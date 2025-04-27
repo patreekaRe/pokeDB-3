@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    	<meta charset="utf-8">
+    	<meta name="description" content="This app helps youtubers pick the best background color for their videos">
+    	<meta name="keywords" content="youtube, background, lights">
+
+		<title>Pokemon Starter Picker</title>
+
+		<!-- external CSS link -->
+		<link rel="stylesheet" href="normalize.css">
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div id="scene-overlay"></div>
+		<div id="starter-screen">
+			<h1></h1>
+			<div id="logo-area">
+				<img src="https://loodibee.com/wp-content/uploads/International-Pokemon-logo.png" alt="Pokemon Logo" class="main-logo">
+				<img src="DB_logo.png" alt="DB Logo" class="db-logo">
+				<img src="rogue_like_logo.png" alt="Rogue Like Logo" class="rogue-logo">
+			  </div>
+			
+			  <!-- <h2 id="chooseStarterButton">Choose Your Pokémon!</h2>
+			<h2 id="startGameButton" class="disabled">Start Game</h2> -->
+			<div class="main-action-wrapper">
+				<button id="main-action-button" class="start-game-button">Choose Your Starter</button>
+			  </div>
+
+
+			<div class="remoteControl">
+				<!-- Charmander (unlocked) -->
+				<button id="red" class="poke-btn" data-pokemon="charmander"></button>
+				<button id="green" class="poke-btn" data-pokemon="bulbasaur"></button>
+				<button id="blue" class="poke-btn" data-pokemon="squirtle"></button>
+			  
+				<!-- Gen 1 Locked -->
+				<!-- <button id="green" class="poke-btn locked-starter" disabled title="Locked: Catch Bulbasaur in battle"></button>
+				<button id="blue" class="poke-btn locked-starter" disabled title="Locked: Catch Squirtle in battle"></button> -->
+			  
+				<!-- Gen 2 Locked -->
+				<button id="red2" class="poke-btn locked-starter" disabled title="Locked: Catch Cyndaquil in battle"></button>
+				<button id="green2" class="poke-btn locked-starter" disabled title="Locked: Catch Chikorita in battle"></button>
+				<button id="blue2" class="poke-btn locked-starter" disabled title="Locked: Catch Totodile in battle"></button>
+			  
+				<!-- Gen 3 Locked -->
+				<button id="red3" class="poke-btn locked-starter" disabled title="Locked: Catch Torchic in battle"></button>
+				<button id="green3" class="poke-btn locked-starter" disabled title="Locked: Catch Treecko in battle"></button>
+				<button id="blue3" class="poke-btn locked-starter" disabled title="Locked: Catch Mudkip in battle"></button>
+			  </div>
+		
+			<img id="pokemonImg" style="display: none;" />
+
+			<div id="trainerBackground"></div>
+
+		</div>
+
+
+		
+		<div id="deck-builder" style="display: none;">
+			<div id="drop-zone">
+				<!-- <h3>Your Deck</h3>
+				<button onclick="startBattleWith(randomEncounter())" class="start-game-button">Battle Start!</button>
+				<div class="deck-slot-area" id="deck-slot-area"> -->
+				  <!-- Dragged cards will appear here -->
+				<!-- </div> -->
+				<div class="deck-section">
+
+					<div class="deck-header">
+					  <!-- <h3>Your Deck</h3> -->
+				<!-- <button onclick="startBattleWith(randomEncounter())" class="start-game-button">Battle Start!</button> -->
+				<button onclick="startBattleProperly()" class="start-game-button">Battle Start!</button>
+
+				<!-- <button onclick="startBattleProperly()" class="start-game-button">Battle Start!</button> -->
+
+					</div>
+				  
+					<div id="deck-slot-area">
+					  <!-- Cards will appear here -->
+					</div>
+				  
+				  </div>
+			  </div>
+			<h2 id="deckbuilderButton" style="text-align: center;">Charmander Starter Deck</h2>
+
+			<!-- Floating cards row (scrolls left to right if overflow) -->
+
+			<div class="card-pool">
+
+				<div class="card-row fire-row">
+				  <!-- 🔥 Fire Attack Cards -->
+				  <!-- Ember, Ember+, Flare Up, Scorch -->
+				  <div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front fire-card">
+						<h3>Ember</h3>
+						<p class="tag">🔥 Fire • Power: 10</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Deal 10 fire damage to the enemy. Basic starter move.</p>
+					</div>
+					</div>
+				</div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front fire-card">
+						<h3>Ember+</h3>
+						<p class="tag">🔥 Fire • Power: 15</p>
+					</div>
+					<div class="card-back">
+						<p class="description">An upgraded Ember. Deal 15 fire damage to the enemy.</p>
+					</div>
+					</div>
+				</div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front fire-card">
+						<h3>Scorch</h3>
+						<p class="tag">🔥 Fire • Burn Chance</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Deal 8 fire damage with a chance to weaken the enemy's attack.</p>
+					</div>
+					</div>
+				</div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front fire-card">
+						<h3>Flare Up</h3>
+						<p class="tag">🔥 Fire • Power: 20</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Deal 20 fire damage. Deal +10 more if your HP is below 50%.</p>
+					</div>
+					</div>
+				</div>
+
+
+
+				</div>
+			  
+				<div class="card-row defense-row">
+				  <!-- 🛡️ Defense Cards -->
+				  <!-- Block, Defense, Quick Guard -->
+				  <div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front defense-card">
+						<h3>Block</h3>
+						<p class="tag">🛡️ Defense • Block 5</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Gain 5 block to absorb incoming damage.</p>
+					</div>
+					</div>
+				</div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front defense-card">
+						<h3>Defense</h3>
+						<p class="tag">🛡️ Defense • Block 10</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Gain 10 block to greatly reduce incoming damage this turn.</p>
+					</div>
+					</div>
+				</div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front defense-card">
+						<h3>Quick Guard</h3>
+						<p class="tag">🛡️ Defense • Guard Move</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Block the first incoming enemy attack completely.</p>
+					</div>
+					</div>
+				</div>
+
+				</div>
+			  
+				<div class="card-row buff-row">
+				  <!-- 💨 Buff/Debuff Cards -->
+				  <!-- Tailwind, Heat Up, Smokescreen -->
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front wind-card">
+						<h3>Smokescreen</h3>
+						<p class="tag">💨 Debuff • Accuracy Down</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Lower the enemy’s accuracy by 10% next turn.</p>
+					</div>
+					</div>
+				</div>
+
+				  <div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front wind-card">
+						<h3>Tailwind</h3>
+						<p class="tag">💨 Buff • Speed Boost</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Boost your speed. Gain +1 extra energy next turn.</p>
+					</div>
+					</div>
+				</div>
+
+				  <div class="card-container" draggable="true">
+					<div class="card-flip">
+					<div class="card-front fire-card">
+						<h3>Heat Up</h3>
+						<p class="tag">🔥 Buff • Attack Boost</p>
+					</div>
+					<div class="card-back">
+						<p class="description">Increase your next attack’s damage by +2.</p>
+					</div>
+					</div>
+
+				</div>
+
+				</div>
+			  
+				<div class="card-row locked-row">
+
+					<div class="card-container">
+					  <div class="card-flip">
+						<div class="card-front fire-card locked">
+						  <h3>Fire Spin</h3>
+						  <p class="tag">🔥 Fire • Burn Effect</p>
+						</div>
+						<div class="card-back">
+						  <p class="description">Locked - Complete 3 battles in a row.</p>
+						</div>
+					  </div>
+					</div>
+				  
+					<div class="card-container">
+					  <div class="card-flip">
+						<div class="card-front wind-card locked">
+						  <h3>Smokescreen</h3>
+						  <p class="tag">💨 Debuff • Accuracy Down</p>
+						</div>
+						<div class="card-back">
+						  <p class="description">Locked - Win a battle without taking damage.</p>
+						</div>
+					  </div>
+					</div>
+				  
+					<div class="card-container">
+					  <div class="card-flip">
+						<div class="card-front power-card locked">
+						  <h3>Seismic Toss</h3>
+						  <p class="tag">💥 Power • Damage scales with level</p>
+						</div>
+						<div class="card-back">
+						  <p class="description">Locked - Reach Level 10 with Charmander.</p>
+						</div>
+					  </div>
+					</div>
+				  
+					<div class="card-container">
+					  <div class="card-flip">
+						<div class="card-front fire-card locked">
+						  <h3>Flame Blast</h3>
+						  <p class="tag">🔥 Supermove • Power: 30+</p>
+						</div>
+						<div class="card-back">
+						  <p class="description">Locked - Defeat a boss with fire moves only.</p>
+						</div>
+					  </div>
+					</div>
+				  
+					<div class="card-container">
+					  <div class="card-flip">
+						<div class="card-front lucky-card locked">
+						  <h3>Lucky Claw</h3>
+						  <p class="tag">⭐ Rare • Draw 1, Gain 5 XP</p>
+						</div>
+						<div class="card-back">
+						  <p class="description">Locked - Catch a shiny starter.</p>
+						</div>
+					  </div>
+					</div>
+				  
+				  </div>
+
+			  </div>
+
+			  <!-- Locked Cards -->			  
+			  <!-- <div class="locked-row">
+				<div class="card fire-card locked">
+					<h3>Fire Spin</h3>
+					<p class="description">Locked - Complete 3 battles in a row.</p>
+					<p class="tag">🔥 Fire • Burn Effect</p>
+				</div>
+				
+				<div class="card wind-card locked">
+					<h3>Smokescreen</h3>
+					<p class="description">Locked - Win a battle without taking damage.</p>
+					<p class="tag">💨 Debuff • Accuracy Down</p>
+				</div>
+				
+				<div class="card power-card locked">
+					<h3>Seismic Toss</h3>
+					<p class="description">Locked - Reach Level 10 with Charmander.</p>
+					<p class="tag">💥 Power • Damage scales with level</p>
+				</div>
+				
+				<div class="card fire-card locked">
+					<h3>Flame Blast</h3>
+					<p class="description">Locked - Defeat a boss with fire moves only.</p>
+					<p class="tag">🔥 Supermove • Power: 30+</p>
+				</div>
+				
+				<div class="card lucky-card locked">
+					<h3>Lucky Claw</h3>
+					<p class="description">Locked - Catch a shiny starter.</p>
+					<p class="tag">⭐ Rare • Draw 1, Gain 5 XP</p>
+				</div>
+			</div> -->
+			</div>
+
+		  </div>
+		
+		  <div id="battle-screen" style="display: none;">
+
+			<!-- Task Bar (Top HUD) -->
+			<div id="battle-task-bar">
+			  <div class="battle-portrait-wrapper">
+				<div class="battle-portrait">
+				  <div class="portrait-inner">
+					<img id="battle-player-portrait" src="https://media.tenor.com/hLfJG3B_ZLIAAAAj/charmander-gif-pokemon.gif" alt="Your Sprite">
+				  </div>
+				</div>
+			  </div>
+		  
+			  <div class="battle-stats">
+				<div class="stat-block">
+					❤️ HP: <span id="battle-player-hp">100</span>
+					<div id="health-bar-wrapper">
+					  <div id="health-bar"></div>
+					</div>
+				  </div>
+				<div class="stat-block">🛡️ Block: <span id="battle-player-block">0</span></div>
+				<div class="stat-block">⚡ Energy: <span id="battle-player-energy">3</span></div>
+				<div class="stat-block">📚 Draw: <span id="draw-pile-count">0</span> cards</div>
+				<div class="stat-block">🗂️ Discard: <span id="discard-pile-count">0</span> cards</div>
+			  </div>
+		  
+			  <div id="battle-items">
+				<div class="item-slot"></div>
+				<div class="item-slot"></div>
+				<div class="item-slot"></div>
+			  </div>
+		  
+			  <div class="end-turn-area">
+				<button id="end-turn-button" class="start-game-button">End Turn</button>
+			  </div>
+			</div>
+		  
+			<!-- Battle Arena -->
+			<div class="battle-layout">
+			  <div class="player-side">
+				<img id="player-sprite" src="https://img.pokemondb.net/sprites/black-white/anim/back-normal/charmander.gif" alt="Your Pokémon">
+			  </div>
+		  
+			  <div class="battle-background">
+				<!-- Background arena here (Forest, etc.) -->
+			  </div>
+		  
+			  <div class="enemy-side">
+				<img id="enemy-sprite" src="img/sprites/Ashroot.png" alt="Enemy Sprite">
+				<h3 id="enemy-name">Ashroot</h3>
+				<p id="enemy-hp">HP: ???</p>
+				<p id="enemy-description">An ancient wild spirit born from the roots of the Lost Wilds.</p>
+			  </div>
+			</div>
+		  
+			<!-- Hand of Cards -->
+			<div id="battle-hand" class="battle-hand">
+			  <!-- Player's 5 battle cards will be dynamically inserted here -->
+			</div>
+		  
+		  </div>
+
+		<div id="battle-screen" style="display: none;">
+  
+  <!-- Hand of Cards -->
+  <div id="battle-hand" class="battle-hand">
+    <!-- Player's cards will appear here -->
+  </div>
+
+  <!-- Task Bar with Player Info + End Turn Button -->
+  <div id="battle-task-bar">
+
+    <!-- Player Portrait and Stats -->
+    <div class="battle-portrait-wrapper">
+      <div class="battle-portrait">
+        <div class="portrait-inner">
+          <img id="battle-player-portrait" src="https://media.tenor.com/hLfJG3B_ZLIAAAAj/charmander-gif-pokemon.gif" alt="Your Sprite">
+        </div>
+      </div>
+    </div>
+
+    <div class="battle-stats">
+      <div class="stat-block">
+        ❤️ HP:
+        <div id="health-bar-container">
+          <div id="health-bar"></div>
+        </div>
+        <span id="battle-player-hp" class="health-text">100</span>
+      </div>
+      <div class="stat-block">
+        🛡️ Block: <span id="battle-player-block">0</span>
+      </div>
+      <div class="stat-block">
+        ⚡ Energy: <span id="battle-player-energy">3</span>
+      </div>
+    </div>
+
+    <!-- Battle Items (optional) -->
+    <div id="battle-items">
+      <div class="item-slot"></div>
+      <div class="item-slot"></div>
+      <div class="item-slot"></div>
+    </div>
+
+    <!-- End Turn Button -->
+    <div class="end-turn-area">
+      <button id="end-turn-button" class="start-game-button">End Turn</button>
+    </div>
+
+  </div>
+
+  <!-- Enemy Area (this was missing!!) -->
+  <div class="battle-layout">
+    <div class="player-side">
+      <h3>You</h3>
+      <img id="player-sprite" src="" alt="Your Pokémon">
+    </div>
+
+    <div class="enemy-side">
+      <h3 id="enemy-name">Enemy Name</h3>
+      <img id="enemy-sprite" src="img/sprites/Ashroot.png" alt="Enemy Sprite">
+      <p id="enemy-hp">HP: ???</p>
+      <p id="enemy-description">Description will go here</p>
+      <div id="effectiveness-msg"></div>
+    </div>
+  </div>
+
+</div>
+
+		
+		<script src="main.js"></script>
+	</body>
+</html>
+
+		
+		<!-- <h1></h1>
+		<img id="Logo" class="logo" src="https://loodibee.com/wp-content/uploads/International-Pokemon-logo.png" alt="generic youtube gaming chair">
+
+		<h2 id="evolveButton">Choose your Pokémon!</h2>
+		<div class="remoteControl">
+			<button id="red" class="poke-btn" data-pokemon="charmander"></button>
+			<button id="green" class="poke-btn" data-pokemon="bulbasaur"></button>
+			<button id="blue" class="poke-btn" data-pokemon="squirtle"></button>
+		  
+			<button id="red2" class="poke-btn" data-pokemon="cyndaquil"></button>
+			<button id="green2" class="poke-btn" data-pokemon="chikorita"></button>
+			<button id="blue2" class="poke-btn" data-pokemon="totodile"></button>
+		  
+			<button id="red3" class="poke-btn" data-pokemon="torchic"></button>
+			<button id="green3" class="poke-btn" data-pokemon="treecko"></button>
+			<button id="blue3" class="poke-btn" data-pokemon="mudkip"></button>
+		</div>
+		<script type="text/javascript" src="main.js"></script>
+		<img id="pokemonImg" style="display: none;" />
+		<div id="trainerBackground"></div> -->

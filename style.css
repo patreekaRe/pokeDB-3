@@ -1,0 +1,1734 @@
+/* *****************************************
+/* HOT GARBAGE - PLEASE DON'T MIMIC THIS CSS
+/*******************************************/
+
+/* Box Model Hack */
+*{
+  box-sizing: border-box;
+}
+
+/******************************************
+/* LAYOUT
+/*******************************************/
+body{
+  background-color: rgb(255, 247, 222);
+}
+
+h1, h2{
+  text-align: center;
+}
+
+h2{
+  min-width: 350px;
+  max-width: 350px;
+  height: 50px;
+  border: 3px solid black;
+  padding: 7px;
+  border-radius: 10px;
+  margin-top: 0px;
+  margin-left: 30px;
+  background-color: rgb(255, 255, 255);
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+
+}
+h2:hover {
+  transform: scale(1.1);
+}
+
+.logo{
+  display: block;
+  height: 350px;
+  margin: 100px auto;
+}
+.logo:hover{
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  transform: scale(1.1);
+}
+
+.remoteControl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px;
+  max-width: 350px;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 3px solid black;
+  border-radius: 20px;
+}
+
+.remoteControl button {
+  box-shadow: 0 0 10px rgba(0,0,0,.5);
+  width: 95px;
+  height: 95px;
+  border-radius: 50px;
+  border-color: rgb(0, 0, 0);
+  border: 3px solid;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.remoteControl button:hover {
+  transform: scale(1.1);
+}
+
+/* #evolveButton.disabled {
+  background-color: #ccc;
+  color: #888;
+  cursor: not-allowed;
+  pointer-events: none;
+} */
+
+/******************************************
+/* ADDITIONAL STYLES
+/*******************************************/
+#red{
+  background-image: url(https://loodibee.com/wp-content/uploads/Pokemon-Charmander-icon.png);
+  background-size: 100% 100%;
+  background-color: rgb(161, 14, 14);
+}
+#green{
+  background-image: url(https://loodibee.com/wp-content/uploads/Pokemon-Bulbasaur-icon.png);
+  background-size: 100% 100%;
+  background-color: rgb(53, 163, 2);
+}
+#blue{
+  background-image: url(https://loodibee.com/wp-content/uploads/Pokemon-Squirtle-icon.png);
+  background-size: 100% 100%;
+  background-color: rgb(28, 145, 255);
+}
+#red2{
+  background-image: url(https://static.wikia.nocookie.net/pokemon-advanced/images/0/00/Cynadquil.png);
+  background-size: 100% 100%;
+  background-color: rgba(231, 74, 26, 0.822);
+}
+#green2{
+  background-image: url(https://static.wikia.nocookie.net/pokemon-advanced/images/4/4e/Chikorita.png);
+  background-size: 100% 100%;
+  background-color: rgba(76, 197, 147, 0.822);
+}
+#blue2{
+  background-image: url(https://static.wikia.nocookie.net/pokemon-fighters-ex-roblox/images/6/67/H158.png);
+  background-size: 100% 100%;
+  background-color: rgba(6, 144, 207, 0.64);
+}#red3{
+  background-image: url(https://static.wikia.nocookie.net/goofy-legends-gl/images/6/65/Shuffle255.png);
+  background-size: 100% 100%;
+  background-color: rgba(255, 174, 0, 0.822);
+}
+#green3{
+  background-image: url(https://static.wikia.nocookie.net/goofy-legends-gl/images/4/4e/Shuffle252.png);
+  background-size: 100% 100%;
+  background-color: rgba(113, 223, 99, 0.822);
+}
+#blue3{
+  background-image: url(https://static.wikia.nocookie.net/pokemon-fighters-ex-roblox/images/e/e8/H258.png);
+  background-size: 100% 100%;
+  background-color: rgba(126, 228, 241, 0.822);
+}
+
+#pokemonImg {
+  position: absolute;
+  top: 275px;
+  left: 50%;
+  margin-left: -100px; /* half of width */
+  width: 200px;
+  height: auto;
+  display: none;
+  z-index: 5;
+  pointer-events: none;
+  transition: 
+    transform 0.3s ease,
+    filter 0.3s ease,
+    opacity 0.3s ease,
+    margin-left 0.3s ease,
+    width 0.3s ease;
+  filter: 
+    brightness(1.2) 
+    contrast(1.1) 
+    drop-shadow(0 0 8px orange);
+}
+
+#trainerBackground {
+  position: absolute;
+  top: 918px;
+  left: 825px;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 100px;
+  background-image: url('https://i.pinimg.com/originals/a7/bc/5e/a7bc5e24c5695d8ad44d6271b44e288d.gif');
+  background-repeat: no-repeat;
+  background-size: contain;
+  z-index: 0;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  filter: drop-shadow(0px 10px 12px rgba(0, 0, 0, 0.5));
+}
+  /* position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 110px;
+  background-image: url('https://i.pinimg.com/originals/a7/bc/5e/a7bc5e24c5695d8ad44d6271b44e288d.gif');
+  background-repeat: no-repeat;
+  background-size: contain;
+  z-index: 1;
+  pointer-events: none;
+} */
+
+#pokemonImg.animate {
+  animation: glow 0.8s ease-in-out;
+}
+
+@keyframes glow {
+  0% { filter: brightness(1); transform: scale(1); }
+  50% { filter: brightness(1.6); transform: scale(1.1); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
+
+#pokemonImg.charizard-transition {
+  animation: charizardGrowFade 1.2s ease forwards;
+}
+
+@keyframes charizardGrowFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    filter: brightness(1.2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: brightness(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+#startGameButton.disabled {
+  background-color: #ccc;
+  color: #888;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+#startGameButton.active {
+  animation: pulse 1s infinite ease-in-out;
+  background-color: rgb(255, 255, 153);
+  color: black;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+button.selected {
+  box-shadow: 0 0 15px 5px yellow;
+  transform: scale(1.1);
+}
+
+.card {
+  width: 280px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: white;
+  border: 4px solid black;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  font-family: 'Arial', sans-serif;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.card h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.card .deck-sprite {
+  width: 120px;
+  margin: 10px auto;
+  display: block;
+}
+
+.card button {
+  background-color: #ffd859;
+  border: 3px solid #444;
+  padding: 8px 16px;
+  margin: 5px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card button:hover {
+  background-color: #ffcb05;
+  transform: scale(1.05);
+}
+
+.deck-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+}
+
+.card {
+  width: 180px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 3px solid black;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  text-align: center;
+  margin: 10px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.card .description {
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.card .tag {
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* TYPE THEMES */
+.fire-card {
+  background: linear-gradient(to top left, #ff9966, #ff5e62);
+  color: white;
+}
+
+.wind-card {
+  background: linear-gradient(to top left, #b6f0ff, #58c2e5);
+  color: #00334d;
+}
+
+.defense-card {
+  background: linear-gradient(to top left, #c9d6ff, #e2e2e2);
+  color: #333;
+}
+
+.card-front.locked {
+  filter: grayscale(100%) brightness(0.7);
+  opacity: 0.6;
+  position: relative;
+  cursor: not-allowed;
+}
+
+.card-front.locked::after {
+  content: "🔒 Locked";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.power-card {
+  background: linear-gradient(to top left, #fa709a, #fee140);
+  color: black;
+}
+
+.lucky-card {
+  background: linear-gradient(to top left, #f5f7fa, #c3cfe2);
+  color: #222;
+}
+
+.poke-btn.locked-starter {
+  filter: grayscale(100%) brightness(0.5);
+  cursor: not-allowed;
+  position: relative;
+}
+
+.poke-btn.locked-starter::after {
+  content: "🔒";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 16px;
+  color: rgb(255, 255, 255);
+  text-shadow: 1px 1px 3px black;
+}
+
+.card {
+  width: 200px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 3px solid #222;
+  background: white;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  margin: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.card:hover {
+  transform: scale(1.05) rotateZ(1deg);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.card h3 {
+  font-size: 22px;
+  margin: 6px 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.card .description {
+  font-size: 14px;
+  margin: 10px 0;
+  line-height: 1.4;
+}
+
+.card .tag {
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 8px;
+}
+
+.fire-card {
+  background: linear-gradient(135deg, #ff9966, #ff5e62);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  border-color: #ff5e62;
+}
+
+.fire-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.4) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-20deg);
+  animation: shine 4s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes shine {
+  0% { left: -50%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* wind-card styles */
+.wind-card {
+  background: linear-gradient(to top left, #b6f0ff, #58c2e5);
+  color: #00334d;
+  position: relative;
+  overflow: hidden;
+  border-color: #58c2e5;
+}
+
+.wind-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.4) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-20deg);
+  animation: shine 4s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* defense-card styles */
+.defense-card {
+  background: linear-gradient(to top left, #c9d6ff, #e2e2e2);
+  color: #333;
+  position: relative;
+  overflow: hidden;
+  border-color: #999;
+}
+
+.defense-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.4) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-20deg);
+  animation: shine 4s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* keyframes (only needs to be added once) */
+@keyframes shine {
+  0% { left: -50%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* === TYPE-THEMED BORDER COLORS === */
+.fire-card {
+  border-color: #ff5e62;
+}
+
+.wind-card {
+  border-color: #58c2e5;
+}
+
+.defense-card {
+  border-color: #999;
+}
+
+.power-card {
+  border-color: #e96d71;
+}
+
+.lucky-card {
+  border-color: #8884d8;
+}
+
+.card-container {
+  perspective: 1000px;
+  cursor: grab;
+}
+
+.card-flip {
+
+  height: 200px;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card-container:hover .card-flip {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: 3px solid #222;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  backface-visibility: hidden;
+}
+
+.card-back {
+  background: #222222;
+  color: rgb(255, 255, 255);
+  transform: rotateY(180deg);
+}
+
+.starter-pool {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 20px;
+  margin-bottom: 80px;
+}
+
+#drop-zone {
+  position:fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 950px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 3px dashed #999;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  z-index: 999;
+}
+
+#drop-zone h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #444;
+}
+
+.deck-slot-area {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 14px;
+  min-height: 120px;
+}
+
+/* Fancy Tilted Hand of Cards */
+#deck-slot-area .card-container:nth-child(1) {
+  transform: rotate(-6deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(2) {
+  transform: rotate(-4deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(3) {
+  transform: rotate(-2deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(4) {
+  transform: rotate(0deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(5) {
+  transform: rotate(2deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(6) {
+  transform: rotate(4deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(7) {
+  transform: rotate(6deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(8) {
+  transform: rotate(8deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(9) {
+  transform: rotate(10deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(10) {
+  transform: rotate(12deg) translateY(0);
+}
+
+.locked-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  max-width: 100%;
+}
+
+.card-pool {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+@keyframes cardDropIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(20px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05) translateY(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.card-drop {
+  animation: cardDropIn 0.4s ease-out;
+}
+
+/* Little Running Trainers */
+#trainerBackground {
+  display: none !important;
+}
+
+#scene-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image: url('https://example.com/scene.png'); /* replace this */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.4; /* adjust for transparency */
+  z-index: 0;
+}
+
+#logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  position: relative;
+}
+
+.main-logo {
+  max-width: 70%;
+  height: auto;
+}
+
+.db-logo {
+  max-width: 20%;
+  margin-top: -30px;
+  margin-left: 240px; /* Adjust to position it after the "N" in Pokémon */
+  position: relative;
+}
+
+.rogue-logo {
+  max-width: 60%;
+  margin-top: -20px;
+}
+
+/* Make starter area look better on phones */
+@media (max-width: 600px) {
+  #starter-screen {
+    padding: 2rem 1rem;
+    gap: 2rem;
+  }
+
+  .card-container {
+    transform: scale(1.3);
+    margin-bottom: 1rem;
+  }
+}
+
+/* === MOBILE OPTIMIZATION FOR STARTER SCREEN === */
+@media (max-width: 600px) {
+  #starter-screen {
+    padding: 2rem 1rem;
+    gap: 2rem;
+    scale: 1.1;
+  }
+
+  .remoteControl {
+    transform: scale(1.15);
+    max-width: 100%;
+  }
+
+  .db-logo {
+    margin-left: 140px;
+    max-width: 30%;
+  }
+
+  .rogue-logo {
+    max-width: 80%;
+  }
+
+  h2#startGameButton {
+    transform: scale(1.1);
+  }
+}
+
+/* === STARTER SCREEN REORGANIZATION === */
+#starter-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  gap: 1.5rem;
+  position: relative;
+  overflow-x: hidden;
+
+  background-image: url('');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Logo stack */
+#logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.main-logo {
+  width: 300px;      /* Set exact width */
+  height: auto;      /* Maintain aspect ratio */
+  max-width: 80vw;   /* Never go wider than 80% of screen */
+  position: relative;
+  top: -60px
+}
+
+.db-logo {
+  /* transform: scale(.5);
+  position: relative;
+  top: -210px;
+  left: -30px;
+  transform: scale(.4); */
+
+  width: 90px;      /* Set exact width */
+  height: auto;      /* Maintain aspect ratio */
+  max-width: 80vw;   /* Never go wider than 80% of screen */
+  position: relative;
+  top: -165px;
+  left: -85px;
+}
+
+.rogue-logo {
+  /* max-width: 70vw;
+  position: relative;
+  top: -645px;
+  transform: scale(.2); */
+  width: 100px;      /* Set exact width */
+  height: auto;      /* Maintain aspect ratio */
+  max-width: 80vw;   /* Never go wider than 80% of screen */
+  position: relative;
+  top: -240px;
+  left: -50px;
+}
+
+/* Start Game button sizing */
+#startGameButton {
+  font-size: 1.2rem;
+  padding: 0.75rem 1.5rem;
+  width: 300px;      
+  height: auto;      
+  max-width: 80vw;   
+  position: relative;
+  top: -10px
+}
+
+/* Scale buttons for starter selection */
+/* .remoteControl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 350px;
+  padding: 1rem;
+  transform: scale(1.1);
+  justify-content: center;
+  position: relative;
+  position: relative;
+  margin-top: -500px;        
+  margin-left: 340px;       
+} */
+
+.remoteControl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 360px;
+  padding: 1rem;
+  transform: scale(1.5);
+  justify-content: center;
+  position: relative;
+  top: -10px;
+  margin: 0 auto; /* ✅ Center it */
+}
+
+/* Mobile optimization */
+@media (max-width: 600px) {
+  #starter-screen {
+    gap: 2.5rem;
+    padding-top: 1.5rem;
+    scale: 1.1;
+  }
+
+  .main-logo {
+    max-width: 80vw;
+  }
+
+  .db-logo {
+    max-width: 28vw;
+    margin-left: 100px;
+  }
+
+  .rogue-logo {
+    max-width: 75vw;
+  }
+
+  #startGameButton {
+    font-size: 1.4rem;
+    transform: scale(1.1);
+  }
+
+  .remoteControl {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+/* === Starter Reveal Animation === */
+.remoteControl {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: 
+    max-height 0.6s ease, 
+    opacity 0.6s ease, 
+    transform 0.6s ease;
+}
+
+.remoteControl.show {
+  max-height: 800px;  /* enough to fit all buttons */
+  opacity: 1;
+  transform: translateY(0);
+  position: fixed;
+  top: 650px;
+}
+
+.start-game-button {
+  background: linear-gradient(to bottom right, #ff6b6b, #ff8e53);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 1px;
+  transform: scale(.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.start-game-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 25px rgba(255, 107, 107, 0.6);
+}
+
+.start-game-button:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.3s ease;
+}
+
+#scene-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.35;
+  z-index: 0;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.scene-transition {
+  animation: sceneFadeZoom 1s ease forwards;
+}
+
+@keyframes sceneFadeZoom {
+  0% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+}
+
+.battle-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  padding-top: 0px;
+  margin-top: 250px;
+  gap: 1rem;
+}
+
+.player-side,
+.enemy-side {
+  flex: 1;
+  text-align: center;
+}
+
+#player-sprite,
+#enemy-sprite {
+  height: auto;
+}
+
+/* .battle-hand {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  z-index: 999;
+} */
+
+/* Deck Builder Visual Rehaul */
+
+/* Container for all cards */
+.card-pool {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  align-items: flex-start;
+}
+
+/* Each type row */
+.card-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  /* padding: 1rem; */
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 720px;
+}
+
+/* Subtle background tints */
+.fire-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  background: linear-gradient(to right, #fff3dc00);
+}
+.defense-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  /* background: linear-gradient(to right, #e5f0ff, #f5faff); */
+}
+.buff-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  /* background: linear-gradient(to right, #e5fff8, #f5fffd); */
+}
+
+/* Card containers */
+.card-container {
+  width: 140px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: rgba(255, 255, 255, 0);
+  cursor: grab;
+}
+
+/* Hover lift effect */
+.card-container:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Dragging effect */
+.card-container.dragging {
+  opacity: 0.8;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Deck Slot Area */
+#deck-slot-area {
+  margin-top: 3rem;
+  padding: 1rem;
+  background: #fafafa;
+  border: 2px dashed #ccc;
+  border-radius: 16px;
+  min-height: 250px;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+/* Start Battle Button */
+#start-battle-button {
+  margin-top: 0rem;
+  padding: 1rem 2rem;
+  font-size: 1.4rem;
+  border-radius: 10px;
+  background: linear-gradient(to right, #ff7e5f, #feb47b);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255, 126, 95, 0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-battle-button:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 126, 95, 0.6);
+}
+
+/* Smaller cards for My Deck area */
+#deck-slot-area .card-container {
+  width: 100px;
+  height: 150px;
+  margin-left: -30px; /* overlap cards slightly */
+  transform: translateY(0); /* no lift in deck */
+  cursor: default;
+  transition: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Optional: when hovered (no lift up) */
+#deck-slot-area .card-container:hover {
+  transform: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Fancy Tilted Hand of Cards */
+#deck-slot-area .card-container:nth-child(1) {
+  transform: rotate(-6deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(2) {
+  transform: rotate(-4deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(3) {
+  transform: rotate(-2deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(4) {
+  transform: rotate(0deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(5) {
+  transform: rotate(2deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(6) {
+  transform: rotate(4deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(7) {
+  transform: rotate(6deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(8) {
+  transform: rotate(8deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(9) {
+  transform: rotate(10deg) translateY(0);
+}
+#deck-slot-area .card-container:nth-child(10) {
+  transform: rotate(12deg) translateY(0);
+}
+
+/* Customized Your Deck Section */
+#deck-slot-area {
+  margin-top: 5px;
+  padding: 1rem;
+  background: #f9f9f918;
+  border: 3px dashed #aaaaaa6c;
+  border-radius: 20px;
+  min-height: 180px;
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto; /* Allow left-right scrolling if needed */
+  overflow-y: hidden;
+  gap: 1rem;
+  white-space: nowrap; /* Force cards into one single line */
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Scrollbar customizations (optional, looks cleaner) */
+#deck-slot-area::-webkit-scrollbar {
+  height: 8px;
+}
+
+#deck-slot-area::-webkit-scrollbar-track {
+  background: transparent
+}
+
+#deck-slot-area::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 4px;
+}
+
+.locked-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  padding: 1rem 2rem; /* match the card rows above */
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 300px;
+}
+
+.start-button-wrapper {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+#drop-zone {
+  position: fixed; 
+  margin: 0 auto;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 150px; 
+  width: fit-content; 
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  border: 3px dashed #99999900;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0);
+  text-align: center;
+  z-index: 999;
+  transition: all 0.3s ease; 
+  display: flex;
+  flex-wrap: nowrap; 
+  overflow-x: auto; 
+  align-items: center;
+  justify-content: center;
+}
+
+/* Deck Builder Section */
+.deck-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: rem;
+}
+
+.deck-header {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: rem;
+}
+
+.deck-header h3 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+#start-battle-button {
+  padding: 0.6rem 1.4rem;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  background: linear-gradient(to right, #ff6a00, #ff9e2c);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#start-battle-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(255, 106, 0, 0.5);
+}
+
+#battle-task-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 24px;
+  border-bottom: 3px solid #444;
+  position: relative;
+  z-index: 10;
+}
+
+.battle-portrait img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: #333;
+  image-rendering: pixelated; /* 🧠 Sharp clean pixel edges */
+}
+
+.battle-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 1rem;
+  color: white;
+}
+
+.stat-block {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+#battle-items {
+  display: flex;
+  gap: 8px;
+}
+
+.item-slot {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px dashed #ccc;
+  border-radius: 6px;
+}
+
+#health-bar-container {
+  width: 150px;
+  height: 18px;
+  background: #333;
+  border: 2px solid white;
+  border-radius: 8px;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+#health-bar {
+  height: 100%;
+  width: 100%; /* Full HP initially */
+  background: linear-gradient(to right, #ff3c3c, #ff7a7a);
+  transition: width 0.4s ease; /* Smooth shrinking effect */
+}
+
+.health-text {
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+#player-sprite {
+  width: 100px; /* or whatever size you want */
+  height: auto;
+  transform: scale(1.8); /* 🔥 Scales the sprite 1.8x larger */
+  transform-origin: center center; /* 📍 keeps it scaling from the middle */
+  /* transform: scaleX(-1); */
+}
+
+.battle-portrait {
+  width: 75px;
+  height: 75px;
+  background: white;
+  border: 3px solid #333;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  transform: scaleX(-1)
+}
+
+#battle-player-portrait {
+  width: 100px; /* 🎯 Bigger than container */
+  height: 100px;
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  transform: translate(-50%, -50%) scale(1.2); /* 🎯 Center and POP OUT */
+  object-fit: cover;
+  pointer-events: none;
+  image-rendering: pixelated; /* Crisp pixel art */
+}
+
+#battle-task-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 50px;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 24px;
+  border-bottom: 3px solid #444;
+  z-index: 10;
+  margin-top: 20px;
+}
+
+#battle-task-bar {
+  position: fixed; /* 🎯 Stay pinned to top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 24px;
+  border-bottom: 3px solid #444;
+  z-index: 100; /* 🎯 Make sure it stays on top of everything */
+}
+
+.battle-portrait-wrapper {
+  position: absolute;
+  top: -10px; /* 🎯 FLOAT the portrait ABOVE the bar */
+  left: 15px;
+  width: 70px;
+  height: 70px;
+  z-index: 20;
+}
+
+.battle-portrait {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border: 3px solid #333;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#battle-player-portrait {
+  width: 110px; /* You can tweak this */
+  height: 110px;
+  transform: translate(-5%, -5%) scale(1); /* 🧠 fine manual positioning */
+  pointer-events: none;
+  image-rendering: pixelated;
+  position: absolute; /* important for moving */
+  top: 1px;
+  left: -5px;
+}
+
+.battle-portrait {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border: 3px solid #333;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.portrait-inner {
+  width: 100%;
+  height: 100%; /* 🧠 makes the inside slightly taller */
+  transform: translateY(0%); /* 🧠 move Charmander down a little */
+  transform: translateX(0%); /* 🧠 move Charmander down a little */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#battle-player-portrait {
+  width: 120%;
+  height: auto;
+  object-fit: cover;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+#battle-task-bar {
+  position: relative;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%); /* 🎯 Center it */
+  width: 100%; /* 🎯 Shrink width */
+  max-width: 100%; /* 🎯 Max width on big screens */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 140px;
+  border-bottom: 3px solid #444;
+  border-radius: 0px; /* 🎯 Optional: round corners */
+  z-index: 100;
+}
+
+#battle-hand {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 10px;
+  /* background: rgba(255, 255, 255, 0); */
+  /* border-top: 3px solid black; */
+  border-radius: 12px 12px 0 0;
+  z-index: 999;
+  overflow-x: auto;
+  overflow-y: hidden;
+  opacity: (100%);
+}
+
+#health-bar {
+  height: 16px;
+  background-color: #4caf50; /* Default green */
+  transition: width 0.3s ease;
+  border-radius: 8px;
+}
+#health-bar-container {
+  width: 100%;
+  height: 16px;
+  background-color: #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+@keyframes idleHover {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* Attach this to Ashroot */
+#enemy-sprite {
+  animation: idleHover 3s ease-in-out infinite;
+}
+@keyframes vineSway {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Attach this to Ashroot */
+#enemy-sprite {
+  animation: vineSway 4s ease-in-out infinite;
+}
+
+#player-sprite {
+  width: 95px;
+  height: auto;
+  transform: scale(1.8) translateY(-20px); /* Move up 20px too */
+  transition: transform 0.3s ease; /* Smooth scaling */
+  transform-origin: center center;
+  /* transform: scaleX(-1); */
+}
+
+#drop-zone {
+  background: rgba(255, 255, 255, 0);
+}
+
+.battle-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('img/backgrounds/wild-clearing.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1; /* behind player and enemy sprites */
+  opacity: 1; /* adjust later for atmospheric effects if needed */
+  transition: opacity 3s ease-in-out;
+}
+
+.battle-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 200px; /* push arena down */
+  padding: 0 10%;
+  position: relative;
+  z-index: 2;
+}
+
+.player-side, .enemy-side {
+  flex: 0 0 40%;
+  text-align: center;
+}
+
+/* #player-sprite {
+  width: 120px;
+  transform: scale(2) rotate(-10deg) translateY(-30px);
+  transform-origin: center;
+  position: absolute;
+  top: 200px;
+  left: 200px;
+} */
+
+#enemy-sprite {
+  width: 140px;
+  transform: scale(2) rotate(10deg) translateY(-30px);
+  transform-origin: center;
+}
+
+.battle-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://wallpaperaccess.com/full/3541806.jpg'); /* Example Forest Background */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3; /* faint, behind battle */
+  z-index: -1;
+}
+
+#battle-hand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0);
+  border-radius: 20px 20px 0 0;
+  z-index: 999;
+}
+
+/* Make the cards arc slightly */
+#battle-hand .card-container:nth-child(1) { transform: rotate(-15deg) translateY(20px); }
+#battle-hand .card-container:nth-child(2) { transform: rotate(-7deg) translateY(10px); }
+#battle-hand .card-container:nth-child(3) { transform: rotate(0deg) translateY(0); }
+#battle-hand .card-container:nth-child(4) { transform: rotate(7deg) translateY(10px); }
+#battle-hand .card-container:nth-child(5) { transform: rotate(15deg) translateY(20px); }
+
+.battle-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('img/backgrounds/wild-clearing.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1; /* make sure it's behind the player and enemy */
+  opacity: 1;  /* you can adjust opacity if you want misty vibes later */
+  transition: opacity 1s ease-in-out;
+}
+
+
+/* battle screen positioning */
+#player-sprite {
+  position: fixed;
+  bottom: 25%;
+  left: 20%;
+  width: 175px;
+  height: auto;
+  transform: translateY(50%);
+}
+
+#enemy-sprite {
+  position: fixed;
+  bottom: 29%;
+  right: 50%;  /* lock enemy towards right */
+  max-width: 300px;
+  height: auto;
+  transform: translateY(50%); /* optional */
+}
+
+#health-bar-wrapper {
+  width: 100%;
+  max-width: 200px;
+  height: 14px;
+  background-color: #ddd;
+  border: 2px solid black;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+#health-bar {
+  height: 100%;
+  width: 100%;
+  background-color: #4caf50; /* Starts green */
+  transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+#deck-builder {
+  position:relative;
+  top: px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('img/backgrounds/charmander-deckbuilder-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;mar
+  z-index: -1; /* make sure it's behind the player and enemy */
+  opacity: 1;  /* you can adjust opacity if you want misty vibes later */
+  transition: opacity 1s ease-in-out;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  min-height: 100vh; /* allow scrollable vertical */
+  overflow-x: hidden; /* disable side scroll */
+}
+
+#deckbuilderButton{
+  margin-top: 60px; /* or 80px, or whatever you want */
+  margin-left: 64px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px 20px;
+  border: 3px solid black;
+  border-radius: 12px;
+  background: white;
+  display: inline-block;
+}
