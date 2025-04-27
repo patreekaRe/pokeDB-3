@@ -127,69 +127,69 @@ document.addEventListener("DOMContentLoaded", function () {
   //   return cardDiv;
   // }
     
-  function rebuildPlayerDeck() {
-    playerDeck = []; // clear the deck
-  
-    const deckCards = document.querySelectorAll('#deck-slot-area .card-container');
-  
-    deckCards.forEach(cardContainer => {
-      const name = cardContainer.querySelector('h3')?.textContent || "Unknown";
-      const type = cardContainer.querySelector('p')?.textContent.toLowerCase() || "attack";
-  
-      let cost = 1;   // Default energy cost
-      let damage = 0; // Default no damage
-      let block = 0;  // Default no block
-      let buff = null; // Default no buff
-  
-      // 🎯 Set proper values based on card name
-      if (name === "Ember") {
-        cost = 1;
-        damage = 6;
-      } else if (name === "Ember+") {
-        cost = 1;
-        damage = 10;
-      } else if (name === "Scorch") {
-        cost = 1;
-        damage = 8;
-        buff = "burn"; // optional burn status you can add later
-      } else if (name === "Flare Up") {
-        cost = 2;
-        damage = 20;
-      } else if (name === "Block") {
-        cost = 1;
-        block = 5;
-      } else if (name === "Defense") {
-        cost = 1;
-        block = 10;
-      } else if (name === "Quick Guard") {
-        cost = 1;
-        block = 7;
-      } else if (name === "Smokescreen") {
-        cost = 0;
-        buff = "enemy miss"; // Decrease enemy accuracy
-      } else if (name === "Tailwind") {
-        cost = 0;
-        buff = "speed"; // Extra energy next turn
-      } else if (name === "Heat Up") {
-        cost = 0;
-        buff = "attack up"; // Boost attack
-      } else {
-        cost = 1;
-      }
-  
-      playerDeck.push({
-        name: name,
-        type: type,
-        cost: cost,
-        damage: damage,
-        block: block,
-        buff: buff
-      });
+function rebuildPlayerDeck() {
+  playerDeck = []; // clear the deck
+
+  const deckCards = document.querySelectorAll('#deck-slot-area .card-container');
+
+  deckCards.forEach(cardContainer => {
+    const name = cardContainer.querySelector('h3')?.textContent || "Unknown";
+    const type = cardContainer.querySelector('p')?.textContent.toLowerCase() || "attack";
+
+    let cost = 1;   // Default energy cost
+    let damage = 0; // Default no damage
+    let block = 0;  // Default no block
+    let buff = null; // Default no buff
+
+    // 🎯 Set proper values based on card name
+    if (name === "Ember") {
+      cost = 1;
+      damage = 6;
+    } else if (name === "Ember+") {
+      cost = 1;
+      damage = 10;
+    } else if (name === "Scorch") {
+      cost = 1;
+      damage = 8;
+      buff = "burn"; // optional burn status you can add later
+    } else if (name === "Flare Up") {
+      cost = 2;
+      damage = 20;
+    } else if (name === "Block") {
+      cost = 1;
+      block = 5;
+    } else if (name === "Defense") {
+      cost = 1;
+      block = 10;
+    } else if (name === "Quick Guard") {
+      cost = 1;
+      block = 7;
+    } else if (name === "Smokescreen") {
+      cost = 0;
+      buff = "enemy miss"; // Decrease enemy accuracy
+    } else if (name === "Tailwind") {
+      cost = 0;
+      buff = "speed"; // Extra energy next turn
+    } else if (name === "Heat Up") {
+      cost = 0;
+      buff = "attack up"; // Boost attack
+    } else {
+      cost = 1;
+    }
+
+    playerDeck.push({
+      name: name,
+      type: type,
+      cost: cost,
+      damage: damage,
+      block: block,
+      buff: buff
     });
-  
-    console.log("✅ Rebuilt playerDeck with correct stats:", playerDeck);
-  }
-  
+  });
+
+  console.log("✅ Rebuilt playerDeck with correct stats:", playerDeck);
+}
+
 
   const enemies = {
     ashroot: {
@@ -450,7 +450,6 @@ document.addEventListener("DOMContentLoaded", function () {
       playerEnergy += 1; 
       updateEnergyDisplay();
     }
-    
   
     // 🆕 Remove the card from the hand visually
     const battleHand = document.getElementById('battle-hand');

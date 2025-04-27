@@ -1178,7 +1178,7 @@ button.selected {
   border: 3px dashed #aaaaaa6c;
   border-radius: 20px;
   min-height: 180px;
-  width: fit-content;
+  width: 120px;
   display: flex;
   flex-direction: row;
   align-items: center;
