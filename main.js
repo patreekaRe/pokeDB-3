@@ -48,6 +48,11 @@ document.addEventListener("DOMContentLoaded", function () {
   let enemyHP = 0; // Will be set when the enemy appears
   let isPlayerTurn = true;
   let playerSpriteUrl = "";
+  let playerHasAttackBuff = false;
+  let pendingEnergyBoost = 0;
+  let enemyWeakenNextTurn = false;
+  let enemyAccuracyDownNextTurn = false;
+  let enemyBurnNextTurn = false; // 🔥 NEW - For Burn effect
 
   // function createCardElement(card) {
   //   const cardDiv = document.createElement('div');
@@ -106,90 +111,80 @@ document.addEventListener("DOMContentLoaded", function () {
     return cardDiv;
   }
   
+  function rebuildPlayerDeck() {
+    playerDeck = []; // clear the deck
   
-  // function createCardElement(card) {
-  //   const cardDiv = document.createElement('div');
-  //   cardDiv.classList.add('card');  // ❗ not card-container
-    
-  //   const title = document.createElement('h3');
-  //   title.textContent = card.name;
-  //   title.style.marginBottom = "8px";
+    const deckCards = document.querySelectorAll('#deck-slot-area .card-container');
   
-  //   const type = document.createElement('p');
-  //   type.textContent = card.type;
-  //   type.classList.add('tag');
-  //   type.style.fontSize = "14px";
-  //   type.style.fontStyle = "italic";
+    deckCards.forEach(cardContainer => {
+      const name = cardContainer.querySelector('h3')?.textContent || "Unknown";
+      const tagText = cardContainer.querySelector('.tag')?.textContent || "";
   
-  //   cardDiv.appendChild(title);
-  //   cardDiv.appendChild(type);
+      // Default values
+      let type = "attack";
+      let cost = 1;
+      let damage = 0;
+      let block = 0;
+      let buff = null;
   
-  //   return cardDiv;
-  // }
-    
-function rebuildPlayerDeck() {
-  playerDeck = []; // clear the deck
-
-  const deckCards = document.querySelectorAll('#deck-slot-area .card-container');
-
-  deckCards.forEach(cardContainer => {
-    const name = cardContainer.querySelector('h3')?.textContent || "Unknown";
-    const type = cardContainer.querySelector('p')?.textContent.toLowerCase() || "attack";
-
-    let cost = 1;   // Default energy cost
-    let damage = 0; // Default no damage
-    let block = 0;  // Default no block
-    let buff = null; // Default no buff
-
-    // 🎯 Set proper values based on card name
-    if (name === "Ember") {
-      cost = 1;
-      damage = 6;
-    } else if (name === "Ember+") {
-      cost = 1;
-      damage = 10;
-    } else if (name === "Scorch") {
-      cost = 1;
-      damage = 8;
-      buff = "burn"; // optional burn status you can add later
-    } else if (name === "Flare Up") {
-      cost = 2;
-      damage = 20;
-    } else if (name === "Block") {
-      cost = 1;
-      block = 5;
-    } else if (name === "Defense") {
-      cost = 1;
-      block = 10;
-    } else if (name === "Quick Guard") {
-      cost = 1;
-      block = 7;
-    } else if (name === "Smokescreen") {
-      cost = 0;
-      buff = "enemy miss"; // Decrease enemy accuracy
-    } else if (name === "Tailwind") {
-      cost = 0;
-      buff = "speed"; // Extra energy next turn
-    } else if (name === "Heat Up") {
-      cost = 0;
-      buff = "attack up"; // Boost attack
-    } else {
-      cost = 1;
-    }
-
-    playerDeck.push({
-      name: name,
-      type: type,
-      cost: cost,
-      damage: damage,
-      block: block,
-      buff: buff
+      // Detect type
+      if (tagText.includes("Fire")) {
+        type = "fire";
+      } else if (tagText.includes("Defense") || tagText.includes("Block") || tagText.includes("Guard")) {
+        type = "defense";
+      } else if (tagText.includes("Buff") || tagText.includes("Debuff")) {
+        type = "buff";
+      }
+  
+      // 🧠 Detect energy cost properly
+      const costMatch = tagText.match(/Cost: (\d+)/);
+      if (costMatch) {
+        cost = parseInt(costMatch[1]);
+      }
+  
+      // 🧠 Detect DAMAGE properly
+      const powerMatch = tagText.match(/Power: (\d+)/);
+      const dmgMatch = tagText.match(/(\d+) dmg/);
+  
+      if (powerMatch) {
+        damage = parseInt(powerMatch[1]);
+      } else if (dmgMatch) {
+        damage = parseInt(dmgMatch[1]);
+      }
+  
+      // 🧠 Detect BLOCK amount
+      const blockMatch = tagText.match(/Block (\d+)/);
+      if (blockMatch) {
+        block = parseInt(blockMatch[1]);
+      }
+  
+      // 🧠 Detect Buff Type
+      if (tagText.includes("Speed Boost")) {
+        buff = "speed";
+      }
+      if (tagText.includes("Attack Boost")) {
+        buff = "attack up";
+      }
+      if (tagText.includes("Refresh")) {
+        buff = "refresh";
+      }
+      if (tagText.includes("Weaken")) {
+        buff = "weaken";
+      }
+  
+      playerDeck.push({
+        name: name,
+        type: type,
+        cost: cost,
+        damage: damage,
+        block: block,
+        buff: buff
+      });
     });
-  });
-
-  console.log("✅ Rebuilt playerDeck with correct stats:", playerDeck);
-}
-
+  
+    console.log("✅ Rebuilt playerDeck with correct COST + DAMAGE:", playerDeck);
+  }
+  
 
   const enemies = {
     ashroot: {
@@ -427,6 +422,62 @@ function rebuildPlayerDeck() {
     }
   }
 
+  // function playCard(card) {
+  //   if (!isPlayerTurn) return;
+  
+  //   console.log("▶️ Played card:", card.name);
+  
+  //   if (playerEnergy < card.cost) {
+  //     alert("⚡ Not enough energy!");
+  //     return;
+  //   }
+  
+  //   playerEnergy -= card.cost;
+  //   updateEnergyDisplay();
+  
+  //   if (card.damage > 0) {
+  //     enemyHP -= card.damage;
+  //     document.getElementById('enemy-hp').textContent = `HP: ${enemyHP}`;
+  //   }
+    
+  //   if (card.block > 0) {
+  //     playerBlock += card.block;
+  //     document.getElementById('battle-player-block').textContent = playerBlock;
+  //   }
+    
+  //   if (card.buff) {
+  //     if (card.buff === "attack up") {
+  //       // Example: maybe increase next attack damage by +2
+  //       // (you can create a boost system later)
+  //       alert("Attack Boost activated!");
+  //     } else if (card.buff === "speed") {
+  //       playerEnergy += 1;
+  //       updateEnergyDisplay();
+  //       alert("Speed Boost activated! ⚡ +1 energy");
+  //     }
+  //   }
+  
+  //   // 🆕 Remove the card from the hand visually
+  //   const battleHand = document.getElementById('battle-hand');
+  //   const cards = battleHand.querySelectorAll('.card');
+  
+  //   cards.forEach((cardDiv) => {
+  //     const name = cardDiv.querySelector('h3').textContent;
+  //     if (name === card.name) {
+  //       // Move to discardPile
+  //       discardPile.push(card);
+  
+  //       // Remove from battle-hand
+  //       battleHand.removeChild(cardDiv);
+  //       updatePileCounts(); // ✅ add here
+  //       return; // Stop after removing one match
+  //     }
+  //   });
+  
+  //   checkBattleState();
+    
+  // }
+
   function playCard(card) {
     if (!isPlayerTurn) return;
   
@@ -437,40 +488,77 @@ function rebuildPlayerDeck() {
       return;
     }
   
+    // Special Condition Check (Firestorm)
+    if (card.name === "Firestorm" && playerHP === 100) {
+      alert("❌ Cannot use Firestorm at full HP!");
+      return;
+    }
+  
     playerEnergy -= card.cost;
     updateEnergyDisplay();
   
-    if (card.type.includes('attack') || card.type.includes('fire')) {
-      enemyHP -= 10; 
-      document.getElementById('enemy-hp').textContent = `HP: ${enemyHP}`;
-    } else if (card.type.includes('defense')) {
-      playerBlock += 5; 
-      document.getElementById('battle-player-block').textContent = playerBlock;
-    } else if (card.type.includes('buff')) {
-      playerEnergy += 1; 
-      updateEnergyDisplay();
+    let totalDamage = card.damage;
+  
+    // 🔥 Handle Attack Buff (Heat Up)
+    if (playerHasAttackBuff) {
+      totalDamage += 5;
+      playerHasAttackBuff = false; // Buff consumed after one attack
+      console.log("💥 Attack buff consumed! +5 bonus damage");
     }
   
-    // 🆕 Remove the card from the hand visually
+    // Apply Damage
+    if (totalDamage > 0) {
+      enemyHP -= totalDamage;
+      if (enemyHP < 0) enemyHP = 0;
+      document.getElementById('enemy-hp').textContent = `HP: ${enemyHP}`;
+    }
+  
+    // Apply Block
+    if (card.block > 0) {
+      playerBlock += card.block;
+      document.getElementById('battle-player-block').textContent = playerBlock;
+    }
+  
+    // Apply Buffs and Debuffs
+    if (card.buff) {
+      if (card.buff === "attack up") {
+        playerHasAttackBuff = true;
+        alert("🔥 Attack Up: Next attack will deal +5 bonus damage!");
+      } else if (card.buff === "speed") {
+        pendingEnergyBoost += 1;
+        if (card.name === "Inferno Charge") {
+          pendingEnergyBoost = 2; // Inferno Charge boosts by +2
+        }
+        alert(`⚡ Energy Boost: Gain +${pendingEnergyBoost} energy next turn!`);
+      } else if (card.buff === "weaken") {
+        enemyWeakenNextTurn = true;
+        alert("😈 Enemy weakened: Deals 25% less damage next turn!");
+      } else if (card.buff === "accuracy down") {
+        enemyAccuracyDownNextTurn = true;
+        alert("🌫️ Enemy accuracy reduced: 10% chance to miss next turn!");
+      } else if (card.buff === "burn") {
+        enemyBurnNextTurn = true;
+        alert("🔥 Enemy is burned! Will take 5 damage at start of their next turn.");
+      }
+    }
+  
+    // After playing, remove card from hand and move to discard
     const battleHand = document.getElementById('battle-hand');
     const cards = battleHand.querySelectorAll('.card');
   
     cards.forEach((cardDiv) => {
       const name = cardDiv.querySelector('h3').textContent;
       if (name === card.name) {
-        // Move to discardPile
         discardPile.push(card);
-  
-        // Remove from battle-hand
         battleHand.removeChild(cardDiv);
-        updatePileCounts(); // ✅ add here
-        return; // Stop after removing one match
+        updatePileCounts();
+        return;
       }
     });
   
     checkBattleState();
-    
   }
+  
 
   function checkBattleState() {
     if (enemyHP <= 0) {

@@ -5,13 +5,15 @@
     	<meta name="description" content="This app helps youtubers pick the best background color for their videos">
     	<meta name="keywords" content="youtube, background, lights">
 
-		<title>Pokemon Starter Picker</title>
+		<title>pokeDB</title>
 
 		<!-- external CSS link -->
 		<link rel="stylesheet" href="normalize.css">
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
+		
+
 		<div id="scene-overlay"></div>
 		<div id="starter-screen">
 			<h1></h1>
@@ -92,51 +94,139 @@
 				  <!-- Ember, Ember+, Flare Up, Scorch -->
 				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front fire-card">
+					  <div class="card-front fire-card">
 						<h3>Ember</h3>
-						<p class="tag">🔥 Fire • Power: 10</p>
+						<p class="tag">🔥 Fire • Power: 10 • Cost: 1</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Deal 10 fire damage. Cheap, reliable starter attack.</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">Deal 10 fire damage to the enemy. Basic starter move.</p>
-					</div>
-					</div>
-				</div>
+				  </div>
 
-				<div class="card-container" draggable="true">
+				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front fire-card">
+					  <div class="card-front fire-card">
 						<h3>Ember+</h3>
-						<p class="tag">🔥 Fire • Power: 15</p>
+						<p class="tag">🔥 Fire • Power: 15 • Cost: 1</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Deal 15 fire damage. Stronger starter move for aggressive plays.</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">An upgraded Ember. Deal 15 fire damage to the enemy.</p>
-					</div>
-					</div>
-				</div>
+				  </div>
 
-				<div class="card-container" draggable="true">
+				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front fire-card">
+					  <div class="card-front fire-card">
+						<h3>Heat Up</h3>
+						<p class="tag">🔥 Buff • Attack Boost • Cost: 1</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Increase your next attack's damage by +2. Buff yourself before big plays!</p>
+					  </div>
+					</div>
+				  </div>
+
+				  <div class="card-container" draggable="true">
+					<div class="card-flip">
+					  <div class="card-front fire-card">
 						<h3>Scorch</h3>
-						<p class="tag">🔥 Fire • Burn Chance</p>
+						<p class="tag">🔥 Fire • Power: 8 + Debuff • Cost: 1</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Deal 8 fire damage and weaken enemy attack slightly next turn.</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">Deal 8 fire damage with a chance to weaken the enemy's attack.</p>
+				  </div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					  <div class="card-front fire-card">
+						<h3>Wildfire</h3>
+						<p class="tag">🔥 Fire • 5 dmg to ALL • Cost: 2</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Deal 5 fire damage to ALL enemies. Great against swarms!</p>
+					  </div>
 					</div>
-					</div>
-				</div>
+				  </div>
 
 				<div class="card-container" draggable="true">
 					<div class="card-flip">
 					<div class="card-front fire-card">
-						<h3>Flare Up</h3>
-						<p class="tag">🔥 Fire • Power: 20</p>
+						<h3>Inferno Charge</h3>
+						<p class="tag">🔥 Fire • 12 dmg + Energy Boost • Cost: 2</p>
 					</div>
 					<div class="card-back">
-						<p class="description">Deal 20 fire damage. Deal +10 more if your HP is below 50%.</p>
+						<p class="description">Deal 12 fire damage. Gain +2 energy next turn. Great setup card!</p>
 					</div>
 					</div>
 				</div>
+
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					  <div class="card-front fire-card">
+						<h3>Flare Up</h3>
+						<p class="tag">🔥 Fire • Power: 20 (+10 low HP) • Cost: 2</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Deal 20 fire damage. Deal +10 more if your HP is below 50%.</p>
+					  </div>
+					</div>
+				  </div>
+
+				  <div class="card-container">
+					<div class="card-flip">
+					  <div class="card-front fire-card locked">
+						<h3>Fire Spin</h3>
+						<p class="tag">🔥 Fire • Burn Effect</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Locked - Complete 3 battles in a row.</p>
+					  </div>
+					</div>
+				  </div>
+
+				<div class="card-container" draggable="true">
+					<div class="card-flip">
+					  <div class="card-front fire-card locked">
+						<h3>Firestorm</h3>
+						<p class="tag">🔥 Fire • Power: 30 • Special Finisher • Cost: 3</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Massive 30 damage attack. Only playable if HP is NOT full!</p>
+					  </div>
+					</div>
+				  </div>
+
+				  <div class="card-container">
+					<div class="card-flip">
+					  <div class="card-front fire-card locked">
+						<h3>Flame Blast</h3>
+						<p class="tag">🔥 Supermove • Power: 30+</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Locked - Defeat a boss with fire moves only.</p>
+					  </div>
+					</div>
+				  </div>
+
+				  <div class="card-container">
+					<div class="card-flip">
+					  <div class="card-front power-card locked">
+						<h3>Seismic Toss</h3>
+						<p class="tag">💥 Power • Damage scales with level</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Locked - Reach Level 10 with Charmander.</p>
+					  </div>
+					</div>
+				  </div>
+
+
+
 
 
 
@@ -147,146 +237,87 @@
 				  <!-- Block, Defense, Quick Guard -->
 				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front defense-card">
+					  <div class="card-front defense-card">
 						<h3>Block</h3>
-						<p class="tag">🛡️ Defense • Block 5</p>
-					</div>
-					<div class="card-back">
+						<p class="tag">🛡️ Defense • Block 5 • Cost: 1</p>
+					  </div>
+					  <div class="card-back">
 						<p class="description">Gain 5 block to absorb incoming damage.</p>
+					  </div>
 					</div>
-					</div>
-				</div>
+				  </div>
 
-				<div class="card-container" draggable="true">
+				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front defense-card">
+					  <div class="card-front defense-card">
 						<h3>Defense</h3>
-						<p class="tag">🛡️ Defense • Block 10</p>
+						<p class="tag">🛡️ Defense • Block 10 • Cost: 1</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Gain 10 block to greatly reduce incoming damage.</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">Gain 10 block to greatly reduce incoming damage this turn.</p>
-					</div>
-					</div>
-				</div>
+				  </div>
 
-				<div class="card-container" draggable="true">
+				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front defense-card">
+					  <div class="card-front defense-card">
 						<h3>Quick Guard</h3>
-						<p class="tag">🛡️ Defense • Guard Move</p>
-					</div>
-					<div class="card-back">
+						<p class="tag">🛡️ Defense • Guard Move • Cost: 2</p>
+					  </div>
+					  <div class="card-back">
 						<p class="description">Block the first incoming enemy attack completely.</p>
+					  </div>
 					</div>
-					</div>
-				</div>
+				  </div>
 
 				</div>
 			  
+
+				<!-- 💨 Buff/Debuff Cards -->
 				<div class="card-row buff-row">
-				  <!-- 💨 Buff/Debuff Cards -->
-				  <!-- Tailwind, Heat Up, Smokescreen -->
 
-				<div class="card-container" draggable="true">
+				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front wind-card">
+					  <div class="card-front wind-card">
 						<h3>Smokescreen</h3>
-						<p class="tag">💨 Debuff • Accuracy Down</p>
+						<p class="tag">💨 Debuff • Accuracy Down • Cost: 0</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Lower the enemy’s accuracy by 10% next turn. Great tactical card.</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">Lower the enemy’s accuracy by 10% next turn.</p>
-					</div>
-					</div>
-				</div>
+				  </div>
 
 				  <div class="card-container" draggable="true">
 					<div class="card-flip">
-					<div class="card-front wind-card">
+					  <div class="card-front wind-card">
 						<h3>Tailwind</h3>
-						<p class="tag">💨 Buff • Speed Boost</p>
+						<p class="tag">💨 Buff • Speed Boost • Cost: 0</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Gain +1 extra energy next turn. Free move to set up big combos!</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">Boost your speed. Gain +1 extra energy next turn.</p>
-					</div>
-					</div>
-				</div>
+				  </div>
 
-				  <div class="card-container" draggable="true">
+				  <div class="card-container">
 					<div class="card-flip">
-					<div class="card-front fire-card">
-						<h3>Heat Up</h3>
-						<p class="tag">🔥 Buff • Attack Boost</p>
+					  <div class="card-front lucky-card locked">
+						<h3>Lucky Claw</h3>
+						<p class="tag">⭐ Rare • Draw 1, Gain 5 XP</p>
+					  </div>
+					  <div class="card-back">
+						<p class="description">Locked - Catch a shiny starter.</p>
+					  </div>
 					</div>
-					<div class="card-back">
-						<p class="description">Increase your next attack’s damage by +2.</p>
-					</div>
-					</div>
+				  </div>
 
 				</div>
 
-				</div>
-			  
-				<div class="card-row locked-row">
 
-					<div class="card-container">
-					  <div class="card-flip">
-						<div class="card-front fire-card locked">
-						  <h3>Fire Spin</h3>
-						  <p class="tag">🔥 Fire • Burn Effect</p>
-						</div>
-						<div class="card-back">
-						  <p class="description">Locked - Complete 3 battles in a row.</p>
-						</div>
-					  </div>
-					</div>
-				  
-					<div class="card-container">
-					  <div class="card-flip">
-						<div class="card-front wind-card locked">
-						  <h3>Smokescreen</h3>
-						  <p class="tag">💨 Debuff • Accuracy Down</p>
-						</div>
-						<div class="card-back">
-						  <p class="description">Locked - Win a battle without taking damage.</p>
-						</div>
-					  </div>
-					</div>
-				  
-					<div class="card-container">
-					  <div class="card-flip">
-						<div class="card-front power-card locked">
-						  <h3>Seismic Toss</h3>
-						  <p class="tag">💥 Power • Damage scales with level</p>
-						</div>
-						<div class="card-back">
-						  <p class="description">Locked - Reach Level 10 with Charmander.</p>
-						</div>
-					  </div>
-					</div>
-				  
-					<div class="card-container">
-					  <div class="card-flip">
-						<div class="card-front fire-card locked">
-						  <h3>Flame Blast</h3>
-						  <p class="tag">🔥 Supermove • Power: 30+</p>
-						</div>
-						<div class="card-back">
-						  <p class="description">Locked - Defeat a boss with fire moves only.</p>
-						</div>
-					  </div>
-					</div>
-				  
-					<div class="card-container">
-					  <div class="card-flip">
-						<div class="card-front lucky-card locked">
-						  <h3>Lucky Claw</h3>
-						  <p class="tag">⭐ Rare • Draw 1, Gain 5 XP</p>
-						</div>
-						<div class="card-back">
-						  <p class="description">Locked - Catch a shiny starter.</p>
-						</div>
-					  </div>
-					</div>
+			  		<!-- LOCKED CARDS -->
+				<!-- <div class="card-row locked-row"> -->
 				  
 				  </div>
 
