@@ -308,7 +308,10 @@ async function enemyTurn() {
       const through = hurtPlayer(damage);
       hitEffect('player-sprite');
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
-      log(`${b.def.name} used ${move.name}! ${damage} damage${through < damage ? ` (${damage - through} blocked)` : ''}.`);
+      const effect = enemyTypeMultiplier();
+      if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
+      if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
+      log(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${through < damage ? `, ${damage - through} blocked` : ''}.`);
       if (hasRelic('rocky-helmet')) {
         hurtEnemy(3);
         pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
@@ -340,10 +343,21 @@ async function enemyTurn() {
 
 const currentMove = () => battle.def.moves[battle.enemy.moveIndex % battle.def.moves.length];
 
-/** Damage an enemy attack will deal right now (includes strength and weaken). */
+/**
+ * The type chart applied to enemy attacks. An enemy's attacks use its own
+ * type: x1.5 if that type beats yours, x0.5 if it loses to yours, else x1.
+ */
+function enemyTypeMultiplier() {
+  const attackerType = TYPES[battle.def.type];
+  if (attackerType.beats === battle.starter.type) return 1.5;
+  if (attackerType.losesTo === battle.starter.type) return 0.5;
+  return 1;
+}
+
+/** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = move.amount + en.strength;
+  const raw = Math.round((move.amount + en.strength) * enemyTypeMultiplier());
   return en.weakened ? Math.floor(raw / 2) : raw;
 }
 
@@ -449,7 +463,9 @@ function renderIntent() {
   if (move.kind === 'attack' || move.kind === 'drain') {
     const dmg = attackDamage(move);
     icon = move.kind === 'drain' ? '🩸' : '⚔️';
-    text = b.guard ? `${move.name} (guarded)` : `${move.name} · ${dmg}`;
+    // ▲ means the enemy's type is strong against yours, ▼ means it is weak against yours
+    const arrow = enemyTypeMultiplier() > 1 ? ' ▲' : enemyTypeMultiplier() < 1 ? ' ▼' : '';
+    text = b.guard ? `${move.name} (guarded)` : `${move.name} · ${dmg}${arrow}`;
   } else if (move.kind === 'defend') {
     icon = '🛡️'; kind = 'defend'; text = `${move.name} · +${move.amount} block`;
   } else {
