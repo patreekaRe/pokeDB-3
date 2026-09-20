@@ -35,7 +35,7 @@
     <section id="start-screen" class="screen">
       <div class="hero">
         <h1 class="title">Poké<span>DB</span><small>Rogue-Like Deck Battler</small></h1>
-        <p class="pitch">Build a deck of moves, then battle wild monsters.<br>Win to keep your streak alive and unlock new cards and starters.</p>
+        <p class="pitch">Pick a starter, climb a branching map, beat three bosses and evolve along the way.<br>Every run grows your deck with new moves and relics.</p>
         <button class="btn secondary" id="howto-btn">📖 How to play</button>
       </div>
 
@@ -49,47 +49,76 @@
             <h3 id="detail-name">Pick a starter above</h3>
             <p id="detail-blurb">Tap one of the three free starters to begin.</p>
           </div>
-          <button class="btn primary" id="choose-btn" disabled>Build your deck →</button>
+          <button class="btn primary" id="choose-btn" disabled>See starting deck →</button>
         </div>
       </div>
 
       <p class="progress-line" id="progress-line"></p>
     </section>
 
-    <!-- ============ 2. DECK BUILDER ============ -->
-    <section id="builder-screen" class="screen" hidden>
+    <!-- ============ 2. DECK PREVIEW (read-only) ============ -->
+    <section id="preview-screen" class="screen" hidden>
       <div class="builder-head">
-        <img id="builder-sprite" class="pixel" alt="">
+        <img id="preview-sprite" class="pixel" alt="">
         <div>
-          <h2 id="builder-title">Your deck</h2>
-          <p class="hint">Tap a card (or drag it) to add it to your deck. Tap a card in your deck to remove it.</p>
+          <h2 id="preview-title">Your starter</h2>
+          <p class="hint" id="preview-blurb"></p>
         </div>
       </div>
 
-      <div class="panel deck-panel" id="deck-panel">
+      <div class="panel">
+        <h3>Evolution line</h3>
+        <div id="evo-line" class="evo-line"></div>
+        <p class="hint" id="evo-note"></p>
+      </div>
+
+      <div class="panel">
         <div class="deck-header">
-          <h3>Your deck <span id="deck-count" class="count">0/10</span></h3>
-          <div class="deck-tools">
-            <button class="btn small secondary" id="deck-default">Starter deck</button>
-            <button class="btn small secondary" id="deck-clear">Clear</button>
-          </div>
+          <h3>Starting deck <span id="preview-count" class="count">10 cards</span></h3>
         </div>
-        <div id="deck-slots" class="deck-slots" aria-label="Your deck"></div>
-        <div id="save-slots" class="save-slots"></div>
-      </div>
-
-      <div class="panel pool-panel" id="pool-panel">
-        <h3>Card collection</h3>
-        <div id="card-pool" class="card-pool"></div>
+        <div id="preview-deck" class="card-pool"></div>
+        <p class="hint">This deck is fixed. You grow it during the run by picking new moves after fights.</p>
       </div>
 
       <div class="builder-bar">
-        <span id="deck-warning" class="warning"></span>
-        <button class="btn primary big" id="battle-btn">⚔️ Battle!</button>
+        <button class="btn secondary" id="preview-back">← Back</button>
+        <button class="btn primary big" id="preview-begin">Begin run →</button>
       </div>
     </section>
 
-    <!-- ============ 3. BATTLE ============ -->
+    <!-- ============ 3. MAP ============ -->
+    <section id="map-screen" class="screen" hidden>
+      <div class="run-bar panel">
+        <div class="run-who">
+          <img id="run-sprite" class="portrait pixel" alt="">
+          <div class="run-info">
+            <strong id="run-title"></strong>
+            <div class="bar hp" role="progressbar" aria-label="Your HP">
+              <div class="bar-fill" id="run-hp-fill"></div>
+              <span class="bar-text" id="run-hp-text"></span>
+            </div>
+          </div>
+        </div>
+        <div class="run-tools">
+          <div id="run-relics" class="relic-row" aria-label="Your relics"></div>
+          <button class="btn small secondary" id="run-deck-btn">🃏 Deck (<span id="run-deck-count">10</span>)</button>
+        </div>
+      </div>
+
+      <h2 class="biome-title" id="biome-title"></h2>
+      <div class="map-wrap"><div class="map" id="map"></div></div>
+      <p class="map-legend">⚔️ Fight &nbsp;·&nbsp; 💀 Elite &nbsp;·&nbsp; 🏥 Rest &nbsp;·&nbsp; 🎁 Treasure &nbsp;·&nbsp; 👑 Boss &nbsp;—&nbsp; start at the bottom and climb up</p>
+    </section>
+
+    <!-- ============ 4. REWARDS (choose one) ============ -->
+    <section id="reward-screen" class="screen" hidden>
+      <h2 id="reward-title" class="reward-title"></h2>
+      <p class="hint reward-sub" id="reward-sub"></p>
+      <div id="reward-options" class="reward-options"></div>
+      <div class="reward-skip"><button class="btn secondary" id="reward-skip">Skip</button></div>
+    </section>
+
+    <!-- ============ 5. BATTLE ============ -->
     <section id="battle-screen" class="screen" hidden>
 
       <div class="hud">
@@ -152,12 +181,12 @@
   <dialog id="help-dialog" class="dialog">
     <h2>How to play</h2>
     <ol class="howto">
-      <li><strong>Pick a starter.</strong> Its type decides which attack cards you can use.</li>
-      <li><strong>Build a deck</strong> of 5–10 cards (up to 3 copies of each). Tap or drag cards in.</li>
-      <li><strong>Battle!</strong> Each turn you draw 5 cards and have <b>3 ⚡ energy</b>. Tap a card to play it. Its cost is the number in the corner.</li>
-      <li><strong>Watch the enemy's intent</strong> above its head. It tells you what it will do next turn, so you can block or hurry.</li>
-      <li><strong>End Turn</strong> when you're done. The enemy acts, then you draw a fresh hand.</li>
-      <li><strong>Win</strong> to build a streak. Each win unlocks new cards and, later, new starters.</li>
+      <li><strong>Pick a starter.</strong> Each one has its own fixed 10-card deck. Check it out before you begin.</li>
+      <li><strong>Climb the map.</strong> Start at the bottom and pick a path upward: ⚔️ fights, 💀 elites, 🏥 rest sites and 🎁 treasure. Your HP carries over between fights.</li>
+      <li><strong>Battle.</strong> Each turn you draw 5 cards and have <b>3 ⚡ energy</b>. Tap a card to play it. Its cost is the number in the corner. Press <b>End Turn</b> when you're done.</li>
+      <li><strong>Read the enemy's intent</strong> above its head. It shows what it will do next turn, so you can block or hurry.</li>
+      <li><strong>Grow your deck.</strong> After fights, pick 1 of 3 new moves. Elites, bosses and treasure give <b>relics</b>, held items with permanent bonuses.</li>
+      <li><strong>Beat the boss</strong> at the top of each of the 3 biomes. After the first two bosses your Pokémon <b>evolves</b>: more HP, a full heal and stronger moves.</li>
     </ol>
     <h3>Good to know</h3>
     <ul class="glossary">
@@ -166,6 +195,8 @@
       <li><b>🔥 Burn</b> hurts the enemy at the start of its turn, then wears off by 1 each turn.</li>
       <li><b>🎯 Focus</b> adds bonus damage to your next attack.</li>
       <li><b>💨 Weaken</b> makes the enemy's next attack deal half damage.</li>
+      <li><b>🔒 Locked starters</b> unlock through achievements. Tap one to see what to do.</li>
+      <li>If you faint, the run is over. Your unlocked starters and stats are kept.</li>
     </ul>
     <form method="dialog"><button class="btn primary">Got it</button></form>
   </dialog>
@@ -175,7 +206,7 @@
     <p><strong>PokéDB</strong> is a fan-made learning project by Patrick, built with plain HTML, CSS and JavaScript. It is free and non-commercial.</p>
     <p class="disclaimer">Pokémon and all related names and characters are trademarks of Nintendo, Creatures Inc. and GAME FREAK inc. This project is <strong>not affiliated with, endorsed by or sponsored by</strong> any of them.</p>
     <ul class="credits">
-      <li>Pokémon pixel sprites: <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener">PokeAPI/sprites</a> (Gen 5 art, © Nintendo / Game Freak).</li>
+      <li>Pokémon pixel sprites (starters, evolutions, wild Pokémon and bosses): <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener">PokeAPI/sprites</a> (Gen 5 art, © Nintendo / Game Freak).</li>
       <li>Enemy monsters (Ashroot, Blazeclaw, Aquaeye) and backgrounds: original AI-assisted artwork made for this project.</li>
       <li>Code, card design and game rules: Patrick.</li>
     </ul>
@@ -191,9 +222,27 @@
     <ul id="result-unlocks" class="unlocks"></ul>
     <div class="dialog-actions">
       <button class="btn secondary" id="result-menu">Main menu</button>
-      <button class="btn secondary" id="result-deck">Edit deck</button>
-      <button class="btn primary" id="result-again">Battle again</button>
+      <button class="btn primary" id="result-again">New run</button>
     </div>
+  </dialog>
+
+  <dialog id="evolve-dialog" class="dialog result">
+    <h2 id="evolve-title"></h2>
+    <div class="evolve-art">
+      <img id="evolve-from" class="pixel" alt="">
+      <span class="evo-arrow">→</span>
+      <img id="evolve-to" class="pixel evolve-new" alt="">
+    </div>
+    <p id="evolve-text"></p>
+    <div class="dialog-actions">
+      <button class="btn primary" id="evolve-continue">Continue</button>
+    </div>
+  </dialog>
+
+  <dialog id="deck-dialog" class="dialog wide-dialog">
+    <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
+    <div id="deck-dialog-cards" class="card-pool"></div>
+    <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 
   <dialog id="confirm-dialog" class="dialog small-dialog">

@@ -1,6 +1,6 @@
 /* ============================================================
-   screens.css  -  the layout of the three screens:
-     1. Start screen   2. Deck builder   3. Battle
+   screens.css  -  the layout of the screens:
+     1. Start screen   2. Deck preview   3. Map   4. Rewards   5. Battle
    Phone layouts are handled at the bottom in @media rules.
    ============================================================ */
 
@@ -81,48 +81,16 @@
 .detail-text p { color: var(--muted); }
 .progress-line { color: #dfe3ff; font-size: 0.9rem; text-shadow: 0 1px 4px #000; text-align: center; }
 
-/* ============ 2. DECK BUILDER ============ */
-#builder-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; }
+/* ============ 2. DECK PREVIEW ============ */
+#preview-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; }
 .builder-head { display: flex; align-items: center; gap: 14px; }
 .builder-head img { width: 72px; height: 72px; object-fit: contain; }
 .builder-head h2 { font-size: 1.6rem; text-shadow: 0 2px 6px #000; }
 .hint { color: #dfe3ff; font-size: 0.92rem; text-shadow: 0 1px 4px #000; }
 
 .deck-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-.deck-tools { display: flex; gap: 8px; }
 .count { margin-left: 8px; padding: 2px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 0.9rem; }
 
-.deck-slots {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px 10px;
-}
-@media (min-width: 900px) {
-  .deck-slots { grid-template-columns: repeat(10, 1fr); gap: 12px 8px; }
-}
-.slot.empty {
-  aspect-ratio: 5 / 6.2;
-  display: grid;
-  place-items: center;
-  border: 2px dashed rgba(255, 255, 255, 0.28);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 1.6rem;
-}
-.save-slots {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--panel-edge);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-}
-.save-label { font-weight: 800; color: var(--muted); }
-.save-slot { display: flex; align-items: center; gap: 6px; }
-.save-info { font-size: 0.85rem; min-width: 84px; }
-
-.deck-panel.drop-hover, .pool-panel.drop-hover { outline: 3px dashed var(--accent); outline-offset: 3px; }
 
 .card-pool {
   margin-top: 12px;
@@ -144,7 +112,6 @@
   gap: 16px;
   background: linear-gradient(180deg, transparent, rgba(10, 12, 30, 0.92) 40%);
 }
-.warning { color: var(--warn); font-weight: 700; font-size: 0.9rem; }
 
 /* ============ 3. BATTLE ============ */
 body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hidden; }
@@ -189,6 +156,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .enemy-zone[data-type="fire"]  { --accent: #ff7a45; }
 .enemy-zone[data-type="water"] { --accent: #3fa3ff; }
 .enemy-zone[data-type="grass"] { --accent: #4fcf6c; }
+.enemy-zone[data-type="normal"] { --accent: #b7bdd6; }
 
 .enemy-zone {
   position: relative;
@@ -352,11 +320,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .screen { padding: 14px 12px 20px; }
   .starter-btn img { width: 60px; height: 60px; }
   .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 10px; }
-  .deck-slots { gap: 12px 6px; }
   .builder-head h2 { font-size: 1.3rem; }
   .builder-bar { margin: 4px -12px 0; }
-  .save-slot { width: 100%; }
-  .save-info { flex: 1; }
 
   /* battle: shrink the top bar and keep the hand readable */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
@@ -379,3 +344,135 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .enemy-portrait { width: clamp(90px, 17vh, 190px); }
   .hand { --hand-card-w: clamp(96px, 17vh, 148px); }
 }
+
+/* ============================================================
+   THE RUN: evolution line, map, rewards, relics
+   ============================================================ */
+
+/* ---------- evolution line (deck preview) ---------- */
+.evo-line { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0; }
+.evo-stage { display: flex; flex-direction: column; align-items: center; min-width: 96px; }
+.evo-stage img { width: 88px; height: 88px; object-fit: contain; }
+.evo-hp { font-size: 0.8rem; color: var(--muted); }
+.evo-arrow { font-size: 1.6rem; color: var(--gold); font-weight: 900; }
+
+/* ---------- run bar (top of the map) ---------- */
+.run-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 10px 14px;
+}
+.run-who { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px; }
+.run-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.run-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.relic-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.biome-title { text-align: center; margin: 14px 0 6px; font-size: 1.5rem; text-shadow: 0 2px 8px #000; }
+
+/* ---------- the map ---------- */
+#map-screen { max-width: 640px; }
+.map-wrap { padding: 0 4px; }
+.map {
+  position: relative;
+  width: 100%;
+  height: clamp(440px, 68vh, 620px);
+  border-radius: var(--radius);
+  background: rgba(10, 12, 30, 0.6);
+  border: 1px solid var(--panel-edge);
+}
+.map-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map-line { stroke: rgba(255, 255, 255, 0.25); stroke-width: 3; stroke-dasharray: 2 7; stroke-linecap: round; }
+.map-line.walked { stroke: var(--gold); stroke-dasharray: none; }
+.map-line.active { stroke: #fff; stroke-dasharray: none; stroke-width: 4; }
+
+.map-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  background: #262c58;
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.55;
+  cursor: default;
+}
+.map-node.type-elite { background: #5a1f24; }
+.map-node.type-rest  { background: #1e5a3c; }
+.map-node.type-treasure { background: #5a4a14; }
+.map-node.type-boss { width: 62px; height: 62px; font-size: 1.9rem; background: #4a2670; border-color: var(--gold); }
+.map-node.visited { opacity: 0.35; filter: grayscale(0.6); }
+.map-node.current { opacity: 1; border-color: var(--gold); filter: none; box-shadow: 0 0 0 4px rgba(255, 203, 5, 0.35); }
+.map-node.reachable {
+  opacity: 1;
+  cursor: pointer;
+  border-color: #fff;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.map-node.reachable:hover { transform: translate(-50%, -50%) scale(1.15); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18); } }
+.map-legend { margin-top: 10px; text-align: center; font-size: 0.85rem; color: #dfe3ff; text-shadow: 0 1px 4px #000; }
+
+/* ---------- rewards (choose one) ---------- */
+#reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; }
+.reward-title { font-size: 1.8rem; text-shadow: 0 2px 8px #000; text-align: center; }
+.reward-sub { text-align: center; }
+.reward-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; width: 100%; padding: 12px 0; }
+.reward-option { background: none; border: 0; padding: 0; width: clamp(130px, 28vw, 200px); transition: transform 0.15s; }
+.reward-option:hover, .reward-option:focus-visible { transform: translateY(-8px) scale(1.04); }
+.reward-skip { padding-top: 8px; }
+
+/* ---------- relics ---------- */
+.relic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 14px;
+  border-radius: 16px;
+  background: linear-gradient(165deg, #3b3f78, #22264f);
+  border: 2px solid var(--gold);
+  text-align: center;
+  color: #fff;
+  min-height: 190px;
+  justify-content: center;
+}
+.relic-icon { font-size: 3rem; line-height: 1; }
+.relic-name { font-size: 1.1rem; }
+.relic-text { font-size: 0.9rem; color: #dfe3ff; }
+.relic.compact { min-height: 0; padding: 4px; width: 38px; height: 38px; border-radius: 10px; border-width: 1px; justify-content: center; }
+.relic.compact .relic-icon { font-size: 1.3rem; }
+
+/* ---------- evolution and deck dialogs ---------- */
+.evolve-art { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 10px 0 14px; }
+.evolve-art img { width: 110px; height: 110px; object-fit: contain; }
+.evolve-new { animation: evolvePop 0.9s ease-out both 0.3s; filter: drop-shadow(0 0 14px var(--gold)); }
+@keyframes evolvePop { from { opacity: 0; transform: scale(0.3); } 60% { transform: scale(1.25); } to { opacity: 1; transform: none; } }
+.wide-dialog { width: min(900px, 94vw); }
+.wide-dialog .card-pool { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+
+/* ---------- enemy portraits: pixel sprites, elites and bosses ---------- */
+.enemy-portrait.sprite { background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.28), rgba(10, 12, 30, 0.85)); }
+.enemy-portrait.sprite img { object-fit: contain; padding: 10%; }
+.enemy-portrait.elite { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 30px #ff3b3b, 0 10px 24px rgba(0, 0, 0, 0.6); }
+.enemy-portrait.boss  { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 36px var(--gold), 0 10px 24px rgba(0, 0, 0, 0.6); }
+
+/* ---------- phones (kept last so it wins over the rules above) ---------- */
+@media (max-width: 720px) {
+  .map-node { width: 40px; height: 40px; font-size: 1.15rem; }
+  .map-node.type-boss { width: 54px; height: 54px; font-size: 1.6rem; }
+  .reward-options { gap: 12px; }
+  .evo-stage img { width: 72px; height: 72px; }
+}
+
+.panel > .hint { margin-top: 12px; }
+
+/* A slim, subtle scrollbar for the hand when it scrolls sideways on phones */
+.hand { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.35) transparent; }
