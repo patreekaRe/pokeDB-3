@@ -17,7 +17,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 5. **Evolve.** Beat the boss of Biome 1 and Biome 2 and your Pokémon evolves: +20 max HP, a full heal, and all moves 25% stronger per stage.
 6. **Win the run** by beating the boss of Biome 3. If you faint, the run is over, but your unlocked starters and stats are kept.
 
-**Type chart:** 🔥 Fire beats 🌿 Grass, 🌿 Grass beats 💧 Water, 💧 Water beats 🔥 Fire (×1.5 damage; the reverse is ×0.5).
+**Type chart:** 🔥 Fire beats 🌿 Grass, 🌿 Grass beats 💧 Water, 💧 Water beats 🔥 Fire (×1.5 damage; the reverse is ×0.5). It works both ways: enemy attacks use their own type against you, and a ▲ or ▼ on the enemy's intent shows whether it is strong or weak against your starter. Neutral enemies are always ×1.
 
 **Status effects:** *Block* soaks up damage for one round, *Burn* damages the enemy at the start of its turn, *Focus* powers up your next attack, *Weaken* halves the enemy's next attack, and *Guard* stops it completely.
 
@@ -27,7 +27,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 - A **branching map** for each of three biomes, with fights, elites, rest sites, treasure and a boss. A new map is generated every biome.
 - **Card rewards and relics:** 32 cards across common, uncommon and rare rarities, and 11 relics (Charcoal, Leftovers, Focus Sash, Scope Lens…).
 - **Turn-based battles** with an energy system, draw and discard piles that reshuffle, enemy intent, type advantages and status effects.
-- **Bosses:** Snorlax, Tangrowth and Salamence, each with its own move pattern.
+- **Every enemy is a real Pokémon:** 15 wild Pokémon across the three biomes, three elite "Alpha" fights, and the bosses Snorlax, Tangrowth and Salamence, each with its own move pattern.
 - **Achievements** unlock the six extra starters, saved in `localStorage`.
 - Responsive layout from phones to desktop, keyboard-accessible cards and buttons, and support for `prefers-reduced-motion`.
 
@@ -89,8 +89,8 @@ All the numbers are plain data, so you can tune the game without touching the ru
 
 ## Credits and legal
 
-- **Pokémon sprites:** Gen 5 pixel art from the [PokeAPI sprites project](https://github.com/PokeAPI/sprites), used for starters, evolutions, wild Pokémon and bosses. The Pokémon and their artwork are © Nintendo / Creatures Inc. / GAME FREAK inc. and are used here on a non-commercial fan-project basis. No affiliation is claimed. If you are a rights holder and want something removed, please open an issue.
-- **Enemy monsters (Ashroot, Blazeclaw, Aquaeye) and backgrounds:** original AI-assisted artwork created for this project.
+- **Pokémon sprites:** Gen 5 pixel art from the [PokeAPI sprites project](https://github.com/PokeAPI/sprites), used for starters, evolutions, and every enemy and boss. The Pokémon and their artwork are © Nintendo / Creatures Inc. / GAME FREAK inc. and are used here on a non-commercial fan-project basis. No affiliation is claimed. If you are a rights holder and want something removed, please open an issue.
+- **Backgrounds:** original AI-assisted artwork created for this project. The original monster art (Ashroot, Blazeclaw, Aquaeye) is kept in `assets/enemies/` but is not used in the game right now.
 - **Code, card design and game rules:** Patrick ([patreekaRe](https://github.com/patreekaRe)). Rebuilt and restructured with help from Claude Code.
 - Emoji are rendered by your device's own emoji font.
 
