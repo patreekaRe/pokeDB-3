@@ -1,0 +1,157 @@
+/* ============================================================
+   cards.css  -  how a card looks.
+
+   A card is two boxes:
+     .card       the outer box. It sets the size and is a "container".
+     .card-face  the inner box you actually see.
+
+   Everything inside is sized in "cqw" units (1% of the card's width),
+   so the same design works big in the collection and small in your
+   deck. To resize cards, just change the width.
+   ============================================================ */
+
+.card {
+  --c1: #9aa2c8;          /* top colour of the card */
+  --c2: #565d84;          /* bottom colour */
+  --edge: #d8dcf0;
+
+  position: relative;
+  width: var(--card-w, 100%);
+  aspect-ratio: 5 / 7.4;
+  container-type: inline-size;         /* lets children use cqw units */
+  color: #fff;
+  text-align: center;
+  user-select: none;
+  transition: transform 0.15s, filter 0.15s;
+}
+.card.type-fire   { --c1: #ff8f4d; --c2: #b8321a; --edge: #ffd0a8; }
+.card.type-water  { --c1: #5cbcff; --c2: #1d58b8; --edge: #bfe3ff; }
+.card.type-grass  { --c1: #72dc70; --c2: #257a38; --edge: #c8f5c4; }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3cqw;
+  padding: 9cqw 7cqw 7cqw;
+  border-radius: 9cqw;
+  border: 0.8cqw solid var(--edge);
+  background: linear-gradient(165deg, var(--c1), var(--c2));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  transition: box-shadow 0.15s;
+}
+
+.card-cost {
+  position: absolute;
+  top: -3cqw;
+  left: -3cqw;
+  width: 20cqw;
+  height: 20cqw;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe680, #d79a00);
+  border: 0.8cqw solid #fff3b0;
+  color: #4a2f00;
+  font-size: 12cqw;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.card-name {
+  width: 100%;
+  min-height: 12cqw;
+  padding-left: 12cqw;               /* leaves room for the cost gem */
+  padding-right: 2cqw;
+  display: grid;
+  align-items: center;
+  font-size: 10.5cqw;
+  line-height: 1.1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.card-art {
+  width: 100%;
+  flex: 0 0 auto;
+  height: 32cqw;
+  display: grid;
+  place-items: center;
+  font-size: 21cqw;
+  line-height: 1;
+  border-radius: 5cqw;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.3);
+}
+.card-type {
+  font-size: 7.5cqw;
+  font-weight: 700;
+  opacity: 0.9;
+}
+.card-text {
+  font-size: 8.4cqw;
+  line-height: 1.22;
+  padding: 2cqw 3cqw;
+  border-radius: 4cqw;
+  background: rgba(0, 0, 0, 0.28);
+  width: 100%;
+  flex: 1;
+  display: grid;
+  align-items: center;
+}
+
+/* Interactive cards lift up when you point at them */
+.card[role="button"] { cursor: pointer; }
+.card[role="button"]:hover { transform: translateY(-5px) scale(1.03); z-index: 2; }
+.card[role="button"]:hover .card-face { box-shadow: 0 12px 22px rgba(0, 0, 0, 0.55); }
+
+/* Locked cards: greyed out with a message */
+.card.locked { filter: grayscale(1) brightness(0.55); }
+.lock-badge {
+  position: absolute;
+  inset: auto 6cqw 10cqw;
+  padding: 3cqw 2cqw;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 8cqw;
+  font-weight: 800;
+}
+.card.locked .card-text { visibility: hidden; }
+
+/* Badge showing how many copies are already in the deck */
+.in-deck {
+  position: absolute;
+  top: -3cqw;
+  right: -3cqw;
+  padding: 1cqw 5cqw;
+  border-radius: 999px;
+  background: #fff;
+  color: #222;
+  font-size: 10cqw;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+.card.maxed { opacity: 0.55; }
+
+/* Compact version used in the deck strip */
+.card.small { aspect-ratio: 5 / 6.2; }
+.card.small .card-face { padding: 8cqw 5cqw 5cqw; gap: 2cqw; }
+.card.small .card-type,
+.card.small .card-text { display: none; }
+.card.small .card-name { font-size: 12cqw; min-height: 0; padding-left: 16cqw; padding-right: 1cqw; justify-items: center; }
+.card.small .card-art { height: auto; flex: 1; font-size: 30cqw; }
+.card.small .card-cost { width: 22cqw; height: 22cqw; font-size: 14cqw; }
+
+/* ---------- cards in your battle hand ---------- */
+.card.in-hand { --card-w: var(--hand-card-w); flex: 0 0 auto; }
+.card.in-hand.unplayable { filter: grayscale(0.7) brightness(0.7); }
+.card.in-hand.waiting { pointer-events: none; }
+.card.in-hand:hover:not(.unplayable) { transform: translateY(-16px) scale(1.06); }
+
+.card.deal { animation: deal 0.4s ease-out both; }
+@keyframes deal {
+  from { opacity: 0; transform: translateY(80px) rotate(8deg) scale(0.8); }
+  to   { opacity: 1; transform: none; }
+}
