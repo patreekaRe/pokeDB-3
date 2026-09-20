@@ -17,6 +17,9 @@
      burn          burn the enemy (takes damage at the start of its turn)
      guard         completely block the enemy's next attack
      needsWounded  can only be played when you are missing some HP
+
+   rarity: 'common' (default), 'uncommon' or 'rare'. It decides how
+   often a card shows up as a reward, and in which biome.
    ============================================================ */
 
 /** The four card "types". Fire beats Grass, Grass beats Water, Water beats Fire. */
@@ -27,10 +30,6 @@ export const TYPES = {
   normal: { label: 'Neutral', icon: '⭐', beats: null,    losesTo: null    },
 };
 
-/*
-  unlockAt = how many total battle wins you need before the card unlocks.
-  0 means available from the start.
-*/
 const NEUTRAL_CARDS = [
   { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', effects: { damage: 7 } },
   { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', effects: { block: 6 } },
@@ -39,7 +38,7 @@ const NEUTRAL_CARDS = [
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', effects: { heal: 10 } },
   { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', effects: { weaken: true } },
   { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', effects: { nextEnergy: 1 } },
-  { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', effects: { draw: 2 }, unlockAt: 5 },
+  { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', effects: { draw: 2 }, rarity: 'uncommon' },
 ];
 
 const FIRE_CARDS = [
@@ -48,9 +47,9 @@ const FIRE_CARDS = [
   { id: 'heat-up',         name: 'Heat Up',         type: 'fire', cost: 1, art: '📈', effects: { focus: 6 } },
   { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', effects: { damage: 12, bonusIfLow: 10 } },
   { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', effects: { damage: 8, nextEnergy: 2 } },
-  { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', effects: { damage: 3, burn: 3 }, unlockAt: 2 },
-  { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', effects: { damage: 30, needsWounded: true }, unlockAt: 4 },
-  { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 3, art: '💥', effects: { damage: 24, burn: 3 }, unlockAt: 7 },
+  { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', effects: { damage: 3, burn: 3 }, rarity: 'uncommon' },
+  { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', effects: { damage: 30, needsWounded: true }, rarity: 'rare' },
+  { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 3, art: '💥', effects: { damage: 24, burn: 3 }, rarity: 'rare' },
 ];
 
 const GRASS_CARDS = [
@@ -59,9 +58,9 @@ const GRASS_CARDS = [
   { id: 'growth',       name: 'Growth',       type: 'grass', cost: 1, art: '🌱', effects: { focus: 6 } },
   { id: 'razor-leaf',   name: 'Razor Leaf',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 15 } },
   { id: 'absorb',       name: 'Absorb',       type: 'grass', cost: 1, art: '💚', effects: { damage: 6, heal: 4 } },
-  { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', effects: { heal: 14 }, unlockAt: 2 },
-  { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 2, art: '🌸', effects: { damage: 12, block: 6 }, unlockAt: 4 },
-  { id: 'solar-beam',   name: 'Solar Beam',   type: 'grass', cost: 3, art: '🌞', effects: { damage: 28 }, unlockAt: 7 },
+  { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', effects: { heal: 14 }, rarity: 'uncommon' },
+  { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 2, art: '🌸', effects: { damage: 12, block: 6 }, rarity: 'uncommon' },
+  { id: 'solar-beam',   name: 'Solar Beam',   type: 'grass', cost: 3, art: '🌞', effects: { damage: 28 }, rarity: 'rare' },
 ];
 
 const WATER_CARDS = [
@@ -70,9 +69,9 @@ const WATER_CARDS = [
   { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', effects: { focus: 6 } },
   { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', effects: { damage: 15 } },
   { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', effects: { block: 9 } },
-  { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 2, art: '🌀', effects: { damage: 8, weaken: true }, unlockAt: 2 },
-  { id: 'aqua-ring',    name: 'Aqua Ring',    type: 'water', cost: 1, art: '⭕', effects: { heal: 6, block: 6 }, unlockAt: 4 },
-  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 3, art: '🚿', effects: { damage: 28 }, unlockAt: 7 },
+  { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 2, art: '🌀', effects: { damage: 8, weaken: true }, rarity: 'uncommon' },
+  { id: 'aqua-ring',    name: 'Aqua Ring',    type: 'water', cost: 1, art: '⭕', effects: { heal: 6, block: 6 }, rarity: 'uncommon' },
+  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 3, art: '🚿', effects: { damage: 28 }, rarity: 'rare' },
 ];
 
 /** Every card, and a quick lookup by id (CARDS_BY_ID['ember']). */
@@ -81,26 +80,33 @@ export const CARDS_BY_ID = Object.fromEntries(ALL_CARDS.map(c => [c.id, c]));
 
 const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS };
 
-/** The cards a starter of this type is allowed to use: its own type + neutral cards. */
+/** The cards a starter of this type can win as rewards: its own type + neutral cards. */
 export function poolForType(type) {
   return [...TYPE_SETS[type], ...NEUTRAL_CARDS];
 }
 
-/** A ready-made 10-card deck so a new player can press "Battle!" straight away. */
-export function defaultDeck(type) {
-  const [basic, second, buff, strong] = TYPE_SETS[type];
-  return [basic, basic, basic, second, buff, strong, 'block', 'block', 'block', 'tailwind']
-    .map(c => (typeof c === 'string' ? c : c.id));
-}
-
-/** Rules for building a deck. */
-export const DECK_MIN = 5;
-export const DECK_MAX = 10;
+/** You can own at most this many copies of one card in a run. */
 export const MAX_COPIES = 3;
 
+/* ---------- evolution makes moves stronger ---------- */
+
+/** Each evolution stage makes damage, block, healing and focus this much stronger. */
+export const STAGE_POWER = 0.25;
+
+/** A card's effects after applying the evolution bonus (stage 0 = unchanged). */
+export function scaledEffects(card, stage = 0) {
+  const e = { ...card.effects };
+  const k = 1 + STAGE_POWER * stage;
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus']) {
+    if (e[key]) e[key] = Math.round(e[key] * k);
+  }
+  if (e.burn) e.burn += stage;
+  return e;
+}
+
 /** Turns a card's effects into a readable sentence. */
-export function describe(card) {
-  const e = card.effects;
+export function describe(card, stage = 0) {
+  const e = scaledEffects(card, stage);
   const parts = [];
   if (e.damage)       parts.push(`Deal ${e.damage} damage.`);
   if (e.bonusIfLow)   parts.push(`+${e.bonusIfLow} if your HP is below half.`);

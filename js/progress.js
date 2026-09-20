@@ -1,22 +1,27 @@
 /* ============================================================
-   progress.js  -  what is unlocked, based on your total wins.
+   progress.js  -  which starters are unlocked, and checking whether
+   you just earned a new one.
    ============================================================ */
 
-import { getSave } from './storage.js';
-import { ALL_CARDS } from './data/cards.js';
-import { STARTERS } from './data/starters.js';
+import { getSave, updateSave } from './storage.js';
+import { ACHIEVEMENTS } from './data/achievements.js';
+import { STARTERS_BY_ID } from './data/starters.js';
+import { ACHIEVEMENT_FOR } from './data/achievements.js';
 
-export const isCardUnlocked    = (card)    => getSave().wins >= (card.unlockAt || 0);
-export const isStarterUnlocked = (starter) => getSave().wins >= starter.unlockAt;
+/** The three Kanto starters have no achievement, so they're always unlocked. */
+export function isStarterUnlocked(starter) {
+  return !ACHIEVEMENT_FOR[starter.id] || getSave().unlocked.includes(starter.id);
+}
 
 /**
- * Everything that became unlocked when going from `before` wins to `after` wins.
- * Used to show "New unlocks!" after a victory.
+ * Look at your stats and unlock any starters you have earned.
+ * Returns the list of starters that were newly unlocked.
  */
-export function newUnlocks(before, after) {
-  const crossed = (needed) => needed > before && needed <= after;
-  return [
-    ...STARTERS.filter(s => crossed(s.unlockAt)).map(s => `Starter: ${s.name}`),
-    ...ALL_CARDS.filter(c => crossed(c.unlockAt || 0)).map(c => `Card: ${c.name}`),
-  ];
+export function checkAchievements() {
+  const save = getSave();
+  const earned = ACHIEVEMENTS.filter(a => !save.unlocked.includes(a.starter) && a.test(save.stats));
+  if (earned.length) {
+    updateSave(d => { d.unlocked.push(...earned.map(a => a.starter)); });
+  }
+  return earned.map(a => STARTERS_BY_ID[a.starter]);
 }
