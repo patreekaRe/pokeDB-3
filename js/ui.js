@@ -21,7 +21,7 @@ export function el(tag, className = '', text = '') {
 
 /* ---------- screens ---------- */
 
-const SCREENS = ['start-screen', 'builder-screen', 'battle-screen'];
+const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen'];
 
 /** Show one screen and hide the others. */
 export function showScreen(id) {
@@ -79,9 +79,8 @@ export function confirmDialog(question, yesLabel = 'Yes') {
 
 /**
  * Build the HTML for one card.
- *   options.locked   greyed out with a padlock
- *   options.unlockAt text shown on a locked card
- *   options.small    compact version used in the deck strip
+ *   options.stage    evolution stage (moves get stronger, so the text changes)
+ *   options.count    show a ×N badge (used when the same card is in the deck several times)
  */
 export function makeCard(card, options = {}) {
   const type = TYPES[card.type];
@@ -94,7 +93,7 @@ export function makeCard(card, options = {}) {
   const name = el('h3', 'card-name', card.name);
   const art = el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
-  const text = el('p', 'card-text', describe(card));
+  const text = el('p', 'card-text', describe(card, options.stage || 0));
 
   // The outer .card sets the size; the inner .card-face is what you see.
   // (Text inside sizes itself from the card's width, see cards.css.)
@@ -102,10 +101,24 @@ export function makeCard(card, options = {}) {
   face.append(cost, name, art, tag, text);
   node.append(face);
 
-  if (options.small) node.classList.add('small');
-  if (options.locked) {
-    node.classList.add('locked');
-    face.append(el('div', 'lock-badge', `🔒 Win ${options.unlockAt} battles`));
+  if (options.count > 1) node.append(el('span', 'in-deck', `×${options.count}`));
+  return node;
+}
+
+/** A relic tile: icon, name and what it does. */
+export function makeRelic(relic, { compact = false } = {}) {
+  const node = el('div', `relic${compact ? ' compact' : ''}`);
+  node.title = `${relic.name}: ${relic.text}`;
+  node.append(el('span', 'relic-icon', relic.icon));
+  if (!compact) {
+    node.append(el('strong', 'relic-name', relic.name), el('span', 'relic-text', relic.text));
   }
   return node;
+}
+
+/** Group a list of card ids into [{ card, count }], keeping first-seen order. */
+export function groupDeck(ids, cardsById) {
+  const groups = new Map();
+  for (const id of ids) groups.set(id, (groups.get(id) || 0) + 1);
+  return [...groups].map(([id, count]) => ({ card: cardsById[id], count }));
 }

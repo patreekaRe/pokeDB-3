@@ -2,26 +2,31 @@
    main.js  -  the front door of the game.
 
    It builds the start screen (pick a starter), wires up the buttons
-   that are always on screen, and connects the three screens:
+   that are always on screen, and connects the screens:
 
-       start screen  ->  deck builder  ->  battle
-                   ^______________________|
+       start screen -> deck preview -> map -> battle -> rewards -> map ...
+                                        (run.js is in charge of that loop)
 
    The other files each do one job:
-     data/*.js       cards, starters, enemies (plain data)
+     data/*.js       cards, starters, enemies, relics, achievements (plain data)
      storage.js      saving to localStorage
-     progress.js     what you have unlocked
+     progress.js     unlocking starters
      ui.js           small helpers (dialogs, toasts, card element)
-     deckbuilder.js  the deck-building screen
+     deckpreview.js  the read-only deck preview
+     run.js          one run: the map loop, rewards, evolution, the end
+     map.js          building and drawing the branching map
+     rewards.js      the "choose one" screen
      battle.js       the fight
    ============================================================ */
 
 import { STARTERS, spriteUrl, BACKDROPS } from './data/starters.js';
+import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES } from './data/cards.js';
 import { getSave, updateSave, resetSave } from './storage.js';
 import { isStarterUnlocked } from './progress.js';
-import { initDeckBuilder, openDeckBuilder } from './deckbuilder.js';
-import { initBattle, startBattle, abandonBattle, isBattleRunning } from './battle.js';
+import { openPreview } from './deckpreview.js';
+import { initRun, beginRun, abandonRun, isRunActive } from './run.js';
+import { initBattle } from './battle.js';
 import {
   $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog,
 } from './ui.js';
@@ -44,16 +49,16 @@ function renderStarters() {
     const img = el('img', 'pixel');
     img.src = spriteUrl(starter, 'front');
     img.alt = '';
-    btn.append(img, el('span', 'starter-name', unlocked ? starter.name : '???'));
+    btn.append(img, el('span', 'starter-name', unlocked ? starter.line[0].name : '???'));
 
     if (!unlocked) {
       btn.classList.add('locked');
-      btn.append(el('span', 'starter-lock', `🔒 ${starter.unlockAt} wins`));
+      btn.append(el('span', 'starter-lock', '🔒 Achievement'));
     }
     if (selected === starter) btn.classList.add('selected');
 
     btn.addEventListener('click', () => {
-      if (!unlocked) return toast(`Win ${starter.unlockAt} battles to unlock ${starter.name}.`, 'warn');
+      if (!unlocked) return toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
       selectStarter(starter);
     });
     grid.append(btn);
@@ -66,9 +71,9 @@ function selectStarter(starter) {
 
   const type = TYPES[starter.type];
   $('detail-sprite').src = spriteUrl(starter, 'front');
-  $('detail-sprite').alt = starter.name;
+  $('detail-sprite').alt = starter.line[0].name;
   $('detail-sprite').hidden = false;
-  $('detail-name').textContent = `${starter.name}  ${type.icon} ${type.label}`;
+  $('detail-name').textContent = `${starter.line[0].name}  ${type.icon} ${type.label}`;
   $('detail-blurb').textContent = starter.blurb;
   $('choose-btn').disabled = false;
 
@@ -76,39 +81,50 @@ function selectStarter(starter) {
 }
 
 function renderProgress() {
-  const { wins, losses, streak, bestStreak } = getSave();
-  $('progress-line').textContent = wins + losses === 0
-    ? 'New here? Pick a starter and build your first deck.'
-    : `Wins: ${wins}   ·   Losses: ${losses}   ·   Streak: ${streak} 🔥   ·   Best streak: ${bestStreak}`;
+  const { stats, unlocked } = getSave();
+  $('progress-line').textContent = stats.runsStarted === 0
+    ? 'New here? Pick a starter and see its deck.'
+    : `Runs won: ${stats.runsWon} of ${stats.runsStarted}   ·   Enemies defeated: ${stats.enemiesDefeated}   ·   Starters unlocked: ${3 + unlocked.length} of ${STARTERS.length}`;
 }
 
 /* ---------- moving between screens ---------- */
 
+/** Show the start screen (keeps whichever starter you had picked). */
+function showStart() {
+  renderStarters();
+  renderProgress();
+  if (!selected) setBackdrop(BACKDROPS.water, '');
+  showScreen('start-screen');
+}
+
 function goToMenu() {
-  abandonBattle();
+  abandonRun();
   selected = null;
   $('detail-sprite').hidden = true;
   $('detail-name').textContent = 'Pick a starter above';
   $('detail-blurb').textContent = 'Tap one of the three free starters to begin.';
   $('choose-btn').disabled = true;
-  renderStarters();
-  renderProgress();
-  setBackdrop(BACKDROPS.water, '');
-  showScreen('start-screen');
+  showStart();
+}
+
+/** Look at a starter's deck, and start a run from there. */
+function previewStarter(starter) {
+  selected = starter;
+  openPreview(starter, { onBegin: () => beginRun(starter), onBack: showStart });
 }
 
 async function requestMenu() {
-  if (isBattleRunning() && !(await confirmDialog('Leave this battle? Your progress in the fight will be lost.', 'Leave'))) return;
+  if (isRunActive() && !(await confirmDialog('Abandon this run? You will lose your progress in it.', 'Abandon'))) return;
   goToMenu();
 }
 
 /* ---------- start everything ---------- */
 
 function init() {
-  initDeckBuilder(startBattle);
-  initBattle({ onEditDeck: openDeckBuilder, onMenu: goToMenu });
+  initBattle();
+  initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 
-  $('choose-btn').addEventListener('click', () => selected && openDeckBuilder(selected));
+  $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', () => openDialog('help-dialog'));
@@ -119,7 +135,7 @@ function init() {
   $('brand-btn').addEventListener('click', requestMenu);
 
   $('reset-btn').addEventListener('click', async () => {
-    if (!(await confirmDialog('Erase all wins, unlocks and saved decks?', 'Erase'))) return;
+    if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
     resetSave();
     closeDialog('about-dialog');
     goToMenu();

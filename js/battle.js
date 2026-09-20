@@ -9,81 +9,90 @@
      5. When the draw pile runs out, the discard pile is shuffled back in.
      6. Reduce the enemy to 0 HP to win. If you hit 0 HP, you lose.
 
+   battle.js does not know about maps or rewards. run.js starts a battle
+   with startBattle() and gets told how it went through the onEnd callback.
+
    All of the battle's numbers live in one object called `battle`.
    The screen is redrawn from that object by the render functions,
    so the game rules (top half) and the drawing code (bottom half)
    stay separate and easy to read.
    ============================================================ */
 
-import { CARDS_BY_ID, TYPES } from './data/cards.js';
-import { randomEnemy } from './data/enemies.js';
-import { spriteUrl } from './data/starters.js';
-import { getSave, recordResult } from './storage.js';
-import { newUnlocks } from './progress.js';
-import { $, el, makeCard, showScreen, setBackdrop, toast, sleep, openDialog, closeDialog } from './ui.js';
+import { CARDS_BY_ID, TYPES, scaledEffects } from './data/cards.js';
+import { RELICS_BY_ID } from './data/relics.js';
+import { spriteUrl, stageName } from './data/starters.js';
+import { $, el, makeCard, showScreen, setBackdrop, toast, sleep } from './ui.js';
 
-const PLAYER_MAX_HP = 70;
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
-const STREAK_HP_BONUS = 8;   // each win in your streak gives the next enemy this much extra HP...
-const STREAK_DAMAGE_BONUS = 1; // ...and this much extra damage on every attack
-const MAX_STREAK_BONUSES = 6;
+
+/** Relics that boost attacks of one type, by the type of your starter. */
+const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
 
 /** The current battle, or null when no battle is running. */
 let battle = null;
-let handlers = { onEditDeck() {}, onMenu() {} };
 let nextUid = 1;
 
 /** Called once at startup. */
-export function initBattle(callbacks) {
-  handlers = callbacks;
+export function initBattle() {
   $('end-turn-btn').addEventListener('click', endTurn);
-  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); startBattle(battle.starter, battle.deckIds); });
-  $('result-deck').addEventListener('click',  () => { closeDialog('result-dialog'); handlers.onEditDeck(battle.starter); });
-  $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); handlers.onMenu(); });
 }
 
-/** Leave the battle without finishing it (used by the menu button). */
+/** Leave the battle without finishing it (used when you abandon a run). */
 export function abandonBattle() {
   battle = null;
 }
 
 export const isBattleRunning = () => battle !== null && !battle.over;
 
+const hasRelic = (id) => battle.relics.includes(id);
+
 /* ============================================================
    PART 1: THE RULES
    ============================================================ */
 
-export function startBattle(starter, deckIds) {
-  const def = randomEnemy();
-  const streakBonus = Math.min(getSave().streak, MAX_STREAK_BONUSES) * STREAK_HP_BONUS;
+/**
+ * Start a fight.
+ *   run        the current run (starter, stage, deck, hp, relics, biome)
+ *   encounter  who you are fighting: { def, kind, maxHp, strength }
+ *   onEnd      called when the fight is over with { won, hp, damageTaken }
+ */
+export function startBattle({ run, encounter, onEnd }) {
+  const def = encounter.def;
 
   battle = {
-    starter,
-    deckIds,
+    starter: run.starter,
+    stage: run.stage,
     def,
+    kind: encounter.kind,
+    relics: [...run.relics],
+    onEnd,
 
     // the player
-    hp: PLAYER_MAX_HP,
+    hp: run.hp,
+    maxHp: run.maxHp,
     block: 0,
     energy: 0,
     nextEnergy: 0,     // bonus energy waiting for next turn
     focus: 0,          // bonus damage waiting for your next attack
     guard: false,      // blocks the next enemy attack completely
+    sashReady: run.relics.includes('focus-sash'),
+    turn: 0,
+    damageTaken: 0,
 
     // the piles of cards
-    drawPile: shuffle(deckIds.map(id => CARDS_BY_ID[id])),
+    drawPile: shuffle(run.deck.map(id => CARDS_BY_ID[id])),
     hand: [],
     discard: [],
 
     // the enemy
     enemy: {
-      hp: def.hp + streakBonus,
-      maxHp: def.hp + streakBonus,
+      hp: encounter.maxHp,
+      maxHp: encounter.maxHp,
       block: 0,
-      strength: Math.min(getSave().streak, MAX_STREAK_BONUSES) * STREAK_DAMAGE_BONUS,   // extra damage on every attack
+      strength: encounter.strength,   // extra damage on every attack
       burn: 0,
-      weakened: false, // next attack deals half
+      weakened: false,                // next attack deals half
       moveIndex: Math.floor(Math.random() * def.moves.length),
     },
 
@@ -91,23 +100,34 @@ export function startBattle(starter, deckIds) {
     over: false,
   };
 
-  setBackdrop(def.backdrop, starter.type);
+  setBackdrop(run.backdrop, run.starter.type);
   showScreen('battle-screen');
   setupBattleScreen();
 
-  const streak = getSave().streak;
-  log(`A wild ${def.name} appeared!${streak ? `  (Win streak: ${streak} 🔥)` : ''}`);
+  log(encounter.kind === 'boss' ? `${def.name} blocks the way!` : `A wild ${def.name} appeared!`);
   beginPlayerTurn();
 }
 
 function beginPlayerTurn() {
   const b = battle;
-  b.block = 0;                                   // block only lasts one round
-  b.energy = ENERGY_PER_TURN + b.nextEnergy;
+  b.turn += 1;
+  b.block = b.turn === 1 && hasRelic('iron-plate') ? 8 : 0;   // block only lasts one round
+  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0);
   b.nextEnergy = 0;
-  draw(HAND_SIZE);
+
+  if (hasRelic('leftovers')) healPlayer(3);
+  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0));
   b.busy = false;
   renderAll();
+}
+
+/** Heal the player (never above max HP). Returns how much was healed. */
+function healPlayer(amount) {
+  const b = battle;
+  const healed = Math.min(amount, b.maxHp - b.hp);
+  b.hp += healed;
+  if (healed > 0) pop('player-zone', `+${healed} HP`, 'heal');
+  return healed;
 }
 
 /** Draw cards. If the draw pile is empty, shuffle the discard pile back in. */
@@ -128,19 +148,23 @@ function whyNotPlayable(card) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
   if (card.cost > b.energy) return 'Not enough energy!';
-  if (card.effects.needsWounded && b.hp >= PLAYER_MAX_HP) return `${card.name} only works when you're hurt.`;
+  if (card.effects.needsWounded && b.hp >= b.maxHp) return `${card.name} only works when you're hurt.`;
   return null;
 }
 
 /** How much damage does this attack do to the current enemy? */
 function damageFor(card) {
   const b = battle;
-  const e = card.effects;
+  const e = scaledEffects(card, b.stage);
   if (!e.damage) return { amount: 0, multiplier: 1 };
 
   let amount = e.damage;
-  if (e.bonusIfLow && b.hp < PLAYER_MAX_HP / 2) amount += e.bonusIfLow;
+  if (e.bonusIfLow && b.hp < b.maxHp / 2) amount += e.bonusIfLow;
   amount += b.focus;
+
+  // relics
+  if (hasRelic('muscle-band')) amount += 2;
+  if (card.type === b.starter.type && hasRelic(TYPE_RELIC[card.type])) amount += 2;
 
   // Fire beats Grass, Grass beats Water, Water beats Fire.
   let multiplier = 1;
@@ -165,7 +189,8 @@ async function playCard(uid) {
   b.hand.splice(index, 1);
   b.discard.push(card);
 
-  const e = card.effects;
+  const e = scaledEffects(card, b.stage);
+  const who = stageName(b.starter, b.stage);
 
   // --- damage ---
   if (e.damage) {
@@ -178,9 +203,10 @@ async function playCard(uid) {
     pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
     if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
     if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
-    log(`${b.starter.name} used ${card.name}! ${amount} damage${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
+    log(`${who} used ${card.name}! ${amount} damage${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
+    if (hasRelic('shell-bell')) healPlayer(2);
   } else {
-    log(`${b.starter.name} used ${card.name}.`);
+    log(`${who} used ${card.name}.`);
   }
 
   // --- everything else a card can do ---
@@ -190,12 +216,8 @@ async function playCard(uid) {
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
-  if (e.heal) {
-    const healed = Math.min(e.heal, PLAYER_MAX_HP - b.hp);
-    b.hp += healed;
-    if (healed > 0) pop('player-zone', `+${healed} HP`, 'heal');
-  }
-  if (e.draw) draw(e.draw);
+  if (e.heal)       healPlayer(e.heal);
+  if (e.draw)       draw(e.draw);
 
   renderAll();
   await sleep(220);
@@ -221,8 +243,16 @@ function hurtPlayer(amount) {
   const b = battle;
   const absorbed = Math.min(b.block, amount);
   b.block -= absorbed;
-  const through = amount - absorbed;
+  let through = amount - absorbed;
+
+  // Focus Sash: survive one fatal hit per battle.
+  if (b.hp - through <= 0 && b.sashReady) {
+    b.sashReady = false;
+    through = b.hp - 1;
+    pop('player-zone', '🎗️ Focus Sash!', 'note good', 300);
+  }
   b.hp = Math.max(0, b.hp - through);
+  b.damageTaken += through;
   return through;
 }
 
@@ -263,7 +293,7 @@ async function enemyTurn() {
 
   // 2. Then it uses its move.
   if (move.kind === 'attack' || move.kind === 'drain') {
-    let damage = attackDamage(move);
+    const damage = attackDamage(move);
     en.weakened = false;                          // weaken only affects one attack
     $('enemy-portrait-box').classList.add('attacking');
     await sleep(250);
@@ -279,6 +309,10 @@ async function enemyTurn() {
       hitEffect('player-sprite');
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
       log(`${b.def.name} used ${move.name}! ${damage} damage${through < damage ? ` (${damage - through} blocked)` : ''}.`);
+      if (hasRelic('rocky-helmet')) {
+        hurtEnemy(3);
+        pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
+      }
     }
     if (move.kind === 'drain') {
       en.hp = Math.min(en.maxHp, en.hp + move.heal);
@@ -300,6 +334,7 @@ async function enemyTurn() {
 
   if (battle !== b) return;
   if (b.hp <= 0) return finish(false);
+  if (b.enemy.hp <= 0) return finish(true);       // knocked out by Rocky Helmet
   beginPlayerTurn();
 }
 
@@ -316,8 +351,6 @@ async function finish(won) {
   const b = battle;
   b.over = true;
   b.busy = true;
-  const winsBefore = getSave().wins;
-  recordResult(won);
   renderAll();
 
   if (won) {
@@ -325,23 +358,12 @@ async function finish(won) {
     log(`${b.def.name} was defeated!`);
   } else {
     $('player-sprite').classList.add('defeated');
-    log(`${b.starter.name} fainted…`);
+    log(`${stageName(b.starter, b.stage)} fainted…`);
   }
-  await sleep(1100);
+  await sleep(1200);
   if (battle !== b) return;
 
-  const save = getSave();
-  $('result-title').textContent = won ? '🏆 Victory!' : '💀 Defeated';
-  $('result-text').textContent = won
-    ? `You beat ${b.def.name}. Win streak: ${save.streak} (best: ${save.bestStreak}). Total wins: ${save.wins}.`
-    : `${b.def.name} was too strong this time. Tweak your deck and try again!`;
-
-  const unlocks = won ? newUnlocks(winsBefore, save.wins) : [];
-  const list = $('result-unlocks');
-  list.replaceChildren(...unlocks.map(u => el('li', '', `🔓 ${u}`)));
-  list.hidden = unlocks.length === 0;
-  $('result-again').textContent = won ? 'Next battle' : 'Try again';
-  openDialog('result-dialog');
+  b.onEnd({ won, hp: b.hp, damageTaken: b.damageTaken });
 }
 
 /** Randomly reorder an array (returns a new array). */
@@ -361,14 +383,23 @@ function shuffle(list) {
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   const b = battle;
-  $('hud-portrait').src = spriteUrl(b.starter, 'front');
-  $('player-sprite').src = spriteUrl(b.starter, 'back');
+  $('hud-portrait').src = spriteUrl(b.starter, 'front', b.stage);
+  $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
+  $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').classList.remove('defeated', 'lunge', 'hit');
-  $('enemy-img').src = b.def.image;
-  $('enemy-img').alt = b.def.name;
-  $('enemy-portrait-box').classList.remove('defeated', 'hit', 'attacking');
+
+  const img = $('enemy-img');
+  img.src = b.def.image;
+  img.alt = b.def.name;
+  img.classList.toggle('pixel', !b.def.art);
+  const box = $('enemy-portrait-box');
+  box.classList.remove('defeated', 'hit', 'attacking');
+  box.classList.toggle('sprite', !b.def.art);
+  box.classList.toggle('elite', b.kind === 'elite');
+  box.classList.toggle('boss', b.kind === 'boss');
+
   $('enemy-zone').dataset.type = b.def.type;
-  $('enemy-name').textContent = b.def.name;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👑 ' : b.kind === 'elite' ? '💀 ' : '') + b.def.name;
   $('enemy-type').textContent = `${TYPES[b.def.type].icon} ${TYPES[b.def.type].label}`;
   $('enemy-type').className = `chip type-${b.def.type}`;
   $('enemy-desc').textContent = b.def.description;
@@ -393,10 +424,10 @@ function setBar(prefix, hp, max) {
 
 function renderBars() {
   const b = battle;
-  setBar('player', b.hp, PLAYER_MAX_HP);
+  setBar('player', b.hp, b.maxHp);
   setBar('enemy', b.enemy.hp, b.enemy.maxHp);
   setPill('player-block', '🛡️', 'Block', b.block);
-  setPill('player-energy', '⚡', 'Energy', `${b.energy}/${ENERGY_PER_TURN}`);
+  setPill('player-energy', '⚡', 'Energy', `${b.energy}`);
   setPill('draw-count', '📚', 'Draw', b.drawPile.length);
   setPill('discard-count', '🗂️', 'Discard', b.discard.length);
   $('end-turn-btn').disabled = b.busy || b.over;
@@ -443,10 +474,11 @@ function renderStatus() {
   if (b.focus)      playerChips.push(['🎯', `Focus +${b.focus}`]);
   if (b.guard)      playerChips.push(['✋', 'Guard']);
   if (b.nextEnergy) playerChips.push(['⚡', `+${b.nextEnergy} next turn`]);
+  b.relics.forEach(id => playerChips.push([RELICS_BY_ID[id].icon, '']));
   $('player-status').replaceChildren(...playerChips.map(chipFor));
 }
 
-const chipFor = ([icon, text]) => el('span', 'chip status', `${icon} ${text}`);
+const chipFor = ([icon, text]) => el('span', 'chip status', text ? `${icon} ${text}` : icon);
 
 function renderHand() {
   const b = battle;
@@ -455,7 +487,7 @@ function renderHand() {
 
   b.hand.forEach((entry, i) => {
     const { card } = entry;
-    const node = makeCard(card);
+    const node = makeCard(card, { stage: b.stage });
     node.classList.add('in-hand');
 
     if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
