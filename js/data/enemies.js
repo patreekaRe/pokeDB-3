@@ -1,9 +1,13 @@
 /* ============================================================
-   enemies.js  -  the monsters you fight, and the three biomes.
+   enemies.js  -  the Pokémon you fight, and the three biomes.
 
    Each enemy has a "moves" list. On its turn it uses the next move in
    the list, then loops back to the start. The move it will use next is
    shown above its head (the "intent"), so you can plan your turn.
+
+   Enemy attacks follow the same type chart as yours: an enemy's attacks
+   use its own type, so a Fire enemy hits a Grass starter for x1.5 and a
+   Water starter for x0.5. Neutral enemies are always x1.
 
    Move kinds:
      attack    hit the player for `amount` damage
@@ -15,48 +19,27 @@
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
    ============================================================ */
 
-/** Helpers for the two kinds of artwork. */
-const artwork = (name) => ({ image: `assets/enemies/${name}.jpg`, art: true });     // Patrick's own monsters
-const sprite  = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false }); // pixel sprites
+/** Pixel sprite from assets/pokemon/ (Gen 5 art from PokeAPI/sprites). */
+const sprite = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false });
 
 export const ENEMY_DEFS = {
-  /* ----- your own monsters ----- */
-  ashroot: {
-    name: 'Ashroot', type: 'grass', hp: 55, ...artwork('ashroot'),
-    description: 'A sneaky vine beast from the roots of the Lost Wilds.',
-    moves: [
-      { kind: 'attack', name: 'Vine Whip', amount: 7 },
-      { kind: 'drain',  name: 'Drain',     amount: 5, heal: 5 },
-      { kind: 'attack', name: 'Root Slam', amount: 11 },
-    ],
-  },
-  blazeclaw: {
-    name: 'Blazeclaw', type: 'fire', hp: 65, ...artwork('blazeclaw'),
-    description: 'An aggressive predator with blazing strikes.',
-    moves: [
-      { kind: 'attack', name: 'Scratch',    amount: 8 },
-      { kind: 'buff',   name: 'Roar',       amount: 2 },
-      { kind: 'attack', name: 'Flame Claw', amount: 12 },
-    ],
-  },
-  aquaeye: {
-    name: 'Aquaeye', type: 'water', hp: 60, ...artwork('aquaeye'),
-    description: 'Floods the battlefield and hides behind waves.',
-    moves: [
-      { kind: 'attack', name: 'Bubble',      amount: 6 },
-      { kind: 'defend', name: 'Wave Shield', amount: 8 },
-      { kind: 'attack', name: 'Wave Crash',  amount: 11 },
-    ],
-  },
-
-  /* ----- wild Pokémon ----- */
+  /* ----- Biome 1: small wild Pokémon ----- */
   rattata: {
     name: 'Rattata', type: 'normal', hp: 40, ...sprite('rattata'),
     description: 'Small, quick and everywhere.',
     moves: [
-      { kind: 'attack', name: 'Tackle',      amount: 6 },
+      { kind: 'attack', name: 'Tackle',       amount: 6 },
       { kind: 'attack', name: 'Quick Attack', amount: 5 },
-      { kind: 'attack', name: 'Hyper Fang',  amount: 9 },
+      { kind: 'attack', name: 'Hyper Fang',   amount: 9 },
+    ],
+  },
+  pidgey: {
+    name: 'Pidgey', type: 'normal', hp: 42, ...sprite('pidgey'),
+    description: 'Kicks up sand, then swoops down.',
+    moves: [
+      { kind: 'attack', name: 'Gust',        amount: 6 },
+      { kind: 'defend', name: 'Sand Attack', amount: 6 },
+      { kind: 'attack', name: 'Wing Attack', amount: 10 },
     ],
   },
   oddish: {
@@ -77,6 +60,17 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Body Slam', amount: 9 },
     ],
   },
+  vulpix: {
+    name: 'Vulpix', type: 'fire', hp: 45, ...sprite('vulpix'),
+    description: 'Six tails, each one warm.',
+    moves: [
+      { kind: 'attack', name: 'Ember',        amount: 6 },
+      { kind: 'buff',   name: 'Will-O-Wisp',  amount: 2 },
+      { kind: 'attack', name: 'Flamethrower', amount: 10 },
+    ],
+  },
+
+  /* ----- Biome 2: the shrine ----- */
   zubat: {
     name: 'Zubat', type: 'normal', hp: 45, ...sprite('zubat'),
     description: 'Swoops out of the dark.',
@@ -104,6 +98,26 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Flame Wheel', amount: 12 },
     ],
   },
+  bellsprout: {
+    name: 'Bellsprout', type: 'grass', hp: 55, ...sprite('bellsprout'),
+    description: 'Thin, bendy and surprisingly sharp.',
+    moves: [
+      { kind: 'attack', name: 'Vine Whip',  amount: 7 },
+      { kind: 'buff',   name: 'Growth',     amount: 2 },
+      { kind: 'attack', name: 'Razor Leaf', amount: 11 },
+    ],
+  },
+  krabby: {
+    name: 'Krabby', type: 'water', hp: 55, ...sprite('krabby'),
+    description: 'Big claws, tough shell.',
+    moves: [
+      { kind: 'attack', name: 'Vice Grip',  amount: 7 },
+      { kind: 'defend', name: 'Harden',     amount: 8 },
+      { kind: 'attack', name: 'Crabhammer', amount: 12 },
+    ],
+  },
+
+  /* ----- Biome 3: the wastes ----- */
   machop: {
     name: 'Machop', type: 'normal', hp: 60, ...sprite('machop'),
     description: 'Trains all day. It shows.',
@@ -111,6 +125,71 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Karate Chop', amount: 7 },
       { kind: 'buff',   name: 'Bulk Up',     amount: 3 },
       { kind: 'attack', name: 'Cross Chop',  amount: 12 },
+    ],
+  },
+  ponyta: {
+    name: 'Ponyta', type: 'fire', hp: 62, ...sprite('ponyta'),
+    description: 'Gallops across the hot ground.',
+    moves: [
+      { kind: 'attack', name: 'Ember',       amount: 8 },
+      { kind: 'buff',   name: 'Agility',     amount: 2 },
+      { kind: 'attack', name: 'Flame Wheel', amount: 12 },
+    ],
+  },
+  staryu: {
+    name: 'Staryu', type: 'water', hp: 60, ...sprite('staryu'),
+    description: 'Spins out of the tide pools.',
+    moves: [
+      { kind: 'attack', name: 'Water Gun',   amount: 7 },
+      { kind: 'defend', name: 'Harden',      amount: 8 },
+      { kind: 'attack', name: 'Bubble Beam', amount: 12 },
+    ],
+  },
+  rhyhorn: {
+    name: 'Rhyhorn', type: 'normal', hp: 70, ...sprite('rhyhorn'),
+    description: 'Charges first and asks questions never.',
+    moves: [
+      { kind: 'attack', name: 'Horn Attack', amount: 8 },
+      { kind: 'defend', name: 'Harden',      amount: 10 },
+      { kind: 'attack', name: 'Take Down',   amount: 13 },
+    ],
+  },
+  tangela: {
+    name: 'Tangela', type: 'grass', hp: 62, ...sprite('tangela'),
+    description: 'A tangle of vines with something inside.',
+    moves: [
+      { kind: 'drain',  name: 'Mega Drain', amount: 6, heal: 6 },
+      { kind: 'defend', name: 'Ingrain',    amount: 8 },
+      { kind: 'attack', name: 'Power Whip', amount: 12 },
+    ],
+  },
+
+  /* ----- the bases of the elites (they only appear as "Alpha" versions) ----- */
+  gloom: {
+    name: 'Gloom', type: 'grass', hp: 60, ...sprite('gloom'),
+    description: 'Its smell alone is a weapon.',
+    moves: [
+      { kind: 'drain',  name: 'Absorb',      amount: 6, heal: 5 },
+      { kind: 'attack', name: 'Acid',        amount: 8 },
+      { kind: 'attack', name: 'Petal Dance', amount: 11 },
+    ],
+  },
+  poliwhirl: {
+    name: 'Poliwhirl', type: 'water', hp: 65, ...sprite('poliwhirl'),
+    description: 'The swirl on its belly is hypnotic.',
+    moves: [
+      { kind: 'attack', name: 'Water Gun', amount: 7 },
+      { kind: 'defend', name: 'Bubble',    amount: 8 },
+      { kind: 'attack', name: 'Body Slam', amount: 12 },
+    ],
+  },
+  arcanine: {
+    name: 'Arcanine', type: 'fire', hp: 75, ...sprite('arcanine'),
+    description: 'Runs like a legend and bites like one too.',
+    moves: [
+      { kind: 'attack', name: 'Bite',         amount: 9 },
+      { kind: 'buff',   name: 'Roar',         amount: 2 },
+      { kind: 'attack', name: 'Flamethrower', amount: 13 },
     ],
   },
 
@@ -163,24 +242,27 @@ export function eliteOf(def) {
    BIOMES  -  each is one act of a run: a map, then a boss.
    hpMult / dmgBonus make regular enemies tougher in later biomes,
    and bossBonus adds bonus damage to that biome's boss.
+
+   Each biome mixes all four types so that every starter meets
+   enemies it is strong against and enemies it is weak against.
    ============================================================ */
 export const BIOMES = [
   {
     id: 'clearing', name: 'Whispering Clearing', backdrop: 'assets/backgrounds/clearing.jpg',
-    normals: ['rattata', 'oddish', 'poliwag', 'ashroot', 'aquaeye'],
-    elites: ['ashroot'], boss: 'snorlax',
+    normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
+    elites: ['gloom', 'poliwhirl', 'growlithe'], boss: 'snorlax',
     hpMult: 1, dmgBonus: 0, bossBonus: 0,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine', backdrop: 'assets/backgrounds/shrine.jpg',
-    normals: ['zubat', 'geodude', 'growlithe', 'ashroot', 'aquaeye'],
-    elites: ['aquaeye'], boss: 'tangrowth',
+    normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
+    elites: ['gloom', 'poliwhirl', 'arcanine'], boss: 'tangrowth',
     hpMult: 1.9, dmgBonus: 4, bossBonus: 4,
   },
   {
     id: 'wastes', name: 'Ember Wastes', backdrop: 'assets/backgrounds/volcano.jpg',
-    normals: ['blazeclaw', 'growlithe', 'machop', 'geodude', 'aquaeye'],
-    elites: ['blazeclaw'], boss: 'salamence',
+    normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
+    elites: ['gloom', 'poliwhirl', 'arcanine'], boss: 'salamence',
     hpMult: 3, dmgBonus: 9, bossBonus: 8,
   },
 ];
