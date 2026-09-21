@@ -18,7 +18,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { CARDS_BY_ID, TYPES, scaledEffects } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { RELICS_BY_ID } from './data/relics.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { $, el, makeCard, showScreen, setBackdrop, toast, sleep } from './ui.js';
@@ -171,8 +171,8 @@ function damageFor(card) {
   // Fire beats Grass, Grass beats Water, Water beats Fire.
   let multiplier = 1;
   const type = TYPES[card.type];
-  if (type.beats === b.def.type) multiplier = 1.5;
-  else if (type.losesTo === b.def.type) multiplier = 0.5;
+  if (type.beats === b.def.type) multiplier = SUPER_EFFECTIVE;
+  else if (type.losesTo === b.def.type) multiplier = NOT_VERY_EFFECTIVE;
 
   return { amount: Math.round(amount * multiplier), multiplier };
 }
@@ -353,12 +353,12 @@ const currentMove = () => battle.def.moves[battle.enemy.moveIndex % battle.def.m
 
 /**
  * The type chart applied to enemy attacks. An enemy's attacks use its own
- * type: x1.5 if that type beats yours, x0.5 if it loses to yours, else x1.
+ * type: super effective if that type beats yours, not very effective if it loses to yours, else x1.
  */
 function enemyTypeMultiplier() {
   const attackerType = TYPES[battle.def.type];
-  if (attackerType.beats === battle.starter.type) return 1.5;
-  if (attackerType.losesTo === battle.starter.type) return 0.5;
+  if (attackerType.beats === battle.starter.type) return SUPER_EFFECTIVE;
+  if (attackerType.losesTo === battle.starter.type) return NOT_VERY_EFFECTIVE;
   return 1;
 }
 

@@ -22,6 +22,10 @@
    often a card shows up as a reward, and in which biome.
    ============================================================ */
 
+/** How strong the type chart is. Attacks that beat the target's type do this much more damage, and attacks that lose do this much less. It works both ways: on your attacks and on the enemy's attacks. */
+export const SUPER_EFFECTIVE = 1.3;
+export const NOT_VERY_EFFECTIVE = 0.75;
+
 /** The four card "types". Fire beats Grass, Grass beats Water, Water beats Fire. */
 export const TYPES = {
   fire:   { label: 'Fire',    icon: '🔥', beats: 'grass', losesTo: 'water' },
