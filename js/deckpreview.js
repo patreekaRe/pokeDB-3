@@ -10,6 +10,8 @@
 import { CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
 import { BACKDROPS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { TYPES } from './data/cards.js';
+import { LEVELS, MAX_LEVEL } from './data/difficulty.js';
+import { getSave } from './storage.js';
 import { $, el, makeCard, groupDeck, showScreen, setBackdrop, openDialog } from './ui.js';
 
 /** Fill a container with the cards of a deck, grouping copies (Ember ×3). */
@@ -19,7 +21,26 @@ function fillDeck(container, ids, stage = 0) {
   );
 }
 
-/** The screen shown after you pick a starter. */
+let level = 0;   // the Trainer Level picked for the next run
+
+/** Show the level picker: the rules of the chosen level, and a hint about the next one. */
+function renderLevel() {
+  const max = getSave().maxLevel;
+  $('level-num').textContent = String(level);
+  $('level-name').textContent = LEVELS[level].name;
+  $('level-down').disabled = level <= 0;
+  $('level-up').disabled = level >= max;
+
+  const rules = level === 0
+    ? [el('li', '', LEVELS[0].text)]
+    : Array.from({ length: level }, (_, i) => el('li', '', `Level ${i + 1}: ${LEVELS[i + 1].text}`));
+  if (level === max && max < MAX_LEVEL) {
+    rules.push(el('li', 'level-locked', `🔒 Win a run on Level ${max} to unlock Level ${max + 1} (${LEVELS[max + 1].name}): ${LEVELS[max + 1].text}`));
+  }
+  $('level-rules').replaceChildren(...rules);
+}
+
+/** The screen shown after you pick a starter. onBegin(level) starts the run. */
 export function openPreview(starter, { onBegin, onBack }) {
   const type = TYPES[starter.type];
 
@@ -45,8 +66,13 @@ export function openPreview(starter, { onBegin, onBack }) {
   $('preview-count').textContent = `${starter.deck.length} cards`;
   fillDeck($('preview-deck'), starter.deck);
 
+  level = getSave().maxLevel;    // start on your highest unlocked level
+  renderLevel();
+  $('level-down').onclick = () => { level = Math.max(0, level - 1); renderLevel(); };
+  $('level-up').onclick = () => { level = Math.min(getSave().maxLevel, level + 1); renderLevel(); };
+
   $('preview-back').onclick = onBack;
-  $('preview-begin').onclick = onBegin;
+  $('preview-begin').onclick = () => onBegin(level);
   showScreen('preview-screen');
 }
 

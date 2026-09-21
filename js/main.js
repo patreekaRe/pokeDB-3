@@ -110,7 +110,7 @@ function goToMenu() {
 /** Look at a starter's deck, and start a run from there. */
 function previewStarter(starter) {
   selected = starter;
-  openPreview(starter, { onBegin: () => beginRun(starter), onBack: showStart });
+  openPreview(starter, { onBegin: (level) => beginRun(starter, level), onBack: showStart });
 }
 
 async function requestMenu() {

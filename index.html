@@ -72,6 +72,18 @@
         <p class="hint" id="evo-note"></p>
       </div>
 
+      <div class="panel level-panel">
+        <div class="level-row">
+          <h3>Trainer Level <span id="level-name" class="count"></span></h3>
+          <div class="level-picker">
+            <button class="btn small secondary" id="level-down" aria-label="Lower level">−</button>
+            <strong id="level-num">0</strong>
+            <button class="btn small secondary" id="level-up" aria-label="Higher level">+</button>
+          </div>
+        </div>
+        <ul id="level-rules" class="level-rules"></ul>
+      </div>
+
       <div class="panel">
         <div class="deck-header">
           <h3>Starting deck <span id="preview-count" class="count">10 cards</span></h3>
@@ -92,7 +104,7 @@
         <div class="run-who">
           <img id="run-sprite" class="portrait pixel" alt="">
           <div class="run-info">
-            <strong id="run-title"></strong>
+            <div class="run-name"><strong id="run-title"></strong> <span id="run-level" class="chip level-chip" hidden></span></div>
             <div class="bar hp" role="progressbar" aria-label="Your HP">
               <div class="bar-fill" id="run-hp-fill"></div>
               <span class="bar-text" id="run-hp-text"></span>
@@ -195,6 +207,8 @@
       <li><b>🔥 Burn</b> hurts the enemy at the start of its turn, then wears off by 1 each turn.</li>
       <li><b>🎯 Focus</b> adds bonus damage to your next attack.</li>
       <li><b>💨 Weaken</b> makes the enemy's next attack deal half damage.</li>
+      <li><b>😡 Enrage</b>: every 6 turns of a fight, the enemy gains +2 strength. Don't stall!</li>
+      <li><b>⭐ Trainer Levels</b>: win a run on your highest level to unlock the next, harder one. Pick your level before you begin a run.</li>
       <li><b>🔒 Locked starters</b> unlock through achievements. Tap one to see what to do.</li>
       <li>If you faint, the run is over. Your unlocked starters and stats are kept.</li>
     </ul>

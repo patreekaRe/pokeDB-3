@@ -17,6 +17,7 @@ const KEY = 'pokedb.save.v2';
 
 const freshSave = () => ({
   seenHelp: false,
+  maxLevel: 0,               // the highest Trainer Level you have unlocked (see data/difficulty.js)
   unlocked: [],              // ids of starters unlocked by achievements
   stats: {
     runsStarted: 0,

@@ -59,7 +59,7 @@ const randFloat = (min, max) => min + Math.random() * (max - min);
    ============================================================ */
 
 /** Build a random map. Returns { floors: [[room...]...], boss, byId }. */
-export function generateMap() {
+export function generateMap({ eliteMult = 1 } = {}) {
   const grid = Array.from({ length: FLOORS }, () => Array(COLS).fill(null));
 
   // Rooms are made on demand, so only rooms that a path visits exist.
@@ -103,7 +103,7 @@ export function generateMap() {
   floors[TOP_FLOOR].forEach(room => link(room, boss));
 
   // 3. Decide what each room is.
-  assignTypes(floors);
+  assignTypes(floors, { ...ROOM_ODDS, elite: ROOM_ODDS.elite * eliteMult });
 
   const byId = {};
   [...floors.flat(), boss].forEach(room => { byId[room.id] = room; });
@@ -130,7 +130,7 @@ function nextColumn(grid, floor, col) {
 
 /* ---------- room types ---------- */
 
-function assignTypes(floors) {
+function assignTypes(floors, odds) {
   const byId = Object.fromEntries(floors.flat().map(r => [r.id, r]));
   const fix = (floor, type) => floors[floor].forEach(room => { room.type = type; room.decided = true; });
 
@@ -148,7 +148,7 @@ function assignTypes(floors) {
     for (const room of floors[floor]) {
       let type = 'fight';
       for (let tries = 0; tries < 200; tries++) {
-        type = rollType();
+        type = rollType(odds);
         // The "different destinations" rule is dropped if it can't be met
         // (early floors only allow fights, so siblings can't all differ).
         const strict = tries < MAX_STRICT_TRIES;
@@ -160,10 +160,10 @@ function assignTypes(floors) {
   }
 }
 
-function rollType() {
-  const total = Object.values(ROOM_ODDS).reduce((sum, n) => sum + n, 0);
+function rollType(odds) {
+  const total = Object.values(odds).reduce((sum, n) => sum + n, 0);
   let roll = Math.random() * total;
-  for (const [type, chance] of Object.entries(ROOM_ODDS)) {
+  for (const [type, chance] of Object.entries(odds)) {
     if ((roll -= chance) < 0) return type;
   }
   return 'fight';

@@ -18,15 +18,14 @@ import { BIOMES, buildEncounter } from './data/enemies.js';
 import { BASE_HP, HP_PER_STAGE, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER } from './data/cards.js';
 import { RELICS_BY_ID } from './data/relics.js';
-import { updateSave } from './storage.js';
+import { getSave, updateSave } from './storage.js';
+import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog } from './ui.js';
-
-const REST_HEAL = 0.35;   // a rest site heals this fraction of your max HP
 
 let run = null;
 
@@ -51,10 +50,13 @@ export function abandonRun() {
   run = null;
 }
 
-/** Start a brand new run with a starter. */
-export function beginRun(starter) {
+/** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
+export function beginRun(starter, level = 0) {
   run = {
     starter,
+    level,
+    mods: modsFor(level),   // the rules of this Trainer Level
+    levelUnlocked: null,    // set if winning this run unlocks the next level
     stage: 0,
     maxHp: BASE_HP,
     hp: BASE_HP,
@@ -94,6 +96,8 @@ function showMap() {
   $('run-title').textContent = stageName(run.starter, run.stage);
   $('biome-title').textContent = `Biome ${run.biome + 1}: ${biome.name}`;
   $('run-deck-count').textContent = String(run.deck.length);
+  $('run-level').hidden = run.level === 0;
+  $('run-level').textContent = `Level ${run.level}`;
 
   const ratio = run.hp / run.maxHp;
   const fill = $('run-hp-fill');
@@ -121,7 +125,7 @@ function enterNode(node) {
    ============================================================ */
 
 function fight(node) {
-  const encounter = buildEncounter(run.biome, node.type);
+  const encounter = buildEncounter(run.biome, node.type, run.mods);
   startBattle({ run, encounter, onEnd: (result) => afterFight(node, result) });
 }
 
@@ -198,11 +202,12 @@ function treasureRoom() {
 }
 
 function restSite() {
-  const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * REST_HEAL));
+  const restHeal = run.mods.restHeal;
+  const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   showChoice({
     title: 'Pokémon Center',
     sub: 'A safe place to catch your breath.',
-    options: [textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(REST_HEAL * 100)}% of your max HP).`, () => {
+    options: [textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, () => {
       run.hp += heal;
       run.rested = true;
       toast(`Healed ${heal} HP.`, 'ok');
@@ -219,7 +224,9 @@ function evolve(next) {
   const from = run.stage;
   run.stage += 1;
   run.maxHp += HP_PER_STAGE;
-  run.hp = run.maxHp;
+  // Evolving heals you: fully at Trainer Level 0-4, only half of your missing HP at level 5.
+  run.hp = Math.min(run.maxHp, Math.round(run.hp + (run.maxHp - run.hp) * run.mods.evolveHeal));
+  const healed = run.mods.evolveHeal >= 1 ? 'fully healed' : 'healed by half of its missing HP';
 
   const fromName = stageName(run.starter, from);
   const toName = stageName(run.starter, run.stage);
@@ -227,7 +234,7 @@ function evolve(next) {
   $('evolve-to').src = spriteUrl(run.starter, 'front', run.stage);
   $('evolve-title').textContent = `${fromName} is evolving!`;
   $('evolve-text').textContent =
-    `${fromName} evolved into ${toName}! Max HP +${HP_PER_STAGE} and fully healed. ` +
+    `${fromName} evolved into ${toName}! Max HP +${HP_PER_STAGE} and ${healed}. ` +
     `All your moves are now ${STAGE_POWER * 100 * run.stage}% stronger.`;
   $('evolve-continue').onclick = () => { closeDialog('evolve-dialog'); next(); };
   openDialog('evolve-dialog');
@@ -255,6 +262,12 @@ function endRun(won) {
       if (!run.rested) d.stats.noRestWin = true;
     });
     announceUnlocks();
+
+    // Winning on your highest unlocked Trainer Level unlocks the next one.
+    if (run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
+      run.levelUnlocked = run.level + 1;
+      updateSave(d => { d.maxLevel = run.levelUnlocked; });
+    }
   }
 
   const name = stageName(run.starter, run.stage);
@@ -265,8 +278,10 @@ function endRun(won) {
     : `${name} fainted in Biome ${run.biome + 1} (${biome.name}) after ${run.fights} won fights. Try a different path or a different starter!`;
 
   const list = $('result-unlocks');
-  list.replaceChildren(...run.unlocks.map(s => el('li', '', `🔓 Unlocked ${s.line[0].name}!`)));
-  list.hidden = run.unlocks.length === 0;
+  const lines = run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`);
+  if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
+  list.replaceChildren(...lines.map(text => el('li', '', text)));
+  list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
   openDialog('result-dialog');
 }
