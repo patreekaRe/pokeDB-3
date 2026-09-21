@@ -25,6 +25,8 @@ import { $, el, makeCard, showScreen, setBackdrop, toast, sleep } from './ui.js'
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
+const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
+const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 
 /** Relics that boost attacks of one type, by the type of your starter. */
 const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
@@ -329,6 +331,12 @@ async function enemyTurn() {
     en.strength += move.amount;
     pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
     log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
+  }
+
+  // Enrage: long fights get more dangerous.
+  if (b.turn % ENRAGE_EVERY === 0) {
+    en.strength += ENRAGE_BONUS;
+    pop('enemy-zone', `😡 Enraged +${ENRAGE_BONUS}`, 'note bad', 350);
   }
 
   en.moveIndex += 1;                              // pick the next move
