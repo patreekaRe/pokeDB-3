@@ -13,7 +13,7 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'cyndaquil',
-    text: 'Defeat the Biome 2 boss (Tangrowth)',
+    text: 'Defeat the Biome 2 boss',
     test: (s) => !!s.bossesDefeated[2],
   },
   {

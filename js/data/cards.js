@@ -44,8 +44,9 @@ const NEUTRAL_CARDS = [
 const FIRE_CARDS = [
   { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', effects: { damage: 8 } },
   { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 1, art: '☄️', effects: { damage: 5, weaken: true } },
+  { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', effects: { block: 9 } },
   { id: 'heat-up',         name: 'Heat Up',         type: 'fire', cost: 1, art: '📈', effects: { focus: 6 } },
-  { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', effects: { damage: 12, bonusIfLow: 10 } },
+  { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', effects: { damage: 14, bonusIfLow: 10 } },
   { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', effects: { damage: 8, nextEnergy: 2 } },
   { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', effects: { damage: 3, burn: 3 }, rarity: 'uncommon' },
   { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', effects: { damage: 30, needsWounded: true }, rarity: 'rare' },
@@ -91,7 +92,7 @@ export const MAX_COPIES = 3;
 /* ---------- evolution makes moves stronger ---------- */
 
 /** Each evolution stage makes damage, block, healing and focus this much stronger. */
-export const STAGE_POWER = 0.25;
+export const STAGE_POWER = 0.15;
 
 /** A card's effects after applying the evolution bonus (stage 0 = unchanged). */
 export function scaledEffects(card, stage = 0) {

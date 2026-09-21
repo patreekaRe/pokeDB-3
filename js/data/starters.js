@@ -22,7 +22,7 @@ export const STARTERS = [
       { id: 'charizard',  name: 'Charizard' },
     ],
     blurb: 'Fast, fiery attacks. Hits harder when hurt.',
-    deck: ['ember', 'ember', 'ember', 'scorch', 'heat-up', 'flare-up', 'block', 'block', 'block', 'tailwind'],
+    deck: ['ember', 'ember', 'ember', 'scorch', 'heat-up', 'flare-up', 'flame-wall', 'flame-wall', 'block', 'tailwind'],
   },
   {
     id: 'bulbasaur', type: 'grass',
@@ -32,7 +32,7 @@ export const STARTERS = [
       { id: 'venusaur',  name: 'Venusaur' },
     ],
     blurb: 'Steady damage, with plenty of block.',
-    deck: ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth', 'razor-leaf', 'block', 'block', 'block', 'tailwind'],
+    deck: ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth', 'razor-leaf', 'potion', 'block', 'block', 'tailwind'],
   },
   {
     id: 'squirtle', type: 'water',
@@ -42,7 +42,7 @@ export const STARTERS = [
       { id: 'blastoise', name: 'Blastoise' },
     ],
     blurb: 'Tough shell, quick draws, reliable water attacks.',
-    deck: ['water-gun', 'water-gun', 'water-gun', 'bubble', 'rain-dance', 'surf', 'block', 'block', 'block', 'tailwind'],
+    deck: ['water-gun', 'water-gun', 'water-gun', 'bubble', 'rain-dance', 'surf', 'withdraw', 'withdraw', 'aqua-ring', 'tailwind'],
   },
 
   {
@@ -53,7 +53,7 @@ export const STARTERS = [
       { id: 'typhlosion', name: 'Typhlosion' },
     ],
     blurb: 'A burn specialist that sets enemies ablaze.',
-    deck: ['ember', 'ember', 'fire-spin', 'scorch', 'heat-up', 'inferno-charge', 'block', 'block', 'tailwind', 'smokescreen'],
+    deck: ['ember', 'ember', 'fire-spin', 'scorch', 'heat-up', 'inferno-charge', 'flame-wall', 'block', 'tailwind', 'smokescreen'],
   },
   {
     id: 'chikorita', type: 'grass',
@@ -84,7 +84,7 @@ export const STARTERS = [
       { id: 'blaziken',  name: 'Blaziken' },
     ],
     blurb: 'An aggressive glass cannon with a little healing.',
-    deck: ['ember', 'ember', 'ember', 'flare-up', 'inferno-charge', 'heat-up', 'block', 'block', 'potion', 'tailwind'],
+    deck: ['ember', 'ember', 'ember', 'flare-up', 'inferno-charge', 'heat-up', 'flame-wall', 'block', 'potion', 'tailwind'],
   },
   {
     id: 'treecko', type: 'grass',

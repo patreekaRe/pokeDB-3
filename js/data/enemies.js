@@ -205,21 +205,41 @@ export const ENEMY_DEFS = {
     ],
   },
   tangrowth: {
-    name: 'Tangrowth', type: 'grass', hp: 280, ...sprite('tangrowth'), boss: true,
+    name: 'Tangrowth', type: 'grass', hp: 230, ...sprite('tangrowth'), boss: true,
     description: 'The shrine\'s guardian, wrapped in living vines.',
     moves: [
-      { kind: 'attack', name: 'Vine Whip',  amount: 9 },
-      { kind: 'drain',  name: 'Giga Drain', amount: 10, heal: 10 },
-      { kind: 'defend', name: 'Ingrain',    amount: 16 },
-      { kind: 'attack', name: 'Power Whip', amount: 18 },
+      { kind: 'attack', name: 'Vine Whip',  amount: 11 },
+      { kind: 'drain',  name: 'Giga Drain', amount: 10, heal: 6 },
+      { kind: 'defend', name: 'Ingrain',    amount: 10 },
+      { kind: 'attack', name: 'Power Whip', amount: 22 },
+    ],
+  },
+  magmar: {
+    name: 'Magmar', type: 'fire', hp: 210, ...sprite('magmar'), boss: true,
+    description: 'A living furnace that guards the shrine\x27s heart.',
+    moves: [
+      { kind: 'attack', name: 'Fire Punch', amount: 10 },
+      { kind: 'buff',   name: 'Sunny Day',  amount: 3 },
+      { kind: 'defend', name: 'Protect',    amount: 10 },
+      { kind: 'attack', name: 'Fire Blast', amount: 20 },
+    ],
+  },
+  lapras: {
+    name: 'Lapras', type: 'water', hp: 240, ...sprite('lapras'), boss: true,
+    description: 'A gentle giant. Not today.',
+    moves: [
+      { kind: 'attack', name: 'Water Pulse', amount: 10 },
+      { kind: 'defend', name: 'Mist',        amount: 10 },
+      { kind: 'attack', name: 'Surf',        amount: 14 },
+      { kind: 'attack', name: 'Hydro Pump',  amount: 21 },
     ],
   },
   salamence: {
-    name: 'Salamence', type: 'normal', hp: 450, ...sprite('salamence'), boss: true,
+    name: 'Salamence', type: 'normal', hp: 380, ...sprite('salamence'), boss: true,
     description: 'The tyrant of the Ember Wastes. Beat it to finish the run.',
     moves: [
       { kind: 'attack', name: 'Bite',          amount: 11 },
-      { kind: 'buff',   name: 'Dragon Dance',  amount: 3 },
+      { kind: 'buff',   name: 'Dragon Dance',  amount: 2 },
       { kind: 'attack', name: 'Dragon Claw',   amount: 15 },
       { kind: 'attack', name: 'Hyper Beam',    amount: 22 },
     ],
@@ -231,10 +251,10 @@ export function eliteOf(def) {
   return {
     ...def,
     name: `Alpha ${def.name}`,
-    hp: Math.round(def.hp * 1.7),
+    hp: Math.round(def.hp * 1.4),
     elite: true,
     description: `A much bigger ${def.name}. Watch out for its Rampage.`,
-    moves: [...def.moves, { kind: 'attack', name: 'Rampage', amount: 16 }],
+    moves: [...def.moves, { kind: 'attack', name: 'Rampage', amount: 14 }],
   };
 }
 
@@ -243,6 +263,9 @@ export function eliteOf(def) {
    hpMult / dmgBonus make regular enemies tougher in later biomes,
    and bossBonus adds bonus damage to that biome's boss.
 
+   A biome can have several possible bosses; one is picked at random each run,
+   so no starter always meets the boss it is weakest against.
+
    Each biome mixes all four types so that every starter meets
    enemies it is strong against and enemies it is weak against.
    ============================================================ */
@@ -250,35 +273,39 @@ export const BIOMES = [
   {
     id: 'clearing', name: 'Whispering Clearing', backdrop: 'assets/backgrounds/clearing.jpg',
     normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
-    elites: ['gloom', 'poliwhirl', 'growlithe'], boss: 'snorlax',
-    hpMult: 1, dmgBonus: 0, bossBonus: 0,
+    elites: ['gloom', 'poliwhirl', 'growlithe'], bosses: ['snorlax'],
+    hpMult: 1.15, dmgBonus: 2, bossBonus: 5,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine', backdrop: 'assets/backgrounds/shrine.jpg',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
-    elites: ['gloom', 'poliwhirl', 'arcanine'], boss: 'tangrowth',
-    hpMult: 1.9, dmgBonus: 4, bossBonus: 4,
+    elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['tangrowth', 'magmar', 'lapras'],
+    hpMult: 2.2, dmgBonus: 8, bossBonus: 14,
   },
   {
     id: 'wastes', name: 'Ember Wastes', backdrop: 'assets/backgrounds/volcano.jpg',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
-    elites: ['gloom', 'poliwhirl', 'arcanine'], boss: 'salamence',
-    hpMult: 3, dmgBonus: 9, bossBonus: 8,
+    elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['salamence'],
+    hpMult: 4.1, dmgBonus: 16, bossBonus: 30,
   },
 ];
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 /**
- * Build one fight. kind is 'fight', 'elite' or 'boss'.
+ * Build one fight. kind is 'fight', 'elite' or 'boss'. mods are the Trainer Level rules.
  * Returns everything battle.js needs: the enemy, its HP, and bonus damage.
  */
-export function buildEncounter(biomeIndex, kind) {
+export function buildEncounter(biomeIndex, kind, mods) {
   const biome = BIOMES[biomeIndex];
 
   if (kind === 'boss') {
-    const def = ENEMY_DEFS[biome.boss];
-    return { def, kind, maxHp: def.hp, strength: biome.bossBonus };
+    const def = ENEMY_DEFS[pick(biome.bosses)];
+    return {
+      def, kind,
+      maxHp: Math.round(def.hp * mods.bossHp),
+      strength: biome.bossBonus + mods.bossDmg + mods.enemyDmg,
+    };
   }
 
   const base = ENEMY_DEFS[pick(kind === 'elite' ? biome.elites : biome.normals)];
@@ -286,7 +313,7 @@ export function buildEncounter(biomeIndex, kind) {
   return {
     def,
     kind,
-    maxHp: Math.round(def.hp * biome.hpMult),
-    strength: biome.dmgBonus,
+    maxHp: Math.round(def.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),
+    strength: biome.dmgBonus + mods.enemyDmg,
   };
 }
