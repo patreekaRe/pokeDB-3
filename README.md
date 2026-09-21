@@ -24,7 +24,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 ## Features
 
 - Nine starters (three types), each with its own fixed starting deck and three-stage evolution line.
-- A **branching map** for each of three biomes, with fights, elites, rest sites, treasure and a boss. A new map is generated every biome.
+- A **branching map** for each of three biomes, generated the way Slay the Spire does it: random paths that never cross, rooms that only exist where a path went, a treasure floor in the middle, rest sites before the boss, and room rules like "no two rest sites in a row". A new map is generated for every biome.
 - **Card rewards and relics:** 32 cards across common, uncommon and rare rarities, and 11 relics (Charcoal, Leftovers, Focus Sash, Scope Lens…).
 - **Turn-based battles** with an energy system, draw and discard piles that reshuffle, enemy intent, type advantages and status effects.
 - **Every enemy is a real Pokémon:** 15 wild Pokémon across the three biomes, three elite "Alpha" fights, and the bosses Snorlax, Tangrowth and Salamence, each with its own move pattern.
@@ -60,7 +60,7 @@ css/
 js/
   main.js             start screen and moving between screens
   run.js              one run: the map loop, rewards, evolution, the end
-  map.js              building and drawing the branching map
+  map.js              building (Slay the Spire style) and drawing the branching map
   rewards.js          the "choose one" screen and what you are offered
   battle.js           the turn-based battle (rules on top, drawing below)
   deckpreview.js      the read-only deck preview and deck pop-up
@@ -81,6 +81,7 @@ serve.ps1             tiny local web server for Windows
 
 All the numbers are plain data, so you can tune the game without touching the rules:
 
+- **Map size and room odds:** the constants at the top of `js/map.js` (`COLS`, `FLOORS`, `PATHS`, `ROOM_ODDS`). More floors means a longer run with more rewards.
 - **Cards:** `js/data/cards.js`. For example `{ id: 'ember', name: 'Ember', type: 'fire', cost: 1, art: '🔥', effects: { damage: 8 } }`. The text on the card is generated from `effects`.
 - **Starter decks and HP:** `js/data/starters.js` (`deck`, `BASE_HP`, `HP_PER_STAGE`).
 - **Enemy HP and damage, and how much harder each biome gets:** `js/data/enemies.js` (`hpMult`, `dmgBonus`, `bossBonus`).
