@@ -26,6 +26,8 @@
    ============================================================ */
 
 import { $, el } from './ui.js';
+import { ENEMY_DEFS } from './data/enemies.js';
+import { TYPES } from './data/cards.js';
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
@@ -240,8 +242,17 @@ export function renderMap(map, currentId, onPick) {
     btn.type = 'button';
     btn.style.left = `${xOf(node)}%`;
     btn.style.top = `${yOf(node)}%`;
-    btn.title = info.label;
-    btn.setAttribute('aria-label', info.label);
+    let label = info.label;
+
+    // Elites and bosses are chosen ahead of time, so show who is waiting (scouting).
+    if (node.enemyId) {
+      const def = ENEMY_DEFS[node.enemyId];
+      const type = TYPES[def.type];
+      label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name} (${type.label} type)`;
+      btn.append(el('span', `node-badge type-${def.type}`, type.icon));
+    }
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
 
     const canGo = reachable.has(node.id);
     if (node.visited) btn.classList.add('visited');

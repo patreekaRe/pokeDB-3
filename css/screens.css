@@ -486,3 +486,23 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .level-locked { list-style: none; margin-left: -20px; color: var(--muted); }
 .run-name { display: flex; align-items: center; gap: 8px; }
 .level-chip { background: #6b4b00; color: #ffe27a; border: 1px solid var(--gold); }
+
+/* Small type badge on elite and boss map nodes (scouting) */
+.node-badge {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #1a1e42;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+.node-badge.type-fire  { border-color: #ff8a4c; }
+.node-badge.type-water { border-color: #55b6ff; }
+.node-badge.type-grass { border-color: #63dc7f; }
+.node-badge.type-normal { border-color: #b7bdd6; }

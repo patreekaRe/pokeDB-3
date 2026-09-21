@@ -14,7 +14,7 @@
      deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, buildEncounter } from './data/enemies.js';
+import { BIOMES, buildEncounter, pickEnemyId } from './data/enemies.js';
 import { BASE_HP, HP_PER_STAGE, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER } from './data/cards.js';
 import { RELICS_BY_ID } from './data/relics.js';
@@ -82,6 +82,10 @@ export function beginRun(starter, level = 0) {
 function startBiome() {
   const biome = BIOMES[run.biome];
   run.map = generateMap();
+  // Decide now which elite or boss each of those rooms holds, so the map can show it (scouting).
+  for (const node of Object.values(run.map.byId)) {
+    if (node.type === 'elite' || node.type === 'boss') node.enemyId = pickEnemyId(run.biome, node.type);
+  }
   run.current = null;
   run.backdrop = biome.backdrop;
   showMap();
@@ -125,7 +129,7 @@ function enterNode(node) {
    ============================================================ */
 
 function fight(node) {
-  const encounter = buildEncounter(run.biome, node.type, run.mods);
+  const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   startBattle({ run, encounter, onEnd: (result) => afterFight(node, result) });
 }
 
