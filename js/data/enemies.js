@@ -6,8 +6,8 @@
    shown above its head (the "intent"), so you can plan your turn.
 
    Enemy attacks follow the same type chart as yours: an enemy's attacks
-   use its own type, so a Fire enemy hits a Grass starter for x1.5 and a
-   Water starter for x0.5. Neutral enemies are always x1.
+   use its own type, so a Fire enemy hits a Grass starter for extra damage and a
+   Water starter for less (see SUPER_EFFECTIVE in cards.js). Neutral enemies are always x1.
 
    Move kinds:
      attack    hit the player for `amount` damage
@@ -195,7 +195,7 @@ export const ENEMY_DEFS = {
 
   /* ----- bosses (fixed HP; the biome adds bonus damage via bossBonus) ----- */
   snorlax: {
-    name: 'Snorlax', type: 'normal', hp: 150, ...sprite('snorlax'), boss: true,
+    name: 'Snorlax', type: 'normal', hp: 170, ...sprite('snorlax'), boss: true,
     description: 'Blocks the path. Hits like a boulder when it wakes up.',
     moves: [
       { kind: 'attack', name: 'Body Slam',   amount: 11 },
@@ -205,7 +205,7 @@ export const ENEMY_DEFS = {
     ],
   },
   tangrowth: {
-    name: 'Tangrowth', type: 'grass', hp: 230, ...sprite('tangrowth'), boss: true,
+    name: 'Tangrowth', type: 'grass', hp: 250, ...sprite('tangrowth'), boss: true,
     description: 'The shrine\'s guardian, wrapped in living vines.',
     moves: [
       { kind: 'attack', name: 'Vine Whip',  amount: 11 },
@@ -215,7 +215,7 @@ export const ENEMY_DEFS = {
     ],
   },
   magmar: {
-    name: 'Magmar', type: 'fire', hp: 210, ...sprite('magmar'), boss: true,
+    name: 'Magmar', type: 'fire', hp: 230, ...sprite('magmar'), boss: true,
     description: 'A living furnace that guards the shrine\x27s heart.',
     moves: [
       { kind: 'attack', name: 'Fire Punch', amount: 10 },
@@ -225,7 +225,7 @@ export const ENEMY_DEFS = {
     ],
   },
   lapras: {
-    name: 'Lapras', type: 'water', hp: 240, ...sprite('lapras'), boss: true,
+    name: 'Lapras', type: 'water', hp: 260, ...sprite('lapras'), boss: true,
     description: 'A gentle giant. Not today.',
     moves: [
       { kind: 'attack', name: 'Water Pulse', amount: 10 },
@@ -235,7 +235,7 @@ export const ENEMY_DEFS = {
     ],
   },
   salamence: {
-    name: 'Salamence', type: 'normal', hp: 380, ...sprite('salamence'), boss: true,
+    name: 'Salamence', type: 'normal', hp: 420, ...sprite('salamence'), boss: true,
     description: 'The tyrant of the Ember Wastes. Beat it to finish the run.',
     moves: [
       { kind: 'attack', name: 'Bite',          amount: 11 },
@@ -251,7 +251,7 @@ export function eliteOf(def) {
   return {
     ...def,
     name: `Alpha ${def.name}`,
-    hp: Math.round(def.hp * 1.4),
+    hp: Math.round(def.hp * 1.6),
     elite: true,
     description: `A much bigger ${def.name}. Watch out for its Rampage.`,
     moves: [...def.moves, { kind: 'attack', name: 'Rampage', amount: 14 }],
@@ -274,19 +274,19 @@ export const BIOMES = [
     id: 'clearing', name: 'Whispering Clearing', backdrop: 'assets/backgrounds/clearing.jpg',
     normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
     elites: ['gloom', 'poliwhirl', 'growlithe'], bosses: ['snorlax'],
-    hpMult: 1.15, dmgBonus: 2, bossBonus: 5,
+    hpMult: 1.4, dmgBonus: 5, bossBonus: 7,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine', backdrop: 'assets/backgrounds/shrine.jpg',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['tangrowth', 'magmar', 'lapras'],
-    hpMult: 2.2, dmgBonus: 8, bossBonus: 14,
+    hpMult: 2.7, dmgBonus: 12, bossBonus: 18,
   },
   {
     id: 'wastes', name: 'Ember Wastes', backdrop: 'assets/backgrounds/volcano.jpg',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['salamence'],
-    hpMult: 4.1, dmgBonus: 16, bossBonus: 30,
+    hpMult: 5, dmgBonus: 22, bossBonus: 32,
   },
 ];
 
@@ -294,13 +294,20 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 /**
  * Build one fight. kind is 'fight', 'elite' or 'boss'. mods are the Trainer Level rules.
+ * enemyId is optional: the map picks the elite and boss ahead of time so it can show them.
  * Returns everything battle.js needs: the enemy, its HP, and bonus damage.
  */
-export function buildEncounter(biomeIndex, kind, mods) {
+/** Pick which enemy an elite or boss node will hold (so the map can show it before you go). */
+export function pickEnemyId(biomeIndex, kind) {
+  const biome = BIOMES[biomeIndex];
+  return pick(kind === 'boss' ? biome.bosses : biome.elites);
+}
+
+export function buildEncounter(biomeIndex, kind, mods, enemyId) {
   const biome = BIOMES[biomeIndex];
 
   if (kind === 'boss') {
-    const def = ENEMY_DEFS[pick(biome.bosses)];
+    const def = ENEMY_DEFS[enemyId || pick(biome.bosses)];
     return {
       def, kind,
       maxHp: Math.round(def.hp * mods.bossHp),
@@ -308,7 +315,7 @@ export function buildEncounter(biomeIndex, kind, mods) {
     };
   }
 
-  const base = ENEMY_DEFS[pick(kind === 'elite' ? biome.elites : biome.normals)];
+  const base = ENEMY_DEFS[enemyId || pick(kind === 'elite' ? biome.elites : biome.normals)];
   const def = kind === 'elite' ? eliteOf(base) : base;
   return {
     def,
