@@ -466,8 +466,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 
 /* ---------- phones (kept last so it wins over the rules above) ---------- */
 @media (max-width: 720px) {
-  .map-node { width: 40px; height: 40px; font-size: 1.15rem; }
-  .map-node.type-boss { width: 54px; height: 54px; font-size: 1.6rem; }
+  .map-node { width: 34px; height: 34px; font-size: 1rem; border-width: 2px; }
+  .map-node.type-boss { width: 50px; height: 50px; font-size: 1.5rem; }
   .reward-options { gap: 12px; }
   .evo-stage img { width: 72px; height: 72px; }
 }
