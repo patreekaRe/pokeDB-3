@@ -183,29 +183,6 @@
       </div>
     </section>
 
-    <!-- ============ 6. SHOP ============ -->
-    <section id="shop-screen" class="screen" hidden>
-      <div class="shop-head">
-        <h2>Shop</h2>
-        <div class="coin-balance">💰 <span class="coin-value">0</span> PokéCoins</div>
-      </div>
-
-      <div class="panel">
-        <h3>Skins</h3>
-        <p class="hint">A new look to play as. Same moves as their type - this is purely cosmetic.</p>
-        <div id="shop-skins" class="shop-grid"></div>
-      </div>
-
-      <div class="panel">
-        <h3>Permanent perks</h3>
-        <p class="hint">Apply to every future run, forever.</p>
-        <div id="shop-passives" class="shop-grid"></div>
-      </div>
-
-      <div class="builder-bar">
-        <button class="btn secondary" id="shop-back">← Back</button>
-      </div>
-    </section>
   </main>
 
   <!-- Always-visible fan project note -->
@@ -277,6 +254,30 @@
   <dialog id="deck-dialog" class="dialog wide-dialog">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
     <div id="deck-dialog-cards" class="card-pool"></div>
+    <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
+  </dialog>
+
+  <!-- The shop floats on top of whatever screen you're on (map, battle, a
+       reward choice, anywhere) - closing it never navigates you away, so
+       tapping 🛒 to peek at the shop mid-run can't get you "stuck". -->
+  <dialog id="shop-dialog" class="dialog wide-dialog">
+    <div class="shop-head">
+      <h2>Shop</h2>
+      <div class="coin-balance">💰 <span class="coin-value">0</span> PokéCoins</div>
+    </div>
+
+    <div class="panel">
+      <h3>Skins</h3>
+      <p class="hint">A new look to play as. Same moves as their type - this is purely cosmetic.</p>
+      <div id="shop-skins" class="shop-grid"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Permanent perks</h3>
+      <p class="hint">Apply to every future run, forever.</p>
+      <div id="shop-passives" class="shop-grid"></div>
+    </div>
+
     <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 

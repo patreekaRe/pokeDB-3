@@ -22,7 +22,7 @@ export function el(tag, className = '', text = '') {
 
 /* ---------- screens ---------- */
 
-const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen', 'shop-screen'];
+const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen'];
 
 /** Show one screen and hide the others. */
 export function showScreen(id) {

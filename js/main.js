@@ -27,7 +27,7 @@ import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive } from './run.js';
 import { initBattle } from './battle.js';
-import { initShop, openShop } from './shop.js';
+import { toggleShop } from './shop.js';
 import {
   $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
@@ -74,7 +74,7 @@ function renderStarters() {
 
     btn.addEventListener('click', () => {
       if (unlocked) return selectStarter(starter);
-      if (isShopUnlock(starter)) return openShop(starter.id);
+      if (isShopUnlock(starter)) return toggleShop(starter.id);
       toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
     });
     grid.append(btn);
@@ -143,11 +143,15 @@ async function requestMenu() {
 function init() {
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
-  initShop({ onBack: showStart });
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
-  $('shop-btn').addEventListener('click', () => openShop());
+  $('shop-btn').addEventListener('click', () => toggleShop());
   $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
+
+  // A purchase made while the shop was open over some other screen (map,
+  // battle, a reward choice) should still be reflected once you're back
+  // looking at the start screen - refresh it every time the dialog closes.
+  $('shop-dialog').addEventListener('close', () => { renderStarters(); renderProgress(); });
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', () => openDialog('help-dialog'));

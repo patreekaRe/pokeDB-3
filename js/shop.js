@@ -7,28 +7,20 @@
 import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS } from './data/shop.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave } from './storage.js';
-import { $, el, showScreen, refreshCoins, toast } from './ui.js';
+import { $, el, refreshCoins, toast } from './ui.js';
 
-let onClose = () => {};
-let returnScreen = 'start-screen';   // whatever screen was showing when you opened the shop
+/** Toggle the shop dialog open/closed. It's a non-modal dialog (.show(), not
+ *  .showModal()) so it floats on top of whatever screen is showing without
+ *  blocking it - the map, a battle, a reward choice underneath stays fully
+ *  clickable, and the shop button in the topbar stays clickable too, so it
+ *  really is a toggle rather than a one-way trip.
+ *  highlightId briefly flashes one item (used when you tap a shop-locked starter). */
+export function toggleShop(highlightId) {
+  const dialog = $('shop-dialog');
+  if (dialog.open) return dialog.close();
 
-/** Called once at startup. */
-export function initShop({ onBack }) {
-  onClose = onBack;
-  // The shop never abandons a run: it just hides the map/battle screen (the DOM
-  // underneath is untouched), so "Back" can simply reveal it again. Only when you
-  // opened the shop FROM the start screen does it need the fuller refresh onBack does.
-  $('shop-back').addEventListener('click', () => {
-    if (returnScreen === 'start-screen') onClose();
-    else showScreen(returnScreen);
-  });
-}
-
-/** Open the shop. highlightId briefly flashes one item (used when you tap a shop-locked starter). */
-export function openShop(highlightId) {
-  returnScreen = document.body.dataset.screen;
   render();
-  showScreen('shop-screen');
+  dialog.show();
   if (highlightId) {
     const item = $(`shop-item-${highlightId}`);
     if (item) { item.scrollIntoView({ block: 'center' }); item.classList.add('flash'); setTimeout(() => item.classList.remove('flash'), 1200); }
