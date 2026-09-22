@@ -10,15 +10,23 @@ import { getSave, updateSave } from './storage.js';
 import { $, el, showScreen, refreshCoins, toast } from './ui.js';
 
 let onClose = () => {};
+let returnScreen = 'start-screen';   // whatever screen was showing when you opened the shop
 
 /** Called once at startup. */
 export function initShop({ onBack }) {
   onClose = onBack;
-  $('shop-back').addEventListener('click', onClose);
+  // The shop never abandons a run: it just hides the map/battle screen (the DOM
+  // underneath is untouched), so "Back" can simply reveal it again. Only when you
+  // opened the shop FROM the start screen does it need the fuller refresh onBack does.
+  $('shop-back').addEventListener('click', () => {
+    if (returnScreen === 'start-screen') onClose();
+    else showScreen(returnScreen);
+  });
 }
 
 /** Open the shop. highlightId briefly flashes one item (used when you tap a shop-locked starter). */
 export function openShop(highlightId) {
+  returnScreen = document.body.dataset.screen;
   render();
   showScreen('shop-screen');
   if (highlightId) {

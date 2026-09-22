@@ -36,10 +36,11 @@ let selected = null;   // the starter picked on the start screen
 
 /* ---------- start screen ---------- */
 
-// The first 9 (the 3 real starters + the 6 shop-bought skins) always show.
-// The rest (achievement-locked skins and the legendaries) collapse behind
-// "Show more", so a fresh visitor sees a manageable grid, not all 18 at once.
-const ALWAYS_SHOWN = 9;
+// The first 6 (the 3 real starters + the first 3 shop-bought skins) always
+// show. Everything else (the rest of the shop skins, the achievement-locked
+// skins, and the legendaries) collapses behind "Show more", so a fresh
+// visitor sees a manageable grid, not all 18 at once.
+const ALWAYS_SHOWN = 6;
 let showAllStarters = false;
 
 function renderStarters() {
@@ -80,7 +81,7 @@ function renderStarters() {
   });
 
   const moreBtn = $('starter-more-btn');
-  moreBtn.textContent = showAllStarters ? 'Show fewer starters ▲' : `Show ${STARTERS.length - ALWAYS_SHOWN} more starters ▾`;
+  moreBtn.textContent = showAllStarters ? 'Show fewer ▲' : `Show ${STARTERS.length - ALWAYS_SHOWN} more ▾`;
 }
 
 function selectStarter(starter) {

@@ -25,7 +25,7 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog } from './ui.js';
+import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins } from './ui.js';
 
 let run = null;
 
@@ -170,6 +170,7 @@ function afterFight(node, result) {
   const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
   const earned = awardCoins(coinsFor[node.type]);
+  refreshCoins();
   toast(`+${earned} 💰${disadvantage ? ' (type disadvantage!)' : ''}`, 'ok');
 
   const steps = [];   // screens to show one after another
@@ -310,6 +311,7 @@ function endRun(won) {
 
   if (won) {
     const winCoins = awardCoins(COIN_REWARDS.winBonus);
+    refreshCoins();
     toast(`+${winCoins} 💰 (run complete!)`, 'ok');
 
     updateSave(d => {
