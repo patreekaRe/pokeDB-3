@@ -23,6 +23,8 @@
   <header class="topbar">
     <button class="brand" id="brand-btn" aria-label="PokéDB main menu">Poké<span>DB</span></button>
     <div class="topbar-actions">
+      <span class="coin-pill" title="PokéCoins - spend them in the Shop">💰 <span class="coin-value">0</span></span>
+      <button class="icon-btn" id="shop-btn" aria-label="Shop" title="Shop">🛒</button>
       <button class="icon-btn" id="help-btn" aria-label="How to play" title="How to play">?</button>
       <button class="icon-btn" id="about-btn" aria-label="About and credits" title="About and credits">i</button>
       <button class="icon-btn" id="home-btn" aria-label="Back to main menu" title="Main menu" hidden>⌂</button>
@@ -179,6 +181,30 @@
         <div id="hand" class="hand" aria-label="Your hand"></div>
       </div>
     </section>
+
+    <!-- ============ 6. SHOP ============ -->
+    <section id="shop-screen" class="screen" hidden>
+      <div class="shop-head">
+        <h2>Shop</h2>
+        <div class="coin-balance">💰 <span class="coin-value">0</span> PokéCoins</div>
+      </div>
+
+      <div class="panel">
+        <h3>Skins</h3>
+        <p class="hint">A new look to play as. Same moves as their type - this is purely cosmetic.</p>
+        <div id="shop-skins" class="shop-grid"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Permanent perks</h3>
+        <p class="hint">Apply to every future run, forever.</p>
+        <div id="shop-passives" class="shop-grid"></div>
+      </div>
+
+      <div class="builder-bar">
+        <button class="btn secondary" id="shop-back">← Back</button>
+      </div>
+    </section>
   </main>
 
   <!-- Always-visible fan project note -->
@@ -209,8 +235,9 @@
       <li><b>💨 Weaken</b> makes the enemy's next attack deal half damage.</li>
       <li><b>😡 Enrage</b>: every 6 turns of a fight, the enemy gains +2 strength. Don't stall!</li>
       <li><b>⭐ Trainer Levels</b>: win a run on your highest level to unlock the next, harder one. Pick your level before you begin a run.</li>
-      <li><b>🔒 Locked starters</b> unlock through achievements. Tap one to see what to do.</li>
-      <li>If you faint, the run is over. Your unlocked starters and stats are kept.</li>
+      <li><b>💰 PokéCoins</b> are earned from every fight you win (more from elites, even more if you fought one that's strong against your type) and from finishing a run. Spend them in the <b>🛒 Shop</b> on new skins and permanent perks.</li>
+      <li><b>🔒 Locked starters</b> unlock through the shop or through achievements. Tap one to see which.</li>
+      <li>If you faint, the run is over. Your unlocked starters, PokéCoins and stats are kept.</li>
     </ul>
     <form method="dialog"><button class="btn primary">Got it</button></form>
   </dialog>

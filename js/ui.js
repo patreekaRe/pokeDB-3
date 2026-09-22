@@ -4,6 +4,7 @@
    ============================================================ */
 
 import { TYPES, describe } from './data/cards.js';
+import { getSave } from './storage.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -21,7 +22,7 @@ export function el(tag, className = '', text = '') {
 
 /* ---------- screens ---------- */
 
-const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen'];
+const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen', 'shop-screen'];
 
 /** Show one screen and hide the others. */
 export function showScreen(id) {
@@ -35,6 +36,12 @@ export function showScreen(id) {
 export function setBackdrop(url, type) {
   $('backdrop').style.backgroundImage = url ? `url("${url}")` : '';
   document.body.dataset.theme = type || '';
+}
+
+/** Refresh every on-screen PokéCoin balance from the save. Call this after coins change. */
+export function refreshCoins() {
+  const coins = getSave().coins;
+  for (const node of document.querySelectorAll('.coin-value')) node.textContent = String(coins);
 }
 
 /* ---------- toast (little message at the top) ---------- */

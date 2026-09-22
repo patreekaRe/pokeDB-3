@@ -23,12 +23,13 @@ import { STARTERS, spriteUrl, BACKDROPS } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES } from './data/cards.js';
 import { getSave, updateSave, resetSave } from './storage.js';
-import { isStarterUnlocked } from './progress.js';
+import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive } from './run.js';
 import { initBattle } from './battle.js';
+import { initShop, openShop } from './shop.js';
 import {
-  $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog,
+  $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
 
 let selected = null;   // the starter picked on the start screen
@@ -53,13 +54,15 @@ function renderStarters() {
 
     if (!unlocked) {
       btn.classList.add('locked');
-      btn.append(el('span', 'starter-lock', '🔒 Achievement'));
+      const lockLabel = isShopUnlock(starter) ? '🔒 Shop' : starter.legendary ? '🔒 Legendary' : '🔒 Achievement';
+      btn.append(el('span', 'starter-lock', lockLabel));
     }
     if (selected === starter) btn.classList.add('selected');
 
     btn.addEventListener('click', () => {
-      if (!unlocked) return toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
-      selectStarter(starter);
+      if (unlocked) return selectStarter(starter);
+      if (isShopUnlock(starter)) return openShop(starter.id);
+      toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
     });
     grid.append(btn);
   }
@@ -93,6 +96,7 @@ function renderProgress() {
 function showStart() {
   renderStarters();
   renderProgress();
+  refreshCoins();
   if (!selected) setBackdrop(BACKDROPS.water, '');
   showScreen('start-screen');
 }
@@ -123,8 +127,10 @@ async function requestMenu() {
 function init() {
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
+  initShop({ onBack: showStart });
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
+  $('shop-btn').addEventListener('click', () => openShop());
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', () => openDialog('help-dialog'));
