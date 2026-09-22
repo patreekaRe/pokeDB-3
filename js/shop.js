@@ -51,7 +51,7 @@ function skinTile(item) {
   img.src = spriteUrl(starter, 'front');
   img.alt = starter.line[0].name;
 
-  node.append(img, el('strong', '', starter.line[0].name), el('span', 'shop-item-text', starter.blurb));
+  node.append(img, el('strong', '', starter.line[0].name));
 
   if (owned) {
     node.append(el('span', 'shop-owned', '✅ Owned'));

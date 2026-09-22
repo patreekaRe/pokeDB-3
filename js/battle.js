@@ -433,9 +433,9 @@ function setupBattleScreen() {
   $('enemy-type').className = `chip type-${b.def.type}`;
   $('battle-log').textContent = '';
 
-  $('relic-row').replaceChildren(...b.relics.map(id => {
+  $('battle-relics').replaceChildren(...b.relics.map(id => {
     const relic = RELICS_BY_ID[id];
-    const node = el('span', 'relic-icon', relic.icon);
+    const node = el('span', 'battle-relic', relic.icon);
     node.title = `${relic.name}: ${relic.text}`;
     return node;
   }));

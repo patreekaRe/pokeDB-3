@@ -138,8 +138,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   padding: 4px 4px 46px;
 }
 
-.relic-row { position: absolute; top: 0; left: 4px; z-index: 2; display: flex; gap: 4px; }
-.relic-icon {
+.battle-relics { position: absolute; top: 0; left: 4px; z-index: 2; display: flex; gap: 4px; }
+.battle-relic {
   width: 30px;
   height: 30px;
   display: grid;
@@ -411,8 +411,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .energy-orb b { font-size: 1.35rem; }
   .turn-side { flex-direction: row-reverse; justify-content: flex-start; gap: 12px; }
   #end-turn-btn { padding: 10px 16px; font-size: 0.95rem; }
-  .relic-icon { width: 26px; height: 26px; font-size: 0.85rem; }
-  .relic-row { flex-direction: column; }
+  .battle-relic { width: 26px; height: 26px; font-size: 0.85rem; }
+  .battle-relics { flex-direction: column; }
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }
@@ -652,7 +652,9 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .shop-item-level { font-size: 0.78rem; color: var(--muted); }
 .shop-owned { font-weight: 800; color: var(--good); }
 .shop-item.flash { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(255, 203, 5, 0.35), 0 0 30px var(--gold); }
+.shop-grid.skins { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 
 @media (max-width: 720px) {
   .shop-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .shop-grid.skins { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 }
