@@ -36,16 +36,28 @@ let selected = null;   // the starter picked on the start screen
 
 /* ---------- start screen ---------- */
 
+// The first 9 (the 3 real starters + the 6 shop-bought skins) always show.
+// The rest (achievement-locked skins and the legendaries) collapse behind
+// "Show more", so a fresh visitor sees a manageable grid, not all 18 at once.
+const ALWAYS_SHOWN = 9;
+let showAllStarters = false;
+
 function renderStarters() {
   const grid = $('starter-grid');
   grid.replaceChildren();
 
-  for (const starter of STARTERS) {
+  // If you've already unlocked or selected something in the collapsed group,
+  // there's no point hiding it - expand automatically.
+  const hidden = STARTERS.slice(ALWAYS_SHOWN);
+  if (hidden.includes(selected) || hidden.some(isStarterUnlocked)) showAllStarters = true;
+
+  STARTERS.forEach((starter, i) => {
     const unlocked = isStarterUnlocked(starter);
     const btn = el('button', `starter-btn type-${starter.type}`);
     btn.type = 'button';
     btn.setAttribute('role', 'radio');
     btn.setAttribute('aria-checked', String(selected === starter));
+    btn.hidden = i >= ALWAYS_SHOWN && !showAllStarters;
 
     const img = el('img', 'pixel');
     img.src = spriteUrl(starter, 'front');
@@ -65,7 +77,10 @@ function renderStarters() {
       toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
     });
     grid.append(btn);
-  }
+  });
+
+  const moreBtn = $('starter-more-btn');
+  moreBtn.textContent = showAllStarters ? 'Show fewer starters ▲' : `Show ${STARTERS.length - ALWAYS_SHOWN} more starters ▾`;
 }
 
 function selectStarter(starter) {
@@ -131,6 +146,7 @@ function init() {
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
   $('shop-btn').addEventListener('click', () => openShop());
+  $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', () => openDialog('help-dialog'));

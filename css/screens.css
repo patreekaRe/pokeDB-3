@@ -44,6 +44,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
+.starter-more-btn { display: block; margin: 12px auto 0; }
 .starter-btn {
   position: relative;
   display: flex;
