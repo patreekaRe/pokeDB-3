@@ -36,12 +36,12 @@ export function cardChoices(run, source) {
 
 /**
  * Pick 2 signature evolution cards to offer when your starter evolves.
- * Each type has 4 (see evolutionCardsFor in cards.js); you already own
- * whichever one you picked at your last evolution, so it's filtered out
- * here and you always get a fresh pair.
+ * run.stage is already the NEW stage by the time this runs (evolve() bumps
+ * it first), so stage 1 gets the mid tier and stage 2 gets the high tier -
+ * see evolutionCardsFor in cards.js.
  */
 export function evolutionChoices(run) {
-  const pool = evolutionCardsFor(run.starter.type).filter(c => {
+  const pool = evolutionCardsFor(run.starter.type, run.stage).filter(c => {
     const copies = run.deck.filter(x => x === c.id).length;
     return copies < (c.maxCopies || MAX_COPIES);
   });

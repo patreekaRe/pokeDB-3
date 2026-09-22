@@ -98,51 +98,84 @@ const WATER_CARDS = [
 
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
-   normal fights. When your starter evolves you choose 1 of 2 of
-   these (see evolutionChoices() in rewards.js). Each type has 4;
-   you'll own 2 of them by the time you finish a run (one per
-   evolution), so the choice never repeats a card you already have.
+   normal fights. There are two TIERS per type, one per evolution:
+
+     MID tier   offered when you evolve for the FIRST time
+                (Charmander -> Charmeleon, Bulbasaur -> Ivysaur, ...)
+     HIGH tier  offered when you evolve for the SECOND time, into
+                your final form (-> Charizard, Venusaur, Blastoise, ...)
+
+   Each tier has 4 cards; you choose 1 of a random 2 (see
+   evolutionChoices() in rewards.js). High tier is meant to feel like
+   a real power spike, not just "mid tier with bigger numbers" - it
+   costs more energy on average and its top card in each type
+   (Blast Burn / Frenzy Plant / Hydro Cannon) is the strongest single
+   hit in the game.
    ============================================================ */
 
-const FIRE_EVO_CARDS = [
-  { id: 'flare-blitz', name: 'Flare Blitz', type: 'fire', cost: 2, art: '💥', effects: { damage: 20 }, evoOnly: true, maxCopies: 1 },
-  { id: 'inferno',     name: 'Inferno',     type: 'fire', cost: 2, art: '🌋', effects: { damage: 14, burn: 5 }, evoOnly: true, maxCopies: 1 },
-  { id: 'fire-blast',  name: 'Fire Blast',  type: 'fire', cost: 3, art: '🔥', effects: { damage: 22, burn: 4 }, evoOnly: true, maxCopies: 1 },
-  { id: 'overheat',    name: 'Overheat',    type: 'fire', cost: 3, art: '☀️', effects: { damage: 26, bonusIfLow: 10 }, evoOnly: true, maxCopies: 1 },
+const FIRE_EVO_MID = [
+  { id: 'flame-charge', name: 'Flame Charge', type: 'fire', cost: 1, art: '⚡', effects: { damage: 10, nextEnergy: 1 }, evoOnly: true, maxCopies: 1 },
+  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', effects: { damage: 8, burn: 3 }, evoOnly: true, maxCopies: 1 },
+  { id: 'flame-wheel',  name: 'Flame Wheel',  type: 'fire', cost: 2, art: '🔥', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
+  { id: 'incinerate',   name: 'Incinerate',   type: 'fire', cost: 2, art: '🌪️', effects: { damage: 14, weaken: true }, evoOnly: true, maxCopies: 1 },
+];
+const FIRE_EVO_HIGH = [
+  { id: 'flamethrower', name: 'Flamethrower', type: 'fire', cost: 2, art: '🔥', effects: { damage: 22, burn: 3 }, evoOnly: true, maxCopies: 1 },
+  { id: 'fire-blast',   name: 'Fire Blast',   type: 'fire', cost: 3, art: '☄️', effects: { damage: 24, burn: 5 }, evoOnly: true, maxCopies: 1 },
+  { id: 'overheat',     name: 'Overheat',     type: 'fire', cost: 3, art: '☀️', effects: { damage: 30, bonusIfLow: 12 }, evoOnly: true, maxCopies: 1 },
+  { id: 'blast-burn',   name: 'Blast Burn',   type: 'fire', cost: 3, art: '🌋', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
-const GRASS_EVO_CARDS = [
-  { id: 'spore',        name: 'Spore',        type: 'grass', cost: 1, art: '🍄', effects: { weaken: true, focus: 8 }, evoOnly: true, maxCopies: 1 },
-  { id: 'giga-drain',   name: 'Giga Drain',   type: 'grass', cost: 2, art: '🩸', effects: { damage: 16, heal: 10 }, evoOnly: true, maxCopies: 1 },
-  { id: 'frenzy-plant', name: 'Frenzy Plant', type: 'grass', cost: 3, art: '🌳', effects: { damage: 22, block: 8 }, evoOnly: true, maxCopies: 1 },
-  { id: 'leaf-storm',   name: 'Leaf Storm',   type: 'grass', cost: 3, art: '🍂', effects: { damage: 26 }, evoOnly: true, maxCopies: 1 },
+const GRASS_EVO_MID = [
+  { id: 'leech-seed',    name: 'Leech Seed',    type: 'grass', cost: 1, art: '🌱', effects: { damage: 8, heal: 5 }, evoOnly: true, maxCopies: 1 },
+  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', effects: { focus: 6, block: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'razor-storm',   name: 'Razor Storm',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
+  { id: 'poison-powder', name: 'Poison Powder', type: 'grass', cost: 1, art: '☠️', effects: { weaken: true, heal: 3 }, evoOnly: true, maxCopies: 1 },
+];
+const GRASS_EVO_HIGH = [
+  { id: 'giga-drain',    name: 'Giga Drain',    type: 'grass', cost: 2, art: '🩸', effects: { damage: 20, heal: 12 }, evoOnly: true, maxCopies: 1 },
+  { id: 'petal-blizzard', name: 'Petal Blizzard', type: 'grass', cost: 2, art: '🌸', effects: { damage: 24 }, evoOnly: true, maxCopies: 1 },
+  { id: 'leaf-storm',    name: 'Leaf Storm',    type: 'grass', cost: 3, art: '🍂', effects: { damage: 26, block: 8 }, evoOnly: true, maxCopies: 1 },
+  { id: 'frenzy-plant',  name: 'Frenzy Plant',  type: 'grass', cost: 3, art: '🌳', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
-const WATER_EVO_CARDS = [
-  { id: 'aqua-jet',     name: 'Aqua Jet',     type: 'water', cost: 1, art: '💨', effects: { damage: 14 }, evoOnly: true, maxCopies: 1 },
-  { id: 'wave-crash',   name: 'Wave Crash',   type: 'water', cost: 2, art: '🌊', effects: { damage: 18, focus: 4 }, evoOnly: true, maxCopies: 1 },
-  { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', effects: { damage: 16, weaken: true }, evoOnly: true, maxCopies: 1 },
-  { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🌊', effects: { damage: 26 }, evoOnly: true, maxCopies: 1 },
+const WATER_EVO_MID = [
+  { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', effects: { damage: 10, block: 4 }, evoOnly: true, maxCopies: 1 },
+  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', effects: { damage: 10, weaken: true }, evoOnly: true, maxCopies: 1 },
+  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
+  { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', effects: { block: 10, heal: 2 }, evoOnly: true, maxCopies: 1 },
+];
+const WATER_EVO_HIGH = [
+  { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', effects: { damage: 20, weaken: true }, evoOnly: true, maxCopies: 1 },
+  { id: 'wave-crash',   name: 'Wave Crash',   type: 'water', cost: 2, art: '🌊', effects: { damage: 24, block: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', effects: { damage: 26, focus: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
 /** Every card, and a quick lookup by id (CARDS_BY_ID['ember']). */
 export const ALL_CARDS = [
   ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS,
-  ...FIRE_EVO_CARDS, ...GRASS_EVO_CARDS, ...WATER_EVO_CARDS,
+  ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
 ];
 export const CARDS_BY_ID = Object.fromEntries(ALL_CARDS.map(c => [c.id, c]));
 
 const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS };
-const EVO_SETS = { fire: FIRE_EVO_CARDS, grass: GRASS_EVO_CARDS, water: WATER_EVO_CARDS };
+// Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
+// 2 = your final evolution (high tier).
+const EVO_SETS = {
+  fire:  { 1: FIRE_EVO_MID,  2: FIRE_EVO_HIGH },
+  grass: { 1: GRASS_EVO_MID, 2: GRASS_EVO_HIGH },
+  water: { 1: WATER_EVO_MID, 2: WATER_EVO_HIGH },
+};
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. */
 export function poolForType(type) {
   return [...TYPE_SETS[type], ...NEUTRAL_CARDS];
 }
 
-/** The 4 signature evolution cards for a starter's type (see evolutionChoices() in rewards.js). */
-export function evolutionCardsFor(type) {
-  return EVO_SETS[type];
+/** The 4 signature evolution cards for a starter's type at a given evolution stage (1 or 2). */
+export function evolutionCardsFor(type, stage) {
+  return (EVO_SETS[type] && EVO_SETS[type][stage]) || [];
 }
 
 /** You can own at most this many copies of one card in a run (unless the card sets its own maxCopies). */
