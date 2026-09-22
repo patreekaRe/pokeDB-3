@@ -16,35 +16,37 @@
    ============================================================ */
 
 export const ACHIEVEMENTS = [
+  // Easier, first-tier goals up front...
   {
     starter: 'torchic',
-    text: 'Defeat a boss with over half your HP left',
-    test: (s) => s.healthyBossWin,
-  },
-  {
-    starter: 'treecko',
-    text: 'Win a run visiting at most 1 rest site',
-    test: (s) => s.lightRestWin,
-  },
-  {
-    starter: 'mudkip',
-    text: 'Win a run with each Kanto starter',
-    test: (s) => ['charmander', 'bulbasaur', 'squirtle'].every(id => (s.winsBy[id] || 0) >= 1),
-  },
-  {
-    starter: 'turtwig',
     text: 'Defeat the Biome 1 boss (Snorlax)',
     test: (s) => !!s.bossesDefeated[1],
   },
   {
-    starter: 'chimchar',
+    starter: 'treecko',
     text: 'Defeat the Biome 2 boss',
     test: (s) => !!s.bossesDefeated[2],
   },
   {
-    starter: 'piplup',
+    starter: 'mudkip',
     text: 'Win a full run',
     test: (s) => s.runsWon >= 1,
+  },
+  // ...tougher, second-tier goals once you've got the basics down.
+  {
+    starter: 'turtwig',
+    text: 'Defeat a boss with over half your HP left',
+    test: (s) => s.healthyBossWin,
+  },
+  {
+    starter: 'chimchar',
+    text: 'Win a run visiting at most 1 rest site',
+    test: (s) => s.lightRestWin,
+  },
+  {
+    starter: 'piplup',
+    text: 'Win a run with each Kanto starter',
+    test: (s) => ['charmander', 'bulbasaur', 'squirtle'].every(id => (s.winsBy[id] || 0) >= 1),
   },
   // Legendaries: still the hardest unlock in the game, but Level 5 (the bot's
   // win rate there is ~10-18%) felt discouraging rather than aspirational.
