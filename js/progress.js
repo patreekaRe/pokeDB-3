@@ -8,9 +8,14 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 
-/** The three Kanto starters have no achievement, so they're always unlocked. */
+/** The three real characters are always unlocked. Every skin needs an achievement or a shop purchase. */
 export function isStarterUnlocked(starter) {
-  return !ACHIEVEMENT_FOR[starter.id] || getSave().unlocked.includes(starter.id);
+  return !!starter.free || getSave().unlocked.includes(starter.id);
+}
+
+/** True if a locked starter can be bought in the shop rather than earned. */
+export function isShopUnlock(starter) {
+  return !starter.free && !ACHIEVEMENT_FOR[starter.id];
 }
 
 /**

@@ -1,25 +1,35 @@
 /* ============================================================
-   starters.js  -  the nine starter Pokémon you can play.
+   starters.js  -  the starter Pokémon you can play.
 
    Only THREE of them are gameplay-distinct: Charmander, Bulbasaur and
-   Squirtle each define their type's real starting deck. The other six
-   (Cyndaquil, Chikorita, Totodile, Torchic, Treecko, Mudkip) are SKINS -
-   they share their type's exact deck (same array, see FIRE_DECK etc.
-   below) and only change the sprite, name and evolution line. That
-   keeps the balance work to 3 decks instead of 9; `skinOf` just
-   documents which real character a skin borrows its moves from
-   (nothing in the code reads it, it's for humans).
+   Squirtle each define their type's real starting deck (`free: true` -
+   they need no unlock at all). Every other entry is a SKIN - it shares
+   its type's exact deck (same array, see FIRE_DECK etc. below) and
+   only changes the sprite, name and evolution line. That keeps the
+   balance work to 3 decks; `skinOf` documents which real character a
+   skin borrows its moves from (nothing in the code reads it, it's for
+   humans).
+
+   Skins unlock one of two ways (see isStarterUnlocked in progress.js):
+     - achievement   listed in data/achievements.js
+     - shop          bought with PokéCoins, listed in data/shop.js
+   Either way, unlocking just adds the id to save.unlocked - the game
+   doesn't care which method got you there.
 
    Each starter has:
      line   its three evolution stages (stage 0, 1, 2)
      deck   its fixed 10-card starting deck (card ids from cards.js).
             You can't edit it. You grow your deck by winning fights.
 
-   The three Kanto starters are free. The other six are unlocked by
-   achievements (see achievements.js).
+   Legendaries (Moltres/Shaymin/Suicune) don't evolve into a different
+   species in the real games, so their "evolutions" are titles, not
+   new Pokémon - same sprite for stage 0 and 1, and the shiny recolor
+   for stage 2 ("Ascendant"), as a genuine payoff for reaching it.
 
    Sprites are Gen 5 pixel art from the PokeAPI sprites project
    (credits are in the README). The files live in assets/pokemon/.
+   Gen 6+ Pokémon don't exist in this animated style, which is why the
+   roster stops at Gen 5.
 
    (The old design - all 9 with their own hand-tuned deck - is saved
    in docs/archived-starters.md in case we bring it back later.)
@@ -30,8 +40,9 @@ const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth
 const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'bubble', 'rain-dance', 'surf', 'withdraw', 'withdraw', 'aqua-ring', 'tailwind'];
 
 export const STARTERS = [
+  /* ---------- the three real characters: free, and the only ones with a unique deck ---------- */
   {
-    id: 'charmander', type: 'fire',
+    id: 'charmander', type: 'fire', free: true,
     line: [
       { id: 'charmander', name: 'Charmander' },
       { id: 'charmeleon', name: 'Charmeleon' },
@@ -41,7 +52,7 @@ export const STARTERS = [
     deck: FIRE_DECK,
   },
   {
-    id: 'bulbasaur', type: 'grass',
+    id: 'bulbasaur', type: 'grass', free: true,
     line: [
       { id: 'bulbasaur', name: 'Bulbasaur' },
       { id: 'ivysaur',   name: 'Ivysaur' },
@@ -51,7 +62,7 @@ export const STARTERS = [
     deck: GRASS_DECK,
   },
   {
-    id: 'squirtle', type: 'water',
+    id: 'squirtle', type: 'water', free: true,
     line: [
       { id: 'squirtle',  name: 'Squirtle' },
       { id: 'wartortle', name: 'Wartortle' },
@@ -61,7 +72,7 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
 
-  /* ---------- skins: same deck as the matching Kanto starter above ---------- */
+  /* ---------- skins bought in the shop ---------- */
   {
     id: 'cyndaquil', type: 'fire', skinOf: 'charmander',
     line: [
@@ -93,6 +104,38 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
   {
+    id: 'snivy', type: 'grass', skinOf: 'bulbasaur',
+    line: [
+      { id: 'snivy',      name: 'Snivy' },
+      { id: 'servine',    name: 'Servine' },
+      { id: 'serperior',  name: 'Serperior' },
+    ],
+    blurb: 'Same grass moves as Bulbasaur. Sleek, quick, a little smug.',
+    deck: GRASS_DECK,
+  },
+  {
+    id: 'tepig', type: 'fire', skinOf: 'charmander',
+    line: [
+      { id: 'tepig',   name: 'Tepig' },
+      { id: 'pignite', name: 'Pignite' },
+      { id: 'emboar',  name: 'Emboar' },
+    ],
+    blurb: 'Same fire moves as Charmander. Snorts smoke when excited.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'oshawott', type: 'water', skinOf: 'squirtle',
+    line: [
+      { id: 'oshawott', name: 'Oshawott' },
+      { id: 'dewott',   name: 'Dewott' },
+      { id: 'samurott', name: 'Samurott' },
+    ],
+    blurb: 'Same water moves as Squirtle. Never without its scalchop.',
+    deck: WATER_DECK,
+  },
+
+  /* ---------- skins unlocked through achievements ---------- */
+  {
     id: 'torchic', type: 'fire', skinOf: 'charmander',
     line: [
       { id: 'torchic',   name: 'Torchic' },
@@ -120,6 +163,70 @@ export const STARTERS = [
       { id: 'swampert',  name: 'Swampert' },
     ],
     blurb: 'Same water moves as Squirtle, straight out of the mud.',
+    deck: WATER_DECK,
+  },
+  {
+    id: 'turtwig', type: 'grass', skinOf: 'bulbasaur',
+    line: [
+      { id: 'turtwig',  name: 'Turtwig' },
+      { id: 'grotle',   name: 'Grotle' },
+      { id: 'torterra', name: 'Torterra' },
+    ],
+    blurb: 'Same grass moves as Bulbasaur. A much sturdier shell.',
+    deck: GRASS_DECK,
+  },
+  {
+    id: 'chimchar', type: 'fire', skinOf: 'charmander',
+    line: [
+      { id: 'chimchar',  name: 'Chimchar' },
+      { id: 'monferno',  name: 'Monferno' },
+      { id: 'infernape', name: 'Infernape' },
+    ],
+    blurb: 'Same fire moves as Charmander. A flame that never goes out.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'piplup', type: 'water', skinOf: 'squirtle',
+    line: [
+      { id: 'piplup',   name: 'Piplup' },
+      { id: 'prinplup', name: 'Prinplup' },
+      { id: 'empoleon', name: 'Empoleon' },
+    ],
+    blurb: 'Same water moves as Squirtle. Proud, and dramatic about it.',
+    deck: WATER_DECK,
+  },
+
+  /* ---------- legendaries: the rarest unlock, one per type ----------
+     They don't evolve into a different species - "evolving" just gives
+     them a title, and reaching the final one reveals their shiny colours. */
+  {
+    id: 'moltres', type: 'fire', skinOf: 'charmander', legendary: true,
+    line: [
+      { id: 'moltres',        name: 'Moltres' },
+      { id: 'moltres',        name: 'Awakened Moltres' },
+      { id: 'moltres-shiny',  name: 'Ascendant Moltres' },
+    ],
+    blurb: 'A legendary flame. Same fire moves as Charmander - but you\'ll have earned this one.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'shaymin', type: 'grass', skinOf: 'bulbasaur', legendary: true,
+    line: [
+      { id: 'shaymin',        name: 'Shaymin' },
+      { id: 'shaymin',        name: 'Awakened Shaymin' },
+      { id: 'shaymin-shiny',  name: 'Ascendant Shaymin' },
+    ],
+    blurb: 'A legendary bloom. Same grass moves as Bulbasaur, wrapped in myth.',
+    deck: GRASS_DECK,
+  },
+  {
+    id: 'suicune', type: 'water', skinOf: 'squirtle', legendary: true,
+    line: [
+      { id: 'suicune',        name: 'Suicune' },
+      { id: 'suicune',        name: 'Awakened Suicune' },
+      { id: 'suicune-shiny',  name: 'Ascendant Suicune' },
+    ],
+    blurb: 'A legendary tide. Same water moves as Squirtle, carried by legend.',
     deck: WATER_DECK,
   },
 ];
