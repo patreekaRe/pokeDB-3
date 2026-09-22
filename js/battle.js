@@ -57,7 +57,8 @@ const hasRelic = (id) => battle.relics.includes(id);
  * Start a fight.
  *   run        the current run (starter, stage, deck, hp, relics, biome)
  *   encounter  who you are fighting: { def, kind, maxHp, strength }
- *   onEnd      called when the fight is over with { won, hp, damageTaken }
+ *   onEnd      called when the fight is over with
+ *              { won, hp, damageTaken, maxHit, lowestHpRatio }
  */
 export function startBattle({ run, encounter, onEnd }) {
   const def = encounter.def;
@@ -81,6 +82,8 @@ export function startBattle({ run, encounter, onEnd }) {
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
     damageTaken: 0,
+    maxHit: 0,             // the biggest single-card hit dealt this fight (for the Chimchar achievement)
+    lowestHpRatio: 1,      // the lowest your HP/maxHp ever dropped to this fight (for the Turtwig achievement)
 
     // the piles of cards
     drawPile: shuffle(run.deck.map(id => CARDS_BY_ID[id])),
@@ -204,6 +207,7 @@ async function playCard(uid) {
     lunge('player-sprite');
     await sleep(180);
     const dealt = hurtEnemy(amount);
+    b.maxHit = Math.max(b.maxHit, amount);
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
     if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
@@ -258,6 +262,7 @@ function hurtPlayer(amount) {
     pop('player-zone', '🎗️ Focus Sash!', 'note good', 300);
   }
   b.hp = Math.max(0, b.hp - through);
+  b.lowestHpRatio = Math.min(b.lowestHpRatio, b.hp / b.maxHp);
   b.damageTaken += through;
   return through;
 }
@@ -389,7 +394,7 @@ async function finish(won) {
   await sleep(1200);
   if (battle !== b) return;
 
-  b.onEnd({ won, hp: b.hp, damageTaken: b.damageTaken });
+  b.onEnd({ won, hp: b.hp, damageTaken: b.damageTaken, maxHit: b.maxHit, lowestHpRatio: b.lowestHpRatio });
 }
 
 /** Randomly reorder an array (returns a new array). */

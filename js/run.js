@@ -14,11 +14,11 @@
      deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, buildEncounter, pickEnemyId } from './data/enemies.js';
+import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
 import { BASE_HP, HP_PER_STAGE, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER } from './data/cards.js';
-import { RELICS_BY_ID } from './data/relics.js';
-import { getSave, updateSave } from './storage.js';
+import { STAGE_POWER, TYPES } from './data/cards.js';
+import { RELICS, RELICS_BY_ID } from './data/relics.js';
+import { getSave, updateSave, awardCoins } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
@@ -30,6 +30,24 @@ import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDial
 let run = null;
 
 export const isRunActive = () => run !== null && !run.over;
+
+/* ============================================================
+   PokéCoins  -  see js/data/shop.js for what they buy.
+   ============================================================ */
+const COIN_REWARDS = { fight: 3, elite: 12, eliteDisadvantage: 18, boss: 30, winBonus: 50 };
+
+/** True if the elite/boss on this node is a type that beats your starter (fighting it is a real risk). */
+function isTypeDisadvantage(node) {
+  if (!node.enemyId) return false;
+  const enemyType = TYPES[ENEMY_DEFS[node.enemyId].type];
+  return enemyType.beats === run.starter.type;
+}
+
+/** Pick one random relic for the Starting Relic Charm passive (never a rare one - those are meant to be found). */
+function randomStartingRelic() {
+  const pool = RELICS.filter(r => !r.rare && (!r.only || r.only === run.starter.type));
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 /** Called once at startup. */
 export function initRun({ onMenu, onNewRun }) {
@@ -52,25 +70,35 @@ export function abandonRun() {
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
 export function beginRun(starter, level = 0) {
+  const passives = getSave().passives;
+  const startHp = BASE_HP + passives.hpBoost * 5;   // shop passive: Max HP Boost
+
   run = {
     starter,
     level,
     mods: modsFor(level),   // the rules of this Trainer Level
     levelUnlocked: null,    // set if winning this run unlocks the next level
     stage: 0,
-    maxHp: BASE_HP,
-    hp: BASE_HP,
+    maxHp: startHp,
+    hp: startHp,
     biome: 0,
     deck: [...starter.deck],
     relics: [],
     map: null,
     current: null,        // id of the map node you are standing on
     backdrop: '',
-    rested: false,        // did you ever use a rest site? (for an achievement)
+    rested: false,         // did you ever use a rest site? (for an achievement)
+    minHpRatio: 1,         // lowest HP/maxHp reached this run (for an achievement)
     fights: 0,
-    unlocks: [],          // starters unlocked during this run
+    unlocks: [],           // starters unlocked during this run
     over: false,
   };
+
+  if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
+    const relic = randomStartingRelic();
+    if (relic) { run.relics.push(relic.id); toast(`Starting relic: ${relic.name}!`, 'ok'); }
+  }
+
   updateSave(d => { d.stats.runsStarted += 1; });
   startBiome();
 }
@@ -138,7 +166,16 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
-  updateSave(d => { d.stats.enemiesDefeated += 1; });
+  run.minHpRatio = Math.min(run.minHpRatio, result.lowestHpRatio);
+  updateSave(d => {
+    d.stats.enemiesDefeated += 1;
+    d.stats.biggestHit = Math.max(d.stats.biggestHit, result.maxHit);
+  });
+
+  const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
+  const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
+  const earned = awardCoins(coinsFor[node.type]);
+  toast(`+${earned} 💰${disadvantage ? ' (type disadvantage!)' : ''}`, 'ok');
 
   const steps = [];   // screens to show one after another
   if (node.type === 'fight') steps.push(next => offerCard('fight', next));
@@ -147,6 +184,7 @@ function afterFight(node, result) {
   if (node.type === 'boss') {
     updateSave(d => {
       d.stats.bossesDefeated[run.biome + 1] = true;
+      if (node.enemyId && !d.stats.bossIdsDefeated.includes(node.enemyId)) d.stats.bossIdsDefeated.push(node.enemyId);
       if (result.damageTaken === 0) d.stats.noDamageBoss = true;
     });
     if (run.biome === BIOMES.length - 1) return endRun(true);       // final boss: you win!
@@ -223,7 +261,7 @@ function treasureRoom() {
 }
 
 function restSite() {
-  const restHeal = run.mods.restHeal;
+  const restHeal = run.mods.restHeal + (getSave().passives.wellFed ? 0.05 : 0);   // shop passive: Well-Fed Bonus
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   showChoice({
     title: 'Pokémon Center',
@@ -277,10 +315,16 @@ function endRun(won) {
   run.over = true;
 
   if (won) {
+    const winCoins = awardCoins(COIN_REWARDS.winBonus);
+    toast(`+${winCoins} 💰 (run complete!)`, 'ok');
+
     updateSave(d => {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
       if (!run.rested) d.stats.noRestWin = true;
+      if (run.minHpRatio >= 0.3) d.stats.noLowHpWin = true;
+      const type = run.starter.type;
+      d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });
     announceUnlocks();
 
