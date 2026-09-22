@@ -16,6 +16,10 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 then open `http://localhost:8123`. Check `netstat -ano | grep LISTENING`
 first — a server from a previous session may already be running.
 
+`serve.ps1` is Windows-only. In a Linux/cloud session, serve the repo root
+with `python3 -m http.server 8123` instead. Cloud sessions should still push
+to `main` (see Conventions), not open a branch or PR.
+
 ## Architecture
 
 - **Entry point**: `index.html` loads `js/main.js` as a module. Every other
@@ -47,6 +51,32 @@ first — a server from a previous session may already be running.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
+
+## Battle screen layout
+
+There's no top HUD bar. The arena shows each fighter with a **nameplate**
+(name + HP bar) under the sprite and a row of **status badges** above it:
+round icons with a number bubble (block, burn, weakened, strength, focus,
+guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. A badge
+only renders while its status is active, and each one explains itself in
+its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
+that fighter has block. Below the arena, `.battle-controls` is a 3-column
+grid: energy orb | hand | End Turn + draw/discard counts. On phones the orb
+and End Turn share a row above the hand so the cards get the full width.
+Relics show as small icons in the arena's top-left corner (`#battle-relics`).
+Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
+
+**Watch for CSS class-name collisions.** The map screen and reward screen
+already use `.relic-row` and `.relic-icon`, and a later, unscoped rule like
+`.relic-icon { font-size: 3rem }` wins over anything earlier in the file.
+That's why battle uses `.battle-relics` / `.battle-relic`. Before adding a
+generic class name, grep `css/` and `js/` for it.
+
+The shop's top-bar button (`.shop-btn`) is gold with a pulsing glow, and
+`aria-expanded` on it drives the pressed-in "shop is open" look. Keep that
+attribute in sync if you add another way to open or close the shop:
+`toggleShop()` sets it to true, and the dialog's `close` listener in
+`js/main.js` sets it back to false.
 
 ## Conventions
 
