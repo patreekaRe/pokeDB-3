@@ -410,7 +410,7 @@ function shuffle(list) {
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   const b = battle;
-  $('hud-portrait').src = spriteUrl(b.starter, 'front', b.stage);
+  $('player-name').textContent = stageName(b.starter, b.stage);
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').classList.remove('defeated', 'lunge', 'hit');
@@ -424,13 +424,21 @@ function setupBattleScreen() {
   box.classList.toggle('sprite', !b.def.art);
   box.classList.toggle('elite', b.kind === 'elite');
   box.classList.toggle('boss', b.kind === 'boss');
+  box.title = b.def.description;
 
   $('enemy-zone').dataset.type = b.def.type;
   $('enemy-name').textContent = (b.kind === 'boss' ? '👑 ' : b.kind === 'elite' ? '💀 ' : '') + b.def.name;
-  $('enemy-type').textContent = `${TYPES[b.def.type].icon} ${TYPES[b.def.type].label}`;
+  $('enemy-type').textContent = TYPES[b.def.type].icon;
+  $('enemy-type').title = `${TYPES[b.def.type].label} type`;
   $('enemy-type').className = `chip type-${b.def.type}`;
-  $('enemy-desc').textContent = b.def.description;
   $('battle-log').textContent = '';
+
+  $('relic-row').replaceChildren(...b.relics.map(id => {
+    const relic = RELICS_BY_ID[id];
+    const node = el('span', 'relic-icon', relic.icon);
+    node.title = `${relic.name}: ${relic.text}`;
+    return node;
+  }));
 }
 
 function renderAll() {
@@ -453,16 +461,15 @@ function renderBars() {
   const b = battle;
   setBar('player', b.hp, b.maxHp);
   setBar('enemy', b.enemy.hp, b.enemy.maxHp);
-  setPill('player-block', '🛡️', 'Block', b.block);
-  setPill('player-energy', '⚡', 'Energy', `${b.energy}`);
-  setPill('draw-count', '📚', 'Draw', b.drawPile.length);
-  setPill('discard-count', '🗂️', 'Discard', b.discard.length);
-  $('end-turn-btn').disabled = b.busy || b.over;
-}
+  $('player-plate').classList.toggle('has-block', b.block > 0);
+  $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
-/** A small stat badge. The word (Block, Energy...) is hidden on phones to save room. */
-function setPill(id, icon, label, value) {
-  $(id).replaceChildren(`${icon} `, el('span', 'lbl', `${label} `), String(value));
+  const orb = $('player-energy');
+  orb.replaceChildren(el('span', 'orb-icon', '⚡'), el('b', '', String(b.energy)));
+  orb.classList.toggle('empty', b.energy === 0);
+  $('draw-count').textContent = `📚 ${b.drawPile.length}`;
+  $('discard-count').textContent = `🗂️ ${b.discard.length}`;
+  $('end-turn-btn').disabled = b.busy || b.over;
 }
 
 /** The little bubble that says what the enemy will do next. */
@@ -472,42 +479,49 @@ function renderIntent() {
   if (b.over) { box.textContent = ''; box.className = 'intent'; return; }
 
   const move = currentMove();
-  let icon = '⚔️', text = '', kind = 'attack';
+  let icon = '⚔️', value = '', kind = 'attack', detail = '';
   if (move.kind === 'attack' || move.kind === 'drain') {
-    const dmg = attackDamage(move);
     icon = move.kind === 'drain' ? '🩸' : '⚔️';
     // ▲ means the enemy's type is strong against yours, ▼ means it is weak against yours
-    const arrow = enemyTypeMultiplier() > 1 ? ' ▲' : enemyTypeMultiplier() < 1 ? ' ▼' : '';
-    text = b.guard ? `${move.name} (guarded)` : `${move.name} · ${dmg}${arrow}`;
+    const arrow = enemyTypeMultiplier() > 1 ? '▲' : enemyTypeMultiplier() < 1 ? '▼' : '';
+    value = b.guard ? '✋' : `${attackDamage(move)}${arrow}`;
+    detail = b.guard ? 'will hit your Guard' : `${attackDamage(move)} damage${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
   } else if (move.kind === 'defend') {
-    icon = '🛡️'; kind = 'defend'; text = `${move.name} · +${move.amount} block`;
+    icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
   } else {
-    icon = '💪'; kind = 'buff'; text = `${move.name} · +${move.amount} strength`;
+    icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
   box.className = `intent ${kind}`;
-  box.replaceChildren(el('span', 'intent-icon', icon), el('span', '', text));
-  box.title = 'What the enemy will do on its next turn';
+  box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', move.name));
+  box.title = `Next turn: ${move.name} (${detail})`;
 }
 
 function renderStatus() {
   const b = battle;
   const en = b.enemy;
-  const enemyChips = [];
-  if (en.block)    enemyChips.push(['🛡️', `Block ${en.block}`]);
-  if (en.burn)     enemyChips.push(['🔥', `Burn ${en.burn}`]);
-  if (en.weakened) enemyChips.push(['💨', 'Weakened']);
-  if (en.strength) enemyChips.push(['💪', `Strength +${en.strength}`]);
-  $('enemy-status').replaceChildren(...enemyChips.map(chipFor));
+  const enemyBadges = [];
+  if (en.block)    enemyBadges.push(['🛡️', en.block, `Block ${en.block}: soaks up damage until its next turn`, 'block']);
+  if (en.burn)     enemyBadges.push(['🔥', en.burn, `Burn ${en.burn}: takes ${en.burn} damage at the start of its turn`]);
+  if (en.weakened) enemyBadges.push(['💨', '', 'Weakened: its next attack deals half damage']);
+  if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
+  $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 
-  const playerChips = [];
-  if (b.focus)      playerChips.push(['🎯', `Focus +${b.focus}`]);
-  if (b.guard)      playerChips.push(['✋', 'Guard']);
-  if (b.nextEnergy) playerChips.push(['⚡', `+${b.nextEnergy} next turn`]);
-  b.relics.forEach(id => playerChips.push([RELICS_BY_ID[id].icon, '']));
-  $('player-status').replaceChildren(...playerChips.map(chipFor));
+  const playerBadges = [];
+  if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage until your next turn`, 'block']);
+  if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
+  if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
+  if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, `+${b.nextEnergy} energy next turn`, 'good']);
+  $('player-status').replaceChildren(...playerBadges.map(badgeFor));
 }
 
-const chipFor = ([icon, text]) => el('span', 'chip status', text ? `${icon} ${text}` : icon);
+/** A floating status icon above a sprite, with its number in a corner bubble. */
+function badgeFor([icon, value, title, kind = '']) {
+  const node = el('span', `badge ${kind}`, icon);
+  node.title = title;
+  node.setAttribute('aria-label', title);
+  if (value !== '') node.append(el('b', '', String(value)));
+  return node;
+}
 
 function renderHand() {
   const b = battle;

@@ -120,28 +120,14 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #battle-screen {
   display: grid;
   grid-template-columns: minmax(0, 1fr);   /* stops wide content from stretching the page */
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
   gap: 8px;
   padding: 10px 14px 6px;
   min-height: 0;
   max-width: 1200px;
 }
 
-.hud {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  background: var(--panel);
-  border: 1px solid var(--panel-edge);
-}
-.hud-player { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
 .portrait { width: 56px; height: 56px; object-fit: contain; border-radius: 12px; background: rgba(255, 255, 255, 0.1); flex: 0 0 auto; }
-.hud-info { flex: 1; min-width: 0; max-width: 460px; display: flex; flex-direction: column; gap: 6px; }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; }
-#end-turn-btn { padding: 12px 22px; font-size: 1.05rem; white-space: nowrap; }
 
 .arena {
   position: relative;
@@ -151,6 +137,81 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   align-items: end;
   padding: 4px 4px 46px;
 }
+
+.relic-row { position: absolute; top: 0; left: 4px; z-index: 2; display: flex; gap: 4px; }
+.relic-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--panel-edge);
+  cursor: help;
+}
+
+/* --- nameplates: name + HP bar under each fighter --- */
+.nameplate {
+  width: min(100%, 240px);
+  padding: 6px 10px 8px;
+  border-radius: 12px;
+  background: rgba(10, 12, 30, 0.72);
+  border: 1px solid var(--panel-edge);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
+.nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nameplate-title .chip { padding: 1px 7px; cursor: help; }
+.nameplate .bar { height: 16px; transition: border-color 0.2s, box-shadow 0.2s; }
+/* while a fighter has block, its HP bar gets a blue rim so you can tell at a glance */
+.nameplate.has-block .bar { border-color: #6fb8ff; box-shadow: 0 0 8px rgba(111, 184, 255, 0.7); }
+
+/* --- floating status badges above each sprite --- */
+.badges {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  align-items: flex-end;
+}
+.badge {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.62);
+  border: 2px solid var(--panel-edge);
+  cursor: help;
+  animation: badgeIn 0.25s ease-out;
+}
+.badge b {
+  position: absolute;
+  right: -7px;
+  bottom: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 900;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.badge.block { border-color: #6fb8ff; background: rgba(20, 60, 120, 0.8); }
+.badge.block b { background: #6fb8ff; }
+.badge.good { border-color: var(--good); }
+.badge.bad  { border-color: var(--bad); }
+.badge.bad b { background: var(--bad); color: #fff; }
+@keyframes badgeIn { from { transform: scale(0.4); opacity: 0; } }
 
 /* --- enemy --- */
 /* the enemy's frame takes its own type colour */
@@ -168,25 +229,26 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 .intent {
   min-height: 34px;
-  padding: 5px 14px;
+  padding: 4px 12px 4px 8px;
   border-radius: 999px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 800;
-  font-size: 0.92rem;
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid var(--bad);
+  cursor: help;
   animation: bob 1.8s ease-in-out infinite;
 }
 .intent:empty { visibility: hidden; }
 .intent.defend { border-color: #55b6ff; }
 .intent.buff   { border-color: var(--warn); }
 .intent-icon { font-size: 1.15rem; }
+.intent-value { font-size: 1.15rem; font-weight: 900; }
+.intent-name { font-size: 0.75rem; font-weight: 700; color: var(--muted); }
 @keyframes bob { 50% { transform: translateY(-4px); } }
 
 .enemy-portrait {
@@ -199,21 +261,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   transition: opacity 0.9s, transform 0.9s, filter 0.9s;
 }
 .enemy-portrait img { width: 100%; height: 100%; object-fit: cover; }
-.enemy-plate {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 14px;
-  background: var(--panel);
-  border: 1px solid var(--panel-edge);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.enemy-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.enemy-title strong { font-size: 1.1rem; }
-.enemy-desc { font-size: 0.78rem; color: var(--muted); }
-.status-row { display: flex; flex-wrap: wrap; gap: 5px; min-height: 0; }
-.status-row:empty { display: none; }
 .bar.enemy .bar-fill { background: #e0575b; }
 .bar.enemy .bar-fill[data-level="high"] { background: #e0575b; }
 
@@ -227,7 +274,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  width: min(100%, 300px);
   padding-bottom: 20px;
 }
 #player-sprite {
@@ -235,23 +283,22 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   width: clamp(96px, 21vh, 230px);
   height: auto;
   max-width: 92%;
-  margin-bottom: 4px;
   filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5));
 }
-.player-zone .status-row { justify-content: center; }
 
 .battle-log {
   position: absolute;
-  left: 25%;                       /* sits under your Pokémon, clear of the enemy panel */
+  left: 50%;
   bottom: 2px;
   transform: translateX(-50%);
-  width: min(46%, 560px);
-  padding: 6px 14px;
+  width: min(60%, 560px);
+  padding: 5px 14px;
   border-radius: 999px;
   text-align: center;
-  font-size: 0.88rem;
-  background: rgba(0, 0, 0, 0.62);
-  min-height: 30px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.5);
+  min-height: 28px;
 }
 .battle-log:empty { visibility: hidden; }
 
@@ -299,8 +346,40 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
 
+/* --- bottom row: energy orb | hand | end turn + piles --- */
+.battle-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "orb hand side";
+  align-items: center;
+  gap: 10px;
+}
+.energy-orb {
+  grid-area: orb;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  background: radial-gradient(circle at 35% 30%, #ffe27a, #d99a00 55%, #6b4b00);
+  border: 3px solid #fff3c4;
+  box-shadow: 0 0 18px rgba(255, 203, 5, 0.55), inset 0 -4px 8px rgba(0, 0, 0, 0.35);
+  color: #2a1a00;
+  transition: filter 0.25s, box-shadow 0.25s;
+}
+.energy-orb b { font-size: 1.7rem; font-weight: 900; }
+.orb-icon { font-size: 0.8rem; }
+.energy-orb.empty { filter: grayscale(0.85) brightness(0.7); box-shadow: none; }
+.turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#end-turn-btn { padding: 12px 22px; font-size: 1.05rem; white-space: nowrap; }
+.piles { display: flex; gap: 10px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.piles span { cursor: help; }
+
 /* --- hand --- */
-.hand-wrap { padding-top: 4px; }
+.hand-wrap { grid-area: hand; min-width: 0; padding-top: 4px; }
 .hand {
   --hand-card-w: clamp(112px, 12vw, 148px);
   display: flex;
@@ -324,24 +403,29 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .builder-head h2 { font-size: 1.3rem; }
   .builder-bar { margin: 4px -12px 0; }
 
-  /* battle: shrink the top bar and keep the hand readable */
+  /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
-  .hud { padding: 6px 8px; gap: 8px; }
   .portrait { width: 44px; height: 44px; }
-  .pill { font-size: 0.75rem; padding: 2px 8px; }
-  #end-turn-btn { padding: 10px 14px; font-size: 0.95rem; }
+  .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 4px 10px; }
+  .energy-orb { width: 52px; height: 52px; }
+  .energy-orb b { font-size: 1.35rem; }
+  .turn-side { flex-direction: row-reverse; justify-content: flex-start; gap: 12px; }
+  #end-turn-btn { padding: 10px 16px; font-size: 0.95rem; }
+  .relic-icon { width: 26px; height: 26px; font-size: 0.85rem; }
+  .relic-row { flex-direction: column; }
   .enemy-zone { width: 100%; }
-  .enemy-desc { display: none; }
+  .nameplate { padding: 4px 8px 6px; }
+  .nameplate-title strong { font-size: 0.85rem; }
+  .badge { width: 30px; height: 30px; font-size: 0.95rem; }
+  .badges { min-height: 32px; gap: 6px; }
   .enemy-portrait { width: clamp(96px, 16vh, 140px); }
   .hand { --hand-card-w: 108px; gap: 8px; }
   .fan-note { font-size: 0.64rem; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
-  .pill .lbl { display: none; }
-  .battle-log { left: 50%; width: 96%; font-size: 0.8rem; border-radius: 16px; }
+  .battle-log { width: 96%; font-size: 0.8rem; border-radius: 16px; }
 }
 
 /* Short windows (small laptops): make the battle scene a little more compact */
 @media (max-height: 760px) and (min-width: 721px) {
-  .enemy-desc { display: none; }
   .enemy-portrait { width: clamp(90px, 17vh, 190px); }
   .hand { --hand-card-w: clamp(96px, 17vh, 148px); }
 }
@@ -460,10 +544,13 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .wide-dialog .card-pool { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 
 /* ---------- enemy portraits: pixel sprites, elites and bosses ---------- */
-.enemy-portrait.sprite { background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.28), rgba(10, 12, 30, 0.85)); }
-.enemy-portrait.sprite img { object-fit: contain; padding: 10%; }
-.enemy-portrait.elite { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 30px #ff3b3b, 0 10px 24px rgba(0, 0, 0, 0.6); }
-.enemy-portrait.boss  { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 36px var(--gold), 0 10px 24px rgba(0, 0, 0, 0.6); }
+/* pixel sprites stand in the scene frameless, like your Pokémon; the glow marks elites and bosses */
+.enemy-portrait.sprite { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+.enemy-portrait.sprite img { object-fit: contain; filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+.enemy-portrait.sprite.elite img { filter: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+.enemy-portrait.sprite.boss img  { filter: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+.enemy-portrait.elite:not(.sprite) { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 30px #ff3b3b, 0 10px 24px rgba(0, 0, 0, 0.6); }
+.enemy-portrait.boss:not(.sprite)  { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 36px var(--gold), 0 10px 24px rgba(0, 0, 0, 0.6); }
 
 /* ---------- phones (kept last so it wins over the rules above) ---------- */
 @media (max-width: 720px) {

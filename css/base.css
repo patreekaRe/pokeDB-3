@@ -174,18 +174,6 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .chip.type-fire  { background: #c9431f; }
 .chip.type-water { background: #2569c7; }
 .chip.type-grass { background: #2f8f43; }
-.chip.status { background: rgba(0, 0, 0, 0.55); border: 1px solid var(--panel-edge); }
-
-.pill {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--panel-edge);
-  font-size: 0.85rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.pill.energy { background: #6b4b00; border-color: var(--gold); color: #ffe27a; }
 
 /* Health bars */
 .bar {

@@ -136,50 +136,49 @@
     <!-- ============ 5. BATTLE ============ -->
     <section id="battle-screen" class="screen" hidden>
 
-      <div class="hud">
-        <div class="hud-player">
-          <img id="hud-portrait" class="portrait pixel" alt="">
-          <div class="hud-info">
-            <div class="bar hp" role="progressbar" aria-label="Your HP">
-              <div class="bar-fill" id="player-hp-fill"></div>
-              <span class="bar-text" id="player-hp-text"></span>
-            </div>
-            <div class="pills">
-              <span class="pill" id="player-block" title="Block absorbs damage until your next turn">🛡️ 0</span>
-              <span class="pill energy" id="player-energy" title="Energy: each card costs some">⚡ 3/3</span>
-              <span class="pill" id="draw-count" title="Cards left in your draw pile">📚 0</span>
-              <span class="pill" id="discard-count" title="Cards in your discard pile">🗂️ 0</span>
-            </div>
-          </div>
-        </div>
-        <button class="btn primary" id="end-turn-btn">End Turn</button>
-      </div>
-
       <div class="arena" id="arena">
+        <div class="relic-row" id="relic-row" aria-label="Your relics"></div>
+
         <div class="enemy-zone" id="enemy-zone">
           <div class="intent" id="enemy-intent"></div>
+          <div class="badges" id="enemy-status"></div>
           <div class="enemy-portrait" id="enemy-portrait-box"><img id="enemy-img" alt=""></div>
-          <div class="enemy-plate">
-            <div class="enemy-title"><strong id="enemy-name"></strong><span id="enemy-type" class="chip"></span></div>
+          <div class="nameplate" id="enemy-plate">
+            <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-type" class="chip"></span></div>
             <div class="bar hp enemy" role="progressbar" aria-label="Enemy HP">
               <div class="bar-fill" id="enemy-hp-fill"></div>
               <span class="bar-text" id="enemy-hp-text"></span>
             </div>
-            <div class="status-row" id="enemy-status"></div>
-            <p class="enemy-desc" id="enemy-desc"></p>
           </div>
         </div>
 
         <div class="player-zone" id="player-zone">
+          <div class="badges" id="player-status"></div>
           <img id="player-sprite" class="pixel" alt="Your Pokémon">
-          <div class="status-row" id="player-status"></div>
+          <div class="nameplate" id="player-plate">
+            <div class="nameplate-title"><strong id="player-name"></strong></div>
+            <div class="bar hp" role="progressbar" aria-label="Your HP">
+              <div class="bar-fill" id="player-hp-fill"></div>
+              <span class="bar-text" id="player-hp-text"></span>
+            </div>
+          </div>
         </div>
 
         <p class="battle-log" id="battle-log" aria-live="polite"></p>
       </div>
 
-      <div class="hand-wrap">
-        <div id="hand" class="hand" aria-label="Your hand"></div>
+      <div class="battle-controls">
+        <div class="energy-orb" id="player-energy" title="Energy: each card costs some"></div>
+        <div class="hand-wrap">
+          <div id="hand" class="hand" aria-label="Your hand"></div>
+        </div>
+        <div class="turn-side">
+          <button class="btn primary" id="end-turn-btn">End Turn</button>
+          <div class="piles">
+            <span id="draw-count" title="Cards left in your draw pile"></span>
+            <span id="discard-count" title="Cards in your discard pile"></span>
+          </div>
+        </div>
       </div>
     </section>
 
