@@ -21,6 +21,7 @@ export function toggleShop(highlightId) {
 
   render();
   dialog.show();
+  $('shop-btn').setAttribute('aria-expanded', 'true');
   if (highlightId) {
     const item = $(`shop-item-${highlightId}`);
     if (item) { item.scrollIntoView({ block: 'center' }); item.classList.add('flash'); setTimeout(() => item.classList.remove('flash'), 1200); }

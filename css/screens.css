@@ -609,6 +609,30 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   white-space: nowrap;
 }
 
+/* The cart emoji renders grey on most phones, so the shop button carries its own colour */
+.icon-btn.shop-btn {
+  background: linear-gradient(180deg, #ffd84a, #ff9a2e);
+  border: 2px solid #fff3c4;
+  box-shadow: 0 0 10px rgba(255, 190, 40, 0.6);
+  animation: shopGlow 2.4s ease-in-out infinite;
+  transition: transform 0.12s, box-shadow 0.2s;
+}
+.icon-btn.shop-btn:hover { background: linear-gradient(180deg, #ffe27a, #ffab4a); transform: translateY(-1px) scale(1.06); }
+.icon-btn.shop-btn:active { transform: scale(0.94); }
+/* while the shop is open: stop pulsing, look pressed in, and wear a white ring */
+.icon-btn.shop-btn[aria-expanded="true"] {
+  animation: none;
+  background: linear-gradient(180deg, #ff9a2e, #e07a10);
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+@keyframes shopGlow {
+  50% { box-shadow: 0 0 18px 3px rgba(255, 190, 40, 0.85); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn.shop-btn { animation: none; }
+}
+
 /* ---------- 6. SHOP ---------- */
 /* Non-modal (.show(), not .showModal()) so it floats above the current
    screen like a PiP window instead of blocking it - no ::backdrop dims the

@@ -151,7 +151,11 @@ function init() {
   // A purchase made while the shop was open over some other screen (map,
   // battle, a reward choice) should still be reflected once you're back
   // looking at the start screen - refresh it every time the dialog closes.
-  $('shop-dialog').addEventListener('close', () => { renderStarters(); renderProgress(); });
+  $('shop-dialog').addEventListener('close', () => {
+    $('shop-btn').setAttribute('aria-expanded', 'false');
+    renderStarters();
+    renderProgress();
+  });
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', () => openDialog('help-dialog'));
