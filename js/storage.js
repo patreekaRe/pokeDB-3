@@ -32,13 +32,10 @@ const freshSave = () => ({
     runsWon: 0,
     enemiesDefeated: 0,
     bossesDefeated: {},       // { 1: true, 2: true, 3: true } by biome number
-    bossIdsDefeated: [],      // which specific bosses you've beaten, e.g. ['snorlax','tangrowth']
     winsBy: {},               // run wins per starter, e.g. { charmander: 2 }
     maxLevelWinByType: { fire: -1, grass: -1, water: -1 },   // highest Trainer Level won with each type, -1 = never
-    biggestHit: 0,            // the most damage you've ever dealt with one card
-    noDamageBoss: false,      // beat a boss without taking damage
-    noRestWin: false,         // won a run without resting
-    noLowHpWin: false,        // won a run without your HP ever dropping below 30%
+    healthyBossWin: false,    // beat a boss with over half your HP left
+    lightRestWin: false,      // won a run visiting at most 1 rest site
   },
 });
 

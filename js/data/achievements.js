@@ -8,18 +8,23 @@
 
    Each achievement unlocks one starter. `test` looks at your saved
    stats (see storage.js) and returns true once you have done it.
+
+   Kept deliberately forgiving: nothing here needs a flawless run.
+   The two that used to ("no damage at all", "no rest site at all")
+   were changed to "mostly" versions, since a single mistake voiding
+   an entire run felt like bad luck more than a fair challenge.
    ============================================================ */
 
 export const ACHIEVEMENTS = [
   {
     starter: 'torchic',
-    text: 'Defeat a boss without taking any damage',
-    test: (s) => s.noDamageBoss,
+    text: 'Defeat a boss with over half your HP left',
+    test: (s) => s.healthyBossWin,
   },
   {
     starter: 'treecko',
-    text: 'Win a run without visiting a rest site',
-    test: (s) => s.noRestWin,
+    text: 'Win a run visiting at most 1 rest site',
+    test: (s) => s.lightRestWin,
   },
   {
     starter: 'mudkip',
@@ -28,18 +33,18 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'turtwig',
-    text: 'Win a run without your HP ever dropping below 30%',
-    test: (s) => s.noLowHpWin,
+    text: 'Defeat the Biome 1 boss (Snorlax)',
+    test: (s) => !!s.bossesDefeated[1],
   },
   {
     starter: 'chimchar',
-    text: 'Deal 50 or more damage with a single card',
-    test: (s) => s.biggestHit >= 50,
+    text: 'Defeat the Biome 2 boss',
+    test: (s) => !!s.bossesDefeated[2],
   },
   {
     starter: 'piplup',
-    text: 'Defeat all three possible Biome 2 bosses (Tangrowth, Magmar, Lapras) across any runs',
-    test: (s) => ['tangrowth', 'magmar', 'lapras'].every(id => s.bossIdsDefeated.includes(id)),
+    text: 'Win a full run',
+    test: (s) => s.runsWon >= 1,
   },
   // Legendaries: still the hardest unlock in the game, but Level 5 (the bot's
   // win rate there is ~10-18%) felt discouraging rather than aspirational.

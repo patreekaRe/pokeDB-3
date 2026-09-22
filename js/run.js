@@ -87,8 +87,7 @@ export function beginRun(starter, level = 0) {
     map: null,
     current: null,        // id of the map node you are standing on
     backdrop: '',
-    rested: false,         // did you ever use a rest site? (for an achievement)
-    minHpRatio: 1,         // lowest HP/maxHp reached this run (for an achievement)
+    restCount: 0,          // how many rest sites you've used this run (for an achievement)
     fights: 0,
     unlocks: [],           // starters unlocked during this run
     over: false,
@@ -166,11 +165,7 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
-  run.minHpRatio = Math.min(run.minHpRatio, result.lowestHpRatio);
-  updateSave(d => {
-    d.stats.enemiesDefeated += 1;
-    d.stats.biggestHit = Math.max(d.stats.biggestHit, result.maxHit);
-  });
+  updateSave(d => { d.stats.enemiesDefeated += 1; });
 
   const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
@@ -184,8 +179,7 @@ function afterFight(node, result) {
   if (node.type === 'boss') {
     updateSave(d => {
       d.stats.bossesDefeated[run.biome + 1] = true;
-      if (node.enemyId && !d.stats.bossIdsDefeated.includes(node.enemyId)) d.stats.bossIdsDefeated.push(node.enemyId);
-      if (result.damageTaken === 0) d.stats.noDamageBoss = true;
+      if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
     if (run.biome === BIOMES.length - 1) return endRun(true);       // final boss: you win!
     announceUnlocks();
@@ -268,7 +262,7 @@ function restSite() {
     sub: 'A safe place to catch your breath.',
     options: [textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, () => {
       run.hp += heal;
-      run.rested = true;
+      run.restCount += 1;
       toast(`Healed ${heal} HP.`, 'ok');
       showMap();
     })],
@@ -321,8 +315,7 @@ function endRun(won) {
     updateSave(d => {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
-      if (!run.rested) d.stats.noRestWin = true;
-      if (run.minHpRatio >= 0.3) d.stats.noLowHpWin = true;
+      if (run.restCount <= 1) d.stats.lightRestWin = true;
       const type = run.starter.type;
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });
