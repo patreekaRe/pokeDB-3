@@ -41,20 +41,23 @@ export const ACHIEVEMENTS = [
     text: 'Defeat all three possible Biome 2 bosses (Tangrowth, Magmar, Lapras) across any runs',
     test: (s) => ['tangrowth', 'magmar', 'lapras'].every(id => s.bossIdsDefeated.includes(id)),
   },
+  // Legendaries: still the hardest unlock in the game, but Level 5 (the bot's
+  // win rate there is ~10-18%) felt discouraging rather than aspirational.
+  // Level 3 (~35-50%) is still a real skill check.
   {
     starter: 'moltres',
-    text: 'Win a run on Trainer Level 5 with a Fire starter',
-    test: (s) => s.maxLevelWinByType.fire >= 5,
+    text: 'Win a run on Trainer Level 3 with a Fire starter',
+    test: (s) => s.maxLevelWinByType.fire >= 3,
   },
   {
     starter: 'shaymin',
-    text: 'Win a run on Trainer Level 5 with a Grass starter',
-    test: (s) => s.maxLevelWinByType.grass >= 5,
+    text: 'Win a run on Trainer Level 3 with a Grass starter',
+    test: (s) => s.maxLevelWinByType.grass >= 3,
   },
   {
     starter: 'suicune',
-    text: 'Win a run on Trainer Level 5 with a Water starter',
-    test: (s) => s.maxLevelWinByType.water >= 5,
+    text: 'Win a run on Trainer Level 3 with a Water starter',
+    test: (s) => s.maxLevelWinByType.water >= 3,
   },
 ];
 
