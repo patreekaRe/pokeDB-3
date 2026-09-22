@@ -86,6 +86,7 @@ export function startBattle({ run, encounter, onEnd }) {
     drawPile: shuffle(run.deck.map(id => CARDS_BY_ID[id])),
     hand: [],
     discard: [],
+    exhaust: [],       // exhausted cards (e.g. Potion): gone for the rest of THIS fight only
 
     // the enemy
     enemy: {
@@ -189,7 +190,9 @@ async function playCard(uid) {
   b.busy = true;
   b.energy -= card.cost;
   b.hand.splice(index, 1);
-  b.discard.push(card);
+  // Exhausted cards leave the fight for good (they don't go to the discard pile,
+  // so they can't reshuffle back into your draw pile this battle).
+  if (card.exhaust) b.exhaust.push(card); else b.discard.push(card);
 
   const e = scaledEffects(card, b.stage);
   const who = stageName(b.starter, b.stage);
@@ -220,6 +223,7 @@ async function playCard(uid) {
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
   if (e.heal)       healPlayer(e.heal);
   if (e.draw)       draw(e.draw);
+  if (card.exhaust) pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
 
   renderAll();
   await sleep(220);

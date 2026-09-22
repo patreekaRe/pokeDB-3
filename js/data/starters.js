@@ -32,7 +32,7 @@ export const STARTERS = [
       { id: 'venusaur',  name: 'Venusaur' },
     ],
     blurb: 'Steady damage, with plenty of block.',
-    deck: ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth', 'razor-leaf', 'potion', 'block', 'block', 'tailwind'],
+    deck: ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth', 'razor-leaf', 'absorb', 'block', 'block', 'tailwind'],
   },
   {
     id: 'squirtle', type: 'water',
@@ -63,7 +63,7 @@ export const STARTERS = [
       { id: 'meganium',  name: 'Meganium' },
     ],
     blurb: 'A healer. Wins long fights by outlasting enemies.',
-    deck: ['vine-whip', 'vine-whip', 'absorb', 'absorb', 'synthesis', 'razor-leaf', 'block', 'block', 'potion', 'tailwind'],
+    deck: ['vine-whip', 'vine-whip', 'absorb', 'absorb', 'synthesis', 'razor-leaf', 'stun-spore', 'block', 'block', 'tailwind'],
   },
   {
     id: 'totodile', type: 'water',
@@ -83,8 +83,8 @@ export const STARTERS = [
       { id: 'combusken', name: 'Combusken' },
       { id: 'blaziken',  name: 'Blaziken' },
     ],
-    blurb: 'An aggressive glass cannon with a little healing.',
-    deck: ['ember', 'ember', 'ember', 'flare-up', 'inferno-charge', 'heat-up', 'flame-wall', 'block', 'potion', 'tailwind'],
+    blurb: 'An aggressive glass cannon. Hits fast and hits hard.',
+    deck: ['ember', 'ember', 'ember', 'flare-up', 'inferno-charge', 'heat-up', 'flame-wall', 'scorch', 'block', 'tailwind'],
   },
   {
     id: 'treecko', type: 'grass',
