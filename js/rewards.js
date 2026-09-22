@@ -3,7 +3,7 @@
    which cards and relics you are offered.
    ============================================================ */
 
-import { poolForType, MAX_COPIES } from './data/cards.js';
+import { poolForType, evolutionCardsFor, MAX_COPIES } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
 
@@ -32,6 +32,20 @@ export function cardChoices(run, source) {
     pool = pool.filter(c => c !== card);
   }
   return chosen;
+}
+
+/**
+ * Pick 2 signature evolution cards to offer when your starter evolves.
+ * Each type has 4 (see evolutionCardsFor in cards.js); you already own
+ * whichever one you picked at your last evolution, so it's filtered out
+ * here and you always get a fresh pair.
+ */
+export function evolutionChoices(run) {
+  const pool = evolutionCardsFor(run.starter.type).filter(c => {
+    const copies = run.deck.filter(x => x === c.id).length;
+    return copies < (c.maxCopies || MAX_COPIES);
+  });
+  return pool.sort(() => Math.random() - 0.5).slice(0, 2);
 }
 
 /** Pick up to 3 relics you don't already have and that suit your starter. */

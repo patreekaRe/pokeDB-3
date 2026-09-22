@@ -23,7 +23,7 @@ import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
-import { cardChoices, relicChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog } from './ui.js';
 
@@ -151,7 +151,7 @@ function afterFight(node, result) {
     });
     if (run.biome === BIOMES.length - 1) return endRun(true);       // final boss: you win!
     announceUnlocks();
-    steps.push(next => evolve(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next));
+    steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next));
   }
 
   runSteps(steps, () => {
@@ -179,6 +179,23 @@ function offerCard(source, next) {
     options: cards.map(card => cardOption(card, run.stage, () => {
       run.deck.push(card.id);
       toast(`${card.name} added to your deck.`, 'ok');
+      next();
+    })),
+    onSkip: next,
+  });
+}
+
+/** The "choose 1 of 2" screen for a new signature move after evolving. */
+function offerEvolutionCard(next) {
+  const cards = evolutionChoices(run);
+  if (!cards.length) return next();
+
+  showChoice({
+    title: `${stageName(run.starter, run.stage)} learned a new move!`,
+    sub: 'Evolving unlocked a powerful signature move. Choose one to add to your deck.',
+    options: cards.map(card => cardOption(card, run.stage, () => {
+      run.deck.push(card.id);
+      toast(`${card.name} added to your deck!`, 'ok');
       next();
     })),
     onSkip: next,
