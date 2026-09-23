@@ -43,7 +43,7 @@ const TRACKS = {
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1.
 const SOUNDS = {
-  heal: { url: 'assets/audio/sfx/heal.mp3' },   // the Pokémon Center chime
+  heal: { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
 };
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
 // Pokémon without a cry stay silent instead of logging a 404 every fight.
