@@ -107,16 +107,40 @@ generic class name, grep `css/` and `js/` for it.
 The top `.run-card` shows your Pokémon inside `.hp-ring`, an SVG ring that
 *is* the HP bar (`pathLength="100"`, so `strokeDashoffset = 100 - hp%`;
 `data-level` turns it yellow/red and it pulses when low), then the name and
-two round `.run-icon` buttons (emoji + count bubble, no text; the label is
-set as title/aria-label in `showMap()`): Deck (the deck dialog) and Relics.
-The card has no box around it, like the battle screen. Relics and the
-map Key (next to the biome name) are both `.drop` drop-downs, wired by
-`DROPS` / `initDrops()` in `js/run.js`: opening one closes the other, and
-they close on an outside tap, Escape, or whenever `showMap()` runs. Their
-rows reuse the How to play `.howto-li` / `.howto-node` styles, so keep the
-key's wording in step with the How to play map slide. The run card has
-`z-index: 6` so the Relics drop-down renders above the map heading that
-follows it.
+one `.run-icon` button: the **Bag** (a pixel backpack drawn as an inline SVG
+in `index.html`). The Bag is a `.drop` drop-down with three pockets, like the
+Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics
+and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
+through `POCKETS` in order, and the last pocket is remembered. It's wired by
+`initBag()` / `showPocket()` / `closeBag()` in `js/run.js` and closes on an
+outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
+play `.howto-li` / `.howto-node` styles (map rooms use `.howto-node.town`),
+so keep the Key's wording in step with the How to play map slide. The run
+card has `z-index: 6` so the Bag renders above the map that follows it.
+
+The map itself is drawn like the Pokégear Town Map from Gold/Silver
+(rendering only: the data from `generateMap()` and the saved-run shape are
+unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
+`renderMap()` in `js/map.js`:
+- Everything snaps to a tile grid (`TILE`, `GRID_W`/`GRID_H`, `colX()`,
+  `rowY()`; the boss sits on top, a start spot below floor 0). `#map` gets
+  `--grid-w`/`--grid-h` and keeps that aspect ratio; CSS sizes rooms in
+  tiles, so everything scales with the map's width.
+- Terrain and routes are painted pixel by pixel into a small `<canvas>`
+  (`.map-terrain`, `image-rendering: pixelated`). `PALETTES` picks each
+  biome's ground and blobs (water, mountain, trees, lava), grown only in
+  the gaps between routes by a PRNG seeded from the node ids + biome, so a
+  refresh draws the same terrain. Water and lava drift on a timer while the
+  map screen shows (off under `prefers-reduced-motion`).
+- Every link runs up, jogs sideways on the row halfway to the next floor,
+  then up again. Paths never cross, so jogs on the same row merge like
+  crossroads. Routes are cream; walked ones get thick red dashes and the
+  routes you can take next are white.
+- Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
+  drawn inside, for tap size): orange, red for elites, a gold boss. Visited
+  greys out, reachable blinks. `.node-badge` scouts elite/boss types. Your
+  starter's sprite (`.map-trainer`) stands on the current room like the
+  Pokégear's trainer head.
 
 The shop's top-bar button (`.shop-btn`) has no chrome: it's a CSS Poké Mart
 (`.mart`, sized in em so one `font-size` scales it; also used small on the
@@ -125,6 +149,16 @@ How to play shop slide), and
 attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in
 `js/main.js` sets it back to false.
+
+## Windows
+
+Every `.dialog`, the Bag and the Poké Ball menu are light Pokégear windows:
+muted parchment inside a chunky grey frame, square corners. The colours are
+the `--win-*` tokens in `:root` (`css/base.css`); tune the tone there. Inside
+a `.dialog` the usual tokens (`--ink`, `--muted`, `--panel`, `--gold`...) are
+re-pointed to dark-on-parchment values, so most content re-themes itself.
+Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
+`.dialog ...` override in `css/base.css`. Game cards keep their own look.
 
 ## Top bar and start screen
 

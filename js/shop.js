@@ -58,7 +58,8 @@ function skinTile(item) {
   if (owned) {
     node.append(el('span', 'shop-owned', '✅ Owned'));
   } else {
-    const btn = el('button', 'btn small primary', `Buy · ${item.cost} 💰`);
+    const btn = el('button', 'btn small primary', `${item.cost} 💰`);
+    btn.setAttribute('aria-label', `Buy ${starter.line[0].name} for ${item.cost} PokéCoins`);
     btn.addEventListener('click', () => buy(item.cost, () => {
       updateSave(d => { d.unlocked.push(item.id); });
       toast(`${starter.line[0].name} unlocked!`, 'ok');
@@ -83,7 +84,8 @@ function passiveTile(item) {
     node.append(el('span', 'shop-owned', '✅ Maxed'));
   } else {
     const cost = item.costs[level];
-    const btn = el('button', 'btn small primary', `Buy · ${cost} 💰`);
+    const btn = el('button', 'btn small primary', `${cost} 💰`);
+    btn.setAttribute('aria-label', `Buy ${item.name} for ${cost} PokéCoins`);
     btn.addEventListener('click', () => buy(cost, () => {
       updateSave(d => {
         if (item.maxLevel > 1) d.passives[item.id] += 1;

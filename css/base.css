@@ -24,6 +24,15 @@
 
   --radius: 16px;
   --topbar-h: 52px;
+  /* Pokégear windows (dialogs, the Bag, the Poké Ball menu): a muted parchment that sits between the dark game and a bright menu */
+  --win-bg: #e4dcc4;
+  --win-panel: #d6ccae;
+  --win-edge: #b8aa84;
+  --win-tile: #eee7d2;
+  --win-shadow: #9c8c64;
+  --win-ink: #241c14;
+  --win-muted: #574b36;
+  --win-gold: #8e4c06;
   --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
 }
 
@@ -157,6 +166,32 @@ h1, h2, h3, h4, p { margin: 0; }
   flex: 0 0 auto;
 }
 #music-btn[aria-pressed="false"] .mi-label { color: var(--muted); }
+
+/* The menu is a light Pokégear window too, with a blinking ▶ cursor on the item you point at, like the Gold/Silver start menu */
+.ball-menu-panel {
+  --ink: var(--win-ink);
+  --muted: var(--win-muted);
+  padding: 8px;
+  color: var(--ink);
+  border-radius: 0;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+.ball-menu-panel::before { display: none; }
+.ball-menu-panel .menu-item { position: relative; padding-left: 24px; border-radius: 0; color: var(--ink); }
+.ball-menu-panel .menu-item:hover, .ball-menu-panel .menu-item:focus-visible { background: var(--win-panel); }
+.ball-menu-panel .menu-item:hover::before, .ball-menu-panel .menu-item:focus-visible::before {
+  content: '▶';
+  position: absolute;
+  left: 8px;
+  font-size: 0.7rem;
+  animation: cursorBlink 1s steps(1) infinite;
+}
+@keyframes cursorBlink { 50% { opacity: 0; } }
+.ball-menu-panel .mi-icon { background: none; border-radius: 0; }
 @keyframes menuDrop {
   from { opacity: 0; transform: translateY(-6px) scale(0.92); }
   to   { opacity: 1; transform: none; }
@@ -311,6 +346,30 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .dialog p, .dialog li { margin-bottom: 8px; }
 .dialog a { color: var(--gold); }
 .dialog.small-dialog { width: min(400px, 92vw); }
+
+/* Every window is a light Pokégear menu, like the Bag: cream inside a chunky grey frame.
+   Re-pointing the colour tokens here re-themes whatever sits inside a window; only the
+   game cards keep their own dark look. */
+.dialog {
+  --ink: var(--win-ink);
+  --muted: var(--win-muted);
+  --panel: var(--win-panel);
+  --panel-edge: var(--win-edge);
+  --gold: var(--win-gold);
+  border-radius: 0;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+.dialog h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
+.dialog :not(.card, .card *) { text-shadow: none; }
+.dialog .hint, .dialog .shop-item-text { color: var(--muted); }
+.dialog .howto-head h3 { color: #283060; }
+.dialog .howto-prev { color: var(--ink); background: var(--panel); }
+.dialog .howto-dot { background: var(--panel-edge); }
+.dialog .shop-item { border-radius: 0; border: 3px solid var(--panel-edge); background: var(--win-tile); color: var(--ink); box-shadow: 2px 2px 0 var(--win-shadow); }
+.dialog .panel { border-radius: 0; backdrop-filter: none; }
+.dialog .btn:not(.primary, .danger) { color: var(--ink); background: var(--panel); border-color: var(--panel-edge); }
 .dialog-actions {
   display: flex;
   gap: 10px;

@@ -815,7 +815,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
    Styled after the Gold/Silver Bag screen: a cream menu in the grey frame, a "◀ pocket ▶"
    header, pocket tabs you can tap, and a blinking ▲ cursor under the open pocket. */
 .bag-sprite { width: 32px; height: 32px; }
-.bag { width: min(340px, calc(100vw - 24px)); padding: 10px; background: #f8f8e8; color: #282018; }
+.bag { width: min(340px, calc(100vw - 24px)); padding: 10px; background: var(--win-bg); color: var(--win-ink); }
 .bag-head { display: flex; align-items: center; justify-content: space-between; background: #283060; box-shadow: inset 0 0 0 2px #303038; }
 .bag-head strong { font-size: 0.95rem; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; }
 .bag-flip { width: 36px; height: 34px; padding: 0; border: 0; background: none; color: #f8d030; font-size: 0.95rem; animation: bagBlink 1s steps(1) infinite; }
@@ -830,12 +830,12 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   place-items: center;
   padding: 0;
   border-radius: 0;
-  border: 3px solid #b8a888;
-  background: #e8e0c8;
-  box-shadow: 2px 2px 0 #a09070;
+  border: 3px solid var(--win-edge);
+  background: var(--win-panel);
+  box-shadow: 2px 2px 0 var(--win-shadow);
   font-size: 1.3rem;
 }
-.bag-pocket[aria-selected="true"] { border-color: #f89030; background: #fff; transform: translateY(-3px); box-shadow: 2px 5px 0 #a09070; }
+.bag-pocket[aria-selected="true"] { border-color: #f89030; background: var(--win-tile); transform: translateY(-3px); box-shadow: 2px 5px 0 var(--win-shadow); }
 .bag-pocket[aria-selected="true"]::after {
   content: '▲';
   position: absolute;
@@ -843,7 +843,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   bottom: -19px;
   transform: translateX(-50%);
   font-size: 0.6rem;
-  color: #282018;
+  color: var(--win-ink);
   animation: bagBlink 1s steps(1) infinite;
 }
 .bag-pocket b {
@@ -861,11 +861,11 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   font-size: 0.7rem;
   font-weight: 900;
 }
-.bag .howto-li { background: none; border: 0; border-bottom: 2px dashed #d8d0b0; }
+.bag .howto-li { background: none; border: 0; border-bottom: 2px dashed var(--win-edge); }
 .bag .howto-li:last-child { border-bottom: 0; }
-.bag .howto-li-text small, .bag .drop-note, .bag .drop-empty { color: #6a5e48; }
+.bag .howto-li-text small, .bag .drop-note, .bag .drop-empty { color: var(--win-muted); }
 .bag-deck-text { margin: 4px 0 12px; font-size: 0.9rem; text-align: center; }
-.bag #run-deck-btn { width: 100%; }
+.bag #run-deck-btn { width: 100%; color: var(--win-ink); background: var(--win-panel); border-color: var(--win-edge); }
 
 /* ---------- the map: a Pokégear-style town map ----------
    js/map.js paints terrain and routes onto a small canvas scaled up with sharp pixels,
@@ -1111,7 +1111,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   transform: translate(-50%, -50%);
   margin: 0;
   z-index: 90;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 #shop-dialog .shop-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
 #shop-dialog .panel + .panel { margin-top: 14px; }
