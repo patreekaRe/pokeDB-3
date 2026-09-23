@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
-import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
+import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER, TYPES, CARDS_BY_ID } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
@@ -102,10 +102,11 @@ function checkpoint() {
 
 function restoreRun(saved) {
   if (saved.version !== RUN_SAVE_VERSION) throw new Error('old run save');
-  const starter = STARTERS_BY_ID[saved.starter];
+  const starterById = (id) => STARTERS_BY_ID[RENAMED_STARTERS[id] || id];
+  const starter = starterById(saved.starter);
   const known = (ids, table) => ids.every(id => table[id]);
   if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0)
-      || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.unlocks, STARTERS_BY_ID)) {
+      || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !saved.unlocks.every(starterById)) {
     throw new Error('bad run save');
   }
 
@@ -123,7 +124,7 @@ function restoreRun(saved) {
     starter,
     mods: modsFor(saved.level),
     map: { floors, boss: byId.boss, byId },
-    unlocks: saved.unlocks.map(id => STARTERS_BY_ID[id]),
+    unlocks: saved.unlocks.map(starterById),
     over: false,
   };
 }

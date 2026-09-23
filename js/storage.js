@@ -14,6 +14,8 @@
    still works, it just can't remember anything.
    ============================================================ */
 
+import { RENAMED_STARTERS } from './data/starters.js';
+
 const KEY = 'pokedb.save.v2';
 
 const freshSave = () => ({
@@ -48,7 +50,7 @@ function load() {
     if (raw) {
       const saved = JSON.parse(raw);
       const base = freshSave();
-      return {
+      const merged = {
         ...base, ...saved,
         passives: { ...base.passives, ...saved.passives },
         stats: {
@@ -56,9 +58,22 @@ function load() {
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },
         },
       };
+      return renameStarters(merged);
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
+}
+
+/** A starter that was swapped out (Shaymin -> Virizion) carries its unlock and wins over to the new one. */
+function renameStarters(save) {
+  for (const [from, to] of Object.entries(RENAMED_STARTERS)) {
+    if (save.unlocked.includes(from)) save.unlocked = [...new Set(save.unlocked.map(id => (id === from ? to : id)))];
+    if (save.stats.winsBy[from]) {
+      save.stats.winsBy[to] = (save.stats.winsBy[to] || 0) + save.stats.winsBy[from];
+      delete save.stats.winsBy[from];
+    }
+  }
+  return save;
 }
 
 function persist() {

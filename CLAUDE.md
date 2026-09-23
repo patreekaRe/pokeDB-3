@@ -45,6 +45,9 @@ to `main` (see Conventions), not open a branch or PR.
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
   `-shiny` suffixed sprite id for a visual payoff on final evolution.
+  Shaymin was swapped for Virizion; `RENAMED_STARTERS` in
+  `js/data/starters.js` moves an old id's unlock, wins and saved run over
+  to the new one (add to it if a starter is ever replaced again).
 - **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
   centred alone on the last grid row). It unlocks once every other starter
   is unlocked; that achievement must stay last in `ACHIEVEMENTS`, since

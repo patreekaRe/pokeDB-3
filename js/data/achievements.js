@@ -60,7 +60,7 @@ export const ACHIEVEMENTS = [
     test: (s) => s.maxLevelWinByType.fire >= 3,
   },
   {
-    starter: 'shaymin',
+    starter: 'virizion',
     text: 'Win a run on Trainer Level 3 with a Grass starter',
     test: (s) => s.maxLevelWinByType.grass >= 3,
   },

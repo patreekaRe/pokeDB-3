@@ -21,7 +21,7 @@
      deck   its fixed 10-card starting deck (card ids from cards.js).
             You can't edit it. You grow your deck by winning fights.
 
-   Legendaries (Moltres/Shaymin/Suicune) don't evolve into a different
+   Legendaries (Moltres/Virizion/Suicune) don't evolve into a different
    species in the real games, so their "evolutions" are titles, not
    new Pokémon - same sprite for stage 0 and 1, and the shiny recolor
    for stage 2 ("Ascendant"), as a genuine payoff for reaching it.
@@ -210,13 +210,13 @@ export const STARTERS = [
     deck: FIRE_DECK,
   },
   {
-    id: 'shaymin', type: 'grass', skinOf: 'bulbasaur', legendary: true,
+    id: 'virizion', type: 'grass', skinOf: 'bulbasaur', legendary: true,
     line: [
-      { id: 'shaymin',        name: 'Shaymin' },
-      { id: 'shaymin',        name: 'Awakened Shaymin' },
-      { id: 'shaymin-shiny',  name: 'Ascendant Shaymin' },
+      { id: 'virizion',       name: 'Virizion' },
+      { id: 'virizion',       name: 'Awakened Virizion' },
+      { id: 'virizion-shiny', name: 'Ascendant Virizion' },
     ],
-    blurb: 'A legendary bloom. Same grass moves as Bulbasaur, wrapped in myth.',
+    blurb: 'A legendary guardian of the forest. Same grass moves as Bulbasaur, swift as the wind.',
     deck: GRASS_DECK,
   },
   {
@@ -266,3 +266,6 @@ export const BACKDROPS = {
 /** Hit points at each evolution stage: BASE_HP, then +HP_PER_STAGE for each evolution. */
 export const BASE_HP = 70;
 export const HP_PER_STAGE = 20;
+
+/** Starters that were swapped for another (old id -> new id), so saves keep what they earned. */
+export const RENAMED_STARTERS = { shaymin: 'virizion' };
