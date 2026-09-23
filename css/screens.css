@@ -1284,6 +1284,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .ach-text strong { font-size: 0.95rem; }
 .ach:not(.done) .ach-text span { color: var(--muted); }
 .ach-status { font-size: 1.2rem; }
+.ach-status .pokeball { font-size: 2rem; margin: 0; animation: none; }   /* a caught Poké Ball, sized in em */
 
 @media (max-width: 420px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
