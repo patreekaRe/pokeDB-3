@@ -81,7 +81,7 @@ attribute in sync if you add another way to open or close the shop:
 ## Music
 
 `js/audio.js` plays one looping track at a time from `assets/audio/`:
-`title` on every non-battle screen (triggered in `showScreen()` in
+`title` on the menus and map (triggered in `showScreen()` in
 `js/ui.js`), `wild` / `elite` / `boss` chosen by `encounter.kind` in
 `startBattle()`, `victory` from the moment an enemy faints (`finish()` in
 `js/battle.js`) through the reward picks, and `center` at rest sites
@@ -91,7 +91,8 @@ Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to
 the map. Sound effects are decoded buffers played with `playSound()`; to
 add one, list it in `SOUNDS` and drop the MP3 in `assets/audio/sfx/`
-(attack hit sounds were planned but are on hold). Tracks crossfade and each file downloads only the first
+(attack hit sounds were planned but are on hold). Tracks crossfade and
+each file downloads only the first
 time it's needed. Title resumes where it left off; battle tracks restart
 each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
 128 kbps).
