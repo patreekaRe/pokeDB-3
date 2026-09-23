@@ -709,12 +709,13 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .evo-hp { font-size: 0.8rem; color: var(--muted); }
 .evo-arrow { font-size: 1.6rem; color: var(--gold); font-weight: 900; }
 
-/* ---------- run card (top of the map): who you are, your HP, deck and relics ---------- */
-/* z-index: its blur makes a stacking context, so the Relics drop-down can only rise above the map heading if the card does */
-.run-card { position: relative; z-index: 6; display: flex; align-items: center; gap: 14px; padding: 10px 12px 12px; }
+/* ---------- run card (top of the map): who you are, your HP, deck and relics ----------
+   No box around it: like the battle screen, everything floats on the backdrop with a shadow.
+   z-index lifts the Relics drop-down above the map heading that comes after it. */
+.run-card { position: relative; z-index: 6; display: flex; align-items: center; gap: 14px; padding: 4px 2px 8px; }
 
 /* Your Pokémon inside a ring that is its HP bar: it drains clockwise and goes green -> yellow -> red */
-.hp-ring { --hp-color: var(--good); position: relative; flex: none; width: 78px; height: 78px; }
+.hp-ring { --hp-color: var(--good); position: relative; flex: none; width: 78px; height: 78px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)); }
 .hp-ring[data-level="mid"] { --hp-color: var(--warn); }
 .hp-ring[data-level="low"] { --hp-color: var(--bad); }
 .hp-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
@@ -748,27 +749,45 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .hp-ring[data-level="low"] .hp-ring-fill { animation: none; }
 }
 
-.run-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.run-sub { font-size: 0.78rem; color: var(--muted); }
-.run-pill {
+.run-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
+.run-info strong { font-size: 1.1rem; }
+.run-sub { font-size: 0.8rem; color: #dfe3ff; }
+
+/* Deck and Relics: round frosted buttons (like the Shop's) with a count bubble */
+.run-icon {
+  position: relative;
   flex: none;
-  width: 60px;
-  padding: 6px 0 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  border-radius: 12px;
-  border: 1px solid var(--panel-edge);
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--ink);
-  font-size: 1rem;
-  line-height: 1.1;
-  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(12, 14, 34, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  font-size: 1.45rem;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
-.run-pill:hover, .run-pill[aria-expanded="true"] { border-color: var(--accent); background: rgba(255, 255, 255, 0.12); }
-.run-pill:active { transform: scale(0.94); }
-.run-pill small { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.run-icon:hover, .run-icon[aria-expanded="true"] { background: rgba(40, 46, 96, 0.75); border-color: var(--accent); }
+.run-icon:active { transform: scale(0.92); }
+.run-icon b {
+  position: absolute;
+  right: -5px;
+  top: -4px;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-size: 0.75rem;
+  font-weight: 900;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
 .relic-node { background: linear-gradient(165deg, #3b3f78, #22264f); border-color: var(--gold); }
 
 /* ---------- biome name + the map key ---------- */
@@ -787,14 +806,17 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   justify-self: end;
   padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid var(--panel-edge);
-  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(12, 14, 34, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
   color: var(--ink);
   font-weight: 800;
   font-size: 0.85rem;
   white-space: nowrap;
 }
-.map-key-btn:hover, .map-key-btn[aria-expanded="true"] { border-color: var(--gold); }
+.map-key-btn:hover, .map-key-btn[aria-expanded="true"] { background: rgba(40, 46, 96, 0.75); border-color: var(--gold); }
 
 /* ---------- the map's drop-downs (Relics, Key) ---------- */
 .drop {

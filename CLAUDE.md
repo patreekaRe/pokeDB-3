@@ -107,14 +107,16 @@ generic class name, grep `css/` and `js/` for it.
 The top `.run-card` shows your Pokémon inside `.hp-ring`, an SVG ring that
 *is* the HP bar (`pathLength="100"`, so `strokeDashoffset = 100 - hp%`;
 `data-level` turns it yellow/red and it pulses when low), then the name and
-two `.run-pill` buttons: Deck (the deck dialog) and Relics. Relics and the
+two round `.run-icon` buttons (emoji + count bubble, no text; the label is
+set as title/aria-label in `showMap()`): Deck (the deck dialog) and Relics.
+The card has no box around it, like the battle screen. Relics and the
 map Key (next to the biome name) are both `.drop` drop-downs, wired by
 `DROPS` / `initDrops()` in `js/run.js`: opening one closes the other, and
 they close on an outside tap, Escape, or whenever `showMap()` runs. Their
 rows reuse the How to play `.howto-li` / `.howto-node` styles, so keep the
 key's wording in step with the How to play map slide. The run card has
-`z-index: 6` because its backdrop blur makes a stacking context; without
-it the Relics drop-down renders under the map heading.
+`z-index: 6` so the Relics drop-down renders above the map heading that
+follows it.
 
 The shop's top-bar button (`.shop-btn`) has no chrome: it's a CSS Poké Mart
 (`.mart`, sized in em so one `font-size` scales it; also used small on the

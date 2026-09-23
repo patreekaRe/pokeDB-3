@@ -135,7 +135,7 @@
 
     <!-- ============ 3. MAP ============ -->
     <section id="map-screen" class="screen" hidden>
-      <div class="run-card panel">
+      <div class="run-card">
         <!-- the ring around your Pokémon is its HP bar -->
         <div class="hp-ring" id="run-hp-ring" role="progressbar" aria-label="Your HP" aria-valuemin="0">
           <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -149,8 +149,8 @@
           <div class="run-name"><strong id="run-title"></strong> <span id="run-level" class="chip level-chip" hidden></span></div>
           <small class="run-sub" id="run-sub"></small>
         </div>
-        <button class="run-pill" id="run-deck-btn" title="See your deck"><span>🃏 <b id="run-deck-count">10</b></span><small>Deck</small></button>
-        <button class="run-pill" id="run-relics-btn" title="See your relics" aria-expanded="false" aria-controls="relics-drop"><span>🎒 <b id="run-relic-count">0</b></span><small>Relics</small></button>
+        <button class="run-icon" id="run-deck-btn"><span aria-hidden="true">🃏</span><b id="run-deck-count" aria-hidden="true">10</b></button>
+        <button class="run-icon" id="run-relics-btn" aria-expanded="false" aria-controls="relics-drop"><span aria-hidden="true">🎒</span><b id="run-relic-count" aria-hidden="true">0</b></button>
         <div class="drop panel" id="relics-drop" hidden>
           <div id="relics-list" class="howto-list"></div>
           <p class="drop-note">Relics work on their own, every fight, for the rest of the run.</p>

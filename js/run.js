@@ -208,6 +208,8 @@ function showMap() {
   $('biome-name').textContent = biome.name;
   $('run-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = String(run.relics.length);
+  labelIcon('run-deck-btn', `Your deck: ${run.deck.length} cards`);
+  labelIcon('run-relics-btn', `Your relics: ${run.relics.length}`);
   $('run-level').hidden = run.level === 0;
   $('run-level').textContent = `Level ${run.level}`;
   $('run-sub').textContent = run.stage < 2 ? 'Beat the boss to evolve' : 'Fully evolved';
@@ -227,6 +229,11 @@ function showMap() {
   renderMap(run.map, run.current, enterNode);
   showScreen('map-screen');
   playMusic(`map${run.biome + 1}`);
+}
+
+function labelIcon(id, label) {
+  $(id).title = label;
+  $(id).setAttribute('aria-label', label);
 }
 
 /* The map's drop-downs (Relics and Key): [button id, panel id]. Opening one closes the other. */
