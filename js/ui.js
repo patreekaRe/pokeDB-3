@@ -30,7 +30,8 @@ export function showScreen(id) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   $('home-btn').hidden = id === 'start-screen';   // no "menu" button needed on the menu
   document.body.dataset.screen = id;
-  if (id !== 'battle-screen') playMusic('title');   // battle.js picks the fight's own track
+  // battles and reward screens pick their own track (fight music, victory, Pokémon Center)
+  if (id !== 'battle-screen' && id !== 'reward-screen') playMusic('title');
   window.scrollTo(0, 0);
 }
 

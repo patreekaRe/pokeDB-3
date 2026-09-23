@@ -83,7 +83,10 @@ attribute in sync if you add another way to open or close the shop:
 `js/audio.js` plays one looping track at a time from `assets/audio/`:
 `title` on every non-battle screen (triggered in `showScreen()` in
 `js/ui.js`), `wild` / `elite` / `boss` chosen by `encounter.kind` in
-`startBattle()`, and `center` at rest sites (`restSite()` in `js/run.js`).
+`startBattle()`, `victory` from the moment an enemy faints (`finish()` in
+`js/battle.js`) through the reward picks, and `center` at rest sites
+(`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the
+reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to
 the map. Sound effects are decoded buffers played with `playSound()`; to

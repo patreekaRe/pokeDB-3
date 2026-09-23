@@ -1,9 +1,10 @@
 /* ============================================================
    audio.js  -  background music and sound effects.
 
-   MUSIC: one looping track plays at a time: 'title' on every screen
-   except battles and rest sites, 'wild' / 'elite' / 'boss' during fights
-   and 'center' at a Pokémon Center. Switching tracks crossfades.
+   MUSIC: one looping track plays at a time: 'title' on the menus and map,
+   'wild' / 'elite' / 'boss' during fights, 'victory' from the moment an
+   enemy faints until you're back on the map, and 'center' at a Pokémon
+   Center. Switching tracks crossfades.
 
    Why the Web Audio API instead of plain <audio> elements: iPhones ignore
    an <audio> element's .volume, so fades would be impossible there. Each
@@ -25,11 +26,12 @@ import { getSave, updateSave } from './storage.js';
 const $ = (id) => document.getElementById(id);   // not imported from ui.js, which imports this file
 
 const TRACKS = {
-  title:  'assets/audio/title.mp3',
-  wild:   'assets/audio/wild.mp3',
-  elite:  'assets/audio/elite.mp3',
-  boss:   'assets/audio/boss.mp3',
-  center: 'assets/audio/center.mp3',
+  title:   'assets/audio/title.mp3',
+  wild:    'assets/audio/wild.mp3',
+  elite:   'assets/audio/elite.mp3',
+  boss:    'assets/audio/boss.mp3',
+  center:  'assets/audio/center.mp3',
+  victory: 'assets/audio/victory.mp3',
 };
 const SOUNDS = {
   heal:        'assets/audio/sfx/heal.mp3',        // the Pokémon Center chime
@@ -64,7 +66,7 @@ export function initAudio() {
  * Switch to a track, or pass null for silence. Does nothing if it's
  * already the one playing.
  * restart: start from the beginning instead of where it last stopped.
- * cut:     stop the old track instantly instead of fading it out.
+ * cut:     switch instantly (no fade out, no fade in), e.g. for a fanfare.
  */
 export function playMusic(name, { restart = false, cut = false } = {}) {
   if (current === name) return;
@@ -73,7 +75,12 @@ export function playMusic(name, { restart = false, cut = false } = {}) {
   if (previous) cut ? stop(previous) : fadeOut(previous);
   if (!name) return;
   if (restart && players[name]) players[name].el.currentTime = 0;
-  if (!getSave().muted) fadeIn(name);
+  if (!getSave().muted) fadeIn(name, cut);
+}
+
+/** Start downloading a track ahead of time so it can start the moment it's needed. */
+export function preloadMusic(name) {
+  player(name);
 }
 
 /** Start downloading effects ahead of time so their first play isn't delayed. */
@@ -157,9 +164,10 @@ function rampTo(gain, value) {
   gain.gain.linearRampToValueAtTime(value, now + FADE);
 }
 
-function fadeIn(name) {
+function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
-  rampTo(gain, 1);
+  if (instant) { gain.gain.cancelScheduledValues(ctx.currentTime); gain.gain.setValueAtTime(1, ctx.currentTime); }
+  else rampTo(gain, 1);
   el.play().catch(() => { /* blocked until the first tap; unlock() retries */ });
 }
 
