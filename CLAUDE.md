@@ -176,8 +176,11 @@ a `.dialog` the usual tokens (`--ink`, `--muted`, `--panel`, `--gold`...) are
 re-pointed to dark-on-parchment values, so most content re-themes itself.
 Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
 `.dialog ...` override in `css/base.css`. Game cards keep their own look.
-Window text (and the HP bar and biome sign) uses the Pixelify Sans Google
-Font, loaded in `<head>` next to Sniglet; `.dialog .card` resets to the
+Window text (and the HP bar, biome sign, PP box...) uses Press Start 2P, the
+8x8 Game Boy-style font, as `var(--pixel-font)`. It's declared by hand as
+"PokeDB Pixel" at the top of `css/base.css` with `size-adjust: 66%` (its
+letters are far bigger than other fonts' at the same size; `font-size-adjust`
+measured it inconsistently, so don't go back to that). `.card` resets to the
 normal font so cards read the same as in battle. Every `.btn` is a Gen 1-3
 menu option to match: cream box, pixel frame, and a blinking ▶ cursor on
 hover/focus (left padding reserves its space; `.primary` = orange frame,

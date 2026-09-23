@@ -6,6 +6,24 @@
    Change one here and it changes everywhere.
    ============================================================ */
 
+/* Press Start 2P (Google Fonts, OFL), the 8x8 Game Boy-style font. Declared here instead of through the
+   Google stylesheet so size-adjust can shrink it: its letters are far bigger than other fonts' at the
+   same font-size, and font-size-adjust measured it inconsistently between elements. */
+@font-face {
+  font-family: "PokeDB Pixel";
+  src: url(https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nVivM.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  size-adjust: 66%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PokeDB Pixel";
+  src: url(https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nbivN04w.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+20A0-20AB, U+20AD-20C0, U+A720-A7FF;
+  size-adjust: 66%;
+  font-display: swap;
+}
+
 :root {
   --bg: #12142a;
   --panel: rgba(22, 26, 58, 0.86);
@@ -33,6 +51,7 @@
   --win-ink: #241c14;
   --win-muted: #574b36;
   --win-gold: #8e4c06;
+  --pixel-font: "PokeDB Pixel", var(--font);   /* Press Start 2P, see the @font-face above */
   --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
 }
 
@@ -252,7 +271,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   border-radius: 0;
   background: var(--win-tile);
   color: var(--win-ink);
-  font-family: "Pixelify Sans", var(--font);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-shadow: none;
@@ -369,7 +388,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   --panel-edge: var(--win-edge);
   --gold: var(--win-gold);
   color: var(--win-ink);
-  font-family: "Pixelify Sans", var(--font);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
 }
 .dialog {
   border-radius: 0;
@@ -385,8 +404,8 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   backdrop-filter: none;
 }
 .dialog .panel { border: 2px solid var(--win-edge); background: var(--win-panel); box-shadow: none; }
-.ball-menu-panel { font-family: "Pixelify Sans", var(--font); }
-:is(.dialog, .panel) .card { font-family: var(--font); }   /* cards keep their own type, so they read the same as in battle */
+.ball-menu-panel { font-family: var(--pixel-font); font-synthesis-weight: none; }
+:is(.dialog, .panel) .card { font-family: var(--font); font-synthesis-weight: auto; }   /* cards keep their own type, so they read the same as in battle */
 :is(.dialog, .panel) h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
 :is(.dialog, .panel) h3 { color: #283060; }
 :is(.dialog, .panel) :not(.card, .card *) { text-shadow: none; }
