@@ -21,7 +21,7 @@
 import { CARDS_BY_ID, TYPES, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { RELICS_BY_ID } from './data/relics.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { $, el, makeCard, showScreen, setBackdrop, toast, sleep, setHpBar } from './ui.js';
+import { $, el, makeCard, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
 import { playMusic, preloadMusic, playCry, preloadCries } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
@@ -210,7 +210,7 @@ function draw(count) {
 function whyNotPlayable(card) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
-  if (card.cost > b.energy) return 'Not enough energy!';
+  if (card.cost > b.energy) return 'Not enough PP!';
   if (card.effects.needsWounded && b.hp >= b.maxHp) return `${card.name} only works when you're hurt.`;
   return null;
 }
@@ -245,7 +245,11 @@ async function playCard(uid) {
 
   const { card } = b.hand[index];
   const problem = whyNotPlayable(card);
-  if (problem) return toast(problem, 'warn');
+  if (problem) {
+    log(problem);   // in the text box, like the games' "There's no PP left for this move!"
+    if (card.cost > b.energy) shake($('player-energy'));
+    return;
+  }
 
   b.busy = true;
   b.energy -= card.cost;
@@ -662,4 +666,10 @@ function log(message) {
     text.textContent = letters.slice(0, shown).join('');
     if (shown >= letters.length) { clearInterval(typing); box.classList.add('done'); }
   }, 18);
+}
+
+function shake(node) {
+  node.classList.remove('shake');
+  void node.offsetWidth;
+  node.classList.add('shake');
 }
