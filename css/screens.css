@@ -101,9 +101,8 @@
   from { opacity: 0; letter-spacing: 0.4em; }
   to   { opacity: 1; letter-spacing: 0.14em; }
 }
-/* "How to play": floats inside an orbiting sparkle ring (drawn by js/fx.js),
-   with a spinning rainbow border and a light sweep across the face */
-@property --cta-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+/* "How to play": a gold-framed menu button floating inside an orbiting sparkle ring (drawn by js/fx.js).
+   Its ▶ cursor always blinks, since it's the first thing to press, and a pixel glint sweeps across the face. */
 .howto-cta { position: relative; z-index: 2; display: inline-block; margin-top: 6px; animation: ctaFloat 3.4s ease-in-out infinite; }
 #howto-fx {
   position: absolute;
@@ -115,43 +114,35 @@
   pointer-events: none;
 }
 .howto-btn {
-  position: relative;
   isolation: isolate;
-  padding: 13px 28px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 800;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  box-shadow: 0 8px 24px rgba(90, 70, 230, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  transition: transform 0.15s ease-out;
+  overflow: hidden;
+  padding: 12px 26px 12px 34px;
+  border-color: #f8d030;
+  color: #283060;
+  font-size: 1.1rem;
 }
-.howto-btn::before,
-.howto-btn::after { content: ""; position: absolute; border-radius: inherit; }
-.howto-btn::before {                       /* the spinning rainbow border */
-  inset: -3px;
-  z-index: -2;
-  background: conic-gradient(from var(--cta-angle), #ffcb05, #ff8f4d, #ff5a8a, #5cbcff, #72dc70, #ffcb05);
-  animation: ctaSpin 4s linear infinite;
+.howto-btn::before {
+  content: '▶';
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6em;
+  animation: cursorBlink 1s steps(1) infinite;
 }
-.howto-btn::after {                        /* the face, with a light sweep crossing it */
+.howto-btn::after {
+  content: "";
+  position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%) no-repeat,
-    linear-gradient(135deg, #3b4fd8, #7b3fe4);
-  background-size: 250% 100%, 100% 100%;
-  animation: ctaSheen 3.6s ease-in-out infinite 1.5s;
+  background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.9) 38% 45%, transparent 45% 49%, rgba(255, 255, 255, 0.9) 49% 52%, transparent 52%) no-repeat;
+  background-size: 250% 100%;
+  animation: ctaSheen 3.6s steps(14) infinite 1.5s;
 }
-.howto-btn:hover { filter: brightness(1.1); }
-.howto-btn:active { transform: scale(0.95) !important; }
 @keyframes ctaFloat { 50% { transform: translateY(-5px); } }
-@keyframes ctaSpin { to { --cta-angle: 360deg; } }
 @keyframes ctaSheen {
-  0%, 55% { background-position: 160% 0, 0 0; }
-  100%    { background-position: -60% 0, 0 0; }
+  0%, 55% { background-position: 160% 0; }
+  100%    { background-position: -60% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -167,19 +158,19 @@
   align-items: center;
   gap: 14px;
   padding: 12px 16px 12px 12px;
-  border-radius: var(--radius);
-  border: 1px solid var(--panel-edge);
-  background: linear-gradient(100deg, color-mix(in srgb, var(--type) 22%, transparent), transparent 60%), var(--panel);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  color: #fff;
+  border-radius: 0;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 4px 0 2px rgba(0, 0, 0, 0.4);
+  color: var(--win-ink);
+  font-family: "Pixelify Sans", var(--font);
   text-align: left;
-  transition: transform 0.15s, border-color 0.15s;
+  transition: transform 0.1s steps(2), border-color 0.15s;
 }
 .continue-btn.type-fire  { --type: #ff8a4c; }
 .continue-btn.type-water { --type: #55b6ff; }
 .continue-btn.type-grass { --type: #63dc7f; }
-.continue-btn:hover { transform: translateY(-2px); border-color: var(--type); }
+.continue-btn:hover { transform: translateY(-2px); border-color: #f89030; }
 .continue-sprite {
   flex: none;
   display: grid;
@@ -190,11 +181,11 @@
   background: radial-gradient(circle, color-mix(in srgb, var(--type) 45%, transparent), transparent 70%);
 }
 .continue-sprite img { width: 64px; height: 64px; object-fit: contain; }
-.continue-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.continue-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+.continue-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.continue-label { padding: 2px 6px; background: #283060; color: #f8d030; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .continue-text strong { font-size: 1.15rem; line-height: 1.15; }
-.continue-info { font-size: 0.85rem; color: var(--muted); }
-.continue-hp { display: block; height: 6px; margin-top: 5px; border-radius: 999px; overflow: hidden; background: rgba(0, 0, 0, 0.45); }
+.continue-info { font-size: 0.85rem; color: var(--win-muted); }
+.continue-hp { display: block; align-self: stretch; height: 12px; margin-top: 4px; padding: 2px; border: 2px solid #181818; border-radius: 0 6px 6px 0; background: #f8f8f0; }
 .continue-hp .bar-fill { display: block; }
 .continue-ball { position: relative; flex: none; width: 42px; height: 42px; transform-origin: 50% 90%; }
 .ball-top, .ball-bottom {
@@ -273,17 +264,21 @@
   align-items: center;
   gap: 2px;
   padding: 8px 4px 10px;
-  border-radius: 14px;
-  border: 2px solid var(--panel-edge);
-  background: rgba(255, 255, 255, 0.07);
-  transition: transform 0.12s, background 0.12s, border-color 0.12s;
+  border-radius: 0;
+  border: 3px solid var(--win-edge);
+  background: var(--win-tile);
+  color: var(--win-ink);
+  box-shadow: 2px 2px 0 var(--win-shadow);
+  transition: transform 0.1s steps(2);
 }
 .starter-btn img { width: 72px; height: 72px; object-fit: contain; }
-.starter-name { font-weight: 800; font-size: 0.95rem; }
-.starter-btn:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.14); }
-.starter-btn.type-fire.selected  { border-color: #ff8a4c; background: rgba(255, 110, 60, 0.28); }
-.starter-btn.type-water.selected { border-color: #55b6ff; background: rgba(60, 150, 255, 0.28); }
-.starter-btn.type-grass.selected { border-color: #63dc7f; background: rgba(70, 200, 100, 0.28); }
+.starter-name { font-weight: 700; font-size: 0.95rem; }
+.starter-btn:hover { transform: translateY(-3px); background: #fffaf0; }
+/* the one you've picked gets its type's colour and the menu's blinking ▶ cursor */
+.starter-btn.selected { background: #fffaf0; border-color: #f89030; }
+.starter-btn.type-water.selected { border-color: #3878f0; }
+.starter-btn.type-grass.selected { border-color: #30a040; }
+.starter-btn.selected::before { content: '▶'; position: absolute; left: 6px; top: 6px; font-size: 0.7rem; animation: cursorBlink 1s steps(1) infinite; }
 .starter-btn.locked { opacity: 0.6; }
 .starter-btn.locked img { filter: brightness(0) opacity(0.6); }   /* silhouette */
 .starter-lock { font-size: 0.75rem; color: var(--muted); }
@@ -292,7 +287,7 @@
 .starter-detail {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid var(--panel-edge);
+  border-top: 3px dashed var(--win-edge);
   display: flex;
   align-items: center;
   justify-content: center;   /* with nothing picked yet, the lone button sits in the middle */
@@ -1241,6 +1236,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   color: #fff;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
+.shop-item .btn { white-space: nowrap; }
 .shop-item-sprite { width: 64px; height: 64px; object-fit: contain; }
 .shop-item-icon { font-size: 2.6rem; line-height: 1; }
 .shop-item-text { font-size: 0.85rem; color: #dfe3ff; flex: 1; }

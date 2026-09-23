@@ -167,7 +167,9 @@ attribute in sync if you add another way to open or close the shop:
 
 ## Windows
 
-Every `.dialog`, the Bag and the Poké Ball menu are light Pokégear windows:
+Every `.dialog`, every `.panel` (start screen, deck preview), the Bag, the
+Continue card and the Poké Ball menu are light Pokégear windows (a `.panel`
+inside a `.dialog` is a flat inset box instead):
 muted parchment inside a chunky grey frame, square corners. The colours are
 the `--win-*` tokens in `:root` (`css/base.css`); tune the tone there. Inside
 a `.dialog` the usual tokens (`--ink`, `--muted`, `--panel`, `--gold`...) are
@@ -179,7 +181,8 @@ Font, loaded in `<head>` next to Sniglet; `.dialog .card` resets to the
 normal font so cards read the same as in battle. Every `.btn` is a Gen 1-3
 menu option to match: cream box, pixel frame, and a blinking ▶ cursor on
 hover/focus (left padding reserves its space; `.primary` = orange frame,
-`.danger` = red). The animated How to play button keeps its own look.
+`.danger` = red). The How to play button is one too, with a gold frame, an
+always-blinking ▶ and a stepped pixel glint sweeping across it.
 
 ## Top bar and start screen
 

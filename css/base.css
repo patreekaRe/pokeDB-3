@@ -359,30 +359,41 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .dialog a { color: var(--gold); }
 .dialog.small-dialog { width: min(400px, 92vw); }
 
-/* Every window is a light Pokégear menu, like the Bag: cream inside a chunky grey frame.
-   Re-pointing the colour tokens here re-themes whatever sits inside a window; only the
-   game cards keep their own dark look. */
-.dialog {
+/* Every window and panel is a light Pokégear menu, like the Bag: cream inside a chunky grey frame.
+   Re-pointing the colour tokens here re-themes whatever sits inside; only the game cards keep
+   their own look. A panel inside a window is a flat inset box instead of a second frame. */
+:is(.dialog, .panel) {
   --ink: var(--win-ink);
   --muted: var(--win-muted);
   --panel: var(--win-panel);
   --panel-edge: var(--win-edge);
   --gold: var(--win-gold);
+  color: var(--win-ink);
+  font-family: "Pixelify Sans", var(--font);
+}
+.dialog {
   border-radius: 0;
   border: 3px solid #b8b8c8;
   background: var(--win-bg);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 20px 60px rgba(0, 0, 0, 0.55);
 }
-.dialog, .ball-menu-panel { font-family: "Pixelify Sans", var(--font); }
-.dialog .card { font-family: var(--font); }   /* cards keep their own type, so they read the same as in battle */
-.dialog h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
-.dialog :not(.card, .card *) { text-shadow: none; }
-.dialog .hint, .dialog .shop-item-text { color: var(--muted); }
-.dialog .howto-head h3 { color: #283060; }
+.panel {
+  border-radius: 0;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 4px 0 2px rgba(0, 0, 0, 0.4);
+  backdrop-filter: none;
+}
+.dialog .panel { border: 2px solid var(--win-edge); background: var(--win-panel); box-shadow: none; }
+.ball-menu-panel { font-family: "Pixelify Sans", var(--font); }
+:is(.dialog, .panel) .card { font-family: var(--font); }   /* cards keep their own type, so they read the same as in battle */
+:is(.dialog, .panel) h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
+:is(.dialog, .panel) h3 { color: #283060; }
+:is(.dialog, .panel) :not(.card, .card *) { text-shadow: none; }
+:is(.dialog, .panel) :is(.hint, .shop-item-text) { color: var(--muted); }
 .dialog .howto-prev { color: var(--ink); background: var(--panel); }
 .dialog .howto-dot { background: var(--panel-edge); }
 .dialog .shop-item { border-radius: 0; border: 3px solid var(--panel-edge); background: var(--win-tile); color: var(--ink); box-shadow: 2px 2px 0 var(--win-shadow); }
-.dialog .panel { border-radius: 0; backdrop-filter: none; }
 .dialog-actions {
   display: flex;
   gap: 10px;
