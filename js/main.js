@@ -193,7 +193,13 @@ function init() {
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
-  $('continue-btn').addEventListener('click', () => savedRun && continueRun(savedRun));
+  $('continue-btn').addEventListener('click', () => {
+    const btn = $('continue-btn');
+    if (!savedRun || btn.classList.contains('opening')) return;
+    btn.classList.add('opening');   // the Poké Ball pops open, then the map loads
+    const wait = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450;
+    setTimeout(() => continueRun(savedRun), wait);
+  });
   $('shop-btn').addEventListener('click', () => toggleShop());
   $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
 
