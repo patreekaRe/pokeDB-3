@@ -43,6 +43,9 @@ const SOUNDS = {
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1
 const FADE = 0.8;             // seconds for a crossfade
+// On touch screens only the END of a tap (touchend / pointerup / click) counts as
+// a gesture that may start sound; pointerdown works with a mouse but not a finger.
+const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'];
 
 let ctx = null;            // the AudioContext, created the first time any sound is needed
 let musicBus = null;       // gain node every music track runs through
@@ -56,7 +59,7 @@ export function initAudio() {
   renderButton();
   $('music-btn').addEventListener('click', () => setMuted(!getSave().muted));
 
-  ['pointerdown', 'keydown'].forEach(type => document.addEventListener(type, unlock, true));
+  UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
@@ -195,9 +198,14 @@ function stop(name) {
 
 /** The first tap or key press: now the browser lets us start sound. */
 function unlock() {
-  if (ctx) ctx.resume();
+  const context = audioContext();
+  context.resume();
   if (current && !getSave().muted) fadeIn(current);
-  if (ctx && ctx.state !== 'suspended') {
-    ['pointerdown', 'keydown'].forEach(type => document.removeEventListener(type, unlock, true));
-  }
+  // stay subscribed until sound really works: the context is running and the current track isn't stuck paused
+  setTimeout(() => {
+    const blocked = current && !getSave().muted && players[current] && players[current].el.paused;
+    if (context.state === 'running' && !blocked) {
+      UNLOCK_EVENTS.forEach(type => document.removeEventListener(type, unlock, true));
+    }
+  }, 250);
 }
