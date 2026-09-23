@@ -35,7 +35,7 @@ export const isRunActive = () => run !== null && !run.over;
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
    ============================================================ */
-const COIN_REWARDS = { fight: 3, elite: 12, eliteDisadvantage: 18, boss: 30, winBonus: 50 };
+export const COIN_REWARDS = { fight: 3, elite: 12, eliteDisadvantage: 18, boss: 30, winBonus: 50 };
 
 /** True if the elite/boss on this node is a type that beats your starter (fighting it is a real risk). */
 function isTypeDisadvantage(node) {

@@ -1031,15 +1031,66 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .howto-beats { font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .howto-beats::after { content: " ›"; color: var(--gold); font-size: 0.9rem; }
 
-.howto-tips {
-  margin-top: 18px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  font-size: 0.85rem;
+/* the slides: a sideways scroll-snap strip, one topic per slide */
+.howto-dialog { position: relative; }
+.howto-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  font-size: 0.95rem;
 }
-.howto-tips p { margin: 2px 0; }
-.howto-go { margin-top: 16px; }
+.howto-close:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+.howto-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.howto-track::-webkit-scrollbar { display: none; }
+.howto-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 4px 6px;
+}
+.howto-slide > .howto-label:first-child { margin-top: 0; }
+.howto-perks .howto-item { max-width: 76px; text-align: center; line-height: 1.15; }
+
+.howto-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
+.howto-prev {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.howto-prev:disabled { visibility: hidden; }
+.howto-next { min-width: 118px; }
+.howto-dots { display: flex; gap: 8px; }
+.howto-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  transition: width 0.2s, background 0.2s;
+}
+.howto-dot[aria-current="true"] { width: 24px; background: var(--gold); }
 
 @media (max-width: 560px) {
   .howto-dialog { padding: 18px 14px; }

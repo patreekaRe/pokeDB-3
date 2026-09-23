@@ -117,6 +117,12 @@ hand-rolled 3D projection, deliberately not Three.js, to keep the page
 light on phones. It only animates while the start screen is showing, and
 all start-screen motion stops under `prefers-reduced-motion`.
 
+How to play (`#help-dialog`, `js/howto.js`) is a row of swipeable slides
+(native CSS scroll-snap, plus dots, Next/Prev and arrow keys). Open it with
+`openHowto()`, not `openDialog()`, so it always starts on slide 1. The shop
+slide is filled from `COIN_REWARDS` and `PASSIVE_SHOP_ITEMS`, and turn one
+uses a real card, so the guide stays in step with the game data.
+
 ## Music
 
 `js/audio.js` plays one looping track at a time from `assets/audio/`:

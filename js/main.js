@@ -18,11 +18,12 @@
      rewards.js      the "choose one" screen
      battle.js       the fight
      records.js      the Stats and Achievements windows
+     howto.js        the swipeable How to play window
    ============================================================ */
 
 import { STARTERS, spriteUrl, stageName, BACKDROPS } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
-import { TYPES, CARDS_BY_ID } from './data/cards.js';
+import { TYPES } from './data/cards.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
@@ -31,9 +32,10 @@ import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
 import { initAudio } from './audio.js';
 import { initHowtoFx } from './fx.js';
+import { initHowto, openHowto } from './howto.js';
 import { openStats, openAchievements } from './records.js';
 import {
-  $, el, makeCard, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
+  $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
 
 let selected = null;   // the starter picked on the start screen
@@ -188,7 +190,7 @@ function initBallMenu() {
 function init() {
   initAudio();
   initHowtoFx();
-  $('howto-card').append(makeCard(CARDS_BY_ID.ember, { stage: 0 }));   // a real card, so the guide always matches the game
+  initHowto();
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 
@@ -212,8 +214,8 @@ function init() {
   });
 
   // Buttons that are always on screen
-  $('help-btn').addEventListener('click', () => openDialog('help-dialog'));
-  $('howto-btn').addEventListener('click', () => openDialog('help-dialog'));
+  $('help-btn').addEventListener('click', openHowto);
+  $('howto-btn').addEventListener('click', openHowto);
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   $('stats-btn').addEventListener('click', openStats);
@@ -234,7 +236,7 @@ function init() {
   // Show the how-to-play once, the very first time.
   if (!getSave().seenHelp) {
     updateSave(d => { d.seenHelp = true; });
-    setTimeout(() => openDialog('help-dialog'), 400);
+    setTimeout(openHowto, 400);
   }
 }
 
