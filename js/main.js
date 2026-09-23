@@ -140,6 +140,32 @@ async function requestMenu() {
   goToMenu();
 }
 
+/* ---------- the Poké Ball menu (top left) ---------- */
+
+function initBallMenu() {
+  const ball = $('brand-btn');
+  const panel = $('ball-menu-panel');
+  const setOpen = (open) => {
+    panel.hidden = !open;
+    ball.setAttribute('aria-expanded', String(open));
+  };
+
+  ball.addEventListener('click', () => setOpen(panel.hidden));
+  $('home-btn').addEventListener('click', requestMenu);
+
+  // picking an item closes the menu, except Sound, so you can see it switch on/off
+  panel.addEventListener('click', (e) => {
+    const item = e.target.closest('.menu-item');
+    if (item && item.id !== 'music-btn') setOpen(false);
+  });
+  document.addEventListener('click', (e) => {
+    if (!panel.hidden && !e.target.closest('.ball-menu')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) { setOpen(false); ball.focus(); }
+  });
+}
+
 /* ---------- start everything ---------- */
 
 function init() {
@@ -167,7 +193,7 @@ function init() {
   $('howto-btn').addEventListener('click', () => openDialog('help-dialog'));
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
-  $('brand-btn').addEventListener('click', requestMenu);
+  initBallMenu();
 
   $('reset-btn').addEventListener('click', async () => {
     if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;

@@ -99,6 +99,71 @@ h1, h2, h3, h4, p { margin: 0; }
 .home-ball .pokeball { animation: none; transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
 .home-ball:hover .pokeball { transform: rotate(-25deg) scale(1.08); }
 .home-ball:active .pokeball { transform: scale(0.9); }
+.home-ball[aria-expanded="true"] .pokeball { transform: rotate(180deg); }
+
+/* the drop-down under the Poké Ball: Main menu, Sound, How to play, About */
+.ball-menu { position: relative; }
+.ball-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 18px;
+  background: rgba(20, 24, 54, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform-origin: 16px 0;
+  animation: menuDrop 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.ball-menu-panel::before {                 /* little notch pointing up at the ball */
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 14px;
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  background: inherit;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px 9px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+.menu-item:hover, .menu-item:focus-visible { background: rgba(255, 255, 255, 0.1); }
+.mi-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 1rem;
+  flex: 0 0 auto;
+}
+#music-btn[aria-pressed="false"] .mi-label { color: var(--muted); }
+@keyframes menuDrop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ball-menu-panel { animation: none; }
+}
 .icon-btn {
   width: 36px;
   height: 36px;

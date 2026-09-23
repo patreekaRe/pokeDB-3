@@ -122,7 +122,8 @@ function setMuted(muted) {
 function renderButton() {
   const muted = getSave().muted;
   const btn = $('music-btn');
-  btn.textContent = muted ? '🔇' : '🔊';
+  btn.querySelector('.mi-icon').textContent = muted ? '🔇' : '🔊';
+  btn.querySelector('.mi-label').textContent = muted ? 'Sound off' : 'Sound on';
   btn.title = muted ? 'Turn sound on' : 'Mute sound';
   btn.setAttribute('aria-pressed', String(!muted));
 }

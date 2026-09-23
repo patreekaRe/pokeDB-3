@@ -78,7 +78,13 @@ attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in
 `js/main.js` sets it back to false.
 
-## Start screen
+## Top bar and start screen
+
+There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
+(`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
+menu, Sound, How to play and About. The top right only shows coins and the
+Shop. The "Main menu" item hides itself on the start screen (`showScreen()`).
+
 
 The logo is built from per-letter spans in `index.html`: "Poké" uses the
 Sniglet Google Font (loaded in `<head>`, logo only), "DB" uses the normal
@@ -111,7 +117,7 @@ each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
   iOS ignores `<audio>.volume`, so plain elements can't fade there.
 - Browsers block sound until the first tap or key press; `unlock()` starts
   the pending track then. Don't "fix" music not starting on page load.
-- The 🔊 button saves `muted` in the save file (`js/storage.js`). On iPhone,
+- The Sound item in the Poké Ball menu saves `muted` in the save file (`js/storage.js`). On iPhone,
   Web Audio also respects the silent switch, which is intended.
 - `audio.js` defines its own `$` instead of importing `ui.js`, because
   `ui.js` imports `audio.js`.

@@ -29,6 +29,7 @@ const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen'
 export function showScreen(id) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   document.body.dataset.screen = id;
+  $('home-btn').hidden = id === 'start-screen';   // the menu's "Main menu" item isn't needed on the menu
   // the map, battles and reward screens pick their own track (biome theme, fight music, victory, Pokémon Center)
   if (!['map-screen', 'battle-screen', 'reward-screen'].includes(id)) playMusic('title');
   window.scrollTo(0, 0);
