@@ -93,7 +93,9 @@ already use `.relic-row` and `.relic-icon`, and a later, unscoped rule like
 That's why battle uses `.battle-relics` / `.battle-relic`. Before adding a
 generic class name, grep `css/` and `js/` for it.
 
-The shop's top-bar button (`.shop-btn`) is gold with a pulsing glow, and
+The shop's top-bar button (`.shop-btn`) has no chrome: it's a CSS Poké Mart
+(`.mart`, sized in em so one `font-size` scales it; also used small on the
+How to play shop slide), and
 `aria-expanded` on it drives the pressed-in "shop is open" look. Keep that
 attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in

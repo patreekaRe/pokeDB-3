@@ -834,53 +834,56 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   white-space: nowrap;
 }
 
-/* A tiny Poké Mart (blue roof, white wall, blue door), the shop from the games */
-.mart { position: relative; display: inline-block; width: 20px; height: 18px; vertical-align: middle; }
-.mart::before, .mart::after { content: ""; position: absolute; border: 1.5px solid #173f8f; }
+/* A little Poké Mart, the shop from the games: striped blue awning, white walls,
+   two windows and sliding glass doors. Sized in em so one font-size scales it. */
+.mart { position: relative; display: inline-block; width: 1em; height: 0.9em; font-size: 32px; vertical-align: middle; }
+.mart::before, .mart::after { content: ""; position: absolute; border: 0.05em solid #173f8f; }
 .mart::before {
   top: 0;
   left: 0;
   right: 0;
-  height: 8px;
+  height: 0.4em;
   z-index: 1;
-  border-radius: 4px 4px 2px 2px;
-  background: linear-gradient(#5b9bff 0 40%, #2a6ee8 40%);
+  border-radius: 0.16em 0.16em 0.05em 0.05em;
+  background:
+    linear-gradient(#6aa6ff 0 22%, #2a6ee8 22% 48%, #173f8f 48% 54%, transparent 54%),
+    repeating-linear-gradient(90deg, #2a6ee8 0 0.125em, #fff 0.125em 0.25em);
 }
 .mart::after {
-  top: 6px;
-  left: 2px;
-  right: 2px;
+  top: 0.34em;
+  left: 0.1em;
+  right: 0.1em;
   bottom: 0;
-  border-radius: 0 0 2px 2px;
-  background: linear-gradient(#2a6ee8, #2a6ee8) 50% 100% / 5px 6px no-repeat, #fff;
+  border-radius: 0 0 0.06em 0.06em;
+  background:
+    linear-gradient(rgba(23, 63, 143, 0.3), transparent) top / 100% 0.08em no-repeat,
+    linear-gradient(90deg, #173f8f 0 10%, #9cc6ff 10% 46%, #173f8f 46% 54%, #9cc6ff 54% 90%, #173f8f 90%) 50% 100% / 0.28em 0.32em no-repeat,
+    linear-gradient(#9cc6ff, #9cc6ff) left 0.1em top 0.14em / 0.14em 0.11em no-repeat,
+    linear-gradient(#173f8f, #173f8f) left 0.08em top 0.12em / 0.18em 0.15em no-repeat,
+    linear-gradient(#9cc6ff, #9cc6ff) right 0.1em top 0.14em / 0.14em 0.11em no-repeat,
+    linear-gradient(#173f8f, #173f8f) right 0.08em top 0.12em / 0.18em 0.15em no-repeat,
+    #f4f6ff;
 }
-.howto-label .mart { width: 16px; height: 14px; margin-top: -3px; }
-.howto-label .mart::before { height: 7px; }
-.howto-label .mart::after { top: 5px; }
+.howto-label .mart { font-size: 18px; margin-top: -4px; }
 
-/* Gold with a pulsing glow, so the shop is the one button up here that asks to be tapped */
+/* No button chrome: the Poké Mart itself is the button, with a shadow so it reads over any backdrop */
 .icon-btn.shop-btn {
-  background: linear-gradient(180deg, #ffd84a, #ff9a2e);
-  border: 2px solid #fff3c4;
-  box-shadow: 0 0 10px rgba(255, 190, 40, 0.6);
-  animation: shopGlow 2.4s ease-in-out infinite;
-  transition: transform 0.12s, box-shadow 0.2s;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  transition: transform 0.12s, filter 0.2s;
 }
-.icon-btn.shop-btn:hover { background: linear-gradient(180deg, #ffe27a, #ffab4a); transform: translateY(-1px) scale(1.06); }
-.icon-btn.shop-btn:active { transform: scale(0.94); }
-/* while the shop is open: stop pulsing, look pressed in, and wear a white ring */
-.icon-btn.shop-btn[aria-expanded="true"] {
-  animation: none;
-  background: linear-gradient(180deg, #ff9a2e, #e07a10);
-  border-color: #fff;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-@keyframes shopGlow {
-  50% { box-shadow: 0 0 18px 3px rgba(255, 190, 40, 0.85); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .icon-btn.shop-btn { animation: none; }
-}
+.icon-btn.shop-btn:hover { background: none; transform: translateY(-2px) scale(1.08); }
+.icon-btn.shop-btn:active { transform: scale(0.92); }
+/* while the shop is open: pressed in, with a soft white halo */
+.icon-btn.shop-btn[aria-expanded="true"] { transform: scale(0.92); filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)); }
 /* narrow phones: tighten the floating buttons so they all fit on one row */
 @media (max-width: 420px) {
   .topbar { padding: 0 max(10px, env(safe-area-inset-left)); }
