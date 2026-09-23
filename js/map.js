@@ -220,7 +220,8 @@ export function reachableNodes(map, currentId) {
 const TILE = 8;                                   // canvas pixels per tile
 const GRID_W = 3 + (COLS - 1) * 5 + 4;             // tiles across
 const colX = (col) => 3 + col * 5;                 // tile column of a room
-const rowY = (floor) => floor >= FLOORS ? 3 : 10 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
+const BOSS_ROW = 10;                              // leaves room above the boss for its silhouette
+const rowY = (floor) => floor >= FLOORS ? BOSS_ROW : BOSS_ROW + 7 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
 const JOIN_ROW = rowY(0) + 3;                      // where the routes from the first rooms meet
 const START_ROW = JOIN_ROW + 6;                    // the end of the single road up the middle, where you start
 const GRID_H = START_ROW + 2;
@@ -464,6 +465,16 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer 
     btn.disabled = !canGo;
     if (canGo) btn.addEventListener('click', () => onPick(node));
     box.append(btn);
+  }
+
+  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming.
+  const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
+  if (boss?.image) {
+    const img = el('img', 'map-boss-shadow');
+    img.src = boss.image;
+    img.alt = '';
+    place(img, colX(BOSS_COL), rowY(FLOORS));
+    box.append(img);
   }
 
   if (trainer) {

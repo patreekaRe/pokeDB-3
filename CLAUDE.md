@@ -117,27 +117,31 @@ generic class name, grep `css/` and `js/` for it.
 The top `.run-card` shows your Pokémon floating on the scenery, then its name
 and a Gold/Silver-style HP bar (`.gb-hp`: black "HP:" tag, outlined bar, the
 numbers underneath; `data-level` turns it yellow at 50% and red at 20%, the
-games' thresholds), then
-one `.run-icon` button: the **Bag** (a pixel backpack drawn as an inline SVG
-in `index.html`). The Bag is a `.drop` drop-down with three pockets, like the
+games' thresholds).
+
+Below it, `.map-head` holds the biome name as a pixel location sign
+(`.biome-sign`, wood / mossy stone / dark rock per `data-biome`) that drops
+in, like the games' location signs, only when you arrive in a new biome
+(`showMap()`). The sign is centred with one `.run-icon` button right beside
+it: the **Bag** (a pixel backpack drawn as an inline SVG in `index.html`).
+Under 520px there's no room to centre the sign alone, so sign and Bag centre
+as a pair. The Bag is a `.drop` drop-down, centred under that row over the
+map (`.map-head` has `z-index: 6`), with three pockets, like the
 Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics
 and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
 through `POCKETS` in order, and the last pocket is remembered. It's wired by
 `initBag()` / `showPocket()` / `closeBag()` in `js/run.js` and closes on an
 outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
 play `.howto-li` / `.howto-node` styles (map rooms use `.howto-node.town`),
-so keep the Key's wording in step with the How to play map slide. The run
-card has `z-index: 6` so the Bag renders above the map that follows it.
-Under it, the biome name is a pixel location sign (`.biome-sign`, wood /
-mossy stone / dark rock per `data-biome`) that drops in, like the games'
-location signs, only when you arrive in a new biome (`showMap()`).
+so keep the Key's wording in step with the How to play map slide.
 
 The map itself is drawn like the Pokégear Town Map from Gold/Silver
 (rendering only: the data from `generateMap()` and the saved-run shape are
 unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
 `renderMap()` in `js/map.js`:
 - Everything snaps to a tile grid (`TILE`, `GRID_W`/`GRID_H`, `colX()`,
-  `rowY()`; the boss sits on top; below floor 0 the routes join at
+  `rowY()`; the boss sits on top at `BOSS_ROW`, low enough to leave room
+  above it for its silhouette; below floor 0 the routes join at
   `JOIN_ROW` and one road runs down the middle to `START_ROW`, where you start). `#map` gets
   `--grid-w`/`--grid-h` and keeps that aspect ratio; CSS sizes rooms in
   tiles, so everything scales with the map's width.
@@ -153,9 +157,12 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   routes you can take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
   drawn inside, for tap size): orange, red for elites, a gold boss. Visited
-  greys out, reachable blinks. `.node-badge` scouts elite/boss types. Your
-  starter's sprite (`.map-trainer`) stands on the current room like the
-  Pokégear's trainer head.
+  greys out, reachable blinks. `.node-badge` scouts elite/boss types: a
+  pixel chip set into the middle of the room's top edge. Your starter's
+  sprite (`.map-trainer`) stands on the current room like the Pokégear's
+  trainer head, and the biome's boss (`map.boss.enemyId`) stands above its
+  room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
+  rooms 1, your sprite 2.
 
 The shop's top-bar button (`.shop-btn`) has no chrome: it's a CSS Poké Mart
 (`.mart`, sized in em so one `font-size` scales it; also used small on the
