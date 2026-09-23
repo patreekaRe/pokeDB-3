@@ -28,6 +28,8 @@
       <button class="home-ball" id="brand-btn" aria-label="Menu" title="Menu" aria-expanded="false" aria-controls="ball-menu-panel"><span class="pokeball"></span></button>
       <div class="ball-menu-panel" id="ball-menu-panel" hidden>
         <button class="menu-item" id="home-btn"><span class="mi-icon">🏠</span><span class="mi-label">Main menu</span></button>
+        <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
+        <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
         <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
         <button class="menu-item" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
         <button class="menu-item" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>
@@ -68,15 +70,14 @@
 
         <div id="starter-detail" class="starter-detail">
           <img id="detail-sprite" class="pixel" alt="" hidden>
-          <div class="detail-text">
-            <h3 id="detail-name">Pick a starter above</h3>
-            <p id="detail-blurb">Tap one of the three free starters to begin.</p>
+          <div class="detail-text" id="detail-text" hidden>
+            <h3 id="detail-name"></h3>
+            <p id="detail-blurb"></p>
           </div>
           <button class="btn primary" id="choose-btn" disabled>See starting deck →</button>
         </div>
       </div>
 
-      <p class="progress-line" id="progress-line"></p>
     </section>
 
     <!-- ============ 2. DECK PREVIEW (read-only) ============ -->
@@ -269,6 +270,19 @@
     </div>
 
     <form method="dialog" class="howto-go"><button class="btn primary big">Let's go!</button></form>
+  </dialog>
+
+  <dialog id="stats-dialog" class="dialog records-dialog">
+    <h2 tabindex="-1" autofocus>📊 Stats</h2>
+    <div id="stats-body"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  </dialog>
+
+  <dialog id="achievements-dialog" class="dialog records-dialog">
+    <h2 tabindex="-1" autofocus>🏆 Achievements</h2>
+    <p class="records-sub">Each one unlocks a new starter.</p>
+    <div id="achievements-body"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
   <dialog id="about-dialog" class="dialog">

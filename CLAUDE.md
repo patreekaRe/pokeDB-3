@@ -82,7 +82,9 @@ attribute in sync if you add another way to open or close the shop:
 
 There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
-menu, Sound, How to play and About. The top right only shows coins and the
+menu, Stats, Achievements, Sound, How to play and About (Stats and
+Achievements are windows built fresh from the save by `js/records.js`). The
+top right only shows coins and the
 Shop. The "Main menu" item hides itself on the start screen (`showScreen()`).
 
 

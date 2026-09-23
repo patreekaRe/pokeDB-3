@@ -17,6 +17,7 @@
      map.js          building and drawing the branching map
      rewards.js      the "choose one" screen
      battle.js       the fight
+     records.js      the Stats and Achievements windows
    ============================================================ */
 
 import { STARTERS, spriteUrl, BACKDROPS } from './data/starters.js';
@@ -30,6 +31,7 @@ import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
 import { initAudio } from './audio.js';
 import { initHowtoFx } from './fx.js';
+import { openStats, openAchievements } from './records.js';
 import {
   $, el, makeCard, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
@@ -96,16 +98,10 @@ function selectStarter(starter) {
   $('detail-sprite').hidden = false;
   $('detail-name').textContent = `${starter.line[0].name}  ${type.icon} ${type.label}`;
   $('detail-blurb').textContent = starter.blurb;
+  $('detail-text').hidden = false;
   $('choose-btn').disabled = false;
 
   setBackdrop(BACKDROPS[starter.type], starter.type);
-}
-
-function renderProgress() {
-  const { stats, unlocked } = getSave();
-  $('progress-line').textContent = stats.runsStarted === 0
-    ? 'New here? Pick a starter and see its deck.'
-    : `Runs won: ${stats.runsWon} of ${stats.runsStarted}   ·   Enemies defeated: ${stats.enemiesDefeated}   ·   Starters unlocked: ${3 + unlocked.length} of ${STARTERS.length}`;
 }
 
 /* ---------- moving between screens ---------- */
@@ -113,7 +109,6 @@ function renderProgress() {
 /** Show the start screen (keeps whichever starter you had picked). */
 function showStart() {
   renderStarters();
-  renderProgress();
   refreshCoins();
   if (!selected) setBackdrop(BACKDROPS.water, '');
   showScreen('start-screen');
@@ -123,8 +118,7 @@ function goToMenu() {
   abandonRun();
   selected = null;
   $('detail-sprite').hidden = true;
-  $('detail-name').textContent = 'Pick a starter above';
-  $('detail-blurb').textContent = 'Tap one of the three free starters to begin.';
+  $('detail-text').hidden = true;
   $('choose-btn').disabled = true;
   showStart();
 }
@@ -185,7 +179,6 @@ function init() {
   $('shop-dialog').addEventListener('close', () => {
     $('shop-btn').setAttribute('aria-expanded', 'false');
     renderStarters();
-    renderProgress();
   });
 
   // Buttons that are always on screen
@@ -193,6 +186,8 @@ function init() {
   $('howto-btn').addEventListener('click', () => openDialog('help-dialog'));
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
+  $('stats-btn').addEventListener('click', openStats);
+  $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();
 
   $('reset-btn').addEventListener('click', async () => {

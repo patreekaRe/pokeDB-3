@@ -195,6 +195,7 @@
   border-top: 1px solid var(--panel-edge);
   display: flex;
   align-items: center;
+  justify-content: center;   /* with nothing picked yet, the lone button sits in the middle */
   gap: 14px;
   flex-wrap: wrap;
 }
@@ -202,7 +203,6 @@
 .detail-text { flex: 1; min-width: 180px; }
 .detail-text h3 { font-size: 1.2rem; }
 .detail-text p { color: var(--muted); }
-.progress-line { color: #dfe3ff; font-size: 0.9rem; text-shadow: 0 1px 4px #000; text-align: center; }
 
 /* ============ 2. DECK PREVIEW ============ */
 #preview-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; }
@@ -952,4 +952,75 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .howto-types { gap: 4px; }
   .howto-beats { font-size: 0.58rem; }
   .howto-row { gap: 8px 10px; }
+}
+
+/* ---------- 8. STATS & ACHIEVEMENTS (from the Poké Ball menu) ---------- */
+.records-dialog { width: min(560px, 94vw); }
+.records-dialog h2 { outline: none; }
+.records-sub { margin: -6px 0 14px; color: var(--muted); font-size: 0.9rem; }
+.records-label {
+  margin: 18px 0 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.records-empty { color: var(--muted); font-size: 0.9rem; }
+.records-close { margin-top: 18px; text-align: center; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-edge);
+  text-align: center;
+}
+.stat-icon { font-size: 1.3rem; }
+.stat-value { font-size: 1.6rem; font-weight: 900; color: var(--gold); line-height: 1.1; }
+.stat-label { font-size: 0.75rem; font-weight: 700; }
+.stat-note { font-size: 0.68rem; color: var(--muted); }
+
+.champions { display: flex; flex-wrap: wrap; gap: 8px; }
+.champion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+.champion img { width: 48px; height: 48px; object-fit: contain; }
+
+.ach-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.ach-progress b { font-size: 1.1rem; color: var(--gold); white-space: nowrap; }
+.ach-bar { flex: 1; height: 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.4); overflow: hidden; }
+.ach-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ffcb05, #ff9a2e); }
+.ach-list { display: flex; flex-direction: column; gap: 8px; }
+.ach {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-edge);
+}
+.ach img { width: 48px; height: 48px; object-fit: contain; flex: 0 0 auto; filter: brightness(0) opacity(0.45); }
+.ach.done { border-color: rgba(255, 203, 5, 0.5); background: rgba(255, 203, 5, 0.08); }
+.ach.done img { filter: none; }
+.ach-text { flex: 1; display: flex; flex-direction: column; font-size: 0.85rem; }
+.ach-text strong { font-size: 0.95rem; }
+.ach:not(.done) .ach-text span { color: var(--muted); }
+.ach-status { font-size: 1.2rem; }
+
+@media (max-width: 420px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
