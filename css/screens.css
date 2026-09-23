@@ -643,7 +643,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .orb-icon { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; }
 .energy-orb.empty { filter: grayscale(0.85) brightness(0.7); box-shadow: none; }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-#end-turn-btn { padding: 12px 22px; font-size: 1.05rem; white-space: nowrap; }
+#end-turn-btn { padding: 12px 22px 12px 30px; font-size: 1.05rem; white-space: nowrap; }
 .piles { display: flex; gap: 10px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
 .piles span { cursor: help; }
 
@@ -678,7 +678,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .energy-orb { width: 52px; height: 52px; }
   .energy-orb b { font-size: 1.35rem; }
   .turn-side { flex-direction: row-reverse; justify-content: flex-start; gap: 12px; }
-  #end-turn-btn { padding: 10px 16px; font-size: 0.95rem; }
+  #end-turn-btn { padding: 10px 16px 10px 24px; font-size: 0.95rem; }
   .battle-relic { width: 26px; height: 26px; font-size: 0.85rem; }
   .battle-relics { flex-direction: column; }
   .enemy-zone { width: 100%; }
@@ -885,7 +885,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .bag .howto-li:last-child { border-bottom: 0; }
 .bag .howto-li-text small, .bag .drop-note, .bag .drop-empty { color: var(--win-muted); }
 .bag-deck-text { margin: 4px 0 12px; font-size: 0.9rem; text-align: center; }
-.bag #run-deck-btn { width: 100%; color: var(--win-ink); background: var(--win-panel); border-color: var(--win-edge); }
+.bag #run-deck-btn { width: 100%; }
 
 /* ---------- the map: a Pokégear-style town map ----------
    js/map.js paints terrain and routes onto a small canvas scaled up with sharp pixels,
@@ -1270,13 +1270,14 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 
 .howto-card { --card-w: 78px; width: 78px; pointer-events: none; }
 .howto-endturn {
-  padding: 9px 16px;
-  border-radius: 999px;
-  font-weight: 800;
+  padding: 7px 16px;
+  border: 3px solid #f89030;
+  background: var(--win-tile);
+  color: var(--win-ink);
+  font-family: "Pixelify Sans", var(--font);
+  font-weight: 700;
   font-size: 0.9rem;
-  color: #fff;
-  background: linear-gradient(180deg, #ff9a5a, #e0552a);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
   white-space: nowrap;
 }
 
