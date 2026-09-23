@@ -28,10 +28,12 @@ function update() {
   $('howto-next').textContent = i === slides.length - 1 ? "Let's go!" : 'Next ›';
 }
 
-const item = (nodeClass, icon, label, note = '') => {
-  const box = el('div', 'howto-item');
-  box.append(el('span', `howto-node ${nodeClass}`, icon), label);
-  if (note) box.append(el('small', '', note));
+/** A list row like the static ones in index.html: icon on the left, name and a short line beside it. */
+const row = (nodeClass, icon, title, note) => {
+  const box = el('div', 'howto-li');
+  const text = el('span', 'howto-li-text');
+  text.append(el('b', '', title), el('small', '', note));
+  box.append(el('span', `howto-node ${nodeClass}`, icon), text);
   return box;
 };
 
@@ -39,14 +41,14 @@ export function initHowto() {
   $('howto-card').append(makeCard(CARDS_BY_ID.ember, { stage: 0 }));   // a real card, so the guide always matches the game
 
   $('howto-coins').replaceChildren(
-    item('', '⚔️', `+${COIN_REWARDS.fight}`, 'fight'),
-    item('elite', '💀', `+${COIN_REWARDS.elite}`, 'elite'),
-    item('boss', '👑', `+${COIN_REWARDS.boss}`, 'boss'),
-    item('treasure', '🏆', `+${COIN_REWARDS.winBonus}`, 'full win'),
+    row('', '⚔️', `+${COIN_REWARDS.fight} 💰`, 'Wild fight'),
+    row('elite', '💀', `+${COIN_REWARDS.elite} 💰`, 'Elite'),
+    row('boss', '👑', `+${COIN_REWARDS.boss} 💰`, 'Boss'),
+    row('treasure', '🏆', `+${COIN_REWARDS.winBonus} 💰`, 'Full win'),
   );
   $('howto-perks').replaceChildren(
-    item('', '🔓', 'New starters'),
-    ...PASSIVE_SHOP_ITEMS.map(perk => item('', perk.icon, perk.name)),
+    row('', '🔓', 'New starters', 'Unlock new Pokémon to play as.'),
+    ...PASSIVE_SHOP_ITEMS.map(perk => row('', perk.icon, perk.name, perk.text)),
   );
 
   slides = [...track().querySelectorAll('.howto-slide')];
