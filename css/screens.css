@@ -1125,16 +1125,13 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .coin-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(12, 14, 34, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
-  border: 1px solid var(--gold);
-  font-weight: 800;
-  color: var(--gold);
+  gap: 5px;
+  padding: 4px 6px;
+  font-family: var(--pixel-font);
+  font-size: 1.25rem;
+  color: #f8d030;
+  text-shadow: 2px 2px 0 #181010, -1px -1px 0 #181010, 1px -1px 0 #181010, -1px 1px 0 #181010;   /* floats on the scenery like the Poké Mart, so a hard pixel outline keeps it readable */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
   white-space: nowrap;
 }
 
@@ -1194,12 +1191,12 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .home-ball { font-size: 52px; }
   .topbar-actions { gap: 5px; }
   .icon-btn { width: 32px; height: 32px; }
-  .coin-pill { padding: 4px 9px; }
+  .coin-pill { padding: 4px; }
 }
 @media (max-width: 340px) {
   .topbar-actions { gap: 3px; }
   .icon-btn { width: 30px; height: 30px; }
-  .coin-pill { padding: 3px 7px; }
+  .coin-pill { padding: 3px; }
 }
 
 /* ---------- 6. SHOP ---------- */
