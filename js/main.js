@@ -33,6 +33,7 @@ import { toggleShop } from './shop.js';
 import { initAudio, playCry } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
+import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import {
   $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
@@ -194,6 +195,7 @@ function initBallMenu() {
 /* ---------- start everything ---------- */
 
 function init() {
+  initPixelIcons();
   initAudio();
   initHowtoFx();
   initHowto();

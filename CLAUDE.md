@@ -201,6 +201,18 @@ How to play (`#help-dialog`, `js/howto.js`) is a row of swipeable slides
 slide is filled from `COIN_REWARDS` and `PASSIVE_SHOP_ITEMS`, and turn one
 uses a real card, so the guide stays in step with the game data.
 
+## Pixel icons
+
+The game never shows emoji: `js/icons.js` swaps every emoji on the page for
+an 8-bit pixel icon. Data files and code keep writing emoji (card `art`,
+relic `icon`, toasts...); `initPixelIcons()` (called first in `js/main.js`)
+swaps existing text and uses a `MutationObserver` to swap anything added
+later. Each icon is a 12x12 pixel map in `ICONS` using the letters in
+`PALETTE`; the black outline is added automatically, so only draw the fill.
+**When you add an emoji anywhere, draw its icon in `ICONS` too**, or it shows
+as a plain emoji. Tooltips (`title`) can't hold SVG and keep the emoji. Don't
+read an emoji back out of the page with `textContent`: it's been replaced.
+
 ## Music
 
 `js/audio.js` plays one looping track at a time from `assets/audio/`:
