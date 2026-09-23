@@ -225,7 +225,7 @@
           </div>
         </div>
 
-        <p class="battle-log" id="battle-log" aria-live="polite"></p>
+        <div class="battle-log quiet" id="battle-log"><span id="battle-log-text" aria-hidden="true"></span><span class="sr-only" id="battle-log-live" aria-live="polite"></span></div>
       </div>
 
       <div class="battle-controls">
@@ -236,8 +236,8 @@
         <div class="turn-side">
           <button class="btn primary" id="end-turn-btn">End Turn</button>
           <div class="piles">
-            <span id="draw-count" title="Cards left in your draw pile"></span>
-            <span id="discard-count" title="Cards in your discard pile"></span>
+            <span class="pile" id="draw-count" title="Cards left in your draw pile"></span>
+            <span class="pile" id="discard-count" title="Cards in your discard pile"></span>
           </div>
         </div>
       </div>

@@ -492,7 +492,7 @@ function setupBattleScreen() {
   $('enemy-type').textContent = TYPES[b.def.type].icon;
   $('enemy-type').title = `${TYPES[b.def.type].label} type`;
   $('enemy-type').className = `chip type-${b.def.type}`;
-  $('battle-log').textContent = '';
+  log('');
 
   $('battle-relics').replaceChildren(...b.relics.map(id => {
     const relic = RELICS_BY_ID[id];
@@ -533,8 +533,8 @@ function renderBars() {
   orb.replaceChildren(el('span', 'pp-label', 'PP'), count, el('span', 'pp-max', `/${max}`), pips);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
-  $('draw-count').textContent = `📚 ${b.drawPile.length}`;
-  $('discard-count').textContent = `🗂️ ${b.discard.length}`;
+  $('draw-count').replaceChildren(el('span', 'pile-label', 'Draw'), el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
+  $('discard-count').replaceChildren(el('span', 'pile-label', 'Discard'), el('span', 'pile-icon', '🗂️'), el('b', '', String(b.discard.length)));
   $('end-turn-btn').disabled = b.busy || b.over;
 }
 
@@ -641,6 +641,25 @@ function pop(zoneId, text, kind = '', delay = 0) {
   setTimeout(() => node.remove(), 1400 + delay);
 }
 
+/* The battle text types itself out like the games' text box; the full line goes to screen readers at once. */
+let typing = 0;
 function log(message) {
-  $('battle-log').textContent = message;
+  const box = $('battle-log');
+  const text = $('battle-log-text');
+  $('battle-log-live').textContent = message;
+  box.classList.toggle('quiet', !message);
+  box.classList.remove('done');
+  clearInterval(typing);
+  const letters = Array.from(message);
+  if (!message || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    text.textContent = message;
+    box.classList.add('done');
+    return;
+  }
+  let shown = 0;
+  typing = setInterval(() => {
+    shown += 2;
+    text.textContent = letters.slice(0, shown).join('');
+    if (shown >= letters.length) { clearInterval(typing); box.classList.add('done'); }
+  }, 18);
 }

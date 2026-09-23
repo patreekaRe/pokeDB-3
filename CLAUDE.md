@@ -97,7 +97,11 @@ that fighter has block. Below the arena, `.battle-controls` is a 3-column
 grid: energy (`.energy-orb`, drawn as the games' **PP**: a PP tag, "2/3" and a
 pip per point, where the max is `b.turnEnergy`, the energy the turn started
 with; `data-shown` remembers the last value so spent pips burst and refills pop
-in) | hand | End Turn + draw/discard counts. On phones the PP box
+in) | hand | End Turn + the draw/discard piles (`.pile` windows: label, a
+pixel card stack, the count). Above them, `#battle-log` is a Gold/Silver
+text box: `log()` types each line out (instantly under reduced motion) into
+`#battle-log-text`, while `#battle-log-live` gets the whole line at once for
+screen readers; `.done` shows the blinking ▼. On phones the PP box
 and End Turn share a row above the hand so the cards get the full width.
 Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.

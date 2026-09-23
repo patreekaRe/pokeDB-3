@@ -415,3 +415,4 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 /* 8-bit pixel icons that js/icons.js swaps in for emoji; they size with the text like the emoji did */
 .px-wrap { display: inline-block; line-height: 1; vertical-align: -0.2em; }
 .px-icon { display: block; width: 1.15em; height: 1.15em; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
