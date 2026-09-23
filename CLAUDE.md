@@ -78,6 +78,24 @@ attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in
 `js/main.js` sets it back to false.
 
+## Music
+
+`js/audio.js` plays one looping track at a time from `assets/audio/`:
+`title` on every non-battle screen (triggered in `showScreen()` in
+`js/ui.js`), and `wild` / `elite` / `boss` chosen by `encounter.kind` in
+`startBattle()`. Tracks crossfade and each file downloads only the first
+time it's needed. Title resumes where it left off; battle tracks restart
+each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
+128 kbps).
+- Playback goes through the Web Audio API (a GainNode per track) because
+  iOS ignores `<audio>.volume`, so plain elements can't fade there.
+- Browsers block sound until the first tap or key press; `unlock()` starts
+  the pending track then. Don't "fix" music not starting on page load.
+- The 🔊 button saves `muted` in the save file (`js/storage.js`). On iPhone,
+  Web Audio also respects the silent switch, which is intended.
+- `audio.js` defines its own `$` instead of importing `ui.js`, because
+  `ui.js` imports `audio.js`.
+
 ## Conventions
 
 - No comments unless they explain a non-obvious *why* (a workaround, a

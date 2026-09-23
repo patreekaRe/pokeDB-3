@@ -6,7 +6,7 @@ $root = $PSScriptRoot
 $mime = @{
   '.html' = 'text/html; charset=utf-8'; '.js' = 'text/javascript'; '.css' = 'text/css'
   '.png' = 'image/png'; '.jpg' = 'image/jpeg'; '.gif' = 'image/gif'; '.svg' = 'image/svg+xml'
-  '.json' = 'application/json'
+  '.json' = 'application/json'; '.mp3' = 'audio/mpeg'; '.wav' = 'audio/wav'
 }
 
 $listener = New-Object System.Net.HttpListener

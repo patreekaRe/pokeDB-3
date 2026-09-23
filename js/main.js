@@ -28,6 +28,7 @@ import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
+import { initAudio } from './audio.js';
 import {
   $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
@@ -141,6 +142,7 @@ async function requestMenu() {
 /* ---------- start everything ---------- */
 
 function init() {
+  initAudio();
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 

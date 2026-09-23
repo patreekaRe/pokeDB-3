@@ -18,6 +18,7 @@ const KEY = 'pokedb.save.v2';
 
 const freshSave = () => ({
   seenHelp: false,
+  muted: false,              // background music switched off with the 🔊 button
   maxLevel: 0,               // the highest Trainer Level you have unlocked (see data/difficulty.js)
   unlocked: [],               // ids of starters unlocked, either by achievement OR by buying them in the shop
   coins: 0,                  // PokéCoins: the shop currency (see data/shop.js)

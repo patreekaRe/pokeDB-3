@@ -22,6 +22,7 @@ import { CARDS_BY_ID, TYPES, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE 
 import { RELICS_BY_ID } from './data/relics.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { $, el, makeCard, showScreen, setBackdrop, toast, sleep } from './ui.js';
+import { playMusic } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -106,6 +107,7 @@ export function startBattle({ run, encounter, onEnd }) {
 
   setBackdrop(run.backdrop, run.starter.type);
   showScreen('battle-screen');
+  playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
   setupBattleScreen();
 
   log(encounter.kind === 'boss' ? `${def.name} blocks the way!` : `A wild ${def.name} appeared!`);

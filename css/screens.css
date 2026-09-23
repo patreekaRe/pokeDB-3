@@ -632,6 +632,19 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 @media (prefers-reduced-motion: reduce) {
   .icon-btn.shop-btn { animation: none; }
 }
+/* narrow phones: during a run the top bar holds six controls, so tighten it to keep ⌂ on screen */
+@media (max-width: 420px) {
+  .topbar { padding: 0 max(10px, env(safe-area-inset-left)); }
+  .brand { font-size: 1.25rem; padding: 4px 2px; }
+  .topbar-actions { gap: 5px; }
+  .icon-btn { width: 32px; height: 32px; }
+  .coin-pill { padding: 4px 9px; }
+}
+@media (max-width: 340px) {
+  .topbar-actions { gap: 3px; }
+  .icon-btn { width: 30px; height: 30px; }
+  .coin-pill { padding: 3px 7px; }
+}
 
 /* ---------- 6. SHOP ---------- */
 /* Non-modal (.show(), not .showModal()) so it floats above the current

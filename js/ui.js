@@ -5,6 +5,7 @@
 
 import { TYPES, describe } from './data/cards.js';
 import { getSave } from './storage.js';
+import { playMusic } from './audio.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -29,6 +30,7 @@ export function showScreen(id) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   $('home-btn').hidden = id === 'start-screen';   // no "menu" button needed on the menu
   document.body.dataset.screen = id;
+  if (id !== 'battle-screen') playMusic('title');   // battle.js picks the fight's own track
   window.scrollTo(0, 0);
 }
 
