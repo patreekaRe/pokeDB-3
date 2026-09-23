@@ -40,8 +40,10 @@ const TRACKS = {
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
 };
+// Files come mastered at very different loudness, so each can be boosted
+// (or cut) on top of SFX_VOLUME. `gain` defaults to 1.
 const SOUNDS = {
-  heal:        'assets/audio/sfx/heal.mp3',        // the Pokémon Center chime
+  heal: { url: 'assets/audio/sfx/heal.mp3', gain: 3 },   // the Pokémon Center chime; its file is very quiet
 };
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
 // Pokémon without a cry stay silent instead of logging a 404 every fight.
@@ -107,7 +109,7 @@ export function preloadMusic(name) {
 
 /** Start downloading effects ahead of time so their first play isn't delayed. */
 export function preloadSounds(...names) {
-  names.forEach(loadSound);
+  names.forEach(name => loadSound(name));
 }
 
 /**
@@ -117,11 +119,13 @@ export function preloadSounds(...names) {
 export async function playSound(name, fallback) {
   if (getSave().muted) return 0;
   let buffer = await loadSound(name);
-  if (!buffer && fallback) buffer = await loadSound(fallback);
+  if (!buffer && fallback) buffer = await loadSound(name = fallback);
   if (!buffer || ctx.state !== 'running') return 0;
   const source = ctx.createBufferSource();
   source.buffer = buffer;
-  source.connect(sfxBus);
+  const gain = ctx.createGain();
+  gain.gain.value = SOUNDS[name]?.gain ?? 1;
+  source.connect(gain).connect(sfxBus);
   source.start();
   return buffer.duration;
 }
@@ -208,7 +212,7 @@ function player(name) {
   return players[name];
 }
 
-function loadSound(name, url = SOUNDS[name]) {
+function loadSound(name, url = SOUNDS[name]?.url) {
   if (!(name in buffers)) {
     buffers[name] = fetch(url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })

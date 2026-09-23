@@ -147,7 +147,7 @@ reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to
 the map. Sound effects are decoded buffers played with `playSound()`; to
-add one, list it in `SOUNDS` and drop the MP3 in `assets/audio/sfx/`
+add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and drop the MP3 in `assets/audio/sfx/`
 (attack hit sounds were planned but are on hold). Tracks crossfade and
 each file downloads only the first
 time it's needed. Title resumes where it left off; battle tracks restart
