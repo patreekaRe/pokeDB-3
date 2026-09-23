@@ -25,7 +25,8 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins } from './ui.js';
+import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep } from './ui.js';
+import { playMusic, playSound, preloadSounds } from './audio.js';
 
 let run = null;
 
@@ -261,15 +262,23 @@ function restSite() {
   showChoice({
     title: 'Pokémon Center',
     sub: 'A safe place to catch your breath.',
-    options: [textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, () => {
+    options: [textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, async () => {
+      const thisRun = run;
       run.hp += heal;
       run.restCount += 1;
+      // like the games: the music stops and the healing chime plays out before you leave
+      playMusic(null, { cut: true });
+      const chime = await playSound('heal');
+      await sleep(Math.min(chime, 4) * 1000);
+      if (run !== thisRun) return;                 // the run was abandoned during the chime
       toast(`Healed ${heal} HP.`, 'ok');
       showMap();
     })],
     skipLabel: 'Leave without resting',
     onSkip: showMap,
   });
+  playMusic('center');
+  preloadSounds('heal');
 }
 
 /* ---------- evolution ---------- */
