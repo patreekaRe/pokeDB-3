@@ -247,7 +247,7 @@ function afterFight(node, result) {
 
   const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
-  run.pendingCoins = `+${coinsWithBonus(coinsFor[node.type])} 💰${disadvantage ? ' (type disadvantage!)' : ''}`;
+  run.pendingCoins = `+${coinsWithBonus(coinsFor[node.type])} 💰 PokéCoins${disadvantage ? ' (type disadvantage!)' : ''}`;
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {

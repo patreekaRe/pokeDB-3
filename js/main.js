@@ -113,9 +113,13 @@ function renderContinue() {
   $('continue-btn').hidden = !savedRun;
   if (!savedRun) return;
   const { starter, stage, biome, hp, maxHp, level } = savedRun;
+  $('continue-btn').className = `continue-btn type-${starter.type}`;
   $('continue-sprite').src = spriteUrl(starter, 'front', stage);
-  $('continue-info').textContent =
-    `${stageName(starter, stage)} · Biome ${biome + 1} · ${hp}/${maxHp} HP${level ? ` · Level ${level}` : ''}`;
+  $('continue-name').textContent = stageName(starter, stage);
+  $('continue-info').textContent = `Biome ${biome + 1} · ${hp}/${maxHp} HP${level ? ` · Level ${level}` : ''}`;
+  const ratio = hp / maxHp;
+  $('continue-hp-fill').style.width = `${ratio * 100}%`;
+  $('continue-hp-fill').dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
 }
 
 /** Show the start screen (keeps whichever starter you had picked). */

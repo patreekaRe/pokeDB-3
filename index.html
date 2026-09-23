@@ -63,12 +63,15 @@
         </div>
       </div>
 
-      <button class="continue-btn panel" id="continue-btn" type="button" hidden>
-        <img id="continue-sprite" class="pixel" alt="">
+      <button class="continue-btn" id="continue-btn" type="button" hidden>
+        <span class="continue-sprite"><img id="continue-sprite" class="pixel" alt=""></span>
         <span class="continue-text">
-          <strong>▶ Continue run</strong>
-          <span id="continue-info"></span>
+          <span class="continue-label">Continue run</span>
+          <strong id="continue-name"></strong>
+          <span class="continue-info" id="continue-info"></span>
+          <span class="continue-hp"><span class="bar-fill" id="continue-hp-fill"></span></span>
         </span>
+        <span class="continue-go" aria-hidden="true">▶</span>
       </button>
 
       <div class="starter-panel panel">
