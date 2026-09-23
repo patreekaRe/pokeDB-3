@@ -253,7 +253,7 @@
 .starter-panel h2 { text-align: center; margin-bottom: 12px; }
 .starter-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));   /* equal columns even when a name is wider than its share */
   gap: 10px;
 }
 .starter-more-btn { display: block; margin: 12px auto 0; }
@@ -272,7 +272,8 @@
   transition: transform 0.1s steps(2);
 }
 .starter-btn img { width: 72px; height: 72px; object-fit: contain; }
-.starter-name { font-weight: 700; font-size: 0.95rem; }
+.starter-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 0.95rem; }
+@media (max-width: 480px) { .starter-name { font-size: 0.78rem; } }   /* "Charmander", the longest, fits a phone column */
 .starter-btn:hover { transform: translateY(-3px); background: #fffaf0; }
 /* the one you've picked gets its type's colour and the menu's blinking ▶ cursor */
 .starter-btn.selected { background: #fffaf0; border-color: #f89030; }
