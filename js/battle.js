@@ -22,12 +22,13 @@ import { CARDS_BY_ID, TYPES, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE 
 import { RELICS_BY_ID } from './data/relics.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { $, el, makeCard, showScreen, setBackdrop, toast, sleep } from './ui.js';
-import { playMusic, preloadMusic } from './audio.js';
+import { playMusic, preloadMusic, playCry, preloadCries } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
 const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
+const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 
 /** Relics that boost attacks of one type, by the type of your starter. */
 const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
@@ -112,7 +113,61 @@ export function startBattle({ run, encounter, onEnd }) {
   setupBattleScreen();
 
   log(encounter.kind === 'boss' ? `${def.name} blocks the way!` : `A wild ${def.name} appeared!`);
+  playIntro();
+}
+
+/**
+ * The enemy appears and cries, then a Poké Ball is thrown in and your
+ * Pokémon pops out and cries. Cards can't be played until it's done.
+ */
+async function playIntro() {
+  const b = battle;
+  const zone = $('player-zone');
+  const sprite = $('player-sprite');
+  const ball = $('intro-ball');
+  const portrait = $('enemy-portrait-box');
+  const still = () => battle === b;   // the run may be abandoned mid-intro
+  const cry = (id) => id ? Promise.race([playCry(id), sleep(CRY_WAIT_MAX)]) : null;
+  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const playerSpriteId = b.starter.line[b.stage].id;
+  preloadCries(b.def.spriteId ?? '', playerSpriteId);
+
+  zone.classList.add('awaiting');
+  renderAll();
+  if (motion) portrait.classList.add('entering');
+  await Promise.all([cry(b.def.spriteId), sleep(motion ? 700 : 300)]);
+  if (!still()) return;
+  portrait.classList.remove('entering');
+
+  if (motion) {
+    ball.hidden = false;
+    // start off the left edge near the bottom; starting below the window would make the page scrollable for a moment
+    const at = ball.getBoundingClientRect();
+    ball.style.setProperty('--from-x', `${-at.left - 60}px`);
+    ball.style.setProperty('--from-y', `${innerHeight - at.top - 40}px`);
+    ball.classList.add('thrown');
+    await sleep(700);
+    if (!still()) return;
+    ball.classList.replace('thrown', 'open');
+    await sleep(180);
+    if (!still()) return;
+  }
+  zone.classList.remove('awaiting');
+  if (motion) sprite.classList.add('released');
+  await Promise.all([cry(playerSpriteId), sleep(motion ? 600 : 0)]);
+  if (!still()) return;
+  resetIntro();
   beginPlayerTurn();
+}
+
+/** Put the intro's pieces back to rest (also run before each battle, in case one was cut short). */
+function resetIntro() {
+  const ball = $('intro-ball');
+  ball.hidden = true;
+  ball.classList.remove('thrown', 'open');
+  $('player-sprite').classList.remove('released');
+  $('player-zone').classList.remove('awaiting');
+  $('enemy-portrait-box').classList.remove('entering');
 }
 
 function beginPlayerTurn() {
@@ -418,6 +473,7 @@ function setupBattleScreen() {
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').classList.remove('defeated', 'lunge', 'hit');
+  resetIntro();
 
   const img = $('enemy-img');
   img.src = b.def.image;

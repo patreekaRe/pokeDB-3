@@ -30,7 +30,7 @@ import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
-import { initAudio } from './audio.js';
+import { initAudio, playCry } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
 import { openStats, openAchievements } from './records.js';
@@ -79,6 +79,7 @@ function renderStarters() {
     if (selected === starter) btn.classList.add('selected');
 
     btn.addEventListener('click', () => {
+      if (unlocked) playCry(starter.line[0].id);
       if (unlocked && starter.comingSoon) return toast(`✨ ${starter.line[0].name}'s own moves are coming soon!`, 'ok');
       if (unlocked) return selectStarter(starter);
       if (isShopUnlock(starter)) return toggleShop(starter.id);

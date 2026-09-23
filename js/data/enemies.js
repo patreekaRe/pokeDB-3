@@ -20,7 +20,7 @@
    ============================================================ */
 
 /** Pixel sprite from assets/pokemon/ (Gen 5 art from PokeAPI/sprites). */
-const sprite = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false });
+const sprite = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false, spriteId: name });
 
 export const ENEMY_DEFS = {
   /* ----- Biome 1: small wild Pokémon ----- */

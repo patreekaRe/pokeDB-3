@@ -18,6 +18,9 @@
    into memory, so they play without delay and can overlap. A missing
    effect file is simply silent.
 
+   CRIES are one clip per Pokémon in assets/audio/cries/, named by sprite
+   id. Only one plays at a time: a new cry cuts the previous one.
+
    Browsers refuse to play sound until the player has tapped or pressed a
    key, so the first track requested is held until then (see unlock()).
    The 🔊 button mutes music and effects together.
@@ -40,8 +43,18 @@ const TRACKS = {
 const SOUNDS = {
   heal:        'assets/audio/sfx/heal.mp3',        // the Pokémon Center chime
 };
+// Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
+// Pokémon without a cry stay silent instead of logging a 404 every fight.
+const CRIES = new Set([
+  'charmander', 'charmeleon', 'charizard', 'bulbasaur', 'ivysaur', 'venusaur',
+  'squirtle', 'wartortle', 'blastoise',
+  'rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix', 'zubat', 'geodude', 'growlithe',
+  'bellsprout', 'krabby', 'machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela', 'gloom',
+  'poliwhirl', 'arcanine', 'snorlax', 'tangrowth', 'magmar', 'lapras', 'salamence',
+]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1
+const CRY_VOLUME = 0.12;      // 0-1, low because the cry files are mastered ~4x louder than the music
 const FADE = 0.8;             // seconds for a crossfade
 // On touch screens only the END of a tap (touchend / pointerup / click) counts as
 // a gesture that may start sound; pointerdown works with a mouse but not a finger.
@@ -50,6 +63,8 @@ const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown
 let ctx = null;            // the AudioContext, created the first time any sound is needed
 let musicBus = null;       // gain node every music track runs through
 let sfxBus = null;         // gain node every sound effect runs through
+let cryBus = null;         // gain node every cry runs through
+let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
 const players = {};        // track name -> { el, gain }
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
 let current = null;        // name of the track that should be playing right now
@@ -111,9 +126,44 @@ export async function playSound(name, fallback) {
   return buffer.duration;
 }
 
+/**
+ * Play a Pokémon's cry by sprite id, cutting off any cry still playing.
+ * Shiny forms use the base cry. Resolves once the cry has finished or been
+ * cut off; straight away if sound is muted, still blocked, or it has no file.
+ */
+export async function playCry(spriteId) {
+  const id = cryId(spriteId);
+  stopCry();
+  if (getSave().muted || !CRIES.has(id)) return;
+  const buffer = await loadSound(`cry:${id}`, `assets/audio/cries/${id}.mp3`);
+  if (!buffer || ctx.state !== 'running' || getSave().muted) return;
+  stopCry();   // another cry may have been asked for while this one loaded
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(cryBus);
+  cryPlaying = source;
+  await new Promise(resolve => { source.onended = resolve; source.start(); });
+  if (cryPlaying === source) cryPlaying = null;
+}
+
+/** Start downloading cries ahead of time so they play without delay. */
+export function preloadCries(...spriteIds) {
+  spriteIds.map(cryId).filter(id => CRIES.has(id))
+    .forEach(id => loadSound(`cry:${id}`, `assets/audio/cries/${id}.mp3`));
+}
+
+const cryId = (spriteId) => spriteId.replace(/-shiny$/, '');
+
+function stopCry() {
+  const source = cryPlaying;
+  cryPlaying = null;
+  source?.stop();   // fires onended, so whoever awaited it moves on
+}
+
 function setMuted(muted) {
   updateSave(d => { d.muted = muted; });
   renderButton();
+  if (muted) stopCry();
   if (!current) return;
   if (muted) Object.keys(players).forEach(fadeOut);
   else fadeIn(current);
@@ -137,6 +187,9 @@ function audioContext() {
     sfxBus = ctx.createGain();
     sfxBus.gain.value = SFX_VOLUME;
     sfxBus.connect(ctx.destination);
+    cryBus = ctx.createGain();
+    cryBus.gain.value = CRY_VOLUME;
+    cryBus.connect(ctx.destination);
   }
   return ctx;
 }
@@ -155,9 +208,9 @@ function player(name) {
   return players[name];
 }
 
-function loadSound(name) {
+function loadSound(name, url = SOUNDS[name]) {
   if (!(name in buffers)) {
-    buffers[name] = fetch(SOUNDS[name])
+    buffers[name] = fetch(url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
       .then(data => audioContext().decodeAudioData(data))
       .catch(() => null);

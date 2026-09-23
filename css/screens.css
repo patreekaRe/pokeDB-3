@@ -568,6 +568,55 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
 
+/* --- battle intro: enemy appears, then a Poké Ball releases your Pokémon --- */
+.enemy-portrait.entering { animation: enemyEnter 0.55s ease-out; }
+@keyframes enemyEnter { from { opacity: 0; transform: translateX(60px) scale(0.85); } }
+.player-zone.awaiting #player-sprite,
+.player-zone.awaiting #player-plate { visibility: hidden; }
+#player-sprite.released { animation: released 0.6s ease-out; }
+@keyframes released {
+  from { transform: scale(0.15); filter: brightness(8); }
+  55%  { transform: scale(1.12); filter: brightness(2.5); }
+}
+.intro-ball {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  font-size: 80px;   /* .pokeball is sized in em */
+  pointer-events: none;
+}
+.intro-ball .pokeball { position: absolute; translate: -50% -50%; animation: none; }
+/* thrown in an arc, spinning, from off the window's bottom-left corner (--from-x/y are set by playIntro()) */
+.intro-ball.thrown { animation: ballArcX 0.7s linear both; }
+.intro-ball.thrown .pokeball { animation: ballArcY 0.7s both, ballSpin 0.7s linear both; }
+@keyframes ballArcX { from { transform: translateX(var(--from-x)); } }
+@keyframes ballArcY {
+  from { top: var(--from-y); animation-timing-function: ease-out; }
+  45%  { top: -16vh; animation-timing-function: ease-in; }
+  to   { top: 0; }
+}
+@keyframes ballSpin { from { rotate: -900deg; } }
+.intro-ball.open .pokeball { animation: ballPop 0.3s ease-in both; }
+@keyframes ballPop { to { transform: scale(1.5); opacity: 0; } }
+.intro-ball.open::after {
+  content: "";
+  position: absolute;
+  width: 2.4em;
+  height: 2.4em;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%);
+  animation: ballFlash 0.5s ease-out both;
+}
+@keyframes ballFlash {
+  from { transform: scale(0.1); opacity: 1; }
+  40%  { opacity: 1; }
+  to   { transform: scale(2.6); opacity: 0; }
+}
+
 /* --- bottom row: energy orb | hand | end turn + piles --- */
 .battle-controls {
   display: grid;

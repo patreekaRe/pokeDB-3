@@ -159,6 +159,13 @@ each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
   the pending track then. Don't "fix" music not starting on page load.
 - The Sound item in the Poké Ball menu saves `muted` in the save file (`js/storage.js`). On iPhone,
   Web Audio also respects the silent switch, which is intended.
+- **Cries** (`playCry()`): one MP3 per sprite id in `assets/audio/cries/`
+  (from play.pokemonshowdown.com/audio/cries/). Add the id to `CRIES` in
+  `js/audio.js` when you drop a file in; ids not listed are silent, and
+  `-shiny` ids use the base cry. A new cry cuts the previous one. They play
+  on a starter tap and in the battle intro (`playIntro()` in
+  `js/battle.js`: enemy cry, Poké Ball throw, your cry, then turn 1). The
+  files are mastered ~4× louder than the music, hence `CRY_VOLUME` 0.12.
 - `audio.js` defines its own `$` instead of importing `ui.js`, because
   `ui.js` imports `audio.js`.
 
