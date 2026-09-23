@@ -546,12 +546,13 @@ function renderBars() {
 function renderIntent() {
   const b = battle;
   const box = $('enemy-intent');
-  if (b.over) { box.textContent = ''; box.className = 'intent'; return; }
+  if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; return; }
 
   const move = currentMove();
   let icon = '⚔️', value = '', kind = 'attack', detail = '';
   if (move.kind === 'attack' || move.kind === 'drain') {
     icon = move.kind === 'drain' ? '🩸' : '⚔️';
+    kind = move.kind;
     // ▲ means the enemy's type is strong against yours, ▼ means it is weak against yours
     const arrow = enemyTypeMultiplier() > 1 ? '▲' : enemyTypeMultiplier() < 1 ? '▼' : '';
     value = b.guard ? '✋' : `${attackDamage(move)}${arrow}`;
@@ -561,7 +562,12 @@ function renderIntent() {
   } else {
     icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
-  box.className = `intent ${kind}`;
+  // The bubble pops in like the games' "!" emote, but only when the enemy picks a new move.
+  const key = `${b.turn}:${move.name}`;
+  const fresh = box.dataset.move !== key;
+  box.dataset.move = key;
+  box.className = `intent ${kind} fresh`;
+  if (fresh) { box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
   box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', move.name));
   box.title = `Next turn: ${move.name} (${detail})`;
 }

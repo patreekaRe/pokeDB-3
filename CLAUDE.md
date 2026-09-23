@@ -103,6 +103,14 @@ text box: `log()` types each line out (instantly under reduced motion) into
 `#battle-log-text`, while `#battle-log-live` gets the whole line at once for
 screen readers; `.done` shows the blinking ▼. On phones the PP box
 and End Turn share a row above the hand so the cards get the full width.
+The enemy's next move (`#enemy-intent`, `renderIntent()`) is a compact
+one-row Pokégear bubble over its head: icon, number, move name, and a pixel
+tail. Its frame colour is the move kind (red attack, purple drain, blue
+defend, green buff), and it pops in (`.fresh`) only when the move changes.
+On short phones (≤700px tall, like the iPhone SE) the two nameplates end up
+level, so a media query at the end of the phone rules compacts them, shrinks
+the enemy sprite and keeps room above the text box; the phone rules also keep
+a 10px gap between the fighters' columns.
 Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 
