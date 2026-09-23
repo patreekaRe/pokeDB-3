@@ -25,7 +25,7 @@ const TRACKS = {
   elite: 'assets/audio/elite.mp3',
   boss:  'assets/audio/boss.mp3',
 };
-const VOLUME = 0.5;        // overall music volume, 0-1
+const VOLUME = 0.75;       // overall music volume, 0-1
 const FADE = 0.8;          // seconds for a crossfade
 
 let ctx = null;            // the AudioContext, created the first time any track is needed
