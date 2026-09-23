@@ -62,9 +62,11 @@ export function relicChoices(run) {
  *   options   [{ node, onPick }]   node is the element to show, onPick runs when chosen
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  */
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = '' }) {
   $('reward-title').textContent = title;
   $('reward-sub').textContent = sub;
+  $('reward-coins').textContent = coins;
+  $('reward-coins').hidden = !coins;
 
   const box = $('reward-options');
   box.replaceChildren();

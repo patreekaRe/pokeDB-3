@@ -75,10 +75,12 @@ export function updateSave(change) {
   persist();
 }
 
+/** How many PokéCoins an amount is worth after the Coin Finder passive. */
+export const coinsWithBonus = (amount) => Math.round(amount * (data.passives.coinFinder ? 1.15 : 1));
+
 /** Give the player PokéCoins, boosted by the Coin Finder passive if they own it. */
 export function awardCoins(amount) {
-  const bonus = data.passives.coinFinder ? 1.15 : 1;
-  const total = Math.round(amount * bonus);
+  const total = coinsWithBonus(amount);
   updateSave(d => { d.coins += total; });
   return total;
 }

@@ -65,7 +65,10 @@ node objects, so restore rebuilds `floors` from `byId` to keep `visited`
 in sync. Every fight node gets its `enemyId` in `startBiome()` so a
 refresh can't reroll a fight (only elites/bosses show a scouting badge).
 The save is cleared by `endRun()`, by `abandonRun()` when a run was live,
-and by the About dialog's erase. A version mismatch or any bad id silently
+and by the About dialog's erase. Fight coins and the enemiesDefeated stat
+are shown on the reward screen but only paid out as the rewards end, just
+before the checkpoint, so refreshing on a reward screen can't pay twice.
+A version mismatch or any bad id silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
 screen's Continue button (`renderContinue()` in `js/main.js`) shows
 whenever a valid save exists, and Begin run confirms before replacing it.

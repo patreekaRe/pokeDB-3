@@ -18,7 +18,7 @@ import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER, TYPES, CARDS_BY_ID } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
-import { getSave, updateSave, awardCoins, saveRunData, loadRunData, clearRunData } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
@@ -166,6 +166,7 @@ export function beginRun(starter, level = 0) {
     restCount: 0,          // how many rest sites you've used this run (for an achievement)
     fights: 0,
     unlocks: [],           // starters unlocked during this run
+    pendingCoins: '',      // coins won in the last fight, paid out when its rewards end
     over: false,
   };
 
@@ -243,13 +244,19 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
-  updateSave(d => { d.stats.enemiesDefeated += 1; });
 
   const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
-  const earned = awardCoins(coinsFor[node.type]);
-  refreshCoins();
-  toast(`+${earned} 💰${disadvantage ? ' (type disadvantage!)' : ''}`, 'ok');
+  run.pendingCoins = `+${coinsWithBonus(coinsFor[node.type])} 💰${disadvantage ? ' (type disadvantage!)' : ''}`;
+  // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
+  // reward screen replays the fight, so paying earlier would let it be earned twice.
+  const collect = () => {
+    awardCoins(coinsFor[node.type]);
+    updateSave(d => { d.stats.enemiesDefeated += 1; });
+    refreshCoins();
+    toast(run.pendingCoins, 'ok');
+    run.pendingCoins = '';
+  };
 
   const steps = [];   // screens to show one after another
   if (node.type === 'fight') steps.push(next => offerCard('fight', next));
@@ -260,12 +267,13 @@ function afterFight(node, result) {
       d.stats.bossesDefeated[run.biome + 1] = true;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
-    if (run.biome === BIOMES.length - 1) return endRun(true);       // final boss: you win!
+    if (run.biome === BIOMES.length - 1) { collect(); return endRun(true); }       // final boss: you win!
     announceUnlocks();
     steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next));
   }
 
   runSteps(steps, () => {
+    collect();
     if (node.type === 'boss') { run.biome += 1; startBiome(); }
     else showMap();
   });
@@ -293,6 +301,7 @@ function offerCard(source, next) {
       next();
     })),
     onSkip: next,
+    coins: run.pendingCoins,
   });
 }
 
@@ -310,6 +319,7 @@ function offerEvolutionCard(next) {
       next();
     })),
     onSkip: next,
+    coins: run.pendingCoins,
   });
 }
 
@@ -326,6 +336,7 @@ function offerRelic(title, next) {
       next();
     })),
     onSkip: next,
+    coins: run.pendingCoins,
   });
 }
 
