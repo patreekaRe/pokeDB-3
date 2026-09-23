@@ -128,7 +128,8 @@ The map itself is drawn like the Pokégear Town Map from Gold/Silver
 unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
 `renderMap()` in `js/map.js`:
 - Everything snaps to a tile grid (`TILE`, `GRID_W`/`GRID_H`, `colX()`,
-  `rowY()`; the boss sits on top, a start spot below floor 0). `#map` gets
+  `rowY()`; the boss sits on top; below floor 0 the routes join at
+  `JOIN_ROW` and one road runs down the middle to `START_ROW`, where you start). `#map` gets
   `--grid-w`/`--grid-h` and keeps that aspect ratio; CSS sizes rooms in
   tiles, so everything scales with the map's width.
 - Terrain and routes are painted pixel by pixel into a small `<canvas>`

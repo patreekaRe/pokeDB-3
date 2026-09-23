@@ -221,8 +221,9 @@ const TILE = 8;                                   // canvas pixels per tile
 const GRID_W = 3 + (COLS - 1) * 5 + 4;             // tiles across
 const colX = (col) => 3 + col * 5;                 // tile column of a room
 const rowY = (floor) => floor >= FLOORS ? 3 : 10 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
-const START_ROW = rowY(0) + 3;                     // where you stand before the first room
-const GRID_H = START_ROW + 3;
+const JOIN_ROW = rowY(0) + 3;                      // where the routes from the first rooms meet
+const START_ROW = JOIN_ROW + 6;                    // the end of the single road up the middle, where you start
+const GRID_H = START_ROW + 2;
 const BOSS_COL = Math.floor(COLS / 2);
 
 const PALETTES = {
@@ -281,7 +282,7 @@ function routeSegments(map, currentId, reachable) {
   }
   for (const node of map.floors[0]) {
     const state = !currentId ? 'active' : node.visited ? 'walked' : 'fill';
-    link(colX(BOSS_COL), START_ROW, colX(node.col), rowY(0), START_ROW, state);
+    link(colX(BOSS_COL), START_ROW, colX(node.col), rowY(0), JOIN_ROW, state);
   }
   return segs;
 }
@@ -467,7 +468,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer 
 
   if (trainer) {
     const here = currentId && map.byId[currentId];
-    const img = el('img', 'map-trainer');
+    const img = el('img', here ? 'map-trainer' : 'map-trainer at-start');
     img.src = trainer;
     img.alt = '';
     place(img, colX(here ? here.col : BOSS_COL), here ? rowY(here.floor) : START_ROW);
