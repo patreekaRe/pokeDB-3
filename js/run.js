@@ -214,13 +214,13 @@ function showMap() {
   $('run-sub').textContent = run.stage < 2 ? 'Beat the boss to evolve' : 'Fully evolved';
 
   const ratio = run.hp / run.maxHp;
-  const ring = $('run-hp-ring');
-  ring.dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
-  ring.setAttribute('aria-valuemax', String(run.maxHp));
-  ring.setAttribute('aria-valuenow', String(run.hp));
-  ring.title = `HP ${run.hp} / ${run.maxHp}`;
-  $('run-hp-arc').style.strokeDashoffset = String(100 - ratio * 100);
-  $('run-hp-text').textContent = `${run.hp}/${run.maxHp}`;
+  const hp = $('run-hp');
+  hp.dataset.level = ratio > 0.5 ? 'high' : ratio > 0.2 ? 'mid' : 'low';   // Gold/Silver's green / yellow / red
+  hp.setAttribute('aria-valuemax', String(run.maxHp));
+  hp.setAttribute('aria-valuenow', String(run.hp));
+  hp.title = `HP ${run.hp} / ${run.maxHp}`;
+  $('run-hp-fill').style.width = `${ratio * 100}%`;
+  $('run-hp-text').textContent = `${run.hp}/ ${run.maxHp}`;
 
   renderRelicList();
   closeBag();

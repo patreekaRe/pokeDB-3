@@ -104,9 +104,10 @@ generic class name, grep `css/` and `js/` for it.
 
 ## Map screen
 
-The top `.run-card` shows your Pokémon inside `.hp-ring`, an SVG ring that
-*is* the HP bar (`pathLength="100"`, so `strokeDashoffset = 100 - hp%`;
-`data-level` turns it yellow/red and it pulses when low), then the name and
+The top `.run-card` shows your Pokémon floating on the scenery, then its name
+and a Gold/Silver-style HP bar (`.gb-hp`: black "HP:" tag, outlined bar, the
+numbers underneath; `data-level` turns it yellow at 50% and red at 20%, the
+games' thresholds), then
 one `.run-icon` button: the **Bag** (a pixel backpack drawn as an inline SVG
 in `index.html`). The Bag is a `.drop` drop-down with three pockets, like the
 Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics
