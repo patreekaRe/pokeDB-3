@@ -162,7 +162,7 @@ h1, h2, h3, h4, p { margin: 0; }
   to   { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ball-menu-panel, .map-key { animation: none; }
+  .ball-menu-panel, .drop { animation: none; }
 }
 .icon-btn {
   width: 36px;

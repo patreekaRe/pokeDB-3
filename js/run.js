@@ -53,12 +53,7 @@ function randomStartingRelic() {
 /** Called once at startup. */
 export function initRun({ onMenu, onNewRun }) {
   $('run-deck-btn').addEventListener('click', () => run && showDeckDialog(run));
-  $('run-relics-btn').addEventListener('click', () => run && showRelicsDialog());
-  $('map-key-btn').addEventListener('click', () => setMapKey($('map-key').hidden));
-  document.addEventListener('click', (e) => {
-    if (!$('map-key').hidden && !e.target.closest('#map-key, #map-key-btn')) setMapKey(false);
-  });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMapKey(false); });
+  initDrops();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
@@ -215,26 +210,50 @@ function showMap() {
   $('run-relic-count').textContent = String(run.relics.length);
   $('run-level').hidden = run.level === 0;
   $('run-level').textContent = `Level ${run.level}`;
+  $('run-sub').textContent = run.stage < 2 ? 'Beat the boss to evolve' : 'Fully evolved';
 
   const ratio = run.hp / run.maxHp;
-  const fill = $('run-hp-fill');
-  fill.style.width = `${ratio * 100}%`;
-  fill.dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
-  $('run-hp-text').textContent = `${run.hp} / ${run.maxHp}`;
+  const ring = $('run-hp-ring');
+  ring.dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
+  ring.setAttribute('aria-valuemax', String(run.maxHp));
+  ring.setAttribute('aria-valuenow', String(run.hp));
+  ring.title = `HP ${run.hp} / ${run.maxHp}`;
+  $('run-hp-arc').style.strokeDashoffset = String(100 - ratio * 100);
+  $('run-hp-text').textContent = `${run.hp}/${run.maxHp}`;
 
-  setMapKey(false);
+  renderRelicList();
+  closeDrops();
   checkpoint();
   renderMap(run.map, run.current, enterNode);
   showScreen('map-screen');
   playMusic(`map${run.biome + 1}`);
 }
 
-function setMapKey(open) {
-  $('map-key').hidden = !open;
-  $('map-key-btn').setAttribute('aria-expanded', String(open));
+/* The map's drop-downs (Relics and Key): [button id, panel id]. Opening one closes the other. */
+const DROPS = [['run-relics-btn', 'relics-drop'], ['map-key-btn', 'map-key']];
+
+function initDrops() {
+  for (const [btnId, panelId] of DROPS) {
+    $(btnId).addEventListener('click', () => {
+      const open = $(panelId).hidden;
+      closeDrops();
+      if (open) setDrop(btnId, panelId, true);
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest(DROPS.flat().map(id => `#${id}`).join(', '))) closeDrops();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrops(); });
 }
 
-function showRelicsDialog() {
+function setDrop(btnId, panelId, open) {
+  $(panelId).hidden = !open;
+  $(btnId).setAttribute('aria-expanded', String(open));
+}
+
+const closeDrops = () => DROPS.forEach(([btnId, panelId]) => setDrop(btnId, panelId, false));
+
+function renderRelicList() {
   const rows = run.relics.map(id => {
     const relic = RELICS_BY_ID[id];
     const row = el('div', 'howto-li');
@@ -243,8 +262,7 @@ function showRelicsDialog() {
     row.append(el('span', 'howto-node relic-node', relic.icon), text);
     return row;
   });
-  $('relics-list').replaceChildren(...(rows.length ? rows : [el('p', 'hint', 'No relics yet. Beat an elite or open a treasure to find one.')]));
-  openDialog('relics-dialog');
+  $('relics-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
 }
 
 function enterNode(node) {

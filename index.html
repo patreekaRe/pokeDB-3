@@ -136,22 +136,31 @@
     <!-- ============ 3. MAP ============ -->
     <section id="map-screen" class="screen" hidden>
       <div class="run-card panel">
-        <img id="run-sprite" class="run-sprite pixel" alt="">
+        <!-- the ring around your Pokémon is its HP bar -->
+        <div class="hp-ring" id="run-hp-ring" role="progressbar" aria-label="Your HP" aria-valuemin="0">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="hp-ring-track" cx="50" cy="50" r="45" pathLength="100"></circle>
+            <circle class="hp-ring-fill" id="run-hp-arc" cx="50" cy="50" r="45" pathLength="100"></circle>
+          </svg>
+          <img id="run-sprite" class="pixel" alt="">
+          <span class="hp-ring-text" id="run-hp-text"></span>
+        </div>
         <div class="run-info">
           <div class="run-name"><strong id="run-title"></strong> <span id="run-level" class="chip level-chip" hidden></span></div>
-          <div class="bar hp" role="progressbar" aria-label="Your HP">
-            <div class="bar-fill" id="run-hp-fill"></div>
-            <span class="bar-text" id="run-hp-text"></span>
-          </div>
+          <small class="run-sub" id="run-sub"></small>
         </div>
         <button class="run-pill" id="run-deck-btn" title="See your deck"><span>🃏 <b id="run-deck-count">10</b></span><small>Deck</small></button>
-        <button class="run-pill" id="run-relics-btn" title="See your relics"><span>🎒 <b id="run-relic-count">0</b></span><small>Relics</small></button>
+        <button class="run-pill" id="run-relics-btn" title="See your relics" aria-expanded="false" aria-controls="relics-drop"><span>🎒 <b id="run-relic-count">0</b></span><small>Relics</small></button>
+        <div class="drop panel" id="relics-drop" hidden>
+          <div id="relics-list" class="howto-list"></div>
+          <p class="drop-note">Relics work on their own, every fight, for the rest of the run.</p>
+        </div>
       </div>
 
       <div class="map-head">
         <h2 class="biome-title"><small id="biome-number"></small><span id="biome-name"></span></h2>
         <button class="map-key-btn" id="map-key-btn" aria-expanded="false" aria-controls="map-key">🧭 Key</button>
-        <div class="map-key panel" id="map-key" hidden>
+        <div class="drop panel" id="map-key" hidden>
           <div class="howto-list">
             <div class="howto-li"><span class="howto-node">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card.</small></span></div>
             <div class="howto-li"><span class="howto-node elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
@@ -159,7 +168,7 @@
             <div class="howto-li"><span class="howto-node treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
             <div class="howto-li"><span class="howto-node boss">👑</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
           </div>
-          <p class="map-key-note">Start at the bottom and climb. The small badge on an elite or boss shows its type.</p>
+          <p class="drop-note">Start at the bottom and climb. The small badge on an elite or boss shows its type.</p>
         </div>
       </div>
       <div class="map-wrap"><div class="map" id="map"></div></div>
@@ -391,13 +400,6 @@
   <dialog id="deck-dialog" class="dialog wide-dialog">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
     <div id="deck-dialog-cards" class="card-pool"></div>
-    <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
-  </dialog>
-
-  <dialog id="relics-dialog" class="dialog">
-    <h2>🎒 Your relics</h2>
-    <p class="hint">Relics work on their own, every fight, for the rest of the run.</p>
-    <div id="relics-list" class="howto-list relic-list"></div>
     <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 
