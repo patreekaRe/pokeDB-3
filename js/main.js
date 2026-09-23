@@ -44,20 +44,14 @@ let selected = null;   // the starter picked on the start screen
 
 // The first 6 (the 3 real starters + the first 3 shop-bought skins) always
 // show. Everything else (the rest of the shop skins, the achievement-locked
-// skins, and the legendaries) collapses behind "Show more", so a fresh
-// visitor sees a manageable grid, not all 18 at once.
+// skins, and the legendaries) starts collapsed behind "Show more", however
+// many are unlocked, so the main page stays short.
 const ALWAYS_SHOWN = 6;
-let showAllChoice = null;   // null until the player uses Show more / Show fewer; then their choice sticks
 let showAllStarters = false;
 
 function renderStarters() {
   const grid = $('starter-grid');
   grid.replaceChildren();
-
-  // If you've already unlocked or selected something in the collapsed group,
-  // there's no point hiding it - expand automatically, unless you've collapsed it yourself.
-  const hidden = STARTERS.slice(ALWAYS_SHOWN);
-  showAllStarters = showAllChoice ?? (hidden.includes(selected) || hidden.some(isStarterUnlocked));
 
   STARTERS.forEach((starter, i) => {
     const unlocked = isStarterUnlocked(starter);
@@ -215,7 +209,7 @@ function init() {
     setTimeout(() => continueRun(savedRun), wait);
   });
   $('shop-btn').addEventListener('click', () => toggleShop());
-  $('starter-more-btn').addEventListener('click', () => { showAllChoice = !showAllStarters; renderStarters(); });
+  $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
 
   // A purchase made while the shop was open over some other screen (map,
   // battle, a reward choice) should still be reflected once you're back
