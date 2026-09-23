@@ -118,6 +118,9 @@ outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
 play `.howto-li` / `.howto-node` styles (map rooms use `.howto-node.town`),
 so keep the Key's wording in step with the How to play map slide. The run
 card has `z-index: 6` so the Bag renders above the map that follows it.
+Under it, the biome name is a pixel location sign (`.biome-sign`, wood /
+mossy stone / dark rock per `data-biome`) that drops in, like the games'
+location signs, only when you arrive in a new biome (`showMap()`).
 
 The map itself is drawn like the Pokégear Town Map from Gold/Silver
 (rendering only: the data from `generateMap()` and the saved-run shape are
@@ -160,6 +163,9 @@ a `.dialog` the usual tokens (`--ink`, `--muted`, `--panel`, `--gold`...) are
 re-pointed to dark-on-parchment values, so most content re-themes itself.
 Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
 `.dialog ...` override in `css/base.css`. Game cards keep their own look.
+Window text (and the HP bar and biome sign) uses the Pixelify Sans Google
+Font, loaded in `<head>` next to Sniglet; `.dialog .card` resets to the
+normal font so cards read the same as in battle.
 
 ## Top bar and start screen
 

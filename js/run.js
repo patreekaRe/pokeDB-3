@@ -204,8 +204,15 @@ function showMap() {
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
   $('run-title').textContent = stageName(run.starter, run.stage);
-  $('biome-number').textContent = `Biome ${run.biome + 1} of ${BIOMES.length}`;
-  $('biome-name').textContent = biome.name;
+  // The sign drops in like the games' location sign, but only when you arrive in a new biome.
+  const sign = $('biome-name');
+  if (sign.textContent !== biome.name) {
+    sign.textContent = biome.name;
+    sign.dataset.biome = biome.id;
+    sign.classList.remove('arrive');
+    void sign.offsetWidth;
+    sign.classList.add('arrive');
+  }
   $('run-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = String(run.relics.length);
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;

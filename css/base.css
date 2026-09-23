@@ -361,6 +361,8 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   background: var(--win-bg);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 20px 60px rgba(0, 0, 0, 0.55);
 }
+.dialog, .ball-menu-panel { font-family: "Pixelify Sans", var(--font); }
+.dialog .card { font-family: var(--font); }   /* cards keep their own type, so they read the same as in battle */
 .dialog h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
 .dialog :not(.card, .card *) { text-shadow: none; }
 .dialog .hint, .dialog .shop-item-text { color: var(--muted); }
