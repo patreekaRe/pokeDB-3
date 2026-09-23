@@ -211,7 +211,6 @@ function showMap() {
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
   $('run-level').hidden = run.level === 0;
   $('run-level').textContent = `Level ${run.level}`;
-  $('run-sub').textContent = run.stage < 2 ? 'Beat the boss to evolve' : 'Fully evolved';
 
   const ratio = run.hp / run.maxHp;
   const hp = $('run-hp');
