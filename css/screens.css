@@ -434,25 +434,25 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 /* In the nameplates, status sits beside the name like PSN / PAR in the games: small square chips, icon then number */
 /* flex-basis auto: when they don't fit beside the name, the whole row of chips drops to its own line under it */
 .nameplate-title { flex-wrap: wrap; row-gap: 3px; }
-.nameplate .badges { flex: 1 0 auto; justify-content: flex-end; flex-wrap: wrap; gap: 3px; min-height: 0; align-items: center; }
+.nameplate .badges { flex: 1 0 auto; justify-content: flex-end; flex-wrap: wrap; gap: 8px; min-height: 0; align-items: center; }
 .nameplate .badges:empty { display: none; }
 .nameplate .badge {
   width: auto;
   height: 20px;
-  padding: 0 3px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
+  border: 0;
   border-radius: 0;
-  border: 2px solid #303038;
-  background: #fff;
-  font-size: 0.78rem;
+  background: none;
+  font-size: 0.85rem;
 }
-.nameplate .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.75rem; }
-.nameplate .badge.block { border-color: #2060d8; background: #d8e8ff; }
-.nameplate .badge.good { border-color: #208030; background: #d8f4d0; }
-.nameplate .badge.bad  { border-color: #c02020; background: #ffd8d0; }
-.nameplate .badge.bad b { background: none; color: #a01818; }
+.nameplate .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.8rem; }
+/* no boxes: the number's colour says what kind of status it is */
+.nameplate .badge.block b { color: #2060d8; }
+.nameplate .badge.good b { color: #208030; }
+.nameplate .badge.bad b { color: #c02020; }
 
 /* --- enemy --- */
 /* the enemy's frame takes its own type colour */

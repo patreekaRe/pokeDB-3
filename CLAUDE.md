@@ -87,8 +87,8 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 There's no top HUD bar. The arena shows each fighter with a **nameplate**
 (a small Pokégear window: name + the same Gold/Silver `.gb-hp` HP bar as
 the map, filled by `setHpBar()` in `js/ui.js`) under the sprite. Its title row
-holds the name and the **status badges**, like PSN/PAR in the games: small
-square chips, icon then number (block, burn, weakened, strength, focus,
+holds the name and the **status badges**, like PSN/PAR in the games: no box,
+just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, weakened, strength, focus,
 guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. When they
 don't fit beside the name, the row of chips drops to its own line. A badge
 only renders while its status is active, and each one explains itself in
