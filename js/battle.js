@@ -477,6 +477,7 @@ function setupBattleScreen() {
   $('player-name').textContent = stageName(b.starter, b.stage);
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
+  $('player-sprite').dataset.stage = String(b.stage);
   $('player-sprite').classList.remove('defeated', 'lunge', 'hit');
   resetIntro();
 

@@ -422,7 +422,7 @@ function paintTerrain(canvas, map, biomeId, segs) {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer } = {}) {
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2 } = {}) {
   const box = $('map');
   box.replaceChildren();
   box.style.setProperty('--grid-w', GRID_W);
@@ -480,6 +480,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer 
   if (trainer) {
     const here = currentId && map.byId[currentId];
     const img = el('img', here ? 'map-trainer' : 'map-trainer at-start');
+    img.dataset.stage = String(stage);
     img.src = trainer;
     img.alt = '';
     place(img, colX(here ? here.col : BOSS_COL), here ? rowY(here.floor) : START_ROW);

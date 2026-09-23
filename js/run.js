@@ -203,6 +203,7 @@ function showMap() {
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
+  $('run-sprite').dataset.stage = String(run.stage);
   $('run-title').textContent = stageName(run.starter, run.stage);
   // The sign drops in like the games' location sign, but only when you arrive in a new biome.
   const sign = $('biome-name');
@@ -224,7 +225,7 @@ function showMap() {
   renderRelicList();
   closeBag();
   checkpoint();
-  renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage) });
+  renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage });
   showScreen('map-screen');
   playMusic(`map${run.biome + 1}`);
 }
@@ -445,7 +446,9 @@ function evolve(next) {
   const fromName = stageName(run.starter, from);
   const toName = stageName(run.starter, run.stage);
   $('evolve-from').src = spriteUrl(run.starter, 'front', from);
+  $('evolve-from').dataset.stage = String(from);
   $('evolve-to').src = spriteUrl(run.starter, 'front', run.stage);
+  $('evolve-to').dataset.stage = String(run.stage);
   $('evolve-title').textContent = `${fromName} is evolving!`;
   $('evolve-text').textContent =
     `${fromName} evolved into ${toName}! Max HP +${HP_PER_STAGE} and ${healed}. ` +

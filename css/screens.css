@@ -539,6 +539,13 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   width: min(100%, 300px);
   padding-bottom: 20px;
 }
+
+/* Your Pokémon grows as it evolves: the first form is drawn at 78% and the middle one at 90% of its final
+   size, scaled from its feet. `scale` stacks with the attack/hit/evolve animations' transforms and leaves
+   the layout alone, so nothing around the sprite moves. */
+:is(#player-sprite, .run-sprite, .map-trainer, .evolve-art img) { scale: var(--grow, 1); transform-origin: 50% 100%; }
+:is(#player-sprite, .run-sprite, .map-trainer, .evolve-art img)[data-stage="0"] { --grow: 0.78; }
+:is(#player-sprite, .run-sprite, .map-trainer, .evolve-art img)[data-stage="1"] { --grow: 0.9; }
 #player-sprite {
   /* sized from the window height so it fits on short screens too */
   width: clamp(96px, 21vh, 230px);

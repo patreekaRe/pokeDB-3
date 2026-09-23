@@ -111,6 +111,11 @@ On short phones (≤700px tall, like the iPhone SE) the two nameplates end up
 level, so a media query at the end of the phone rules compacts them, shrinks
 the enemy sprite and keeps room above the text box; the phone rules also keep
 a 10px gap between the fighters' columns.
+Your Pokémon grows as it evolves: its sprites (battle, map card, map
+trainer, evolve pop-up) carry `data-stage`, and CSS scales stage 0 to 78% and
+stage 1 to 90% with the `scale` property (from the feet), so the attack and
+evolve animations' transforms and the layout are untouched. The deck
+preview's swipeable evolution line uses bigger steps (64/88/116px).
 Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 
