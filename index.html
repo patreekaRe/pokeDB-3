@@ -205,10 +205,11 @@
           <div class="enemy-portrait" id="enemy-portrait-box"><img id="enemy-img" alt=""></div>
           <div class="nameplate" id="enemy-plate">
             <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-type" class="chip"></span></div>
-            <div class="bar hp enemy" role="progressbar" aria-label="Enemy HP">
-              <div class="bar-fill" id="enemy-hp-fill"></div>
-              <span class="bar-text" id="enemy-hp-text"></span>
+            <div class="gb-hp" id="enemy-hp" role="progressbar" aria-label="Enemy HP" aria-valuemin="0">
+              <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+              <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>
             </div>
+            <span class="gb-hp-num" id="enemy-hp-text"></span>
           </div>
         </div>
 
@@ -218,10 +219,11 @@
           <div class="intro-ball" id="intro-ball" hidden><span class="pokeball"></span></div>
           <div class="nameplate" id="player-plate">
             <div class="nameplate-title"><strong id="player-name"></strong></div>
-            <div class="bar hp" role="progressbar" aria-label="Your HP">
-              <div class="bar-fill" id="player-hp-fill"></div>
-              <span class="bar-text" id="player-hp-text"></span>
+            <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
+              <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+              <span class="gb-hp-track"><span class="gb-hp-fill" id="player-hp-fill"></span></span>
             </div>
+            <span class="gb-hp-num" id="player-hp-text"></span>
           </div>
         </div>
 

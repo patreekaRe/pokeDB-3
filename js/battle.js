@@ -21,7 +21,7 @@
 import { CARDS_BY_ID, TYPES, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { RELICS_BY_ID } from './data/relics.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { $, el, makeCard, showScreen, setBackdrop, toast, sleep } from './ui.js';
+import { $, el, makeCard, showScreen, setBackdrop, toast, sleep, setHpBar } from './ui.js';
 import { playMusic, preloadMusic, playCry, preloadCries } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
@@ -509,18 +509,10 @@ function renderAll() {
   renderHand();
 }
 
-function setBar(prefix, hp, max) {
-  const ratio = Math.max(0, hp / max);
-  const fill = $(`${prefix}-hp-fill`);
-  fill.style.width = `${ratio * 100}%`;
-  fill.dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
-  $(`${prefix}-hp-text`).textContent = `${hp} / ${max}`;
-}
-
 function renderBars() {
   const b = battle;
-  setBar('player', b.hp, b.maxHp);
-  setBar('enemy', b.enemy.hp, b.enemy.maxHp);
+  setHpBar('player', b.hp, b.maxHp);
+  setHpBar('enemy', b.enemy.hp, b.enemy.maxHp);
   $('player-plate').classList.toggle('has-block', b.block > 0);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 

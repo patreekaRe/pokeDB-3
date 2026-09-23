@@ -371,23 +371,27 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   cursor: help;
 }
 
-/* --- nameplates: name + HP bar under each fighter --- */
+/* --- nameplates: a small Pokégear window under each fighter with its name and Gold/Silver HP bar --- */
 .nameplate {
   width: min(100%, 240px);
-  padding: 6px 10px 8px;
-  border-radius: 12px;
-  background: rgba(10, 12, 30, 0.72);
-  border: 1px solid var(--panel-edge);
+  padding: 6px 10px 5px;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  font-family: "Pixelify Sans", var(--font);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 }
 .nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nameplate-title .chip { padding: 1px 7px; cursor: help; }
-.nameplate .bar { height: 16px; transition: border-color 0.2s, box-shadow 0.2s; }
+.nameplate .gb-hp, .nameplate .gb-hp-num { width: 100%; margin: 0; }
+.nameplate .gb-hp-num { font-size: 0.85rem; line-height: 1; }
+.nameplate .gb-hp-track { transition: border-color 0.2s, box-shadow 0.2s; }
 /* while a fighter has block, its HP bar gets a blue rim so you can tell at a glance */
-.nameplate.has-block .bar { border-color: #6fb8ff; box-shadow: 0 0 8px rgba(111, 184, 255, 0.7); }
+.nameplate.has-block .gb-hp-track { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
 
 /* --- floating status badges above each sprite --- */
 .badges {
@@ -481,8 +485,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   transition: opacity 0.9s, transform 0.9s, filter 0.9s;
 }
 .enemy-portrait img { width: 100%; height: 100%; object-fit: cover; }
-.bar.enemy .bar-fill { background: #e0575b; }
-.bar.enemy .bar-fill[data-level="high"] { background: #e0575b; }
 
 /* --- player --- */
 .player-zone {

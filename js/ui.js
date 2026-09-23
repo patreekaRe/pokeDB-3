@@ -129,3 +129,18 @@ export function groupDeck(ids, cardsById) {
   for (const id of ids) groups.set(id, (groups.get(id) || 0) + 1);
   return [...groups].map(([id, count]) => ({ card: cardsById[id], count }));
 }
+
+/**
+ * Fill a Gold/Silver HP bar: #<prefix>-hp, #<prefix>-hp-fill and #<prefix>-hp-text.
+ * It turns yellow at half HP and red at a fifth, like the games.
+ */
+export function setHpBar(prefix, hp, max) {
+  const ratio = Math.max(0, hp / max);
+  const bar = $(`${prefix}-hp`);
+  bar.dataset.level = ratio > 0.5 ? 'high' : ratio > 0.2 ? 'mid' : 'low';
+  bar.setAttribute('aria-valuemax', String(max));
+  bar.setAttribute('aria-valuenow', String(Math.max(0, hp)));
+  bar.title = `HP ${hp} / ${max}`;
+  $(`${prefix}-hp-fill`).style.width = `${ratio * 100}%`;
+  $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/ ${max}`;
+}

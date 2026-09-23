@@ -85,7 +85,8 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 ## Battle screen layout
 
 There's no top HUD bar. The arena shows each fighter with a **nameplate**
-(name + HP bar) under the sprite and a row of **status badges** above it:
+(a small Pokégear window: name + the same Gold/Silver `.gb-hp` HP bar as
+the map, filled by `setHpBar()` in `js/ui.js`) under the sprite and a row of **status badges** above it:
 round icons with a number bubble (block, burn, weakened, strength, focus,
 guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. A badge
 only renders while its status is active, and each one explains itself in

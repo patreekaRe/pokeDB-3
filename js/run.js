@@ -25,7 +25,7 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep } from './ui.js';
+import { $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 
 let run = null;
@@ -219,14 +219,7 @@ function showMap() {
   $('run-level').hidden = run.level === 0;
   $('run-level').textContent = `Level ${run.level}`;
 
-  const ratio = run.hp / run.maxHp;
-  const hp = $('run-hp');
-  hp.dataset.level = ratio > 0.5 ? 'high' : ratio > 0.2 ? 'mid' : 'low';   // Gold/Silver's green / yellow / red
-  hp.setAttribute('aria-valuemax', String(run.maxHp));
-  hp.setAttribute('aria-valuenow', String(run.hp));
-  hp.title = `HP ${run.hp} / ${run.maxHp}`;
-  $('run-hp-fill').style.width = `${ratio * 100}%`;
-  $('run-hp-text').textContent = `${run.hp}/ ${run.maxHp}`;
+  setHpBar('run', run.hp, run.maxHp);
 
   renderRelicList();
   closeBag();
