@@ -510,7 +510,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .intent.fresh { animation: intentPop 0.35s steps(4), bob 1.8s steps(2) 0.35s infinite; }
 .intent-icon { font-size: 1rem; }
 .intent-value { font-size: 1.05rem; font-weight: 400; color: #283060; }
-.intent-name { font-size: 0.62rem; color: var(--win-muted); white-space: nowrap; }
+.intent-name { font-size: 0.8rem; color: #283060; text-shadow: 1px 0 0 currentColor; white-space: nowrap; }   /* the 1px copy is a crisp pixel "bold": the font has no bold weight */
+@media (max-width: 420px) { .intent-name { font-size: 0.7rem; } }   /* "Flamethrower" still clears the screen edge on an iPhone SE */
 @keyframes bob { 50% { transform: translateY(-4px); } }
 @keyframes intentPop { from { transform: translateY(8px) scale(0.3); opacity: 0; } 60% { transform: translateY(-3px) scale(1.15); opacity: 1; } }
 
