@@ -175,6 +175,7 @@ function beginPlayerTurn() {
   b.turn += 1;
   b.block = b.turn === 1 && hasRelic('iron-plate') ? 8 : 0;   // block only lasts one round
   b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0);
+  b.turnEnergy = b.energy;
   b.nextEnergy = 0;
 
   if (hasRelic('leftovers')) healPlayer(3);
@@ -516,8 +517,12 @@ function renderBars() {
   $('player-plate').classList.toggle('has-block', b.block > 0);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
+  // Energy is shown as the games' PP: "2/3" and a pip for each point this turn started with.
   const orb = $('player-energy');
-  orb.replaceChildren(el('span', 'orb-icon', '⚡'), el('b', '', String(b.energy)));
+  const max = Math.max(b.turnEnergy ?? ENERGY_PER_TURN, b.energy);
+  const pips = el('span', 'pp-pips');
+  for (let i = 0; i < max; i++) pips.append(el('i', i < b.energy ? 'on' : ''));
+  orb.replaceChildren(el('span', 'pp-label', 'PP'), el('b', '', String(b.energy)), el('span', 'pp-max', `/${max}`), pips);
   orb.classList.toggle('empty', b.energy === 0);
   $('draw-count').textContent = `📚 ${b.drawPile.length}`;
   $('discard-count').textContent = `🗂️ ${b.discard.length}`;

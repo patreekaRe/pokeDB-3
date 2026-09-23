@@ -86,13 +86,17 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 
 There's no top HUD bar. The arena shows each fighter with a **nameplate**
 (a small Pokégear window: name + the same Gold/Silver `.gb-hp` HP bar as
-the map, filled by `setHpBar()` in `js/ui.js`) under the sprite and a row of **status badges** above it:
-round icons with a number bubble (block, burn, weakened, strength, focus,
-guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. A badge
+the map, filled by `setHpBar()` in `js/ui.js`) under the sprite. Its title row
+holds the name and the **status badges**, like PSN/PAR in the games: small
+square chips, icon then number (block, burn, weakened, strength, focus,
+guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. When they
+don't fit beside the name, the row of chips drops to its own line. A badge
 only renders while its status is active, and each one explains itself in
 its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
 that fighter has block. Below the arena, `.battle-controls` is a 3-column
-grid: energy orb | hand | End Turn + draw/discard counts. On phones the orb
+grid: energy (`.energy-orb`, drawn as the games' **PP**: a PP tag, "2/3" and a
+pip per point, where the max is `b.turnEnergy`, the energy the turn started
+with) | hand | End Turn + draw/discard counts. On phones the PP box
 and End Turn share a row above the hand so the cards get the full width.
 Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.

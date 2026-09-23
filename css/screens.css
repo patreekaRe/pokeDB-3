@@ -393,7 +393,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 /* while a fighter has block, its HP bar gets a blue rim so you can tell at a glance */
 .nameplate.has-block .gb-hp-track { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
 
-/* --- floating status badges above each sprite --- */
+/* --- status badges (in the nameplates; the How to play guide shows them on their own too) --- */
 .badges {
   display: flex;
   justify-content: center;
@@ -436,6 +436,28 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .badge.bad  { border-color: var(--bad); }
 .badge.bad b { background: var(--bad); color: #fff; }
 @keyframes badgeIn { from { transform: scale(0.4); opacity: 0; } }
+/* In the nameplates, status sits beside the name like PSN / PAR in the games: small square chips, icon then number */
+/* flex-basis auto: when they don't fit beside the name, the whole row of chips drops to its own line under it */
+.nameplate-title { flex-wrap: wrap; row-gap: 3px; }
+.nameplate .badges { flex: 1 0 auto; justify-content: flex-end; flex-wrap: wrap; gap: 3px; min-height: 0; align-items: center; }
+.nameplate .badges:empty { display: none; }
+.nameplate .badge {
+  width: auto;
+  height: 20px;
+  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  border-radius: 0;
+  border: 2px solid #303038;
+  background: #fff;
+  font-size: 0.78rem;
+}
+.nameplate .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.75rem; }
+.nameplate .badge.block { border-color: #2060d8; background: #d8e8ff; }
+.nameplate .badge.good { border-color: #208030; background: #d8f4d0; }
+.nameplate .badge.bad  { border-color: #c02020; background: #ffd8d0; }
+.nameplate .badge.bad b { background: none; color: #a01818; }
 
 /* --- enemy --- */
 /* the enemy's frame takes its own type colour */
@@ -625,25 +647,32 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   align-items: center;
   gap: 10px;
 }
+/* Energy as the games' PP: a little Pokégear window with a PP tag, "2/3" and a pip per point */
 .energy-orb {
   grid-area: orb;
   position: relative;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
   display: grid;
-  place-items: center;
+  grid-template-columns: auto auto;
+  grid-template-areas: "label label" "num max" "pips pips";
+  justify-content: center;
+  align-items: baseline;
+  min-width: 74px;
+  padding: 5px 9px 7px;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  font-family: "Pixelify Sans", var(--font);
   line-height: 1;
-  background: radial-gradient(circle at 35% 30%, #ffe27a, #d99a00 55%, #6b4b00);
-  border: 3px solid #fff3c4;
-  box-shadow: 0 0 18px rgba(255, 203, 5, 0.55), inset 0 -4px 8px rgba(0, 0, 0, 0.35);
-  color: #2a1a00;
-  transition: filter 0.25s, box-shadow 0.25s;
+  transition: filter 0.25s;
 }
-.energy-orb b { font-size: 1.7rem; font-weight: 900; }
-/* the bolt is taken out of the flow so it can't push the number off centre */
-.orb-icon { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; }
-.energy-orb.empty { filter: grayscale(0.85) brightness(0.7); box-shadow: none; }
+.pp-label { grid-area: label; justify-self: start; margin-bottom: 3px; padding: 1px 4px; background: #181818; color: #f8b030; font-size: 0.68rem; font-weight: 700; }
+.energy-orb b { grid-area: num; justify-self: end; font-size: 1.7rem; font-weight: 700; }
+.pp-max { grid-area: max; font-size: 0.95rem; font-weight: 700; color: var(--win-muted); }
+.pp-pips { grid-area: pips; display: flex; justify-content: center; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.pp-pips i { width: 9px; height: 9px; border: 2px solid #303038; background: #b8aa84; }
+.pp-pips i.on { background: #f8d030; box-shadow: inset -2px -2px 0 #c88810; }
+.energy-orb.empty b { color: #a01818; }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 #end-turn-btn { padding: 12px 22px 12px 30px; font-size: 1.05rem; white-space: nowrap; }
 .piles { display: flex; gap: 10px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
@@ -677,8 +706,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
   .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 4px 10px; }
-  .energy-orb { width: 52px; height: 52px; }
-  .energy-orb b { font-size: 1.35rem; }
+  .energy-orb { min-width: 64px; padding: 4px 7px 6px; }
+  .energy-orb b { font-size: 1.4rem; }
   .turn-side { flex-direction: row-reverse; justify-content: flex-start; gap: 12px; }
   #end-turn-btn { padding: 10px 16px 10px 24px; font-size: 0.95rem; }
   .battle-relic { width: 26px; height: 26px; font-size: 0.85rem; }
