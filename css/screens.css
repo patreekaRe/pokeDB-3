@@ -209,7 +209,7 @@
   z-index: 2;
   border-bottom: 0;
   border-radius: 42px 42px 0 0;
-  background: linear-gradient(#ff4a3d 72%, #1b1f3a 72%);
+  background: linear-gradient(#ff4a3d 91%, #1b1f3a 91%);
   transform-origin: 6% 100%;   /* the hinge is at the back-left, so the lid swings up and away */
   transition: transform 0.28s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
@@ -217,19 +217,19 @@
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -7px;
-  width: 14px;
-  height: 14px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
   transform: translateX(-50%);
   border-radius: 50%;
   background: #fff;
-  border: 3px solid #1b1f3a;
+  border: 2px solid #1b1f3a;
 }
 .ball-bottom {
   bottom: 0;
   border-top: 0;
   border-radius: 0 0 42px 42px;
-  background: linear-gradient(#1b1f3a 28%, #fff 28%);
+  background: linear-gradient(#1b1f3a 9%, #fff 9%);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
 }
 .ball-light {
