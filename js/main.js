@@ -47,6 +47,7 @@ let selected = null;   // the starter picked on the start screen
 // skins, and the legendaries) collapses behind "Show more", so a fresh
 // visitor sees a manageable grid, not all 18 at once.
 const ALWAYS_SHOWN = 6;
+let showAllChoice = null;   // null until the player uses Show more / Show fewer; then their choice sticks
 let showAllStarters = false;
 
 function renderStarters() {
@@ -54,9 +55,9 @@ function renderStarters() {
   grid.replaceChildren();
 
   // If you've already unlocked or selected something in the collapsed group,
-  // there's no point hiding it - expand automatically.
+  // there's no point hiding it - expand automatically, unless you've collapsed it yourself.
   const hidden = STARTERS.slice(ALWAYS_SHOWN);
-  if (hidden.includes(selected) || hidden.some(isStarterUnlocked)) showAllStarters = true;
+  showAllStarters = showAllChoice ?? (hidden.includes(selected) || hidden.some(isStarterUnlocked));
 
   STARTERS.forEach((starter, i) => {
     const unlocked = isStarterUnlocked(starter);
@@ -81,6 +82,7 @@ function renderStarters() {
     btn.addEventListener('click', () => {
       if (unlocked) playCry(starter.line[0].id);
       if (unlocked && starter.comingSoon) return toast(`✨ ${starter.line[0].name}'s own moves are coming soon!`, 'ok');
+      if (unlocked && selected === starter) return showChooseButton();
       if (unlocked) return selectStarter(starter);
       if (isShopUnlock(starter)) return toggleShop(starter.id);
       toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
@@ -106,6 +108,14 @@ function selectStarter(starter) {
   $('choose-btn').disabled = false;
 
   setBackdrop(BACKDROPS[starter.type], starter.type);
+}
+
+/** Tapping the picked starter again: bring "See starting deck" into view. */
+function showChooseButton() {
+  const btn = $('choose-btn');
+  const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  btn.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+  btn.focus({ preventScroll: true });
 }
 
 /* ---------- moving between screens ---------- */
@@ -205,7 +215,7 @@ function init() {
     setTimeout(() => continueRun(savedRun), wait);
   });
   $('shop-btn').addEventListener('click', () => toggleShop());
-  $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
+  $('starter-more-btn').addEventListener('click', () => { showAllChoice = !showAllStarters; renderStarters(); });
 
   // A purchase made while the shop was open over some other screen (map,
   // battle, a reward choice) should still be reflected once you're back
