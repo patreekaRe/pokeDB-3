@@ -724,7 +724,10 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   gap: 4px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 203, 5, 0.16);
+  background: rgba(12, 14, 34, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
   border: 1px solid var(--gold);
   font-weight: 800;
   color: var(--gold);
@@ -754,10 +757,10 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 @media (prefers-reduced-motion: reduce) {
   .icon-btn.shop-btn { animation: none; }
 }
-/* narrow phones: during a run the top bar holds six controls, so tighten it to keep ⌂ on screen */
+/* narrow phones: tighten the floating buttons so they all fit on one row */
 @media (max-width: 420px) {
   .topbar { padding: 0 max(10px, env(safe-area-inset-left)); }
-  .brand { font-size: 1.25rem; padding: 4px 2px; }
+  .home-ball { font-size: 52px; }
   .topbar-actions { gap: 5px; }
   .icon-btn { width: 32px; height: 32px; }
   .coin-pill { padding: 4px 9px; }

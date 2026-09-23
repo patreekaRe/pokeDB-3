@@ -167,7 +167,6 @@ function init() {
   $('howto-btn').addEventListener('click', () => openDialog('help-dialog'));
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
-  $('home-btn').addEventListener('click', requestMenu);
   $('brand-btn').addEventListener('click', requestMenu);
 
   $('reset-btn').addEventListener('click', async () => {
