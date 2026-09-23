@@ -801,22 +801,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 }
 .biome-title { grid-column: 2; display: flex; flex-direction: column; align-items: center; font-size: 1.4rem; line-height: 1.15; text-align: center; text-shadow: 0 2px 8px #000; }
 .biome-title small { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
-.map-key-btn {
-  grid-column: 3;
-  justify-self: end;
-  padding: 7px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(12, 14, 34, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
-  color: var(--ink);
-  font-weight: 800;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-.map-key-btn:hover, .map-key-btn[aria-expanded="true"] { background: rgba(40, 46, 96, 0.75); border-color: var(--gold); }
+.map-key-btn { grid-column: 3; justify-self: end; }   /* looks like the Deck/Relics icons (.run-icon) */
 
 /* ---------- the map's drop-downs (Relics, Key) ---------- */
 .drop {
