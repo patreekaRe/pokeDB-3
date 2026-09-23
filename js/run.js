@@ -15,10 +15,10 @@
    ============================================================ */
 
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
-import { BASE_HP, HP_PER_STAGE, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER, TYPES } from './data/cards.js';
+import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
+import { STAGE_POWER, TYPES, CARDS_BY_ID } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
-import { getSave, updateSave, awardCoins } from './storage.js';
+import { getSave, updateSave, awardCoins, saveRunData, loadRunData, clearRunData } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
@@ -66,7 +66,82 @@ export function initRun({ onMenu, onNewRun }) {
 /** Throw away the current run (used when you go back to the menu). */
 export function abandonRun() {
   abandonBattle();
+  if (run) clearRunData();
   run = null;
+}
+
+/* ============================================================
+   SAVED RUNS  -  a checkpoint is written every time the map is shown,
+   so a refresh puts you back on the map before the room you were in.
+   Everything is stored by id and rebuilt from the data files on load.
+   ============================================================ */
+
+const RUN_SAVE_VERSION = 1;
+
+function checkpoint() {
+  const { floors, byId } = run.map;
+  saveRunData({
+    version: RUN_SAVE_VERSION,
+    starter: run.starter.id,
+    level: run.level,
+    levelUnlocked: run.levelUnlocked,
+    stage: run.stage,
+    hp: run.hp,
+    maxHp: run.maxHp,
+    biome: run.biome,
+    deck: run.deck,
+    relics: run.relics,
+    map: { nodes: Object.values(byId), floors: floors.map(row => row.map(node => node.id)) },
+    current: run.current,
+    backdrop: run.backdrop,
+    restCount: run.restCount,
+    fights: run.fights,
+    unlocks: run.unlocks.map(s => s.id),
+  });
+}
+
+function restoreRun(saved) {
+  if (saved.version !== RUN_SAVE_VERSION) throw new Error('old run save');
+  const starter = STARTERS_BY_ID[saved.starter];
+  const known = (ids, table) => ids.every(id => table[id]);
+  if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0)
+      || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.unlocks, STARTERS_BY_ID)) {
+    throw new Error('bad run save');
+  }
+
+  // floors and byId must hold the same node objects, or visiting a room wouldn't show on the map
+  const byId = Object.fromEntries(saved.map.nodes.map(node => [node.id, node]));
+  const floors = saved.map.floors.map(row => row.map(id => byId[id]));
+  const nodes = Object.values(byId);
+  if (!byId.boss || floors.flat().some(n => !n) || (saved.current && !byId[saved.current])
+      || nodes.some(n => [...n.next, ...n.prev].some(id => !byId[id]) || (n.enemyId && !ENEMY_DEFS[n.enemyId]))) {
+    throw new Error('bad run map');
+  }
+
+  return {
+    ...saved,
+    starter,
+    mods: modsFor(saved.level),
+    map: { floors, boss: byId.boss, byId },
+    unlocks: saved.unlocks.map(id => STARTERS_BY_ID[id]),
+    over: false,
+  };
+}
+
+/** The saved run, rebuilt and ready to play, or null. A save that can't be restored is thrown away. */
+export function loadSavedRun() {
+  const saved = loadRunData();
+  if (!saved) return null;
+  try { return restoreRun(saved); }
+  catch (err) { clearRunData(); return null; }
+}
+
+export const hasSavedRun = () => loadSavedRun() !== null;
+
+/** Pick a saved run (from loadSavedRun) back up on its map. */
+export function continueRun(saved) {
+  run = saved;
+  showMap();
 }
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
@@ -110,9 +185,9 @@ export function beginRun(starter, level = 0) {
 function startBiome() {
   const biome = BIOMES[run.biome];
   run.map = generateMap();
-  // Decide now which elite or boss each of those rooms holds, so the map can show it (scouting).
+  // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   for (const node of Object.values(run.map.byId)) {
-    if (node.type === 'elite' || node.type === 'boss') node.enemyId = pickEnemyId(run.biome, node.type);
+    if (['fight', 'elite', 'boss'].includes(node.type)) node.enemyId = pickEnemyId(run.biome, node.type);
   }
   run.current = null;
   run.backdrop = biome.backdrop;
@@ -139,6 +214,7 @@ function showMap() {
 
   $('run-relics').replaceChildren(...run.relics.map(id => makeRelic(RELICS_BY_ID[id], { compact: true })));
 
+  checkpoint();
   renderMap(run.map, run.current, enterNode);
   showScreen('map-screen');
   playMusic(`map${run.biome + 1}`);
@@ -318,6 +394,7 @@ function announceUnlocks() {
 
 function endRun(won) {
   run.over = true;
+  clearRunData();
 
   if (won) {
     const winCoins = awardCoins(COIN_REWARDS.winBonus);

@@ -52,6 +52,24 @@ to `main` (see Conventions), not open a branch or PR.
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
 
+## Saved runs
+
+The run in progress is checkpointed to its own localStorage key
+(`pokedb.run.v1`, helpers at the bottom of `js/storage.js`) every time
+`showMap()` runs, so a refresh resumes on the map before whatever room you
+were in; a battle is replayed from the start, never serialised.
+`checkpoint()` / `restoreRun()` in `js/run.js` store everything by id
+(starter, cards, relics, unlocks) and rebuild from the data files; `mods`
+is recomputed with `modsFor(level)`. The map's `floors` and `byId` share
+node objects, so restore rebuilds `floors` from `byId` to keep `visited`
+in sync. Every fight node gets its `enemyId` in `startBiome()` so a
+refresh can't reroll a fight (only elites/bosses show a scouting badge).
+The save is cleared by `endRun()`, by `abandonRun()` when a run was live,
+and by the About dialog's erase. A version mismatch or any bad id silently
+discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
+screen's Continue button (`renderContinue()` in `js/main.js`) shows
+whenever a valid save exists, and Begin run confirms before replacing it.
+
 ## Battle screen layout
 
 There's no top HUD bar. The arena shows each fighter with a **nameplate**

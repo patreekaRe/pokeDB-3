@@ -20,13 +20,13 @@
      records.js      the Stats and Achievements windows
    ============================================================ */
 
-import { STARTERS, spriteUrl, BACKDROPS } from './data/starters.js';
+import { STARTERS, spriteUrl, stageName, BACKDROPS } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID } from './data/cards.js';
-import { getSave, updateSave, resetSave } from './storage.js';
+import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
-import { initRun, beginRun, abandonRun, isRunActive } from './run.js';
+import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
 import { initAudio } from './audio.js';
@@ -106,8 +106,21 @@ function selectStarter(starter) {
 
 /* ---------- moving between screens ---------- */
 
+let savedRun = null;   // a run saved from an earlier visit, offered by the Continue button
+
+function renderContinue() {
+  savedRun = loadSavedRun();
+  $('continue-btn').hidden = !savedRun;
+  if (!savedRun) return;
+  const { starter, stage, biome, hp, maxHp, level } = savedRun;
+  $('continue-sprite').src = spriteUrl(starter, 'front', stage);
+  $('continue-info').textContent =
+    `${stageName(starter, stage)} · Biome ${biome + 1} · ${hp}/${maxHp} HP${level ? ` · Level ${level}` : ''}`;
+}
+
 /** Show the start screen (keeps whichever starter you had picked). */
 function showStart() {
+  renderContinue();
   renderStarters();
   refreshCoins();
   if (!selected) setBackdrop(BACKDROPS.water, '');
@@ -126,7 +139,13 @@ function goToMenu() {
 /** Look at a starter's deck, and start a run from there. */
 function previewStarter(starter) {
   selected = starter;
-  openPreview(starter, { onBegin: (level) => beginRun(starter, level), onBack: showStart });
+  openPreview(starter, {
+    onBegin: async (level) => {
+      if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
+      beginRun(starter, level);
+    },
+    onBack: showStart,
+  });
 }
 
 async function requestMenu() {
@@ -170,6 +189,7 @@ function init() {
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
+  $('continue-btn').addEventListener('click', () => savedRun && continueRun(savedRun));
   $('shop-btn').addEventListener('click', () => toggleShop());
   $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
 
@@ -193,6 +213,7 @@ function init() {
   $('reset-btn').addEventListener('click', async () => {
     if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
     resetSave();
+    clearRunData();
     closeDialog('about-dialog');
     goToMenu();
     toast('Saved progress erased.', 'ok');

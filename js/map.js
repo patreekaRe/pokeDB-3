@@ -244,8 +244,8 @@ export function renderMap(map, currentId, onPick) {
     btn.style.top = `${yOf(node)}%`;
     let label = info.label;
 
-    // Elites and bosses are chosen ahead of time, so show who is waiting (scouting).
-    if (node.enemyId) {
+    // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
+    if (node.enemyId && node.type !== 'fight') {
       const def = ENEMY_DEFS[node.enemyId];
       const type = TYPES[def.type];
       label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name} (${type.label} type)`;

@@ -6,8 +6,8 @@
    into text with JSON.stringify and back with JSON.parse.
 
    What we save is your long-term progress: stats, PokéCoins, shop
-   purchases and unlocked starters. A run in progress is not saved yet:
-   close the tab and the run is lost.
+   purchases and unlocked starters. The run in progress is saved
+   separately (see the bottom of this file) each time the map is shown.
 
    Everything is wrapped in try/catch because localStorage can be
    blocked (private windows, strict settings). If it fails the game
@@ -86,4 +86,28 @@ export function awardCoins(amount) {
 export function resetSave() {
   data = freshSave();
   persist();
+}
+
+/* ---------- the run in progress ----------
+   Kept under its own key so a broken or outdated run save can be thrown
+   away without touching your long-term progress. run.js decides what goes in. */
+
+const RUN_KEY = 'pokedb.run.v1';
+
+export function saveRunData(saved) {
+  try { localStorage.setItem(RUN_KEY, JSON.stringify(saved)); }
+  catch (err) { /* storage is full or blocked: ignore */ }
+}
+
+/** The saved run as plain data, or null if there isn't one (or it can't be read). */
+export function loadRunData() {
+  try {
+    const raw = localStorage.getItem(RUN_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) { return null; }
+}
+
+export function clearRunData() {
+  try { localStorage.removeItem(RUN_KEY); }
+  catch (err) { /* blocked: nothing to clear */ }
 }

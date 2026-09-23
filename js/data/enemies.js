@@ -297,10 +297,10 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
  * enemyId is optional: the map picks the elite and boss ahead of time so it can show them.
  * Returns everything battle.js needs: the enemy, its HP, and bonus damage.
  */
-/** Pick which enemy an elite or boss node will hold (so the map can show it before you go). */
+/** Pick which enemy a fight, elite or boss node will hold, when the map is made. */
 export function pickEnemyId(biomeIndex, kind) {
   const biome = BIOMES[biomeIndex];
-  return pick(kind === 'boss' ? biome.bosses : biome.elites);
+  return pick(kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals);
 }
 
 export function buildEncounter(biomeIndex, kind, mods, enemyId) {
