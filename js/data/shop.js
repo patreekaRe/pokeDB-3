@@ -21,8 +21,8 @@ export const SKIN_SHOP_ITEMS = [
   { id: 'cyndaquil', cost: 150 },
   { id: 'chikorita', cost: 150 },
   { id: 'totodile',  cost: 150 },
-  { id: 'snivy',     cost: 250 },
   { id: 'tepig',     cost: 250 },
+  { id: 'snivy',     cost: 250 },
   { id: 'oshawott',  cost: 250 },
 ];
 

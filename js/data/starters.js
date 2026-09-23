@@ -104,16 +104,6 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
   {
-    id: 'snivy', type: 'grass', skinOf: 'bulbasaur',
-    line: [
-      { id: 'snivy',      name: 'Snivy' },
-      { id: 'servine',    name: 'Servine' },
-      { id: 'serperior',  name: 'Serperior' },
-    ],
-    blurb: 'Same grass moves as Bulbasaur. Sleek, quick, a little smug.',
-    deck: GRASS_DECK,
-  },
-  {
     id: 'tepig', type: 'fire', skinOf: 'charmander',
     line: [
       { id: 'tepig',   name: 'Tepig' },
@@ -122,6 +112,16 @@ export const STARTERS = [
     ],
     blurb: 'Same fire moves as Charmander. Snorts smoke when excited.',
     deck: FIRE_DECK,
+  },
+  {
+    id: 'snivy', type: 'grass', skinOf: 'bulbasaur',
+    line: [
+      { id: 'snivy',      name: 'Snivy' },
+      { id: 'servine',    name: 'Servine' },
+      { id: 'serperior',  name: 'Serperior' },
+    ],
+    blurb: 'Same grass moves as Bulbasaur. Sleek, quick, a little smug.',
+    deck: GRASS_DECK,
   },
   {
     id: 'oshawott', type: 'water', skinOf: 'squirtle',
@@ -166,16 +166,6 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
   {
-    id: 'turtwig', type: 'grass', skinOf: 'bulbasaur',
-    line: [
-      { id: 'turtwig',  name: 'Turtwig' },
-      { id: 'grotle',   name: 'Grotle' },
-      { id: 'torterra', name: 'Torterra' },
-    ],
-    blurb: 'Same grass moves as Bulbasaur. A much sturdier shell.',
-    deck: GRASS_DECK,
-  },
-  {
     id: 'chimchar', type: 'fire', skinOf: 'charmander',
     line: [
       { id: 'chimchar',  name: 'Chimchar' },
@@ -184,6 +174,16 @@ export const STARTERS = [
     ],
     blurb: 'Same fire moves as Charmander. A flame that never goes out.',
     deck: FIRE_DECK,
+  },
+  {
+    id: 'turtwig', type: 'grass', skinOf: 'bulbasaur',
+    line: [
+      { id: 'turtwig',  name: 'Turtwig' },
+      { id: 'grotle',   name: 'Grotle' },
+      { id: 'torterra', name: 'Torterra' },
+    ],
+    blurb: 'Same grass moves as Bulbasaur. A much sturdier shell.',
+    deck: GRASS_DECK,
   },
   {
     id: 'piplup', type: 'water', skinOf: 'squirtle',

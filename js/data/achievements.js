@@ -37,12 +37,12 @@ export const ACHIEVEMENTS = [
   },
   // ...tougher, second-tier goals once you've got the basics down.
   {
-    starter: 'turtwig',
+    starter: 'chimchar',
     text: 'Defeat a boss with over half your HP left',
     test: (s) => s.healthyBossWin,
   },
   {
-    starter: 'chimchar',
+    starter: 'turtwig',
     text: 'Win a run visiting at most 1 rest site',
     test: (s) => s.lightRestWin,
   },

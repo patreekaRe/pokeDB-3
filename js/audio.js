@@ -50,6 +50,12 @@ const SOUNDS = {
 const CRIES = new Set([
   'charmander', 'charmeleon', 'charizard', 'bulbasaur', 'ivysaur', 'venusaur',
   'squirtle', 'wartortle', 'blastoise',
+  'cyndaquil', 'quilava', 'typhlosion', 'chikorita', 'bayleef', 'meganium',
+  'totodile', 'croconaw', 'feraligatr', 'tepig', 'pignite', 'emboar',
+  'snivy', 'servine', 'serperior', 'oshawott', 'dewott', 'samurott',
+  'combusken', 'blaziken', 'treecko', 'grovyle', 'sceptile',
+  'mudkip', 'marshtomp', 'swampert', 'chimchar', 'monferno', 'infernape',
+  'turtwig', 'grotle', 'torterra', 'piplup', 'prinplup', 'empoleon',
   'rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix', 'zubat', 'geodude', 'growlithe',
   'bellsprout', 'krabby', 'machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela', 'gloom',
   'poliwhirl', 'arcanine', 'snorlax', 'tangrowth', 'magmar', 'lapras', 'salamence',
