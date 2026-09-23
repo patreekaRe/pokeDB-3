@@ -537,8 +537,8 @@ function renderBars() {
   orb.replaceChildren(el('span', 'pp-label', 'PP'), count, el('span', 'pp-max', `/${max}`), pips);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
-  $('draw-count').replaceChildren(el('span', 'pile-label', 'Draw'), el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
-  $('discard-count').replaceChildren(el('span', 'pile-label', 'Discard'), el('span', 'pile-icon', '🗂️'), el('b', '', String(b.discard.length)));
+  $('draw-count').replaceChildren(el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
+  $('discard-count').replaceChildren(el('span', 'pile-icon', '🗂️'), el('b', '', String(b.discard.length)));
   $('end-turn-btn').disabled = b.busy || b.over;
 }
 
