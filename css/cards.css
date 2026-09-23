@@ -11,9 +11,8 @@
    ============================================================ */
 
 .card {
-  --c1: #9aa2c8;          /* top colour of the card */
-  --c2: #565d84;          /* bottom colour */
-  --edge: #d8dcf0;
+  --c1: #9aa2c8;          /* the card body (Normal type) */
+  --c2: #565d84;          /* the frame */
 
   position: relative;
   width: var(--card-w, 100%);
@@ -24,9 +23,9 @@
   user-select: none;
   transition: transform 0.15s, filter 0.15s;
 }
-.card.type-fire   { --c1: #ff8f4d; --c2: #b8321a; --edge: #ffd0a8; }
-.card.type-water  { --c1: #5cbcff; --c2: #1d58b8; --edge: #bfe3ff; }
-.card.type-grass  { --c1: #72dc70; --c2: #257a38; --edge: #c8f5c4; }
+.card.type-fire   { --c1: #ff8f4d; --c2: #b8321a; }
+.card.type-water  { --c1: #5cbcff; --c2: #1d58b8; }
+.card.type-grass  { --c1: #72dc70; --c2: #257a38; }
 
 .card-face {
   position: absolute;
@@ -35,11 +34,13 @@
   flex-direction: column;
   align-items: center;
   gap: 3cqw;
-  padding: 9cqw 7cqw 7cqw;
-  border-radius: 9cqw;
-  border: 0.8cqw solid var(--edge);
-  background: linear-gradient(165deg, var(--c1), var(--c2));
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  padding: 9cqw 6cqw 6cqw;
+  border-radius: 0;
+  border: 2.4cqw solid var(--c2);
+  background:
+    repeating-conic-gradient(rgba(255, 255, 255, 0.07) 0 25%, transparent 0 50%) 0 0 / 4cqw 4cqw,
+    var(--c1);                                   /* a faint pixel checkerboard, like the GB card game's cards */
+  box-shadow: 0 0 0 1.2cqw #181010, inset 0 0 0 1cqw rgba(255, 255, 255, 0.3), 1.6cqw 1.6cqw 0 1.2cqw rgba(0, 0, 0, 0.4);
   transition: box-shadow 0.15s;
 }
 
@@ -47,29 +48,32 @@
   position: absolute;
   top: -3cqw;
   left: -3cqw;
-  width: 20cqw;
-  height: 20cqw;
+  width: 19cqw;
+  height: 19cqw;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffe680, #d79a00);
-  border: 0.8cqw solid #fff3b0;
-  color: #4a2f00;
+  border: 1.2cqw solid #181010;
+  background: #f8d030;
+  box-shadow: inset -1.6cqw -1.6cqw 0 #c88810, inset 1.6cqw 1.6cqw 0 #fff6b0;
+  color: #181010;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 12cqw;
-  font-weight: 900;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  line-height: 1;
 }
 
 .card-name {
   width: 100%;
   min-height: 12cqw;
   padding-left: 12cqw;               /* leaves room for the cost gem */
-  padding-right: 2cqw;
+  padding-right: 1cqw;
   display: grid;
   align-items: center;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 10.5cqw;
-  line-height: 1.1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  font-weight: 400;
+  line-height: 1.2;
+  color: #fff8e0;
+  text-shadow: 0.9cqw 0.9cqw 0 rgba(0, 0, 0, 0.6);
 }
 .card-art {
   width: 100%;
@@ -79,21 +83,25 @@
   place-items: center;
   font-size: 21cqw;
   line-height: 1;
-  border-radius: 5cqw;
-  background: rgba(255, 255, 255, 0.22);
-  box-shadow: inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.3);
+  border: 1.2cqw solid #181010;
+  background: color-mix(in srgb, var(--c1) 30%, #fff8e8);
+  box-shadow: inset 0 0 0 1cqw rgba(255, 255, 255, 0.55);
 }
 .card-type {
+  font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 7.5cqw;
-  font-weight: 700;
-  opacity: 0.9;
+  color: #181010;
 }
+/* the description stays in the normal font: pixel letters would be too small to read at card size */
 .card-text {
+  font-family: var(--font);
   font-size: 8.4cqw;
+  font-weight: 700;
   line-height: 1.22;
   padding: 2cqw 3cqw;
-  border-radius: 4cqw;
-  background: rgba(0, 0, 0, 0.28);
+  border: 1.2cqw solid #181010;
+  background: var(--win-bg);
+  color: var(--win-ink);
   width: 100%;
   flex: 1;
   display: grid;
@@ -103,7 +111,7 @@
 /* Interactive cards lift up when you point at them */
 .card[role="button"] { cursor: pointer; }
 .card[role="button"]:hover { transform: translateY(-5px) scale(1.03); z-index: 2; }
-.card[role="button"]:hover .card-face { box-shadow: 0 12px 22px rgba(0, 0, 0, 0.55); }
+.card[role="button"]:hover .card-face { box-shadow: 0 0 0 1.2cqw #181010, inset 0 0 0 1cqw rgba(255, 255, 255, 0.3), 2.4cqw 3cqw 0 1.2cqw rgba(0, 0, 0, 0.4); }
 
 /* Locked cards: greyed out with a message */
 .card.locked { filter: grayscale(1) brightness(0.55); }
@@ -111,11 +119,11 @@
   position: absolute;
   inset: auto 6cqw 10cqw;
   padding: 3cqw 2cqw;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  font-size: 8cqw;
-  font-weight: 800;
+  border: 1cqw solid #181010;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 6.5cqw;
 }
 .card.locked .card-text { visibility: hidden; }
 
@@ -124,13 +132,13 @@
   position: absolute;
   top: -3cqw;
   right: -3cqw;
-  padding: 1cqw 5cqw;
-  border-radius: 999px;
-  background: #fff;
-  color: #222;
-  font-size: 10cqw;
-  font-weight: 900;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  padding: 1.5cqw 3cqw;
+  border: 1.2cqw solid #181010;
+  background: #fff8e0;
+  color: #181010;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 9cqw;
+  line-height: 1;
   z-index: 1;
 }
 .card.maxed { opacity: 0.55; }

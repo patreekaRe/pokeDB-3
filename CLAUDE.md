@@ -198,7 +198,11 @@ the `--win-*` tokens in `:root` (`css/base.css`); tune the tone there. Inside
 a `.dialog` the usual tokens (`--ink`, `--muted`, `--panel`, `--gold`...) are
 re-pointed to dark-on-parchment values, so most content re-themes itself.
 Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
-`.dialog ...` override in `css/base.css`. Game cards keep their own look.
+`.dialog ...` override in `css/base.css`. Game cards (`css/cards.css`) are styled after the Game Boy
+Color Pokémon Trading Card Game: square type-coloured frame, pixel checker
+body, square gold cost gem, pixel-font name/type, a framed art window and a
+cream text window. The description stays in the normal font on purpose:
+pixel letters would be too small to read at card size.
 Window text (and the HP bar, biome sign, PP box...) uses Press Start 2P, the
 8x8 Game Boy-style font, as `var(--pixel-font)`. It's declared by hand as
 "PokeDB Pixel" at the top of `css/base.css` with `size-adjust: 66%` (its
