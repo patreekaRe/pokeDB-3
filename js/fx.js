@@ -8,10 +8,10 @@
    showing.
    ============================================================ */
 
-const COUNT = 42;
+const COUNT = 14;
 const TILT = 0.38;         // radians the ring leans back (0 = seen edge-on, like a planet's ring)
-const SPEED = 0.35;        // radians per second around the ring
-const COLORS = ['#ffcb05', '#ffffff', '#ff8f4d', '#5cbcff', '#72dc70'];
+const SPEED = 0.18;        // radians per second around the ring
+const COLORS = ['#ffffff', '#ffe9a6'];   // kept soft on purpose: a hint of motion, not a light show
 
 /** Called once at startup. */
 export function initHowtoFx() {
@@ -23,7 +23,7 @@ export function initHowtoFx() {
   const points = Array.from({ length: COUNT }, (_, i) => ({
     angle: (i / COUNT) * Math.PI * 2 + Math.random() * 0.3,
     lift: (Math.random() - 0.5) * 0.25,
-    size: 1.8 + Math.random() * 2.6,
+    size: 0.7 + Math.random() * 0.9,
     color: COLORS[i % COLORS.length],
     phase: Math.random() * Math.PI * 2,
   }));
@@ -67,7 +67,7 @@ export function initHowtoFx() {
       const depth = 1 - (z + radius) / (radius * 2);            // 0 = far, 1 = near
       const twinkle = 0.75 + 0.25 * Math.sin(t * 3 + p.phase);
       const r = p.size * scale * 3;
-      ctx.globalAlpha = (0.25 + 0.75 * depth) * twinkle;
+      ctx.globalAlpha = (0.08 + 0.27 * depth) * twinkle;
       ctx.drawImage(sprites[p.color], sx - r, sy - r, r * 2, r * 2);
     }
     ctx.globalAlpha = 1;
