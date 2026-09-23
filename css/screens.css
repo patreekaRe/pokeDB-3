@@ -22,8 +22,8 @@
   paint-order: stroke fill;
   text-shadow: 0 0.06em 0 #14275e, 0 0.14em 0.3em rgba(0, 0, 0, 0.5);
   transform: rotate(-2deg);
+  margin: 10px 0 22px;
 }
-.title span { color: #fff; }
 .title small {
   display: block;
   margin-top: 0.3em;
@@ -34,8 +34,65 @@
   -webkit-text-stroke: 0;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
   transform: none;
+  animation: subtitleIn 0.8s ease-out both 0.7s;
 }
-.pitch { margin: 16px 0 14px; color: #e6e9ff; font-size: 1.05rem; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); }
+
+/* the logo: letters bounce in one by one, then a slow wave with a shine
+   rolls through them; the "o" is a Poké Ball that wobbles like a catch */
+.title-logo { display: inline-flex; align-items: baseline; }
+.tl {
+  display: inline-block;
+  animation:
+    letterIn 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both calc(var(--i) * 80ms),
+    letterWave 3.2s ease-in-out infinite calc(1s + var(--i) * 0.14s);
+}
+.tl.db { color: #fff; }
+.pokeball {
+  position: relative;
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin: 0 0.02em;
+  border-radius: 50%;
+  border: 0.07em solid var(--blue);
+  background: linear-gradient(180deg, #ff4a3d 0 44%, #1b1f3a 44% 56%, #fff 56%);
+  box-shadow: 0 0.06em 0 #14275e, inset -0.06em -0.06em 0 rgba(0, 0, 0, 0.18);
+  animation: ballWobble 3.2s ease-in-out infinite 1.4s;
+}
+.pokeball::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 0.2em;
+  height: 0.2em;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  border: 0.045em solid #1b1f3a;
+}
+@keyframes letterIn {
+  from { opacity: 0; transform: translateY(-0.6em) scale(0.4); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes letterWave {
+  0%, 100% { transform: translateY(0); filter: brightness(1); }
+  18%      { transform: translateY(-0.07em); filter: brightness(1.3); }
+  36%      { transform: translateY(0); filter: brightness(1); }
+}
+@keyframes ballWobble {
+  0%, 55%, 100% { transform: rotate(0); }
+  64% { transform: rotate(-22deg); }
+  74% { transform: rotate(16deg); }
+  84% { transform: rotate(-8deg); }
+  92% { transform: rotate(3deg); }
+}
+@keyframes subtitleIn {
+  from { opacity: 0; letter-spacing: 0.4em; }
+  to   { opacity: 1; letter-spacing: 0.14em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl, .pokeball, .title small { animation: none; }
+}
 
 .starter-panel { width: 100%; }
 .starter-panel h2 { text-align: center; margin-bottom: 12px; }
