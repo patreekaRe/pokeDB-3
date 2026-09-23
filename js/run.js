@@ -25,7 +25,7 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeRelic, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep } from './ui.js';
+import { $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 
 let run = null;
@@ -53,6 +53,12 @@ function randomStartingRelic() {
 /** Called once at startup. */
 export function initRun({ onMenu, onNewRun }) {
   $('run-deck-btn').addEventListener('click', () => run && showDeckDialog(run));
+  $('run-relics-btn').addEventListener('click', () => run && showRelicsDialog());
+  $('map-key-btn').addEventListener('click', () => setMapKey($('map-key').hidden));
+  document.addEventListener('click', (e) => {
+    if (!$('map-key').hidden && !e.target.closest('#map-key, #map-key-btn')) setMapKey(false);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMapKey(false); });
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
@@ -203,8 +209,10 @@ function showMap() {
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
   $('run-title').textContent = stageName(run.starter, run.stage);
-  $('biome-title').textContent = `Biome ${run.biome + 1}: ${biome.name}`;
+  $('biome-number').textContent = `Biome ${run.biome + 1} of ${BIOMES.length}`;
+  $('biome-name').textContent = biome.name;
   $('run-deck-count').textContent = String(run.deck.length);
+  $('run-relic-count').textContent = String(run.relics.length);
   $('run-level').hidden = run.level === 0;
   $('run-level').textContent = `Level ${run.level}`;
 
@@ -214,12 +222,29 @@ function showMap() {
   fill.dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
   $('run-hp-text').textContent = `${run.hp} / ${run.maxHp}`;
 
-  $('run-relics').replaceChildren(...run.relics.map(id => makeRelic(RELICS_BY_ID[id], { compact: true })));
-
+  setMapKey(false);
   checkpoint();
   renderMap(run.map, run.current, enterNode);
   showScreen('map-screen');
   playMusic(`map${run.biome + 1}`);
+}
+
+function setMapKey(open) {
+  $('map-key').hidden = !open;
+  $('map-key-btn').setAttribute('aria-expanded', String(open));
+}
+
+function showRelicsDialog() {
+  const rows = run.relics.map(id => {
+    const relic = RELICS_BY_ID[id];
+    const row = el('div', 'howto-li');
+    const text = el('span', 'howto-li-text');
+    text.append(el('b', '', relic.name), el('small', '', relic.text));
+    row.append(el('span', 'howto-node relic-node', relic.icon), text);
+    return row;
+  });
+  $('relics-list').replaceChildren(...(rows.length ? rows : [el('p', 'hint', 'No relics yet. Beat an elite or open a treasure to find one.')]));
+  openDialog('relics-dialog');
 }
 
 function enterNode(node) {

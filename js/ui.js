@@ -116,13 +116,10 @@ export function makeCard(card, options = {}) {
 }
 
 /** A relic tile: icon, name and what it does. */
-export function makeRelic(relic, { compact = false } = {}) {
-  const node = el('div', `relic${compact ? ' compact' : ''}`);
+export function makeRelic(relic) {
+  const node = el('div', 'relic');
   node.title = `${relic.name}: ${relic.text}`;
-  node.append(el('span', 'relic-icon', relic.icon));
-  if (!compact) {
-    node.append(el('strong', 'relic-name', relic.name), el('span', 'relic-text', relic.text));
-  }
+  node.append(el('span', 'relic-icon', relic.icon), el('strong', 'relic-name', relic.name), el('span', 'relic-text', relic.text));
   return node;
 }
 

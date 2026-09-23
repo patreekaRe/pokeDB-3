@@ -96,11 +96,21 @@ and End Turn share a row above the hand so the cards get the full width.
 Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 
-**Watch for CSS class-name collisions.** The map screen and reward screen
-already use `.relic-row` and `.relic-icon`, and a later, unscoped rule like
+**Watch for CSS class-name collisions.** The reward screen already uses
+`.relic-icon`, and a later, unscoped rule like
 `.relic-icon { font-size: 3rem }` wins over anything earlier in the file.
 That's why battle uses `.battle-relics` / `.battle-relic`. Before adding a
 generic class name, grep `css/` and `js/` for it.
+
+## Map screen
+
+The top `.run-card` shows only the sprite, name, HP and two `.run-pill`
+buttons: Deck (the deck dialog) and Relics (`#relics-dialog`, built by
+`showRelicsDialog()` in `js/run.js`). The node legend is a Key button
+(`#map-key-btn`) that opens a floating `#map-key` list; it closes on an
+outside tap, Escape, or whenever `showMap()` runs. Its rows and the relics
+list reuse the How to play `.howto-li` / `.howto-node` styles, so keep the
+key's wording in step with the How to play map slide.
 
 The shop's top-bar button (`.shop-btn`) has no chrome: it's a CSS Poké Mart
 (`.mart`, sized in em so one `font-size` scales it; also used small on the
