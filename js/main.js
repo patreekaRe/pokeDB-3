@@ -21,7 +21,7 @@
 
 import { STARTERS, spriteUrl, BACKDROPS } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
-import { TYPES } from './data/cards.js';
+import { TYPES, CARDS_BY_ID } from './data/cards.js';
 import { getSave, updateSave, resetSave } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
@@ -30,7 +30,7 @@ import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
 import { initAudio } from './audio.js';
 import {
-  $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
+  $, el, makeCard, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
 
 let selected = null;   // the starter picked on the start screen
@@ -143,6 +143,7 @@ async function requestMenu() {
 
 function init() {
   initAudio();
+  $('howto-card').append(makeCard(CARDS_BY_ID.ember, { stage: 0 }));   // a real card, so the guide always matches the game
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 

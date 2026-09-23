@@ -194,23 +194,62 @@
   <div id="toast" class="toast" role="status"></div>
 
   <!-- ============ DIALOGS ============ -->
-  <dialog id="help-dialog" class="dialog">
-    <h2>How to play</h2>
-    <ol class="howto">
-      <li><strong>Pick a starter</strong> and preview its deck. It's fixed - no editing.</li>
-      <li><strong>Climb the map:</strong> ⚔️ fights, 💀 elites, 🏥 rest sites, 🎁 treasure, then 👑 a boss.</li>
-      <li><strong>In battle:</strong> draw 5 cards, get 3⚡ energy, tap a card to play it. <b>End Turn</b> when done.</li>
-      <li><strong>Win fights</strong> to add moves to your deck and earn 💰 PokéCoins. Evolve after each biome's boss.</li>
-      <li><strong>Beat all 3 bosses</strong> to win the run.</li>
-    </ol>
-    <h3>Good to know</h3>
-    <ul class="glossary">
-      <li><b>🔥&gt;🌿&gt;💧&gt;🔥</b> type advantage: +30% / -25% damage, both ways. Watch for ▲▼ on enemy attacks.</li>
-      <li><b>🛡️Block</b> absorbs damage this round · <b>🔥Burn</b> ticks each enemy turn · <b>🎯Focus</b> boosts your next hit · <b>💨Weaken</b> halves their next hit.</li>
-      <li><b>😡 Enrage:</b> fights get harder after turn 6, so don't stall.</li>
-      <li><b>⭐ Trainer Levels</b> and <b>🔒 locked starters</b> unlock through the <b>🛒 Shop</b> or achievements. If you faint, your unlocks and coins are kept.</li>
-    </ul>
-    <form method="dialog"><button class="btn primary">Got it</button></form>
+  <dialog id="help-dialog" class="dialog howto-dialog">
+    <h2 tabindex="-1" autofocus>How to play</h2>   <!-- focus the top, or the dialog opens scrolled down to its only button -->
+
+    <div class="howto-steps">
+      <div class="howto-step"><img src="assets/pokemon/charmander-front.gif" class="pixel" alt=""><b>Pick a starter</b></div>
+      <span class="howto-arrow" aria-hidden="true">›</span>
+      <div class="howto-step"><span class="howto-icon">🗺️</span><b>Climb the map</b></div>
+      <span class="howto-arrow" aria-hidden="true">›</span>
+      <div class="howto-step"><span class="howto-icon">⚔️</span><b>Win battles</b><small>new moves + 💰</small></div>
+      <span class="howto-arrow" aria-hidden="true">›</span>
+      <div class="howto-step boss"><img src="assets/pokemon/snorlax-front.gif" class="pixel" alt=""><b>Beat 3 bosses</b><small>evolve after each</small></div>
+    </div>
+
+    <h3 class="howto-label">Your turn</h3>
+    <div class="howto-turn">
+      <div class="energy-orb" title="Energy"><span class="orb-icon">⚡</span><b>3</b></div>
+      <span class="howto-arrow" aria-hidden="true">›</span>
+      <div id="howto-card" class="howto-card"></div>
+      <span class="howto-arrow" aria-hidden="true">›</span>
+      <span class="howto-endturn">End Turn</span>
+    </div>
+    <p class="howto-caption">Spend ⚡ to play cards (cost in the corner)</p>
+
+    <h3 class="howto-label">Map</h3>
+    <div class="howto-row">
+      <div class="howto-item"><span class="howto-node">⚔️</span>Fight</div>
+      <div class="howto-item"><span class="howto-node elite">💀</span>Elite</div>
+      <div class="howto-item"><span class="howto-node rest">🏥</span>Heal</div>
+      <div class="howto-item"><span class="howto-node treasure">🎁</span>Relic</div>
+      <div class="howto-item"><span class="howto-node boss">👑</span>Boss</div>
+    </div>
+
+    <h3 class="howto-label">Types</h3>
+    <div class="howto-types">
+      <span class="howto-type fire">🔥</span><span class="howto-beats">beats</span>
+      <span class="howto-type grass">🌿</span><span class="howto-beats">beats</span>
+      <span class="howto-type water">💧</span><span class="howto-beats">beats</span>
+      <span class="howto-type fire">🔥</span>
+    </div>
+    <p class="howto-caption">▲ +30% damage · ▼ −25% · works for enemies too</p>
+
+    <h3 class="howto-label">Statuses</h3>
+    <div class="howto-row">
+      <div class="howto-item"><span class="badge block">🛡️<b>6</b></span>Block</div>
+      <div class="howto-item"><span class="badge">🔥<b>3</b></span>Burn</div>
+      <div class="howto-item"><span class="badge good">🎯<b>8</b></span>Next hit</div>
+      <div class="howto-item"><span class="badge">💨</span>½ damage</div>
+      <div class="howto-item"><span class="badge bad">😡</span>Turn 6+</div>
+    </div>
+
+    <div class="howto-tips">
+      <p>💰 Faint? You keep your coins and unlocks</p>
+      <p>🛒 Spend coins in the Shop</p>
+    </div>
+
+    <form method="dialog" class="howto-go"><button class="btn primary big">Let's go!</button></form>
   </dialog>
 
   <dialog id="about-dialog" class="dialog">

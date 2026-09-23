@@ -249,7 +249,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   margin-top: 16px;
 }
 .dialog-actions form { margin: 0; }
-.howto, .glossary, .credits, .unlocks { padding-left: 22px; }
+.credits, .unlocks { padding-left: 22px; }
 .disclaimer {
   padding: 10px 12px;
   border-radius: 10px;
