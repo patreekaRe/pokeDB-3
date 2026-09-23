@@ -78,6 +78,16 @@ attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in
 `js/main.js` sets it back to false.
 
+## Start screen
+
+The logo is built from per-letter spans in `index.html`: "Poké" uses the
+Sniglet Google Font (loaded in `<head>`, logo only), "DB" uses the normal
+heavy font, and the "o" is a CSS Poké Ball (`.pokeball`). The "How to play"
+button's orbiting sparkle ring is drawn on a 2D canvas by `js/fx.js` with
+hand-rolled 3D projection, deliberately not Three.js, to keep the page
+light on phones. It only animates while the start screen is showing, and
+all start-screen motion stops under `prefers-reduced-motion`.
+
 ## Music
 
 `js/audio.js` plays one looping track at a time from `assets/audio/`:

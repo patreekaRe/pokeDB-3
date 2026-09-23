@@ -29,6 +29,7 @@ import { initRun, beginRun, abandonRun, isRunActive } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
 import { initAudio } from './audio.js';
+import { initHowtoFx } from './fx.js';
 import {
   $, el, makeCard, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
@@ -143,6 +144,7 @@ async function requestMenu() {
 
 function init() {
   initAudio();
+  initHowtoFx();
   $('howto-card').append(makeCard(CARDS_BY_ID.ember, { stage: 0 }));   // a real card, so the guide always matches the game
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
