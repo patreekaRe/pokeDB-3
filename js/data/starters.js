@@ -229,6 +229,21 @@ export const STARTERS = [
     blurb: 'A legendary tide. Same water moves as Squirtle, carried by legend.',
     deck: WATER_DECK,
   },
+
+  /* ---------- the secret final one ----------
+     Hidden as "???" until you unlock every other starter. Psychic isn't one of
+     the three battle types yet and it has no deck, so `comingSoon` keeps it
+     out of runs (main.js) until its own cards are built. */
+  {
+    id: 'mewtwo', type: 'psychic', legendary: true, secret: true, comingSoon: true,
+    line: [
+      { id: 'mewtwo',        name: 'Mewtwo' },
+      { id: 'mewtwo',        name: 'Awakened Mewtwo' },
+      { id: 'mewtwo-shiny',  name: 'Ascendant Mewtwo' },
+    ],
+    blurb: 'The final secret. Its own psychic moves are still being trained.',
+    deck: [],
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries(STARTERS.map(s => [s.id, s]));

@@ -60,7 +60,7 @@ function renderStarters() {
 
   STARTERS.forEach((starter, i) => {
     const unlocked = isStarterUnlocked(starter);
-    const btn = el('button', `starter-btn type-${starter.type}`);
+    const btn = el('button', `starter-btn type-${starter.type}${starter.secret ? ' secret' : ''}`);
     btn.type = 'button';
     btn.setAttribute('role', 'radio');
     btn.setAttribute('aria-checked', String(selected === starter));
@@ -73,12 +73,13 @@ function renderStarters() {
 
     if (!unlocked) {
       btn.classList.add('locked');
-      const lockLabel = isShopUnlock(starter) ? '🔒 Shop' : starter.legendary ? '🔒 Legendary' : '🔒 Achievement';
+      const lockLabel = isShopUnlock(starter) ? '🔒 Shop' : starter.secret ? '🔒 ???' : starter.legendary ? '🔒 Legendary' : '🔒 Achievement';
       btn.append(el('span', 'starter-lock', lockLabel));
     }
     if (selected === starter) btn.classList.add('selected');
 
     btn.addEventListener('click', () => {
+      if (unlocked && starter.comingSoon) return toast(`✨ ${starter.line[0].name}'s own moves are coming soon!`, 'ok');
       if (unlocked) return selectStarter(starter);
       if (isShopUnlock(starter)) return toggleShop(starter.id);
       toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');

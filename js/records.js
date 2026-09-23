@@ -68,7 +68,7 @@ export function openAchievements() {
     img.src = spriteUrl(starter, 'front');
     img.alt = '';
     const text = el('div', 'ach-text');
-    text.append(el('strong', '', starter.line[0].name), el('span', '', a.text));
+    text.append(el('strong', '', got || !starter.secret ? starter.line[0].name : '???'), el('span', '', a.text));
     row.append(img, text, el('span', 'ach-status', got ? '✅' : '🔒'));
     row.title = got ? `Unlocked ${starter.line[0].name}` : `Locked: ${a.text}`;
     list.append(row);

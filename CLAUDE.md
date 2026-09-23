@@ -45,6 +45,12 @@ to `main` (see Conventions), not open a branch or PR.
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
   `-shiny` suffixed sprite id for a visual payoff on final evolution.
+- **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
+  centred alone on the last grid row). It unlocks once every other starter
+  is unlocked; that achievement must stay last in `ACHIEVEMENTS`, since
+  `checkAchievements()` grants in order (the shop also runs it after a
+  purchase). It is `type: 'psychic'` with an empty deck, so `comingSoon: true`
+  stops it being picked for a run until its own cards exist.
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
   `js/run.js`. Shop catalog is `js/data/shop.js`; `js/shop.js` renders it.

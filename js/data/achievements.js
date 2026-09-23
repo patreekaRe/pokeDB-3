@@ -7,13 +7,16 @@
    that need to be earned.
 
    Each achievement unlocks one starter. `test` looks at your saved
-   stats (see storage.js) and returns true once you have done it.
+   stats (see storage.js) and returns true once you have done it; it
+   also gets the whole save, for goals about what you have unlocked.
 
    Kept deliberately forgiving: nothing here needs a flawless run.
    The two that used to ("no damage at all", "no rest site at all")
    were changed to "mostly" versions, since a single mistake voiding
    an entire run felt like bad luck more than a fair challenge.
    ============================================================ */
+
+import { STARTERS } from './starters.js';
 
 export const ACHIEVEMENTS = [
   // Easier, first-tier goals up front...
@@ -65,6 +68,13 @@ export const ACHIEVEMENTS = [
     starter: 'suicune',
     text: 'Win a run on Trainer Level 3 with a Water starter',
     test: (s) => s.maxLevelWinByType.water >= 3,
+  },
+  // Must stay last: checkAchievements() grants in order, so this sees any
+  // starter unlocked by the entries above in the same check.
+  {
+    starter: 'mewtwo',
+    text: 'Unlock every other Pokémon',
+    test: (s, save) => STARTERS.every(st => st.id === 'mewtwo' || st.free || save.unlocked.includes(st.id)),
   },
 ];
 

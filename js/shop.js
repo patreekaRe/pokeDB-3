@@ -7,6 +7,7 @@
 import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS } from './data/shop.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave } from './storage.js';
+import { checkAchievements } from './progress.js';
 import { $, el, refreshCoins, toast } from './ui.js';
 
 /** Toggle the shop dialog open/closed. It's a non-modal dialog (.show(), not
@@ -61,6 +62,8 @@ function skinTile(item) {
     btn.addEventListener('click', () => buy(item.cost, () => {
       updateSave(d => { d.unlocked.push(item.id); });
       toast(`${starter.line[0].name} unlocked!`, 'ok');
+      // buying the last missing skin can complete an "unlock everything" goal
+      for (const earned of checkAchievements()) toast(`🔓 Unlocked ${earned.line[0].name}!`, 'ok');
     }));
     node.append(btn);
   }

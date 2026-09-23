@@ -24,9 +24,12 @@ export function isShopUnlock(starter) {
  */
 export function checkAchievements() {
   const save = getSave();
-  const earned = ACHIEVEMENTS.filter(a => !save.unlocked.includes(a.starter) && a.test(save.stats));
-  if (earned.length) {
-    updateSave(d => { d.unlocked.push(...earned.map(a => a.starter)); });
+  const earned = [];
+  // One at a time, so a later goal (Mewtwo's "unlock everything") sees what the earlier ones just unlocked.
+  for (const a of ACHIEVEMENTS) {
+    if (save.unlocked.includes(a.starter) || !a.test(save.stats, save)) continue;
+    updateSave(d => { d.unlocked.push(a.starter); });
+    earned.push(STARTERS_BY_ID[a.starter]);
   }
-  return earned.map(a => STARTERS_BY_ID[a.starter]);
+  return earned;
 }
