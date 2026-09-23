@@ -20,9 +20,19 @@
   color: var(--gold);
   -webkit-text-stroke: 0.09em var(--blue);
   paint-order: stroke fill;
-  text-shadow: 0 0.06em 0 #14275e, 0 0.14em 0.3em rgba(0, 0, 0, 0.5);
-  transform: rotate(-2deg);
   margin: 10px 0 22px;
+}
+/* Fredoka's round letters + a thick outline + stacked shadows = a puffy, bubbly logo */
+.title-logo {
+  font-family: "Fredoka", var(--font);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  -webkit-text-stroke: 0.12em var(--blue);
+  text-shadow:
+    0 0.03em 0 #1e3a80,
+    0 0.06em 0 #14275e,
+    0 0.09em 0 #0d1a44,
+    0 0.16em 0.3em rgba(0, 0, 0, 0.55);
 }
 .title small {
   display: block;
@@ -56,7 +66,7 @@
   border-radius: 50%;
   border: 0.07em solid var(--blue);
   background: linear-gradient(180deg, #ff4a3d 0 44%, #1b1f3a 44% 56%, #fff 56%);
-  box-shadow: 0 0.06em 0 #14275e, inset -0.06em -0.06em 0 rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0.03em 0 #1e3a80, 0 0.06em 0 #14275e, 0 0.09em 0 #0d1a44, inset -0.06em -0.06em 0 rgba(0, 0, 0, 0.18);
   animation: ballWobble 3.2s ease-in-out infinite 1.4s;
 }
 .pokeball::after {
