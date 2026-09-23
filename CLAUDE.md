@@ -96,7 +96,8 @@ its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
 that fighter has block. Below the arena, `.battle-controls` is a 3-column
 grid: energy (`.energy-orb`, drawn as the games' **PP**: a PP tag, "2/3" and a
 pip per point, where the max is `b.turnEnergy`, the energy the turn started
-with) | hand | End Turn + draw/discard counts. On phones the PP box
+with; `data-shown` remembers the last value so spent pips burst and refills pop
+in) | hand | End Turn + draw/discard counts. On phones the PP box
 and End Turn share a row above the hand so the cards get the full width.
 Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.

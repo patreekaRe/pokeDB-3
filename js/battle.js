@@ -518,11 +518,20 @@ function renderBars() {
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
   // Energy is shown as the games' PP: "2/3" and a pip for each point this turn started with.
+  // Pips that were just spent burst, and refilled ones pop back in one after another.
   const orb = $('player-energy');
   const max = Math.max(b.turnEnergy ?? ENERGY_PER_TURN, b.energy);
+  const shown = orb.dataset.shown === undefined ? b.energy : Number(orb.dataset.shown);
   const pips = el('span', 'pp-pips');
-  for (let i = 0; i < max; i++) pips.append(el('i', i < b.energy ? 'on' : ''));
-  orb.replaceChildren(el('span', 'pp-label', 'PP'), el('b', '', String(b.energy)), el('span', 'pp-max', `/${max}`), pips);
+  for (let i = 0; i < max; i++) {
+    const pip = el('i', i < b.energy ? 'on' : '');
+    if (i < b.energy && i >= shown) { pip.classList.add('refill'); pip.style.animationDelay = `${(i - shown) * 0.08}s`; }
+    if (i >= b.energy && i < shown) pip.classList.add('spent');
+    pips.append(pip);
+  }
+  const count = el('b', b.energy !== shown ? 'bump' : '', String(b.energy));
+  orb.replaceChildren(el('span', 'pp-label', 'PP'), count, el('span', 'pp-max', `/${max}`), pips);
+  orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
   $('draw-count').textContent = `📚 ${b.drawPile.length}`;
   $('discard-count').textContent = `🗂️ ${b.discard.length}`;
