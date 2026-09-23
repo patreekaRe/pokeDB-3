@@ -141,6 +141,7 @@ function showMap() {
 
   renderMap(run.map, run.current, enterNode);
   showScreen('map-screen');
+  playMusic(`map${run.biome + 1}`);
 }
 
 function enterNode(node) {

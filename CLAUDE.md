@@ -81,11 +81,12 @@ attribute in sync if you add another way to open or close the shop:
 ## Music
 
 `js/audio.js` plays one looping track at a time from `assets/audio/`:
-`title` on the menus and map (triggered in `showScreen()` in
-`js/ui.js`), `wild` / `elite` / `boss` chosen by `encounter.kind` in
+`title` on the menus (triggered in `showScreen()` in
+`js/ui.js`), `map1`–`map3` on each biome's map (`showMap()` in `js/run.js`),
+`wild` / `elite` / `boss` chosen by `encounter.kind` in
 `startBattle()`, `victory` from the moment an enemy faints (`finish()` in
 `js/battle.js`) through the reward picks, and `center` at rest sites
-(`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the
+(`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to

@@ -1,10 +1,11 @@
 /* ============================================================
    audio.js  -  background music and sound effects.
 
-   MUSIC: one looping track plays at a time: 'title' on the menus and map,
-   'wild' / 'elite' / 'boss' during fights, 'victory' from the moment an
-   enemy faints until you're back on the map, and 'center' at a Pokémon
-   Center. Switching tracks crossfades.
+   MUSIC: one looping track plays at a time: 'title' on the menus,
+   'map1' / 'map2' / 'map3' on each biome's map, 'wild' / 'elite' / 'boss'
+   during fights, 'victory' from the moment an enemy faints until you're
+   back on the map, and 'center' at a Pokémon Center. Switching tracks
+   crossfades.
 
    Why the Web Audio API instead of plain <audio> elements: iPhones ignore
    an <audio> element's .volume, so fades would be impossible there. Each
@@ -32,6 +33,9 @@ const TRACKS = {
   boss:    'assets/audio/boss.mp3',
   center:  'assets/audio/center.mp3',
   victory: 'assets/audio/victory.mp3',
+  map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
+  map2:    'assets/audio/map2.mp3',
+  map3:    'assets/audio/map3.mp3',
 };
 const SOUNDS = {
   heal:        'assets/audio/sfx/heal.mp3',        // the Pokémon Center chime
