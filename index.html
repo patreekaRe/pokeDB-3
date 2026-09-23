@@ -233,7 +233,7 @@
     <!-- one slide per topic; swipe on touch, or use the dots, arrows and arrow keys (js/howto.js) -->
     <div class="howto-track" id="howto-track">
       <section class="howto-slide" data-title="Your run">
-        <h3 class="howto-label">Your run</h3>
+        <header class="howto-head"><h3>🏆 Your run</h3><p>Four steps from starter to champion</p></header>
         <div class="howto-steps">
           <div class="howto-step"><img src="assets/pokemon/charmander-front.gif" class="pixel" alt=""><b>Pick a starter</b></div>
           <span class="howto-arrow" aria-hidden="true">›</span>
@@ -246,55 +246,64 @@
       </section>
 
       <section class="howto-slide" data-title="Your turn">
-        <h3 class="howto-label">Your turn</h3>
-        <div class="howto-turn">
-          <div class="energy-orb" title="Energy"><span class="orb-icon">⚡</span><b>3</b></div>
+        <header class="howto-head"><h3>⚔️ Your turn</h3><p>Play your cards, then hand it over to the enemy</p></header>
+        <div class="howto-steps three">
+          <div class="howto-step">
+            <div class="howto-visual"><div class="energy-orb" title="Energy"><span class="orb-icon">⚡</span><b>3</b></div></div>
+            <b>Get 3 energy</b><small>refills every turn</small>
+          </div>
           <span class="howto-arrow" aria-hidden="true">›</span>
-          <div id="howto-card" class="howto-card"></div>
+          <div class="howto-step">
+            <div class="howto-visual"><div id="howto-card" class="howto-card"></div></div>
+            <b>Play cards</b><small>each costs the ⚡ in its corner</small>
+          </div>
           <span class="howto-arrow" aria-hidden="true">›</span>
-          <span class="howto-endturn">End Turn</span>
+          <div class="howto-step">
+            <div class="howto-visual"><span class="howto-endturn">End Turn</span></div>
+            <b>End your turn</b><small>the enemy moves, you draw 5 new cards</small>
+          </div>
         </div>
-        <p class="howto-caption">Spend ⚡ to play cards (cost in the corner)</p>
+        <p class="howto-tip">👀 The enemy shows its next move above its head. Block before a big hit!</p>
       </section>
 
       <section class="howto-slide" data-title="The map">
-        <h3 class="howto-label">The map</h3>
-        <div class="howto-row">
-          <div class="howto-item"><span class="howto-node">⚔️</span>Fight</div>
-          <div class="howto-item"><span class="howto-node elite">💀</span>Elite</div>
-          <div class="howto-item"><span class="howto-node rest">🏥</span>Heal</div>
-          <div class="howto-item"><span class="howto-node treasure">🎁</span>Relic</div>
-          <div class="howto-item"><span class="howto-node boss">👑</span>Boss</div>
+        <header class="howto-head"><h3>🧭 The map</h3><p>Start at the bottom and choose your path to the boss</p></header>
+        <div class="howto-list">
+          <div class="howto-li"><span class="howto-node">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card.</small></span></div>
+          <div class="howto-li"><span class="howto-node elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
+          <div class="howto-li"><span class="howto-node rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal some HP.</small></span></div>
+          <div class="howto-li"><span class="howto-node treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
+          <div class="howto-li"><span class="howto-node boss">👑</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
         </div>
-        <p class="howto-caption">Pick a path up to the boss. Elites hit harder but drop relics.</p>
       </section>
 
       <section class="howto-slide" data-title="Types and statuses">
-        <h3 class="howto-label">Types</h3>
+        <header class="howto-head"><h3>🔥 Types and statuses</h3><p>Hit their weakness and keep an eye on the badges</p></header>
         <div class="howto-types">
           <span class="howto-type fire">🔥</span><span class="howto-beats">beats</span>
           <span class="howto-type grass">🌿</span><span class="howto-beats">beats</span>
           <span class="howto-type water">💧</span><span class="howto-beats">beats</span>
           <span class="howto-type fire">🔥</span>
         </div>
-        <p class="howto-caption">▲ +30% damage · ▼ −25% · works for enemies too</p>
+        <div class="howto-chips">
+          <span class="howto-chip good">▲ +30% damage with the edge</span>
+          <span class="howto-chip bad">▼ −25% against it</span>
+        </div>
 
-        <h3 class="howto-label">Statuses</h3>
-        <div class="howto-row">
-          <div class="howto-item"><span class="badge block">🛡️<b>6</b></span>Block</div>
-          <div class="howto-item"><span class="badge">🔥<b>3</b></span>Burn</div>
-          <div class="howto-item"><span class="badge good">🎯<b>8</b></span>Next hit</div>
-          <div class="howto-item"><span class="badge">💨</span>½ damage</div>
-          <div class="howto-item"><span class="badge bad">😡</span>Turn 6+</div>
+        <div class="howto-list">
+          <div class="howto-li"><span class="badge block">🛡️<b>6</b></span><span class="howto-li-text"><b>Block</b><small>Soaks up damage until your next turn.</small></span></div>
+          <div class="howto-li"><span class="badge">🔥<b>3</b></span><span class="howto-li-text"><b>Burn</b><small>Hurts at the start of each turn.</small></span></div>
+          <div class="howto-li"><span class="badge good">🎯<b>8</b></span><span class="howto-li-text"><b>Focus</b><small>Your next attack hits harder.</small></span></div>
+          <div class="howto-li"><span class="badge">💨</span><span class="howto-li-text"><b>Weakened</b><small>The next attack does half damage.</small></span></div>
+          <div class="howto-li"><span class="badge bad">😡</span><span class="howto-li-text"><b>Enraged</b><small>Every 6 turns, the enemy gets stronger.</small></span></div>
         </div>
       </section>
 
       <section class="howto-slide" data-title="PokéCoins and the Shop">
-        <h3 class="howto-label">Earn PokéCoins</h3>
+        <header class="howto-head"><h3>💰 PokéCoins</h3><p>Earn them in every run, and keep them even if you faint</p></header>
         <div class="howto-row" id="howto-coins"></div>
-        <p class="howto-caption">You keep them even if you faint</p>
 
-        <h3 class="howto-label">Spend them in the <span class="mart" aria-hidden="true"></span> Shop</h3>
+        <h4 class="howto-label">Spend them at the <span class="mart" aria-hidden="true"></span> Poké Mart</h4>
         <div class="howto-row howto-perks" id="howto-perks"></div>
       </section>
     </div>

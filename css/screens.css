@@ -958,7 +958,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   text-transform: uppercase;
   color: var(--muted);
 }
-.howto-caption { margin: 8px 0 0; font-size: 0.82rem; color: var(--muted); }
 .howto-arrow { align-self: center; font-size: 1.6rem; font-weight: 900; color: var(--gold); opacity: 0.7; }
 
 /* the run, in four steps */
@@ -999,14 +998,52 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   font-weight: 900;
 }
 .howto-step img { width: 52px; height: 52px; object-fit: contain; }
-.howto-step small { color: var(--muted); font-size: 0.72rem; }
+.howto-step small { color: var(--muted); font-size: 0.76rem; line-height: 1.25; }
 .howto-icon { font-size: 2.2rem; line-height: 52px; height: 52px; }
 .howto-step.boss { border-color: var(--gold); background: rgba(255, 203, 5, 0.1); }
 .howto-step.boss img { filter: drop-shadow(0 0 8px var(--gold)); }
 
-/* a turn: orb > card > End Turn */
-.howto-turn { display: flex; align-items: center; justify-content: center; gap: 12px; }
-.howto-turn .energy-orb { flex: 0 0 auto; }
+/* each slide opens with a title and a one-line summary */
+.howto-head { margin-bottom: 16px; }
+.howto-head h3 { margin: 0; font-size: 1.3rem; color: #fff; }
+.howto-head p { margin: 4px 0 0; font-size: 0.9rem; color: var(--muted); }
+
+/* your turn: the same numbered tiles as slide 1, with the real orb / card / button on top */
+.howto-steps.three { grid-template-columns: 1fr auto 1fr auto 1fr; }
+.howto-visual { height: 116px; display: grid; place-items: center; margin-bottom: 4px; }
+.howto-tip {
+  margin: 14px 0 0;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: rgba(255, 203, 5, 0.1);
+  border: 1px solid rgba(255, 203, 5, 0.3);
+  font-size: 0.86rem;
+}
+
+/* icon + name + one-line explanation (map rooms, statuses) */
+.howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
+.howto-li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.howto-li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-edge);
+}
+.howto-li .howto-node, .howto-li .badge { flex: none; }
+.howto-li .badge { cursor: default; animation: none; }
+.howto-li-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.howto-li-text b { font-size: 0.92rem; }
+.howto-li-text small { font-size: 0.8rem; line-height: 1.25; color: var(--muted); }
+
+.howto-chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+.howto-chip { padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+.howto-chip.good { background: rgba(80, 200, 110, 0.18); color: #8ff0a8; }
+.howto-chip.bad  { background: rgba(230, 80, 80, 0.18); color: #ff9c9c; }
+.howto-item small { font-size: 0.72rem; font-weight: 600; color: var(--muted); }
+
 .howto-card { --card-w: 78px; width: 78px; pointer-events: none; }
 .howto-endturn {
   padding: 9px 16px;
@@ -1121,7 +1158,11 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   /* two-by-two instead of a row of four; the numbers keep the order clear */
   .howto-steps { grid-template-columns: 1fr 1fr; gap: 14px 12px; }
   .howto-steps .howto-arrow { display: none; }
-  .howto-turn { gap: 8px; }
+  .howto-steps.three { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .howto-visual { height: 100px; }
+  .howto-endturn { padding: 7px 10px; font-size: 0.78rem; }
+  .howto-list { grid-template-columns: 1fr; gap: 6px; }
+  .howto-li { padding: 7px 10px; }
   .howto-card { --card-w: 68px; width: 68px; }
   .howto-type { width: 38px; height: 38px; font-size: 1.1rem; }
   .howto-types { gap: 4px; }

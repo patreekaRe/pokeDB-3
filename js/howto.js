@@ -28,9 +28,10 @@ function update() {
   $('howto-next').textContent = i === slides.length - 1 ? "Let's go!" : 'Next ›';
 }
 
-const item = (nodeClass, icon, label) => {
+const item = (nodeClass, icon, label, note = '') => {
   const box = el('div', 'howto-item');
   box.append(el('span', `howto-node ${nodeClass}`, icon), label);
+  if (note) box.append(el('small', '', note));
   return box;
 };
 
@@ -38,10 +39,10 @@ export function initHowto() {
   $('howto-card').append(makeCard(CARDS_BY_ID.ember, { stage: 0 }));   // a real card, so the guide always matches the game
 
   $('howto-coins').replaceChildren(
-    item('', '⚔️', `+${COIN_REWARDS.fight}`),
-    item('elite', '💀', `+${COIN_REWARDS.elite}`),
-    item('boss', '👑', `+${COIN_REWARDS.boss}`),
-    item('treasure', '🏆', `+${COIN_REWARDS.winBonus} win`),
+    item('', '⚔️', `+${COIN_REWARDS.fight}`, 'fight'),
+    item('elite', '💀', `+${COIN_REWARDS.elite}`, 'elite'),
+    item('boss', '👑', `+${COIN_REWARDS.boss}`, 'boss'),
+    item('treasure', '🏆', `+${COIN_REWARDS.winBonus}`, 'full win'),
   );
   $('howto-perks').replaceChildren(
     item('', '🔓', 'New starters'),
