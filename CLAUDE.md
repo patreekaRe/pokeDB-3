@@ -114,19 +114,22 @@ generic class name, grep `css/` and `js/` for it.
 
 ## Map screen
 
-The top `.run-card` shows your Pokémon floating on the scenery, then its name
-and a Gold/Silver-style HP bar (`.gb-hp`: black "HP:" tag, outlined bar, the
-numbers underneath; `data-level` turns it yellow at 50% and red at 20%, the
-games' thresholds).
+The top `.run-card`, centred like everything below it, shows your Pokémon
+floating on the scenery, then its name and a Gold/Silver-style HP bar
+(`.gb-hp`: black "HP:" tag, outlined bar, the numbers underneath;
+`data-level` turns it yellow at 50% and red at 20%, the games' thresholds).
 
-Below it, `.map-head` holds the biome name as a pixel location sign
+Below it, `.map-head` holds the biome name alone as a pixel location sign
 (`.biome-sign`, wood / mossy stone / dark rock per `data-biome`) that drops
 in, like the games' location signs, only when you arrive in a new biome
-(`showMap()`). The sign is centred with one `.run-icon` button right beside
-it: the **Bag** (a pixel backpack drawn as an inline SVG in `index.html`).
-Under 520px there's no room to centre the sign alone, so sign and Bag centre
-as a pair. The Bag is a `.drop` drop-down, centred under that row over the
-map (`.map-head` has `z-index: 6`), with three pockets, like the
+(`showMap()`).
+
+The **Bag** (`#bag-btn`, a frameless pixel backpack drawn as an inline SVG in
+`index.html`) lives in the top bar's right corner, after the coins and the
+Poké Mart. `showScreen()` in `js/ui.js` shows it only on `RUN_SCREENS`
+(map, battle, rewards) and closes it on every screen change. It's a `.drop`
+drop-down hanging from the right edge of `.topbar-actions`, with three
+pockets, like the
 Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics
 and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
 through `POCKETS` in order, and the last pocket is remembered. It's wired by
@@ -200,8 +203,8 @@ There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
-top right only shows coins and the
-Shop. The "Main menu" item hides itself on the start screen (`showScreen()`).
+top right shows the coins (floating, no box), the Shop and, during a run, the Bag.
+The "Main menu" item hides itself on the start screen (`showScreen()`).
 
 
 The logo is built from per-letter spans in `index.html`: "Poké" uses the

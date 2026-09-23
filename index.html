@@ -38,6 +38,37 @@
     <div class="topbar-actions">
       <span class="coin-pill" title="PokéCoins - spend them in the Shop">💰 <span class="coin-value">0</span></span>
       <button class="icon-btn shop-btn" id="shop-btn" aria-label="Shop" aria-expanded="false" title="Shop"><span class="mart" aria-hidden="true"></span></button>
+      <button class="bag-btn" id="bag-btn" hidden aria-expanded="false" aria-controls="bag" aria-label="Bag" title="Bag"><svg class="bag-sprite" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="5" y="0" width="6" height="1" fill="#3a1a10"/><rect x="4" y="1" width="1" height="1" fill="#3a1a10"/><rect x="5" y="1" width="6" height="1" fill="#f8a888"/><rect x="11" y="1" width="1" height="1" fill="#3a1a10"/><rect x="4" y="2" width="1" height="1" fill="#3a1a10"/><rect x="5" y="2" width="1" height="1" fill="#f8a888"/><rect x="6" y="2" width="1" height="1" fill="#3a1a10"/><rect x="9" y="2" width="1" height="1" fill="#3a1a10"/><rect x="10" y="2" width="1" height="1" fill="#f8a888"/><rect x="11" y="2" width="1" height="1" fill="#3a1a10"/><rect x="2" y="3" width="12" height="1" fill="#3a1a10"/><rect x="1" y="4" width="1" height="1" fill="#3a1a10"/><rect x="2" y="4" width="12" height="1" fill="#d84830"/><rect x="14" y="4" width="1" height="1" fill="#3a1a10"/><rect x="1" y="5" width="1" height="1" fill="#3a1a10"/><rect x="2" y="5" width="12" height="1" fill="#f8a888"/><rect x="14" y="5" width="1" height="1" fill="#3a1a10"/><rect x="1" y="6" width="1" height="1" fill="#3a1a10"/><rect x="2" y="6" width="12" height="1" fill="#f06848"/><rect x="14" y="6" width="1" height="1" fill="#3a1a10"/><rect x="1" y="7" width="1" height="1" fill="#3a1a10"/><rect x="2" y="7" width="5" height="1" fill="#f06848"/><rect x="7" y="7" width="2" height="1" fill="#f8d030"/><rect x="9" y="7" width="5" height="1" fill="#f06848"/><rect x="14" y="7" width="1" height="1" fill="#3a1a10"/><rect x="1" y="8" width="1" height="1" fill="#3a1a10"/><rect x="2" y="8" width="5" height="1" fill="#a02818"/><rect x="7" y="8" width="2" height="1" fill="#f8d030"/><rect x="9" y="8" width="5" height="1" fill="#a02818"/><rect x="14" y="8" width="1" height="1" fill="#3a1a10"/><rect x="1" y="9" width="1" height="1" fill="#3a1a10"/><rect x="2" y="9" width="12" height="1" fill="#d84830"/><rect x="14" y="9" width="1" height="1" fill="#3a1a10"/><rect x="1" y="10" width="1" height="1" fill="#3a1a10"/><rect x="2" y="10" width="2" height="1" fill="#d84830"/><rect x="4" y="10" width="8" height="1" fill="#a02818"/><rect x="12" y="10" width="2" height="1" fill="#d84830"/><rect x="14" y="10" width="1" height="1" fill="#3a1a10"/><rect x="1" y="11" width="1" height="1" fill="#3a1a10"/><rect x="2" y="11" width="2" height="1" fill="#d84830"/><rect x="4" y="11" width="1" height="1" fill="#a02818"/><rect x="5" y="11" width="6" height="1" fill="#f06848"/><rect x="11" y="11" width="1" height="1" fill="#a02818"/><rect x="12" y="11" width="2" height="1" fill="#d84830"/><rect x="14" y="11" width="1" height="1" fill="#3a1a10"/><rect x="1" y="12" width="1" height="1" fill="#3a1a10"/><rect x="2" y="12" width="2" height="1" fill="#d84830"/><rect x="4" y="12" width="8" height="1" fill="#a02818"/><rect x="12" y="12" width="2" height="1" fill="#d84830"/><rect x="14" y="12" width="1" height="1" fill="#3a1a10"/><rect x="1" y="13" width="1" height="1" fill="#3a1a10"/><rect x="2" y="13" width="12" height="1" fill="#d84830"/><rect x="14" y="13" width="1" height="1" fill="#3a1a10"/><rect x="2" y="14" width="1" height="1" fill="#3a1a10"/><rect x="3" y="14" width="1" height="1" fill="#a02818"/><rect x="4" y="14" width="8" height="1" fill="#3a1a10"/><rect x="12" y="14" width="1" height="1" fill="#a02818"/><rect x="13" y="14" width="1" height="1" fill="#3a1a10"/></svg></button>
+      <div class="drop panel bag" id="bag" hidden>
+        <div class="bag-head">
+          <button class="bag-flip" id="bag-prev" aria-label="Previous pocket">◀</button>
+          <strong id="bag-title">Relics</strong>
+          <button class="bag-flip" id="bag-next" aria-label="Next pocket">▶</button>
+        </div>
+        <div class="bag-pockets" role="tablist" aria-label="Bag pockets">
+          <button class="bag-pocket" role="tab" data-pocket="deck" data-name="Deck" aria-label="Deck" aria-controls="bag-deck"><span aria-hidden="true">🃏</span><b id="run-deck-count">10</b></button>
+          <button class="bag-pocket" role="tab" data-pocket="relics" data-name="Relics" aria-label="Relics" aria-controls="bag-relics"><span aria-hidden="true">💎</span><b id="run-relic-count">0</b></button>
+          <button class="bag-pocket" role="tab" data-pocket="key" data-name="Map key" aria-label="Map key" aria-controls="bag-key"><span aria-hidden="true">🗺️</span></button>
+        </div>
+        <div class="bag-pocket-body" id="bag-deck" role="tabpanel" hidden>
+          <p class="bag-deck-text" id="bag-deck-text"></p>
+          <button class="btn" id="run-deck-btn">Look through your deck</button>
+        </div>
+        <div class="bag-pocket-body" id="bag-relics" role="tabpanel" hidden>
+          <div id="relics-list" class="howto-list"></div>
+          <p class="drop-note">Relics work on their own, every fight, for the rest of the run.</p>
+        </div>
+        <div class="bag-pocket-body" id="bag-key" role="tabpanel" hidden>
+          <div class="howto-list">
+            <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card.</small></span></div>
+            <div class="howto-li"><span class="howto-node town elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
+            <div class="howto-li"><span class="howto-node town rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal some HP.</small></span></div>
+            <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
+            <div class="howto-li"><span class="howto-node town boss">👑</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
+          </div>
+          <p class="drop-note">Start at the bottom and climb: white routes are where you can go next, and a red trail marks where you have been. The small badge on an elite or boss shows its type.</p>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -149,37 +180,6 @@
 
       <div class="map-head">
         <h2 class="biome-sign" id="biome-name"></h2>
-        <button class="run-icon bag-btn" id="bag-btn" aria-expanded="false" aria-controls="bag" aria-label="Bag" title="Bag"><svg class="bag-sprite" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="5" y="0" width="6" height="1" fill="#3a1a10"/><rect x="4" y="1" width="1" height="1" fill="#3a1a10"/><rect x="5" y="1" width="6" height="1" fill="#f8a888"/><rect x="11" y="1" width="1" height="1" fill="#3a1a10"/><rect x="4" y="2" width="1" height="1" fill="#3a1a10"/><rect x="5" y="2" width="1" height="1" fill="#f8a888"/><rect x="6" y="2" width="1" height="1" fill="#3a1a10"/><rect x="9" y="2" width="1" height="1" fill="#3a1a10"/><rect x="10" y="2" width="1" height="1" fill="#f8a888"/><rect x="11" y="2" width="1" height="1" fill="#3a1a10"/><rect x="2" y="3" width="12" height="1" fill="#3a1a10"/><rect x="1" y="4" width="1" height="1" fill="#3a1a10"/><rect x="2" y="4" width="12" height="1" fill="#d84830"/><rect x="14" y="4" width="1" height="1" fill="#3a1a10"/><rect x="1" y="5" width="1" height="1" fill="#3a1a10"/><rect x="2" y="5" width="12" height="1" fill="#f8a888"/><rect x="14" y="5" width="1" height="1" fill="#3a1a10"/><rect x="1" y="6" width="1" height="1" fill="#3a1a10"/><rect x="2" y="6" width="12" height="1" fill="#f06848"/><rect x="14" y="6" width="1" height="1" fill="#3a1a10"/><rect x="1" y="7" width="1" height="1" fill="#3a1a10"/><rect x="2" y="7" width="5" height="1" fill="#f06848"/><rect x="7" y="7" width="2" height="1" fill="#f8d030"/><rect x="9" y="7" width="5" height="1" fill="#f06848"/><rect x="14" y="7" width="1" height="1" fill="#3a1a10"/><rect x="1" y="8" width="1" height="1" fill="#3a1a10"/><rect x="2" y="8" width="5" height="1" fill="#a02818"/><rect x="7" y="8" width="2" height="1" fill="#f8d030"/><rect x="9" y="8" width="5" height="1" fill="#a02818"/><rect x="14" y="8" width="1" height="1" fill="#3a1a10"/><rect x="1" y="9" width="1" height="1" fill="#3a1a10"/><rect x="2" y="9" width="12" height="1" fill="#d84830"/><rect x="14" y="9" width="1" height="1" fill="#3a1a10"/><rect x="1" y="10" width="1" height="1" fill="#3a1a10"/><rect x="2" y="10" width="2" height="1" fill="#d84830"/><rect x="4" y="10" width="8" height="1" fill="#a02818"/><rect x="12" y="10" width="2" height="1" fill="#d84830"/><rect x="14" y="10" width="1" height="1" fill="#3a1a10"/><rect x="1" y="11" width="1" height="1" fill="#3a1a10"/><rect x="2" y="11" width="2" height="1" fill="#d84830"/><rect x="4" y="11" width="1" height="1" fill="#a02818"/><rect x="5" y="11" width="6" height="1" fill="#f06848"/><rect x="11" y="11" width="1" height="1" fill="#a02818"/><rect x="12" y="11" width="2" height="1" fill="#d84830"/><rect x="14" y="11" width="1" height="1" fill="#3a1a10"/><rect x="1" y="12" width="1" height="1" fill="#3a1a10"/><rect x="2" y="12" width="2" height="1" fill="#d84830"/><rect x="4" y="12" width="8" height="1" fill="#a02818"/><rect x="12" y="12" width="2" height="1" fill="#d84830"/><rect x="14" y="12" width="1" height="1" fill="#3a1a10"/><rect x="1" y="13" width="1" height="1" fill="#3a1a10"/><rect x="2" y="13" width="12" height="1" fill="#d84830"/><rect x="14" y="13" width="1" height="1" fill="#3a1a10"/><rect x="2" y="14" width="1" height="1" fill="#3a1a10"/><rect x="3" y="14" width="1" height="1" fill="#a02818"/><rect x="4" y="14" width="8" height="1" fill="#3a1a10"/><rect x="12" y="14" width="1" height="1" fill="#a02818"/><rect x="13" y="14" width="1" height="1" fill="#3a1a10"/></svg></button>
-        <div class="drop panel bag" id="bag" hidden>
-          <div class="bag-head">
-            <button class="bag-flip" id="bag-prev" aria-label="Previous pocket">◀</button>
-            <strong id="bag-title">Relics</strong>
-            <button class="bag-flip" id="bag-next" aria-label="Next pocket">▶</button>
-          </div>
-          <div class="bag-pockets" role="tablist" aria-label="Bag pockets">
-            <button class="bag-pocket" role="tab" data-pocket="deck" data-name="Deck" aria-label="Deck" aria-controls="bag-deck"><span aria-hidden="true">🃏</span><b id="run-deck-count">10</b></button>
-            <button class="bag-pocket" role="tab" data-pocket="relics" data-name="Relics" aria-label="Relics" aria-controls="bag-relics"><span aria-hidden="true">💎</span><b id="run-relic-count">0</b></button>
-            <button class="bag-pocket" role="tab" data-pocket="key" data-name="Map key" aria-label="Map key" aria-controls="bag-key"><span aria-hidden="true">🗺️</span></button>
-          </div>
-          <div class="bag-pocket-body" id="bag-deck" role="tabpanel" hidden>
-            <p class="bag-deck-text" id="bag-deck-text"></p>
-            <button class="btn" id="run-deck-btn">Look through your deck</button>
-          </div>
-          <div class="bag-pocket-body" id="bag-relics" role="tabpanel" hidden>
-            <div id="relics-list" class="howto-list"></div>
-            <p class="drop-note">Relics work on their own, every fight, for the rest of the run.</p>
-          </div>
-          <div class="bag-pocket-body" id="bag-key" role="tabpanel" hidden>
-            <div class="howto-list">
-              <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card.</small></span></div>
-              <div class="howto-li"><span class="howto-node town elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
-              <div class="howto-li"><span class="howto-node town rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal some HP.</small></span></div>
-              <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
-              <div class="howto-li"><span class="howto-node town boss">👑</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
-            </div>
-            <p class="drop-note">Start at the bottom and climb: white routes are where you can go next, and a red trail marks where you have been. The small badge on an elite or boss shows its type.</p>
-          </div>
-        </div>
       </div>
       <div class="map-wrap"><div class="map" id="map"></div></div>
     </section>

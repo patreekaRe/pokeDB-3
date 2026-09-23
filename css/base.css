@@ -111,7 +111,7 @@ h1, h2, h3, h4, p { margin: 0; }
   pointer-events: none;      /* no bar: the empty space between buttons lets taps through */
 }
 .topbar > * { pointer-events: auto; }
-.topbar-actions { display: flex; gap: 8px; }
+.topbar-actions { position: relative; display: flex; align-items: center; gap: 8px; }   /* position: the Bag drops down from its right edge */
 
 /* the home button: a Poké Ball (same drawing as the logo's "o") */
 .home-ball {

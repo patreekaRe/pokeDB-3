@@ -25,13 +25,20 @@ export function el(tag, className = '', text = '') {
 
 const SCREENS = ['start-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen'];
 
+// The screens of a run in progress: they pick their own music, and only they show the Bag.
+const RUN_SCREENS = ['map-screen', 'battle-screen', 'reward-screen'];
+
 /** Show one screen and hide the others. */
 export function showScreen(id) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   document.body.dataset.screen = id;
   $('home-btn').hidden = id === 'start-screen';   // the menu's "Main menu" item isn't needed on the menu
+  const inRun = RUN_SCREENS.includes(id);
+  $('bag-btn').hidden = !inRun;
+  $('bag').hidden = true;
+  $('bag-btn').setAttribute('aria-expanded', 'false');
   // the map, battles and reward screens pick their own track (biome theme, fight music, victory, Pokémon Center)
-  if (!['map-screen', 'battle-screen', 'reward-screen'].includes(id)) playMusic('title');
+  if (!inRun) playMusic('title');
   window.scrollTo(0, 0);
 }
 

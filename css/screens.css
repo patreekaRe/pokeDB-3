@@ -792,7 +792,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 
 /* ---------- run card (top of the map): who you are and your HP ----------
    No box around it: like the battle screen, everything floats on the backdrop with a shadow. */
-.run-card { position: relative; display: flex; align-items: center; gap: 14px; padding: 4px 2px 8px; }
+.run-card { position: relative; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 4px 2px 8px; }
 
 /* Your Pokémon floats on the scenery, with a Gold/Silver HP bar beside it:
    a black "HP:" tag, an outlined bar that goes green -> yellow -> red, and the numbers underneath */
@@ -824,40 +824,28 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .gb-hp-fill { display: block; height: 100%; width: 100%; background: var(--hp-color); transition: width 0.6s steps(12), background 0.3s; }
 .gb-hp-num { font-family: var(--pixel-font); font-synthesis-weight: none; align-self: flex-start; width: min(190px, 100%); text-align: right; font-size: 0.9rem; font-weight: 900; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
 
-.run-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
+.run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
 .run-info strong { font-size: 1.1rem; }
 
-/* The Bag button: a chunky Pokégear button in the same grey frame as the map.
-   Open (aria-expanded) looks pressed in. */
-.run-icon {
-  position: relative;
-  flex: none;
-  width: 46px;
-  height: 46px;
+/* The Bag button: a frameless pixel backpack in the top-right corner beside the coins and the Poké Mart.
+   Shown only on run screens (showScreen() in js/ui.js); open (aria-expanded) looks pressed in. */
+.bag-btn {
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   padding: 0;
-  border-radius: 0;
-  border: 3px solid #b8b8c8;
-  background: #283060;
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, inset 0 4px 0 2px #3a4480, 3px 3px 0 2px rgba(0, 0, 0, 0.45);
-  font-size: 1.35rem;
-  transition: transform 0.08s steps(1), box-shadow 0.08s steps(1);
+  border: 0;
+  background: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  transition: transform 0.1s steps(2), filter 0.1s;
 }
-.run-icon:hover { border-color: #fff; }
-.run-icon[aria-expanded="true"], .run-icon:active {
-  border-color: #f89030;
-  background: #1c2248;
-  transform: translate(2px, 2px);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, inset 0 3px 0 2px #10142c, 1px 1px 0 2px rgba(0, 0, 0, 0.45);
-}
+.bag-btn:hover { transform: translateY(-2px); }
+.bag-btn[aria-expanded="true"], .bag-btn:active { transform: translateY(2px) scale(0.9); filter: brightness(0.85) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); }
 .relic-node { background: linear-gradient(165deg, #3b3f78, #22264f); border-color: var(--gold); }
 
 /* ---------- the biome's name: a pixel location sign, like the one the games show when you enter an area ---------- */
-/* the sign sits centred with the Bag right beside it; the Bag opens centred underneath, over the map */
-.map-head { position: relative; z-index: 6; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; column-gap: 12px; margin: 12px 0 14px; }
-.map-head .biome-sign { grid-column: 2; }
-.map-head .bag-btn { grid-column: 3; justify-self: start; }
+.map-head { display: flex; justify-content: center; margin: 12px 0 14px; }
 .biome-sign {
   --plank: #b0682c;
   --plank-dark: #95521f;
@@ -887,10 +875,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 }
 .biome-sign[data-biome="shrine"] { --plank: #6f7f62; --plank-dark: #5b6a50; --rim: #9aae84; --frame: #1f2a18; --nail: #2f4a24; --text: #eef8dc; }
 .biome-sign[data-biome="wastes"] { --plank: #54403a; --plank-dark: #43322d; --rim: #e0602a; --frame: #1c1210; --nail: #f8a030; --text: #ffe0b0; }
-@media (max-width: 520px) {   /* no room to centre the sign on its own, so the sign and Bag centre together */
-  .map-head { display: flex; justify-content: center; gap: 10px; }
-  .biome-sign { padding: 6px 14px 7px; font-size: 1rem; white-space: nowrap; }
-}
 .biome-sign.arrive { animation: signDrop 0.7s steps(7) both; }
 @keyframes signDrop {
   from { transform: translateY(-24px); opacity: 0; }
@@ -901,12 +885,10 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 /* ---------- the map's drop-downs (Relics, Key) ---------- */
 .drop {
   position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
+  top: calc(100% + 6px);
   right: 0;
-  margin: 0 auto;
   z-index: 5;
-  width: min(340px, 100%);
+  width: min(340px, calc(100vw - 24px));
   padding: 12px;
   border-radius: 0;
   border: 3px solid #b8b8c8;
