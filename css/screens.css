@@ -834,7 +834,31 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   white-space: nowrap;
 }
 
-/* The cart emoji renders grey on most phones, so the shop button carries its own colour */
+/* A tiny Poké Mart (blue roof, white wall, blue door), the shop from the games */
+.mart { position: relative; display: inline-block; width: 20px; height: 18px; vertical-align: middle; }
+.mart::before, .mart::after { content: ""; position: absolute; border: 1.5px solid #173f8f; }
+.mart::before {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  z-index: 1;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(#5b9bff 0 40%, #2a6ee8 40%);
+}
+.mart::after {
+  top: 6px;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(#2a6ee8, #2a6ee8) 50% 100% / 5px 6px no-repeat, #fff;
+}
+.howto-label .mart { width: 16px; height: 14px; margin-top: -3px; }
+.howto-label .mart::before { height: 7px; }
+.howto-label .mart::after { top: 5px; }
+
+/* Gold with a pulsing glow, so the shop is the one button up here that asks to be tapped */
 .icon-btn.shop-btn {
   background: linear-gradient(180deg, #ffd84a, #ff9a2e);
   border: 2px solid #fff3c4;
