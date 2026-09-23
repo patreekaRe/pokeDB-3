@@ -40,6 +40,9 @@ let nextUid = 1;
 /** Called once at startup. */
 export function initBattle() {
   $('end-turn-btn').addEventListener('click', endTurn);
+  // tapping the dimmed battle around a picked card, or Escape, puts it back
+  $('card-focus').addEventListener('click', (e) => { if (!e.target.closest('.focus-card')) cancelPick(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
 }
 
 /** Leave the battle without finishing it (used when you abandon a run). */
@@ -604,6 +607,7 @@ function renderHand() {
   const b = battle;
   const box = $('hand');
   box.replaceChildren();
+  if (b.busy || !b.hand.some(entry => entry.uid === selectedUid)) selectedUid = null;
 
   b.hand.forEach((entry, i) => {
     const { card } = entry;
@@ -612,6 +616,7 @@ function renderHand() {
 
     if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     if (b.busy) node.classList.add('waiting');
+    if (entry.uid === selectedUid) node.classList.add('selected');
 
     if (entry.fresh) {                            // cards just drawn slide in
       node.classList.add('deal');
@@ -622,12 +627,57 @@ function renderHand() {
     node.tabIndex = 0;
     node.setAttribute('role', 'button');
     node.setAttribute('aria-label', `${card.name}, costs ${card.cost}`);
-    node.addEventListener('click', () => playCard(entry.uid));
+    node.addEventListener('click', () => tapCard(entry.uid));
     node.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playCard(entry.uid); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
     });
     box.append(node);
   });
+  renderFocus();
+}
+
+/* ---------- picking a card: the first tap blows it up, the second plays it ---------- */
+
+let selectedUid = null;
+
+function tapCard(uid) {
+  if (battle.busy) return;
+  if (selectedUid === uid) {
+    selectedUid = null;
+    return playCard(uid);
+  }
+  selectedUid = uid;
+  renderHand();
+}
+
+function cancelPick() {
+  if (selectedUid === null) return;
+  selectedUid = null;
+  renderHand();
+}
+
+/** The big copy of the picked card at the bottom middle of the screen, over a dimmed battle. */
+function renderFocus() {
+  const b = battle;
+  const layer = $('card-focus');
+  const entry = b.hand.find(h => h.uid === selectedUid);
+  if (!entry) { layer.hidden = true; layer.replaceChildren(); return; }
+
+  const big = makeCard(entry.card, { stage: b.stage });
+  big.classList.add('focus-card');
+  const problem = whyNotPlayable(entry.card);
+  if (problem) big.classList.add('unplayable');
+  big.tabIndex = 0;
+  big.setAttribute('role', 'button');
+  big.setAttribute('aria-label', `Play ${entry.card.name}`);
+  big.addEventListener('click', () => tapCard(entry.uid));
+  big.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
+  });
+  const verb = matchMedia('(hover: hover)').matches ? 'Click' : 'Tap';
+  layer.replaceChildren(big, el('p', 'focus-hint', problem || `${verb} again to play`));
+  layer.hidden = false;
+  big.focus({ preventScroll: true });
 }
 
 /* ---------- little visual effects ---------- */

@@ -111,6 +111,12 @@ On short phones (≤700px tall, like the iPhone SE) the two nameplates end up
 level, so a media query at the end of the phone rules compacts them, shrinks
 the enemy sprite and keeps room above the text box; the phone rules also keep
 a 10px gap between the fighters' columns.
+Playing a card takes two taps (clicks or Enter presses too): `tapCard()` first
+picks it (`selectedUid`, `.selected` in the hand) and `renderFocus()` shows a
+big copy at the bottom middle in `#card-focus`, a dimmed full-screen layer;
+tapping that big card plays it, tapping the dimmed area or Escape cancels
+(`cancelPick()`), and tapping another hand card switches. The pick clears
+itself whenever the battle is busy or the card leaves the hand.
 Your Pokémon grows as it evolves: its sprites (battle, map card, map
 trainer, evolve pop-up) carry `data-stage`, and CSS scales stage 0 to 78% and
 stage 1 to 90% with the `scale` property (from the feet), so the attack and

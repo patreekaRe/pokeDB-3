@@ -163,3 +163,34 @@
   from { opacity: 0; transform: translateY(80px) rotate(8deg) scale(0.8); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ---------- picking a card: the first tap blows it up at the bottom middle, the second plays it ---------- */
+.card.in-hand.selected { transform: translateY(-10px); z-index: 2; }
+.card.in-hand.selected .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
+.card-focus {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
+  background: rgba(8, 10, 24, 0.45);
+}
+.card.focus-card { --card-w: min(56vw, 240px); animation: focusIn 0.18s ease-out; }
+.card.focus-card[role="button"]:hover { transform: none; }
+.card.focus-card.unplayable { filter: grayscale(0.6) brightness(0.8); }
+.focus-hint {
+  margin: 0;
+  padding: 6px 12px;
+  border: 3px solid #b8b8c8;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 0.8rem;
+  text-align: center;
+}
+@keyframes focusIn { from { transform: translateY(40px) scale(0.6); opacity: 0; } }
