@@ -797,11 +797,46 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
    THE RUN: evolution line, map, rewards, relics
    ============================================================ */
 
-/* ---------- evolution line (deck preview) ---------- */
-.evo-line { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0; }
-.evo-stage { display: flex; flex-direction: column; align-items: center; min-width: 96px; }
-.evo-stage img { width: 88px; height: 88px; object-fit: contain; }
+/* ---------- evolution line (deck preview): one form per slide, swipeable ----------
+   Each form is drawn bigger than the last on the same ground line, so flicking through looks like growing up. */
+.evo-carousel { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px; margin: 8px 0 4px; }
+.evo-line {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  outline: none;
+}
+.evo-line::-webkit-scrollbar { display: none; }
+.evo-stage {
+  --size: 64px;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.evo-stage[data-stage="1"] { --size: 88px; }
+.evo-stage[data-stage="2"] { --size: 116px; }
+.evo-stage img {
+  width: var(--size);
+  height: var(--size);
+  margin-top: calc(116px - var(--size));   /* every form stands on the same ground line */
+  object-fit: contain;
+  object-position: bottom;
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.15));
+}
 .evo-hp { font-size: 0.8rem; color: var(--muted); }
+.evo-when { font-size: 0.7rem; color: #283060; }
+.evo-flip { width: 36px; height: 44px; padding: 0; border: 0; background: none; color: #283060; font-size: 1rem; }
+.evo-flip:disabled { visibility: hidden; }
+.evo-flip:not(:disabled):hover { color: #f89030; }
+.evo-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; }
+.evo-dot { width: 12px; height: 12px; padding: 0; border: 2px solid #303038; background: var(--win-edge); }
+.evo-dot[aria-current="true"] { background: #f89030; }
+@media (prefers-reduced-motion: reduce) { .evo-line { scroll-behavior: auto; } }
 .evo-arrow { font-size: 1.6rem; color: var(--gold); font-weight: 900; }
 
 /* ---------- run card (top of the map): who you are and your HP ----------
@@ -1100,7 +1135,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 /* ---------- phones (kept last so it wins over the rules above) ---------- */
 @media (max-width: 720px) {
   .reward-options { gap: 12px; }
-  .evo-stage img { width: 72px; height: 72px; }
 }
 
 /* phones: a gap between the two fighters' columns, so their nameplates never touch */

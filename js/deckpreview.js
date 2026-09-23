@@ -50,15 +50,41 @@ export function openPreview(starter, { onBegin, onBack }) {
   $('preview-title').textContent = `${starter.line[0].name}  ${type.icon} ${type.label}`;
   $('preview-blurb').textContent = starter.blurb;
 
-  // the three evolution stages
-  $('evo-line').replaceChildren(...starter.line.flatMap((stage, i) => {
-    const tile = el('div', 'evo-stage');
+  // the three evolution stages, one per slide: swipe or use the arrows, and each form is drawn bigger than the last
+  const WHEN = ['Where you start', 'After the Biome 1 boss', 'After the Biome 2 boss'];
+  const track = $('evo-line');
+  track.replaceChildren(...starter.line.map((stage, i) => {
+    const slide = el('div', 'evo-stage');
+    slide.dataset.stage = String(i);
     const img = el('img', 'pixel');
     img.src = spriteUrl(starter, 'front', i);
     img.alt = stage.name;
-    tile.append(img, el('strong', '', stage.name), el('span', 'evo-hp', `${BASE_HP + i * HP_PER_STAGE} HP`));
-    return i < 2 ? [tile, el('span', 'evo-arrow', '→')] : [tile];
+    slide.append(img, el('strong', '', stage.name), el('span', 'evo-hp', `${BASE_HP + i * HP_PER_STAGE} HP`), el('small', 'evo-when', WHEN[i]));
+    return slide;
   }));
+  const dots = starter.line.map((stage, i) => {
+    const dot = el('button', 'evo-dot');
+    dot.type = 'button';
+    dot.setAttribute('aria-label', stage.name);
+    dot.onclick = () => showForm(i);
+    return dot;
+  });
+  $('evo-dots').replaceChildren(...dots);
+  const current = () => Math.round(track.scrollLeft / track.clientWidth);
+  const showForm = (i) => track.scrollTo({ left: Math.max(0, Math.min(dots.length - 1, i)) * track.clientWidth });
+  const update = () => {
+    const i = current();
+    dots.forEach((dot, j) => dot.setAttribute('aria-current', String(i === j)));
+    $('evo-prev').disabled = i === 0;
+    $('evo-next').disabled = i === dots.length - 1;
+  };
+  $('evo-prev').onclick = () => showForm(current() - 1);
+  $('evo-next').onclick = () => showForm(current() + 1);
+  track.onscroll = update;
+  track.onkeydown = (e) => {
+    if (e.key === 'ArrowLeft') showForm(current() - 1);
+    if (e.key === 'ArrowRight') showForm(current() + 1);
+  };
   $('evo-note').textContent =
     `Evolves after you defeat the Biome 1 and Biome 2 bosses: +${HP_PER_STAGE} max HP, a full heal, ` +
     `and all your moves get ${STAGE_POWER * 100}% stronger.`;
@@ -74,6 +100,8 @@ export function openPreview(starter, { onBegin, onBack }) {
   $('preview-back').onclick = onBack;
   $('preview-begin').onclick = () => onBegin(level);
   showScreen('preview-screen');
+  track.scrollLeft = 0;   // always start on the first form
+  update();
 }
 
 /** Pop-up showing the deck you have right now in a run. */

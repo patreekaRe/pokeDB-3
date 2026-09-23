@@ -134,7 +134,12 @@
 
       <div class="panel">
         <h3>Evolution line</h3>
-        <div id="evo-line" class="evo-line"></div>
+        <div class="evo-carousel">
+          <button class="evo-flip" id="evo-prev" type="button" aria-label="Previous form">◀</button>
+          <div id="evo-line" class="evo-line" tabindex="0" aria-label="Evolution line: swipe or use the arrows"></div>
+          <button class="evo-flip" id="evo-next" type="button" aria-label="Next form">▶</button>
+        </div>
+        <div class="evo-dots" id="evo-dots"></div>
         <p class="hint" id="evo-note"></p>
       </div>
 
