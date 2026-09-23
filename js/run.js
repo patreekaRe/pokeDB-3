@@ -53,7 +53,7 @@ function randomStartingRelic() {
 /** Called once at startup. */
 export function initRun({ onMenu, onNewRun }) {
   $('run-deck-btn').addEventListener('click', () => run && showDeckDialog(run));
-  initDrops();
+  initBag();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
@@ -208,8 +208,7 @@ function showMap() {
   $('biome-name').textContent = biome.name;
   $('run-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = String(run.relics.length);
-  labelIcon('run-deck-btn', `Your deck: ${run.deck.length} cards`);
-  labelIcon('run-relics-btn', `Your relics: ${run.relics.length}`);
+  $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
   $('run-level').hidden = run.level === 0;
   $('run-level').textContent = `Level ${run.level}`;
   $('run-sub').textContent = run.stage < 2 ? 'Beat the boss to evolve' : 'Fully evolved';
@@ -224,41 +223,55 @@ function showMap() {
   $('run-hp-text').textContent = `${run.hp}/${run.maxHp}`;
 
   renderRelicList();
-  closeDrops();
+  closeBag();
   checkpoint();
-  renderMap(run.map, run.current, enterNode);
+  renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage) });
   showScreen('map-screen');
   playMusic(`map${run.biome + 1}`);
 }
 
-function labelIcon(id, label) {
-  $(id).title = label;
-  $(id).setAttribute('aria-label', label);
-}
+/* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
+   The tabs pick a pocket, and the arrows flip through them in order. */
+const POCKETS = ['deck', 'relics', 'key'];
+let pocket = 'relics';
 
-/* The map's drop-downs (Relics and Key): [button id, panel id]. Opening one closes the other. */
-const DROPS = [['run-relics-btn', 'relics-drop'], ['map-key-btn', 'map-key']];
-
-function initDrops() {
-  for (const [btnId, panelId] of DROPS) {
-    $(btnId).addEventListener('click', () => {
-      const open = $(panelId).hidden;
-      closeDrops();
-      if (open) setDrop(btnId, panelId, true);
-    });
+function initBag() {
+  $('bag-btn').addEventListener('click', () => ($('bag').hidden ? openBag() : closeBag()));
+  for (const tab of document.querySelectorAll('.bag-pocket')) {
+    tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest(DROPS.flat().map(id => `#${id}`).join(', '))) closeDrops();
+  const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
+  $('bag-prev').addEventListener('click', () => flip(-1));
+  $('bag-next').addEventListener('click', () => flip(1));
+  document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #bag')) closeBag(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeBag();
+    if ($('bag').hidden) return;
+    if (e.key === 'ArrowLeft') flip(-1);
+    if (e.key === 'ArrowRight') flip(1);
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrops(); });
 }
 
-function setDrop(btnId, panelId, open) {
-  $(panelId).hidden = !open;
-  $(btnId).setAttribute('aria-expanded', String(open));
+function openBag() {
+  $('bag').hidden = false;
+  $('bag-btn').setAttribute('aria-expanded', 'true');
+  showPocket(pocket);
 }
 
-const closeDrops = () => DROPS.forEach(([btnId, panelId]) => setDrop(btnId, panelId, false));
+function closeBag() {
+  $('bag').hidden = true;
+  $('bag-btn').setAttribute('aria-expanded', 'false');
+}
+
+function showPocket(name) {
+  pocket = name;
+  for (const tab of document.querySelectorAll('.bag-pocket')) {
+    const on = tab.dataset.pocket === name;
+    tab.setAttribute('aria-selected', String(on));
+    $(tab.getAttribute('aria-controls')).hidden = !on;
+    if (on) $('bag-title').textContent = tab.dataset.name;
+  }
+}
 
 function renderRelicList() {
   const rows = run.relics.map(id => {

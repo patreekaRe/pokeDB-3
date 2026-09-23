@@ -753,40 +753,29 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .run-info strong { font-size: 1.1rem; }
 .run-sub { font-size: 0.8rem; color: #dfe3ff; }
 
-/* Deck and Relics: round frosted buttons (like the Shop's) with a count bubble */
+/* The Bag button: a chunky Pokégear button in the same grey frame as the map.
+   Open (aria-expanded) looks pressed in. */
 .run-icon {
   position: relative;
   flex: none;
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(12, 14, 34, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
-  font-size: 1.45rem;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  padding: 0;
+  border-radius: 0;
+  border: 3px solid #b8b8c8;
+  background: #283060;
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, inset 0 4px 0 2px #3a4480, 3px 3px 0 2px rgba(0, 0, 0, 0.45);
+  font-size: 1.35rem;
+  transition: transform 0.08s steps(1), box-shadow 0.08s steps(1);
 }
-.run-icon:hover, .run-icon[aria-expanded="true"] { background: rgba(40, 46, 96, 0.75); border-color: var(--accent); }
-.run-icon:active { transform: scale(0.92); }
-.run-icon b {
-  position: absolute;
-  right: -5px;
-  top: -4px;
-  min-width: 21px;
-  height: 21px;
-  padding: 0 5px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: #fff;
-  color: #111;
-  font-size: 0.75rem;
-  font-weight: 900;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+.run-icon:hover { border-color: #fff; }
+.run-icon[aria-expanded="true"], .run-icon:active {
+  border-color: #f89030;
+  background: #1c2248;
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, inset 0 3px 0 2px #10142c, 1px 1px 0 2px rgba(0, 0, 0, 0.45);
 }
 .relic-node { background: linear-gradient(165deg, #3b3f78, #22264f); border-color: var(--gold); }
 
@@ -801,72 +790,147 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 }
 .biome-title { grid-column: 2; display: flex; flex-direction: column; align-items: center; font-size: 1.4rem; line-height: 1.15; text-align: center; text-shadow: 0 2px 8px #000; }
 .biome-title small { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
-.map-key-btn { grid-column: 3; justify-self: end; }   /* looks like the Deck/Relics icons (.run-icon) */
 
 /* ---------- the map's drop-downs (Relics, Key) ---------- */
 .drop {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 10px);
   right: 0;
   z-index: 5;
   width: min(330px, 100%);
   padding: 12px;
+  border-radius: 0;
+  border: 3px solid #b8b8c8;
   background: #171b3d;   /* solid: a blur can't see out of the run card, so a see-through panel shows the map through it */
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 12px 30px rgba(0, 0, 0, 0.55);
   animation: menuDrop 0.16s ease-out;
 }
 .drop .howto-list { grid-template-columns: 1fr; gap: 6px; }
-.drop .howto-li { padding: 5px 10px; gap: 10px; }
+.drop .howto-li { padding: 5px 10px; gap: 10px; border-radius: 0; }
 .drop .howto-node { width: 34px; height: 34px; font-size: 1rem; }
 .drop-note { margin-top: 10px; font-size: 0.78rem; line-height: 1.35; color: var(--muted); text-align: center; }
 .drop-empty { font-size: 0.85rem; color: var(--muted); text-align: center; padding: 4px 0; }
 
-/* ---------- the map ---------- */
-#map-screen { max-width: 640px; }
-.map-wrap { padding: 0 4px; }
-.map {
+/* ---------- the Bag: Deck, Relics and the map Key in one drop-down ----------
+   Styled after the Gold/Silver Bag screen: a cream menu in the grey frame, a "◀ pocket ▶"
+   header, pocket tabs you can tap, and a blinking ▲ cursor under the open pocket. */
+.bag-sprite { width: 32px; height: 32px; }
+.bag { width: min(340px, calc(100vw - 24px)); padding: 10px; background: #f8f8e8; color: #282018; }
+.bag-head { display: flex; align-items: center; justify-content: space-between; background: #283060; box-shadow: inset 0 0 0 2px #303038; }
+.bag-head strong { font-size: 0.95rem; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; }
+.bag-flip { width: 36px; height: 34px; padding: 0; border: 0; background: none; color: #f8d030; font-size: 0.95rem; animation: bagBlink 1s steps(1) infinite; }
+.bag-flip:hover { color: #fff; }
+@keyframes bagBlink { 50% { opacity: 0.35; } }
+.bag-pockets { display: flex; justify-content: center; gap: 12px; margin: 12px 0 20px; }
+.bag-pocket {
   position: relative;
-  width: 100%;
-  height: clamp(440px, 68vh, 620px);
-  border-radius: var(--radius);
-  background: rgba(10, 12, 30, 0.6);
-  border: 1px solid var(--panel-edge);
+  width: 54px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 0;
+  border: 3px solid #b8a888;
+  background: #e8e0c8;
+  box-shadow: 2px 2px 0 #a09070;
+  font-size: 1.3rem;
 }
-.map-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
-.map-line { stroke: rgba(255, 255, 255, 0.25); stroke-width: 3; stroke-dasharray: 2 7; stroke-linecap: round; }
-.map-line.walked { stroke: var(--gold); stroke-dasharray: none; }
-.map-line.active { stroke: #fff; stroke-dasharray: none; stroke-width: 4; }
+.bag-pocket[aria-selected="true"] { border-color: #f89030; background: #fff; transform: translateY(-3px); box-shadow: 2px 5px 0 #a09070; }
+.bag-pocket[aria-selected="true"]::after {
+  content: '▲';
+  position: absolute;
+  left: 50%;
+  bottom: -19px;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: #282018;
+  animation: bagBlink 1s steps(1) infinite;
+}
+.bag-pocket b {
+  position: absolute;
+  right: -9px;
+  top: -9px;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #f89030;
+  background: #402010;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+.bag .howto-li { background: none; border: 0; border-bottom: 2px dashed #d8d0b0; }
+.bag .howto-li:last-child { border-bottom: 0; }
+.bag .howto-li-text small, .bag .drop-note, .bag .drop-empty { color: #6a5e48; }
+.bag-deck-text { margin: 4px 0 12px; font-size: 0.9rem; text-align: center; }
+.bag #run-deck-btn { width: 100%; }
 
+/* ---------- the map: a Pokégear-style town map ----------
+   js/map.js paints terrain and routes onto a small canvas scaled up with sharp pixels,
+   and lays the rooms over it. --grid-w / --grid-h (set by js/map.js) are the size in tiles,
+   so --tile is one tile of the map's width and everything on it scales together. */
+#map-screen { max-width: 640px; }
+.map-wrap { padding: 10px; }
+.map {
+  --tile: calc(100% / var(--grid-w, 37));
+  position: relative;
+  container-type: inline-size;
+  width: min(100%, calc(78vh * var(--grid-w, 37) / var(--grid-h, 58)));
+  aspect-ratio: var(--grid-w, 37) / var(--grid-h, 58);
+  margin: 0 auto;
+  background: #58c040;
+  /* a chunky grey frame, like the Pokégear's */
+  box-shadow: 0 0 0 3px #303038, 0 0 0 7px #b8b8c8, 0 0 0 10px #303038, 0 12px 30px 10px rgba(0, 0, 0, 0.45);
+}
+.map-terrain { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* A room: the button is a tap target one tile bigger than the town square drawn inside it */
 .map-node {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 46px;
-  height: 46px;
+  width: calc(var(--tile) * 5);
+  aspect-ratio: 1;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  background: #262c58;
-  font-size: 1.35rem;
-  line-height: 1;
   padding: 0;
-  opacity: 0.55;
+  border: 0;
+  background: none;
   cursor: default;
 }
-.map-node.type-elite { background: #5a1f24; }
-.map-node.type-rest  { background: #1e5a3c; }
-.map-node.type-treasure { background: #5a4a14; }
-.map-node.type-boss { width: 62px; height: 62px; font-size: 1.9rem; background: #4a2670; border-color: var(--gold); }
-.map-node.visited { opacity: 0.35; filter: grayscale(0.6); }
-.map-node.current { opacity: 1; border-color: var(--gold); filter: none; box-shadow: 0 0 0 4px rgba(255, 203, 5, 0.35); }
-.map-node.reachable {
-  opacity: 1;
-  cursor: pointer;
-  border-color: #fff;
-  animation: pulse 1.4s ease-in-out infinite;
+.map-town {
+  width: 60%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: #402010;                                  /* the dark inner square */
+  border: calc(100cqw / var(--grid-w, 37) * 0.5) solid #f89030;   /* the orange outer square */
+  box-shadow: 0 0 0 1px #582808, 2px 2px 0 1px rgba(0, 0, 0, 0.35);
+  font-size: calc(100cqw / var(--grid-w, 37) * 1.35);
+  line-height: 1;
 }
-.map-node.reachable:hover { transform: translate(-50%, -50%) scale(1.15); }
-@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18); } }
+.map-node.type-elite .map-town { border-color: #f04038; }
+.map-node.type-boss { width: calc(var(--tile) * 6); }
+.map-node.type-boss .map-town { width: 84%; border-color: var(--gold); background: #4a2670; font-size: calc(100cqw / var(--grid-w, 37) * 2.4); box-shadow: 0 0 0 2px #6b4b00, 3px 3px 0 1px rgba(0, 0, 0, 0.35); }
+.map-node.visited .map-town { border-color: #a89880; background: #504840; filter: grayscale(0.7); opacity: 0.8; }
+.map-node.current .map-town { border-color: var(--gold); filter: none; opacity: 1; }
+.map-node.reachable { cursor: pointer; }
+.map-node.reachable .map-town { animation: townBlink 0.9s steps(1) infinite; }
+.map-node.reachable:hover .map-town, .map-node.reachable:focus-visible .map-town { border-color: #fff; transform: scale(1.12); }
+@keyframes townBlink { 50% { border-color: #fff; } }
+
+/* Your Pokémon stands on the room you're in, like the trainer's head on the Pokégear */
+.map-trainer {
+  position: absolute;
+  width: calc(var(--tile) * 5);
+  transform: translate(-50%, -96%);
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.5));
+  animation: trainerHop 1s steps(1) infinite;
+}
+@keyframes trainerHop { 50% { margin-top: -2px; } }
 
 /* ---------- rewards (choose one) ---------- */
 #reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; }
@@ -916,8 +980,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 
 /* ---------- phones (kept last so it wins over the rules above) ---------- */
 @media (max-width: 720px) {
-  .map-node { width: 34px; height: 34px; font-size: 1rem; border-width: 2px; }
-  .map-node.type-boss { width: 50px; height: 50px; font-size: 1.5rem; }
   .reward-options { gap: 12px; }
   .evo-stage img { width: 72px; height: 72px; }
 }
@@ -1213,6 +1275,15 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .howto-node.rest     { background: #1e5a3c; }
 .howto-node.treasure { background: #5a4a14; }
 .howto-node.boss     { background: #4a2670; border-color: var(--gold); }
+/* map rooms in the Key and How to play: the same orange town squares as the map, on a patch of grass */
+.howto-node.town {
+  border-radius: 0;
+  border: 3px solid #f89030;
+  background: #402010;
+  box-shadow: 0 0 0 1px #582808, 0 0 0 4px #58c040, 0 0 0 5px #389828;
+}
+.howto-node.town.elite { border-color: #f04038; }
+.howto-node.town.boss  { border-color: var(--gold); background: #4a2670; }
 
 /* the type cycle */
 .howto-types { display: flex; align-items: center; justify-content: center; gap: 6px; }

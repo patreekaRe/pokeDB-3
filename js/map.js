@@ -205,43 +205,245 @@ export function reachableNodes(map, currentId) {
 }
 
 /* ============================================================
-   DRAWING THE MAP
+   DRAWING THE MAP  -  in the style of a Pokégear town map
+
+   Everything snaps to a grid of tiles. Terrain and routes are painted
+   pixel by pixel onto a small canvas that CSS scales up with
+   image-rendering: pixelated. The rooms are buttons laid over it.
+
+   Every link runs straight up out of its room, jogs sideways on the
+   row halfway to the next floor, then runs straight up into the next
+   room. Paths never cross (see nextColumn), so links that share a
+   jog row just merge into one route, like crossroads.
    ============================================================ */
 
-const xOf = (node) => 8 + node.col * (84 / (COLS - 1)) + node.jx;            // % from the left
-const yOf = (node) => 93 - node.floor * (86 / FLOORS) + node.jy;             // % from the top (floor 0 at the bottom)
+const TILE = 8;                                   // canvas pixels per tile
+const GRID_W = 3 + (COLS - 1) * 5 + 4;             // tiles across
+const colX = (col) => 3 + col * 5;                 // tile column of a room
+const rowY = (floor) => floor >= FLOORS ? 3 : 10 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
+const START_ROW = rowY(0) + 3;                     // where you stand before the first room
+const GRID_H = START_ROW + 3;
+const BOSS_COL = Math.floor(COLS / 2);
 
-/** Draw the map into #map. onPick(node) is called when you click a reachable node. */
-export function renderMap(map, currentId, onPick) {
-  const box = $('map');
-  box.replaceChildren();
+const PALETTES = {
+  clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
+  shrine:   { ground: 'moss',  blobs: [['trees', 9, 14, 40], ['water', 3, 12, 28], ['mountain', 2, 8, 16]] },
+  wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
+};
 
-  // Lines first, so the nodes sit on top of them.
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('class', 'map-lines');
-  const reachable = new Set(reachableNodes(map, currentId).map(n => n.id));
+// base, light, dark, edge (the 1px line where it meets other terrain)
+const TERRAIN = {
+  grass:    ['#58c040', '#88e060', '#389828'],
+  moss:     ['#3f9a3f', '#66bd55', '#2a7a2e'],
+  dust:     ['#c09460', '#dcb27c', '#8e6a40'],
+  water:    ['#3878f0', '#a8d8f8', '#2858c0', '#e8f8ff'],
+  lava:     ['#e04818', '#f8c030', '#a02808', '#601800'],
+  mountain: ['#c08040', '#e8b070', '#7a4a20', '#5a3010'],
+  trees:    ['#2f8a2f', '#58b848', '#185018', '#103810'],
+};
 
+// 8x8 motifs: . base, L light, D dark
+const MOTIFS = {
+  mountain: ['........', '...LL...', '..LL.D..', '.LL...D.', '.L....DD', 'L.....DD', '......DD', 'DDDDDDDD'],
+  trees:    ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
+};
+
+const ROUTE = { edge: '#9a8448', fill: '#f8f0b8', walked: '#e83030', active: '#ffffff' };
+let flowTimer = 0;
+
+/** A small seeded random number generator (mulberry32), so a refresh draws the same terrain. */
+function seeded(text) {
+  let seed = 0;
+  for (const ch of text) seed = Math.imul(seed ^ ch.charCodeAt(0), 2654435761);
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** The routes as tile rectangles: [x1, y1, x2, y2, state]. */
+function routeSegments(map, currentId, reachable) {
+  const segs = [];
+  const add = (x1, y1, x2, y2, state) => segs.push([Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2), state]);
+  const link = (x1, y1, x2, y2, jog, state) => {
+    add(x1, y1, x1, jog, state);
+    add(x1, jog, x2, jog, state);
+    add(x2, jog, x2, y2, state);
+  };
   for (const node of Object.values(map.byId)) {
     for (const nextId of node.next) {
       const to = map.byId[nextId];
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', `${xOf(node)}%`);
-      line.setAttribute('y1', `${yOf(node)}%`);
-      line.setAttribute('x2', `${xOf(to)}%`);
-      line.setAttribute('y2', `${yOf(to)}%`);
-      const active = node.id === currentId && reachable.has(nextId);
-      line.setAttribute('class', `map-line${node.visited && to.visited ? ' walked' : ''}${active ? ' active' : ''}`);
-      svg.append(line);
+      const state = node.id === currentId && reachable.has(nextId) ? 'active' : node.visited && to.visited ? 'walked' : 'fill';
+      link(colX(node.col), rowY(node.floor), colX(to.col), rowY(to.floor), rowY(node.floor) - 3, state);
     }
   }
-  box.append(svg);
+  for (const node of map.floors[0]) {
+    const state = !currentId ? 'active' : node.visited ? 'walked' : 'fill';
+    link(colX(BOSS_COL), START_ROW, colX(node.col), rowY(0), START_ROW, state);
+  }
+  return segs;
+}
+
+/** Which tiles are what: ground, water, mountain... Blobs grow in the gaps between routes. */
+function terrainGrid(map, biomeId, segs, rand) {
+  const palette = PALETTES[biomeId] || PALETTES.clearing;
+  const grid = Array.from({ length: GRID_H }, () => Array(GRID_W).fill(palette.ground));
+
+  // How far each tile is from a route or room, so blobs keep clear of them.
+  const dist = Array.from({ length: GRID_H }, () => Array(GRID_W).fill(Infinity));
+  const queue = [];
+  const block = (x, y) => { if (dist[y]?.[x] === Infinity) { dist[y][x] = 0; queue.push([x, y]); } };
+  for (const [x1, y1, x2, y2] of segs) for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) block(x, y);
+  for (const node of Object.values(map.byId)) {
+    const r = node.type === 'boss' ? 2 : 1;
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) block(colX(node.col) + dx, rowY(node.floor) + dy);
+  }
+  for (let i = 0; i < queue.length; i++) {
+    const [x, y] = queue[i];
+    for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+      if (dist[ny]?.[nx] === Infinity) { dist[ny][nx] = dist[y][x] + 1; queue.push([nx, ny]); }
+    }
+  }
+
+  for (const [kind, count, min, max] of palette.blobs) {
+    for (let n = 0; n < count; n++) {
+      const seeds = [];
+      for (let y = 0; y < GRID_H; y++) for (let x = 0; x < GRID_W; x++) {
+        if (dist[y][x] >= 2 && grid[y][x] === palette.ground) seeds.push([x, y]);
+      }
+      if (!seeds.length) return grid;
+      const size = min + Math.floor(rand() * (max - min + 1));
+      const blob = [seeds[Math.floor(rand() * seeds.length)]];
+      grid[blob[0][1]][blob[0][0]] = kind;
+      for (let tries = 0; blob.length < size && tries < size * 20; tries++) {
+        const [x, y] = blob[Math.floor(rand() * blob.length)];
+        const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(rand() * 4)];
+        const nx = x + dx, ny = y + dy;
+        if (dist[ny]?.[nx] >= 1 && grid[ny][nx] === palette.ground) { grid[ny][nx] = kind; blob.push([nx, ny]); }
+      }
+    }
+  }
+  return grid;
+}
+
+// ImageData wants ABGR on little-endian machines (all of them, in practice)
+const abgr = (color) => {
+  const n = parseInt(color.slice(1), 16);
+  return ((255 << 24) | ((n & 255) << 16) | (n & 0xff00) | (n >> 16)) >>> 0;
+};
+
+const ripple = (x, y) => (((x + y) % 6) + 6) % 6 === 0 && ((x - y) & 7) < 4;   // short diagonal dashes
+
+function paintTerrain(canvas, map, biomeId, segs) {
+  const rand = seeded(`${biomeId}|${Object.keys(map.byId).sort().join()}`);
+  const grid = terrainGrid(map, biomeId, segs, rand);
+  const w = GRID_W * TILE, h = GRID_H * TILE;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(w, h);
+  const px = new Uint32Array(img.data.buffer);
+  const put = (x, y, c) => { px[y * w + x] = c; };
+  const terrain = Object.fromEntries(Object.entries(TERRAIN).map(([k, v]) => [k, v.map(abgr)]));
+  const route = Object.fromEntries(Object.entries(ROUTE).map(([k, v]) => [k, abgr(v)]));
+  const flowing = [];   // [x, y, base, light, speed] for every water/lava pixel, redrawn as it drifts
+
+  for (let ty = 0; ty < GRID_H; ty++) for (let tx = 0; tx < GRID_W; tx++) {
+    const kind = grid[ty][tx];
+    const [base, light, dark, edge] = terrain[kind];
+    const motif = MOTIFS[kind];
+    const tuft = !motif && rand() < 0.22 ? [1 + Math.floor(rand() * 4), 1 + Math.floor(rand() * 5)] : null;
+    for (let ly = 0; ly < TILE; ly++) for (let lx = 0; lx < TILE; lx++) {
+      const x = tx * TILE + lx, y = ty * TILE + ly;
+      let c = base;
+      if (kind === 'water' || kind === 'lava') {
+        if (ripple(x, y)) c = light;
+        flowing.push([x, y, base, light, kind === 'water' ? 1 : -0.5]);
+      } else if (motif) {
+        const m = motif[ly][lx];
+        c = m === 'L' ? light : m === 'D' ? dark : base;
+      } else if (tuft && ly === tuft[1] + 1 && (lx === tuft[0] || lx === tuft[0] + 2)) {
+        c = dark;
+      } else if (tuft && ly === tuft[1] && lx === tuft[0] + 1) {
+        c = light;
+      }
+      put(x, y, c);
+    }
+    if (edge) {
+      const other = (dx, dy) => (grid[ty + dy]?.[tx + dx] ?? kind) !== kind;
+      for (let i = 0; i < TILE; i++) {
+        if (other(0, -1)) put(tx * TILE + i, ty * TILE, edge);
+        if (other(0, 1)) put(tx * TILE + i, ty * TILE + TILE - 1, edge);
+        if (other(-1, 0)) put(tx * TILE, ty * TILE + i, edge);
+        if (other(1, 0)) put(tx * TILE + TILE - 1, ty * TILE + i, edge);
+      }
+    }
+  }
+
+  // Routes: every edge first, then the fills, so routes that meet merge without a seam.
+  // Walked routes keep the plain fill and get thick red dashes, like a trail.
+  const rect = (x1, y1, x2, y2, c) => { for (let y = y1; y < y2; y++) for (let x = x1; x < x2; x++) put(x, y, c); };
+  for (const [x1, y1, x2, y2] of segs) rect(x1 * TILE, y1 * TILE, (x2 + 1) * TILE, (y2 + 1) * TILE, route.edge);
+  for (const state of ['fill', 'walked', 'active']) {
+    for (const [x1, y1, x2, y2, s] of segs) {
+      if (s !== state) continue;
+      rect(x1 * TILE + 1, y1 * TILE + 1, (x2 + 1) * TILE - 1, (y2 + 1) * TILE - 1, route[s === 'walked' ? 'fill' : s]);
+      if (s !== 'walked') continue;
+      if (y1 === y2 && x1 !== x2) {
+        for (let x = x1 * TILE + 1; x < (x2 + 1) * TILE - 1; x++) if (x % 6 < 4) rect(x, y1 * TILE + 2, x + 1, y1 * TILE + TILE - 2, route.walked);
+      } else {
+        for (let y = y1 * TILE + 1; y < (y2 + 1) * TILE - 1; y++) if (y % 6 < 4) rect(x1 * TILE + 2, y, x1 * TILE + TILE - 2, y + 1, route.walked);
+      }
+    }
+  }
+  const draw = () => ctx.putImageData(img, 0, 0);
+  draw();
+
+  // Water and lava drift, a pixel at a time, while the map is on screen.
+  clearInterval(flowTimer);
+  if (!flowing.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let tick = 0;
+  flowTimer = setInterval(() => {
+    if (!canvas.isConnected) return clearInterval(flowTimer);
+    if ($('map-screen').hidden) return;
+    tick++;
+    for (const [x, y, base, light, speed] of flowing) {
+      put(x, y, ripple(x - Math.floor(tick * speed), y) ? light : base);
+    }
+    draw();
+  }, 220);
+}
+
+/**
+ * Draw the map into #map. onPick(node) is called when you click a reachable node.
+ * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
+ */
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer } = {}) {
+  const box = $('map');
+  box.replaceChildren();
+  box.style.setProperty('--grid-w', GRID_W);
+  box.style.setProperty('--grid-h', GRID_H);
+  const reachable = new Set(reachableNodes(map, currentId).map(n => n.id));
+  const segs = routeSegments(map, currentId, reachable);
+
+  const canvas = el('canvas', 'map-terrain');
+  canvas.setAttribute('aria-hidden', 'true');
+  paintTerrain(canvas, map, biome, segs);
+  box.append(canvas);
+
+  const place = (elem, x, y) => {
+    elem.style.left = `${((x + 0.5) / GRID_W) * 100}%`;
+    elem.style.top = `${((y + 0.5) / GRID_H) * 100}%`;
+  };
 
   for (const node of Object.values(map.byId)) {
     const info = NODE_INFO[node.type];
-    const btn = el('button', `map-node type-${node.type}`, info.icon);
+    const btn = el('button', `map-node type-${node.type}`);
     btn.type = 'button';
-    btn.style.left = `${xOf(node)}%`;
-    btn.style.top = `${yOf(node)}%`;
+    btn.append(el('span', 'map-town', info.icon));
+    place(btn, colX(node.col), rowY(node.floor));
     let label = info.label;
 
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
@@ -261,5 +463,14 @@ export function renderMap(map, currentId, onPick) {
     btn.disabled = !canGo;
     if (canGo) btn.addEventListener('click', () => onPick(node));
     box.append(btn);
+  }
+
+  if (trainer) {
+    const here = currentId && map.byId[currentId];
+    const img = el('img', 'map-trainer');
+    img.src = trainer;
+    img.alt = '';
+    place(img, colX(here ? here.col : BOSS_COL), here ? rowY(here.floor) : START_ROW);
+    box.append(img);
   }
 }
