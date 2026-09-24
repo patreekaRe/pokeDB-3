@@ -1977,3 +1977,22 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .howto-dialog .howto-li .badge.bad b { color: #c02020; }
 .howto-dialog .howto-node:not(.town) { border: 0; border-radius: 0; background: none; font-size: 1.5rem; }
 .howto-dialog .howto-node.town { box-shadow: 0 0 0 1px #582808; }
+
+/* ---------- the pixel battle scene (js/battlebg.js) ---------- */
+#battle-bg { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; image-rendering: pixelated; display: none; }
+body.has-scene[data-screen="battle-screen"] #battle-bg { display: block; }
+/* the grassy pads the Pokémon stand on, like the Gen 3/4 games; behind the sprites, and they don't lunge with them */
+.has-scene .enemy-zone::after,
+.has-scene .player-zone::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  z-index: -1;
+  aspect-ratio: 48 / 14;
+  translate: -50% 0;
+  background: var(--pad) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.has-scene .enemy-zone::after { width: calc(clamp(110px, 20vh, 190px) * 1.25); bottom: -2%; }   /* 1.25x the portrait, as horizonRow() assumes */
+.has-scene .player-zone::before { width: clamp(130px, 25vh, 290px); bottom: -4%; }

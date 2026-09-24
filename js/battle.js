@@ -23,6 +23,8 @@ import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EF
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
+import { showBattleScene } from './battlebg.js';
+import { BIOMES } from './data/enemies.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
@@ -115,6 +117,7 @@ export function startBattle({ run, encounter, onEnd }) {
 
   setBackdrop(run.backdrop, run.starter.type);
   showScreen('battle-screen');
+  showBattleScene(BIOMES[run.biome]?.id);
   playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
   preloadMusic('victory');
   setupBattleScreen();

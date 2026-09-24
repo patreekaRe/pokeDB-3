@@ -325,6 +325,16 @@ stage 1 to 90% with the `scale` property (from the feet), so the attack and
 evolve animations' transforms and the layout are untouched. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
+Battles are set in a pixel-art scene per biome (`js/battlebg.js`, the user's
+call: the blurred photos clashed with the 8-bit look): sky bands, drifting
+clouds, far hills, a tree line and a meadow, painted into `#battle-bg` (a
+fixed low-res canvas, one canvas pixel = 4 CSS px on phones, 5 on PCs) by
+`showBattleScene()` from `startBattle()`. `horizonRow()` puts the horizon at
+~38% of the screen but always above the enemy's pad, so the layout can move.
+Both Pokémon stand on Gen 3/4-style grassy pads (`--pad`, a data-URL pixel
+image, drawn by `.enemy-zone::after` / `.player-zone::before` so they don't
+lunge with the sprites). Only biomes listed in `SCENES` get one (the Clearing
+so far); the others keep the photo backdrop (`body.has-scene` switches).
 
 **Watch for CSS class-name collisions.** The reward screen already uses
 `.relic-icon`, and a later, unscoped rule like
