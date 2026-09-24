@@ -42,7 +42,7 @@ let nextUid = 1;
 export function initBattle() {
   $('end-turn-btn').addEventListener('click', endTurn);
   // tapping the dimmed battle around a picked card, or Escape, puts it back
-  $('card-focus').addEventListener('click', (e) => { if (!e.target.closest('.focus-card')) cancelPick(); });
+  $('card-focus').addEventListener('click', (e) => { if (!e.target.closest('.focus-card, .focus-play')) cancelPick(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
 }
 
@@ -794,11 +794,19 @@ function cancelPick() {
   renderHand();
 }
 
+/** The Play / Use button under a picked card or item: End Turn's red striped panel and pill. */
+function focusButton(label, onClick) {
+  const btn = el('button', 'ds-btn ds-play focus-play');
+  btn.type = 'button';
+  btn.append(el('span', 'pp-pill', label));
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
 /** The big copy of the picked card (or item) at the bottom middle of the screen, over a dimmed battle. */
 function renderFocus() {
   const b = battle;
   const layer = $('card-focus');
-  const verb = matchMedia('(hover: hover)').matches ? 'Click' : 'Tap';
   const item = ITEMS_BY_ID[b.items[selectedItem]];
   if (item) {
     const index = selectedItem;
@@ -813,7 +821,7 @@ function renderFocus() {
     big.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapItem(index); }
     });
-    layer.replaceChildren(big, el('p', 'focus-hint', problem || `${verb} again to use`));
+    layer.replaceChildren(big, problem ? el('p', 'focus-hint', problem) : focusButton('Use', () => tapItem(index)));
     layer.hidden = false;
     big.focus({ preventScroll: true });
     return;
@@ -832,7 +840,7 @@ function renderFocus() {
   big.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
-  layer.replaceChildren(big, el('p', 'focus-hint', problem || `${verb} again to play`));
+  layer.replaceChildren(big, problem ? el('p', 'focus-hint', problem) : focusButton('Play', () => tapCard(entry.uid)));
   layer.hidden = false;
   big.focus({ preventScroll: true });
 }

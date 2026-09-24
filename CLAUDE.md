@@ -297,7 +297,7 @@ first blows a copy of the tile up in the middle of a dimmed screen
 `confirm` ("Add to deck") under it; the big tile or that button takes it, the
 dimmed area or Escape backs out. "Add to deck" and Skip are `.ds-btn`s: End
 Turn's striped panel and white pill, green (`.ds-go`) or blue (`.ds-skip`),
-with a blinking ▶ in the pill.
+with a blinking ▶ in the pill. Battle's picked card / item shows a red `.ds-play` Play / Use button (`focusButton()` in `js/battle.js`) instead of "Tap again to play".
 Titles are short headers on a pixel-font plate ("Learn a new move", "Item found").
 In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it

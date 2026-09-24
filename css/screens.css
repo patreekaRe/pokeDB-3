@@ -1257,6 +1257,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   cursor: pointer;
 }
 .ds-btn.ds-skip { --stripe-a: #6890e0; --stripe-b: #88a8f0; --rim: #3858b0; }
+.ds-btn.ds-play { --stripe-a: #f07068; --stripe-b: #f8887c; --rim: #c84840; }   /* battle's Play / Use: End Turn's own colours */
 .ds-btn .pp-pill { gap: 0; padding: 13px 24px 12px 38px; position: relative; font-size: 1.2rem; }
 .ds-btn .pp-pill::before { content: '▶'; position: absolute; left: 16px; top: 50%; translate: 0 -50%; font-size: 0.6em; animation: cursorBlink 1s steps(1) infinite; }
 .ds-btn:hover .pp-pill { background: #fff; }
