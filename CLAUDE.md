@@ -278,7 +278,7 @@ it), trims the space under your Pokémon so your nameplate clears the enemy's
 feet, and keeps room above the text box; the phone rules also keep a 10px
 gap between the two columns.
 Hints live in `title` attributes. Touch screens can't hover, so `js/tips.js`
-shows a tapped element's `title` in a `.tap-tip` bubble (touch/pen only; mouse
+shows a tapped element's `title` in `.tap-tip`, a mini copy of the battle text box that stays until the next tap anywhere (touch/pen only; mouse
 keeps the native tooltip). Buttons and other controls are skipped, since tapping
 them already does something. Give new non-button things a `title` and they get
 this for free.

@@ -4,19 +4,18 @@
    Status badges, the piles, the coins, the enemy's intent and more
    explain themselves in a `title`, which only shows on mouse hover.
    On a touch screen, tapping anything with a title pops the same text
-   up in a small Pokégear bubble; the next tap anywhere closes it.
+   up in a mini copy of the battle text box, which stays until the next
+   tap anywhere (on the box itself too).
    Buttons and other controls are left alone: tapping them already
    does something.
    ============================================================ */
 
 const CONTROLS = 'button, a, input, select, textarea, label, summary, [role="button"], [role="radio"], [role="tab"], [role="checkbox"]';
 const MAX_MOVE = 10;        // px a finger can drift and still count as a tap
-const SHOW_MS = 5000;
 
 let tip = null;             // the bubble element
 let owner = null;           // the element whose hint is showing
 let start = null;           // where the current touch began
-let hideTimer = 0;
 
 /** Called once at startup. */
 export function initTips() {
@@ -53,19 +52,13 @@ function showTip(target) {
   const box = target.getBoundingClientRect();
   const width = tip.offsetWidth, height = tip.offsetHeight;
   const left = Math.min(Math.max(8, box.left + box.width / 2 - width / 2), innerWidth - width - 8);
-  const above = box.top - height - 8 >= 8;
+  const above = box.top - height - 12 >= 8;
   tip.style.left = `${left}px`;
-  tip.style.top = `${above ? box.top - height - 8 : box.bottom + 8}px`;
-  tip.style.setProperty('--arrow-x', `${box.left + box.width / 2 - left}px`);
-  tip.classList.toggle('below', !above);
-
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(hideTip, SHOW_MS);
+  tip.style.top = `${above ? box.top - height - 12 : box.bottom + 12}px`;
 }
 
 function hideTip() {
   if (!owner) return;
   owner = null;
   tip.hidden = true;
-  clearTimeout(hideTimer);
 }
