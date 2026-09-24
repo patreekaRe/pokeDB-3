@@ -102,7 +102,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 
   const skip = $('reward-skip');
   skip.hidden = !onSkip;
-  skip.textContent = skipLabel;
+  $('reward-skip-text').textContent = skipLabel;
   skip.onclick = onSkip ? once(onSkip) : null;
 
   showScreen('reward-screen');
@@ -121,7 +121,8 @@ function openFocus(option, btn, take) {
   big.tabIndex = 0;
   big.setAttribute('role', 'button');
   big.setAttribute('aria-label', option.ask);
-  const yes = el('button', 'focus-hint focus-confirm', option.confirm || 'Choose');
+  const yes = el('button', 'ds-btn ds-go focus-confirm');
+  yes.append(el('span', 'pp-pill', option.confirm || 'Choose'));
   yes.type = 'button';
   const layer = el('div', 'card-focus reward-focus');
   layer.append(big, yes);

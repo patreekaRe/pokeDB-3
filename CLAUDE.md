@@ -294,8 +294,10 @@ box says "The wild X fainted!", the PokéCoins and the ₽ as separate lines.
 Options with `ask`/`confirm` (card, relic and item rewards) take two taps: the
 first blows a copy of the tile up in the middle of a dimmed screen
 (`openFocus()`, reusing battle's `.card-focus`/`.focus-card`) with the
-`confirm` ("Add to deck") under it in the "Tap to play" style; the big tile or
-that button takes it, the dimmed area or Escape backs out.
+`confirm` ("Add to deck") under it; the big tile or that button takes it, the
+dimmed area or Escape backs out. "Add to deck" and Skip are `.ds-btn`s: End
+Turn's striped panel and white pill, green (`.ds-go`) or blue (`.ds-skip`),
+with a blinking ▶ in the pill.
 Titles are short headers on a pixel-font plate ("Learn a new move", "Item found").
 In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
@@ -403,7 +405,7 @@ re-pointed to dark-on-parchment values, so most content re-themes itself.
 Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
 `.dialog ...` override in `css/base.css`. Game cards (`css/cards.css`) are styled after the Game Boy
 Color Pokémon Trading Card Game: square type-coloured frame, pixel checker
-body, square gold cost gem, pixel-font name/type, a framed art window and a
+body, a round PP cost set inside the frame (a mini PP box: white disc, salmon ring), pixel-font name/type, a framed art window and a
 cream text window. The description stays in the normal font on purpose:
 pixel letters would be too small to read at card size.
 Window text (and the HP bar, biome sign, PP box...) uses Press Start 2P, the

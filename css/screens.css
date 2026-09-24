@@ -1241,8 +1241,27 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* a picked reward, blown up in the middle (rewards.js openFocus); the confirm sits under it like battle's "Tap to play" */
 .card-focus.reward-focus { justify-content: center; padding-bottom: 16px; background: rgba(8, 10, 24, 0.6); }
 .reward-focus .card.focus-card { --card-w: min(64vw, 260px, 45vh); }
-.focus-confirm { position: relative; padding-left: 26px; font: inherit; font-family: var(--pixel-font); font-size: 0.95rem; cursor: pointer; }
-.focus-confirm::before { content: '▶'; position: absolute; left: 10px; top: 50%; translate: 0 -50%; font-size: 0.6rem; animation: cursorBlink 1s steps(1) infinite; }
+/* Reward buttons ("Add to deck", Skip): End Turn's striped panel and white pill, in their own colours
+   (green to take, blue to pass) and with the menus' blinking ▶ cursor in the pill */
+.ds-btn {
+  --stripe-a: #58b858; --stripe-b: #78d070; --rim: #2f8a3a;
+  position: relative;
+  padding: 6px 7px;
+  border: 0;
+  border-radius: var(--round);
+  background: repeating-linear-gradient(var(--stripe-a) 0 4px, var(--stripe-b) 4px 8px);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px var(--rim), 4px 4px 0 2px rgba(0, 0, 0, 0.45);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.ds-btn.ds-skip { --stripe-a: #6890e0; --stripe-b: #88a8f0; --rim: #3858b0; }
+.ds-btn .pp-pill { gap: 0; padding: 13px 24px 12px 38px; position: relative; font-size: 1.2rem; }
+.ds-btn .pp-pill::before { content: '▶'; position: absolute; left: 16px; top: 50%; translate: 0 -50%; font-size: 0.6em; animation: cursorBlink 1s steps(1) infinite; }
+.ds-btn:hover .pp-pill { background: #fff; }
+.ds-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px var(--rim), 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
+.ds-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
 .reward-option.picked .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }   /* like a picked card in battle */
 .reward-option.picked > .relic { outline: 4px solid #f8d030; outline-offset: 2px; }

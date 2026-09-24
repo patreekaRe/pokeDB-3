@@ -44,27 +44,31 @@
   transition: box-shadow 0.15s;
 }
 
+/* the PP cost: a tiny copy of the battle's PP box (white pill, salmon ring, dark outline, grey-shadowed
+   numbers), set inside the frame so a card's cost reads as the PP it spends */
 .card-cost {
   position: absolute;
-  top: -3cqw;
-  left: -3cqw;
-  width: 19cqw;
-  height: 19cqw;
+  top: 4.5cqw;
+  left: 4.5cqw;
+  width: 15cqw;
+  height: 15cqw;
   display: grid;
   place-items: center;
-  border: 1.2cqw solid #181010;
-  background: #f8d030;
-  box-shadow: inset -1.6cqw -1.6cqw 0 #c88810, inset 1.6cqw 1.6cqw 0 #fff6b0;
-  color: #181010;
+  padding-top: 0.6cqw;
+  border-radius: 50%;
+  background: #f8f8f8;
+  box-shadow: inset 0 -1.4cqw 0 #d0d0d8, 0 0 0 1.6cqw #f07068, 0 0 0 2.8cqw #303038;
+  color: #404048;
+  text-shadow: 0.9cqw 0.9cqw 0 #c0c0c8;
   font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 12cqw;
+  font-size: 10cqw;
   line-height: 1;
 }
 
 .card-name {
   width: 100%;
   min-height: 12cqw;
-  padding-left: 12cqw;               /* leaves room for the cost gem */
+  padding-left: 18cqw;               /* leaves room for the PP cost */
   padding-right: 1cqw;
   display: grid;
   align-items: center;
@@ -150,7 +154,7 @@
 .card.small .card-text { display: none; }
 .card.small .card-name { font-size: 12cqw; min-height: 0; padding-left: 16cqw; padding-right: 1cqw; justify-items: center; }
 .card.small .card-art { height: auto; flex: 1; font-size: 30cqw; }
-.card.small .card-cost { width: 22cqw; height: 22cqw; font-size: 14cqw; }
+.card.small .card-cost { width: 18cqw; height: 18cqw; font-size: 12cqw; }
 
 /* ---------- cards in your battle hand ---------- */
 .card.in-hand { --card-w: var(--hand-card-w); flex: 0 0 auto; }
@@ -213,5 +217,4 @@
 
 /* soft corners inside a card, in step with its 7cqw outer corners */
 .card-art, .card-text { border-radius: 4cqw; }
-.card-cost { border-radius: 4cqw; }
 .lock-badge, .in-deck { border-radius: 3cqw; }
