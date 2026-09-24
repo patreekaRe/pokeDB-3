@@ -43,8 +43,8 @@ export const EVENTS = [
   {
     id: 'team-rocket', icon: '🚀', name: 'Team Rocket',
     text: 'A Team Rocket grunt blocks the road and demands a toll!',
-    toll: [40, 60, 80],        // ₽
-    fleeHp: 0.1,               // share of max HP lost running past
+    toll: [30, 45, 60],        // ₽
+    fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), picked per biome.
     team: [['rattata', 'zubat'], ['zubat', 'geodude'], ['machop', 'rhyhorn']],
   },
