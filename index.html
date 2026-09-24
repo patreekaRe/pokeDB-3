@@ -148,7 +148,19 @@
         <h2>Choose your starter</h2>
         <div id="starter-grid" class="starter-grid" role="radiogroup" aria-label="Starter Pokémon"></div>
         <button class="btn small secondary starter-more-btn" id="starter-more-btn" type="button">Show more starters ▾</button>
+      </div>
 
+      <!-- the picked starter, pinned to the bottom like the deck screen's bar, so the grid stays free to browse (selectStarter() in js/main.js) -->
+      <div id="starter-sheet" class="starter-sheet" hidden>
+        <button class="sheet-close" id="detail-close" type="button" aria-label="Close">✕</button>
+        <div class="starter-detail">
+          <img id="detail-sprite" class="pixel" alt="">
+          <div class="detail-text">
+            <h3><span id="detail-name"></span> <span class="detail-type" id="detail-type"></span></h3>
+            <p id="detail-blurb"></p>
+          </div>
+        </div>
+        <button class="btn primary" id="choose-btn" type="button">See starting deck →</button>
       </div>
 
     </section>
@@ -474,22 +486,6 @@
     </div>
 
     <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
-  </dialog>
-
-  <!-- a picked starter pops up here (selectStarter() in js/main.js); tapping outside closes it -->
-  <dialog id="starter-dialog" class="dialog small-dialog starter-dialog">
-    <div class="starter-detail">
-      <img id="detail-sprite" class="pixel" alt="">
-      <div class="detail-text">
-        <h3 id="detail-name"></h3>
-        <span class="detail-type" id="detail-type"></span>
-        <p id="detail-blurb"></p>
-      </div>
-    </div>
-    <div class="dialog-actions">
-      <button class="btn secondary" id="detail-back" type="button">Back</button>
-      <button class="btn primary" id="choose-btn" type="button">See starting deck →</button>
-    </div>
   </dialog>
 
   <dialog id="confirm-dialog" class="dialog small-dialog">

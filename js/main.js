@@ -84,6 +84,7 @@ function renderStarters() {
 
     btn.addEventListener('click', () => {
       if (unlocked) playCry(starter.line[0].id);
+      if (unlocked && selected === starter) return showSheet(true);
       if (unlocked && starter.comingSoon) return toast(`✨ ${starter.line[0].name}'s own moves are coming soon!`, 'ok');
       if (unlocked) return selectStarter(starter);
       if (isShopUnlock(starter)) return toggleShop(starter.id);
@@ -152,7 +153,15 @@ function selectStarter(starter) {
   $('detail-blurb').textContent = starter.blurb;
 
   setBackdrop(BACKDROPS[starter.type], starter.type);
-  openDialog('starter-dialog');
+  showSheet(true);
+}
+
+/** The picked starter's panel: the page gets padding for it, so it never covers the last row of starters. */
+function showSheet(open) {
+  const sheet = $('starter-sheet');
+  sheet.hidden = !open;
+  document.body.classList.toggle('sheet-open', open);
+  if (open) document.body.style.setProperty('--sheet-h', `${sheet.offsetHeight + 16}px`);
 }
 
 /* ---------- moving between screens ---------- */
@@ -185,6 +194,7 @@ function showStart() {
 function goToMenu() {
   abandonRun();
   selected = null;
+  showSheet(false);
   showStart();
 }
 
@@ -242,17 +252,8 @@ function init() {
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 
-  $('choose-btn').addEventListener('click', () => {
-    closeDialog('starter-dialog');
-    if (selected) previewStarter(selected);
-  });
-  $('detail-back').addEventListener('click', () => closeDialog('starter-dialog'));
-  // a tap on the dimmed backdrop lands on the <dialog> itself (as do taps on its padding, hence the box check)
-  $('starter-dialog').addEventListener('click', (e) => {
-    const box = e.currentTarget.getBoundingClientRect();
-    const outside = e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom;
-    if (e.target === e.currentTarget && outside) closeDialog('starter-dialog');
-  });
+  $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
+  $('detail-close').addEventListener('click', () => showSheet(false));
   $('continue-btn').addEventListener('click', () => {
     const btn = $('continue-btn');
     if (!savedRun || btn.classList.contains('opening')) return;
