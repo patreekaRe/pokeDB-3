@@ -23,7 +23,7 @@ import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EF
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
-import { playMusic, preloadMusic, playCry, preloadCries } from './audio.js';
+import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -138,6 +138,7 @@ async function playIntro() {
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
+  preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion');
 
   zone.classList.add('awaiting');
   renderAll();
@@ -276,6 +277,7 @@ async function playCard(uid) {
   b.busy = true;
   b.energy -= card.cost;
   b.hand.splice(index, 1);
+  playSound('card');
   // Exhausted cards leave the fight for good (they don't go to the discard pile,
   // so they can't reshuffle back into your draw pile this battle).
   if (card.exhaust || card.power) b.exhaust.push(card); else b.discard.push(card);
@@ -298,6 +300,7 @@ async function playCard(uid) {
       await sleep(180);
       if (battle !== b) return;
       const dealt = hurtEnemy(amount);
+      playSound(dealt > 0 ? 'hit' : 'block');
       hitEffect('enemy-portrait-box');
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
       if (b.enemy.hp <= 0) break;
@@ -315,7 +318,7 @@ async function playCard(uid) {
   // --- everything else a card can do ---
   if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
   if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '💨 Weakened', 'note'); }
-  if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); }
+  if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); }
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
   if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); }
@@ -363,6 +366,7 @@ async function useItem(index) {
   b.items.splice(index, 1);
   const e = item.effects;
   log(`You used ${item.name}!`);
+  playSound(e.heal ? 'potion' : 'item', 'item');
 
   if (e.flee) {
     b.over = true;
@@ -472,6 +476,7 @@ async function enemyTurn() {
       log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
     } else {
       const through = hurtPlayer(damage);
+      playSound(through > 0 ? 'hit' : 'block');
       hitEffect('player-sprite');
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
       const effect = enemyTypeMultiplier();
@@ -549,6 +554,7 @@ async function finish(won) {
 
   if (won) {
     $('enemy-portrait-box').classList.add('defeated');
+    playSound('faint');
     playMusic('victory', { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
     log(`${b.def.name} was defeated!`);
   } else {

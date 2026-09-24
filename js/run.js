@@ -216,6 +216,7 @@ function startBiome() {
 function showMap() {
   const biome = BIOMES[run.biome];
   setBackdrop(run.backdrop, run.starter.type);
+  preloadSounds('event', 'buy', 'item', 'potion');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -348,6 +349,7 @@ function useItemOnMap(index) {
   run.hp += healed;
   run.items.splice(index, 1);
   setHpBar('run', run.hp, run.maxHp);
+  playSound('potion', 'item');
   toast(`Used ${item.name}: healed ${healed} HP.`, 'ok');
   afterBagChange();
 }
@@ -365,7 +367,7 @@ function enterNode(node) {
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
   if (node.type === 'shop') return martRoom();
-  if (node.type === 'event') return eventRoom(node);
+  if (node.type === 'event') { playSound('event'); return eventRoom(node); }
   fight(node);   // 'fight', 'elite' or 'boss'
 }
 
@@ -855,7 +857,7 @@ function ware(option, price, onBuy) {
   return {
     node,
     disabled: option.disabled || price > run.money,
-    onPick: () => { run.money -= price; setMoney(run.money); onBuy(); },
+    onPick: () => { run.money -= price; setMoney(run.money); playSound('buy'); onBuy(); },
   };
 }
 
@@ -905,6 +907,7 @@ function martRoom() {
     run.money -= removalPrice;
     run.removals += 1;
     setMoney(run.money);
+    playSound('buy');
     martRoom();
   }) };
 

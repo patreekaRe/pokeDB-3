@@ -43,8 +43,17 @@ const TRACKS = {
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1.
 const SOUNDS = {
-  heal: { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
+  heal:  { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
+  card:  { url: 'assets/audio/sfx/card.mp3' },    // a card is played
+  hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
+  block: { url: 'assets/audio/sfx/block.mp3' },   // you gain block, or a hit is fully blocked
+  faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
+  buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
+  event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
+  item:  { url: 'assets/audio/sfx/item.mp3' },    // an item is used
+  potion: { url: 'assets/audio/sfx/potion.mp3' }, // a healing item is used (heal.mp3 stays the Pokémon Center's own)
 };
+const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
 // Pokémon without a cry stay silent instead of logging a 404 every fight.
 const CRIES = new Set([
@@ -75,6 +84,7 @@ let cryBus = null;         // gain node every cry runs through
 let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
 const players = {};        // track name -> { el, gain }
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
+const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
 let current = null;        // name of the track that should be playing right now
 
 /** Called once at startup. */
@@ -127,12 +137,22 @@ export async function playSound(name, fallback) {
   let buffer = await loadSound(name);
   if (!buffer && fallback) buffer = await loadSound(name = fallback);
   if (!buffer || ctx.state !== 'running') return 0;
+  const now = ctx.currentTime;
+  const last = lastPlayed[name];
+  if (last && now - last.at < SFX_MIN_GAP) return 0;
+  // a repeat cuts the one still ringing (with a tiny fade, so it doesn't click) instead of layering on top
+  if (last && now < last.at + buffer.duration) {
+    last.gain.gain.setValueAtTime(last.gain.gain.value, now);
+    last.gain.gain.linearRampToValueAtTime(0, now + 0.03);
+    last.source.stop(now + 0.03);
+  }
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   const gain = ctx.createGain();
   gain.gain.value = SOUNDS[name]?.gain ?? 1;
   source.connect(gain).connect(sfxBus);
   source.start();
+  lastPlayed[name] = { source, gain, at: now };
   return buffer.duration;
 }
 

@@ -418,9 +418,22 @@ read an emoji back out of the page with `textContent`: it's been replaced.
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to
-the map. Sound effects are decoded buffers played with `playSound()`; to
-add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and drop the MP3 in `assets/audio/sfx/`
-(attack hit sounds were planned but are on hold). Tracks crossfade and
+the map. `heal` is for rest sites only (the user's call): don't reuse it
+for potions or other heals. Sound effects are decoded buffers played with `playSound()`; to
+add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and drop the MP3 in `assets/audio/sfx/`.
+The rest of `SOUNDS` and where each plays: `card` (`playCard()`), `hit`
+(damage gets through, either side; a fully blocked hit plays `block`
+instead), `block` (a card gains block), `faint` (enemy KO, in `finish()`),
+`item` (`useItem()` in battle), `potion` (a healing item, in battle or
+`useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
+removal is paid for) and `event` (walking into a ❓ room, in `enterNode()`,
+so "Back" re-renders don't replay it). Battle sounds preload in
+`startBattle()`, map ones in `showMap()`. A missing file is silent (one
+404 in the console per sound per page load). `playSound()` drops a repeat
+of the same sound within `SFX_MIN_GAP` (70 ms) and cuts a still-ringing
+earlier copy with a 30 ms fade, so multi-hits don't pile up; different
+sounds still overlap (a block card plays `card` + `block` together).
+Muted or still-locked audio plays nothing. Tracks crossfade and
 each file downloads only the first
 time it's needed. Title resumes where it left off; battle tracks restart
 each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
