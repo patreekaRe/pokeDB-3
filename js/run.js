@@ -939,6 +939,12 @@ function martRoom() {
     onSkip: showMap,
     layout: 'mart-window',
   });
+
+  // the shopkeeper, beside the items and relics (the .mart-window grid places it)
+  const clerk = el('img', 'mart-clerk');
+  clerk.src = 'assets/pokemon/kecleon-front.gif';
+  clerk.alt = 'Kecleon, the shopkeeper';
+  $('reward-options').append(clerk);
 }
 
 /* ---------- evolution ---------- */

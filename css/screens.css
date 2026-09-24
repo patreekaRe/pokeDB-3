@@ -1847,8 +1847,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .reward-options.mart-window {
   flex: none;                /* the screen is a flex column: without this the window gets squeezed shut */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "cards cards" "items service" "relics service";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "cards cards cards" "clerk items service" "clerk relics service";
   align-items: stretch;
   gap: 16px 22px;
   width: min(100%, 900px);
@@ -1864,6 +1864,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .mart-window .group-items { grid-area: items; }
 .mart-window .group-relics { grid-area: relics; }
 .mart-window .group-service { grid-area: service; align-items: center; }
+/* Kecleon minding the counter, at 2x its 65px sprite so the pixels stay even */
+.mart-clerk { grid-area: clerk; align-self: center; width: 130px; image-rendering: pixelated; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25)); }
 .mart-window .group-cards .reward-option { width: clamp(104px, 15vw, 150px); }
 .mart-window .group-service .reward-option { width: clamp(120px, 17vw, 160px); }
 /* items on one row and relics on the next, as bare icons with their prices: both rows centred with one spacing,
@@ -1889,7 +1891,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .mart-window .mart-price.too-dear { color: #c02020; }
 .mart-window .reward-option:disabled { opacity: 0.55; }
 @media (max-width: 720px) {
-  .reward-options.mart-window { grid-template-columns: 1fr; grid-template-areas: "cards" "items" "relics" "service"; gap: 14px; padding: 16px 10px; }
+  .reward-options.mart-window { grid-template-columns: 1fr; grid-template-areas: "cards" "clerk" "items" "relics" "service"; gap: 14px; padding: 16px 10px; }
+  .mart-clerk { justify-self: center; }
   .mart-window .group-cards { gap: 10px; }
   .mart-window .group-cards .reward-option { width: calc((100% - 20px) / 3); }
   .mart-window :is(.group-items, .group-relics) .reward-option { width: 80px; }
