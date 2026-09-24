@@ -678,18 +678,14 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   align-items: center;
   gap: 10px;
 }
-/* Energy as the games' PP: a Pokégear window with a black PP tag, "2/3" and a segmented bar in the HP bar's
-   style. The window keeps one width however much PP you have: more PP just means thinner segments.
+/* Energy as the games' PP: a Pokégear window with a black PP tag and "2/3", like a move's PP in the games.
    Orange frame while you have PP, grey when you're out. */
 .energy-orb {
   grid-area: orb;
   position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: "label num max" "bar bar bar";
-  align-items: end;
-  width: 132px;
-  padding: 7px 10px 9px;
+  display: flex;
+  align-items: baseline;
+  padding: 8px 12px;
   border: 3px solid #f89030;
   background: var(--win-bg);
   color: #283060;
@@ -699,26 +695,19 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   transition: border-color 0.2s, filter 0.25s;
 }
 .pp-label {
-  grid-area: label;
   align-self: center;
+  margin-right: 8px;
   padding: 3px 5px;
   background: #181818;
   color: #f8b030;
   font-size: 0.68rem;
 }
-.energy-orb b { grid-area: num; justify-self: end; font-size: 1.7rem; font-weight: 700; text-shadow: 2px 2px 0 var(--win-edge); }
+.energy-orb b { font-size: 1.7rem; font-weight: 700; text-shadow: 2px 2px 0 var(--win-edge); }
 .energy-orb b.bump { animation: ppBump 0.35s steps(3); }
-.pp-max { grid-area: max; margin-left: 2px; font-size: 0.95rem; font-weight: 700; color: var(--win-muted); }
-.pp-bar { grid-area: bar; display: flex; gap: 2px; height: 14px; margin-top: 7px; padding: 2px; background: #303038; }
-.pp-bar i { flex: 1; min-width: 0; background: #a89a74; box-shadow: inset 0 2px 0 #8a7c58; }
-.pp-bar i.on { background: #f8d030; box-shadow: inset 0 3px 0 #fff6b0, inset 0 -2px 0 #c88810; }
-.pp-bar i.refill { animation: ppRefill 0.3s steps(3) both; }
-.pp-bar i.spent { animation: ppSpent 0.4s steps(4); }
+.pp-max { margin-left: 2px; font-size: 0.95rem; font-weight: 700; color: var(--win-muted); }
 .energy-orb.empty { border-color: #b8b8c8; }
 .energy-orb.empty b { color: #a01818; }
 @keyframes ppBump { 50% { transform: translateY(-4px) scale(1.15); } }
-@keyframes ppRefill { from { transform: scaleY(0); } 60% { transform: scaleY(1.3); } }
-@keyframes ppSpent { 0%, 50% { background: #fff; } }
 .energy-orb.shake { animation: ppShake 0.36s steps(6); }   /* tried to play a card without enough PP */
 @keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); border-color: #e04040; } 40%, 80% { transform: translateX(5px); border-color: #e04040; } }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -768,7 +757,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
   .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 4px 10px; }
-  .energy-orb { width: 124px; padding: 6px 8px 7px; }
+  .energy-orb { padding: 7px 10px; }
   .turn-side { align-items: flex-end; }
   #end-turn-btn { padding: 10px 16px 10px 24px; font-size: 0.95rem; }
   .enemy-zone { width: 100%; }
@@ -1619,4 +1608,4 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* ---------- soft corners for the pixel windows that don't set their own (sizes in :root) ---------- */
 .nameplate, .energy-orb, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
 .intent, .focus-hint, .howto-endturn, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
-.map-town, .node-badge, .pp-bar, .pp-label, .evo-dot { border-radius: var(--round-xs); }
+.map-town, .node-badge, .pp-label, .evo-dot { border-radius: var(--round-xs); }

@@ -101,11 +101,10 @@ in from the left and wrap onto a second line when they reach the HP numbers. A b
 only renders while its status is active, and each one explains itself in
 its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
 that fighter has block. Below the arena, `.battle-controls` is a 3-column
-grid: energy (`.energy-orb`, drawn as the games' **PP**: a black PP tag, "2/3" and
-a segmented `.pp-bar` in the HP bar's style, one segment per point, where the max
-is `b.turnEnergy`, the energy the turn started with; the window has a fixed
-width, so more PP only makes the segments thinner; `data-shown` remembers the
-last value so spent segments flash and refills pop in) | hand | End Turn. The
+grid: energy (`.energy-orb`, drawn as the games' **PP**: a black PP tag and
+"2/3", numbers only like a move's PP, where the max is `b.turnEnergy`, the
+energy the turn started with; `data-shown` remembers the last value so the
+number bumps when it changes) | hand | End Turn. The
 draw/discard piles (`.piles` / `.pile`: a floating pixel card stack and the
 count, like the coins) live in the top bar beside the Poké Ball, shown only
 while `body[data-screen="battle-screen"]`. Relics don't show in battle (they

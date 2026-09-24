@@ -517,20 +517,12 @@ function renderBars() {
   $('player-plate').classList.toggle('has-block', b.block > 0);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
-  // Energy is shown as the games' PP: "2/3" and a bar with a segment for each point this turn started with.
-  // Segments that were just spent flash, and refilled ones pop back in one after another.
+  // Energy is shown as the games' PP: "PP 2/3", out of what this turn started with. The number bumps when it changes.
   const orb = $('player-energy');
   const max = Math.max(b.turnEnergy ?? ENERGY_PER_TURN, b.energy);
   const shown = orb.dataset.shown === undefined ? b.energy : Number(orb.dataset.shown);
-  const pips = el('span', 'pp-bar');
-  for (let i = 0; i < max; i++) {
-    const pip = el('i', i < b.energy ? 'on' : '');
-    if (i < b.energy && i >= shown) { pip.classList.add('refill'); pip.style.animationDelay = `${(i - shown) * 0.08}s`; }
-    if (i >= b.energy && i < shown) pip.classList.add('spent');
-    pips.append(pip);
-  }
   const count = el('b', b.energy !== shown ? 'bump' : '', String(b.energy));
-  orb.replaceChildren(el('span', 'pp-label', 'PP'), count, el('span', 'pp-max', `/${max}`), pips);
+  orb.replaceChildren(el('span', 'pp-label', 'PP'), count, el('span', 'pp-max', `/${max}`));
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
   $('draw-count').replaceChildren(el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
