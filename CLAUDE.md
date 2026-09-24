@@ -67,8 +67,17 @@ to `main` (see Conventions), not open a branch or PR.
   of the late biomes), so it's rationed per type. Water starts with none
   (Fire's deck has two, Grass's one), which made it the weakest type at
   every Trainer Level, dying early to long biome-1 fights (Alpha Gloom,
-  Snorlax). Withdraw's 11 block (vs Flame Wall's 9) makes up for it; a
-  repeatable Weaken on Bubble overshot to ~90% at Level 5. Don't remove a card id:
+  Snorlax). Withdraw's 10 block (vs Flame Wall's 9) makes up for it; a
+  repeatable Weaken on Bubble overshot to ~90% at Level 5. Water's other
+  Weakens are Whirlpool (uncommon, 1 cost) and the evolution cards Bubble
+  Beam and Scald. Before Whirlpool cost 1, Bubble Beam (offered in half of
+  runs) decided Water runs: ~95% wins after biome 1 with it, ~55% without.
+  Card-pool review (bot harness, 2026-09-24): as one extra copy in the
+  starting deck, block, Weaken, healing and powers raise win rates and big
+  attacks lower them (Flare Blitz, Fire Blast, Solar Beam: −15 to −30
+  points), since a turn spent without defending costs more HP than it saves.
+  So check defensive numbers first: +1 or +2 block on a starting card moves
+  a type 10–30 points at Level 5. Don't remove a card id:
   a saved run holding it would be discarded.
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in

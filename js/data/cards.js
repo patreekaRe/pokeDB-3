@@ -83,7 +83,7 @@ const NEUTRAL_CARDS = [
      Water  block, card draw, hitting back, and turning block into damage */
 const FIRE_CARDS = [
   { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', effects: { damage: 9 } },
-  { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 1, art: '☄️', effects: { damage: 5, weaken: true } },
+  { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 1, art: '☄️', effects: { damage: 6, weaken: true } },
   { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', effects: { block: 9 } },
   // The three "set up your next hit" cards (Heat Up, Growth, Rain Dance) each lean into
   // their type's identity: Fire is pure burst, Grass adds a little sustain, Water adds a little safety.
@@ -129,8 +129,10 @@ const WATER_CARDS = [
   { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', effects: { damage: 15 } },
   // Water's starting deck has no Weaken (Fire has two, Grass one), so its two Withdraws block
   // more than Flame Wall to carry it through biome 1's long fights against Gloom and Snorlax.
-  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', effects: { block: 11 } },
-  { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 2, art: '🌀', effects: { damage: 8, weaken: true }, rarity: 'uncommon' },
+  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', effects: { block: 10 } },
+  // Water's only other repeatable Weaken is the evolution card Bubble Beam, offered in half of all runs,
+  // and runs without it lost ~40 points more after biome 1. A 1-cost Whirlpool lets rewards supply one.
+  { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 1, art: '🌀', effects: { damage: 5, weaken: true }, rarity: 'uncommon' },
   // Aqua Ring used to heal 6 + block 6, which was strong for a 1-cost card. Heal is now smaller,
   // so it reads as a defensive card with a little sustain, not a free heal.
   { id: 'aqua-ring',    name: 'Aqua Ring',    type: 'water', cost: 1, art: '⭕', effects: { heal: 3, block: 6 }, rarity: 'uncommon' },
@@ -190,7 +192,7 @@ const GRASS_EVO_HIGH = [
 
 const WATER_EVO_MID = [
   { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', effects: { damage: 10, block: 4 }, evoOnly: true, maxCopies: 1 },
-  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', effects: { damage: 10, weaken: true }, evoOnly: true, maxCopies: 1 },
+  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', effects: { damage: 6, weaken: true }, evoOnly: true, maxCopies: 1 },
   { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
   { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', effects: { block: 10, heal: 2 }, evoOnly: true, maxCopies: 1 },
 ];
