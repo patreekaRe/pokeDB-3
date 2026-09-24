@@ -406,13 +406,14 @@ There's no automated test suite. Before committing:
    reach the screen/dialog you changed, and interact with it — rather than
    just reading the code.
 3. If it's a balance change (card damage, achievement difficulty, drop
-   rates), a headless-bot regression harness can be built on request (it's
-   never committed to this repo — it lives in Claude's scratchpad and gets
-   rebuilt each time it's needed). This machine has no Node or Python, so
-   it runs in the browser pane: a copy of `serve.ps1` in the scratchpad
-   serves the repo plus a `/sim/` folder, and the harness `import()`s the
-   real `js/data/` files. Compare against the previous data from `git show`
-   under the same bot. The bot must value damage prevented above damage
+   rates), use the headless-bot harness in `../pokeDB-sim/` (a sibling
+   folder, never committed to this repo; its README says how to run it).
+   Reuse it rather than rebuilding it. This machine has no Node or Python,
+   so it runs in the browser pane: its `serve-sim.ps1` serves this repo
+   plus its `/sim/` folder, and the harness `import()`s the real `js/data/`
+   files. Compare before/after under the same bot (in-memory tweaks in
+   `sim/variants.js`, or the previous data from `git show`). `sim/engine.js`
+   mirrors `js/battle.js`'s rules, so update it when battle rules change. The bot must value damage prevented above damage
    dealt (about 1.6×), or it under-blocks and misjudges attack-heavy pools.
    It must also pick relics by measured value (e.g. win rate starting with
    only that relic), not at random or by a hand-written list: the healing
