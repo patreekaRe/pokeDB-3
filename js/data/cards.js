@@ -127,7 +127,9 @@ const WATER_CARDS = [
   { id: 'bubble',       name: 'Bubble',       type: 'water', cost: 1, art: '🫧', effects: { damage: 5, draw: 1 } },
   { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', effects: { focus: 5, block: 4 } },
   { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', effects: { damage: 15 } },
-  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', effects: { block: 9 } },
+  // Water's starting deck has no Weaken (Fire has two, Grass one), so its two Withdraws block
+  // more than Flame Wall to carry it through biome 1's long fights against Gloom and Snorlax.
+  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', effects: { block: 11 } },
   { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 2, art: '🌀', effects: { damage: 8, weaken: true }, rarity: 'uncommon' },
   // Aqua Ring used to heal 6 + block 6, which was strong for a 1-cost card. Heal is now smaller,
   // so it reads as a defensive card with a little sustain, not a free heal.

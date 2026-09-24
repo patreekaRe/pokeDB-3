@@ -64,7 +64,11 @@ to `main` (see Conventions), not open a branch or PR.
   Each type has an archetype: Fire burn + burst + HP-for-damage, Grass
   healing + growing strength, Water block + draw + hitting back. Weaken
   is the strongest defensive effect in the game (it halves the 30+ hits
-  of the late biomes), so it's rationed per type. Don't remove a card id:
+  of the late biomes), so it's rationed per type. Water starts with none
+  (Fire's deck has two, Grass's one), which made it the weakest type at
+  every Trainer Level, dying early to long biome-1 fights (Alpha Gloom,
+  Snorlax). Withdraw's 11 block (vs Flame Wall's 9) makes up for it; a
+  repeatable Weaken on Bubble overshot to ~90% at Level 5. Don't remove a card id:
   a saved run holding it would be discarded.
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
