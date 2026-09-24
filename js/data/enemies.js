@@ -280,13 +280,13 @@ export const BIOMES = [
     id: 'shrine', name: 'Overgrown Shrine', backdrop: 'assets/backgrounds/shrine.jpg',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['tangrowth', 'magmar', 'lapras'],
-    hpMult: 2.7, dmgBonus: 12, bossBonus: 18,
+    hpMult: 3.5, dmgBonus: 16, bossBonus: 24,
   },
   {
     id: 'wastes', name: 'Ember Wastes', backdrop: 'assets/backgrounds/volcano.jpg',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['salamence'],
-    hpMult: 5, dmgBonus: 22, bossBonus: 32,
+    hpMult: 6.5, dmgBonus: 30, bossBonus: 40,
   },
 ];
 

@@ -15,8 +15,8 @@ export const RELICS = [
   { id: 'mystic-water', name: 'Mystic Water', icon: '💧', only: 'water', text: 'Your Water attacks deal +2 damage.' },
 
   { id: 'muscle-band',  name: 'Muscle Band',  icon: '💪', text: 'All your attacks deal +2 damage.' },
-  { id: 'leftovers',    name: 'Leftovers',    icon: '🍙', text: 'Heal 3 HP at the start of each of your turns.' },
-  { id: 'shell-bell',   name: 'Shell Bell',   icon: '🔔', text: 'Heal 2 HP each time you play an attack.' },
+  { id: 'leftovers',    name: 'Leftovers',    icon: '🍙', text: 'Heal 2 HP at the start of each of your turns.' },
+  { id: 'shell-bell',   name: 'Shell Bell',   icon: '🔔', text: 'Heal 1 HP each time you play an attack.' },
   { id: 'iron-plate',   name: 'Iron Plate',   icon: '🛡️', text: 'Start each battle with 8 block.' },
   { id: 'rocky-helmet', name: 'Rocky Helmet', icon: '⛑️', text: 'Enemies take 3 damage when they attack you.' },
   { id: 'scope-lens',   name: 'Scope Lens',   icon: '🔍', text: 'Draw 1 extra card each turn.' },
@@ -33,7 +33,7 @@ export const RELICS = [
   { id: 'amulet-coin',  name: 'Amulet Coin',  icon: '🪙', text: 'Win double prize money (₽) after fights.' },
 
   { id: 'flame-orb',    name: 'Flame Orb',    icon: '🔥', only: 'fire',  text: 'Enemies start each battle with 3 burn.' },
-  { id: 'heat-rock',    name: 'Heat Rock',    icon: '♨️', only: 'fire',  text: 'Heal 2 HP each time burn hurts an enemy.' },
+  { id: 'heat-rock',    name: 'Heat Rock',    icon: '♨️', only: 'fire',  text: 'Heal 1 HP each time burn hurts an enemy.' },
   { id: 'big-root',     name: 'Big Root',     icon: '🌳', only: 'grass', text: 'Healing from your cards and powers restores 2 more HP.' },
   { id: 'grassy-seed',  name: 'Grassy Seed',  icon: '🍀', only: 'grass', text: 'Gain 1 strength every 3rd turn.' },
   { id: 'damp-rock',    name: 'Damp Rock',    icon: '🌧️', only: 'water', text: 'Cards that give block give 2 more.' },

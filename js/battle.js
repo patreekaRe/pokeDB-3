@@ -186,7 +186,7 @@ function beginPlayerTurn() {
   b.nextEnergy = 0;
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; pop('player-zone', '-1 ☠️', 'dmg'); }
-  if (hasRelic('leftovers')) healPlayer(3);
+  if (hasRelic('leftovers')) healPlayer(2);
   if (p.healEachTurn) healPlayer(p.healEachTurn + healBonus());
   if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); }
   if (p.burnEachTurn) { b.enemy.burn += p.burnEachTurn; pop('enemy-zone', `🔥 Burn ${p.burnEachTurn}`, 'note'); }
@@ -305,7 +305,7 @@ async function playCard(uid) {
     if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
     const total = hits.length > 1 ? `${hits.join(' + ')} damage` : `${hits[0]} damage`;
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
-    if (hasRelic('shell-bell')) healPlayer(2);
+    if (hasRelic('shell-bell')) healPlayer(1);
   } else {
     log(`${who} used ${card.name}.`);
   }
@@ -400,7 +400,7 @@ async function enemyTurn() {
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
     log(`${b.def.name} took ${burnDamage} burn damage.`);
-    if (hasRelic('heat-rock')) healPlayer(2);
+    if (hasRelic('heat-rock')) healPlayer(1);
     renderAll();
     await sleep(600);
     if (battle !== b) return;
