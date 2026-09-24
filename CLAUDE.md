@@ -325,22 +325,26 @@ stage 1 to 90% with the `scale` property (from the feet), so the attack and
 evolve animations' transforms and the layout are untouched. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
-Battles are set in a pixel-art scene per biome (`js/battlebg.js`, the user's
-call: the blurred photos clashed with the 8-bit look), painted into `#battle-bg` (a
-fixed low-res canvas, one canvas pixel = 4 CSS px on phones, 5 on PCs) by
-`showBattleScene()` from `startBattle()`. The still parts (sky bands, sun,
-two hill ranges, tall trees with trunks behind a bushy tree line, the
-meadow with grass patches, rocks and flower clusters) are painted once into
-`base`; `draw()` copies it every frame (8 fps) and adds the living parts:
-far/near clouds (near ones drag dithered shadows over the meadow), grass
-blades swaying in rolling waves of wind, butterflies, an occasional flock of
-birds and twinkling pollen. `sky` masks where clouds and birds may draw, so
-they pass behind hills and trees. `horizonRow()` puts the horizon at
-~38% of the screen but always above the enemy's pad, so the layout can move.
-Both Pokémon stand on Gen 3/4-style grassy pads (`--pad`, a data-URL pixel
-image, drawn by `.enemy-zone::after` / `.player-zone::before` so they don't
-lunge with the sprites). Only biomes listed in `SCENES` get one (the Clearing
-so far); the others keep the photo backdrop (`body.has-scene` switches).
+Battles are set in a pixel-art scene per biome *and* fight kind
+(`js/battlebg.js`, the user's call: the blurred photos clashed with the 8-bit
+look): a normal fight, an elite's tenser light and a boss's dramatic arena.
+Clearing: sunny day / sunset with fireflies / moonlit night. Shrine: misty
+morning under pines with a torii, stone lanterns, light shafts and falling
+leaves / dusk with lit lanterns and autumn leaves / night with blue spirit
+wisps. Wastes: hazy volcano with glowing lava cracks, embers and ash / red
+sky / an eruption with lava rivers, flying lava and lightning. All of it is
+data in `BIOME_ART` (shared per biome, `kinds` override per fight; `life`
+lists the animated parts), painted into `#battle-bg` (a fixed low-res canvas,
+one canvas pixel = 4 CSS px on phones, 5 on PCs) by
+`showBattleScene(biomeId, kind)` from `startBattle()`. Still parts are painted
+once into `base`; `draw()` copies it every frame (8 fps) and adds the living
+ones. `sky` masks where clouds, smoke and birds may draw, so they pass behind
+hills, trees and the volcano. `horizonRow()` puts the horizon at ~38% of the
+screen but always above the enemy's pad, so the layout can move. Both
+Pokémon stand on Gen 3/4-style pads (`--pad`, a data-URL pixel image: grass,
+mossy flagstone or cracked lava rock, from the scene's `pad`), drawn by
+`.enemy-zone::after` / `.player-zone::before` so they don't lunge with the
+sprites. Menus and the map still use the photo backdrops.
 
 **Watch for CSS class-name collisions.** The reward screen already uses
 `.relic-icon`, and a later, unscoped rule like

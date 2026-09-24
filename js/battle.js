@@ -117,7 +117,7 @@ export function startBattle({ run, encounter, onEnd }) {
 
   setBackdrop(run.backdrop, run.starter.type);
   showScreen('battle-screen');
-  showBattleScene(BIOMES[run.biome]?.id);
+  showBattleScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild');
   playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
   preloadMusic('victory');
   setupBattleScreen();
