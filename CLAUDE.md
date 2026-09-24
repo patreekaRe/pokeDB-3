@@ -153,8 +153,13 @@ card of the next rarity you hold under `MAX_COPIES`; Shrine gives the first
 unowned relic of your type's `only` relics, then normal ones. The Wishing
 Well's one `luck` roll serves both tosses (the big toss wins whenever the
 small one would); a win offers its unowned `relics` via `showRelics()`.
-Fan Club never costs anything (₽ above half HP, else a Potion, or ₽ with a
-full Bag). Relics from events go through `gainRelic()` so Cleanse Tag works. Paid choices use `moneyOption`/`hpOption` (greyed out when
+Fan Club never costs anything (₽ above half HP, else a Super Potion, or ₽ with a
+full Bag). Relics from events go through `gainRelic()` so Cleanse Tag works.
+At first the four new events cost Level 5 ~3 points (66%): Shrine HP is barely
+healed back when Centers heal 10%, and they replace the healing events some of
+the time. Cheaper Shrine (6/9/12 HP) and Well (₽30-50 / ₽70-110) and a Super
+Potion from the Fan Club fixed it. Bot now: L0 94.8, L3 86.4, L5 68.1 (Water
+trails at L5, ~56%, with or without the new events). Paid choices use `moneyOption`/`hpOption` (greyed out when
 unaffordable, and HP costs never faint you), and money/HP is only taken once
 the reward is actually received, so "Back" is free. Team Rocket's Battle
 runs `fight()` with a copy of the node typed `elite`, so it pays elite
