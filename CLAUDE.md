@@ -108,7 +108,7 @@ just the name (and the enemy's type chip); under the HP bar, `.nameplate-foot`
 has the **status badges** on the left and the HP numbers on the right. The
 badges read like PSN/PAR in the games: no box,
 just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, weakened, strength, focus,
-guard, next-turn energy, strength, and one per active power), built by `badgeFor()` in `js/battle.js`. They fill
+guard, next-turn energy, your own strength, and one per active power), built by `badgeFor()` in `js/battle.js`. They fill
 in from the left and wrap onto a second line when they reach the HP numbers. A badge
 only renders while its status is active, and each one explains itself in
 its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
