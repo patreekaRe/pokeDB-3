@@ -105,7 +105,9 @@ grid: energy (`.energy-orb`, drawn as the games' **PP** like the
 Diamond/Pearl move screen: a white `.pp-pill` with "PP" on the left and "2/3"
 on the right, on a salmon striped panel; the max is `b.turnEnergy`, the
 energy the turn started with; `data-shown` remembers the last value so the
-number bumps when it changes, and `.empty` turns the numbers red) | hand | End Turn. The
+number bumps when it changes, and `.empty` turns the numbers red) | hand | End Turn
+(`#end-turn-btn`, not a `.btn`: the same salmon panel and white pill, so the
+two match; greyed out while disabled). The
 draw/discard piles (`.piles` / `.pile`: a floating pixel card stack and the
 count, like the coins) live in the top bar beside the Poké Ball, shown only
 while `body[data-screen="battle-screen"]`. Relics don't show in battle (they

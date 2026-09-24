@@ -678,18 +678,19 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   align-items: center;
   gap: 10px;
 }
-/* Energy as the games' PP, drawn like the Diamond/Pearl move screen: a white pill with "PP" on the left and
-   "2/3" on the right, on the salmon striped move panel. The numbers turn red when you're out. */
-.energy-orb {
-  grid-area: orb;
+/* PP and End Turn are drawn like the Diamond/Pearl move screen: a white pill on the salmon striped move
+   panel. PP shows "PP" on the left and "2/3" on the right; the numbers turn red when you're out. */
+.energy-orb, #end-turn-btn, .howto-endturn {
   position: relative;
   padding: 7px 8px;
+  border: 0;
   background: repeating-linear-gradient(#f07068 0 4px, #f8887c 4px 8px);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 4px 4px 0 2px rgba(0, 0, 0, 0.45);
   font-family: var(--pixel-font); font-synthesis-weight: none;
   line-height: 1;
   transition: filter 0.25s;
 }
+.energy-orb { grid-area: orb; }
 .pp-pill {
   display: flex;
   align-items: baseline;
@@ -711,7 +712,12 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .energy-orb.shake { animation: ppShake 0.36s steps(6); }   /* tried to play a card without enough PP */
 @keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-#end-turn-btn { padding: 12px 22px 12px 30px; font-size: 1.05rem; white-space: nowrap; }
+#end-turn-btn { cursor: pointer; }
+#end-turn-btn .pp-pill { font-size: 1.05rem; }
+#end-turn-btn:hover:not(:disabled) .pp-pill { background: #fff; }
+#end-turn-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
+#end-turn-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
+#end-turn-btn:disabled { filter: grayscale(1) brightness(0.9); opacity: 0.7; cursor: not-allowed; }
 /* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
 .piles { display: none; gap: 12px; margin: 0 auto 0 12px; }   /* in the top bar, beside the Poké Ball */
 body[data-screen="battle-screen"] .piles { display: flex; }
@@ -757,10 +763,11 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
   .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 4px 10px; }
-  .energy-orb { padding: 6px 7px; }
+  .energy-orb, .howto-endturn { padding: 6px 7px; }
   .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
-  #end-turn-btn { padding: 10px 16px 10px 24px; font-size: 0.95rem; }
+  #end-turn-btn { padding: 6px 7px; }
+  #end-turn-btn .pp-pill { font-size: 0.95rem; }
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }
@@ -1403,18 +1410,12 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .howto-chip.good { background: rgba(80, 200, 110, 0.18); color: #8ff0a8; }
 .howto-chip.bad  { background: rgba(230, 80, 80, 0.18); color: #ff9c9c; }
 
+/* the How to play slide's small copies of the PP window and End Turn */
+.howto-visual :is(.energy-orb, .howto-endturn) { padding: 5px 6px; }
+.howto-visual .pp-pill { gap: 8px; padding: 6px 9px 5px; font-size: 0.72rem; }
+.howto-visual :is(.pp-label, .pp-count) { font-size: inherit; }
+
 .howto-card { --card-w: 78px; width: 78px; pointer-events: none; }
-.howto-endturn {
-  padding: 7px 16px;
-  border: 3px solid #f89030;
-  background: var(--win-tile);
-  color: var(--win-ink);
-  font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
-  white-space: nowrap;
-}
 
 .howto-node {
   width: 40px;
@@ -1524,7 +1525,6 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .howto-steps .howto-arrow { display: none; }
   .howto-steps.three { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .howto-visual { height: 100px; }
-  .howto-endturn { padding: 7px 10px; font-size: 0.78rem; }
   .howto-list { grid-template-columns: 1fr; gap: 6px; }
   .howto-li { padding: 5px 10px; gap: 10px; }
   .howto-li .howto-node { width: 34px; height: 34px; font-size: 1rem; }
@@ -1607,6 +1607,6 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 }
 
 /* ---------- soft corners for the pixel windows that don't set their own (sizes in :root) ---------- */
-.nameplate, .energy-orb, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
-.intent, .focus-hint, .howto-endturn, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
+.nameplate, .energy-orb, #end-turn-btn, .howto-endturn, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
+.intent, .focus-hint, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
 .map-town, .node-badge, .evo-dot { border-radius: var(--round-xs); }
