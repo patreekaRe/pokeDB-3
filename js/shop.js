@@ -43,6 +43,15 @@ function buy(cost, onBought) {
   render();
 }
 
+/** "Owned" / "Maxed" with a caught Poké Ball in front, like the games' owned mark. */
+function ownedTag(text) {
+  const tag = el('span', 'shop-owned');
+  const ball = el('span', 'pokeball');
+  ball.setAttribute('aria-hidden', 'true');
+  tag.append(ball, text);
+  return tag;
+}
+
 function skinTile(item) {
   const starter = STARTERS_BY_ID[item.id];
   const owned = getSave().unlocked.includes(item.id);
@@ -56,7 +65,7 @@ function skinTile(item) {
   node.append(img, el('strong', '', starter.line[0].name));
 
   if (owned) {
-    node.append(el('span', 'shop-owned', '✅ Owned'));
+    node.append(ownedTag('Owned'));
   } else {
     const btn = el('button', 'btn small primary', `${item.cost} 💰`);
     btn.setAttribute('aria-label', `Buy ${starter.line[0].name} for ${item.cost} PokéCoins`);
@@ -81,7 +90,7 @@ function passiveTile(item) {
   if (item.maxLevel > 1) node.append(el('span', 'shop-item-level', `Level ${level} / ${item.maxLevel}`));
 
   if (maxed) {
-    node.append(el('span', 'shop-owned', '✅ Maxed'));
+    node.append(ownedTag('Maxed'));
   } else {
     const cost = item.costs[level];
     const btn = el('button', 'btn small primary', `${cost} 💰`);

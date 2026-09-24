@@ -382,7 +382,7 @@ body.titling { overflow: hidden; }
   box-shadow: 2px 2px 0 var(--win-shadow);
   transition: transform 0.1s steps(2);
 }
-.starter-btn img { width: 72px; height: 72px; object-fit: contain; }
+.starter-btn img { width: 72px; height: 72px; object-fit: contain; transform-origin: 0 0; }   /* main.js fitSprite() scales small sprites up */
 .starter-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 0.95rem; }
 @media (max-width: 480px) { .starter-name { font-size: 0.78rem; } }   /* "Charmander", the longest, fits a phone column */
 .starter-btn:hover { transform: translateY(-3px); background: #fffaf0; }
@@ -1417,7 +1417,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .shop-item-icon { font-size: 2.6rem; line-height: 1; }
 .shop-item-text { font-size: 0.85rem; color: #dfe3ff; flex: 1; }
 .shop-item-level { font-size: 0.78rem; color: var(--muted); }
-.shop-owned { font-weight: 800; color: var(--good); }
+.shop-owned { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #1f7a38; }
+.shop-owned .pokeball { font-size: 2.2em; margin: 0; border-width: 0.06em; box-shadow: none; animation: none; }
 .shop-item.flash { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(255, 203, 5, 0.35), 0 0 30px var(--gold); }
 .shop-grid.skins { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 

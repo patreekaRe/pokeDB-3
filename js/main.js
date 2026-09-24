@@ -66,19 +66,17 @@ function renderStarters() {
     const img = el('img', 'pixel');
     img.src = spriteUrl(starter, 'front');
     img.alt = '';
+    fitSprite(img);
     btn.append(img, el('span', 'starter-name', unlocked ? starter.line[0].name : '???'));
 
-    // a corner badge says where a starter comes from, without adding a line that would make its tile taller than the rest
-    if (!starter.free) {
+    // a locked tile's corner badge says how to get it, without adding a line that would make the tile taller than the rest
+    if (!unlocked) {
       const shop = isShopUnlock(starter);
       const badge = el('span', 'starter-source', shop ? '💰' : '🏆');
       badge.setAttribute('aria-hidden', 'true');
-      btn.title = shop ? 'Unlocked in the Shop' : 'Unlocked by an achievement';
-      btn.append(badge);
-    }
-    if (!unlocked) {
+      btn.title = shop ? 'Buy it in the Shop' : 'Earn it with an achievement';
       btn.classList.add('locked');
-      btn.append(el('span', 'sr-only', isShopUnlock(starter) ? 'Locked: buy it in the Shop' : 'Locked: earn an achievement'));
+      btn.append(badge, el('span', 'sr-only', shop ? 'Locked: buy it in the Shop' : 'Locked: earn an achievement'));
     }
     if (selected === starter) btn.classList.add('selected');
 
@@ -95,6 +93,49 @@ function renderStarters() {
 
   const moreBtn = $('starter-more-btn');
   moreBtn.textContent = showAllStarters ? 'Show fewer ▲' : `Show ${STARTERS.length - ALWAYS_SHOWN} more ▾`;
+}
+
+// The sprite GIFs pad their Pokémon with very different amounts of empty
+// canvas (Totodile or Moltres fill barely half of theirs), so at one tile
+// size some look tiny. Measure the visible pixels once per sprite and
+// transform the image so every Pokémon fills about the same share of its
+// box, feet near its bottom edge. A transform leaves the tile's layout alone.
+const SPRITE_FILL = 0.88;     // the visible Pokémon's longer side, as a share of the box
+const spriteFits = new Map(); // url -> transform string
+
+function fitSprite(img) {
+  const apply = () => { img.style.transform = spriteFits.get(img.src) || ''; };
+  if (spriteFits.has(img.src)) return apply();
+  img.addEventListener('load', () => {
+    if (!spriteFits.has(img.src)) spriteFits.set(img.src, measureFit(img));
+    apply();
+  }, { once: true });
+}
+
+function measureFit(img) {
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const g = canvas.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const alpha = g.getImageData(0, 0, W, H).data;
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (alpha[(y * W + x) * 4 + 3] < 20) continue;
+      if (x < x0) x0 = x; if (x > x1) x1 = x;
+      if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+  }
+  if (x1 < 0) return '';
+  // in units of the (square) box: where object-fit: contain drew the Pokémon
+  const s = 1 / Math.max(W, H);
+  const ox = (1 - W * s) / 2, oy = (1 - H * s) / 2;
+  const k = Math.max(1, SPRITE_FILL / (Math.max(x1 - x0 + 1, y1 - y0 + 1) * s));
+  if (k < 1.05) return '';
+  const cx = ox + (x0 + x1 + 1) / 2 * s, feet = oy + (y1 + 1) * s;
+  const tx = 0.5 - k * cx, ty = 0.98 - k * feet;
+  return `translate(${(tx * 100).toFixed(1)}%, ${(ty * 100).toFixed(1)}%) scale(${k.toFixed(3)})`;
 }
 
 function selectStarter(starter) {
@@ -219,6 +260,7 @@ function init() {
     setTimeout(() => continueRun(savedRun), wait);
   });
   $('shop-btn').addEventListener('click', () => toggleShop());
+  $('menu-shop-btn').addEventListener('click', () => toggleShop());
   $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
 
   // A purchase made while the shop was open over some other screen (map,

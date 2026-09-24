@@ -411,11 +411,20 @@ There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
-top right shows the coins (floating, no box), during a run the ₽ (`#money-pill`), then
-the Shop and, during a run, the Bag. In battle on phones ≤420px the PokéCoins
+top right shows the coins (floating, no box), then the Shop outside a run, or
+the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
+hides `#shop-btn` and shows a Shop item (`#menu-shop-btn`) in the Poké Ball
+menu instead. In battle on phones ≤420px the PokéCoins
 hide so the piles, ₽ and buttons fit on one row.
 In battle, the draw and discard piles sit beside the Poké Ball.
 The "Main menu" item hides itself on the start screen (`showScreen()`).
+
+Starter tiles are all one size: a locked one shows a 💰 (Shop) or 🏆
+(achievement) corner badge instead of a text line, and an unlocked one shows
+nothing extra. The sprite GIFs pad their Pokémon very unevenly, so
+`fitSprite()` in `js/main.js` measures each one's visible pixels once and
+scales small ones up with a `transform` (layout untouched). The Shop marks
+owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
 
 The logo is built from per-letter spans in `index.html`: "Poké" uses the

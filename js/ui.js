@@ -36,6 +36,9 @@ export function showScreen(id) {
   const inRun = RUN_SCREENS.includes(id);
   $('bag-btn').hidden = !inRun;
   $('money-pill').hidden = !inRun;
+  // in a run the Shop moves into the Poké Ball menu, leaving the top bar to the run's own ₽ and Bag
+  $('shop-btn').hidden = inRun;
+  $('menu-shop-btn').hidden = !inRun;
   $('bag').hidden = true;
   $('bag-btn').setAttribute('aria-expanded', 'false');
   // the map, battles and reward screens pick their own track (biome theme, fight music, victory, Pokémon Center)
