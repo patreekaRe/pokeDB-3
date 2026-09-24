@@ -19,6 +19,7 @@
      battle.js       the fight
      records.js      the Stats and Achievements windows
      howto.js        the swipeable How to play window
+     title.js        the PRESS START title screen before the start screen
    ============================================================ */
 
 import { STARTERS, spriteUrl, stageName, BACKDROPS } from './data/starters.js';
@@ -33,6 +34,7 @@ import { toggleShop } from './shop.js';
 import { initAudio, playCry } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
+import { showTitle } from './title.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import {
@@ -241,11 +243,17 @@ function init() {
 
   goToMenu();
 
-  // Show the how-to-play once, the very first time.
-  if (!getSave().seenHelp) {
-    updateSave(d => { d.seenHelp = true; });
-    setTimeout(openHowto, 400);
-  }
+  showTitle().then(() => {
+    // the logo's bounce-in already ran behind the title screen: play it again now it can be seen
+    const logo = document.querySelector('#start-screen .title');
+    logo.replaceWith(logo.cloneNode(true));
+
+    // Show the how-to-play once, the very first time.
+    if (!getSave().seenHelp) {
+      updateSave(d => { d.seenHelp = true; });
+      setTimeout(openHowto, 400);
+    }
+  });
 }
 
 init();

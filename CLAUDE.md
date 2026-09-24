@@ -391,6 +391,20 @@ hover/focus (left padding reserves its space; `.primary` = orange frame,
 `.danger` = red). The How to play button is one too, with a gold frame, an
 always-blinking ▶ and a stepped pixel glint sweeping across it.
 
+## Title screen
+
+Every page load opens on a Gold/Silver-style title screen (`#title-screen`,
+`showTitle()` in `js/title.js`, called at the end of `init()` in
+`js/main.js`) before the start screen. It's a fixed overlay above the top
+bar: a pixel night sky painted into a low-res `<canvas>` (dithered sky
+bands, moon, hills, the grassy ledge; stars twinkle at 10 fps and the odd
+shooting star crosses), Moltres flying past the moon as a silhouette, the
+three starters hopping on the ledge, and a blinking PRESS START (TAP TO
+START on touch). Any tap or key flashes white, fades out, then replays the
+start screen's logo bounce and opens the first-time How to play. That
+first tap also unlocks audio, so the title music starts with the menu.
+`--ground` (set from JS) keeps the CSS sprites on the painted ledge.
+
 ## Top bar and start screen
 
 There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down

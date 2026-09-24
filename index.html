@@ -22,6 +22,32 @@
 
   <div id="backdrop" aria-hidden="true"></div>
 
+  <!-- Title screen: shown once per page load, before the start screen (js/title.js) -->
+  <div id="title-screen" class="title-screen" hidden>
+    <canvas id="title-sky" class="title-sky pixel" aria-hidden="true"></canvas>
+    <img class="title-flyer pixel" src="assets/pokemon/moltres-front.gif" alt="" aria-hidden="true">
+    <div class="title-center">
+      <div class="title title-big" aria-label="PokéDB: Rogue-Like Deck Battler">
+        <span class="title-logo" aria-hidden="true">
+          <span class="tl" style="--i:0">P</span>
+          <span class="tl" style="--i:1"><span class="pokeball"></span></span>
+          <span class="tl" style="--i:2">k</span>
+          <span class="tl" style="--i:3">é</span>
+          <span class="tl db" style="--i:4">D</span>
+          <span class="tl db" style="--i:5">B</span>
+        </span>
+        <small aria-hidden="true">Rogue-Like Deck Battler</small>
+      </div>
+      <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
+    </div>
+    <div class="title-trio" aria-hidden="true">
+      <img class="pixel" src="assets/pokemon/bulbasaur-front.gif" alt="" style="--d:0s">
+      <img class="pixel" src="assets/pokemon/charmander-front.gif" alt="" style="--d:0.35s">
+      <img class="pixel" src="assets/pokemon/squirtle-front.gif" alt="" style="--d:0.7s">
+    </div>
+    <p class="title-foot">© 2026 PokéDB · a fan game, not affiliated with Nintendo</p>
+  </div>
+
   <!-- Floating buttons along the top of every screen (no bar behind them) -->
   <header class="topbar">
     <div class="ball-menu">
