@@ -908,6 +908,14 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .hand { --hand-card-w: clamp(96px, 17vh, 148px); }
 }
 
+/* Tablets held upright: beside the hand, the big PP and End Turn left room for only three cards,
+   so they move to a row above it like on phones and a full hand of five fits across */
+@media (min-width: 721px) and (max-width: 1100px) and (orientation: portrait) {
+  .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 6px 12px; }
+  .turn-side { align-items: flex-end; }
+  .hand { --hand-card-w: clamp(112px, 16vw, 160px); }
+}
+
 /* ============================================================
    THE RUN: evolution line, map, rewards, relics
    ============================================================ */
