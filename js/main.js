@@ -45,11 +45,10 @@ let selected = null;   // the starter picked on the start screen
 
 /* ---------- start screen ---------- */
 
-// The first 6 (the 3 real starters + the first 3 shop-bought skins) always
-// show. Everything else (the rest of the shop skins, the achievement-locked
-// skins, and the legendaries) starts collapsed behind "Show more", however
-// many are unlocked, so the main page stays short.
-const ALWAYS_SHOWN = 6;
+// Only the 3 real starters always show. Everything else (the shop skins,
+// the achievement-locked skins, and the legendaries) starts collapsed behind
+// "Show more", however many are unlocked, so the main page stays short.
+const ALWAYS_SHOWN = 3;
 let showAllStarters = false;
 
 function renderStarters() {
