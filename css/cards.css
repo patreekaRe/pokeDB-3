@@ -195,6 +195,22 @@
 }
 @keyframes focusIn { from { transform: translateY(40px) scale(0.6); opacity: 0; } }
 
+/* ---------- deck views: tap a card to read it bigger (zoomCard() in js/ui.js); any tap closes it ---------- */
+.card-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px;
+  background: rgba(8, 10, 24, 0.7);
+  cursor: pointer;
+}
+.card.zoom-card { --card-w: min(72vw, 300px, 50vh); animation: focusIn 0.18s ease-out; }
+
 /* soft corners inside a card, in step with its 7cqw outer corners */
 .card-art, .card-text { border-radius: 4cqw; }
 .card-cost { border-radius: 4cqw; }

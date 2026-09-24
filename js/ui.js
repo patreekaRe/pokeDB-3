@@ -126,6 +126,41 @@ export function makeCard(card, options = {}) {
   return node;
 }
 
+/**
+ * Blow a card up in the middle of a dimmed screen so its text is easy to read.
+ * Any tap or Escape closes it. Inside a modal dialog it's put in the dialog,
+ * which sits in the top layer above everything else.
+ */
+export function zoomCard(card, stage, from) {
+  const layer = el('div', 'card-zoom');
+  const big = makeCard(card, { stage });
+  big.classList.add('zoom-card');
+  layer.append(big, el('p', 'focus-hint', 'Tap anywhere to close'));
+
+  const close = () => {
+    layer.remove();
+    document.removeEventListener('keydown', onKey, true);
+    from?.focus({ preventScroll: true });
+  };
+  // Escape would otherwise also close the dialog underneath
+  const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); close(); } };
+  layer.addEventListener('click', close);
+  document.addEventListener('keydown', onKey, true);
+  (from?.closest('dialog[open]') || document.body).append(layer);
+}
+
+/** Make a card in a deck view tappable to zoom in on it. */
+export function zoomable(node, card, stage) {
+  node.tabIndex = 0;
+  node.setAttribute('role', 'button');
+  node.setAttribute('aria-label', `${card.name}: tap to read it bigger`);
+  node.addEventListener('click', () => zoomCard(card, stage, node));
+  node.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zoomCard(card, stage, node); }
+  });
+  return node;
+}
+
 /** A relic tile: icon, name and what it does. */
 export function makeRelic(relic) {
   const node = el('div', 'relic');

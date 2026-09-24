@@ -12,12 +12,12 @@ import { BACKDROPS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js'
 import { TYPES } from './data/cards.js';
 import { LEVELS, MAX_LEVEL } from './data/difficulty.js';
 import { getSave } from './storage.js';
-import { $, el, makeCard, groupDeck, showScreen, setBackdrop, openDialog } from './ui.js';
+import { $, el, makeCard, zoomable, groupDeck, showScreen, setBackdrop, openDialog } from './ui.js';
 
-/** Fill a container with the cards of a deck, grouping copies (Ember ×3). */
+/** Fill a container with the cards of a deck, grouping copies (Ember ×3). Tap one to read it bigger. */
 function fillDeck(container, ids, stage = 0) {
   container.replaceChildren(
-    ...groupDeck(ids, CARDS_BY_ID).map(({ card, count }) => makeCard(card, { stage, count })),
+    ...groupDeck(ids, CARDS_BY_ID).map(({ card, count }) => zoomable(makeCard(card, { stage, count }), card, stage)),
   );
 }
 

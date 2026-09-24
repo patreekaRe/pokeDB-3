@@ -284,6 +284,10 @@ shows a tapped element's `title` in `.tap-tip`, a mini copy of the battle text b
 keeps the native tooltip). Buttons and other controls are skipped, since tapping
 them already does something. Give new non-button things a `title` and they get
 this for free.
+In the read-only deck views (the starting deck and the Bag's deck window,
+both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
+up (`zoomable()` / `zoomCard()` in `js/ui.js`); any tap or Escape closes it,
+and inside a dialog Escape closes only the zoom.
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first
