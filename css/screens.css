@@ -1257,9 +1257,11 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   cursor: pointer;
 }
 .ds-btn.ds-skip { --stripe-a: #6890e0; --stripe-b: #88a8f0; --rim: #3858b0; }
-.ds-btn.ds-play { --stripe-a: #f07068; --stripe-b: #f8887c; --rim: #c84840; }   /* battle's Play / Use: End Turn's own colours */
+.ds-btn.ds-play { --stripe-a: #f07068; --stripe-b: #f8887c; --rim: #c84840; padding: 5px 6px; }   /* battle's Play / Use: End Turn's own colours, kept small under the card */
 .ds-btn .pp-pill { gap: 0; padding: 13px 24px 12px 38px; position: relative; font-size: 1.2rem; }
 .ds-btn .pp-pill::before { content: '▶'; position: absolute; left: 16px; top: 50%; translate: 0 -50%; font-size: 0.6em; animation: cursorBlink 1s steps(1) infinite; }
+.ds-btn.ds-play .pp-pill { font-size: 0.85rem; padding: 8px 14px 7px 26px; }
+.ds-btn.ds-play .pp-pill::before { left: 11px; }
 .ds-btn:hover .pp-pill { background: #fff; }
 .ds-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px var(--rim), 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
 .ds-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
