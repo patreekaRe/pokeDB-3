@@ -35,9 +35,8 @@ const FLOORS = 10;    // floors per biome (Slay the Spire uses 15: a much longer
 const PATHS = 6;      // how many random paths are walked
 
 // Chance (in %) of each room type on floors that are not fixed.
-// (Slay the Spire also has events. They aren't in this game yet,
-//  so their share is added to plain fights. Add them here when they exist.)
-const ROOM_ODDS = { fight: 60, elite: 16, rest: 12, shop: 12 };
+// The shop share is low because every map is promised one Mart anyway (see assignTypes).
+const ROOM_ODDS = { fight: 45, event: 22, elite: 16, rest: 12, shop: 5 };
 
 // Where the special floors are, scaled to the number of floors
 // (for 15 floors this gives: treasure on floor 9, no elites/rests below floor 6).
@@ -52,6 +51,7 @@ export const NODE_INFO = {
   rest:     { icon: '🏥', label: 'Pokémon Center (heal)' },
   treasure: { icon: '🎁', label: 'Treasure (choose a relic)' },
   shop:     { icon: '🏪', label: 'Poké Mart (spend ₽ on cards, relics and forgetting moves)' },
+  event:    { icon: '❓', label: 'Mystery event (a choice, often with a cost)' },
   boss:     { icon: '👑', label: 'Boss' },
 };
 
@@ -191,7 +191,7 @@ function isAllowed(room, type, byId, strict) {
   // 2. A rest site can't sit right under the top floor of rest sites.
   if (type === 'rest' && room.floor === TOP_FLOOR - 1) return false;
 
-  // 3. Elites, rest sites and shops can't come twice in a row on the same path.
+  // 3. Elites, rest sites, shops and events can't come twice in a row on the same path.
   if (type !== 'fight' && parents.some(p => p.type === type)) return false;
 
   // 4. Rooms that share a parent should lead to different things.

@@ -5,7 +5,7 @@
    A run goes like this:
 
        pick a starter -> preview the fixed deck -> Biome 1 map
-         -> walk the map: fights, elites, rest sites, treasure, Poké Marts
+         -> walk the map: fights, elites, rest sites, treasure, Poké Marts, ? events
          -> boss -> (evolve!) -> Biome 2 map -> boss -> evolve
          -> Biome 3 map -> final boss -> you win
 
@@ -16,10 +16,11 @@
 
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER, TYPES, CARDS_BY_ID, MAX_COPIES } from './data/cards.js';
+import { STAGE_POWER, TYPES, CARDS_BY_ID, MAX_COPIES, poolForType } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
+import { EVENTS, EVENTS_BY_ID } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
@@ -78,7 +79,7 @@ export function abandonRun() {
    Everything is stored by id and rebuilt from the data files on load.
    ============================================================ */
 
-const RUN_SAVE_VERSION = 3;
+const RUN_SAVE_VERSION = 4;
 
 function checkpoint() {
   const { floors, byId } = run.map;
@@ -120,6 +121,7 @@ function restoreRun(saved) {
   const nodes = Object.values(byId);
   if (!byId.boss || floors.flat().some(n => !n) || (saved.current && !byId[saved.current])
       || nodes.some(n => [...n.next, ...n.prev].some(id => !byId[id]) || (n.enemyId && !ENEMY_DEFS[n.enemyId])
+        || (n.event && !(EVENTS_BY_ID[n.event.id] && (!n.event.enemyId || ENEMY_DEFS[n.event.enemyId])))
         || (n.stock && !(known(n.stock.cards.map(i => i.id), CARDS_BY_ID) && known(n.stock.relics.map(i => i.id), RELICS_BY_ID))))) {
     throw new Error('bad run map');
   }
@@ -199,6 +201,7 @@ function startBiome() {
     if (['fight', 'elite', 'boss'].includes(node.type)) node.enemyId = pickEnemyId(run.biome, node.type);
     if (node.type === 'shop') node.stock = martStock();
   }
+  rollEvents();
   run.current = null;
   run.backdrop = biome.backdrop;
   showMap();
@@ -300,6 +303,7 @@ function enterNode(node) {
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
   if (node.type === 'shop') return martRoom();
+  if (node.type === 'event') return eventRoom(node);
   fight(node);   // 'fight', 'elite' or 'boss'
 }
 
@@ -459,7 +463,7 @@ function forgetOption(back) {
 }
 
 /** `done` runs after a card is forgotten; Cleanse Tag passes its reward chain here, the Center returns to the map. */
-function forgetMove(back, done = showMap) {
+function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep every move' : 'Back') {
   showChoice({
     title: 'Forget a move',
     sub: `Choose a card to remove from your deck. It can't go below ${MIN_DECK} cards.`,
@@ -468,7 +472,165 @@ function forgetMove(back, done = showMap) {
       toast(`${card.name} was forgotten.`, 'ok');
       done();
     }, count)),
-    skipLabel: back === done ? 'Keep every move' : 'Back',
+    skipLabel,
+    onSkip: back,
+  });
+}
+
+/* ---------- ? events (the numbers are in js/data/events.js) ---------- */
+
+/** Rolled when the biome starts and saved on the node, so a refresh can't swap the event or its dice. No repeats in a biome until every event has come up. */
+function rollEvents() {
+  let bag = [];
+  for (const node of Object.values(run.map.byId)) {
+    if (node.type !== 'event') continue;
+    if (!bag.length) bag = [...EVENTS].sort(() => Math.random() - 0.5);
+    const event = bag.pop();
+    node.event = { id: event.id };
+    if (event.trapChance) node.event.trap = Math.random() < event.trapChance;
+    if (event.team) {
+      const team = event.team[run.biome];
+      node.event.enemyId = team[Math.floor(Math.random() * team.length)];
+    }
+  }
+}
+
+const perBiome = (value) => (Array.isArray(value) ? value[run.biome] : value);
+const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
+
+/** A choice tile that costs HP: greyed out if paying would faint you. */
+function hpOption(icon, title, text, cost, onPick) {
+  return { ...textOption(icon, title, text, onPick), disabled: run.hp <= cost };
+}
+
+/** A choice tile that costs ₽: greyed out if you can't afford it. The money is taken by onPick, when the reward is actually received. */
+function moneyOption(icon, title, text, price, onPick) {
+  return { ...textOption(icon, title, text, onPick), disabled: run.money < price };
+}
+
+function eventRoom(node) {
+  const event = EVENTS_BY_ID[node.event.id];
+  const back = () => eventRoom(node);
+  const { options, leave = true } = EVENT_CHOICES[event.id](event, node.event, back);
+  showChoice({
+    title: `${event.icon} ${event.name}`,
+    sub: event.text,
+    options,
+    skipLabel: 'Leave',
+    onSkip: leave ? showMap : undefined,
+  });
+}
+
+const EVENT_CHOICES = {
+  'berry-tree'(event) {
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.eatHeal));
+    const grow = perBiome(event.plantMaxHp);
+    return { options: [
+      textOption('💚', 'Eat the berries', `Heal ${heal} HP.`, () => {
+        run.hp += heal;
+        toast(`Healed ${heal} HP.`, 'ok');
+        showMap();
+      }),
+      textOption('❤️', 'Plant one', `Max HP +${grow}.`, () => {
+        run.maxHp += grow;
+        run.hp += grow;
+        toast(`Max HP +${grow}!`, 'ok');
+        showMap();
+      }),
+    ] };
+  },
+
+  'move-tutor'(event, state, back) {
+    const price = perBiome(event.price);
+    const hpCost = perBiome(event.hpCost);
+    const teach = (pay) => () => tutorCards(back, pay);
+    return { options: [
+      moneyOption('💴', `Pay ₽${price}`, 'Choose one of 3 rare moves to learn.', price, teach(() => { run.money -= price; setMoney(run.money); })),
+      hpOption('🩸', `Pay ${hpCost} HP`, 'Train until it hurts. Choose one of 3 rare moves to learn.', hpCost, teach(() => loseHp(hpCost))),
+    ] };
+  },
+
+  'move-deleter'(event, state, back) {
+    const hpCost = Math.ceil(run.maxHp * event.doubleHpCost);
+    const canOne = run.deck.length > MIN_DECK;
+    const canTwo = run.deck.length > MIN_DECK + 1;
+    // the HP is only paid once the second move is actually forgotten; stopping after one is free
+    const second = () => forgetMove(showMap, () => { loseHp(hpCost); toast(`Lost ${hpCost} HP.`, 'warn'); showMap(); }, 'Stop at one (free)');
+    return { options: [
+      { ...textOption('📖', 'Forget a move', canOne ? 'Free: remove one card from your deck.' : `Your deck is at the minimum (${MIN_DECK} cards).`,
+        () => forgetMove(back)), disabled: !canOne },
+      { ...hpOption('📖', 'Forget two moves', canTwo ? `Lose ${hpCost} HP to remove two cards.` : `Needs a deck of ${MIN_DECK + 2} cards or more.`,
+        hpCost, () => forgetMove(back, second)), ...(!canTwo && { disabled: true }) },
+    ] };
+  },
+
+  'item-ball'(event, state) {
+    const damage = Math.min(run.hp - 1, perBiome(event.trapDamage));
+    return { options: [
+      textOption('⚫', 'Pick it up', 'It could be a relic. It could also explode.', () => {
+        if (!state.trap) return offerRelic('It was an item!', showMap);
+        loseHp(damage);
+        toast(`💥 It was a Voltorb! It exploded for ${damage} damage.`, 'warn');
+        showMap();
+      }),
+    ] };
+  },
+
+  'hot-spring'(event) {
+    const loss = perBiome(event.soakMaxHpLoss);
+    const dip = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.dipHeal));
+    return { options: [
+      textOption('♨️', 'Soak for hours', `Fully heal, but lose ${loss} max HP.`, () => {
+        run.maxHp -= loss;
+        run.hp = run.maxHp;
+        toast(`Fully healed. Max HP -${loss}.`, 'ok');
+        showMap();
+      }),
+      textOption('💚', 'A quick dip', `Heal ${dip} HP.`, () => {
+        run.hp += dip;
+        toast(`Healed ${dip} HP.`, 'ok');
+        showMap();
+      }),
+    ] };
+  },
+
+  'team-rocket'(event, state, back) {
+    const toll = perBiome(event.toll);
+    const flee = Math.ceil(run.maxHp * event.fleeHp);
+    const node = run.map.byId[run.current];
+    const foe = ENEMY_DEFS[state.enemyId];
+    return { leave: false, options: [
+      moneyOption('💴', `Pay ₽${toll}`, 'Hand over the toll and walk on.', toll, () => {
+        run.money -= toll;
+        setMoney(run.money);
+        toast(`The grunt took ₽${toll}.`, 'warn');
+        showMap();
+      }),
+      textOption('⚔️', 'Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
+      textOption('💨', 'Run for it', `Lose ${flee} HP getting away.`, () => {
+        loseHp(flee);
+        toast(`Got away, but lost ${flee} HP.`, 'warn');
+        showMap();
+      }),
+    ] };
+  },
+};
+
+/** The Move Tutor's lesson: 3 rare moves (or the best on offer if you own every rare), paid for only when one is learned. */
+function tutorCards(back, pay) {
+  const copies = (id) => run.deck.filter(x => x === id).length;
+  const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
+  const cards = rares.length ? rares.sort(() => Math.random() - 0.5).slice(0, 3) : cardChoices(run, 'boss');
+  showChoice({
+    title: 'Move Tutor',
+    sub: 'Which move should your Pokémon learn?',
+    options: cards.map(card => cardOption(card, run.stage, () => {
+      pay();
+      run.deck.push(card.id);
+      toast(`${card.name} added to your deck.`, 'ok');
+      showMap();
+    })),
+    skipLabel: 'Back',
     onSkip: back,
   });
 }

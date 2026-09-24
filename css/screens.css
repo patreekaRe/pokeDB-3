@@ -1616,6 +1616,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 
 /* ---------- Poké Mart (map room) and Pokédollars ---------- */
 .map-node.type-shop .map-town, .howto-node.town.shop { border-color: #3878f0; }
+.map-node.type-event .map-town, .howto-node.town.event { border-color: #b058d8; }
 .money-pill { color: #f8f8f8; }
 .mart-ware { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .mart-ware > * { width: 100%; }

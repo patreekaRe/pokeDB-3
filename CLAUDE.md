@@ -129,6 +129,22 @@ its price tag and disables it when you can't afford it. Removal reuses
 Purchases are only saved when you leave for the map. Consumables are meant
 to join the stock later.
 
+## ? events
+
+`event` map rooms (❓, purple frame) hold one of the scenes in
+`js/data/events.js` (numbers, often per biome as `[b1, b2, b3]`); what each
+choice does is in `EVENT_CHOICES` in `js/run.js`, shown with `showChoice`.
+`rollEvents()` (from `startBiome()`) stores `node.event` = `{ id }` plus any
+dice (Item Ball's `trap`, Team Rocket's `enemyId`), drawn from a shuffled
+bag so a biome has no repeats until all have come up; a refresh can't
+reroll them. Paid choices use `moneyOption`/`hpOption` (greyed out when
+unaffordable, and HP costs never faint you), and money/HP is only taken once
+the reward is actually received, so "Back" is free. Team Rocket's Battle
+runs `fight()` with a copy of the node typed `elite`, so it pays elite
+rewards; it has no Leave. A new event needs an entry in both places, an
+icon in `ICONS` for any new emoji, and a `RUN_SAVE_VERSION` bump only if the
+node shape changes.
+
 ## Relics
 
 `js/data/relics.js`; effects are applied where `hasRelic()` appears in
