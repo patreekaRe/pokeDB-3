@@ -395,7 +395,11 @@ function afterFight(node, result) {
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
-  run.pendingCoins = { coins: coinsWithBonus(coinsFor[node.type]), money: prize, disadvantage };
+  const foe = ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
+  run.pendingCoins = {
+    foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
+    coins: coinsWithBonus(coinsFor[node.type]), money: prize, disadvantage,
+  };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
@@ -410,7 +414,7 @@ function afterFight(node, result) {
 
   const steps = [];   // screens to show one after another
   if (node.type === 'fight') steps.push(next => offerCard('fight', next));
-  if (node.type === 'elite') steps.push(next => offerRelic('Elite defeated!', next), next => offerCard('elite', next));
+  if (node.type === 'elite') steps.push(next => offerRelic('The Alpha\'s relic', next), next => offerCard('elite', next));
 
   if (node.type === 'boss') {
     updateSave(d => {
@@ -419,7 +423,7 @@ function afterFight(node, result) {
     });
     if (run.biome === BIOMES.length - 1) { collect(); return endRun(true); }       // final boss: you win!
     announceUnlocks();
-    steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next, { boss: true }));
+    steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
   }
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
@@ -452,13 +456,9 @@ function offerCard(source, next) {
   if (!cards.length) return next();
 
   showChoice({
-    title: 'Choose a move',
-    sub: `Add one card to your deck (you have ${run.deck.length}), or skip.`,
-    options: cards.map(card => cardOption(card, run.stage, () => {
-      run.deck.push(card.id);
-      toast(`${card.name} added to your deck.`, 'ok');
-      next();
-    })),
+    title: 'Learn a new move',
+    sub: `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
+    options: cards.map(card => learnOption(card, next)),
     onSkip: next,
     coins: run.pendingCoins,
   });
@@ -470,16 +470,25 @@ function offerEvolutionCard(next) {
   if (!cards.length) return next();
 
   showChoice({
-    title: `${stageName(run.starter, run.stage)} learned a new move!`,
-    sub: 'Evolving unlocked a powerful signature move. Choose one to add to your deck.',
-    options: cards.map(card => cardOption(card, run.stage, () => {
-      run.deck.push(card.id);
-      toast(`${card.name} added to your deck!`, 'ok');
-      next();
-    })),
+    title: 'Signature move',
+    sub: `${stageName(run.starter, run.stage)} can learn a powerful signature move! Pick one to add to your deck.`,
+    options: cards.map(card => learnOption(card, next)),
     onSkip: next,
     coins: run.pendingCoins,
   });
+}
+
+/** A card reward tile: first tap picks it, then "Add to deck" (or a second tap) takes it. */
+function learnOption(card, next) {
+  return {
+    ...cardOption(card, run.stage, () => {
+      run.deck.push(card.id);
+      toast(`${card.name} added to your deck!`, 'ok');
+      next();
+    }),
+    ask: `Add ${card.name} to your deck?`,
+    confirm: 'Add to deck',
+  };
 }
 
 function offerRelic(title, next, { boss = false } = {}) {
@@ -491,8 +500,8 @@ function showRelics(title, relics, next) {
 
   showChoice({
     title,
-    sub: relics[0].boss ? 'Choose a boss relic. Each one is strong, but comes with a catch.' : 'Choose a relic. It helps you for the rest of the run.',
-    options: relics.map(relic => relicOption(relic, () => gainRelic(relic, next))),
+    sub: relics[0].boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
+    options: relics.map(relic => ({ ...relicOption(relic, () => gainRelic(relic, next)), ask: `Take the ${relic.name}?`, confirm: 'Take it' })),
     onSkip: next,
     coins: run.pendingCoins,
   });
@@ -514,12 +523,12 @@ function offerItem(item, next) {
     next();
   };
   showChoice({
-    title: `Found a ${item.name}!`,
-    sub: full ? `${item.icon} ${item.text} Your Bag is full (${ITEM_SLOTS} items): swap one of yours for it, or leave it.`
-      : `${item.text} Items go in your Bag (up to ${ITEM_SLOTS}) and are used up in battle.`,
+    title: 'Item found',
+    sub: [`You found a ${item.name}!`, full ? `${item.text} Your Bag is full (${ITEM_SLOTS} items): swap one of yours for it, or leave it.`
+      : `${item.text} Items go in your Bag (up to ${ITEM_SLOTS}) and are used up in battle.`],
     options: full
-      ? run.items.map((id, index) => itemOption(ITEMS_BY_ID[id], take(index)))
-      : [itemOption(item, take())],
+      ? run.items.map((id, index) => ({ ...itemOption(ITEMS_BY_ID[id], take(index)), ask: `Toss your ${ITEMS_BY_ID[id].name} for the ${item.name}?`, confirm: 'Swap' }))
+      : [{ ...itemOption(item, take()), ask: `Put the ${item.name} in the Bag?`, confirm: 'Put in Bag' }],
     skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: next,
     coins: run.pendingCoins,
@@ -527,7 +536,7 @@ function offerItem(item, next) {
 }
 
 function treasureRoom() {
-  offerRelic('Treasure!', showMap);
+  offerRelic('Treasure chest', showMap);
 }
 
 /** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
@@ -692,7 +701,7 @@ const EVENT_CHOICES = {
     const damage = Math.min(run.hp - 1, perBiome(event.trapDamage));
     return { options: [
       textOption('⚫', 'Pick it up', 'It could be a relic. It could also explode.', () => {
-        if (!state.trap) return offerRelic('It was an item!', showMap);
+        if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
         toast(`💥 It was a Voltorb! It exploded for ${damage} damage.`, 'warn');
         showMap();

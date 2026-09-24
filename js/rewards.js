@@ -64,31 +64,50 @@ export function relicChoices(run, { boss = false } = {}) {
 
 /**
  * Show a "choose one" screen.
- *   options   [{ node, onPick, disabled }]   node is the element to show, onPick runs when chosen
+ *   sub       the text box's line, or a list of lines
+ *   options   [{ node, onPick, disabled, ask, confirm }]   node is the element to show, onPick runs when chosen.
+ *             With `ask` the pick takes two taps, like a card in battle: the first raises the tile and puts
+ *             `ask` in the text box with a `confirm` button; that button, or the same tile again, takes it.
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
+ *   coins     after a fight, { foe, coins, money, disadvantage }: an icon row, and (on the first screen only) the text box's first lines
  */
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null }) {
   $('reward-title').textContent = title;
-  // what the fight paid shows as icons; the text box says it in words, then what to do
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;
-  const lines = coins
-    ? [`You got ${coins.coins} PokéCoins${coins.disadvantage ? ' (type disadvantage bonus!)' : ''} and ₽${coins.money} prize money!`, sub]
-    : [sub];
+  // every screen after a fight shows the icon row, but only the first one tells the news
+  const news = coins && !coins.told;
+  if (coins) coins.told = true;
+  const lines = [
+    ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins${coins.disadvantage ? ' for beating a type you\'re weak to' : ''}!`, `You got ₽${coins.money} for winning!`] : []),
+    ...[].concat(sub),   // sub is one line, or a list of them
+  ];
   sayLines(lines.filter(Boolean));
 
   const box = $('reward-options');
   box.replaceChildren();
+  const confirm = $('reward-confirm');
+  confirm.hidden = true;
 
   let done = false;
   const once = (fn) => () => { if (done) return; done = true; fn(); };
+  let picked = null;
 
   for (const option of options) {
     const btn = el('button', 'reward-option');
     btn.type = 'button';
     btn.append(option.node);
     btn.disabled = !!option.disabled;
-    btn.addEventListener('click', once(option.onPick));
+    const take = once(option.onPick);
+    btn.addEventListener('click', () => {
+      if (!option.ask || picked === btn) return take();
+      picked = btn;
+      for (const other of box.children) other.classList.toggle('picked', other === btn);
+      confirm.textContent = option.confirm || 'Choose';
+      confirm.hidden = false;
+      confirm.onclick = take;
+      sayLines([option.ask]);
+    });
     box.append(btn);
   }
 
@@ -100,17 +119,15 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   showScreen('reward-screen');
 }
 
-/* The reward screen's text box: types each line out like the battle log. Tapping it
-   finishes the line being typed, or moves on to the next; a finished line also moves
-   on by itself after a moment, so the instruction is never stuck behind a tap. The
-   ▼ blinks while there's more to read. */
-const TYPE_MS = 18, NEXT_MS = 1500;
-let say = { lines: [], at: 0, typing: 0, wait: 0 };
+/* The reward screen's text box: types each line out like the battle log, then waits
+   for you, like the games: a tap finishes the line being typed, or moves on to the
+   next one. The ▼ blinks while there's more to read. */
+const TYPE_MS = 18;
+let say = { lines: [], at: 0, typing: 0 };
 
 function sayLines(lines) {
   clearInterval(say.typing);
-  clearTimeout(say.wait);
-  say = { lines, at: 0, typing: 0, wait: 0 };
+  say = { lines, at: 0, typing: 0 };
   $('reward-log').hidden = !lines.length;
   $('reward-log').onclick = () => {
     if (say.typing) return finishLine();
@@ -120,7 +137,6 @@ function sayLines(lines) {
 }
 
 function showLine(i) {
-  clearTimeout(say.wait);
   say.at = i;
   const box = $('reward-log');
   const line = say.lines[i];
@@ -140,9 +156,7 @@ function finishLine() {
   clearInterval(say.typing);
   say.typing = 0;
   $('reward-log-text').textContent = say.lines[say.at];
-  const more = say.at < say.lines.length - 1;
-  $('reward-log').classList.toggle('more', more);
-  if (more) say.wait = setTimeout(() => showLine(say.at + 1), NEXT_MS);
+  $('reward-log').classList.toggle('more', say.at < say.lines.length - 1);
 }
 
 /** Ready-made option tiles. */
