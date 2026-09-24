@@ -326,10 +326,16 @@ evolve animations' transforms and the layout are untouched. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 Battles are set in a pixel-art scene per biome (`js/battlebg.js`, the user's
-call: the blurred photos clashed with the 8-bit look): sky bands, drifting
-clouds, far hills, a tree line and a meadow, painted into `#battle-bg` (a
+call: the blurred photos clashed with the 8-bit look), painted into `#battle-bg` (a
 fixed low-res canvas, one canvas pixel = 4 CSS px on phones, 5 on PCs) by
-`showBattleScene()` from `startBattle()`. `horizonRow()` puts the horizon at
+`showBattleScene()` from `startBattle()`. The still parts (sky bands, sun,
+two hill ranges, tall trees with trunks behind a bushy tree line, the
+meadow with grass patches, rocks and flower clusters) are painted once into
+`base`; `draw()` copies it every frame (8 fps) and adds the living parts:
+far/near clouds (near ones drag dithered shadows over the meadow), grass
+blades swaying in rolling waves of wind, butterflies, an occasional flock of
+birds and twinkling pollen. `sky` masks where clouds and birds may draw, so
+they pass behind hills and trees. `horizonRow()` puts the horizon at
 ~38% of the screen but always above the enemy's pad, so the layout can move.
 Both Pokémon stand on Gen 3/4-style grassy pads (`--pad`, a data-URL pixel
 image, drawn by `.enemy-zone::after` / `.player-zone::before` so they don't
