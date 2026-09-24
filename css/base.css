@@ -360,6 +360,37 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   z-index: 100;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- tap-to-read hint (js/tips.js): a title's text, for touch screens that can't hover ---------- */
+.tap-tip {
+  position: fixed;
+  z-index: 110;
+  max-width: min(260px, calc(100vw - 16px));
+  padding: 7px 10px;
+  border-radius: var(--round-sm);
+  background: var(--win-bg);
+  color: var(--win-ink);
+  border: 3px solid var(--win-edge);
+  box-shadow: 2px 2px 0 var(--win-shadow), 0 4px 14px rgba(0, 0, 0, 0.45);
+  font: 700 0.85rem/1.35 var(--font);
+  pointer-events: none;
+  animation: tipIn 0.12s steps(2);
+}
+.tap-tip::after {             /* the pixel tail, pointing at what was tapped */
+  content: "";
+  position: absolute;
+  left: clamp(8px, var(--arrow-x, 50%), calc(100% - 8px));
+  top: 100%;
+  width: 8px;
+  height: 8px;
+  translate: -50% -3px;
+  rotate: 45deg;
+  background: var(--win-bg);
+  border: solid var(--win-edge);
+  border-width: 0 3px 3px 0;
+}
+.tap-tip.below::after { top: auto; bottom: 100%; translate: -50% 3px; border-width: 3px 0 0 3px; }
+@keyframes tipIn { from { opacity: 0; transform: translateY(4px); } }
 .toast.ok   { background: #1e6b43; }
 .toast.warn { background: #7a5212; }
 

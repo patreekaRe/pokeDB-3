@@ -20,6 +20,7 @@
      records.js      the Stats and Achievements windows
      howto.js        the swipeable How to play window
      title.js        the PRESS START title screen before the start screen
+     tips.js         tap-to-read hints (an element's title) on touch screens
    ============================================================ */
 
 import { STARTERS, spriteUrl, stageName, BACKDROPS } from './data/starters.js';
@@ -35,6 +36,7 @@ import { initAudio, playCry } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
 import { showTitle } from './title.js';
+import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import {
@@ -246,6 +248,7 @@ function initBallMenu() {
 function init() {
   initPixelIcons();
   initAudio();
+  initTips();
   initHowtoFx();
   initHowto();
   initBattle();

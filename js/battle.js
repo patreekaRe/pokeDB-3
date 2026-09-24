@@ -768,6 +768,14 @@ let selectedItem = null;   // index into battle.items; items are picked and conf
 function tapCard(uid) {
   if (battle.busy) return;
   selectedItem = null;
+  const entry = battle.hand.find(h => h.uid === uid);
+  // a card that can't be played skips the big preview, which would cover the PP box's shake and the reason in the text box
+  if (entry && whyNotPlayable(entry.card)) {
+    selectedUid = null;
+    renderItems();
+    renderHand();
+    return playCard(uid);
+  }
   if (selectedUid === uid) {
     selectedUid = null;
     return playCard(uid);

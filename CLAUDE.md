@@ -277,7 +277,14 @@ enemy's box square (`min-height: 0`, or a tall sprite like Oddish stretches
 it), trims the space under your Pokémon so your nameplate clears the enemy's
 feet, and keeps room above the text box; the phone rules also keep a 10px
 gap between the two columns.
-Playing a card takes two taps (clicks or Enter presses too): `tapCard()` first
+Hints live in `title` attributes. Touch screens can't hover, so `js/tips.js`
+shows a tapped element's `title` in a `.tap-tip` bubble (touch/pen only; mouse
+keeps the native tooltip). Buttons and other controls are skipped, since tapping
+them already does something. Give new non-button things a `title` and they get
+this for free.
+Playing a card takes two taps (clicks or Enter presses too), except a card that
+can't be played: one tap logs why and shakes the PP box, with no big preview
+covering it. `tapCard()` first
 picks it (`selectedUid`, `.selected` in the hand) and `renderFocus()` shows a
 big copy at the bottom middle in `#card-focus`, a dimmed full-screen layer;
 tapping that big card plays it, tapping the dimmed area or Escape cancels
