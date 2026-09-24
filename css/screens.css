@@ -830,6 +830,9 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #end-turn-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
 #end-turn-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
 #end-turn-btn:disabled { filter: grayscale(1) brightness(0.9); opacity: 0.7; cursor: not-allowed; }
+/* PP and End Turn are one size, so the two ends of the controls match (wrap + align-content centres the PP's baseline row) */
+.battle-controls .pp-pill { min-width: 7.75rem; height: 2.6rem; flex-wrap: wrap; align-content: center; }
+#end-turn-btn .pp-pill { justify-content: center; }
 /* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
 .piles { display: none; gap: 12px; margin: 0 auto 0 12px; }   /* in the top bar, beside the Poké Ball */
 body[data-screen="battle-screen"] .piles { display: flex; }
@@ -880,6 +883,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .turn-side { align-items: flex-end; }
   #end-turn-btn { padding: 6px 7px; }
   #end-turn-btn .pp-pill { font-size: 0.95rem; }
+  .battle-controls .pp-pill { min-width: 6.75rem; }
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }
@@ -1745,26 +1749,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
 }
 
-/* ---------- items: the Bag's one-use items, in slots under the PP box ---------- */
-.item-slots { display: flex; gap: 6px; }
-.item-slot {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 3px solid #b8b8c8;
-  border-radius: var(--round-sm);
-  background: var(--win-bg);
-  box-shadow: 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.4);
-  font-size: 1.35rem;
-  cursor: pointer;
-}
-.item-slot:disabled { background: rgba(248, 240, 216, 0.25); border-style: dashed; box-shadow: 0 0 0 2px rgba(48, 48, 56, 0.6); cursor: default; }
-.item-slot:not(:disabled):hover { transform: translateY(-2px); }
-.item-slot:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
-.item-slot.selected { border-color: #f8d030; transform: translateY(-4px); }
-.item-slot.unusable { filter: grayscale(0.7) brightness(0.85); }
+/* ---------- items: the Bag's one-use items, used from its Items pocket and confirmed like a card ---------- */
 .relic.focus-item { width: min(70vw, 240px); min-height: 0; cursor: pointer; animation: focusIn 0.18s ease-out; }
 .relic.focus-item.unplayable { filter: grayscale(0.6) brightness(0.8); }
 .relic.item-tile { border-color: #3878f0; }
@@ -1772,18 +1757,3 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .item-row .howto-li-text { flex: 1; }
 .item-actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
 .bag .item-actions .btn { padding: 4px 8px 4px 16px; font-size: 0.7rem; min-height: 0; }
-/* phones: PP, the slots and End Turn share one row above the hand */
-@media (max-width: 720px) {
-  .orb-wrap { flex-direction: row; gap: 8px; }
-  .item-slots { gap: 4px; }
-  .item-slot { width: 30px; height: 30px; border-width: 2px; font-size: 1rem; }
-  .pp-pill { gap: 10px; }
-}
-@media (max-width: 400px) {
-  .orb-wrap { gap: 6px; }
-  .item-slot { width: 28px; height: 28px; }
-  .battle-controls .pp-pill { gap: 8px; padding-left: 10px; padding-right: 10px; }
-}
-@media (max-width: 340px) {
-  .orb-wrap { flex-direction: column; align-items: flex-start; }
-}

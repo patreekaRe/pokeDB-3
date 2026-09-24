@@ -21,7 +21,7 @@
 
 import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
+import { ITEMS_BY_ID } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds } from './audio.js';
 
@@ -619,27 +619,9 @@ function renderAll() {
   renderHand();
 }
 
-/** The Bag's item slots beside the PP box: always ITEM_SLOTS of them, so you can see the room left. */
+/** Items are used from the Bag's Items pocket (pickItem), not the battle screen: drop a pick that no longer stands. */
 function renderItems() {
-  const b = battle;
-  if (b.busy || !b.items[selectedItem]) selectedItem = null;
-  const slots = Array.from({ length: ITEM_SLOTS }, (_, i) => {
-    const item = ITEMS_BY_ID[b.items[i]];
-    const slot = el('button', 'item-slot', item ? item.icon : '');
-    slot.type = 'button';
-    if (!item) {
-      slot.disabled = true;
-      slot.setAttribute('aria-label', 'Empty item slot');
-      return slot;
-    }
-    slot.title = `${item.name}: ${item.text}`;
-    slot.setAttribute('aria-label', `${item.name}: ${item.text}`);
-    slot.classList.toggle('selected', i === selectedItem);
-    slot.classList.toggle('unusable', !b.busy && !!whyNotUsable(item));
-    slot.addEventListener('click', () => tapItem(i));
-    return slot;
-  });
-  $('item-slots').replaceChildren(...slots);
+  if (battle.busy || !battle.items[selectedItem]) selectedItem = null;
 }
 
 function renderBars() {
