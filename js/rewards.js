@@ -67,11 +67,15 @@ export function relicChoices(run, { boss = false } = {}) {
  *   options   [{ node, onPick, disabled }]   node is the element to show, onPick runs when chosen
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  */
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = '' }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null }) {
   $('reward-title').textContent = title;
-  $('reward-sub').textContent = sub;
-  $('reward-coins').textContent = coins;
+  // what the fight paid shows as icons; the text box says it in words, then what to do
+  $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;
+  const lines = coins
+    ? [`You got ${coins.coins} PokéCoins${coins.disadvantage ? ' (type disadvantage bonus!)' : ''} and ₽${coins.money} prize money!`, sub]
+    : [sub];
+  sayLines(lines.filter(Boolean));
 
   const box = $('reward-options');
   box.replaceChildren();
@@ -94,6 +98,51 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   skip.onclick = onSkip ? once(onSkip) : null;
 
   showScreen('reward-screen');
+}
+
+/* The reward screen's text box: types each line out like the battle log. Tapping it
+   finishes the line being typed, or moves on to the next; a finished line also moves
+   on by itself after a moment, so the instruction is never stuck behind a tap. The
+   ▼ blinks while there's more to read. */
+const TYPE_MS = 18, NEXT_MS = 1500;
+let say = { lines: [], at: 0, typing: 0, wait: 0 };
+
+function sayLines(lines) {
+  clearInterval(say.typing);
+  clearTimeout(say.wait);
+  say = { lines, at: 0, typing: 0, wait: 0 };
+  $('reward-log').hidden = !lines.length;
+  $('reward-log').onclick = () => {
+    if (say.typing) return finishLine();
+    if (say.at < say.lines.length - 1) showLine(say.at + 1);
+  };
+  if (lines.length) showLine(0);
+}
+
+function showLine(i) {
+  clearTimeout(say.wait);
+  say.at = i;
+  const box = $('reward-log');
+  const line = say.lines[i];
+  $('reward-log-live').textContent = line;
+  box.classList.remove('more');
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finishLine();
+  const letters = Array.from(line);
+  let shown = 0;
+  say.typing = setInterval(() => {
+    shown += 2;
+    $('reward-log-text').textContent = letters.slice(0, shown).join('');
+    if (shown >= letters.length) finishLine();
+  }, TYPE_MS);
+}
+
+function finishLine() {
+  clearInterval(say.typing);
+  say.typing = 0;
+  $('reward-log-text').textContent = say.lines[say.at];
+  const more = say.at < say.lines.length - 1;
+  $('reward-log').classList.toggle('more', more);
+  if (more) say.wait = setTimeout(() => showLine(say.at + 1), NEXT_MS);
 }
 
 /** Ready-made option tiles. */

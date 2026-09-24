@@ -284,6 +284,12 @@ shows a tapped element's `title` in `.tap-tip`, a mini copy of the battle text b
 keeps the native tooltip). Buttons and other controls are skipped, since tapping
 them already does something. Give new non-button things a `title` and they get
 this for free.
+Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
+in `#reward-log`, a copy of the battle text box stuck to the bottom of the
+screen (`sayLines()` in `js/rewards.js`): lines type out, a tap finishes or
+skips ahead, and a finished line moves on by itself after `NEXT_MS`. After a
+fight, `coins` (`run.pendingCoins`: `{ coins, money, disadvantage }`) shows as
+an icon row (💰 +25 💴 +₽120) and as the box's first line.
 In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
 up (`zoomable()` / `zoomCard()` in `js/ui.js`); any tap or Escape closes it,

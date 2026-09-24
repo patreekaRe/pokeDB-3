@@ -1212,8 +1212,36 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* ---------- rewards (choose one) ---------- */
 #reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; }
 .reward-title { font-size: 1.8rem; text-shadow: 0 2px 8px #000; text-align: center; }
-.reward-sub { text-align: center; }
-.reward-coins { text-align: center; font-weight: 800; font-size: 1.1rem; color: var(--gold); text-shadow: 0 1px 4px #000; }
+.reward-coins { margin: 0; text-align: center; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 1.25rem; white-space: pre; color: #fff; text-shadow: 2px 2px 0 #000; }
+/* the screen's text: the battle's Gold/Silver text box, stuck to the bottom so it stays in view (tap to skip ahead) */
+.reward-log {
+  position: sticky;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 3;
+  width: min(100%, 620px);
+  min-height: 3.4em;
+  margin-top: auto;
+  padding: 9px 28px 9px 14px;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round);
+  background: var(--win-bg);
+  color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+.reward-log.more::after {
+  content: '▼';
+  position: absolute;
+  right: 10px;
+  bottom: 6px;
+  font-size: 0.6rem;
+  color: #c02020;
+  animation: cursorBlink 1s steps(1) infinite;
+}
 .reward-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; width: 100%; padding: 12px 0; }
 .reward-option { background: none; border: 0; padding: 0; width: clamp(130px, 28vw, 200px); transition: transform 0.15s; }
 .reward-option:hover, .reward-option:focus-visible { transform: translateY(-8px) scale(1.04); }

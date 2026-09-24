@@ -182,7 +182,7 @@ export function beginRun(starter, level = 0) {
     money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
     removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
     unlocks: [],          // starters unlocked during this run
-    pendingCoins: '',      // coins won in the last fight, paid out when its rewards end
+    pendingCoins: null,    // { coins, money, disadvantage } won in the last fight, paid out when its rewards end
     over: false,
   };
 
@@ -395,7 +395,7 @@ function afterFight(node, result) {
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
-  run.pendingCoins = `+${coinsWithBonus(coinsFor[node.type])} 💰 PokéCoins${disadvantage ? ' (type disadvantage!)' : ''}, +${prize} 💴 prize money`;
+  run.pendingCoins = { coins: coinsWithBonus(coinsFor[node.type]), money: prize, disadvantage };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
@@ -404,8 +404,8 @@ function afterFight(node, result) {
     setMoney(run.money);
     updateSave(d => { d.stats.enemiesDefeated += 1; });
     refreshCoins();
-    toast(run.pendingCoins, 'ok');
-    run.pendingCoins = '';
+    toast(`+${run.pendingCoins.coins} 💰  +₽${prize} 💴`, 'ok');
+    run.pendingCoins = null;
   };
 
   const steps = [];   // screens to show one after another

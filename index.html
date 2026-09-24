@@ -232,9 +232,10 @@
     <section id="reward-screen" class="screen" hidden>
       <h2 id="reward-title" class="reward-title"></h2>
       <p id="reward-coins" class="reward-coins" hidden></p>
-      <p class="hint reward-sub" id="reward-sub"></p>
       <div id="reward-options" class="reward-options"></div>
       <div class="reward-skip"><button class="btn secondary" id="reward-skip">Skip</button></div>
+      <!-- the screen's text, typed out in a battle-style text box; tap it to skip ahead (rewards.js) -->
+      <div class="reward-log" id="reward-log"><span id="reward-log-text" aria-hidden="true"></span><span class="sr-only" id="reward-log-live" aria-live="polite"></span></div>
     </section>
 
     <!-- ============ 5. BATTLE ============ -->
@@ -275,7 +276,7 @@
 
       <div class="battle-controls">
         <div class="orb-wrap">
-          <div class="energy-orb" id="player-energy" title="PP (energy): each card costs some, and it refills every turn"></div>
+          <div class="energy-orb" id="player-energy" title="PP (energy): each card costs some, and it refills every turn"></div>
         </div>
         <div class="hand-wrap">
           <div id="hand" class="hand" aria-label="Your hand"></div>
