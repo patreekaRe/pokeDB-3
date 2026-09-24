@@ -200,6 +200,12 @@ were (it sees the enemy's next move, so one timely item saves most of its
 deaths), so biomes 2–3 hit harder instead (`dmgBonus` 16→18 and 30→33 in
 `BIOMES`). That brought Level 0 back to ~94%, with Level 3 at ~85% and
 Level 5 at ~69%. Retune enemy damage rather than starving items.
+The harness also has a human-like bot (`humanCfg()`: no intent numbers, 10%
+random card plays, one-step routing; see its README), since the target is a
+decent human winning about half their Level 0 runs. It won 87.5% at Level 0,
+so every biome's `dmgBonus`/`bossBonus` went up +2/+3/+4 and Level 5's
+`enemyDmg` down 2→1 to keep it beatable: human bot L0 ~75%, L3 ~62%, L5 ~43%
+(strong bot L0 ~86%, L5 ~55%). Water is the weakest type at every level.
 
 ## Relics
 

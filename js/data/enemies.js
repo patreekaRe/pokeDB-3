@@ -274,19 +274,19 @@ export const BIOMES = [
     id: 'clearing', name: 'Whispering Clearing', backdrop: 'assets/backgrounds/clearing.jpg',
     normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
     elites: ['gloom', 'poliwhirl', 'growlithe'], bosses: ['snorlax'],
-    hpMult: 1.4, dmgBonus: 5, bossBonus: 7,
+    hpMult: 1.4, dmgBonus: 7, bossBonus: 9,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine', backdrop: 'assets/backgrounds/shrine.jpg',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['tangrowth', 'magmar', 'lapras'],
-    hpMult: 3.5, dmgBonus: 18, bossBonus: 24,
+    hpMult: 3.5, dmgBonus: 21, bossBonus: 27,
   },
   {
     id: 'wastes', name: 'Ember Wastes', backdrop: 'assets/backgrounds/volcano.jpg',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['salamence'],
-    hpMult: 6.5, dmgBonus: 33, bossBonus: 40,
+    hpMult: 6.5, dmgBonus: 37, bossBonus: 44,
   },
 ];
 

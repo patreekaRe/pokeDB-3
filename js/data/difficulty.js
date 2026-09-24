@@ -26,7 +26,7 @@ export const LEVELS = [
   { name: 'Elite Territory', text: 'Elite Pokémon have 30% more HP.', mods: { eliteHp: 1.3 } },
   { name: 'Rationing', text: 'Pokémon Centers heal only 10% of your HP instead of 35%.', mods: { restHeal: 0.1 } },
   { name: 'Fierce Bosses', text: 'Bosses have 20% more HP and hit 4 harder.', mods: { bossHp: 1.2, bossDmg: 4 } },
-  { name: 'Wild Aura', text: 'Every enemy hits 2 harder, and evolving only heals half of your missing HP.', mods: { enemyDmg: 2, evolveHeal: 0.5 } },
+  { name: 'Wild Aura', text: 'Every enemy hits 1 harder, and evolving only heals half of your missing HP.', mods: { enemyDmg: 1, evolveHeal: 0.5 } },
 ];
 
 export const MAX_LEVEL = LEVELS.length - 1;
