@@ -17,12 +17,27 @@
      burn          burn the enemy (takes damage at the start of its turn)
      guard         completely block the enemy's next attack
      needsWounded  can only be played when you are missing some HP
+     hits          the damage lands this many times (strength, relics and
+                   block apply to every hit; focus only to the first)
+     blockDamage   the damage is your current block (instead of `damage`)
+     bonusPerBurn  extra damage per Burn stack on the enemy
+     strengthMult  your strength counts this many times on this attack
+     selfDamage    lose this much HP first (never below 1; it can switch on bonusIfLow)
+     strength      +this much damage on every hit for the rest of the fight
+     energy        gain this much energy right now
+
+   Power effects (only on `power: true` cards, see POWERS below):
+     blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
+     drawEachTurn, thorns, blaze
 
    A card can also have (these sit next to `effects`, not inside it):
      exhaust    true = this card leaves the fight after you play it once
                 (it won't reshuffle back into your draw pile until your
                 next battle). Good for strong effects that shouldn't be
                 spammed every turn.
+     power      true = playing it switches on its power effects for the
+                rest of the fight, and the card leaves the fight.
+     retain     true = it stays in your hand when your turn ends.
      evoOnly    true = this card is never offered as a normal reward.
                 It only appears in the "choose 1 of 2" screen you get
                 when your starter evolves (see evolutionCardsFor below).
@@ -53,13 +68,21 @@ const NEUTRAL_CARDS = [
   // Potion is reward-only now (no starter begins with a free heal) and exhausts,
   // so it's a one-time save rather than a card you can loop every turn.
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', effects: { heal: 10 }, exhaust: true },
-  { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', effects: { weaken: true } },
+  // The free cards were picked over everything else, so the two strongest now work once per fight.
+  { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', effects: { weaken: true }, exhaust: true },
   { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', effects: { nextEnergy: 1 } },
-  { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', effects: { draw: 2 }, rarity: 'uncommon' },
+  { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', effects: { draw: 2 }, exhaust: true, rarity: 'uncommon' },
+  { id: 'double-hit',   name: 'Double Hit',   type: 'normal', cost: 1, art: '💥', effects: { damage: 4, hits: 2 } },
+  { id: 'swords-dance', name: 'Swords Dance', type: 'normal', cost: 1, art: '⚔️', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon' },
+  { id: 'agility',      name: 'Agility',      type: 'normal', cost: 0, art: '⚡', effects: { energy: 1, draw: 1 }, exhaust: true, rarity: 'uncommon' },
 ];
 
+/* Each type plays its own way:
+     Fire   burn that stacks up, big hits, and trading HP for damage
+     Grass  healing, and strength that grows over a long fight
+     Water  block, card draw, hitting back, and turning block into damage */
 const FIRE_CARDS = [
-  { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', effects: { damage: 8 } },
+  { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', effects: { damage: 9 } },
   { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 1, art: '☄️', effects: { damage: 5, weaken: true } },
   { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', effects: { block: 9 } },
   // The three "set up your next hit" cards (Heat Up, Growth, Rain Dance) each lean into
@@ -67,9 +90,17 @@ const FIRE_CARDS = [
   { id: 'heat-up',         name: 'Heat Up',         type: 'fire', cost: 1, art: '📈', effects: { focus: 8 } },
   { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', effects: { damage: 14, bonusIfLow: 10 } },
   { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', effects: { damage: 8, nextEnergy: 2 } },
-  { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', effects: { damage: 3, burn: 3 }, rarity: 'uncommon' },
+  { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', effects: { burn: 3, weaken: true } },
+  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', effects: { block: 8, burn: 2 } },
+  { id: 'fire-lash',       name: 'Fire Lash',       type: 'fire', cost: 1, art: '🦷', effects: { damage: 5, hits: 2 } },
+  { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', effects: { damage: 3, burn: 4 }, rarity: 'uncommon' },
+  { id: 'flare-blitz',     name: 'Flare Blitz',     type: 'fire', cost: 2, art: '☄️', effects: { selfDamage: 5, damage: 22 }, rarity: 'uncommon' },
+  { id: 'inferno',         name: 'Inferno',         type: 'fire', cost: 2, art: '🌪️', effects: { damage: 6, bonusPerBurn: 2 }, rarity: 'uncommon' },
+  { id: 'heat-wave',       name: 'Heat Wave',       type: 'fire', cost: 2, art: '♨️', effects: { damage: 5, hits: 3, burn: 2 }, rarity: 'uncommon' },
+  { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon' },
   { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', effects: { damage: 30, needsWounded: true }, rarity: 'rare' },
   { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 3, art: '💥', effects: { damage: 24, burn: 3 }, rarity: 'rare' },
+  { id: 'blaze',           name: 'Blaze',           type: 'fire', cost: 1, art: '🌋', effects: { blaze: 6 }, power: true, rarity: 'rare' },
 ];
 
 const GRASS_CARDS = [
@@ -78,9 +109,17 @@ const GRASS_CARDS = [
   { id: 'growth',       name: 'Growth',       type: 'grass', cost: 1, art: '🌱', effects: { focus: 5, heal: 3 } },
   { id: 'razor-leaf',   name: 'Razor Leaf',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 15 } },
   { id: 'absorb',       name: 'Absorb',       type: 'grass', cost: 1, art: '💚', effects: { damage: 6, heal: 4 } },
+  { id: 'bullet-seed',  name: 'Bullet Seed',  type: 'grass', cost: 1, art: '🌱', effects: { damage: 3, hits: 3 } },
+  { id: 'mega-drain',   name: 'Mega Drain',   type: 'grass', cost: 2, art: '💚', effects: { damage: 11, heal: 6 } },
+  { id: 'cotton-guard', name: 'Cotton Guard', type: 'grass', cost: 1, art: '🛡️', effects: { block: 8 }, retain: true },
   { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', effects: { heal: 14 }, rarity: 'uncommon' },
   { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 2, art: '🌸', effects: { damage: 12, block: 6 }, rarity: 'uncommon' },
+  { id: 'leaf-blade',   name: 'Leaf Blade',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 10, strength: 2 }, rarity: 'uncommon' },
+  { id: 'sleep-powder', name: 'Sleep Powder', type: 'grass', cost: 1, art: '🍄', effects: { weaken: true, draw: 1 }, retain: true, rarity: 'uncommon' },
+  { id: 'ingrain',      name: 'Ingrain',      type: 'grass', cost: 1, art: '🌳', effects: { healEachTurn: 3 }, power: true, rarity: 'uncommon' },
   { id: 'solar-beam',   name: 'Solar Beam',   type: 'grass', cost: 3, art: '🌞', effects: { damage: 28 }, rarity: 'rare' },
+  { id: 'grassy-terrain', name: 'Grassy Terrain', type: 'grass', cost: 2, art: '🌿', effects: { strengthEachTurn: 1 }, power: true, rarity: 'rare' },
+  { id: 'power-whip',   name: 'Power Whip',   type: 'grass', cost: 2, art: '🌳', effects: { damage: 10, strengthMult: 3 }, rarity: 'rare' },
 ];
 
 const WATER_CARDS = [
@@ -93,7 +132,15 @@ const WATER_CARDS = [
   // Aqua Ring used to heal 6 + block 6, which was strong for a 1-cost card. Heal is now smaller,
   // so it reads as a defensive card with a little sustain, not a free heal.
   { id: 'aqua-ring',    name: 'Aqua Ring',    type: 'water', cost: 1, art: '⭕', effects: { heal: 3, block: 6 }, rarity: 'uncommon' },
+  { id: 'water-pulse',  name: 'Water Pulse',  type: 'water', cost: 1, art: '💧', effects: { damage: 7 }, retain: true },
+  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', effects: { block: 7, draw: 1 } },
+  { id: 'clamp',        name: 'Clamp',        type: 'water', cost: 2, art: '🐚', effects: { damage: 9, block: 9 } },
+  { id: 'razor-shell',  name: 'Razor Shell',  type: 'water', cost: 1, art: '🐚', effects: { blockDamage: true }, rarity: 'uncommon' },
+  { id: 'surging-strikes', name: 'Surging Strikes', type: 'water', cost: 2, art: '🌊', effects: { damage: 5, hits: 3 }, rarity: 'uncommon' },
+  { id: 'mirror-coat',  name: 'Mirror Coat',  type: 'water', cost: 1, art: '🔮', effects: { thorns: 5 }, power: true, rarity: 'uncommon' },
+  { id: 'water-veil',   name: 'Water Veil',   type: 'water', cost: 2, art: '🌧️', effects: { blockEachTurn: 5 }, power: true, rarity: 'uncommon' },
   { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 3, art: '🚿', effects: { damage: 28 }, rarity: 'rare' },
+  { id: 'primordial-sea', name: 'Primordial Sea', type: 'water', cost: 2, art: '🌀', effects: { drawEachTurn: 1, blockEachTurn: 3 }, power: true, rarity: 'rare' },
 ];
 
 /* ============================================================
@@ -128,7 +175,7 @@ const FIRE_EVO_HIGH = [
 
 const GRASS_EVO_MID = [
   { id: 'leech-seed',    name: 'Leech Seed',    type: 'grass', cost: 1, art: '🌱', effects: { damage: 8, heal: 5 }, evoOnly: true, maxCopies: 1 },
-  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', effects: { focus: 6, block: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', effects: { strength: 2, block: 6 }, evoOnly: true, maxCopies: 1 },
   { id: 'razor-storm',   name: 'Razor Storm',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
   { id: 'poison-powder', name: 'Poison Powder', type: 'grass', cost: 1, art: '☠️', effects: { weaken: true, heal: 3 }, evoOnly: true, maxCopies: 1 },
 ];
@@ -190,28 +237,50 @@ export const STAGE_POWER = 0.15;
 export function scaledEffects(card, stage = 0) {
   const e = { ...card.effects };
   const k = 1 + STAGE_POWER * stage;
-  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus']) {
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze']) {
     if (e[key]) e[key] = Math.round(e[key] * k);
   }
   if (e.burn) e.burn += stage;
   return e;
 }
 
+/**
+ * The power effects: what each one does at full strength, and the badge it shows
+ * on your nameplate while it's switched on (battle.js adds up every power you play).
+ */
+export const POWERS = {
+  blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
+  healEachTurn:     { icon: '💚', text: (n) => `At the start of each turn, heal ${n} HP.` },
+  burnEachTurn:     { icon: '☀️', text: (n) => `At the start of each turn, Burn the enemy ${n}.` },
+  strengthEachTurn: { icon: '🌱', text: (n) => `At the start of each turn, gain ${n} strength.` },
+  drawEachTurn:     { icon: '🌧️', text: (n) => `Draw ${n} more card${n > 1 ? 's' : ''} each turn.` },
+  thorns:           { icon: '🔮', text: (n) => `When the enemy attacks you, it takes ${n} damage.` },
+  blaze:            { icon: '🌋', text: (n) => `Your attacks deal +${n} while your HP is below half.` },
+};
+
 /** Turns a card's effects into a readable sentence. */
 export function describe(card, stage = 0) {
   const e = scaledEffects(card, stage);
   const parts = [];
-  if (e.damage)       parts.push(`Deal ${e.damage} damage.`);
+  if (e.selfDamage)   parts.push(`Lose ${e.selfDamage} HP.`);
+  if (e.damage)       parts.push(`Deal ${e.damage} damage${e.hits > 1 ? ` ${e.hits} times` : ''}.`);
+  if (e.blockDamage)  parts.push('Deal damage equal to your block.');
   if (e.bonusIfLow)   parts.push(`+${e.bonusIfLow} if your HP is below half.`);
+  if (e.bonusPerBurn) parts.push(`+${e.bonusPerBurn} for each Burn on the enemy.`);
+  if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(`Burn ${e.burn}.`);
   if (e.weaken)       parts.push('Enemy\'s next attack deals half damage.');
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block)        parts.push(`Gain ${e.block} block.`);
   if (e.heal)         parts.push(`Heal ${e.heal} HP.`);
+  if (e.strength)     parts.push(`Your hits deal +${e.strength} all fight.`);
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
+  if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
   if (e.draw)         parts.push(`Draw ${e.draw} card${e.draw > 1 ? 's' : ''}.`);
   if (e.nextEnergy)   parts.push(`+${e.nextEnergy} energy next turn.`);
+  for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
+  if (card.retain)    parts.push('Stays in hand between turns.');
   if (card.exhaust)   parts.push('Exhausts after use.');
   return parts.join(' ');
 }

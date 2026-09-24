@@ -35,7 +35,7 @@
    in docs/archived-starters.md in case we bring it back later.)
    ============================================================ */
 
-const FIRE_DECK  = ['ember', 'ember', 'ember', 'scorch', 'heat-up', 'flare-up', 'flame-wall', 'flame-wall', 'block', 'tailwind'];
+const FIRE_DECK  = ['ember', 'ember', 'ember', 'scorch', 'will-o-wisp', 'flare-up', 'flame-wall', 'flame-wall', 'flame-body', 'tailwind'];
 const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth', 'razor-leaf', 'absorb', 'block', 'block', 'tailwind'];
 const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'bubble', 'rain-dance', 'surf', 'withdraw', 'withdraw', 'aqua-ring', 'tailwind'];
 

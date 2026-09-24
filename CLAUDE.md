@@ -54,6 +54,18 @@ to `main` (see Conventions), not open a branch or PR.
   `checkAchievements()` grants in order (the shop also runs it after a
   purchase). It is `type: 'psychic'` with an empty deck, so `comingSoon: true`
   stops it being picked for a run until its own cards exist.
+- **Cards** (`js/data/cards.js`): every effect is a key in a card's
+  `effects` (the header comment lists them all) and `describe()` writes
+  the card text from them, so new mechanics need a line there too. Beyond
+  damage/block/heal there are multi-hits (`hits`), player `strength`,
+  `power: true` cards whose `POWERS` keys (block/heal/burn/strength/draw
+  each turn, thorns, blaze) stay on all fight as nameplate badges,
+  `retain`, `exhaust`, `selfDamage`, `blockDamage` and `bonusPerBurn`.
+  Each type has an archetype: Fire burn + burst + HP-for-damage, Grass
+  healing + growing strength, Water block + draw + hitting back. Weaken
+  is the strongest defensive effect in the game (it halves the 30+ hits
+  of the late biomes), so it's rationed per type. Don't remove a card id:
+  a saved run holding it would be discarded.
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
   `js/run.js`. Shop catalog is `js/data/shop.js`; `js/shop.js` renders it.
@@ -96,7 +108,7 @@ just the name (and the enemy's type chip); under the HP bar, `.nameplate-foot`
 has the **status badges** on the left and the HP numbers on the right. The
 badges read like PSN/PAR in the games: no box,
 just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, weakened, strength, focus,
-guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. They fill
+guard, next-turn energy, strength, and one per active power), built by `badgeFor()` in `js/battle.js`. They fill
 in from the left and wrap onto a second line when they reach the HP numbers. A badge
 only renders while its status is active, and each one explains itself in
 its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
@@ -327,7 +339,12 @@ There's no automated test suite. Before committing:
 3. If it's a balance change (card damage, achievement difficulty, drop
    rates), a headless-bot regression harness can be built on request (it's
    never committed to this repo — it lives in Claude's scratchpad and gets
-   rebuilt each time it's needed).
+   rebuilt each time it's needed). This machine has no Node or Python, so
+   it runs in the browser pane: a copy of `serve.ps1` in the scratchpad
+   serves the repo plus a `/sim/` folder, and the harness `import()`s the
+   real `js/data/` files. Compare against the previous data from `git show`
+   under the same bot. The bot must value damage prevented above damage
+   dealt (about 1.6×), or it under-blocks and misjudges attack-heavy pools.
 4. After pushing, GitHub Pages can take several minutes (occasionally
    10+) to actually serve the new files — `raw.githubusercontent.com/.../main/<path>`
    reflects the pushed source immediately and is the fastest way to confirm
