@@ -35,21 +35,23 @@ const FLOORS = 8;     // floors per biome (Slay the Spire uses 15: a much longer
 const PATHS = 6;      // how many random paths are walked
 
 // Chance (in %) of each room type on floors that are not fixed.
-// (Slay the Spire also has events and shops. They aren't in this game yet,
+// (Slay the Spire also has events. They aren't in this game yet,
 //  so their share is added to plain fights. Add them here when they exist.)
-const ROOM_ODDS = { fight: 72, elite: 16, rest: 12 };
+const ROOM_ODDS = { fight: 60, elite: 16, rest: 12, shop: 12 };
 
 // Where the special floors are, scaled to the number of floors
 // (for 15 floors this gives: treasure on floor 9, no elites/rests below floor 6).
 const TREASURE_FLOOR = Math.max(2, Math.round(FLOORS * 0.6) - 1);   // index, 0 = bottom
 const MIN_ELITE_REST_FLOOR = Math.max(2, Math.round(FLOORS * 0.4) - 1);
 const TOP_FLOOR = FLOORS - 1;                                         // always rest sites
+const MIN_SHOP_FLOOR = MIN_ELITE_REST_FLOOR + 1;                      // a few fights in, so you have prize money to spend
 
 export const NODE_INFO = {
   fight:    { icon: '⚔️', label: 'Wild fight' },
   elite:    { icon: '💀', label: 'Elite fight (harder, better rewards)' },
   rest:     { icon: '🏥', label: 'Pokémon Center (heal)' },
   treasure: { icon: '🎁', label: 'Treasure (choose a relic)' },
+  shop:     { icon: '🏪', label: 'Poké Mart (spend ₽ on cards, relics and forgetting moves)' },
   boss:     { icon: '👑', label: 'Boss' },
 };
 
@@ -178,11 +180,13 @@ function isAllowed(room, type, byId, strict) {
   // 1. Elites and rest sites can't be too low on the map.
   if ((type === 'elite' || type === 'rest') && room.floor < MIN_ELITE_REST_FLOOR) return false;
 
+  if (type === 'shop' && room.floor < MIN_SHOP_FLOOR) return false;
+
   // 2. A rest site can't sit right under the top floor of rest sites.
   if (type === 'rest' && room.floor === TOP_FLOOR - 1) return false;
 
-  // 3. Elites and rest sites can't come twice in a row on the same path.
-  if ((type === 'elite' || type === 'rest') && parents.some(p => p.type === type)) return false;
+  // 3. Elites, rest sites and shops can't come twice in a row on the same path.
+  if (type !== 'fight' && parents.some(p => p.type === type)) return false;
 
   // 4. Rooms that share a parent should lead to different things.
   if (strict) {

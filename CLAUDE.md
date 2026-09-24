@@ -89,7 +89,7 @@ The save is cleared by `endRun()`, by `abandonRun()` when a run was live,
 and by the About dialog's erase. Fight coins and the enemiesDefeated stat
 are shown on the reward screen but only paid out as the rewards end, just
 before the checkpoint, so refreshing on a reward screen can't pay twice.
-A version mismatch or any bad id silently
+A version mismatch or any bad id (deck, relics, Mart stock) silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
 screen's Continue button (`renderContinue()` in `js/main.js`) shows
 whenever a valid save exists, and Begin run confirms before replacing it.
@@ -103,13 +103,36 @@ takes the deck below `MIN_DECK` (7); at the minimum the tile is shown
 `disabled` (`showChoice` options accept `disabled`). Forgetting doesn't
 count as a rest for `restCount`. The Cleanse Tag relic reuses the picker
 right after it's picked up (`forgetMove(back, done)`: `done` continues the
-reward chain instead of returning to the map). More removal sources (card
-shop, events) are planned with those features.
+reward chain instead of returning to the map). The Poké Mart sells removal too
+(see below); events are planned as another source.
+
+## Poké Mart and Pokédollars
+
+Pokédollars (₽, 💴) are per-run prize money, separate from the meta
+PokéCoins: `run.money`, saved in the run save and lost when the run ends.
+All the numbers live in `js/data/mart.js` (`PRIZE_MONEY` ranges per fight
+kind, card/relic prices by rarity with a ±`MART_JITTER` wobble, removal
+`base` + `step` per removal already bought this run, `run.removals`). Prize
+money is rolled in `afterFight()` and paid in `collect()` with the coins, so
+a refresh can't pay it twice; the Amulet Coin relic doubles it. `setMoney()`
+in `js/ui.js` fills the top-bar `#money-pill`, which `showScreen()` shows
+only on `RUN_SCREENS`.
+
+`shop` is a map room type (`ROOM_ODDS`, not below `MIN_SHOP_FLOOR`, never
+twice in a row on a path; blue 🏪 town square). Its stock (`node.stock`:
+cards and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
+and saved with the map, so a refresh can't reroll the shelves.
+`martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
+re-renders itself after each purchase; `ware()` wraps a card/relic tile with
+its price tag and disables it when you can't afford it. Removal reuses
+`forgetMove(martRoom, pay)`, so backing out of the picker costs nothing.
+Purchases are only saved when you leave for the map. Consumables are meant
+to join the stock later.
 
 ## Relics
 
 `js/data/relics.js`; effects are applied where `hasRelic()` appears in
-`js/battle.js` (Cleanse Tag and Choice Band act in `js/run.js`). Flags:
+`js/battle.js` (Cleanse Tag, Choice Band and Amulet Coin act in `js/run.js`). Flags:
 `only` = one type's starters, `rare` = never from the Starting Relic Charm,
 `boss` = only offered after a boss. `relicChoices(run, { boss })` in
 `js/rewards.js` offers only boss relics after a boss (normal ones once you
@@ -280,7 +303,9 @@ There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
-top right shows the coins (floating, no box), the Shop and, during a run, the Bag.
+top right shows the coins (floating, no box), during a run the ₽ (`#money-pill`), then
+the Shop and, during a run, the Bag. In battle on phones ≤420px the PokéCoins
+hide so the piles, ₽ and buttons fit on one row.
 In battle, the draw and discard piles sit beside the Poké Ball.
 The "Main menu" item hides itself on the start screen (`showScreen()`).
 

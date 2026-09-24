@@ -5,7 +5,7 @@
    A run goes like this:
 
        pick a starter -> preview the fixed deck -> Biome 1 map
-         -> walk the map: fights, elites, rest sites, treasure
+         -> walk the map: fights, elites, rest sites, treasure, Poké Marts
          -> boss -> (evolve!) -> Biome 2 map -> boss -> evolve
          -> Biome 3 map -> final boss -> you win
 
@@ -16,16 +16,17 @@
 
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER, TYPES, CARDS_BY_ID } from './data/cards.js';
+import { STAGE_POWER, TYPES, CARDS_BY_ID, MAX_COPIES } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
+import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, groupDeck, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep, setHpBar } from './ui.js';
+import { $, el, groupDeck, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 
 let run = null;
@@ -77,7 +78,7 @@ export function abandonRun() {
    Everything is stored by id and rebuilt from the data files on load.
    ============================================================ */
 
-const RUN_SAVE_VERSION = 1;
+const RUN_SAVE_VERSION = 2;
 
 function checkpoint() {
   const { floors, byId } = run.map;
@@ -97,6 +98,8 @@ function checkpoint() {
     backdrop: run.backdrop,
     restCount: run.restCount,
     fights: run.fights,
+    money: run.money,
+    removals: run.removals,
     unlocks: run.unlocks.map(s => s.id),
   });
 }
@@ -106,7 +109,7 @@ function restoreRun(saved) {
   const starterById = (id) => STARTERS_BY_ID[RENAMED_STARTERS[id] || id];
   const starter = starterById(saved.starter);
   const known = (ids, table) => ids.every(id => table[id]);
-  if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0)
+  if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0) || !(saved.money >= 0)
       || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !saved.unlocks.every(starterById)) {
     throw new Error('bad run save');
   }
@@ -116,7 +119,8 @@ function restoreRun(saved) {
   const floors = saved.map.floors.map(row => row.map(id => byId[id]));
   const nodes = Object.values(byId);
   if (!byId.boss || floors.flat().some(n => !n) || (saved.current && !byId[saved.current])
-      || nodes.some(n => [...n.next, ...n.prev].some(id => !byId[id]) || (n.enemyId && !ENEMY_DEFS[n.enemyId]))) {
+      || nodes.some(n => [...n.next, ...n.prev].some(id => !byId[id]) || (n.enemyId && !ENEMY_DEFS[n.enemyId])
+        || (n.stock && !(known(n.stock.cards.map(i => i.id), CARDS_BY_ID) && known(n.stock.relics.map(i => i.id), RELICS_BY_ID))))) {
     throw new Error('bad run map');
   }
 
@@ -167,7 +171,9 @@ export function beginRun(starter, level = 0) {
     backdrop: '',
     restCount: 0,          // how many rest sites you've used this run (for an achievement)
     fights: 0,
-    unlocks: [],           // starters unlocked during this run
+    money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
+    removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
+    unlocks: [],          // starters unlocked during this run
     pendingCoins: '',      // coins won in the last fight, paid out when its rewards end
     over: false,
   };
@@ -191,6 +197,7 @@ function startBiome() {
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   for (const node of Object.values(run.map.byId)) {
     if (['fight', 'elite', 'boss'].includes(node.type)) node.enemyId = pickEnemyId(run.biome, node.type);
+    if (node.type === 'shop') node.stock = martStock();
   }
   run.current = null;
   run.backdrop = biome.backdrop;
@@ -221,6 +228,7 @@ function showMap() {
   $('run-level').textContent = `Level ${run.level}`;
 
   setHpBar('run', run.hp, run.maxHp);
+  setMoney(run.money);
 
   renderRelicList();
   closeBag();
@@ -291,6 +299,7 @@ function enterNode(node) {
 
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
+  if (node.type === 'shop') return martRoom();
   fight(node);   // 'fight', 'elite' or 'boss'
 }
 
@@ -311,11 +320,15 @@ function afterFight(node, result) {
 
   const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
   const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
-  run.pendingCoins = `+${coinsWithBonus(coinsFor[node.type])} 💰 PokéCoins${disadvantage ? ' (type disadvantage!)' : ''}`;
+  const [low, high] = PRIZE_MONEY[node.type];
+  const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  run.pendingCoins = `+${coinsWithBonus(coinsFor[node.type])} 💰 PokéCoins${disadvantage ? ' (type disadvantage!)' : ''}, +${prize} 💴 prize money`;
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
     awardCoins(coinsFor[node.type]);
+    run.money += prize;
+    setMoney(run.money);
     updateSave(d => { d.stats.enemiesDefeated += 1; });
     refreshCoins();
     toast(run.pendingCoins, 'ok');
@@ -457,6 +470,76 @@ function forgetMove(back, done = showMap) {
     }, count)),
     skipLabel: back === done ? 'Keep every move' : 'Back',
     onSkip: back,
+  });
+}
+
+/* ---------- the Poké Mart ---------- */
+
+const jitter = (price) => Math.round(price * (1 + (Math.random() * 2 - 1) * MART_JITTER));
+
+/** Rolled when the biome starts and saved on the node, so a refresh can't reroll the shelves. */
+function martStock() {
+  return {
+    cards: cardChoices(run, 'fight', MART_STOCK.cards)
+      .map(card => ({ id: card.id, price: jitter(MART_CARD_PRICES[card.rarity || 'common']), sold: false })),
+    relics: relicChoices(run).slice(0, MART_STOCK.relics)
+      .map(relic => ({ id: relic.id, price: jitter(MART_RELIC_PRICES[relic.rare ? 'rare' : 'normal']), sold: false })),
+  };
+}
+
+/** A shop tile: the usual card or relic tile with its price tag underneath, greyed out if you can't afford it. */
+function ware(option, price, onBuy) {
+  const node = el('div', 'mart-ware');
+  node.append(option.node, el('span', 'mart-price', `💴 ${price}`));
+  return {
+    node,
+    disabled: option.disabled || price > run.money,
+    onPick: () => { run.money -= price; setMoney(run.money); onBuy(); },
+  };
+}
+
+/* Purchases are only checkpointed when you leave for the map, so a refresh inside the Mart undoes them along with the money. */
+function martRoom() {
+  const { stock } = run.map.byId[run.current];
+  const copies = (id) => run.deck.filter(x => x === id).length;
+
+  const cards = stock.cards.filter(item => !item.sold && copies(item.id) < MAX_COPIES).map(item => {
+    const card = CARDS_BY_ID[item.id];
+    return ware(cardOption(card, run.stage), item.price, () => {
+      item.sold = true;
+      run.deck.push(card.id);
+      toast(`Bought ${card.name}.`, 'ok');
+      martRoom();
+    });
+  });
+
+  const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
+    const relic = RELICS_BY_ID[item.id];
+    return ware(relicOption(relic), item.price, () => {
+      item.sold = true;
+      run.relics.push(relic.id);
+      toast(`Bought ${relic.name}!`, 'ok');
+      if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
+      martRoom();
+    });
+  });
+
+  const removalPrice = MART_REMOVAL.base + MART_REMOVAL.step * run.removals;
+  const forget = forgetOption(martRoom);
+  // the money is only taken once a card is actually forgotten, so "Back" out of the picker is free
+  const removal = { ...ware(forget, removalPrice, () => {}), onPick: () => forgetMove(martRoom, () => {
+    run.money -= removalPrice;
+    run.removals += 1;
+    setMoney(run.money);
+    martRoom();
+  }) };
+
+  showChoice({
+    title: 'Poké Mart',
+    sub: `Welcome! You have ₽${run.money} to spend.`,
+    options: [...cards, ...relics, removal],
+    skipLabel: 'Leave the Mart',
+    onSkip: showMap,
   });
 }
 

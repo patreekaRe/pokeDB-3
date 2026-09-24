@@ -35,6 +35,7 @@ export function showScreen(id) {
   $('home-btn').hidden = id === 'start-screen';   // the menu's "Main menu" item isn't needed on the menu
   const inRun = RUN_SCREENS.includes(id);
   $('bag-btn').hidden = !inRun;
+  $('money-pill').hidden = !inRun;
   $('bag').hidden = true;
   $('bag-btn').setAttribute('aria-expanded', 'false');
   // the map, battles and reward screens pick their own track (biome theme, fight music, victory, Pokémon Center)
@@ -150,4 +151,9 @@ export function setHpBar(prefix, hp, max) {
   bar.title = `HP ${hp} / ${max}`;
   $(`${prefix}-hp-fill`).style.width = `${ratio * 100}%`;
   $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/ ${max}`;
+}
+
+/** Show the run's Pokédollars in the top bar (it's only visible on the run screens). */
+export function setMoney(amount) {
+  $('money-value').textContent = String(amount);
 }

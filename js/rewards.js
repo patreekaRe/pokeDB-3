@@ -10,11 +10,11 @@ import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
 /* ---------- what you get offered ---------- */
 
 /**
- * Pick 3 different cards to offer.
+ * Pick 3 (or `count`) different cards to offer.
  * Later biomes and tougher fights make rare cards more likely.
  * source is 'fight', 'elite' or 'boss'.
  */
-export function cardChoices(run, source) {
+export function cardChoices(run, source, count = 3) {
   const b = run.biome;
   const weights = { common: 70 - b * 15, uncommon: 26 + b * 7, rare: 4 + b * 8 };
   if (source === 'elite') { weights.common -= 10; weights.rare += 10; }
@@ -24,7 +24,7 @@ export function cardChoices(run, source) {
   let pool = poolForType(run.starter.type).filter(c => copies(c.id) < MAX_COPIES);
   const chosen = [];
 
-  while (chosen.length < 3 && pool.length) {
+  while (chosen.length < count && pool.length) {
     const weightOf = (c) => Math.max(1, weights[c.rarity || 'common']);
     let roll = Math.random() * pool.reduce((sum, c) => sum + weightOf(c), 0);
     const card = pool.find(c => (roll -= weightOf(c)) < 0) || pool[0];

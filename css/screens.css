@@ -1255,6 +1255,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .topbar-actions { gap: 5px; }
   .icon-btn { width: 32px; height: 32px; }
   .coin-pill { padding: 4px; }
+  /* in battle the piles would crowd the row out, so the PokéCoins (which can't change mid-fight) step aside for the ₽ */
+  body[data-screen="battle-screen"] .coin-pill:not(.money-pill) { display: none; }
 }
 @media (max-width: 340px) {
   .topbar-actions { gap: 3px; }
@@ -1611,3 +1613,20 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .nameplate, .energy-orb, #end-turn-btn, .howto-endturn, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
 .intent, .focus-hint, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
 .map-town, .node-badge, .evo-dot { border-radius: var(--round-xs); }
+
+/* ---------- Poké Mart (map room) and Pokédollars ---------- */
+.map-node.type-shop .map-town, .howto-node.town.shop { border-color: #3878f0; }
+.money-pill { color: #f8f8f8; }
+.mart-ware { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.mart-ware > * { width: 100%; }
+.mart-price {
+  width: auto;
+  padding: 3px 8px;
+  font-family: var(--pixel-font);
+  font-size: 1rem;
+  color: #181010;
+  background: #f8f0d8;
+  border: 2px solid #3878f0;
+  border-radius: var(--round-xs);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+}

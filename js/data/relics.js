@@ -30,6 +30,7 @@ export const RELICS = [
   { id: 'power-herb',   name: 'Power Herb',   icon: '🌿', text: 'Draw 1 card whenever you play a power.' },
   { id: 'grip-claw',    name: 'Grip Claw',    icon: '🦀', text: 'At the end of your turn, your leftmost card stays in your hand.' },
   { id: 'eject-pack',   name: 'Eject Pack',   icon: '🎒', text: 'Draw 1 card whenever a card exhausts.' },
+  { id: 'amulet-coin',  name: 'Amulet Coin',  icon: '🪙', text: 'Win double prize money (₽) after fights.' },
 
   { id: 'flame-orb',    name: 'Flame Orb',    icon: '🔥', only: 'fire',  text: 'Enemies start each battle with 3 burn.' },
   { id: 'heat-rock',    name: 'Heat Rock',    icon: '♨️', only: 'fire',  text: 'Heal 2 HP each time burn hurts an enemy.' },
