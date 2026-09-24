@@ -223,13 +223,25 @@ export function reachableNodes(map, currentId) {
 
 const TILE = 8;                                   // canvas pixels per tile
 const GRID_W = 3 + (COLS - 1) * 5 + 4;             // tiles across
-const colX = (col) => 3 + col * 5;                 // tile column of a room
 const BOSS_ROW = 10;                              // leaves room above the boss for its silhouette
 const rowY = (floor) => floor >= FLOORS ? BOSS_ROW : BOSS_ROW + 7 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
 const JOIN_ROW = rowY(0) + 3;                      // where the routes from the first rooms meet
 const START_ROW = JOIN_ROW + 6;                    // the end of the single road up the middle, where you start
 const GRID_H = START_ROW + 2;
 const BOSS_COL = Math.floor(COLS / 2);
+const CENTER_X = 3 + BOSS_COL * 5;                // tile column of the boss and the start road
+const MAX_STEP = 8;                               // widest gap between columns, so a narrow map isn't stretched thin
+
+let colX = (col) => 3 + col * 5;                  // tile column of a room, set per map by spreadColumns()
+
+/** Paths can wander to one side, so spread the columns this map actually uses across the width, centred under the boss. */
+function spreadColumns(map) {
+  const cols = map.floors.flat().map(node => node.col);
+  const lo = Math.min(...cols), hi = Math.max(...cols);
+  const step = hi > lo ? Math.min(MAX_STEP, ((COLS - 1) * 5) / (hi - lo)) : 0;
+  colX = (col) => Math.round(CENTER_X + (col - (lo + hi) / 2) * step);
+}
+const nodeX = (node) => (node.type === 'boss' ? CENTER_X : colX(node.col));
 
 const PALETTES = {
   clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
@@ -282,12 +294,12 @@ function routeSegments(map, currentId, reachable) {
     for (const nextId of node.next) {
       const to = map.byId[nextId];
       const state = node.id === currentId && reachable.has(nextId) ? 'active' : node.visited && to.visited ? 'walked' : 'fill';
-      link(colX(node.col), rowY(node.floor), colX(to.col), rowY(to.floor), rowY(node.floor) - 3, state);
+      link(nodeX(node), rowY(node.floor), nodeX(to), rowY(to.floor), rowY(node.floor) - 3, state);
     }
   }
   for (const node of map.floors[0]) {
     const state = !currentId ? 'active' : node.visited ? 'walked' : 'fill';
-    link(colX(BOSS_COL), START_ROW, colX(node.col), rowY(0), JOIN_ROW, state);
+    link(CENTER_X, START_ROW, nodeX(node), rowY(0), JOIN_ROW, state);
   }
   return segs;
 }
@@ -304,7 +316,7 @@ function terrainGrid(map, biomeId, segs, rand) {
   for (const [x1, y1, x2, y2] of segs) for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) block(x, y);
   for (const node of Object.values(map.byId)) {
     const r = node.type === 'boss' ? 2 : 1;
-    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) block(colX(node.col) + dx, rowY(node.floor) + dy);
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) block(nodeX(node) + dx, rowY(node.floor) + dy);
   }
   for (let i = 0; i < queue.length; i++) {
     const [x, y] = queue[i];
@@ -431,6 +443,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
   box.replaceChildren();
   box.style.setProperty('--grid-w', GRID_W);
   box.style.setProperty('--grid-h', GRID_H);
+  spreadColumns(map);
   const reachable = new Set(reachableNodes(map, currentId).map(n => n.id));
   const segs = routeSegments(map, currentId, reachable);
 
@@ -449,7 +462,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     const btn = el('button', `map-node type-${node.type}`);
     btn.type = 'button';
     btn.append(el('span', 'map-town', info.icon));
-    place(btn, colX(node.col), rowY(node.floor));
+    place(btn, nodeX(node), rowY(node.floor));
     let label = info.label;
 
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
@@ -477,7 +490,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     const img = el('img', 'map-boss-shadow');
     img.src = boss.image;
     img.alt = '';
-    place(img, colX(BOSS_COL), rowY(FLOORS));
+    place(img, CENTER_X, rowY(FLOORS));
     box.append(img);
   }
 
@@ -487,7 +500,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     img.dataset.stage = String(stage);
     img.src = trainer;
     img.alt = '';
-    place(img, colX(here ? here.col : BOSS_COL), here ? rowY(here.floor) : START_ROW);
+    place(img, (here ? nodeX(here) : CENTER_X), here ? rowY(here.floor) : START_ROW);
     box.append(img);
   }
 }

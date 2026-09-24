@@ -240,7 +240,10 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   above it for its silhouette; below floor 0 the routes join at
   `JOIN_ROW` and one road runs down the middle to `START_ROW`, where you start). `#map` gets
   `--grid-w`/`--grid-h` and keeps that aspect ratio; CSS sizes rooms in
-  tiles, so everything scales with the map's width.
+  tiles, so everything scales with the map's width. Paths can wander to one
+  side, so `spreadColumns()` resets `colX()` per map to spread the columns
+  it uses across the width (centred on `CENTER_X`, at most `MAX_STEP` tiles
+  apart); draw rooms with `nodeX(node)`, which keeps the boss centred.
 - Terrain and routes are painted pixel by pixel into a small `<canvas>`
   (`.map-terrain`, `image-rendering: pixelated`). `PALETTES` picks each
   biome's ground and blobs (water, mountain, trees, lava), grown only in
