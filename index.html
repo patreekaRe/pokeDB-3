@@ -53,6 +53,7 @@
         <div class="bag-pockets" role="tablist" aria-label="Bag pockets">
           <button class="bag-pocket" role="tab" data-pocket="deck" data-name="Deck" aria-label="Deck" aria-controls="bag-deck"><span aria-hidden="true">🃏</span><b id="run-deck-count">10</b></button>
           <button class="bag-pocket" role="tab" data-pocket="relics" data-name="Relics" aria-label="Relics" aria-controls="bag-relics"><span aria-hidden="true">💎</span><b id="run-relic-count">0</b></button>
+          <button class="bag-pocket" role="tab" data-pocket="items" data-name="Items" aria-label="Items" aria-controls="bag-items"><span aria-hidden="true">🧴</span><b id="run-item-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="key" data-name="Map key" aria-label="Map key" aria-controls="bag-key"><span aria-hidden="true">🗺️</span></button>
         </div>
         <div class="bag-pocket-body" id="bag-deck" role="tabpanel" hidden>
@@ -63,13 +64,17 @@
           <div id="relics-list" class="howto-list"></div>
           <p class="drop-note">Relics work on their own, every fight, for the rest of the run.</p>
         </div>
+        <div class="bag-pocket-body" id="bag-items" role="tabpanel" hidden>
+          <div id="items-list" class="howto-list"></div>
+          <p class="drop-note" id="items-note"></p>
+        </div>
         <div class="bag-pocket-body" id="bag-key" role="tabpanel" hidden>
           <div class="howto-list">
-            <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card.</small></span></div>
+            <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card, sometimes an item.</small></span></div>
             <div class="howto-li"><span class="howto-node town elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
             <div class="howto-li"><span class="howto-node town rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal, or forget a move to thin your deck.</small></span></div>
             <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
-            <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, relics or forgetting a move.</small></span></div>
+            <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, items, relics or forgetting a move.</small></span></div>
             <div class="howto-li"><span class="howto-node town event">❓</span><span class="howto-li-text"><b>Mystery event</b><small>Something happens. Choose what to do: most rewards have a cost.</small></span></div>
             <div class="howto-li"><span class="howto-node town boss">👑</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
           </div>
@@ -242,7 +247,10 @@
       </div>
 
       <div class="battle-controls">
-        <div class="energy-orb" id="player-energy" title="PP (energy): each card costs some, and it refills every turn"></div>
+        <div class="orb-wrap">
+          <div class="energy-orb" id="player-energy" title="PP (energy): each card costs some, and it refills every turn"></div>
+          <div class="item-slots" id="item-slots" aria-label="Items"></div>
+        </div>
         <div class="hand-wrap">
           <div id="hand" class="hand" aria-label="Your hand"></div>
         </div>
@@ -302,16 +310,17 @@
           </div>
         </div>
         <p class="howto-tip">👀 The enemy shows its next move above its head. Block before a big hit!</p>
+        <p class="howto-tip">🧴 Items (up to 3) sit under your PP. Using one costs no PP, but it's gone after.</p>
       </section>
 
       <section class="howto-slide" data-title="The map">
         <header class="howto-head"><h3>🧭 The map</h3><p>Start at the bottom and choose your path to the boss</p></header>
         <div class="howto-list">
-          <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card.</small></span></div>
+          <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card, sometimes an item.</small></span></div>
           <div class="howto-li"><span class="howto-node town elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
           <div class="howto-li"><span class="howto-node town rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal, or forget a move to thin your deck.</small></span></div>
           <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
-          <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, relics or forgetting a move.</small></span></div>
+          <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, items, relics or forgetting a move.</small></span></div>
           <div class="howto-li"><span class="howto-node town event">❓</span><span class="howto-li-text"><b>Mystery event</b><small>Something happens. Choose what to do: most rewards have a cost.</small></span></div>
           <div class="howto-li"><span class="howto-node town boss">👑</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
         </div>

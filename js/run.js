@@ -18,14 +18,15 @@ import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER, TYPES, CARDS_BY_ID, MAX_COPIES, poolForType } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
+import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID } from './data/events.js';
-import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
+import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
-import { startBattle, abandonBattle } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
+import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, groupDeck, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
@@ -79,7 +80,7 @@ export function abandonRun() {
    Everything is stored by id and rebuilt from the data files on load.
    ============================================================ */
 
-const RUN_SAVE_VERSION = 4;
+const RUN_SAVE_VERSION = 5;
 
 function checkpoint() {
   const { floors, byId } = run.map;
@@ -94,6 +95,8 @@ function checkpoint() {
     biome: run.biome,
     deck: run.deck,
     relics: run.relics,
+    items: run.items,
+    itemChance: run.itemChance,
     map: { nodes: Object.values(byId), floors: floors.map(row => row.map(node => node.id)) },
     current: run.current,
     backdrop: run.backdrop,
@@ -111,7 +114,8 @@ function restoreRun(saved) {
   const starter = starterById(saved.starter);
   const known = (ids, table) => ids.every(id => table[id]);
   if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0) || !(saved.money >= 0)
-      || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !saved.unlocks.every(starterById)) {
+      || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.items, ITEMS_BY_ID) || !(saved.itemChance >= 0)
+      || !saved.unlocks.every(starterById)) {
     throw new Error('bad run save');
   }
 
@@ -122,7 +126,7 @@ function restoreRun(saved) {
   if (!byId.boss || floors.flat().some(n => !n) || (saved.current && !byId[saved.current])
       || nodes.some(n => [...n.next, ...n.prev].some(id => !byId[id]) || (n.enemyId && !ENEMY_DEFS[n.enemyId])
         || (n.event && !(EVENTS_BY_ID[n.event.id] && (!n.event.enemyId || ENEMY_DEFS[n.event.enemyId])))
-        || (n.stock && !(known(n.stock.cards.map(i => i.id), CARDS_BY_ID) && known(n.stock.relics.map(i => i.id), RELICS_BY_ID))))) {
+        || (n.stock && !(known(n.stock.cards.map(i => i.id), CARDS_BY_ID) && known(n.stock.relics.map(i => i.id), RELICS_BY_ID) && known(n.stock.items.map(i => i.id), ITEMS_BY_ID))))) {
     throw new Error('bad run map');
   }
 
@@ -168,6 +172,8 @@ export function beginRun(starter, level = 0) {
     biome: 0,
     deck: [...starter.deck],
     relics: [],
+    items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
+    itemChance: ITEM_DROP.base,   // chance of an item after the next won fight
     map: null,
     current: null,        // id of the map node you are standing on
     backdrop: '',
@@ -234,6 +240,7 @@ function showMap() {
   setMoney(run.money);
 
   renderRelicList();
+  renderItemList();
   closeBag();
   checkpoint();
   renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage });
@@ -243,7 +250,7 @@ function showMap() {
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
    The tabs pick a pocket, and the arrows flip through them in order. */
-const POCKETS = ['deck', 'relics', 'key'];
+const POCKETS = ['deck', 'relics', 'items', 'key'];
 let pocket = 'relics';
 
 function initBag() {
@@ -264,6 +271,7 @@ function initBag() {
 }
 
 function openBag() {
+  renderItemList();   // items can be used up in battle, so this pocket is redrawn each time
   $('bag').hidden = false;
   $('bag-btn').setAttribute('aria-expanded', 'true');
   showPocket(pocket);
@@ -296,6 +304,60 @@ function renderRelicList() {
   $('relics-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
 }
 
+/* The Items pocket: in battle, Use picks the item like a slot does (with the same confirm step); on the map only heals can be used.
+   Items can't be used or tossed on the reward screens, where a change would be saved with the next checkpoint half-way through the rewards. */
+function renderItemList() {
+  if (!run) return;
+  const screen = document.body.dataset.screen;
+  const inBattle = screen === 'battle-screen' && isBattleRunning();
+  const onMap = screen === 'map-screen';
+  const rows = run.items.map((id, index) => {
+    const item = ITEMS_BY_ID[id];
+    const row = el('div', 'howto-li item-row');
+    const text = el('span', 'howto-li-text');
+    text.append(el('b', '', item.name), el('small', '', item.text));
+    const actions = el('span', 'item-actions');
+    const use = el('button', 'btn item-use', 'Use');
+    use.type = 'button';
+    use.disabled = !(inBattle || (onMap && item.map && run.hp < run.maxHp));
+    use.addEventListener('click', () => {
+      if (inBattle) { closeBag(); return pickItem(index); }
+      useItemOnMap(index);
+    });
+    const toss = el('button', 'btn item-toss', 'Toss');
+    toss.type = 'button';
+    toss.disabled = !onMap;
+    toss.addEventListener('click', () => {
+      run.items.splice(index, 1);
+      toast(`Tossed the ${item.name}.`);
+      afterBagChange();
+    });
+    actions.append(use, toss);
+    row.append(el('span', 'howto-node relic-node', item.icon), text, actions);
+    return row;
+  });
+  $('items-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
+  $('run-item-count').textContent = `${run.items.length}/${ITEM_SLOTS}`;
+  $('items-note').textContent = inBattle ? 'Using an item costs no PP.'
+    : `Holds ${ITEM_SLOTS} items. Use them in battle; potions work on the map too.`;
+}
+
+function useItemOnMap(index) {
+  const item = ITEMS_BY_ID[run.items[index]];
+  const healed = Math.min(item.effects.heal, run.maxHp - run.hp);
+  run.hp += healed;
+  run.items.splice(index, 1);
+  setHpBar('run', run.hp, run.maxHp);
+  toast(`Used ${item.name}: healed ${healed} HP.`, 'ok');
+  afterBagChange();
+}
+
+/** Only called on the map screen, so saving here can't split a reward chain. */
+function afterBagChange() {
+  checkpoint();
+  renderItemList();
+}
+
 function enterNode(node) {
   run.current = node.id;
   node.visited = true;
@@ -317,6 +379,11 @@ function fight(node) {
 }
 
 function afterFight(node, result) {
+  if (result.fled) {
+    run.hp = result.hp;
+    toast('Got away safely!', 'ok');
+    return showMap();
+  }
   if (!result.won) return endRun(false);
 
   run.hp = result.hp;
@@ -351,6 +418,15 @@ function afterFight(node, result) {
     if (run.biome === BIOMES.length - 1) { collect(); return endRun(true); }       // final boss: you win!
     announceUnlocks();
     steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next, { boss: true }));
+  }
+
+  // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
+  if (Math.random() < run.itemChance) {
+    run.itemChance = Math.max(0, run.itemChance - ITEM_DROP.step);
+    const [item] = itemChoices(run);
+    if (item) steps.push(next => offerItem(item, next));
+  } else {
+    run.itemChance = Math.min(1, run.itemChance + ITEM_DROP.step);
   }
 
   runSteps(steps, () => {
@@ -417,6 +493,27 @@ function offerRelic(title, next, { boss = false } = {}) {
       if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
       next();
     })),
+    onSkip: next,
+    coins: run.pendingCoins,
+  });
+}
+
+/** A found item: take it, or with a full Bag, swap one of yours for it. */
+function offerItem(item, next) {
+  const full = run.items.length >= ITEM_SLOTS;
+  const take = (index) => () => {
+    if (index === undefined) run.items.push(item.id); else run.items[index] = item.id;
+    toast(`Put the ${item.name} in the Bag.`, 'ok');
+    next();
+  };
+  showChoice({
+    title: `Found a ${item.name}!`,
+    sub: full ? `${item.icon} ${item.text} Your Bag is full (${ITEM_SLOTS} items): swap one of yours for it, or leave it.`
+      : `${item.text} Items go in your Bag (up to ${ITEM_SLOTS}) and are used up in battle.`,
+    options: full
+      ? run.items.map((id, index) => itemOption(ITEMS_BY_ID[id], take(index)))
+      : [itemOption(item, take())],
+    skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: next,
     coins: run.pendingCoins,
   });
@@ -644,6 +741,8 @@ function martStock() {
   return {
     cards: cardChoices(run, 'fight', MART_STOCK.cards)
       .map(card => ({ id: card.id, price: jitter(MART_CARD_PRICES[card.rarity || 'common']), sold: false })),
+    items: itemChoices(run, MART_STOCK.items)
+      .map(item => ({ id: item.id, price: jitter(MART_ITEM_PRICES[item.rarity]), sold: false })),
     relics: relicChoices(run).slice(0, MART_STOCK.relics)
       .map(relic => ({ id: relic.id, price: jitter(MART_RELIC_PRICES[relic.rare ? 'rare' : 'normal']), sold: false })),
   };
@@ -675,6 +774,19 @@ function martRoom() {
     });
   });
 
+  const bagFull = run.items.length >= ITEM_SLOTS;
+  const items = stock.items.filter(item => !item.sold).map(item => {
+    const found = ITEMS_BY_ID[item.id];
+    const option = itemOption(found);
+    if (bagFull) option.node.append(el('span', 'item-full', 'Bag full'));
+    return ware({ ...option, disabled: bagFull }, item.price, () => {
+      item.sold = true;
+      run.items.push(found.id);
+      toast(`Bought a ${found.name}.`, 'ok');
+      martRoom();
+    });
+  });
+
   const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
     const relic = RELICS_BY_ID[item.id];
     return ware(relicOption(relic), item.price, () => {
@@ -699,7 +811,7 @@ function martRoom() {
   showChoice({
     title: 'Poké Mart',
     sub: `Welcome! You have ₽${run.money} to spend.`,
-    options: [...cards, ...relics, removal],
+    options: [...cards, ...items, ...relics, removal],
     skipLabel: 'Leave the Mart',
     onSkip: showMap,
   });

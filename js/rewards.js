@@ -5,6 +5,7 @@
 
 import { poolForType, evolutionCardsFor, MAX_COPIES } from './data/cards.js';
 import { RELICS } from './data/relics.js';
+import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
 
 /* ---------- what you get offered ---------- */
@@ -105,3 +106,22 @@ export function textOption(icon, title, text, onPick) {
   node.append(el('span', 'relic-icon', icon), el('strong', 'relic-name', title), el('span', 'relic-text', text));
   return { node, onPick };
 }
+
+/** Pick `count` different items (commons more often) that suit your starter. */
+export function itemChoices(run, count = 1) {
+  let pool = itemsForType(run.starter.type);
+  const chosen = [];
+  while (chosen.length < count && pool.length) {
+    let roll = Math.random() * pool.reduce((sum, i) => sum + ITEM_WEIGHTS[i.rarity], 0);
+    const item = pool.find(i => (roll -= ITEM_WEIGHTS[i.rarity]) < 0) || pool[0];
+    chosen.push(item);
+    pool = pool.filter(i => i !== item);
+  }
+  return chosen;
+}
+
+export const itemOption = (item, onPick) => {
+  const node = makeRelic(item);
+  node.classList.add('item-tile');
+  return { node, onPick };
+};

@@ -620,6 +620,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
+#player-sprite.fled { opacity: 0; transform: translateX(-120px); }   /* Poké Doll: ran away */
 
 /* --- battle intro: enemy appears, then a Poké Ball releases your Pokémon --- */
 .enemy-portrait.entering { animation: enemyEnter 0.55s ease-out; }
@@ -690,7 +691,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   line-height: 1;
   transition: filter 0.25s;
 }
-.energy-orb { grid-area: orb; }
+.orb-wrap { grid-area: orb; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .pp-pill {
   display: flex;
   align-items: baseline;
@@ -1630,4 +1631,47 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   border: 2px solid #3878f0;
   border-radius: var(--round-xs);
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- items: the Bag's one-use items, in slots under the PP box ---------- */
+.item-slots { display: flex; gap: 6px; }
+.item-slot {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round-sm);
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.4);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+.item-slot:disabled { background: rgba(248, 240, 216, 0.25); border-style: dashed; box-shadow: 0 0 0 2px rgba(48, 48, 56, 0.6); cursor: default; }
+.item-slot:not(:disabled):hover { transform: translateY(-2px); }
+.item-slot:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
+.item-slot.selected { border-color: #f8d030; transform: translateY(-4px); }
+.item-slot.unusable { filter: grayscale(0.7) brightness(0.85); }
+.relic.focus-item { width: min(70vw, 240px); min-height: 0; cursor: pointer; animation: focusIn 0.18s ease-out; }
+.relic.focus-item.unplayable { filter: grayscale(0.6) brightness(0.8); }
+.relic.item-tile { border-color: #3878f0; }
+.item-full { font-family: var(--pixel-font); font-size: 0.7rem; color: #f8b8a8; }
+.item-row .howto-li-text { flex: 1; }
+.item-actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
+.bag .item-actions .btn { padding: 4px 8px 4px 16px; font-size: 0.7rem; min-height: 0; }
+/* phones: PP, the slots and End Turn share one row above the hand */
+@media (max-width: 720px) {
+  .orb-wrap { flex-direction: row; gap: 8px; }
+  .item-slots { gap: 4px; }
+  .item-slot { width: 30px; height: 30px; border-width: 2px; font-size: 1rem; }
+  .pp-pill { gap: 10px; }
+}
+@media (max-width: 400px) {
+  .orb-wrap { gap: 6px; }
+  .item-slot { width: 28px; height: 28px; }
+  .battle-controls .pp-pill { gap: 8px; padding-left: 10px; padding-right: 10px; }
+}
+@media (max-width: 340px) {
+  .orb-wrap { flex-direction: column; align-items: flex-start; }
 }

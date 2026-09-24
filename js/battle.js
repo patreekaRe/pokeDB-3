@@ -21,7 +21,8 @@
 
 import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { $, el, makeCard, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
+import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
+import { $, el, makeCard, makeRelic, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
 import { playMusic, preloadMusic, playCry, preloadCries } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
@@ -63,7 +64,7 @@ const hasRelic = (id) => battle.relics.includes(id);
  *   run        the current run (starter, stage, deck, hp, relics, biome)
  *   encounter  who you are fighting: { def, kind, maxHp, strength }
  *   onEnd      called when the fight is over with
- *              { won, hp, damageTaken }
+ *              { won, hp, damageTaken }, plus fled: true after a Poké Doll
  */
 export function startBattle({ run, encounter, onEnd }) {
   const def = encounter.def;
@@ -74,6 +75,7 @@ export function startBattle({ run, encounter, onEnd }) {
     def,
     kind: encounter.kind,
     relics: [...run.relics],
+    items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
 
     // the player
@@ -340,6 +342,54 @@ async function playCard(uid) {
   renderAll();
 }
 
+/* ---------- items: free to use, once, on your turn ---------- */
+
+function whyNotUsable(item) {
+  const b = battle;
+  if (b.busy || b.over) return 'Wait for your turn.';
+  if (item.effects.flee && b.kind === 'boss') return 'You can\'t run from a boss!';
+  if (item.effects.heal && !Object.keys(item.effects).some(k => k !== 'heal') && b.hp >= b.maxHp) return 'Your HP is already full.';
+  return null;
+}
+
+async function useItem(index) {
+  const b = battle;
+  const item = ITEMS_BY_ID[b.items[index]];
+  if (!item) return;
+  const problem = whyNotUsable(item);
+  if (problem) return log(problem);
+
+  b.busy = true;
+  b.items.splice(index, 1);
+  const e = item.effects;
+  log(`You used ${item.name}!`);
+
+  if (e.flee) {
+    b.over = true;
+    renderAll();
+    $('player-sprite').classList.add('fled');
+    await sleep(900);
+    if (battle !== b) return;
+    $('player-sprite').classList.remove('fled');
+    return b.onEnd({ won: false, fled: true, hp: b.hp, damageTaken: b.damageTaken });
+  }
+
+  if (e.burn)     { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
+  if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); }
+  if (e.guard)    { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
+  if (e.focus)    { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
+  if (e.strength) { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); }
+  if (e.energy)   { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
+  if (e.heal)     healPlayer(e.heal);
+  if (e.draw)     draw(e.draw);
+
+  renderAll();
+  await sleep(220);
+  if (battle !== b) return;
+  b.busy = false;
+  renderAll();
+}
+
 /** Damage the enemy: its block soaks it up first. Returns the damage that got through. */
 function hurtEnemy(amount) {
   const en = battle.enemy;
@@ -559,7 +609,31 @@ function renderAll() {
   renderBars();
   renderIntent();
   renderStatus();
+  renderItems();
   renderHand();
+}
+
+/** The Bag's item slots beside the PP box: always ITEM_SLOTS of them, so you can see the room left. */
+function renderItems() {
+  const b = battle;
+  if (b.busy || !b.items[selectedItem]) selectedItem = null;
+  const slots = Array.from({ length: ITEM_SLOTS }, (_, i) => {
+    const item = ITEMS_BY_ID[b.items[i]];
+    const slot = el('button', 'item-slot', item ? item.icon : '');
+    slot.type = 'button';
+    if (!item) {
+      slot.disabled = true;
+      slot.setAttribute('aria-label', 'Empty item slot');
+      return slot;
+    }
+    slot.title = `${item.name}: ${item.text}`;
+    slot.setAttribute('aria-label', `${item.name}: ${item.text}`);
+    slot.classList.toggle('selected', i === selectedItem);
+    slot.classList.toggle('unusable', !b.busy && !!whyNotUsable(item));
+    slot.addEventListener('click', () => tapItem(i));
+    return slot;
+  });
+  $('item-slots').replaceChildren(...slots);
 }
 
 function renderBars() {
@@ -683,27 +757,71 @@ function renderHand() {
 /* ---------- picking a card: the first tap blows it up, the second plays it ---------- */
 
 let selectedUid = null;
+let selectedItem = null;   // index into battle.items; items are picked and confirmed the same way
 
 function tapCard(uid) {
   if (battle.busy) return;
+  selectedItem = null;
   if (selectedUid === uid) {
     selectedUid = null;
     return playCard(uid);
   }
   selectedUid = uid;
+  renderItems();
   renderHand();
+}
+
+function tapItem(index) {
+  if (!battle || battle.busy) return;
+  selectedUid = null;
+  if (selectedItem === index) {
+    selectedItem = null;
+    return useItem(index);
+  }
+  selectedItem = index;
+  renderItems();
+  renderHand();
+}
+
+/** The Bag's Items pocket uses the same pick as the slots, so an item always gets a confirm step. */
+export function pickItem(index) {
+  if (!isBattleRunning() || battle.busy) return;
+  selectedItem = null;
+  tapItem(index);
 }
 
 function cancelPick() {
-  if (selectedUid === null) return;
+  if (selectedUid === null && selectedItem === null) return;
   selectedUid = null;
+  selectedItem = null;
+  renderItems();
   renderHand();
 }
 
-/** The big copy of the picked card at the bottom middle of the screen, over a dimmed battle. */
+/** The big copy of the picked card (or item) at the bottom middle of the screen, over a dimmed battle. */
 function renderFocus() {
   const b = battle;
   const layer = $('card-focus');
+  const verb = matchMedia('(hover: hover)').matches ? 'Click' : 'Tap';
+  const item = ITEMS_BY_ID[b.items[selectedItem]];
+  if (item) {
+    const index = selectedItem;
+    const big = makeRelic(item);
+    big.classList.add('focus-card', 'focus-item');
+    const problem = whyNotUsable(item);
+    if (problem) big.classList.add('unplayable');
+    big.tabIndex = 0;
+    big.setAttribute('role', 'button');
+    big.setAttribute('aria-label', `Use ${item.name}`);
+    big.addEventListener('click', () => tapItem(index));
+    big.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapItem(index); }
+    });
+    layer.replaceChildren(big, el('p', 'focus-hint', problem || `${verb} again to use`));
+    layer.hidden = false;
+    big.focus({ preventScroll: true });
+    return;
+  }
   const entry = b.hand.find(h => h.uid === selectedUid);
   if (!entry) { layer.hidden = true; layer.replaceChildren(); return; }
 
@@ -718,7 +836,6 @@ function renderFocus() {
   big.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
-  const verb = matchMedia('(hover: hover)').matches ? 'Click' : 'Tap';
   layer.replaceChildren(big, el('p', 'focus-hint', problem || `${verb} again to play`));
   layer.hidden = false;
   big.focus({ preventScroll: true });

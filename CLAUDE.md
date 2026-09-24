@@ -120,14 +120,14 @@ only on `RUN_SCREENS`.
 
 `shop` is a map room type (`ROOM_ODDS`, not below `MIN_SHOP_FLOOR`, never
 twice in a row on a path, at least one per map; blue 🏪 town square). Its stock (`node.stock`:
-cards and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
+cards, items and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
 and saved with the map, so a refresh can't reroll the shelves.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
-re-renders itself after each purchase; `ware()` wraps a card/relic tile with
+re-renders itself after each purchase; `ware()` wraps a card/item/relic tile with
 its price tag and disables it when you can't afford it. Removal reuses
 `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing.
-Purchases are only saved when you leave for the map. Consumables are meant
-to join the stock later.
+Purchases are only saved when you leave for the map. Items are covered
+under Items below.
 
 ## ? events
 
@@ -144,6 +144,40 @@ runs `fight()` with a copy of the node typed `elite`, so it pays elite
 rewards; it has no Leave. A new event needs an entry in both places, an
 icon in `ICONS` for any new emoji, and a `RUN_SAVE_VERSION` bump only if the
 node shape changes.
+
+## Items
+
+One-use items (Slay the Spire's potions) in `js/data/items.js`: `effects`
+keys (heal, block, strength, focus, energy, draw, guard, burn, flee), a
+`rarity` (drop/stock weight in `ITEM_WEIGHTS`, Mart price in
+`MART_ITEM_PRICES`), `only` for a type's Gem, and `map: true` for heals
+usable outside battle. The run holds at most `ITEM_SLOTS` (3) ids in
+`run.items`, saved by id with `run.itemChance` (a bad id discards the save).
+Sources: 3 per Mart (`node.stock.items`, rolled in `startBiome()`, greyed
+out with a full Bag), and after every won fight except the final boss a
+StS-style drop (`ITEM_DROP`: 40%, −10% after a drop, +10% after a miss),
+shown as a last reward step by `offerItem()` (with a full Bag it offers to
+swap one of yours). Nothing heals through Big Root or boosts block through
+Damp Rock: those are for cards.
+
+In battle, `battle.items` *is* `run.items`, so using one removes it from the
+run too (a refresh replays the fight from the checkpoint, items included).
+`#item-slots` under the PP box (in the same row as PP and End Turn on phones)
+always shows `ITEM_SLOTS` slots; `tapItem()` picks one like a card, and
+`renderFocus()` shows a big `.focus-item` tile to confirm. `useItem()` costs
+no PP and works only on your turn (`whyNotUsable()`). The Poké Doll ends a
+non-boss fight with `onEnd({ fled: true })`: no rewards, back to the map.
+The Bag's Items pocket (`renderItemList()` in `js/run.js`) lists them with
+Use / Toss: in battle Use goes through `pickItem()` (same confirm), on the
+map only heals work (and only when hurt) and Toss is allowed; on reward
+screens both are disabled, since the next checkpoint would split a reward
+chain. The bot harness mirrors all of this (`applyItem`, `useItems`,
+`ITEM_VALUE`; `cfg.noItems` turns items off for A/B runs).
+Items raised the Level 0 bot win rate from ~94% to ~96% however scarce they
+were (it sees the enemy's next move, so one timely item saves most of its
+deaths), so biomes 2–3 hit harder instead (`dmgBonus` 16→18 and 30→33 in
+`BIOMES`). That brought Level 0 back to ~94%, with Level 3 at ~85% and
+Level 5 at ~69%. Retune enemy damage rather than starving items.
 
 ## Relics
 
@@ -237,10 +271,10 @@ The **Bag** (`#bag-btn`, a frameless pixel backpack drawn as an inline SVG in
 `index.html`) lives in the top bar's right corner, after the coins and the
 Poké Mart. `showScreen()` in `js/ui.js` shows it only on `RUN_SCREENS`
 (map, battle, rewards) and closes it on every screen change. It's a `.drop`
-drop-down hanging from the right edge of `.topbar-actions`, with three
+drop-down hanging from the right edge of `.topbar-actions`, with four
 pockets, like the
-Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics
-and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
+Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics,
+Items (see Items below) and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
 through `POCKETS` in order, and the last pocket is remembered. It's wired by
 `initBag()` / `showPocket()` / `closeBag()` in `js/run.js` and closes on an
 outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
