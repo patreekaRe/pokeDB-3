@@ -19,7 +19,6 @@
    ============================================================ */
 
 import { CARDS_BY_ID, TYPES, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
-import { RELICS_BY_ID } from './data/relics.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { $, el, makeCard, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
 import { playMusic, preloadMusic, playCry, preloadCries } from './audio.js';
@@ -501,13 +500,6 @@ function setupBattleScreen() {
   $('enemy-type').title = `${TYPES[b.def.type].label} type`;
   $('enemy-type').className = `chip type-${b.def.type}`;
   log('');
-
-  $('battle-relics').replaceChildren(...b.relics.map(id => {
-    const relic = RELICS_BY_ID[id];
-    const node = el('span', 'battle-relic', relic.icon);
-    node.title = `${relic.name}: ${relic.text}`;
-    return node;
-  }));
 }
 
 function renderAll() {
@@ -525,12 +517,12 @@ function renderBars() {
   $('player-plate').classList.toggle('has-block', b.block > 0);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
-  // Energy is shown as the games' PP: "2/3" and a pip for each point this turn started with.
-  // Pips that were just spent burst, and refilled ones pop back in one after another.
+  // Energy is shown as the games' PP: "2/3" and a bar with a segment for each point this turn started with.
+  // Segments that were just spent flash, and refilled ones pop back in one after another.
   const orb = $('player-energy');
   const max = Math.max(b.turnEnergy ?? ENERGY_PER_TURN, b.energy);
   const shown = orb.dataset.shown === undefined ? b.energy : Number(orb.dataset.shown);
-  const pips = el('span', 'pp-pips');
+  const pips = el('span', 'pp-bar');
   for (let i = 0; i < max; i++) {
     const pip = el('i', i < b.energy ? 'on' : '');
     if (i < b.energy && i >= shown) { pip.classList.add('refill'); pip.style.animationDelay = `${(i - shown) * 0.08}s`; }

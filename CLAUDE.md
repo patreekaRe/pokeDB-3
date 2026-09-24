@@ -91,19 +91,25 @@ enemy's nameplate top left with the enemy top right, your Pokémon bottom left
 with its nameplate bottom right. The nameplates are direct children of
 `.arena` (outside `#enemy-zone`/`#player-zone`, which keep the sprites and the
 `pop()` numbers) on a 2-column, 3-row grid; the two sprites share the middle
-row in opposite columns, which keeps the scene short. Its title row
-holds the name and the **status badges**, like PSN/PAR in the games: no box,
+row in opposite columns, which keeps the scene short. The title row holds
+just the name (and the enemy's type chip); under the HP bar, `.nameplate-foot`
+has the **status badges** on the left and the HP numbers on the right. The
+badges read like PSN/PAR in the games: no box,
 just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, weakened, strength, focus,
-guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. When they
-don't fit beside the name, the row of chips drops to its own line. A badge
+guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. They fill
+in from the left and wrap onto a second line when they reach the HP numbers. A badge
 only renders while its status is active, and each one explains itself in
 its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
 that fighter has block. Below the arena, `.battle-controls` is a 3-column
-grid: energy (`.energy-orb`, drawn as the games' **PP**: a PP tag, "2/3" and a
-pip per point, where the max is `b.turnEnergy`, the energy the turn started
-with; `data-shown` remembers the last value so spent pips burst and refills pop
-in) | hand | End Turn + the draw/discard piles (`.pile`: a floating pixel card
-stack and the count, like the coins). Above them, `#battle-log` is a Gold/Silver
+grid: energy (`.energy-orb`, drawn as the games' **PP**: a black PP tag, "2/3" and
+a segmented `.pp-bar` in the HP bar's style, one segment per point, where the max
+is `b.turnEnergy`, the energy the turn started with; the window has a fixed
+width, so more PP only makes the segments thinner; `data-shown` remembers the
+last value so spent segments flash and refills pop in) | hand | End Turn. The
+draw/discard piles (`.piles` / `.pile`: a floating pixel card stack and the
+count, like the coins) live in the top bar beside the Poké Ball, shown only
+while `body[data-screen="battle-screen"]`. Relics don't show in battle (they
+are in the Bag). Above them, `#battle-log` is a Gold/Silver
 text box: `log()` types each line out (instantly under reduced motion) into
 `#battle-log-text`, while `#battle-log-live` gets the whole line at once for
 screen readers; `.done` shows the blinking ▼. On phones the PP box
@@ -129,13 +135,12 @@ trainer, evolve pop-up) carry `data-stage`, and CSS scales stage 0 to 78% and
 stage 1 to 90% with the `scale` property (from the feet), so the attack and
 evolve animations' transforms and the layout are untouched. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
-Relics show as small icons in the arena's top-left corner (`#battle-relics`).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 
 **Watch for CSS class-name collisions.** The reward screen already uses
 `.relic-icon`, and a later, unscoped rule like
 `.relic-icon { font-size: 3rem }` wins over anything earlier in the file.
-That's why battle uses `.battle-relics` / `.battle-relic`. Before adding a
+Before adding a
 generic class name, grep `css/` and `js/` for it.
 
 ## Map screen
@@ -237,6 +242,7 @@ There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 menu, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
 top right shows the coins (floating, no box), the Shop and, during a run, the Bag.
+In battle, the draw and discard piles sit beside the Poké Ball.
 The "Main menu" item hides itself on the start screen (`showScreen()`).
 
 

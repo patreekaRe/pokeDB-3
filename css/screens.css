@@ -359,19 +359,6 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #enemy-plate  { grid-column: 1; grid-row: 1; align-self: center; justify-self: center; }
 #player-plate { grid-column: 2; grid-row: 3; align-self: end; justify-self: center; margin-bottom: 20px; }
 
-.battle-relics { position: absolute; top: 0; left: 4px; z-index: 2; display: flex; gap: 4px; }
-.battle-relic {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  font-size: 1rem;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--panel-edge);
-  cursor: help;
-}
-
 /* --- nameplates: a small Pokégear window under each fighter with its name and Gold/Silver HP bar --- */
 .nameplate {
   width: min(100%, 240px);
@@ -388,8 +375,10 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nameplate-title .chip { padding: 1px 7px; cursor: help; }
-.nameplate .gb-hp, .nameplate .gb-hp-num { width: 100%; margin: 0; }
-.nameplate .gb-hp-num { font-size: 0.85rem; line-height: 1; }
+.nameplate .gb-hp { width: 100%; margin: 0; }
+/* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */
+.nameplate-foot { display: flex; align-items: flex-start; gap: 4px 8px; }
+.nameplate .gb-hp-num { flex: none; width: auto; margin: 0 0 0 auto; font-size: 0.85rem; line-height: 20px; }
 .nameplate .gb-hp-track { transition: border-color 0.2s, box-shadow 0.2s; }
 /* while a fighter has block, its HP bar gets a blue rim so you can tell at a glance */
 .nameplate.has-block .gb-hp-track { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
@@ -437,10 +426,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .badge.bad  { border-color: var(--bad); }
 .badge.bad b { background: var(--bad); color: #fff; }
 @keyframes badgeIn { from { transform: scale(0.4); opacity: 0; } }
-/* In the nameplates, status sits beside the name like PSN / PAR in the games: small square chips, icon then number */
-/* flex-basis auto: when they don't fit beside the name, the whole row of chips drops to its own line under it */
-.nameplate-title { flex-wrap: wrap; row-gap: 3px; }
-.nameplate .badges { flex: 1 0 auto; justify-content: flex-end; flex-wrap: wrap; gap: 8px; min-height: 0; align-items: center; }
+/* In the nameplates, status sits under the HP bar like PSN / PAR in the games: small chips, icon then number */
+.nameplate .badges { flex: 1 1 0; min-width: 0; justify-content: flex-start; flex-wrap: wrap; gap: 2px 8px; min-height: 0; align-items: center; }
 .nameplate .badges:empty { display: none; }
 .nameplate .badge {
   width: auto;
@@ -683,7 +670,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   to   { transform: scale(2.6); opacity: 0; }
 }
 
-/* --- bottom row: energy orb | hand | end turn + piles --- */
+/* --- bottom row: PP | hand | End Turn --- */
 .battle-controls {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -691,18 +678,18 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   align-items: center;
   gap: 10px;
 }
-/* Energy as the games' PP: a Pokégear window with a navy PP band, a big "2/3" and a row of pixel gems.
+/* Energy as the games' PP: a Pokégear window with a black PP tag, "2/3" and a segmented bar in the HP bar's
+   style. The window keeps one width however much PP you have: more PP just means thinner segments.
    Orange frame while you have PP, grey when you're out. */
 .energy-orb {
   grid-area: orb;
   position: relative;
   display: grid;
-  grid-template-columns: auto auto;
-  grid-template-areas: "label label" "num max" "pips pips";
-  justify-content: center;
-  align-items: baseline;
-  min-width: 96px;
-  padding: 0 10px 9px;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "label num max" "bar bar bar";
+  align-items: end;
+  width: 132px;
+  padding: 7px 10px 9px;
   border: 3px solid #f89030;
   background: var(--win-bg);
   color: #283060;
@@ -713,34 +700,32 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 }
 .pp-label {
   grid-area: label;
-  margin: 7px 0 3px;
-  color: #283060;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  text-align: center;
+  align-self: center;
+  padding: 3px 5px;
+  background: #181818;
+  color: #f8b030;
+  font-size: 0.68rem;
 }
-.energy-orb b { grid-area: num; justify-self: end; font-size: 2.3rem; font-weight: 700; text-shadow: 3px 3px 0 var(--win-edge); }
+.energy-orb b { grid-area: num; justify-self: end; font-size: 1.7rem; font-weight: 700; text-shadow: 2px 2px 0 var(--win-edge); }
 .energy-orb b.bump { animation: ppBump 0.35s steps(3); }
-.pp-max { grid-area: max; margin-left: 2px; font-size: 1.1rem; font-weight: 700; color: var(--win-muted); }
-.pp-pips { grid-area: pips; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-.pp-pips i { width: 14px; height: 14px; border: 2px solid #303038; background: #a89a74; box-shadow: inset 2px 2px 0 #8a7c58; }
-.pp-pips i.on { background: #f8d030; box-shadow: inset 3px 3px 0 #fff6b0, inset -3px -3px 0 #c88810; }
-.pp-pips i.refill { animation: ppRefill 0.3s steps(3) both; }
-.pp-pips i.spent { animation: ppSpent 0.4s steps(4); }
+.pp-max { grid-area: max; margin-left: 2px; font-size: 0.95rem; font-weight: 700; color: var(--win-muted); }
+.pp-bar { grid-area: bar; display: flex; gap: 2px; height: 14px; margin-top: 7px; padding: 2px; background: #303038; }
+.pp-bar i { flex: 1; min-width: 0; background: #a89a74; box-shadow: inset 0 2px 0 #8a7c58; }
+.pp-bar i.on { background: #f8d030; box-shadow: inset 0 3px 0 #fff6b0, inset 0 -2px 0 #c88810; }
+.pp-bar i.refill { animation: ppRefill 0.3s steps(3) both; }
+.pp-bar i.spent { animation: ppSpent 0.4s steps(4); }
 .energy-orb.empty { border-color: #b8b8c8; }
 .energy-orb.empty b { color: #a01818; }
-.energy-orb.empty .pp-label { color: #6a6a72; }
 @keyframes ppBump { 50% { transform: translateY(-4px) scale(1.15); } }
-@keyframes ppRefill { from { transform: scale(0); } 60% { transform: scale(1.3); } }
-@keyframes ppSpent { 0% { background: #fff; transform: scale(1.35); } 50% { background: #fff; transform: scale(1.1); } }
+@keyframes ppRefill { from { transform: scaleY(0); } 60% { transform: scaleY(1.3); } }
+@keyframes ppSpent { 0%, 50% { background: #fff; } }
 .energy-orb.shake { animation: ppShake 0.36s steps(6); }   /* tried to play a card without enough PP */
 @keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); border-color: #e04040; } 40%, 80% { transform: translateX(5px); border-color: #e04040; } }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 #end-turn-btn { padding: 12px 22px 12px 30px; font-size: 1.05rem; white-space: nowrap; }
-/* Draw and discard piles: a pixel card stack and the count, floating like the coins (each explains itself in its title) */
-.piles { display: flex; gap: 12px; }
+/* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
+.piles { display: none; gap: 12px; margin: 0 auto 0 12px; }   /* in the top bar, beside the Poké Ball */
+body[data-screen="battle-screen"] .piles { display: flex; }
 .pile {
   display: flex;
   align-items: center;
@@ -783,13 +768,9 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
   .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 4px 10px; }
-  .energy-orb { min-width: 84px; padding: 0 8px 7px; }
-  .pp-label { margin: 6px 0 2px; }
-  .energy-orb b { font-size: 1.9rem; }
-  .turn-side { flex-direction: row-reverse; justify-content: flex-start; gap: 12px; }
+  .energy-orb { width: 124px; padding: 6px 8px 7px; }
+  .turn-side { align-items: flex-end; }
   #end-turn-btn { padding: 10px 16px 10px 24px; font-size: 0.95rem; }
-  .battle-relic { width: 26px; height: 26px; font-size: 0.85rem; }
-  .battle-relics { flex-direction: column; }
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }
@@ -1638,4 +1619,4 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 /* ---------- soft corners for the pixel windows that don't set their own (sizes in :root) ---------- */
 .nameplate, .energy-orb, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
 .intent, .focus-hint, .howto-endturn, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
-.map-town, .node-badge, .pp-pips i, .evo-dot { border-radius: var(--round-xs); }
+.map-town, .node-badge, .pp-bar, .pp-label, .evo-dot { border-radius: var(--round-xs); }

@@ -35,6 +35,10 @@
         <button class="menu-item" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>
       </div>
     </div>
+    <div class="piles" aria-label="Your piles">   <!-- shown only in battle -->
+      <span class="pile" id="draw-count" title="Cards left in your draw pile"></span>
+      <span class="pile" id="discard-count" title="Cards in your discard pile"></span>
+    </div>
     <div class="topbar-actions">
       <span class="coin-pill" title="PokéCoins - spend them in the Shop">💰 <span class="coin-value">0</span></span>
       <button class="icon-btn shop-btn" id="shop-btn" aria-label="Shop" aria-expanded="false" title="Shop"><span class="mart" aria-hidden="true"></span></button>
@@ -202,15 +206,14 @@
     <section id="battle-screen" class="screen" hidden>
 
       <div class="arena" id="arena">
-        <div class="battle-relics" id="battle-relics" aria-label="Your relics"></div>
 
         <div class="nameplate" id="enemy-plate">
-          <div class="nameplate-title"><strong id="enemy-name"></strong><div class="badges" id="enemy-status"></div><span id="enemy-type" class="chip"></span></div>
+          <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-type" class="chip"></span></div>
           <div class="gb-hp" id="enemy-hp" role="progressbar" aria-label="Enemy HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>
           </div>
-          <span class="gb-hp-num" id="enemy-hp-text"></span>
+          <div class="nameplate-foot"><div class="badges" id="enemy-status"></div><span class="gb-hp-num" id="enemy-hp-text"></span></div>
         </div>
 
         <div class="enemy-zone" id="enemy-zone">
@@ -224,12 +227,12 @@
         </div>
 
         <div class="nameplate" id="player-plate">
-          <div class="nameplate-title"><strong id="player-name"></strong><div class="badges" id="player-status"></div></div>
+          <div class="nameplate-title"><strong id="player-name"></strong></div>
           <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="player-hp-fill"></span></span>
           </div>
-          <span class="gb-hp-num" id="player-hp-text"></span>
+          <div class="nameplate-foot"><div class="badges" id="player-status"></div><span class="gb-hp-num" id="player-hp-text"></span></div>
         </div>
 
         <div class="battle-log quiet" id="battle-log"><span id="battle-log-text" aria-hidden="true"></span><span class="sr-only" id="battle-log-live" aria-live="polite"></span></div>
@@ -242,10 +245,6 @@
         </div>
         <div class="turn-side">
           <button class="btn primary" id="end-turn-btn">End Turn</button>
-          <div class="piles">
-            <span class="pile" id="draw-count" title="Cards left in your draw pile"></span>
-            <span class="pile" id="discard-count" title="Cards in your discard pile"></span>
-          </div>
         </div>
       </div>
       <div class="card-focus" id="card-focus" hidden></div>
@@ -285,7 +284,7 @@
         <header class="howto-head"><h3>⚔️ Your turn</h3><p>Play your cards, then hand it over to the enemy</p></header>
         <div class="howto-steps three">
           <div class="howto-step">
-            <div class="howto-visual"><div class="energy-orb" title="PP (energy)"><span class="pp-label">PP</span><b>3</b><span class="pp-max">/3</span><span class="pp-pips"><i class="on"></i><i class="on"></i><i class="on"></i></span></div></div>
+            <div class="howto-visual"><div class="energy-orb" title="PP (energy)"><span class="pp-label">PP</span><b>3</b><span class="pp-max">/3</span><span class="pp-bar"><i class="on"></i><i class="on"></i><i class="on"></i></span></div></div>
             <b>Get 3 energy</b><small>refills every turn</small>
           </div>
           <span class="howto-arrow" aria-hidden="true">›</span>
