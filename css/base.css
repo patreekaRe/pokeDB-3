@@ -311,9 +311,6 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   font-weight: 700;
   background: rgba(255, 255, 255, 0.16);
 }
-.chip.type-fire  { background: #c9431f; }
-.chip.type-water { background: #2569c7; }
-.chip.type-grass { background: #2f8f43; }
 
 /* Health bars */
 .bar {

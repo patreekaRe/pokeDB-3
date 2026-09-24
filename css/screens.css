@@ -485,7 +485,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 }
 .nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nameplate-title .chip { padding: 1px 7px; cursor: help; }
+.nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; }   /* just the type's pixel icon, no pill */
 .nameplate .gb-hp { width: 100%; margin: 0; }
 /* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */
 .nameplate-foot { display: flex; align-items: flex-start; gap: 4px 8px; }
