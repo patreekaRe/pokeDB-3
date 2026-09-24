@@ -371,21 +371,22 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   side, so `spreadColumns()` resets `colX()` per map to spread the columns
   it uses across the width (centred on `CENTER_X`, at most `MAX_STEP` tiles
   apart); draw rooms with `nodeX(node)`, which keeps the boss centred.
-- Terrain and routes are painted pixel by pixel into a small `<canvas>`
+- Terrain is painted pixel by pixel into a small `<canvas>`
   (`.map-terrain`, `image-rendering: pixelated`). `PALETTES` picks each
   biome's ground and blobs (water, mountain, trees, lava), grown only in
-  the gaps between routes by a PRNG seeded from the node ids + biome, so a
-  refresh draws the same terrain. Water and lava drift on a timer while the
-  map screen shows (off under `prefers-reduced-motion`).
-- A link straight up is a straight road; a link to the next column is its
-  own three-step pixel diagonal from the room's top corner to the next
-  room's bottom corner (`diagonal()` in `routeSegments()`). Routes only meet
-  inside rooms (links to the boss aside, which all merge). It used to jog
-  on a shared row halfway up, which joined routes from different rooms and
-  showed ways that didn't exist on almost every map: a player saw a
-  crossroads but could only take the one real link. Check a routing change
-  by flood-filling the drawn route tiles upwards from each room. Routes are cream; walked ones get thick red dashes and the
-  routes you can take next are white.
+  the gaps between routes (`routeTiles()`) by a PRNG seeded from the node
+  ids + biome, so a refresh draws the same terrain. Water and lava drift on
+  a timer while the map screen shows (off under `prefers-reduced-motion`).
+- Routes are smooth SVG polylines over the canvas (`.map-routes`,
+  `routeLines()` / `drawRoutes()`), deliberately not pixel art: the user
+  found pixel-staircase diagonals too ugly. Every link is its own straight
+  line from room centre to room centre (straight up, or diagonal to the
+  next column), so routes only meet inside rooms; links to the boss and
+  the start road still jog on a shared row, since those all merge anyway.
+  Links used to jog on a shared row halfway up, which joined routes from
+  different rooms and showed ways that didn't exist on almost every map.
+  Routes are cream; walked ones get thick red dashes and the routes you can
+  take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
   drawn inside, for tap size): orange, red for elites, a gold boss. Visited
   greys out, reachable blinks. `.node-badge` scouts elite/boss types: a

@@ -257,15 +257,16 @@ export function reachableNodes(map, currentId) {
 /* ============================================================
    DRAWING THE MAP  -  in the style of a Pokégear town map
 
-   Everything snaps to a grid of tiles. Terrain and routes are painted
-   pixel by pixel onto a small canvas that CSS scales up with
-   image-rendering: pixelated. The rooms are buttons laid over it.
+   Everything snaps to a grid of tiles. Terrain is painted pixel by
+   pixel onto a small canvas that CSS scales up with image-rendering:
+   pixelated; the routes are smooth SVG lines over it, and the rooms are
+   buttons laid over those.
 
-   A link straight up is a straight road. A link to the next column is
-   its own pixel diagonal from corner to corner, so routes only meet
-   inside rooms: a shared sideways row would join routes from different
-   rooms and look like a way that doesn't exist. Links to the boss all
-   merge into one road, since they lead to the same room.
+   Every link is its own straight line from room to room (straight up,
+   or diagonal to the next column), so routes only meet inside rooms: a
+   shared sideways row would join routes from different rooms and look
+   like a way that doesn't exist. Links to the boss all merge into one
+   road, since they lead to the same room.
    ============================================================ */
 
 const TILE = 8;                                   // canvas pixels per tile
@@ -328,41 +329,72 @@ function seeded(text) {
   };
 }
 
-/** The routes as tile rectangles: [x1, y1, x2, y2, state]. */
-function routeSegments(map, currentId, reachable) {
-  const segs = [];
-  const add = (x1, y1, x2, y2, state) => segs.push([Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2), state]);
-  const link = (x1, y1, x2, y2, jog, state) => {
-    add(x1, y1, x1, jog, state);
-    add(x1, jog, x2, jog, state);
-    add(x2, jog, x2, y2, state);
-  };
-  // corner to corner in three steps: leaves just above the room's top corner, enters just under the next one's
-  const diagonal = (x1, y1, x2, y2, state) => {
-    const dir = Math.sign(x2 - x1);
-    const from = x1 + dir, to = x2 - dir, xa = from + Math.round((to - from) / 3), xb = from + Math.round((to - from) * 2 / 3);
-    add(from, y1 - 2, xa, y1 - 2, state);
-    add(xa, y1 - 3, xb, y1 - 3, state);
-    add(xb, y2 + 2, to, y2 + 2, state);
-  };
+/** The routes as lines through tile centres: [[x, y]...] points plus a state (fill, walked or active). */
+function routeLines(map, currentId, reachable) {
+  const lines = [];
+  // up, sideways on the jog row, up again: for the roads that merge (into the boss, out of the start)
+  const jogged = (x1, y1, x2, y2, jog, state) => lines.push({ points: [[x1, y1], [x1, jog], [x2, jog], [x2, y2]], state });
   for (const node of Object.values(map.byId)) {
     for (const nextId of node.next) {
       const to = map.byId[nextId];
       const state = node.id === currentId && reachable.has(nextId) ? 'active' : node.visited && to.visited ? 'walked' : 'fill';
       const [x1, y1, x2, y2] = [nodeX(node), rowY(node.floor), nodeX(to), rowY(to.floor)];
-      if (to.type === 'boss' || x1 === x2) link(x1, y1, x2, y2, y1 - 3, state);
-      else diagonal(x1, y1, x2, y2, state);
+      if (to.type === 'boss') jogged(x1, y1, x2, y2, y1 - 3, state);
+      else lines.push({ points: [[x1, y1], [x2, y2]], state });
     }
   }
   for (const node of map.floors[0]) {
     const state = !currentId ? 'active' : node.visited ? 'walked' : 'fill';
-    link(CENTER_X, START_ROW, nodeX(node), rowY(0), JOIN_ROW, state);
+    jogged(CENTER_X, START_ROW, nodeX(node), rowY(0), JOIN_ROW, state);
   }
-  return segs;
+  return lines;
+}
+
+/** Every tile a route passes through, so terrain keeps clear of the routes. */
+function routeTiles(lines) {
+  const tiles = [];
+  for (const { points } of lines) {
+    for (let i = 1; i < points.length; i++) {
+      const [[x1, y1], [x2, y2]] = [points[i - 1], points[i]];
+      const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 4;
+      for (let k = 0; k <= steps; k++) tiles.push([Math.round(x1 + (x2 - x1) * k / steps), Math.round(y1 + (y2 - y1) * k / steps)]);
+    }
+  }
+  return tiles;
+}
+
+/* The routes are drawn as smooth lines over the pixel terrain (the user's call: pixel staircases for the
+   diagonals looked too jagged). Every edge goes down first, then the fills, so routes that meet merge without a seam. */
+function drawRoutes(lines) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'map-routes');
+  svg.setAttribute('viewBox', `0 0 ${GRID_W} ${GRID_H}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+  const path = ({ points }, color, width, dash) => {
+    const line = document.createElementNS(NS, 'polyline');
+    line.setAttribute('points', points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(' '));
+    line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', width);
+    line.setAttribute('stroke-linecap', dash ? 'butt' : 'square');   // square caps would fill the dash gaps
+    line.setAttribute('stroke-linejoin', 'miter');
+    if (dash) line.setAttribute('stroke-dasharray', dash);
+    svg.append(line);
+  };
+  for (const line of lines) path(line, ROUTE.edge, 1);
+  for (const state of ['fill', 'walked', 'active']) {
+    for (const line of lines.filter(l => l.state === state)) {
+      path(line, ROUTE[state === 'walked' ? 'fill' : state], 0.75);
+      if (state === 'walked') path(line, ROUTE.walked, 0.5, '0.5 0.25');
+    }
+  }
+  return svg;
 }
 
 /** Which tiles are what: ground, water, mountain... Blobs grow in the gaps between routes. */
-function terrainGrid(map, biomeId, segs, rand) {
+function terrainGrid(map, biomeId, tiles, rand) {
   const palette = PALETTES[biomeId] || PALETTES.clearing;
   const grid = Array.from({ length: GRID_H }, () => Array(GRID_W).fill(palette.ground));
 
@@ -370,7 +402,7 @@ function terrainGrid(map, biomeId, segs, rand) {
   const dist = Array.from({ length: GRID_H }, () => Array(GRID_W).fill(Infinity));
   const queue = [];
   const block = (x, y) => { if (dist[y]?.[x] === Infinity) { dist[y][x] = 0; queue.push([x, y]); } };
-  for (const [x1, y1, x2, y2] of segs) for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) block(x, y);
+  for (const [x, y] of tiles) block(x, y);
   for (const node of Object.values(map.byId)) {
     const r = node.type === 'boss' ? 2 : 1;
     for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) block(nodeX(node) + dx, rowY(node.floor) + dy);
@@ -411,9 +443,9 @@ const abgr = (color) => {
 
 const ripple = (x, y) => (((x + y) % 6) + 6) % 6 === 0 && ((x - y) & 7) < 4;   // short diagonal dashes
 
-function paintTerrain(canvas, map, biomeId, segs) {
+function paintTerrain(canvas, map, biomeId, tiles) {
   const rand = seeded(`${biomeId}|${Object.keys(map.byId).sort().join()}`);
-  const grid = terrainGrid(map, biomeId, segs, rand);
+  const grid = terrainGrid(map, biomeId, tiles, rand);
   const w = GRID_W * TILE, h = GRID_H * TILE;
   canvas.width = w;
   canvas.height = h;
@@ -422,7 +454,6 @@ function paintTerrain(canvas, map, biomeId, segs) {
   const px = new Uint32Array(img.data.buffer);
   const put = (x, y, c) => { px[y * w + x] = c; };
   const terrain = Object.fromEntries(Object.entries(TERRAIN).map(([k, v]) => [k, v.map(abgr)]));
-  const route = Object.fromEntries(Object.entries(ROUTE).map(([k, v]) => [k, abgr(v)]));
   const flowing = [];   // [x, y, base, light, speed] for every water/lava pixel, redrawn as it drifts
 
   for (let ty = 0; ty < GRID_H; ty++) for (let tx = 0; tx < GRID_W; tx++) {
@@ -457,22 +488,6 @@ function paintTerrain(canvas, map, biomeId, segs) {
     }
   }
 
-  // Routes: every edge first, then the fills, so routes that meet merge without a seam.
-  // Walked routes keep the plain fill and get thick red dashes, like a trail.
-  const rect = (x1, y1, x2, y2, c) => { for (let y = y1; y < y2; y++) for (let x = x1; x < x2; x++) put(x, y, c); };
-  for (const [x1, y1, x2, y2] of segs) rect(x1 * TILE, y1 * TILE, (x2 + 1) * TILE, (y2 + 1) * TILE, route.edge);
-  for (const state of ['fill', 'walked', 'active']) {
-    for (const [x1, y1, x2, y2, s] of segs) {
-      if (s !== state) continue;
-      rect(x1 * TILE + 1, y1 * TILE + 1, (x2 + 1) * TILE - 1, (y2 + 1) * TILE - 1, route[s === 'walked' ? 'fill' : s]);
-      if (s !== 'walked') continue;
-      if (y1 === y2 && x1 !== x2) {
-        for (let x = x1 * TILE + 1; x < (x2 + 1) * TILE - 1; x++) if (x % 6 < 4) rect(x, y1 * TILE + 2, x + 1, y1 * TILE + TILE - 2, route.walked);
-      } else {
-        for (let y = y1 * TILE + 1; y < (y2 + 1) * TILE - 1; y++) if (y % 6 < 4) rect(x1 * TILE + 2, y, x1 * TILE + TILE - 2, y + 1, route.walked);
-      }
-    }
-  }
   const draw = () => ctx.putImageData(img, 0, 0);
   draw();
 
@@ -502,12 +517,12 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
   box.style.setProperty('--grid-h', GRID_H);
   spreadColumns(map);
   const reachable = new Set(reachableNodes(map, currentId).map(n => n.id));
-  const segs = routeSegments(map, currentId, reachable);
+  const lines = routeLines(map, currentId, reachable);
 
   const canvas = el('canvas', 'map-terrain');
   canvas.setAttribute('aria-hidden', 'true');
-  paintTerrain(canvas, map, biome, segs);
-  box.append(canvas);
+  paintTerrain(canvas, map, biome, routeTiles(lines));
+  box.append(canvas, drawRoutes(lines));
 
   const place = (elem, x, y) => {
     elem.style.left = `${((x + 0.5) / GRID_W) * 100}%`;

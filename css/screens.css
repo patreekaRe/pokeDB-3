@@ -1148,6 +1148,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   box-shadow: 0 0 0 3px #303038, 0 0 0 7px #b8b8c8, 0 0 0 10px #303038, 0 12px 30px 10px rgba(0, 0, 0, 0.45);
 }
 .map-terrain { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.map-routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
 /* A room: the button is a tap target one tile bigger than the town square drawn inside it */
 .map-node {
