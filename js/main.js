@@ -68,10 +68,17 @@ function renderStarters() {
     img.alt = '';
     btn.append(img, el('span', 'starter-name', unlocked ? starter.line[0].name : '???'));
 
+    // a corner badge says where a starter comes from, without adding a line that would make its tile taller than the rest
+    if (!starter.free) {
+      const shop = isShopUnlock(starter);
+      const badge = el('span', 'starter-source', shop ? '💰' : '🏆');
+      badge.setAttribute('aria-hidden', 'true');
+      btn.title = shop ? 'Unlocked in the Shop' : 'Unlocked by an achievement';
+      btn.append(badge);
+    }
     if (!unlocked) {
       btn.classList.add('locked');
-      const lockLabel = isShopUnlock(starter) ? '🔒 Shop' : starter.secret ? '🔒 ???' : starter.legendary ? '🔒 Legendary' : '🔒 Achievement';
-      btn.append(el('span', 'starter-lock', lockLabel));
+      btn.append(el('span', 'sr-only', isShopUnlock(starter) ? 'Locked: buy it in the Shop' : 'Locked: earn an achievement'));
     }
     if (selected === starter) btn.classList.add('selected');
 

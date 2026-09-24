@@ -393,7 +393,7 @@ body.titling { overflow: hidden; }
 .starter-btn.selected::before { content: '▶'; position: absolute; left: 6px; top: 6px; font-size: 0.7rem; animation: cursorBlink 1s steps(1) infinite; }
 .starter-btn.locked { opacity: 0.6; }
 .starter-btn.locked img { filter: brightness(0) opacity(0.6); }   /* silhouette */
-.starter-lock { font-size: 0.75rem; color: var(--muted); }
+.starter-source { position: absolute; top: 5px; right: 6px; font-size: 1rem; line-height: 1; }   /* 💰 shop / 🏆 achievement */
 .starter-btn.secret { grid-column: 2; }   /* the lone last tile: centred under the grid, like a final boss */
 
 .starter-detail {
