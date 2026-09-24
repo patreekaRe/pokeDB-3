@@ -118,8 +118,15 @@ a refresh can't pay it twice; the Amulet Coin relic doubles it. `setMoney()`
 in `js/ui.js` fills the top-bar `#money-pill`, which `showScreen()` shows
 only on `RUN_SCREENS`.
 
-`shop` is a map room type (`ROOM_ODDS`, not below `MIN_SHOP_FLOOR`, never
-twice in a row on a path, at least one per map; blue 🏪 town square). Its stock (`node.stock`:
+`shop` is a map room type (blue 🏪 town square, never twice in a row on a
+path). Marts aren't rolled (`ROOM_ODDS.shop` is 0): after the other rooms are
+rolled, `placeMarts()` in `js/map.js` turns fights/events on `MART_FLOORS`
+(the floors after the treasure, ~5 fights of ₽ in) into Marts, greedily picking
+the room that the most start-to-boss routes pass, until `MART_ROUTE_SHARE`
+(75%) of routes pass one. That gives ~2.1 Marts a map on ~85% of routes
+(before: one random Mart, often floor 4, on ~34% of routes, and on 60% of maps
+some start couldn't reach any); the Level 0 bot moved within noise (~94.6%).
+Measure with a route-share count over a few thousand `generateMap()` calls. Its stock (`node.stock`:
 cards, items and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
 and saved with the map, so a refresh can't reroll the shelves.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and

@@ -35,8 +35,8 @@ const FLOORS = 10;    // floors per biome (Slay the Spire uses 15: a much longer
 const PATHS = 6;      // how many random paths are walked
 
 // Chance (in %) of each room type on floors that are not fixed.
-// The shop share is low because every map is promised one Mart anyway (see assignTypes).
-const ROOM_ODDS = { fight: 45, event: 22, elite: 16, rest: 12, shop: 5 };
+// Marts aren't rolled: placeMarts() puts them where most routes pass (see MART_ROUTE_SHARE).
+const ROOM_ODDS = { fight: 45, event: 22, elite: 16, rest: 12, shop: 0 };
 
 // Where the special floors are, scaled to the number of floors
 // (for 15 floors this gives: treasure on floor 9, no elites/rests below floor 6).
@@ -44,6 +44,11 @@ const TREASURE_FLOOR = Math.max(2, Math.round(FLOORS * 0.6) - 1);   // index, 0 
 const MIN_ELITE_REST_FLOOR = Math.max(2, Math.round(FLOORS * 0.4) - 1);
 const TOP_FLOOR = FLOORS - 1;                                         // always rest sites
 const MIN_SHOP_FLOOR = MIN_ELITE_REST_FLOOR + 1;                      // a few fights in, so you have prize money to spend
+
+// Prize money is only spent at a Mart, so after rolling, fights/events on these floors (after the
+// treasure, when you have ~5 fights of ₽) become Marts until this share of start-to-boss routes pass one.
+const MART_FLOORS = [TREASURE_FLOOR + 1, TOP_FLOOR - 1];
+const MART_ROUTE_SHARE = 0.75;
 
 export const NODE_INFO = {
   fight:    { icon: '⚔️', label: 'Wild fight' },
@@ -163,11 +168,46 @@ function assignTypes(floors, odds) {
     }
   }
 
-  // Prize money can only be spent at a Mart, so every map gets at least one (a route to it is still your choice).
-  if (!floors.flat().some(room => room.type === 'shop')) {
-    const spots = floors.flat().filter(room => room.type === 'fight' && room.floor > 0 && isAllowed(room, 'shop', byId, false));
-    if (spots.length) spots[randInt(0, spots.length - 1)].type = 'shop';
+  placeMarts(floors, byId);
+}
+
+/** Turn the rooms that the most routes run through into Marts until MART_ROUTE_SHARE of the routes pass one. */
+function placeMarts(floors, byId) {
+  const fits = (room, strict) => ['fight', 'event'].includes(room.type)
+    && room.floor >= MART_FLOORS[0] && room.floor <= MART_FLOORS[1]
+    && room.next.every(id => byId[id].type !== 'shop')
+    && isAllowed(room, 'shop', byId, strict);
+
+  let share = martRouteShare(floors, byId);
+  while (share < MART_ROUTE_SHARE) {
+    let spots = floors.flat().filter(room => fits(room, true));
+    if (!spots.length) spots = floors.flat().filter(room => fits(room, false));
+    if (!spots.length) return;
+    let best = null;
+    for (const room of spots) {
+      const type = room.type;
+      room.type = 'shop';
+      const gain = martRouteShare(floors, byId) + Math.random() * 1e-6;
+      room.type = type;
+      if (!best || gain > best.gain) best = { room, gain };
+    }
+    best.room.type = 'shop';
+    share = best.gain;
   }
+}
+
+/** The share of start-to-boss routes that pass at least one Mart. */
+function martRouteShare(floors, byId) {
+  const all = {}, dry = {};
+  for (let f = floors.length - 1; f >= 0; f--) {
+    for (const room of floors[f]) {
+      const next = room.next.filter(id => id !== 'boss');
+      all[room.id] = next.length ? next.reduce((sum, id) => sum + all[id], 0) : 1;
+      dry[room.id] = room.type === 'shop' ? 0 : next.length ? next.reduce((sum, id) => sum + dry[id], 0) : 1;
+    }
+  }
+  const total = floors[0].reduce((sum, room) => sum + all[room.id], 0);
+  return 1 - floors[0].reduce((sum, room) => sum + dry[room.id], 0) / total;
 }
 
 function rollType(odds) {
