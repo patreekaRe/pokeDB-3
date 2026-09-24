@@ -830,9 +830,13 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #end-turn-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
 #end-turn-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
 #end-turn-btn:disabled { filter: grayscale(1) brightness(0.9); opacity: 0.7; cursor: not-allowed; }
-/* PP and End Turn are one size, so the two ends of the controls match (wrap + align-content centres the PP's baseline row) */
-.battle-controls .pp-pill { min-width: 7.75rem; height: 2.6rem; flex-wrap: wrap; align-content: center; }
-#end-turn-btn .pp-pill { justify-content: center; }
+/* PP and End Turn are one size, so the two ends of the controls match (wrap + align-content centres the PP's baseline row).
+   Big here, on PCs and phones held sideways; the phone rules shrink them so the hand keeps the room. */
+.battle-controls :is(.energy-orb, #end-turn-btn) { padding: 8px 9px; }
+.battle-controls .pp-pill { min-width: 9.5rem; height: 3.1rem; padding: 12px 20px 11px; flex-wrap: wrap; align-content: center; }
+.battle-controls .pp-label { font-size: 1.2rem; }
+.battle-controls .pp-count { font-size: 1.6rem; }
+#end-turn-btn .pp-pill { justify-content: center; font-size: 1.25rem; }
 /* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
 .piles { display: none; gap: 12px; margin: 0 auto 0 12px; }   /* in the top bar, beside the Poké Ball */
 body[data-screen="battle-screen"] .piles { display: flex; }
@@ -882,8 +886,11 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
   #end-turn-btn { padding: 6px 7px; }
-  #end-turn-btn .pp-pill { font-size: 0.95rem; }
-  .battle-controls .pp-pill { min-width: 6.75rem; }
+  .battle-controls :is(.energy-orb, #end-turn-btn) { padding: 5px 6px; }
+  .battle-controls .pp-pill { min-width: 5.9rem; height: 2.2rem; gap: 10px; padding: 7px 11px 6px; }
+  .battle-controls .pp-label { font-size: 0.85rem; }
+  .battle-controls .pp-count { font-size: 1.1rem; }
+  #end-turn-btn .pp-pill { font-size: 0.8rem; }
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }

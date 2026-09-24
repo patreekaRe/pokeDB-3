@@ -201,7 +201,7 @@ There are no item slots on the battle screen (the user's call: the Bag is
 more Pokémon-like); items are used from the Bag's Items pocket, whose Use
 calls `pickItem()` → `tapItem()`, and `renderFocus()` shows a big
 `.focus-item` tile to confirm. PP and End Turn share one size
-(`.battle-controls .pp-pill`). `useItem()` costs
+(`.battle-controls .pp-pill`): big on PCs and sideways phones, small in the phone rules (≤720px). `useItem()` costs
 no PP and works only on your turn (`whyNotUsable()`). The Poké Doll ends a
 non-boss fight with `onEnd({ fled: true })`: no rewards, back to the map.
 The Bag's Items pocket (`renderItemList()` in `js/run.js`) lists them with
