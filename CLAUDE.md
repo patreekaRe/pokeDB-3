@@ -292,8 +292,10 @@ a fight, `coins` (`run.pendingCoins`: `{ foe, coins, money, disadvantage }`)
 shows as an icon row (💰 +25 💴 +₽120) on every step, and the first screen's
 box says "The wild X fainted!", the PokéCoins and the ₽ as separate lines.
 Options with `ask`/`confirm` (card, relic and item rewards) take two taps: the
-first raises the tile (`.picked`) and the box asks, with a `#reward-confirm`
-button ("Add to deck") beside it; that button or a second tap takes it.
+first blows a copy of the tile up in the middle of a dimmed screen
+(`openFocus()`, reusing battle's `.card-focus`/`.focus-card`) with the
+`confirm` ("Add to deck") under it in the "Tap to play" style; the big tile or
+that button takes it, the dimmed area or Escape backs out.
 Titles are short headers on a pixel-font plate ("Learn a new move", "Item found").
 In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it

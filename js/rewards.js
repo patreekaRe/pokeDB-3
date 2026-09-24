@@ -66,8 +66,8 @@ export function relicChoices(run, { boss = false } = {}) {
  * Show a "choose one" screen.
  *   sub       the text box's line, or a list of lines
  *   options   [{ node, onPick, disabled, ask, confirm }]   node is the element to show, onPick runs when chosen.
- *             With `ask` the pick takes two taps, like a card in battle: the first raises the tile and puts
- *             `ask` in the text box with a `confirm` button; that button, or the same tile again, takes it.
+ *             With `ask` (the question, read out to screen readers) the pick takes two taps, like a card in
+ *             battle: the first blows the tile up with a `confirm` button under it (openFocus).
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  *   coins     after a fight, { foe, coins, money, disadvantage }: an icon row, and (on the first screen only) the text box's first lines
  */
@@ -86,12 +86,9 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 
   const box = $('reward-options');
   box.replaceChildren();
-  const confirm = $('reward-confirm');
-  confirm.hidden = true;
 
   let done = false;
-  const once = (fn) => () => { if (done) return; done = true; fn(); };
-  let picked = null;
+  const once = (fn) => () => { if (done) return; done = true; closeFocus(); fn(); };
 
   for (const option of options) {
     const btn = el('button', 'reward-option');
@@ -99,15 +96,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.append(option.node);
     btn.disabled = !!option.disabled;
     const take = once(option.onPick);
-    btn.addEventListener('click', () => {
-      if (!option.ask || picked === btn) return take();
-      picked = btn;
-      for (const other of box.children) other.classList.toggle('picked', other === btn);
-      confirm.textContent = option.confirm || 'Choose';
-      confirm.hidden = false;
-      confirm.onclick = take;
-      sayLines([option.ask]);
-    });
+    btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
     box.append(btn);
   }
 
@@ -117,6 +106,45 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   skip.onclick = onSkip ? once(onSkip) : null;
 
   showScreen('reward-screen');
+}
+
+/* A picked reward blows up in the middle of a dimmed screen, like a card picked in battle,
+   with its confirm ("Add to deck") under it where battle says "Tap to play". The big tile
+   or the confirm takes it; the dimmed area or Escape puts it back. */
+let focus = null;   // { layer, btn, onKey }
+
+function openFocus(option, btn, take) {
+  closeFocus();
+  const big = option.node.cloneNode(true);
+  big.classList.add('focus-card');
+  if (big.classList.contains('relic')) big.classList.add('focus-item');
+  big.tabIndex = 0;
+  big.setAttribute('role', 'button');
+  big.setAttribute('aria-label', option.ask);
+  const yes = el('button', 'focus-hint focus-confirm', option.confirm || 'Choose');
+  yes.type = 'button';
+  const layer = el('div', 'card-focus reward-focus');
+  layer.append(big, yes);
+  layer.addEventListener('click', (e) => {
+    if (e.target.closest('.focus-card, .focus-confirm')) take(); else closeFocus();
+  });
+  const onKey = (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); closeFocus(); }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target === big) { e.preventDefault(); take(); }
+  };
+  document.addEventListener('keydown', onKey);
+  btn.classList.add('picked');
+  document.body.append(layer);
+  focus = { layer, btn, onKey };
+  yes.focus({ preventScroll: true });
+}
+
+function closeFocus() {
+  if (!focus) return;
+  focus.layer.remove();
+  focus.btn.classList.remove('picked');
+  document.removeEventListener('keydown', focus.onKey);
+  focus = null;
 }
 
 /* The reward screen's text box: types each line out like the battle log, then waits

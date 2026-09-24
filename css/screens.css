@@ -1238,7 +1238,11 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   align-items: stretch;
   gap: 10px;
 }
-.reward-confirm { flex: none; align-self: center; }
+/* a picked reward, blown up in the middle (rewards.js openFocus); the confirm sits under it like battle's "Tap to play" */
+.card-focus.reward-focus { justify-content: center; padding-bottom: 16px; background: rgba(8, 10, 24, 0.6); }
+.reward-focus .card.focus-card { --card-w: min(64vw, 260px, 45vh); }
+.focus-confirm { position: relative; padding-left: 26px; font: inherit; font-family: var(--pixel-font); font-size: 0.95rem; cursor: pointer; }
+.focus-confirm::before { content: '▶'; position: absolute; left: 10px; top: 50%; translate: 0 -50%; font-size: 0.6rem; animation: cursorBlink 1s steps(1) infinite; }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
 .reward-option.picked .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }   /* like a picked card in battle */
 .reward-option.picked > .relic { outline: 4px solid #f8d030; outline-offset: 2px; }
