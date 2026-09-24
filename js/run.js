@@ -125,7 +125,7 @@ function restoreRun(saved) {
   const nodes = Object.values(byId);
   if (!byId.boss || floors.flat().some(n => !n) || (saved.current && !byId[saved.current])
       || nodes.some(n => [...n.next, ...n.prev].some(id => !byId[id]) || (n.enemyId && !ENEMY_DEFS[n.enemyId])
-        || (n.event && !(EVENTS_BY_ID[n.event.id] && (!n.event.enemyId || ENEMY_DEFS[n.event.enemyId])))
+        || (n.event && !(EVENTS_BY_ID[n.event.id] && (!n.event.enemyId || ENEMY_DEFS[n.event.enemyId]) && eventIdsKnown(n.event)))
         || (n.stock && !(known(n.stock.cards.map(i => i.id), CARDS_BY_ID) && known(n.stock.relics.map(i => i.id), RELICS_BY_ID) && known(n.stock.items.map(i => i.id), ITEMS_BY_ID))))) {
     throw new Error('bad run map');
   }
@@ -481,21 +481,26 @@ function offerEvolutionCard(next) {
 }
 
 function offerRelic(title, next, { boss = false } = {}) {
-  const relics = relicChoices(run, { boss });
+  showRelics(title, relicChoices(run, { boss }), next);
+}
+
+function showRelics(title, relics, next) {
   if (!relics.length) return next();
 
   showChoice({
     title,
     sub: relics[0].boss ? 'Choose a boss relic. Each one is strong, but comes with a catch.' : 'Choose a relic. It helps you for the rest of the run.',
-    options: relics.map(relic => relicOption(relic, () => {
-      run.relics.push(relic.id);
-      toast(`Found ${relic.name}!`, 'ok');
-      if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
-      next();
-    })),
+    options: relics.map(relic => relicOption(relic, () => gainRelic(relic, next))),
     onSkip: next,
     coins: run.pendingCoins,
   });
+}
+
+function gainRelic(relic, next) {
+  run.relics.push(relic.id);
+  toast(`Found ${relic.name}!`, 'ok');
+  if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
+  next();
 }
 
 /** A found item: take it, or with a full Bag, swap one of yours for it. */
@@ -589,8 +594,28 @@ function rollEvents() {
       const team = event.team[run.biome];
       node.event.enemyId = team[Math.floor(Math.random() * team.length)];
     }
+    if (event.upgrade) {
+      // every card of each rarity in a shuffled order: the trade takes the first one you don't already hold MAX_COPIES of
+      const pool = poolForType(run.starter.type);
+      node.event.offers = Object.fromEntries(Object.values(event.upgrade).map(rarity =>
+        [rarity, shuffle(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
+    }
+    if (event.tosses) {
+      node.event.luck = Math.random();   // one roll for every toss, so the bigger toss wins whenever the small one would
+      node.event.relics = relicChoices(run).map(r => r.id);
+    }
+    if (event.offering) {
+      const typeRelics = shuffle(RELICS.filter(r => r.only === run.starter.type));
+      node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
+    }
   }
 }
+
+const shuffle = (list) => [...list].sort(() => Math.random() - 0.5);
+
+/** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
+const eventIdsKnown = (state) => Object.values(state.offers || {}).flat().every(id => CARDS_BY_ID[id])
+  && (state.relics || []).every(id => RELICS_BY_ID[id]);
 
 const perBiome = (value) => (Array.isArray(value) ? value[run.biome] : value);
 const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
@@ -711,7 +736,82 @@ const EVENT_CHOICES = {
       }),
     ] };
   },
+
+  'day-care'(event, state, back) {
+    const trades = dayCareTrades(event, state);
+    return { options: [
+      { ...textOption('🥚', 'Trade a move', trades.length ? 'Give up a common or uncommon card for a random card one rarity higher.'
+        : 'You have no common or uncommon cards they can trade.', () => dayCare(trades, back)), disabled: !trades.length },
+    ] };
+  },
+
+  'wishing-well'(event, state) {
+    const relics = state.relics.map(id => RELICS_BY_ID[id]).filter(r => !run.relics.includes(r.id));
+    return { options: event.tosses.map(({ price, odds }, i) => {
+      const cost = perBiome(price);
+      const option = moneyOption(i ? '💴' : '🪙', `Toss ₽${cost}`, relics.length ? `A ${Math.round(odds * 100)}% chance to find a relic.`
+        : 'Nothing down there you don\'t already have.', cost, () => {
+        run.money -= cost;
+        setMoney(run.money);
+        if (state.luck < odds) return showRelics('Your wish came true!', relics, showMap);
+        toast('Plop. Nothing but ripples.', 'warn');
+        showMap();
+      });
+      return { ...option, disabled: option.disabled || !relics.length };
+    }) };
+  },
+
+  'fan-club'(event) {
+    const healthy = run.hp > run.maxHp / 2;
+    const item = ITEMS_BY_ID[event.tiredItem];
+    const money = perBiome(healthy ? event.healthyMoney : event.tiredMoney);
+    const collect = () => { run.money += money; setMoney(run.money); toast(`The fans gave you ₽${money}!`, 'ok'); showMap(); };
+    if (healthy) return { options: [textOption('💴', 'Show off', `The fans are thrilled! They give you ₽${money}.`, collect)] };
+    if (run.items.length < ITEM_SLOTS) {
+      return { options: [textOption(item.icon, 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
+        run.items.push(item.id);
+        toast(`Put the ${item.name} in the Bag.`, 'ok');
+        showMap();
+      })] };
+    }
+    return { options: [textOption('💴', 'Accept their gift', `They worry about your Pokémon and give you ₽${money}.`, collect)] };
+  },
+
+  'shrine'(event, state) {
+    const cost = perBiome(event.offering);
+    const relic = state.relics.map(id => RELICS_BY_ID[id]).find(r => !run.relics.includes(r.id));
+    if (!relic) return { options: [{ ...textOption('⛩️', 'Pray', 'The shrine has nothing left to give you.', () => {}), disabled: true }] };
+    return { options: [
+      hpOption('⛩️', `Pray (${cost} HP)`, `Receive ${relic.icon} ${relic.name}: ${relic.text}`, cost, () => {
+        loseHp(cost);
+        gainRelic(relic, showMap);
+      }),
+    ] };
+  },
 };
+
+/** The deck's common and uncommon cards, each with the card it trades for (the first rolled one you hold fewer than MAX_COPIES of). */
+function dayCareTrades(event, state) {
+  const copies = (id) => run.deck.filter(x => x === id).length;
+  return groupDeck(run.deck, CARDS_BY_ID)
+    .filter(({ card }) => !card.evoOnly && event.upgrade[card.rarity || 'common'])
+    .map(entry => ({ ...entry, gets: CARDS_BY_ID[state.offers[event.upgrade[entry.card.rarity || 'common']].find(id => copies(id) < MAX_COPIES)] }))
+    .filter(entry => entry.gets);
+}
+
+function dayCare(trades, back) {
+  showChoice({
+    title: 'Day Care',
+    sub: 'Choose a move to trade. A common comes back uncommon, and an uncommon comes back rare.',
+    options: trades.map(({ card, count, gets }) => cardOption(card, run.stage, () => {
+      run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
+      toast(`${card.name} was traded for ${gets.name}!`, 'ok');
+      showMap();
+    }, count)),
+    skipLabel: 'Back',
+    onSkip: back,
+  });
+}
 
 /** The Move Tutor's lesson: 3 rare moves (or the best on offer if you own every rare), paid for only when one is learned. */
 function tutorCards(back, pay) {

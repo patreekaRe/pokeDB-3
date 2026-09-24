@@ -142,9 +142,19 @@ under Items below.
 `js/data/events.js` (numbers, often per biome as `[b1, b2, b3]`); what each
 choice does is in `EVENT_CHOICES` in `js/run.js`, shown with `showChoice`.
 `rollEvents()` (from `startBiome()`) stores `node.event` = `{ id }` plus any
-dice (Item Ball's `trap`, Team Rocket's `enemyId`), drawn from a shuffled
-bag so a biome has no repeats until all have come up; a refresh can't
-reroll them. Paid choices use `moneyOption`/`hpOption` (greyed out when
+dice (Item Ball's `trap`, Team Rocket's `enemyId`, Day Care's shuffled
+`offers` per rarity, Wishing Well's `luck` + `relics`, Shrine's `relics`),
+drawn from a shuffled bag so a biome has no repeats until all have come up;
+a refresh can't reroll them. Card/relic ids on an event are checked by
+`eventIdsKnown()` on restore. Lists (not single ids) are stored so a card
+or relic gained since the biome started is skipped for the next one:
+Day Care trades a common/uncommon (never an evolution card) for the first
+card of the next rarity you hold under `MAX_COPIES`; Shrine gives the first
+unowned relic of your type's `only` relics, then normal ones. The Wishing
+Well's one `luck` roll serves both tosses (the big toss wins whenever the
+small one would); a win offers its unowned `relics` via `showRelics()`.
+Fan Club never costs anything (₽ above half HP, else a Potion, or ₽ with a
+full Bag). Relics from events go through `gainRelic()` so Cleanse Tag works. Paid choices use `moneyOption`/`hpOption` (greyed out when
 unaffordable, and HP costs never faint you), and money/HP is only taken once
 the reward is actually received, so "Back" is free. Team Rocket's Battle
 runs `fight()` with a copy of the node typed `elite`, so it pays elite

@@ -6,7 +6,8 @@
    Numbers written as [a, b, c] are per biome (Biome 1, 2, 3). What each
    choice does is in eventRoom() in js/run.js; tune the numbers here.
 
-   Which event a room holds (and any dice, like the Item Ball's trap) is
+   Which event a room holds (and any dice, like the Item Ball's trap, the
+   Day Care's cards or the Wishing Well's luck and relics) is
    rolled when the biome starts, so a refresh can't reroll it.
    ============================================================ */
 
@@ -47,6 +48,34 @@ export const EVENTS = [
     fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), picked per biome.
     team: [['rattata', 'zubat'], ['zubat', 'geodude'], ['machop', 'rhyhorn']],
+  },
+  {
+    id: 'day-care', icon: '🥚', name: 'Day Care',
+    text: 'The Day Care couple offer to swap one of your moves for a rarer one they\'ve been raising.',
+    // a card of each rarity trades for a random card (of your type's pool) of the next one up; rares can't be traded
+    upgrade: { common: 'uncommon', uncommon: 'rare' },
+  },
+  {
+    id: 'wishing-well', icon: '⛲', name: 'Wishing Well',
+    text: 'Something glints at the bottom of an old well. They say a coin buys a wish.',
+    // pay ₽ for a chance of a relic (choose 1 of 3); the bigger toss has better odds
+    tosses: [
+      { price: [40, 55, 70], odds: 0.4 },
+      { price: [90, 120, 150], odds: 0.8 },
+    ],
+  },
+  {
+    id: 'fan-club', icon: '📣', name: 'Fan Club',
+    text: 'The Pokémon Fan Club rushes over to meet your Pokémon!',
+    healthyMoney: [40, 55, 70],   // ₽ if your HP is above half
+    tiredItem: 'potion',          // otherwise they hand you this (or tiredMoney with a full Bag)
+    tiredMoney: [15, 20, 25],
+  },
+  {
+    id: 'shrine', icon: '⛩️', name: 'Shrine',
+    text: 'An old shrine hums with the power of your Pokémon\'s type.',
+    // HP for one of your type's relics (a normal relic once you own them all); never faints you
+    offering: [10, 14, 18],
   },
 ];
 
