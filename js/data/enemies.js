@@ -93,8 +93,8 @@ export const ENEMY_DEFS = {
     name: 'Growlithe', type: 'fire', hp: 58, ...sprite('growlithe'),
     description: 'Loyal, loud and very warm.',
     moves: [
-      { kind: 'attack', name: 'Bite',        amount: 8 },
-      { kind: 'buff',   name: 'Howl',        amount: 2 },
+      { kind: 'attack', name: 'Bite',        amount: 6 },
+      { kind: 'buff',   name: 'Howl',        amount: 1 },
       { kind: 'attack', name: 'Flame Wheel', amount: 12 },
     ],
   },
@@ -169,9 +169,9 @@ export const ENEMY_DEFS = {
     name: 'Gloom', type: 'grass', hp: 60, ...sprite('gloom'),
     description: 'Its smell alone is a weapon.',
     moves: [
-      { kind: 'drain',  name: 'Absorb',      amount: 6, heal: 5 },
-      { kind: 'attack', name: 'Acid',        amount: 8 },
-      { kind: 'attack', name: 'Petal Dance', amount: 11 },
+      { kind: 'drain',  name: 'Absorb',      amount: 6, heal: 3 },
+      { kind: 'defend', name: 'Ingrain',     amount: 8 },
+      { kind: 'attack', name: 'Petal Dance', amount: 9 },
     ],
   },
   poliwhirl: {
