@@ -86,7 +86,12 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 
 There's no top HUD bar. The arena shows each fighter with a **nameplate**
 (a small Pokégear window: name + the same Gold/Silver `.gb-hp` HP bar as
-the map, filled by `setHpBar()` in `js/ui.js`) under the sprite. Its title row
+the map, filled by `setHpBar()` in `js/ui.js`), laid out like the games: the
+enemy's nameplate top left with the enemy top right, your Pokémon bottom left
+with its nameplate bottom right. The nameplates are direct children of
+`.arena` (outside `#enemy-zone`/`#player-zone`, which keep the sprites and the
+`pop()` numbers) on a 2-column, 3-row grid; the two sprites share the middle
+row in opposite columns, which keeps the scene short. Its title row
 holds the name and the **status badges**, like PSN/PAR in the games: no box,
 just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, weakened, strength, focus,
 guard, next-turn energy), built by `badgeFor()` in `js/battle.js`. When they
@@ -107,10 +112,12 @@ The enemy's next move (`#enemy-intent`, `renderIntent()`) is a compact
 one-row Pokégear bubble over its head: icon, number, move name, and a pixel
 tail. Its frame colour is the move kind (red attack, purple drain, blue
 defend, green buff), and it pops in (`.fresh`) only when the move changes.
-On short phones (≤700px tall, like the iPhone SE) the two nameplates end up
-level, so a media query at the end of the phone rules compacts them, shrinks
-the enemy sprite and keeps room above the text box; the phone rules also keep
-a 10px gap between the fighters' columns.
+On short phones (≤700px tall, like the iPhone SE) the scene is tight, so a
+media query at the end of the phone rules compacts the nameplates, keeps the
+enemy's box square (`min-height: 0`, or a tall sprite like Oddish stretches
+it), trims the space under your Pokémon so your nameplate clears the enemy's
+feet, and keeps room above the text box; the phone rules also keep a 10px
+gap between the two columns.
 Playing a card takes two taps (clicks or Enter presses too): `tapCard()` first
 picks it (`selectedUid`, `.selected` in the hand) and `renderFocus()` shows a
 big copy at the bottom middle in `#card-focus`, a dimmed full-screen layer;

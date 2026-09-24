@@ -204,30 +204,32 @@
       <div class="arena" id="arena">
         <div class="battle-relics" id="battle-relics" aria-label="Your relics"></div>
 
+        <div class="nameplate" id="enemy-plate">
+          <div class="nameplate-title"><strong id="enemy-name"></strong><div class="badges" id="enemy-status"></div><span id="enemy-type" class="chip"></span></div>
+          <div class="gb-hp" id="enemy-hp" role="progressbar" aria-label="Enemy HP" aria-valuemin="0">
+            <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+            <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>
+          </div>
+          <span class="gb-hp-num" id="enemy-hp-text"></span>
+        </div>
+
         <div class="enemy-zone" id="enemy-zone">
           <div class="intent" id="enemy-intent"></div>
           <div class="enemy-portrait" id="enemy-portrait-box"><img id="enemy-img" alt=""></div>
-          <div class="nameplate" id="enemy-plate">
-            <div class="nameplate-title"><strong id="enemy-name"></strong><div class="badges" id="enemy-status"></div><span id="enemy-type" class="chip"></span></div>
-            <div class="gb-hp" id="enemy-hp" role="progressbar" aria-label="Enemy HP" aria-valuemin="0">
-              <span class="gb-hp-tag" aria-hidden="true">HP:</span>
-              <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>
-            </div>
-            <span class="gb-hp-num" id="enemy-hp-text"></span>
-          </div>
         </div>
 
         <div class="player-zone" id="player-zone">
           <img id="player-sprite" class="pixel" alt="Your Pokémon">
           <div class="intro-ball" id="intro-ball" hidden><span class="pokeball"></span></div>
-          <div class="nameplate" id="player-plate">
-            <div class="nameplate-title"><strong id="player-name"></strong><div class="badges" id="player-status"></div></div>
-            <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
-              <span class="gb-hp-tag" aria-hidden="true">HP:</span>
-              <span class="gb-hp-track"><span class="gb-hp-fill" id="player-hp-fill"></span></span>
-            </div>
-            <span class="gb-hp-num" id="player-hp-text"></span>
+        </div>
+
+        <div class="nameplate" id="player-plate">
+          <div class="nameplate-title"><strong id="player-name"></strong><div class="badges" id="player-status"></div></div>
+          <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
+            <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+            <span class="gb-hp-track"><span class="gb-hp-fill" id="player-hp-fill"></span></span>
           </div>
+          <span class="gb-hp-num" id="player-hp-text"></span>
         </div>
 
         <div class="battle-log quiet" id="battle-log"><span id="battle-log-text" aria-hidden="true"></span><span class="sr-only" id="battle-log-live" aria-live="polite"></span></div>

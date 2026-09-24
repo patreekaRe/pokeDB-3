@@ -350,9 +350,14 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: end;
+  grid-template-rows: auto 1fr auto;
   padding: 4px 4px 46px;
 }
+/* Laid out like the games: the enemy's nameplate top left with the enemy top right, your Pokémon bottom
+   left with its nameplate bottom right. The two sprites share the middle row, in different columns, so
+   the scene is no taller than when each nameplate sat under its own sprite. */
+#enemy-plate  { grid-column: 1; grid-row: 1; align-self: center; justify-self: center; }
+#player-plate { grid-column: 2; grid-row: 3; align-self: end; justify-self: center; margin-bottom: 20px; }
 
 .battle-relics { position: absolute; top: 0; left: 4px; z-index: 2; display: flex; gap: 4px; }
 .battle-relic {
@@ -465,6 +470,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .enemy-zone {
   position: relative;
   grid-column: 2;
+  grid-row: 1 / 3;
   justify-self: center;
   align-self: start;
   width: min(100%, 300px);
@@ -530,7 +536,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .player-zone {
   position: relative;
   grid-column: 1;
-  grid-row: 1;
+  grid-row: 2 / 4;
   align-self: end;
   justify-self: center;
   display: flex;
@@ -632,7 +638,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .enemy-portrait.entering { animation: enemyEnter 0.55s ease-out; }
 @keyframes enemyEnter { from { opacity: 0; transform: translateX(60px) scale(0.85); } }
 .player-zone.awaiting #player-sprite,
-.player-zone.awaiting #player-plate { visibility: hidden; }
+.player-zone.awaiting ~ #player-plate { visibility: hidden; }
 #player-sprite.released { animation: released 0.6s ease-out; }
 @keyframes released {
   from { transform: scale(0.15); filter: brightness(8); }
@@ -1145,17 +1151,20 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   .reward-options { gap: 12px; }
 }
 
-/* phones: a gap between the two fighters' columns, so their nameplates never touch */
+/* phones: a gap between the two columns, so a nameplate never touches the sprite beside it */
 @media (max-width: 720px) {
   .arena { column-gap: 10px; }
 }
-/* short phones (iPhone SE): both nameplates end up level, so make them compact and give the text box room */
+/* short phones (iPhone SE): the scene is tight, so make the nameplates compact, shrink the enemy and let
+   your nameplate and Pokémon sit lower, so your nameplate clears the enemy's feet */
 @media (max-width: 720px) and (max-height: 700px) {
   .arena { padding-bottom: 56px; }
   .nameplate { padding: 4px 7px 4px; gap: 2px; }
   .nameplate-title strong { font-size: 0.78rem; }
   .nameplate .gb-hp-num { font-size: 0.75rem; }
-  .enemy-portrait { width: clamp(84px, 15vh, 120px); }
+  .enemy-portrait { width: clamp(84px, 15vh, 120px); min-height: 0; }   /* min-height: 0 keeps a tall sprite's box square */
+  .player-zone { padding-bottom: 4px; }
+  #player-plate { margin-bottom: 4px; }
   .enemy-zone { gap: 3px; }
   .intent { margin-bottom: 5px; }
 }
