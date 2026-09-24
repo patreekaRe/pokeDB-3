@@ -199,7 +199,10 @@ attribute in sync if you add another way to open or close the shop:
 Every `.dialog`, every `.panel` (start screen, deck preview), the Bag, the
 Continue card and the Poké Ball menu are light Pokégear windows (a `.panel`
 inside a `.dialog` is a flat inset box instead):
-muted parchment inside a chunky grey frame, square corners. The colours are
+muted parchment inside a chunky grey frame, softly rounded corners (`--round` 12px windows,
+`--round-sm` 8px buttons/tiles, `--round-xs` 4px tiny bits, all in `:root`;
+pieces without their own radius get it from the "soft corners" block at the
+end of `css/screens.css`). The colours are
 the `--win-*` tokens in `:root` (`css/base.css`); tune the tone there. Inside
 a `.dialog` the usual tokens (`--ink`, `--muted`, `--panel`, `--gold`...) are
 re-pointed to dark-on-parchment values, so most content re-themes itself.

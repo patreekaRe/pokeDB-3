@@ -35,7 +35,7 @@
   align-items: center;
   gap: 3cqw;
   padding: 9cqw 6cqw 6cqw;
-  border-radius: 0;
+  border-radius: 7cqw;
   border: 2.4cqw solid var(--c2);
   background:
     repeating-conic-gradient(rgba(255, 255, 255, 0.07) 0 25%, transparent 0 50%) 0 0 / 4cqw 4cqw,
@@ -194,3 +194,8 @@
   text-align: center;
 }
 @keyframes focusIn { from { transform: translateY(40px) scale(0.6); opacity: 0; } }
+
+/* soft corners inside a card, in step with its 7cqw outer corners */
+.card-art, .card-text { border-radius: 4cqw; }
+.card-cost { border-radius: 4cqw; }
+.lock-badge, .in-deck { border-radius: 3cqw; }
