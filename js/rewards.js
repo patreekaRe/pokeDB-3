@@ -70,8 +70,9 @@ export function relicChoices(run, { boss = false } = {}) {
  *             battle: the first blows the tile up with a `confirm` button under it (openFocus).
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  *   coins     after a fight, { foe, coins, money, disadvantage }: an icon row, and (on the first screen only) the text box's first lines
+ *   layout    extra class for the options box ('mart-window'); options may carry a `group` and a `zoom` tile
  */
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '' }) {
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;
@@ -84,8 +85,17 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   ];
   sayLines(lines.filter(Boolean));
 
+  // a `layout` (the Mart's 'mart-window') styles the options as one window; options with a `group` are
+  // gathered into a .choice-group per group, in the order they first appear
   const box = $('reward-options');
   box.replaceChildren();
+  box.className = `reward-options${layout ? ` ${layout}` : ''}`;
+  const groups = {};
+  const home = (group) => {
+    if (!group) return box;
+    if (!groups[group]) box.append(groups[group] = el('div', `choice-group group-${group}`));
+    return groups[group];
+  };
 
   let done = false;
   const once = (fn) => () => { if (done) return; done = true; closeFocus(); fn(); };
@@ -97,7 +107,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.disabled = !!option.disabled;
     const take = once(option.onPick);
     btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
-    box.append(btn);
+    home(option.group).append(btn);
   }
 
   const skip = $('reward-skip');
@@ -115,7 +125,7 @@ let focus = null;   // { layer, btn, onKey }
 
 function openFocus(option, btn, take) {
   closeFocus();
-  const big = option.node.cloneNode(true);
+  const big = (option.zoom || option.node).cloneNode(true);   // zoom: the bare tile, when node wraps it (a Mart price tag)
   big.classList.add('focus-card');
   if (big.classList.contains('relic')) big.classList.add('focus-item');
   big.tabIndex = 0;

@@ -1232,7 +1232,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   position: sticky;
   bottom: max(10px, env(safe-area-inset-bottom));
   z-index: 3;
-  width: min(100%, 620px);
+  width: min(100%, 720px);
   margin-top: auto;
   display: flex;
   align-items: stretch;
@@ -1298,26 +1298,37 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .reward-option { background: none; border: 0; padding: 0; width: clamp(130px, 28vw, 200px); transition: transform 0.15s; }
 .reward-option:hover, .reward-option:focus-visible { transform: translateY(-8px) scale(1.04); }
 .reward-option:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
-.reward-skip { padding-top: 8px; }
 
 /* ---------- relics ---------- */
+/* Relic, item and choice tiles (Pokémon Center, events, Forget a move): a Pokégear window, like the
+   text box and the menus: parchment in a grey frame, pixel-font name, dark text. */
 .relic {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 18px 14px;
-  border-radius: 16px;
-  background: linear-gradient(165deg, #3b3f78, #22264f);
-  border: 2px solid var(--gold);
-  text-align: center;
-  color: #fff;
-  min-height: 190px;
   justify-content: center;
+  gap: 8px;
+  min-height: 190px;
+  padding: 16px 12px;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round);
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  color: var(--win-ink);
 }
-.relic-icon { font-size: 3rem; line-height: 1; }
-.relic-name { font-size: 1.1rem; }
-.relic-text { font-size: 0.9rem; color: #dfe3ff; }
+.relic-icon { font-size: 3rem; line-height: 1; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25)); }
+.relic-name { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.95rem; line-height: 1.3; }
+.relic-text { font-size: 0.88rem; font-weight: 700; line-height: 1.3; color: var(--win-muted); }
+.reward-bottom > .ds-btn { flex: none; align-self: center; }
+.reward-option > .relic { height: 100%; }   /* tiles side by side share one height */
+/* phones: the text box takes the full width, with a smaller Skip / Leave under it on the right */
+@media (max-width: 720px) {
+  .reward-bottom { flex-direction: column-reverse; gap: 8px; }
+  .reward-bottom > .ds-btn { align-self: flex-end; }
+  .reward-bottom > .ds-btn .pp-pill { font-size: 0.85rem; padding: 8px 14px 7px 26px; }
+  .reward-bottom > .ds-btn .pp-pill::before { left: 11px; }
+}
 
 /* ---------- evolution and deck dialogs ---------- */
 .evolve-art { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 10px 0 14px; }
@@ -1830,6 +1841,59 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .map-node.type-shop .map-town, .howto-node.town.shop { border-color: #3878f0; }
 .map-node.type-event .map-town, .howto-node.town.event { border-color: #b058d8; }
 .money-pill { color: #f8f8f8; }
+/* The Mart: one Pokégear window laid out like Slay the Spire's shop. Moves along the top; below, two
+   rows of bare icons (items, then relics) with the forget-a-move service beside them; every
+   price under its ware. */
+.reward-options.mart-window {
+  flex: none;                /* the screen is a flex column: without this the window gets squeezed shut */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "cards cards" "items service" "relics service";
+  align-items: stretch;
+  gap: 16px 22px;
+  width: min(100%, 900px);
+  padding: 22px 20px;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round);
+  /* the Mart's floor: cool grey checker tiles, so the warm parchment of the cards and shelves stands out */
+  background: repeating-conic-gradient(#dfe5ee 0 25%, #ecf0f5 0 50%) 0 0 / 24px 24px;
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 4px 0 2px rgba(0, 0, 0, 0.4);
+}
+.mart-window .choice-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+.mart-window .group-cards { grid-area: cards; margin-bottom: 6px; }
+.mart-window .group-items { grid-area: items; }
+.mart-window .group-relics { grid-area: relics; }
+.mart-window .group-service { grid-area: service; align-items: center; }
+.mart-window .group-cards .reward-option { width: clamp(104px, 15vw, 150px); }
+.mart-window .group-service .reward-option { width: clamp(120px, 17vw, 160px); }
+/* items on one row and relics on the next, as bare icons with their prices: both rows centred with one spacing,
+   so the 2 relics sit in the gaps under the 3 items, like a 3-2 zone */
+.mart-window :is(.group-items, .group-relics) { justify-content: center; align-items: flex-end; gap: 12px 28px; }
+.mart-window :is(.group-items, .group-relics) .reward-option { width: 84px; flex: none; }
+/* just the icon (the name and text show when you tap it) */
+.mart-window :is(.group-items, .group-relics) .relic { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+.mart-window :is(.group-items, .group-relics) :is(.relic-name, .relic-text) { display: none; }
+.mart-window :is(.group-items, .group-relics) .relic-icon { font-size: 2.8rem; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25)); }
+/* the forget service: a tall tile beside the icons, like the removal card, in the Mart's own blue
+   (the colour of Mart rooms on the map) so it reads as a counter service rather than a ware */
+.mart-window .group-service .relic {
+  min-height: 200px;
+  padding: 16px 10px;
+  border-color: #3878f0;
+  background: repeating-linear-gradient(#dce8ff 0 4px, #cddcfa 4px 8px);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #1848a0, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  color: #182850;
+}
+.mart-window .group-service .relic-text { color: #34467a; }
+.mart-window .mart-price { padding: 0; border: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 1rem; }
+.mart-window .mart-price.too-dear { color: #c02020; }
+.mart-window .reward-option:disabled { opacity: 0.55; }
+@media (max-width: 720px) {
+  .reward-options.mart-window { grid-template-columns: 1fr; grid-template-areas: "cards" "items" "relics" "service"; gap: 14px; padding: 16px 10px; }
+  .mart-window .group-cards { gap: 10px; }
+  .mart-window .group-cards .reward-option { width: calc((100% - 20px) / 3); }
+  .mart-window :is(.group-items, .group-relics) .reward-option { width: 80px; }
+}
 .mart-ware { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .mart-ware > * { width: 100%; }
 .mart-price {
@@ -1848,7 +1912,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .relic.focus-item { width: min(70vw, 240px); min-height: 0; cursor: pointer; animation: focusIn 0.18s ease-out; }
 .relic.focus-item.unplayable { filter: grayscale(0.6) brightness(0.8); }
 .relic.item-tile { border-color: #3878f0; }
-.item-full { font-family: var(--pixel-font); font-size: 0.7rem; color: #f8b8a8; }
+.item-full { font-family: var(--pixel-font); font-size: 0.7rem; color: #c02020; }
 .item-row .howto-li-text { flex: 1; }
 .item-actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
 .bag .item-actions .btn { padding: 4px 8px 4px 16px; font-size: 0.7rem; min-height: 0; }

@@ -860,12 +860,22 @@ function martStock() {
 }
 
 /** A shop tile: the usual card or relic tile with its price tag underneath, greyed out if you can't afford it. */
-function ware(option, price, onBuy) {
+/**
+ * A Mart tile with its price under it (red when you can't afford it). group places it in the Mart window:
+ * 'cards' (the top row), 'items' / 'relics' (rows of icons) or 'service' (forgetting a move).
+ * Buying takes two taps: the first blows the tile up with a "Buy" button under it.
+ */
+function ware(option, price, onBuy, { group, name }) {
   const node = el('div', 'mart-ware');
-  node.append(option.node, el('span', 'mart-price', `💴 ${price}`));
+  const dear = price > run.money;
+  node.append(option.node, el('span', `mart-price${dear ? ' too-dear' : ''}`, `💴 ${price}`));
   return {
     node,
-    disabled: option.disabled || price > run.money,
+    zoom: option.node,
+    group,
+    disabled: option.disabled || dear,
+    ask: `Buy ${name} for ₽${price}?`,
+    confirm: `Buy ₽${price}`,
     onPick: () => { run.money -= price; setMoney(run.money); playSound('buy'); onBuy(); },
   };
 }
@@ -882,7 +892,7 @@ function martRoom() {
       run.deck.push(card.id);
       toast(`Bought ${card.name}.`, 'ok');
       martRoom();
-    });
+    }, { group: 'cards', name: card.name });
   });
 
   const bagFull = run.items.length >= ITEM_SLOTS;
@@ -895,7 +905,7 @@ function martRoom() {
       run.items.push(found.id);
       toast(`Bought a ${found.name}.`, 'ok');
       martRoom();
-    });
+    }, { group: 'items', name: `the ${found.name}` });
   });
 
   const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
@@ -906,13 +916,14 @@ function martRoom() {
       toast(`Bought ${relic.name}!`, 'ok');
       if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
       martRoom();
-    });
+    }, { group: 'relics', name: `the ${relic.name}` });
   });
 
   const removalPrice = MART_REMOVAL.base + MART_REMOVAL.step * run.removals;
   const forget = forgetOption(martRoom);
-  // the money is only taken once a card is actually forgotten, so "Back" out of the picker is free
-  const removal = { ...ware(forget, removalPrice, () => {}), onPick: () => forgetMove(martRoom, () => {
+  // the money is only taken once a card is actually forgotten, so "Back" out of the picker is free;
+  // no Buy step either, since the picker is its own confirm
+  const removal = { ...ware(forget, removalPrice, () => {}, { group: 'service', name: '' }), ask: undefined, onPick: () => forgetMove(martRoom, () => {
     run.money -= removalPrice;
     run.removals += 1;
     setMoney(run.money);
@@ -926,6 +937,7 @@ function martRoom() {
     options: [...cards, ...items, ...relics, removal],
     skipLabel: 'Leave the Mart',
     onSkip: showMap,
+    layout: 'mart-window',
   });
 }
 

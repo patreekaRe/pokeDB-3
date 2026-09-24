@@ -144,7 +144,12 @@ cards, items and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
 and saved with the map, so a refresh can't reroll the shelves.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
 re-renders itself after each purchase; `ware()` wraps a card/item/relic tile with
-its price tag and disables it when you can't afford it. Removal reuses
+its price tag (red and disabled when you can't afford it), a `group` and a
+two-tap "Buy ₽N" confirm. `layout: 'mart-window'` turns the options into one
+window laid out like Slay the Spire's shop (the user's reference): moves on
+top, then items (3) and relics (2) as bare icons in a staggered 3-2, and the
+forget service as a Mart-blue tile beside them, on a cool grey checker floor
+so the parchment cards stand out. (Not `.mart`: that's the top bar's Mart icon.) Removal reuses
 `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing.
 Purchases are only saved when you leave for the map. Items are covered
 under Items below.
@@ -285,8 +290,9 @@ keeps the native tooltip). Buttons and other controls are skipped, since tapping
 them already does something. Give new non-button things a `title` and they get
 this for free.
 Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
-in `#reward-log`, a copy of the battle text box stuck to the bottom of the
-screen (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
+in `#reward-log`, a copy of the battle text box pinned to the bottom of the
+screen beside the Skip / Leave button (stacked on phones), and draws its
+`.relic` tiles (relics, items, choices) as parchment Pokégear windows (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
 type out and wait for a tap, like the games (the user wants no autoplay). After
 a fight, `coins` (`run.pendingCoins`: `{ foe, coins, money, disadvantage }`)
 shows as an icon row (💰 +25 💴 +₽120) on every step, and the first screen's
