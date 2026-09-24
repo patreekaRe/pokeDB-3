@@ -150,7 +150,9 @@ window laid out like Slay the Spire's shop (the user's reference): moves on
 top, then items (3) and relics (2) as bare icons in a staggered 3-2, and the
 forget service as a Mart-blue tile beside them, on a cool grey checker floor
 so the parchment cards stand out. (Not `.mart`: that's the top bar's Mart icon.) Removal reuses
-`forgetMove(martRoom, pay)`, so backing out of the picker costs nothing.
+`forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
+bought once per Mart (`stock.removed`, then the tile greys out). Every forget picker
+(Center, Mart, Cleanse Tag, events) takes two taps, like adding a card: `ask`/`confirm` "Forget it".
 Purchases are only saved when you leave for the map. Items are covered
 under Items below.
 

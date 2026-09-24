@@ -580,11 +580,15 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
   showChoice({
     title: 'Forget a move',
     sub: `Choose a card to remove from your deck. It can't go below ${MIN_DECK} cards.`,
-    options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => cardOption(card, run.stage, () => {
-      run.deck.splice(run.deck.indexOf(card.id), 1);
-      toast(`${card.name} was forgotten.`, 'ok');
-      done();
-    }, count)),
+    options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => ({
+      ...cardOption(card, run.stage, () => {
+        run.deck.splice(run.deck.indexOf(card.id), 1);
+        toast(`${card.name} was forgotten.`, 'ok');
+        done();
+      }, count),
+      ask: `Forget ${card.name}?`,
+      confirm: 'Forget it',
+    })),
     skipLabel,
     onSkip: back,
   });
@@ -920,16 +924,20 @@ function martRoom() {
   });
 
   const removalPrice = MART_REMOVAL.base + MART_REMOVAL.step * run.removals;
-  const forget = forgetOption(martRoom);
+  const forget = stock.removed
+    ? { ...textOption('📖', 'Forget a move', 'Only one move can be forgotten per Mart.', () => {}), disabled: true }
+    : forgetOption(martRoom);
   // the money is only taken once a card is actually forgotten, so "Back" out of the picker is free;
   // no Buy step either, since the picker is its own confirm
   const removal = { ...ware(forget, removalPrice, () => {}, { group: 'service', name: '' }), ask: undefined, onPick: () => forgetMove(martRoom, () => {
+    stock.removed = true;   // once per Mart, like Slay the Spire's card removal
     run.money -= removalPrice;
     run.removals += 1;
     setMoney(run.money);
     playSound('buy');
     martRoom();
   }) };
+  if (stock.removed) removal.node.querySelector('.mart-price').remove();
 
   showChoice({
     title: 'Poké Mart',
