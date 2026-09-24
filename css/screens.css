@@ -396,20 +396,23 @@ body.titling { overflow: hidden; }
 .starter-source { position: absolute; top: 5px; right: 6px; font-size: 1rem; line-height: 1; }   /* 💰 shop / 🏆 achievement */
 .starter-btn.secret { grid-column: 2; }   /* the lone last tile: centred under the grid, like a final boss */
 
-.starter-detail {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 3px dashed var(--win-edge);
-  display: flex;
-  align-items: center;
-  justify-content: center;   /* with nothing picked yet, the lone button sits in the middle */
-  gap: 14px;
-  flex-wrap: wrap;
+/* the picked starter's window (#starter-dialog) */
+.starter-detail { display: flex; align-items: center; gap: 16px; text-align: left; }
+.starter-detail img { flex: none; width: 104px; height: 104px; object-fit: contain; }
+.detail-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.detail-text h3 { margin: 0; font-size: 1.3rem; }
+.detail-text p { margin: 0; color: var(--muted); line-height: 1.4; }
+.detail-type { padding: 2px 10px 2px 6px; border-radius: 999px; font-size: 0.8rem; font-weight: 800; color: #fff; background: #777; }
+.detail-type.type-fire  { background: #c9431f; }
+.detail-type.type-grass { background: #2f8f43; }
+.detail-type.type-water { background: #2569c7; }
+.detail-type.type-psychic { background: #b04a8a; }
+.starter-dialog .dialog-actions { margin-top: 18px; }
+@media (max-width: 420px) {
+  .starter-detail { flex-direction: column; text-align: center; }
+  .detail-text { align-items: center; }
+  .starter-dialog .dialog-actions { flex-direction: column-reverse; align-items: stretch; }
 }
-.starter-detail img { width: 96px; height: 96px; object-fit: contain; }
-.detail-text { flex: 1; min-width: 180px; }
-.detail-text h3 { font-size: 1.2rem; }
-.detail-text p { color: var(--muted); }
 
 /* ============ 2. DECK PREVIEW ============ */
 #preview-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; }

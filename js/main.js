@@ -85,7 +85,6 @@ function renderStarters() {
     btn.addEventListener('click', () => {
       if (unlocked) playCry(starter.line[0].id);
       if (unlocked && starter.comingSoon) return toast(`✨ ${starter.line[0].name}'s own moves are coming soon!`, 'ok');
-      if (unlocked && selected === starter) return showChooseButton();
       if (unlocked) return selectStarter(starter);
       if (isShopUnlock(starter)) return toggleShop(starter.id);
       toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
@@ -147,21 +146,13 @@ function selectStarter(starter) {
   const type = TYPES[starter.type];
   $('detail-sprite').src = spriteUrl(starter, 'front');
   $('detail-sprite').alt = starter.line[0].name;
-  $('detail-sprite').hidden = false;
-  $('detail-name').textContent = `${starter.line[0].name}  ${type.icon} ${type.label}`;
+  $('detail-name').textContent = starter.line[0].name;
+  $('detail-type').textContent = `${type.icon} ${type.label}`;
+  $('detail-type').className = `detail-type type-${starter.type}`;
   $('detail-blurb').textContent = starter.blurb;
-  $('detail-text').hidden = false;
-  $('choose-btn').disabled = false;
 
   setBackdrop(BACKDROPS[starter.type], starter.type);
-}
-
-/** Tapping the picked starter again: bring "See starting deck" into view. */
-function showChooseButton() {
-  const btn = $('choose-btn');
-  const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  btn.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
-  btn.focus({ preventScroll: true });
+  openDialog('starter-dialog');
 }
 
 /* ---------- moving between screens ---------- */
@@ -194,9 +185,6 @@ function showStart() {
 function goToMenu() {
   abandonRun();
   selected = null;
-  $('detail-sprite').hidden = true;
-  $('detail-text').hidden = true;
-  $('choose-btn').disabled = true;
   showStart();
 }
 
@@ -254,7 +242,17 @@ function init() {
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 
-  $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
+  $('choose-btn').addEventListener('click', () => {
+    closeDialog('starter-dialog');
+    if (selected) previewStarter(selected);
+  });
+  $('detail-back').addEventListener('click', () => closeDialog('starter-dialog'));
+  // a tap on the dimmed backdrop lands on the <dialog> itself (as do taps on its padding, hence the box check)
+  $('starter-dialog').addEventListener('click', (e) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const outside = e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom;
+    if (e.target === e.currentTarget && outside) closeDialog('starter-dialog');
+  });
   $('continue-btn').addEventListener('click', () => {
     const btn = $('continue-btn');
     if (!savedRun || btn.classList.contains('opening')) return;

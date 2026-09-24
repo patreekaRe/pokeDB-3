@@ -461,6 +461,10 @@ hide so the piles, ₽ and buttons fit on one row.
 In battle, the draw and discard piles sit beside the Poké Ball.
 The "Main menu" item hides itself on the start screen (`showScreen()`).
 
+Tapping an unlocked starter picks it and opens `#starter-dialog`, a modal
+window (sprite, name, type chip, blurb, "See starting deck →" and Back) on
+top of everything; Back, Escape or a tap on the dimmed backdrop closes it
+and keeps the pick, and tapping the picked tile again reopens it.
 Starter tiles are all one size: a locked one shows a 💰 (Shop) or 🏆
 (achievement) corner badge instead of a text line, and an unlocked one shows
 nothing extra. The sprite GIFs pad their Pokémon very unevenly, so
