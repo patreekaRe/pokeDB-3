@@ -179,7 +179,7 @@
   padding: 0 16px calc(24px + env(safe-area-inset-bottom));
   background: rgba(8, 10, 24, 0.45);
 }
-.card.focus-card { --card-w: min(56vw, 240px); animation: focusIn 0.18s ease-out; }
+.card.focus-card { --card-w: min(48vw, 205px); animation: focusIn 0.18s ease-out; }
 .card.focus-card[role="button"]:hover { transform: none; }
 .card.focus-card.unplayable { filter: grayscale(0.6) brightness(0.8); }
 .focus-hint {
