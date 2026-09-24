@@ -48,10 +48,14 @@ export function evolutionChoices(run) {
   return pool.sort(() => Math.random() - 0.5).slice(0, 2);
 }
 
-/** Pick up to 3 relics you don't already have and that suit your starter. */
-export function relicChoices(run) {
-  const pool = RELICS.filter(r =>
-    !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
+/**
+ * Pick up to 3 relics you don't already have and that suit your starter.
+ * A boss offers its own boss relics, or the normal pool once you hold them all.
+ */
+export function relicChoices(run, { boss = false } = {}) {
+  const fits = RELICS.filter(r => !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
+  const bossPool = boss ? fits.filter(r => r.boss) : [];
+  const pool = bossPool.length ? bossPool : fits.filter(r => !r.boss);
   return pool.sort(() => Math.random() - 0.5).slice(0, 3);
 }
 

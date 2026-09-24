@@ -101,8 +101,23 @@ move" (`forgetOption()` / `forgetMove()`): a `showChoice` picker of the deck
 grouped with `groupDeck` (×N badges), "Back" returns to the Center. It never
 takes the deck below `MIN_DECK` (7); at the minimum the tile is shown
 `disabled` (`showChoice` options accept `disabled`). Forgetting doesn't
-count as a rest for `restCount`. More removal sources (card shop, events,
-relics) are planned with those features.
+count as a rest for `restCount`. The Cleanse Tag relic reuses the picker
+right after it's picked up (`forgetMove(back, done)`: `done` continues the
+reward chain instead of returning to the map). More removal sources (card
+shop, events) are planned with those features.
+
+## Relics
+
+`js/data/relics.js`; effects are applied where `hasRelic()` appears in
+`js/battle.js` (Cleanse Tag and Choice Band act in `js/run.js`). Flags:
+`only` = one type's starters, `rare` = never from the Starting Relic Charm,
+`boss` = only offered after a boss. `relicChoices(run, { boss })` in
+`js/rewards.js` offers only boss relics after a boss (normal ones once you
+own them all), and never offers boss relics anywhere else. The three boss
+relics each give +1 PP with a catch (Choice Band: no Rest; Choice Specs:
+draw 1 fewer; Toxic Orb: lose 1 HP a turn, never below 1). Each type has two
+relics that push its archetype. Healing from Big Root only boosts card and
+power heals, not other relics.
 
 ## Battle screen layout
 
@@ -355,6 +370,12 @@ There's no automated test suite. Before committing:
    real `js/data/` files. Compare against the previous data from `git show`
    under the same bot. The bot must value damage prevented above damage
    dealt (about 1.6×), or it under-blocks and misjudges attack-heavy pools.
+   It must also pick relics by measured value (e.g. win rate starting with
+   only that relic), not at random or by a hand-written list: the healing
+   relics (Leftovers, Shell Bell) carry bot runs, and energy relics
+   (Choice Scarf) must rank with the boss relics, or old-vs-new relic pool
+   comparisons swing 20–40 points from pick bias alone. Absolute win rates
+   differ between bot versions; only compare runs of the same bot.
 4. After pushing, GitHub Pages can take several minutes (occasionally
    10+) to actually serve the new files — `raw.githubusercontent.com/.../main/<path>`
    reflects the pushed source immediately and is the fastest way to confirm

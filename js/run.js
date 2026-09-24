@@ -44,9 +44,9 @@ function isTypeDisadvantage(node) {
   return enemyType.beats === run.starter.type;
 }
 
-/** Pick one random relic for the Starting Relic Charm passive (never a rare one - those are meant to be found). */
+/** Pick one random relic for the Starting Relic Charm passive (never a rare or boss one - those are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
-  const pool = RELICS.filter(r => !r.rare && (!r.only || r.only === run.starter.type));
+  const pool = RELICS.filter(r => !r.rare && !r.boss && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -333,7 +333,7 @@ function afterFight(node, result) {
     });
     if (run.biome === BIOMES.length - 1) { collect(); return endRun(true); }       // final boss: you win!
     announceUnlocks();
-    steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next));
+    steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss defeated!', next, { boss: true }));
   }
 
   runSteps(steps, () => {
@@ -387,16 +387,17 @@ function offerEvolutionCard(next) {
   });
 }
 
-function offerRelic(title, next) {
-  const relics = relicChoices(run);
+function offerRelic(title, next, { boss = false } = {}) {
+  const relics = relicChoices(run, { boss });
   if (!relics.length) return next();
 
   showChoice({
     title,
-    sub: 'Choose a relic. It helps you for the rest of the run.',
+    sub: relics[0].boss ? 'Choose a boss relic. Each one is strong, but comes with a catch.' : 'Choose a relic. It helps you for the rest of the run.',
     options: relics.map(relic => relicOption(relic, () => {
       run.relics.push(relic.id);
       toast(`Found ${relic.name}!`, 'ok');
+      if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
       next();
     })),
     onSkip: next,
@@ -417,7 +418,9 @@ function restSite() {
   showChoice({
     title: 'Pokémon Center',
     sub: 'A safe place to catch your breath.',
-    options: [textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, async () => {
+    options: [run.relics.includes('choice-band')
+      ? { ...textOption('🏥', 'Rest', 'Your Choice Band won\'t let you rest.', () => {}), disabled: true }
+      : textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, async () => {
       const thisRun = run;
       run.hp += heal;
       run.restCount += 1;
@@ -442,16 +445,17 @@ function forgetOption(back) {
   return { ...textOption('📖', 'Forget a move', text, () => forgetMove(back)), disabled: atMin };
 }
 
-function forgetMove(back) {
+/** `done` runs after a card is forgotten; Cleanse Tag passes its reward chain here, the Center returns to the map. */
+function forgetMove(back, done = showMap) {
   showChoice({
     title: 'Forget a move',
     sub: `Choose a card to remove from your deck. It can't go below ${MIN_DECK} cards.`,
     options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => cardOption(card, run.stage, () => {
       run.deck.splice(run.deck.indexOf(card.id), 1);
       toast(`${card.name} was forgotten.`, 'ok');
-      showMap();
+      done();
     }, count)),
-    skipLabel: 'Back',
+    skipLabel: back === done ? 'Keep every move' : 'Back',
     onSkip: back,
   });
 }

@@ -84,7 +84,7 @@ export function startBattle({ run, encounter, onEnd }) {
     nextEnergy: 0,     // bonus energy waiting for next turn
     focus: 0,          // bonus damage waiting for your next attack
     guard: false,      // blocks the next enemy attack completely
-    strength: 0,       // extra damage on every hit, for the rest of this fight
+    strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
     powers: {},        // power effects played this fight, added up: { blockEachTurn: 5, ... }
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
@@ -102,7 +102,7 @@ export function startBattle({ run, encounter, onEnd }) {
       maxHp: encounter.maxHp,
       block: 0,
       strength: encounter.strength,   // extra damage on every attack
-      burn: 0,
+      burn: run.relics.includes('flame-orb') ? 3 : 0,
       weakened: false,                // next attack deals half
       moveIndex: Math.floor(Math.random() * def.moves.length),
     },
@@ -180,18 +180,25 @@ function beginPlayerTurn() {
   b.turn += 1;
   const p = b.powers;
   b.block = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0);   // block only lasts one round
-  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0);
+  const bossEnergy = ['choice-band', 'choice-specs', 'toxic-orb'].filter(hasRelic).length;
+  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy;
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
 
+  if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; pop('player-zone', '-1 ☠️', 'dmg'); }
   if (hasRelic('leftovers')) healPlayer(3);
-  if (p.healEachTurn) healPlayer(p.healEachTurn);
+  if (p.healEachTurn) healPlayer(p.healEachTurn + healBonus());
+  if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); }
   if (p.burnEachTurn) { b.enemy.burn += p.burnEachTurn; pop('enemy-zone', `🔥 Burn ${p.burnEachTurn}`, 'note'); }
   if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); }
-  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0));
+  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0)
+    + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0));
   b.busy = false;
   renderAll();
 }
+
+/** Big Root: extra healing on heals that come from cards and powers (not other relics). */
+const healBonus = () => (hasRelic('big-root') ? 2 : 0);
 
 /** Heal the player (never above max HP). Returns how much was healed. */
 function healPlayer(amount) {
@@ -306,7 +313,7 @@ async function playCard(uid) {
   // --- everything else a card can do ---
   if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
   if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '💨 Weakened', 'note'); }
-  if (e.block)      { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); }
+  if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); }
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
   if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); }
@@ -316,9 +323,13 @@ async function playCard(uid) {
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
     pop('player-zone', `✨ ${card.name}`, 'note good', 200);
   }
-  if (e.heal)       healPlayer(e.heal);
+  if (e.heal)       healPlayer(e.heal + healBonus());
   if (e.draw)       draw(e.draw);
-  if (card.exhaust) pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
+  if (card.power && hasRelic('power-herb')) draw(1);
+  if (card.exhaust) {
+    pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
+    if (hasRelic('eject-pack')) draw(1);
+  }
 
   renderAll();
   await sleep(220);
@@ -363,8 +374,11 @@ async function endTurn() {
   b.busy = true;
 
   // Discard whatever is left in your hand, except cards that retain.
-  b.discard.push(...b.hand.filter(h => !h.card.retain).map(h => h.card));
-  b.hand = b.hand.filter(h => h.card.retain);
+  // Grip Claw also keeps the leftmost card that would have been discarded.
+  const gripped = hasRelic('grip-claw') ? b.hand.find(h => !h.card.retain) : null;
+  const stays = (h) => h.card.retain || h === gripped;
+  b.discard.push(...b.hand.filter(h => !stays(h)).map(h => h.card));
+  b.hand = b.hand.filter(stays);
   renderAll();
 
   await sleep(500);
@@ -386,6 +400,7 @@ async function enemyTurn() {
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
     log(`${b.def.name} took ${burnDamage} burn damage.`);
+    if (hasRelic('heat-rock')) healPlayer(2);
     renderAll();
     await sleep(600);
     if (battle !== b) return;
@@ -416,6 +431,10 @@ async function enemyTurn() {
       if (hasRelic('rocky-helmet')) {
         hurtEnemy(3);
         pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
+      }
+      if (hasRelic('wave-incense') && through === 0 && damage > 0) {
+        hurtEnemy(5);
+        pop('enemy-zone', '-5 🌊', 'dmg', 320);
       }
       if (b.powers.thorns) {
         hurtEnemy(b.powers.thorns);
