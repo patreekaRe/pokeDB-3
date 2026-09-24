@@ -678,38 +678,38 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   align-items: center;
   gap: 10px;
 }
-/* Energy as the games' PP: a Pokégear window with a black PP tag and "2/3", like a move's PP in the games.
-   Orange frame while you have PP, grey when you're out. */
+/* Energy as the games' PP, drawn like the Diamond/Pearl move screen: a white pill with "PP" on the left and
+   "2/3" on the right, on the salmon striped move panel. The numbers turn red when you're out. */
 .energy-orb {
   grid-area: orb;
   position: relative;
-  display: flex;
-  align-items: baseline;
-  padding: 8px 12px;
-  border: 3px solid #f89030;
-  background: var(--win-bg);
-  color: #283060;
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 4px 0 2px rgba(0, 0, 0, 0.45);
+  padding: 7px 8px;
+  background: repeating-linear-gradient(#f07068 0 4px, #f8887c 4px 8px);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 4px 4px 0 2px rgba(0, 0, 0, 0.45);
   font-family: var(--pixel-font); font-synthesis-weight: none;
   line-height: 1;
-  transition: border-color 0.2s, filter 0.25s;
+  transition: filter 0.25s;
 }
-.pp-label {
-  align-self: center;
-  margin-right: 8px;
-  padding: 3px 5px;
-  background: #181818;
-  color: #f8b030;
-  font-size: 0.68rem;
+.pp-pill {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 10px 16px 9px;
+  border-radius: 999px;
+  background: #f8f8f8;
+  box-shadow: inset 0 -3px 0 #d0d0d8;
+  color: #404048;
+  text-shadow: 2px 2px 0 #c0c0c8;   /* the DS text's grey drop shadow */
+  white-space: nowrap;
 }
-.energy-orb b { font-size: 1.7rem; font-weight: 700; text-shadow: 2px 2px 0 var(--win-edge); }
+.pp-label { font-size: 1rem; }
+.pp-count { margin-left: auto; font-size: 1.35rem; }
+.energy-orb b { display: inline-block; font-weight: 400; }
 .energy-orb b.bump { animation: ppBump 0.35s steps(3); }
-.pp-max { margin-left: 2px; font-size: 0.95rem; font-weight: 700; color: var(--win-muted); }
-.energy-orb.empty { border-color: #b8b8c8; }
-.energy-orb.empty b { color: #a01818; }
+.energy-orb.empty .pp-count { color: #e03828; text-shadow: 2px 2px 0 #f8b8a8; }
 @keyframes ppBump { 50% { transform: translateY(-4px) scale(1.15); } }
 .energy-orb.shake { animation: ppShake 0.36s steps(6); }   /* tried to play a card without enough PP */
-@keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); border-color: #e04040; } 40%, 80% { transform: translateX(5px); border-color: #e04040; } }
+@keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 #end-turn-btn { padding: 12px 22px 12px 30px; font-size: 1.05rem; white-space: nowrap; }
 /* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
@@ -757,7 +757,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
   .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 4px 10px; }
-  .energy-orb { padding: 7px 10px; }
+  .energy-orb { padding: 6px 7px; }
+  .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
   #end-turn-btn { padding: 10px 16px 10px 24px; font-size: 0.95rem; }
   .enemy-zone { width: 100%; }
@@ -1608,4 +1609,4 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* ---------- soft corners for the pixel windows that don't set their own (sizes in :root) ---------- */
 .nameplate, .energy-orb, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
 .intent, .focus-hint, .howto-endturn, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
-.map-town, .node-badge, .pp-label, .evo-dot { border-radius: var(--round-xs); }
+.map-town, .node-badge, .evo-dot { border-radius: var(--round-xs); }

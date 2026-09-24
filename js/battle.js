@@ -522,7 +522,11 @@ function renderBars() {
   const max = Math.max(b.turnEnergy ?? ENERGY_PER_TURN, b.energy);
   const shown = orb.dataset.shown === undefined ? b.energy : Number(orb.dataset.shown);
   const count = el('b', b.energy !== shown ? 'bump' : '', String(b.energy));
-  orb.replaceChildren(el('span', 'pp-label', 'PP'), count, el('span', 'pp-max', `/${max}`));
+  const numbers = el('span', 'pp-count');
+  numbers.append(count, `/${max}`);
+  const pill = el('span', 'pp-pill');
+  pill.append(el('span', 'pp-label', 'PP'), numbers);
+  orb.replaceChildren(pill);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
   $('draw-count').replaceChildren(el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
