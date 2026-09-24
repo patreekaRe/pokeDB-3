@@ -377,9 +377,14 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   the gaps between routes by a PRNG seeded from the node ids + biome, so a
   refresh draws the same terrain. Water and lava drift on a timer while the
   map screen shows (off under `prefers-reduced-motion`).
-- Every link runs up, jogs sideways on the row halfway to the next floor,
-  then up again. Paths never cross, so jogs on the same row merge like
-  crossroads. Routes are cream; walked ones get thick red dashes and the
+- A link straight up is a straight road; a link to the next column is its
+  own three-step pixel diagonal from the room's top corner to the next
+  room's bottom corner (`diagonal()` in `routeSegments()`). Routes only meet
+  inside rooms (links to the boss aside, which all merge). It used to jog
+  on a shared row halfway up, which joined routes from different rooms and
+  showed ways that didn't exist on almost every map: a player saw a
+  crossroads but could only take the one real link. Check a routing change
+  by flood-filling the drawn route tiles upwards from each room. Routes are cream; walked ones get thick red dashes and the
   routes you can take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
   drawn inside, for tap size): orange, red for elites, a gold boss. Visited

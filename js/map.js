@@ -261,10 +261,11 @@ export function reachableNodes(map, currentId) {
    pixel by pixel onto a small canvas that CSS scales up with
    image-rendering: pixelated. The rooms are buttons laid over it.
 
-   Every link runs straight up out of its room, jogs sideways on the
-   row halfway to the next floor, then runs straight up into the next
-   room. Paths never cross (see nextColumn), so links that share a
-   jog row just merge into one route, like crossroads.
+   A link straight up is a straight road. A link to the next column is
+   its own pixel diagonal from corner to corner, so routes only meet
+   inside rooms: a shared sideways row would join routes from different
+   rooms and look like a way that doesn't exist. Links to the boss all
+   merge into one road, since they lead to the same room.
    ============================================================ */
 
 const TILE = 8;                                   // canvas pixels per tile
@@ -336,11 +337,21 @@ function routeSegments(map, currentId, reachable) {
     add(x1, jog, x2, jog, state);
     add(x2, jog, x2, y2, state);
   };
+  // corner to corner in three steps: leaves just above the room's top corner, enters just under the next one's
+  const diagonal = (x1, y1, x2, y2, state) => {
+    const dir = Math.sign(x2 - x1);
+    const from = x1 + dir, to = x2 - dir, xa = from + Math.round((to - from) / 3), xb = from + Math.round((to - from) * 2 / 3);
+    add(from, y1 - 2, xa, y1 - 2, state);
+    add(xa, y1 - 3, xb, y1 - 3, state);
+    add(xb, y2 + 2, to, y2 + 2, state);
+  };
   for (const node of Object.values(map.byId)) {
     for (const nextId of node.next) {
       const to = map.byId[nextId];
       const state = node.id === currentId && reachable.has(nextId) ? 'active' : node.visited && to.visited ? 'walked' : 'fill';
-      link(nodeX(node), rowY(node.floor), nodeX(to), rowY(to.floor), rowY(node.floor) - 3, state);
+      const [x1, y1, x2, y2] = [nodeX(node), rowY(node.floor), nodeX(to), rowY(to.floor)];
+      if (to.type === 'boss' || x1 === x2) link(x1, y1, x2, y2, y1 - 3, state);
+      else diagonal(x1, y1, x2, y2, state);
     }
   }
   for (const node of map.floors[0]) {
