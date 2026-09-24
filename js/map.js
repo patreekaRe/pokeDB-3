@@ -162,6 +162,12 @@ function assignTypes(floors, odds) {
       room.decided = true;
     }
   }
+
+  // Prize money can only be spent at a Mart, so every map gets at least one (a route to it is still your choice).
+  if (!floors.flat().some(room => room.type === 'shop')) {
+    const spots = floors.flat().filter(room => room.type === 'fight' && room.floor > 0 && isAllowed(room, 'shop', byId, false));
+    if (spots.length) spots[randInt(0, spots.length - 1)].type = 'shop';
+  }
 }
 
 function rollType(odds) {
@@ -227,7 +233,7 @@ const BOSS_ROW = 10;                              // leaves room above the boss 
 const rowY = (floor) => floor >= FLOORS ? BOSS_ROW : BOSS_ROW + 7 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
 const JOIN_ROW = rowY(0) + 3;                      // where the routes from the first rooms meet
 const START_ROW = JOIN_ROW + 6;                    // the end of the single road up the middle, where you start
-const GRID_H = START_ROW + 2;
+const GRID_H = START_ROW + 4;                      // room under the road for your Pokémon to stand at the start
 const BOSS_COL = Math.floor(COLS / 2);
 const CENTER_X = 3 + BOSS_COL * 5;                // tile column of the boss and the start road
 const MAX_STEP = 8;                               // widest gap between columns, so a narrow map isn't stretched thin

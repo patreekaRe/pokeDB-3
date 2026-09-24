@@ -119,7 +119,7 @@ in `js/ui.js` fills the top-bar `#money-pill`, which `showScreen()` shows
 only on `RUN_SCREENS`.
 
 `shop` is a map room type (`ROOM_ODDS`, not below `MIN_SHOP_FLOOR`, never
-twice in a row on a path; blue 🏪 town square). Its stock (`node.stock`:
+twice in a row on a path, at least one per map; blue 🏪 town square). Its stock (`node.stock`:
 cards and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
 and saved with the map, so a refresh can't reroll the shelves.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
