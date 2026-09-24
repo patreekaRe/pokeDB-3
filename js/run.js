@@ -549,8 +549,8 @@ function restSite() {
     title: 'Pokémon Center',
     sub: 'A safe place to catch your breath.',
     options: [run.relics.includes('choice-band')
-      ? { ...textOption('🏥', 'Rest', 'Your Choice Band won\'t let you rest.', () => {}), disabled: true }
-      : textOption('🏥', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, async () => {
+      ? { ...textOption('🏨', 'Rest', 'Your Choice Band won\'t let you rest.', () => {}), disabled: true }
+      : textOption('🏨', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, async () => {
       const thisRun = run;
       run.hp += heal;
       run.restCount += 1;
