@@ -78,7 +78,7 @@ export function abandonRun() {
    Everything is stored by id and rebuilt from the data files on load.
    ============================================================ */
 
-const RUN_SAVE_VERSION = 2;
+const RUN_SAVE_VERSION = 3;
 
 function checkpoint() {
   const { floors, byId } = run.map;

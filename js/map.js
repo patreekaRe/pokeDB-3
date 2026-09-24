@@ -31,7 +31,7 @@ import { TYPES } from './data/cards.js';
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
-const FLOORS = 8;     // floors per biome (Slay the Spire uses 15: a much longer run)
+const FLOORS = 10;    // floors per biome (Slay the Spire uses 15: a much longer run)
 const PATHS = 6;      // how many random paths are walked
 
 // Chance (in %) of each room type on floors that are not fixed.
