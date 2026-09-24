@@ -309,37 +309,32 @@
     <div class="howto-track" id="howto-track">
       <section class="howto-slide" data-title="Your run">
         <header class="howto-head"><h3>🏆 Your run</h3><p>Four steps from starter to champion</p></header>
-        <div class="howto-steps">
-          <div class="howto-step"><img src="assets/pokemon/charmander-front.gif" class="pixel" alt=""><b>Pick a starter</b></div>
-          <span class="howto-arrow" aria-hidden="true">›</span>
-          <div class="howto-step"><span class="howto-icon">🗺️</span><b>Climb the map</b></div>
-          <span class="howto-arrow" aria-hidden="true">›</span>
-          <div class="howto-step"><span class="howto-icon">⚔️</span><b>Win battles</b><small>new moves + 💰</small></div>
-          <span class="howto-arrow" aria-hidden="true">›</span>
-          <div class="howto-step boss"><img src="assets/pokemon/snorlax-front.gif" class="pixel" alt=""><b>Beat 3 bosses</b><small>evolve after each</small></div>
-        </div>
+        <ol class="howto-list howto-flow">
+          <li class="howto-li"><span class="howto-pic"><img src="assets/pokemon/charmander-front.gif" class="pixel" alt=""></span><span class="howto-li-text"><b>Pick a starter</b><small>Fire, Grass or Water: each type plays differently.</small></span></li>
+          <li class="howto-li"><span class="howto-pic">🗺️</span><span class="howto-li-text"><b>Climb the map</b><small>Choose your path, room by room, up to the boss.</small></span></li>
+          <li class="howto-li"><span class="howto-pic">⚔️</span><span class="howto-li-text"><b>Win battles</b><small>Each win teaches you a new move and pays 💰.</small></span></li>
+          <li class="howto-li boss"><span class="howto-pic"><img src="assets/pokemon/snorlax-front.gif" class="pixel" alt=""></span><span class="howto-li-text"><b>Beat 3 bosses</b><small>Your Pokémon evolves after each one. Beat the third to win.</small></span></li>
+        </ol>
       </section>
 
       <section class="howto-slide" data-title="Your turn">
-        <header class="howto-head"><h3>⚔️ Your turn</h3><p>Play your cards, then hand it over to the enemy</p></header>
-        <div class="howto-steps three">
-          <div class="howto-step">
-            <div class="howto-visual"><div class="energy-orb" title="PP (energy)"><span class="pp-pill"><span class="pp-label">PP</span><span class="pp-count"><b>3</b>/3</span></span></div></div>
-            <b>Get 3 energy</b><small>refills every turn</small>
-          </div>
-          <span class="howto-arrow" aria-hidden="true">›</span>
-          <div class="howto-step">
-            <div class="howto-visual"><div id="howto-card" class="howto-card"></div></div>
-            <b>Play cards</b><small>each costs the ⚡ in its corner</small>
-          </div>
-          <span class="howto-arrow" aria-hidden="true">›</span>
-          <div class="howto-step">
-            <div class="howto-visual"><span class="howto-endturn"><span class="pp-pill">End Turn</span></span></div>
-            <b>End your turn</b><small>the enemy moves, you draw 5 new cards</small>
-          </div>
-        </div>
+        <header class="howto-head"><h3>⚔️ Your turn</h3><p>Play your cards, then it's the enemy's move</p></header>
+        <ol class="howto-list howto-flow">
+          <li class="howto-li">
+            <span class="howto-pic wide"><span class="energy-orb" title="PP (energy)"><span class="pp-pill"><span class="pp-label">PP</span><span class="pp-count"><b>3</b>/3</span></span></span></span>
+            <span class="howto-li-text"><b>Get 3 PP</b><small>Your energy. It refills every turn.</small></span>
+          </li>
+          <li class="howto-li">
+            <span class="howto-pic wide"><span class="howto-hand" aria-hidden="true"><span class="fire">🔥</span><span class="grass">🌿</span><span class="water">💧</span></span></span>
+            <span class="howto-li-text"><b>Play cards</b><small>Each one costs the PP in its corner.</small></span>
+          </li>
+          <li class="howto-li">
+            <span class="howto-pic wide"><span class="howto-endturn"><span class="pp-pill">End Turn</span></span></span>
+            <span class="howto-li-text"><b>End your turn</b><small>The enemy moves, then you draw 5 new cards.</small></span>
+          </li>
+        </ol>
         <p class="howto-tip">👀 The enemy shows its next move above its head. Block before a big hit!</p>
-        <p class="howto-tip">🧴 Items (up to 3) sit under your PP. Using one costs no PP, but it's gone after.</p>
+        <p class="howto-tip">🎒 Items are in your Bag. Using one costs no PP, but it's gone after.</p>
       </section>
 
       <section class="howto-slide" data-title="The map">
@@ -358,9 +353,9 @@
       <section class="howto-slide" data-title="Types and statuses">
         <header class="howto-head"><h3>🔥 Types and statuses</h3><p>Hit their weakness and keep an eye on the badges</p></header>
         <div class="howto-types">
-          <span class="howto-type fire">🔥</span><span class="howto-beats">beats</span>
-          <span class="howto-type grass">🌿</span><span class="howto-beats">beats</span>
-          <span class="howto-type water">💧</span><span class="howto-beats">beats</span>
+          <span class="howto-type fire">🔥</span><span class="howto-beats" aria-label="beats">▶</span>
+          <span class="howto-type grass">🌿</span><span class="howto-beats" aria-label="beats">▶</span>
+          <span class="howto-type water">💧</span><span class="howto-beats" aria-label="beats">▶</span>
           <span class="howto-type fire">🔥</span>
         </div>
         <div class="howto-chips">

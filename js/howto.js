@@ -5,10 +5,9 @@
    so it can't drift from the game.
    ============================================================ */
 
-import { CARDS_BY_ID } from './data/cards.js';
 import { PASSIVE_SHOP_ITEMS } from './data/shop.js';
 import { COIN_REWARDS } from './run.js';
-import { $, el, makeCard, openDialog, closeDialog } from './ui.js';
+import { $, el, openDialog, closeDialog } from './ui.js';
 
 let slides = [];
 let dots = [];
@@ -38,8 +37,6 @@ const row = (nodeClass, icon, title, note) => {
 };
 
 export function initHowto() {
-  $('howto-card').append(makeCard(CARDS_BY_ID.ember, { stage: 0 }));   // a real card, so the guide always matches the game
-
   $('howto-coins').replaceChildren(
     row('', '⚔️', `+${COIN_REWARDS.fight} 💰`, 'Wild fight'),
     row('elite', '💀', `+${COIN_REWARDS.elite} 💰`, 'Elite'),

@@ -479,8 +479,11 @@ all start-screen motion stops under `prefers-reduced-motion`.
 How to play (`#help-dialog`, `js/howto.js`) is a row of swipeable slides
 (native CSS scroll-snap, plus dots, Next/Prev and arrow keys). Open it with
 `openHowto()`, not `openDialog()`, so it always starts on slide 1. The shop
-slide is filled from `COIN_REWARDS` and `PASSIVE_SHOP_ITEMS`, and turn one
-uses a real card, so the guide stays in step with the game data.
+slide is filled from `COIN_REWARDS` and `PASSIVE_SHOP_ITEMS`, so the guide
+stays in step with the game data. The first two slides are numbered rows
+(`.howto-flow`, a picture slot then a name and one line); the turn slide
+draws a small fanned hand (`.howto-hand`) rather than a real card, whose
+text was too small to read at that size.
 
 ## Pixel icons
 
