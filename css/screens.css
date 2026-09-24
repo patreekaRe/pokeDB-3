@@ -1086,6 +1086,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .reward-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; width: 100%; padding: 12px 0; }
 .reward-option { background: none; border: 0; padding: 0; width: clamp(130px, 28vw, 200px); transition: transform 0.15s; }
 .reward-option:hover, .reward-option:focus-visible { transform: translateY(-8px) scale(1.04); }
+.reward-option:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
 .reward-skip { padding-top: 8px; }
 
 /* ---------- relics ---------- */

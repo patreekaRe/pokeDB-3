@@ -94,6 +94,16 @@ discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
 screen's Continue button (`renderContinue()` in `js/main.js`) shows
 whenever a valid save exists, and Begin run confirms before replacing it.
 
+## Deck thinning
+
+The Pokémon Center (`restSite()` in `js/run.js`) offers Rest *or* "Forget a
+move" (`forgetOption()` / `forgetMove()`): a `showChoice` picker of the deck
+grouped with `groupDeck` (×N badges), "Back" returns to the Center. It never
+takes the deck below `MIN_DECK` (7); at the minimum the tile is shown
+`disabled` (`showChoice` options accept `disabled`). Forgetting doesn't
+count as a rest for `restCount`. More removal sources (card shop, events,
+relics) are planned with those features.
+
 ## Battle screen layout
 
 There's no top HUD bar. The arena shows each fighter with a **nameplate**

@@ -59,7 +59,7 @@ export function relicChoices(run) {
 
 /**
  * Show a "choose one" screen.
- *   options   [{ node, onPick }]   node is the element to show, onPick runs when chosen
+ *   options   [{ node, onPick, disabled }]   node is the element to show, onPick runs when chosen
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  */
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = '' }) {
@@ -78,6 +78,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     const btn = el('button', 'reward-option');
     btn.type = 'button';
     btn.append(option.node);
+    btn.disabled = !!option.disabled;
     btn.addEventListener('click', once(option.onPick));
     box.append(btn);
   }
@@ -91,7 +92,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 }
 
 /** Ready-made option tiles. */
-export const cardOption = (card, stage, onPick) => ({ node: makeCard(card, { stage }), onPick });
+export const cardOption = (card, stage, onPick, count = 1) => ({ node: makeCard(card, { stage, count }), onPick });
 export const relicOption = (relic, onPick) => ({ node: makeRelic(relic), onPick });
 
 /** A simple tile with an icon and text (used for resting). */

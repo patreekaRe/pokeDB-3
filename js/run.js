@@ -25,7 +25,7 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, showChoice, cardOption, relicOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep, setHpBar } from './ui.js';
+import { $, el, groupDeck, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 
 let run = null;
@@ -408,6 +408,9 @@ function treasureRoom() {
   offerRelic('Treasure!', showMap);
 }
 
+/** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
+const MIN_DECK = 7;
+
 function restSite() {
   const restHeal = run.mods.restHeal + (getSave().passives.wellFed ? 0.05 : 0);   // shop passive: Well-Fed Bonus
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
@@ -425,12 +428,32 @@ function restSite() {
       if (run !== thisRun) return;                 // the run was abandoned during the chime
       toast(`Healed ${heal} HP.`, 'ok');
       showMap();
-    })],
+    }), forgetOption(restSite)],
     skipLabel: 'Leave without resting',
     onSkip: showMap,
   });
   playMusic('center');
   preloadSounds('heal');
+}
+
+function forgetOption(back) {
+  const atMin = run.deck.length <= MIN_DECK;
+  const text = atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`;
+  return { ...textOption('📖', 'Forget a move', text, () => forgetMove(back)), disabled: atMin };
+}
+
+function forgetMove(back) {
+  showChoice({
+    title: 'Forget a move',
+    sub: `Choose a card to remove from your deck. It can't go below ${MIN_DECK} cards.`,
+    options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => cardOption(card, run.stage, () => {
+      run.deck.splice(run.deck.indexOf(card.id), 1);
+      toast(`${card.name} was forgotten.`, 'ok');
+      showMap();
+    }, count)),
+    skipLabel: 'Back',
+    onSkip: back,
+  });
 }
 
 /* ---------- evolution ---------- */
