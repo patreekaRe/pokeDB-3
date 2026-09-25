@@ -113,9 +113,14 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 ## Deck thinning
 
 The Pokémon Center (`restSite()` in `js/run.js`) offers Rest *or* "Forget a
-move" (`forgetOption()` / `forgetMove()`): a `showChoice` picker of the deck
-grouped with `groupDeck` (×N badges), "Back" returns to the Center. It never
-takes the deck below `MIN_DECK` (7); at the minimum the tile is shown
+move" (`forgetMove()`): a `showChoice` picker of the deck
+grouped with `groupDeck` (×N badges), "Back" returns to the Center. The Center
+has no tiles (the user's call, for immersion): its two options (`layout:
+'center-room'`) are see-through buttons laid over the scene's healing machine and
+PC (`placeCenterSpots()`, from `centerSpots()` in `js/scene.js`, rerun on the
+scene's `scenepaint` event), each under a bouncing `.center-label` sign, and the
+scene isn't dimmed. It never
+takes the deck below `MIN_DECK` (7); at the minimum the PC is
 `disabled` (`showChoice` options accept `disabled`). Forgetting doesn't
 count as a rest for `restCount`. The Cleanse Tag relic reuses the picker
 right after it's picked up (`forgetMove(back, done)`: `done` continues the
@@ -152,7 +157,13 @@ two-tap "Buy ₽N" confirm. `layout: 'mart-window'` turns the options into one
 window laid out like Slay the Spire's shop (the user's reference): moves on
 top, then items (3) and relics (2) as bare icons in a staggered 3-2, and the
 forget service as a Mart-blue tile beside them, on a cool grey checker floor
-so the parchment cards stand out. (Not `.mart`: that's the top bar's Mart icon.) Removal reuses
+so the parchment cards stand out. (Not `.mart`: that's the top bar's Mart icon.) The Mart
+has its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts: teal-banded white
+walls, glass fridges and grey shelves of goods, green octagon tiles, an orange mat).
+On phones there's no window at all (the user wanted it to feel like standing in a
+shop): the moves are one swipeable shelf, items and relics share the shelf below,
+then Kecleon (2x) stands behind a glass counter (the grid's `::after`) with the
+forget service in front. Removal reuses
 `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
 bought once per Mart (`stock.removed`, then the tile greys out). Every forget picker
 (Center, Mart, Cleanse Tag, events) takes two taps, like adding a card: `ask`/`confirm` "Forget it".
@@ -301,8 +312,10 @@ them already does something (hover still shows their hint). Give new non-button 
 this for free.
 Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
 in `#reward-log`, a copy of the battle text box pinned to the bottom of the
-screen beside the Skip / Leave button (stacked on phones), and draws its
-`.relic` tiles (relics, items, choices) as parchment Pokégear windows (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
+screen; the Skip / Leave button sits centred right under the options (the user's
+call: not off to the right by the text box). It draws its
+`.relic` tiles (relics, items, choices) as parchment Pokégear windows, which on
+phones become short rows (icon | name over text) so a choice isn't a screen tall (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
 type out and wait for a tap, like the games (the user wants no autoplay). After
 a fight, `coins` (`run.pendingCoins`: `{ foe, coins, money, disadvantage }`)
 shows as an icon row (💰 +25 💴 +₽120) on every step, and the first screen's
@@ -487,7 +500,8 @@ Poké Mart: PokéCoins buy starters and perks at the Game Corner, ₽ buys cards
 relics at the Mart. Its top-bar button (`.shop-btn`) has no chrome: a pixel
 slot machine (🎰 in `js/icons.js`, in `.gc-icon`; also on the menu item, the
 window title and the How to play coins slide), its window has a gold frame on a
-purple rim, and
+purple rim (on phones the skins and perks are two rows each that you swipe
+sideways, perks as rows: icon | name, text, price), and
 `aria-expanded` on it drives the pressed-in "shop is open" look. Keep that
 attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in

@@ -73,7 +73,7 @@
   display: grid;
   align-items: center;
   font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 10.5cqw;
+  font-size: calc(10.5cqw * var(--name-fit, 1));
   font-weight: 400;
   line-height: 1.2;
   color: #fff8e0;
@@ -152,7 +152,7 @@
 .card.small .card-face { padding: 8cqw 5cqw 5cqw; gap: 2cqw; }
 .card.small .card-type,
 .card.small .card-text { display: none; }
-.card.small .card-name { font-size: 12cqw; min-height: 0; padding-left: 16cqw; padding-right: 1cqw; justify-items: center; }
+.card.small .card-name { font-size: calc(12cqw * var(--name-fit, 1)); min-height: 0; padding-left: 16cqw; padding-right: 1cqw; justify-items: center; }
 .card.small .card-art { height: auto; flex: 1; font-size: 30cqw; }
 .card.small .card-cost { width: 18cqw; height: 18cqw; font-size: 12cqw; }
 

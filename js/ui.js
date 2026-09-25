@@ -111,6 +111,9 @@ export function makeCard(card, options = {}) {
   cost.title = `Costs ${card.cost} energy`;
 
   const name = el('h3', 'card-name', card.name);
+  // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
+  const longest = Math.max(...card.name.split(/[ -]/).map(w => w.length));
+  if (longest > 9) name.style.setProperty('--name-fit', (9.6 / longest).toFixed(3));
   const art = el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
   const text = el('p', 'card-text', describe(card, options.stage || 0));

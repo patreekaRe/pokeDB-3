@@ -30,7 +30,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, c
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, centerSpots } from './scene.js';
 
 let run = null;
 
@@ -545,31 +545,69 @@ const MIN_DECK = 7;
 function restSite() {
   const restHeal = run.mods.restHeal + (getSave().passives.wellFed ? 0.05 : 0);   // shop passive: Well-Fed Bonus
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
+  const banned = run.relics.includes('choice-band');
+  const atMin = run.deck.length <= MIN_DECK;
+  // no tiles here: the healing machine and the PC in the scene are the choices, each under a bouncing label
   showChoice({
     title: 'Pokémon Center',
-    sub: 'A safe place to catch your breath.',
-    options: [run.relics.includes('choice-band')
-      ? { ...textOption('🏨', 'Rest', 'Your Choice Band won\'t let you rest.', () => {}), disabled: true }
-      : textOption('🏨', 'Rest', `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`, async () => {
-      const thisRun = run;
-      run.hp += heal;
-      run.restCount += 1;
-      healAtCenter();
-      // like the games: the music stops and the healing chime plays out before you leave
-      playMusic(null, { cut: true });
-      const chime = await playSound('heal');
-      await sleep(Math.min(chime, 4) * 1000);
-      if (run !== thisRun) return;                 // the run was abandoned during the chime
-      toast(`Healed ${heal} HP.`, 'ok');
-      showMap();
-    }), forgetOption(restSite)],
-    skipLabel: 'Leave without resting',
+    sub: ['A safe place to catch your breath.', 'Use the healing machine to rest, or the PC to forget a move.'],
+    options: [
+      {
+        node: centerLabel(banned ? 'No rest' : heal ? `Rest +${heal} HP` : 'Rest',
+          banned ? 'Your Choice Band won\'t let you rest.' : `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`),
+        disabled: banned,
+        onPick: async () => {
+          const thisRun = run;
+          run.hp += heal;
+          run.restCount += 1;
+          $('reward-options').classList.add('resting');
+          healAtCenter();
+          // like the games: the music stops and the healing chime plays out before you leave
+          playMusic(null, { cut: true });
+          const chime = await playSound('heal');
+          await sleep(Math.min(chime, 4) * 1000);
+          if (run !== thisRun) return;                 // the run was abandoned during the chime
+          toast(`Healed ${heal} HP.`, 'ok');
+          showMap();
+        },
+      },
+      {
+        node: centerLabel('Forget a move',
+          atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`),
+        disabled: atMin,
+        onPick: () => forgetMove(restSite),
+      },
+    ],
+    skipLabel: 'Leave',
     onSkip: showMap,
+    layout: 'center-room',
   });
   showPlaceScene('center');
+  placeCenterSpots();
   playMusic('center');
   preloadSounds('heal');
 }
+
+function centerLabel(text, hint) {
+  const label = el('span', 'center-label', text);
+  label.title = hint;
+  return label;
+}
+
+/** Lay the Center's two choices over the machine and the PC in the scene; the scene tells us whenever it repaints. */
+function placeCenterSpots() {
+  const box = $('reward-options');
+  if (!box.classList.contains('center-room')) return;
+  const spots = centerSpots();
+  if (!spots) return;
+  box.querySelectorAll('.reward-option').forEach((btn, i) => {
+    const r = spots[i === 0 ? 'machine' : 'pc'];
+    // at least a fingertip wide, around the thing itself
+    const w = Math.max(r.width, 64), h = Math.max(r.height, 56);
+    Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
+  });
+}
+addEventListener('scenepaint', placeCenterSpots);
 
 function forgetOption(back) {
   const atMin = run.deck.length <= MIN_DECK;
@@ -949,6 +987,8 @@ function martRoom() {
     onSkip: showMap,
     layout: 'mart-window',
   });
+
+  showPlaceScene('mart');
 
   // the shopkeeper, beside the items and relics (the .mart-window grid places it)
   const clerk = el('img', 'mart-clerk');

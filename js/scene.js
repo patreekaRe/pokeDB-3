@@ -283,6 +283,20 @@ const PLACE_ART = {
     plant: ['#5ab048', '#2e7a34', '#f878a8', '#c85a30', '#8a3420'],
     life: ['center'],
   },
+
+  mart: {   // inside a Poké Mart: the back wall lined with stocked shelves under the Mart's blue stripe
+    backdrop: 'mart', floor: 'mart', light: null, horizon: 0.74,   // low, so the shelves stand behind the wares
+    sky: ['#f8f8f0'],
+    wall: ['#2a8a98', '#58c0c8', '#f8f8f0', '#e89078'],
+    clock: ['#a05838', '#f8f8f0', '#303038'],
+    fridge: ['#c8c8d8', '#a8e4e8', '#e8fcfc', '#78c878', '#7a7a90'],
+    shelf: ['#ffffff', '#b8b8c8', '#7a7a90', '#d8d8e4'],
+    goods: ['#e04030', '#f8c030', '#7858d0', '#f8f8f8', '#f89838', '#d83060'],
+    tiles: ['#a8e8b0', '#78c890', '#88d49c'],
+    mat: ['#e85830', '#f8a868'],
+    plant: ['#5ab048', '#2e7a34', '#8ad060', '#c8c8d8', '#7a7a90'],
+    life: [],
+  },
 };
 
 
@@ -308,6 +322,14 @@ export function healAtCenter() {
   if (!life.machine) return;
   life.healAt = timer ? tick : tick - 40;
   if (!timer) draw();
+}
+
+/** Where the Center's healing machine and PC are on screen, in CSS pixels ({ machine, pc } of { left, top, width, height }), or null. */
+export function centerSpots() {
+  if (!life.spots || !canvas) return null;
+  const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
+  const rect = ({ x0, x1, y0, y1 }) => ({ left: box.left + x0 * sx, top: box.top + y0 * sy, width: (x1 - x0 + 1) * sx, height: (y1 - y0 + 1) * sy });
+  return { machine: rect(life.spots.machine), pc: rect(life.spots.pc) };
 }
 
 /**
@@ -364,6 +386,7 @@ function resize() {
   base = paintBase();
   makeLife();
   draw();
+  dispatchEvent(new Event('scenepaint'));   // the Center's tap spots follow the scene (centerSpots)
 }
 
 /** The horizon sits at about 38% of the screen, but always above the enemy's pad, so the pad is on the ground on any layout. */
@@ -431,8 +454,10 @@ function paintBase() {
   if (S.raw.backdrop === 'sea') seaBackdrop();
   if (S.raw.backdrop === 'jungle') jungleBackdrop();
   if (S.raw.backdrop === 'center') centerBackdrop();
+  if (S.raw.backdrop === 'mart') martBackdrop();
 
   if (S.raw.floor === 'center') centerFloor();
+  if (S.raw.floor === 'mart') martFloor();
   if (S.raw.floor === 'meadow') meadow();
   if (S.raw.floor === 'moss') mossGround();
   if (S.raw.floor === 'basalt') basalt();
@@ -444,6 +469,7 @@ function paintBase() {
   if (S.raw.backdrop === 'shrine') shrineFront();
   if (S.raw.backdrop === 'jungle') jungleFront();
   if (S.raw.backdrop === 'center') centerFront();
+  if (S.raw.backdrop === 'mart') martFront();
 
   return Uint32Array.from(px);
 }
@@ -1097,6 +1123,92 @@ function counter(cx, top, half) {
   ball(cx, top + 7, 3);
 }
 
+/* ---------- the Poké Mart, after the Gen 3 Marts: white walls under a teal band, glass fridges and
+   grey shelves of goods along the back, green octagon tiles and an orange mat at the door ---------- */
+
+function martBackdrop() {
+  const [top, band, face, stripe] = S.wall;
+  const ceil = 3, shelfTop = ceil + Math.max(8, Math.round((horizon - ceil) * 0.3));
+  for (let y = 0; y < shelfTop; y++) for (let x = 0; x < W; x++) {
+    const d = shelfTop - y;
+    solid(x, y, y < ceil ? top : y < ceil + 3 ? band : d === 3 || d === 4 ? stripe : face);
+  }
+  wallClock(Math.round(W * 0.14), ceil + 3 + Math.round((shelfTop - ceil - 7) / 2));
+  const unit = 24, r = seeded(W * 17 + H);
+  let i = 0;
+  for (let u = ((W >> 1) - 12) % unit - unit; u < W; u += unit, i++) {
+    if (i % 3 === 1) fridge(u, shelfTop - 2, horizon, unit);
+    else shelfUnit(u, shelfTop, horizon, unit, r);
+  }
+}
+
+function wallClock(cx, cy) {
+  const [rim, dial, hand] = S.clock;
+  for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) {
+    const d = Math.hypot(x, y);
+    if (d <= 3.4) solid(cx + x, cy + y, d > 2.4 ? rim : dial);
+  }
+  solid(cx, cy, hand); solid(cx, cy - 1, hand); solid(cx + 1, cy, hand);
+}
+
+/** A glass drinks fridge: a grey frame round three doors of rows of green bottles. */
+function fridge(x0, top, foot, w) {
+  const [frame, glass, shine, bottle, dark] = S.fridge, doors = 3, dw = Math.floor((w - 2) / doors);
+  for (let y = top; y < foot; y++) for (let x = x0; x < x0 + w; x++) {
+    const lx = x - x0 - 1, door = Math.floor(lx / dw), dx = lx - door * dw;
+    const edge = x === x0 || x === x0 + w - 1 || y === top || y === foot - 1 || dx === 0;
+    if (edge) { solid(x, y, x === x0 ? dark : frame); continue; }
+    const row = (y - top - 2) % 5, glint = (dx + (y - top)) % 9 === 3;
+    solid(x, y, glint ? shine : row >= 2 && row <= 3 && dx % 2 === 1 ? bottle : glass);
+  }
+}
+
+/** One shelving unit: grey posts and white boards with a row of boxes on every board. */
+function shelfUnit(x0, top, foot, w, r) {
+  const [lite, post, dark, back] = S.shelf, gap = 13;
+  for (let y = top; y < foot; y++) for (let x = x0; x < x0 + w; x++) {
+    const side = x - x0 < 2 || x - x0 >= w - 1;
+    solid(x, y, side ? (x - x0 === 0 ? dark : post) : back);
+  }
+  for (let board = foot - 2; board > top + 3; board -= gap) {
+    for (let x = x0 + 2; x < x0 + w - 1; x++) { solid(x, board, lite); solid(x, board + 1, dark); }
+    for (let x = x0 + 3; x < x0 + w - 2;) {
+      const bw = 3 + Math.floor(r() * 3), bh = Math.min(gap - 4, 3 + Math.floor(r() * 4)), c = S.goods[Math.floor(r() * S.goods.length)];
+      if (x + bw > x0 + w - 2) break;
+      for (let y = board - bh; y < board; y++) for (let k = 0; k < bw; k++) solid(x + k, y, c);
+      for (let y = board - bh; y < board; y++) tint(x + bw - 1, y, 0.75);   // a shaded side
+      tint(x, board - bh, 1.25, 20);                                         // a glint on the top corner
+      x += bw + 1 + (r() < 0.4 ? 1 : 0);
+    }
+  }
+  for (let x = x0; x < x0 + w; x++) tint(x, top, 0.7);
+}
+
+/** Green octagon tiles in perspective, the wall's shadow along its foot, and the orange mat by the door. */
+function martFloor() {
+  const [tile, corner, grout] = S.tiles, cx = W / 2, vy = horizon - (H - horizon) * 1.5;
+  const bottom = H - vy, ku = bottom / 6, kv = bottom * bottom / 3.5;
+  for (let y = horizon; y < H; y++) {
+    const dz = y - vy, v = kv / dz, fv = v - Math.floor(v), ev = Math.min(fv, 1 - fv);
+    for (let x = 0; x < W; x++) {
+      const u = (x - cx) * ku / dz, fu = u - Math.floor(u), eu = Math.min(fu, 1 - fu);
+      const line = eu < ku / dz * 0.6 || ev * dz * dz / kv < 0.6;
+      put(x, y, eu + ev < 0.28 ? corner : line ? grout : tile);
+    }
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.82); tint(x, horizon + 1, 0.92); }
+  const [mat, trim] = S.mat, mw = Math.min(22, Math.round(W * 0.14)), my = H - 7;
+  for (let y = my; y < my + 5; y++) for (let x = (W >> 1) - mw; x <= (W >> 1) + mw; x++) {
+    put(x, y, y === my || y === my + 4 || Math.abs(x - (W >> 1)) === mw ? trim : mat);
+  }
+}
+
+function martFront() {
+  const foot = horizon + 4;
+  pottedPlant(4, foot, 4);
+  pottedPlant(W - 5, foot, 4);
+}
+
 /** The healing machine on the counter: a red hood over six ball slots, and a glowing cyan stripe (drawCenter). */
 function healMachine(x0, top) {
   const [white, light, grey, slate] = S.machine, [lit, red, dark] = S.dome, [, , deep] = S.glow;
@@ -1118,6 +1230,7 @@ function healMachine(x0, top) {
   for (let x = x0 + 11; x <= x0 + 14; x++) for (let y = top - 2; y <= top - 1; y++) solid(x, y, S.screen[0]);
   solid(x0 + 3, top - 1, S.screen[1]); solid(x0 + 5, top - 1, S.plant[0]);
   life.machine = { x0: x0 + 1, x1: x0 + 15, y: top - 3, slots };
+  life.spots = { ...life.spots, machine: { x0, x1: x0 + 16, y0: top - 11, y1: top + 1 } };
 }
 
 /** The PC on the counter, its cursor blinking (drawCenter). */
@@ -1131,6 +1244,7 @@ function counterPc(x0, top) {
   for (let x = x0 + 3; x <= x0 + 7; x++) solid(x, top - 6, lite);
   for (let x = x0 - 1; x <= x0 + 11; x++) solid(x, top - 1, x % 2 ? beige : brown);
   life.pc = { x: x0 + 3, y: top - 4 };
+  life.spots = { ...life.spots, pc: { x0: x0 - 1, x1: x0 + 11, y0: top - 10, y1: top - 1 } };
 }
 
 function pottedPlant(x, foot, size) {
