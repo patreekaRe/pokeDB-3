@@ -296,7 +296,18 @@ body.titling { overflow: hidden; }
   border-radius: 50%;
   background: radial-gradient(circle, color-mix(in srgb, var(--type) 45%, transparent), transparent 70%);
 }
-.continue-sprite img { width: 64px; height: 64px; object-fit: contain; }
+.continue-sprite { position: relative; }
+.continue-sprite img { width: 64px; height: 64px; object-fit: contain; transform: scale(0); }
+.continue-sprite .continue-ball { position: absolute; left: 50%; top: 50%; margin: -18px 0 0 -18px; }
+/* tapped: the ball goes, and the starter comes out white, then colours in, like the games' send-out */
+.continue-btn.out .continue-ball { animation: ballAway 0.2s steps(2) forwards; }
+.continue-btn.out .continue-sprite img { animation: sendOut 0.45s steps(5) forwards; }
+@keyframes ballAway { to { transform: scale(0.2); opacity: 0; } }
+@keyframes sendOut {
+  0%   { transform: scale(0.2); filter: brightness(0) invert(1); }
+  60%  { transform: scale(1.12); filter: brightness(0) invert(1); }
+  100% { transform: scale(1); filter: none; }
+}
 .continue-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
 .continue-label { padding: 2px 6px; background: #283060; color: #f8d030; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .continue-text strong { font-size: 1.15rem; line-height: 1.15; }
@@ -348,7 +359,7 @@ body.titling { overflow: hidden; }
 @media (prefers-reduced-motion: no-preference) {
   /* ballWobble rests for its first half, so each shake is followed by a pause, like a catch in progress */
   .continue-ball { animation: ballWobble 2.4s steps(24) infinite; }   /* stepped, so it ticks like a sprite */
-  .continue-btn.opening .continue-ball { animation: none; }
+  .continue-btn.opening:not(.out) .continue-ball { animation: none; }
 }
 
 .starter-panel { width: fit-content; max-width: 100%; }   /* as wide as its grid, not the page */

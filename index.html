@@ -135,14 +135,16 @@
       </div>
 
       <button class="continue-btn" id="continue-btn" type="button" hidden>
-        <span class="continue-sprite"><img id="continue-sprite" class="pixel" alt=""></span>
+        <span class="continue-sprite">   <!-- the ball waits here; tapping it sends the starter out (js/main.js) -->
+          <span class="continue-ball" aria-hidden="true"><span class="ball-bottom"></span><span class="ball-light"></span><span class="ball-top"></span></span>
+          <img id="continue-sprite" class="pixel" alt="">
+        </span>
         <span class="continue-text">
           <span class="continue-label">Continue run</span>
           <strong id="continue-name"></strong>
           <span class="continue-info" id="continue-info"></span>
           <span class="continue-hp"><span class="bar-fill" id="continue-hp-fill"></span></span>
         </span>
-        <span class="continue-ball" aria-hidden="true"><span class="ball-bottom"></span><span class="ball-light"></span><span class="ball-top"></span></span>
       </button>
 
       <div class="starter-panel panel">

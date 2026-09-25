@@ -260,9 +260,11 @@ function init() {
   $('continue-btn').addEventListener('click', () => {
     const btn = $('continue-btn');
     if (!savedRun || btn.classList.contains('opening')) return;
-    btn.classList.add('opening');   // the Poké Ball pops open, then the map loads
-    const wait = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450;
-    setTimeout(() => continueRun(savedRun), wait);
+    // the Poké Ball pops open, your Pokémon comes out with its cry, then the map loads
+    btn.classList.add('opening');
+    const run = savedRun, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => { btn.classList.add('out'); playCry(run.starter.line[run.stage]?.id ?? run.starter.line[0].id); }, still ? 0 : 250);
+    setTimeout(() => continueRun(run), still ? 0 : 1100);
   });
   $('shop-btn').addEventListener('click', () => toggleShop());
   $('menu-shop-btn').addEventListener('click', () => toggleShop());

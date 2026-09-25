@@ -105,7 +105,9 @@ are shown on the reward screen but only paid out as the rewards end, just
 before the checkpoint, so refreshing on a reward screen can't pay twice.
 A version mismatch or any bad id (deck, relics, Mart stock) silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
-screen's Continue button (`renderContinue()` in `js/main.js`) shows
+screen's Continue button (`renderContinue()` in `js/main.js`) holds the run's Poké Ball
+where the sprite goes; tapping it opens the lid and sends the starter out (white,
+then coloured in, with its cry) before the map loads, shows
 whenever a valid save exists, and Begin run confirms before replacing it.
 
 ## Deck thinning
