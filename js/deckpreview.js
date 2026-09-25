@@ -53,7 +53,7 @@ export function openPreview(starter, { onBegin, onBack }) {
   $('preview-blurb').textContent = starter.blurb;
 
   // the three evolution stages, one per slide: swipe or use the arrows, and each form is drawn bigger than the last
-  const WHEN = ['Where you start', 'After the Biome 1 boss', 'After the Biome 2 boss'];
+  const WHEN = ['Start', 'After boss 1', 'After boss 2'];
   const track = $('evo-line');
   track.replaceChildren(...starter.line.map((stage, i) => {
     const slide = el('div', 'evo-stage');
@@ -87,7 +87,8 @@ export function openPreview(starter, { onBegin, onBack }) {
     if (e.key === 'ArrowLeft') showForm(current() - 1);
     if (e.key === 'ArrowRight') showForm(current() + 1);
   };
-  $('evo-note').textContent =
+  // the details live in a tooltip (a tap on touch screens), so the panel stays light
+  track.title =
     `Evolves after you defeat the Biome 1 and Biome 2 bosses: +${HP_PER_STAGE} max HP, a full heal, ` +
     `and all your moves get ${STAGE_POWER * 100}% stronger.`;
 
