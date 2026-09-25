@@ -990,7 +990,7 @@ function martRoom() {
     title: 'Poké Mart',
     sub: `Welcome! You have ₽${run.money} to spend.`,
     options: [...cards, ...items, ...relics, removal],
-    skipLabel: 'Leave the Mart',
+    skipLabel: 'Leave',
     onSkip: showMap,
     layout: 'mart-window',
   });
@@ -1002,10 +1002,11 @@ function martRoom() {
   const clutter = el('span', 'mart-clutter');
   clutter.setAttribute('aria-hidden', 'true');
   for (const icon of ['🔔', '🧪', '🧴', '⚫', '🎁']) clutter.append(el('span', '', icon));
-  $('reward-options').append(clerk, clutter);
+  $('reward-options').append(clerk, clutter, $('reward-skip'));   // Leave goes on the counter's front, under Kecleon
 
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
-  showPlaceScene('mart', { floor: () => $('reward-options').getBoundingClientRect().bottom });
+  const shop = () => $('reward-options').getBoundingClientRect();
+  showPlaceScene('mart', { floor: () => shop().bottom, span: () => [shop().left, shop().right] });
 }
 
 /* ---------- evolution ---------- */

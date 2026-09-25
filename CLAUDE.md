@@ -155,17 +155,23 @@ re-renders itself after each purchase; `ware()` wraps a card/item/relic tile wit
 its price tag (red and disabled when you can't afford it), a `group` and a
 two-tap "Buy ₽N" confirm. `layout: 'mart-window'` lays the Mart out like a Zelda shop
 (the user's sketch), the same at every screen size, with no window: behind a glass
-counter (the grid's `::after`, with `.mart-clutter` icons on it) stands one grey pixel
-shelf unit (hard-edged gradient bands for depth), all the moves on the top shelf as
-`.card.small` thumbnails (the tap blows up a full card, `option.zoom`), the items on
-the next shelf and the relics under them in the gaps, a 3-2 pyramid, as bare icons
-with price tags. Kecleon (2x, flipped to face the shelves) stands at the counter's
-left end, and forgetting a move is the 💻 PC on its right (`martPc()`, under the
-Center's bouncing `.center-label` sign). (Not `.mart`: that's the top bar's Mart icon.)
-The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts: teal-banded
-white walls with sale posters, green octagon tiles, an orange mat), barely dimmed, and
-its floor line follows the counter's foot (`showPlaceScene('mart', { floor })`), so the
-shop stands on the tiles instead of floating (the user's call; no fridges either).
+counter (the grid's `::after`, with `.mart-clutter` icons on it, and Leave on its front:
+`martRoom()` moves `#reward-skip` into the grid, `showChoice()` puts it back) stands one
+grey pixel shelf unit (hard-edged gradient bands for depth, a strip light under each
+board, a Mart-blue crown with a Poké Ball, yellow/pink shelf talkers), all the moves on
+the top shelf as `.card.small` thumbnails (a pixel shine sweeps across them; the tap
+blows up a full card, `option.zoom`), the items on the next shelf and the relics under
+them in the gaps, a 3-2 pyramid, as bobbing bare icons with plain printed prices (no
+tag boxes). Kecleon (2x, flipped to face the shelves) stands at the counter's left end,
+and forgetting a move is the 💻 PC on its right (`martPc()`, under the Center's bouncing
+`.center-label` sign). (Not `.mart`: that's the top bar's Mart icon.)
+The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts): teal-banded
+white walls with pennant bunting and hanging lamps (glow, flicker, drifting dust), and on
+wider screens a window (clouds, a passing bird), crates, a SALE poster and a cork board;
+green octagon tiles with baskets, boxes and Poké/Great/Ultra/Master Balls lying about.
+It's barely dimmed, and its floor line follows the counter's foot and its plants its ends
+(`showPlaceScene('mart', { floor, span })`), so the shop stands on the tiles instead of
+floating (the user's calls; no fridges, no tiny clock or posters).
 Removal reuses
 `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
 bought once per Mart (`stock.removed`, then the PC says "Sold out"). Every forget picker

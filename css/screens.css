@@ -2105,37 +2105,105 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
    for depth: a lit left post and a shaded right one, the inner side walls and the shadow under each board going
    back into the cabinet, and each board showing its pale top surface above its white front edge */
 .mart-window :is(.group-cards, .group-items, .group-relics) {
+  --board: linear-gradient(to top, #6a6a80 0 3px, #ffffff 3px 7px, #e8e8f0 7px 11px, #c4c4d4 11px 13px, transparent 13px);
+  --walls: linear-gradient(to right, #a8a8b8 0 6px, #bcbccc 6px 10px, transparent 10px calc(100% - 10px), #bcbccc calc(100% - 10px) calc(100% - 6px), #a8a8b8 calc(100% - 6px));
+  --light: linear-gradient(transparent 0 4px, #fff8d0 4px 6px, rgba(255, 240, 170, 0.45) 6px 12px, rgba(255, 240, 170, 0.2) 12px 20px, transparent 20px);   /* a strip light under the shelf above */
+  position: relative;
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
   align-items: flex-end;
   gap: 8px;
   margin: 0 12px;
-  padding: 14px 16px 20px;
+  padding: 18px 16px 20px;
   border-left: 6px solid #d8d8e4;
   border-right: 6px solid #9898a8;
-  background:
-    linear-gradient(to top, #6a6a80 0 3px, #ffffff 3px 7px, #e8e8f0 7px 11px, #c4c4d4 11px 13px, transparent 13px),
-    linear-gradient(to right, #a8a8b8 0 6px, #bcbccc 6px 10px, transparent 10px calc(100% - 10px), #bcbccc calc(100% - 10px) calc(100% - 6px), #a8a8b8 calc(100% - 6px)),
-    linear-gradient(#8e8ea0 0 4px, #aeaebe 4px 8px, #cdcddb 8px);
+  background: var(--board), var(--light), var(--walls), linear-gradient(#8e8ea0 0 4px, #aeaebe 4px 8px, #cdcddb 8px);
   box-shadow: -2px 0 0 #303038, 2px 0 0 #303038;
 }
-.mart-window .group-cards { grid-area: cards; padding-top: 12px; border-top: 6px solid #e0e0ea; border-radius: var(--round-sm) var(--round-sm) 0 0; box-shadow: -2px 0 0 #303038, 2px 0 0 #303038, 0 -2px 0 #303038;
-  background:
-    linear-gradient(to top, #6a6a80 0 3px, #ffffff 3px 7px, #e8e8f0 7px 11px, #c4c4d4 11px 13px, transparent 13px),
-    linear-gradient(to right, #a8a8b8 0 6px, #bcbccc 6px 10px, transparent 10px calc(100% - 10px), #bcbccc calc(100% - 10px) calc(100% - 6px), #a8a8b8 calc(100% - 6px)),
-    linear-gradient(#9e9eb0 0 4px, #b6b6c6 4px 8px, #cdcddb 8px); }
+.mart-window .group-cards {
+  grid-area: cards;
+  margin-top: 38px;
+  padding-top: 16px;
+  border-top: 6px solid #e0e0ea;
+  background: var(--board), var(--light), var(--walls), linear-gradient(#9e9eb0 0 4px, #b6b6c6 4px 8px, #cdcddb 8px);
+  box-shadow: -2px 0 0 #303038, 2px 0 0 #303038, 0 -2px 0 #303038;
+}
+/* the cabinet's crown: a Mart-blue sign board with a Poké Ball on it */
+.mart-window .group-cards::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  right: -14px;
+  top: -34px;
+  height: 26px;
+  border-radius: var(--round-sm) var(--round-sm) 0 0;
+  background: linear-gradient(#78a8f8 0 3px, #3878f0 3px 19px, #1848a0 19px);
+  box-shadow: 0 0 0 2px #303038, 0 3px 0 2px rgba(0, 0, 0, 0.25);
+}
+.mart-window .group-cards::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -31px;
+  width: 20px;
+  height: 20px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 3px, #303038 3px 5px, transparent 5px), linear-gradient(#e04030 0 8px, #303038 8px 12px, #f8f8f8 12px);
+  box-shadow: 0 0 0 2px #303038;
+}
+/* a little yellow shelf talker in each shelf's top corner */
+.mart-window :is(.group-items, .group-relics)::before {
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  padding: 3px 5px 2px;
+  border-radius: 2px;
+  background: #f8d030;
+  box-shadow: 0 0 0 2px #303038, 2px 2px 0 1px rgba(0, 0, 0, 0.3);
+  color: #303038;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 0.45rem;
+  letter-spacing: 0.05em;
+}
+.mart-window .group-items::before { content: "ITEMS"; }
+.mart-window .group-relics::before { content: "RELICS"; background: #f070a8; }
 .mart-window .group-items { grid-area: items; gap: 18px; }
 /* the relics sit in the gaps between the items (a 3-2 pyramid), over a tall band where Kecleon's head and the PC's sign go */
-.mart-window .group-relics { grid-area: relics; gap: 18px; padding-bottom: 88px; }
-.mart-window .group-cards .reward-option { width: calc((100% - 32px) / 5); max-width: 104px; flex: none; }
+.mart-window .group-relics { grid-area: relics; gap: 18px; padding-bottom: 74px; }
+.mart-window .group-cards .reward-option { width: calc((100% - 32px) / 5); max-width: 90px; flex: none; }
 .mart-window :is(.group-items, .group-relics) .reward-option { width: 60px; flex: none; }
-/* items and relics are bare icons on the shelf (the name and text show when you tap one) */
+/* items and relics are bare icons on the shelf (the name and text show when you tap one), bobbing one after another */
 .mart-window :is(.group-items, .group-relics) .relic { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .mart-window :is(.group-items, .group-relics) :is(.relic-name, .relic-text) { display: none; }
-.mart-window :is(.group-items, .group-relics) .relic-icon { font-size: 2.4rem; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25)); }
+.mart-window :is(.group-items, .group-relics) .relic-icon { font-size: 2.4rem; filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.25)); animation: wareBob 2.4s steps(2) infinite; }
+.mart-window :is(.group-items, .group-relics) .reward-option:nth-child(2) .relic-icon { animation-delay: -0.8s; }
+.mart-window :is(.group-items, .group-relics) .reward-option:nth-child(3) .relic-icon { animation-delay: -1.6s; }
+.mart-window .group-relics .relic-icon { animation-delay: -0.4s; }
+@keyframes wareBob { 50% { translate: 0 -3px; } }
+/* a pixel shine sweeping across each card now and then, one card after another */
+.mart-window .group-cards .card-face { overflow: hidden; }
+.mart-window .group-cards .card-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.75) 38% 46%, transparent 46% 52%, rgba(255, 255, 255, 0.5) 52% 55%, transparent 55%);
+  translate: -110% 0;
+  animation: wareShine 6s steps(8) infinite;
+  pointer-events: none;
+}
+.mart-window .group-cards .reward-option:nth-child(2) .card-face::after { animation-delay: 0.6s; }
+.mart-window .group-cards .reward-option:nth-child(3) .card-face::after { animation-delay: 1.2s; }
+.mart-window .group-cards .reward-option:nth-child(4) .card-face::after { animation-delay: 1.8s; }
+.mart-window .group-cards .reward-option:nth-child(5) .card-face::after { animation-delay: 2.4s; }
+@keyframes wareShine { 0%, 80% { translate: -110% 0; } 100% { translate: 110% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .mart-window .relic-icon, .mart-window .card-face::after { animation: none; }
+}
+/* prices are just printed on the shelf edge: no tag */
 .mart-window .mart-ware { gap: 4px; }
-.mart-window .mart-price { padding: 2px 4px; font-size: 0.72rem; white-space: nowrap; }
+.mart-window .mart-price { padding: 0; border: 0; background: none; box-shadow: none; font-size: 0.72rem; white-space: nowrap; color: #283060; text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7); }
 .mart-window .mart-price.too-dear { color: #c02020; }
 .mart-window .reward-option:disabled { opacity: 0.55; }
 /* the glass counter, like the Gen 3 Marts', in front of the shelf's foot and hiding Kecleon's */
@@ -2170,6 +2238,10 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 /* odds and ends on the counter between Kecleon and the PC, so it isn't bare */
 .mart-clutter { grid-area: counter; z-index: 3; justify-self: center; align-self: start; display: flex; align-items: flex-end; gap: 2px; margin-top: -20px; font-size: 1.5rem; line-height: 1; filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.25)); pointer-events: none; }
 .mart-clutter > :nth-child(odd) { font-size: 1.2rem; }
+/* Leave hangs on the counter's front, under Kecleon */
+.mart-window > #reward-skip { grid-area: counter; z-index: 3; justify-self: start; align-self: end; margin: 0 0 7px 26px; padding: 4px 5px; }
+.mart-window > #reward-skip .pp-pill { font-size: 0.8rem; padding: 7px 12px 6px 24px; }
+.mart-window > #reward-skip .pp-pill::before { left: 10px; }
 .mart-window .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; }
 @media (max-width: 420px) {
   .mart-window :is(.group-cards, .group-items, .group-relics) { margin: 0 6px; padding-inline: 12px; }
