@@ -150,7 +150,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'shuffle', 'run-away', ...(b.kind === 'boss' ? ['thunder'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', ...(b.kind === 'boss' ? ['thunder'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -244,7 +244,6 @@ function draw(count) {
     if (b.drawPile.length === 0) {
       if (b.discard.length === 0) return;        // nothing left anywhere
       b.drawPile = shuffle(b.discard);
-      playSound('shuffle');
       b.discard = [];
     }
     b.hand.push({ uid: nextUid++, card: b.drawPile.pop(), fresh: true });

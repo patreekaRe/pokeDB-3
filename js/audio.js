@@ -66,7 +66,6 @@ const SOUNDS = {
   'heal-hp':    { url: 'assets/audio/sfx/potion.mp3' },       // a card or power heals you in battle: the potion's file (the user's call); never the Center's heal
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
-  shuffle:      { synth: shuffleRiffle },                     // the discard pile is shuffled back into the draw pile: made in code (the user's call)
   stick:        { synth: stickTick },                         // the Game Corner's joystick moves the cursor: made in code (the user's call)
   thunder:      { url: 'assets/audio/sfx/thunder.mp3' },      // a lightning bolt in a boss's storm
   coins:        { url: 'assets/audio/sfx/buy.mp3' },          // a fight's PokéCoins and ₽ are paid out: the Mart's buy file (the user's call)
@@ -400,28 +399,6 @@ function normalize(buffer, peak) {
   const top = out.reduce((max, v) => Math.max(max, Math.abs(v)), 0) || 1;
   for (let i = 0; i < out.length; i++) out[i] *= peak / top;
   return buffer;
-}
-
-/**
- * The shuffle sound: a deck riffled back together. A run of short lo-fi noise ticks (sample-and-hold noise, which
- * gives the 8-bit grit) that bunch up in the middle like cards falling, then a low square "thup" as the pile squares up.
- */
-function shuffleRiffle(ac) {
-  const rate = ac.sampleRate, length = Math.round(rate * 0.42);
-  const buffer = ac.createBuffer(1, length, rate);
-  const out = buffer.getChannelData(0);
-  const ticks = [];
-  for (let k = 0; k < 16; k++) { const x = k / 15; ticks.push(0.3 * (x - 0.35 * Math.sin(2 * Math.PI * x) / (2 * Math.PI))); }
-  let held = 0;
-  for (let i = 0; i < length; i++) {
-    const t = i / rate;
-    if (i % 6 === 0) held = Math.random() * 2 - 1;
-    const tick = ticks.reduce((sum, at) => (t >= at ? sum + Math.exp(-(t - at) / 0.005) : sum), 0);
-    const thup = t >= 0.34 ? Math.sign(Math.sin(2 * Math.PI * 196 * (t - 0.34))) * 0.35 * Math.exp(-(t - 0.34) / 0.025) : 0;
-    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));
-    out[i] = (held * Math.min(tick, 1) * 0.6 + thup) * fade;
-  }
-  return normalize(buffer, 0.2);
 }
 
 /** The Game Corner's joystick: a short two-step square-wave cursor tick, like moving a menu cursor on an arcade screen. */

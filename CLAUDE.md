@@ -741,14 +741,13 @@ Weakened), `item-get` (a relic or item received: reward picks via `confirmSound`
 the Shrine; not Mart buys), `low-hp` (looped with `setLoop()` in `js/audio.js` while your HP is at 20% or
 below, set on every `renderAll()`, off when the battle ends, is abandoned, or on mute), `event` (walking into a ❓ room, in `enterNode()`,
 so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, not relics; `potion.mp3`, the user's call; never the Center's `heal`),
-`power` (a power card is played), `burn` (burn damage ticks), `shuffle` (synthesized, `shuffleRiffle()`: the discard pile goes back into the draw
-pile, in `draw()`), `thunder` (each lightning bolt while a boss's storm is on, in `drawLightning()` in `js/scene.js`),
+`power` (a power card is played), `burn` (burn damage ticks), no sound when the discard pile is shuffled back in (the user dropped the synth riffle: it sounded distorted; a file may come later), `thunder` (each lightning bolt while a boss's storm is on, in `drawLightning()` in `js/scene.js`),
 `coins` (a fight's PokéCoins and ₽ are paid, `collect()`; `buy.mp3`), `door` (walking into a Mart or Center, `enterNode()`; `event.mp3`, the same sound as a ❓ room),
 `achievement` (`checkAchievements()` grants a starter), `bag` (the Bag opens and closes, and so does the Poké Ball menu: `setOpen()` in `js/main.js`; the user's call), `cancel` (the menu blip for
 backing out, `bag.mp3` too, so every window closes with the Bag's sound: `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕, a zoomed card; also Escape on a modal
 window or the Game Corner, the Game Corner's top-bar toggle closing it, and backing out of a picked card or reward; falls back to `confirm`), `stick` (synthesized, `stickTick()`: the Game Corner's joystick moves) and `run-away` (every way of running: the Poké Doll,
 in place of `item`, and Team Rocket's "Run for it"; there's no running-away relic). The user picked those file reuses. Synths
-(`blockClink()`, `shuffleRiffle()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution pop-up has no sound on
+(`blockClink()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution pop-up has no sound on
 purpose: the user has a bigger plan for evolving. Battle sounds preload in
 `startBattle()` (`thunder` only for bosses), map ones in `showMap()`, `confirm` / `cancel` in `unlock()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat
