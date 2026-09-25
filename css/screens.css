@@ -1284,7 +1284,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .map-trainer.at-start { transform: translate(-50%, -62%); }   /* at the foot of the start road, so the road shows above it */
 
 /* ---------- rewards (choose one) ---------- */
-#reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; }
+#reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; --log-w: 440px; }
+@media (max-width: 720px) { #reward-screen { --log-w: 300px; } }
 /* the screen's name on a small Pokégear plate, like a menu header in the games */
 .reward-title {
   margin: 0;
@@ -1306,7 +1307,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   position: sticky;
   bottom: max(10px, env(safe-area-inset-bottom));
   z-index: 3;
-  width: min(100%, 720px);
+  width: min(100%, var(--log-w));   /* a narrow, centred box rather than one stretched across the screen */
   margin-top: auto;
   display: flex;
   align-items: stretch;
@@ -1368,7 +1369,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   flex: 1;
   min-width: 0;
   min-height: 3.4em;
-  padding: 9px 28px 9px 14px;
+  padding: 9px 28px 9px 28px;
   border: 3px solid #b8b8c8;
   border-radius: var(--round);
   background: var(--win-bg);
@@ -1377,9 +1378,10 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 0.95rem;
   line-height: 1.4;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
 }
+.log-rest { visibility: hidden; }
 .reward-log.more::after {
   content: '▼';
   position: absolute;
@@ -2273,7 +2275,7 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
   bottom: auto;
   left: 50%;
   translate: -50% 0;
-  width: min(calc(100% - 32px), 720px);
+  width: min(calc(100% - 32px), var(--log-w));
 }
 #reward-screen:has(.center-room) #reward-skip { margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
 /* each choice is a see-through button laid over its machine (placeCenterSpots() in js/run.js) */

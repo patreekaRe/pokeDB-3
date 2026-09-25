@@ -185,9 +185,12 @@ function showLine(i) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finishLine();
   const letters = Array.from(line);
   let shown = 0;
+  // the rest of the line is laid out but invisible, so centred text doesn't slide as it types out
+  const rest = el('span', 'log-rest');
   say.typing = setInterval(() => {
     shown += 2;
-    $('reward-log-text').textContent = letters.slice(0, shown).join('');
+    rest.textContent = letters.slice(shown).join('');
+    $('reward-log-text').replaceChildren(letters.slice(0, shown).join(''), rest);
     if (shown >= letters.length) finishLine();
   }, TYPE_MS);
 }

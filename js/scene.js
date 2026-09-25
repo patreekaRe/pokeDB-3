@@ -1889,6 +1889,31 @@ function drawCenter(t) {
   }
 }
 
+/** The Mart: each lamp's soft glow (one flickers now and then), clouds and the odd bird crossing the windows, dust in the light. */
+function drawMart(t) {
+  for (const l of life.lamps) {
+    if ((t + l.phase) % 173 < 3) continue;   // a flicker
+    for (let y = 0; y < 7; y++) for (let x = -2 - y; x <= 2 + y; x++) if (dither(l.x + x, l.y + y) < 9 - y) tint(l.x + x, l.y + y, 1.05, 6);
+  }
+  for (const w of life.windows) {
+    const glass = (x, y) => x >= w.x0 && x <= w.x1 && y >= w.y0 && y <= w.y1 && x !== w.cx && y !== w.bar;
+    const cx = w.x0 - 6 + Math.floor((t * 0.12 + w.cx * 3) % (w.x1 - w.x0 + 12));
+    for (const [dx, dy] of [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [1, -1], [2, -1], [3, -1]]) {
+      if (glass(cx + dx, w.y0 + 3 + dy)) put(cx + dx, w.y0 + 3 + dy, S.window[4]);
+    }
+    const fly = (t + w.cx * 11) % 240;
+    if (fly < 50) {   // a bird flapping across
+      const bx = w.x0 + Math.floor(fly * (w.x1 - w.x0) / 50), by = w.y0 + 2, flap = fly % 4 < 2 ? 1 : 0;
+      for (const dx of [-1, 0, 1]) if (glass(bx + dx, by - (dx ? flap : 0))) put(bx + dx, by - (dx ? flap : 0), S.lamp[0]);
+    }
+  }
+  for (const m of life.dust) {
+    m.y -= m.drift;
+    if (m.y < 8) m.y = horizon - 2;
+    if (Math.sin((t + m.phase) / 5) > 0.2) put(m.x + Math.sin((t + m.phase) / 11) * 2, m.y, S.mote);
+  }
+}
+
 /** The sea: glints winking on the water, swells rolling in, surf running up the sand, a sail crossing and the lighthouse's lamp. */
 function drawSea(t) {
   const shore = life.shore, span = shore - horizon;
