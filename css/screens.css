@@ -2101,7 +2101,9 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   gap: 0;
   padding: 0;
 }
-/* the shelf unit: a grey metal cabinet, narrower than the counter in front of it, each shelf on a white board */
+/* the shelf unit: a grey metal cabinet, narrower than the counter in front of it, drawn in hard-edged pixel bands
+   for depth: a lit left post and a shaded right one, the inner side walls and the shadow under each board going
+   back into the cabinet, and each board showing its pale top surface above its white front edge */
 .mart-window :is(.group-cards, .group-items, .group-relics) {
   display: flex;
   flex-wrap: nowrap;
@@ -2109,16 +2111,23 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   align-items: flex-end;
   gap: 8px;
   margin: 0 12px;
-  padding: 12px 10px 8px;
-  border-inline: 6px solid #b8b8c8;
-  border-bottom: 7px solid #fff;
-  background: #d8d8e4;
-  box-shadow: -2px 0 0 #303038, 2px 0 0 #303038, inset 0 4px 0 #7a7a90;
+  padding: 14px 16px 20px;
+  border-left: 6px solid #d8d8e4;
+  border-right: 6px solid #9898a8;
+  background:
+    linear-gradient(to top, #6a6a80 0 3px, #ffffff 3px 7px, #e8e8f0 7px 11px, #c4c4d4 11px 13px, transparent 13px),
+    linear-gradient(to right, #a8a8b8 0 6px, #bcbccc 6px 10px, transparent 10px calc(100% - 10px), #bcbccc calc(100% - 10px) calc(100% - 6px), #a8a8b8 calc(100% - 6px)),
+    linear-gradient(#8e8ea0 0 4px, #aeaebe 4px 8px, #cdcddb 8px);
+  box-shadow: -2px 0 0 #303038, 2px 0 0 #303038;
 }
-.mart-window .group-cards { grid-area: cards; border-top: 6px solid #b8b8c8; border-radius: var(--round-sm) var(--round-sm) 0 0; box-shadow: -2px 0 0 #303038, 2px 0 0 #303038, 0 -2px 0 #303038; }
+.mart-window .group-cards { grid-area: cards; padding-top: 12px; border-top: 6px solid #e0e0ea; border-radius: var(--round-sm) var(--round-sm) 0 0; box-shadow: -2px 0 0 #303038, 2px 0 0 #303038, 0 -2px 0 #303038;
+  background:
+    linear-gradient(to top, #6a6a80 0 3px, #ffffff 3px 7px, #e8e8f0 7px 11px, #c4c4d4 11px 13px, transparent 13px),
+    linear-gradient(to right, #a8a8b8 0 6px, #bcbccc 6px 10px, transparent 10px calc(100% - 10px), #bcbccc calc(100% - 10px) calc(100% - 6px), #a8a8b8 calc(100% - 6px)),
+    linear-gradient(#9e9eb0 0 4px, #b6b6c6 4px 8px, #cdcddb 8px); }
 .mart-window .group-items { grid-area: items; gap: 18px; }
-/* the relics leave the left end free for Kecleon, who stands in front of it, and room under them for the PC */
-.mart-window .group-relics { grid-area: relics; gap: 18px; padding-left: 120px; padding-bottom: 46px; }
+/* the relics sit in the gaps between the items (a 3-2 pyramid), over a tall band where Kecleon's head and the PC's sign go */
+.mart-window .group-relics { grid-area: relics; gap: 18px; padding-bottom: 88px; }
 .mart-window .group-cards .reward-option { width: calc((100% - 32px) / 5); max-width: 104px; flex: none; }
 .mart-window :is(.group-items, .group-relics) .reward-option { width: 60px; flex: none; }
 /* items and relics are bare icons on the shelf (the name and text show when you tap one) */
@@ -2151,18 +2160,19 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   image-rendering: pixelated;
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25));
 }
-/* the PC on the counter's right end, its bouncing sign (the Center's) on the counter's glass under it, clear of the shelf */
+/* the PC on the counter's right end, the Center's bouncing sign floating over it */
 .mart-window .group-service { grid-area: counter; z-index: 3; justify-self: end; align-self: start; margin: -36px 12px 0 0; }
 .mart-window .group-service .reward-option { position: relative; }
 .mart-window .group-service .reward-option:is(:hover, :focus-visible) { transform: none; filter: brightness(1.1); }
-.mart-pc { display: flex; flex-direction: column-reverse; align-items: center; gap: 6px; }
+.mart-pc { display: block; }
 .mart-pc-icon { display: block; font-size: 2.8rem; line-height: 1; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.3)); }
-.mart-pc .center-label { position: static; translate: none; border-color: #3878f0; font-size: 0.7rem; padding: 4px 7px; }
-.mart-pc .center-label::after { display: none; }
+.mart-pc .center-label { border-color: #3878f0; bottom: calc(100% + 10px); font-size: 0.72rem; padding: 5px 8px; }
+/* odds and ends on the counter between Kecleon and the PC, so it isn't bare */
+.mart-clutter { grid-area: counter; z-index: 3; justify-self: center; align-self: start; display: flex; align-items: flex-end; gap: 2px; margin-top: -20px; font-size: 1.5rem; line-height: 1; filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.25)); pointer-events: none; }
+.mart-clutter > :nth-child(odd) { font-size: 1.2rem; }
 .mart-window .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; }
 @media (max-width: 420px) {
-  .mart-window :is(.group-cards, .group-items, .group-relics) { margin: 0 6px; padding-inline: 6px; }
-  .mart-window .group-relics { padding-left: 110px; }
+  .mart-window :is(.group-cards, .group-items, .group-relics) { margin: 0 6px; padding-inline: 12px; }
   .mart-window :is(.group-items, .group-relics) .reward-option { width: 54px; }
   .mart-window :is(.group-items, .group-relics) .relic-icon { font-size: 2.1rem; }
 }

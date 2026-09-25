@@ -155,15 +155,17 @@ re-renders itself after each purchase; `ware()` wraps a card/item/relic tile wit
 its price tag (red and disabled when you can't afford it), a `group` and a
 two-tap "Buy ₽N" confirm. `layout: 'mart-window'` lays the Mart out like a Zelda shop
 (the user's sketch), the same at every screen size, with no window: behind a glass
-counter (the grid's `::after`) stands one grey shelf unit, all the moves on the top
-shelf as `.card.small` thumbnails (the tap blows up a full card, `option.zoom`), the
-items on the next shelf and the relics on the bottom one as bare icons, each with a
-price tag. Kecleon (2x, flipped to face the shelves) stands at the counter's left end,
-in front of the relic shelf, and forgetting a move is the 💻 PC on the counter's right
-(`martPc()`, the Center's bouncing `.center-label` sign on the counter glass).
-(Not `.mart`: that's the top bar's Mart icon.) The room is its own indoor scene
-(`PLACE_ART.mart`, after the Gen 3 Marts: teal-banded white walls, glass fridges down
-both sides of a bare back wall, green octagon tiles, an orange mat), barely dimmed.
+counter (the grid's `::after`, with `.mart-clutter` icons on it) stands one grey pixel
+shelf unit (hard-edged gradient bands for depth), all the moves on the top shelf as
+`.card.small` thumbnails (the tap blows up a full card, `option.zoom`), the items on
+the next shelf and the relics under them in the gaps, a 3-2 pyramid, as bare icons
+with price tags. Kecleon (2x, flipped to face the shelves) stands at the counter's
+left end, and forgetting a move is the 💻 PC on its right (`martPc()`, under the
+Center's bouncing `.center-label` sign). (Not `.mart`: that's the top bar's Mart icon.)
+The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts: teal-banded
+white walls with sale posters, green octagon tiles, an orange mat), barely dimmed, and
+its floor line follows the counter's foot (`showPlaceScene('mart', { floor })`), so the
+shop stands on the tiles instead of floating (the user's call; no fridges either).
 Removal reuses
 `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
 bought once per Mart (`stock.removed`, then the PC says "Sold out"). Every forget picker

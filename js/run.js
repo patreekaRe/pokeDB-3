@@ -995,13 +995,17 @@ function martRoom() {
     layout: 'mart-window',
   });
 
-  showPlaceScene('mart');
-
-  // the shopkeeper, at the left end of the counter (the .mart-window grid places it)
+  // the shopkeeper at the left end of the counter, and odds and ends on it (the .mart-window grid places both)
   const clerk = el('img', 'mart-clerk');
   clerk.src = 'assets/pokemon/kecleon-front.gif';
   clerk.alt = 'Kecleon, the shopkeeper';
-  $('reward-options').append(clerk);
+  const clutter = el('span', 'mart-clutter');
+  clutter.setAttribute('aria-hidden', 'true');
+  for (const icon of ['🔔', '🧪', '🧴', '⚫', '🎁']) clutter.append(el('span', '', icon));
+  $('reward-options').append(clerk, clutter);
+
+  // the room's floor starts at the foot of the counter, so the shop stands on the tiles
+  showPlaceScene('mart', { floor: () => $('reward-options').getBoundingClientRect().bottom });
 }
 
 /* ---------- evolution ---------- */

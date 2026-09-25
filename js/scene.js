@@ -284,12 +284,13 @@ const PLACE_ART = {
     life: ['center'],
   },
 
-  mart: {   // inside a Poké Mart: fridges down both sides of a bare wall, where the shop's real shelf stands
+  mart: {   // inside a Poké Mart: a bare wall for the shop's real shelf, its floor line set by the page (martRoom)
     backdrop: 'mart', floor: 'mart', light: null, horizon: 0.74,   // low, so the wall stands behind the shelf
     sky: ['#f8f8f0'],
     wall: ['#2a8a98', '#58c0c8', '#f8f8f0', '#e89078'],
     clock: ['#a05838', '#f8f8f0', '#303038'],
-    fridge: ['#c8c8d8', '#a8e4e8', '#e8fcfc', '#78c878', '#7a7a90'],
+    wainscot: ['#e8e8f0', '#b8b8c8'],
+    poster: ['#e85830', '#3878f0'],
     tiles: ['#a8e8b0', '#78c890', '#88d49c'],
     mat: ['#e85830', '#f8a868'],
     plant: ['#5ab048', '#2e7a34', '#8ad060', '#c8c8d8', '#7a7a90'],
@@ -302,6 +303,7 @@ let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
 let life = {};
 let shown = '';                 // which scene is up, so going back to it doesn't restart it
+let floorAt = null;             // a place whose floor line the page sets (showPlaceScene's `floor`)
 let storm = { on: false, level: 0 };
 
 /** The menus' scene: each starter type has its own (TYPE_ART); before one is picked, the Clearing's moonlit night, like the title screen. */
@@ -310,9 +312,10 @@ export function showMenuScene(type) {
   else showScene('clearing', 'boss');
 }
 
-/** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. */
-export function showPlaceScene(place) {
-  paintScene(`place/${place}`, PLACE_ART[place]);
+/** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. `floor` (a function giving
+    a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles. */
+export function showPlaceScene(place, { floor = null } = {}) {
+  paintScene(`place/${place}`, PLACE_ART[place], floor);
 }
 
 /** Resting at the Center: the machine takes the balls in one by one, then they flash, like the games. */
@@ -342,11 +345,12 @@ export function showScene(biomeId, kind = 'wild') {
   paintScene(`${biomeId}/${kind}`, { ...shared, ...(kinds[kind] || kinds.wild) });
 }
 
-function paintScene(key, raw) {
+function paintScene(key, raw, floor = null) {
   canvas = $('scene-bg');
   ctx = canvas.getContext('2d');
   document.body.classList.toggle('has-scene', !!raw);
-  if (raw && key === shown && document.body.dataset.screen !== 'battle-screen') return;
+  floorAt = floor;
+  if (raw && key === shown && document.body.dataset.screen !== 'battle-screen') { if (floor) resize(); return; }
   shown = key;
   clearInterval(timer);
   storm = { on: false, level: 0 };
@@ -375,7 +379,8 @@ function resize() {
   H = Math.max(1, Math.ceil(innerHeight / scale));
   canvas.width = W;
   canvas.height = H;
-  horizon = S.raw.horizon ? Math.round(H * S.raw.horizon) : horizonRow(scale);
+  horizon = floorAt ? Math.max(Math.round(H * 0.3), Math.min(H - 8, Math.round(floorAt() * H / innerHeight)))
+    : S.raw.horizon ? Math.round(H * S.raw.horizon) : horizonRow(scale);
   rand = seeded(W * 131 + H);
   img = ctx.createImageData(W, H);
   px = new Uint32Array(img.data.buffer);
@@ -1121,21 +1126,19 @@ function counter(cx, top, half) {
   ball(cx, top + 7, 3);
 }
 
-/* ---------- the Poké Mart, after the Gen 3 Marts: white walls under a teal band, glass fridges and
-   a bare back wall, green octagon tiles and an orange mat at the door ---------- */
+/* ---------- the Poké Mart, after the Gen 3 Marts: white walls under a teal band with sale posters,
+   green octagon tiles and an orange mat at the door ---------- */
 
 function martBackdrop() {
-  const [top, band, face, stripe] = S.wall;
-  const ceil = 3, shelfTop = ceil + Math.max(8, Math.round((horizon - ceil) * 0.3));
-  for (let y = 0; y < shelfTop; y++) for (let x = 0; x < W; x++) {
-    const d = shelfTop - y;
-    solid(x, y, y < ceil ? top : y < ceil + 3 ? band : d === 3 || d === 4 ? stripe : face);
+  const [top, band, face, stripe] = S.wall, [panel, shade] = S.wainscot;
+  const ceil = 3, rail = horizon - Math.max(6, Math.round(horizon * 0.2));
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    solid(x, y, y < ceil ? top : y < ceil + 3 ? band : y < rail ? face : y - rail < 2 ? stripe : y >= horizon - 2 ? shade : panel);
   }
-  wallClock(Math.round(W * 0.14), ceil + 3 + Math.round((shelfTop - ceil - 7) / 2));
-  // fridges down both sides; the middle of the wall stays bare, since the shop's real shelf stands there
-  const unit = 24;
-  for (let u = -6; u < W * 0.2; u += unit) fridge(u, shelfTop - 2, horizon, unit);
-  for (let u = W + 6 - unit; u + unit > W * 0.8; u -= unit) fridge(u, shelfTop - 2, horizon, unit);
+  const mid = Math.round((ceil + 3 + rail) / 2);
+  if (W > 140) wallClock(Math.round(W * 0.14), ceil + 8);   // on a phone it would hide behind the top bar
+  poster(Math.round(W * 0.08), mid, S.poster[0]);
+  poster(Math.round(W * 0.92), mid, S.poster[1]);
 }
 
 function wallClock(cx, cy) {
@@ -1147,15 +1150,14 @@ function wallClock(cx, cy) {
   solid(cx, cy, hand); solid(cx, cy - 1, hand); solid(cx + 1, cy, hand);
 }
 
-/** A glass drinks fridge: a grey frame round three doors of rows of green bottles. */
-function fridge(x0, top, foot, w) {
-  const [frame, glass, shine, bottle, dark] = S.fridge, doors = 3, dw = Math.floor((w - 2) / doors);
-  for (let y = top; y < foot; y++) for (let x = x0; x < x0 + w; x++) {
-    const lx = x - x0 - 1, door = Math.floor(lx / dw), dx = lx - door * dw;
-    const edge = x === x0 || x === x0 + w - 1 || y === top || y === foot - 1 || dx === 0;
-    if (edge) { solid(x, y, x === x0 ? dark : frame); continue; }
-    const row = (y - top - 2) % 5, glint = (dx + (y - top)) % 9 === 3;
-    solid(x, y, glint ? shine : row >= 2 && row <= 3 && dx % 2 === 1 ? bottle : glass);
+/** A small sale poster: a coloured sheet with a white star and a few lines of print. */
+function poster(cx, cy, colour) {
+  const [, dial, ink] = S.clock;
+  for (let y = -5; y <= 5; y++) for (let x = -4; x <= 4; x++) {
+    const edge = Math.abs(x) === 4 || Math.abs(y) === 5;
+    const star = (Math.abs(x) + Math.abs(y + 2) <= 2);
+    const print = y >= 2 && y <= 3 && Math.abs(x) <= 2 && (x + y) % 2 === 0;
+    solid(cx + x, cy + y, edge ? ink : star ? dial : print ? dial : colour);
   }
 }
 
