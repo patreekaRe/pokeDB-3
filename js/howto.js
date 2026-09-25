@@ -51,7 +51,7 @@ export function initHowto() {
   );
   $('howto-perks').replaceChildren(
     row('', '💰', 'New starters', 'Unlock new Pokémon to play as.'),
-    row('', '✨', 'Perks', "Permanent boosts for every run. Drop by and see what's on offer!"),
+    row('', '⏫', 'Perks', "Permanent boosts for every run. Drop by and see what's on offer!"),
   );
 
   slides = [...track().querySelectorAll('.howto-slide')];

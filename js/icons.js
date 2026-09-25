@@ -1033,6 +1033,21 @@ const ICONS = {
     '.....w......',
   ],
 
+  '⏫': [   // a permanent Game Corner perk: the games' stat-raise arrows
+    '.....ee.....',
+    '....eGGe....',
+    '...eGGGGE...',
+    '..eGGEEGGE..',
+    '.eGGE..EGGE.',
+    '..EE....EE..',
+    '.....ee.....',
+    '....eGGe....',
+    '...eGGGGE...',
+    '..eGGEEGGE..',
+    '.eGGE..EGGE.',
+    '..EE....EE..',
+  ],
+
   /* ---------- menus, guide and windows ---------- */
   '🏠': [
     '............',
