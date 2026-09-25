@@ -323,7 +323,7 @@ async function playCard(uid) {
 
   // --- everything else a card can do ---
   if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
-  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '💨 Weakened', 'note'); }
+  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '📉 Weakened', 'note'); }
   if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); }
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
@@ -726,7 +726,7 @@ function renderStatus() {
   const enemyBadges = [];
   if (en.block)    enemyBadges.push(['🛡️', en.block, `Block ${en.block}: soaks up damage until its next turn`, 'block']);
   if (en.burn)     enemyBadges.push(['🔥', en.burn, `Burn ${en.burn}: takes ${en.burn} damage at the start of its turn`]);
-  if (en.weakened) enemyBadges.push(['💨', '', 'Weakened: its next attack deals half damage']);
+  if (en.weakened) enemyBadges.push(['📉', '', 'Weakened: its next attack deals half damage']);
   if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 
