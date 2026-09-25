@@ -1578,15 +1578,123 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   margin: 0;
   z-index: 90;
 }
-#shop-dialog .shop-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
 #shop-dialog .panel + .panel { margin-top: 14px; }
 .shop-head h2 { font-size: 1.6rem; text-shadow: 0 2px 6px #000; }
-/* the Game Corner's own window: a gold frame on a purple rim (the slot machine's colours), not the Mart's blue */
-#shop-dialog { border-color: #e0b838; box-shadow: 0 0 0 2px #4a2670, inset 0 0 0 2px #4a2670, 0 0 0 5px #b058d8, 0 20px 60px rgba(0, 0, 0, 0.55); }
-#shop-dialog .shop-head h2 { display: flex; align-items: center; gap: 10px; margin: 0; padding: 0; border: 0; color: #4a2670; text-shadow: none; }
-#shop-dialog .shop-head h2 .gc-icon { font-size: 30px; }
-#shop-dialog .shop-head h2 small { font-size: 0.55em; color: #8a6010; }
-#shop-dialog .shop-head { padding-bottom: 10px; border-bottom: 3px dashed #d8b0e8; }
+/* The Game Corner's window, all casino (the user's call): a gold frame on a purple rim, purple carpet with a gold
+   diamond weave behind the parchment prize shelves, and a marquee sign whose bulbs chase round it. */
+#shop-dialog {
+  border-color: #e0b838;
+  background:
+    repeating-linear-gradient(45deg, rgba(248, 208, 48, 0.12) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(-45deg, rgba(248, 208, 48, 0.12) 0 2px, transparent 2px 22px),
+    radial-gradient(ellipse at 50% 0%, #5a2a88, #2a1244 70%);
+  box-shadow: 0 0 0 2px #4a2670, inset 0 0 0 2px #4a2670, 0 0 0 5px #b058d8, 0 0 40px rgba(176, 88, 216, 0.45), 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+#shop-dialog .shop-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px; }
+/* the sign: gold letters on purple, ringed by two rows of bulbs (yellow and white, offset half a step) that swap */
+#shop-dialog .gc-sign {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 16px 22px;
+  border: 0;
+  border-radius: var(--round);
+  background: linear-gradient(#6a2890, #3a1460);
+  box-shadow: 0 0 0 3px #181010, 0 0 0 6px #e0b838, 0 0 0 8px #181010, 0 6px 0 5px rgba(0, 0, 0, 0.35);
+}
+.gc-sign::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 7px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle, #fff8c0 0 2px, transparent 2.6px) 0 0 / 14px 14px,
+    radial-gradient(circle, #f8d030 0 2px, #b88010 2.3px, transparent 3px) 7px 7px / 14px 14px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: bulbChase 0.8s steps(1) infinite;
+  pointer-events: none;
+}
+@keyframes bulbChase { 50% { background-position: 7px 7px, 0 0; } }
+#shop-dialog .gc-title {
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: clamp(1.4rem, 5vw, 2.1rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: #f8d030;
+  text-shadow: 2px 0 0 #181010, -2px 0 0 #181010, 0 2px 0 #181010, 0 -2px 0 #181010, 0 5px 0 #8a4c06;
+  animation: signGlow 1.6s steps(2) infinite;
+}
+@keyframes signGlow { 50% { color: #fff0a0; } }
+.gc-sign .gc-icon { font-size: 30px; }
+#shop-dialog .gc-title { white-space: nowrap; }
+@media (max-width: 480px) {
+  #shop-dialog .gc-sign { gap: 8px; padding: 14px 14px; }
+  #shop-dialog .gc-title { font-size: 1.05rem; }
+  .gc-sign .gc-icon { font-size: 22px; }
+}
+/* a red ribbon under the sign, and your coins on a black counter pill */
+#shop-dialog .gc-ribbon {
+  margin: 0;
+  padding: 4px 16px;
+  background: #c83828;
+  color: #fff8e0;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%, 8px 50%);
+}
+#shop-dialog .coin-balance {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #181010;
+  box-shadow: 0 0 0 2px #e0b838;
+  color: #f8d030;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+/* the prize shelves: parchment with a gold trim; each prize catches a pixel glint when you point at it */
+#shop-dialog .panel { border: 3px solid #e0b838; box-shadow: 0 0 0 2px #4a2670, 4px 4px 0 2px rgba(0, 0, 0, 0.35); }
+#shop-dialog .panel h3 { color: #6a2890; }
+#shop-dialog .shop-item { position: relative; overflow: hidden; }
+#shop-dialog .shop-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.7) 45% 52%, transparent 57%);
+  translate: -100% 0;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  #shop-dialog .shop-item:hover { border-color: #e0b838; }
+  #shop-dialog .shop-item:hover::after { animation: prizeGlint 0.6s steps(6); }
+}
+@keyframes prizeGlint { to { translate: 100% 0; } }
+/* sparkles twinkling in the window's corners */
+#shop-dialog::before, #shop-dialog::after {
+  content: "✦";
+  position: absolute;
+  top: 10px;
+  font-size: 1.3rem;
+  color: #f8d030;
+  text-shadow: 0 0 6px #f8d030;
+  animation: twinkle 1.4s steps(2) infinite;
+  pointer-events: none;
+}
+#shop-dialog::before { left: 14px; }
+#shop-dialog::after { right: 14px; animation-delay: 0.7s; }
+@keyframes twinkle { 50% { opacity: 0.2; transform: scale(0.6); } }
+#shop-dialog .dialog-actions { justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .gc-sign::before, #shop-dialog .gc-title, #shop-dialog::before, #shop-dialog::after { animation: none; }
+  #shop-dialog .shop-item:hover::after { animation: none; }
+}
 .coin-balance { font-weight: 800; color: var(--gold); font-size: 1.1rem; }
 
 .shop-grid {
