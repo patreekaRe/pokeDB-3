@@ -329,7 +329,8 @@ Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
 in `#reward-log`, a copy of the battle text box pinned to the bottom of the
 screen, narrow and centred (`--log-w`: 440px, 300px on phones; the user's call: no
 stretched text boxes; the untyped rest of a line is laid out invisibly, `.log-rest`,
-so centred text doesn't slide as it types); the Skip / Leave button sits centred right under the options (the user's
+so centred text doesn't slide as it types; relic picks, `layout: 'relic-pick'`, sit it just under Skip
+instead, since their short rows left it far below them); the Skip / Leave button sits centred right under the options (the user's
 call: not off to the right by the text box). It draws its
 `.relic` tiles (relics, items, choices) as parchment Pokégear windows, which on
 phones become short rows (icon | name over text) so a choice isn't a screen tall (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines

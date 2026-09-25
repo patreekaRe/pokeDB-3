@@ -503,6 +503,7 @@ function showRelics(title, relics, next) {
     sub: relics[0].boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
     options: relics.map(relic => ({ ...relicOption(relic, () => gainRelic(relic, next)), ask: `Take the ${relic.name}?`, confirm: 'Take it' })),
     onSkip: next,
+    layout: 'relic-pick',
     coins: run.pendingCoins,
   });
 }

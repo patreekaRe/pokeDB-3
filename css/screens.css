@@ -1315,6 +1315,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   align-items: stretch;
   gap: 10px;
 }
+/* relics are short rows, so pinned to the bottom their text box sat far below them (the user wanted it higher) */
+#reward-screen:has(.relic-pick) .reward-bottom { margin-top: 0; }
 /* a picked reward, blown up in the middle (rewards.js openFocus); the confirm sits under it like battle's "Tap to play" */
 .card-focus.reward-focus { justify-content: center; padding-bottom: 16px; background: rgba(8, 10, 24, 0.6); }
 .reward-focus .card.focus-card { --card-w: min(64vw, 260px, 45vh); }
