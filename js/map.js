@@ -373,13 +373,13 @@ function linkPoints(from, to) {
   return to.type === 'boss' ? jogged(x1, y1, y1 - 3) : [[x1, y1], [x2, y2]];
 }
 
-/** Every tile centre along a route, one per step, in order. */
+/** Evenly spaced points along a route, about a tile apart, in order. Not snapped to tiles: that turned diagonals into staircases. */
 function tileSteps(points) {
   const steps = [points[0]];
   for (let i = 1; i < points.length; i++) {
     const [[x1, y1], [x2, y2]] = [points[i - 1], points[i]];
-    const n = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
-    for (let k = 1; k <= n; k++) steps.push([Math.round(x1 + (x2 - x1) * k / n), Math.round(y1 + (y2 - y1) * k / n)]);
+    const n = Math.round(Math.hypot(x2 - x1, y2 - y1));
+    for (let k = 1; k <= n; k++) steps.push([x1 + (x2 - x1) * k / n, y1 + (y2 - y1) * k / n]);
   }
   return steps;
 }
