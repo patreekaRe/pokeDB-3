@@ -416,7 +416,9 @@ are the games' PC (a cream CRT with a blue menu, a keyboard) and the healing mac
 the counter below the Center's two tiles. Rest, like the games: the music cuts,
 `healAtCenter()` drops your one Poké Ball into the tray (you carry one Pokémon, so
 the other five slots stay empty) and resolves once it's in, then the `heal` chime
-starts and `flashCenter(seconds)` flashes the ball for exactly as long as it plays.
+starts and `flashCenter(seconds)` flashes the ball for exactly as long as it plays. Then the text box says
+your Pokémon is feeling better and the full bar stays up ~2 s before the map (the user
+found leaving straight away too quick).
 Asking for the scene already up leaves it
 running (except in battle). Outside battles `#backdrop` (above the canvas)
 dims it so windows stay readable; `setTheme(type)` in `js/ui.js` only sets

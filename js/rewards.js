@@ -164,7 +164,7 @@ function closeFocus() {
 const TYPE_MS = 18;
 let say = { lines: [], at: 0, typing: 0 };
 
-function sayLines(lines) {
+export function sayLines(lines) {
   clearInterval(say.typing);
   say = { lines, at: 0, typing: 0 };
   $('reward-log').hidden = !lines.length;

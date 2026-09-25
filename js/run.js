@@ -26,7 +26,7 @@ import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MAR
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, cardOption, relicOption, itemOption, textOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, sayLines, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
@@ -573,6 +573,10 @@ function restSite() {
           vitals.fill(before, run.hp, seconds);   // the patient monitor's bar fills up while the chime plays
           await sleep(seconds * 1000);
           if (run !== thisRun) return;                 // the run was abandoned during the chime
+          // a moment to see the full bar, with Chansey's goodbye, before heading back out
+          sayLines([`${stageName(run.starter, run.stage)} is feeling much better! Come back any time!`]);
+          await sleep(2200);
+          if (run !== thisRun) return;
           toast(`Healed ${heal} HP.`, 'ok');
           showMap();
         },
