@@ -256,13 +256,6 @@ export function spriteUrl(starter, kind, stage = 0) {
 /** The name of a starter at a given evolution stage (Charmander, Charmeleon...). */
 export const stageName = (starter, stage) => starter.line[stage].name;
 
-/** Which backdrop picture goes with each type (used on the menu). */
-export const BACKDROPS = {
-  fire:  'assets/backgrounds/volcano.jpg',
-  grass: 'assets/backgrounds/shrine.jpg',
-  water: 'assets/backgrounds/clearing.jpg',
-};
-
 /** Hit points at each evolution stage: BASE_HP, then +HP_PER_STAGE for each evolution. */
 export const BASE_HP = 70;
 export const HP_PER_STAGE = 20;

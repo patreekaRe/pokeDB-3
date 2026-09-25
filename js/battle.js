@@ -22,8 +22,8 @@
 import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { $, el, makeCard, makeRelic, showScreen, setBackdrop, sleep, setHpBar } from './ui.js';
-import { showBattleScene } from './battlebg.js';
+import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar } from './ui.js';
+import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds } from './audio.js';
 
@@ -115,9 +115,9 @@ export function startBattle({ run, encounter, onEnd }) {
     over: false,
   };
 
-  setBackdrop(run.backdrop, run.starter.type);
+  setTheme(run.starter.type);
   showScreen('battle-screen');
-  showBattleScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild');
+  showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild');
   playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
   preloadMusic('victory');
   setupBattleScreen();
@@ -305,6 +305,7 @@ async function playCard(uid) {
       const dealt = hurtEnemy(amount);
       playSound(dealt > 0 ? 'hit' : 'block');
       hitEffect('enemy-portrait-box');
+      bigHit(dealt, b.enemy.maxHp);
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
       if (b.enemy.hp <= 0) break;
       if (i < hits.length - 1) { renderBars(); await sleep(200); }
@@ -404,6 +405,7 @@ function hurtEnemy(amount) {
   en.block -= absorbed;
   const through = amount - absorbed;
   en.hp = Math.max(0, en.hp - through);
+  checkStorm();
   return through;
 }
 
@@ -454,6 +456,7 @@ async function enemyTurn() {
     const burnDamage = en.burn;
     en.burn -= 1;
     en.hp = Math.max(0, en.hp - burnDamage);
+    checkStorm();
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
     log(`${b.def.name} took ${burnDamage} burn damage.`);
@@ -481,6 +484,7 @@ async function enemyTurn() {
       const through = hurtPlayer(damage);
       playSound(through > 0 ? 'hit' : 'block');
       hitEffect('player-sprite');
+      bigHit(through, b.maxHp);
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
       const effect = enemyTypeMultiplier();
       if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
@@ -552,6 +556,7 @@ function attackDamage(move) {
 async function finish(won) {
   const b = battle;
   b.over = true;
+  setStorm(false);
   b.busy = true;
   renderAll();
 
@@ -860,6 +865,18 @@ function flash(id, className, ms = 400) {
 }
 const hitEffect = (id) => flash(id, 'hit', 420);
 const lunge = (id) => flash(id, 'lunge', 380);
+
+/** A hit that takes a big bite out of someone (a quarter of their HP, or 25) jolts the arena and flashes the screen. */
+function bigHit(through, maxHp) {
+  if (through < Math.max(12, Math.min(25, maxHp * 0.25)) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  flash('battle-screen', 'big-hit', 450);
+}
+
+/** A boss close to fainting brings the weather in (see setStorm in scene.js). */
+function checkStorm() {
+  const en = battle.enemy;
+  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3) setStorm(true);
+}
 
 /** A number or word that floats up from a spot on screen. */
 function pop(zoneId, text, kind = '', delay = 0) {

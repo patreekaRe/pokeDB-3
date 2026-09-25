@@ -87,15 +87,16 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Pixel-art sprites should stay crisp when scaled up */
 .pixel { image-rendering: pixelated; image-rendering: crisp-edges; }
 
-/* ---------- picture behind everything ---------- */
+/* ---------- behind everything: the pixel scene (#scene-bg, js/scene.js) under this dimming layer ---------- */
 #backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: var(--bg) center / cover no-repeat;
-  transition: background-image 0.4s;
+  background: var(--bg);
 }
-#backdrop::after {                       /* darkens the picture so text stays readable */
+.has-scene #backdrop { background: none; }
+.has-scene[data-screen="battle-screen"] #backdrop { display: none; }   /* battles show the scene at full strength */
+#backdrop::after {                       /* darkens the scene so text stays readable */
   content: "";
   position: absolute;
   inset: 0;

@@ -23,7 +23,7 @@
      tips.js         tap-to-read hints (an element's title) on touch screens
    ============================================================ */
 
-import { STARTERS, spriteUrl, stageName, BACKDROPS } from './data/starters.js';
+import { STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES } from './data/cards.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
@@ -36,11 +36,12 @@ import { initAudio, playCry } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
 import { showTitle } from './title.js';
+import { showMenuScene } from './scene.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import {
-  $, el, showScreen, setBackdrop, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
+  $, el, showScreen, setTheme, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
 
 let selected = null;   // the starter picked on the start screen
@@ -152,7 +153,8 @@ function selectStarter(starter) {
   $('detail-type').className = `detail-type type-${starter.type}`;
   $('detail-blurb').textContent = starter.blurb;
 
-  setBackdrop(BACKDROPS[starter.type], starter.type);
+  setTheme(starter.type);
+  showMenuScene(starter.type);
   showSheet(true);
 }
 
@@ -187,8 +189,9 @@ function showStart() {
   renderContinue();
   renderStarters();
   refreshCoins();
-  if (!selected) setBackdrop(BACKDROPS.water, '');
   showScreen('start-screen');
+  setTheme(selected?.type);
+  showMenuScene(selected?.type);
 }
 
 function goToMenu() {

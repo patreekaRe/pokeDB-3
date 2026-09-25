@@ -1,8 +1,12 @@
 /* ============================================================
-   battlebg.js  -  the pixel-art scene behind a battle: one per biome
+   scene.js  -  the pixel-art scene behind every screen: one per biome
    and fight kind (a normal fight, an elite's tenser light, a boss's
-   dramatic arena), plus the pads the two Pokémon stand on, like the
-   Gen 3/4 games.
+   dramatic arena), plus the pads the two Pokémon stand on in battle,
+   like the Gen 3/4 games. The map and reward screens show their
+   biome's normal scene, the menus the one that goes with the picked
+   starter's type (a moonlit night before one is picked), dimmed by
+   #backdrop so the windows stay readable. When a boss is close to
+   fainting, setStorm() turns the weather (rain, cinders, lightning).
 
    The scene is painted into a small canvas (one canvas pixel = a few
    CSS pixels, upscaled with image-rendering: pixelated), the same way
@@ -10,8 +14,9 @@
    Everything that never moves is painted once into `base`; each frame
    copies it and draws the living parts on top (clouds, swaying grass,
    butterflies, leaves, fireflies, wisps, embers, lava, lightning...).
-   Which parts a scene has is data: see SCENES. It only animates while
-   a battle is showing, and not at all under prefers-reduced-motion.
+   Which parts a scene has is data: see BIOME_ART. It pauses while the
+   tab or the title screen hides it, and never moves under
+   prefers-reduced-motion.
    ============================================================ */
 
 import { $ } from './ui.js';
@@ -23,10 +28,13 @@ const dither = (x, y) => BAYER[((y % 4 + 4) % 4) * 4 + ((x % 4 + 4) % 4)];
 /* ---------- the scenes ----------
    Each biome has its shared look, and `kinds` overrides it for wild / elite / boss fights.
    sky: bands top to bottom. light: 'sun' | 'moon' | 'haze' | null. backdrop: 'hills' | 'shrine' | 'volcano'.
-   floor: 'meadow' | 'moss' | 'basalt' (ground: its colour bands). life: the animated parts to run. */
+   floor: 'meadow' | 'moss' | 'basalt' (ground: its colour bands). life: the animated parts to run.
+   storm: what setStorm() brings: its rain (or cinders) colours, fall speed and amount, and
+   [multiply, +r, +g, +b] tints that darken the sky and ground. */
 const BIOME_ART = {
   clearing: {
     backdrop: 'hills', floor: 'meadow', light: 'sun',
+    storm: { rain: ['#e0ecff', '#98b0d8'], fall: 3.5, count: 1, sky: [0.55, 4, 8, 22], ground: [0.72, 0, 2, 10] },
     sun: ['#fffce8', '#fff0a0', '#f8e070'],
     cloud: ['#ffffff', '#eef4fb', '#c8dcee', '#a8c4e0'],
     trunk: ['#7a5430', '#4e3418'],
@@ -88,6 +96,7 @@ const BIOME_ART = {
 
   shrine: {
     backdrop: 'shrine', floor: 'moss', light: null,
+    storm: { rain: ['#d0e8f0', '#80a0b0'], fall: 3.5, count: 1, sky: [0.55, 0, 10, 18], ground: [0.72, 0, 4, 8] },
     trunk: ['#5a4430', '#382818'],
     torii: ['#d84830', '#a82c20', '#6a1810'],
     stone: ['#b8b8a8', '#8c8c7e', '#5e5e54'],
@@ -143,6 +152,7 @@ const BIOME_ART = {
 
   wastes: {
     backdrop: 'volcano', floor: 'basalt', light: 'haze',
+    storm: { rain: ['#fff0a0', '#f06820'], fall: 1.1, count: 0.6, sky: [0.8, 40, 0, 0], ground: [0.85, 18, 0, 0] },   // a rain of cinders
     rock: ['#7a6a62', '#564a44', '#342c28'],
     lava: ['#fff0a0', '#f8b830', '#f06820', '#b03010'],
     ember: ['#fff0a0', '#f8a830', '#e85820'],
@@ -184,35 +194,58 @@ const BIOME_ART = {
   },
 };
 
-export const hasScene = (biomeId) => !!BIOME_ART[biomeId];
 
 let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
 let life = {};
+let shown = '';                 // which scene is up, so going back to it doesn't restart it
+let storm = { on: false, level: 0 };
 
-/** Paint the scene for a biome and fight kind ('wild' | 'elite' | 'boss') behind the battle screen, or clear it. */
-export function showBattleScene(biomeId, kind = 'wild') {
-  canvas = $('battle-bg');
+/** The menus' scene for the picked starter's type; before one is picked, a moonlit night like the title screen's. */
+const TYPE_SCENES = { fire: ['wastes', 'wild'], grass: ['shrine', 'wild'], water: ['clearing', 'wild'] };
+export const showMenuScene = (type) => showScene(...(TYPE_SCENES[type] || ['clearing', 'boss']));
+
+/**
+ * Paint the scene for a biome and fight kind ('wild' | 'elite' | 'boss') behind the page, or clear it.
+ * Asking again for the scene that's already up leaves it running, except in battle, where the
+ * horizon is fitted to the enemy's pad and every fight starts with calm weather.
+ */
+export function showScene(biomeId, kind = 'wild') {
+  canvas = $('scene-bg');
   ctx = canvas.getContext('2d');
   const art = BIOME_ART[biomeId];
   document.body.classList.toggle('has-scene', !!art);
+  const inBattle = document.body.dataset.screen === 'battle-screen';
+  const key = `${biomeId}/${kind}`;
+  if (art && key === shown && !inBattle) return;
+  shown = art ? key : '';
   clearInterval(timer);
+  storm = { on: false, level: 0 };
   if (!art) { S = null; return; }
   const { kinds, ...shared } = art;
   const raw = { ...shared, ...(kinds[kind] || kinds.wild) };
   S = colours(raw);
   S.raw = raw;
+  S.storm = { ...raw.storm, rain: raw.storm.rain.map(abgr) };
   $('battle-screen').style.setProperty('--pad', `url("${padImage(raw.pad)}")`);
   resize();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(frame, 1000 / FPS);
+}
+
+/** Bring the weather in (a boss close to fainting) or let it pass. Under reduced motion only the light changes. */
+export function setStorm(on) {
+  if (!S || storm.on === on) return;
+  storm.on = on;
+  if (on && !life.rain) makeRain();
+  if (!timer) { storm.level = on ? 1 : 0; draw(); }
 }
 
 addEventListener('resize', () => { if (S) resize(); });
 
 function resize() {
   const scale = innerWidth <= 720 ? 4 : 5;
-  W = Math.ceil(innerWidth / scale);
-  H = Math.ceil(innerHeight / scale);
+  W = Math.max(1, Math.ceil(innerWidth / scale));   // a hidden pane can report 0 at load; the resize listener repaints it
+  H = Math.max(1, Math.ceil(innerHeight / scale));
   canvas.width = W;
   canvas.height = H;
   horizon = horizonRow(scale);
@@ -237,8 +270,9 @@ function horizonRow(scale) {
 }
 
 function frame() {
-  if (document.body.dataset.screen !== 'battle-screen' || document.hidden) return;
+  if (document.hidden || !$('title-screen').hidden) return;
   tick++;
+  storm.level = Math.max(0, Math.min(1, storm.level + (storm.on ? 1 : -1) / (FPS * 2)));
   draw();
 }
 
@@ -671,11 +705,23 @@ function makeLife() {
 
   life.flock = null;
   life.bolt = null;
+  life.boltAt = -99;
+  life.nextBolt = tick + FPS * 2;
   life.blobs = [];
+  if (storm.on) makeRain();
+}
+
+/** Each drop lands on its own row of the ground (or falls past the bottom), splashes, and starts again at the top. */
+function makeRain() {
+  life.rain = [];
+  for (let i = 0, n = Math.round((W * H / 130) * S.storm.count); i < n; i++) {
+    life.rain.push({ x: rand() * (W + H * 0.5), y: rand() * H, land: horizon + rand() * (H - horizon + 6), speed: 0.8 + rand() * 0.4, phase: rand() * 30 });
+  }
 }
 
 function draw() {
   px.set(base);
+  if (storm.level > 0) stormLight();
   const t = tick, L = life, has = (name) => S.raw.life.includes(name);
 
   if (L.stars) for (const s of L.stars) { const b = Math.sin((t + s.phase) / 6); if (b > 0.6) { put(s.x - 1, s.y, S.sky[2]); put(s.x + 1, s.y, S.sky[2]); put(s.x, s.y - 1, S.sky[2]); put(s.x, s.y + 1, S.sky[2]); } if (b < -0.7) put(s.x, s.y, S.sky[1]); }
@@ -691,7 +737,8 @@ function draw() {
   if (L.smoke) drawSmoke(t);
   if (L.clouds) {
     for (const c of L.clouds) {
-      const x = ((c.x + t * c.speed) % (W + c.w * 2)) - c.w;
+      c.x += c.speed * (1 + 3 * storm.level);
+      const x = (c.x % (W + c.w * 2)) - c.w;
       if (c.near && S.raw.clouds.shadows) cloudShadow(x, c);
       cloud(Math.round(x), c.y, c.w, c.h, c.near);
     }
@@ -710,13 +757,13 @@ function draw() {
 
   if (L.flows) drawLava(t);
   if (has('eruption')) drawEruption(t);
-  if (has('lightning')) drawLightning(t);
+  if (has('lightning') || storm.level > 0.6) drawLightning(t);
   if (has('mist')) drawMist(t);
 
   if (L.blades) {
     const [tip, mid, root] = S.blade;
     for (const b of L.blades) {
-      const wind = Math.sin(t / 5 - b.x / 9 + b.y / 23) + 0.6 * Math.sin(t / 13 - b.x / 31);
+      const wind = Math.sin(t / 5 - b.x / 9 + b.y / 23) + 0.6 * Math.sin(t / 13 - b.x / 31) + storm.level * 1.4;
       const lean = wind > 0.9 ? 1 : wind < -1.2 ? -1 : 0;
       put(b.x, b.y, root);
       if (b.h >= 2) put(b.x, b.y - 1, b.h === 2 ? tip : mid);
@@ -811,6 +858,8 @@ function draw() {
     }
   }
 
+  if (life.rain && storm.level > 0) drawRain(t);
+
   ctx.putImageData(img, 0, 0);
 }
 
@@ -904,7 +953,7 @@ function drawLava(t) {
 function drawEruption(t) {
   const v = life.volcano;
   if (!v) return;
-  if (t % 5 === 0) life.blobs.push({ x: v.x + (rand() - 0.5) * v.crater, y: v.y - 1, vx: (rand() - 0.5) * 1.6, vy: -1.6 - rand() * 1.4 });
+  if (t % (storm.on ? 2 : 5) === 0) life.blobs.push({ x: v.x + (rand() - 0.5) * v.crater, y: v.y - 1, vx: (rand() - 0.5) * 1.6, vy: -1.6 - rand() * 1.4 });
   life.blobs = life.blobs.filter(b => {
     b.x += b.vx; b.y += b.vy; b.vy += 0.12;
     if (b.y > v.y + v.height * 0.6) return false;
@@ -913,18 +962,49 @@ function drawEruption(t) {
   });
 }
 
-/** A lightning bolt now and then: a white flash over the sky, then a forked bolt for two frames. */
+/** A lightning bolt now and then (every few seconds in a storm): a white flash over the sky, then a forked bolt for two frames. */
 function drawLightning(t) {
-  const cycle = t % (FPS * 7);
-  if (cycle === 0) {
+  if (t >= life.nextBolt) {
     const bolt = [];
     let x = Math.floor(W * (0.15 + rand() * 0.7)), y = 0;
     const end = Math.round(horizon * (0.5 + rand() * 0.4));
     while (y < end) { bolt.push([x, y]); y++; if (rand() < 0.5) x += rand() < 0.5 ? -1 : 1; }
     life.bolt = bolt;
+    life.boltAt = t;
+    life.nextBolt = t + (storm.on ? FPS * (2 + rand() * 3) : FPS * 7);
   }
+  const cycle = t - life.boltAt;
   if (cycle <= 1) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle === 0 ? 1.9 : 1.35, cycle === 0 ? 40 : 14);
   if (cycle <= 2 && life.bolt) for (const [x, y] of life.bolt) { put(x, y, abgr('#fffff0')); put(x + 1, y, abgr('#c8c0ff')); }
+}
+
+/** The storm's light: the sky and the ground darken (or redden) as it rolls in. */
+function stormLight() {
+  const mix = ([k, r, g, b]) => [1 - (1 - k) * storm.level, r * storm.level, g * storm.level, b * storm.level];
+  const up = mix(S.storm.sky), down = mix(S.storm.ground);
+  for (let i = 0; i < px.length; i++) {
+    const [k, r, g, b] = sky[i] ? up : down, c = px[i];
+    const f = (v, add) => Math.min(255, Math.round(v * k + add));
+    px[i] = ((255 << 24) | (f((c >> 16) & 255, b) << 16) | (f((c >> 8) & 255, g) << 8) | f(c & 255, r)) >>> 0;
+  }
+}
+
+/** Rain slanting on the wind (or cinders drifting down in the Wastes), thickening as the storm builds. */
+function drawRain(t) {
+  const [bright, dim] = S.storm.rain, fast = S.storm.fall > 2;
+  const count = Math.round(life.rain.length * storm.level);
+  for (let i = 0; i < count; i++) {
+    const d = life.rain[i];
+    d.y += S.storm.fall * d.speed;
+    d.x -= fast ? S.storm.fall * d.speed * 0.4 : 0.2 + Math.sin((t + d.phase) / 4) * 0.3;
+    if (d.y >= d.land) {
+      if (fast && d.land < H) { put(d.x - 1, d.land, dim); put(d.x + 1, d.land, dim); }
+      d.y = -rand() * 10; d.x = rand() * (W + H * 0.5); d.land = horizon + rand() * (H - horizon + 6);
+      continue;
+    }
+    if (fast) { put(d.x, d.y, bright); put(d.x + 1, d.y - 2, dim); put(d.x + 1, d.y - 1, dim); }
+    else if (Math.sin((t + d.phase) / 2.5) > -0.3) put(d.x, d.y, (t + d.phase) % 6 < 3 ? bright : dim);
+  }
 }
 
 function tintIndex(i, k, add) {

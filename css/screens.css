@@ -756,6 +756,27 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   60% { transform: translateX(-7px); }
   80% { transform: translateX(4px); }
 }
+/* a big hit (bigHit() in battle.js): the arena jolts and the screen flashes white; `translate` leaves the sprites' own transforms alone */
+#battle-screen.big-hit .arena { animation: bigJolt 0.45s steps(9); }
+@keyframes bigJolt {
+  11% { translate: -8px 4px; }
+  22% { translate: 7px -5px; }
+  33% { translate: -6px -3px; }
+  44% { translate: 5px 4px; }
+  55% { translate: -4px 2px; }
+  66% { translate: 3px -2px; }
+  77% { translate: -2px 1px; }
+}
+#battle-screen.big-hit::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #fff;
+  pointer-events: none;
+  animation: bigFlash 0.3s steps(3) forwards;
+}
+@keyframes bigFlash { from { opacity: 0.5; } to { opacity: 0; } }
 #player-sprite.lunge { animation: lunge 0.38s ease-out; }
 @keyframes lunge { 40% { transform: translate(40px, -14px); } }
 .enemy-portrait.attacking { animation: enemyLunge 0.25s ease-in; }
@@ -1978,9 +1999,9 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .howto-dialog .howto-node:not(.town) { border: 0; border-radius: 0; background: none; font-size: 1.5rem; }
 .howto-dialog .howto-node.town { box-shadow: 0 0 0 1px #582808; }
 
-/* ---------- the pixel battle scene (js/battlebg.js) ---------- */
-#battle-bg { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; image-rendering: pixelated; display: none; }
-body.has-scene[data-screen="battle-screen"] #battle-bg { display: block; }
+/* ---------- the pixel scene behind every screen (js/scene.js), dimmed by #backdrop outside battles ---------- */
+#scene-bg { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; image-rendering: pixelated; display: none; }
+body.has-scene #scene-bg { display: block; }
 /* the grassy pads the Pokémon stand on, like the Gen 3/4 games; behind the sprites, and they don't lunge with them */
 .has-scene .enemy-zone::after,
 .has-scene .player-zone::before {

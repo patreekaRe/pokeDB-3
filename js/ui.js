@@ -46,9 +46,8 @@ export function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
-/** Set the blurred backdrop picture behind everything. */
-export function setBackdrop(url, type) {
-  $('backdrop').style.backgroundImage = url ? `url("${url}")` : '';
+/** Tint the page with the starter type's accent colour (or none). */
+export function setTheme(type) {
   document.body.dataset.theme = type || '';
 }
 

@@ -28,8 +28,9 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, groupDeck, showScreen, setBackdrop, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
+import { $, el, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
+import { showScene } from './scene.js';
 
 let run = null;
 
@@ -99,7 +100,6 @@ function checkpoint() {
     itemChance: run.itemChance,
     map: { nodes: Object.values(byId), floors: floors.map(row => row.map(node => node.id)) },
     current: run.current,
-    backdrop: run.backdrop,
     restCount: run.restCount,
     fights: run.fights,
     money: run.money,
@@ -176,7 +176,6 @@ export function beginRun(starter, level = 0) {
     itemChance: ITEM_DROP.base,   // chance of an item after the next won fight
     map: null,
     current: null,        // id of the map node you are standing on
-    backdrop: '',
     restCount: 0,          // how many rest sites you've used this run (for an achievement)
     fights: 0,
     money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
@@ -209,13 +208,12 @@ function startBiome() {
   }
   rollEvents();
   run.current = null;
-  run.backdrop = biome.backdrop;
   showMap();
 }
 
 function showMap() {
   const biome = BIOMES[run.biome];
-  setBackdrop(run.backdrop, run.starter.type);
+  setTheme(run.starter.type);
   preloadSounds('event', 'buy', 'item', 'potion');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
@@ -246,6 +244,7 @@ function showMap() {
   checkpoint();
   renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage });
   showScreen('map-screen');
+  showScene(biome.id);
   playMusic(`map${run.biome + 1}`);
 }
 

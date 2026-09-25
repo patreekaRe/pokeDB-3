@@ -325,26 +325,45 @@ stage 1 to 90% with the `scale` property (from the feet), so the attack and
 evolve animations' transforms and the layout are untouched. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
-Battles are set in a pixel-art scene per biome *and* fight kind
-(`js/battlebg.js`, the user's call: the blurred photos clashed with the 8-bit
-look): a normal fight, an elite's tenser light and a boss's dramatic arena.
+Every screen is set in a pixel-art scene per biome *and* fight kind
+(`js/scene.js`, the user's call: the blurred photos clashed with the 8-bit
+look; there are no photo backdrops left): a normal fight, an elite's tenser
+light and a boss's dramatic arena.
 Clearing: sunny day / sunset with fireflies / moonlit night. Shrine: misty
 morning under pines with a torii, stone lanterns, light shafts and falling
 leaves / dusk with lit lanterns and autumn leaves / night with blue spirit
 wisps. Wastes: hazy volcano with glowing lava cracks, embers and ash / red
 sky / an eruption with lava rivers, flying lava and lightning. All of it is
 data in `BIOME_ART` (shared per biome, `kinds` override per fight; `life`
-lists the animated parts), painted into `#battle-bg` (a fixed low-res canvas,
+lists the animated parts), painted into `#scene-bg` (a fixed low-res canvas,
 one canvas pixel = 4 CSS px on phones, 5 on PCs) by
-`showBattleScene(biomeId, kind)` from `startBattle()`. Still parts are painted
-once into `base`; `draw()` copies it every frame (8 fps) and adds the living
+`showScene(biomeId, kind)`: from `startBattle()`, and from `showMap()` with the
+biome's normal scene (reward, Center, Mart and event screens keep whatever is
+up, so an elite's rewards stay at sunset). The menus call
+`showMenuScene(type)`: the picked starter's type picks a biome (fire Wastes,
+grass Shrine, water Clearing), and with none picked it's the Clearing's
+moonlit night, like the title. Asking for the scene already up leaves it
+running (except in battle). Outside battles `#backdrop` (above the canvas)
+dims it so windows stay readable; `setTheme(type)` in `js/ui.js` only sets
+the accent colour now. Still parts are painted
+once into `base`; `draw()` copies it every frame (8 fps, paused while the tab
+or title screen hides it) and adds the living
 ones. `sky` masks where clouds, smoke and birds may draw, so they pass behind
 hills, trees and the volcano. `horizonRow()` puts the horizon at ~38% of the
 screen but always above the enemy's pad, so the layout can move. Both
 Pokémon stand on Gen 3/4-style pads (`--pad`, a data-URL pixel image: grass,
 mossy flagstone or cracked lava rock, from the scene's `pad`), drawn by
 `.enemy-zone::after` / `.player-zone::before` so they don't lunge with the
-sprites. Menus and the map still use the photo backdrops.
+sprites.
+Battle moments: a hit that takes at least a quarter of the target's HP
+(clamped to 12–25) runs `bigHit()` in `js/battle.js`, which jolts `.arena`
+(the `translate` property, so sprite transforms are untouched) and flashes the
+screen white (`#battle-screen.big-hit`), skipped under reduced motion. When a
+boss drops to 30% HP, `checkStorm()` calls `setStorm(true)`: the biome's
+`storm` (rain in the Clearing and Shrine, a rain of cinders in the Wastes)
+fades in over 2 s with darker/redder light, stronger wind, faster clouds and
+lightning every few seconds; `finish()` lets it pass, and every new fight
+starts calm.
 
 **Watch for CSS class-name collisions.** The reward screen already uses
 `.relic-icon`, and a later, unscoped rule like

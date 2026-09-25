@@ -8,11 +8,12 @@
    ============================================================ */
 
 import { CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
-import { BACKDROPS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
+import { BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { TYPES } from './data/cards.js';
 import { LEVELS, MAX_LEVEL } from './data/difficulty.js';
 import { getSave } from './storage.js';
-import { $, el, makeCard, zoomable, groupDeck, showScreen, setBackdrop, openDialog } from './ui.js';
+import { $, el, makeCard, zoomable, groupDeck, showScreen, setTheme, openDialog } from './ui.js';
+import { showMenuScene } from './scene.js';
 
 /** Fill a container with the cards of a deck, grouping copies (Ember ×3). Tap one to read it bigger. */
 function fillDeck(container, ids, stage = 0) {
@@ -44,7 +45,8 @@ function renderLevel() {
 export function openPreview(starter, { onBegin, onBack }) {
   const type = TYPES[starter.type];
 
-  setBackdrop(BACKDROPS[starter.type], starter.type);
+  setTheme(starter.type);
+  showMenuScene(starter.type);
   $('preview-sprite').src = spriteUrl(starter, 'front');
   $('preview-sprite').alt = starter.line[0].name;
   $('preview-title').textContent = `${starter.line[0].name}  ${type.icon} ${type.label}`;
