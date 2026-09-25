@@ -43,6 +43,7 @@ const TRACKS = {
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
 // play just part of a file, fading out at the end, so a long one can be trimmed without re-encoding.
+// `synth` builds the sound in code instead of loading a file.
 const SOUNDS = {
   heal:  { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
   card:  { url: 'assets/audio/sfx/card.mp3' },    // a card is played
@@ -50,7 +51,7 @@ const SOUNDS = {
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
-  block: { url: 'assets/audio/sfx/block.mp3', start: 0.09, length: 0.6 },   // you gain block, or a hit is fully blocked
+  block: { synth: blockClink },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
   event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
@@ -265,6 +266,8 @@ function player(name) {
 }
 
 function loadSound(name, url = SOUNDS[name]?.url) {
+  const synth = SOUNDS[name]?.synth;
+  if (synth && !(name in buffers)) buffers[name] = Promise.resolve(synth(audioContext()));
   if (!(name in buffers)) {
     buffers[name] = fetch(url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
@@ -318,4 +321,29 @@ function unlock() {
       UNLOCK_EVENTS.forEach(type => document.removeEventListener(type, unlock, true));
     }
   }, 250);
+}
+
+/**
+ * The block sound, built sample by sample: an 8-bit shield "clink". A tick of noise for the impact, a
+ * square-wave blip that steps down (G6 then D6) like the games' chiptune effects, and a short metallic
+ * ring from a few inharmonic partials so it reads as hitting something hard.
+ */
+function blockClink(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.3);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const ring = [[2093, 0.16], [3170, 0.1], [4060, 0.06]];
+  let peak = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const tick = (Math.random() * 2 - 1) * Math.exp(-t / 0.004) * 0.5;
+    const pitch = t < 0.035 ? 1568 : 1175;
+    const blip = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.22 * Math.exp(-t / 0.07);
+    const metal = ring.reduce((sum, [f, a]) => sum + Math.sin(2 * Math.PI * f * t) * a, 0) * Math.exp(-t / 0.09);
+    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));   // no click at either end
+    out[i] = (tick + blip + metal) * fade;
+    peak = Math.max(peak, Math.abs(out[i]));
+  }
+  for (let i = 0; i < length; i++) out[i] *= 0.9 / peak;
+  return buffer;
 }
