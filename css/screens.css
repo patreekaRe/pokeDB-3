@@ -920,6 +920,9 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 }
 .hand > :first-child { margin-left: auto; }
 .hand > :last-child  { margin-right: auto; }
+/* a hovered card lifts 16px and grows 6%, and the hand scrolls sideways (so it clips): leave room above it with a mouse */
+@media (hover: hover) { .hand { padding-top: calc(22px + var(--hand-card-w) * 0.06); min-height: calc(var(--hand-card-w) * 1.54 + 28px); } }
+@media (hover: none) { .card.in-hand:hover:not(.unplayable):not(.selected) { transform: none; } }   /* a tap leaves :hover stuck on touch screens; the picked card lifts on its own (.selected) */
 
 .result h2 { font-size: 1.8rem; text-align: center; }
 .result p { text-align: center; }
