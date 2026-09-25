@@ -365,11 +365,12 @@ body.titling { overflow: hidden; }
   .continue-btn.opening .continue-ball { animation: none; }
 }
 
-.starter-panel { width: 100%; }
+.starter-panel { width: fit-content; max-width: 100%; }   /* as wide as its grid, not the page */
 .starter-panel h2 { text-align: center; margin-bottom: 12px; }
 .starter-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));   /* equal columns even when a name is wider than its share */
+  grid-template-columns: repeat(3, minmax(0, 124px));   /* square tiles, just big enough for the sprite and name; equal even when a name is wider */
+  justify-content: center;
   gap: 10px;
 }
 .starter-more-btn { display: block; margin: 12px auto 0; }
@@ -378,6 +379,8 @@ body.titling { overflow: hidden; }
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
   gap: 2px;
   padding: 8px 4px 10px;
   border-radius: var(--round-sm);
@@ -389,7 +392,7 @@ body.titling { overflow: hidden; }
 }
 .starter-btn img { width: 72px; height: 72px; object-fit: contain; transform-origin: 0 0; }   /* main.js fitSprite() scales small sprites up */
 .starter-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 0.95rem; }
-@media (max-width: 480px) { .starter-name { font-size: 0.78rem; } }   /* "Charmander", the longest, fits a phone column */
+@media (max-width: 480px) { .starter-name { font-size: 0.74rem; } }   /* "Charmander", the longest, fits a phone column */
 .starter-btn:hover { transform: translateY(-3px); background: #fffaf0; }
 /* the one you've picked gets its type's colour and the menu's blinking ▶ cursor */
 .starter-btn.selected { background: #fffaf0; border-color: #f89030; }
@@ -946,6 +949,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 @media (max-width: 720px) {
   .screen { padding: 14px 12px 20px; }
   .starter-btn img { width: 60px; height: 60px; }
+  .starter-btn { padding: 4px 4px 6px; }   /* keeps the tile square in a phone column */
   .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 10px; }
   .builder-head h2 { font-size: 1.3rem; }
   #preview-screen { padding-left: 18px; padding-right: 18px; }
