@@ -36,7 +36,9 @@ function renderLevel() {
     ? [el('li', '', LEVELS[0].text)]
     : Array.from({ length: level }, (_, i) => el('li', '', `Level ${i + 1}: ${LEVELS[i + 1].text}`));
   if (level === max && max < MAX_LEVEL) {
-    rules.push(el('li', 'level-locked', `🔒 Win a run on Level ${max} to unlock Level ${max + 1} (${LEVELS[max + 1].name}): ${LEVELS[max + 1].text}`));
+    const next = el('li', 'level-locked', `🔒 Win on Level ${max} to unlock Level ${max + 1}`);
+    next.title = `${LEVELS[max + 1].name}: ${LEVELS[max + 1].text}`;
+    rules.push(next);
   }
   $('level-rules').replaceChildren(...rules);
 }
