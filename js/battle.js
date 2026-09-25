@@ -332,7 +332,7 @@ async function playCard(uid) {
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (card.power) {
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
-    pop('player-zone', `✨ ${card.name}`, 'note good', 200);
+    pop('player-zone', `🧬 ${card.name}`, 'note good', 200);
   }
   if (e.heal)       healPlayer(e.heal + healBonus());
   if (e.draw)       draw(e.draw);

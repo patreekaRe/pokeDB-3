@@ -476,6 +476,21 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 /* 8-bit pixel icons that js/icons.js swaps in for emoji; they size with the text like the emoji did */
 .px-wrap { display: inline-block; line-height: 1; vertical-align: -0.2em; }
 .px-icon { display: block; width: 1.15em; height: 1.15em; }
+/* PokéCoins spin like an arcade coin every few seconds: stepped frames, so it stays pixel art */
+.px-wrap[aria-label="💰"] .px-icon { animation: coinSpin 2.4s steps(1) infinite; }
+@keyframes coinSpin {
+  0%, 55%, 100% { transform: scaleX(1); filter: none; }
+  59% { transform: scaleX(0.7); }
+  63% { transform: scaleX(0.35); filter: brightness(1.2); }
+  67% { transform: scaleX(0.12); filter: brightness(1.4); }
+  71% { transform: scaleX(-0.35); filter: brightness(1.2); }
+  75% { transform: scaleX(-0.7); }
+  79% { transform: scaleX(-1); }
+  83% { transform: scaleX(-0.7); }
+  87% { transform: scaleX(-0.35); filter: brightness(1.2); }
+  91% { transform: scaleX(0.12); filter: brightness(1.4); }
+  95% { transform: scaleX(0.7); }
+}
 /* the Game Corner perk arrow hops up like a stat raise, flashing at the top */
 .px-wrap[aria-label="⏫"] .px-icon { animation: statUp 1.6s steps(1) infinite; }
 @keyframes statUp {
