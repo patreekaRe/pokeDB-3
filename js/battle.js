@@ -150,7 +150,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', ...(b.kind === 'boss' ? ['thunder'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...(b.kind === 'boss' ? ['thunder'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -295,7 +295,7 @@ async function playCard(uid) {
   const problem = whyNotPlayable(card);
   if (problem) {
     log(problem);   // in the text box, like the games' "There's no PP left for this move!"
-    if (card.cost > b.energy) shake($('player-energy'));
+    if (card.cost > b.energy) { shake($('player-energy')); playSound('no-pp'); }
     return;
   }
 

@@ -74,6 +74,7 @@ const SOUNDS = {
   cancel:       { url: 'assets/audio/sfx/bag.mp3' },          // Back / Skip / Leave, closing a window, backing out of a pick: the Bag's file (the user's call)
   bag:          { url: 'assets/audio/sfx/bag.mp3' },          // the Bag is opened
   'run-away':   { url: 'assets/audio/sfx/run-away.mp3' },     // you get away: the Poké Doll, or Team Rocket's "Run for it"
+  'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3' },        // a card is tapped without enough PP left (the greyed-out ones)
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so

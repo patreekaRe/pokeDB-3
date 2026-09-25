@@ -746,7 +746,7 @@ so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, n
 `achievement` (`checkAchievements()` grants a starter), `bag` (the Bag opens and closes, and so does the Poké Ball menu: `setOpen()` in `js/main.js`; the user's call), `cancel` (the menu blip for
 backing out, `bag.mp3` too, so every window closes with the Bag's sound: `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕, a zoomed card; also Escape on a modal
 window or the Game Corner, the Game Corner's top-bar toggle closing it, and backing out of a picked card or reward; falls back to `confirm`), `stick` (synthesized, `stickTick()`: the Game Corner's joystick moves) and `run-away` (every way of running: the Poké Doll,
-in place of `item`, and Team Rocket's "Run for it"; there's no running-away relic). The user picked those file reuses. Synths
+in place of `item`, and Team Rocket's "Run for it"; there's no running-away relic) and `no-pp` (tapping a greyed-out card that costs more PP than you have, with the PP box's shake, in `playCard()`). The user picked those file reuses. Synths
 (`blockClink()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution pop-up has no sound on
 purpose: the user has a bigger plan for evolving. Battle sounds preload in
 `startBattle()` (`thunder` only for bosses), map ones in `showMap()`, `confirm` / `cancel` in `unlock()`. A missing file is silent (one
