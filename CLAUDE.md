@@ -58,7 +58,8 @@ to `main` (see Conventions), not open a branch or PR.
   `effects` (the header comment lists them all) and `describe()` writes
   the card text from them, so new mechanics need a line there too. Beyond
   damage/block/heal there are multi-hits (`hits`), player `strength`,
-  `power: true` cards whose `POWERS` keys (block/heal/burn/strength/draw
+  `power: true` cards whose `POWERS` keys (played with a Power Lens pop-up in
+the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   each turn, thorns, blaze) stay on all fight as nameplate badges,
   `retain`, `exhaust`, `selfDamage`, `blockDamage` and `bonusPerBurn`.
   Each type has an archetype: Fire burn + burst + HP-for-damage, Grass

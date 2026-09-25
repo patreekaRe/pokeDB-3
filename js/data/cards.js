@@ -252,6 +252,9 @@ export function scaledEffects(card, stage = 0) {
  * The power effects: what each one does at full strength, and the badge it shows
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
+/** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦' };
+
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
   healEachTurn:     { icon: '💚', text: (n) => `At the start of each turn, heal ${n} HP.` },

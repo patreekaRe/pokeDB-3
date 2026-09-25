@@ -1033,20 +1033,10 @@ const ICONS = {
     '.....w......',
   ],
 
-  '🧬': [   // a power card: a Mega Stone, its two-strand swirl in warm and cool colours
-    '............',
-    '....cccc....',
-    '..cwGccocc..',
-    '.cwGccccocb.',
-    '.cwcGccoccb.',
-    '.ccccGoccbb.',
-    '.cccmccGcbb.',
-    '.ccmccccGbb.',
-    '.cccmccGbbb.',
-    '..cccmGbbb..',
-    '....bbbb....',
-    '............',
-  ],
+  '🧬': lens('p', 'P', 'u', 'c'),   // a power card: the Power Lens (Psychic, and How to play)
+  '🟧': lens('r', 'R', 'o', 'y'),   // Fire's power lens
+  '🟩': lens('G', 'E', 'e', 'y'),   // Grass's power lens
+  '🟦': lens('b', 'B', 'c', 'y'),   // Water's power lens
   '⏫': [   // a permanent Game Corner perk: the games' stat-raise arrows
     '.....wy.....',
     '....wyyo....',
@@ -1439,6 +1429,24 @@ const ICONS = {
   '🟢': gem('G', 'E'),   // Grass Gem
   '🔵': gem('b', 'B'),   // Water Gem
 };
+
+/** A Power Lens band seen from above: colour (A), shade (D), light edge (L) and its gem stud (J). */
+function lens(A, D, L, J) {
+  return [
+    '............',
+    '............',
+    '...LLLLLL...',
+    '.LLAAAAAAAA.',
+    'LAkkkkkkkkAD',
+    'LLAkkkkkkAAD',
+    'LAAAAAAAAAAD',
+    'LLLLJwJLLLLD',
+    'LAAAAJJAAAAD',
+    '.DAAAAAAAAD.',
+    '..DDDDDDDD..',
+    '............',
+  ].map(row => row.replace(/A/g, A).replace(/D/g, D).replace(/L/g, L).replace(/J/g, J));
+}
 
 /** A cut gem in one colour (A) with its shaded side (D). */
 function gem(A, D) {

@@ -19,7 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
@@ -332,7 +332,7 @@ async function playCard(uid) {
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (card.power) {
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
-    pop('player-zone', `🧬 ${card.name}`, 'note good', 200);
+    pop('player-zone', `${POWER_LENS[b.starter.type] ?? '🧬'} ${card.name}`, 'note good', 200);
   }
   if (e.heal)       healPlayer(e.heal + healBonus());
   if (e.draw)       draw(e.draw);
