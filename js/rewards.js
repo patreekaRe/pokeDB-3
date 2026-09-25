@@ -160,7 +160,7 @@ function closeFocus() {
 
 /* The reward screen's text box: types each line out like the battle log, then waits
    for you, like the games: a tap finishes the line being typed, or moves on to the
-   next one. The ▼ blinks while there's more to read. */
+   next one, and a tap on the last one closes the box. The ▼ blinks while there's more to read. */
 const TYPE_MS = 18;
 let say = { lines: [], at: 0, typing: 0 };
 
@@ -171,6 +171,7 @@ function sayLines(lines) {
   $('reward-log').onclick = () => {
     if (say.typing) return finishLine();
     if (say.at < say.lines.length - 1) showLine(say.at + 1);
+    else $('reward-log').hidden = true;   // like the games, a tap on the last line closes the box
   };
   if (lines.length) showLine(0);
 }

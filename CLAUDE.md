@@ -333,7 +333,8 @@ so centred text doesn't slide as it types); the Skip / Leave button sits centred
 call: not off to the right by the text box). It draws its
 `.relic` tiles (relics, items, choices) as parchment Pokégear windows, which on
 phones become short rows (icon | name over text) so a choice isn't a screen tall (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
-type out and wait for a tap, like the games (the user wants no autoplay). After
+type out and wait for a tap, like the games (the user wants no autoplay), and a tap on
+the last line closes the box. After
 a fight, `coins` (`run.pendingCoins`: `{ foe, coins, money, disadvantage }`)
 shows as an icon row (💰 +25 💴 +₽120) on every step, and the first screen's
 box says "The wild X fainted!", the PokéCoins and the ₽ as separate lines.
