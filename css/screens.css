@@ -118,24 +118,8 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
-.howto-btn {
-  isolation: isolate;
-  overflow: hidden;
-  padding: 12px 26px 12px 34px;
-  border-color: #f8d030;
-  color: #283060;
-  font-size: 1.1rem;
-}
-.howto-btn::before {
-  content: '▶';
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.6em;
-  animation: cursorBlink 1s steps(1) infinite;
-}
-.howto-btn::after {
+#howto-btn .pp-pill { isolation: isolate; overflow: hidden; gap: 8px; align-items: center; font-size: 1rem; padding: 11px 22px 10px 32px; }   /* a touch bigger than the other menu capsules: the first thing to press */
+.howto-btn .pp-pill::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -151,7 +135,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tl, .pokeball, .title small, .howto-cta, .howto-btn::before, .howto-btn::after { animation: none; }
+  .tl, .pokeball, .title small, .howto-cta, .howto-btn .pp-pill::after { animation: none; }
   #howto-fx { display: none; }
 }
 
@@ -446,7 +430,7 @@ body[data-screen="start-screen"].sheet-open { padding-bottom: var(--sheet-h, 200
 .detail-type.type-grass { background: #2f8f43; }
 .detail-type.type-water { background: #2569c7; }
 .detail-type.type-psychic { background: #b04a8a; }
-.starter-sheet #choose-btn { width: 100%; }
+.starter-sheet #choose-btn { align-self: center; }
 
 /* ============ 2. DECK PREVIEW ============ */
 #preview-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; max-width: 680px; }   /* narrow like the start screen, so the scene shows either side */
@@ -1352,6 +1336,11 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .ds-btn .pp-pill::before { content: '▶'; position: absolute; left: 16px; top: 50%; translate: 0 -50%; font-size: 0.6em; animation: cursorBlink 1s steps(1) infinite; }
 .ds-btn.ds-play .pp-pill { font-size: 0.85rem; padding: 8px 14px 7px 26px; }
 .ds-btn.ds-play .pp-pill::before { left: 11px; }
+/* the menus' capsules (How to play, See deck, Begin run, Back): a size down, so they sit lighter than a reward pick */
+.ds-btn.ds-gold { --stripe-a: #e8b820; --stripe-b: #f8d048; --rim: #b08010; }
+.ds-btn.ds-sm { padding: 5px 6px; }
+.ds-btn.ds-sm .pp-pill { font-size: 0.9rem; padding: 10px 18px 9px 30px; color: #283060; white-space: nowrap; }
+.ds-btn.ds-sm .pp-pill::before { left: 13px; }
 .ds-btn:hover .pp-pill { background: #fff; }
 .ds-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px var(--rim), 2px 2px 0 1px rgba(0, 0, 0, 0.45); }
 .ds-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }

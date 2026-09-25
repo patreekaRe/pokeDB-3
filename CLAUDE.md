@@ -313,7 +313,8 @@ first blows a copy of the tile up in the middle of a dimmed screen
 `confirm` ("Add to deck") under it; the big tile or that button takes it, the
 dimmed area or Escape backs out. "Add to deck" and Skip are `.ds-btn`s: End
 Turn's striped panel and white pill, green (`.ds-go`) or blue (`.ds-skip`),
-with a blinking ▶ in the pill. Battle's picked card / item shows a red `.ds-play` Play / Use button (`focusButton()` in `js/battle.js`) instead of "Tap again to play".
+with a blinking ▶ in the pill. The menus use a size-down version (`.ds-sm`): How to play
+(gold `.ds-gold`, with its glint on the pill), See deck and Begin run (green), Back (blue). Battle's picked card / item shows a red `.ds-play` Play / Use button (`focusButton()` in `js/battle.js`) instead of "Tap again to play".
 Titles are short headers on a pixel-font plate ("Learn a new move", "Item found").
 In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
@@ -518,8 +519,7 @@ measured it inconsistently, so don't go back to that). `.card` resets to the
 normal font so cards read the same as in battle. Every `.btn` is a Gen 1-3
 menu option to match: cream box, pixel frame, and a blinking ▶ cursor on
 hover/focus (left padding reserves its space; `.primary` = orange frame,
-`.danger` = red). The How to play button is one too, with a gold frame, an
-always-blinking ▶ and a stepped pixel glint sweeping across it.
+`.danger` = red). The How to play button is a gold `.ds-btn` capsule instead (see below).
 
 ## Title screen
 

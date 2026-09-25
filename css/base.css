@@ -282,7 +282,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   text-shadow: none;
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
 }
-.btn:where(:not(.howto-btn))::before {
+.btn::before {
   content: '▶';
   position: absolute;
   left: 9px;
@@ -291,7 +291,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   font-size: 0.6em;
   opacity: 0;
 }
-.btn:where(:not(.howto-btn, :disabled)):where(:hover, :focus-visible)::before { animation: cursorBlink 1s steps(1) infinite; opacity: 1; }
+.btn:where(:not(:disabled)):where(:hover, :focus-visible)::before { animation: cursorBlink 1s steps(1) infinite; opacity: 1; }
 .btn:hover:not(:disabled) { background: #fffaf0; }
 .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 1px 1px 0 2px rgba(0, 0, 0, 0.4); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
