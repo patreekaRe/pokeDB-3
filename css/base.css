@@ -476,4 +476,14 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 /* 8-bit pixel icons that js/icons.js swaps in for emoji; they size with the text like the emoji did */
 .px-wrap { display: inline-block; line-height: 1; vertical-align: -0.2em; }
 .px-icon { display: block; width: 1.15em; height: 1.15em; }
+/* the Game Corner perk arrow hops up like a stat raise, flashing at the top */
+.px-wrap[aria-label="⏫"] .px-icon { animation: statUp 1.6s steps(1) infinite; }
+@keyframes statUp {
+  0%, 60%, 100% { transform: translateY(0); filter: none; }
+  10% { transform: translateY(-8%); }
+  20% { transform: translateY(-17%); filter: brightness(1.25) drop-shadow(0 0 2px #fff4b0); }
+  30% { transform: translateY(-25%); filter: brightness(1.45) drop-shadow(0 0 3px #fff4b0); }
+  40% { transform: translateY(-17%); filter: brightness(1.2); }
+  50% { transform: translateY(-8%); }
+}
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
