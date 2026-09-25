@@ -773,7 +773,7 @@ function renderHand() {
 }
 
 /** Fans the hand in a gentle arc, like cards held in a hand: each overlaps the last a little,
-    more as the hand grows so it still fits, and only scrolls sideways past ~10 cards. */
+    more as the hand grows so it always fits: the hand never scrolls. */
 function fanHand() {
   const box = $('hand');
   const cards = [...box.children];
@@ -782,7 +782,7 @@ function fanHand() {
   const w = cards[0].offsetWidth;
   const pad = getComputedStyle(box);
   const room = box.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight) - 16;   // the tilted end cards stick out a little
-  const step = n > 1 ? Math.max(w * 0.3, Math.min(w * 0.88, (room - w) / (n - 1))) : w;
+  const step = n > 1 ? Math.max(w * 0.12, Math.min(w * 0.88, (room - w) / (n - 1))) : w;
   const edge = (n - 1) / 2;
   box.style.setProperty('--overlap', `${w - step}px`);
   box.style.setProperty('--fan-tilt', `${edge ? Math.min(2.5, 9 / edge) : 0}deg`);

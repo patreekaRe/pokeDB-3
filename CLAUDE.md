@@ -315,7 +315,7 @@ up (`zoomable()` / `zoomCard()` in `js/ui.js`); any tap or Escape closes it,
 and inside a dialog Escape closes only the zoom.
 The hand is held in a fan (`fanHand()` in `js/battle.js`, rerun on resize): cards
 overlap, tilt and sink towards the ends, StS-style, squeezing closer as the hand
-grows so ~10 fit before it scrolls. It uses the `rotate`/`translate` properties so
+grows so the whole hand always fits (it never scrolls). It uses the `rotate`/`translate` properties so
 the hover lift and deal animation (`transform`) stay separate; a hovered or picked
 card straightens and comes to the front.
 Playing a card takes two taps (clicks or Enter presses too), except a card that

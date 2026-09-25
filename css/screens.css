@@ -916,13 +916,11 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   --hand-card-w: clamp(112px, 12vw, 148px);
   display: flex;
   padding: 18px 6px 22px;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
   min-height: calc(var(--hand-card-w) * 1.48 + 40px);
 }
 .hand > :first-child { margin-left: auto; }
 .hand > :last-child  { margin-right: auto; }
-/* a hovered card lifts 16px and grows 6%, and the hand scrolls sideways (so it clips): leave room above it with a mouse */
+/* a hovered card lifts 16px and grows 6%: leave room above it with a mouse */
 @media (hover: hover) { .hand { padding-top: calc(22px + var(--hand-card-w) * 0.06); min-height: calc(var(--hand-card-w) * 1.54 + 44px); } }
 @media (hover: none) { .card.in-hand:hover:not(.unplayable):not(.selected) { transform: none; } }   /* a tap leaves :hover stuck on touch screens; the picked card lifts on its own (.selected) */
 
@@ -1443,8 +1441,6 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 
 .panel > .hint { margin-top: 12px; }
 
-/* A slim, subtle scrollbar for the hand when it scrolls sideways on phones */
-.hand { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.35) transparent; }
 
 /* ---------- the preview's small windows: centred and narrow, so the starter's scene shows around them ---------- */
 .evo-panel, .level-panel { align-self: center; width: min(100%, 420px); text-align: center; }
