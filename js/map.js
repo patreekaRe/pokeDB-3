@@ -642,7 +642,7 @@ function place(elem, x, y) {
  * step like the overworld walk, with the walked route's red dashes trailing it; the room opens once it
  * arrives, and taps are ignored meanwhile. Showdown front sprites face left, so it flips to walk right.
  */
-const WALK_MS = [320, 480];   // one link's walk, from a short straight link to the long start road
+const WALK_MS = [650, 1100];   // one link's walk, from a short straight link to the long start road (the user found faster zoomed past)
 let walking = false, routesSvg = null, trainerImg = null, walkFrom = null;
 
 function walkTo(node, onPick) {
@@ -652,7 +652,7 @@ function walkTo(node, onPick) {
   walking = true;
   const points = linkPoints(walkFrom, node);
   const steps = tileSteps(points);
-  const ms = Math.min(WALK_MS[1], Math.max(WALK_MS[0], steps.length * 55)) / (steps.length - 1);
+  const ms = Math.min(WALK_MS[1], Math.max(WALK_MS[0], steps.length * 100)) / (steps.length - 1);
   const dx = points.at(-1)[0] - points[0][0];
   img.classList.remove('at-start');
   img.classList.add('walking');
