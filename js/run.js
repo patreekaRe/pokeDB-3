@@ -215,7 +215,7 @@ function startBiome() {
 function showMap() {
   const biome = BIOMES[run.biome];
   setTheme(run.starter.type);
-  preloadSounds('event', 'buy', 'item', 'potion', 'encounter');
+  preloadSounds('event', 'buy', 'item', 'potion', 'item-get');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -504,7 +504,7 @@ function showRelics(title, relics, next) {
   showChoice({
     title,
     sub: relics[0].boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
-    options: relics.map(relic => ({ ...relicOption(relic, () => gainRelic(relic, next)), ask: `Take the ${relic.name}?`, confirm: 'Take it' })),
+    options: relics.map(relic => ({ ...relicOption(relic, () => gainRelic(relic, next)), ask: `Take the ${relic.name}?`, confirm: 'Take it', confirmSound: 'item-get' })),
     onSkip: next,
     layout: 'relic-pick',
     coins: run.pendingCoins,
@@ -531,8 +531,8 @@ function offerItem(item, next) {
     sub: [`You found a ${item.name}!`, full ? `${item.text} Your Bag is full (${ITEM_SLOTS} items): swap one of yours for it, or leave it.`
       : `${item.text} Items go in your Bag (up to ${ITEM_SLOTS}) and are used up in battle.`],
     options: full
-      ? run.items.map((id, index) => ({ ...itemOption(ITEMS_BY_ID[id], take(index)), ask: `Toss your ${ITEMS_BY_ID[id].name} for the ${item.name}?`, confirm: 'Swap' }))
-      : [{ ...itemOption(item, take()), ask: `Put the ${item.name} in the Bag?`, confirm: 'Put in Bag' }],
+      ? run.items.map((id, index) => ({ ...itemOption(ITEMS_BY_ID[id], take(index)), ask: `Toss your ${ITEMS_BY_ID[id].name} for the ${item.name}?`, confirm: 'Swap', confirmSound: 'item-get' }))
+      : [{ ...itemOption(item, take()), ask: `Put the ${item.name} in the Bag?`, confirm: 'Put in Bag', confirmSound: 'item-get' }],
     skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: next,
     coins: run.pendingCoins,
@@ -889,6 +889,7 @@ const EVENT_CHOICES = {
     if (run.items.length < ITEM_SLOTS) {
       return { options: [textOption(itemSprite(item, 'relic-icon'), 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
         run.items.push(item.id);
+        playSound('item-get');
         toast(`Put the ${item.name} in the Bag.`, 'ok');
         showMap();
       })] };
@@ -903,6 +904,7 @@ const EVENT_CHOICES = {
     return { options: [
       hpOption('⛩️', `Pray (${cost} HP)`, `Receive ${relic.icon} ${relic.name}: ${relic.text}`, cost, () => {
         loseHp(cost);
+        playSound('item-get');
         gainRelic(relic, showMap);
       }),
     ] };

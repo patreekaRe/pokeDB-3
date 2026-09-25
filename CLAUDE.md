@@ -541,7 +541,7 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
 - Every battle opens with a Gen 3/4-style transition (`js/transition.js`, the user's call):
   `fight()` in `js/run.js` awaits `battleWipe(kind)` (two white flashes, then wild: bars from
   alternate sides, elite: a closing iris, boss: a shatter from the centre; the battle theme
-  starts with the flash, so `startBattle()`'s `playMusic` is a no-op), starts the battle under
+  starts with the flash (no sound effect of its own: the games have none), so `startBattle()`'s `playMusic` is a no-op), starts the battle under
   the black, then opens onto it the same way (`.out`: the bars carry on off the far side, the
   iris opens, the tiles fall away), so the battle screen never just appears: ~1.6 s, ~2.7 s for
   a boss. Before a boss, `walkTo()` runs
@@ -708,7 +708,11 @@ or zoom), unless that click already started an effect of its own; cries don't co
 starter tap blips then cries. New buttons get it for free; to silence one, keep it out of `CONTROLS`),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
-removal is paid for), `encounter` (every battle transition's flash; the file is still to come) and `event` (walking into a ❓ room, in `enterNode()`,
+removal is paid for), `ball-throw` / `ball-open` (the battle intro's Poké Ball; `ball-open` also on the Continue card),
+`stat-up` (strength or focus gained, either side, enemy buffs and Enrage too), `stat-down` (the enemy is
+Weakened), `item-get` (a relic or item received: reward picks via `confirmSound`, the Fan Club gift,
+the Shrine; not Mart buys), `low-hp` (looped with `setLoop()` in `js/audio.js` while your HP is at 20% or
+below, set on every `renderAll()`, off when the battle ends, is abandoned, or on mute) and `event` (walking into a ❓ room, in `enterNode()`,
 so "Back" re-renders don't replay it). Battle sounds preload in
 `startBattle()`, map ones in `showMap()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat

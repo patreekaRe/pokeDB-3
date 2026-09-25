@@ -26,7 +26,7 @@ import { SPRITE_FIT } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar } from './ui.js';
 import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
-import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds } from './audio.js';
+import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -58,6 +58,7 @@ export function initBattle() {
 /** Leave the battle without finishing it (used when you abandon a run). */
 export function abandonBattle() {
   battle = null;
+  setLoop('low-hp', false);
 }
 
 export const isBattleRunning = () => battle !== null && !battle.over;
@@ -148,7 +149,7 @@ async function playIntro() {
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
-  preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion');
+  preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp');
 
   zone.classList.add('awaiting');
   renderAll();
@@ -170,9 +171,11 @@ async function playIntro() {
     ball.style.setProperty('--from-x', `${-at.left - 60}px`);
     ball.style.setProperty('--from-y', `${innerHeight - at.top - 40}px`);
     ball.classList.add('thrown');
+    playSound('ball-throw');
     await sleep(700);
     if (!still()) return;
     ball.classList.replace('thrown', 'open');
+    playSound('ball-open');
     await sleep(180);
     if (!still()) return;
   }
@@ -211,9 +214,9 @@ function beginPlayerTurn() {
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; pop('player-zone', '-1 ☠️', 'dmg'); }
   if (hasRelic('leftovers')) healPlayer(2);
   if (p.healEachTurn) healPlayer(p.healEachTurn + healBonus());
-  if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); }
+  if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); playSound('stat-up'); }
   if (p.burnEachTurn) { b.enemy.burn += p.burnEachTurn; pop('enemy-zone', `🔥 Burn ${p.burnEachTurn}`, 'note'); }
-  if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); }
+  if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); playSound('stat-up'); }
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0));
   b.busy = false;
@@ -338,11 +341,11 @@ async function playCard(uid) {
 
   // --- everything else a card can do ---
   if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
-  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '📉 Weakened', 'note'); }
+  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '📉 Weakened', 'note'); playSound('stat-down'); }
   if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); }
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
-  if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
-  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); }
+  if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); }
+  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); }
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (card.power) {
@@ -402,8 +405,8 @@ async function useItem(index) {
   if (e.burn)     { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
   if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); }
   if (e.guard)    { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
-  if (e.focus)    { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); }
-  if (e.strength) { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); }
+  if (e.focus)    { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); }
+  if (e.strength) { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); }
   if (e.energy)   { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal)     healPlayer(e.heal);
   if (e.draw)     draw(e.draw);
@@ -531,6 +534,7 @@ async function enemyTurn() {
   } else if (move.kind === 'buff') {
     en.strength += move.amount;
     pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
+    playSound('stat-up');
     log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
   }
 
@@ -538,6 +542,7 @@ async function enemyTurn() {
   if (b.turn % ENRAGE_EVERY === 0) {
     en.strength += ENRAGE_BONUS;
     pop('enemy-zone', `😡 Enraged +${ENRAGE_BONUS}`, 'note bad', 350);
+    playSound('stat-up');
   }
 
   en.moveIndex += 1;                              // pick the next move
@@ -684,6 +689,7 @@ function renderItems() {
 function renderBars() {
   const b = battle;
   setHpBar('player', b.hp, b.maxHp);
+  setLoop('low-hp', !b.over && b.hp > 0 && b.hp <= b.maxHp * 0.2);   // the games' low-HP beeping
   setHpBar('enemy', b.enemy.hp, b.enemy.maxHp);
   $('player-plate').classList.toggle('has-block', b.block > 0);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);

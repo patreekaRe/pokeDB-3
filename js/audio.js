@@ -57,7 +57,12 @@ const SOUNDS = {
   event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
   item:  { url: 'assets/audio/sfx/item.mp3' },    // an item is used
   potion: { url: 'assets/audio/sfx/potion.mp3' }, // a healing item is used (heal.mp3 stays the Pokémon Center's own)
-  encounter: { url: 'assets/audio/sfx/encounter.mp3' },   // every battle transition (js/transition.js): the flash, then the wipe
+  'ball-throw': { url: 'assets/audio/sfx/ball-throw.mp3' },   // the battle intro's Poké Ball is thrown
+  'ball-open':  { url: 'assets/audio/sfx/ball-open.mp3' },    // ...and pops open (and the Continue card's ball)
+  'stat-up':    { url: 'assets/audio/sfx/stat-up.mp3' },      // strength or focus gained, either side
+  'stat-down':  { url: 'assets/audio/sfx/stat-down.mp3' },    // the enemy is Weakened
+  'item-get':   { url: 'assets/audio/sfx/item-get.mp3' },     // a relic or item is received (not bought: that's buy)
+  'low-hp':     { url: 'assets/audio/sfx/low-hp.mp3' },       // looped by setLoop() while your HP is at 20% or below in battle
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -91,6 +96,7 @@ let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
 const players = {};        // track name -> { el, gain }
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
 const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
+const loops = {};          // sound name -> { on, source } of an effect that repeats until turned off (setLoop)
 let current = null;        // name of the track that should be playing right now
 
 let lastCue = -1;          // ctx time the latest effect started
@@ -203,6 +209,30 @@ export async function playCry(spriteId) {
   if (cryPlaying === source) cryPlaying = null;
 }
 
+/**
+ * Keep an effect repeating (the games' low-HP beeping) until it's turned off. Safe to call on every
+ * render: asking for the state it's already in does nothing. Muting stops it; unmuting doesn't restart it
+ * until the next call.
+ */
+export async function setLoop(name, on) {
+  const loop = loops[name] ||= { on: false, source: null };
+  if (loop.on === on) return;
+  loop.on = on;
+  if (!on) { loop.source?.stop(); loop.source = null; return; }
+  if (getSave().muted) { loop.on = false; return; }
+  const buffer = await loadSound(name);
+  if (!buffer || ctx.state !== 'running' || !loop.on || loop.source) { if (!loop.source) loop.on = false; return; }
+  const { gain: volume = 1 } = SOUNDS[name] || {};
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  const gain = ctx.createGain();
+  gain.gain.value = volume;
+  source.connect(gain).connect(sfxBus);
+  source.start();
+  loop.source = source;
+}
+
 /** Start downloading cries ahead of time so they play without delay. */
 export function preloadCries(...spriteIds) {
   spriteIds.map(cryId).filter(id => CRIES.has(id))
@@ -221,6 +251,7 @@ function setMuted(muted) {
   updateSave(d => { d.muted = muted; });
   renderButton();
   if (muted) stopCry();
+  if (muted) Object.keys(loops).forEach(name => setLoop(name, false));
   if (!current) return;
   if (muted) Object.keys(players).forEach(fadeOut);
   else fadeIn(current);

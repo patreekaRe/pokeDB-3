@@ -32,7 +32,7 @@ import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop } from './shop.js';
-import { initAudio, playCry } from './audio.js';
+import { initAudio, playCry, playSound } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
 import { showTitle } from './title.js';
@@ -262,6 +262,7 @@ function init() {
     if (!savedRun || btn.classList.contains('opening')) return;
     // the Poké Ball pops open, your Pokémon comes out with its cry, then the map loads
     btn.classList.add('opening');
+    playSound('ball-open');
     const run = savedRun, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(() => { btn.classList.add('out'); playCry(run.starter.line[run.stage]?.id ?? run.starter.line[0].id); }, still ? 0 : 250);
     setTimeout(() => continueRun(run), still ? 0 : 1100);

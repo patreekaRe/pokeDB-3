@@ -6,7 +6,7 @@
  * the same way. Nothing here saves: a refresh mid-way resumes on the map before the room.
  */
 import { el, sleep } from './ui.js';
-import { playCry, playMusic, playSound, preloadCries, preloadMusic } from './audio.js';
+import { playCry, playMusic, preloadCries, preloadMusic } from './audio.js';
 
 const CRY_WAIT_MAX = 900;   // a long cry mustn't hold the whole reveal up
 const FLASH_MS = 400;
@@ -32,7 +32,6 @@ export async function bossReveal(shadow, spriteId) {
 export async function battleWipe(kind) {
   if (still()) return () => {};
   playMusic(TRACK[kind] ?? 'wild', { restart: true, cut: true });
-  playSound('encounter');
   const wipe = el('div', `battle-wipe wipe-${kind}`);
   (kind === 'boss' ? shatter : kind === 'elite' ? iris : bars)(wipe);
   document.body.append(wipe);
