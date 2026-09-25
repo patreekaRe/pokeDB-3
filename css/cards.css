@@ -91,6 +91,24 @@
   background: color-mix(in srgb, var(--c1) 30%, #fff8e8);
   box-shadow: inset 0 0 0 1cqw rgba(255, 255, 255, 0.55);
 }
+/* item art (cardSprite() in js/ui.js): the sprite's visible box (--bx/--by/--bw/--bh, in its 32px frame) scaled
+   as big as fits --box-w x --box-h, whatever padding the file has, so every item fills the window the same way */
+.card-art { --box-w: 72cqw; --box-h: 25cqw; }
+.sprite-fit {
+  --k: min(calc(var(--box-w) / var(--bw)), calc(var(--box-h) / var(--bh)));
+  position: relative;
+  width: calc(var(--k) * var(--bw));
+  height: calc(var(--k) * var(--bh));
+  overflow: hidden;
+  font-size: 21cqw;                    /* the emoji fallback, if the file is missing */
+}
+.sprite-fit .item-sprite {
+  position: absolute;
+  left: calc(var(--k) * var(--bx) * -1);
+  top: calc(var(--k) * var(--by) * -1);
+  width: calc(var(--k) * 32);
+  height: calc(var(--k) * 32);
+}
 .card-type {
   font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 7.5cqw;
@@ -154,7 +172,7 @@
 .card.small .card-type,
 .card.small .card-text { display: none; }
 .card.small .card-name { font-size: calc(12cqw * var(--name-fit, 1)); min-height: 0; padding-left: 16cqw; padding-right: 1cqw; justify-items: center; }
-.card.small .card-art { height: auto; flex: 1; font-size: 30cqw; }
+.card.small .card-art { height: auto; flex: 1; font-size: 30cqw; --box-w: 64cqw; --box-h: 60cqw; }
 .card.small .card-cost { width: 18cqw; height: 18cqw; font-size: 12cqw; }
 
 /* ---------- cards in your battle hand ---------- */

@@ -4,6 +4,7 @@
    ============================================================ */
 
 import { TYPES, describe, keywords } from './data/cards.js';
+import { ITEM_FIT } from './data/item-fit.js';
 import { getSave } from './storage.js';
 import { playMusic } from './audio.js';
 
@@ -114,7 +115,7 @@ export function makeCard(card, options = {}) {
   // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
   const longest = Math.max(...card.name.split(/[ -]/).map(w => w.length));
   if (longest > 9) name.style.setProperty('--name-fit', (9.6 / longest).toFixed(3));
-  const art = card.sprite ? itemSprite({ id: card.sprite, icon: card.art }, 'card-art') : el('div', 'card-art', card.art);
+  const art = card.sprite ? cardSprite(card) : el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
   const text = el('p', 'card-text');
   const words = keywords(card);
@@ -132,6 +133,16 @@ export function makeCard(card, options = {}) {
 
   if (options.count > 1) node.append(el('span', 'in-deck', `×${options.count}`));
   return node;
+}
+
+/** A card's item art, cropped to the sprite's visible pixels (ITEM_FIT) so the CSS can scale it to fill the art window. */
+function cardSprite(card) {
+  const art = el('div', 'card-art');
+  const [x, y, w, h] = ITEM_FIT[card.sprite] || [0, 0, 32, 32];
+  const crop = itemSprite({ id: card.sprite, icon: card.art }, 'sprite-fit');
+  for (const [k, v] of Object.entries({ bx: x, by: y, bw: w, bh: h })) crop.style.setProperty(`--${k}`, v);
+  art.append(crop);
+  return art;
 }
 
 /**
