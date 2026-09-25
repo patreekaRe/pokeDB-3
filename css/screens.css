@@ -1077,7 +1077,6 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 }
 .bag-btn:hover { transform: translateY(-2px); }
 .bag-btn[aria-expanded="true"], .bag-btn:active { transform: translateY(2px) scale(0.9); filter: brightness(0.85) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); }
-.relic-node { background: linear-gradient(165deg, #3b3f78, #22264f); border-color: var(--gold); }
 
 /* ---------- the biome's name: a pixel location sign, like the one the games show when you enter an area ---------- */
 .map-head { display: flex; justify-content: center; margin: 12px 0 14px; }
@@ -1133,7 +1132,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 }
 .drop .howto-list { grid-template-columns: 1fr; gap: 6px; }
 .drop .howto-li { padding: 5px 10px; gap: 10px; border-radius: var(--round-sm); }
-.drop .howto-node { width: 34px; height: 34px; font-size: 1rem; }
+.drop .howto-node { width: 34px; height: 34px; font-size: 1.35rem; }
 .drop-note { margin-top: 10px; font-size: 0.78rem; line-height: 1.35; color: var(--muted); text-align: center; }
 .drop-empty { font-size: 0.85rem; color: var(--muted); text-align: center; padding: 4px 0; }
 
@@ -1535,7 +1534,9 @@ body[data-screen="battle-screen"] .piles { display: flex; }
    from the run's blue Poké Mart building, which is spent in ₽. Sized by font-size, like every pixel icon. */
 .gc-icon { display: inline-block; vertical-align: middle; line-height: 0; }
 .shop-btn .gc-icon { font-size: 30px; }
-.howto-label .gc-icon { font-size: 16px; margin-top: -3px; }
+/* the PokéCoins slide opens on coin ▶ slot machine: what they're for, before how to earn them */
+.gc-hero { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; font-size: 44px; line-height: 0; }
+.gc-hero b { font-size: 16px; line-height: 1; color: var(--win-muted); }
 
 /* No button chrome: the slot machine itself is the button, with a shadow so it reads over any backdrop */
 .icon-btn.shop-btn {
@@ -1897,31 +1898,14 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .howto-chip.good { background: #2e7d32; color: #fff; }
 .howto-chip.bad  { background: #b3261e; color: #fff; }
 
+/* bare icons (map rooms, relics, items): no chip or frame, the user's call */
 .howto-node {
   width: 40px;
   height: 40px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.45);
-  background: #262c58;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
 }
-.howto-node.elite    { background: #5a1f24; }
-.howto-node.rest     { background: #1e5a3c; }
-.howto-node.treasure { background: #5a4a14; }
-.howto-node.boss     { background: #4a2670; border-color: var(--gold); }
-/* map rooms in the Key and How to play: the same orange town squares as the map, on a patch of grass */
-.howto-node.town {
-  border-radius: var(--round-xs);
-  border: 3px solid #f89030;
-  background: #402010;
-  box-shadow: 0 0 0 1px #582808, 0 0 0 4px #58c040, 0 0 0 5px #389828;
-}
-.howto-node.town.elite { border-color: #f04038; }
-.howto-node.town.boss  { border-color: var(--gold); background: #4a2670; }
-/* the Mart and Center are buildings, as on the map: no square, the SVG at its own 26:22 shape */
-.howto-node.town.building { border: 0; background: none; box-shadow: none; border-radius: 0; }
 .howto-node.building svg { width: 100%; height: auto; display: block; }
 
 /* the type cycle */
@@ -2005,7 +1989,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .howto-list { grid-template-columns: 1fr; gap: 6px; }
   .howto-list:not(.howto-earn) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }
   .howto-li { padding: 5px 10px; gap: 10px; }
-  .howto-li .howto-node { width: 34px; height: 34px; font-size: 1rem; }
+  .howto-li .howto-node { width: 34px; height: 34px; font-size: 1.35rem; }
   .howto-pic.wide { width: 90px; }
   .howto-type { width: 38px; height: 38px; font-size: 1.1rem; }
   .howto-types { gap: 4px; }
@@ -2090,8 +2074,8 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .map-town, .evo-dot { border-radius: var(--round-xs); }
 
 /* ---------- Poké Mart (map room) and Pokédollars ---------- */
-.map-node.type-shop .map-town, .howto-node.town.shop { border-color: #3878f0; }
-.map-node.type-event .map-town, .howto-node.town.event { border-color: #b058d8; }
+.map-node.type-shop .map-town { border-color: #3878f0; }
+.map-node.type-event .map-town { border-color: #b058d8; }
 .money-pill { color: #f8f8f8; }
 /* The Poké Mart, Zelda-shop style (the user's sketch), the same on every screen: Kecleon at the left end of a
    glass counter, and behind the counter one shelf unit: the moves (small cards, tap one to see it full size)
@@ -2425,7 +2409,7 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
 .bag .item-actions .btn { padding: 4px 8px 4px 16px; font-size: 0.7rem; min-height: 0; }
 
 /* How to play: plain icons, no round chips. Statuses read like the nameplates' badges (icon, then a coloured
-   number); the PokéCoins rows are bare icons; map rooms keep their coloured frame without the grass ring. */
+   number). */
 .howto-dialog .howto-li .badge {
   width: 44px;
   height: auto;
@@ -2442,8 +2426,6 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
 .howto-dialog .howto-li .badge.block b { color: #2060d8; }
 .howto-dialog .howto-li .badge.good b { color: #208030; }
 .howto-dialog .howto-li .badge.bad b { color: #c02020; }
-.howto-dialog .howto-node:not(.town) { border: 0; border-radius: 0; background: none; font-size: 1.5rem; }
-.howto-dialog .howto-node.town:not(.building) { box-shadow: 0 0 0 1px #582808; }
 
 /* ---------- the pixel scene behind every screen (js/scene.js), dimmed by #backdrop outside battles ---------- */
 #scene-bg { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; image-rendering: pixelated; display: none; }

@@ -476,7 +476,7 @@ Items (see Items below) and the map Key. Pocket tabs pick one, the ◀ ▶ heade
 through `POCKETS` in order, and the last pocket is remembered. It's wired by
 `initBag()` / `showPocket()` / `closeBag()` in `js/run.js` and closes on an
 outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
-play `.howto-li` / `.howto-node` styles (map rooms use `.howto-node.town`),
+play `.howto-li` / `.howto-node` styles (bare icons with no chip or frame, the user's call; map rooms add `.town`),
 so keep the Key's wording in step with the How to play map slide. In both, `initHowto()` swaps the
 Mart and Center rows' emoji for the map's own buildings (`buildingSvg()`).
 
@@ -632,7 +632,7 @@ How to play (`#help-dialog`, `js/howto.js`) is a row of swipeable slides
 `openHowto()`, not `openDialog()`, so it always starts on slide 1. The coins
 slide is filled from `COIN_REWARDS`, so the guide stays in step with the game
 data. It deliberately doesn't list the Game Corner's perks (the user's call:
-players find them there), just "New starters" and one "Perks" row. The first two slides are numbered rows
+players find them there), it opens on coin ▶ slot machine (`.gc-hero`) with a "Starters" and a "Perks" row, then "Earn them". The first two slides are numbered rows
 (`.howto-flow`, a picture slot then a name and one line); the turn slide
 draws a small fanned hand (`.howto-hand`) rather than a real card, whose
 text was too small to read at that size. Its two tips show a sample intent bubble and a copy of the top bar's Bag sprite (cloned in `initHowto()`).
