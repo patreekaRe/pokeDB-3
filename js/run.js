@@ -244,7 +244,7 @@ function showMap() {
   checkpoint();
   renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage });
   showScreen('map-screen');
-  document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // an upright tablet's map is taller than the screen
+  document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
   showScene(biome.id);
   playMusic(`map${run.biome + 1}`);
 }

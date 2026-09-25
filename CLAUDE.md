@@ -407,14 +407,15 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
 - Everything snaps to a tile grid (`TILE`, `GRID_W`/`GRID_H`, `colX()`,
   `rowY()`; the boss sits on top at `BOSS_ROW`, low enough to leave room
   above it for its silhouette; below floor 0 the routes join at
-  `JOIN_ROW` and one road runs down the middle to `START_ROW`, where you start). `.map-wrap` gets
-  `--grid-w`/`--grid-h` and `#map` keeps that aspect ratio; CSS sizes rooms in
-  tiles, so everything scales with the map's width. Phones fit the map to
-  78vh. Wide landscape screens (>720px) turn it on its side: `.map-wrap` takes
-  the rotated shape and `#map` is rotated 90° inside it (start on the left,
-  boss on the right), while rooms, your sprite and the boss silhouette turn
-  back upright (`rotate`/`transform` in that media query). Upright tablets
-  keep it tall but up to 600px wide, and `showMap()` scrolls your sprite into view. Paths can wander to one
+  `JOIN_ROW` and one road runs down the middle to `START_ROW`, where you start). `#map` gets
+  `--grid-w`/`--grid-h` and keeps that aspect ratio; CSS sizes rooms in
+  tiles, so everything scales with the map's width. The map is always
+  upright (the user tried it sideways on wide screens and didn't want it).
+  Phones use `NARROW_W` tiles across, fitted to 78vh. Wider screens (>720px)
+  draw it at `WIDE_TILE` (11) px a tile and `fitGrid()` gives it more tiles
+  across (up to `WIDEST_W`) instead of stretching it: more terrain, rooms
+  spread further apart, the page scrolls, and `showMap()` scrolls your
+  sprite into view. A resize that changes the tile count redraws the map. Paths can wander to one
   side, so `spreadColumns()` resets `colX()` per map to spread the columns
   it uses across the width (centred on `CENTER_X`, at most `MAX_STEP` tiles
   apart); draw rooms with `nodeX(node)`, which keeps the boss centred.

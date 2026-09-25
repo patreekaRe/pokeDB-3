@@ -270,23 +270,37 @@ export function reachableNodes(map, currentId) {
    ============================================================ */
 
 const TILE = 8;                                   // canvas pixels per tile
-const GRID_W = 3 + (COLS - 1) * 5 + 4;             // tiles across
+const NARROW_W = 3 + (COLS - 1) * 5 + 4;           // tiles across on a phone
+const WIDEST_W = 72;                              // tiles across at most, on a wide screen
+const WIDE_TILE = 11;                             // CSS px per tile on a wide screen (css/screens.css)
+let GRID_W = NARROW_W;                            // set per render by fitGrid()
 const BOSS_ROW = 10;                              // leaves room above the boss for its silhouette
 const rowY = (floor) => floor >= FLOORS ? BOSS_ROW : BOSS_ROW + 7 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
 const JOIN_ROW = rowY(0) + 3;                      // where the routes from the first rooms meet
 const START_ROW = JOIN_ROW + 6;                    // the end of the single road up the middle, where you start
 const GRID_H = START_ROW + 4;                      // room under the road for your Pokémon to stand at the start
 const BOSS_COL = Math.floor(COLS / 2);
-const CENTER_X = 3 + BOSS_COL * 5;                // tile column of the boss and the start road
-const MAX_STEP = 8;                               // widest gap between columns, so a narrow map isn't stretched thin
+let CENTER_X = 3 + BOSS_COL * 5;                  // tile column of the boss and the start road
+const MAX_STEP = 8;                               // widest gap between columns on a phone, so a narrow map isn't stretched thin
 
 let colX = (col) => 3 + col * 5;                  // tile column of a room, set per map by spreadColumns()
+
+/**
+ * The map always stays upright. A phone fits it to the screen's height (CSS: 78vh); a wider screen draws it
+ * at WIDE_TILE px a tile and gives it more tiles across instead of stretching it, so it fills the width with
+ * more terrain and the rooms spread further apart, and the page scrolls (showMap() keeps you in view).
+ */
+function fitGrid(box) {
+  const room = Math.min(innerWidth, 1100) - 32 - 20;   // #map-screen's width and padding, then .map-wrap's (the screen may still be hidden)
+  GRID_W = innerWidth <= 720 ? NARROW_W : Math.max(NARROW_W, Math.min(WIDEST_W, Math.floor(room / WIDE_TILE)));
+  CENTER_X = Math.floor(GRID_W / 2);
+}
 
 /** Paths can wander to one side, so spread the columns this map actually uses across the width, centred under the boss. */
 function spreadColumns(map) {
   const cols = map.floors.flat().map(node => node.col);
   const lo = Math.min(...cols), hi = Math.max(...cols);
-  const step = hi > lo ? Math.min(MAX_STEP, ((COLS - 1) * 5) / (hi - lo)) : 0;
+  const step = hi > lo ? Math.min(MAX_STEP * GRID_W / NARROW_W, (GRID_W - 7) / (hi - lo)) : 0;
   colX = (col) => Math.round(CENTER_X + (col - (lo + hi) / 2) * step);
 }
 const nodeX = (node) => (node.type === 'boss' ? CENTER_X : colX(node.col));
@@ -415,7 +429,7 @@ function terrainGrid(map, biomeId, tiles, rand) {
   }
 
   for (const [kind, count, min, max] of palette.blobs) {
-    for (let n = 0; n < count; n++) {
+    for (let n = 0; n < Math.round(count * GRID_W / NARROW_W); n++) {
       const seeds = [];
       for (let y = 0; y < GRID_H; y++) for (let x = 0; x < GRID_W; x++) {
         if (dist[y][x] >= 2 && grid[y][x] === palette.ground) seeds.push([x, y]);
@@ -506,16 +520,29 @@ function paintTerrain(canvas, map, biomeId, tiles) {
   }, 220);
 }
 
+// Turning a tablet or resizing the window can change how many tiles fit across, so the map is drawn again.
+let lastRender = null, resizeTimer = 0;
+addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (!lastRender || $('map-screen').hidden) return;
+    const before = GRID_W;
+    fitGrid($('map'));
+    if (GRID_W !== before) renderMap(...lastRender);
+  }, 200);
+});
+
 /**
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
 export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2 } = {}) {
+  lastRender = [map, currentId, onPick, { biome, trainer, stage }];
   const box = $('map');
   box.replaceChildren();
-  // on the wrapper, which sizes the sideways map on wide screens (css/screens.css)
-  box.parentElement.style.setProperty('--grid-w', GRID_W);
-  box.parentElement.style.setProperty('--grid-h', GRID_H);
+  fitGrid(box);
+  box.style.setProperty('--grid-w', GRID_W);
+  box.style.setProperty('--grid-h', GRID_H);
   spreadColumns(map);
   const reachable = new Set(reachableNodes(map, currentId).map(n => n.id));
   const lines = routeLines(map, currentId, reachable);
