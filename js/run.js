@@ -30,7 +30,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, c
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps } from './scene.js';
 
 let run = null;
 
@@ -1022,11 +1022,21 @@ function martRoom() {
   const clutter = el('span', 'mart-clutter');
   clutter.setAttribute('aria-hidden', 'true');
   for (const icon of ['🔔', '🧪', '🧴', '⚫', '🎁']) clutter.append(el('span', '', icon));
-  $('reward-options').append(clerk, clutter, $('reward-skip'));   // Leave goes on the counter's front, under Kecleon
+  $('reward-options').append(clerk, clutter);
 
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
   const shop = () => $('reward-options').getBoundingClientRect();
   showPlaceScene('mart', { floor: () => shop().bottom, span: () => [shop().left, shop().right] });
+
+  // on a phone the counter spans the screen, so the plants and ball bins stand in front of it, against its foot
+  const props = martProps();
+  if (props) {
+    const row = el('div', 'mart-props');
+    row.setAttribute('aria-hidden', 'true');
+    const prop = ({ url, w, h }) => Object.assign(el('img'), { src: url, alt: '', width: w * 4, height: h * 4 });
+    row.append(prop(props.plant), prop(props.left), el('span', 'mart-props-gap'), prop(props.right), prop(props.plant));
+    $('reward-options').append(row);
+  }
 }
 
 /* ---------- evolution ---------- */

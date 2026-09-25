@@ -88,7 +88,6 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   // a `layout` (the Mart's 'mart-window') styles the options as one window; options with a `group` are
   // gathered into a .choice-group per group, in the order they first appear
   const box = $('reward-options');
-  box.after($('reward-skip'));   // the Mart moves Skip / Leave onto its counter; put it back before clearing the options
   box.replaceChildren();
   box.className = `reward-options${layout ? ` ${layout}` : ''}`;
   const groups = {};

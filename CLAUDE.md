@@ -156,8 +156,8 @@ re-renders itself after each purchase; `ware()` wraps a card/item/relic tile wit
 its price tag (red and disabled when you can't afford it), a `group` and a
 two-tap "Buy ₽N" confirm. `layout: 'mart-window'` lays the Mart out like a Zelda shop
 (the user's sketch), the same at every screen size, with no window: behind a glass
-counter (the grid's `::after`, with `.mart-clutter` icons on it, and Leave on its front:
-`martRoom()` moves `#reward-skip` into the grid, `showChoice()` puts it back) stands one
+counter (the grid's `::after`, with `.mart-clutter` icons on it; Leave sits on the floor
+just above the text box) stands one
 grey pixel shelf unit (hard-edged gradient bands for depth, a strip light under each
 board, a Mart-blue crown with a Poké Ball, and big swinging Bag-pocket `.shelf-sign`s over
 the items and relics shelves, added by `martRoom()`: an icon, outlined pixel letters), all the moves on
@@ -171,8 +171,10 @@ The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts): teal
 white walls with pennant bunting and hanging lamps (glow, flicker, drifting dust), and on
 wider screens a window (clouds, a passing bird), crates, a SALE poster and a cork board;
 green octagon tiles, and two blue bins heaped with Poké/Great/Ultra/Master Balls
-(`ballBin()`): beside the counter's ends where there's room, else just in front of it
-(the user wanted nothing scattered on the floor).
+(`ballBin()`) with the plants: beside the counter's ends where there's room; a phone's
+counter spans the screen, so there `martProps()` paints them as little images
+(`paintProp()`) that `.mart-props` stands in front of its foot (the user wanted nothing
+scattered on the floor, and nothing hidden behind the counter).
 It's barely dimmed, and its floor line follows the counter's foot and its plants its ends
 (`showPlaceScene('mart', { floor, span })`), so the shop stands on the tiles instead of
 floating (the user's calls; no fridges, no tiny clock or posters).

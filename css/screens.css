@@ -2166,7 +2166,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px 5px 7px;
+  padding: 4px 9px 4px 6px;
   border-radius: 10px 10px 10px 3px;
   background: linear-gradient(var(--plate-lite) 0 4px, var(--plate) 4px calc(100% - 5px), var(--plate-dark) calc(100% - 5px));
   box-shadow: 0 0 0 3px #303038, inset 0 0 0 2px rgba(255, 255, 255, 0.35), 3px 4px 0 2px rgba(0, 0, 0, 0.3);
@@ -2187,10 +2187,10 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 }
 .shelf-sign::before { left: 14px; }
 .shelf-sign::after { right: 14px; }
-.shelf-sign-icon { font-size: 1.5rem; line-height: 1; filter: drop-shadow(1px 1px 0 #303038); }
+.shelf-sign-icon { font-size: 1.15rem; line-height: 1; filter: drop-shadow(1px 1px 0 #303038); }
 .shelf-sign-text {
   font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 1rem;
+  font-size: 0.78rem;
   letter-spacing: 0.06em;
   color: var(--ink);
   text-shadow: 2px 0 0 #303038, -2px 0 0 #303038, 0 2px 0 #303038, 0 -2px 0 #303038, 2px 2px 0 #303038, 3px 4px 0 var(--drop);
@@ -2213,7 +2213,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 @keyframes signSwingR { 50% { translate: 0 1px; rotate: -1deg; } }
 @media (prefers-reduced-motion: reduce) { .shelf-sign, .shelf-sign .shelf-sign-text::after { animation: none; } }
 /* the wares sit below the sign */
-.mart-window :is(.group-items, .group-relics) { padding-top: 54px; }
+.mart-window :is(.group-items, .group-relics) { padding-top: 48px; }
 .mart-window .group-items { grid-area: items; gap: 18px; }
 /* the relics sit in the gaps between the items (a 3-2 pyramid), over a tall band where Kecleon's head and the PC's sign go */
 .mart-window .group-relics { grid-area: relics; gap: 18px; padding-bottom: 68px; }
@@ -2274,19 +2274,23 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25));
 }
 /* the PC on the counter's right end, the Center's bouncing sign floating over it */
-.mart-window .group-service { grid-area: counter; z-index: 3; justify-self: end; align-self: start; margin: -36px 12px 0 0; }
+.mart-window .group-service { grid-area: counter; z-index: 3; justify-self: end; align-self: start; margin: -28px 12px 0 0; }
 .mart-window .group-service .reward-option { position: relative; }
 .mart-window .group-service .reward-option:is(:hover, :focus-visible) { transform: none; filter: brightness(1.1); }
 .mart-pc { display: block; }
 .mart-pc-icon { display: block; font-size: 2.8rem; line-height: 1; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.3)); }
-.mart-pc .center-label { border-color: #3878f0; bottom: calc(100% + 10px); font-size: 0.72rem; padding: 5px 8px; }
+.mart-pc .center-label { border-color: #3878f0; bottom: calc(100% + 6px); font-size: 0.72rem; padding: 5px 8px; }
 /* odds and ends on the counter between Kecleon and the PC, so it isn't bare */
 .mart-clutter { grid-area: counter; z-index: 3; justify-self: center; align-self: start; display: flex; align-items: flex-end; gap: 2px; margin-top: -20px; font-size: 1.5rem; line-height: 1; filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.25)); pointer-events: none; }
 .mart-clutter > :nth-child(odd) { font-size: 1.2rem; }
-/* Leave hangs on the counter's front, under Kecleon */
-.mart-window > #reward-skip { grid-area: counter; z-index: 3; justify-self: start; align-self: end; margin: 0 0 7px 26px; padding: 4px 5px; }
-.mart-window > #reward-skip .pp-pill { font-size: 0.8rem; padding: 7px 12px 6px 24px; }
-.mart-window > #reward-skip .pp-pill::before { left: 10px; }
+/* Leave sits on the floor just above the text box, clear of the props standing in front of the counter */
+#reward-screen:has(.mart-window) #reward-skip { margin-top: auto; }
+#reward-screen:has(.mart-window) .reward-bottom { margin-top: 0; }
+.reward-options.mart-window:has(.mart-props) { margin-bottom: 26px; }
+/* a phone's plants and ball bins (martProps()), standing on the floor in front of the counter's two ends */
+.mart-props { grid-area: counter; z-index: 4; align-self: end; display: flex; align-items: flex-end; gap: 2px; margin: 0 -4px -26px; pointer-events: none; }
+.mart-props img { image-rendering: pixelated; }
+.mart-props-gap { flex: 1; }
 .mart-window .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; }
 @media (max-width: 420px) {
   .mart-window :is(.group-cards, .group-items, .group-relics) { margin: 0 6px; padding-inline: 12px; }

@@ -436,6 +436,7 @@ function tint(x, y, k, add = 0) {
   x |= 0; y |= 0;
   if (!inside(x, y)) return;
   const c = px[y * W + x];
+  if (!(c >>> 24)) return;   // a see-through pixel of a prop (paintProp) stays see-through
   const f = (v) => Math.max(0, Math.min(255, Math.round(v * k + add)));
   px[y * W + x] = ((255 << 24) | (f((c >> 16) & 255) << 16) | (f((c >> 8) & 255) << 8) | f(c & 255)) >>> 0;
 }
@@ -1278,16 +1279,40 @@ function martFloor() {
   }
 }
 
+/** Where the counter leaves wall to either side (a wide screen) the plants and ball bins stand there; a phone's counter
+    spans the screen, so they'd hide behind it, and the page stands them in front of it instead (martProps()). */
+const martRoomy = () => spanAt && spanAt()[0] * W / innerWidth > 34;
+
 function martFront() {
-  const foot = horizon + 4;
-  // the plants flank the counter's two ends, and a bin heaped with Poké Balls stands against it at each end
-  const [l, r] = spanAt ? spanAt().map(x => Math.round(x * W / innerWidth)) : [0, W];
-  pottedPlant(Math.max(4, l - 6), foot, 4);
-  pottedPlant(Math.min(W - 5, r + 5), foot, 4);
-  // beside the plants where the wall has room, else just in front of the counter (a phone's counter spans the screen)
-  const out = l > 34, y = out ? horizon - 2 : horizon + 4;
-  ballBin(out ? l - 22 : l + 14, y, ['great', 'poke', 'great']);
-  ballBin(out ? r + 21 : r - 14, y, ['ultra', 'master', 'ultra']);
+  if (!martRoomy()) return;
+  const [l, r] = spanAt().map(x => Math.round(x * W / innerWidth)), foot = horizon + 4;
+  pottedPlant(l - 6, foot, 4);
+  pottedPlant(r + 5, foot, 4);
+  ballBin(l - 22, horizon - 2, ['great', 'poke', 'great']);
+  ballBin(r + 21, horizon - 2, ['ultra', 'master', 'ultra']);
+}
+
+/** The Mart's plants and ball bins as little pixel images ({ plant, left, right } data URLs with their sizes), for the
+    page to stand in front of a counter that spans the screen; null when they're painted beside it instead. */
+export function martProps() {
+  if (!S || S.raw.backdrop !== 'mart' || martRoomy()) return null;
+  return {
+    plant: paintProp(11, 13, () => pottedPlant(5, 12, 4)),
+    left: paintProp(17, 11, () => ballBin(8, 4, ['great', 'poke', 'great'])),
+    right: paintProp(17, 11, () => ballBin(8, 4, ['ultra', 'master', 'ultra'])),
+  };
+}
+
+/** Paint a prop on its own transparent w x h pixels, with the scene's painters, and hand it back as { url, w, h }. */
+function paintProp(w, h, paint) {
+  const saved = [W, H, px, sky];
+  W = w; H = h; px = new Uint32Array(w * h); sky = new Uint8Array(w * h);
+  paint();
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(px.buffer), w, h), 0, 0);
+  [W, H, px, sky] = saved;
+  return { url: c.toDataURL(), w, h };
 }
 
 /** A low blue Mart bin against the counter, heaped with Poké Balls whose lower halves sit inside it. */
