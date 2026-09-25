@@ -233,9 +233,9 @@
 .card-focus.rise .card.focus-card { animation: none; transform-origin: 50% 100%; }
 .card-focus.rise .card.focus-card .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
 .card.in-hand.lifted { visibility: hidden; }
-.card-focus.rise .focus-play { padding: 3px 4px; }
-.card-focus.rise .focus-play .pp-pill { font-size: 0.7rem; padding: 5px 10px 4px 20px; }
-.card-focus.rise .focus-play .pp-pill::before { left: 8px; }
+.card-focus.rise .focus-play { padding: 2px 3px; }
+.card-focus.rise .focus-play .pp-pill { font-size: 0.6rem; padding: 4px 8px 3px 17px; }
+.card-focus.rise .focus-play .pp-pill::before { left: 7px; }
 
 /* ---------- deck views: tap a card to read it bigger (zoomCard() in js/ui.js); any tap closes it ---------- */
 .card-zoom {

@@ -936,13 +936,14 @@ function popFromHand(big, extra, from) {
   from.classList.add('lifted');
   const r = from.getBoundingClientRect();
   const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
+  const under = 16;   // clears the card's gold ring and drop shadow, which stick out ~8px past its box
   const ew = extra.offsetWidth, eh = extra.offsetHeight;
   const left = Math.max(gap, Math.min(innerWidth - w - gap, r.left + r.width / 2 - w / 2));
   const foot = Math.min(r.bottom, innerHeight - gap);   // the Play button stands at the hand card's foot, the card on it
-  const top = Math.max(gap, foot - eh - 6 - h);
+  const top = Math.max(gap, foot - eh - under - h);
   Object.assign(big.style, { left: `${left}px`, top: `${top}px` });
   const ex = Math.max(gap, Math.min(innerWidth - ew - gap, left + w / 2 - ew / 2));
-  Object.assign(extra.style, { left: `${ex}px`, top: `${top + h + 6}px` });
+  Object.assign(extra.style, { left: `${ex}px`, top: `${top + h + under}px` });
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const dx = r.left + r.width / 2 - (left + w / 2), dy = r.bottom - (top + h);
