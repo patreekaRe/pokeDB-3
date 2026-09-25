@@ -350,22 +350,38 @@ function seeded(text) {
 /** The routes as lines through tile centres: [[x, y]...] points plus a state (fill, walked or active). */
 function routeLines(map, currentId, reachable) {
   const lines = [];
-  // up, sideways on the jog row, up again: for the roads that merge (into the boss, out of the start)
-  const jogged = (x1, y1, x2, y2, jog, state) => lines.push({ points: [[x1, y1], [x1, jog], [x2, jog], [x2, y2]], state });
   for (const node of Object.values(map.byId)) {
     for (const nextId of node.next) {
       const to = map.byId[nextId];
       const state = node.id === currentId && reachable.has(nextId) ? 'active' : node.visited && to.visited ? 'walked' : 'fill';
-      const [x1, y1, x2, y2] = [nodeX(node), rowY(node.floor), nodeX(to), rowY(to.floor)];
-      if (to.type === 'boss') jogged(x1, y1, x2, y2, y1 - 3, state);
-      else lines.push({ points: [[x1, y1], [x2, y2]], state });
+      lines.push({ points: linkPoints(node, to), state });
     }
   }
   for (const node of map.floors[0]) {
     const state = !currentId ? 'active' : node.visited ? 'walked' : 'fill';
-    jogged(CENTER_X, START_ROW, nodeX(node), rowY(0), JOIN_ROW, state);
+    lines.push({ points: linkPoints(null, node), state });
   }
   return lines;
+}
+
+/** The route from one room to the next (from = null: the start road). The roads that merge (into the boss, out of the start) go up, sideways on a jog row, then up again. */
+function linkPoints(from, to) {
+  const [x2, y2] = [nodeX(to), rowY(to.floor)];
+  const jogged = (x1, y1, jog) => [[x1, y1], [x1, jog], [x2, jog], [x2, y2]];
+  if (!from) return jogged(CENTER_X, START_ROW, JOIN_ROW);
+  const [x1, y1] = [nodeX(from), rowY(from.floor)];
+  return to.type === 'boss' ? jogged(x1, y1, y1 - 3) : [[x1, y1], [x2, y2]];
+}
+
+/** Every tile centre along a route, one per step, in order. */
+function tileSteps(points) {
+  const steps = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    const [[x1, y1], [x2, y2]] = [points[i - 1], points[i]];
+    const n = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+    for (let k = 1; k <= n; k++) steps.push([Math.round(x1 + (x2 - x1) * k / n), Math.round(y1 + (y2 - y1) * k / n)]);
+  }
+  return steps;
 }
 
 /** Every tile a route passes through, so terrain keeps clear of the routes. */
@@ -383,6 +399,8 @@ function routeTiles(lines) {
 
 /* The routes are drawn as smooth lines over the pixel terrain (the user's call: pixel staircases for the
    diagonals looked too jagged). Every edge goes down first, then the fills, so routes that meet merge without a seam. */
+const polyPoints = (points) => points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(' ');
+
 function drawRoutes(lines) {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
@@ -392,7 +410,7 @@ function drawRoutes(lines) {
   svg.setAttribute('aria-hidden', 'true');
   const path = ({ points }, color, width, dash) => {
     const line = document.createElementNS(NS, 'polyline');
-    line.setAttribute('points', points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(' '));
+    line.setAttribute('points', polyPoints(points));
     line.setAttribute('fill', 'none');
     line.setAttribute('stroke', color);
     line.setAttribute('stroke-width', width);
@@ -400,7 +418,9 @@ function drawRoutes(lines) {
     line.setAttribute('stroke-linejoin', 'miter');
     if (dash) line.setAttribute('stroke-dasharray', dash);
     svg.append(line);
+    return line;
   };
+  svg.path = path;   // walkTo() draws the walked trail with it
   for (const line of lines) path(line, ROUTE.edge, 1);
   for (const state of ['fill', 'walked', 'active']) {
     for (const line of lines.filter(l => l.state === state)) {
@@ -554,12 +574,10 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
   const canvas = el('canvas', 'map-terrain');
   canvas.setAttribute('aria-hidden', 'true');
   paintTerrain(canvas, map, biome, routeTiles(lines));
-  box.append(canvas, drawRoutes(lines));
-
-  const place = (elem, x, y) => {
-    elem.style.left = `${((x + 0.5) / GRID_W) * 100}%`;
-    elem.style.top = `${((y + 0.5) / GRID_H) * 100}%`;
-  };
+  routesSvg = drawRoutes(lines);
+  box.append(canvas, routesSvg);
+  trainerImg = null;
+  walkFrom = currentId && map.byId[currentId];
 
   for (const node of Object.values(map.byId)) {
     const info = NODE_INFO[node.type];
@@ -588,7 +606,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     if (node.id === currentId) btn.classList.add('current');
     if (canGo) btn.classList.add('reachable');
     btn.disabled = !canGo;
-    if (canGo) btn.addEventListener('click', () => onPick(node));
+    if (canGo) btn.addEventListener('click', () => walkTo(node, onPick));
     box.append(btn);
   }
 
@@ -610,5 +628,45 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     img.alt = '';
     place(img, (here ? nodeX(here) : CENTER_X), here ? rowY(here.floor) : START_ROW);
     box.append(img);
+    trainerImg = img;
   }
+}
+
+function place(elem, x, y) {
+  elem.style.left = `${((x + 0.5) / GRID_W) * 100}%`;
+  elem.style.top = `${((y + 0.5) / GRID_H) * 100}%`;
+}
+
+/*
+ * Tapping a reachable room walks your Pokémon there along its route a tile at a time, bobbing every other
+ * step like the overworld walk, with the walked route's red dashes trailing it; the room opens once it
+ * arrives, and taps are ignored meanwhile. Showdown front sprites face left, so it flips to walk right.
+ */
+const WALK_MS = [320, 480];   // one link's walk, from a short straight link to the long start road
+let walking = false, routesSvg = null, trainerImg = null, walkFrom = null;
+
+function walkTo(node, onPick) {
+  if (walking) return;
+  const img = trainerImg;
+  if (!img || matchMedia('(prefers-reduced-motion: reduce)').matches) return onPick(node);
+  walking = true;
+  const points = linkPoints(walkFrom, node);
+  const steps = tileSteps(points);
+  const ms = Math.min(WALK_MS[1], Math.max(WALK_MS[0], steps.length * 55)) / (steps.length - 1);
+  const dx = points.at(-1)[0] - points[0][0];
+  img.classList.remove('at-start');
+  img.classList.add('walking');
+  if (dx) img.style.setProperty('--face', dx > 0 ? -1 : 1);
+  const trail = [routesSvg.path({ points: [] }, ROUTE.fill, 0.75), routesSvg.path({ points: [] }, ROUTE.walked, 0.5, '0.5 0.25')];
+  let i = 0;
+  const step = () => {
+    i++;
+    place(img, ...steps[i]);
+    img.classList.toggle('bob', i % 4 < 2);
+    for (const line of trail) line.setAttribute('points', polyPoints(steps.slice(0, i + 1)));
+    if (i < steps.length - 1) return setTimeout(step, ms);
+    img.classList.remove('bob');
+    setTimeout(() => { walking = false; onPick(node); }, 120);
+  };
+  setTimeout(step, ms);
 }
