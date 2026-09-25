@@ -1,11 +1,10 @@
 /* ============================================================
    howto.js  -  the "How to play" window: a row of slides you swipe
    through (native scroll-snap), with dots, arrows and arrow keys.
-   The shop slide is filled from the real coin rewards and shop items,
+   The coins slide is filled from the real coin rewards,
    so it can't drift from the game.
    ============================================================ */
 
-import { PASSIVE_SHOP_ITEMS } from './data/shop.js';
 import { COIN_REWARDS } from './run.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 import { buildingSvg } from './buildings.js';
@@ -51,8 +50,8 @@ export function initHowto() {
     row('treasure', '🏆', `+${COIN_REWARDS.winBonus} 💰`, 'Full win'),
   );
   $('howto-perks').replaceChildren(
-    row('', '🔓', 'New starters', 'Unlock new Pokémon to play as.'),
-    ...PASSIVE_SHOP_ITEMS.map(perk => row('', perk.icon, perk.name, perk.text)),
+    row('', '💰', 'New starters', 'Unlock new Pokémon to play as.'),
+    row('', '✨', 'Perks', "Permanent boosts for every run. Drop by and see what's on offer!"),
   );
 
   slides = [...track().querySelectorAll('.howto-slide')];
