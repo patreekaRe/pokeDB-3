@@ -614,6 +614,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .intent {
   --kind: #e04040;
   position: relative;
+  translate: 0 calc(var(--base) * var(--size, 1) * var(--head-room, 0));   /* down to the Pokémon's head (--head-room: sizeSprite() in js/battle.js) */
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -651,10 +653,11 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 @keyframes bob { 50% { transform: translateY(-4px); } }
 @keyframes intentPop { from { transform: translateY(8px) scale(0.3); opacity: 0; } 60% { transform: translateY(-3px) scale(1.15); opacity: 1; } }
 
+.enemy-zone { --base: clamp(92px, 16vh, 160px); }   /* the enemy's box before --size (sizeSprite() in js/battle.js); its pad scales with it too */
 .enemy-portrait {
-  --base: clamp(92px, 16vh, 160px);
   width: calc(var(--base) * var(--size, 1));
   aspect-ratio: 1;
+  min-height: 0;   /* keeps a tall sprite's box square, or it stretches the box and is drawn too big */
   border-radius: 22px;
   overflow: hidden;
   border: 4px solid var(--accent);
@@ -690,6 +693,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   aspect-ratio: 1;
   object-fit: contain;
   object-position: 50% 100%;
+  translate: calc(var(--shift, 0) * 100%) calc(var(--drop, 0) * 100%);   /* stands the resting pose centred at the bottom */
   max-width: 92%;
   filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5));
 }
@@ -954,7 +958,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .nameplate-title strong { font-size: 0.85rem; }
   .badge { width: 30px; height: 30px; font-size: 0.95rem; }
   .badges { min-height: 32px; gap: 6px; }
-  .enemy-portrait { --base: clamp(80px, 13vh, 118px); }
+  .enemy-zone { --base: clamp(80px, 13vh, 118px); }
   .hand { --hand-card-w: 108px; }
   .fan-note { font-size: 0.64rem; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
   .battle-log { width: 96%; font-size: 0.85rem; }
@@ -962,7 +966,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 
 /* Short windows (small laptops): make the battle scene a little more compact */
 @media (max-height: 760px) and (min-width: 721px) {
-  .enemy-portrait { --base: clamp(76px, 14vh, 160px); }
+  .enemy-zone { --base: clamp(76px, 14vh, 160px); }
   .hand { --hand-card-w: clamp(96px, 17vh, 148px); }
 }
 
@@ -1410,7 +1414,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* ---------- enemy portraits: pixel sprites, elites and bosses ---------- */
 /* pixel sprites stand in the scene frameless, like your Pokémon; the glow marks elites and bosses */
 .enemy-portrait.sprite { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
-.enemy-portrait.sprite img { object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+.enemy-portrait.sprite img { object-fit: contain; object-position: 50% 100%; translate: calc(var(--shift, 0) * 100%) calc(var(--drop, 0) * 100%); filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.sprite.elite img { filter: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.sprite.boss img  { filter: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.elite:not(.sprite) { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 30px #ff3b3b, 0 10px 24px rgba(0, 0, 0, 0.6); }
@@ -1432,7 +1436,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .nameplate { padding: 4px 7px 4px; gap: 2px; }
   .nameplate-title strong { font-size: 0.78rem; }
   .nameplate .gb-hp-num { font-size: 0.75rem; }
-  .enemy-portrait { --base: clamp(70px, 12.5vh, 100px); min-height: 0; }   /* min-height: 0 keeps a tall sprite's box square */
+  .enemy-zone { --base: clamp(70px, 12.5vh, 100px); }
   .player-zone { padding-bottom: 4px; }
   #player-plate { margin-bottom: 4px; }
   .enemy-zone { gap: 3px; }
@@ -2027,5 +2031,5 @@ body.has-scene #scene-bg { display: block; }
   image-rendering: pixelated;
   pointer-events: none;
 }
-.has-scene .enemy-zone::after { width: calc(clamp(110px, 20vh, 190px) * 1.25); bottom: -2%; }   /* 1.25x the portrait, as horizonRow() assumes */
+.has-scene .enemy-zone::after { width: calc(var(--base) * 1.5); bottom: calc(var(--base) * -0.2); }   /* the feet land just below the pad's middle; horizonRow() assumes this */
 .has-scene .player-zone::before { width: clamp(130px, 25vh, 290px); bottom: -4%; }

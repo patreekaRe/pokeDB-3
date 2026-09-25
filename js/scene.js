@@ -332,8 +332,9 @@ function horizonRow(scale) {
   const box = $('enemy-portrait-box').getBoundingClientRect();
   const low = Math.round(H * 0.38);
   if (!box.height) return low;
-  const pad = box.width * 1.25 * 16 / 48;   // the enemy's pad (its CSS width, at the pad image's aspect)
-  const row = Math.round((box.bottom - pad - 6) / scale);
+  // the enemy's pad (see .enemy-zone::after): 1.5x the box before --size wide, at the pad image's 48:16, its bottom 0.2x below the feet
+  const base = box.width / (parseFloat(getComputedStyle($('enemy-zone')).getPropertyValue('--size')) || 1);
+  const row = Math.round((box.bottom + base * 0.2 - base * 1.5 * 16 / 48 - 6) / scale);
   return Math.max(Math.round(H * 0.15), Math.min(low, row));
 }
 

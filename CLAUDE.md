@@ -335,7 +335,13 @@ In battle, both sprites are sized from their GIF files instead (`sizeSprite()` i
 Pidgey (48px) is drawn small and Snorlax big rather than all filling one box. The
 curve is softened and clamped, and the enemy's base size is smaller than yours
 because it stands further back (the user's call). Legendaries, which reuse one
-sprite, get the 78/90% stage steps folded into `--size`. The deck
+sprite, get the 78/90% stage steps folded into `--size`. Sizes and placement use each GIF's
+resting pose from `js/data/sprite-fit.js` (median bounds over every frame, since a
+hop or a wingbeat widens the frame): `--shift`/`--drop` centre that pose on its feet
+at the box bottom, and `--head-room` drops the enemy's intent to its head.
+Re-measure (ImageDecoder over all frames) when adding a sprite. The enemy's pad is
+sized from `--base` on `.enemy-zone` and sits so the feet land just below its middle;
+`horizonRow()` in `js/scene.js` mirrors that. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 Every screen is set in a pixel-art scene per biome *and* fight kind

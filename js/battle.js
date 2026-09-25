@@ -22,6 +22,7 @@
 import { CARDS_BY_ID, TYPES, POWERS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
+import { SPRITE_FIT } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar } from './ui.js';
 import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
@@ -592,14 +593,25 @@ function shuffle(list) {
 
 /**
  * The sprite files share one pixel scale (Pidgey is 48px, Charizard 100px), so size each by its file
- * instead of stretching all to one box: --size = (longest side / 64)^lean * times, clamped, then * stage.
- * Your Pokémon's base size is bigger than the enemy's, since it stands nearer.
+ * instead of stretching all to one box. SPRITE_FIT gives the Pokémon's resting pose inside its GIF; the
+ * pose's longest side sets the size ((side / 64)^lean * times, clamped, then * stage), and the box is
+ * scaled so the pose, not the whole frame, comes out that big. --shift/--drop move the image so the
+ * pose stands centred on its feet at the box bottom, and --head-room is how far down the box its head
+ * starts (the enemy's intent drops to it). Your Pokémon's base size is bigger, since it stands nearer.
  */
 function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
   const apply = () => {
-    if (!img.naturalWidth) return;
-    const f = Math.pow(Math.max(img.naturalWidth, img.naturalHeight) / 64, lean) * times;
-    target.style.setProperty('--size', (Math.min(max, Math.max(min, f)) * stage).toFixed(3));
+    const W = img.naturalWidth, H = img.naturalHeight;
+    if (!W) return;
+    const [top, bottom, left, right] = SPRITE_FIT[img.src.split('/').pop().replace(/\.gif$/, '')] || [0, 0, 0, 0];
+    const long = Math.max(W, H);
+    const pose = Math.max(W - left - right, H - top - bottom);
+    const f = Math.min(max, Math.max(min, Math.pow(pose / 64, lean) * times)) * stage;
+    const set = (name, value) => target.style.setProperty(name, value.toFixed(3));
+    set('--size', f * long / pose);
+    set('--shift', (right - left) / 2 / long);
+    set('--drop', bottom / long);
+    set('--head-room', (long - H + top + bottom) / long);
   };
   img.onload = apply;
   if (img.complete) apply();
@@ -625,8 +637,9 @@ function setupBattleScreen() {
   const box = $('enemy-portrait-box');
   box.classList.remove('defeated', 'hit', 'attacking');
   box.classList.toggle('sprite', !b.def.art);
-  if (b.def.art) img.style.removeProperty('--size'), box.style.removeProperty('--size');
-  else sizeSprite(img, 0.6, 1, 0.7, 1.3, 1, box);
+  const zone = $('enemy-zone');
+  if (b.def.art) ['--size', '--shift', '--drop', '--head-room'].forEach(name => zone.style.removeProperty(name));
+  else sizeSprite(img, 0.6, 1, 0.7, 1.3, 1, zone);
   box.classList.toggle('elite', b.kind === 'elite');
   box.classList.toggle('boss', b.kind === 'boss');
   box.title = b.def.description;
