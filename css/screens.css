@@ -1241,7 +1241,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .map-node.reachable:hover .map-town, .map-node.reachable:focus-visible .map-town { border-color: #fff; transform: scale(1.12); }
 @keyframes townBlink { 50% { border-color: #fff; } }
 /* Poké Marts and Pokémon Centers stand on the map as little buildings (js/buildings.js) instead of a framed square */
-.map-node.type-shop, .map-node.type-rest { width: calc(var(--tile) * 6); }
+.map-node.type-shop, .map-node.type-rest { width: calc(var(--tile) * 5); }
 .map-building { display: block; width: 100%; filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.35)); transition: transform 0.1s; }
 .map-building svg { display: block; width: 100%; height: auto; }
 .map-node.reachable .map-building { animation: houseBlink 0.9s steps(1) infinite; }
