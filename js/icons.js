@@ -646,19 +646,6 @@ const ICONS = {
     '..wwl..wwl..',
     '..wl....wl..',
   ],
-  '🧪': [
-    '............',
-    '.....ll.....',
-    '....llll....',
-    '.....ll.....',
-    '....wwww....',
-    '...wppppw...',
-    '...ppwppp...',
-    '...pwppppP..',
-    '...ppppppP..',
-    '...ppppPPP..',
-    '....PPPP....',
-  ],
   '🧱': [
     '............',
     '............',
@@ -1443,6 +1430,8 @@ const ICONS = {
   '🟢': gem('G', 'E'),   // Grass Gem
   '🔵': gem('b', 'B'),   // Water Gem
 };
+// the Potion card and the Mart's Items sign are the same pink flask as the Potion item
+ICONS['🧪'] = ICONS['🧴'];
 
 /** A Power Lens band seen from above: colour (A), shade (D), light edge (L) and its gem stud (J). */
 function lens(A, D, L, J) {

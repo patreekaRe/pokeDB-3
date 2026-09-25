@@ -1068,7 +1068,7 @@ function martRoom() {
   clerk.alt = 'Kecleon, the shopkeeper';
   const clutter = el('span', 'mart-clutter');
   clutter.setAttribute('aria-hidden', 'true');
-  for (const icon of ['🔔', '🧪', '🧴', '⚫', '🎁']) clutter.append(el('span', '', icon));
+  for (const icon of ['🔔', '🥤', '🧴', '⚫', '🎁']) clutter.append(el('span', '', icon));
   $('reward-options').append(clerk, clutter);
 
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
