@@ -2277,8 +2277,8 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   image-rendering: pixelated;
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25));
 }
-/* the PC on the counter's right end, the Center's bouncing sign floating over it */
-.mart-window .group-service { grid-area: counter; z-index: 3; justify-self: end; align-self: start; margin: -28px 12px 0 0; }
+/* the PC on the counter's right end, its keyboard on the counter top, the Center's bouncing sign floating over it */
+.mart-window .group-service { grid-area: counter; z-index: 3; justify-self: end; align-self: start; margin: -46px 12px 0 0; }
 .mart-window .group-service .reward-option { position: relative; }
 .mart-window .group-service .reward-option:is(:hover, :focus-visible) { transform: none; filter: brightness(1.1); }
 .mart-pc { display: block; }

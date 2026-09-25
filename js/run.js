@@ -583,7 +583,7 @@ function restSite() {
         },
       },
       {
-        node: centerLabel('Forget a move',
+        node: centerLabel('Forget',
           atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`),
         disabled: atMin,
         onPick: () => forgetMove(restSite),
@@ -1031,7 +1031,7 @@ function martRoom() {
   // forgetting a move is the PC on the counter, under a bouncing sign like the Center's; the money is only
   // taken once a card is actually forgotten, so "Back" out of the picker is free, and it needs no Buy step
   const removal = {
-    node: martPc(stock.removed ? 'Sold out' : `Forget a move 💴 ${removalPrice}`,
+    node: martPc(stock.removed ? 'Sold out' : 'Forget',
       stock.removed ? 'Only one move can be forgotten per Mart.' : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck for ₽${removalPrice}.`),
     group: 'service',
     disabled: stock.removed || atMin || removalPrice > run.money,
