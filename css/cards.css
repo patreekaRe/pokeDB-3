@@ -158,6 +158,15 @@
 
 /* ---------- cards in your battle hand ---------- */
 .card.in-hand { --card-w: var(--hand-card-w); flex: 0 0 auto; }
+/* held in a fan (fanHand() in js/battle.js sets --fan, the offset from the middle): tilted, sinking towards the edges, overlapping.
+   rotate/translate, not transform, so the hover lift and the deal animation stay separate */
+.card.in-hand {
+  rotate: calc(var(--fan, 0) * var(--fan-tilt, 0deg));
+  translate: 0 calc(var(--fan, 0) * var(--fan, 0) * var(--fan-drop, 0px));
+  transition: transform 0.15s, filter 0.15s, rotate 0.15s, translate 0.15s;
+}
+.card.in-hand + .card.in-hand { margin-left: calc(-1 * var(--overlap, 0px)); }
+.card.in-hand:is(:hover:not(.unplayable), .selected) { rotate: 0deg; translate: 0; z-index: 2; }
 .card.in-hand.unplayable { filter: grayscale(0.7) brightness(0.7); }
 .card.in-hand.waiting { pointer-events: none; }
 .card.in-hand:hover:not(.unplayable) { transform: translateY(-16px) scale(1.06); }

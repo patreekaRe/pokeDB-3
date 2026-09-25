@@ -46,6 +46,7 @@ export function initBattle() {
   // tapping the dimmed battle around a picked card, or Escape, puts it back
   $('card-focus').addEventListener('click', (e) => { if (!e.target.closest('.focus-card, .focus-play')) cancelPick(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
+  addEventListener('resize', () => { if (battle) fanHand(); });
 }
 
 /** Leave the battle without finishing it (used when you abandon a run). */
@@ -589,6 +590,21 @@ function shuffle(list) {
    PART 2: DRAWING THE SCREEN
    ============================================================ */
 
+/**
+ * The sprite files share one pixel scale (Pidgey is 48px, Charizard 100px), so size each by its file
+ * instead of stretching all to one box: --size = (longest side / 64)^lean * times, clamped, then * stage.
+ * Your Pokémon's base size is bigger than the enemy's, since it stands nearer.
+ */
+function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
+  const apply = () => {
+    if (!img.naturalWidth) return;
+    const f = Math.pow(Math.max(img.naturalWidth, img.naturalHeight) / 64, lean) * times;
+    target.style.setProperty('--size', (Math.min(max, Math.max(min, f)) * stage).toFixed(3));
+  };
+  img.onload = apply;
+  if (img.complete) apply();
+}
+
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   const b = battle;
@@ -597,6 +613,9 @@ function setupBattleScreen() {
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').dataset.stage = String(b.stage);
   $('player-sprite').classList.remove('defeated', 'lunge', 'hit');
+  // legendaries keep one sprite, so they grow by stage like the map sprites; the others' files already grow
+  const oneSprite = b.starter.line.every(form => form.id.replace(/-shiny$/, '') === b.starter.line[0].id);
+  sizeSprite($('player-sprite'), 0.5, 1.1, 0.75, 1.25, oneSprite ? [0.78, 0.9, 1][b.stage] : 1);
   resetIntro();
 
   const img = $('enemy-img');
@@ -606,6 +625,8 @@ function setupBattleScreen() {
   const box = $('enemy-portrait-box');
   box.classList.remove('defeated', 'hit', 'attacking');
   box.classList.toggle('sprite', !b.def.art);
+  if (b.def.art) img.style.removeProperty('--size'), box.style.removeProperty('--size');
+  else sizeSprite(img, 0.6, 1, 0.7, 1.3, 1, box);
   box.classList.toggle('elite', b.kind === 'elite');
   box.classList.toggle('boss', b.kind === 'boss');
   box.title = b.def.description;
@@ -747,7 +768,26 @@ function renderHand() {
     });
     box.append(node);
   });
+  fanHand();
   renderFocus();
+}
+
+/** Fans the hand in a gentle arc, like cards held in a hand: each overlaps the last a little,
+    more as the hand grows so it still fits, and only scrolls sideways past ~10 cards. */
+function fanHand() {
+  const box = $('hand');
+  const cards = [...box.children];
+  const n = cards.length;
+  if (!n || !box.clientWidth) return;
+  const w = cards[0].offsetWidth;
+  const pad = getComputedStyle(box);
+  const room = box.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight) - 16;   // the tilted end cards stick out a little
+  const step = n > 1 ? Math.max(w * 0.3, Math.min(w * 0.88, (room - w) / (n - 1))) : w;
+  const edge = (n - 1) / 2;
+  box.style.setProperty('--overlap', `${w - step}px`);
+  box.style.setProperty('--fan-tilt', `${edge ? Math.min(2.5, 9 / edge) : 0}deg`);
+  box.style.setProperty('--fan-drop', `${edge ? Math.min(3, 14 / (edge * edge)) : 0}px`);
+  cards.forEach((card, i) => card.style.setProperty('--fan', i - edge));
 }
 
 /* ---------- picking a card: the first tap blows it up, the second plays it ---------- */

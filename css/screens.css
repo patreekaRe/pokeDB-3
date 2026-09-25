@@ -652,7 +652,8 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 @keyframes intentPop { from { transform: translateY(8px) scale(0.3); opacity: 0; } 60% { transform: translateY(-3px) scale(1.15); opacity: 1; } }
 
 .enemy-portrait {
-  width: clamp(110px, 20vh, 190px);
+  --base: clamp(92px, 16vh, 160px);
+  width: calc(var(--base) * var(--size, 1));
   aspect-ratio: 1;
   border-radius: 22px;
   overflow: hidden;
@@ -680,13 +681,15 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 /* Your Pokémon grows as it evolves: the first form is drawn at 78% and the middle one at 90% of its final
    size, scaled from its feet. `scale` stacks with the attack/hit/evolve animations' transforms and leaves
    the layout alone, so nothing around the sprite moves. */
-:is(#player-sprite, .run-sprite, .map-trainer, .evolve-art img) { scale: var(--grow, 1); transform-origin: 50% 100%; }
-:is(#player-sprite, .run-sprite, .map-trainer, .evolve-art img)[data-stage="0"] { --grow: 0.78; }
-:is(#player-sprite, .run-sprite, .map-trainer, .evolve-art img)[data-stage="1"] { --grow: 0.9; }
+:is(.run-sprite, .map-trainer, .evolve-art img) { scale: var(--grow, 1); transform-origin: 50% 100%; }
+:is(.run-sprite, .map-trainer, .evolve-art img)[data-stage="0"] { --grow: 0.78; }
+:is(.run-sprite, .map-trainer, .evolve-art img)[data-stage="1"] { --grow: 0.9; }
 #player-sprite {
-  /* sized from the window height so it fits on short screens too */
-  width: clamp(96px, 21vh, 230px);
-  height: auto;
+  /* sized from the window height so it fits on short screens too; --size (sizeSprite() in js/battle.js) scales it by the file's real size */
+  width: calc(clamp(96px, 21vh, 230px) * var(--size, 1));
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: 50% 100%;
   max-width: 92%;
   filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5));
 }
@@ -912,16 +915,15 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .hand {
   --hand-card-w: clamp(112px, 12vw, 148px);
   display: flex;
-  gap: 12px;
-  padding: 18px 6px 6px;
+  padding: 18px 6px 22px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
-  min-height: calc(var(--hand-card-w) * 1.48 + 24px);
+  min-height: calc(var(--hand-card-w) * 1.48 + 40px);
 }
 .hand > :first-child { margin-left: auto; }
 .hand > :last-child  { margin-right: auto; }
 /* a hovered card lifts 16px and grows 6%, and the hand scrolls sideways (so it clips): leave room above it with a mouse */
-@media (hover: hover) { .hand { padding-top: calc(22px + var(--hand-card-w) * 0.06); min-height: calc(var(--hand-card-w) * 1.54 + 28px); } }
+@media (hover: hover) { .hand { padding-top: calc(22px + var(--hand-card-w) * 0.06); min-height: calc(var(--hand-card-w) * 1.54 + 44px); } }
 @media (hover: none) { .card.in-hand:hover:not(.unplayable):not(.selected) { transform: none; } }   /* a tap leaves :hover stuck on touch screens; the picked card lifts on its own (.selected) */
 
 .result h2 { font-size: 1.8rem; text-align: center; }
@@ -954,15 +956,15 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .nameplate-title strong { font-size: 0.85rem; }
   .badge { width: 30px; height: 30px; font-size: 0.95rem; }
   .badges { min-height: 32px; gap: 6px; }
-  .enemy-portrait { width: clamp(96px, 16vh, 140px); }
-  .hand { --hand-card-w: 108px; gap: 8px; }
+  .enemy-portrait { --base: clamp(80px, 13vh, 118px); }
+  .hand { --hand-card-w: 108px; }
   .fan-note { font-size: 0.64rem; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
   .battle-log { width: 96%; font-size: 0.85rem; }
 }
 
 /* Short windows (small laptops): make the battle scene a little more compact */
 @media (max-height: 760px) and (min-width: 721px) {
-  .enemy-portrait { width: clamp(90px, 17vh, 190px); }
+  .enemy-portrait { --base: clamp(76px, 14vh, 160px); }
   .hand { --hand-card-w: clamp(96px, 17vh, 148px); }
 }
 
@@ -1410,7 +1412,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* ---------- enemy portraits: pixel sprites, elites and bosses ---------- */
 /* pixel sprites stand in the scene frameless, like your Pokémon; the glow marks elites and bosses */
 .enemy-portrait.sprite { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
-.enemy-portrait.sprite img { object-fit: contain; filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+.enemy-portrait.sprite img { object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.sprite.elite img { filter: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.sprite.boss img  { filter: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.elite:not(.sprite) { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 30px #ff3b3b, 0 10px 24px rgba(0, 0, 0, 0.6); }
@@ -1432,7 +1434,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .nameplate { padding: 4px 7px 4px; gap: 2px; }
   .nameplate-title strong { font-size: 0.78rem; }
   .nameplate .gb-hp-num { font-size: 0.75rem; }
-  .enemy-portrait { width: clamp(84px, 15vh, 120px); min-height: 0; }   /* min-height: 0 keeps a tall sprite's box square */
+  .enemy-portrait { --base: clamp(70px, 12.5vh, 100px); min-height: 0; }   /* min-height: 0 keeps a tall sprite's box square */
   .player-zone { padding-bottom: 4px; }
   #player-plate { margin-bottom: 4px; }
   .enemy-zone { gap: 3px; }

@@ -313,6 +313,11 @@ In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
 up (`zoomable()` / `zoomCard()` in `js/ui.js`); any tap or Escape closes it,
 and inside a dialog Escape closes only the zoom.
+The hand is held in a fan (`fanHand()` in `js/battle.js`, rerun on resize): cards
+overlap, tilt and sink towards the ends, StS-style, squeezing closer as the hand
+grows so ~10 fit before it scrolls. It uses the `rotate`/`translate` properties so
+the hover lift and deal animation (`transform`) stay separate; a hovered or picked
+card straightens and comes to the front.
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first
@@ -321,10 +326,16 @@ big copy at the bottom middle in `#card-focus`, a dimmed full-screen layer;
 tapping that big card plays it, tapping the dimmed area or Escape cancels
 (`cancelPick()`), and tapping another hand card switches. The pick clears
 itself whenever the battle is busy or the card leaves the hand.
-Your Pokémon grows as it evolves: its sprites (battle, map card, map
+Your Pokémon grows as it evolves: its sprites (map card, map
 trainer, evolve pop-up) carry `data-stage`, and CSS scales stage 0 to 78% and
 stage 1 to 90% with the `scale` property (from the feet), so the attack and
-evolve animations' transforms and the layout are untouched. The deck
+evolve animations' transforms and the layout are untouched.
+In battle, both sprites are sized from their GIF files instead (`sizeSprite()` in
+`js/battle.js` sets `--size`): the Showdown sprites share one pixel scale, so
+Pidgey (48px) is drawn small and Snorlax big rather than all filling one box. The
+curve is softened and clamped, and the enemy's base size is smaller than yours
+because it stands further back (the user's call). Legendaries, which reuse one
+sprite, get the 78/90% stage steps folded into `--size`. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
 Every screen is set in a pixel-art scene per biome *and* fight kind
