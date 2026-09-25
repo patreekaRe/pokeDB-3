@@ -382,7 +382,6 @@ function blockClink(ac) {
   const buffer = ac.createBuffer(1, length, rate);
   const out = buffer.getChannelData(0);
   const ring = [[2093, 0.16], [3170, 0.1], [4060, 0.06]];
-  let peak = 0;
   for (let i = 0; i < length; i++) {
     const t = i / rate;
     const tick = (Math.random() * 2 - 1) * Math.exp(-t / 0.004) * 0.5;
@@ -391,10 +390,8 @@ function blockClink(ac) {
     const metal = ring.reduce((sum, [f, a]) => sum + Math.sin(2 * Math.PI * f * t) * a, 0) * Math.exp(-t / 0.09);
     const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));   // no click at either end
     out[i] = (tick + blip + metal) * fade;
-    peak = Math.max(peak, Math.abs(out[i]));
   }
-  for (let i = 0; i < length; i++) out[i] *= 0.9 / peak;
-  return buffer;
+  return normalize(buffer, 0.2);   // it used to peak at 0.9, about 4x the MP3s (the user found it far too loud)
 }
 
 /** Scale a synth buffer so its loudest sample is `peak`: the MP3s peak around 0.1-0.25, so synths sit with them. */

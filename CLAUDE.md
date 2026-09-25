@@ -719,7 +719,7 @@ for potions or other heals. Sound effects are decoded buffers played with `playS
 add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and drop the MP3 in `assets/audio/sfx/`.
 `start`/`length` play only part of a file with a short fade-out, so a long or late-starting
 effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` is
-`blockClink()` at the end of `js/audio.js`, an 8-bit shield clink (the user swapped their MP3 for a generated one).
+`blockClink()` at the end of `js/audio.js`, an 8-bit shield clink (the user swapped their MP3 for a generated one), normalized to 0.2 like the other synths (at 0.9 it was far too loud).
 The user supplies the effect MP3s themselves.
 The rest of `SOUNDS` and where each plays: `card` (`playCard()`; at 0.3 gain like `confirm`, the user's call), `hit`
 (damage gets through, either side; `hitSound()` in `js/battle.js` plays `hit-super` /
