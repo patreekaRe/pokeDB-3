@@ -649,6 +649,15 @@ later. Each icon is a 12x12 pixel map in `ICONS` using the letters in
 as a plain emoji. Tooltips (`title`) can't hold SVG and keep the emoji. Don't
 read an emoji back out of the page with `textContent`: it's been replaced.
 
+Items and relics are the exception: they show real PokéSprite item sprites
+(`assets/items/<id>.png`, 32x32, from github.com/msikma/pokesprite, credited in
+About) through `itemSprite()` in `js/ui.js`, which falls back to the emoji if the
+file is missing. A card can use one as art with `sprite` (the Potion card does),
+and the Mart counter clutter is PokéSprite items too. Their emoji stay in the data
+for tooltips and event text, and must not be swapped globally: many are shared
+(🔥 is the Fire type, 💪 the strength badge). A new item or relic needs its PNG
+named after its id.
+
 ## Music
 
 `js/audio.js` plays one looping track at a time from `assets/audio/`:

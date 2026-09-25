@@ -114,7 +114,7 @@ export function makeCard(card, options = {}) {
   // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
   const longest = Math.max(...card.name.split(/[ -]/).map(w => w.length));
   if (longest > 9) name.style.setProperty('--name-fit', (9.6 / longest).toFixed(3));
-  const art = el('div', 'card-art', card.art);
+  const art = card.sprite ? itemSprite({ id: card.sprite, icon: card.art }, 'card-art') : el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
   const text = el('p', 'card-text');
   const words = keywords(card);
@@ -169,11 +169,26 @@ export function zoomable(node, card, stage) {
   return node;
 }
 
+/**
+ * An item or relic's PokéSprite image (assets/items/<id>.png), in a span of the given class.
+ * Sized in em like the pixel icons; falls back to its emoji if the file is missing.
+ */
+export function itemSprite(thing, className = '') {
+  const box = el('span', className);
+  const img = el('img', 'item-sprite');
+  img.src = `assets/items/${thing.id}.png`;
+  img.alt = '';
+  img.draggable = false;
+  img.onerror = () => box.replaceChildren(thing.icon || '');
+  box.append(img);
+  return box;
+}
+
 /** A relic tile: icon, name and what it does. */
 export function makeRelic(relic) {
   const node = el('div', 'relic');
   node.title = `${relic.name}: ${relic.text}`;
-  node.append(el('span', 'relic-icon', relic.icon), el('strong', 'relic-name', relic.name), el('span', 'relic-text', relic.text));
+  node.append(itemSprite(relic, 'relic-icon'), el('strong', 'relic-name', relic.name), el('span', 'relic-text', relic.text));
   return node;
 }
 

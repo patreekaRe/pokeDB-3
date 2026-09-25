@@ -206,10 +206,10 @@ function finishLine() {
 export const cardOption = (card, stage, onPick, count = 1) => ({ node: makeCard(card, { stage, count }), onPick });
 export const relicOption = (relic, onPick) => ({ node: makeRelic(relic), onPick });
 
-/** A simple tile with an icon and text (used for resting). */
+/** A simple tile with an icon (an emoji, or an element such as itemSprite()) and text. */
 export function textOption(icon, title, text, onPick) {
   const node = el('div', 'relic');
-  node.append(el('span', 'relic-icon', icon), el('strong', 'relic-name', title), el('span', 'relic-text', text));
+  node.append(typeof icon === 'string' ? el('span', 'relic-icon', icon) : icon, el('strong', 'relic-name', title), el('span', 'relic-text', text));
   return { node, onPick };
 }
 

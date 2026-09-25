@@ -28,7 +28,7 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, sayLines, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps } from './scene.js';
 
@@ -299,7 +299,7 @@ function renderRelicList() {
     const row = el('div', 'howto-li');
     const text = el('span', 'howto-li-text');
     text.append(el('b', '', relic.name), el('small', '', relic.text));
-    row.append(el('span', 'howto-node relic-node', relic.icon), text);
+    row.append(itemSprite(relic, 'howto-node'), text);
     return row;
   });
   $('relics-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
@@ -334,7 +334,7 @@ function renderItemList() {
       afterBagChange();
     });
     actions.append(use, toss);
-    row.append(el('span', 'howto-node relic-node', item.icon), text, actions);
+    row.append(itemSprite(item, 'howto-node'), text, actions);
     return row;
   });
   $('items-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
@@ -883,7 +883,7 @@ const EVENT_CHOICES = {
     const collect = () => { run.money += money; setMoney(run.money); toast(`The fans gave you ₽${money}!`, 'ok'); showMap(); };
     if (healthy) return { options: [textOption('💴', 'Show off', `The fans are thrilled! They give you ₽${money}.`, collect)] };
     if (run.items.length < ITEM_SLOTS) {
-      return { options: [textOption(item.icon, 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
+      return { options: [textOption(itemSprite(item, 'relic-icon'), 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
         run.items.push(item.id);
         toast(`Put the ${item.name} in the Bag.`, 'ok');
         showMap();
@@ -1055,10 +1055,12 @@ function martRoom() {
   });
 
   // a Bag-pocket sign hanging over the items and the relics shelves
-  for (const [group, icon, text] of [['items', '🧪', 'ITEMS'], ['relics', '💎', 'RELICS']]) {
+  for (const [group, icon, text] of [['items', itemSprite({ id: 'potion' }), 'ITEMS'], ['relics', '💎', 'RELICS']]) {
     const sign = el('span', `shelf-sign ${group}`);
     sign.setAttribute('aria-hidden', 'true');
-    sign.append(el('span', 'shelf-sign-icon', icon), el('span', 'shelf-sign-text', text));
+    const iconBox = typeof icon === 'string' ? el('span', 'shelf-sign-icon', icon) : icon;
+    iconBox.classList.add('shelf-sign-icon');
+    sign.append(iconBox, el('span', 'shelf-sign-text', text));
     document.querySelector(`#reward-options .group-${group}`)?.prepend(sign);
   }
 
@@ -1068,7 +1070,7 @@ function martRoom() {
   clerk.alt = 'Kecleon, the shopkeeper';
   const clutter = el('span', 'mart-clutter');
   clutter.setAttribute('aria-hidden', 'true');
-  for (const icon of ['🔔', '🥤', '🧴', '⚫', '🎁']) clutter.append(el('span', '', icon));
+  for (const id of ['repel', 'super-potion', 'rare-candy', 'potion', 'revive', 'escape-rope']) clutter.append(itemSprite({ id }));
   $('reward-options').append(clerk, clutter);
 
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles

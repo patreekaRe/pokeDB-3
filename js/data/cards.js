@@ -43,6 +43,7 @@
                 when your starter evolves (see evolutionCardsFor below).
      maxCopies  overrides MAX_COPIES for this one card (evolution cards
                 are capped at 1 copy - they're meant to be a signature move).
+     sprite     an assets/items/ file name (no .png) drawn as the art in place of the emoji.
 
    rarity: 'common' (default), 'uncommon' or 'rare'. It decides how
    often a card shows up as a reward, and in which biome.
@@ -67,7 +68,7 @@ const NEUTRAL_CARDS = [
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', effects: { guard: true } },
   // Potion is reward-only now (no starter begins with a free heal) and exhausts,
   // so it's a one-time save rather than a card you can loop every turn.
-  { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', effects: { heal: 10 }, exhaust: true },
+  { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },
   // The free cards were picked over everything else, so the two strongest now work once per fight.
   { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', effects: { weaken: true }, exhaust: true },
   { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', effects: { nextEnergy: 1 } },
