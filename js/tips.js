@@ -95,12 +95,15 @@ function leave() {
   hovered = null;
 }
 
-function showTip(target, pin) {
+/** Pin a note over an element, in the tapped-hint box: what a toast used to say (a locked starter's how-to-unlock). */
+export const tipAt = (target, text) => showTip(target, true, text);
+
+function showTip(target, pin, text = hintOf(target)) {
   owner = target;
   pinned = pin;
   // a modal <dialog> sits in the top layer, above anything outside it
   (target.closest('dialog[open]') || document.body).append(tip);
-  tip.textContent = hintOf(target);
+  tip.textContent = text;
   tip.hidden = false;
 
   const box = target.getBoundingClientRect();

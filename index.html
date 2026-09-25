@@ -231,6 +231,8 @@
         <h2 class="biome-sign" id="biome-name"></h2>
       </div>
       <div class="map-wrap"><div class="map" id="map"></div></div>
+      <!-- news from the run (an event's outcome, a used item...), told in the same text box as the reward screens (rewards.js tell()) -->
+      <div class="map-bottom"><div class="reward-log" id="map-log" hidden><span id="map-log-text" aria-hidden="true"></span><span class="sr-only" id="map-log-live" aria-live="polite"></span></div></div>
     </section>
 
     <!-- ============ 4. REWARDS (choose one) ============ -->
@@ -303,7 +305,6 @@
     <button class="link-btn" id="credits-link">Credits</button>
   </footer>
 
-  <div id="toast" class="toast" role="status"></div>
 
   <!-- ============ DIALOGS ============ -->
   <dialog id="help-dialog" class="dialog howto-dialog">
@@ -471,27 +472,35 @@
 
   <!-- The shop floats on top of whatever screen you're on (map, battle, a
        reward choice, anywhere) - closing it never navigates you away, so
-       tapping the Game Corner button to peek at it mid-run can't get you "stuck". -->
-  <dialog id="shop-dialog" class="dialog wide-dialog">
-    <div class="shop-head">
-      <h2 class="gc-sign"><span class="gc-icon" aria-hidden="true">🎰</span><span class="gc-title">Game Corner</span><span class="gc-icon" aria-hidden="true">🎰</span></h2>
-      <p class="gc-ribbon">Prize counter</p>
-      <div class="coin-balance">💰 <span class="coin-value">0</span> PokéCoins</div>
+       tapping the Game Corner button to peek at it mid-run can't get you "stuck".
+       It's an arcade cabinet: the prizes are on its screen, picked with the joystick (js/shop.js). -->
+  <dialog id="shop-dialog" class="dialog gc-cabinet" aria-label="Game Corner">
+    <div class="gc-marquee">
+      <span class="gc-grille"></span>
+      <h2 class="gc-sign"><span class="gc-icon" aria-hidden="true">🎰</span><span class="gc-title">Game<br>Corner</span></h2>
+      <span class="gc-grille"></span>
     </div>
-
-    <div class="panel">
-      <h3>Skins</h3>
-      <p class="hint">A new look to play as. Same moves as their type - this is purely cosmetic.</p>
-      <div id="shop-skins" class="shop-grid skins"></div>
+    <div class="gc-bezel">
+      <div class="gc-crt">
+        <div class="gc-crt-head"><span id="gc-section"></span><span class="gc-coins">💰 <span class="coin-value">0</span></span></div>
+        <div id="gc-pick" class="gc-pick" aria-live="polite"></div>
+        <div id="gc-roster" class="gc-roster"></div>
+      </div>
     </div>
-
-    <div class="panel">
-      <h3>Permanent perks</h3>
-      <p class="hint">Apply to every future run, forever.</p>
-      <div id="shop-passives" class="shop-grid"></div>
+    <div class="gc-deck">
+      <div id="gc-stick" class="gc-stick">
+        <button type="button" class="gc-pad up" data-dir="0,-1" aria-label="Up: Pokémon or Perks"></button>
+        <button type="button" class="gc-pad left" data-dir="-1,0" aria-label="Left"></button>
+        <button type="button" class="gc-pad right" data-dir="1,0" aria-label="Right"></button>
+        <button type="button" class="gc-pad down" data-dir="0,1" aria-label="Down: Pokémon or Perks"></button>
+        <span class="gc-shaft" aria-hidden="true"></span>
+        <span id="gc-ball" class="gc-ball"></span>
+      </div>
+      <div class="gc-buttons">
+        <span class="gc-btn-wrap"><button type="button" id="gc-buy" class="gc-btn buy"></button><span id="gc-buy-label" class="gc-btn-label">Buy</span></span>
+        <form method="dialog" class="gc-btn-wrap"><button class="gc-btn exit" aria-label="Close the Game Corner"></button><span class="gc-btn-label">Exit</span></form>
+      </div>
     </div>
-
-    <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 
   <dialog id="confirm-dialog" class="dialog small-dialog">

@@ -340,27 +340,6 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   text-shadow: 0 1px 2px #000;
 }
 
-/* ---------- toast ---------- */
-.toast {
-  position: fixed;
-  top: calc(var(--topbar-h) + 10px);
-  left: 50%;
-  transform: translate(-50%, -20px);
-  max-width: 90vw;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: #23294f;
-  border: 1px solid var(--panel-edge);
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 100;
-}
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-.toast.ok   { background: #1e6b43; }
-.toast.warn { background: #7a5212; }
-
 /* ---------- tap-to-read hint (js/tips.js): a title's text, for touch screens that can't hover ---------- */
 /* a mini copy of the battle's Gold/Silver text box; it stays up until the next tap anywhere */
 .tap-tip {
@@ -440,10 +419,9 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 :is(.dialog, .panel) h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
 :is(.dialog, .panel) h3 { color: #283060; }
 :is(.dialog, .panel) :not(.card, .card *) { text-shadow: none; }
-:is(.dialog, .panel) :is(.hint, .shop-item-text) { color: var(--muted); }
+:is(.dialog, .panel) .hint { color: var(--muted); }
 .dialog .howto-prev { color: var(--ink); background: var(--panel); }
 .dialog .howto-dot { background: var(--panel-edge); }
-.dialog .shop-item { border-radius: var(--round-sm); border: 3px solid var(--panel-edge); background: var(--win-tile); color: var(--ink); box-shadow: 2px 2px 0 var(--win-shadow); }
 .dialog-actions {
   display: flex;
   gap: 10px;
@@ -504,3 +482,25 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   50% { transform: translateY(-8%); }
 }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Scrollbars: chunky square Game Boy-style bars instead of the browser's own (the user's call). A light grey
+   bevelled thumb in a dark slot on the page, and in a parchment slot inside windows. Chrome ignores the
+   ::-webkit-scrollbar rules once scrollbar-color is set, so that's only for browsers without them (Firefox). */
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: #303038; box-shadow: inset 0 0 0 2px #181010; }
+::-webkit-scrollbar-thumb {
+  background: #c8c8d0;
+  border: 2px solid #181010;
+  box-shadow: inset 2px 2px 0 #f8f8f8, inset -2px -2px 0 #888890;
+}
+::-webkit-scrollbar-thumb:hover { background: #e0e0e8; }
+::-webkit-scrollbar-thumb:active { background: #f8d030; box-shadow: inset 2px 2px 0 #fff0a0, inset -2px -2px 0 #c88810; }
+::-webkit-scrollbar-corner { background: transparent; }
+:is(.dialog, .panel, .bag) ::-webkit-scrollbar-track, :is(.dialog, .panel)::-webkit-scrollbar-track {
+  background: var(--win-panel);
+  box-shadow: inset 0 0 0 2px var(--win-edge);
+}
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-color: #c8c8d0 #303038; }
+  :is(.dialog, .panel, .bag), :is(.dialog, .panel, .bag) * { scrollbar-color: #888890 var(--win-panel); }
+}

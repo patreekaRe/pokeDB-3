@@ -82,6 +82,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const news = coins && !coins.told;
   if (coins) coins.told = true;
   const lines = [
+    ...notes.splice(0),
     ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins${coins.disadvantage ? ' for beating a type you\'re weak to' : ''}!`, `You got ₽${coins.money} for winning!`] : []),
     ...[].concat(sub),   // sub is one line, or a list of them
   ];
@@ -168,26 +169,42 @@ function closeFocus() {
 /* The reward screen's text box: types each line out like the battle log, then waits
    for you, like the games: a tap finishes the line being typed, or moves on to the
    next one, and a tap on the last one closes the box. The ▼ blinks while there's more to read. */
+// The map has its own copy of the box (#map-log), so `box` names which one to use.
 const TYPE_MS = 18;
-let say = { lines: [], at: 0, typing: 0 };
+let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
-export function sayLines(lines) {
+export function sayLines(lines, boxId = 'reward-log') {
   clearInterval(say.typing);
-  say = { lines, at: 0, typing: 0 };
-  $('reward-log').hidden = !lines.length;
-  $('reward-log').onclick = () => {
+  say = { lines, at: 0, typing: 0, box: boxId };
+  const box = $(boxId);
+  box.hidden = !lines.length;
+  box.onclick = () => {
+    if (say.box !== boxId) return;
     if (say.typing) return finishLine();
     if (say.at < say.lines.length - 1) showLine(say.at + 1);
-    else $('reward-log').hidden = true;   // like the games, a tap on the last line closes the box
+    else box.hidden = true;   // like the games, a tap on the last line closes the box
   };
   if (lines.length) showLine(0);
 }
 
+/* News from the run (a card learned, a Mart buy, an event's outcome) in place of pop-up toasts: told in the next
+   text box, like the games. On the map it's told there and then; otherwise it waits for the next screen's box. */
+const notes = [];
+export function tell(line) {
+  notes.push(line);
+  if (document.body.dataset.screen === 'map-screen') showNotes();
+}
+/** Tell whatever news is waiting in the map's text box (or put the box away if there's none). */
+export function showNotes() {
+  sayLines(notes.splice(0), 'map-log');
+}
+export const dropNotes = () => { notes.length = 0; };
+
 function showLine(i) {
   say.at = i;
-  const box = $('reward-log');
+  const box = $(say.box);
   const line = say.lines[i];
-  $('reward-log-live').textContent = line;
+  $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finishLine();
   const letters = Array.from(line);
@@ -197,7 +214,7 @@ function showLine(i) {
   say.typing = setInterval(() => {
     shown += 2;
     rest.textContent = letters.slice(shown).join('');
-    $('reward-log-text').replaceChildren(letters.slice(0, shown).join(''), rest);
+    $(`${say.box}-text`).replaceChildren(letters.slice(0, shown).join(''), rest);
     if (shown >= letters.length) finishLine();
   }, TYPE_MS);
 }
@@ -205,8 +222,8 @@ function showLine(i) {
 function finishLine() {
   clearInterval(say.typing);
   say.typing = 0;
-  $('reward-log-text').textContent = say.lines[say.at];
-  $('reward-log').classList.toggle('more', say.at < say.lines.length - 1);
+  $(`${say.box}-text`).textContent = say.lines[say.at];
+  $(say.box).classList.toggle('more', say.at < say.lines.length - 1);
 }
 
 /** Ready-made option tiles. */

@@ -1,6 +1,6 @@
 /* ============================================================
    ui.js  -  small helpers every screen shares:
-   switching screens, toast messages, dialogs, and the card element.
+   switching screens, dialogs, and the card element.
    ============================================================ */
 
 import { TYPES, describe, keywords } from './data/cards.js';
@@ -56,17 +56,6 @@ export function setTheme(type) {
 export function refreshCoins() {
   const coins = getSave().coins;
   for (const node of document.querySelectorAll('.coin-value')) node.textContent = String(coins);
-}
-
-/* ---------- toast (little message at the top) ---------- */
-
-let toastTimer;
-export function toast(message, kind = '') {
-  const t = $('toast');
-  t.textContent = message;
-  t.className = `toast show ${kind}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = 'toast'; }, 2200);
 }
 
 /* ---------- dialogs (built on the <dialog> element) ---------- */

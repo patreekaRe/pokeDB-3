@@ -26,9 +26,9 @@ import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MAR
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, sayLines, cardOption, relicOption, itemOption, textOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -159,6 +159,7 @@ export function continueRun(saved) {
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
 export function beginRun(starter, level = 0) {
+  dropNotes();
   const passives = getSave().passives;
   const startHp = BASE_HP + passives.hpBoost * 5;   // shop passive: Max HP Boost
 
@@ -188,7 +189,7 @@ export function beginRun(starter, level = 0) {
 
   if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
     const relic = randomStartingRelic();
-    if (relic) { run.relics.push(relic.id); toast(`Starting relic: ${relic.name}!`, 'ok'); }
+    if (relic) { run.relics.push(relic.id); tell(`Starting relic: ${relic.name}!`); }
   }
 
   updateSave(d => { d.stats.runsStarted += 1; });
@@ -241,13 +242,14 @@ function showMap() {
 
   renderRelicList();
   renderItemList();
-  closeBag();
+  closeBag(true);
   checkpoint();
   renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage });
   showScreen('map-screen');
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
   showScene(biome.id);
   playMusic(`map${run.biome + 1}`);
+  showNotes();
 }
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
@@ -280,7 +282,8 @@ function openBag() {
   showPocket(pocket);
 }
 
-function closeBag() {
+function closeBag(quiet = false) {
+  if (!quiet && !$('bag').hidden) playSound('bag');   // closing sounds just like opening (the user's call)
   $('bag').hidden = true;
   $('bag-btn').setAttribute('aria-expanded', 'false');
 }
@@ -324,7 +327,7 @@ function renderItemList() {
     use.type = 'button';
     use.disabled = !(inBattle || (onMap && item.map && run.hp < run.maxHp));
     use.addEventListener('click', () => {
-      if (inBattle) { closeBag(); return pickItem(index); }
+      if (inBattle) { closeBag(true); return pickItem(index); }
       useItemOnMap(index);
     });
     const toss = el('button', 'btn item-toss', 'Toss');
@@ -332,7 +335,7 @@ function renderItemList() {
     toss.disabled = !onMap;
     toss.addEventListener('click', () => {
       run.items.splice(index, 1);
-      toast(`Tossed the ${item.name}.`);
+      tell(`Tossed the ${item.name}.`);
       afterBagChange();
     });
     actions.append(use, toss);
@@ -352,7 +355,7 @@ function useItemOnMap(index) {
   run.items.splice(index, 1);
   setHpBar('run', run.hp, run.maxHp);
   playSound('potion', 'item');
-  toast(`Used ${item.name}: healed ${healed} HP.`, 'ok');
+  tell(`Used ${item.name}: healed ${healed} HP.`);
   afterBagChange();
 }
 
@@ -388,7 +391,7 @@ async function fight(node) {
 function afterFight(node, result) {
   if (result.fled) {
     run.hp = result.hp;
-    toast('Got away safely!', 'ok');
+    tell('Got away safely!');
     return showMap();
   }
   if (!result.won) return endRun(false);
@@ -413,7 +416,6 @@ function afterFight(node, result) {
     setMoney(run.money);
     updateSave(d => { d.stats.enemiesDefeated += 1; });
     refreshCoins();
-    toast(`+${run.pendingCoins.coins} 💰  +₽${prize} 💴`, 'ok');
     playSound('coins');
     run.pendingCoins = null;
   };
@@ -489,7 +491,7 @@ function learnOption(card, next) {
   return {
     ...cardOption(card, run.stage, () => {
       run.deck.push(card.id);
-      toast(`${card.name} added to your deck!`, 'ok');
+      tell(`${card.name} added to your deck!`);
       next();
     }),
     ask: `Add ${card.name} to your deck?`,
@@ -516,7 +518,7 @@ function showRelics(title, relics, next) {
 
 function gainRelic(relic, next) {
   run.relics.push(relic.id);
-  toast(`Found ${relic.name}!`, 'ok');
+  tell(`Found ${relic.name}!`);
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
   next();
 }
@@ -526,7 +528,7 @@ function offerItem(item, next) {
   const full = run.items.length >= ITEM_SLOTS;
   const take = (index) => () => {
     if (index === undefined) run.items.push(item.id); else run.items[index] = item.id;
-    toast(`Put the ${item.name} in the Bag.`, 'ok');
+    tell(`Put the ${item.name} in the Bag.`);
     next();
   };
   showChoice({
@@ -584,7 +586,6 @@ function restSite() {
           sayLines([`${stageName(run.starter, run.stage)} is feeling much better! Come back any time!`]);
           await sleep(2200);
           if (run !== thisRun) return;
-          toast(`Healed ${heal} HP.`, 'ok');
           showMap();
         },
       },
@@ -689,7 +690,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
     options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => ({
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1);
-        toast(`${card.name} was forgotten.`, 'ok');
+        tell(`${card.name} was forgotten.`);
         done();
       }, count),
       ask: `Forget ${card.name}?`,
@@ -772,13 +773,13 @@ const EVENT_CHOICES = {
     return { options: [
       textOption('💚', 'Eat the berries', `Heal ${heal} HP.`, () => {
         run.hp += heal;
-        toast(`Healed ${heal} HP.`, 'ok');
+        tell(`Healed ${heal} HP.`);
         showMap();
       }),
       textOption('❤️', 'Plant one', `Max HP +${grow}.`, () => {
         run.maxHp += grow;
         run.hp += grow;
-        toast(`Max HP +${grow}!`, 'ok');
+        tell(`Max HP +${grow}!`);
         showMap();
       }),
     ] };
@@ -799,7 +800,7 @@ const EVENT_CHOICES = {
     const canOne = run.deck.length > MIN_DECK;
     const canTwo = run.deck.length > MIN_DECK + 1;
     // the HP is only paid once the second move is actually forgotten; stopping after one is free
-    const second = () => forgetMove(showMap, () => { loseHp(hpCost); toast(`Lost ${hpCost} HP.`, 'warn'); showMap(); }, 'Stop at one (free)');
+    const second = () => forgetMove(showMap, () => { loseHp(hpCost); tell(`Lost ${hpCost} HP.`); showMap(); }, 'Stop at one (free)');
     return { options: [
       { ...textOption('📖', 'Forget a move', canOne ? 'Free: remove one card from your deck.' : `Your deck is at the minimum (${MIN_DECK} cards).`,
         () => forgetMove(back)), disabled: !canOne },
@@ -814,7 +815,7 @@ const EVENT_CHOICES = {
       textOption('⚫', 'Pick it up', 'It could be a relic. It could also explode.', () => {
         if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
-        toast(`💥 It was a Voltorb! It exploded for ${damage} damage.`, 'warn');
+        tell(`It was a Voltorb! It exploded for ${damage} damage.`);
         showMap();
       }),
     ] };
@@ -827,12 +828,12 @@ const EVENT_CHOICES = {
       textOption('♨️', 'Soak for hours', `Fully heal, but lose ${loss} max HP.`, () => {
         run.maxHp -= loss;
         run.hp = run.maxHp;
-        toast(`Fully healed. Max HP -${loss}.`, 'ok');
+        tell(`Fully healed. Max HP -${loss}.`);
         showMap();
       }),
       textOption('💚', 'A quick dip', `Heal ${dip} HP.`, () => {
         run.hp += dip;
-        toast(`Healed ${dip} HP.`, 'ok');
+        tell(`Healed ${dip} HP.`);
         showMap();
       }),
     ] };
@@ -847,14 +848,14 @@ const EVENT_CHOICES = {
       moneyOption('💴', `Pay ₽${toll}`, 'Hand over the toll and walk on.', toll, () => {
         run.money -= toll;
         setMoney(run.money);
-        toast(`The grunt took ₽${toll}.`, 'warn');
+        tell(`The grunt took ₽${toll}.`);
         showMap();
       }),
       textOption('⚔️', 'Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
       textOption('💨', 'Run for it', `Lose ${flee} HP getting away.`, () => {
         playSound('run-away');
         loseHp(flee);
-        toast(`Got away, but lost ${flee} HP.`, 'warn');
+        tell(`Got away, but lost ${flee} HP.`);
         showMap();
       }),
     ] };
@@ -877,7 +878,7 @@ const EVENT_CHOICES = {
         run.money -= cost;
         setMoney(run.money);
         if (state.luck < odds) return showRelics('Your wish came true!', relics, showMap);
-        toast('Plop. Nothing but ripples.', 'warn');
+        tell('Plop. Nothing but ripples.');
         showMap();
       });
       return { ...option, disabled: option.disabled || !relics.length };
@@ -888,13 +889,13 @@ const EVENT_CHOICES = {
     const healthy = run.hp > run.maxHp / 2;
     const item = ITEMS_BY_ID[event.tiredItem];
     const money = perBiome(healthy ? event.healthyMoney : event.tiredMoney);
-    const collect = () => { run.money += money; setMoney(run.money); toast(`The fans gave you ₽${money}!`, 'ok'); showMap(); };
+    const collect = () => { run.money += money; setMoney(run.money); tell(`The fans gave you ₽${money}!`); showMap(); };
     if (healthy) return { options: [textOption('💴', 'Show off', `The fans are thrilled! They give you ₽${money}.`, collect)] };
     if (run.items.length < ITEM_SLOTS) {
       return { options: [textOption(itemSprite(item, 'relic-icon'), 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
         run.items.push(item.id);
         playSound('item-get');
-        toast(`Put the ${item.name} in the Bag.`, 'ok');
+        tell(`Put the ${item.name} in the Bag.`);
         showMap();
       })] };
     }
@@ -930,7 +931,7 @@ function dayCare(trades, back) {
     sub: 'Choose a move to trade. A common comes back uncommon, and an uncommon comes back rare.',
     options: trades.map(({ card, count, gets }) => cardOption(card, run.stage, () => {
       run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
-      toast(`${card.name} was traded for ${gets.name}!`, 'ok');
+      tell(`${card.name} was traded for ${gets.name}!`);
       showMap();
     }, count)),
     skipLabel: 'Back',
@@ -949,7 +950,7 @@ function tutorCards(back, pay) {
     options: cards.map(card => cardOption(card, run.stage, () => {
       pay();
       run.deck.push(card.id);
-      toast(`${card.name} added to your deck.`, 'ok');
+      tell(`${card.name} added to your deck.`);
       showMap();
     })),
     skipLabel: 'Back',
@@ -1008,7 +1009,7 @@ function martRoom() {
     return ware(option, item.price, () => {
       item.sold = true;
       run.deck.push(card.id);
-      toast(`Bought ${card.name}.`, 'ok');
+      tell(`Bought ${card.name}.`);
       martRoom();
     }, { group: 'cards', name: card.name });
   });
@@ -1021,7 +1022,7 @@ function martRoom() {
     return ware({ ...option, disabled: bagFull }, item.price, () => {
       item.sold = true;
       run.items.push(found.id);
-      toast(`Bought a ${found.name}.`, 'ok');
+      tell(`Bought a ${found.name}.`);
       martRoom();
     }, { group: 'items', name: `the ${found.name}` });
   });
@@ -1031,7 +1032,7 @@ function martRoom() {
     return ware(relicOption(relic), item.price, () => {
       item.sold = true;
       run.relics.push(relic.id);
-      toast(`Bought ${relic.name}!`, 'ok');
+      tell(`Bought ${relic.name}!`);
       if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
       martRoom();
     }, { group: 'relics', name: `the ${relic.name}` });
@@ -1127,7 +1128,7 @@ function evolve(next) {
 function announceUnlocks() {
   for (const starter of checkAchievements()) {
     run.unlocks.push(starter);
-    toast(`🔓 Unlocked ${starter.line[0].name}!`, 'ok');
+    tell(`${starter.line[0].name} unlocked!`);
   }
 }
 
@@ -1135,10 +1136,10 @@ function endRun(won) {
   run.over = true;
   clearRunData();
 
+  let winCoins = 0;
   if (won) {
-    const winCoins = awardCoins(COIN_REWARDS.winBonus);
+    winCoins = awardCoins(COIN_REWARDS.winBonus);
     refreshCoins();
-    toast(`+${winCoins} 💰 (run complete!)`, 'ok');
 
     updateSave(d => {
       d.stats.runsWon += 1;
@@ -1163,8 +1164,10 @@ function endRun(won) {
     ? `${name} beat all three bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
     : `${name} fainted in Biome ${run.biome + 1} (${biome.name}) after ${run.fights} won fights. Try a different path or a different starter!`;
 
+  dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
   const lines = run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`);
+  if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(text => el('li', '', text)));
   list.hidden = lines.length === 0;

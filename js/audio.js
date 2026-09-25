@@ -46,7 +46,7 @@ const TRACKS = {
 // `synth` builds the sound in code instead of loading a file.
 const SOUNDS = {
   heal:  { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
-  card:  { url: 'assets/audio/sfx/card.mp3' },    // a card is played
+  card:  { url: 'assets/audio/sfx/card.mp3', gain: 0.3 },    // a card is played: as quiet as confirm, its twin (the user's call)
   confirm: { url: 'assets/audio/sfx/card.mp3', gain: 0.3 },  // any other window's confirm (Add to deck, Forget it, Yes...) and the menu blip: same file as card (the user's call), much quieter (the user found it too loud)
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
@@ -67,6 +67,7 @@ const SOUNDS = {
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
   shuffle:      { synth: shuffleRiffle },                     // the discard pile is shuffled back into the draw pile: made in code (the user's call)
+  stick:        { synth: stickTick },                         // the Game Corner's joystick moves the cursor: made in code (the user's call)
   thunder:      { url: 'assets/audio/sfx/thunder.mp3' },      // a lightning bolt in a boss's storm
   coins:        { url: 'assets/audio/sfx/buy.mp3' },          // a fight's PokéCoins and ₽ are paid out: the Mart's buy file (the user's call)
   door:         { url: 'assets/audio/sfx/event.mp3' },        // walking into a Poké Mart or Pokémon Center: the same sound as a ? room (the user's call)
@@ -117,8 +118,8 @@ let lastCue = -1;          // ctx time the latest effect started
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
 const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, .card-focus, .card-zoom, [title], [data-tip]';
-// ...except these back out (Back / Skip / Leave, No, a window's Close or ✕), so they blip `cancel`
-const CANCELS = '#reward-skip, #confirm-no, .sheet-close, form[method="dialog"] button';
+// ...except these back out (Back / Skip / Leave, No, a window's Close or ✕, a zoomed card), so they blip `cancel`
+const CANCELS = '#reward-skip, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {
   if (!ctx || !e.target.closest?.(CONTROLS)) return;
   const at = ctx.currentTime;
@@ -360,7 +361,7 @@ function stop(name) {
 function unlock() {
   const context = audioContext();
   context.resume();
-  preloadSounds('confirm', 'cancel');   // so the first blip isn't late waiting on a download (or a missing file's 404)
+  preloadSounds('confirm', 'cancel', 'bag');   // so the first blip isn't late waiting on a download (or a missing file's 404)
   if (current && !getSave().muted) fadeIn(current);
   // stay subscribed until sound really works: the context is running and the current track isn't stuck paused
   setTimeout(() => {
@@ -424,4 +425,18 @@ function shuffleRiffle(ac) {
     out[i] = (held * Math.min(tick, 1) * 0.6 + thup) * fade;
   }
   return normalize(buffer, 0.2);
+}
+
+/** The Game Corner's joystick: a short two-step square-wave cursor tick, like moving a menu cursor on an arcade screen. */
+function stickTick(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.06);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const pitch = t < 0.02 ? 1319 : 1760;
+    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.008));
+    out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.04) * fade;
+  }
+  return normalize(buffer, 0.12);
 }

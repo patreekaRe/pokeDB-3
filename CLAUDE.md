@@ -329,6 +329,16 @@ in place of the native tooltip: while hovered the `title` moves to
 `data-tip` and comes back on leaving. Taps and clicks on buttons and other controls are skipped, since tapping
 them already does something (hover still shows their hint). Give new non-button things a `title` and they get
 this for free.
+There are no toasts (the user's call: no pop-ups that don't fit their area). Run news goes to `tell()` in
+`js/rewards.js`: it's said in the next `showChoice` text box, before that screen's own lines, or on the
+map in `#map-log` (the same box, pinned to the bottom of the map; `showNotes()` runs at the end of
+`showMap()`, and straight away if you're already on the map, e.g. a Bag item used there). `beginRun()`
+and the result window drop leftover notes (`dropNotes()`); the result window lists unlocks and the win's
+coins itself. A note about one element uses `tipAt(el, text)` from `js/tips.js` (a locked starter's
+how-to-unlock), and the Game Corner says its own on the CRT.
+Scrollbars are chunky square pixel bars (end of `css/base.css`: `::-webkit-scrollbar`, `scrollbar-color`
+only for browsers without it, since Chrome drops the webkit rules once it's set): a bevelled grey thumb in
+a dark slot, a parchment slot inside windows.
 Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
 in `#reward-log`, a copy of the battle text box pinned to the bottom of the
 screen, narrow and centred (`--log-w`: 440px, 300px on phones; the user's call: no
@@ -559,13 +569,25 @@ counter, where coins buy Pokémon), so it can't be mistaken for the run's blue
 Poké Mart: PokéCoins buy starters and perks at the Game Corner, ₽ buys cards and
 relics at the Mart. Its top-bar button (`.shop-btn`) has no chrome: a pixel
 slot machine (🎰 in `js/icons.js`, in `.gc-icon`; also on the menu item, the
-window title and the How to play coins slide), its window has a gold frame on a
-purple rim (on phones the skins and perks are two rows each that you swipe
-sideways, perks as rows: icon | name, text, price), and
+sign and the How to play coins slide), and
 `aria-expanded` on it drives the pressed-in "shop is open" look. Keep that
 attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in
 `js/main.js` sets it back to false.
+Its window (`#shop-dialog.gc-cabinet`, `js/shop.js`) is a pixel-art arcade cabinet (after the user's
+reference photo): charcoal body between brass side trims, two pixel speaker grilles round a purple
+GAME CORNER sign, a teal CRT (scanlines) in a curved black bezel, and a control deck with ONE red
+ball-top joystick (the user's call) and two round buttons, a pink Buy and a blue Exit (a
+`form[method="dialog"]` button, so it blips `cancel`). The CRT is a fighting-game character select:
+two roster rows, Pokémon (skins) over Perks, with a blinking cursor frame; the choice under it is shown
+big (sprite or icon, name, one line, `Lv n/m`, price in red when you can't afford it, or `ownedTag()`).
+Joystick up/down switches row, left/right moves along it (both wrap): drag the ball (`initDrag()`,
+one move per push past `PUSH` px), tap the four arrows printed on its base (`.gc-pad`), press the arrow
+keys, or tap a roster cell. Moves play `stick` (a synth). Buy takes two presses: the first arms it
+(`Sure?`, blinking), any move disarms it; the purchase plays `buy` and the CRT says what you got in
+place of the item's text (`cursor.news`: never a toast), including any starter `checkAchievements()`
+unlocks. Escape closes it while nothing modal is open. The grille and ball are pixel maps drawn as SVG
+(`pixelSvg()`). Tapping a shop-locked starter opens it on that skin.
 
 ## Windows
 
@@ -660,7 +682,7 @@ text was too small to read at that size. Its two tips show a sample intent bubbl
 
 The game never shows emoji: `js/icons.js` swaps every emoji on the page for
 an 8-bit pixel icon. Data files and code keep writing emoji (card `art`,
-relic `icon`, toasts...); `initPixelIcons()` (called first in `js/main.js`)
+relic `icon`, text boxes...); `initPixelIcons()` (called first in `js/main.js`)
 swaps existing text and uses a `MutationObserver` to swap anything added
 later. Each icon is a 12x12 pixel map in `ICONS` using the letters in
 `PALETTE`; the black outline is added automatically, so only draw the fill.
@@ -699,7 +721,7 @@ add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and dro
 effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` is
 `blockClink()` at the end of `js/audio.js`, an 8-bit shield clink (the user swapped their MP3 for a generated one).
 The user supplies the effect MP3s themselves.
-The rest of `SOUNDS` and where each plays: `card` (`playCard()`), `hit`
+The rest of `SOUNDS` and where each plays: `card` (`playCard()`; at 0.3 gain like `confirm`, the user's call), `hit`
 (damage gets through, either side; `hitSound()` in `js/battle.js` plays `hit-super` /
 `hit-weak` for super / not very effective hits, like the games' three damage sounds, falling
 back to `hit` while those files are missing; a fully blocked hit plays `block`
@@ -722,11 +744,11 @@ so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, n
 `power` (a power card is played), `burn` (burn damage ticks), `shuffle` (synthesized, `shuffleRiffle()`: the discard pile goes back into the draw
 pile, in `draw()`), `thunder` (each lightning bolt while a boss's storm is on, in `drawLightning()` in `js/scene.js`),
 `coins` (a fight's PokéCoins and ₽ are paid, `collect()`; `buy.mp3`), `door` (walking into a Mart or Center, `enterNode()`; `event.mp3`, the same sound as a ❓ room),
-`achievement` (`checkAchievements()` grants a starter), `bag` (the Bag opens), `cancel` (the menu blip for
-backing out, `bag.mp3` too, `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕; also Escape on a modal
-window, and backing out of a picked card or reward; falls back to `confirm`) and `run-away` (every way of running: the Poké Doll,
+`achievement` (`checkAchievements()` grants a starter), `bag` (the Bag opens and closes, and so does the Poké Ball menu: `setOpen()` in `js/main.js`; the user's call), `cancel` (the menu blip for
+backing out, `bag.mp3` too, so every window closes with the Bag's sound: `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕, a zoomed card; also Escape on a modal
+window or the Game Corner, the Game Corner's top-bar toggle closing it, and backing out of a picked card or reward; falls back to `confirm`), `stick` (synthesized, `stickTick()`: the Game Corner's joystick moves) and `run-away` (every way of running: the Poké Doll,
 in place of `item`, and Team Rocket's "Run for it"; there's no running-away relic). The user picked those file reuses. Synths
-(`blockClink()`, `shuffleRiffle()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution pop-up has no sound on
+(`blockClink()`, `shuffleRiffle()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution pop-up has no sound on
 purpose: the user has a bigger plan for evolving. Battle sounds preload in
 `startBattle()` (`thunder` only for bosses), map ones in `showMap()`, `confirm` / `cancel` in `unlock()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat

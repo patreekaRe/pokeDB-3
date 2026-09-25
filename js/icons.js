@@ -7,7 +7,7 @@
 
    initPixelIcons() watches the page and swaps every emoji that has
    an icon here for the pixel version, wherever it shows up (cards,
-   windows, toasts...), so the data files can keep using emoji.
+   windows, text boxes...), so the data files can keep using emoji.
    Emoji without an icon yet are left alone.
    ============================================================ */
 

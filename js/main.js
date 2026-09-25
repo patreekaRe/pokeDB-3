@@ -11,7 +11,7 @@
      data/*.js       cards, starters, enemies, relics, achievements (plain data)
      storage.js      saving to localStorage
      progress.js     unlocking starters
-     ui.js           small helpers (dialogs, toasts, card element)
+     ui.js           small helpers (dialogs, card element)
      deckpreview.js  the read-only deck preview
      run.js          one run: the map loop, rewards, evolution, the end
      map.js          building and drawing the branching map
@@ -31,17 +31,17 @@ import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun } from './run.js';
 import { initBattle } from './battle.js';
-import { toggleShop } from './shop.js';
+import { toggleShop, initShop } from './shop.js';
 import { initAudio, playCry, playSound } from './audio.js';
 import { initHowtoFx } from './fx.js';
 import { initHowto, openHowto } from './howto.js';
 import { showTitle } from './title.js';
 import { showMenuScene } from './scene.js';
-import { initTips } from './tips.js';
+import { initTips, tipAt } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import {
-  $, el, showScreen, setTheme, toast, openDialog, closeDialog, confirmDialog, refreshCoins,
+  $, el, showScreen, setTheme, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
 
 let selected = null;   // the starter picked on the start screen
@@ -86,10 +86,10 @@ function renderStarters() {
     btn.addEventListener('click', () => {
       if (unlocked) playCry(starter.line[0].id);
       if (unlocked && selected === starter) return showSheet(true);
-      if (unlocked && starter.comingSoon) return toast(`✨ ${starter.line[0].name}'s own moves are coming soon!`, 'ok');
+      if (unlocked && starter.comingSoon) return tipAt(btn, `${starter.line[0].name}'s own moves are coming soon!`);
       if (unlocked) return selectStarter(starter);
       if (isShopUnlock(starter)) return toggleShop(starter.id);
-      toast(`🔒 To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`, 'warn');
+      tipAt(btn, `To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`);
     });
     grid.append(btn);
   });
@@ -223,7 +223,9 @@ async function requestMenu() {
 function initBallMenu() {
   const ball = $('brand-btn');
   const panel = $('ball-menu-panel');
-  const setOpen = (open) => {
+  // opening and closing it sound like the Bag (the user's call), except when a picked item closes it
+  const setOpen = (open, quiet = false) => {
+    if (!quiet && open === panel.hidden) playSound('bag');
     panel.hidden = !open;
     ball.setAttribute('aria-expanded', String(open));
   };
@@ -234,7 +236,7 @@ function initBallMenu() {
   // picking an item closes the menu, except Sound, so you can see it switch on/off
   panel.addEventListener('click', (e) => {
     const item = e.target.closest('.menu-item');
-    if (item && item.id !== 'music-btn') setOpen(false);
+    if (item && item.id !== 'music-btn') setOpen(false, true);
   });
   document.addEventListener('click', (e) => {
     if (!panel.hidden && !e.target.closest('.ball-menu')) setOpen(false);
@@ -267,6 +269,7 @@ function init() {
     setTimeout(() => { btn.classList.add('out'); playCry(run.starter.line[run.stage]?.id ?? run.starter.line[0].id); }, still ? 0 : 250);
     setTimeout(() => continueRun(run), still ? 0 : 1100);
   });
+  initShop();
   $('shop-btn').addEventListener('click', () => toggleShop());
   $('menu-shop-btn').addEventListener('click', () => toggleShop());
   $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
@@ -294,7 +297,6 @@ function init() {
     clearRunData();
     closeDialog('about-dialog');
     goToMenu();
-    toast('Saved progress erased.', 'ok');
   });
 
   goToMenu();
