@@ -47,9 +47,9 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 | --- | --- |
 | ![Map on a phone](assets/screenshots/mobile-map.jpg) | ![Battle on a phone](assets/screenshots/mobile-battle.jpg) |
 
-| Start screen | Shop |
+| Start screen | Game Corner |
 | --- | --- |
-| ![Start screen](assets/screenshots/start.jpg) | ![Shop](assets/screenshots/shop.jpg) |
+| ![Start screen](assets/screenshots/start.jpg) | ![Game Corner arcade cabinet](assets/screenshots/shop.jpg) |
 
 ## Run it locally
 
