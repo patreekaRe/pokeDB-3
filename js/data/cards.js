@@ -62,8 +62,8 @@ export const TYPES = {
 };
 
 const NEUTRAL_CARDS = [
-  { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', sprite: 'silk-scarf', effects: { damage: 7 } },
-  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'rusted-shield', effects: { block: 6 } },
+  { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', sprite: 'hit-spark', effects: { damage: 7 } },
+  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 6 } },
   { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 14 } },
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true } },
   // Potion is reward-only now (no starter begins with a free heal) and exhausts,
