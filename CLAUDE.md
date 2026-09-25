@@ -676,9 +676,14 @@ Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 the map. `heal` is for rest sites only (the user's call): don't reuse it
 for potions or other heals. Sound effects are decoded buffers played with `playSound()`; to
 add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and drop the MP3 in `assets/audio/sfx/`.
+`start`/`length` play only part of a file with a short fade-out, so a long or late-starting
+effect is trimmed in code (block.mp3 is: the user's file was 1.5 s with a silent lead-in).
+The user supplies the effect MP3s themselves.
 The rest of `SOUNDS` and where each plays: `card` (`playCard()`), `hit`
-(damage gets through, either side; a fully blocked hit plays `block`
-instead), `block` (a card gains block), `faint` (enemy KO, in `finish()`),
+(damage gets through, either side; `hitSound()` in `js/battle.js` plays `hit-super` /
+`hit-weak` for super / not very effective hits, like the games' three damage sounds, falling
+back to `hit` while those files are missing; a fully blocked hit plays `block`
+instead; there are no critical hits), `block` (a card gains block), `faint` (enemy KO, in `finish()`),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
 removal is paid for) and `event` (walking into a ❓ room, in `enterNode()`,

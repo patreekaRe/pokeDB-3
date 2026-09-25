@@ -305,7 +305,7 @@ async function playCard(uid) {
       await sleep(180);
       if (battle !== b) return;
       const dealt = hurtEnemy(amount);
-      playSound(dealt > 0 ? 'hit' : 'block');
+      hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
       bigHit(dealt, b.enemy.maxHp);
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
@@ -484,11 +484,11 @@ async function enemyTurn() {
       log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
     } else {
       const through = hurtPlayer(damage);
-      playSound(through > 0 ? 'hit' : 'block');
+      const effect = enemyTypeMultiplier();
+      hitSound(through, effect);
       hitEffect('player-sprite');
       bigHit(through, b.maxHp);
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
-      const effect = enemyTypeMultiplier();
       if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
       if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
       log(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${through < damage ? `, ${damage - through} blocked` : ''}.`);
@@ -918,6 +918,12 @@ function flash(id, className, ms = 400) {
 }
 const hitEffect = (id) => flash(id, 'hit', 420);
 const lunge = (id) => flash(id, 'lunge', 380);
+
+/** Like the games, a super / not very effective hit has its own sound; a fully blocked one plays block. */
+function hitSound(through, multiplier) {
+  if (through <= 0) playSound('block');
+  else playSound(multiplier > 1 ? 'hit-super' : multiplier < 1 ? 'hit-weak' : 'hit', 'hit');
+}
 
 /** A hit that takes a big bite out of someone (a quarter of their HP, or 25) jolts the arena and flashes the screen. */
 function bigHit(through, maxHp) {

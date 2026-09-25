@@ -41,12 +41,15 @@ const TRACKS = {
   map3:    'assets/audio/map3.mp3',
 };
 // Files come mastered at very different loudness, so each can be boosted
-// (or cut) on top of SFX_VOLUME. `gain` defaults to 1.
+// (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
+// play just part of a file, fading out at the end, so a long one can be trimmed without re-encoding.
 const SOUNDS = {
   heal:  { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
   card:  { url: 'assets/audio/sfx/card.mp3' },    // a card is played
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
-  block: { url: 'assets/audio/sfx/block.mp3' },   // you gain block, or a hit is fully blocked
+  'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
+  'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
+  block: { url: 'assets/audio/sfx/block.mp3', start: 0.09, length: 0.6 },   // you gain block, or a hit is fully blocked
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
   event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
@@ -141,19 +144,25 @@ export async function playSound(name, fallback) {
   const last = lastPlayed[name];
   if (last && now - last.at < SFX_MIN_GAP) return 0;
   // a repeat cuts the one still ringing (with a tiny fade, so it doesn't click) instead of layering on top
-  if (last && now < last.at + buffer.duration) {
+  if (last && now < last.at + last.length) {
+    last.gain.gain.cancelScheduledValues(now);
     last.gain.gain.setValueAtTime(last.gain.gain.value, now);
     last.gain.gain.linearRampToValueAtTime(0, now + 0.03);
     last.source.stop(now + 0.03);
   }
+  const { gain: volume = 1, start = 0, length = buffer.duration - start } = SOUNDS[name] || {};
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   const gain = ctx.createGain();
-  gain.gain.value = SOUNDS[name]?.gain ?? 1;
+  gain.gain.value = volume;
+  if (length < buffer.duration - start) {
+    gain.gain.setValueAtTime(volume, now + length - 0.08);
+    gain.gain.linearRampToValueAtTime(0, now + length);
+  }
   source.connect(gain).connect(sfxBus);
-  source.start();
-  lastPlayed[name] = { source, gain, at: now };
-  return buffer.duration;
+  source.start(now, start, length);
+  lastPlayed[name] = { source, gain, at: now, length };
+  return length;
 }
 
 /**
