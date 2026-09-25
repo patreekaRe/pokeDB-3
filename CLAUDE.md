@@ -274,7 +274,10 @@ while `body[data-screen="battle-screen"]`. Relics don't show in battle (they
 are in the Bag). Above them, `#battle-log` is a Gold/Silver
 text box: `log()` types each line out (instantly under reduced motion) into
 `#battle-log-text`, while `#battle-log-live` gets the whole line at once for
-screen readers; `.done` shows the blinking ▼. On phones the PP box
+screen readers; `.done` shows the blinking ▼. The box is always two lines tall, like the
+games', with exactly that room (plus a gap) reserved under your nameplate; a line
+that would need three gets one notch smaller text (`fitLog()`), and the rare one
+that still doesn't fit grows a line (the user's call). On phones the PP box
 and End Turn share a row above the hand so the cards get the full width.
 The enemy's next move (`#enemy-intent`, `renderIntent()`) is a compact
 one-row Pokégear bubble over its head: icon, number, move name, and a pixel
