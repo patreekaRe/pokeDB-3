@@ -1732,7 +1732,9 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 
 /* icon + name + one-line explanation (map rooms, statuses) */
 .howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
-.howto-li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* a lone last row (Boss, Enraged, Coin Finder) gets its own line but stays the others' width, centred */
+.howto-li:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 8px) / 2); }
+:is(.drop, .howto-flow) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }   /* one column there anyway */
 .howto-list.howto-earn { grid-template-columns: 1fr 1fr; }   /* short rows: two per line even on phones */
 .howto-li {
   display: flex;
@@ -1860,6 +1862,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 @media (max-width: 560px) {
   .howto-dialog { padding: 18px 14px; }
   .howto-list { grid-template-columns: 1fr; gap: 6px; }
+  .howto-list:not(.howto-earn) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }
   .howto-li { padding: 5px 10px; gap: 10px; }
   .howto-li .howto-node { width: 34px; height: 34px; font-size: 1rem; }
   .howto-pic.wide { width: 90px; }
