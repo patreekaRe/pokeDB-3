@@ -516,8 +516,8 @@ The "Main menu" item hides itself on the start screen (`showScreen()`).
 
 Tapping an unlocked starter picks it and shows `#starter-sheet`, a window
 pinned to the bottom of the screen like the deck screen's Begin run bar
-(`showSheet()` in `js/main.js`): sprite, name, type chip, blurb and "See
-starting deck →". It isn't modal, so you can keep scrolling and tapping
+(`showSheet()` in `js/main.js`): a narrow (340px) window with the sprite,
+name, type chip, blurb and "See deck →" stacked and centred. It isn't modal, so you can keep scrolling and tapping
 other starters (the panel just switches); `body.sheet-open` pads the page
 by its height (`--sheet-h`) so it never covers the last row. ✕ hides it and
 keeps the pick; tapping the picked tile again brings it back.
