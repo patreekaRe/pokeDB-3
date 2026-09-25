@@ -8,6 +8,7 @@
 import { PASSIVE_SHOP_ITEMS } from './data/shop.js';
 import { COIN_REWARDS } from './run.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
+import { buildingSvg } from './buildings.js';
 
 let slides = [];
 let dots = [];
@@ -37,6 +38,11 @@ const row = (nodeClass, icon, title, note) => {
 };
 
 export function initHowto() {
+  // the Mart and Center rows (How to play and the Bag's Key) show the map's own little buildings
+  for (const node of document.querySelectorAll('.howto-node.town.shop, .howto-node.town.rest')) {
+    node.innerHTML = buildingSvg(node.classList.contains('shop') ? 'shop' : 'rest');
+    node.classList.add('building');
+  }
   $('howto-coins').replaceChildren(
     row('', '⚔️', `+${COIN_REWARDS.fight} 💰`, 'Wild fight'),
     row('elite', '💀', `+${COIN_REWARDS.elite} 💰`, 'Elite'),

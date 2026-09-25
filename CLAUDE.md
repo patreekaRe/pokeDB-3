@@ -420,7 +420,8 @@ through `POCKETS` in order, and the last pocket is remembered. It's wired by
 `initBag()` / `showPocket()` / `closeBag()` in `js/run.js` and closes on an
 outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
 play `.howto-li` / `.howto-node` styles (map rooms use `.howto-node.town`),
-so keep the Key's wording in step with the How to play map slide.
+so keep the Key's wording in step with the How to play map slide. In both, `initHowto()` swaps the
+Mart and Center rows' emoji for the map's own buildings (`buildingSvg()`).
 
 The map itself is drawn like the Pokégear Town Map from Gold/Silver
 (rendering only: the data from `generateMap()` and the saved-run shape are

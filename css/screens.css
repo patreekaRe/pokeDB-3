@@ -36,13 +36,18 @@
 }
 .title small {
   display: block;
-  margin-top: 0.3em;
-  font-size: clamp(0.9rem, 3.4vw, 1.35rem);
-  letter-spacing: 0.14em;
+  margin-top: 0.45em;
+  font-family: var(--pixel-font); font-synthesis-weight: none;   /* in the game's pixel font, with a hard outline in the logo's dark blue */
+  font-weight: 400;
+  font-size: clamp(1rem, 4vw, 1.6rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: #fff8e0;
   -webkit-text-stroke: 0;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+  text-shadow:
+    2px 0 0 #14275e, -2px 0 0 #14275e, 0 2px 0 #14275e, 0 -2px 0 #14275e,
+    2px 2px 0 #14275e, -2px 2px 0 #14275e, 2px -2px 0 #14275e, -2px -2px 0 #14275e,
+    0 5px 0 #0d1a44;
   transform: none;
   animation: subtitleIn 0.8s ease-out both 0.7s;
 }
@@ -98,8 +103,8 @@
   92% { transform: rotate(3deg); }
 }
 @keyframes subtitleIn {
-  from { opacity: 0; letter-spacing: 0.4em; }
-  to   { opacity: 1; letter-spacing: 0.14em; }
+  from { opacity: 0; letter-spacing: 0.3em; }
+  to   { opacity: 1; letter-spacing: 0.08em; }
 }
 /* "How to play": a gold-framed menu button floating inside an orbiting sparkle ring (drawn by js/fx.js).
    Its ▶ cursor always blinks, since it's the first thing to press, and a pixel glint sweeps across the face. */
@@ -1772,6 +1777,9 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 }
 .howto-node.town.elite { border-color: #f04038; }
 .howto-node.town.boss  { border-color: var(--gold); background: #4a2670; }
+/* the Mart and Center are buildings, as on the map: no square, the SVG at its own 26:22 shape */
+.howto-node.town.building { border: 0; background: none; box-shadow: none; border-radius: 0; }
+.howto-node.building svg { width: 100%; height: auto; display: block; }
 
 /* the type cycle */
 .howto-types { display: flex; align-items: center; justify-content: center; gap: 6px; }
