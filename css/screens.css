@@ -1447,25 +1447,20 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .level-chip { background: #6b4b00; color: #ffe27a; border: 1px solid var(--gold); }
 
 /* Small type badge on elite and boss rooms (scouting): a pixel chip set into the middle of the room's top edge */
+/* An elite or boss room's type: just the type's pixel icon tucked on the room's top-right corner,
+   with a dark pixel outline so it reads on any terrain (no box, so the room keeps one clean frame) */
 .node-badge {
   position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translate(-50%, -55%);
-  width: 20px;
-  height: 20px;
+  right: 2%;
+  top: 2%;
+  z-index: 1;
   display: grid;
   place-items: center;
-  border: 2px solid #fff;
-  background: #fff8e0;
-  box-shadow: 0 0 0 2px #303038;
-  font-size: 0.75rem;
+  font-size: calc(100cqw / var(--grid-w, 37) * 1.5);
   line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(1px 0 0 #181010) drop-shadow(-1px 0 0 #181010) drop-shadow(0 1px 0 #181010) drop-shadow(0 -1px 0 #181010);
 }
-.node-badge.type-fire  { border-color: #ff8a4c; }
-.node-badge.type-water { border-color: #55b6ff; }
-.node-badge.type-grass { border-color: #63dc7f; }
-.node-badge.type-normal { border-color: #b7bdd6; }
 
 /* ---------- coin display (topbar + shop) ---------- */
 .coin-pill {
@@ -1900,7 +1895,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 /* ---------- soft corners for the pixel windows that don't set their own (sizes in :root) ---------- */
 .nameplate, .energy-orb, #end-turn-btn, .howto-endturn, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
 .intent, .focus-hint, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
-.map-town, .node-badge, .evo-dot { border-radius: var(--round-xs); }
+.map-town, .evo-dot { border-radius: var(--round-xs); }
 
 /* ---------- Poké Mart (map room) and Pokédollars ---------- */
 .map-node.type-shop .map-town, .howto-node.town.shop { border-color: #3878f0; }

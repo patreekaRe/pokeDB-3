@@ -437,8 +437,9 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
   drawn inside, for tap size): orange, red for elites, a gold boss. Visited
-  greys out, reachable blinks. `.node-badge` scouts elite/boss types: a
-  pixel chip set into the middle of the room's top edge. Your starter's
+  greys out, reachable blinks. `.node-badge` scouts elite/boss types: the
+  bare type icon (no box, the user found the chip cluttered) on the room's
+  top-right corner, with a dark pixel outline. Your starter's
   sprite (`.map-trainer`) stands on the current room like the Pokégear's
   trainer head, and the biome's boss (`map.boss.enemyId`) stands above its
   room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
