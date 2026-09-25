@@ -46,6 +46,7 @@ const TRACKS = {
 const SOUNDS = {
   heal:  { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
   card:  { url: 'assets/audio/sfx/card.mp3' },    // a card is played
+  confirm: { url: 'assets/audio/sfx/card.mp3' },  // any other window's confirm (Add to deck, Forget it, Yes...): the user wants it to match
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)

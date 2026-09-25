@@ -684,6 +684,10 @@ The rest of `SOUNDS` and where each plays: `card` (`playCard()`), `hit`
 `hit-weak` for super / not very effective hits, like the games' three damage sounds, falling
 back to `hit` while those files are missing; a fully blocked hit plays `block`
 instead; there are no critical hits), `block` (a card gains block), `faint` (enemy KO, in `finish()`),
+`confirm` (the same file as `card` and `item`, the user's call: every window's confirm
+sounds alike; `showChoice` plays it when an `ask` option is taken, or the option's
+`confirmSound`, which Mart purchases and the Mart's removal set to `buy`; `confirmDialog()`'s
+Yes plays it too),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
 removal is paid for) and `event` (walking into a ❓ room, in `enterNode()`,

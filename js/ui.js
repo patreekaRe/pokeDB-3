@@ -6,7 +6,7 @@
 import { TYPES, describe, keywords } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
 import { getSave } from './storage.js';
-import { playMusic } from './audio.js';
+import { playMusic, playSound } from './audio.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -91,7 +91,7 @@ export function confirmDialog(question, yesLabel = 'Yes') {
       closeDialog('confirm-dialog');
       resolve(answer);
     };
-    $('confirm-yes').onclick = () => finish(true);
+    $('confirm-yes').onclick = () => { playSound('confirm'); finish(true); };
     $('confirm-no').onclick = () => finish(false);
   });
 }

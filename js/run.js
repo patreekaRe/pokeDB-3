@@ -676,7 +676,7 @@ function martPc(text, hint) {
 }
 
 /** `done` runs after a card is forgotten; Cleanse Tag passes its reward chain here, the Center returns to the map. */
-function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep every move' : 'Back') {
+function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep every move' : 'Back', confirmSound) {
   showChoice({
     title: 'Forget a move',
     sub: `Choose a card to remove from your deck. It can't go below ${MIN_DECK} cards.`,
@@ -688,6 +688,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
       }, count),
       ask: `Forget ${card.name}?`,
       confirm: 'Forget it',
+      confirmSound,
     })),
     skipLabel,
     onSkip: back,
@@ -980,7 +981,8 @@ function ware(option, price, onBuy, { group, name }) {
     disabled: option.disabled || dear,
     ask: `Buy ${name} for ₽${price}?`,
     confirm: `Buy ₽${price}`,
-    onPick: () => { run.money -= price; setMoney(run.money); playSound('buy'); onBuy(); },
+    confirmSound: 'buy',
+    onPick: () => { run.money -= price; setMoney(run.money); onBuy(); },
   };
 }
 
@@ -1040,9 +1042,8 @@ function martRoom() {
       run.money -= removalPrice;
       run.removals += 1;
       setMoney(run.money);
-      playSound('buy');
       martRoom();
-    }),
+    }, undefined, 'buy'),
   };
 
   showChoice({

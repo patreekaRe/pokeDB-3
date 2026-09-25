@@ -7,6 +7,7 @@ import { poolForType, evolutionCardsFor, MAX_COPIES } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
+import { playSound } from './audio.js';
 
 /* ---------- what you get offered ---------- */
 
@@ -67,7 +68,8 @@ export function relicChoices(run, { boss = false } = {}) {
  *   sub       the text box's line, or a list of lines
  *   options   [{ node, onPick, disabled, ask, confirm }]   node is the element to show, onPick runs when chosen.
  *             With `ask` (the question, read out to screen readers) the pick takes two taps, like a card in
- *             battle: the first blows the tile up with a `confirm` button under it (openFocus).
+ *             battle: the first blows the tile up with a `confirm` button under it (openFocus). Taking it
+ *             plays the confirm sound, or `confirmSound` (a Mart purchase's own).
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  *   coins     after a fight, { foe, coins, money, disadvantage }: an icon row, and (on the first screen only) the text box's first lines
  *   layout    extra class for the options box ('mart-window'); options may carry a `group` and a `zoom` tile
@@ -105,7 +107,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.type = 'button';
     btn.append(option.node);
     btn.disabled = !!option.disabled;
-    const take = once(option.onPick);
+    const take = once(option.ask ? () => { playSound(option.confirmSound || 'confirm'); option.onPick(); } : option.onPick);
     btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
     home(option.group).append(btn);
   }
