@@ -611,7 +611,7 @@ function setupBattleScreen() {
   box.title = b.def.description;
 
   $('enemy-zone').dataset.type = b.def.type;
-  $('enemy-name').textContent = (b.kind === 'boss' ? '👑 ' : b.kind === 'elite' ? '💀 ' : '') + b.def.name;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : '') + b.def.name;
   $('enemy-type').textContent = TYPES[b.def.type].icon;
   $('enemy-type').title = `${TYPES[b.def.type].label} type`;
   $('enemy-type').className = `chip type-${b.def.type}`;

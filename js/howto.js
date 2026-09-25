@@ -40,7 +40,7 @@ export function initHowto() {
   $('howto-coins').replaceChildren(
     row('', '⚔️', `+${COIN_REWARDS.fight} 💰`, 'Wild fight'),
     row('elite', '💀', `+${COIN_REWARDS.elite} 💰`, 'Elite'),
-    row('boss', '👑', `+${COIN_REWARDS.boss} 💰`, 'Boss'),
+    row('boss', '👹', `+${COIN_REWARDS.boss} 💰`, 'Boss'),
     row('treasure', '🏆', `+${COIN_REWARDS.winBonus} 💰`, 'Full win'),
   );
   $('howto-perks').replaceChildren(

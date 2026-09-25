@@ -17,7 +17,7 @@ export function openStats() {
   const tiles = [
     ['🏆', s.runsWon, 'Runs won', winRate],
     ['⚔️', s.enemiesDefeated, 'Enemies defeated'],
-    ['👑', `${Object.keys(s.bossesDefeated).length}/3`, 'Bosses beaten'],
+    ['👹', `${Object.keys(s.bossesDefeated).length}/3`, 'Bosses beaten'],
     ['🔓', `${3 + save.unlocked.length}/${STARTERS.length}`, 'Starters unlocked'],
     ['⭐', save.maxLevel, 'Trainer Level'],
     ['💰', save.coins, 'PokéCoins'],

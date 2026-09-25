@@ -16,7 +16,7 @@
         below are re-rolled.
      5. Every room on the top floor connects to the biome's boss.
 
-       boss             👑
+       boss             👹
                       /    \
        top floor     🏥    🏥      <- always rest sites
        ...
@@ -61,7 +61,7 @@ export const NODE_INFO = {
   treasure: { icon: '🎁', label: 'Treasure (choose a relic)' },
   shop:     { icon: '🏪', label: 'Poké Mart (spend ₽ on cards, relics and forgetting moves)' },
   event:    { icon: '❓', label: 'Mystery event (a choice, often with a cost)' },
-  boss:     { icon: '👑', label: 'Boss' },
+  boss:     { icon: '👹', label: 'Boss' },
 };
 
 const randInt = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
