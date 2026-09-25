@@ -870,7 +870,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
   padding: 10px 16px 9px;
   border-radius: 999px;
   background: #f8f8f8;
-  box-shadow: inset 0 -3px 0 #d0d0d8;
+  box-shadow: 0 0 0 4px var(--rim, #c84840), inset 0 -3px 0 #d0d0d8;   /* a thick ring in the panel's dark rim colour */
   color: #404048;
   text-shadow: 2px 2px 0 #c0c0c8;   /* the DS text's grey drop shadow */
   white-space: nowrap;
@@ -1662,7 +1662,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 
 /* the PP window and End Turn, small */
 .howto-pic :is(.energy-orb, .howto-endturn) { padding: 4px 5px; }
-.howto-pic .pp-pill { gap: 6px; padding: 5px 8px 4px; font-size: 0.66rem; }
+.howto-pic .pp-pill { gap: 6px; padding: 5px 8px 4px; font-size: 0.66rem; box-shadow: 0 0 0 2px var(--rim, #c84840), inset 0 -2px 0 #d0d0d8; }
 .howto-pic :is(.pp-label, .pp-count) { font-size: inherit; }
 
 /* a little fanned hand of cards, one per type, each with its PP cost disc */

@@ -262,7 +262,7 @@ only renders while its status is active, and each one explains itself in
 its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
 that fighter has block. Below the arena, `.battle-controls` is a 3-column
 grid: energy (`.energy-orb`, drawn as the games' **PP** like the
-Diamond/Pearl move screen: a white `.pp-pill` with "PP" on the left and "2/3"
+Diamond/Pearl move screen: a white `.pp-pill` (ringed in its panel's `--rim` colour, on every button built from it) with "PP" on the left and "2/3"
 on the right, on a salmon striped panel; the max is `b.turnEnergy`, the
 energy the turn started with; `data-shown` remembers the last value so the
 number bumps when it changes, and `.empty` turns the numbers red) | hand | End Turn
