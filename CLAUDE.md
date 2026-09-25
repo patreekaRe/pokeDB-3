@@ -527,7 +527,7 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
 - Tapping a reachable room walks your sprite there first (`walkTo()`):
   along the same route `linkPoints()` gives `routeLines()`, one tile a step,
   bobbing every other step, flipped (`--face`) to walk right (Showdown
-  front sprites face left), with the red walked dashes trailing it. 650–1100
+  front sprites face left), with the red walked dashes trailing it. 500–850
   ms a link (`WALK_MS`; faster looked like zooming), then the room opens; taps are ignored meanwhile,
   and reduced motion skips it (the user's picks: brisk, stepped, trailed).
 
