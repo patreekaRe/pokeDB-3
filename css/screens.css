@@ -2155,25 +2155,68 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   background: radial-gradient(circle, #fff 0 3px, #303038 3px 5px, transparent 5px), linear-gradient(#e04030 0 8px, #303038 8px 12px, #f8f8f8 12px);
   box-shadow: 0 0 0 2px #303038;
 }
-/* a little yellow shelf talker in each shelf's top corner */
-.mart-window :is(.group-items, .group-relics)::before {
+/* each shelf's sign, like a pocket of the games' Bag: a chunky plate with the pocket's icon and bold outlined pixel
+   letters with a coloured drop shadow, hanging from the board above on two little chains and swinging gently */
+.shelf-sign {
+  --plate: #f8a030; --plate-lite: #fcd068; --plate-dark: #c86810; --ink: #f8f8f8; --drop: #a04808;
   position: absolute;
-  top: 4px;
-  left: 12px;
-  padding: 3px 5px 2px;
-  border-radius: 2px;
-  background: #f8d030;
-  box-shadow: 0 0 0 2px #303038, 2px 2px 0 1px rgba(0, 0, 0, 0.3);
-  color: #303038;
-  font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 0.45rem;
-  letter-spacing: 0.05em;
+  top: 12px;
+  left: 16px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 7px;
+  border-radius: 10px 10px 10px 3px;
+  background: linear-gradient(var(--plate-lite) 0 4px, var(--plate) 4px calc(100% - 5px), var(--plate-dark) calc(100% - 5px));
+  box-shadow: 0 0 0 3px #303038, inset 0 0 0 2px rgba(255, 255, 255, 0.35), 3px 4px 0 2px rgba(0, 0, 0, 0.3);
+  transform-origin: 50% -10px;
+  rotate: -3deg;
+  animation: signSwing 3.2s steps(4) infinite;
+  pointer-events: none;
 }
-.mart-window .group-items::before { content: "ITEMS"; }
-.mart-window .group-relics::before { content: "RELICS"; background: #f070a8; }
+/* the two chains up to the board */
+.shelf-sign::before, .shelf-sign::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  width: 3px;
+  height: 12px;
+  margin-bottom: 3px;
+  background: repeating-linear-gradient(#9898a8 0 3px, #505060 3px 4px);
+}
+.shelf-sign::before { left: 14px; }
+.shelf-sign::after { right: 14px; }
+.shelf-sign-icon { font-size: 1.5rem; line-height: 1; filter: drop-shadow(1px 1px 0 #303038); }
+.shelf-sign-text {
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  text-shadow: 2px 0 0 #303038, -2px 0 0 #303038, 0 2px 0 #303038, 0 -2px 0 #303038, 2px 2px 0 #303038, 3px 4px 0 var(--drop);
+}
+.shelf-sign.relics { --plate: #9058d8; --plate-lite: #c098f8; --plate-dark: #6030a0; --drop: #f070a8; rotate: 3deg; animation-delay: -1.6s; }
+/* sparkles twinkling on the relic sign's corners */
+.shelf-sign.relics .shelf-sign-text::after {
+  content: "✦";
+  position: absolute;
+  top: -9px;
+  right: -7px;
+  font-size: 0.9rem;
+  color: #fff8c0;
+  text-shadow: 0 0 4px #f8d030;
+  animation: twinkle 1.4s steps(2) infinite;
+}
+.shelf-sign.relics .shelf-sign-text { position: relative; }
+@keyframes signSwing { 50% { translate: 0 1px; rotate: 1deg; } }
+.shelf-sign.relics { animation-name: signSwingR; }
+@keyframes signSwingR { 50% { translate: 0 1px; rotate: -1deg; } }
+@media (prefers-reduced-motion: reduce) { .shelf-sign, .shelf-sign .shelf-sign-text::after { animation: none; } }
+/* the wares sit below the sign */
+.mart-window :is(.group-items, .group-relics) { padding-top: 54px; }
 .mart-window .group-items { grid-area: items; gap: 18px; }
 /* the relics sit in the gaps between the items (a 3-2 pyramid), over a tall band where Kecleon's head and the PC's sign go */
-.mart-window .group-relics { grid-area: relics; gap: 18px; padding-bottom: 74px; }
+.mart-window .group-relics { grid-area: relics; gap: 18px; padding-bottom: 68px; }
 .mart-window .group-cards .reward-option { width: calc((100% - 32px) / 5); max-width: 90px; flex: none; }
 .mart-window :is(.group-items, .group-relics) .reward-option { width: 60px; flex: none; }
 /* items and relics are bare icons on the shelf (the name and text show when you tap one), bobbing one after another */

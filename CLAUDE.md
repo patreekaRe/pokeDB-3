@@ -159,7 +159,8 @@ two-tap "Buy ₽N" confirm. `layout: 'mart-window'` lays the Mart out like a Zel
 counter (the grid's `::after`, with `.mart-clutter` icons on it, and Leave on its front:
 `martRoom()` moves `#reward-skip` into the grid, `showChoice()` puts it back) stands one
 grey pixel shelf unit (hard-edged gradient bands for depth, a strip light under each
-board, a Mart-blue crown with a Poké Ball, yellow/pink shelf talkers), all the moves on
+board, a Mart-blue crown with a Poké Ball, and big swinging Bag-pocket `.shelf-sign`s over
+the items and relics shelves, added by `martRoom()`: an icon, outlined pixel letters), all the moves on
 the top shelf as `.card.small` thumbnails (a pixel shine sweeps across them; the tap
 blows up a full card, `option.zoom`), the items on the next shelf and the relics under
 them in the gaps, a 3-2 pyramid, as bobbing bare icons with plain printed prices (no
@@ -169,7 +170,9 @@ and forgetting a move is the 💻 PC on its right (`martPc()`, under the Center'
 The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts): teal-banded
 white walls with pennant bunting and hanging lamps (glow, flicker, drifting dust), and on
 wider screens a window (clouds, a passing bird), crates, a SALE poster and a cork board;
-green octagon tiles with baskets, boxes and Poké/Great/Ultra/Master Balls lying about.
+green octagon tiles, and two blue bins heaped with Poké/Great/Ultra/Master Balls
+(`ballBin()`): beside the counter's ends where there's room, else just in front of it
+(the user wanted nothing scattered on the floor).
 It's barely dimmed, and its floor line follows the counter's foot and its plants its ends
 (`showPlaceScene('mart', { floor, span })`), so the shop stands on the tiles instead of
 floating (the user's calls; no fridges, no tiny clock or posters).

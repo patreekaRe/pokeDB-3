@@ -294,8 +294,7 @@ const PLACE_ART = {
     balls: { base: ['#f8f8f8', '#303038', '#ffffff'], poke: ['#e04030'], great: ['#3878f0', '#e04030'], ultra: ['#383840', '#f8d030'], master: ['#8048c8', '#f070a8'] },
     lamp: ['#505060', '#fffce8', '#c8c8d8', '#fff4b0'],
     window: ['#ffffff', '#98d8f8', '#58b858', '#e05838', '#ffffff'],
-    basket: ['#e04030', '#a82820', '#505060'],
-    boxes: ['#d8a060', '#a87038', '#f0d8a0'],
+    bin: ['#3878f0', '#78a8f8', '#fffcf0'],
     mote: '#fffce8',
     tiles: ['#a8e8b0', '#78c890', '#88d49c'],
     mat: ['#e85830', '#f8a868'],
@@ -1281,20 +1280,29 @@ function martFloor() {
 
 function martFront() {
   const foot = horizon + 4;
-  // the plants flank the counter's two ends
+  // the plants flank the counter's two ends, and a bin heaped with Poké Balls stands against it at each end
   const [l, r] = spanAt ? spanAt().map(x => Math.round(x * W / innerWidth)) : [0, W];
   pottedPlant(Math.max(4, l - 6), foot, 4);
   pottedPlant(Math.min(W - 5, r + 5), foot, 4);
-  const left = Math.max(12, Math.round(W * 0.12)), right = W - Math.max(14, Math.round(W * 0.14));
-  basketStack(left, Math.min(H - 3, foot + 10));
-  boxStack(right, Math.min(H - 3, foot + 12));
-  // Poké Balls of every kind lying about the floor
-  const spots = [[left + 9, foot + 13, 'great'], [left - 5, foot + 18, 'poke'], [right - 11, foot + 15, 'ultra'], [right + 7, foot + 19, 'master'], [W >> 1, foot + 24, 'poke']];
-  for (const [x, y, kind] of spots) if (y < H - 2) floorBall(x, y, kind);
+  // beside the plants where the wall has room, else just in front of the counter (a phone's counter spans the screen)
+  const out = l > 34, y = out ? horizon - 2 : horizon + 4;
+  ballBin(out ? l - 22 : l + 14, y, ['great', 'poke', 'great']);
+  ballBin(out ? r + 21 : r - 14, y, ['ultra', 'master', 'ultra']);
 }
 
-/** A Poké Ball on the floor: Poké (red), Great (blue with red marks), Ultra (black with a yellow H) or Master (purple, pink bumps). */
-function floorBall(cx, cy, kind) {
+/** A low blue Mart bin against the counter, heaped with Poké Balls whose lower halves sit inside it. */
+function ballBin(cx, top, kinds) {
+  const [blue, rim, label] = S.bin, x0 = cx - 7, x1 = cx + 7, y1 = top + 5;
+  [[-4, 0], [0, -1], [4, 0]].forEach(([dx, dy], i) => floorBall(cx + dx, top + dy, kinds[i % kinds.length], false));
+  for (let y = top + 1; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const edge = x === x0 || x === x1 || y === y1;
+    solid(x, y, y === top + 1 ? rim : edge ? S.balls.base[1] : y === top + 3 && Math.abs(x - cx) < 4 ? label : blue);
+  }
+  for (let x = x0; x <= x1 + 1; x++) tint(x, y1 + 1, 0.8);   // its shadow on the tiles
+}
+
+/** A Poké Ball: Poké (red), Great (blue with red marks), Ultra (black with a yellow H) or Master (purple, pink bumps). */
+function floorBall(cx, cy, kind, shadow = true) {
   const [white, band, shine] = S.balls.base, top = S.balls[kind];
   for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) {
     const d = Math.hypot(x, y);
@@ -1308,34 +1316,7 @@ function floorBall(cx, cy, kind) {
     if (x === -1 && y === -2) c = shine;
     solid(cx + x, cy + y, c);
   }
-  for (let x = -2; x <= 3; x++) tint(cx + x, cy + 4, 0.8);   // its shadow
-}
-
-/** A stack of red shopping baskets by the door. */
-function basketStack(cx, foot) {
-  const [red, dark, handle] = S.basket;
-  for (let n = 0; n < 3; n++) {
-    const y1 = foot - n * 2;
-    for (let y = y1 - 3; y <= y1; y++) for (let x = -4; x <= 4; x++) {
-      const inset = y === y1 ? 1 : 0;
-      if (Math.abs(x) <= 4 - inset) solid(cx + x, y, y === y1 - 3 ? red : (x + y) % 2 ? dark : red);
-    }
-  }
-  for (let x = -2; x <= 2; x++) solid(cx + x, foot - 9, handle);
-  solid(cx - 3, foot - 8, handle); solid(cx + 3, foot - 8, handle);
-}
-
-/** Cardboard boxes, one on top of another, waiting to be shelved. */
-function boxStack(cx, foot) {
-  const [card, dark, tape] = S.boxes;
-  const box = (x0, y0, w, h) => {
-    for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
-      solid(x, y, x === x0 + w - 1 || y === y0 + h - 1 ? dark : y === y0 ? tape : card);
-    }
-    for (let y = y0; y < y0 + h - 1; y++) solid(x0 + (w >> 1), y, tape);
-  };
-  box(cx - 6, foot - 6, 11, 7);
-  box(cx - 4, foot - 11, 8, 5);
+  if (shadow) for (let x = -2; x <= 3; x++) tint(cx + x, cy + 4, 0.8);
 }
 
 

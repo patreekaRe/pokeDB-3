@@ -1007,6 +1007,14 @@ function martRoom() {
     layout: 'mart-window',
   });
 
+  // a Bag-pocket sign hanging over the items and the relics shelves
+  for (const [group, icon, text] of [['items', '🧪', 'ITEMS'], ['relics', '💎', 'RELICS']]) {
+    const sign = el('span', `shelf-sign ${group}`);
+    sign.setAttribute('aria-hidden', 'true');
+    sign.append(el('span', 'shelf-sign-icon', icon), el('span', 'shelf-sign-text', text));
+    document.querySelector(`#reward-options .group-${group}`)?.prepend(sign);
+  }
+
   // the shopkeeper at the left end of the counter, and odds and ends on it (the .mart-window grid places both)
   const clerk = el('img', 'mart-clerk');
   clerk.src = 'assets/pokemon/kecleon-front.gif';
