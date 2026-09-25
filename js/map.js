@@ -28,6 +28,7 @@
 import { $, el } from './ui.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { TYPES } from './data/cards.js';
+import { buildingSvg } from './buildings.js';
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
@@ -49,6 +50,9 @@ const MIN_SHOP_FLOOR = MIN_ELITE_REST_FLOOR + 1;                      // a few f
 // treasure, when you have ~5 fights of ₽) become Marts until this share of start-to-boss routes pass one.
 const MART_FLOORS = [TREASURE_FLOOR + 1, TOP_FLOOR - 1];
 const MART_ROUTE_SHARE = 0.75;
+
+// Rooms drawn as a building standing on the map instead of a framed square (js/buildings.js).
+const BUILDINGS = ['shop', 'rest'];
 
 export const NODE_INFO = {
   fight:    { icon: '⚔️', label: 'Wild fight' },
@@ -561,7 +565,11 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     const info = NODE_INFO[node.type];
     const btn = el('button', `map-node type-${node.type}`);
     btn.type = 'button';
-    btn.append(el('span', 'map-town', info.icon));
+    if (BUILDINGS.includes(node.type)) {
+      const house = el('span', 'map-building');
+      house.innerHTML = buildingSvg(node.type);
+      btn.append(house);
+    } else btn.append(el('span', 'map-town', info.icon));
     place(btn, nodeX(node), rowY(node.floor));
     let label = info.label;
 

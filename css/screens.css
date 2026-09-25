@@ -1240,6 +1240,15 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 .map-node.reachable .map-town { animation: townBlink 0.9s steps(1) infinite; }
 .map-node.reachable:hover .map-town, .map-node.reachable:focus-visible .map-town { border-color: #fff; transform: scale(1.12); }
 @keyframes townBlink { 50% { border-color: #fff; } }
+/* Poké Marts and Pokémon Centers stand on the map as little buildings (js/buildings.js) instead of a framed square */
+.map-node.type-shop, .map-node.type-rest { width: calc(var(--tile) * 6); }
+.map-building { display: block; width: 100%; filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.35)); transition: transform 0.1s; }
+.map-building svg { display: block; width: 100%; height: auto; }
+.map-node.reachable .map-building { animation: houseBlink 0.9s steps(1) infinite; }
+@keyframes houseBlink { 50% { filter: brightness(1.2) drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff); } }
+.map-node.reachable:hover .map-building, .map-node.reachable:focus-visible .map-building { transform: scale(1.08); }
+.map-node.visited .map-building { filter: grayscale(0.8) brightness(0.75); opacity: 0.85; }
+.map-node.current .map-building { filter: drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 1px var(--gold)); }
 
 /* Your Pokémon stands on the room you're in, like the trainer's head on the Pokégear */
 /* The biome's boss as a grey silhouette standing just above its room (the room and its badge stay in front) */

@@ -436,8 +436,12 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   Routes are cream; walked ones get thick red dashes and the routes you can
   take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
-  drawn inside, for tap size): orange, red for elites, a gold boss. Visited
-  greys out, reachable blinks. `.node-badge` scouts elite/boss types: the
+  drawn inside, for tap size): orange, red for elites, a gold boss. Poké
+  Marts and Pokémon Centers have no square: they stand on the map as little
+  Gen 3-style buildings (`.map-building`, 6 tiles wide, SVG from
+  `buildingSvg()` in `js/buildings.js`, drawn by rules on a 24x20 grid: blue
+  or red gridded roof, emblem over the door, "MART"/"P.C" sign). Visited
+  greys out, reachable blinks (buildings glow white). `.node-badge` scouts elite/boss types: the
   bare type icon (no box, the user found the chip cluttered) on the room's
   top-right corner, with a dark pixel outline. Your starter's
   sprite (`.map-trainer`) stands on the current room like the Pokégear's
