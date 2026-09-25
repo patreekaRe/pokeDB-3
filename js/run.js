@@ -30,7 +30,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, c
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter, centerSpots } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots } from './scene.js';
 
 let run = null;
 
@@ -561,11 +561,14 @@ function restSite() {
           run.hp += heal;
           run.restCount += 1;
           $('reward-options').classList.add('resting');
-          healAtCenter();
-          // like the games: the music stops and the healing chime plays out before you leave
+          // like the games: the music stops, the balls go into the machine one by one, then they flash while the
+          // healing chime plays out before you leave
           playMusic(null, { cut: true });
+          await healAtCenter();
+          if (run !== thisRun) return;
           const chime = await playSound('heal');
-          await sleep(Math.min(chime, 4) * 1000);
+          flashCenter(Math.min(chime, 4) || 2);
+          await sleep((Math.min(chime, 4) || 2) * 1000);
           if (run !== thisRun) return;                 // the run was abandoned during the chime
           toast(`Healed ${heal} HP.`, 'ok');
           showMap();
@@ -582,6 +585,12 @@ function restSite() {
     onSkip: showMap,
     layout: 'center-room',
   });
+  // Chansey, the nurse, stands behind the counter (placeCenterSpots() hides its feet at the counter top)
+  const nurse = el('div', 'center-nurse'), sprite = el('img');
+  sprite.src = 'assets/pokemon/chansey-front.gif';
+  sprite.alt = 'Chansey, the nurse';
+  nurse.append(sprite);
+  $('reward-options').append(nurse);
   showPlaceScene('center');
   placeCenterSpots();
   playMusic('center');
@@ -594,7 +603,7 @@ function centerLabel(text, hint) {
   return label;
 }
 
-/** Lay the Center's two choices over the machine and the PC in the scene; the scene tells us whenever it repaints. */
+/** Lay the Center's two choices over the machine and the PC in the scene, and stand Chansey at the counter; the scene tells us whenever it repaints. */
 function placeCenterSpots() {
   const box = $('reward-options');
   if (!box.classList.contains('center-room')) return;
@@ -606,6 +615,9 @@ function placeCenterSpots() {
     const w = Math.max(r.width, 64), h = Math.max(r.height, 56);
     Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
   });
+  const nurse = box.querySelector('.center-nurse');
+  if (nurse) Object.assign(nurse.style, { left: `${spots.nurse.x}px`, top: `${spots.nurse.y}px` });
+  $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);   // the text box sits just under the counter
 }
 addEventListener('scenepaint', placeCenterSpots);
 

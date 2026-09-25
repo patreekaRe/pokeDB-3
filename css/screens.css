@@ -2266,9 +2266,16 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 /* the scene shows at full strength here, like a battle, so the counter reads as the place you're standing in */
 body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { background: none; }
 .reward-options.center-room { padding: 0; }
-/* Leave stands on the floor just above the text box, clear of the wall and the counter */
-#reward-screen:has(.center-room) #reward-skip { margin-top: auto; }
-#reward-screen:has(.center-room) .reward-bottom { margin-top: 0; }
+/* the text box sits on the floor just under the counter (--counter-foot, placeCenterSpots()), and Leave at the bottom */
+#reward-screen:has(.center-room) .reward-bottom {
+  position: fixed;
+  top: calc(var(--counter-foot, 70vh) + 12px);
+  bottom: auto;
+  left: 50%;
+  translate: -50% 0;
+  width: min(calc(100% - 32px), 720px);
+}
+#reward-screen:has(.center-room) #reward-skip { margin-top: auto; margin-bottom: max(14px, env(safe-area-inset-bottom)); }
 /* each choice is a see-through button laid over its machine (placeCenterSpots() in js/run.js) */
 .center-room .reward-option {
   position: fixed;
@@ -2279,6 +2286,17 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
 .center-room .reward-option:is(:hover, :focus-visible) { transform: none; background: rgba(255, 255, 255, 0.18); }
 .center-room .reward-option:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
 .center-room .reward-option:disabled { opacity: 1; cursor: not-allowed; }
+/* Chansey behind the counter: a window whose bottom edge is the counter top (placeCenterSpots()), so its feet are hidden */
+.center-nurse {
+  position: fixed;
+  z-index: 1;
+  width: 122px;
+  height: 70px;
+  translate: -50% -100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.center-nurse img { position: absolute; left: 0; top: 0; width: 122px; image-rendering: pixelated; }
 /* the floating sign over each, a small Pokégear bubble with the intent's pixel tail, bobbing to say "tap me" */
 .center-label {
   position: absolute;

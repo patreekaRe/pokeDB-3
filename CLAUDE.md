@@ -119,7 +119,8 @@ has no tiles (the user's call, for immersion): its two options (`layout:
 'center-room'`) are see-through buttons laid over the scene's healing machine and
 PC (`placeCenterSpots()`, from `centerSpots()` in `js/scene.js`, rerun on the
 scene's `scenepaint` event), each under a bouncing `.center-label` sign, and the
-scene isn't dimmed. It never
+scene isn't dimmed. Its text box sits just under the counter (`--counter-foot`) with
+Leave at the bottom of the screen (the user's call). It never
 takes the deck below `MIN_DECK` (7); at the minimum the PC is
 `disabled` (`showChoice` options accept `disabled`). Forgetting doesn't
 count as a rest for `restCount`. The Cleanse Tag relic reuses the picker
@@ -394,11 +395,18 @@ canyon at sunset with a sparking campfire, Water a seaside with surf, a
 lighthouse and a passing sail, Grass a jungle with giant trunks, swaying vines
 and light shafts. With none picked it's the Clearing's moonlit night, like
 the title. The Pokémon Center (`restSite()`) has an indoor scene instead
-(`PLACE_ART.center`, `showPlaceScene('center')`): Chansey in a nurse cap
-behind the counter, the PC and the healing machine on it, a Poké Ball rug; its
-`horizon: 0.6` puts the counter below the Center's two tiles. Rest calls
-`healAtCenter()`, which lights the machine's six balls one by one and flashes
-them during the chime. Asking for the scene already up leaves it
+(`PLACE_ART.center`, `showPlaceScene('center')`): a big Center logo (a Poké Ball
+with a red cross) on the wall behind the counter, hospital monitors on ceiling arms
+(a scrolling heartbeat, a party screen), and on wider walls a clock showing the real
+time and the town map. Chansey is the real sprite (`assets/pokemon/chansey-front.gif`,
+`.center-nurse`, cropped at the counter top by `placeCenterSpots()`); on the counter
+are the games' PC (a cream CRT with a blue menu, a keyboard) and the healing machine
+(a tray of six slots and a screen); a Poké Ball rug in front. Its `horizon: 0.6` puts
+the counter below the Center's two tiles. Rest, like the games: the music cuts,
+`healAtCenter()` drops your one Poké Ball into the tray (you carry one Pokémon, so
+the other five slots stay empty) and resolves once it's in, then the `heal` chime
+starts and `flashCenter(seconds)` flashes the ball for exactly as long as it plays.
+Asking for the scene already up leaves it
 running (except in battle). Outside battles `#backdrop` (above the canvas)
 dims it so windows stay readable; `setTheme(type)` in `js/ui.js` only sets
 the accent colour now. Still parts are painted
