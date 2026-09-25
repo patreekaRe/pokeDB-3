@@ -286,10 +286,12 @@ enemy's box square (`min-height: 0`, or a tall sprite like Oddish stretches
 it), trims the space under your Pokémon so your nameplate clears the enemy's
 feet, and keeps room above the text box; the phone rules also keep a 10px
 gap between the two columns.
-Hints live in `title` attributes. Touch screens can't hover, so `js/tips.js`
-shows a tapped element's `title` in `.tap-tip`, a mini copy of the battle text box that stays until the next tap anywhere (touch/pen only; mouse
-keeps the native tooltip). Buttons and other controls are skipped, since tapping
-them already does something. Give new non-button things a `title` and they get
+Hints live in `title` attributes. `js/tips.js` shows a tapped or clicked
+element's `title` in `.tap-tip`, a mini copy of the battle text box that stays until the next tap or click
+anywhere. A mouse also gets it on hover (after 350 ms, gone on leaving),
+in place of the native tooltip: while hovered the `title` moves to
+`data-tip` and comes back on leaving. Taps and clicks on buttons and other controls are skipped, since tapping
+them already does something (hover still shows their hint). Give new non-button things a `title` and they get
 this for free.
 Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
 in `#reward-log`, a copy of the battle text box pinned to the bottom of the
