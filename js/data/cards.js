@@ -57,7 +57,7 @@ export const TYPES = {
   fire:   { label: 'Fire',    icon: '🔥', beats: 'grass', losesTo: 'water' },
   water:  { label: 'Water',   icon: '💧', beats: 'fire',  losesTo: 'grass' },
   grass:  { label: 'Grass',   icon: '🌿', beats: 'water', losesTo: 'fire'  },
-  normal: { label: 'Neutral', icon: '⭐', beats: null,    losesTo: null    },
+  normal: { label: 'Neutral', icon: '🔯', beats: null,    losesTo: null    },
 };
 
 const NEUTRAL_CARDS = [
