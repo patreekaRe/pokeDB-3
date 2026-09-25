@@ -513,8 +513,9 @@ function paintTerrain(canvas, map, biomeId, tiles) {
 export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2 } = {}) {
   const box = $('map');
   box.replaceChildren();
-  box.style.setProperty('--grid-w', GRID_W);
-  box.style.setProperty('--grid-h', GRID_H);
+  // on the wrapper, which sizes the sideways map on wide screens (css/screens.css)
+  box.parentElement.style.setProperty('--grid-w', GRID_W);
+  box.parentElement.style.setProperty('--grid-h', GRID_H);
   spreadColumns(map);
   const reachable = new Set(reachableNodes(map, currentId).map(n => n.id));
   const lines = routeLines(map, currentId, reachable);
