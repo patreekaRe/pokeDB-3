@@ -111,6 +111,7 @@
   display: grid;
   align-items: center;
 }
+.card-kw { font-weight: 900; color: #b05800; }
 
 /* Interactive cards lift up when you point at them */
 .card[role="button"] { cursor: pointer; }

@@ -288,6 +288,13 @@ export function describe(card, stage = 0) {
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
   if (card.retain)    parts.push('Stays in hand between turns.');
-  if (card.exhaust)   parts.push('Exhausts after use.');
   return parts.join(' ');
+}
+
+/** Keywords shown in bold on the card, around describe()'s text: [label, what it means]. */
+export function keywords(card) {
+  return {
+    lead: card.power ? [['Power', 'Stays on for the rest of the fight. The card is played once per fight.']] : [],
+    tail: card.exhaust ? [['Exhaust', 'Gone for the rest of this fight once played. Back in your deck next fight.']] : [],
+  };
 }

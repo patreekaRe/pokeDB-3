@@ -3,7 +3,7 @@
    switching screens, toast messages, dialogs, and the card element.
    ============================================================ */
 
-import { TYPES, describe } from './data/cards.js';
+import { TYPES, describe, keywords } from './data/cards.js';
 import { getSave } from './storage.js';
 import { playMusic } from './audio.js';
 
@@ -116,7 +116,13 @@ export function makeCard(card, options = {}) {
   if (longest > 9) name.style.setProperty('--name-fit', (9.6 / longest).toFixed(3));
   const art = el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
-  const text = el('p', 'card-text', describe(card, options.stage || 0));
+  const text = el('p', 'card-text');
+  const words = keywords(card);
+  const kw = ([label, tip]) => { const k = el('b', 'card-kw', `${label}.`); k.title = tip; return k; };
+  // one wrapper, since .card-text is a grid and would give each piece its own row
+  const line = el('span');
+  line.append(...words.lead.flatMap(w => [kw(w), ' ']), describe(card, options.stage || 0), ...words.tail.flatMap(w => [' ', kw(w)]));
+  text.append(line);
 
   // The outer .card sets the size; the inner .card-face is what you see.
   // (Text inside sizes itself from the card's width, see cards.css.)

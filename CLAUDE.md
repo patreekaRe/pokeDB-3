@@ -62,6 +62,10 @@ to `main` (see Conventions), not open a branch or PR.
 the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   each turn, thorns, blaze) stay on all fight as nameplate badges,
   `retain`, `exhaust`, `selfDamage`, `blockDamage` and `bonusPerBurn`.
+  Power and exhaust cards carry a bold "Power." / "Exhaust." keyword
+  (`keywords()` in `js/data/cards.js`, drawn by `makeCard()`, with a
+  `title` explaining it); powers leave the fight once played, like StS.
+  There's no exhaust pile icon (the user's call, for now).
   Each type has an archetype: Fire burn + burst + HP-for-damage, Grass
   healing + growing strength, Water block + draw + hitting back. Weaken
   is the strongest defensive effect in the game (it halves the 30+ hits
