@@ -654,8 +654,7 @@ Items and relics are the exception: they show real PokéSprite item sprites
 About) through `itemSprite()` in `js/ui.js`, which falls back to the emoji if the
 file is missing. A card can use one as art with `sprite` (every card does), cropped to
 its visible pixels from `js/data/item-fit.js` and scaled to fill the art window
-(re-measure the alpha bounds when adding one),
-and every other card uses item art that fits the move (some are puns). Their emoji stay in the data
+(re-measure the alpha bounds when adding one); some are puns on the move. Their emoji stay in the data
 for tooltips and event text, and must not be swapped globally: many are shared
 (🔥 is the Fire type, 💪 the strength badge). A new item or relic needs its PNG
 named after its id.
