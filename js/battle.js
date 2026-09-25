@@ -149,7 +149,8 @@ async function playIntro() {
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
-  preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp');
+  preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
+    'heal-hp', 'power', 'burn', 'shuffle', ...(b.kind === 'boss' ? ['thunder'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -206,6 +207,7 @@ function beginPlayerTurn() {
   b.turn += 1;
   const p = b.powers;
   b.block = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0);   // block only lasts one round
+  if (b.block) statFx('player');
   const bossEnergy = ['choice-band', 'choice-specs', 'toxic-orb'].filter(hasRelic).length;
   b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy;
   b.turnEnergy = b.energy;
@@ -213,10 +215,10 @@ function beginPlayerTurn() {
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; pop('player-zone', '-1 ☠️', 'dmg'); }
   if (hasRelic('leftovers')) healPlayer(2);
-  if (p.healEachTurn) healPlayer(p.healEachTurn + healBonus());
-  if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); playSound('stat-up'); }
+  if (p.healEachTurn && healPlayer(p.healEachTurn + healBonus())) playSound('heal-hp');
+  if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); playSound('stat-up'); statFx('player'); }
   if (p.burnEachTurn) { b.enemy.burn += p.burnEachTurn; pop('enemy-zone', `🔥 Burn ${p.burnEachTurn}`, 'note'); }
-  if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); playSound('stat-up'); }
+  if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); playSound('stat-up'); statFx('player'); }
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0));
   b.busy = false;
@@ -242,6 +244,7 @@ function draw(count) {
     if (b.drawPile.length === 0) {
       if (b.discard.length === 0) return;        // nothing left anywhere
       b.drawPile = shuffle(b.discard);
+      playSound('shuffle');
       b.discard = [];
     }
     b.hand.push({ uid: nextUid++, card: b.drawPile.pop(), fresh: true });
@@ -341,18 +344,19 @@ async function playCard(uid) {
 
   // --- everything else a card can do ---
   if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
-  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '📉 Weakened', 'note'); playSound('stat-down'); }
-  if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); }
-  if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
-  if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); }
-  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); }
+  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '📉 Weakened', 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
+  if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); statFx('player'); }
+  if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
+  if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (card.power) {
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
     pop('player-zone', `${POWER_LENS[b.starter.type] ?? '🧬'} ${card.name}`, 'note good', 200);
+    playSound('power');
   }
-  if (e.heal)       healPlayer(e.heal + healBonus());
+  if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
   if (e.draw)       draw(e.draw);
   if (card.power && hasRelic('power-herb')) draw(1);
   if (card.exhaust) {
@@ -403,10 +407,10 @@ async function useItem(index) {
   }
 
   if (e.burn)     { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
-  if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); }
-  if (e.guard)    { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); }
-  if (e.focus)    { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); }
-  if (e.strength) { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); }
+  if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); statFx('player'); }
+  if (e.guard)    { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
+  if (e.focus)    { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (e.strength) { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.energy)   { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal)     healPlayer(e.heal);
   if (e.draw)     draw(e.draw);
@@ -480,6 +484,7 @@ async function enemyTurn() {
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
     log(`${b.def.name} took ${burnDamage} burn damage.`);
+    playSound('burn');
     if (hasRelic('heat-rock')) healPlayer(1);
     renderAll();
     await sleep(600);
@@ -530,11 +535,13 @@ async function enemyTurn() {
   } else if (move.kind === 'defend') {
     en.block += move.amount;
     pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
+    statFx('enemy');
     log(`${b.def.name} used ${move.name} and raised a shield.`);
   } else if (move.kind === 'buff') {
     en.strength += move.amount;
     pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
     playSound('stat-up');
+    statFx('enemy');
     log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
   }
 
@@ -543,6 +550,7 @@ async function enemyTurn() {
     en.strength += ENRAGE_BONUS;
     pop('enemy-zone', `😡 Enraged +${ENRAGE_BONUS}`, 'note bad', 350);
     playSound('stat-up');
+    statFx('enemy');
   }
 
   en.moveIndex += 1;                              // pick the next move
@@ -871,6 +879,7 @@ export function pickItem(index) {
 
 function cancelPick() {
   if (selectedUid === null && selectedItem === null) return;
+  playSound('cancel', 'confirm');
   selectedUid = null;
   selectedItem = null;
   renderItems();
@@ -968,6 +977,26 @@ function flash(id, className, ms = 400) {
   node.classList.add(className);
   setTimeout(() => node.classList.remove(className), ms);
 }
+/**
+ * The games' stat change: bands of colour scroll over the Pokémon's own shape, warm and rising for a raise
+ * (block and Guard count, like Defense), blue and sinking for a drop. The overlay is masked with the sprite's
+ * own GIF, so it takes its outline; it sits in the element that shakes and lunges, so it moves with it.
+ */
+function statFx(side, dir = 'up') {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const img = $(side === 'enemy' ? 'enemy-img' : 'player-sprite');
+  const host = side === 'enemy' ? $('enemy-portrait-box') : $('player-zone');
+  host.querySelector('.stat-fx')?.remove();
+  const box = img.getBoundingClientRect(), at = host.getBoundingClientRect();
+  const fx = el('div', `stat-fx ${dir}`);
+  Object.assign(fx.style, {
+    left: `${box.left - at.left}px`, top: `${box.top - at.top}px`, width: `${box.width}px`, height: `${box.height}px`,
+  });
+  fx.style.setProperty('--mask', `url("${img.currentSrc || img.src}")`);
+  host.append(fx);
+  setTimeout(() => fx.remove(), 1000);
+}
+
 const hitEffect = (id) => flash(id, 'hit', 420);
 const lunge = (id) => flash(id, 'lunge', 380);
 

@@ -21,6 +21,7 @@
    ============================================================ */
 
 import { $ } from './ui.js';
+import { playSound } from './audio.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;
@@ -1804,6 +1805,7 @@ function drawLightning(t) {
     life.bolt = bolt;
     life.boltAt = t;
     life.nextBolt = t + (storm.on ? FPS * (2 + rand() * 3) : FPS * 7);
+    if (storm.on) playSound('thunder');
   }
   const cycle = t - life.boltAt;
   if (cycle <= 1) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle === 0 ? 1.9 : 1.35, cycle === 0 ? 40 : 14);

@@ -785,6 +785,29 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
 #player-sprite.fled { opacity: 0; transform: translateX(-120px); }   /* Poké Doll: ran away */
 
+/* A stat change (statFx() in js/battle.js), like the games: stripes scroll over the Pokémon's silhouette,
+   the sprite's own GIF as the mask. Stepped, so it moves in pixel jumps. */
+.enemy-portrait { position: relative; }
+.stat-fx {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  -webkit-mask: var(--mask) 50% 100% / contain no-repeat;
+  mask: var(--mask) 50% 100% / contain no-repeat;
+  background: repeating-linear-gradient(to bottom, var(--fx-a) 0 8px, var(--fx-b) 8px 16px);
+  mix-blend-mode: hard-light;
+  opacity: 0;
+  animation: statFx 0.9s steps(18) forwards;
+}
+.stat-fx.up   { --fx-a: rgba(255, 96, 48, 0.85); --fx-b: rgba(255, 216, 96, 0.55); --fx-to: -64px; }
+.stat-fx.down { --fx-a: rgba(40, 96, 255, 0.85); --fx-b: rgba(150, 200, 255, 0.5); --fx-to: 64px; }
+@keyframes statFx {
+  0%   { opacity: 0; background-position: 0 0; }
+  15%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; background-position: 0 var(--fx-to); }
+}
+
 /* --- battle intro: enemy appears, then a Poké Ball releases your Pokémon --- */
 /* Like Diamond/Pearl: the enemy slides in on its pad from off the right edge as a silhouette, then
    colours in (.revealed) as it cries. The `translate` property, so the sprite's own transforms are untouched. */

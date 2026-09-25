@@ -215,7 +215,7 @@ function startBiome() {
 function showMap() {
   const biome = BIOMES[run.biome];
   setTheme(run.starter.type);
-  preloadSounds('event', 'buy', 'item', 'potion', 'item-get');
+  preloadSounds('event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -273,6 +273,7 @@ function initBag() {
 }
 
 function openBag() {
+  playSound('bag');
   renderItemList();   // items can be used up in battle, so this pocket is redrawn each time
   $('bag').hidden = false;
   $('bag-btn').setAttribute('aria-expanded', 'true');
@@ -365,6 +366,7 @@ function enterNode(node) {
   run.current = node.id;
   node.visited = true;
 
+  if (node.type === 'rest' || node.type === 'shop') playSound('door');
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
   if (node.type === 'shop') return martRoom();
@@ -412,6 +414,7 @@ function afterFight(node, result) {
     updateSave(d => { d.stats.enemiesDefeated += 1; });
     refreshCoins();
     toast(`+${run.pendingCoins.coins} 💰  +₽${prize} 💴`, 'ok');
+    playSound('coins');
     run.pendingCoins = null;
   };
 

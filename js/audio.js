@@ -47,11 +47,11 @@ const TRACKS = {
 const SOUNDS = {
   heal:  { url: 'assets/audio/sfx/heal.mp3', gain: 0.5 },   // the Pokémon Center chime
   card:  { url: 'assets/audio/sfx/card.mp3' },    // a card is played
-  confirm: { url: 'assets/audio/sfx/card.mp3' },  // any other window's confirm (Add to deck, Forget it, Yes...): the user wants it to match
+  confirm: { url: 'assets/audio/sfx/card.mp3', gain: 0.3 },  // any other window's confirm (Add to deck, Forget it, Yes...) and the menu blip: same file as card (the user's call), much quieter (the user found it too loud)
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
-  block: { synth: blockClink },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
+  block: { synth: blockClink, gain: 0.5 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
   event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
@@ -63,6 +63,16 @@ const SOUNDS = {
   'stat-down':  { url: 'assets/audio/sfx/stat-down.mp3' },    // the enemy is Weakened
   'item-get':   { url: 'assets/audio/sfx/item-get.mp3' },     // a relic or item is received (not bought: that's buy)
   'low-hp':     { url: 'assets/audio/sfx/low-hp.mp3' },       // looped by setLoop() while your HP is at 20% or below in battle
+  'heal-hp':    { url: 'assets/audio/sfx/heal-hp.mp3' },      // a card or power heals you in battle (not items: potion; not the Center: heal)
+  power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
+  burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
+  shuffle:      { url: 'assets/audio/sfx/shuffle.mp3' },      // the discard pile is shuffled back into the draw pile
+  thunder:      { url: 'assets/audio/sfx/thunder.mp3' },      // a lightning bolt in a boss's storm
+  coins:        { url: 'assets/audio/sfx/coins.mp3' },        // a fight's PokéCoins and ₽ are paid out
+  door:         { url: 'assets/audio/sfx/door.mp3' },         // walking into a Poké Mart or Pokémon Center
+  achievement:  { url: 'assets/audio/sfx/achievement.mp3' },  // an achievement unlocks a starter
+  cancel:       { url: 'assets/audio/sfx/cancel.mp3' },       // Back / Skip / Leave, closing a window, backing out of a pick (falls back to confirm)
+  bag:          { url: 'assets/audio/sfx/bag.mp3' },          // the Bag is opened
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -106,10 +116,13 @@ let lastCue = -1;          // ctx time the latest effect started
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
 const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, .card-focus, .card-zoom, [title], [data-tip]';
+// ...except these back out (Back / Skip / Leave, No, a window's Close or ✕), so they blip `cancel`
+const CANCELS = '#reward-skip, #confirm-no, .sheet-close, form[method="dialog"] button';
 function menuBlip(e) {
   if (!ctx || !e.target.closest?.(CONTROLS)) return;
   const at = ctx.currentTime;
-  setTimeout(() => { if (lastCue < at) playSound('confirm'); });
+  const name = e.target.closest(CANCELS) ? 'cancel' : 'confirm';
+  setTimeout(() => { if (lastCue < at) playSound(name, 'confirm'); });
 }
 
 /** Called once at startup. */
@@ -119,6 +132,8 @@ export function initAudio() {
 
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
   document.addEventListener('click', menuBlip);
+  // Escape on a modal window (`cancel` doesn't bubble, so listen while it captures)
+  document.addEventListener('cancel', (e) => { if (e.target instanceof HTMLDialogElement) playSound('cancel', 'confirm'); }, true);
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
@@ -344,6 +359,7 @@ function stop(name) {
 function unlock() {
   const context = audioContext();
   context.resume();
+  preloadSounds('confirm', 'cancel');   // so the first blip isn't late waiting on a download (or a missing file's 404)
   if (current && !getSave().muted) fadeIn(current);
   // stay subscribed until sound really works: the context is running and the current track isn't stuck paused
   setTimeout(() => {

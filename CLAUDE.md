@@ -441,6 +441,11 @@ Pokémon stand on Gen 3/4-style pads (`--pad`, a data-URL pixel image: grass,
 mossy flagstone or cracked lava rock, from the scene's `pad`), drawn by
 `.enemy-zone::after` / `.player-zone::before` so they don't lunge with the
 sprites.
+Stat changes look like the games': `statFx(side, dir)` in `js/battle.js` lays a `.stat-fx` over the sprite, masked
+with the sprite's own GIF (`mask`, contain, 50% 100%, the same fit as the `<img>`), with stepped stripes that
+rise warm (`up`) or sink blue (`down`) for 0.9 s. It sits in `#player-zone` / `#enemy-portrait-box` so it moves
+with a shake. Raises: strength, focus, Guard and block too (the user's call: block is Defense), either side,
+including block at the start of a turn; drops: Weaken. Skipped under reduced motion.
 Battle moments: a hit that takes at least a quarter of the target's HP
 (clamped to 12–25) runs `bigHit()` in `js/battle.js`, which jolts `.arena`
 (the `translate` property, so sprite transforms are untouched) and flashes the
@@ -698,8 +703,8 @@ The rest of `SOUNDS` and where each plays: `card` (`playCard()`), `hit`
 (damage gets through, either side; `hitSound()` in `js/battle.js` plays `hit-super` /
 `hit-weak` for super / not very effective hits, like the games' three damage sounds, falling
 back to `hit` while those files are missing; a fully blocked hit plays `block`
-instead; there are no critical hits), `block` (a card gains block), `faint` (enemy KO, in `finish()`),
-`confirm` (the same file as `card` and `item`, the user's call: every window's confirm
+instead; there are no critical hits), `block` (a card gains block; at half gain, the user found it too loud), `faint` (enemy KO, in `finish()`),
+`confirm` (the same file as `card` and `item`, the user's call, but at 0.3 gain since it plays on nearly every tap: every window's confirm
 sounds alike; `showChoice` plays it when an `ask` option is taken, or the option's
 `confirmSound`, which Mart purchases and the Mart's removal set to `buy`. It's also the menu
 blip, the user's call: `menuBlip()` in `js/audio.js` plays it on any click on a control
@@ -712,9 +717,16 @@ removal is paid for), `ball-throw` / `ball-open` (the battle intro's Poké Ball;
 `stat-up` (strength or focus gained, either side, enemy buffs and Enrage too), `stat-down` (the enemy is
 Weakened), `item-get` (a relic or item received: reward picks via `confirmSound`, the Fan Club gift,
 the Shrine; not Mart buys), `low-hp` (looped with `setLoop()` in `js/audio.js` while your HP is at 20% or
-below, set on every `renderAll()`, off when the battle ends, is abandoned, or on mute) and `event` (walking into a ❓ room, in `enterNode()`,
-so "Back" re-renders don't replay it). Battle sounds preload in
-`startBattle()`, map ones in `showMap()`. A missing file is silent (one
+below, set on every `renderAll()`, off when the battle ends, is abandoned, or on mute), `event` (walking into a ❓ room, in `enterNode()`,
+so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, not relics; items are `potion`, the Center `heal`),
+`power` (a power card is played), `burn` (burn damage ticks), `shuffle` (the discard pile goes back into the draw
+pile, in `draw()`), `thunder` (each lightning bolt while a boss's storm is on, in `drawLightning()` in `js/scene.js`),
+`coins` (a fight's PokéCoins and ₽ are paid, `collect()`), `door` (walking into a Mart or Center, `enterNode()`),
+`achievement` (`checkAchievements()` grants a starter), `bag` (the Bag opens) and `cancel` (the menu blip for
+backing out, `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕; also Escape on a modal
+window, and backing out of a picked card or reward; falls back to `confirm`). The evolution pop-up has no sound on
+purpose: the user has a bigger plan for evolving. Battle sounds preload in
+`startBattle()` (`thunder` only for bosses), map ones in `showMap()`, `confirm` / `cancel` in `unlock()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat
 of the same sound within `SFX_MIN_GAP` (70 ms) and cuts a still-ringing
 earlier copy with a 30 ms fade, so multi-hits don't pile up; different

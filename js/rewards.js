@@ -139,10 +139,10 @@ function openFocus(option, btn, take) {
   const layer = el('div', 'card-focus reward-focus');
   layer.append(big, yes);
   layer.addEventListener('click', (e) => {
-    if (e.target.closest('.focus-card, .focus-confirm')) take(); else closeFocus();
+    if (e.target.closest('.focus-card, .focus-confirm')) take(); else backOut();
   });
   const onKey = (e) => {
-    if (e.key === 'Escape') { e.preventDefault(); closeFocus(); }
+    if (e.key === 'Escape') { e.preventDefault(); backOut(); }
     if ((e.key === 'Enter' || e.key === ' ') && e.target === big) { e.preventDefault(); take(); }
   };
   document.addEventListener('keydown', onKey);
@@ -150,6 +150,11 @@ function openFocus(option, btn, take) {
   document.body.append(layer);
   focus = { layer, btn, onKey };
   yes.focus({ preventScroll: true });
+}
+
+function backOut() {
+  playSound('cancel', 'confirm');
+  closeFocus();
 }
 
 function closeFocus() {

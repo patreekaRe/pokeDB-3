@@ -4,6 +4,7 @@
    ============================================================ */
 
 import { getSave, updateSave } from './storage.js';
+import { playSound } from './audio.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
@@ -31,5 +32,6 @@ export function checkAchievements() {
     updateSave(d => { d.unlocked.push(a.starter); });
     earned.push(STARTERS_BY_ID[a.starter]);
   }
+  if (earned.length) playSound('achievement');
   return earned;
 }
