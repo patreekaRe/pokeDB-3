@@ -271,10 +271,10 @@ const PLACE_ART = {
     counter: ['#f89878', '#e05838', '#a83020'],
     panel: ['#fff4dc', '#f2e2c4', '#d8c098', '#a87848'],
     ball: ['#e04030', '#ffffff', '#383040'],
-    machine: ['#fbfbfb', '#dcdce4', '#a8a8b8', '#4a5264'],
+    machine: ['#fbfbfb', '#dcdce4', '#a8a8b8', '#4a5264', '#2c3240', '#58d858', '#a83020'],
     glow: ['#50d8f0', '#c0fcff', '#2a88a8'],
     screen: ['#a8d8f8', '#4878d8', '#f0fcff'],
-    pc: ['#f0e0c0', '#c8b490', '#8a7458'],
+    pc: ['#f0e0c0', '#c8b490', '#8a7458', '#5a4632', '#fff8e4', '#6e5c46'],
     monitor: ['#4a5264', '#788098', '#10281c', '#58f888', '#1a3e2a'],
     clock: ['#b83828', '#fffcf0', '#303038', '#8a7458'],
     map: ['#5898d8', '#78c068', '#e8d090', '#8a5a34'],
@@ -1143,8 +1143,8 @@ function centerFront() {
   const cx = W >> 1, top = counterTop(), half = Math.max(34, Math.min(64, Math.round(W * 0.3)));
   counter(cx, top, half);
   life.spots = { ...life.spots, nurse: { x: cx, y: top }, foot: top + COUNTER_TALL };   // Chansey is a real sprite standing behind the counter (run.js)
-  healMachine(cx + 13, top);
-  counterPc(cx - 31, top);
+  healMachine(cx + 12, top);
+  counterPc(cx - 32, top);
   const foot = top + COUNTER_TALL - 1;
   for (const s of [-1, 1]) {
     pottedPlant(cx + s * (half + 7), foot, 4);
@@ -1350,55 +1350,75 @@ function floorBall(cx, cy, kind, shadow = true) {
 }
 
 
-/** The healing machine on the counter, like the games': a console whose tray holds six Poké Balls in two rows of
-    three, a small screen on its back, and a status light. The slots sit empty until you rest (drawCenter). */
-function healMachine(x0, top) {
-  const [white, light, grey, slate] = S.machine, [lite, blue] = S.screen, [, , deep] = S.glow;
-  // the screen on the back, showing a cross
-  for (let y = top - 13; y <= top - 7; y++) for (let x = x0 + 11; x <= x0 + 19; x++) {
-    const edge = x === x0 + 11 || x === x0 + 19 || y === top - 13;
-    solid(x, y, edge ? grey : lite);
-  }
-  for (let k = -1; k <= 1; k++) { solid(x0 + 15 + k, top - 10, S.ball[0]); solid(x0 + 15, top - 10 + k, S.ball[0]); }
-  // the tray's top surface, seen from a little above, with its six slots
-  const slots = [];
-  for (let y = top - 7; y <= top - 3; y++) for (let x = x0; x <= x0 + 20; x++) {
-    solid(x, y, y === top - 7 ? white : x === x0 || x === x0 + 20 ? grey : light);
-  }
-  for (let row = 0; row < 2; row++) for (let i = 0; i < 3; i++) {
-    const sx = x0 + 2 + i * 6 + row, sy = top - 6 + row * 2;
-    for (let k = 0; k < 3; k++) solid(sx + k, sy, slate);
-    solid(sx + 1, sy + 1, deep);
-    slots.push([sx, sy]);
-  }
-  // the front face: a red stripe and the status light
-  for (let y = top - 2; y <= top + 1; y++) for (let x = x0; x <= x0 + 20; x++) {
-    solid(x, y, y === top + 1 ? grey : y === top - 1 ? S.ball[0] : x === x0 || x === x0 + 20 ? grey : white);
-  }
-  solid(x0 + 18, top, blue);
-  for (let x = x0; x <= x0 + 21; x++) tint(x, top + 2, 0.85);
-  life.machine = { slots, light: { x: x0 + 18, y: top }, screen: { x0: x0 + 12, x1: x0 + 18, y0: top - 12, y1: top - 7 } };
-  life.spots = { ...life.spots, machine: { x0, x1: x0 + 20, y0: top - 13, y1: top + 1 } };
+/** Paint a pixel map (one string per row, one letter per pixel, '.' left alone) with `key`'s colours, its top left at x0, y0. */
+function pixelMap(x0, y0, rows, key) {
+  rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') solid(x0 + x, y0 + y, key[row[x]]); });
 }
 
-/** The Center's PC, like the games' art: a chunky cream CRT on a stand, a blue menu on its screen, a keyboard in front. */
+/** The healing machine on the counter, like the games': a monitor on its back showing the Center's cross, a tray with
+    six recessed slots for Poké Balls in two staggered rows, a lip, and a white front with a red stripe, vents, two
+    buttons and the status light. The slots sit empty until you rest (drawCenter). */
+function healMachine(x0, top) {
+  const [white, light, grey, slate, hole, green, maroon] = S.machine, [lite, blue, glare] = S.screen, [, , deep] = S.glow;
+  const y0 = top - 17;
+  pixelMap(x0, y0, [
+    '......oooooooooo......',
+    '......oLLLLLLLLo......',
+    '......oLwcccccGo......',
+    '......oLccRRccGo......',
+    '......oLcRRRRcGo......',
+    '......oLccRRccGo......',
+    '......oGGGGGGGGo......',
+    '.......ooGGGGoo.......',
+    '.oooooooooooooooooooo.',
+    'oWWWWWWWWWWWWWWWWWWWWo',
+    'oLhhhLLhhhLLhhhLLLLLGo',
+    'oLheeLLheeLLheeLLyLLGo',
+    'oLLhhhLLhhhLLhhhLrLLGo',
+    'oLLheeLLheeLLheeLLLLGo',
+    'oGGGGGGGGGGGGGGGGGGGGo',
+    'oWWWWWWWWWWWWWWWWWWWLo',
+    'oRRRRRRRRRRRRRRRRRRRDo',
+    'oWWWvWvWvWWWWWWWWbWWLo',
+    '.oooooooooooooooooooo.',
+  ], { o: slate, W: white, L: light, G: grey, h: hole, e: deep, c: lite, w: glare, R: S.ball[0], D: maroon, v: grey, y: green, r: S.ball[0], b: blue });
+  for (let x = x0 + 1; x <= x0 + 22; x++) tint(x, top + 2, 0.85);
+  // a ball rests centred in a slot: drawCenter puts it at (x + 1, y - 2)
+  const slots = [2, 8, 14].map(c => [x0 + c, y0 + 12]).concat([3, 9, 15].map(c => [x0 + c, y0 + 14]));
+  life.machine = { slots, light: { x: x0 + 17, y: y0 + 17 }, screen: { x0: x0 + 8, x1: x0 + 13, y0: y0 + 2, y1: y0 + 5 } };
+  life.spots = { ...life.spots, machine: { x0, x1: x0 + 21, y0, y1: top + 1 } };
+}
+
+/** The Center's PC, like the games' art: a chunky cream CRT with a lit edge and a shaded one, a blue menu on its
+    screen (the top row picked, its cursor blinking in drawCenter), power and disk lights, a stand, and a keyboard. */
 function counterPc(x0, top) {
-  const [beige, tan, brown] = S.pc, [lite, blue, glow] = S.screen;
-  for (let y = top - 14; y <= top - 4; y++) for (let x = x0; x <= x0 + 12; x++) {
-    const corner = (x === x0 || x === x0 + 12) && (y === top - 14 || y === top - 4);
-    if (corner) continue;
-    const screen = x > x0 + 1 && x < x0 + 11 && y > top - 13 && y < top - 5;
-    const edge = x === x0 || x === x0 + 12 || y === top - 14 || y === top - 4;
-    solid(x, y, screen ? blue : edge ? tan : y === top - 13 ? glow : beige);
-  }
-  // the menu on the screen: three rows, the first one highlighted
-  for (let x = x0 + 3; x <= x0 + 9; x++) solid(x, top - 11, lite);
-  for (let x = x0 + 4; x <= x0 + 8; x++) { solid(x, top - 9, glow); solid(x, top - 7, glow); }
-  solid(x0 + 10, top - 5, S.ball[0]);   // the power light
-  for (let y = top - 3; y <= top - 2; y++) for (let x = x0 + 4; x <= x0 + 8; x++) solid(x, y, y === top - 3 ? tan : brown);   // the stand
-  for (let x = x0 - 1; x <= x0 + 13; x++) { solid(x, top - 1, x % 2 ? beige : brown); solid(x, top, tan); }   // the keyboard
-  life.pc = { x: x0 + 3, y: top - 9 };
-  life.spots = { ...life.spots, pc: { x0: x0 - 1, x1: x0 + 13, y0: top - 14, y1: top } };
+  const [beige, tan, brown, outline, cream, key] = S.pc, [lite, blue, glare] = S.screen;
+  const y0 = top - 18;
+  pixelMap(x0, y0, [
+    '.ooooooooooooo.',
+    'oBBBBBBBBBBBBbo',
+    'oBbdddddddddbto',
+    'oBdwmmmmmmmmdto',
+    'oBdmlllllllmdto',
+    'oBdmmmmmmmmmdto',
+    'oBdmwwwwwmmmdto',
+    'oBdmmmmmmmmmdto',
+    'oBdmwwwwmmmmdto',
+    'oBbdddddddddbto',
+    'obbbbbbbbgbrbto',
+    'ottttttttttttto',
+    '.ooooooooooooo.',
+    '.....ottto.....',
+    '...oodddddoo...',
+  ], { o: outline, B: cream, b: beige, t: tan, d: brown, m: blue, l: lite, w: glare, g: S.machine[5], r: S.ball[0] });
+  pixelMap(x0 - 1, y0 + 15, [
+    '.ooooooooooooooo.',
+    'oBkBkBkBkBkBkBkBo',
+    'okBkBkBkBkBkBkBko',
+    'ottttttttttttttto',
+  ], { o: outline, B: cream, k: key, t: tan });
+  life.pc = { x: x0 + 3, y: y0 + 4 };
+  life.spots = { ...life.spots, pc: { x0: x0 - 1, x1: x0 + 15, y0, y1: top } };
 }
 
 function pottedPlant(x, foot, size) {
@@ -1859,7 +1879,7 @@ function drawCampfire(t) {
 /** The Center: your Poké Ball dropping into the machine's tray while you rest, then flashing with the chime; its screen
     and status light, the PC's cursor, the monitors' heartbeat trace and HP bars, and the clock's hands at the real time. */
 function drawCenter(t) {
-  const m = life.machine, [red, white, dark] = S.ball, [lite, blue] = S.screen, [, , , bright] = S.monitor;
+  const m = life.machine, [red, white, dark] = S.ball, [, blue, glare] = S.screen, [, , , bright] = S.monitor;
   const since = life.healAt == null ? -1 : t - life.healAt, f = life.flash;
   const flash = f && t >= f.from && t < f.to && Math.floor((t - f.from) / 2) % 2 === 0;   // in time with the chime
   if (since >= 0) {
@@ -1874,7 +1894,7 @@ function drawCenter(t) {
   if (flash) for (let y = m.screen.y0; y <= m.screen.y1; y++) for (let x = m.screen.x0; x <= m.screen.x1; x++) tint(x, y, 1.2, 30);
   if (t % 12 < 6 || since >= 0) put(m.light.x, m.light.y, since >= 0 ? S.glow[1] : blue);
 
-  if (t % 8 < 4) put(life.pc.x - 1, life.pc.y - 2, lite);   // the menu cursor
+  if (t % 8 < 4) put(life.pc.x, life.pc.y, glare);   // the menu cursor, beside the picked row
 
   for (const mon of life.monitors) {
     if (mon.kind === 'pulse') {

@@ -413,7 +413,7 @@ real time for the chime's length), and on wider walls a clock showing the real
 time and the town map. Chansey is the real sprite (`assets/pokemon/chansey-front.gif`,
 `.center-nurse`, cropped at the counter top by `placeCenterSpots()`); on the counter
 are the games' PC (a cream CRT with a blue menu, a keyboard) and the healing machine
-(a tray of six slots and a screen); a Poké Ball rug in front. Its `horizon: 0.6` puts
+(a tray of six slots and a screen), both outlined, shaded pixel maps (`pixelMap()`: one letter per pixel, the user wanted them detailed); a Poké Ball rug in front. Its `horizon: 0.6` puts
 the counter below the Center's two tiles. Rest, like the games: the music cuts,
 `healAtCenter()` drops your one Poké Ball into the tray (you carry one Pokémon, so
 the other five slots stay empty) and resolves once it's in, then the `heal` chime
