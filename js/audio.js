@@ -63,16 +63,17 @@ const SOUNDS = {
   'stat-down':  { url: 'assets/audio/sfx/stat-down.mp3' },    // the enemy is Weakened
   'item-get':   { url: 'assets/audio/sfx/item-get.mp3' },     // a relic or item is received (not bought: that's buy)
   'low-hp':     { url: 'assets/audio/sfx/low-hp.mp3' },       // looped by setLoop() while your HP is at 20% or below in battle
-  'heal-hp':    { url: 'assets/audio/sfx/heal-hp.mp3' },      // a card or power heals you in battle (not items: potion; not the Center: heal)
+  'heal-hp':    { url: 'assets/audio/sfx/potion.mp3' },       // a card or power heals you in battle: the potion's file (the user's call); never the Center's heal
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
-  shuffle:      { url: 'assets/audio/sfx/shuffle.mp3' },      // the discard pile is shuffled back into the draw pile
+  shuffle:      { synth: shuffleRiffle },                     // the discard pile is shuffled back into the draw pile: made in code (the user's call)
   thunder:      { url: 'assets/audio/sfx/thunder.mp3' },      // a lightning bolt in a boss's storm
-  coins:        { url: 'assets/audio/sfx/coins.mp3' },        // a fight's PokéCoins and ₽ are paid out
-  door:         { url: 'assets/audio/sfx/door.mp3' },         // walking into a Poké Mart or Pokémon Center
+  coins:        { url: 'assets/audio/sfx/buy.mp3' },          // a fight's PokéCoins and ₽ are paid out: the Mart's buy file (the user's call)
+  door:         { url: 'assets/audio/sfx/event.mp3' },        // walking into a Poké Mart or Pokémon Center: the same sound as a ? room (the user's call)
   achievement:  { url: 'assets/audio/sfx/achievement.mp3' },  // an achievement unlocks a starter
-  cancel:       { url: 'assets/audio/sfx/cancel.mp3' },       // Back / Skip / Leave, closing a window, backing out of a pick (falls back to confirm)
+  cancel:       { url: 'assets/audio/sfx/bag.mp3' },          // Back / Skip / Leave, closing a window, backing out of a pick: the Bag's file (the user's call)
   bag:          { url: 'assets/audio/sfx/bag.mp3' },          // the Bag is opened
+  'run-away':   { url: 'assets/audio/sfx/run-away.mp3' },     // you get away: the Poké Doll, or Team Rocket's "Run for it"
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -393,4 +394,34 @@ function blockClink(ac) {
   }
   for (let i = 0; i < length; i++) out[i] *= 0.9 / peak;
   return buffer;
+}
+
+/** Scale a synth buffer so its loudest sample is `peak`: the MP3s peak around 0.1-0.25, so synths sit with them. */
+function normalize(buffer, peak) {
+  const out = buffer.getChannelData(0);
+  const top = out.reduce((max, v) => Math.max(max, Math.abs(v)), 0) || 1;
+  for (let i = 0; i < out.length; i++) out[i] *= peak / top;
+  return buffer;
+}
+
+/**
+ * The shuffle sound: a deck riffled back together. A run of short lo-fi noise ticks (sample-and-hold noise, which
+ * gives the 8-bit grit) that bunch up in the middle like cards falling, then a low square "thup" as the pile squares up.
+ */
+function shuffleRiffle(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.42);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const ticks = [];
+  for (let k = 0; k < 16; k++) { const x = k / 15; ticks.push(0.3 * (x - 0.35 * Math.sin(2 * Math.PI * x) / (2 * Math.PI))); }
+  let held = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    if (i % 6 === 0) held = Math.random() * 2 - 1;
+    const tick = ticks.reduce((sum, at) => (t >= at ? sum + Math.exp(-(t - at) / 0.005) : sum), 0);
+    const thup = t >= 0.34 ? Math.sign(Math.sin(2 * Math.PI * 196 * (t - 0.34))) * 0.35 * Math.exp(-(t - 0.34) / 0.025) : 0;
+    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));
+    out[i] = (held * Math.min(tick, 1) * 0.6 + thup) * fade;
+  }
+  return normalize(buffer, 0.2);
 }

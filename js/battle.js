@@ -150,7 +150,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'shuffle', ...(b.kind === 'boss' ? ['thunder'] : []));
+    'heal-hp', 'power', 'burn', 'shuffle', 'run-away', ...(b.kind === 'boss' ? ['thunder'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -394,7 +394,7 @@ async function useItem(index) {
   b.items.splice(index, 1);
   const e = item.effects;
   log(`You used ${item.name}!`);
-  playSound(e.heal ? 'potion' : 'item', 'item');
+  playSound(e.flee ? 'run-away' : e.heal ? 'potion' : 'item', 'item');
 
   if (e.flee) {
     b.over = true;

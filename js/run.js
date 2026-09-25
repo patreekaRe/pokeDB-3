@@ -215,7 +215,7 @@ function startBiome() {
 function showMap() {
   const biome = BIOMES[run.biome];
   setTheme(run.starter.type);
-  preloadSounds('event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag');
+  preloadSounds('event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -852,6 +852,7 @@ const EVENT_CHOICES = {
       }),
       textOption('⚔️', 'Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
       textOption('💨', 'Run for it', `Lose ${flee} HP getting away.`, () => {
+        playSound('run-away');
         loseHp(flee);
         toast(`Got away, but lost ${flee} HP.`, 'warn');
         showMap();
