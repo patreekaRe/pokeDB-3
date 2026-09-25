@@ -2,7 +2,8 @@
  * Battle transitions, Gen 3/4-style: every fight flashes white twice, then wipes to black its own way
  * (wild: bars slide in from the sides; elite: a closing iris; boss: the screen shatters), and the
  * battle theme starts with the flash. Before a boss, its grey silhouette over the map's boss room
- * colours in with its cry. Nothing here saves: a refresh mid-way resumes on the map before the room.
+ * colours in with its cry. Once the battle is set up under the black, the wipe opens back up onto it
+ * the same way. Nothing here saves: a refresh mid-way resumes on the map before the room.
  */
 import { el, sleep } from './ui.js';
 import { playCry, playMusic, playSound, preloadCries, preloadMusic } from './audio.js';
@@ -38,7 +39,7 @@ export async function battleWipe(kind) {
   await sleep(FLASH_MS + (WIPE_MS[kind] ?? WIPE_MS.fight));
   return async () => {
     wipe.classList.add('out');
-    await sleep(300);
+    await sleep(500);   // the longest opening (the boss's tiles) takes ~470 ms
     wipe.remove();
   };
 }

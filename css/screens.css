@@ -1297,7 +1297,6 @@ body.battle-intro { pointer-events: none; }
   display: grid;
   overflow: hidden;
   pointer-events: auto;
-  transition: opacity 0.3s;
 }
 .battle-wipe::before {
   content: '';
@@ -1355,7 +1354,23 @@ body.battle-intro { pointer-events: none; }
 @keyframes wipe-tile {
   to { scale: 1; rotate: 0deg; }
 }
-.battle-wipe.out { opacity: 0; }
+/* ...and each opens back up onto the battle the way it closed: the bars carry on off the far side,
+   the iris opens, the tiles fall away from the centre first */
+.wipe-fight.out i { animation: wipe-bar-out 0.24s steps(6) var(--delay) both; }
+@keyframes wipe-bar-out {
+  from { translate: 0 0; }
+  to { translate: calc(var(--from) * -100%) 0; }
+}
+.wipe-elite.out i { animation: wipe-iris-open 0.45s steps(10) both; }
+@keyframes wipe-iris-open {
+  from { width: 0; height: 0; }
+  to { width: 120vmax; height: 120vmax; }
+}
+.wipe-boss.out i { animation: wipe-tile-out 0.2s ease-out calc(var(--delay) * 0.6) both; }
+@keyframes wipe-tile-out {
+  from { scale: 1; rotate: 0deg; }
+  to { scale: 0; rotate: calc(var(--spin) * -45deg); }
+}
 .map-trainer {
   position: absolute;
   z-index: 2;

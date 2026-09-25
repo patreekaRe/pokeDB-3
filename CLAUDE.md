@@ -538,7 +538,9 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   `fight()` in `js/run.js` awaits `battleWipe(kind)` (two white flashes, then wild: bars from
   alternate sides, elite: a closing iris, boss: a shatter from the centre; the battle theme
   starts with the flash, so `startBattle()`'s `playMusic` is a no-op), starts the battle under
-  the black and fades it out: ~1.2 s, ~2.2 s for a boss. Before a boss, `walkTo()` runs
+  the black, then opens onto it the same way (`.out`: the bars carry on off the far side, the
+  iris opens, the tiles fall away), so the battle screen never just appears: ~1.6 s, ~2.7 s for
+  a boss. Before a boss, `walkTo()` runs
   `bossReveal()`: the silhouette colours in (`.revealed`) with its cry, and `body.battle-intro`
   blocks taps. Nothing checkpoints until `showMap()`, so a refresh mid-way resumes before the
   room. Reduced motion keeps the reveal's cry and pause but skips the wipe.
