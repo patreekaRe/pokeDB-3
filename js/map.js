@@ -29,6 +29,7 @@ import { $, el } from './ui.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { TYPES } from './data/cards.js';
 import { buildingSvg } from './buildings.js';
+import { bossReveal, preloadBossReveal } from './transition.js';
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
@@ -612,12 +613,15 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
   // The biome's boss waits above its room as a grey silhouette, a hint of what's coming.
   const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
+  bossShadow = null;
   if (boss?.image) {
     const img = el('img', 'map-boss-shadow');
     img.src = boss.image;
     img.alt = '';
     place(img, CENTER_X, rowY(FLOORS));
     box.append(img);
+    bossShadow = img;
+    if (reachable.has(map.boss.id)) preloadBossReveal(boss.spriteId);
   }
 
   if (trainer) {
@@ -643,13 +647,18 @@ function place(elem, x, y) {
  * arrives, and taps are ignored meanwhile. Showdown front sprites face left, so it flips to walk right.
  */
 const WALK_MS = [500, 850];    // one link's walk, from a short straight link to the long start road (the user's pace: 0.3-0.5 s zoomed past, 0.65-1.1 s dragged)
-let walking = false, routesSvg = null, trainerImg = null, walkFrom = null;
+let walking = false, routesSvg = null, trainerImg = null, walkFrom = null, bossShadow = null;
 
 function walkTo(node, onPick) {
   if (walking) return;
   const img = trainerImg;
-  if (!img || matchMedia('(prefers-reduced-motion: reduce)').matches) return onPick(node);
   walking = true;
+  const arrive = async () => {
+    if (node.type === 'boss') await bossReveal(bossShadow, ENEMY_DEFS[node.enemyId]?.spriteId);
+    walking = false;
+    onPick(node);
+  };
+  if (!img || matchMedia('(prefers-reduced-motion: reduce)').matches) return arrive();
   const points = linkPoints(walkFrom, node);
   const steps = tileSteps(points);
   const ms = Math.min(WALK_MS[1], Math.max(WALK_MS[0], steps.length * 75)) / (steps.length - 1);
@@ -666,7 +675,7 @@ function walkTo(node, onPick) {
     for (const line of trail) line.setAttribute('points', polyPoints(steps.slice(0, i + 1)));
     if (i < steps.length - 1) return setTimeout(step, ms);
     img.classList.remove('bob');
-    setTimeout(() => { walking = false; onPick(node); }, 120);
+    setTimeout(arrive, 120);
   };
   setTimeout(step, ms);
 }

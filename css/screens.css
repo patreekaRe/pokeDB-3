@@ -1275,7 +1275,87 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   pointer-events: none;
   image-rendering: pixelated;
   filter: brightness(0) invert(0.3) opacity(0.75) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  transition: filter 0.45s steps(5);
 }
+/* the boss reveal (js/transition.js): the silhouette colours in, in pixel steps, and rears up */
+.map-boss-shadow.revealed {
+  z-index: 3;
+  filter: brightness(1) invert(0) opacity(1) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  animation: boss-rear 0.5s steps(4) both;
+}
+@keyframes boss-rear {
+  0% { scale: 1; }
+  50% { scale: 1.18; }
+  100% { scale: 1.1; }
+}
+body.battle-intro { pointer-events: none; }
+/* battle transitions (js/transition.js): two white flashes, then each fight kind's own wipe to black */
+.battle-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  overflow: hidden;
+  pointer-events: auto;
+  transition: opacity 0.3s;
+}
+.battle-wipe::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #fff;
+  opacity: 0;
+  animation: wipe-flash 0.4s steps(1) both;
+}
+@keyframes wipe-flash {
+  0%, 50% { opacity: 1; }
+  25%, 75%, 100% { opacity: 0; }
+}
+/* wild: bars slide in from alternate sides */
+.wipe-fight { grid-template-rows: repeat(8, 1fr); }
+.wipe-fight i {
+  background: #000;
+  margin: -1px 0;   /* a hair of overlap so no seams show */
+  translate: calc(var(--from) * 100%) 0;
+  animation: wipe-bar 0.24s steps(6) both;
+  animation-delay: calc(0.4s + var(--delay));
+}
+@keyframes wipe-bar {
+  to { translate: 0 0; }
+}
+/* elite: an iris closes on the middle of the screen */
+.wipe-elite i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 150vmax #000;
+  /* its size animates rather than its scale, which would shrink the black shadow with it */
+  animation: wipe-iris 0.5s steps(10) 0.4s both;
+}
+@keyframes wipe-iris {
+  from { width: 120vmax; height: 120vmax; }
+  to { width: 0; height: 0; }
+}
+/* boss: the screen shatters to black from the centre */
+.wipe-boss {
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+}
+.wipe-boss i {
+  background: #000;
+  scale: 0;
+  rotate: calc(var(--spin) * 45deg);
+  margin: -1px;
+  animation: wipe-tile 0.22s ease-in both;
+  animation-delay: calc(0.4s + var(--delay));
+}
+@keyframes wipe-tile {
+  to { scale: 1; rotate: 0deg; }
+}
+.battle-wipe.out { opacity: 0; }
 .map-trainer {
   position: absolute;
   z-index: 2;

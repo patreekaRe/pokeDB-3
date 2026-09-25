@@ -31,6 +31,7 @@ import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps } from './scene.js';
+import { battleWipe } from './transition.js';
 
 let run = null;
 
@@ -214,7 +215,7 @@ function startBiome() {
 function showMap() {
   const biome = BIOMES[run.biome];
   setTheme(run.starter.type);
-  preloadSounds('event', 'buy', 'item', 'potion');
+  preloadSounds('event', 'buy', 'item', 'potion', 'encounter');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -375,9 +376,11 @@ function enterNode(node) {
    FIGHTS AND WHAT COMES AFTER
    ============================================================ */
 
-function fight(node) {
+async function fight(node) {
+  const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   startBattle({ run, encounter, onEnd: (result) => afterFight(node, result) });
+  enter();
 }
 
 function afterFight(node, result) {

@@ -534,6 +534,14 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   front sprites face left), with the red walked dashes trailing it. 500–850
   ms a link (`WALK_MS`; faster looked like zooming), then the room opens; taps are ignored meanwhile,
   and reduced motion skips it (the user's picks: brisk, stepped, trailed).
+- Every battle opens with a Gen 3/4-style transition (`js/transition.js`, the user's call):
+  `fight()` in `js/run.js` awaits `battleWipe(kind)` (two white flashes, then wild: bars from
+  alternate sides, elite: a closing iris, boss: a shatter from the centre; the battle theme
+  starts with the flash, so `startBattle()`'s `playMusic` is a no-op), starts the battle under
+  the black and fades it out: ~1.2 s, ~2.2 s for a boss. Before a boss, `walkTo()` runs
+  `bossReveal()`: the silhouette colours in (`.revealed`) with its cry, and `body.battle-intro`
+  blocks taps. Nothing checkpoints until `showMap()`, so a refresh mid-way resumes before the
+  room. Reduced motion keeps the reveal's cry and pause but skips the wipe.
 
 The home shop is the **Game Corner** (the user's call: the Gold/Silver prize
 counter, where coins buy Pokémon), so it can't be mistaken for the run's blue
@@ -693,7 +701,7 @@ or zoom), unless that click already started an effect of its own; cries don't co
 starter tap blips then cries. New buttons get it for free; to silence one, keep it out of `CONTROLS`),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
-removal is paid for) and `event` (walking into a ❓ room, in `enterNode()`,
+removal is paid for), `encounter` (every battle transition's flash; the file is still to come) and `event` (walking into a ❓ room, in `enterNode()`,
 so "Back" re-renders don't replay it). Battle sounds preload in
 `startBattle()`, map ones in `showMap()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat

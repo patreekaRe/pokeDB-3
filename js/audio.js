@@ -56,6 +56,7 @@ const SOUNDS = {
   event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
   item:  { url: 'assets/audio/sfx/item.mp3' },    // an item is used
   potion: { url: 'assets/audio/sfx/potion.mp3' }, // a healing item is used (heal.mp3 stays the Pokémon Center's own)
+  encounter: { url: 'assets/audio/sfx/encounter.mp3' },   // every battle transition (js/transition.js): the flash, then the wipe
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
