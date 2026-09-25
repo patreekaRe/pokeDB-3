@@ -77,9 +77,9 @@ function renderStarters() {
       const shop = isShopUnlock(starter);
       const badge = el('span', 'starter-source', shop ? '💰' : '🏆');
       badge.setAttribute('aria-hidden', 'true');
-      btn.title = shop ? 'Buy it in the Shop' : 'Earn it with an achievement';
+      btn.title = shop ? 'Trade PokéCoins for it at the Game Corner' : 'Earn it with an achievement';
       btn.classList.add('locked');
-      btn.append(badge, el('span', 'sr-only', shop ? 'Locked: buy it in the Shop' : 'Locked: earn an achievement'));
+      btn.append(badge, el('span', 'sr-only', shop ? 'Locked: get it at the Game Corner' : 'Locked: earn an achievement'));
     }
     if (selected === starter) btn.classList.add('selected');
 

@@ -1521,39 +1521,13 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   white-space: nowrap;
 }
 
-/* A little Poké Mart, the shop from the games: striped blue awning, white walls,
-   two windows and sliding glass doors. Sized in em so one font-size scales it. */
-.mart { position: relative; display: inline-block; width: 1em; height: 0.9em; font-size: 32px; vertical-align: middle; }
-.mart::before, .mart::after { content: ""; position: absolute; border: 0.05em solid #173f8f; }
-.mart::before {
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 0.4em;
-  z-index: 1;
-  border-radius: 0.16em 0.16em 0.05em 0.05em;
-  background:
-    linear-gradient(#6aa6ff 0 22%, #2a6ee8 22% 48%, #173f8f 48% 54%, transparent 54%),
-    repeating-linear-gradient(90deg, #2a6ee8 0 0.125em, #fff 0.125em 0.25em);
-}
-.mart::after {
-  top: 0.34em;
-  left: 0.1em;
-  right: 0.1em;
-  bottom: 0;
-  border-radius: 0 0 0.06em 0.06em;
-  background:
-    linear-gradient(rgba(23, 63, 143, 0.3), transparent) top / 100% 0.08em no-repeat,
-    linear-gradient(90deg, #173f8f 0 10%, #9cc6ff 10% 46%, #173f8f 46% 54%, #9cc6ff 54% 90%, #173f8f 90%) 50% 100% / 0.28em 0.32em no-repeat,
-    linear-gradient(#9cc6ff, #9cc6ff) left 0.1em top 0.14em / 0.14em 0.11em no-repeat,
-    linear-gradient(#173f8f, #173f8f) left 0.08em top 0.12em / 0.18em 0.15em no-repeat,
-    linear-gradient(#9cc6ff, #9cc6ff) right 0.1em top 0.14em / 0.14em 0.11em no-repeat,
-    linear-gradient(#173f8f, #173f8f) right 0.08em top 0.12em / 0.18em 0.15em no-repeat,
-    #f4f6ff;
-}
-.howto-label .mart { font-size: 18px; margin-top: -4px; }
+/* The Game Corner (the home shop, spent in PokéCoins): a pixel slot machine (🎰 in js/icons.js), kept apart
+   from the run's blue Poké Mart building, which is spent in ₽. Sized by font-size, like every pixel icon. */
+.gc-icon { display: inline-block; vertical-align: middle; line-height: 0; }
+.shop-btn .gc-icon { font-size: 30px; }
+.howto-label .gc-icon { font-size: 16px; margin-top: -3px; }
 
-/* No button chrome: the Poké Mart itself is the button, with a shadow so it reads over any backdrop */
+/* No button chrome: the slot machine itself is the button, with a shadow so it reads over any backdrop */
 .icon-btn.shop-btn {
   display: grid;
   place-items: center;
@@ -1577,6 +1551,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .home-ball { font-size: 52px; }
   .topbar-actions { gap: 5px; }
   .icon-btn { width: 32px; height: 32px; }
+  .shop-btn .gc-icon { font-size: 24px; }
   .coin-pill { padding: 4px; }
   /* in battle the piles would crowd the row out, so the PokéCoins (which can't change mid-fight) step aside for the ₽ */
   body[data-screen="battle-screen"] .coin-pill:not(.money-pill) { display: none; }
@@ -1587,7 +1562,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   .coin-pill { padding: 3px; }
 }
 
-/* ---------- 6. SHOP ---------- */
+/* ---------- 6. GAME CORNER (the home shop) ---------- */
 /* Non-modal (.show(), not .showModal()) so it floats above the current
    screen like a PiP window instead of blocking it - no ::backdrop dims the
    page, and the map/battle/reward screen underneath stays fully clickable. */
@@ -1602,6 +1577,12 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 #shop-dialog .shop-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
 #shop-dialog .panel + .panel { margin-top: 14px; }
 .shop-head h2 { font-size: 1.6rem; text-shadow: 0 2px 6px #000; }
+/* the Game Corner's own window: a gold frame on a purple rim (the slot machine's colours), not the Mart's blue */
+#shop-dialog { border-color: #e0b838; box-shadow: 0 0 0 2px #4a2670, inset 0 0 0 2px #4a2670, 0 0 0 5px #b058d8, 0 20px 60px rgba(0, 0, 0, 0.55); }
+#shop-dialog .shop-head h2 { display: flex; align-items: center; gap: 10px; margin: 0; padding: 0; border: 0; color: #4a2670; text-shadow: none; }
+#shop-dialog .shop-head h2 .gc-icon { font-size: 30px; }
+#shop-dialog .shop-head h2 small { font-size: 0.55em; color: #8a6010; }
+#shop-dialog .shop-head { padding-bottom: 10px; border-bottom: 3px dashed #d8b0e8; }
 .coin-balance { font-weight: 800; color: var(--gold); font-size: 1.1rem; }
 
 .shop-grid {

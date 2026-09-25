@@ -472,9 +472,13 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
   rooms 1, your sprite 2.
 
-The shop's top-bar button (`.shop-btn`) has no chrome: it's a CSS Poké Mart
-(`.mart`, sized in em so one `font-size` scales it; also used small on the
-How to play shop slide), and
+The home shop is the **Game Corner** (the user's call: the Gold/Silver prize
+counter, where coins buy Pokémon), so it can't be mistaken for the run's blue
+Poké Mart: PokéCoins buy starters and perks at the Game Corner, ₽ buys cards and
+relics at the Mart. Its top-bar button (`.shop-btn`) has no chrome: a pixel
+slot machine (🎰 in `js/icons.js`, in `.gc-icon`; also on the menu item, the
+window title and the How to play coins slide), its window has a gold frame on a
+purple rim, and
 `aria-expanded` on it drives the pressed-in "shop is open" look. Keep that
 attribute in sync if you add another way to open or close the shop:
 `toggleShop()` sets it to true, and the dialog's `close` listener in
@@ -529,9 +533,9 @@ There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
-top right shows the coins (floating, no box), then the Shop outside a run, or
+top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
-hides `#shop-btn` and shows a Shop item (`#menu-shop-btn`) in the Poké Ball
+hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball
 menu instead. In battle on phones ≤420px the PokéCoins
 hide so the piles, ₽ and buttons fit on one row.
 In battle, the draw and discard piles sit beside the Poké Ball.
