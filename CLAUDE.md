@@ -686,8 +686,11 @@ back to `hit` while those files are missing; a fully blocked hit plays `block`
 instead; there are no critical hits), `block` (a card gains block), `faint` (enemy KO, in `finish()`),
 `confirm` (the same file as `card` and `item`, the user's call: every window's confirm
 sounds alike; `showChoice` plays it when an `ask` option is taken, or the option's
-`confirmSound`, which Mart purchases and the Mart's removal set to `buy`; `confirmDialog()`'s
-Yes plays it too),
+`confirmSound`, which Mart purchases and the Mart's removal set to `buy`. It's also the menu
+blip, the user's call: `menuBlip()` in `js/audio.js` plays it on any click on a control
+(`CONTROLS`: buttons, tabs, map rooms, cards, the reward text box, a card's dimmed focus layer
+or zoom), unless that click already started an effect of its own; cries don't count, so a
+starter tap blips then cries. New buttons get it for free; to silence one, keep it out of `CONTROLS`),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
 removal is paid for) and `event` (walking into a ❓ room, in `enterNode()`,

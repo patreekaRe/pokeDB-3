@@ -91,12 +91,26 @@ const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (
 const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
 let current = null;        // name of the track that should be playing right now
 
+let lastCue = -1;          // ctx time the latest effect started
+
+// Like the games' menu blip: a tap on any control (a button, a map room, a card, a text box,
+// the dimmed area around a blown-up card) plays the confirm sound, unless that tap already
+// set off an effect of its own (a card played, a purchase). Checked a tick later, once the
+// tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
+const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, .card-focus, .card-zoom';
+function menuBlip(e) {
+  if (!ctx || !e.target.closest?.(CONTROLS)) return;
+  const at = ctx.currentTime;
+  setTimeout(() => { if (lastCue < at) playSound('confirm'); });
+}
+
 /** Called once at startup. */
 export function initAudio() {
   renderButton();
   $('music-btn').addEventListener('click', () => setMuted(!getSave().muted));
 
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
+  document.addEventListener('click', menuBlip);
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
@@ -163,6 +177,7 @@ export async function playSound(name, fallback) {
   source.connect(gain).connect(sfxBus);
   source.start(now, start, length);
   lastPlayed[name] = { source, gain, at: now, length };
+  lastCue = now;
   return length;
 }
 
