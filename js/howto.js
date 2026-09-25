@@ -43,6 +43,7 @@ export function initHowto() {
     node.innerHTML = buildingSvg(node.classList.contains('shop') ? 'shop' : 'rest');
     node.classList.add('building');
   }
+  $('howto-bag').replaceChildren($('bag-btn').querySelector('svg').cloneNode(true));
   $('howto-coins').replaceChildren(
     row('', '⚔️', `+${COIN_REWARDS.fight} 💰`, 'Wild fight'),
     row('elite', '💀', `+${COIN_REWARDS.elite} 💰`, 'Elite'),

@@ -258,6 +258,33 @@ const TYPE_ART = {
   },
 };
 
+/* ---------- places: indoor scenes for a room on the map (showPlaceScene) ---------- */
+const PLACE_ART = {
+  center: {   // inside a Pokémon Center: Chansey behind the counter, the healing machine beside it
+    backdrop: 'center', floor: 'center', light: null, horizon: 0.6,   // low, so the counter shows under the Center's two tiles
+    sky: ['#f8d888'],
+    ceiling: ['#8a2c20', '#b84430', '#fff4c8'],
+    wall: ['#f8d888', '#eec070', '#d09048', '#fff0b8'],
+    wainscot: ['#e85838', '#b83828', '#7a2418', '#f89868'],
+    tiles: ['#fbf0d0', '#f4d8a4', '#dcb886'],
+    rug: ['#c8b8ec', '#a898d8', '#f0ecfc'],
+    counter: ['#f89878', '#e05838', '#a83020'],
+    panel: ['#fff4dc', '#f2e2c4', '#d8c098', '#a87848'],
+    ball: ['#e04030', '#ffffff', '#383040'],
+    chansey: ['#7a3850', '#fde4ec', '#f8b8cc', '#e08aa8', '#302030'],
+    cap: ['#ffffff', '#d8d8e8', '#e03040'],
+    machine: ['#fbfbfb', '#dcdce4', '#a8a8b8', '#4a5264'],
+    dome: ['#f87868', '#d83830', '#901c18'],
+    glow: ['#50d8f0', '#c0fcff', '#2a88a8'],
+    screen: ['#a8d8f8', '#4878d8', '#f0fcff'],
+    pc: ['#f0e0c0', '#c8b490', '#8a7458'],
+    tv: ['#4a3840', '#a8d0e8', '#e8f4f8'],
+    map: ['#5898d8', '#78c068', '#e8d090', '#8a5a34'],
+    plant: ['#5ab048', '#2e7a34', '#f878a8', '#c85a30', '#8a3420'],
+    life: ['center'],
+  },
+};
+
 
 let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
@@ -269,6 +296,18 @@ let storm = { on: false, level: 0 };
 export function showMenuScene(type) {
   if (TYPE_ART[type]) paintScene(`menu/${type}`, TYPE_ART[type]);
   else showScene('clearing', 'boss');
+}
+
+/** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. */
+export function showPlaceScene(place) {
+  paintScene(`place/${place}`, PLACE_ART[place]);
+}
+
+/** Resting at the Center: the machine takes the balls in one by one, then they flash, like the games. */
+export function healAtCenter() {
+  if (!life.machine) return;
+  life.healAt = timer ? tick : tick - 40;
+  if (!timer) draw();
 }
 
 /**
@@ -316,7 +355,7 @@ function resize() {
   H = Math.max(1, Math.ceil(innerHeight / scale));
   canvas.width = W;
   canvas.height = H;
-  horizon = horizonRow(scale);
+  horizon = S.raw.horizon ? Math.round(H * S.raw.horizon) : horizonRow(scale);
   rand = seeded(W * 131 + H);
   img = ctx.createImageData(W, H);
   px = new Uint32Array(img.data.buffer);
@@ -391,7 +430,9 @@ function paintBase() {
   if (S.raw.backdrop === 'canyon') canyonBackdrop();
   if (S.raw.backdrop === 'sea') seaBackdrop();
   if (S.raw.backdrop === 'jungle') jungleBackdrop();
+  if (S.raw.backdrop === 'center') centerBackdrop();
 
+  if (S.raw.floor === 'center') centerFloor();
   if (S.raw.floor === 'meadow') meadow();
   if (S.raw.floor === 'moss') mossGround();
   if (S.raw.floor === 'basalt') basalt();
@@ -402,6 +443,7 @@ function paintBase() {
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
   if (S.raw.backdrop === 'jungle') jungleFront();
+  if (S.raw.backdrop === 'center') centerFront();
 
   return Uint32Array.from(px);
 }
@@ -907,6 +949,202 @@ function bigLeaf(x, y, len, ang) {
    THE LIVING PARTS
    ============================================================ */
 
+/* ---------- the Pokémon Center: Chansey behind the counter, the healing machine beside it ---------- */
+
+const counterTop = () => horizon + 2;
+const COUNTER_TALL = 14;   // surface and front, down to the floor
+
+function centerBackdrop() {
+  const [shadow, ceiling, lamp] = S.ceiling, [face, low, seam, shine] = S.wall, [red, dark, base, trim] = S.wainscot;
+  const cx = W >> 1, ceil = 4, rail = horizon - 10;
+  for (let y = 0; y < ceil; y++) for (let x = 0; x < W; x++) solid(x, y, y === ceil - 1 ? shadow : ceiling);
+  for (let x = ((cx - 4) % 26) - 26; x < W; x += 26) for (let k = 0; k < 8; k++) solid(x + k, 1, lamp);
+  // the big wall panels, like the anime's Centers
+  const pw = 14, ph = Math.max(5, Math.floor((rail - ceil) / Math.max(2, Math.round((rail - ceil) / 16))));
+  for (let y = ceil; y < rail; y++) for (let x = 0; x < W; x++) {
+    const lx = ((x - cx - 7) % pw + pw) % pw, ly = (y - ceil) % ph;
+    solid(x, y, lx === 0 || ly === 0 ? seam : ly === 1 ? shine : ly === ph - 1 || lx === pw - 1 ? low : face);
+  }
+  for (let y = rail; y < horizon; y++) for (let x = 0; x < W; x++) {
+    solid(x, y, y === rail ? trim : y === horizon - 1 ? base : ((x - cx) % 12 + 12) % 12 === 6 ? dark : red);
+  }
+  const midY = Math.round((ceil + rail) / 2);
+  wallTv(cx - 25, midY);
+  wallMap(cx + 25, midY);
+}
+
+/** A TV on the wall showing a Poké Ball, its scanline rolls (drawCenter). */
+function wallTv(x, y) {
+  const [frame, screen, glare] = S.tv;
+  const x0 = x - 7, x1 = x + 7, y0 = y - 5, y1 = y + 4;
+  for (let j = y0; j <= y1; j++) for (let i = x0; i <= x1; i++) {
+    const edge = i === x0 || i === x1 || j === y0 || j === y1;
+    solid(i, j, edge ? frame : (i - x0) + (j - y0) < 4 ? glare : screen);
+  }
+  ball(x, y, 3);
+  life.tv = { x0: x0 + 1, x1: x1 - 1, y0: y0 + 1, y1: y1 - 1 };
+}
+
+/** A framed map of the region, like the one in the reference. */
+function wallMap(x, y) {
+  const [sea, land, sand, wood] = S.map, r = seeded(W + 7);
+  const x0 = x - 8, x1 = x + 8, y0 = y - 5, y1 = y + 4;
+  const blobs = [[x - 3, y - 1, 3], [x + 3, y + 1, 3], [x + 1, y - 2, 2]].map(([bx, by, br]) => [bx + Math.round(r() * 2 - 1), by, br]);
+  for (let j = y0; j <= y1; j++) for (let i = x0; i <= x1; i++) {
+    if (i === x0 || i === x1 || j === y0 || j === y1) { solid(i, j, wood); continue; }
+    const d = Math.min(...blobs.map(([bx, by, br]) => Math.hypot((i - bx) / br, (j - by) / (br * 0.8))));
+    solid(i, j, d < 0.75 ? land : d < 1 ? sand : sea);
+  }
+}
+
+/** Cream tiles in perspective, the wall's shadow along its foot, and a Poké Ball rug in front of the counter. */
+function centerFloor() {
+  const [a, b, grout] = S.tiles, cx = W / 2, vy = horizon - (H - horizon) * 1.5;
+  const bottom = H - vy, ku = bottom / 12, kv = bottom * bottom / 7;
+  for (let y = horizon; y < H; y++) {
+    const dz = y - vy, v = Math.floor(kv / dz), line = v !== Math.floor(kv / (dz + 1));
+    for (let x = 0; x < W; x++) {
+      const u = (x - cx) * ku / dz, cell = Math.floor(u);
+      put(x, y, line || u - cell < ku / dz ? grout : (cell + v) & 1 ? a : b);
+    }
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.82); tint(x, horizon + 1, 0.92); }
+  const foot = counterTop() + COUNTER_TALL, rx = Math.min(48, Math.round(W * 0.28));
+  ballRug(W >> 1, Math.round(foot + (H - foot) * 0.45), rx, Math.max(4, Math.round(rx * 0.28)));
+}
+
+function ballRug(cx, cy, rx, ry) {
+  const [body, edge, pale] = S.rug;
+  for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
+    const d = (x / rx) ** 2 + (y / ry) ** 2;
+    if (d > 1) continue;
+    const e = (x / (rx * 0.42)) ** 2 + (y / (ry * 0.42)) ** 2;
+    put(cx + x, cy + y, (e < 1 && (e > 0.7 || e < 0.16 || y === 0)) ? pale : d > 0.8 ? edge : body);
+  }
+}
+
+/** A tiny Poké Ball: red top, white bottom, dark band and outline. */
+function ball(cx, cy, r) {
+  const [red, white, dark] = S.ball;
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+    const d = Math.hypot(x, y);
+    if (d > r + 0.4) continue;
+    solid(cx + x, cy + y, d > r - 0.6 || y === 0 || (d < 1.6 && d >= 0.9) ? dark : d < 0.9 ? white : y < 0 ? red : white);
+  }
+}
+
+/** Fill a little sprite from at(x, y) (a colour or null) with a dark outline around it, like the games' sprites. */
+function sprite(ox, oy, [x0, x1, y0, y1], at, out) {
+  for (let y = y0 - 1; y <= y1 + 1; y++) for (let x = x0 - 1; x <= x1 + 1; x++) {
+    const c = at(x, y);
+    if (c) solid(ox + x, oy + y, c);
+    else if (at(x - 1, y) || at(x + 1, y) || at(x, y - 1) || at(x, y + 1)) solid(ox + x, oy + y, out);
+  }
+}
+
+function centerFront() {
+  const cx = W >> 1, top = counterTop(), half = Math.max(34, Math.min(64, Math.round(W * 0.3)));
+  chansey(cx, top - 3);
+  counter(cx, top, half);
+  const [out, , body] = S.chansey;
+  sprite(cx, top - 3, [-10, 10, 2, 3], (x, y) => {   // its little hands resting on the counter
+    const k = Math.abs(x);
+    return (y === 3 && k >= 8 && k <= 10) || (y === 2 && k >= 9 && k <= 10) ? body : null;
+  }, out);
+  healMachine(cx + 12, top);
+  counterPc(cx - 29, top);
+  const foot = top + COUNTER_TALL - 1;
+  for (const s of [-1, 1]) {
+    pottedPlant(cx + s * (half + 7), foot, 4);
+    if (cx - half > 44) pottedPlant(cx + s * (half + 30), foot + 6, 5);
+  }
+}
+
+function chansey(cx, cy) {
+  const [out, lit, body, shade, eye] = S.chansey, [white, grey, red] = S.cap;
+  const at = (x, y) => {
+    if (y >= -13 && y <= -9 && Math.abs(x) <= (y === -13 ? 3 : 4)) {   // the nurse cap and its red cross
+      return (x === 0 && y >= -12 && y <= -10) || (y === -11 && Math.abs(x) === 1) ? red : y === -9 ? grey : white;
+    }
+    const k = Math.abs(x);
+    const inBody = (x / 8.5) ** 2 + (y / 9.3) ** 2 <= 1
+      || (k === 8 && (y === -4 || y === -5)) || (k === 9 && (y === -5 || y === -6)) || (k === 10 && y === -6);   // the curled tufts on its head
+    if (!inBody) return null;
+    if ((x + 3) ** 2 + (y + 5) ** 2 < 6) return lit;
+    const lean = x * 0.7 + y * 0.4;
+    return lean > 5 || (lean > 3.5 && dither(x, y) < 10) ? shade : body;
+  };
+  sprite(cx, cy, [-11, 11, -13, 9], at, out);
+  for (const s of [-1, 1]) { solid(cx + 3 * s, cy - 3, eye); solid(cx + 3 * s, cy - 2, eye); }
+  solid(cx - 1, cy, out); solid(cx + 1, cy, out); solid(cx, cy + 1, out);
+  life.eyes = { x: cx, y: cy };
+}
+
+function counter(cx, top, half) {
+  const [lit, body, lip] = S.counter, [cream, face, seam, base] = S.panel;
+  for (let x = cx - half; x <= cx + half; x++) {
+    const end = x === cx - half || x === cx + half;
+    if (!end) solid(x, top, lit);
+    solid(x, top + 1, body);
+    solid(x, top + 2, lip);
+    for (let y = top + 3; y < top + COUNTER_TALL; y++) {
+      const groove = ((x - cx) % 16 + 16) % 16 === 8;
+      solid(x, y, y === top + COUNTER_TALL - 1 ? base : y === top + 3 ? seam : y === top + 10 || y === top + 11 ? body
+        : end || groove ? seam : y === top + 4 ? cream : face);
+    }
+  }
+  for (let x = cx - half - 1; x <= cx + half + 1; x++) { tint(x, top + COUNTER_TALL, 0.8); tint(x, top + COUNTER_TALL + 1, 0.92); }
+  ball(cx, top + 7, 3);
+}
+
+/** The healing machine on the counter: a red hood over six ball slots, and a glowing cyan stripe (drawCenter). */
+function healMachine(x0, top) {
+  const [white, light, grey, slate] = S.machine, [lit, red, dark] = S.dome, [, , deep] = S.glow;
+  for (let y = -4; y <= 0; y++) for (let x = -4; x <= 4; x++) {
+    const d = x * x + y * y * 1.4;
+    if (d <= 17) solid(x0 + 4 + x, top - 6 + y, d > 12 ? dark : x < -1 && y < -1 ? lit : red);
+  }
+  const slots = [];
+  for (let x = x0 + 1; x <= x0 + 15; x++) {
+    solid(x, top - 6, grey);
+    const slot = (x - x0) % 2 === 0 && x > x0 + 2 && x < x0 + 15;
+    solid(x, top - 5, slot ? deep : slate);
+    if (slot) slots.push([x, top - 5]);
+  }
+  for (let y = top - 4; y <= top + 1; y++) for (let x = x0; x <= x0 + 16; x++) {
+    const edge = x === x0 || x === x0 + 16 || y === top + 1;
+    solid(x, y, y === top - 4 ? white : edge ? grey : light);
+  }
+  for (let x = x0 + 11; x <= x0 + 14; x++) for (let y = top - 2; y <= top - 1; y++) solid(x, y, S.screen[0]);
+  solid(x0 + 3, top - 1, S.screen[1]); solid(x0 + 5, top - 1, S.plant[0]);
+  life.machine = { x0: x0 + 1, x1: x0 + 15, y: top - 3, slots };
+}
+
+/** The PC on the counter, its cursor blinking (drawCenter). */
+function counterPc(x0, top) {
+  const [beige, tan, brown] = S.pc, [lite, blue] = S.screen;
+  for (let y = top - 10; y <= top - 2; y++) for (let x = x0; x <= x0 + 10; x++) {
+    const screen = x > x0 + 1 && x < x0 + 9 && y > top - 9 && y < top - 3;
+    const edge = x === x0 || x === x0 + 10 || y === top - 10 || y === top - 2;
+    solid(x, y, screen ? (y === top - 8 ? lite : blue) : edge ? tan : beige);
+  }
+  for (let x = x0 + 3; x <= x0 + 7; x++) solid(x, top - 6, lite);
+  for (let x = x0 - 1; x <= x0 + 11; x++) solid(x, top - 1, x % 2 ? beige : brown);
+  life.pc = { x: x0 + 3, y: top - 4 };
+}
+
+function pottedPlant(x, foot, size) {
+  const [leaf, dark, flower, pot, potDark] = S.plant, r = seeded(x * 31 + foot);
+  const cy = foot - 4 - Math.round(size * 0.7);
+  for (let y = -size; y <= size; y++) for (let k = -size - 1; k <= size + 1; k++) {
+    const d = (k / (size + 1)) ** 2 + (y / size) ** 2;
+    if (d <= 1 && r() > 0.08) solid(x + k, cy + y, k + y > size * 0.4 || (d > 0.6 && dither(k, y) < 6) ? dark : leaf);
+  }
+  for (let n = 0; n < size; n++) solid(x + Math.round((r() - 0.5) * size * 1.6), cy + Math.round((r() - 0.7) * size), flower);
+  for (let y = foot - 3; y <= foot; y++) for (let k = -2; k <= 2; k++) solid(x + k, y, k === 2 || y === foot ? potDark : pot);
+  for (let k = -3; k <= 3; k++) solid(x + k, foot - 4, k === 3 ? potDark : pot);
+}
+
 function makeLife() {
   const has = (name) => S.raw.life.includes(name);
   const meadowY = () => horizon + 6 + rand() * (H - horizon) * 0.7;
@@ -1073,6 +1311,7 @@ function draw() {
   }
 
   if (has('campfire')) drawCampfire(t);
+  if (has('center')) drawCenter(t);
   if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit) {
@@ -1345,6 +1584,21 @@ function drawCampfire(t) {
     const d = (x / (size * 3)) ** 2 + (y / size) ** 2;
     if (d < 1 && d > 0.3 && dither(x + t, y) < 2 + glow) tint(fx + x, fy + y + 1, 1.1, 16);
   }
+}
+
+/** The Center: the machine's stripe breathing (its balls lighting up and flashing while you rest), Chansey blinking, the PC's cursor and the TV's scanline. */
+function drawCenter(t) {
+  const m = life.machine, [, bright] = S.glow, [red, white] = S.ball;
+  const since = life.healAt == null ? -1 : t - life.healAt, full = 2 + m.slots.length * 2;
+  const flash = since > full && Math.floor(since / 2) % 2 === 0;
+  for (let x = m.x0; x <= m.x1; x++) if (flash || dither(x + t, 1) < 8 + 7 * Math.sin(t / 3)) put(x, m.y, bright);
+  m.slots.forEach(([x, y], i) => { if (since >= 2 + i * 2) put(x, y, flash ? white : red); });
+
+  const [, , body, , eye] = S.chansey, e = life.eyes;
+  if (t % 36 < 2) for (const s of [-1, 1]) { put(e.x + 3 * s, e.y - 3, body); put(e.x + 3 * s, e.y - 2, eye); }
+  if (t % 8 < 4) put(life.pc.x, life.pc.y, S.screen[2]);
+  const tv = life.tv, row = tv.y0 + t % (tv.y1 - tv.y0 + 1);
+  for (let x = tv.x0; x <= tv.x1; x++) tint(x, row, 1.12, 12);
 }
 
 /** The sea: glints winking on the water, swells rolling in, surf running up the sand, a sail crossing and the lighthouse's lamp. */

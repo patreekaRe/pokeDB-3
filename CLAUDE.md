@@ -367,7 +367,12 @@ up, so an elite's rewards stay at sunset). The menus call
 canyon at sunset with a sparking campfire, Water a seaside with surf, a
 lighthouse and a passing sail, Grass a jungle with giant trunks, swaying vines
 and light shafts. With none picked it's the Clearing's moonlit night, like
-the title. Asking for the scene already up leaves it
+the title. The Pokémon Center (`restSite()`) has an indoor scene instead
+(`PLACE_ART.center`, `showPlaceScene('center')`): Chansey in a nurse cap
+behind the counter, the PC and the healing machine on it, a Poké Ball rug; its
+`horizon: 0.6` puts the counter below the Center's two tiles. Rest calls
+`healAtCenter()`, which lights the machine's six balls one by one and flashes
+them during the chime. Asking for the scene already up leaves it
 running (except in battle). Outside battles `#backdrop` (above the canvas)
 dims it so windows stay readable; `setTheme(type)` in `js/ui.js` only sets
 the accent colour now. Still parts are painted
@@ -571,7 +576,7 @@ slide is filled from `COIN_REWARDS` and `PASSIVE_SHOP_ITEMS`, so the guide
 stays in step with the game data. The first two slides are numbered rows
 (`.howto-flow`, a picture slot then a name and one line); the turn slide
 draws a small fanned hand (`.howto-hand`) rather than a real card, whose
-text was too small to read at that size.
+text was too small to read at that size. Its two tips show a sample intent bubble and a copy of the top bar's Bag sprite (cloned in `initHowto()`).
 
 ## Pixel icons
 

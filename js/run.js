@@ -30,7 +30,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, c
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter } from './scene.js';
 
 let run = null;
 
@@ -554,6 +554,7 @@ function restSite() {
       const thisRun = run;
       run.hp += heal;
       run.restCount += 1;
+      healAtCenter();
       // like the games: the music stops and the healing chime plays out before you leave
       playMusic(null, { cut: true });
       const chime = await playSound('heal');
@@ -565,6 +566,7 @@ function restSite() {
     skipLabel: 'Leave without resting',
     onSkip: showMap,
   });
+  showPlaceScene('center');
   playMusic('center');
   preloadSounds('heal');
 }
