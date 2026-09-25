@@ -43,7 +43,7 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'turtwig',
-    text: 'Win a run visiting at most 1 rest site',
+    text: 'Win a run resting at a Pokémon Center no more than 3 times',
     test: (s) => s.lightRestWin,
   },
   {

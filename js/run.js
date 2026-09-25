@@ -1005,7 +1005,7 @@ function endRun(won) {
     updateSave(d => {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
-      if (run.restCount <= 1) d.stats.lightRestWin = true;
+      if (run.restCount <= 3) d.stats.lightRestWin = true;
       const type = run.starter.type;
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });

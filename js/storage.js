@@ -38,7 +38,7 @@ const freshSave = () => ({
     winsBy: {},               // run wins per starter, e.g. { charmander: 2 }
     maxLevelWinByType: { fire: -1, grass: -1, water: -1 },   // highest Trainer Level won with each type, -1 = never
     healthyBossWin: false,    // beat a boss with over half your HP left
-    lightRestWin: false,      // won a run visiting at most 1 rest site
+    lightRestWin: false,      // won a run resting at most 3 times (at most 1 before, which still counts)
   },
 });
 
