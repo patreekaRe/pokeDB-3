@@ -340,9 +340,12 @@ one canvas pixel = 4 CSS px on phones, 5 on PCs) by
 `showScene(biomeId, kind)`: from `startBattle()`, and from `showMap()` with the
 biome's normal scene (reward, Center, Mart and event screens keep whatever is
 up, so an elite's rewards stay at sunset). The menus call
-`showMenuScene(type)`: the picked starter's type picks a biome (fire Wastes,
-grass Shrine, water Clearing), and with none picked it's the Clearing's
-moonlit night, like the title. Asking for the scene already up leaves it
+`showMenuScene(type)`: each starter type has its own scene, seen nowhere else
+(`TYPE_ART`, same shape as a biome without kinds, pads or storms): Fire a red-rock
+canyon at sunset with a sparking campfire, Water a seaside with surf, a
+lighthouse and a passing sail, Grass a jungle with giant trunks, swaying vines
+and light shafts. With none picked it's the Clearing's moonlit night, like
+the title. Asking for the scene already up leaves it
 running (except in battle). Outside battles `#backdrop` (above the canvas)
 dims it so windows stay readable; `setTheme(type)` in `js/ui.js` only sets
 the accent colour now. Still parts are painted

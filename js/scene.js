@@ -4,7 +4,8 @@
    dramatic arena), plus the pads the two Pokémon stand on in battle,
    like the Gen 3/4 games. The map and reward screens show their
    biome's normal scene, the menus the one that goes with the picked
-   starter's type (a moonlit night before one is picked), dimmed by
+   starter's type: its own canyon, seaside or jungle (a moonlit night
+   before one is picked), dimmed by
    #backdrop so the windows stay readable. When a boss is close to
    fainting, setStorm() turns the weather (rain, cinders, lightning).
 
@@ -194,6 +195,69 @@ const BIOME_ART = {
   },
 };
 
+/* ---------- the menus: one scene per starter type, seen nowhere else ----------
+   Same shape as a biome's scene, without kinds, pads or storms. */
+const TYPE_ART = {
+  fire: {   // a red-rock canyon at sunset, a campfire throwing sparks
+    backdrop: 'canyon', floor: 'desert', light: 'sun', sunLow: true,
+    sky: ['#2a1a4a', '#48245a', '#743062', '#a8405e', '#d65a4c', '#f08244', '#f8a850', '#f8c868'],
+    sun: ['#fff8d8', '#f8d070', '#f09848'],
+    farMesas: ['#8a4a6a', '#74405e'],
+    mesas: ['#e07848', '#b85a3a', '#8a3c2c', '#6a2c24'],
+    ground: ['#c8703e', '#bc663a', '#ae5c36', '#9e5232', '#8e482e', '#7c3e2a'],
+    rock: ['#d88a58', '#a45a3a', '#6a3424'],
+    cactus: ['#6a8a40', '#4a6a30', '#2e4a22'],
+    logs: ['#8a5a34', '#5a3a20', '#3a2414'],
+    stone: ['#a09088', '#706058', '#48403c'],
+    flame: ['#fffce0', '#f8e060', '#f8a030', '#e05a20', '#a02c18'],
+    bird: '#3a1e30',
+    life: ['birds', 'campfire'],
+  },
+
+  water: {   // a bright seaside: surf running up the sand, a sail on the horizon, gulls
+    backdrop: 'sea', floor: 'beach', light: 'sun',
+    sky: ['#3a88e0', '#4c98ea', '#62a8f0', '#7cbaf4', '#98ccf8', '#b8def8', '#d8eef8'],
+    sun: ['#fffce8', '#fff0a0', '#f8e070'],
+    cloud: ['#ffffff', '#eef4fb', '#c8dcee', '#a8c4e0'],
+    clouds: { count: 1 },
+    island: ['#6aa880', '#4a8868', '#2e6a54'],
+    tower: ['#f8f8f0', '#d84830', '#a0a098'],
+    sea: ['#58b8e8', '#48a8e0', '#3a98d6', '#2e88cc', '#2a7cc0', '#2a74b8'],
+    ripple: ['#8ad0f0', '#1e64a8'],
+    glint: ['#ffffff', '#c8f0ff'],
+    foam: ['#ffffff', '#d8f0f8'],
+    wet: ['#c8b078', '#b8a068'],
+    sand: ['#f8e8b0', '#f0dca0', '#e8d094', '#e0c488', '#d6b87c'],
+    rock: ['#c8c0b0', '#948c80', '#605a54'],
+    shells: ['#f8c8c8', '#f8f0e0', '#f8a060'],
+    sail: ['#ffffff', '#c8d8e8', '#8a5a34'],
+    bird: '#f8f8f8',
+    life: ['clouds', 'birds', 'surf'],
+  },
+
+  grass: {   // deep in a jungle: giant trunks, hanging vines, light pouring through the canopy
+    backdrop: 'jungle', floor: 'jungleFloor', light: null,
+    sky: ['#e8f8c8', '#d0f0a8', '#b8e490', '#a0d880'],
+    canopy: ['#5aa848', '#3e8a3c', '#2a6a30', '#1a4a24'],
+    farForest: ['#6aa878', '#528e66'],
+    bark: ['#8a6a48', '#5e4630', '#3a2a1c'],
+    trunk: ['#5e4630', '#3a2a1c'],
+    trees: ['#5ab04c', '#3e9040', '#2a7034', '#1a5026'],
+    ground: ['#4e8a3a', '#467e36', '#3e7232', '#36662e', '#2e5a2a', '#264e26'],
+    blade: ['#8ad060', '#4e9a3c', '#2a6a2a'],
+    patch: '#2e6028',
+    fern: ['#7ac858', '#4e9a40', '#2e6a2e'],
+    leaf: ['#5ab84a', '#3a9038', '#1e5a24', '#9ae070'],
+    vine: ['#6ab04a', '#3e7a34'],
+    flowers: [['#f84830', '#f8e048'], ['#f89830', '#f8f0a0'], ['#e858a8', '#f8e0f0']],
+    rock: ['#9aa890', '#6a7862', '#44503e'],
+    butterflies: ['#f8d848', '#58c8f8', '#f87848'],
+    bird: '#1e3a1e',
+    pollen: ['#fffce0', '#e8f8a0'],
+    life: ['vines', 'blades', 'butterflies', 'pollen'],
+  },
+};
+
 
 let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
@@ -201,9 +265,11 @@ let life = {};
 let shown = '';                 // which scene is up, so going back to it doesn't restart it
 let storm = { on: false, level: 0 };
 
-/** The menus' scene for the picked starter's type; before one is picked, a moonlit night like the title screen's. */
-const TYPE_SCENES = { fire: ['wastes', 'wild'], grass: ['shrine', 'wild'], water: ['clearing', 'wild'] };
-export const showMenuScene = (type) => showScene(...(TYPE_SCENES[type] || ['clearing', 'boss']));
+/** The menus' scene: each starter type has its own (TYPE_ART); before one is picked, the Clearing's moonlit night, like the title screen. */
+export function showMenuScene(type) {
+  if (TYPE_ART[type]) paintScene(`menu/${type}`, TYPE_ART[type]);
+  else showScene('clearing', 'boss');
+}
 
 /**
  * Paint the scene for a biome and fight kind ('wild' | 'elite' | 'boss') behind the page, or clear it.
@@ -211,30 +277,32 @@ export const showMenuScene = (type) => showScene(...(TYPE_SCENES[type] || ['clea
  * horizon is fitted to the enemy's pad and every fight starts with calm weather.
  */
 export function showScene(biomeId, kind = 'wild') {
+  const art = BIOME_ART[biomeId];
+  if (!art) { paintScene('', null); return; }
+  const { kinds, ...shared } = art;
+  paintScene(`${biomeId}/${kind}`, { ...shared, ...(kinds[kind] || kinds.wild) });
+}
+
+function paintScene(key, raw) {
   canvas = $('scene-bg');
   ctx = canvas.getContext('2d');
-  const art = BIOME_ART[biomeId];
-  document.body.classList.toggle('has-scene', !!art);
-  const inBattle = document.body.dataset.screen === 'battle-screen';
-  const key = `${biomeId}/${kind}`;
-  if (art && key === shown && !inBattle) return;
-  shown = art ? key : '';
+  document.body.classList.toggle('has-scene', !!raw);
+  if (raw && key === shown && document.body.dataset.screen !== 'battle-screen') return;
+  shown = key;
   clearInterval(timer);
   storm = { on: false, level: 0 };
-  if (!art) { S = null; return; }
-  const { kinds, ...shared } = art;
-  const raw = { ...shared, ...(kinds[kind] || kinds.wild) };
+  if (!raw) { S = null; return; }
   S = colours(raw);
   S.raw = raw;
-  S.storm = { ...raw.storm, rain: raw.storm.rain.map(abgr) };
-  $('battle-screen').style.setProperty('--pad', `url("${padImage(raw.pad)}")`);
+  S.storm = raw.storm && { ...raw.storm, rain: raw.storm.rain.map(abgr) };
+  if (raw.pad) $('battle-screen').style.setProperty('--pad', `url("${padImage(raw.pad)}")`);
   resize();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(frame, 1000 / FPS);
 }
 
 /** Bring the weather in (a boss close to fainting) or let it pass. Under reduced motion only the light changes. */
 export function setStorm(on) {
-  if (!S || storm.on === on) return;
+  if (!S?.storm || storm.on === on) return;
   storm.on = on;
   if (on && !life.rain) makeRain();
   if (!timer) { storm.level = on ? 1 : 0; draw(); }
@@ -319,13 +387,20 @@ function paintBase() {
   }
   if (S.raw.backdrop === 'shrine') shrineBackdrop();
   if (S.raw.backdrop === 'volcano') volcanoBackdrop();
+  if (S.raw.backdrop === 'canyon') canyonBackdrop();
+  if (S.raw.backdrop === 'sea') seaBackdrop();
+  if (S.raw.backdrop === 'jungle') jungleBackdrop();
 
   if (S.raw.floor === 'meadow') meadow();
   if (S.raw.floor === 'moss') mossGround();
   if (S.raw.floor === 'basalt') basalt();
+  if (S.raw.floor === 'desert') desert();
+  if (S.raw.floor === 'beach') beach();
+  if (S.raw.floor === 'jungleFloor') jungleFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
+  if (S.raw.backdrop === 'jungle') jungleFront();
 
   return Uint32Array.from(px);
 }
@@ -544,7 +619,7 @@ function mossGround() {
     }
     y += Math.round(ry * 2 + 2 + depth * 4);
   }
-  for (let n = 0; n < Math.max(3, Math.round(W / 40)); n++) {
+  for (let n = 0; n < Math.max(4, Math.round(W / 28)); n++) {
     const y = horizon + 6 + Math.floor(rand() * (H - horizon - 8));
     rock(Math.floor(rand() * W), y, depthOf(y) > 0.4 ? 2 : 1);
   }
@@ -616,6 +691,215 @@ function basalt() {
     walk(Math.floor(rand() * W), y, 8 + Math.floor(rand() * (12 + depthOf(y) * 30)), rand() < 0.5 ? -1 : 1, 0, 0);
   }
   for (const [x, y] of life.cracks) put(x, y, S.lava[2]);
+}
+
+/* ---------- the menus' Fire scene: a canyon at sunset ---------- */
+
+/** A flat-topped butte: sheer sides banded with strata, lit on the left, spreading into rubble at its foot. */
+function mesa(cx, top, half, [lit, body, strata, shade]) {
+  for (let y = top; y < horizon; y++) {
+    const k = (y - top) / Math.max(1, horizon - top);
+    const w = Math.round(half * (1 + (k > 0.7 ? (k - 0.7) * 1.8 : 0)));
+    for (let x = -w; x <= w; x++) {
+      const u = x / w;
+      solid(cx + x, y, y === top || u < -0.75 ? lit : u > 0.5 && (u > 0.75 || dither(x, y) < 8) ? shade : (y - top) % 5 === 3 && k < 0.7 ? strata : body);
+    }
+  }
+}
+
+function canyonBackdrop() {
+  ridge(horizon - 5, 3, 10, 1.3, S.farMesas, false, true);
+  const [far, farDark] = S.farMesas;
+  for (const [at, rise, width] of [[0.2, 0.3, 0.06], [0.45, 0.22, 0.1], [0.74, 0.34, 0.05]]) {
+    mesa(Math.round(W * at), horizon - Math.round(horizon * rise), Math.max(3, Math.round(W * width)), [far, far, farDark, farDark]);
+  }
+  for (const [at, rise, width] of [[0.06, 0.42, 0.09], [0.36, 0.26, 0.12], [0.6, 0.48, 0.07], [0.99, 0.36, 0.08]]) {
+    mesa(Math.round(W * at), horizon - Math.round(horizon * rise), Math.max(4, Math.round(W * width)), S.mesas);
+  }
+}
+
+function desert() {
+  bands(horizon, H, S.ground, 0.8);
+  grassPatches(S.ground[S.ground.length - 1], Math.round(W / 14));
+  for (let n = 0; n < Math.round(W / 16); n++) {
+    const y = horizon + 4 + Math.floor(rand() * (H - horizon - 5));
+    rock(Math.floor(rand() * W), y, depthOf(y) > 0.35 ? 2 : 1);
+  }
+  for (let n = 0; n < Math.max(4, Math.round(W / 28)); n++) {
+    const y = horizon + 3 + Math.floor(rand() * (H - horizon) * 0.6);
+    cactus(Math.floor(rand() * W), y, 4 + Math.round(depthOf(y) * 16));
+  }
+  campfireBase(Math.round(W * 0.15), horizon + Math.round((H - horizon) * 0.42));
+}
+
+function cactus(x, foot, h) {
+  const [lit, body, shade] = S.cactus;
+  for (let y = 0; y < h; y++) { solid(x, foot - y, y === h - 1 ? body : lit); solid(x + 1, foot - y, shade); }
+  if (h < 6) return;
+  const arm = Math.max(2, Math.round(h * 0.3));
+  const left = foot - Math.round(h * 0.4), right = foot - Math.round(h * 0.58);
+  solid(x - 1, left, body); solid(x - 2, left, body);
+  for (let k = 1; k <= arm; k++) solid(x - 2, left - k, lit);
+  solid(x + 2, right, shade); solid(x + 3, right, shade);
+  for (let k = 1; k <= arm - 1; k++) solid(x + 3, right - k, shade);
+}
+
+/** The fire's ring of stones, its crossed logs and the warm light it throws on the sand. */
+function campfireBase(fx, fy) {
+  const size = Math.max(4, Math.round(H * 0.06));
+  life.fire = { x: fx, y: fy, size };
+  for (let y = -size * 2; y <= size * 2; y++) for (let x = -size * 4; x <= size * 4; x++) {
+    const d = (x / (size * 4)) ** 2 + (y / (size * 1.6)) ** 2;
+    if (d < 1 && dither(x, y) < (d < 0.35 ? 12 : 5)) tint(fx + x, fy + y, 1.12, 22);
+  }
+  const [log, logDark, logEnd] = S.logs;
+  for (let k = -size; k <= size; k++) {
+    put(fx + k, fy - Math.round(k * 0.3), k > 0 ? logDark : log);
+    put(fx + k, fy + Math.round(k * 0.3) - 1, k < 0 ? logDark : log);
+  }
+  put(fx - size, fy + Math.round(size * 0.3), logEnd); put(fx + size, fy - Math.round(size * 0.3), logEnd);
+  const [lit, body, dark] = S.stone;
+  for (let a = 0; a < 12; a++) {
+    const ang = (a / 12) * Math.PI * 2, x = fx + Math.round(Math.cos(ang) * (size + 2)), y = fy + Math.round(Math.sin(ang) * (size * 0.45 + 1));
+    put(x, y, body); put(x + 1, y, dark); put(x, y - 1, lit);
+  }
+}
+
+/* ---------- the menus' Water scene: a seaside ---------- */
+
+function seaBackdrop() {
+  // a far island with a striped lighthouse
+  const ix = Math.round(W * 0.2), half = Math.max(8, Math.round(W * 0.11)), h = Math.max(4, Math.round(horizon * 0.14));
+  const [lit, body, shade] = S.island;
+  for (let x = -half; x <= half; x++) {
+    const top = horizon - Math.round(h * Math.pow(Math.cos((x / half) * Math.PI / 2), 0.6) * (1 + 0.12 * Math.sin(x / 3)));
+    for (let y = top; y < horizon; y++) solid(ix + x, y, y === top ? lit : x > half * 0.3 && dither(x, y) < 10 ? shade : body);
+  }
+  const [white, red, grey] = S.tower;
+  const lx = ix - Math.round(half * 0.25), foot = horizon - Math.round(h * 0.85), top = foot - Math.max(6, Math.round(h * 1.3));
+  for (let y = top; y <= foot; y++) { const c = Math.floor((y - top) / 2) % 2 ? red : white; solid(lx, y, c); solid(lx + 1, y, c); }
+  for (let x = -1; x <= 2; x++) solid(lx + x, top - 1, grey);
+  solid(lx, top - 2, red); solid(lx + 1, top - 2, red); solid(lx, top - 3, grey);
+  life.beacon = { x: lx, y: top - 2 };
+}
+
+function beach() {
+  const shore = life.shore = horizon + Math.round((H - horizon) * 0.5);
+  bands(horizon, shore, S.sea, 1);
+  for (let n = 0, count = Math.round(W * (shore - horizon) / 26); n < count; n++) {
+    const y = horizon + 1 + Math.floor(rand() * (shore - horizon - 1)), near = (y - horizon) / (shore - horizon);
+    const x = Math.floor(rand() * W), len = 1 + Math.round(near * 5 * rand()), c = rand() < 0.5 ? S.ripple[0] : S.ripple[1];
+    for (let k = 0; k < len; k++) put(x + k, y, c);
+  }
+  if (life.sun) {
+    for (let y = horizon; y < shore; y++) {
+      const spread = 1 + Math.round((y - horizon) * 0.14);
+      for (let x = -spread; x <= spread; x++) if (dither(x, y) < 2) put(life.sun.x + x, y, S.glint[1]);
+    }
+  }
+  bands(shore, H, S.sand, 1);
+  for (let x = 0; x < W; x++) for (let y = shore; y < shore + 3; y++) if (y === shore || dither(x, y) < 10 - (y - shore) * 4) put(x, y, S.wet[y === shore ? 1 : 0]);
+  for (let n = 0; n < Math.round(W / 10); n++) {
+    const y = shore + 5 + Math.floor(rand() * Math.max(1, H - shore - 5)), x = Math.floor(rand() * W);
+    if (rand() < 0.3) rock(x, y, depthOf(y) > 0.7 ? 2 : 1);
+    else { const c = S.shells[Math.floor(rand() * S.shells.length)]; put(x, y, c); if (depthOf(y) > 0.7) put(x + 1, y, c); }
+  }
+  umbrella(Math.round(W * 0.84), shore + Math.round((H - shore) * 0.55), Math.max(5, Math.round(H * 0.06)));
+}
+
+/** A striped beach umbrella leaning into the sand, with its shadow. */
+function umbrella(x, foot, r) {
+  const [white, red] = S.tower;
+  for (let y = 0; y < r * 2; y++) put(x + Math.round(y * 0.15), foot - y, S.sail[2]);
+  const cx = x + Math.round(r * 0.3), cy = foot - r * 2, rx = Math.round(r * 1.6);
+  for (let y = -r; y <= 0; y++) for (let dx = -rx; dx <= rx; dx++) {
+    if ((dx / rx) ** 2 + (y / r) ** 2 > 1) continue;
+    put(cx + dx, cy + y, Math.floor((dx + rx) / Math.max(1, Math.round(r * 0.55))) % 2 ? white : red);
+  }
+  for (let dx = -r; dx <= r; dx++) for (let dy = 0; dy <= 1; dy++) if (dither(dx, dy) < 10) tint(x + dx + 2, foot + dy, 0.85);
+}
+
+/* ---------- the menus' Grass scene: a jungle ---------- */
+
+function jungleBackdrop() {
+  ridge(horizon - Math.round(horizon * 0.4), 5, 6, 0.9, S.farForest, false);
+  for (let y = 0; y < horizon + 10 && y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const band = ((x + y * 0.5) % 40 + 40) % 40;
+      if (band < 6 && dither(x, y) < (band < 3 ? 6 : 3)) tint(x, y, 1.07, 16);
+    }
+  }
+  treeLine();
+}
+
+function jungleFloor() {
+  bands(horizon, H, S.ground, 0.8);
+  grassPatches(S.patch, Math.round(W / 8));
+  for (let n = 0; n < Math.max(2, Math.round(W / 50)); n++) {
+    const y = horizon + 6 + Math.floor(rand() * (H - horizon - 8));
+    rock(Math.floor(rand() * W), y, depthOf(y) > 0.5 ? 2 : 1);
+  }
+  flowerClusters(Math.round(W / 16));
+  for (let n = 0; n < Math.round(W / 14); n++) {
+    const y = horizon + 3 + Math.floor(rand() * (H - horizon - 3));
+    fern(Math.floor(rand() * W), y, 2 + Math.round(depthOf(y) * 8));
+  }
+}
+
+/** A fern: fronds arching out from one spot and drooping at the tips, with leaflets along them. */
+function fern(x, foot, size) {
+  const [lit, body, dark] = S.fern;
+  for (const a of [-1.3, -0.75, -0.25, 0.25, 0.75, 1.3]) {
+    for (let s = 1; s <= size; s++) {
+      const fx = x + Math.sin(a) * s, fy = foot - Math.cos(a) * s * 0.9 + (s / size) ** 2 * size * 0.55;
+      put(fx, fy, a < 0 ? lit : body);
+      if (s % 2 === 0 && s < size) put(fx, fy - 1, a < 0 ? body : dark);
+    }
+  }
+}
+
+/** The giant trunks and the canopy overhead, then big leaves close in at the bottom corners. */
+function jungleFront() {
+  const [lit, body, shade] = S.bark;
+  for (const at of [0.05, 0.27, 0.74, 0.95]) {
+    const cx = Math.round(W * at + (rand() - 0.5) * W * 0.04), half = Math.max(2, Math.round(W * (0.014 + rand() * 0.012)));
+    const foot = horizon + Math.round((H - horizon) * (0.12 + rand() * 0.2));
+    for (let y = 0; y <= foot; y++) {
+      const flare = y > foot - half * 3 ? Math.round((y - (foot - half * 3)) * 0.7) : 0;   // buttress roots
+      for (let x = -half - flare; x <= half + flare; x++) {
+        const u = x / (half + flare);
+        solid(cx + x, y, u < -0.55 ? lit : u > 0.45 ? shade : (x + 40) % 3 === 0 && dither(x, y) < 10 ? shade : body);
+      }
+    }
+    for (let y = foot; y <= foot + 2; y++) for (let x = -half * 3; x <= half * 3; x++) if (dither(x, y) < 7) tint(cx + x, y, 0.8);
+  }
+  const [clit, cbody, cshade, cdeep] = S.canopy;
+  const deep = Math.round(horizon * 0.3);
+  for (let n = 0, count = Math.round(W / 3); n < count; n++) {
+    const cx = Math.floor(rand() * W), cy = Math.floor(rand() * deep * 0.8), r = 3 + Math.floor(rand() * 6);
+    for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+      if (x * x + y * y > r * r) continue;
+      const light = x - y;
+      solid(cx + x, cy + y, light > r * 0.8 ? clit : light < -r * 0.9 ? cdeep : light < -r * 0.2 && dither(x, y) < 8 ? cshade : cbody);
+    }
+  }
+  life.canopyDeep = deep;
+  for (const [x0, dir] of [[-2, 1], [W + 1, -1]]) {
+    for (const [ang, len] of [[-0.9, 0.2], [-0.45, 0.26], [-0.1, 0.18]]) bigLeaf(x0, H + 2, Math.round(H * len), dir > 0 ? ang : -Math.PI - ang);
+  }
+}
+
+/** A long pointed leaf from (x, y) at an angle, its halves in two greens around a pale midrib. */
+function bigLeaf(x, y, len, ang) {
+  const [lit, body, edge, rib] = S.leaf;
+  const ux = Math.cos(ang), uy = Math.sin(ang), nx = -uy, ny = ux;
+  for (let s = 0; s <= len; s++) {
+    const w = Math.sin(Math.PI * Math.min(1, s / len * 1.1)) * len * 0.22;
+    for (let k = -w; k <= w; k += 0.5) {
+      const c = Math.abs(k) < 0.5 ? rib : Math.abs(k) > w - 1 ? edge : k < 0 ? lit : body;
+      solid(x + ux * s + nx * k, y + uy * s + ny * k, c);
+    }
+  }
 }
 
 /* ============================================================
@@ -709,6 +993,20 @@ function makeLife() {
   life.nextBolt = tick + FPS * 2;
   life.blobs = [];
   if (storm.on) makeRain();
+  if (has('campfire')) life.sparks = [];
+  if (has('surf')) {
+    life.glints = [];
+    for (let i = 0, n = Math.round(W * (life.shore - horizon) / 30); i < n; i++) {
+      life.glints.push({ x: Math.floor(rand() * W), y: horizon + 1 + Math.floor(rand() * (life.shore - horizon - 2)), phase: rand() * 40 });
+    }
+    life.boat = { x: rand() * W };
+  }
+  if (has('vines')) {
+    life.vines = [];
+    for (let i = 0, n = Math.round(W / 9); i < n; i++) {
+      life.vines.push({ x: Math.floor(rand() * W), y: Math.floor(life.canopyDeep * (0.4 + rand() * 0.5)), len: Math.round(horizon * (0.15 + rand() * 0.6)), phase: rand() * 20 });
+    }
+  }
 }
 
 /** Each drop lands on its own row of the ground (or falls past the bottom), splashes, and starts again at the top. */
@@ -759,6 +1057,7 @@ function draw() {
   if (has('eruption')) drawEruption(t);
   if (has('lightning') || storm.level > 0.6) drawLightning(t);
   if (has('mist')) drawMist(t);
+  if (has('surf')) drawSea(t);
 
   if (L.blades) {
     const [tip, mid, root] = S.blade;
@@ -771,6 +1070,9 @@ function draw() {
       if (b.twin) { put(b.x + 2, b.y, root); put(b.x + 2 + lean, b.y - 1, tip); }
     }
   }
+
+  if (has('campfire')) drawCampfire(t);
+  if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit) {
     const [hot, warm, glow] = S.lanternGlow;
@@ -1010,6 +1312,80 @@ function drawRain(t) {
 function tintIndex(i, k, add) {
   const c = px[i], f = (v) => Math.min(255, Math.round(v * k + add));
   px[i] = ((255 << 24) | (f((c >> 16) & 255) << 16) | (f((c >> 8) & 255) << 8) | f(c & 255)) >>> 0;
+}
+
+/* ---------- the menus' living parts ---------- */
+
+const noise = (a, b, c) => { const s = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return s - Math.floor(s); };
+
+/** The campfire: flickering flames over the logs, sparks rising and winking out, and the light breathing on the sand. */
+function drawCampfire(t) {
+  const { x: fx, y: fy, size } = life.fire, [white, yellow, orange, red, deep] = S.flame;
+  const tall = size * 1.6 + Math.sin(t / 2) * 1.2 + noise(t, 1, 2) * 1.5;
+  for (let dy = 0; dy < tall; dy++) {
+    const k = dy / tall, half = size * 0.75 * Math.pow(1 - k, 0.7) * (0.8 + 0.4 * noise(dy, t, 3));
+    const sway = Math.sin(t / 3 + dy / 3) * k * 1.5;
+    for (let dx = -Math.ceil(half); dx <= Math.ceil(half); dx++) {
+      const e = Math.abs(dx) / Math.max(0.5, half);
+      if (e > 1) continue;
+      const heat = (1 - k) * (1 - e * 0.8) + noise(dx, dy, t) * 0.25;
+      put(fx + dx + sway, fy - 1 - dy, heat > 0.75 ? white : heat > 0.55 ? yellow : heat > 0.35 ? orange : heat > 0.18 ? red : deep);
+    }
+  }
+  if (t % 2 === 0) life.sparks.push({ x: fx + (rand() - 0.5) * size, y: fy - tall * 0.6, vx: (rand() - 0.5) * 0.4, vy: -0.6 - rand() * 0.6, age: 0, life: 14 + rand() * 20 });
+  life.sparks = life.sparks.filter(s => {
+    s.x += s.vx + Math.sin((t + s.life) / 3) * 0.3; s.y += s.vy; s.age++;
+    if (s.age > s.life) return false;
+    if (noise(s.life, s.age, 7) > 0.15) put(s.x, s.y, s.age < s.life * 0.4 ? yellow : s.age < s.life * 0.75 ? orange : red);
+    return true;
+  });
+  const glow = Math.sin(t / 2.3) + Math.sin(t / 3.7);
+  for (let y = -size; y <= size; y++) for (let x = -size * 3; x <= size * 3; x++) {
+    const d = (x / (size * 3)) ** 2 + (y / size) ** 2;
+    if (d < 1 && d > 0.3 && dither(x + t, y) < 2 + glow) tint(fx + x, fy + y + 1, 1.1, 16);
+  }
+}
+
+/** The sea: glints winking on the water, swells rolling in, surf running up the sand, a sail crossing and the lighthouse's lamp. */
+function drawSea(t) {
+  const shore = life.shore, span = shore - horizon;
+  for (const g of life.glints) {
+    const s = Math.sin((t + g.phase) / 3);
+    if (s > 0.8) { put(g.x, g.y, S.glint[0]); if (g.y > horizon + span * 0.5) put(g.x + 1, g.y, S.glint[1]); }
+  }
+  for (let i = 0; i < 3; i++) {
+    const y = horizon + 2 + Math.floor(((t * 0.25 + i * span / 3) % span + span) % span * 0.97);
+    const near = (y - horizon) / span;
+    for (let x = 0; x < W; x++) if (Math.sin(x / (4 + near * 6) + i * 2 + t * 0.05) > 0.55 - near * 0.3) put(x, y, S.foam[1]);
+  }
+  for (let x = 0; x < W; x++) {
+    const reach = shore + Math.round(1.5 + 1.5 * Math.sin(t / 7 + x / 37) + 0.8 * Math.sin(t / 11 - x / 19));
+    for (let y = shore; y < reach; y++) put(x, y, S.sea[0]);
+    put(x, reach, dither(x, t) < 12 ? S.foam[0] : S.foam[1]);
+    if (dither(x + t, reach) < 5) put(x, reach - 1, S.foam[1]);
+  }
+  const b = life.boat;
+  b.x += 0.08;
+  if (b.x > W + 6) b.x = -6;
+  const bx = Math.round(b.x), by = horizon, [sail, sailShade, hull] = S.sail;
+  for (let k = -2; k <= 2; k++) put(bx + k, by, hull);
+  for (let y = 1; y <= 4; y++) for (let k = 0; k <= Math.round((4 - y) * 0.6); k++) put(bx + k, by - y, k === 0 ? sailShade : sail);
+  if (life.beacon && t % 16 < 3) {
+    const { x, y } = life.beacon;
+    put(x, y, S.glint[0]); put(x + 1, y, S.glint[0]); put(x - 1, y, S.sun[1]); put(x + 2, y, S.sun[1]);
+  }
+}
+
+/** Vines hanging from the canopy, swaying a little more towards their tips, with a leaf every few pixels. */
+function drawVines(t) {
+  const [green, dark] = S.vine;
+  for (const v of life.vines) {
+    for (let k = 0; k < v.len; k++) {
+      const x = v.x + Math.round(Math.sin(t / 9 + v.phase) * Math.pow(k / v.len, 1.5) * 2.5);
+      put(x, v.y + k, k % 5 === 0 ? green : dark);
+      if (k % 4 === 2) put(x + ((k >> 2) % 2 ? 1 : -1), v.y + k, S.leaf[0]);
+    }
+  }
 }
 
 /* ---------- battle pads ---------- */
