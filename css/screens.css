@@ -304,40 +304,26 @@ body.titling { overflow: hidden; }
 .continue-hp { display: block; align-self: stretch; height: 12px; margin-top: 4px; padding: 2px; border: 2px solid #181818; border-radius: 0 6px 6px 0; background: #f8f8f0; }
 .continue-hp .bar-fill { display: block; }
 .continue-ball { position: relative; flex: none; width: 42px; height: 42px; transform-origin: 50% 90%; }
+/* a 14x14 pixel Poké Ball, in two halves so the lid can still swing open (each half is 14x7, drawn crisp) */
 .ball-top, .ball-bottom {
   position: absolute;
   left: 0;
   width: 100%;
   height: 50%;
-  border: 3px solid var(--blue);
+  background: center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 .ball-top {
   top: 0;
   z-index: 2;
-  border-bottom: 0;
-  border-radius: 42px 42px 0 0;
-  background: linear-gradient(#ff4a3d 91%, #1b1f3a 91%);
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='4' y='0' width='6' height='1' fill='%23181010'/><rect x='2' y='1' width='2' height='1' fill='%23181010'/><rect x='4' y='1' width='6' height='1' fill='%23e83828'/><rect x='10' y='1' width='2' height='1' fill='%23181010'/><rect x='1' y='2' width='1' height='1' fill='%23181010'/><rect x='2' y='2' width='1' height='1' fill='%23e83828'/><rect x='3' y='2' width='1' height='1' fill='%23f8f8f8'/><rect x='4' y='2' width='7' height='1' fill='%23e83828'/><rect x='11' y='2' width='1' height='1' fill='%23a01818'/><rect x='12' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='1' height='1' fill='%23f8f8f8'/><rect x='3' y='3' width='8' height='1' fill='%23e83828'/><rect x='11' y='3' width='1' height='1' fill='%23a01818'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='0' y='4' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='10' height='1' fill='%23e83828'/><rect x='11' y='4' width='2' height='1' fill='%23a01818'/><rect x='13' y='4' width='1' height='1' fill='%23181010'/><rect x='0' y='5' width='1' height='1' fill='%23181010'/><rect x='1' y='5' width='4' height='1' fill='%23e83828'/><rect x='5' y='5' width='4' height='1' fill='%23181010'/><rect x='9' y='5' width='2' height='1' fill='%23e83828'/><rect x='11' y='5' width='2' height='1' fill='%23a01818'/><rect x='13' y='5' width='1' height='1' fill='%23181010'/><rect x='0' y='6' width='5' height='1' fill='%23181010'/><rect x='5' y='6' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='6' width='5' height='1' fill='%23181010'/></svg>");
   transform-origin: 6% 100%;   /* the hinge is at the back-left, so the lid swings up and away */
-  transition: transform 0.28s cubic-bezier(0.3, 1.6, 0.5, 1);
-}
-.ball-top::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -6px;
-  width: 12px;
-  height: 12px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #1b1f3a;
+  transition: transform 0.28s steps(3);
 }
 .ball-bottom {
   bottom: 0;
-  border-top: 0;
-  border-radius: 0 0 42px 42px;
-  background: linear-gradient(#1b1f3a 9%, #fff 9%);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='0' y='0' width='5' height='1' fill='%23181010'/><rect x='5' y='0' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='0' width='5' height='1' fill='%23181010'/><rect x='0' y='1' width='1' height='1' fill='%23181010'/><rect x='1' y='1' width='4' height='1' fill='%23f8f8f8'/><rect x='5' y='1' width='4' height='1' fill='%23181010'/><rect x='9' y='1' width='2' height='1' fill='%23f8f8f8'/><rect x='11' y='1' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='1' width='1' height='1' fill='%23181010'/><rect x='0' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='2' width='10' height='1' fill='%23f8f8f8'/><rect x='11' y='2' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='8' height='1' fill='%23f8f8f8'/><rect x='10' y='3' width='2' height='1' fill='%23c8c8d0'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='4' width='7' height='1' fill='%23f8f8f8'/><rect x='9' y='4' width='3' height='1' fill='%23c8c8d0'/><rect x='12' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='5' width='6' height='1' fill='%23c8c8d0'/><rect x='10' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='6' width='6' height='1' fill='%23181010'/></svg>");
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
 }
 .ball-light {
   position: absolute;
@@ -361,7 +347,7 @@ body.titling { overflow: hidden; }
 }
 @media (prefers-reduced-motion: no-preference) {
   /* ballWobble rests for its first half, so each shake is followed by a pause, like a catch in progress */
-  .continue-ball { animation: ballWobble 2.4s ease-in-out infinite; }
+  .continue-ball { animation: ballWobble 2.4s steps(24) infinite; }   /* stepped, so it ticks like a sprite */
   .continue-btn.opening .continue-ball { animation: none; }
 }
 
