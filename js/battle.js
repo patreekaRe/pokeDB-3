@@ -44,10 +44,15 @@ let nextUid = 1;
 /** Called once at startup. */
 export function initBattle() {
   $('end-turn-btn').addEventListener('click', endTurn);
-  // tapping the dimmed battle around a picked card, or Escape, puts it back
-  $('card-focus').addEventListener('click', (e) => { if (!e.target.closest('.focus-card, .focus-play')) cancelPick(); });
+  // tapping the battle around a picked card, or Escape, puts it back; tapping another card in the hand picks that one
+  $('card-focus').addEventListener('click', (e) => {
+    if (e.target.closest('.focus-card, .focus-play')) return;
+    const other = document.elementsFromPoint(e.clientX, e.clientY).find(node => node.matches('.card.in-hand:not(.lifted)'));
+    if (other && selectedUid !== null) tapCard(Number(other.dataset.uid));
+    else cancelPick();
+  });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
-  addEventListener('resize', () => { if (battle) fanHand(); });
+  addEventListener('resize', () => { if (battle) { fanHand(); renderFocus(); } });
 }
 
 /** Leave the battle without finishing it (used when you abandon a run). */
@@ -775,6 +780,7 @@ function renderHand() {
     if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     if (b.busy) node.classList.add('waiting');
     if (entry.uid === selectedUid) node.classList.add('selected');
+    node.dataset.uid = entry.uid;
 
     if (entry.fresh) {                            // cards just drawn slide in
       node.classList.add('deal');
@@ -874,10 +880,11 @@ function focusButton(label, onClick) {
   return btn;
 }
 
-/** The big copy of the picked card (or item) at the bottom middle of the screen, over a dimmed battle. */
+/** The picked card, risen out of the hand (popFromHand()), or the picked item blown up at the bottom middle over a dimmed battle. */
 function renderFocus() {
   const b = battle;
   const layer = $('card-focus');
+  layer.classList.remove('rise');
   const item = ITEMS_BY_ID[b.items[selectedItem]];
   if (item) {
     const index = selectedItem;
@@ -911,9 +918,37 @@ function renderFocus() {
   big.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
-  layer.replaceChildren(big, problem ? el('p', 'focus-hint', problem) : focusButton('Play', () => tapCard(entry.uid)));
+  const extra = problem ? el('p', 'focus-hint', problem) : focusButton('Play', () => tapCard(entry.uid));
+  layer.replaceChildren(big, extra);
+  layer.classList.add('rise');
   layer.hidden = false;
+  popFromHand(big, extra, $('hand').querySelector(`[data-uid="${entry.uid}"]`));
   big.focus({ preventScroll: true });
+}
+
+/**
+ * Like Slay the Spire, the picked card rises out of its own place in the hand, bigger and straight,
+ * instead of jumping to the middle of the screen; a small Play button sits under it
+ * (the user's call). The hand's copy hides so it reads as the same card lifting.
+ */
+function popFromHand(big, extra, from) {
+  if (!from) return;
+  from.classList.add('lifted');
+  const r = from.getBoundingClientRect();
+  const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
+  const ew = extra.offsetWidth, eh = extra.offsetHeight;
+  const left = Math.max(gap, Math.min(innerWidth - w - gap, r.left + r.width / 2 - w / 2));
+  const foot = Math.min(r.bottom, innerHeight - gap);   // the Play button stands at the hand card's foot, the card on it
+  const top = Math.max(gap, foot - eh - 6 - h);
+  Object.assign(big.style, { left: `${left}px`, top: `${top}px` });
+  const ex = Math.max(gap, Math.min(innerWidth - ew - gap, left + w / 2 - ew / 2));
+  Object.assign(extra.style, { left: `${ex}px`, top: `${top + h + 6}px` });
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const dx = r.left + r.width / 2 - (left + w / 2), dy = r.bottom - (top + h);
+  big.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${r.width / w})` }, { transform: 'none' }],
+    { duration: 140, easing: 'ease-out' });
+  extra.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, delay: 60, fill: 'backwards' });
 }
 
 /* ---------- little visual effects ---------- */

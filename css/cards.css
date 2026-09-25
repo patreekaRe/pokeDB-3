@@ -196,7 +196,7 @@
   to   { opacity: 1; transform: none; }
 }
 
-/* ---------- picking a card: the first tap blows it up at the bottom middle, the second plays it ---------- */
+/* ---------- picking a card: the first tap lifts it out of the hand, the second plays it (an item blows up at the bottom middle) ---------- */
 .card.in-hand.selected { transform: translateY(-10px); z-index: 2; }
 .card.in-hand.selected .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
 .card-focus {
@@ -226,6 +226,16 @@
   text-align: center;
 }
 @keyframes focusIn { from { transform: translateY(40px) scale(0.6); opacity: 0; } }
+/* a picked hand card rises out of its own place (popFromHand() in js/battle.js), StS-style: no dimming,
+   and the hand's copy hides so it reads as the same card lifting */
+.card-focus.rise { display: block; padding: 0; background: none; }
+.card-focus.rise > * { position: fixed; margin: 0; }
+.card-focus.rise .card.focus-card { animation: none; transform-origin: 50% 100%; }
+.card-focus.rise .card.focus-card .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
+.card.in-hand.lifted { visibility: hidden; }
+.card-focus.rise .focus-play { padding: 3px 4px; }
+.card-focus.rise .focus-play .pp-pill { font-size: 0.7rem; padding: 5px 10px 4px 20px; }
+.card-focus.rise .focus-play .pp-pill::before { left: 8px; }
 
 /* ---------- deck views: tap a card to read it bigger (zoomCard() in js/ui.js); any tap closes it ---------- */
 .card-zoom {

@@ -364,10 +364,14 @@ card straightens and comes to the front.
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first
-picks it (`selectedUid`, `.selected` in the hand) and `renderFocus()` shows a
-big copy at the bottom middle in `#card-focus`, a dimmed full-screen layer;
-tapping that big card plays it, tapping the dimmed area or Escape cancels
-(`cancelPick()`), and tapping another hand card switches. The pick clears
+picks it (`selectedUid`, `.selected` in the hand) and `renderFocus()` lifts a
+big copy straight up out of its place in the hand, StS-style (the user's call:
+it used to blow up in the middle over a dimmed screen): `popFromHand()` places it
+in `#card-focus` (a see-through full-screen layer, `.rise`), grows it from the hand
+card's box, hides the hand's copy (`.lifted`) and sets a small Play button under it.
+Tapping that big card plays it, tapping elsewhere or Escape cancels
+(`cancelPick()`), and tapping another hand card through the layer switches
+(`elementsFromPoint`, by `data-uid`). Items still blow up at the bottom middle. The pick clears
 itself whenever the battle is busy or the card leaves the hand.
 Your Pokémon grows as it evolves: its sprites (map card, map
 trainer, evolve pop-up) carry `data-stage`, and CSS scales stage 0 to 78% and
