@@ -949,6 +949,7 @@ function log(message) {
   box.classList.toggle('quiet', !message);
   box.classList.remove('done');
   clearInterval(typing);
+  fitLog(box, text, message);
   const letters = Array.from(message);
   if (!message || matchMedia('(prefers-reduced-motion: reduce)').matches) {
     text.textContent = message;
@@ -961,6 +962,16 @@ function log(message) {
     text.textContent = letters.slice(0, shown).join('');
     if (shown >= letters.length) { clearInterval(typing); box.classList.add('done'); }
   }, 18);
+}
+
+/** The text box is two lines tall, like the games': a message that would wrap onto a third line
+    (a narrow phone, a long enemy name) gets a notch smaller text, measured in full before it types out.
+    Only one notch: in the rare case it still needs three lines, the box grows a line (the user's call). */
+function fitLog(box, text, message) {
+  box.classList.remove('tight');
+  text.textContent = message;
+  if (text.offsetHeight > parseFloat(getComputedStyle(text).lineHeight) * 2.5) box.classList.add('tight');
+  text.textContent = '';
 }
 
 function shake(node) {
