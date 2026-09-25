@@ -558,6 +558,7 @@ function restSite() {
         disabled: banned,
         onPick: async () => {
           const thisRun = run;
+          const before = run.hp;
           run.hp += heal;
           run.restCount += 1;
           $('reward-options').classList.add('resting');
@@ -567,8 +568,10 @@ function restSite() {
           await healAtCenter();
           if (run !== thisRun) return;
           const chime = await playSound('heal');
-          flashCenter(Math.min(chime, 4) || 2);
-          await sleep((Math.min(chime, 4) || 2) * 1000);
+          const seconds = Math.min(chime, 4) || 2;
+          flashCenter(seconds);
+          vitals.fill(before, run.hp, seconds);   // the patient monitor's bar fills up while the chime plays
+          await sleep(seconds * 1000);
           if (run !== thisRun) return;                 // the run was abandoned during the chime
           toast(`Healed ${heal} HP.`, 'ok');
           showMap();
@@ -590,11 +593,48 @@ function restSite() {
   sprite.src = 'assets/pokemon/chansey-front.gif';
   sprite.alt = 'Chansey, the nurse';
   nurse.append(sprite);
-  $('reward-options').append(nurse);
+  const vitals = centerVitals(run.hp, banned ? 0 : heal);
+  $('reward-options').append(nurse, vitals.node);
   showPlaceScene('center');
   placeCenterSpots();
   playMusic('center');
   preloadSounds('heal');
+}
+
+/** The Center's patient monitor: your Pokémon, its HP bar in green phosphor and what Rest would heal blinking on the
+    end of it; `fill()` runs the bar and the numbers up in real time while you rest. placeCenterSpots() lays it over
+    the scene's monitor screen. */
+function centerVitals(hp, heal) {
+  const node = el('div', 'center-vitals');
+  node.title = heal ? `${stageName(run.starter, run.stage)}: ${hp}/${run.maxHp} HP. Resting heals ${heal}.` : `${stageName(run.starter, run.stage)}: ${hp}/${run.maxHp} HP.`;
+  const face = el('img', 'vitals-face');
+  face.src = spriteUrl(run.starter, 'front', run.stage);
+  face.alt = '';
+  const bar = el('span', 'vitals-bar'), fill = el('span', 'vitals-fill'), gain = el('span', 'vitals-gain');
+  bar.append(fill, gain);
+  const nums = el('span', 'vitals-hp'), plus = el('span', 'vitals-plus', heal ? `+${heal}` : '');
+  node.append(face, el('span', 'vitals-name', stageName(run.starter, run.stage).toUpperCase()), bar, nums, plus);
+  const show = (now, coming) => {
+    fill.style.width = `${now / run.maxHp * 100}%`;
+    gain.style.left = fill.style.width;
+    gain.style.width = `${coming / run.maxHp * 100}%`;
+    nums.textContent = `HP ${Math.round(now)}/${run.maxHp}`;
+  };
+  show(hp, heal);
+  return {
+    node,
+    fill(from, to, seconds) {
+      node.classList.add('healing');
+      plus.textContent = '';
+      const start = performance.now();
+      const step = (t) => {
+        const k = Math.min(1, (t - start) / (seconds * 1000));
+        show(from + (to - from) * k, (to - from) * (1 - k));
+        if (k < 1 && node.isConnected) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    },
+  };
 }
 
 function centerLabel(text, hint) {
@@ -617,6 +657,8 @@ function placeCenterSpots() {
   });
   const nurse = box.querySelector('.center-nurse');
   if (nurse) Object.assign(nurse.style, { left: `${spots.nurse.x}px`, top: `${spots.nurse.y}px` });
+  const vitals = box.querySelector('.center-vitals'), p = spots.patient;
+  if (vitals && p) Object.assign(vitals.style, { left: `${p.left}px`, top: `${p.top}px`, width: `${p.width}px`, height: `${p.height}px`, fontSize: `${p.width / 11.5}px` });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);   // the text box sits just under the counter
 }
 addEventListener('scenepaint', placeCenterSpots);

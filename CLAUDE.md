@@ -405,7 +405,10 @@ and light shafts. With none picked it's the Clearing's moonlit night, like
 the title. The Pokémon Center (`restSite()`) has an indoor scene instead
 (`PLACE_ART.center`, `showPlaceScene('center')`): a big Center logo (a Poké Ball
 with a red cross) on the wall behind the counter, hospital monitors on ceiling arms
-(a scrolling heartbeat, a party screen), and on wider walls a clock showing the real
+(a scrolling heartbeat, a party screen, and the big patient monitor: `centerVitals()` in
+`js/run.js` lays your Pokémon's sprite, name and a green-phosphor HP bar over it, with what
+Rest would heal blinking on the bar's end and "+N"; resting runs the bar and numbers up in
+real time for the chime's length), and on wider walls a clock showing the real
 time and the town map. Chansey is the real sprite (`assets/pokemon/chansey-front.gif`,
 `.center-nurse`, cropped at the counter top by `placeCenterSpots()`); on the counter
 are the games' PC (a cream CRT with a blue menu, a keyboard) and the healing machine

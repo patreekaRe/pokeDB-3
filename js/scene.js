@@ -345,7 +345,7 @@ export function centerSpots() {
   if (!life.spots || !canvas) return null;
   const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
   const rect = ({ x0, x1, y0, y1 }) => ({ left: box.left + x0 * sx, top: box.top + y0 * sy, width: (x1 - x0 + 1) * sx, height: (y1 - y0 + 1) * sy });
-  return { machine: rect(life.spots.machine), pc: rect(life.spots.pc), nurse: { x: box.left + (life.spots.nurse.x + 0.5) * sx, y: box.top + life.spots.nurse.y * sy }, foot: box.top + life.spots.foot * sy };
+  return { machine: rect(life.spots.machine), pc: rect(life.spots.pc), nurse: { x: box.left + (life.spots.nurse.x + 0.5) * sx, y: box.top + life.spots.nurse.y * sy }, foot: box.top + life.spots.foot * sy, patient: rect(life.spots.patient) };
 }
 
 /**
@@ -1018,16 +1018,19 @@ function centerBackdrop() {
   const top = counterTop(), r = Math.max(12, Math.min(22, Math.floor((top - ceil) * 0.2)));
   const logoY = top - 15 - Math.round(r * 0.45);
   centerLogo(cx, logoY, r);
-  // wide walls hang the monitors beside the logo; a phone's narrow wall hangs them side by side above it
-  const wide = W > 160, mw = wide ? 26 : 22, mh = wide ? 17 : 15;
-  const gap = wide ? r + 5 + (mw >> 1) : (mw >> 1) + 3, monY = wide ? logoY - 4 : logoY - r - (mh >> 1) - 5;
+  // the big patient monitor shows your Pokémon's HP (the page draws it: centerSpots().patient), a heartbeat monitor
+  // beside it; wide walls hang them either side of the logo, a phone's narrow wall above it with a party screen too
   life.monitors = [];
-  wallMonitor(cx - gap, monY, mw, mh, 'pulse', ceil);
-  wallMonitor(cx + gap, monY, mw, mh, 'party', ceil);
   if (W > 160) {
-    const far = gap + (mw >> 1) + 22;
-    wallClock(cx - far, logoY - 6, 8);
-    wallMap(cx + far, logoY - 4, 14, 9);
+    wallMonitor(cx - r - 18, logoY - 4, 26, 17, 'pulse', ceil);
+    wallMonitor(cx + r + 24, logoY - 4, 38, 24, 'patient', ceil);
+    wallClock(cx - r - 50, logoY - 6, 8);
+    wallMap(cx + r + 62, logoY - 4, 14, 9);
+  } else {
+    const y = logoY - r - 18;
+    wallMonitor(cx, y, 40, 26, 'patient', ceil);
+    wallMonitor(cx - 32, y + 2, 18, 14, 'pulse', ceil);
+    wallMonitor(cx + 32, y + 2, 18, 14, 'party', ceil);
   }
 }
 
@@ -1047,7 +1050,8 @@ function centerLogo(cx, cy, r) {
   for (const [x, y] of [[-0.55, -0.62], [-0.45, -0.72], [-0.65, -0.5]]) solid(cx + Math.round(x * r), cy + Math.round(y * r), white);   // a shine
 }
 
-/** A hospital monitor on an arm from the ceiling: 'pulse' draws a heartbeat trace, 'party' six Poké Balls with HP bars (drawCenter animates both). */
+/** A hospital monitor on an arm from the ceiling: 'pulse' draws a heartbeat trace, 'party' six Poké Balls with HP bars
+    (drawCenter animates both), and 'patient' an empty screen the page fills with your Pokémon's HP (centerSpots). */
 function wallMonitor(cx, cy, w, h, kind, ceil) {
   const [frame, bezel, screen, , dim] = S.monitor;
   const x0 = cx - (w >> 1), x1 = x0 + w - 1, y0 = cy - (h >> 1), y1 = y0 + h - 1;
@@ -1066,7 +1070,8 @@ function wallMonitor(cx, cy, w, h, kind, ceil) {
       for (let k = 0; k < 3 + (i * 5) % 3; k++) solid(bx + 3 + k, by + 1, bright);
     }
   }
-  life.monitors.push(box);
+  if (kind === 'patient') life.spots = { ...life.spots, patient: { x0: box.x0, x1: box.x1, y0: box.y0, y1: box.y1 } };
+  else life.monitors.push(box);
 }
 
 /** A wall clock showing the real time (drawCenter moves its hands). */

@@ -2335,6 +2335,35 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
 .center-room .reward-option:is(:hover, :focus-visible) { transform: none; background: rgba(255, 255, 255, 0.18); }
 .center-room .reward-option:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
 .center-room .reward-option:disabled { opacity: 1; cursor: not-allowed; }
+/* the patient monitor (centerVitals()): your Pokémon's HP in green phosphor over the scene's monitor screen, the heal
+   Rest would give blinking on the end of the bar, and the bar filling up in real time while you rest */
+.center-vitals {
+  position: fixed;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "face name name" "bar bar bar" "hp hp plus";
+  align-items: center;
+  gap: 0.25em 0.4em;
+  padding: 0.35em 0.5em;
+  background: repeating-linear-gradient(#0e2a1c 0 3px, #12321f 3px 4px);
+  color: #58f888;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  line-height: 1;
+  text-shadow: 0 0 4px rgba(88, 248, 136, 0.6);
+  cursor: help;
+}
+.vitals-face { grid-area: face; width: 2em; height: 2em; object-fit: contain; image-rendering: pixelated; filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(0.95) drop-shadow(0 0 3px rgba(88, 248, 136, 0.5)); }
+.vitals-name { grid-area: name; font-size: 0.8em; overflow: hidden; white-space: nowrap; }
+.vitals-bar { grid-area: bar; position: relative; height: 0.8em; border: 1px solid #58f888; background: #0a1e14; overflow: hidden; }
+.vitals-fill, .vitals-gain { position: absolute; top: 0; bottom: 0; left: 0; }
+.vitals-fill { background: #58f888; box-shadow: 0 0 5px #58f888; }
+.vitals-gain { background: #c8ffd8; animation: cursorBlink 1s steps(1) infinite; }
+.vitals-hp { grid-area: hp; font-size: 0.85em; white-space: nowrap; }
+.vitals-plus { grid-area: plus; font-size: 0.85em; color: #c8ffd8; animation: cursorBlink 1s steps(1) infinite; }
+.center-vitals.healing .vitals-gain { animation: none; opacity: 0.5; }
+.center-vitals.healing .vitals-hp { color: #c8ffd8; }
+@media (prefers-reduced-motion: reduce) { .vitals-gain, .vitals-plus { animation: none; } }
 /* Chansey behind the counter: a window whose bottom edge is the counter top (placeCenterSpots()), so its feet are hidden */
 .center-nurse {
   position: fixed;
