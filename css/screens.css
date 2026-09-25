@@ -2275,7 +2275,7 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
   translate: -50% 0;
   width: min(calc(100% - 32px), 720px);
 }
-#reward-screen:has(.center-room) #reward-skip { margin-top: auto; margin-bottom: max(14px, env(safe-area-inset-bottom)); }
+#reward-screen:has(.center-room) #reward-skip { margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
 /* each choice is a see-through button laid over its machine (placeCenterSpots() in js/run.js) */
 .center-room .reward-option {
   position: fixed;
