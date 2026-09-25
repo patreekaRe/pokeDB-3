@@ -30,7 +30,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, s
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest } from './scene.js';
 import { battleWipe } from './transition.js';
 
 let run = null;
@@ -544,9 +544,117 @@ function offerItem(item, next) {
   });
 }
 
+/** The treasure grotto: a Poké Ball chest on a dais in a shaft of light. Tapped, it wobbles like a ball about to open,
+    pops, and the relics float up out of it with no tiles round them; tap one to read it in the text box, then tap it
+    again (or Take it) and it flies into the Bag. */
 function treasureRoom() {
-  offerRelic('Treasure chest', showMap);
+  const thisRun = run, relics = relicChoices(run), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  showChoice({
+    title: 'Treasure',
+    sub: ['A chest glints in a shaft of light.', 'Tap it to open it!'],
+    options: [],
+    skipLabel: 'Leave',
+    onSkip: showMap,
+    layout: 'treasure-room',
+  });
+  showPlaceScene('treasure', { biome: BIOMES[run.biome].id });
+
+  const art = treasureChest(), stage = el('div', 'treasure-stage');
+  const part = (name) => {
+    const img = el('img', `chest-part chest-${name}`);
+    Object.assign(img, { src: art[name].url, alt: '', draggable: false });
+    img.style.setProperty('--w', art[name].w);
+    img.style.setProperty('--h', art[name].h);
+    return img;
+  };
+  const chest = el('button', 'treasure-chest');
+  chest.type = 'button';
+  chest.setAttribute('aria-label', 'Open the chest');
+  chest.append(el('span', 'chest-rays'), part('open'), part('body'), part('lid'), el('span', 'chest-glow'), centerLabel('Open', 'Open the chest'));
+  const take = el('button', 'ds-btn ds-go ds-sm treasure-take');
+  take.type = 'button';
+  take.hidden = true;
+  take.append(el('span', 'pp-pill', 'Take it'));
+  stage.append(chest, take);
+  $('reward-options').append(stage);
+  placeTreasure();
+
+  let picked = null, taking = false;
+  chest.addEventListener('click', async () => {
+    if (chest.classList.contains('shaking') || chest.classList.contains('opened')) return;
+    chest.classList.add('shaking');
+    await sleep(reduced ? 0 : 1100);
+    if (run !== thisRun || !chest.isConnected) return;
+    chest.classList.replace('shaking', 'opened');
+    chest.tabIndex = -1;
+    playSound('ball-open');
+    stage.append(el('div', 'treasure-flash'));
+    relics.forEach((relic, i) => stage.append(relicButton(relic, i)));
+    placeTreasure();
+    await sleep(reduced ? 0 : 500 + relics.length * 180);
+    if (run !== thisRun || !chest.isConnected) return;
+    sayLines(relics.length ? ['The chest was full of relics!', 'Tap one to see what it does.'] : ['The chest is empty...']);
+  });
+
+  function relicButton(relic, i) {
+    const btn = el('button', 'treasure-relic'), float = el('span', 'relic-float');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', `${relic.name}: ${relic.text}`);
+    btn.style.setProperty('--i', i);
+    float.append(itemSprite(relic, 'treasure-sprite'));
+    btn.append(el('span', 'relic-halo'), float, el('span', 'relic-label', relic.name));
+    btn.addEventListener('click', () => (picked === relic ? takeIt() : choose(relic, btn)));
+    return btn;
+  }
+
+  function choose(relic, btn) {
+    if (taking) return;
+    picked = relic;
+    stage.classList.add('choosing');
+    stage.querySelectorAll('.treasure-relic').forEach(b => b.classList.toggle('chosen', b === btn));
+    take.hidden = false;
+    sayLines([`${relic.name}: ${relic.text}`]);
+  }
+
+  take.addEventListener('click', takeIt);
+  async function takeIt() {
+    if (!picked || taking) return;
+    taking = true;
+    playSound('item-get');
+    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
+    take.hidden = true;
+    const btn = stage.querySelector('.treasure-relic.chosen'), from = btn.getBoundingClientRect(), to = $('bag-btn').getBoundingClientRect();
+    btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
+    btn.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
+    stage.classList.add('taking');
+    btn.classList.add('taken');
+    await sleep(reduced ? 0 : 750);
+    if (run !== thisRun) return;
+    gainRelic(picked, showMap);
+  }
 }
+
+/** Stand the chest on the grotto's dais and float the relics in a row above it; the scene tells us whenever it repaints. */
+function placeTreasure() {
+  const stage = document.querySelector('.treasure-stage'), spot = stage?.isConnected && treasureSpots();
+  if (!spot) return;
+  const { left, foot, px } = spot, chestTop = foot - 28 * px, cx = left + 18 * px;
+  const size = innerWidth <= 720 ? 72 : 96;
+  const titleFoot = $('reward-title').getBoundingClientRect().bottom;
+  const rowY = Math.max(titleFoot + size / 2 + 12, chestTop - 100 - size / 2);
+  stage.style.setProperty('--px', `${px}px`);
+  stage.style.setProperty('--size', `${size}px`);
+  Object.assign(stage.querySelector('.treasure-chest').style, { left: `${left}px`, top: `${foot}px` });
+  stage.querySelector('.treasure-take').style.top = `${Math.max(rowY + size / 2 + 24, chestTop - 66)}px`;
+  const relics = [...stage.querySelectorAll('.treasure-relic')], gap = Math.min(size * 1.5, (innerWidth - 24) / Math.max(1, relics.length));
+  relics.forEach((btn, i) => {
+    const off = i - (relics.length - 1) / 2, x = cx + off * gap, y = rowY + Math.abs(off) * 14;
+    Object.assign(btn.style, { left: `${x}px`, top: `${y}px` });
+    btn.style.setProperty('--from-x', `${cx - x}px`);
+    btn.style.setProperty('--from-y', `${chestTop + 8 * px - y}px`);
+  });
+}
+addEventListener('scenepaint', placeTreasure);
 
 /** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
 const MIN_DECK = 7;

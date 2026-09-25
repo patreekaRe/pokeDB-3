@@ -260,6 +260,14 @@ const TYPE_ART = {
 };
 
 /* ---------- places: indoor scenes for a room on the map (showPlaceScene) ---------- */
+// the treasure chest's shared colours (see chestLid()); each biome gives it a ball's lid
+const BALL_CHEST = {
+  body: ['#ffffff', '#f0f0f4', '#c8c8d4', '#9898a8'],
+  trim: ['#f0f0f8', '#b8b8c8', '#808090'],
+  band: '#303038', line: '#1c1c24',
+  button: ['#ffffff', '#b0b0c0'],
+};
+
 const PLACE_ART = {
   center: {   // inside a Pokémon Center: the big logo and hospital monitors behind the counter, the healing machine and PC on it
     backdrop: 'center', floor: 'center', light: null, horizon: 0.6,   // low, so the counter shows under the Center's two tiles
@@ -302,6 +310,52 @@ const PLACE_ART = {
     plant: ['#5ab048', '#2e7a34', '#8ad060', '#c8c8d8', '#7a7a90'],
     life: ['mart'],
   },
+
+  /* a hidden grotto: a shaft of light through a hole in the roof onto a stone dais, crystals in the rock and gold
+     spilled round the chest (the page's own, from treasureChest()). Its look is per biome (`biomes`). */
+  treasure: {
+    backdrop: 'treasure', floor: 'treasure', light: null, horizon: 0.56,
+    coin: ['#fff8b0', '#f8c830', '#b07818'],
+    gem: ['#f85878', '#58e088', '#58a8f8', '#c878f8'],
+    balls: { base: ['#f8f8f8', '#303038', '#ffffff'], poke: ['#e04030'], great: ['#3878f0', '#e04030'], ultra: ['#383840', '#f8d030'], master: ['#8048c8', '#f070a8'] },
+    biomes: {
+      clearing: {   // a mossy grotto with blue crystals and a wooden chest
+        sky: ['#fffbe0', '#d8f0f8'],
+        rock: ['#7a8a92', '#627078', '#4c5860', '#3a444c', '#262e36'],
+        moss: ['#8ac860', '#5a9a44', '#3a6e30'],
+        crystal: ['#f0ffff', '#a0e4f8', '#50a8e0', '#2c64a0'],
+        ground: ['#58646a', '#4e5a60', '#465056', '#3e474d', '#363e44'],
+        stone: ['#c8ccc4', '#a4aaa2', '#7c827c', '#565c58'],
+        beam: '#fff4c0', drip: '#c0ecff', mote: '#fffce8',
+        chest: { ...BALL_CHEST, lid: ['#ff8070', '#e83830', '#b82020', '#7a1418'] },   // a Poké Ball
+        life: ['treasure', 'drips'],
+      },
+      shrine: {   // an old stone vault: rose quartz, spirit wisps and a red lacquer chest
+        sky: ['#f8f0ff', '#d8e8f0'],
+        rock: ['#8a8898', '#6c6a7c', '#545264', '#403e50', '#2a2838'],
+        moss: ['#7aa870', '#4e7e50', '#2e5438'],
+        crystal: ['#fff4fa', '#f8b8d8', '#d86aa0', '#8a3868'],
+        ground: ['#5c5a6a', '#524f60', '#484656', '#403e4c', '#363442'],
+        stone: ['#d0ccc0', '#aca698', '#848070', '#5c584c'],
+        beam: '#fff0f4', drip: '#e0e8ff', mote: '#fff8fc',
+        wisp: ['#f0ffff', '#98e0f8', '#4898c8'],
+        chest: { ...BALL_CHEST, lid: ['#88c0ff', '#3878f0', '#2850b8', '#183078'], marks: 'great', mark: ['#ff7060', '#e03830', '#a82020'] },   // a Great Ball
+        life: ['treasure', 'drips', 'wisps'],
+      },
+      wastes: {   // an obsidian cave: fire crystals, glowing veins and a black chest
+        sky: ['#f8c878', '#f09048'],
+        rock: ['#6a5250', '#523e3e', '#3e2e30', '#2e2224', '#1a1214'],
+        vein: ['#f8b030', '#e05820'],
+        crystal: ['#fff4c0', '#f8b048', '#e86020', '#982818'],
+        ground: ['#4a3a38', '#423432', '#3a2e2c', '#332826', '#2a2120'],
+        stone: ['#9a8a80', '#7a6a62', '#5a4c46', '#3a302c'],
+        beam: '#ffd8a0', mote: '#fff0c0',
+        ember: ['#fff0a0', '#f8a830', '#e85820'], embers: 0.5,
+        chest: { ...BALL_CHEST, lid: ['#70707e', '#46464e', '#303036', '#1c1c22'], trim: ['#fff080', '#f8d030', '#c09818'], marks: 'ultra' },   // an Ultra Ball
+        life: ['treasure', 'embers'],
+      },
+    },
+  },
 };
 
 
@@ -320,9 +374,12 @@ export function showMenuScene(type) {
 
 /** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. `floor` (a function giving
     a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles, and
-    `span` (one giving its page [left, right]) lets the scene dress its ends. */
-export function showPlaceScene(place, { floor = null, span = null } = {}) {
-  paintScene(`place/${place}`, PLACE_ART[place], floor, span);
+    `span` (one giving its page [left, right]) lets the scene dress its ends. A place with `biomes` (the treasure
+    grotto) takes its look from `biome`. */
+export function showPlaceScene(place, { floor = null, span = null, biome = null } = {}) {
+  const { biomes, ...art } = PLACE_ART[place];
+  const look = biomes && (biomes[biome] || Object.values(biomes)[0]);
+  paintScene(`place/${place}${look ? `/${biome}` : ''}`, look ? { ...art, ...look } : art, floor, span);
 }
 
 const BALL_DROP = 4;   // frames before your Poké Ball settles into the healing machine
@@ -476,7 +533,9 @@ function paintBase() {
   if (S.raw.backdrop === 'jungle') jungleBackdrop();
   if (S.raw.backdrop === 'center') centerBackdrop();
   if (S.raw.backdrop === 'mart') martBackdrop();
+  if (S.raw.backdrop === 'treasure') grottoWall();
 
+  if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'center') centerFloor();
   if (S.raw.floor === 'mart') martFloor();
   if (S.raw.floor === 'meadow') meadow();
@@ -491,6 +550,7 @@ function paintBase() {
   if (S.raw.backdrop === 'jungle') jungleFront();
   if (S.raw.backdrop === 'center') centerFront();
   if (S.raw.backdrop === 'mart') martFront();
+  if (S.raw.backdrop === 'treasure') grottoFront();
 
   return Uint32Array.from(px);
 }
@@ -1350,6 +1410,293 @@ function floorBall(cx, cy, kind, shadow = true) {
   if (shadow) for (let x = -2; x <= 3; x++) tint(cx + x, cy + 4, 0.8);
 }
 
+/* ---------- the treasure grotto: cracked rock walls, a hole in the roof letting a shaft of light down onto a stone
+   dais, crystals, stalactites dripping (or glowing veins in the Wastes), and gold spilled round the chest ---------- */
+
+const CHEST_W = 36, LID_H = 13, BODY_H = 15, OPEN_H = 9;
+
+/** Mix a pixel towards colour `c` by k (0-1). */
+function blend(x, y, c, k) {
+  x |= 0; y |= 0;
+  if (!inside(x, y)) return;
+  const i = y * W + x, a = px[i], mix = (s) => Math.round(((a >> s) & 255) * (1 - k) + ((c >> s) & 255) * k);
+  px[i] = ((255 << 24) | (mix(16) << 16) | (mix(8) << 8) | mix(0)) >>> 0;
+}
+
+/** Rock broken into facets (Voronoi cells), each lit on its top-left and cracked at its edges, darker towards the
+    walls' ends and the roof, so the light seems to come from the hole. */
+function grottoWall() {
+  const [, , , , crack] = S.rock, cx = W / 2, G = 8, GY = 6;
+  const feature = (i, j) => [(i + 0.2 + noise(i, j, 1) * 0.6) * G, (j + 0.2 + noise(i, j, 2) * 0.6) * GY];
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    const i0 = Math.floor(x / G), j0 = Math.floor(y / GY);
+    let d1 = 1e9, d2 = 1e9, f = null, cell = null;
+    for (let j = j0 - 1; j <= j0 + 1; j++) for (let i = i0 - 1; i <= i0 + 1; i++) {
+      const p = feature(i, j), d = Math.hypot(x - p[0], y - p[1]);
+      if (d < d1) { d2 = d1; d1 = d; f = p; cell = [i, j]; } else if (d < d2) d2 = d;
+    }
+    const dark = 1.1 * Math.pow(Math.abs(x + 0.5 - cx) / cx, 1.5) + 0.7 * Math.pow(1 - y / horizon, 2);
+    if (d2 - d1 < 1.1) {
+      const vein = S.vein && y > horizon * 0.45 && noise(cell[0], cell[1], 3) > 0.9 && noise(x >> 2, y >> 2, 4) > 0.3;
+      solid(x, y, vein ? S.vein[(x + y) & 1] : crack);
+      continue;
+    }
+    const lit = ((f[0] - x) / G + (f[1] - y) / GY) * 0.8 + (dither(x, y) / 16 - 0.5) * 0.35;
+    const shade = (lit > 0.35 ? 0 : lit > 0 ? 1 : lit > -0.35 ? 2 : 3) + Math.floor(dark * 2 + dither(x + 1, y) / 16);
+    solid(x, y, S.rock[Math.min(3, shade)]);
+  }
+
+  // the hole in the roof, rimmed with lit rock, the sky showing through
+  const rx = Math.max(6, Math.round(W * 0.08)), ry = 3;
+  life.hole = { rx };
+  for (let y = 0; y <= ry + 1; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) {
+    const d = Math.hypot((x + 0.5 - cx) / rx, (y + 0.5) / ry);
+    if (d <= 1) { put(x, y, S.sky[d < 0.6 ? 0 : 1]); sky[y * W + x] = 1; }
+    else if (d <= 1.35) solid(x, y, S.rock[0]);
+  }
+  if (S.moss) for (let x = Math.floor(cx - rx - 1); x <= cx + rx + 1; x++) {   // roots and moss hanging from its rim
+    if (noise(x, 1, 7) < 0.45) continue;
+    const top = Math.round(ry * Math.sqrt(Math.max(0, 1 - ((x + 0.5 - cx) / rx) ** 2))) + 1;
+    for (let k = 0, len = 1 + Math.floor(noise(x, 2, 7) * 6); k < len; k++) solid(x, top + k, S.moss[k === len - 1 ? 2 : k ? 1 : 0]);
+  }
+
+  // stalactites along the roof (their tips drip in drawGrotto)
+  life.tips = [];
+  for (let x = 2 + Math.floor(rand() * 5); x < W - 2; x += 5 + Math.floor(rand() * 8)) {
+    if (Math.abs(x - cx) < rx + 4) continue;
+    const len = 3 + Math.floor(rand() * 7);
+    for (let k = 0; k < len; k++) {
+      const w = Math.round((1 - k / len) * 2);
+      for (let dx = -w; dx <= w; dx++) solid(x + dx, k, dx < 0 ? S.rock[1] : dx > 0 ? S.rock[3] : S.rock[2]);
+    }
+    if (rand() < 0.6) life.tips.push({ x, y: len, floor: horizon + 1 + Math.floor(rand() * 4) });
+  }
+
+  // moss along the wall's foot
+  if (S.moss) for (let x = 0; x < W; x++) {
+    if (noise(Math.floor(x / 6), 0, 6) < 0.4) continue;
+    const m = 1 + Math.round(3 * noise(x, 0, 5));
+    for (let k = 0; k < m; k++) solid(x, horizon - 1 - k, S.moss[k === m - 1 ? 0 : dither(x, k) < 8 ? 1 : 2]);
+  }
+
+  // crystal clusters growing out of the walls
+  life.glints = [];
+  const wide = W > 200;
+  crystalCluster(Math.round(W * 0.07), Math.round(horizon * 0.5), 8);
+  crystalCluster(Math.round(W * 0.93), Math.round(horizon * 0.66), 9);
+  if (wide) { crystalCluster(Math.round(W * 0.27), Math.round(horizon * 0.42), 6); crystalCluster(Math.round(W * 0.76), Math.round(horizon * 0.35), 7); }
+}
+
+/** A few crystals from one spot: a tall one in the middle and shorter ones leaning out. */
+function crystalCluster(cx, foot, h) {
+  crystal(cx - 3, foot + 1, h * 0.6, -1);
+  crystal(cx + 3, foot + 1, h * 0.55, 1);
+  crystal(cx, foot, h, 0);
+}
+
+/** A six-sided crystal seen side on: a lit face, a darker one, a pointed tip that glints now and then (drawGrotto). */
+function crystal(cx, foot, h, lean) {
+  const [shine, light, body, dark] = S.crystal, full = h >= 8 ? 4 : 3;
+  h = Math.max(3, Math.round(h));
+  let tip = null;
+  for (let k = 0; k < h; k++) {
+    const toTip = h - 1 - k, w = toTip >= 2 ? full : toTip === 1 ? 2 : 1;
+    const x0 = cx + Math.round(lean * k / 3) - (w >> 1), y = foot - k;
+    const faces = w === 4 ? [light, shine, body, dark] : w === 3 ? [light, body, dark] : w === 2 ? [light, body] : [shine];
+    faces.forEach((c, j) => solid(x0 + j, y, c));
+    solid(x0 - 1, y, S.rock[4]);
+    solid(x0 + w, y, S.rock[4]);
+    if (!toTip) { solid(x0, y - 1, S.rock[4]); tip = { x: x0, y }; }
+  }
+  life.glints.push({ ...tip, c: shine, phase: rand() * 80 });
+}
+
+function grottoFloor() {
+  const [lit, , , , deep] = S.ground, cx = W >> 1;
+  bands(horizon, H, S.ground, 0.8);
+  for (let n = 0, count = Math.round(W * (H - horizon) / 45); n < count; n++) {   // pebbles
+    const x = Math.floor(rand() * W), y = horizon + 2 + Math.floor(rand() * (H - horizon - 2));
+    put(x, y, lit);
+    if (depthOf(y) > 0.4) { put(x + 1, y, lit); put(x, y + 1, deep); put(x + 1, y + 1, deep); }
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.7); tint(x, horizon + 1, 0.85); }   // the wall's shadow at its foot
+
+  const dy = horizon + Math.round((H - horizon) * 0.34), rx = CHEST_W / 2 + 8, ry = 5;
+  life.dais = { x: cx, y: dy };
+  dais(cx, dy, rx, ry);
+
+  // gold spilled round the dais, with a Poké Ball or two
+  const [shine, gold, dark] = S.coin;
+  const heap = (hx, foot, size) => {
+    for (let k = 0; k < size; k++) for (let x = -(size - k) * 2; x <= (size - k) * 2; x++) {
+      put(hx + x, foot - k, (x + k * 2) % 3 === 0 ? shine : (x + k) % 2 ? gold : dark);
+    }
+    for (let x = -size * 2 - 1; x <= size * 2 + 1; x++) tint(hx + x, foot + 1, 0.7);
+    put(hx + 1, foot - 1, S.gem[Math.floor(rand() * S.gem.length)]);
+    life.glints.push({ x: hx, y: foot - size + 1, c: shine, phase: rand() * 80 });
+  };
+  heap(cx - rx - 5, dy + 5, 3);
+  heap(cx + rx + 5, dy + 8, 2);
+  for (let n = 0; n < 12; n++) {
+    const x = Math.round(cx + (rand() * 2 - 1) * (rx + 16)), y = Math.round(dy + ry + 3 + rand() * Math.max(2, (H - dy - ry - 6) * 0.6));
+    if (Math.abs(x - cx) < rx - 4 && y < dy + ry + 5) continue;
+    put(x, y, gold); put(x + 1, y, shine); put(x, y + 1, dark); put(x + 1, y + 1, dark);
+    if (rand() < 0.3) put(x + 3, y, S.gem[n % S.gem.length]);
+  }
+  floorBall(cx - rx - 13, dy + 12, 'great');
+  floorBall(cx + rx + 12, dy + 1, 'poke');
+}
+
+/** A round stone dais on a wider step, lit rim at the back, its front laid in blocks. */
+function dais(cx, cy, rx, ry) {
+  const [lit, top, face, deep] = S.stone;
+  const disc = (y0, rx2, ry2, tall, rim) => {
+    for (let x = -rx2; x <= rx2; x++) {
+      const e = Math.sqrt(Math.max(0, 1 - (x / (rx2 + 0.5)) ** 2)), back = Math.round(y0 - ry2 * e), front = Math.round(y0 + ry2 * e);
+      for (let y = back; y <= front; y++) put(cx + x, y, y === back ? rim : top);
+      for (let k = 1; k <= tall; k++) put(cx + x, front + k, k === tall ? deep : (x + rx2) % 7 === 0 ? deep : face);
+    }
+  };
+  disc(cy + 4, rx + 5, ry + 2, 2, face);
+  disc(cy, rx, ry, 4, lit);
+}
+
+/** The light: a shaft from the hole down to the dais with a pool round it, then dark boulders in the front corners. */
+function grottoFront() {
+  const cx = W / 2, d = life.dais, beam = S.beam;
+  for (let y = 0; y < d.y + 3; y++) {
+    const hw = beamWidth(y);
+    for (let x = Math.floor(cx - hw - 3); x <= cx + hw + 3; x++) {
+      const e = Math.abs(x + 0.5 - cx) - hw;
+      if (e < -1) blend(x, y, beam, 0.24);
+      else if (dither(x, y) < (3 - e) * 3) blend(x, y, beam, 0.14);
+    }
+  }
+  const prx = CHEST_W / 2 + 16, pry = 9;
+  for (let y = d.y - pry; y <= d.y + pry + 2; y++) for (let x = Math.floor(cx - prx); x <= cx + prx; x++) {
+    const e = Math.hypot((x + 0.5 - cx) / prx, (y - d.y - 2) / pry);
+    if (e < 0.75) blend(x, y, beam, 0.2);
+    else if (e < 1 && dither(x, y) < (1 - e) * 60) blend(x, y, beam, 0.12);
+  }
+
+  const boulder = (from, to, tall) => {
+    for (let x = Math.min(from, to); x <= Math.max(from, to); x++) {
+      const k = Math.abs(x - from) / Math.abs(to - from), h = Math.round(tall * Math.sqrt(Math.max(0, 1 - k * k)) + Math.sin(x * 1.7) * 0.8);
+      for (let y = H - h; y < H; y++) solid(x, y, y === H - h ? S.rock[3] : S.rock[4]);
+    }
+  };
+  boulder(-1, Math.round(W * 0.2), Math.round((H - horizon) * 0.28));
+  boulder(W, Math.round(W * 0.84), Math.round((H - horizon) * 0.2));
+  crystalCluster(Math.round(W * 0.92), H - Math.round((H - horizon) * 0.14), 10);
+}
+
+const beamWidth = (y) => life.hole.rx + (CHEST_W / 2 + 10 - life.hole.rx) * Math.min(1, y / life.dais.y);
+
+/** The grotto's life: a brighter band sliding down the light, dust drifting in it, crystals and gold glinting,
+    drops falling from the stalactites. */
+function drawGrotto(t) {
+  const cx = W / 2, d = life.dais, band = Math.floor((t * 1.5) % (d.y + 40));
+  for (let y = band - 4; y <= band; y++) {
+    if (y < 0 || y > d.y) continue;
+    const hw = beamWidth(y);
+    for (let x = Math.ceil(cx - hw); x < cx + hw; x++) if (dither(x, y) < 10) blend(x, y, S.beam, 0.1);
+  }
+  for (const m of life.beamMotes) {
+    m.y += m.drift;
+    if (m.y > d.y) m.y = 3;
+    const x = cx + m.side * beamWidth(m.y) * 0.9 + Math.sin((t + m.phase) / 9) * 1.5;
+    if (Math.sin((t + m.phase) / 4) > -0.2) put(x, m.y, S.mote);
+  }
+  for (const g of life.glints) {
+    const s = Math.sin((t + g.phase) / 5);
+    if (s > 0.94) for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) put(g.x + dx, g.y + dy, g.c);
+    else if (s > 0.8) put(g.x, g.y, g.c);
+  }
+  for (const drop of life.drops) {
+    const age = (t + drop.at) % 90;
+    if (age < 14) { if (age > 5) put(drop.x, drop.y, S.drip); continue; }   // swelling on the tip
+    const y = drop.y + Math.round((age - 14) ** 2 * 0.25);
+    if (y < drop.floor) put(drop.x, y, S.drip);
+    else if (y < drop.floor + 5) { put(drop.x - 1, drop.floor - 1, S.drip); put(drop.x + 1, drop.floor - 1, S.drip); }
+  }
+}
+
+/** Where the chest stands, in CSS pixels: its left edge, its feet (a y) and one scene pixel's size, or null. */
+export function treasureSpots() {
+  if (!life.dais || !canvas || S?.raw.backdrop !== 'treasure') return null;
+  const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
+  return { left: box.left + (life.dais.x - CHEST_W / 2) * sx, foot: box.top + (life.dais.y + 2) * sy, px: sx };
+}
+
+/** The chest in this grotto's colours, as little pixel images ({ url, w, h }) for the page to stand on the dais and open:
+    the closed lid, the lid swung back (its inside, over a heap of gold) and the body. The latch is a Poké Ball split
+    between lid and body, so opening the chest opens the ball. */
+export function treasureChest() {
+  if (S?.raw.backdrop !== 'treasure') return null;
+  return { lid: paintProp(CHEST_W, LID_H, chestLid), open: paintProp(CHEST_W, OPEN_H, chestOpenLid), body: paintProp(CHEST_W, BODY_H, chestBody) };
+}
+
+/** Fill a shape (`mask`) with `colourAt`, outlined all round in the chest's line colour. */
+function chestShape(mask, colourAt) {
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (mask(x, y)) solid(x, y, colourAt(x, y));
+    else if ([-1, 0, 1].some(dy => [-1, 0, 1].some(dx => mask(x + dx, y + dy)))) solid(x, y, S.chest.line);
+  }
+}
+
+/* The chest is a Poké Ball (a Great Ball, an Ultra Ball as the biomes go on): the ball's colour on the domed lid, a
+   white body, the black band round the seam and the ball's button as the latch, half on the lid and half on the body. */
+const LID_SPANS = [null, [8, 27], [5, 30], [3, 32], [2, 33]];
+const BUTTON = { x: 18, y: 13 };   // the button's centre, in lid rows (the body's row 0 is lid row 13)
+
+/** The ball's button: white, a grey ring, white again, then the black band's ring; null outside it. */
+function chestButton(x, y) {
+  const { band, button } = S.chest, d = Math.hypot(x + 0.5 - BUTTON.x, y + 0.5 - BUTTON.y);
+  return d > 4.4 ? null : d > 3.4 ? band : d > 2.5 ? button[0] : d > 1.5 ? button[1] : button[0];
+}
+
+function chestLid() {
+  const { lid, trim, band, marks } = S.chest;
+  const span = (y) => (y >= 1 && y <= 11 ? LID_SPANS[y] || [1, 34] : null);
+  chestShape((x, y) => { const s = span(y); return !!s && x >= s[0] && x <= s[1]; }, (x, y) => {
+    const b = chestButton(x, y);
+    if (b) return b;
+    if (y >= 10) return band;
+    const [s0, s1] = span(y), k = Math.min(x - s0, s1 - x);
+    if (k <= 1) return trim[k];
+    const shade = y <= 2 ? 0 : y <= 6 ? 1 : y <= 8 ? 2 : 3;
+    if (marks === 'great' && k <= 7 && y >= 2 && y <= 8) return S.chest.mark[Math.max(0, shade - 1)];   // the Great Ball's red patches
+    if (marks === 'ultra' && y <= 8 && ((x >= 10 && x <= 12) || (x >= 23 && x <= 25))) return trim[x === 10 || x === 23 ? 0 : 1];   // the Ultra Ball's H
+    if (shade === 1 && y <= 4 && x >= 7 && x <= 10 && x - 7 <= y - 2) return lid[0];   // the shine
+    return lid[shade];
+  });
+  for (let x = 16; x <= 20; x++) { const b = chestButton(x, 12); if (b) solid(x, 12, b); }   // the button carries on over the seam
+}
+
+function chestOpenLid() {
+  const { lid, trim, coin = S.coin } = S.chest;
+  chestShape((x, y) => y >= 1 && y <= 7 && x >= (y === 1 ? 3 : 1) && x <= (y === 1 ? 32 : 34), (x, y) => {
+    if (y >= 6) return (x + y) % 3 === 0 ? coin[0] : (x * 3 + y) % 4 ? coin[1] : coin[2];   // the treasure inside
+    const k = Math.min(x - 1, 34 - x);
+    if (y === 1 || k <= 1) return trim[1];
+    return y === 5 ? S.chest.band : y === 3 ? lid[3] : lid[2];   // the inside of the lid, in its shadow
+  });
+}
+
+function chestBody() {
+  const { body, trim, band } = S.chest;
+  const feet = (x) => (x >= 2 && x <= 6) || (x >= 29 && x <= 33);
+  chestShape((x, y) => (y >= 1 && y <= 11 && x >= 1 && x <= 34) || (y >= 12 && y <= 13 && feet(x)), (x, y) => {
+    if (y >= 12) return band;
+    const b = chestButton(x, y + BUTTON.y);
+    if (b) return b;
+    if (y <= 2) return band;
+    if (x <= 2 || x >= 33) return trim[x === 1 || x === 33 ? 0 : x === 2 || x === 34 ? 1 : 2];
+    if (y >= 10) return y === 10 ? trim[0] : trim[2];
+    return y === 3 ? body[2] : y >= 8 ? body[y === 9 ? 3 : 2] : x % 11 === 4 && y === 5 ? body[0] : body[1];
+  });
+  for (let x = 16; x <= 20; x++) { const b = chestButton(x, BUTTON.y); if (b) solid(x, 0, b); }
+}
 
 /** Paint a pixel map (one string per row, one letter per pixel, '.' left alone) with `key`'s colours, its top left at x0, y0. */
 function pixelMap(x0, y0, rows, key) {
@@ -1522,6 +1869,11 @@ function makeLife() {
   life.blobs = [];
   if (storm.on) makeRain();
   if (has('campfire')) life.sparks = [];
+  if (has('treasure')) {
+    const d = life.dais;
+    life.beamMotes = Array.from({ length: Math.round(W / 6) }, () => ({ y: rand() * d.y, side: rand() * 2 - 1, drift: 0.04 + rand() * 0.08, phase: rand() * 60 }));
+    life.drops = has('drips') ? life.tips.map(tip => ({ ...tip, at: Math.floor(rand() * 90) })) : [];
+  }
   if (has('mart')) life.dust = Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
   if (has('surf')) {
     life.glints = [];
@@ -1603,6 +1955,7 @@ function draw() {
   if (has('campfire')) drawCampfire(t);
   if (has('center')) drawCenter(t);
   if (has('mart')) drawMart(t);
+  if (has('treasure')) drawGrotto(t);
   if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit) {

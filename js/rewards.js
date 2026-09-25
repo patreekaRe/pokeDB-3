@@ -115,6 +115,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 
   const skip = $('reward-skip');
   skip.hidden = !onSkip;
+  skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
   $('reward-skip-text').textContent = skipLabel;
   skip.onclick = onSkip ? once(onSkip) : null;
 
