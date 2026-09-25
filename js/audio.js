@@ -94,10 +94,10 @@ let current = null;        // name of the track that should be playing right now
 let lastCue = -1;          // ctx time the latest effect started
 
 // Like the games' menu blip: a tap on any control (a button, a map room, a card, a text box,
-// the dimmed area around a blown-up card) plays the confirm sound, unless that tap already
+// the dimmed area around a blown-up card, anything with a note in its title) plays the confirm sound, unless that tap already
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
-const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, .card-focus, .card-zoom';
+const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, .card-focus, .card-zoom, [title], [data-tip]';
 function menuBlip(e) {
   if (!ctx || !e.target.closest?.(CONTROLS)) return;
   const at = ctx.currentTime;

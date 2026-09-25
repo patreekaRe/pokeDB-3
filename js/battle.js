@@ -137,7 +137,7 @@ async function playIntro() {
   const zone = $('player-zone');
   const sprite = $('player-sprite');
   const ball = $('intro-ball');
-  const portrait = $('enemy-portrait-box');
+  const enemyZone = $('enemy-zone');
   const still = () => battle === b;   // the run may be abandoned mid-intro
   const cry = (id) => id ? Promise.race([playCry(id), sleep(CRY_WAIT_MAX)]) : null;
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -147,10 +147,16 @@ async function playIntro() {
 
   zone.classList.add('awaiting');
   renderAll();
-  if (motion) portrait.classList.add('entering');
-  await Promise.all([cry(b.def.spriteId), sleep(motion ? 700 : 300)]);
+  // each Pokémon only cries once it's actually there to see
+  if (motion) {
+    enemyZone.classList.add('entering');
+    await sleep(800);
+    if (!still()) return;
+    enemyZone.classList.replace('entering', 'revealed');
+  }
+  await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
-  portrait.classList.remove('entering');
+  enemyZone.classList.remove('revealed');
 
   if (motion) {
     ball.hidden = false;
@@ -166,8 +172,12 @@ async function playIntro() {
     if (!still()) return;
   }
   zone.classList.remove('awaiting');
-  if (motion) sprite.classList.add('released');
-  await Promise.all([cry(playerSpriteId), sleep(motion ? 600 : 0)]);
+  if (motion) {
+    sprite.classList.add('released');
+    await sleep(330);   // the pop is at full size 55% into its 0.6 s
+    if (!still()) return;
+  }
+  await Promise.all([cry(playerSpriteId), sleep(motion ? 270 : 0)]);
   if (!still()) return;
   resetIntro();
   beginPlayerTurn();
@@ -180,7 +190,7 @@ function resetIntro() {
   ball.classList.remove('thrown', 'open');
   $('player-sprite').classList.remove('released');
   $('player-zone').classList.remove('awaiting');
-  $('enemy-portrait-box').classList.remove('entering');
+  $('enemy-zone').classList.remove('entering', 'revealed');
 }
 
 function beginPlayerTurn() {

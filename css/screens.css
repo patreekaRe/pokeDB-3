@@ -786,8 +786,15 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 #player-sprite.fled { opacity: 0; transform: translateX(-120px); }   /* Poké Doll: ran away */
 
 /* --- battle intro: enemy appears, then a Poké Ball releases your Pokémon --- */
-.enemy-portrait.entering { animation: enemyEnter 0.55s ease-out; }
-@keyframes enemyEnter { from { opacity: 0; transform: translateX(60px) scale(0.85); } }
+/* Like Diamond/Pearl: the enemy slides in on its pad from off the right edge as a silhouette, then
+   colours in (.revealed) as it cries. The `translate` property, so the sprite's own transforms are untouched. */
+html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sideways scroll while it's off-screen (on body, phones could still swipe) */
+.enemy-zone.entering { animation: enemySlideIn 0.8s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+@keyframes enemySlideIn { from { translate: 100vw 0; } }
+.enemy-zone.entering .intent { visibility: hidden; }
+.enemy-zone.entering #enemy-img { filter: brightness(0) opacity(0.85); }
+.enemy-zone.revealed #enemy-img { animation: enemyReveal 0.4s ease-out; }
+@keyframes enemyReveal { from { filter: brightness(0) opacity(0.85); } 40% { filter: brightness(2.2); } }
 .player-zone.awaiting #player-sprite,
 .player-zone.awaiting ~ #player-plate { visibility: hidden; }
 #player-sprite.released { animation: released 0.6s ease-out; }

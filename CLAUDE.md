@@ -716,7 +716,10 @@ each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
   `js/audio.js` when you drop a file in; ids not listed are silent, and
   `-shiny` ids use the base cry. A new cry cuts the previous one. They play
   on a starter tap and in the battle intro (`playIntro()` in
-  `js/battle.js`: enemy cry, Poké Ball throw, your cry, then turn 1). The
+  `js/battle.js`: the enemy slides in on its pad from off the right edge as a
+  silhouette, Diamond/Pearl-style, colours in and cries; then the Poké Ball throw,
+  and your cry once it has popped out to full size; then turn 1. Each cry waits
+  until its Pokémon can be seen (the user's call). The
   files are mastered ~4× louder than the music, hence `CRY_VOLUME` 0.12.
 - `audio.js` defines its own `$` instead of importing `ui.js`, because
   `ui.js` imports `audio.js`.
