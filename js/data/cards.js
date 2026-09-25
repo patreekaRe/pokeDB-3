@@ -63,19 +63,19 @@ export const TYPES = {
 
 const NEUTRAL_CARDS = [
   { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', effects: { damage: 7 } },
-  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', effects: { block: 6 } },
-  { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', effects: { block: 14 } },
+  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'rusted-shield', effects: { block: 6 } },
+  { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 14 } },
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', effects: { guard: true } },
   // Potion is reward-only now (no starter begins with a free heal) and exhausts,
   // so it's a one-time save rather than a card you can loop every turn.
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },
   // The free cards were picked over everything else, so the two strongest now work once per fight.
-  { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', effects: { weaken: true }, exhaust: true },
-  { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', effects: { nextEnergy: 1 } },
-  { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', effects: { draw: 2 }, exhaust: true, rarity: 'uncommon' },
+  { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', sprite: 'smoke-ball', effects: { weaken: true }, exhaust: true },
+  { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', sprite: 'air-balloon', effects: { nextEnergy: 1 } },
+  { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', sprite: 'razor-claw', effects: { draw: 2 }, exhaust: true, rarity: 'uncommon' },
   { id: 'double-hit',   name: 'Double Hit',   type: 'normal', cost: 1, art: '💥', effects: { damage: 4, hits: 2 } },
-  { id: 'swords-dance', name: 'Swords Dance', type: 'normal', cost: 1, art: '⚔️', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon' },
-  { id: 'agility',      name: 'Agility',      type: 'normal', cost: 0, art: '⚡', effects: { energy: 1, draw: 1 }, exhaust: true, rarity: 'uncommon' },
+  { id: 'swords-dance', name: 'Swords Dance', type: 'normal', cost: 1, art: '⚔️', sprite: 'rusted-sword', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon' },
+  { id: 'agility',      name: 'Agility',      type: 'normal', cost: 0, art: '⚡', sprite: 'quick-powder', effects: { energy: 1, draw: 1 }, exhaust: true, rarity: 'uncommon' },
 ];
 
 /* Each type plays its own way:
@@ -83,7 +83,7 @@ const NEUTRAL_CARDS = [
      Grass  healing, and strength that grows over a long fight
      Water  block, card draw, hitting back, and turning block into damage */
 const FIRE_CARDS = [
-  { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', effects: { damage: 9 } },
+  { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', sprite: 'fire-stone', effects: { damage: 9 } },
   { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 1, art: '☄️', effects: { damage: 6, weaken: true } },
   { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', effects: { block: 9 } },
   // The three "set up your next hit" cards (Heat Up, Growth, Rain Dance) each lean into
@@ -91,14 +91,14 @@ const FIRE_CARDS = [
   { id: 'heat-up',         name: 'Heat Up',         type: 'fire', cost: 1, art: '📈', effects: { focus: 8 } },
   { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', effects: { damage: 14, bonusIfLow: 10 } },
   { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', effects: { damage: 8, nextEnergy: 2 } },
-  { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', effects: { burn: 3, weaken: true } },
+  { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', sprite: 'spell-tag', effects: { burn: 3, weaken: true } },
   { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', effects: { block: 8, burn: 2 } },
   { id: 'fire-lash',       name: 'Fire Lash',       type: 'fire', cost: 1, art: '🦷', effects: { damage: 5, hits: 2 } },
   { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', effects: { damage: 3, burn: 4 }, rarity: 'uncommon' },
   { id: 'flare-blitz',     name: 'Flare Blitz',     type: 'fire', cost: 2, art: '☄️', effects: { selfDamage: 5, damage: 22 }, rarity: 'uncommon' },
   { id: 'inferno',         name: 'Inferno',         type: 'fire', cost: 2, art: '🌪️', effects: { damage: 6, bonusPerBurn: 2 }, rarity: 'uncommon' },
   { id: 'heat-wave',       name: 'Heat Wave',       type: 'fire', cost: 2, art: '♨️', effects: { damage: 5, hits: 3, burn: 2 }, rarity: 'uncommon' },
-  { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon' },
+  { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', sprite: 'sun-stone', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon' },
   { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', effects: { damage: 30, needsWounded: true }, rarity: 'rare' },
   { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 3, art: '💥', effects: { damage: 24, burn: 3 }, rarity: 'rare' },
   { id: 'blaze',           name: 'Blaze',           type: 'fire', cost: 1, art: '🌋', effects: { blaze: 6 }, power: true, rarity: 'rare' },
@@ -106,31 +106,31 @@ const FIRE_CARDS = [
 
 const GRASS_CARDS = [
   { id: 'vine-whip',    name: 'Vine Whip',    type: 'grass', cost: 1, art: '🌿', effects: { damage: 8 } },
-  { id: 'stun-spore',   name: 'Stun Spore',   type: 'grass', cost: 1, art: '🍄', effects: { damage: 5, weaken: true } },
+  { id: 'stun-spore',   name: 'Stun Spore',   type: 'grass', cost: 1, art: '🍄', sprite: 'tiny-mushroom', effects: { damage: 5, weaken: true } },
   { id: 'growth',       name: 'Growth',       type: 'grass', cost: 1, art: '🌱', effects: { focus: 5, heal: 3 } },
   { id: 'razor-leaf',   name: 'Razor Leaf',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 15 } },
-  { id: 'absorb',       name: 'Absorb',       type: 'grass', cost: 1, art: '💚', effects: { damage: 6, heal: 4 } },
+  { id: 'absorb',       name: 'Absorb',       type: 'grass', cost: 1, art: '💚', sprite: 'absorb-bulb', effects: { damage: 6, heal: 4 } },
   { id: 'bullet-seed',  name: 'Bullet Seed',  type: 'grass', cost: 1, art: '🌱', effects: { damage: 3, hits: 3 } },
   { id: 'mega-drain',   name: 'Mega Drain',   type: 'grass', cost: 2, art: '💚', effects: { damage: 11, heal: 6 } },
-  { id: 'cotton-guard', name: 'Cotton Guard', type: 'grass', cost: 1, art: '🛡️', effects: { block: 8 }, retain: true },
-  { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', effects: { heal: 14 }, rarity: 'uncommon' },
-  { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 2, art: '🌸', effects: { damage: 12, block: 6 }, rarity: 'uncommon' },
-  { id: 'leaf-blade',   name: 'Leaf Blade',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 10, strength: 2 }, rarity: 'uncommon' },
-  { id: 'sleep-powder', name: 'Sleep Powder', type: 'grass', cost: 1, art: '🍄', effects: { weaken: true, draw: 1 }, retain: true, rarity: 'uncommon' },
+  { id: 'cotton-guard', name: 'Cotton Guard', type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 8 }, retain: true },
+  { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', sprite: 'sitrus-berry', effects: { heal: 14 }, rarity: 'uncommon' },
+  { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 2, art: '🌸', sprite: 'petal-pink', effects: { damage: 12, block: 6 }, rarity: 'uncommon' },
+  { id: 'leaf-blade',   name: 'Leaf Blade',   type: 'grass', cost: 2, art: '🍃', sprite: 'leaf-stone', effects: { damage: 10, strength: 2 }, rarity: 'uncommon' },
+  { id: 'sleep-powder', name: 'Sleep Powder', type: 'grass', cost: 1, art: '🍄', sprite: 'big-mushroom', effects: { weaken: true, draw: 1 }, retain: true, rarity: 'uncommon' },
   { id: 'ingrain',      name: 'Ingrain',      type: 'grass', cost: 1, art: '🌳', effects: { healEachTurn: 3 }, power: true, rarity: 'uncommon' },
-  { id: 'solar-beam',   name: 'Solar Beam',   type: 'grass', cost: 3, art: '🌞', effects: { damage: 28 }, rarity: 'rare' },
-  { id: 'grassy-terrain', name: 'Grassy Terrain', type: 'grass', cost: 2, art: '🌿', effects: { strengthEachTurn: 1 }, power: true, rarity: 'rare' },
+  { id: 'solar-beam',   name: 'Solar Beam',   type: 'grass', cost: 3, art: '🌞', sprite: 'tm-grass', effects: { damage: 28 }, rarity: 'rare' },
+  { id: 'grassy-terrain', name: 'Grassy Terrain', type: 'grass', cost: 2, art: '🌿', sprite: 'terrain-extender', effects: { strengthEachTurn: 1 }, power: true, rarity: 'rare' },
   { id: 'power-whip',   name: 'Power Whip',   type: 'grass', cost: 2, art: '🌳', effects: { damage: 10, strengthMult: 3 }, rarity: 'rare' },
 ];
 
 const WATER_CARDS = [
-  { id: 'water-gun',    name: 'Water Gun',    type: 'water', cost: 1, art: '💧', effects: { damage: 8 } },
+  { id: 'water-gun',    name: 'Water Gun',    type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 8 } },
   { id: 'bubble',       name: 'Bubble',       type: 'water', cost: 1, art: '🫧', effects: { damage: 5, draw: 1 } },
   { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', effects: { focus: 5, block: 4 } },
-  { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', effects: { damage: 15 } },
+  { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', sprite: 'hm-water', effects: { damage: 15 } },
   // Water's starting deck has no Weaken (Fire has two, Grass one), so its two Withdraws block
   // more than Flame Wall to carry it through biome 1's long fights against Gloom and Snorlax.
-  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', effects: { block: 10 } },
+  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 10 } },
   // Water's only other repeatable Weaken is the evolution card Bubble Beam, offered in half of all runs,
   // and runs without it lost ~40 points more after biome 1. A 1-cost Whirlpool lets rewards supply one.
   { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 1, art: '🌀', effects: { damage: 5, weaken: true }, rarity: 'uncommon' },
@@ -138,14 +138,14 @@ const WATER_CARDS = [
   // so it reads as a defensive card with a little sustain, not a free heal.
   { id: 'aqua-ring',    name: 'Aqua Ring',    type: 'water', cost: 1, art: '⭕', effects: { heal: 3, block: 6 }, rarity: 'uncommon' },
   { id: 'water-pulse',  name: 'Water Pulse',  type: 'water', cost: 1, art: '💧', effects: { damage: 7 }, retain: true },
-  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', effects: { block: 7, draw: 1 } },
-  { id: 'clamp',        name: 'Clamp',        type: 'water', cost: 2, art: '🐚', effects: { damage: 9, block: 9 } },
+  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 7, draw: 1 } },
+  { id: 'clamp',        name: 'Clamp',        type: 'water', cost: 2, art: '🐚', sprite: 'big-pearl', effects: { damage: 9, block: 9 } },
   { id: 'razor-shell',  name: 'Razor Shell',  type: 'water', cost: 1, art: '🐚', effects: { blockDamage: true }, rarity: 'uncommon' },
   { id: 'surging-strikes', name: 'Surging Strikes', type: 'water', cost: 2, art: '🌊', effects: { damage: 5, hits: 3 }, rarity: 'uncommon' },
-  { id: 'mirror-coat',  name: 'Mirror Coat',  type: 'water', cost: 1, art: '🔮', effects: { thorns: 5 }, power: true, rarity: 'uncommon' },
+  { id: 'mirror-coat',  name: 'Mirror Coat',  type: 'water', cost: 1, art: '🔮', sprite: 'reveal-glass', effects: { thorns: 5 }, power: true, rarity: 'uncommon' },
   { id: 'water-veil',   name: 'Water Veil',   type: 'water', cost: 2, art: '🌧️', effects: { blockEachTurn: 5 }, power: true, rarity: 'uncommon' },
-  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 3, art: '🚿', effects: { damage: 28 }, rarity: 'rare' },
-  { id: 'primordial-sea', name: 'Primordial Sea', type: 'water', cost: 2, art: '🌀', effects: { drawEachTurn: 1, blockEachTurn: 3 }, power: true, rarity: 'rare' },
+  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 3, art: '🚿', sprite: 'tm-water', effects: { damage: 28 }, rarity: 'rare' },
+  { id: 'primordial-sea', name: 'Primordial Sea', type: 'water', cost: 2, art: '🌀', sprite: 'blue-orb', effects: { drawEachTurn: 1, blockEachTurn: 3 }, power: true, rarity: 'rare' },
 ];
 
 /* ============================================================
@@ -167,28 +167,28 @@ const WATER_CARDS = [
 
 const FIRE_EVO_MID = [
   { id: 'flame-charge', name: 'Flame Charge', type: 'fire', cost: 1, art: '⚡', effects: { damage: 10, nextEnergy: 1 }, evoOnly: true, maxCopies: 1 },
-  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', effects: { damage: 8, burn: 3 }, evoOnly: true, maxCopies: 1 },
+  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', sprite: 'razor-fang', effects: { damage: 8, burn: 3 }, evoOnly: true, maxCopies: 1 },
   { id: 'flame-wheel',  name: 'Flame Wheel',  type: 'fire', cost: 2, art: '🔥', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
   { id: 'incinerate',   name: 'Incinerate',   type: 'fire', cost: 2, art: '🌪️', effects: { damage: 14, weaken: true }, evoOnly: true, maxCopies: 1 },
 ];
 const FIRE_EVO_HIGH = [
-  { id: 'flamethrower', name: 'Flamethrower', type: 'fire', cost: 2, art: '🔥', effects: { damage: 22, burn: 3 }, evoOnly: true, maxCopies: 1 },
-  { id: 'fire-blast',   name: 'Fire Blast',   type: 'fire', cost: 3, art: '☄️', effects: { damage: 24, burn: 5 }, evoOnly: true, maxCopies: 1 },
+  { id: 'flamethrower', name: 'Flamethrower', type: 'fire', cost: 2, art: '🔥', sprite: 'tm-fire', effects: { damage: 22, burn: 3 }, evoOnly: true, maxCopies: 1 },
+  { id: 'fire-blast',   name: 'Fire Blast',   type: 'fire', cost: 3, art: '☄️', sprite: 'firium-z', effects: { damage: 24, burn: 5 }, evoOnly: true, maxCopies: 1 },
   { id: 'overheat',     name: 'Overheat',     type: 'fire', cost: 3, art: '☀️', effects: { damage: 30, bonusIfLow: 12 }, evoOnly: true, maxCopies: 1 },
-  { id: 'blast-burn',   name: 'Blast Burn',   type: 'fire', cost: 3, art: '🌋', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
+  { id: 'blast-burn',   name: 'Blast Burn',   type: 'fire', cost: 3, art: '🌋', sprite: 'charizardite-x', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
 const GRASS_EVO_MID = [
   { id: 'leech-seed',    name: 'Leech Seed',    type: 'grass', cost: 1, art: '🌱', effects: { damage: 8, heal: 5 }, evoOnly: true, maxCopies: 1 },
-  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', effects: { strength: 2, block: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', sprite: 'macho-brace', effects: { strength: 2, block: 6 }, evoOnly: true, maxCopies: 1 },
   { id: 'razor-storm',   name: 'Razor Storm',   type: 'grass', cost: 2, art: '🍃', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
-  { id: 'poison-powder', name: 'Poison Powder', type: 'grass', cost: 1, art: '☠️', effects: { weaken: true, heal: 3 }, evoOnly: true, maxCopies: 1 },
+  { id: 'poison-powder', name: 'Poison Powder', type: 'grass', cost: 1, art: '☠️', sprite: 'poison-barb', effects: { weaken: true, heal: 3 }, evoOnly: true, maxCopies: 1 },
 ];
 const GRASS_EVO_HIGH = [
   { id: 'giga-drain',    name: 'Giga Drain',    type: 'grass', cost: 2, art: '🩸', effects: { damage: 20, heal: 12 }, evoOnly: true, maxCopies: 1 },
-  { id: 'petal-blizzard', name: 'Petal Blizzard', type: 'grass', cost: 2, art: '🌸', effects: { damage: 24 }, evoOnly: true, maxCopies: 1 },
+  { id: 'petal-blizzard', name: 'Petal Blizzard', type: 'grass', cost: 2, art: '🌸', sprite: 'petal-red', effects: { damage: 24 }, evoOnly: true, maxCopies: 1 },
   { id: 'leaf-storm',    name: 'Leaf Storm',    type: 'grass', cost: 3, art: '🍂', effects: { damage: 26, block: 8 }, evoOnly: true, maxCopies: 1 },
-  { id: 'frenzy-plant',  name: 'Frenzy Plant',  type: 'grass', cost: 3, art: '🌳', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
+  { id: 'frenzy-plant',  name: 'Frenzy Plant',  type: 'grass', cost: 3, art: '🌳', sprite: 'venusaurite', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
 const WATER_EVO_MID = [
@@ -200,8 +200,8 @@ const WATER_EVO_MID = [
 const WATER_EVO_HIGH = [
   { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', effects: { damage: 20, weaken: true }, evoOnly: true, maxCopies: 1 },
   { id: 'wave-crash',   name: 'Wave Crash',   type: 'water', cost: 2, art: '🌊', effects: { damage: 24, block: 6 }, evoOnly: true, maxCopies: 1 },
-  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', effects: { damage: 26, focus: 6 }, evoOnly: true, maxCopies: 1 },
-  { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
+  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', sprite: 'waterium-z', effects: { damage: 26, focus: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', sprite: 'blastoisinite', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
 /** Every card, and a quick lookup by id (CARDS_BY_ID['ember']). */

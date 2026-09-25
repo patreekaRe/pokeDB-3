@@ -1064,14 +1064,11 @@ function martRoom() {
     document.querySelector(`#reward-options .group-${group}`)?.prepend(sign);
   }
 
-  // the shopkeeper at the left end of the counter, and odds and ends on it (the .mart-window grid places both)
+  // the shopkeeper at the left end of the counter (the .mart-window grid places it); the counter stays bare (the user's call)
   const clerk = el('img', 'mart-clerk');
   clerk.src = 'assets/pokemon/kecleon-front.gif';
   clerk.alt = 'Kecleon, the shopkeeper';
-  const clutter = el('span', 'mart-clutter');
-  clutter.setAttribute('aria-hidden', 'true');
-  for (const id of ['repel', 'super-potion', 'rare-candy', 'potion', 'revive', 'escape-rope']) clutter.append(itemSprite({ id }));
-  $('reward-options').append(clerk, clutter);
+  $('reward-options').append(clerk);
 
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
   const shop = () => $('reward-options').getBoundingClientRect();

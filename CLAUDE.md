@@ -160,7 +160,7 @@ re-renders itself after each purchase; `ware()` wraps a card/item/relic tile wit
 its price tag (red and disabled when you can't afford it), a `group` and a
 two-tap "Buy ₽N" confirm. `layout: 'mart-window'` lays the Mart out like a Zelda shop
 (the user's sketch), the same at every screen size, with no window: behind a glass
-counter (the grid's `::after`, with `.mart-clutter` icons on it; Leave sits on the floor
+counter (the grid's `::after`, bare: the user found items on it odd; Leave sits on the floor
 just above the text box) stands one
 grey pixel shelf unit (hard-edged gradient bands for depth, a strip light under each
 board, a Mart-blue crown with a Poké Ball, and big swinging Bag-pocket `.shelf-sign`s over
@@ -653,7 +653,7 @@ Items and relics are the exception: they show real PokéSprite item sprites
 (`assets/items/<id>.png`, 32x32, from github.com/msikma/pokesprite, credited in
 About) through `itemSprite()` in `js/ui.js`, which falls back to the emoji if the
 file is missing. A card can use one as art with `sprite` (the Potion card does),
-and the Mart counter clutter is PokéSprite items too. Their emoji stay in the data
+and 37 more cards use item art that fits the move. Their emoji stay in the data
 for tooltips and event text, and must not be swapped globally: many are shared
 (🔥 is the Fire type, 💪 the strength badge). A new item or relic needs its PNG
 named after its id.

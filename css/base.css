@@ -478,7 +478,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .px-icon { display: block; width: 1.15em; height: 1.15em; }
 /* PokéSprite item/relic art (itemSprite() in js/ui.js): 32px sprites with padding, so a little bigger than a pixel icon */
 .item-sprite { display: block; width: 1.6em; height: 1.6em; max-width: none; flex: none; image-rendering: pixelated; }
-.card-art .item-sprite { width: 1.4em; height: 1.4em; }
+.card-art .item-sprite { width: 1.75em; height: 1.75em; }   /* a little over the window: the sprite's edges are see-through padding */
 /* PokéCoins spin like an arcade coin every few seconds: stepped frames, so it stays pixel art */
 .px-wrap[aria-label="💰"] .px-icon { animation: coinSpin 2.4s steps(1) infinite; }
 @keyframes coinSpin {

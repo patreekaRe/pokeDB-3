@@ -2268,12 +2268,6 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 .mart-pc { display: block; }
 .mart-pc-icon { display: block; font-size: 2.8rem; line-height: 1; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.3)); }
 .mart-pc .center-label { border-color: #3878f0; bottom: calc(100% + 6px); font-size: 0.72rem; padding: 5px 8px; }
-/* odds and ends on the counter between Kecleon and the PC, so it isn't bare */
-.mart-clutter { grid-area: counter; z-index: 3; justify-self: center; align-self: start; display: flex; align-items: flex-end; gap: 2px; margin-top: -20px; font-size: 1.5rem; line-height: 1; filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.25)); pointer-events: none; }
-.mart-clutter > :nth-child(odd) { font-size: 1.2rem; }
-/* PokéSprite items pad their 32px frame, so they overlap a little to sit together */
-.mart-clutter > * { flex: none; }
-.mart-clutter .item-sprite { width: 1.9em; height: 1.9em; margin: 0 -0.3em; }
 /* Leave sits on the floor just above the text box, clear of the props standing in front of the counter */
 #reward-screen:has(.mart-window) #reward-skip { margin-top: auto; }
 #reward-screen:has(.mart-window) .reward-bottom { margin-top: 0; }
