@@ -113,13 +113,7 @@ export function makeCard(card, options = {}) {
   const name = el('h3', 'card-name', card.name);
   const art = el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
-  const text = el('p', 'card-text');
-  const words = el('span');   // one grid item, or .card-text's grid would stack every piece
-  // numbers stay in the normal font (.card-num) while the rest of the text is pixel lettering
-  describe(card, options.stage || 0).split(/(\d+)/).forEach((part, i) => {
-    if (part) words.append(i % 2 ? el('b', 'card-num', part) : part);
-  });
-  text.append(words);
+  const text = el('p', 'card-text', describe(card, options.stage || 0));
 
   // The outer .card sets the size; the inner .card-face is what you see.
   // (Text inside sizes itself from the card's width, see cards.css.)
