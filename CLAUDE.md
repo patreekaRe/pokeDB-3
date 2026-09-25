@@ -300,7 +300,7 @@ on the right, on a salmon striped panel; the max is `b.turnEnergy`, the
 energy the turn started with; `data-shown` remembers the last value so the
 number bumps when it changes, and `.empty` turns the numbers red) | hand | End Turn
 (`#end-turn-btn`, not a `.btn`: the same salmon panel and white pill, so the
-two match; greyed out while disabled). The
+two match; greyed out while disabled; when no card in hand can be played, `.nudge` (set in `renderAll()`, items don't count) makes it hop, scroll its stripes and blink a gold ring and a ▶ in the pill, the user's call, so it's clear to end the turn). The
 draw/discard piles (`.piles` / `.pile`: a floating pixel card stack and the
 count, like the coins) live in the top bar beside the Poké Ball, shown only
 while `body[data-screen="battle-screen"]`. Relics don't show in battle (they

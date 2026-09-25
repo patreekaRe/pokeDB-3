@@ -716,6 +716,8 @@ function renderBars() {
   $('draw-count').replaceChildren(el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
   $('discard-count').replaceChildren(el('span', 'pile-icon', '🗂️'), el('b', '', String(b.discard.length)));
   $('end-turn-btn').disabled = b.busy || b.over;
+  // nothing left to play: End Turn hops and blinks so it's clear that's the move (items don't count, they're optional)
+  $('end-turn-btn').classList.toggle('nudge', !b.busy && !b.over && b.hand.every(h => whyNotPlayable(h.card)));
 }
 
 /** The little bubble that says what the enemy will do next. */
