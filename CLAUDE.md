@@ -492,8 +492,11 @@ Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
 `.dialog ...` override in `css/base.css`. Game cards (`css/cards.css`) are styled after the Game Boy
 Color Pokémon Trading Card Game: square type-coloured frame, pixel checker
 body, a round PP cost set inside the frame (a mini PP box: white disc, salmon ring), pixel-font name/type, a framed art window and a
-cream text window. The description stays in the normal font on purpose:
-pixel letters would be too small to read at card size.
+cream text window. A "pixel look" block at the end of `css/cards.css` squares the
+frames with notched pixel corners (offset shadows, no spread) and sets the
+description in Pixelify Sans (Press Start 2P is too small at card size), except
+numbers: `makeCard()` wraps them in `.card-num`, normal bold font, so values read
+at a glance (the user's call).
 Window text (and the HP bar, biome sign, PP box...) uses Press Start 2P, the
 8x8 Game Boy-style font, as `var(--pixel-font)`. It's declared by hand as
 "PokeDB Pixel" at the top of `css/base.css` with `size-adjust: 66%` (its
