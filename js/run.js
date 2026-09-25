@@ -28,7 +28,7 @@ import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, toast, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, centerSpots } from './scene.js';
 
@@ -609,10 +609,11 @@ function placeCenterSpots() {
 }
 addEventListener('scenepaint', placeCenterSpots);
 
-function forgetOption(back) {
-  const atMin = run.deck.length <= MIN_DECK;
-  const text = atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`;
-  return { ...textOption('📖', 'Forget a move', text, () => forgetMove(back)), disabled: atMin };
+/** The Mart's PC on the counter, under the same bouncing sign as the Center's. */
+function martPc(text, hint) {
+  const pc = el('span', 'mart-pc');
+  pc.append(centerLabel(text, hint), el('span', 'mart-pc-icon', '💻'));
+  return pc;
 }
 
 /** `done` runs after a card is forgotten; Cleanse Tag passes its reward chain here, the Center returns to the map. */
@@ -915,7 +916,7 @@ function ware(option, price, onBuy, { group, name }) {
   node.append(option.node, el('span', `mart-price${dear ? ' too-dear' : ''}`, `💴 ${price}`));
   return {
     node,
-    zoom: option.node,
+    zoom: option.zoom || option.node,
     group,
     disabled: option.disabled || dear,
     ask: `Buy ${name} for ₽${price}?`,
@@ -931,7 +932,10 @@ function martRoom() {
 
   const cards = stock.cards.filter(item => !item.sold && copies(item.id) < MAX_COPIES).map(item => {
     const card = CARDS_BY_ID[item.id];
-    return ware(cardOption(card, run.stage), item.price, () => {
+    // a small card on the shelf, blown up full size when you tap it
+    const option = { ...cardOption(card, run.stage), zoom: makeCard(card, { stage: run.stage }) };
+    option.node.classList.add('small');
+    return ware(option, item.price, () => {
       item.sold = true;
       run.deck.push(card.id);
       toast(`Bought ${card.name}.`, 'ok');
@@ -964,20 +968,23 @@ function martRoom() {
   });
 
   const removalPrice = MART_REMOVAL.base + MART_REMOVAL.step * run.removals;
-  const forget = stock.removed
-    ? { ...textOption('📖', 'Forget a move', 'Only one move can be forgotten per Mart.', () => {}), disabled: true }
-    : forgetOption(martRoom);
-  // the money is only taken once a card is actually forgotten, so "Back" out of the picker is free;
-  // no Buy step either, since the picker is its own confirm
-  const removal = { ...ware(forget, removalPrice, () => {}, { group: 'service', name: '' }), ask: undefined, onPick: () => forgetMove(martRoom, () => {
-    stock.removed = true;   // once per Mart, like Slay the Spire's card removal
-    run.money -= removalPrice;
-    run.removals += 1;
-    setMoney(run.money);
-    playSound('buy');
-    martRoom();
-  }) };
-  if (stock.removed) removal.node.querySelector('.mart-price').remove();
+  const atMin = run.deck.length <= MIN_DECK;
+  // forgetting a move is the PC on the counter, under a bouncing sign like the Center's; the money is only
+  // taken once a card is actually forgotten, so "Back" out of the picker is free, and it needs no Buy step
+  const removal = {
+    node: martPc(stock.removed ? 'Sold out' : `Forget a move 💴 ${removalPrice}`,
+      stock.removed ? 'Only one move can be forgotten per Mart.' : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck for ₽${removalPrice}.`),
+    group: 'service',
+    disabled: stock.removed || atMin || removalPrice > run.money,
+    onPick: () => forgetMove(martRoom, () => {
+      stock.removed = true;   // once per Mart, like Slay the Spire's card removal
+      run.money -= removalPrice;
+      run.removals += 1;
+      setMoney(run.money);
+      playSound('buy');
+      martRoom();
+    }),
+  };
 
   showChoice({
     title: 'Poké Mart',
@@ -990,7 +997,7 @@ function martRoom() {
 
   showPlaceScene('mart');
 
-  // the shopkeeper, beside the items and relics (the .mart-window grid places it)
+  // the shopkeeper, at the left end of the counter (the .mart-window grid places it)
   const clerk = el('img', 'mart-clerk');
   clerk.src = 'assets/pokemon/kecleon-front.gif';
   clerk.alt = 'Kecleon, the shopkeeper';

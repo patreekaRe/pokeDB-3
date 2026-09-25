@@ -284,14 +284,12 @@ const PLACE_ART = {
     life: ['center'],
   },
 
-  mart: {   // inside a Poké Mart: the back wall lined with stocked shelves under the Mart's blue stripe
-    backdrop: 'mart', floor: 'mart', light: null, horizon: 0.74,   // low, so the shelves stand behind the wares
+  mart: {   // inside a Poké Mart: fridges down both sides of a bare wall, where the shop's real shelf stands
+    backdrop: 'mart', floor: 'mart', light: null, horizon: 0.74,   // low, so the wall stands behind the shelf
     sky: ['#f8f8f0'],
     wall: ['#2a8a98', '#58c0c8', '#f8f8f0', '#e89078'],
     clock: ['#a05838', '#f8f8f0', '#303038'],
     fridge: ['#c8c8d8', '#a8e4e8', '#e8fcfc', '#78c878', '#7a7a90'],
-    shelf: ['#ffffff', '#b8b8c8', '#7a7a90', '#d8d8e4'],
-    goods: ['#e04030', '#f8c030', '#7858d0', '#f8f8f8', '#f89838', '#d83060'],
     tiles: ['#a8e8b0', '#78c890', '#88d49c'],
     mat: ['#e85830', '#f8a868'],
     plant: ['#5ab048', '#2e7a34', '#8ad060', '#c8c8d8', '#7a7a90'],
@@ -1124,7 +1122,7 @@ function counter(cx, top, half) {
 }
 
 /* ---------- the Poké Mart, after the Gen 3 Marts: white walls under a teal band, glass fridges and
-   grey shelves of goods along the back, green octagon tiles and an orange mat at the door ---------- */
+   a bare back wall, green octagon tiles and an orange mat at the door ---------- */
 
 function martBackdrop() {
   const [top, band, face, stripe] = S.wall;
@@ -1134,12 +1132,10 @@ function martBackdrop() {
     solid(x, y, y < ceil ? top : y < ceil + 3 ? band : d === 3 || d === 4 ? stripe : face);
   }
   wallClock(Math.round(W * 0.14), ceil + 3 + Math.round((shelfTop - ceil - 7) / 2));
-  const unit = 24, r = seeded(W * 17 + H);
-  let i = 0;
-  for (let u = ((W >> 1) - 12) % unit - unit; u < W; u += unit, i++) {
-    if (i % 3 === 1) fridge(u, shelfTop - 2, horizon, unit);
-    else shelfUnit(u, shelfTop, horizon, unit, r);
-  }
+  // fridges down both sides; the middle of the wall stays bare, since the shop's real shelf stands there
+  const unit = 24;
+  for (let u = -6; u < W * 0.2; u += unit) fridge(u, shelfTop - 2, horizon, unit);
+  for (let u = W + 6 - unit; u + unit > W * 0.8; u -= unit) fridge(u, shelfTop - 2, horizon, unit);
 }
 
 function wallClock(cx, cy) {
@@ -1161,27 +1157,6 @@ function fridge(x0, top, foot, w) {
     const row = (y - top - 2) % 5, glint = (dx + (y - top)) % 9 === 3;
     solid(x, y, glint ? shine : row >= 2 && row <= 3 && dx % 2 === 1 ? bottle : glass);
   }
-}
-
-/** One shelving unit: grey posts and white boards with a row of boxes on every board. */
-function shelfUnit(x0, top, foot, w, r) {
-  const [lite, post, dark, back] = S.shelf, gap = 13;
-  for (let y = top; y < foot; y++) for (let x = x0; x < x0 + w; x++) {
-    const side = x - x0 < 2 || x - x0 >= w - 1;
-    solid(x, y, side ? (x - x0 === 0 ? dark : post) : back);
-  }
-  for (let board = foot - 2; board > top + 3; board -= gap) {
-    for (let x = x0 + 2; x < x0 + w - 1; x++) { solid(x, board, lite); solid(x, board + 1, dark); }
-    for (let x = x0 + 3; x < x0 + w - 2;) {
-      const bw = 3 + Math.floor(r() * 3), bh = Math.min(gap - 4, 3 + Math.floor(r() * 4)), c = S.goods[Math.floor(r() * S.goods.length)];
-      if (x + bw > x0 + w - 2) break;
-      for (let y = board - bh; y < board; y++) for (let k = 0; k < bw; k++) solid(x + k, y, c);
-      for (let y = board - bh; y < board; y++) tint(x + bw - 1, y, 0.75);   // a shaded side
-      tint(x, board - bh, 1.25, 20);                                         // a glint on the top corner
-      x += bw + 1 + (r() < 0.4 ? 1 : 0);
-    }
-  }
-  for (let x = x0; x < x0 + w; x++) tint(x, top, 0.7);
 }
 
 /** Green octagon tiles in perspective, the wall's shadow along its foot, and the orange mat by the door. */

@@ -153,19 +153,20 @@ and saved with the map, so a refresh can't reroll the shelves.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
 re-renders itself after each purchase; `ware()` wraps a card/item/relic tile with
 its price tag (red and disabled when you can't afford it), a `group` and a
-two-tap "Buy ₽N" confirm. `layout: 'mart-window'` turns the options into one
-window laid out like Slay the Spire's shop (the user's reference): moves on
-top, then items (3) and relics (2) as bare icons in a staggered 3-2, and the
-forget service as a Mart-blue tile beside them, on a cool grey checker floor
-so the parchment cards stand out. (Not `.mart`: that's the top bar's Mart icon.) The Mart
-has its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts: teal-banded white
-walls, glass fridges and grey shelves of goods, green octagon tiles, an orange mat).
-On phones there's no window at all (the user wanted it to feel like standing in a
-shop): the moves are one swipeable shelf, items and relics share the shelf below,
-then Kecleon (2x) stands behind a glass counter (the grid's `::after`) with the
-forget service in front. Removal reuses
+two-tap "Buy ₽N" confirm. `layout: 'mart-window'` lays the Mart out like a Zelda shop
+(the user's sketch), the same at every screen size, with no window: behind a glass
+counter (the grid's `::after`) stands one grey shelf unit, all the moves on the top
+shelf as `.card.small` thumbnails (the tap blows up a full card, `option.zoom`), the
+items on the next shelf and the relics on the bottom one as bare icons, each with a
+price tag. Kecleon (2x, flipped to face the shelves) stands at the counter's left end,
+in front of the relic shelf, and forgetting a move is the 💻 PC on the counter's right
+(`martPc()`, the Center's bouncing `.center-label` sign on the counter glass).
+(Not `.mart`: that's the top bar's Mart icon.) The room is its own indoor scene
+(`PLACE_ART.mart`, after the Gen 3 Marts: teal-banded white walls, glass fridges down
+both sides of a bare back wall, green octagon tiles, an orange mat), barely dimmed.
+Removal reuses
 `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
-bought once per Mart (`stock.removed`, then the tile greys out). Every forget picker
+bought once per Mart (`stock.removed`, then the PC says "Sold out"). Every forget picker
 (Center, Mart, Cleanse Tag, events) takes two taps, like adding a card: `ask`/`confirm` "Forget it".
 Purchases are only saved when you leave for the map. Items are covered
 under Items below.
