@@ -50,12 +50,28 @@
      playTop       play the top card of your draw pile this many times, free, and exhaust it
      exhume        choose a card in your exhaust pile and put it into your hand
      healDealt     heal the damage that got through
+     perTideHeld   +this much damage per Tide you hold (it isn't spent)
+     perTideGained +this much damage per Tide you've gained this fight, spent or not
+     tideMult      multiply your Tide by this
+     blockMult     multiply your block by this
+     blockPerTide  gain this much block per Tide, then all your Tide is spent
+     blockPerCard  gain this much block per card in your hand
+     blockNext     gain this much block at the start of your next turn
+     blur          your block survives the start of your next turn(s)
+     blockDamage   true = the damage is your block; a number = that many times your block (with `block`, the
+                   block comes first)
+     drawTo        draw until you hold this many cards
+     costDownOnDiscard  costs this much less for each card you've discarded this turn
+     ifDiscarded   { bonus, ...effects } if you've discarded a card this turn
+     discardHand   discard your whole hand (one by one, so discard triggers fire); perDiscarded: { draw: 1 } or
+                   { addCard } happens once per card it discarded
 
    Power effects (only on `power: true` cards, see POWERS below):
      blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
      drawEachTurn, thorns, blaze, keepBlock, exhaustBlock, exhaustDraw,
      discardTide, discardBlock, cardDamage, cardBlock, rupture, combust, brutality,
-     corruption, drought, cinderDamage, exhaustBurn
+     corruption, drought, cinderDamage, exhaustBurn, tideEachTurn, drizzle, riptide, retainN,
+     tideSpendBlock, retainDiscount, tideSurge
 
    A card can also have (these sit next to `effects`, not inside it):
      exhaust    true = this card leaves the fight after you play it once
@@ -65,6 +81,8 @@
      power      true = playing it switches on its power effects for the
                 rest of the fight, and the card leaves the fight.
      retain     true = it stays in your hand when your turn ends.
+     growOnRetain  { damage: N } / { heal: N }: each time it stays in your hand at the end of your turn, it
+                gets that much stronger for the rest of the fight (StS's Windmill Strike)
      ethereal   true = exhausted if it's still in your hand when your turn ends.
      innate     true = always in your first hand of a fight.
      unplayable true = can't be played (status cards, and cards that act when discarded).
@@ -121,8 +139,9 @@ const NEUTRAL_CARDS = [
 /* Each type plays its own way:
      Fire   burn that stacks up, big hits, and trading HP for damage (StS's Ironclad + Silent's poison)
      Grass  healing, and strength that grows over a long fight (Ironclad's strength, Reaper)
-     Water  block, card draw, hitting back, and building Tide to cash in with one big wave (Ironclad's block cards,
-            Barricade + Body Slam, Silent's draw)
+     Water  Tide for every build: Tsunami builds it and cashes it in with one big wave (Watcher's Mantra),
+            Shell keeps block and turns it into damage (Barricade + Body Slam, Juggernaut), Flow draws,
+            discards and retains (Silent's discard, Watcher's retain)
    Every starting deck is StS-shaped: 4 attacks, 4 blocks and 2 signature cards. */
 const FIRE_CARDS = [
   // Common: 20
@@ -217,24 +236,74 @@ const GRASS_CARDS = [
 ];
 
 const WATER_CARDS = [
-  { id: 'water-gun',    name: 'Water Gun',    type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 7 } },                   // Strike
-  { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 6 } },                    // Defend
-  { id: 'bubble',       name: 'Bubble',       type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 5, weaken: 1, tide: 1 } },   // Sucker Punch
-  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 8, draw: 1, tide: 1 } },    // Shrug It Off
-  { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { block: 4, tide: 2 } },
-  { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', sprite: 'hm-water', effects: { damage: 12, tide: 2 } },
-  { id: 'water-pulse',  name: 'Water Pulse',  type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 5, perTide: 2 }, retain: true },   // Water's cash-in: hold it until the Tide is high
-  { id: 'clamp',        name: 'Clamp',        type: 'water', cost: 2, art: '🐚', sprite: 'big-pearl', effects: { damage: 10, block: 10 } },         // Iron Wave x2
-  { id: 'razor-shell',  name: 'Razor Shell',  type: 'water', cost: 1, art: '🐚', sprite: 'tropical-shell', effects: { blockDamage: true } },        // Body Slam
-  { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 1, art: '🌀', sprite: 'tidal-bell', effects: { damage: 5, weaken: 2 }, rarity: 'uncommon' },
-  { id: 'liquidation',  name: 'Liquidation',  type: 'water', cost: 1, art: '💦', sprite: 'passho-berry', effects: { damage: 8, vulnerable: 1 }, rarity: 'uncommon' },
-  { id: 'aqua-ring',    name: 'Aqua Ring',    type: 'water', cost: 1, art: '⭕', sprite: 'pearl-string', effects: { heal: 3, block: 6 }, rarity: 'uncommon' },
-  { id: 'surging-strikes', name: 'Surging Strikes', type: 'water', cost: 2, art: '🌊', sprite: 'tr-water', effects: { damage: 5, hits: 3 }, rarity: 'uncommon' },
-  { id: 'mirror-coat',  name: 'Mirror Coat',  type: 'water', cost: 1, art: '🔮', sprite: 'reveal-glass', effects: { thorns: 4 }, power: true, rarity: 'uncommon' },   // Caltrops
-  { id: 'water-veil',   name: 'Water Veil',   type: 'water', cost: 1, art: '🌧️', sprite: 'prism-scale', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon' },   // Metallicize
-  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 2, art: '🚿', sprite: 'tm-water', effects: { damage: 10, perTide: 5 }, rarity: 'rare' },
-  { id: 'primordial-sea', name: 'Primordial Sea', type: 'water', cost: 2, art: '🌀', sprite: 'blue-orb', effects: { drawEachTurn: 1, blockEachTurn: 2 }, power: true, rarity: 'rare' },
-  { id: 'shell-armor',  name: 'Shell Armor',  type: 'water', cost: 2, art: '🐚', sprite: 'shed-shell', effects: { keepBlock: 1 }, power: true, rarity: 'rare' },   // Barricade
+  // Common: 20
+  { id: 'water-gun',      name: 'Water Gun',      type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                        // Strike
+  { id: 'withdraw',       name: 'Withdraw',       type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 6 }, upgrade: { effects: { block: 9 } } },                          // Defend
+  { id: 'bubble',         name: 'Bubble',         type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 5, weaken: 1, tide: 1 }, upgrade: { effects: { damage: 7, weaken: 2 } } },   // Sucker Punch
+  { id: 'dive',           name: 'Dive',           type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 8, draw: 1, tide: 1 }, upgrade: { effects: { block: 11 } } },   // Shrug It Off
+  { id: 'water-pulse',    name: 'Water Pulse',    type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 5, perTide: 2 }, retain: true, upgrade: { effects: { perTide: 3 } } },   // Windmill Strike: hold it until the Tide is high
+  { id: 'rain-dance',     name: 'Rain Dance',     type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { block: 4, tide: 2 }, upgrade: { effects: { tide: 3 } } },   // Prostrate
+  { id: 'surf',           name: 'Surf',           type: 'water', cost: 2, art: '🌊', sprite: 'hm-water', effects: { damage: 12, tide: 2 }, upgrade: { effects: { damage: 16 } } },   // Wheel Kick
+  { id: 'soak',           name: 'Soak',           type: 'water', cost: 1, art: '💦', sprite: 'damp-mulch', effects: { vulnerable: 2, tide: 1 }, upgrade: { effects: { vulnerable: 3 } } },   // Trip
+  { id: 'water-sport',    name: 'Water Sport',    type: 'water', cost: 0, art: '💦', sprite: 'sprayduck', effects: { tide: 2 }, exhaust: true, upgrade: { effects: { tide: 3 } } },   // Pray
+  { id: 'snipe-shot',     name: 'Snipe Shot',     type: 'water', cost: 1, art: '🎯', sprite: 'wide-lens', effects: { damage: 6, perTideHeld: 2 }, upgrade: { effects: { perTideHeld: 3 } } },   // Perfected Strike: counts Tide without spending it
+  { id: 'clamp',          name: 'Clamp',          type: 'water', cost: 2, art: '🐚', sprite: 'big-pearl', effects: { damage: 10, block: 10 }, upgrade: { effects: { damage: 13, block: 13 } } },   // Iron Wave x2
+  { id: 'razor-shell',    name: 'Razor Shell',    type: 'water', cost: 1, art: '🐚', sprite: 'tropical-shell', effects: { blockDamage: true }, upgrade: { cost: 0 } },   // Body Slam
+  { id: 'splash',         name: 'Splash',         type: 'water', cost: 0, art: '💦', sprite: 'lure-ball', effects: { block: 4 }, upgrade: { effects: { block: 7 } } },   // Deflect
+  { id: 'shelter',        name: 'Shelter',        type: 'water', cost: 1, art: '🛡️', sprite: 'light-clay', effects: { block: 7, blockNext: 5 }, upgrade: { effects: { block: 9, blockNext: 7 } } },   // Dodge and Roll
+  { id: 'flip-turn',      name: 'Flip Turn',      type: 'water', cost: 1, art: '🌀', sprite: 'eject-button', effects: { damage: 10, draw: 1, discard: 1 }, upgrade: { effects: { damage: 13 } } },   // Dagger Throw
+  { id: 'waterfall',      name: 'Waterfall',      type: 'water', cost: 1, art: '🌊', sprite: 'super-rod', effects: { draw: 3, discard: 1 }, upgrade: { effects: { draw: 4 } } },   // Acrobatics
+  { id: 'aqua-step',      name: 'Aqua Step',      type: 'water', cost: 0, art: '💦', sprite: 'tropic-mail', effects: { draw: 1, discard: 1 }, upgrade: { effects: { draw: 2, discard: 2 } } },   // Prepared
+  { id: 'mist',           name: 'Mist',           type: 'water', cost: 1, art: '💨', sprite: 'misty-seed', effects: { block: 10, discard: 1 }, upgrade: { effects: { block: 13 } } },   // Survivor
+  { id: 'chilling-water', name: 'Chilling Water', type: 'water', cost: 1, art: '💧', sprite: 'never-melt-ice', effects: { block: 6, draw: 2 }, upgrade: { effects: { block: 9 } } },   // Backflip
+  { id: 'muddy-water',    name: 'Muddy Water',    type: 'water', cost: 2, art: '🌊', sprite: 'polished-mud-ball', effects: { damage: 14, weaken: 2 }, upgrade: { effects: { damage: 17, weaken: 3 } } },   // Clothesline
+  // Uncommon: 32
+  { id: 'whirlpool',      name: 'Whirlpool',      type: 'water', cost: 1, art: '🌀', sprite: 'tidal-bell', effects: { damage: 5, weaken: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 7, weaken: 3 } } },   // Sucker Punch+
+  { id: 'liquidation',    name: 'Liquidation',    type: 'water', cost: 1, art: '💦', sprite: 'passho-berry', effects: { damage: 8, vulnerable: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 11, vulnerable: 2 } } },   // Trip + a hit
+  { id: 'rising-tide',    name: 'Rising Tide',    type: 'water', cost: 1, art: '⏫', sprite: 'sea-incense', effects: { tideEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Devotion
+  { id: 'swift-swim',     name: 'Swift Swim',     type: 'water', cost: 0, art: '💦', sprite: 'deep-sea-scale', effects: { tideMult: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { tideMult: 3 } } },   // Catalyst
+  { id: 'crabhammer',     name: 'Crabhammer',     type: 'water', cost: 2, art: '🦀', sprite: 'kings-rock', effects: { damage: 12, perTide: 3 }, rarity: 'uncommon', upgrade: { effects: { damage: 16, perTide: 4 } } },   // Wallop, cashing in Tide
+  { id: 'water-spout',    name: 'Water Spout',    type: 'water', cost: 'X', art: '⛲', sprite: 'wailmer-pail', effects: { perX: { tide: 2 } }, rarity: 'uncommon', upgrade: { effects: { xPlus: 1 } } },   // Tempest
+  { id: 'aqua-ring',      name: 'Aqua Ring',      type: 'water', cost: 1, art: '⭕', sprite: 'pearl-string', effects: { heal: 3, block: 6 }, rarity: 'uncommon', upgrade: { effects: { heal: 4, block: 9 } } },
+  { id: 'mirror-coat',    name: 'Mirror Coat',    type: 'water', cost: 1, art: '🔮', sprite: 'reveal-glass', effects: { thorns: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { thorns: 6 } } },   // Caltrops
+  { id: 'water-veil',     name: 'Water Veil',     type: 'water', cost: 1, art: '🌧️', sprite: 'prism-scale', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 4 } } },   // Metallicize
+  { id: 'tidal-wall',     name: 'Tidal Wall',     type: 'water', cost: 1, art: '🌊', sprite: 'swampertite', effects: { blockPerTide: 4 }, rarity: 'uncommon', upgrade: { effects: { blockPerTide: 5 } } },   // Shell's way to cash in Tide
+  { id: 'shell-smash',    name: 'Shell Smash',    type: 'water', cost: 2, art: '🐚', sprite: 'slowbronite', effects: { blockMult: 2 }, rarity: 'uncommon', upgrade: { cost: 1 } },   // Entrench
+  { id: 'aqua-tail',      name: 'Aqua Tail',      type: 'water', cost: 1, art: '🌊', sprite: 'lagging-tail', effects: { block: 7, blockDamage: 0.5 }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Iron Wave + Body Slam
+  { id: 'bubble-shield',  name: 'Bubble Shield',  type: 'water', cost: 1, art: '🫧', sprite: 'soda-pop', effects: { block: 12 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { block: 16 } } },   // Ghostly Armor
+  { id: 'surging-strikes', name: 'Surging Strikes', type: 'water', cost: 2, art: '🌊', sprite: 'tr-water', effects: { damage: 5, hits: 3 }, rarity: 'uncommon', upgrade: { effects: { damage: 7 } } },   // Riddle with Holes
+  { id: 'undertow',       name: 'Undertow',       type: 'water', cost: 1, art: '🌊', sprite: 'wave-mail', effects: { discardTide: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // a discard payoff that feeds Tide
+  { id: 'ripple',         name: 'Ripple',         type: 'water', cost: 0, art: '💧', sprite: 'blue-shard', effects: {}, unplayable: true, onDiscard: { draw: 2 }, rarity: 'uncommon', upgrade: { onDiscard: { draw: 3 } } },   // Reflex
+  { id: 'wellspring',     name: 'Wellspring',     type: 'water', cost: 0, art: '⛲', sprite: 'max-ether', effects: {}, unplayable: true, onDiscard: { energy: 1 }, rarity: 'uncommon', upgrade: { onDiscard: { energy: 2 } } },   // Tactician
+  { id: 'wash-away',      name: 'Wash Away',      type: 'water', cost: 0, art: '🌊', sprite: 'full-heal', effects: { discardHand: true, perDiscarded: { draw: 1 } }, exhaust: true, rarity: 'uncommon', upgrade: { exhaust: false } },   // Calculated Gamble
+  { id: 'triple-dive',    name: 'Triple Dive',    type: 'water', cost: 3, art: '🌊', sprite: 'devon-scuba-gear', effects: { damage: 7, hits: 3, costDownOnDiscard: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 9 } } },   // Eviscerate
+  { id: 'still-waters',   name: 'Still Waters',   type: 'water', cost: 1, art: '🔒', sprite: 'clear-bell', effects: { retainN: 1 }, power: true, rarity: 'uncommon', upgrade: { effects: { retainN: 2 } } },   // Well-Laid Plans
+  { id: 'upwell',         name: 'Upwell',         type: 'water', cost: 1, art: '⛲', sprite: 'good-rod', effects: { drawTo: 6 }, rarity: 'uncommon', upgrade: { effects: { drawTo: 7 } } },   // Expertise
+  { id: 'fishious-rend',  name: 'Fishious Rend',  type: 'water', cost: 2, art: '🦷', sprite: 'deep-sea-tooth', effects: { damage: 14, ifDiscarded: { energy: 2 } }, rarity: 'uncommon', upgrade: { effects: { damage: 18 } } },   // Sneaky Strike
+  { id: 'aqua-cutter',    name: 'Aqua Cutter',    type: 'water', cost: 1, art: '🌊', sprite: 'sharpedonite', effects: { damage: 8 }, retain: true, growOnRetain: { damage: 4 }, rarity: 'uncommon', upgrade: { effects: { damage: 11 }, growOnRetain: { damage: 5 } } },   // Windmill Strike
+  { id: 'octazooka',      name: 'Octazooka',      type: 'water', cost: 1, art: '🎯', sprite: 'zoom-lens', effects: { damage: 7, discard: 1, tide: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 10 } } },   // bridge Flow/Tsunami: Dagger Throw + Tide
+  { id: 'storm-drain',    name: 'Storm Drain',    type: 'water', cost: 1, art: '🛡️', sprite: 'float-stone', effects: { discardBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { discardBlock: 4 } } },   // bridge Flow/Shell: Feel No Pain for discards
+  { id: 'aqua-veil',      name: 'Aqua Veil',      type: 'water', cost: 1, art: '🧣', sprite: 'blue-scarf', effects: { block: 7, blur: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // bridge Shell/Flow: Blur
+  { id: 'jet-punch',      name: 'Jet Punch',      type: 'water', cost: 0, art: '🥊', sprite: 'jet-ball', effects: { damage: 5, ifDiscarded: { draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 7 } } },   // bridge Flow: Flash of Steel
+  { id: 'sparkling-aria', name: 'Sparkling Aria', type: 'water', cost: 2, art: '✨', sprite: 'primarium-z', effects: { tide: 4 }, rarity: 'uncommon', upgrade: { retain: true } },   // Worship
+  { id: 'rain-dish',      name: 'Rain Dish',      type: 'water', cost: 1, art: '⛲', sprite: 'pearl', effects: { tideSpendBlock: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { tideSpendBlock: 3 } } },   // bridge Tsunami/Shell: Mental Fortress (a cash-in also defends)
+  { id: 'bouncy-bubble',  name: 'Bouncy Bubble',  type: 'water', cost: 1, art: '🫧', sprite: 'bead-mail', effects: { damage: 4, hits: 2, tide: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 6 } } },   // bridge Tsunami: Twin Strike + Tide
+  { id: 'water-absorb',   name: 'Water Absorb',   type: 'water', cost: 2, art: '💧', sprite: 'fresh-water', effects: { block: 16 }, retain: true, rarity: 'uncommon', upgrade: { effects: { block: 20 } } },   // bridge Shell/Flow: Protect
+  { id: 'ebb-tide',       name: 'Ebb Tide',       type: 'water', cost: 0, art: '🌊', sprite: 'moon-stone', effects: { draw: 1, discard: 1, tide: 1 }, rarity: 'uncommon', upgrade: { effects: { draw: 2 } } },   // bridge Flow/Tsunami: Prepared + Tide
+  // Rare: 13
+  { id: 'hydro-pump',     name: 'Hydro Pump',     type: 'water', cost: 2, art: '🚿', sprite: 'tm-water', effects: { damage: 10, perTide: 5 }, rarity: 'rare', upgrade: { effects: { damage: 14, perTide: 6 } } },   // Ragnarok, as the big cash-in
+  { id: 'drizzle',        name: 'Drizzle',        type: 'water', cost: 1, art: '💦', sprite: 'azure-flute', effects: { drizzle: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // Envenom for Tide
+  { id: 'tsunami',        name: 'Tsunami',        type: 'water', cost: 2, art: '🌊', sprite: 'water-memory', effects: { damage: 10, perTideGained: 3 }, rarity: 'rare', upgrade: { effects: { perTideGained: 4 } } },   // Brilliance
+  { id: 'shell-armor',    name: 'Shell Armor',    type: 'water', cost: 2, art: '🐚', sprite: 'shed-shell', effects: { keepBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Barricade
+  { id: 'riptide',        name: 'Riptide',        type: 'water', cost: 2, art: '🌀', sprite: 'net-ball', effects: { riptide: 5 }, power: true, rarity: 'rare', upgrade: { effects: { riptide: 7 } } },   // Juggernaut
+  { id: 'iron-shell',     name: 'Iron Shell',     type: 'water', cost: 2, art: '🐚', sprite: 'hard-stone', effects: { block: 36 }, exhaust: true, rarity: 'rare', upgrade: { effects: { block: 46 } } },   // Impervious
+  { id: 'primordial-sea', name: 'Primordial Sea', type: 'water', cost: 2, art: '🌀', sprite: 'blue-orb', effects: { drawEachTurn: 1, blockEachTurn: 2 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Tools of the Trade
+  { id: 'hydration',      name: 'Hydration',      type: 'water', cost: 1, art: '🫧', sprite: 'berry-juice', effects: { cardBlock: 1 }, power: true, rarity: 'rare', upgrade: { innate: true } },   // After Image
+  { id: 'water-shuriken', name: 'Water Shuriken', type: 'water', cost: 1, art: '⭐', sprite: 'star-piece', effects: { discardHand: true, perDiscarded: { addCard: { id: 'droplet' } } }, rarity: 'rare', upgrade: { effects: { perDiscarded: { addCard: { id: 'droplet+' } } } } },   // Storm of Steel
+  { id: 'life-dew',       name: 'Life Dew',       type: 'water', cost: 1, art: '💚', sprite: 'oran-berry', effects: { heal: 6 }, retain: true, growOnRetain: { heal: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { heal: 8 }, growOnRetain: { heal: 3 } } },   // Windmill Strike, for healing
+  { id: 'ebb-and-flow',   name: 'Ebb and Flow',   type: 'water', cost: 1, art: '🏷️', sprite: 'soul-dew', effects: { retainDiscount: 1 }, power: true, rarity: 'rare', upgrade: { innate: true } },   // Establishment
+  { id: 'aqua-wall',      name: 'Aqua Wall',      type: 'water', cost: 2, art: '🏰', sprite: 'icy-rock', effects: { blockPerCard: 4 }, rarity: 'rare', upgrade: { effects: { blockPerCard: 5 } } },   // Spirit Shield
+  { id: 'primal-reversion', name: 'Primal Reversion', type: 'water', cost: 3, art: '🧿', sprite: 'sapphire', effects: { tideSurge: 1 }, power: true, ethereal: true, rarity: 'rare', upgrade: { ethereal: false } },   // Deva Form
 ];
 
 /* ============================================================
@@ -281,16 +350,16 @@ const GRASS_EVO_HIGH = [
 ];
 
 const WATER_EVO_MID = [
-  { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', sprite: 'aqua-suit', effects: { damage: 10, block: 4 }, evoOnly: true, maxCopies: 1 },
-  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', sprite: 'squirt-bottle', effects: { damage: 6, weaken: 2 }, evoOnly: true, maxCopies: 1 },
-  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', sprite: 'shoal-salt', effects: { damage: 8, perTide: 4 }, evoOnly: true, maxCopies: 1 },
-  { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', sprite: 'utility-umbrella', effects: { block: 10, heal: 2 }, evoOnly: true, maxCopies: 1 },
+  { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', sprite: 'aqua-suit', effects: { damage: 8, draw: 1, discard: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11 } } },   // Flow
+  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', sprite: 'squirt-bottle', effects: { damage: 6, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9, weaken: 3 } } },
+  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', sprite: 'shoal-salt', effects: { damage: 8, perTide: 4 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 10, perTide: 5 } } },   // Tsunami
+  { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', sprite: 'utility-umbrella', effects: { block: 10, heal: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 13, heal: 3 } } },   // Shell
 ];
 const WATER_EVO_HIGH = [
-  { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', sprite: 'douse-drive', effects: { damage: 20, weaken: 2 }, evoOnly: true, maxCopies: 1 },
-  { id: 'wave-crash',   name: 'Wave Crash',   type: 'water', cost: 2, art: '🌊', sprite: 'gyaradosite', effects: { damage: 24, block: 6 }, evoOnly: true, maxCopies: 1 },
-  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', sprite: 'waterium-z', effects: { damage: 26, tide: 3 }, evoOnly: true, maxCopies: 1 },
-  { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', sprite: 'blastoisinite', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
+  { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', sprite: 'douse-drive', effects: { damage: 20, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, weaken: 3 } } },
+  { id: 'wave-crash',   name: 'Wave Crash',   type: 'water', cost: 1, art: '🌊', sprite: 'gyaradosite', effects: { blockDamage: 1.5 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { blockDamage: 2 } } },   // Shell: Body Slam x1.5
+  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', sprite: 'waterium-z', effects: { damage: 26, tide: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 32, tide: 4 } } },   // Tsunami
+  { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', sprite: 'blastoisinite', effects: { damage: 34 }, retain: true, growOnRetain: { damage: 6 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42 } } },   // Flow: Windmill Strike
 ];
 
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
@@ -328,7 +397,8 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
 const UPGRADE_STEPS = [['burn', 2], ['weaken', 1], ['vulnerable', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
   exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
-  rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1 };
+  rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
+  tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -383,7 +453,7 @@ export const STAGE_POWER = 0.15;
 export function scaledEffects(card, stage = 0) {
   const e = { ...card.effects };
   const k = 1 + STAGE_POWER * stage;
-  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust']) {
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust', 'blockPerTide', 'blockPerCard', 'blockNext', 'riptide']) {
     if (e[key]) e[key] = Math.round(e[key] * k);
   }
   if (e.burn) e.burn += stage;
@@ -419,6 +489,13 @@ export const POWERS = {
   drought:          { icon: '🌞', text: (n) => `Whenever you Burn the enemy, Burn it ${n} more.` },
   cinderDamage:     { icon: '⭐', text: (n) => `Your Cinders deal +${n} damage.` },
   exhaustBurn:      { icon: '♨️', text: (n) => `Whenever a card exhausts, Burn the enemy ${n}.` },
+  tideEachTurn:     { icon: '⏫', text: (n) => `At the start of each turn, gain ${n} Tide.` },
+  drizzle:          { icon: '💦', text: (n) => `Whenever you gain Tide, gain ${n} more.` },
+  riptide:          { icon: '🌀', text: (n) => `Whenever you gain block, deal ${n} damage.` },
+  retainN:          { icon: '🔒', text: (n) => `At the end of your turn, keep ${plural(n, 'more card')} in your hand.` },
+  tideSpendBlock:   { icon: '⛲', text: (n) => `Whenever you spend Tide, gain ${n} block per Tide spent.` },
+  retainDiscount:   { icon: '🏷️', text: (n) => `Whenever a card stays in your hand at the end of your turn, it costs ${n} less this fight.` },
+  tideSurge:        { icon: '🧿', text: (n) => `At the start of each turn, gain ${n} Tide, then 1 more each turn after.` },
 };
 
 const xLabel = (e) => (e.xPlus ? `X+${e.xPlus}` : 'X');
@@ -435,10 +512,15 @@ function sentences(e) {
   const times = e.perX?.hits ? ` ${xLabel(e)} times` : e.hitsPerAttack ? ' for each attack you\'ve played this turn'
     : e.hitsPerExhausted ? ' for each card exhausted' : e.hits > 1 ? ` ${e.hits} times` : '';
   if (e.damage)       parts.push(`Deal ${e.damage} damage${times}.`);
-  if (e.blockDamage)  parts.push('Deal damage equal to your block.');
+  if (e.blockDamage) {
+    const times = e.blockDamage === true ? 'your block' : e.blockDamage === 0.5 ? 'half your block' : `${e.blockDamage} times your block`;
+    parts.push(e.block ? `Gain ${e.block} block, then deal damage equal to ${times}.` : `Deal damage equal to ${times}.`);
+  }
   if (e.bonus)        parts.push(`+${e.bonus} damage.`);
   if (e.perExhausted) parts.push(`+${e.perExhausted} for each card exhausted.`);
   if (e.perTide)      parts.push(`+${e.perTide} per Tide, then spend all your Tide.`);
+  if (e.perTideHeld)  parts.push(`+${e.perTideHeld} per Tide (it isn't spent).`);
+  if (e.perTideGained) parts.push(`+${e.perTideGained} for each Tide you've gained this fight.`);
   if (e.bonusIfLow)   parts.push(`+${e.bonusIfLow} if your HP is below half.`);
   if (e.bonusPerBurn) parts.push(`+${e.bonusPerBurn} for each Burn on the enemy.`);
   if (e.perPlayed)    parts.push(`+${e.perPlayed} for each other card you've played this turn.`);
@@ -449,19 +531,32 @@ function sentences(e) {
   if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
-  if (e.block)        parts.push(`Gain ${e.block} block.`);
+  if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
+  if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
+  if (e.blockPerTide) parts.push(`Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
+  if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
+  if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
+  if (e.blur)         parts.push('Your block doesn\'t wear off at the start of your next turn.');
   if (e.blockPerExhausted) parts.push(`Gain ${e.blockPerExhausted} block for each card exhausted.`);
   if (e.heal)         parts.push(`Heal ${e.heal} HP.`);
   if (e.healDealt)    parts.push('Heal the damage that gets through.');
   if (e.strength)     parts.push(`Your hits deal +${e.strength} all fight.`);
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
   if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
+  if (e.discardHand) {
+    parts.push('Discard your hand.');
+    const each = e.perDiscarded || {};
+    if (each.draw) parts.push(`Draw ${plural(each.draw, 'card')} for each.`);
+    if (each.addCard) parts.push(`Add a ${CARDS_BY_ID[each.addCard.id]?.name ?? each.addCard.id} to your hand for each.`);
+  }
   if (e.draw)         parts.push(`Draw ${plural(e.draw, 'card')}.`);
+  if (e.drawTo)       parts.push(`Draw until you have ${e.drawTo} cards.`);
   if (e.discard)      parts.push(`Discard ${plural(e.discard, 'card')}.`);
   if (e.exhaustPick)  parts.push(`Exhaust ${plural(e.exhaustPick, 'card')} from your hand.`);
   if (e.playTop)      parts.push(e.playTop > 1 ? `Play the top ${e.playTop} cards of your draw pile and exhaust them.` : 'Play the top card of your draw pile and exhaust it.');
   if (e.exhume)       parts.push('Put a card from your exhaust pile into your hand.');
   if (e.tide)         parts.push(`Gain ${e.tide} Tide.`);
+  if (e.tideMult)     parts.push(`${MULT[e.tideMult] ?? `Multiply by ${e.tideMult}`} your Tide.`);
   if (e.nextEnergy)   parts.push(`+${e.nextEnergy} energy next turn.`);
   if (e.addCard) {
     const { id, n = 1, to = 'hand' } = e.addCard;
@@ -475,6 +570,8 @@ function sentences(e) {
   if (e.ifBurned)     parts.push(`If the enemy is Burned: ${sentences(e.ifBurned).join(' ')}`);
   if (e.ifHurt)       parts.push(`If you've lost HP this turn: ${sentences(e.ifHurt).join(' ')}`);
   if (e.costDownOnHurt) parts.push(`Costs ${e.costDownOnHurt} less for each time you've lost HP this fight.`);
+  if (e.ifDiscarded)  parts.push(`If you've discarded a card this turn: ${sentences(e.ifDiscarded).join(' ')}`);
+  if (e.costDownOnDiscard) parts.push(`Costs ${e.costDownOnDiscard} less for each card you've discarded this turn.`);
   return parts;
 }
 
@@ -490,6 +587,10 @@ export function describe(card, stage = 0) {
   if (card.onExhaust) parts.push(`When exhausted: ${sentences(card.onExhaust).join(' ')}`);
   if (card.onDiscard) parts.push(`When discarded: ${sentences(card.onDiscard).join(' ')}`);
   if (card.retain)    parts.push('Stays in hand between turns.');
+  if (card.growOnRetain) {
+    const g = card.growOnRetain;
+    parts.push(`Grows ${[g.damage && `+${g.damage} damage`, g.heal && `+${g.heal} heal`].filter(Boolean).join(' and ')} each turn it stays.`);
+  }
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
@@ -514,10 +615,11 @@ export function termTips(card) {
   const e = card.effects;
   return [e.weaken && 'Weak: the enemy deals 25% less damage. Lasts that many enemy turns.',
     e.vulnerable && 'Vulnerable: the enemy takes 50% more damage from your attacks. Lasts that many enemy turns.',
-    (e.tide || e.perTide || e.discardTide) && 'Tide: builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.',
+    (e.tide || e.perTide || e.discardTide || e.perTideHeld || e.perTideGained || e.tideMult || e.blockPerTide || e.tideEachTurn
+      || e.drizzle || e.tideSpendBlock || e.tideSurge) && 'Tide: builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.',
     (e.perX || card.cost === 'X') && 'X: this card spends all your PP, and X is how much it spent.',
     e.combo && `Combo ${e.combo.at}: the extra only happens if you've already played ${e.combo.at} other cards this turn.`,
-    (e.discard || card.onDiscard) && 'Discard: moved from your hand to the discard pile. Cards that say "When discarded" only trigger when a card makes you discard them.',
+    (e.discard || card.onDiscard || e.discardHand || e.ifDiscarded || e.costDownOnDiscard) && 'Discard: moved from your hand to the discard pile. Cards that say "When discarded" only trigger when a card makes you discard them.',
     (e.exhaustPick || card.onExhaust || e.exhaustBlock || e.exhaustDraw || e.exhaustHand || e.exhaustBurn || e.playTop || e.exhume || e.corruption)
       && 'Exhaust: gone for the rest of this fight.',
     (e.burn || e.burnMult || e.ifBurned || e.bonusPerBurn || e.burnEachTurn || e.drought || e.exhaustBurn)

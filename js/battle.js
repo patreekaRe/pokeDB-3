@@ -108,6 +108,10 @@ export function startBattle({ run, encounter, onEnd }) {
     focus: 0,          // bonus damage waiting for your next attack
     guard: false,      // blocks the next enemy attack completely
     tide: ability?.id === 'torrent' ? ability.amount : 0,   // Water's stored-up resource: built by `tide` cards, all spent by the next `perTide` card
+    tideGained: ability?.id === 'torrent' ? ability.amount : 0,   // all the Tide gained this fight, spent or not (Tsunami)
+    surgeTurns: 0,     // turns Primal Reversion has already paid out: it pays 1 more each turn
+    blockNext: 0,      // block waiting for your next turn (Shelter)
+    blur: 0,           // turns your block survives the start of your turn (Aqua Veil)
     strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
     powers: {},        // power effects played this fight, added up: { blockEachTurn: 5, ... }
     sashReady: run.relics.includes('focus-sash'),
@@ -225,7 +229,11 @@ function beginPlayerTurn() {
   const b = battle;
   b.turn += 1;
   const p = b.powers;
-  b.block = (p.keepBlock ? b.block : 0) + (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0);   // block only lasts one round, unless Shell Armor keeps it
+  // block only lasts one round, unless Shell Armor or Aqua Veil keeps it
+  const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0) + b.blockNext;
+  b.block = (p.keepBlock || b.blur ? b.block : 0) + fresh;
+  if (b.blur) b.blur -= 1;
+  b.blockNext = 0;
   if (b.block) statFx('player');
   const bossEnergy = ['choice-band', 'choice-specs', 'toxic-orb'].filter(hasRelic).length;
   b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy;
@@ -241,8 +249,12 @@ function beginPlayerTurn() {
   if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); playSound('stat-up'); statFx('player'); }
   if (p.burnEachTurn) burnEnemy(p.burnEachTurn);
   if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (p.tideEachTurn) gainTide(p.tideEachTurn);
+  if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
+  if (fresh && p.riptide) riptide();
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0));
+  if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block
   b.busy = false;
   renderAll();
 }
@@ -285,11 +297,13 @@ function markHurt() {
 /** Blue Flare (StS's Corruption): cards that aren't attacks or powers cost 0 and exhaust. */
 const corrupts = (card) => !!battle.powers.corruption && !isAttack(card) && !card.power && !card.status;
 
-/** What a card costs right now: Mind Blown gets cheaper each time you're hurt, Blue Flare makes non-attacks free. */
+/** What a card costs right now: Mind Blown gets cheaper each time you're hurt, Triple Dive per discard this turn,
+    Ebb and Flow's retained cards by their `discount`, and Blue Flare makes non-attacks free. */
 function costOf(card) {
   if (card.cost === 'X') return 'X';
   if (corrupts(card)) return 0;
-  return Math.max(0, card.cost - (card.effects.costDownOnHurt || 0) * battle.timesHurt);
+  const e = card.effects;
+  return Math.max(0, card.cost - (e.costDownOnHurt || 0) * battle.timesHurt - (e.costDownOnDiscard || 0) * battle.discarded - (card.discount || 0));
 }
 
 /** The top card of the draw pile (the discard pile is shuffled in when it runs out), or null if both are empty. */
@@ -335,6 +349,7 @@ function effectsOf(card, x = 0) {
   }
   if (e.ifBurned && b.enemy.burn > 0) addExtras(e, e.ifBurned);
   if (e.ifHurt && b.hurtThisTurn) addExtras(e, e.ifHurt);
+  if (e.ifDiscarded && b.discarded) addExtras(e, e.ifDiscarded);
   return e;
 }
 
@@ -352,10 +367,12 @@ function damageFor(card, e) {
   if (!e.damage && !e.blockDamage) return { hits: [], multiplier: 1 };
 
   const low = b.hp < b.maxHp / 2;
-  let amount = e.blockDamage ? b.block : e.damage;
+  let amount = e.blockDamage ? Math.floor(b.block * (e.blockDamage === true ? 1 : e.blockDamage)) : e.damage;
   if (e.bonusIfLow && low) amount += e.bonusIfLow;
   if (e.bonusPerBurn) amount += e.bonusPerBurn * b.enemy.burn;
   if (e.perTide) amount += e.perTide * b.tide;
+  if (e.perTideHeld) amount += e.perTideHeld * b.tide;
+  if (e.perTideGained) amount += e.perTideGained * b.tideGained;
   if (e.perPlayed) amount += e.perPlayed * (b.played - 1);
   if (e.perDiscard) amount += e.perDiscard * b.discarded;
   if (e.perExhausted) amount += e.perExhausted * (e.exhausted || 0);
@@ -428,6 +445,18 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     e.exhausted = going.length;
     renderHand();
   }
+  if (e.discardHand) {
+    // Wash Away / Water Shuriken: each card is discarded one by one, so Ripple and Undertow trigger
+    const going = [...b.hand];
+    going.forEach(discardFromHand);
+    e.discardedNow = going.length;
+    renderHand();
+  }
+  if (e.blockDamage && e.block) {
+    // Aqua Tail: the block comes first, so the hit counts it
+    gainBlock(e.block + (hasRelic('damp-rock') ? 2 : 0));
+    e.block = 0;
+  }
 
   // --- damage ---
   const { hits, multiplier } = damageFor(card, e);
@@ -453,13 +482,14 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
     if (hasRelic('shell-bell')) healPlayer(1);
     if (e.healDealt && healPlayer(through)) playSound('heal-hp');
-    if (e.perTide && b.tide) { pop('player-zone', `🌊 ${b.tide} Tide spent`, 'note', 200); b.tide = 0; }
+    if (e.perTide) spendTide();
   } else {
     log(card.status ? `${card.name} was cleared away.` : `${who} used ${card.name}.`);
   }
 
   // --- everything else a card can do ---
   applyEffects(e);
+  if (e.perDiscarded && e.discardedNow) applyEffects(timesEach(e.perDiscarded, e.discardedNow));
   if (e.combo && b.played - 1 >= e.combo.at) {
     pop('player-zone', '✨ Combo!', 'note good', 150);
     applyEffects(e.combo);
@@ -504,16 +534,30 @@ function applyEffects(e) {
   if (e.weaken)     { b.enemy.weak += e.weaken; pop('enemy-zone', `📉 Weak ${e.weaken}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
   if (e.vulnerable) { b.enemy.vulnerable += e.vulnerable; pop('enemy-zone', `💔 Vulnerable ${e.vulnerable}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
   if (e.block)      gainBlock(e.block + (hasRelic('damp-rock') ? 2 : 0));
+  if (e.blockMult && b.block) gainBlock(b.block * (e.blockMult - 1));
+  if (e.blockPerTide) { const spent = spendTide(); if (spent) gainBlock(spent * e.blockPerTide + (hasRelic('damp-rock') ? 2 : 0)); }
+  if (e.blockPerCard) gainBlock(e.blockPerCard * b.hand.length + (hasRelic('damp-rock') ? 2 : 0));
+  if (e.blockNext)  { b.blockNext += e.blockNext; pop('player-zone', `🛡️ +${e.blockNext} next turn`, 'block', 150); }
+  if (e.blur)       { b.blur = Math.max(b.blur, e.blur); pop('player-zone', '🛡️ Block stays', 'block', 150); }
   if (e.blockPerExhausted && e.exhausted) gainBlock(e.blockPerExhausted * e.exhausted + (hasRelic('damp-rock') ? 2 : 0));
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.tide)       gainTide(e.tide);
+  if (e.tideMult && b.tide) gainTide(b.tide * (e.tideMult - 1));
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
   if (e.draw)       draw(e.draw);
+  if (e.drawTo)     draw(e.drawTo - b.hand.length);
   if (e.addCard)    addCards(e.addCard);
+}
+
+/** A card's "for each card discarded" extras, times that many: numbers multiply, an addCard makes that many. */
+function timesEach(extras, n) {
+  const out = {};
+  for (const [key, v] of Object.entries(extras)) out[key] = key === 'addCard' ? { ...v, n: (v.n || 1) * n } : v * n;
+  return out;
 }
 
 /** Burn the enemy (Drought adds to every Burn a card or power applies). */
@@ -528,11 +572,35 @@ function gainBlock(n) {
   pop('player-zone', `+${n} 🛡️`, 'block');
   playSound('block');
   statFx('player');
+  if (battle.powers.riptide) riptide();
 }
 
+/** Riptide (StS's Juggernaut): gaining block hits the enemy. */
+function riptide() {
+  const n = battle.powers.riptide;
+  const dealt = hurtEnemy(n);
+  hitEffect('enemy-portrait-box');
+  pop('enemy-zone', dealt > 0 ? `-${dealt} 🌀` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150);
+}
+
+/** Gain Tide; Drizzle adds to every gain. Everything gained counts for Tsunami. */
 function gainTide(n) {
-  battle.tide += n;
-  pop('player-zone', `🌊 Tide +${n}`, 'note good');
+  const b = battle;
+  const add = n + (b.powers.drizzle || 0);
+  b.tide += add;
+  b.tideGained += add;
+  pop('player-zone', `🌊 Tide +${add}`, 'note good');
+}
+
+/** Spend all your Tide (a `perTide` or `blockPerTide` card); Rain Dish turns what's spent into block. Returns how much. */
+function spendTide() {
+  const b = battle;
+  const spent = b.tide;
+  if (!spent) return 0;
+  b.tide = 0;
+  pop('player-zone', `🌊 ${spent} Tide spent`, 'note', 200);
+  if (b.powers.tideSpendBlock) gainBlock(spent * b.powers.tideSpendBlock);
+  return spent;
 }
 
 /** New cards for this fight only (Cinders, status junk...): into your hand (the discard pile once it's full),
@@ -623,12 +691,14 @@ function discardFromHand(entry) {
  * picks one (tapCard), which `act` then takes out of the hand. With no more cards than asked for, it takes
  * them all without asking, like StS.
  */
-async function pickFromHand(n, verb, act) {
+async function pickFromHand(n, verb, act, only = () => true) {
   const b = battle;
-  for (let left = n; left > 0 && b.hand.length; left--) {
-    if (b.hand.length <= left) { [...b.hand].forEach(act); break; }
+  for (let left = n; left > 0; left--) {
+    const open = b.hand.filter(only);
+    if (!open.length) break;
+    if (open.length <= left) { open.forEach(act); break; }
     log(`Choose a card to ${verb}.`);
-    const uid = await new Promise(resolve => { choosing = { resolve }; renderAll(); });
+    const uid = await new Promise(resolve => { choosing = { resolve, only }; renderAll(); });
     if (battle !== b) return;
     act(b.hand.find(h => h.uid === uid));
     renderAll();
@@ -751,11 +821,25 @@ async function endTurn() {
   fading.forEach(h => exhaustCard(h.card));
 
   // Discard whatever is left in your hand, except cards that retain.
-  // Grip Claw also keeps the leftmost card that would have been discarded.
+  // Grip Claw also keeps the leftmost card that would have been discarded, and Still Waters lets you pick more.
   const gripped = hasRelic('grip-claw') ? b.hand.find(h => !h.card.retain) : null;
-  const stays = (h) => h.card.retain || h === gripped;
-  b.discard.push(...b.hand.filter(h => !stays(h)).map(h => h.card));
-  b.hand = b.hand.filter(stays);
+  const kept = new Set(b.hand.filter(h => h.card.retain || h === gripped));
+  if (b.powers.retainN) {
+    await pickFromHand(b.powers.retainN, 'keep', (h) => kept.add(h), (h) => !kept.has(h));
+    if (battle !== b) return;
+  }
+  b.discard.push(...b.hand.filter(h => !kept.has(h)).map(h => h.card));
+  b.hand = b.hand.filter(h => kept.has(h));
+  // a card kept in hand grows (Aqua Cutter, Life Dew, Hydro Cannon) and Ebb and Flow makes it cheaper, for this fight:
+  // it becomes its own copy, so the deck's card stays as it was
+  for (const h of b.hand) {
+    const grow = h.card.growOnRetain;
+    const cheaper = b.powers.retainDiscount && typeof h.card.cost === 'number' && costOf(h.card) > 0;
+    if (!grow && !cheaper) continue;
+    const effects = { ...h.card.effects };
+    for (const [key, n] of Object.entries(grow || {})) effects[key] = (effects[key] || 0) + n;
+    h.card = { ...h.card, effects, discount: (h.card.discount || 0) + (cheaper ? b.powers.retainDiscount : 0) };
+  }
   renderAll();
 
   await sleep(500);
@@ -1087,6 +1171,8 @@ function renderStatus() {
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, `+${b.nextEnergy} energy next turn`, 'good']);
   if (hasAbility('blaze') && b.hp < b.maxHp / 2) playerBadges.push(['🔥', '', `Blaze: your attacks deal +${b.ability.amount} while your HP is below half`, 'good']);
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
+  if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);
+  if (b.blur)       playerBadges.push(['🔰', '', 'Your block stays at the start of your next turn', 'block']);
   for (const [key, power] of Object.entries(POWERS)) {
     if (b.powers[key]) playerBadges.push([power.icon, power.flag ? '' : b.powers[key], power.text(b.powers[key]), 'good']);
   }
@@ -1113,7 +1199,7 @@ function renderHand() {
     const node = makeCard(card, { stage: b.stage, cost: costOf(card) });
     node.classList.add('in-hand');
 
-    if (choosing) node.classList.add('choosable');
+    if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');
     if (entry.uid === selectedUid) node.classList.add('selected');
@@ -1127,7 +1213,7 @@ function renderHand() {
 
     node.tabIndex = 0;
     node.setAttribute('role', 'button');
-    node.setAttribute('aria-label', choosing ? `Choose ${card.name}` : `${card.name}, costs ${costOf(card)}`);
+    node.setAttribute('aria-label', choosing?.only(entry) ? `Choose ${card.name}` : `${card.name}, costs ${costOf(card)}`);
     node.addEventListener('click', () => tapCard(entry.uid));
     node.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
@@ -1164,7 +1250,11 @@ let choosing = null;       // { resolve } while a card asks you to pick a card i
 let pilePick = null;       // { done } while a card asks you to pick a card from a pile (pickFromPile)
 
 function tapCard(uid) {
-  if (choosing) { const pick = choosing; choosing = null; return pick.resolve(uid); }
+  if (choosing) {
+    const entry = battle.hand.find(h => h.uid === uid);
+    if (!entry || !choosing.only(entry)) return;
+    const pick = choosing; choosing = null; return pick.resolve(uid);
+  }
   if (battle.busy) return;
   selectedItem = null;
   const entry = battle.hand.find(h => h.uid === uid);

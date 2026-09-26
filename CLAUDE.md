@@ -72,8 +72,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`keywords()` in `js/data/cards.js`, drawn by `makeCard()`, with a
   `title` explaining it); powers leave the fight once played, like StS.
   There's no exhaust pile icon (the user's call, for now).
-  Each type has an archetype: Fire burn + burst + HP-for-damage, Grass
-  healing + growing strength, Water block + draw + Tide.
+  Each type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
+  Drain / Spores, Water Tsunami / Shell / Flow.
   Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
   "build up, cash in" resource, `battle.tide`, shown as a 🌊 nameplate badge and
   lasting all fight. `tide: N` cards build it (Bubble, Dive, Rain Dance, Surf,
@@ -143,6 +143,20 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   cost in the hand comes from `costOf()` (`makeCard(card, { cost })` shows a cheaper one in green).
   Human bot, Fire L0 / L3 / L5: 71.2 / 63.3 / 34.5 before, 70.7 / 62.2 / 39.3 after (600 runs/cell); the bot never
   takes the combo cards, so those builds are for the user's playtest.
+  **Water's pool (6c.4, 2026-09-26)**: 20 common / 32 uncommon / 13 rare + 8 evolution cards, the same way (the doc's
+  Water section lists them and what changed). Water's mechanics, all in `js/battle.js` with `describe()` lines: Tide goes
+  through `gainTide()` (Drizzle adds to every gain; `battle.tideGained` counts it all for Tsunami's `perTideGained`) and
+  `spendTide()` (every "spend all your Tide": `perTide`, `blockPerTide`; Rain Dish's `tideSpendBlock` turns it into
+  block), `perTideHeld` (counts without spending), `tideMult`, powers `tideEachTurn`, `tideSurge` (Primal Reversion, 1 more
+  each turn, `battle.surgeTurns`). Block: `blockMult`, `blockPerCard`, `blockNext` and `blur` (`battle.blockNext` /
+  `battle.blur`, used in `beginPlayerTurn()`, with badges), `blockDamage` true or a multiple (with `block`, the block comes
+  first: Aqua Tail), power `riptide` (every `gainBlock()` and the turn's first block hit the enemy). Hand: `drawTo`,
+  `ifDiscarded`, `costDownOnDiscard`, `discardHand` + `perDiscarded` (`timesEach()`). At the end of your turn Still
+  Waters' `retainN` asks which card to keep (`pickFromHand()` takes an `only` filter; `choosing.only` greys the rest),
+  then every kept card with a `growOnRetain` (next to `effects`: Aqua Cutter, Life Dew, Hydro Cannon) or under Ebb and
+  Flow (`retainDiscount`) becomes its own copy for the fight, with bigger effects or a `discount` that `costOf()`
+  subtracts; the deck's card is untouched. **The sim doesn't mirror 6c.4 yet** (this session couldn't reach it), so
+  Water's pool hasn't had a bot check; the Grass session does that first (see the roadmap).
   **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version

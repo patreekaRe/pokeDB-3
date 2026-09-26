@@ -1,8 +1,8 @@
 # Card design: the StS feel (roadmap step 6c)
 
 **Status: approved (2026-09-26).** The user asked Claude to settle the open questions by whatever is closest to
-StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**, the three Abilities, and **Fire's whole pool**
-(6c.3, see its section). Each type's cards get built in their own session: Water next, then Grass.
+StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**, the three Abilities, **Fire's whole pool**
+(6c.3) and **Water's whole pool** (6c.4, see their sections). Grass is next.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -90,9 +90,9 @@ Ability's name (done in 6c.2; same id).
 | Burn multipliers (Fire) **(done in 6c.3)** | double/triple the enemy's Burn; Burn N several times; +N to every Burn you apply; "if the enemy is Burned" | `burnMult: N`, `burnTimes`, power `drought`, `ifBurned: { bonus, ... }` | Catalyst, Bouncing Flask, Envenom, Bane |
 | Hurt this turn (Fire) **(done in 6c.3)** | "if you lost HP this turn"; cheaper per HP loss this fight; gain strength when a card hurts you; lose HP at the start/end of your turn | `ifHurt: { bonus, ... }`, `costDownOnHurt`, powers `rupture`, `combust`, `brutality` | Blood for Blood, Rupture, Combust, Brutality |
 | Exhaust your hand (Fire) **(done in 6c.3)** | exhaust all (or all non-attacks); scale with how many; non-attacks free but exhausting; play the top card; take one back | `exhaustHand: 'all' / 'skills'`, `perExhausted`, `hitsPerExhausted`, `blockPerExhausted`, power `corruption`, `playTop`, `exhume`, powers `exhaustBurn`, `cinderDamage` | Fiend Fire, Second Wind, Corruption, Havoc, Exhume |
-| Tide multipliers (Water) | double your Tide; gain extra Tide whenever you gain Tide | `tideMult`, power `drizzle` | — |
-| Block tricks (Water) | double your block; deal damage whenever you gain block; keep block once | `blockMult`, power `blockDamage`, `blur` | Entrench, Juggernaut, Blur |
-| Retain tricks (Water) | a card that grows while retained; keep N extra cards at end of turn; draw until N | `growOnRetain`, power `retainN`, `drawTo: N` | Windmill Strike, Well-Laid Plans, Expertise |
+| Tide multipliers (Water) **(done in 6c.4)** | double your Tide; gain extra Tide whenever you gain Tide; count Tide without spending it, or all the Tide gained this fight; Tide each turn (growing); spending Tide gives block | `tideMult`, power `drizzle`, `perTideHeld`, `perTideGained`, powers `tideEachTurn`, `tideSurge`, `tideSpendBlock`, `blockPerTide` | Catalyst, Perfected Strike, Brilliance, Devotion, Deva Form, Mental Fortress |
+| Block tricks (Water) **(done in 6c.4)** | double your block; deal damage whenever you gain block; keep block once; block next turn; block per card in hand; hit for a multiple of your block | `blockMult`, power `riptide`, `blur`, `blockNext`, `blockPerCard`, `blockDamage: N` | Entrench, Juggernaut, Blur, Dodge and Roll, Spirit Shield |
+| Retain tricks (Water) **(done in 6c.4)** | a card that grows while retained; keep N extra cards at end of turn (your pick); kept cards get cheaper; draw until N; discard-this-turn payoffs; discard your hand | `growOnRetain` (next to `effects`), powers `retainN`, `retainDiscount`, `drawTo: N`, `ifDiscarded`, `costDownOnDiscard`, `discardHand` + `perDiscarded` | Windmill Strike, Well-Laid Plans, Establishment, Expertise, Sneaky Strike, Eviscerate, Calculated Gamble, Storm of Steel |
 
 **Default upgrade** (a card without its own `upgrade`): +3 damage (+2 per hit on 2-hit cards, +1 on 3+ hits) and
 +3 block; if it has neither, +3 heal; else +1 of its first status (Burn +2, Weak, Vulnerable, Tide, focus +3,
@@ -278,6 +278,21 @@ ideas here; easy to swap.)
 
 ## Water (Squirtle): Tsunami, Shell, Flow
 
+**Built (6c.4, 2026-09-26).** Everything below is in `js/data/cards.js` with its StS model in a comment and a
+hand-picked `upgrade`. Changes made while building it:
+- **9 bridge uncommons** were added (StS's 20/36/16 split; marked *bridge*): Octazooka, Storm Drain, Aqua Veil (the
+  Blur card), Jet Punch, Sparkling Aria, Rain Dish, Bouncy Bubble, Water Absorb, Ebb Tide. Uncommons: 32.
+- **3 more rares** (13 in all): Ebb and Flow (Establishment: kept cards get cheaper), Aqua Wall (Spirit Shield) and
+  Primal Reversion (Deva Form, for Tide).
+- Snipe Shot is +2 per Tide (the skeleton's +1 was weaker than Water Gun at a normal Tide). Fishious Rend costs 2 and
+  deals 14, like Sneaky Strike (at 1 PP with a 2 PP refund it made PP). Tsunami costs 2: 10 + 3 per Tide gained this
+  fight (8 per Tide would have been 100+). Wave Crash costs 1 (x1.5 your block for 2 PP was worse than two Razor
+  Shells). Bubble Shield blocks 12 and Water Absorb (Protect) 16, so the Ethereal and the Retain one differ.
+- Life Dew exhausts (a heal that grows while kept, then cashes in once). Aqua Cutter is 8 + 4 per turn kept.
+- Riptide is the Juggernaut power's name (key `riptide`), since `blockDamage` was already Razor Shell's key.
+- Starting deck unchanged. **Bot check still to do**: this session couldn't reach the sim repo, so the sim doesn't
+  know Water's new keys yet (see the roadmap).
+
 Tokens: **Droplet** (0: deal 3, Tide 1, Exhaust). Discard-trigger cards: Ripple, Wellspring (real cards, not tokens).
 
 | Card | Rarity | Cost | Effect | Arch | StS |
@@ -285,13 +300,13 @@ Tokens: **Droplet** (0: deal 3, Tide 1, Exhaust). Discard-trigger cards: Ripple,
 | ★Water Gun | C | 1 | Deal 7 | — | Strike |
 | ★Withdraw | C | 1 | Block 6 | — | Defend |
 | ★Bubble | C | 1 | Deal 5, Weak 1, Tide 1 | Tsunami | Sucker Punch |
-| ★Dive | C | 1 | Block 9, draw 1, Tide 1 | Tsunami | Shrug It Off |
+| ★Dive | C | 1 | Block 8, draw 1, Tide 1 | Tsunami | Shrug It Off |
 | ★Water Pulse | C | 1 | Deal 5, +2 per Tide (spends it). Retain | Tsunami | Windmill Strike |
 | ★Rain Dance | C | 1 | Block 4, Tide 2 | Tsunami | Prostrate |
 | ★Surf | C | 2 | Deal 12, Tide 2 | Tsunami | Wheel Kick |
 | Soak | C | 1 | Vulnerable 2, Tide 1 | Tsunami | Trip |
 | Water Sport | C | 0 | Tide 2. Exhaust | Tsunami | Pray |
-| Snipe Shot | C | 1 | Deal 6, +1 per Tide (doesn't spend it) | Tsunami | Perfected Strike |
+| Snipe Shot | C | 1 | Deal 6, +2 per Tide (doesn't spend it) | Tsunami | Perfected Strike |
 | ★Clamp | C | 2 | Deal 10, block 10 | Shell | Iron Wave x2 |
 | ★Razor Shell | C | 1 | Deal damage equal to your block | Shell | Body Slam |
 | Splash | C | 0 | Block 4 | Shell | Deflect |
@@ -308,48 +323,60 @@ Tokens: **Droplet** (0: deal 3, Tide 1, Exhaust). Discard-trigger cards: Ripple,
 | Swift Swim | U | 0 | Double your Tide. Exhaust | Tsunami | Catalyst (Tide) |
 | Crabhammer | U | 2 | Deal 12, +3 per Tide (spends it) | Tsunami | Wallop |
 | Water Spout | U | X | Gain 2 Tide, X times | Tsunami | Tempest |
+| Sparkling Aria *(bridge)* | U | 2 | Tide 4 (upgrade: Retain) | Tsunami | Worship |
+| Bouncy Bubble *(bridge)* | U | 1 | Deal 4 twice, Tide 1 | Tsunami | Twin Strike + Tide |
 | ★Aqua Ring | U | 1 | Heal 3, block 6 | Shell | — |
 | ★Mirror Coat | U | 1 | Power: when attacked, deal 4 back | Shell | Caltrops |
 | ★Water Veil | U | 1 | Power: block 3 at the start of each turn | Shell | Metallicize |
 | Tidal Wall | U | 1 | Block 4 per Tide (spends it) | Shell/Tsunami | — |
 | Shell Smash | U | 2 | Double your block | Shell | Entrench |
 | Aqua Tail | U | 1 | Block 7, then deal half your block | Shell | Iron Wave + Body Slam |
-| Bubble Shield | U | 1 | Block 14. Ethereal | Shell | Ghostly Armor |
+| Bubble Shield | U | 1 | Block 12. Ethereal | Shell | Ghostly Armor |
+| Rain Dish *(bridge)* | U | 1 | Power: whenever you spend Tide, block 2 per Tide spent | Tsunami/Shell | Mental Fortress |
+| Aqua Veil *(bridge)* | U | 1 | Block 7; your block doesn't wear off next turn | Shell/Flow | Blur |
+| Water Absorb *(bridge)* | U | 2 | Block 16. Retain | Shell/Flow | Protect |
 | ★Surging Strikes | U | 2 | Deal 5 three times | Flow | Riddle with Holes |
 | Undertow | U | 1 | Power: whenever you discard a card, gain 1 Tide | Flow/Tsunami | — (discard payoff) |
 | Ripple | U | — | Unplayable. When discarded, draw 2 | Flow | Reflex |
 | Wellspring | U | — | Unplayable. When discarded, gain 1 PP | Flow | Tactician |
 | Wash Away | U | 0 | Discard your hand, draw that many. Exhaust | Flow | Calculated Gamble |
 | Triple Dive | U | 3 | Deal 7 three times; costs 1 less per card discarded this turn | Flow | Eviscerate |
-| Still Waters | U | 1 | Power: keep 1 more card in hand at the end of your turn | Flow | Well-Laid Plans |
+| Still Waters | U | 1 | Power: keep 1 more card (your pick) at the end of your turn | Flow | Well-Laid Plans |
 | Upwell | U | 1 | Draw until you have 6 cards | Flow | Expertise |
-| Fishious Rend | U | 1 | Deal 10; if you discarded this turn, gain 2 PP | Flow | Sneaky Strike |
-| Aqua Cutter | U | 1 | Deal 7, +3 each turn it's retained. Retain | Flow | Windmill Strike |
+| Fishious Rend | U | 2 | Deal 14; if you discarded this turn, gain 2 PP | Flow | Sneaky Strike |
+| Aqua Cutter | U | 1 | Deal 8, +4 each turn it's retained. Retain | Flow | Windmill Strike |
+| Octazooka *(bridge)* | U | 1 | Deal 7, discard 1, Tide 1 | Flow/Tsunami | Dagger Throw + Tide |
+| Storm Drain *(bridge)* | U | 1 | Power: whenever you discard a card, block 3 | Flow/Shell | Feel No Pain (discards) |
+| Jet Punch *(bridge)* | U | 0 | Deal 5; if you discarded this turn, draw 1 | Flow | Flash of Steel |
+| Ebb Tide *(bridge)* | U | 0 | Draw 1, discard 1, Tide 1 | Flow/Tsunami | Prepared + Tide |
 | ★Hydro Pump | R | 2 | Deal 10, +5 per Tide (spends it) | Tsunami | Ragnarok |
-| Drizzle | R | 1 | Power: whenever you gain Tide, gain 1 more | Tsunami | — |
-| Tsunami | R | 3 | Deal 8 per Tide gained this fight | Tsunami | Brilliance |
+| Drizzle | R | 1 | Power: whenever you gain Tide, gain 1 more | Tsunami | Envenom (Tide) |
+| Tsunami | R | 2 | Deal 10, +3 per Tide gained this fight | Tsunami | Brilliance |
+| Primal Reversion | R | 3 | Power: gain 1 Tide each turn, 1 more each turn after. Ethereal | Tsunami | Deva Form |
 | ★Shell Armor | R | 2 | Power: block doesn't wear off | Shell | Barricade |
-| Riptide | R | 2 | Power: whenever you gain block, deal 4 | Shell | Juggernaut |
+| Riptide | R | 2 | Power: whenever you gain block, deal 5 | Shell | Juggernaut |
 | Iron Shell | R | 2 | Block 36. Exhaust | Shell | Impervious |
+| Aqua Wall | R | 2 | Block 4 per other card in your hand | Shell/Flow | Spirit Shield |
 | ★Primordial Sea | R | 2 | Power: draw 1 and block 2 each turn | Flow | Tools of the Trade |
-| Hydration | R | 1 | Power: whenever you play a card, block 1 | Flow | After Image |
+| Hydration | R | 1 | Power: whenever you play a card, block 1 (upgrade: Innate) | Flow | After Image |
 | Water Shuriken | R | 1 | Discard your hand, add a Droplet per card | Flow | Storm of Steel |
-| Life Dew | R | 1 | Retain. Heal 6; this card's heal grows by 2 each turn retained | Flow | Windmill (heal) |
+| Life Dew | R | 1 | Heal 6, +2 each turn retained. Retain. Exhaust | Flow | Windmill (heal) |
+| Ebb and Flow | R | 1 | Power: a card that stays in your hand costs 1 less this fight | Flow | Establishment |
 
 Evolution cards:
 
 | Card | Tier | Cost | Effect | Arch |
 |---|---|---|---|---|
-| ★Aqua Jet | 1st | 1 | Deal 10, block 4 *(now: deal 8, draw 1, discard 1)* | Flow |
+| ★Aqua Jet | 1st | 1 | Deal 8, draw 1, discard 1 *(was deal 10, block 4)* | Flow |
 | ★Bubble Beam | 1st | 1 | Deal 6, Weak 2 | — |
 | ★Brine | 1st | 2 | Deal 8, +4 per Tide | Tsunami |
 | ★Rain Shield | 1st | 1 | Block 10, heal 2 | Shell |
 | ★Scald | final | 2 | Deal 20, Weak 2 | — |
-| ★Wave Crash | final | 2 | Deal 24, block 6 *(now: deal damage equal to your block x1.5)* | Shell |
+| ★Wave Crash | final | 1 *(was 2)* | Deal damage equal to your block x1.5 *(was deal 24, block 6)* | Shell |
 | ★Origin Pulse | final | 3 | Deal 26, Tide 3 | Tsunami |
-| ★Hydro Cannon | final | 3 | Deal 34 *(now: Retain; +6 each turn retained)* | Flow |
+| ★Hydro Cannon | final | 3 | Deal 34, Retain; +6 each turn retained *(was deal 34)* | Flow |
 
-Water: 20 common, 25 uncommon, 10 rare, 8 evolution = **63**.
+Water: 20 common, 32 uncommon (with the bridges), 13 rare, 8 evolution = **73**.
 
 ## Neutral (~20)
 
