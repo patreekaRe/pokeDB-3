@@ -37,7 +37,7 @@
 
 const FIRE_DECK  = ['ember', 'ember', 'ember', 'flame-body', 'flame-wall', 'flame-wall', 'flame-wall', 'flame-wall', 'scorch', 'will-o-wisp'];
 const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'vine-whip', 'cotton-guard', 'block', 'block', 'block', 'seed-bomb', 'absorb'];
-const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-gun', 'withdraw', 'withdraw', 'withdraw', 'withdraw', 'bubble', 'dive'];
+const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-pulse', 'withdraw', 'withdraw', 'withdraw', 'withdraw', 'bubble', 'dive'];
 
 export const STARTERS = [
   /* ---------- the three real characters: free, and the only ones with a unique deck ---------- */
@@ -68,7 +68,7 @@ export const STARTERS = [
       { id: 'wartortle', name: 'Wartortle' },
       { id: 'blastoise', name: 'Blastoise' },
     ],
-    blurb: 'Tough shell, quick draws, reliable water attacks.',
+    blurb: 'Tough shell. Builds up the Tide, then crashes it down in one big wave.',
     deck: WATER_DECK,
   },
 

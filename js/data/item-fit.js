@@ -72,6 +72,7 @@ export const ITEM_FIT = {
   'sceptilite': [9, 9, 14, 14],
   'shoal-salt': [5, 12, 22, 13],
   'shoal-shell': [6, 6, 20, 20],
+  'shed-shell': [6, 6, 20, 20],
   'shield': [4, 3, 23, 26],
   'silk-scarf': [5, 5, 22, 22],
   'silver-leaf': [6, 6, 18, 21],

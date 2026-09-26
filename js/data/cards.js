@@ -26,10 +26,12 @@
      selfDamage    lose this much HP first (never below 1; it can switch on bonusIfLow)
      strength      +this much damage on every hit for the rest of the fight
      energy        gain this much energy right now
+     tide          gain this much Tide (Water's stored-up resource; it lasts all fight)
+     perTide       +this much damage per Tide you hold, then all your Tide is spent
 
    Power effects (only on `power: true` cards, see POWERS below):
      blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
-     drawEachTurn, thorns, blaze
+     drawEachTurn, thorns, blaze, keepBlock
 
    A card can also have (these sit next to `effects`, not inside it):
      exhaust    true = this card leaves the fight after you play it once
@@ -88,7 +90,8 @@ const NEUTRAL_CARDS = [
 /* Each type plays its own way:
      Fire   burn that stacks up, big hits, and trading HP for damage (StS's Ironclad + Silent's poison)
      Grass  healing, and strength that grows over a long fight (Ironclad's strength, Reaper)
-     Water  block, card draw, hitting back, and turning block into damage (Ironclad's block cards, Silent's draw)
+     Water  block, card draw, hitting back, and building Tide to cash in with one big wave (Ironclad's block cards,
+            Barricade + Body Slam, Silent's draw)
    Every starting deck is StS-shaped: 4 attacks, 4 blocks and 2 signature cards. */
 const FIRE_CARDS = [
   { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', sprite: 'fire-stone', effects: { damage: 7 } },                          // Strike
@@ -137,11 +140,11 @@ const GRASS_CARDS = [
 const WATER_CARDS = [
   { id: 'water-gun',    name: 'Water Gun',    type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 7 } },                   // Strike
   { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 6 } },                    // Defend
-  { id: 'bubble',       name: 'Bubble',       type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 6, weaken: 1 } },        // Sucker Punch
-  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 9, draw: 1 } },             // Shrug It Off
-  { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { focus: 5, block: 5 } },
-  { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', sprite: 'hm-water', effects: { damage: 16 } },
-  { id: 'water-pulse',  name: 'Water Pulse',  type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 8 }, retain: true },
+  { id: 'bubble',       name: 'Bubble',       type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 5, weaken: 1, tide: 1 } },   // Sucker Punch
+  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 8, draw: 1, tide: 1 } },    // Shrug It Off
+  { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { block: 4, tide: 2 } },
+  { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', sprite: 'hm-water', effects: { damage: 12, tide: 2 } },
+  { id: 'water-pulse',  name: 'Water Pulse',  type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 5, perTide: 2 }, retain: true },   // Water's cash-in: hold it until the Tide is high
   { id: 'clamp',        name: 'Clamp',        type: 'water', cost: 2, art: '🐚', sprite: 'big-pearl', effects: { damage: 10, block: 10 } },         // Iron Wave x2
   { id: 'razor-shell',  name: 'Razor Shell',  type: 'water', cost: 1, art: '🐚', sprite: 'tropical-shell', effects: { blockDamage: true } },        // Body Slam
   { id: 'whirlpool',    name: 'Whirlpool',    type: 'water', cost: 1, art: '🌀', sprite: 'tidal-bell', effects: { damage: 5, weaken: 2 }, rarity: 'uncommon' },
@@ -150,8 +153,9 @@ const WATER_CARDS = [
   { id: 'surging-strikes', name: 'Surging Strikes', type: 'water', cost: 2, art: '🌊', sprite: 'tr-water', effects: { damage: 5, hits: 3 }, rarity: 'uncommon' },
   { id: 'mirror-coat',  name: 'Mirror Coat',  type: 'water', cost: 1, art: '🔮', sprite: 'reveal-glass', effects: { thorns: 4 }, power: true, rarity: 'uncommon' },   // Caltrops
   { id: 'water-veil',   name: 'Water Veil',   type: 'water', cost: 1, art: '🌧️', sprite: 'prism-scale', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon' },   // Metallicize
-  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 3, art: '🚿', sprite: 'tm-water', effects: { damage: 36 }, rarity: 'rare' },        // Bludgeon
+  { id: 'hydro-pump',   name: 'Hydro Pump',   type: 'water', cost: 2, art: '🚿', sprite: 'tm-water', effects: { damage: 10, perTide: 5 }, rarity: 'rare' },
   { id: 'primordial-sea', name: 'Primordial Sea', type: 'water', cost: 2, art: '🌀', sprite: 'blue-orb', effects: { drawEachTurn: 1, blockEachTurn: 2 }, power: true, rarity: 'rare' },
+  { id: 'shell-armor',  name: 'Shell Armor',  type: 'water', cost: 2, art: '🐚', sprite: 'shed-shell', effects: { keepBlock: 1 }, power: true, rarity: 'rare' },   // Barricade
 ];
 
 /* ============================================================
@@ -200,13 +204,13 @@ const GRASS_EVO_HIGH = [
 const WATER_EVO_MID = [
   { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', sprite: 'aqua-suit', effects: { damage: 10, block: 4 }, evoOnly: true, maxCopies: 1 },
   { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', sprite: 'squirt-bottle', effects: { damage: 6, weaken: 2 }, evoOnly: true, maxCopies: 1 },
-  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', sprite: 'shoal-salt', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
+  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', sprite: 'shoal-salt', effects: { damage: 8, perTide: 4 }, evoOnly: true, maxCopies: 1 },
   { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', sprite: 'utility-umbrella', effects: { block: 10, heal: 2 }, evoOnly: true, maxCopies: 1 },
 ];
 const WATER_EVO_HIGH = [
   { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', sprite: 'douse-drive', effects: { damage: 20, weaken: 2 }, evoOnly: true, maxCopies: 1 },
   { id: 'wave-crash',   name: 'Wave Crash',   type: 'water', cost: 2, art: '🌊', sprite: 'gyaradosite', effects: { damage: 24, block: 6 }, evoOnly: true, maxCopies: 1 },
-  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', sprite: 'waterium-z', effects: { damage: 26, focus: 6 }, evoOnly: true, maxCopies: 1 },
+  { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', sprite: 'waterium-z', effects: { damage: 26, tide: 3 }, evoOnly: true, maxCopies: 1 },
   { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', sprite: 'blastoisinite', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
@@ -269,6 +273,7 @@ export const POWERS = {
   strengthEachTurn: { icon: '🌱', text: (n) => `At the start of each turn, gain ${n} strength.` },
   drawEachTurn:     { icon: '🌧️', text: (n) => `Draw ${n} more card${n > 1 ? 's' : ''} each turn.` },
   thorns:           { icon: '🔮', text: (n) => `When the enemy attacks you, it takes ${n} damage.` },
+  keepBlock:        { icon: '🐚', flag: true, text: () => 'Your block no longer wears off between turns.' },
   blaze:            { icon: '🌋', text: (n) => `Your attacks deal +${n} while your HP is below half.` },
 };
 
@@ -279,6 +284,7 @@ export function describe(card, stage = 0) {
   if (e.selfDamage)   parts.push(`Lose ${e.selfDamage} HP.`);
   if (e.damage)       parts.push(`Deal ${e.damage} damage${e.hits > 1 ? ` ${e.hits} times` : ''}.`);
   if (e.blockDamage)  parts.push('Deal damage equal to your block.');
+  if (e.perTide)      parts.push(`+${e.perTide} per Tide, then spend all your Tide.`);
   if (e.bonusIfLow)   parts.push(`+${e.bonusIfLow} if your HP is below half.`);
   if (e.bonusPerBurn) parts.push(`+${e.bonusPerBurn} for each Burn on the enemy.`);
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
@@ -292,6 +298,7 @@ export function describe(card, stage = 0) {
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
   if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
   if (e.draw)         parts.push(`Draw ${e.draw} card${e.draw > 1 ? 's' : ''}.`);
+  if (e.tide)         parts.push(`Gain ${e.tide} Tide.`);
   if (e.nextEnergy)   parts.push(`+${e.nextEnergy} energy next turn.`);
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
   if (e.needsWounded) parts.push('Only playable if you are hurt.');

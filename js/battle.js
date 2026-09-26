@@ -96,6 +96,7 @@ export function startBattle({ run, encounter, onEnd }) {
     nextEnergy: 0,     // bonus energy waiting for next turn
     focus: 0,          // bonus damage waiting for your next attack
     guard: false,      // blocks the next enemy attack completely
+    tide: 0,           // Water's stored-up resource: built by `tide` cards, all spent by the next `perTide` card
     strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
     powers: {},        // power effects played this fight, added up: { blockEachTurn: 5, ... }
     sashReady: run.relics.includes('focus-sash'),
@@ -208,7 +209,7 @@ function beginPlayerTurn() {
   const b = battle;
   b.turn += 1;
   const p = b.powers;
-  b.block = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0);   // block only lasts one round
+  b.block = (p.keepBlock ? b.block : 0) + (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0);   // block only lasts one round, unless Shell Armor keeps it
   if (b.block) statFx('player');
   const bossEnergy = ['choice-band', 'choice-specs', 'toxic-orb'].filter(hasRelic).length;
   b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy;
@@ -271,6 +272,7 @@ function damageFor(card) {
   let amount = e.blockDamage ? b.block : e.damage;
   if (e.bonusIfLow && low) amount += e.bonusIfLow;
   if (e.bonusPerBurn) amount += e.bonusPerBurn * b.enemy.burn;
+  if (e.perTide) amount += e.perTide * b.tide;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
 
@@ -336,6 +338,7 @@ async function playCard(uid) {
     const total = hits.length > 1 ? `${hits.join(' + ')} damage` : `${hits[0]} damage`;
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
     if (hasRelic('shell-bell')) healPlayer(1);
+    if (e.perTide && b.tide) { pop('player-zone', `🌊 ${b.tide} Tide spent`, 'note', 200); b.tide = 0; }
   } else {
     log(`${who} used ${card.name}.`);
   }
@@ -348,6 +351,7 @@ async function playCard(uid) {
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (e.tide)       { b.tide += e.tide; pop('player-zone', `🌊 Tide +${e.tide}`, 'note good'); }
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (card.power) {
@@ -771,13 +775,14 @@ function renderStatus() {
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 
   const playerBadges = [];
-  if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage until your next turn`, 'block']);
+  if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
   if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit`, 'good']);
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, `+${b.nextEnergy} energy next turn`, 'good']);
+  if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   for (const [key, power] of Object.entries(POWERS)) {
-    if (b.powers[key]) playerBadges.push([power.icon, b.powers[key], power.text(b.powers[key]), 'good']);
+    if (b.powers[key]) playerBadges.push([power.icon, power.flag ? '' : b.powers[key], power.text(b.powers[key]), 'good']);
   }
   $('player-status').replaceChildren(...playerBadges.map(badgeFor));
 }

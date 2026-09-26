@@ -50,12 +50,20 @@ steps land (mark them done, note anything decided along the way).
    Tabs per type (Fire, Grass, Water, Neutral; ← → switch), grouped Common / Uncommon / Rare, then the
    evolution-only cards in two groups (1st form, final form), each sorted by cost then name, at base
    (stage 0) numbers; tap to zoom (`zoomable()`). It opens on the picked starter's type, else the last tab.
-6b. **Water rework** (1 session, the user's playtest 2026-09-26: "Water felt kind of bland"): its cards
-   are mostly plain damage and block, while Fire stacks burn and Grass grows strength. Give it a
-   signature "build up, cash in" mechanic: a Tide resource (nameplate badge) that Water cards build
-   and others spend, plus a rare Barricade-style power (block stays between turns) so Razor Shell
-   builds are worth aiming for. Rework existing Water cards rather than only adding (never remove an
-   id), mirror the rules in the sim engine, and bot-check Levels 0/3/5 so Water stays level.
+6b. **Water rework** — done (2026-09-26, the user's playtest: "Water felt kind of bland"). Water now
+   has a "build up, cash in" mechanic, **Tide** (`battle.tide`, a 🌊 nameplate badge, lasts all fight):
+   - Build (`tide: N`): Bubble 5 dmg + Weak 1 + Tide 1, Dive 8 block + draw + Tide 1, Rain Dance
+     4 block + Tide 2 (was focus + block), Surf 12 dmg + Tide 2 (was 16), Origin Pulse Tide 3 (was focus 6).
+   - Cash in (`perTide: N`, then all Tide is spent): Water Pulse 5 + 2/Tide (retain; replaces one
+     Water Gun in the starting deck), Hydro Pump 2 cost 10 + 5/Tide (was 3 cost 36), Brine 8 + 4/Tide.
+   - New rare power **Shell Armor** (`shell-armor`, StS's Barricade, `keepBlock`): block no longer wears
+     off between turns, so Razor Shell builds are worth aiming for. No ids removed, no save bump.
+   - Rejected in the bot: Tide on Withdraw (Water L3 ~83-95%), Water Pulse +3/Tide, Bubble 6 dmg with
+     Tide (the bot hoarded Bubbles: L5 47).
+   - After (human bot, 600 runs/cell) fire / grass / water: L0 66 / 77 / 78, L3 61 / 57 / 67,
+     L5 35 / 37 / 41 (strong bot L0 80 / 87 / 90, L3 73 / 72 / 82, L5 56 / 53 / 58). Water was
+     76 / 65 / 39 before, so it stays level (the top of the three at L3, within noise elsewhere).
+   - For the playtest: does Tide read clearly (card text, badge tooltip), and is holding Water Pulse fun?
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of

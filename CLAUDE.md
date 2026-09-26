@@ -73,14 +73,28 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `title` explaining it); powers leave the fight once played, like StS.
   There's no exhaust pile icon (the user's call, for now).
   Each type has an archetype: Fire burn + burst + HP-for-damage, Grass
-  healing + growing strength, Water block + draw + hitting back.
+  healing + growing strength, Water block + draw + Tide.
+  Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
+  "build up, cash in" resource, `battle.tide`, shown as a 🌊 nameplate badge and
+  lasting all fight. `tide: N` cards build it (Bubble, Dive, Rain Dance, Surf,
+  Origin Pulse); `perTide: N` cards add N damage per Tide, then spend it all
+  (Water Pulse, retained so you can hold it until the Tide is high, replaces a
+  Water Gun in the starting deck; Hydro Pump, now 2 cost; Brine). `makeCard()`
+  explains Tide in the text's `title`. Shell Armor (rare power, StS's Barricade)
+  is `keepBlock`: `beginPlayerTurn()` keeps your block instead of zeroing it, so
+  Razor Shell builds are worth aiming for; a `POWERS` entry with `flag: true`
+  shows its badge without a number. Withdraw deliberately builds no Tide: 4 of
+  them made Water win ~95% at Level 3 in the bot, and Tide on Bubble made the bot
+  hoard Bubbles until it dropped to 5 damage (Rain Dance to 4 block). After (human
+  bot, 600 runs/cell) fire / grass / water: L0 66 / 77 / 78, L3 61 / 57 / 67,
+  L5 35 / 37 / 41; Water was 76 / 65 / 39 before, so it stays level.
   StS revamp (2026-09-26, the user's call: "more like StS"): every card is
   modelled on a Slay the Spire 1 card (named in a comment on its line) at
   StS's numbers x~1.2 (Strike 6 -> 7, Defend 5 -> 6), keeping StS's price
   per energy. Starting decks are StS-shaped: 4 attacks, 4 blocks, 2
   signature cards (Fire: Scorch = Bash + Will-O-Wisp; Grass: Seed Bomb =
   Bash + Absorb, one of its blocks a Cotton Guard; Water: Bubble + Dive =
-  Shrug It Off), no Tailwind. `weaken: N` is StS's Weak (enemy deals 25%
+  Shrug It Off, one of its attacks a Water Pulse), no Tailwind. `weaken: N` is StS's Weak (enemy deals 25%
   less for N enemy turns, `WEAK_MULT`) and `vulnerable: N` its Vulnerable
   (your attacks deal 50% more, `VULNERABLE_MULT`); both tick down at the end
   of each enemy turn (`enemy.weak` / `enemy.vulnerable` in `js/battle.js`),
