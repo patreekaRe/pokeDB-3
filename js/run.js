@@ -1043,7 +1043,17 @@ const EVENT_CHOICES = {
 
   'wishing-well'(event, state) {
     const relics = state.relics.map(id => RELICS_BY_ID[id]).filter(r => !run.relics.includes(r.id));
-    return { sub: [event.text, 'Toss a coin, or a big one for better odds.'], options: event.tosses.map(({ price, odds }, i) => {
+    const canToss = relics.length && run.money >= perBiome(event.tosses[0].price);
+    const fish = perBiome(event.fish);
+    const fishOption = spotOption(`Fish ₽${fish}`, `Fish out the coins other trainers tossed in: ₽${fish}.`, () => {
+      run.money += fish;
+      setMoney(run.money);
+      playSound('coins');
+      tell(`Fished ₽${fish} out of the well!`);
+      showMap();
+    });
+    return { sub: [event.text, canToss ? 'Toss a coin, or a big one for better odds.' : 'No wish today, but there are coins glinting at the bottom...'], options: event.tosses.map(({ price, odds }, i) => {
+      if (i === 0 && !canToss) return fishOption;
       const cost = perBiome(price);
       const hint = relics.length ? `Toss ₽${cost}: a ${Math.round(odds * 100)}% chance to find a relic.` : 'Nothing down there you don\'t already have.';
       return spotOption(`Toss ₽${cost}`, hint, async () => {

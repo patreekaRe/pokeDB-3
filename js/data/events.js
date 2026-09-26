@@ -64,6 +64,7 @@ export const EVENTS = [
       { price: [30, 40, 50], odds: 0.4 },
       { price: [70, 90, 110], odds: 0.8 },
     ],
+    fish: [20, 30, 40],   // ₽ fished out of the well when you can't make the small toss, so the room is never wasted
   },
   {
     id: 'fan-club', icon: '📣', name: 'Fan Club',

@@ -250,7 +250,9 @@ Day Care trades a common/uncommon (never an evolution card) for the first
 card of the next rarity you hold under `MAX_COPIES`; Shrine gives the first
 unowned relic of your type's `only` relics, then normal ones. The Wishing
 Well's one `luck` roll serves both tosses (the big toss wins whenever the
-small one would); a win offers its unowned `relics` via `showRelics()`.
+small one would); a win offers its unowned `relics` via `showRelics()`. When the small toss can't be
+made (too little ₽, or nothing left to win), its spot becomes "Fish ₽N" (`fish`, free ₽), so the
+room is never wasted (the user hit one with no money).
 Fan Club never costs anything (₽ above half HP, else a Super Potion, or ₽ with a
 full Bag). Relics from events go through `gainRelic()` so Cleanse Tag works.
 At first the four new events cost Level 5 ~3 points (66%): Shrine HP is barely
