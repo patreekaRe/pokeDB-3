@@ -61,6 +61,7 @@
       <div class="ball-menu-panel" id="ball-menu-panel" hidden>
         <button class="menu-item" id="home-btn"><span class="mi-icon">🏠</span><span class="mi-label">Main menu</span></button>
         <button class="menu-item" id="menu-shop-btn" hidden><span class="mi-icon">🎰</span><span class="mi-label">Game Corner</span></button>
+        <button class="menu-item" id="index-btn"><span class="mi-icon">🃏</span><span class="mi-label">Card index</span></button>
         <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
         <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
         <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
@@ -137,6 +138,7 @@
           <canvas id="howto-fx" aria-hidden="true"></canvas>
           <button class="ds-btn ds-gold ds-sm howto-btn" id="howto-btn"><span class="pp-pill">📖 How to play</span></button>
         </div>
+        <div class="index-cta"><button class="ds-btn ds-skip ds-sm" id="home-index-btn" type="button"><span class="pp-pill">🃏 Card index</span></button></div>
       </div>
 
       <button class="continue-btn" id="continue-btn" type="button" hidden>
@@ -403,6 +405,14 @@
       <div class="howto-dots" id="howto-dots"></div>
       <button class="btn primary howto-next" id="howto-next" type="button">Next ›</button>
     </div>
+  </dialog>
+
+  <!-- every card in the game, a tab per type (js/cardindex.js) -->
+  <dialog id="index-dialog" class="dialog wide-dialog index-dialog">
+    <h2 tabindex="-1" autofocus>🃏 Card index <span id="index-total" class="count"></span></h2>
+    <div class="index-tabs" id="index-tabs" role="tablist" aria-label="Card types"></div>
+    <div id="index-cards" class="card-pool" role="tabpanel"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
   <dialog id="stats-dialog" class="dialog records-dialog">

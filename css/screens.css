@@ -2189,6 +2189,54 @@ body.battle-intro { pointer-events: none; }
   .howto-beats { font-size: 0.58rem; }
 }
 
+/* ---------- CARD INDEX (js/cardindex.js): StS's Compendium, a tab per type ---------- */
+.index-cta { position: relative; z-index: 2; margin-top: 12px; }
+#home-index-btn .pp-pill { gap: 8px; align-items: center; }
+.index-tabs {
+  position: sticky;
+  top: -22px;   /* the dialog's padding: the tabs stay put while the cards scroll under them */
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 -22px 4px;
+  padding: 10px 12px 12px;
+  background: var(--win-bg);
+  border-bottom: 3px dashed var(--win-edge);
+}
+.index-tab {
+  --c1: #9aa2c8; --c2: #565d84;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px 7px;
+  border: 3px solid var(--win-edge);
+  border-radius: var(--round-sm);
+  background: var(--win-panel);
+  box-shadow: 2px 2px 0 var(--win-shadow);
+  color: var(--win-ink);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.index-tab.type-fire  { --c1: #ff8f4d; --c2: #b8321a; }
+.index-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
+.index-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
+.index-tab-icon { font-size: 1.1rem; line-height: 1; }
+.index-tab:hover { background: var(--win-tile); }
+.index-tab[aria-selected="true"] { border-color: var(--c2); background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); transform: translateY(-2px); box-shadow: 2px 4px 0 var(--win-shadow); }
+.index-dialog .card-pool { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(144px, 1fr)); }
+.index-head { grid-column: 1 / -1; margin-top: 14px; }
+.index-dialog .index-heading { display: flex; align-items: baseline; gap: 8px; margin: 0; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.8rem; color: #283060; }
+.index-count { font-size: 0.7em; color: var(--muted); }
+.index-dialog .index-note { margin: 6px 0 0; color: var(--muted); font-size: 0.85rem; }
+@media (max-width: 720px) {
+  .index-dialog { padding: 16px; }
+  .index-dialog .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 8px; }
+  .index-tabs { top: -16px; margin: 0 -16px 4px; gap: 5px; padding: 8px 6px 10px; }
+  .index-tab { flex-direction: column; gap: 3px; padding: 6px 4px 5px; min-width: 0; flex: 1 1 0; font-size: 0.5rem; }
+}
+
 /* ---------- 8. STATS & ACHIEVEMENTS (from the Poké Ball menu) ---------- */
 .records-dialog { width: min(560px, 94vw); }
 .records-dialog h2 { outline: none; }

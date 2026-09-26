@@ -45,9 +45,11 @@ steps land (mark them done, note anything decided along the way).
      L5 36 / 33 / 39. Strong bot L0 79 / 89 / 88, L3 75 / 73 / 78, L5 53 / 51 / 51.
    - Still to watch in the playtest: Fire's deaths are mostly biome 3 bosses (strong start, thin
      late game); Grass/Water's are biome 1 at Levels 3+. Slaking is the softest biome-3 boss.
-6. **Card index** (1 session, added 2026-09-26): a StS-style Compendium of every card, opened from
-   the home screen / Poké Ball menu. Tabs per type (Fire, Grass, Water, Neutral), grouped by rarity,
-   evolution-only cards in their own group; tap to zoom (`zoomCard()`). No balance impact.
+6. **Card index** — done (2026-09-26): a StS-style Compendium of every card (`js/cardindex.js`,
+   `#index-dialog`), opened from the Poké Ball menu and a blue "Card index" button under How to play.
+   Tabs per type (Fire, Grass, Water, Neutral; ← → switch), grouped Common / Uncommon / Rare, then the
+   evolution-only cards in two groups (1st form, final form), each sorted by cost then name, at base
+   (stage 0) numbers; tap to zoom (`zoomable()`). It opens on the picked starter's type, else the last tab.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of

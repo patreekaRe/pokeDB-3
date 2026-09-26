@@ -40,6 +40,7 @@ import { showMenuScene } from './scene.js';
 import { initTips, tipAt } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
+import { initCardIndex, openCardIndex } from './cardindex.js';
 import {
   $, el, showScreen, setTheme, openDialog, closeDialog, confirmDialog, refreshCoins,
 } from './ui.js';
@@ -287,6 +288,9 @@ function init() {
   $('howto-btn').addEventListener('click', openHowto);
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
+  initCardIndex();
+  $('index-btn').addEventListener('click', () => openCardIndex(selected?.type));
+  $('home-index-btn').addEventListener('click', () => openCardIndex(selected?.type));
   $('stats-btn').addEventListener('click', openStats);
   $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();

@@ -723,8 +723,14 @@ first tap also unlocks audio, so the title music starts with the menu.
 
 There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
-menu, Stats, Achievements, Sound, How to play and About (Stats and
+menu, Card index, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
+**Card index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium) is also a
+blue `.ds-btn` under How to play on the start screen: every card in `ALL_CARDS`,
+a sticky tab row per type (Fire, Grass, Water, Neutral), grouped by rarity and
+then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name at
+stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
+else the last tab; new cards show up there on their own. The
 top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
 hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball
