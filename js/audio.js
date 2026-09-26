@@ -91,7 +91,8 @@ const CRIES = new Set([
   'rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix', 'zubat', 'geodude', 'growlithe',
   'bellsprout', 'krabby', 'machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela', 'gloom',
   'poliwhirl', 'arcanine', 'snorlax', 'tangrowth', 'magmar', 'lapras', 'salamence',
-  'flareon', 'poliwrath',
+  'flareon', 'poliwrath', 'ninetales', 'shiftry', 'slowking', 'chandelure', 'ursaring',
+  'houndoom', 'breloom', 'kingdra', 'slaking', 'magmortar', 'gyarados',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1

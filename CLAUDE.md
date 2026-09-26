@@ -105,7 +105,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   give any new off-type move one too. **Elites and bosses ignore the chart
   both ways** (`typeless()`, by `battle.kind`, so Team Rocket's Alpha too;
   the user's call: type walls there felt unfair, match-ups are for wild
-  fights). So the elite type-disadvantage coin bonus is gone. The sim
+  fights). So the elite type-disadvantage coin bonus is gone, and they *show* as Neutral too
+  (the nameplate chip, `setupBattleScreen()` in `js/battle.js`, the map's `.node-badge`), since
+  their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in

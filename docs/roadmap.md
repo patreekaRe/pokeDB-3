@@ -12,16 +12,19 @@ steps land (mark them done, note anything decided along the way).
      card, Weak/Vulnerable, StS-shaped starting decks) and an enemy retune to match. That retune
      only moved the per-biome numbers (`dmgBonus`, `bossBonus`, `hpMult`), so step 5 redoes it
      cheaply once the new roster exists.
-3. **New elites and bosses** (1–2 sessions), biome by biome, starting with biome 1.
-   - Biome 1 done: elites Gloom, Poliwhirl, Flareon (new); bosses Snorlax, Arcanine (moved up
-     from elite, now a 150 HP boss), Poliwrath (new), one picked per run. Alpha Growlithe is gone
-     (Growlithe becomes a biome-1 wild in step 4). `RUN_SAVE_VERSION` 5 → 6, since `arcanine`
-     changed from an elite base to a boss.
-   - Biomes 2–3 still borrow biome 1's elites (Gloom, Poliwhirl, and Flareon in place of the old
-     Arcanine) until their own land next.
-   - Cries now come from PokeAPI (`github.com/PokeAPI/cries`, `cries/pokemon/latest/<dex no>.ogg`)
-     converted to mono 64 kbps MP3 at -3 dB, since play.pokemonshowdown.com is blocked in cloud
-     sessions; `pip install imageio-ffmpeg` gives an ffmpeg binary.
+3. **New elites and bosses** — done: every biome has its own 3 elites and 3 bosses from the
+   list below (one boss picked per run), all with rough numbers in line with what they replaced.
+   - Arcanine moved from elite base to a biome-1 boss (150 HP), so `RUN_SAVE_VERSION` went 5 → 6.
+   - Salamence stays as a 4th biome-3 boss (bosses are neutral, so it costs nothing).
+   - Slaking's pattern is Truant: every other move is a loaf (a block move called Truant).
+   - Elites and bosses now also *show* as Neutral (battle nameplate chip, map scouting badge);
+     their own types are theme only and stay in the data for the Pokédex.
+   - Still in `ENEMY_DEFS` but unused until step 4: Magmar (becomes a biome-3 wild) and Lapras
+     (leaves). Drop Lapras in step 4 along with the other departing wilds, with a save bump.
+   - Cries come from PokeAPI (`github.com/PokeAPI/cries`, `cries/pokemon/latest/<dex no>.ogg`),
+     since play.pokemonshowdown.com is blocked in cloud sessions: convert to mono 64 kbps MP3
+     normalized to about -14 dB mean volume (the level of the existing cries); `pip install
+     imageio-ffmpeg` gives an ffmpeg binary, and PIL's median frame bounds match sprite-fit.js.
 4. **New wild Pokémon** (1–2 sessions).
 5. **Big balance pass** (1 session): the bot harness at Levels 0, 3 and 5 over the new roster,
    retune each biome's numbers, check no type trails; then the user's own playtest (nothing

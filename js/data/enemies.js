@@ -166,7 +166,7 @@ export const ENEMY_DEFS = {
     ],
   },
 
-  /* ----- the bases of the elites (they only appear as "Alpha" versions) ----- */
+  /* ----- the bases of the elites (they only appear as "Alpha" versions), 3 per biome ----- */
   gloom: {
     name: 'Gloom', type: 'grass', hp: 60, ...sprite('gloom'),
     description: 'Its smell alone is a weapon.',
@@ -192,6 +192,61 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Fire Fang',   amount: 8 },
       { kind: 'buff',   name: 'Work Up',     amount: 2 },
       { kind: 'attack', name: 'Flare Blitz', amount: 12 },
+    ],
+  },
+
+  ninetales: {
+    name: 'Ninetales', type: 'fire', hp: 68, ...sprite('ninetales'),
+    description: 'Said to live a thousand years, and to curse whoever grabs a tail.',
+    moves: [
+      { kind: 'attack', name: 'Ember',        amount: 8 },
+      { kind: 'buff',   name: 'Nasty Plot',   amount: 2 },
+      { kind: 'attack', name: 'Flamethrower', amount: 12 },
+    ],
+  },
+  shiftry: {
+    name: 'Shiftry', type: 'grass', hp: 66, ...sprite('shiftry'),
+    description: 'Its leaf fans whip up gales in the shrine woods.',
+    moves: [
+      { kind: 'attack', name: 'Faint Attack', amount: 7, type: 'normal' },
+      { kind: 'buff',   name: 'Growth',       amount: 2 },
+      { kind: 'attack', name: 'Leaf Storm',   amount: 12 },
+    ],
+  },
+  slowking: {
+    name: 'Slowking', type: 'water', hp: 72, ...sprite('slowking'),
+    description: 'The Shellder on its head made it wise. Too wise.',
+    moves: [
+      { kind: 'attack', name: 'Water Pulse', amount: 7 },
+      { kind: 'defend', name: 'Amnesia',     amount: 9 },
+      { kind: 'attack', name: 'Surf',        amount: 11 },
+    ],
+  },
+  houndoom: {
+    name: 'Houndoom', type: 'fire', hp: 70, ...sprite('houndoom'),
+    description: 'Its howl sends everything on the wastes running.',
+    moves: [
+      { kind: 'attack', name: 'Bite',         amount: 8, type: 'normal' },
+      { kind: 'buff',   name: 'Nasty Plot',   amount: 2 },
+      { kind: 'attack', name: 'Flamethrower', amount: 13 },
+    ],
+  },
+  breloom: {
+    name: 'Breloom', type: 'grass', hp: 68, ...sprite('breloom'),
+    description: 'Its stretchy arms punch faster than you can see.',
+    moves: [
+      { kind: 'attack', name: 'Mach Punch',  amount: 7, type: 'normal' },
+      { kind: 'drain',  name: 'Drain Punch', amount: 7, heal: 5, type: 'normal' },
+      { kind: 'attack', name: 'Seed Bomb',   amount: 12 },
+    ],
+  },
+  kingdra: {
+    name: 'Kingdra', type: 'water', hp: 72, ...sprite('kingdra'),
+    description: 'Sleeps deep under the lava lakes\' steaming springs.',
+    moves: [
+      { kind: 'attack', name: 'Water Pulse',  amount: 8 },
+      { kind: 'buff',   name: 'Dragon Dance', amount: 2 },
+      { kind: 'attack', name: 'Hydro Pump',   amount: 13 },
     ],
   },
 
@@ -256,6 +311,56 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Hydro Pump',  amount: 21 },
     ],
   },
+  chandelure: {
+    name: 'Chandelure', type: 'fire', hp: 230, ...sprite('chandelure'), boss: true,
+    description: 'Its ghostly flames burn the spirit, not the body.',
+    moves: [
+      { kind: 'attack', name: 'Hex',        amount: 10, type: 'normal' },
+      { kind: 'buff',   name: 'Calm Mind',  amount: 3 },
+      { kind: 'drain',  name: 'Pain Split', amount: 10, heal: 8, type: 'normal' },
+      { kind: 'attack', name: 'Overheat',   amount: 21 },
+    ],
+  },
+  ursaring: {
+    name: 'Ursaring', type: 'normal', hp: 260, ...sprite('ursaring'), boss: true,
+    description: 'It guards the shrine\'s honey trees, and it does not share.',
+    moves: [
+      { kind: 'attack', name: 'Slash',        amount: 11 },
+      { kind: 'defend', name: 'Rest',         amount: 12 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
+      { kind: 'attack', name: 'Hammer Arm',   amount: 20 },
+    ],
+  },
+  slaking: {
+    name: 'Slaking', type: 'normal', hp: 440, ...sprite('slaking'), boss: true,
+    description: 'Lazes about every other turn. The turns in between hurt.',
+    moves: [
+      { kind: 'attack', name: 'Hammer Arm',  amount: 16 },
+      { kind: 'defend', name: 'Truant',      amount: 14 },
+      { kind: 'attack', name: 'Giga Impact', amount: 24 },
+      { kind: 'defend', name: 'Truant',      amount: 14 },
+    ],
+  },
+  magmortar: {
+    name: 'Magmortar', type: 'fire', hp: 400, ...sprite('magmortar'), boss: true,
+    description: 'Fires fireballs from its arms, hot enough to melt the wastes.',
+    moves: [
+      { kind: 'attack', name: 'Flamethrower', amount: 12 },
+      { kind: 'buff',   name: 'Sunny Day',    amount: 3 },
+      { kind: 'attack', name: 'Thunderbolt',  amount: 14, type: 'normal' },
+      { kind: 'attack', name: 'Fire Blast',   amount: 22 },
+    ],
+  },
+  gyarados: {
+    name: 'Gyarados', type: 'water', hp: 420, ...sprite('gyarados'), boss: true,
+    description: 'Once it starts rampaging, it burns everything down.',
+    moves: [
+      { kind: 'attack', name: 'Bite',         amount: 11, type: 'normal' },
+      { kind: 'buff',   name: 'Dragon Dance', amount: 2 },
+      { kind: 'attack', name: 'Waterfall',    amount: 15 },
+      { kind: 'attack', name: 'Hyper Beam',   amount: 22, type: 'normal' },
+    ],
+  },
   salamence: {
     name: 'Salamence', type: 'normal', hp: 420, ...sprite('salamence'), boss: true,
     description: 'The tyrant of the Ember Wastes. Beat it to finish the run.',
@@ -303,13 +408,13 @@ export const BIOMES = [
   {
     id: 'shrine', name: 'Overgrown Shrine',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
-    elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['tangrowth', 'magmar', 'lapras'],
+    elites: ['ninetales', 'shiftry', 'slowking'], bosses: ['chandelure', 'tangrowth', 'ursaring'],
     hpMult: 2.9, dmgBonus: 11, bossBonus: 16,
   },
   {
     id: 'wastes', name: 'Ember Wastes',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
-    elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['salamence'],
+    elites: ['houndoom', 'breloom', 'kingdra'], bosses: ['slaking', 'magmortar', 'gyarados', 'salamence'],
     hpMult: 5.2, dmgBonus: 22, bossBonus: 28,
   },
 ];

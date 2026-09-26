@@ -595,9 +595,9 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
     if (node.enemyId && node.type !== 'fight') {
       const def = ENEMY_DEFS[node.enemyId];
-      const type = TYPES[def.type];
+      const type = TYPES.normal;   // elites and bosses ignore the type chart
       label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name} (${type.label} type)`;
-      btn.append(el('span', `node-badge type-${def.type}`, type.icon));
+      btn.append(el('span', 'node-badge type-normal', type.icon));
     }
     btn.title = label;
     btn.setAttribute('aria-label', label);
