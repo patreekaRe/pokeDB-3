@@ -22,7 +22,7 @@ export const ACHIEVEMENTS = [
   // Easier, first-tier goals up front...
   {
     starter: 'torchic',
-    text: 'Defeat the Biome 1 boss (Snorlax)',
+    text: 'Defeat the Biome 1 boss',
     test: (s) => !!s.bossesDefeated[1],
   },
   {

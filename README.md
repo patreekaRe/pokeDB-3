@@ -31,7 +31,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 - A **branching map** for each of three biomes, generated the way Slay the Spire does it: random paths that never cross, rooms that only exist where a path went, a treasure floor in the middle, rest sites before the boss, and room rules like "no two rest sites in a row". A new map is generated for every biome.
 - **Card rewards and relics:** 32 cards across common, uncommon and rare rarities, and 11 relics (Charcoal, Leftovers, Focus Sash, Scope Lens…).
 - **Turn-based battles** with an energy system, draw and discard piles that reshuffle, enemy intent, type advantages and status effects.
-- **Every enemy is a real Pokémon:** 15 wild Pokémon across the three biomes, "Alpha" elite fights, and bosses with their own move patterns: Snorlax, then Tangrowth, Magmar or Lapras (picked at random, so no starter always meets its worst matchup), then Salamence.
+- **Every enemy is a real Pokémon:** 15 wild Pokémon across the three biomes, "Alpha" elite fights, and bosses with their own move patterns: Snorlax, Arcanine or Poliwrath, then Tangrowth, Magmar or Lapras (picked at random, so no starter always meets its worst matchup), then Salamence.
 - **Scouting:** the map picks each elite and boss ahead of time and shows its type as a small badge, so you can route around a matchup you can't win (a Fire starter may want to skip a Water elite).
 - **Trainer Levels 0–5** (inspired by Slay the Spire's Ascension): win on your highest level to unlock the next, harder one.
 - **Evolution cards in two tiers:** a mid-tier choose-1-of-2 at your first evolution, a high-tier one (each type's canonical capstone move) at your final evolution - a real power spike, not just bigger numbers.

@@ -13,6 +13,15 @@ steps land (mark them done, note anything decided along the way).
      only moved the per-biome numbers (`dmgBonus`, `bossBonus`, `hpMult`), so step 5 redoes it
      cheaply once the new roster exists.
 3. **New elites and bosses** (1–2 sessions), biome by biome, starting with biome 1.
+   - Biome 1 done: elites Gloom, Poliwhirl, Flareon (new); bosses Snorlax, Arcanine (moved up
+     from elite, now a 150 HP boss), Poliwrath (new), one picked per run. Alpha Growlithe is gone
+     (Growlithe becomes a biome-1 wild in step 4). `RUN_SAVE_VERSION` 5 → 6, since `arcanine`
+     changed from an elite base to a boss.
+   - Biomes 2–3 still borrow biome 1's elites (Gloom, Poliwhirl, and Flareon in place of the old
+     Arcanine) until their own land next.
+   - Cries now come from PokeAPI (`github.com/PokeAPI/cries`, `cries/pokemon/latest/<dex no>.ogg`)
+     converted to mono 64 kbps MP3 at -3 dB, since play.pokemonshowdown.com is blocked in cloud
+     sessions; `pip install imageio-ffmpeg` gives an ffmpeg binary.
 4. **New wild Pokémon** (1–2 sessions).
 5. **Big balance pass** (1 session): the bot harness at Levels 0, 3 and 5 over the new roster,
    retune each biome's numbers, check no type trails; then the user's own playtest (nothing

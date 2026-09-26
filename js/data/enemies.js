@@ -185,13 +185,13 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Body Slam', amount: 12, type: 'normal' },
     ],
   },
-  arcanine: {
-    name: 'Arcanine', type: 'fire', hp: 75, ...sprite('arcanine'),
-    description: 'Runs like a legend and bites like one too.',
+  flareon: {
+    name: 'Flareon', type: 'fire', hp: 64, ...sprite('flareon'),
+    description: 'Its fluffy collar holds in a furnace.',
     moves: [
-      { kind: 'attack', name: 'Bite',         amount: 9, type: 'normal' },
-      { kind: 'buff',   name: 'Roar',         amount: 2 },
-      { kind: 'attack', name: 'Flamethrower', amount: 13 },
+      { kind: 'attack', name: 'Fire Fang',   amount: 8 },
+      { kind: 'buff',   name: 'Work Up',     amount: 2 },
+      { kind: 'attack', name: 'Flare Blitz', amount: 12 },
     ],
   },
 
@@ -204,6 +204,26 @@ export const ENEMY_DEFS = {
       { kind: 'defend', name: 'Rest',        amount: 14 },
       { kind: 'buff',   name: 'Belly Drum',  amount: 2 },
       { kind: 'attack', name: 'Giga Impact', amount: 16 },
+    ],
+  },
+  arcanine: {
+    name: 'Arcanine', type: 'fire', hp: 150, ...sprite('arcanine'), boss: true,
+    description: 'Runs like a legend and bites like one too.',
+    moves: [
+      { kind: 'attack', name: 'Fire Fang',     amount: 10 },
+      { kind: 'buff',   name: 'Howl',          amount: 2 },
+      { kind: 'attack', name: 'Extreme Speed', amount: 12, type: 'normal' },
+      { kind: 'attack', name: 'Flare Blitz',   amount: 17 },
+    ],
+  },
+  poliwrath: {
+    name: 'Poliwrath', type: 'water', hp: 175, ...sprite('poliwrath'), boss: true,
+    description: 'Swims the pond by day and trains its fists by night.',
+    moves: [
+      { kind: 'attack', name: 'Bubble Beam',   amount: 10 },
+      { kind: 'defend', name: 'Detect',        amount: 12 },
+      { kind: 'buff',   name: 'Bulk Up',       amount: 2 },
+      { kind: 'attack', name: 'Dynamic Punch', amount: 15, type: 'normal' },
     ],
   },
   tangrowth: {
@@ -277,19 +297,19 @@ export const BIOMES = [
   {
     id: 'clearing', name: 'Whispering Clearing',
     normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
-    elites: ['gloom', 'poliwhirl', 'growlithe'], bosses: ['snorlax'],
+    elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['snorlax', 'arcanine', 'poliwrath'],
     hpMult: 1.2, dmgBonus: 4, bossBonus: 5,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
-    elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['tangrowth', 'magmar', 'lapras'],
+    elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['tangrowth', 'magmar', 'lapras'],
     hpMult: 2.9, dmgBonus: 11, bossBonus: 16,
   },
   {
     id: 'wastes', name: 'Ember Wastes',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
-    elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['salamence'],
+    elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['salamence'],
     hpMult: 5.2, dmgBonus: 22, bossBonus: 28,
   },
 ];
