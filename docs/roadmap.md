@@ -107,7 +107,8 @@ steps land (mark them done, note anything decided along the way).
       pick from the exhaust pile). 6 bridge uncommons were added (Blaze Kick, Infernal Parade, Steam Engine, Fiery
       Wrath, Armor Cannon, Heatproof); Burning Jealousy costs 2, Fire Blast 2. Starting deck unchanged.
       Bot check (human bot, 600 runs/cell, same bot): Fire L0 / L3 / L5 was 71.2 / 63.3 / 34.5, now 70.7 / 62.2 / 39.3,
-      so no retune. The bot scores cards one at a time and never takes the combo pieces (Fan the Flames, Sacred Fire,
+      so no retune. Grass / Water in the same run: L0 74.2 / 74.8, L3 52.2 / 57.8, L5 32.0 / 30.2 (unchanged data;
+      within noise of the last session's 300-run numbers), so Fire is now level with or ahead of the others. The bot scores cards one at a time and never takes the combo pieces (Fan the Flames, Sacred Fire,
       Drought, Blue Flare, Raging Fury, Fusion Flare, Wildfire, the exhaust engine): only the user's playtest can judge
       those builds. Before/after runs: serve the old commit (`git worktree`) with the old sim on a second port.
    4. **Water's cards — NEXT.** Session prompt (paste into a fresh session):
