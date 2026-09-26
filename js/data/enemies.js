@@ -362,7 +362,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'drain',  name: 'Absorb',      amount: 6, heal: 3 },
       { kind: 'defend', name: 'Ingrain',     amount: 8 },
-      { kind: 'attack', name: 'Petal Dance', amount: 9 },
+      { kind: 'attack', name: 'Petal Dance', amount: 11 },
     ],
   },
   poliwhirl: {
@@ -380,7 +380,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Fire Fang',   amount: 8 },
       { kind: 'buff',   name: 'Work Up',     amount: 2 },
-      { kind: 'attack', name: 'Flare Blitz', amount: 12 },
+      { kind: 'attack', name: 'Flare Blitz', amount: 10 },
     ],
   },
 
@@ -454,10 +454,10 @@ export const ENEMY_DEFS = {
     name: 'Arcanine', type: 'fire', hp: 150, ...sprite('arcanine'), boss: true,
     description: 'Runs like a legend and bites like one too.',
     moves: [
-      { kind: 'attack', name: 'Fire Fang',     amount: 10 },
+      { kind: 'attack', name: 'Fire Fang',     amount: 9 },
       { kind: 'buff',   name: 'Howl',          amount: 2 },
       { kind: 'attack', name: 'Extreme Speed', amount: 12, type: 'normal' },
-      { kind: 'attack', name: 'Flare Blitz',   amount: 17 },
+      { kind: 'attack', name: 'Flare Blitz',   amount: 13 },
     ],
   },
   poliwrath: {
@@ -497,7 +497,7 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Slash',        amount: 11 },
       { kind: 'defend', name: 'Rest',         amount: 12 },
       { kind: 'buff',   name: 'Swords Dance', amount: 2 },
-      { kind: 'attack', name: 'Hammer Arm',   amount: 20 },
+      { kind: 'attack', name: 'Hammer Arm',   amount: 22 },
     ],
   },
   slaking: {
@@ -527,7 +527,7 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Bite',         amount: 11, type: 'normal' },
       { kind: 'buff',   name: 'Dragon Dance', amount: 2 },
       { kind: 'attack', name: 'Waterfall',    amount: 15 },
-      { kind: 'attack', name: 'Hyper Beam',   amount: 22, type: 'normal' },
+      { kind: 'attack', name: 'Hyper Beam',   amount: 20, type: 'normal' },
     ],
   },
   salamence: {
@@ -537,7 +537,7 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Bite',          amount: 11, type: 'normal' },
       { kind: 'buff',   name: 'Dragon Dance',  amount: 2 },
       { kind: 'attack', name: 'Dragon Claw',   amount: 15 },
-      { kind: 'attack', name: 'Hyper Beam',    amount: 22 },
+      { kind: 'attack', name: 'Hyper Beam',    amount: 20 },
     ],
   },
 };
@@ -573,21 +573,21 @@ export const BIOMES = [
     normals: ['vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot',
       'poliwag', 'psyduck', 'marill', 'rattata', 'sentret', 'zigzagoon'],
     elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['snorlax', 'arcanine', 'poliwrath'],
-    hpMult: 1.2, dmgBonus: 4, bossBonus: 5,
+    hpMult: 1.2, dmgBonus: 6, bossBonus: 7,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine',
     normals: ['litwick', 'houndour', 'darumaka', 'bellsprout', 'paras', 'cherubi',
       'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler'],
     elites: ['ninetales', 'shiftry', 'slowking'], bosses: ['chandelure', 'tangrowth', 'ursaring'],
-    hpMult: 2.9, dmgBonus: 11, bossBonus: 16,
+    hpMult: 2.9, dmgBonus: 14, bossBonus: 19,
   },
   {
     id: 'wastes', name: 'Ember Wastes',
     normals: ['magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus',
       'staryu', 'crawdaunt', 'sharpedo', 'tauros', 'bouffalant', 'zangoose'],
     elites: ['houndoom', 'breloom', 'kingdra'], bosses: ['slaking', 'magmortar', 'gyarados', 'salamence'],
-    hpMult: 5.2, dmgBonus: 22, bossBonus: 28,
+    hpMult: 5.2, dmgBonus: 24, bossBonus: 30,
   },
 ];
 

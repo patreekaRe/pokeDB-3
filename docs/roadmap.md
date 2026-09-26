@@ -33,9 +33,18 @@ steps land (mark them done, note anything decided along the way).
      that biome, so the Alpha is lighter than a real elite (no more 700+ HP Rhyhorn).
    - With 12 wilds a biome, a run rarely meets the same wild twice; nothing weights the picks yet
      (the Pokédex step may favour unregistered ones).
-5. **Big balance pass** (1 session): the bot harness at Levels 0, 3 and 5 over the new roster,
-   retune each biome's numbers, check no type trails; then the user's own playtest (nothing
-   has been checked against a real player yet, only the bots).
+5. **Big balance pass** — bots done (2026-09-26); the user's own playtest is next.
+   - Baseline over the new roster (human bot): L0 ~83, L3 ~68, L5 ~45, and the user found Fire
+     easy. Biome 1 never killed anyone at L0, but at L3/L5 it killed Grass/Water 10-30% of runs
+     (Arcanine, Flareon; Alpha elites with Elite Territory had as much HP as the boss) and Fire ~0%.
+   - Shipped: biome `dmgBonus` 6/14/24, `bossBonus` 7/19/30; Arcanine Fire Fang 9 / Flare Blitz 13,
+     Flareon Flare Blitz 10, Gloom Petal Dance 11, Ursaring Hammer Arm 22, Gyarados and Salamence
+     Hyper Beam 20 (evens each biome's elites/bosses); Elite Territory +15% HP, Fierce Bosses
+     +10% HP; Cotton Guard 8, Dive 9.
+   - Now (human bot, 600 runs/cell) fire / grass / water: L0 74 / 76 / 76, L3 59 / 56 / 65,
+     L5 36 / 33 / 39. Strong bot L0 79 / 89 / 88, L3 75 / 73 / 78, L5 53 / 51 / 51.
+   - Still to watch in the playtest: Fire's deaths are mostly biome 3 bosses (strong start, thin
+     late game); Grass/Water's are biome 1 at Levels 3+. Slaking is the softest biome-3 boss.
 6. **Pokédex, then catching** (2–3 sessions).
 
 Anytime, as a break from number work:

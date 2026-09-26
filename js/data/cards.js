@@ -123,7 +123,7 @@ const GRASS_CARDS = [
   { id: 'razor-leaf',   name: 'Razor Leaf',   type: 'grass', cost: 2, art: '🍃', sprite: 'silver-leaf', effects: { damage: 16 } },
   { id: 'bullet-seed',  name: 'Bullet Seed',  type: 'grass', cost: 1, art: '🌱', sprite: 'green-apricorn', effects: { damage: 3, hits: 3 } },         // Sword Boomerang
   { id: 'mega-drain',   name: 'Mega Drain',   type: 'grass', cost: 2, art: '💚', sprite: 'luminous-moss', effects: { damage: 12, heal: 6 } },
-  { id: 'cotton-guard', name: 'Cotton Guard', type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 7 }, retain: true },
+  { id: 'cotton-guard', name: 'Cotton Guard', type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 8 }, retain: true },
   { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 1, art: '🌸', sprite: 'petal-pink', effects: { damage: 6, block: 6 } },            // Iron Wave
   { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', sprite: 'sitrus-berry', effects: { heal: 14 }, rarity: 'uncommon' },
   { id: 'leaf-blade',   name: 'Leaf Blade',   type: 'grass', cost: 2, art: '🍃', sprite: 'leaf-stone', effects: { damage: 10, strength: 2 }, rarity: 'uncommon' },
@@ -138,7 +138,7 @@ const WATER_CARDS = [
   { id: 'water-gun',    name: 'Water Gun',    type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 7 } },                   // Strike
   { id: 'withdraw',     name: 'Withdraw',     type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 6 } },                    // Defend
   { id: 'bubble',       name: 'Bubble',       type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 6, weaken: 1 } },        // Sucker Punch
-  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 8, draw: 1 } },             // Shrug It Off
+  { id: 'dive',         name: 'Dive',         type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 9, draw: 1 } },             // Shrug It Off
   { id: 'rain-dance',   name: 'Rain Dance',   type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { focus: 5, block: 5 } },
   { id: 'surf',         name: 'Surf',         type: 'water', cost: 2, art: '🌊', sprite: 'hm-water', effects: { damage: 16 } },
   { id: 'water-pulse',  name: 'Water Pulse',  type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 8 }, retain: true },

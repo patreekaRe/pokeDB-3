@@ -86,7 +86,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   of each enemy turn (`enemy.weak` / `enemy.vulnerable` in `js/battle.js`),
   and `makeCard()` puts an explaining `title` on the text. Enemy numbers
   were retuned around the cards (biome `dmgBonus` 4/11/22, `bossBonus`
-  5/16/28, `hpMult` 1.2/2.9/5.2; Fierce Bosses +2 damage, not +4). Fire
+  5/16/28, `hpMult` 1.2/2.9/5.2; Fierce Bosses +2 damage, not +4), then
+  again over the new 54-Pokémon roster (2026-09-26, see Items below). Fire
   has the fewest defensive cards, so its Defend (Flame Wall) blocks 8 and
   its Flame Barrier (Burning Bulwark) is 1 cost; without that Fire trailed
   the others by 15-30 points.
@@ -333,6 +334,17 @@ decent human winning about half their Level 0 runs. It won 87.5% at Level 0,
 so every biome's `dmgBonus`/`bossBonus` went up +2/+3/+4 and Level 5's
 `enemyDmg` down 2→1 to keep it beatable: human bot L0 ~75%, L3 ~62%, L5 ~43%
 (strong bot L0 ~86%, L5 ~55%). Water is the weakest type at every level.
+Roster balance pass (2026-09-26, after the new 54 Pokémon; the user found Fire
+easy): the human bot was back up to L0 ~83%, and biome 1 was a coin flip for
+Grass/Water at Levels 3-5 (Alpha elites out-HP'd the boss) while Fire walked
+it. Now `dmgBonus` 6/14/24, `bossBonus` 7/19/30, Elite Territory +15% HP
+(was 30), Fierce Bosses +10% HP (was 20), Cotton Guard 8, Dive 9, and the
+outliers evened within each biome (Arcanine, Flareon, Gyarados and Salamence
+softer; Gloom and Ursaring harder). Human bot fire / grass / water: L0
+74 / 76 / 76, L3 59 / 56 / 65, L5 36 / 33 / 39; strong bot L0 79 / 89 / 88,
+L5 53 / 51 / 51. Fire still dies mostly to biome 3 bosses (it's strong early,
+thin late), Grass/Water mostly in biome 1 at higher Levels. A +1/+2 block on
+a starting card moved a type 5-20 points here too.
 
 ## Relics
 
