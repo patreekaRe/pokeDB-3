@@ -50,6 +50,12 @@ steps land (mark them done, note anything decided along the way).
    Tabs per type (Fire, Grass, Water, Neutral; ← → switch), grouped Common / Uncommon / Rare, then the
    evolution-only cards in two groups (1st form, final form), each sorted by cost then name, at base
    (stage 0) numbers; tap to zoom (`zoomable()`). It opens on the picked starter's type, else the last tab.
+6b. **Water rework** (1 session, the user's playtest 2026-09-26: "Water felt kind of bland"): its cards
+   are mostly plain damage and block, while Fire stacks burn and Grass grows strength. Give it a
+   signature "build up, cash in" mechanic: a Tide resource (nameplate badge) that Water cards build
+   and others spend, plus a rare Barricade-style power (block stays between turns) so Razor Shell
+   builds are worth aiming for. Rework existing Water cards rather than only adding (never remove an
+   id), mirror the rules in the sim engine, and bot-check Levels 0/3/5 so Water stays level.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
