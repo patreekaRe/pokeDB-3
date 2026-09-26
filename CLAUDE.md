@@ -693,7 +693,10 @@ Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
 `.dialog ...` override in `css/base.css`. Game cards (`css/cards.css`) are styled after the Game Boy
 Color Pokémon Trading Card Game: square type-coloured frame, pixel checker
 body, a round PP cost set inside the frame (a mini PP box: white disc, salmon ring), pixel-font name/type, a framed art window and a
-cream text window. The description stays in the normal font on purpose:
+cream text window. Every card keeps a fixed two-line name band (the
+name centred on the card, padded the same both sides, the PP cost on its centre line), so the art,
+type and text windows line up across a row whichever names wrap (the user's call: the text was
+"all over the place"). The description stays in the normal font on purpose:
 pixel letters would be too small to read at card size. A long text or a two-line
 name could push the text window out of the card, so `makeCard()` hands every card
 to a `ResizeObserver` (`fitCard()` in `js/ui.js`): once it's first laid out, its

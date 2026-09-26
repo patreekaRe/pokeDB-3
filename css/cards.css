@@ -34,7 +34,7 @@
   flex-direction: column;
   align-items: center;
   gap: 3cqw;
-  padding: 9cqw 6cqw 6cqw;
+  padding: 5cqw 6cqw 6cqw;
   border-radius: 7cqw;
   border: 2.4cqw solid var(--c2);
   background:
@@ -45,13 +45,14 @@
 }
 
 /* the PP cost: a tiny copy of the battle's PP box (white pill, salmon ring, dark outline, grey-shadowed
-   numbers), set inside the frame so a card's cost reads as the PP it spends */
+   numbers), set inside the frame so a card's cost reads as the PP it spends. It sits on the name's
+   centre line: (name band 21cqw - 14cqw) / 2 below the 5cqw top padding. */
 .card-cost {
   position: absolute;
-  top: 4.5cqw;
-  left: 4.5cqw;
-  width: 15cqw;
-  height: 15cqw;
+  top: 8.5cqw;
+  left: 3cqw;
+  width: 14cqw;
+  height: 14cqw;
   display: grid;
   place-items: center;
   padding-top: 0.6cqw;
@@ -61,28 +62,31 @@
   color: #404048;
   text-shadow: 0.9cqw 0.9cqw 0 #c0c0c8;
   font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 10cqw;
+  font-size: 9.5cqw;
   line-height: 1;
 }
 
+/* every card keeps a two-line band for its name, so the art, type and text windows line up across a
+   row whichever names wrap; it's padded the same both sides (room for the PP cost) to sit centred */
 .card-name {
   width: 100%;
-  min-height: 12cqw;
-  padding-left: 18cqw;               /* leaves room for the PP cost */
-  padding-right: 1cqw;
+  flex: 0 0 auto;
+  height: 21cqw;
+  padding: 0 14cqw;
   display: grid;
   align-items: center;
+  justify-items: center;
   font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: calc(10.5cqw * var(--name-fit, 1));
+  font-size: calc(9cqw * var(--name-fit, 1));
   font-weight: 400;
-  line-height: 1.2;
+  line-height: 1.15;
   color: #fff8e0;
   text-shadow: 0.9cqw 0.9cqw 0 rgba(0, 0, 0, 0.6);
 }
 .card-art {
   width: 100%;
   flex: 0 0 auto;
-  height: 32cqw;
+  height: 27cqw;
   display: grid;
   place-items: center;
   font-size: 21cqw;
@@ -93,7 +97,7 @@
 }
 /* item art (cardSprite() in js/ui.js): the sprite's visible box (--bx/--by/--bw/--bh, in its 32px frame) scaled
    as big as fits --box-w x --box-h, whatever padding the file has, so every item fills the window the same way */
-.card-art { --box-w: 72cqw; --box-h: 25cqw; }
+.card-art { --box-w: 72cqw; --box-h: 21cqw; }
 .sprite-fit {
   --k: min(calc(var(--box-w) / var(--bw)), calc(var(--box-h) / var(--bh)));
   position: relative;
@@ -110,8 +114,10 @@
   height: calc(var(--k) * 32);
 }
 .card-type {
+  flex: 0 0 auto;
   font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 7.5cqw;
+  line-height: 1.2;
   color: #181010;
 }
 /* the description stays in the normal font: pixel letters would be too small to read at card size */
@@ -168,12 +174,12 @@
 
 /* Compact version used in the deck strip */
 .card.small { aspect-ratio: 5 / 6.2; }
-.card.small .card-face { padding: 8cqw 5cqw 5cqw; gap: 2cqw; }
+.card.small .card-face { padding: 5cqw 5cqw 5cqw; gap: 2cqw; }
 .card.small .card-type,
 .card.small .card-text { display: none; }
-.card.small .card-name { font-size: calc(12cqw * var(--name-fit, 1)); min-height: 0; padding-left: 16cqw; padding-right: 1cqw; justify-items: center; }
+.card.small .card-name { font-size: calc(10cqw * var(--name-fit, 1)); height: 24cqw; padding: 0 16.5cqw; }
 .card.small .card-art { height: auto; flex: 1; font-size: 30cqw; --box-w: 64cqw; --box-h: 60cqw; }
-.card.small .card-cost { width: 18cqw; height: 18cqw; font-size: 12cqw; }
+.card.small .card-cost { top: 9.5cqw; left: 3.5cqw; width: 15cqw; height: 15cqw; font-size: 10.5cqw; }
 
 /* ---------- cards in your battle hand ---------- */
 .card.in-hand { --card-w: var(--hand-card-w); flex: 0 0 auto; }
