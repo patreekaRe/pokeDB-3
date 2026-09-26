@@ -463,7 +463,7 @@ stage 1 to 90% with the `scale` property (from the feet), so the attack and
 evolve animations' transforms and the layout are untouched.
 In battle, both sprites are sized from their GIF files instead (`sizeSprite()` in
 `js/battle.js` sets `--size`): the Showdown sprites share one pixel scale, so
-Pidgey (48px) is drawn small and Snorlax big rather than all filling one box. The
+Teddiursa (36px) is drawn small and Snorlax big rather than all filling one box. The
 curve is softened and clamped, and the enemy's base size is smaller than yours
 because it stands further back (the user's call). Legendaries, which reuse one
 sprite, get the 78/90% stage steps folded into `--size`. Sizes and placement use each GIF's

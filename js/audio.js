@@ -88,10 +88,13 @@ const CRIES = new Set([
   'torchic', 'combusken', 'blaziken', 'treecko', 'grovyle', 'sceptile',
   'mudkip', 'marshtomp', 'swampert', 'chimchar', 'monferno', 'infernape',
   'turtwig', 'grotle', 'torterra', 'piplup', 'prinplup', 'empoleon',
-  'rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix', 'zubat', 'geodude', 'growlithe',
-  'bellsprout', 'krabby', 'machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela', 'gloom',
-  'poliwhirl', 'arcanine', 'snorlax', 'tangrowth', 'magmar', 'lapras', 'salamence',
-  'flareon', 'poliwrath', 'ninetales', 'shiftry', 'slowking', 'chandelure', 'ursaring',
+  'vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot', 'poliwag', 'psyduck',
+  'marill', 'rattata', 'sentret', 'zigzagoon', 'litwick', 'houndour', 'darumaka', 'bellsprout',
+  'paras', 'cherubi', 'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler',
+  'magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus', 'staryu', 'crawdaunt',
+  'sharpedo', 'tauros', 'bouffalant', 'zangoose',
+  'gloom', 'poliwhirl', 'flareon', 'ninetales', 'shiftry', 'slowking',
+  'snorlax', 'arcanine', 'poliwrath', 'chandelure', 'tangrowth', 'ursaring', 'salamence',
   'houndoom', 'breloom', 'kingdra', 'slaking', 'magmortar', 'gyarados',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1

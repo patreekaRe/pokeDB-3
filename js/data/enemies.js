@@ -25,23 +25,32 @@
 const sprite = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false, spriteId: name });
 
 export const ENEMY_DEFS = {
-  /* ----- Biome 1: small wild Pokémon ----- */
-  rattata: {
-    name: 'Rattata', type: 'normal', hp: 40, ...sprite('rattata'),
-    description: 'Small, quick and everywhere.',
+  /* ----- Biome 1: the clearing's meadow and pond, baby forms ----- */
+  vulpix: {
+    name: 'Vulpix', type: 'fire', hp: 45, ...sprite('vulpix'),
+    description: 'Six tails, each one warm.',
     moves: [
-      { kind: 'attack', name: 'Tackle',       amount: 6 },
-      { kind: 'attack', name: 'Quick Attack', amount: 5 },
-      { kind: 'attack', name: 'Hyper Fang',   amount: 9 },
+      { kind: 'attack', name: 'Ember',        amount: 6 },
+      { kind: 'buff',   name: 'Will-O-Wisp',  amount: 2 },
+      { kind: 'attack', name: 'Flamethrower', amount: 10 },
     ],
   },
-  pidgey: {
-    name: 'Pidgey', type: 'normal', hp: 42, ...sprite('pidgey'),
-    description: 'Kicks up sand, then swoops down.',
+  growlithe: {
+    name: 'Growlithe', type: 'fire', hp: 46, ...sprite('growlithe'),
+    description: 'Loyal, loud and very warm.',
     moves: [
-      { kind: 'attack', name: 'Gust',        amount: 6 },
-      { kind: 'defend', name: 'Sand Attack', amount: 6 },
-      { kind: 'attack', name: 'Wing Attack', amount: 10 },
+      { kind: 'attack', name: 'Bite',        amount: 5, type: 'normal' },
+      { kind: 'buff',   name: 'Howl',        amount: 1 },
+      { kind: 'attack', name: 'Flame Wheel', amount: 10 },
+    ],
+  },
+  pansear: {
+    name: 'Pansear', type: 'fire', hp: 44, ...sprite('pansear'),
+    description: 'Roasts the berries it finds. And anything else.',
+    moves: [
+      { kind: 'attack', name: 'Scratch',     amount: 5, type: 'normal' },
+      { kind: 'attack', name: 'Incinerate',  amount: 7 },
+      { kind: 'attack', name: 'Flame Burst', amount: 9 },
     ],
   },
   oddish: {
@@ -53,6 +62,24 @@ export const ENEMY_DEFS = {
       { kind: 'buff',   name: 'Growth', amount: 2 },
     ],
   },
+  hoppip: {
+    name: 'Hoppip', type: 'grass', hp: 40, ...sprite('hoppip'),
+    description: 'So light the meadow breeze carries it off.',
+    moves: [
+      { kind: 'attack', name: 'Bullet Seed', amount: 6 },
+      { kind: 'defend', name: 'Synthesis',   amount: 7 },
+      { kind: 'attack', name: 'Acrobatics',  amount: 9, type: 'normal' },
+    ],
+  },
+  seedot: {
+    name: 'Seedot', type: 'grass', hp: 42, ...sprite('seedot'),
+    description: 'Hangs from a branch looking exactly like an acorn.',
+    moves: [
+      { kind: 'defend', name: 'Harden',      amount: 7 },
+      { kind: 'attack', name: 'Bullet Seed', amount: 6 },
+      { kind: 'attack', name: 'Seed Bomb',   amount: 9 },
+    ],
+  },
   poliwag: {
     name: 'Poliwag', type: 'water', hp: 48, ...sprite('poliwag'),
     description: 'Splashes around in every puddle.',
@@ -62,42 +89,78 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Body Slam', amount: 9, type: 'normal' },
     ],
   },
-  vulpix: {
-    name: 'Vulpix', type: 'fire', hp: 45, ...sprite('vulpix'),
-    description: 'Six tails, each one warm.',
+  psyduck: {
+    name: 'Psyduck', type: 'water', hp: 46, ...sprite('psyduck'),
+    description: 'Its headache gets worse. So does its aim.',
     moves: [
-      { kind: 'attack', name: 'Ember',        amount: 6 },
-      { kind: 'buff',   name: 'Will-O-Wisp',  amount: 2 },
-      { kind: 'attack', name: 'Flamethrower', amount: 10 },
+      { kind: 'attack', name: 'Water Gun', amount: 6 },
+      { kind: 'defend', name: 'Amnesia',   amount: 7 },
+      { kind: 'attack', name: 'Confusion', amount: 10, type: 'normal' },
+    ],
+  },
+  marill: {
+    name: 'Marill', type: 'water', hp: 48, ...sprite('marill'),
+    description: 'Its tail floats on the pond like a buoy.',
+    moves: [
+      { kind: 'defend', name: 'Defense Curl', amount: 6 },
+      { kind: 'attack', name: 'Rollout',      amount: 7, type: 'normal' },
+      { kind: 'attack', name: 'Aqua Tail',    amount: 9 },
+    ],
+  },
+  rattata: {
+    name: 'Rattata', type: 'normal', hp: 40, ...sprite('rattata'),
+    description: 'Small, quick and everywhere.',
+    moves: [
+      { kind: 'attack', name: 'Tackle',       amount: 6 },
+      { kind: 'attack', name: 'Quick Attack', amount: 5 },
+      { kind: 'attack', name: 'Hyper Fang',   amount: 9 },
+    ],
+  },
+  sentret: {
+    name: 'Sentret', type: 'normal', hp: 42, ...sprite('sentret'),
+    description: 'Stands on its tail to keep watch over the meadow.',
+    moves: [
+      { kind: 'attack', name: 'Scratch',      amount: 6 },
+      { kind: 'defend', name: 'Defense Curl', amount: 6 },
+      { kind: 'attack', name: 'Fury Swipes',  amount: 9 },
+    ],
+  },
+  zigzagoon: {
+    name: 'Zigzagoon', type: 'normal', hp: 44, ...sprite('zigzagoon'),
+    description: 'Zigzags through the grass, sniffing out trouble.',
+    moves: [
+      { kind: 'attack', name: 'Tackle',    amount: 6 },
+      { kind: 'buff',   name: 'Tail Whip', amount: 2 },
+      { kind: 'attack', name: 'Headbutt',  amount: 9 },
     ],
   },
 
-  /* ----- Biome 2: the shrine ----- */
-  zubat: {
-    name: 'Zubat', type: 'normal', hp: 45, ...sprite('zubat'),
-    description: 'Swoops out of the dark.',
+  /* ----- Biome 2: the shrine's spirits and folklore ----- */
+  litwick: {
+    name: 'Litwick', type: 'fire', hp: 50, ...sprite('litwick'),
+    description: 'A candle that lights the way, and burns your life force as fuel.',
     moves: [
-      { kind: 'attack', name: 'Wing Attack', amount: 6 },
-      { kind: 'drain',  name: 'Leech Life',  amount: 5, heal: 5 },
-      { kind: 'attack', name: 'Air Cutter',  amount: 9 },
+      { kind: 'attack', name: 'Ember',      amount: 7 },
+      { kind: 'drain',  name: 'Pain Split', amount: 6, heal: 5, type: 'normal' },
+      { kind: 'attack', name: 'Fire Spin',  amount: 11 },
     ],
   },
-  geodude: {
-    name: 'Geodude', type: 'normal', hp: 60, ...sprite('geodude'),
-    description: 'A living rock. Slow but sturdy.',
+  houndour: {
+    name: 'Houndour', type: 'fire', hp: 52, ...sprite('houndour'),
+    description: 'Hunts the shrine grounds in packs, calling out to each other.',
     moves: [
-      { kind: 'defend', name: 'Defense Curl', amount: 9 },
-      { kind: 'attack', name: 'Rock Throw',   amount: 9 },
-      { kind: 'attack', name: 'Rollout',      amount: 12 },
+      { kind: 'attack', name: 'Bite',      amount: 7, type: 'normal' },
+      { kind: 'buff',   name: 'Howl',      amount: 1 },
+      { kind: 'attack', name: 'Fire Fang', amount: 11 },
     ],
   },
-  growlithe: {
-    name: 'Growlithe', type: 'fire', hp: 58, ...sprite('growlithe'),
-    description: 'Loyal, loud and very warm.',
+  darumaka: {
+    name: 'Darumaka', type: 'fire', hp: 56, ...sprite('darumaka'),
+    description: 'Tumbles about like a lucky charm with a furnace inside.',
     moves: [
-      { kind: 'attack', name: 'Bite',        amount: 6, type: 'normal' },
-      { kind: 'buff',   name: 'Howl',        amount: 1 },
-      { kind: 'attack', name: 'Flame Wheel', amount: 12 },
+      { kind: 'attack', name: 'Headbutt',   amount: 7, type: 'normal' },
+      { kind: 'buff',   name: 'Work Up',    amount: 2 },
+      { kind: 'attack', name: 'Fire Punch', amount: 12 },
     ],
   },
   bellsprout: {
@@ -109,6 +172,24 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Razor Leaf', amount: 11 },
     ],
   },
+  paras: {
+    name: 'Paras', type: 'grass', hp: 50, ...sprite('paras'),
+    description: 'The mushrooms on its back grow from the shrine\'s old roots.',
+    moves: [
+      { kind: 'attack', name: 'Scratch',    amount: 6, type: 'normal' },
+      { kind: 'drain',  name: 'Giga Drain', amount: 6, heal: 5 },
+      { kind: 'attack', name: 'X-Scissor',  amount: 11, type: 'normal' },
+    ],
+  },
+  cherubi: {
+    name: 'Cherubi', type: 'grass', hp: 48, ...sprite('cherubi'),
+    description: 'Left as an offering, it took root and never left.',
+    moves: [
+      { kind: 'attack', name: 'Magical Leaf', amount: 7 },
+      { kind: 'buff',   name: 'Sunny Day',    amount: 2 },
+      { kind: 'attack', name: 'Seed Bomb',    amount: 11 },
+    ],
+  },
   krabby: {
     name: 'Krabby', type: 'water', hp: 55, ...sprite('krabby'),
     description: 'Big claws, tough shell.',
@@ -118,42 +199,78 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Crabhammer', amount: 12 },
     ],
   },
+  slowpoke: {
+    name: 'Slowpoke', type: 'water', hp: 60, ...sprite('slowpoke'),
+    description: 'Dozes by the shrine\'s well. Some say it brings the rain.',
+    moves: [
+      { kind: 'attack', name: 'Water Gun',    amount: 7 },
+      { kind: 'defend', name: 'Slack Off',    amount: 9 },
+      { kind: 'attack', name: 'Zen Headbutt', amount: 11, type: 'normal' },
+    ],
+  },
+  shellos: {
+    name: 'Shellos', type: 'water', hp: 55, ...sprite('shellos'),
+    description: 'Oozes out of the shrine\'s old stone basins.',
+    moves: [
+      { kind: 'attack', name: 'Water Pulse',  amount: 7 },
+      { kind: 'defend', name: 'Recover',      amount: 8 },
+      { kind: 'attack', name: 'Muddy Water',  amount: 11 },
+    ],
+  },
+  teddiursa: {
+    name: 'Teddiursa', type: 'normal', hp: 52, ...sprite('teddiursa'),
+    description: 'Licks honey off its paws. Cute until you get between it and the honey.',
+    moves: [
+      { kind: 'attack', name: 'Fury Swipes', amount: 6 },
+      { kind: 'defend', name: 'Charm',       amount: 8 },
+      { kind: 'attack', name: 'Slash',       amount: 11 },
+    ],
+  },
+  aipom: {
+    name: 'Aipom', type: 'normal', hp: 48, ...sprite('aipom'),
+    description: 'Steals the shrine\'s offerings with its hand of a tail.',
+    moves: [
+      { kind: 'attack', name: 'Swift',      amount: 6 },
+      { kind: 'buff',   name: 'Nasty Plot', amount: 2 },
+      { kind: 'attack', name: 'Double Hit', amount: 11 },
+    ],
+  },
+  stantler: {
+    name: 'Stantler', type: 'normal', hp: 58, ...sprite('stantler'),
+    description: 'Its antlers bend the air, so the path ahead never looks quite right.',
+    moves: [
+      { kind: 'attack', name: 'Stomp',     amount: 7 },
+      { kind: 'buff',   name: 'Calm Mind', amount: 1 },
+      { kind: 'attack', name: 'Take Down', amount: 12 },
+    ],
+  },
 
-  /* ----- Biome 3: the wastes ----- */
-  machop: {
-    name: 'Machop', type: 'normal', hp: 60, ...sprite('machop'),
-    description: 'Trains all day. It shows.',
+  /* ----- Biome 3: the wastes, fully evolved ----- */
+  magmar: {
+    name: 'Magmar', type: 'fire', hp: 64, ...sprite('magmar'),
+    description: 'Born in the lava, it breathes out heat haze.',
     moves: [
-      { kind: 'attack', name: 'Karate Chop', amount: 7 },
-      { kind: 'buff',   name: 'Bulk Up',     amount: 3 },
-      { kind: 'attack', name: 'Cross Chop',  amount: 12 },
+      { kind: 'attack', name: 'Fire Punch',   amount: 8 },
+      { kind: 'defend', name: 'Smokescreen',  amount: 9 },
+      { kind: 'attack', name: 'Flamethrower', amount: 12 },
     ],
   },
-  ponyta: {
-    name: 'Ponyta', type: 'fire', hp: 62, ...sprite('ponyta'),
-    description: 'Gallops across the hot ground.',
+  torkoal: {
+    name: 'Torkoal', type: 'fire', hp: 70, ...sprite('torkoal'),
+    description: 'Burns coal in its shell and puffs black smoke from its nose.',
     moves: [
-      { kind: 'attack', name: 'Ember',       amount: 8 },
-      { kind: 'buff',   name: 'Agility',     amount: 2 },
-      { kind: 'attack', name: 'Flame Wheel', amount: 12 },
+      { kind: 'attack', name: 'Flame Wheel',  amount: 8 },
+      { kind: 'defend', name: 'Iron Defense', amount: 10 },
+      { kind: 'attack', name: 'Lava Plume',   amount: 12 },
     ],
   },
-  staryu: {
-    name: 'Staryu', type: 'water', hp: 60, ...sprite('staryu'),
-    description: 'Spins out of the tide pools.',
+  heatmor: {
+    name: 'Heatmor', type: 'fire', hp: 64, ...sprite('heatmor'),
+    description: 'Breathes fire through its snout to melt its way into anthills.',
     moves: [
-      { kind: 'attack', name: 'Water Gun',   amount: 7 },
-      { kind: 'defend', name: 'Harden',      amount: 8 },
-      { kind: 'attack', name: 'Bubble Beam', amount: 12 },
-    ],
-  },
-  rhyhorn: {
-    name: 'Rhyhorn', type: 'normal', hp: 70, ...sprite('rhyhorn'),
-    description: 'Charges first and asks questions never.',
-    moves: [
-      { kind: 'attack', name: 'Horn Attack', amount: 8 },
-      { kind: 'defend', name: 'Harden',      amount: 10 },
-      { kind: 'attack', name: 'Take Down',   amount: 13 },
+      { kind: 'attack', name: 'Incinerate', amount: 8 },
+      { kind: 'buff',   name: 'Hone Claws', amount: 2 },
+      { kind: 'attack', name: 'Inferno',    amount: 13 },
     ],
   },
   tangela: {
@@ -163,6 +280,78 @@ export const ENEMY_DEFS = {
       { kind: 'drain',  name: 'Mega Drain', amount: 6, heal: 6 },
       { kind: 'defend', name: 'Ingrain',    amount: 8 },
       { kind: 'attack', name: 'Power Whip', amount: 12 },
+    ],
+  },
+  cacturne: {
+    name: 'Cacturne', type: 'grass', hp: 64, ...sprite('cacturne'),
+    description: 'Stands still all day in the heat, then follows travellers at night.',
+    moves: [
+      { kind: 'attack', name: 'Needle Arm',   amount: 8 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
+      { kind: 'attack', name: 'Energy Ball',  amount: 12 },
+    ],
+  },
+  maractus: {
+    name: 'Maractus', type: 'grass', hp: 62, ...sprite('maractus'),
+    description: 'Dances to a rhythm only it hears. The needles fly anyway.',
+    moves: [
+      { kind: 'drain',  name: 'Giga Drain',   amount: 7, heal: 6 },
+      { kind: 'defend', name: 'Cotton Guard', amount: 10 },
+      { kind: 'attack', name: 'Petal Dance',  amount: 13 },
+    ],
+  },
+  staryu: {
+    name: 'Staryu', type: 'water', hp: 60, ...sprite('staryu'),
+    description: 'Spins out of the hot springs.',
+    moves: [
+      { kind: 'attack', name: 'Water Gun',   amount: 7 },
+      { kind: 'defend', name: 'Harden',      amount: 8 },
+      { kind: 'attack', name: 'Bubble Beam', amount: 12 },
+    ],
+  },
+  crawdaunt: {
+    name: 'Crawdaunt', type: 'water', hp: 66, ...sprite('crawdaunt'),
+    description: 'Picks fights with anything that comes near its steaming pool.',
+    moves: [
+      { kind: 'attack', name: 'Night Slash', amount: 8, type: 'normal' },
+      { kind: 'defend', name: 'Harden',      amount: 9 },
+      { kind: 'attack', name: 'Crabhammer',  amount: 13 },
+    ],
+  },
+  sharpedo: {
+    name: 'Sharpedo', type: 'water', hp: 62, ...sprite('sharpedo'),
+    description: 'Its fangs can tear through iron. Or through you.',
+    moves: [
+      { kind: 'attack', name: 'Crunch',    amount: 8, type: 'normal' },
+      { kind: 'buff',   name: 'Agility',   amount: 2 },
+      { kind: 'attack', name: 'Waterfall', amount: 13 },
+    ],
+  },
+  tauros: {
+    name: 'Tauros', type: 'normal', hp: 68, ...sprite('tauros'),
+    description: 'Whips itself with its tails, then charges at anything.',
+    moves: [
+      { kind: 'attack', name: 'Horn Attack', amount: 8 },
+      { kind: 'buff',   name: 'Rage',        amount: 2 },
+      { kind: 'attack', name: 'Thrash',      amount: 13 },
+    ],
+  },
+  bouffalant: {
+    name: 'Bouffalant', type: 'normal', hp: 72, ...sprite('bouffalant'),
+    description: 'Its huge afro softens any blow, and not one of its own.',
+    moves: [
+      { kind: 'attack', name: 'Fury Attack', amount: 8 },
+      { kind: 'defend', name: 'Endure',      amount: 10 },
+      { kind: 'attack', name: 'Head Charge', amount: 13 },
+    ],
+  },
+  zangoose: {
+    name: 'Zangoose', type: 'normal', hp: 64, ...sprite('zangoose'),
+    description: 'Sharpens its claws on the volcanic rock, waiting for a rival.',
+    moves: [
+      { kind: 'attack', name: 'Slash',        amount: 8 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 3 },
+      { kind: 'attack', name: 'Crush Claw',   amount: 13 },
     ],
   },
 
@@ -291,26 +480,6 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Power Whip', amount: 22 },
     ],
   },
-  magmar: {
-    name: 'Magmar', type: 'fire', hp: 230, ...sprite('magmar'), boss: true,
-    description: 'A living furnace that guards the shrine\x27s heart.',
-    moves: [
-      { kind: 'attack', name: 'Fire Punch', amount: 10 },
-      { kind: 'buff',   name: 'Sunny Day',  amount: 3 },
-      { kind: 'defend', name: 'Protect',    amount: 10 },
-      { kind: 'attack', name: 'Fire Blast', amount: 20 },
-    ],
-  },
-  lapras: {
-    name: 'Lapras', type: 'water', hp: 260, ...sprite('lapras'), boss: true,
-    description: 'A gentle giant. Not today.',
-    moves: [
-      { kind: 'attack', name: 'Water Pulse', amount: 10 },
-      { kind: 'defend', name: 'Mist',        amount: 10 },
-      { kind: 'attack', name: 'Surf',        amount: 14 },
-      { kind: 'attack', name: 'Hydro Pump',  amount: 21 },
-    ],
-  },
   chandelure: {
     name: 'Chandelure', type: 'fire', hp: 230, ...sprite('chandelure'), boss: true,
     description: 'Its ghostly flames burn the spirit, not the body.',
@@ -401,19 +570,22 @@ export function eliteOf(def) {
 export const BIOMES = [
   {
     id: 'clearing', name: 'Whispering Clearing',
-    normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
+    normals: ['vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot',
+      'poliwag', 'psyduck', 'marill', 'rattata', 'sentret', 'zigzagoon'],
     elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['snorlax', 'arcanine', 'poliwrath'],
     hpMult: 1.2, dmgBonus: 4, bossBonus: 5,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine',
-    normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
+    normals: ['litwick', 'houndour', 'darumaka', 'bellsprout', 'paras', 'cherubi',
+      'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler'],
     elites: ['ninetales', 'shiftry', 'slowking'], bosses: ['chandelure', 'tangrowth', 'ursaring'],
     hpMult: 2.9, dmgBonus: 11, bossBonus: 16,
   },
   {
     id: 'wastes', name: 'Ember Wastes',
-    normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
+    normals: ['magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus',
+      'staryu', 'crawdaunt', 'sharpedo', 'tauros', 'bouffalant', 'zangoose'],
     elites: ['houndoom', 'breloom', 'kingdra'], bosses: ['slaking', 'magmortar', 'gyarados', 'salamence'],
     hpMult: 5.2, dmgBonus: 22, bossBonus: 28,
   },

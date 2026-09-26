@@ -19,13 +19,20 @@ steps land (mark them done, note anything decided along the way).
    - Slaking's pattern is Truant: every other move is a loaf (a block move called Truant).
    - Elites and bosses now also *show* as Neutral (battle nameplate chip, map scouting badge);
      their own types are theme only and stay in the data for the Pokédex.
-   - Still in `ENEMY_DEFS` but unused until step 4: Magmar (becomes a biome-3 wild) and Lapras
-     (leaves). Drop Lapras in step 4 along with the other departing wilds, with a save bump.
    - Cries come from PokeAPI (`github.com/PokeAPI/cries`, `cries/pokemon/latest/<dex no>.ogg`),
      since play.pokemonshowdown.com is blocked in cloud sessions: convert to mono 64 kbps MP3
      normalized to about -14 dB mean volume (the level of the existing cries); `pip install
      imageio-ffmpeg` gives an ffmpeg binary, and PIL's median frame bounds match sprite-fit.js.
-4. **New wild Pokémon** (1–2 sessions).
+4. **New wild Pokémon** — done: every biome has its 12 wilds from the list below (3 per type),
+   with rough numbers in the range of the wilds they replaced (biome 1 ~40–48 HP, biome 2
+   ~48–60, biome 3 ~60–72; the usual attack / setup / big attack shape).
+   - Growlithe moved to biome 1 (HP 58 → 46), Magmar became a biome-3 wild (64 HP).
+   - Pidgey, Zubat, Machop, Geodude, Rhyhorn, Ponyta and Lapras left the game (sprites, cries,
+     sprite-fit entries and defs removed), so `RUN_SAVE_VERSION` went 6 → 7.
+   - Team Rocket's teams are now Rattata/Zigzagoon, Houndour/Aipom, Sharpedo/Zangoose: wilds of
+     that biome, so the Alpha is lighter than a real elite (no more 700+ HP Rhyhorn).
+   - With 12 wilds a biome, a run rarely meets the same wild twice; nothing weights the picks yet
+     (the Pokédex step may favour unregistered ones).
 5. **Big balance pass** (1 session): the bot harness at Levels 0, 3 and 5 over the new roster,
    retune each biome's numbers, check no type trails; then the user's own playtest (nothing
    has been checked against a real player yet, only the bots).
@@ -55,9 +62,8 @@ Anytime, as a break from number work:
   sprites, `sprites/pokemon/versions/generation-v/black-white/animated/<dex no>.gif`), its cry
   in `assets/audio/cries/` + `CRIES` in `js/audio.js` (play.pokemonshowdown.com/audio/cries/),
   a `js/data/sprite-fit.js` entry (median bounds over every frame), and its `ENEMY_DEFS` entry.
-- Removing a Pokémon: also update Team Rocket's `team` lists in `js/data/events.js` (they use
-  rattata, zubat, geodude, machop, rhyhorn today). The 700+ HP Rocket Rhyhorn (Alpha x1.6 on
-  biome 3's x6.5) goes with the roster change; keep Rocket's optional fight no harder than an elite.
+- Removing a Pokémon: also update Team Rocket's `team` lists in `js/data/events.js`; keep
+  Rocket's optional fight no harder than an elite.
 - A saved run holds map nodes with `enemyId`s: bump `RUN_SAVE_VERSION` (js/run.js) when
   enemy ids are removed, or old saves will point at missing Pokémon.
 
