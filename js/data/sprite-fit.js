@@ -47,6 +47,8 @@ export const SPRITE_FIT = {
   'feraligatr-back': [3, 1, 6, 1],
   'feraligatr-front': [2, 0, 0, 9],
   'geodude-front': [16, 3, 1, 1],
+  'grunt-f': [13, 1, 16, 27],
+  'grunt-m': [15, 1, 20, 19],
   'gloom-front': [1, 0, 1, 1],
   'grotle-back': [3, 0, 2, 1],
   'grotle-front': [3, 0, 2, 3],

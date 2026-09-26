@@ -825,6 +825,7 @@ function rollEvents() {
     if (event.team) {
       const team = event.team[run.biome];
       node.event.enemyId = team[Math.floor(Math.random() * team.length)];
+      node.event.grunt = event.grunts[Math.floor(Math.random() * event.grunts.length)];
     }
     if (event.upgrade) {
       // every card of each rarity in a shuffled order: the trade takes the first one you don't already hold MAX_COPIES of
@@ -868,7 +869,7 @@ const EVENT_SCENES = { 'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-w
 function eventRoom(node) {
   const event = EVENTS_BY_ID[node.event.id];
   const back = () => eventRoom(node);
-  const { options, leave = true, sub = event.text, mon } = EVENT_CHOICES[event.id](event, node.event, back);
+  const { options, leave = true, sub = event.text, figures } = EVENT_CHOICES[event.id](event, node.event, back);
   const scene = EVENT_SCENES[event.id];
   showChoice({
     title: `${event.icon} ${event.name}`,
@@ -879,10 +880,12 @@ function eventRoom(node) {
     layout: scene ? `event-room ${scene}-room` : '',
   });
   if (!scene) return;
-  if (mon) {   // a Pokémon standing in the scene (the grunt's), its real sprite on the scene's `mon` spot
-    const sprite = el('img', 'event-mon');
-    sprite.src = ENEMY_DEFS[mon].image;
+  // people and Pokémon standing in the scene (the grunt and his Alpha) are real sprites, on the scene's `stands`
+  for (const [stand, { src, alpha }] of Object.entries(figures || {})) {
+    const sprite = el('img', `event-figure${alpha ? ' alpha' : ''}`);
+    sprite.src = src;
     sprite.alt = '';
+    sprite.dataset.stand = stand;
     sprite.addEventListener('load', placeEventSpots);
     $('reward-options').append(sprite);
   }
@@ -901,6 +904,9 @@ async function playOut(act, opts) {
   return run === thisRun;
 }
 
+/** The grunt's sprite reacts to a choice as it plays out (a CSS animation timed to the scene's act). */
+const gruntDoes = (move) => $('reward-options').querySelector('[data-stand="trainer"]')?.classList.add(move);
+
 /** Lay the event's choices over its props; the scene tells us whenever it repaints. */
 function placeEventSpots() {
   const box = $('reward-options'), spots = box.classList.contains('event-room') && eventSpots();
@@ -911,13 +917,14 @@ function placeEventSpots() {
     const w = Math.max(r.width, 56), h = Math.max(r.height, 56);
     Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
   });
-  const sprite = box.querySelector('.event-mon');
-  if (sprite?.naturalWidth && spots.mon) {
+  box.querySelectorAll('.event-figure').forEach(sprite => {
+    const at = spots.stands[sprite.dataset.stand];
+    if (!sprite.naturalWidth || !at) return;
     // half the scene's pixel size, like Chansey at the Center, its resting pose (SPRITE_FIT) centred on its feet
-    const k = spots.mon.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
+    const k = spots.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
     const [, bottom, left, right] = SPRITE_FIT[sprite.src.split('/').pop().replace(/\.gif$/, '')] || [0, 0, 0, 0];
-    Object.assign(sprite.style, { width: `${w * k}px`, left: `${spots.mon.x - (left + (w - left - right) / 2) * k}px`, top: `${spots.mon.y - (h - bottom) * k}px` });
-  }
+    Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
+  });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
 }
 addEventListener('scenepaint', placeEventSpots);
@@ -1010,11 +1017,15 @@ const EVENT_CHOICES = {
     const flee = Math.ceil(run.maxHp * event.fleeHp);
     const node = run.map.byId[run.current];
     const foe = ENEMY_DEFS[state.enemyId];
-    return { leave: false, mon: state.enemyId, sub: [event.text, `Pay ₽${toll}, battle his Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
+    return { leave: false, figures: {
+      trainer: { src: `assets/trainers/${state.grunt || event.grunts[0]}.gif` },
+      mon: { src: foe.image, alpha: true },
+    }, sub: [event.text, `Pay ₽${toll}, battle the grunt's Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
       spotOption(`Pay ₽${toll}`, `Hand over the ₽${toll} toll and walk on.`, async () => {
         run.money -= toll;
         setMoney(run.money);
         playSound('buy');
+        gruntDoes('hop');
         if (!await playOut('pay')) return;
         tell(`The grunt took ₽${toll}.`);
         showMap();
@@ -1022,6 +1033,7 @@ const EVENT_CHOICES = {
       spotOption('Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
       spotOption('Run', `Run for it: lose ${flee} HP getting away.`, async () => {
         playSound('run-away');
+        gruntDoes('shake');
         if (!await playOut('run')) return;
         loseHp(flee);
         tell(`Got away, but lost ${flee} HP.`);

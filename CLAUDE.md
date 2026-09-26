@@ -254,10 +254,13 @@ in the big pool (a cloud of steam) or dip in the small one (ripples); a rubber d
 two halves are the two tosses (signs leaning apart); a coin (a Nugget for the big toss) arcs in, splashes,
 and a win sends light and sparkles up. Item Ball: a Poké Ball in a patch of the games' tall grass (outlined
 tufts, drawn live so they rustle); picking it up wobbles it, then it pops open, or opens its eyes as a Voltorb,
-flashes and explodes over a scorch. Team Rocket: a pixel grunt (`GRUNT`) at a black-and-red roadblock with an R
-board, his Alpha beside him as its real GIF (the choice returns `mon`; `.event-mon` stands on the scene's
-`life.mon` at half the scene's pixel size, like Chansey), and a bush: paying throws him coins (he hops), Battle
-goes straight to the fight, Run shakes the bush. Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome): a
+flashes and explodes over a scorch. Team Rocket: a black-and-red roadblock with an R board and a bush, with the grunt
+and their Alpha standing at it as real GIFs (the choice returns `figures`, `{ stand: { src, alpha } }`; each
+`.event-figure` stands on the scene's `life.stands` at half the scene's pixel size, like Chansey, fitted by
+`SPRITE_FIT`). The grunt is male or female (`grunts` in `js/data/events.js`, rolled into `node.event.grunt`;
+saves from before fall back to the first), animated HGSS-style sprites by justin8964 in `assets/trainers/`,
+credited in About. Paying throws coins into the grunt's hand and `gruntDoes('hop')` hops the sprite as they
+land; Battle goes straight to the fight; Run shakes the bush (and `shake`s the grunt). Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome): a
 little Ilex Forest-style shrine between two stone lanterns, glowing in your type's colour (`types`, picked by
 `showPlaceScene()`'s `type`); praying draws red HP motes into it, it flares, and a spark rises out. An act's
 `cues` play sounds on its frames (`actCues()`; all at once under reduced motion): the Voltorb's `hit`, the

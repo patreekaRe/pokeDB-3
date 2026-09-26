@@ -424,9 +424,8 @@ const PLACE_ART = {
     },
   },
 
-  rocket: {   // a Team Rocket grunt at a roadblock with his Pokémon (the page stands its sprite on `life.mon`), a bush to run through
+  rocket: {   // a Team Rocket roadblock: the page stands the grunt and their Pokémon on `life.stands` as real sprites; a bush to run through
     outdoor: true, prop: 'rocket', horizon: 0.5,
-    grunt: ['#101018', '#3a3a48', '#6a6a80', '#f8d0a8', '#d09870', '#e02828', '#f0f0f0', '#a8a8b8'],
     plank: ['#383840', '#202028', '#e03830', '#901818', '#101014'],
     wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
     coin: ['#fff8b0', '#f8c830', '#b07818'],
@@ -1841,8 +1840,8 @@ export function eventSpots() {
   if (!life.eventSpots || !canvas || !S?.raw.prop) return null;
   const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
   const rect = ({ x0, x1, y0, y1 }) => ({ left: box.left + x0 * sx, top: box.top + y0 * sy, width: (x1 - x0 + 1) * sx, height: (y1 - y0 + 1) * sy });
-  const mon = life.mon && { x: box.left + (life.mon.x + 0.5) * sx, y: box.top + life.mon.y * sy, px: sx };
-  return { spots: life.eventSpots.map(rect), foot: box.top + life.foot * sy, mon };
+  const stands = Object.fromEntries(Object.entries(life.stands || {}).map(([k, p]) => [k, { x: box.left + (p.x + 0.5) * sx, y: box.top + p.y * sy }]));
+  return { spots: life.eventSpots.map(rect), foot: box.top + life.foot * sy, stands, px: sx };
 }
 
 // how long each choice plays out, in frames, and what it sets going
@@ -2282,19 +2281,20 @@ function drawItemBall(t) {
 
 function rocketScene() {
   const cx = W >> 1, foot = groundAt(0.42);
-  barricade(cx - 8, foot - 2, 21);
-  const grunt = { x: cx - 15, y: foot }, mon = { x: cx + 8, y: foot + 1 }, bush = { x: cx + 29, y: foot + 3 };
-  groundShadow(grunt.x, foot + 1, 6, 1);
+  barricade(cx - 12, foot - 2, 24);
+  const trainer = { x: cx - 18, y: foot + 1 }, mon = { x: cx + 8, y: foot + 1 }, bush = { x: cx + 29, y: foot + 3 };
+  groundShadow(trainer.x, trainer.y, 7, 1);
   groundShadow(mon.x, mon.y, 9, 2);
   groundShadow(bush.x + 1, bush.y, 9, 2);
-  Object.assign(life, { grunt, mon, bush });
+  life.stands = { trainer, mon };
+  life.bush = bush;
   life.eventSpots = [
-    { x0: grunt.x - 7, x1: grunt.x + 6, y0: foot - 21, y1: foot + 1 },
+    { x0: trainer.x - 8, x1: trainer.x + 8, y0: foot - 33, y1: foot + 1 },
     { x0: mon.x - 10, x1: mon.x + 10, y0: foot - 20, y1: foot + 2 },
     { x0: bush.x - 8, x1: bush.x + 8, y0: bush.y - 12, y1: bush.y + 1 },
   ];
   life.foot = bush.y + 5;
-  life.keep = [{ x0: cx - 36, x1: bush.x + 9, y0: foot - 26, y1: bush.y + 3 }];
+  life.keep = [{ x0: cx - 43, x1: bush.x + 9, y0: foot - 26, y1: bush.y + 3 }];
 }
 
 /** A roadblock of two planks striped in Team Rocket's black and red on wooden posts, with a big red R on a board. */
@@ -2325,39 +2325,10 @@ function barricade(cx, foot, hw) {
   ], { k: line, b: black, R: red });
 }
 
-const GRUNT = [
-  '....kkkkkk....',
-  '...kcCCCCCk...',
-  '..kcCCCCCCCk..',
-  '..kCCCCCCCCk..',
-  '.kCCCCCCCCCCk.',
-  '..kkkkkkkkkk..',
-  '..kSssssssSk..',
-  '..kskssssksk..',
-  '..kssssssssk..',
-  '...kSSSSSSk...',
-  '..kkBBBBBBkk..',
-  '.kBBBRRRBBBBk.',
-  '.kBkBRBBRBkBk.',
-  '.kBkBRRRBBkBk.',
-  '.kBkBRBRBBkBk.',
-  '.kwkBRBBRBkwk.',
-  '..k.kBBBBk.k..',
-  '....kBBBBk....',
-  '....kBkkBk....',
-  '...kwwk.kwwk..',
-  '...kkkk.kkkk..',
-];
-
-/** The grunt, the bush and the act: paying throws coins to him and he hops for joy; running shakes the bush, leaves
-    fly and he shakes his fist. */
-function drawRocket(t) {
-  const pay = actFrame('pay'), flee = actFrame('run'), g = life.grunt, bush = life.bush;
-  const [line, cap, capLit, skin, skinDark, red, white] = S.grunt;
-  const hop = pay >= 8 && pay < 12 ? [-1, -2, -1, 0][pay - 8] : 0, shake = flee >= 2 && flee < 10 ? (flee % 2 ? 1 : -1) : 0;
-  const idle = pay < 0 && flee < 0 && t % 40 < 2 ? 1 : 0;   // he shifts his weight now and then
-  pixelMap(g.x - 7 + shake, g.y - 20 + hop + idle, GRUNT, { k: line, C: cap, c: capLit, s: skin, S: skinDark, B: cap, R: red, w: white });
-
+/** The bush and the acts (the grunt's sprite hops or shakes by itself, gruntDoes() in js/run.js): paying throws coins into
+    the grunt's hand; running shakes the bush and throws leaves out of it. */
+function drawRocket() {
+  const pay = actFrame('pay'), flee = actFrame('run'), g = life.stands.trainer, bush = life.bush;
   const [lit, leaf, dark, bLine] = S.bush, rustle = flee >= 0 && flee < 8 ? (flee % 2 ? 1 : -1) : 0;
   const clumps = [[-4, -5, 4.5], [4, -5, 4.5], [0, -7, 5], [-5, -2, 4], [5, -2, 4], [0, -3, 5.5]];
   const inBush = (x, y) => clumps.some(([dx, dy, r]) => Math.hypot(x - bush.x - dx - rustle, (y - bush.y - dy) * 1.1) <= r);
@@ -2373,7 +2344,7 @@ function drawRocket(t) {
   }
 
   if (pay >= 0) {   // three coins arc up from you into his hand
-    const [shine, gold, gDark] = S.coin, hx = g.x + 5, hy = g.y - 7;
+    const [shine, gold, gDark] = S.coin, hx = g.x + 4, hy = g.y - 16;
     for (let i = 0; i < 3; i++) {
       const k = (pay - i * 2) / 6;
       if (k < 0 || k > 1) continue;
@@ -2757,7 +2728,7 @@ function draw() {
   if (has('well')) drawWell(t);
   if (L.act) actCues();
   if (has('itemball')) drawItemBall(t);
-  if (has('rocket')) drawRocket(t);
+  if (has('rocket')) drawRocket();
   if (has('altar')) drawAltar(t);
   if (has('vines')) drawVines(t);
 

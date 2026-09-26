@@ -48,6 +48,7 @@ export const EVENTS = [
     fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), picked per biome.
     team: [['rattata', 'zubat'], ['zubat', 'geodude'], ['machop', 'rhyhorn']],
+    grunts: ['grunt-m', 'grunt-f'],   // the grunt himself (or herself), from assets/trainers/
   },
   {
     id: 'day-care', icon: '🥚', name: 'Day Care',
