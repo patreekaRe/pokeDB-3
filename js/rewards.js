@@ -3,7 +3,7 @@
    which cards and relics you are offered.
    ============================================================ */
 
-import { poolForType, evolutionCardsFor, MAX_COPIES } from './data/cards.js';
+import { poolForType, evolutionCardsFor, MAX_COPIES, baseId } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
@@ -22,7 +22,7 @@ export function cardChoices(run, source, count = 3) {
   if (source === 'elite') { weights.common -= 10; weights.rare += 10; }
   if (source === 'boss')  { weights.common -= 30; weights.rare += 25; weights.uncommon += 5; }
 
-  const copies = (id) => run.deck.filter(x => x === id).length;
+  const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   let pool = poolForType(run.starter.type).filter(c => copies(c.id) < MAX_COPIES);
   const chosen = [];
 
@@ -44,7 +44,7 @@ export function cardChoices(run, source, count = 3) {
  */
 export function evolutionChoices(run) {
   const pool = evolutionCardsFor(run.starter.type, run.stage).filter(c => {
-    const copies = run.deck.filter(x => x === c.id).length;
+    const copies = run.deck.filter(x => baseId(x) === c.id).length;
     return copies < (c.maxCopies || MAX_COPIES);
   });
   return pool.sort(() => Math.random() - 0.5).slice(0, 2);

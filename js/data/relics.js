@@ -46,3 +46,12 @@ export const RELICS = [
 ];
 
 export const RELICS_BY_ID = Object.fromEntries(RELICS.map(r => [r.id, r]));
+
+/* Each character's starter Ability (StS's starter relics: Burning Blood, Ring of the Snake...). It comes from the
+   starter's type, so every skin shares it, and it isn't stored in the run save. The effects are in battle.js
+   (search for `ability`); `amount` is the number in the text. */
+export const ABILITIES = {
+  fire:  { id: 'blaze',    name: 'Blaze',    icon: '🔥', sprite: 'ability-capsule', amount: 3, text: 'While your HP is below half, your attacks deal +3 damage.' },
+  grass: { id: 'overgrow', name: 'Overgrow', icon: '🌿', sprite: 'ability-capsule', amount: 3, text: 'After each fight you win, heal 3 HP.' },
+  water: { id: 'torrent',  name: 'Torrent',  icon: '🌊', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Tide.' },
+};

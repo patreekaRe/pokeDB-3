@@ -13,7 +13,8 @@ const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare
 
 let tab = 'fire';
 
-const byCost = (a, b) => a.cost - b.cost || a.name.localeCompare(b.name);
+const costRank = (c) => (c.cost === 'X' ? 9 : c.cost);
+const byCost = (a, b) => costRank(a) - costRank(b) || a.name.localeCompare(b.name);
 
 function group(label, cards, note) {
   const head = el('div', 'index-head');

@@ -1,7 +1,7 @@
 # Card design: the StS feel (roadmap step 6c)
 
 **Status: draft for the user's approval.** Nothing below is built yet except the engine pieces marked
-**(engine: done)**. Each type's cards get built in their own session once this is approved or changed.
+**(engine: done)** and the three Abilities. Each type's cards get built in their own session once this is approved or changed.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -60,7 +60,7 @@ it can't be lost or swapped and old saves pick it up for free. It shows at the t
 | Type | Ability | Effect | StS model | Why |
 |---|---|---|---|---|
 | Fire | **Blaze** | While your HP is below half, your attacks deal +3 damage. | (the games' Blaze) | Aggressive like the games' Blaze; the payoff for Reckless, and a comeback for everyone. |
-| Grass | **Overgrow** | After each fight you win, heal 5 HP. | Burning Blood (6 of 80 HP) | Grass regrows; steady value for any Grass build. |
+| Grass | **Overgrow** | After each fight you win, heal 3 HP. | Burning Blood (6 of 80 HP) | Grass regrows; steady value for any Grass build. (5 HP was worth +10 to +22 points in the bot, far more than the others.) |
 | Water | **Torrent** | Start each fight with 2 Tide. | Pure Water / Ring of the Snake | Tide is Water's resource, so every build starts a wave ahead. |
 
 The rare power card `blaze` ("+6 on attacks below half HP") is renamed **Solar Power** so it doesn't share the
@@ -379,7 +379,7 @@ the junk). The intent bubble shows it; bosses that punish pure turtling (step 9)
 ## Questions for the user
 
 1. The three archetype changes above (Kindling, Drain, Tide for all of Water): OK?
-2. The Abilities: Blaze (+3 below half HP), Overgrow (heal 5 after a win), Torrent (2 Tide at the start). Fine,
+2. The Abilities: Blaze (+3 below half HP), Overgrow (heal 3 after a win), Torrent (2 Tide at the start). Fine,
    or would you prefer something flashier (e.g. Blaze: "the first time each fight you drop below half, gain 2 PP")?
 3. Card names: most are real Pokémon moves; a few are made up (Kindle, Stoke, Hot Coals, Tidal Wall, Upwell,
    Rototiller is real). Veto any you dislike.

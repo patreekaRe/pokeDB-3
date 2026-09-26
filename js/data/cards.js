@@ -28,10 +28,22 @@
      energy        gain this much energy right now
      tide          gain this much Tide (Water's stored-up resource; it lasts all fight)
      perTide       +this much damage per Tide you hold, then all your Tide is spent
+     discard       choose this many cards in your hand to discard (they trigger `onDiscard`)
+     exhaustPick   choose this many cards in your hand to exhaust (they trigger `onExhaust`)
+     addCard       { id, n, to }: put n new copies of a card (often a TOKEN_CARDS one) into your
+                   'hand' (default), 'draw' pile (shuffled in) or 'discard' pile, for this fight only
+     perX          on an X-cost card (cost: 'X'): added once per PP spent, e.g. { hits: 1 } = "X times"
+     xPlus         X counts this much more (an upgrade's X+1)
+     perPlayed     +this much damage for each other card you've played this turn
+     hitsPerAttack the damage lands once per attack you've played this turn, this one included
+     perDiscard    +this much damage for each card you've discarded this turn
+     combo         { at, ...effects }: those extra effects if you've played `at` other cards this turn
+     endTurnHurt   (status cards) lose this much HP if it's in your hand when your turn ends
 
    Power effects (only on `power: true` cards, see POWERS below):
      blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
-     drawEachTurn, thorns, blaze, keepBlock
+     drawEachTurn, thorns, blaze, keepBlock, exhaustBlock, exhaustDraw,
+     discardTide, discardBlock, cardDamage, cardBlock
 
    A card can also have (these sit next to `effects`, not inside it):
      exhaust    true = this card leaves the fight after you play it once
@@ -41,6 +53,13 @@
      power      true = playing it switches on its power effects for the
                 rest of the fight, and the card leaves the fight.
      retain     true = it stays in your hand when your turn ends.
+     ethereal   true = exhausted if it's still in your hand when your turn ends.
+     innate     true = always in your first hand of a fight.
+     unplayable true = can't be played (status cards, and cards that act when discarded).
+     onExhaust / onDiscard   effects that happen when this card is exhausted / discarded from your hand
+                by a card (not by the end of your turn): block, draw, energy, tide, heal...
+     upgrade    what PP Up changes: { effects: {...}, cost, retain, exhaust, ... } merged over the card.
+                Without it the default rule applies (upgradeOf below).
      evoOnly    true = this card is never offered as a normal reward.
                 It only appears in the "choose 1 of 2" screen you get
                 when your starter evolves (see evolutionCardsFor below).
@@ -114,7 +133,7 @@ const FIRE_CARDS = [
   { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', sprite: 'sun-stone', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon' },   // Noxious Fumes
   { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', sprite: 'charizardite-y', effects: { damage: 36 }, rarity: 'rare' },    // Bludgeon
   { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 2, art: '💥', sprite: 'red-orb', effects: { damage: 18, burn: 4 }, rarity: 'rare' },
-  { id: 'blaze',           name: 'Blaze',           type: 'fire', cost: 1, art: '🌋', sprite: 'adrenaline-orb', effects: { blaze: 6 }, power: true, rarity: 'rare' },
+  { id: 'blaze',           name: 'Solar Power',     type: 'fire', cost: 1, art: '🌋', sprite: 'adrenaline-orb', effects: { blaze: 6 }, power: true, rarity: 'rare' },
 ];
 
 const GRASS_CARDS = [
@@ -214,12 +233,63 @@ const WATER_EVO_HIGH = [
   { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', sprite: 'blastoisinite', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
 ];
 
-/** Every card, and a quick lookup by id (CARDS_BY_ID['ember']). */
+/* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
+const TOKEN_CARDS = [
+  { id: 'cinder',   name: 'Cinder',   type: 'fire',  cost: 0, art: '🔥', effects: { damage: 4 }, exhaust: true, token: true },   // Shiv
+  { id: 'seedling', name: 'Seedling', type: 'grass', cost: 0, art: '🌱', effects: { heal: 2, draw: 1 }, exhaust: true, token: true },
+  { id: 'droplet',  name: 'Droplet',  type: 'water', cost: 0, art: '💧', effects: { damage: 3, tide: 1 }, exhaust: true, token: true },
+];
+
+/* Junk enemies shuffle into your deck for one fight (a move's `adds`, or a `kind: 'status'` move). */
+const STATUS_CARDS = [
+  { id: 'confusion', name: 'Confusion', type: 'normal', cost: 0, art: '🌀', effects: {}, status: true, unplayable: true, ethereal: true },   // Dazed
+  { id: 'paralysis', name: 'Paralysis', type: 'normal', cost: 0, art: '⚡', effects: {}, status: true, unplayable: true },                   // Wound
+  { id: 'poison',    name: 'Poison',    type: 'normal', cost: 0, art: '☠️', effects: { endTurnHurt: 2 }, status: true, unplayable: true },   // Burn
+  { id: 'sludge',    name: 'Sludge',    type: 'normal', cost: 1, art: '🟣', effects: {}, status: true, exhaust: true },                       // Slimed
+];
+
+/** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
+    upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
   ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
 ];
-export const CARDS_BY_ID = Object.fromEntries(ALL_CARDS.map(c => [c.id, c]));
+
+/* ---------- PP Up: upgraded cards ----------
+   An upgraded card is its own card object with the id `<id>+` and the name `<name>+`, so a deck saves as ids
+   and everything that looks cards up by id works unchanged. */
+
+export const upgradeId = (id) => `${id}+`;
+export const baseId = (id) => id.replace(/\+$/, '');
+export const canUpgrade = (card) => !card.upgraded && !card.status;
+
+/** The default upgrade, StS-sized: +3 damage (less per hit on multi-hits) and +3 block; else +3 heal; else +1 of
+    the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
+const UPGRADE_STEPS = [['burn', 2], ['weaken', 1], ['vulnerable', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['draw', 1]];
+const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
+  exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1 };
+function upgradeOf(card) {
+  if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
+  const e = { ...card.effects };
+  let { cost, exhaust } = card;
+  const cheaper = () => { if (typeof cost === 'number' && cost > 0) cost -= 1; else if (exhaust) exhaust = false; else e.draw = 1; };
+  if (card.power) {
+    const key = Object.keys(POWER_STEPS).find(k => e[k]);
+    if (key) e[key] += POWER_STEPS[key]; else cheaper();
+  } else if (e.damage || e.block) {
+    if (e.damage) e.damage += e.hits >= 3 ? 1 : e.hits === 2 ? 2 : 3;
+    if (e.block) e.block += 3;
+  } else if (e.heal) e.heal += 3;
+  else {
+    const step = UPGRADE_STEPS.find(([k]) => e[k]);
+    if (step) e[step[0]] += step[1]; else cheaper();
+  }
+  return { effects: e, cost, exhaust };
+}
+const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id), name: `${card.name}+`, base: card.id, upgraded: true });
+
+export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS].map(c => [c.id, c]));
+for (const card of [...ALL_CARDS, ...TOKEN_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
 const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
@@ -252,7 +322,7 @@ export const STAGE_POWER = 0.15;
 export function scaledEffects(card, stage = 0) {
   const e = { ...card.effects };
   const k = 1 + STAGE_POWER * stage;
-  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze']) {
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock']) {
     if (e[key]) e[key] = Math.round(e[key] * k);
   }
   if (e.burn) e.burn += stage;
@@ -275,18 +345,30 @@ export const POWERS = {
   thorns:           { icon: '🔮', text: (n) => `When the enemy attacks you, it takes ${n} damage.` },
   keepBlock:        { icon: '🐚', flag: true, text: () => 'Your block no longer wears off between turns.' },
   blaze:            { icon: '🌋', text: (n) => `Your attacks deal +${n} while your HP is below half.` },
+  exhaustBlock:     { icon: '🧱', text: (n) => `Whenever a card exhausts, gain ${n} block.` },
+  exhaustDraw:      { icon: '📚', text: (n) => `Whenever a card exhausts, draw ${n}.` },
+  discardTide:      { icon: '🌊', text: (n) => `Whenever you discard a card, gain ${n} Tide.` },
+  discardBlock:     { icon: '🛡️', text: (n) => `Whenever you discard a card, gain ${n} block.` },
+  cardDamage:       { icon: '✨', text: (n) => `Whenever you play a card, deal ${n} damage.` },
+  cardBlock:        { icon: '🫧', text: (n) => `Whenever you play a card, gain ${n} block.` },
 };
 
-/** Turns a card's effects into a readable sentence. */
-export function describe(card, stage = 0) {
-  const e = scaledEffects(card, stage);
+const xLabel = (e) => (e.xPlus ? `X+${e.xPlus}` : 'X');
+const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
+const PILES = { hand: 'your hand', draw: 'your draw pile', discard: 'your discard pile' };
+
+/** The sentences for a set of effects (a card's, or its combo / onExhaust / onDiscard extras). */
+function sentences(e) {
   const parts = [];
   if (e.selfDamage)   parts.push(`Lose ${e.selfDamage} HP.`);
-  if (e.damage)       parts.push(`Deal ${e.damage} damage${e.hits > 1 ? ` ${e.hits} times` : ''}.`);
+  const times = e.perX?.hits ? ` ${xLabel(e)} times` : e.hitsPerAttack ? ' for each attack you\'ve played this turn' : e.hits > 1 ? ` ${e.hits} times` : '';
+  if (e.damage)       parts.push(`Deal ${e.damage} damage${times}.`);
   if (e.blockDamage)  parts.push('Deal damage equal to your block.');
   if (e.perTide)      parts.push(`+${e.perTide} per Tide, then spend all your Tide.`);
   if (e.bonusIfLow)   parts.push(`+${e.bonusIfLow} if your HP is below half.`);
   if (e.bonusPerBurn) parts.push(`+${e.bonusPerBurn} for each Burn on the enemy.`);
+  if (e.perPlayed)    parts.push(`+${e.perPlayed} for each other card you've played this turn.`);
+  if (e.perDiscard)   parts.push(`+${e.perDiscard} for each card you've discarded this turn.`);
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(`Burn ${e.burn}.`);
   if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
@@ -297,19 +379,63 @@ export function describe(card, stage = 0) {
   if (e.strength)     parts.push(`Your hits deal +${e.strength} all fight.`);
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
   if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
-  if (e.draw)         parts.push(`Draw ${e.draw} card${e.draw > 1 ? 's' : ''}.`);
+  if (e.draw)         parts.push(`Draw ${plural(e.draw, 'card')}.`);
+  if (e.discard)      parts.push(`Discard ${plural(e.discard, 'card')}.`);
+  if (e.exhaustPick)  parts.push(`Exhaust ${plural(e.exhaustPick, 'card')} from your hand.`);
   if (e.tide)         parts.push(`Gain ${e.tide} Tide.`);
   if (e.nextEnergy)   parts.push(`+${e.nextEnergy} energy next turn.`);
+  if (e.addCard) {
+    const { id, n = 1, to = 'hand' } = e.addCard;
+    const name = CARDS_BY_ID[id]?.name ?? id;
+    parts.push(to === 'draw' ? `Shuffle ${n > 1 ? `${n} ${name}s` : `a ${name}`} into your draw pile.` : `Add ${n > 1 ? `${n} ${name}s` : `a ${name}`} to ${PILES[to]}.`);
+  }
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
+  if (e.endTurnHurt)  parts.push(`If it's in your hand at the end of your turn, lose ${e.endTurnHurt} HP.`);
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
+  return parts;
+}
+
+/** Turns a card's effects into a readable sentence. */
+export function describe(card, stage = 0) {
+  const e = scaledEffects(card, stage);
+  const parts = sentences(e);
+  if (e.perX) {
+    const { hits, ...rest } = e.perX;
+    parts.push(...sentences(rest).map(line => line.replace(/\.$/, ` ${xLabel(e)} times.`)));
+  }
+  if (e.combo) { const { at, ...more } = e.combo; parts.push(`Combo ${at}: ${sentences(more).join(' ')}`); }
+  if (card.onExhaust) parts.push(`When exhausted: ${sentences(card.onExhaust).join(' ')}`);
+  if (card.onDiscard) parts.push(`When discarded: ${sentences(card.onDiscard).join(' ')}`);
   if (card.retain)    parts.push('Stays in hand between turns.');
+  if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
 
 /** Keywords shown in bold on the card, around describe()'s text: [label, what it means]. */
 export function keywords(card) {
   return {
-    lead: card.power ? [['Power', 'Stays on for the rest of the fight. The card is played once per fight.']] : [],
-    tail: card.exhaust ? [['Exhaust', 'Gone for the rest of this fight once played. Back in your deck next fight.']] : [],
+    lead: [
+      card.unplayable && ['Unplayable', 'This card can\'t be played.'],
+      card.innate && ['Innate', 'Always in your first hand of a fight.'],
+      card.power && ['Power', 'Stays on for the rest of the fight. The card is played once per fight.'],
+    ].filter(Boolean),
+    tail: [
+      card.ethereal && ['Ethereal', 'If it\'s still in your hand at the end of your turn, it\'s exhausted.'],
+      card.exhaust && ['Exhaust', 'Gone for the rest of this fight once played. Back in your deck next fight.'],
+    ].filter(Boolean),
   };
+}
+
+/** Explanations for the terms a card's text uses (shown as the text's tooltip). */
+export function termTips(card) {
+  const e = card.effects;
+  return [e.weaken && 'Weak: the enemy deals 25% less damage. Lasts that many enemy turns.',
+    e.vulnerable && 'Vulnerable: the enemy takes 50% more damage from your attacks. Lasts that many enemy turns.',
+    (e.tide || e.perTide || e.discardTide) && 'Tide: builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.',
+    (e.perX || card.cost === 'X') && 'X: this card spends all your PP, and X is how much it spent.',
+    e.combo && `Combo ${e.combo.at}: the extra only happens if you've already played ${e.combo.at} other cards this turn.`,
+    (e.discard || card.onDiscard) && 'Discard: moved from your hand to the discard pile. Cards that say "When discarded" only trigger when a card makes you discard them.',
+    (e.exhaustPick || card.onExhaust || e.exhaustBlock || e.exhaustDraw) && 'Exhaust: gone for the rest of this fight.',
+    card.upgraded && 'Upgraded with PP Up.',
+  ].filter(Boolean);
 }

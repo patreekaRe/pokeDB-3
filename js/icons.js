@@ -1485,6 +1485,20 @@ const ICONS = {
   '🔴': gem('r', 'R'),   // Fire Gem
   '🟢': gem('G', 'E'),   // Grass Gem
   '🔵': gem('b', 'B'),   // Water Gem
+  '🟣': [   // the Sludge status card: a purple blob
+    '............',
+    '............',
+    '.....PP.....',
+    '....PppP....',
+    '...PpwppP...',
+    '..PppppppP..',
+    '..PpppppppP.',
+    '.PppppppppP.',
+    '.PPpppppPPP.',
+    '..PPPPPPPP..',
+    '............',
+    '............',
+  ],
 };
 // the Potion card and the Mart's Items sign are the same pink flask as the Potion item
 ICONS['🧪'] = ICONS['🧴'];

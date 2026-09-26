@@ -26,6 +26,7 @@
 import { STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES } from './data/cards.js';
+import { ABILITIES } from './data/relics.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
@@ -153,6 +154,9 @@ function selectStarter(starter) {
   $('detail-type').textContent = `${type.icon} ${type.label}`;
   $('detail-type').className = `detail-type type-${starter.type}`;
   $('detail-blurb').textContent = starter.blurb;
+  const ability = ABILITIES[starter.type];   // shared by every skin of the type
+  $('detail-ability').hidden = !ability;
+  if (ability) { $('detail-ability').replaceChildren(el('b', '', `${ability.name}: `), ability.text); $('detail-ability').title = 'Ability: every starter of this type has it'; }
 
   setTheme(starter.type);
   showMenuScene(starter.type);

@@ -77,13 +77,28 @@ steps land (mark them done, note anything decided along the way).
    - **~20 real Neutral cards** (cross-type tools, not filler), build-defining relics, enemy status effects.
    - Never remove a card id (rework instead), so saved runs survive.
    Steps, one per session:
-   1. **Design doc** (`docs/card-design.md`): the 9 archetypes, each type's Ability, the new mechanics, and a
-      card-list skeleton per type (name, rarity, cost, rough effect, archetype, StS card it's modelled on).
+   1. **Design doc** (`docs/card-design.md`) — done (2026-09-26), **waiting for the user's approval**: the 9
+      archetypes, each type's Ability, the new mechanics, and a card-list skeleton per type (name, rarity, cost,
+      rough effect, archetype, StS card it's modelled on). Changes from the proposals: Fire's Momentum became
+      **Kindling** (exhaust + 0-cost Cinders; Momentum overlapped Water's Flow), Grass's Sustain became **Drain**
+      (Leech Seed as Grass's poison, overheal turns into block), Water's third is **Tsunami** and Tide is now all
+      of Water's resource. Fire 68 / Grass 64 / Water 63 cards incl. 8 evolution cards each, Neutral 21, and 4
+      status cards. The doc ends with 5 questions for the user.
       **The user approves it before any type's cards are built.**
-   2. **Engine**: card upgrades (a "PP Up" third option at the Pokémon Center, StS's Smith: upgraded cards
-      shown with a +, saved by id), exhaust/discard triggers, cards that create cards, X-cost, "cards played
-      this turn" conditions, status cards (enemies shuffling junk like Confusion into your deck), starter
-      Abilities. Mirror everything in the sim engine.
+   2. **Engine** — done (2026-09-26). Built: PP Up at the Pokémon Center (Chansey is the third spot; upgraded
+      cards are `CARDS_BY_ID['<id>+']`, built from a card's `upgrade` or a default rule, so no save bump), X cost,
+      discard / exhaust picks from the hand, `onDiscard` / `onExhaust`, exhaust and discard powers, cards made in
+      a fight (`addCard`, tokens Cinder / Seedling / Droplet), cards-played-this-turn payoffs (`perPlayed`,
+      `hitsPerAttack`, `combo`, `cardDamage` / `cardBlock`), Unplayable / Ethereal / Innate, a 10-card hand cap,
+      status cards (Confusion, Paralysis, Poison, Sludge) via enemy moves' `adds` / `kind: 'status'` (no enemy uses
+      them yet), and the Abilities (Blaze +3 below half HP, Overgrow heal 3 after a win, Torrent 2 Tide). The rare
+      power `blaze` is named Solar Power now. All mirrored in the sim (variants `noAbility`, `noUpgrades`, `og3`,
+      `dmgUp1`). Tested headless with injected test cards for every mechanic.
+      - Bot: PP Up + Abilities made the human bot ~12 points stronger (L0 69 / 78 / 71 -> 83 / 88 / 82); Overgrow at
+        5 HP was +10 to +22 for Grass alone. Shipped Overgrow 3 and enemy `dmgBonus` / `bossBonus` +1/+2/+3 (7/16/27,
+        8/21/33): human L0 70 / 77 / 76, L3 56 / 57 / 61, L5 34 / 34 / 33 (fire / grass / water), close to before.
+      - Left for the type sessions (listed per type in the doc): Leech Seed, Sap, overheal, Flex, burn multipliers,
+        hurt-this-turn, exhaust-your-hand, Tide multipliers, block tricks, retain tricks, picking from the exhaust pile.
    3–8. **One type per 1–2 sessions**: its ~70 cards with PokéSprite art (+ `item-fit.js`), starting deck,
       Ability, a bot check at Levels 0/3/5. The bot scores cards one at a time and won't see combos, so it
       only guards against broken numbers; the user's playtests judge whether builds are fun.

@@ -26,6 +26,9 @@
 .card.type-fire   { --c1: #ff8f4d; --c2: #b8321a; }
 .card.type-water  { --c1: #5cbcff; --c2: #1d58b8; }
 .card.type-grass  { --c1: #72dc70; --c2: #257a38; }
+/* status cards (enemies' junk) are a dull grey; an upgraded card's name is green, like StS's */
+.card.status      { --c1: #8c8c94; --c2: #505058; }
+.card.upgraded .card-name { color: #208030; }
 
 .card-face {
   position: absolute;
@@ -205,6 +208,9 @@
 /* ---------- picking a card: the first tap lifts it out of the hand, the second plays it (an item blows up at the bottom middle) ---------- */
 .card.in-hand.selected { transform: translateY(-10px); z-index: 2; }
 .card.in-hand.selected .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
+/* a card is asking you to pick a card in your hand (discard / exhaust): they all glow and can be tapped */
+.card.in-hand.choosable { cursor: pointer; }
+.card.in-hand.choosable .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 2.4cqw #f8f8f8, 1.6cqw 1.6cqw 0 2.4cqw rgba(0, 0, 0, 0.4); }
 .card-focus {
   position: fixed;
   inset: 0;

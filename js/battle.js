@@ -22,6 +22,7 @@
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
+import { ABILITIES } from './data/relics.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar } from './ui.js';
 import { showScene, setStorm } from './scene.js';
@@ -30,6 +31,7 @@ import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSound
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
+const MAX_HAND = 10;       // like StS: draws stop and new cards go to the discard pile once the hand is full
 const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
@@ -58,12 +60,16 @@ export function initBattle() {
 /** Leave the battle without finishing it (used when you abandon a run). */
 export function abandonBattle() {
   battle = null;
+  choosing = null;
   setLoop('low-hp', false);
 }
 
 export const isBattleRunning = () => battle !== null && !battle.over;
 
 const hasRelic = (id) => battle.relics.includes(id);
+/** The starter's Ability (Blaze / Overgrow / Torrent), from its type: ABILITIES in data/relics.js. */
+const hasAbility = (id) => battle.ability?.id === id;
+const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
 
 /* ============================================================
    PART 1: THE RULES
@@ -78,6 +84,9 @@ const hasRelic = (id) => battle.relics.includes(id);
  */
 export function startBattle({ run, encounter, onEnd }) {
   const def = encounter.def;
+  const ability = ABILITIES[run.starter.type] ?? null;
+  const deck = shuffle(run.deck.map(id => CARDS_BY_ID[id]));
+  choosing = null;
 
   battle = {
     starter: run.starter,
@@ -85,6 +94,7 @@ export function startBattle({ run, encounter, onEnd }) {
     def,
     kind: encounter.kind,
     relics: [...run.relics],
+    ability,
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
 
@@ -96,15 +106,18 @@ export function startBattle({ run, encounter, onEnd }) {
     nextEnergy: 0,     // bonus energy waiting for next turn
     focus: 0,          // bonus damage waiting for your next attack
     guard: false,      // blocks the next enemy attack completely
-    tide: 0,           // Water's stored-up resource: built by `tide` cards, all spent by the next `perTide` card
+    tide: ability?.id === 'torrent' ? ability.amount : 0,   // Water's stored-up resource: built by `tide` cards, all spent by the next `perTide` card
     strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
     powers: {},        // power effects played this fight, added up: { blockEachTurn: 5, ... }
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
     damageTaken: 0,
+    played: 0,         // cards played this turn (this one included, while it resolves)
+    attacks: 0,        // attacks played this turn
+    discarded: 0,      // cards discarded from your hand by a card this turn
 
     // the piles of cards
-    drawPile: shuffle(run.deck.map(id => CARDS_BY_ID[id])),
+    drawPile: [...deck.filter(c => !c.innate), ...deck.filter(c => c.innate)],   // innate cards on top: always in the first hand
     hand: [],
     discard: [],
     exhaust: [],       // exhausted and power cards: gone for the rest of THIS fight only
@@ -215,6 +228,7 @@ function beginPlayerTurn() {
   b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy;
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
+  b.played = b.attacks = b.discarded = 0;
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; pop('player-zone', '-1 ☠️', 'dmg'); }
   if (hasRelic('leftovers')) healPlayer(2);
@@ -244,6 +258,7 @@ function healPlayer(amount) {
 function draw(count) {
   const b = battle;
   for (let i = 0; i < count; i++) {
+    if (b.hand.length >= MAX_HAND) return;
     if (b.drawPile.length === 0) {
       if (b.discard.length === 0) return;        // nothing left anywhere
       b.drawPile = shuffle(b.discard);
@@ -257,15 +272,24 @@ function draw(count) {
 function whyNotPlayable(card) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
-  if (card.cost > b.energy) return 'Not enough PP!';
+  if (card.unplayable) return `${card.name} can't be played.`;
+  if (card.cost > b.energy) return 'Not enough PP!';   // an X card ('X') is always playable, even with 0 PP
   if (card.effects.needsWounded && b.hp >= b.maxHp) return `${card.name} only works when you're hurt.`;
   return null;
 }
 
+/** A card's effects as played now: scaled by evolution, plus its per-X part for the X it was played with. */
+function effectsOf(card, x = 0) {
+  const e = scaledEffects(card, battle.stage);
+  if (!e.perX) return e;
+  const times = x + (e.xPlus || 0);
+  for (const [key, n] of Object.entries(e.perX)) e[key] = (e[key] || 0) + n * times;
+  return e;
+}
+
 /** The damage of each hit this attack does to the current enemy (an empty list for non-attacks). */
-function damageFor(card) {
+function damageFor(card, e) {
   const b = battle;
-  const e = scaledEffects(card, b.stage);
   if (!e.damage && !e.blockDamage) return { hits: [], multiplier: 1 };
 
   const low = b.hp < b.maxHp / 2;
@@ -273,8 +297,11 @@ function damageFor(card) {
   if (e.bonusIfLow && low) amount += e.bonusIfLow;
   if (e.bonusPerBurn) amount += e.bonusPerBurn * b.enemy.burn;
   if (e.perTide) amount += e.perTide * b.tide;
+  if (e.perPlayed) amount += e.perPlayed * (b.played - 1);
+  if (e.perDiscard) amount += e.perDiscard * b.discarded;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
+  if (hasAbility('blaze') && low) amount += b.ability.amount;
 
   // relics
   if (hasRelic('muscle-band')) amount += 2;
@@ -283,7 +310,8 @@ function damageFor(card) {
   const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
 
   const vulnerable = b.enemy.vulnerable > 0 ? VULNERABLE_MULT : 1;
-  const hits = Array.from({ length: e.hits || 1 }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier) * vulnerable));
+  const count = e.hitsPerAttack ? b.attacks : e.perX?.hits ? e.hits : e.hits || 1;   // an X card played with X = 0 doesn't hit
+  const hits = Array.from({ length: count }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier) * vulnerable));
   return { hits, multiplier };
 }
 
@@ -301,14 +329,14 @@ async function playCard(uid) {
   }
 
   b.busy = true;
-  b.energy -= card.cost;
+  const x = card.cost === 'X' ? b.energy : 0;
+  b.energy -= card.cost === 'X' ? b.energy : card.cost;
   b.hand.splice(index, 1);
+  b.played += 1;
+  if (isAttack(card)) b.attacks += 1;
   playSound('card');
-  // Exhausted cards leave the fight for good (they don't go to the discard pile,
-  // so they can't reshuffle back into your draw pile this battle).
-  if (card.exhaust || card.power) b.exhaust.push(card); else b.discard.push(card);
 
-  const e = scaledEffects(card, b.stage);
+  const e = effectsOf(card, x);
   const who = stageName(b.starter, b.stage);
 
   if (e.selfDamage) {
@@ -318,7 +346,7 @@ async function playCard(uid) {
   }
 
   // --- damage ---
-  const { hits, multiplier } = damageFor(card);
+  const { hits, multiplier } = damageFor(card, e);
   if (hits.length) {
     b.focus = 0;                                  // focus is used up by the attack
     for (const [i, amount] of hits.entries()) {
@@ -340,32 +368,31 @@ async function playCard(uid) {
     if (hasRelic('shell-bell')) healPlayer(1);
     if (e.perTide && b.tide) { pop('player-zone', `🌊 ${b.tide} Tide spent`, 'note', 200); b.tide = 0; }
   } else {
-    log(`${who} used ${card.name}.`);
+    log(card.status ? `${card.name} was cleared away.` : `${who} used ${card.name}.`);
   }
 
   // --- everything else a card can do ---
-  if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
-  if (e.weaken)     { b.enemy.weak += e.weaken; pop('enemy-zone', `📉 Weak ${e.weaken}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
-  if (e.vulnerable) { b.enemy.vulnerable += e.vulnerable; pop('enemy-zone', `💔 Vulnerable ${e.vulnerable}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
-  if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); statFx('player'); }
-  if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
-  if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
-  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
-  if (e.tide)       { b.tide += e.tide; pop('player-zone', `🌊 Tide +${e.tide}`, 'note good'); }
-  if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
-  if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
+  applyEffects(e);
+  if (e.combo && b.played - 1 >= e.combo.at) {
+    pop('player-zone', '✨ Combo!', 'note good', 150);
+    applyEffects(e.combo);
+  }
   if (card.power) {
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
     pop('player-zone', `${POWER_LENS[b.starter.type] ?? '🧬'} ${card.name}`, 'note good', 200);
     playSound('power');
   }
-  if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
-  if (e.draw)       draw(e.draw);
+  if (e.discard) await pickFromHand(e.discard, 'discard', discardFromHand);
+  if (e.exhaustPick) await pickFromHand(e.exhaustPick, 'exhaust', (entry) => { b.hand.splice(b.hand.indexOf(entry), 1); exhaustCard(entry.card); });
+  if (battle !== b) return;
+
+  // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
+  if (card.power) b.exhaust.push(card);           // powers leave the fight, but aren't "exhausted" (no triggers)
+  else if (card.exhaust) exhaustCard(card);
+  else b.discard.push(card);
   if (card.power && hasRelic('power-herb')) draw(1);
-  if (card.exhaust) {
-    pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
-    if (hasRelic('eject-pack')) draw(1);
-  }
+  if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
+  if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
 
   renderAll();
   await sleep(220);
@@ -374,6 +401,90 @@ async function playCard(uid) {
   if (b.enemy.hp <= 0) return finish(true);
   b.busy = false;
   renderAll();
+}
+
+/** Block, Weak, draw... everything a card does besides its damage. Also used for a card's combo and for
+    `onExhaust` / `onDiscard`. Damp Rock adds to every card's block. */
+function applyEffects(e) {
+  const b = battle;
+  if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
+  if (e.weaken)     { b.enemy.weak += e.weaken; pop('enemy-zone', `📉 Weak ${e.weaken}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
+  if (e.vulnerable) { b.enemy.vulnerable += e.vulnerable; pop('enemy-zone', `💔 Vulnerable ${e.vulnerable}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
+  if (e.block)      gainBlock(e.block + (hasRelic('damp-rock') ? 2 : 0));
+  if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
+  if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (e.tide)       gainTide(e.tide);
+  if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
+  if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
+  if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
+  if (e.draw)       draw(e.draw);
+  if (e.addCard)    addCards(e.addCard);
+}
+
+function gainBlock(n) {
+  battle.block += n;
+  pop('player-zone', `+${n} 🛡️`, 'block');
+  playSound('block');
+  statFx('player');
+}
+
+function gainTide(n) {
+  battle.tide += n;
+  pop('player-zone', `🌊 Tide +${n}`, 'note good');
+}
+
+/** New cards for this fight only (Cinders, status junk...): into your hand (the discard pile once it's full),
+    shuffled into the draw pile, or onto the discard pile. */
+function addCards({ id, n = 1, to = 'hand' }) {
+  const b = battle;
+  const card = CARDS_BY_ID[id];
+  for (let i = 0; i < n; i++) {
+    if (to === 'hand' && b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
+    else if (to === 'draw') b.drawPile.splice(Math.floor(Math.random() * (b.drawPile.length + 1)), 0, card);
+    else b.discard.push(card);
+  }
+  pop('player-zone', `🃏 +${n} ${card.name}`, card.status ? 'note bad' : 'note good', 120);
+}
+
+/** A card leaves the fight: its own `onExhaust`, the exhaust powers and Eject Pack all trigger. */
+function exhaustCard(card) {
+  const b = battle;
+  b.exhaust.push(card);
+  pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
+  if (card.onExhaust) applyEffects(card.onExhaust);
+  if (b.powers.exhaustBlock) gainBlock(b.powers.exhaustBlock);
+  if (b.powers.exhaustDraw) draw(b.powers.exhaustDraw);
+  if (hasRelic('eject-pack')) draw(1);
+}
+
+/** A card made you discard this one from your hand (the end of your turn doesn't count, like StS). */
+function discardFromHand(entry) {
+  const b = battle;
+  b.hand.splice(b.hand.indexOf(entry), 1);
+  b.discard.push(entry.card);
+  b.discarded += 1;
+  pop('player-zone', `🗂️ ${entry.card.name}`, 'note', 150);
+  if (entry.card.onDiscard) applyEffects(entry.card.onDiscard);
+  if (b.powers.discardTide) gainTide(b.powers.discardTide);
+  if (b.powers.discardBlock) gainBlock(b.powers.discardBlock);
+}
+
+/**
+ * A card asks you to pick `n` cards in your hand ("Choose a card to discard."): the hand glows and a tap
+ * picks one (tapCard), which `act` then takes out of the hand. With no more cards than asked for, it takes
+ * them all without asking, like StS.
+ */
+async function pickFromHand(n, verb, act) {
+  const b = battle;
+  for (let left = n; left > 0 && b.hand.length; left--) {
+    if (b.hand.length <= left) { [...b.hand].forEach(act); break; }
+    log(`Choose a card to ${verb}.`);
+    const uid = await new Promise(resolve => { choosing = { resolve }; renderAll(); });
+    if (battle !== b) return;
+    act(b.hand.find(h => h.uid === uid));
+    renderAll();
+  }
 }
 
 /* ---------- items: free to use, once, on your turn ---------- */
@@ -458,6 +569,22 @@ async function endTurn() {
   const b = battle;
   if (!b || b.busy || b.over) return;
   b.busy = true;
+
+  // Status cards that hurt while held (Poison), then Ethereal cards fade away (exhausted).
+  const hurt = b.hand.reduce((sum, h) => sum + (h.card.effects.endTurnHurt || 0), 0);
+  if (hurt) {
+    const through = hurtPlayer(hurt);
+    hitEffect('player-sprite');
+    pop('player-zone', through > 0 ? `-${through} ☠️` : 'Blocked', through > 0 ? 'dmg' : 'block');
+    log(`The Poison in your hand hurt ${stageName(b.starter, b.stage)} for ${hurt}.`);
+    renderAll();
+    await sleep(500);
+    if (battle !== b) return;
+    if (b.hp <= 0) return finish(false);
+  }
+  const fading = b.hand.filter(h => h.card.ethereal);
+  b.hand = b.hand.filter(h => !h.card.ethereal);
+  fading.forEach(h => exhaustCard(h.card));
 
   // Discard whatever is left in your hand, except cards that retain.
   // Grip Claw also keeps the leftmost card that would have been discarded.
@@ -546,6 +673,13 @@ async function enemyTurn() {
     statFx('enemy');
     log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
   }
+  if (move.adds) {
+    // junk for your deck (a `kind: 'status'` move does only this; an attack can do it too)
+    const { card, n = 1, to = 'discard' } = move.adds;
+    addCards({ id: card, n, to });
+    playSound('stat-down');
+    if (move.kind === 'status') log(`${b.def.name} used ${move.name}! ${n > 1 ? `${n} ${CARDS_BY_ID[card].name} cards` : CARDS_BY_ID[card].name} went into your deck.`);
+  }
 
   if (en.weak > 0) en.weak -= 1;                  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn
   if (en.vulnerable > 0) en.vulnerable -= 1;
@@ -601,6 +735,7 @@ async function finish(won) {
   renderAll();
 
   if (won) {
+    if (hasAbility('overgrow') && healPlayer(b.ability.amount)) pop('player-zone', `🌿 Overgrow`, 'note good', 300);
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
     playMusic('victory', { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
@@ -750,6 +885,8 @@ function renderIntent() {
     detail = b.guard ? 'will hit your Guard' : `${attackDamage(move)} damage${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
   } else if (move.kind === 'defend') {
     icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
+  } else if (move.kind === 'status') {
+    icon = CARDS_BY_ID[move.adds.card].art; kind = 'status'; value = `+${move.adds.n || 1}`; detail = '';
   } else {
     icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
@@ -760,6 +897,10 @@ function renderIntent() {
   box.className = `intent ${kind} fresh`;
   if (fresh) { box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
   box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', move.name));
+  if (move.adds) {
+    const junk = `puts ${move.adds.n || 1} ${CARDS_BY_ID[move.adds.card].name} into your ${{ hand: 'hand', draw: 'draw pile' }[move.adds.to] || 'discard pile'}`;
+    detail = detail ? `${detail}, and ${junk}` : junk;
+  }
   box.title = `Next turn: ${move.name} (${detail})`;
 }
 
@@ -780,6 +921,7 @@ function renderStatus() {
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, `+${b.nextEnergy} energy next turn`, 'good']);
+  if (hasAbility('blaze') && b.hp < b.maxHp / 2) playerBadges.push(['🔥', '', `Blaze: your attacks deal +${b.ability.amount} while your HP is below half`, 'good']);
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   for (const [key, power] of Object.entries(POWERS)) {
     if (b.powers[key]) playerBadges.push([power.icon, power.flag ? '' : b.powers[key], power.text(b.powers[key]), 'good']);
@@ -807,8 +949,9 @@ function renderHand() {
     const node = makeCard(card, { stage: b.stage });
     node.classList.add('in-hand');
 
-    if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
-    if (b.busy) node.classList.add('waiting');
+    if (choosing) node.classList.add('choosable');
+    else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
+    else if (b.busy) node.classList.add('waiting');
     if (entry.uid === selectedUid) node.classList.add('selected');
     node.dataset.uid = entry.uid;
 
@@ -820,7 +963,7 @@ function renderHand() {
 
     node.tabIndex = 0;
     node.setAttribute('role', 'button');
-    node.setAttribute('aria-label', `${card.name}, costs ${card.cost}`);
+    node.setAttribute('aria-label', choosing ? `Choose ${card.name}` : `${card.name}, costs ${card.cost}`);
     node.addEventListener('click', () => tapCard(entry.uid));
     node.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
@@ -853,8 +996,10 @@ function fanHand() {
 
 let selectedUid = null;
 let selectedItem = null;   // index into battle.items; items are picked and confirmed the same way
+let choosing = null;       // { resolve } while a card asks you to pick a card in your hand (pickFromHand)
 
 function tapCard(uid) {
+  if (choosing) { const pick = choosing; choosing = null; return pick.resolve(uid); }
   if (battle.busy) return;
   selectedItem = null;
   const entry = battle.hand.find(h => h.uid === uid);

@@ -573,21 +573,21 @@ export const BIOMES = [
     normals: ['vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot',
       'poliwag', 'psyduck', 'marill', 'rattata', 'sentret', 'zigzagoon'],
     elites: ['gloom', 'poliwhirl', 'flareon'], bosses: ['snorlax', 'arcanine', 'poliwrath'],
-    hpMult: 1.2, dmgBonus: 6, bossBonus: 7,
+    hpMult: 1.2, dmgBonus: 7, bossBonus: 8,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine',
     normals: ['litwick', 'houndour', 'darumaka', 'bellsprout', 'paras', 'cherubi',
       'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler'],
     elites: ['ninetales', 'shiftry', 'slowking'], bosses: ['chandelure', 'tangrowth', 'ursaring'],
-    hpMult: 2.9, dmgBonus: 14, bossBonus: 19,
+    hpMult: 2.9, dmgBonus: 16, bossBonus: 21,
   },
   {
     id: 'wastes', name: 'Ember Wastes',
     normals: ['magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus',
       'staryu', 'crawdaunt', 'sharpedo', 'tauros', 'bouffalant', 'zangoose'],
     elites: ['houndoom', 'breloom', 'kingdra'], bosses: ['slaking', 'magmortar', 'gyarados', 'salamence'],
-    hpMult: 5.2, dmgBonus: 24, bossBonus: 30,
+    hpMult: 5.2, dmgBonus: 27, bossBonus: 33,
   },
 ];
 

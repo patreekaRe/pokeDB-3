@@ -3,7 +3,7 @@
    switching screens, dialogs, and the card element.
    ============================================================ */
 
-import { TYPES, describe, keywords } from './data/cards.js';
+import { TYPES, describe, keywords, termTips } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
 import { getSave } from './storage.js';
 import { playMusic } from './audio.js';
@@ -94,11 +94,12 @@ export function confirmDialog(question, yesLabel = 'Yes') {
  */
 export function makeCard(card, options = {}) {
   const type = TYPES[card.type];
-  const node = el('div', `card type-${card.type}`);
+  const node = el('div', `card type-${card.type}${card.upgraded ? ' upgraded' : ''}${card.status ? ' status' : ''}`);
   node.dataset.id = card.id;
 
   const cost = el('span', 'card-cost', String(card.cost));
-  cost.title = `Costs ${card.cost} energy`;
+  cost.title = card.cost === 'X' ? 'Costs all your energy' : `Costs ${card.cost} energy`;
+  if (card.unplayable) cost.hidden = true;
 
   const name = el('h3', 'card-name', card.name);
   // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
@@ -112,9 +113,7 @@ export function makeCard(card, options = {}) {
   // one wrapper, since .card-text is a grid and would give each piece its own row
   const line = el('span');
   line.append(...words.lead.flatMap(w => [kw(w), ' ']), describe(card, options.stage || 0), ...words.tail.flatMap(w => [' ', kw(w)]));
-  const tips = [card.effects.weaken && 'Weak: the enemy deals 25% less damage. Lasts that many enemy turns.',
-    card.effects.vulnerable && 'Vulnerable: the enemy takes 50% more damage from your attacks. Lasts that many enemy turns.',
-    (card.effects.tide || card.effects.perTide) && 'Tide: builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.'].filter(Boolean);
+  const tips = termTips(card);
   if (tips.length) line.title = tips.join(' ');
   text.append(line);
 
@@ -210,7 +209,7 @@ export function zoomable(node, card, stage) {
 export function itemSprite(thing, className = '') {
   const box = el('span', className);
   const img = el('img', 'item-sprite');
-  img.src = `assets/items/${thing.id}.png`;
+  img.src = `assets/items/${thing.sprite || thing.id}.png`;
   img.alt = '';
   img.draggable = false;
   img.onerror = () => box.replaceChildren(thing.icon || '');

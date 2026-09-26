@@ -425,6 +425,8 @@ body[data-screen="start-screen"].sheet-open { padding-bottom: var(--sheet-h, 200
 .detail-text { min-width: 0; }
 .detail-text h3 { margin: 0 0 4px; font-size: 1.15rem; color: var(--win-ink); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px; }
 .detail-text p { margin: 0; color: var(--win-muted); font-size: 0.9rem; line-height: 1.35; }
+.detail-text .detail-ability { margin-top: 4px; font-size: 0.82rem; }
+.detail-ability b { color: var(--win-ink); }
 .detail-type { padding: 1px 9px 1px 5px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: #fff; background: #777; }
 .detail-type.type-fire  { background: #c9431f; }
 .detail-type.type-grass { background: #2f8f43; }
@@ -634,6 +636,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .intent.drain  { --kind: #9048c8; }
 .intent.defend { --kind: #3878f0; }
 .intent.buff   { --kind: #30a040; }
+.intent.status { --kind: #707078; }   /* shuffles junk (a status card) into your deck */
 .intent.fresh { animation: intentPop 0.35s steps(4), bob 1.8s steps(2) 0.35s infinite; }
 .intent-icon { font-size: 1rem; }
 .intent-value { font-size: 1.05rem; font-weight: 400; color: #283060; }
@@ -2623,6 +2626,7 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   animation: spotBounce 0.9s ease-in-out infinite;
 }
 :is(.center-room, .event-room) .reward-option + .reward-option .center-label { border-color: #3878f0; animation-delay: -0.45s; }
+.center-room .reward-option:nth-child(3) .center-label { border-color: #b058d8; animation-delay: -0.2s; }   /* PP Up, over Chansey */
 .center-label::after {
   content: "";
   position: absolute;

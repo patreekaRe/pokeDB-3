@@ -17,8 +17,8 @@
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType } from './data/cards.js';
-import { RELICS, RELICS_BY_ID } from './data/relics.js';
+import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
+import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
@@ -293,15 +293,17 @@ function showPocket(name) {
 }
 
 function renderRelicList() {
-  const rows = run.relics.map(id => {
-    const relic = RELICS_BY_ID[id];
-    const row = el('div', 'howto-li');
+  const row = (relic, label = relic.name) => {
+    const li = el('div', 'howto-li');
     const text = el('span', 'howto-li-text');
-    text.append(el('b', '', relic.name), el('small', '', relic.text));
-    row.append(itemSprite(relic, 'howto-node'), text);
-    return row;
-  });
-  $('relics-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
+    text.append(el('b', '', label), el('small', '', relic.text));
+    li.append(itemSprite(relic, 'howto-node'), text);
+    return li;
+  };
+  const ability = ABILITIES[run.starter.type];   // the starter's own, always first (StS's starter relic)
+  const rows = run.relics.map(id => row(RELICS_BY_ID[id]));
+  $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
+    ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
 }
 
 /* The Items pocket: in battle, Use picks the item like a slot does (with the same confirm step); on the map only heals can be used.
@@ -656,10 +658,11 @@ function restSite() {
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   const banned = run.relics.includes('choice-band');
   const atMin = run.deck.length <= MIN_DECK;
-  // no tiles here: the healing machine and the PC in the scene are the choices, each under a bouncing label
+  const upgradable = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
+  // no tiles here: the healing machine, the PC and Chansey in the scene are the choices, each under a bouncing label
   showChoice({
     title: 'Pokémon Center',
-    sub: ['A safe place to catch your breath.', 'Use the healing machine to rest, or the PC to forget a move.'],
+    sub: ['A safe place to catch your breath.', 'Use the healing machine to rest, the PC to forget a move, or ask Chansey for a PP Up.'],
     options: [
       {
         node: centerLabel(banned ? 'No rest' : heal ? `Rest +${heal} HP` : 'Rest',
@@ -694,6 +697,11 @@ function restSite() {
           atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`),
         disabled: atMin,
         onPick: () => forgetMove(restSite),
+      },
+      {
+        node: centerLabel('PP Up', upgradable ? 'Upgrade one card for the rest of the run (StS\'s Smith).' : 'Every card in your deck is already upgraded.'),
+        disabled: !upgradable,
+        onPick: () => upgradeMove(restSite),
       },
     ],
     skipLabel: 'Leave',
@@ -762,7 +770,8 @@ function placeCenterSpots() {
   const spots = centerSpots();
   if (!spots) return;
   box.querySelectorAll('.reward-option').forEach((btn, i) => {
-    const r = spots[i === 0 ? 'machine' : 'pc'];
+    // PP Up is Chansey herself: the part of her that shows over the counter (.center-nurse is 70px tall)
+    const r = i === 2 ? { left: spots.nurse.x - 36, top: spots.nurse.y - 64, width: 72, height: 64 } : spots[i === 0 ? 'machine' : 'pc'];
     // at least a fingertip wide, around the thing itself
     const w = Math.max(r.width, 64), h = Math.max(r.height, 56);
     Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
@@ -780,6 +789,31 @@ function martPc(text, hint) {
   const pc = el('span', 'mart-pc');
   pc.append(centerLabel(text, hint), el('span', 'mart-pc-icon', '💻'));
   return pc;
+}
+
+/** PP Up (StS's Smith): pick a card to upgrade for the rest of the run; it saves as its `<id>+`. The blown-up
+    card shows the upgraded version, so you see what you get before you confirm. */
+function upgradeMove(back, done = showMap) {
+  showChoice({
+    title: 'PP Up',
+    sub: 'Choose a move to power up for the rest of the run. Tap one to see it upgraded.',
+    options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => canUpgrade(card)).map(({ card, count }) => {
+      const better = CARDS_BY_ID[upgradeId(card.id)];
+      return {
+        ...cardOption(card, run.stage, () => {
+          run.deck.splice(run.deck.indexOf(card.id), 1, better.id);
+          tell(`${card.name} became ${better.name}!`);
+          done();
+        }, count),
+        zoom: makeCard(better, { stage: run.stage }),
+        ask: `Upgrade ${card.name}?`,
+        confirm: 'PP Up',
+        confirmSound: 'stat-up',
+      };
+    }),
+    skipLabel: 'Back',
+    onSkip: back,
+  });
 }
 
 /** `done` runs after a card is forgotten; Cleanse Tag passes its reward chain here, the Center returns to the map. */
@@ -1103,7 +1137,7 @@ const EVENT_CHOICES = {
 
 /** The deck's common and uncommon cards, each with the card it trades for (the first rolled one you hold fewer than MAX_COPIES of). */
 function dayCareTrades(event, state) {
-  const copies = (id) => run.deck.filter(x => x === id).length;
+  const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   return groupDeck(run.deck, CARDS_BY_ID)
     .filter(({ card }) => !card.evoOnly && event.upgrade[card.rarity || 'common'])
     .map(entry => ({ ...entry, gets: CARDS_BY_ID[state.offers[event.upgrade[entry.card.rarity || 'common']].find(id => copies(id) < MAX_COPIES)] }))
@@ -1126,7 +1160,7 @@ function dayCare(trades, back) {
 
 /** The Move Tutor's lesson: 3 rare moves (or the best on offer if you own every rare), paid for only when one is learned. */
 function tutorCards(back, pay) {
-  const copies = (id) => run.deck.filter(x => x === id).length;
+  const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
   const cards = rares.length ? rares.sort(() => Math.random() - 0.5).slice(0, 3) : cardChoices(run, 'boss');
   showChoice({
@@ -1184,7 +1218,7 @@ function ware(option, price, onBuy, { group, name }) {
 /* Purchases are only checkpointed when you leave for the map, so a refresh inside the Mart undoes them along with the money. */
 function martRoom() {
   const { stock } = run.map.byId[run.current];
-  const copies = (id) => run.deck.filter(x => x === id).length;
+  const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
 
   const cards = stock.cards.filter(item => !item.sold && copies(item.id) < MAX_COPIES).map(item => {
     const card = CARDS_BY_ID[item.id];

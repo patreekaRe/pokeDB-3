@@ -112,6 +112,34 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   So check defensive numbers first: +1 or +2 block on a starting card moves
   a type 10–30 points at Level 5. Don't remove a card id:
   a saved run holding it would be discarded.
+  **Card pool expansion (roadmap 6c)**: `docs/card-design.md` is the plan (9 archetypes, ~70 cards a
+  type, each on a StS card); the user approves it before any type's cards are built. The engine for it
+  landed first (6c.2), all in `js/battle.js` and described by `describe()` (the header of
+  `js/data/cards.js` lists every key): X cost (`cost: 'X'` + `perX`, `xPlus`), `discard` / `exhaustPick`
+  (the hand glows and one tap picks, `pickFromHand()`; no more cards than asked takes them all),
+  `onDiscard` / `onExhaust` (only a card's discard counts, not the end of turn, like StS), exhaust and
+  discard powers (`exhaustBlock`, `exhaustDraw`, `discardTide`, `discardBlock`), played-this-turn
+  (`battle.played` / `attacks` / `discarded`: `perPlayed`, `hitsPerAttack`, `perDiscard`,
+  `combo: { at, ... }`, powers `cardDamage` / `cardBlock`), `addCard: { id, n, to }`, keywords
+  `unplayable` / `ethereal` / `innate` (bold via `keywords()`; `termTips()` explains terms in the text's
+  `title`), a 10-card hand cap (`MAX_HAND`: draws stop, made cards go to the discard pile). Played cards
+  now reach their pile *after* resolving (their own draw can't reshuffle them), and every exhaust goes
+  through `exhaustCard()` (so Eject Pack also fires for ethereal and picked exhausts). `TOKEN_CARDS`
+  (Cinder, Seedling, Droplet) and `STATUS_CARDS` (Confusion, Paralysis, Poison, Sludge: grey `.status`
+  cards) are in `CARDS_BY_ID` only, never in `ALL_CARDS`, so they're never offered or indexed. Enemy
+  moves can carry `adds: { card, n, to }` (default the discard pile), or be `kind: 'status'` (only
+  that; a grey intent bubble). No enemy uses them yet (step 6c.9).
+  **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
+  name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
+  (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
+  bump). Anything counting copies uses `baseId()` (MAX_COPIES, Mart, Day Care, Move Tutor, rewards).
+  `ALL_CARDS` stays base cards only. The Center's third choice is PP Up (see Deck thinning).
+- **Starter Abilities** (StS's starter relics): `ABILITIES` in `js/data/relics.js`, one per type, so
+  every skin shares it and nothing is saved (it comes from `starter.type`). Fire **Blaze**: attacks +3
+  while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
+  fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide. It's the first row of the
+  Bag's Relics pocket and a line on the starter sheet (`#detail-ability`). The rare power card `blaze`
+  is named Solar Power now (same id) so the two don't share a name.
 - **Types**: four types (fire/grass/water, and `normal`, shown as Neutral,
   x1 both ways). `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,
@@ -156,12 +184,15 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 
 ## Deck thinning
 
-The Pokémon Center (`restSite()` in `js/run.js`) offers Rest *or* "Forget a
-move" (`forgetMove()`): a `showChoice` picker of the deck
+The Pokémon Center (`restSite()` in `js/run.js`) offers Rest, "Forget a
+move" (`forgetMove()`) *or* **PP Up** (`upgradeMove()`, StS's Smith: pick a card,
+the blown-up copy shows the upgraded version via `option.zoom`, and it's swapped
+for its `<id>+` in place): each a `showChoice` picker of the deck
 grouped with `groupDeck` (×N badges), "Back" returns to the Center. The Center
-has no tiles (the user's call, for immersion): its two options (`layout:
-'center-room'`) are see-through buttons laid over the scene's healing machine and
-PC (`placeCenterSpots()`, from `centerSpots()` in `js/scene.js`, rerun on the
+has no tiles (the user's call, for immersion): its three options (`layout:
+'center-room'`) are see-through buttons laid over the scene's healing machine,
+PC and Chansey (PP Up, a purple sign; her rect is worked out from `spots.nurse`)
+(`placeCenterSpots()`, from `centerSpots()` in `js/scene.js`, rerun on the
 scene's `scenepaint` event), each under a bouncing `.center-label` sign, and the
 scene isn't dimmed. Its text box sits just under the counter (`--counter-foot`) with
 Leave at the bottom of the screen (the user's call). It never
@@ -361,6 +392,12 @@ softer; Gloom and Ursaring harder). Human bot fire / grass / water: L0
 L5 53 / 51 / 51. Fire still dies mostly to biome 3 bosses (it's strong early,
 thin late), Grass/Water mostly in biome 1 at higher Levels. A +1/+2 block on
 a starting card moved a type 5-20 points here too.
+Card engine (6c.2, 2026-09-26): PP Up and the Abilities made the human bot
+~12 points stronger (L0 69 / 78 / 71 -> 83 / 88 / 82; Overgrow at 5 HP alone
+was +10-22 for Grass), so Overgrow heals 3 and biome `dmgBonus` / `bossBonus`
+went +1/+2/+3 (now 7/16/27 and 8/21/33). Human bot fire / grass / water, 300
+runs/cell: L0 70 / 77 / 76, L3 56 / 57 / 61, L5 34 / 34 / 33 (before, 400
+runs: L0 69 / 78 / 71, L3 60 / 62 / 64, L5 37 / 32 / 38).
 
 ## Relics
 
