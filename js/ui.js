@@ -112,6 +112,9 @@ export function makeCard(card, options = {}) {
   // one wrapper, since .card-text is a grid and would give each piece its own row
   const line = el('span');
   line.append(...words.lead.flatMap(w => [kw(w), ' ']), describe(card, options.stage || 0), ...words.tail.flatMap(w => [' ', kw(w)]));
+  const tips = [card.effects.weaken && 'Weak: the enemy deals 25% less damage. Lasts that many enemy turns.',
+    card.effects.vulnerable && 'Vulnerable: the enemy takes 50% more damage from your attacks. Lasts that many enemy turns.'].filter(Boolean);
+  if (tips.length) line.title = tips.join(' ');
   text.append(line);
 
   // The outer .card sets the size; the inner .card-face is what you see.

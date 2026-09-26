@@ -60,7 +60,7 @@ const SOUNDS = {
   'ball-throw': { url: 'assets/audio/sfx/ball-throw.mp3' },   // the battle intro's Poké Ball is thrown
   'ball-open':  { url: 'assets/audio/sfx/ball-open.mp3' },    // ...and pops open (and the Continue card's ball)
   'stat-up':    { url: 'assets/audio/sfx/stat-up.mp3' },      // strength or focus gained, either side
-  'stat-down':  { url: 'assets/audio/sfx/stat-down.mp3' },    // the enemy is Weakened
+  'stat-down':  { url: 'assets/audio/sfx/stat-down.mp3' },    // the enemy gets Weak or Vulnerable
   'item-get':   { url: 'assets/audio/sfx/item-get.mp3' },     // a relic or item is received (not bought: that's buy)
   'low-hp':     { url: 'assets/audio/sfx/low-hp.mp3' },       // looped by setLoop() while your HP is at 20% or below in battle
   'heal-hp':    { url: 'assets/audio/sfx/potion.mp3' },       // a card or power heals you in battle: the potion's file (the user's call); never the Center's heal

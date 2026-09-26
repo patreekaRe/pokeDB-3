@@ -35,9 +35,9 @@
    in docs/archived-starters.md in case we bring it back later.)
    ============================================================ */
 
-const FIRE_DECK  = ['ember', 'ember', 'ember', 'scorch', 'will-o-wisp', 'flare-up', 'flame-wall', 'flame-wall', 'flame-body', 'tailwind'];
-const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'stun-spore', 'growth', 'razor-leaf', 'absorb', 'block', 'block', 'tailwind'];
-const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'bubble', 'rain-dance', 'surf', 'withdraw', 'withdraw', 'aqua-ring', 'tailwind'];
+const FIRE_DECK  = ['ember', 'ember', 'ember', 'flame-body', 'flame-wall', 'flame-wall', 'flame-wall', 'flame-wall', 'scorch', 'will-o-wisp'];
+const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'vine-whip', 'cotton-guard', 'block', 'block', 'block', 'seed-bomb', 'absorb'];
+const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-gun', 'withdraw', 'withdraw', 'withdraw', 'withdraw', 'bubble', 'dive'];
 
 export const STARTERS = [
   /* ---------- the three real characters: free, and the only ones with a unique deck ---------- */

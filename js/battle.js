@@ -19,7 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
@@ -116,7 +116,8 @@ export function startBattle({ run, encounter, onEnd }) {
       dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
       strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
       burn: run.relics.includes('flame-orb') ? 3 : 0,
-      weakened: false,                // next attack deals half
+      weak: 0,                        // turns left dealing WEAK_MULT damage
+      vulnerable: 0,                  // turns left taking VULNERABLE_MULT damage from your attacks
       moveIndex: Math.floor(Math.random() * def.moves.length),
     },
 
@@ -279,7 +280,8 @@ function damageFor(card) {
 
   const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
 
-  const hits = Array.from({ length: e.hits || 1 }, (_, i) => Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier));
+  const vulnerable = b.enemy.vulnerable > 0 ? VULNERABLE_MULT : 1;
+  const hits = Array.from({ length: e.hits || 1 }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier) * vulnerable));
   return { hits, multiplier };
 }
 
@@ -340,7 +342,8 @@ async function playCard(uid) {
 
   // --- everything else a card can do ---
   if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
-  if (e.weaken)     { b.enemy.weakened = true; pop('enemy-zone', '📉 Weakened', 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
+  if (e.weaken)     { b.enemy.weak += e.weaken; pop('enemy-zone', `📉 Weak ${e.weaken}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
+  if (e.vulnerable) { b.enemy.vulnerable += e.vulnerable; pop('enemy-zone', `💔 Vulnerable ${e.vulnerable}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
   if (e.block)      { const block = e.block + (hasRelic('damp-rock') ? 2 : 0); b.block += block; pop('player-zone', `+${block} 🛡️`, 'block'); playSound('block'); statFx('player'); }
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
@@ -491,7 +494,6 @@ async function enemyTurn() {
   // 2. Then it uses its move.
   if (move.kind === 'attack' || move.kind === 'drain') {
     const damage = attackDamage(move);
-    en.weakened = false;                          // weaken only affects one attack
     $('enemy-portrait-box').classList.add('attacking');
     await sleep(250);
     $('enemy-portrait-box').classList.remove('attacking');
@@ -541,6 +543,9 @@ async function enemyTurn() {
     log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
   }
 
+  if (en.weak > 0) en.weak -= 1;                  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn
+  if (en.vulnerable > 0) en.vulnerable -= 1;
+
   // Enrage: long fights get more dangerous.
   if (b.turn % ENRAGE_EVERY === 0) {
     en.strength += ENRAGE_BONUS;
@@ -581,7 +586,7 @@ function enemyTypeMultiplier(move) {
 function attackDamage(move) {
   const en = battle.enemy;
   const raw = Math.round((move.amount + en.dmgBonus + en.strength) * enemyTypeMultiplier(move));
-  return en.weakened ? Math.floor(raw / 2) : raw;
+  return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
 async function finish(won) {
@@ -759,7 +764,8 @@ function renderStatus() {
   const enemyBadges = [];
   if (en.block)    enemyBadges.push(['🛡️', en.block, `Block ${en.block}: soaks up damage until its next turn`, 'block']);
   if (en.burn)     enemyBadges.push(['🔥', en.burn, `Burn ${en.burn}: takes ${en.burn} damage at the start of its turn`]);
-  if (en.weakened) enemyBadges.push(['📉', '', 'Weakened: its next attack deals half damage']);
+  if (en.weak)     enemyBadges.push(['📉', en.weak, `Weak ${en.weak}: deals 25% less damage for ${en.weak} more turn${en.weak > 1 ? 's' : ''}`]);
+  if (en.vulnerable) enemyBadges.push(['💔', en.vulnerable, `Vulnerable ${en.vulnerable}: takes 50% more damage from your attacks for ${en.vulnerable} more turn${en.vulnerable > 1 ? 's' : ''}`]);
   if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 

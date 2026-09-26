@@ -249,14 +249,16 @@ export const ENEMY_DEFS = {
 };
 
 /** Elite version of an enemy: bigger, meaner, with an extra move. */
+export const ELITE = { hpMult: 1.6, rampage: 14 };
+
 export function eliteOf(def) {
   return {
     ...def,
     name: `Alpha ${def.name}`,
-    hp: Math.round(def.hp * 1.6),
+    hp: Math.round(def.hp * ELITE.hpMult),
     elite: true,
     description: `A much bigger ${def.name}. Watch out for its Rampage.`,
-    moves: [...def.moves, { kind: 'attack', name: 'Rampage', amount: 14 }],
+    moves: [...def.moves, { kind: 'attack', name: 'Rampage', amount: ELITE.rampage }],
   };
 }
 
@@ -276,19 +278,19 @@ export const BIOMES = [
     id: 'clearing', name: 'Whispering Clearing',
     normals: ['rattata', 'pidgey', 'oddish', 'poliwag', 'vulpix'],
     elites: ['gloom', 'poliwhirl', 'growlithe'], bosses: ['snorlax'],
-    hpMult: 1.4, dmgBonus: 7, bossBonus: 9,
+    hpMult: 1.2, dmgBonus: 4, bossBonus: 5,
   },
   {
     id: 'shrine', name: 'Overgrown Shrine',
     normals: ['zubat', 'geodude', 'growlithe', 'bellsprout', 'krabby'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['tangrowth', 'magmar', 'lapras'],
-    hpMult: 3.5, dmgBonus: 21, bossBonus: 27,
+    hpMult: 2.9, dmgBonus: 11, bossBonus: 16,
   },
   {
     id: 'wastes', name: 'Ember Wastes',
     normals: ['machop', 'ponyta', 'staryu', 'rhyhorn', 'tangela'],
     elites: ['gloom', 'poliwhirl', 'arcanine'], bosses: ['salamence'],
-    hpMult: 6.5, dmgBonus: 37, bossBonus: 44,
+    hpMult: 5.2, dmgBonus: 22, bossBonus: 28,
   },
 ];
 

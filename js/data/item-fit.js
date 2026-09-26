@@ -96,4 +96,10 @@ export const ITEM_FIT = {
   'water-stone': [6, 6, 20, 20],
   'waterium-z': [8, 12, 16, 9],
   'white-herb': [6, 8, 19, 17],
+  'expert-belt': [5, 5, 22, 21],
+  'occa-berry': [7, 8, 17, 17],
+  'rindo-berry': [6, 6, 19, 20],
+  'passho-berry': [6, 7, 20, 18],
+  'black-glasses': [5, 9, 21, 15],
+  'wise-glasses': [5, 9, 21, 15],
 };

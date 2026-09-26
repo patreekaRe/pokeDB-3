@@ -67,16 +67,23 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `title` explaining it); powers leave the fight once played, like StS.
   There's no exhaust pile icon (the user's call, for now).
   Each type has an archetype: Fire burn + burst + HP-for-damage, Grass
-  healing + growing strength, Water block + draw + hitting back. Weaken
-  is the strongest defensive effect in the game (it halves the 30+ hits
-  of the late biomes), so it's rationed per type. Water starts with none
-  (Fire's deck has two, Grass's one), which made it the weakest type at
-  every Trainer Level, dying early to long biome-1 fights (Alpha Gloom,
-  Snorlax). Withdraw's 10 block (vs Flame Wall's 9) makes up for it; a
-  repeatable Weaken on Bubble overshot to ~90% at Level 5. Water's other
-  Weakens are Whirlpool (uncommon, 1 cost) and the evolution cards Bubble
-  Beam and Scald. Before Whirlpool cost 1, Bubble Beam (offered in half of
-  runs) decided Water runs: ~95% wins after biome 1 with it, ~55% without.
+  healing + growing strength, Water block + draw + hitting back.
+  StS revamp (2026-09-26, the user's call: "more like StS"): every card is
+  modelled on a Slay the Spire 1 card (named in a comment on its line) at
+  StS's numbers x~1.2 (Strike 6 -> 7, Defend 5 -> 6), keeping StS's price
+  per energy. Starting decks are StS-shaped: 4 attacks, 4 blocks, 2
+  signature cards (Fire: Scorch = Bash + Will-O-Wisp; Grass: Seed Bomb =
+  Bash + Absorb, one of its blocks a Cotton Guard; Water: Bubble + Dive =
+  Shrug It Off), no Tailwind. `weaken: N` is StS's Weak (enemy deals 25%
+  less for N enemy turns, `WEAK_MULT`) and `vulnerable: N` its Vulnerable
+  (your attacks deal 50% more, `VULNERABLE_MULT`); both tick down at the end
+  of each enemy turn (`enemy.weak` / `enemy.vulnerable` in `js/battle.js`),
+  and `makeCard()` puts an explaining `title` on the text. Enemy numbers
+  were retuned around the cards (biome `dmgBonus` 4/11/22, `bossBonus`
+  5/16/28, `hpMult` 1.2/2.9/5.2; Fierce Bosses +2 damage, not +4). Fire
+  has the fewest defensive cards, so its Defend (Flame Wall) blocks 8 and
+  its Flame Barrier (Burning Bulwark) is 1 cost; without that Fire trailed
+  the others by 15-30 points.
   Card-pool review (bot harness, 2026-09-24): as one extra copy in the
   starting deck, block, Weaken, healing and powers raise win rates and big
   attacks lower them (Flare Blitz, Fire Blast, Solar Beam: −15 to −30
@@ -345,7 +352,7 @@ row in opposite columns, which keeps the scene short. The title row holds
 just the name (and the enemy's type chip); under the HP bar, `.nameplate-foot`
 has the **status badges** on the left and the HP numbers on the right. The
 badges read like PSN/PAR in the games: no box,
-just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, weakened, strength, focus,
+just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, Weak, Vulnerable, strength, focus,
 guard, next-turn energy, your own strength, and one per active power), built by `badgeFor()` in `js/battle.js`. They fill
 in from the left and wrap onto a second line when they reach the HP numbers. A badge
 only renders while its status is active, and each one explains itself in
@@ -514,7 +521,7 @@ Stat changes look like the games': `statFx(side, dir)` in `js/battle.js` lays a 
 with the sprite's own GIF (`mask`, contain, 50% 100%, the same fit as the `<img>`), with stepped stripes that
 rise warm (`up`) or sink blue (`down`) for 0.9 s. It sits in `#player-zone` / `#enemy-portrait-box` so it moves
 with a shake. Raises: strength, focus, Guard and block too (the user's call: block is Defense), either side,
-including block at the start of a turn; drops: Weaken. Skipped under reduced motion.
+including block at the start of a turn; drops: Weak and Vulnerable. Skipped under reduced motion.
 Battle moments: a hit that takes at least a quarter of the target's HP
 (clamped to 12–25) runs `bigHit()` in `js/battle.js`, which jolts `.arena`
 (the `translate` property, so sprite transforms are untouched) and flashes the
@@ -795,8 +802,8 @@ starter tap blips then cries. New buttons get it for free; to silence one, keep 
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
 removal is paid for), `ball-throw` / `ball-open` (the battle intro's Poké Ball; `ball-open` also on the Continue card),
-`stat-up` (strength or focus gained, either side, enemy buffs and Enrage too), `stat-down` (the enemy is
-Weakened), `item-get` (a relic or item received: reward picks via `confirmSound`, the Fan Club gift,
+`stat-up` (strength or focus gained, either side, enemy buffs and Enrage too), `stat-down` (the enemy gets
+Weak or Vulnerable), `item-get` (a relic or item received: reward picks via `confirmSound`, the Fan Club gift,
 the Shrine; not Mart buys), `low-hp` (looped with `setLoop()` in `js/audio.js` while your HP is at 20% or
 below, set on every `renderAll()`, off when the battle ends, is abandoned, or on mute), `event` (walking into a ❓ room, in `enterNode()`,
 so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, not relics; `potion.mp3`, the user's call; never the Center's `heal`),
