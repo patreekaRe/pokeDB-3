@@ -114,7 +114,7 @@ Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
 - Biome 3: Torkoal, Victreebel, Whiscash; Aerodactyl (elite); Cradily (boss)
 (Some of these were since used in the main list or aren't pure Normal; re-check before using.)
 
-## Pokédex (step 6)
+## Pokédex (step 7)
 
 - Fight rooms on the map show a silhouette until you've beaten that Pokémon; after that, its
   sprite and weakness.
