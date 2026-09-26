@@ -2216,7 +2216,7 @@ body.battle-intro { pointer-events: none; }
   box-shadow: 2px 2px 0 var(--win-shadow);
   color: var(--win-ink);
   font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 .index-tab.type-fire  { --c1: #ff8f4d; --c2: #b8321a; }
@@ -2227,14 +2227,17 @@ body.battle-intro { pointer-events: none; }
 .index-tab[aria-selected="true"] { border-color: var(--c2); background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); transform: translateY(-2px); box-shadow: 2px 4px 0 var(--win-shadow); }
 .index-dialog .card-pool { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(144px, 1fr)); }
 .index-head { grid-column: 1 / -1; margin-top: 14px; }
-.index-dialog .index-heading { display: flex; align-items: baseline; gap: 8px; margin: 0; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.8rem; color: #283060; }
+.index-dialog .index-heading { display: flex; align-items: baseline; gap: 8px; margin: 0; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 1rem; color: #283060; }
 .index-count { font-size: 0.7em; color: var(--muted); }
+#index-total { white-space: nowrap; }
 .index-dialog .index-note { margin: 6px 0 0; color: var(--muted); font-size: 0.85rem; }
 @media (max-width: 720px) {
   .index-dialog { padding: 16px; }
+  .index-dialog h2 { font-size: 1.1rem; }
+  #index-total { font-size: 0.7rem; }
   .index-dialog .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 8px; }
   .index-tabs { top: -16px; margin: 0 -16px 4px; gap: 5px; padding: 8px 6px 10px; }
-  .index-tab { flex-direction: column; gap: 3px; padding: 6px 4px 5px; min-width: 0; flex: 1 1 0; font-size: 0.5rem; }
+  .index-tab { flex-direction: column; gap: 3px; padding: 6px 4px 5px; min-width: 0; flex: 1 1 0; font-size: 0.62rem; }
 }
 
 /* ---------- 8. STATS & ACHIEVEMENTS (from the Poké Ball menu) ---------- */

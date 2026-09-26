@@ -117,7 +117,7 @@
 /* the description stays in the normal font: pixel letters would be too small to read at card size */
 .card-text {
   font-family: var(--font);
-  font-size: 8.4cqw;
+  font-size: calc(8.4cqw * var(--text-fit, 1));
   font-weight: 700;
   line-height: 1.22;
   padding: 2cqw 3cqw;

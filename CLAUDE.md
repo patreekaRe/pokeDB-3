@@ -694,7 +694,11 @@ Anything with a hard-coded light colour (white text, `#dfe3ff`) needs a
 Color Pokémon Trading Card Game: square type-coloured frame, pixel checker
 body, a round PP cost set inside the frame (a mini PP box: white disc, salmon ring), pixel-font name/type, a framed art window and a
 cream text window. The description stays in the normal font on purpose:
-pixel letters would be too small to read at card size.
+pixel letters would be too small to read at card size. A long text or a two-line
+name could push the text window out of the card, so `makeCard()` hands every card
+to a `ResizeObserver` (`fitCard()` in `js/ui.js`): once it's first laid out, its
+`--name-fit` / `--text-fit` shrink just enough to fit (measured, since the fonts
+differ per device; everything is in cqw, so one fit holds at any size).
 Window text (and the HP bar, biome sign, PP box...) uses Press Start 2P, the
 8x8 Game Boy-style font, as `var(--pixel-font)`. It's declared by hand as
 "PokeDB Pixel" at the top of `css/base.css` with `size-adjust: 66%` (its

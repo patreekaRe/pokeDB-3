@@ -124,7 +124,37 @@ export function makeCard(card, options = {}) {
   node.append(face);
 
   if (options.count > 1) node.append(el('span', 'in-deck', `×${options.count}`));
+  fitWatch.observe(node);
   return node;
+}
+
+/* A long text or a two-line name can push the text window out of the card. The fonts differ
+   between devices, so each card is measured once it's first laid out and its name and text
+   shrink just enough to fit. Everything inside is in cqw, so one fit holds at any size. */
+const fitWatch = new ResizeObserver((entries) => {
+  for (const { target, contentRect } of entries) {
+    if (!contentRect.width) continue;
+    fitWatch.unobserve(target);
+    fitCard(target);
+  }
+});
+
+function fitCard(node) {
+  const face = node.querySelector('.card-face');
+  const name = node.querySelector('.card-name');
+  const text = node.querySelector('.card-text');
+  let nameFit = parseFloat(name.style.getPropertyValue('--name-fit')) || 1;
+  while (name.scrollWidth > name.clientWidth + 1 && nameFit > 0.6) {
+    nameFit -= 0.04;
+    name.style.setProperty('--name-fit', nameFit.toFixed(2));
+  }
+  // the text window may reach halfway into the frame's bottom padding
+  const room = () => face.clientHeight - parseFloat(getComputedStyle(face).paddingBottom) / 2;
+  let textFit = 1;
+  while (text.offsetHeight && text.offsetTop + text.offsetHeight > room() && textFit > 0.7) {
+    textFit -= 0.04;
+    text.style.setProperty('--text-fit', textFit.toFixed(2));
+  }
 }
 
 /** A card's item art, cropped to the sprite's visible pixels (ITEM_FIT) so the CSS can scale it to fill the art window. */
