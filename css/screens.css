@@ -2491,10 +2491,10 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 
 /* ---------- the Pokémon Center: no tiles, you tap the healing machine or the PC in the scene ---------- */
 /* the scene shows at full strength here, like a battle, so the counter reads as the place you're standing in */
-body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { background: none; }
-.reward-options.center-room { padding: 0; }
+body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop::after { background: none; }
+.reward-options:is(.center-room, .event-room) { padding: 0; }
 /* the text box sits on the floor just under the counter (--counter-foot, placeCenterSpots()), and Leave at the bottom */
-#reward-screen:has(.center-room) .reward-bottom {
+#reward-screen:has(:is(.center-room, .event-room)) .reward-bottom {
   position: fixed;
   top: calc(var(--counter-foot, 70vh) + 12px);
   bottom: auto;
@@ -2502,17 +2502,17 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
   translate: -50% 0;
   width: min(calc(100% - 32px), var(--log-w));
 }
-#reward-screen:has(.center-room) #reward-skip { margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
+#reward-screen:has(:is(.center-room, .event-room)) #reward-skip { margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
 /* each choice is a see-through button laid over its machine (placeCenterSpots() in js/run.js) */
-.center-room .reward-option {
+:is(.center-room, .event-room) .reward-option {
   position: fixed;
   z-index: 2;
   border-radius: var(--round-sm);
   cursor: pointer;
 }
-.center-room .reward-option:is(:hover, :focus-visible) { transform: none; background: rgba(255, 255, 255, 0.18); }
-.center-room .reward-option:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
-.center-room .reward-option:disabled { opacity: 1; cursor: not-allowed; }
+:is(.center-room, .event-room) .reward-option:is(:hover, :focus-visible) { transform: none; background: rgba(255, 255, 255, 0.18); }
+:is(.center-room, .event-room) .reward-option:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
+:is(.center-room, .event-room) .reward-option:disabled { opacity: 1; cursor: not-allowed; }
 /* the patient monitor (centerVitals()): your Pokémon's HP in green phosphor over the scene's monitor screen, the heal
    Rest would give blinking on the end of the bar, and the bar filling up in real time while you rest */
 .center-vitals {
@@ -2571,7 +2571,7 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
   white-space: nowrap;
   animation: spotBounce 0.9s ease-in-out infinite;
 }
-.center-room .reward-option + .reward-option .center-label { border-color: #3878f0; animation-delay: -0.45s; }
+:is(.center-room, .event-room) .reward-option + .reward-option .center-label { border-color: #3878f0; animation-delay: -0.45s; }
 .center-label::after {
   content: "";
   position: absolute;
@@ -2585,8 +2585,12 @@ body[data-screen="reward-screen"]:has(.center-room) #backdrop::after { backgroun
   clip-path: polygon(0 0, 100% 0, 100% 50%, 70% 50%, 70% 100%, 30% 100%, 30% 50%, 0 50%);
 }
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
-.center-room .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; filter: grayscale(1); }
-.center-room.resting .center-label { visibility: hidden; }
+:is(.center-room, .event-room) .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; filter: grayscale(1); }
+:is(.center-room, .event-room).resting .center-label { visibility: hidden; }
+/* the ? events with a scene of their own (eventRoom()) work the same way over their props; the well's two tosses are
+   its two halves, so their signs lean apart */
+.well-room .reward-option:first-child .center-label { translate: -80% 0; }
+.well-room .reward-option + .reward-option .center-label { translate: -20% 0; }
 @media (prefers-reduced-motion: reduce) { .center-label { animation: none; } }
 
 /* ---------- the treasure grotto (treasureRoom() in js/run.js): a Poké Ball chest on the scene's dais, sized in the

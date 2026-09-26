@@ -30,7 +30,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, s
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 
 let run = null;
@@ -861,32 +861,69 @@ function moneyOption(icon, title, text, price, onPick) {
   return { ...textOption(icon, title, text, onPick), disabled: run.money < price };
 }
 
+// events with a scene of their own (PLACE_ART in js/scene.js): no tiles, their choices are signs over its props
+const EVENT_SCENES = { 'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well' };
+
 function eventRoom(node) {
   const event = EVENTS_BY_ID[node.event.id];
   const back = () => eventRoom(node);
-  const { options, leave = true } = EVENT_CHOICES[event.id](event, node.event, back);
+  const { options, leave = true, sub = event.text } = EVENT_CHOICES[event.id](event, node.event, back);
+  const scene = EVENT_SCENES[event.id];
   showChoice({
     title: `${event.icon} ${event.name}`,
-    sub: event.text,
+    sub,
     options,
     skipLabel: 'Leave',
     onSkip: leave ? showMap : undefined,
+    layout: scene ? `event-room ${scene}-room` : '',
   });
+  if (!scene) return;
+  showPlaceScene(scene, { biome: BIOMES[run.biome].id });
+  placeEventSpots();
 }
+
+/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. */
+const spotOption = (label, hint, onPick, disabled = false) => ({ node: centerLabel(label, hint), disabled, onPick });
+
+/** Play a choice out on the event's scene before it takes effect; false if the run ended meanwhile. */
+async function playOut(act, opts) {
+  const thisRun = run;
+  $('reward-options').classList.add('resting');
+  await sleep(sceneAct(act, opts));
+  return run === thisRun;
+}
+
+/** Lay the event's choices over its props; the scene tells us whenever it repaints. */
+function placeEventSpots() {
+  const box = $('reward-options'), spots = box.classList.contains('event-room') && eventSpots();
+  if (!spots) return;
+  box.querySelectorAll('.reward-option').forEach((btn, i) => {
+    const r = spots.spots[i];
+    if (!r) return;
+    const w = Math.max(r.width, 56), h = Math.max(r.height, 56);
+    Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
+  });
+  $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
+}
+addEventListener('scenepaint', placeEventSpots);
 
 const EVENT_CHOICES = {
   'berry-tree'(event) {
     const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.eatHeal));
     const grow = perBiome(event.plantMaxHp);
-    return { options: [
-      textOption('💚', 'Eat the berries', `Heal ${heal} HP.`, () => {
+    return { sub: [event.text, 'Eat the berries to heal, or plant one to grow stronger.'], options: [
+      spotOption(heal ? `Eat +${heal} HP` : 'Eat', `Eat the berries: heal ${heal} HP.`, async () => {
+        if (!await playOut('eat')) return;
         run.hp += heal;
+        playSound('heal-hp');
         tell(`Healed ${heal} HP.`);
         showMap();
       }),
-      textOption('❤️', 'Plant one', `Max HP +${grow}.`, () => {
+      spotOption(`Plant +${grow} max HP`, `Plant one: max HP +${grow}.`, async () => {
+        if (!await playOut('plant')) return;
         run.maxHp += grow;
         run.hp += grow;
+        playSound('stat-up');
         tell(`Max HP +${grow}!`);
         showMap();
       }),
@@ -932,15 +969,19 @@ const EVENT_CHOICES = {
   'hot-spring'(event) {
     const loss = perBiome(event.soakMaxHpLoss);
     const dip = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.dipHeal));
-    return { options: [
-      textOption('♨️', 'Soak for hours', `Fully heal, but lose ${loss} max HP.`, () => {
+    return { sub: [event.text, `Soak in the big pool for a full heal (max HP -${loss}), or take a quick dip.`], options: [
+      spotOption('Soak: full HP', `Soak for hours: fully heal, but lose ${loss} max HP.`, async () => {
+        if (!await playOut('soak')) return;
         run.maxHp -= loss;
         run.hp = run.maxHp;
+        playSound('heal-hp');
         tell(`Fully healed. Max HP -${loss}.`);
         showMap();
       }),
-      textOption('💚', 'A quick dip', `Heal ${dip} HP.`, () => {
+      spotOption(dip ? `Dip +${dip} HP` : 'Dip', `A quick dip: heal ${dip} HP.`, async () => {
+        if (!await playOut('dip')) return;
         run.hp += dip;
+        playSound('heal-hp');
         tell(`Healed ${dip} HP.`);
         showMap();
       }),
@@ -979,17 +1020,19 @@ const EVENT_CHOICES = {
 
   'wishing-well'(event, state) {
     const relics = state.relics.map(id => RELICS_BY_ID[id]).filter(r => !run.relics.includes(r.id));
-    return { options: event.tosses.map(({ price, odds }, i) => {
+    return { sub: [event.text, 'Toss a coin, or a big one for better odds.'], options: event.tosses.map(({ price, odds }, i) => {
       const cost = perBiome(price);
-      const option = moneyOption(i ? '💴' : '🪙', `Toss ₽${cost}`, relics.length ? `A ${Math.round(odds * 100)}% chance to find a relic.`
-        : 'Nothing down there you don\'t already have.', cost, () => {
+      const hint = relics.length ? `Toss ₽${cost}: a ${Math.round(odds * 100)}% chance to find a relic.` : 'Nothing down there you don\'t already have.';
+      return spotOption(`Toss ₽${cost}`, hint, async () => {
         run.money -= cost;
         setMoney(run.money);
-        if (state.luck < odds) return showRelics('Your wish came true!', relics, showMap);
+        playSound('buy');
+        const win = state.luck < odds;
+        if (!await playOut('toss', { big: i > 0, win })) return;
+        if (win) return showRelics('Your wish came true!', relics, showMap);
         tell('Plop. Nothing but ripples.');
         showMap();
-      });
-      return { ...option, disabled: option.disabled || !relics.length };
+      }, run.money < cost || !relics.length);
     }) };
   },
 

@@ -239,6 +239,21 @@ rewards; it has no Leave. A new event needs an entry in both places, an
 icon in `ICONS` for any new emoji, and a `RUN_SAVE_VERSION` bump only if the
 node shape changes.
 
+Events are getting scenes of their own, a few per session (Berry Tree, Hot Spring and Wishing Well so far;
+the other seven still show plain tiles over the map's scene). `EVENT_SCENES` in `js/run.js` maps an event to
+its `PLACE_ART` entry; `outdoor: true` makes `showPlaceScene()` paint that biome's own wild scene (sky,
+backdrop, ground, life) with the event's props in the middle (`prop`, `eventProps()` in `js/scene.js`), and
+its `biomes` only retint the props. Like the Center, there are no tiles: layout `event-room <scene>-room`
+lays each choice as a see-through button over a prop (`life.eventSpots`, `eventSpots()`, placed by
+`placeEventSpots()`) under a bouncing `.center-label` (`spotOption()`), with the text box under the props
+(`--counter-foot`). A pick plays out on the scene first (`playOut()` → `sceneAct()`: frames in `ACTS`, drawn
+by the prop's draw function off `actFrame()`; skipped under reduced motion), then takes effect. Berry Tree:
+eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Hot Spring: soak
+in the big pool (a cloud of steam) or dip in the small one (ripples); a rubber duck bobs. Wishing Well: its
+two halves are the two tosses (signs leaning apart); a coin (a Nugget for the big toss) arcs in, splashes,
+and a win sends light and sparkles up. `life.keep` keeps grass blades and lava cracks off the props. Sounds:
+`heal-hp` for the heals, `stat-up` for planting, `buy` for a toss.
+
 ## Items
 
 One-use items (Slay the Spire's potions) in `js/data/items.js`: `effects`

@@ -356,6 +356,61 @@ const PLACE_ART = {
       },
     },
   },
+
+  /* ? events outdoors: the biome's own scene (BIOME_ART's wild look: its sky, backdrop and ground) with the event's
+     props in the middle (`prop`, painted by eventProps()); `biomes` retints the props to suit the biome. */
+  berry: {   // an Oran Berry tree in a plot of soft soil, like the games' berry plots, and an empty plot with a sign
+    outdoor: true, prop: 'berry', horizon: 0.5,
+    leaf: ['#98e070', '#62b84c', '#3e9040', '#246a2e'], leafLine: '#15401c',
+    bark: ['#b07c4c', '#7e5430', '#54341c'],
+    berry: ['#e0f4ff', '#60a8f8', '#2e68d8', '#1a3c90'], stem: '#3e9a38',
+    soil: ['#a87448', '#7e5230', '#5e3a20', '#4a2c16', '#2a180c'],
+    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
+    life: ['berry'],
+    biomes: {
+      shrine: { leaf: ['#88d078', '#52a458', '#347e46', '#1e5a34'], leafLine: '#0e3620' },
+      wastes: {   // a hardy, sun-scorched tree in ashy soil
+        leaf: ['#c8c060', '#98a040', '#6e7a32', '#465024'], leafLine: '#262a10',
+        soil: ['#8a6a58', '#5e463a', '#46342c', '#382822', '#1a100c'],
+      },
+    },
+  },
+
+  spring: {   // a hot spring ringed with round stones, a little pool below it, a ♨ sign, a wooden bucket and a rubber duck
+    outdoor: true, prop: 'spring', horizon: 0.5,
+    water: ['#f0ffff', '#98ecf0', '#58ccdc', '#3494b8'],
+    steam: '#ffffff',
+    poolStone: ['#e8e8e0', '#b8b8b0', '#86867e', '#3a3a38'],
+    onsen: ['#fff4dc', '#e03828'],
+    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'], hoop: '#505058',
+    duck: ['#f8e048', '#c8a018', '#f89830'],
+    life: ['spring'],
+    biomes: {
+      shrine: { poolStone: ['#d0d4c0', '#a2a894', '#747a68', '#2e3428'] },
+      wastes: { poolStone: ['#9a8078', '#745a52', '#54403a', '#1e1412'] },
+    },
+  },
+
+  well: {   // an old stone wishing well under a tiled roof, with a crank and a bucket, coins glinting in the water
+    outdoor: true, prop: 'well', horizon: 0.5,
+    wellStone: ['#e0e4ec', '#b4bac8', '#8a90a0', '#6a7080', '#303440'],
+    wellWater: ['#4a7ab8', '#1e3c70', '#0c1a38'],
+    roof: ['#f87858', '#e04030', '#a82820', '#501010'],
+    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'], hoop: '#505058',
+    rope: ['#e8d098', '#a88850'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'], wish: '#fff8d0',
+    life: ['well'],
+    biomes: {
+      shrine: {   // mossy stones under a green copper roof
+        wellStone: ['#d4d8c4', '#a8ae98', '#7c846e', '#5e6a50', '#283020'],
+        roof: ['#88d0b0', '#4aa080', '#2e7458', '#123828'],
+      },
+      wastes: {   // dark basalt under slate
+        wellStone: ['#a08c84', '#7a6660', '#5a4844', '#46363a', '#1a1012'],
+        roof: ['#8a8a98', '#5e5e6a', '#3e3e48', '#18181e'],
+      },
+    },
+  },
 };
 
 
@@ -375,9 +430,15 @@ export function showMenuScene(type) {
 /** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. `floor` (a function giving
     a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles, and
     `span` (one giving its page [left, right]) lets the scene dress its ends. A place with `biomes` (the treasure
-    grotto) takes its look from `biome`. */
+    grotto) takes its look from `biome`; an `outdoor` one (a ? event) stands in that biome's own scene. */
 export function showPlaceScene(place, { floor = null, span = null, biome = null } = {}) {
   const { biomes, ...art } = PLACE_ART[place];
+  if (art.outdoor) {
+    const { kinds, storm, ...shared } = BIOME_ART[biome] || BIOME_ART.clearing;
+    const { pad, life: own, ...wild } = kinds.wild;
+    paintScene(`place/${place}/${biome}`, { ...shared, ...wild, ...art, ...biomes?.[biome], life: [...own, ...art.life] }, floor, span);
+    return;
+  }
   const look = biomes && (biomes[biome] || Object.values(biomes)[0]);
   paintScene(`place/${place}${look ? `/${biome}` : ''}`, look ? { ...art, ...look } : art, floor, span);
 }
@@ -551,6 +612,7 @@ function paintBase() {
   if (S.raw.backdrop === 'center') centerFront();
   if (S.raw.backdrop === 'mart') martFront();
   if (S.raw.backdrop === 'treasure') grottoFront();
+  if (S.raw.prop) eventProps();
 
   return Uint32Array.from(px);
 }
@@ -1698,6 +1760,383 @@ function chestBody() {
   for (let x = 16; x <= 20; x++) { const b = chestButton(x, BUTTON.y); if (b) solid(x, 0, b); }
 }
 
+/* ============================================================
+   ? EVENTS OUTDOORS: props standing in the biome's scene. The page lays its choices over them (eventSpots()) and
+   plays each choice out on them (sceneAct()): berries falling, a sprout, steam, ripples, a coin into the well.
+   ============================================================ */
+
+const groundAt = (k) => horizon + Math.round((H - horizon) * k);
+const kept = (x, y) => life.keep?.some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
+
+function eventProps() {
+  ({ berry: berryScene, spring: springScene, well: wellScene })[S.raw.prop]();
+  if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
+}
+
+/** Fill a shape (`mask`) inside a box with `colourAt`, outlined in `line` where it meets the outside, like the games' sprites. */
+function outlined(x0, y0, x1, y1, mask, colourAt, line) {
+  for (let y = Math.floor(y0) - 1; y <= y1 + 1; y++) for (let x = Math.floor(x0) - 1; x <= x1 + 1; x++) {
+    if (mask(x, y)) solid(x, y, colourAt(x, y));
+    else if (mask(x - 1, y) || mask(x + 1, y) || mask(x, y - 1) || mask(x, y + 1)) solid(x, y, line);
+  }
+}
+
+function groundShadow(cx, cy, rx, ry) {
+  for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
+    const d = (x / rx) ** 2 + (y / ry) ** 2;
+    if (d <= 1 && (d < 0.55 || dither(cx + x, cy + y) < 8)) tint(cx + x, cy + y, 0.72);
+  }
+}
+
+/** Where the event's choices are on screen, in CSS pixels ({ spots: [{ left, top, width, height }], foot: a y under
+    the props for the text box }), or null. */
+export function eventSpots() {
+  if (!life.eventSpots || !canvas || !S?.raw.prop) return null;
+  const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
+  const rect = ({ x0, x1, y0, y1 }) => ({ left: box.left + x0 * sx, top: box.top + y0 * sy, width: (x1 - x0 + 1) * sx, height: (y1 - y0 + 1) * sy });
+  return { spots: life.eventSpots.map(rect), foot: box.top + life.foot * sy };
+}
+
+// how long each choice plays out, in frames, and what it sets going
+const ACTS = {
+  eat: { frames: 13, start: () => [...life.berries].sort((a, b) => b.y - a.y).slice(0, 3).forEach((b, i) => { b.fall = i * 2; b.floor = life.treeFoot + 1 + i; }) },
+  plant: { frames: 14, start: () => { [...life.berries].sort((a, b) => a.y - b.y)[0].fly = 0; } },
+  soak: { frames: 16 },
+  dip: { frames: 11 },
+  toss: { frames: ({ win }) => (win ? 26 : 15) },
+};
+
+/** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it). */
+export function sceneAct(name, opts = {}) {
+  const act = ACTS[name];
+  if (!act || !timer || !S?.raw.prop) return 0;
+  life.act = { name, at: tick, ...opts };
+  act.start?.();
+  return (typeof act.frames === 'function' ? act.frames(opts) : act.frames) * 1000 / FPS;
+}
+const actFrame = (name) => (life.act?.name === name ? tick - life.act.at : -1);
+
+/* ---------- the Berry Tree ---------- */
+
+// the crown's leafy clumps [dx, dy, r] from the tree's foot, back to front, and where the berries hang
+const CROWN = [[-5, -25, 6.5], [5, -25, 6.5], [0, -19, 10], [-9, -14, 7], [9, -14, 7]];
+const BERRIES = [[-11, -24], [-3, -28], [5, -23], [-7, -17], [1, -14], [10, -18], [-12, -11], [7, -10]];
+
+function berryScene() {
+  const cx = (W >> 1) - 13, fy = groundAt(0.42) - 1, plot = { x: cx + 31, y: fy + 4 };
+  groundShadow(cx + 3, fy + 2, 18, 4);
+  softSoil(cx, fy, 13, 3);
+  softSoil(plot.x, plot.y, 8, 2);
+  signPost(plot.x + 13, plot.y + 3);
+  berryTree(cx, fy);
+  life.berries = BERRIES.map(([dx, dy], i) => ({ x: cx + dx, y: fy + dy, phase: i * 23 }));
+  life.treeFoot = fy;
+  life.plot = plot;
+  life.eventSpots = [
+    { x0: cx - 16, x1: cx + 16, y0: fy - 32, y1: fy + 4 },
+    { x0: plot.x - 10, x1: plot.x + 10, y0: plot.y - 7, y1: plot.y + 4 },
+  ];
+  life.foot = plot.y + 6;
+  life.keep = [{ x0: cx - 18, x1: plot.x + 18, y0: fy - 34, y1: plot.y + 5 }];
+}
+
+/** A square of soft, tilled soil like the games' berry plots: furrowed rows and a darker front edge. */
+function softSoil(cx, cy, hw, hh) {
+  const [lit, soil, furrow, face, line] = S.soil;
+  const inPlot = (x, y) => Math.abs(x - cx) <= hw && y >= cy - hh && y <= cy + hh + 1 && !(Math.abs(x - cx) === hw && (y === cy - hh || y === cy + hh + 1));
+  outlined(cx - hw, cy - hh, cx + hw, cy + hh + 1, inPlot,
+    (x, y) => (y === cy + hh + 1 ? face : y === cy - hh ? lit : (y - cy + hh) % 2 === 0 && x % 3 ? furrow : soil), line);
+}
+
+/** A little wooden sign on a post, like the ones by the games' berry plots. */
+function signPost(cx, foot) {
+  const [lit, wood, dark, line] = S.wood;
+  pixelMap(cx - 4, foot - 9, [
+    'kkkkkkkkk',
+    'kaaaaaaak',
+    'kaddddabk',
+    'kaaaaaabk',
+    'kadddabbk',
+    'kbbbbbbbk',
+    'kkkkakkkk',
+    '...kbk...',
+    '...kbk...',
+  ], { k: line, a: lit, b: wood, d: dark });
+}
+
+/** A round berry tree: a short trunk under leafy clumps lit from the top left, each clump edged where it overlaps one behind. */
+function berryTree(cx, fy) {
+  const [barkLit, bark, barkDark] = S.bark, tones = S.leaf, line = S.leafLine;
+  outlined(cx - 3, fy - 11, cx + 3, fy, (x, y) => y >= fy - 11 && y <= fy && Math.abs(x - cx) <= (y >= fy - 1 ? 2 : 1),
+    (x) => (x < cx ? barkLit : x > cx ? barkDark : bark), line);
+  const clump = (x, y) => {
+    for (let i = CROWN.length - 1; i >= 0; i--) {
+      const [dx, dy, r] = CROWN[i], ux = (x - cx - dx) / r, uy = (y - fy - dy) / r, d = Math.hypot(ux, uy);
+      if (d <= 1) return { i, ux, uy, d };
+    }
+    return null;
+  };
+  const behind = (x, y, i) => CROWN.some(([dx, dy, r], j) => j < i && Math.hypot(x - cx - dx, y - fy - dy) <= r);
+  outlined(cx - 17, fy - 33, cx + 17, fy - 6, (x, y) => !!clump(x, y), (x, y) => {
+    const c = clump(x, y);
+    if (c.d > 0.86 && behind(x, y, c.i)) return tones[3];
+    const v = c.ux + c.uy * 1.2, fleck = (x * 2 + y * 3) % 7 === 0 && y % 2 === 0;   // little leaf marks
+    return tones[Math.min(3, (v < -0.7 ? 0 : v < 0.2 ? 1 : v < 0.9 ? 2 : 3) + (fleck ? 1 : 0))];
+  }, line);
+}
+
+/** An Oran Berry: round and blue with a shine and a green stem. */
+function berry(x, y) {
+  const [shine, body, shade, deep] = S.berry;
+  put(x + 1, y - 1, S.stem);
+  put(x, y, shine); put(x + 1, y, body); put(x + 2, y, body);
+  put(x, y + 1, body); put(x + 1, y + 1, shade); put(x + 2, y + 1, shade);
+  put(x + 1, y + 2, deep);
+}
+
+function sparkle(x, y, c) {
+  for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) put(x + dx, y + dy, c);
+}
+
+/** The berries (they glint now and then); eating shakes three loose to bounce on the soil and vanish, planting throws
+    one into the empty plot and a sprout comes up. */
+function drawBerryTree() {
+  const eat = actFrame('eat'), plant = actFrame('plant'), p = life.plot, shine = S.berry[0];
+  for (const b of life.berries) {
+    if (b.gone) continue;
+    let { x, y } = b;
+    if (b.fall != null && eat >= b.fall) {
+      const k = eat - b.fall, land = Math.sqrt((b.floor - b.y) / 0.9);
+      if (k > land + 3) { b.gone = true; continue; }
+      if (k > land + 1) { sparkle(x + 1, b.floor, shine); continue; }
+      y = Math.min(b.floor, b.y + Math.round(0.9 * k * k));
+      x += (x < p.x - 31 ? -1 : 1) * Math.min(k, 3);   // away from the trunk
+    }
+    if (b.fly != null && plant >= 0) {
+      const k = Math.min(1, plant / 6);
+      if (plant >= 6) { b.gone = true; life.sprout = tick; continue; }
+      x = Math.round(b.x + (p.x - 1 - b.x) * k);
+      y = Math.round(b.y + (p.y - 2 - b.y) * k - Math.sin(k * Math.PI) * 10);
+    }
+    berry(x, y);
+    if (Math.sin((tick + b.phase) / 6) > 0.96) put(x + 1, y, shine);
+  }
+  if (life.sprout != null) {
+    const s = tick - life.sprout, [lit, leaf] = S.leaf, { x, y } = p;
+    put(x - 1, y, S.soil[0]); put(x, y - 1, S.soil[0]); put(x + 1, y, S.soil[0]);
+    if (s >= 2) { put(x, y - 1, S.stem); put(x, y - 2, S.stem); put(x - 1, y - 3, lit); put(x + 1, y - 3, leaf); }
+    if (s >= 4) {
+      put(x, y - 3, S.stem); put(x, y - 4, S.stem);
+      for (const [dx, dy, c] of [[-1, -4, lit], [-2, -5, lit], [-1, -5, leaf], [1, -4, leaf], [2, -5, leaf], [1, -5, lit]]) put(x + dx, y + dy, c);
+      if (s < 7) sparkle(x, y - 7, S.berry[0]);
+    }
+  }
+}
+
+/* ---------- the Hot Spring ---------- */
+
+function springScene() {
+  const cx = (W >> 1) - 8, cy = groundAt(0.34);
+  const big = { x: cx, y: cy, rx: 19, ry: 6 }, small = { x: cx + 30, y: cy + 10, rx: 9, ry: 3 };
+  hotPool(big);
+  hotPool(small);
+  if (cx - 39 > 0) onsenSign(cx - 31, cy + 5);   // where there's room left of the pool
+  woodBucket(small.x + 13, small.y + 3);
+  life.pools = [big, small];
+  life.eventSpots = [
+    { x0: big.x - big.rx - 3, x1: big.x + big.rx + 3, y0: big.y - big.ry - 12, y1: big.y + big.ry + 2 },
+    { x0: small.x - small.rx - 3, x1: small.x + small.rx + 3, y0: small.y - small.ry - 4, y1: small.y + small.ry + 3 },
+  ];
+  life.foot = small.y + small.ry + 6;
+  life.keep = [{ x0: big.x - big.rx - 4, x1: small.x + small.rx + 18, y0: big.y - big.ry - 4, y1: small.y + small.ry + 5 }];
+}
+
+const inPool = (p, x, y) => ((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 <= 0.8;
+
+/** Steaming water, darker in the back where the rim shades it, ringed with round stones (bigger at the front). */
+function hotPool({ x: cx, y: cy, rx, ry }) {
+  const [, light, water, deep] = S.water;
+  for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
+    const d = (x / (rx + 0.5)) ** 2 + (y / (ry + 0.5)) ** 2, k = (y + ry) / (2 * ry);
+    if (d <= 1) solid(cx + x, cy + y, k < 0.3 || (k < 0.5 && dither(x, y) < 6) ? deep : d > 0.7 && y > 0 ? light : water);
+  }
+  const [back, front] = ry >= 5 ? [2, 3] : [1.5, 2], n = Math.round(Math.PI * (rx + ry) / (ry >= 5 ? 3.2 : 2.6)), stones = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + 0.2;
+    stones.push({ x: Math.round(cx + Math.cos(a) * (rx + 2)), y: Math.round(cy + Math.sin(a) * (ry + 1.5)), r: Math.sin(a) > 0.3 ? front : back });
+  }
+  stones.sort((a, b) => a.y - b.y).forEach(s => poolStone(s.x, s.y, s.r));
+}
+
+function poolStone(cx, cy, r) {
+  const [lit, body, shade, line] = S.poolStone, ry = Math.max(1, r * 0.75);
+  outlined(cx - r, cy - ry, cx + r, cy + ry, (x, y) => ((x - cx) / (r + 0.5)) ** 2 + ((y - cy) / (ry + 0.5)) ** 2 <= 1, (x, y) => {
+    const v = (x - cx) / r + (y - cy) / ry;
+    return v < -0.6 ? lit : v < 0.6 ? body : shade;
+  }, line);
+}
+
+/** A wooden board with the hot spring mark (♨: three wisps of steam over a bowl) on a post. */
+function onsenSign(cx, foot) {
+  const [board, red] = S.onsen, [, wood, , line] = S.wood;
+  const mark = ['..r...r...r..', '.r...r...r...', '.r...r...r...', '..r...r...r..', '.............', 'r...........r', '.rrrrrrrrrrr.'];
+  pixelMap(cx - 7, foot - 14, [
+    'kkkkkkkkkkkkkkk',
+    ...mark.map(row => `k${row.replace(/\./g, 'w')}k`),
+    'kwwwwwwwwwwwwwk',
+    'kkkkkkkkkkkkkkk',
+    '......kbk......',
+    '......kbk......',
+    '......kbk......',
+  ], { k: line, w: board, r: red, b: wood });
+}
+
+/** A wooden bath bucket with a metal hoop, by the little pool. */
+function woodBucket(cx, foot) {
+  const [lit, wood, dark, line] = S.wood;
+  pixelMap(cx - 3, foot - 5, [
+    '.kkkkk.',
+    'kaaabdk',
+    'khhhhhk',
+    'kaabbdk',
+    '.kkkkk.',
+  ], { k: line, a: lit, b: wood, d: dark, h: S.hoop });
+}
+
+/** Glints sliding over the water, a rubber duck bobbing, steam rising (a cloud of it while you soak) and ripples where you step in. */
+function drawSpring(t) {
+  const soak = actFrame('soak'), dip = actFrame('dip'), [foam, light] = S.water;
+  const surge = soak < 0 ? 0 : Math.max(0, Math.min(1, soak / 4, (16 - soak) / 4));
+  life.pools.forEach((p, i) => {
+    for (let k = 0; k < Math.max(2, Math.round(p.rx / 5)); k++) {
+      const row = p.y - p.ry + 2 + ((k * 3) % Math.max(1, p.ry * 2 - 2));
+      const x = p.x - p.rx + ((Math.floor(t * 0.4) + k * 11 + i * 5) % (p.rx * 2));
+      for (let d = 0; d < 3; d++) if (inPool(p, x + d, row)) put(x + d, row, d === 1 ? foam : light);
+    }
+    const f = i ? dip : soak;
+    if (f >= 0) for (const age of [f, f - 3]) {
+      if (age < 0 || age > 8) continue;
+      const rx = 1 + age * p.rx / 8, ry = Math.max(1, rx * p.ry / p.rx);
+      for (let a = 0; a < Math.PI * 2; a += 0.6 / rx) {
+        const x = Math.round(p.x + Math.cos(a) * rx), y = Math.round(p.y + Math.sin(a) * ry);
+        if (inPool(p, x, y)) put(x, y, foam);
+      }
+    }
+    if (i === 1 && dip >= 0 && dip < 4) for (const dx of [-3, -1, 1, 3]) put(p.x + dx * (1 + dip * 0.5), p.y - 2 - dip * 2 + dip * dip * 0.6, foam);
+  });
+
+  const big = life.pools[0], [yellow, shade, beak] = S.duck;   // the duck, a little Psyduck-yellow
+  const dx = big.x + 8 + Math.round(Math.sin(t / 14) * 4), dy = big.y + ((t >> 2) % 2) - (surge ? Math.round(Math.sin(t) * 1) : 0);
+  pixelMap(dx - 2, dy - 3, ['.yy..', 'yyyb.', 'syyy.', '.ss..'], { y: yellow, s: shade, b: beak });
+  put(dx - 2, dy + 1, foam); put(dx + 2, dy + 1, foam);
+
+  for (const s of life.steam) {
+    const p = life.pools[s.pool], boost = s.pool === 0 ? surge : 0;
+    const age = (s.age + t * s.speed * (1 + boost)) % 32, fade = 1 - age / 32;
+    const x = p.x + s.dx + Math.sin((t + s.age) / 5) * 1.5 + age * 0.12, y = p.y - 1 - age * (0.55 + boost * 0.25);
+    const r = 1.5 + age / 8 + boost * 1.5, k = (0.5 + boost * 0.35) * fade;
+    for (let oy = -r; oy <= r; oy++) for (let ox = -r; ox <= r; ox++) {
+      if (ox * ox + oy * oy <= r * r && dither(Math.round(x + ox), Math.round(y + oy)) < 14) blend(x + ox, y + oy, S.steam, k);
+    }
+  }
+}
+
+/* ---------- the Wishing Well ---------- */
+
+function wellScene() {
+  const cx = W >> 1, foot = groundAt(0.44), hw = 13, rim = foot - 11;
+  groundShadow(cx + 3, foot, hw + 6, 3);
+  wellBody(cx, foot, hw, rim);
+  wellFrame(cx, rim, hw);
+  life.well = { x: cx, y: rim, rx: hw - 3 };
+  life.coins = Array.from({ length: 5 }, () => ({ x: cx - 8 + Math.floor(rand() * 17), y: rim - 1 + Math.floor(rand() * 3), phase: rand() * 60 }));
+  life.eventSpots = [
+    { x0: cx - hw - 5, x1: cx - 1, y0: rim - 32, y1: foot + 2 },
+    { x0: cx, x1: cx + hw + 5, y0: rim - 32, y1: foot + 2 },
+  ];
+  life.foot = foot + 5;
+  life.keep = [{ x0: cx - hw - 6, x1: cx + hw + 6, y0: rim - 34, y1: foot + 3 }];
+}
+
+/** A round stone well: bricks in staggered rows, lit on the left, under a ring of capstones round dark water. */
+function wellBody(cx, foot, hw, rim) {
+  const [lit, body, shade, mortar, line] = S.wellStone, [light, water, deep] = S.wellWater;
+  const bottom = (dx) => foot - 2 + Math.round(2 * Math.sqrt(Math.max(0, 1 - (dx / (hw + 0.5)) ** 2)));
+  outlined(cx - hw, rim, cx + hw, foot, (x, y) => Math.abs(x - cx) <= hw && y >= rim && y <= bottom(x - cx), (x, y) => {
+    const u = (x - cx) / hw, row = Math.floor((y - rim) / 3), brick = (x - cx + hw + (row % 2) * 3) % 6;
+    if ((y - rim) % 3 === 0 || brick === 0) return mortar;
+    return u < -0.55 ? lit : u > 0.45 ? shade : brick === 1 && u < 0.2 ? lit : body;
+  }, line);
+  const rx = hw + 1, ry = 4, hx = hw - 2, hy = 2, seams = 14;
+  outlined(cx - rx, rim - ry, cx + rx, rim + ry, (x, y) => ((x - cx) / (rx + 0.5)) ** 2 + ((y - rim) / (ry + 0.5)) ** 2 <= 1, (x, y) => {
+    if (((x - cx) / (hx + 0.5)) ** 2 + ((y - rim) / (hy + 0.5)) ** 2 <= 1) return y < rim ? deep : y === rim ? water : light;
+    const a = (Math.atan2((y - rim) / ry, (x - cx) / rx) + Math.PI) / (Math.PI * 2) * seams;
+    if (a - Math.floor(a) < 0.12) return mortar;
+    return y < rim - 1 ? lit : y > rim + 1 ? shade : body;
+  }, line);
+}
+
+/** Two posts on the rim holding a crank with a rope and bucket, under a tiled roof, like a house roof in the games. */
+function wellFrame(cx, rim, hw) {
+  const [wLit, wood, wDark, line] = S.wood, [rLit, roof, rDark, rLine] = S.roof, top = rim - 22;
+  for (const x0 of [cx - hw, cx + hw - 1]) {
+    outlined(x0, top, x0 + 1, rim, (x, y) => x >= x0 && x <= x0 + 1 && y >= top && y <= rim, (x) => (x === x0 ? wLit : wDark), line);
+  }
+  const axle = top + 6;
+  outlined(cx - hw + 2, axle, cx + hw - 2, axle + 1, (x, y) => x >= cx - hw + 2 && x <= cx + hw - 2 && y >= axle && y <= axle + 1, (x, y) => (y === axle ? wLit : wood), line);
+  outlined(cx + hw + 2, axle, cx + hw + 4, axle + 4, (x, y) => (y === axle && x >= cx + hw + 2 && x <= cx + hw + 3) || (x === cx + hw + 3 && y >= axle && y <= axle + 3), () => wDark, line);
+  const [rope, ropeDark] = S.rope, bucketTop = rim - 9;
+  for (let y = axle + 2; y < bucketTop; y++) { solid(cx, y, y % 2 ? rope : ropeDark); }
+  pixelMap(cx - 3, bucketTop, [
+    'k.....k',
+    'kkkkkkk',
+    'kaaabdk',
+    'khhhhhk',
+    '.kbbdk.',
+    '..kkk..',
+  ], { k: line, a: wLit, b: wood, d: wDark, h: S.hoop });
+  const peak = top - 9, eave = top + 1, span = hw + 5;
+  outlined(cx - span, peak, cx + span, eave, (x, y) => y >= peak && y <= eave && Math.abs(x - cx) <= 1 + (y - peak) * span / (eave - peak), (x, y) => {
+    const e = Math.abs(x - cx), r = y - peak, left = x < cx;
+    if (y === eave) return rDark;
+    if (e <= 1 || r <= 1) return rLit;
+    if (r % 3 === 2) return left ? roof : rDark;   // the rows of tiles
+    if ((e + (Math.floor(r / 3) % 2) * 2) % 4 === 0) return left ? roof : rDark;
+    return left ? rLit : roof;
+  }, rLine);
+  for (let x = cx - hw; x <= cx + hw; x++) tint(x, eave + 2, 0.75);   // the roof's shadow on the posts and axle
+}
+
+/** Coins glinting at the bottom; a toss arcs a coin (a Nugget for the big one) up from you and into the water with a
+    splash and ripples, and a wish that comes true sends light and sparkles up out of the well. */
+function drawWell(t) {
+  const w = life.well, f = actFrame('toss'), [shine, gold, dark] = S.coin, foam = S.wellWater[0];
+  for (const c of life.coins) { const s = Math.sin((t + c.phase) / 5); if (s > 0.5) put(c.x, c.y, s > 0.9 ? shine : gold); }
+  if (f < 0) return;
+  const { big, win } = life.act, tx = w.x + (big ? 3 : -3), ty = w.y, sx = w.x + (big ? 24 : -24), sy = H + 2;
+  if (f < 7) {
+    const k = f / 7, x = Math.round(sx + (tx - sx) * k), y = Math.round(sy + (ty - sy) * k - ((sy - ty) * 0.5 + 12) * 4 * k * (1 - k));
+    put(x, y, shine); put(x + 1, y, gold); put(x, y + 1, gold); put(x + 1, y + 1, dark);
+    if (big) { put(x + 2, y, gold); put(x + 2, y + 1, dark); put(x, y + 2, dark); put(x + 1, y + 2, dark); put(x - 1, y + 1, shine); }
+  }
+  if (f >= 7 && f < 10) for (const dx of [-2, -1, 1, 2]) put(tx + dx * (f - 6), ty - 3 - (9 - f) * 1.5 + Math.abs(dx), foam);
+  if (f >= 7 && f < 15) {
+    const rx = 1 + (f - 7) * (w.rx - 1) / 7, ry = Math.max(1, rx / 5);
+    for (let a = 0; a < Math.PI * 2; a += 0.5 / rx) put(Math.round(tx + Math.cos(a) * rx), Math.round(ty + Math.sin(a) * ry), foam);
+  }
+  if (win && f >= 11) {
+    const k = f - 11, reach = Math.min(40, k * 5), fade = f > 22 ? (26 - f) / 4 : 1;
+    for (let y = ty - 1; y > ty - reach; y--) {
+      const hw = w.rx - 2 + Math.round((ty - y) / 8);
+      for (let x = w.x - hw; x <= w.x + hw; x++) if (dither(x, y) < 10 * fade * (1 - (ty - y) / 44)) blend(x, y, S.wish, 0.35);
+    }
+    for (let i = 0; i < 6; i++) {
+      const y = ty - 2 - ((k * 2 + i * 7) % 36), x = w.x + Math.round(Math.sin(i * 2.1 + k / 3) * (w.rx - 2));
+      if (fade > 0.3) sparkle(x, y, (k + i) % 2 ? shine : S.wish);
+    }
+  }
+}
+
 /** Paint a pixel map (one string per row, one letter per pixel, '.' left alone) with `key`'s colours, its top left at x0, y0. */
 function pixelMap(x0, y0, rows, key) {
   rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') solid(x0 + x, y0 + y, key[row[x]]); });
@@ -1874,7 +2313,13 @@ function makeLife() {
     life.beamMotes = Array.from({ length: Math.round(W / 6) }, () => ({ y: rand() * d.y, side: rand() * 2 - 1, drift: 0.04 + rand() * 0.08, phase: rand() * 60 }));
     life.drops = has('drips') ? life.tips.map(tip => ({ ...tip, at: Math.floor(rand() * 90) })) : [];
   }
-  if (has('mart')) life.dust = Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
+  if (life.keep && life.blades) life.blades = life.blades.filter(b => !kept(b.x, b.y));   // no grass growing through the props
+  if (has('spring')) {
+    life.steam = life.pools.flatMap((p, i) => Array.from({ length: Math.max(3, Math.round(p.rx / 2.5)) }, () => ({
+      pool: i, dx: (rand() * 2 - 1) * p.rx * 0.7, age: rand() * 32, speed: 0.7 + rand() * 0.5,
+    })));
+  }
+  if (has('mart')) life.dust =Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
   if (has('surf')) {
     life.glints = [];
     for (let i = 0, n = Math.round(W * (life.shore - horizon) / 30); i < n; i++) {
@@ -1956,6 +2401,9 @@ function draw() {
   if (has('center')) drawCenter(t);
   if (has('mart')) drawMart(t);
   if (has('treasure')) drawGrotto(t);
+  if (has('berry')) drawBerryTree();
+  if (has('spring')) drawSpring(t);
+  if (has('well')) drawWell(t);
   if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit) {
