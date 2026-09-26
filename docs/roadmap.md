@@ -64,6 +64,31 @@ steps land (mark them done, note anything decided along the way).
      L5 35 / 37 / 41 (strong bot L0 80 / 87 / 90, L3 73 / 72 / 82, L5 56 / 53 / 58). Water was
      76 / 65 / 39 before, so it stays level (the top of the three at L3, within noise elsewhere).
    - For the playtest: does Tide read clearly (card text, badge tooltip), and is holding Water Pulse fun?
+6c. **Card pool expansion: the StS feel** (~8–10 sessions, the user's call 2026-09-26: "I really want the StS
+   feel... different builds, even if it means 70+ cards per [type]"). There are only 3 characters (Fire, Grass,
+   Water); every other starter stays a cosmetic skin sharing its type's deck. Each character gets StS's shape:
+   - **~70 cards per type** supporting 3 archetypes, so two runs of one type can play completely differently:
+     Fire: Burn (stack/spread burn), Recklessness (lose HP to hit harder), Momentum (cheap attacks, energy,
+     many cards a turn). Grass: Strength (grow over a fight), Sustain (healing that turns into block/damage),
+     Spores (stacking debuffs on the enemy). Water: Tide (build up, cash in), Shell (Shell Armor block +
+     Razor Shell), Flow (draw, retain, cycling). These are proposals: the design doc settles them.
+   - **A starter relic per character** (StS's Burning Blood): an Ability like Blaze / Overgrow / Torrent,
+     shared by all of that type's skins.
+   - **~20 real Neutral cards** (cross-type tools, not filler), build-defining relics, enemy status effects.
+   - Never remove a card id (rework instead), so saved runs survive.
+   Steps, one per session:
+   1. **Design doc** (`docs/card-design.md`): the 9 archetypes, each type's Ability, the new mechanics, and a
+      card-list skeleton per type (name, rarity, cost, rough effect, archetype, StS card it's modelled on).
+      **The user approves it before any type's cards are built.**
+   2. **Engine**: card upgrades (a "PP Up" third option at the Pokémon Center, StS's Smith: upgraded cards
+      shown with a +, saved by id), exhaust/discard triggers, cards that create cards, X-cost, "cards played
+      this turn" conditions, status cards (enemies shuffling junk like Confusion into your deck), starter
+      Abilities. Mirror everything in the sim engine.
+   3–8. **One type per 1–2 sessions**: its ~70 cards with PokéSprite art (+ `item-fit.js`), starting deck,
+      Ability, a bot check at Levels 0/3/5. The bot scores cards one at a time and won't see combos, so it
+      only guards against broken numbers; the user's playtests judge whether builds are fun.
+   9. **Neutral pool, build-defining relics, enemy retune** (status-applying moves, bosses that punish pure
+      turtling), then a full bot pass.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
