@@ -77,14 +77,14 @@ steps land (mark them done, note anything decided along the way).
    - **~20 real Neutral cards** (cross-type tools, not filler), build-defining relics, enemy status effects.
    - Never remove a card id (rework instead), so saved runs survive.
    Steps, one per session:
-   1. **Design doc** (`docs/card-design.md`) — done (2026-09-26), **waiting for the user's approval**: the 9
+   1. **Design doc** (`docs/card-design.md`) — done and approved (2026-09-26; the user asked Claude to settle the
+      open questions by what's closest to StS, see its Decisions section): the 9
       archetypes, each type's Ability, the new mechanics, and a card-list skeleton per type (name, rarity, cost,
       rough effect, archetype, StS card it's modelled on). Changes from the proposals: Fire's Momentum became
       **Kindling** (exhaust + 0-cost Cinders; Momentum overlapped Water's Flow), Grass's Sustain became **Drain**
       (Leech Seed as Grass's poison, overheal turns into block), Water's third is **Tsunami** and Tide is now all
       of Water's resource. Fire 68 / Grass 64 / Water 63 cards incl. 8 evolution cards each, Neutral 21, and 4
-      status cards. The doc ends with 5 questions for the user.
-      **The user approves it before any type's cards are built.**
+      status cards.
    2. **Engine** — done (2026-09-26). Built: PP Up at the Pokémon Center (Chansey is the third spot; upgraded
       cards are `CARDS_BY_ID['<id>+']`, built from a card's `upgrade` or a default rule, so no save bump), X cost,
       discard / exhaust picks from the hand, `onDiscard` / `onExhaust`, exhaust and discard powers, cards made in
@@ -99,11 +99,26 @@ steps land (mark them done, note anything decided along the way).
         8/21/33): human L0 70 / 77 / 76, L3 56 / 57 / 61, L5 34 / 34 / 33 (fire / grass / water), close to before.
       - Left for the type sessions (listed per type in the doc): Leech Seed, Sap, overheal, Flex, burn multipliers,
         hurt-this-turn, exhaust-your-hand, Tide multipliers, block tricks, retain tricks, picking from the exhaust pile.
-   3–8. **One type per 1–2 sessions**: its ~70 cards with PokéSprite art (+ `item-fit.js`), starting deck,
+   3. **Fire's cards — NEXT.** Session prompt (paste into a fresh session):
+      > Start roadmap step 6c.3: build Fire's card pool from docs/card-design.md (approved). Read CLAUDE.md,
+      > docs/roadmap.md and the doc first. Build Fire's type-specific mechanics from the doc's table (burn
+      > multipliers, hurt-this-turn / cost-down-on-hurt / Rupture, exhaust-your-hand with per-card scaling,
+      > Combust-style end-of-turn, Corruption, Havoc, Exhume) in js/battle.js with describe() lines, then every
+      > Fire card in the doc: reworked existing ids keep their ids, new cards get ids, PokéSprite art (+ item-fit.js
+      > bounds), a hand-picked `upgrade` each, and the StS model in a comment. Top the uncommons up to ~30 with
+      > bridge cards (StS's 20/36/16 split). Keep the starting deck unless the bot says otherwise. Mirror
+      > everything in the sim (patreekare/pokeDB-sim, see "Bot harness in a cloud session"), teach the bot's
+      > cardScore the new keys, and run a human-bot check at Levels 0/3/5 (Fire vs the unchanged Grass/Water):
+      > retune Fire's numbers, not enemies, if it moves more than ~5 points. Test in the browser headless
+      > (Chromium at /opt/pw-browsers/chromium). Update CLAUDE.md, the roadmap and the doc, push both repos to main.
+   4. **Water's cards**, the same way (Tsunami / Shell / Flow mechanics from the doc).
+   5. **Grass's cards**, the same way (Leech Seed, Sap, overheal, Flex).
+   6–8. Spare sessions for fixes from the user's playtests of each type.
+   Each type step: its ~72 cards with PokéSprite art (+ `item-fit.js`), starting deck,
       Ability, a bot check at Levels 0/3/5. The bot scores cards one at a time and won't see combos, so it
       only guards against broken numbers; the user's playtests judge whether builds are fun.
    9. **Neutral pool, build-defining relics, enemy retune** (status-applying moves, bosses that punish pure
-      turtling), then a full bot pass.
+      turtling), StS's reward rules (upgraded cards in later biomes, a rare-card pity counter), then a full bot pass.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of

@@ -113,7 +113,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   a type 10–30 points at Level 5. Don't remove a card id:
   a saved run holding it would be discarded.
   **Card pool expansion (roadmap 6c)**: `docs/card-design.md` is the plan (9 archetypes, ~70 cards a
-  type, each on a StS card); the user approves it before any type's cards are built. The engine for it
+  type, each on a StS card); the user approved it (2026-09-26); its Decisions section settles the open questions. The engine for it
   landed first (6c.2), all in `js/battle.js` and described by `describe()` (the header of
   `js/data/cards.js` lists every key): X cost (`cost: 'X'` + `perX`, `xPlus`), `discard` / `exhaustPick`
   (the hand glows and one tap picks, `pickFromHand()`; no more cards than asked takes them all),

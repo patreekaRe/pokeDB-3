@@ -1,7 +1,8 @@
 # Card design: the StS feel (roadmap step 6c)
 
-**Status: draft for the user's approval.** Nothing below is built yet except the engine pieces marked
-**(engine: done)** and the three Abilities. Each type's cards get built in their own session once this is approved or changed.
+**Status: approved (2026-09-26).** The user asked Claude to settle the open questions by whatever is closest to
+StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)** and the three Abilities.
+Each type's cards get built in their own session, Fire first.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -376,12 +377,22 @@ Fight-only, never in your run deck. Built now; no enemy uses them yet (step 9 gi
 Enemy moves get `adds: { card, n, to }` (on an attack, it also hits) or `kind: 'status'` (the whole turn is
 the junk). The intent bubble shows it; bosses that punish pure turtling (step 9) can shuffle Paralysis.
 
-## Questions for the user
+## Decisions (2026-09-26, "closest to StS")
 
-1. The three archetype changes above (Kindling, Drain, Tide for all of Water): OK?
-2. The Abilities: Blaze (+3 below half HP), Overgrow (heal 3 after a win), Torrent (2 Tide at the start). Fine,
-   or would you prefer something flashier (e.g. Blaze: "the first time each fight you drop below half, gain 2 PP")?
-3. Card names: most are real Pokémon moves; a few are made up (Kindle, Stoke, Hot Coals, Tidal Wall, Upwell,
-   Rototiller is real). Veto any you dislike.
-4. Status cards: Confusion / Paralysis / Poison / Sludge. OK as names?
-5. Order of the type sessions: Fire first (it trails late and has the most new mechanics), then Water, then Grass?
+1. **Archetypes stay as above** (Kindling, Drain, Tide for all of Water). Each maps onto a real StS archetype
+   (Ironclad exhaust, poison-as-healing, Watcher's Mantra), which is the point.
+2. **Abilities stay small and passive**, like StS's starter relics (Burning Blood, Ring of the Snake, Pure Water):
+   Blaze +3 below half HP, Overgrow heal 3 after a win, Torrent 2 Tide at the start. No flashy triggers.
+3. **Names stay.** Made-up ones (Kindle, Stoke, Hot Coals, Tidal Wall, Upwell) are fine; swap for a real move
+   name if a type session finds a good one.
+4. **Status cards stay**: Confusion (Dazed), Paralysis (Wound), Poison (Burn), Sludge (Slimed).
+5. **Order: Fire, then Water, then Grass.** Fire trails late and uses the most new mechanics.
+6. **The enemy damage bump (+1/+2/+3) stays**: StS's enemies are tuned for a player who upgrades at campfires.
+7. **Pool size, StS's split.** StS's Ironclad has 20 commons, 36 uncommons and 16 rares (plus basics). Our
+   skeletons have ~20 / ~25 / ~12-14: each type session tops the uncommons up (+6 to +10, mostly bridge cards
+   between two archetypes) so each type lands at ~72 cards with the evolution cards.
+8. **Upgrades for every card are hand-picked in the type sessions** (StS-style: Bash +2 Vulnerable, Barricade
+   2 -> 1 cost), written as each card's `upgrade`; the default rule is only a fallback.
+9. **More StS rules for step 6c.9** (not the type sessions): upgraded cards among rewards later in a run
+   (StS: none in Act 1, 25% in Act 2, 50% in Act 3 at A0), and one rare-card pity counter like StS's
+   (each common offered raises the rare chance a little until a rare shows).
