@@ -45,7 +45,15 @@ steps land (mark them done, note anything decided along the way).
      L5 36 / 33 / 39. Strong bot L0 79 / 89 / 88, L3 75 / 73 / 78, L5 53 / 51 / 51.
    - Still to watch in the playtest: Fire's deaths are mostly biome 3 bosses (strong start, thin
      late game); Grass/Water's are biome 1 at Levels 3+. Slaking is the softest biome-3 boss.
-6. **Pokédex, then catching** (2–3 sessions).
+6. **Card index** (1 session, added 2026-09-26): a StS-style Compendium of every card, opened from
+   the home screen / Poké Ball menu. Tabs per type (Fire, Grass, Water, Neutral), grouped by rarity,
+   evolution-only cards in their own group; tap to zoom (`zoomCard()`). No balance impact.
+7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
+   (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
+8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
+   uses. Add a few more small ones and a reason to keep earning (e.g. coins scaling with Trainer
+   Level). Pokédex perks and new Game Corner perks all make runs easier, so finish with a bot pass
+   at Levels 0/3/5 and retune enemies (not the perks) if Level 0 drifts well above ~75% (human bot).
 
 Anytime, as a break from number work:
 - **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'
@@ -111,7 +119,10 @@ Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
 - Fight rooms on the map show a silhouette until you've beaten that Pokémon; after that, its
   sprite and weakness.
 - A Pokédex window, probably in the Poké Ball menu.
-- Finishing a biome's set gives an achievement, PokéCoins and maybe a perk.
+- Finishing a biome's set gives an achievement, PokéCoins and a permanent perk (one per biome).
+  Keep them small and different from the Game Corner's (ideas: Clearing: start each run with ₽50;
+  Shrine: start with a Potion; Wastes: one free card-reward reroll per biome). They can't be bought,
+  so show them locked in the Pokédex window with the biome's progress.
 - Unregistered Pokémon show up a bit more often, so the last few entries don't drag.
 
 ## Catching (optional, after the Pokédex)
