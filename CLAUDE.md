@@ -141,6 +141,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   exhausts them), `cinderDamage`, `exhaustBurn`. `loseHp()` is every self-inflicted HP loss (Raging Fury triggers
   on it) and `markHurt()` counts every HP loss, the enemy's too (`battle.hurtThisTurn`, `battle.timesHurt`). A card's
   cost in the hand comes from `costOf()` (`makeCard(card, { cost })` shows a cheaper one in green).
+  Human bot, Fire L0 / L3 / L5: 71.2 / 63.3 / 34.5 before, 70.7 / 62.2 / 39.3 after (600 runs/cell); the bot never
+  takes the combo cards, so those builds are for the user's playtest.
   **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
