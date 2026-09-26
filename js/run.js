@@ -17,7 +17,7 @@
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER, TYPES, CARDS_BY_ID, MAX_COPIES, poolForType } from './data/cards.js';
+import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
@@ -41,14 +41,7 @@ export const isRunActive = () => run !== null && !run.over;
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
    ============================================================ */
-export const COIN_REWARDS = { fight: 3, elite: 12, eliteDisadvantage: 18, boss: 30, winBonus: 50 };
-
-/** True if the elite/boss on this node is a type that beats your starter (fighting it is a real risk). */
-function isTypeDisadvantage(node) {
-  if (!node.enemyId) return false;
-  const enemyType = TYPES[ENEMY_DEFS[node.enemyId].type];
-  return enemyType.beats === run.starter.type;
-}
+export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 50 };
 
 /** Pick one random relic for the Starting Relic Charm passive (never a rare or boss one - those are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
@@ -184,7 +177,7 @@ export function beginRun(starter, level = 0) {
     money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
     removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
     unlocks: [],          // starters unlocked during this run
-    pendingCoins: null,    // { coins, money, disadvantage } won in the last fight, paid out when its rewards end
+    pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     over: false,
   };
 
@@ -400,19 +393,17 @@ function afterFight(node, result) {
   run.hp = result.hp;
   run.fights += 1;
 
-  const disadvantage = node.type === 'elite' && isTypeDisadvantage(node);
-  const coinsFor = { fight: COIN_REWARDS.fight, elite: disadvantage ? COIN_REWARDS.eliteDisadvantage : COIN_REWARDS.elite, boss: COIN_REWARDS.boss };
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
   const foe = ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
-    coins: coinsWithBonus(coinsFor[node.type]), money: prize, disadvantage,
+    coins: coinsWithBonus(COIN_REWARDS[node.type]), money: prize,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
-    awardCoins(coinsFor[node.type]);
+    awardCoins(COIN_REWARDS[node.type]);
     run.money += prize;
     setMoney(run.money);
     updateSave(d => { d.stats.enemiesDefeated += 1; });

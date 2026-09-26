@@ -71,7 +71,7 @@ export function relicChoices(run, { boss = false } = {}) {
  *             battle: the first blows the tile up with a `confirm` button under it (openFocus). Taking it
  *             plays the confirm sound, or `confirmSound` (a Mart purchase's own).
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
- *   coins     after a fight, { foe, coins, money, disadvantage }: an icon row, and (on the first screen only) the text box's first lines
+ *   coins     after a fight, { foe, coins, money }: an icon row, and (on the first screen only) the text box's first lines
  *   layout    extra class for the options box ('mart-window'); options may carry a `group` and a `zoom` tile
  */
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '' }) {
@@ -83,7 +83,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (coins) coins.told = true;
   const lines = [
     ...notes.splice(0),
-    ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins${coins.disadvantage ? ' for beating a type you\'re weak to' : ''}!`, `You got ₽${coins.money} for winning!`] : []),
+    ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins!`, `You got ₽${coins.money} for winning!`] : []),
     ...[].concat(sub),   // sub is one line, or a list of them
   ];
   sayLines(lines.filter(Boolean));

@@ -8,6 +8,8 @@
    Enemy attacks follow the same type chart as yours: an enemy's attacks
    use its own type, so a Fire enemy hits a Grass starter for extra damage and a
    Water starter for less (see SUPER_EFFECTIVE in cards.js). Neutral enemies are always x1.
+   A move whose real type isn't Fire/Grass/Water (Body Slam, Bite, Acid...) sets
+   `type: 'normal'` so it stays x1. Elites and bosses ignore the chart both ways.
 
    Move kinds:
      attack    hit the player for `amount` damage
@@ -47,7 +49,7 @@ export const ENEMY_DEFS = {
     description: 'Soaks up sunlight and your health.',
     moves: [
       { kind: 'drain',  name: 'Absorb', amount: 5, heal: 4 },
-      { kind: 'attack', name: 'Acid',   amount: 8 },
+      { kind: 'attack', name: 'Acid',   amount: 8, type: 'normal' },
       { kind: 'buff',   name: 'Growth', amount: 2 },
     ],
   },
@@ -57,7 +59,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 6 },
       { kind: 'defend', name: 'Bubble',    amount: 7 },
-      { kind: 'attack', name: 'Body Slam', amount: 9 },
+      { kind: 'attack', name: 'Body Slam', amount: 9, type: 'normal' },
     ],
   },
   vulpix: {
@@ -93,7 +95,7 @@ export const ENEMY_DEFS = {
     name: 'Growlithe', type: 'fire', hp: 58, ...sprite('growlithe'),
     description: 'Loyal, loud and very warm.',
     moves: [
-      { kind: 'attack', name: 'Bite',        amount: 6 },
+      { kind: 'attack', name: 'Bite',        amount: 6, type: 'normal' },
       { kind: 'buff',   name: 'Howl',        amount: 1 },
       { kind: 'attack', name: 'Flame Wheel', amount: 12 },
     ],
@@ -111,7 +113,7 @@ export const ENEMY_DEFS = {
     name: 'Krabby', type: 'water', hp: 55, ...sprite('krabby'),
     description: 'Big claws, tough shell.',
     moves: [
-      { kind: 'attack', name: 'Vice Grip',  amount: 7 },
+      { kind: 'attack', name: 'Vice Grip',  amount: 7, type: 'normal' },
       { kind: 'defend', name: 'Harden',     amount: 8 },
       { kind: 'attack', name: 'Crabhammer', amount: 12 },
     ],
@@ -180,14 +182,14 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 7 },
       { kind: 'defend', name: 'Bubble',    amount: 8 },
-      { kind: 'attack', name: 'Body Slam', amount: 12 },
+      { kind: 'attack', name: 'Body Slam', amount: 12, type: 'normal' },
     ],
   },
   arcanine: {
     name: 'Arcanine', type: 'fire', hp: 75, ...sprite('arcanine'),
     description: 'Runs like a legend and bites like one too.',
     moves: [
-      { kind: 'attack', name: 'Bite',         amount: 9 },
+      { kind: 'attack', name: 'Bite',         amount: 9, type: 'normal' },
       { kind: 'buff',   name: 'Roar',         amount: 2 },
       { kind: 'attack', name: 'Flamethrower', amount: 13 },
     ],
@@ -198,7 +200,7 @@ export const ENEMY_DEFS = {
     name: 'Snorlax', type: 'normal', hp: 170, ...sprite('snorlax'), boss: true,
     description: 'Blocks the path. Hits like a boulder when it wakes up.',
     moves: [
-      { kind: 'attack', name: 'Body Slam',   amount: 11 },
+      { kind: 'attack', name: 'Body Slam',   amount: 11, type: 'normal' },
       { kind: 'defend', name: 'Rest',        amount: 14 },
       { kind: 'buff',   name: 'Belly Drum',  amount: 2 },
       { kind: 'attack', name: 'Giga Impact', amount: 16 },
@@ -238,7 +240,7 @@ export const ENEMY_DEFS = {
     name: 'Salamence', type: 'normal', hp: 420, ...sprite('salamence'), boss: true,
     description: 'The tyrant of the Ember Wastes. Beat it to finish the run.',
     moves: [
-      { kind: 'attack', name: 'Bite',          amount: 11 },
+      { kind: 'attack', name: 'Bite',          amount: 11, type: 'normal' },
       { kind: 'buff',   name: 'Dragon Dance',  amount: 2 },
       { kind: 'attack', name: 'Dragon Claw',   amount: 15 },
       { kind: 'attack', name: 'Hyper Beam',    amount: 22 },

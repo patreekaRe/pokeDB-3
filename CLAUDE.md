@@ -84,6 +84,16 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   So check defensive numbers first: +1 or +2 block on a starting card moves
   a type 10–30 points at Level 5. Don't remove a card id:
   a saved run holding it would be discarded.
+- **Types**: four types (fire/grass/water, and `normal`, shown as Neutral,
+  x1 both ways). `typeMultiplier()` in `js/battle.js` is the chart; a card
+  uses its own `type`. An enemy attack uses the move's `type` if it has one,
+  else the enemy's: moves whose real type isn't Fire/Grass/Water (Body Slam,
+  Bite, Vice Grip, Acid) carry `type: 'normal'` in `js/data/enemies.js`, so
+  give any new off-type move one too. **Elites and bosses ignore the chart
+  both ways** (`typeless()`, by `battle.kind`, so Team Rocket's Alpha too;
+  the user's call: type walls there felt unfair, match-ups are for wild
+  fights). So the elite type-disadvantage coin bonus is gone. The sim
+  mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
   `js/run.js`. Shop catalog is `js/data/shop.js`; `js/shop.js` renders it.
@@ -339,7 +349,9 @@ just icon then number, coloured blue/green/red for block/buff/debuff (block, bur
 guard, next-turn energy, your own strength, and one per active power), built by `badgeFor()` in `js/battle.js`. They fill
 in from the left and wrap onto a second line when they reach the HP numbers. A badge
 only renders while its status is active, and each one explains itself in
-its `title` tooltip. A nameplate gets `.has-block` (blue HP-bar rim) while
+its `title` tooltip. The biome's and level's extra enemy damage (`encounter.strength`)
+is kept in `enemy.dmgBonus`, not `strength`, so an enemy doesn't walk in with a 💪
+badge (the user found that confusing); only strength gained in the fight shows. A nameplate gets `.has-block` (blue HP-bar rim) while
 that fighter has block. Below the arena, `.battle-controls` is a 3-column
 grid: energy (`.energy-orb`, drawn as the games' **PP** like the
 Diamond/Pearl move screen: a white `.pp-pill` (ringed in its panel's `--rim` colour, in a capsule-shaped panel, on every button built from it) with "PP" on the left and "2/3"
@@ -397,7 +409,7 @@ call: not off to the right by the text box). It draws its
 phones become short rows (icon | name over text) so a choice isn't a screen tall (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
 type out and wait for a tap, like the games (the user wants no autoplay), and a tap on
 the last line closes the box. After
-a fight, `coins` (`run.pendingCoins`: `{ foe, coins, money, disadvantage }`)
+a fight, `coins` (`run.pendingCoins`: `{ foe, coins, money }`)
 shows as an icon row (💰 +25 💴 +₽120) on every step, and the first screen's
 box says "The wild X fainted!", the PokéCoins and the ₽ as separate lines.
 Options with `ask`/`confirm` (card, relic and item rewards) take two taps: the

@@ -113,7 +113,8 @@ export function startBattle({ run, encounter, onEnd }) {
       hp: encounter.maxHp,
       maxHp: encounter.maxHp,
       block: 0,
-      strength: encounter.strength,   // extra damage on every attack
+      dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
+      strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
       burn: run.relics.includes('flame-orb') ? 3 : 0,
       weakened: false,                // next attack deals half
       moveIndex: Math.floor(Math.random() * def.moves.length),
@@ -276,11 +277,7 @@ function damageFor(card) {
   if (hasRelic('muscle-band')) amount += 2;
   if (card.type === b.starter.type && hasRelic(TYPE_RELIC[card.type])) amount += 2;
 
-  // Fire beats Grass, Grass beats Water, Water beats Fire.
-  let multiplier = 1;
-  const type = TYPES[card.type];
-  if (type.beats === b.def.type) multiplier = SUPER_EFFECTIVE;
-  else if (type.losesTo === b.def.type) multiplier = NOT_VERY_EFFECTIVE;
+  const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
 
   const hits = Array.from({ length: e.hits || 1 }, (_, i) => Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier));
   return { hits, multiplier };
@@ -506,7 +503,7 @@ async function enemyTurn() {
       log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
     } else {
       const through = hurtPlayer(damage);
-      const effect = enemyTypeMultiplier();
+      const effect = enemyTypeMultiplier(move);
       hitSound(through, effect);
       hitEffect('player-sprite');
       bigHit(through, b.maxHp);
@@ -564,21 +561,26 @@ async function enemyTurn() {
 
 const currentMove = () => battle.def.moves[battle.enemy.moveIndex % battle.def.moves.length];
 
-/**
- * The type chart applied to enemy attacks. An enemy's attacks use its own
- * type: super effective if that type beats yours, not very effective if it loses to yours, else x1.
- */
-function enemyTypeMultiplier() {
-  const attackerType = TYPES[battle.def.type];
-  if (attackerType.beats === battle.starter.type) return SUPER_EFFECTIVE;
-  if (attackerType.losesTo === battle.starter.type) return NOT_VERY_EFFECTIVE;
+/** Fire beats Grass, Grass beats Water, Water beats Fire. */
+function typeMultiplier(attacker, defender) {
+  const type = TYPES[attacker];
+  if (type.beats === defender) return SUPER_EFFECTIVE;
+  if (type.losesTo === defender) return NOT_VERY_EFFECTIVE;
   return 1;
+}
+
+/** Elites and bosses (Team Rocket's Alpha too) ignore the type chart both ways: only wild fights hinge on match-ups (the user's call). */
+const typeless = () => battle.kind === 'elite' || battle.kind === 'boss';
+
+/** A move with its own `type` (Body Slam is Normal) uses that, else the enemy's type. */
+function enemyTypeMultiplier(move) {
+  return typeless() ? 1 : typeMultiplier(move.type ?? battle.def.type, battle.starter.type);
 }
 
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round((move.amount + en.strength) * enemyTypeMultiplier());
+  const raw = Math.round((move.amount + en.dmgBonus + en.strength) * enemyTypeMultiplier(move));
   return en.weakened ? Math.floor(raw / 2) : raw;
 }
 
@@ -732,7 +734,8 @@ function renderIntent() {
     icon = move.kind === 'drain' ? '🩸' : '⚔️';
     kind = move.kind;
     // ▲ means the enemy's type is strong against yours, ▼ means it is weak against yours
-    const arrow = enemyTypeMultiplier() > 1 ? '▲' : enemyTypeMultiplier() < 1 ? '▼' : '';
+    const effect = enemyTypeMultiplier(move);
+    const arrow = effect > 1 ? '▲' : effect < 1 ? '▼' : '';
     value = b.guard ? '✋' : `${attackDamage(move)}${arrow}`;
     detail = b.guard ? 'will hit your Guard' : `${attackDamage(move)} damage${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
   } else if (move.kind === 'defend') {
