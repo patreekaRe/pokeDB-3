@@ -1,8 +1,8 @@
 # Card design: the StS feel (roadmap step 6c)
 
 **Status: approved (2026-09-26).** The user asked Claude to settle the open questions by whatever is closest to
-StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)** and the three Abilities.
-Each type's cards get built in their own session, Fire first.
+StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**, the three Abilities, and **Fire's whole pool**
+(6c.3, see its section). Each type's cards get built in their own session: Water next, then Grass.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -87,9 +87,9 @@ Ability's name (done in 6c.2; same id).
 | Sap (Grass) | the enemy loses strength (can go negative) | `sap: N` | Disarm, Malaise |
 | Overheal (Grass) | power: healing past max HP becomes block | power `overheal` | — |
 | Temporary strength (Grass) | strength that goes away at end of turn | `flex: N` | Flex |
-| Burn multipliers (Fire) | double/triple the enemy's Burn | `burnMult: N` | Catalyst |
-| Hurt this turn (Fire) | "if you lost HP this turn"; cheaper per HP loss this fight; gain strength when a card hurts you | `ifHurt`, `costDownOnHurt`, power `rupture` | Blood for Blood, Rupture |
-| Exhaust your hand (Fire) | exhaust all (or all non-attacks); scale with how many | `exhaustHand: 'all' / 'skills'`, `perExhausted` | Fiend Fire, Second Wind |
+| Burn multipliers (Fire) **(done in 6c.3)** | double/triple the enemy's Burn; Burn N several times; +N to every Burn you apply; "if the enemy is Burned" | `burnMult: N`, `burnTimes`, power `drought`, `ifBurned: { bonus, ... }` | Catalyst, Bouncing Flask, Envenom, Bane |
+| Hurt this turn (Fire) **(done in 6c.3)** | "if you lost HP this turn"; cheaper per HP loss this fight; gain strength when a card hurts you; lose HP at the start/end of your turn | `ifHurt: { bonus, ... }`, `costDownOnHurt`, powers `rupture`, `combust`, `brutality` | Blood for Blood, Rupture, Combust, Brutality |
+| Exhaust your hand (Fire) **(done in 6c.3)** | exhaust all (or all non-attacks); scale with how many; non-attacks free but exhausting; play the top card; take one back | `exhaustHand: 'all' / 'skills'`, `perExhausted`, `hitsPerExhausted`, `blockPerExhausted`, power `corruption`, `playTop`, `exhume`, powers `exhaustBurn`, `cinderDamage` | Fiend Fire, Second Wind, Corruption, Havoc, Exhume |
 | Tide multipliers (Water) | double your Tide; gain extra Tide whenever you gain Tide | `tideMult`, power `drizzle` | — |
 | Block tricks (Water) | double your block; deal damage whenever you gain block; keep block once | `blockMult`, power `blockDamage`, `blur` | Entrench, Juggernaut, Blur |
 | Retain tricks (Water) | a card that grows while retained; keep N extra cards at end of turn; draw until N | `growOnRetain`, power `retainN`, `drawTo: N` | Windmill Strike, Well-Laid Plans, Expertise |
@@ -101,6 +101,16 @@ anything else costs 1 less, or loses Exhaust if it's already free. The card sess
 hand-picked upgrade instead, like StS (Bash: +2 Vulnerable, Inflame: +1 strength, Barricade: cost 2 -> 1).
 
 ## Fire (Charmander): Burn, Reckless, Kindling
+
+**Built (6c.3, 2026-09-26).** Everything below is in `js/data/cards.js` with its StS model in a comment and a
+hand-picked `upgrade`. Changes made while building it:
+- **6 bridge uncommons** were added (StS's 20/36/16 split; marked *bridge* in the table): Blaze Kick (Burn/Reckless),
+  Infernal Parade (Burn), Steam Engine (Burn/Kindling), Fiery Wrath (Reckless/Kindling), Armor Cannon and Heatproof
+  (Ethereal, so they feed Kindling's exhaust payoffs). Uncommons: 32.
+- Burning Jealousy costs 2 like Fiend Fire (the skeleton said 1); Searing Shot counts itself (5 per attack).
+- Fire Blast costs 2 (Burn 8, Vulnerable 2): at 3 PP with no damage it was a dead evolution pick.
+- Bitter Blade heals what gets through (single target, so 12 damage).
+- Flare Boost's upgrade makes it Innate; Rage+ adds a Rage+.
 
 Tokens: **Cinder** (0: deal 4, Exhaust; Shiv). Status it makes itself: Paralysis (Wild Strike's Wound).
 
@@ -147,11 +157,17 @@ Tokens: **Cinder** (0: deal 4, Exhaust; Shiv). Status it makes itself: Paralysis
 | White Smoke | U | 1 | Exhaust every non-attack in your hand, block 6 each | Kindling | Second Wind |
 | Magma Armor | U | 1 | Block 6; when exhausted, gain 2 PP | Kindling | Sentinel |
 | Magma Storm | U | 2 | Deal 19; exhaust every non-attack in your hand | Kindling | Sever Soul |
-| Searing Shot | U | 1 | Deal 7 for each attack played this turn | Kindling | Finisher |
+| Searing Shot | U | 1 | Deal 5 for each attack played this turn (itself too) | Kindling | Finisher |
 | Sizzly Slide | U | 1 | Deal 9. Combo 3: gain 1 PP | Kindling | Sneaky Strike |
 | Hot Coals | U | 1 | Power: Cinders deal +4 | Kindling | Accuracy |
 | Wildfire | U | 1 | Play the top card of your draw pile and exhaust it | Kindling | Havoc |
 | ★Inferno Charge | U | 2 | Deal 9, +2 PP next turn *(now uncommon, was common)* | — | Outmaneuver (attack) |
+| Infernal Parade *(bridge)* | U | 1 | Deal 8; +8 if the enemy is Burned | Burn | Bane |
+| Blaze Kick *(bridge)* | U | 1 | Lose 2 HP, deal 9, Burn 4 | Burn/Reckless | Hemokinesis + Poisoned Stab |
+| Steam Engine *(bridge)* | U | 1 | Power: whenever a card exhausts, Burn 2 | Burn/Kindling | Feel No Pain (Burn) |
+| Fiery Wrath *(bridge)* | U | 0 | Lose 3 HP, add 2 Cinders to your hand | Reckless/Kindling | Bloodletting + Blade Dance |
+| Armor Cannon *(bridge)* | U | 2 | Deal 24. Ethereal | Kindling | Carnage |
+| Heatproof *(bridge)* | U | 1 | Block 12. Ethereal | Kindling | Ghostly Armor |
 | ★Firestorm | R | 3 | Deal 36 | — | Bludgeon |
 | ★Flame Blast | R | 2 | Deal 18, Burn 4 | Burn | Bane+ |
 | Sacred Fire | R | 2 | Triple the enemy's Burn. Exhaust | Burn | Catalyst+ |
@@ -161,7 +177,7 @@ Tokens: **Cinder** (0: deal 4, Exhaust; Shiv). Status it makes itself: Paralysis
 | Bitter Blade | R | 2 | Deal 12, heal what gets through. Exhaust | Reckless | Reaper |
 | Flare Boost | R | 0 | Power: at the start of your turn, lose 1 HP and draw 1 | Reckless | Brutality |
 | V-create | R | 2 | Deal 26; shuffle a Poison into your discard pile | Reckless | Immolate |
-| Burning Jealousy | R | 1 | Exhaust your hand; deal 8 per card exhausted. Exhaust | Kindling | Fiend Fire |
+| Burning Jealousy | R | 2 | Exhaust your hand; deal 8 per card exhausted. Exhaust | Kindling | Fiend Fire |
 | Blue Flare | R | 3 | Power: your non-attacks cost 0 but exhaust | Kindling | Corruption |
 | Torch Song | R | 2 | Power: whenever you play a card, deal 2 | Kindling | A Thousand Cuts |
 | Pyro Ball | R | X | Deal 7, X times | Kindling | Whirlwind |
@@ -176,11 +192,11 @@ Evolution cards (evo-only, 1 copy; small reworks so each tier has one per archet
 | ★Flame Wheel | 1st | 2 | Deal 16 *(now: lose 2 HP, deal 20)* | Reckless |
 | ★Incinerate | 1st | 2 | Deal 14, Weak 2 *(now: deal 14, exhaust a card from your hand, draw 1)* | Kindling |
 | ★Flamethrower | final | 2 | Deal 22, Burn 3 | Burn |
-| ★Fire Blast | final | 3 | Deal 24, Burn 5 *(now: Burn 8, Vulnerable 2)* | Burn |
+| ★Fire Blast | final | 2 *(was 3)* | Deal 24, Burn 5 *(now: Burn 8, Vulnerable 2)* | Burn |
 | ★Overheat | final | 3 | Deal 30, +12 if HP below half | Reckless |
 | ★Blast Burn | final | 3 | Deal 34 *(now: deal 34, then exhaust your hand; +4 per card)* | Kindling |
 
-Fire: 20 common, 26 uncommon, 14 rare, 8 evolution = **68**.
+Fire: 20 common, 32 uncommon (with the bridges), 14 rare, 8 evolution = **74**.
 
 ## Grass (Bulbasaur): Growth, Drain, Spores
 

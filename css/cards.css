@@ -182,6 +182,7 @@
 .card.small .card-text { display: none; }
 .card.small .card-name { font-size: calc(10cqw * var(--name-fit, 1)); height: 24cqw; padding: 0 16.5cqw; }
 .card.small .card-art { height: auto; flex: 1; font-size: 30cqw; --box-w: 64cqw; --box-h: 60cqw; }
+.card-cost.cheaper { color: #189038; text-shadow: 0.9cqw 0.9cqw 0 #a8d8b0; }
 .card.small .card-cost { top: 9.5cqw; left: 3.5cqw; width: 15cqw; height: 15cqw; font-size: 10.5cqw; }
 
 /* ---------- cards in your battle hand ---------- */
@@ -237,6 +238,11 @@
   font-size: 0.8rem;
   text-align: center;
 }
+/* Fusion Flare: the exhaust pile's cards laid out over the dimmed battle, one tap takes one back */
+.card-focus.pile-picking { justify-content: center; background: rgba(8, 10, 24, 0.7); }
+.pile-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 760px; max-height: 70vh; overflow-y: auto; padding: 8px; }
+.card.pile-card { --card-w: min(28vw, 130px); cursor: pointer; }
+.card.pile-card:is(:hover, :focus-visible) { transform: translateY(-6px); }
 @keyframes focusIn { from { transform: translateY(40px) scale(0.6); opacity: 0; } }
 /* a picked hand card rises out of its own place (popFromHand() in js/battle.js), StS-style: no dimming,
    and the hand's copy hides so it reads as the same card lifting */

@@ -129,6 +129,18 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   cards) are in `CARDS_BY_ID` only, never in `ALL_CARDS`, so they're never offered or indexed. Enemy
   moves can carry `adds: { card, n, to }` (default the discard pile), or be `kind: 'status'` (only
   that; a grey intent bubble). No enemy uses them yet (step 6c.9).
+  **Fire's pool (6c.3, 2026-09-26)**: 20 common / 32 uncommon / 14 rare + 8 evolution cards, each with its StS
+  model in a comment and a hand-picked `upgrade` (the doc's Fire section lists them and what changed). Fire's
+  mechanics, all in `js/battle.js` with `describe()` lines: `burnTimes`, `burnMult` (Catalyst), power `drought`
+  (every Burn a card applies +N, via `burnEnemy()`), `ifBurned` / `ifHurt` (`{ bonus, ...effects }` merged in by
+  `effectsOf()` as the card is played), `costDownOnHurt` (Mind Blown), `exhaustHand: 'all' | 'skills'` with
+  `perExhausted` / `hitsPerExhausted` / `blockPerExhausted` (resolved before the damage), `playTop` (Wildfire, StS's
+  Havoc: `resolveCard()` plays the top card free and exhausts it), `exhume` (Fusion Flare: `pickFromPile()` lays the
+  exhaust pile over the dimmed battle, `.pile-pick`), `healDealt`, powers `rupture`, `combust` (end of your turn,
+  in `endTurn()`), `brutality`, `corruption` (Blue Flare: `costOf()` makes non-attacks 0 and `resolveCard()`
+  exhausts them), `cinderDamage`, `exhaustBurn`. `loseHp()` is every self-inflicted HP loss (Raging Fury triggers
+  on it) and `markHurt()` counts every HP loss, the enemy's too (`battle.hurtThisTurn`, `battle.timesHurt`). A card's
+  cost in the hand comes from `costOf()` (`makeCard(card, { cost })` shows a cheaper one in green).
   **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version

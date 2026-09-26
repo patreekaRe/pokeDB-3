@@ -97,8 +97,10 @@ export function makeCard(card, options = {}) {
   const node = el('div', `card type-${card.type}${card.upgraded ? ' upgraded' : ''}${card.status ? ' status' : ''}`);
   node.dataset.id = card.id;
 
-  const cost = el('span', 'card-cost', String(card.cost));
-  cost.title = card.cost === 'X' ? 'Costs all your energy' : `Costs ${card.cost} energy`;
+  // options.cost: what it costs right now in battle (Mind Blown, Blue Flare), shown green when it's cheaper
+  const shown = options.cost ?? card.cost;
+  const cost = el('span', `card-cost${shown !== card.cost ? ' cheaper' : ''}`, String(shown));
+  cost.title = card.cost === 'X' ? 'Costs all your energy' : `Costs ${shown} energy${shown !== card.cost ? ` right now (normally ${card.cost})` : ''}`;
   if (card.unplayable) cost.hidden = true;
 
   const name = el('h3', 'card-name', card.name);

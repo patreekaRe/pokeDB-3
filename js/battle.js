@@ -19,7 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { ABILITIES } from './data/relics.js';
@@ -48,7 +48,7 @@ export function initBattle() {
   $('end-turn-btn').addEventListener('click', endTurn);
   // tapping the battle around a picked card, or Escape, puts it back; tapping another card in the hand picks that one
   $('card-focus').addEventListener('click', (e) => {
-    if (e.target.closest('.focus-card, .focus-play')) return;
+    if (pilePick || e.target.closest('.focus-card, .focus-play')) return;
     const other = document.elementsFromPoint(e.clientX, e.clientY).find(node => node.matches('.card.in-hand:not(.lifted)'));
     if (other && selectedUid !== null) tapCard(Number(other.dataset.uid));
     else cancelPick();
@@ -61,6 +61,7 @@ export function initBattle() {
 export function abandonBattle() {
   battle = null;
   choosing = null;
+  if (pilePick) { pilePick = null; const layer = $('card-focus'); layer.hidden = true; layer.replaceChildren(); layer.classList.remove('pile-picking'); }
   setLoop('low-hp', false);
 }
 
@@ -112,6 +113,8 @@ export function startBattle({ run, encounter, onEnd }) {
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
     damageTaken: 0,
+    hurtThisTurn: false,   // lost HP on this turn of yours (Temper Flare)
+    timesHurt: 0,      // times you've lost HP this fight, however it happened (Mind Blown)
     played: 0,         // cards played this turn (this one included, while it resolves)
     attacks: 0,        // attacks played this turn
     discarded: 0,      // cards discarded from your hand by a card this turn
@@ -229,14 +232,16 @@ function beginPlayerTurn() {
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
   b.played = b.attacks = b.discarded = 0;
+  b.hurtThisTurn = false;
 
-  if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; pop('player-zone', '-1 ☠️', 'dmg'); }
+  if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
+  if (p.brutality) loseHp(p.brutality);
   if (hasRelic('leftovers')) healPlayer(2);
   if (p.healEachTurn && healPlayer(p.healEachTurn + healBonus())) playSound('heal-hp');
   if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); playSound('stat-up'); statFx('player'); }
-  if (p.burnEachTurn) { b.enemy.burn += p.burnEachTurn; pop('enemy-zone', `🔥 Burn ${p.burnEachTurn}`, 'note'); }
+  if (p.burnEachTurn) burnEnemy(p.burnEachTurn);
   if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); playSound('stat-up'); statFx('player'); }
-  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0)
+  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0));
   b.busy = false;
   renderAll();
@@ -254,17 +259,58 @@ function healPlayer(amount) {
   return healed;
 }
 
+/** You lose HP by your own doing (a card or a power): never below 1. Raging Fury turns it into strength. */
+function loseHp(n) {
+  const b = battle;
+  const lost = Math.min(n, b.hp - 1);
+  if (lost <= 0) return;
+  b.hp -= lost;
+  b.damageTaken += lost;
+  markHurt();
+  pop('player-zone', `-${lost}`, 'dmg');
+  if (b.powers.rupture) {
+    b.strength += b.powers.rupture;
+    pop('player-zone', `😡 +${b.powers.rupture} strength`, 'note good', 200);
+    playSound('stat-up');
+    statFx('player');
+  }
+}
+
+/** Any HP loss, from the enemy too, counts for "lost HP this turn" and Mind Blown's discount. */
+function markHurt() {
+  battle.hurtThisTurn = true;
+  battle.timesHurt += 1;
+}
+
+/** Blue Flare (StS's Corruption): cards that aren't attacks or powers cost 0 and exhaust. */
+const corrupts = (card) => !!battle.powers.corruption && !isAttack(card) && !card.power && !card.status;
+
+/** What a card costs right now: Mind Blown gets cheaper each time you're hurt, Blue Flare makes non-attacks free. */
+function costOf(card) {
+  if (card.cost === 'X') return 'X';
+  if (corrupts(card)) return 0;
+  return Math.max(0, card.cost - (card.effects.costDownOnHurt || 0) * battle.timesHurt);
+}
+
+/** The top card of the draw pile (the discard pile is shuffled in when it runs out), or null if both are empty. */
+function drawTop() {
+  const b = battle;
+  if (b.drawPile.length === 0) {
+    if (b.discard.length === 0) return null;
+    b.drawPile = shuffle(b.discard);
+    b.discard = [];
+  }
+  return b.drawPile.pop();
+}
+
 /** Draw cards. If the draw pile is empty, shuffle the discard pile back in. */
 function draw(count) {
   const b = battle;
   for (let i = 0; i < count; i++) {
     if (b.hand.length >= MAX_HAND) return;
-    if (b.drawPile.length === 0) {
-      if (b.discard.length === 0) return;        // nothing left anywhere
-      b.drawPile = shuffle(b.discard);
-      b.discard = [];
-    }
-    b.hand.push({ uid: nextUid++, card: b.drawPile.pop(), fresh: true });
+    const card = drawTop();
+    if (!card) return;                           // nothing left anywhere
+    b.hand.push({ uid: nextUid++, card, fresh: true });
   }
 }
 
@@ -273,18 +319,31 @@ function whyNotPlayable(card) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
   if (card.unplayable) return `${card.name} can't be played.`;
-  if (card.cost > b.energy) return 'Not enough PP!';   // an X card ('X') is always playable, even with 0 PP
+  if (costOf(card) > b.energy) return 'Not enough PP!';   // an X card ('X') is always playable, even with 0 PP
   if (card.effects.needsWounded && b.hp >= b.maxHp) return `${card.name} only works when you're hurt.`;
   return null;
 }
 
-/** A card's effects as played now: scaled by evolution, plus its per-X part for the X it was played with. */
+/** A card's effects as played now: scaled by evolution, plus its per-X part for the X it was played with,
+    plus its `ifBurned` / `ifHurt` extras when those hold as it's played. */
 function effectsOf(card, x = 0) {
-  const e = scaledEffects(card, battle.stage);
-  if (!e.perX) return e;
-  const times = x + (e.xPlus || 0);
-  for (const [key, n] of Object.entries(e.perX)) e[key] = (e[key] || 0) + n * times;
+  const b = battle;
+  const e = scaledEffects(card, b.stage);
+  if (e.perX) {
+    const times = x + (e.xPlus || 0);
+    for (const [key, n] of Object.entries(e.perX)) e[key] = (e[key] || 0) + n * times;
+  }
+  if (e.ifBurned && b.enemy.burn > 0) addExtras(e, e.ifBurned);
+  if (e.ifHurt && b.hurtThisTurn) addExtras(e, e.ifHurt);
   return e;
+}
+
+/** Adds a condition's extras onto a card's effects: `bonus` is extra damage, numbers add up. */
+function addExtras(e, extras) {
+  for (const [key, n] of Object.entries(extras)) {
+    if (key === 'bonus') e.damage = (e.damage || 0) + n;
+    else e[key] = typeof n === 'number' ? (e[key] || 0) + n : n;
+  }
 }
 
 /** The damage of each hit this attack does to the current enemy (an empty list for non-attacks). */
@@ -299,6 +358,8 @@ function damageFor(card, e) {
   if (e.perTide) amount += e.perTide * b.tide;
   if (e.perPlayed) amount += e.perPlayed * (b.played - 1);
   if (e.perDiscard) amount += e.perDiscard * b.discarded;
+  if (e.perExhausted) amount += e.perExhausted * (e.exhausted || 0);
+  if (baseId(card.id) === 'cinder') amount += b.powers.cinderDamage || 0;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
   if (hasAbility('blaze') && low) amount += b.ability.amount;
@@ -310,7 +371,8 @@ function damageFor(card, e) {
   const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
 
   const vulnerable = b.enemy.vulnerable > 0 ? VULNERABLE_MULT : 1;
-  const count = e.hitsPerAttack ? b.attacks : e.perX?.hits ? e.hits : e.hits || 1;   // an X card played with X = 0 doesn't hit
+  const count = e.hitsPerAttack ? b.attacks : e.hitsPerExhausted ? e.exhausted || 0
+    : e.perX?.hits ? e.hits : e.hits || 1;   // an X card played with X = 0 doesn't hit
   const hits = Array.from({ length: count }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier) * vulnerable));
   return { hits, multiplier };
 }
@@ -324,14 +386,32 @@ async function playCard(uid) {
   const problem = whyNotPlayable(card);
   if (problem) {
     log(problem);   // in the text box, like the games' "There's no PP left for this move!"
-    if (card.cost > b.energy) { shake($('player-energy')); playSound('no-pp'); }
+    if (costOf(card) > b.energy) { shake($('player-energy')); playSound('no-pp'); }
     return;
   }
 
   b.busy = true;
-  const x = card.cost === 'X' ? b.energy : 0;
-  b.energy -= card.cost === 'X' ? b.energy : card.cost;
+  const cost = costOf(card);
+  const x = cost === 'X' ? b.energy : 0;
+  b.energy -= cost === 'X' ? b.energy : cost;
   b.hand.splice(index, 1);
+  if (!await resolveCard(card, x)) return;       // the player left the battle
+
+  renderAll();
+  await sleep(220);
+
+  if (battle !== b) return;                      // the player left the battle
+  if (b.enemy.hp <= 0) return finish(true);
+  b.busy = false;
+  renderAll();
+}
+
+/**
+ * A card does its thing: from your hand once paid for, or free off the draw pile (Wildfire, StS's Havoc,
+ * which exhausts it). Resolves to false if the battle went away meanwhile.
+ */
+async function resolveCard(card, x, { exhaust = false } = {}) {
+  const b = battle;
   b.played += 1;
   if (isAttack(card)) b.attacks += 1;
   playSound('card');
@@ -339,21 +419,27 @@ async function playCard(uid) {
   const e = effectsOf(card, x);
   const who = stageName(b.starter, b.stage);
 
-  if (e.selfDamage) {
-    b.hp = Math.max(1, b.hp - e.selfDamage);
-    b.damageTaken += e.selfDamage;
-    pop('player-zone', `-${e.selfDamage}`, 'dmg');
+  if (e.selfDamage) loseHp(e.selfDamage);
+  if (e.exhaustHand) {
+    // before the damage, which counts them (Burning Jealousy, Blast Burn)
+    const going = b.hand.filter(h => e.exhaustHand === 'all' || !isAttack(h.card));
+    b.hand = b.hand.filter(h => !going.includes(h));
+    going.forEach(h => exhaustCard(h.card));
+    e.exhausted = going.length;
+    renderHand();
   }
 
   // --- damage ---
   const { hits, multiplier } = damageFor(card, e);
   if (hits.length) {
     b.focus = 0;                                  // focus is used up by the attack
+    let through = 0;
     for (const [i, amount] of hits.entries()) {
       lunge('player-sprite');
       await sleep(180);
-      if (battle !== b) return;
+      if (battle !== b) return false;
       const dealt = hurtEnemy(amount);
+      through += dealt;
       hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
       bigHit(dealt, b.enemy.maxHp);
@@ -366,6 +452,7 @@ async function playCard(uid) {
     const total = hits.length > 1 ? `${hits.join(' + ')} damage` : `${hits[0]} damage`;
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
     if (hasRelic('shell-bell')) healPlayer(1);
+    if (e.healDealt && healPlayer(through)) playSound('heal-hp');
     if (e.perTide && b.tide) { pop('player-zone', `🌊 ${b.tide} Tide spent`, 'note', 200); b.tide = 0; }
   } else {
     log(card.status ? `${card.name} was cleared away.` : `${who} used ${card.name}.`);
@@ -384,33 +471,40 @@ async function playCard(uid) {
   }
   if (e.discard) await pickFromHand(e.discard, 'discard', discardFromHand);
   if (e.exhaustPick) await pickFromHand(e.exhaustPick, 'exhaust', (entry) => { b.hand.splice(b.hand.indexOf(entry), 1); exhaustCard(entry.card); });
-  if (battle !== b) return;
+  if (e.exhume) await takeFromExhaust();
+  if (battle !== b) return false;
 
   // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
   if (card.power) b.exhaust.push(card);           // powers leave the fight, but aren't "exhausted" (no triggers)
-  else if (card.exhaust) exhaustCard(card);
+  else if (card.exhaust || exhaust || corrupts(card)) exhaustCard(card);
   else b.discard.push(card);
   if (card.power && hasRelic('power-herb')) draw(1);
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
 
-  renderAll();
-  await sleep(220);
-
-  if (battle !== b) return;                      // the player left the battle
-  if (b.enemy.hp <= 0) return finish(true);
-  b.busy = false;
-  renderAll();
+  for (let i = 0; i < (e.playTop || 0) && b.enemy.hp > 0; i++) {
+    const top = drawTop();
+    if (!top) break;
+    pop('player-zone', `🌪️ ${top.name}!`, 'note good');
+    renderAll();
+    await sleep(350);
+    if (battle !== b) return false;
+    if (top.unplayable) exhaustCard(top);
+    else if (!await resolveCard(top, 0, { exhaust: true })) return false;
+  }
+  return battle === b;
 }
 
 /** Block, Weak, draw... everything a card does besides its damage. Also used for a card's combo and for
     `onExhaust` / `onDiscard`. Damp Rock adds to every card's block. */
 function applyEffects(e) {
   const b = battle;
-  if (e.burn)       { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
+  for (let i = 0; i < (e.burn ? e.burnTimes || 1 : 0); i++) burnEnemy(e.burn, i * 150);
+  if (e.burnMult && b.enemy.burn) { b.enemy.burn *= e.burnMult; pop('enemy-zone', `🔥 Burn ×${e.burnMult}`, 'note', 150); }
   if (e.weaken)     { b.enemy.weak += e.weaken; pop('enemy-zone', `📉 Weak ${e.weaken}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
   if (e.vulnerable) { b.enemy.vulnerable += e.vulnerable; pop('enemy-zone', `💔 Vulnerable ${e.vulnerable}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
   if (e.block)      gainBlock(e.block + (hasRelic('damp-rock') ? 2 : 0));
+  if (e.blockPerExhausted && e.exhausted) gainBlock(e.blockPerExhausted * e.exhausted + (hasRelic('damp-rock') ? 2 : 0));
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
@@ -420,6 +514,13 @@ function applyEffects(e) {
   if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
   if (e.draw)       draw(e.draw);
   if (e.addCard)    addCards(e.addCard);
+}
+
+/** Burn the enemy (Drought adds to every Burn a card or power applies). */
+function burnEnemy(n, delay = 0) {
+  const add = n + (battle.powers.drought || 0);
+  battle.enemy.burn += add;
+  pop('enemy-zone', `🔥 Burn ${add}`, 'note', delay);
 }
 
 function gainBlock(n) {
@@ -455,7 +556,54 @@ function exhaustCard(card) {
   if (card.onExhaust) applyEffects(card.onExhaust);
   if (b.powers.exhaustBlock) gainBlock(b.powers.exhaustBlock);
   if (b.powers.exhaustDraw) draw(b.powers.exhaustDraw);
+  if (b.powers.exhaustBurn) burnEnemy(b.powers.exhaustBurn, 150);
   if (hasRelic('eject-pack')) draw(1);
+}
+
+/** Fusion Flare (StS's Exhume): a card from the exhaust pile back into your hand (never a power or another Exhume). */
+async function takeFromExhaust() {
+  const b = battle;
+  const options = [...new Map(b.exhaust.filter(c => !c.power && !c.effects.exhume).map(c => [c.id, c])).values()];
+  if (!options.length) return log('There\'s nothing in your exhaust pile to take back.');
+  const card = options.length === 1 ? options[0] : await pickFromPile(options, 'Choose a card to take back.');
+  if (battle !== b) return;
+  b.exhaust.splice(b.exhaust.indexOf(card), 1);
+  if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
+  else b.discard.push(card);
+  pop('player-zone', `🧬 ${card.name} is back`, 'note good', 150);
+  renderAll();
+}
+
+/** Lays some cards out over the battle, dimmed behind them, and resolves with the one tapped. */
+function pickFromPile(cards, prompt) {
+  log(prompt);
+  const layer = $('card-focus');
+  return new Promise(resolve => {
+    const done = (card) => {
+      pilePick = null;
+      layer.classList.remove('pile-picking');
+      layer.hidden = true;
+      layer.replaceChildren();
+      resolve(card);
+    };
+    const row = el('div', 'pile-pick');
+    for (const card of cards) {
+      const node = makeCard(card, { stage: battle.stage });
+      node.classList.add('pile-card');
+      node.tabIndex = 0;
+      node.setAttribute('role', 'button');
+      node.setAttribute('aria-label', `Take back ${card.name}`);
+      node.addEventListener('click', () => done(card));
+      node.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); done(card); } });
+      row.append(node);
+    }
+    pilePick = { done };
+    layer.classList.remove('rise');
+    layer.classList.add('pile-picking');
+    layer.replaceChildren(el('p', 'focus-hint', prompt), row);
+    layer.hidden = false;
+    row.firstChild.focus({ preventScroll: true });
+  });
 }
 
 /** A card made you discard this one from your hand (the end of your turn doesn't count, like StS). */
@@ -547,6 +695,7 @@ function hurtEnemy(amount) {
   return through;
 }
 
+
 /** Damage the player: block first, then HP. Returns the damage that got through. */
 function hurtPlayer(amount) {
   const b = battle;
@@ -562,6 +711,7 @@ function hurtPlayer(amount) {
   }
   b.hp = Math.max(0, b.hp - through);
   b.damageTaken += through;
+  if (through > 0) markHurt();
   return through;
 }
 
@@ -569,6 +719,20 @@ async function endTurn() {
   const b = battle;
   if (!b || b.busy || b.over) return;
   b.busy = true;
+
+  // Eruption (StS's Combust): lose 1 HP, hit the enemy
+  if (b.powers.combust) {
+    loseHp(1);
+    const dealt = hurtEnemy(b.powers.combust);
+    hitEffect('enemy-portrait-box');
+    pop('enemy-zone', dealt > 0 ? `-${dealt} 💥` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
+    playSound(dealt > 0 ? 'hit' : 'block');
+    log(`Eruption hit ${b.def.name} for ${b.powers.combust}!`);
+    renderAll();
+    await sleep(500);
+    if (battle !== b) return;
+    if (b.enemy.hp <= 0) return finish(true);
+  }
 
   // Status cards that hurt while held (Poison), then Ethereal cards fade away (exhausted).
   const hurt = b.hand.reduce((sum, h) => sum + (h.card.effects.endTurnHurt || 0), 0);
@@ -946,7 +1110,7 @@ function renderHand() {
 
   b.hand.forEach((entry, i) => {
     const { card } = entry;
-    const node = makeCard(card, { stage: b.stage });
+    const node = makeCard(card, { stage: b.stage, cost: costOf(card) });
     node.classList.add('in-hand');
 
     if (choosing) node.classList.add('choosable');
@@ -963,7 +1127,7 @@ function renderHand() {
 
     node.tabIndex = 0;
     node.setAttribute('role', 'button');
-    node.setAttribute('aria-label', choosing ? `Choose ${card.name}` : `${card.name}, costs ${card.cost}`);
+    node.setAttribute('aria-label', choosing ? `Choose ${card.name}` : `${card.name}, costs ${costOf(card)}`);
     node.addEventListener('click', () => tapCard(entry.uid));
     node.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
@@ -997,6 +1161,7 @@ function fanHand() {
 let selectedUid = null;
 let selectedItem = null;   // index into battle.items; items are picked and confirmed the same way
 let choosing = null;       // { resolve } while a card asks you to pick a card in your hand (pickFromHand)
+let pilePick = null;       // { done } while a card asks you to pick a card from a pile (pickFromPile)
 
 function tapCard(uid) {
   if (choosing) { const pick = choosing; choosing = null; return pick.resolve(uid); }
@@ -1059,6 +1224,7 @@ function focusButton(label, onClick) {
 /** The picked card, risen out of the hand (popFromHand()), or the picked item blown up at the bottom middle over a dimmed battle. */
 function renderFocus() {
   const b = battle;
+  if (pilePick) return;                           // Fusion Flare's picker owns the layer until a card is taken
   const layer = $('card-focus');
   layer.classList.remove('rise');
   const item = ITEMS_BY_ID[b.items[selectedItem]];
@@ -1083,7 +1249,7 @@ function renderFocus() {
   const entry = b.hand.find(h => h.uid === selectedUid);
   if (!entry) { layer.hidden = true; layer.replaceChildren(); return; }
 
-  const big = makeCard(entry.card, { stage: b.stage });
+  const big = makeCard(entry.card, { stage: b.stage, cost: costOf(entry.card) });
   big.classList.add('focus-card');
   const problem = whyNotPlayable(entry.card);
   if (problem) big.classList.add('unplayable');

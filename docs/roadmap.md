@@ -99,19 +99,26 @@ steps land (mark them done, note anything decided along the way).
         8/21/33): human L0 70 / 77 / 76, L3 56 / 57 / 61, L5 34 / 34 / 33 (fire / grass / water), close to before.
       - Left for the type sessions (listed per type in the doc): Leech Seed, Sap, overheal, Flex, burn multipliers,
         hurt-this-turn, exhaust-your-hand, Tide multipliers, block tricks, retain tricks, picking from the exhaust pile.
-   3. **Fire's cards — NEXT.** Session prompt (paste into a fresh session):
-      > Start roadmap step 6c.3: build Fire's card pool from docs/card-design.md (approved). Read CLAUDE.md,
-      > docs/roadmap.md and the doc first. Build Fire's type-specific mechanics from the doc's table (burn
-      > multipliers, hurt-this-turn / cost-down-on-hurt / Rupture, exhaust-your-hand with per-card scaling,
-      > Combust-style end-of-turn, Corruption, Havoc, Exhume) in js/battle.js with describe() lines, then every
-      > Fire card in the doc: reworked existing ids keep their ids, new cards get ids, PokéSprite art (+ item-fit.js
-      > bounds), a hand-picked `upgrade` each, and the StS model in a comment. Top the uncommons up to ~30 with
-      > bridge cards (StS's 20/36/16 split). Keep the starting deck unless the bot says otherwise. Mirror
-      > everything in the sim (patreekare/pokeDB-sim, see "Bot harness in a cloud session"), teach the bot's
-      > cardScore the new keys, and run a human-bot check at Levels 0/3/5 (Fire vs the unchanged Grass/Water):
-      > retune Fire's numbers, not enemies, if it moves more than ~5 points. Test in the browser headless
+   3. **Fire's cards** — done (2026-09-26). 20 common / 32 uncommon / 14 rare + 8 evolution cards = 74, each on a StS
+      card with a hand-picked upgrade and PokéSprite art (45 new sprites + `item-fit.js`). Fire's mechanics are in
+      `js/battle.js`: burn multipliers (`burnMult`, `burnTimes`, Drought), `ifBurned` / `ifHurt`, `costDownOnHurt`,
+      powers Raging Fury (Rupture), Eruption (Combust), Flare Boost (Brutality), Blue Flare (Corruption), Steam Engine,
+      Hot Coals, exhaust-your-hand (`exhaustHand` + per-card scaling), Wildfire (Havoc) and Fusion Flare (Exhume, a
+      pick from the exhaust pile). 6 bridge uncommons were added (Blaze Kick, Infernal Parade, Steam Engine, Fiery
+      Wrath, Armor Cannon, Heatproof); Burning Jealousy costs 2, Fire Blast 2. Starting deck unchanged.
+      Bot check (human bot, Levels 0/3/5): in progress, see the next commit.
+   4. **Water's cards — NEXT.** Session prompt (paste into a fresh session):
+      > Start roadmap step 6c.4: build Water's card pool from docs/card-design.md (approved; its Decisions section
+      > settles the open questions). Read CLAUDE.md, docs/roadmap.md and the doc first; Fire (6c.3) is the worked
+      > example. Build Water's type-specific mechanics from the doc's table (Tide multipliers / Drizzle, block tricks:
+      > double block, damage on block gain, Blur; retain tricks: grow while retained, keep N extra cards, draw until N)
+      > in js/battle.js with describe() lines, then every Water card in the doc: reworked existing ids keep their ids,
+      > new cards get ids, PokéSprite art (+ item-fit.js bounds), a hand-picked `upgrade` each, and the StS model in a
+      > comment. Top the uncommons up to ~32 with bridge cards (StS's 20/36/16 split). Keep the starting deck unless
+      > the bot says otherwise. Mirror everything in the sim (patreekare/pokeDB-sim, see "Bot harness in a cloud
+      > session"), teach the bot's cardScore the new keys, and run a human-bot check at Levels 0/3/5 (Water vs the
+      > others): retune Water's numbers, not enemies, if it moves more than ~5 points. Test in the browser headless
       > (Chromium at /opt/pw-browsers/chromium). Update CLAUDE.md, the roadmap and the doc, push both repos to main.
-   4. **Water's cards**, the same way (Tsunami / Shell / Flow mechanics from the doc).
    5. **Grass's cards**, the same way (Leech Seed, Sap, overheal, Flex).
    6–8. Spare sessions for fixes from the user's playtests of each type.
    Each type step: its ~72 cards with PokéSprite art (+ `item-fit.js`), starting deck,

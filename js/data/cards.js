@@ -39,11 +39,23 @@
      perDiscard    +this much damage for each card you've discarded this turn
      combo         { at, ...effects }: those extra effects if you've played `at` other cards this turn
      endTurnHurt   (status cards) lose this much HP if it's in your hand when your turn ends
+     burnTimes     the card's `burn` is applied this many times (Drought adds to each)
+     burnMult      multiply the enemy's Burn by this (after the card's own Burn)
+     ifBurned      { bonus, ...effects }: if the enemy has Burn when you play it, +bonus damage and those effects
+     ifHurt        the same, if you've lost HP this turn
+     costDownOnHurt  costs this much less for each time you've lost HP this fight
+     exhaustHand   'all' or 'skills' (every non-attack): exhaust those cards in your hand first
+     perExhausted  +this much damage per card exhaustHand took; blockPerExhausted: this much block per card
+     hitsPerExhausted  the damage lands once per card exhaustHand took
+     playTop       play the top card of your draw pile this many times, free, and exhaust it
+     exhume        choose a card in your exhaust pile and put it into your hand
+     healDealt     heal the damage that got through
 
    Power effects (only on `power: true` cards, see POWERS below):
      blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
      drawEachTurn, thorns, blaze, keepBlock, exhaustBlock, exhaustDraw,
-     discardTide, discardBlock, cardDamage, cardBlock
+     discardTide, discardBlock, cardDamage, cardBlock, rupture, combust, brutality,
+     corruption, drought, cinderDamage, exhaustBurn
 
    A card can also have (these sit next to `effects`, not inside it):
      exhaust    true = this card leaves the fight after you play it once
@@ -113,27 +125,75 @@ const NEUTRAL_CARDS = [
             Barricade + Body Slam, Silent's draw)
    Every starting deck is StS-shaped: 4 attacks, 4 blocks and 2 signature cards. */
 const FIRE_CARDS = [
-  { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', sprite: 'fire-stone', effects: { damage: 7 } },                          // Strike
-  { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', sprite: 'flame-plate', effects: { block: 8 } },                          // Defend, +2: Fire has the fewest ways to defend
-  { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 2, art: '☄️', sprite: 'burn-drive', effects: { damage: 10, vulnerable: 2 } },          // Bash
-  { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', sprite: 'spell-tag', effects: { burn: 4, weaken: 2 } },                  // Deadly Poison + Weak, like the move's halved Attack
-  { id: 'mystical-fire',   name: 'Mystical Fire',   type: 'fire', cost: 1, art: '✨', sprite: 'wise-glasses', effects: { damage: 6, weaken: 1 } },             // Sucker Punch
-  { id: 'fire-punch',      name: 'Fire Punch',      type: 'fire', cost: 1, art: '🥊', sprite: 'expert-belt', effects: { damage: 10, draw: 1 } },               // Pommel Strike
-  { id: 'heat-up',         name: 'Heat Up',         type: 'fire', cost: 1, art: '📈', sprite: 'liechi-berry', effects: { strength: 1, focus: 4 } },            // Inflame, half now
-  { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', sprite: 'magmarizer', effects: { damage: 15, bonusIfLow: 8 } },
-  { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', sprite: 'cell-battery', effects: { damage: 9, nextEnergy: 2 } },
-  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', sprite: 'magma-stone', effects: { block: 8, burn: 2 } },                 // Iron Wave
-  { id: 'fire-lash',       name: 'Fire Lash',       type: 'fire', cost: 1, art: '🦷', sprite: 'binding-band', effects: { damage: 5, hits: 2 } },               // Twin Strike
-  { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', sprite: 'red-shard', effects: { damage: 6, burn: 3 } },                  // Poisoned Stab
-  { id: 'flare-blitz',     name: 'Flare Blitz',     type: 'fire', cost: 1, art: '☄️', sprite: 'life-orb', effects: { selfDamage: 2, damage: 17 }, rarity: 'uncommon' },   // Hemokinesis
-  { id: 'inferno',         name: 'Inferno',         type: 'fire', cost: 1, art: '🌪️', sprite: 'houndoominite', effects: { damage: 7, bonusPerBurn: 2 }, rarity: 'uncommon' },   // Bane
-  { id: 'lava-plume',      name: 'Lava Plume',      type: 'fire', cost: 2, art: '🌋', sprite: 'occa-berry', effects: { damage: 15, weaken: 1, vulnerable: 1 }, rarity: 'uncommon' },   // Uppercut
-  { id: 'burning-bulwark', name: 'Burning Bulwark', type: 'fire', cost: 1, art: '🛡️', sprite: 'rusted-shield', effects: { block: 11, burn: 3 }, rarity: 'uncommon' },   // Flame Barrier
-  { id: 'heat-wave',       name: 'Heat Wave',       type: 'fire', cost: 2, art: '♨️', sprite: 'blazikenite', effects: { damage: 5, hits: 3, burn: 2 }, rarity: 'uncommon' },
-  { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', sprite: 'sun-stone', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon' },   // Noxious Fumes
-  { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', sprite: 'charizardite-y', effects: { damage: 36 }, rarity: 'rare' },    // Bludgeon
-  { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 2, art: '💥', sprite: 'red-orb', effects: { damage: 18, burn: 4 }, rarity: 'rare' },
-  { id: 'blaze',           name: 'Solar Power',     type: 'fire', cost: 1, art: '🌋', sprite: 'adrenaline-orb', effects: { blaze: 6 }, power: true, rarity: 'rare' },
+  // Common: 20
+  { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', sprite: 'fire-stone', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                          // Strike
+  { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', sprite: 'flame-plate', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },                          // Defend, +2: Fire has the fewest ways to defend
+  { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 2, art: '☄️', sprite: 'burn-drive', effects: { damage: 10, vulnerable: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },          // Bash
+  { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', sprite: 'spell-tag', effects: { burn: 4, weaken: 2 }, upgrade: { effects: { burn: 6 } } },                  // Deadly Poison + Weak, like the move's halved Attack
+  { id: 'mystical-fire',   name: 'Mystical Fire',   type: 'fire', cost: 1, art: '✨', sprite: 'wise-glasses', effects: { damage: 6, weaken: 1 }, upgrade: { effects: { damage: 8, weaken: 2 } } },             // Sucker Punch
+  { id: 'fire-punch',      name: 'Fire Punch',      type: 'fire', cost: 1, art: '🥊', sprite: 'expert-belt', effects: { damage: 10, draw: 1 }, upgrade: { effects: { damage: 12, draw: 2 } } },               // Pommel Strike
+  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', sprite: 'magma-stone', effects: { block: 8, burn: 2 }, upgrade: { effects: { block: 10, burn: 3 } } },                 // Iron Wave
+  { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', sprite: 'red-shard', effects: { damage: 6, burn: 3 }, upgrade: { effects: { damage: 8, burn: 4 } } },                  // Poisoned Stab
+  { id: 'flame-burst',     name: 'Flame Burst',     type: 'fire', cost: 2, art: '💥', sprite: 'flame-mail', effects: { burn: 3, burnTimes: 3 }, upgrade: { effects: { burn: 4 } } },          // Bouncing Flask
+  { id: 'scorching-sands', name: 'Scorching Sands', type: 'fire', cost: 1, art: '🌪️', sprite: 'soft-sand', effects: { damage: 8, ifBurned: { vulnerable: 1 } }, upgrade: { effects: { damage: 10, ifBurned: { vulnerable: 2 } } } },   // Bane, with Vulnerable
+  { id: 'heat-up',         name: 'Heat Up',         type: 'fire', cost: 1, art: '📈', sprite: 'liechi-berry', effects: { strength: 1, focus: 4 }, upgrade: { effects: { focus: 8 } } },            // Inflame, half now
+  { id: 'flare-up',        name: 'Flare Up',        type: 'fire', cost: 2, art: '🌋', sprite: 'magmarizer', effects: { damage: 15, bonusIfLow: 8 }, upgrade: { effects: { damage: 18, bonusIfLow: 12 } } },   // Perfected Strike, paid by low HP
+  { id: 'fiery-dance',     name: 'Fiery Dance',     type: 'fire', cost: 0, art: '🩸', sprite: 'red-nectar', effects: { selfDamage: 3, energy: 2 }, upgrade: { effects: { energy: 3 } } },            // Bloodletting
+  { id: 'heat-crash',      name: 'Heat Crash',      type: 'fire', cost: 1, art: '💥', sprite: 'iron-ball', effects: { damage: 14, addCard: { id: 'paralysis', to: 'draw' } }, upgrade: { effects: { damage: 19 } } },   // Wild Strike
+  { id: 'fire-lash',       name: 'Fire Lash',       type: 'fire', cost: 1, art: '🦷', sprite: 'binding-band', effects: { damage: 5, hits: 2 }, upgrade: { effects: { damage: 7 } } },               // Twin Strike
+  { id: 'rage',            name: 'Rage',            type: 'fire', cost: 0, art: '😡', sprite: 'rage-candy-bar', effects: { damage: 6, addCard: { id: 'rage', to: 'discard' } }, upgrade: { effects: { damage: 9, addCard: { id: 'rage+', to: 'discard' } } } },   // Anger
+  { id: 'spark-shower',    name: 'Spark Shower',    type: 'fire', cost: 1, art: '✨', sprite: 'stardust', effects: { addCard: { id: 'cinder', n: 3 } }, upgrade: { effects: { addCard: { id: 'cinder', n: 4 } } } },   // Blade Dance
+  { id: 'cinder-cloak',    name: 'Cinder Cloak',    type: 'fire', cost: 1, art: '🧣', sprite: 'red-scarf', effects: { block: 7, addCard: { id: 'cinder' } }, upgrade: { effects: { addCard: { id: 'cinder', n: 2 } } } },   // Cloak and Dagger
+  { id: 'kindle',          name: 'Kindle',          type: 'fire', cost: 1, art: '🧱', sprite: 'stick', effects: { block: 8, exhaustPick: 1 }, upgrade: { effects: { block: 11 } } },                // True Grit
+  { id: 'flare',           name: 'Flare',           type: 'fire', cost: 0, art: '🔥', sprite: 'figy-berry', effects: { damage: 4, burn: 1 }, upgrade: { effects: { damage: 5, burn: 2 } } },         // Flying Knee, lite
+  // Uncommon: 32
+  { id: 'inferno',         name: 'Inferno',         type: 'fire', cost: 1, art: '🌪️', sprite: 'houndoominite', effects: { damage: 7, bonusPerBurn: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 9, bonusPerBurn: 3 } } },   // Bane, per stack
+  { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', sprite: 'sun-stone', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { burnEachTurn: 3 } } },   // Noxious Fumes
+  { id: 'heat-wave',       name: 'Heat Wave',       type: 'fire', cost: 2, art: '♨️', sprite: 'blazikenite', effects: { damage: 5, hits: 3, burn: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 6, burn: 3 } } },   // Riddle with Holes
+  { id: 'burning-bulwark', name: 'Burning Bulwark', type: 'fire', cost: 1, art: '🛡️', sprite: 'rusted-shield', effects: { block: 11, burn: 3 }, rarity: 'uncommon', upgrade: { effects: { block: 14, burn: 4 } } },   // Flame Barrier
+  { id: 'fan-the-flames',  name: 'Fan the Flames',  type: 'fire', cost: 1, art: '🌬️', sprite: 'fire-memory', effects: { burnMult: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Catalyst
+  { id: 'ash-cloud',       name: 'Ash Cloud',       type: 'fire', cost: 2, art: '💨', sprite: 'soot-sack', effects: { burn: 5, weaken: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { burn: 7, weaken: 3 } } },   // Crippling Cloud
+  { id: 'heat-haze',       name: 'Heat Haze',       type: 'fire', cost: 1, art: '♨️', sprite: 'bright-powder', effects: { block: 7, ifBurned: { block: 5 } }, rarity: 'uncommon', upgrade: { effects: { block: 9, ifBurned: { block: 6 } } } },   // Dodge and Roll
+  { id: 'infernal-parade', name: 'Infernal Parade', type: 'fire', cost: 1, art: '👻', sprite: 'odd-keystone', effects: { damage: 8, ifBurned: { bonus: 8 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10, ifBurned: { bonus: 10 } } } },   // Bane
+  { id: 'blaze-kick',      name: 'Blaze Kick',      type: 'fire', cost: 1, art: '👟', sprite: 'heavy-duty-boots', effects: { selfDamage: 2, damage: 9, burn: 4 }, rarity: 'uncommon', upgrade: { effects: { damage: 12, burn: 5 } } },   // Hemokinesis + Poisoned Stab: Burn and Reckless
+  { id: 'steam-engine',    name: 'Steam Engine',    type: 'fire', cost: 1, art: '♨️', sprite: 'machine-part', effects: { exhaustBurn: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { exhaustBurn: 3 } } },   // Feel No Pain, as Burn: Burn and Kindling
+  { id: 'flare-blitz',     name: 'Flare Blitz',     type: 'fire', cost: 1, art: '☄️', sprite: 'life-orb', effects: { selfDamage: 2, damage: 17 }, rarity: 'uncommon', upgrade: { effects: { damage: 22 } } },   // Hemokinesis
+  { id: 'raging-fury',     name: 'Raging Fury',     type: 'fire', cost: 1, art: '😡', sprite: 'red-chain', effects: { rupture: 1 }, power: true, rarity: 'uncommon', upgrade: { effects: { rupture: 2 } } },   // Rupture
+  { id: 'temper-flare',    name: 'Temper Flare',    type: 'fire', cost: 1, art: '😡', sprite: 'red-card', effects: { damage: 10, ifHurt: { bonus: 10 } }, rarity: 'uncommon', upgrade: { effects: { damage: 13, ifHurt: { bonus: 13 } } } },   // Spot Weakness, as an attack
+  { id: 'mind-blown',      name: 'Mind Blown',      type: 'fire', cost: 4, art: '💥', sprite: 'weakness-policy', effects: { damage: 22, costDownOnHurt: 1 }, rarity: 'uncommon', upgrade: { cost: 3 } },   // Blood for Blood
+  { id: 'eruption',        name: 'Eruption',        type: 'fire', cost: 1, art: '🌋', sprite: 'cameruptite', effects: { combust: 6 }, power: true, rarity: 'uncommon', upgrade: { effects: { combust: 8 } } },   // Combust
+  { id: 'shell-trap',      name: 'Shell Trap',      type: 'fire', cost: 1, art: '🐚', sprite: 'jaboca-berry', effects: { block: 18, addCard: { id: 'paralysis', n: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 23 } } },   // Power Through
+  { id: 'fiery-wrath',     name: 'Fiery Wrath',     type: 'fire', cost: 0, art: '😡', sprite: 'dread-plate', effects: { selfDamage: 3, addCard: { id: 'cinder', n: 2 } }, rarity: 'uncommon', upgrade: { effects: { addCard: { id: 'cinder', n: 3 } } } },   // Bloodletting + Blade Dance: Reckless and Kindling
+  { id: 'lava-plume',      name: 'Lava Plume',      type: 'fire', cost: 2, art: '🌋', sprite: 'occa-berry', effects: { damage: 15, weaken: 1, vulnerable: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 2, vulnerable: 2 } } },   // Uppercut
+  { id: 'ember-veil',      name: 'Ember Veil',      type: 'fire', cost: 2, art: '🛡️', sprite: 'safety-goggles', effects: { block: 13, weaken: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 16, weaken: 3 } } },   // Leg Sweep
+  { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', sprite: 'cell-battery', effects: { damage: 9, nextEnergy: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 13 } } },   // Outmaneuver, as an attack
+  { id: 'flash-fire',      name: 'Flash Fire',      type: 'fire', cost: 2, art: '📚', sprite: 'light-ball', effects: { exhaustDraw: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },   // Dark Embrace
+  { id: 'fire-pledge',     name: 'Fire Pledge',     type: 'fire', cost: 1, art: '🧱', sprite: 'red-flute', effects: { exhaustBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { exhaustBlock: 5 } } },   // Feel No Pain
+  { id: 'stoke',           name: 'Stoke',           type: 'fire', cost: 1, art: '🔥', sprite: 'lava-cookie', effects: { exhaustPick: 1, draw: 2 }, rarity: 'uncommon', upgrade: { effects: { draw: 3 } } },   // Burning Pact
+  { id: 'white-smoke',     name: 'White Smoke',     type: 'fire', cost: 1, art: '💨', sprite: 'silver-powder', effects: { exhaustHand: 'skills', blockPerExhausted: 6 }, rarity: 'uncommon', upgrade: { effects: { blockPerExhausted: 8 } } },   // Second Wind
+  { id: 'magma-armor',     name: 'Magma Armor',     type: 'fire', cost: 1, art: '🛡️', sprite: 'protector', effects: { block: 6 }, onExhaust: { energy: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 9 }, onExhaust: { energy: 3 } } },   // Sentinel
+  { id: 'magma-storm',     name: 'Magma Storm',     type: 'fire', cost: 2, art: '🌋', sprite: 'magma-suit', effects: { exhaustHand: 'skills', damage: 19 }, rarity: 'uncommon', upgrade: { effects: { damage: 26 } } },   // Sever Soul
+  { id: 'searing-shot',    name: 'Searing Shot',    type: 'fire', cost: 1, art: '🎯', sprite: 'x-sp-atk', effects: { damage: 5, hitsPerAttack: true }, rarity: 'uncommon', upgrade: { effects: { damage: 7 } } },   // Finisher
+  { id: 'sizzly-slide',    name: 'Sizzly Slide',    type: 'fire', cost: 1, art: '👟', sprite: 'roller-skates', effects: { damage: 9, combo: { at: 3, energy: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 12 } } },   // Sneaky Strike
+  { id: 'hot-coals',       name: 'Hot Coals',       type: 'fire', cost: 1, art: '🔥', sprite: 'ruby', effects: { cinderDamage: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { cinderDamage: 6 } } },   // Accuracy
+  { id: 'wildfire',        name: 'Wildfire',        type: 'fire', cost: 1, art: '🌪️', sprite: 'blunder-policy', effects: { playTop: 1 }, rarity: 'uncommon', upgrade: { cost: 0 } },   // Havoc
+  { id: 'armor-cannon',    name: 'Armor Cannon',    type: 'fire', cost: 2, art: '💥', sprite: 'armorite-ore', effects: { damage: 24 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { damage: 30 } } },   // Carnage: Ethereal feeds the exhaust payoffs
+  { id: 'heatproof',       name: 'Heatproof',       type: 'fire', cost: 1, art: '🛡️', sprite: 'assault-vest', effects: { block: 12 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { block: 16 } } },   // Ghostly Armor
+  // Rare: 14
+  { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', sprite: 'charizardite-y', effects: { damage: 36 }, rarity: 'rare', upgrade: { effects: { damage: 46 } } },    // Bludgeon
+  { id: 'flame-blast',     name: 'Flame Blast',     type: 'fire', cost: 2, art: '💥', sprite: 'red-orb', effects: { damage: 18, burn: 4 }, rarity: 'rare', upgrade: { effects: { damage: 22, burn: 6 } } },   // Bane+
+  { id: 'sacred-fire',     name: 'Sacred Fire',     type: 'fire', cost: 2, art: '🔥', sprite: 'sacred-ash', effects: { burnMult: 3 }, exhaust: true, rarity: 'rare', upgrade: { cost: 1 } },   // Catalyst+
+  { id: 'drought',         name: 'Drought',         type: 'fire', cost: 2, art: '🌞', sprite: 'sun-flute', effects: { drought: 2 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Envenom
+  { id: 'blaze',           name: 'Solar Power',     type: 'fire', cost: 1, art: '🌋', sprite: 'adrenaline-orb', effects: { blaze: 6 }, power: true, rarity: 'rare', upgrade: { effects: { blaze: 9 } } },   // Berserk
+  { id: 'burn-up',         name: 'Burn Up',         type: 'fire', cost: 0, art: '🔥', sprite: 'energy-root', effects: { selfDamage: 6, energy: 2, draw: 3 }, exhaust: true, rarity: 'rare', upgrade: { effects: { draw: 5 } } },   // Offering
+  { id: 'bitter-blade',    name: 'Bitter Blade',    type: 'fire', cost: 2, art: '🗡️', sprite: 'reaper-cloth', effects: { damage: 12, healDealt: true }, exhaust: true, rarity: 'rare', upgrade: { effects: { damage: 16 } } },   // Reaper
+  { id: 'flare-boost',     name: 'Flare Boost',     type: 'fire', cost: 0, art: '🩸', sprite: 'energy-powder', effects: { brutality: 1 }, power: true, rarity: 'rare', upgrade: { innate: true } },   // Brutality
+  { id: 'v-create',        name: 'V-create',        type: 'fire', cost: 2, art: '☄️', sprite: 'liberty-pass', effects: { damage: 26, addCard: { id: 'poison', to: 'discard' } }, rarity: 'rare', upgrade: { effects: { damage: 33 } } },   // Immolate
+  { id: 'burning-jealousy', name: 'Burning Jealousy', type: 'fire', cost: 2, art: '😡', sprite: 'green-shard', effects: { exhaustHand: 'all', damage: 8, hitsPerExhausted: true }, exhaust: true, rarity: 'rare', upgrade: { effects: { damage: 11 } } },   // Fiend Fire
+  { id: 'blue-flare',      name: 'Blue Flare',      type: 'fire', cost: 3, art: '🔵', sprite: 'light-stone', effects: { corruption: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // Corruption
+  { id: 'torch-song',      name: 'Torch Song',      type: 'fire', cost: 2, art: '📣', sprite: 'throat-spray', effects: { cardDamage: 2 }, power: true, rarity: 'rare', upgrade: { effects: { cardDamage: 3 } } },   // A Thousand Cuts
+  { id: 'pyro-ball',       name: 'Pyro Ball',       type: 'fire', cost: 'X', art: '⚫', sprite: 'fast-ball', effects: { damage: 7, perX: { hits: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 10 } } },   // Whirlwind
+  { id: 'fusion-flare',    name: 'Fusion Flare',    type: 'fire', cost: 1, art: '🧬', sprite: 'dna-splicers', effects: { exhume: 1 }, exhaust: true, rarity: 'rare', upgrade: { cost: 0 } },   // Exhume
 ];
 
 const GRASS_CARDS = [
@@ -195,16 +255,16 @@ const WATER_CARDS = [
    ============================================================ */
 
 const FIRE_EVO_MID = [
-  { id: 'flame-charge', name: 'Flame Charge', type: 'fire', cost: 1, art: '⚡', sprite: 'power-anklet', effects: { damage: 10, nextEnergy: 1 }, evoOnly: true, maxCopies: 1 },
-  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', sprite: 'razor-fang', effects: { damage: 8, burn: 3 }, evoOnly: true, maxCopies: 1 },
-  { id: 'flame-wheel',  name: 'Flame Wheel',  type: 'fire', cost: 2, art: '🔥', sprite: 'tr-fire', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
-  { id: 'incinerate',   name: 'Incinerate',   type: 'fire', cost: 2, art: '🌪️', sprite: 'incinium-z', effects: { damage: 14, weaken: 2 }, evoOnly: true, maxCopies: 1 },
+  { id: 'flame-charge', name: 'Flame Charge', type: 'fire', cost: 1, art: '⚡', sprite: 'power-anklet', effects: { damage: 10, nextEnergy: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 13 } } },   // Kindling
+  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', sprite: 'razor-fang', effects: { damage: 8, burn: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11, burn: 4 } } },   // Burn
+  { id: 'flame-wheel',  name: 'Flame Wheel',  type: 'fire', cost: 2, art: '🔥', sprite: 'tr-fire', effects: { selfDamage: 2, damage: 20 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26 } } },   // Reckless
+  { id: 'incinerate',   name: 'Incinerate',   type: 'fire', cost: 2, art: '🌪️', sprite: 'incinium-z', effects: { damage: 14, exhaustPick: 1, draw: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18 } } },   // Kindling
 ];
 const FIRE_EVO_HIGH = [
-  { id: 'flamethrower', name: 'Flamethrower', type: 'fire', cost: 2, art: '🔥', sprite: 'tm-fire', effects: { damage: 22, burn: 3 }, evoOnly: true, maxCopies: 1 },
-  { id: 'fire-blast',   name: 'Fire Blast',   type: 'fire', cost: 3, art: '☄️', sprite: 'firium-z', effects: { damage: 24, burn: 5 }, evoOnly: true, maxCopies: 1 },
-  { id: 'overheat',     name: 'Overheat',     type: 'fire', cost: 3, art: '☀️', sprite: 'white-herb', effects: { damage: 30, bonusIfLow: 12 }, evoOnly: true, maxCopies: 1 },
-  { id: 'blast-burn',   name: 'Blast Burn',   type: 'fire', cost: 3, art: '🌋', sprite: 'charizardite-x', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
+  { id: 'flamethrower', name: 'Flamethrower', type: 'fire', cost: 2, art: '🔥', sprite: 'tm-fire', effects: { damage: 22, burn: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 28, burn: 4 } } },   // Burn
+  { id: 'fire-blast',   name: 'Fire Blast',   type: 'fire', cost: 2, art: '☄️', sprite: 'firium-z', effects: { burn: 8, vulnerable: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { burn: 11, vulnerable: 3 } } },   // Burn: a big stack to double
+  { id: 'overheat',     name: 'Overheat',     type: 'fire', cost: 3, art: '☀️', sprite: 'white-herb', effects: { damage: 30, bonusIfLow: 12 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 38 } } },   // Reckless
+  { id: 'blast-burn',   name: 'Blast Burn',   type: 'fire', cost: 3, art: '🌋', sprite: 'charizardite-x', effects: { exhaustHand: 'all', damage: 34, perExhausted: 4 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42 } } },   // Kindling
 ];
 
 const GRASS_EVO_MID = [
@@ -267,7 +327,8 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
     the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
 const UPGRADE_STEPS = [['burn', 2], ['weaken', 1], ['vulnerable', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
-  exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1 };
+  exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
+  rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -322,7 +383,7 @@ export const STAGE_POWER = 0.15;
 export function scaledEffects(card, stage = 0) {
   const e = { ...card.effects };
   const k = 1 + STAGE_POWER * stage;
-  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock']) {
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust']) {
     if (e[key]) e[key] = Math.round(e[key] * k);
   }
   if (e.burn) e.burn += stage;
@@ -351,47 +412,69 @@ export const POWERS = {
   discardBlock:     { icon: '🛡️', text: (n) => `Whenever you discard a card, gain ${n} block.` },
   cardDamage:       { icon: '✨', text: (n) => `Whenever you play a card, deal ${n} damage.` },
   cardBlock:        { icon: '🫧', text: (n) => `Whenever you play a card, gain ${n} block.` },
+  rupture:          { icon: '😡', text: (n) => `Whenever a card makes you lose HP, your hits deal +${n} all fight.` },
+  combust:          { icon: '💥', text: (n) => `At the end of your turn, lose 1 HP and deal ${n} damage.` },
+  brutality:        { icon: '🩸', text: (n) => `At the start of your turn, lose ${n} HP and draw ${plural(n, 'card')}.` },
+  corruption:       { icon: '🔵', flag: true, text: () => 'Your cards that aren\'t attacks or powers cost 0, but exhaust when played.' },
+  drought:          { icon: '🌞', text: (n) => `Whenever you Burn the enemy, Burn it ${n} more.` },
+  cinderDamage:     { icon: '⭐', text: (n) => `Your Cinders deal +${n} damage.` },
+  exhaustBurn:      { icon: '♨️', text: (n) => `Whenever a card exhausts, Burn the enemy ${n}.` },
 };
 
 const xLabel = (e) => (e.xPlus ? `X+${e.xPlus}` : 'X');
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 const PILES = { hand: 'your hand', draw: 'your draw pile', discard: 'your discard pile' };
+const TIMES = { 2: 'twice', 3: 'three times', 4: 'four times' };
+const MULT = { 2: 'Double', 3: 'Triple' };
 
 /** The sentences for a set of effects (a card's, or its combo / onExhaust / onDiscard extras). */
 function sentences(e) {
   const parts = [];
   if (e.selfDamage)   parts.push(`Lose ${e.selfDamage} HP.`);
-  const times = e.perX?.hits ? ` ${xLabel(e)} times` : e.hitsPerAttack ? ' for each attack you\'ve played this turn' : e.hits > 1 ? ` ${e.hits} times` : '';
+  if (e.exhaustHand)  parts.push(e.exhaustHand === 'all' ? 'Exhaust your hand.' : 'Exhaust every non-attack in your hand.');
+  const times = e.perX?.hits ? ` ${xLabel(e)} times` : e.hitsPerAttack ? ' for each attack you\'ve played this turn'
+    : e.hitsPerExhausted ? ' for each card exhausted' : e.hits > 1 ? ` ${e.hits} times` : '';
   if (e.damage)       parts.push(`Deal ${e.damage} damage${times}.`);
   if (e.blockDamage)  parts.push('Deal damage equal to your block.');
+  if (e.bonus)        parts.push(`+${e.bonus} damage.`);
+  if (e.perExhausted) parts.push(`+${e.perExhausted} for each card exhausted.`);
   if (e.perTide)      parts.push(`+${e.perTide} per Tide, then spend all your Tide.`);
   if (e.bonusIfLow)   parts.push(`+${e.bonusIfLow} if your HP is below half.`);
   if (e.bonusPerBurn) parts.push(`+${e.bonusPerBurn} for each Burn on the enemy.`);
   if (e.perPlayed)    parts.push(`+${e.perPlayed} for each other card you've played this turn.`);
   if (e.perDiscard)   parts.push(`+${e.perDiscard} for each card you've discarded this turn.`);
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
-  if (e.burn)         parts.push(`Burn ${e.burn}.`);
+  if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
+  if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
   if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block)        parts.push(`Gain ${e.block} block.`);
+  if (e.blockPerExhausted) parts.push(`Gain ${e.blockPerExhausted} block for each card exhausted.`);
   if (e.heal)         parts.push(`Heal ${e.heal} HP.`);
+  if (e.healDealt)    parts.push('Heal the damage that gets through.');
   if (e.strength)     parts.push(`Your hits deal +${e.strength} all fight.`);
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
   if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
   if (e.draw)         parts.push(`Draw ${plural(e.draw, 'card')}.`);
   if (e.discard)      parts.push(`Discard ${plural(e.discard, 'card')}.`);
   if (e.exhaustPick)  parts.push(`Exhaust ${plural(e.exhaustPick, 'card')} from your hand.`);
+  if (e.playTop)      parts.push(e.playTop > 1 ? `Play the top ${e.playTop} cards of your draw pile and exhaust them.` : 'Play the top card of your draw pile and exhaust it.');
+  if (e.exhume)       parts.push('Put a card from your exhaust pile into your hand.');
   if (e.tide)         parts.push(`Gain ${e.tide} Tide.`);
   if (e.nextEnergy)   parts.push(`+${e.nextEnergy} energy next turn.`);
   if (e.addCard) {
     const { id, n = 1, to = 'hand' } = e.addCard;
     const name = CARDS_BY_ID[id]?.name ?? id;
-    parts.push(to === 'draw' ? `Shuffle ${n > 1 ? `${n} ${name}s` : `a ${name}`} into your draw pile.` : `Add ${n > 1 ? `${n} ${name}s` : `a ${name}`} to ${PILES[to]}.`);
+    const some = n > 1 ? `${n} ${/s$/.test(name) ? `${name} cards` : `${name}s`}` : `a ${name}`;
+    parts.push(to === 'draw' ? `Shuffle ${some} into your draw pile.` : `Add ${some} to ${PILES[to]}.`);
   }
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
   if (e.endTurnHurt)  parts.push(`If it's in your hand at the end of your turn, lose ${e.endTurnHurt} HP.`);
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
+  if (e.ifBurned)     parts.push(`If the enemy is Burned: ${sentences(e.ifBurned).join(' ')}`);
+  if (e.ifHurt)       parts.push(`If you've lost HP this turn: ${sentences(e.ifHurt).join(' ')}`);
+  if (e.costDownOnHurt) parts.push(`Costs ${e.costDownOnHurt} less for each time you've lost HP this fight.`);
   return parts;
 }
 
@@ -435,7 +518,11 @@ export function termTips(card) {
     (e.perX || card.cost === 'X') && 'X: this card spends all your PP, and X is how much it spent.',
     e.combo && `Combo ${e.combo.at}: the extra only happens if you've already played ${e.combo.at} other cards this turn.`,
     (e.discard || card.onDiscard) && 'Discard: moved from your hand to the discard pile. Cards that say "When discarded" only trigger when a card makes you discard them.',
-    (e.exhaustPick || card.onExhaust || e.exhaustBlock || e.exhaustDraw) && 'Exhaust: gone for the rest of this fight.',
+    (e.exhaustPick || card.onExhaust || e.exhaustBlock || e.exhaustDraw || e.exhaustHand || e.exhaustBurn || e.playTop || e.exhume || e.corruption)
+      && 'Exhaust: gone for the rest of this fight.',
+    (e.burn || e.burnMult || e.ifBurned || e.bonusPerBurn || e.burnEachTurn || e.drought || e.exhaustBurn)
+      && 'Burn: the enemy takes that much damage at the start of its turn, then its Burn drops by 1.',
+    e.ifHurt && 'Losing HP counts however it happens: your own cards, Poison, or the enemy\'s hits.',
     card.upgraded && 'Upgraded with PP Up.',
   ].filter(Boolean);
 }
