@@ -15,6 +15,7 @@
    ============================================================ */
 
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
+import { SPRITE_FIT } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER, TYPES, CARDS_BY_ID, MAX_COPIES, poolForType } from './data/cards.js';
 import { RELICS, RELICS_BY_ID } from './data/relics.js';
@@ -862,12 +863,12 @@ function moneyOption(icon, title, text, price, onPick) {
 }
 
 // events with a scene of their own (PLACE_ART in js/scene.js): no tiles, their choices are signs over its props
-const EVENT_SCENES = { 'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well' };
+const EVENT_SCENES = { 'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well', 'item-ball': 'itemball', 'team-rocket': 'rocket', shrine: 'altar' };
 
 function eventRoom(node) {
   const event = EVENTS_BY_ID[node.event.id];
   const back = () => eventRoom(node);
-  const { options, leave = true, sub = event.text } = EVENT_CHOICES[event.id](event, node.event, back);
+  const { options, leave = true, sub = event.text, mon } = EVENT_CHOICES[event.id](event, node.event, back);
   const scene = EVENT_SCENES[event.id];
   showChoice({
     title: `${event.icon} ${event.name}`,
@@ -878,7 +879,14 @@ function eventRoom(node) {
     layout: scene ? `event-room ${scene}-room` : '',
   });
   if (!scene) return;
-  showPlaceScene(scene, { biome: BIOMES[run.biome].id });
+  if (mon) {   // a Pokémon standing in the scene (the grunt's), its real sprite on the scene's `mon` spot
+    const sprite = el('img', 'event-mon');
+    sprite.src = ENEMY_DEFS[mon].image;
+    sprite.alt = '';
+    sprite.addEventListener('load', placeEventSpots);
+    $('reward-options').append(sprite);
+  }
+  showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type });
   placeEventSpots();
 }
 
@@ -903,6 +911,13 @@ function placeEventSpots() {
     const w = Math.max(r.width, 56), h = Math.max(r.height, 56);
     Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
   });
+  const sprite = box.querySelector('.event-mon');
+  if (sprite?.naturalWidth && spots.mon) {
+    // half the scene's pixel size, like Chansey at the Center, its resting pose (SPRITE_FIT) centred on its feet
+    const k = spots.mon.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
+    const [, bottom, left, right] = SPRITE_FIT[sprite.src.split('/').pop().replace(/\.gif$/, '')] || [0, 0, 0, 0];
+    Object.assign(sprite.style, { width: `${w * k}px`, left: `${spots.mon.x - (left + (w - left - right) / 2) * k}px`, top: `${spots.mon.y - (h - bottom) * k}px` });
+  }
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
 }
 addEventListener('scenepaint', placeEventSpots);
@@ -956,8 +971,10 @@ const EVENT_CHOICES = {
 
   'item-ball'(event, state) {
     const damage = Math.min(run.hp - 1, perBiome(event.trapDamage));
-    return { options: [
-      textOption('⚫', 'Pick it up', 'It could be a relic. It could also explode.', () => {
+    preloadSounds('ball-open', 'hit');
+    return { sub: [event.text, 'It could hold a relic. It could also explode.'], options: [
+      spotOption('Pick it up', 'Pick it up: a relic, or a Voltorb.', async () => {
+        if (!await playOut('pickup', { trap: state.trap })) return;
         if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
         tell(`It was a Voltorb! It exploded for ${damage} damage.`);
@@ -993,16 +1010,19 @@ const EVENT_CHOICES = {
     const flee = Math.ceil(run.maxHp * event.fleeHp);
     const node = run.map.byId[run.current];
     const foe = ENEMY_DEFS[state.enemyId];
-    return { leave: false, options: [
-      moneyOption('💴', `Pay ₽${toll}`, 'Hand over the toll and walk on.', toll, () => {
+    return { leave: false, mon: state.enemyId, sub: [event.text, `Pay ₽${toll}, battle his Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
+      spotOption(`Pay ₽${toll}`, `Hand over the ₽${toll} toll and walk on.`, async () => {
         run.money -= toll;
         setMoney(run.money);
+        playSound('buy');
+        if (!await playOut('pay')) return;
         tell(`The grunt took ₽${toll}.`);
         showMap();
-      }),
-      textOption('⚔️', 'Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
-      textOption('💨', 'Run for it', `Lose ${flee} HP getting away.`, () => {
+      }, run.money < toll),
+      spotOption('Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
+      spotOption('Run', `Run for it: lose ${flee} HP getting away.`, async () => {
         playSound('run-away');
+        if (!await playOut('run')) return;
         loseHp(flee);
         tell(`Got away, but lost ${flee} HP.`);
         showMap();
@@ -1056,13 +1076,14 @@ const EVENT_CHOICES = {
   'shrine'(event, state) {
     const cost = perBiome(event.offering);
     const relic = state.relics.map(id => RELICS_BY_ID[id]).find(r => !run.relics.includes(r.id));
-    if (!relic) return { options: [{ ...textOption('⛩️', 'Pray', 'The shrine has nothing left to give you.', () => {}), disabled: true }] };
-    return { options: [
-      hpOption('⛩️', `Pray (${cost} HP)`, `Receive ${relic.icon} ${relic.name}: ${relic.text}`, cost, () => {
+    if (!relic) return { options: [spotOption('Pray', 'The shrine has nothing left to give you.', () => {}, true)] };
+    return { sub: [event.text, `Offer ${cost} HP in prayer, and it will give you ${relic.name}: ${relic.text}`], options: [
+      spotOption(`Pray -${cost} HP`, `Offer ${cost} HP: receive ${relic.icon} ${relic.name}. ${relic.text}`, async () => {
+        if (!await playOut('pray')) return;
         loseHp(cost);
         playSound('item-get');
         gainRelic(relic, showMap);
-      }),
+      }, run.hp <= cost),
     ] };
   },
 };

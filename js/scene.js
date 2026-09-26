@@ -411,6 +411,52 @@ const PLACE_ART = {
       },
     },
   },
+
+  itemball: {   // a Poké Ball lying in a patch of tall grass, like an item ball in the games (or a Voltorb...)
+    outdoor: true, prop: 'itemball', horizon: 0.5,
+    tall: ['#a8f070', '#60c040', '#389028', '#185818'],
+    ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'],
+    boom: ['#ffffff', '#fff070', '#f89020', '#d83818'], smoke: ['#d0d0d0', '#8a8a8a'],
+    life: ['itemball'],
+    biomes: {
+      shrine: { tall: ['#98e0a0', '#50a868', '#307c48', '#16482a'] },
+      wastes: { tall: ['#d8d078', '#a8a048', '#767030', '#403c18'] },   // dry, sun-scorched grass
+    },
+  },
+
+  rocket: {   // a Team Rocket grunt at a roadblock with his Pokémon (the page stands its sprite on `life.mon`), a bush to run through
+    outdoor: true, prop: 'rocket', horizon: 0.5,
+    grunt: ['#101018', '#3a3a48', '#6a6a80', '#f8d0a8', '#d09870', '#e02828', '#f0f0f0', '#a8a8b8'],
+    plank: ['#383840', '#202028', '#e03830', '#901818', '#101014'],
+    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'],
+    bush: ['#88d060', '#50a040', '#307428', '#143c14'],
+    life: ['rocket'],
+    biomes: {
+      shrine: { bush: ['#78c880', '#449858', '#2a6e40', '#0e3a20'] },
+      wastes: { bush: ['#b8b060', '#88883c', '#5e6028', '#2a2a10'] },
+    },
+  },
+
+  altar: {   // a little wooden shrine on a stone base, like Ilex Forest's, with your type's power glowing inside
+    outdoor: true, prop: 'altar', horizon: 0.5,
+    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
+    roof: ['#b87860', '#8a4c3a', '#5e2e24', '#2a1410'],
+    altarStone: ['#e0e0d8', '#b0b0a8', '#80807a', '#303030'],
+    inside: '#140c0c', rope: ['#f0e0a0', '#c0a060'], paper: '#ffffff', hp: ['#ffd0d8', '#f05878'],
+    glow: ['#ffffff', '#fff0a0', '#e0e0e0'],
+    types: {
+      fire: { glow: ['#fff8d0', '#f8a030', '#e04818'] },
+      water: { glow: ['#f0fcff', '#60b0f8', '#2860d0'] },
+      grass: { glow: ['#f8ffd0', '#80d850', '#309030'] },
+      psychic: { glow: ['#fff0fc', '#f878c8', '#b03890'] },
+    },
+    life: ['altar'],
+    biomes: {
+      shrine: { roof: ['#88d0b0', '#4aa080', '#2e7458', '#123828'] },   // green copper, like the torii's shrine
+      wastes: { roof: ['#8a8a98', '#5e5e6a', '#3e3e48', '#18181e'], altarStone: ['#a08c84', '#7a6660', '#54403a', '#1a1012'] },
+    },
+  },
 };
 
 
@@ -430,13 +476,14 @@ export function showMenuScene(type) {
 /** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. `floor` (a function giving
     a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles, and
     `span` (one giving its page [left, right]) lets the scene dress its ends. A place with `biomes` (the treasure
-    grotto) takes its look from `biome`; an `outdoor` one (a ? event) stands in that biome's own scene. */
-export function showPlaceScene(place, { floor = null, span = null, biome = null } = {}) {
-  const { biomes, ...art } = PLACE_ART[place];
+    grotto) takes its look from `biome`; an `outdoor` one (a ? event) stands in that biome's own scene, and its `types`
+    (the shrine's glow) retint it for your Pokémon's `type`. */
+export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null } = {}) {
+  const { biomes, types, ...art } = PLACE_ART[place];
   if (art.outdoor) {
     const { kinds, storm, ...shared } = BIOME_ART[biome] || BIOME_ART.clearing;
     const { pad, life: own, ...wild } = kinds.wild;
-    paintScene(`place/${place}/${biome}`, { ...shared, ...wild, ...art, ...biomes?.[biome], life: [...own, ...art.life] }, floor, span);
+    paintScene(`place/${place}/${biome}/${type}`, { ...shared, ...wild, ...art, ...biomes?.[biome], ...types?.[type], life: [...own, ...art.life] }, floor, span);
     return;
   }
   const look = biomes && (biomes[biome] || Object.values(biomes)[0]);
@@ -1769,7 +1816,7 @@ const groundAt = (k) => horizon + Math.round((H - horizon) * k);
 const kept = (x, y) => life.keep?.some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
 
 function eventProps() {
-  ({ berry: berryScene, spring: springScene, well: wellScene })[S.raw.prop]();
+  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene })[S.raw.prop]();
   if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
 }
 
@@ -1794,7 +1841,8 @@ export function eventSpots() {
   if (!life.eventSpots || !canvas || !S?.raw.prop) return null;
   const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
   const rect = ({ x0, x1, y0, y1 }) => ({ left: box.left + x0 * sx, top: box.top + y0 * sy, width: (x1 - x0 + 1) * sx, height: (y1 - y0 + 1) * sy });
-  return { spots: life.eventSpots.map(rect), foot: box.top + life.foot * sy };
+  const mon = life.mon && { x: box.left + (life.mon.x + 0.5) * sx, y: box.top + life.mon.y * sy, px: sx };
+  return { spots: life.eventSpots.map(rect), foot: box.top + life.foot * sy, mon };
 }
 
 // how long each choice plays out, in frames, and what it sets going
@@ -1804,17 +1852,27 @@ const ACTS = {
   soak: { frames: 16 },
   dip: { frames: 11 },
   toss: { frames: ({ win }) => (win ? 26 : 15) },
+  pickup: { frames: ({ trap }) => (trap ? 22 : 15), cues: ({ trap }) => (trap ? [[11, 'hit']] : [[6, 'ball-open']]) },
+  pay: { frames: 13 },
+  run: { frames: 11 },
+  pray: { frames: 19 },
 };
 
-/** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it). */
+/** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
+    but still plays its `cues`, the sounds timed to its frames). */
 export function sceneAct(name, opts = {}) {
   const act = ACTS[name];
-  if (!act || !timer || !S?.raw.prop) return 0;
+  if (!act || !S?.raw.prop) return 0;
+  if (!timer) { for (const [, sound] of act.cues?.(opts) || []) playSound(sound); return 0; }
   life.act = { name, at: tick, ...opts };
   act.start?.();
   return (typeof act.frames === 'function' ? act.frames(opts) : act.frames) * 1000 / FPS;
 }
 const actFrame = (name) => (life.act?.name === name ? tick - life.act.at : -1);
+function actCues() {
+  const { name, at, ...opts } = life.act;
+  for (const [f, sound] of ACTS[name].cues?.(opts) || []) if (tick - at === f) playSound(sound);
+}
 
 /* ---------- the Berry Tree ---------- */
 
@@ -2137,6 +2195,299 @@ function drawWell(t) {
   }
 }
 
+/* ---------- the Item Ball ---------- */
+
+function itemBallScene() {
+  const cx = W >> 1, cy = groundAt(0.4), [, , dark, deep] = S.tall;
+  for (let y = -10; y <= 10; y++) for (let x = -25; x <= 25; x++) {   // the dark ground between the tufts
+    const d = (x / 25) ** 2 + (y / 10) ** 2;
+    if (d <= 1) solid(cx + x, cy + 1 + y, d > 0.7 && dither(x, y) < 8 ? deep : dark);
+  }
+  life.tufts = [];
+  [12, 18, 21, 18, 12].forEach((hw, i) => {
+    for (let x = -hw + (i % 2 ? 3 : 0); x <= hw; x += 6) life.tufts.push({ x: cx + x, y: cy + (i - 2) * 4 + 3 });
+  });
+  life.ball = { x: cx, y: cy + 3 };
+  life.eventSpots = [{ x0: cx - 16, x1: cx + 16, y0: cy - 12, y1: cy + 11 }];
+  life.foot = cy + 14;
+  life.keep = [{ x0: cx - 27, x1: cx + 27, y0: cy - 12, y1: cy + 12 }];
+}
+
+// a tuft of the games' tall grass: three blades, the left one lit, over a shaded clump (outlined by tuft())
+const TUFT = ['a..a..b', 'a.aab.b', 'aaabbbb', 'cabbbbc', '.ccccc.'];
+const BALL = ['.kkkkk.', 'kRWRRRk', 'kRRRRDk', 'kkkWkkk', 'kWWWWGk', 'kWWWGGk', '.kkkkk.'];
+const VOLTORB = ['.kkkkk.', 'kRRRRRk', 'kkWRWkk', 'kRRRRDk', 'kWWWWGk', 'kWWWGGk', '.kkkkk.'];
+
+/** One tuft of tall grass, its bottom middle at x, y; its tips lean in the wind (a hidden Pokémon rustling it). */
+function tuft(x, y, lean) {
+  const [a, b, c, k] = S.tall, key = { a, b, c };
+  const at = (i, r) => (r >= 0 && r < 5 && i >= 0 && i < 7 ? TUFT[r][i] : '.');
+  for (let r = -1; r <= 5; r++) for (let i = -1; i <= 7; i++) {
+    const ch = at(i, r), px = x - 3 + i + (r < 2 ? lean : 0), py = y - 4 + r;
+    if (ch !== '.') put(px, py, key[ch]);
+    else if (r < 5 && [at(i - 1, r), at(i + 1, r), at(i, r - 1), at(i, r + 1)].some(n => n !== '.')) put(px, py, k);
+  }
+}
+
+/** The tall grass and the ball in it (it glints, and the grass round it rustles now and then). Picking it up wobbles it
+    like a catch; then it either pops open in a burst of light, or it opens its eyes: a Voltorb, which flashes and explodes. */
+function drawItemBall(t) {
+  const f = actFrame('pickup'), trap = life.act?.trap, b = life.ball, [white, grey, red, dark, line] = S.ball;
+  const boomAt = 11, gone = f >= (trap ? boomAt : 10);
+  const rustle = f < 0 && t % 48 < 4 ? (t % 2 ? 1 : -1) : 0;
+  const drawBall = () => {
+    if (gone) return;
+    const dx = f >= 0 && f < 6 ? [0, -1, 0, 1, 0, -1][f] : 0, lift = !trap && f >= 6 ? f - 5 : 0;
+    const flash = trap && f >= 8 && f % 2 === 0;
+    const key = flash ? { k: white, R: white, D: grey, W: white, G: grey } : { k: line, R: red, D: dark, W: white, G: grey };
+    (trap && f >= 6 ? VOLTORB : BALL).forEach((row, r) => {
+      for (let i = 0; i < 7; i++) if (row[i] !== '.') put(b.x - 3 + i + dx, b.y - 6 + r - (r < 4 ? lift : 0), key[row[i]]);
+    });
+    if (f < 0 && Math.sin(t / 7) > 0.93) sparkle(b.x - 2, b.y - 6, white);
+  };
+  let drawn = false;
+  for (const p of life.tufts) {
+    if (!drawn && p.y > b.y) { drawBall(); drawn = true; }
+    tuft(p.x, p.y, Math.abs(p.x - b.x) < 8 && Math.abs(p.y - b.y) < 6 ? rustle : 0);
+  }
+  if (!drawn) drawBall();
+  if (f < 0) return;
+
+  if (!trap && f >= 6) {   // it pops open: a burst of light and sparkles
+    const k = f - 6, [hot, gold] = S.boom;
+    if (k < 5) for (let a = 0; a < 8; a++) for (let r = 2; r < 3 + k * 2; r++) put(b.x + Math.round(Math.cos(a * Math.PI / 4) * r), b.y - 4 + Math.round(Math.sin(a * Math.PI / 4) * r * 0.8), r > k * 2 ? gold : hot);
+    for (let i = 0; i < 4 && k > 1; i++) sparkle(b.x + Math.round(Math.sin(i * 1.7 + k) * 6), b.y - 6 - k * 2 - i * 3, i % 2 ? hot : gold);
+  }
+  if (trap && f >= boomAt) {   // Self-Destruct: a white flash, a fireball, then smoke drifting up off a scorched patch
+    const k = f - boomAt, [hot, yellow, orange, redBoom] = S.boom, [smoke, smokeDark] = S.smoke;
+    for (let y = -4; y <= 3; y++) for (let x = -10; x <= 10; x++) if ((x / 10) ** 2 + (y / 3.5) ** 2 <= 1) tint(b.x + x, b.y + y, 0.55);
+    const r = Math.min(13, 3 + k * 3), fade = Math.max(0, 1 - (k - 3) / 5);
+    if (fade > 0) for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+      const d = Math.hypot(x, y * 1.2) / r;
+      if (d > 1 || dither(b.x + x, b.y + y) >= 16 * fade) continue;
+      put(b.x + x, b.y - 3 + y, k < 2 ? hot : d < 0.35 ? yellow : d < 0.7 ? orange : redBoom);
+    }
+    for (let i = 0; i < 5 && k >= 3; i++) {
+      const age = k - 3 - (i % 3), x = b.x + (i - 2) * 4 + Math.round(Math.sin(age / 2 + i) * 1.5), y = b.y - 4 - age * 2;
+      if (age < 0 || age > 8) continue;
+      const pr = 2 + (age >> 2);
+      for (let oy = -pr; oy <= pr; oy++) for (let ox = -pr; ox <= pr; ox++) {
+        if (ox * ox + oy * oy <= pr * pr && dither(x + ox, y + oy) < 16 - age * 1.6) put(x + ox, y + oy, oy > 0 ? smokeDark : smoke);
+      }
+    }
+  }
+}
+
+/* ---------- Team Rocket ---------- */
+
+function rocketScene() {
+  const cx = W >> 1, foot = groundAt(0.42);
+  barricade(cx - 8, foot - 2, 21);
+  const grunt = { x: cx - 15, y: foot }, mon = { x: cx + 8, y: foot + 1 }, bush = { x: cx + 29, y: foot + 3 };
+  groundShadow(grunt.x, foot + 1, 6, 1);
+  groundShadow(mon.x, mon.y, 9, 2);
+  groundShadow(bush.x + 1, bush.y, 9, 2);
+  Object.assign(life, { grunt, mon, bush });
+  life.eventSpots = [
+    { x0: grunt.x - 7, x1: grunt.x + 6, y0: foot - 21, y1: foot + 1 },
+    { x0: mon.x - 10, x1: mon.x + 10, y0: foot - 20, y1: foot + 2 },
+    { x0: bush.x - 8, x1: bush.x + 8, y0: bush.y - 12, y1: bush.y + 1 },
+  ];
+  life.foot = bush.y + 5;
+  life.keep = [{ x0: cx - 36, x1: bush.x + 9, y0: foot - 26, y1: bush.y + 3 }];
+}
+
+/** A roadblock of two planks striped in Team Rocket's black and red on wooden posts, with a big red R on a board. */
+function barricade(cx, foot, hw) {
+  const [black, blackDark, red, redDark, line] = S.plank, [wLit, wood, wDark, wLine] = S.wood;
+  for (const x0 of [cx - hw, cx + hw - 1]) {
+    outlined(x0, foot - 12, x0 + 1, foot, (x, y) => x >= x0 && x <= x0 + 1 && y >= foot - 12 && y <= foot, (x) => (x === x0 ? wLit : wDark), wLine);
+  }
+  for (const top of [foot - 10, foot - 5]) {
+    outlined(cx - hw - 2, top, cx + hw + 2, top + 2, (x, y) => Math.abs(x - cx) <= hw + 2 && y >= top && y <= top + 2, (x, y) => {
+      const stripe = Math.floor((x + y) / 3) % 2, lit = y === top;
+      return stripe ? (lit ? red : redDark) : (lit ? black : blackDark);
+    }, line);
+  }
+  const sx = cx - hw - 3, sy = foot - 24;   // the R board on a pole at the left end
+  outlined(cx - hw, sy + 8, cx - hw + 1, foot - 12, (x, y) => x >= cx - hw && x <= cx - hw + 1 && y >= sy + 8 && y <= foot - 12, (x) => (x === cx - hw ? wLit : wDark), wLine);
+  pixelMap(sx - 3, sy - 1, [
+    'kkkkkkkkkk',
+    'kbbbbbbbbk',
+    'kbRRRRbbbk',
+    'kbRRbbRRbk',
+    'kbRRbbRRbk',
+    'kbRRRRRbbk',
+    'kbRRbRRbbk',
+    'kbRRbbRRbk',
+    'kbbbbbbbbk',
+    'kkkkkkkkkk',
+  ], { k: line, b: black, R: red });
+}
+
+const GRUNT = [
+  '....kkkkkk....',
+  '...kcCCCCCk...',
+  '..kcCCCCCCCk..',
+  '..kCCCCCCCCk..',
+  '.kCCCCCCCCCCk.',
+  '..kkkkkkkkkk..',
+  '..kSssssssSk..',
+  '..kskssssksk..',
+  '..kssssssssk..',
+  '...kSSSSSSk...',
+  '..kkBBBBBBkk..',
+  '.kBBBRRRBBBBk.',
+  '.kBkBRBBRBkBk.',
+  '.kBkBRRRBBkBk.',
+  '.kBkBRBRBBkBk.',
+  '.kwkBRBBRBkwk.',
+  '..k.kBBBBk.k..',
+  '....kBBBBk....',
+  '....kBkkBk....',
+  '...kwwk.kwwk..',
+  '...kkkk.kkkk..',
+];
+
+/** The grunt, the bush and the act: paying throws coins to him and he hops for joy; running shakes the bush, leaves
+    fly and he shakes his fist. */
+function drawRocket(t) {
+  const pay = actFrame('pay'), flee = actFrame('run'), g = life.grunt, bush = life.bush;
+  const [line, cap, capLit, skin, skinDark, red, white] = S.grunt;
+  const hop = pay >= 8 && pay < 12 ? [-1, -2, -1, 0][pay - 8] : 0, shake = flee >= 2 && flee < 10 ? (flee % 2 ? 1 : -1) : 0;
+  const idle = pay < 0 && flee < 0 && t % 40 < 2 ? 1 : 0;   // he shifts his weight now and then
+  pixelMap(g.x - 7 + shake, g.y - 20 + hop + idle, GRUNT, { k: line, C: cap, c: capLit, s: skin, S: skinDark, B: cap, R: red, w: white });
+
+  const [lit, leaf, dark, bLine] = S.bush, rustle = flee >= 0 && flee < 8 ? (flee % 2 ? 1 : -1) : 0;
+  const clumps = [[-4, -5, 4.5], [4, -5, 4.5], [0, -7, 5], [-5, -2, 4], [5, -2, 4], [0, -3, 5.5]];
+  const inBush = (x, y) => clumps.some(([dx, dy, r]) => Math.hypot(x - bush.x - dx - rustle, (y - bush.y - dy) * 1.1) <= r);
+  outlined(bush.x - 11, bush.y - 13, bush.x + 11, bush.y, inBush, (x, y) => {
+    const v = (x - bush.x - rustle) / 9 + (y - bush.y + 6) / 6;
+    return (x * 3 + y * 5) % 11 === 0 ? dark : v < -0.5 ? lit : v < 0.7 ? leaf : dark;
+  }, bLine);
+  if (flee >= 0) for (let i = 0; i < 6; i++) {   // leaves thrown out as you dive through
+    const k = flee - (i >> 1);
+    if (k < 0 || k > 8) continue;
+    const dir = i % 2 ? 1 : -1, x = bush.x + dir * (3 + k * (1 + i % 3)), y = bush.y - 8 - k * 2 + Math.round(k * k * 0.35);
+    put(x, y, i % 3 ? leaf : lit); put(x + dir, y, dark);
+  }
+
+  if (pay >= 0) {   // three coins arc up from you into his hand
+    const [shine, gold, gDark] = S.coin, hx = g.x + 5, hy = g.y - 7;
+    for (let i = 0; i < 3; i++) {
+      const k = (pay - i * 2) / 6;
+      if (k < 0 || k > 1) continue;
+      const sx = (W >> 1) + (i - 1) * 6, sy = H + 2;
+      const x = Math.round(sx + (hx - sx) * k), y = Math.round(sy + (hy - sy) * k - 14 * 4 * k * (1 - k));
+      put(x, y, shine); put(x + 1, y, gold); put(x, y + 1, gold); put(x + 1, y + 1, gDark);
+    }
+    if (pay >= 8 && pay < 11) sparkle(hx + 1, hy - 3, S.coin[0]);
+  }
+}
+
+/* ---------- the Shrine ---------- */
+
+function altarScene() {
+  const cx = W >> 1, foot = groundAt(0.42);
+  groundShadow(cx + 2, foot + 1, 17, 3);
+  if (cx - 27 > 0) { stoneLantern(cx - 21, foot + 1); stoneLantern(cx + 21, foot + 1); }
+  altar(cx, foot);
+  life.orb = { x: cx, y: foot - 9 };
+  life.eventSpots = [{ x0: cx - 15, x1: cx + 15, y0: foot - 26, y1: foot + 4 }];
+  life.foot = foot + 8;
+  life.keep = [{ x0: cx - 26, x1: cx + 26, y0: foot - 26, y1: foot + 5 }];
+}
+
+/** A stone lantern like the shrine biome's, its window lit with your type's glow. */
+function stoneLantern(cx, foot) {
+  const [lit, , shade, line] = S.altarStone;
+  pixelMap(cx - 3, foot - 12, [
+    '...k...',
+    '..kak..',
+    '.kaabk.',
+    'kaaabbk',
+    'kkkkkkk',
+    '.kagbk.',
+    '.kkkkk.',
+    '..kak..',
+    '..kab..',
+    '..kbk..',
+    '.kaabk.',
+    'kkkkkkk',
+  ], { k: line, a: lit, b: shade, g: S.glow[1] });
+}
+
+/** A little wooden shrine (like Ilex Forest's) on two stone steps: its doors open on a dark inside where your type's
+    power glows (drawAltar), a straw rope with paper streamers under a roof with upturned eaves, an offering box in front. */
+function altar(cx, foot) {
+  const [sLit, stone, sShade, sLine] = S.altarStone, [wLit, wood, wDark, wLine] = S.wood, [rLit, roof, rDark, rLine] = S.roof;
+  const block = (x0, x1, y0, y1, colourAt, line) => outlined(x0, y0, x1, y1, (x, y) => x >= x0 && x <= x1 && y >= y0 && y <= y1, colourAt, line);
+  block(cx - 14, cx + 14, foot - 2, foot, (x, y) => (y === foot - 2 ? sLit : (x - cx + 20) % 7 === 0 ? sShade : stone), sLine);
+  block(cx - 11, cx + 11, foot - 5, foot - 3, (x, y) => (y === foot - 5 ? sLit : (x - cx + 20) % 6 === 0 ? sShade : stone), sLine);
+  block(cx - 8, cx + 8, foot - 16, foot - 6, (x, y) => {
+    if (Math.abs(x - cx) <= 4 && y >= foot - 13) return y === foot - 13 ? wLine : S.inside;   // the open doorway, dark inside
+    if (Math.abs(x - cx) === 5 && y >= foot - 13) return wDark;   // the doors folded back
+    return x < cx - 5 ? wLit : x > cx + 5 ? wDark : wood;
+  }, wLine);
+  const top = foot - 25, eave = foot - 17;
+  outlined(cx - 15, top, cx + 15, eave, (x, y) => {
+    const r = y - top, hw = 2 + Math.round(r * 11 / (eave - top));
+    return y >= top && y <= eave && (Math.abs(x - cx) <= hw || (y >= eave - 2 && Math.abs(x - cx) <= hw + (eave - y) + 1 && Math.abs(x - cx) <= 15));
+  }, (x, y) => {
+    const e = x - cx;
+    if (y === eave) return rDark;
+    if (y === top || Math.abs(e) <= 1) return rLit;
+    if (Math.abs(e) % 3 === 0) return e < 0 ? roof : rDark;   // the ribs of the roof
+    return e < 0 ? rLit : roof;
+  }, rLine);
+  const [rope, ropeDark] = S.rope;
+  for (let x = cx - 9; x <= cx + 9; x++) { solid(x, foot - 15, x % 2 ? rope : ropeDark); solid(x, foot - 14 + ((x - cx + 9) % 6 === 3 ? 1 : 0), ropeDark); }
+  for (const dx of [-6, 6]) pixelMap(cx + dx - 1, foot - 13, ['w.', '.w', 'w.', '.w'], { w: S.paper });   // paper streamers (shide)
+  pixelMap(cx - 6, foot - 3, [
+    'kkkkkkkkkkkkk',
+    'kabababababdk',
+    'kkkkkkkkkkkkk',
+    'kaaabbbbbbbdk',
+    'kaaabbbbbbbdk',
+    'kkkkkkkkkkkkk',
+  ], { k: wLine, a: wLit, b: wood, d: wDark });
+}
+
+/** The glow of your type inside the shrine, pulsing, with motes drifting up. Praying draws your HP up into it as red
+    motes; it flares and throws rays across the shrine, then a spark rises out of the roof (the relic). */
+function drawAltar(t) {
+  const o = life.orb, f = actFrame('pray'), [core, glow, deep] = S.glow;
+  const flare = f >= 8 && f < 14 ? Math.sin((f - 8) / 6 * Math.PI) : 0;
+  const r = 2.5 + Math.sin(t / 4) * 0.6 + flare * 6;
+  for (let y = -Math.ceil(r); y <= r; y++) for (let x = -Math.ceil(r); x <= r; x++) {
+    const d = Math.hypot(x, y) / r;
+    if (d <= 1 && dither(o.x + x, o.y + y) < 16 * (1.1 - d)) put(o.x + x, o.y + y, d < 0.45 ? core : d < 0.75 ? glow : deep);
+  }
+  put(o.x, o.y, core); put(o.x - 1, o.y, core); put(o.x + 1, o.y, core); put(o.x, o.y - 1, core); put(o.x, o.y + 1, core);
+  for (let i = 0; i < 3; i++) {
+    const age = (t + i * 9) % 27, x = o.x - 3 + ((i * 5 + (t / 27 | 0)) % 7);
+    if (age < 12) put(x, o.y + 3 - age, age < 6 ? glow : deep);
+  }
+  if (f < 0) return;
+  const [pale, pink] = S.hp;
+  for (let i = 0; i < 5; i++) {   // your offering, rising from you as HP-red motes
+    const k = (f - i) / 6;
+    if (k < 0 || k > 1) continue;
+    const sx = o.x + (i - 2) * 9, sy = H + 1;
+    const x = Math.round(sx + (o.x - sx) * k + Math.sin(k * 6 + i) * 2), y = Math.round(sy + (o.y - sy) * k);
+    put(x, y, pale); put(x + 1, y, pink); put(x, y + 1, pink); put(x - 1, y, pink);
+  }
+  if (flare > 0.3) for (let a = 0; a < 8; a++) {
+    const ang = a * Math.PI / 4 + 0.39, len = 6 + flare * 12;
+    for (let s = 4; s < len; s++) if (dither(a, s) < 12) put(o.x + Math.round(Math.cos(ang) * s), o.y + Math.round(Math.sin(ang) * s * 0.8), s < len * 0.5 ? core : glow);
+  }
+  if (f >= 12) {
+    const k = f - 12, y = o.y - 4 - k * 4;
+    sparkle(o.x, y, k % 2 ? core : glow);
+    if (k > 1) { put(o.x - 2, y + 3, glow); put(o.x + 2, y + 5, glow); }
+  }
+}
+
 /** Paint a pixel map (one string per row, one letter per pixel, '.' left alone) with `key`'s colours, its top left at x0, y0. */
 function pixelMap(x0, y0, rows, key) {
   rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') solid(x0 + x, y0 + y, key[row[x]]); });
@@ -2319,7 +2670,7 @@ function makeLife() {
       pool: i, dx: (rand() * 2 - 1) * p.rx * 0.7, age: rand() * 32, speed: 0.7 + rand() * 0.5,
     })));
   }
-  if (has('mart')) life.dust =Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
+  if (has('mart')) life.dust = Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
   if (has('surf')) {
     life.glints = [];
     for (let i = 0, n = Math.round(W * (life.shore - horizon) / 30); i < n; i++) {
@@ -2404,6 +2755,10 @@ function draw() {
   if (has('berry')) drawBerryTree();
   if (has('spring')) drawSpring(t);
   if (has('well')) drawWell(t);
+  if (L.act) actCues();
+  if (has('itemball')) drawItemBall(t);
+  if (has('rocket')) drawRocket(t);
+  if (has('altar')) drawAltar(t);
   if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit) {

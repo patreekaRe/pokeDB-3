@@ -239,8 +239,9 @@ rewards; it has no Leave. A new event needs an entry in both places, an
 icon in `ICONS` for any new emoji, and a `RUN_SAVE_VERSION` bump only if the
 node shape changes.
 
-Events are getting scenes of their own, a few per session (Berry Tree, Hot Spring and Wishing Well so far;
-the other seven still show plain tiles over the map's scene). `EVENT_SCENES` in `js/run.js` maps an event to
+Events are getting scenes of their own, a few per session (Berry Tree, Hot Spring, Wishing Well, Item Ball,
+Team Rocket and Shrine so far; Move Tutor, Move Deleter, Day Care and Fan Club still show plain tiles over the
+map's scene). `EVENT_SCENES` in `js/run.js` maps an event to
 its `PLACE_ART` entry; `outdoor: true` makes `showPlaceScene()` paint that biome's own wild scene (sky,
 backdrop, ground, life) with the event's props in the middle (`prop`, `eventProps()` in `js/scene.js`), and
 its `biomes` only retint the props. Like the Center, there are no tiles: layout `event-room <scene>-room`
@@ -251,8 +252,17 @@ by the prop's draw function off `actFrame()`; skipped under reduced motion), the
 eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Hot Spring: soak
 in the big pool (a cloud of steam) or dip in the small one (ripples); a rubber duck bobs. Wishing Well: its
 two halves are the two tosses (signs leaning apart); a coin (a Nugget for the big toss) arcs in, splashes,
-and a win sends light and sparkles up. `life.keep` keeps grass blades and lava cracks off the props. Sounds:
-`heal-hp` for the heals, `stat-up` for planting, `buy` for a toss.
+and a win sends light and sparkles up. Item Ball: a Poké Ball in a patch of the games' tall grass (outlined
+tufts, drawn live so they rustle); picking it up wobbles it, then it pops open, or opens its eyes as a Voltorb,
+flashes and explodes over a scorch. Team Rocket: a pixel grunt (`GRUNT`) at a black-and-red roadblock with an R
+board, his Alpha beside him as its real GIF (the choice returns `mon`; `.event-mon` stands on the scene's
+`life.mon` at half the scene's pixel size, like Chansey), and a bush: paying throws him coins (he hops), Battle
+goes straight to the fight, Run shakes the bush. Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome): a
+little Ilex Forest-style shrine between two stone lanterns, glowing in your type's colour (`types`, picked by
+`showPlaceScene()`'s `type`); praying draws red HP motes into it, it flares, and a spark rises out. An act's
+`cues` play sounds on its frames (`actCues()`; all at once under reduced motion): the Voltorb's `hit`, the
+ball's `ball-open`. `life.keep` keeps grass blades and lava cracks off the props. Sounds:
+`heal-hp` for the heals, `stat-up` for planting, `buy` for a toss or the toll.
 
 ## Items
 

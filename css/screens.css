@@ -2591,6 +2591,14 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
    its two halves, so their signs lean apart */
 .well-room .reward-option:first-child .center-label { translate: -80% 0; }
 .well-room .reward-option + .reward-option .center-label { translate: -20% 0; }
+/* a Pokémon standing in an event's scene (the grunt's Alpha, placeEventSpots()), glowing red like an elite in battle */
+.event-mon {
+  position: fixed;
+  z-index: 1;
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 6px #ff3b3b);
+}
 @media (prefers-reduced-motion: reduce) { .center-label { animation: none; } }
 
 /* ---------- the treasure grotto (treasureRoom() in js/run.js): a Poké Ball chest on the scene's dais, sized in the
