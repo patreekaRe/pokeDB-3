@@ -23,7 +23,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 
 **Type chart:** 🔥 Fire beats 🌿 Grass, 🌿 Grass beats 💧 Water, 💧 Water beats 🔥 Fire (30% more damage; the reverse does 25% less). It works both ways: enemy attacks use their own type against you, and a ▲ or ▼ on the enemy's intent shows whether it is strong or weak against your starter. Neutral enemies are always ×1.
 
-**Status effects:** *Block* soaks up damage for one round, *Burn* damages the enemy at the start of its turn, *Focus* powers up your next attack, *Weaken* halves the enemy's next attack, and *Guard* stops it completely.
+**Status effects:** *Block* soaks up damage for one round, *Burn* damages the enemy at the start of its turn, *Focus* powers up your next attack, *Weak* makes the enemy deal 25% less damage for a few turns, *Vulnerable* makes it take 50% more from your attacks, and *Guard* stops it completely.
 
 ## Features
 

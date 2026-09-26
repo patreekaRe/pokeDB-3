@@ -4,6 +4,12 @@ A browser-based Pokémon-themed roguelike deck-battler. Vanilla HTML/CSS/JS
 (ES modules), no build step, no framework. Deployed on GitHub Pages at
 https://patreekare.github.io/pokeDB-3/.
 
+## Roadmap
+
+The agreed plan (task order, the new 54-Pokémon roster per biome, rules for adding
+enemies, Pokédex/catching ideas) is in `docs/roadmap.md`. Read it before starting a
+roster, balance or Pokédex task, and keep it up to date as steps land.
+
 ## Running it locally
 
 There's no `file://` support (ES modules need a real origin). Use the
