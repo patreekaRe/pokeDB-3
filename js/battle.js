@@ -19,7 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { ABILITIES } from './data/relics.js';
@@ -107,6 +107,7 @@ export function startBattle({ run, encounter, onEnd }) {
     nextEnergy: 0,     // bonus energy waiting for next turn
     focus: 0,          // bonus damage waiting for your next attack
     guard: false,      // blocks the next enemy attack completely
+    endure: false,     // can't drop below 1 HP until your next turn (Endure)
     tide: ability?.id === 'torrent' ? ability.amount : 0,   // Water's stored-up resource: built by `tide` cards, all spent by the next `perTide` card
     tideGained: ability?.id === 'torrent' ? ability.amount : 0,   // all the Tide gained this fight, spent or not (Tsunami)
     surgeTurns: 0,     // turns Primal Reversion has already paid out: it pays 1 more each turn
@@ -247,6 +248,7 @@ function beginPlayerTurn() {
   b.played = b.attacks = b.discarded = 0;
   b.hurtThisTurn = false;
   b.healedThisTurn = false;
+  b.endure = false;
   b.pledged = false;
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
@@ -384,6 +386,7 @@ function whyNotPlayable(card) {
   if (card.unplayable) return `${card.name} can't be played.`;
   if (costOf(card) > b.energy) return 'Not enough PP!';   // an X card ('X') is always playable, even with 0 PP
   if (card.effects.needsWounded && b.hp >= b.maxHp) return `${card.name} only works when you're hurt.`;
+  if (card.effects.needsEmptyDraw && b.drawPile.length) return `${card.name} only works when your draw pile is empty.`;
   return null;
 }
 
@@ -563,13 +566,14 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
   }
   if (e.discard) await pickFromHand(e.discard, 'discard', discardFromHand);
   if (e.exhaustPick) await pickFromHand(e.exhaustPick, 'exhaust', (entry) => { b.hand.splice(b.hand.indexOf(entry), 1); exhaustCard(entry.card); });
+  if (e.copyPick) await pickFromHand(1, 'copy', (entry) => addCopies(entry.card, e.copyPick), (h) => !h.card.status && !h.card.unplayable);
   if (e.exhume) await takeFromExhaust();
   if (battle !== b) return false;
 
   // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
-  if (card.power) b.exhaust.push(card);           // powers leave the fight, but aren't "exhausted" (no triggers)
+  if (card.power) b.exhaust.push(settled(card));  // powers leave the fight, but aren't "exhausted" (no triggers)
   else if (card.exhaust || exhaust || corrupts(card)) exhaustCard(card);
-  else b.discard.push(card);
+  else b.discard.push(settled(card));
   if (card.power && hasRelic('power-herb')) draw(1);
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
@@ -611,7 +615,9 @@ function applyEffects(e) {
   if (e.doubleStrength && b.strength > 0) gainStrength(b.strength, `💪 ×2`);
   if (e.tide)       gainTide(e.tide);
   if (e.tideMult && b.tide) gainTide(b.tide * (e.tideMult - 1));
-  if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
+  if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ ${e.nextEnergy > 0 ? '+' : ''}${e.nextEnergy} next turn`, e.nextEnergy > 0 ? 'note good' : 'note bad'); }
+  if (e.endure)     { b.endure = true; pop('player-zone', '🎗️ Enduring', 'note good', 150); statFx('player'); }
+  if (e.randomCard) addRandomCards(e.randomCard);
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
   if (e.healPerStrength && b.strength > 0 && healPlayer(e.healPerStrength * b.strength + healBonus())) playSound('heal-hp');
@@ -685,10 +691,36 @@ function addCards({ id, n = 1, to = 'hand' }) {
   pop('player-zone', `🃏 +${n} ${card.name}`, card.status ? 'note bad' : 'note good', 120);
 }
 
+/** Mimic (StS's Dual Wield): copies of a card in your hand, for this fight (the discard pile once the hand is full). */
+function addCopies(card, n) {
+  const b = battle;
+  for (let i = 0; i < n; i++) {
+    if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
+    else b.discard.push(settled(card));
+  }
+  pop('player-zone', `🧬 +${n} ${card.name}`, 'note good', 120);
+}
+
+/** Metronome (StS's Discovery): random cards of your type, free this turn only. The free copy remembers the card
+    (`orig`), which is what goes to a pile afterwards (settled). */
+function addRandomCards(n) {
+  const b = battle;
+  const pool = typePool(b.starter.type).filter(c => !c.evoOnly);
+  for (let i = 0; i < n && pool.length; i++) {
+    const card = pool[Math.floor(Math.random() * pool.length)];
+    const free = { ...card, discount: typeof card.cost === 'number' ? card.cost : 0, orig: card };
+    if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card: free, fresh: true });
+    else b.discard.push(card);
+    pop('player-zone', `✨ ${card.name}!`, 'note good', 150 + i * 150);
+  }
+}
+
+const settled = (card) => card.orig || card;
+
 /** A card leaves the fight: its own `onExhaust`, the exhaust powers and Eject Pack all trigger. */
 function exhaustCard(card) {
   const b = battle;
-  b.exhaust.push(card);
+  b.exhaust.push(settled(card));
   pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
   if (card.onExhaust) applyEffects(card.onExhaust);
   if (b.powers.exhaustBlock) gainBlock(b.powers.exhaustBlock);
@@ -747,7 +779,7 @@ function pickFromPile(cards, prompt) {
 function discardFromHand(entry) {
   const b = battle;
   b.hand.splice(b.hand.indexOf(entry), 1);
-  b.discard.push(entry.card);
+  b.discard.push(settled(entry.card));
   b.discarded += 1;
   pop('player-zone', `🗂️ ${entry.card.name}`, 'note', 150);
   if (entry.card.onDiscard) applyEffects(entry.card.onDiscard);
@@ -848,6 +880,10 @@ function hurtPlayer(amount) {
     through = b.hp - 1;
     pop('player-zone', '🎗️ Focus Sash!', 'note good', 300);
   }
+  if (b.hp - through <= 0 && b.endure && b.hp > 0) {
+    through = b.hp - 1;
+    pop('player-zone', '🎗️ Endured!', 'note good', 300);
+  }
   b.hp = Math.max(0, b.hp - through);
   b.damageTaken += through;
   if (through > 0) markHurt();
@@ -886,6 +922,7 @@ async function endTurn() {
     if (b.hp <= 0) return finish(false);
   }
   if (b.flex) { b.strength -= b.flex; b.flex = 0; }
+  for (const h of b.hand) h.card = settled(h.card);   // Metronome's cards are only free this turn
   const fading = b.hand.filter(h => h.card.ethereal);
   b.hand = b.hand.filter(h => !h.card.ethereal);
   fading.forEach(h => exhaustCard(h.card));
@@ -969,6 +1006,7 @@ async function enemyTurn() {
       pop('player-zone', '✋ Guarded!', 'block');
       log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
     } else {
+      const shield = b.block;
       const through = hurtPlayer(damage);
       const effect = enemyTypeMultiplier(move);
       hitSound(through, effect);
@@ -977,7 +1015,7 @@ async function enemyTurn() {
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
       if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
       if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
-      log(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${through < damage ? `, ${damage - through} blocked` : ''}.`);
+      log(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`);
       if (hasRelic('rocky-helmet')) {
         hurtEnemy(3);
         pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
@@ -1231,6 +1269,7 @@ function renderIntent() {
   box.className = `intent ${kind} fresh`;
   if (fresh) { box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
   box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', move.name));
+  if (move.adds && move.kind !== 'status') box.append(el('span', 'intent-icon intent-adds', CARDS_BY_ID[move.adds.card].art));
   if (move.adds) {
     const junk = `puts ${move.adds.n || 1} ${CARDS_BY_ID[move.adds.card].name} into your ${{ hand: 'hand', draw: 'draw pile' }[move.adds.to] || 'discard pile'}`;
     detail = detail ? `${detail}, and ${junk}` : junk;
@@ -1256,7 +1295,8 @@ function renderStatus() {
   if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit${b.flex ? ` (${b.flex} of it wears off at the end of this turn)` : ''}`, 'good']);
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
-  if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, `+${b.nextEnergy} energy next turn`, 'good']);
+  if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, b.nextEnergy > 0 ? `+${b.nextEnergy} energy next turn` : `${-b.nextEnergy} less energy next turn`, b.nextEnergy > 0 ? 'good' : 'bad']);
+  if (b.endure)     playerBadges.push(['🎗️', '', 'Endure: you can\'t drop below 1 HP until your next turn', 'good']);
   if (hasAbility('blaze') && b.hp < b.maxHp / 2) playerBadges.push(['🔥', '', `Blaze: your attacks deal +${b.ability.amount} while your HP is below half`, 'good']);
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);

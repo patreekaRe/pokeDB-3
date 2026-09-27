@@ -77,6 +77,11 @@
      doubleStrength  double your strength
      feed          if this card knocks the enemy out, gain this much max HP (StS's Feed)
      exhaustHand: 'status'  exhaust every status card in your hand (StS's Purity)
+     copyPick      choose a card in your hand and add this many copies of it to your hand (StS's Dual Wield)
+     randomCard    add this many random cards of your type to your hand; they cost 0 this turn (StS's Discovery)
+     endure        until your next turn, you can't drop below 1 HP
+     needsEmptyDraw  can only be played when your draw pile is empty (StS's Grand Finale)
+     nextEnergy    a negative number is that much less energy next turn (Hyper Beam's recharge)
 
    Power effects (only on `power: true` cards, see POWERS below):
      blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
@@ -137,7 +142,7 @@ export const TYPES = {
 const NEUTRAL_CARDS = [
   { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', sprite: 'hit-spark', effects: { damage: 7 } },                 // Strike
   { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 6 } },                    // Defend
-  { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 22 }, exhaust: true, rarity: 'uncommon' },   // Impervious
+  { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 22 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { block: 30 } } },   // Impervious
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true } },
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },      // Bandage Up
   { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', sprite: 'smoke-ball', effects: { weaken: 2 }, exhaust: true },   // Intimidate
@@ -145,8 +150,17 @@ const NEUTRAL_CARDS = [
   { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', sprite: 'razor-claw', effects: { draw: 2 }, exhaust: true, rarity: 'uncommon' },   // Finesse
   { id: 'double-hit',   name: 'Double Hit',   type: 'normal', cost: 1, art: '💥', sprite: 'lucky-punch', effects: { damage: 5, hits: 2 } },     // Twin Strike
   { id: 'swords-dance', name: 'Swords Dance', type: 'normal', cost: 1, art: '⚔️', sprite: 'rusted-sword', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon' },   // Inflame
-  { id: 'agility',      name: 'Agility',      type: 'normal', cost: 0, art: '⚡', sprite: 'quick-powder', effects: { energy: 1, draw: 2 }, exhaust: true, rarity: 'uncommon' },   // Adrenaline
+  { id: 'agility',      name: 'Agility',      type: 'normal', cost: 0, art: '⚡', sprite: 'quick-powder', effects: { energy: 1, draw: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { energy: 2 } } },   // Adrenaline
   { id: 'leer',         name: 'Leer',         type: 'normal', cost: 0, art: '👀', sprite: 'black-glasses', effects: { vulnerable: 2 }, rarity: 'uncommon' },   // Trip
+  { id: 'quick-attack', name: 'Quick Attack', type: 'normal', cost: 0, art: '💨', sprite: 'quick-ball', effects: { damage: 4, draw: 1 }, upgrade: { effects: { damage: 7 } } },   // Flash of Steel
+  { id: 'rapid-spin',   name: 'Rapid Spin',   type: 'normal', cost: 1, art: '🌀', sprite: 'paralyze-heal', effects: { exhaustHand: 'status', damage: 7, draw: 1 }, upgrade: { effects: { damage: 10 } } },   // Purity + a Strike
+  { id: 'double-team',  name: 'Double Team',  type: 'normal', cost: 1, art: '✨', sprite: 'destiny-knot', effects: { block: 6, blur: 1 }, rarity: 'uncommon' },   // Blur
+  { id: 'substitute',   name: 'Substitute',   type: 'normal', cost: 1, art: '🧸', sprite: 'revive', effects: { selfDamage: 4, block: 16 }, rarity: 'uncommon', upgrade: { effects: { block: 20 } } },   // (Offering-style: HP for block)
+  { id: 'mimic',        name: 'Mimic',        type: 'normal', cost: 1, art: '🧬', sprite: 'silk-scarf', effects: { copyPick: 1 }, rarity: 'uncommon', upgrade: { effects: { copyPick: 2 } } },   // Dual Wield
+  { id: 'endure',       name: 'Endure',       type: 'normal', cost: 1, art: '🎗️', sprite: 'focus-band', effects: { endure: true, block: 4 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Pokémon's Endure; StS has no card for it)
+  { id: 'metronome',    name: 'Metronome',    type: 'normal', cost: 1, art: '❓', sprite: 'metronome', effects: { randomCard: 1 }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Discovery / Jack of All Trades
+  { id: 'hyper-beam',   name: 'Hyper Beam',   type: 'normal', cost: 2, art: '💥', sprite: 'tm-normal', effects: { damage: 38, nextEnergy: -1 }, rarity: 'rare', upgrade: { effects: { damage: 50 } } },   // Bludgeon, 1 PP now and 1 next turn
+  { id: 'last-resort',  name: 'Last Resort',  type: 'normal', cost: 0, art: '⭐', sprite: 'normal-gem', effects: { damage: 60, needsEmptyDraw: true }, rarity: 'rare', upgrade: { effects: { damage: 72 } } },   // Grand Finale
 ];
 
 /* Each type plays its own way:
@@ -502,6 +516,11 @@ export function poolForType(type) {
   return [...TYPE_SETS[type], ...NEUTRAL_CARDS];
 }
 
+/** Only your type's own reward cards (Metronome's random card). */
+export function typePool(type) {
+  return TYPE_SETS[type] || [];
+}
+
 /** The 4 signature evolution cards for a starter's type at a given evolution stage (1 or 2). */
 export function evolutionCardsFor(type, stage) {
   return (EVO_SETS[type] && EVO_SETS[type][stage]) || [];
@@ -642,7 +661,10 @@ function sentences(e) {
   if (e.exhume)       parts.push('Put a card from your exhaust pile into your hand.');
   if (e.tide)         parts.push(`Gain ${e.tide} Tide.`);
   if (e.tideMult)     parts.push(`${MULT[e.tideMult] ?? `Multiply by ${e.tideMult}`} your Tide.`);
-  if (e.nextEnergy)   parts.push(`+${e.nextEnergy} energy next turn.`);
+  if (e.nextEnergy)   parts.push(e.nextEnergy > 0 ? `+${e.nextEnergy} energy next turn.` : `${-e.nextEnergy} less energy next turn.`);
+  if (e.copyPick)     parts.push(`Choose a card in your hand. Add ${e.copyPick > 1 ? `${e.copyPick} copies` : 'a copy'} of it to your hand.`);
+  if (e.randomCard)   parts.push('Add a random card of your type to your hand. It costs 0 this turn.');
+  if (e.endure)       parts.push('Until your next turn, you can\'t drop below 1 HP.');
   if (e.addCard) {
     const { id, n = 1, to = 'hand' } = e.addCard;
     const name = CARDS_BY_ID[id]?.name ?? id;
@@ -652,6 +674,7 @@ function sentences(e) {
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
   if (e.endTurnHurt)  parts.push(`If it's in your hand at the end of your turn, lose ${e.endTurnHurt} HP.`);
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
+  if (e.needsEmptyDraw) parts.push('Only playable when your draw pile is empty.');
   if (e.ifBurned)     parts.push(`If the enemy is Burned: ${sentences(e.ifBurned).join(' ')}`);
   if (e.ifHurt)       parts.push(`If you've lost HP this turn: ${sentences(e.ifHurt).join(' ')}`);
   if (e.costDownOnHurt) parts.push(`Costs ${e.costDownOnHurt} less for each time you've lost HP this fight.`);
