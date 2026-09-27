@@ -464,7 +464,7 @@ Anytime, as a break from number work:
   with the ♨ board, stone lanterns and a bath bucket. A look per biome: a sunny garden with maple leaves, misty cedars
   with autumn leaves, a milky pool under volcanic rock with steam vents and embers. The user also asked to see their HP
   there: every event where HP decides the choice (Hot Spring, Berry Tree, Shrine, Item Ball, Team Rocket, and the
-  new scenes below) shows your Pokémon's battle nameplate under the title (`eventVitals()`), and its bar runs to the new
+  new scenes below) shows a slim HP row under the title (`eventVitals()`; first a full nameplate, slimmed the same day at the user's ask), and its bar runs to the new
   HP before the room closes (`showHpChange()`). The signs say where you'd end up ("Heal 11 HP, to 46/70").
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"

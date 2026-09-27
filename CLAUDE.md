@@ -472,8 +472,8 @@ under a spotlight, act `cheer`: confetti and hearts, the fans hop; Persian and C
 floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). The outdoor ones (Berry Tree, Wishing Well, Item Ball, Team
 Rocket) are close-ups too: their art's `zoom` (1.75) makes `resize()` paint the scene with bigger pixels, as far as
 their props (`span` pixels across) still fit the screen, so a narrow phone zooms less than a PC. Where HP decides the choice
-(every event but the Wishing Well and Day Care) the choice returns `vitals: true`: your battle nameplate
-(`eventVitals()`) sits under the title (the top bar's little plate steps aside), and `showHpChange()` runs its bar to
+(every event but the Wishing Well and Day Care) the choice returns `vitals: true`: a slim HP row (the battle's
+`.gb-hp` bar and numbers, no name; the user found a full nameplate too bulky; `eventVitals()`) sits under the title (the top bar's little plate steps aside), and `showHpChange()` runs its bar to
 the new HP before the room closes. Choices that open a picker (Tutor, Deleter, Day Care) play their act first; the
 price is still only paid once something is picked.
 

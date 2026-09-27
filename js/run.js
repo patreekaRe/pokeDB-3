@@ -1161,12 +1161,10 @@ function eventRoom(node) {
   placeEventSpots();
 }
 
-/** Your Pokémon's HP, big, under the title of an event where HP decides the choice (the Hot Spring's soak or dip, an
-    HP price), like its battle nameplate; the top bar's little plate steps aside for it. */
+/** Your HP on an event where it decides the choice (the Hot Spring's soak or dip, an HP price): one slim row under the
+    title, the battle's HP bar and numbers; the top bar's little plate steps aside for it. */
 function eventVitals() {
-  const plate = el('div', 'nameplate event-vitals');
-  const title = el('div', 'nameplate-title');
-  title.append(el('strong', '', stageName(run.starter, run.stage)));
+  const plate = el('div', 'event-vitals');
   const bar = el('div', 'gb-hp');
   bar.id = 'event-hp';
   bar.setAttribute('role', 'progressbar');
@@ -1177,10 +1175,9 @@ function eventVitals() {
   fill.id = 'event-hp-fill';
   track.append(fill);
   bar.append(tag, track);
-  const foot = el('div', 'nameplate-foot'), nums = el('span', 'gb-hp-num');
+  const nums = el('span', 'gb-hp-num');
   nums.id = 'event-hp-text';
-  foot.append(nums);
-  plate.append(title, bar, foot);
+  plate.append(bar, nums);
   return plate;
 }
 
