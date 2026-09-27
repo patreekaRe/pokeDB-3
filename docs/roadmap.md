@@ -279,6 +279,29 @@ steps land (mark them done, note anything decided along the way).
    and retune enemies (not the perks) if Level 0 drifts well above ~75% (human bot, no perks bought, is the baseline
    a new player sees; also check with all perks maxed).
 
+9. **More starters** (agreed with the user, 2026-09-27; ~3-4 sessions, 4-6 starters each). Only Pokémon with matching
+   Gen 5 animated sprites (normal and shiny, PokeAPI's black-white `animated/`), not on the enemy roster, and no two-stage
+   lines with a made-up middle stage (the user's call). The Gen 6-9 starters wait: they have no Gen 5-style sprites.
+   - **6 three-stage skins, bought at the Game Corner (~300 each, a shiny each):** Grass Budew → Roselia → Roserade,
+     Sewaddle → Swadloon → Leavanny, Lotad → Lombre → Ludicolo; Water Horsea → Seadra → Kingdra, Spheal → Sealeo → Walrein,
+     Tympole → Palpitoad → Seismitoad. (Fire has no clean three-stage line left: Magby and Litwick are enemies.)
+   - **11 legendaries, earned by achievements** (the same sprite for stages 0-1, the shiny as "Ascendant", like Moltres):
+     - Entei / Celebi / Kyogre: win on Trainer Level 5 with a Fire / Grass / Water starter.
+     - Ho-Oh / Lugia / Palkia: complete the Clearing / Shrine / Wastes Pokédex page.
+     - Reshiram: complete every Pokédex entry's research (step 7b).
+     - Victini: win a run with a deck of 15 cards or fewer.
+     - Heatran: win a run without resting at a Pokémon Center.
+     - Manaphy: hold 20 Tide at once in a fight (Water's own mechanic; the "6 Mart relics" idea was dropped as unclear).
+     - Keldeo: win a run with every Water starter you own.
+   - Needs: starter entries, 6 + 6 shiny sprites each (legendaries 2 + 2), cries (PokeAPI, see step 3), `SPRITE_FIT`
+     entries, achievement stats (deck size at the win, no-rest win, max Tide), and the Game Corner rows. Mewtwo stays "unlock
+     every other Pokémon" for now; the user will adjust it later.
+   **Run in: CLOUD.** Session prompt (repeat for the next batch):
+   > Do roadmap step 9, more starters (read CLAUDE.md and docs/roadmap.md first). Add the next 4-6 starters from the list
+   > (start with the 6 Game Corner skins), with normal and shiny sprites from PokeAPI, cries, SPRITE_FIT entries and their
+   > unlocks. Keep old saves loading, test at phone and PC widths with Playwright, update CLAUDE.md and the roadmap (mark
+   > which ones landed), and push to main. No balance change (skins share decks), so no bot run is needed.
+
 Anytime, as a break from number work:
 - **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'
   evolve animation (flashing silhouette switching between the two forms) plus the evolution
