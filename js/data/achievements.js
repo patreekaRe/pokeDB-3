@@ -70,6 +70,37 @@ export const ACHIEVEMENTS = [
     text: 'Win a run on Trainer Level 3 with a Water starter',
     test: (s) => s.maxLevelWinByType.water >= 3,
   },
+  // The hardest goals (step 9b): the top Trainer Level per type, then a finished Pokédex page per biome.
+  {
+    starter: 'entei',
+    text: 'Win a run on Trainer Level 5 with a Fire starter',
+    test: (s) => s.maxLevelWinByType.fire >= 5,
+  },
+  {
+    starter: 'celebi',
+    text: 'Win a run on Trainer Level 5 with a Grass starter',
+    test: (s) => s.maxLevelWinByType.grass >= 5,
+  },
+  {
+    starter: 'kyogre',
+    text: 'Win a run on Trainer Level 5 with a Water starter',
+    test: (s) => s.maxLevelWinByType.water >= 5,
+  },
+  {
+    starter: 'hooh',
+    text: 'Complete the Whispering Clearing page of the Pokédex',
+    test: (s, save) => save.dex.done.includes('clearing'),
+  },
+  {
+    starter: 'lugia',
+    text: 'Complete the Overgrown Shrine page of the Pokédex',
+    test: (s, save) => save.dex.done.includes('shrine'),
+  },
+  {
+    starter: 'palkia',
+    text: 'Complete the Ember Wastes page of the Pokédex',
+    test: (s, save) => save.dex.done.includes('wastes'),
+  },
   // Must stay last: checkAchievements() grants in order, so this sees any
   // starter unlocked by the entries above in the same check.
   {

@@ -378,6 +378,24 @@ What the overnight chain did, one session per big step (details and bot numbers 
      with each type (shiny and normal back sprites), no console errors.
      **For the user to check:** the blurbs are mine; the cries' loudness by ear; whether 300 feels right (the shop's total is
      now ~11100 coins). Mewtwo's "unlock every other Pokémon" now needs these six too; a save that already had Mewtwo keeps it.
+   - **9b, 6 legendaries by achievement: done (2026-09-27, chain session).** Entei / Celebi / Kyogre (win on Trainer Level 5
+     with a Fire / Grass / Water starter) and Ho-Oh / Lugia / Palkia (complete the Clearing / Shrine / Wastes Pokédex page),
+     after Suicune in `STARTERS` and `ACHIEVEMENTS` (Mewtwo still last). Types: Entei / Ho-Oh Fire, Celebi Grass, Kyogre /
+     Lugia / Palkia Water (their Water-ish side: the list gave none). One sprite for stages 0-1 and the shiny as "Ascendant",
+     like Moltres; 24 GIFs, 24 `SPRITE_FIT` lines (PIL median bbox), 6 cries from PokeAPI (-14 dB mean, mono 64 kbps), and a
+     300 shiny each (the legendary price; the Game Corner's total is now ~12900). Achievements are now also checked after
+     every won fight (a finished page says "Ho-Oh unlocked!" in that reward box) and at the end of a *lost* run too (before,
+     only a win or a boss checked, so a goal met in a lost run waited). An old save that already won Level 5 or finished a
+     page gets the legendary at its next run's end, listed in the result window. No save change.
+     Also fixed in passing: Moltres, Virizion, Suicune and Mewtwo had no cries (not in `CRIES`, no files); they now have
+     PokeAPI's, converted the same way.
+     Checked headless at 390x844, 375x667 and 1366x900: the grid (a row of Entei / Celebi / Kyogre, then Ho-Oh / Lugia /
+     Palkia, Mewtwo centred under), an old-style save granting Entei + Ho-Oh on a lost run, finishing the Clearing page
+     mid-run unlocking Ho-Oh, fights as Entei, shiny Kyogre and Lugia, the Game Corner's shiny row, the Achievements window
+     (16 now); no console errors.
+     **For the user to check:** the blurbs and types are mine; Kyogre's GIF swims high in its frame (its median pose is used,
+     like the rest); the new cries' loudness by ear. Level 5 wins are rare (the human bot wins ~30%), so Entei / Celebi /
+     Kyogre are the hardest unlocks by design.
    **Run in: CLOUD.** Session prompt (repeat for the next batch):
    > Do roadmap step 9, more starters (read CLAUDE.md and docs/roadmap.md first). Add the next 4-6 starters from the list
    > (start with the 6 Game Corner skins), with normal and shiny sprites from PokeAPI, cries, SPRITE_FIT entries and their

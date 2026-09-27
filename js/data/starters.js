@@ -21,7 +21,7 @@
      deck   its fixed 10-card starting deck (card ids from cards.js).
             You can't edit it. You grow your deck by winning fights.
 
-   Legendaries (Moltres/Virizion/Suicune) don't evolve into a different
+   Legendaries (Moltres, Entei, Ho-Oh...) don't evolve into a different
    species in the real games, so their "evolutions" are titles, not
    new Pokémon - same sprite for stage 0 and 1, and the shiny recolor
    for stage 2 ("Ascendant"), as a genuine payoff for reaching it.
@@ -289,6 +289,70 @@ export const STARTERS = [
       { id: 'suicune-shiny',  name: 'Ascendant Suicune' },
     ],
     blurb: 'A legendary tide. Same water moves as Squirtle, carried by legend.',
+    deck: WATER_DECK,
+  },
+
+  /* ---------- legendaries earned by the hardest goals (step 9b) ----------
+     A Level 5 win per type (Entei / Celebi / Kyogre), then a finished Pokédex
+     page per biome (Ho-Oh / Lugia / Palkia). Same one-sprite line as above. */
+  {
+    id: 'entei', type: 'fire', skinOf: 'charmander', legendary: true,
+    line: [
+      { id: 'entei',         name: 'Entei' },
+      { id: 'entei',         name: 'Awakened Entei' },
+      { id: 'entei-shiny',   name: 'Ascendant Entei' },
+    ],
+    blurb: 'A legendary volcano\'s heart. Same fire moves as Charmander, earned at the highest Trainer Level.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'celebi', type: 'grass', skinOf: 'bulbasaur', legendary: true,
+    line: [
+      { id: 'celebi',        name: 'Celebi' },
+      { id: 'celebi',        name: 'Awakened Celebi' },
+      { id: 'celebi-shiny',  name: 'Ascendant Celebi' },
+    ],
+    blurb: 'The legendary voice of the forest. Same grass moves as Bulbasaur, earned at the highest Trainer Level.',
+    deck: GRASS_DECK,
+  },
+  {
+    id: 'kyogre', type: 'water', skinOf: 'squirtle', legendary: true,
+    line: [
+      { id: 'kyogre',        name: 'Kyogre' },
+      { id: 'kyogre',        name: 'Awakened Kyogre' },
+      { id: 'kyogre-shiny',  name: 'Ascendant Kyogre' },
+    ],
+    blurb: 'The legendary lord of the sea. Same water moves as Squirtle, earned at the highest Trainer Level.',
+    deck: WATER_DECK,
+  },
+  {
+    id: 'hooh', type: 'fire', skinOf: 'charmander', legendary: true,
+    line: [
+      { id: 'hooh',          name: 'Ho-Oh' },
+      { id: 'hooh',          name: 'Awakened Ho-Oh' },
+      { id: 'hooh-shiny',    name: 'Ascendant Ho-Oh' },
+    ],
+    blurb: 'A legendary rainbow flame, drawn by a finished Clearing page. Same fire moves as Charmander.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'lugia', type: 'water', skinOf: 'squirtle', legendary: true,
+    line: [
+      { id: 'lugia',         name: 'Lugia' },
+      { id: 'lugia',         name: 'Awakened Lugia' },
+      { id: 'lugia-shiny',   name: 'Ascendant Lugia' },
+    ],
+    blurb: 'The legendary guardian of the deep, drawn by a finished Shrine page. Same water moves as Squirtle.',
+    deck: WATER_DECK,
+  },
+  {
+    id: 'palkia', type: 'water', skinOf: 'squirtle', legendary: true,
+    line: [
+      { id: 'palkia',        name: 'Palkia' },
+      { id: 'palkia',        name: 'Awakened Palkia' },
+      { id: 'palkia-shiny',  name: 'Ascendant Palkia' },
+    ],
+    blurb: 'A legend that bends space, drawn by a finished Wastes page. Same water moves as Squirtle.',
     deck: WATER_DECK,
   },
 

@@ -16,8 +16,8 @@
    Costs are tuned against roughly what a run earns (see run.js's
    COIN_REWARDS): a run that dies partway through earns ~80-100 coins,
    a full clear ~230-250 at Level 0 and ~350 at Level 5 (COIN_LEVEL_BONUS),
-   plus 450 once for the Pokédex pages. Everything here costs ~11100:
-   skins 3000, perks 3130, shinies 4950, so ~45 runs buy it all and
+   plus 450 once for the Pokédex pages. Everything here costs ~12900:
+   skins 3000, perks 3130, shinies 6750, so ~50 runs buy it all and
    the shinies (cosmetic) are the long tail.
    ============================================================ */
 

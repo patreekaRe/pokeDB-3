@@ -457,6 +457,14 @@ function afterFight(node, result) {
   run.fights += 1;
   const { lines: dexNews, complete: dexComplete } = dexDefeated(node.enemyId);
   if (dexComplete) run.dexComplete = true;   // the result window says so too
+  // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
+  // The final boss leaves it to endRun(), whose result window lists every unlock.
+  if (!(node.type === 'boss' && run.biome === BIOMES.length - 1)) {
+    for (const starter of checkAchievements()) {
+      run.unlocks.push(starter);
+      dexNews.push(`${starter.line[0].name} unlocked!`);
+    }
+  }
 
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
@@ -1605,7 +1613,6 @@ function endRun(won) {
       const type = run.starter.type;
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });
-    announceUnlocks();
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
@@ -1613,6 +1620,8 @@ function endRun(won) {
       updateSave(d => { d.maxLevel = run.levelUnlocked; });
     }
   }
+
+  announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
 
   const name = stageName(run.starter, run.stage);
   const biome = BIOMES[run.biome];
