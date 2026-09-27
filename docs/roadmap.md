@@ -193,7 +193,9 @@ Anytime, as a break from number work:
   signs (`spotOption()`) explained themselves only in a hover tooltip, which phones never show. Each sign now carries
   a visible caption under its label (`.spot-caption`), and `placeEventSpots()` nudges signs back onto the screen and
   lifts one clear of a lower sign it would cover (Team Rocket's three). Checked headless at 375 and 320px wide.
-  The Center's three signs still explain themselves only by `title`.
+  Follow-up the same day: the Center's three signs got captions too (`captionedSign()`, spread by `spreadSigns()`), and
+  on short phones (375x667, 320x568) the text box under the counter no longer covers Leave: `liftRoomLog()` lifts it
+  just clear (13-30px on a 375x667 phone; on 320x568 it covers the foot of the props).
 - **Shrine close-up** (the user's idea, 2026-09-27): the Shrine event "currently looks very small"; make it a
   close-up, as if you're standing right in front of the shrine, filling the screen like the treasure room's grotto.
   Its own scene in `PLACE_ART` (like `treasure`), not a prop on the biome's outdoor scene.

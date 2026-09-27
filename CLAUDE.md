@@ -260,11 +260,12 @@ for its `<id>+` in place): each a `showChoice` picker of the deck
 grouped with `groupDeck` (×N badges), "Back" returns to the Center. The Center
 has no tiles (the user's call, for immersion): its three options (`layout:
 'center-room'`) are see-through buttons laid over the scene's healing machine,
-PC and Chansey (PP Up, a purple sign; her rect is worked out from `spots.nurse`)
+PC and Chansey (PP Up, a purple sign; her rect is worked out from `spots.nurse`; each sign has a caption line, `captionedSign()`)
 (`placeCenterSpots()`, from `centerSpots()` in `js/scene.js`, rerun on the
 scene's `scenepaint` event), each under a bouncing `.center-label` sign, and the
 scene isn't dimmed. Its text box sits just under the counter (`--counter-foot`) with
-Leave at the bottom of the screen (the user's call). It never
+Leave at the bottom of the screen (the user's call); on a short phone `liftRoomLog()` lifts the box (`--log-lift`) just
+clear of Leave, for event scenes too. It never
 takes the deck below `MIN_DECK` (7); at the minimum the PC is
 `disabled` (`showChoice` options accept `disabled`). Forgetting doesn't
 count as a rest for `restCount`. The Cleanse Tag relic reuses the picker
@@ -389,7 +390,7 @@ backdrop, ground, life) with the event's props in the middle (`prop`, `eventProp
 its `biomes` only retint the props. Like the Center, there are no tiles: layout `event-room <scene>-room`
 lays each choice as a see-through button over a prop (`life.eventSpots`, `eventSpots()`, placed by
 `placeEventSpots()`) under a bouncing `.center-label` (`spotOption()`) whose second line (`.spot-caption`) says what
-it does (phones never see a `title`; `placeEventSpots()` keeps the signs on screen and off each other), with the text box under the props
+it does (phones never see a `title`; `spreadSigns()` keeps the signs on screen and off each other), with the text box under the props
 (`--counter-foot`). A pick plays out on the scene first (`playOut()` → `sceneAct()`: frames in `ACTS`, drawn
 by the prop's draw function off `actFrame()`; skipped under reduced motion), then takes effect. Berry Tree:
 eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Hot Spring: soak

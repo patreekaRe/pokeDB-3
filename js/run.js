@@ -791,8 +791,8 @@ function restSite() {
       : 'Use the healing machine to rest, or ask Chansey for a PP Up.'],
     options: [
       {
-        node: centerLabel(banned ? 'No rest' : heal ? `Rest +${heal} HP` : 'Rest',
-          banned ? 'Your Choice Band won\'t let you rest.' : `Heal ${heal} HP (${Math.round(restHeal * 100)}% of your max HP).`),
+        node: captionedSign(banned ? 'No rest' : heal ? `Rest +${heal} HP` : 'Rest',
+          banned ? 'Your Choice Band won\'t let you rest.' : heal ? `Heal ${heal} HP.` : 'You\'re already at full HP.'),
         disabled: banned,
         onPick: async () => {
           const thisRun = run;
@@ -819,14 +819,14 @@ function restSite() {
         },
       },
       {
-        node: centerLabel('Forget',
-          !herb ? 'Only with a Mental Herb. The Poké Mart\'s PC can forget a move for ₽.'
-            : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`),
+        node: captionedSign('Forget',
+          !herb ? 'Needs a Mental Herb.'
+            : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : 'Remove a card from your deck.'),
         disabled: !herb || atMin,
         onPick: () => forgetMove(restSite),
       },
       {
-        node: centerLabel('PP Up', upgradable ? 'Upgrade one card for the rest of the run (StS\'s Smith).' : 'Every card in your deck is already upgraded.'),
+        node: captionedSign('PP Up', upgradable ? 'Upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
         disabled: !upgradable,
         onPick: () => upgradeMove(restSite),
       },
@@ -884,6 +884,32 @@ function centerVitals(hp, heal) {
   };
 }
 
+/** A Center or event sign that spells out what its choice does, since a phone never shows centerLabel()'s hover title. */
+function captionedSign(text, caption) {
+  const sign = el('span', 'center-label', text);
+  sign.append(el('span', 'spot-caption', caption));
+  return sign;
+}
+
+/** A sign with its caption is big: one over a prop near the edge is nudged back onto the screen, and one that would
+ *  cover a lower sign (the grunt's three, the Center's) is lifted clear of it. */
+function spreadSigns(box) {
+  const signs = [...box.querySelectorAll('.reward-option .center-label')];
+  signs.forEach(sign => { sign.style.marginLeft = ''; sign.style.marginBottom = ''; });
+  const placed = [];
+  signs.map(sign => ({ sign, r: sign.getBoundingClientRect() })).sort((a, b) => b.r.bottom - a.r.bottom).forEach(({ sign, r }) => {
+    const edge = 8, gap = 10;   // the gap covers the signs bobbing out of step
+    const nudge = r.left < edge ? edge - r.left : r.right > innerWidth - edge ? innerWidth - edge - r.right : 0;
+    let lift = 0;
+    for (const o of placed) {
+      if (r.left + nudge < o.right && r.right + nudge > o.left && r.bottom - lift > o.top - gap) lift = r.bottom - o.top + gap;
+    }
+    if (nudge) sign.style.marginLeft = `${nudge}px`;
+    if (lift) sign.style.marginBottom = `${lift}px`;
+    placed.push({ left: r.left + nudge, right: r.right + nudge, top: r.top - lift });
+  });
+}
+
 function centerLabel(text, hint) {
   const label = el('span', 'center-label', text);
   label.title = hint;
@@ -908,7 +934,22 @@ function placeCenterSpots() {
   const vitals = box.querySelector('.center-vitals'), p = spots.patient;
   if (vitals && p) Object.assign(vitals.style, { left: `${p.left}px`, top: `${p.top}px`, width: `${p.width}px`, height: `${p.height}px`, fontSize: `${p.width / 11.5}px` });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);   // the text box sits just under the counter
+  spreadSigns(box);
+  liftRoomLog();
 }
+
+/** On a short phone the text box under the counter reached down over Leave, so lift it just clear (it grows a line
+ *  for long text, hence the observer). */
+function liftRoomLog() {
+  const screen = $('reward-screen'), box = screen.querySelector('.reward-bottom'), skip = $('reward-skip');
+  if (!screen.querySelector(':is(.center-room, .event-room)')) return;
+  const foot = parseFloat(screen.style.getPropertyValue('--counter-foot')) || 0;
+  const floor = skip.offsetHeight ? skip.getBoundingClientRect().top : screen.getBoundingClientRect().bottom;   // Team Rocket has no Leave
+  const room = floor - 8 - box.offsetHeight - (foot + 12);
+  screen.style.setProperty('--log-lift', `${Math.max(0, -room)}px`);
+}
+new ResizeObserver(liftRoomLog).observe(document.querySelector('#reward-screen .reward-bottom'));
+addEventListener('resize', liftRoomLog);
 addEventListener('scenepaint', placeCenterSpots);
 
 /** The Mart's PC on the counter, under the same bouncing sign as the Center's. */
@@ -1045,13 +1086,8 @@ function eventRoom(node) {
   placeEventSpots();
 }
 
-/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. The sign spells out
- *  what the choice does, since a phone never shows the hover tooltip centerLabel() relies on. */
-function spotOption(label, hint, onPick, disabled = false) {
-  const sign = el('span', 'center-label', label);
-  sign.append(el('span', 'spot-caption', hint));
-  return { node: sign, disabled, onPick };
-}
+/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. */
+const spotOption = (label, hint, onPick, disabled = false) => ({ node: captionedSign(label, hint), disabled, onPick });
 
 /** Play a choice out on the event's scene before it takes effect; false if the run ended meanwhile. */
 async function playOut(act, opts) {
@@ -1083,22 +1119,8 @@ function placeEventSpots() {
     Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
-  // a sign with its caption is big: one over a prop near the edge is nudged back onto the screen, and one that would
-  // cover a lower sign (the grunt's three) is lifted clear of it
-  const signs = [...box.querySelectorAll('.center-label')];
-  signs.forEach(sign => { sign.style.marginLeft = ''; sign.style.marginBottom = ''; });
-  const placed = [];
-  signs.map(sign => ({ sign, r: sign.getBoundingClientRect() })).sort((a, b) => b.r.bottom - a.r.bottom).forEach(({ sign, r }) => {
-    const edge = 8, gap = 10;   // the gap covers the signs bobbing out of step
-    const nudge = r.left < edge ? edge - r.left : r.right > innerWidth - edge ? innerWidth - edge - r.right : 0;
-    let lift = 0;
-    for (const o of placed) {
-      if (r.left + nudge < o.right && r.right + nudge > o.left && r.bottom - lift > o.top - gap) lift = r.bottom - o.top + gap;
-    }
-    if (nudge) sign.style.marginLeft = `${nudge}px`;
-    if (lift) sign.style.marginBottom = `${lift}px`;
-    placed.push({ left: r.left + nudge, right: r.right + nudge, top: r.top - lift });
-  });
+  liftRoomLog();
+  spreadSigns(box);
 }
 addEventListener('scenepaint', placeEventSpots);
 
