@@ -16,8 +16,8 @@
    Costs are tuned against roughly what a run earns (see run.js's
    COIN_REWARDS): a run that dies partway through earns ~80-100 coins,
    a full clear ~230-250 at Level 0 and ~350 at Level 5 (COIN_LEVEL_BONUS),
-   plus 450 once for the Pokédex pages. Everything here costs ~8400:
-   skins 1200, perks 3430, shinies 3750, so ~35 runs buy it all and
+   plus 450 once for the Pokédex pages. Everything here costs ~8100:
+   skins 1200, perks 3130, shinies 3750, so ~35 runs buy it all and
    the shinies (cosmetic) are the long tail.
    ============================================================ */
 
@@ -65,8 +65,8 @@ export const PASSIVE_SHOP_ITEMS = [
   },
   {
     id: 'tutorNotes', icon: '📖', name: 'Move Tutor Notes',   // Neow's "upgrade a card"
-    text: 'Start every run by PP Upping one move of your starting deck, your pick (two moves at Lv 2).',
-    costs: [200, 400], maxLevel: 2,
+    text: 'Start every run by PP Upping one move of your starting deck, your pick.',
+    costs: [300], maxLevel: 1,   // a Lv 2 (two moves) was +8 to +28 points at Level 3 in the bot: one move is Neow's own
   },
   {
     id: 'scoutReport', icon: '🔍', name: 'Scout Report',   // StS's Question Card

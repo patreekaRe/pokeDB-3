@@ -242,7 +242,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   one, true/false or a number): Max HP Boost, Starting Relic Charm, Well-Fed, Coin Finder, and since step 8 **Bag
   Pocket** (StS's Potion Belt: `itemSlots()` in `js/run.js`, 4 items), **Mart Card** (Membership Card, 3 levels:
   `MART_DISCOUNT` 10/15/20% off every Mart price and the removal, applied at the counter by `martPrice()`, so the
-  saved stock keeps its base prices), **Move Tutor Notes** (Neow's upgrade, 2 levels: `run.tutorLeft` starting moves
+  saved stock keeps its base prices), **Move Tutor Notes** (Neow's upgrade, 1 level; a Lv 2 of two moves was +8 to +28 points at Level 3: `run.tutorLeft` starting moves
   to PP Up, asked by `tutorNotes()` at the end of `showMap()` after the checkpoint, so a refresh asks again) and
   **Scout Report** (Question Card: `REWARD_CARDS`, 4 cards on a fight's card reward). Old saves merge the new
   passives in as 0/false. **Shiny starters** (cosmetic): the Game Corner's third row, one per starter but Mewtwo
