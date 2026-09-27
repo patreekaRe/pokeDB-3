@@ -442,8 +442,31 @@ What the overnight chain did, one session per big step (details and bot numbers 
    > which ones landed), and push to main. No balance change (skins share decks), so no bot run is needed.
 
 Done 2026-09-27 (the user's asks, no bot run): Pokédex payouts raised (research 50 / 100 / 200, pages 300 / 400 / 500, whole
-dex 5000), a Rewards tab in the Pokédex, the Silph Scope (reveal a fight room's Pokémon, 1 a biome, 3 with the Game Corner's
+dex 1500, first 5000), a Rewards tab in the Pokédex, the Silph Scope (reveal a fight room's Pokémon, 1 a biome, 3 with the Game Corner's
 Scope Upgrade), a volume slider, a quieter low-HP beep, and Main menu keeping the run saved.
+
+## Next sessions (queued 2026-09-27)
+
+Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
+
+1. **Evolution overhaul.** Run in: CLOUD (attach pokeDB-3).
+   > Read CLAUDE.md and docs/roadmap.md ("Evolution overhaul" under Anytime). Build the games' evolve animation for the
+   > evolve pop-up: the Pokémon flashes white and its silhouette switches between the old and new forms, faster and faster,
+   > then the new form colours in with a flash, and "Congratulations! X evolved into Y!" in the text box. Cosmetic only (no
+   > stat or deck changes). The user supplies the evolution song as an MP3 (ask for it; if it isn't there yet, build it silent
+   > with a `SOUNDS`/track hook ready). Respect reduced motion. Test at phone and PC widths with Playwright, update CLAUDE.md
+   > and the roadmap, push to main.
+2. **Cries.** Run in: CLOUD (attach pokeDB-3).
+   > Read CLAUDE.md (Music: Cries). Ask the user what they want changed about the cries (loudness, missing ones, wrong ones,
+   > new places they play) before changing anything. PokeAPI's cries (`cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3 at
+   > ~-14 dB mean) are the source; play.pokemonshowdown.com is blocked in cloud sessions.
+3. **Cloud save with login.** Run in: CLOUD (attach pokeDB-3).
+   > Read CLAUDE.md (Saved runs, storage.js). Plan a cloud save with the user first: Firebase or Supabase (free tier), sign-in
+   > by Google and/or an email link, a Sign in item in the Poké Ball menu, playing signed-out unchanged. The user's existing
+   > save on their phone (`pokedb.save.v2` and the run's `pokedb.run.v1` in localStorage) must upload as their first cloud
+   > save the first time they sign in on that device; decide with them what happens when two devices' saves differ (newest
+   > wins, or ask). Walk them through creating the project and pasting its public config. A simpler fallback if they'd rather:
+   > "copy / paste save code" buttons with no accounts.
 
 Anytime, as a break from number work:
 - **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'

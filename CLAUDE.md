@@ -999,9 +999,9 @@ every defeat (`countDex()`; old saves seed 1 per `defeated` id in `seedCounts()`
 "X defeated n/3" until the entry's `RESEARCH_GOAL` (3, bosses 2, in `js/data/pokedex.js`). At the goal it's Research
 complete: a gold mark (`.dex-mark.gold`, a gold tile), `RESEARCH_COINS` once (wild 50 / Alpha 100 / boss 200), and its entry
 shows HP and each move's numbers at that biome on Level 0 (`buildEncounter()` + `moveNumbers()`, before types). Every entry
-complete pays `DEX_COMPLETE_COINS` (5000) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
+complete pays `DEX_COMPLETE_COINS` (1500) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
 saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. A fourth tab, **Rewards** (`renderRewards()`, the user's call: easy to find), lists
-the complete-Pokédex jackpot (5000 coins, Reshiram, the Silph Scope), research payouts and each page's perk with progress.
+the complete-Pokédex jackpot (1500 coins, Reshiram, the Silph Scope), research payouts and each page's perk with progress.
 **Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button under the map's biome sign
 (`#scope-btn`, `drawMap()` in `js/run.js`) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
 **Scope Upgrade** (`scopeUpgrade`, 2 levels, `needsDex`: greyed out until the Pokédex is complete). Tapping it lights up

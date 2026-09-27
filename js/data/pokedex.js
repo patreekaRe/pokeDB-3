@@ -33,7 +33,7 @@ export const DEX_START_MONEY = 50;
    met once per biome per run, so they need fewer. Completing every entry pays the jackpot once. */
 export const RESEARCH_GOAL = { wild: 3, elite: 3, boss: 2 };
 export const RESEARCH_COINS = { wild: 50, elite: 100, boss: 200 };   // raised with the pages and the jackpot (the user's call, 2026-09-27)
-export const DEX_COMPLETE_COINS = 5000;
+export const DEX_COMPLETE_COINS = 1500;   // more than the three pages together (1200); the Scope Upgrade is left to grind for (the user's call)
 
 /* The complete Pokédex's other prize (besides Reshiram): the Silph Scope, a button on the map that reveals who waits in a
    fight room of your choice, SCOPE_REVEALS a biome; the Game Corner's Scope Upgrade perk (`scopeUpgrade`) adds more. */
