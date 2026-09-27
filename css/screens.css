@@ -383,7 +383,6 @@ body.titling { overflow: hidden; }
 .starter-btn.locked { opacity: 0.6; }
 .starter-btn.locked img { filter: brightness(0) opacity(0.6); }   /* silhouette */
 .starter-source { position: absolute; top: 5px; right: 6px; font-size: 1rem; line-height: 1; }   /* 💰 shop / 🏆 achievement */
-.starter-btn.secret { grid-column: 2; }   /* the lone last tile: centred under the grid, like a final boss */
 
 /* the picked starter: a window pinned to the bottom (like the deck screen's bar), so the grid above stays scrollable */
 .starter-sheet {

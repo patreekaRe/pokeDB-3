@@ -87,7 +87,7 @@ to `main` (see Conventions), not open a branch or PR.
   `js/data/starters.js` moves an old id's unlock, wins and saved run over
   to the new one (add to it if a starter is ever replaced again).
 - **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
-  centred alone on the last grid row). It unlocks once every other starter
+  in the next grid slot like any other tile). It unlocks once every other starter
   is unlocked; that achievement must stay last in `ACHIEVEMENTS`, since
   `checkAchievements()` grants in order (the shop also runs it after a
   purchase). It is `type: 'psychic'` with an empty deck, so `comingSoon: true`
