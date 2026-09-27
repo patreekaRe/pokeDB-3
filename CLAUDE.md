@@ -259,7 +259,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   to PP Up, asked by `tutorNotes()` at the end of `showMap()` after the checkpoint, so a refresh asks again) and
   **Scout Report** (Question Card: `REWARD_CARDS`, 4 cards on a fight's card reward). Old saves merge the new
   passives in as 0/false. **Shiny starters** (cosmetic): the Game Corner's third row, one per starter but Mewtwo
-  (`SHINY_COSTS`: 150 the free three, 200 skins, 300 legendaries; only once you own the starter, else a silhouette).
+  (`SHINY_COSTS`: 250 the free three, 350 skins, 500 legendaries, the user's call 2026-09-27; only once you own the starter, else a silhouette).
   The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny toggle on the starter sheet
   (`#shiny-toggle`) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
   (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows;

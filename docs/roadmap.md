@@ -19,7 +19,7 @@ What the second chain did (details and "For the user" notes in each step below):
 **For you to check:** the new blurbs, types (Lugia / Palkia / Manaphy / Keldeo as Water, Ho-Oh / Reshiram / Victini / Heatran
 as Fire; Grass has only Celebi and Virizion) and cries by ear; 300 per skin; research numbers show Level 0's values; Keldeo's
 "every Water starter you own" gets harder as you buy Water skins; Victini at ≤15 cards may be easy; the Game Corner's
-total is now ~14400 PokéCoins. Mewtwo's "unlock every other Pokémon" now needs all 31 others, the new legendaries included.
+total is now ~14400 PokéCoins (~20200 since shinies went to 250 / 350 / 500, the user's call the same day). Mewtwo's "unlock every other Pokémon" now needs all 31 others, the new legendaries included.
 
 ## Overnight summary (2026-09-27)
 

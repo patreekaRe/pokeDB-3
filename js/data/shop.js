@@ -16,8 +16,8 @@
    Costs are tuned against roughly what a run earns (see run.js's
    COIN_REWARDS): a run that dies partway through earns ~80-100 coins,
    a full clear ~230-250 at Level 0 and ~350 at Level 5 (COIN_LEVEL_BONUS),
-   plus 450 once for the Pokédex pages. Everything here costs ~14400:
-   skins 3000, perks 3130, shinies 8250, so ~55 runs buy it all and
+   plus 450 once for the Pokédex pages. Everything here costs ~20200:
+   skins 3000, perks 3130, shinies 14050, so ~75 runs buy it all and
    the shinies (cosmetic) are the long tail.
    ============================================================ */
 
@@ -88,7 +88,7 @@ export const REWARD_CARDS = [3, 4];
 
 /** A starter's shiny colours, by how it's unlocked (the free three are cheapest, legendaries dearest). Cosmetic only;
     it can only be bought once you own the starter. Mewtwo isn't playable yet, so it has none. */
-export const SHINY_COSTS = { free: 150, skin: 200, legendary: 300 };
+export const SHINY_COSTS = { free: 250, skin: 350, legendary: 500 };
 
 /** PokéCoins from fights and wins grow with the Trainer Level played: +10% a level (Level 5 pays +50%). */
 export const COIN_LEVEL_BONUS = 0.1;
