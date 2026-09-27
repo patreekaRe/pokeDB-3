@@ -171,12 +171,24 @@ steps land (mark them done, note anything decided along the way).
       - The replaced Pokémon's sprites, cries and sprite-fit entries are gone (nothing else used them). Checked headless:
         every new one's intro, size and intent bubble. The sim (`pokeDB-sim`) still needs its enemy ids mirrored
         (variants such as `oldStatus`, `gloomPoison1`): this session couldn't attach that repo.
-   11. **NEXT: more relics and items, and Water's catch-up.** **Run in the CLOUD** (both repos). Session prompt:
-      > Do roadmap step 6c.11 (read CLAUDE.md, docs/roadmap.md and docs/card-design.md first): add build-defining relics
-      > (a few per type's archetypes, plus Neutral ones) and a few more items, StS-style, with PokéSprite art. Recalibrate
-      > sim/ranks.json (calibrate()) so the bot picks them by value, then a human-bot pass at Levels 0/3/5 (300+ runs/cell).
-      > Water trails Fire/Grass by ~10 at Levels 3/5: try small Water buffs (Withdraw 7 was far too much). Keep Level 0
-      > near ~75% for the human bot. Update CLAUDE.md and the roadmap and push both repos to main.
+   11. **NEXT: more relics and items, and Water's catch-up** (agreed 2026-09-27: ~30 relics and ~8 items, so the
+      pool goes 28 → ~58 relics and 12 → ~20 items; a run sees ~41 relics, 3-4 runs' worth, like StS's ratio).
+      Two sessions:
+      - **11a: relics.** **Run in the CLOUD** (both repos). Session prompt:
+        > Do roadmap step 6c.11a (read CLAUDE.md, docs/roadmap.md and docs/card-design.md first). First mirror the
+        > 6c.10 enemy changes into pokeDB-sim (the new Normal elites/bosses and their status cards; the last session
+        > couldn't attach it). Then add ~30 relics, StS-style, with PokéSprite art: 18 for the types (2 per archetype, one
+        > of each type's a rule-changer like Dead Branch / Runic Pyramid / Snecko Eye), 9 any type can get, 3 boss relics
+        > (big upside with a real catch, like the Choice items). At least half should change how you play, not just add
+        > numbers. Add relic rarity tiers (common / uncommon / rare, StS's weights; treasure and elites lean rarer),
+        > replacing the lone `rare` flag's role where it fits. Recalibrate sim/ranks.json (calibrate()) so the bot picks
+        > relics by value, then a human-bot pass at Levels 0/3/5 (300+ runs/cell): keep Level 0 near ~75%. Update
+        > CLAUDE.md and the roadmap and push both repos to main.
+      - **11b: items and Water's catch-up.** **Run in the CLOUD** (both repos). Session prompt:
+        > Do roadmap step 6c.11b (read CLAUDE.md and docs/roadmap.md first): add ~8 items (StS potions, PokéSprite art),
+        > including one per type that feeds an archetype (e.g. Water gaining Tide). Water trails Fire/Grass by ~10 at
+        > Levels 3/5: try small Water buffs (Withdraw 7 was far too much). Human-bot pass at Levels 0/3/5 (300+
+        > runs/cell), Level 0 near ~75%. Update CLAUDE.md and the roadmap and push both repos to main.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
