@@ -252,12 +252,15 @@ steps land (mark them done, note anything decided along the way).
    biome per run, so 3 of each would take a dozen-plus runs and the Wastes page a dozen winning runs). On top, Legends:
    Arceus-style research: every entry counts its defeats, the reward text box says "Oddish defeated 2/3" after a win, the
    entry shows its count, and at 3 (bosses 2) it's **Research complete**: a gold mark in place of the red Poké Ball and more
-   detail (each move's numbers at that biome). A page with every entry complete pays a one-time PokéCoin bonus (a new way to
-   earn, not an easier run). Save: `dex.count: { id: n }` (old saves start from their `defeated` list as 1 each).
+   detail (each move's numbers at that biome). Each completed entry pays a small one-time PokéCoin bonus (the user's call:
+   wild 5, Alpha 10, boss 15, so ~430 over all 55), and completing every entry pays one big bonus (300) with a
+   "Pokédex complete" line in the result window and the Achievements list (a new way to earn, not an easier run; no
+   per-page research bonus, since the page's first-defeat reward already exists). Save: `dex.count: { id: n }` (old saves start from their `defeated` list as 1 each).
    **Run in: CLOUD.** Session prompt:
    > Do roadmap step 7b, Pokédex research levels (read CLAUDE.md and docs/roadmap.md first, especially step 7 and 7b).
    > Count defeats per Pokédex entry, say "X defeated n/3" after a win, mark Research complete at 3 (bosses 2) with a gold
-   > mark and each move's numbers, and pay a one-time PokéCoin bonus per fully researched page. Old saves must load (seed
+   > mark and each move's numbers, pay a small one-time PokéCoin bonus per completed entry (wild 5, Alpha 10, boss 15)
+   > and a big one (300) for completing every entry. Old saves must load (seed
    > counts from `dex.defeated`). Test at phone (390x844, 375x667) and PC widths with Playwright, update CLAUDE.md and the
    > roadmap, and push to main. No balance change, so no bot run is needed.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
