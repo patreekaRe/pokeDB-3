@@ -11,7 +11,7 @@ export const PRIZE_MONEY = { fight: [12, 18], elite: [25, 35], boss: [65, 85] };
 
 export const MART_CARD_PRICES = { common: 50, uncommon: 80, rare: 125 };
 export const MART_RELIC_PRICES = { common: 140, uncommon: 180, rare: 230 };   // by the relic's rarity
-export const MART_ITEM_PRICES = { common: 40, uncommon: 65 };
+export const MART_ITEM_PRICES = { common: 40, uncommon: 65, rare: 90 };
 export const MART_JITTER = 0.1;
 
 // Forgetting a move costs more each time you buy it in the same run.

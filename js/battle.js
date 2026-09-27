@@ -748,6 +748,22 @@ function addRandomCards(n) {
   }
 }
 
+/** TM (StS's Attack Potion): choose one of `n` different random cards of your type; it's free this turn, then an
+    ordinary card for the rest of the fight. */
+async function discoverCard(n) {
+  const b = battle;
+  const pool = [...typePool(b.starter.type).filter(c => !c.evoOnly)];
+  const options = [];
+  while (options.length < n && pool.length) options.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  if (!options.length) return;
+  const card = await pickFromPile(options, 'Choose a move to learn.', 'Learn');
+  if (battle !== b) return;
+  const free = { ...card, discount: typeof card.cost === 'number' ? card.cost : 0, orig: card };
+  if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card: free, fresh: true });
+  else b.discard.push(card);
+  pop('player-zone', `💿 ${card.name}!`, 'note good', 150);
+}
+
 const settled = (card) => card.orig || card;
 
 /** A card leaves the fight: its own `onExhaust`, the exhaust powers and Eject Pack all trigger. */
@@ -789,7 +805,7 @@ async function takeFromExhaust() {
 }
 
 /** Lays some cards out over the battle, dimmed behind them, and resolves with the one tapped. */
-function pickFromPile(cards, prompt) {
+function pickFromPile(cards, prompt, verb = 'Take back') {
   log(prompt);
   const layer = $('card-focus');
   return new Promise(resolve => {
@@ -806,7 +822,7 @@ function pickFromPile(cards, prompt) {
       node.classList.add('pile-card');
       node.tabIndex = 0;
       node.setAttribute('role', 'button');
-      node.setAttribute('aria-label', `Take back ${card.name}`);
+      node.setAttribute('aria-label', `${verb} ${card.name}`);
       node.addEventListener('click', () => done(card));
       node.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); done(card); } });
       row.append(node);
@@ -858,6 +874,8 @@ function whyNotUsable(item) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
   if (item.effects.flee && b.kind === 'boss') return 'You can\'t run from a boss!';
+  if (item.effects.revive) return `${item.name} works on its own when you would faint.`;
+  if (item.effects.burnMult && !b.enemy.burn) return 'The enemy isn\'t burned.';
   if (item.effects.heal && !Object.keys(item.effects).some(k => k !== 'heal') && b.hp >= b.maxHp) return 'Your HP is already full.';
   return null;
 }
@@ -882,10 +900,16 @@ async function useItem(index) {
     await sleep(900);
     if (battle !== b) return;
     $('player-sprite').classList.remove('fled');
-    return b.onEnd({ won: false, fled: true, hp: b.hp, damageTaken: b.damageTaken });
+    return b.onEnd({ won: false, fled: true, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken });
   }
 
   if (e.burn)     { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
+  if (e.burnMult) { b.enemy.burn *= e.burnMult; pop('enemy-zone', `🔥 Burn ${b.enemy.burn}!`, 'note'); }
+  if (e.weaken)   applyDebuff('weaken', e.weaken);
+  if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
+  if (e.seed)     applyDebuff('seed', e.seed);
+  if (e.tide)     gainTide(e.tide);
+  if (e.maxHp)    { b.maxHp += e.maxHp; b.hp += e.maxHp; pop('player-zone', `💚 Max HP +${e.maxHp}`, 'heal'); playSound('stat-up'); statFx('player'); }
   if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); statFx('player'); }
   if (e.guard)    { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
   if (e.focus)    { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
@@ -893,6 +917,8 @@ async function useItem(index) {
   if (e.energy)   { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal)     healPlayer(e.heal);
   if (e.draw)     draw(e.draw);
+  if (e.discover) await discoverCard(e.discover);
+  if (battle !== b) return;
 
   renderAll();
   await sleep(220);
@@ -934,7 +960,30 @@ function hurtPlayer(amount) {
   b.hp = Math.max(0, b.hp - through);
   b.damageTaken += through;
   if (through > 0) markHurt();
+  if (b.hp <= 0) revive();
   return through;
+}
+
+/** Revive (StS's Fairy in a Bottle): fainting uses it up instead, and you come back with a share of your max HP. */
+function revive() {
+  const b = battle;
+  const index = b.items.findIndex(id => ITEMS_BY_ID[id]?.effects.revive);
+  if (index < 0) return;
+  const item = ITEMS_BY_ID[b.items[index]];
+  b.items.splice(index, 1);
+  b.hp = Math.max(1, Math.floor(b.maxHp * item.effects.revive));
+  pop('player-zone', `✨ Revived! +${b.hp} HP`, 'heal', 350);
+  b.revived = `${item.name} brought ${stageName(b.starter, b.stage)} back!`;   // told after the hit's own line (withRevive)
+  playSound('potion', 'item');
+}
+
+/** The line for a hit, plus Revive's news if that hit made you faint. */
+function withRevive(message) {
+  const b = battle;
+  if (!b.revived) return message;
+  const out = `${message} ${b.revived}`;
+  b.revived = null;
+  return out;
 }
 
 async function endTurn() {
@@ -962,7 +1011,7 @@ async function endTurn() {
     const through = hurtPlayer(hurt);
     hitEffect('player-sprite');
     pop('player-zone', through > 0 ? `-${through} ☠️` : 'Blocked', through > 0 ? 'dmg' : 'block');
-    log(`The Poison in your hand hurt ${stageName(b.starter, b.stage)} for ${hurt}.`);
+    log(withRevive(`The Poison in your hand hurt ${stageName(b.starter, b.stage)} for ${hurt}.`));
     renderAll();
     await sleep(500);
     if (battle !== b) return;
@@ -1063,7 +1112,7 @@ async function enemyTurn() {
       pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
       if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
       if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
-      log(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`);
+      log(withRevive(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`));
       if (hasRelic('rocky-helmet')) {
         hurtEnemy(3);
         pop('enemy-zone', '-3 ⛑️', 'dmg', 250);

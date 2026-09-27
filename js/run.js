@@ -20,7 +20,7 @@ import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, sta
 import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen } from './storage.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
@@ -185,7 +185,7 @@ export function beginRun(starter, level = 0) {
 
   if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
     const relic = randomStartingRelic();
-    if (relic) { run.relics.push(relic.id); tell(`Starting relic: ${relic.name}!`); }
+    if (relic) { run.relics.push(relic.id); markSeen('relics', relic.id); tell(`Starting relic: ${relic.name}!`); }
   }
 
   updateSave(d => { d.stats.runsStarted += 1; });
@@ -325,7 +325,7 @@ function renderItemList() {
     const actions = el('span', 'item-actions');
     const use = el('button', 'btn item-use', 'Use');
     use.type = 'button';
-    use.disabled = !(inBattle || (onMap && item.map && run.hp < run.maxHp));
+    use.disabled = !(inBattle || (onMap && item.map && (item.effects.maxHp || run.hp < run.maxHp)));
     use.addEventListener('click', () => {
       if (inBattle) { closeBag(true); return pickItem(index); }
       useItemOnMap(index);
@@ -346,17 +346,24 @@ function renderItemList() {
   $('items-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
   $('run-item-count').textContent = `${run.items.length}/${ITEM_SLOTS}`;
   $('items-note').textContent = inBattle ? 'Using an item costs no PP.'
-    : `Holds ${ITEM_SLOTS} items. Use them in battle; potions work on the map too.`;
+    : `Holds ${ITEM_SLOTS} items. Use them in battle; potions and HP Up work on the map too.`;
 }
 
 function useItemOnMap(index) {
   const item = ITEMS_BY_ID[run.items[index]];
-  const healed = Math.min(item.effects.heal, run.maxHp - run.hp);
-  run.hp += healed;
   run.items.splice(index, 1);
+  if (item.effects.maxHp) {
+    run.maxHp += item.effects.maxHp;
+    run.hp += item.effects.maxHp;
+    playSound('stat-up', 'item');
+    tell(`Used ${item.name}: max HP +${item.effects.maxHp}.`);
+  } else {
+    const healed = Math.min(item.effects.heal, run.maxHp - run.hp);
+    run.hp += healed;
+    playSound('potion', 'item');
+    tell(`Used ${item.name}: healed ${healed} HP.`);
+  }
   setHpBar('run', run.hp, run.maxHp);
-  playSound('potion', 'item');
-  tell(`Used ${item.name}: healed ${healed} HP.`);
   afterBagChange();
 }
 
@@ -394,6 +401,7 @@ async function fight(node) {
 }
 
 function afterFight(node, result) {
+  run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.fled) {
     run.hp = result.hp;
     tell('Got away safely!');
@@ -401,7 +409,6 @@ function afterFight(node, result) {
   }
   if (!result.won) return endRun(false);
 
-  run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) can raise it
   run.hp = result.hp;
   run.fights += 1;
 
@@ -615,6 +622,8 @@ function offerItem(item, next) {
 
 /** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. */
 function floatingThing(thing, i = 0, size = 72) {
+  if (ITEMS_BY_ID[thing.id] === thing) markSeen('items', thing.id);
+  else if (RELICS_BY_ID[thing.id] === thing) markSeen('relics', thing.id);
   const btn = el('button', 'float-thing'), float = el('span', 'relic-float');
   btn.type = 'button';
   btn.style.setProperty('--i', i);
@@ -723,6 +732,7 @@ function treasureRoom() {
     btn.type = 'button';
     btn.setAttribute('aria-label', `${relic.name}: ${relic.text}`);
     btn.style.setProperty('--i', i);
+    markSeen('relics', relic.id);
     float.append(itemSprite(relic, 'treasure-sprite'));
     btn.append(el('span', 'relic-halo'), float, el('span', 'relic-label', relic.name));
     btn.addEventListener('click', () => (picked === relic ? takeIt() : choose(relic, btn)));
@@ -1286,6 +1296,7 @@ const EVENT_CHOICES = {
     const collect = () => { run.money += money; setMoney(run.money); tell(`The fans gave you ₽${money}!`); showMap(); };
     if (healthy) return { options: [textOption('💴', 'Show off', `The fans are thrilled! They give you ₽${money}.`, collect)] };
     if (run.items.length < ITEM_SLOTS) {
+      markSeen('items', item.id);
       return { options: [textOption(itemSprite(item, 'relic-icon'), 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
         run.items.push(item.id);
         playSound('item-get');

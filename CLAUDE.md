@@ -420,10 +420,17 @@ ball's `ball-open`. `life.keep` keeps grass blades and lava cracks off the props
 ## Items
 
 One-use items (Slay the Spire's potions) in `js/data/items.js`: `effects`
-keys (heal, block, strength, focus, energy, draw, guard, burn, flee), a
-`rarity` (drop/stock weight in `ITEM_WEIGHTS`, Mart price in
-`MART_ITEM_PRICES`), `only` for a type's Gem, and `map: true` for heals
-usable outside battle. The run holds at most `ITEM_SLOTS` (3) ids in
+keys (heal, block, strength, focus, energy, draw, guard, burn, flee, and since 6c.11b weaken / vulnerable / seed
+through `applyDebuff()`, `burnMult`, `tide` through `gainTide()`, `maxHp`, `discover`, `revive`), a
+`rarity` (common / uncommon / rare: drop/stock weight in `ITEM_WEIGHTS`, Mart price in
+`MART_ITEM_PRICES`), `only` for a type's Gem or archetype item, and `map: true` for items
+usable outside battle (heals, and HP Up). 20 items since 6c.11b, each new one on a StS potion (in a comment):
+Black Flute (Weak Potion), X Accuracy (Fear Potion), TM (Attack Potion: `discoverCard()` lays 3 random cards of
+your type out with `pickFromPile()`, the one taken is free this turn via `discount` + `orig`), HP Up (Fruit Juice,
++5 max HP; `onEnd` passes `maxHp` on a flee too), Revive (Fairy in a Bottle: can't be used, `whyNotUsable()` says so;
+`hurtPlayer()` calls `revive()` when you'd faint, which takes it out of the Bag, sets 30% HP and adds its news to the
+hit's log line via `withRevive()`), and one per type for an archetype: Fire's Burn Drive (Catalyst, doubles Burn),
+Grass's Absorb Bulb (Leech Seed 4), Water's Fresh Water (5 Tide). They reuse emoji already in `ICONS`. The run holds at most `ITEM_SLOTS` (3) ids in
 `run.items`, saved by id with `run.itemChance` (a bad id discards the save).
 Sources: 3 per Mart (`node.stock.items`, rolled in `startBiome()`, greyed
 out with a full Bag), and after every won fight except the final boss a
@@ -886,14 +893,19 @@ first tap also unlocks audio, so the title music starts with the menu.
 
 There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
-menu, Card index, Stats, Achievements, Sound, How to play and About (Stats and
+menu, Index, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). The
-**Card index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium) is also a
+**Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) is also a
 blue `.ds-btn` under How to play on the start screen: every card in `ALL_CARDS`,
 a sticky tab row per type (Fire, Grass, Water, Neutral), grouped by rarity and
 then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name at
 stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
-else the last tab; new cards show up there on their own. The
+else the last tab; new cards show up there on their own. Two more tabs, Relics and Items (the user's call,
+2026-09-27), list every relic (the Abilities first, then by rarity, then Boss) and item (by rarity), with an
+"N/M found" count: one you haven't met in a run is a dark silhouette of its sprite, "???" (`.index-thing.locked`).
+Met means offered, sold or found: `markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`)
+is called by `relicOption()` / `itemOption()` in `js/rewards.js` (rewards and the Mart), `floatingThing()` (item
+balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gift. Saves from before start empty. The
 top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
 hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball

@@ -30,6 +30,7 @@ const freshSave = () => ({
     wellFed: false,           // Pokémon Centers heal +5% more
     coinFinder: false,        // +15% PokéCoins from every source
   },
+  seen: { relics: [], items: [] },   // ids met in a run (offered or found), unlocked in the Index; others show as silhouettes
   stats: {
     runsStarted: 0,
     runsWon: 0,
@@ -53,6 +54,7 @@ function load() {
       const merged = {
         ...base, ...saved,
         passives: { ...base.passives, ...saved.passives },
+        seen: { ...base.seen, ...saved.seen },
         stats: {
           ...base.stats, ...saved.stats,
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },
@@ -98,6 +100,13 @@ export function awardCoins(amount) {
   const total = coinsWithBonus(amount);
   updateSave(d => { d.coins += total; });
   return total;
+}
+
+/** A relic or item was met in a run (offered, sold or found): the Index shows it from now on. */
+export function markSeen(kind, id) {
+  if (data.seen[kind].includes(id)) return;
+  data.seen[kind].push(id);
+  persist();
 }
 
 export function resetSave() {
