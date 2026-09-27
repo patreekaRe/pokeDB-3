@@ -10,8 +10,10 @@ The user finds it hard to keep track, so **every time you give them a next step 
 plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ Run this in: CLOUD"). Default rule:
 - **CLOUD**: building cards/mechanics, balance and bot checks (the sim), anything with long runs or many downloads.
   It saves the user's data and has Node, Python and Chromium. Attach both `pokeDB-3` and `pokeDB-sim`.
-- **LOCAL** (their Windows PC, `serve.ps1`): playtesting, and visual work they want to see live (layout, art,
-  animation). No Node/Python there, so no bot runs.
+- **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
+  a few minutes after a push. This is the default way to playtest.
+- **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
+  (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
 
 ## Roadmap

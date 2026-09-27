@@ -134,7 +134,8 @@ steps land (mark them done, note anything decided along the way).
         Ingrain + seeds) fun or too safe? Do Growth (Rototiller, Growth Spurt, Solar Blade) and Spores (Effect Spore, Leaf
         Tornado, Nature's Madness) feel like their own builds? The bot never takes the combo pieces.
    6. **NEXT: the user's playtest of all three types**, then fixes.
-      - **Playtest: run LOCAL** (your PC, `serve.ps1`, play Fire, Grass and Water runs, note what feels off).
+      - **Playtest: no session needed**: play on the live site (https://patreekare.github.io/pokeDB-3/, phone is fine),
+        a few Fire, Grass and Water runs, and note what feels off.
       - **Then the fix/build session: run in the CLOUD** (select both `pokeDB-3` and `pokeDB-sim`). Session prompt:
       > Continue the roadmap after 6c.5 (all three type pools are built). Read CLAUDE.md, docs/roadmap.md and
       > docs/card-design.md first. If I've given playtest notes, fix those first (numbers in js/data/cards.js, mirror any rule
