@@ -254,14 +254,14 @@ steps land (mark them done, note anything decided along the way).
    entry shows its count, and at 3 (bosses 2) it's **Research complete**: a gold mark in place of the red Poké Ball and more
    detail (each move's numbers at that biome). Each completed entry pays a small one-time PokéCoin bonus (the user's call:
    wild 25, Alpha 50, boss 100: 36 wilds, 9 Alphas and 10 bosses make ~2350 over all 55, about ten winning runs'
-   worth, a real second source of coins for the shinies), and completing every entry pays one big bonus (300) with a
+   worth, a real second source of coins for the shinies), and completing every entry pays one big bonus (1000, the jackpot) with a
    "Pokédex complete" line in the result window and the Achievements list (a new way to earn, not an easier run; no
    per-page research bonus, since the page's first-defeat reward already exists). Save: `dex.count: { id: n }` (old saves start from their `defeated` list as 1 each).
    **Run in: CLOUD.** Session prompt:
    > Do roadmap step 7b, Pokédex research levels (read CLAUDE.md and docs/roadmap.md first, especially step 7 and 7b).
    > Count defeats per Pokédex entry, say "X defeated n/3" after a win, mark Research complete at 3 (bosses 2) with a gold
    > mark and each move's numbers, pay a small one-time PokéCoin bonus per completed entry (wild 25, Alpha 50, boss 100)
-   > and a big one (300) for completing every entry. Old saves must load (seed
+   > and a big one (1000) for completing every entry. Old saves must load (seed
    > counts from `dex.defeated`). Test at phone (390x844, 375x667) and PC widths with Playwright, update CLAUDE.md and the
    > roadmap, and push to main. No balance change, so no bot run is needed.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
