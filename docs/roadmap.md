@@ -231,8 +231,14 @@ steps land (mark them done, note anything decided along the way).
    start with a Potion, Neow's potions), **Oak's Advice** (Wastes: once per biome, a Reroll button beside Skip on a
    card reward). Fight rooms pick unbeaten Pokémon twice as often. No save bump (old saves load with an empty dex and
    run saves with no `rerollBiome` just have their reroll unused).
-   Bot (human bot, 400 runs/cell, sim `cfg.dexPerks` = all three perks) fire / grass / water: BOTNUMBERS
+   Bot (human bot, 400 runs/cell, sim `cfg.dexPerks` = all three perks) fire / grass / water, no perks -> all three
+   perks: L0 79.0 / 80.5 / 76.8 -> 80.8 / 83.0 / 78.8, L3 62.8 / 54.5 / 49.3 -> 61.5 / 69.5 / 59.3, L5 35.8 / 27.3 / 32.8 ->
+   37.5 / 41.3 / 37.8 (noise ~±4). Level 0 barely moves, but Grass/Water at Levels 3/5 gain 5-15 points, nearly all from
+   fewer biome-1 deaths (the Potion and ₽50 at the start). Shipped as is: the perks are earned late (every Pokémon on a
+   page, bosses included) and a new player never has them; **step 8 should measure each perk alone and, with the Game
+   Corner perks, decide whether to soften one (e.g. the Potion only from the 2nd biome) or retune.**
    **For the user to decide / check:**
+   - The perks lift Levels 3/5 for Grass/Water by 5-15 points once earned (above): fine as an endgame reward, or too much?
    - The "achievement" for a page is a row in the Achievements window's new "Pokédex pages" list, not a starter unlock
      (every achievement there unlocks a starter; a page unlocking one would need 3 new starters).
    - The roadmap's "fight rooms on the map show a silhouette until beaten, then sprite and weakness" isn't done: it
