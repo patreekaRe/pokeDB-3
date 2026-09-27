@@ -2854,9 +2854,51 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .float-go { margin-top: 2px; }
 /* an event's gift floats in the middle of the scene, over the props */
 .float-gift { position: fixed; left: 50%; top: 42%; translate: -50% -50%; z-index: 3; padding: 0; }
+/* before the item shows, it lies in a Poké Ball in the middle (offerItem): tapped, it hops and wobbles like the treasure
+   chest, its top pops off in a flash with the chest's rays, and the item rises out where the ball was */
+.reward-options.item-found { overflow-x: clip; }
+.item-found > .float-stage { padding-top: max(24px, 12vh); }
+.ball-spot { position: relative; display: grid; place-items: center; }
+.ball-spot > * { grid-area: 1 / 1; }
+.item-ball {
+  --px: 5px;
+  position: relative;
+  align-self: start;
+  width: calc(var(--px) * 22);
+  height: calc(var(--px) * 22);
+  margin-top: -8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  animation: chestHop 2.6s ease-in-out infinite;
+}
+.item-ball:focus-visible { outline: 3px solid #f8d030; outline-offset: 4px; border-radius: 50%; }
+.ball-half { position: absolute; left: 0; width: 100%; height: 50%; image-rendering: pixelated; pointer-events: none; filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.35)); }
+.ball-top { top: 0; transform-origin: 20% 100%; }
+.ball-bottom { bottom: 0; }
+.item-ball .center-label { bottom: calc(100% + 12px); }
+.item-ball .chest-glow { bottom: 40%; width: 140%; height: 120%; }
+.item-ball.shaking { animation: chestWobble 1.1s ease-in-out; }
+.item-ball:is(.shaking, .opened) .center-label { visibility: hidden; }
+.item-ball.opened { animation: ballGone 0.45s ease-in 0.35s forwards; cursor: default; pointer-events: none; }
+.item-ball.opened .ball-top { animation: ballTopPop 0.45s ease-out forwards; }
+.item-ball.opened .chest-glow { animation: glowIn 0.3s ease-out forwards; }
+@keyframes ballTopPop { to { transform: translate(-6px, -60%) rotate(-40deg); opacity: 0; } }
+@keyframes ballGone { to { transform: scale(0.4); opacity: 0; visibility: hidden; } }
+.ball-spot > .chest-rays { position: absolute; left: 50%; top: calc(var(--size, 96px) / 2); bottom: auto; width: min(120vmin, 560px); translate: -50% -50%; }
+.float-stage.open .ball-spot > .chest-rays { animation: raysIn 0.7s ease-out forwards, raysTurn 40s linear infinite; }
+.float-stage.sealed .ball-spot > .float-thing, .float-stage.sealed > :not(.ball-spot) { visibility: hidden; }
+.float-stage.open .ball-spot > .float-thing:not(.taken) { animation: itemRise 0.8s cubic-bezier(0.25, 0.8, 0.35, 1) 0.2s backwards; }
+@keyframes itemRise { 0% { transform: translateY(30px) scale(0.15); opacity: 0; } 25% { opacity: 1; } 60% { transform: translateY(-16px) scale(1.15); } 100% { transform: none; } }
+.float-stage.open > .float-caption, .float-stage.open > .float-row { animation: bagRowIn 0.4s ease-out 0.7s backwards; }
+@keyframes bagRowIn { from { opacity: 0; } }
+@media (max-width: 720px) { .item-ball { --px: 4px; } }
 @media (prefers-reduced-motion: reduce) {
-  .treasure-chest, .treasure-chest.opened, .treasure-relic, .float-thing.taken, .relic-float, .relic-float::before, .relic-float::after, .relic-halo, .treasure-flash { animation: none; }
-  .treasure-chest.opened :is(.chest-glow, .chest-rays) { animation: none; opacity: 1; }
+  .treasure-chest, .treasure-chest.opened, .treasure-relic, .float-thing.taken, .item-ball, .item-ball.opened .ball-top, .float-stage.open :is(.float-thing, .float-caption, .float-row), .relic-float, .relic-float::before, .relic-float::after, .relic-halo, .treasure-flash { animation: none; }
+  .treasure-chest.opened :is(.chest-glow, .chest-rays), .float-stage.open .ball-spot > .chest-rays { animation: none; opacity: 1; }
+  .item-ball.opened { display: none; }
   .treasure-flash { display: none; }
 }
 

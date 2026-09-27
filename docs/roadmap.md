@@ -189,6 +189,11 @@ Anytime, as a break from number work:
   evolve animation (flashing silhouette switching between the two forms) plus the evolution
   song, which the user supplies as an MP3.
 - **The last 4 event scenes**: Move Tutor, Move Deleter, Day Care, Fan Club.
+- **Shrine close-up** (the user's idea, 2026-09-27): the Shrine event "currently looks very small"; make it a
+  close-up, as if you're standing right in front of the shrine, filling the screen like the treasure room's grotto.
+  Its own scene in `PLACE_ART` (like `treasure`), not a prop on the biome's outdoor scene.
+- **Hot Spring close-up** (the user's idea, 2026-09-27): it "feels far away"; a very close view, as if you're about
+  to step in. Likewise its own `PLACE_ART` scene rather than a prop on the outdoor scene.
 - Missing sound files `hit-super` / `hit-weak` (they fall back to `hit`; the user supplies MP3s).
 - Mewtwo's Psychic deck (much later).
 

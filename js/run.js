@@ -31,7 +31,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, s
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, eventSpots, sceneAct } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 
 let run = null;
@@ -523,25 +523,53 @@ function gainRelic(relic, next) {
   next();
 }
 
-/** A found item floats over the screen like a treasure relic: tap it (then Put in Bag) and it flies into the Bag.
-    With a full Bag your items float in a row under it: tap one to mark it for tossing (it greys out with a ✕),
-    then Swap. */
+/** A found item first lies in a Poké Ball in the middle of the screen, like an item ball in the games: tapped, it
+    wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic: tap
+    it (then Put in Bag) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark
+    it for tossing (it greys out with a ✕), then Swap. */
 function offerItem(item, next) {
-  const thisRun = run, full = run.items.length >= ITEM_SLOTS;
+  const thisRun = run, full = run.items.length >= ITEM_SLOTS, reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${ITEM_SLOTS} items). Tap one of yours to swap it out, or leave it.`
+    : `Tap it to put it in your Bag (up to ${ITEM_SLOTS} items, used up in battle).`];
   showChoice({
     title: 'Item found',
-    sub: [`You found ${/^[AEIOU]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${ITEM_SLOTS} items). Tap one of yours to swap it out, or leave it.`
-      : `Tap it to put it in your Bag (up to ${ITEM_SLOTS} items, used up in battle).`],
+    sub: ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
     options: [],
     skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: next,
     coins: run.pendingCoins,
     layout: 'item-found',
   });
-  const stage = el('div', 'float-stage'), found = floatingThing(item, 0, 96), row = el('div', 'float-row');
+  const stage = el('div', 'float-stage sealed'), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
   const go = goButton(full ? 'Swap' : 'Put in Bag');
   let toss = null, taking = false;
-  stage.append(found);
+
+  const art = itemBallArt(['poke', 'great', 'ultra'][run.biome] || 'poke'), ball = el('button', 'item-ball');
+  ball.type = 'button';
+  ball.setAttribute('aria-label', 'Open the Poké Ball');
+  const half = (name) => {
+    const img = el('img', `ball-half ball-${name}`);
+    Object.assign(img, { src: art[name].url, alt: '', draggable: false });
+    return img;
+  };
+  ball.append(half('bottom'), half('top'), el('span', 'chest-glow'), centerLabel('Open', 'Open the Poké Ball'));
+  spot.append(el('span', 'chest-rays'), ball, thing);
+  stage.append(spot);
+  ball.addEventListener('click', async () => {
+    if (ball.classList.contains('shaking') || ball.classList.contains('opened')) return;
+    ball.classList.add('shaking');
+    await sleep(reduced ? 0 : 1100);
+    if (run !== thisRun || !ball.isConnected) return;
+    ball.classList.replace('shaking', 'opened');
+    ball.tabIndex = -1;
+    playSound('ball-open');
+    stage.append(el('div', 'treasure-flash'));
+    stage.classList.replace('sealed', 'open');
+    await sleep(reduced ? 0 : 900);
+    if (run !== thisRun || !ball.isConnected) return;
+    sayLines(found);
+  });
+
   if (full) {
     run.items.forEach((id, index) => {
       const mine = ITEMS_BY_ID[id], btn = floatingThing(mine, index + 1, 64);
@@ -557,9 +585,9 @@ function offerItem(item, next) {
     });
     stage.append(el('p', 'float-caption', 'Your Bag'), row);
   }
-  found.addEventListener('click', () => {
+  thing.addEventListener('click', () => {
     if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
-    if (!full && go.hidden) { found.classList.add('chosen'); go.hidden = false; return sayLines([`Put the ${item.name} in your Bag?`]); }
+    if (!full && go.hidden) { thing.classList.add('chosen'); go.hidden = false; return sayLines([`Put the ${item.name} in your Bag?`]); }
     take();
   });
   go.addEventListener('click', take);
@@ -573,7 +601,7 @@ function offerItem(item, next) {
     $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
     go.hidden = true;
     if (toss !== null) row.children[toss].classList.add('gone');
-    await flyToBag(found);
+    await flyToBag(thing);
     if (run !== thisRun) return;
     if (toss === null) run.items.push(item.id); else run.items[toss] = item.id;
     tell(`Put the ${item.name} in the Bag.`);

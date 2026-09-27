@@ -421,7 +421,11 @@ usable outside battle. The run holds at most `ITEM_SLOTS` (3) ids in
 Sources: 3 per Mart (`node.stock.items`, rolled in `startBiome()`, greyed
 out with a full Bag), and after every won fight except the final boss a
 StS-style drop (`ITEM_DROP`: 40%, −10% after a drop, +10% after a miss),
-shown as a last reward step by `offerItem()`: no tiles, the item floats like a treasure relic
+shown as a last reward step by `offerItem()`: it first lies in a round pixel Poké Ball in the middle of the screen
+(the user's call, like the games' item balls; `itemBallArt()` in `js/scene.js` paints its two halves, a Poké / Great /
+Ultra Ball per biome), which hops like the treasure chest; a tap wobbles it (`chestWobble`), then `ball-open` plays, the
+top half pops off in a flash with the chest's rays, and the item rises out where it was (`.float-stage.sealed` →
+`.open`; Skip works throughout). Then no tiles: the item floats like a treasure relic
 (`floatingThing()`, tap it then Put in Bag, and `flyToBag()` shrinks it into the Bag); with a full Bag your items
 float in a row under it, and the one you tap to toss greys out under a red pixel ✕ before you Swap (the user's
 calls). Nothing heals through Big Root or boosts block through

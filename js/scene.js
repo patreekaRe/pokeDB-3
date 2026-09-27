@@ -1744,6 +1744,44 @@ export function treasureChest() {
   return { lid: paintProp(CHEST_W, LID_H, chestLid), open: paintProp(CHEST_W, OPEN_H, chestOpenLid), body: paintProp(CHEST_W, BODY_H, chestBody) };
 }
 
+/* A found item's Poké Ball (offerItem() in js/run.js): the biome's ball (Poké, Great, Ultra), round like the games'
+   item balls, painted as two halves split along the band so the top can pop open. */
+const ITEM_BALLS = {
+  poke: { top: ['#ff9080', '#e83830', '#b82020'] },
+  great: { top: ['#98c8ff', '#3878f0', '#2850b8'], mark: ['#ff7060', '#e03830'] },
+  ultra: { top: ['#70707e', '#46464e', '#2c2c34'], mark: ['#fff080', '#f8d030'] },
+};
+const ITEM_BALL = 22;
+
+/** The two halves of the ball as little pixel images ({ url, w, h }): `top` (its upper half and the band's top row)
+    and `bottom`. Needs no scene up: it paints with its own colours. */
+export function itemBallArt(kind = 'poke') {
+  const k = ITEM_BALLS[kind] || ITEM_BALLS.poke, c = colours({ ...k, white: ['#ffffff', '#e0e0e8', '#a8a8b8'], line: '#202028', grey: '#b8b8c8' });
+  const half = ITEM_BALL / 2;
+  const paint = (dy) => () => {
+    const inBall = (x, y) => Math.hypot(x + 0.5 - half, y + 0.5 - half) <= half - 1.2;
+    for (let y = 0; y < ITEM_BALL; y++) for (let x = 0; x < ITEM_BALL; x++) {
+      const d = Math.hypot(x + 0.5 - half, y + 0.5 - half), lit = (x + 0.5 - half) * 0.7 + (y + 0.5 - half) * 0.7;
+      let col;
+      if (!inBall(x, y)) {
+        if ([-1, 0, 1].some(oy => [-1, 0, 1].some(ox => inBall(x + ox, y + oy)))) col = c.line;
+        else continue;
+      } else if (d <= 2.2) col = c.white[0];
+      else if (d <= 3.2) col = c.grey;
+      else if (d <= 4.4 || y === half - 1 || y === half) col = c.line;
+      else if (y < half) {
+        const shade = lit < -4 ? 0 : lit < 4 ? 1 : 2;
+        col = c.top[shade];
+        if (kind === 'great' && Math.abs(x + 0.5 - half) >= 5.5 && y >= 3 && y <= 7) col = c.mark[shade ? 1 : 0];
+        if (kind === 'ultra' && y <= 7 && (Math.abs(x + 0.5 - half) === 3.5 || Math.abs(x + 0.5 - half) === 4.5)) col = c.mark[x < half ? 0 : 1];
+        if (x >= 5 && x <= 7 && y >= 4 && y <= 6 && x - 5 <= y - 4) col = c.white[0];   // the shine
+      } else col = c.white[lit < 2 ? 0 : lit < 7 ? 1 : 2];
+      solid(x, y - dy, col);
+    }
+  };
+  return { top: paintProp(ITEM_BALL, half, paint(0)), bottom: paintProp(ITEM_BALL, half, paint(half)) };
+}
+
 /** Fill a shape (`mask`) with `colourAt`, outlined all round in the chest's line colour. */
 function chestShape(mask, colourAt) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
