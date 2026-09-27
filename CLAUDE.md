@@ -469,7 +469,9 @@ act `erase`; a hypnotist's pendulum: forget two, act `hypno`; a dozing Slowpoke 
 clapboard front with a DAY CARE board in the 3x5 `pixelText()` font, a picket fence, an Egg in a straw nest, act
 `trade`; Miltank and Marill figures) and the **Fan Club** (striped paper, portraits, pennants, a red carpet to a stage
 under a spotlight, act `cheer`: confetti and hearts, the fans hop; Persian and Cinccino figures; a Super Potion gift
-floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). Where HP decides the choice
+floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). The outdoor ones (Berry Tree, Wishing Well, Item Ball, Team
+Rocket) are close-ups too: their art's `zoom` (1.75) makes `resize()` paint the scene with bigger pixels, as far as
+their props (`span` pixels across) still fit the screen, so a narrow phone zooms less than a PC. Where HP decides the choice
 (every event but the Wishing Well and Day Care) the choice returns `vitals: true`: your battle nameplate
 (`eventVitals()`) sits under the title (the top bar's little plate steps aside), and `showHpChange()` runs its bar to
 the new HP before the room closes. Choices that open a picker (Tutor, Deleter, Day Care) play their act first; the

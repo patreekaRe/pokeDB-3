@@ -445,7 +445,9 @@ Anytime, as a break from number work:
   couple's house front, a picket fence, an Egg in a straw nest, Miltank and Marill) and Fan Club (portraits, pennants, a
   red carpet to a spotlit stage, Persian and Cinccino). Each choice plays out first (chalk writing, the sandbag swinging,
   the book's words fading, the pendulum's rings, the Egg wobbling, confetti). See CLAUDE.md's ? events.
-  **For the user to check:** the figures (Slowpoke, Miltank, Marill, Persian, Cinccino) are my picks from sprites the
+  The same day the four outdoor events (Berry Tree, Wishing Well, Item Ball, Team Rocket) became close-ups too: their
+  scenes zoom in (bigger pixels) as far as their props fit the screen width, so nothing looks far away any more.
+  **For the user to check:** the zoomed scenes' chunkier pixels (1.75x on PCs, less on narrow phones); the figures (Slowpoke, Miltank, Marill, Persian, Cinccino) are my picks from sprites the
   game already had; the Day Care couple and the tutor themselves aren't shown (no trainer sprites for them yet).
 - ~~**Event choices explained on phones**~~ (the user's note, 2026-09-27; done the same day): an event scene's
   signs (`spotOption()`) explained themselves only in a hover tooltip, which phones never show. Each sign now carries

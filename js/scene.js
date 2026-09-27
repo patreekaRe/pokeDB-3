@@ -360,7 +360,7 @@ const PLACE_ART = {
   /* ? events outdoors: the biome's own scene (BIOME_ART's wild look: its sky, backdrop and ground) with the event's
      props in the middle (`prop`, painted by eventProps()); `biomes` retints the props to suit the biome. */
   berry: {   // an Oran Berry tree in a plot of soft soil, like the games' berry plots, and an empty plot with a sign
-    outdoor: true, prop: 'berry', horizon: 0.5,
+    outdoor: true, prop: 'berry', horizon: 0.5, zoom: 1.75, span: 76,
     leaf: ['#98e070', '#62b84c', '#3e9040', '#246a2e'], leafLine: '#15401c',
     bark: ['#b07c4c', '#7e5430', '#54341c'],
     berry: ['#e0f4ff', '#60a8f8', '#2e68d8', '#1a3c90'], stem: '#3e9a38',
@@ -431,7 +431,7 @@ const PLACE_ART = {
   },
 
   well: {   // an old stone wishing well under a tiled roof, with a crank and a bucket, coins glinting in the water
-    outdoor: true, prop: 'well', horizon: 0.5,
+    outdoor: true, prop: 'well', horizon: 0.5, zoom: 1.75, span: 54,
     wellStone: ['#e0e4ec', '#b4bac8', '#8a90a0', '#6a7080', '#303440'],
     wellWater: ['#4a7ab8', '#1e3c70', '#0c1a38'],
     roof: ['#f87858', '#e04030', '#a82820', '#501010'],
@@ -452,7 +452,7 @@ const PLACE_ART = {
   },
 
   itemball: {   // a Poké Ball lying in a patch of tall grass, like an item ball in the games (or a Voltorb...)
-    outdoor: true, prop: 'itemball', horizon: 0.5,
+    outdoor: true, prop: 'itemball', horizon: 0.5, zoom: 1.75, span: 60,
     tall: ['#a8f070', '#60c040', '#389028', '#185818'],
     ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'],
     boom: ['#ffffff', '#fff070', '#f89020', '#d83818'], smoke: ['#d0d0d0', '#8a8a8a'],
@@ -464,7 +464,7 @@ const PLACE_ART = {
   },
 
   rocket: {   // a Team Rocket roadblock: the page stands the grunt and their Pokémon on `life.stands` as real sprites; a bush to run through
-    outdoor: true, prop: 'rocket', horizon: 0.5,
+    outdoor: true, prop: 'rocket', horizon: 0.5, zoom: 1.75, span: 90,
     plank: ['#383840', '#202028', '#e03830', '#901818', '#101014'],
     wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
     coin: ['#fff8b0', '#f8c830', '#b07818'],
@@ -705,7 +705,8 @@ export function setStorm(on) {
 addEventListener('resize', () => { if (S) resize(); });
 
 function resize() {
-  const scale = innerWidth <= 720 ? 4 : 5;
+  // a close-up (an event's) zooms in, with bigger pixels, as far as its props (`span` pixels across) still fit the screen
+  const near = innerWidth <= 720 ? 4 : 5, scale = S.raw.zoom ? Math.max(near, Math.min(near * S.raw.zoom, innerWidth / S.raw.span)) : near;
   W = Math.max(1, Math.ceil(innerWidth / scale));   // a hidden pane can report 0 at load; the resize listener repaints it
   H = Math.max(1, Math.ceil(innerHeight / scale));
   canvas.width = W;
