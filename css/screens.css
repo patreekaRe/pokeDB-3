@@ -3140,10 +3140,13 @@ body.has-scene #scene-bg { display: block; }
 .dex-bar { flex: none; height: 8px; margin-top: 4px; background: rgba(0, 0, 0, 0.18); }
 .dex-perk-count { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.9rem; }
 /* the Rewards tab: the complete-Pokédex jackpot lists its three prizes as rows */
-.dex-jackpot { align-items: flex-start; }
-.dex-prize { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-.dex-prize-icon, .dex-prize-sprite { flex: none; width: 40px; height: 40px; display: grid; place-items: center; font-size: 1.6rem; object-fit: contain; }
-.dex-prize-icon .item-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
+.dex-goal { align-items: flex-start; }
+.dex-goal-how { color: var(--win-muted); font-size: 0.8rem; }
+.dex-goal-pay { font-weight: 700; }
+.dex-prize { display: flex; align-items: center; gap: 8px; }
+.dex-prize-text { font-size: 0.85rem; }
+.dex-prize-icon, .dex-prize-sprite { flex: none; width: 32px; height: 32px; display: grid; place-items: center; font-size: 1.3rem; object-fit: contain; }
+.dex-prize-icon .item-sprite { width: 28px; height: 28px; image-rendering: pixelated; }
 .dex-jackpot:not(.earned) .dex-prize-sprite { filter: brightness(0) opacity(0.45); }
 .dex-entry {
   position: relative;

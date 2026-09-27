@@ -140,8 +140,8 @@ const REWARDS = DEX_PAGES.length;
 
 function prize(art, name, text) {
   const row = el('div', 'dex-prize');
-  row.append(art, el('div', 'dex-perk-text'));
-  row.lastChild.append(el('strong', '', name), el('span', '', text));
+  row.append(art, el('span', 'dex-prize-text'));
+  row.lastChild.append(el('b', '', name), text ? ` · ${text}` : '');
   return row;
 }
 
@@ -156,33 +156,39 @@ function progressBar(n, of) {
 function renderRewards() {
   const save = getSave();
   const [done, all] = researchCount();
-  const jackpot = el('div', `dex-perk dex-jackpot${save.dex.complete ? ' earned' : ''}`);
-  const text = el('div', 'dex-perk-text');
+  const defeated = new Set(save.dex.defeated);
   const reshiram = STARTERS_BY_ID.reshiram;
   const img = el('img', 'pixel dex-prize-sprite');
   img.src = spriteUrl(reshiram, 'front', 0);
   img.alt = '';
-  text.append(
-    el('strong', '', `${save.dex.complete ? '' : '🔒 '}Complete the Pokédex`),
-    el('span', '', `Finish the research on all ${all} entries: beat each wild Pokémon and Alpha 3 times, and each boss twice.`),
-    prize(el('span', 'dex-prize-icon', '💰'), `${DEX_COMPLETE_COINS} PokéCoins`, 'Paid once.'),
-    prize(img, reshiram.line[0].name, 'A new starter: the legendary Fire Pokémon.'),
-    prize(itemSprite(SCOPE, 'dex-prize-icon'), SCOPE.name, `${SCOPE.text} The Game Corner's Scope Upgrade raises it to 3.`),
-    progressBar(done, all),
-    el('small', '', save.dex.complete ? 'Earned!' : `★ ${done}/${all} researched`),
-  );
-  jackpot.append(el('span', 'dex-perk-icon', '🏆'), text);
 
-  const research = el('div', 'dex-perk');
-  const rText = el('div', 'dex-perk-text');
-  rText.append(
-    el('strong', '', 'Research'),
-    el('span', '', `Each entry pays once when its research completes: 💰 ${RESEARCH_COINS.wild} for a wild Pokémon, ${RESEARCH_COINS.elite} for an Alpha, ${RESEARCH_COINS.boss} for a boss.`),
-  );
-  research.append(el('span', 'dex-perk-icon', '★'), rText, el('b', 'dex-perk-count', `${done}/${all}`));
+  // one box per goal: what to do in a few words, the prizes as icon rows, and how far along you are
+  const goal = (icon, title, how, prizes, n, of, earned, tip) => {
+    const box = el('div', `dex-perk dex-goal${earned ? ' earned' : ''}`);
+    const text = el('div', 'dex-perk-text');
+    text.append(el('strong', '', `${earned ? '✅ ' : ''}${title}`), el('span', 'dex-goal-how', how), ...prizes, progressBar(n, of));
+    box.append(el('span', 'dex-perk-icon', icon), text, el('b', 'dex-perk-count', `${n}/${of}`));
+    box.title = tip;
+    return box;
+  };
+  const coins = (n) => prize(el('span', 'dex-prize-icon', '💰'), `${n} PokéCoins`, '');
 
-  const defeated = new Set(save.dex.defeated);
-  const pages = DEX_PAGES.map(p => perkBox(p, p.ids.filter(id => defeated.has(id)).length, save.dex.done.includes(p.biome), p.name));
+  const jackpot = goal('🏆', 'Complete the Pokédex', `Research all ${all} entries`, [
+    coins(DEX_COMPLETE_COINS),
+    prize(img, reshiram.line[0].name, 'New starter'),
+    prize(itemSprite(SCOPE, 'dex-prize-icon'), SCOPE.name, SCOPE.short),
+  ], done, all, save.dex.complete, 'Research an entry by beating it 3 times (a boss twice).');
+  jackpot.classList.add('dex-jackpot');
+
+  const research = goal('★', 'Research', 'Beat one Pokémon 3× (bosses 2×)', [
+    el('span', 'dex-goal-pay', `💰 ${RESEARCH_COINS.wild} wild · ${RESEARCH_COINS.elite} Alpha · ${RESEARCH_COINS.boss} boss`),
+  ], done, all, false, 'Each entry pays once.');
+
+  const pages = DEX_PAGES.map(p => goal(p.perk.icon, `${p.name.split(' ').pop()} page`, `Beat all ${p.ids.length} once`, [
+    coins(p.perk.coins),
+    prize(el('span', 'dex-prize-icon', p.perk.icon), p.perk.name, p.perk.short),
+  ], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.perk.name}: ${p.perk.text}`));
+
   $('dex-body').replaceChildren(jackpot, research, ...pages);
 }
 

@@ -14,15 +14,15 @@ import { BIOMES } from './enemies.js';
 export const DEX_PERKS = {
   clearing: {
     id: 'moms-savings', name: 'Mom\'s Savings', icon: '💴', coins: 300,
-    text: 'Start every run with ₽50.',
+    text: 'Start every run with ₽50.', short: 'Start runs with ₽50',
   },
   shrine: {
     id: 'chansey-gift', name: 'Chansey\'s Gift', icon: '🧴', coins: 400,
-    text: 'Start every run with a Potion in the Bag.',
+    text: 'Start every run with a Potion in the Bag.', short: 'Start runs with a Potion',
   },
   wastes: {
     id: 'oaks-advice', name: 'Oak\'s Advice', icon: '🎓', coins: 500,
-    text: 'Once per biome, reroll a card reward for 3 new cards.',
+    text: 'Once per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward once a biome',
   },
 };
 
@@ -40,6 +40,7 @@ export const DEX_COMPLETE_COINS = 1500;   // more than the three pages together 
 export const SCOPE = {
   id: 'silph-scope', name: 'Silph Scope', icon: '👀',
   text: 'Once per biome, reveal who waits in a fight room on the map, and their type.',
+  short: 'Reveal a fight room on the map',
 };
 export const SCOPE_REVEALS = 1;
 
