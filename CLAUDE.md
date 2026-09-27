@@ -4,6 +4,16 @@ A browser-based Pokémon-themed roguelike deck-battler. Vanilla HTML/CSS/JS
 (ES modules), no build step, no framework. Deployed on GitHub Pages at
 https://patreekare.github.io/pokeDB-3/.
 
+## Cloud or local: always tell the user (their request)
+
+The user finds it hard to keep track, so **every time you give them a next step or a next-session prompt, say
+plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ Run this in: CLOUD"). Default rule:
+- **CLOUD**: building cards/mechanics, balance and bot checks (the sim), anything with long runs or many downloads.
+  It saves the user's data and has Node, Python and Chromium. Attach both `pokeDB-3` and `pokeDB-sim`.
+- **LOCAL** (their Windows PC, `serve.ps1`): playtesting, and visual work they want to see live (layout, art,
+  animation). No Node/Python there, so no bot runs.
+Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
+
 ## Roadmap
 
 The agreed plan (task order, the new 54-Pokémon roster per biome, rules for adding
