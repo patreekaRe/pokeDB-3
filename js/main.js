@@ -273,6 +273,9 @@ function init() {
   initTips();
   initHowtoFx();
   initHowto();
+  // The top bar has no background, so once the page scrolls a fade keeps its numbers off whatever slides under them.
+  const markScrolled = () => document.body.classList.toggle('scrolled', scrollY > 4);
+  addEventListener('scroll', markScrolled, { passive: true });
   initBattle();
   initRun({ onMenu: goToMenu, onNewRun: previewStarter });
 

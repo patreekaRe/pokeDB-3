@@ -116,6 +116,17 @@ h1, h2, h3, h4, p { margin: 0; }
   pointer-events: none;      /* no bar: the empty space between buttons lets taps through */
 }
 .topbar > * { pointer-events: auto; }
+.topbar::before {   /* a fade behind the buttons once the page scrolls (body.scrolled, js/main.js), so the coins don't sit on the run card's name */
+  content: "";
+  position: absolute;
+  inset: 0 0 -22px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(10, 12, 30, 0.88), rgba(10, 12, 30, 0.6) 65%, transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+body.scrolled .topbar::before { opacity: 1; }
 .topbar-actions { position: relative; display: flex; align-items: center; gap: 8px; }   /* position: the Bag drops down from its right edge */
 
 /* the home button: a Poké Ball (same drawing as the logo's "o") */
