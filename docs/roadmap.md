@@ -111,38 +111,38 @@ steps land (mark them done, note anything decided along the way).
       within noise of the last session's 300-run numbers), so Fire is now level with or ahead of the others. The bot scores cards one at a time and never takes the combo pieces (Fan the Flames, Sacred Fire,
       Drought, Blue Flare, Raging Fury, Fusion Flare, Wildfire, the exhaust engine): only the user's playtest can judge
       those builds. Before/after runs: serve the old commit (`git worktree`) with the old sim on a second port.
-   4. **Water's cards** — done (2026-09-26), **bot check still to do**. 20 common / 32 uncommon / 13 rare + 8 evolution
-      cards = 73, each on a StS card with a hand-picked upgrade and PokéSprite art (47 new sprites + `item-fit.js`).
-      Water's mechanics are in `js/battle.js`: Tide multipliers and payoffs (`tideMult`, Drizzle, `perTideHeld`,
-      `perTideGained` / `battle.tideGained`, Rising Tide, Primal Reversion's growing Tide, Rain Dish's block when Tide is
-      spent via `spendTide()`, `blockPerTide`), block tricks (`blockMult`, Riptide on every `gainBlock()`, `blur`,
-      `blockNext`, `blockPerCard`, `blockDamage` as a multiple), retain tricks (`growOnRetain` and Ebb and Flow's
-      `discount` make a kept card its own copy for the fight; Still Waters' `retainN` asks which card to keep, through
-      `pickFromHand()`'s new `only` filter), `drawTo`, `ifDiscarded`, `costDownOnDiscard`, `discardHand` + `perDiscarded`.
-      9 bridge uncommons and 3 extra rares were added; the doc's Water section lists them and every number changed.
-      Starting deck unchanged. Tested headless (every mechanic in real fights, the Card index at PC and phone sizes).
-      - **Not done: the sim.** This session couldn't attach `patreekare/pokeDB-sim`, so the sim doesn't know Water's new
-        keys, the bot's `cardScore` doesn't score them, and there's no before/after bot check. The Grass session does it
-        (its prompt below). Until then Water's reward pool is only playtested, not bot-checked.
+   4. **Water's cards** — done (2026-09-26); bot check done in 6c.5. 20 common / 32 uncommon / 13 rare + 8 evolution
+      cards = 73 (the doc's Water section lists them). Bot (human, 600 runs/cell, pre-6c.4 commit on port 8131 with the old
+      sim): L0 / L3 / L5 71.0 / 57.8 / 33.8 -> 64.2 / 41.5 / 24.5 with the new pool. Retuned Water's commons (Shelter 9,
+      Mist 12, Chilling Water gains Weak 1 for one of its draws): 74.0 / 56.8 / 36.3 (400 runs). The new sim on the old data
+      played 58.5 at L3 (old sim 57.8), so the drop was the pool, not the mirror.
       - For the playtest: do the three Water builds feel different (Tide cash-ins, a Shell Armor / Riptide wall, a
-        discard-and-retain hand)? Is Still Waters' "Choose a card to keep" at the end of the turn clear? Swift Swim with
-        Drizzle, Snipe Shot at high Tide and Wave Crash behind Iron Shell hit very hard: are they fun or broken?
-   5. **Grass's cards — NEXT.** Session prompt (paste into a fresh session; select both `pokeDB-3` and `pokeDB-sim`):
-      > Start roadmap step 6c.5: build Grass's card pool from docs/card-design.md (approved; its Decisions section settles
-      > the open questions). Read CLAUDE.md, docs/roadmap.md and the doc first; Fire (6c.3) and Water (6c.4) are the worked
-      > examples. First, the sim: Water's session couldn't reach patreekare/pokeDB-sim, so mirror Water's 6c.4 mechanics
-      > there (the roadmap's step 4 lists them) and teach the bot's cardScore those keys, then run a human-bot check of Water
-      > at Levels 0/3/5 against the pre-6c.4 commit (retune Water's numbers, not enemies, if it moved more than ~5 points).
-      > Then build Grass's type-specific mechanics from the doc's table (Leech Seed: `seed`, Sap, overheal / Chlorophyll,
-      > Flex's temporary strength) in js/battle.js with describe() lines, then every Grass card in the doc: reworked existing
-      > ids keep their ids, new cards get ids, PokéSprite art (+ item-fit.js bounds), a hand-picked `upgrade` each, and the
-      > StS model in a comment. Top the uncommons up to ~32 with bridge cards and the rares to ~13-14 (StS's 20/36/16 split).
-      > Keep the starting deck unless the bot says otherwise. Mirror everything in the sim (see "Bot harness in a cloud
-      > session"), teach cardScore the new keys, and run a human-bot check at Levels 0/3/5 (Grass vs the others): retune
-      > Grass's numbers, not enemies, if it moves more than ~5 points. Test in the browser headless (Chromium at
-      > /opt/pw-browsers/chromium). Update CLAUDE.md, the roadmap and the doc, push both repos to main (no branch or PR).
-      > End with a short summary for the user and anything they should playtest; also write the next session's prompt.
-   6–8. Spare sessions for fixes from the user's playtests of each type.
+        discard-and-retain hand)? Is Still Waters' "Choose a card to keep" clear? Swift Swim with Drizzle, Snipe Shot at high
+        Tide and Wave Crash behind Iron Shell hit very hard: fun or broken?
+   5. **Grass's cards** — done (2026-09-27). 20 common / 32 uncommon / 14 rare + 8 evolution cards = 74, each on a StS card
+      with a hand-picked upgrade and PokéSprite art (49 new sprites + `item-fit.js`). Grass's mechanics are in `js/battle.js`:
+      Leech Seed (`seed`, `enemy.seed`: drains at the start of the enemy's turn and heals you; Grassy Surge's `seedKeep`
+      stops it dropping; Seed Sower's `attackSeed`), Sap (`enemy.sap`, its attacks deal that much less), Flex
+      (`battle.flex`, gone at the end of your turn), `healPlayer()` with Chlorophyll's overheal-to-block and Grass Pledge's
+      strength, `gainStrength()` with Harvest's heal, `applyDebuff()` with Effect Spore and Sap Sipper, `debuffKinds()` for
+      Leaf Tornado / Pollen Puff, conditions `ifWeak` / `ifVulnerable` / `ifSeeded` / `ifHealed` / `ifEnemyAttacks`, Feed
+      (`feed`: +max HP, returned to `afterFight()` as `result.maxHp`), `exhaustHand: 'status'`. The doc's Grass section lists
+      the bridges and every number changed. Starting deck unchanged. All mirrored in the sim.
+      - Bot (human): old pool L0 / L3 / L5 74.2 / 52.2 / 32.0 (6c.3's run); new pool 89.3 / 76.5 / 58.8, almost all from
+        Leech Seed. With smaller seeds (shipped): 78.8 / 57.0 / 32.5 (400 runs).
+      - For the playtest: does Leech Seed read clearly (badge, the drain at the enemy's turn)? Is a Drain deck (Chlorophyll +
+        Ingrain + seeds) fun or too safe? Do Growth (Rototiller, Growth Spurt, Solar Blade) and Spores (Effect Spore, Leaf
+        Tornado, Nature's Madness) feel like their own builds? The bot never takes the combo pieces.
+   6. **NEXT: the user's playtest of all three types**, then fixes. Session prompt (paste into a fresh session; select both
+      `pokeDB-3` and `pokeDB-sim`):
+      > Continue the roadmap after 6c.5 (all three type pools are built). Read CLAUDE.md, docs/roadmap.md and
+      > docs/card-design.md first. If I've given playtest notes, fix those first (numbers in js/data/cards.js, mirror any rule
+      > change in the sim, bot-check the type at Levels 0/3/5 with the human bot). Otherwise start step 6c.9: the ~20 real
+      > Neutral cards from the doc, then StS's reward rules (upgraded cards in later biomes, a rare-card pity counter), then
+      > give enemies the status cards (Confusion, Paralysis, Poison, Sludge per the doc's table) and a full bot pass at
+      > Levels 0/3/5 (retune enemies if Level 0 drifts well above ~75% for the human bot). Test headless in Chromium
+      > (/opt/pw-browsers/chromium). Update CLAUDE.md, the roadmap and the doc, and push both repos to main (no branch or PR).
+   7–8. Spare sessions for fixes from the user's playtests of each type.
    Each type step: its ~72 cards with PokéSprite art (+ `item-fit.js`), starting deck,
       Ability, a bot check at Levels 0/3/5. The bot scores cards one at a time and won't see combos, so it
       only guards against broken numbers; the user's playtests judge whether builds are fun.

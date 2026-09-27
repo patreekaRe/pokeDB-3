@@ -2,7 +2,7 @@
 
 **Status: approved (2026-09-26).** The user asked Claude to settle the open questions by whatever is closest to
 StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**, the three Abilities, **Fire's whole pool**
-(6c.3) and **Water's whole pool** (6c.4, see their sections). Grass is next.
+(6c.3), **Water's whole pool** (6c.4) and **Grass's whole pool** (6c.5, see their sections). All three types are done.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -200,6 +200,23 @@ Fire: 20 common, 32 uncommon (with the bridges), 14 rare, 8 evolution = **74**.
 
 ## Grass (Bulbasaur): Growth, Drain, Spores
 
+**Built (6c.5, 2026-09-27).** Everything is in `js/data/cards.js` with its StS model in a comment and a hand-picked
+`upgrade`; the table below is the skeleton, and these changed while building it:
+- **9 bridge uncommons** (uncommons: 32): Grav Apple (Uppercut, Growth/Spores), Drum Beating (Dropkick: deal 7; if the enemy
+  is Vulnerable, +1 PP and draw 1), Spicy Extract (Vulnerable 2, +1 strength), Chloroblast (lose 3 HP, deal 18, Growth/Drain),
+  Flower Shield (block 8; if you healed this turn, +1 strength), Sappy Seed (Leech Seed 2, Sap 1), Cotton Spore (Weak 2,
+  Leech Seed 1), Energy Ball (deal 9; if the enemy has Leech Seed, heal 4), Aromatic Mist (heal 3, Weak 1, draw 1).
+- **2 more rares** (14): Seed Sower (Envenom: every hit that gets through adds Leech Seed 1) and Matcha Gotcha (X: deal 5,
+  X times, heal what gets through. Exhaust).
+- **Leech Seed was far too strong** in the bot (it skips block and heals as much as it deals: Grass L0 / L3 / L5 went
+  74 / 52 / 32 -> 89 / 77 / 59). Shipped with smaller seeds: Worry Seed 3, Snap Trap 2, Sappy Seed 2, Cotton Spore 1,
+  Seed Flare 12 + 2, Leech Seed (evo) 3 + heal 3. Human bot then 79 / 57 / 33.
+- Solar Blade costs 2 (deal 8, strength x4, Retain: Heavy Blade+); Spiky Shield costs 1 like Mirror Coat; Powder
+  (permanent Weak 1 a turn) costs 2; Effect Spore deals 5 per debuff; Aromatherapy also draws 1; Strength Sap also Saps 1;
+  Jungle Healing costs 1 (Feed); Frenzy Plant is deal 30, strength x4.
+- Sap is its own enemy counter (`enemy.sap`, a 🍂 badge), not negative strength, so it counts as a debuff kind.
+- Starting deck unchanged.
+
 Tokens: **Seedling** (0: heal 2, draw 1, Exhaust).
 
 | Card | Rarity | Cost | Effect | Arch | StS |
@@ -290,8 +307,9 @@ hand-picked `upgrade`. Changes made while building it:
   Shells). Bubble Shield blocks 12 and Water Absorb (Protect) 16, so the Ethereal and the Retain one differ.
 - Life Dew exhausts (a heal that grows while kept, then cashes in once). Aqua Cutter is 8 + 4 per turn kept.
 - Riptide is the Juggernaut power's name (key `riptide`), since `blockDamage` was already Razor Shell's key.
-- Starting deck unchanged. **Bot check still to do**: this session couldn't reach the sim repo, so the sim doesn't
-  know Water's new keys yet (see the roadmap).
+- Starting deck unchanged. **Bot check (done in 6c.5)**: the new pool played 7-16 points weaker than the old one
+  (human bot L0 / L3 / L5 71 / 58 / 34 -> 64 / 42 / 25; more of the pool is cycling, and Weak got rarer). Shipped
+  Shelter block 9, Mist block 12, Chilling Water block 6 + Weak 1 + draw 1 (the move lowers Attack): 74 / 57 / 36.
 
 Tokens: **Droplet** (0: deal 3, Tide 1, Exhaust). Discard-trigger cards: Ripple, Wellspring (real cards, not tokens).
 

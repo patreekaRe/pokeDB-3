@@ -155,8 +155,21 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Waters' `retainN` asks which card to keep (`pickFromHand()` takes an `only` filter; `choosing.only` greys the rest),
   then every kept card with a `growOnRetain` (next to `effects`: Aqua Cutter, Life Dew, Hydro Cannon) or under Ebb and
   Flow (`retainDiscount`) becomes its own copy for the fight, with bigger effects or a `discount` that `costOf()`
-  subtracts; the deck's card is untouched. **The sim doesn't mirror 6c.4 yet** (this session couldn't reach it), so
-  Water's pool hasn't had a bot check; the Grass session does that first (see the roadmap).
+  subtracts; the deck's card is untouched. The sim mirrors it all; its bot check (6c.5) found the pool 7-16 points
+  weaker, so Shelter blocks 9, Mist 12 and Chilling Water trades a draw for Weak 1 (human bot L0 / L3 / L5 ~74 / 57 / 36).
+  **Grass's pool (6c.5, 2026-09-27)**: 20 common / 32 uncommon / 14 rare + 8 evolution cards (the doc's Grass section).
+  Grass's mechanics, all in `js/battle.js` with `describe()` lines: **Leech Seed** (`seed`, `enemy.seed`, 🌱 badge: at the
+  start of the enemy's turn, after Burn, it loses that much HP, you heal as much, then it drops by 1; Grassy Surge's
+  `seedKeep` stops the drop; Seed Sower's `attackSeed` seeds on every hit that gets through) and **Sap** (`sap`,
+  `enemy.sap`, 🍂 badge: `attackDamage()` subtracts it, all fight). Every debuff from a card or power goes through
+  `applyDebuff()` (Effect Spore's `debuffDamage`, Sap Sipper's `weakBlock`); `debuffKinds()` counts Weak / Vulnerable / Seed /
+  Sap / Burn (`perDebuff`, `drawPerDebuff`). Every heal goes through `healPlayer()` (Chlorophyll's `overheal`: healing past
+  max HP becomes block; Grass Pledge's `healStrength`, once a turn via `battle.pledged`; `battle.healedThisTurn` for
+  `ifHealed`), every strength gain through `gainStrength()` (Harvest's `strengthHeal`; `flex` strength is kept in
+  `battle.flex` and taken off in `endTurn()`). Also `ifWeak` / `ifVulnerable` / `ifSeeded` / `ifEnemyAttacks`,
+  `healPerStrength`, `healPerSeed`, `doubleStrength`, powers `attackHeal`, `weakEachTurn`, `exhaustHand: 'status'`, and
+  `feed` (Jungle Healing, StS's Feed: +max HP on a kill; `onEnd` now passes `maxHp` and `afterFight()` keeps it). Leech Seed
+  skips block and heals, so its numbers are small (Worry Seed 3): at 4-6 the human bot won 89 / 77 / 59 at L0 / L3 / L5.
   **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
