@@ -3,7 +3,7 @@
    which cards and relics you are offered.
    ============================================================ */
 
-import { poolForType, evolutionCardsFor, MAX_COPIES, baseId } from './data/cards.js';
+import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
@@ -11,16 +11,25 @@ import { playSound } from './audio.js';
 
 /* ---------- what you get offered ---------- */
 
+/** StS's reward rules. A common or uncommon card offered after a fight comes upgraded this often, per biome (StS: none
+    in Act 1, 25% in Act 2, 50% in Act 3). */
+export const REWARD_UPGRADE_ODDS = [0, 0.25, 0.5];
+/** StS's rare pity: every common a fight's reward offers adds `step` to the next reward's rare weight (out of ~100),
+    up to `max`, and offering a rare resets it. Kept in the run (`run.rarePity`). */
+export const RARE_PITY = { step: 1, max: 40 };
+
 /**
  * Pick 3 (or `count`) different cards to offer.
  * Later biomes and tougher fights make rare cards more likely.
- * source is 'fight', 'elite' or 'boss'.
+ * source is 'fight', 'elite' or 'boss'. `reward` (a fight's card reward, not the Mart) applies the rare pity and
+ * the upgrade odds above.
  */
-export function cardChoices(run, source, count = 3) {
+export function cardChoices(run, source, count = 3, { reward = false } = {}) {
   const b = run.biome;
   const weights = { common: 70 - b * 15, uncommon: 26 + b * 7, rare: 4 + b * 8 };
   if (source === 'elite') { weights.common -= 10; weights.rare += 10; }
   if (source === 'boss')  { weights.common -= 30; weights.rare += 25; weights.uncommon += 5; }
+  if (reward) weights.rare += run.rarePity || 0;
 
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   let pool = poolForType(run.starter.type).filter(c => copies(c.id) < MAX_COPIES);
@@ -33,7 +42,13 @@ export function cardChoices(run, source, count = 3) {
     chosen.push(card);
     pool = pool.filter(c => c !== card);
   }
-  return chosen;
+  if (!reward) return chosen;
+
+  const rarity = (c) => c.rarity || 'common';
+  run.rarePity = chosen.some(c => rarity(c) === 'rare') ? 0
+    : Math.min(RARE_PITY.max, (run.rarePity || 0) + RARE_PITY.step * chosen.filter(c => rarity(c) === 'common').length);
+  const odds = REWARD_UPGRADE_ODDS[b] ?? 0;
+  return chosen.map(c => (rarity(c) !== 'rare' && Math.random() < odds ? CARDS_BY_ID[upgradeId(c.id)] : c));
 }
 
 /**

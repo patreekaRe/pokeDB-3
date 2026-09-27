@@ -99,6 +99,7 @@ function checkpoint() {
     fights: run.fights,
     money: run.money,
     removals: run.removals,
+    rarePity: run.rarePity,
     unlocks: run.unlocks.map(s => s.id),
   });
 }
@@ -176,6 +177,7 @@ export function beginRun(starter, level = 0) {
     fights: 0,
     money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
     removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
+    rarePity: 0,           // extra rare weight on the next card reward (RARE_PITY in rewards.js)
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     over: false,
@@ -455,7 +457,7 @@ function runSteps(steps, done) {
 /* ---------- rewards ---------- */
 
 function offerCard(source, next) {
-  const cards = cardChoices(run, source);
+  const cards = cardChoices(run, source, 3, { reward: true });
   if (!cards.length) return next();
 
   showChoice({

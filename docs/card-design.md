@@ -2,7 +2,8 @@
 
 **Status: approved (2026-09-26).** The user asked Claude to settle the open questions by whatever is closest to
 StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**, the three Abilities, **Fire's whole pool**
-(6c.3), **Water's whole pool** (6c.4) and **Grass's whole pool** (6c.5, see their sections). All three types are done.
+(6c.3), **Water's whole pool** (6c.4) and **Grass's whole pool** (6c.5, see their sections). All three types are done,
+and 6c.9 built the **Neutral pool**, StS's **reward rules** (Decisions, 9) and gave enemies the **status cards**.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -396,47 +397,58 @@ Evolution cards:
 
 Water: 20 common, 32 uncommon (with the bridges), 13 rare, 8 evolution = **73**.
 
-## Neutral (~20)
+## Neutral (~20) **(built in 6c.9, 2026-09-27)**
 
-Any type can be offered these. ★ = existing.
+Any type can be offered these. ★ = existed before 6c.9. Nine new cards, each with a hand-picked upgrade (in brackets)
+and PokéSprite art; Iron Defense and Agility got hand-picked upgrades too (the rest use the default rule, which already
+matches StS for them). New mechanics, in `js/battle.js` with `describe()` lines: `copyPick` (Mimic: `pickFromHand()`,
+copies for the fight), `randomCard` (Metronome: a random card of your type from `typePool()`, free this turn: the free
+copy carries `orig`, and `settled()` puts the real card on whichever pile it goes to, and back in the hand at the end of
+the turn), `endure` (`battle.endure`, a 🎗️ badge, `hurtPlayer()` stops at 1 HP until your next turn), `needsEmptyDraw`
+(Last Resort) and a negative `nextEnergy` ("1 less energy next turn", a red ⚡ badge).
 
-| Card | Rarity | Cost | Effect | StS |
+| Card | Rarity | Cost | Effect (upgrade) | StS |
 |---|---|---|---|---|
-| ★Tackle | C | 1 | Deal 7 | Strike |
-| ★Block | C | 1 | Block 6 | Defend |
-| ★Double Hit | C | 1 | Deal 5 twice | Twin Strike |
-| ★Potion | C | 1 | Heal 10. Exhaust | Bandage Up |
-| ★Smokescreen | C | 0 | Weak 2. Exhaust | Intimidate |
-| ★Tailwind | C | 0 | +1 PP next turn | — |
-| ★Quick Guard | C | 2 | Block the next attack completely | — |
-| Quick Attack | C | 0 | Deal 4, draw 1 | Flash of Steel |
-| Rapid Spin | C | 1 | Deal 6; exhaust every status card in your hand | Purity + hit |
-| ★Iron Defense | U | 2 | Block 22. Exhaust | Impervious |
-| ★Lucky Claw | U | 0 | Draw 2. Exhaust | Finesse |
-| ★Swords Dance | U | 1 | +2 strength. Exhaust | Inflame |
-| ★Agility | U | 0 | +1 PP, draw 2. Exhaust | Adrenaline |
-| ★Leer | U | 0 | Vulnerable 2 | Trip |
-| Double Team | U | 1 | Block 6; your block doesn't wear off next turn | Blur |
-| Substitute | U | 1 | Lose 5 HP, block 16 | — |
-| Mimic | U | 1 | Add a copy of a card in your hand | Dual Wield |
-| Endure | U | 1 | You can't drop below 1 HP this turn. Exhaust | — |
-| Metronome | R | 1 | Add a random card of your type to your hand; it costs 0 this turn. Exhaust | Jack of All Trades / Discovery |
-| Hyper Beam | R | 2 | Deal 32; -2 PP next turn | — |
-| Last Resort | R | 0 | Only playable when your draw pile is empty. Deal 50 | Grand Finale |
+| ★Tackle | C | 1 | Deal 7 (10) | Strike |
+| ★Block | C | 1 | Block 6 (9) | Defend |
+| ★Double Hit | C | 1 | Deal 5 twice (7 twice) | Twin Strike |
+| ★Potion | C | 1 | Heal 10. Exhaust (13) | Bandage Up |
+| ★Smokescreen | C | 0 | Weak 2. Exhaust (Weak 3) | Intimidate |
+| ★Tailwind | C | 0 | +1 PP next turn (and draw 1) | — |
+| ★Quick Guard | C | 2 | Block the next attack completely (1 cost) | — |
+| Quick Attack | C | 0 | Deal 4, draw 1 (7) | Flash of Steel |
+| Rapid Spin | C | 1 | Exhaust every status card in your hand, deal 7, draw 1 (10) | Purity + a Strike |
+| ★Iron Defense | U | 2 | Block 22. Exhaust (30) | Impervious |
+| ★Lucky Claw | U | 0 | Draw 2. Exhaust (draw 3) | Finesse |
+| ★Swords Dance | U | 1 | +2 strength. Exhaust (+3) | Inflame |
+| ★Agility | U | 0 | +1 PP, draw 2. Exhaust (+2 PP) | Adrenaline |
+| ★Leer | U | 0 | Vulnerable 2 (3) | Trip |
+| Double Team | U | 1 | Block 6; your block doesn't wear off next turn (9) | Blur |
+| Substitute | U | 1 | Lose 4 HP, block 16 (20) | — (HP for block, like Offering) |
+| Mimic | U | 1 | Choose a card in your hand, add a copy of it (2 copies) | Dual Wield |
+| Endure | U | 1 | Block 4; until your next turn you can't drop below 1 HP. Exhaust (0 cost) | — (the games' Endure) |
+| Metronome | R | 1 | Add a random card of your type to your hand; it costs 0 this turn. Exhaust (no Exhaust) | Discovery / Jack of All Trades |
+| Hyper Beam | R | 2 | Deal 38; 1 less PP next turn (50) | Bludgeon (3 PP split over two turns) |
+| Last Resort | R | 0 | Only playable when your draw pile is empty. Deal 60 (72) | Grand Finale |
 
-## Status cards (enemies' junk) **(engine: done)**
+Changes from the skeleton: Rapid Spin also draws 1 (a plain 6-damage hit was a worse Tackle outside status fights),
+Substitute loses 4 HP (not 5), Endure also blocks 4 (so it's never a dead card when the enemy doesn't attack), Hyper Beam
+is StS's Bludgeon (38 for 2 PP and 1 next turn) and Last Resort StS's Grand Finale numbers x1.2.
 
-Fight-only, never in your run deck. Built now; no enemy uses them yet (step 9 gives them to enemies).
+## Status cards (enemies' junk) **(engine: done; given to enemies in 6c.9)**
 
-| Card | Effect | StS | Suggested users (step 9) |
+Fight-only, never in your run deck. Enemy moves carry `adds: { card, n, to }` (on an attack it also hits; the bubble
+shows the card's icon after the move name) or are `kind: 'status'` (the whole turn is the junk, a grey bubble).
+
+| Card | Effect | StS | Enemies (move, where it goes) |
 |---|---|---|---|
-| Confusion | Unplayable. Ethereal | Dazed | Psyduck, Slowpoke, Slowking (Confusion / Psybeam) |
-| Paralysis | Unplayable | Wound | Stantler, Tauros (Body Slam, Stomp) |
-| Poison | Unplayable. At the end of your turn, if it's in your hand, lose 2 HP | Burn | Oddish, Gloom, Seedot (Poison Powder, Acid) |
-| Sludge | Costs 1. Exhaust (does nothing) | Slimed | Shellos, Tangela (Mud-Slap, Constrict) |
+| Confusion | Unplayable. Ethereal | Dazed | Psyduck (Confusion, 1 to the draw pile), Slowpoke (Zen Headbutt, 2 draw), Alpha Slowking (Water Pulse, 2 draw) |
+| Paralysis | Unplayable | Wound | Snorlax (Body Slam, 1 draw), Stantler (Stomp, 1 draw), Tauros (Body Slam, was Horn Attack, 1 draw), Tangrowth (Stun Spore, a status turn in place of Ingrain, 2 draw) |
+| Poison | Unplayable. At the end of your turn, if it's in your hand, lose 2 HP | Burn | Oddish (Acid, 1 discard), Alpha Gloom (Poison Powder, a status turn in place of Ingrain, 2 draw) |
+| Sludge | Costs 1. Exhaust (does nothing) | Slimed | Shellos (Muddy Water, 1 discard), Tangela (Constrict 6, an attack in place of Ingrain, 2 discard) |
 
-Enemy moves get `adds: { card, n, to }` (on an attack, it also hits) or `kind: 'status'` (the whole turn is
-the junk). The intent bubble shows it; bosses that punish pure turtling (step 9) can shuffle Paralysis.
+Seedot (in the skeleton) was left out: it has no poison move. Tangrowth and Gloom trade a block turn for junk, so they
+punish a slow, blocking deck: the junk clogs the hands it has to block with.
 
 ## Decisions (2026-09-26, "closest to StS")
 
@@ -456,4 +468,8 @@ the junk). The intent bubble shows it; bosses that punish pure turtling (step 9)
    2 -> 1 cost), written as each card's `upgrade`; the default rule is only a fallback.
 9. **More StS rules for step 6c.9** (not the type sessions): upgraded cards among rewards later in a run
    (StS: none in Act 1, 25% in Act 2, 50% in Act 3 at A0), and one rare-card pity counter like StS's
-   (each common offered raises the rare chance a little until a rare shows).
+   (each common offered raises the rare chance a little until a rare shows). **Built (2026-09-27)**: in
+   `cardChoices(run, source, count, { reward: true })` (`js/rewards.js`), used for a fight's card reward only (not the
+   Mart, Move Tutor or evolution picks): `REWARD_UPGRADE_ODDS` [0, 0.25, 0.5] per biome for commons and uncommons (rares
+   never, like StS), and `RARE_PITY` (+1 rare weight per common offered, up to 40, reset when a rare is offered; kept in
+   `run.rarePity`, saved with the run, 0 for older saves). Biome 1's rares go from ~2% to ~6% of offered cards.

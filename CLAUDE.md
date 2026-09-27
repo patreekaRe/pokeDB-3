@@ -141,7 +141,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (Cinder, Seedling, Droplet) and `STATUS_CARDS` (Confusion, Paralysis, Poison, Sludge: grey `.status`
   cards) are in `CARDS_BY_ID` only, never in `ALL_CARDS`, so they're never offered or indexed. Enemy
   moves can carry `adds: { card, n, to }` (default the discard pile), or be `kind: 'status'` (only
-  that; a grey intent bubble). No enemy uses them yet (step 6c.9).
+  that; a grey intent bubble; on an attack the junk card's icon follows the move name). Enemies using them since 6c.9
+  are listed in the doc's Status cards table (Psyduck, Oddish, Alpha Gloom, Snorlax, Slowpoke, Shellos, Stantler, Alpha
+  Slowking, Tangrowth, Tangela, Tauros).
   **Fire's pool (6c.3, 2026-09-26)**: 20 common / 32 uncommon / 14 rare + 8 evolution cards, each with its StS
   model in a comment and a hand-picked `upgrade` (the doc's Fire section lists them and what changed). Fire's
   mechanics, all in `js/battle.js` with `describe()` lines: `burnTimes`, `burnMult` (Catalyst), power `drought`
@@ -183,6 +185,15 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `healPerStrength`, `healPerSeed`, `doubleStrength`, powers `attackHeal`, `weakEachTurn`, `exhaustHand: 'status'`, and
   `feed` (Jungle Healing, StS's Feed: +max HP on a kill; `onEnd` now passes `maxHp` and `afterFight()` keeps it). Leech Seed
   skips block and heals, so its numbers are small (Worry Seed 3): at 4-6 the human bot won 89 / 77 / 59 at L0 / L3 / L5.
+  **Neutral pool (6c.9, 2026-09-27)**: 21 cards any type can be offered (the doc's Neutral section), 9 of them new:
+  Quick Attack, Rapid Spin, Double Team, Substitute, Mimic (`copyPick`), Endure (`endure`: `battle.endure`, a 🎗️ badge,
+  `hurtPlayer()` stops at 1 HP until your next turn), Metronome (`randomCard`: a random card from `typePool(type)`, free
+  this turn; the free copy carries `orig` and `settled()` puts the real card back wherever it goes, and in the hand at the
+  end of the turn), Hyper Beam (a negative `nextEnergy`, a red ⚡ badge) and Last Resort (`needsEmptyDraw`).
+  **Reward rules (6c.9)**: a fight's card reward (`cardChoices(run, source, 3, { reward: true })`, not the Mart or events)
+  offers commons/uncommons upgraded at `REWARD_UPGRADE_ODDS` per biome (0 / 25% / 50%, StS's) and adds `run.rarePity`
+  (StS's rare pity: +1 rare weight per common offered, up to 40, reset once a rare is offered; saved with the run, an old
+  save's missing value counts as 0) to the rare weight. Both live in `js/rewards.js`.
   **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version

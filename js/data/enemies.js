@@ -16,6 +16,9 @@
      drain     hit the player for `amount` and heal itself by `heal`
      defend    gain `amount` block
      buff      gain `amount` strength (all its attacks hit harder)
+     status    only puts junk into your deck (its `adds`)
+   Any move can carry `adds: { card, n, to }`: status cards (Confusion, Paralysis, Poison, Sludge in
+   cards.js) put into your 'draw' pile (shuffled in) or 'discard' pile (the default), for this fight.
 
    Numbers here are for the first biome. Later biomes multiply HP and
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
@@ -58,7 +61,7 @@ export const ENEMY_DEFS = {
     description: 'Soaks up sunlight and your health.',
     moves: [
       { kind: 'drain',  name: 'Absorb', amount: 5, heal: 4 },
-      { kind: 'attack', name: 'Acid',   amount: 8, type: 'normal' },
+      { kind: 'attack', name: 'Acid',   amount: 8, type: 'normal', adds: { card: 'poison', n: 1 } },
       { kind: 'buff',   name: 'Growth', amount: 2 },
     ],
   },
@@ -95,7 +98,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 6 },
       { kind: 'defend', name: 'Amnesia',   amount: 7 },
-      { kind: 'attack', name: 'Confusion', amount: 10, type: 'normal' },
+      { kind: 'attack', name: 'Confusion', amount: 10, type: 'normal', adds: { card: 'confusion', n: 1, to: 'draw' } },
     ],
   },
   marill: {
@@ -205,7 +208,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Water Gun',    amount: 7 },
       { kind: 'defend', name: 'Slack Off',    amount: 9 },
-      { kind: 'attack', name: 'Zen Headbutt', amount: 11, type: 'normal' },
+      { kind: 'attack', name: 'Zen Headbutt', amount: 11, type: 'normal', adds: { card: 'confusion', n: 2, to: 'draw' } },
     ],
   },
   shellos: {
@@ -214,7 +217,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Water Pulse',  amount: 7 },
       { kind: 'defend', name: 'Recover',      amount: 8 },
-      { kind: 'attack', name: 'Muddy Water',  amount: 11 },
+      { kind: 'attack', name: 'Muddy Water',  amount: 11, adds: { card: 'sludge', n: 1 } },
     ],
   },
   teddiursa: {
@@ -239,7 +242,7 @@ export const ENEMY_DEFS = {
     name: 'Stantler', type: 'normal', hp: 58, ...sprite('stantler'),
     description: 'Its antlers bend the air, so the path ahead never looks quite right.',
     moves: [
-      { kind: 'attack', name: 'Stomp',     amount: 7 },
+      { kind: 'attack', name: 'Stomp',     amount: 7, adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'buff',   name: 'Calm Mind', amount: 1 },
       { kind: 'attack', name: 'Take Down', amount: 12 },
     ],
@@ -278,7 +281,7 @@ export const ENEMY_DEFS = {
     description: 'A tangle of vines with something inside.',
     moves: [
       { kind: 'drain',  name: 'Mega Drain', amount: 6, heal: 6 },
-      { kind: 'defend', name: 'Ingrain',    amount: 8 },
+      { kind: 'attack', name: 'Constrict',  amount: 6, type: 'normal', adds: { card: 'sludge', n: 2 } },
       { kind: 'attack', name: 'Power Whip', amount: 12 },
     ],
   },
@@ -331,7 +334,7 @@ export const ENEMY_DEFS = {
     name: 'Tauros', type: 'normal', hp: 68, ...sprite('tauros'),
     description: 'Whips itself with its tails, then charges at anything.',
     moves: [
-      { kind: 'attack', name: 'Horn Attack', amount: 8 },
+      { kind: 'attack', name: 'Body Slam',   amount: 8, adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'buff',   name: 'Rage',        amount: 2 },
       { kind: 'attack', name: 'Thrash',      amount: 13 },
     ],
@@ -361,7 +364,7 @@ export const ENEMY_DEFS = {
     description: 'Its smell alone is a weapon.',
     moves: [
       { kind: 'drain',  name: 'Absorb',      amount: 6, heal: 3 },
-      { kind: 'defend', name: 'Ingrain',     amount: 8 },
+      { kind: 'status', name: 'Poison Powder', adds: { card: 'poison', n: 2, to: 'draw' } },
       { kind: 'attack', name: 'Petal Dance', amount: 11 },
     ],
   },
@@ -406,7 +409,7 @@ export const ENEMY_DEFS = {
     name: 'Slowking', type: 'water', hp: 72, ...sprite('slowking'),
     description: 'The Shellder on its head made it wise. Too wise.',
     moves: [
-      { kind: 'attack', name: 'Water Pulse', amount: 7 },
+      { kind: 'attack', name: 'Water Pulse', amount: 7, adds: { card: 'confusion', n: 2, to: 'draw' } },
       { kind: 'defend', name: 'Amnesia',     amount: 9 },
       { kind: 'attack', name: 'Surf',        amount: 11 },
     ],
@@ -444,7 +447,7 @@ export const ENEMY_DEFS = {
     name: 'Snorlax', type: 'normal', hp: 170, ...sprite('snorlax'), boss: true,
     description: 'Blocks the path. Hits like a boulder when it wakes up.',
     moves: [
-      { kind: 'attack', name: 'Body Slam',   amount: 11, type: 'normal' },
+      { kind: 'attack', name: 'Body Slam',   amount: 11, type: 'normal', adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'defend', name: 'Rest',        amount: 14 },
       { kind: 'buff',   name: 'Belly Drum',  amount: 2 },
       { kind: 'attack', name: 'Giga Impact', amount: 16 },
@@ -476,7 +479,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Vine Whip',  amount: 11 },
       { kind: 'drain',  name: 'Giga Drain', amount: 10, heal: 6 },
-      { kind: 'defend', name: 'Ingrain',    amount: 10 },
+      { kind: 'status', name: 'Stun Spore', adds: { card: 'paralysis', n: 2, to: 'draw' } },
       { kind: 'attack', name: 'Power Whip', amount: 22 },
     ],
   },
