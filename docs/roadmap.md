@@ -247,6 +247,19 @@ steps land (mark them done, note anything decided along the way).
    - Seen = fought (a map's boss silhouette doesn't count); moves show at seen, per your note; amounts aren't shown
      (they grow per biome and Level, so a base number would mislead).
    - Perks are always on once earned (no toggle), like the Game Corner's.
+7b. **Pokédex research levels** (the user's idea, 2026-09-27, agreed that day; 1 small session, after step 8). One defeat
+   still unlocks an entry and counts for its page and perk (the user asked whether to require 3; bosses are met once per
+   biome per run, so 3 of each would take a dozen-plus runs and the Wastes page a dozen winning runs). On top, Legends:
+   Arceus-style research: every entry counts its defeats, the reward text box says "Oddish defeated 2/3" after a win, the
+   entry shows its count, and at 3 (bosses 2) it's **Research complete**: a gold mark in place of the red Poké Ball and more
+   detail (each move's numbers at that biome). A page with every entry complete pays a one-time PokéCoin bonus (a new way to
+   earn, not an easier run). Save: `dex.count: { id: n }` (old saves start from their `defeated` list as 1 each).
+   **Run in: CLOUD.** Session prompt:
+   > Do roadmap step 7b, Pokédex research levels (read CLAUDE.md and docs/roadmap.md first, especially step 7 and 7b).
+   > Count defeats per Pokédex entry, say "X defeated n/3" after a win, mark Research complete at 3 (bosses 2) with a gold
+   > mark and each move's numbers, and pay a one-time PokéCoin bonus per fully researched page. Old saves must load (seed
+   > counts from `dex.defeated`). Test at phone (390x844, 375x667) and PC widths with Playwright, update CLAUDE.md and the
+   > roadmap, and push to main. No balance change, so no bot run is needed.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
    uses. **Agreed list (the user, 2026-09-27): exactly these, 4 new perks (4 -> 8), each levelled like the current
    ones (`Lv n/m`):**
