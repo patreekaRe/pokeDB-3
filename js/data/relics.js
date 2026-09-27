@@ -27,6 +27,7 @@ export const RELICS = [
   { id: 'black-belt',   name: 'Black Belt',   icon: '🥋', text: 'Start each battle with 1 strength.' },
   { id: 'quick-claw',   name: 'Quick Claw',   icon: '🐾', text: 'Draw 2 extra cards on your first turn.' },
   { id: 'cleanse-tag',  name: 'Cleanse Tag',  icon: '🏷️', text: 'When you pick this up, forget a move from your deck.' },
+  { id: 'mental-herb',  name: 'Mental Herb',  icon: '🍃', text: 'At a Pokémon Center, the PC can also forget a move from your deck.' },   // Peace Pipe
   { id: 'power-herb',   name: 'Power Herb',   icon: '🌿', text: 'Draw 1 card whenever you play a power.' },
   { id: 'grip-claw',    name: 'Grip Claw',    icon: '🦀', text: 'At the end of your turn, your leftmost card stays in your hand.' },
   { id: 'eject-pack',   name: 'Eject Pack',   icon: '🎒', text: 'Draw 1 card whenever a card exhausts.' },

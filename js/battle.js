@@ -50,7 +50,7 @@ export function initBattle() {
   $('card-focus').addEventListener('click', (e) => {
     if (pilePick || e.target.closest('.focus-card, .focus-play')) return;
     const other = document.elementsFromPoint(e.clientX, e.clientY).find(node => node.matches('.card.in-hand:not(.lifted)'));
-    if (other && selectedUid !== null) tapCard(Number(other.dataset.uid));
+    if (other && (selectedUid !== null || choosing?.picked)) tapCard(Number(other.dataset.uid));
     else cancelPick();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
@@ -799,7 +799,7 @@ async function pickFromHand(n, verb, act, only = () => true) {
     if (!open.length) break;
     if (open.length <= left) { open.forEach(act); break; }
     log(`Choose a card to ${verb}.`);
-    const uid = await new Promise(resolve => { choosing = { resolve, only }; renderAll(); });
+    const uid = await new Promise(resolve => { choosing = { resolve, only, verb, picked: null }; renderAll(); });
     if (battle !== b) return;
     act(b.hand.find(h => h.uid === uid));
     renderAll();
@@ -1330,7 +1330,7 @@ function renderHand() {
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');
-    if (entry.uid === selectedUid) node.classList.add('selected');
+    if (entry.uid === (choosing ? choosing.picked : selectedUid)) node.classList.add('selected');
     node.dataset.uid = entry.uid;
 
     if (entry.fresh) {                            // cards just drawn slide in
@@ -1379,8 +1379,10 @@ let pilePick = null;       // { done } while a card asks you to pick a card from
 
 function tapCard(uid) {
   if (choosing) {
+    // like playing a card: the first tap lifts it with a button naming what happens, the second confirms
     const entry = battle.hand.find(h => h.uid === uid);
     if (!entry || !choosing.only(entry)) return;
+    if (choosing.picked !== uid) { choosing.picked = uid; return renderHand(); }
     const pick = choosing; choosing = null; return pick.resolve(uid);
   }
   if (battle.busy) return;
@@ -1422,6 +1424,7 @@ export function pickItem(index) {
 }
 
 function cancelPick() {
+  if (choosing?.picked) { choosing.picked = null; playSound('cancel', 'confirm'); return renderHand(); }
   if (selectedUid === null && selectedItem === null) return;
   playSound('cancel', 'confirm');
   selectedUid = null;
@@ -1431,6 +1434,8 @@ function cancelPick() {
 }
 
 /** The Play / Use button under a picked card or item: End Turn's red striped panel and pill. */
+const PICK_VERBS = { discard: 'Discard', exhaust: 'Exhaust', keep: 'Keep', copy: 'Copy' };
+
 function focusButton(label, onClick) {
   const btn = el('button', 'ds-btn ds-play focus-play');
   btn.type = 'button';
@@ -1464,21 +1469,22 @@ function renderFocus() {
     big.focus({ preventScroll: true });
     return;
   }
-  const entry = b.hand.find(h => h.uid === selectedUid);
+  const entry = b.hand.find(h => h.uid === (choosing ? choosing.picked : selectedUid));
   if (!entry) { layer.hidden = true; layer.replaceChildren(); return; }
 
   const big = makeCard(entry.card, { stage: b.stage, cost: costOf(entry.card) });
   big.classList.add('focus-card');
-  const problem = whyNotPlayable(entry.card);
+  const problem = choosing ? null : whyNotPlayable(entry.card);
   if (problem) big.classList.add('unplayable');
   big.tabIndex = 0;
   big.setAttribute('role', 'button');
-  big.setAttribute('aria-label', `Play ${entry.card.name}`);
+  const verb = choosing ? PICK_VERBS[choosing.verb] ?? choosing.verb : 'Play';
+  big.setAttribute('aria-label', `${verb} ${entry.card.name}`);
   big.addEventListener('click', () => tapCard(entry.uid));
   big.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
-  const extra = problem ? el('p', 'focus-hint', problem) : focusButton('Play', () => tapCard(entry.uid));
+  const extra = problem ? el('p', 'focus-hint', problem) : focusButton(verb, () => tapCard(entry.uid));
   layer.replaceChildren(big, extra);
   layer.classList.add('rise');
   layer.hidden = false;

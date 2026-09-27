@@ -249,8 +249,9 @@ whenever a valid save exists, and Begin run confirms before replacing it.
 
 ## Deck thinning
 
-The Pokémon Center (`restSite()` in `js/run.js`) offers Rest, "Forget a
-move" (`forgetMove()`) *or* **PP Up** (`upgradeMove()`, StS's Smith: pick a card,
+The Pokémon Center (`restSite()` in `js/run.js`) offers Rest *or* **PP Up** (StS's campfire, the user's call
+2026-09-27); its PC's "Forget a move" (`forgetMove()`) is greyed out unless you hold the **Mental Herb** relic
+(StS's Peace Pipe). Then **PP Up** (`upgradeMove()`, StS's Smith: pick a card,
 the blown-up copy shows the upgraded version via `option.zoom`, and it's swapped
 for its `<id>+` in place): each a `showChoice` picker of the deck
 grouped with `groupDeck` (×N badges), "Back" returns to the Center. The Center
@@ -400,7 +401,8 @@ saves from before fall back to the first), animated HGSS-style sprites by justin
 credited in About. Paying throws coins into the grunt's hand and `gruntDoes('hop')` hops the sprite as they
 land; Battle goes straight to the fight; Run shakes the bush (and `shake`s the grunt). Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome): a
 little Ilex Forest-style shrine between two stone lanterns, glowing in your type's colour (`types`, picked by
-`showPlaceScene()`'s `type`); praying draws red HP motes into it, it flares, and a spark rises out. An act's
+`showPlaceScene()`'s `type`); praying draws red HP motes into it, it flares, and a spark rises out; then the relic floats over the scene with
+its name (`revealGift()`, the item screen's `floatingThing()`) until you tap it or Take it and it flies into the Bag. An act's
 `cues` play sounds on its frames (`actCues()`; all at once under reduced motion): the Voltorb's `hit`, the
 ball's `ball-open`. `life.keep` keeps grass blades and lava cracks off the props. Sounds:
 `heal-hp` for the heals, `stat-up` for planting, `buy` for a toss or the toll.
@@ -416,8 +418,10 @@ usable outside battle. The run holds at most `ITEM_SLOTS` (3) ids in
 Sources: 3 per Mart (`node.stock.items`, rolled in `startBiome()`, greyed
 out with a full Bag), and after every won fight except the final boss a
 StS-style drop (`ITEM_DROP`: 40%, −10% after a drop, +10% after a miss),
-shown as a last reward step by `offerItem()` (with a full Bag it offers to
-swap one of yours). Nothing heals through Big Root or boosts block through
+shown as a last reward step by `offerItem()`: no tiles, the item floats like a treasure relic
+(`floatingThing()`, tap it then Put in Bag, and `flyToBag()` shrinks it into the Bag); with a full Bag your items
+float in a row under it, and the one you tap to toss greys out under a red pixel ✕ before you Swap (the user's
+calls). Nothing heals through Big Root or boosts block through
 Damp Rock: those are for cards.
 
 In battle, `battle.items` *is* `run.items`, so using one removes it from the
@@ -575,6 +579,8 @@ overlap, tilt and sink towards the ends, StS-style, squeezing closer as the hand
 grows so the whole hand always fits (it never scrolls). It uses the `rotate`/`translate` properties so
 the hover lift and deal animation (`transform`) stay separate; a hovered or picked
 card straightens and comes to the front.
+A card's pick from your hand (discard, exhaust, keep, Mimic's copy: `pickFromHand()`) takes two taps too: the first lifts
+it like a played card with a button naming the verb (`PICK_VERBS`, `choosing.picked`), the second confirms (the user's call).
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first

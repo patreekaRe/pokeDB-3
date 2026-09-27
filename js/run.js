@@ -520,25 +520,115 @@ function gainRelic(relic, next) {
   next();
 }
 
-/** A found item: take it, or with a full Bag, swap one of yours for it. */
+/** A found item floats over the screen like a treasure relic: tap it (then Put in Bag) and it flies into the Bag.
+    With a full Bag your items float in a row under it: tap one to mark it for tossing (it greys out with a ✕),
+    then Swap. */
 function offerItem(item, next) {
-  const full = run.items.length >= ITEM_SLOTS;
-  const take = (index) => () => {
-    if (index === undefined) run.items.push(item.id); else run.items[index] = item.id;
-    tell(`Put the ${item.name} in the Bag.`);
-    next();
-  };
+  const thisRun = run, full = run.items.length >= ITEM_SLOTS;
   showChoice({
     title: 'Item found',
-    sub: [`You found a ${item.name}!`, full ? `${item.text} Your Bag is full (${ITEM_SLOTS} items): swap one of yours for it, or leave it.`
-      : `${item.text} Items go in your Bag (up to ${ITEM_SLOTS}) and are used up in battle.`],
-    options: full
-      ? run.items.map((id, index) => ({ ...itemOption(ITEMS_BY_ID[id], take(index)), ask: `Toss your ${ITEMS_BY_ID[id].name} for the ${item.name}?`, confirm: 'Swap', confirmSound: 'item-get' }))
-      : [{ ...itemOption(item, take()), ask: `Put the ${item.name} in the Bag?`, confirm: 'Put in Bag', confirmSound: 'item-get' }],
+    sub: [`You found ${/^[AEIOU]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${ITEM_SLOTS} items). Tap one of yours to swap it out, or leave it.`
+      : `Tap it to put it in your Bag (up to ${ITEM_SLOTS} items, used up in battle).`],
+    options: [],
     skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: next,
     coins: run.pendingCoins,
+    layout: 'item-found',
   });
+  const stage = el('div', 'float-stage'), found = floatingThing(item, 0, 96), row = el('div', 'float-row');
+  const go = goButton(full ? 'Swap' : 'Put in Bag');
+  let toss = null, taking = false;
+  stage.append(found);
+  if (full) {
+    run.items.forEach((id, index) => {
+      const mine = ITEMS_BY_ID[id], btn = floatingThing(mine, index + 1, 64);
+      btn.addEventListener('click', () => {
+        if (toss === index) return take();
+        toss = index;
+        stage.classList.add('choosing');
+        row.querySelectorAll('.float-thing').forEach(b => b.classList.toggle('tossing', b === btn));
+        go.hidden = false;
+        sayLines([`Toss your ${mine.name} for the ${item.name}?`]);
+      });
+      row.append(btn);
+    });
+    stage.append(el('p', 'float-caption', 'Your Bag'), row);
+  }
+  found.addEventListener('click', () => {
+    if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
+    if (!full && go.hidden) { found.classList.add('chosen'); go.hidden = false; return sayLines([`Put the ${item.name} in your Bag?`]); }
+    take();
+  });
+  go.addEventListener('click', take);
+  stage.append(go);
+  $('reward-options').append(stage);
+
+  async function take() {
+    if (taking) return;
+    taking = true;
+    playSound('item-get');
+    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
+    go.hidden = true;
+    if (toss !== null) row.children[toss].classList.add('gone');
+    await flyToBag(found);
+    if (run !== thisRun) return;
+    if (toss === null) run.items.push(item.id); else run.items[toss] = item.id;
+    tell(`Put the ${item.name} in the Bag.`);
+    next();
+  }
+}
+
+/** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. */
+function floatingThing(thing, i = 0, size = 72) {
+  const btn = el('button', 'float-thing'), float = el('span', 'relic-float');
+  btn.type = 'button';
+  btn.style.setProperty('--i', i);
+  btn.style.setProperty('--size', `${size}px`);
+  btn.setAttribute('aria-label', `${thing.name}: ${thing.text}`);
+  float.append(itemSprite(thing, 'treasure-sprite'));
+  btn.append(el('span', 'relic-halo'), float, el('span', 'float-label', thing.name));
+  return btn;
+}
+
+function goButton(label) {
+  const btn = el('button', 'ds-btn ds-go ds-sm float-go');
+  btn.type = 'button';
+  btn.hidden = true;
+  btn.append(el('span', 'pp-pill', label));
+  return btn;
+}
+
+/** A floating relic or item shrinks away into the Bag (the treasure room's relicToBag). */
+async function flyToBag(btn) {
+  const from = btn.getBoundingClientRect(), to = $('bag-btn').getBoundingClientRect();
+  btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
+  btn.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
+  btn.classList.add('taken');
+  await sleep(matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 750);
+}
+
+/** An event's gift (the Shrine's relic) floats up over the scene with its name, so you see what you got; tapping it
+    or Take it flies it into the Bag, then `done`. */
+function revealGift(thing, lines, done) {
+  const thisRun = run, box = $('reward-options');
+  box.querySelectorAll('.reward-option').forEach(btn => { btn.hidden = true; });
+  $('reward-skip').style.visibility = 'hidden';
+  const stage = el('div', 'float-stage float-gift'), gift = floatingThing(thing, 0, 104), go = goButton('Take it');
+  go.hidden = false;
+  stage.append(gift, go);
+  box.append(stage);
+  sayLines(lines);
+  let taking = false;
+  const take = async () => {
+    if (taking) return;
+    taking = true;
+    go.hidden = true;
+    playSound('item-get');
+    await flyToBag(gift);
+    if (run === thisRun) done();
+  };
+  gift.addEventListener('click', take);
+  go.addEventListener('click', take);
 }
 
 /** The treasure grotto: a Poké Ball chest on a dais in a shaft of light. Tapped, it wobbles like a ball about to open,
@@ -661,11 +751,13 @@ function restSite() {
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   const banned = run.relics.includes('choice-band');
   const atMin = run.deck.length <= MIN_DECK;
+  const herb = run.relics.includes('mental-herb');   // like StS's Peace Pipe: only this relic lets the PC forget a move
   const upgradable = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
   // no tiles here: the healing machine, the PC and Chansey in the scene are the choices, each under a bouncing label
   showChoice({
     title: 'Pokémon Center',
-    sub: ['A safe place to catch your breath.', 'Use the healing machine to rest, the PC to forget a move, or ask Chansey for a PP Up.'],
+    sub: ['A safe place to catch your breath.', herb ? 'Use the healing machine to rest, the PC to forget a move (your Mental Herb), or ask Chansey for a PP Up.'
+      : 'Use the healing machine to rest, or ask Chansey for a PP Up.'],
     options: [
       {
         node: centerLabel(banned ? 'No rest' : heal ? `Rest +${heal} HP` : 'Rest',
@@ -697,8 +789,9 @@ function restSite() {
       },
       {
         node: centerLabel('Forget',
-          atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`),
-        disabled: atMin,
+          !herb ? 'Only with a Mental Herb. The Poké Mart\'s PC can forget a move for ₽.'
+            : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck (you have ${run.deck.length}).`),
+        disabled: !herb || atMin,
         onPick: () => forgetMove(restSite),
       },
       {
@@ -1131,8 +1224,7 @@ const EVENT_CHOICES = {
       spotOption(`Pray -${cost} HP`, `Offer ${cost} HP: receive ${relic.icon} ${relic.name}. ${relic.text}`, async () => {
         if (!await playOut('pray')) return;
         loseHp(cost);
-        playSound('item-get');
-        gainRelic(relic, showMap);
+        revealGift(relic, [`The shrine gave you ${relic.name}!`, relic.text], () => gainRelic(relic, showMap));
       }, run.hp <= cost),
     ] };
   },
