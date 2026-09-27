@@ -44,7 +44,7 @@ import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
 import {
-  $, el, showScreen, setTheme, openDialog, closeDialog, confirmDialog, refreshCoins,
+  $, el, showScreen, setTheme, openDialog, closeDialog, confirmDialog, refreshCoins, itemSprite,
 } from './ui.js';
 
 let selected = null;   // the starter picked on the start screen
@@ -157,7 +157,12 @@ function selectStarter(starter) {
   $('detail-blurb').textContent = starter.blurb;
   const ability = ABILITIES[starter.type];   // shared by every skin of the type
   $('detail-ability').hidden = !ability;
-  if (ability) { $('detail-ability').replaceChildren(el('b', '', `${ability.name}: `), ability.text); $('detail-ability').title = 'Ability: every starter of this type has it'; }
+  if (ability) {
+    const label = el('b');
+    label.append(itemSprite(ability), `Ability: ${ability.name}`);
+    $('detail-ability').replaceChildren(label, el('span', '', ability.text));
+    $('detail-ability').title = 'Every starter of this type has this Ability. It works in every fight, all run.';
+  }
 
   setTheme(starter.type);
   showMenuScene(starter.type);

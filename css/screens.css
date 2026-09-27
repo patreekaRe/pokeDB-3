@@ -425,8 +425,13 @@ body[data-screen="start-screen"].sheet-open { padding-bottom: var(--sheet-h, 200
 .detail-text { min-width: 0; }
 .detail-text h3 { margin: 0 0 4px; font-size: 1.15rem; color: var(--win-ink); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px; }
 .detail-text p { margin: 0; color: var(--win-muted); font-size: 0.9rem; line-height: 1.35; }
-.detail-text .detail-ability { margin-top: 4px; font-size: 0.82rem; }
-.detail-ability b { color: var(--win-ink); }
+.detail-text .detail-ability {
+  margin-top: 6px; padding: 5px 8px;
+  border: 2px solid var(--win-edge); border-radius: var(--round-sm);
+  background: var(--win-tile);
+  font-size: 0.82rem;
+}
+.detail-ability b { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; color: var(--accent-dark); font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: normal; font-size: 0.72rem; }
 .detail-type { padding: 1px 9px 1px 5px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: #fff; background: #777; }
 .detail-type.type-fire  { background: #c9431f; }
 .detail-type.type-grass { background: #2f8f43; }
@@ -509,6 +514,28 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; }   /* just the type's pixel icon, no pill */
+/* Gen 5's ability pop-up (abilityBanner() in js/battle.js): a window that slides in from the left edge on your side */
+.ability-banner {
+  position: absolute; left: 0; top: 46%; z-index: 6;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 7px 14px 7px 12px;
+  border: 3px solid #b8b8c8; border-left: 0;
+  border-radius: 0 var(--round-sm) var(--round-sm) 0;
+  background: var(--win-bg); color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  pointer-events: none;
+}
+.ability-banner span { font-size: 0.7rem; color: var(--win-muted); }
+.ability-banner strong { font-size: 0.95rem; font-weight: normal; color: var(--accent-dark); }
+.ability-banner.show { animation: bannerIn 1.9s ease-out both; }
+@keyframes bannerIn {
+  0% { transform: translateX(-110%); }
+  14%, 86% { transform: none; }
+  100% { transform: translateX(-110%); }
+}
+@media (prefers-reduced-motion: reduce) { .ability-banner.show { animation: none; } }
+@media (min-width: 900px) { .ability-banner { padding: 9px 20px 9px 16px; } .ability-banner span { font-size: 0.85rem; } .ability-banner strong { font-size: 1.2rem; } }
 .nameplate .gb-hp { width: 100%; margin: 0; }
 /* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */
 .nameplate-foot { display: flex; align-items: flex-start; gap: 4px 8px; }
@@ -937,6 +964,19 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 /* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
 .piles { display: none; gap: 12px; margin: 0 auto 0 12px; }   /* in the top bar, beside the Poké Ball */
 body[data-screen="battle-screen"] .piles { display: flex; }
+/* your HP on every choice screen (showChoiceHp() in js/rewards.js): a small Pokégear window beside the Poké Ball */
+.hp-plate {
+  display: none; align-items: center; gap: 6px; margin: 0 auto 0 10px;
+  padding: 4px 8px 3px;
+  border: 3px solid #b8b8c8; border-radius: var(--round-sm);
+  background: var(--win-bg); color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.35);
+}
+body[data-screen="reward-screen"] .hp-plate { display: flex; }
+.hp-plate .gb-hp { width: 96px; margin: 0; }
+.hp-plate .gb-hp-track { height: 14px; padding: 2px; }
+.hp-plate .gb-hp-tag { line-height: 14px; font-size: 0.6rem; }
+.hp-plate .gb-hp-num { width: auto; align-self: center; font-size: 0.72rem; letter-spacing: 0.04em; white-space: nowrap; }
 .pile {
   display: flex;
   align-items: center;
@@ -1103,6 +1143,9 @@ body[data-screen="battle-screen"] .piles { display: flex; }
 
 .run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; width: 190px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
 .run-info strong { font-size: 1.1rem; }
+.ability-chip .item-sprite { width: 1.3em; height: 1.3em; margin: -0.2em 0; }
+.run-ability .item-sprite, .detail-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
+.run-ability { align-self: flex-end; display: flex; align-items: center; gap: 4px; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.72rem; color: #ffe6a0; cursor: help; }
 
 /* The Bag button: a frameless pixel backpack in the top-right corner beside the coins and the Poké Mart.
    Shown only on run screens (showScreen() in js/ui.js); open (aria-expanded) looks pressed in. */
@@ -1716,9 +1759,16 @@ body.battle-intro { pointer-events: none; }
   .coin-pill { padding: 4px; }
   /* in battle the piles would crowd the row out, so the PokéCoins (which can't change mid-fight) step aside for the ₽ */
   body[data-screen="battle-screen"] .coin-pill:not(.money-pill) { display: none; }
+  /* the HP plate squeezes in beside the Poké Ball: its bar's HP: tag goes, the numbers shrink */
+  .hp-plate { gap: 4px; margin-left: 4px; padding: 3px 5px 2px; }
+  .hp-plate .gb-hp { width: 50px; }
+  .hp-plate .gb-hp-tag { display: none; }
+  .hp-plate .gb-hp-track { border-radius: 6px; }
+  .hp-plate .gb-hp-num { font-size: 0.6rem; letter-spacing: 0; }
 }
 @media (max-width: 340px) {
   .topbar-actions { gap: 3px; }
+  body[data-screen="reward-screen"] .coin-pill:not(.money-pill) { display: none; }   /* room for the HP plate */
   .icon-btn { width: 30px; height: 30px; }
   .coin-pill { padding: 3px; }
 }

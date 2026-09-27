@@ -253,6 +253,20 @@ Anytime, as a break from number work:
   treasure grotto. See CLAUDE.md's ? events.
 - **Hot Spring close-up** (the user's idea, 2026-09-27): it "feels far away"; a very close view, as if you're about
   to step in. Likewise its own `PLACE_ART` scene rather than a prop on the outdoor scene.
+- **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
+  - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
+    banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,
+    Overgrow when it heals after a win), an "Ability: X" line on the map's run card, and a boxed "Ability: X" on the
+    starter sheet.
+  - Keyword boxes beside every blown-up card (battle's lifted card, the Index / deck zoom, reward and Mart picks),
+    built from `cardTerms()` in `js/data/cards.js`. Retain is now a bold keyword like Exhaust ("Retain." on Water
+    Pulse, Cotton Guard...) instead of "Stays in hand between turns." at the end of the text.
+  - A small HP plate in the top bar on every choice screen (rewards, events, Center, Mart).
+  **For the user to check:** the nameplate chip is the Ability Capsule sprite, not the type icon (Blaze's 🔥 is also the
+  Fire type's icon, so it read as a second type chip); on phones the risen card's keyword boxes stack above it, over
+  the arena (StS puts them beside it, but a phone has no room); Strength gets a box on every strength card (Growth
+  too), Block doesn't (StS shows one for Block, but every card would carry it); the Fusion Flare / TM pile picker
+  has no boxes yet.
 - **Make the game explain itself** (the user's notes, 2026-09-27, parked while 11a ran; do after the 11 sessions):
   - **Starter Abilities are easy to miss**: the user only found theirs in the Bag's Relics pocket. Ideas: an always-on
     Ability badge on your nameplate (tap for its text), a Gen 5-style "Charmander's Blaze" banner whenever it triggers

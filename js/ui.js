@@ -3,7 +3,7 @@
    switching screens, dialogs, and the card element.
    ============================================================ */
 
-import { TYPES, describe, keywords, termTips } from './data/cards.js';
+import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
 import { getSave } from './storage.js';
 import { playMusic } from './audio.js';
@@ -170,6 +170,36 @@ function cardSprite(card) {
 }
 
 /**
+ * StS's keyword boxes: a little window per term a card uses (Exhaust, Tide, Weak...), shown beside the card
+ * whenever it's blown up, since a phone can't reach a `title`. A card's DOM node works too (by its data-id).
+ * Null when the card has no terms.
+ */
+export function cardTips(card, big) {
+  if (card instanceof Element) card = card.classList.contains('card') && CARDS_BY_ID[card.dataset.id];
+  const terms = card ? cardTerms(card) : [];
+  if (!terms.length) return null;
+  // the boxes say it all, so the big card's own hover tips (the same words) would only cover them on a PC
+  big?.querySelectorAll('.card-text [title]').forEach(node => node.removeAttribute('title'));
+  const box = el('div', 'card-tips');
+  for (const [label, text] of terms) {
+    const tip = el('div', 'card-tip');
+    tip.append(el('b', 'card-tip-name', label), el('span', '', text));
+    box.append(tip);
+  }
+  return box;
+}
+
+/** A blown-up card with its keyword boxes: beside it when there's room, under it on a phone (CSS decides). */
+export function withTips(big, card = big) {
+  const tips = cardTips(card, big);
+  if (!tips) return big;
+  const row = el('div', 'tip-row');
+  row.style.setProperty('--tips', tips.children.length);   // a phone stacks them under the card, which shrinks to make room
+  row.append(big, tips);
+  return row;
+}
+
+/**
  * Blow a card up in the middle of a dimmed screen so its text is easy to read.
  * Any tap or Escape closes it. Inside a modal dialog it's put in the dialog,
  * which sits in the top layer above everything else.
@@ -178,7 +208,7 @@ export function zoomCard(card, stage, from) {
   const layer = el('div', 'card-zoom');
   const big = makeCard(card, { stage });
   big.classList.add('zoom-card');
-  layer.append(big, el('p', 'focus-hint', 'Tap anywhere to close'));
+  layer.append(withTips(big, card), el('p', 'focus-hint', 'Tap anywhere to close'));
 
   const close = () => {
     layer.remove();

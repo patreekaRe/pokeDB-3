@@ -6,7 +6,7 @@
 import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
-import { $, el, makeCard, makeRelic, showScreen } from './ui.js';
+import { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar } from './ui.js';
 import { playSound } from './audio.js';
 import { markSeen } from './storage.js';
 
@@ -112,6 +112,15 @@ export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
  *   coins     after a fight, { foe, coins, money }: an icon row, and (on the first screen only) the text box's first lines
  *   layout    extra class for the options box ('mart-window'); options may carry a `group` and a `zoom` tile
  */
+/* Every choice screen shows your HP in the top bar (the Hot Spring's soak or dip, a Shrine's HP price...):
+   run.js hands over where to read it, since this file doesn't hold the run. */
+let hpSource = () => null;
+export function trackHp(source) { hpSource = source; }
+export function showChoiceHp() {
+  const hp = hpSource();
+  if (hp) setHpBar('choice', hp.hp, hp.maxHp);
+}
+
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '' }) {
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
@@ -157,6 +166,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   $('reward-skip-text').textContent = skipLabel;
   skip.onclick = onSkip ? once(onSkip) : null;
 
+  showChoiceHp();
   showScreen('reward-screen');
 }
 
@@ -177,8 +187,9 @@ function openFocus(option, btn, take) {
   yes.append(el('span', 'pp-pill', option.confirm || 'Choose'));
   yes.type = 'button';
   const layer = el('div', 'card-focus reward-focus');
-  layer.append(big, yes);
+  layer.append(withTips(big), yes);
   layer.addEventListener('click', (e) => {
+    if (e.target.closest('.card-tips')) return;
     if (e.target.closest('.focus-card, .focus-confirm')) take(); else backOut();
   });
   const onKey = (e) => {

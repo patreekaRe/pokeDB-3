@@ -24,7 +24,7 @@ import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar } from './ui.js';
+import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite } from './ui.js';
 import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -236,6 +236,7 @@ function resetIntro() {
 function beginPlayerTurn() {
   const b = battle;
   b.turn += 1;
+  if (b.turn === 1 && hasAbility('torrent')) abilityBanner();
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (b.turn === 2 && hasRelic('stone-plate') ? 12 : 0)
@@ -1204,7 +1205,8 @@ async function finish(won) {
   renderAll();
 
   if (won) {
-    if (hasAbility('overgrow') && healPlayer(b.ability.amount)) pop('player-zone', `🌿 Overgrow`, 'note good', 300);
+    const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
+    if (grew) abilityBanner();
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
     playMusic('victory', { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
@@ -1213,7 +1215,7 @@ async function finish(won) {
     $('player-sprite').classList.add('defeated');
     log(`${stageName(b.starter, b.stage)} fainted…`);
   }
-  await sleep(1200);
+  await sleep(won && hasAbility('overgrow') ? 1700 : 1200);   // time to read Overgrow's banner
   if (battle !== b) return;
 
   b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken });
@@ -1259,10 +1261,43 @@ function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
   if (img.complete) apply();
 }
 
+/**
+ * Gen 5's ability pop-up: "Charmander's Blaze" slides in on your side when the Ability does something (Torrent at
+ * the fight's start, Blaze lighting up, Overgrow after a win), so it's clear what the Ability is and when it counts.
+ */
+let bannerTimer = 0;
+function abilityBanner() {
+  const b = battle, banner = $('ability-banner');
+  $('ability-banner-who').textContent = `${stageName(b.starter, b.stage)}'s`;
+  $('ability-banner-name').textContent = `${b.ability.icon} ${b.ability.name}`;
+  banner.title = b.ability.text;
+  banner.hidden = false;
+  banner.classList.remove('show');
+  void banner.offsetWidth;   // restarts the slide
+  banner.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, 1900);
+}
+
+/* Blaze lights up whenever HP falls below half (again after a heal took it back over); not during the intro. */
+function checkBlaze() {
+  const b = battle;
+  if (!hasAbility('blaze') || !b.turn) return;
+  const lit = b.hp > 0 && b.hp < b.maxHp / 2;
+  if (lit && !b.blazeLit) abilityBanner();
+  b.blazeLit = lit;
+}
+
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   const b = battle;
   $('player-name').textContent = stageName(b.starter, b.stage);
+  $('player-ability').hidden = !b.ability;
+  if (b.ability) {
+    $('player-ability').replaceChildren(itemSprite(b.ability));   // the Bag's Ability Capsule, so it doesn't read as a type
+    $('player-ability').title = `Ability: ${b.ability.name}. ${b.ability.text}`;
+  }
+  $('ability-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').dataset.stage = String(b.stage);
@@ -1297,6 +1332,7 @@ function setupBattleScreen() {
 
 function renderAll() {
   if (!battle) return;
+  checkBlaze();
   renderBars();
   renderIntent();
   renderStatus();
@@ -1590,10 +1626,11 @@ function renderFocus() {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
   const extra = problem ? el('p', 'focus-hint', problem) : focusButton(verb, () => tapCard(entry.uid));
-  layer.replaceChildren(big, extra);
+  const tips = cardTips(entry.card, big);
+  layer.replaceChildren(big, extra, ...(tips ? [tips] : []));
   layer.classList.add('rise');
   layer.hidden = false;
-  popFromHand(big, extra, $('hand').querySelector(`[data-uid="${entry.uid}"]`));
+  popFromHand(big, extra, $('hand').querySelector(`[data-uid="${entry.uid}"]`), tips);
   big.focus({ preventScroll: true });
 }
 
@@ -1602,8 +1639,8 @@ function renderFocus() {
  * instead of jumping to the middle of the screen; a small Play button sits under it
  * (the user's call). The hand's copy hides so it reads as the same card lifting.
  */
-function popFromHand(big, extra, from) {
-  if (!from) return;
+function popFromHand(big, extra, from, tips) {
+  if (!from) { tips?.remove(); return; }
   from.classList.add('lifted');
   const r = from.getBoundingClientRect();
   const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
@@ -1615,12 +1652,32 @@ function popFromHand(big, extra, from) {
   Object.assign(big.style, { left: `${left}px`, top: `${top}px` });
   const ex = Math.max(gap, Math.min(innerWidth - ew - gap, left + w / 2 - ew / 2));
   Object.assign(extra.style, { left: `${ex}px`, top: `${top + h + under}px` });
+  if (tips) placeTips(tips, left, top, w, gap);
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const dx = r.left + r.width / 2 - (left + w / 2), dy = r.bottom - (top + h);
   big.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${r.width / w})` }, { transform: 'none' }],
     { duration: 140, easing: 'ease-out' });
   extra.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, delay: 60, fill: 'backwards' });
+}
+
+/* The keyword boxes go beside the risen card, StS-style, on whichever side has room; a phone rarely has it, so
+   there they stack over the card instead, where the arena is. */
+const TIPS_W = 190;
+
+function placeTips(tips, left, top, w, gap) {
+  const right = innerWidth - left - w - 2 * gap, leftRoom = left - 2 * gap;
+  const side = right >= TIPS_W ? 'right' : leftRoom >= TIPS_W ? 'left' : null;
+  const width = side ? TIPS_W : Math.min(innerWidth - 2 * gap, 340);
+  tips.style.width = `${width}px`;
+  const th = tips.offsetHeight;
+  if (side) {
+    tips.style.left = `${side === 'right' ? left + w + gap : left - gap - width}px`;
+    tips.style.top = `${Math.max(gap, Math.min(top, innerHeight - th - gap))}px`;
+  } else {
+    tips.style.left = `${Math.max(gap, Math.min(innerWidth - width - gap, left + w / 2 - width / 2))}px`;
+    tips.style.top = `${Math.max(gap, top - gap - th)}px`;
+  }
 }
 
 /* ---------- little visual effects ---------- */

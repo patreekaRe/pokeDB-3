@@ -271,6 +271,35 @@
 }
 .card.zoom-card { --card-w: min(72vw, 300px, 50vh); animation: focusIn 0.18s ease-out; }
 
+/* ---------- keyword boxes (cardTips() in js/ui.js): StS's little windows beside a blown-up card ---------- */
+.card-tips { display: flex; flex-direction: column; gap: 6px; width: 190px; cursor: default; }
+.card-tip {
+  padding: 6px 8px;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round-sm);
+  background: var(--win-bg);
+  color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  text-align: left;
+}
+.card-tip-name { display: block; margin-bottom: 3px; color: var(--win-gold); font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.72rem; font-weight: normal; }
+/* beside the card on wide screens, under it on a phone */
+.tip-row { display: flex; align-items: flex-start; justify-content: center; gap: 12px; }
+.tip-row .card-tips { animation: tipsIn 0.2s ease-out 0.1s backwards; }
+@keyframes tipsIn { from { opacity: 0; transform: translateY(8px); } }
+/* in battle the boxes are placed by placeTips() in js/battle.js, and taps go through them to the layer */
+.card-focus.rise .card-tips { pointer-events: none; animation: tipsIn 0.2s ease-out 0.1s backwards; }
+@media (max-width: 720px) {
+  .tip-row { flex-direction: column; align-items: center; gap: 8px; }
+  .tip-row .card-tips { width: min(100%, 340px); }
+  :is(.card-focus, .card-zoom) .tip-row .card:is(.focus-card, .zoom-card) { --card-w: min(64vw, 260px, calc(50vh - var(--tips) * 5.5vh)); }
+  .card-tip { padding: 4px 7px; font-size: 0.72rem; }
+  .card-tip-name { display: inline; margin: 0 6px 0 0; font-size: 0.62rem; }
+}
+@media (prefers-reduced-motion: reduce) { .card-tips, .tip-row .card-tips { animation: none; } }
+
 /* soft corners inside a card, in step with its 7cqw outer corners */
 .card-art, .card-text { border-radius: 4cqw; }
 .lock-badge, .in-deck { border-radius: 3cqw; }

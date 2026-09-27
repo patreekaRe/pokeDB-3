@@ -699,7 +699,6 @@ export function describe(card, stage = 0) {
   if (e.combo) { const { at, ...more } = e.combo; parts.push(`Combo ${at}: ${sentences(more).join(' ')}`); }
   if (card.onExhaust) parts.push(`When exhausted: ${sentences(card.onExhaust).join(' ')}`);
   if (card.onDiscard) parts.push(`When discarded: ${sentences(card.onDiscard).join(' ')}`);
-  if (card.retain)    parts.push('Stays in hand between turns.');
   if (card.growOnRetain) {
     const g = card.growOnRetain;
     parts.push(`Grows ${[g.damage && `+${g.damage} damage`, g.heal && `+${g.heal} heal`].filter(Boolean).join(' and ')} each turn it stays.`);
@@ -715,6 +714,7 @@ export function keywords(card) {
       card.unplayable && ['Unplayable', 'This card can\'t be played.'],
       card.innate && ['Innate', 'Always in your first hand of a fight.'],
       card.power && ['Power', 'Stays on for the rest of the fight. The card is played once per fight.'],
+      card.retain && ['Retain', 'Stays in your hand at the end of your turn instead of being discarded.'],
     ].filter(Boolean),
     tail: [
       card.ethereal && ['Ethereal', 'If it\'s still in your hand at the end of your turn, it\'s exhausted.'],
@@ -723,27 +723,53 @@ export function keywords(card) {
   };
 }
 
-/** Explanations for the terms a card's text uses (shown as the text's tooltip). */
-export function termTips(card) {
+/** Every effect key a card uses, its nested ones too (combo, perX, ifBurned, onExhaust...), so a term hidden in one still gets its tip. */
+function effectKeys(card) {
+  const keys = new Set();
+  const walk = (obj) => {
+    for (const [k, v] of Object.entries(obj || {})) {
+      if (v === 0 || v === false || v == null) continue;
+      keys.add(k);
+      if (typeof v === 'object') walk(v);
+    }
+  };
+  walk(card.effects); walk(card.onExhaust); walk(card.onDiscard);
+  return [...keys];
+}
+
+/**
+ * The terms a card uses, as [label, what it means]: its bold keywords first, then everything its text relies on.
+ * They're the keyword boxes beside a blown-up card (cardTips() in ui.js, StS's) and the text's tooltip, so a new
+ * mechanic only needs a line here.
+ */
+export function cardTerms(card) {
+  const keys = effectKeys(card);
+  const uses = (re) => keys.some(k => re.test(k));
   const e = card.effects;
-  return [e.weaken && 'Weak: the enemy deals 25% less damage. Lasts that many enemy turns.',
-    e.vulnerable && 'Vulnerable: the enemy takes 50% more damage from your attacks. Lasts that many enemy turns.',
-    (e.tide || e.perTide || e.discardTide || e.perTideHeld || e.perTideGained || e.tideMult || e.blockPerTide || e.tideEachTurn
-      || e.drizzle || e.tideSpendBlock || e.tideSurge) && 'Tide: builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.',
-    (e.perX || card.cost === 'X') && 'X: this card spends all your PP, and X is how much it spent.',
-    e.combo && `Combo ${e.combo.at}: the extra only happens if you've already played ${e.combo.at} other cards this turn.`,
-    (e.discard || card.onDiscard || e.discardHand || e.ifDiscarded || e.costDownOnDiscard) && 'Discard: moved from your hand to the discard pile. Cards that say "When discarded" only trigger when a card makes you discard them.',
-    (e.exhaustPick || card.onExhaust || e.exhaustBlock || e.exhaustDraw || e.exhaustHand || e.exhaustBurn || e.playTop || e.exhume || e.corruption)
-      && 'Exhaust: gone for the rest of this fight.',
-    (e.burn || e.burnMult || e.ifBurned || e.bonusPerBurn || e.burnEachTurn || e.drought || e.exhaustBurn)
-      && 'Burn: the enemy takes that much damage at the start of its turn, then its Burn drops by 1.',
-    e.ifHurt && 'Losing HP counts however it happens: your own cards, Poison, or the enemy\'s hits.',
-    (e.seed || e.healPerSeed || e.ifSeeded || e.seedKeep || e.attackSeed || e.perX?.seed)
-      && 'Leech Seed: at the start of its turn the enemy loses that much HP and you heal as much, then it drops by 1.',
-    (e.sap || e.perX?.sap) && 'Sap: the enemy\'s attacks deal that much less, for the rest of the fight.',
-    (e.doubleStrength || e.strengthMult || e.healPerStrength || e.strengthHeal)
-      && 'Strength: what cards like Growth add to your hits ("your hits deal +1 all fight"), shown as your 💪 badge.',
-    (e.perDebuff || e.drawPerDebuff || e.debuffDamage) && 'Debuffs: Weak, Vulnerable, Leech Seed, Sap and Burn.',
-    card.upgraded && 'Upgraded with PP Up.',
+  const { lead, tail } = keywords(card);
+  const terms = [...lead, ...tail,
+    card.growOnRetain && ['Retain', 'Stays in your hand at the end of your turn instead of being discarded.'],
+    uses(/^retain/) && ['Retain', 'A kept card stays in your hand at the end of your turn instead of being discarded.'],
+    (uses(/exhaust|^playTop$|^exhume$|^corruption$/) || card.onExhaust) && ['Exhaust', 'An exhausted card is gone for the rest of this fight. It\'s back in your deck next fight.'],
+    (uses(/discard/i) || card.onDiscard) && ['Discard', 'Moved from your hand to the discard pile. "When discarded" only triggers when a card makes you discard it.'],
+    uses(/tide|^drizzle$/i) && ['Tide', 'Builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.'],
+    uses(/burn|^drought$/i) && ['Burn', 'The enemy takes that much damage at the start of its turn, then its Burn drops by 1.'],
+    uses(/seed/i) && ['Leech Seed', 'At the start of its turn the enemy loses that much HP and you heal as much, then it drops by 1.'],
+    uses(/^sap$/) && ['Sap', 'The enemy\'s attacks deal that much less, for the rest of the fight.'],
+    uses(/weak/i) && ['Weak', 'The enemy deals 25% less damage. Lasts that many enemy turns.'],
+    uses(/vulnerable/i) && ['Vulnerable', 'The enemy takes 50% more damage from your attacks. Lasts that many enemy turns.'],
+    uses(/strength|^flex$/i) && ['Strength', 'Added to every hit you deal, shown as your 💪 badge.'],
+    uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap and Burn.'],
+    (uses(/^perX$/) || card.cost === 'X') && ['X', 'This card spends all your PP, and X is how much it spent.'],
+    e.combo && [`Combo ${e.combo.at}`, `The extra only happens if you've already played ${e.combo.at} other cards this turn.`],
+    uses(/^ifHurt$|OnHurt$/) && ['Losing HP', 'Counts however it happens: your own cards, Poison, or the enemy\'s hits.'],
+    card.upgraded && ['Upgraded', 'Made stronger with PP Up.'],
   ].filter(Boolean);
+  return terms.filter(([label], i) => terms.findIndex(t => t[0] === label) === i);
+}
+
+/** The terms a card's text relies on, beyond its bold keywords (which explain themselves), as its text's tooltip. */
+export function termTips(card) {
+  const own = new Set([...keywords(card).lead, ...keywords(card).tail].map(([label]) => label));
+  return cardTerms(card).filter(([label]) => !own.has(label)).map(([label, text]) => `${label}: ${text}`);
 }

@@ -81,9 +81,17 @@ to `main` (see Conventions), not open a branch or PR.
 the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   each turn, thorns, blaze) stay on all fight as nameplate badges,
   `retain`, `exhaust`, `selfDamage`, `blockDamage` and `bonusPerBurn`.
-  Power and exhaust cards carry a bold "Power." / "Exhaust." keyword
+  Power, exhaust and retain cards carry a bold "Power." / "Exhaust." / "Retain." keyword
   (`keywords()` in `js/data/cards.js`, drawn by `makeCard()`, with a
   `title` explaining it); powers leave the fight once played, like StS.
+  **Keyword boxes** (StS's): `cardTerms(card)` in `js/data/cards.js` lists every term a card uses as
+  `[label, text]` (its keywords, then Tide, Burn, Leech Seed, Weak, Vulnerable, Sap, Strength, Discard, X,
+  Combo... found by regex over its effect keys, nested ones too), and `termTips()` is the same minus the
+  keywords, for the text's `title`. `cardTips()` / `withTips()` in `js/ui.js` draw them as little parchment
+  windows beside any blown-up card: battle's risen card (`placeTips()` in `js/battle.js`: beside it on
+  whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()` and the reward /
+  Mart focus (`openFocus()`); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
+  `--tips`. A new mechanic only needs a line in `cardTerms()`.
   There's no exhaust pile icon (the user's call, for now).
   Each type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
   Drain / Spores, Water Tsunami / Shell / Flow.
@@ -205,7 +213,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   every skin shares it and nothing is saved (it comes from `starter.type`). Fire **Blaze**: attacks +3
   while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
   fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide. It's the first row of the
-  Bag's Relics pocket and a line on the starter sheet (`#detail-ability`). The rare power card `blaze`
+  Bag's Relics pocket, a boxed "Ability: X" on the starter sheet (`#detail-ability`), an "Ability: X" line on
+  the map's run card (`#run-ability`), and an Ability Capsule chip on your battle nameplate (`#player-ability`,
+  tap for its text; the capsule, not the type icon, so it doesn't read as a type). When it does something,
+  `abilityBanner()` in `js/battle.js` slides in Gen 5's "Charmander's Blaze" window (`#ability-banner`) on
+  your side for 1.9 s: Torrent on turn 1, Blaze each time HP drops below half (`checkBlaze()` in
+  `renderAll()`, again after a heal took it back over), Overgrow when it heals after a win (the faint pause
+  is 1.7 s then). The rare power card `blaze`
   is named Solar Power now (same id) so the two don't share a name.
 - **Types**: four types (fire/grass/water, and `normal`, shown as Neutral,
   x1 both ways). `typeMultiplier()` in `js/battle.js` is the chart; a card
@@ -590,6 +604,10 @@ how-to-unlock), and the Game Corner says its own on the CRT.
 Scrollbars are chunky square pixel bars (end of `css/base.css`: `::-webkit-scrollbar`, `scrollbar-color`
 only for browsers without it, since Chrome drops the webkit rules once it's set): a bevelled grey thumb in
 a dark slot, a parchment slot inside windows.
+Every `showChoice` screen also shows your HP: `#choice-plate` in the top bar beside the Poké Ball (a small
+Pokégear window with a `.gb-hp` bar, shown only on `body[data-screen="reward-screen"]`), filled by
+`showChoiceHp()` in `js/rewards.js` from `trackHp()` (run.js hands it the run); the Center's Rest refreshes it
+as the heal runs. On ≤420px the bar drops its HP: tag, and on ≤340px the PokéCoins step aside for it.
 Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
 in `#reward-log`, a copy of the battle text box pinned to the bottom of the
 screen, narrow and centred (`--log-w`: 440px, 300px on phones; the user's call: no

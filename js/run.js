@@ -27,7 +27,7 @@ import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MAR
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption, textOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption, textOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
@@ -53,6 +53,7 @@ function randomStartingRelic() {
 export function initRun({ onMenu, onNewRun }) {
   $('run-deck-btn').addEventListener('click', () => run && showDeckDialog(run));
   initBag();
+  trackHp(() => run);
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
@@ -235,6 +236,12 @@ function showMap() {
 
   setHpBar('run', run.hp, run.maxHp);
   setMoney(run.money);
+  const ability = ABILITIES[run.starter.type];
+  $('run-ability').hidden = !ability;
+  if (ability) {
+    $('run-ability').replaceChildren(itemSprite(ability), `Ability: ${ability.name}`);
+    $('run-ability').title = `Ability: ${ability.name}. ${ability.text}`;
+  }
 
   renderRelicList();
   renderItemList();
@@ -823,6 +830,7 @@ function restSite() {
           const seconds = Math.min(chime, 4) || 2;
           flashCenter(seconds);
           vitals.fill(before, run.hp, seconds);   // the patient monitor's bar fills up while the chime plays
+          showChoiceHp();
           await sleep(seconds * 1000);
           if (run !== thisRun) return;                 // the run was abandoned during the chime
           // a moment to see the full bar, with Chansey's goodbye, before heading back out

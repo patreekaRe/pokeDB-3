@@ -73,6 +73,14 @@
       <span class="pile" id="draw-count" title="Cards left in your draw pile"></span>
       <span class="pile" id="discard-count" title="Cards in your discard pile"></span>
     </div>
+    <!-- shown only on the reward screen (every room with choices: rewards, events, Center, Mart), from showChoice() -->
+    <div class="hp-plate" id="choice-plate">
+      <div class="gb-hp" id="choice-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
+        <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+        <span class="gb-hp-track"><span class="gb-hp-fill" id="choice-hp-fill"></span></span>
+      </div>
+      <span class="gb-hp-num" id="choice-hp-text"></span>
+    </div>
     <div class="topbar-actions">
       <span class="coin-pill" title="PokéCoins - spend them at the Game Corner">💰 <span class="coin-value">0</span></span>
       <span class="coin-pill money-pill" id="money-pill" hidden title="Pokédollars - prize money for this run, spent at Poké Marts on the map">💴 <span id="money-value">0</span></span>
@@ -232,6 +240,7 @@
             <span class="gb-hp-track"><span class="gb-hp-fill" id="run-hp-fill"></span></span>
           </div>
           <span class="gb-hp-num" id="run-hp-text"></span>
+          <span class="run-ability" id="run-ability"></span>
         </div>
       </div>
 
@@ -259,6 +268,8 @@
     <section id="battle-screen" class="screen" hidden>
 
       <div class="arena" id="arena">
+        <!-- Gen 5's ability pop-up ("Charmander's Blaze"), slid in by abilityBanner() in js/battle.js -->
+        <div class="ability-banner" id="ability-banner" aria-hidden="true" hidden><span id="ability-banner-who"></span><strong id="ability-banner-name"></strong></div>
 
         <div class="nameplate" id="enemy-plate">
           <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-type" class="chip"></span></div>
@@ -280,7 +291,7 @@
         </div>
 
         <div class="nameplate" id="player-plate">
-          <div class="nameplate-title"><strong id="player-name"></strong></div>
+          <div class="nameplate-title"><strong id="player-name"></strong><span id="player-ability" class="chip ability-chip"></span></div>
           <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="player-hp-fill"></span></span>
