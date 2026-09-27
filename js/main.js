@@ -278,6 +278,11 @@ function init() {
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
   $('detail-close').addEventListener('click', () => showSheet(false));
+  // a tap on the open page (not a button, another starter or a window) puts the starter's panel away, like ✕
+  document.addEventListener('click', (e) => {
+    if ($('starter-sheet').hidden || !e.detail || e.target.closest('#starter-sheet, button, a, input, dialog, .drop, .tap-tip')) return;
+    showSheet(false);
+  });
   $('shiny-toggle').addEventListener('click', () => {
     if (!selected) return;
     const id = selected.id;

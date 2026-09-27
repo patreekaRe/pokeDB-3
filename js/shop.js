@@ -61,6 +61,20 @@ export function initShop() {
   $('gc-buy').addEventListener('click', press);
   initDrag();
 
+  // The cabinet isn't modal, so there's no backdrop: a tap anywhere else closes it (and does nothing else, so it can't
+  // pick a starter or a map room by accident). A press that began inside (a joystick drag) doesn't count.
+  let pressedInside = false;
+  document.addEventListener('pointerdown', (e) => { pressedInside = !!e.target.closest?.('#shop-dialog'); }, true);
+  document.addEventListener('click', (e) => {
+    const dialog = $('shop-dialog');
+    if (!dialog.open || pressedInside || !e.detail || document.querySelector('dialog:modal')) return;
+    if (e.target.closest('#shop-dialog, .shop-btn, #menu-shop-btn, .starter-btn.locked')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    playSound('cancel', 'confirm');
+    dialog.close();
+  }, true);
+
   document.addEventListener('keydown', (e) => {
     const dialog = $('shop-dialog');
     if (!dialog.open || document.querySelector('dialog:modal')) return;

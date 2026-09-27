@@ -6,7 +6,7 @@
 import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
 import { getSave } from './storage.js';
-import { playMusic } from './audio.js';
+import { playMusic, playSound } from './audio.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -68,6 +68,22 @@ export function closeDialog(id) {
   const d = $(id);
   if (d.open) d.close();
 }
+
+/* A tap on the dimmed backdrop, outside a window, closes it like Escape (the user's call: every window closes that way).
+   A window that moves the game along has a button that stands in for closing it: No, the result's Main menu, Continue. */
+const OUTSIDE_TAP = { 'confirm-dialog': 'confirm-no', 'result-dialog': 'result-menu', 'evolve-dialog': 'evolve-continue' };
+let downOn = null;   // where the press began, so a drag that ends on the backdrop (selecting text, a swipe) isn't a tap outside
+document.addEventListener('pointerdown', (e) => { downOn = e.target; }, true);
+document.addEventListener('click', (e) => {
+  const d = e.target;
+  if (!(d instanceof HTMLDialogElement) || !d.open || !d.matches(':modal') || downOn !== d || !e.detail) return;
+  const r = d.getBoundingClientRect();
+  if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
+  const stand = OUTSIDE_TAP[d.id];
+  if (stand) return $(stand).click();
+  playSound('cancel', 'confirm');
+  d.close();
+});
 
 /** Ask a yes/no question. Use it like:  if (await confirmDialog('Sure?')) { ... } */
 export function confirmDialog(question, yesLabel = 'Yes') {

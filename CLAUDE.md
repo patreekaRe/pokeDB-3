@@ -56,6 +56,12 @@ to `main` (see Conventions), not open a branch or PR.
   the exception** — it uses `.show()`/`.close()` directly (non-modal), so it
   floats above whatever screen is showing without blocking or hiding it.
   That's intentional: don't "fix" it back to `showModal()`.
+  **Every window closes on a tap outside it** (the user's call, 2026-09-27): `js/ui.js` closes any modal dialog when
+  a press starts and ends on its backdrop (with the `cancel` sound); the result, evolve and yes/no windows click
+  their stand-in button instead (`OUTSIDE_TAP`: Main menu, Continue, No). The Game Corner, having no backdrop,
+  closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
+  it); the starter sheet goes away on a tap on the page that isn't a button. The Bag, the Poké Ball menu, zooms and
+  focus layers already did.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
