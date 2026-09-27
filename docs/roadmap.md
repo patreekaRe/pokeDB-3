@@ -136,6 +136,9 @@ steps land (mark them done, note anything decided along the way).
    6. **NEXT: the user's playtest of all three types**, then fixes.
       - **Playtest: no session needed**: play on the live site (https://patreekare.github.io/pokeDB-3/, phone is fine),
         a few Fire, Grass and Water runs, and note what feels off.
+      - Playtest notes so far: 2026-09-27, one Fire run won, "pretty smooth... felt pretty easy", lowest HP a little
+        over half. Enemies aren't retuned for the new pools yet (step 9), so step 9's enemy pass should aim to make runs
+        tenser, not just keep the bot numbers level.
       - **Then the fix/build session: run in the CLOUD** (select both `pokeDB-3` and `pokeDB-sim`). Session prompt:
       > Continue the roadmap after 6c.5 (all three type pools are built). Read CLAUDE.md, docs/roadmap.md and
       > docs/card-design.md first. If I've given playtest notes, fix those first (numbers in js/data/cards.js, mirror any rule
