@@ -430,7 +430,9 @@ your type out with `pickFromPile()`, the one taken is free this turn via `discou
 +5 max HP; `onEnd` passes `maxHp` on a flee too), Revive (Fairy in a Bottle: can't be used, `whyNotUsable()` says so;
 `hurtPlayer()` calls `revive()` when you'd faint, which takes it out of the Bag, sets 30% HP and adds its news to the
 hit's log line via `withRevive()`), and one per type for an archetype: Fire's Burn Drive (Catalyst, doubles Burn),
-Grass's Absorb Bulb (Leech Seed 4), Water's Fresh Water (5 Tide). They reuse emoji already in `ICONS`. The run holds at most `ITEM_SLOTS` (3) ids in
+Grass's Absorb Bulb (Leech Seed 4), Water's Fresh Water (5 Tide). They reuse emoji already in `ICONS`.
+The same step's catch-up: Dive blocks 9 and Flame Body 10 (human bot fire / grass / water, 400 runs: L0 ~80 / 74-78 / 72,
+L3 58 / 56 / 56, L5 29 / 34 / 32; details in the roadmap's 6c.11b). The run holds at most `ITEM_SLOTS` (3) ids in
 `run.items`, saved by id with `run.itemChance` (a bad id discards the save).
 Sources: 3 per Mart (`node.stock.items`, rolled in `startBiome()`, greyed
 out with a full Bag), and after every won fight except the final boss a

@@ -204,6 +204,21 @@ steps land (mark them done, note anything decided along the way).
         > are ~2-4 points harder than before and Fire/Water trail Grass a little there: try small buffs (Withdraw 7 was
         > far too much for Water). Run the bot with `sim/run-node.mjs` (see its README). Human-bot pass at Levels 0/3/5
         > (300+ runs/cell), Level 0 near ~75%. Update CLAUDE.md and the roadmap and push both repos to main.
+      - **11b done (2026-09-27).** 8 items (20 in all), each on a StS potion, PokéSprite art, an item `rare` tier
+        (weight 1, ₽90): Black Flute (Weak 3), X Accuracy (Vulnerable 3), TM (choose 1 of 3 cards of your type, free this
+        turn), HP Up (rare, +5 max HP, map too), Revive (rare, Fairy in a Bottle: 30% HP when you'd faint), and per type
+        Burn Drive (Fire: double Burn, StS's Catalyst), Absorb Bulb (Grass: Leech Seed 4), Fresh Water (Water: 5 Tide).
+        Catch-up: Dive 8 -> 9 block (upgrade 12) and Flame Body 8 -> 10 (upgrade 12).
+        Human bot, 400 runs/cell, fire / grass / water: old items L0 74.3 / 82.3 / 65.0, L3 49.3 / 56.5 / 46.8, L5 25.8 /
+        30.5 / 23.8; new items L0 72.8 / 73.5 (77.8 on a re-run: noise is ~±4) / 68.5, L3 51.0 / 56.0 / 49.0, L5 28.8 /
+        33.5 / 28.3; shipped (with the buffs) fire 79.5 / 57.8 / 29.3, water 72.3 / 56.3 / 31.5 (grass as above). Tried and
+        dropped: Blaze +4 and Torrent 3 Tide (within noise), Flame Wall 9 (Fire L0 81.3, L3 62.0, L5 35.5: 4 copies is
+        too much). Also: the sim's `cardScore` is memoised, so a run is ~5x faster.
+        **Also added (the user's request that night): a Relics and an Items tab in the Index** (the Card index,
+        renamed): every relic and item, a dark silhouette until met in a run (offered, sold or found), with found
+        counts. See CLAUDE.md's Top bar and start screen.
+        **For the user to check:** TM's picker reuses Fusion Flare's card layout; Revive's news rides on the hit's own
+        text line; Fire L0 ~79 is a bit above target (it was the weakest at L3, so the buff went in anyway).
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
