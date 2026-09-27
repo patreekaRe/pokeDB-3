@@ -69,9 +69,12 @@ to `main` (see Conventions), not open a branch or PR.
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
   `-shiny` suffixed sprite id for a visual payoff on final evolution.
-  Nine earned ones: Moltres / Virizion / Suicune (a Level 3 win per type), and since step 9b Entei / Celebi / Kyogre
+  Sixteen earned ones: Moltres / Virizion / Suicune (a Level 3 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 5 win per type) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
-  ids `hooh` etc.). `checkAchievements()` runs after every won fight's Pokédex update (`afterFight()`, so a page's
+  ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won with 15 cards or
+  fewer), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
+  in `gainTide()` in `js/battle.js`) and Keldeo (a win with every Water starter you own, Keldeo aside: `winsBy`).
+  `checkAchievements()` runs after every won fight's Pokédex update (`afterFight()`, so a page's
   legendary is told in that reward box), after each boss, at every run's end, won or lost (so an old save that
   already met a goal gets it then), and after a Game Corner buy.
   Shaymin was swapped for Virizion; `RENAMED_STARTERS` in

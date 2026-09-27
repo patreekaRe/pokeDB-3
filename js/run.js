@@ -1610,6 +1610,8 @@ function endRun(won) {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
       if (run.restCount <= 3) d.stats.lightRestWin = true;
+      if (run.restCount === 0) d.stats.noRestWin = true;
+      if (run.deck.length <= 15) d.stats.smallDeckWin = true;
       const type = run.starter.type;
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });

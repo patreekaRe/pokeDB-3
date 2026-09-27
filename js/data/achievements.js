@@ -11,10 +11,11 @@
    stats (see storage.js) and returns true once you have done it; it
    also gets the whole save, for goals about what you have unlocked.
 
-   Kept deliberately forgiving: nothing here needs a flawless run.
-   The two that used to ("no damage at all", "no rest site at all")
-   were changed to "mostly" versions, since a single mistake voiding
-   an entire run felt like bad luck more than a fair challenge.
+   The early goals are deliberately forgiving: the two that used to
+   need a flawless run ("no damage at all", "no rest site at all")
+   were changed to "mostly" versions. Only the late legendaries
+   (steps 9b-9c: Level 5, no rest, the whole Pokédex) are meant as
+   mastery goals.
    ============================================================ */
 
 import { STARTERS } from './starters.js';
@@ -100,6 +101,34 @@ export const ACHIEVEMENTS = [
     starter: 'palkia',
     text: 'Complete the Ember Wastes page of the Pokédex',
     test: (s, save) => save.dex.done.includes('wastes'),
+  },
+  // Mastery goals (step 9c).
+  {
+    starter: 'reshiram',
+    text: 'Complete the research of every Pokédex entry',
+    test: (s, save) => !!save.dex.complete,
+  },
+  {
+    starter: 'victini',
+    text: 'Win a run with a deck of 15 cards or fewer',
+    test: (s) => s.smallDeckWin,
+  },
+  {
+    starter: 'heatran',
+    text: 'Win a run without resting at a Pokémon Center',
+    test: (s) => s.noRestWin,
+  },
+  {
+    starter: 'manaphy',
+    text: 'Hold 20 Tide at once in a fight',
+    test: (s) => s.maxTide >= 20,
+  },
+  {
+    // Keldeo itself doesn't count, or it could never be earned.
+    starter: 'keldeo',
+    text: 'Win a run with every Water starter you own',
+    test: (s, save) => STARTERS.filter(st => st.type === 'water' && st.id !== 'keldeo' && (st.free || save.unlocked.includes(st.id)))
+      .every(st => (s.winsBy[st.id] || 0) >= 1),
   },
   // Must stay last: checkAchievements() grants in order, so this sees any
   // starter unlocked by the entries above in the same check.

@@ -356,6 +356,59 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
 
+  /* ---------- legendaries for mastery goals (step 9c) ----------
+     A finished Pokédex, a lean deck, no rest, a flood of Tide, every Water starter. */
+  {
+    id: 'reshiram', type: 'fire', skinOf: 'charmander', legendary: true,
+    line: [
+      { id: 'reshiram',      name: 'Reshiram' },
+      { id: 'reshiram',      name: 'Awakened Reshiram' },
+      { id: 'reshiram-shiny',name: 'Ascendant Reshiram' },
+    ],
+    blurb: 'The legendary white flame of truth, drawn by a Pokédex with every entry researched. Same fire moves as Charmander.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'victini', type: 'fire', skinOf: 'charmander', legendary: true,
+    line: [
+      { id: 'victini',       name: 'Victini' },
+      { id: 'victini',       name: 'Awakened Victini' },
+      { id: 'victini-shiny', name: 'Ascendant Victini' },
+    ],
+    blurb: 'The legendary bringer of victory, for a win with a lean deck. Same fire moves as Charmander.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'heatran', type: 'fire', skinOf: 'charmander', legendary: true,
+    line: [
+      { id: 'heatran',       name: 'Heatran' },
+      { id: 'heatran',       name: 'Awakened Heatran' },
+      { id: 'heatran-shiny', name: 'Ascendant Heatran' },
+    ],
+    blurb: 'A legend of the magma, for a win that never rested. Same fire moves as Charmander.',
+    deck: FIRE_DECK,
+  },
+  {
+    id: 'manaphy', type: 'water', skinOf: 'squirtle', legendary: true,
+    line: [
+      { id: 'manaphy',       name: 'Manaphy' },
+      { id: 'manaphy',       name: 'Awakened Manaphy' },
+      { id: 'manaphy-shiny', name: 'Ascendant Manaphy' },
+    ],
+    blurb: 'The legendary prince of the sea, for a tide that rose to 20. Same water moves as Squirtle.',
+    deck: WATER_DECK,
+  },
+  {
+    id: 'keldeo', type: 'water', skinOf: 'squirtle', legendary: true,
+    line: [
+      { id: 'keldeo',        name: 'Keldeo' },
+      { id: 'keldeo',        name: 'Awakened Keldeo' },
+      { id: 'keldeo-shiny',  name: 'Ascendant Keldeo' },
+    ],
+    blurb: 'A legendary colt of the rivers, for a win with every Water starter. Same water moves as Squirtle.',
+    deck: WATER_DECK,
+  },
+
   /* ---------- the secret final one ----------
      Hidden as "???" until you unlock every other starter. Psychic isn't one of
      the three battle types yet and it has no deck, so `comingSoon` keeps it

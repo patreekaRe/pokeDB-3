@@ -3,6 +3,24 @@
 The plan agreed with the user (2026-09-25/26). Work top to bottom; update this file as
 steps land (mark them done, note anything decided along the way).
 
+## Chain summary (2026-09-27, second chain)
+
+What the second chain did (details and "For the user" notes in each step below):
+- **7b, Pokédex research levels**: every entry counts defeats ("Oddish defeated 2/3"); at 3 (bosses 2) it's Research
+  complete, a gold mark, each move's numbers, and PokéCoins (wild 25 / Alpha 50 / boss 100); every entry done pays 1000 once.
+- **9a, 6 Game Corner skins**: Budew, Sewaddle, Lotad (Grass) and Horsea, Spheal, Tympole (Water), 300 each plus a shiny.
+- **9b, 6 legendaries**: Entei / Celebi / Kyogre (a Level 5 win per type), Ho-Oh / Lugia / Palkia (a finished Pokédex page).
+  Unlocks are now also checked after each won fight and at the end of a lost run. Moltres, Virizion, Suicune and Mewtwo got
+  the cries they never had.
+- **9c, the last 5 legendaries**: Reshiram (whole-dex research), Victini (win with ≤15 cards), Heatran (win with no rest),
+  Manaphy (20 Tide at once), Keldeo (win with every Water starter you own). Done in 9b's session: the chain hit its session
+  depth limit and couldn't start a fourth.
+
+**For you to check:** the new blurbs, types (Lugia / Palkia / Manaphy / Keldeo as Water, Ho-Oh / Reshiram / Victini / Heatran
+as Fire; Grass has only Celebi and Virizion) and cries by ear; 300 per skin; research numbers show Level 0's values; Keldeo's
+"every Water starter you own" gets harder as you buy Water skins; Victini at ≤15 cards may be easy; the Game Corner's
+total is now ~14400 PokéCoins. Mewtwo's "unlock every other Pokémon" now needs all 31 others, the new legendaries included.
+
 ## Overnight summary (2026-09-27)
 
 What the overnight chain did, one session per big step (details and bot numbers in each step below):
@@ -396,6 +414,23 @@ What the overnight chain did, one session per big step (details and bot numbers 
      **For the user to check:** the blurbs and types are mine; Kyogre's GIF swims high in its frame (its median pose is used,
      like the rest); the new cries' loudness by ear. Level 5 wins are rare (the human bot wins ~30%), so Entei / Celebi /
      Kyogre are the hardest unlocks by design.
+   - **9c, the last 5 legendaries: done (2026-09-27, in 9b's session:** the chain couldn't start a 4th session, "lineage depth
+     8 (limit 8)", so 9b's session did 9c too). Reshiram (every entry's research done, `dex.complete`), Victini (win with 15
+     cards or fewer), Heatran (win without resting at a Center; PP Up there isn't a rest), Manaphy (hold 20 Tide at once),
+     Keldeo (win with every Water starter you own). Types: Reshiram / Victini / Heatran Fire, Manaphy / Keldeo Water. New
+     stats `smallDeckWin`, `noRestWin`, `maxTide` (old saves merge them in as false / 0; `maxTide` is written by `gainTide()`,
+     so Torrent's opening 2 doesn't count but every gain after does). 20 GIFs, 20 `SPRITE_FIT` lines, 5 cries, a 300 shiny
+     each (Game Corner total ~14400). No save-shape change beyond the stats, no run-save bump.
+     Checked headless at 390x844, 375x667 and 1366x900: a final-boss win at 10 cards with no rest unlocking Victini + Heatran
+     (+ Reshiram from an old-style save with `dex.complete`), Keldeo on a Squirtle win once Mudkip had a win, `maxTide` rising
+     from a Bubble, fights as Reshiram and Keldeo, the full grid (Mewtwo still centred last); no console errors.
+     **For the user to check:**
+     - Keldeo's goal grows as you buy Water skins (each owned one needs a win), and a win that unlocks Mudkip holds Keldeo back
+       until Mudkip wins too; that's how "every Water starter you own" reads, but you may prefer "every Water type line" or a
+       fixed list.
+     - Victini at 15 cards is easy-ish with the Center's PP Up and Mart removals (a 10-card start plus ~5 picks); Manaphy's
+       20 Tide needs a Drizzle / Tide build. Say if either should be harder.
+     - Grass got no legendary in 9c (the list had none): Celebi (9b) and Virizion are its only two.
    **Run in: CLOUD.** Session prompt (repeat for the next batch):
    > Do roadmap step 9, more starters (read CLAUDE.md and docs/roadmap.md first). Add the next 4-6 starters from the list
    > (start with the 6 Game Corner skins), with normal and shiny sprites from PokeAPI, cries, SPRITE_FIT entries and their

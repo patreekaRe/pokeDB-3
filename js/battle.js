@@ -22,7 +22,7 @@
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { isShiny } from './storage.js';
+import { isShiny, getSave, updateSave } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite } from './ui.js';
@@ -714,6 +714,7 @@ function gainTide(n) {
   const add = n + (b.powers.drizzle || 0);
   b.tide += add;
   b.tideGained += add;
+  if (b.tide > getSave().stats.maxTide) updateSave(d => { d.stats.maxTide = b.tide; });   // Manaphy's goal
   pop('player-zone', `🌊 Tide +${add}`, 'note good');
 }
 
