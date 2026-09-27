@@ -3,6 +3,32 @@
 The plan agreed with the user (2026-09-25/26). Work top to bottom; update this file as
 steps land (mark them done, note anything decided along the way).
 
+## Overnight summary (2026-09-27)
+
+What the overnight chain did, one session per big step (details and bot numbers in each step below):
+- **6c.11a, relics**: 30 new StS-style relics (58 in all) with common / uncommon / rare tiers and PokéSprite art; the sim
+  mirrors them and ranks.json was recalibrated. Levels 3/5 ended ~2-4 points harder, Fire/Water a little behind Grass.
+- **6c.11b, items**: 8 new StS-potion items (20 in all), one per type feeding an archetype; Dive 9 and Flame Body 10 as the
+  Fire/Water catch-up; a Relics and an Items tab in the Index (silhouettes until met).
+- **Make the game explain itself**: Ability chip + Gen 5 "Charmander's Blaze" banner, keyword boxes beside blown-up cards,
+  and an HP plate on every choice screen.
+- **7, Pokédex**: a page per biome, "???" until fought, complete once beaten; finishing a page pays PokéCoins and a perk
+  (Mom's Savings ₽50, Chansey's Gift Potion, Oak's Advice reroll).
+- **8, Game Corner perks and coin economy**: Bag Pocket, Mart Card, Move Tutor Notes, Scout Report; shiny starters (a third
+  Game Corner row, a ✨ toggle on the starter sheet, a sparkle in battle); PokéCoins +10% per Trainer Level. No enemy retune
+  (Level 0 with no perks is ~77%); Move Tutor Notes cut to one move after the bot found two worth 8-28 points.
+- Planned with you during step 8 (not built yet): **7b, Pokédex research levels** and **9, more starters**.
+
+**For you to check or decide** (the full lists are in each step's "For the user" notes):
+- Step 8: with every perk bought, Level 0 is ~96% and Level 5 ~75% (endgame easy); Move Tutor Notes is still the strongest
+  single perk; every perk now reads `Lv n/m`.
+- Step 7: Pokédex perks lift Grass/Water at Levels 3/5 by 5-15 once earned; fight-room silhouettes on the map aren't done
+  (your call); page coins 100 / 150 / 200 are a guess.
+- 6c.11b: TM's picker reuses Fusion Flare's layout; Revive's news rides on the hit's text line; Fire L0 ~79 is a bit high.
+- Explain-itself: the nameplate chip is the Ability Capsule, not the type icon; on phones the risen card's keyword boxes
+  stack over the arena; Block has no keyword box; the TM / Fusion Flare picker has no boxes yet.
+- Seen in passing: on short PC windows (1280x800) the Mart's text box covers half of Leave (it was so before step 8).
+
 ## Order
 
 1. **Lock the Pokémon list** — done (the list below).
@@ -278,6 +304,38 @@ steps land (mark them done, note anything decided along the way).
    easier (and the Pokédex adds 3 more: mirrored in the sim as `cfg.dexPerks`), so finish with a bot pass at Levels 0/3/5 (the sim needs the Game Corner perks mirrored)
    and retune enemies (not the perks) if Level 0 drifts well above ~75% (human bot, no perks bought, is the baseline
    a new player sees; also check with all perks maxed).
+   **Done (2026-09-27, the last overnight session).** See CLAUDE.md's Economy. Perks now show `Lv n/m`:
+   - **Bag Pocket** (300): 4 items. **Mart Card** (150 / 250 / 400): 10 / 15 / 20% off every Mart price and the removal.
+     **Move Tutor Notes** (300): PP Up one starting move before the first room. **Scout Report** (350): 4-card rewards.
+   - **Shiny starters**: a third Game Corner row, 150 (the free three) / 200 (skins) / 300 (legendaries), only for a starter
+     you own; buying switches it on, a ✨ Shiny toggle on the starter sheet switches it. Swapped in everywhere via
+     `spriteUrl()` (90 PokeAPI shiny GIFs), with a sparkle burst when it comes out of its ball in battle.
+   - **Coins grow +10% per Trainer Level** (Level 5 pays +50%), shown on the deck screen's level rules and How to play.
+   - Old saves load (new perks start at 0, no shinies). No run-save bump (`tutorLeft` missing = 0).
+   Bot (human bot, 400 runs/cell; sim `cfg.perks` = { id: level } or 'max', which includes the old four perks the sim
+   never modelled before; `cfg.dexPerks` = true or a list), fire / grass / water:
+   - **No perks** (what a new player sees): L0 79.5 / 79.3 / 72.8, L3 59.3 / 54.5 / 49.5, L5 34.8 / 29.3 / 31.0. Level 0
+     is ~77%, near the ~75% target, so **no enemy retune**.
+   - **Each perk alone at L3** (vs 59.3 / 54.5 / 49.5; noise ~±5): Mom's Savings 61.3 / 61.0 / 51.0, Chansey's Gift
+     67.8 / 57.3 / 59.0, Oak's Advice 57.5 / 57.3 / 57.5, Bag Pocket 61.3 / 56.8 / 53.3, Mart Card Lv 3 56.0 / 55.0 / 55.3,
+     Scout Report 60.8 / 56.8 / 55.3, **Move Tutor Notes two moves 67.0 / 83.0 / 72.3** (+8 to +28), one move 66.0 / 75.5 /
+     61.0. So Tutor Notes shipped as one move (Neow's own blessing) at 300; the rest are within a few points.
+   - **Game Corner perks all maxed** (Tutor Notes at two): L0 95.3 / 98.3 / 95.0, L3 83.5 / 93.5 / 90.0, L5 72.8 / 84.5 /
+     74.5. **Every perk, Pokédex too**: two-move Tutor L0 97.0 / 98.8 / 96.3, L3 89.3 / 96.5 / 92.8, L5 73.0 / 85.3 / 85.0;
+     shipped (one move) L0 94.8 / 97.8 / 96.5, L5 72.0 / 81.3 / 73.8.
+   **For the user to decide / check:**
+   - With **everything bought** (~3100 coins of perks and all three Pokédex pages), Level 5 is ~75% and Level 0 ~96%: the
+     endgame is easy. That's the permanent-upgrade trade-off (StS has none; Hades-style mirrors do this). If it's too much,
+     the old Max HP Boost (+15 HP) and Starting Relic Charm are the likely big ones (not measured alone), or Trainer
+     Levels 6+ could be added for maxed players. Level 0 with no perks is unchanged, so new players aren't affected.
+   - Move Tutor Notes is still the strongest single perk (Grass +21 at L3: a PP Upped Block/Cotton Guard is +3 block every
+     cycle). One level only; the text and price (300) say so.
+   - Chansey's Gift (+3 to +10 at L3) is the strongest Pokédex perk; left as is (it's earned late).
+   - Every perk shows `Lv n/m`, one-level ones as `Lv 0/1` / `Lv 1/1`, so the row reads the same.
+   - Shiny rows show a starter you haven't unlocked as a "???" silhouette you can't buy yet; Mewtwo has no shiny (not
+     playable). Legendaries' shiny only changes stages 0-1 (their final stage is already the shiny).
+   - The Game Corner shows 6 cells a row with ◀ ▶ past that (8 perks, 18 shinies).
+   - Seen at 1280x800 (and at HEAD before this step): the Mart's text box covers half of Leave on short PC windows.
 
 9. **More starters** (agreed with the user, 2026-09-27; ~3-4 sessions, 4-6 starters each). Only Pokémon with matching
    Gen 5 animated sprites (normal and shiny, PokeAPI's black-white `animated/`), not on the enemy roster, and no two-stage
