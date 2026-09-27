@@ -29,12 +29,6 @@ export const SKIN_SHOP_ITEMS = [
   { id: 'tepig',     cost: 250 },
   { id: 'snivy',     cost: 250 },
   { id: 'oshawott',  cost: 250 },
-  { id: 'budew',     cost: 300 },
-  { id: 'sewaddle',  cost: 300 },
-  { id: 'lotad',     cost: 300 },
-  { id: 'horsea',    cost: 300 },
-  { id: 'spheal',    cost: 300 },
-  { id: 'tympole',   cost: 300 },
 ];
 
 /** Permanent passive perks. `maxLevel` > 1 means it can be bought more than once, at rising cost. */

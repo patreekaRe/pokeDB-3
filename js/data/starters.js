@@ -134,68 +134,6 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
 
-  /* ---------- more Game Corner skins (roadmap step 9a): one row of Grass, one of Water ---------- */
-  {
-    id: 'budew', type: 'grass', skinOf: 'bulbasaur',
-    line: [
-      { id: 'budew', name: 'Budew' },
-      { id: 'roselia', name: 'Roselia' },
-      { id: 'roserade', name: 'Roserade' },
-    ],
-    blurb: 'Same grass moves as Bulbasaur. A bud that blooms into a bouquet.',
-    deck: GRASS_DECK,
-  },
-  {
-    id: 'sewaddle', type: 'grass', skinOf: 'bulbasaur',
-    line: [
-      { id: 'sewaddle', name: 'Sewaddle' },
-      { id: 'swadloon', name: 'Swadloon' },
-      { id: 'leavanny', name: 'Leavanny' },
-    ],
-    blurb: 'Same grass moves as Bulbasaur. Sews its own leafy clothes.',
-    deck: GRASS_DECK,
-  },
-  {
-    id: 'lotad', type: 'grass', skinOf: 'bulbasaur',
-    line: [
-      { id: 'lotad', name: 'Lotad' },
-      { id: 'lombre', name: 'Lombre' },
-      { id: 'ludicolo', name: 'Ludicolo' },
-    ],
-    blurb: 'Same grass moves as Bulbasaur, with a lily pad hat and a dance in its step.',
-    deck: GRASS_DECK,
-  },
-  {
-    id: 'horsea', type: 'water', skinOf: 'squirtle',
-    line: [
-      { id: 'horsea', name: 'Horsea' },
-      { id: 'seadra', name: 'Seadra' },
-      { id: 'kingdra', name: 'Kingdra' },
-    ],
-    blurb: 'Same water moves as Squirtle. Small, but it shoots ink with pinpoint aim.',
-    deck: WATER_DECK,
-  },
-  {
-    id: 'spheal', type: 'water', skinOf: 'squirtle',
-    line: [
-      { id: 'spheal', name: 'Spheal' },
-      { id: 'sealeo', name: 'Sealeo' },
-      { id: 'walrein', name: 'Walrein' },
-    ],
-    blurb: 'Same water moves as Squirtle. Rolls everywhere, and grows mighty tusks.',
-    deck: WATER_DECK,
-  },
-  {
-    id: 'tympole', type: 'water', skinOf: 'squirtle',
-    line: [
-      { id: 'tympole', name: 'Tympole' },
-      { id: 'palpitoad', name: 'Palpitoad' },
-      { id: 'seismitoad', name: 'Seismitoad' },
-    ],
-    blurb: 'Same water moves as Squirtle. Its song makes the water shake.',
-    deck: WATER_DECK,
-  },
-
   /* ---------- skins unlocked through achievements ---------- */
   {
     id: 'torchic', type: 'fire', skinOf: 'charmander',

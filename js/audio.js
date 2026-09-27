@@ -88,8 +88,6 @@ const CRIES = new Set([
   'torchic', 'combusken', 'blaziken', 'treecko', 'grovyle', 'sceptile',
   'mudkip', 'marshtomp', 'swampert', 'chimchar', 'monferno', 'infernape',
   'turtwig', 'grotle', 'torterra', 'piplup', 'prinplup', 'empoleon',
-  'budew', 'roselia', 'roserade', 'sewaddle', 'swadloon', 'leavanny', 'lotad', 'lombre', 'ludicolo',
-  'horsea', 'seadra', 'kingdra', 'spheal', 'sealeo', 'walrein', 'tympole', 'palpitoad', 'seismitoad',
   'moltres', 'virizion', 'suicune', 'mewtwo', 'entei', 'celebi', 'kyogre', 'hooh', 'lugia', 'palkia',
   'reshiram', 'victini', 'heatran', 'manaphy', 'keldeo',
   'vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot', 'poliwag', 'psyduck',

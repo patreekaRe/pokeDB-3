@@ -8,7 +8,8 @@ steps land (mark them done, note anything decided along the way).
 What the second chain did (details and "For the user" notes in each step below):
 - **7b, Pokédex research levels**: every entry counts defeats ("Oddish defeated 2/3"); at 3 (bosses 2) it's Research
   complete, a gold mark, each move's numbers, and PokéCoins (wild 25 / Alpha 50 / boss 100); every entry done pays 1000 once.
-- **9a, 6 Game Corner skins**: Budew, Sewaddle, Lotad (Grass) and Horsea, Spheal, Tympole (Water), 300 each plus a shiny.
+- **9a, 6 Game Corner skins**: Budew, Sewaddle, Lotad (Grass) and Horsea, Spheal, Tympole (Water). **Removed again the same
+  day: the user had said no to them.** Don't re-add them.
 - **9b, 6 legendaries**: Entei / Celebi / Kyogre (a Level 5 win per type), Ho-Oh / Lugia / Palkia (a finished Pokédex page).
   Unlocks are now also checked after each won fight and at the end of a lost run. Moltres, Virizion, Suicune and Mewtwo got
   the cries they never had.
@@ -17,9 +18,9 @@ What the second chain did (details and "For the user" notes in each step below):
   depth limit and couldn't start a fourth.
 
 **For you to check:** the new blurbs, types (Lugia / Palkia / Manaphy / Keldeo as Water, Ho-Oh / Reshiram / Victini / Heatran
-as Fire; Grass has only Celebi and Virizion) and cries by ear; 300 per skin; research numbers show Level 0's values; Keldeo's
-"every Water starter you own" gets harder as you buy Water skins; Victini at ≤15 cards may be easy; the Game Corner's
-total is now ~14400 PokéCoins (~20200 since shinies went to 250 / 350 / 500, the user's call the same day). Mewtwo's "unlock every other Pokémon" now needs all 31 others, the new legendaries included.
+as Fire; Grass has only Celebi and Virizion) and cries by ear; research numbers show Level 0's values; Keldeo's
+Victini at ≤15 cards may be easy; the Game Corner's
+total is now ~14400 PokéCoins (~20200 since shinies went to 250 / 350 / 500, the user's call the same day). Mewtwo's "unlock every other Pokémon" now needs all 25 others (31 before the 9a skins were removed), the new legendaries included.
 
 ## Overnight summary (2026-09-27)
 
@@ -372,7 +373,8 @@ What the overnight chain did, one session per big step (details and bot numbers 
 9. **More starters** (agreed with the user, 2026-09-27; ~3-4 sessions, 4-6 starters each). Only Pokémon with matching
    Gen 5 animated sprites (normal and shiny, PokeAPI's black-white `animated/`), not on the enemy roster, and no two-stage
    lines with a made-up middle stage (the user's call). The Gen 6-9 starters wait: they have no Gen 5-style sprites.
-   - **6 three-stage skins, bought at the Game Corner (~300 each, a shiny each):** Grass Budew → Roselia → Roserade,
+   - **6 three-stage skins, bought at the Game Corner (~300 each, a shiny each): REJECTED by the user; added in 9a by
+     mistake and removed again (2026-09-27). Don't add them.** Grass Budew → Roselia → Roserade,
      Sewaddle → Swadloon → Leavanny, Lotad → Lombre → Ludicolo; Water Horsea → Seadra → Kingdra, Spheal → Sealeo → Walrein,
      Tympole → Palpitoad → Seismitoad. (Fire has no clean three-stage line left: Magby and Litwick are enemies.)
    - **11 legendaries, earned by achievements** (the same sprite for stages 0-1, the shiny as "Ascendant", like Moltres):
@@ -386,7 +388,9 @@ What the overnight chain did, one session per big step (details and bot numbers 
    - Needs: starter entries, 6 + 6 shiny sprites each (legendaries 2 + 2), cries (PokeAPI, see step 3), `SPRITE_FIT`
      entries, achievement stats (deck size at the win, no-rest win, max Tide), and the Game Corner rows. Mewtwo stays "unlock
      every other Pokémon" for now; the user will adjust it later.
-   - **9a, the 6 Game Corner skins: done (2026-09-27, chain session).** Budew, Sewaddle, Lotad (Grass) and Horsea, Spheal,
+   - **9a, the 6 Game Corner skins: removed (2026-09-27).** The user had said no; their starter entries, shop rows,
+     GIFs, cries and `SPRITE_FIT` lines are gone (git history has them). A save that bought one keeps a harmless stale id.
+     What the original session did: Budew, Sewaddle, Lotad (Grass) and Horsea, Spheal,
      Tympole (Water), 300 PokéCoins each at the end of the Game Corner's Pokémon row, and a 200 shiny each (the skin price in
      `SHINY_COSTS`). 72 GIFs (front/back, normal and shiny, for all 18 stages), 18 cries (PokeAPI's, converted like step 3's:
      Showdown's are still blocked), 36 `SPRITE_FIT` lines. In the starter grid they sit after the Gen 5 skins, a row of Grass

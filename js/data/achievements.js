@@ -2,8 +2,7 @@
    achievements.js  -  how achievement-locked skins get unlocked.
 
    Not every skin is here - Cyndaquil, Chikorita, Totodile, Snivy,
-   Tepig, Oshawott, Budew, Sewaddle, Lotad, Horsea, Spheal and Tympole
-   are bought in the shop instead (see data/shop.js
+   Tepig and Oshawott are bought in the shop instead (see data/shop.js
    and progress.js's isShopUnlock). This file is only for the skins
    that need to be earned.
 
