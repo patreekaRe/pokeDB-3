@@ -891,11 +891,12 @@ function captionedSign(text, caption) {
   return sign;
 }
 
-/** A sign with its caption is big: one over a prop near the edge is nudged back onto the screen, and one that would
- *  cover a lower sign (the grunt's three, the Center's) is lifted clear of it. */
+/** A sign with its caption is big: one over a prop near the edge is nudged back onto the screen, one that would
+ *  cover a lower sign (the grunt's three, the Center's) is lifted clear of it, and none covers the screen's title. */
 function spreadSigns(box) {
   const signs = [...box.querySelectorAll('.reward-option .center-label')];
   signs.forEach(sign => { sign.style.marginLeft = ''; sign.style.marginBottom = ''; });
+  const title = $('reward-title'), ceiling = title.offsetHeight ? title.getBoundingClientRect().bottom + 6 : 0;
   const placed = [];
   signs.map(sign => ({ sign, r: sign.getBoundingClientRect() })).sort((a, b) => b.r.bottom - a.r.bottom).forEach(({ sign, r }) => {
     const edge = 8, gap = 10;   // the gap covers the signs bobbing out of step
@@ -904,6 +905,7 @@ function spreadSigns(box) {
     for (const o of placed) {
       if (r.left + nudge < o.right && r.right + nudge > o.left && r.bottom - lift > o.top - gap) lift = r.bottom - o.top + gap;
     }
+    if (r.top - lift < ceiling) lift = r.top - ceiling;   // over the prop rather than over the screen's title (the Shrine's roof)
     if (nudge) sign.style.marginLeft = `${nudge}px`;
     if (lift) sign.style.marginBottom = `${lift}px`;
     placed.push({ left: r.left + nudge, right: r.right + nudge, top: r.top - lift });

@@ -437,12 +437,17 @@ const PLACE_ART = {
     },
   },
 
-  altar: {   // a little wooden shrine on a stone base, like Ilex Forest's, with your type's power glowing inside
-    outdoor: true, prop: 'altar', horizon: 0.5,
+  /* the Shrine, close up: standing right in front of a little wooden shrine (like Ilex Forest's) on its stone steps,
+     your type's power glowing through its doorway, stone lanterns either side of you, a fence and the grove (or rock)
+     behind. Its own scene, not a prop in the biome's: `biomes` gives each its look, `types` the glow. */
+  altar: {
+    backdrop: 'altar', floor: 'altar', prop: 'altar', light: null, horizon: 0.52,
+    sky: ['#2e6e30'],
     wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
     roof: ['#b87860', '#8a4c3a', '#5e2e24', '#2a1410'],
     altarStone: ['#e0e0d8', '#b0b0a8', '#80807a', '#303030'],
-    inside: '#140c0c', rope: ['#f0e0a0', '#c0a060'], paper: '#ffffff', hp: ['#ffd0d8', '#f05878'],
+    inside: '#140c0c', rope: ['#f0e0a0', '#c0a060', '#8a7040'], paper: '#ffffff', hp: ['#ffd0d8', '#f05878'],
+    bell: ['#fff8b0', '#f8c830', '#b07818', '#5a3a08'], cord: ['#f04030', '#ffffff', '#901818'],
     glow: ['#ffffff', '#fff0a0', '#e0e0e0'],
     types: {
       fire: { glow: ['#fff8d0', '#f8a030', '#e04818'] },
@@ -450,10 +455,38 @@ const PLACE_ART = {
       grass: { glow: ['#f8ffd0', '#80d850', '#309030'] },
       psychic: { glow: ['#fff0fc', '#f878c8', '#b03890'] },
     },
-    life: ['altar'],
     biomes: {
-      shrine: { roof: ['#88d0b0', '#4aa080', '#2e7458', '#123828'] },   // green copper, like the torii's shrine
-      wastes: { roof: ['#8a8a98', '#5e5e6a', '#3e3e48', '#18181e'], altarStone: ['#a08c84', '#7a6660', '#54403a', '#1a1012'] },
+      clearing: {   // a sunny grove: a wall of leaves behind a plain wooden fence, raked white gravel, a grey stone path
+        wall: 'leaves',
+        leaf: ['#b8e878', '#80c858', '#58a444', '#3a7a34', '#22522a'],
+        fence: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
+        ground: ['#e8e0c8', '#dcd4ba', '#d0c8ac', '#c4bc9e'],
+        pollen: ['#fffce0', '#e8f8a0'],
+        leaves: [['#98e070', '#62b84c'], ['#c8e878', '#80b840']],
+        life: ['altar', 'pollen', 'leaves'],
+      },
+      shrine: {   // old cedars in the mist behind a vermilion fence, mossy flagstones, autumn leaves, spirit wisps
+        wall: 'cedars', roof: ['#88d0b0', '#4aa080', '#2e7458', '#123828'],   // green copper, like the torii's shrine
+        leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36', '#183024'],
+        bark: ['#9a6a50', '#7a4e3c', '#5a362a', '#2e1a14'],
+        mistColour: '#e8f0ec',
+        fence: ['#f87858', '#e04030', '#a82820', '#501010'],
+        ground: ['#a0ac94', '#909e86', '#808e78', '#707e6a'],
+        moss: ['#8ac068', '#5a9048'],
+        leaves: [['#f8a040', '#c85828'], ['#f86050', '#a83028']],
+        wisp: ['#f0ffff', '#98e0f8', '#4898c8'],
+        life: ['altar', 'leaves', 'wisps'],
+      },
+      wastes: {   // cut into an obsidian cliff: glowing veins, a basalt fence and flagstones with lava in the cracks
+        wall: 'rock', roof: ['#8a8a98', '#5e5e6a', '#3e3e48', '#18181e'],
+        rock: ['#6a5250', '#523e3e', '#3e2e30', '#2e2224', '#1a1214'],
+        vein: ['#f8b030', '#e05820'],
+        altarStone: ['#a08c84', '#7a6660', '#54403a', '#1a1012'],
+        fence: ['#8a7a74', '#6a5a54', '#4a3c38', '#1a1012'],
+        ground: ['#5a4a46', '#524440', '#4a3c3a', '#423634'],
+        ember: ['#fff0a0', '#f8a830', '#e85820'], embers: 0.5,
+        life: ['altar', 'embers'],
+      },
     },
   },
 };
@@ -475,8 +508,8 @@ export function showMenuScene(type) {
 /** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. `floor` (a function giving
     a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles, and
     `span` (one giving its page [left, right]) lets the scene dress its ends. A place with `biomes` (the treasure
-    grotto) takes its look from `biome`; an `outdoor` one (a ? event) stands in that biome's own scene, and its `types`
-    (the shrine's glow) retint it for your Pokémon's `type`. */
+    grotto, the Shrine) takes its look from `biome`, and its `types` (the Shrine's glow) retint it for your Pokémon's
+    `type`; an `outdoor` one (a ? event) stands in that biome's own scene. */
 export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null } = {}) {
   const { biomes, types, ...art } = PLACE_ART[place];
   if (art.outdoor) {
@@ -485,8 +518,8 @@ export function showPlaceScene(place, { floor = null, span = null, biome = null,
     paintScene(`place/${place}/${biome}/${type}`, { ...shared, ...wild, ...art, ...biomes?.[biome], ...types?.[type], life: [...own, ...art.life] }, floor, span);
     return;
   }
-  const look = biomes && (biomes[biome] || Object.values(biomes)[0]);
-  paintScene(`place/${place}${look ? `/${biome}` : ''}`, look ? { ...art, ...look } : art, floor, span);
+  const look = biomes && (biomes[biome] || Object.values(biomes)[0]), glow = types?.[type];
+  paintScene(`place/${place}${look ? `/${biome}` : ''}${glow ? `/${type}` : ''}`, { ...art, ...look, ...glow }, floor, span);
 }
 
 const BALL_DROP = 4;   // frames before your Poké Ball settles into the healing machine
@@ -641,8 +674,10 @@ function paintBase() {
   if (S.raw.backdrop === 'center') centerBackdrop();
   if (S.raw.backdrop === 'mart') martBackdrop();
   if (S.raw.backdrop === 'treasure') grottoWall();
+  if (S.raw.backdrop === 'altar') shrineGrove();
 
   if (S.raw.floor === 'treasure') grottoFloor();
+  if (S.raw.floor === 'altar') shrineApproach();
   if (S.raw.floor === 'center') centerFloor();
   if (S.raw.floor === 'mart') martFloor();
   if (S.raw.floor === 'meadow') meadow();
@@ -1531,9 +1566,9 @@ function blend(x, y, c, k) {
   px[i] = ((255 << 24) | (mix(16) << 16) | (mix(8) << 8) | mix(0)) >>> 0;
 }
 
-/** Rock broken into facets (Voronoi cells), each lit on its top-left and cracked at its edges, darker towards the
-    walls' ends and the roof, so the light seems to come from the hole. */
-function grottoWall() {
+/** Rock broken into facets (Voronoi cells) above the horizon, each lit on its top-left and cracked at its edges,
+    darker towards the sides and the top; glowing veins run through the cracks where the scene has `vein`. */
+function facetRock() {
   const [, , , , crack] = S.rock, cx = W / 2, G = 8, GY = 6;
   const feature = (i, j) => [(i + 0.2 + noise(i, j, 1) * 0.6) * G, (j + 0.2 + noise(i, j, 2) * 0.6) * GY];
   for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
@@ -1553,6 +1588,12 @@ function grottoWall() {
     const shade = (lit > 0.35 ? 0 : lit > 0 ? 1 : lit > -0.35 ? 2 : 3) + Math.floor(dark * 2 + dither(x + 1, y) / 16);
     solid(x, y, S.rock[Math.min(3, shade)]);
   }
+}
+
+/** The grotto's rock walls, darker towards their ends and the roof, so the light seems to come from the hole. */
+function grottoWall() {
+  const cx = W / 2;
+  facetRock();
 
   // the hole in the roof, rimmed with lit rock, the sky showing through
   const rx = Math.max(6, Math.round(W * 0.08)), ry = 3;
@@ -2394,106 +2435,312 @@ function drawRocket() {
   }
 }
 
-/* ---------- the Shrine ---------- */
+/* ---------- the Shrine, close up: its own scene (PLACE_ART.altar), the shrine filling the screen ---------- */
+
+/** The shrine's width `s` (as big as the screen allows), its middle and its foot, high enough to leave ~200 CSS px
+    under it for the text box and Leave; everything else is measured from these. */
+function shrineLayout() {
+  return { s: Math.round(Math.min(W * 0.72, H * 0.54, 130)), cx: W >> 1, foot: Math.round(Math.min(H * 0.74, H - 200 * H / innerHeight)) };
+}
+
+/** Behind the shrine: a wall of leaves, old cedars in the mist or cut rock, and a fence along its foot. */
+function shrineGrove() {
+  const { s } = shrineLayout();
+  if (S.raw.wall === 'rock') facetRock();
+  else foliage();
+  if (S.raw.wall === 'cedars') cedars(s);
+  shrineFence(Math.max(6, Math.round(s * 0.16)), Math.max(5, Math.round(s * 0.09)));
+}
+
+/** Round clumps of leaves heaped on each other, lit on their top left, the lower ones in front, darker overhead. */
+function foliage() {
+  const G = 7, last = S.leaf.length - 1;
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    let best = null;
+    const i0 = Math.floor(x / G), j0 = Math.floor(y / G);
+    for (let j = j0 - 1; j <= j0 + 1; j++) for (let i = i0 - 1; i <= i0 + 1; i++) {
+      const fx = (i + noise(i, j, 11)) * G, fy = (j + noise(i, j, 12)) * G, r = G * (0.75 + noise(i, j, 13) * 0.4);
+      const dx = x + 0.5 - fx, dy = y + 0.5 - fy;
+      if (dx * dx + dy * dy <= r * r && (!best || fy > best.fy)) best = { fy, r, dx, dy };
+    }
+    const shade = 1.4 * Math.pow(1 - y / horizon, 1.6) + dither(x, y) / 16;
+    if (!best) { solid(x, y, S.leaf[last]); continue; }
+    const { r, dx, dy } = best, lit = -(dx + dy) / r;
+    if (dy > 0 && dx * dx + dy * dy > (r - 1.2) ** 2) { solid(x, y, S.leaf[last]); continue; }   // the clump's shadowed rim
+    const level = (lit > 0.55 ? 0 : lit > 0.05 ? 1 : lit > -0.5 ? 2 : 3) + Math.floor(shade);
+    solid(x, y, S.leaf[Math.min(last, level)]);
+  }
+}
+
+/** Tall cedar trunks rising out of the leaves, the widest to one side roped off as a sacred tree, mist at their feet. */
+function cedars(s) {
+  const [lit, bark, dark, line] = S.bark, n = Math.max(3, Math.round(W / 20)), cx = W / 2;
+  const trunks = Array.from({ length: n }, (_, i) => ({ x: Math.round((i + 0.15 + rand() * 0.7) * W / n), w: 4 + Math.floor(rand() * 5) }));
+  for (const { x: x0, w } of trunks) for (let y = 0; y < horizon; y++) {
+    const flare = Math.max(0, 3 - (horizon - y));   // the roots spreading at its foot
+    for (let dx = -flare; dx < w + flare; dx++) {
+      const x = x0 + dx, edge = dx === -flare || dx === w + flare - 1;
+      const groove = !edge && dx > 1 && noise(x, y >> 2, 5) > 0.72;
+      solid(x, y, edge ? line : dx <= 1 ? lit : groove || dx >= w * 0.6 ? dark : bark);
+    }
+  }
+  const sacred = trunks.filter(t => Math.abs(t.x + t.w / 2 - cx) > s * 0.62).sort((a, b) => b.w - a.w)[0];
+  if (sacred) {
+    const y = Math.round(horizon * 0.62), [rope, twist, under] = S.rope;
+    for (let x = sacred.x - 1; x <= sacred.x + sacred.w; x++) { solid(x, y, (x + y) % 3 ? rope : twist); solid(x, y + 1, (x + y + 1) % 3 ? twist : rope); solid(x, y + 2, under); }
+    shide(sacred.x + (sacred.w >> 1) - 1, y + 3, 5);
+  }
+  const top = Math.round(horizon * 0.55), mist = S.mistColour;
+  for (let y = top; y < horizon; y++) for (let x = 0; x < W; x++) {
+    const k = (y - top) / (horizon - top), wave = Math.sin(x / 9 + y / 5) * 0.08;
+    if (dither(x, y) < 16 * Math.min(1, k * 1.3 + wave)) blend(x, y, mist, 0.35 + k * 0.25);
+  }
+}
+
+/** A shrine's fence (tamagaki) along the horizon: posts with pointed caps and two rails, the grove showing between. */
+function shrineFence(h, gap) {
+  const [lit, body, dark, line] = S.fence, top = horizon - h, low = horizon - Math.round(h * 0.45);
+  for (const y of [top + 2, low]) for (let x = 0; x < W; x++) { solid(x, y, lit); solid(x, y + 1, dark); solid(x, y + 2, line); }
+  for (let x0 = Math.floor((W / 2) % gap) - gap; x0 < W; x0 += gap) {
+    for (let y = top; y < horizon; y++) {
+      const cap = y === top;
+      solid(x0 - 1, y, line); solid(x0 + 3, y, line);
+      for (let k = 0; k < 3; k++) solid(x0 + k, y, cap ? (k === 1 ? lit : line) : k === 0 ? lit : k === 1 ? body : dark);
+    }
+    solid(x0 + 1, top - 1, line);
+  }
+}
+
+/** The ground: gravel, and a path of flagstones from the shrine's steps out to you, widening as it comes closer. */
+function shrineApproach() {
+  const { s, cx, foot } = shrineLayout(), [light, , , deep] = S.ground;
+  bands(horizon, H, S.ground, 1);
+  for (let n = 0, count = Math.round(W * (H - horizon) / 5); n < count; n++) {
+    const x = Math.floor(rand() * W), y = horizon + 1 + Math.floor(rand() * (H - horizon));
+    put(x, y, rand() < 0.5 ? light : deep);
+    if (depthOf(y) > 0.5 && rand() < 0.5) put(x + 1, y, deep);
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.72); tint(x, horizon + 1, 0.86); }   // the fence's shadow
+
+  const [lit, stone, shade, line] = S.altarStone, half = (y) => s * 0.3 + (y - foot) * 0.45;
+  for (let y0 = foot - Math.round(s * 0.2), rh = 3, row = 0; y0 < H; y0 += rh, rh++, row++) {
+    const w = rh * 2 + 3, off = row % 2 ? w >> 1 : 0;
+    for (let y = y0; y < y0 + rh && y < H; y++) {
+      const hw = half(y);
+      for (let x = Math.ceil(cx - hw); x <= cx + hw; x++) {
+        const edge = Math.abs(x + 0.5 - cx) > hw - 1, joint = (x - Math.round(cx) + off + w * 8) % w === 0;
+        let c = y === y0 + rh - 1 || joint || edge ? line : y === y0 ? lit : dither(x, y) < 3 ? shade : stone;
+        if (c === line && y > y0 && noise(x, y, 9) > 0.45) {   // what grows in, or glows in, the gaps
+          if (S.moss) c = S.moss[(x + y) & 1];
+          else if (S.vein && noise(x >> 1, y0, 8) > 0.55) c = S.vein[(x + y) & 1];
+        }
+        put(x, y, c);
+      }
+    }
+  }
+}
 
 function altarScene() {
-  const cx = W >> 1, foot = groundAt(0.42);
-  groundShadow(cx + 2, foot + 1, 17, 3);
-  if (cx - 27 > 0) { stoneLantern(cx - 21, foot + 1); stoneLantern(cx + 21, foot + 1); }
-  altar(cx, foot);
-  life.orb = { x: cx, y: foot - 9 };
-  life.eventSpots = [{ x0: cx - 15, x1: cx + 15, y0: foot - 26, y1: foot + 4 }];
-  life.foot = foot + 8;
-  life.keep = [{ x0: cx - 26, x1: cx + 26, y0: foot - 26, y1: foot + 5 }];
+  const { s, cx, foot } = shrineLayout(), L = Math.round(s * 0.62);
+  life.lamps = [];
+  if (W > s * 2.4) {   // wide screens see a second pair of lanterns further back
+    const far = Math.round(s * 0.98), l = Math.round(L * 0.72);
+    for (const x of [cx - far, cx + far]) { groundShadow(x + 1, foot - 3, Math.round(l * 0.3), 2); stoneLantern(x, foot - 3, l); }
+  }
+  groundShadow(cx, foot + 2, Math.round(s * 0.55), Math.max(2, Math.round(s * 0.05)));
+  const { top, orbY } = shrine(cx, foot, s);
+  life.orb = { x: cx, y: orbY, k: s / 30 };
+  const near = Math.round(s * 0.63);
+  for (const x of [cx - near, cx + near]) { groundShadow(x + 2, foot + 8, Math.round(L * 0.32), 2); stoneLantern(x, foot + 8, L); }
+  const bw = Math.round(s * 0.34);
+  life.eventSpots = [{ x0: cx - bw, x1: cx + bw, y0: top, y1: foot }];
+  life.foot = foot + 4;
 }
 
-/** A stone lantern like the shrine biome's, its window lit with your type's glow. */
-function stoneLantern(cx, foot) {
-  const [lit, , shade, line] = S.altarStone;
-  pixelMap(cx - 3, foot - 12, [
-    '...k...',
-    '..kak..',
-    '.kaabk.',
-    'kaaabbk',
-    'kkkkkkk',
-    '.kagbk.',
-    '.kkkkk.',
-    '..kak..',
-    '..kab..',
-    '..kbk..',
-    '.kaabk.',
-    'kkkkkkk',
-  ], { k: line, a: lit, b: shade, g: S.glow[1] });
+/** A stone lantern (tōrō): a finial, a curled roof, the firebox (its window lit with your type's glow, flickering in
+    drawAltar), a platform, the post and a wide foot. `L` is its height. */
+function stoneLantern(cx, foot, L) {
+  const [lit, stone, shade, line] = S.altarStone, top = foot - L;
+  const parts = [[0.08, 0.06], [0.24, 0.34], [0.44, 0.18], [0.5, 0.27], [0.84, 0.09], [0.9, 0.17], [1.01, 0.24]];
+  const at = (y) => { const t = (y - top) / L; const i = parts.findIndex(([end]) => t < end); return i < 0 ? null : { i, t }; };
+  const halfAt = (y) => {
+    const p = at(y);
+    if (!p) return -1;
+    if (p.i === 1) return L * (0.1 + (p.t - 0.08) / 0.16 * 0.24);   // the roof spreading to its eaves
+    return Math.max(1, L * parts[p.i][1]);
+  };
+  const win = { x0: Math.round(cx - L * 0.09), x1: Math.round(cx + L * 0.09), y0: Math.round(top + L * 0.28), y1: Math.round(top + L * 0.4) };
+  outlined(cx - L * 0.4, top, cx + L * 0.4, foot, (x, y) => y >= top && y <= foot && Math.abs(x + 0.5 - cx) <= halfAt(y) + 0.5, (x, y) => {
+    if (x >= win.x0 && x <= win.x1 && y >= win.y0 && y <= win.y1) return S.glow[1];
+    const p = at(y), k = (x + 0.5 - cx) / Math.max(1, halfAt(y));
+    if (p.i !== at(y - 1)?.i) return lit;   // the top of each part catches the light
+    if (p.i !== at(y + 1)?.i) return shade;
+    return k < -0.45 ? lit : k > 0.4 ? shade : stone;
+  }, line);
+  life.lamps.push(win);
 }
 
-/** A little wooden shrine (like Ilex Forest's) on two stone steps: its doors open on a dark inside where your type's
-    power glows (drawAltar), a straw rope with paper streamers under a roof with upturned eaves, an offering box in front. */
-function altar(cx, foot) {
+/** A zigzag paper streamer (shide) hanging from a rope. */
+function shide(x, y, len) {
+  for (let k = 0; k < len; k++) {
+    const o = (k >> 1) % 2;
+    solid(x + o, y + k, S.paper);
+    solid(x + o + 1, y + k, S.paper);
+    tint(x + o + 1, y + k, 0.82);
+  }
+}
+
+/** The shrine (like Ilex Forest's, close up) on three stone steps: plank walls between pillars, open doors on a dark
+    inside where your type's power glows (drawAltar) under a lattice, a thick straw rope with paper streamers and a bell,
+    a roof flaring to upturned eaves with crossed finials (chigi) and billets on its ridge, an offering box in front.
+    Returns its top (the finials' tips) and where the glow sits. */
+function shrine(cx, foot, s) {
   const [sLit, stone, sShade, sLine] = S.altarStone, [wLit, wood, wDark, wLine] = S.wood, [rLit, roof, rDark, rLine] = S.roof;
+  const u = (k) => Math.max(1, Math.round(s * k));
   const block = (x0, x1, y0, y1, colourAt, line) => outlined(x0, y0, x1, y1, (x, y) => x >= x0 && x <= x1 && y >= y0 && y <= y1, colourAt, line);
-  block(cx - 14, cx + 14, foot - 2, foot, (x, y) => (y === foot - 2 ? sLit : (x - cx + 20) % 7 === 0 ? sShade : stone), sLine);
-  block(cx - 11, cx + 11, foot - 5, foot - 3, (x, y) => (y === foot - 5 ? sLit : (x - cx + 20) % 6 === 0 ? sShade : stone), sLine);
-  block(cx - 8, cx + 8, foot - 16, foot - 6, (x, y) => {
-    if (Math.abs(x - cx) <= 4 && y >= foot - 13) return y === foot - 13 ? wLine : S.inside;   // the open doorway, dark inside
-    if (Math.abs(x - cx) === 5 && y >= foot - 13) return wDark;   // the doors folded back
-    return x < cx - 5 ? wLit : x > cx + 5 ? wDark : wood;
+
+  // three stone steps, each a lit tread over its riser
+  const stepH = Math.max(3, u(0.05));
+  for (let i = 0; i < 3; i++) {
+    const hw = u(0.5 - i * 0.075), y1 = foot - i * stepH, y0 = y1 - stepH + 1;
+    for (let y = y0; y <= y1; y++) for (let x = cx - hw; x <= cx + hw; x++) {
+      const side = Math.abs(x - cx) === hw;
+      solid(x, y, y === y1 || side ? sLine : y === y0 ? sLit : (x - cx + 50 + i * 3) % 9 === 0 ? sShade : dither(x, y) < 2 ? sShade : stone);
+    }
+  }
+  const baseTop = foot - 3 * stepH, bw = u(0.34), eave = baseTop - u(0.42), deck = baseTop - Math.max(2, u(0.04));
+
+  // the walls, the veranda, the pillars
+  block(cx - bw, cx + bw, eave + 1, deck - 1, (x) => {
+    const e = x - cx;
+    if ((e + 200) % 4 === 0) return wDark;
+    return e < -bw * 0.5 ? wLit : e > bw * 0.5 ? wDark : wood;
   }, wLine);
-  const top = foot - 25, eave = foot - 17;
-  outlined(cx - 15, top, cx + 15, eave, (x, y) => {
-    const r = y - top, hw = 2 + Math.round(r * 11 / (eave - top));
-    return y >= top && y <= eave && (Math.abs(x - cx) <= hw || (y >= eave - 2 && Math.abs(x - cx) <= hw + (eave - y) + 1 && Math.abs(x - cx) <= 15));
-  }, (x, y) => {
+  block(cx - bw - 2, cx + bw + 2, deck, baseTop, (x, y) => (y === deck ? wLit : (x - cx + 200) % 5 === 0 ? wLine : wDark), wLine);
+  for (const side of [-1, 1]) block(cx + side * bw - 1, cx + side * bw + 1, eave + 1, deck - 1, (x) => (x === cx + side * bw - 1 ? wLit : x === cx + side * bw ? wood : wDark), wLine);
+
+  // the doorway: the doors folded back, a lattice over a dark inside
+  const dw = u(0.2), doorTop = eave + u(0.08), lattice = doorTop + Math.max(3, u(0.09));
+  block(cx - dw, cx + dw, doorTop, deck - 1, (x, y) => {
+    if (y < lattice) return (x - cx + 200) % 2 ? S.inside : wood;
+    if (y === lattice) return wDark;
+    return S.inside;
+  }, wLine);
+  for (const side of [-1, 1]) block(cx + side * (dw + 2), cx + side * (dw + 3), doorTop, deck - 1, (x, y) => ((y - doorTop) % 3 === 0 ? wLine : wDark), wLine);
+
+  // the head beam, and the rafter ends under the eave
+  const rw = u(0.56);
+  block(cx - bw - 3, cx + bw + 3, eave + 2, eave + 3, (x, y) => (y === eave + 2 ? wLit : wood), wLine);
+  for (let x = cx - rw + 3; x <= cx + rw - 3; x++) solid(x, eave + 1, (x - cx + 200) % 2 ? wLine : wLit);
+
+  // the roof, flaring out to upturned eaves
+  const roofTop = eave - u(0.34), tip = Math.max(2, u(0.06)), neck = u(0.13);
+  const half = (y) => {
+    const r = (y - roofTop) / (eave - roofTop);
+    return neck + (rw - tip - neck) * Math.pow(r, 1.5) + (y >= eave - tip ? (eave - y) * 1.5 + 1 : 0);
+  };
+  outlined(cx - rw - tip * 2, roofTop, cx + rw + tip * 2, eave, (x, y) => y >= roofTop && y <= eave && Math.abs(x + 0.5 - cx) <= half(y), (x, y) => {
     const e = x - cx;
     if (y === eave) return rDark;
-    if (y === top || Math.abs(e) <= 1) return rLit;
-    if (Math.abs(e) % 3 === 0) return e < 0 ? roof : rDark;   // the ribs of the roof
+    if (y === eave - 1) return (e + 200) % 2 ? rLit : rDark;   // the ends of the tiles
+    if (y === roofTop || Math.abs(e) <= 1) return rLit;
+    if ((Math.abs(e) + 1) % 3 === 0) return e < 0 ? roof : rDark;   // the rows of tiles running down it
     return e < 0 ? rLit : roof;
   }, rLine);
-  const [rope, ropeDark] = S.rope;
-  for (let x = cx - 9; x <= cx + 9; x++) { solid(x, foot - 15, x % 2 ? rope : ropeDark); solid(x, foot - 14 + ((x - cx + 9) % 6 === 3 ? 1 : 0), ropeDark); }
-  for (const dx of [-6, 6]) pixelMap(cx + dx - 1, foot - 13, ['w.', '.w', 'w.', '.w'], { w: S.paper });   // paper streamers (shide)
-  pixelMap(cx - 6, foot - 3, [
-    'kkkkkkkkkkkkk',
-    'kabababababdk',
-    'kkkkkkkkkkkkk',
-    'kaaabbbbbbbdk',
-    'kaaabbbbbbbdk',
-    'kkkkkkkkkkkkk',
-  ], { k: wLine, a: wLit, b: wood, d: wDark });
+
+  // the ridge, its billets (katsuogi) and crossed finials (chigi)
+  const ridge = neck + 2, rTop = roofTop - Math.max(2, u(0.04));
+  block(cx - ridge, cx + ridge, rTop, roofTop - 1, (x, y) => (y === rTop ? rLit : rDark), rLine);
+  const [gold, goldBody] = S.bell;
+  for (const k of [-1, 0, 1]) {
+    const bx = cx + Math.round(k * ridge * 0.6), hw = Math.max(1, u(0.03));
+    block(bx - hw, bx + hw, rTop - 2, rTop - 1, (x) => (Math.abs(x - bx) === hw ? goldBody : x < bx ? wLit : wood), wLine);
+  }
+  const len = Math.max(2, u(0.075));
+  for (const side of [-1, 1]) {
+    const ex = cx + side * ridge;
+    outlined(ex - len - 1, rTop - len, ex + len + 1, rTop, (x, y) => y >= rTop - len && y <= rTop && Math.abs(Math.abs(x + 0.5 - ex) - (rTop - y)) <= 0.6, (x) => ((x - ex) * side > 0 ? wood : wLit), wLine);
+  }
+
+  // the straw rope sagging across the front, with streamers and tassels, the bell hanging from its middle
+  const [rope, twist, under] = S.rope, th = Math.max(2, u(0.05)), sag = Math.max(1, u(0.04)), ropeY = eave + 4;
+  const ropeAt = (x) => ropeY + Math.round(sag * (1 - ((x - cx) / (bw + 2)) ** 2));
+  for (let x = cx - bw - 2; x <= cx + bw + 2; x++) {
+    const y = ropeAt(x);
+    for (let k = 0; k < th; k++) solid(x, y + k, (x + k * 2 + 200) % 4 < 2 ? rope : twist);
+    solid(x, y + th, under);
+  }
+  for (const k of [-0.75, -0.25, 0.25, 0.75]) {
+    const x = cx + Math.round(k * bw);
+    for (let d = 1; d <= Math.max(2, u(0.05)); d++) { solid(x, ropeAt(x) + th + d, twist); solid(x + 1, ropeAt(x) + th + d, under); }
+  }
+  for (const k of [-0.5, 0.5]) { const x = cx + Math.round(k * bw); shide(x, ropeAt(x) + th + 1, Math.max(4, u(0.16))); }
+
+  const br = Math.max(2, u(0.055)), by = ropeAt(cx) + th + br + 1, [shine, , dim, deep] = S.bell;
+  for (let y = -br; y <= br; y++) for (let x = -br; x <= br; x++) {
+    const d = Math.hypot(x, y);
+    if (d <= br + 0.3) solid(cx + x, by + y, d > br - 0.7 ? deep : x + y < -br * 0.5 ? shine : y === Math.round(br * 0.4) ? deep : x + y > br * 0.4 ? dim : gold);
+  }
+  const box = { hw: u(0.22), h: Math.max(4, u(0.13)) }, boxTop = foot - box.h + 2;
+  life.cord = [];
+  const [red, white, redDark] = S.cord;
+  for (let y = by + br + 1; y < boxTop - 2; y++) {
+    const c = (y >> 1) % 2 ? red : white;
+    life.cord.push([cx, y, c], [cx + 1, y, (y >> 1) % 2 ? redDark : white]);
+  }
+  for (const [x, y, c] of life.cord) solid(x, y, c);
+
+  // the offering box: a slatted top over a panelled front with a gold plate
+  block(cx - box.hw, cx + box.hw, boxTop, foot + 2, (x, y) => {
+    if (y <= boxTop + 1) return (x - cx + 200) % 2 ? wLine : wLit;
+    if (y === boxTop + 2) return wDark;
+    if (Math.abs(x - cx) <= 2 && y >= boxTop + 4 && y <= boxTop + 5) return y === boxTop + 4 ? gold : dim;
+    return Math.abs(x - cx) >= box.hw - 1 || y === foot + 2 ? wDark : x < cx ? wLit : wood;
+  }, wLine);
+
+  return { top: rTop - len, orbY: Math.round((lattice + deck) / 2) };
 }
 
-/** The glow of your type inside the shrine, pulsing, with motes drifting up. Praying draws your HP up into it as red
-    motes; it flares and throws rays across the shrine, then a spark rises out of the roof (the relic). */
+/** Your type's glow in the shrine, pulsing, with motes drifting up, and the lanterns flickering in its colour. Praying
+    draws your HP up into it as red motes; it flares and throws rays across the shrine, then a spark rises out of the
+    roof (the relic). Everything is measured in `k`, the shrine's size. */
 function drawAltar(t) {
-  const o = life.orb, f = actFrame('pray'), [core, glow, deep] = S.glow;
+  const o = life.orb, k = o.k, f = actFrame('pray'), [core, glow, deep] = S.glow;
+  for (const w of life.lamps) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) {
+    const flick = 6 + Math.round(4 * Math.sin(t / 2 + w.x0) + 3 * Math.sin(t / 5.3));
+    if (dither(x, y + (t >> 1)) < flick) put(x, y, core);
+  }
   const flare = f >= 8 && f < 14 ? Math.sin((f - 8) / 6 * Math.PI) : 0;
-  const r = 2.5 + Math.sin(t / 4) * 0.6 + flare * 6;
+  const r = (2.5 + Math.sin(t / 4) * 0.6) * k + flare * 6 * k;
   for (let y = -Math.ceil(r); y <= r; y++) for (let x = -Math.ceil(r); x <= r; x++) {
     const d = Math.hypot(x, y) / r;
     if (d <= 1 && dither(o.x + x, o.y + y) < 16 * (1.1 - d)) put(o.x + x, o.y + y, d < 0.45 ? core : d < 0.75 ? glow : deep);
   }
-  put(o.x, o.y, core); put(o.x - 1, o.y, core); put(o.x + 1, o.y, core); put(o.x, o.y - 1, core); put(o.x, o.y + 1, core);
-  for (let i = 0; i < 3; i++) {
-    const age = (t + i * 9) % 27, x = o.x - 3 + ((i * 5 + (t / 27 | 0)) % 7);
-    if (age < 12) put(x, o.y + 3 - age, age < 6 ? glow : deep);
+  sparkle(o.x, o.y, core);
+  for (let i = 0; i < 5; i++) {
+    const age = (t + i * 7) % 27, x = o.x + Math.round((((i * 5 + (t / 27 | 0)) % 7) - 3) * k);
+    if (age < 12) put(x, o.y + Math.round((3 - age) * k), age < 6 ? glow : deep);
   }
+  for (const [x, y, c] of life.cord) put(x, y, c);   // the bell's cord hangs in front of the glow
   if (f < 0) return;
   const [pale, pink] = S.hp;
   for (let i = 0; i < 5; i++) {   // your offering, rising from you as HP-red motes
-    const k = (f - i) / 6;
-    if (k < 0 || k > 1) continue;
-    const sx = o.x + (i - 2) * 9, sy = H + 1;
-    const x = Math.round(sx + (o.x - sx) * k + Math.sin(k * 6 + i) * 2), y = Math.round(sy + (o.y - sy) * k);
+    const p = (f - i) / 6;
+    if (p < 0 || p > 1) continue;
+    const sx = o.x + (i - 2) * 9 * k, sy = H + 1;
+    const x = Math.round(sx + (o.x - sx) * p + Math.sin(p * 6 + i) * 2 * k), y = Math.round(sy + (o.y - sy) * p);
     put(x, y, pale); put(x + 1, y, pink); put(x, y + 1, pink); put(x - 1, y, pink);
+    if (k > 1.5) { put(x, y - 1, pink); put(x + 1, y + 1, pink); }
   }
   if (flare > 0.3) for (let a = 0; a < 8; a++) {
-    const ang = a * Math.PI / 4 + 0.39, len = 6 + flare * 12;
-    for (let s = 4; s < len; s++) if (dither(a, s) < 12) put(o.x + Math.round(Math.cos(ang) * s), o.y + Math.round(Math.sin(ang) * s * 0.8), s < len * 0.5 ? core : glow);
+    const ang = a * Math.PI / 4 + 0.39, len = (6 + flare * 12) * k;
+    for (let s = 4 * k; s < len; s++) if (dither(a, Math.round(s)) < 12) put(o.x + Math.round(Math.cos(ang) * s), o.y + Math.round(Math.sin(ang) * s * 0.8), s < len * 0.5 ? core : glow);
   }
   if (f >= 12) {
-    const k = f - 12, y = o.y - 4 - k * 4;
-    sparkle(o.x, y, k % 2 ? core : glow);
-    if (k > 1) { put(o.x - 2, y + 3, glow); put(o.x + 2, y + 5, glow); }
+    const n = f - 12, y = o.y - 4 * k - n * 4 * k;
+    sparkle(o.x, y, n % 2 ? core : glow);
+    if (k > 1.5) { put(o.x - 2, y, glow); put(o.x + 2, y, glow); put(o.x, y - 2, glow); put(o.x, y + 2, glow); }
+    if (n > 1) { put(o.x - 2, y + 3 * k, glow); put(o.x + 2, y + 5 * k, glow); }
   }
 }
 

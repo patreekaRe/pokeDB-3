@@ -390,7 +390,7 @@ backdrop, ground, life) with the event's props in the middle (`prop`, `eventProp
 its `biomes` only retint the props. Like the Center, there are no tiles: layout `event-room <scene>-room`
 lays each choice as a see-through button over a prop (`life.eventSpots`, `eventSpots()`, placed by
 `placeEventSpots()`) under a bouncing `.center-label` (`spotOption()`) whose second line (`.spot-caption`) says what
-it does (phones never see a `title`; `spreadSigns()` keeps the signs on screen and off each other), with the text box under the props
+it does (phones never see a `title`; `spreadSigns()` keeps the signs on screen, off each other and off the screen's title), with the text box under the props
 (`--counter-foot`). A pick plays out on the scene first (`playOut()` → `sceneAct()`: frames in `ACTS`, drawn
 by the prop's draw function off `actFrame()`; skipped under reduced motion), then takes effect. Berry Tree:
 eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Hot Spring: soak
@@ -404,9 +404,14 @@ and their Alpha standing at it as real GIFs (the choice returns `figures`, `{ st
 `SPRITE_FIT`). The grunt is male or female (`grunts` in `js/data/events.js`, rolled into `node.event.grunt`;
 saves from before fall back to the first), animated HGSS-style sprites by justin8964 in `assets/trainers/`,
 credited in About. Paying throws coins into the grunt's hand and `gruntDoes('hop')` hops the sprite as they
-land; Battle goes straight to the fight; Run shakes the bush (and `shake`s the grunt). Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome): a
-little Ilex Forest-style shrine between two stone lanterns, glowing in your type's colour (`types`, picked by
-`showPlaceScene()`'s `type`); praying draws red HP motes into it, it flares, and a spark rises out; then the relic floats over the scene with
+land; Battle goes straight to the fight; Run shakes the bush (and `shake`s the grunt). Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome) is a
+close-up with a scene of its own, not a prop in the biome's (the user found it "very small"): like the grotto, no `outdoor`,
+a look per biome from `biomes` (`wall`: a Clearing wall of leaves `foliage()`, the Shrine's misty cedars with a roped
+sacred tree `cedars()`, the Wastes' cut rock `facetRock()`, shared with the grotto; a fence along it, `shrineFence()`, and
+a flagstone path, `shrineApproach()`). The Ilex Forest-style shrine (`shrine()`: steps, lattice doorway, straw rope, bell and
+cord, flared roof with chigi) is sized by `shrineLayout()` to fill the screen, its foot ~200 CSS px above the bottom for the
+text box and Leave; big stone lanterns (`stoneLantern()`) frame it, a second pair on wide screens. It glows in your type's
+colour (`types`, picked by `showPlaceScene()`'s `type`, which works for any place with `biomes`), lanterns too; praying draws red HP motes into it, it flares, and a spark rises out; then the relic floats over the scene with
 its name (`revealGift()`, the item screen's `floatingThing()`) until you tap it or Take it and it flies into the Bag. An act's
 `cues` play sounds on its frames (`actCues()`; all at once under reduced motion): the Voltorb's `hit`, the
 ball's `ball-open`. `life.keep` keeps grass blades and lava cracks off the props. Sounds:
