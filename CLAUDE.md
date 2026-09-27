@@ -307,7 +307,7 @@ blows up a full card, `option.zoom`), the items on the next shelf and the relics
 them in the gaps, a 3-2 pyramid, as bobbing bare icons with plain printed prices (no
 tag boxes). Kecleon (2x, flipped to face the shelves) stands at the counter's left end,
 and forgetting a move is the 💻 PC on its right (`martPc()`, under the Center's bouncing
-`.center-label` sign). (Not `.mart`: that's the top bar's Mart icon.)
+`.center-label` sign, which shows the price: "Forget 💴50"). (Not `.mart`: that's the top bar's Mart icon.)
 The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts): teal-banded
 white walls with pennant bunting and hanging lamps (glow, flicker, drifting dust), and on
 wider screens a window (clouds, a passing bird), crates, a SALE poster and a cork board;
@@ -437,7 +437,7 @@ The Bag's Items pocket (`renderItemList()` in `js/run.js`) lists them with
 Use / Toss: in battle Use goes through `pickItem()` (same confirm), on the
 map only heals work (and only when hurt) and Toss is allowed; on reward
 screens both are disabled, since the next checkpoint would split a reward
-chain. The bot harness mirrors all of this (`applyItem`, `useItems`,
+chain, except Toss in the Mart (to make room for a buy: it re-renders the Mart, saved with the purchases). The bot harness mirrors all of this (`applyItem`, `useItems`,
 `ITEM_VALUE`; `cfg.noItems` turns items off for A/B runs).
 Items raised the Level 0 bot win rate from ~94% to ~96% however scarce they
 were (it sees the enemy's next move, so one timely item saves most of its
