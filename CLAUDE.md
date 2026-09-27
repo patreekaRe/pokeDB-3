@@ -142,8 +142,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   cards) are in `CARDS_BY_ID` only, never in `ALL_CARDS`, so they're never offered or indexed. Enemy
   moves can carry `adds: { card, n, to }` (default the discard pile), or be `kind: 'status'` (only
   that; a grey intent bubble; on an attack the junk card's icon follows the move name). Enemies using them since 6c.9
-  are listed in the doc's Status cards table (Psyduck, Oddish, Alpha Gloom, Snorlax, Slowpoke, Shellos, Stantler, Alpha
-  Slowking, Tangrowth, Tangela, Tauros).
+  are listed in the doc's Status cards table (Psyduck, Oddish, Alpha Raticate, Snorlax, Slowpoke, Shellos, Stantler, Alpha
+  Watchog, Exploud, Tangela, Tauros).
   **Fire's pool (6c.3, 2026-09-26)**: 20 common / 32 uncommon / 14 rare + 8 evolution cards, each with its StS
   model in a comment and a hand-picked `upgrade` (the doc's Fire section lists them and what changed). Fire's
   mechanics, all in `js/battle.js` with `describe()` lines: `burnTimes`, `burnMult` (Catalyst), power `drought`
@@ -215,7 +215,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   give any new off-type move one too. **Elites and bosses ignore the chart
   both ways** (`typeless()`, by `battle.kind`, so Team Rocket's Alpha too;
   the user's call: type walls there felt unfair, match-ups are for wild
-  fights). So the elite type-disadvantage coin bonus is gone, and they *show* as Neutral too
+  fights). Since 6c.10 every elite and boss is also a pure Normal Pokémon (the user's call: a Gloom that
+  wasn't weak to Charmander looked like a bug), with no Fire/Grass/Water move names. So the elite type-disadvantage coin bonus is gone, and they *show* as Neutral too
   (the nameplate chip, `setupBattleScreen()` in `js/battle.js`, the map's `.node-badge`), since
   their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
@@ -458,7 +459,8 @@ Grass/Water at Levels 3-5 (Alpha elites out-HP'd the boss) while Fire walked
 it. Now `dmgBonus` 6/14/24, `bossBonus` 7/19/30, Elite Territory +15% HP
 (was 30), Fierce Bosses +10% HP (was 20), Cotton Guard 8, Dive 9, and the
 outliers evened within each biome (Arcanine, Flareon, Gyarados and Salamence
-softer; Gloom and Ursaring harder). Human bot fire / grass / water: L0
+softer; Gloom and Ursaring harder; since 6c.10 those slots are Kangaskhan, Linoone,
+Lickilicky, Porygon-Z and Raticate, same numbers). Human bot fire / grass / water: L0
 74 / 76 / 76, L3 59 / 56 / 65, L5 36 / 33 / 39; strong bot L0 79 / 89 / 88,
 L5 53 / 51 / 51. Fire still dies mostly to biome 3 bosses (it's strong early,
 thin late), Grass/Water mostly in biome 1 at higher Levels. A +1/+2 block on

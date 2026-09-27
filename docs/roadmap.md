@@ -154,23 +154,24 @@ steps land (mark them done, note anything decided along the way).
         -3 to +3 at L0 but Water -15 / -8 and Grass -8 at L3 / L5 (biome 1's Alpha Gloom), the Center change -2 to +7.
         Gloom at 1 Poison (shipped): Water 69.3 / 49.0 / 25.8 (400). Withdraw 7 on top overshot (82.3 / 70.5 / 47.3).
       - Left: build-defining relics and more items (next sessions), and Water trails by ~10 at L3/L5.
-   10. **NEXT: Normal-type elites and bosses (a visual swap)**. The user's call (2026-09-27): elites and bosses already
-      fight as Neutral, but a Gloom that isn't weak to Fire looks like a bug, so every non-Normal elite and boss becomes a
-      pure Normal Pokémon with the same moves and numbers (move names that give away a type are renamed, same numbers).
-      Proposed (Gen 1-5, pure Normal, not used elsewhere, mostly evolutions of each biome's wilds):
-      biome 1 elites Raticate, Furret, Linoone (for Gloom, Poliwhirl, Flareon), bosses Snorlax + Kangaskhan, Miltank (for
-      Arcanine, Poliwrath); biome 2 elites Ambipom, Persian, Watchog (for Ninetales, Shiftry, Slowking), bosses Ursaring +
-      Stoutland, Exploud (for Chandelure, Tangrowth); biome 3 elites Purugly, Cinccino, Lopunny (for Houndoom, Breloom,
-      Kingdra), bosses Slaking + Regigigas, Lickilicky, Porygon-Z (for Magmortar, Gyarados, Salamence).
-      **Run in the CLOUD** (select both `pokeDB-3` and `pokeDB-sim`). Session prompt:
-      > Do roadmap step 6c.10 (read CLAUDE.md and docs/roadmap.md first): swap every non-Normal elite and boss for the pure
-      > Normal Pokémon listed there. Visual only: keep each one's moves, numbers, status cards and place in BIOMES; rename
-      > moves whose name gives away a Fire/Grass/Water type to a Normal move (same kind and numbers). Give the new ones new
-      > ids (bump RUN_SAVE_VERSION), their Gen 5 animated sprite, cry (PokeAPI cries, the roadmap's step 3 notes say how)
-      > and sprite-fit.js entry; remove the replaced Pokémon's files and entries unless something else uses them (Team
-      > Rocket, the Pokédex notes), and update the roadmap's Pokémon list. Mirror any id the sim's variants use. Check a
-      > fight with each new sprite headless in Chromium (/opt/pw-browsers/chromium), then push both repos to main.
-   11. **Then: more relics and items, and Water's catch-up.** **Run in the CLOUD** (both repos). Session prompt:
+   10. **Normal-type elites and bosses (a visual swap)** — done (2026-09-27). The user's call: elites and bosses already
+      fought as Neutral, but a Gloom that isn't weak to Fire looked like a bug, so every non-Normal elite and boss became a
+      pure Normal Pokémon with the same moves, numbers, status cards and place in `BIOMES` (new ids, `RUN_SAVE_VERSION`
+      7 → 8). Old → new (moves renamed only where they named a type, or didn't fit):
+      - Biome 1 elites: Gloom → Raticate (Super Fang, Toxic, Hyper Fang), Poliwhirl → Furret (Quick Attack, Defense
+        Curl, Body Slam), Flareon → Linoone (Headbutt, Work Up, Double-Edge). Bosses: Arcanine → Kangaskhan (Mega Punch,
+        Howl, Extreme Speed, Mega Kick), Poliwrath → Miltank (Rollout, Defense Curl, Bulk Up, Dynamic Punch).
+      - Biome 2 elites: Ninetales → Ambipom (Double Hit, Nasty Plot, Last Resort), Shiftry → Persian (Faint Attack, Nasty
+        Plot, Slash), Slowking → Watchog (Confuse Ray, Amnesia, Crunch). Bosses: Chandelure → Stoutland (Take Down, Work
+        Up, Retaliate, Giga Impact), Tangrowth → Exploud (Uproar, Bite, Screech, Hyper Voice).
+      - Biome 3 elites: Houndoom → Purugly (Bite, Nasty Plot, Slam), Breloom → Cinccino (Double Slap, Covet, Tail Slap),
+        Kingdra → Lopunny (Dizzy Punch, Agility, Return). Bosses: Magmortar → Regigigas (Knock Off, Slow Start, Payback,
+        Crush Grip), Gyarados → Lickilicky (Wrap, Swords Dance, Wring Out, Hyper Beam), Salamence → Porygon-Z (Psybeam,
+        Nasty Plot, Tri Attack, Hyper Beam).
+      - The replaced Pokémon's sprites, cries and sprite-fit entries are gone (nothing else used them). Checked headless:
+        every new one's intro, size and intent bubble. The sim (`pokeDB-sim`) still needs its enemy ids mirrored
+        (variants such as `oldStatus`, `gloomPoison1`): this session couldn't attach that repo.
+   11. **NEXT: more relics and items, and Water's catch-up.** **Run in the CLOUD** (both repos). Session prompt:
       > Do roadmap step 6c.11 (read CLAUDE.md, docs/roadmap.md and docs/card-design.md first): add build-defining relics
       > (a few per type's archetypes, plus Neutral ones) and a few more items, StS-style, with PokéSprite art. Recalibrate
       > sim/ranks.json (calibrate()) so the bot picks them by value, then a human-bot pass at Levels 0/3/5 (300+ runs/cell).
@@ -215,7 +216,8 @@ Anytime, as a break from number work:
 ## The Pokémon list: 18 per biome, 54 in all
 
 Each biome: 12 wild (3 Fire, 3 Grass, 3 Water, 3 pure Normal, so every starter meets the same
-number of good and bad match-ups), 3 elites, 3 bosses. All Gen 1–5, to match the sprite style;
+number of good and bad match-ups), 3 elites, 3 bosses (biome 3 has a 4th), all elites and bosses pure Normal
+since 6c.10. All Gen 1–5, to match the sprite style;
 none are starter lines or Pokémon the game uses elsewhere (Moltres, Suicune, Virizion, Mewtwo,
 Chansey, Kecleon).
 
@@ -226,15 +228,16 @@ Chansey, Kecleon).
 | Grass | Oddish, Hoppip, Seedot | Bellsprout, Paras, Cherubi | Tangela, Cacturne, Maractus |
 | Water | Poliwag, Psyduck, Marill | Krabby, Slowpoke, Shellos | Staryu, Crawdaunt, Sharpedo |
 | Normal | Rattata, Sentret, Zigzagoon | Teddiursa, Aipom, Stantler | Tauros, Bouffalant, Zangoose |
-| Elites | Gloom, Poliwhirl, Flareon | Ninetales, Shiftry, Slowking | Houndoom, Breloom, Kingdra |
-| Bosses | Snorlax, Arcanine, Poliwrath | Chandelure, Tangrowth, Ursaring | Slaking, Magmortar, Gyarados |
+| Elites | Raticate, Furret, Linoone | Ambipom, Persian, Watchog | Purugly, Cinccino, Lopunny |
+| Bosses | Snorlax, Kangaskhan, Miltank | Stoutland, Exploud, Ursaring | Slaking, Regigigas, Lickilicky, Porygon-Z |
 
 Leaving the game: Pidgey, Zubat, Machop, Geodude, Rhyhorn, Salamence (the current final boss;
 it could stay as a 4th biome-3 boss, since bosses are neutral), plus current bosses Magmar
 (becomes a biome-3 wild) and Lapras.
 
-Some lines carry across biomes, for a sense of progression in the Pokédex: Houndour → Houndoom,
-Litwick → Chandelure, Teddiursa → Ursaring, Magmar → Magmortar.
+Some lines carry across biomes, for a sense of progression in the Pokédex: Rattata → Raticate,
+Sentret → Furret, Zigzagoon → Linoone, Aipom → Ambipom, Teddiursa → Ursaring. (Houndoom, Chandelure,
+Magmortar and the other non-Normal elites and bosses left the game in 6c.10.)
 
 Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
 - Biome 1: Ponyta, Sunkern, Goldeen; Pidgeotto (elite); Vileplume (boss)

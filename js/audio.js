@@ -93,9 +93,10 @@ const CRIES = new Set([
   'paras', 'cherubi', 'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler',
   'magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus', 'staryu', 'crawdaunt',
   'sharpedo', 'tauros', 'bouffalant', 'zangoose',
-  'gloom', 'poliwhirl', 'flareon', 'ninetales', 'shiftry', 'slowking',
-  'snorlax', 'arcanine', 'poliwrath', 'chandelure', 'tangrowth', 'ursaring', 'salamence',
-  'houndoom', 'breloom', 'kingdra', 'slaking', 'magmortar', 'gyarados',
+  'raticate', 'furret', 'linoone', 'ambipom', 'persian', 'watchog',
+  'purugly', 'cinccino', 'lopunny',
+  'snorlax', 'kangaskhan', 'miltank', 'ursaring', 'stoutland', 'exploud',
+  'slaking', 'regigigas', 'lickilicky', 'porygonz',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1
