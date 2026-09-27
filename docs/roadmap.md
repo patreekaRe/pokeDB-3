@@ -207,9 +207,19 @@ steps land (mark them done, note anything decided along the way).
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
-   uses. Add a few more small ones and a reason to keep earning (e.g. coins scaling with Trainer
-   Level). Pokédex perks and new Game Corner perks all make runs easier, so finish with a bot pass
-   at Levels 0/3/5 and retune enemies (not the perks) if Level 0 drifts well above ~75% (human bot).
+   uses. **Agreed list (the user, 2026-09-27): exactly these, 4 new perks (4 -> 8), each levelled like the current
+   ones (`Lv n/m`):**
+   - **Bag Pocket** (StS's Potion Belt): carry 4 items instead of 3 (`ITEM_SLOTS`).
+   - **Mart Card** (StS's Membership Card): Poké Mart prices lower, cards, relics, items and removal (e.g. 10 / 15 /
+     20% by level).
+   - **Move Tutor Notes** (Neow's upgrade blessing): start each run with one starting card PP Upped, you pick which.
+   - **Scout Report** (StS's Question Card): a fight's card reward shows 4 cards instead of 3.
+   Plus two ways to keep earning that don't make runs easier: **shiny starters**, a shiny version of every starter
+   bought with coins (Showdown's shiny sprites; swapped in on the starter screen, map and battle; cosmetic only, a
+   toggle once owned), and **PokéCoin rewards that grow with the Trainer Level** played. The new perks all make runs
+   easier (and the Pokédex adds 3 more), so finish with a bot pass at Levels 0/3/5 (the sim needs the perks mirrored)
+   and retune enemies (not the perks) if Level 0 drifts well above ~75% (human bot, no perks bought, is the baseline
+   a new player sees; also check with all perks maxed).
 
 Anytime, as a break from number work:
 - **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'
