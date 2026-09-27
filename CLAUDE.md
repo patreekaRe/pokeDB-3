@@ -11,7 +11,8 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **CLOUD**: building cards/mechanics, balance and bot checks (the sim), anything with long runs or many downloads.
   It saves the user's data and has Node, Python and Chromium. Attach both `pokeDB-3` and `pokeDB-sim`.
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
-  a few minutes after a push. This is the default way to playtest.
+  a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
+  Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.

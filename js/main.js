@@ -26,6 +26,7 @@
 import { STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES } from './data/cards.js';
+import { MAX_LEVEL } from './data/difficulty.js';
 import { ABILITIES } from './data/relics.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
@@ -255,6 +256,8 @@ function initBallMenu() {
 
 function init() {
   initPixelIcons();
+  // Playtest shortcut (the user's ask): opening the game with ?levels unlocks every Trainer Level for good.
+  if (new URLSearchParams(location.search).has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   initAudio();
   initTips();
   initHowtoFx();
