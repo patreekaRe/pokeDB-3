@@ -1744,22 +1744,6 @@ body.battle-intro { pointer-events: none; }
 .run-name { display: flex; align-items: center; gap: 8px; }
 .level-chip { background: #6b4b00; color: #ffe27a; border: 1px solid var(--gold); }
 
-/* Small type badge on elite and boss rooms (scouting): a pixel chip set into the middle of the room's top edge */
-/* An elite or boss room's type: just the type's pixel icon tucked on the room's top-right corner,
-   with a dark pixel outline so it reads on any terrain (no box, so the room keeps one clean frame) */
-.node-badge {
-  position: absolute;
-  right: 2%;
-  top: 2%;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  font-size: calc(100cqw / var(--grid-w, 37) * 1.5);
-  line-height: 1;
-  pointer-events: none;
-  filter: drop-shadow(1px 0 0 #181010) drop-shadow(-1px 0 0 #181010) drop-shadow(0 1px 0 #181010) drop-shadow(0 -1px 0 #181010);
-}
-
 /* ---------- coin display (topbar + shop) ---------- */
 .coin-pill {
   display: inline-flex;

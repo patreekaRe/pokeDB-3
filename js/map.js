@@ -27,7 +27,6 @@
 
 import { $, el } from './ui.js';
 import { ENEMY_DEFS } from './data/enemies.js';
-import { TYPES } from './data/cards.js';
 import { buildingSvg } from './buildings.js';
 import { bossReveal, preloadBossReveal } from './transition.js';
 
@@ -596,9 +595,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
     if (node.enemyId && node.type !== 'fight') {
       const def = ENEMY_DEFS[node.enemyId];
-      const type = TYPES.normal;   // elites and bosses ignore the type chart
-      label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name} (${type.label} type)`;
-      btn.append(el('span', 'node-badge type-normal', type.icon));
+      label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name}`;   // no type badge: elites and bosses are all Normal (the user's call)
     }
     btn.title = label;
     btn.setAttribute('aria-label', label);

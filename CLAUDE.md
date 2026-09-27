@@ -250,7 +250,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   the user's call: type walls there felt unfair, match-ups are for wild
   fights). Since 6c.10 every elite and boss is also a pure Normal Pokémon (the user's call: a Gloom that
   wasn't weak to Charmander looked like a bug), with no Fire/Grass/Water move names. So the elite type-disadvantage coin bonus is gone, and they *show* as Neutral too
-  (the nameplate chip, `setupBattleScreen()` in `js/battle.js`, the map's `.node-badge`), since
+  (the nameplate chip, `setupBattleScreen()` in `js/battle.js`; the map shows no type badge at all), since
   their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
@@ -288,7 +288,7 @@ were in; a battle is replayed from the start, never serialised.
 is recomputed with `modsFor(level)`. The map's `floors` and `byId` share
 node objects, so restore rebuilds `floors` from `byId` to keep `visited`
 in sync. Every fight node gets its `enemyId` in `startBiome()` so a
-refresh can't reroll a fight (only elites/bosses show a scouting badge).
+refresh can't reroll a fight (only elites/bosses name their Pokémon, in the room's `title`).
 The save is cleared by `endRun()`, by `abandonRun()` when a run was live,
 and by the About dialog's erase. Fight coins and the enemiesDefeated stat
 are shown on the reward screen but only paid out as the rewards end, just
@@ -863,9 +863,8 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   Gen 3-style buildings (`.map-building`, 4 tiles wide, SVG from
   `buildingSvg()` in `js/buildings.js`, drawn by rules on a 24x20 grid: blue
   or red gridded roof, emblem over the door, "MART"/"P.C" sign). Visited
-  greys out, reachable blinks (buildings glow white). `.node-badge` scouts elite/boss types: the
-  bare type icon (no box, the user found the chip cluttered) on the room's
-  top-right corner, with a dark pixel outline. Your starter's
+  greys out, reachable blinks (buildings glow white). Elite and boss rooms carry no type badge
+  (the user's call: they're all Normal); their `title` names the Pokémon. Your starter's
   sprite (`.map-trainer`) stands on the current room like the Pokégear's
   trainer head, and the biome's boss (`map.boss.enemyId`) stands above its
   room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
