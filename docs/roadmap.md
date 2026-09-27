@@ -133,26 +133,49 @@ steps land (mark them done, note anything decided along the way).
       - For the playtest: does Leech Seed read clearly (badge, the drain at the enemy's turn)? Is a Drain deck (Chlorophyll +
         Ingrain + seeds) fun or too safe? Do Growth (Rototiller, Growth Spurt, Solar Blade) and Spores (Effect Spore, Leaf
         Tornado, Nature's Madness) feel like their own builds? The bot never takes the combo pieces.
-   6. **NEXT: the user's playtest of all three types**, then fixes.
-      - **Playtest: no session needed**: play on the live site (https://patreekare.github.io/pokeDB-3/, phone is fine),
-        a few Fire, Grass and Water runs, and note what feels off.
-      - Playtest notes so far: 2026-09-27, one Fire run won, "pretty smooth... felt pretty easy", lowest HP a little
-        over half. Enemies aren't retuned for the new pools yet (step 9), so step 9's enemy pass should aim to make runs
-        tenser, not just keep the bot numbers level.
-      - **Then the fix/build session: run in the CLOUD** (select both `pokeDB-3` and `pokeDB-sim`). Session prompt:
-      > Continue the roadmap after 6c.5 (all three type pools are built). Read CLAUDE.md, docs/roadmap.md and
-      > docs/card-design.md first. If I've given playtest notes, fix those first (numbers in js/data/cards.js, mirror any rule
-      > change in the sim, bot-check the type at Levels 0/3/5 with the human bot). Otherwise start step 6c.9: the ~20 real
-      > Neutral cards from the doc, then StS's reward rules (upgraded cards in later biomes, a rare-card pity counter), then
-      > give enemies the status cards (Confusion, Paralysis, Poison, Sludge per the doc's table) and a full bot pass at
-      > Levels 0/3/5 (retune enemies if Level 0 drifts well above ~75% for the human bot). Test headless in Chromium
-      > (/opt/pw-browsers/chromium). Update CLAUDE.md, the roadmap and the doc, and push both repos to main (no branch or PR).
+   6. **The user's playtest of all three types** — ongoing (play on the live site). Notes so far: 2026-09-27, one Fire
+      run won, "pretty smooth... felt pretty easy", lowest HP a little over half. After 6c.9 the human bot has Fire the
+      strongest at Level 0 (~75%); if it still feels easy, raise biome 2-3 `dmgBonus` by 1-2 (all types).
    7–8. Spare sessions for fixes from the user's playtests of each type.
    Each type step: its ~72 cards with PokéSprite art (+ `item-fit.js`), starting deck,
       Ability, a bot check at Levels 0/3/5. The bot scores cards one at a time and won't see combos, so it
       only guards against broken numbers; the user's playtests judge whether builds are fun.
-   9. **Neutral pool, build-defining relics, enemy retune** (status-applying moves, bosses that punish pure
-      turtling), StS's reward rules (upgraded cards in later biomes, a rare-card pity counter), then a full bot pass.
+   9. **Neutral pool, reward rules, enemy status cards** — done (2026-09-27, 6c.9; see the doc's Neutral and Status
+      sections and Decisions 9):
+      - 9 new Neutral cards (21 in all), StS's reward rules (upgraded commons/uncommons in biomes 2-3 at 25% / 50%, a rare
+        pity counter), status cards on 11 enemies (Alpha Gloom 1 Poison, Tangrowth 2 Paralysis, Psyduck/Slowpoke/Slowking
+        Confusion, Snorlax/Stantler/Tauros Paralysis, Oddish Poison, Shellos/Tangela Sludge).
+      - The user's notes (same day): the Center offers Rest or PP Up only (forgetting there needs the new Mental Herb relic,
+        StS's Peace Pipe); found items float like treasure relics and a full Bag shows which item you'd toss; the Shrine
+        shows the relic it gives; in-battle hand picks (discard, exhaust, keep, copy) take a confirm tap; the Mart PC's sign
+        shows its price and the Bag can toss items in the Mart. Biomes stay at 10 floors (the user's call).
+      - Bot (human, 300 runs/cell) fire / grass / water: L0 74.7 / 75.7 / 69.7, L3 64.3 / 59.0 / 42.0, L5 39.0 / 33.0 / 24.0
+        with Gloom at 2 Poison; each part alone: new Neutral cards ~0 (within noise), reward rules +3 to +7, status cards
+        -3 to +3 at L0 but Water -15 / -8 and Grass -8 at L3 / L5 (biome 1's Alpha Gloom), the Center change -2 to +7.
+        Gloom at 1 Poison (shipped): Water 69.3 / 49.0 / 25.8 (400). Withdraw 7 on top overshot (82.3 / 70.5 / 47.3).
+      - Left: build-defining relics and more items (next sessions), and Water trails by ~10 at L3/L5.
+   10. **NEXT: Normal-type elites and bosses (a visual swap)**. The user's call (2026-09-27): elites and bosses already
+      fight as Neutral, but a Gloom that isn't weak to Fire looks like a bug, so every non-Normal elite and boss becomes a
+      pure Normal Pokémon with the same moves and numbers (move names that give away a type are renamed, same numbers).
+      Proposed (Gen 1-5, pure Normal, not used elsewhere, mostly evolutions of each biome's wilds):
+      biome 1 elites Raticate, Furret, Linoone (for Gloom, Poliwhirl, Flareon), bosses Snorlax + Kangaskhan, Miltank (for
+      Arcanine, Poliwrath); biome 2 elites Ambipom, Persian, Watchog (for Ninetales, Shiftry, Slowking), bosses Ursaring +
+      Stoutland, Exploud (for Chandelure, Tangrowth); biome 3 elites Purugly, Cinccino, Lopunny (for Houndoom, Breloom,
+      Kingdra), bosses Slaking + Regigigas, Lickilicky, Porygon-Z (for Magmortar, Gyarados, Salamence).
+      **Run in the CLOUD** (select both `pokeDB-3` and `pokeDB-sim`). Session prompt:
+      > Do roadmap step 6c.10 (read CLAUDE.md and docs/roadmap.md first): swap every non-Normal elite and boss for the pure
+      > Normal Pokémon listed there. Visual only: keep each one's moves, numbers, status cards and place in BIOMES; rename
+      > moves whose name gives away a Fire/Grass/Water type to a Normal move (same kind and numbers). Give the new ones new
+      > ids (bump RUN_SAVE_VERSION), their Gen 5 animated sprite, cry (PokeAPI cries, the roadmap's step 3 notes say how)
+      > and sprite-fit.js entry; remove the replaced Pokémon's files and entries unless something else uses them (Team
+      > Rocket, the Pokédex notes), and update the roadmap's Pokémon list. Mirror any id the sim's variants use. Check a
+      > fight with each new sprite headless in Chromium (/opt/pw-browsers/chromium), then push both repos to main.
+   11. **Then: more relics and items, and Water's catch-up.** **Run in the CLOUD** (both repos). Session prompt:
+      > Do roadmap step 6c.11 (read CLAUDE.md, docs/roadmap.md and docs/card-design.md first): add build-defining relics
+      > (a few per type's archetypes, plus Neutral ones) and a few more items, StS-style, with PokéSprite art. Recalibrate
+      > sim/ranks.json (calibrate()) so the bot picks them by value, then a human-bot pass at Levels 0/3/5 (300+ runs/cell).
+      > Water trails Fire/Grass by ~10 at Levels 3/5: try small Water buffs (Withdraw 7 was far too much). Keep Level 0
+      > near ~75% for the human bot. Update CLAUDE.md and the roadmap and push both repos to main.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of

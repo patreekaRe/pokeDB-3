@@ -194,6 +194,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   offers commons/uncommons upgraded at `REWARD_UPGRADE_ODDS` per biome (0 / 25% / 50%, StS's) and adds `run.rarePity`
   (StS's rare pity: +1 rare weight per common offered, up to 40, reset once a rare is offered; saved with the run, an old
   save's missing value counts as 0) to the rare weight. Both live in `js/rewards.js`.
+  Bot pass after 6c.9 (human bot, fire / grass / water): L0 ~75 / 76 / 69, L3 ~64 / 59 / 49, L5 ~39 / 33 / 26; Water
+  trails at Levels 3-5 (the status cards clog its hand-based decks). Numbers per part are in the roadmap's step 6c.9.
   **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
