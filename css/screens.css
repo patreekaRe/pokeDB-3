@@ -1614,11 +1614,11 @@ body.battle-intro { pointer-events: none; }
 .relic-name { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.95rem; line-height: 1.3; }
 .relic-text { font-size: 0.88rem; font-weight: 700; line-height: 1.3; color: var(--win-muted); }
 /* Skip / Leave sits centred right under the options, not off in a corner by the text box */
-#reward-skip { flex: none; margin-top: -4px; }
+.reward-actions { flex: none; display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: -4px; }
 .reward-option > .relic { height: 100%; }   /* tiles side by side share one height */
 @media (max-width: 720px) {
-  #reward-skip .pp-pill { font-size: 0.85rem; padding: 8px 14px 7px 26px; }
-  #reward-skip .pp-pill::before { left: 11px; }
+  .reward-actions .pp-pill { font-size: 0.85rem; padding: 8px 14px 7px 26px; }
+  .reward-actions .pp-pill::before { left: 11px; }
 }
 
 /* ---------- evolution and deck dialogs ---------- */
@@ -2244,7 +2244,7 @@ body.battle-intro { pointer-events: none; }
 
 /* ---------- CARD INDEX (js/cardindex.js): StS's Compendium, a tab per type ---------- */
 .index-cta { position: relative; z-index: 2; margin-top: 12px; }
-#home-index-btn .pp-pill { gap: 8px; align-items: center; }
+:is(#home-index-btn, #home-dex-btn) .pp-pill { gap: 8px; align-items: center; }
 .index-tabs {
   position: sticky;
   top: -22px;   /* the dialog's padding: the tabs stay put while the cards scroll under them */
@@ -2581,7 +2581,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 .mart-pc-icon { display: block; font-size: 2.8rem; line-height: 1; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.3)); }
 .mart-pc .center-label { border-color: #3878f0; bottom: calc(100% + 6px); font-size: 0.72rem; padding: 5px 8px; }
 /* Leave sits on the floor just above the text box, clear of the props standing in front of the counter */
-#reward-screen:has(.mart-window) #reward-skip { margin-top: auto; }
+#reward-screen:has(.mart-window) .reward-actions { margin-top: auto; }
 #reward-screen:has(.mart-window) .reward-bottom { margin-top: 0; }
 .reward-options.mart-window:has(.mart-props) { margin-bottom: 26px; }
 /* a phone's plants and ball bins (martProps()), standing on the floor in front of the counter's two ends */
@@ -2621,7 +2621,7 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   translate: -50% 0;
   width: min(calc(100% - 32px), var(--log-w));
 }
-#reward-screen:has(:is(.center-room, .event-room)) #reward-skip { margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
+#reward-screen:has(:is(.center-room, .event-room)) .reward-actions { margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
 /* each choice is a see-through button laid over its machine (placeCenterSpots() in js/run.js) */
 :is(.center-room, .event-room) .reward-option {
   position: fixed;
@@ -2744,8 +2744,8 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
    scene's own pixels (--px), and the relics floating out of it with no tiles round them ---------- */
 body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { background: none; }
 .reward-options.treasure-room { padding: 0; }
-#reward-screen:has(.treasure-room) :is(.reward-title, #reward-skip) { position: relative; z-index: 2; }
-#reward-screen:has(.treasure-room) #reward-skip { margin-top: auto; }
+#reward-screen:has(.treasure-room) :is(.reward-title, .reward-actions) { position: relative; z-index: 2; }
+#reward-screen:has(.treasure-room) .reward-actions { margin-top: auto; }
 #reward-screen:has(.treasure-room) .reward-bottom { margin-top: 0; }
 .treasure-stage { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 .treasure-stage > button { pointer-events: auto; }
@@ -3026,3 +3026,96 @@ body.has-scene #scene-bg { display: block; }
 }
 .has-scene .enemy-zone::after { width: calc(var(--base) * 1.5); bottom: calc(var(--base) * -0.2); }   /* the feet land just below the pad's middle; horizonRow() assumes this */
 .has-scene .player-zone::before { width: clamp(130px, 25vh, 290px); bottom: -4%; }
+
+/* ---------- POKÉDEX (js/pokedex.js): a page per biome, entries ??? until fought ---------- */
+.ds-btn.ds-dex { --stripe-a: #e05858; --stripe-b: #f07878; --rim: #a83030; }
+.index-cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+#reward-reroll .pp-pill { gap: 8px; align-items: center; }
+.dex-tab.biome-clearing { --c1: #72c860; --c2: #2f7a30; }
+.dex-tab.biome-shrine   { --c1: #b88ad8; --c2: #5a3488; }
+.dex-tab.biome-wastes   { --c1: #e8744a; --c2: #8a2e18; }
+.dex-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.dex-perk {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 3px dashed var(--win-edge);
+  border-radius: var(--round);
+  background: var(--win-panel);
+  color: var(--win-ink);
+}
+.dex-perk.earned { border-style: solid; border-color: #c89a18; background: #fbf0c8; }
+.dex-perk-icon { font-size: 2rem; line-height: 1; flex: none; }
+.dex-perk:not(.earned) .dex-perk-icon { filter: grayscale(1) opacity(0.6); }
+.dex-perk-text { flex: 1; display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem; min-width: 0; }
+.dex-perk-text strong { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.8rem; }
+.dex-perk-text small { color: var(--win-muted); }
+.dex-bar { flex: none; height: 8px; margin-top: 4px; background: rgba(0, 0, 0, 0.18); }
+.dex-perk-count { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.9rem; }
+.dex-entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px 10px;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round-sm);
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, 3px 3px 0 1px rgba(0, 0, 0, 0.3);
+  color: var(--win-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.dex-entry:disabled { cursor: default; }
+.dex-entry:not(:disabled):hover { background: var(--win-tile); }
+.dex-entry:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
+.dex-no { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.6rem; color: var(--win-muted); align-self: flex-start; }
+.dex-sprite { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
+.dex-entry.locked .dex-sprite { filter: brightness(0) opacity(0.55); }   /* a silhouette until you've fought it */
+.dex-name { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.65rem; line-height: 1.3; text-align: center; }
+.dex-entry.locked .dex-name { color: var(--win-muted); }
+.dex-mark.pokeball { position: absolute; top: 5px; right: 6px; margin: 0; font-size: 1.1rem; animation: none; }   /* beaten: the games' caught mark */
+.dex-zoom { cursor: pointer; }
+.dex-detail {
+  width: min(92vw, 380px);
+  max-height: 78vh;
+  overflow-y: auto;
+  padding: 16px;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round);
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 4px 0 2px rgba(0, 0, 0, 0.45);
+  color: var(--win-ink);
+  animation: focusIn 0.18s ease-out;
+}
+.dex-detail-head { display: flex; align-items: center; gap: 14px; }
+.dex-detail-sprite { width: 112px; height: 112px; object-fit: contain; image-rendering: pixelated; flex: none; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.12), transparent); }
+.dex-detail-names { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.dex-detail-name { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 1rem; }
+.dex-detail-facts { margin: 10px 0 6px; font-weight: 700; font-size: 0.85rem; color: var(--win-muted); }
+.dex-detail-text { margin: 6px 0; font-size: 0.9rem; }
+.dex-detail-text.muted { color: var(--win-muted); font-style: italic; }
+.dex-detail-weak { margin: 6px 0; font-weight: 700; font-size: 0.85rem; }
+.dex-moves-head { margin: 12px 0 6px; font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.7rem; }
+.dex-moves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.dex-move { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: var(--round-xs); background: var(--win-panel); font-size: 0.88rem; font-weight: 700; }
+.dex-move small { margin-left: auto; color: var(--win-muted); font-weight: 700; }
+.dex-move.kind-attack { box-shadow: inset 4px 0 0 #d84838; }
+.dex-move.kind-drain  { box-shadow: inset 4px 0 0 #9048c0; }
+.dex-move.kind-defend { box-shadow: inset 4px 0 0 #3878f0; }
+.dex-move.kind-buff   { box-shadow: inset 4px 0 0 #38a048; }
+.dex-move.kind-status { box-shadow: inset 4px 0 0 #888890; }
+.dex-ach-icon { width: 48px; text-align: center; font-size: 1.8rem; flex: none; }
+.dex-ach:not(.done) .dex-ach-icon { filter: grayscale(1) opacity(0.5); }
+@media (max-width: 720px) {
+  .dex-body { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .dex-sprite { width: 56px; height: 56px; }
+  .dex-name { font-size: 0.55rem; }
+  .dex-perk { gap: 8px; padding: 8px; }
+  .dex-perk-icon { font-size: 1.5rem; }
+  .dex-detail-sprite { width: 88px; height: 88px; }
+}

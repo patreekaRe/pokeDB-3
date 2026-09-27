@@ -602,10 +602,14 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
  * enemyId is optional: the map picks the elite and boss ahead of time so it can show them.
  * Returns everything battle.js needs: the enemy, its HP, and bonus damage.
  */
-/** Pick which enemy a fight, elite or boss node will hold, when the map is made. */
-export function pickEnemyId(biomeIndex, kind) {
+/** Pick which enemy a fight, elite or boss node will hold, when the map is made. `weight(id)` favours some
+    (the Pokédex's unbeaten ones); the default is an even pick. */
+export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
   const biome = BIOMES[biomeIndex];
-  return pick(kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals);
+  const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals;
+  const weights = list.map(weight);
+  let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
+  return list.find((id, i) => (roll -= weights[i]) < 0) ?? list[list.length - 1];
 }
 
 export function buildEncounter(biomeIndex, kind, mods, enemyId) {

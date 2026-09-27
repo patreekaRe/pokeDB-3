@@ -62,6 +62,7 @@
         <button class="menu-item" id="home-btn"><span class="mi-icon">🏠</span><span class="mi-label">Main menu</span></button>
         <button class="menu-item" id="menu-shop-btn" hidden><span class="mi-icon">🎰</span><span class="mi-label">Game Corner</span></button>
         <button class="menu-item" id="index-btn"><span class="mi-icon">🃏</span><span class="mi-label">Index</span></button>
+        <button class="menu-item" id="dex-btn"><span class="mi-icon">📕</span><span class="mi-label">Pokédex</span></button>
         <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
         <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
         <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
@@ -146,7 +147,7 @@
           <canvas id="howto-fx" aria-hidden="true"></canvas>
           <button class="ds-btn ds-gold ds-sm howto-btn" id="howto-btn"><span class="pp-pill">📖 How to play</span></button>
         </div>
-        <div class="index-cta"><button class="ds-btn ds-skip ds-sm" id="home-index-btn" type="button"><span class="pp-pill">🃏 Index</span></button></div>
+        <div class="index-cta"><button class="ds-btn ds-skip ds-sm" id="home-index-btn" type="button"><span class="pp-pill">🃏 Index</span></button><button class="ds-btn ds-dex ds-sm" id="home-dex-btn" type="button"><span class="pp-pill">📕 Pokédex</span></button></div>
       </div>
 
       <button class="continue-btn" id="continue-btn" type="button" hidden>
@@ -257,7 +258,10 @@
       <h2 id="reward-title" class="reward-title"></h2>
       <p id="reward-coins" class="reward-coins" hidden></p>
       <div id="reward-options" class="reward-options"></div>
-      <button class="ds-btn ds-skip" id="reward-skip" type="button"><span class="pp-pill" id="reward-skip-text">Skip</span></button>
+      <div class="reward-actions">
+        <button class="ds-btn ds-go" id="reward-reroll" type="button" hidden><span class="pp-pill">🎓 Reroll</span></button>
+        <button class="ds-btn ds-skip" id="reward-skip" type="button"><span class="pp-pill" id="reward-skip-text">Skip</span></button>
+      </div>
       <!-- pinned to the bottom: the screen's text, typed out in a battle-style text box you tap through (rewards.js) -->
       <div class="reward-bottom">
         <div class="reward-log" id="reward-log"><span id="reward-log-text" aria-hidden="true"></span><span class="sr-only" id="reward-log-live" aria-live="polite"></span></div>
@@ -424,6 +428,14 @@
     <h2 tabindex="-1" autofocus>🃏 Index <span id="index-total" class="count"></span></h2>
     <div class="index-tabs" id="index-tabs" role="tablist" aria-label="Index tabs"></div>
     <div id="index-cards" class="card-pool" role="tabpanel"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  </dialog>
+
+  <!-- every enemy, a page per biome: ??? until fought, complete once beaten (js/pokedex.js) -->
+  <dialog id="dex-dialog" class="dialog wide-dialog index-dialog dex-dialog">
+    <h2 tabindex="-1" autofocus>📕 Pokédex <span id="dex-total" class="count"></span></h2>
+    <div class="index-tabs" id="dex-tabs" role="tablist" aria-label="Pokédex pages"></div>
+    <div id="dex-body" class="dex-body" role="tabpanel"></div>
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 

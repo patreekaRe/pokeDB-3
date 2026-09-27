@@ -7,6 +7,7 @@
 import { getSave } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
+import { DEX_PAGES } from './data/pokedex.js';
 import { $, el, openDialog } from './ui.js';
 
 export function openStats() {
@@ -75,6 +76,19 @@ export function openAchievements() {
     list.append(row);
   }
 
-  $('achievements-body').replaceChildren(header, list);
+  // the Pokédex's page rewards: a perk each rather than a starter
+  const dex = el('div', 'ach-list');
+  for (const p of DEX_PAGES) {
+    const got = getSave().dex.done.includes(p.biome);
+    const row = el('div', `ach dex-ach${got ? ' done' : ''}`);
+    const text = el('div', 'ach-text');
+    text.append(el('strong', '', p.perk.name), el('span', '', `Complete the Pokédex's ${p.name} page: ${p.perk.text}`));
+    row.append(el('span', 'dex-ach-icon', p.perk.icon), text, el('span', 'ach-status', got ? '' : '🔒'));
+    if (got) row.lastChild.append(el('span', 'pokeball'));
+    row.title = got ? `Earned ${p.perk.name}` : `Locked: defeat every Pokémon on the ${p.name} page`;
+    dex.append(row);
+  }
+
+  $('achievements-body').replaceChildren(header, list, el('h3', 'records-label', 'Pokédex pages'), dex);
   openDialog('achievements-dialog');
 }

@@ -31,7 +31,7 @@ import { ABILITIES } from './data/relics.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
-import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun } from './run.js';
+import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playCry, playSound } from './audio.js';
@@ -43,6 +43,7 @@ import { initTips, tipAt } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
+import { initPokedex, openPokedex } from './pokedex.js';
 import {
   $, el, showScreen, setTheme, openDialog, closeDialog, confirmDialog, refreshCoins, itemSprite,
 } from './ui.js';
@@ -303,6 +304,9 @@ function init() {
   initCardIndex();
   $('index-btn').addEventListener('click', () => openCardIndex(selected?.type));
   $('home-index-btn').addEventListener('click', () => openCardIndex(selected?.type));
+  initPokedex();
+  $('dex-btn').addEventListener('click', () => openPokedex(runBiome()));
+  $('home-dex-btn').addEventListener('click', () => openPokedex());
   $('stats-btn').addEventListener('click', openStats);
   $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();

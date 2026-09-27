@@ -31,6 +31,7 @@ const freshSave = () => ({
     coinFinder: false,        // +15% PokéCoins from every source
   },
   seen: { relics: [], items: [] },   // ids met in a run (offered or found), unlocked in the Index; others show as silhouettes
+  dex: { seen: [], defeated: [], done: [] },   // Pokédex: enemy ids fought / beaten, and biome pages whose reward was paid
   stats: {
     runsStarted: 0,
     runsWon: 0,
@@ -55,6 +56,7 @@ function load() {
         ...base, ...saved,
         passives: { ...base.passives, ...saved.passives },
         seen: { ...base.seen, ...saved.seen },
+        dex: { ...base.dex, ...saved.dex },
         stats: {
           ...base.stats, ...saved.stats,
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },
@@ -107,6 +109,14 @@ export function markSeen(kind, id) {
   if (data.seen[kind].includes(id)) return;
   data.seen[kind].push(id);
   persist();
+}
+
+/** The Pokédex: `list` is 'seen' (fought it) or 'defeated' (beat it). Returns true the first time. */
+export function markDex(list, id) {
+  if (data.dex[list].includes(id)) return false;
+  data.dex[list].push(id);
+  persist();
+  return true;
 }
 
 export function resetSave() {

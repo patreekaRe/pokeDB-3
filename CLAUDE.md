@@ -613,7 +613,7 @@ in `#reward-log`, a copy of the battle text box pinned to the bottom of the
 screen, narrow and centred (`--log-w`: 440px, 300px on phones; the user's call: no
 stretched text boxes; the untyped rest of a line is laid out invisibly, `.log-rest`,
 so centred text doesn't slide as it types; relic picks, `layout: 'relic-pick'`, sit it just under Skip
-instead, since their short rows left it far below them); the Skip / Leave button sits centred right under the options (the user's
+instead, since their short rows left it far below them); the Skip / Leave button (in `.reward-actions`, with Oak's Advice's Reroll beside it) sits centred right under the options (the user's
 call: not off to the right by the text box). It draws its
 `.relic` tiles (relics, items, choices) as parchment Pokégear windows, which on
 phones become short rows (icon | name over text) so a choice isn't a screen tall (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
@@ -925,7 +925,21 @@ else the last tab; new cards show up there on their own. Two more tabs, Relics a
 "N/M found" count: one you haven't met in a run is a dark silhouette of its sprite, "???" (`.index-thing.locked`).
 Met means offered, sold or found: `markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`)
 is called by `relicOption()` / `itemOption()` in `js/rewards.js` (rewards and the Mart), `floatingThing()` (item
-balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gift. Saves from before start empty. The
+balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gift. Saves from before start empty.
+The **Pokédex** (`js/pokedex.js`, `#dex-dialog`, roadmap step 7) sits beside it: a red `.ds-dex` button next to Index on
+the start screen and a Poké Ball menu item (so it opens from the map too, on the run's biome page). A page per biome
+(`DEX_PAGES` in `js/data/pokedex.js`, built from `BIOMES`: 12 wilds, then Alphas, then Bosses, numbered No.001-055);
+an entry is a dark "???" silhouette (`.dex-entry.locked`) until you've fought it (seen: name, type, moves in order), then
+complete once beaten (defeated: a Poké Ball mark, flavour text, weakness), like the games' seen / caught; tap an entry for
+it blown up (`.dex-zoom`, the zoom layer). The save's `dex: { seen, defeated, done }` (old saves merge in empty) is written
+by `dexSeen()` from `fight()` and `dexDefeated()` from `afterFight()` (Team Rocket's Alpha counts as its species). The
+first defeat says "X's data was added to the Pokédex!" in the reward text box (`pendingCoins.dex`, after the coin
+lines); defeating the last entry on a page pays its PokéCoins once (100 / 150 / 200, `done` guards it) and turns on its
+perk (`DEX_PERKS`, `hasDexPerk()`): Mom's Savings (start runs with ₽50, `DEX_START_MONEY`), Chansey's Gift (start
+with a Potion), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
+`run.rerollBiome`, saved with the run). A final-boss page completion goes in the result window (`run.dexNews`). The
+Achievements window lists the three pages after the starters. Fight rooms prefer unbeaten Pokémon 2:1
+(`pickEnemyId(biome, kind, dexWeight)`). The sim mirrors the perks as `cfg.dexPerks`. The
 top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
 hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball

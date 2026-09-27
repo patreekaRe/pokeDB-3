@@ -121,7 +121,7 @@ export function showChoiceHp() {
   if (hp) setHpBar('choice', hp.hp, hp.maxHp);
 }
 
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '' }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null }) {
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;
@@ -130,7 +130,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (coins) coins.told = true;
   const lines = [
     ...notes.splice(0),
-    ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins!`, `You got ₽${coins.money} for winning!`] : []),
+    ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins!`, `You got ₽${coins.money} for winning!`, ...(coins.dex || [])] : []),
     ...[].concat(sub),   // sub is one line, or a list of them
   ];
   sayLines(lines.filter(Boolean));
@@ -165,6 +165,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
   $('reward-skip-text').textContent = skipLabel;
   skip.onclick = onSkip ? once(onSkip) : null;
+  $('reward-reroll').hidden = !reroll;
+  $('reward-reroll').onclick = reroll ? once(reroll) : null;
 
   showChoiceHp();
   showScreen('reward-screen');

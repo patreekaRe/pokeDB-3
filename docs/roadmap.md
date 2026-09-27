@@ -221,6 +221,26 @@ steps land (mark them done, note anything decided along the way).
         text line; Fire L0 ~79 is a bit above target (it was the weakest at L3, so the buff went in anyway).
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
+   **Pokédex done (2026-09-27, overnight session); catching still waits for the user.** See CLAUDE.md's Top bar and
+   start screen. A `📕 Pokédex` window (Poké Ball menu, so the map too, and a red button beside Index on the start
+   screen), a page per biome with its 12 wilds, 3 Alphas and 3-4 bosses (No.001-055). Entries are "???" silhouettes until
+   fought (seen: name, type chip, moves in order), then complete once beaten (a Poké Ball mark, flavour text, weakness).
+   First defeats say "X's data was added to the Pokédex!" after the fight's coin lines. Finishing a page pays PokéCoins
+   once (100 / 150 / 200) and turns on its perk, listed locked with the page's progress bar at the top of the page and in
+   the Achievements window: **Mom's Savings** (Clearing: start runs with ₽50, Neow's gold), **Chansey's Gift** (Shrine:
+   start with a Potion, Neow's potions), **Oak's Advice** (Wastes: once per biome, a Reroll button beside Skip on a
+   card reward). Fight rooms pick unbeaten Pokémon twice as often. No save bump (old saves load with an empty dex and
+   run saves with no `rerollBiome` just have their reroll unused).
+   Bot (human bot, 400 runs/cell, sim `cfg.dexPerks` = all three perks) fire / grass / water: BOTNUMBERS
+   **For the user to decide / check:**
+   - The "achievement" for a page is a row in the Achievements window's new "Pokédex pages" list, not a starter unlock
+     (every achievement there unlocks a starter; a page unlocking one would need 3 new starters).
+   - The roadmap's "fight rooms on the map show a silhouette until beaten, then sprite and weakness" isn't done: it
+     would show every wild on the map (only elites/bosses are scouted today) and change routing. Your call.
+   - Coin amounts (100 / 150 / 200) are a guess; step 8 reviews the whole coin economy.
+   - Seen = fought (a map's boss silhouette doesn't count); moves show at seen, per your note; amounts aren't shown
+     (they grow per biome and Level, so a base number would mislead).
+   - Perks are always on once earned (no toggle), like the Game Corner's.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
    uses. **Agreed list (the user, 2026-09-27): exactly these, 4 new perks (4 -> 8), each levelled like the current
    ones (`Lv n/m`):**
@@ -232,7 +252,7 @@ steps land (mark them done, note anything decided along the way).
    Plus two ways to keep earning that don't make runs easier: **shiny starters**, a shiny version of every starter
    bought with coins (Showdown's shiny sprites; swapped in on the starter screen, map and battle; cosmetic only, a
    toggle once owned), and **PokéCoin rewards that grow with the Trainer Level** played. The new perks all make runs
-   easier (and the Pokédex adds 3 more), so finish with a bot pass at Levels 0/3/5 (the sim needs the perks mirrored)
+   easier (and the Pokédex adds 3 more: mirrored in the sim as `cfg.dexPerks`), so finish with a bot pass at Levels 0/3/5 (the sim needs the Game Corner perks mirrored)
    and retune enemies (not the perks) if Level 0 drifts well above ~75% (human bot, no perks bought, is the baseline
    a new player sees; also check with all perks maxed).
 

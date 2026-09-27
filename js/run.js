@@ -33,10 +33,15 @@ import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDial
 import { playMusic, playSound, preloadSounds } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
+import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
+import { DEX_START_MONEY } from './data/pokedex.js';
 
 let run = null;
 
 export const isRunActive = () => run !== null && !run.over;
+
+/** The biome the run in progress is in (the Pokédex opens on its page), or undefined. */
+export const runBiome = () => (isRunActive() ? run.biome : undefined);
 
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
@@ -101,6 +106,7 @@ function checkpoint() {
     money: run.money,
     removals: run.removals,
     rarePity: run.rarePity,
+    rerollBiome: run.rerollBiome,
     unlocks: run.unlocks.map(s => s.id),
   });
 }
@@ -179,6 +185,7 @@ export function beginRun(starter, level = 0) {
     money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
     removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
     rarePity: 0,           // extra rare weight on the next card reward (RARE_PITY in rewards.js)
+    rerollBiome: -1,       // the biome whose card reroll (Pokédex perk Oak's Advice) was used
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     over: false,
@@ -188,6 +195,10 @@ export function beginRun(starter, level = 0) {
     const relic = randomStartingRelic();
     if (relic) { run.relics.push(relic.id); markSeen('relics', relic.id); tell(`Starting relic: ${relic.name}!`); }
   }
+
+  // Pokédex perks, earned by completing a biome's page
+  if (hasDexPerk('moms-savings')) { run.money += DEX_START_MONEY; tell(`Mom's Savings: you set out with ₽${DEX_START_MONEY}!`); }
+  if (hasDexPerk('chansey-gift')) { run.items.push('potion'); markSeen('items', 'potion'); tell('Chansey\'s Gift: a Potion is in your Bag!'); }
 
   updateSave(d => { d.stats.runsStarted += 1; });
   startBiome();
@@ -202,7 +213,7 @@ function startBiome() {
   run.map = generateMap();
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   for (const node of Object.values(run.map.byId)) {
-    if (['fight', 'elite', 'boss'].includes(node.type)) node.enemyId = pickEnemyId(run.biome, node.type);
+    if (['fight', 'elite', 'boss'].includes(node.type)) node.enemyId = pickEnemyId(run.biome, node.type, dexWeight);
     if (node.type === 'shop') node.stock = martStock();
   }
   rollEvents();
@@ -403,6 +414,7 @@ function enterNode(node) {
 async function fight(node) {
   const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
+  dexSeen(node.enemyId);
   startBattle({ run, encounter, onEnd: (result) => afterFight(node, result) });
   enter();
 }
@@ -418,17 +430,19 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
+  const dexNews = dexDefeated(node.enemyId);
 
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
   const foe = ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
-    coins: coinsWithBonus(COIN_REWARDS[node.type]), money: prize,
+    coins: coinsWithBonus(COIN_REWARDS[node.type]), money: prize, dex: dexNews,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
+    if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
     awardCoins(COIN_REWARDS[node.type]);
     run.money += prize;
     setMoney(run.money);
@@ -447,7 +461,7 @@ function afterFight(node, result) {
       d.stats.bossesDefeated[run.biome + 1] = true;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
-    if (run.biome === BIOMES.length - 1) { collect(); return endRun(true); }       // final boss: you win!
+    if (run.biome === BIOMES.length - 1) { run.pendingCoins.told = true; run.dexNews = dexNews; collect(); return endRun(true); }       // final boss: you win!
     announceUnlocks();
     steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
   }
@@ -477,16 +491,20 @@ function runSteps(steps, done) {
 
 /* ---------- rewards ---------- */
 
-function offerCard(source, next) {
+function offerCard(source, next, rerolled = false) {
   const cards = cardChoices(run, source, 3, { reward: true });
   if (!cards.length) return next();
 
+  // Oak's Advice (a Pokédex perk): once per biome, swap the three for three new ones
+  const canReroll = hasDexPerk('oaks-advice') && run.rerollBiome !== run.biome;
   showChoice({
     title: 'Learn a new move',
-    sub: `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
+    sub: [rerolled && 'Oak\'s Advice: three new moves!', `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
+      canReroll && 'Oak\'s Advice: you can reroll these once this biome.'],
     options: cards.map(card => learnOption(card, next)),
     onSkip: next,
     coins: run.pendingCoins,
+    reroll: canReroll ? () => { run.rerollBiome = run.biome; offerCard(source, next, true); } : null,
   });
 }
 
@@ -1579,7 +1597,7 @@ function endRun(won) {
 
   dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
-  const lines = run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`);
+  const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.dexNews || []).map(line => `📕 ${line}`)];
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(text => el('li', '', text)));
