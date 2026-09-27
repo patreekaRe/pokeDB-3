@@ -392,6 +392,7 @@ function afterFight(node, result) {
   }
   if (!result.won) return endRun(false);
 
+  run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) can raise it
   run.hp = result.hp;
   run.fights += 1;
 

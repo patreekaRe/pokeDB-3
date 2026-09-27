@@ -113,6 +113,9 @@ export function startBattle({ run, encounter, onEnd }) {
     blockNext: 0,      // block waiting for your next turn (Shelter)
     blur: 0,           // turns your block survives the start of your turn (Aqua Veil)
     strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
+    flex: 0,           // the part of `strength` that goes away at the end of this turn (Rototiller, StS's Flex)
+    healedThisTurn: false,   // healed on this turn of yours (Grassy Glide)
+    pledged: false,    // Grass Pledge has already paid out this turn
     powers: {},        // power effects played this fight, added up: { blockEachTurn: 5, ... }
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
@@ -137,6 +140,8 @@ export function startBattle({ run, encounter, onEnd }) {
       dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
       strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
       burn: run.relics.includes('flame-orb') ? 3 : 0,
+      seed: 0,                        // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
+      sap: 0,                         // its attacks deal this much less, all fight
       weak: 0,                        // turns left dealing WEAK_MULT damage
       vulnerable: 0,                  // turns left taking VULNERABLE_MULT damage from your attacks
       moveIndex: Math.floor(Math.random() * def.moves.length),
@@ -241,14 +246,17 @@ function beginPlayerTurn() {
   b.nextEnergy = 0;
   b.played = b.attacks = b.discarded = 0;
   b.hurtThisTurn = false;
+  b.healedThisTurn = false;
+  b.pledged = false;
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
   if (p.brutality) loseHp(p.brutality);
   if (hasRelic('leftovers')) healPlayer(2);
   if (p.healEachTurn && healPlayer(p.healEachTurn + healBonus())) playSound('heal-hp');
-  if (hasRelic('grassy-seed') && b.turn % 3 === 0) { b.strength += 1; pop('player-zone', '🍀 +1 strength', 'note good'); playSound('stat-up'); statFx('player'); }
+  if (hasRelic('grassy-seed') && b.turn % 3 === 0) gainStrength(1, '🍀 +1 strength');
   if (p.burnEachTurn) burnEnemy(p.burnEachTurn);
-  if (p.strengthEachTurn) { b.strength += p.strengthEachTurn; pop('player-zone', `💪 +${p.strengthEachTurn}`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (p.strengthEachTurn) gainStrength(p.strengthEachTurn);
+  if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (fresh && p.riptide) riptide();
@@ -262,13 +270,54 @@ function beginPlayerTurn() {
 /** Big Root: extra healing on heals that come from cards and powers (not other relics). */
 const healBonus = () => (hasRelic('big-root') ? 2 : 0);
 
-/** Heal the player (never above max HP). Returns how much was healed. */
+/** Heal the player (never above max HP). Returns how much was healed. Chlorophyll turns what's past max HP
+    into block, and Grass Pledge turns a heal into strength once a turn. */
 function healPlayer(amount) {
   const b = battle;
   const healed = Math.min(amount, b.maxHp - b.hp);
   b.hp += healed;
-  if (healed > 0) pop('player-zone', `+${healed} HP`, 'heal');
+  if (healed > 0) {
+    pop('player-zone', `+${healed} HP`, 'heal');
+    b.healedThisTurn = true;
+    if (b.powers.healStrength && !b.pledged) { b.pledged = true; gainStrength(b.powers.healStrength); }
+  }
+  if (amount > healed && b.powers.overheal) gainBlock(amount - healed);
   return healed;
+}
+
+/** Gain strength (a card, a power, a relic): Harvest heals for it. `flex` strength goes away at the end of the turn. */
+function gainStrength(n, note = `💪 +${n}`, { flex = false } = {}) {
+  const b = battle;
+  b.strength += n;
+  if (flex) b.flex += n;
+  pop('player-zone', note, 'note good');
+  playSound('stat-up');
+  statFx('player');
+  if (b.powers.strengthHeal && healPlayer(b.powers.strengthHeal)) playSound('heal-hp');
+}
+
+/** Weak, Vulnerable, Leech Seed or Sap on the enemy, from a card or a power: Effect Spore hits for it, Sap Sipper
+    blocks for Weak. */
+function applyDebuff(kind, n) {
+  const b = battle;
+  const en = b.enemy;
+  if (kind === 'weaken') { en.weak += n; pop('enemy-zone', `📉 Weak ${n}`, 'note'); }
+  if (kind === 'vulnerable') { en.vulnerable += n; pop('enemy-zone', `💔 Vulnerable ${n}`, 'note'); }
+  if (kind === 'seed') { en.seed += n; pop('enemy-zone', `🌱 Leech Seed ${n}`, 'note'); }
+  if (kind === 'sap') { en.sap += n; pop('enemy-zone', `🍂 Sap ${n}`, 'note'); }
+  playSound('stat-down');
+  statFx('enemy', 'down');
+  if (b.powers.debuffDamage) {
+    const dealt = hurtEnemy(b.powers.debuffDamage);
+    pop('enemy-zone', dealt > 0 ? `-${dealt} 🍄` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200);
+  }
+  if (kind === 'weaken' && b.powers.weakBlock) gainBlock(b.powers.weakBlock);
+}
+
+/** How many kinds of debuff the enemy has: Weak, Vulnerable, Leech Seed, Sap, Burn (Leaf Tornado, Pollen Puff). */
+function debuffKinds() {
+  const en = battle.enemy;
+  return [en.weak, en.vulnerable, en.seed, en.sap, en.burn].filter(n => n > 0).length;
 }
 
 /** You lose HP by your own doing (a card or a power): never below 1. Raging Fury turns it into strength. */
@@ -350,6 +399,11 @@ function effectsOf(card, x = 0) {
   if (e.ifBurned && b.enemy.burn > 0) addExtras(e, e.ifBurned);
   if (e.ifHurt && b.hurtThisTurn) addExtras(e, e.ifHurt);
   if (e.ifDiscarded && b.discarded) addExtras(e, e.ifDiscarded);
+  if (e.ifWeak && b.enemy.weak > 0) addExtras(e, e.ifWeak);
+  if (e.ifVulnerable && b.enemy.vulnerable > 0) addExtras(e, e.ifVulnerable);
+  if (e.ifSeeded && b.enemy.seed > 0) addExtras(e, e.ifSeeded);
+  if (e.ifHealed && b.healedThisTurn) addExtras(e, e.ifHealed);
+  if (e.ifEnemyAttacks && ['attack', 'drain'].includes(currentMove().kind)) addExtras(e, e.ifEnemyAttacks);
   return e;
 }
 
@@ -376,6 +430,7 @@ function damageFor(card, e) {
   if (e.perPlayed) amount += e.perPlayed * (b.played - 1);
   if (e.perDiscard) amount += e.perDiscard * b.discarded;
   if (e.perExhausted) amount += e.perExhausted * (e.exhausted || 0);
+  if (e.perDebuff) amount += e.perDebuff * debuffKinds();
   if (baseId(card.id) === 'cinder') amount += b.powers.cinderDamage || 0;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
@@ -439,7 +494,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
   if (e.selfDamage) loseHp(e.selfDamage);
   if (e.exhaustHand) {
     // before the damage, which counts them (Burning Jealousy, Blast Burn)
-    const going = b.hand.filter(h => e.exhaustHand === 'all' || !isAttack(h.card));
+    const going = b.hand.filter(h => e.exhaustHand === 'all' || (e.exhaustHand === 'status' ? h.card.status : !isAttack(h.card)));
     b.hand = b.hand.filter(h => !going.includes(h));
     going.forEach(h => exhaustCard(h.card));
     e.exhausted = going.length;
@@ -469,6 +524,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
       if (battle !== b) return false;
       const dealt = hurtEnemy(amount);
       through += dealt;
+      if (dealt > 0 && b.powers.attackSeed) applyDebuff('seed', b.powers.attackSeed);
       hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
       bigHit(dealt, b.enemy.maxHp);
@@ -482,7 +538,13 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
     if (hasRelic('shell-bell')) healPlayer(1);
     if (e.healDealt && healPlayer(through)) playSound('heal-hp');
+    if (through > 0 && b.powers.attackHeal && healPlayer(b.powers.attackHeal)) playSound('heal-hp');
     if (e.perTide) spendTide();
+    if (e.feed && b.enemy.hp <= 0) {
+      b.maxHp += e.feed;
+      b.hp += e.feed;
+      pop('player-zone', `❤️ +${e.feed} max HP`, 'note good', 200);
+    }
   } else {
     log(card.status ? `${card.name} was cleared away.` : `${who} used ${card.name}.`);
   }
@@ -531,8 +593,10 @@ function applyEffects(e) {
   const b = battle;
   for (let i = 0; i < (e.burn ? e.burnTimes || 1 : 0); i++) burnEnemy(e.burn, i * 150);
   if (e.burnMult && b.enemy.burn) { b.enemy.burn *= e.burnMult; pop('enemy-zone', `🔥 Burn ×${e.burnMult}`, 'note', 150); }
-  if (e.weaken)     { b.enemy.weak += e.weaken; pop('enemy-zone', `📉 Weak ${e.weaken}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
-  if (e.vulnerable) { b.enemy.vulnerable += e.vulnerable; pop('enemy-zone', `💔 Vulnerable ${e.vulnerable}`, 'note'); playSound('stat-down'); statFx('enemy', 'down'); }
+  if (e.weaken)     applyDebuff('weaken', e.weaken);
+  if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
+  if (e.seed)       applyDebuff('seed', e.seed);
+  if (e.sap)        applyDebuff('sap', e.sap);
   if (e.block)      gainBlock(e.block + (hasRelic('damp-rock') ? 2 : 0));
   if (e.blockMult && b.block) gainBlock(b.block * (e.blockMult - 1));
   if (e.blockPerTide) { const spent = spendTide(); if (spent) gainBlock(spent * e.blockPerTide + (hasRelic('damp-rock') ? 2 : 0)); }
@@ -542,13 +606,18 @@ function applyEffects(e) {
   if (e.blockPerExhausted && e.exhausted) gainBlock(e.blockPerExhausted * e.exhausted + (hasRelic('damp-rock') ? 2 : 0));
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
   if (e.focus)      { b.focus += e.focus; pop('player-zone', `🎯 +${e.focus} next attack`, 'note good'); playSound('stat-up'); statFx('player'); }
-  if (e.strength)   { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
+  if (e.strength)   gainStrength(e.strength);
+  if (e.flex)       gainStrength(e.flex, `💪 +${e.flex} this turn`, { flex: true });
+  if (e.doubleStrength && b.strength > 0) gainStrength(b.strength, `💪 ×2`);
   if (e.tide)       gainTide(e.tide);
   if (e.tideMult && b.tide) gainTide(b.tide * (e.tideMult - 1));
   if (e.nextEnergy) { b.nextEnergy += e.nextEnergy; pop('player-zone', `⚡ +${e.nextEnergy} next turn`, 'note good'); }
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
+  if (e.healPerStrength && b.strength > 0 && healPlayer(e.healPerStrength * b.strength + healBonus())) playSound('heal-hp');
+  if (e.healPerSeed && b.enemy.seed > 0 && healPlayer(e.healPerSeed * b.enemy.seed + healBonus())) playSound('heal-hp');
   if (e.draw)       draw(e.draw);
+  if (e.drawPerDebuff) draw(e.drawPerDebuff * debuffKinds());
   if (e.drawTo)     draw(e.drawTo - b.hand.length);
   if (e.addCard)    addCards(e.addCard);
 }
@@ -816,6 +885,7 @@ async function endTurn() {
     if (battle !== b) return;
     if (b.hp <= 0) return finish(false);
   }
+  if (b.flex) { b.strength -= b.flex; b.flex = 0; }
   const fading = b.hand.filter(h => h.card.ethereal);
   b.hand = b.hand.filter(h => !h.card.ethereal);
   fading.forEach(h => exhaustCard(h.card));
@@ -864,6 +934,22 @@ async function enemyTurn() {
     log(`${b.def.name} took ${burnDamage} burn damage.`);
     playSound('burn');
     if (hasRelic('heat-rock')) healPlayer(1);
+    renderAll();
+    await sleep(600);
+    if (battle !== b) return;
+    if (b.enemy.hp <= 0) return finish(true);
+  }
+
+  // 1b. Leech Seed drains it and heals you (Grassy Surge keeps it from dropping).
+  if (en.seed > 0) {
+    const n = en.seed;
+    if (!b.powers.seedKeep) en.seed -= 1;
+    en.hp = Math.max(0, en.hp - n);
+    checkStorm();
+    hitEffect('enemy-portrait-box');
+    pop('enemy-zone', `-${n} 🌱`, 'dmg');
+    log(`Leech Seed sapped ${n} HP from ${b.def.name}!`);
+    if (healPlayer(n)) playSound('heal-hp');
     renderAll();
     await sleep(600);
     if (battle !== b) return;
@@ -971,7 +1057,7 @@ function enemyTypeMultiplier(move) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round((move.amount + en.dmgBonus + en.strength) * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + en.dmgBonus + en.strength - en.sap) * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
@@ -995,7 +1081,7 @@ async function finish(won) {
   await sleep(1200);
   if (battle !== b) return;
 
-  b.onEnd({ won, hp: b.hp, damageTaken: b.damageTaken });
+  b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken });
 }
 
 /** Randomly reorder an array (returns a new array). */
@@ -1160,12 +1246,14 @@ function renderStatus() {
   if (en.burn)     enemyBadges.push(['🔥', en.burn, `Burn ${en.burn}: takes ${en.burn} damage at the start of its turn`]);
   if (en.weak)     enemyBadges.push(['📉', en.weak, `Weak ${en.weak}: deals 25% less damage for ${en.weak} more turn${en.weak > 1 ? 's' : ''}`]);
   if (en.vulnerable) enemyBadges.push(['💔', en.vulnerable, `Vulnerable ${en.vulnerable}: takes 50% more damage from your attacks for ${en.vulnerable} more turn${en.vulnerable > 1 ? 's' : ''}`]);
+  if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
+  if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 
   const playerBadges = [];
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
-  if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit`, 'good']);
+  if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit${b.flex ? ` (${b.flex} of it wears off at the end of this turn)` : ''}`, 'good']);
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, `+${b.nextEnergy} energy next turn`, 'good']);

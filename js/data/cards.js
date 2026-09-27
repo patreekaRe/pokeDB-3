@@ -65,13 +65,26 @@
      ifDiscarded   { bonus, ...effects } if you've discarded a card this turn
      discardHand   discard your whole hand (one by one, so discard triggers fire); perDiscarded: { draw: 1 } or
                    { addCard } happens once per card it discarded
+     seed          Leech Seed: at the start of its turn the enemy loses that much HP, you heal as much, then it drops by 1
+     sap           Sap: the enemy's attacks deal that much less for the rest of the fight
+     flex          +this much strength for this turn only (StS's Flex)
+     ifWeak / ifVulnerable / ifSeeded / ifHealed / ifEnemyAttacks   { bonus, ...effects } like ifBurned: if the enemy is
+                   Weak / Vulnerable / has Leech Seed, if you've healed this turn, if the enemy intends to attack
+     healPerStrength  heal this much per strength you have
+     healPerSeed   heal this much per Leech Seed on the enemy
+     perDebuff     +this much damage per kind of debuff on the enemy (Weak, Vulnerable, Leech Seed, Sap, Burn)
+     drawPerDebuff draw this many cards per kind of debuff on the enemy
+     doubleStrength  double your strength
+     feed          if this card knocks the enemy out, gain this much max HP (StS's Feed)
+     exhaustHand: 'status'  exhaust every status card in your hand (StS's Purity)
 
    Power effects (only on `power: true` cards, see POWERS below):
      blockEachTurn, healEachTurn, burnEachTurn, strengthEachTurn,
      drawEachTurn, thorns, blaze, keepBlock, exhaustBlock, exhaustDraw,
      discardTide, discardBlock, cardDamage, cardBlock, rupture, combust, brutality,
      corruption, drought, cinderDamage, exhaustBurn, tideEachTurn, drizzle, riptide, retainN,
-     tideSpendBlock, retainDiscount, tideSurge
+     tideSpendBlock, retainDiscount, tideSurge, overheal, healStrength, seedKeep, attackHeal, attackSeed,
+     debuffDamage, weakEachTurn, weakBlock, strengthHeal
 
    A card can also have (these sit next to `effects`, not inside it):
      exhaust    true = this card leaves the fight after you play it once
@@ -216,23 +229,75 @@ const FIRE_CARDS = [
 ];
 
 const GRASS_CARDS = [
-  { id: 'vine-whip',    name: 'Vine Whip',    type: 'grass', cost: 1, art: '🌿', sprite: 'galarica-twig', effects: { damage: 7 } },                  // Strike
-  { id: 'stun-spore',   name: 'Stun Spore',   type: 'grass', cost: 1, art: '🍄', sprite: 'tiny-mushroom', effects: { damage: 6, weaken: 1 } },       // Sucker Punch
-  { id: 'absorb',       name: 'Absorb',       type: 'grass', cost: 1, art: '💚', sprite: 'absorb-bulb', effects: { damage: 6, heal: 3 } },           // a small Reaper
-  { id: 'growth',       name: 'Growth',       type: 'grass', cost: 1, art: '🌱', sprite: 'growth-mulch', effects: { strength: 1, heal: 3 } },
-  { id: 'seed-bomb',    name: 'Seed Bomb',    type: 'grass', cost: 2, art: '🌰', sprite: 'rindo-berry', effects: { damage: 10, vulnerable: 2 } },    // Bash
-  { id: 'razor-leaf',   name: 'Razor Leaf',   type: 'grass', cost: 2, art: '🍃', sprite: 'silver-leaf', effects: { damage: 16 } },
-  { id: 'bullet-seed',  name: 'Bullet Seed',  type: 'grass', cost: 1, art: '🌱', sprite: 'green-apricorn', effects: { damage: 3, hits: 3 } },         // Sword Boomerang
-  { id: 'mega-drain',   name: 'Mega Drain',   type: 'grass', cost: 2, art: '💚', sprite: 'luminous-moss', effects: { damage: 12, heal: 6 } },
-  { id: 'cotton-guard', name: 'Cotton Guard', type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 8 }, retain: true },
-  { id: 'petal-dance',  name: 'Petal Dance',  type: 'grass', cost: 1, art: '🌸', sprite: 'petal-pink', effects: { damage: 6, block: 6 } },            // Iron Wave
-  { id: 'synthesis',    name: 'Synthesis',    type: 'grass', cost: 2, art: '☀️', sprite: 'sitrus-berry', effects: { heal: 14 }, rarity: 'uncommon' },
-  { id: 'leaf-blade',   name: 'Leaf Blade',   type: 'grass', cost: 2, art: '🍃', sprite: 'leaf-stone', effects: { damage: 10, strength: 2 }, rarity: 'uncommon' },
-  { id: 'power-whip',   name: 'Power Whip',   type: 'grass', cost: 2, art: '🌳', sprite: 'power-band', effects: { damage: 14, strengthMult: 3 }, rarity: 'uncommon' },   // Heavy Blade
-  { id: 'sleep-powder', name: 'Sleep Powder', type: 'grass', cost: 1, art: '🍄', sprite: 'big-mushroom', effects: { weaken: 2, draw: 1 }, retain: true, rarity: 'uncommon' },
-  { id: 'ingrain',      name: 'Ingrain',      type: 'grass', cost: 1, art: '🌳', sprite: 'rich-mulch', effects: { healEachTurn: 3 }, power: true, rarity: 'uncommon' },
-  { id: 'solar-beam',   name: 'Solar Beam',   type: 'grass', cost: 3, art: '🌞', sprite: 'tm-grass', effects: { damage: 36 }, rarity: 'rare' },        // Bludgeon
-  { id: 'grassy-terrain', name: 'Grassy Terrain', type: 'grass', cost: 3, art: '🌿', sprite: 'terrain-extender', effects: { strengthEachTurn: 2 }, power: true, rarity: 'rare' },   // Demon Form
+  // Common: 20
+  { id: 'vine-whip',      name: 'Vine Whip',      type: 'grass', cost: 1, art: '🌿', sprite: 'galarica-twig', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                        // Strike
+  { id: 'cotton-guard',   name: 'Cotton Guard',   type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 8 }, retain: true, upgrade: { effects: { block: 11 } } },   // Defend (Retain)
+  { id: 'seed-bomb',      name: 'Seed Bomb',      type: 'grass', cost: 2, art: '🌰', sprite: 'rindo-berry', effects: { damage: 10, vulnerable: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash
+  { id: 'petal-dance',    name: 'Petal Dance',    type: 'grass', cost: 1, art: '🌸', sprite: 'petal-pink', effects: { damage: 6, block: 6 }, upgrade: { effects: { damage: 8, block: 8 } } },   // Iron Wave
+  { id: 'razor-leaf',     name: 'Razor Leaf',     type: 'grass', cost: 2, art: '🍃', sprite: 'silver-leaf', effects: { damage: 16 }, upgrade: { effects: { damage: 21 } } },   // Carnage, without Ethereal
+  { id: 'growth',         name: 'Growth',         type: 'grass', cost: 1, art: '🌱', sprite: 'growth-mulch', effects: { strength: 1, heal: 3 }, upgrade: { effects: { strength: 2 } } },   // Inflame (half) + a heal
+  { id: 'bullet-seed',    name: 'Bullet Seed',    type: 'grass', cost: 1, art: '🌱', sprite: 'green-apricorn', effects: { damage: 3, hits: 3 }, upgrade: { effects: { damage: 4 } } },   // Sword Boomerang
+  { id: 'rototiller',     name: 'Rototiller',     type: 'grass', cost: 0, art: '🌱', sprite: 'boost-mulch', effects: { flex: 3 }, upgrade: { effects: { flex: 5 } } },   // Flex
+  { id: 'branch-poke',    name: 'Branch Poke',    type: 'grass', cost: 0, art: '🌿', sprite: 'large-leek', effects: { damage: 4 }, upgrade: { effects: { damage: 6 } } },   // a free hit, for strength to multiply (Flying Knee's price)
+  { id: 'wood-hammer',    name: 'Wood Hammer',    type: 'grass', cost: 2, art: '🌳', sprite: 'wood-mail', effects: { damage: 14, weaken: 2 }, upgrade: { effects: { damage: 17, weaken: 3 } } },   // Clothesline
+  { id: 'absorb',         name: 'Absorb',         type: 'grass', cost: 1, art: '💚', sprite: 'absorb-bulb', effects: { damage: 6, heal: 3 }, upgrade: { effects: { damage: 8, heal: 4 } } },   // Reaper (lite)
+  { id: 'mega-drain',     name: 'Mega Drain',     type: 'grass', cost: 2, art: '💚', sprite: 'luminous-moss', effects: { damage: 12, heal: 6 }, upgrade: { effects: { damage: 15, heal: 8 } } },   // Reaper (lite)
+  { id: 'worry-seed',     name: 'Worry Seed',     type: 'grass', cost: 1, art: '🌱', sprite: 'psychic-seed', effects: { seed: 4 }, upgrade: { effects: { seed: 6 } } },   // Deadly Poison
+  { id: 'snap-trap',      name: 'Snap Trap',      type: 'grass', cost: 1, art: '🌿', sprite: 'ring-target', effects: { damage: 5, seed: 2 }, upgrade: { effects: { damage: 7, seed: 3 } } },   // Poisoned Stab
+  { id: 'leaf-guard',     name: 'Leaf Guard',     type: 'grass', cost: 1, art: '🍃', sprite: 'rose-incense', effects: { block: 7, heal: 2 }, upgrade: { effects: { block: 10, heal: 3 } } },   // Shrug It Off, healing in place of the draw
+  { id: 'sprout',         name: 'Sprout',         type: 'grass', cost: 1, art: '🌱', sprite: 'revival-herb', effects: { addCard: { id: 'seedling', n: 2, to: 'draw' } }, upgrade: { effects: { addCard: { id: 'seedling', n: 3, to: 'draw' } } } },   // Blade Dance, into the draw pile
+  { id: 'stun-spore',     name: 'Stun Spore',     type: 'grass', cost: 1, art: '🍄', sprite: 'tiny-mushroom', effects: { damage: 6, weaken: 1 }, upgrade: { effects: { damage: 8, weaken: 2 } } },   // Sucker Punch
+  { id: 'magical-leaf',   name: 'Magical Leaf',   type: 'grass', cost: 1, art: '🍃', sprite: 'petal-green', effects: { damage: 8, ifWeak: { bonus: 4 } }, upgrade: { effects: { damage: 10, ifWeak: { bonus: 6 } } } },   // Heel Hook
+  { id: 'sweet-scent',    name: 'Sweet Scent',    type: 'grass', cost: 1, art: '🌸', sprite: 'sachet', effects: { sap: 2 }, exhaust: true, upgrade: { effects: { sap: 3 } } },   // Disarm
+  { id: 'apple-acid',     name: 'Apple Acid',     type: 'grass', cost: 1, art: '🌰', sprite: 'tart-apple', effects: { damage: 8, vulnerable: 1 }, upgrade: { effects: { damage: 11, vulnerable: 2 } } },   // Trip + a hit
+  // Uncommon: 32
+  { id: 'leaf-blade',     name: 'Leaf Blade',     type: 'grass', cost: 2, art: '🍃', sprite: 'leaf-stone', effects: { damage: 10, strength: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 14 } } },   // Inflame + a hit
+  { id: 'power-whip',     name: 'Power Whip',     type: 'grass', cost: 2, art: '🌳', sprite: 'power-band', effects: { damage: 14, strengthMult: 3 }, rarity: 'uncommon', upgrade: { effects: { strengthMult: 5 } } },   // Heavy Blade
+  { id: 'trailblaze',     name: 'Trailblaze',     type: 'grass', cost: 1, art: '🌿', sprite: 'swift-wing', effects: { ifEnemyAttacks: { strength: 3 } }, rarity: 'uncommon', upgrade: { effects: { ifEnemyAttacks: { strength: 4 } } } },   // Spot Weakness
+  { id: 'needle-arm',     name: 'Needle Arm',     type: 'grass', cost: 1, art: '🌿', sprite: 'sticky-barb', effects: { damage: 2, hits: 4 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { hits: 5 } } },   // Pummel
+  { id: 'horn-leech',     name: 'Horn Leech',     type: 'grass', cost: 2, art: '🌳', sprite: 'rare-bone', effects: { damage: 10, healPerStrength: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 13, healPerStrength: 3 } } },   // bridge Growth/Drain: Reaper, by strength
+  { id: 'grass-pledge',   name: 'Grass Pledge',   type: 'grass', cost: 1, art: '🌿', sprite: 'leaf-letter-eevee', effects: { healStrength: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // bridge Growth/Drain: Rupture, on heals
+  { id: 'spiky-shield',   name: 'Spiky Shield',   type: 'grass', cost: 1, art: '🌿', sprite: 'sharp-beak', effects: { thorns: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { thorns: 6 } } },   // Caltrops
+  { id: 'synthesis',      name: 'Synthesis',      type: 'grass', cost: 2, art: '☀️', sprite: 'sitrus-berry', effects: { heal: 14 }, rarity: 'uncommon', upgrade: { effects: { heal: 19 } } },   // Bandage Up, kept
+  { id: 'ingrain',        name: 'Ingrain',        type: 'grass', cost: 1, art: '🌳', sprite: 'rich-mulch', effects: { healEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { healEachTurn: 4 } } },   // Regen
+  { id: 'chlorophyll',    name: 'Chlorophyll',    type: 'grass', cost: 1, art: '☀️', sprite: 'petal-yellow', effects: { overheal: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Feel No Pain, for healing past full
+  { id: 'strength-sap',   name: 'Strength Sap',   type: 'grass', cost: 1, art: '💚', sprite: 'max-honey', effects: { healPerSeed: 2, sap: 1 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { healPerSeed: 3 } } },   // Bane, as a heal
+  { id: 'grassy-glide',   name: 'Grassy Glide',   type: 'grass', cost: 1, art: '🍃', sprite: 'pretty-wing', effects: { block: 8, ifHealed: { block: 5 } }, rarity: 'uncommon', upgrade: { effects: { block: 10, ifHealed: { block: 7 } } } },   // Dodge and Roll
+  { id: 'floral-healing', name: 'Floral Healing', type: 'grass', cost: 1, art: '🌸', sprite: 'small-bouquet', effects: { heal: 5, block: 5 }, rarity: 'uncommon', upgrade: { effects: { heal: 7, block: 7 } } },   // Shrug It Off, as a heal
+  { id: 'aromatherapy',   name: 'Aromatherapy',   type: 'grass', cost: 1, art: '🌸', sprite: 'full-restore', effects: { heal: 4, exhaustHand: 'status', draw: 1 }, rarity: 'uncommon', upgrade: { effects: { heal: 7 } } },   // Purity
+  { id: 'seed-flare',     name: 'Seed Flare',     type: 'grass', cost: 2, art: '🌸', sprite: 'flower-sweet', effects: { damage: 12, seed: 5 }, rarity: 'uncommon', upgrade: { effects: { damage: 15, seed: 7 } } },   // bridge Drain/Spores: Bouncing Flask + a hit
+  { id: 'sleep-powder',   name: 'Sleep Powder',   type: 'grass', cost: 1, art: '🍄', sprite: 'big-mushroom', effects: { weaken: 2, draw: 1 }, retain: true, rarity: 'uncommon', upgrade: { effects: { weaken: 3 } } },   // Blind
+  { id: 'spore',          name: 'Spore',          type: 'grass', cost: 1, art: '🍄', sprite: 'balm-mushroom', effects: { weaken: 2, vulnerable: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { weaken: 3, vulnerable: 3 } } },   // Crippling Cloud
+  { id: 'effect-spore',   name: 'Effect Spore',   type: 'grass', cost: 1, art: '🍄', sprite: 'mixed-mushrooms', effects: { debuffDamage: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { debuffDamage: 7 } } },   // Sadistic Nature
+  { id: 'leaf-tornado',   name: 'Leaf Tornado',   type: 'grass', cost: 1, art: '🌪️', sprite: 'green-scarf', effects: { damage: 6, perDebuff: 4 }, rarity: 'uncommon', upgrade: { effects: { damage: 8, perDebuff: 5 } } },   // Bane, per debuff
+  { id: 'rage-powder',    name: 'Rage Powder',    type: 'grass', cost: 1, art: '🍄', sprite: 'heal-powder', effects: { block: 8, weaken: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 10, weaken: 2 } } },   // Leg Sweep (lite)
+  { id: 'forests-curse',  name: 'Forest\'s Curse', type: 'grass', cost: 1, art: '🌳', sprite: 'odd-incense', effects: { sap: 1, vulnerable: 2 }, rarity: 'uncommon', upgrade: { effects: { sap: 2, vulnerable: 3 } } },   // Malaise (lite)
+  { id: 'powder',         name: 'Powder',         type: 'grass', cost: 2, art: '💨', sprite: 'metal-powder', effects: { weakEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },   // Noxious Fumes, as Weak
+  { id: 'trop-kick',      name: 'Trop Kick',      type: 'grass', cost: 1, art: '🥊', sprite: 'fruit-bunch', effects: { damage: 9, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 12 } } },   // Disarm + a hit
+  { id: 'grav-apple',     name: 'Grav Apple',     type: 'grass', cost: 2, art: '🌰', sprite: 'sweet-apple', effects: { damage: 15, weaken: 1, vulnerable: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 2, vulnerable: 2 } } },   // bridge Growth/Spores: Uppercut
+  { id: 'drum-beating',   name: 'Drum Beating',   type: 'grass', cost: 1, art: '🥊', sprite: 'thick-club', effects: { damage: 7, ifVulnerable: { energy: 1, draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10 } } },   // bridge Growth/Spores: Dropkick
+  { id: 'spicy-extract',  name: 'Spicy Extract',  type: 'grass', cost: 1, art: '🔥', sprite: 'spice-mix', effects: { vulnerable: 2, strength: 1 }, rarity: 'uncommon', upgrade: { effects: { strength: 2 } } },   // bridge Growth/Spores: Trip + Inflame (half)
+  { id: 'chloroblast',    name: 'Chloroblast',    type: 'grass', cost: 1, art: '☀️', sprite: 'tr-grass', effects: { selfDamage: 3, damage: 18 }, rarity: 'uncommon', upgrade: { effects: { damage: 23 } } },   // bridge Growth/Drain: Hemokinesis (heal it back)
+  { id: 'flower-shield',  name: 'Flower Shield',  type: 'grass', cost: 1, art: '🌸', sprite: 'petal-orange', effects: { block: 8, ifHealed: { strength: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // bridge Growth/Drain: a Defend that grows
+  { id: 'sappy-seed',     name: 'Sappy Seed',     type: 'grass', cost: 1, art: '🌱', sprite: 'electric-seed', effects: { seed: 3, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { seed: 5 } } },   // bridge Drain/Spores: Deadly Poison + Disarm (lite)
+  { id: 'cotton-spore',   name: 'Cotton Spore',   type: 'grass', cost: 1, art: '💨', sprite: 'fresh-cream', effects: { weaken: 2, seed: 2 }, rarity: 'uncommon', upgrade: { effects: { weaken: 3, seed: 3 } } },   // bridge Drain/Spores: Blind + poison
+  { id: 'energy-ball',    name: 'Energy Ball',    type: 'grass', cost: 1, art: '🌀', sprite: 'grass-memory', effects: { damage: 9, ifSeeded: { heal: 4 } }, rarity: 'uncommon', upgrade: { effects: { damage: 12, ifSeeded: { heal: 5 } } } },   // bridge Drain/Spores: Bane, as a heal
+  { id: 'aromatic-mist',  name: 'Aromatic Mist',  type: 'grass', cost: 1, art: '🌸', sprite: 'pink-nectar', effects: { heal: 3, weaken: 1, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { heal: 5, weaken: 2 } } },   // bridge Drain/Spores: Blind + a heal
+  // Rare: 14
+  { id: 'solar-beam',     name: 'Solar Beam',     type: 'grass', cost: 3, art: '🌞', sprite: 'tm-grass', effects: { damage: 36 }, rarity: 'rare', upgrade: { effects: { damage: 46 } } },   // Bludgeon
+  { id: 'grassy-terrain', name: 'Grassy Terrain', type: 'grass', cost: 3, art: '🌿', sprite: 'terrain-extender', effects: { strengthEachTurn: 2 }, power: true, rarity: 'rare', upgrade: { effects: { strengthEachTurn: 3 } } },   // Demon Form
+  { id: 'growth-spurt',   name: 'Growth Spurt',   type: 'grass', cost: 1, art: '🌱', sprite: 'rare-candy', effects: { doubleStrength: true }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Limit Break
+  { id: 'solar-blade',    name: 'Solar Blade',    type: 'grass', cost: 2, art: '🌞', sprite: 'solganium-z', effects: { damage: 8, strengthMult: 4 }, retain: true, rarity: 'rare', upgrade: { effects: { damage: 12, strengthMult: 5 } } },   // Heavy Blade+, kept for the big turn
+  { id: 'harvest',        name: 'Harvest',        type: 'grass', cost: 1, art: '🫐', sprite: 'berry-pots', effects: { strengthHeal: 2 }, power: true, rarity: 'rare', upgrade: { effects: { strengthHeal: 3 } } },   // bridge Growth/Drain
+  { id: 'jungle-healing', name: 'Jungle Healing', type: 'grass', cost: 1, art: '💚', sprite: 'max-potion', effects: { damage: 12, feed: 4 }, exhaust: true, rarity: 'rare', upgrade: { effects: { damage: 14, feed: 5 } } },   // Feed
+  { id: 'grassy-surge',   name: 'Grassy Surge',   type: 'grass', cost: 3, art: '🌱', sprite: 'meadow-plate', effects: { seedKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // Catalyst, made permanent
+  { id: 'leech-life',     name: 'Leech Life',     type: 'grass', cost: 1, art: '🩸', sprite: 'buginium-z', effects: { attackHeal: 2 }, power: true, rarity: 'rare', upgrade: { effects: { attackHeal: 3 } } },   // Reaper, on every attack
+  { id: 'seed-sower',     name: 'Seed Sower',     type: 'grass', cost: 2, art: '🌱', sprite: 'starf-berry', effects: { attackSeed: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Envenom
+  { id: 'matcha-gotcha',  name: 'Matcha Gotcha',  type: 'grass', cost: 'X', art: '💚', sprite: 'cracked-pot', effects: { damage: 5, perX: { hits: 1 }, healDealt: true }, exhaust: true, rarity: 'rare', upgrade: { effects: { damage: 7 } } },   // Whirlwind + Reaper
+  { id: 'natures-madness', name: 'Nature\'s Madness', type: 'grass', cost: 'X', art: '🌀', sprite: 'tapunium-z', effects: { perX: { sap: 1, weaken: 1 } }, exhaust: true, rarity: 'rare', upgrade: { effects: { xPlus: 1 } } },   // Malaise
+  { id: 'pollen-puff',    name: 'Pollen Puff',    type: 'grass', cost: 1, art: '🌸', sprite: 'honey', effects: { drawPerDebuff: 1 }, rarity: 'rare', upgrade: { cost: 0 } },   // Expertise, by debuffs
+  { id: 'sap-sipper',     name: 'Sap Sipper',     type: 'grass', cost: 1, art: '💚', sprite: 'yellow-nectar', effects: { weakBlock: 4 }, power: true, rarity: 'rare', upgrade: { effects: { weakBlock: 6 } } },   // Sadistic Nature, as block
+  { id: 'petal-storm',    name: 'Petal Storm',    type: 'grass', cost: 2, art: '🌸', sprite: 'petal-purple', effects: { damage: 4, hits: 5, vulnerable: 1 }, rarity: 'rare', upgrade: { effects: { damage: 5, vulnerable: 2 } } },   // Glass Knife
 ];
 
 const WATER_CARDS = [
@@ -337,16 +402,16 @@ const FIRE_EVO_HIGH = [
 ];
 
 const GRASS_EVO_MID = [
-  { id: 'leech-seed',    name: 'Leech Seed',    type: 'grass', cost: 1, art: '🌱', sprite: 'carrot-seeds', effects: { damage: 8, heal: 5 }, evoOnly: true, maxCopies: 1 },
-  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', sprite: 'macho-brace', effects: { strength: 2, block: 6 }, evoOnly: true, maxCopies: 1 },
-  { id: 'razor-storm',   name: 'Razor Storm',   type: 'grass', cost: 2, art: '🍃', sprite: 'gold-leaf', effects: { damage: 16 }, evoOnly: true, maxCopies: 1 },
-  { id: 'poison-powder', name: 'Poison Powder', type: 'grass', cost: 1, art: '☠️', sprite: 'poison-barb', effects: { weaken: 2, heal: 3 }, evoOnly: true, maxCopies: 1 },
+  { id: 'leech-seed',    name: 'Leech Seed',    type: 'grass', cost: 1, art: '🌱', sprite: 'carrot-seeds', effects: { seed: 6, heal: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { seed: 8, heal: 4 } } },   // Drain: Deadly Poison, the move itself
+  { id: 'bulk-up',       name: 'Bulk Up',       type: 'grass', cost: 1, art: '💪', sprite: 'macho-brace', effects: { strength: 2, block: 6 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { strength: 3, block: 8 } } },   // Growth: Inflame + a Defend
+  { id: 'razor-storm',   name: 'Razor Storm',   type: 'grass', cost: 2, art: '🍃', sprite: 'gold-leaf', effects: { damage: 3, hits: 6 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 4 } } },   // Growth: every hit carries your strength
+  { id: 'poison-powder', name: 'Poison Powder', type: 'grass', cost: 1, art: '☠️', sprite: 'poison-barb', effects: { weaken: 2, sap: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { weaken: 3, sap: 2 } } },   // Spores: Blind + Disarm (lite)
 ];
 const GRASS_EVO_HIGH = [
-  { id: 'giga-drain',    name: 'Giga Drain',    type: 'grass', cost: 2, art: '🩸', sprite: 'grassium-z', effects: { damage: 20, heal: 12 }, evoOnly: true, maxCopies: 1 },
-  { id: 'petal-blizzard', name: 'Petal Blizzard', type: 'grass', cost: 2, art: '🌸', sprite: 'petal-red', effects: { damage: 24 }, evoOnly: true, maxCopies: 1 },
-  { id: 'leaf-storm',    name: 'Leaf Storm',    type: 'grass', cost: 3, art: '🍂', sprite: 'sceptilite', effects: { damage: 26, block: 8 }, evoOnly: true, maxCopies: 1 },
-  { id: 'frenzy-plant',  name: 'Frenzy Plant',  type: 'grass', cost: 3, art: '🌳', sprite: 'venusaurite', effects: { damage: 34 }, evoOnly: true, maxCopies: 1 },
+  { id: 'giga-drain',    name: 'Giga Drain',    type: 'grass', cost: 2, art: '🩸', sprite: 'grassium-z', effects: { damage: 20, heal: 12 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, heal: 15 } } },   // Drain
+  { id: 'petal-blizzard', name: 'Petal Blizzard', type: 'grass', cost: 2, art: '🌸', sprite: 'petal-red', effects: { damage: 12, hits: 2, vulnerable: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 15, vulnerable: 3 } } },   // Spores
+  { id: 'leaf-storm',    name: 'Leaf Storm',    type: 'grass', cost: 3, art: '🍂', sprite: 'sceptilite', effects: { damage: 26, block: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 32, block: 11 } } },
+  { id: 'frenzy-plant',  name: 'Frenzy Plant',  type: 'grass', cost: 3, art: '🌳', sprite: 'venusaurite', effects: { damage: 30, strengthMult: 4 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 38 } } },   // Growth: Heavy Blade at its biggest
 ];
 
 const WATER_EVO_MID = [
@@ -394,11 +459,12 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
 
 /** The default upgrade, StS-sized: +3 damage (less per hit on multi-hits) and +3 block; else +3 heal; else +1 of
     the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
-const UPGRADE_STEPS = [['burn', 2], ['weaken', 1], ['vulnerable', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['draw', 1]];
+const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
   exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
   rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
-  tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1 };
+  tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1,
+  healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -453,10 +519,11 @@ export const STAGE_POWER = 0.15;
 export function scaledEffects(card, stage = 0) {
   const e = { ...card.effects };
   const k = 1 + STAGE_POWER * stage;
-  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust', 'blockPerTide', 'blockPerCard', 'blockNext', 'riptide']) {
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust', 'blockPerTide', 'blockPerCard', 'blockNext', 'riptide', 'weakBlock', 'debuffDamage']) {
     if (e[key]) e[key] = Math.round(e[key] * k);
   }
   if (e.burn) e.burn += stage;
+  if (e.seed) e.seed += stage;
   return e;
 }
 
@@ -496,6 +563,15 @@ export const POWERS = {
   tideSpendBlock:   { icon: '⛲', text: (n) => `Whenever you spend Tide, gain ${n} block per Tide spent.` },
   retainDiscount:   { icon: '🏷️', text: (n) => `Whenever a card stays in your hand at the end of your turn, it costs ${n} less this fight.` },
   tideSurge:        { icon: '🧿', text: (n) => `At the start of each turn, gain ${n} Tide, then 1 more each turn after.` },
+  overheal:         { icon: '🌸', flag: true, text: () => 'Healing past your max HP becomes block.' },
+  healStrength:     { icon: '🍀', text: (n) => `Whenever you heal (once a turn), your hits deal +${n} all fight.` },
+  seedKeep:         { icon: '🌳', flag: true, text: () => 'Leech Seed on the enemy no longer drops.' },
+  attackHeal:       { icon: '🦷', text: (n) => `Whenever your attack deals damage, heal ${n} HP.` },
+  attackSeed:       { icon: '🌿', text: (n) => `Whenever a hit of yours gets through, Leech Seed ${n}.` },
+  debuffDamage:     { icon: '🍄', text: (n) => `Whenever you apply a debuff, deal ${n} damage.` },
+  weakEachTurn:     { icon: '💨', text: (n) => `At the start of each turn, apply ${n} Weak.` },
+  weakBlock:        { icon: '🍃', text: (n) => `Whenever you apply Weak, gain ${n} block.` },
+  strengthHeal:     { icon: '🌰', text: (n) => `Whenever you gain strength, heal ${n} HP.` },
 };
 
 const xLabel = (e) => (e.xPlus ? `X+${e.xPlus}` : 'X');
@@ -508,7 +584,7 @@ const MULT = { 2: 'Double', 3: 'Triple' };
 function sentences(e) {
   const parts = [];
   if (e.selfDamage)   parts.push(`Lose ${e.selfDamage} HP.`);
-  if (e.exhaustHand)  parts.push(e.exhaustHand === 'all' ? 'Exhaust your hand.' : 'Exhaust every non-attack in your hand.');
+  if (e.exhaustHand)  parts.push({ all: 'Exhaust your hand.', status: 'Exhaust every status card in your hand.' }[e.exhaustHand] ?? 'Exhaust every non-attack in your hand.');
   const times = e.perX?.hits ? ` ${xLabel(e)} times` : e.hitsPerAttack ? ' for each attack you\'ve played this turn'
     : e.hitsPerExhausted ? ' for each card exhausted' : e.hits > 1 ? ` ${e.hits} times` : '';
   if (e.damage)       parts.push(`Deal ${e.damage} damage${times}.`);
@@ -525,11 +601,14 @@ function sentences(e) {
   if (e.bonusPerBurn) parts.push(`+${e.bonusPerBurn} for each Burn on the enemy.`);
   if (e.perPlayed)    parts.push(`+${e.perPlayed} for each other card you've played this turn.`);
   if (e.perDiscard)   parts.push(`+${e.perDiscard} for each card you've discarded this turn.`);
+  if (e.perDebuff)    parts.push(`+${e.perDebuff} for each kind of debuff on the enemy.`);
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
   if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
+  if (e.seed)         parts.push(`Leech Seed ${e.seed}.`);
+  if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
@@ -540,7 +619,12 @@ function sentences(e) {
   if (e.blockPerExhausted) parts.push(`Gain ${e.blockPerExhausted} block for each card exhausted.`);
   if (e.heal)         parts.push(`Heal ${e.heal} HP.`);
   if (e.healDealt)    parts.push('Heal the damage that gets through.');
+  if (e.healPerStrength) parts.push(`Heal ${e.healPerStrength} HP for each strength you have.`);
+  if (e.healPerSeed)  parts.push(`Heal ${e.healPerSeed} HP for each Leech Seed on the enemy.`);
+  if (e.feed)         parts.push(`If this knocks the enemy out, gain ${e.feed} max HP.`);
   if (e.strength)     parts.push(`Your hits deal +${e.strength} all fight.`);
+  if (e.flex)         parts.push(`Your hits deal +${e.flex} this turn.`);
+  if (e.doubleStrength) parts.push('Double your strength.');
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
   if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
   if (e.discardHand) {
@@ -551,6 +635,7 @@ function sentences(e) {
   }
   if (e.draw)         parts.push(`Draw ${plural(e.draw, 'card')}.`);
   if (e.drawTo)       parts.push(`Draw until you have ${e.drawTo} cards.`);
+  if (e.drawPerDebuff) parts.push(`Draw ${plural(e.drawPerDebuff, 'card')} for each kind of debuff on the enemy.`);
   if (e.discard)      parts.push(`Discard ${plural(e.discard, 'card')}.`);
   if (e.exhaustPick)  parts.push(`Exhaust ${plural(e.exhaustPick, 'card')} from your hand.`);
   if (e.playTop)      parts.push(e.playTop > 1 ? `Play the top ${e.playTop} cards of your draw pile and exhaust them.` : 'Play the top card of your draw pile and exhaust it.');
@@ -572,6 +657,11 @@ function sentences(e) {
   if (e.costDownOnHurt) parts.push(`Costs ${e.costDownOnHurt} less for each time you've lost HP this fight.`);
   if (e.ifDiscarded)  parts.push(`If you've discarded a card this turn: ${sentences(e.ifDiscarded).join(' ')}`);
   if (e.costDownOnDiscard) parts.push(`Costs ${e.costDownOnDiscard} less for each card you've discarded this turn.`);
+  if (e.ifWeak)       parts.push(`If the enemy is Weak: ${sentences(e.ifWeak).join(' ')}`);
+  if (e.ifVulnerable) parts.push(`If the enemy is Vulnerable: ${sentences(e.ifVulnerable).join(' ')}`);
+  if (e.ifSeeded)     parts.push(`If the enemy has Leech Seed: ${sentences(e.ifSeeded).join(' ')}`);
+  if (e.ifHealed)     parts.push(`If you've healed this turn: ${sentences(e.ifHealed).join(' ')}`);
+  if (e.ifEnemyAttacks) parts.push(`If the enemy intends to attack: ${sentences(e.ifEnemyAttacks).join(' ')}`);
   return parts;
 }
 
@@ -625,6 +715,12 @@ export function termTips(card) {
     (e.burn || e.burnMult || e.ifBurned || e.bonusPerBurn || e.burnEachTurn || e.drought || e.exhaustBurn)
       && 'Burn: the enemy takes that much damage at the start of its turn, then its Burn drops by 1.',
     e.ifHurt && 'Losing HP counts however it happens: your own cards, Poison, or the enemy\'s hits.',
+    (e.seed || e.healPerSeed || e.ifSeeded || e.seedKeep || e.attackSeed || e.perX?.seed)
+      && 'Leech Seed: at the start of its turn the enemy loses that much HP and you heal as much, then it drops by 1.',
+    (e.sap || e.perX?.sap) && 'Sap: the enemy\'s attacks deal that much less, for the rest of the fight.',
+    (e.doubleStrength || e.strengthMult || e.healPerStrength || e.strengthHeal)
+      && 'Strength: what cards like Growth add to your hits ("your hits deal +1 all fight"), shown as your 💪 badge.',
+    (e.perDebuff || e.drawPerDebuff || e.debuffDamage) && 'Debuffs: Weak, Vulnerable, Leech Seed, Sap and Burn.',
     card.upgraded && 'Upgraded with PP Up.',
   ].filter(Boolean);
 }
