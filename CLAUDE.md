@@ -426,9 +426,7 @@ rewards; it has no Leave. A new event needs an entry in both places, an
 icon in `ICONS` for any new emoji, and a `RUN_SAVE_VERSION` bump only if the
 node shape changes.
 
-Events are getting scenes of their own, a few per session (Berry Tree, Hot Spring, Wishing Well, Item Ball,
-Team Rocket and Shrine so far; Move Tutor, Move Deleter, Day Care and Fan Club still show plain tiles over the
-map's scene). `EVENT_SCENES` in `js/run.js` maps an event to
+Every event has a scene of its own (no event shows plain tiles any more). `EVENT_SCENES` in `js/run.js` maps an event to
 its `PLACE_ART` entry; `outdoor: true` makes `showPlaceScene()` paint that biome's own wild scene (sky,
 backdrop, ground, life) with the event's props in the middle (`prop`, `eventProps()` in `js/scene.js`), and
 its `biomes` only retint the props. Like the Center, there are no tiles: layout `event-room <scene>-room`
@@ -460,6 +458,22 @@ its name (`revealGift()`, the item screen's `floatingThing()`) until you tap it 
 `cues` play sounds on its frames (`actCues()`; all at once under reduced motion): the Voltorb's `hit`, the
 ball's `ball-open`. `life.keep` keeps grass blades and lava cracks off the props. Sounds:
 `heal-hp` for the heals, `stat-up` for planting, `buy` for a toss or the toll.
+Close-ups (own scenes, no `outdoor`, props sized to the screen with ~190 CSS px left under them for the text box and
+Leave), besides the Shrine: the **Hot Spring** (`PLACE_ART.spring`, `springLayout()`: a big rock pool at your feet (soak)
+and a little one fed by a bamboo spout (dip), a bamboo fence with the ♨ board, stone lanterns; per biome a sunny garden,
+misty cedars, or a milky pool under volcanic rock with steam vents), and four rooms laid out by `roomLayout()` (its
+`ceil` is the wall's top under the title and HP window, so wall props hang below it; `roomWall()`, `plankFloor()`,
+`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (a chalkboard over a desk with a coin tray: pay ₽,
+act `lesson`; a sandbag: pay HP, act `train`), the **Move Deleter**'s study (bookcases, a lectern's open book: forget one,
+act `erase`; a hypnotist's pendulum: forget two, act `hypno`; a dozing Slowpoke figure), the **Day Care** (the house's
+clapboard front with a DAY CARE board in the 3x5 `pixelText()` font, a picket fence, an Egg in a straw nest, act
+`trade`; Miltank and Marill figures) and the **Fan Club** (striped paper, portraits, pennants, a red carpet to a stage
+under a spotlight, act `cheer`: confetti and hearts, the fans hop; Persian and Cinccino figures; a Super Potion gift
+floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). Where HP decides the choice
+(every event but the Wishing Well and Day Care) the choice returns `vitals: true`: your battle nameplate
+(`eventVitals()`) sits under the title (the top bar's little plate steps aside), and `showHpChange()` runs its bar to
+the new HP before the room closes. Choices that open a picker (Tutor, Deleter, Day Care) play their act first; the
+price is still only paid once something is picked.
 
 ## Items
 

@@ -28,7 +28,7 @@ import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MAR
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption, textOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
 import { playMusic, playSound, preloadSounds } from './audio.js';
@@ -1123,18 +1123,11 @@ const eventIdsKnown = (state) => Object.values(state.offers || {}).flat().every(
 const perBiome = (value) => (Array.isArray(value) ? value[run.biome] : value);
 const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
 
-/** A choice tile that costs HP: greyed out if paying would faint you. */
-function hpOption(icon, title, text, cost, onPick) {
-  return { ...textOption(icon, title, text, onPick), disabled: run.hp <= cost };
-}
-
-/** A choice tile that costs ₽: greyed out if you can't afford it. The money is taken by onPick, when the reward is actually received. */
-function moneyOption(icon, title, text, price, onPick) {
-  return { ...textOption(icon, title, text, onPick), disabled: run.money < price };
-}
-
 // events with a scene of their own (PLACE_ART in js/scene.js): no tiles, their choices are signs over its props
-const EVENT_SCENES = { 'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well', 'item-ball': 'itemball', 'team-rocket': 'rocket', shrine: 'altar' };
+const EVENT_SCENES = {
+  'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well', 'item-ball': 'itemball', 'team-rocket': 'rocket', shrine: 'altar',
+  'move-tutor': 'tutor', 'move-deleter': 'deleter', 'day-care': 'daycare', 'fan-club': 'fans',
+};
 
 function eventRoom(node) {
   const event = EVENTS_BY_ID[node.event.id];
@@ -1154,9 +1147,10 @@ function eventRoom(node) {
     $('reward-options').append(eventVitals());
     setHpBar('event', run.hp, run.maxHp);
   }
-  // people and Pokémon standing in the scene (the grunt and his Alpha) are real sprites, on the scene's `stands`
-  for (const [stand, { src, alpha }] of Object.entries(figures || {})) {
-    const sprite = el('img', `event-figure${alpha ? ' alpha' : ''}`);
+  // people and Pokémon standing in the scene (the grunt and his Alpha, the Day Care's and the Fan Club's Pokémon) are
+  // real sprites, on the scene's `stands`; `flip` turns one to face the other way (front sprites all face left)
+  for (const [stand, { src, alpha, flip }] of Object.entries(figures || {})) {
+    const sprite = el('img', `event-figure${alpha ? ' alpha' : ''}${flip ? ' flip' : ''}`);
     sprite.src = src;
     sprite.alt = '';
     sprite.dataset.stand = stand;
@@ -1227,7 +1221,8 @@ function placeEventSpots() {
     if (!sprite.naturalWidth || !at) return;
     // half the scene's pixel size, like Chansey at the Center, its resting pose (SPRITE_FIT) centred on its feet
     const k = spots.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
-    const [, bottom, left, right] = spriteFit(sprite.src);
+    const [, bottom, fitLeft, fitRight] = spriteFit(sprite.src), flip = sprite.classList.contains('flip');
+    const [left, right] = flip ? [fitRight, fitLeft] : [fitLeft, fitRight];
     Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
   const vitals = box.querySelector('.event-vitals'), title = $('reward-title');
@@ -1266,10 +1261,11 @@ const EVENT_CHOICES = {
   'move-tutor'(event, state, back) {
     const price = perBiome(event.price);
     const hpCost = perBiome(event.hpCost);
-    const teach = (pay) => () => tutorCards(back, pay);
-    return { options: [
-      moneyOption('💴', `Pay ₽${price}`, 'Choose one of 3 rare moves to learn.', price, teach(() => { run.money -= price; setMoney(run.money); })),
-      hpOption('🩸', `Pay ${hpCost} HP`, 'Train until it hurts. Choose one of 3 rare moves to learn.', hpCost, teach(() => loseHp(hpCost))),
+    // the lesson plays out first; you pay only once a move is picked, so backing out of the picker is free
+    const teach = (act, pay) => async () => { if (await playOut(act)) tutorCards(back, pay); };
+    return { vitals: true, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
+      spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { run.money -= price; setMoney(run.money); }), run.money < price),
+      spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
     ] };
   },
 
@@ -1279,11 +1275,11 @@ const EVENT_CHOICES = {
     const canTwo = run.deck.length > MIN_DECK + 1;
     // the HP is only paid once the second move is actually forgotten; stopping after one is free
     const second = () => forgetMove(showMap, () => { loseHp(hpCost); tell(`Lost ${hpCost} HP.`); showMap(); }, 'Stop at one (free)');
-    return { options: [
-      { ...textOption('📖', 'Forget a move', canOne ? 'Free: remove one card from your deck.' : `Your deck is at the minimum (${MIN_DECK} cards).`,
-        () => forgetMove(back)), disabled: !canOne },
-      { ...hpOption('📖', 'Forget two moves', canTwo ? `Lose ${hpCost} HP to remove two cards.` : `Needs a deck of ${MIN_DECK + 2} cards or more.`,
-        hpCost, () => forgetMove(back, second)), ...(!canTwo && { disabled: true }) },
+    return { vitals: true, figures: { mon: { src: 'assets/pokemon/slowpoke-front.gif' } }, options: [
+      spotOption('Forget a move', canOne ? 'Free: he erases one card from your deck.' : `Your deck is at the minimum (${MIN_DECK} cards).`,
+        async () => { if (await playOut('erase')) forgetMove(back); }, !canOne),
+      spotOption(`Forget two -${hpCost} HP`, canTwo ? `The pendulum takes two cards, and ${hpCost} HP.` : `Needs a deck of ${MIN_DECK + 2} cards or more.`,
+        async () => { if (await playOut('hypno')) forgetMove(back, second); }, !canTwo || run.hp <= hpCost),
     ] };
   },
 
@@ -1359,9 +1355,9 @@ const EVENT_CHOICES = {
 
   'day-care'(event, state, back) {
     const trades = dayCareTrades(event, state);
-    return { options: [
-      { ...textOption('🥚', 'Trade a move', trades.length ? 'Give up a common or uncommon card for a random card one rarity higher.'
-        : 'You have no common or uncommon cards they can trade.', () => dayCare(trades, back)), disabled: !trades.length },
+    return { figures: { left: { src: 'assets/pokemon/miltank-front.gif', flip: true }, right: { src: 'assets/pokemon/marill-front.gif' } }, options: [
+      spotOption('Trade a move', trades.length ? 'Give a common or uncommon card, get one a rarity higher.' : 'You have no common or uncommon cards they can trade.',
+        async () => { if (await playOut('trade')) dayCare(trades, back); }, !trades.length),
     ] };
   },
 
@@ -1397,18 +1393,24 @@ const EVENT_CHOICES = {
     const healthy = run.hp > run.maxHp / 2;
     const item = ITEMS_BY_ID[event.tiredItem];
     const money = perBiome(healthy ? event.healthyMoney : event.tiredMoney);
-    const collect = () => { run.money += money; setMoney(run.money); tell(`The fans gave you ₽${money}!`); showMap(); };
-    if (healthy) return { options: [textOption('💴', 'Show off', `The fans are thrilled! They give you ₽${money}.`, collect)] };
+    const collect = () => { run.money += money; setMoney(run.money); playSound('coins'); tell(`The fans gave you ₽${money}!`); showMap(); };
+    const cheer = async (then) => {
+      $('reward-options').querySelectorAll('.event-figure').forEach(fan => fan.classList.add('hop'));
+      if (await playOut('cheer')) then();
+    };
+    const view = { vitals: true, figures: { left: { src: 'assets/pokemon/persian-front.gif', flip: true }, right: { src: 'assets/pokemon/cinccino-front.gif' } } };
+    const why = 'Healthy Pokémon (over half HP) get prize money; tired ones get looked after.';
+    if (healthy) return { ...view, sub: [event.text, why], options: [spotOption('Show off', `The fans are thrilled! They give you ₽${money}.`, () => cheer(collect))] };
     if (run.items.length < itemSlots()) {
       markSeen('items', item.id);
-      return { options: [textOption(itemSprite(item, 'relic-icon'), 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
-        run.items.push(item.id);
-        playSound('item-get');
-        tell(`Put the ${item.name} in the Bag.`);
-        showMap();
-      })] };
+      return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => cheer(() =>
+        revealGift(item, [`The fans gave you a ${item.name}!`, item.text], () => {
+          run.items.push(item.id);
+          tell(`Put the ${item.name} in the Bag.`);
+          showMap();
+        })))] };
     }
-    return { options: [textOption('💴', 'Accept their gift', `They worry about your Pokémon and give you ₽${money}.`, collect)] };
+    return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you ₽${money}.`, () => cheer(collect))] };
   },
 
   'shrine'(event, state) {

@@ -476,6 +476,84 @@ const PLACE_ART = {
     },
   },
 
+  /* the Move Tutor's dojo: plaster between timber posts, a chalkboard over a low desk (pay ₽), a sandbag (pay HP) */
+  tutor: {
+    backdrop: 'dojo', floor: 'planks', prop: 'tutor', light: null, horizon: 0.6, sky: ['#f4ead0'],
+    wall: ['#f4ead0', '#e4d6b4', '#c8b490', '#fff8e4'],
+    trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
+    plank: ['#d8a868', '#c49058', '#a87444', '#6a4424'],
+    board: ['#2e6a48', '#285c3e'], chalk: '#f0f8f0',
+    coin: ['#fff8b0', '#f8c830', '#b07818'], scroll: ['#fff8e4', '#e0d0a8'], cord: '#e03830',
+    tatami: ['#d8d890', '#b8b870', '#3a5a30'],
+    bag: ['#f0d8a8', '#d8b880', '#a88050', '#3a2412'], rope: ['#e8d098', '#a88850'],
+    view: ['#a0dcf8', '#d0f0f8', '#58a044', '#88c070'],
+    life: ['tutor'],
+    biomes: {
+      shrine: { view: ['#d8e8e0', '#f0f8f4', '#3a6448', '#6a9a70'] },
+      wastes: { view: ['#f09048', '#f8c878', '#3e2e30', '#6a5250'], volcano: true },
+    },
+  },
+
+  /* the Move Deleter's study: dim striped paper, shelves of old books, a lectern with a big open book (forget one) and a
+     hypnotist's pendulum (forget two), candles, a Slowpoke dozing (the page's figure) */
+  deleter: {
+    backdrop: 'study', floor: 'planks', prop: 'deleter', light: null, horizon: 0.6, sky: ['#5a4a6a'],
+    wall: ['#5a4a6a', '#4e4060', '#3e3250', '#7a6a8a'],
+    trim: ['#9a6a48', '#6e4a30', '#4a2e1c', '#1e120a'],
+    plank: ['#8a6448', '#7a563c', '#644430', '#2e1e14'],
+    books: ['#b83828', '#3868b8', '#388858', '#c89830', '#8a4ab0', '#d8d0b8'],
+    page: ['#fff8e4', '#d8c8a0', '#4a3a30'], wax: ['#fff8e8', '#d8ccb0'],
+    flame: ['#fff8c0', '#f8a830'], chalk: '#e8e8f0', coin: ['#fff8b0', '#f8c830', '#b07818'],
+    hypno: ['#f878c8', '#a878f8'],
+    view: ['#283868', '#485890', '#1a2440', '#303e68'],
+    life: ['deleter'],
+    biomes: {
+      shrine: { view: ['#3a4a58', '#5a6a78', '#1e2a24', '#2e3e34'] },
+      wastes: { view: ['#5a2418', '#a84828', '#1a1012', '#3a2420'], volcano: true },
+    },
+  },
+
+  /* the Day Care: the couple's clapboard house and its DAY CARE board behind a white picket fence, an Egg in a straw
+     nest in the yard (trade), and two of the Pokémon they're raising (the page's figures) */
+  daycare: {
+    backdrop: 'daycare', floor: 'yard', prop: 'daycare', light: null, horizon: 0.56, sky: ['#fff4dc'],
+    siding: ['#fff4dc', '#f0e0c0', '#d8c098', '#a88a60'],
+    roof: ['#f87858', '#e04030', '#a82820', '#501010'],
+    trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
+    signBoard: ['#fffcf0', '#f8f0d8', '#6a5a48'], coin: ['#fff8b0', '#f8c830', '#b07818'],
+    flowers: ['#f878a8', '#f8d030', '#f8f8f8', '#a878f8'],
+    picket: ['#ffffff', '#c8c8d8', '#6a6a78'],
+    ground: ['#88d060', '#78c058', '#68b050', '#58a048'], blade: ['#b8f080', '#4a9038'],
+    straw: ['#f8e098', '#d8b868', '#a08040', '#5a4420'],
+    egg: ['#fffcf0', '#e8e0c8', '#78c868', '#3a3a30'],
+    view: ['#a0dcf8', '#d0f0f8', '#58a044', '#88c070'],
+    life: ['daycare'],
+    biomes: {
+      shrine: { ground: ['#88c088', '#78b078', '#68a06a', '#58905c'], blade: ['#a8e0a0', '#3a7448'], view: ['#d8e8e0', '#f0f8f4', '#3a6448', '#6a9a70'] },
+      wastes: {   // dry, sun-scorched grass, ash on the walls
+        ground: ['#c8b870', '#b8a860', '#a89850', '#988840'], blade: ['#e0d088', '#7a6a30'],
+        siding: ['#e8dcc8', '#d8c8b0', '#b8a888', '#8a7a60'], view: ['#f09048', '#f8c878', '#3e2e30', '#6a5250'], volcano: true,
+      },
+    },
+  },
+
+  /* the Pokémon Fan Club: striped paper hung with portraits of prize Pokémon and pennants, a red carpet to a little stage
+     under a spotlight (show off, or their gift beside it), the members' Pokémon either side (the page's figures) */
+  fans: {
+    backdrop: 'fanclub', floor: 'carpet', prop: 'fans', light: null, horizon: 0.6, sky: ['#fce0e8'],
+    wall: ['#fce0e8', '#f4c8d4', '#e8a8b8', '#fff0f4'],
+    trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
+    plank: ['#d8a868', '#c49058', '#a87444', '#6a4424'],
+    flags: ['#e04030', '#f8c030', '#3878f0', '#58b858', '#f070a8'], lamp: ['#505060'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'],
+    portraits: [['#98d8f8', '#f8d030', '#c89818'], ['#f8e0a8', '#f8a8c8', '#d07898'], ['#c8f0c0', '#a878d8', '#7850a8'], ['#f8c8a0', '#e8e8f0', '#b0b0c0']],
+    carpet: ['#d83838', '#b02828', '#f8c830'],
+    stage: ['#fff0c8', '#f0d8a0', '#c89858', '#5a3a1c'],
+    gift: ['#58a8f8', '#3878d0', '#f8d030'],
+    spot: '#fffce0', heart: '#f85888',
+    life: ['fans'],
+  },
+
   /* the Shrine, close up: standing right in front of a little wooden shrine (like Ilex Forest's) on its stone steps,
      your type's power glowing through its doorway, stone lanterns either side of you, a fence and the grove (or rock)
      behind. Its own scene, not a prop in the biome's: `biomes` gives each its look, `types` the glow. */
@@ -715,10 +793,17 @@ function paintBase() {
   if (S.raw.backdrop === 'treasure') grottoWall();
   if (S.raw.backdrop === 'altar') shrineGrove();
   if (S.raw.backdrop === 'onsen') onsenWall();
+  if (S.raw.backdrop === 'dojo') roomWall({ posts: 26 });
+  if (S.raw.backdrop === 'study') roomWall({ stripes: 3 });
+  if (S.raw.backdrop === 'fanclub') fanWall();
+  if (S.raw.backdrop === 'daycare') daycareHouse();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
   if (S.raw.floor === 'onsen') flagstones();
+  if (S.raw.floor === 'planks') plankFloor();
+  if (S.raw.floor === 'carpet') carpet();
+  if (S.raw.floor === 'yard') yardGrass();
   if (S.raw.floor === 'center') centerFloor();
   if (S.raw.floor === 'mart') martFloor();
   if (S.raw.floor === 'meadow') meadow();
@@ -1935,7 +2020,7 @@ const groundAt = (k) => horizon + Math.round((H - horizon) * k);
 const kept = (x, y) => life.keep?.some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
 
 function eventProps() {
-  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene })[S.raw.prop]();
+  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene })[S.raw.prop]();
   if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
 }
 
@@ -1975,6 +2060,12 @@ const ACTS = {
   pay: { frames: 13 },
   run: { frames: 11 },
   pray: { frames: 19 },
+  lesson: { frames: 12 },
+  train: { frames: 20, cues: () => [[2, 'hit'], [6, 'hit'], [10, 'hit']] },
+  erase: { frames: 14 },
+  hypno: { frames: 16 },
+  trade: { frames: 18 },
+  cheer: { frames: 18 },
 };
 
 /** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
@@ -2900,6 +2991,477 @@ function drawAltar(t) {
   }
 }
 
+/* ---------- indoor ? events: the Move Tutor's dojo, the Move Deleter's study, the Fan Club; and the Day Care's yard.
+   Each its own close-up scene (PLACE_ART), like the Shrine: props sized to the screen, standing on a floor line high
+   enough to leave ~200 CSS px under them for the text box and Leave. ---------- */
+
+/** The room's floor line (where the props stand), its middle, a size `s` to measure the props by, and `ceil`, the top
+    of the wall that shows under the screen's title and HP window (wall props hang below it). */
+function roomLayout() {
+  const foot = Math.round(Math.min(H * 0.8, H - 190 * H / innerHeight));
+  return { cx: W >> 1, foot, s: Math.round(Math.min(W * 0.9, foot * 0.9, 150)), ceil: Math.round(Math.min(horizon * 0.55, 225 * H / innerHeight)) };
+}
+const railRow = () => horizon - Math.max(6, Math.round(horizon * 0.2));
+
+/** A room's back wall down to the floor line: plaster (or striped paper) under a ceiling beam, timber posts where the
+    room has them, and a wooden wainscot. Returns the rail's row. */
+function roomWall({ posts = 0, stripes = 0 } = {}) {
+  const [face, low, seam, shine] = S.wall, [wLit, wood, wDark, wLine] = S.trim, cx = W >> 1;
+  const rail = railRow(), beam = Math.max(3, Math.round(horizon * 0.05));
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    let c;
+    if (y < beam) c = y === beam - 1 ? wLine : y === 0 ? wLit : wood;
+    else if (y >= rail) c = y === rail ? wLit : y === rail + 1 || y === horizon - 1 ? wLine : ((x - cx + 400) % 9 === 0 ? wDark : wood);
+    else if (stripes) {
+      const band = Math.floor((x - cx + 400) / stripes) % 2;
+      c = band ? (dither(x, y) < 3 ? seam : low) : face;
+    } else {
+      const shade = Math.pow(1 - (y - beam) / (rail - beam), 2) * 12;
+      c = dither(x, y) < shade ? low : face;
+    }
+    solid(x, y, c);
+  }
+  if (!stripes) for (let x = 0; x < W; x++) solid(x, beam, shine);
+  if (posts) for (let x0 = ((cx + posts / 2) % posts) - posts; x0 < W; x0 += posts) {
+    for (let y = beam; y < rail; y++) { solid(x0 - 1, y, wLine); solid(x0, y, wLit); solid(x0 + 1, y, wood); solid(x0 + 2, y, wDark); solid(x0 + 3, y, wLine); }
+  }
+  return rail;
+}
+
+/** Floorboards running away from you, their joints staggered, darkening to the wall. */
+function plankFloor() {
+  const [lit, body, dark, line] = S.plank, cx = W / 2, vy = horizon - (H - horizon) * 1.8;
+  const bottom = H - vy, ku = bottom / 9, kv = bottom * bottom / 5;
+  for (let y = horizon; y < H; y++) {
+    const dz = y - vy, v = Math.floor(kv / dz), rowEdge = v !== Math.floor(kv / (dz + 1));
+    for (let x = 0; x < W; x++) {
+      const u = (x - cx) * ku / dz, board = Math.floor(u), seam = u - board < ku / dz;
+      const joint = rowEdge && (board + v * 2 + 99) % 3 === 0;
+      const tone = noise(board, Math.floor(v / 3), 6);
+      put(x, y, seam || joint ? line : tone < 0.3 ? lit : tone > 0.75 ? dark : body);
+    }
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.7); tint(x, horizon + 1, 0.85); }
+}
+
+/** A window onto the biome outside (sky, hills, the volcano in the Wastes) in a wooden frame with a cross bar. */
+function roomWindow(cx, top, hw, hh) {
+  const [sky, glow, hill, far] = S.view, [wLit, wood, , wLine] = S.trim;
+  for (let y = top; y <= top + hh; y++) for (let x = cx - hw; x <= cx + hw; x++) {
+    const k = (y - top) / hh, ridgeY = top + hh * (0.62 + 0.12 * Math.sin((x - cx) / 4.5)), peak = S.raw.volcano && Math.abs(x - cx - hw * 0.3) < (y - top - hh * 0.3) * 0.9;
+    solid(x, y, peak || y > ridgeY + 3 ? hill : y > ridgeY ? far : k > 0.45 && dither(x, y) < 8 ? glow : sky);
+  }
+  for (let y = top - 1; y <= top + hh + 1; y++) { solid(cx - hw - 1, y, wLine); solid(cx + hw + 1, y, wLine); solid(cx, y, wood); }
+  for (let x = cx - hw - 2; x <= cx + hw + 2; x++) { solid(x, top - 2, wLine); solid(x, top - 1, wLit); solid(x, top + (hh >> 1), wood); solid(x, top + hh + 1, wLit); solid(x, top + hh + 2, wLine); }
+}
+
+/* ----- the Move Tutor's dojo: a chalkboard of moves over a low desk (pay ₽) and a sandbag hanging from a beam (pay HP) ----- */
+
+function tutorScene() {
+  const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const board = { x0: cx - u(0.46), x1: cx + u(0.1), y0: ceil + 3, y1: Math.min(railRow() - 3, ceil + 3 + u(0.32)) };
+  chalkboard(board);
+  const desk = { cx: Math.round((board.x0 + board.x1) / 2), hw: u(0.26), top: foot - u(0.15) };
+  mat(desk.cx, foot - 1, desk.hw + 4);
+  lowDesk(desk.cx, foot, desk.hw, desk.top);
+  const bag = { x: cx + u(0.32), top: ceil, w: Math.max(5, u(0.09)), h: u(0.38) };
+  bag.len = foot - u(0.05) - bag.h - bag.top;
+  const [wLit, wood, wDark, wLine] = S.trim;   // the beam it hangs from, across the ceiling
+  for (let x = bag.x - u(0.16); x <= bag.x + u(0.16); x++) { solid(x, bag.top - 2, wLine); solid(x, bag.top - 1, wLit); solid(x, bag.top, wood); solid(x, bag.top + 1, wDark); solid(x, bag.top + 2, wLine); }
+  groundShadow(bag.x, foot - u(0.02), bag.w + 2, 2);
+  if (W > s * 1.5) roomWindow(cx + u(0.9), ceil + 3, u(0.14), Math.min(u(0.2), railRow() - ceil - 8));
+  life.board = board;
+  life.bag = bag;
+  life.eventSpots = [
+    { x0: desk.cx - desk.hw, x1: desk.cx + desk.hw, y0: board.y1 + 3, y1: foot },
+    { x0: bag.x - bag.w - 4, x1: bag.x + bag.w + 4, y0: bag.top + bag.len - 4, y1: bag.top + bag.len + bag.h },
+  ];
+  life.foot = foot + 4;
+}
+
+/** A green chalkboard in a wooden frame, chalked with a lesson: a Poké Ball, arrows between moves, lines of notes. */
+function chalkboard({ x0, x1, y0, y1 }) {
+  const [green, dark] = S.board, chalk = S.chalk, [wLit, wood, , wLine] = S.trim;
+  for (let y = y0 - 2; y <= y1 + 2; y++) for (let x = x0 - 2; x <= x1 + 2; x++) {
+    const frame = x < x0 || x > x1 || y < y0 || y > y1, edge = x === x0 - 2 || x === x1 + 2 || y === y0 - 2 || y === y1 + 2;
+    solid(x, y, edge ? wLine : frame ? (y < y0 ? wLit : wood) : dither(x, y) < 3 ? dark : green);
+  }
+  for (let x = x0 + 2; x < x1 - 1; x += 3) solid(x, y1 - 1, chalk);   // chalk dust along the ledge
+  const bw = x1 - x0, bh = y1 - y0, r = Math.max(3, Math.round(Math.min(bw, bh) * 0.18)), bx = x0 + r + 3, by = y0 + r + 3;
+  for (let a = 0; a < Math.PI * 2; a += 0.35 / r) put(bx + Math.round(Math.cos(a) * r), by + Math.round(Math.sin(a) * r), chalk);
+  for (let x = -r; x <= r; x++) put(bx + x, by, chalk);
+  put(bx, by, green); put(bx - 1, by, chalk); put(bx + 1, by, chalk);
+  const ax = bx + r + 3, ay = by;   // an arrow to the notes
+  for (let x = 0; x < Math.max(3, bw * 0.15); x++) put(ax + x, ay, chalk);
+  const tip = ax + Math.round(Math.max(3, bw * 0.15));
+  put(tip - 1, ay - 1, chalk); put(tip - 1, ay + 1, chalk);
+  for (let row = 0; row < 3; row++) {
+    const y = y0 + 3 + row * Math.max(3, Math.round(bh * 0.18));
+    for (let x = tip + 3; x < x1 - 3; x++) if (noise(x >> 1, row, 3) > 0.25) put(x, y, chalk);
+  }
+  for (let row = 0; row < 2; row++) {
+    const y = by + r + 3 + row * 3;
+    if (y < y1 - 2) for (let x = x0 + 3; x < x1 - 4; x++) if (noise(x >> 1, row + 5, 3) > 0.3) put(x, y, chalk);
+  }
+}
+
+/** A low wooden desk with a coin tray and a rolled scroll on it. */
+function lowDesk(cx, foot, hw, top) {
+  const [wLit, wood, wDark, wLine] = S.trim, [coinLit, coin, coinDark] = S.coin;
+  outlined(cx - hw, top, cx + hw, top + 2, (x, y) => x >= cx - hw && x <= cx + hw && y >= top && y <= top + 2, (x, y) => (y === top ? wLit : wood), wLine);
+  for (const side of [-1, 1]) for (let y = top + 4; y <= foot; y++) {
+    const x = cx + side * (hw - 2);
+    solid(x - 1, y, wLine); solid(x, y, wood); solid(x + 1, y, wDark); solid(x + 2, y, wLine);
+  }
+  groundShadow(cx, foot + 1, hw + 2, 2);
+  const tx = cx - Math.round(hw * 0.4);   // the coin tray, heaped with coins
+  for (let x = tx - 4; x <= tx + 4; x++) { solid(x, top - 1, wLine); if (Math.abs(x - tx) < 4) solid(x, top - 2, wDark); }
+  for (const [dx, dy] of [[-2, -3], [0, -3], [2, -3], [-1, -4], [1, -4], [0, -5]]) solid(tx + dx, top + dy, dy === -5 ? coinLit : coin);
+  solid(tx - 3, top - 3, coinDark); solid(tx + 3, top - 3, coinDark);
+  const sx = cx + Math.round(hw * 0.35), [paper, paperShade] = S.scroll;   // a scroll, tied with a red cord
+  for (let x = sx - 5; x <= sx + 5; x++) { solid(x, top - 3, wLine); solid(x, top - 2, x === sx ? S.cord : paper); solid(x, top - 1, x === sx ? S.cord : paperShade); }
+  solid(sx - 6, top - 2, wLine); solid(sx + 6, top - 2, wLine); solid(sx - 6, top - 1, wLine); solid(sx + 6, top - 1, wLine);
+}
+
+/** A thin straw mat (tatami) on the floor. */
+function mat(cx, foot, hw) {
+  const [straw, strawDark, border] = S.tatami, hh = Math.max(2, Math.round(hw * 0.2));
+  for (let y = foot - hh; y <= foot + hh; y++) for (let x = cx - hw; x <= cx + hw; x++) {
+    const edge = Math.abs(y - foot) === hh || Math.abs(x - cx) >= hw - 1;
+    put(x, y, edge ? border : (x + y) % 3 ? straw : strawDark);
+  }
+}
+
+/** The sandbag swings on its rope (hard while you train, knocking out dust and stars), and chalk writes itself on the
+    board during a lesson. */
+function drawTutor(t) {
+  const b = life.bag, f = actFrame('train'), [canvas, shade, dark, line] = S.bag;
+  const hit = f >= 0 && f < 18 ? [2, 6, 10].some(k => f >= k && f < k + 3) : false;
+  const swing = f >= 0 ? Math.sin(f * 0.9) * Math.max(0, 1 - f / 22) * 0.5 : Math.sin(t / 9) * 0.05;
+  const topX = b.x, topY = b.top + 1;
+  const endX = topX + Math.sin(swing) * b.len, endY = topY + Math.cos(swing) * b.len;
+  for (let k = 0; k <= b.len; k++) put(Math.round(topX + (endX - topX) * k / b.len), Math.round(topY + (endY - topY) * k / b.len), S.rope[1]);
+  for (let y = 0; y < b.h; y++) {
+    const cy = endY + y * Math.cos(swing), cxx = endX + y * Math.sin(swing);
+    const half = y < 2 || y > b.h - 3 ? b.w - 1 : b.w;
+    for (let x = -half; x <= half; x++) {
+      const edge = Math.abs(x) === half || y === 0 || y === b.h - 1, band = y === Math.round(b.h * 0.2) || y === Math.round(b.h * 0.8);
+      put(cxx + x, cy, edge ? line : band ? dark : x < -half * 0.3 ? canvas : x > half * 0.5 ? dark : shade);
+    }
+  }
+  if (hit) {
+    const hx = Math.round(endX - b.w - 2), hy = Math.round(endY + b.h * 0.45);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + f; put(hx + Math.round(Math.cos(a) * 3), hy + Math.round(Math.sin(a) * 3), S.chalk); }
+    sparkle(hx, hy, S.coin[0]);
+  }
+  const l = actFrame('lesson'), bd = life.board;
+  if (l >= 0) {
+    const n = Math.min(l * 6, (bd.x1 - bd.x0 - 8) * 2);
+    for (let i = 0; i < n; i++) put(bd.x0 + 4 + (i >> 1), bd.y1 - 4 - Math.round(Math.sin(i / 3) * 1.5), S.chalk);
+    const tipX = bd.x0 + 4 + (n >> 1), tipY = bd.y1 - 4 - Math.round(Math.sin(n / 3) * 1.5);
+    sparkle(tipX, tipY - 1, S.coin[0]);
+  }
+}
+
+/* ----- the Move Deleter's study: a lectern with a big old book (forget one), a hypnotist's pendulum (forget two) ----- */
+
+function deleterScene() {
+  const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  life.candles = [];
+  const shelfTop = Math.round(horizon * 0.14), win = Math.min(u(0.16), railRow() - ceil - 8);
+  bookcase(cx - u(0.5), shelfTop, u(0.26), horizon - shelfTop - 1);
+  if (W > s * 1.4) { bookcase(cx + u(0.72), shelfTop, u(0.22), horizon - shelfTop - 1); roomWindow(cx + u(0.18), ceil + 3, u(0.1), win); }
+  else roomWindow(cx + u(0.28), ceil + 3, u(0.1), win);
+  const lec = { x: cx - u(0.22), top: foot - u(0.36) };
+  lectern(lec.x, foot, lec.top, u(0.2));
+  const pend = { x: cx + u(0.26), top: foot - u(0.5), len: u(0.34) };
+  pendulumStand(pend.x, foot, pend.top, u(0.12));
+  life.book = { x: lec.x, y: lec.top - 2, w: Math.round(u(0.2) * 0.9) };
+  life.pendulum = pend;
+  life.stands = { mon: { x: cx + u(0.02), y: foot + u(0.06) } };
+  life.eventSpots = [
+    { x0: lec.x - u(0.18), x1: lec.x + u(0.18), y0: lec.top - u(0.1), y1: foot },
+    { x0: pend.x - u(0.12), x1: pend.x + u(0.12), y0: pend.top, y1: foot },
+  ];
+  life.foot = foot + 4;
+}
+
+/** A wall of old books: dark shelves stacked with spines of every colour, some leaning. */
+function bookcase(cx, top, hw, h) {
+  const [wLit, wood, wDark, wLine] = S.trim, shelf = 9;
+  for (let y = top; y < top + h; y++) for (let x = cx - hw; x <= cx + hw; x++) {
+    const side = Math.abs(x - cx) >= hw - 1, board = (y - top) % shelf === 0 || y === top + h - 1;
+    if (side || board) { solid(x, y, x === cx - hw || y === top ? wLine : board ? wLit : wood); continue; }
+    const row = Math.floor((y - top) / shelf), book = Math.floor((x - cx + hw) / 2 + noise(row, 1, 2) * 3);
+    const tall = 4 + Math.floor(noise(book, row, 3) * 4), gap = noise(book, row, 5) > 0.88;
+    const fromShelf = shelf - ((y - top) % shelf);
+    solid(x, y, gap || fromShelf > tall ? wDark : (x - cx + hw) % 2 === 0 ? wLine : S.books[Math.floor(noise(book, row, 4) * S.books.length)]);
+  }
+}
+
+/** A carved wooden lectern holding a big open book, a candle on each side. */
+function lectern(cx, foot, top, hw) {
+  const [wLit, wood, wDark, wLine] = S.trim, [page, pageShade, ink] = S.page;
+  for (let y = top + 3; y <= foot; y++) {
+    const w = y > foot - 3 ? Math.round(hw * 0.6) : Math.max(2, Math.round(hw * 0.18));
+    for (let x = -w; x <= w; x++) solid(cx + x, y, Math.abs(x) === w || y === foot ? wLine : x < 0 ? wLit : wDark);
+  }
+  outlined(cx - hw, top, cx + hw, top + 3, (x, y) => y >= top && y <= top + 3 && Math.abs(x + 0.5 - cx) <= hw - (top + 3 - y) * 0.5, (x, y) => (y === top ? wLit : wood), wLine);
+  const bw = Math.round(hw * 0.9), by = top - 2;   // the open book, its pages curling up from the spine
+  for (let x = -bw; x <= bw; x++) {
+    const curl = Math.round(Math.abs(x) / bw * 2);
+    for (let y = by - 4 + curl; y <= by; y++) solid(cx + x, y, x === 0 ? pageShade : y === by - 4 + curl ? wLine : page);
+    solid(cx + x, by + 1, wLine);
+  }
+  for (let x = -bw + 2; x <= bw - 2; x++) if (Math.abs(x) > 1 && noise(x, 2, 7) > 0.35) { solid(cx + x, by - 2, ink); if (noise(x, 3, 7) > 0.4) solid(cx + x, by - 1, ink); }
+  groundShadow(cx, foot + 1, hw, 2);
+  for (const side of [-1, 1]) candle(cx + side * (hw + 3), top + 2);
+}
+
+function candle(x, foot) {
+  const [wax, waxShade] = S.wax;
+  for (let y = foot - 5; y <= foot; y++) { solid(x, y, wax); solid(x + 1, y, waxShade); }
+  solid(x - 1, foot + 1, S.trim[3]); solid(x, foot + 1, S.trim[3]); solid(x + 1, foot + 1, S.trim[3]); solid(x + 2, foot + 1, S.trim[3]);
+  life.candles.push({ x, y: foot - 6 });
+}
+
+/** A tall stand with an arm, the pendulum's string tied at its end (the page's pendulum swings in drawDeleter). */
+function pendulumStand(cx, foot, top, hw) {
+  const [wLit, wood, wDark, wLine] = S.trim;
+  for (let y = top; y <= foot; y++) { solid(cx + hw - 1, y, wLine); solid(cx + hw, y, wLit); solid(cx + hw + 1, y, wDark); solid(cx + hw + 2, y, wLine); }
+  for (let x = cx - 1; x <= cx + hw + 2; x++) { solid(x, top - 1, wLine); solid(x, top, wood); solid(x, top + 1, wLine); }
+  for (let x = cx + hw - 4; x <= cx + hw + 6; x++) { solid(x, foot, wLine); solid(x, foot - 1, wDark); }
+  groundShadow(cx + hw, foot + 1, 6, 1);
+}
+
+/** Candles flicker; the pendulum sways (and swings wide, throwing out rings, while it hypnotises); the book's words
+    fade letter by letter as a move is forgotten. */
+function drawDeleter(t) {
+  for (const c of life.candles) {
+    const f = Math.sin(t / 1.7 + c.x) + Math.sin(t / 3.1);
+    put(c.x, c.y, S.flame[0]); put(c.x, c.y - 1, f > -0.5 ? S.flame[1] : S.flame[0]); if (f > 0.4) put(c.x, c.y - 2, S.flame[1]);
+    for (let y = -4; y <= 3; y++) for (let x = -4; x <= 4; x++) if ((x || y) && x * x + y * y <= 14 + f * 3 && dither(c.x + x, c.y + y) < 3) blend(c.x + x, c.y + y, S.flame[1], 0.35);
+  }
+  const p = life.pendulum, f = actFrame('hypno'), amp = f >= 0 ? 0.6 : 0.3, speed = f >= 0 ? 2.2 : 5;
+  const a = Math.sin(t / speed) * amp, ex = p.x + Math.round(Math.sin(a) * p.len), ey = p.top + 1 + Math.round(Math.cos(a) * p.len);
+  for (let k = 0; k <= p.len; k++) put(p.x + Math.round(Math.sin(a) * k), p.top + 1 + Math.round(Math.cos(a) * k), S.chalk);
+  const [ring, ringShade] = S.coin;
+  for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) { const d = Math.hypot(x, y); if (d <= 3.3) put(ex + x, ey + 3 + y, d < 1.5 ? ringShade : d > 2.5 ? S.trim[3] : ring); }
+  if (f >= 0) for (const age of [f % 8, (f + 4) % 8]) {
+    const r = 4 + age * 2;
+    for (let q = 0; q < Math.PI * 2; q += 0.5 / r) if (dither(Math.round(q * 9), age) < 10) put(ex + Math.round(Math.cos(q) * r), ey + 3 + Math.round(Math.sin(q) * r * 0.7), age < 4 ? S.hypno[0] : S.hypno[1]);
+  }
+  const e = actFrame('erase'), b = life.book;
+  if (e >= 0) {
+    const gone = Math.min(b.w * 2, e * 3);
+    for (let x = -b.w + 2; x < -b.w + 2 + gone; x++) if (Math.abs(x) > 1) { put(b.x + x, b.y - 2, S.page[0]); put(b.x + x, b.y - 1, S.page[0]); }
+    for (let i = 0; i < 4; i++) { const age = (e + i * 3) % 10; sparkle(b.x - b.w + 2 + ((i * 7 + e) % (b.w * 2)), b.y - 3 - age, age < 5 ? S.coin[0] : S.hypno[1]); }
+  }
+}
+
+/* ----- the Day Care: the couple's house front, a picket fence and an Egg in a straw nest in the yard ----- */
+
+function daycareScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const nest = { x: cx, y: foot - u(0.04), r: u(0.12) };
+  groundShadow(nest.x, nest.y + 2, nest.r + 3, 3);
+  strawNest(nest.x, nest.y, nest.r);
+  life.egg = { x: nest.x, y: nest.y - 1, r: Math.max(4, Math.round(nest.r * 0.62)) };
+  life.stands = { left: { x: cx - u(0.36), y: foot - u(0.02) }, right: { x: cx + u(0.34), y: foot + u(0.03) } };
+  for (const p of Object.values(life.stands)) groundShadow(p.x, p.y, u(0.08), 2);
+  life.eventSpots = [{ x0: nest.x - nest.r - 2, x1: nest.x + nest.r + 2, y0: nest.y - life.egg.r * 3, y1: nest.y + 3 }];
+  life.foot = foot + 4;
+}
+
+/** The couple's house: clapboard walls under a red roof's eave, a door with a round window, the DAY CARE board with
+    an Egg on it, a window box of flowers; a white picket fence along the yard in front. */
+function daycareHouse() {
+  const { cx, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k)), [lit, board, shade, line] = S.siding;
+  const eave = Math.max(4, Math.round(horizon * 0.1)), [rLit, roof, rDark, rLine] = S.roof;
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    if (y < eave) { solid(x, y, y === eave - 1 ? rLine : y === eave - 2 ? rDark : (x + y * 2) % 6 === 0 ? rLit : roof); continue; }
+    const row = (y - eave) % 5;
+    solid(x, y, row === 0 ? line : row === 1 ? lit : dither(x, y) < 2 ? shade : board);
+  }
+  for (let x = 0; x < W; x++) tint(x, eave, 0.6), tint(x, eave + 1, 0.75);   // the eave's shadow
+  const [dLit, door, dDark, dLine] = S.trim, dw = u(0.1), dTop = Math.round(horizon * 0.34), dx = cx + u(0.26);
+  for (let y = dTop; y < horizon; y++) for (let x = dx - dw; x <= dx + dw; x++) {
+    const edge = Math.abs(x - dx) === dw || y === dTop;
+    solid(x, y, edge ? dLine : Math.abs(x - dx) === dw - 1 ? dLit : (x - dx + 50) % 4 === 0 ? dDark : door);
+  }
+  const wr = Math.max(2, Math.round(dw * 0.45)), wy = dTop + wr + 3;
+  for (let y = -wr; y <= wr; y++) for (let x = -wr; x <= wr; x++) { const d = Math.hypot(x, y); if (d <= wr + 0.3) solid(dx + x, wy + y, d > wr - 0.8 ? dLine : S.view[0]); }
+  solid(dx - dw + 2, Math.round((dTop + horizon) / 2), S.coin[0]);   // the door knob
+  const sw = Math.max(18, u(0.22)), sTop = ceil + 2, oneLine = sw * 2 - 14 >= 33, sh = oneLine ? 9 : 15, sx = cx - u(0.2);   // the DAY CARE board, an Egg on it
+  for (let y = sTop; y <= sTop + sh; y++) for (let x = sx - sw; x <= sx + sw; x++) {
+    const edge = Math.abs(x - sx) === sw || y === sTop || y === sTop + sh;
+    solid(x, y, edge ? dLine : y === sTop + 1 ? S.signBoard[0] : S.signBoard[1]);
+  }
+  egg(sx - sw + 6, sTop + Math.round(sh / 2), 3, 0);
+  const words = oneLine ? ['DAY CARE'] : ['DAY', 'CARE'], textX = sx - sw + 12;
+  words.forEach((word, i) => pixelText(textX, sTop + 2 + i * 6, word, S.signBoard[2]));
+  const bx = cx - u(0.2), bw2 = u(0.14), bh = Math.min(u(0.12), horizon - Math.max(8, Math.round(H * 0.08)) - sTop - sh - 12), by = sTop + sh + 5 + bh;   // a window with a box of flowers
+  roomWindow(bx, by - bh, bw2, bh);
+  for (let x = bx - bw2 - 2; x <= bx + bw2 + 2; x++) { solid(x, by + 1, dLine); solid(x, by + 2, door); solid(x, by + 3, dDark); solid(x, by + 4, dLine); if ((x * 7) % 5 < 3) solid(x, by, S.flowers[(x >> 1) % S.flowers.length]); }
+  picketFence(Math.max(8, Math.round(H * 0.08)));
+}
+
+/** A white picket fence along the yard, its pointed pickets over two rails. */
+function picketFence(h) {
+  const [white, shade, line] = S.picket, top = horizon - h;
+  for (const y of [top + 3, horizon - 3]) for (let x = 0; x < W; x++) { solid(x, y, shade); solid(x, y + 1, line); }
+  for (let x0 = (W >> 1) % 5 - 5; x0 < W; x0 += 5) for (let y = top; y < horizon; y++) {
+    const tip = y === top, w = tip ? 1 : 3;
+    for (let k = 0; k < w; k++) solid(x0 + (tip ? 1 : k), y, tip ? line : k === 2 ? shade : white);
+    if (!tip) { solid(x0 - 1, y, line); solid(x0 + 3, y, line); }
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.75); }
+}
+
+/** The yard's grass, with clover and daisies. */
+function yardGrass() {
+  bands(horizon, H, S.ground, 1);
+  for (let n = 0, c = Math.round(W * (H - horizon) / 14); n < c; n++) {
+    const x = Math.floor(rand() * W), y = horizon + 2 + Math.floor(rand() * (H - horizon)), deep = depthOf(y) > 0.4;
+    put(x, y, S.blade[0]); put(x, y - 1, S.blade[0]);
+    if (deep) { put(x + 1, y, S.blade[1]); put(x - 1, y - 2, S.blade[0]); }
+    if (rand() < 0.05) sparkle(x, y, S.flowers[n % S.flowers.length]);
+  }
+}
+
+/** A round nest of woven straw. */
+function strawNest(cx, cy, r) {
+  const [lit, straw, dark, line] = S.straw, ry = Math.max(2, Math.round(r * 0.4));
+  outlined(cx - r, cy - ry, cx + r, cy + ry, (x, y) => ((x - cx) / (r + 0.5)) ** 2 + ((y - cy) / (ry + 0.5)) ** 2 <= 1, (x, y) => {
+    const inner = ((x - cx) / (r * 0.65)) ** 2 + ((y - cy + 1) / (ry * 0.6)) ** 2 <= 1;
+    return inner ? dark : (x * 3 + y * 5) % 4 === 0 ? lit : (x + y) % 3 === 0 ? dark : straw;
+  }, line);
+}
+
+/** A Pokémon Egg: cream, with green spots, lit on its top left, outlined; `tilt` wobbles it. */
+function egg(cx, cy, r, tilt, paint = solid) {
+  const [shell, shade, spot, line] = S.egg, ry = r * 1.3;
+  const tx = (x, y) => x - y * tilt * 0.35;
+  const inEgg = (x, y) => { const dy = y < 0 ? y / ry : y / (ry * 0.85); return (tx(x, y) / (r + 0.3)) ** 2 + dy * dy <= 1; };
+  for (let y = -Math.ceil(ry) - 1; y <= Math.ceil(ry) + 1; y++) for (let x = -r - 3; x <= r + 3; x++) {
+    if (inEgg(x, y)) paint(cx + x, cy + y, noise(Math.round(tx(x, y) / 2), Math.round(y / 2), 12) > 0.72 ? spot : tx(x, y) + y > r * 0.6 ? shade : shell);
+    else if (inEgg(x - 1, y) || inEgg(x + 1, y) || inEgg(x, y - 1) || inEgg(x, y + 1)) paint(cx + x, cy + y, line);
+  }
+}
+
+/** The Egg in the nest wobbles now and then (a lot while you trade), sparkles rising round it as it glows. */
+function drawDaycare(t) {
+  const e = life.egg, f = actFrame('trade');
+  const wob = f >= 0 ? Math.sin(f * 1.3) * Math.min(1, f / 3) : (t % 40 < 6 ? Math.sin(t * 1.5) * 0.5 : 0);
+  egg(e.x, e.y - Math.round(e.r * 1.1), e.r, wob, put);
+  if (f >= 6) for (let i = 0; i < 6; i++) {
+    const age = (f - 6 + i * 3) % 12, ang = i * 1.05;
+    sparkle(e.x + Math.round(Math.cos(ang) * (e.r + 3 + age * 0.6)), e.y - e.r - Math.round(age * 1.2), age < 6 ? S.coin[0] : S.egg[0]);
+  }
+}
+
+/* ----- the Fan Club: striped wallpaper hung with portraits of prize Pokémon, pennants, a red carpet to a little stage
+   under a spotlight, the fans either side ----- */
+
+function fanScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const stage = { x: cx, y: foot - u(0.08), rx: u(0.26), ry: Math.max(3, u(0.07)), h: Math.max(3, u(0.05)) };
+  podium(stage);
+  giftBox(stage.x + Math.round(stage.rx * 0.55), stage.y + 1, Math.max(4, u(0.055)));
+  life.stage = stage;
+  life.stands = { left: { x: cx - u(0.36), y: foot + u(0.05) }, right: { x: cx + u(0.38), y: foot + u(0.07) } };
+  for (const p of Object.values(life.stands)) groundShadow(p.x, p.y, u(0.08), 2);
+  life.eventSpots = [{ x0: stage.x - stage.rx, x1: stage.x + stage.rx, y0: stage.y - stage.ry - u(0.24), y1: stage.y + stage.ry + stage.h }];
+  life.foot = foot + 4;
+  life.confetti = Array.from({ length: Math.round(W / 3) }, (_, i) => ({ x: rand() * W, y: -rand() * H * 0.6, vx: (rand() - 0.5) * 0.6, vy: 0.8 + rand() * 1.2, c: i % S.flags.length }));
+}
+
+function fanWall() {
+  const rail = roomWall({ stripes: 4 });
+  bunting(Math.max(4, Math.round(horizon * 0.06)));
+  const n = Math.max(2, Math.floor(W / 44)), fw = Math.max(7, Math.min(14, Math.round(W / (n * 3.2)))), fh = Math.round(fw * 1.25);
+  const y = Math.round((roomLayout().ceil + rail) / 2 - fh / 2);
+  for (let i = 0; i < n; i++) portrait(Math.round((i + 0.5) * W / n), y + (i % 2 ? 2 : 0), fw, fh, i);
+}
+
+/** A gilt frame round a portrait of a prize Pokémon: a round blob of a body with ears, a coloured background. */
+function portrait(cx, top, hw, h, i) {
+  const [gold, goldDark] = S.coin, [bg, body, bodyShade] = S.portraits[i % S.portraits.length];
+  for (let y = top; y <= top + h; y++) for (let x = cx - hw; x <= cx + hw; x++) {
+    const edge = Math.abs(x - cx) >= hw - 1 || y <= top + 1 || y >= top + h - 1;
+    solid(x, y, edge ? ((x + y) % 2 ? gold : goldDark) : bg);
+  }
+  const r = Math.max(2, Math.round(hw * 0.42)), by = top + Math.round(h * 0.6);
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r) solid(cx + x, by + y, x + y > r * 0.3 ? bodyShade : body);
+  for (const side of [-1, 1]) for (let k = 0; k < Math.max(2, r - 1); k++) solid(cx + side * (r - 1), by - r - k, body);
+  solid(cx - 1, by - 1, S.trim[3]); solid(cx + 1, by - 1, S.trim[3]);
+  for (let x = cx - hw; x <= cx + hw; x++) tint(x, top + h + 1, 0.75);
+}
+
+/** A red carpet running from you to the stage, gold along its edges. */
+function carpet() {
+  plankFloor();
+  const { cx } = roomLayout(), [red, redDark, gold] = S.carpet;
+  for (let y = horizon + 1; y < H; y++) {
+    const hw = 6 + (y - horizon) * 0.55;
+    for (let x = Math.ceil(cx - hw); x <= cx + hw; x++) put(x, y, Math.abs(x - cx) > hw - 1.5 ? gold : dither(x, y) < 3 ? redDark : red);
+  }
+}
+
+/** A round stage, two steps high, lit from above. */
+function podium({ x: cx, y: cy, rx, ry, h }) {
+  const [lit, body, dark, line] = S.stage;
+  for (let y = -ry; y <= ry + h; y++) for (let x = -rx - 1; x <= rx + 1; x++) {
+    const top = (x / (rx + 0.5)) ** 2 + (y / (ry + 0.5)) ** 2 <= 1, side = y > 0 && Math.abs(x) <= rx && (x / (rx + 0.5)) ** 2 + ((y - h) / (ry + 0.5)) ** 2 <= 1;
+    if (top) solid(cx + x, cy + y, (x / (rx + 0.5)) ** 2 + (y / (ry + 0.5)) ** 2 > 0.8 ? lit : body);
+    else if (side) solid(cx + x, cy + y, Math.abs(x) >= rx - 1 || y === ry + h ? line : dark);
+  }
+}
+
+/** A present wrapped in paper and ribbon, for a tired Pokémon. */
+function giftBox(cx, foot, r) {
+  const [paper, paperDark, ribbon] = S.gift, top = foot - r * 2;
+  for (let y = top; y <= foot; y++) for (let x = cx - r; x <= cx + r; x++) {
+    const edge = Math.abs(x - cx) === r || y === top || y === foot, band = x === cx || y === top + Math.round(r * 0.6);
+    solid(x, y, edge ? S.trim[3] : band ? ribbon : x > cx ? paperDark : paper);
+  }
+  solid(cx - 2, top - 1, ribbon); solid(cx - 1, top - 2, ribbon); solid(cx + 1, top - 2, ribbon); solid(cx + 2, top - 1, ribbon); solid(cx, top - 1, ribbon);
+}
+
+/** The spotlight's cone over the stage, breathing; showing off throws confetti down over the whole room. */
+function drawFans(t) {
+  const st = life.stage, f = actFrame('cheer'), top = 0, glow = S.spot;
+  for (let y = top; y <= st.y + st.ry; y++) {
+    const k = (y - top) / (st.y - top), hw = 2 + k * (st.rx + 1);
+    const light = 0.14 + (f >= 0 ? 0.12 : 0) + Math.sin(t / 6) * 0.03;
+    for (let x = Math.round(st.x - hw); x <= st.x + hw; x++) blend(x, y, glow, Math.abs(x - st.x) > hw - 1 ? light * 0.5 : light);
+  }
+  if (f < 0) return;
+  for (const c of life.confetti) {
+    const y = c.y + f * c.vy * 2.2, x = c.x + f * c.vx + Math.sin((f + c.x) / 2) * 1.5;
+    if (y > 0 && y < H) { put(x, y, S.flags[c.c]); if ((f + c.c) % 3) put(x + 1, y, S.flags[c.c]); }
+  }
+  for (let i = 0; i < 5; i++) {   // hearts rising off the stage
+    const age = (f + i * 3) % 14, x = st.x + (i - 2) * Math.max(3, Math.round(st.rx / 2.5)), y = st.y - st.ry - age * 2;
+    const h = S.heart;
+    put(x - 1, y, h); put(x + 1, y, h); put(x - 1, y + 1, h); put(x, y + 1, h); put(x + 1, y + 1, h); put(x, y + 2, h); put(x - 2, y + 1, h); put(x + 2, y + 1, h);
+  }
+}
+
+// a 3x5 pixel font for signs, just the letters they use
+const GLYPHS = {
+  A: ['.#.', '#.#', '###', '#.#', '#.#'], C: ['.##', '#..', '#..', '#..', '.##'], D: ['##.', '#.#', '#.#', '#.#', '##.'],
+  E: ['###', '#..', '##.', '#..', '###'], R: ['##.', '#.#', '##.', '#.#', '#.#'], Y: ['#.#', '#.#', '.#.', '.#.', '.#.'], ' ': ['...'],
+};
+
+/** Letters in the 3x5 pixel font, a pixel apart, their top left at x, y. */
+function pixelText(x, y, text, colour) {
+  for (const ch of text) {
+    (GLYPHS[ch] || []).forEach((row, dy) => { for (let dx = 0; dx < row.length; dx++) if (row[dx] === '#') solid(x + dx, y + dy, colour); });
+    x += ch === ' ' ? 3 : 4;
+  }
+}
+
 /** Paint a pixel map (one string per row, one letter per pixel, '.' left alone) with `key`'s colours, its top left at x0, y0. */
 function pixelMap(x0, y0, rows, key) {
   rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') solid(x0 + x, y0 + y, key[row[x]]); });
@@ -3172,6 +3734,10 @@ function draw() {
   if (has('itemball')) drawItemBall(t);
   if (has('rocket')) drawRocket();
   if (has('altar')) drawAltar(t);
+  if (has('tutor')) drawTutor(t);
+  if (has('deleter')) drawDeleter(t);
+  if (has('daycare')) drawDaycare(t);
+  if (has('fans')) drawFans(t);
   if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit) {

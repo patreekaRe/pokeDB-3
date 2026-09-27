@@ -2775,6 +2775,7 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   image-rendering: pixelated;
 }
 .event-figure.alpha { filter: drop-shadow(0 0 6px #ff3b3b); }
+.event-figure.flip { scale: -1 1; }
 .event-figure.hop { animation: figureHop 0.5s steps(4) 1s 2; }
 .event-figure.shake { animation: figureShake 0.25s steps(2) 0.25s 4; }
 @keyframes figureHop { 50% { translate: 0 -10px; } }

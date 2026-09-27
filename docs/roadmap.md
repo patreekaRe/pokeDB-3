@@ -440,7 +440,13 @@ Anytime, as a break from number work:
 - **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'
   evolve animation (flashing silhouette switching between the two forms) plus the evolution
   song, which the user supplies as an MP3.
-- **The last 4 event scenes**: Move Tutor, Move Deleter, Day Care, Fan Club.
+- ~~**The last 4 event scenes**~~ (done 2026-09-27): Move Tutor (a dojo: chalkboard and desk for ₽, a sandbag for HP),
+  Move Deleter (a candle-lit study: a lectern's open book, a hypnotist's pendulum, a dozing Slowpoke), Day Care (the
+  couple's house front, a picket fence, an Egg in a straw nest, Miltank and Marill) and Fan Club (portraits, pennants, a
+  red carpet to a spotlit stage, Persian and Cinccino). Each choice plays out first (chalk writing, the sandbag swinging,
+  the book's words fading, the pendulum's rings, the Egg wobbling, confetti). See CLAUDE.md's ? events.
+  **For the user to check:** the figures (Slowpoke, Miltank, Marill, Persian, Cinccino) are my picks from sprites the
+  game already had; the Day Care couple and the tutor themselves aren't shown (no trainer sprites for them yet).
 - ~~**Event choices explained on phones**~~ (the user's note, 2026-09-27; done the same day): an event scene's
   signs (`spotOption()`) explained themselves only in a hover tooltip, which phones never show. Each sign now carries
   a visible caption under its label (`.spot-caption`), and `placeEventSpots()` nudges signs back onto the screen and
