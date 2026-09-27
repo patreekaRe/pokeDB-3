@@ -66,6 +66,7 @@
         <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
         <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
         <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
+        <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="volume-slider" min="0" max="100" step="5" value="100"></label>
         <button class="menu-item" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
         <button class="menu-item" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>
       </div>
@@ -248,6 +249,8 @@
 
       <div class="map-head">
         <h2 class="biome-sign" id="biome-name"></h2>
+        <!-- the Silph Scope, a complete Pokédex's prize: reveals a fight room's Pokémon (js/run.js drawMap()) -->
+        <button class="scope-btn" id="scope-btn" type="button" hidden></button>
       </div>
       <div class="map-wrap"><div class="map" id="map"></div></div>
       <!-- news from the run (an event's outcome, a used item...), told in the same text box as the reward screens (rewards.js tell()) -->

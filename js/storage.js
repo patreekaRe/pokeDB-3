@@ -21,6 +21,7 @@ const KEY = 'pokedb.save.v2';
 const freshSave = () => ({
   seenHelp: false,
   muted: false,              // background music switched off with the 🔊 button
+  volume: 1,                 // the Poké Ball menu's volume slider, 0-1 (js/audio.js squares it)
   maxLevel: 0,               // the highest Trainer Level you have unlocked (see data/difficulty.js)
   unlocked: [],               // ids of starters unlocked, either by achievement OR by buying them in the shop
   coins: 0,                  // PokéCoins: the shop currency (see data/shop.js)
@@ -33,6 +34,7 @@ const freshSave = () => ({
     martCard: 0,              // Poké Mart prices lower (levels 0-3, MART_DISCOUNT)
     tutorNotes: 0,            // PP Up this many starting moves at the start of a run (0-2)
     scoutReport: false,       // card rewards offer 4 moves
+    scopeUpgrade: 0,          // the Silph Scope reveals 1 more room a biome per level (0-2); needs a complete Pokédex
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
   seen: { relics: [], items: [] },   // ids met in a run (offered or found), unlocked in the Index; others show as silhouettes

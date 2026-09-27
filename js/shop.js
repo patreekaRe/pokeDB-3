@@ -108,8 +108,10 @@ function skinEntry(item) {
 
 function perkEntry(item) {
   const level = perkLevel(item.id);
+  const locked = item.needsDex && !getSave().dex.complete;
   return {
-    id: item.id, name: item.name, icon: item.icon, text: item.text,
+    id: item.id, name: item.name, icon: item.icon, text: locked ? 'Complete the Pokédex to get the Silph Scope first.' : item.text,
+    blocked: locked,
     level: `Lv ${level}/${item.maxLevel}`,
     done: level >= item.maxLevel && 'Maxed',
     cost: item.costs[level],

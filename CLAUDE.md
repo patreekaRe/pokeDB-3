@@ -989,7 +989,7 @@ complete once beaten (defeated: a Poké Ball mark, flavour text, weakness), like
 it blown up (`.dex-zoom`, the zoom layer). The save's `dex: { seen, defeated, done }` (old saves merge in empty) is written
 by `dexSeen()` from `fight()` and `dexDefeated()` from `afterFight()` (Team Rocket's Alpha counts as its species). The
 first defeat says "X's data was added to the Pokédex!" in the reward text box (`pendingCoins.dex`, after the coin
-lines); defeating the last entry on a page pays its PokéCoins once (100 / 150 / 200, `done` guards it) and turns on its
+lines); defeating the last entry on a page pays its PokéCoins once (300 / 400 / 500, `done` guards it) and turns on its
 perk (`DEX_PERKS`, `hasDexPerk()`): Mom's Savings (start runs with ₽50, `DEX_START_MONEY`), Chansey's Gift (start
 with a Potion), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
 `run.rerollBiome`, saved with the run). A final-boss page completion goes in the result window (`run.dexNews`). The
@@ -997,10 +997,17 @@ Achievements window lists the three pages after the starters. Fight rooms prefer
 (`pickEnemyId(biome, kind, dexWeight)`). The sim mirrors the perks as `cfg.dexPerks`. **Research** (step 7b, Legends: Arceus-style): the save's `dex.count: { id: n }` counts
 every defeat (`countDex()`; old saves seed 1 per `defeated` id in `seedCounts()`), and each win's reward text box says
 "X defeated n/3" until the entry's `RESEARCH_GOAL` (3, bosses 2, in `js/data/pokedex.js`). At the goal it's Research
-complete: a gold mark (`.dex-mark.gold`, a gold tile), `RESEARCH_COINS` once (wild 25 / Alpha 50 / boss 100), and its entry
+complete: a gold mark (`.dex-mark.gold`, a gold tile), `RESEARCH_COINS` once (wild 50 / Alpha 100 / boss 200), and its entry
 shows HP and each move's numbers at that biome on Level 0 (`buildEncounter()` + `moveNumbers()`, before types). Every entry
-complete pays `DEX_COMPLETE_COINS` (1000) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
-saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. The
+complete pays `DEX_COMPLETE_COINS` (5000) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
+saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. A fourth tab, **Rewards** (`renderRewards()`, the user's call: easy to find), lists
+the complete-Pokédex jackpot (5000 coins, Reshiram, the Silph Scope), research payouts and each page's perk with progress.
+**Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button under the map's biome sign
+(`#scope-btn`, `drawMap()` in `js/run.js`) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
+**Scope Upgrade** (`scopeUpgrade`, 2 levels, `needsDex`: greyed out until the Pokédex is complete). Tapping it lights up
+every unvisited fight / elite room (`scopeable()`, `.scope-pick`, `renderMap(..., { reveal })`); the one picked gets
+`node.revealed` (saved with the map's nodes, which also counts the biome's reveals used), cries, and shows its Pokémon above
+the room in colour (`.map-revealed`) with its type icon for a wild one (elites are Normal, so none). No bot run (the user's call). The
 top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
 hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball
@@ -1127,7 +1134,8 @@ each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
   iOS ignores `<audio>.volume`, so plain elements can't fade there.
 - Browsers block sound until the first tap or key press; `unlock()` starts
   the pending track then. Don't "fix" music not starting on page load.
-- The Sound item in the Poké Ball menu saves `muted` in the save file (`js/storage.js`). On iPhone,
+- The Sound item in the Poké Ball menu saves `muted` in the save file (`js/storage.js`); the slider under it (`#volume-slider`)
+  saves `volume` (0-1), squared onto `masterBus`, which every other bus runs through. `low-hp` plays at 0.35 gain (the user's call). On iPhone,
   Web Audio also respects the silent switch, which is intended.
 - **Cries** (`playCry()`): one MP3 per sprite id in `assets/audio/cries/`
   (from play.pokemonshowdown.com/audio/cries/). Add the id to `CRIES` in

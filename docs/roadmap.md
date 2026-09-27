@@ -441,6 +441,10 @@ What the overnight chain did, one session per big step (details and bot numbers 
    > unlocks. Keep old saves loading, test at phone and PC widths with Playwright, update CLAUDE.md and the roadmap (mark
    > which ones landed), and push to main. No balance change (skins share decks), so no bot run is needed.
 
+Done 2026-09-27 (the user's asks, no bot run): Pokédex payouts raised (research 50 / 100 / 200, pages 300 / 400 / 500, whole
+dex 5000), a Rewards tab in the Pokédex, the Silph Scope (reveal a fight room's Pokémon, 1 a biome, 3 with the Game Corner's
+Scope Upgrade), a volume slider, a quieter low-HP beep, and Main menu keeping the run saved.
+
 Anytime, as a break from number work:
 - **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'
   evolve animation (flashing silhouette switching between the two forms) plus the evolution

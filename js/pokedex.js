@@ -14,9 +14,10 @@
 import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
 import { TYPES, CARDS_BY_ID } from './data/cards.js';
 import { modsFor } from './data/difficulty.js';
-import { DEX_PAGES, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS } from './data/pokedex.js';
+import { DEX_PAGES, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
+import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
-import { $, el, openDialog } from './ui.js';
+import { $, el, openDialog, itemSprite } from './ui.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
 const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defend: ['🛡️', 'Block'], buff: ['💪', 'Buff'], status: ['🗂️', 'Status'] };
@@ -74,7 +75,7 @@ export function dexDefeated(id) {
   if (!save.dex.complete && ALL_IDS.every(researched)) {
     updateSave(d => { d.dex.complete = true; });
     const coins = awardCoins(DEX_COMPLETE_COINS);
-    lines.push(`Pokédex complete! Every entry's research is done. +${coins} PokéCoins!`);
+    lines.push(`Pokédex complete! Every entry's research is done. +${coins} PokéCoins!`, `New on the map: the ${SCOPE.name}. ${SCOPE.text}`);
     complete = true;
   }
   return { lines, complete };
@@ -115,12 +116,12 @@ function entryTile(id, role, seen, defeated) {
   return tile;
 }
 
-function perkBox(p, count, done) {
+function perkBox(p, count, done, pageName) {
   const box = el('div', `dex-perk${done ? ' earned' : ''}`);
   const icon = el('span', 'dex-perk-icon', p.perk.icon);
   const text = el('div', 'dex-perk-text');
   text.append(
-    el('strong', '', `${done ? '' : '🔒 '}${p.perk.name}`),
+    el('strong', '', `${done ? '' : '🔒 '}${pageName ? `${pageName} page: ` : ''}${p.perk.name}`),
     el('span', '', p.perk.text),
     el('small', '', done ? 'Earned: on for every run.' : `Defeat all ${p.ids.length} to earn it, plus 💰 ${p.perk.coins}.`),
   );
@@ -133,8 +134,61 @@ function perkBox(p, count, done) {
   return box;
 }
 
+/* The Rewards tab (the user's call: what finishing the Pokédex pays should be easy to find): the jackpot, research and
+   each page's perk, with how far along you are. */
+const REWARDS = DEX_PAGES.length;
+
+function prize(art, name, text) {
+  const row = el('div', 'dex-prize');
+  row.append(art, el('div', 'dex-perk-text'));
+  row.lastChild.append(el('strong', '', name), el('span', '', text));
+  return row;
+}
+
+function progressBar(n, of) {
+  const bar = el('div', 'ach-bar dex-bar');
+  const fill = el('div', 'ach-fill');
+  fill.style.width = `${(n / of) * 100}%`;
+  bar.append(fill);
+  return bar;
+}
+
+function renderRewards() {
+  const save = getSave();
+  const [done, all] = researchCount();
+  const jackpot = el('div', `dex-perk dex-jackpot${save.dex.complete ? ' earned' : ''}`);
+  const text = el('div', 'dex-perk-text');
+  const reshiram = STARTERS_BY_ID.reshiram;
+  const img = el('img', 'pixel dex-prize-sprite');
+  img.src = spriteUrl(reshiram, 'front', 0);
+  img.alt = '';
+  text.append(
+    el('strong', '', `${save.dex.complete ? '' : '🔒 '}Complete the Pokédex`),
+    el('span', '', `Finish the research on all ${all} entries: beat each wild Pokémon and Alpha 3 times, and each boss twice.`),
+    prize(el('span', 'dex-prize-icon', '💰'), `${DEX_COMPLETE_COINS} PokéCoins`, 'Paid once.'),
+    prize(img, reshiram.line[0].name, 'A new starter: the legendary Fire Pokémon.'),
+    prize(itemSprite(SCOPE, 'dex-prize-icon'), SCOPE.name, `${SCOPE.text} The Game Corner's Scope Upgrade raises it to 3.`),
+    progressBar(done, all),
+    el('small', '', save.dex.complete ? 'Earned!' : `★ ${done}/${all} researched`),
+  );
+  jackpot.append(el('span', 'dex-perk-icon', '🏆'), text);
+
+  const research = el('div', 'dex-perk');
+  const rText = el('div', 'dex-perk-text');
+  rText.append(
+    el('strong', '', 'Research'),
+    el('span', '', `Each entry pays once when its research completes: 💰 ${RESEARCH_COINS.wild} for a wild Pokémon, ${RESEARCH_COINS.elite} for an Alpha, ${RESEARCH_COINS.boss} for a boss.`),
+  );
+  research.append(el('span', 'dex-perk-icon', '★'), rText, el('b', 'dex-perk-count', `${done}/${all}`));
+
+  const defeated = new Set(save.dex.defeated);
+  const pages = DEX_PAGES.map(p => perkBox(p, p.ids.filter(id => defeated.has(id)).length, save.dex.done.includes(p.biome), p.name));
+  $('dex-body').replaceChildren(jackpot, research, ...pages);
+}
+
 function render() {
   const save = getSave();
+  if (page === REWARDS) { renderRewards(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   const seen = new Set(save.dex.seen);
   const defeated = new Set(save.dex.defeated);
   const p = DEX_PAGES[page];
@@ -153,6 +207,10 @@ function render() {
   const [done] = researchCount();
   $('dex-total').textContent = `${ALL_IDS.filter(id => defeated.has(id)).length}/${ALL_IDS.length} · ${ALL_IDS.filter(id => seen.has(id)).length} seen · ★${done}`;
   $('dex-total').title = `${ALL_IDS.filter(id => defeated.has(id)).length} defeated, ${ALL_IDS.filter(id => seen.has(id)).length} seen, ${done} with Research complete`;
+  markTabs();
+}
+
+function markTabs() {
   for (const btn of document.querySelectorAll('.dex-tab')) {
     const on = Number(btn.dataset.page) === page;
     btn.setAttribute('aria-selected', String(on));
@@ -236,21 +294,23 @@ function pick(i, focus = false) {
 
 export function initPokedex() {
   const tabs = $('dex-tabs');
-  tabs.replaceChildren(...DEX_PAGES.map((p, i) => {
-    const btn = el('button', `index-tab dex-tab biome-${p.biome}`);
+  const tab = (i, className, icon, label) => {
+    const btn = el('button', `index-tab dex-tab ${className}`);
     btn.type = 'button';
     btn.dataset.page = String(i);
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-controls', 'dex-body');
-    btn.append(el('span', 'index-tab-icon', ['🌳', '⛩️', '🌋'][i]), el('span', 'index-tab-label', p.name.split(' ').pop()));
+    btn.append(el('span', 'index-tab-icon', icon), el('span', 'index-tab-label', label));
     btn.addEventListener('click', () => pick(i));
     return btn;
-  }));
+  };
+  tabs.replaceChildren(...DEX_PAGES.map((p, i) => tab(i, `biome-${p.biome}`, ['🌳', '⛩️', '🌋'][i], p.name.split(' ').pop())),
+    tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
   tabs.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;
     e.preventDefault();
-    pick((page + step + DEX_PAGES.length) % DEX_PAGES.length, true);
+    pick((page + step + REWARDS + 1) % (REWARDS + 1), true);
   });
 }
 

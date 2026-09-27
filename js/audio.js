@@ -62,7 +62,7 @@ const SOUNDS = {
   'stat-up':    { url: 'assets/audio/sfx/stat-up.mp3' },      // strength or focus gained, either side
   'stat-down':  { url: 'assets/audio/sfx/stat-down.mp3' },    // the enemy gets Weak or Vulnerable
   'item-get':   { url: 'assets/audio/sfx/item-get.mp3' },     // a relic or item is received (not bought: that's buy)
-  'low-hp':     { url: 'assets/audio/sfx/low-hp.mp3' },       // looped by setLoop() while your HP is at 20% or below in battle
+  'low-hp':     { url: 'assets/audio/sfx/low-hp.mp3', gain: 0.35 },   // looped by setLoop() while your HP is at 20% or below in battle; quiet (the user's call)
   'heal-hp':    { url: 'assets/audio/sfx/potion.mp3' },       // a card or power heals you in battle: the potion's file (the user's call); never the Center's heal
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
@@ -112,6 +112,7 @@ let ctx = null;            // the AudioContext, created the first time any sound
 let musicBus = null;       // gain node every music track runs through
 let sfxBus = null;         // gain node every sound effect runs through
 let cryBus = null;         // gain node every cry runs through
+let masterBus = null;      // the volume slider: every bus runs through it
 let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
 const players = {};        // track name -> { el, gain }
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
@@ -139,6 +140,12 @@ function menuBlip(e) {
 export function initAudio() {
   renderButton();
   $('music-btn').addEventListener('click', () => setMuted(!getSave().muted));
+  const slider = $('volume-slider');
+  const paint = () => slider.style.setProperty('--v', slider.value);   // the green part of the track (WebKit has no ::range-progress)
+  slider.value = Math.round((getSave().volume ?? 1) * 100);
+  paint();
+  slider.addEventListener('input', () => { paint(); setVolume(slider.value / 100); });
+  slider.addEventListener('change', () => playSound('confirm'));   // a blip at the new level, so you hear what you picked
 
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
   document.addEventListener('click', menuBlip);
@@ -282,6 +289,14 @@ function setMuted(muted) {
   else fadeIn(current);
 }
 
+// squared, so the slider's low half isn't nearly all loud (ears hear loudness roughly logarithmically)
+const volumeGain = () => (getSave().volume ?? 1) ** 2;
+
+function setVolume(volume) {
+  updateSave(d => { d.volume = volume; });
+  if (masterBus) masterBus.gain.setTargetAtTime(volumeGain(), ctx.currentTime, 0.02);
+}
+
 function renderButton() {
   const muted = getSave().muted;
   const btn = $('music-btn');
@@ -294,15 +309,18 @@ function renderButton() {
 function audioContext() {
   if (!ctx) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+    masterBus = ctx.createGain();
+    masterBus.gain.value = volumeGain();
+    masterBus.connect(ctx.destination);
     musicBus = ctx.createGain();
     musicBus.gain.value = MUSIC_VOLUME;
-    musicBus.connect(ctx.destination);
+    musicBus.connect(masterBus);
     sfxBus = ctx.createGain();
     sfxBus.gain.value = SFX_VOLUME;
-    sfxBus.connect(ctx.destination);
+    sfxBus.connect(masterBus);
     cryBus = ctx.createGain();
     cryBus.gain.value = CRY_VOLUME;
-    cryBus.connect(ctx.destination);
+    cryBus.connect(masterBus);
   }
   return ctx;
 }

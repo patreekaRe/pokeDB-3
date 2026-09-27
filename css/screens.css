@@ -1214,7 +1214,27 @@ body[data-screen="reward-screen"]:has(.event-vitals) .hp-plate { display: none; 
 .bag-btn[aria-expanded="true"], .bag-btn:active { transform: translateY(2px) scale(0.9); filter: brightness(0.85) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); }
 
 /* ---------- the biome's name: a pixel location sign, like the one the games show when you enter an area ---------- */
-.map-head { display: flex; justify-content: center; margin: 12px 0 14px; }
+.map-head { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 12px 0 14px; }
+/* the Silph Scope button (a complete Pokédex's prize): a small Pokégear capsule under the biome sign, "1/1" reveals left */
+.scope-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 6px;
+  border: 3px solid #b8b8c8;
+  border-radius: 999px;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, 2px 3px 0 2px rgba(0, 0, 0, 0.35);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.scope-btn[hidden] { display: none; }
+.scope-icon .item-sprite { display: block; width: 32px; height: 32px; image-rendering: pixelated; }
+.scope-btn:disabled { filter: grayscale(1); opacity: 0.6; cursor: default; }
+.scope-btn.on { border-color: var(--gold); animation: scopeBlink 0.9s steps(1) infinite; }
+@keyframes scopeBlink { 50% { border-color: #fff; } }
 .biome-sign {
   --plank: #b0682c;
   --plank-dark: #95521f;
@@ -1383,6 +1403,30 @@ body[data-screen="reward-screen"]:has(.event-vitals) .hp-plate { display: none; 
 .map-node.reachable .map-town { animation: townBlink 0.9s steps(1) infinite; }
 .map-node.reachable:hover .map-town, .map-node.reachable:focus-visible .map-town { border-color: #fff; transform: scale(1.12); }
 @keyframes townBlink { 50% { border-color: #fff; } }
+/* picking a room for the Silph Scope: the fight rooms it can reveal blink gold, the rest fade back */
+.map.scoping .map-node:not(.scope-pick) { opacity: 0.45; }
+.map-node.scope-pick { cursor: pointer; }
+.map-node.scope-pick .map-town { border-color: var(--gold); animation: scopePick 0.7s steps(1) infinite; }
+.map-node.scope-pick:hover .map-town, .map-node.scope-pick:focus-visible .map-town { transform: scale(1.15); }
+@keyframes scopePick { 50% { border-color: #fff; box-shadow: 0 0 0 2px var(--gold); } }
+/* a revealed room's Pokémon stands above it in full colour, like the boss above its room, with its type beside it */
+.map-revealed {
+  position: absolute;
+  z-index: 1;
+  width: calc(var(--tile) * 7);   /* on the figure, not the img: --tile is a share of the map's width */
+  transform: translate(-50%, -100%);
+  margin-top: calc(var(--tile) * 0.9);   /* the GIFs pad their Pokémon's feet: this stands them on the room's top edge */
+  pointer-events: none;
+}
+.map-revealed-sprite { display: block; width: 100%; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
+.map-revealed-type {
+  position: absolute;
+  right: 12%;
+  bottom: 22%;
+  font-size: calc(100cqw / var(--grid-w, 37) * 1.5);
+  line-height: 1;
+  filter: drop-shadow(1px 0 0 #181010) drop-shadow(-1px 0 0 #181010) drop-shadow(0 1px 0 #181010) drop-shadow(0 -1px 0 #181010);
+}
 /* Poké Marts and Pokémon Centers stand on the map as little buildings (js/buildings.js) instead of a framed square */
 .map-node.type-shop, .map-node.type-rest { width: calc(var(--tile) * 4); }
 .map-building { display: block; width: 100%; filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.35)); transition: transform 0.1s; }
@@ -3095,6 +3139,12 @@ body.has-scene #scene-bg { display: block; }
 .dex-perk-text small { color: var(--win-muted); }
 .dex-bar { flex: none; height: 8px; margin-top: 4px; background: rgba(0, 0, 0, 0.18); }
 .dex-perk-count { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.9rem; }
+/* the Rewards tab: the complete-Pokédex jackpot lists its three prizes as rows */
+.dex-jackpot { align-items: flex-start; }
+.dex-prize { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.dex-prize-icon, .dex-prize-sprite { flex: none; width: 40px; height: 40px; display: grid; place-items: center; font-size: 1.6rem; object-fit: contain; }
+.dex-prize-icon .item-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
+.dex-jackpot:not(.earned) .dex-prize-sprite { filter: brightness(0) opacity(0.45); }
 .dex-entry {
   position: relative;
   display: flex;

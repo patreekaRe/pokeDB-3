@@ -26,16 +26,16 @@ import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
-import { generateMap, renderMap } from './map.js';
+import { generateMap, renderMap, scopeable } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
-import { playMusic, playSound, preloadSounds } from './audio.js';
+import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
-import { DEX_START_MONEY, DEX_COMPLETE_COINS } from './data/pokedex.js';
+import { DEX_START_MONEY, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
 let run = null;
 
@@ -69,6 +69,7 @@ export function initRun({ onMenu, onNewRun }) {
   $('run-deck-btn').addEventListener('click', () => run && showDeckDialog(run));
   initBag();
   trackHp(() => run);
+  initScope();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
@@ -242,6 +243,7 @@ function startBiome() {
 
 function showMap() {
   const biome = BIOMES[run.biome];
+  scoping = false;
   setTheme(run.starter.type);
   preloadSounds('event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
 
@@ -277,7 +279,7 @@ function showMap() {
   renderItemList();
   closeBag(true);
   checkpoint();
-  renderMap(run.map, run.current, enterNode, { biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage });
+  drawMap();
   showScreen('map-screen');
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
   showScene(biome.id);
@@ -420,6 +422,53 @@ function useItemOnMap(index) {
 function afterBagChange() {
   checkpoint();
   renderItemList();
+}
+
+/* ---------- the Silph Scope (a complete Pokédex's prize): reveal who waits in a fight room ---------- */
+
+let scoping = false;   // picking a room to reveal: the map's fight rooms light up instead of the reachable ones
+
+const scopeReveals = () => (getSave().dex.complete ? SCOPE_REVEALS + perkLevel('scopeUpgrade') : 0);
+const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).length;   // saved with the map's nodes
+
+function drawMap() {
+  const biome = BIOMES[run.biome];
+  const nodes = Object.values(run.map.byId);
+  if (scoping && !nodes.some(scopeable)) scoping = false;
+  renderMap(run.map, run.current, enterNode, {
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null,
+  });
+  const total = scopeReveals(), left = total - scopeUsed();
+  const btn = $('scope-btn');
+  btn.hidden = !total;
+  if (!total) return;
+  btn.classList.toggle('on', scoping);
+  btn.disabled = !scoping && (left <= 0 || !nodes.some(scopeable));
+  btn.setAttribute('aria-pressed', String(scoping));
+  btn.querySelector('.scope-label').textContent = scoping ? 'Pick a room' : `${left}/${total}`;
+  btn.title = scoping ? 'Tap a lit-up fight room to reveal it, or tap here to put the Scope away.'
+    : `${SCOPE.name}: ${SCOPE.text} ${left} of ${total} left in this biome.`;
+  $('map').classList.toggle('scoping', scoping);
+}
+
+function toggleScope() {
+  if (!run || (!scoping && scopeReveals() - scopeUsed() <= 0)) return;
+  scoping = !scoping;
+  playSound(scoping ? 'confirm' : 'cancel', 'confirm');
+  drawMap();
+}
+
+function revealRoom(node) {
+  node.revealed = true;
+  scoping = false;
+  checkpoint();
+  drawMap();
+  playCry(ENEMY_DEFS[node.enemyId].spriteId);
+}
+
+function initScope() {
+  $('scope-btn').replaceChildren(itemSprite(SCOPE, 'scope-icon'), el('span', 'scope-label'));
+  $('scope-btn').addEventListener('click', toggleScope);
 }
 
 function enterNode(node) {

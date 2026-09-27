@@ -73,6 +73,11 @@ export const PASSIVE_SHOP_ITEMS = [
     text: 'Card rewards after a fight offer 4 moves instead of 3.',
     costs: [350], maxLevel: 1,
   },
+  {
+    id: 'scopeUpgrade', icon: '👀', name: 'Scope Upgrade',   // needs the Silph Scope, a complete Pokédex's prize
+    text: 'The Silph Scope reveals 2 rooms a biome (3 at Lv 2).',
+    costs: [600, 1000], maxLevel: 2, needsDex: true,
+  },
 ];
 
 /** Mart Card: the price cut at each level (index = level). */

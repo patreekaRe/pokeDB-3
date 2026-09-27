@@ -26,6 +26,7 @@
    ============================================================ */
 
 import { $, el } from './ui.js';
+import { TYPES } from './data/cards.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { buildingSvg } from './buildings.js';
 import { bossReveal, preloadBossReveal } from './transition.js';
@@ -561,8 +562,8 @@ addEventListener('resize', () => {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2 } = {}) {
-  lastRender = [map, currentId, onPick, { biome, trainer, stage }];
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null } = {}) {
+  lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal }];
   const box = $('map');
   box.replaceChildren();
   fitGrid(box);
@@ -593,20 +594,29 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     let label = info.label;
 
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
-    if (node.enemyId && node.type !== 'fight') {
+    if (node.enemyId && (node.type !== 'fight' || node.revealed)) {
       const def = ENEMY_DEFS[node.enemyId];
       label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name}`;   // no type badge: elites and bosses are all Normal (the user's call)
     }
     btn.title = label;
     btn.setAttribute('aria-label', label);
 
-    const canGo = reachable.has(node.id);
     if (node.visited) btn.classList.add('visited');
     if (node.id === currentId) btn.classList.add('current');
-    if (canGo) btn.classList.add('reachable');
-    btn.disabled = !canGo;
-    if (canGo) btn.addEventListener('click', () => walkTo(node, onPick));
+    if (reveal) {
+      // picking a room for the Silph Scope: only unrevealed fight rooms you haven't been to light up
+      const can = scopeable(node);
+      btn.classList.toggle('scope-pick', can);
+      btn.disabled = !can;
+      if (can) btn.addEventListener('click', () => reveal(node));
+    } else {
+      const canGo = reachable.has(node.id);
+      if (canGo) btn.classList.add('reachable');
+      btn.disabled = !canGo;
+      if (canGo) btn.addEventListener('click', () => walkTo(node, onPick));
+    }
     box.append(btn);
+    if (node.revealed && node.enemyId && !node.visited) box.append(revealedFigure(node));
   }
 
   // The biome's boss waits above its room as a grey silhouette, a hint of what's coming.
@@ -632,6 +642,24 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     box.append(img);
     trainerImg = img;
   }
+}
+
+/** A room the Silph Scope can reveal: a fight you haven't been to whose Pokémon isn't shown yet (the boss always is). */
+export const scopeable = (node) => ['fight', 'elite'].includes(node.type) && node.enemyId && !node.visited && !node.revealed;
+
+/* A revealed room's Pokémon stands above it in full colour (the boss's silhouette, coloured in), with its type's icon
+   beside it for a wild one: elites are all Normal, so they show none (the user's call on the badges). */
+function revealedFigure(node) {
+  const def = ENEMY_DEFS[node.enemyId];
+  const fig = el('span', 'map-revealed');
+  const img = el('img', 'map-revealed-sprite');
+  img.src = def.image;
+  img.alt = '';
+  fig.append(img);
+  if (node.type === 'fight' && TYPES[def.type]) fig.append(el('span', `map-revealed-type type-${def.type}`, TYPES[def.type].icon));
+  fig.title = `${node.type === 'elite' ? 'Alpha ' : ''}${def.name}${node.type === 'fight' ? ` (${TYPES[def.type].label} type)` : ''}`;
+  place(fig, nodeX(node), rowY(node.floor));
+  return fig;
 }
 
 function place(elem, x, y) {
