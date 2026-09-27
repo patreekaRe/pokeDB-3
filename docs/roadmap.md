@@ -189,6 +189,11 @@ Anytime, as a break from number work:
   evolve animation (flashing silhouette switching between the two forms) plus the evolution
   song, which the user supplies as an MP3.
 - **The last 4 event scenes**: Move Tutor, Move Deleter, Day Care, Fan Club.
+- ~~**Event choices explained on phones**~~ (the user's note, 2026-09-27; done the same day): an event scene's
+  signs (`spotOption()`) explained themselves only in a hover tooltip, which phones never show. Each sign now carries
+  a visible caption under its label (`.spot-caption`), and `placeEventSpots()` nudges signs back onto the screen and
+  lifts one clear of a lower sign it would cover (Team Rocket's three). Checked headless at 375 and 320px wide.
+  The Center's three signs still explain themselves only by `title`.
 - **Shrine close-up** (the user's idea, 2026-09-27): the Shrine event "currently looks very small"; make it a
   close-up, as if you're standing right in front of the shrine, filling the screen like the treasure room's grotto.
   Its own scene in `PLACE_ART` (like `treasure`), not a prop on the biome's outdoor scene.
@@ -254,7 +259,10 @@ Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
 
 - Fight rooms on the map show a silhouette until you've beaten that Pokémon; after that, its
   sprite and weakness.
-- A Pokédex window, probably in the Poké Ball menu.
+- A Pokédex window, probably in the Poké Ball menu, that can also be opened from the map (the user's note,
+  2026-09-27).
+- Each entry lists that Pokémon's moves (its enemy moves from `js/data/enemies.js`), hidden until you've fought it
+  (the user's note, 2026-09-27).
 - Finishing a biome's set gives an achievement, PokéCoins and a permanent perk (one per biome).
   Keep them small and different from the Game Corner's (ideas: Clearing: start each run with ₽50;
   Shrine: start with a Potion; Wastes: one free card-reward reroll per biome). They can't be bought,

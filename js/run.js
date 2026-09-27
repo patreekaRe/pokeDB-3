@@ -1045,8 +1045,13 @@ function eventRoom(node) {
   placeEventSpots();
 }
 
-/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. */
-const spotOption = (label, hint, onPick, disabled = false) => ({ node: centerLabel(label, hint), disabled, onPick });
+/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. The sign spells out
+ *  what the choice does, since a phone never shows the hover tooltip centerLabel() relies on. */
+function spotOption(label, hint, onPick, disabled = false) {
+  const sign = el('span', 'center-label', label);
+  sign.append(el('span', 'spot-caption', hint));
+  return { node: sign, disabled, onPick };
+}
 
 /** Play a choice out on the event's scene before it takes effect; false if the run ended meanwhile. */
 async function playOut(act, opts) {
@@ -1078,6 +1083,22 @@ function placeEventSpots() {
     Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
+  // a sign with its caption is big: one over a prop near the edge is nudged back onto the screen, and one that would
+  // cover a lower sign (the grunt's three) is lifted clear of it
+  const signs = [...box.querySelectorAll('.center-label')];
+  signs.forEach(sign => { sign.style.marginLeft = ''; sign.style.marginBottom = ''; });
+  const placed = [];
+  signs.map(sign => ({ sign, r: sign.getBoundingClientRect() })).sort((a, b) => b.r.bottom - a.r.bottom).forEach(({ sign, r }) => {
+    const edge = 8, gap = 10;   // the gap covers the signs bobbing out of step
+    const nudge = r.left < edge ? edge - r.left : r.right > innerWidth - edge ? innerWidth - edge - r.right : 0;
+    let lift = 0;
+    for (const o of placed) {
+      if (r.left + nudge < o.right && r.right + nudge > o.left && r.bottom - lift > o.top - gap) lift = r.bottom - o.top + gap;
+    }
+    if (nudge) sign.style.marginLeft = `${nudge}px`;
+    if (lift) sign.style.marginBottom = `${lift}px`;
+    placed.push({ left: r.left + nudge, right: r.right + nudge, top: r.top - lift });
+  });
 }
 addEventListener('scenepaint', placeEventSpots);
 
@@ -1086,14 +1107,14 @@ const EVENT_CHOICES = {
     const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.eatHeal));
     const grow = perBiome(event.plantMaxHp);
     return { sub: [event.text, 'Eat the berries to heal, or plant one to grow stronger.'], options: [
-      spotOption(heal ? `Eat +${heal} HP` : 'Eat', `Eat the berries: heal ${heal} HP.`, async () => {
+      spotOption(heal ? `Eat +${heal} HP` : 'Eat', heal ? `Heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
         if (!await playOut('eat')) return;
         run.hp += heal;
         playSound('heal-hp');
         tell(`Healed ${heal} HP.`);
         showMap();
       }),
-      spotOption(`Plant +${grow} max HP`, `Plant one: max HP +${grow}.`, async () => {
+      spotOption(`Plant +${grow} max HP`, `Max HP +${grow} for the rest of the run.`, async () => {
         if (!await playOut('plant')) return;
         run.maxHp += grow;
         run.hp += grow;
@@ -1132,7 +1153,7 @@ const EVENT_CHOICES = {
     const damage = Math.min(run.hp - 1, perBiome(event.trapDamage));
     preloadSounds('ball-open', 'hit');
     return { sub: [event.text, 'It could hold a relic. It could also explode.'], options: [
-      spotOption('Pick it up', 'Pick it up: a relic, or a Voltorb.', async () => {
+      spotOption('Pick it up', 'A relic... or a Voltorb that explodes.', async () => {
         if (!await playOut('pickup', { trap: state.trap })) return;
         if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
@@ -1146,7 +1167,7 @@ const EVENT_CHOICES = {
     const loss = perBiome(event.soakMaxHpLoss);
     const dip = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.dipHeal));
     return { sub: [event.text, `Soak in the big pool for a full heal (max HP -${loss}), or take a quick dip.`], options: [
-      spotOption('Soak: full HP', `Soak for hours: fully heal, but lose ${loss} max HP.`, async () => {
+      spotOption('Soak: full HP', `Fully heal, but lose ${loss} max HP.`, async () => {
         if (!await playOut('soak')) return;
         run.maxHp -= loss;
         run.hp = run.maxHp;
@@ -1154,7 +1175,7 @@ const EVENT_CHOICES = {
         tell(`Fully healed. Max HP -${loss}.`);
         showMap();
       }),
-      spotOption(dip ? `Dip +${dip} HP` : 'Dip', `A quick dip: heal ${dip} HP.`, async () => {
+      spotOption(dip ? `Dip +${dip} HP` : 'Dip', dip ? `Heal ${dip} HP.` : 'You\'re already at full HP.', async () => {
         if (!await playOut('dip')) return;
         run.hp += dip;
         playSound('heal-hp');
@@ -1173,7 +1194,7 @@ const EVENT_CHOICES = {
       trainer: { src: `assets/trainers/${state.grunt || event.grunts[0]}.gif` },
       mon: { src: foe.image, alpha: true },
     }, sub: [event.text, `Pay ₽${toll}, battle the grunt's Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
-      spotOption(`Pay ₽${toll}`, `Hand over the ₽${toll} toll and walk on.`, async () => {
+      spotOption(`Pay ₽${toll}`, 'Walk on in peace.', async () => {
         run.money -= toll;
         setMoney(run.money);
         playSound('buy');
@@ -1182,8 +1203,8 @@ const EVENT_CHOICES = {
         tell(`The grunt took ₽${toll}.`);
         showMap();
       }, run.money < toll),
-      spotOption('Battle!', `Fight the grunt's Alpha ${foe.name}, an elite fight with elite rewards.`, () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
-      spotOption('Run', `Run for it: lose ${flee} HP getting away.`, async () => {
+      spotOption('Battle!', 'Elite fight, elite rewards.', () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
+      spotOption('Run', `Lose ${flee} HP.`, async () => {
         playSound('run-away');
         gruntDoes('shake');
         if (!await playOut('run')) return;
@@ -1206,7 +1227,7 @@ const EVENT_CHOICES = {
     const relics = state.relics.map(id => RELICS_BY_ID[id]).filter(r => !run.relics.includes(r.id));
     const canToss = relics.length && run.money >= perBiome(event.tosses[0].price);
     const fish = perBiome(event.fish);
-    const fishOption = spotOption(`Fish ₽${fish}`, `Fish out the coins other trainers tossed in: ₽${fish}.`, () => {
+    const fishOption = spotOption(`Fish ₽${fish}`, 'Fish out the coins other trainers tossed in.', () => {
       run.money += fish;
       setMoney(run.money);
       playSound('coins');
@@ -1216,7 +1237,7 @@ const EVENT_CHOICES = {
     return { sub: [event.text, canToss ? 'Toss a coin, or a big one for better odds.' : 'No wish today, but there are coins glinting at the bottom...'], options: event.tosses.map(({ price, odds }, i) => {
       if (i === 0 && !canToss) return fishOption;
       const cost = perBiome(price);
-      const hint = relics.length ? `Toss ₽${cost}: a ${Math.round(odds * 100)}% chance to find a relic.` : 'Nothing down there you don\'t already have.';
+      const hint = relics.length ? `A ${Math.round(odds * 100)}% chance to find a relic.` : 'Nothing down there you don\'t already have.';
       return spotOption(`Toss ₽${cost}`, hint, async () => {
         run.money -= cost;
         setMoney(run.money);
@@ -1252,7 +1273,7 @@ const EVENT_CHOICES = {
     const relic = state.relics.map(id => RELICS_BY_ID[id]).find(r => !run.relics.includes(r.id));
     if (!relic) return { options: [spotOption('Pray', 'The shrine has nothing left to give you.', () => {}, true)] };
     return { sub: [event.text, `Offer ${cost} HP in prayer, and it will give you ${relic.name}: ${relic.text}`], options: [
-      spotOption(`Pray -${cost} HP`, `Offer ${cost} HP: receive ${relic.icon} ${relic.name}. ${relic.text}`, async () => {
+      spotOption(`Pray -${cost} HP`, `Receive ${relic.icon} ${relic.name}: ${relic.text}`, async () => {
         if (!await playOut('pray')) return;
         loseHp(cost);
         revealGift(relic, [`The shrine gave you ${relic.name}!`, relic.text], () => gainRelic(relic, showMap));

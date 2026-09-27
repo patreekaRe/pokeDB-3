@@ -2642,6 +2642,19 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
 :is(.center-room, .event-room) .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; filter: grayscale(1); }
 :is(.center-room, .event-room).resting .center-label { visibility: hidden; }
+/* what an event choice does, a second line in its sign (spotOption()): readable text, not pixel letters */
+.spot-caption {
+  display: block;
+  width: max-content;
+  max-width: min(170px, 34vw);
+  margin-top: 5px;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+  color: var(--win-muted);
+}
 /* the ? events with a scene of their own (eventRoom()) work the same way over their props; the well's two tosses are
    its two halves, so their signs lean apart */
 .well-room .reward-option:first-child .center-label { translate: -80% 0; }
