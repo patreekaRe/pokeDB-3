@@ -443,9 +443,10 @@ function terrainGrid(map, biomeId, tiles, rand) {
   const block = (x, y) => { if (dist[y]?.[x] === Infinity) { dist[y][x] = 0; queue.push([x, y]); } };
   for (const [x, y] of tiles) block(x, y);
   for (const node of Object.values(map.byId)) {
-    const r = node.type === 'boss' ? 2 : 1;
+    const r = node.type === 'boss' || BUILDINGS.includes(node.type) ? 2 : 1;   // buildings are 4 tiles wide
     for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) block(nodeX(node) + dx, rowY(node.floor) + dy);
   }
+  for (let dy = -4; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) block(CENTER_X + dx, START_ROW + dy);   // your Pokémon stands here at the start, not in a lake
   for (let i = 0; i < queue.length; i++) {
     const [x, y] = queue[i];
     for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
