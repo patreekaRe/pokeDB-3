@@ -376,18 +376,57 @@ const PLACE_ART = {
     },
   },
 
-  spring: {   // a hot spring ringed with round stones, a little pool below it, a ♨ sign, a wooden bucket and a rubber duck
-    outdoor: true, prop: 'spring', horizon: 0.5,
-    water: ['#f0ffff', '#98ecf0', '#58ccdc', '#3494b8'],
+  /* the Hot Spring, close up: standing at the edge of a big steaming rock pool (soak), a little one below it fed by a
+     bamboo spout (dip), a bamboo fence, a stone lantern, the ♨ sign and a bucket. Its own scene: `biomes` gives each
+     its look (a sunny garden, misty cedars, a steaming volcanic rock wall). */
+  spring: {
+    backdrop: 'onsen', floor: 'onsen', prop: 'spring', light: null, horizon: 0.48,
+    water: ['#f0ffff', '#a8f0f0', '#60d0dc', '#3a9ac0', '#246a98'],
     steam: '#ffffff',
     poolStone: ['#e8e8e0', '#b8b8b0', '#86867e', '#3a3a38'],
     onsen: ['#fff4dc', '#e03828'],
-    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'], hoop: '#505058',
+    wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'], hoop: '#505058', towel: ['#ffffff', '#c8d8f0'],
+    bamboo: ['#c8e878', '#90c050', '#5a8a30', '#2a4418'], tie: '#3a2412',
+    altarStone: ['#e0e0d8', '#b0b0a8', '#80807a', '#303030'], glow: ['#fffce0', '#f8d878', '#e0a040'],
     duck: ['#f8e048', '#c8a018', '#f89830'],
     life: ['spring'],
     biomes: {
-      shrine: { poolStone: ['#d0d4c0', '#a2a894', '#747a68', '#2e3428'] },
-      wastes: { poolStone: ['#9a8078', '#745a52', '#54403a', '#1e1412'] },
+      clearing: {   // a sunny garden: sky over green hills and round trees, a bamboo fence, grey flagstones, maple leaves
+        wall: 'garden', light: 'sun',
+        sky: ['#78c8f8', '#a0dcf8', '#c8ecf8', '#e8f8f8'],
+        sun: ['#fffce8', '#fff4b0', '#fff8d8'],
+        farHills: ['#a8d8b0', '#90c8a0'], hills: ['#80c060', '#62a84c', '#4a8a3c'],
+        trees: ['#98d860', '#6ab848', '#4a9438', '#2e6e2c'], trunk: ['#8a5a34', '#5e3a20'],
+        ground: ['#c8c8c0', '#b4b4ac', '#a0a098', '#8a8a82'], groundLine: '#6a6a64', moss: ['#8ac860', '#5a9a44'],
+        leaves: [['#f86040', '#c83820'], ['#f8a040', '#d06828']],
+        life: ['spring', 'leaves'],
+      },
+      shrine: {   // old cedars in the mist behind a dark bamboo fence, mossy flagstones, autumn leaves drifting down
+        wall: 'cedars',
+        sky: ['#2e6e30'],
+        leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36', '#183024'],
+        bark: ['#9a6a50', '#7a4e3c', '#5a362a', '#2e1a14'],
+        rope: ['#f0e0a0', '#c0a060', '#8a7040'], paper: '#ffffff', mistColour: '#e8f0ec',
+        bamboo: ['#b0a070', '#8a7850', '#5e5034', '#2a2418'],
+        poolStone: ['#d0d4c0', '#a2a894', '#747a68', '#2e3428'],
+        ground: ['#a0ac94', '#909e86', '#808e78', '#707e6a'], groundLine: '#4e5a48', moss: ['#8ac068', '#5a9048'],
+        water: ['#f0fff8', '#b0f0e0', '#70d0c0', '#3a9aa0', '#20687a'],
+        leaves: [['#f8a040', '#c85828'], ['#f86050', '#a83028']],
+        life: ['spring', 'leaves'],
+      },
+      wastes: {   // a milky pool under a cliff of volcanic rock, steam vents in its cracks, embers drifting
+        wall: 'rock',
+        sky: ['#3a2e30'],
+        rock: ['#6a5250', '#523e3e', '#3e2e30', '#2e2224', '#1a1214'],
+        vein: ['#f8b030', '#e05820'],
+        poolStone: ['#9a8078', '#745a52', '#54403a', '#1e1412'],
+        altarStone: ['#a08c84', '#7a6660', '#54403a', '#1a1012'], glow: ['#fff0c0', '#f8a830', '#e05820'],
+        bamboo: ['#9a8a80', '#6a5a54', '#4a3c38', '#1a1012'],   // a charred wooden pipe
+        ground: ['#5a4a46', '#524440', '#4a3c3a', '#423634'], groundLine: '#2a1e1c',
+        water: ['#ffffff', '#e0f4f0', '#a8dcd8', '#78b8c0', '#4a8898'],
+        ember: ['#fff0a0', '#f8a830', '#e85820'], embers: 0.4,
+        life: ['spring', 'embers'],
+      },
     },
   },
 
@@ -675,9 +714,11 @@ function paintBase() {
   if (S.raw.backdrop === 'mart') martBackdrop();
   if (S.raw.backdrop === 'treasure') grottoWall();
   if (S.raw.backdrop === 'altar') shrineGrove();
+  if (S.raw.backdrop === 'onsen') onsenWall();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
+  if (S.raw.floor === 'onsen') flagstones();
   if (S.raw.floor === 'center') centerFloor();
   if (S.raw.floor === 'mart') martFloor();
   if (S.raw.floor === 'meadow') meadow();
@@ -2071,35 +2112,119 @@ function drawBerryTree() {
 
 /* ---------- the Hot Spring ---------- */
 
+/* ---------- the Hot Spring, close up: its own scene (PLACE_ART.spring), the pool at your feet ---------- */
+
+/** The big pool fills the screen's middle, its back rim just below the fence and its front where you'd step in, high
+    enough to leave ~190 CSS px under it for the text box and Leave; the little pool sits below its front right. */
+function springLayout() {
+  const foot = Math.round(Math.min(H * 0.8, H - 190 * H / innerHeight));
+  const ry = Math.max(6, Math.round(Math.min((foot - horizon - 7) / 2.2, W * 0.2)));
+  const rx = Math.round(Math.min(W * 0.42, ry * (W > 200 ? 4 : 3.2), 130));
+  const srx = Math.max(8, Math.round(rx * 0.34)), sry = Math.max(3, Math.round(srx * 0.42));
+  const big = { x: Math.round(W / 2 - srx * 0.45), y: foot - ry - 3, rx, ry };
+  return { foot, big, small: { x: Math.round(big.x + rx * 0.7), y: Math.round(big.y + ry * 0.62), rx: srx, ry: sry } };
+}
+
+/** Behind the pools: a garden under the sky, old cedars in the mist, or a cliff of volcanic rock; a bamboo fence along
+    the first two. */
+const fenceHeight = () => Math.max(8, Math.round(H * 0.1));
+
+function onsenWall() {
+  const fh = fenceHeight();
+  if (S.raw.wall === 'rock') { facetRock(); ventSpots(); return; }
+  if (S.raw.wall === 'cedars') { foliage(); cedars(springLayout().big.rx * 1.6); }
+  else {
+    ridge(horizon - fh - 10, 6, 23, 0.4, S.farHills, false);
+    ridge(horizon - fh - 4, 5, 13, 2.1, S.hills, true);
+    for (let x = 4 + Math.floor(rand() * 8); x < W; x += 12 + Math.floor(rand() * 14)) roundTree(x, horizon - fh - 3 - Math.floor(rand() * 5), 5 + Math.floor(rand() * 4), false);
+  }
+  bambooFence(fh);
+}
+
+/** Where the rock lets out steam (drawn by drawSpring). */
+function ventSpots() {
+  const n = Math.max(2, Math.round(W / 60));
+  life.vents = Array.from({ length: n }, (_, i) => ({
+    x: Math.round((i + 0.3 + rand() * 0.4) * W / n), y: Math.round(horizon * (0.55 + rand() * 0.35)), age: rand() * 40,
+  }));
+}
+
+/** A bamboo fence (takegaki): upright poles with their joints, a split cap along the top, two rails lashed with rope. */
+function bambooFence(h) {
+  const [lit, body, dark, line] = S.bamboo, top = horizon - h;
+  for (let x = 0; x < W; x++) {
+    const pole = Math.floor(x / 3), k = x % 3, joint = (pole * 7) % 5 + 3;
+    for (let y = top + (pole % 2); y < horizon; y++) {
+      const node = (y - top + joint) % 7 === 0;
+      solid(x, y, k === 2 ? line : node ? dark : k === 0 ? lit : body);
+    }
+    solid(x, top + (pole % 2) - 1, line);
+  }
+  for (const y of [top + Math.round(h * 0.25), top + Math.round(h * 0.7)]) {
+    for (let x = 0; x < W; x++) { solid(x, y, lit); solid(x, y + 1, dark); solid(x, y + 2, line); }
+    for (let x = 5; x < W; x += 9) { solid(x, y, S.tie); solid(x, y + 1, S.tie); solid(x + 1, y + 1, S.tie); }
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.7); tint(x, horizon + 1, 0.85); }   // its shadow on the stones
+}
+
+/** Flagstones from the fence to your feet, the rows growing as they come closer, moss (or cinders) in the joints. */
+function flagstones() {
+  const line = S.groundLine;
+  for (let y0 = horizon, rh = 2, row = 0; y0 < H; y0 += rh, rh = Math.min(rh + (row % 2), 9), row++) {
+    let x = -Math.floor(noise(row, 1, 3) * rh * 3);
+    while (x < W) {
+      const w = rh * 2 + 2 + Math.floor(noise(x, row, 4) * rh * 3), shade = S.ground[Math.floor(noise(x, row, 5) * 3)];
+      for (let y = y0; y < y0 + rh && y < H; y++) for (let dx = 0; dx < w; dx++) {
+        const edge = dx === 0 || y === y0 + rh - 1;
+        let c = edge ? line : y === y0 ? S.ground[0] : dither(x + dx, y) < 2 ? S.ground[3] : shade;
+        if (edge && S.moss && noise(x + dx, y, 9) > 0.55) c = S.moss[(dx + y) & 1];
+        solid(x + dx, y, c);
+      }
+      x += w;
+    }
+  }
+}
+
 function springScene() {
-  const cx = (W >> 1) - 8, cy = groundAt(0.34);
-  const big = { x: cx, y: cy, rx: 19, ry: 6 }, small = { x: cx + 30, y: cy + 10, rx: 9, ry: 3 };
+  const { foot, big, small } = springLayout();
+  life.lamps = [];
+  const L = Math.round(big.ry * 1.5), lx = big.x - big.rx - Math.round(L * 0.2);
+  if (lx - L * 0.35 > 0) { groundShadow(lx + 1, big.y - big.ry + 2, Math.round(L * 0.3), 2); stoneLantern(lx, big.y - big.ry + 2, L); }
+  else { groundShadow(big.x - big.rx + 6, horizon + 3, Math.round(L * 0.25), 1); stoneLantern(big.x - big.rx + 6, horizon + 3, Math.round(L * 0.8)); }
+  onsenSign(Math.min(W - 9, big.x + Math.round(big.rx * 0.5)), horizon - fenceHeight() + 2);
+  const rx2 = small.x + small.rx + Math.round(L * 0.55);   // wide screens get a second lantern past the spout
+  if (rx2 + L * 0.4 < W) { groundShadow(rx2 + 1, big.y - big.ry + 2, Math.round(L * 0.3), 2); stoneLantern(rx2, big.y - big.ry + 2, L); }
   hotPool(big);
+  const spout = bambooSpout(small);
   hotPool(small);
-  if (cx - 39 > 0) onsenSign(cx - 31, cy + 5);   // where there's room left of the pool
-  woodBucket(small.x + 13, small.y + 3);
+  const bx = big.x - Math.round(big.rx * 0.55), by = big.y + big.ry + 4;
+  bathBucket(Math.max(6, bx), Math.min(foot + 2, by));
   life.pools = [big, small];
+  life.spout = spout;
   life.eventSpots = [
-    { x0: big.x - big.rx - 3, x1: big.x + big.rx + 3, y0: big.y - big.ry - 12, y1: big.y + big.ry + 2 },
-    { x0: small.x - small.rx - 3, x1: small.x + small.rx + 3, y0: small.y - small.ry - 4, y1: small.y + small.ry + 3 },
+    { x0: big.x - Math.round(big.rx * 0.7), x1: big.x + Math.round(big.rx * 0.5), y0: big.y - big.ry, y1: big.y + Math.round(big.ry * 0.4) },
+    { x0: small.x - small.rx, x1: small.x + small.rx, y0: small.y - small.ry - 2, y1: small.y + small.ry + 2 },
   ];
-  life.foot = small.y + small.ry + 6;
-  life.keep = [{ x0: big.x - big.rx - 4, x1: small.x + small.rx + 18, y0: big.y - big.ry - 4, y1: small.y + small.ry + 5 }];
+  life.foot = foot + 2;
 }
 
 const inPool = (p, x, y) => ((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 <= 0.8;
 
-/** Steaming water, darker in the back where the rim shades it, ringed with round stones (bigger at the front). */
+/** Steaming water, shaded under its back rim and clear over the stones at the front, ringed with boulders that grow
+    as they come closer. */
 function hotPool({ x: cx, y: cy, rx, ry }) {
-  const [, light, water, deep] = S.water;
+  const [, light, water, deep, deepest] = S.water;
   for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
     const d = (x / (rx + 0.5)) ** 2 + (y / (ry + 0.5)) ** 2, k = (y + ry) / (2 * ry);
-    if (d <= 1) solid(cx + x, cy + y, k < 0.3 || (k < 0.5 && dither(x, y) < 6) ? deep : d > 0.7 && y > 0 ? light : water);
+    if (d > 1) continue;
+    const c = k < 0.18 ? deepest : k < 0.4 || (k < 0.52 && dither(x, y) < 8) ? deep : k > 0.8 && dither(x, y) < (k - 0.8) * 60 ? light : water;
+    solid(cx + x, cy + y, c);
   }
-  const [back, front] = ry >= 5 ? [2, 3] : [1.5, 2], n = Math.round(Math.PI * (rx + ry) / (ry >= 5 ? 3.2 : 2.6)), stones = [];
+  const n = Math.round(Math.PI * (rx + ry) / Math.max(2.4, ry * 0.3)), stones = [];
   for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 + 0.2;
-    stones.push({ x: Math.round(cx + Math.cos(a) * (rx + 2)), y: Math.round(cy + Math.sin(a) * (ry + 1.5)), r: Math.sin(a) > 0.3 ? front : back });
+    const a = (i / n) * Math.PI * 2 + 0.2, near = (Math.sin(a) + 1) / 2;
+    const r = Math.max(1.5, ry * (0.12 + near * 0.16) * (0.8 + noise(i, rx, 7) * 0.45));
+    stones.push({ x: Math.round(cx + Math.cos(a) * (rx + r * 0.6)), y: Math.round(cy + Math.sin(a) * (ry + r * 0.45)), r });
   }
   stones.sort((a, b) => a.y - b.y).forEach(s => poolStone(s.x, s.y, s.r));
 }
@@ -2108,71 +2233,102 @@ function poolStone(cx, cy, r) {
   const [lit, body, shade, line] = S.poolStone, ry = Math.max(1, r * 0.75);
   outlined(cx - r, cy - ry, cx + r, cy + ry, (x, y) => ((x - cx) / (r + 0.5)) ** 2 + ((y - cy) / (ry + 0.5)) ** 2 <= 1, (x, y) => {
     const v = (x - cx) / r + (y - cy) / ry;
-    return v < -0.6 ? lit : v < 0.6 ? body : shade;
+    return v < -0.6 ? lit : v < 0.6 || dither(x, y) < 4 ? body : shade;
   }, line);
 }
 
-/** A wooden board with the hot spring mark (♨: three wisps of steam over a bowl) on a post. */
-function onsenSign(cx, foot) {
-  const [board, red] = S.onsen, [, wood, , line] = S.wood;
+/** A bamboo pipe (kakei) on a post, pouring into the little pool from its right; returns where the water leaves it. */
+function bambooSpout(p) {
+  const [lit, body, dark, line] = S.bamboo, post = Math.min(W - 3, p.x + p.rx + 5), top = p.y - p.ry - Math.max(8, p.ry * 2);
+  for (let y = top; y <= p.y + 1; y++) { solid(post - 1, y, line); solid(post, y, lit); solid(post + 1, y, dark); solid(post + 2, y, line); }
+  const end = { x: p.x + Math.round(p.rx * 0.35), y: top + 3 };
+  for (let x = end.x; x <= post + 1; x++) {
+    const y = top + Math.round((x - end.x) / (post + 1 - end.x) * -2) + 2;
+    solid(x, y - 1, line); solid(x, y, (x - end.x) % 6 === 5 ? dark : lit); solid(x, y + 1, body); solid(x, y + 2, line);
+  }
+  solid(end.x - 1, end.y - 2, line); solid(end.x - 1, end.y - 1, S.water[3]); solid(end.x - 1, end.y, line);
+  return { x: end.x - 1, y: end.y, to: p.y - 1 };
+}
+
+/** A wooden bath bucket (with its metal hoops) and a folded towel over its rim. */
+function bathBucket(cx, foot) {
+  const [lit, wood, dark, line] = S.wood, [towel, fold] = S.towel;
+  pixelMap(cx - 5, foot - 8, [
+    '...wwww....',
+    '.kwwwffwkk.',
+    'kaaawfbbdk.',
+    'khhhhhhhhk.',
+    'kaaabbbbdk.',
+    'kaaabbbbdk.',
+    'khhhhhhhhk.',
+    '.kkkkkkkk..',
+  ], { k: line, a: lit, b: wood, d: dark, h: S.hoop, w: towel, f: fold });
+}
+
+/** A wooden board with the hot spring mark (♨: three wisps of steam over a bowl), nailed up on the fence (or rock). */
+function onsenSign(cx, top) {
+  const [board, red] = S.onsen, [, , , line] = S.wood;
   const mark = ['..r...r...r..', '.r...r...r...', '.r...r...r...', '..r...r...r..', '.............', 'r...........r', '.rrrrrrrrrrr.'];
-  pixelMap(cx - 7, foot - 14, [
+  pixelMap(cx - 7, top, [
     'kkkkkkkkkkkkkkk',
+    'kwnwwwwwwwwwnwk',
     ...mark.map(row => `k${row.replace(/\./g, 'w')}k`),
     'kwwwwwwwwwwwwwk',
     'kkkkkkkkkkkkkkk',
-    '......kbk......',
-    '......kbk......',
-    '......kbk......',
-  ], { k: line, w: board, r: red, b: wood });
+  ], { k: line, w: board, r: red, n: line });
+  for (let x = cx - 6; x <= cx + 8; x++) tint(x, top + 11, 0.7);   // its shadow
 }
 
-/** A wooden bath bucket with a metal hoop, by the little pool. */
-function woodBucket(cx, foot) {
-  const [lit, wood, dark, line] = S.wood;
-  pixelMap(cx - 3, foot - 5, [
-    '.kkkkk.',
-    'kaaabdk',
-    'khhhhhk',
-    'kaabbdk',
-    '.kkkkk.',
-  ], { k: line, a: lit, b: wood, d: dark, h: S.hoop });
-}
-
-/** Glints sliding over the water, a rubber duck bobbing, steam rising (a cloud of it while you soak) and ripples where you step in. */
+/** Glints sliding over the water, a rubber duck bobbing, the spout's stream splashing, the lantern flickering, steam
+    rising off both pools and the rock's vents (a cloud of it while you soak) and ripples where you step in. */
 function drawSpring(t) {
   const soak = actFrame('soak'), dip = actFrame('dip'), [foam, light] = S.water;
   const surge = soak < 0 ? 0 : Math.max(0, Math.min(1, soak / 4, (16 - soak) / 4));
+  for (const w of life.lamps) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) {
+    const flick = 6 + Math.round(4 * Math.sin(t / 2 + w.x0) + 3 * Math.sin(t / 5.3));
+    if (dither(x, y + (t >> 1)) < flick) put(x, y, S.glow[0]);
+  }
   life.pools.forEach((p, i) => {
-    for (let k = 0; k < Math.max(2, Math.round(p.rx / 5)); k++) {
-      const row = p.y - p.ry + 2 + ((k * 3) % Math.max(1, p.ry * 2 - 2));
-      const x = p.x - p.rx + ((Math.floor(t * 0.4) + k * 11 + i * 5) % (p.rx * 2));
-      for (let d = 0; d < 3; d++) if (inPool(p, x + d, row)) put(x + d, row, d === 1 ? foam : light);
+    for (let k = 0; k < Math.max(2, Math.round(p.rx / 4)); k++) {
+      const row = p.y - p.ry + 2 + ((k * 5) % Math.max(1, p.ry * 2 - 3));
+      const len = Math.max(2, Math.round(p.rx / 12)), x = p.x - p.rx + ((Math.floor(t * 0.5) + k * 13 + i * 5) % (p.rx * 2));
+      for (let d = 0; d <= len; d++) if (inPool(p, x + d, row)) put(x + d, row, d === 1 ? foam : light);
     }
     const f = i ? dip : soak;
-    if (f >= 0) for (const age of [f, f - 3]) {
-      if (age < 0 || age > 8) continue;
-      const rx = 1 + age * p.rx / 8, ry = Math.max(1, rx * p.ry / p.rx);
+    if (f >= 0) for (const age of [f, f - 3, f - 6]) {
+      if (age < 0 || age > 9) continue;
+      const rx = 1 + age * p.rx / 9, ry = Math.max(1, rx * p.ry / p.rx);
       for (let a = 0; a < Math.PI * 2; a += 0.6 / rx) {
         const x = Math.round(p.x + Math.cos(a) * rx), y = Math.round(p.y + Math.sin(a) * ry);
         if (inPool(p, x, y)) put(x, y, foam);
       }
     }
-    if (i === 1 && dip >= 0 && dip < 4) for (const dx of [-3, -1, 1, 3]) put(p.x + dx * (1 + dip * 0.5), p.y - 2 - dip * 2 + dip * dip * 0.6, foam);
+    if (i === 1 && dip >= 0 && dip < 5) for (const dx of [-3, -1, 1, 3]) put(p.x + dx * (1 + dip * 0.6), p.y - 2 - dip * 2 + dip * dip * 0.6, foam);
   });
 
+  const s = life.spout, small = life.pools[1];   // the spout's stream, bending as it falls, and its splash
+  for (let y = s.y; y <= s.to; y++) {
+    const x = s.x - Math.round(Math.sqrt(y - s.y) * 0.6), c = (y + t) % 3 ? light : foam;
+    put(x, y, c);
+    if ((y + t) % 4 === 0) put(x - 1, y, foam);
+  }
+  const sx = s.x - Math.round(Math.sqrt(s.to - s.y) * 0.6);
+  for (const dx of [-2, 2]) put(sx + dx, s.to - ((t + (dx > 0 ? 1 : 0)) % 2), foam);
+  if (inPool(small, sx, s.to + 1)) put(sx, s.to + 1, foam);
+
   const big = life.pools[0], [yellow, shade, beak] = S.duck;   // the duck, a little Psyduck-yellow
-  const dx = big.x + 8 + Math.round(Math.sin(t / 14) * 4), dy = big.y + ((t >> 2) % 2) - (surge ? Math.round(Math.sin(t) * 1) : 0);
+  const dx = big.x + Math.round(big.rx * 0.3) + Math.round(Math.sin(t / 14) * big.rx * 0.2), dy = big.y + ((t >> 2) % 2) - (surge ? Math.round(Math.sin(t)) : 0);
   pixelMap(dx - 2, dy - 3, ['.yy..', 'yyyb.', 'syyy.', '.ss..'], { y: yellow, s: shade, b: beak });
   put(dx - 2, dy + 1, foam); put(dx + 2, dy + 1, foam);
 
-  for (const s of life.steam) {
-    const p = life.pools[s.pool], boost = s.pool === 0 ? surge : 0;
-    const age = (s.age + t * s.speed * (1 + boost)) % 32, fade = 1 - age / 32;
-    const x = p.x + s.dx + Math.sin((t + s.age) / 5) * 1.5 + age * 0.12, y = p.y - 1 - age * (0.55 + boost * 0.25);
-    const r = 1.5 + age / 8 + boost * 1.5, k = (0.5 + boost * 0.35) * fade;
-    for (let oy = -r; oy <= r; oy++) for (let ox = -r; ox <= r; ox++) {
-      if (ox * ox + oy * oy <= r * r && dither(Math.round(x + ox), Math.round(y + oy)) < 14) blend(x + ox, y + oy, S.steam, k);
+  for (const st of life.steam) {
+    const p = st.pool < 0 ? null : life.pools[st.pool], boost = st.pool === 0 ? surge : 0, span = st.pool < 0 ? 24 : 36;
+    const age = (st.age + t * st.speed * (1 + boost)) % span, fade = 1 - age / span;
+    const ox = p ? p.x + st.dx : life.vents[st.vent].x, oy = p ? p.y - 1 : life.vents[st.vent].y;
+    const x = ox + Math.sin((t + st.age) / 5) * 1.5 + age * 0.15, y = oy - age * (0.6 + boost * 0.25);
+    const r = st.size * (1 + age / 10) + boost * 2, k = (p ? 0.45 + boost * 0.4 : 0.35) * fade;
+    for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) {
+      if (xx * xx + yy * yy <= r * r && dither(Math.round(x + xx), Math.round(y + yy)) < 14) blend(x + xx, y + yy, S.steam, k);
     }
   }
 }
@@ -2922,9 +3078,10 @@ function makeLife() {
   }
   if (life.keep && life.blades) life.blades = life.blades.filter(b => !kept(b.x, b.y));   // no grass growing through the props
   if (has('spring')) {
-    life.steam = life.pools.flatMap((p, i) => Array.from({ length: Math.max(3, Math.round(p.rx / 2.5)) }, () => ({
-      pool: i, dx: (rand() * 2 - 1) * p.rx * 0.7, age: rand() * 32, speed: 0.7 + rand() * 0.5,
+    life.steam = life.pools.flatMap((p, i) => Array.from({ length: Math.max(3, Math.round(p.rx / 2)) }, () => ({
+      pool: i, dx: (rand() * 2 - 1) * p.rx * 0.75, age: rand() * 36, speed: 0.6 + rand() * 0.5, size: 1.2 + p.ry / 14 + rand(),
     })));
+    for (const [v, vent] of (life.vents || []).entries()) for (let n = 0; n < 3; n++) life.steam.push({ pool: -1, vent: v, age: n * 8 + rand() * 4, speed: 0.6, size: 1 });
   }
   if (has('mart')) life.dust = Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
   if (has('surf')) {

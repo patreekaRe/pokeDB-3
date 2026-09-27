@@ -40,8 +40,8 @@ What the overnight chain did, one session per big step (details and bot numbers 
 **For you to check or decide** (the full lists are in each step's "For the user" notes):
 - Step 8: with every perk bought, Level 0 is ~96% and Level 5 ~75% (endgame easy); Move Tutor Notes is still the strongest
   single perk; every perk now reads `Lv n/m`.
-- Step 7: Pokédex perks lift Grass/Water at Levels 3/5 by 5-15 once earned; fight-room silhouettes on the map aren't done
-  (your call); page coins 100 / 150 / 200 are a guess.
+- Step 7: Pokédex perks lift Grass/Water at Levels 3/5 by 5-15 once earned; fight-room silhouettes on the map were
+  dropped (your call, like catching); page coins 100 / 150 / 200 are a guess.
 - 6c.11b: TM's picker reuses Fusion Flare's layout; Revive's news rides on the hit's text line; Fire L0 ~79 is a bit high.
 - Explain-itself: the nameplate chip is the Ability Capsule, not the type icon; on phones the risen card's keyword boxes
   stack over the arena; Block has no keyword box; the TM / Fusion Flare picker has no boxes yet.
@@ -263,9 +263,9 @@ What the overnight chain did, one session per big step (details and bot numbers 
         counts. See CLAUDE.md's Top bar and start screen.
         **For the user to check:** TM's picker reuses Fusion Flare's card layout; Revive's news rides on the hit's own
         text line; Fire L0 ~79 is a bit above target (it was the weakest at L3, so the buff went in anyway).
-7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
+7. **Pokédex** (2–3 sessions; catching was dropped, the user's call 2026-09-27: "doesn't make sense"). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
-   **Pokédex done (2026-09-27, overnight session); catching still waits for the user.** See CLAUDE.md's Top bar and
+   **Pokédex done (2026-09-27, overnight session).** See CLAUDE.md's Top bar and
    start screen. A `📕 Pokédex` window (Poké Ball menu, so the map too, and a red button beside Index on the start
    screen), a page per biome with its 12 wilds, 3 Alphas and 3-4 bosses (No.001-055). Entries are "???" silhouettes until
    fought (seen: name, type chip, moves in order), then complete once beaten (a Poké Ball mark, flavour text, weakness).
@@ -285,8 +285,7 @@ What the overnight chain did, one session per big step (details and bot numbers 
    - The perks lift Levels 3/5 for Grass/Water by 5-15 points once earned (above): fine as an endgame reward, or too much?
    - The "achievement" for a page is a row in the Achievements window's new "Pokédex pages" list, not a starter unlock
      (every achievement there unlocks a starter; a page unlocking one would need 3 new starters).
-   - The roadmap's "fight rooms on the map show a silhouette until beaten, then sprite and weakness" isn't done: it
-     would show every wild on the map (only elites/bosses are scouted today) and change routing. Your call.
+   - Map silhouettes for fight rooms: dropped (the user's call, 2026-09-27; it would have shown every wild on the map).
    - Coin amounts (100 / 150 / 200) are a guess; step 8 reviews the whole coin economy.
    - Seen = fought (a map's boss silhouette doesn't count); moves show at seen, per your note; amounts aren't shown
      (they grow per biome and Level, so a base number would mislead).
@@ -452,8 +451,13 @@ Anytime, as a break from number work:
 - ~~**Shrine close-up**~~ (done 2026-09-27): the Shrine event "looked very small"; it's now a close-up filling the
   screen, its own `PLACE_ART.altar` scene with a look per biome (leafy grove / misty cedars / obsidian rock), like the
   treasure grotto. See CLAUDE.md's ? events.
-- **Hot Spring close-up** (the user's idea, 2026-09-27): it "feels far away"; a very close view, as if you're about
-  to step in. Likewise its own `PLACE_ART` scene rather than a prop on the outdoor scene.
+- ~~**Hot Spring close-up**~~ (done 2026-09-27): it "felt far away"; it's now its own `PLACE_ART.spring` scene, standing
+  at the edge of a big steaming rock pool (soak) with a little pool below it fed by a bamboo spout (dip), a bamboo fence
+  with the ♨ board, stone lanterns and a bath bucket. A look per biome: a sunny garden with maple leaves, misty cedars
+  with autumn leaves, a milky pool under volcanic rock with steam vents and embers. The user also asked to see their HP
+  there: every event where HP decides the choice (Hot Spring, Berry Tree, Shrine, Item Ball, Team Rocket, and the
+  new scenes below) shows your Pokémon's battle nameplate under the title (`eventVitals()`), and its bar runs to the new
+  HP before the room closes (`showHpChange()`). The signs say where you'd end up ("Heal 11 HP, to 46/70").
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,
@@ -537,8 +541,7 @@ Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
 
 ## Pokédex (step 7)
 
-- Fight rooms on the map show a silhouette until you've beaten that Pokémon; after that, its
-  sprite and weakness.
+- ~~Fight rooms on the map show a silhouette until you've beaten that Pokémon~~ (dropped, the user's call 2026-09-27).
 - A Pokédex window, probably in the Poké Ball menu, that can also be opened from the map (the user's note,
   2026-09-27).
 - Each entry lists that Pokémon's moves (its enemy moves from `js/data/enemies.js`), hidden until you've fought it
@@ -549,10 +552,10 @@ Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
   so show them locked in the Pokédex window with the biome's progress.
 - Unregistered Pokémon show up a bit more often, so the last few entries don't drag.
 
-## Catching (optional, after the Pokédex)
+## Catching: dropped
 
-- Poké Balls sold at the Mart, taking item slots. Throwing one at low HP ends the fight early;
-  a miss ends your turn. Changes balance, so it needs another bot run.
+The user's call (2026-09-27): it doesn't make sense for this game. (The idea was Poké Balls from the Mart that end a
+fight early at low HP.)
 
 ## Bot harness in a cloud session
 

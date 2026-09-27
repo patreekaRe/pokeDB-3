@@ -1007,6 +1007,10 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.35);
 }
 body[data-screen="reward-screen"] .hp-plate { display: flex; }
+body[data-screen="reward-screen"]:has(.event-vitals) .hp-plate { display: none; }   /* the event's own big one says it */
+/* your HP on an event scene where it decides the choice (eventVitals() in js/run.js): the battle nameplate, under the title */
+.event-vitals { position: fixed; z-index: 2; left: 50%; translate: -50% 0; width: min(260px, calc(100vw - 32px)); pointer-events: none; }
+.event-vitals .gb-hp-fill { transition: width 0.8s steps(16), background 0.3s; }
 .hp-plate .gb-hp { width: 96px; margin: 0; }
 .hp-plate .gb-hp-track { height: 14px; padding: 2px; }
 .hp-plate .gb-hp-tag { line-height: 14px; font-size: 0.6rem; }

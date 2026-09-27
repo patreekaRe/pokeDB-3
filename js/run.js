@@ -970,7 +970,8 @@ function captionedSign(text, caption) {
 function spreadSigns(box) {
   const signs = [...box.querySelectorAll('.reward-option .center-label')];
   signs.forEach(sign => { sign.style.marginLeft = ''; sign.style.marginBottom = ''; });
-  const title = $('reward-title'), ceiling = title.offsetHeight ? title.getBoundingClientRect().bottom + 6 : 0;
+  const title = $('reward-title'), vitals = box.querySelector('.event-vitals');
+  const ceiling = Math.max(title.offsetHeight ? title.getBoundingClientRect().bottom + 6 : 0, vitals ? vitals.getBoundingClientRect().bottom + 6 : 0);
   const placed = [];
   signs.map(sign => ({ sign, r: sign.getBoundingClientRect() })).sort((a, b) => b.r.bottom - a.r.bottom).forEach(({ sign, r }) => {
     const edge = 8, gap = 10;   // the gap covers the signs bobbing out of step
@@ -1138,7 +1139,7 @@ const EVENT_SCENES = { 'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-w
 function eventRoom(node) {
   const event = EVENTS_BY_ID[node.event.id];
   const back = () => eventRoom(node);
-  const { options, leave = true, sub = event.text, figures } = EVENT_CHOICES[event.id](event, node.event, back);
+  const { options, leave = true, sub = event.text, figures, vitals } = EVENT_CHOICES[event.id](event, node.event, back);
   const scene = EVENT_SCENES[event.id];
   showChoice({
     title: `${event.icon} ${event.name}`,
@@ -1149,6 +1150,10 @@ function eventRoom(node) {
     layout: scene ? `event-room ${scene}-room` : '',
   });
   if (!scene) return;
+  if (vitals) {
+    $('reward-options').append(eventVitals());
+    setHpBar('event', run.hp, run.maxHp);
+  }
   // people and Pokémon standing in the scene (the grunt and his Alpha) are real sprites, on the scene's `stands`
   for (const [stand, { src, alpha }] of Object.entries(figures || {})) {
     const sprite = el('img', `event-figure${alpha ? ' alpha' : ''}`);
@@ -1160,6 +1165,37 @@ function eventRoom(node) {
   }
   showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type });
   placeEventSpots();
+}
+
+/** Your Pokémon's HP, big, under the title of an event where HP decides the choice (the Hot Spring's soak or dip, an
+    HP price), like its battle nameplate; the top bar's little plate steps aside for it. */
+function eventVitals() {
+  const plate = el('div', 'nameplate event-vitals');
+  const title = el('div', 'nameplate-title');
+  title.append(el('strong', '', stageName(run.starter, run.stage)));
+  const bar = el('div', 'gb-hp');
+  bar.id = 'event-hp';
+  bar.setAttribute('role', 'progressbar');
+  bar.setAttribute('aria-label', 'Your HP');
+  bar.setAttribute('aria-valuemin', '0');
+  const tag = el('span', 'gb-hp-tag', 'HP:'), track = el('span', 'gb-hp-track'), fill = el('span', 'gb-hp-fill');
+  tag.setAttribute('aria-hidden', 'true');
+  fill.id = 'event-hp-fill';
+  track.append(fill);
+  bar.append(tag, track);
+  const foot = el('div', 'nameplate-foot'), nums = el('span', 'gb-hp-num');
+  nums.id = 'event-hp-text';
+  foot.append(nums);
+  plate.append(title, bar, foot);
+  return plate;
+}
+
+/** Run the event's HP bar to your new HP, and give it a moment to be seen before the room closes. */
+async function showHpChange() {
+  if (!$('event-hp')) return;
+  setHpBar('event', run.hp, run.maxHp);
+  showChoiceHp();
+  await sleep(1000);
 }
 
 /** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. */
@@ -1194,6 +1230,8 @@ function placeEventSpots() {
     const [, bottom, left, right] = spriteFit(sprite.src);
     Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
+  const vitals = box.querySelector('.event-vitals'), title = $('reward-title');
+  if (vitals) vitals.style.top = `${title.getBoundingClientRect().bottom + 10}px`;
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
   liftRoomLog();
   spreadSigns(box);
@@ -1204,11 +1242,12 @@ const EVENT_CHOICES = {
   'berry-tree'(event) {
     const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.eatHeal));
     const grow = perBiome(event.plantMaxHp);
-    return { sub: [event.text, 'Eat the berries to heal, or plant one to grow stronger.'], options: [
+    return { vitals: true, sub: [event.text, 'Eat the berries to heal, or plant one to grow stronger.'], options: [
       spotOption(heal ? `Eat +${heal} HP` : 'Eat', heal ? `Heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
         if (!await playOut('eat')) return;
         run.hp += heal;
         playSound('heal-hp');
+        await showHpChange();
         tell(`Healed ${heal} HP.`);
         showMap();
       }),
@@ -1217,6 +1256,7 @@ const EVENT_CHOICES = {
         run.maxHp += grow;
         run.hp += grow;
         playSound('stat-up');
+        await showHpChange();
         tell(`Max HP +${grow}!`);
         showMap();
       }),
@@ -1250,11 +1290,12 @@ const EVENT_CHOICES = {
   'item-ball'(event, state) {
     const damage = Math.min(run.hp - 1, perBiome(event.trapDamage));
     preloadSounds('ball-open', 'hit');
-    return { sub: [event.text, 'It could hold a relic. It could also explode.'], options: [
+    return { vitals: true, sub: [event.text, 'It could hold a relic. It could also explode.'], options: [
       spotOption('Pick it up', 'A relic... or a Voltorb that explodes.', async () => {
         if (!await playOut('pickup', { trap: state.trap })) return;
         if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
+        await showHpChange();
         tell(`It was a Voltorb! It exploded for ${damage} damage.`);
         showMap();
       }),
@@ -1264,19 +1305,21 @@ const EVENT_CHOICES = {
   'hot-spring'(event) {
     const loss = perBiome(event.soakMaxHpLoss);
     const dip = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.dipHeal));
-    return { sub: [event.text, `Soak in the big pool for a full heal (max HP -${loss}), or take a quick dip.`], options: [
-      spotOption('Soak: full HP', `Fully heal, but lose ${loss} max HP.`, async () => {
+    return { vitals: true, sub: [event.text, `Soak in the big pool for a full heal (max HP -${loss}), or take a quick dip.`], options: [
+      spotOption('Soak: full HP', `Fully heal to ${run.maxHp - loss}/${run.maxHp - loss} HP, but lose ${loss} max HP.`, async () => {
         if (!await playOut('soak')) return;
         run.maxHp -= loss;
         run.hp = run.maxHp;
         playSound('heal-hp');
+        await showHpChange();
         tell(`Fully healed. Max HP -${loss}.`);
         showMap();
       }),
-      spotOption(dip ? `Dip +${dip} HP` : 'Dip', dip ? `Heal ${dip} HP.` : 'You\'re already at full HP.', async () => {
+      spotOption(dip ? `Dip +${dip} HP` : 'Dip', dip ? `Heal ${dip} HP, to ${run.hp + dip}/${run.maxHp}.` : 'You\'re already at full HP.', async () => {
         if (!await playOut('dip')) return;
         run.hp += dip;
         playSound('heal-hp');
+        await showHpChange();
         tell(`Healed ${dip} HP.`);
         showMap();
       }),
@@ -1288,7 +1331,7 @@ const EVENT_CHOICES = {
     const flee = Math.ceil(run.maxHp * event.fleeHp);
     const node = run.map.byId[run.current];
     const foe = ENEMY_DEFS[state.enemyId];
-    return { leave: false, figures: {
+    return { leave: false, vitals: true, figures: {
       trainer: { src: `assets/trainers/${state.grunt || event.grunts[0]}.gif` },
       mon: { src: foe.image, alpha: true },
     }, sub: [event.text, `Pay ₽${toll}, battle the grunt's Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
@@ -1307,6 +1350,7 @@ const EVENT_CHOICES = {
         gruntDoes('shake');
         if (!await playOut('run')) return;
         loseHp(flee);
+        await showHpChange();
         tell(`Got away, but lost ${flee} HP.`);
         showMap();
       }),
@@ -1371,10 +1415,11 @@ const EVENT_CHOICES = {
     const cost = perBiome(event.offering);
     const relic = state.relics.map(id => RELICS_BY_ID[id]).find(r => !run.relics.includes(r.id));
     if (!relic) return { options: [spotOption('Pray', 'The shrine has nothing left to give you.', () => {}, true)] };
-    return { sub: [event.text, `Offer ${cost} HP in prayer, and it will give you ${relic.name}: ${relic.text}`], options: [
+    return { vitals: true, sub: [event.text, `Offer ${cost} HP in prayer, and it will give you ${relic.name}: ${relic.text}`], options: [
       spotOption(`Pray -${cost} HP`, `Receive ${relic.icon} ${relic.name}: ${relic.text}`, async () => {
         if (!await playOut('pray')) return;
         loseHp(cost);
+        await showHpChange();
         revealGift(relic, [`The shrine gave you ${relic.name}!`, relic.text], () => gainRelic(relic, showMap));
       }, run.hp <= cost),
     ] };
