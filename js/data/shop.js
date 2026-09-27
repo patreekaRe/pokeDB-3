@@ -16,8 +16,8 @@
    Costs are tuned against roughly what a run earns (see run.js's
    COIN_REWARDS): a run that dies partway through earns ~80-100 coins,
    a full clear ~230-250 at Level 0 and ~350 at Level 5 (COIN_LEVEL_BONUS),
-   plus 450 once for the Pokédex pages. Everything here costs ~8100:
-   skins 1200, perks 3130, shinies 3750, so ~35 runs buy it all and
+   plus 450 once for the Pokédex pages. Everything here costs ~11100:
+   skins 3000, perks 3130, shinies 4950, so ~45 runs buy it all and
    the shinies (cosmetic) are the long tail.
    ============================================================ */
 
@@ -29,6 +29,12 @@ export const SKIN_SHOP_ITEMS = [
   { id: 'tepig',     cost: 250 },
   { id: 'snivy',     cost: 250 },
   { id: 'oshawott',  cost: 250 },
+  { id: 'budew',     cost: 300 },
+  { id: 'sewaddle',  cost: 300 },
+  { id: 'lotad',     cost: 300 },
+  { id: 'horsea',    cost: 300 },
+  { id: 'spheal',    cost: 300 },
+  { id: 'tympole',   cost: 300 },
 ];
 
 /** Permanent passive perks. `maxLevel` > 1 means it can be bought more than once, at rising cost. */

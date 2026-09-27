@@ -60,7 +60,12 @@ to `main` (see Conventions), not open a branch or PR.
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
   sprite/name/blurb. `skinOf` on a skin entry is documentation only; code
-  never reads it.
+  never reads it. 12 are Game Corner skins (`SKIN_SHOP_ITEMS`): the Gen 2/5 starters (150/250) and, since step 9a,
+  Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole (300; a row of Grass, then Water, in the starter grid). A new starter
+  needs front/back GIFs and their `shiny/` pair for every stage (PokeAPI black-white animated), `SPRITE_FIT` lines for
+  the normal ones (a PIL median bbox over all frames matches the ImageDecoder numbers exactly), and a cry in `CRIES`
+  (play.pokemonshowdown.com is blocked in cloud sessions: PokeAPI's `cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3
+  at ~-14 dB mean, see the roadmap's step 3).
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
   `-shiny` suffixed sprite id for a visual payoff on final evolution.
@@ -250,7 +255,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny toggle on the starter sheet
   (`#shiny-toggle`) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
   (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows;
-  a legendary's final stage is already shiny. The 90 GIFs are PokeAPI's black-white animated `shiny/` and
+  a legendary's final stage is already shiny. The 126 GIFs are PokeAPI's black-white animated `shiny/` and
   `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
   `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
   burst of ✨ (`shinySparkle()` in `js/battle.js`).

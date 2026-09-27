@@ -369,6 +369,15 @@ What the overnight chain did, one session per big step (details and bot numbers 
    - Needs: starter entries, 6 + 6 shiny sprites each (legendaries 2 + 2), cries (PokeAPI, see step 3), `SPRITE_FIT`
      entries, achievement stats (deck size at the win, no-rest win, max Tide), and the Game Corner rows. Mewtwo stays "unlock
      every other Pokémon" for now; the user will adjust it later.
+   - **9a, the 6 Game Corner skins: done (2026-09-27, chain session).** Budew, Sewaddle, Lotad (Grass) and Horsea, Spheal,
+     Tympole (Water), 300 PokéCoins each at the end of the Game Corner's Pokémon row, and a 200 shiny each (the skin price in
+     `SHINY_COSTS`). 72 GIFs (front/back, normal and shiny, for all 18 stages), 18 cries (PokeAPI's, converted like step 3's:
+     Showdown's are still blocked), 36 `SPRITE_FIT` lines. In the starter grid they sit after the Gen 5 skins, a row of Grass
+     then a row of Water (no Fire skin, so the grid's usual fire/grass/water columns would have a gap). No save change: old
+     saves load as before. Checked headless at 390x844, 375x667 and 1366x900: buying a skin and its shiny, a run and a fight
+     with each type (shiny and normal back sprites), no console errors.
+     **For the user to check:** the blurbs are mine; the cries' loudness by ear; whether 300 feels right (the shop's total is
+     now ~11100 coins). Mewtwo's "unlock every other Pokémon" now needs these six too; a save that already had Mewtwo keeps it.
    **Run in: CLOUD.** Session prompt (repeat for the next batch):
    > Do roadmap step 9, more starters (read CLAUDE.md and docs/roadmap.md first). Add the next 4-6 starters from the list
    > (start with the 6 Game Corner skins), with normal and shiny sprites from PokeAPI, cries, SPRITE_FIT entries and their
