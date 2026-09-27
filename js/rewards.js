@@ -65,15 +65,37 @@ export function evolutionChoices(run) {
   return pool.sort(() => Math.random() - 0.5).slice(0, 2);
 }
 
+/** StS's relic tiers: each relic offered rolls common / uncommon / rare by these weights (StS's 50 / 33 / 17),
+    leaning rarer after an elite and in a treasure room. */
+export const RELIC_ODDS = {
+  normal:   { common: 50, uncommon: 33, rare: 17 },
+  elite:    { common: 35, uncommon: 40, rare: 25 },
+  treasure: { common: 20, uncommon: 50, rare: 30 },
+};
+const TIERS = ['common', 'uncommon', 'rare'];
+
 /**
- * Pick up to 3 relics you don't already have and that suit your starter.
+ * Pick up to 3 relics you don't already have and that suit your starter. Each one rolls a tier (RELIC_ODDS by
+ * `source`: 'normal', 'elite' or 'treasure'); a tier with nothing left falls to the next one up, then down, like StS.
  * A boss offers its own boss relics, or the normal pool once you hold them all.
  */
-export function relicChoices(run, { boss = false } = {}) {
+export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
   const fits = RELICS.filter(r => !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
   const bossPool = boss ? fits.filter(r => r.boss) : [];
-  const pool = bossPool.length ? bossPool : fits.filter(r => !r.boss);
-  return pool.sort(() => Math.random() - 0.5).slice(0, 3);
+  if (bossPool.length) return bossPool.sort(() => Math.random() - 0.5).slice(0, 3);
+  let pool = fits.filter(r => !r.boss);
+  const odds = RELIC_ODDS[source] || RELIC_ODDS.normal;
+  const chosen = [];
+  while (chosen.length < 3 && pool.length) {
+    let roll = Math.random() * TIERS.reduce((sum, t) => sum + odds[t], 0);
+    const at = TIERS.findIndex(t => (roll -= odds[t]) < 0);
+    const order = [...TIERS.slice(at), ...TIERS.slice(0, at).reverse()];
+    const tier = order.map(t => pool.filter(r => r.rarity === t)).find(list => list.length);
+    const relic = tier[Math.floor(Math.random() * tier.length)];
+    chosen.push(relic);
+    pool = pool.filter(r => r !== relic);
+  }
+  return chosen;
 }
 
 /* ---------- the screen ---------- */

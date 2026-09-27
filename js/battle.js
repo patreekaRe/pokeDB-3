@@ -22,7 +22,7 @@
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { ABILITIES } from './data/relics.js';
+import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { SPRITE_FIT } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar } from './ui.js';
 import { showScene, setStorm } from './scene.js';
@@ -32,6 +32,7 @@ import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSound
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
 const MAX_HAND = 10;       // like StS: draws stop and new cards go to the discard pile once the hand is full
+const ROOM_SERVICE_CAP = 6;   // the Room Service boss relic's cards per turn (StS's Velvet Choker)
 const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
@@ -114,6 +115,7 @@ export function startBattle({ run, encounter, onEnd }) {
     blockNext: 0,      // block waiting for your next turn (Shelter)
     blur: 0,           // turns your block survives the start of your turn (Aqua Veil)
     strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
+    firstAttack: run.relics.includes('dragon-fang'),   // Dragon Fang's bonus is still waiting for your first attack
     flex: 0,           // the part of `strength` that goes away at the end of this turn (Rototiller, StS's Flex)
     healedThisTurn: false,   // healed on this turn of yours (Grassy Glide)
     pledged: false,    // Grass Pledge has already paid out this turn
@@ -139,9 +141,9 @@ export function startBattle({ run, encounter, onEnd }) {
       maxHp: encounter.maxHp,
       block: 0,
       dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
-      strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
+      strength: run.relics.includes('griseous-orb') ? 2 : 0,   // gained in the fight (buff moves, Enrage, Griseous Orb), shown as a badge
       burn: run.relics.includes('flame-orb') ? 3 : 0,
-      seed: 0,                        // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
+      seed: run.relics.includes('gooey-mulch') ? 2 : 0,   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
       weak: 0,                        // turns left dealing WEAK_MULT damage
       vulnerable: 0,                  // turns left taking VULNERABLE_MULT damage from your attacks
@@ -235,14 +237,17 @@ function beginPlayerTurn() {
   const b = battle;
   b.turn += 1;
   const p = b.powers;
-  // block only lasts one round, unless Shell Armor or Aqua Veil keeps it
-  const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (p.blockEachTurn || 0) + b.blockNext;
-  b.block = (p.keepBlock || b.blur ? b.block : 0) + fresh;
+  // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
+  const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (b.turn === 2 && hasRelic('stone-plate') ? 12 : 0)
+    + (hasRelic('eviolite') ? 3 : 0) + (p.blockEachTurn || 0) + b.blockNext;
+  b.block = (p.keepBlock || b.blur ? b.block : hasRelic('everstone') ? Math.max(0, b.block - 10) : 0) + fresh;
   if (b.blur) b.blur -= 1;
   b.blockNext = 0;
   if (b.block) statFx('player');
-  const bossEnergy = ['choice-band', 'choice-specs', 'toxic-orb'].filter(hasRelic).length;
-  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy;
+  const bossEnergy = ENERGY_RELICS.filter(hasRelic).length;
+  const leftover = hasRelic('casteliacone') ? b.energy : 0;   // Casteliacone (StS's Ice Cream): unspent PP carries over
+  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy + leftover
+    + (b.turn === 1 && hasRelic('lemonade') ? 1 : 0);
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
   b.played = b.attacks = b.discarded = 0;
@@ -250,6 +255,7 @@ function beginPlayerTurn() {
   b.healedThisTurn = false;
   b.endure = false;
   b.pledged = false;
+  b.sludged = false;   // Black Sludge's HP is paid on the turn's first attack
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
   if (p.brutality) loseHp(p.brutality);
@@ -261,10 +267,18 @@ function beginPlayerTurn() {
   if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
+  if (hasRelic('blue-flute')) gainTide(1);
   if (fresh && p.riptide) riptide();
+  if (hasRelic('spelon-berry') && b.enemy.burn >= 2) {
+    const dealt = hurtEnemy(Math.floor(b.enemy.burn / 2));
+    hitEffect('enemy-portrait-box');
+    pop('enemy-zone', `-${dealt} 🔥`, 'dmg', 150);
+    playSound('burn');
+  }
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
-    + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0));
-  if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block
+    + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0));
+  if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
+  if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry
   b.busy = false;
   renderAll();
 }
@@ -282,6 +296,7 @@ function healPlayer(amount) {
     pop('player-zone', `+${healed} HP`, 'heal');
     b.healedThisTurn = true;
     if (b.powers.healStrength && !b.pledged) { b.pledged = true; gainStrength(b.powers.healStrength); }
+    if (hasRelic('enigma-berry')) { const dealt = hurtEnemy(healed); pop('enemy-zone', dealt > 0 ? `-${dealt} 🫐` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }
   }
   if (amount > healed && b.powers.overheal) gainBlock(amount - healed);
   return healed;
@@ -290,6 +305,7 @@ function healPlayer(amount) {
 /** Gain strength (a card, a power, a relic): Harvest heals for it. `flex` strength goes away at the end of the turn. */
 function gainStrength(n, note = `💪 +${n}`, { flex = false } = {}) {
   const b = battle;
+  if (hasRelic('muscle-wing')) { n += 1; note = `💪 +${n}`; }
   b.strength += n;
   if (flex) b.flex += n;
   pop('player-zone', note, 'note good');
@@ -314,6 +330,7 @@ function applyDebuff(kind, n) {
     pop('enemy-zone', dealt > 0 ? `-${dealt} 🍄` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200);
   }
   if (kind === 'weaken' && b.powers.weakBlock) gainBlock(b.powers.weakBlock);
+  if (kind === 'vulnerable' && hasRelic('toxic-plate')) applyDebuff('weaken', 1);
 }
 
 /** How many kinds of debuff the enemy has: Weak, Vulnerable, Leech Seed, Sap, Burn (Leaf Tornado, Pollen Puff). */
@@ -343,7 +360,11 @@ function loseHp(n) {
 function markHurt() {
   battle.hurtThisTurn = true;
   battle.timesHurt += 1;
+  if (hasRelic('salac-berry')) draw(1);   // Salac Berry (StS's Runic Cube): a card for every HP loss, the enemy's hits too
 }
+
+/** Lum Berry (StS's Medical Kit): status cards can be played for 0 PP, and exhaust. */
+const lumCures = (card) => !!card.status && hasRelic('lum-berry');
 
 /** Blue Flare (StS's Corruption): cards that aren't attacks or powers cost 0 and exhaust. */
 const corrupts = (card) => !!battle.powers.corruption && !isAttack(card) && !card.power && !card.status;
@@ -352,7 +373,7 @@ const corrupts = (card) => !!battle.powers.corruption && !isAttack(card) && !car
     Ebb and Flow's retained cards by their `discount`, and Blue Flare makes non-attacks free. */
 function costOf(card) {
   if (card.cost === 'X') return 'X';
-  if (corrupts(card)) return 0;
+  if (corrupts(card) || lumCures(card)) return 0;
   const e = card.effects;
   return Math.max(0, card.cost - (e.costDownOnHurt || 0) * battle.timesHurt - (e.costDownOnDiscard || 0) * battle.discarded - (card.discount || 0));
 }
@@ -373,8 +394,11 @@ function draw(count) {
   const b = battle;
   for (let i = 0; i < count; i++) {
     if (b.hand.length >= MAX_HAND) return;
-    const card = drawTop();
-    if (!card) return;                           // nothing left anywhere
+    const top = drawTop();
+    if (!top) return;                            // nothing left anywhere
+    // Max Mushrooms (StS's Snecko Eye): a drawn card costs 0-3 while it's in your hand (settled() puts it back)
+    const card = hasRelic('max-mushrooms') && typeof top.cost === 'number' && !top.unplayable
+      ? { ...top, cost: Math.floor(Math.random() * 4), orig: top } : top;
     b.hand.push({ uid: nextUid++, card, fresh: true });
   }
 }
@@ -383,7 +407,8 @@ function draw(count) {
 function whyNotPlayable(card) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
-  if (card.unplayable) return `${card.name} can't be played.`;
+  if (card.unplayable && !lumCures(card)) return `${card.name} can't be played.`;
+  if (hasRelic('room-service') && b.played >= ROOM_SERVICE_CAP) return `Room Service: only ${ROOM_SERVICE_CAP} cards a turn.`;
   if (costOf(card) > b.energy) return 'Not enough PP!';   // an X card ('X') is always playable, even with 0 PP
   if (card.effects.needsWounded && b.hp >= b.maxHp) return `${card.name} only works when you're hurt.`;
   if (card.effects.needsEmptyDraw && b.drawPile.length) return `${card.name} only works when your draw pile is empty.`;
@@ -442,6 +467,8 @@ function damageFor(card, e) {
   // relics
   if (hasRelic('muscle-band')) amount += 2;
   if (card.type === b.starter.type && hasRelic(TYPE_RELIC[card.type])) amount += 2;
+  if (hasRelic('black-sludge')) amount += 3;
+  if (b.firstAttack) amount += 10;   // Dragon Fang
 
   const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
 
@@ -477,6 +504,7 @@ async function playCard(uid) {
 
   if (battle !== b) return;                      // the player left the battle
   if (b.enemy.hp <= 0) return finish(true);
+  if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Magnet', 'note good'); }
   b.busy = false;
   renderAll();
 }
@@ -539,7 +567,11 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
     const total = hits.length > 1 ? `${hits.join(' + ')} damage` : `${hits[0]} damage`;
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
+    b.firstAttack = false;
     if (hasRelic('shell-bell')) healPlayer(1);
+    if (hasRelic('black-sludge') && !b.sludged) { b.sludged = true; loseHp(1); }
+    if (b.attacks % 3 === 0 && hasRelic('protein')) gainStrength(1, '💪 +1 Protein');
+    if (b.attacks % 3 === 0 && hasRelic('fist-plate')) gainBlock(4);
     if (e.healDealt && healPlayer(through)) playSound('heal-hp');
     if (through > 0 && b.powers.attackHeal && healPlayer(b.powers.attackHeal)) playSound('heal-hp');
     if (e.perTide) spendTide();
@@ -572,7 +604,8 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
 
   // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
   if (card.power) b.exhaust.push(settled(card));  // powers leave the fight, but aren't "exhausted" (no triggers)
-  else if (card.exhaust || exhaust || corrupts(card)) exhaustCard(card);
+  else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
+  if (lumCures(card)) draw(1);
   else b.discard.push(settled(card));
   if (card.power && hasRelic('power-herb')) draw(1);
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
@@ -637,7 +670,7 @@ function timesEach(extras, n) {
 
 /** Burn the enemy (Drought adds to every Burn a card or power applies). */
 function burnEnemy(n, delay = 0) {
-  const add = n + (battle.powers.drought || 0);
+  const add = n + (battle.powers.drought || 0) + (hasRelic('tamato-berry') ? 2 : 0);
   battle.enemy.burn += add;
   pop('enemy-zone', `🔥 Burn ${add}`, 'note', delay);
 }
@@ -672,7 +705,7 @@ function spendTide() {
   const b = battle;
   const spent = b.tide;
   if (!spent) return 0;
-  b.tide = 0;
+  b.tide = hasRelic('lustrous-orb') ? Math.floor(spent / 2) : 0;
   pop('player-zone', `🌊 ${spent} Tide spent`, 'note', 200);
   if (b.powers.tideSpendBlock) gainBlock(spent * b.powers.tideSpendBlock);
   return spent;
@@ -727,6 +760,18 @@ function exhaustCard(card) {
   if (b.powers.exhaustDraw) draw(b.powers.exhaustDraw);
   if (b.powers.exhaustBurn) burnEnemy(b.powers.exhaustBurn, 150);
   if (hasRelic('eject-pack')) draw(1);
+  if (hasRelic('smoke-poke-tail')) { const dealt = hurtEnemy(4); pop('enemy-zone', dealt > 0 ? `-${dealt} 💨` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200); }
+  if (hasRelic('dawn-stone')) addTypeCard();
+}
+
+/** Dawn Stone (StS's Dead Branch): a random card of your type into your hand (the discard pile once it's full). */
+function addTypeCard() {
+  const b = battle;
+  const pool = typePool(b.starter.type).filter(c => !c.evoOnly);
+  const card = pool[Math.floor(Math.random() * pool.length)];
+  if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
+  else b.discard.push(card);
+  pop('player-zone', `💎 ${card.name}`, 'note good', 250);
 }
 
 /** Fusion Flare (StS's Exhume): a card from the exhaust pile back into your hand (never a power or another Exhume). */
@@ -785,6 +830,7 @@ function discardFromHand(entry) {
   if (entry.card.onDiscard) applyEffects(entry.card.onDiscard);
   if (b.powers.discardTide) gainTide(b.powers.discardTide);
   if (b.powers.discardBlock) gainBlock(b.powers.discardBlock);
+  if (hasRelic('heart-scale')) gainBlock(3);
 }
 
 /**
@@ -851,6 +897,7 @@ async function useItem(index) {
   renderAll();
   await sleep(220);
   if (battle !== b) return;
+  if (b.enemy.hp <= 0) return finish(true);   // Enigma Berry off a Potion
   b.busy = false;
   renderAll();
 }
@@ -926,12 +973,13 @@ async function endTurn() {
   const fading = b.hand.filter(h => h.card.ethereal);
   b.hand = b.hand.filter(h => !h.card.ethereal);
   fading.forEach(h => exhaustCard(h.card));
+  if (b.enemy.hp <= 0) { renderAll(); return finish(true); }   // Smoke-Poke Tail off a faded card
 
-  // Discard whatever is left in your hand, except cards that retain.
+  // Discard whatever is left in your hand, except cards that retain (Slowpoke Tail, StS's Runic Pyramid: all of it).
   // Grip Claw also keeps the leftmost card that would have been discarded, and Still Waters lets you pick more.
   const gripped = hasRelic('grip-claw') ? b.hand.find(h => !h.card.retain) : null;
-  const kept = new Set(b.hand.filter(h => h.card.retain || h === gripped));
-  if (b.powers.retainN) {
+  const kept = new Set(b.hand.filter(h => h.card.retain || h === gripped || hasRelic('slowpoke-tail')));
+  if (b.powers.retainN && kept.size < b.hand.length) {
     await pickFromHand(b.powers.retainN, 'keep', (h) => kept.add(h), (h) => !kept.has(h));
     if (battle !== b) return;
   }
@@ -970,7 +1018,7 @@ async function enemyTurn() {
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
     log(`${b.def.name} took ${burnDamage} burn damage.`);
     playSound('burn');
-    if (hasRelic('heat-rock')) healPlayer(1);
+    if (hasRelic('heat-rock')) healPlayer(2);
     renderAll();
     await sleep(600);
     if (battle !== b) return;
@@ -1246,6 +1294,14 @@ function renderIntent() {
   if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; return; }
 
   const move = currentMove();
+  if (hasRelic('dusk-stone')) {
+    // Dusk Stone (StS's Runic Dome): the enemy's next move stays hidden
+    box.className = 'intent status';
+    delete box.dataset.move;
+    box.replaceChildren(el('span', 'intent-icon', '❓'), el('b', 'intent-value', '?'), el('span', 'intent-name', '???'));
+    box.title = 'Dusk Stone: you can\'t see what the enemy will do next.';
+    return;
+  }
   let icon = '⚔️', value = '', kind = 'attack', detail = '';
   if (move.kind === 'attack' || move.kind === 'drain') {
     icon = move.kind === 'drain' ? '🩸' : '⚔️';

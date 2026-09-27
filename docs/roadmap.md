@@ -171,7 +171,7 @@ steps land (mark them done, note anything decided along the way).
       - The replaced Pokémon's sprites, cries and sprite-fit entries are gone (nothing else used them). Checked headless:
         every new one's intro, size and intent bubble. The sim (`pokeDB-sim`) still needs its enemy ids mirrored
         (variants such as `oldStatus`, `gloomPoison1`): this session couldn't attach that repo.
-   11. **NEXT: more relics and items, and Water's catch-up** (agreed 2026-09-27: ~30 relics and ~8 items, so the
+   11. **More relics and items, and the Fire/Water catch-up** (agreed 2026-09-27: ~30 relics and ~8 items, so the
       pool goes 28 → ~58 relics and 12 → ~20 items; a run sees ~41 relics, 3-4 runs' worth, like StS's ratio).
       Two sessions:
       - **11a: relics.** **Run in the CLOUD** (both repos). Session prompt:
@@ -184,11 +184,26 @@ steps land (mark them done, note anything decided along the way).
         > replacing the lone `rare` flag's role where it fits. Recalibrate sim/ranks.json (calibrate()) so the bot picks
         > relics by value, then a human-bot pass at Levels 0/3/5 (300+ runs/cell): keep Level 0 near ~75%. Update
         > CLAUDE.md and the roadmap and push both repos to main.
-      - **11b: items and Water's catch-up.** **Run in the CLOUD** (both repos). Session prompt:
+      - **11a done (2026-09-27).** 30 relics (58 in all), rarity tiers, PokéSprite art; the list and what each is modelled
+        on are in CLAUDE.md's Relics. The sim mirrors them all, ranks.json is recalibrated (200 runs/relic/type) and the
+        sim has a browser-free runner (`sim/run-node.mjs`, README). Human bot, 400 runs/cell, fire / grass / water:
+        before (the 28 old relics, 300 runs) L0 74.3 / 72.7 / 70.3, L3 62.3 / 55.0 / 48.7, L5 33.0 / 30.0 / 30.3;
+        after L0 71.3 / 79.3 / 73.3, L3 51.5 / 55.5 / 51.0, L5 27.3 / 28.8 / 26.3. What moved it: this game leans on
+        relics hard (with none, even the strong bot wins ~10% at L0), so 30 middling relics thinned Fire's and Water's
+        offers of the healing ones (Fire L3 62 -> 44 at first; with the new relics banned from the pool it's 61 again).
+        Retuned: Tamato Berry +2 (it was never wired in), Black Sludge's HP only on the turn's first attack, Salac Berry
+        on every HP loss, Smoke-Poke Tail 4, Big Malasada 15, Eviolite 3 block every turn (Orichalcum never fired for
+        Water), Lum Berry also draws, Dragon Fang 10, Gooey Mulch 2 Seed, and the old Heat Rock heals 2 per burn tick
+        (Fire L0 68 -> 71, L3 43 -> 52). No effect: Spelon Berry at full Burn, Griseous Orb at 1 strength, Leftovers
+        and Shell Bell as commons (all within noise). The bot never builds for Fire's combo relics (Dawn Stone, Spelon
+        Berry, Smoke-Poke Tail), as with its combo cards: those are for playtests.
+        Parked during this session: the user's "make the game explain itself" notes (Anytime list below).
+      - **11b: items and the Fire/Water catch-up.** **Run in the CLOUD** (both repos). Session prompt:
         > Do roadmap step 6c.11b (read CLAUDE.md and docs/roadmap.md first): add ~8 items (StS potions, PokéSprite art),
-        > including one per type that feeds an archetype (e.g. Water gaining Tide). Water trails Fire/Grass by ~10 at
-        > Levels 3/5: try small Water buffs (Withdraw 7 was far too much). Human-bot pass at Levels 0/3/5 (300+
-        > runs/cell), Level 0 near ~75%. Update CLAUDE.md and the roadmap and push both repos to main.
+        > including one per type that feeds an archetype (e.g. Water gaining Tide). Since the 6c.11a relics, Levels 3/5
+        > are ~2-4 points harder than before and Fire/Water trail Grass a little there: try small buffs (Withdraw 7 was
+        > far too much for Water). Run the bot with `sim/run-node.mjs` (see its README). Human-bot pass at Levels 0/3/5
+        > (300+ runs/cell), Level 0 near ~75%. Update CLAUDE.md and the roadmap and push both repos to main.
 7. **Pokédex, then catching** (2–3 sessions). Each completed biome page grants a permanent perk
    (the user's idea, 2026-09-26), on top of the achievement and PokéCoins below.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
@@ -213,6 +228,17 @@ Anytime, as a break from number work:
   treasure grotto. See CLAUDE.md's ? events.
 - **Hot Spring close-up** (the user's idea, 2026-09-27): it "feels far away"; a very close view, as if you're about
   to step in. Likewise its own `PLACE_ART` scene rather than a prop on the outdoor scene.
+- **Make the game explain itself** (the user's notes, 2026-09-27, parked while 11a ran; do after the 11 sessions):
+  - **Starter Abilities are easy to miss**: the user only found theirs in the Bag's Relics pocket. Ideas: an always-on
+    Ability badge on your nameplate (tap for its text), a Gen 5-style "Charmander's Blaze" banner whenever it triggers
+    (Blaze turning on, Torrent at a fight's start, Overgrow after a win), a line on the map's run card, and a clearer
+    Ability line on the starter sheet.
+  - **Keyword tips**: Ethereal, Exhaust, Retain, Tide, Burn, Leech Seed and the rest are only explained in the card
+    text's `title` (`termTips()` / `keywords()` in `js/data/cards.js`), which a phone can't reach on a hand card (a tap
+    picks it). StS's way: little keyword boxes beside the card whenever it's blown up (battle's lifted card, `zoomCard()`,
+    the reward focus).
+  - **Show your HP on event screens**: the Hot Spring's choice (soak vs dip) depends on your HP, but nothing there
+    shows it. A small `.gb-hp` plate on every `showChoice` screen during a run (events, Center, Mart) would do.
 - Missing sound files `hit-super` / `hit-weak` (they fall back to `hit`; the user supplies MP3s).
 - Mewtwo's Psychic deck (much later).
 

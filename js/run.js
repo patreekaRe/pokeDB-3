@@ -43,9 +43,9 @@ export const isRunActive = () => run !== null && !run.over;
    ============================================================ */
 export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 50 };
 
-/** Pick one random relic for the Starting Relic Charm passive (never a rare or boss one - those are meant to be found; Cleanse Tag only works when picked up). */
+/** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
-  const pool = RELICS.filter(r => !r.rare && !r.boss && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
+  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -373,7 +373,11 @@ function enterNode(node) {
   if (node.type === 'rest' || node.type === 'shop') playSound('door');
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
-  if (node.type === 'shop') return martRoom();
+  if (node.type === 'shop') {
+    const healed = run.relics.includes('big-malasada') ? Math.min(15, run.maxHp - run.hp) : 0;
+    if (healed) { run.hp += healed; playSound('heal-hp'); tell(`You ate the Big Malasada. +${healed} HP!`); }
+    return martRoom();
+  }
   if (node.type === 'event') { playSound('event'); return eventRoom(node); }
   fight(node);   // 'fight', 'elite' or 'boss'
 }
@@ -422,7 +426,7 @@ function afterFight(node, result) {
 
   const steps = [];   // screens to show one after another
   if (node.type === 'fight') steps.push(next => offerCard('fight', next));
-  if (node.type === 'elite') steps.push(next => offerRelic('The Alpha\'s relic', next), next => offerCard('elite', next));
+  if (node.type === 'elite') steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
 
   if (node.type === 'boss') {
     updateSave(d => {
@@ -499,8 +503,8 @@ function learnOption(card, next) {
   };
 }
 
-function offerRelic(title, next, { boss = false } = {}) {
-  showRelics(title, relicChoices(run, { boss }), next);
+function offerRelic(title, next, { boss = false, source = 'normal' } = {}) {
+  showRelics(title, relicChoices(run, { boss, source }), next);
 }
 
 function showRelics(title, relics, next) {
@@ -666,7 +670,7 @@ function revealGift(thing, lines, done) {
     pops, and the relics float up out of it with no tiles round them; tap one to read it in the text box, then tap it
     again (or Take it) and it flies into the Bag. */
 function treasureRoom() {
-  const thisRun = run, relics = relicChoices(run), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const thisRun = run, relics = relicChoices(run, { source: 'treasure' }), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   showChoice({
     title: 'Treasure',
     sub: ['A chest glints in a shaft of light.', 'Tap it to open it!'],
@@ -1360,7 +1364,7 @@ function martStock() {
     items: itemChoices(run, MART_STOCK.items)
       .map(item => ({ id: item.id, price: jitter(MART_ITEM_PRICES[item.rarity]), sold: false })),
     relics: relicChoices(run).slice(0, MART_STOCK.relics)
-      .map(relic => ({ id: relic.id, price: jitter(MART_RELIC_PRICES[relic.rare ? 'rare' : 'normal']), sold: false })),
+      .map(relic => ({ id: relic.id, price: jitter(MART_RELIC_PRICES[relic.rarity]), sold: false })),
   };
 }
 

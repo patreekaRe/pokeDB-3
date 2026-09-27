@@ -636,7 +636,7 @@ body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hid
 .intent.drain  { --kind: #9048c8; }
 .intent.defend { --kind: #3878f0; }
 .intent.buff   { --kind: #30a040; }
-.intent.status { --kind: #707078; }   /* shuffles junk (a status card) into your deck */
+.intent.status { --kind: #707078; }   /* shuffles junk (a status card) into your deck, or hidden by the Dusk Stone */
 .intent.fresh { animation: intentPop 0.35s steps(4), bob 1.8s steps(2) 0.35s infinite; }
 .intent-icon { font-size: 1rem; }
 .intent-value { font-size: 1.05rem; font-weight: 400; color: #283060; }
