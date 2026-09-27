@@ -309,12 +309,14 @@ function renderRelicList() {
 }
 
 /* The Items pocket: in battle, Use picks the item like a slot does (with the same confirm step); on the map only heals can be used.
-   Items can't be used or tossed on the reward screens, where a change would be saved with the next checkpoint half-way through the rewards. */
+   Items can't be used or tossed on the reward screens, where a change would be saved with the next checkpoint half-way through the rewards,
+   except tossing in the Poké Mart, to make room for one you want to buy (saved with the purchases, when you leave). */
 function renderItemList() {
   if (!run) return;
   const screen = document.body.dataset.screen;
   const inBattle = screen === 'battle-screen' && isBattleRunning();
   const onMap = screen === 'map-screen';
+  const inMart = screen === 'reward-screen' && $('reward-options').classList.contains('mart-window');
   const rows = run.items.map((id, index) => {
     const item = ITEMS_BY_ID[id];
     const row = el('div', 'howto-li item-row');
@@ -330,10 +332,11 @@ function renderItemList() {
     });
     const toss = el('button', 'btn item-toss', 'Toss');
     toss.type = 'button';
-    toss.disabled = !onMap;
+    toss.disabled = !onMap && !inMart;
     toss.addEventListener('click', () => {
       run.items.splice(index, 1);
       tell(`Tossed the ${item.name}.`);
+      if (inMart) { renderItemList(); return martRoom(); }
       afterBagChange();
     });
     actions.append(use, toss);
@@ -1357,7 +1360,7 @@ function martRoom() {
   // forgetting a move is the PC on the counter, under a bouncing sign like the Center's; the money is only
   // taken once a card is actually forgotten, so "Back" out of the picker is free, and it needs no Buy step
   const removal = {
-    node: martPc(stock.removed ? 'Sold out' : 'Forget',
+    node: martPc(stock.removed ? 'Sold out' : `Forget 💴${removalPrice}`,
       stock.removed ? 'Only one move can be forgotten per Mart.' : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Remove one card from your deck for ₽${removalPrice}.`),
     group: 'service',
     disabled: stock.removed || atMin || removalPrice > run.money,
