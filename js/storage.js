@@ -36,7 +36,7 @@ const freshSave = () => ({
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
   seen: { relics: [], items: [] },   // ids met in a run (offered or found), unlocked in the Index; others show as silhouettes
-  dex: { seen: [], defeated: [], done: [] },   // Pokédex: enemy ids fought / beaten, and biome pages whose reward was paid
+  dex: { seen: [], defeated: [], done: [], count: {}, complete: false },   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
     runsWon: 0,
@@ -61,7 +61,7 @@ function load() {
         ...base, ...saved,
         passives: { ...base.passives, ...saved.passives },
         seen: { ...base.seen, ...saved.seen },
-        dex: { ...base.dex, ...saved.dex },
+        dex: seedCounts({ ...base.dex, ...saved.dex }),
         shiny: { ...base.shiny, ...saved.shiny },
         stats: {
           ...base.stats, ...saved.stats,
@@ -72,6 +72,12 @@ function load() {
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
+}
+
+/** Saves from before research levels knew only who was beaten: each counts as beaten once. */
+function seedCounts(dex) {
+  if (dex.count && Object.keys(dex.count).length) return dex;
+  return { ...dex, count: Object.fromEntries(dex.defeated.map(id => [id, 1])) };
 }
 
 /** A starter that was swapped out (Shaymin -> Virizion) carries its unlock and wins over to the new one. */
@@ -132,6 +138,13 @@ export function markDex(list, id) {
   data.dex[list].push(id);
   persist();
   return true;
+}
+
+/** One more defeat of this Pokémon for its Pokédex research. Returns the new count. */
+export function countDex(id) {
+  data.dex.count[id] = (data.dex.count[id] || 0) + 1;
+  persist();
+  return data.dex.count[id];
 }
 
 export function resetSave() {

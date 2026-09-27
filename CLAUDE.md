@@ -957,7 +957,13 @@ perk (`DEX_PERKS`, `hasDexPerk()`): Mom's Savings (start runs with ₽50, `DEX_S
 with a Potion), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
 `run.rerollBiome`, saved with the run). A final-boss page completion goes in the result window (`run.dexNews`). The
 Achievements window lists the three pages after the starters. Fight rooms prefer unbeaten Pokémon 2:1
-(`pickEnemyId(biome, kind, dexWeight)`). The sim mirrors the perks as `cfg.dexPerks`. The
+(`pickEnemyId(biome, kind, dexWeight)`). The sim mirrors the perks as `cfg.dexPerks`. **Research** (step 7b, Legends: Arceus-style): the save's `dex.count: { id: n }` counts
+every defeat (`countDex()`; old saves seed 1 per `defeated` id in `seedCounts()`), and each win's reward text box says
+"X defeated n/3" until the entry's `RESEARCH_GOAL` (3, bosses 2, in `js/data/pokedex.js`). At the goal it's Research
+complete: a gold mark (`.dex-mark.gold`, a gold tile), `RESEARCH_COINS` once (wild 25 / Alpha 50 / boss 100), and its entry
+shows HP and each move's numbers at that biome on Level 0 (`buildEncounter()` + `moveNumbers()`, before types). Every entry
+complete pays `DEX_COMPLETE_COINS` (1000) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
+saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. The
 top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
 hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball

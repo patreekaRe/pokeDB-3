@@ -6,13 +6,16 @@
    and moves show), and complete once you've beaten it (defeated: a
    Poké Ball mark, its flavour text and weakness), like the games'
    seen / caught. Defeating every Pokémon on a page pays its PokéCoins
-   once and turns on its perk for every run after.
+   once and turns on its perk for every run after. On top, each entry
+   counts its defeats (research, Legends: Arceus-style): at its goal it's
+   Research complete, with a gold mark and its moves' numbers.
    ============================================================ */
 
-import { ENEMY_DEFS, eliteOf } from './data/enemies.js';
-import { TYPES } from './data/cards.js';
-import { DEX_PAGES, DEX_NUMBER } from './data/pokedex.js';
-import { getSave, updateSave, markDex, awardCoins } from './storage.js';
+import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
+import { TYPES, CARDS_BY_ID } from './data/cards.js';
+import { modsFor } from './data/difficulty.js';
+import { DEX_PAGES, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS } from './data/pokedex.js';
+import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog } from './ui.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
@@ -23,6 +26,11 @@ let page = 0;
 const dexNo = (id) => `No.${String(DEX_NUMBER[id]).padStart(3, '0')}`;
 const pageOf = (id) => DEX_PAGES.find(p => p.ids.includes(id));
 const pageDone = (p, defeated) => p.ids.every(id => defeated.has(id));
+const ALL_IDS = DEX_PAGES.flatMap(p => p.ids);
+const roleOf = (id) => pageOf(id).role[id];
+const goalOf = (id) => RESEARCH_GOAL[roleOf(id)];
+const defeats = (id) => getSave().dex.count[id] || 0;
+const researched = (id) => defeats(id) >= goalOf(id);
 
 /** True once the page holding this perk is complete (its reward is paid). */
 export const hasDexPerk = (perkId) => DEX_PAGES.some(p => p.perk.id === perkId && getSave().dex.done.includes(p.biome));
@@ -36,23 +44,44 @@ export function dexSeen(id) {
 }
 
 /**
- * This Pokémon was beaten. Returns the lines to tell: its data joining the Pokédex the first
- * time, and a finished page's PokéCoins and perk (paid here, once, however the run ends).
+ * This Pokémon was beaten. Returns `{ lines, complete }`: the lines to tell (its data joining the
+ * Pokédex the first time, its research count, a finished page's PokéCoins and perk, research and
+ * whole-dex bonuses, all paid here, once, however the run ends) and whether this finished the Pokédex.
  */
 export function dexDefeated(id) {
-  if (!ENEMY_DEFS[id]) return [];
+  if (!ENEMY_DEFS[id] || !pageOf(id)) return { lines: [], complete: false };
+  const name = ENEMY_DEFS[id].name;
+  const lines = [];
   markDex('seen', id);
-  if (!markDex('defeated', id)) return [];
-  const lines = [`${ENEMY_DEFS[id].name}'s data was added to the Pokédex!`];
+  if (markDex('defeated', id)) lines.push(`${name}'s data was added to the Pokédex!`);
+
+  const goal = goalOf(id);
+  const n = countDex(id);
+  if (n < goal) lines.push(`${name} defeated ${n}/${goal}.`);
+  else if (n === goal) {
+    const coins = awardCoins(RESEARCH_COINS[roleOf(id)]);
+    lines.push(`${name} defeated ${n}/${goal}: Research complete! +${coins} PokéCoins.`);
+  }
+
   const p = pageOf(id);
   const save = getSave();
-  if (p && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
+  if (!save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });
     const coins = awardCoins(p.perk.coins);
     lines.push(`The ${p.name} page is complete! +${coins} PokéCoins.`, `New perk: ${p.perk.name}. ${p.perk.text}`);
   }
-  return lines;
+  let complete = false;
+  if (!save.dex.complete && ALL_IDS.every(researched)) {
+    updateSave(d => { d.dex.complete = true; });
+    const coins = awardCoins(DEX_COMPLETE_COINS);
+    lines.push(`Pokédex complete! Every entry's research is done. +${coins} PokéCoins!`);
+    complete = true;
+  }
+  return { lines, complete };
 }
+
+/** How many entries' research is complete, of how many. */
+export const researchCount = () => [ALL_IDS.filter(researched).length, ALL_IDS.length];
 
 /* ---------- the window ---------- */
 
@@ -71,11 +100,16 @@ function typeChip(type) {
 function entryTile(id, role, seen, defeated) {
   const def = ENEMY_DEFS[id];
   const known = seen.has(id);
-  const tile = el('button', `dex-entry${known ? '' : ' locked'}${defeated.has(id) ? ' defeated' : ''}`);
+  const done = researched(id);
+  const tile = el('button', `dex-entry${known ? '' : ' locked'}${defeated.has(id) ? ' defeated' : ''}${done ? ' researched' : ''}`);
   tile.type = 'button';
   tile.append(el('span', 'dex-no', dexNo(id)), sprite(def, 'dex-sprite'), el('strong', 'dex-name', known ? def.name : '???'));
-  if (defeated.has(id)) tile.append(el('span', 'dex-mark pokeball'));
-  tile.title = known ? `${def.name}: tap for its entry` : 'Not seen yet. Fight it in a run to fill this in.';
+  if (defeated.has(id)) {
+    tile.append(el('span', `dex-mark pokeball${done ? ' gold' : ''}`));
+    tile.append(el('span', 'dex-research', done ? '★ Research' : `${defeats(id)}/${goalOf(id)}`));
+  }
+  tile.title = !known ? 'Not seen yet. Fight it in a run to fill this in.'
+    : done ? `${def.name}: Research complete. Tap for its entry` : `${def.name}: defeated ${defeats(id)}/${goalOf(id)}. Tap for its entry`;
   tile.disabled = !known;
   if (known) tile.addEventListener('click', () => openEntry(id, role, defeated.has(id), tile));
   return tile;
@@ -116,13 +150,28 @@ function render() {
   }
   $('dex-body').replaceChildren(...body);
   $('dex-dialog').scrollTop = 0;
-  const all = DEX_PAGES.flatMap(q => q.ids);
-  $('dex-total').textContent = `${all.filter(id => defeated.has(id)).length}/${all.length} · ${all.filter(id => seen.has(id)).length} seen`;
+  const [done] = researchCount();
+  $('dex-total').textContent = `${ALL_IDS.filter(id => defeated.has(id)).length}/${ALL_IDS.length} · ${ALL_IDS.filter(id => seen.has(id)).length} seen · ★${done}`;
+  $('dex-total').title = `${ALL_IDS.filter(id => defeated.has(id)).length} defeated, ${ALL_IDS.filter(id => seen.has(id)).length} seen, ${done} with Research complete`;
   for (const btn of document.querySelectorAll('.dex-tab')) {
     const on = Number(btn.dataset.page) === page;
     btn.setAttribute('aria-selected', String(on));
     btn.tabIndex = on ? 0 : -1;
   }
+}
+
+/** A move's numbers in a fight (Research complete): attacks carry the biome's extra damage. */
+function moveNumbers(m, extra) {
+  const junk = m.adds ? `${m.adds.n ?? 1} ${CARDS_BY_ID[m.adds.card]?.name ?? m.adds.card}` : '';
+  const parts = {
+    attack: () => [`${m.amount + extra} dmg`],
+    drain: () => [`${m.amount + extra} dmg`, `heal ${m.heal}`],
+    defend: () => [`+${m.amount} block`],
+    buff: () => [`+${m.amount} strength`],
+    status: () => [],
+  }[m.kind]?.() ?? [];
+  if (junk) parts.push(`+${junk}`);
+  return parts.join(', ');
 }
 
 /** One entry blown up over the window, like a zoomed card: any tap or Escape closes it. */
@@ -138,8 +187,16 @@ function openEntry(id, role, defeated, from) {
 
   const facts = el('p', 'dex-detail-facts');
   const where = pageOf(id).name;
+  const done = researched(id);
   facts.textContent = `${ROLE_LABEL[role]} · ${where}`;
   card.append(facts);
+  if (defeated) {
+    card.append(el('p', `dex-detail-research${done ? ' done' : ''}`, done
+      ? `★ Research complete (defeated ${defeats(id)})`
+      : `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry shows its moves' numbers.`));
+  }
+  const foe = done && buildEncounter(BIOMES.findIndex(b => b.id === pageOf(id).biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
+  if (foe) card.append(el('p', 'dex-detail-hp', `HP ${foe.maxHp} · numbers at Level 0, before types`));
   if (defeated) {
     card.append(el('p', 'dex-detail-text', base.description));
     const weak = role === 'wild' && TYPES[base.type].losesTo;
@@ -153,7 +210,7 @@ function openEntry(id, role, defeated, from) {
   for (const m of def.moves) {
     const [icon, label] = MOVE_KIND[m.kind] || ['❓', m.kind];
     const li = el('li', `dex-move kind-${m.kind}`);
-    li.append(el('span', 'dex-move-icon', icon), el('span', 'dex-move-name', m.name), el('small', '', label));
+    li.append(el('span', 'dex-move-icon', icon), el('span', 'dex-move-name', m.name), el('small', '', foe ? moveNumbers(m, foe.strength) : label));
     moves.append(li);
   }
   card.append(el('h4', 'dex-moves-head', 'Moves, in order'), moves);

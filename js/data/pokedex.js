@@ -28,6 +28,13 @@ export const DEX_PERKS = {
 
 export const DEX_START_MONEY = 50;
 
+/* Research (Legends: Arceus's research levels): every entry counts its defeats. At the goal it's
+   Research complete (the entry shows each move's numbers) and pays its PokéCoins once; bosses are
+   met once per biome per run, so they need fewer. Completing every entry pays the jackpot once. */
+export const RESEARCH_GOAL = { wild: 3, elite: 3, boss: 2 };
+export const RESEARCH_COINS = { wild: 25, elite: 50, boss: 100 };
+export const DEX_COMPLETE_COINS = 1000;
+
 export const DEX_PAGES = BIOMES.map(b => ({
   biome: b.id,
   name: b.name,

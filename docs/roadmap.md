@@ -17,7 +17,7 @@ What the overnight chain did, one session per big step (details and bot numbers 
 - **8, Game Corner perks and coin economy**: Bag Pocket, Mart Card, Move Tutor Notes, Scout Report; shiny starters (a third
   Game Corner row, a ✨ toggle on the starter sheet, a sparkle in battle); PokéCoins +10% per Trainer Level. No enemy retune
   (Level 0 with no perks is ~77%); Move Tutor Notes cut to one move after the bot found two worth 8-28 points.
-- Planned with you during step 8 (not built yet): **7b, Pokédex research levels** and **9, more starters**.
+- Planned with you during step 8: **7b, Pokédex research levels** (done in the next chain) and **9, more starters**.
 
 **For you to check or decide** (the full lists are in each step's "For the user" notes):
 - Step 8: with every perk bought, Level 0 is ~96% and Level 5 ~75% (endgame easy); Move Tutor Notes is still the strongest
@@ -290,6 +290,21 @@ What the overnight chain did, one session per big step (details and bot numbers 
    > and a big one (1000) for completing every entry. Old saves must load (seed
    > counts from `dex.defeated`). Test at phone (390x844, 375x667) and PC widths with Playwright, update CLAUDE.md and the
    > roadmap, and push to main. No balance change, so no bot run is needed.
+   **Done (2026-09-27, chain session 1).** As agreed: one defeat still unlocks an entry; every entry counts its defeats
+   (`dex.count`, old saves seed 1 per beaten entry), the reward text box says "Oddish defeated 2/3." after each win until
+   the goal, then "Oddish defeated 3/3: Research complete! +25 PokéCoins." Tiles show `n/3` under the name, and a gold
+   Poké Ball mark and gold tile once complete ("★ Research"); the entry's zoom says its research count and, once complete,
+   its HP and each move's numbers. The whole-dex 1000 is told in the reward box (or the result window after the final
+   boss), again in the result window at the run's end, and is a "Pokédex complete" row under Pokédex pages in
+   Achievements (with the research count). The header shows `★N` for completed entries. No balance change, no bot run.
+   **Decisions for the user to check:**
+   - The numbers are Level 0's at that biome and before the type chart (the entry says so): attacks include the biome's
+     extra damage, Alphas show Rampage, status moves show the junk they add (e.g. "+1 Poison").
+   - Defeats past the goal are still counted but not announced (no line after "Research complete").
+   - A refresh on a reward screen replays the fight, and that replayed win counts as another defeat (like the coins, it's
+     a fight you won again). If a refresh lands between earning the 1000 and the next map, the result window at the run's
+     end won't repeat the line (the coins are already paid).
+   - Coin Finder's +15% applies to research and jackpot coins, like every other PokéCoin.
 8. **Game Corner perks and coin economy** (1 session): only 4 perks today, so PokéCoins run out of
    uses. **Agreed list (the user, 2026-09-27): exactly these, 4 new perks (4 -> 8), each levelled like the current
    ones (`Lv n/m`):**

@@ -35,7 +35,7 @@ import { playMusic, playSound, preloadSounds } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
-import { DEX_START_MONEY } from './data/pokedex.js';
+import { DEX_START_MONEY, DEX_COMPLETE_COINS } from './data/pokedex.js';
 
 let run = null;
 
@@ -118,6 +118,7 @@ function checkpoint() {
     rarePity: run.rarePity,
     rerollBiome: run.rerollBiome,
     tutorLeft: run.tutorLeft,
+    dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
   });
 }
@@ -454,7 +455,8 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
-  const dexNews = dexDefeated(node.enemyId);
+  const { lines: dexNews, complete: dexComplete } = dexDefeated(node.enemyId);
+  if (dexComplete) run.dexComplete = true;   // the result window says so too
 
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
@@ -485,7 +487,7 @@ function afterFight(node, result) {
       d.stats.bossesDefeated[run.biome + 1] = true;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
-    if (run.biome === BIOMES.length - 1) { run.pendingCoins.told = true; run.dexNews = dexNews; collect(); return endRun(true); }       // final boss: you win!
+    if (run.biome === BIOMES.length - 1) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!
     announceUnlocks();
     steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
   }
@@ -1622,6 +1624,7 @@ function endRun(won) {
   dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.dexNews || []).map(line => `📕 ${line}`)];
+  if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(text => el('li', '', text)));

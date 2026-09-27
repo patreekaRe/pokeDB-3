@@ -7,7 +7,8 @@
 import { getSave } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
-import { DEX_PAGES } from './data/pokedex.js';
+import { DEX_PAGES, DEX_COMPLETE_COINS } from './data/pokedex.js';
+import { researchCount } from './pokedex.js';
 import { $, el, openDialog } from './ui.js';
 
 export function openStats() {
@@ -86,6 +87,18 @@ export function openAchievements() {
     row.append(el('span', 'dex-ach-icon', p.perk.icon), text, el('span', 'ach-status', got ? '' : '🔒'));
     if (got) row.lastChild.append(el('span', 'pokeball'));
     row.title = got ? `Earned ${p.perk.name}` : `Locked: defeat every Pokémon on the ${p.name} page`;
+    dex.append(row);
+  }
+  {
+    const got = getSave().dex.complete;
+    const [n, total] = researchCount();
+    const row = el('div', `ach dex-ach${got ? ' done' : ''}`);
+    const text = el('div', 'ach-text');
+    text.append(el('strong', '', 'Pokédex complete'),
+      el('span', '', `Complete every entry's research (${n}/${total}): +${DEX_COMPLETE_COINS} PokéCoins.`));
+    row.append(el('span', 'dex-ach-icon', '📕'), text, el('span', 'ach-status', got ? '' : '🔒'));
+    if (got) row.lastChild.append(el('span', 'pokeball'));
+    row.title = got ? 'Every entry\'s research is complete' : `Locked: ${n} of ${total} entries have Research complete`;
     dex.append(row);
   }
 
