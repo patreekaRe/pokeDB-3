@@ -31,7 +31,7 @@ import { ABILITIES } from './data/relics.js';
 import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
-import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
+import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playCry, playSound } from './audio.js';
@@ -229,8 +229,17 @@ function previewStarter(starter) {
   });
 }
 
+// The run stays saved (the user's call: going to the menu shouldn't cost it). Only the map is a checkpoint, so
+// leaving from a fight or room means replaying it, as a refresh would.
 async function requestMenu() {
-  if (isRunActive() && !(await confirmDialog('Abandon this run? You will lose your progress in it.', 'Abandon'))) return;
+  if (isRunActive()) {
+    if (document.body.dataset.screen !== 'map-screen'
+      && !(await confirmDialog('Back to the menu? Your run is saved, but this room will start over when you continue.', 'Menu'))) return;
+    suspendRun();
+    selected = null;
+    showSheet(false);
+    return showStart();
+  }
   goToMenu();
 }
 

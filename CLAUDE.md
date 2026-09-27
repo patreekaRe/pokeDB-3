@@ -289,8 +289,9 @@ is recomputed with `modsFor(level)`. The map's `floors` and `byId` share
 node objects, so restore rebuilds `floors` from `byId` to keep `visited`
 in sync. Every fight node gets its `enemyId` in `startBiome()` so a
 refresh can't reroll a fight (only elites/bosses name their Pokémon, in the room's `title`).
-The save is cleared by `endRun()`, by `abandonRun()` when a run was live,
-and by the About dialog's erase. Fight coins and the enemiesDefeated stat
+The save is cleared by `endRun()`, by starting a new run over it (Begin run confirms), and by the About dialog's
+erase. The Poké Ball menu's Main menu keeps it (`suspendRun()`, the user's call): straight from the map, and after a
+confirm from anywhere else, since that room replays from the map checkpoint; `abandonRun()` is only for the run's end. Fight coins and the enemiesDefeated stat
 are shown on the reward screen but only paid out as the rewards end, just
 before the checkpoint, so refreshing on a reward screen can't pay twice.
 A version mismatch or any bad id (deck, relics, Mart stock) silently

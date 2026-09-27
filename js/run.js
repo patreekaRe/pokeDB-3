@@ -80,6 +80,12 @@ export function initRun({ onMenu, onNewRun }) {
 }
 
 /** Throw away the current run (used when you go back to the menu). */
+/** Back to the menu keeping the save: Continue picks the run up from its last map checkpoint. */
+export function suspendRun() {
+  abandonBattle();
+  run = null;
+}
+
 export function abandonRun() {
   abandonBattle();
   if (run) clearRunData();
