@@ -15,12 +15,13 @@
    ============================================================ */
 
 import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
-import { SPRITE_FIT } from './data/sprite-fit.js';
+import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
+import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
@@ -47,6 +48,15 @@ export const runBiome = () => (isRunActive() ? run.biome : undefined);
    PokéCoins  -  see js/data/shop.js for what they buy.
    ============================================================ */
 export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 50 };
+
+/** A coin reward at the run's Trainer Level (COIN_LEVEL_BONUS a level), before the Coin Finder. */
+const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
+
+/** How many items the Bag holds: the Game Corner's Bag Pocket adds one. */
+const itemSlots = () => ITEM_SLOTS + (perkLevel('bagPocket') ? 1 : 0);
+
+/** A Poké Mart price after the Game Corner's Mart Card (read at the counter, so buying it mid-run counts at once). */
+const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perkLevel('martCard')]));
 
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
@@ -107,6 +117,7 @@ function checkpoint() {
     removals: run.removals,
     rarePity: run.rarePity,
     rerollBiome: run.rerollBiome,
+    tutorLeft: run.tutorLeft,
     unlocks: run.unlocks.map(s => s.id),
   });
 }
@@ -186,6 +197,7 @@ export function beginRun(starter, level = 0) {
     removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
     rarePity: 0,           // extra rare weight on the next card reward (RARE_PITY in rewards.js)
     rerollBiome: -1,       // the biome whose card reroll (Pokédex perk Oak's Advice) was used
+    tutorLeft: perkLevel('tutorNotes'),   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     over: false,
@@ -263,7 +275,19 @@ function showMap() {
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
   showScene(biome.id);
   playMusic(`map${run.biome + 1}`);
+  if (run.tutorLeft > 0) return tutorNotes();
   showNotes();
+}
+
+/** Move Tutor Notes (a Game Corner perk, Neow's "upgrade a card"): before the first room, PP Up starting moves.
+    It's asked on the map, after the checkpoint, and `tutorLeft` is saved, so a refresh asks again. */
+function tutorNotes() {
+  const left = run.tutorLeft;
+  upgradeMove(() => { run.tutorLeft = 0; showMap(); }, () => { run.tutorLeft -= 1; showMap(); }, {
+    title: 'Move Tutor Notes',
+    sub: [`Your Move Tutor Notes! Pick a move to PP Up before you set out${left > 1 ? ` (${left} to go)` : ''}.`, 'Tap one to see it upgraded.'],
+    skipLabel: 'Skip',
+  });
 }
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
@@ -362,9 +386,9 @@ function renderItemList() {
     return row;
   });
   $('items-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
-  $('run-item-count').textContent = `${run.items.length}/${ITEM_SLOTS}`;
+  $('run-item-count').textContent = `${run.items.length}/${itemSlots()}`;
   $('items-note').textContent = inBattle ? 'Using an item costs no PP.'
-    : `Holds ${ITEM_SLOTS} items. Use them in battle; potions and HP Up work on the map too.`;
+    : `Holds ${itemSlots()} items. Use them in battle; potions and HP Up work on the map too.`;
 }
 
 function useItemOnMap(index) {
@@ -437,13 +461,13 @@ function afterFight(node, result) {
   const foe = ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
-    coins: coinsWithBonus(COIN_REWARDS[node.type]), money: prize, dex: dexNews,
+    coins: coinsWithBonus(levelCoins(COIN_REWARDS[node.type])), money: prize, dex: dexNews,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
     if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
-    awardCoins(COIN_REWARDS[node.type]);
+    awardCoins(levelCoins(COIN_REWARDS[node.type]));
     run.money += prize;
     setMoney(run.money);
     updateSave(d => { d.stats.enemiesDefeated += 1; });
@@ -492,14 +516,14 @@ function runSteps(steps, done) {
 /* ---------- rewards ---------- */
 
 function offerCard(source, next, rerolled = false) {
-  const cards = cardChoices(run, source, 3, { reward: true });
+  const cards = cardChoices(run, source, REWARD_CARDS[perkLevel('scoutReport') ? 1 : 0], { reward: true });   // Scout Report: 4
   if (!cards.length) return next();
 
-  // Oak's Advice (a Pokédex perk): once per biome, swap the three for three new ones
+  // Oak's Advice (a Pokédex perk): once per biome, swap the moves offered for new ones
   const canReroll = hasDexPerk('oaks-advice') && run.rerollBiome !== run.biome;
   showChoice({
     title: 'Learn a new move',
-    sub: [rerolled && 'Oak\'s Advice: three new moves!', `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
+    sub: [rerolled && 'Oak\'s Advice: new moves to pick from!', `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
       canReroll && 'Oak\'s Advice: you can reroll these once this biome.'],
     options: cards.map(card => learnOption(card, next)),
     onSkip: next,
@@ -564,9 +588,9 @@ function gainRelic(relic, next) {
     it (then Put in Bag) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark
     it for tossing (it greys out with a ✕), then Swap. */
 function offerItem(item, next) {
-  const thisRun = run, full = run.items.length >= ITEM_SLOTS, reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${ITEM_SLOTS} items). Tap one of yours to swap it out, or leave it.`
-    : `Tap it to put it in your Bag (up to ${ITEM_SLOTS} items, used up in battle).`];
+  const thisRun = run, full = run.items.length >= itemSlots(), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${itemSlots()} items). Tap one of yours to swap it out, or leave it.`
+    : `Tap it to put it in your Bag (up to ${itemSlots()} items, used up in battle).`];
   showChoice({
     title: 'Item found',
     sub: ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
@@ -1003,10 +1027,10 @@ function martPc(text, hint) {
 
 /** PP Up (StS's Smith): pick a card to upgrade for the rest of the run; it saves as its `<id>+`. The blown-up
     card shows the upgraded version, so you see what you get before you confirm. */
-function upgradeMove(back, done = showMap) {
+function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a move to power up for the rest of the run. Tap one to see it upgraded.', skipLabel = 'Back' } = {}) {
   showChoice({
-    title: 'PP Up',
-    sub: 'Choose a move to power up for the rest of the run. Tap one to see it upgraded.',
+    title,
+    sub,
     options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => canUpgrade(card)).map(({ card, count }) => {
       const better = CARDS_BY_ID[upgradeId(card.id)];
       return {
@@ -1021,7 +1045,7 @@ function upgradeMove(back, done = showMap) {
         confirmSound: 'stat-up',
       };
     }),
-    skipLabel: 'Back',
+    skipLabel,
     onSkip: back,
   });
 }
@@ -1157,7 +1181,7 @@ function placeEventSpots() {
     if (!sprite.naturalWidth || !at) return;
     // half the scene's pixel size, like Chansey at the Center, its resting pose (SPRITE_FIT) centred on its feet
     const k = spots.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
-    const [, bottom, left, right] = SPRITE_FIT[sprite.src.split('/').pop().replace(/\.gif$/, '')] || [0, 0, 0, 0];
+    const [, bottom, left, right] = spriteFit(sprite.src);
     Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
@@ -1321,7 +1345,7 @@ const EVENT_CHOICES = {
     const money = perBiome(healthy ? event.healthyMoney : event.tiredMoney);
     const collect = () => { run.money += money; setMoney(run.money); tell(`The fans gave you ₽${money}!`); showMap(); };
     if (healthy) return { options: [textOption('💴', 'Show off', `The fans are thrilled! They give you ₽${money}.`, collect)] };
-    if (run.items.length < ITEM_SLOTS) {
+    if (run.items.length < itemSlots()) {
       markSeen('items', item.id);
       return { options: [textOption(itemSprite(item, 'relic-icon'), 'Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => {
         run.items.push(item.id);
@@ -1437,7 +1461,7 @@ function martRoom() {
     // a small card on the shelf, blown up full size when you tap it
     const option = { ...cardOption(card, run.stage), zoom: makeCard(card, { stage: run.stage }) };
     option.node.classList.add('small');
-    return ware(option, item.price, () => {
+    return ware(option, martPrice(item.price), () => {
       item.sold = true;
       run.deck.push(card.id);
       tell(`Bought ${card.name}.`);
@@ -1445,12 +1469,12 @@ function martRoom() {
     }, { group: 'cards', name: card.name });
   });
 
-  const bagFull = run.items.length >= ITEM_SLOTS;
+  const bagFull = run.items.length >= itemSlots();
   const items = stock.items.filter(item => !item.sold).map(item => {
     const found = ITEMS_BY_ID[item.id];
     const option = itemOption(found);
     if (bagFull) option.node.append(el('span', 'item-full', 'Bag full'));
-    return ware({ ...option, disabled: bagFull }, item.price, () => {
+    return ware({ ...option, disabled: bagFull }, martPrice(item.price), () => {
       item.sold = true;
       run.items.push(found.id);
       tell(`Bought a ${found.name}.`);
@@ -1460,7 +1484,7 @@ function martRoom() {
 
   const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
     const relic = RELICS_BY_ID[item.id];
-    return ware(relicOption(relic), item.price, () => {
+    return ware(relicOption(relic), martPrice(item.price), () => {
       item.sold = true;
       run.relics.push(relic.id);
       tell(`Bought ${relic.name}!`);
@@ -1469,7 +1493,7 @@ function martRoom() {
     }, { group: 'relics', name: `the ${relic.name}` });
   });
 
-  const removalPrice = MART_REMOVAL.base + MART_REMOVAL.step * run.removals;
+  const removalPrice = martPrice(MART_REMOVAL.base + MART_REMOVAL.step * run.removals);
   const atMin = run.deck.length <= MIN_DECK;
   // forgetting a move is the PC on the counter, under a bouncing sign like the Center's; the money is only
   // taken once a card is actually forgotten, so "Back" out of the picker is free, and it needs no Buy step
@@ -1489,7 +1513,7 @@ function martRoom() {
 
   showChoice({
     title: 'Poké Mart',
-    sub: `Welcome! You have ₽${run.money} to spend.`,
+    sub: [`Welcome! You have ₽${run.money} to spend.`, perkLevel('martCard') && `Your Mart Card takes ${Math.round(MART_DISCOUNT[perkLevel('martCard')] * 100)}% off every price.`],
     options: [...cards, ...items, ...relics, removal],
     skipLabel: 'Leave',
     onSkip: showMap,
@@ -1569,7 +1593,7 @@ function endRun(won) {
 
   let winCoins = 0;
   if (won) {
-    winCoins = awardCoins(COIN_REWARDS.winBonus);
+    winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
 
     updateSave(d => {

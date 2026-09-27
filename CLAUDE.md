@@ -236,7 +236,24 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
-  `js/run.js`. Shop catalog is `js/data/shop.js`; `js/shop.js` renders it.
+  `js/run.js`; fight and win coins grow +10% per Trainer Level played (`COIN_LEVEL_BONUS`, `levelCoins()`; shown
+  on the deck screen's level rules and the How to play coins slide). Shop catalog is `js/data/shop.js`; `js/shop.js`
+  renders it. **Game Corner perks** (step 8, 8 in all, each shown `Lv n/m`; `perkLevel(id)` in `js/storage.js` reads
+  one, true/false or a number): Max HP Boost, Starting Relic Charm, Well-Fed, Coin Finder, and since step 8 **Bag
+  Pocket** (StS's Potion Belt: `itemSlots()` in `js/run.js`, 4 items), **Mart Card** (Membership Card, 3 levels:
+  `MART_DISCOUNT` 10/15/20% off every Mart price and the removal, applied at the counter by `martPrice()`, so the
+  saved stock keeps its base prices), **Move Tutor Notes** (Neow's upgrade, 2 levels: `run.tutorLeft` starting moves
+  to PP Up, asked by `tutorNotes()` at the end of `showMap()` after the checkpoint, so a refresh asks again) and
+  **Scout Report** (Question Card: `REWARD_CARDS`, 4 cards on a fight's card reward). Old saves merge the new
+  passives in as 0/false. **Shiny starters** (cosmetic): the Game Corner's third row, one per starter but Mewtwo
+  (`SHINY_COSTS`: 150 the free three, 200 skins, 300 legendaries; only once you own the starter, else a silhouette).
+  The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny toggle on the starter sheet
+  (`#shiny-toggle`) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
+  (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows;
+  a legendary's final stage is already shiny. The 90 GIFs are PokeAPI's black-white animated `shiny/` and
+  `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
+  `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
+  burst of ✨ (`shinySparkle()` in `js/battle.js`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
@@ -850,7 +867,8 @@ reference photo): charcoal body between brass side trims, two pixel speaker gril
 GAME CORNER sign, a teal CRT (scanlines) in a curved black bezel, and a control deck with ONE red
 ball-top joystick (the user's call) and two round buttons, a pink Buy and a blue Exit (a
 `form[method="dialog"]` button, so it blips `cancel`). The CRT is a fighting-game character select:
-two roster rows, Pokémon (skins) over Perks, with a blinking cursor frame; the choice under it is shown
+three roster rows, Pokémon (skins), Perks and Shiny, with a blinking cursor frame; a row longer than `WINDOW` (6)
+shows the 6 cells round the cursor with ◀ ▶ marks; the choice under it is shown
 big (sprite or icon, name, one line, `Lv n/m`, price in red when you can't afford it, or `ownedTag()`).
 Joystick up/down switches row, left/right moves along it (both wrap): drag the ball (`initDrag()`,
 one move per push past `PUSH` px), tap the four arrows printed on its base (`.gc-pad`), press the arrow

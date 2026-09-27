@@ -420,6 +420,24 @@ body[data-screen="start-screen"].sheet-open { padding-bottom: var(--sheet-h, 200
   font-size: 0.9rem;
 }
 .sheet-close:hover { background: rgba(0, 0, 0, 0.12); color: var(--win-ink); }
+/* a bought shiny's on/off switch (the Game Corner sells them), opposite the ✕ */
+.shiny-toggle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 2px solid var(--win-edge);
+  border-radius: 999px;
+  background: var(--win-tile);
+  color: var(--win-muted);
+  font-family: var(--pixel-font);
+  font-size: 0.62rem;
+}
+.shiny-toggle[aria-pressed="true"] { border-color: #d8a020; background: #fff4c8; color: #8a5a00; }
+.shiny-toggle[aria-pressed="false"] .px-wrap { filter: grayscale(1); opacity: 0.6; }
 .starter-detail { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }   /* stacked and centred in a narrow window */
 .starter-detail img { flex: none; width: 64px; height: 64px; object-fit: contain; }
 .detail-text { min-width: 0; }
@@ -851,6 +869,22 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .player-zone.awaiting #player-sprite,
 .player-zone.awaiting ~ #player-plate { visibility: hidden; }
 #player-sprite.released { animation: released 0.6s ease-out; }
+/* a shiny's sparkles as it comes out of the ball (shinySparkle() in js/battle.js) */
+.shiny-burst { position: absolute; left: 50%; bottom: 40%; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.shiny-star {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  font-size: 28px;
+  line-height: 1;
+  opacity: 0;
+  animation: shinyStar 0.8s steps(8) var(--delay) forwards;
+}
+@keyframes shinyStar {
+  0% { opacity: 1; transform: rotate(var(--angle)) translateY(-10px) scale(0.4); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateY(-90px) scale(1.1); }
+}
 @keyframes released {
   from { transform: scale(0.15); filter: brightness(8); }
   55%  { transform: scale(1.12); filter: brightness(2.5); }
@@ -1902,6 +1936,9 @@ body.battle-intro { pointer-events: none; }
 .gc-cell .shop-owned .pokeball { font-size: 20px; }
 .gc-cell.on { border-color: #f8e070; box-shadow: 0 0 0 2px #181010, 0 0 8px #f8e070; animation: gcCursor 0.8s steps(1) infinite; }
 @keyframes gcCursor { 50% { border-color: #e83828; } }
+.gc-more { align-self: center; width: 8px; font-size: 0.55rem; color: #b8f0dc; }   /* more cells past the row's window */
+.gc-more.none { visibility: hidden; }
+.gc-cell img.dark, .gc-pick-sprite.dark { filter: brightness(0) opacity(0.55); }   /* a shiny for a starter you haven't unlocked */
 
 /* the control deck: a brass lip, then the joystick on the left and the two buttons on the right */
 .gc-deck {

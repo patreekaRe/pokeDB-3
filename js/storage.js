@@ -29,7 +29,12 @@ const freshSave = () => ({
     relicCharm: false,        // start every run holding one random common relic
     wellFed: false,           // Pokémon Centers heal +5% more
     coinFinder: false,        // +15% PokéCoins from every source
+    bagPocket: false,         // the Bag holds one more item
+    martCard: 0,              // Poké Mart prices lower (levels 0-3, MART_DISCOUNT)
+    tutorNotes: 0,            // PP Up this many starting moves at the start of a run (0-2)
+    scoutReport: false,       // card rewards offer 4 moves
   },
+  shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
   seen: { relics: [], items: [] },   // ids met in a run (offered or found), unlocked in the Index; others show as silhouettes
   dex: { seen: [], defeated: [], done: [] },   // Pokédex: enemy ids fought / beaten, and biome pages whose reward was paid
   stats: {
@@ -57,6 +62,7 @@ function load() {
         passives: { ...base.passives, ...saved.passives },
         seen: { ...base.seen, ...saved.seen },
         dex: { ...base.dex, ...saved.dex },
+        shiny: { ...base.shiny, ...saved.shiny },
         stats: {
           ...base.stats, ...saved.stats,
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },
@@ -96,6 +102,15 @@ export function updateSave(change) {
 
 /** How many PokéCoins an amount is worth after the Coin Finder passive. */
 export const coinsWithBonus = (amount) => Math.round(amount * (data.passives.coinFinder ? 1.15 : 1));
+
+/** How many levels of a Game Corner perk you own (one-level perks are saved as true/false). */
+export function perkLevel(id) {
+  const value = data.passives[id];
+  return typeof value === 'number' ? value : (value ? 1 : 0);
+}
+
+/** Is this starter shown in its shiny colours? */
+export const isShiny = (id) => data.shiny.on.includes(id);
 
 /** Give the player PokéCoins, boosted by the Coin Finder passive if they own it. */
 export function awardCoins(amount) {

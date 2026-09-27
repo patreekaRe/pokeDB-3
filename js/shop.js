@@ -4,23 +4,27 @@
    this file draws it on an arcade cabinet's screen, character-select
    style, and handles the joystick and buying.
 
-   The screen holds two rows, Pokémon and Perks: the joystick's up/down
-   switches row, left/right moves along it, and the choice under the
-   cursor is shown big. Buy takes two presses (the first arms it).
+   The screen holds three rows, Pokémon, Perks and Shiny: the joystick's
+   up/down switches row, left/right moves along it, and the choice under
+   the cursor is shown big. A row longer than WINDOW cells shows the
+   WINDOW around the cursor, with arrows for the rest. Buy takes two
+   presses (the first arms it).
    ============================================================ */
 
-import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS } from './data/shop.js';
-import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { getSave, updateSave } from './storage.js';
-import { checkAchievements } from './progress.js';
+import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS, SHINY_COSTS } from './data/shop.js';
+import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { getSave, updateSave, perkLevel } from './storage.js';
+import { checkAchievements, isStarterUnlocked } from './progress.js';
 import { playSound, preloadSounds } from './audio.js';
 import { $, el, refreshCoins } from './ui.js';
 
 const ROWS = [
   { id: 'skins', name: 'Pokémon', entries: () => SKIN_SHOP_ITEMS.map(skinEntry) },
   { id: 'perks', name: 'Perks', entries: () => PASSIVE_SHOP_ITEMS.map(perkEntry) },
+  { id: 'shiny', name: 'Shiny', entries: () => STARTERS.filter(s => !s.secret).map(shinyEntry) },
 ];
-const cursor = { row: 0, col: [0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
+const cursor = { row: 0, col: [0, 0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
+const WINDOW = 6;     // cells a row shows at once
 const PUSH = 16;      // px the stick must be dragged before it counts as a push
 const TRAVEL = 12;    // px the ball can lean
 
@@ -89,10 +93,10 @@ function skinEntry(item) {
 }
 
 function perkEntry(item) {
-  const level = currentLevel(item);
+  const level = perkLevel(item.id);
   return {
     id: item.id, name: item.name, icon: item.icon, text: item.text,
-    level: item.maxLevel > 1 ? `Lv ${level}/${item.maxLevel}` : '',
+    level: `Lv ${level}/${item.maxLevel}`,
     done: level >= item.maxLevel && 'Maxed',
     cost: item.costs[level],
     bought() {
@@ -100,7 +104,26 @@ function perkEntry(item) {
         if (item.maxLevel > 1) d.passives[item.id] += 1;
         else d.passives[item.id] = true;
       });
-      return ['Perk bought!'];
+      return [item.maxLevel > 1 ? `${item.name} is now Lv ${level + 1}!` : 'Perk bought!'];
+    },
+  };
+}
+
+/** A starter's shiny colours: cosmetic, and only for a starter you own (a locked one shows as a silhouette). */
+function shinyEntry(starter) {
+  const name = starter.line[0].name;
+  const known = isStarterUnlocked(starter);
+  const owned = getSave().shiny.owned.includes(starter.id);
+  return {
+    id: starter.id, name: known ? `Shiny ${name}` : '???', sprite: spriteUrl(starter, 'front', 0, true), dark: !known,
+    text: known ? 'Its rare shiny colours, on the starter screen, the map and in battle. Just for looks: tap ✨ on its card to switch.'
+      : 'Unlock this starter first.',
+    blocked: !known,
+    done: owned && 'Owned',
+    cost: SHINY_COSTS[starter.free ? 'free' : starter.legendary ? 'legendary' : 'skin'],
+    bought() {
+      updateSave(d => { d.shiny.owned.push(starter.id); d.shiny.on.push(starter.id); });
+      return [`Shiny ${name} is yours!`, 'It\'s switched on: tap ✨ on its card to switch.'];
     },
   };
 }
@@ -113,9 +136,9 @@ function render() {
 
   $('gc-section').textContent = `${ROWS[cursor.row].name} ${cursor.col[cursor.row] + 1}/${rows[cursor.row].length}`;
 
-  const art = pick.sprite ? el('img', 'pixel gc-pick-sprite') : el('span', 'gc-pick-icon', pick.icon);
+  const art = pick.sprite ? el('img', `pixel gc-pick-sprite${pick.dark ? ' dark' : ''}`) : el('span', 'gc-pick-icon', pick.icon);
   if (pick.sprite) { art.src = pick.sprite; art.alt = ''; }
-  const price = pick.done ? ownedTag(pick.done) : el('span', `gc-price${coins < pick.cost ? ' short' : ''}`, `💰 ${pick.cost}`);
+  const price = pick.done ? ownedTag(pick.done) : el('span', `gc-price${coins < pick.cost || pick.blocked ? ' short' : ''}`, `💰 ${pick.cost}`);
   const foot = el('div', 'gc-pick-foot');
   if (pick.level) foot.append(el('span', 'gc-level', pick.level));
   foot.append(price);
@@ -126,13 +149,17 @@ function render() {
     const line = el('div', 'gc-row');
     line.setAttribute('role', 'group');
     line.setAttribute('aria-label', ROWS[r].name);
+    const start = Math.max(0, Math.min(cursor.col[r] - Math.floor(WINDOW / 2) + 1, entries.length - WINDOW));
+    const shown = entries.length > WINDOW;
+    if (shown) line.append(el('span', `gc-more${start > 0 ? '' : ' none'}`, '◀'));
     entries.forEach((entry, c) => {
+      if (shown && (c < start || c >= start + WINDOW)) return;
       const cell = el('button', 'gc-cell');
       cell.type = 'button';
       cell.setAttribute('aria-label', `${entry.name}${entry.done ? `, ${entry.done}` : `, ${entry.cost} PokéCoins`}`);
       if (r === cursor.row && c === cursor.col[r]) { cell.classList.add('on'); cell.setAttribute('aria-current', 'true'); }
       if (entry.sprite) {
-        const img = el('img', 'pixel');
+        const img = el('img', `pixel${entry.dark ? ' dark' : ''}`);
         img.src = entry.sprite;
         img.alt = '';
         cell.append(img);
@@ -141,11 +168,12 @@ function render() {
       cell.addEventListener('click', () => select(r, c));
       line.append(cell);
     });
+    if (shown) line.append(el('span', `gc-more${start + WINDOW < entries.length ? '' : ' none'}`, '▶'));
     return line;
   }));
 
   const buy = $('gc-buy');
-  buy.disabled = Boolean(pick.done) || coins < pick.cost;
+  buy.disabled = Boolean(pick.done) || pick.blocked || coins < pick.cost;
   buy.classList.toggle('armed', cursor.armed);
   buy.setAttribute('aria-label', pick.done ? pick.done : cursor.armed ? `Press again to buy ${pick.name}` : `Buy ${pick.name} for ${pick.cost} PokéCoins`);
   $('gc-buy-label').textContent = cursor.armed ? 'Sure?' : 'Buy';
@@ -175,7 +203,7 @@ function select(row, col) {
 /** First press arms the button, the second buys (the menu blip covers the first). */
 function press() {
   const pick = ROWS[cursor.row].entries()[cursor.col[cursor.row]];
-  if (pick.done || getSave().coins < pick.cost) return;
+  if (pick.done || pick.blocked || getSave().coins < pick.cost) return;
   if (!cursor.armed) { cursor.armed = true; cursor.news = null; render(); return; }
   cursor.armed = false;
   updateSave(d => { d.coins -= pick.cost; });
@@ -235,12 +263,6 @@ function ownedTag(text) {
   ball.setAttribute('aria-hidden', 'true');
   tag.append(ball, text);
   return tag;
-}
-
-/** How many levels of a passive you already own (stacking ones are a number, others true/false). */
-function currentLevel(item) {
-  const value = getSave().passives[item.id];
-  return typeof value === 'number' ? value : (value ? 1 : 0);
 }
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);

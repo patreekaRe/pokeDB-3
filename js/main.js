@@ -23,12 +23,12 @@
      tips.js         tap-to-read hints (an element's title) on touch screens
    ============================================================ */
 
-import { STARTERS, spriteUrl, stageName } from './data/starters.js';
+import { STARTERS, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES } from './data/cards.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { ABILITIES } from './data/relics.js';
-import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
+import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
@@ -152,6 +152,10 @@ function selectStarter(starter) {
   const type = TYPES[starter.type];
   $('detail-sprite').src = spriteUrl(starter, 'front');
   $('detail-sprite').alt = starter.line[0].name;
+  const owned = getSave().shiny.owned.includes(starter.id);
+  $('shiny-toggle').hidden = !owned;
+  $('shiny-toggle').setAttribute('aria-pressed', String(isShiny(starter.id)));
+  $('shiny-toggle').title = isShiny(starter.id) ? 'Shiny colours on: tap to switch them off.' : 'You own its shiny colours: tap to switch them on.';
   $('detail-name').textContent = starter.line[0].name;
   $('detail-type').textContent = `${type.icon} ${type.label}`;
   $('detail-type').className = `detail-type type-${starter.type}`;
@@ -262,6 +266,7 @@ function initBallMenu() {
 
 function init() {
   initPixelIcons();
+  useShinies(isShiny);
   // Playtest shortcut (the user's ask): opening the game with ?levels unlocks every Trainer Level for good.
   if (new URLSearchParams(location.search).has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   initAudio();
@@ -273,6 +278,13 @@ function init() {
 
   $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
   $('detail-close').addEventListener('click', () => showSheet(false));
+  $('shiny-toggle').addEventListener('click', () => {
+    if (!selected) return;
+    const id = selected.id;
+    updateSave(d => { d.shiny.on = isShiny(id) ? d.shiny.on.filter(x => x !== id) : [...d.shiny.on, id]; });
+    playCry(selected.line[0].id);
+    selectStarter(selected);
+  });
   $('continue-btn').addEventListener('click', () => {
     const btn = $('continue-btn');
     if (!savedRun || btn.classList.contains('opening')) return;
@@ -294,6 +306,7 @@ function init() {
   $('shop-dialog').addEventListener('close', () => {
     $('shop-btn').setAttribute('aria-expanded', 'false');
     renderStarters();
+    if (selected && !$('starter-sheet').hidden) selectStarter(selected);   // a shiny bought for it shows at once
   });
 
   // Buttons that are always on screen

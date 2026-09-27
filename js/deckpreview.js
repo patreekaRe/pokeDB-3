@@ -12,6 +12,7 @@ import { BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { TYPES } from './data/cards.js';
 import { LEVELS, MAX_LEVEL } from './data/difficulty.js';
 import { getSave } from './storage.js';
+import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { $, el, makeCard, zoomable, groupDeck, showScreen, setTheme, openDialog } from './ui.js';
 import { showMenuScene } from './scene.js';
 
@@ -40,6 +41,7 @@ function renderLevel() {
     next.title = `${LEVELS[max + 1].name}: ${LEVELS[max + 1].text}`;
     rules.push(next);
   }
+  if (level > 0) rules.push(el('li', 'level-coins', `💰 PokéCoins from fights and wins: +${Math.round(level * COIN_LEVEL_BONUS * 100)}%`));
   $('level-rules').replaceChildren(...rules);
 }
 

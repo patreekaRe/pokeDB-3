@@ -248,10 +248,16 @@ export const STARTERS = [
 
 export const STARTERS_BY_ID = Object.fromEntries(STARTERS.map(s => [s.id, s]));
 
-/** Path to one of a starter's images at a given evolution stage. kind is 'front' or 'back'. */
-export function spriteUrl(starter, kind, stage = 0) {
-  return `assets/pokemon/${starter.line[stage].id}-${kind}.gif`;
+/** Path to one of a starter's images at a given evolution stage. kind is 'front' or 'back'. `shiny` defaults to
+    whether its shiny colours are switched on (the Game Corner sells them); a legendary's final stage already is. */
+export function spriteUrl(starter, kind, stage = 0, shiny = shinyOn(starter.id)) {
+  const id = starter.line[stage].id;
+  return `assets/pokemon/${shiny && !id.endsWith('-shiny') ? `${id}-shiny` : id}-${kind}.gif`;
 }
+
+// Data files don't read the save; main.js hands in the check at startup.
+let shinyOn = () => false;
+export function useShinies(check) { shinyOn = check; }
 
 /** The name of a starter at a given evolution stage (Charmander, Charmeleon...). */
 export const stageName = (starter, stage) => starter.line[stage].name;

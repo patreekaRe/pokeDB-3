@@ -22,8 +22,9 @@
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
+import { isShiny } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
-import { SPRITE_FIT } from './data/sprite-fit.js';
+import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite } from './ui.js';
 import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
@@ -216,11 +217,26 @@ async function playIntro() {
     sprite.classList.add('released');
     await sleep(330);   // the pop is at full size 55% into its 0.6 s
     if (!still()) return;
+    if (isShiny(b.starter.id)) shinySparkle(zone);
   }
   await Promise.all([cry(playerSpriteId), sleep(motion ? 270 : 0)]);
   if (!still()) return;
   resetIntro();
   beginPlayerTurn();
+}
+
+/** A shiny Pokémon comes out of its ball in a burst of sparkles, like the games. */
+function shinySparkle(zone) {
+  const burst = el('div', 'shiny-burst');
+  burst.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 6; i++) {
+    const star = el('span', 'shiny-star', '✨');
+    star.style.setProperty('--angle', `${i * 60 + 30}deg`);
+    star.style.setProperty('--delay', `${(i % 3) * 90}ms`);
+    burst.append(star);
+  }
+  zone.append(burst);
+  setTimeout(() => burst.remove(), 1200);
 }
 
 /** Put the intro's pieces back to rest (also run before each battle, in case one was cut short). */
@@ -1247,7 +1263,7 @@ function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
   const apply = () => {
     const W = img.naturalWidth, H = img.naturalHeight;
     if (!W) return;
-    const [top, bottom, left, right] = SPRITE_FIT[img.src.split('/').pop().replace(/\.gif$/, '')] || [0, 0, 0, 0];
+    const [top, bottom, left, right] = spriteFit(img.src);
     const long = Math.max(W, H);
     const pose = Math.max(W - left - right, H - top - bottom);
     const f = Math.min(max, Math.max(min, Math.pow(pose / 64, lean) * times)) * stage;

@@ -177,3 +177,10 @@ export const SPRITE_FIT = {
   'zangoose-front': [5, 1, 4, 10],
   'zigzagoon-front': [5, 0, 1, 2],
 };
+
+/** The gaps for a sprite's URL or file name. A starter's bought shiny is the same animation recoloured, so it
+    borrows its normal sprite's entry. */
+export function spriteFit(src) {
+  const name = src.split('/').pop().replace(/\.gif$/, '');
+  return SPRITE_FIT[name] || SPRITE_FIT[name.replace('-shiny', '')] || [0, 0, 0, 0];
+}

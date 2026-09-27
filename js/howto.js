@@ -6,6 +6,7 @@
    ============================================================ */
 
 import { COIN_REWARDS } from './run.js';
+import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 import { buildingSvg } from './buildings.js';
 
@@ -48,10 +49,12 @@ export function initHowto() {
     row('elite', '💀', `+${COIN_REWARDS.elite} 💰`, 'Elite'),
     row('boss', '👹', `+${COIN_REWARDS.boss} 💰`, 'Boss'),
     row('treasure', '🏆', `+${COIN_REWARDS.winBonus} 💰`, 'Full win'),
+    row('', '⭐', `+${Math.round(COIN_LEVEL_BONUS * 100)}%`, 'Per Trainer Level'),
   );
   $('howto-perks').replaceChildren(
     row('', '🥚', 'Starters', 'New Pokémon'),
     row('', '⏫', 'Perks', 'Boosts every run'),
+    row('', '✨', 'Shiny', 'New colours'),
   );
 
   slides = [...track().querySelectorAll('.howto-slide')];
