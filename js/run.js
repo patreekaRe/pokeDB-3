@@ -1027,6 +1027,25 @@ function liftRoomLog() {
 }
 new ResizeObserver(liftRoomLog).observe(document.querySelector('#reward-screen .reward-bottom'));
 addEventListener('resize', liftRoomLog);
+
+/** On a short window the Mart's shelves pushed Leave and the text box off the bottom, so the whole shop is zoomed out just
+    enough for the screen to fit without scrolling. It works out its own zoom, so the scene's floor line (read from the
+    counter's box) is repainted with a second resize once the zoom changes. */
+function fitMart() {
+  const shop = document.querySelector('#reward-options.mart-window');
+  if (!shop) return;
+  const before = shop.style.zoom;
+  const note = document.querySelector('.fan-note')?.offsetHeight || 0;   // the fan note may scroll away under the page
+  const fits = (zoom) => { shop.style.zoom = zoom; return document.documentElement.scrollHeight - note <= innerHeight; };
+  if (!fits('')) {
+    let [lo, hi] = [0.6, 1];   // the largest zoom that fits, to within 1%: the layout doesn't shrink in step with it
+    while (hi - lo > 0.01) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+    shop.style.zoom = lo.toFixed(3);
+  }
+  if (shop.style.zoom !== before) dispatchEvent(new Event('resize'));
+}
+addEventListener('resize', fitMart);
+new ResizeObserver(() => fitMart()).observe(document.querySelector('#reward-screen .reward-bottom'));   // the text box grows as a line types out
 addEventListener('scenepaint', placeCenterSpots);
 
 /** The Mart's PC on the counter, under the same bouncing sign as the Center's. */
@@ -1590,6 +1609,7 @@ function martRoom() {
   clerk.alt = 'Kecleon, the shopkeeper';
   $('reward-options').append(clerk);
 
+  fitMart();
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
   const shop = () => $('reward-options').getBoundingClientRect();
   showPlaceScene('mart', { floor: () => shop().bottom, span: () => [shop().left, shop().right] });

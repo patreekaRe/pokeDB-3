@@ -46,7 +46,7 @@ What the overnight chain did, one session per big step (details and bot numbers 
 - 6c.11b: TM's picker reuses Fusion Flare's layout; Revive's news rides on the hit's text line; Fire L0 ~79 is a bit high.
 - Explain-itself: the nameplate chip is the Ability Capsule, not the type icon; on phones the risen card's keyword boxes
   stack over the arena; Block has no keyword box; the TM / Fusion Flare picker has no boxes yet.
-- Seen in passing: on short PC windows (1280x800) the Mart's text box covers half of Leave (it was so before step 8).
+- Seen in passing: on short PC windows (1280x800) the Mart's text box covered half of Leave. Fixed 2026-09-27 (`fitMart()`).
 
 ## Order
 
@@ -369,6 +369,7 @@ What the overnight chain did, one session per big step (details and bot numbers 
      playable). Legendaries' shiny only changes stages 0-1 (their final stage is already the shiny).
    - The Game Corner shows 6 cells a row with ◀ ▶ past that (8 perks, 18 shinies).
    - Seen at 1280x800 (and at HEAD before this step): the Mart's text box covers half of Leave on short PC windows.
+     Fixed 2026-09-27: `fitMart()` zooms the shop out to fit.
 
 9. **More starters** (agreed with the user, 2026-09-27; ~3-4 sessions, 4-6 starters each). Only Pokémon with matching
    Gen 5 animated sprites (normal and shiny, PokeAPI's black-white `animated/`), not on the enemy roster, and no two-stage
