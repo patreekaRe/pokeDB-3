@@ -364,7 +364,7 @@ export const ENEMY_DEFS = {
     description: 'Its smell alone is a weapon.',
     moves: [
       { kind: 'drain',  name: 'Absorb',      amount: 6, heal: 3 },
-      { kind: 'status', name: 'Poison Powder', adds: { card: 'poison', n: 2, to: 'draw' } },
+      { kind: 'status', name: 'Poison Powder', adds: { card: 'poison', n: 1, to: 'draw' } },
       { kind: 'attack', name: 'Petal Dance', amount: 11 },
     ],
   },

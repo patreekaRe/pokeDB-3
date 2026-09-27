@@ -444,7 +444,7 @@ shows the card's icon after the move name) or are `kind: 'status'` (the whole tu
 |---|---|---|---|
 | Confusion | Unplayable. Ethereal | Dazed | Psyduck (Confusion, 1 to the draw pile), Slowpoke (Zen Headbutt, 2 draw), Alpha Slowking (Water Pulse, 2 draw) |
 | Paralysis | Unplayable | Wound | Snorlax (Body Slam, 1 draw), Stantler (Stomp, 1 draw), Tauros (Body Slam, was Horn Attack, 1 draw), Tangrowth (Stun Spore, a status turn in place of Ingrain, 2 draw) |
-| Poison | Unplayable. At the end of your turn, if it's in your hand, lose 2 HP | Burn | Oddish (Acid, 1 discard), Alpha Gloom (Poison Powder, a status turn in place of Ingrain, 2 draw) |
+| Poison | Unplayable. At the end of your turn, if it's in your hand, lose 2 HP | Burn | Oddish (Acid, 1 discard), Alpha Gloom (Poison Powder, a status turn in place of Ingrain, 1 draw: 2 cost Water and Grass 5-15 points at Levels 3-5) |
 | Sludge | Costs 1. Exhaust (does nothing) | Slimed | Shellos (Muddy Water, 1 discard), Tangela (Constrict 6, an attack in place of Ingrain, 2 discard) |
 
 Seedot (in the skeleton) was left out: it has no poison move. Tangrowth and Gloom trade a block turn for junk, so they
