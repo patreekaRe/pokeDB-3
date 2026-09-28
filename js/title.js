@@ -10,6 +10,7 @@
    ============================================================ */
 
 import { $ } from './ui.js';
+import { playSound } from './audio.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -83,6 +84,8 @@ export function showTitle() {
     const go = (e) => {
       if (e.type === 'keydown' && (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key))) return;
       e.preventDefault();
+      // the menu blip only answers buttons, and a tap on the sky isn't one: every way in says so (the user heard silence)
+      playSound('confirm');
       screen.removeEventListener('click', go);
       document.removeEventListener('keydown', go);
       screen.classList.add('leaving');
