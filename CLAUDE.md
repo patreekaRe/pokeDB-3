@@ -845,7 +845,9 @@ big copy straight up out of its place in the hand, StS-style (the user's call:
 it used to blow up in the middle over a dimmed screen): `popFromHand()` places it
 in `#card-focus` (a see-through full-screen layer, `.rise`), grows it from the hand
 card's box, hides the hand's copy (`.lifted`) and sets a small Play button under it.
-Tapping that big card plays it, tapping elsewhere or Escape cancels
+Once played it flies off to where it acts (`flyCard()`, the user's call 2026-09-28, 0.4 s, not awaited): an attack
+spins into the enemy as the hit lands, anything else drops glowing into your Pokémon; a card that exhausts poofs into the
+exhaust pile instead (`smokeOut()`). Tapping that big card plays it, tapping elsewhere or Escape cancels
 (`cancelPick()`), and tapping another hand card through the layer switches
 (`elementsFromPoint`, by `data-uid`). Items still blow up at the bottom middle. The pick clears
 itself whenever the battle is busy or the card leaves the hand.

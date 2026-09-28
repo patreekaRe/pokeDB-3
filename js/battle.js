@@ -567,6 +567,7 @@ async function playCard(uid) {
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
   if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) smokeOut(uid);   // it poofs into the exhaust pile as it's played
+  else flyCard(uid, isAttack(card) ? 'enemy-img' : 'player-sprite');
   b.hand.splice(index, 1);
   if (!await resolveCard(card, x)) return;       // the player left the battle
 
@@ -1458,6 +1459,28 @@ function renderPicking() {
   screen.dataset.pick = verb;
   banner.replaceChildren(...[icon && el('span', 'pick-icon', icon), el('strong', 'pick-title', title), line && el('span', 'pick-line', line)].filter(Boolean));
   banner.hidden = false;
+}
+
+/** A played card flies off to where it acts, StS-style: an attack at the enemy, landing as the hit does (~0.2 s), and
+    a block, buff or power into your Pokémon (the user's call, 2026-09-28). It shrinks as it goes, so it reads as thrown. */
+function flyCard(uid, at) {
+  const from = $('hand').querySelector(`[data-uid="${uid}"]`);
+  const risen = $('card-focus').querySelector('.focus-card');
+  const src = risen && !$('card-focus').hidden ? risen : from;
+  const target = $(at);
+  if (!src || !target || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r = src.getBoundingClientRect(), to = target.getBoundingClientRect();
+  const ghost = src.cloneNode(true);
+  ghost.classList.add('fly-ghost', at === 'enemy-img' ? 'fly-attack' : 'fly-self');
+  ghost.removeAttribute('id');
+  Object.assign(ghost.style, { position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: 0, rotate: '0deg', translate: '0', transform: 'none' });
+  ghost.style.setProperty('--to-x', `${to.left + to.width / 2 - (r.left + r.width / 2)}px`);
+  ghost.style.setProperty('--to-y', `${to.top + to.height / 2 - (r.top + r.height / 2)}px`);
+  const wrap = el('div', 'exhaust-fx');
+  wrap.append(ghost);
+  document.body.append(wrap);
+  src.style.visibility = 'hidden';
+  setTimeout(() => wrap.remove(), 420);
 }
 
 /** A card exhausted from your hand, picked or played (an Exhaust card, a status card under Lum Berry), goes poof in a

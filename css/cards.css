@@ -403,3 +403,21 @@
 .term-debuff { color: #7a3aa8; }
 .term-strength { color: #b8201c; }
 .card-tip-name.term-key { color: var(--win-gold); }
+
+/* a played card flies off to where it acts (flyCard() in js/battle.js): an attack at the enemy, spinning a little as
+   it's thrown; a block, buff or power drops into your Pokémon with a soft glow */
+.card.fly-ghost, .card.focus-card.fly-ghost { transform-origin: 50% 50%; }
+.card.fly-attack, .card.focus-card.fly-attack { animation: flyAttack 0.4s both; }
+.card.fly-self, .card.focus-card.fly-self { animation: flySelf 0.4s both; }
+@keyframes flyAttack {
+  0% { transform: none; }
+  15% { transform: translateY(-14px) scale(1.04); animation-timing-function: ease-in; }
+  55% { transform: translate(var(--to-x), var(--to-y)) scale(0.22) rotate(-18deg); opacity: 1; }
+  100% { transform: translate(var(--to-x), var(--to-y)) scale(0.1) rotate(-30deg); opacity: 0; }
+}
+@keyframes flySelf {
+  0% { transform: none; filter: none; }
+  15% { transform: translateY(-10px) scale(1.04); animation-timing-function: ease-in; }
+  60% { transform: translate(var(--to-x), var(--to-y)) scale(0.25); filter: brightness(1.6) drop-shadow(0 0 8px #a8d8ff); opacity: 1; }
+  100% { transform: translate(var(--to-x), var(--to-y)) scale(0.15); filter: brightness(2); opacity: 0; }
+}
