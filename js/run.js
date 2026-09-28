@@ -1323,10 +1323,7 @@ function placeEventSpots() {
     const k = spots.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
     const [, bottom, fitLeft, fitRight] = spriteFit(sprite.src), flip = figure.classList.contains('flip');
     const [left, right] = flip ? [fitRight, fitLeft] : [fitLeft, fitRight];
-    const top = at.y - (h - bottom) * k;
-    Object.assign(figure.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${top}px` });
-    // a stand with a `cut` is behind something (the tutor's desk): the figure ends there
-    figure.style.clipPath = at.cut === undefined ? '' : `inset(0 0 ${Math.max(0, top + h * k - at.cut)}px 0)`;
+    Object.assign(figure.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
   liftRoomLog();
@@ -1368,7 +1365,7 @@ const EVENT_CHOICES = {
       figureDoes('npc', act === 'train' ? 'npc-turn' : 'npc-nod');
       if (await playOut(act)) tutorCards(back, pay, react('npc-nod'));
     };
-    return { figures: { npc: { npc: 'tutor' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
+    return { figures: { npc: { npc: 'alder' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
       spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { run.money -= price; setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
     ] };

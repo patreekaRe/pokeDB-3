@@ -472,16 +472,16 @@ Leave), besides the Shrine: the **Hot Spring** (`PLACE_ART.spring`, `springLayou
 and a little one fed by a bamboo spout (dip), a bamboo fence with the ♨ board, stone lanterns; per biome a sunny garden,
 misty cedars, or a milky pool under volcanic rock with steam vents), and four rooms laid out by `roomLayout()` (its
 `ceil` is the wall's top under the title and HP window, so wall props hang below it; `roomWall()`, `plankFloor()`,
-`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (a chalkboard over a desk with a coin tray: pay ₽,
+`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (Alder sitting cross-legged on a straw mat before a chalkboard, the Pay sign on him: pay ₽,
 act `lesson`; a sandbag: pay HP, act `train`), the **Move Deleter**'s study (bookcases, a lectern's open book: forget one,
 act `erase`; a hypnotist's pendulum: forget two, act `hypno`; a dozing Slowpoke figure), the **Day Care** (the house's
 clapboard front with a DAY CARE board in the 3x5 `pixelText()` font, a picket fence, an Egg in a straw nest, act
 `trade`; Miltank and Marill figures) and the **Fan Club** (striped paper, portraits, pennants, a red carpet to a stage
 under a spotlight, act `cheer`: confetti and hearts, the fans hop; Persian and Cinccino figures; a Super Potion gift
 floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). **Event NPCs** (step from 2026-09-28): a trainer stands in
-each of those four rooms (`figures.npc = { npc: id }`, `NPCS` in `js/data/events.js`): the Move Tutor (behind his desk, his legs
-going down behind its top edge, the stand's `cut`, between the coin tray and scroll at its ends), the Move Deleter (behind the dozing Slowpoke), the Day-Care Lady (behind Marill) and
-the Fan Club's Chairman (on the stage). They're kyledove's still sprites from Pokéngine (credited in About),
+each of those four rooms (`figures.npc = { npc: id }`, `NPCS` in `js/data/events.js`): the Move Tutor (Alder, `alder`, sitting on the
+mat, not cut off; the desk, coin tray and scroll are gone, the user's call 2026-09-28), the Move Deleter (behind the dozing Slowpoke), the Day-Care Lady (behind Marill) and
+the Fan Club's Chairman (on the stage). They're still sprites from Pokéngine (kyledove's, and Jext's Alder; credited in About),
 `assets/trainers/<id>.png` plus a hand-painted eyes-closed `<id>-blink.png`, at the grunts' scale. `eventFigure()` in
 `js/run.js` cuts each into legs, upper body and head layers (clip-paths from `NPCS`' `head` box and `waist` row) so they move
 a whole sprite pixel at a time: the upper body breathes (a 2.8 s loop, random phase), the head bobs while the text box

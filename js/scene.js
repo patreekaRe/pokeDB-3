@@ -476,14 +476,14 @@ const PLACE_ART = {
     },
   },
 
-  /* the Move Tutor's dojo: plaster between timber posts, a chalkboard over a low desk (pay ₽), a sandbag (pay HP) */
+  /* the Move Tutor's dojo: plaster between timber posts, a chalkboard over Alder's straw mat (pay ₽), a sandbag (pay HP) */
   tutor: {
     backdrop: 'dojo', floor: 'planks', prop: 'tutor', light: null, horizon: 0.6, sky: ['#f4ead0'],
     wall: ['#f4ead0', '#e4d6b4', '#c8b490', '#fff8e4'],
     trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
     plank: ['#d8a868', '#c49058', '#a87444', '#6a4424'],
     board: ['#2e6a48', '#285c3e'], chalk: '#f0f8f0',
-    coin: ['#fff8b0', '#f8c830', '#b07818'], scroll: ['#fff8e4', '#e0d0a8'], cord: '#e03830',
+    coin: ['#fff8b0', '#f8c830', '#b07818'],
     tatami: ['#d8d890', '#b8b870', '#3a5a30'],
     bag: ['#f0d8a8', '#d8b880', '#a88050', '#3a2412'], rope: ['#e8d098', '#a88850'],
     view: ['#a0dcf8', '#d0f0f8', '#58a044', '#88c070'],
@@ -3058,15 +3058,15 @@ function roomWindow(cx, top, hw, hh) {
   for (let x = cx - hw - 2; x <= cx + hw + 2; x++) { solid(x, top - 2, wLine); solid(x, top - 1, wLit); solid(x, top + (hh >> 1), wood); solid(x, top + hh + 1, wLit); solid(x, top + hh + 2, wLine); }
 }
 
-/* ----- the Move Tutor's dojo: a chalkboard of moves over a low desk (pay ₽) and a sandbag hanging from a beam (pay HP) ----- */
+/* ----- the Move Tutor's dojo: Alder sits on a straw mat before a chalkboard of moves (pay ₽), and a sandbag hangs
+   from a beam (pay HP) ----- */
 
 function tutorScene() {
   const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
   const board = { x0: cx - u(0.46), x1: cx + u(0.1), y0: ceil + 3, y1: Math.min(railRow() - 3, ceil + 3 + u(0.32)) };
   chalkboard(board);
-  const desk = { cx: Math.round((board.x0 + board.x1) / 2), hw: u(0.26), top: foot - u(0.15) };
-  mat(desk.cx, foot - 1, desk.hw + 4);
-  lowDesk(desk.cx, foot, desk.hw, desk.top);
+  const seat = { x: Math.round((board.x0 + board.x1) / 2), y: foot - 1 };
+  mat(seat.x, seat.y, 22);
   const bag = { x: cx + u(0.32), top: ceil, w: Math.max(5, u(0.09)), h: u(0.38) };
   bag.len = foot - u(0.05) - bag.h - bag.top;
   const [wLit, wood, wDark, wLine] = S.trim;   // the beam it hangs from, across the ceiling
@@ -3075,10 +3075,10 @@ function tutorScene() {
   if (W > s * 1.5) roomWindow(cx + u(0.9), ceil + 3, u(0.14), Math.min(u(0.2), railRow() - ceil - 8));
   life.board = board;
   life.bag = bag;
-  // the tutor stands behind the desk, his legs going down behind its top, between the coin tray and the scroll
-  life.stands = { npc: { x: desk.cx, y: desk.top + 9, cut: desk.top } };
+  // Alder (62x66, drawn at half the scene's pixel size) sits cross-legged in the middle of the mat; his sign is on him
+  life.stands = { npc: { x: seat.x, y: seat.y + 2 } };
   life.eventSpots = [
-    { x0: desk.cx - desk.hw, x1: desk.cx + desk.hw, y0: board.y1 + 3, y1: foot },
+    { x0: seat.x - 16, x1: seat.x + 16, y0: seat.y + 2 - 33, y1: seat.y + 2 },
     { x0: bag.x - bag.w - 4, x1: bag.x + bag.w + 4, y0: bag.top + bag.len - 4, y1: bag.top + bag.len + bag.h },
   ];
   life.foot = foot + 4;
@@ -3108,24 +3108,6 @@ function chalkboard({ x0, x1, y0, y1 }) {
     const y = by + r + 3 + row * 3;
     if (y < y1 - 2) for (let x = x0 + 3; x < x1 - 4; x++) if (noise(x >> 1, row + 5, 3) > 0.3) put(x, y, chalk);
   }
-}
-
-/** A low wooden desk with a coin tray and a rolled scroll on it. */
-function lowDesk(cx, foot, hw, top) {
-  const [wLit, wood, wDark, wLine] = S.trim, [coinLit, coin, coinDark] = S.coin;
-  outlined(cx - hw, top, cx + hw, top + 2, (x, y) => x >= cx - hw && x <= cx + hw && y >= top && y <= top + 2, (x, y) => (y === top ? wLit : wood), wLine);
-  for (const side of [-1, 1]) for (let y = top + 4; y <= foot; y++) {
-    const x = cx + side * (hw - 2);
-    solid(x - 1, y, wLine); solid(x, y, wood); solid(x + 1, y, wDark); solid(x + 2, y, wLine);
-  }
-  groundShadow(cx, foot + 1, hw + 2, 2);
-  const tx = cx - hw + 6;   // the coin tray, heaped with coins, at one end (the tutor stands behind the middle)
-  for (let x = tx - 4; x <= tx + 4; x++) { solid(x, top - 1, wLine); if (Math.abs(x - tx) < 4) solid(x, top - 2, wDark); }
-  for (const [dx, dy] of [[-2, -3], [0, -3], [2, -3], [-1, -4], [1, -4], [0, -5]]) solid(tx + dx, top + dy, dy === -5 ? coinLit : coin);
-  solid(tx - 3, top - 3, coinDark); solid(tx + 3, top - 3, coinDark);
-  const sx = cx + hw - 7, [paper, paperShade] = S.scroll;   // a scroll, tied with a red cord
-  for (let x = sx - 5; x <= sx + 5; x++) { solid(x, top - 3, wLine); solid(x, top - 2, x === sx ? S.cord : paper); solid(x, top - 1, x === sx ? S.cord : paperShade); }
-  solid(sx - 6, top - 2, wLine); solid(sx + 6, top - 2, wLine); solid(sx - 6, top - 1, wLine); solid(sx + 6, top - 1, wLine);
 }
 
 /** A thin straw mat (tatami) on the floor. */
