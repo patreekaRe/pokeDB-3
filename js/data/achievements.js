@@ -108,7 +108,7 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'victini',
-    text: 'Win a run with a deck of 15 cards or fewer',
+    text: 'Win a run on Trainer Level 3 or higher with a deck of 15 cards or fewer',
     test: (s) => s.smallDeckWin,
   },
   {

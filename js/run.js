@@ -1964,7 +1964,7 @@ function endRun(won) {
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
       if (run.restCount <= 3) d.stats.lightRestWin = true;
       if (run.restCount === 0) d.stats.noRestWin = true;
-      if (run.deck.length <= 15) d.stats.smallDeckWin = true;
+      if (run.deck.length <= 15 && run.level >= 3) d.stats.smallDeckWin = true;   // Level 3+ since 2026-09-28: at Level 0 Fire won ~80% of 15-card runs in the bot
       const type = run.starter.type;
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });

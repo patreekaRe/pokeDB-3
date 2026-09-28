@@ -88,8 +88,8 @@ live site.
   `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of `js/data/sprite-fit.js`; a new legendary needs both.
   Sixteen earned ones: Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
-  ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won with 15 cards or
-  fewer), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
+  ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won on Level 3+ with 15 cards or
+  fewer, any Level until 2026-09-28), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
   in `gainTide()` in `js/battle.js`) and Keldeo (wins with 3 different Water starters, Keldeo aside: `winsBy`; was every one you own until 2026-09-28).
   `checkAchievements()` runs after every won fight's Pokédex update (`afterFight()`, so a page's
   legendary is told in that reward box), after each boss, at every run's end, won or lost (so an old save that
