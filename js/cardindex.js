@@ -13,8 +13,8 @@ import { ITEMS } from './data/items.js';
 import { getSave } from './storage.js';
 import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
 
-const TABS = ['fire', 'grass', 'water', 'normal', 'relics', 'items'];
-const TAB_LOOK = { relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
+const TABS = ['fire', 'grass', 'water', 'normal', 'mystery', 'relics', 'items'];
+const TAB_LOOK = { mystery: { icon: '❓', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
 
 let tab = 'fire';
@@ -85,7 +85,8 @@ function renderThings() {
 
 function render() {
   $('index-cards').classList.remove('index-things');
-  if (TAB_LOOK[tab]) renderThings();
+  if (tab === 'mystery') renderMystery();
+  else if (TAB_LOOK[tab]) renderThings();
   else renderCards();
   $('index-dialog').scrollTop = 0;
   for (const btn of document.querySelectorAll('.index-tab')) {
@@ -110,6 +111,22 @@ function renderCards() {
   }
   $('index-cards').replaceChildren(...body);
   $('index-total').textContent = `${cards.filter(c => seen.has(c.id)).length}/${cards.length} found`;
+}
+
+/** The fourth type's tab (Mewtwo's, coming in v1.0): blank "???" cards, so there's nothing to give away yet. */
+function renderMystery() {
+  const blank = () => {
+    const node = lockedCard(ALL_CARDS[0]);
+    node.querySelector('.card-art').replaceChildren();
+    node.querySelector('.card-type').textContent = '???';
+    return node;
+  };
+  const head = el('div', 'index-head');
+  const title = el('h3', 'index-heading', '???');
+  title.append(el('span', 'index-count', '?/?'));
+  head.append(title, el('p', 'index-note', 'Moves no starter has learned yet.'));
+  $('index-cards').replaceChildren(head, ...Array.from({ length: 8 }, blank));
+  $('index-total').textContent = '?/? found';
 }
 
 function pick(type, focus = false) {

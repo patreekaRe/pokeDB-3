@@ -2377,6 +2377,7 @@ body.battle-intro { pointer-events: none; }
 .index-tab.type-fire  { --c1: #ff8f4d; --c2: #b8321a; }
 .index-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
 .index-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
+.index-tab.type-mystery { --c1: #8a6ad8; --c2: #3c2a78; }
 .index-tab-icon { font-size: 1.1rem; line-height: 1; }
 .index-tab:hover { background: var(--win-tile); }
 .index-tab[aria-selected="true"] { border-color: var(--c2); background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); transform: translateY(-2px); box-shadow: 2px 4px 0 var(--win-shadow); }

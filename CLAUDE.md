@@ -1186,7 +1186,7 @@ beaten counts once). Main menu's icon is the games' cream PC (🖥️, with the 
 letters in `PALETTE`). The
 **Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the
 Poké Ball menu and the Collection's Moves, Relics and Items cards: every card in `ALL_CARDS`,
-a sticky tab row per type (Fire, Grass, Water, Neutral), grouped by rarity and
+a sticky tab row per type (Fire, Grass, Water, Neutral, then a purple **???** for Mewtwo's coming Psychic pool: `renderMystery()`, 8 blank locked cards, counted nowhere; the user's ask 2026-09-28), grouped by rarity and
 then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name at
 stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
 else the last tab; new cards show up there on their own. Two more tabs, Relics and Items (the user's call,
