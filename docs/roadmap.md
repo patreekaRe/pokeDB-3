@@ -666,7 +666,7 @@ last act only a special run reaches.
    Mewtwo's shiny (`SHINY_COSTS` skips it today).
 
 **Parts, one session each:**
-- **A. Mewtwo's deck.** (The Index already has a "???" tab for it, `renderMystery()` in `js/cardindex.js`: swap `'mystery'` in `TABS` for `'psychic'` and drop it once the pool exists.; likewise the character select's type chip reads "❓ ???" via `PSYCHIC` in `js/select.js` until Psychic joins `TYPES`.) A Psychic pool in `js/data/cards.js`, each card on a StS model like the others (docs/card-design.md
+- **A. Mewtwo's deck.** (The Index already has a "???" tab for it, `renderMystery()` in `js/cardindex.js`: swap `'mystery'` in `TABS` for `'psychic'` and drop it once the pool exists.; likewise the character select's type chip reads "???" via `PSYCHIC` in `js/select.js` until Psychic joins `TYPES`.) A Psychic pool in `js/data/cards.js`, each card on a StS model like the others (docs/card-design.md
   style: archetypes, an `upgrade` each, `describe()` lines, `cardTerms()` for any new term). Psychic is new to the type
   chart (`typeMultiplier()`): simplest is Neutral both ways, since biome 1-3 wilds are Fire/Grass/Water. Its Ability,
   its evolution/power-up (a legendary: aura GIFs from `tools/legendary-aura.py mewtwo psychic`), then `comingSoon` off.

@@ -14,7 +14,7 @@ import { getSave } from './storage.js';
 import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
 
 const TABS = ['fire', 'grass', 'water', 'normal', 'mystery', 'relics', 'items'];
-const TAB_LOOK = { mystery: { icon: '❓', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
+const TAB_LOOK = { mystery: { icon: '🔒', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
 
 let tab = 'fire';
