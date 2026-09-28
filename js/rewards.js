@@ -8,7 +8,6 @@ import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar } from './ui.js';
 import { playSound } from './audio.js';
-import { markSeen } from './storage.js';
 
 /* ---------- what you get offered ---------- */
 
@@ -282,10 +281,7 @@ function finishLine() {
 }
 
 /** Ready-made option tiles. */
-export const cardOption = (card, stage, onPick, count = 1) => {
-  markSeen('cards', card.id);
-  return { node: makeCard(card, { stage, count }), onPick };
-};
+export const cardOption = (card, stage, onPick, count = 1) => ({ node: makeCard(card, { stage, count }), onPick });
 export const relicOption = (relic, onPick) => ({ node: makeRelic(relic), onPick });
 
 /** A simple tile with an icon (an emoji, or an element such as itemSprite()) and text. */

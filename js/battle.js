@@ -574,6 +574,7 @@ async function playCard(uid) {
  */
 async function resolveCard(card, x, { exhaust = false } = {}) {
   const b = battle;
+  markSeen('cards', card.id);   // a move is met in the Index once played, not when offered (the user's call); Metronome's too
   b.played += 1;
   if (isAttack(card)) b.attacks += 1;
   playSound('card');
@@ -878,7 +879,6 @@ function pickFromPile(cards, prompt, verb = 'Take back') {
     };
     const row = el('div', 'pile-pick');
     for (const card of cards) {
-      markSeen('cards', card.id);
       const node = makeCard(card, { stage: battle.stage });
       node.classList.add('pile-card');
       node.tabIndex = 0;
@@ -1532,7 +1532,6 @@ function renderHand() {
 
   b.hand.forEach((entry, i) => {
     const { card } = entry;
-    markSeen('cards', card.id);   // Metronome's and the TM's cards, too
     const node = makeCard(card, { stage: b.stage, cost: costOf(card) });
     node.classList.add('in-hand');
 

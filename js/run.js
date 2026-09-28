@@ -226,7 +226,6 @@ export function beginRun(starter, level = 0) {
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     over: false,
   };
-  for (const id of run.deck) markSeen('cards', id);
 
   if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
     const relic = randomStartingRelic();
