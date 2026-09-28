@@ -385,7 +385,7 @@ What the overnight chain did, one session per big step (details and bot numbers 
      - Victini: win a run with a deck of 15 cards or fewer.
      - Heatran: win a run without resting at a Pokémon Center.
      - Manaphy: hold 20 Tide at once in a fight (Water's own mechanic; the "6 Mart relics" idea was dropped as unclear).
-     - Keldeo: win a run with every Water starter you own.
+     - Keldeo: win a run with every Water starter you own (since 2026-09-28: with 5 different Water starters, the user's call).
    - Needs: starter entries, 6 + 6 shiny sprites each (legendaries 2 + 2), cries (PokeAPI, see step 3), `SPRITE_FIT`
      entries, achievement stats (deck size at the win, no-rest win, max Tide), and the Game Corner rows. Mewtwo stays "unlock
      every other Pokémon" for now; the user will adjust it later.

@@ -122,11 +122,11 @@ export const ACHIEVEMENTS = [
     test: (s) => s.maxTide >= 20,
   },
   {
-    // Keldeo itself doesn't count, or it could never be earned.
+    // Keldeo itself doesn't count, or it could never be earned. 5 of the 10 others (the user's call, 2026-09-28: "every one
+    // you own" was a single Squirtle win for a new player).
     starter: 'keldeo',
-    text: 'Win a run with every Water starter you own',
-    test: (s, save) => STARTERS.filter(st => st.type === 'water' && st.id !== 'keldeo' && (st.free || save.unlocked.includes(st.id)))
-      .every(st => (s.winsBy[st.id] || 0) >= 1),
+    text: 'Win a run with 5 different Water starters',
+    test: (s) => STARTERS.filter(st => st.type === 'water' && st.id !== 'keldeo' && (s.winsBy[st.id] || 0) >= 1).length >= 5,
   },
   // Must stay last: checkAchievements() grants in order, so this sees any
   // starter unlocked by the entries above in the same check.
