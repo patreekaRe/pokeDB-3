@@ -2807,21 +2807,39 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
    its two halves, so their signs lean apart */
 .well-room .reward-option:first-child .center-label { translate: -80% 0; }
 .well-room .reward-option + .reward-option .center-label { translate: -20% 0; }
-/* people and Pokémon standing in an event's scene (the grunt and their Alpha, placeEventSpots()); an Alpha glows red
+/* people and Pokémon standing in an event's scene (eventFigure(), placed by placeEventSpots()); an Alpha glows red
    like an elite in battle. The grunt hops when the coins land (the scene's pay act) and shakes a fist as you run. */
 .event-figure {
   position: fixed;
   z-index: 1;
   pointer-events: none;
-  image-rendering: pixelated;
 }
+.event-figure img { display: block; width: 100%; image-rendering: pixelated; }
 .event-figure.alpha { filter: drop-shadow(0 0 6px #ff3b3b); }
 .event-figure.flip { scale: -1 1; }
 .event-figure.hop { animation: figureHop 0.5s steps(4) 1s 2; }
 .event-figure.shake { animation: figureShake 0.25s steps(2) 0.25s 4; }
 @keyframes figureHop { 50% { translate: 0 -10px; } }
 @keyframes figureShake { 25% { translate: -4px 0; } 75% { translate: 4px 0; } }
-@media (prefers-reduced-motion: reduce) { .event-figure { animation: none; } }
+/* the event trainers (NPCS in js/data/events.js) are stills in three layers (legs, upper body, head) that move a whole
+   sprite pixel at a time (--h / --w are the sprite's size, so 100% / var(--h) is one of its pixels): the upper body
+   breathes, the head bobs while the text box types and nods or shakes, and an eyes-closed head blinks in */
+.npc-upper, .npc-head { position: absolute; inset: 0; }
+.npc-upper img, .npc-head img { position: absolute; left: 0; top: 0; }
+.npc-shut { visibility: hidden; }
+.event-figure.npc-blink .npc-shut { visibility: visible; }
+.npc-upper { animation: npcBreathe 2.8s steps(1) var(--phase, 0s) infinite; }
+:where(#reward-screen:has(#reward-log.typing)) .event-figure.npc .npc-head { animation: npcDip 0.3s steps(1) infinite; }
+.event-figure.npc.npc-nod .npc-head { animation: npcNod 0.8s steps(1) 2; }
+.event-figure.npc.npc-no .npc-head { animation: npcNo 0.3s steps(1) 0.2s 3; }
+.event-figure.npc-jump { animation: figureHop 0.5s steps(4) 0.2s 2; }
+.event-figure.npc-turn { scale: -1 1; }
+.event-figure.flip.npc-turn { scale: 1 1; }
+@keyframes npcBreathe { 50% { translate: 0 calc(100% / var(--h, 64)); } }
+@keyframes npcDip { 50% { translate: 0 calc(100% / var(--h, 64)); } }
+@keyframes npcNod { 20% { translate: 0 calc(100% / var(--h, 64)); } 40% { translate: 0 calc(200% / var(--h, 64)); } 70% { translate: 0 calc(100% / var(--h, 64)); } }
+@keyframes npcNo { 25% { translate: calc(-100% / var(--w, 32)) 0; } 75% { translate: calc(100% / var(--w, 32)) 0; } }
+@media (prefers-reduced-motion: reduce) { .event-figure, .event-figure * { animation: none !important; } }
 @media (prefers-reduced-motion: reduce) { .center-label { animation: none; } }
 
 /* ---------- the treasure grotto (treasureRoom() in js/run.js): a Poké Ball chest on the scene's dais, sized in the

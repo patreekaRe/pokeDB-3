@@ -81,4 +81,14 @@ export const EVENTS = [
   },
 ];
 
+/* The trainers standing in four events (kyledove's still sprites, `assets/trainers/<id>.png`, with an eyes-closed
+   `<id>-blink.png`). eventFigure() in js/run.js cuts each into layers so it can breathe and talk a whole pixel at a
+   time: `head` is [left, right, bottom] in sprite pixels, `waist` the row the upper body dips from. */
+export const NPCS = {
+  tutor: { head: [8, 24, 17], waist: 44 },      // the Move Tutor (kyledove's Scientist)
+  deleter: { head: [24, 44, 17], waist: 36 },   // the Move Deleter (Augustine Sycamore)
+  daycare: { head: [12, 34, 18], waist: 38 },   // the Day-Care Lady (Agatha)
+  chairman: { head: [7, 27, 18], waist: 40 },   // the Fan Club's Chairman (Founder)
+};
+
 export const EVENTS_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));

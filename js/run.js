@@ -23,7 +23,7 @@ import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
-import { EVENTS, EVENTS_BY_ID } from './data/events.js';
+import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
 import { generateMap, renderMap, scopeable } from './map.js';
@@ -1203,15 +1203,18 @@ const EVENT_SCENES = {
   'move-tutor': 'tutor', 'move-deleter': 'deleter', 'day-care': 'daycare', 'fan-club': 'fans',
 };
 
-function eventRoom(node) {
+/** An event's room; `after` is its trainer's reaction (a figureDoes() move) once its picker is done: then the room has no
+    choices, the text box says what happened, and closing it (or Leave) goes on to the map. */
+function eventRoom(node, after) {
   const event = EVENTS_BY_ID[node.event.id];
   const back = () => eventRoom(node);
-  const { options, leave = true, sub = event.text, figures, vitals } = EVENT_CHOICES[event.id](event, node.event, back);
+  const react = (move) => () => eventRoom(node, move);
+  const { options, leave = true, sub = event.text, figures, vitals } = EVENT_CHOICES[event.id](event, node.event, back, react);
   const scene = EVENT_SCENES[event.id];
   showChoice({
     title: `${event.icon} ${event.name}`,
-    sub,
-    options,
+    sub: after ? [] : sub,
+    options: after ? [] : options,
     skipLabel: 'Leave',
     onSkip: leave ? showMap : undefined,
     layout: scene ? `event-room ${scene}-room` : '',
@@ -1221,18 +1224,63 @@ function eventRoom(node) {
     $('reward-options').append(eventVitals());
     setHpBar('event', run.hp, run.maxHp);
   }
-  // people and Pokémon standing in the scene (the grunt and his Alpha, the Day Care's and the Fan Club's Pokémon) are
-  // real sprites, on the scene's `stands`; `flip` turns one to face the other way (front sprites all face left)
-  for (const [stand, { src, alpha, flip }] of Object.entries(figures || {})) {
-    const sprite = el('img', `event-figure${alpha ? ' alpha' : ''}${flip ? ' flip' : ''}`);
-    sprite.src = src;
-    sprite.alt = '';
-    sprite.dataset.stand = stand;
-    sprite.addEventListener('load', placeEventSpots);
-    $('reward-options').append(sprite);
-  }
+  for (const [stand, figure] of Object.entries(figures || {})) $('reward-options').append(eventFigure(stand, figure));
   showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type });
   placeEventSpots();
+  if (!after) return;
+  figureDoes('npc', after);
+  const box = $('reward-log'), read = box.onclick;
+  if (box.hidden) return;
+  box.onclick = () => { read(); if (box.hidden) showMap(); };
+}
+
+/** Someone standing in an event's scene, on its `stands` (placeEventSpots()): the grunt and their Alpha, the Pokémon
+    at the Day Care and the Fan Club, or a trainer (`npc`, an id in NPCS) who breathes, blinks, and bobs their head
+    while the text box types. `flip` turns one round (front sprites all face left). */
+function eventFigure(stand, { src, alpha, flip, npc }) {
+  const figure = el('div', `event-figure${alpha ? ' alpha' : ''}${flip ? ' flip' : ''}${npc ? ' npc' : ''}`);
+  figure.dataset.stand = stand;
+  const img = (cls, file = src) => {
+    const sprite = el('img', cls);
+    sprite.src = file;
+    sprite.alt = '';
+    return sprite;
+  };
+  if (!npc) {
+    const sprite = img('');
+    sprite.addEventListener('load', placeEventSpots);
+    figure.append(sprite);
+    return figure;
+  }
+  // a still sprite, cut into legs, upper body and head so each can move by whole pixels (a scaled image would drop a row
+  // somewhere in the face); the head holds an eyes-closed copy over the open one for blinking
+  src = `assets/trainers/${npc}.png`;
+  const legs = img('npc-legs'), upper = el('div', 'npc-upper'), torso = img('npc-torso'), head = el('div', 'npc-head');
+  head.append(img(''), img('npc-shut', `assets/trainers/${npc}-blink.png`));
+  upper.append(torso, head);
+  figure.append(legs, upper);
+  figure.style.setProperty('--phase', `${-Math.random() * 3}s`);
+  legs.addEventListener('load', () => {
+    const { naturalWidth: w, naturalHeight: h } = legs, { head: [x0, x1, y1], waist } = NPCS[npc];
+    const x = (px) => `${px / w * 100}%`, y = (px) => `${px / h * 100}%`;
+    figure.style.setProperty('--w', w);
+    figure.style.setProperty('--h', h);
+    legs.style.clipPath = `inset(${y(waist)} 0 0 0)`;
+    torso.style.clipPath = `polygon(0 0, ${x(x0)} 0, ${x(x0)} ${y(y1)}, ${x(x1)} ${y(y1)}, ${x(x1)} 0, 100% 0, 100% ${y(waist)}, 0 ${y(waist)})`;
+    head.style.clipPath = `inset(0 ${x(w - x1)} ${y(h - y1)} ${x(x0)})`;
+    placeEventSpots();
+  }, { once: true });
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) blinkNow(figure);
+  return figure;
+}
+
+/** A trainer blinks every 2-6 s, for ~120 ms, until the room closes. */
+function blinkNow(figure) {
+  setTimeout(() => {
+    if (!figure.isConnected) return;
+    figure.classList.add('npc-blink');
+    setTimeout(() => { figure.classList.remove('npc-blink'); blinkNow(figure); }, 120);
+  }, 2000 + Math.random() * 4000);
 }
 
 /** Your HP on an event where it decides the choice (the Hot Spring's soak or dip, an HP price): one slim row under the
@@ -1274,8 +1322,15 @@ async function playOut(act, opts) {
   return run === thisRun;
 }
 
-/** The grunt's sprite reacts to a choice as it plays out (a CSS animation timed to the scene's act). */
-const gruntDoes = (move) => $('reward-options').querySelector('[data-stand="trainer"]')?.classList.add(move);
+/** Someone in the scene reacts to a choice (a CSS animation timed to the scene's act, run again if it already ran): the
+    grunt hops or shakes; a trainer jumps, nods, shakes their head (npc-no) or turns round (npc-turn, until the room closes). */
+function figureDoes(stand, move) {
+  const figure = $('reward-options').querySelector(`[data-stand="${stand}"]`);
+  if (!figure) return;
+  figure.classList.remove(move);
+  void figure.offsetWidth;
+  figure.classList.add(move);
+}
 
 /** Lay the event's choices over its props; the scene tells us whenever it repaints. */
 function placeEventSpots() {
@@ -1287,14 +1342,17 @@ function placeEventSpots() {
     const w = Math.max(r.width, 56), h = Math.max(r.height, 56);
     Object.assign(btn.style, { left: `${r.left + (r.width - w) / 2}px`, top: `${r.top + r.height - h}px`, width: `${w}px`, height: `${h}px` });
   });
-  box.querySelectorAll('.event-figure').forEach(sprite => {
-    const at = spots.stands[sprite.dataset.stand];
+  box.querySelectorAll('.event-figure').forEach(figure => {
+    const at = spots.stands[figure.dataset.stand], sprite = figure.querySelector('img');
     if (!sprite.naturalWidth || !at) return;
     // half the scene's pixel size, like Chansey at the Center, its resting pose (SPRITE_FIT) centred on its feet
     const k = spots.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
-    const [, bottom, fitLeft, fitRight] = spriteFit(sprite.src), flip = sprite.classList.contains('flip');
+    const [, bottom, fitLeft, fitRight] = spriteFit(sprite.src), flip = figure.classList.contains('flip');
     const [left, right] = flip ? [fitRight, fitLeft] : [fitLeft, fitRight];
-    Object.assign(sprite.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
+    const top = at.y - (h - bottom) * k;
+    Object.assign(figure.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${top}px` });
+    // a stand with a `cut` is behind something (the tutor's desk): the figure ends there
+    figure.style.clipPath = at.cut === undefined ? '' : `inset(0 0 ${Math.max(0, top + h * k - at.cut)}px 0)`;
   });
   const vitals = box.querySelector('.event-vitals'), title = $('reward-title');
   if (vitals) vitals.style.top = `${title.getBoundingClientRect().bottom + 10}px`;
@@ -1329,28 +1387,34 @@ const EVENT_CHOICES = {
     ] };
   },
 
-  'move-tutor'(event, state, back) {
+  'move-tutor'(event, state, back, react) {
     const price = perBiome(event.price);
     const hpCost = perBiome(event.hpCost);
-    // the lesson plays out first; you pay only once a move is picked, so backing out of the picker is free
-    const teach = (act, pay) => async () => { if (await playOut(act)) tutorCards(back, pay); };
-    return { vitals: true, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
+    // the lesson plays out first (he nods along at the board, or turns to watch you at the sandbag); you pay only once a
+    // move is picked, so backing out of the picker is free, and then he nods: well learned
+    const teach = (act, pay) => async () => {
+      figureDoes('npc', act === 'train' ? 'npc-turn' : 'npc-nod');
+      if (await playOut(act)) tutorCards(back, pay, react('npc-nod'));
+    };
+    return { vitals: true, figures: { npc: { npc: 'tutor' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
       spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { run.money -= price; setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
     ] };
   },
 
-  'move-deleter'(event, state, back) {
+  'move-deleter'(event, state, back, react) {
     const hpCost = Math.ceil(run.maxHp * event.doubleHpCost);
     const canOne = run.deck.length > MIN_DECK;
     const canTwo = run.deck.length > MIN_DECK + 1;
+    // he hops for joy once a move is gone, and shakes his head if you back out of his picker
+    const gone = react('npc-jump'), refuse = () => { back(); figureDoes('npc', 'npc-no'); };
     // the HP is only paid once the second move is actually forgotten; stopping after one is free
-    const second = () => forgetMove(showMap, () => { loseHp(hpCost); tell(`Lost ${hpCost} HP.`); showMap(); }, 'Stop at one (free)');
-    return { vitals: true, figures: { mon: { src: 'assets/pokemon/slowpoke-front.gif' } }, options: [
+    const second = () => forgetMove(gone, () => { loseHp(hpCost); tell(`Lost ${hpCost} HP.`); gone(); }, 'Stop at one (free)');
+    return { vitals: true, figures: { npc: { npc: 'deleter' }, mon: { src: 'assets/pokemon/slowpoke-front.gif' } }, options: [
       spotOption('Forget a move', canOne ? 'Free: he erases one card from your deck.' : `Your deck is at the minimum (${MIN_DECK} cards).`,
-        async () => { if (await playOut('erase')) forgetMove(back); }, !canOne),
+        async () => { if (await playOut('erase')) forgetMove(refuse, gone); }, !canOne),
       spotOption(`Forget two -${hpCost} HP`, canTwo ? `The pendulum takes two cards, and ${hpCost} HP.` : `Needs a deck of ${MIN_DECK + 2} cards or more.`,
-        async () => { if (await playOut('hypno')) forgetMove(back, second); }, !canTwo || run.hp <= hpCost),
+        async () => { if (await playOut('hypno')) forgetMove(refuse, second); }, !canTwo || run.hp <= hpCost),
     ] };
   },
 
@@ -1406,7 +1470,7 @@ const EVENT_CHOICES = {
         run.money -= toll;
         setMoney(run.money);
         playSound('buy');
-        gruntDoes('hop');
+        figureDoes('trainer', 'hop');
         if (!await playOut('pay')) return;
         tell(`The grunt took ₽${toll}.`);
         showMap();
@@ -1414,7 +1478,7 @@ const EVENT_CHOICES = {
       spotOption('Battle!', 'Elite fight, elite rewards.', () => fight({ ...node, type: 'elite', enemyId: state.enemyId })),
       spotOption('Run', `Lose ${flee} HP.`, async () => {
         playSound('run-away');
-        gruntDoes('shake');
+        figureDoes('trainer', 'shake');
         if (!await playOut('run')) return;
         loseHp(flee);
         await showHpChange();
@@ -1424,11 +1488,14 @@ const EVENT_CHOICES = {
     ] };
   },
 
-  'day-care'(event, state, back) {
+  'day-care'(event, state, back, react) {
     const trades = dayCareTrades(event, state);
-    return { figures: { left: { src: 'assets/pokemon/miltank-front.gif', flip: true }, right: { src: 'assets/pokemon/marill-front.gif' } }, options: [
+    return { figures: {
+      npc: { npc: 'daycare' }, left: { src: 'assets/pokemon/miltank-front.gif', flip: true }, right: { src: 'assets/pokemon/marill-front.gif' },
+    }, options: [
+      // she (behind Marill) turns to fetch the trade, and faces you again with a hop once it's done
       spotOption('Trade a move', trades.length ? 'Give a common or uncommon card, get one a rarity higher.' : 'You have no common or uncommon cards they can trade.',
-        async () => { if (await playOut('trade')) dayCare(trades, back); }, !trades.length),
+        async () => { figureDoes('npc', 'npc-turn'); if (await playOut('trade')) dayCare(trades, back, react('npc-jump')); }, !trades.length),
     ] };
   },
 
@@ -1469,17 +1536,19 @@ const EVENT_CHOICES = {
       $('reward-options').querySelectorAll('.event-figure').forEach(fan => fan.classList.add('hop'));
       if (await playOut('cheer')) then();
     };
-    const view = { vitals: true, figures: { left: { src: 'assets/pokemon/persian-front.gif', flip: true }, right: { src: 'assets/pokemon/cinccino-front.gif' } } };
+    const view = { vitals: true, figures: { left: { src: 'assets/pokemon/persian-front.gif', flip: true }, right: { src: 'assets/pokemon/cinccino-front.gif' }, npc: { npc: 'chairman' } } };
     const why = 'Healthy Pokémon (over half HP) get prize money; tired ones get looked after.';
     if (healthy) return { ...view, sub: [event.text, why], options: [spotOption('Show off', `The fans are thrilled! They give you ₽${money}.`, () => cheer(collect))] };
     if (run.items.length < itemSlots()) {
       markSeen('items', item.id);
-      return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => cheer(() =>
+      return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => cheer(() => {
+        figureDoes('npc', 'npc-jump');   // the Chairman, as he hands it over
         revealGift(item, [`The fans gave you a ${item.name}!`, item.text], () => {
           run.items.push(item.id);
           tell(`Put the ${item.name} in the Bag.`);
           showMap();
-        })))] };
+        });
+      }))] };
     }
     return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you ₽${money}.`, () => cheer(collect))] };
   },
@@ -1508,14 +1577,14 @@ function dayCareTrades(event, state) {
     .filter(entry => entry.gets);
 }
 
-function dayCare(trades, back) {
+function dayCare(trades, back, done = showMap) {
   showChoice({
     title: 'Day Care',
     sub: 'Choose a move to trade. A common comes back uncommon, and an uncommon comes back rare.',
     options: trades.map(({ card, count, gets }) => cardOption(card, run.stage, () => {
       run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
       tell(`${card.name} was traded for ${gets.name}!`);
-      showMap();
+      done();
     }, count)),
     skipLabel: 'Back',
     onSkip: back,
@@ -1523,7 +1592,7 @@ function dayCare(trades, back) {
 }
 
 /** The Move Tutor's lesson: 3 rare moves (or the best on offer if you own every rare), paid for only when one is learned. */
-function tutorCards(back, pay) {
+function tutorCards(back, pay, done = showMap) {
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
   const cards = rares.length ? rares.sort(() => Math.random() - 0.5).slice(0, 3) : cardChoices(run, 'boss');
@@ -1534,7 +1603,7 @@ function tutorCards(back, pay) {
       pay();
       run.deck.push(card.id);
       tell(`${card.name} added to your deck.`);
-      showMap();
+      done();
     })),
     skipLabel: 'Back',
     onSkip: back,

@@ -454,7 +454,7 @@ and their Alpha standing at it as real GIFs (the choice returns `figures`, `{ st
 `.event-figure` stands on the scene's `life.stands` at half the scene's pixel size, like Chansey, fitted by
 `SPRITE_FIT`). The grunt is male or female (`grunts` in `js/data/events.js`, rolled into `node.event.grunt`;
 saves from before fall back to the first), animated HGSS-style sprites by justin8964 in `assets/trainers/`,
-credited in About. Paying throws coins into the grunt's hand and `gruntDoes('hop')` hops the sprite as they
+credited in About. Paying throws coins into the grunt's hand and `figureDoes('trainer', 'hop')` hops the sprite as they
 land; Battle goes straight to the fight; Run shakes the bush (and `shake`s the grunt). Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome) is a
 close-up with a scene of its own, not a prop in the biome's (the user found it "very small"): like the grotto, no `outdoor`,
 a look per biome from `biomes` (`wall`: a Clearing wall of leaves `foliage()`, the Shrine's misty cedars with a roped
@@ -478,7 +478,20 @@ act `erase`; a hypnotist's pendulum: forget two, act `hypno`; a dozing Slowpoke 
 clapboard front with a DAY CARE board in the 3x5 `pixelText()` font, a picket fence, an Egg in a straw nest, act
 `trade`; Miltank and Marill figures) and the **Fan Club** (striped paper, portraits, pennants, a red carpet to a stage
 under a spotlight, act `cheer`: confetti and hearts, the fans hop; Persian and Cinccino figures; a Super Potion gift
-floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). The outdoor ones (Berry Tree, Wishing Well, Item Ball, Team
+floats up with `revealGift()`). A figure's `flip` turns it round (front sprites face left). **Event NPCs** (step from 2026-09-28): a trainer stands in
+each of those four rooms (`figures.npc = { npc: id }`, `NPCS` in `js/data/events.js`): the Move Tutor (behind his desk, cut
+off above it by the stand's `cut`), the Move Deleter (behind the dozing Slowpoke), the Day-Care Lady (behind Marill) and
+the Fan Club's Chairman (on the stage). They're kyledove's still sprites from Pokéngine (credited in About),
+`assets/trainers/<id>.png` plus a hand-painted eyes-closed `<id>-blink.png`, at the grunts' scale. `eventFigure()` in
+`js/run.js` cuts each into legs, upper body and head layers (clip-paths from `NPCS`' `head` box and `waist` row) so they move
+a whole sprite pixel at a time: the upper body breathes (a 2.8 s loop, random phase), the head bobs while the text box
+types (`sayLines()` puts `.typing` on it), and the eyes-closed head blinks in for 120 ms every 2-6 s (`blinkNow()`).
+Reactions go through `figureDoes(stand, move)`: `npc-nod`, `npc-no` (head shake), `npc-jump`, `npc-turn` (faces the other
+way until the room closes). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
+when you back out of his picker; the Day-Care Lady turns on a trade; the Chairman jumps handing over his gift. A done
+picker comes back to the room (`eventRoom(node, after)`, from the choice's `react(move)`): no choices, the NPC does `after`
+(the Tutor nods, the Deleter and the Day-Care Lady jump) while the text box says what happened, and closing the box or
+Leave goes on to the map. All of it stops under reduced motion. The outdoor ones (Berry Tree, Wishing Well, Item Ball, Team
 Rocket) are close-ups too: their art's `zoom` (1.75) makes `resize()` paint the scene with bigger pixels, as far as
 their props (`span` pixels across) still fit the screen, so a narrow phone zooms less than a PC. Where HP decides the choice
 (every event but the Wishing Well and Day Care) the choice returns `vitals: true`: a slim HP row (the battle's

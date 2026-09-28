@@ -2046,7 +2046,9 @@ export function eventSpots() {
   if (!life.eventSpots || !canvas || !S?.raw.prop) return null;
   const box = canvas.getBoundingClientRect(), sx = box.width / W, sy = box.height / H;
   const rect = ({ x0, x1, y0, y1 }) => ({ left: box.left + x0 * sx, top: box.top + y0 * sy, width: (x1 - x0 + 1) * sx, height: (y1 - y0 + 1) * sy });
-  const stands = Object.fromEntries(Object.entries(life.stands || {}).map(([k, p]) => [k, { x: box.left + (p.x + 0.5) * sx, y: box.top + p.y * sy }]));
+  const stands = Object.fromEntries(Object.entries(life.stands || {}).map(([k, p]) => [k, {
+    x: box.left + (p.x + 0.5) * sx, y: box.top + p.y * sy, cut: p.cut === undefined ? undefined : box.top + p.cut * sy,
+  }]));
   return { spots: life.eventSpots.map(rect), foot: box.top + life.foot * sy, stands, px: sx };
 }
 
@@ -2652,7 +2654,7 @@ function barricade(cx, foot, hw) {
   ], { k: line, b: black, R: red });
 }
 
-/** The bush and the acts (the grunt's sprite hops or shakes by itself, gruntDoes() in js/run.js): paying throws coins into
+/** The bush and the acts (the grunt's sprite hops or shakes by itself, figureDoes() in js/run.js): paying throws coins into
     the grunt's hand; running shakes the bush and throws leaves out of it. */
 function drawRocket() {
   const pay = actFrame('pay'), flee = actFrame('run'), g = life.stands.trainer, bush = life.bush;
@@ -3073,6 +3075,8 @@ function tutorScene() {
   if (W > s * 1.5) roomWindow(cx + u(0.9), ceil + 3, u(0.14), Math.min(u(0.2), railRow() - ceil - 8));
   life.board = board;
   life.bag = bag;
+  // the tutor stands behind the desk, cut off just above its top so the coin tray and the scroll stay in front of him
+  life.stands = { npc: { x: desk.cx, y: desk.top + 9, cut: desk.top - 3 } };
   life.eventSpots = [
     { x0: desk.cx - desk.hw, x1: desk.cx + desk.hw, y0: board.y1 + 3, y1: foot },
     { x0: bag.x - bag.w - 4, x1: bag.x + bag.w + 4, y0: bag.top + bag.len - 4, y1: bag.top + bag.len + bag.h },
@@ -3179,7 +3183,7 @@ function deleterScene() {
   pendulumStand(pend.x, foot, pend.top, u(0.12));
   life.book = { x: lec.x, y: lec.top - 2, w: Math.round(u(0.2) * 0.9) };
   life.pendulum = pend;
-  life.stands = { mon: { x: cx + u(0.02), y: foot + u(0.06) } };
+  life.stands = { npc: { x: cx - u(0.03), y: foot - u(0.03) }, mon: { x: cx + u(0.02), y: foot + u(0.06) } };
   life.eventSpots = [
     { x0: lec.x - u(0.18), x1: lec.x + u(0.18), y0: lec.top - u(0.1), y1: foot },
     { x0: pend.x - u(0.12), x1: pend.x + u(0.12), y0: pend.top, y1: foot },
@@ -3268,7 +3272,7 @@ function daycareScene() {
   groundShadow(nest.x, nest.y + 2, nest.r + 3, 3);
   strawNest(nest.x, nest.y, nest.r);
   life.egg = { x: nest.x, y: nest.y - 1, r: Math.max(4, Math.round(nest.r * 0.62)) };
-  life.stands = { left: { x: cx - u(0.36), y: foot - u(0.02) }, right: { x: cx + u(0.34), y: foot + u(0.03) } };
+  life.stands = { left: { x: cx - u(0.36), y: foot - u(0.02) }, right: { x: cx + u(0.34), y: foot + u(0.03) }, npc: { x: cx + u(0.33), y: foot - u(0.1) } };
   for (const p of Object.values(life.stands)) groundShadow(p.x, p.y, u(0.08), 2);
   life.eventSpots = [{ x0: nest.x - nest.r - 2, x1: nest.x + nest.r + 2, y0: nest.y - life.egg.r * 3, y1: nest.y + 3 }];
   life.foot = foot + 4;
@@ -3372,6 +3376,7 @@ function fanScene() {
   life.stage = stage;
   life.stands = { left: { x: cx - u(0.36), y: foot + u(0.05) }, right: { x: cx + u(0.38), y: foot + u(0.07) } };
   for (const p of Object.values(life.stands)) groundShadow(p.x, p.y, u(0.08), 2);
+  life.stands.npc = { x: stage.x - Math.round(stage.rx * 0.3), y: stage.y + 1 };   // the Chairman, on his stage
   life.eventSpots = [{ x0: stage.x - stage.rx, x1: stage.x + stage.rx, y0: stage.y - stage.ry - u(0.24), y1: stage.y + stage.ry + stage.h }];
   life.foot = foot + 4;
   life.confetti = Array.from({ length: Math.round(W / 3) }, (_, i) => ({ x: rand() * W, y: -rand() * H * 0.6, vx: (rand() - 0.5) * 0.6, vy: 0.8 + rand() * 1.2, c: i % S.flags.length }));

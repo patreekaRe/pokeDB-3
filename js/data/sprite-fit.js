@@ -68,6 +68,9 @@ export const SPRITE_FIT = {
   'grovyle-back': [14, 1, 4, 8],
   'grovyle-front': [12, 0, 4, 2],
   'growlithe-front': [6, 1, 3, 5],
+  'chairman': [0, 0, 0, 0],   // the event NPCs are stills that fill their frames
+  'daycare': [0, 0, 0, 0],
+  'deleter': [0, 0, 0, 0],
   'grunt-f': [13, 1, 16, 27],
   'grunt-m': [15, 1, 20, 19],
   'heatmor-front': [3, 0, 20, 4],
@@ -201,6 +204,7 @@ export const SPRITE_FIT = {
   'treecko-front': [13, 6, 1, 1],
   'turtwig-back': [1, 0, 1, 0],
   'turtwig-front': [1, 0, 0, 0],
+  'tutor': [0, 0, 0, 0],
   'typhlosion-back': [2, 1, 2, 2],
   'typhlosion-front': [1, 0, 2, 1],
   'ursaring-front': [13, 0, 3, 7],
@@ -225,6 +229,6 @@ export const SPRITE_FIT = {
 /** The gaps for a sprite's URL or file name. A starter's bought shiny is the same animation recoloured, so it
     borrows its normal sprite's entry. */
 export function spriteFit(src) {
-  const name = src.split('/').pop().replace(/\.gif$/, '');
+  const name = src.split('/').pop().replace(/\.\w+$/, '');
   return SPRITE_FIT[name] || SPRITE_FIT[name.replace('-shiny', '')] || [0, 0, 0, 0];
 }

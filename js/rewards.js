@@ -259,6 +259,7 @@ function showLine(i) {
   $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finishLine();
+  box.classList.add('typing');   // an event's trainer bobs their head while it types (css/screens.css)
   const letters = Array.from(line);
   let shown = 0;
   // the rest of the line is laid out but invisible, so centred text doesn't slide as it types out
@@ -274,6 +275,7 @@ function showLine(i) {
 function finishLine() {
   clearInterval(say.typing);
   say.typing = 0;
+  $(say.box).classList.remove('typing');
   $(`${say.box}-text`).textContent = say.lines[say.at];
   $(say.box).classList.toggle('more', say.at < say.lines.length - 1);
 }
