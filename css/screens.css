@@ -2775,15 +2775,15 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
 :is(.center-room, .event-room) .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; filter: grayscale(1); }
 :is(.center-room, .event-room).resting .center-label { visibility: hidden; }
-/* what an event choice does, a second line in its sign (spotOption()): readable text, not pixel letters */
+/* what an event choice does, a second line in its sign (spotOption()), in the text boxes' pixel font like every
+   other window (the user's call, 2026-09-28) */
 .spot-caption {
   display: block;
   width: max-content;
-  max-width: min(170px, 34vw);
-  margin-top: 5px;
-  font-family: var(--font);
+  max-width: min(180px, 38vw);
+  margin-top: 6px;
   font-size: 0.72rem;
-  line-height: 1.25;
+  line-height: 1.4;
   white-space: normal;
   text-align: center;
   color: var(--win-muted);
