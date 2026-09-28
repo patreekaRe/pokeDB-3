@@ -952,9 +952,13 @@ ball-top joystick (the user's call) and two round buttons, a pink Buy and a blue
 three roster rows, Pokémon (skins), Perks and Shiny, with a blinking cursor frame; a row longer than `WINDOW` (6)
 shows the 6 cells round the cursor with ◀ ▶ marks; the choice under it is shown
 big (sprite or icon, name, one line, `Lv n/m`, price in red when you can't afford it, or `ownedTag()`).
-Joystick up/down switches row, left/right moves along it (both wrap): drag the ball (`initDrag()`,
-one move per push past `PUSH` px), tap the four arrows printed on its base (`.gc-pad`), press the arrow
-keys, or tap a roster cell. Moves play `stick` (a synth). Buy takes two presses: the first arms it
+Joystick up/down switches row, left/right moves along it (both wrap). Since 2026-09-28 (the user found it fiddly) the
+whole stick takes presses (`initDrag()` on `#gc-stick`): drag it (one move per push past `PUSH` px, held over it repeats
+every 150 ms after 420 ms), or tap anywhere on it and it moves towards where you tapped from its middle (the ball sits
+above the middle, so tapping it is "up"); the printed arrows (`.gc-pad`, bigger now, `pointer-events: none`) stay as
+buttons for keyboards. Arrow keys and tapping a roster cell work too. The chosen item's words sit on a dark plate above
+the scanlines (`.gc-pick-plate`) with a hard text shadow, in bigger type (the user found the CRT hard to read); under
+600px tall (an iPhone SE) the art and sign shrink and the deck is `zoom`ed to 0.8 so it all fits. Moves play `stick` (a synth). Buy takes two presses: the first arms it
 (`Sure?`, blinking), any move disarms it; the purchase plays `buy` and the CRT says what you got in
 place of the item's text (`cursor.news`: never a toast), including any starter `checkAchievements()`
 unlocks. Escape closes it while nothing modal is open. The grille and ball are pixel maps drawn as SVG

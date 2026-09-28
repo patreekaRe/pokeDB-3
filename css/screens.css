@@ -1942,15 +1942,15 @@ body.battle-intro { pointer-events: none; }
   box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.55), inset 0 0 0 2px #0a3a32;
   overflow: hidden;
 }
-#shop-dialog .gc-crt * { text-shadow: 0 0 4px rgba(160, 255, 220, 0.5); }
+#shop-dialog .gc-crt * { text-shadow: 2px 2px 0 rgba(0, 20, 16, 0.6); }   /* a hard shadow: the old soft glow blurred the pixel letters */
 .gc-crt::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(rgba(0, 0, 0, 0.1) 0 1px, transparent 1px 3px);
   pointer-events: none;
 }
-.gc-crt-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.62rem; text-transform: uppercase; }
+.gc-crt-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; text-transform: uppercase; color: #e8fff4; }
 .gc-coins { color: #f8e070; }
 
 /* the highlighted choice, big, character-select style */
@@ -1958,14 +1958,27 @@ body.battle-intro { pointer-events: none; }
 .gc-pick-art { display: grid; place-items: center; height: 88px; }
 .gc-pick-sprite { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }
 .gc-pick-icon { font-size: 60px; line-height: 0; }
-.gc-pick-name { font-size: 0.85rem; font-weight: 400; color: #fff; }
-.gc-pick-text { font-size: 0.55rem; line-height: 1.6; color: #b8f0dc; max-width: 26ch; }
-.gc-news { font-size: 0.6rem; line-height: 1.6; color: #f8e070; max-width: 26ch; animation: gcNews 0.8s steps(1) infinite; }
+/* the words on a dark plate, above the scanlines (the ::after), so they read cleanly */
+.gc-pick-plate {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 10px 9px;
+  border-radius: var(--round-sm);
+  background: rgba(4, 30, 26, 0.72);
+  box-shadow: inset 0 0 0 2px rgba(152, 240, 210, 0.25);
+}
+.gc-pick-name { font-size: 1rem; font-weight: 400; color: #fff; }
+.gc-pick-text { font-size: 0.7rem; line-height: 1.6; color: #e0fff0; max-width: 30ch; }
+.gc-news { font-size: 0.7rem; line-height: 1.6; color: #f8e070; max-width: 30ch; animation: gcNews 0.8s steps(1) infinite; }
 @keyframes gcNews { 50% { color: #fff; } }
-.gc-pick-foot { display: flex; align-items: center; gap: 10px; margin-top: 2px; font-size: 0.7rem; }
-.gc-level { color: #b8f0dc; }
+.gc-pick-foot { display: flex; align-items: center; gap: 12px; margin-top: 2px; font-size: 0.85rem; }
+.gc-level { color: #e0fff0; }
 .gc-price { color: #f8e070; }
-.gc-price.short { color: #ff8878; }
+.gc-price.short { color: #ffa898; }
 .gc-pick .shop-owned { color: #98f8a8; font-weight: 400; }
 .gc-pick .shop-owned .pokeball { font-size: 1.8em; }
 .gc-pick.won { animation: gcFlash 0.6s steps(2) 2; }
@@ -2021,6 +2034,8 @@ body.battle-intro { pointer-events: none; }
   border-radius: 50%;
   background: radial-gradient(circle, #101014 0 24%, #3a3a44 25% 27%, #26262e 28%);
   box-shadow: 0 0 0 3px #181010, inset 0 3px 0 #4a4a54;
+  touch-action: none;
+  cursor: pointer;
 }
 .gc-pad {
   position: absolute;
@@ -2029,21 +2044,20 @@ body.battle-intro { pointer-events: none; }
   padding: 0;
   border: 0;
   background: none;
-  cursor: pointer;
+  pointer-events: none;   /* a press lands on the stick itself (initDrag()); the pads are for keyboards */
 }
 .gc-pad::before {
   content: "";
   position: absolute;
   inset: 0;
   margin: auto;
-  width: 12px;
-  height: 10px;
-  background: #8a8a92;
+  width: 16px;
+  height: 13px;
+  background: #b8b8c2;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
-@media (hover: hover) { .gc-pad:hover::before { background: #f8e070; } }
 .gc-pad:focus-visible::before { background: #f8e070; }
-.gc-pad:active::before { background: #fff; }
+.gc-stick.held .gc-pad::before { background: #d8d8e0; }
 .gc-pad.up { top: 0; left: 37px; }
 .gc-pad.down { bottom: 0; left: 37px; rotate: 180deg; }
 .gc-pad.left { left: 0; top: 37px; rotate: -90deg; }
@@ -2108,6 +2122,19 @@ body.battle-intro { pointer-events: none; }
   .gc-pick-art { height: 72px; }
   .gc-pick-sprite { width: 80px; height: 80px; }
   .gc-deck { margin-top: 12px; padding-top: 8px; }
+}
+/* an iPhone SE (568px): the bigger, readable text needs the room, so the art and the sign shrink instead */
+@media (max-height: 600px) {
+  .gc-marquee { grid-template-columns: 28px 1fr 28px; margin-bottom: 6px; }
+  .gc-grille svg { width: 28px; height: 28px; }
+  #shop-dialog .gc-sign { padding: 3px 8px; }
+  .gc-pick { min-height: 0; gap: 3px; }
+  .gc-pick-art { height: 46px; }
+  .gc-pick-sprite { width: 56px; height: 56px; }
+  .gc-pick-icon { font-size: 40px; }
+  .gc-pick-plate { gap: 4px; padding: 6px 8px; }
+  .gc-crt { gap: 5px; }
+  .gc-deck { margin-top: 8px; padding-top: 6px; zoom: 0.8; }   /* zoom, unlike scale, gives the room back to the layout */
 }
 @media (prefers-reduced-motion: reduce) {
   #shop-dialog .gc-title, .gc-cell.on, .gc-btn.armed, .gc-pick.won, .gc-pick.flash, .gc-news { animation: none; }

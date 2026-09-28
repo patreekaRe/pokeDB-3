@@ -158,7 +158,10 @@ function render() {
   const foot = el('div', 'gc-pick-foot');
   if (pick.level) foot.append(el('span', 'gc-level', pick.level));
   foot.append(price);
-  $('gc-pick').replaceChildren(el('div', 'gc-pick-art'), el('strong', 'gc-pick-name', pick.name), cursor.news ? el('span', 'gc-news', cursor.news.join(' ')) : el('span', 'gc-pick-text', pick.text), foot);
+  // the words sit on a dark plate above the scanlines: on the bare glowing teal they were hard to read (the user's note)
+  const plate = el('div', 'gc-pick-plate');
+  plate.append(el('strong', 'gc-pick-name', pick.name), cursor.news ? el('span', 'gc-news', cursor.news.join(' ')) : el('span', 'gc-pick-text', pick.text), foot);
+  $('gc-pick').replaceChildren(el('div', 'gc-pick-art'), plate);
   $('gc-pick').firstChild.append(art);
 
   $('gc-roster').replaceChildren(...rows.map((entries, r) => {
@@ -245,31 +248,55 @@ function lean(dx, dy, bounce = false) {
   if (bounce) lean.timer = setTimeout(() => lean(0, 0), 140);
 }
 
-/** Drag the ball like a real stick: one move per push past PUSH, back near the middle to push again. */
+/**
+ * The stick, like a real one but easier to hit (the user found it fiddly): press anywhere on it. Dragging moves once per
+ * push past PUSH (back near the middle to push again); a tap without a drag moves towards where you tapped, measured from
+ * the stick's middle, so the ball (which sits above it) is "up". Held over, a push repeats, so a long row is quick.
+ */
 function initDrag() {
-  const ball = $('gc-ball');
-  let from = null, pushed = false;
-  ball.addEventListener('pointerdown', (e) => {
+  const stick = $('gc-stick');
+  let from = null, pushed = false, repeat = 0;
+  const stop = () => { clearTimeout(repeat); clearInterval(repeat); repeat = 0; };
+  const push = (dx, dy) => {
+    const dir = Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)];
+    move(...dir);
+    stop();
+    repeat = setTimeout(() => { repeat = setInterval(() => move(...dir), 150); }, 420);
+  };
+  stick.addEventListener('pointerdown', (e) => {
     from = { x: e.clientX, y: e.clientY };
     pushed = false;
-    ball.setPointerCapture(e.pointerId);
-    $('gc-stick').classList.add('held');
+    stick.setPointerCapture(e.pointerId);
+    stick.classList.add('held');
   });
-  ball.addEventListener('pointermove', (e) => {
+  stick.addEventListener('pointermove', (e) => {
     if (!from) return;
     const dx = e.clientX - from.x, dy = e.clientY - from.y;
     const far = Math.hypot(dx, dy);
     const scale = Math.min(1, far / (PUSH * 1.5)) / (far || 1);
     lean(dx * scale, dy * scale);
-    if (!pushed && far >= PUSH) {
-      pushed = true;
-      if (Math.abs(dx) > Math.abs(dy)) move(Math.sign(dx), 0);
-      else move(0, Math.sign(dy));
-    } else if (pushed && far < PUSH / 2) pushed = false;
+    if (!pushed && far >= PUSH) { pushed = true; push(dx, dy); }
+    else if (pushed && far < PUSH / 2) { pushed = false; stop(); }
   });
-  const release = () => { from = null; lean(0, 0); $('gc-stick').classList.remove('held'); };
-  ball.addEventListener('pointerup', release);
-  ball.addEventListener('pointercancel', release);
+  const release = (e) => {
+    if (!from) return;
+    stop();
+    stick.classList.remove('held');
+    if (!pushed && e.type === 'pointerup') {
+      const box = stick.getBoundingClientRect();
+      const dx = e.clientX - (box.left + box.width / 2), dy = e.clientY - (box.top + box.height / 2);
+      if (Math.hypot(dx, dy) > 8) {
+        const dir = Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)];
+        from = null;
+        lean(...dir, true);
+        return move(...dir);
+      }
+    }
+    from = null;
+    lean(0, 0);
+  };
+  stick.addEventListener('pointerup', release);
+  stick.addEventListener('pointercancel', release);
 }
 
 /** "Owned" / "Maxed" with a caught Poké Ball in front, like the games' owned mark. */
