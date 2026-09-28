@@ -27,7 +27,7 @@ import { showMenuScene } from './scene.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
-const PSYCHIC = { label: 'Psychic', icon: '🔮' };   // Mewtwo's type has no cards yet, so it isn't in TYPES
+const PSYCHIC = { label: '???', icon: '' };   // Mewtwo's type has no cards yet, so it isn't in TYPES; kept a mystery like the Index's ??? tab
 
 let picked = null;        // the starter shown big
 let tab = 'starters';
@@ -153,7 +153,7 @@ function show(starter) {
     { title: `Won on Trainer Level 5${wins > 1 ? ` ${wins} times` : ''}` }));
   const hp = BASE_HP + (getSave().passives.hpBoost || 0) * 5;
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
-  $('sel-type').textContent = `${type.icon} ${type.label}`;
+  $('sel-type').textContent = [type.icon, type.label].filter(Boolean).join(' ');
   $('sel-type').className = `chip sel-type type-${starter.type}`;
   $('sel-blurb').textContent = unlocked ? starter.blurb
     : starter.secret ? 'Unlock every other starter and win a run on Trainer Level 5 to meet it.'

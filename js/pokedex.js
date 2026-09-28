@@ -205,8 +205,8 @@ function renderRewards() {
 function renderMystery() {
   const box = el('div', 'dex-perk dex-mystery-box');
   const text = el('div', 'dex-perk-text');
-  text.append(el('strong', '', '🔒 ???'), el('span', '', 'Something waits beyond the Ember Wastes.'), el('small', '', 'No trainer has found a way there... yet.'));
-  box.append(el('span', 'dex-perk-icon', '❓'), text);
+  text.append(el('strong', '', '???'), el('span', '', 'Something waits beyond the Ember Wastes.'), el('small', '', 'No trainer has found a way there... yet.'));
+  box.append(el('span', 'dex-perk-icon', '🔒'), text);
   const body = [box];
   for (const [label, n] of [['Wild Pokémon', 12], ['Alphas', 3], ['???', 1]]) {
     const head = el('div', 'index-head');
@@ -340,7 +340,7 @@ export function initPokedex() {
     return btn;
   };
   tabs.replaceChildren(...DEX_PAGES.map((p, i) => tab(i, `biome-${p.biome}`, ['🌳', '⛩️', '🌋'][i], p.name.split(' ').pop())),
-    tab(MYSTERY, 'biome-mystery', '❓', '???'), tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
+    tab(MYSTERY, 'biome-mystery', '🔒', '???'), tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
   tabs.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;
