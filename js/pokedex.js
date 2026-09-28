@@ -180,8 +180,14 @@ function renderRewards() {
   ], done, all, save.dex.complete, 'Research an entry by beating it 3 times (a boss twice).');
   jackpot.classList.add('dex-jackpot');
 
+  // one row per kind, marked with its map room's icon rather than a word (the user's call)
+  const pay = (icon, kind, n) => {
+    const row = prize(el('span', 'dex-prize-icon', icon), `💰 ${n}`, '');
+    row.title = `${kind}: ${n} PokéCoins`;
+    return row;
+  };
   const research = goal('★', 'Research', 'Beat one Pokémon 3× (bosses 2×)', [
-    el('span', 'dex-goal-pay', `💰 ${RESEARCH_COINS.wild} wild · ${RESEARCH_COINS.elite} Alpha · ${RESEARCH_COINS.boss} boss`),
+    pay('⚔️', 'Wild', RESEARCH_COINS.wild), pay('💀', 'Alpha', RESEARCH_COINS.elite), pay('👹', 'Boss', RESEARCH_COINS.boss),
   ], done, all, false, 'Each entry pays once.');
 
   const pages = DEX_PAGES.map(p => goal(p.perk.icon, `${p.name.split(' ').pop()} page`, `Beat all ${p.ids.length} once`, [

@@ -2832,8 +2832,13 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { background: none; }
 .reward-options.treasure-room { padding: 0; }
 #reward-screen:has(.treasure-room) :is(.reward-title, .reward-actions) { position: relative; z-index: 2; }
-#reward-screen:has(.treasure-room) .reward-actions { margin-top: auto; }
-#reward-screen:has(.treasure-room) .reward-bottom { margin-top: 0; }
+/* the floating-thing screens (the grotto, a found item): the text box sits with the thing you tap and Skip / Leave goes
+   to the very bottom, out of the way (the user's call: nothing should pull you off the item) */
+#reward-screen:has(:is(.treasure-room, .item-found)) .reward-actions { order: 2; margin-top: auto; margin-bottom: calc(max(0px, env(safe-area-inset-bottom)) - 14px); }
+#reward-screen:has(:is(.treasure-room, .item-found)) .reward-bottom { order: 1; margin-top: 0; }
+#reward-screen:has(.item-found) .reward-bottom { position: static; }
+#reward-screen:has(.treasure-room) .reward-bottom { margin-top: auto; }   /* the chest fills the middle: the box waits just above Leave */
+#reward-screen:has(.treasure-room) .reward-actions { margin-top: 0; }
 .treasure-stage { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 .treasure-stage > button { pointer-events: auto; }
 .treasure-chest {
@@ -3145,7 +3150,6 @@ body.has-scene #scene-bg { display: block; }
 /* the Rewards tab: the complete-Pokédex jackpot lists its three prizes as rows */
 .dex-goal { align-items: flex-start; }
 .dex-goal-how { color: var(--win-muted); font-size: 0.8rem; }
-.dex-goal-pay { font-weight: 700; }
 .dex-prize { display: flex; align-items: center; gap: 8px; }
 .dex-prize-text { font-size: 0.85rem; }
 .dex-prize-icon, .dex-prize-sprite { flex: none; width: 32px; height: 32px; display: grid; place-items: center; font-size: 1.3rem; object-fit: contain; }
@@ -3169,7 +3173,7 @@ body.has-scene #scene-bg { display: block; }
 .dex-entry:disabled { cursor: default; }
 .dex-entry:not(:disabled):hover { background: var(--win-tile); }
 .dex-entry:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
-.dex-no { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.6rem; color: var(--win-muted); align-self: flex-start; }
+.dex-no { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.8rem; color: var(--win-ink); align-self: flex-start; }   /* the user found 0.6rem too small to read */
 .dex-sprite { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
 .dex-entry.locked .dex-sprite { filter: brightness(0) opacity(0.55); }   /* a silhouette until you've fought it */
 .dex-name { font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.65rem; line-height: 1.3; text-align: center; }
@@ -3177,7 +3181,7 @@ body.has-scene #scene-bg { display: block; }
 .dex-mark.pokeball { position: absolute; top: 5px; right: 6px; margin: 0; font-size: 1.1rem; animation: none; }   /* beaten: the games' caught mark */
 .dex-mark.pokeball.gold { background: linear-gradient(180deg, #f8d030 0 44%, #1b1f3a 44% 56%, #fff4c0 56%); border-color: #a07010; box-shadow: 0 0 6px 1px rgba(248, 208, 48, 0.8); }   /* Research complete */
 .dex-entry.researched { border-color: #d8a820; background: #fbf3d0; }
-.dex-research { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.5rem; color: var(--win-muted); }
+.dex-research { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.8rem; color: var(--win-ink); }
 .dex-entry.researched .dex-research { color: #8a6000; }
 .dex-detail-research { margin: 4px 0; font-size: 0.82rem; font-weight: 700; color: var(--win-muted); }
 .dex-detail-research.done { color: #8a6000; font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: 400; font-size: 0.7rem; }

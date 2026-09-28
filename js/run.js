@@ -652,20 +652,20 @@ function gainRelic(relic, next) {
     wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic: tap
     it (then Put in Bag) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark
     it for tossing (it greys out with a ✕), then Swap. */
-function offerItem(item, next) {
+function offerItem(item, next, { opened = false } = {}) {
   const thisRun = run, full = run.items.length >= itemSlots(), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${itemSlots()} items). Tap one of yours to swap it out, or leave it.`
     : `Tap it to put it in your Bag (up to ${itemSlots()} items, used up in battle).`];
   showChoice({
     title: 'Item found',
-    sub: ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
+    sub: opened ? found : ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
     options: [],
     skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: next,
     coins: run.pendingCoins,
     layout: 'item-found',
   });
-  const stage = el('div', 'float-stage sealed'), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
+  const stage = el('div', `float-stage ${opened ? 'open' : 'sealed'}`), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
   const go = goButton(full ? 'Swap' : 'Put in Bag');
   let toss = null, taking = false;
 
@@ -678,7 +678,7 @@ function offerItem(item, next) {
     return img;
   };
   ball.append(half('bottom'), half('top'), el('span', 'chest-glow'), centerLabel('Open', 'Open the Poké Ball'));
-  spot.append(el('span', 'chest-rays'), ball, thing);
+  spot.append(el('span', 'chest-rays'), ...(opened ? [] : [ball]), thing);   // opened: it came out of an event's ball already
   stage.append(spot);
   ball.addEventListener('click', async () => {
     if (ball.classList.contains('shaking') || ball.classList.contains('opened')) return;
@@ -1165,7 +1165,11 @@ function rollEvents() {
     if (!bag.length) bag = [...EVENTS].sort(() => Math.random() - 0.5);
     const event = bag.pop();
     node.event = { id: event.id };
-    if (event.trapChance) node.event.trap = Math.random() < event.trapChance;
+    if (event.trapChance) {
+      const roll = Math.random();
+      node.event.trap = roll < event.trapChance;
+      node.event.relic = !node.event.trap && roll < event.trapChance + event.relicChance;   // else an item
+    }
     if (event.team) {
       const team = event.team[run.biome];
       node.event.enemyId = team[Math.floor(Math.random() * team.length)];
@@ -1390,9 +1394,12 @@ const EVENT_CHOICES = {
   'item-ball'(event, state) {
     const damage = Math.min(run.hp - 1, perBiome(event.trapDamage));
     preloadSounds('ball-open', 'hit');
-    return { sub: [event.text, 'It could hold a relic. It could also explode.'], options: [
-      spotOption('Pick it up', 'A relic... or a Voltorb that explodes.', async () => {
+    return { sub: [event.text, 'Most hold an item, a rare few a relic. Some explode.'], options: [
+      spotOption('Pick it up', 'An item, maybe a relic... or a Voltorb that explodes.', async () => {
         if (!await playOut('pickup', { trap: state.trap })) return;
+        if (state.relic) return offerRelic('Inside the Item Ball', showMap);
+        const [item] = state.trap ? [] : itemChoices(run);
+        if (item) return offerItem(item, showMap, { opened: true });
         if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
         await showHpChange();

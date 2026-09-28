@@ -447,7 +447,9 @@ by the prop's draw function off `actFrame()`; skipped under reduced motion), the
 eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Hot Spring: soak
 in the big pool (a cloud of steam) or dip in the small one (ripples); a rubber duck bobs. Wishing Well: its
 two halves are the two tosses (signs leaning apart); a coin (a Nugget for the big toss) arcs in, splashes,
-and a win sends light and sparkles up. Item Ball: a Poké Ball in a patch of the games' tall grass (outlined
+and a win sends light and sparkles up. Item Ball (60% an item, rising straight out via `offerItem(item, next, { opened:
+true })`; 25% a Voltorb, `trapChance`; 15% a relic, `relicChance`: the user's call 2026-09-27, rolled into `node.event.trap` /
+`.relic`, so older saves get an item where they had a relic): a Poké Ball in a patch of the games' tall grass (outlined
 tufts, drawn live so they rustle); picking it up wobbles it, then it pops open, or opens its eyes as a Voltorb,
 flashes and explodes over a scorch. Team Rocket: a black-and-red roadblock with an R board and a bush, with the grunt
 and their Alpha standing at it as real GIFs (the choice returns `figures`, `{ stand: { src, alpha } }`; each
@@ -681,7 +683,9 @@ screen, narrow and centred (`--log-w`: 440px, 300px on phones; the user's call: 
 stretched text boxes; the untyped rest of a line is laid out invisibly, `.log-rest`,
 so centred text doesn't slide as it types; relic picks, `layout: 'relic-pick'`, sit it just under Skip
 instead, since their short rows left it far below them); the Skip / Leave button (in `.reward-actions`, with Oak's Advice's Reroll beside it) sits centred right under the options (the user's
-call: not off to the right by the text box). It draws its
+call: not off to the right by the text box), except on the floating-thing screens (Item found, the treasure grotto),
+where the text box sits with the thing and Skip / Leave goes to the very bottom (the user's call: nothing should pull you
+off the item). It draws its
 `.relic` tiles (relics, items, choices) as parchment Pokégear windows, which on
 phones become short rows (icon | name over text) so a choice isn't a screen tall (`sayLines()` in `js/rewards.js`; `sub` may be a list of lines): lines
 type out and wait for a tap, like the games (the user wants no autoplay), and a tap on

@@ -32,7 +32,8 @@ export const EVENTS = [
   {
     id: 'item-ball', icon: '⚫', name: 'Item Ball',
     text: 'A Poké Ball lies in the grass. Is it an item... or a Voltorb?',
-    trapChance: 0.4,
+    trapChance: 0.25,          // a Voltorb
+    relicChance: 0.15,         // a relic; else (60%) an item
     trapDamage: [10, 14, 20],  // never takes you below 1 HP
   },
   {
