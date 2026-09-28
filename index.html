@@ -49,14 +49,16 @@
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
       <!-- a saved run: its nameplate, right under the gems (renderRun() in js/title.js); the Pokémon waits in Continue's ball -->
       <div class="title-run" id="title-run" hidden>
+        <h3 class="biome-sign title-biome" id="title-run-biome"></h3>
         <div class="nameplate title-plate" id="title-plate">
-          <div class="nameplate-title"><strong id="title-run-name"></strong><span class="title-place" id="title-run-place"></span></div>
+          <div class="nameplate-title"><strong id="title-run-name"></strong></div>
           <div class="gb-hp" id="title-run-hp" role="progressbar" aria-label="HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="title-run-hp-fill"></span></span>
           </div>
           <span class="gb-hp-num" id="title-run-hp-text"></span>
         </div>
+        <button type="button" class="pxb red white small title-abandon" id="title-abandon"><span class="pxb-o"><span class="pxb-i">Abandon run</span></span></button>
       </div>
     </div>
     <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js) and Sound -->
@@ -87,6 +89,7 @@
         <button class="menu-item" id="cloud-btn" hidden><span class="mi-icon">☁️</span><span class="mi-label">Sign in</span></button>
         <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
         <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="volume-slider" min="0" max="100" step="5" value="100"></label>
+        <button class="menu-item" id="abandon-btn" hidden><span class="mi-icon">🏳️</span><span class="mi-label">Abandon run</span></button>
         <button class="menu-item" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
         <button class="menu-item" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>
       </div>

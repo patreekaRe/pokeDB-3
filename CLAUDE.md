@@ -312,7 +312,7 @@ saves differ). `js/cloud.js`; the project (`pokedb-42e7c`, the user's) and its p
 the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) and the title's PC stay
 hidden and nothing changes. The title's top-left corner has its own way in once the gems are up: the games' PC
 (`#title-account`, the 🖥️ pixel icon big, captioned Sign in / Cloud save, a green power light once signed in; the user's
-idea). Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
+idea; tapping it plays `pc-on`, `assets/audio/sfx/pc-on.mp3`, the games' PC boot sound, supplied by the user). Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
 when `pokedb.cloud.v1` (this device's `{ uid, rev, dirty, localAt }`) says you're signed in, the URL is an email sign-in
 link, or you open the window. Both localStorage keys (`SAVE_KEYS` in `js/storage.js`) go as they are into one Firestore
 document, `saves/<uid>` = `{ save, run, rev, savedAt, device }`; `onSaveWrite()` fires on every write, and the upload
@@ -1036,7 +1036,13 @@ bar: a pixel **dusk** sky painted into a low-res `<canvas>` (`SKY`: deep blue to
 corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
 Moltres flying past as a silhouette over an empty ledge (the three starters that stood on it were removed, the user's
 call 2026-09-28). With a saved run a battle `.nameplate` sits right under the gems, in `.title-center`'s flow (`#title-run`,
-`renderRun()` in `js/title.js`; the user's call: neatly under Game Corner at every size) with the run's name, biome and HP; the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
+`renderRun()` in `js/title.js`; the user's call: neatly under Game Corner at every size) with the run's name and HP, the
+biome's own map sign over it (`.title-biome`, a smaller `.biome-sign` that drops in: the Clearing's sways, the Shrine's has
+mist drifting across, the Wastes' rim flickers like embers) and a red Abandon run pill under it (`requestAbandon()` in
+`js/main.js`, after a confirm: the run is gone, nothing else changes; also an 🏳️ Abandon run item in the Poké Ball menu
+whenever a run is saved or going). Continue's gem shimmers: `tick()` repaints its canvas with a slanted band of light
+(`paintGem(..., sweep)`) crossing it every 3 s. New game hatches the Egg first (`hatch()`: it shakes harder, cracks, bursts
+in a flash, `stat-up` then `ball-open`; straight through under reduced motion); the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
 top-left corner (`.title-corner`, gems up only) holds the cloud save's PC (see Cloud save) and a 🔊 Sound button whose
 `#title-sound-panel` (a `.ball-menu-panel`) has the same Sound toggle and volume slider as the Poké Ball menu
 (`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key

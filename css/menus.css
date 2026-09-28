@@ -179,7 +179,27 @@
 @keyframes cballOut { 0% { scale: 0.2; filter: brightness(0) invert(1); } 60% { scale: 1.12; filter: brightness(0) invert(1); } 100% { scale: 1; filter: none; } }
 @keyframes cballLight { 0% { opacity: 0; transform: scale(0.3); } 35% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: scale(3.5); } }
 /* A saved run: its nameplate right under the gems (name, biome, HP, like battle's); the Pokémon waits in Continue's ball */
-.title-run { pointer-events: none; }
+.title-run { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.title-run[hidden] { display: none; }
+.title-plate, .title-biome { pointer-events: none; }
+/* the biome's own map sign, smaller, with a touch of its place: the Clearing's sways, the Shrine's has mist drifting
+   across, the Wastes' rim flickers like embers */
+.title-biome { font-size: 0.85rem; padding: 6px 16px 7px; overflow: hidden; transform-origin: 50% -20px; }
+.title-biome.arrive { animation: signDrop 0.7s steps(7) both; }
+@media (prefers-reduced-motion: no-preference) {
+  .title-biome[data-biome="clearing"] { animation: signDrop 0.7s steps(7) both, signSway 3.2s steps(8) 0.7s infinite; }
+  .title-biome[data-biome="shrine"]::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 20%, rgba(240, 255, 230, 0.35) 45%, transparent 70%) -100% 0 / 60% 100% no-repeat;
+    animation: signMist 4s linear infinite;
+  }
+  .title-biome[data-biome="wastes"] { animation: signDrop 0.7s steps(7) both, signEmber 1.2s steps(2) infinite; }
+}
+@keyframes signSway { 0%, 100% { rotate: -1.5deg; } 50% { rotate: 1.5deg; } }
+@keyframes signMist { to { background-position: 250% 0; } }
+@keyframes signEmber { 50% { box-shadow: inset 0 0 0 2px #ffb040, 0 0 10px 2px rgba(248, 120, 40, 0.55), 4px 4px 0 rgba(0, 0, 0, 0.45); } }
+.title-abandon { margin-top: -2px; }
+.title-abandon .pxb-i { font-size: 0.6rem; }
 .title-screen:not(.menu) .title-run { display: none; }
 .title-plate { width: 210px; opacity: 0; }
 .title-screen.menu .title-plate { opacity: 1; animation: plateIn 0.3s steps(3); }
@@ -198,6 +218,22 @@
 @media (max-height: 700px) { .gem-continue .gem-label { font-size: 0.92rem; } .gem-continue .cball { width: 42px; height: 42px; } .gem-continue .cball-ball { width: 34px; height: 34px; } }
 /* New game's Egg wobbles while it's the one picked, as if about to hatch */
 .gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; transform-origin: 50% 90%; }
+/* New game: the Egg hatches (hatch() in js/title.js): it shakes harder and harder, cracks, and bursts in a flash of light */
+.gem.hatching .gem-egg { animation: eggShake 0.65s steps(10) forwards; transform-origin: 50% 90%; }
+.gem.cracked .gem-egg { animation: eggShake2 0.2s steps(4) infinite; }
+.gem.cracked .gem-icon::after {
+  content: ''; position: absolute; left: 50%; top: 45%; width: 26px; height: 6px; margin-left: -13px; pointer-events: none;
+  background: #2a1408;
+  clip-path: polygon(0 50%, 20% 0, 40% 60%, 60% 0, 80% 60%, 100% 20%, 100% 55%, 80% 100%, 60% 45%, 40% 100%, 20% 45%, 0 90%);
+}
+.gem.hatched .gem-egg { animation: eggBurst 0.4s steps(4) forwards; }
+.gem.hatched .gem-icon::before {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 12px 6px #fff, 0 0 30px 12px #f8e0ff; animation: cballLight 0.45s ease-out forwards;
+}
+@keyframes eggShake { 0% { rotate: 0deg; } 20% { rotate: -10deg; } 40% { rotate: 10deg; } 60% { rotate: -16deg; } 80% { rotate: 16deg; } 100% { rotate: 0deg; } }
+@keyframes eggShake2 { 0%, 100% { translate: -2px 0; } 50% { translate: 2px 0; } }
+@keyframes eggBurst { to { scale: 1.8; opacity: 0; filter: brightness(0) invert(1); } }
 @keyframes eggWobble { 0%, 50%, 100% { rotate: 0deg; } 60% { rotate: -12deg; } 70% { rotate: 10deg; } 80% { rotate: -6deg; } 90% { rotate: 3deg; } }
 @media (prefers-reduced-motion: no-preference) {
   .cball-ball { animation: ballWobble 2.4s steps(24) infinite; }

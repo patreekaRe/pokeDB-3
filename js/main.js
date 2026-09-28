@@ -59,7 +59,8 @@ function savedRunCard() {
     saved, hp, maxHp,
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
-    place: BIOMES[biome]?.name.split(' ').pop() ?? `Biome ${biome + 1}`,   // Clearing, Shrine, Wastes: the full names don't fit a gem
+    place: BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
+    biome: BIOMES[biome]?.id,
     cry: starter.line[stage]?.id ?? starter.line[0].id,
   };
 }
@@ -99,6 +100,15 @@ async function requestMenu() {
   goHome();
 }
 
+/** Throw the run away for good (the user's ask): from the Poké Ball menu, or the title's nameplate. */
+async function requestAbandon() {
+  if (!hasSavedRun() && !isRunActive()) return;
+  if (!(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return;
+  abandonRun();
+  clearRunData();
+  showHome();
+}
+
 /* ---------- the Poké Ball menu (top left) ---------- */
 
 function initBallMenu() {
@@ -111,7 +121,11 @@ function initBallMenu() {
     ball.setAttribute('aria-expanded', String(open));
   };
 
-  ball.addEventListener('click', () => setOpen(panel.hidden));
+  ball.addEventListener('click', () => {
+    if (panel.hidden) $('abandon-btn').hidden = !isRunActive() && !hasSavedRun();
+    setOpen(panel.hidden);
+  });
+  $('abandon-btn').addEventListener('click', requestAbandon);
   $('home-btn').addEventListener('click', requestMenu);
 
   // picking an item closes the menu, except Sound, so you can see it switch on/off
@@ -180,6 +194,7 @@ function init() {
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
     onGameCorner: () => toggleShop(),
+    onAbandon: requestAbandon,
   });
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({ onBack: showHome });

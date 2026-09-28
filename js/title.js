@@ -51,6 +51,7 @@ export function initTitle(handlers) {
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
   initSoundPanel();
+  $('title-abandon').addEventListener('click', () => actions.onAbandon());
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
     if (!pressed) return start(e);
@@ -130,7 +131,7 @@ function renderMenu() {
   const run = actions.savedRun();
   const gems = [
     run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
-    gem('new', 'New game', actions.onNewGame, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
+    gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
     gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
     gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
   ].filter(Boolean);
@@ -173,7 +174,7 @@ function sizeGems() {
     const w = big ? cols + 2 * Math.round(cols * 0.04) : cols, h = big ? GEM_BIG : GEM_H;
     btn.style.width = `${w * px}px`;
     btn.style.height = `${h * px}px`;
-    paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind]);
+    paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind], big ? shine : null);
   }
 }
 
@@ -181,7 +182,7 @@ function sizeGems() {
  * A pixel gem, after the glossy hexagon reference: pointed ends, a dark outline, a two-tone bronze frame and an inner
  * groove round a face with a light band on top, a shade band below, a gloss streak and white glints.
  */
-function paintGem(canvas, cols, rows, [face, hi, lo]) {
+function paintGem(canvas, cols, rows, [face, hi, lo], sweep = null) {
   canvas.width = cols;
   canvas.height = rows;
   const g = canvas.getContext('2d');
@@ -197,6 +198,8 @@ function paintGem(canvas, cols, rows, [face, hi, lo]) {
       else if (d <= 2) c = d === 2 ? BRONZE_MID : y < mid ? BRONZE_LIGHT : BRONZE_DARK;
       else if (d === 3) c = GROOVE;
       else c = y <= 5 ? hi : y >= rows - 6 ? lo : face;
+      // Continue's shimmer: a slanted band of light crossing the face
+      if (sweep !== null && d > 3) { const at = x - sweep + (rows - y) * 0.6; if (at >= 0 && at < 3) c = at < 1 ? '#fff8d8' : '#ffe8a0'; }
       g.fillStyle = c;
       g.fillRect(x, y, 1, 1);
     }
@@ -226,7 +229,12 @@ function renderRun(run) {
   $('title-run').hidden = !run;
   if (!run) return;
   $('title-run-name').textContent = run.name;
-  $('title-run-place').textContent = run.place;
+  const sign = $('title-run-biome');
+  sign.textContent = run.place;
+  sign.dataset.biome = run.biome;
+  sign.classList.remove('arrive');
+  void sign.offsetWidth;
+  sign.classList.add('arrive');
   setHpBar('title-run', run.hp, run.maxHp);
 }
 
@@ -241,6 +249,21 @@ function sendOut(run) {
     btn.classList.remove('opening', 'out');
     actions.onContinue(run.saved);
   }, still() ? 0 : 1100);
+}
+
+/** New game: the Egg shakes harder and harder, cracks, and bursts open in a flash before the character select. */
+function hatch() {
+  const btn = document.querySelector('#title-menu .gem-new');
+  if (!btn || btn.classList.contains('hatching')) return;
+  if (still()) return actions.onNewGame();
+  btn.classList.add('hatching');
+  playSound('stat-up');
+  setTimeout(() => { btn.classList.add('cracked'); playSound('ball-open'); }, 650);
+  setTimeout(() => btn.classList.add('hatched'), 850);
+  setTimeout(() => {
+    btn.classList.remove('hatching', 'cracked', 'hatched');
+    actions.onNewGame();
+  }, 1250);
 }
 
 /** The Sound button under the PC opens the Poké Ball menu's Sound toggle and slider (js/audio.js runs both). */
@@ -294,8 +317,17 @@ function draw() {
   }
 }
 
+let shine = null;   // where Continue's shimmer is on its face (gem pixels), null between sweeps
+
 function tick() {
   frame++;
+  const cont = document.querySelector('#title-menu .gem-continue');
+  if (cont) {
+    const face = cont.querySelector('.gem-face');
+    if (shine === null && frame % 30 === 0) shine = -12;
+    else if (shine !== null) shine = shine + 3 > face.width + 4 ? null : shine + 3;
+    paintGem(face, face.width, face.height, GEMS.continue, shine);
+  }
   if (!shooting && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
   if (shooting) {
     shooting.x -= 4; shooting.y += 2;

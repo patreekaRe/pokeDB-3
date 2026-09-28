@@ -20,6 +20,7 @@ import { SAVE_KEYS, onSaveWrite } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, stageName } from './data/starters.js';
 import { BIOMES } from './data/enemies.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
+import { playSound } from './audio.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const STATE_KEY = 'pokedb.cloud.v1';
@@ -336,7 +337,7 @@ export function initCloud() {
   $('cloud-btn').hidden = false;
   $('title-account').hidden = false;
   $('cloud-btn').addEventListener('click', openCloud);
-  $('title-account').addEventListener('click', openCloud);
+  $('title-account').addEventListener('click', () => { playSound('pc-on'); openCloud(); });
   $('cloud-google').addEventListener('click', signInGoogle);
   $('cloud-email-form').addEventListener('submit', (e) => {
     e.preventDefault();
