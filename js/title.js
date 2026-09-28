@@ -16,6 +16,7 @@
    ============================================================ */
 
 import { $, el, setHpBar } from './ui.js';
+import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic } from './audio.js';
 
 const PIXEL = 3;
@@ -51,6 +52,7 @@ export function initTitle(handlers) {
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
   initSoundPanel();
+  paintLogo();
   $('title-abandon').addEventListener('click', () => actions.onAbandon());
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
@@ -61,7 +63,7 @@ export function initTitle(handlers) {
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
     if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-corner') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
-  addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); } });
+  addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
 }
 
 /** The first time: PRESS START. Resolves once it's pressed and the menu is up. */
@@ -249,6 +251,20 @@ function sendOut(run) {
     btn.classList.remove('opening', 'out');
     actions.onContinue(run.saved);
   }, still() ? 0 : 1100);
+}
+
+/** The pixel logo, a canvas a letter so each still bounces in and waves on its own; repainted when its pixel size changes. */
+function paintLogo() {
+  const px = logoPixel();
+  if (paintLogo.px === px) return;
+  paintLogo.px = px;
+  $('title-logo').replaceChildren(...LOGO.map((ch, i) => {
+    const letter = el('span', `tl${ch === 'o' ? ' tl-ball' : ''}`);
+    letter.style.setProperty('--i', i);
+    if (i < LOGO.length - 1) letter.style.marginRight = `${-EDGE * px}px`;
+    letter.append(paintGlyph(ch, px));
+    return letter;
+  }));
 }
 
 /** New game: the Egg shakes harder and harder, cracks, and bursts open in a flash before the character select. */

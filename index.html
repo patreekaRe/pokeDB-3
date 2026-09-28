@@ -18,7 +18,6 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sniglet:wght@800&display=swap">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/cards.css">
   <link rel="stylesheet" href="css/screens.css">
@@ -35,14 +34,7 @@
     <img class="title-flyer pixel" src="assets/pokemon/moltres-front.gif" alt="" aria-hidden="true">
     <div class="title-center">
       <div class="title title-big" aria-label="PokéDB: Rogue-Like Deck Battler">
-        <span class="title-logo" aria-hidden="true">
-          <span class="tl" style="--i:0">P</span>
-          <span class="tl" style="--i:1"><span class="pokeball"></span></span>
-          <span class="tl" style="--i:2">k</span>
-          <span class="tl" style="--i:3">é</span>
-          <span class="tl db" style="--i:4">D</span>
-          <span class="tl db" style="--i:5">B</span>
-        </span>
+        <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
         <small aria-hidden="true">Rogue-Like Deck Battler</small>
       </div>
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>

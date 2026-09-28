@@ -1141,9 +1141,12 @@ found, runs won, done), opening the same windows as the Poké Ball menu (Relics 
 3 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
 
-The logo is built from per-letter spans in `index.html`: "Poké" uses the
-Sniglet Google Font (loaded in `<head>`, logo only), "DB" uses the normal
-heavy font, and the "o" is a CSS Poké Ball (`.pokeball`). Under `prefers-reduced-motion` the title, select and Collection skip their
+The logo is pixel art since 2026-09-28 (the user's pick of two mockups): `js/logo.js` paints each glyph of "PokéDB"
+(hand-drawn in `GLYPHS`, the "o" a Poké Ball) on its own canvas, yellow with a light and a shade band, a blue outline, a
+dark rim and a hard shadow, `logoPixel()` CSS px a pixel (3-6, whole numbers, ~70% of the width); `paintLogo()` in
+`js/title.js` lays them in `#title-logo`, overlapping by `EDGE`, and repaints on resize, so the letters still bounce in and
+wave one by one and the ball wobbles (`.tl-ball`). No web font any more (Sniglet is gone); `.pokeball` is still the CSS
+ball used elsewhere. Under `prefers-reduced-motion` the title, select and Collection skip their
 animations (the gems' rise, the send-out, the fades), but not their sounds.
 
 How to play (`#help-dialog`, `js/howto.js`) is a row of swipeable slides

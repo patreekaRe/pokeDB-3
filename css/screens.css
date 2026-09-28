@@ -14,18 +14,6 @@
   paint-order: stroke fill;
   margin: 10px 0 22px;
 }
-/* Sniglet's round letters + a thick outline + stacked shadows = a puffy, bubbly logo */
-.title-logo {
-  font-family: "Sniglet", var(--font);
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  -webkit-text-stroke: 0.12em var(--blue);
-  text-shadow:
-    0 0.03em 0 #1e3a80,
-    0 0.06em 0 #14275e,
-    0 0.09em 0 #0d1a44,
-    0 0.16em 0.3em rgba(0, 0, 0, 0.55);
-}
 .title small {
   display: block;
   margin-top: 0.45em;
@@ -44,17 +32,17 @@
   animation: subtitleIn 0.8s ease-out both 0.7s;
 }
 
-/* the logo: letters bounce in one by one, then a slow wave with a shine
+/* the pixel logo (js/logo.js, a canvas a letter): letters bounce in one by one, then a slow wave with a shine
    rolls through them; the "o" is a Poké Ball that wobbles like a catch */
-.title-logo { display: inline-flex; align-items: baseline; }
+.title-logo { display: inline-flex; align-items: flex-end; }
+.tl canvas { display: block; image-rendering: pixelated; }
+.tl-ball canvas { transform-origin: 50% 85%; animation: ballWobble 3.2s steps(12) infinite 1.4s; }
 .tl {
   display: inline-block;
   animation:
     letterIn 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both calc(var(--i) * 80ms),
     letterWave 3.2s ease-in-out infinite calc(1s + var(--i) * 0.14s);
 }
-/* "Poké" is round and bubbly; "DB" stays in the heavy block font for contrast */
-.tl.db { color: #fff; font-family: var(--font); font-weight: 900; font-size: 1.06em; }
 .pokeball {
   position: relative;
   display: inline-block;
@@ -99,7 +87,7 @@
   to   { opacity: 1; letter-spacing: 0.08em; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tl, .pokeball, .title small { animation: none; }
+  .tl, .tl-ball canvas, .pokeball, .title small { animation: none; }
 }
 
 /* ---------- title screen (js/title.js): a Gold/Silver-style night sky over the start screen ---------- */
