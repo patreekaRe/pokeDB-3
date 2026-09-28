@@ -297,6 +297,10 @@ function showMap() {
     void sign.offsetWidth;
     sign.classList.add('arrive');
   }
+  const here = run.current && run.map.byId[run.current];
+  const floor = here ? here.floor + 1 : 0;   // 0 on the road in, like StS's Neow floor (the title's Continue plate counts the same)
+  $('floor-num').textContent = `F${floor}`;
+  $('floor-tag').title = `Floor ${floor} of ${run.map.floors.length} in ${biome.name}, then the boss`;
   $('run-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = String(run.relics.length);
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;

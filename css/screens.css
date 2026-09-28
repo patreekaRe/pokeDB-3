@@ -722,6 +722,23 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 /* Draw and discard piles: a pixel card stack and the count, floating in the top bar like the coins (each explains itself in its title) */
 .piles { display: none; gap: 12px; margin: 0 auto 0 12px; }   /* in the top bar, beside the Poké Ball */
 body[data-screen="battle-screen"] .piles { display: flex; }
+/* the map's floor, beside the Poké Ball like battle's piles: a pixel staircase (outlined by the drop shadows on its
+   wrapper, since the clip-path would cut them off the stairs themselves) and F7 */
+.floor-tag {
+  display: none; align-items: center; gap: 6px; margin: 0 auto 0 12px;
+  font-family: var(--pixel-font); font-synthesis-weight: none; line-height: 1;
+  color: #fff8e0;
+  text-shadow: 2px 2px 0 #181010, -1px -1px 0 #181010, 1px -1px 0 #181010, -1px 1px 0 #181010;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  cursor: help;
+}
+body[data-screen="map-screen"] .floor-tag { display: flex; }
+.floor-tag b { font-size: 1.3rem; font-weight: 400; }
+.floor-stairs { display: block; filter: drop-shadow(1px 0 0 #181010) drop-shadow(-1px 0 0 #181010) drop-shadow(0 1px 0 #181010) drop-shadow(0 -1px 0 #181010) drop-shadow(2px 2px 0 #181010); }
+.floor-stairs i {
+  display: block; width: 18px; height: 18px; background: #fff8e0;
+  clip-path: polygon(0 100%, 0 67%, 33% 67%, 33% 33%, 67% 33%, 67% 0, 100% 0, 100% 100%);
+}
 /* your HP on every choice screen (showChoiceHp() in js/rewards.js): a small Pokégear window beside the Poké Ball */
 .hp-plate {
   display: none; align-items: center; gap: 6px; margin: 0 auto 0 10px;

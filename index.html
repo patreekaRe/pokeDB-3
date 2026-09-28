@@ -95,6 +95,8 @@
       <button type="button" class="pile" id="discard-count" data-pile="discard" title="Cards in your discard pile: tap to see them"></button>
       <button type="button" class="pile" id="exhaust-count" data-pile="exhaust" title="Exhausted cards, gone for the rest of this fight: tap to see them" hidden></button>
     </div>
+    <!-- shown only on the map: the floor you stand on in this biome (showMap() in js/run.js) -->
+    <div class="floor-tag" id="floor-tag"><span class="floor-stairs" aria-hidden="true"><i></i></span><b id="floor-num">F0</b></div>
     <!-- shown only on the reward screen (every room with choices: rewards, events, Center, Mart), from showChoice() -->
     <div class="hp-plate" id="choice-plate">
       <div class="gb-hp" id="choice-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">

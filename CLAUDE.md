@@ -1180,7 +1180,9 @@ the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
 hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball
 menu instead. In battle on phones ≤420px the PokéCoins
 hide so the piles, ₽ and buttons fit on one row.
-In battle, the draw and discard piles sit beside the Poké Ball.
+In battle, the draw and discard piles sit beside the Poké Ball. On the map, the floor you stand on in the biome does (`#floor-tag`, the user's
+call: a cream pixel staircase and "F7", outlined like the piles, shown only on `body[data-screen="map-screen"]`, set in
+`showMap()`, counted like the title's Continue plate; its `title` says "Floor 7 of 10 in X, then the boss").
 The "Main menu" item takes you to the title's gem menu from anywhere.
 
 **Character select** (`#start-screen.select-screen`, `js/select.js`, New game; Slay the Spire's, the user's call
