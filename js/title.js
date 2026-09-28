@@ -16,7 +16,7 @@
    ============================================================ */
 
 import { $, el, setHpBar } from './ui.js';
-import { playSound, playCry } from './audio.js';
+import { playSound, playCry, playMusic } from './audio.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -74,6 +74,7 @@ export function showTitle() {
 /** Back to the menu from anywhere (Main menu, a run's end, Back): straight to the gems. */
 export function showHome() {
   pressed = true;
+  playMusic('title');   // the overlay doesn't go through showScreen(), so a run's map or battle track would play on
   open();
   renderMenu();
 }
