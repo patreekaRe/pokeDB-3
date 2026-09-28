@@ -312,7 +312,10 @@ saves differ). `js/cloud.js`; the project (`pokedb-42e7c`, the user's) and its p
 the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) and the title's PC stay
 hidden and nothing changes. The title's top-left corner has its own way in once the gems are up: the games' PC
 (`#title-account`, the 🖥️ pixel icon big, captioned Sign in / Cloud save, a green power light once signed in; the user's
-idea; tapping it plays `pc-on`, `assets/audio/sfx/pc-on.mp3`, the games' PC boot sound, supplied by the user). Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
+idea; tapping it plays `pc-on`, `assets/audio/sfx/pc-on.mp3`, the games' PC boot sound, supplied by the user, and
+sets `data-close-sound="pc-off"` on the window, so however it closes it plays `pc-off.mp3` (logging off) in place of
+`cancel`: `js/ui.js`'s outside tap and `js/audio.js`'s Escape skip `cancel` for a window with a `data-close-sound`; both
+are preloaded so they replace the menu blip; from the Poké Ball menu it closes as usual). Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
 when `pokedb.cloud.v1` (this device's `{ uid, rev, dirty, localAt }`) says you're signed in, the URL is an email sign-in
 link, or you open the window. Both localStorage keys (`SAVE_KEYS` in `js/storage.js`) go as they are into one Firestore
 document, `saves/<uid>` = `{ save, run, rev, savedAt, device }`; `onSaveWrite()` fires on every write, and the upload

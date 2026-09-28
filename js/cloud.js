@@ -20,7 +20,7 @@ import { SAVE_KEYS, onSaveWrite } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, stageName } from './data/starters.js';
 import { BIOMES } from './data/enemies.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
-import { playSound } from './audio.js';
+import { playSound, preloadSounds } from './audio.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const STATE_KEY = 'pokedb.cloud.v1';
@@ -336,8 +336,18 @@ export function initCloud() {
   if (!FIREBASE_CONFIG) return;
   $('cloud-btn').hidden = false;
   $('title-account').hidden = false;
+  preloadSounds('pc-on', 'pc-off');   // loaded before the tap, so they replace the menu blip instead of trailing it
   $('cloud-btn').addEventListener('click', openCloud);
-  $('title-account').addEventListener('click', () => { playSound('pc-on'); openCloud(); });
+  $('title-account').addEventListener('click', () => {
+    playSound('pc-on');
+    $('cloud-dialog').dataset.closeSound = 'pc-off';   // logging off the PC as its window closes, in place of cancel
+    openCloud();
+  });
+  $('cloud-dialog').addEventListener('close', () => {
+    const sound = $('cloud-dialog').dataset.closeSound;
+    delete $('cloud-dialog').dataset.closeSound;
+    if (sound) playSound(sound);
+  });
   $('cloud-google').addEventListener('click', signInGoogle);
   $('cloud-email-form').addEventListener('submit', (e) => {
     e.preventDefault();

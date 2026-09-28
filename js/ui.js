@@ -80,7 +80,7 @@ document.addEventListener('click', (e) => {
   if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
   const stand = OUTSIDE_TAP[d.id];
   if (stand) return $(stand).click();
-  playSound('cancel', 'confirm');
+  if (!d.dataset.closeSound) playSound('cancel', 'confirm');
   d.close();
 });
 

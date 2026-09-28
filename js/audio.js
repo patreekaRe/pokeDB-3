@@ -77,7 +77,8 @@ const SOUNDS = {
   'run-away':   { url: 'assets/audio/sfx/run-away.mp3' },     // you get away: the Poké Doll, or Team Rocket's "Run for it"
   evolved:      { url: 'assets/audio/sfx/evolved.mp3', gain: 0.55 },   // "Congratulations! Your X evolved into Y!" (evolution.js); mastered ~5 dB over item-get
   'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },
-  'pc-on':      { url: 'assets/audio/sfx/pc-on.mp3' },        // the games' PC booting up: only the title's Sign in PC (the user's call)   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
+  'pc-on':      { url: 'assets/audio/sfx/pc-on.mp3' },        // the games' PC booting up: only the title's Sign in PC (the user's call)
+  'pc-off':     { url: 'assets/audio/sfx/pc-off.mp3' },       // ...and logging off as that window closes, in place of cancel   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -154,7 +155,8 @@ export function initAudio() {
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
   document.addEventListener('click', menuBlip);
   // Escape on a modal window (`cancel` doesn't bubble, so listen while it captures)
-  document.addEventListener('cancel', (e) => { if (e.target instanceof HTMLDialogElement) playSound('cancel', 'confirm'); }, true);
+  // a window with a data-close-sound plays its own as it closes (the title PC's pc-off), so it skips this one
+  document.addEventListener('cancel', (e) => { if (e.target instanceof HTMLDialogElement && !e.target.dataset.closeSound) playSound('cancel', 'confirm'); }, true);
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
