@@ -27,7 +27,7 @@ import { showMenuScene } from './scene.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
-const PSYCHIC = { label: 'Psychic', icon: '🔮' };   // Mewtwo's type has no cards yet, so it isn't in TYPES
+const PSYCHIC = { label: '???', icon: '❓' };   // Mewtwo's type has no cards yet, so it isn't in TYPES; kept a mystery like the Index's ??? tab
 
 let picked = null;        // the starter shown big
 let tab = 'starters';

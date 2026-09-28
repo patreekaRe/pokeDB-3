@@ -350,7 +350,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .sel-type.type-fire { background: #c9431f; }
 .sel-type.type-grass { background: #2f8f43; }
 .sel-type.type-water { background: #2569c7; }
-.sel-type.type-psychic { background: #b04a8a; }
+.sel-type.type-psychic { background: #8a6ad8; }
 .sel-blurb { margin: 0 0 8px; font-size: 0.72rem; line-height: 1.6; }
 .sel-ability { margin: 0 0 10px; font-size: 0.66rem; line-height: 1.6; opacity: 0.9; }
 .sel-ability b { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; color: #f8d048; font-weight: 400; }
