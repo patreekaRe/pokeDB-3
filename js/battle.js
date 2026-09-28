@@ -25,7 +25,7 @@ import { ITEMS_BY_ID } from './data/items.js';
 import { isShiny, getSave, updateSave } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite } from './ui.js';
+import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -57,11 +57,53 @@ export function initBattle() {
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
   addEventListener('resize', () => { if (battle) { fanHand(); renderFocus(); } });
+  document.querySelectorAll('.piles .pile').forEach(btn => btn.addEventListener('click', () => openPiles(btn.dataset.pile)));
+}
+
+/* StS's pile screens: the top bar's counts open a window with a tab per pile. The draw pile is sorted, so it doesn't
+   give away what's coming next; the others list the latest card first. Copies that grew this fight (Aqua Cutter...)
+   are their own card objects, so cards are grouped by object, not id. */
+const PILES = [
+  ['draw', '📚', 'Draw', 'Your next draws, sorted (their order stays a secret).'],
+  ['discard', '🗂️', 'Discard', 'Shuffled back into your draw pile once it runs out. Latest first.'],
+  ['exhaust', '🌫️', 'Exhaust', 'Exhausted cards: gone for the rest of this fight. Latest first.'],
+];
+// played powers share b.exhaust (they leave the fight too) but, as in StS, aren't shown as exhausted
+const exhaustedCards = (b) => b.exhaust.filter(c => !c.power);
+
+function openPiles(which) {
+  if (!battle) return;
+  showPile(which);
+  openDialog('piles-dialog');
+}
+
+function showPile(which) {
+  const b = battle;
+  const lists = { draw: b.drawPile, discard: b.discard, exhaust: exhaustedCards(b) };
+  $('piles-tabs').replaceChildren(...PILES.map(([id, icon, label]) => {
+    const tab = el('button', 'index-tab');
+    tab.type = 'button';
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', String(id === which));
+    tab.append(el('span', 'index-tab-icon', icon), el('span', 'index-tab-label', `${label} ${lists[id].length}`));
+    tab.addEventListener('click', () => showPile(id));
+    return tab;
+  }));
+  const cards = which === 'draw'
+    ? [...b.drawPile].sort((x, y) => x.name.localeCompare(y.name) || (costOf(x) === 'X' ? 9 : costOf(x)) - (costOf(y) === 'X' ? 9 : costOf(y)))
+    : [...lists[which]].reverse();
+  const groups = new Map();
+  for (const card of cards) groups.set(card, (groups.get(card) || 0) + 1);
+  const [, , , note] = PILES.find(([id]) => id === which);
+  $('piles-note').textContent = groups.size ? note : 'Nothing here yet.';
+  $('piles-cards').replaceChildren(...[...groups].map(([card, count]) =>
+    zoomable(makeCard(card, { stage: b.stage, count, cost: costOf(card) }), card, b.stage)));
 }
 
 /** Leave the battle without finishing it (used when you abandon a run). */
 export function abandonBattle() {
   battle = null;
+  closeDialog('piles-dialog');
   choosing = null;
   if (pilePick) { pilePick = null; const layer = $('card-focus'); layer.hidden = true; layer.replaceChildren(); layer.classList.remove('pile-picking'); }
   setLoop('low-hp', false);
@@ -622,8 +664,8 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
   // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
   if (card.power) b.exhaust.push(settled(card));  // powers leave the fight, but aren't "exhausted" (no triggers)
   else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
-  if (lumCures(card)) draw(1);
   else b.discard.push(settled(card));
+  if (lumCures(card)) draw(1);
   if (card.power && hasRelic('power-herb')) draw(1);
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
@@ -1235,6 +1277,7 @@ async function finish(won) {
   await sleep(won && hasAbility('overgrow') ? 1700 : 1200);   // time to read Overgrow's banner
   if (battle !== b) return;
 
+  closeDialog('piles-dialog');
   b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken });
 }
 
@@ -1384,6 +1427,10 @@ function renderBars() {
   orb.classList.toggle('empty', b.energy === 0);
   $('draw-count').replaceChildren(el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
   $('discard-count').replaceChildren(el('span', 'pile-icon', '🗂️'), el('b', '', String(b.discard.length)));
+  // like StS, the exhaust pile only shows once a card has been exhausted (played powers aren't; they just leave)
+  const exhausted = exhaustedCards(b);
+  $('exhaust-count').hidden = !exhausted.length;
+  $('exhaust-count').replaceChildren(el('span', 'pile-icon', '🌫️'), el('b', '', String(exhausted.length)));
   $('end-turn-btn').disabled = b.busy || b.over;
   // nothing left to play: End Turn hops and blinks so it's clear that's the move (items don't count, they're optional)
   $('end-turn-btn').classList.toggle('nudge', !b.busy && !b.over && b.hand.every(h => whyNotPlayable(h.card)));

@@ -72,8 +72,9 @@
       </div>
     </div>
     <div class="piles" aria-label="Your piles">   <!-- shown only in battle -->
-      <span class="pile" id="draw-count" title="Cards left in your draw pile"></span>
-      <span class="pile" id="discard-count" title="Cards in your discard pile"></span>
+      <button type="button" class="pile" id="draw-count" data-pile="draw" title="Cards left in your draw pile: tap to see them"></button>
+      <button type="button" class="pile" id="discard-count" data-pile="discard" title="Cards in your discard pile: tap to see them"></button>
+      <button type="button" class="pile" id="exhaust-count" data-pile="exhaust" title="Exhausted cards, gone for the rest of this fight: tap to see them" hidden></button>
     </div>
     <!-- shown only on the reward screen (every room with choices: rewards, events, Center, Mart), from showChoice() -->
     <div class="hp-plate" id="choice-plate">
@@ -507,6 +508,15 @@
     <div class="evo-flash" id="evolve-flash"></div>
     <div class="evo-bottom"><div class="reward-log" id="evolve-log" hidden><span id="evolve-log-text" aria-hidden="true"></span><span class="sr-only" id="evolve-log-live" aria-live="polite"></span></div></div>
   </div>
+
+  <!-- battle's draw / discard / exhaust piles, opened from their counts in the top bar (openPiles() in js/battle.js) -->
+  <dialog id="piles-dialog" class="dialog wide-dialog index-dialog">
+    <h2 tabindex="-1" autofocus>Your piles</h2>
+    <div class="index-tabs" id="piles-tabs" role="tablist" aria-label="Piles"></div>
+    <p class="index-note" id="piles-note"></p>
+    <div id="piles-cards" class="card-pool" role="tabpanel"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  </dialog>
 
   <dialog id="deck-dialog" class="dialog wide-dialog">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>

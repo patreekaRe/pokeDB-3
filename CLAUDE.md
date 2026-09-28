@@ -111,7 +111,6 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()` and the reward /
   Mart focus (`openFocus()`); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
   `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`.
-  There's no exhaust pile icon (the user's call, for now).
   Each type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
   Drain / Spores, Water Tsunami / Shell / Flow.
   Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
@@ -636,9 +635,18 @@ energy the turn started with; `data-shown` remembers the last value so the
 number bumps when it changes, and `.empty` turns the numbers red) | hand | End Turn
 (`#end-turn-btn`, not a `.btn`: the same salmon panel and white pill, so the
 two match; greyed out while disabled; when no card in hand can be played, `.nudge` (set in `renderAll()`, items don't count) makes it hop, scroll its stripes and blink a gold ring and a ▶ in the pill, the user's call, so it's clear to end the turn). The
-draw/discard piles (`.piles` / `.pile`: a floating pixel card stack and the
+draw/discard/exhaust piles (`.piles` / `button.pile`: a floating pixel card and the
 count, like the coins) live in the top bar beside the Poké Ball, shown only
-while `body[data-screen="battle-screen"]`. Relics don't show in battle (they
+while `body[data-screen="battle-screen"]`. The exhaust pile (🌫️, its own icon: 💨 is shared) only shows once a card
+has been exhausted; played powers also go to `b.exhaust` (so they leave the fight) but, as in StS, never count as
+exhausted (`exhaustedCards()`). Tapping a pile opens `#piles-dialog` (`openPiles()` in `js/battle.js`, the user's call
+2026-09-28, StS's pile screens): Index-style tabs Draw / Discard / Exhaust with counts, the draw pile sorted by name
+(its order stays secret), the others latest first, cards grouped by object (a grown copy is its own card), each
+`zoomable()`; it closes when the fight ends.
+A played card goes to exactly one pile in `resolveCard()`: power → `b.exhaust`, exhaust/Corruption/Lum Berry →
+`exhaustCard()`, else the discard. From 6c.11a (2026-09-27) to 2026-09-28 a misplaced `else` also put every power and
+Exhaust card in the discard pile, so powers stacked every reshuffle and Exhaust cards came back; the sim had the same
+bug, so bot numbers from those days include it. Relics don't show in battle (they
 are in the Bag). Above them, `#battle-log` is a Gold/Silver
 text box: `log()` types each line out (instantly under reduced motion) into
 `#battle-log-text`, while `#battle-log-live` gets the whole line at once for

@@ -1023,6 +1023,8 @@ body[data-screen="reward-screen"] .hp-plate { display: flex; }
   line-height: 1;
   cursor: help;
 }
+button.pile { padding: 0; border: 0; background: none; cursor: pointer; }   /* tap for the pile's cards (openPiles()) */
+button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .pile-icon { font-size: 1.15rem; }
 .pile b { font-size: 1.3rem; font-weight: 400; }
 
