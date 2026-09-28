@@ -8,7 +8,8 @@
    PokéCoins once and turns on its perk for every run after. Each entry
    counts its defeats (research, Legends: Arceus-style): at its goal it's
    Research complete, with a gold mark, and only then shows its type,
-   role, flavour text, weakness, HP and moves with their numbers.
+   role, flavour text, weakness, HP and moves with their numbers. Once
+   every entry on a page is researched its perk goes up to Lv 2.
    ============================================================ */
 
 import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
@@ -33,8 +34,12 @@ const goalOf = (id) => RESEARCH_GOAL[roleOf(id)];
 const defeats = (id) => getSave().dex.count[id] || 0;
 const researched = (id) => defeats(id) >= goalOf(id);
 
-/** True once the page holding this perk is complete (its reward is paid). */
-export const hasDexPerk = (perkId) => DEX_PAGES.some(p => p.perk.id === perkId && getSave().dex.done.includes(p.biome));
+const pageResearched = (p) => p.ids.every(researched);
+const levelOf = (p) => (!getSave().dex.done.includes(p.biome) ? 0 : pageResearched(p) ? 2 : 1);
+
+/** A page perk's level: 0 until its page is complete, 1 once it is, 2 once every entry on it is researched too.
+    Worked out from the save rather than stored, so a save that had already researched a page gets Lv 2 straight away. */
+export const dexPerkLevel = (perkId) => levelOf(DEX_PAGES.find(p => p.perk.id === perkId));
 
 /** Pick weight for a fight room's Pokémon: ones you haven't beaten yet come up twice as often. */
 export const dexWeight = (id) => (getSave().dex.defeated.includes(id) ? 1 : 2);
@@ -70,6 +75,9 @@ export function dexDefeated(id) {
     updateSave(d => { d.dex.done.push(p.biome); });
     const coins = awardCoins(p.perk.coins);
     lines.push(`The ${p.name} page is complete! +${coins} PokéCoins.`, `New perk: ${p.perk.name}. ${p.perk.text}`);
+  }
+  if (n === goal && pageResearched(p)) {
+    lines.push(`Every ${p.name} entry is researched!`, `${p.perk.name} is now Lv 2: ${p.perk.lv2.text}`);
   }
   let complete = false;
   if (!save.dex.complete && ALL_IDS.every(researched)) {
@@ -116,21 +124,22 @@ function entryTile(id, role, seen, defeated) {
   return tile;
 }
 
-function perkBox(p, count, done, pageName) {
-  const box = el('div', `dex-perk${done ? ' earned' : ''}`);
+function perkBox(p, count, done) {
+  const lv = levelOf(p);
+  const box = el('div', `dex-perk${done ? ' earned' : ''}${lv === 2 ? ' mastered' : ''}`);
   const icon = el('span', 'dex-perk-icon', p.perk.icon);
   const text = el('div', 'dex-perk-text');
+  const studied = p.ids.filter(researched).length;
   text.append(
-    el('strong', '', `${done ? '' : '🔒 '}${pageName ? `${pageName} page: ` : ''}${p.perk.name}`),
-    el('span', '', p.perk.text),
-    el('small', '', done ? 'Earned: on for every run.' : `Defeat all ${p.ids.length} to earn it, plus 💰 ${p.perk.coins}.`),
+    el('strong', '', `${done ? '' : '🔒 '}${p.perk.name}${lv === 2 ? ' Lv 2' : ''}`),
+    el('span', '', lv === 2 ? p.perk.lv2.text : p.perk.text),
+    el('small', '', !done ? `Defeat all ${p.ids.length} to earn it, plus 💰 ${p.perk.coins}.`
+      : lv === 2 ? 'Every entry researched: Lv 2, on for every run.'
+      : `Earned: on for every run. Research all ${p.ids.length} (★${studied}) for Lv 2: ${p.perk.lv2.short}.`),
   );
-  const bar = el('div', 'ach-bar dex-bar');
-  const fill = el('div', 'ach-fill');
-  fill.style.width = `${(count / p.ids.length) * 100}%`;
-  bar.append(fill);
-  text.append(bar);
-  box.append(icon, text, el('b', 'dex-perk-count', `${count}/${p.ids.length}`));
+  const shown = done ? studied : count;   // once the page is complete, the bar tracks the research towards Lv 2
+  text.append(progressBar(shown, p.ids.length));
+  box.append(icon, text, el('b', 'dex-perk-count', `${done ? '★' : ''}${shown}/${p.ids.length}`));
   return box;
 }
 
@@ -198,7 +207,12 @@ function renderRewards() {
     prize(el('span', 'dex-prize-icon', p.perk.icon), p.perk.name, p.perk.short),
   ], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.perk.name}: ${p.perk.text}`));
 
-  $('dex-body').replaceChildren(jackpot, research, ...pages);
+  // researching a whole page raises its perk to Lv 2 (the user's call, 2026-09-28)
+  const masters = DEX_PAGES.map(p => goal('★', `${p.name.split(' ').pop()} research`, `Research all ${p.ids.length}`, [
+    prize(el('span', 'dex-prize-icon', p.perk.icon), `${p.perk.name} Lv 2`, p.perk.lv2.short),
+  ], p.ids.filter(researched).length, p.ids.length, levelOf(p) === 2, `${p.perk.name} Lv 2: ${p.perk.lv2.text}`));
+
+  $('dex-body').replaceChildren(jackpot, research, ...pages, ...masters);
 }
 
 /** The fourth biome's page: nothing but silhouettes of question marks, a hint of what's coming. */

@@ -64,7 +64,7 @@ live site.
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
   it). The Bag, the Poké Ball menu, zooms and
-  focus layers already did.
+  focus layers already did. The Collection screen goes back on a tap on its empty background too (`initCollection()`).
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
@@ -1214,7 +1214,10 @@ first defeat says "X's data was added to the Pokédex!" in the reward text box (
 lines); defeating the last entry on a page pays its PokéCoins once (300 / 400 / 500, `done` guards it) and turns on its
 perk (`DEX_PERKS`, `hasDexPerk()`): Mom's Savings (start runs with ₽50, `DEX_START_MONEY`), Chansey's Gift (start
 with a Potion), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
-`run.rerollBiome`, saved with the run). A final-boss page completion goes in the result window (`run.dexNews`). The
+`run.rerollBiome` / `run.rerollsUsed`, saved with the run). Researching every entry on a page raises its perk to **Lv 2**
+(the user's call, 2026-09-28): ₽100, a Super Potion, two rerolls a biome (`lv2` in `DEX_PERKS`; `DEX_START_MONEY` /
+`DEX_START_ITEM` / `DEX_REROLLS` by level). `dexPerkLevel()` in `js/pokedex.js` works it out from the save (0 / 1 / 2), so
+nothing new is saved; the page's perk box then tracks research, and the Rewards tab has a goal per page. A final-boss page completion goes in the result window (`run.dexNews`). The
 Achievements window lists the three pages after the starters. Fight rooms prefer unbeaten Pokémon 2:1
 (`pickEnemyId(biome, kind, dexWeight)`). The sim mirrors the perks as `cfg.dexPerks`. **Research** (step 7b, Legends: Arceus-style): the save's `dex.count: { id: n }` counts
 every defeat (`countDex()`; old saves seed 1 per `defeated` id in `seedCounts()`), and each win's reward text box says
@@ -1224,8 +1227,9 @@ shows its type, role, flavour text, weakness, HP and each move's numbers at that
 complete pays `DEX_COMPLETE_COINS` (1500) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
 saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. A fourth tab, **???** (`renderMystery()`, the user's ask 2026-09-28), stands in for the Mewtwo-only fourth biome (roadmap's v1.0 plan): question-mark tiles, counted nowhere, until part B gives it real entries. A fifth tab, **Rewards** (`renderRewards()`, the user's call: easy to find), lists
 the complete-Pokédex jackpot (1500 coins, Reshiram, shown as a "???" silhouette until won, the Silph Scope), research payouts and each page's perk with progress.
-**Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button under the map's biome sign
-(`#scope-btn`, `drawMap()` in `js/run.js`) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
+**Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button in the map's bottom-left corner
+(`#scope-btn`, `drawMap()` in `js/run.js`; the user's call 2026-09-28: a child of `#map` kept by `renderMap()` as `.map-keep`,
+sticky so a tall PC map scrolled up keeps it at the screen's bottom) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
 **Scope Upgrade** (`scopeUpgrade`, 2 levels, `needsDex`: greyed out until the Pokédex is complete). Tapping it lights up
 every unvisited fight / elite room (`scopeable()`, `.scope-pick`, `renderMap(..., { reveal })`); the one picked gets
 `node.revealed` (saved with the map's nodes, which also counts the biome's reveals used), cries, and shows its Pokémon above

@@ -236,10 +236,10 @@
         <h2 class="biome-sign" id="biome-name"></h2>
         <!-- the place you stand in (a biome's 3 places and the boss's arena: stageOf() in js/map.js), hung under the sign -->
         <p class="stage-sign" id="stage-name"></p>
-        <!-- the Silph Scope, a complete Pokédex's prize: reveals a fight room's Pokémon (js/run.js drawMap()) -->
-        <button class="scope-btn" id="scope-btn" type="button" hidden></button>
       </div>
-      <div class="map-wrap"><div class="map" id="map"></div></div>
+      <!-- the Silph Scope, a complete Pokédex's prize, lies in the map's bottom-left corner: reveals a fight room's Pokémon
+           (js/run.js drawMap()); .map-keep survives renderMap() -->
+      <div class="map-wrap"><div class="map" id="map"><button class="scope-btn map-keep" id="scope-btn" type="button" hidden></button></div></div>
       <!-- news from the run (an event's outcome, a used item...), told in the same text box as the reward screens (rewards.js tell()) -->
       <div class="map-bottom"><div class="reward-log" id="map-log" hidden><span id="map-log-text" aria-hidden="true"></span><span class="sr-only" id="map-log-live" aria-live="polite"></span></div></div>
     </section>

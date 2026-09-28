@@ -6,7 +6,8 @@
    it and "defeated" (the games' caught) once you've beaten it; a page is
    complete when every entry on it is defeated. Finishing a page pays
    PokéCoins once and switches on a small permanent perk (Neow-style
-   run-start bonuses, StS's). Perks can't be bought at the Game Corner.
+   run-start bonuses, StS's); researching every entry on it raises the
+   perk to Lv 2. Perks can't be bought at the Game Corner.
    ============================================================ */
 
 import { BIOMES } from './enemies.js';
@@ -15,18 +16,23 @@ export const DEX_PERKS = {
   clearing: {
     id: 'moms-savings', name: 'Mom\'s Savings', icon: '💴', coins: 300,
     text: 'Start every run with ₽50.', short: 'Start runs with ₽50',
+    lv2: { text: 'Start every run with ₽100.', short: 'Start runs with ₽100' },
   },
   shrine: {
     id: 'chansey-gift', name: 'Chansey\'s Gift', icon: '🧴', coins: 400,
     text: 'Start every run with a Potion in the Bag.', short: 'Start runs with a Potion',
+    lv2: { text: 'Start every run with a Super Potion in the Bag.', short: 'Start runs with a Super Potion' },
   },
   wastes: {
     id: 'oaks-advice', name: 'Oak\'s Advice', icon: '🎓', coins: 500,
     text: 'Once per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward once a biome',
+    lv2: { text: 'Twice per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward twice a biome' },
   },
 };
 
-export const DEX_START_MONEY = 50;
+export const DEX_START_MONEY = [0, 50, 100];   // by perk level: Lv 2 once the page's every entry is researched
+export const DEX_START_ITEM = [null, 'potion', 'super-potion'];
+export const DEX_REROLLS = [0, 1, 2];
 
 /* Research (Legends: Arceus's research levels): every entry counts its defeats. At the goal it's
    Research complete (the entry shows each move's numbers) and pays its PokéCoins once; bosses are

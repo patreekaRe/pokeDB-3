@@ -35,7 +35,7 @@ export const PATCHES = [
       ['🏆', 'For completionists', [
         'Unlock all 30 starters: 12 from later generations, and 15 legendaries earned through achievements.',
         'Collect a shiny of every starter from the Game Corner, or earn one with a Level 5 win.',
-        'Complete Pokédex research on all 55 Pokémon for PokéCoins, page perks and the Silph Scope.',
+        'Complete Pokédex research on all 55 Pokémon for PokéCoins, page perks (Lv 2 once a page is fully researched) and the Silph Scope.',
         'Find every move, relic and item in the Index, and put a gold star on every starter.',
       ]],
       ['🎰', 'Between runs', [

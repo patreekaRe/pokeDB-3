@@ -13,7 +13,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { DEX_PAGES, DEX_COMPLETE_COINS } from './data/pokedex.js';
-import { researchCount } from './pokedex.js';
+import { researchCount, dexPerkLevel } from './pokedex.js';
 import { $, el, openDialog } from './ui.js';
 
 const tile = ([icon, value, label, note]) => {
@@ -136,9 +136,11 @@ export function openAchievements() {
   const dex = el('div', 'ach-list');
   for (const p of DEX_PAGES) {
     const got = getSave().dex.done.includes(p.biome);
+    const lv2 = dexPerkLevel(p.perk.id) === 2;
     const row = el('div', `ach dex-ach${got ? ' done' : ''}`);
     const text = el('div', 'ach-text');
-    text.append(el('strong', '', p.perk.name), el('span', '', `Complete the Pokédex's ${p.name} page: ${p.perk.text}`));
+    text.append(el('strong', '', `${p.perk.name}${lv2 ? ' Lv 2' : ''}`), el('span', '', `Complete the Pokédex's ${p.name} page: ${p.perk.text}`),
+      el('span', '', `${lv2 ? '★ ' : ''}Research every entry on it for Lv 2: ${p.perk.lv2.text}`));
     row.append(el('span', 'dex-ach-icon', p.perk.icon), text, el('span', 'ach-status', got ? '' : '🔒'));
     if (got) row.lastChild.append(el('span', 'pokeball'));
     dex.append(row);
