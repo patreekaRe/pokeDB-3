@@ -186,7 +186,7 @@ function renderRewards() {
     row.title = `${kind}: ${n} PokéCoins`;
     return row;
   };
-  const research = goal('★', 'Research', 'Beat one Pokémon 3× (bosses 2×)', [
+  const research = goal('★', 'Research', 'Beat a Pokémon 3× (bosses 2×) to complete its research. Each one pays once:', [
     pay('⚔️', 'Wild', RESEARCH_COINS.wild), pay('💀', 'Alpha', RESEARCH_COINS.elite), pay('👹', 'Boss', RESEARCH_COINS.boss),
   ], done, all, false, 'Each entry pays once.');
 
