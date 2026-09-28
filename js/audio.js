@@ -41,9 +41,10 @@ const TRACKS = {
   map3:    'assets/audio/map3.mp3',
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
+  'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
 };
-// A track whose file isn't there yet plays another in its place (the user supplies the Hall of Fame's MP3 later).
-const TRACK_FALLBACK = { 'hall-of-fame': 'victory' };
+// A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
+const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory' };
 const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)

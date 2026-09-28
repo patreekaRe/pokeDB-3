@@ -295,7 +295,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   top layer over it; the user wanted normal wins to feel satisfying too): the pedestal scene below, then the run's numbers
   as a grid of dark tiles popping in (`statsPanel()`, short labels, from the same `statList()` as the record's page), then
   the deck. A Level 5 win is the Hall of Fame version (gold pedestal, title, its song, "Welcome to the HALL OF FAME!");
-  any other is "Victory!" on a silver pedestal over the victory fanfare already playing, saved "as Win NNN". A Level 5 win also throws a **party** (part 3, 2026-09-28; `.party`, never under reduced motion, where it
+  any other is "Victory!" on a silver pedestal with its own song, `run-win` (`assets/audio/run-win.mp3`, the user supplies it; while it's missing the victory fanfare already playing carries on), saved "as Win NNN". A Level 5 win also throws a **party** (part 3, 2026-09-28; `.party`, never under reduced motion, where it
   has no sound either): `celebrate()` in `js/celebrate.js` draws on `#hof-fx`, one low-res canvas behind the layout (3 CSS px a
   pixel on phones, 4 wider; ~30 fps; `stop()` when the scene closes), all in whole pixels, fading by stepping down a palette,
   never by alpha: two spotlights sweeping from the bottom corners (filled row by row), rockets on ember trails bursting in the
@@ -1290,7 +1290,7 @@ named after its id.
 `wild` / `elite` / `boss` chosen by `encounter.kind` in
 `startBattle()`, `victory` from the moment an enemy faints (`finish()` in
 `js/battle.js`) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; after a Level 5
-win, the Hall of Fame's `hall-of-fame`, or `victory` while that file is missing), and `center` at rest sites
+win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the

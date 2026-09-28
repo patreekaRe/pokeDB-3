@@ -25,7 +25,7 @@ const CRY_WAIT_MAX = 1500;
 
 /** Start downloading the cry (and a Level 5 win's song) before the final boss, so the scene doesn't wait on them. */
 export function preloadWinScene(starter, fame) {
-  if (fame) preloadMusic('hall-of-fame');
+  preloadMusic(fame ? 'hall-of-fame' : 'run-win');
   preloadCries(starter.line.at(-1).id);
 }
 
@@ -189,7 +189,7 @@ export async function winScene(entry) {
   $('hof-log').hidden = true;
   scene.className = `hof-scene${fame ? ' fame' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
-  if (fame) playMusic('hall-of-fame', { restart: true });   // otherwise the victory fanfare from the boss's faint plays on
+  playMusic(fame ? 'hall-of-fame' : 'run-win', { restart: true });   // while its file is missing, the victory fanfare from the boss's faint plays on
   const canvas = $('hof-fx');
   canvas.hidden = !party;
   const fx = party ? celebrate(canvas, entry.type, { onBoom: () => replay(scene, 'boom') }) : null;
