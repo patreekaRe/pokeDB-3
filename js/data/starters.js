@@ -369,10 +369,14 @@ export const STARTERS_BY_ID = Object.fromEntries(STARTERS.map(s => [s.id, s]));
     whether its shiny colours are switched on (the Game Corner sells them); a legendary's final stage already is. */
 export function spriteUrl(starter, kind, stage = 0, shiny = shinyOn(starter.id)) {
   const id = starter.line[stage].id;
-  // a legendary's final form is its shiny colours; if it's shiny all along, that form is shiny with a glowing aura instead
-  // (`<id>-ascendant-*.gif`: the shiny GIF with 3 rings in its type's colour, the outer one shimmering), so it still changes
-  if (shiny && id.endsWith('-shiny')) return `assets/pokemon/${id.replace(/-shiny$/, '')}-ascendant-${kind}.gif`;
-  return `assets/pokemon/${shiny ? `${id}-shiny` : id}-${kind}.gif`;
+  // a legendary keeps its sprite, so each stage turns up the power instead (tools/ascendant-aura.py): Awakened glows
+  // (`-awakened`, in its normal or shiny colours), Ascendant blazes in its shiny colours (`-ascendant`), shiny or not
+  if (starter.legendary && stage > 0) {
+    const base = id.replace(/-shiny$/, '');
+    return stage === starter.line.length - 1 ? `assets/pokemon/${base}-ascendant-${kind}.gif`
+      : `assets/pokemon/${base}${shiny ? '-shiny' : ''}-awakened-${kind}.gif`;
+  }
+  return `assets/pokemon/${shiny && !id.endsWith('-shiny') ? `${id}-shiny` : id}-${kind}.gif`;
 }
 
 // Data files don't read the save; main.js hands in the check at startup.

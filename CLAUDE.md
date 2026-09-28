@@ -77,14 +77,16 @@ live site.
   at ~-14 dB mean, see the roadmap's step 3).
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
-  `-shiny` suffixed sprite id for a visual payoff on final evolution. With its shiny bought and on, that payoff would
-  vanish (it's shiny all along), so `spriteUrl()` gives the final form `<id>-ascendant-front/back.gif` instead (the user's
-  ask, 2026-09-28: "obnoxiously different"): the shiny GIF on a padded canvas with, every frame, a 3-ring aura cycling
-  through its type's colours, flares licking up off its top edge, sparkles orbiting with trails, the type's particles rising
-  (embers, bubbles, leaves, stars) and a body flash twice a loop, all on the GIF's own loop. It's baked into the GIF, not
-  CSS, since those sprites already carry their own filters (the intro's silhouette, the evolution's flashes). Made by
-  `tools/ascendant-aura.py <id> <type>` (Pillow), which also prints the pair's `SPRITE_FIT` lines (the shiny's gaps plus the
-  padding) for the end of `js/data/sprite-fit.js`; a new legendary needs both.
+  `-shiny` suffixed sprite id, but `spriteUrl()` turns the power up a notch per stage instead (the user's asks, 2026-09-28:
+  "obnoxiously different", "increases in intensity"), shiny or not: stage 1 is `<id>-awakened-*.gif` (or
+  `<id>-shiny-awakened-*` with the shiny on: two aura rings in the type's colours shimmering slowly, two orbiting sparkles, a
+  few drifting particles) and stage 2 `<id>-ascendant-*.gif` (always the shiny colours, on a padded canvas: a 3-ring aura
+  cycling through the type's colours, flares licking up off its top edge, sparkles orbiting with trails, the type's
+  particles rising (embers, bubbles, leaves, stars) and a body flash twice a loop). So without the shiny it's normal → glow →
+  shiny ablaze, with it shiny → shiny glow → shiny ablaze. Baked into the GIFs, not CSS, since those sprites already carry
+  their own filters (the intro's silhouette, the evolution's flashes). `tools/ascendant-aura.py <id> <type>` (Pillow) makes
+  all six of a legendary's files and prints their `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of
+  `js/data/sprite-fit.js`; a new legendary needs both.
   Sixteen earned ones: Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
   ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won with 15 cards or
