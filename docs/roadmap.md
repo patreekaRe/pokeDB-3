@@ -468,9 +468,10 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    >    hills `#5c4c96` / `#383274`, grass `#1e4a30 #2e6e42 #4c9e58 #86d470`); move the moon so the logo doesn't cover it.
    >    Tapping anywhere still plays `confirm` (fixed 2026-09-28). After PRESS START a stack of **pixel gems** rises in under the
    >    logo (after the glossy hexagon reference: bronze frame, pointed ends, two-tone face and glints, drawn as pixel art at
-   >    68x16 scaled up), each with a round bronze **medallion** over its left point holding an icon: Continue (amber, the saved
-   >    run's Pokémon; only with a save), New game (violet, a Poké Ball), Collection (gold, the Pokédex), Game Corner (coral,
-   >    the slot machine). Arrow keys / hover move a blinking ▶; press sinks the gem; smooth transitions between the title
+   >    68x16 scaled up), each with a bare icon on its left end (no frame round it, the user's call: just a dark pixel outline and a
+   >    drop shadow): Continue (amber, the saved run's Pokémon; only with a save; a taller gem whose second line shows the
+   >    Pokémon, biome and a small HP bar, so the run is visible before tapping), New game (violet, a Poké Ball), Collection
+   >    (gold, the Pokédex), Game Corner (coral, the slot machine). Arrow keys / hover move a blinking ▶; press sinks the gem; smooth transitions between the title
    >    and each screen. The Poké Ball menu stays as it is.
    > 2. **Character select** (replaces the starter grid + sheet; StS-style): the picked Pokémon big (integer-ish scale,
    >    pixelated) standing on its type's scene (`showMenuScene`), a see-through dark info panel (name in big gold pixel

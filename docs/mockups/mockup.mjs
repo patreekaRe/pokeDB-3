@@ -61,6 +61,16 @@ const TITLE_CSS = `
 .gem .medal .emoji-ish { font-size: 30px; }
 .gem.iconed span.lbl { padding-left: 44px; }
 .gem-stack.iconed { gap: 18px; padding-left: 14px; }
+.gem .bare { position: absolute; left: 22px; top: 50%; translate: 0 -50%; z-index: 2; width: 48px; height: 48px; display: grid; place-items: center;
+  filter: drop-shadow(2px 0 0 #2a1408) drop-shadow(-2px 0 0 #2a1408) drop-shadow(0 2px 0 #2a1408) drop-shadow(0 -2px 0 #2a1408) drop-shadow(0 3px 0 rgba(20,10,30,.5)); }
+.gem .bare img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; margin-top: -10px; }
+.gem .bare .px-icon { width: 34px; height: 34px; }
+.gem.bared span.lbl { padding-left: 40px; }
+.gem.bared.cont { height: 76px; }
+.gem .lbl .two { display: grid; gap: 7px; justify-items: center; }
+.gem .lbl .meta { display: flex; align-items: center; gap: 8px; font-size: .55rem; letter-spacing: .04em; text-transform: none; }
+.gem .lbl .hp { width: 64px; height: 7px; background: #402010; box-shadow: 0 0 0 2px #2a1408; position: relative; }
+.gem .lbl .hp i { position: absolute; inset: 0 30% 0 0; background: #58d048; box-shadow: inset 0 2px 0 #98f080; }
 .gem.on::after { content: '▶'; position: absolute; left: -24px; top: 50%; translate: 0 -50%; color: #f8e070; font: .8rem var(--pixel-font); text-shadow: 2px 2px 0 #181018; }
 `;
 async function title(w, h, kind) {
@@ -79,8 +89,9 @@ async function title(w, h, kind) {
         <button class="pxb purple white"><span class="o"><span class="i">Game Corner</span></span></button>`;
     } else {
       // pixel gems, after the glossy hexagon reference: a bronze frame, pointed ends, a glossy face, drawn at 68x16 and scaled 4x
+      let tall = false; const label2h = () => tall ? 19 : 16;
       const gem = (face, hi, lo) => {
-        const W = 68, H = 16, c = document.createElement('canvas'); c.width = W; c.height = H;
+        const W = 68, H = label2h(), c = document.createElement('canvas'); c.width = W; c.height = H;
         const g = c.getContext('2d');
         const inside = (x, y, inset) => { const cy = (H - 1) / 2; const reach = (W / 2 - inset) - Math.max(0, Math.abs(y - cy) * 0.9 - 0); return y >= inset && y <= H - 1 - inset && Math.abs(x + 0.5 - W / 2) <= reach - Math.abs(y - cy) * 0.0; };
         for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -99,13 +110,23 @@ async function title(w, h, kind) {
       };
       m.className = 'gem-stack';
       const items = [['Continue', '#f0a030', '#ffd070', '#c07018', true], ['New game', '#b848d8', '#e088f8', '#7a2098'], ['Collection', '#e8c830', '#fff080', '#b89010'], ['Game Corner', '#f06038', '#ff9870', '#b83018']];
-      const icons = { 'Continue': '<img src="assets/pokemon/charmeleon-front.gif" alt="">', 'New game': '<span class="pokeball" style="font-size:52px"></span>', 'Collection': '📕', 'Game Corner': '🎰' };
+      const icons = { 'Continue': '<img src="assets/pokemon/charmeleon-front.gif" alt="">', 'New game': '<span class="pokeball" style="font-size:46px"></span>', 'Collection': '📕', 'Game Corner': '🎰' };
       const withIcons = kind === 'gem-icons';
+      if (kind === 'gem-bare') m.classList.add('iconed');
       if (withIcons) m.classList.add('iconed');
       for (const [label, face, hi, lo, on] of items) {
         const b = document.createElement('button'); b.className = `gem${on ? ' on' : ''}${withIcons ? ' iconed' : ''}`;
+        tall = kind === 'gem-bare' && label === 'Continue';
         b.append(gem(face, hi, lo)); const s = document.createElement('span'); s.className = 'lbl'; s.textContent = label; b.append(s);
         if (withIcons) { const md = document.createElement('span'); md.className = 'medal'; md.innerHTML = icons[label]; b.append(md); }
+        if (kind === 'gem-bare') {
+          b.classList.add('bared');
+          const ic = document.createElement('span'); ic.className = 'bare'; ic.innerHTML = icons[label]; b.append(ic);
+          if (label === 'Continue') {
+            b.classList.add('cont');
+            s.innerHTML = '<span class="two"><span>Continue</span><span class="meta">Charmeleon · Shrine <span class="hp"><i></i></span></span></span>';
+          }
+        }
         m.append(b);
       }
     }
@@ -149,5 +170,5 @@ async function select(w, h) {
   await page.screenshot({ path: `mock3-select-${w}.png` });
   await page.close();
 }
-for (const [w, h] of [[390, 844], [1280, 800]]) { await title(w, h, 'gem-icons'); }
+for (const [w, h] of [[390, 844], [1280, 800]]) { await title(w, h, 'gem-bare'); }
 await browser.close();
