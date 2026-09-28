@@ -1366,8 +1366,6 @@ body.battle-intro { pointer-events: none; }
   align-items: stretch;
   gap: 10px;
 }
-/* relics are short rows, so pinned to the bottom their text box sat far below them (the user wanted it higher) */
-#reward-screen:has(.relic-pick) .reward-bottom { margin-top: 0; }
 /* a picked reward, blown up in the middle (rewards.js openFocus); the confirm sits under it like battle's "Tap to play" */
 .card-focus.reward-focus { justify-content: center; padding-bottom: 16px; background: rgba(8, 10, 24, 0.6); }
 .reward-focus .card.focus-card { --card-w: min(64vw, 260px, 45vh); }
@@ -3114,9 +3112,24 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .float-stage.open > .float-caption, .float-stage.open > .float-row { animation: bagRowIn 0.4s ease-out 0.7s backwards; }
 @keyframes bagRowIn { from { opacity: 0; } }
 @media (max-width: 720px) { .item-ball { --px: 4px; } }
+/* a relic reward (showRelics): the relics burst out in a flash one after another and float in a row in the rays; the
+   ones you didn't pick dim, and a boss's are gold */
+.relic-stage { padding-top: max(24px, 14vh); }
+.relic-stage .float-row { gap: clamp(16px, 5vw, 48px); }
+.relic-stage .ball-spot > .chest-rays { top: calc(var(--size, 72px) / 2 + 12px); animation: raysIn 0.7s ease-out forwards, raysTurn 40s linear infinite; }
+.relic-stage .float-thing { margin-bottom: 52px; animation: relicPop 0.8s cubic-bezier(0.25, 0.8, 0.35, 1) calc(0.15s + var(--i) * 0.15s) backwards; }
+.relic-stage .float-label { width: calc(var(--size) + 36px); white-space: normal; text-align: center; line-height: 1.5; font-size: 0.65rem; }
+@keyframes relicPop { 0% { transform: translateY(40px) scale(0.15); opacity: 0; } 25% { opacity: 1; } 60% { transform: translateY(-14px) scale(1.15); } 100% { transform: none; } }
+.relic-stage .float-thing.taken { animation: relicToBag 0.7s ease-in forwards; }
+.relic-stage.choosing .float-thing:not(.chosen) { opacity: 0.55; filter: grayscale(0.6); }
+.relic-stage.taking .float-thing:not(.taken) { opacity: 0; }
+.relic-stage.boss .chest-rays { background: repeating-conic-gradient(rgba(248, 200, 64, 0.38) 0 7deg, transparent 7deg 20deg); }
+.relic-stage.boss .relic-halo { background: radial-gradient(closest-side, rgba(248, 192, 40, 0.85), transparent); }
+.relic-stage.boss .treasure-sprite .item-sprite { filter: drop-shadow(0 0 8px rgba(248, 192, 40, 0.95)) drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.35)); }
+.relic-stage.boss .float-label { color: #f8d860; }
 @media (prefers-reduced-motion: reduce) {
-  .treasure-chest, .treasure-chest.opened, .treasure-relic, .float-thing.taken, .item-ball, .item-ball.opened .ball-top, .float-stage.open :is(.float-thing, .float-caption, .float-row), .relic-float, .relic-float::before, .relic-float::after, .relic-halo, .treasure-flash { animation: none; }
-  .treasure-chest.opened :is(.chest-glow, .chest-rays), .float-stage.open .ball-spot > .chest-rays { animation: none; opacity: 1; }
+  .treasure-chest, .treasure-chest.opened, .treasure-relic, .float-thing.taken, .item-ball, .item-ball.opened .ball-top, .float-stage.open :is(.float-thing, .float-caption, .float-row), .relic-stage .float-thing, .relic-float, .relic-float::before, .relic-float::after, .relic-halo, .treasure-flash { animation: none; }
+  .treasure-chest.opened :is(.chest-glow, .chest-rays), .float-stage.open .ball-spot > .chest-rays, .relic-stage .ball-spot > .chest-rays { animation: none; opacity: 1; }
   .item-ball.opened { display: none; }
   .treasure-flash { display: none; }
 }

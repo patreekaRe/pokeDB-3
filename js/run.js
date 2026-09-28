@@ -756,17 +756,55 @@ function offerRelic(title, next, { boss = false, source = 'normal' } = {}) {
   showRelics(title, relicChoices(run, { boss, source }), next);
 }
 
+/** A relic reward (an elite, a boss, the Item Ball, the Wishing Well) floats like the treasure grotto's relics, with no
+    tiles (the user's call, 2026-09-28: the list of windows looked plain): they burst out in a flash and bob in a row in
+    a shaft of light, gold for a boss. Tap one to read it in the text box, then tap it again (or Take it) and it flies
+    into the Bag. */
 function showRelics(title, relics, next) {
   if (!relics.length) return next();
-
+  const thisRun = run, boss = relics[0].boss, size = innerWidth <= 720 ? 72 : 88;
   showChoice({
     title,
-    sub: relics[0].boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
-    options: relics.map(relic => ({ ...relicOption(relic, () => gainRelic(relic, next)), ask: `Take the ${relic.name}?`, confirm: 'Take it', confirmSound: 'item-get' })),
+    sub: [boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
+      'Tap one to see what it does.'],
+    options: [],
     onSkip: next,
-    layout: 'relic-pick',
+    layout: 'item-found relic-drop',
     coins: run.pendingCoins,
   });
+  const stage = el('div', `float-stage open relic-stage${boss ? ' boss' : ''}`), spot = el('div', 'ball-spot'), row = el('div', 'float-row');
+  const go = goButton('Take it');
+  let picked = null, taking = false;
+  const buttons = relics.map((relic, i) => {
+    const btn = floatingThing(relic, i, size);
+    btn.addEventListener('click', () => (picked === relic ? take() : choose(relic, btn)));
+    return btn;
+  });
+  row.append(...buttons);
+  spot.append(el('span', 'chest-rays'), row);
+  stage.append(el('div', 'treasure-flash'), spot, go);
+  $('reward-options').append(stage);
+  playSound('ball-open');
+
+  function choose(relic, btn) {
+    if (taking) return;
+    picked = relic;
+    stage.classList.add('choosing');
+    buttons.forEach(b => b.classList.toggle('chosen', b === btn));
+    go.hidden = false;
+    sayLines([`${relic.name}: ${relic.text}`]);
+  }
+  go.addEventListener('click', take);
+  async function take() {
+    if (!picked || taking) return;
+    taking = true;
+    playSound('item-get');
+    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box would jump into its place
+    go.hidden = true;
+    stage.classList.add('taking');
+    await flyToBag(buttons[relics.indexOf(picked)]);
+    if (run === thisRun) gainRelic(picked, next);
+  }
 }
 
 /** Every relic you take (rewards, treasure, events) comes through here, and only then is it met in the Index (the user's

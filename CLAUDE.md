@@ -780,9 +780,10 @@ Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text
 in `#reward-log`, a copy of the battle text box pinned to the bottom of the
 screen, narrow and centred (`--log-w`: 440px, 300px on phones; the user's call: no
 stretched text boxes; the untyped rest of a line is laid out invisibly, `.log-rest`,
-so centred text doesn't slide as it types; relic picks, `layout: 'relic-pick'`, sit it just under Skip
-instead, since their short rows left it far below them); the Skip / Leave button (in `.reward-actions`, with Oak's Advice's Reroll beside it) sits centred right under the options (the user's
+so centred text doesn't slide as it types); the Skip / Leave button (in `.reward-actions`, with Oak's Advice's Reroll beside it) sits centred right under the options (the user's
 call: not off to the right by the text box), except on the floating-thing screens (Item found, the treasure grotto),
+and the relic rewards (`showRelics()`: elites, bosses, the Item Ball, the Wishing Well; since 2026-09-28 they burst out in
+a flash and float in a row in the treasure room's rays, gold for a boss, tap one to read it, then again or Take it),
 where the text box sits with the thing and Skip / Leave goes to the very bottom (the user's call: nothing should pull you
 off the item). It draws its
 `.relic` tiles (relics, items, choices) as parchment Pokégear windows, which on
