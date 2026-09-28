@@ -148,18 +148,6 @@ body.titling { overflow: hidden; }
 .press-cursor { font-size: 0.7em; color: var(--gold); }
 @keyframes pressBlink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0; } }
 
-/* the three starters wait on the ledge, hopping out of step */
-.title-trio {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--ground) - 16px);
-  translate: -50% 0;
-  display: flex;
-  align-items: flex-end;
-  gap: clamp(4px, 3vw, 28px);
-}
-.title-trio img { width: clamp(72px, 18vw, 112px); animation: trioHop 2.4s steps(2) infinite var(--d); }
-@keyframes trioHop { 0%, 70%, 100% { transform: none; } 80% { transform: translateY(-6px); } }
 .title-foot {
   position: absolute;
   inset: auto 0 max(10px, env(safe-area-inset-bottom));
@@ -209,7 +197,6 @@ body.titling { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
   .press-start { animation: none; opacity: 1; }
-  .title-trio img { animation: none; }
   .title-flyer { display: none; }
 }
 

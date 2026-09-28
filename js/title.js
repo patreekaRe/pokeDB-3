@@ -16,7 +16,6 @@
    ============================================================ */
 
 import { $, el, setHpBar } from './ui.js';
-import { spriteFit } from './data/sprite-fit.js';
 import { playSound, playCry } from './audio.js';
 
 const PIXEL = 3;
@@ -29,7 +28,7 @@ const FAR_HILLS = '#5c4c96', NEAR_HILLS = '#383274';
 const GRASS = ['#1e4a30', '#2e6e42', '#4c9e58', '#86d470'];
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
-const GEM_H = 16;   // gem height in pixels
+const GEM_H = 16, GEM_BIG = 19;   // gem heights in pixels: Continue's is bigger (the user's call)
 // face, top light, bottom shade (the reference's amber, violet, gold and coral)
 const GEMS = {
   continue: ['#f0a030', '#ffd070', '#c07018'],
@@ -51,7 +50,7 @@ export function initTitle(handlers) {
   const screen = $('title-screen');
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
-  $('title-run-mon').addEventListener('load', sizeRunMon);
+  initSoundPanel();
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
     if (!pressed) return start(e);
@@ -59,9 +58,9 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
-    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-account') && gems[at]) { e.preventDefault(); gems[at].click(); }
+    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-corner') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
-  addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); sizeRunMon(); } });
+  addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); } });
 }
 
 /** The first time: PRESS START. Resolves once it's pressed and the menu is up. */
@@ -84,6 +83,8 @@ export function leaveTitle() {
   const screen = $('title-screen');
   if (screen.hidden) return;
   screen.classList.add('away');
+  $('title-sound-panel').hidden = true;
+  $('title-sound-btn').setAttribute('aria-expanded', 'false');
   setTimeout(() => {
     screen.hidden = true;
     screen.classList.remove('away');
@@ -127,7 +128,7 @@ function start(e) {
 function renderMenu() {
   const run = actions.savedRun();
   const gems = [
-    run && gem('continue', 'Continue', () => sendOut(run), runIcon()),
+    run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
     gem('new', 'New game', actions.onNewGame, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
     gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
     gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
@@ -167,9 +168,11 @@ function sizeGems() {
   const px = gemPx();
   const cols = Math.floor(Math.min(300, innerWidth * 0.8) / px);
   for (const btn of document.querySelectorAll('#title-menu .gem')) {
-    btn.style.width = `${cols * px}px`;
-    btn.style.height = `${GEM_H * px}px`;
-    paintGem(btn.querySelector('.gem-face'), cols, GEM_H, GEMS[btn.dataset.kind]);
+    const big = btn.dataset.kind === 'continue';
+    const w = big ? cols + 2 * Math.round(cols * 0.04) : cols, h = big ? GEM_BIG : GEM_H;
+    btn.style.width = `${w * px}px`;
+    btn.style.height = `${h * px}px`;
+    paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind]);
   }
 }
 
@@ -205,53 +208,52 @@ function paintGem(canvas, cols, rows, [face, hi, lo]) {
   g.fillRect(cols - 15, rows - 5, 5, 1);
 }
 
-/** Continue's icon: the run's Poké Ball, wobbling. Your Pokémon waits on the ledge (renderRun()). */
-function runIcon() {
+/** Continue's icon: the run's Poké Ball, wobbling, with your Pokémon waiting inside to be sent out. */
+function runIcon(run) {
   const ball = el('span', 'cball');
   const shell = el('span', 'cball-ball');
   shell.append(el('span', 'cball-bottom'), el('span', 'cball-light'), el('span', 'cball-top'));
-  ball.append(shell);
+  const img = el('img', 'pixel');
+  img.src = run.sprite;
+  img.alt = '';
+  ball.append(shell, img);
   return ball;
 }
 
-/** A saved run puts its Pokémon on the ledge in place of the three starters, with its name, HP and biome over it. */
+/** A saved run's nameplate stands on the ledge (the user's call): its name, biome and HP, like battle's. */
 function renderRun(run) {
-  const screen = $('title-screen');
-  screen.classList.toggle('has-run', !!run);
   $('title-run').hidden = !run;
   if (!run) return;
-  const img = $('title-run-mon');
-  if (!img.src.endsWith(run.sprite)) img.src = run.sprite;
   $('title-run-name').textContent = run.name;
   $('title-run-place').textContent = run.place;
   setHpBar('title-run', run.hp, run.maxHp);
-  sizeRunMon();
 }
 
-/** The resting pose (SPRITE_FIT) about as big as a starter on the ledge, in half steps so its pixels stay even, feet on the grass. */
-function sizeRunMon() {
-  const img = $('title-run-mon');
-  if (!img.naturalWidth || $('title-run').hidden) return;
-  const [top, bottom, left, right] = spriteFit(img.src);
-  const poseH = img.naturalHeight - top - bottom || 64, poseW = img.naturalWidth - left - right || 64;
-  const target = Math.min(150, innerHeight * 0.15, Math.max(88, innerWidth * 0.26));
-  const s = Math.max(1, Math.floor(Math.min(target / poseH, target * 1.3 / poseW, 3) * 2) / 2);
-  img.style.width = `${img.naturalWidth * s}px`;
-  img.style.translate = `${((right - left) / 2) * s}px ${bottom * s}px`;
-}
-
-/** Continue: the ball on the gem pops open in a flash, your Pokémon on the ledge flashes white, hops and cries, then the map. */
+/** Continue: the ball's lid pops open in a flash, your Pokémon comes out with its cry, then the map. */
 function sendOut(run) {
   const btn = document.querySelector('#title-menu .gem-continue');
   if (!btn || btn.classList.contains('opening')) return;
   btn.classList.add('opening');
   playSound('ball-open');
-  setTimeout(() => { $('title-run').classList.add('out'); playCry(run.cry); }, still() ? 0 : 250);
+  setTimeout(() => { btn.classList.add('out'); playCry(run.cry); }, still() ? 0 : 250);
   setTimeout(() => {
-    btn.classList.remove('opening');
-    $('title-run').classList.remove('out');
+    btn.classList.remove('opening', 'out');
     actions.onContinue(run.saved);
   }, still() ? 0 : 1100);
+}
+
+/** The Sound button under the PC opens the Poké Ball menu's Sound toggle and slider (js/audio.js runs both). */
+function initSoundPanel() {
+  const btn = $('title-sound-btn'), panel = $('title-sound-panel');
+  const setOpen = (open) => {
+    if (open === !panel.hidden) return;
+    playSound('bag');
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  btn.addEventListener('click', () => setOpen(panel.hidden));
+  document.addEventListener('click', (e) => { if (!panel.hidden && !e.target.closest('.title-sound')) setOpen(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); } });
 }
 
 /* ---------- the sky ---------- */

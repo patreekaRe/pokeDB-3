@@ -48,12 +48,7 @@
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
     </div>
-    <div class="title-trio" aria-hidden="true">
-      <img class="pixel" src="assets/pokemon/bulbasaur-front.gif" alt="" style="--d:0s">
-      <img class="pixel" src="assets/pokemon/charmander-front.gif" alt="" style="--d:0.35s">
-      <img class="pixel" src="assets/pokemon/squirtle-front.gif" alt="" style="--d:0.7s">
-    </div>
-    <!-- a saved run: its Pokémon waits on the ledge in place of the starters, under a nameplate (renderRun() in js/title.js) -->
+    <!-- a saved run: its nameplate stands on the ledge (renderRun() in js/title.js); the Pokémon waits in Continue's ball -->
     <div class="title-run" id="title-run" hidden>
       <div class="nameplate title-plate" id="title-plate">
         <div class="nameplate-title"><strong id="title-run-name"></strong><span class="title-place" id="title-run-place"></span></div>
@@ -63,10 +58,18 @@
         </div>
         <span class="gb-hp-num" id="title-run-hp-text"></span>
       </div>
-      <img class="pixel title-run-mon" id="title-run-mon" alt="">
     </div>
-    <!-- the cloud save's Sign in, the games' PC, once the gems are up (js/cloud.js shows it) -->
-    <button type="button" class="title-account" id="title-account" hidden aria-label="Sign in"><span class="ta-pc">🖥️</span><span class="ta-label" id="title-account-text">Sign in</span></button>
+    <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js) and Sound -->
+    <div class="title-corner">
+      <button type="button" class="title-account" id="title-account" hidden aria-label="Sign in"><span class="ta-pc">🖥️</span><span class="ta-label" id="title-account-text">Sign in</span></button>
+      <div class="title-sound">
+        <button type="button" class="title-account" id="title-sound-btn" aria-label="Sound" aria-expanded="false" aria-controls="title-sound-panel"><span class="ta-pc" id="title-sound-icon">🔊</span><span class="ta-label">Sound</span></button>
+        <div class="ball-menu-panel title-sound-panel" id="title-sound-panel" hidden>
+          <button class="menu-item" id="title-music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
+          <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="title-volume" min="0" max="100" step="5" value="100"></label>
+        </div>
+      </div>
+    </div>
     <p class="title-foot">© 2026 PokéDB · a fan game, not affiliated with Nintendo</p>
   </div>
 

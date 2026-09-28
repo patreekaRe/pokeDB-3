@@ -64,16 +64,21 @@
 .title-screen.menu { cursor: default; }
 .title-screen.menu .press-start { display: none; }
 .title-screen.menu .title-menu { display: flex; }
-.title-account {
+.title-corner {
   position: absolute; z-index: 3;
   top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left));
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.title-account {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 4px 6px; border: 0; background: none; color: #fff; cursor: pointer;
   font: inherit; font-size: 10px; letter-spacing: 0.04em;
 }
+.title-sound { position: relative; }
+.title-sound-panel { min-width: 230px; z-index: 4; }
 .ta-pc { position: relative; font-size: 40px; line-height: 1; filter: drop-shadow(0 3px 0 rgba(10, 8, 40, 0.55)); }
 .ta-label { text-shadow: 2px 2px 0 #1c1440; }
-.title-account:hover .ta-label, .title-account:focus-visible .ta-label { color: #ffd070; }
+.title-account:hover .ta-label, .title-account:focus-visible .ta-label, .title-account[aria-expanded="true"] .ta-label { color: #ffd070; }
 .title-account:active .ta-pc { translate: 0 2px; }
 /* signed in: the PC's power light is on */
 .title-account.on .ta-pc::after {
@@ -87,7 +92,13 @@
   .title-account:hover .ta-pc, .title-account:focus-visible .ta-pc { animation: taBob 0.4s steps(2) infinite alternate; }
 }
 @media (prefers-reduced-motion: reduce) { .title-account.on .ta-pc::after { animation: none; } }
-.title-screen:not(.menu) .title-account { display: none; }
+/* phones: a little smaller (the user's call) */
+@media (max-width: 600px) {
+  .ta-pc { font-size: 32px; }
+  .title-account { font-size: 9px; padding: 2px 4px; }
+  .title-corner { gap: 2px; }
+}
+.title-screen:not(.menu) .title-corner { display: none; }
 .title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
 .title-big { transition: font-size 0.4s ease; }
@@ -159,17 +170,17 @@
 .cball-top { top: 0; z-index: 2; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='4' y='0' width='6' height='1' fill='%23181010'/><rect x='2' y='1' width='2' height='1' fill='%23181010'/><rect x='4' y='1' width='6' height='1' fill='%23e83828'/><rect x='10' y='1' width='2' height='1' fill='%23181010'/><rect x='1' y='2' width='1' height='1' fill='%23181010'/><rect x='2' y='2' width='1' height='1' fill='%23e83828'/><rect x='3' y='2' width='1' height='1' fill='%23f8f8f8'/><rect x='4' y='2' width='7' height='1' fill='%23e83828'/><rect x='11' y='2' width='1' height='1' fill='%23a01818'/><rect x='12' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='1' height='1' fill='%23f8f8f8'/><rect x='3' y='3' width='8' height='1' fill='%23e83828'/><rect x='11' y='3' width='1' height='1' fill='%23a01818'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='0' y='4' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='4' height='1' fill='%23e83828'/><rect x='5' y='4' width='4' height='1' fill='%23181010'/><rect x='9' y='4' width='2' height='1' fill='%23e83828'/><rect x='11' y='4' width='2' height='1' fill='%23a01818'/><rect x='13' y='4' width='1' height='1' fill='%23181010'/><rect x='0' y='5' width='1' height='1' fill='%23181010'/><rect x='1' y='5' width='3' height='1' fill='%23e83828'/><rect x='4' y='5' width='2' height='1' fill='%23181010'/><rect x='6' y='5' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='5' width='2' height='1' fill='%23181010'/><rect x='10' y='5' width='1' height='1' fill='%23e83828'/><rect x='11' y='5' width='2' height='1' fill='%23a01818'/><rect x='13' y='5' width='1' height='1' fill='%23181010'/><rect x='0' y='6' width='5' height='1' fill='%23181010'/><rect x='5' y='6' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='6' width='5' height='1' fill='%23181010'/></svg>"); transform-origin: 6% 100%; transition: transform 0.28s steps(3); }
 .cball-bottom { bottom: 0; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='0' y='0' width='5' height='1' fill='%23181010'/><rect x='5' y='0' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='0' width='5' height='1' fill='%23181010'/><rect x='0' y='1' width='1' height='1' fill='%23181010'/><rect x='1' y='1' width='3' height='1' fill='%23f8f8f8'/><rect x='4' y='1' width='2' height='1' fill='%23181010'/><rect x='6' y='1' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='1' width='2' height='1' fill='%23181010'/><rect x='10' y='1' width='1' height='1' fill='%23f8f8f8'/><rect x='11' y='1' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='1' width='1' height='1' fill='%23181010'/><rect x='0' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='2' width='4' height='1' fill='%23f8f8f8'/><rect x='5' y='2' width='4' height='1' fill='%23181010'/><rect x='9' y='2' width='2' height='1' fill='%23f8f8f8'/><rect x='11' y='2' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='8' height='1' fill='%23f8f8f8'/><rect x='10' y='3' width='2' height='1' fill='%23c8c8d0'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='4' width='7' height='1' fill='%23f8f8f8'/><rect x='9' y='4' width='3' height='1' fill='%23c8c8d0'/><rect x='12' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='5' width='6' height='1' fill='%23c8c8d0'/><rect x='10' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='6' width='6' height='1' fill='%23181010'/></svg>"); }
 .cball-light { position: absolute; left: 50%; top: 50%; z-index: 1; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 12px 6px #fff, 0 0 30px 12px #f8d048; opacity: 0; }
+.cball img { position: absolute; left: 50%; bottom: -4px; width: 60px; height: 60px; max-width: none; margin: 0 0 0 -30px; object-fit: contain; image-rendering: pixelated; scale: 0; }
 .gem.opening .cball-top { transform: rotate(-38deg); }
 .gem.opening .cball-light { animation: cballLight 0.45s ease-out forwards; }
+.gem.out .cball-ball { animation: cballAway 0.2s steps(2) forwards; }
+.gem.out .cball img { animation: cballOut 0.45s steps(5) forwards; }
+@keyframes cballAway { to { transform: scale(0.2); opacity: 0; } }
+@keyframes cballOut { 0% { scale: 0.2; filter: brightness(0) invert(1); } 60% { scale: 1.12; filter: brightness(0) invert(1); } 100% { scale: 1; filter: none; } }
 @keyframes cballLight { 0% { opacity: 0; transform: scale(0.3); } 35% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: scale(3.5); } }
-/* A saved run: its Pokémon on the ledge in place of the starters, a battle nameplate over it with its HP and biome */
-.title-screen.has-run .title-trio { display: none; }
-.title-run {
-  position: absolute; left: 50%; bottom: calc(var(--ground) - 4px); translate: -50% 0;
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  pointer-events: none;
-}
-.title-plate { width: 200px; opacity: 0; }
+/* A saved run: its nameplate on the ledge (name, biome, HP, like battle's); the Pokémon waits in Continue's ball */
+.title-run { position: absolute; left: 50%; bottom: calc(var(--ground) + 14px); translate: -50% 0; pointer-events: none; }
+.title-plate { width: 210px; opacity: 0; }
 .title-screen.menu .title-plate { opacity: 1; animation: plateIn 0.3s steps(3); }
 .title-plate strong { font-size: 0.8rem; }
 .title-place { font-size: 0.55rem; color: var(--win-muted); white-space: nowrap; }
@@ -177,30 +188,21 @@
 .title-plate .gb-hp-track { height: 12px; }
 .title-plate .gb-hp-tag { font-size: 0.55rem; line-height: 12px; }
 .title-plate .gb-hp-num { width: 100%; font-size: 0.7rem; }
-.title-run-mon { display: block; image-rendering: pixelated; max-width: none; }
-.title-run.out .title-run-mon { animation: runOut 0.7s steps(7); }
 @keyframes plateIn { from { opacity: 0; translate: 0 8px; } }
-@keyframes runOut {
-  0% { filter: brightness(0) invert(1); } 30% { filter: brightness(0) invert(1); transform: translateY(-14px); }
-  60% { filter: none; transform: none; } 80% { transform: translateY(-6px); } 100% { transform: none; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .title-run:not(.out) .title-run-mon { animation: trioHop 2.4s steps(2) infinite; }
-}
-@media (max-height: 700px) { .title-plate { width: 180px; padding: 4px 8px; } .title-run { gap: 6px; } }
-/* wider than tall, there's no room over it under the gems: the nameplate stands beside it, like battle's */
-@media (min-aspect-ratio: 1/1) {
-  .title-run { flex-direction: row; align-items: center; gap: 18px; translate: calc(-50% + 110px) 0; }
-  .title-plate { order: 1; }
-}
+@media (max-height: 700px) { .title-plate { width: 190px; padding: 4px 8px; } .title-run { bottom: calc(var(--ground) + 8px); } }
+/* Continue is the biggest gem (the user's call): a bigger ball and label */
+.gem-continue .gem-label { font-size: 1.15rem; }
+.gem-continue .cball { width: 52px; height: 52px; }
+.gem-continue .cball-ball { width: 42px; height: 42px; }
+@media (max-height: 700px) { .gem-continue .gem-label { font-size: 0.92rem; } .gem-continue .cball { width: 42px; height: 42px; } .gem-continue .cball-ball { width: 34px; height: 34px; } }
 /* New game's Egg wobbles while it's the one picked, as if about to hatch */
 .gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; transform-origin: 50% 90%; }
 @keyframes eggWobble { 0%, 50%, 100% { rotate: 0deg; } 60% { rotate: -12deg; } 70% { rotate: 10deg; } 80% { rotate: -6deg; } 90% { rotate: 3deg; } }
 @media (prefers-reduced-motion: no-preference) {
   .cball-ball { animation: ballWobble 2.4s steps(24) infinite; }
-  .gem.opening .cball-ball { animation: none; }
+  .gem.opening:not(.out) .cball-ball { animation: none; }
 }
-@media (max-height: 700px) { .cball { width: 36px; height: 36px; } .cball-ball { width: 28px; height: 28px; } }
+@media (max-height: 700px) { .cball { width: 36px; height: 36px; } .cball-ball { width: 28px; height: 28px; } .cball img { width: 48px; height: 48px; margin: 0 0 0 -24px; } }
 /* PRESS START flashes white; the title fades out as it's left and back in when you come home */
 .title-screen.flash::after { content: ""; position: absolute; inset: 0; background: #fff; animation: titleFlash2 0.26s steps(2) forwards; pointer-events: none; }
 @keyframes titleFlash2 { 50% { opacity: 1; } 100% { opacity: 0; } }

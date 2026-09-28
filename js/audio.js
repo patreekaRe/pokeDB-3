@@ -141,13 +141,14 @@ function menuBlip(e) {
 /** Called once at startup. */
 export function initAudio() {
   renderButton();
-  $('music-btn').addEventListener('click', () => setMuted(!getSave().muted));
-  const slider = $('volume-slider');
-  const paint = () => slider.style.setProperty('--v', slider.value);   // the green part of the track (WebKit has no ::range-progress)
-  slider.value = Math.round((getSave().volume ?? 1) * 100);
-  paint();
-  slider.addEventListener('input', () => { paint(); setVolume(slider.value / 100); });
-  slider.addEventListener('change', () => playSound('confirm'));   // a blip at the new level, so you hear what you picked
+  // the Poké Ball menu's Sound and the title's are the same control twice
+  for (const id of SOUND_TOGGLES) $(id).addEventListener('click', () => setMuted(!getSave().muted));
+  for (const id of VOLUME_SLIDERS) {
+    const slider = $(id);
+    slider.addEventListener('input', () => { setVolume(slider.value / 100); paintSliders(); });
+    slider.addEventListener('change', () => playSound('confirm'));   // a blip at the new level, so you hear what you picked
+  }
+  paintSliders();
 
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
   document.addEventListener('click', menuBlip);
@@ -299,13 +300,29 @@ function setVolume(volume) {
   if (masterBus) masterBus.gain.setTargetAtTime(volumeGain(), ctx.currentTime, 0.02);
 }
 
+const SOUND_TOGGLES = ['music-btn', 'title-music-btn'];
+const VOLUME_SLIDERS = ['volume-slider', 'title-volume'];
+
 function renderButton() {
   const muted = getSave().muted;
-  const btn = $('music-btn');
-  btn.querySelector('.mi-icon').textContent = muted ? '🔇' : '🔊';
-  btn.querySelector('.mi-label').textContent = muted ? 'Sound off' : 'Sound on';
-  btn.title = muted ? 'Turn sound on' : 'Mute sound';
-  btn.setAttribute('aria-pressed', String(!muted));
+  for (const id of SOUND_TOGGLES) {
+    const btn = $(id);
+    btn.querySelector('.mi-icon').textContent = muted ? '🔇' : '🔊';
+    btn.querySelector('.mi-label').textContent = muted ? 'Sound off' : 'Sound on';
+    btn.title = muted ? 'Turn sound on' : 'Mute sound';
+    btn.setAttribute('aria-pressed', String(!muted));
+  }
+  $('title-sound-icon').textContent = muted ? '🔇' : '🔊';
+}
+
+/** Every slider shows the saved volume, its green part painted from --v (WebKit has no ::range-progress). */
+function paintSliders() {
+  const value = Math.round((getSave().volume ?? 1) * 100);
+  for (const id of VOLUME_SLIDERS) {
+    const slider = $(id);
+    slider.value = value;
+    slider.style.setProperty('--v', value);
+  }
 }
 
 function audioContext() {

@@ -302,7 +302,7 @@ A version mismatch or any bad id (deck, relics, Mart stock) silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The title's
 Continue gem (`savedRunCard()` in `js/main.js`, drawn by `renderMenu()` in `js/title.js`) shows whenever a valid save
 exists, its icon the run's Poké Ball wobbling like a catch in progress (`.cball`, the old Continue card's pixel ball, which
-the user wanted back), its biome and HP on a second line; tapping it swings the lid open in a flash of light, and your
+the user wanted back), its biome and HP on the ledge's nameplate; tapping it swings the lid open in a flash of light, and your
 Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 
 ## Cloud save
@@ -1034,16 +1034,17 @@ The title screen (`#title-screen`, `js/title.js`) is the game's **home** since 2
 Slay the Spire 2's title and pixel-art button references; mockups in `docs/mockups/`). It's a fixed overlay above the top
 bar: a pixel **dusk** sky painted into a low-res `<canvas>` (`SKY`: deep blue to a rose horizon, dithered; the moon up in the
 corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
-Moltres flying past as a silhouette and the three starters hopping on the ledge (the user asked about removing them; kept,
-since without them the scene is empty hills). With a saved run the ledge shows that run's Pokémon alone instead
-(`renderRun()` / `sizeRunMon()` in `js/title.js`, `.has-run`), with a battle `.nameplate` over it (beside it when the
-window is wider than tall) giving its name, biome and HP; Continue pops the gem's ball open and the ledge Pokémon flashes
-white, hops and cries (the user's call, 2026-09-28: the HP and biome used to squeeze onto the Continue gem). Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
+Moltres flying past as a silhouette over an empty ledge (the three starters that stood on it were removed, the user's
+call 2026-09-28). With a saved run a battle `.nameplate` stands on the ledge (`#title-run`, `renderRun()` in `js/title.js`)
+with the run's name, biome and HP; the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
+top-left corner (`.title-corner`, gems up only) holds the cloud save's PC (see Cloud save) and a 🔊 Sound button whose
+`#title-sound-panel` (a `.ball-menu-panel`) has the same Sound toggle and volume slider as the Poké Ball menu
+(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); both are a size smaller under 600px wide. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
 plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): a stack of pixel gems under the logo, each
 painted on its own `<canvas>` by `paintGem()` (pointed ends, a dark outline, a two-tone bronze frame, an inner groove, a face
 with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a pixel, 4 or 3 on windows ≤700px tall, the
 canvas a whole number of pixels wide so they stay square) with a bare pixel icon on its left end (a dark pixel outline, no
-frame: the user's call): **Continue** (amber, only with a save; see Saved runs; its icon is a wobbling Poké Ball), **New game** (violet, an Egg that wobbles while
+frame: the user's call): **Continue** (amber, only with a save; see Saved runs; the biggest gem, `GEM_BIG`, with a bigger ball and label), **New game** (violet, an Egg that wobbles while
 picked, since Continue has the Poké Ball: the character select), **Collection** (gold, the Pokédex: the Collection screen) and **Game Corner** (coral: `toggleShop()`,
 whose dialog sits above the title at z-index 90). Hover, focus or ↑ ↓ move a blinking ▶ (`point()`), Enter / tap picks, a
 press sinks the gem. Leaving fades the title out over the screen you go to (`leaveTitle()`), and every way home (the Poké
