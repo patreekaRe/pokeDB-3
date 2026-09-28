@@ -131,7 +131,7 @@ Tokens: **Cinder** (0: deal 4, Exhaust; Shiv). Status it makes itself: Paralysis
 | ★Flare Up | C | 2 | Deal 15, +8 if HP below half | Reckless | Perfected Strike (low-HP) |
 | Fiery Dance | C | 0 | Lose 3 HP, gain 2 PP | Reckless | Bloodletting |
 | Heat Crash | C | 1 | Deal 14; shuffle a Paralysis into your draw pile | Reckless | Wild Strike |
-| ★Fire Lash | C | 1 | Deal 5 twice | Kindling | Twin Strike |
+| ★Fire Lash | C | 1 | Deal 4 twice, Burn 2 | Kindling | Twin Strike (+ Burn: Double Hit is the plain one) |
 | Rage | C | 0 | Deal 6; add a copy of Rage to your discard pile | Kindling | Anger |
 | Spark Shower | C | 1 | Add 3 Cinders to your hand | Kindling | Blade Dance |
 | Cinder Cloak | C | 1 | Block 7, add a Cinder to your hand | Kindling | Cloak and Dagger |
@@ -409,7 +409,7 @@ the turn), `endure` (`battle.endure`, a 🎗️ badge, `hurtPlayer()` stops at 1
 
 | Card | Rarity | Cost | Effect (upgrade) | StS |
 |---|---|---|---|---|
-| ★Tackle | C | 1 | Deal 7 (10) | Strike |
+| ★Tackle | C | 1 | Deal 6, draw 1 (9) | Pommel Strike (a plain 7 matched each type's Strike) |
 | ★Block | C | 1 | Block 6 (9) | Defend |
 | ★Double Hit | C | 1 | Deal 5 twice (7 twice) | Twin Strike |
 | ★Potion | C | 1 | Heal 10. Exhaust (13) | Bandage Up |

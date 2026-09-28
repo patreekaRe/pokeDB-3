@@ -246,6 +246,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
   bump). Anything counting copies uses `baseId()` (MAX_COPIES, Mart, Day Care, Move Tutor, rewards).
   `ALL_CARDS` stays base cards only. The Center's third choice is PP Up (see Deck thinning).
+  **No duplicates in one run** (the user found Fire Lash = Double Hit, 2026-09-28): no two cards a run can meet (its type's
+  pool, the neutral pool, its starting deck) may share cost and text. `noOffer: true` keeps a card out of `poolForType()`
+  (Block: Grass's starting Defend, which offered doubled Water's Withdraw); Tackle is Pommel Strike (6 + draw 1) and Fire
+  Lash burns. Cross-type twins (Scorch / Seed Bomb, Firestorm / Solar Beam...) never meet in a run, so they stay.
 - **Starter Abilities** (StS's starter relics): `ABILITIES` in `js/data/relics.js`, one per type, so
   every skin shares it and nothing is saved (it comes from `starter.type`). Fire **Blaze**: attacks +3
   while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
