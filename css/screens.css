@@ -2430,6 +2430,21 @@ body.battle-intro { pointer-events: none; }
 .records-empty { color: var(--muted); font-size: 0.9rem; }
 .records-close { margin-top: 18px; text-align: center; }
 
+/* the Patch notes window (js/patchnotes.js) */
+.patch-dialog { max-height: 88vh; flex-direction: column; }
+.patch-dialog[open] { display: flex; }
+.patch-body { overflow-y: auto; min-height: 0; padding-right: 4px; }
+.patch-title { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--gold); }
+.patch-date { margin: 2px 0 6px; font-size: 0.6rem; color: var(--muted); }
+.patch-head { margin: 14px 0 6px; font-size: 0.72rem; display: flex; align-items: center; gap: 6px; }
+.patch-list li { margin: 0; }
+.patch-list { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; font-size: 0.66rem; line-height: 1.6; }
+.patch-game { display: flex; flex-direction: column; gap: 10px; }
+.patch-row { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; }
+.patch-row-icon { display: grid; place-items: center; padding-top: 2px; }
+.patch-row-text { display: flex; flex-direction: column; gap: 3px; font-size: 0.64rem; line-height: 1.6; }
+.patch-row-text b { font-size: 0.72rem; }
+
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .stat-tile {
   display: flex;

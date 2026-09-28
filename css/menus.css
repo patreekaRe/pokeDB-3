@@ -112,6 +112,32 @@
   .title-account { padding: 2px; }
 }
 .title-screen:not(.menu) .title-corner { display: none; }
+/* the version tag at the logo's top right, a little sticker: opens the Patch notes (js/patchnotes.js) */
+.title-big { position: relative; }
+.title-version {
+  position: absolute;
+  top: -6px;
+  right: -14px;
+  padding: 5px 7px 4px;
+  border: 2px solid #14275e;
+  border-radius: var(--round-xs);
+  background: #fff8e0;
+  box-shadow: 0 3px 0 #0d1a44;
+  color: #14275e;
+  font: 11px/1 var(--pixel-font);
+  font-synthesis-weight: none;
+  -webkit-text-stroke: 0;
+  rotate: 8deg;
+  cursor: pointer;
+  animation: versionIn 0.4s steps(4) both 1.2s;
+}
+.title-version:hover, .title-version:focus-visible { background: var(--gold); outline: none; }
+.title-version:active { translate: 0 2px; box-shadow: 0 1px 0 #0d1a44; }
+.title-screen:not(.menu) .title-version { display: none; }
+@keyframes versionIn { from { opacity: 0; scale: 0; } }
+@media (min-width: 900px) { .title-version { font-size: 14px; padding: 6px 9px 5px; } }
+@media (max-width: 600px) { .title-version { font-size: 9px; right: -6px; top: -10px; padding: 4px 5px 3px; } }
+@media (prefers-reduced-motion: reduce) { .title-version { animation: none; } }
 .title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
 .title-big { transition: font-size 0.4s ease; }

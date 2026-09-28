@@ -36,6 +36,7 @@ import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound } from './audio.js';
 import { initHowto, openHowto } from './howto.js';
+import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection } from './collection.js';
@@ -171,6 +172,7 @@ function init() {
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', openHowto);
   $('title-help').addEventListener('click', openHowto);
+  initPatchNotes();
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   initCardIndex();

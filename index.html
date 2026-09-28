@@ -38,6 +38,7 @@
       <div class="title title-big" aria-label="PokéDB: Rogue-Like Deck Battler">
         <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
         <small aria-hidden="true">Rogue-Like Deck Battler</small>
+        <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js -->
       </div>
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
@@ -439,6 +440,12 @@
     <h2 tabindex="-1" autofocus>🏆 Achievements</h2>
     <p class="records-sub">Each one unlocks a new starter.</p>
     <div id="achievements-body"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  </dialog>
+
+  <dialog id="patch-dialog" class="dialog records-dialog patch-dialog">
+    <h2 tabindex="-1" autofocus>📖 Patch notes</h2>
+    <div id="patch-body" class="patch-body"></div>
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
