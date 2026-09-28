@@ -574,6 +574,7 @@ export function eliteOf(def) {
 export const BIOMES = [
   {
     id: 'clearing', name: 'Whispering Clearing',
+    stages: ['Meadow', 'Forest Edge', 'Deep Woods', 'Ancient Tree'],   // floors 1-3, 4-6, 7-10, the boss (stageOf() in js/map.js, painted by js/scene.js)
     normals: ['vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot',
       'poliwag', 'psyduck', 'marill', 'rattata', 'sentret', 'zigzagoon'],
     elites: ['raticate', 'furret', 'linoone'], bosses: ['snorlax', 'kangaskhan', 'miltank'],
@@ -581,6 +582,7 @@ export const BIOMES = [
   },
   {
     id: 'shrine', name: 'Overgrown Shrine',
+    stages: ['Stone Steps', 'Torii Path', 'Inner Court', 'Main Hall'],   // floors 1-3, 4-6, 7-10, the boss (stageOf() in js/map.js, painted by js/scene.js)
     normals: ['litwick', 'houndour', 'darumaka', 'bellsprout', 'paras', 'cherubi',
       'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler'],
     elites: ['ambipom', 'persian', 'watchog'], bosses: ['stoutland', 'exploud', 'ursaring'],
@@ -588,6 +590,7 @@ export const BIOMES = [
   },
   {
     id: 'wastes', name: 'Ember Wastes',
+    stages: ['Ash Plains', 'Lava Fields', 'Volcano Slope', 'Crater Rim'],   // floors 1-3, 4-6, 7-10, the boss (stageOf() in js/map.js, painted by js/scene.js)
     normals: ['magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus',
       'staryu', 'crawdaunt', 'sharpedo', 'tauros', 'bouffalant', 'zangoose'],
     elites: ['purugly', 'cinccino', 'lopunny'], bosses: ['slaking', 'regigigas', 'lickilicky', 'porygonz'],

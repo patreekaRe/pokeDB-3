@@ -72,10 +72,28 @@ const randFloat = (min, max) => min + Math.random() * (max - min);
    BUILDING THE MAP
    ============================================================ */
 
-/** How far into its biome a room is, 0 on the road in to 1 at the boss (the scenery's progress dial, js/scene.js):
-    floor / (floors + 1), the same steps as the map's EXP bar. */
+/* A biome is 3 places plus the boss's arena (the scenery's stages, js/scene.js; their names are each biome's `stages`
+   in js/data/enemies.js): floors 1-3, 4-6, 7-10, then the boss. The road in (floor 0) is the first place's too. */
+const STAGE_OF_FLOOR = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2];
+
+/** Which place a room is in (0-2, 3 the boss's arena) and how many floors into it (`step`, 0 at its first). */
+export function stageOf(map, node) {
+  if (node?.type === 'boss') return { stage: 3, step: 0 };
+  const floor = node ? node.floor + 1 : 0;
+  const stage = STAGE_OF_FLOOR[Math.min(floor, STAGE_OF_FLOOR.length - 1)];
+  return { stage, step: floor - STAGE_OF_FLOOR.indexOf(stage) };
+}
+
+/** Where a room is on the biome's journey, for the scenery (showScene() in js/scene.js): `progress`, 0 on the road in
+    to 1 at the boss (floor / (floors + 1), the same steps as the map's EXP bar), its stage and step, and a `seed` of the
+    map's own, so each run deals the landmarks out afresh and a refresh draws the same ones. */
 export function journey(map, node) {
-  return node ? Math.min(1, (node.floor + 1) / (map.floors.length + 1)) : 0;
+  if (!map) return { progress: 0, stage: 0, step: 0, seed: 0 };
+  const progress = node ? Math.min(1, (node.floor + 1) / (map.floors.length + 1)) : 0;
+  let seed = 7;
+  for (const id of Object.keys(map.byId)) for (let i = 0; i < id.length; i++) seed = (seed * 31 + id.charCodeAt(i)) | 0;
+  for (const n of Object.values(map.byId)) seed = (seed * 31 + n.type.length + (n.enemyId?.length || 0)) | 0;
+  return { progress, ...stageOf(map, node), seed: seed >>> 0 };
 }
 
 /** Build a random map. Returns { floors: [[room...]...], boss, byId }. */

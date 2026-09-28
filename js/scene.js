@@ -50,6 +50,14 @@ const BIOME_ART = {
     bird: '#34405c',
     pollen: ['#fffce0', '#f8f0a0'],
     firefly: ['#f8f8a0', '#c8e858'],
+    marks: {   // the places' own colours (the stream, the landmarks), painted by day
+      water: ['#e0f8ff', '#78c8f0', '#4898d8', '#2e6cb0'], bank: ['#3a7a30'],
+      wood: ['#d0a068', '#a87840', '#744c24', '#3a2410'], stone: ['#e0e0d8', '#b0b0a8', '#808078', '#484844'],
+      leaf: ['#78c860', '#4a9a40', '#2e7030', '#1a4a20'], fern: ['#88d060', '#4e9a3c', '#2e6a2a'],
+      berry: ['#f04858', '#a82030', '#f8c8d0'], cap: ['#e84838', '#b02820', '#f8f0e0'], stem: ['#f0e8d0', '#c8b898'],
+      bark: ['#7a5a3c', '#5a4028', '#3a2818', '#1c1008'], moss: ['#8ac858', '#5a9a40'], roof: ['#d85040', '#a03028'],
+      cattail: ['#9a6030', '#6a3c1c'],
+    },
     times: {
       day: {
         sky: ['#4a90e4', '#5ca0ec', '#70b0f2', '#86c0f6', '#9ed0f8', '#b8e0f8', '#d0ecf8'],
@@ -124,6 +132,14 @@ const BIOME_ART = {
     lanternGlow: ['#fff0a0', '#f8b848', '#d87028'],
     wisp: ['#f0ffff', '#98e0f8', '#4898c8'],
     flowers: [['#f8f0f8', '#f8d8e8']],
+    marks: {
+      stone: ['#d0d0c0', '#a8a898', '#7c7c6e', '#40403a'], wood: ['#c08858', '#8a5430', '#5c361c', '#2e1a0c'],
+      red: ['#e05038', '#a83020', '#6a1810'], plaster: ['#f4f0e4', '#d8d4c8', '#a8a498'], tile: ['#6a7080', '#484e5c', '#2a2e38'],
+      gravel: ['#d8d4c8', '#ccc8bc', '#c0bcb0', '#a8a498'], bamboo: ['#b0e078', '#78b048', '#4a8030', '#2a5018'],
+      water: ['#b8e8f0', '#5898b8', '#386e90'], koi: ['#f87830', '#f8f0e8'], paper: '#f8f4e8',
+      bell: ['#d8b870', '#9a7a40', '#5a4820'], rope: ['#e8d8a0', '#b8a870'], moss: ['#7aa858', '#4e7a3a'],
+      leaf: ['#6aaa58', '#3e7e42', '#24542c'], steam: ['#f0f0ec', '#c8c8c4'],
+    },
     times: {
       day: {   // a misty morning under the trees
         sky: ['#9cbcac', '#a8c6b4', '#b4d0bc', '#c0d8c4', '#ccdfcc', '#d8e6d4'],
@@ -189,6 +205,13 @@ const BIOME_ART = {
     ember: ['#fff0a0', '#f8a830', '#e85820'],
     ash: ['#a8a09c', '#807874'],
     smoke: ['#8a7a78', '#6a5c5a', '#4e4240', '#3a302e'],
+    marks: {
+      ash: ['#8e8680', '#847c76', '#7a726c', '#706862', '#665e58', '#5c544e'],
+      bone: ['#f0ece0', '#c8c0b0', '#8a8070', '#3a322c'], dead: ['#7a6a60', '#54463e', '#362c26', '#1a1412'],
+      rock: ['#d0c8bc', '#a89e94', '#766c64', '#3a322e'], basalt: ['#6e6874', '#4c4852', '#34313a', '#18161c'],
+      obsidian: ['#a8a0c8', '#403850', '#241e30', '#0c0a10'], sulfur: ['#f8f070', '#e0c830', '#a08a18'],
+      steam: ['#f0ece8', '#c0b8b4'], sign: ['#f0c840', '#b08820', '#241c10'],
+    },
     times: {
       day: {   // a hazy, ashen day on the volcano's flank
         sky: ['#5a4448', '#74504c', '#8e5e50', '#a86e50', '#c08050', '#d49458', '#e0a868'],
@@ -705,6 +728,9 @@ function biomeLook(art, time, kind = null) {
   const { times, kinds, ...shared } = art;
   const { from, ...own } = times[time] || times.day;
   let look = from ? { ...grade({ ...shared, ...times[from] }, GRADES[time]), ...own } : { ...shared, ...own };
+  // the places' own colours (`marks`) are painted by day; a hand-painted time grades them into its light
+  // (a shade darker than the grade alone: the hand-painted dusk and night are darker than it)
+  if (!from && shared.marks && !own.marks && GRADES[time]) look.marks = grade(grade({ marks: shared.marks }, GRADES[time]), { sky: [0.82, 0, 0, 0], land: [0.82, 0, 0, 0] }).marks;
   const mood = kinds?.[kind];
   if (mood) {
     const { grade: g, addLife = [], ...rest } = mood;
@@ -732,14 +758,16 @@ export function showMenuScene(type) {
     a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles, and
     `span` (one giving its page [left, right]) lets the scene dress its ends. A place with `biomes` (the treasure
     grotto, the Shrine) takes its look from `biome`, and its `types` (the Shrine's glow) retint it for your Pokémon's
-    `type`; an `outdoor` one (a ? event) stands in that biome's own scene, as far along as `progress` (see showScene). */
-export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null, progress = 0 } = {}) {
+    `type`; an `outdoor` one (a ? event) stands in that biome's own scene, as far along as `where` (see showScene), minus
+    the floor's landmark, which would crowd the props. */
+export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null, where = 0 } = {}) {
   const { biomes, types, ...art } = PLACE_ART[place];
   const time = timeOfDay(), g = GRADES[time];
   if (art.outdoor) {
     const { storm, pad, life: own, ...wild } = biomeLook(BIOME_ART[biome] || BIOME_ART.clearing, time);
     const props = grade({ ...art, ...biomes?.[biome] }, g);
-    paintScene(`place/${place}/${biome}/${type}/${time}/${Math.round(progress * 100)}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life], progress }, floor, span);
+    const at = { ...journeyOf(where), step: null };
+    paintScene(`place/${place}/${biome}/${type}/${time}/${placeKey(at)}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life], ...at }, floor, span);
     return;
   }
   const look = biomes && (biomes[biome] || Object.values(biomes)[0]), glow = types?.[type];
@@ -784,18 +812,27 @@ export function centerSpots() {
 
 /**
  * Paint the scene for a biome and fight kind ('wild' | 'elite' | 'boss') behind the page, or clear it.
- * `progress` is how far into the biome you are, 0 on the road in to 1 at the boss (journey() in js/map.js): each floor
- * moves the scenery a notch towards the boss (the Clearing's meadow thickens into woods, the Shrine gains gates,
- * lanterns and mist, the Wastes' volcano looms nearer). The clock still decides the light.
+ * `where` is where you are on the biome's journey (journey() in js/map.js; a bare number is just the progress):
+ * `progress`, 0 on the road in to 1 at the boss, moves the scenery a notch every floor (the Clearing's meadow thickens
+ * into woods, the Shrine gains gates, lanterns and mist, the Wastes' volcano looms nearer); `stage` picks the place,
+ * 3 per biome plus the boss's arena (STAGES), and `step` / `seed` the floor's landmark (LANDMARKS), different on every
+ * floor of a place. The clock still decides the light.
  * Asking again for the scene that's already up leaves it running, except in battle, where the
  * horizon is fitted to the enemy's pad and every fight starts with calm weather.
  */
-export function showScene(biomeId, kind = 'wild', progress = 0) {
+export function showScene(biomeId, kind = 'wild', where = 0) {
   const art = BIOME_ART[biomeId];
   if (!art) { paintScene('', null); return; }
-  const time = timeOfDay();
-  paintScene(`${biomeId}/${kind}/${time}/${Math.round(progress * 100)}`, { ...biomeLook(art, time, kind), progress });
+  const time = timeOfDay(), at = journeyOf(where);
+  paintScene(`${biomeId}/${kind}/${time}/${placeKey(at)}`, { ...biomeLook(art, time, kind), ...at });
 }
+
+function journeyOf(where) {
+  const { progress = 0, stage = null, step = 0, seed = 0 } = typeof where === 'number' ? { progress: where } : where || {};
+  // a bare progress (the title, the menus) stands in its place with no landmark
+  return { progress, stage: stage ?? Math.min(3, progress >= 1 ? 3 : Math.floor(progress * 11 / 3.5)), step: stage == null ? null : step, seed };
+}
+const placeKey = ({ progress, stage, step, seed }) => `${Math.round(progress * 100)}/${stage}/${step}/${seed}`;
 
 function paintScene(key, raw, floor = null, span = null) {
   canvas = $('scene-bg');
@@ -943,6 +980,7 @@ function paintBase() {
   if (S.raw.backdrop === 'center') centerFront();
   if (S.raw.backdrop === 'mart') martFront();
   if (S.raw.backdrop === 'treasure') grottoFront();
+  if (S.raw.backdrop === 'hills' || S.raw.backdrop === 'shrine' || S.raw.backdrop === 'volcano') { stageFront(); landmark(); }
   if (S.raw.prop) eventProps();
 
   return Uint32Array.from(px);
@@ -1014,6 +1052,7 @@ function meadow() {
     const y = horizon + 6 + Math.floor(rand() * (H - horizon - 8));
     rock(Math.floor(rand() * W), y, depthOf(y) > 0.5 ? 2 : 1);
   }
+  if (stage() === 1) stream();
   flowerClusters(Math.round(W / (S.stars ? 14 : 9) * (1 - p * 0.75)));
   // the trees' shade on the grass
   const reach = Math.round((H - horizon) * 0.3 * p);
@@ -1025,6 +1064,7 @@ function meadow() {
 
 function treeLine() {
   const p = dial();
+  if (stage() === 2) deepWoods();
   if (p > 0.25) {   // a far wood over the hills, in the hills' hazy colours
     const far = [S.hills[0], S.hills[1], S.hills[2], S.hills[2]];
     for (let x = Math.floor(rand() * 6); x < W + 6; x += 3 + Math.floor(rand() * 5 * (1.3 - p))) {
@@ -1038,6 +1078,7 @@ function treeLine() {
     roundTree(x, horizon - 1 - Math.floor(rand() * 3), 3 + Math.floor(rand() * 3) + Math.round(p * 2), false);
   }
   for (let x = 0; x < W; x++) { put(x, horizon + 2, S.trees[3]); if (dither(x, horizon + 3) < 6) put(x, horizon + 3, S.trees[3]); }
+  if (stage() === 3) giantTree();
   if (p >= 0.6) nearTrees((p - 0.6) / 0.4);
 }
 
@@ -1135,19 +1176,37 @@ function shrineBackdrop() {
     }
   }
   // the gate, framed by nearer trees, with a stone lantern either side
-  const gx = Math.round(W * 0.52), size = Math.max(12, Math.round(Math.min(W * 0.4, horizon * 0.72)));
-  // further in, more gates stand behind it, smaller and higher up the path, like a tunnel of torii
-  for (let k = Math.round(dial() * 4); k >= 1; k--) {
-    torii(gx, horizon + 1 - k * Math.max(1, Math.round(size * 0.08)), Math.round(size * 0.74 ** k), k % 2 ? [S.torii[1], S.torii[2], S.torii[2]] : [S.torii[2], S.torii[2], S.torii[2]]);
-  }
-  torii(gx, horizon + 1, size);
+  const gx = Math.round(W * 0.52), size = Math.max(12, Math.round(Math.min(W * 0.4, horizon * 0.72))), st = stage();
   life.lanterns = [];
   life.lanternSize = Math.max(4, Math.round(size * 0.28));
-  for (const dx of [-0.95, 0.95]) lantern(gx + Math.round(dx * size), horizon + 2, life.lanternSize);
-  for (let x = -4; x < W + 6; x += 7 + Math.floor(rand() * 8)) {
-    if (Math.abs(x - gx) < size * 0.8) continue;   // keep the gate clear
-    pine(x, horizon - 4 - Math.floor(rand() * 6), 6 + Math.floor(rand() * 4), S.trees[1], S.trees[2], true);
+  const pines = () => {
+    for (let x = -4; x < W + 6; x += 7 + Math.floor(rand() * 8)) {
+      if (st < 2 && Math.abs(x - gx) < size * 0.8) continue;   // keep the gate clear
+      pine(x, horizon - 4 - Math.floor(rand() * 6), 6 + Math.floor(rand() * 4), S.trees[1], S.trees[2], true);
+    }
+  };
+  if (st >= 2) {   // inside the courtyard: a wall with the gateway behind you, a bell tower over it, then the main hall
+    pines();
+    if (st === 2) {
+      bellTower(Math.round(W * (S.raw.seed & 2 ? 0.2 : 0.82)), horizon - 2, Math.max(14, Math.round(size * 0.95)));
+      courtyardWall(Math.round(size * 0.35));
+      for (const dx of [-0.95, 0.95]) lantern(gx + Math.round(dx * size), horizon + 2, life.lanternSize);
+    } else {
+      const hall = mainHall();
+      courtyardWall(hall.half + 3);
+      mainHall();
+      for (const dx of [-0.55, 0.55]) lantern(gx + Math.round(dx * hall.half), horizon + 3, life.lanternSize);
+    }
+    return;
   }
+  const foot = horizon + 1 - (st === 0 ? shrineSteps(gx, size) : 0);   // at the foot of the steps the gate stands at their top
+  // further in, more gates stand behind it, smaller and higher up the path, like a tunnel of torii
+  for (let k = Math.round(dial() * 4); k >= 1; k--) {
+    torii(gx, foot - k * Math.max(1, Math.round(size * 0.08)), Math.round(size * 0.74 ** k), k % 2 ? [S.torii[1], S.torii[2], S.torii[2]] : [S.torii[2], S.torii[2], S.torii[2]]);
+  }
+  torii(gx, foot, size);
+  for (const dx of [-0.95, 0.95]) lantern(gx + Math.round(dx * size), horizon + 2, life.lanternSize);
+  pines();
 }
 
 /** A pine of three overlapping tiers, each wider than the one above, lit on its left. */
@@ -1197,8 +1256,12 @@ function lantern(cx, foot, size) {
 }
 
 function mossGround() {
-  bands(horizon, H, S.ground, 0.8);
-  grassPatches(S.patch, Math.round(W / 9));
+  const court = stage() >= 2;
+  if (court) gravel();   // the inner courtyard's raked gravel
+  else {
+    bands(horizon, H, S.ground, 0.8);
+    grassPatches(S.patch, Math.round(W / 9));
+  }
   // a worn stone path up to the gate, stepping stones getting bigger closer in
   // stepping stones wind from the gate towards you, bigger and further apart closer in
   const gx = Math.round(W * 0.52);
@@ -1216,7 +1279,7 @@ function mossGround() {
     const y = horizon + 6 + Math.floor(rand() * (H - horizon - 8));
     rock(Math.floor(rand() * W), y, depthOf(y) > 0.4 ? 2 : 1);
   }
-  flowerClusters(Math.round(W / 30));
+  if (!court) flowerClusters(Math.round(W / 30));
 }
 
 function shrineFront() {
@@ -1233,10 +1296,12 @@ function shrineFront() {
 /* ---------- the Wastes ---------- */
 
 function volcanoBackdrop() {
-  ridge(horizon - 7, 5, 9, 0.7, S.mountains, true, true);
+  const st = stage();
+  if (st === 3) { craterRim(); return; }
+  if (st < 2) ridge(horizon - 7, 5, 9, 0.7, S.mountains, true, true);   // on its slope the volcano fills the view
   // the volcano: a broad cone with a flat, glowing crater
   // it looms nearer every floor: bigger, its lava running further down (the crater rim by the boss)
-  const p = dial(), near = 0.72 + p * 0.5;
+  const p = dial(), near = 0.62 + p * 0.6;
   const cx = Math.round(W * 0.5), baseHalf = Math.round(Math.min(W * 0.36, horizon * 1.3) * near), height = Math.round(horizon * Math.min(0.9, 0.78 * near));
   const crater = Math.max(4, Math.round(baseHalf * 0.12));
   const [lit, body, shade] = S.volcano;
@@ -1265,18 +1330,24 @@ function volcanoBackdrop() {
     life.flows.push(path);
   }
   for (const path of life.flows) for (const [x, y] of path) { put(x, y, S.lava[3]); put(x + 1, y, S.volcano[2]); }
+  if (st === 2) slopeRise();
 }
 
 function basalt() {
-  bands(horizon, H, S.ground, 0.8);
+  const st = stage(), ground = st === 0 ? M().ash : S.ground;   // the ash plains are pale with it
+  bands(horizon, H, ground, 0.8);
   // rough patches and rubble
-  grassPatches(S.ground[S.ground.length - 1], Math.round(W / 12));
+  grassPatches(ground[ground.length - 1], Math.round(W / 12));
   for (let n = 0; n < Math.round(W / 14); n++) {
     const y = horizon + 4 + Math.floor(rand() * (H - horizon - 5));
     rock(Math.floor(rand() * W), y, depthOf(y) > 0.35 ? 2 : 1);
   }
+  if (st === 0) for (let n = 0; n < Math.max(2, Math.round(W / 50)); n++) {   // bleached boulders
+    const y = horizon + 4 + Math.floor(rand() * (H - horizon) * 0.5), x = rand() < 0.5 ? Math.floor(rand() * W * 0.3) : W - Math.floor(rand() * W * 0.3);
+    mound(x, y, 2 + Math.round(depthOf(y) * 4), 1 + Math.round(depthOf(y) * 2), M().rock);
+  }
   // cracks with lava deep inside: random walks, wider closer in
-  life.cracks = [];
+  life.cracks ||= [];
   const p = dial(), count = Math.round((W / 9) * (0.6 + S.raw.crackGlow * 0.4) * (0.6 + p * 0.9));
   const walk = (x, y, len, dir, k0, depth) => {
     for (let k = 0; k < len; k++) {
@@ -1302,7 +1373,790 @@ function basalt() {
       else if (d <= 1.6 && dither(x, y) < 10) put(cx + x, cy + y, S.rock[2]);
     }
   }
+  if (st === 1) lavaRiver();
   for (const [x, y] of life.cracks) put(x, y, S.lava[2]);
+  if (st === 3) rimEdge();
+}
+
+/* ---------- the places: 3 per biome plus the boss's arena (step 7 part 2) ----------
+   journey() in js/map.js says which place a floor is in (`stage`: floors 1-3, 4-6, 7-10, then the boss) and how far into
+   it (`step`); the progress dial still moves everything a notch per floor inside a place. Each biome's own painters ask
+   stage() for what changes (the Clearing's stream and deep woods, the Shrine's steps, courtyard wall and main hall, the
+   Wastes' ash, lava rivers, slope and crater rim), and every floor of a place gets a different small landmark at one edge
+   (LANDMARKS, dealt by the map's seed), so neighbouring floors never look alike. Big features keep to the back and the
+   edges: the middle is the two Pokémon's. Their colours are the biome's `marks`, painted by day and graded for the time. */
+
+const stage = () => S.raw.stage ?? 0;
+const within = () => { const n = [4, 3, 4][stage()]; return n ? Math.min(1, (S.raw.step || 0) / (n - 1)) : 1; };   // 0..1 through the place
+const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes' })[S.raw.backdrop];
+const M = () => S.marks;
+
+/** Mark ground where grass shouldn't grow (water, lava, a landmark's footprint). */
+function bare(x, y) { x |= 0; y |= 0; if (inside(x, y)) (life.bare ||= new Uint8Array(W * H))[y * W + x] = 1; }
+
+/** A winding band across the ground (the Clearing's stream, the Wastes' lava river): along the back from the left, then
+    bending towards you on the right, wider the nearer it gets. `each(x, y, edge, depth)` paints each pixel. */
+function winding(backAt, bendAt, width, each) {
+  const back = horizon + backAt, bx = Math.round(W * bendAt);
+  const centre = [];
+  for (let x = -2; x <= bx; x++) centre.push([x, back + Math.round(Math.sin(x / 11) * 0.8)]);
+  for (let y = back + 1, x = bx; y < H + 4; y++) { x += 0.5 + depthOf(y) * 1.6 + Math.sin(y / 5) * 0.4; centre.push([Math.round(x), y]); }
+  const seen = new Set();
+  for (const [cx, cy] of centre) {
+    const depth = depthOf(cy), r = width * (1 + depth * 3.5), ry = Math.max(0.6, r * (0.35 + depth * 0.3));
+    for (let dy = -Math.ceil(ry) - 1; dy <= Math.ceil(ry) + 1; dy++) for (let dx = -Math.ceil(r) - 1; dx <= Math.ceil(r) + 1; dx++) {
+      const x = cx + dx, y = cy + dy, key = y * (W + 8) + x;
+      if (y <= horizon + 1 || !inside(x, y)) continue;
+      const d = (dx / r) ** 2 + (dy / ry) ** 2;
+      if (d > 1.7 || seen.has(key) && d > 1) continue;
+      if (d <= 1) seen.add(key);
+      each(x, y, d > 1 ? 2 : d > 0.55 ? 1 : 0, depth);
+    }
+  }
+  return centre;
+}
+
+/* ----- the Clearing ----- */
+
+/** The forest edge's stream, with glints that sparkle as it runs. */
+function stream() {
+  const [glint, lit, body, deep] = M().water, [bank] = M().bank;
+  life.glints = [];
+  winding(6, 0.72, 2.2, (x, y, edge) => {
+    if (edge === 2) { if (dither(x, y) < 10) put(x, y, bank); return; }
+    put(x, y, edge === 1 ? (y % 2 ? body : deep) : dither(x, y) < 3 ? lit : body);
+    bare(x, y);
+    if (edge === 0 && rand() < 0.06) life.glints.push({ x, y, phase: rand() * 40 });
+  });
+  life.glintColour = glint;
+}
+
+/** Deep in the woods: a thick canopy closes over the top, with dark trunks rising into it at every depth. */
+function deepWoods() {
+  const [lit, leaf, shade, deep] = S.trees, k = within();
+  const roof = Math.round(horizon * (0.2 + k * 0.12));
+  // the gloom of the wood behind, with only a little sky showing through
+  for (let y = roof - 2; y < horizon; y++) for (let x = 0; x < W; x++) {
+    const open = Math.sin(x / 7 + y / 11) + Math.sin(x / 3.1 - y / 9) > 1.35 - (horizon - y) / horizon * 0.4;
+    if (!open) { solid(x, y, dither(x, y) < 5 ? shade : deep); tint(x, y, 0.85); }
+  }
+  for (let x = Math.floor(rand() * 4); x < W; x += 5 + Math.floor(rand() * 10)) {
+    const w = 2 + Math.floor(rand() * 3), far = rand() < 0.5;
+    for (let y = roof - 2; y < horizon; y++) for (let dx = 0; dx < w; dx++) {
+      solid(x + dx, y, dx === w - 1 ? S.trunk[1] : S.trunk[0]);
+      tint(x + dx, y, far ? 0.45 : 0.7);
+    }
+  }
+  for (let x = 0; x < W; x++) {
+    const h = roof + Math.round(2.5 * Math.sin(x / 6) + 1.5 * Math.sin(x / 2.7 + 2));
+    for (let y = 0; y <= h; y++) {
+      const gap = Math.sin(x / 9 + y / 4) + Math.sin(x / 4.3 - y / 3) > 1.55 && y < h - 3;   // sky through the leaves
+      if (!gap) solid(x, y, y >= h - 1 ? deep : dither(x, y) < 2 ? lit : y > h - 4 && dither(x, y) < 8 ? shade : leaf);
+    }
+  }
+}
+
+/** Light falling through the canopy in slanted shafts. */
+function lightShafts(strength) {
+  const low = horizon + Math.round((H - horizon) * 0.5);
+  for (let y = 0; y < low; y++) for (let x = 0; x < W; x++) {
+    const band = ((x - y * 0.45) % 38 + 38) % 38;
+    if (band < 5 && dither(x, y) < (band < 2 ? 5 : 3) * strength) tint(x, y, 1.08, 16);
+  }
+}
+
+/** The boss's arena: an ancient giant tree, its trunk filling the back, roots spilling onto the grass, its crown the sky. */
+function giantTree() {
+  const [lit, leaf, shade, deep] = S.trees, bark = M().bark;
+  const cx = Math.round(W * 0.5), half = Math.max(8, Math.round(Math.min(W * 0.13, horizon * 0.42))), foot = horizon + 3;
+  for (let y = 0; y <= foot; y++) {
+    const flare = y > foot - half ? Math.round((y - foot + half) ** 2 / half * 1.2) : 0;
+    for (let x = -half - flare; x <= half + flare; x++) {
+      const u = x / (half + flare), groove = Math.abs(Math.sin(x * 1.7 + y * 0.08)) < 0.18;
+      solid(cx + x, y, u < -0.7 ? bark[0] : u > 0.45 ? (u > 0.8 ? bark[3] : bark[2]) : groove ? bark[2] : bark[1]);
+    }
+  }
+  // roots crawling out over the ground
+  for (const side of [-1, 1]) for (let r = 0; r < 2; r++) {
+    let x = cx + side * (half * (1.3 + r * 0.4)), y = foot - 2;
+    for (let n = 0, len = Math.round(half * (0.5 + r * 0.3)); n < len; n++) {
+      const thick = Math.max(1, Math.round((1 - n / len) * (3 - r)));
+      x += side * (0.8 + rand() * 0.4); y += 0.2 + n / len * 0.4;
+      for (let t = -thick; t <= thick; t++) solid(x, y + t, t === -thick ? bark[0] : t === thick ? bark[3] : bark[1]);
+      bare(x, y);
+    }
+  }
+  // a hollow and moss
+  const hy = Math.round(horizon * 0.62), hr = Math.max(2, Math.round(half * 0.28));
+  for (let y = -hr * 1.4; y <= hr * 1.4; y++) for (let x = -hr; x <= hr; x++) {
+    const d = (x / hr) ** 2 + (y / (hr * 1.4)) ** 2;
+    if (d <= 1) solid(cx - Math.round(half * 0.2) + x, hy + y, d > 0.7 && y < 0 ? bark[0] : bark[3]);
+  }
+  for (let n = 0; n < half * 3; n++) {
+    const x = cx + Math.round((rand() * 2 - 1) * half * 0.9), y = Math.floor(rand() * foot);
+    if (dither(x, y) < 8) solid(x, y, M().moss[rand() < 0.5 ? 0 : 1]);
+  }
+  // the crown: a ceiling of leaves, heavier over the trunk
+  for (let x = 0; x < W; x++) {
+    const over = Math.max(0, 1 - Math.abs(x - cx) / (W * 0.5));
+    const h = Math.round(horizon * (0.18 + over * 0.14) + 3 * Math.sin(x / 5) + 2 * Math.sin(x / 2.3 + 1));
+    for (let y = 0; y <= h; y++) solid(x, y, y >= h - 1 ? deep : y > h - 4 && dither(x, y) < 9 ? shade : dither(x + 1, y) < 3 ? lit : leaf);
+  }
+}
+
+/* ----- the Shrine ----- */
+
+/** The foot of the stone steps: a flight up to the gate, which stands `rise` rows above the ground. */
+function shrineSteps(gx, size) {
+  const rise = Math.max(4, Math.round(size * 0.34)), top = Math.round(size * 0.42), [lit, body, dark, line] = M().stone;
+  for (let k = 0; k <= rise; k++) {
+    const y = horizon + 1 - k, half = Math.round(top + (rise - k) / rise * size * 0.22);
+    for (let x = -half - 1; x <= half + 1; x++) {
+      const edge = Math.abs(x) >= half;
+      solid(gx + x, y, edge ? line : k % 2 ? (x < -half * 0.6 ? lit : body) : dark);
+    }
+  }
+  return rise;
+}
+
+/** Bamboo crowding in at both edges, green stalks ringed at their joints, sprays of leaves at their tops. */
+function bamboo() {
+  const [lit, body, shade, deep] = M().bamboo;
+  for (const side of [-1, 1]) {
+    for (let n = 0, count = Math.max(3, Math.round(W * 0.05)); n < count; n++) {
+      const x = side < 0 ? Math.round(rand() * W * 0.17) : W - 1 - Math.round(rand() * W * 0.17);
+      const top = Math.round(rand() * horizon * 0.25), foot = horizon + 2 + Math.round(rand() * 5), seg = 5 + Math.floor(rand() * 3), far = rand() < 0.4;
+      for (let y = top; y <= foot; y++) {
+        const joint = (y - top) % seg === 0;
+        solid(x, y, joint ? deep : body); solid(x + 1, y, joint ? deep : shade);
+        if (!far) solid(x - 1, y, joint ? shade : lit);
+        if (far) { tint(x, y, 0.75); tint(x + 1, y, 0.75); }
+      }
+      for (let y = top; y < foot - 6; y += seg * 2) for (let k = 1; k < 5; k++) {
+        const dir = (y / seg) % 2 ? 1 : -1;
+        put(x + dir * k, y + Math.round(k * 0.5), k > 2 ? shade : lit);
+        put(x + dir * k, y + Math.round(k * 0.5) + 1, deep);
+      }
+    }
+  }
+}
+
+/** The inner courtyard's wall: white plaster between dark posts under a tiled roof, a stone footing. */
+function courtyardWall(gap) {
+  const tall = Math.max(7, Math.round(horizon * 0.22)), top = horizon + 1 - tall, gx = Math.round(W * 0.52);
+  const [plaster, plasterDim, plasterDark] = M().plaster, [tileLit, tile, tileDark] = M().tile, [, wood, , woodDark] = M().wood, [, stone, stoneDark] = M().stone;
+  for (let x = 0; x < W; x++) {
+    if (Math.abs(x - gx) < gap) continue;
+    for (let y = top; y <= horizon + 1; y++) {
+      const k = y - top;
+      solid(x, y, k === 0 ? tileLit : k < 3 ? (x % 3 ? tile : tileDark) : k === 3 ? tileDark : y >= horizon ? (x % 5 ? stone : stoneDark)
+        : x % 16 === 0 || x % 16 === 1 ? (x % 16 ? woodDark : wood) : k === 4 ? plasterDark : dither(x, y) < 2 ? plasterDim : plaster);
+    }
+  }
+  // the gateway's posts
+  for (const side of [-1, 1]) for (let y = top - 2; y <= horizon + 1; y++) for (let k = 0; k < 2; k++) solid(gx + side * gap + (side < 0 ? -k : k), y, k ? woodDark : wood);
+  return top;
+}
+
+/** A bell tower over the wall: four posts, a bronze bell hanging under a curved roof. */
+function bellTower(cx, foot, size) {
+  const [red, redDark, redDeep] = M().red, [tileLit, tile, tileDark] = M().tile, [bellLit, bell, bellDark] = M().bell;
+  const half = Math.round(size * 0.35), top = foot - size;
+  for (const x of [-half, half]) for (let y = top + 3; y <= foot; y++) { solid(cx + x, y, red); solid(cx + x + 1, y, redDeep); }
+  for (let x = -half; x <= half; x++) { solid(cx + x, top + 3, redDark); solid(cx + x, foot - Math.round(size * 0.3), redDark); }
+  for (let k = 0; k < 4; k++) {   // the roof, flaring at its eaves
+    const w = half + 3 - k, y = top + 2 - k;
+    for (let x = -w; x <= w; x++) solid(cx + x, y, k === 0 ? tileDark : k === 3 ? tileLit : tile);
+  }
+  solid(cx - half - 3, top + 1, tileDark); solid(cx + half + 3, top + 1, tileDark);
+  const by = top + 4, bh = Math.max(3, Math.round(size * 0.3));
+  for (let y = 0; y < bh; y++) {
+    const w = 1 + Math.round(y / bh * Math.max(1, half * 0.5));
+    for (let x = -w; x <= w; x++) solid(cx + x, by + y, x < 0 ? bellLit : x > w - 2 ? bellDark : bell);
+  }
+}
+
+/** The boss's arena: the main hall, a wide red building on a stone base under a sweeping roof, a straw rope across its front. */
+function mainHall() {
+  const gx = Math.round(W * 0.52), half = Math.round(Math.min(W * 0.34, horizon * 1.15)), base = Math.max(3, Math.round(horizon * 0.07));
+  const tall = Math.round(horizon * 0.4), roofH = Math.round(horizon * 0.3), eave = horizon + 1 - base - tall;
+  const [red, redDark, redDeep] = M().red, [tileLit, tile, tileDark] = M().tile, [lit, body, dark, line] = M().stone, [wLit, wood, wShade, wDark] = M().wood;
+  for (let y = horizon + 1 - base; y <= horizon + 1; y++) for (let x = -half - 2; x <= half + 2; x++) solid(gx + x, y, y === horizon + 1 - base ? lit : (x + y) % 6 ? body : dark);
+  for (let y = eave; y < horizon + 1 - base; y++) for (let x = -half; x <= half; x++) {
+    const bay = ((x + half) % Math.max(6, Math.round(half / 4)));
+    solid(gx + x, y, bay < 2 ? (bay ? redDeep : red) : y - eave < 3 ? redDark : (x + y) % 2 && y - eave > 4 ? wShade : wDark);
+  }
+  for (let k = 0; k < roofH; k++) {   // the roof: sweeping up at the ends, a ridge on top
+    const t = k / roofH, w = Math.round(half * (1.22 - t * 0.55)), y = eave - 1 - k;
+    for (let x = -w; x <= w; x++) {
+      const lift = Math.abs(x) > w - 3 && k < 3 ? 1 : 0;
+      solid(gx + x, y - lift, k === 0 ? tileDark : k === roofH - 1 ? tileLit : (x + k) % 3 ? tile : tileDark);
+    }
+  }
+  const ridge = eave - roofH;
+  for (const side of [-1, 1]) for (let k = 0; k < 5; k++) { solid(gx + side * (Math.round(half * 0.67) + k), ridge - k, wDark); solid(gx + side * (Math.round(half * 0.67) + 4 - k), ridge - k, wDark); }
+  // steps up to it, and the straw rope with its paper zigzags
+  for (let k = 0; k < base + 2; k++) for (let x = -Math.round(half * 0.22) - k; x <= Math.round(half * 0.22) + k; x++) solid(gx + x, horizon + 1 - base + k, k % 2 ? dark : lit);
+  const [rope, ropeDark] = M().rope;
+  for (let x = -half + 2; x <= half - 2; x++) {
+    const y = eave + 2 + Math.round(Math.sin((x + half) / (half * 2) * Math.PI) * 2);
+    solid(gx + x, y, x % 2 ? rope : ropeDark);
+    if ((x + half) % Math.max(5, Math.round(half / 5)) === 0) for (let k = 1; k <= 3; k++) solid(gx + x + (k % 2), y + k, M().paper);
+  }
+  return { gx, eave, half };
+}
+
+function gravel() {
+  bands(horizon, H, M().gravel, 0.9);
+  const [, , , groove] = M().gravel;
+  for (let y = horizon + 3; y < H; y++) {
+    const depth = depthOf(y), step = Math.max(2, Math.round(2 + depth * 3));
+    for (let x = 0; x < W; x++) if ((y + Math.round(Math.sin(x / 14) * 1.2)) % step === 0 && dither(x, y) < 12) put(x, y, groove);
+  }
+}
+
+/* ----- the Wastes ----- */
+
+/** A dead tree: a crooked trunk splitting into bare, forking branches. */
+function deadTree(cx, foot, h, [lit, body, dark]) {
+  const branch = (x, y, len, dir, width) => {
+    for (let k = 0; k < len; k++) {
+      x += dir * (0.3 + rand() * 0.5); y -= 0.8 + rand() * 0.3;
+      for (let w = 0; w < width; w++) solid(x + w, y, w ? dark : lit);
+      if (width > 1 && k > 1 && rand() < 0.22) branch(x, y, Math.round(len * 0.55), rand() < 0.5 ? -1 : 1, width - 1);
+    }
+    if (width === 1) solid(x + dir, y - 1, body);
+  };
+  for (let y = foot; y > foot - h * 0.45; y--) { solid(cx, y, lit); solid(cx + 1, y, body); solid(cx + 2, y, dark); }
+  branch(cx, foot - h * 0.45, Math.round(h * 0.5), -1, 2);
+  branch(cx + 1, foot - h * 0.4, Math.round(h * 0.45), 1, 2);
+  solid(cx - 1, foot, dark); solid(cx + 3, foot, dark);
+}
+
+/** Basalt columns: hexagonal pillars packed together, flat tops lit, heights stepping. */
+function basaltColumns(cx, foot, count, tallest, [lit, body, shade, line]) {
+  for (let n = 0; n < count; n++) {
+    const x = cx + (n - (count - 1) / 2) * 4, h = Math.round(tallest * (0.45 + 0.55 * Math.abs(Math.sin(n * 2.3 + cx))));
+    for (let y = foot - h; y <= foot; y++) for (let k = 0; k < 4; k++) {
+      solid(x + k, y, y === foot - h ? lit : k === 0 ? line : k === 3 ? shade : y === foot - h + 1 ? shade : body);
+    }
+  }
+}
+
+/** The lava fields' river of lava, glowing like the cracks (life.cracks), with steam where it runs. */
+function lavaRiver() {
+  const [lit, body, dark] = S.rock;
+  const path = winding(4, 0.3, 1.1, (x, y, edge) => {
+    if (edge === 2) { if (dither(x, y) < 12) put(x, y, dark); return; }
+    if (edge === 1) { put(x, y, dither(x, y) < 8 ? dark : S.lava[3]); if (dither(x, y) < 8) return; }
+    life.cracks.push([x, y, Math.round(x / 3 + y)]);
+    bare(x, y);
+  });
+  for (let i = 12; i < path.length; i += 23) if (path[i][1] < H - 2) steam(path[i][0], path[i][1] - 1, 0.8);
+}
+
+function steam(x, y, size = 1) { (life.puffs ||= []).push({ x, y, size, phase: rand() * 40 }); }
+
+/** The volcano's slope: rock rising on one side over the horizon, as if the ground tilts up towards the peak. */
+function slopeRise() {
+  const [lit, body, shade] = S.volcano, left = (S.raw.seed & 1) === 0, reach = W * 0.34, height = horizon * 0.42;
+  for (let i = 0; i <= reach; i++) {
+    const x = left ? i : W - 1 - i, t = 1 - i / reach, top = horizon - Math.round(height * t ** 1.3 + Math.sin(i / 3) * 0.8);
+    for (let y = top; y <= horizon + 1; y++) solid(x, y, y === top ? lit : (y + x) % 7 === 0 ? shade : y - top < 2 && dither(x, y) < 8 ? lit : body);
+    if (t > 0.2 && i % 9 === 4) for (let y = top + 2; y < horizon; y++) if (dither(x, y) < 10) put(x, y, shade);
+  }
+}
+
+/** The boss's arena: you're on the crater's rim; below you a lava lake, across it the crater's far wall lit from beneath. */
+function craterRim() {
+  const [lit, body, shade] = S.volcano, lake = Math.max(4, Math.round(horizon * 0.14)), wallTop = horizon - lake - Math.round(horizon * 0.34);
+  for (let x = 0; x < W; x++) {
+    const wav = 0.6 * Math.sin(x / 17 + 1) + 0.4 * Math.sin(x / 6.3) + 0.25 * Math.abs(Math.sin(x / 2.2));
+    const top = wallTop - Math.round(horizon * 0.12 * wav);
+    for (let y = top; y < horizon - lake; y++) {
+      const low = (y - top) / Math.max(1, horizon - lake - top);
+      solid(x, y, y === top ? lit : (x * 3 + y) % 11 === 0 ? shade : low > 0.75 && dither(x, y) < (low - 0.75) * 50 ? S.lava[3] : low > 0.4 && dither(x, y) < 6 ? shade : body);
+    }
+  }
+  for (let y = horizon - lake; y <= horizon; y++) for (let x = 0; x < W; x++) {
+    const near = (y - horizon + lake) / lake, crust = Math.sin(x / (4 + near * 5) + y * 1.3) + Math.sin(x / (9 + near * 8) - y * 0.7);
+    if (crust > 1.1) { solid(x, y, crust > 1.5 ? S.rock[2] : S.lava[3]); continue; }   // plates of cooling crust drift on it
+    solid(x, y, S.lava[2]);
+    (life.cracks ||= []).push([x, y, Math.round(x / 4 + Math.sin(y + x / 7) * 3)]);
+  }
+  life.volcano = { x: Math.round(W * 0.5), y: horizon - Math.round(lake / 2), crater: Math.round(W * 0.2), height: Math.round(horizon * 0.7), near: 1.3 };
+  life.flows = [];
+}
+
+/** The rim's own edge at your feet, a dark lip over the lake. */
+function rimEdge() {
+  const [lit, body, dark] = S.rock;
+  for (let x = 0; x < W; x++) {
+    const y0 = horizon + 1 + Math.round(1.5 + Math.sin(x / 5) + Math.sin(x / 2.1));
+    for (let y = horizon + 1; y <= y0; y++) solid(x, y, y === y0 ? lit : dark);
+    for (let y = y0 + 1; y < y0 + 3; y++) if (dither(x, y) < 6) put(x, y, body);
+  }
+}
+
+/* ----- what each place adds in front of the ground ----- */
+
+function stageFront() {
+  const b = biomeOf(), st = stage();
+  if (b === 'clearing') {
+    if (st === 1) for (let n = 0; n < Math.max(2, Math.round(W / 70)); n++) berryBush(rand() < 0.5 ? Math.round(W * (0.02 + rand() * 0.18)) : Math.round(W * (0.8 + rand() * 0.18)), horizon + 2, 3);
+    if (st >= 2) lightShafts(S.stars ? 0.5 : 1);
+  }
+  if (b === 'shrine' && st === 0) bamboo();
+  if (b === 'wastes') {
+    const rock = M().dead;
+    if (st === 0) for (const at of [0.04, 0.17, 0.86, 0.97]) deadTree(Math.round(W * at), horizon + 2 + Math.round(rand() * 3), Math.round(horizon * (0.18 + rand() * 0.14)), rock);
+    if (st === 1) {
+      for (const at of [0.03, 0.97]) basaltColumns(Math.round(W * at), horizon + 3, 5, Math.round(horizon * 0.3), M().basalt);
+    }
+    if (st === 2) for (let n = 0; n < 3; n++) {
+      const y = horizon + 4 + Math.floor(rand() * (H - horizon) * 0.4), x = Math.floor(rand() * W);
+      for (let k = -2; k <= 2; k++) put(x + k, y, M().sulfur[2]);
+      steam(x, y - 1, 0.7);
+    }
+  }
+}
+
+/* ----- the landmarks: one per floor, at an edge ----- */
+
+/** A mound (a boulder, a bush): an outlined dome lit from the top left; `over(x, y, u, v)` may repaint a pixel (moss, berries, glowing cracks). */
+function mound(cx, foot, rx, ry, [lit, body, shade, line], over = null) {
+  outlined(cx - rx, foot - ry * 2, cx + rx, foot, (x, y) => {
+    const u = (x - cx) / rx, v = (y - (foot - ry)) / ry;
+    return u * u + v * v <= 1 && y <= foot;
+  }, (x, y) => {
+    const u = (x - cx) / rx, v = (y - (foot - ry)) / ry;
+    return over?.(x, y, u, v) ?? (u + v < -0.7 ? lit : u + v > 0.5 ? shade : dither(x, y) < 3 ? lit : body);
+  }, line);
+  for (let x = -rx; x <= rx; x++) bare(cx + x, foot);
+}
+
+/** A fallen log lying across, bark on top, its cut ends showing rings; `hollow` shows a dark hole in the near end. */
+function fallenLog(cx, y, len, r, hollow = false) {
+  const [lit, body, shade, line] = M().bark, [ring, ringDark] = M().wood;
+  for (let x = -len; x <= len; x++) for (let k = -r; k <= r; k++) {
+    const edge = k === -r - 0 && x % 3 === 0;
+    solid(cx + x, y + k, k === -r ? line : k === -r + 1 ? lit : k === r ? line : k > r * 0.4 ? shade : edge ? shade : (x * 5 + k) % 9 === 0 ? shade : body);
+  }
+  for (let k = -r; k <= r; k++) for (let x = 0; x <= Math.max(1, Math.round(r * 0.8)); x++) {
+    const d = (x / Math.max(1, r * 0.8)) ** 2 + (k / r) ** 2;
+    if (d <= 1) solid(cx + len + x, y + k, hollow && d < 0.5 ? line : d > 0.75 ? line : (Math.round(d * 4) % 2 ? ringDark : ring));
+  }
+  for (let x = -len; x <= len; x += 1) if (dither(x, y) < 5) solid(cx + x, y - r, M().moss[0]);
+  for (let x = -len; x <= len; x++) bare(cx + x, y + r);
+}
+
+/** A stump: its cut top showing rings, bark down its sides, roots at its foot; `fungi` adds shelf mushrooms. */
+function stump(cx, foot, half, tall, [lit, body, shade, line], face = M().wood, fungi = false) {
+  for (let y = foot - tall; y <= foot; y++) {
+    const w = half + (y > foot - 2 ? foot - y === 0 ? 2 : 1 : 0);
+    for (let x = -w - 1; x <= w + 1; x++) {
+      const edge = Math.abs(x) === w + 1;
+      solid(cx + x, y, edge || y === foot ? line : x < -w * 0.4 ? lit : x > w * 0.5 ? shade : (x + y * 3) % 5 === 0 ? shade : body);
+    }
+  }
+  for (let x = -half; x <= half; x++) { solid(cx + x, foot - tall - 1, line); solid(cx + x, foot - tall, Math.abs(x) % 2 ? face[1] : face[0]); }
+  solid(cx - half - 1, foot - tall, line); solid(cx + half + 1, foot - tall, line);
+  if (fungi) for (const [dy, side] of [[Math.round(tall * 0.35), 1], [Math.round(tall * 0.65), -1]]) {
+    for (let k = 0; k < 3; k++) solid(cx + side * (half + 2 + k), foot - tall + dy, M().stem[0]);
+    solid(cx + side * (half + 2), foot - tall + dy + 1, M().stem[1]);
+  }
+  for (let x = -half - 2; x <= half + 2; x++) bare(cx + x, foot);
+}
+
+/** A mushroom: a round spotted cap on a pale stem. */
+function mushroom(cx, foot, r, [cap, capDark, spot]) {
+  const [stem, stemDark] = M().stem, line = M().bark[3];
+  for (let y = foot - r - 1; y <= foot; y++) { solid(cx, y, stem); solid(cx + 1, y, stemDark); }
+  outlined(cx - r, foot - r * 2 - 1, cx + r + 1, foot - r, (x, y) => {
+    const u = (x - cx - 0.5) / (r + 0.5), v = (y - (foot - r)) / (r + 0.5);
+    return u * u + v * v <= 1 && y <= foot - r;
+  }, (x, y) => ((x * 7 + y * 3) % 5 === 0 ? spot : x > cx + r * 0.4 ? capDark : cap), line);
+}
+
+/** A clump of ferns: fronds arching out and down from the middle. */
+function ferns(cx, foot, size) {
+  const [lit, body, shade] = M().fern;
+  for (let f = -3; f <= 3; f++) {
+    const dir = f < 0 ? -1 : 1, reach = size * (1 - Math.abs(f) * 0.08), lift = size * (0.9 - Math.abs(f) * 0.15);
+    for (let k = 0; k <= reach; k++) {
+      const t = k / reach, x = cx + dir * k * (0.4 + Math.abs(f) * 0.2), y = foot - Math.sin(t * Math.PI * 0.9) * lift;
+      solid(x, y, f === 0 ? lit : body);
+      if (k % 2 === 0 && k > 1) { solid(x, y - 1, lit); solid(x + dir, y + 1, shade); }
+    }
+  }
+  for (let x = -2; x <= 2; x++) bare(cx + x, foot);
+}
+
+/** A berry bush: a round green mound speckled with berries. */
+function berryBush(cx, foot, r) {
+  const [berry, berryDark, shine] = M().berry, [lit, leaf, shade, line] = M().leaf;
+  mound(cx, foot, r + 2, r, [lit, leaf, shade, line], (x, y, u, v) => (x * 5 + y * 7) % 11 === 0 && v < 0.6 ? ((x + y) % 2 ? berry : berryDark) : (x * 5 + y * 7) % 11 === 1 && v < 0.2 ? shine : null);
+}
+
+/** A wooden fence: posts and two rails. */
+function fence(cx, foot, len) {
+  const [lit, body, shade, line] = M().wood;
+  for (let x = -len; x <= len; x++) for (const k of [3, 6]) { solid(cx + x, foot - k, body); solid(cx + x, foot - k + 1, shade); }
+  for (let x = -len; x <= len; x += 7) for (let y = foot - 9; y <= foot; y++) { solid(cx + x, y, line); solid(cx + x + 1, y, lit); solid(cx + x + 2, y, shade); solid(cx + x + 3, y, line); }
+}
+
+/** A stone statue on a plinth, from a letter map (s stone, S shade, L lit, o line, r red cloth, R its shade, w paper). */
+function statue(cx, foot, rows) {
+  const [lit, body, shade, line] = M().stone, [red, redDark] = M().red;
+  const key = { L: lit, s: body, S: shade, o: line, r: red, R: redDark, w: M().paper, g: M().moss[0], G: M().moss[1] };
+  const w = rows[0].length;
+  pixelMap(cx - Math.floor(w / 2), foot - rows.length + 1, rows, key);
+  for (let x = 0; x < w; x++) bare(cx - Math.floor(w / 2) + x, foot);
+}
+
+/** A little puddle of steam, lava or water at the foot of a landmark: an oval of `colour` with a darker rim. */
+function pool(cx, cy, rx, ry, fill, rim, glow = false) {
+  for (let y = -ry - 1; y <= ry + 1; y++) for (let x = -rx - 1; x <= rx + 1; x++) {
+    const d = (x / rx) ** 2 + (y / ry) ** 2;
+    if (d <= 1) { solid(cx + x, cy + y, fill(x, y, d)); bare(cx + x, cy + y); if (glow) life.cracks.push([cx + x, cy + y, Math.round(d * 5)]); }
+    else if (d <= 1.6) solid(cx + x, cy + y, rim);
+  }
+}
+
+const KOMAINU = [
+  '..oooo....',
+  '.oLssso...',
+  'oLsoLsSo..',
+  'oLssssSo..',
+  '.oRrrRSoo.',
+  '.oLssssSSo',
+  '.oLsoLssSo',
+  '.oLssssSSo',
+  '.oLsSosSSo',
+  'oooooooooo',
+  'oLLssssSSo',
+  'oLssssssSo',
+  'oooooooooo',
+];
+const JIZO = [
+  '..ooo..',
+  '.oLsso.',
+  '.oLsSo.',
+  '.oLssoo',
+  'orrrrRo',
+  'oRrrrRo',
+  '.oLsSo.',
+  '.oLsSo.',
+  '.oLsSo.',
+  'ooooooo',
+  'oLssSSo',
+  'ooooooo',
+];
+const MARKER = [
+  '.ooo.',
+  'oLsSo',
+  'oLoSo',
+  'oLsSo',
+  'oLoSo',
+  'oLoSo',
+  'oLsSo',
+  'oLoSo',
+  'oLsSo',
+  'oLsSo',
+  'oLsSo',
+  'oLgGo',
+  'ooooooo'.slice(0, 5),
+];
+const FOX = [
+  'o.o.....',
+  'oLoo....',
+  'oLsso...',
+  '.oLwso..',
+  '.oLsso..',
+  '.orrRo..',
+  '.oLssoo.',
+  '.oLsssoo',
+  '.oLsssSo',
+  '.oLsssSo',
+  '.oLssSSo',
+  'oooooooo',
+  'oLssssSo',
+  'oooooooo',
+];
+
+/* Each place's landmarks, one per floor; the map's seed deals them out, so two floors of a place never share one. */
+const LANDMARKS = {
+  clearing: [
+    {
+      signpost(cx, foot) {
+        const [lit, body, shade, line] = M().wood;
+        for (let y = foot - 7; y <= foot; y++) { solid(cx, y, line); solid(cx + 1, y, lit); solid(cx + 2, y, shade); solid(cx + 3, y, line); }
+        for (const [y0, dir] of [[foot - 12, 1], [foot - 8, -1]]) {
+          for (let y = y0; y < y0 + 4; y++) for (let x = -5; x <= 6; x++) {
+            const tip = dir > 0 ? x === 6 && (y === y0 || y === y0 + 3) : x === -5 && (y === y0 || y === y0 + 3);
+            if (!tip) solid(cx + x + dir * 2, y, y === y0 || y === y0 + 3 || x === -5 || x === 6 ? line : y === y0 + 1 ? lit : (x + y) % 3 === 0 ? shade : body);
+          }
+        }
+        for (let x = -1; x <= 4; x++) bare(cx + x, foot);
+      },
+      fence(cx, foot) { fence(cx, foot, 11); },
+      boulder(cx, foot) { mound(cx, foot, 7, 5, M().stone, (x, y, u, v) => v < -0.55 && dither(x, y) < 10 ? M().moss[(x + y) % 2] : null); },
+      stump(cx, foot) { stump(cx, foot, 4, 5, M().bark); },
+      birdhouse(cx, foot) {
+        const [lit, body, shade, line] = M().wood, [roof, roofDark] = M().roof;
+        for (let y = foot - 10; y <= foot; y++) { solid(cx, y, lit); solid(cx + 1, y, shade); }
+        for (let y = foot - 17; y <= foot - 10; y++) for (let x = -3; x <= 4; x++) solid(cx + x, y, x === -3 || x === 4 || y === foot - 10 ? line : x < 0 ? lit : body);
+        solid(cx, foot - 14, line); solid(cx + 1, foot - 14, line); solid(cx, foot - 13, line); solid(cx + 1, foot - 13, line);
+        for (let k = 0; k < 4; k++) for (let x = -4 - (3 - k); x <= 5 + (3 - k) - 3 + k * 0; x++) if (Math.abs(x - 0.5) <= 1.5 + k * 1.5) solid(cx + x, foot - 21 + k, k === 3 ? roofDark : roof);
+      },
+    },
+    {
+      bridge: { side: -1, paint(cx) {
+        const y = horizon + 6 + Math.round(Math.sin(cx / 11) * 0.8);
+        fallenLog(cx, y, 9, 1);
+      } },
+      berries(cx, foot) { berryBush(cx, foot, 5); berryBush(cx + 8, foot + 1, 3); },
+      stones: { side: -1, paint(cx) {
+        const y = horizon + 6;
+        for (const dx of [-7, -1, 5]) mound(cx + dx, y + 1, 2, 1, M().stone);
+      } },
+      reeds(cx, foot) {
+        const [lit, body] = M().fern, [cat, catDark] = M().cattail;
+        for (let n = -3; n <= 3; n++) {
+          const x = cx + n * 2, h = 8 + ((n * 7 + 11) % 5);
+          for (let y = foot - h; y <= foot; y++) solid(x + (y < foot - h * 0.7 && n % 2 ? 1 : 0), y, n % 2 ? lit : body);
+          if (n % 2 === 0) for (let k = 0; k < 3; k++) { solid(x, foot - h + 1 + k, k ? catDark : cat); solid(x + 1, foot - h + 1 + k, catDark); }
+        }
+      },
+      log(cx, foot) { fallenLog(cx, foot - 2, 8, 2); },
+    },
+    {
+      mushrooms(cx, foot) { mushroom(cx - 4, foot, 3, M().cap); mushroom(cx + 3, foot + 1, 2, M().cap); mushroom(cx + 7, foot, 1, M().cap); },
+      hollowLog(cx, foot) { fallenLog(cx, foot - 3, 9, 3, true); },
+      ferns(cx, foot) { ferns(cx, foot, 8); },
+      mossRock(cx, foot) { mound(cx, foot, 8, 5, M().stone, (x, y, u, v) => v < 0.1 - Math.sin(x / 2) * 0.3 ? M().moss[(x + y) % 3 ? 0 : 1] : null); ferns(cx + 7, foot, 4); },
+      bigStump(cx, foot) { stump(cx, foot, 6, 9, M().bark, M().wood, true); mushroom(cx - 8, foot, 1, M().cap); },
+    },
+  ],
+  shrine: [
+    {
+      komainu(cx, foot) { statue(cx, foot, KOMAINU); },
+      jizo(cx, foot) { statue(cx - 4, foot, JIZO); statue(cx + 4, foot + 1, JIZO); },
+      basin(cx, foot) {
+        const [lit, body, shade, line] = M().stone, [wlit, water] = M().water, [bLit, bBody] = M().bamboo;
+        for (let y = foot - 5; y <= foot; y++) for (let x = -6; x <= 6; x++) solid(cx + x, y, Math.abs(x) === 6 || y === foot ? line : y === foot - 5 ? lit : x > 3 ? shade : body);
+        for (let x = -5; x <= 5; x++) solid(cx + x, foot - 5, x % 3 ? water : wlit);
+        for (let k = 0; k < 7; k++) solid(cx - 3 + k, foot - 8 + Math.round(k * 0.3), bLit);   // a bamboo ladle laid across
+        solid(cx - 4, foot - 9, bBody); solid(cx - 4, foot - 8, bBody); solid(cx - 3, foot - 9, bBody);
+        for (let x = -6; x <= 6; x++) bare(cx + x, foot);
+      },
+      marker(cx, foot) { statue(cx, foot, MARKER); statue(cx + 4, foot, MARKER.slice(6)); },
+      hokora(cx, foot) {
+        const [lit, body, shade, line] = M().wood, [red, redDark] = M().red, [tLit, tile, tDark] = M().tile;
+        for (let y = foot - 6; y <= foot; y++) { solid(cx, y, M().stone[1]); solid(cx + 1, y, M().stone[2]); }
+        for (let y = foot - 13; y <= foot - 7; y++) for (let x = -4; x <= 5; x++) solid(cx + x, y, x === -4 || x === 5 || y === foot - 7 ? line : Math.abs(x - 0.5) < 2 && y > foot - 12 ? (y % 2 ? shade : body) : x < 0 ? red : redDark);
+        for (let k = 0; k < 3; k++) for (let x = -6 + k; x <= 7 - k; x++) solid(cx + x, foot - 14 - k, k === 0 ? tDark : k === 2 ? tLit : tile);
+      },
+    },
+    {
+      ema(cx, foot) {
+        const [lit, body, shade, line] = M().wood;
+        for (const x of [-7, 7]) for (let y = foot - 12; y <= foot; y++) { solid(cx + x, y, line); solid(cx + x + 1, y, shade); }
+        for (let x = -8; x <= 9; x++) { solid(cx + x, foot - 13, line); solid(cx + x, foot - 12, body); solid(cx + x, foot - 8, shade); }
+        for (let x = -5; x <= 5; x += 2) for (const row of [foot - 11, foot - 7]) {   // the little wooden prayer plaques
+          const h = (x + row) % 3 ? 2 : 3;
+          for (let y = 0; y < h; y++) { solid(cx + x, row + y, y ? body : lit); if ((x + y) % 4 === 1) solid(cx + x, row + y, M().red[0]); }
+        }
+      },
+      fox(cx, foot) { statue(cx, foot, FOX); },
+      box(cx, foot) {
+        const [lit, body, shade, line] = M().wood;
+        for (let y = foot - 7; y <= foot; y++) for (let x = -6; x <= 6; x++) solid(cx + x, y, Math.abs(x) === 6 || y === foot || y === foot - 7 ? line : y === foot - 6 ? (x % 2 ? line : lit) : x > 3 ? shade : y % 2 ? body : shade);
+        const [rope, ropeDark] = M().rope, [red] = M().red;
+        for (let y = foot - 20; y < foot - 8; y++) { solid(cx + 1, y, y % 2 ? rope : ropeDark); if (y > foot - 12) solid(cx + 2, y, red); }
+        for (let x = -1; x <= 3; x++) solid(cx + x, foot - 21, M().bell[0]); solid(cx + 1, foot - 22, M().bell[1]);
+      },
+      sacredRock(cx, foot) {
+        mound(cx, foot, 8, 6, M().stone, (x, y, u, v) => Math.abs(v + 0.15 + u * 0.1) < 0.12 ? M().rope[(x % 2)] : null);
+        for (const dx of [-4, 0, 4]) for (let k = 1; k <= 3; k++) solid(cx + dx + (k % 2), foot - 6 + Math.round(dx * 0.05) + k, M().paper);
+      },
+      bench(cx, foot) {
+        const [lit, body, shade, line] = M().wood, [red, redDark] = M().red;
+        for (const x of [-6, 5]) for (let y = foot - 3; y <= foot; y++) solid(cx + x, y, line);
+        for (let x = -8; x <= 7; x++) { solid(cx + x, foot - 4, red); solid(cx + x, foot - 3, redDark); }
+        for (let y = foot - 21; y <= foot - 4; y++) solid(cx + 6, y, lit);   // a red parasol over it
+        for (let k = 0; k < 5; k++) for (let x = -2 - k * 2; x <= 2 + k * 2; x++) solid(cx + 6 + x, foot - 22 + k, k === 4 ? redDark : (x + k) % 4 ? red : redDark);
+      },
+    },
+    {
+      koi(cx, foot) {
+        const [wlit, water, deep] = M().water, [lit, body, shade, line] = M().stone, [koi, koiWhite] = M().koi;
+        pool(cx, foot - 2, 10, 3, (x, y, d) => d > 0.7 ? deep : dither(x, y) < 2 ? wlit : water, line);
+        for (const [x, y, c] of [[-4, -1, koi], [-3, -1, koiWhite], [3, 0, koi], [4, 0, koi], [5, 0, koiWhite]]) solid(cx + x, foot - 2 + y, c);
+        for (const dx of [-11, 9, -7]) mound(cx + dx, foot - (dx === -7 ? 4 : 1), 2, 1, M().stone);
+        (life.glints ||= []).push({ x: cx - 1, y: foot - 3, phase: 3 }, { x: cx + 6, y: foot - 2, phase: 19 });
+        life.glintColour = M().paper;
+      },
+      pine(cx, foot) {
+        const [lit, leaf, shade] = M().leaf, [bLit, bark, bDark] = M().wood;
+        for (let y = foot - 14; y <= foot; y++) { const x = Math.round(Math.sin(y / 4) * 2); solid(cx + x, y, bLit); solid(cx + x + 1, y, bDark); }
+        for (const [dx, dy, r] of [[-5, -14, 3], [5, -11, 3], [-4, -8, 2], [1, -18, 3]]) for (let y = -1; y <= 1; y++) for (let x = -r - 1; x <= r + 1; x++) {
+          if (Math.abs(x) + Math.abs(y) * 2 <= r + 1) solid(cx + dx + x, foot + dy + y, y < 0 ? lit : y > 0 ? shade : leaf);
+        }
+        for (let x = -3; x <= 3; x++) solid(cx + x, foot, M().stone[3]);
+      },
+      incense(cx, foot) {
+        const [lit, body, shade] = M().bell, line = M().stone[3];
+        for (let y = foot - 7; y <= foot - 3; y++) for (let x = -5; x <= 5; x++) solid(cx + x, y, Math.abs(x) === 5 || y === foot - 3 ? line : y === foot - 7 ? lit : x > 2 ? shade : body);
+        for (const x of [-4, 4]) for (let y = foot - 2; y <= foot; y++) solid(cx + x, y, line);
+        for (let x = -2; x <= 2; x++) solid(cx + x, foot - 8, shade);
+        steam(cx, foot - 9, 0.6);
+      },
+      zenRock(cx, foot) {
+        const groove = M().gravel[3];
+        for (let r = 5; r <= 13; r += 3) for (let a = 0; a < 64; a++) {
+          const x = cx + Math.round(Math.cos(a / 64 * Math.PI * 2) * r), y = foot - 2 + Math.round(Math.sin(a / 64 * Math.PI * 2) * r * 0.35);
+          put(x, y, groove);
+        }
+        mound(cx, foot - 1, 4, 4, M().stone, (x, y, u, v) => v < -0.6 && x % 2 ? M().moss[0] : null);
+      },
+      drum(cx, foot) {
+        const [lit, body, shade, line] = M().wood, [red, redDark] = M().red;
+        for (const x of [-6, 5]) for (let y = foot - 8; y <= foot; y++) { solid(cx + x, y, line); solid(cx + x + 1, y, shade); }
+        for (let y = -6; y <= 6; y++) for (let x = -5; x <= 5; x++) {
+          const d = (x / 5) ** 2 + (y / 6) ** 2;
+          if (d <= 1) solid(cx + x, foot - 13 + y, d > 0.7 ? line : Math.abs(x) < 3 && Math.abs(y) < 4 ? (x < 0 ? M().paper : M().plaster[1]) : d > 0.45 ? red : redDark);
+        }
+      },
+    },
+  ],
+  wastes: [
+    {
+      deadTree(cx, foot) { deadTree(cx, foot, 22, M().dead); },
+      bones(cx, foot) {
+        const [lit, body, shade, line] = M().bone;
+        for (let x = -9; x <= 9; x++) { solid(cx + x, foot - 1, x % 2 ? body : lit); solid(cx + x, foot, shade); }   // the spine
+        for (let k = -8; k <= 6; k += 3) for (let y = 0; y < 7 - Math.abs(k) * 0.3; y++) {   // ribs arching up
+          const x = cx + k + Math.round(Math.sin(y / 3) * 2);
+          solid(x, foot - 2 - y, y > 4 ? lit : body); solid(x + 1, foot - 2 - y, shade);
+        }
+        pixelMap(cx + 9, foot - 5, ['.ooo.', 'oLLbo', 'oLoLo', 'oLbbo', '.ooo.'], { o: line, L: lit, b: body });
+      },
+      cairn(cx, foot) { for (const [dy, rx] of [[0, 6], [-3, 5], [-6, 4], [-8, 3], [-10, 2]]) mound(cx + (dy % 2), foot + dy, rx, 2, M().rock); },
+      arch(cx, foot) {
+        const [lit, body, shade, line] = M().rock;
+        outlined(cx - 11, foot - 16, cx + 11, foot, (x, y) => {
+          const u = (x - cx) / 11, v = (foot - y) / 16, inner = ((x - cx) / 6) ** 2 + ((foot - y) / 10) ** 2;
+          return u * u + v * v <= 1 && inner > 1;
+        }, (x, y) => (x - cx + (foot - y) < -6 ? lit : x > cx + 4 ? shade : (x + y) % 5 ? body : shade), line);
+        for (let x = -11; x <= 11; x++) bare(cx + x, foot);
+      },
+      charred(cx, foot) {
+        stump(cx, foot, 4, 6, M().dead, M().dead);
+        for (const [x, y] of [[-2, -6], [1, -6], [3, -3]]) life.cracks.push([cx + x, foot + y, x + 5]);
+        steam(cx, foot - 8, 0.5);
+      },
+    },
+    {
+      columns(cx, foot) { basaltColumns(cx, foot, 4, 13, M().basalt); },
+      vent(cx, foot) {
+        mound(cx, foot, 6, 3, S.rock.length > 3 ? S.rock : [...S.rock, M().basalt[3]]);
+        for (let x = -1; x <= 1; x++) solid(cx + x, foot - 6, M().basalt[3]);
+        steam(cx, foot - 7, 1.2);
+      },
+      pool(cx, foot) {
+        pool(cx, foot - 2, 8, 3, () => S.lava[2], M().basalt[3], true);
+        for (const dx of [-9, 8]) mound(cx + dx, foot - 1, 2, 1, M().basalt);
+        steam(cx - 2, foot - 4, 0.8);
+      },
+      obsidian(cx, foot) {
+        const [lit, body, shade, line] = M().obsidian;
+        for (const [dx, h, lean] of [[-4, 9, -0.3], [0, 13, 0.1], [4, 8, 0.35], [7, 5, 0.5]]) for (let y = 0; y <= h; y++) {
+          const w = Math.max(0, Math.round((1 - y / h) * 2.2));
+          for (let x = -w; x <= w; x++) solid(cx + dx + Math.round(y * lean) + x, foot - y, x === -w ? line : x < 0 ? lit : x > 0 ? shade : body);
+        }
+        (life.glints ||= []).push({ x: cx, y: foot - 9, phase: 5 }, { x: cx - 4, y: foot - 5, phase: 23 });
+        life.glintColour = M().obsidian[0];
+      },
+      burntTree(cx, foot) {
+        deadTree(cx, foot, 18, M().basalt);
+        for (let k = 0; k < 4; k++) life.cracks.push([cx + (k % 2), foot - 2 - k * 2, k * 3]);
+      },
+    },
+    {
+      fumarole(cx, foot) {
+        const [sLit, sulfur, sDark] = M().sulfur;
+        mound(cx, foot, 7, 3, [sLit, sulfur, sDark, M().basalt[3]], (x, y, u, v) => Math.abs(u) < 0.25 && v < 0 ? M().basalt[3] : null);
+        steam(cx, foot - 6, 1.4); steam(cx + 4, foot - 3, 0.6);
+      },
+      sulfur(cx, foot) {
+        const [lit, body, shade] = M().sulfur, line = M().basalt[3];
+        for (const [dx, h] of [[-4, 5], [-1, 8], [2, 6], [5, 4], [7, 2]]) for (let y = 0; y <= h; y++) {
+          solid(cx + dx - 1, foot - y, line); solid(cx + dx, foot - y, y === h ? lit : body); solid(cx + dx + 1, foot - y, shade); solid(cx + dx + 2, foot - y, line);
+        }
+      },
+      bomb(cx, foot) {
+        mound(cx, foot, 7, 5, M().basalt, (x, y, u, v) => Math.abs(Math.sin(x * 1.3 + y * 0.9)) < 0.12 && u * u + v * v < 0.7 ? (life.cracks.push([x, y, x + y]), S.lava[2]) : null);
+      },
+      tube(cx, foot) {
+        const [lit, body, shade, line] = S.volcano.length > 3 ? S.volcano : [...S.volcano, M().basalt[3]];
+        outlined(cx - 12, foot - 11, cx + 12, foot, (x, y) => ((x - cx) / 12) ** 2 + ((foot - y) / 11) ** 2 <= 1, (x, y) => {
+          const d = ((x - cx) / 6) ** 2 + ((foot - y) / 7) ** 2;
+          if (d <= 1) { if (d > 0.6) return M().basalt[3]; life.cracks.push([x, y, Math.round(d * 6)]); return S.lava[3]; }
+          return x - cx + (foot - y) < -8 ? lit : x > cx + 5 ? shade : body;
+        }, line);
+      },
+      warning(cx, foot) {
+        const [sign, signDark, ink] = M().sign;
+        for (let y = foot - 9; y <= foot; y++) { solid(cx, y, M().dead[1]); solid(cx + 1, y, M().dead[2]); }
+        for (let y = -5; y <= 5; y++) for (let x = -5; x <= 5; x++) {
+          const d = Math.abs(x) + Math.abs(y);
+          if (d <= 5) solid(cx + x + 1, foot - 15 + y, d >= 5 ? ink : d === 4 ? signDark : x === 0 && y !== 2 && y > -4 && y < 4 ? ink : sign);
+        }
+      },
+    },
+  ],
+};
+
+function shuffled(list, r) {
+  const out = list.slice();
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+  return out;
+}
+
+/** This floor's landmark, standing at the back of the left edge or the middle of the right one, clear of the Pokémon. */
+function landmark() {
+  const b = biomeOf(), st = stage();
+  if (!b || S.raw.step == null || st > 2) return;
+  const r = seeded((S.raw.seed ^ (st * 7919 + 17)) >>> 0), order = shuffled(Object.entries(LANDMARKS[b][st]), r);
+  const [name, mark] = order[S.raw.step % order.length];
+  // the deep woods' big trees frame the left edge, so there the landmark stands on the right
+  const paint = mark.paint || mark, side = mark.side || (b === 'clearing' && st === 2 ? 1 : r() < 0.5 ? -1 : 1);
+  const cx = side < 0 ? Math.max(12, Math.round(W * 0.08)) : Math.min(W - 13, Math.round(W * 0.91));
+  const foot = groundAt(side < 0 ? 0.1 : 0.26);
+  const keep = { x0: cx - 14, x1: cx + 14, y0: foot - 24, y1: foot + 2 };
+  life.cracks &&= life.cracks.filter(([x, y]) => x < keep.x0 || x > keep.x1 || y < keep.y0 || y > keep.y1 || y > foot - 1);
+  paint(cx, foot);
+  (life.keep ||= []).push(keep);
+  life.landmark = name;
+}
+
+/** The places' living parts: steam and smoke puffs rising, glints on water and glass. */
+function drawStage(t) {
+  const L = life;
+  if (L.glints && L.glintColour != null && !S.raw.life.includes('surf')) {
+    for (const g of L.glints) if (Math.sin((t + g.phase) / 5) > 0.85) { put(g.x, g.y, L.glintColour); put(g.x + 1, g.y, L.glintColour); }
+  }
+  if (L.puffs) {
+    const [white, grey] = M().steam;
+    for (const p of L.puffs) for (let i = 0; i < 4; i++) {
+      const age = ((t * 0.7 + i * 9 + p.phase) % 36), y = p.y - age * 0.55 * p.size, x = p.x + Math.sin((age + p.phase) / 5) * 1.5 + age * 0.08;
+      const r = (0.8 + age / 14) * p.size, fade = 12 - age / 3;
+      for (let dy = -Math.ceil(r); dy <= Math.ceil(r); dy++) for (let dx = -Math.ceil(r); dx <= Math.ceil(r); dx++) {
+        if (dx * dx + dy * dy <= r * r && dither(Math.round(x + dx), Math.round(y + dy) + i) < fade) put(x + dx, y + dy, age > 18 ? grey : white);
+      }
+    }
+  }
 }
 
 /* ---------- the menus' Fire scene: a canyon at sunset ---------- */
@@ -3745,7 +4599,7 @@ function makeLife() {
 
   if (has('blades')) {
     life.blades = [];
-    const density = S.raw.floor === 'moss' ? 0.6 : 1;
+    const density = S.raw.floor === 'moss' ? (S.raw.backdrop === 'shrine' && S.raw.stage >= 2 ? 0.05 : 0.6) : 1;   // raked gravel grows next to nothing
     for (let y = horizon + 4; y < H; y++) {
       const depth = depthOf(y);
       for (let n = 0, c = Math.round(W * (0.012 + depth * 0.035) * density); n < c; n++) {
@@ -3819,6 +4673,7 @@ function makeLife() {
     life.drops = has('drips') ? life.tips.map(tip => ({ ...tip, at: Math.floor(rand() * 90) })) : [];
   }
   if (life.keep && life.blades) life.blades = life.blades.filter(b => !kept(b.x, b.y));   // no grass growing through the props
+  if (life.bare && life.blades) life.blades = life.blades.filter(b => !life.bare[b.y * W + b.x]);   // nor through water or lava
   if (has('spring')) {
     life.steam = life.pools.flatMap((p, i) => Array.from({ length: Math.max(3, Math.round(p.rx / 2)) }, () => ({
       pool: i, dx: (rand() * 2 - 1) * p.rx * 0.75, age: rand() * 36, speed: 0.6 + rand() * 0.5, size: 1.2 + p.ry / 14 + rand(),
@@ -3885,7 +4740,8 @@ function draw() {
     }
   }
 
-  if (L.flows) drawLava(t);
+  if (L.flows || (L.cracks && S.lava)) drawLava(t);
+  if (L.puffs || L.glints) drawStage(t);
   if (has('eruption')) drawEruption(t);
   if (has('lightning') || storm.level > 0.6) drawLightning(t);
   if (has('mist')) drawMist(t);

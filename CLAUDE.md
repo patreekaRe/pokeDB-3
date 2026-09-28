@@ -873,6 +873,20 @@ crowds, a far wood hides the hills (from ~F3), big near trees frame the scene (F
 and up to 3 pairs of stouter lanterns lining the path, with thicker mist; the Wastes' volcano looms from 72% to 122% size
 with 1-3 lava flows running further down, more cracks, lava pools, embers and a brighter glow. The clock still decides the
 light, so every floor gets every time. Shots of every floor x time: a headless script calling `showScene()` per step.
+**Places** (step 7 part 2, 2026-09-28): each biome is 3 places plus the boss's arena, floors 1-3 / 4-6 / 7-10 / boss
+(`stageOf()` in `js/map.js`; names in each `BIOMES` entry's `stages`). `journey(map, node)` now returns `{ progress, stage,
+step, seed }` (step = floors into the place, seed = a hash of the map, so each run deals landmarks afresh and a refresh draws
+the same), and `showScene()` / `showPlaceScene(..., { where })` take it (a bare number still works: no landmark). The painters
+ask `stage()`: Clearing meadow -> forest edge (a stream winding along the back and down to the right, `winding()`, berry
+bushes) -> deep woods (a canopy roof, dark trunks in a gloom, light shafts) -> the ancient giant tree; Shrine stone steps
+(the gate raised on a flight, bamboo at the edges) -> torii path (as before) -> inner court (raked gravel, a plastered wall,
+a bell tower) -> the main hall; Wastes ash plains (pale ground, dead trees, bleached boulders) -> lava fields (a lava river,
+basalt columns, steam) -> the volcano's slope (rock rising at one side, sulphur vents) -> the crater rim over a lava lake.
+Every floor of a place also gets one small landmark (`LANDMARKS`, 5 per place, 30 in all: signpost, log bridge, komainu,
+koi pond, ribcage, warning sign...), dealt by the seed so two floors of a place never share one, at the back of the left
+edge or the middle of the right (the deep woods: right only, the big trees frame the left), clear of the Pokémon. ? events
+get the place but no landmark. Their colours are each biome's `marks`, painted by day and graded (a shade darker at dusk and
+night). The map hangs the place's name under the biome sign (`#stage-name`, `.stage-sign`, swinging in when it changes).
 Clearing: sunny day / sunset with fireflies / moonlit night / rose dawn. Shrine: misty
 morning under pines with a torii, stone lanterns, light shafts and falling
 leaves / dusk with lit lanterns and autumn leaves / night with blue spirit

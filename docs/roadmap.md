@@ -536,9 +536,12 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    trees, bleached rocks, the volcano far off), F4-6 lava fields (lava rivers, basalt columns, steam), F7-10 the volcano's
    slope (tilted ground, vents, the peak looming), boss the crater rim over a lava lake. Big features at the back and the
    edges: the middle stays clear for the two Pokémon. Landmarks are seeded per floor, so a refresh draws the same one.
-   ▶ Run in: CLOUD. Next prompt: "Do roadmap step 7 part 2: 3 stages plus a boss arena per biome on top of the progress
-   dial (see the part 2 plan), a different landmark on every floor within a stage, and the map screen showing the stage
-   you stand in; playtest shots at every floor and time of day."
+   Part 2 done 2026-09-28 (CLAUDE.md's "Places"): the 3 places and boss arena per biome as planned, 30 landmarks (5 per
+   place, dealt per run by the map's seed, one per floor), and the map hangs the place's name under the biome sign.
+   Checked in headless shots of every floor (0-10 and the boss) at every time of day, at 1280x800 and 390x844, plus the
+   outdoor ? events on the new places.
+   ▶ Playtest on the live site (no session needed): https://patreekare.github.io/pokeDB-3/ and walk up a biome's map
+   (the place's name hangs under the biome sign); add `?time=night` (or dawn, dusk) to see it in other light.
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve

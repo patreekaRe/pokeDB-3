@@ -26,7 +26,7 @@ import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
-import { generateMap, renderMap, scopeable, journey } from './map.js';
+import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
@@ -356,7 +356,19 @@ function showMap() {
   const here = run.current && run.map.byId[run.current];
   const floor = here ? here.floor + 1 : 0;   // 0 on the road in, like StS's Neow floor (the title's Continue plate counts the same)
   $('floor-num').textContent = `F${floor}`;
-  $('floor-tag').title = `Floor ${floor} of ${run.map.floors.length} in ${biome.name}, then the boss`;
+  const { stage } = stageOf(run.map, here), place = biome.stages[stage];
+  $('floor-tag').title = `Floor ${floor} of ${run.map.floors.length} in ${biome.name} (${place}), then the boss`;
+  // the place you stand in swings in under the sign whenever you reach a new one (showScene() paints it)
+  const board = $('stage-name');
+  if (board.textContent !== place || board.dataset.biome !== biome.id) {
+    board.textContent = place;
+    board.dataset.biome = biome.id;
+    board.dataset.stage = String(stage);
+    board.title = stage < 3 ? `${place}: floors ${['1-3', '4-6', '7-10'][stage]} of ${biome.name}` : `${place}: the boss's arena`;
+    board.classList.remove('arrive');
+    void board.offsetWidth;
+    board.classList.add('arrive');
+  }
   $('run-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = String(run.relics.length);
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
@@ -1342,7 +1354,7 @@ function eventRoom(node, after) {
   });
   if (!scene) return;
   for (const [stand, figure] of Object.entries(figures || {})) $('reward-options').append(eventFigure(stand, figure));
-  showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type, progress: journey(run.map, node) });
+  showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type, where: journey(run.map, node) });
   placeEventSpots();
   if (!after) return;
   figureDoes('npc', after);

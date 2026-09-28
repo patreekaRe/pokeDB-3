@@ -1001,6 +1001,45 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .biome-sign[data-biome="shrine"] { --plank: #6f7f62; --plank-dark: #5b6a50; --rim: #9aae84; --frame: #1f2a18; --nail: #2f4a24; --text: #eef8dc; }
 .biome-sign[data-biome="wastes"] { --plank: #54403a; --plank-dark: #43322d; --rim: #e0602a; --frame: #1c1210; --nail: #f8a030; --text: #ffe0b0; }
 .biome-sign.arrive { animation: signDrop 0.7s steps(7) both; }
+/* the place you stand in, a little board hung from the biome sign on two cords; it swings in when you reach a new one */
+.stage-sign {
+  --plank: #c88040; --frame: #3e1e0c; --text: #fff4d6; --cord: #3e1e0c;
+  position: relative;
+  margin: -2px 0 0;
+  padding: 4px 12px 5px;
+  border: 3px solid var(--frame);
+  background: var(--plank);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18), 3px 3px 0 rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  font-size: 0.7rem;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-shadow: 1px 1px 0 var(--frame);
+  transform-origin: 50% -12px;
+}
+.stage-sign:empty { display: none; }
+.stage-sign::before, .stage-sign::after {
+  content: '';
+  position: absolute;
+  top: -13px;
+  width: 3px;
+  height: 10px;
+  background: var(--cord);
+}
+.stage-sign::before { left: 14px; }
+.stage-sign::after { right: 14px; }
+.stage-sign[data-biome="shrine"] { --plank: #7f8f70; --frame: #1f2a18; --text: #eef8dc; --cord: #c8b070; }
+.stage-sign[data-biome="wastes"] { --plank: #64504a; --frame: #1c1210; --text: #ffe0b0; --cord: #1c1210; }
+.stage-sign[data-stage="3"] { --plank: #a02c20; --text: #fff0c0; }   /* the boss's arena */
+.stage-sign.arrive { animation: stageSwing 0.9s steps(9) both; }
+@keyframes stageSwing {
+  from { transform: rotate(-14deg); opacity: 0; }
+  30%  { transform: rotate(9deg); opacity: 1; }
+  60%  { transform: rotate(-4deg); }
+  80%  { transform: rotate(2deg); }
+  to   { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .stage-sign.arrive { animation: none; } }
 @keyframes signDrop {
   from { transform: translateY(-24px); opacity: 0; }
   60%  { transform: translateY(3px); opacity: 1; }
