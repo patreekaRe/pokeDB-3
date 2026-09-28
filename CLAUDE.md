@@ -515,7 +515,8 @@ a refresh can't reroll them. Card/relic ids on an event are checked by
 `eventIdsKnown()` on restore. Lists (not single ids) are stored so a card
 or relic gained since the biome started is skipped for the next one:
 Day Care trades a common/uncommon (never an evolution card) for the first
-card of the next rarity you hold under `MAX_COPIES`; Shrine gives the first
+card of the next rarity you hold under `MAX_COPIES` (two taps, "Trade it", then `revealCard()` shows the card you got big
+in the treasure rays, the user's call 2026-09-28: the text box alone was too blank; reuse it for any card an event gives); Shrine gives the first
 unowned relic of your type's `only` relics, then normal ones. The Wishing
 Well's one `luck` roll serves both tosses (the big toss wins whenever the
 small one would); a win offers its unowned `relics` via `showRelics()`. When the small toss can't be

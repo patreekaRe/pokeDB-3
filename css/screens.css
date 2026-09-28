@@ -3357,3 +3357,11 @@ body.has-scene #scene-bg { display: block; }
 .swap-tip .card-tip-name { display: block; margin-bottom: 3px; }
 .swap-out .card-tip-name { color: #b8201c; }
 .swap-in .card-tip-name { color: #2a7c2a; }
+
+/* a card an event hands you (revealCard() in js/run.js): it pops up big in a burst of the treasure room's rays */
+.reward-options.card-reveal-room { display: grid; place-items: center; }
+.card-reveal { position: relative; display: grid; place-items: center; padding: 28px 0; }
+.card-reveal .chest-rays { bottom: 50%; animation: raysIn 0.7s ease-out forwards, raysTurn 40s linear infinite; }
+.card-reveal .card { --card-w: min(56vw, 220px); position: relative; animation: cardReveal 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+@keyframes cardReveal { from { scale: 0.2; rotate: -12deg; opacity: 0; } 60% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .card-reveal .card, .card-reveal .chest-rays { animation: none; opacity: 1; } }

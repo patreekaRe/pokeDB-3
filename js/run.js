@@ -31,7 +31,7 @@ import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -1740,14 +1740,28 @@ function dayCare(trades, back, done = showMap) {
   showChoice({
     title: 'Day Care',
     sub: 'Choose a move to trade. A common comes back uncommon, and an uncommon comes back rare.',
-    options: trades.map(({ card, count, gets }) => cardOption(card, run.stage, () => {
-      run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
-      tell(`${card.name} was traded for ${gets.name}!`);
-      done();
-    }, count)),
+    options: trades.map(({ card, count, gets }) => ({
+      ...cardOption(card, run.stage, () => {
+        run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
+        revealCard('Day Care', gets, [`The Day-Care Lady brought your ${card.name} back...`, `It came back as ${gets.name}!`], done);
+      }, count),
+      ask: `Trade ${card.name}?`,
+      confirm: 'Trade it',
+    })),
     skipLabel: 'Back',
     onSkip: back,
   });
+}
+
+/** A card an event handed you, shown big in a burst of light before you go on (the user found "You got X!" in the
+    text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text box's last line goes on. */
+function revealCard(title, card, lines, done) {
+  showChoice({ title, sub: lines, options: [], skipLabel: 'OK', onSkip: done, layout: 'card-reveal-room' });
+  const stage = el('div', 'card-reveal');
+  const big = zoomable(makeCard(card, { stage: run.stage }), card, run.stage);
+  stage.append(el('span', 'chest-rays'), el('div', 'treasure-flash'), big);
+  $('reward-options').append(stage);
+  playSound('item-get');
 }
 
 /** The Move Tutor's lesson: 3 rare moves (or the best on offer if you own every rare), paid for only when one is learned. */
