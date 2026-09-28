@@ -1407,7 +1407,11 @@ There's no automated test suite. Before committing:
    so it runs in the browser pane: its `serve-sim.ps1` serves this repo
    plus its `/sim/` folder, and the harness `import()`s the real `js/data/`
    files. In a cloud session, `sim/run-node.mjs` runs it in Node worker threads
-   with no browser (its README says how; ~25 runs/s on 4 cores). Compare before/after under the same bot (in-memory tweaks in
+   with no browser (its README says how; the human bot at Levels 0/3/5 is far slower: 4500 runs took over 20 min on 4 cores).
+   **Keep bot runs small** (the user's call, 2026-09-28: "hundreds, not thousands"): screen candidates at ~150 runs a
+   cell, only on the types and Levels the change touches, and confirm the pick once at ~300; a cell's noise is then
+   ~±8 / ±6 points, so only act on gaps bigger than that. Pipe the runner's stderr to a file, not through `tail`, so
+   progress can be checked. Compare before/after under the same bot (in-memory tweaks in
    `sim/variants.js`, or the previous data from `git show`). `sim/engine.js`
    mirrors `js/battle.js`'s rules, so update it when battle rules change. The bot must value damage prevented above damage
    dealt (about 1.6×), or it under-blocks and misjudges attack-heavy pools.
