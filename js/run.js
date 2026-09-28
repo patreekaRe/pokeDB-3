@@ -841,6 +841,9 @@ function offerItem(item, next, { opened = false } = {}) {
   });
   const stage = el('div', `float-stage ${opened ? 'open' : 'sealed'}`), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
   const go = goButton(full ? 'Swap' : 'Put in Bag');
+  // picking one of yours to toss shows what each does, side by side, so you know what you're trading (the user's call)
+  const tips = el('div', 'swap-tips');
+  tips.hidden = true;
   let toss = null, taking = false;
 
   const art = itemBallArt(['poke', 'great', 'ultra'][run.biome] || 'poke'), ball = el('button', 'item-ball');
@@ -878,11 +881,13 @@ function offerItem(item, next, { opened = false } = {}) {
         stage.classList.add('choosing');
         row.querySelectorAll('.float-thing').forEach(b => b.classList.toggle('tossing', b === btn));
         go.hidden = false;
+        tips.replaceChildren(swapTip('out', `Toss: ${mine.name}`, mine.text), swapTip('in', `Take: ${item.name}`, item.text));
+        tips.hidden = false;
         sayLines([`Toss your ${mine.name} for the ${item.name}?`]);
       });
       row.append(btn);
     });
-    stage.append(el('p', 'float-caption', 'Your Bag'), row);
+    stage.append(el('p', 'float-caption', 'Your Bag'), row, tips);
   }
   thing.addEventListener('click', () => {
     if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
@@ -899,6 +904,7 @@ function offerItem(item, next, { opened = false } = {}) {
     playSound('item-get');
     $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
     go.hidden = true;
+    tips.hidden = true;
     if (toss !== null) row.children[toss].classList.add('gone');
     await flyToBag(thing);
     if (run !== thisRun) return;
@@ -918,6 +924,12 @@ function floatingThing(thing, i = 0, size = 72) {
   float.append(itemSprite(thing, 'treasure-sprite'));
   btn.append(el('span', 'relic-halo'), float, el('span', 'float-label', thing.name));
   return btn;
+}
+
+function swapTip(kind, name, text) {
+  const tip = el('div', `card-tip swap-tip swap-${kind}`);
+  tip.append(el('b', 'card-tip-name', name), el('span', '', text));
+  return tip;
 }
 
 function goButton(label) {

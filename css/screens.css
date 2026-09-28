@@ -3349,3 +3349,11 @@ body.has-scene #scene-bg { display: block; }
 /* the Bag never runs off a phone's screen: its pocket scrolls inside it (the user couldn't read past 8 relics) */
 .bag:not([hidden]) { display: flex; flex-direction: column; max-height: calc(100dvh - 84px); }
 .bag .bag-pocket-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 2px; }
+
+/* the item swap's two little boxes (offerItem() in js/run.js): what you'd toss and what you'd take */
+.swap-tips { display: flex; justify-content: center; gap: 8px; margin: 4px auto 10px; max-width: 380px; padding: 0 8px; animation: tipsIn 0.2s ease-out; }
+.swap-tips[hidden] { display: none; }
+.swap-tip { flex: 1 1 0; max-width: 180px; text-align: left; }
+.swap-tip .card-tip-name { display: block; margin-bottom: 3px; }
+.swap-out .card-tip-name { color: #b8201c; }
+.swap-in .card-tip-name { color: #2a7c2a; }

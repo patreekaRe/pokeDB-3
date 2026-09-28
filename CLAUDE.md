@@ -626,7 +626,8 @@ Ultra Ball per biome), which hops like the treasure chest; a tap wobbles it (`ch
 top half pops off in a flash with the chest's rays, and the item rises out where it was (`.float-stage.sealed` →
 `.open`; Skip works throughout). Then no tiles: the item floats like a treasure relic
 (`floatingThing()`, tap it then Put in Bag, and `flyToBag()` shrinks it into the Bag); with a full Bag your items
-float in a row under it, and the one you tap to toss greys out under a red pixel ✕ before you Swap (the user's
+float in a row under it, and the one you tap to toss greys out under a red pixel ✕ before you Swap, with two little boxes above Swap saying what
+each does ("Toss: X" in red, "Take: Y" in green; `swapTip()`, `.swap-tips`; the user's QoL call, 2026-09-28) (the user's
 calls). Nothing heals through Big Root or boosts block through
 Damp Rock: those are for cards.
 
