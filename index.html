@@ -53,6 +53,18 @@
       <img class="pixel" src="assets/pokemon/charmander-front.gif" alt="" style="--d:0.35s">
       <img class="pixel" src="assets/pokemon/squirtle-front.gif" alt="" style="--d:0.7s">
     </div>
+    <!-- a saved run: its Pokémon waits on the ledge in place of the starters, under a nameplate (renderRun() in js/title.js) -->
+    <div class="title-run" id="title-run" hidden>
+      <div class="nameplate title-plate" id="title-plate">
+        <div class="nameplate-title"><strong id="title-run-name"></strong><span class="title-place" id="title-run-place"></span></div>
+        <div class="gb-hp" id="title-run-hp" role="progressbar" aria-label="HP" aria-valuemin="0">
+          <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+          <span class="gb-hp-track"><span class="gb-hp-fill" id="title-run-hp-fill"></span></span>
+        </div>
+        <span class="gb-hp-num" id="title-run-hp-text"></span>
+      </div>
+      <img class="pixel title-run-mon" id="title-run-mon" alt="">
+    </div>
     <!-- the cloud save's Sign in, the games' PC, once the gems are up (js/cloud.js shows it) -->
     <button type="button" class="title-account" id="title-account" hidden aria-label="Sign in"><span class="ta-pc">🖥️</span><span class="ta-label" id="title-account-text">Sign in</span></button>
     <p class="title-foot">© 2026 PokéDB · a fan game, not affiliated with Nintendo</p>
