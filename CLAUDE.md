@@ -93,7 +93,9 @@ live site.
   in `gainTide()` in `js/battle.js`) and Keldeo (wins with 3 different Water starters, Keldeo aside: `winsBy`; was every one you own until 2026-09-28).
   `checkAchievements()` runs after every won fight's Pokédex update (`afterFight()`, quietly: `{ sound: false }`; its
   unlocks get a window of their own, `unlockWindow()` / `#unlock-dialog`, with the `achievement` jingle then the cry, as the
-  first reward step, or after the evolution for a boss, whose chime sounds just like it; the user heard it early, 2026-09-28), after each boss, at every run's end, won or lost (so an old save that
+  first reward step, or after the evolution for a boss, whose chime sounds just like it; the user heard it early, 2026-09-28;
+  at a run's end `announceUnlocks()` is quiet too and the windows come after the win scene, before the result window; the
+  music dips under the jingle, `duckMusic()` in `js/audio.js`; only the Game Corner still plays it straight away), after each boss, at every run's end, won or lost (so an old save that
   already met a goal gets it then), and after a Game Corner buy.
   Shaymin was swapped for Virizion; `RENAMED_STARTERS` in
   `js/data/starters.js` moves an old id's unlock, wins and saved run over

@@ -32,7 +32,7 @@ import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable } from './ui.js';
-import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
+import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
@@ -1960,15 +1960,15 @@ function unlockWindow(list, next) {
   $('unlock-text').textContent = ACHIEVEMENT_FOR[starter.id]?.text ?? '';
   d.addEventListener('close', () => unlockWindow(rest, next), { once: true });
   openDialog('unlock-dialog');
+  duckMusic(4.6);   // the jingle over a quieter song, not fighting it (the user heard it clash with the win song)
   playSound('achievement').then(len => setTimeout(() => { if (d.open) playCry(starter.line[0].id); }, Math.max(0, len * 1000 - 600)));
 }
 
 /** Check achievements and tell the player about any new starters. */
 function announceUnlocks() {
-  for (const starter of checkAchievements()) {
-    run.unlocks.push(starter);
-    tell(`${starter.line[0].name} unlocked!`);
-  }
+  const fresh = checkAchievements({ sound: false });   // their windows play the jingle, after the win scene
+  run.unlocks.push(...fresh);
+  return fresh;
 }
 
 /** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.
@@ -2033,7 +2033,7 @@ function endRun(won) {
     }
   }
 
-  announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
+  const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
 
   const name = stageName(run.starter, run.stage);
   const biome = BIOMES[run.biome];
@@ -2052,6 +2052,7 @@ function endRun(won) {
   list.replaceChildren(...lines.map(text => el('li', '', text)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
-  if (record) winScene(record).then(() => openDialog('result-dialog'));
-  else openDialog('result-dialog');
+  const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
+  if (record) winScene(record).then(result);
+  else result();
 }

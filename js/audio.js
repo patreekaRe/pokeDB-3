@@ -192,6 +192,17 @@ export function playMusic(name, { restart = false, cut = false } = {}) {
   if (!getSave().muted) fadeIn(name, cut);
 }
 
+/** Dip the music to a quarter for `seconds`, then bring it back, so a jingle (an unlock's fanfare) isn't lost in a song. */
+export function duckMusic(seconds) {
+  if (!musicBus) return;
+  const g = musicBus.gain, now = ctx.currentTime;
+  g.cancelScheduledValues(now);
+  g.setValueAtTime(g.value, now);
+  g.linearRampToValueAtTime(MUSIC_VOLUME * 0.25, now + 0.2);
+  g.setValueAtTime(MUSIC_VOLUME * 0.25, now + seconds);
+  g.linearRampToValueAtTime(MUSIC_VOLUME, now + seconds + 0.8);
+}
+
 /** Start downloading a track ahead of time so it can start the moment it's needed. */
 export function preloadMusic(name) {
   player(name);
