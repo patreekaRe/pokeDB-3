@@ -29,13 +29,22 @@ const runCount = (stats) => `${plural(stats.runsStarted, 'run')} · ${plural(sta
 export function initCollection({ onBack }) {
   $('coll-back').addEventListener('click', onBack);
   // a tap on the empty background, anywhere but a card or the top bar, goes back like a tap outside a window (the user's
-  // call); the press must start and end on the same spot, so a swipe to scroll isn't a tap
-  let downOn = null;
-  document.addEventListener('pointerdown', (e) => { downOn = e.target; }, true);
-  document.addEventListener('click', (e) => {
-    if (document.body.dataset.screen !== 'collection-screen' || !e.detail || downOn !== e.target) return;
-    if (document.querySelector('dialog[open], .card-zoom, .tap-tip') || e.target.closest('.coll-card, button, a, input, dialog, .topbar, .drop')) return;
+  // call). Pointer events, not click: iOS Safari sends no click for a tap on a plain section or the body. The press must
+  // start and end on the same spot, so a swipe to scroll isn't a tap (iOS cancels the pointer on a scroll anyway)
+  let down = null;
+  document.addEventListener('pointerdown', (e) => { down = e.isPrimary ? { target: e.target, x: e.clientX, y: e.clientY } : null; }, true);
+  document.addEventListener('pointerup', (e) => {
+    const start = down;
+    down = null;
+    if (document.body.dataset.screen !== 'collection-screen' || !start || start.target !== e.target) return;
+    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) return;
+    if (document.querySelector('dialog[open], .card-zoom, .tap-tip, #ball-menu-panel:not([hidden])')) return;
+    if (e.target.closest('.coll-card, button, a, input, dialog, .topbar > *, .drop')) return;
     $('coll-back').click();
+    // the tap's own click comes after, onto the title's gems now under the finger: swallow it
+    const swallow = (c) => { c.stopPropagation(); c.preventDefault(); };
+    document.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => document.removeEventListener('click', swallow, true), 500);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.dataset.screen === 'collection-screen' && !document.querySelector('dialog:modal')) onBack();
