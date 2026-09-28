@@ -13,7 +13,7 @@
      storage.js      saving to localStorage
      progress.js     unlocking starters
      ui.js           small helpers (dialogs, card element)
-     deckpreview.js  the read-only deck preview
+     deckpreview.js  the run's deck window (read-only)
      run.js          one run: the map loop, rewards, evolution, the end
      map.js          building and drawing the branching map
      rewards.js      the "choose one" screen
@@ -31,14 +31,13 @@ import { spriteUrl, stageName, useShinies } from './data/starters.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
-import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound } from './audio.js';
 import { initHowto, openHowto } from './howto.js';
 import { initTitle, showTitle, showHome, leaveTitle } from './title.js';
-import { initSelect, showSelect, refreshSelect, pickedStarter } from './select.js';
+import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection } from './collection.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
@@ -79,7 +78,7 @@ function newGame(starter) {
 
 /** Look at a starter's deck, and start a run from there. */
 function previewStarter(starter) {
-  openPreview(starter, {
+  prepare(starter, {
     onBegin: async (level) => {
       if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
       beginRun(starter, level);

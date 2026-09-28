@@ -255,7 +255,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
   `js/run.js`; fight and win coins grow +10% per Trainer Level played (`COIN_LEVEL_BONUS`, `levelCoins()`; shown
-  on the deck screen's level rules and the How to play coins slide). Shop catalog is `js/data/shop.js`; `js/shop.js`
+  on the Prepare step's coins chip and the How to play coins slide). Shop catalog is `js/data/shop.js`; `js/shop.js`
   renders it. **Game Corner perks** (step 8, 8 in all, each shown `Lv n/m`; `perkLevel(id)` in `js/storage.js` reads
   one, true/false or a number): Max HP Boost, Starting Relic Charm, Well-Fed, Coin Finder, and since step 8 **Bag
   Pocket** (StS's Potion Belt: `itemSlots()` in `js/run.js`, 4 items), **Mart Card** (Membership Card, 3 levels:
@@ -743,11 +743,11 @@ with a blinking ▶ in the pill. The menus' own buttons are **pixel pills** inst
 clipped to stepped 3-2-1 pixel corners by `--steps`) with a light band on top, a shade band below, white glint dashes and a
 solid drop shadow; colours `.green` `.blue` `.purple` `.orange` `.sun` `.red`, `.white` for white labels, `.small`, `.on`
 for a lit toggle or tab (a tab that's off sits back). They're the character select's Back / Choose / tabs / Shiny, the
-Collection's Back and the deck screen's Back / Begin run. The reward, battle and Mart capsules (`.ds-btn`) stay as they are
+Collection's Back and the Prepare step's Back / Begin run. The reward, battle and Mart capsules (`.ds-btn`) stay as they are
 for now. Battle's picked card / item shows a red `.ds-play` Play / Use button (`focusButton()` in `js/battle.js`) instead of "Tap again to play".
 Titles are short headers on a pixel-font plate ("Learn a new move", "Item found").
-In the read-only deck views (the starting deck and the Bag's deck window,
-both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
+In the read-only deck views (the Prepare step's starting deck, `renderDeck()` in `js/select.js`, and the Bag's deck
+window, `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
 up (`zoomable()` / `zoomCard()` in `js/ui.js`); any tap or Escape closes it,
 and inside a dialog Escape closes only the zoom.
 The hand is held in a fan (`fanHand()` in `js/battle.js`, rerun on resize): cards
@@ -1129,8 +1129,14 @@ blurb, Ability, a ✨ Shiny pill once that shiny is owned) and a strip of portra
 **Starters** and **Legendaries** (with unlocked/total counts; Mewtwo is the last legendary). A locked portrait is a silhouette
 with a 🔒, and picking it shows the silhouette big with how to get it: the achievement's text, or a 🎰 Game Corner pill
 (`#sel-corner`) that opens the Game Corner on that skin; Choose is greyed out for it (and for Mewtwo while `comingSoon`).
-Picking plays the cry and swaps the scene; ← → move along the strip, Enter chooses, Escape goes back. Choose opens the deck
-and level screen (`openPreview()`), whose Back returns here on the same starter. A Game Corner purchase refreshes it
+Picking plays the cry and swaps the scene; ← → move along the strip, Enter chooses, Escape goes back. Choose turns the same
+screen into the run's setup (**Prepare**, `prepare()` in `js/select.js`, StS's Ascension on its select; the user approved
+a mockup 2026-09-28; the old separate deck preview screen is gone): `.preparing` hides the stats, blurb, Ability, pills and
+portrait strip; `#sel-prep` in the panel shows the evolution line in a row (each form's HP and when, the evolution rules
+in its `title`) and the Trainer Level as ◀ n ▶ (`setLevel()`; ← → too), the level's name, the rule it adds, a coins chip and
+an "All rules" fold-out (with the next level's lock); `#sel-deck` fans the starting deck along the bottom with copies stacked
+(`groupDeck`, the ×N under each card), each `zoomable()`; Choose reads Begin run (`onBegin(level)`, which confirms over a
+saved run) and Back / Escape return to the portraits (`showSelect()` clears it). A Game Corner purchase refreshes it
 (`refreshSelect()` on the shop's `close`). Phones stack it (Pokémon, panel, Back / Choose, tabs, strip, which scrolls
 sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, Back / Choose on the sides, the strip centred at
 the bottom). The page's footer note hides here.

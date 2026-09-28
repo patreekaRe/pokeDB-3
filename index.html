@@ -158,6 +158,24 @@
         <p class="sel-ability" id="sel-ability"></p>
         <button type="button" class="pxb sun small" id="sel-shiny" hidden aria-pressed="false"><span class="pxb-o"><span class="pxb-i">✨ Shiny</span></span></button>
         <button type="button" class="pxb purple small white" id="sel-corner" hidden><span class="pxb-o"><span class="pxb-i">🎰 Game Corner</span></span></button>
+        <!-- after Choose: the run's setup on the same screen (prepare() in js/select.js) -->
+        <div class="sel-prep" id="sel-prep" hidden>
+          <div class="prep-evo" id="prep-evo"></div>
+          <div class="prep-level">
+            <h4>Trainer Level</h4>
+            <div class="prep-pick">
+              <button type="button" class="prep-step" id="level-down" aria-label="Lower level">◀</button>
+              <b id="level-num">0</b>
+              <button type="button" class="prep-step" id="level-up" aria-label="Higher level">▶</button>
+            </div>
+          </div>
+          <p class="prep-lname" id="level-name"></p>
+          <p class="prep-rule" id="level-rule"></p>
+          <div class="prep-foot">
+            <span class="prep-coins" id="level-coins"></span>
+            <details class="prep-all"><summary>All rules</summary><ul id="level-rules"></ul></details>
+          </div>
+        </div>
       </div>
       <div class="sel-actions">
         <button type="button" class="pxb blue white" id="sel-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
@@ -170,6 +188,10 @@
         </div>
         <div class="sel-thumbs" id="sel-thumbs" role="radiogroup" aria-label="Starter Pokémon"></div>
       </div>
+      <div class="sel-deck" id="sel-deck" hidden>
+        <p class="prep-deckhead" id="prep-deckhead"></p>
+        <div class="prep-fan" id="prep-fan"></div>
+      </div>
     </section>
 
     <!-- Collection, the compendium (js/collection.js): a card per window, opened from the title's Collection gem -->
@@ -180,49 +202,6 @@
     </section>
 
     <!-- ============ 2. DECK PREVIEW (read-only) ============ -->
-    <section id="preview-screen" class="screen" hidden>
-      <div class="builder-head">
-        <img id="preview-sprite" class="pixel" alt="">
-        <div>
-          <h2 id="preview-title">Your starter</h2>
-          <p class="hint" id="preview-blurb"></p>
-        </div>
-      </div>
-
-      <div class="panel evo-panel">
-        <h3>Evolution line</h3>
-        <div class="evo-carousel">
-          <button class="evo-flip" id="evo-prev" type="button" aria-label="Previous form">◀</button>
-          <div id="evo-line" class="evo-line" tabindex="0" aria-label="Evolution line: swipe or use the arrows"></div>
-          <button class="evo-flip" id="evo-next" type="button" aria-label="Next form">▶</button>
-        </div>
-        <div class="evo-dots" id="evo-dots"></div>
-      </div>
-
-      <div class="panel level-panel">
-        <h3>Trainer Level</h3>
-        <div class="level-picker">
-          <button class="btn small secondary" id="level-down" aria-label="Lower level">−</button>
-          <strong id="level-num">0</strong>
-          <button class="btn small secondary" id="level-up" aria-label="Higher level">+</button>
-        </div>
-        <span id="level-name" class="count"></span>
-        <ul id="level-rules" class="level-rules"></ul>
-      </div>
-
-      <div class="panel">
-        <div class="deck-header">
-          <h3>Starting deck <span id="preview-count" class="count">10 cards</span></h3>
-        </div>
-        <div id="preview-deck" class="card-pool"></div>
-        <p class="hint">This deck is fixed. You grow it during the run by picking new moves after fights.</p>
-      </div>
-
-      <div class="builder-bar">
-        <button type="button" class="pxb blue white" id="preview-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
-        <button type="button" class="pxb green" id="preview-begin"><span class="pxb-o"><span class="pxb-i">Begin run</span></span></button>
-      </div>
-    </section>
 
     <!-- ============ 3. MAP ============ -->
     <section id="map-screen" class="screen" hidden>

@@ -1,6 +1,6 @@
 /* ============================================================
    screens.css  -  the layout of the screens:
-     1. Title (the character select and Collection are in menus.css)   2. Deck preview   3. Map   4. Rewards   5. Battle
+     1. Title (the character select and Collection are in menus.css)   2. Shared bits   3. Map   4. Rewards   5. Battle
    Phone layouts are handled at the bottom in @media rules.
    ============================================================ */
 
@@ -188,14 +188,9 @@ body.titling { overflow: hidden; }
   .title-flyer { display: none; }
 }
 
-/* ============ 2. DECK PREVIEW ============ */
-#preview-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; max-width: 680px; }   /* narrow like the start screen, so the scene shows either side */
-.builder-head { display: flex; align-items: center; justify-content: center; gap: 14px; }
-.builder-head img { width: 72px; height: 72px; object-fit: contain; }
-.builder-head h2 { font-size: 1.6rem; text-shadow: 0 2px 6px #000; }
+/* ============ 2. SHARED BITS (deck windows, hints) ============ */
 .hint { color: #dfe3ff; font-size: 0.92rem; text-shadow: 0 1px 4px #000; }
 
-.deck-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .count { margin-left: 8px; padding: 2px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 0.9rem; }
 
 
@@ -206,19 +201,6 @@ body.titling { overflow: hidden; }
   gap: 18px 14px;
 }
 .pool-heading { grid-column: 1 / -1; font-size: 1.05rem; margin-top: 4px; color: var(--gold); }
-
-.builder-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  margin: 4px -16px 0;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background: linear-gradient(180deg, transparent, rgba(10, 12, 30, 0.92) 40%);
-}
 
 /* ============ 3. BATTLE ============ */
 body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hidden; }
@@ -781,10 +763,6 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 @media (max-width: 720px) {
   .screen { padding: 14px 12px 20px; }
   .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 10px; }
-  .builder-head h2 { font-size: 1.3rem; }
-  #preview-screen { padding-left: 18px; padding-right: 18px; }
-  .builder-bar { margin: 4px -18px 0; gap: 10px; }
-  .builder-bar .btn { white-space: nowrap; font-size: 0.8rem; }
 
   /* battle: orb and End Turn share a row above the hand so the cards get the full width */
   #battle-screen { padding: 8px 8px 4px; gap: 6px; }
@@ -832,46 +810,6 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
    THE RUN: evolution line, map, rewards, relics
    ============================================================ */
 
-/* ---------- evolution line (deck preview): one form per slide, swipeable ----------
-   Each form is drawn bigger than the last on the same ground line, so flicking through looks like growing up. */
-.evo-carousel { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px; margin: 8px 0 4px; }
-.evo-line {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  outline: none;
-}
-.evo-line::-webkit-scrollbar { display: none; }
-.evo-stage {
-  --size: 64px;
-  flex: 0 0 100%;
-  scroll-snap-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.evo-stage[data-stage="1"] { --size: 88px; }
-.evo-stage[data-stage="2"] { --size: 116px; }
-.evo-stage img {
-  width: var(--size);
-  height: var(--size);
-  margin-top: calc(116px - var(--size));   /* every form stands on the same ground line */
-  object-fit: contain;
-  object-position: bottom;
-  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.15));
-}
-.evo-hp { font-size: 0.8rem; color: var(--muted); }
-.evo-when { font-size: 0.7rem; color: #283060; }
-.evo-flip { width: 36px; height: 44px; padding: 0; border: 0; background: none; color: #283060; font-size: 1rem; }
-.evo-flip:disabled { visibility: hidden; }
-.evo-flip:not(:disabled):hover { color: #f89030; }
-.evo-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; }
-.evo-dot { width: 12px; height: 12px; padding: 0; border: 2px solid #303038; background: var(--win-edge); }
-.evo-dot[aria-current="true"] { background: #f89030; }
-@media (prefers-reduced-motion: reduce) { .evo-line { scroll-behavior: auto; } }
 
 /* ---------- run card (top of the map): who you are and your HP ----------
    No box around it: like the battle screen, everything floats on the backdrop with a shadow. */
@@ -1518,17 +1456,6 @@ body.battle-intro { pointer-events: none; }
 .panel > .hint { margin-top: 12px; }
 
 
-/* ---------- the preview's small windows: centred and narrow, so the starter's scene shows around them ---------- */
-.evo-panel, .level-panel { align-self: center; width: min(100%, 420px); text-align: center; }
-
-/* ---------- Trainer Levels: title, then − N +, then the level's name and one line of rules ---------- */
-.level-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.level-panel .count { margin: 0; }
-.level-picker { display: flex; align-items: center; gap: 12px; }
-.level-picker strong { min-width: 1.5em; text-align: center; font-size: 1.4rem; color: var(--gold); }
-.level-rules { margin: 0; padding: 0; list-style: none; font-size: 0.85rem; }
-.level-rules li { margin-bottom: 4px; }
-.level-locked { color: var(--muted); }
 .run-name { display: flex; align-items: center; gap: 8px; }
 .level-chip { background: #6b4b00; color: #ffe27a; border: 1px solid var(--gold); }
 
@@ -2238,7 +2165,7 @@ body.battle-intro { pointer-events: none; }
 /* ---------- soft corners for the pixel windows that don't set their own (sizes in :root) ---------- */
 .nameplate, .battle-log, .biome-sign, .map, .map-terrain { border-radius: var(--round); }
 .intent, .focus-hint, .bag-head, .bag-pocket b { border-radius: var(--round-sm); }
-.map-town, .evo-dot { border-radius: var(--round-xs); }
+.map-town { border-radius: var(--round-xs); }
 
 /* ---------- Poké Mart (map room) and Pokédollars ---------- */
 .map-node.type-shop .map-town { border-color: #3878f0; }

@@ -24,7 +24,7 @@ export function el(tag, className = '', text = '') {
 
 /* ---------- screens ---------- */
 
-const SCREENS = ['start-screen', 'collection-screen', 'preview-screen', 'map-screen', 'reward-screen', 'battle-screen'];
+const SCREENS = ['start-screen', 'collection-screen', 'map-screen', 'reward-screen', 'battle-screen'];
 
 // The screens of a run in progress: they pick their own music, and only they show the Bag.
 const RUN_SCREENS = ['map-screen', 'battle-screen', 'reward-screen'];

@@ -6,12 +6,17 @@
    starter waits in a strip of portraits along the bottom, split into
    Starters and Legendaries tabs. A locked one shows as a silhouette and
    says how to get it (a Game Corner skin gets a button that opens the
-   Game Corner on it). Choose goes on to the deck and level screen.
+   Game Corner on it). Choose turns the same screen into the run's
+   setup, StS-style (prepare()): the panel shows the evolution line
+   and a Trainer Level picker, the strip gives way to the starting
+   deck fanned out, and Choose becomes Begin run.
    ============================================================ */
 
-import { STARTERS, BASE_HP, spriteUrl } from './data/starters.js';
+import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
-import { TYPES } from './data/cards.js';
+import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
+import { LEVELS, MAX_LEVEL } from './data/difficulty.js';
+import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { getSave, updateSave, isShiny } from './storage.js';
@@ -19,7 +24,7 @@ import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { toggleShop } from './shop.js';
 import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
-import { $, el, showScreen, setTheme, itemSprite, refreshCoins } from './ui.js';
+import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
 const PSYCHIC = { label: 'Psychic', icon: '🔮' };   // Mewtwo's type has no cards yet, so it isn't in TYPES
@@ -27,15 +32,20 @@ const PSYCHIC = { label: 'Psychic', icon: '🔮' };   // Mewtwo's type has no ca
 let picked = null;        // the starter shown big
 let tab = 'starters';
 let handlers = null;      // { onChoose(starter), onBack() }
+let preparing = null;     // after Choose: { onBegin(level), onBack() }, else null
+let level = 0;            // the Trainer Level picked for the run
 
 /** Called once at startup. */
 export function initSelect(on) {
   handlers = on;
-  $('sel-back').addEventListener('click', () => handlers.onBack());
+  $('sel-back').addEventListener('click', () => (preparing ? preparing.onBack() : handlers.onBack()));
   $('sel-go').addEventListener('click', () => {
     if (!picked || !usable(picked)) return;
-    handlers.onChoose(picked);
+    if (preparing) preparing.onBegin(level);
+    else handlers.onChoose(picked);
   });
+  $('level-down').addEventListener('click', () => setLevel(level - 1));
+  $('level-up').addEventListener('click', () => setLevel(level + 1));
   $('sel-shiny').addEventListener('click', () => {
     const id = picked.id;
     updateSave(d => { d.shiny.on = isShiny(id) ? d.shiny.on.filter(x => x !== id) : [...d.shiny.on, id]; });
@@ -55,9 +65,10 @@ export function initSelect(on) {
     if (document.querySelector('dialog:modal, #shop-dialog[open]')) return;
     const list = inTab(), at = list.indexOf(picked);
     const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    if (step) { e.preventDefault(); pick(list[(at + step + list.length) % list.length]); }
-    else if (e.key === 'Enter' && !e.target.closest?.('button')) { e.preventDefault(); $('sel-go').click(); }
-    else if (e.key === 'Escape') handlers.onBack();
+    if (step && preparing) { e.preventDefault(); setLevel(level + step); }
+    else if (step) { e.preventDefault(); pick(list[(at + step + list.length) % list.length]); }
+    else if (e.key === 'Enter' && !e.target.closest?.('button, summary')) { e.preventDefault(); $('sel-go').click(); }
+    else if (e.key === 'Escape') $('sel-back').click();
   });
   addEventListener('resize', () => { if (document.body.dataset.screen === 'start-screen') sizeSprite(); });
 }
@@ -66,6 +77,7 @@ export function initSelect(on) {
 export function showSelect(starter = picked) {
   refreshCoins();
   showScreen('start-screen');
+  setPreparing(null);
   const start = starter && usable(starter) ? starter : STARTERS.find(usable);   // coming back, a locked one you were looking at isn't the pick
   tab = LEGENDS(start) ? 'legends' : 'starters';
   pick(start, true);
@@ -163,6 +175,84 @@ function show(starter) {
   document.querySelector('.select-screen').dataset.type = starter.type;
   setTheme(starter.type);
   showMenuScene(starter.type);
+}
+
+/* ---------- Prepare: the run's setup on the same screen ---------- */
+
+/** After Choose: the evolution line, the Trainer Level and the starting deck, then Begin run (onBegin(level)) or Back. */
+export function prepare(starter, on) {
+  picked = starter;
+  show(starter);
+  renderEvo(starter);
+  renderDeck(starter);
+  level = getSave().maxLevel;   // start on your highest unlocked level
+  renderLevel();
+  setPreparing(on);
+}
+
+function setPreparing(on) {
+  preparing = on;
+  const screen = document.querySelector('.select-screen');
+  screen.classList.toggle('preparing', !!on);
+  $('sel-prep').hidden = !on;
+  $('sel-deck').hidden = !on;
+  $('sel-go').querySelector('.pxb-i').textContent = on ? 'Begin run' : 'Choose';
+  requestAnimationFrame(sizeSprite);   // the stage changes height with the panel
+}
+
+/** The three forms in a row, each with its HP and when it evolves. */
+function renderEvo(starter) {
+  const WHEN = ['Start', 'Boss 1', 'Boss 2'];
+  const row = $('prep-evo');
+  row.replaceChildren(...starter.line.flatMap((form, i) => {
+    const box = el('div', 'prep-form');
+    const img = el('img', 'pixel');
+    img.src = spriteUrl(starter, 'front', i);
+    img.alt = '';
+    box.append(img, el('b', '', form.name), el('span', '', `${BASE_HP + i * HP_PER_STAGE} HP · ${WHEN[i]}`));
+    return i ? [el('span', 'prep-arrow', '▶'), box] : [box];
+  }));
+  row.title = `Evolves after you defeat the Biome 1 and Biome 2 bosses: +${HP_PER_STAGE} max HP, a full heal, `
+    + `and all your moves get ${STAGE_POWER * 100}% stronger.`;
+}
+
+/** The starting deck fanned along the bottom, copies stacked (Ember ×3); tap a card to read it. */
+function renderDeck(starter) {
+  const groups = groupDeck(starter.deck, CARDS_BY_ID);
+  $('prep-deckhead').textContent = `Starting deck · ${starter.deck.length} cards`;
+  $('prep-fan').style.setProperty('--n', groups.length);
+  $('prep-fan').replaceChildren(...groups.map(({ card, count }, i) => {
+    const node = zoomable(makeCard(card, { count }), card, 0);
+    const t = i - (groups.length - 1) / 2;
+    node.style.setProperty('--t', t);
+    return node;
+  }));
+}
+
+function setLevel(to) {
+  const max = getSave().maxLevel;
+  const next = Math.max(0, Math.min(max, to));
+  if (next === level) return;
+  level = next;
+  playSound('stick', 'confirm');
+  renderLevel();
+}
+
+/** The picked level: its name, the rule it adds (the full list folds away), and the coin bonus. */
+function renderLevel() {
+  const max = getSave().maxLevel;
+  $('level-num').textContent = String(level);
+  $('level-name').textContent = LEVELS[level].name;
+  $('level-down').disabled = level <= 0;
+  $('level-up').disabled = level >= max;
+  $('level-rule').textContent = level === 0 ? LEVELS[0].text
+    : `${LEVELS[level].text}${level > 1 ? ` Plus the rules of Levels 1-${level - 1}.` : ''}`;
+  $('level-coins').textContent = level ? `💰 Coins +${Math.round(level * COIN_LEVEL_BONUS * 100)}%` : '';
+  $('level-coins').hidden = !level;
+  const rules = Array.from({ length: level }, (_, i) => el('li', '', `${i + 1}. ${LEVELS[i + 1].text}`));
+  if (max < MAX_LEVEL) rules.push(el('li', 'level-locked', `🔒 Win on Level ${max} to unlock Level ${max + 1}.`));
+  $('level-rules').replaceChildren(...rules);
+  $('level-rules').closest('details').hidden = !rules.length;
 }
 
 /**
