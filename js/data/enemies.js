@@ -612,6 +612,46 @@ export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
   return list.find((id, i) => (roll -= weights[i]) < 0) ?? list[list.length - 1];
 }
 
+/**
+ * Fill a biome's rooms of one kind (sorted floor by floor) with enemies like a dealt deck (the user's call, 2026-09-28:
+ * two Growlithes in one run felt unfair). Routes branch and merge, so for each room it counts, per Pokémon, how many of
+ * the routes into it already met it, and deals one met on the fewest (almost always none); among those the deck makes
+ * every Pokémon come up about as often as the rest, and `weight(id)` favours the Pokédex's unbeaten ones.
+ */
+export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1) {
+  const biome = BIOMES[biomeIndex];
+  const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals;
+  const routes = new Map(), met = new Map();   // node id -> routes from the start into it / { id: routes into it that met id }
+  const count = (node) => {
+    if (!routes.has(node.id)) routes.set(node.id, node.prev.length ? node.prev.reduce((n, id) => n + count(byId[id]), 0) : 1);
+    return routes.get(node.id);
+  };
+  const metBy = (node) => {
+    if (!met.has(node.id)) {
+      const tally = {};
+      for (const id of node.prev) {
+        const prev = byId[id], before = metBy(prev);
+        for (const x of list) tally[x] = (tally[x] || 0) + (prev.enemyId === x ? count(prev) : before[x] || 0);
+      }
+      met.set(node.id, tally);
+    }
+    return met.get(node.id);
+  };
+  let deck = [...list];
+  for (const room of rooms) {
+    const tally = metBy(room);
+    const least = Math.min(...list.map(x => tally[x] || 0));
+    const fresh = list.filter(x => (tally[x] || 0) === least);
+    if (!deck.some(x => fresh.includes(x))) deck = [...list];
+    const options = deck.filter(x => fresh.includes(x));
+    const weights = options.map(weight);
+    let roll = Math.random() * weights.reduce((x, y) => x + y, 0);
+    const id = options.find((_, i) => (roll -= weights[i]) < 0) ?? options[options.length - 1];
+    room.enemyId = id;
+    deck.splice(deck.indexOf(id), 1);
+  }
+}
+
 export function buildEncounter(biomeIndex, kind, mods, enemyId) {
   const biome = BIOMES[biomeIndex];
 

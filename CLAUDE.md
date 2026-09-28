@@ -286,7 +286,9 @@ were in; a battle is replayed from the start, never serialised.
 (starter, cards, relics, unlocks) and rebuild from the data files; `mods`
 is recomputed with `modsFor(level)`. The map's `floors` and `byId` share
 node objects, so restore rebuilds `floors` from `byId` to keep `visited`
-in sync. Every fight node gets its `enemyId` in `startBiome()` so a
+in sync. Every fight node gets its `enemyId` in `startBiome()` (dealt by `dealEnemies()` in `js/data/enemies.js`, floor by
+floor: each room gets a Pokémon the fewest routes into it have already met, from a per-biome deck, so a route meets the same
+Pokémon twice on ~2% of routes instead of ~45%, with each type's share unchanged; the user's call 2026-09-28) so a
 refresh can't reroll a fight (no room names its Pokémon in its `title`, elites and the boss included, the user's call
 2026-09-28; only a Silph Scope reveal does).
 The save is cleared by `endRun()`, by starting a new run over it (Begin run confirms), and by the About dialog's

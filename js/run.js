@@ -14,7 +14,7 @@
      deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, buildEncounter, pickEnemyId, ENEMY_DEFS } from './data/enemies.js';
+import { BIOMES, buildEncounter, dealEnemies, ENEMY_DEFS } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
@@ -250,10 +250,11 @@ function startBiome() {
   updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.map = generateMap();
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
-  for (const node of Object.values(run.map.byId)) {
-    if (['fight', 'elite', 'boss'].includes(node.type)) node.enemyId = pickEnemyId(run.biome, node.type, dexWeight);
-    if (node.type === 'shop') node.stock = martStock();
+  const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
+  for (const kind of ['fight', 'elite', 'boss']) {
+    dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
   }
+  for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   run.current = null;
   showMap();
