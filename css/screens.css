@@ -1845,7 +1845,6 @@ body.battle-intro { pointer-events: none; }
 /* narrow phones: tighten the floating buttons so they all fit on one row */
 @media (max-width: 420px) {
   .topbar { padding: 0 max(10px, env(safe-area-inset-left)); }
-  .home-ball { font-size: 52px; }
   .topbar-actions { gap: 5px; }
   .icon-btn { width: 32px; height: 32px; }
   .shop-btn .gc-icon { font-size: 24px; }

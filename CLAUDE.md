@@ -1008,10 +1008,13 @@ first tap also unlocks audio, so the title music starts with the menu.
 
 ## Top bar and start screen
 
-There's no bar: the top-left Poké Ball (`#brand-btn`) opens a drop-down
+There's no bar: the top-left Poké Ball (`#brand-btn`: an 18x18 pixel sprite inline in `index.html`, `.ball-sprite`, always
+36px so each pixel is exactly 2x2, the user's call 2026-09-28: "between smooth and a hint of 8-bit"; the logo's "o" stays
+the CSS `.pokeball`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Index, Stats, Achievements, Sound, How to play and About (Stats and
-Achievements are windows built fresh from the save by `js/records.js`). The
+Achievements are windows built fresh from the save by `js/records.js`). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
+letters in `PALETTE`). The
 **Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) is also a
 blue `.ds-btn` under How to play on the start screen: every card in `ALL_CARDS`,
 a sticky tab row per type (Fire, Grass, Water, Neutral), grouped by rarity and

@@ -17,6 +17,7 @@ const PALETTE = {
   G: '#58d048', E: '#208030', b: '#3878f0', B: '#1848a0', c: '#98d8f8',
   p: '#b058d8', P: '#6a2890', n: '#b06830', N: '#683818', m: '#f878b0',
   s: '#f8b888', S: '#c87848', e: '#a0e878', u: '#f8a8c8',
+  v: '#f0e4c0', V: '#c8b488',
 };
 
 const ICONS = {
@@ -1049,6 +1050,20 @@ const ICONS = {
     '..rrwrrrR...',
     '...rrrrR....',
     '....RRR.....',
+  ],
+  '🖥️': [   // the Poké Ball menu's Main menu: the games' cream PC, a blue menu on its screen, and its keyboard
+    '............',
+    '.vvvvvvvvvv.',
+    '.vbbbbbbbbV.',
+    '.vbwwwbbbbV.',
+    '.vbbbbbbbbV.',
+    '.vbwwbbbcbV.',
+    '.vvvvvvvrvV.',
+    '.VVVVVVVVVV.',
+    '............',
+    '..vvvvvvvv..',
+    '..VgVgVgVV..',
+    '............',
   ],
   '🌫️': [   // the exhaust pile: a card like the other two piles' (their outline), its face a void, crumbling into smoke
     '..w...l..w..',
