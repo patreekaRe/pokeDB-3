@@ -609,6 +609,16 @@
     <p class="hint">Not sure? Close this and it will ask again next time.</p>
   </dialog>
 
+  <!-- a starter a won fight just unlocked (unlockWindow() in js/run.js) -->
+  <dialog id="unlock-dialog" class="dialog small-dialog unlock-dialog">
+    <p class="unlock-kicker">🏆 Achievement unlocked!</p>
+    <div class="unlock-stage"><img id="unlock-sprite" class="pixel" alt=""></div>
+    <h2 id="unlock-name"></h2>
+    <p id="unlock-text"></p>
+    <p class="unlock-hint">Choose it at New game.</p>
+    <form method="dialog" class="dialog-actions"><button class="btn primary" id="unlock-ok">Great!</button></form>
+  </dialog>
+
   <dialog id="confirm-dialog" class="dialog small-dialog">
     <p id="confirm-text"></p>
     <div class="dialog-actions">

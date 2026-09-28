@@ -21,9 +21,9 @@ export function isShopUnlock(starter) {
 
 /**
  * Look at your stats and unlock any starters you have earned.
- * Returns the list of starters that were newly unlocked.
+ * Returns the list of starters that were newly unlocked. `sound: false` leaves the jingle to whoever shows them.
  */
-export function checkAchievements() {
+export function checkAchievements({ sound = true } = {}) {
   const save = getSave();
   const earned = [];
   // One at a time, so a later goal (Mewtwo's "unlock everything") sees what the earlier ones just unlocked.
@@ -32,6 +32,6 @@ export function checkAchievements() {
     updateSave(d => { d.unlocked.push(a.starter); });
     earned.push(STARTERS_BY_ID[a.starter]);
   }
-  if (earned.length) playSound('achievement');
+  if (earned.length && sound) playSound('achievement');   // after a fight, unlockWindow() in run.js plays it with its window
   return earned;
 }

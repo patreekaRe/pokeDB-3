@@ -3316,3 +3316,32 @@ body.has-scene #scene-bg { display: block; }
   .dex-perk-icon { font-size: 1.5rem; }
   .dex-detail-sprite { width: 88px; height: 88px; }
 }
+
+/* a starter a won fight just unlocked (unlockWindow() in js/run.js): a gold banner, the Pokémon hopping on a spotlight */
+.unlock-dialog { text-align: center; width: min(340px, calc(100vw - 32px)); }
+.unlock-dialog[open] { animation: unlockIn 0.45s steps(6) both; }
+@keyframes unlockIn { 0% { scale: 0.6; opacity: 0; } 70% { scale: 1.06; opacity: 1; } 100% { scale: 1; } }
+.unlock-kicker {
+  margin: -4px -4px 10px;
+  padding: 8px 10px 7px;
+  background: repeating-linear-gradient(90deg, #f0b828 0 12px, #f8c848 12px 24px);
+  border: 3px solid #181010;
+  border-radius: var(--round-sm);
+  color: #3a2408;
+  font-family: var(--pixel-font);
+  font-size: 0.95rem;
+  animation: unlockFlash 0.9s steps(2) 3;
+}
+@keyframes unlockFlash { 50% { filter: brightness(1.35); } }
+.unlock-stage {
+  display: grid;
+  place-items: end center;
+  height: 120px;
+  background: radial-gradient(ellipse 26% 7% at 50% 92%, rgba(24, 16, 16, 0.25) 0 98%, transparent), radial-gradient(circle at 50% 60%, #fff6d0 0 34%, transparent 35%);
+}
+.unlock-stage img { width: auto; height: 104px; image-rendering: pixelated; animation: unlockHop 0.9s steps(4) infinite; transform-origin: 50% 100%; }
+@keyframes unlockHop { 50% { translate: 0 -6px; } }
+#unlock-name { margin: 6px 0 4px; font-family: var(--pixel-font); color: var(--win-gold); font-size: 1.3rem; }
+#unlock-text { margin: 0 0 6px; }
+.unlock-hint { margin: 0 0 4px; color: var(--muted); font-size: 0.75rem; }
+@media (prefers-reduced-motion: reduce) { .unlock-dialog[open], .unlock-kicker, .unlock-stage img { animation: none; } }

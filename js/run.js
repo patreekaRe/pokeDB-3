@@ -26,6 +26,7 @@ import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
+import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
@@ -639,12 +640,10 @@ function afterFight(node, result) {
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
-  if (!(node.type === 'boss' && run.biome === BIOMES.length - 1)) {
-    for (const starter of checkAchievements()) {
-      run.unlocks.push(starter);
-      dexNews.push(`${starter.line[0].name} unlocked!`);
-    }
-  }
+  // A boss win's unlocks wait until after the evolution: the jingle sounds just like its chime (the user heard it early).
+  const unlocked = [];
+  const unlock = () => { for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); } };
+  if (!(node.type === 'boss' && run.biome === BIOMES.length - 1)) unlock();
 
   const [low, high] = PRIZE_MONEY[node.type];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
@@ -683,9 +682,9 @@ function afterFight(node, result) {
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
     if (run.biome === BIOMES.length - 1) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!
-    announceUnlocks();
-    steps.push(next => evolve(next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
-  }
+    unlock();
+    steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
+  } else steps.unshift(next => unlockWindow(unlocked, next));
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
   if (Math.random() < run.itemChance) {
@@ -1922,6 +1921,21 @@ async function evolve(next) {
 /* ============================================================
    THE END OF A RUN
    ============================================================ */
+
+/** A window for each starter a won fight just unlocked, with the achievement jingle and then its cry, before the
+    rewards go on (the user wanted it obvious, 2026-09-28). The run's end lists its unlocks in the result window. */
+function unlockWindow(list, next) {
+  const [starter, ...rest] = list;
+  if (!starter) return next();
+  const d = $('unlock-dialog');
+  $('unlock-sprite').src = spriteUrl(starter, 'front', 0);
+  $('unlock-sprite').alt = starter.line[0].name;
+  $('unlock-name').textContent = starter.line[0].name;
+  $('unlock-text').textContent = ACHIEVEMENT_FOR[starter.id]?.text ?? '';
+  d.addEventListener('close', () => unlockWindow(rest, next), { once: true });
+  openDialog('unlock-dialog');
+  playSound('achievement').then(len => setTimeout(() => { if (d.open) playCry(starter.line[0].id); }, Math.max(0, len * 1000 - 600)));
+}
 
 /** Check achievements and tell the player about any new starters. */
 function announceUnlocks() {
