@@ -1403,6 +1403,135 @@ body.battle-intro { pointer-events: none; }
 }
 @media (max-width: 720px) { .evo-bottom { width: min(calc(100% - 32px), 300px); } }
 .evo-scene.waiting { cursor: pointer; }
+/* The Hall of Fame (js/halloffame.js), after a Level 5 win: a white flash, then a starry night; your Pokémon slides onto
+   a pedestal under a spotlight, its plate pops up, and its final deck rises along the bottom above the text box. */
+.hof-scene { position: fixed; inset: 0; z-index: 950; overflow: hidden; background: radial-gradient(ellipse at 50% 38%, #34489a, #18205a 55%, #0a0e2c); }
+.hof-sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(2px 2px at 12% 18%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 78% 12%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 36% 8%, #ffe890 50%, transparent 51%), radial-gradient(2px 2px at 88% 40%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 6% 52%, #ffe890 50%, transparent 51%), radial-gradient(2px 2px at 62% 26%, #fff 50%, transparent 51%),
+    radial-gradient(3px 3px at 22% 36%, #fff 50%, transparent 51%), radial-gradient(3px 3px at 92% 70%, #ffe890 50%, transparent 51%),
+    radial-gradient(2px 2px at 48% 18%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 16% 80%, #fff 50%, transparent 51%);
+  animation: hofTwinkle 1.6s steps(2) infinite;
+}
+.hof-sky::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(2px 2px at 28% 22%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 70% 6%, #ffe890 50%, transparent 51%),
+    radial-gradient(3px 3px at 84% 26%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 8% 30%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 54% 44%, #ffe890 50%, transparent 51%), radial-gradient(2px 2px at 96% 54%, #fff 50%, transparent 51%);
+  animation: hofTwinkle 1.6s steps(2) infinite reverse;
+}
+@keyframes hofTwinkle { 50% { opacity: 0.35; } }
+.hof-flash { position: absolute; inset: 0; background: #f8f8f8; pointer-events: none; animation: hofWash 0.9s both; }
+@keyframes hofWash {
+  0% { opacity: 1; animation-timing-function: steps(1, end); }
+  15% { opacity: 0; animation-timing-function: steps(1, end); }
+  30% { opacity: 1; animation-timing-function: ease-out; }
+  100% { opacity: 0; }
+}
+.hof-scene.still .hof-flash { display: none; }
+.hof-scene.out { opacity: 0; transition: opacity 0.6s ease-out; }
+.hof-layout {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: max(14px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
+}
+.hof-title {
+  margin: 0;
+  font: 1.6rem/1.2 var(--pixel-font); font-synthesis-weight: none;
+  color: #f8d048;
+  text-shadow: 2px 0 0 #6a3a08, -2px 0 0 #6a3a08, 0 2px 0 #6a3a08, 0 -2px 0 #6a3a08, 0 5px 0 #0a0e2c;
+  animation: hofTitle 0.6s steps(6) both 0.5s;
+}
+@keyframes hofTitle { from { opacity: 0; translate: 0 -24px; } }
+.hof-stage { position: relative; flex: 1 1 0; min-height: 140px; width: 100%; }
+.hof-light {
+  position: absolute; left: 50%; top: -10%; bottom: 18px; width: min(360px, 80vw); translate: -50% 0;
+  background: linear-gradient(rgba(255, 248, 200, 0.05), rgba(255, 240, 170, 0.32));
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  opacity: 0; transition: opacity 0.8s;
+}
+.hof-pedestal {
+  position: absolute; left: 50%; bottom: 0; width: min(220px, 56vw); height: 44px; translate: -50% 0;
+  background: linear-gradient(#f0e0b0 0 8px, #d0b068 8px 12px, #f8d048 12px 17px, #9a6a28 17px 21px, #7a5424 21px 36px, #4a3014 36px);
+  clip-path: polygon(0 0, 100% 0, 100% 8px, calc(100% - 8px) 8px, calc(100% - 8px) calc(100% - 8px), 100% calc(100% - 8px), 100% 100%,
+    0 100%, 0 calc(100% - 8px), 8px calc(100% - 8px), 8px 8px, 0 8px);
+}
+.hof-mon { position: absolute; left: 50%; bottom: 40px; width: 0; height: 0; translate: 60vw 0; }
+.hof-mon img { position: absolute; left: 0; bottom: 0; max-width: none; image-rendering: pixelated; }
+.hof-scene.mon-in .hof-mon { translate: 0 0; transition: translate 0.8s cubic-bezier(0.2, 0.8, 0.3, 1); }
+.hof-scene.mon-in .hof-light { opacity: 1; }
+.hof-plate-slot { min-height: 64px; width: min(calc(100% - 32px), 440px); }
+.hof-plate {
+  padding: 8px 14px;
+  border: 3px solid #b8b8c8; border-radius: var(--round);
+  background: var(--win-bg); color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+}
+.hof-scene .hof-plate { opacity: 0; scale: 0.8; transition: opacity 0.3s, scale 0.3s cubic-bezier(0.2, 1.6, 0.4, 1); }
+.hof-scene.plate-in .hof-plate { opacity: 1; scale: 1; }
+.hof-plate-head { display: flex; align-items: baseline; gap: 10px; }
+.hof-no { font-size: 0.7rem; color: #a02c2c; }
+.hof-name { font-size: 0.95rem; font-weight: 400; }
+.hof-plate-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 6px; font-size: 0.62rem; }
+.hof-deck-slot { width: 100%; min-height: 96px; }
+.hof-deck {
+  display: flex; gap: 8px; justify-content: safe center;
+  overflow-x: auto; padding: 4px 16px 14px;
+  opacity: 0; translate: 0 30px; transition: opacity 0.4s, translate 0.4s ease-out;
+}
+.hof-scene.deck-in .hof-deck { opacity: 1; translate: 0 0; }
+.hof-deck .card { --card-w: 62px; flex: none; }
+.hof-deck .in-deck { top: auto; bottom: -9px; right: 50%; translate: 50% 0; font-size: 15cqw; }
+.hof-bottom { display: flex; width: min(calc(100% - 32px), 440px); }
+.hof-scene.waiting { cursor: pointer; }
+.hof-scene.still .hof-title, .hof-scene.still .hof-sky, .hof-scene.still .hof-sky::after { animation: none; }
+.hof-scene.still .hof-mon, .hof-scene.still .hof-plate, .hof-scene.still .hof-deck { transition: none; }
+@media (max-width: 720px) {
+  .hof-bottom { width: min(calc(100% - 32px), 300px); }
+  .hof-title { font-size: 1.15rem; }
+  .hof-name { font-size: 0.8rem; }
+  .hof-deck .card { --card-w: 52px; }
+  .hof-deck-slot { min-height: 84px; }
+}
+@media (max-height: 600px) {
+  .hof-layout { gap: 6px; }
+  .hof-deck .card { --card-w: 46px; }
+  .hof-deck-slot { min-height: 74px; }
+}
+
+/* the Collection's Hall of Fame window */
+.hof-body { display: flex; flex-direction: column; gap: 8px; }
+.hof-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px;
+  border: 0; border-left: 6px solid #777; border-radius: var(--round-sm);
+  background: rgba(48, 48, 56, 0.07); box-shadow: inset 0 0 0 2px rgba(48, 48, 56, 0.15);
+  color: var(--win-ink); font: inherit; text-align: left; cursor: pointer;
+}
+.hof-row.type-fire, .hof-entry.type-fire { border-left-color: #c8402a; }
+.hof-row.type-grass, .hof-entry.type-grass { border-left-color: #2e8a40; }
+.hof-row.type-water, .hof-entry.type-water { border-left-color: #2a68c8; }
+@media (hover: hover) { .hof-row:hover { background: rgba(48, 48, 56, 0.13); } }
+.hof-row-pic { display: grid; place-items: center; flex: none; width: 64px; height: 64px; }
+.hof-row-pic img { max-width: 64px; max-height: 64px; image-rendering: pixelated; }
+.hof-row-text { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+.hof-row-text strong { font-size: 0.78rem; font-weight: 400; }
+.hof-row-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 0.6rem; }
+.hof-row-text small { font-size: 0.56rem; color: var(--muted); }
+.hof-row-go { color: #c02020; font-size: 0.7rem; }
+.hof-back { align-self: flex-start; }
+.hof-entry {
+  display: flex; align-items: center; gap: 12px; padding: 6px 10px;
+  border-left: 6px solid #777; border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.07);
+}
+.hof-entry-pic { display: grid; place-items: center; flex: none; width: 96px; height: 96px; }
+.hof-entry-pic img { max-width: 96px; max-height: 96px; image-rendering: pixelated; }
+.hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+.hof-cards { margin-top: 6px; }
+
 .wide-dialog { width: min(900px, 94vw); }
 .wide-dialog .card-pool { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 

@@ -40,7 +40,11 @@ const TRACKS = {
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
+  'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
 };
+// A track whose file isn't there yet plays another in its place (the user supplies the Hall of Fame's MP3 later).
+const TRACK_FALLBACK = { 'hall-of-fame': 'victory' };
+const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
 // play just part of a file, fading out at the end, so a long one can be trimmed without re-encoding.
@@ -130,7 +134,7 @@ let lastCue = -1;          // ctx time the latest effect started
 // the dimmed area around a blown-up card, anything with a note in its title) plays the confirm sound, unless that tap already
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
-const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, #evolve-scene.waiting, .card-focus, .card-zoom, [title], [data-tip]';
+const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, #evolve-scene.waiting, #hof-scene.waiting, .card-focus, .card-zoom, [title], [data-tip]';
 // ...except these back out (Back / Skip / Leave, No, a window's Close or ✕, a zoomed card), so they blip `cancel`
 const CANCELS = '#reward-skip, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {
@@ -173,6 +177,7 @@ export function initAudio() {
  * cut:     switch instantly (no fade out, no fade in), e.g. for a fanfare.
  */
 export function playMusic(name, { restart = false, cut = false } = {}) {
+  if (missing.has(name)) name = TRACK_FALLBACK[name] ?? null;
   if (current === name) return;
   const previous = current;
   current = name;
@@ -353,6 +358,12 @@ function player(name) {
   if (!players[name]) {
     const el = new Audio(TRACKS[name]);
     el.loop = true;
+    el.addEventListener('error', () => {
+      missing.add(name);
+      if (current !== name) return;
+      current = null;
+      playMusic(TRACK_FALLBACK[name] ?? null);
+    });
     const gain = ctx.createGain();
     gain.gain.value = 0;
     ctx.createMediaElementSource(el).connect(gain).connect(musicBus);

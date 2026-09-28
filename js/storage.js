@@ -47,7 +47,8 @@ const freshSave = () => ({
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
   seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
-  dex: { seen: [], defeated: [], done: [], count: {}, complete: false },   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
+  dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
+  hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
     runsWon: 0,

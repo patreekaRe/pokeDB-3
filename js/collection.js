@@ -14,6 +14,8 @@ import { getSave } from './storage.js';
 import { openPokedex } from './pokedex.js';
 import { openCardIndex } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
+import { openHallOfFame } from './halloffame.js';
+import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
 import { $, el, showScreen, itemSprite } from './ui.js';
@@ -24,6 +26,15 @@ export function initCollection({ onBack }) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.dataset.screen === 'collection-screen' && !document.querySelector('dialog:modal')) onBack();
   });
+}
+
+/** The newest champion stands on the Hall of Fame card; with none yet, a crown. */
+function fameArt(entry) {
+  if (!entry) return el('span', 'coll-emoji', '👑');
+  const img = el('img', 'pixel coll-fame');
+  img.src = spriteUrl(STARTERS_BY_ID[entry.starter], 'front', entry.stage, entry.shiny);
+  img.alt = '';
+  return img;
 }
 
 export function showCollection() {
@@ -43,6 +54,8 @@ export function showCollection() {
       `${save.stats.runsWon} of ${save.stats.runsStarted} runs won`, openStats],
     ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
       `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
+    ['hof', 'Hall of Fame', fameArt(save.hallOfFame.at(-1)), 'Every Trainer Level 5 win, with its final deck.',
+      `${save.hallOfFame.length} ${save.hallOfFame.length === 1 ? 'champion' : 'champions'}`, openHallOfFame],
   ];
   $('coll-grid').replaceChildren(...cards.map(([id, name, art, text, count, open], i) => {
     const card = el('button', `coll-card coll-${id}`);

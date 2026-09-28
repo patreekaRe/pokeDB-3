@@ -82,20 +82,23 @@ export async function evolutionScene(starter, from, after = []) {
   };
 }
 
-/** Type the lines into the scene's text box; resolves once the last one is tapped away (the white takes taps and Enter too). */
-function say(lines) {
-  const scene = $('evolve-scene'), box = $('evolve-log');
+const say = (lines) => sceneSay('evolve-scene', 'evolve-log', lines);
+
+/** Type the lines into a full-screen scene's text box; resolves once the last one is tapped away (a tap anywhere on the
+    scene or Enter advances it, except on its `.scene-keep` parts, like the Hall of Fame's scrolling deck). */
+export function sceneSay(sceneId, logId, lines) {
+  const scene = $(sceneId), box = $(logId);
   return new Promise(resolve => {
     const onKey = (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       e.preventDefault();
       box.click();
     };
-    const onTap = (e) => { if (!box.contains(e.target)) box.click(); };
+    const onTap = (e) => { if (!box.contains(e.target) && !e.target.closest('.scene-keep')) box.click(); };
     scene.classList.add('waiting');
     scene.addEventListener('click', onTap);
     document.addEventListener('keydown', onKey);
-    sayLines(lines, 'evolve-log', () => {
+    sayLines(lines, logId, () => {
       scene.classList.remove('waiting');
       scene.removeEventListener('click', onTap);
       document.removeEventListener('keydown', onKey);

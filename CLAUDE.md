@@ -279,6 +279,19 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   select's panel, `.sel-name-star`), gives the starter's shiny and switches it on if it isn't owned, and pays
   `LEVEL5_JACKPOT` (500, Coin Finder applies) once per type (`stats.level5Jackpot`). Each reward is a line in the
   result window. Old saves seed nothing (the user's call): rewards start from the next Level 5 win.
+  **Hall of Fame** (part 2, 2026-09-28): `endRun()` then enters the win in the save's `hallOfFame` list (oldest first;
+  `enterHallOfFame()` in `js/halloffame.js`: `no`, starter, stage, shiny, type, local `date` "YYYY-MM-DD", level, deck,
+  relics, fights; old saves start empty) and awaits `hallOfFameScene()` before opening the result window (a modal dialog
+  would sit in the top layer over it). The scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
+  white flash onto a starry night, your Pokémon slides onto a gold pedestal under a spotlight (`SPRITE_FIT` feet, half
+  steps) and cries, its plate pops up (No.NNN, name, type chip, date, Lv.5), "Welcome to the HALL OF FAME!", then the
+  final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
+  text box. Its text box is the evolution scene's, `sceneSay()` exported from `js/evolution.js`. Music: `hall-of-fame`
+  (`assets/audio/hall-of-fame.mp3`, the user supplies it), preloaded before a Level 5 final boss; while the file is missing
+  `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection's
+  seventh card, Hall of Fame (the newest champion's sprite, centred under the others), opens `#hof-dialog`
+  (`openHallOfFame()`): entries newest first, tap one for its plate and its deck (`fillDeck()` from `js/deckpreview.js`,
+  each card `zoomable()`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
@@ -1164,8 +1177,8 @@ saved run) and Back / Escape return to the portraits (`showSelect()` clears it).
 sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, Back / Choose on the sides, the strip centred at
 the bottom). The page's footer note hides here.
 
-**Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): six Pokégear cards with a coloured header
-(Pokédex, Moves, Relics, Items, Stats, Achievements), each with its art, a line and a progress count (defeated, moves,
+**Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): seven Pokégear cards with a coloured header
+(Pokédex, Moves, Relics, Items, Stats, Achievements, Hall of Fame), each with its art, a line and a progress count (defeated, moves,
 found, runs won, done), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
 3 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
@@ -1219,7 +1232,8 @@ named after its id.
 `js/ui.js`), `map1`–`map3` on each biome's map (`showMap()` in `js/run.js`),
 `wild` / `elite` / `boss` chosen by `encounter.kind` in
 `startBattle()`, `victory` from the moment an enemy faints (`finish()` in
-`js/battle.js`) through the reward picks (after a boss, paused for the evolution scene's `evolution` track), and `center` at rest sites
+`js/battle.js`) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; after a Level 5
+win, the Hall of Fame's `hall-of-fame`, or `victory` while that file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the

@@ -35,6 +35,7 @@ import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
+import { enterHallOfFame, hallOfFameScene, preloadHallOfFame } from './halloffame.js';
 import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
 import { DEX_START_MONEY, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
@@ -515,6 +516,7 @@ function enterNode(node) {
 
 async function fight(node) {
   if (node.type === 'boss' && run.biome < BIOMES.length - 1) preloadEvolution(run.starter, run.stage);
+  if (node.type === 'boss' && run.biome === BIOMES.length - 1 && run.level === MAX_LEVEL) preloadHallOfFame(run.starter);
   const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   dexSeen(node.enemyId);
@@ -1814,6 +1816,7 @@ function endRun(won) {
 
   let winCoins = 0;
   let level5 = [];
+  let fame = null;   // a Level 5 win's Hall of Fame entry, whose scene plays before the result window
   if (won) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
@@ -1828,7 +1831,11 @@ function endRun(won) {
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });
 
-    if (run.level === MAX_LEVEL) level5 = level5Rewards();
+    if (run.level === MAX_LEVEL) {
+      level5 = level5Rewards();
+      fame = enterHallOfFame(run, getSave().shiny.on.includes(run.starter.id));
+      level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as No.${String(fame.no).padStart(3, '0')}!`);
+    }
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
@@ -1856,5 +1863,6 @@ function endRun(won) {
   list.replaceChildren(...lines.map(text => el('li', '', text)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
-  openDialog('result-dialog');
+  if (fame) hallOfFameScene(fame).then(() => openDialog('result-dialog'));
+  else openDialog('result-dialog');
 }

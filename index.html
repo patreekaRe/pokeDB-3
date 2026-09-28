@@ -491,6 +491,30 @@
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
+  <!-- The Hall of Fame scene after a Level 5 win (js/halloffame.js): a starry night, your Pokémon on a pedestal -->
+  <div id="hof-scene" class="hof-scene" hidden>
+    <div class="hof-sky" aria-hidden="true"></div>
+    <div class="hof-flash" aria-hidden="true"></div>
+    <div class="hof-layout">
+      <h2 class="hof-title">Hall of Fame</h2>
+      <div class="hof-stage" id="hof-stage">
+        <div class="hof-light" aria-hidden="true"></div>
+        <div class="hof-mon"><img id="hof-mon" class="pixel" alt=""></div>
+        <div class="hof-pedestal" aria-hidden="true"></div>
+      </div>
+      <div class="hof-plate-slot" id="hof-plate-slot"></div>
+      <div class="hof-deck-slot" id="hof-deck-slot"></div>
+      <div class="hof-bottom"><div class="reward-log" id="hof-log" hidden><span id="hof-log-text" aria-hidden="true"></span><span class="sr-only" id="hof-log-live" aria-live="polite"></span></div></div>
+    </div>
+  </div>
+
+  <dialog id="hof-dialog" class="dialog records-dialog hof-dialog">
+    <h2 tabindex="-1" autofocus>🏆 Hall of Fame</h2>
+    <p class="records-sub" id="hof-dialog-sub"></p>
+    <div id="hof-body" class="hof-body"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  </dialog>
+
   <dialog id="deck-dialog" class="dialog wide-dialog">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
     <div id="deck-dialog-cards" class="card-pool"></div>

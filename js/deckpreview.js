@@ -10,7 +10,7 @@ import { CARDS_BY_ID } from './data/cards.js';
 import { $, makeCard, zoomable, groupDeck, openDialog } from './ui.js';
 
 /** Fill a container with the cards of a deck, grouping copies (Ember ×3). Tap one to read it bigger. */
-function fillDeck(container, ids, stage = 0) {
+export function fillDeck(container, ids, stage = 0) {
   container.replaceChildren(
     ...groupDeck(ids, CARDS_BY_ID).map(({ card, count }) => zoomable(makeCard(card, { stage, count }), card, stage)),
   );
