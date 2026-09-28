@@ -369,7 +369,10 @@ export const STARTERS_BY_ID = Object.fromEntries(STARTERS.map(s => [s.id, s]));
     whether its shiny colours are switched on (the Game Corner sells them); a legendary's final stage already is. */
 export function spriteUrl(starter, kind, stage = 0, shiny = shinyOn(starter.id)) {
   const id = starter.line[stage].id;
-  return `assets/pokemon/${shiny && !id.endsWith('-shiny') ? `${id}-shiny` : id}-${kind}.gif`;
+  // a legendary's final form is its shiny colours; if it's shiny all along, that form is shiny with a glowing aura instead
+  // (`<id>-ascendant-*.gif`: the shiny GIF with 3 rings in its type's colour, the outer one shimmering), so it still changes
+  if (shiny && id.endsWith('-shiny')) return `assets/pokemon/${id.replace(/-shiny$/, '')}-ascendant-${kind}.gif`;
+  return `assets/pokemon/${shiny ? `${id}-shiny` : id}-${kind}.gif`;
 }
 
 // Data files don't read the save; main.js hands in the check at startup.

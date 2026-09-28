@@ -77,7 +77,11 @@ live site.
   at ~-14 dB mean, see the roadmap's step 3).
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
-  `-shiny` suffixed sprite id for a visual payoff on final evolution.
+  `-shiny` suffixed sprite id for a visual payoff on final evolution. With its shiny bought and on, that payoff would
+  vanish (it's shiny all along), so `spriteUrl()` gives the final form `<id>-ascendant-front/back.gif` instead: the shiny GIF
+  with a 3-ring aura in its type's colour, the outer ring and sparkles shimmering frame by frame (the user's ask,
+  2026-09-28). Made by `tools/ascendant-aura.py` (Pillow); a new legendary needs its pair too. `spriteFit()` lends them the
+  normal sprite's entry.
   Sixteen earned ones: Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
   ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won with 15 cards or

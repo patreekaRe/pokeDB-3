@@ -230,5 +230,5 @@ export const SPRITE_FIT = {
     borrows its normal sprite's entry. */
 export function spriteFit(src) {
   const name = src.split('/').pop().replace(/\.\w+$/, '');
-  return SPRITE_FIT[name] || SPRITE_FIT[name.replace('-shiny', '')] || [0, 0, 0, 0];
+  return SPRITE_FIT[name] || SPRITE_FIT[name.replace(/-shiny|-ascendant/, '')] || [0, 0, 0, 0];
 }
