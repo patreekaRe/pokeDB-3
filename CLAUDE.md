@@ -88,7 +88,8 @@ to `main` (see Conventions), not open a branch or PR.
   to the new one (add to it if a starter is ever replaced again).
 - **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
   the last portrait in the character select's Legendaries tab). It unlocks once every other starter
-  is unlocked; that achievement must stay last in `ACHIEVEMENTS`, since
+  is unlocked and a run is won on Trainer Level 5 (`stats.level5WinsBy`, so only wins since 2026-09-28 count);
+  that achievement must stay last in `ACHIEVEMENTS`, since
   `checkAchievements()` grants in order (the shop also runs it after a
   purchase). It is `type: 'psychic'` with an empty deck, so `comingSoon: true`
   stops it being picked for a run until its own cards exist.
@@ -272,6 +273,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
   `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
   burst of ✨ (`shinySparkle()` in `js/battle.js`).
+- **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
+  `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
+  `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character
+  select's panel, `.sel-name-star`), gives the starter's shiny and switches it on if it isn't owned, and pays
+  `LEVEL5_JACKPOT` (500, Coin Finder applies) once per type (`stats.level5Jackpot`). Each reward is a line in the
+  result window. Old saves seed nothing (the user's call): rewards start from the next Level 5 win.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

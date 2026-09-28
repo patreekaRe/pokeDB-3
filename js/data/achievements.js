@@ -132,8 +132,9 @@ export const ACHIEVEMENTS = [
   // starter unlocked by the entries above in the same check.
   {
     starter: 'mewtwo',
-    text: 'Unlock every other Pokémon',
-    test: (s, save) => STARTERS.every(st => st.id === 'mewtwo' || st.free || save.unlocked.includes(st.id)),
+    text: 'Unlock every other Pokémon and win a run on Trainer Level 5',
+    test: (s, save) => Object.keys(s.level5WinsBy).length > 0
+      && STARTERS.every(st => st.id === 'mewtwo' || st.free || save.unlocked.includes(st.id)),
   },
 ];
 

@@ -17,7 +17,7 @@
 import { BIOMES, buildEncounter, dealEnemies, ENEMY_DEFS } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
+import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
@@ -49,6 +49,8 @@ export const runBiome = () => (isRunActive() ? run.biome : undefined);
    PokéCoins  -  see js/data/shop.js for what they buy.
    ============================================================ */
 export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 50 };
+/** PokéCoins for the first Trainer Level 5 win with each type (Coin Finder adds to it). */
+export const LEVEL5_JACKPOT = 500;
 
 /** A coin reward at the run's Trainer Level (COIN_LEVEL_BONUS a level), before the Coin Finder. */
 const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
@@ -1783,11 +1785,35 @@ function announceUnlocks() {
   }
 }
 
+/** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.
+    Returns the result window's lines. Mewtwo's unlock reads level5WinsBy too, so this runs before announceUnlocks(). */
+function level5Rewards() {
+  const { id, type } = run.starter;
+  const name = run.starter.line[0].name;
+  const save = getSave();
+  const lines = [`⭐ ${name} earned a gold star for winning on Trainer Level 5!`];
+  const shiny = !save.shiny.owned.includes(id) && !run.starter.comingSoon;
+  const jackpot = !save.stats.level5Jackpot[type];
+  updateSave(d => {
+    d.stats.level5WinsBy[id] = (d.stats.level5WinsBy[id] || 0) + 1;
+    if (shiny) { d.shiny.owned.push(id); if (!d.shiny.on.includes(id)) d.shiny.on.push(id); }
+    if (jackpot) d.stats.level5Jackpot[type] = true;
+  });
+  if (shiny) lines.push(`✨ Shiny ${name} unlocked, and switched on!`);
+  if (jackpot) {
+    const coins = awardCoins(LEVEL5_JACKPOT);
+    refreshCoins();
+    lines.push(`💰 Jackpot! +${coins} PokéCoins for your first Level 5 win with a ${TYPES[type]?.label ?? type} Pokémon!`);
+  }
+  return lines;
+}
+
 function endRun(won) {
   run.over = true;
   clearRunData();
 
   let winCoins = 0;
+  let level5 = [];
   if (won) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
@@ -1801,6 +1827,8 @@ function endRun(won) {
       const type = run.starter.type;
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });
+
+    if (run.level === MAX_LEVEL) level5 = level5Rewards();
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
@@ -1822,6 +1850,7 @@ function endRun(won) {
   const list = $('result-unlocks');
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.dexNews || []).map(line => `📕 ${line}`)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
+  lines.unshift(...level5);
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(text => el('li', '', text)));

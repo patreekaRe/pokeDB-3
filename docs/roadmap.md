@@ -488,6 +488,10 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    4. Project settings (gear) > General > Your apps > Web (`</>`), a nickname, no Hosting, Register; the
       `firebaseConfig = { ... }` block goes into `js/cloud-config.js` as `FIREBASE_CONFIG`. Then playtest on the live site:
       sign in on the phone first (its save becomes the cloud save), then on the PC.
+5. **Level 5 rewards.** Part 1 done 2026-09-28 (the user's picks; CLAUDE.md's "Level 5 rewards"): a Level 5 win
+   unlocks and switches on that starter's shiny, puts a gold star on its portrait and panel, pays 500 PokéCoins the
+   first time per type, and Mewtwo's unlock now also needs a Level 5 win. Old saves seed nothing. Part 2, next:
+   ▶ Run in: CLOUD. The Hall of Fame (the user's pick; not yet designed: ask what it should show).
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve

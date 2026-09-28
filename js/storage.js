@@ -64,6 +64,8 @@ const freshSave = () => ({
     elitesDefeated: 0,        // Alphas beaten (Team Rocket's too)
     coinsEarned: 0,           // every PokéCoin ever paid out, spent or not
     deepestBiome: 0,          // the furthest biome a run reached (1-3)
+    level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
+    level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
   },
 });
 
