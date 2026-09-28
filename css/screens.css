@@ -1007,22 +1007,7 @@ body[data-screen="battle-screen"] .piles { display: flex; }
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.35);
 }
 body[data-screen="reward-screen"] .hp-plate { display: flex; }
-body[data-screen="reward-screen"]:has(.event-vitals) .hp-plate { display: none; }   /* the event's own big one says it */
-/* your HP on an event scene where it decides the choice (eventVitals() in js/run.js): one slim row under the title */
-.event-vitals {
-  position: fixed; z-index: 2; left: 50%; translate: -50% 0;
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 10px 4px 6px;
-  border: 2px solid #b8b8c8; border-radius: var(--round-sm);
-  background: var(--win-bg); color: var(--win-ink);
-  box-shadow: 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
-}
-.event-vitals .gb-hp { width: 128px; margin: 0; }
-.event-vitals .gb-hp-track { height: 12px; padding: 2px; }
-.event-vitals .gb-hp-tag { line-height: 12px; font-size: 0.6rem; }
-.event-vitals .gb-hp-num { width: auto; align-self: center; font-size: 0.75rem; letter-spacing: 0.04em; white-space: nowrap; }
-.event-vitals .gb-hp-fill { transition: width 0.8s steps(16), background 0.3s; }
+.hp-plate .gb-hp-fill { transition: width 0.8s steps(16), background 0.3s; }   /* an event's HP change runs down visibly (showHpChange())*/
 .hp-plate .gb-hp { width: 96px; margin: 0; }
 .hp-plate .gb-hp-track { height: 14px; padding: 2px; }
 .hp-plate .gb-hp-tag { line-height: 14px; font-size: 0.6rem; }

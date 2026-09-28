@@ -493,10 +493,9 @@ picker comes back to the room (`eventRoom(node, after)`, from the choice's `reac
 (the Tutor nods, the Deleter and the Day-Care Lady jump) while the text box says what happened, and closing the box or
 Leave goes on to the map. All of it stops under reduced motion. The outdoor ones (Berry Tree, Wishing Well, Item Ball, Team
 Rocket) are close-ups too: their art's `zoom` (1.75) makes `resize()` paint the scene with bigger pixels, as far as
-their props (`span` pixels across) still fit the screen, so a narrow phone zooms less than a PC. Where HP decides the choice
-(every event but the Wishing Well and Day Care) the choice returns `vitals: true`: a slim HP row (the battle's
-`.gb-hp` bar and numbers, no name; the user found a full nameplate too bulky; `eventVitals()`) sits under the title (the top bar's little plate steps aside), and `showHpChange()` runs its bar to
-the new HP before the room closes. Choices that open a picker (Tutor, Deleter, Day Care) play their act first; the
+their props (`span` pixels across) still fit the screen, so a narrow phone zooms less than a PC. Your HP in an event room is the top bar's
+little plate beside the Poké Ball (`#choice-plate`, as on every choice screen; the user's call 2026-09-28: there used to be
+a row under the title), and `showHpChange()` runs its bar to the new HP before the room closes. Choices that open a picker (Tutor, Deleter, Day Care) play their act first; the
 price is still only paid once something is picked.
 
 ## Items
