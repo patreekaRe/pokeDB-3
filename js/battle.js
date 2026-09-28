@@ -1451,29 +1451,43 @@ function renderPicking() {
   banner.hidden = false;
 }
 
-/** A card exhausted from your hand goes up in smoke where it sat, before it leaves. */
+/** A card exhausted from your hand goes poof in a puff of smoke where it sat, then flies into the exhaust pile, the way
+    an item flies into the Bag (the user's call, 2026-09-28). */
 async function smokeOut(uid) {
   const from = $('hand').querySelector(`[data-uid="${uid}"]`);
   const risen = $('card-focus').querySelector('.focus-card');
   const src = risen && !$('card-focus').hidden ? risen : from;
   if (!src || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const r = src.getBoundingClientRect();
+  const pile = $('exhaust-count');
+  if (pile.hidden) {   // the first exhaust of the fight: the pile appears for the card to land in
+    pile.replaceChildren(el('span', 'pile-icon', '🌫️'), el('b', '', String(exhaustedCards(battle).length)));
+    pile.hidden = false;
+  }
+  const r = src.getBoundingClientRect(), to = pile.getBoundingClientRect();
   const ghost = src.cloneNode(true);
   ghost.classList.add('exhaust-ghost');
   ghost.removeAttribute('id');
   Object.assign(ghost.style, { position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: 0, rotate: '0deg', translate: '0', transform: 'none' });
+  ghost.style.setProperty('--to-x', `${to.left + to.width / 2 - (r.left + r.width / 2)}px`);
+  ghost.style.setProperty('--to-y', `${to.top + to.height / 2 - (r.top + r.height / 2)}px`);
   const wrap = el('div', 'exhaust-fx');
   wrap.append(ghost);
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 9; i++) {
     const puff = el('span', 'exhaust-puff');
-    puff.style.left = `${r.left + r.width * (0.1 + 0.8 * Math.random())}px`;
-    puff.style.top = `${r.top + r.height * (0.35 + 0.5 * Math.random())}px`;
-    puff.style.animationDelay = `${i * 45}ms`;
+    const a = (i / 9) * Math.PI * 2;
+    puff.style.left = `${r.left + r.width / 2 + Math.cos(a) * r.width * 0.3}px`;
+    puff.style.top = `${r.top + r.height / 2 + Math.sin(a) * r.height * 0.25}px`;
+    puff.style.setProperty('--dx', `${Math.cos(a) * 40}px`);
+    puff.style.setProperty('--dy', `${Math.sin(a) * 30 - 20}px`);
+    puff.style.animationDelay = `${(i % 3) * 40}ms`;
     wrap.append(puff);
   }
   document.body.append(wrap);
   src.style.visibility = 'hidden';
-  await sleep(620);
+  await sleep(900);
+  pile.classList.remove('bump');
+  void pile.offsetWidth;
+  pile.classList.add('bump');
   wrap.remove();
 }
 

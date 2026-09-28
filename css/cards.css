@@ -366,26 +366,30 @@
 .ds-btn.ds-play.pick-keep { --stripe-a: #40a050; --stripe-b: #60b868; --rim: #287838; }
 .ds-btn.ds-play.pick-copy { --stripe-a: #d0a020; --stripe-b: #e0b840; --rim: #a07808; }
 
-/* an exhausted card goes up in smoke where it sat: it greys, rises and breaks up while grey pixel puffs billow off it */
+/* an exhausted card goes poof: it flashes grey in a ring of pixel smoke, shrinks to a wisp and flies into the exhaust
+   pile beside the Poké Ball, like an item into the Bag (smokeOut() in js/battle.js) */
 .exhaust-fx { position: fixed; inset: 0; z-index: 130; pointer-events: none; }
-.exhaust-ghost { animation: exhaustGhost 0.62s steps(7) both; }
+.card.exhaust-ghost, .card.focus-card.exhaust-ghost { animation: exhaustGhost 0.9s both; transform-origin: 50% 50%; }
 @keyframes exhaustGhost {
-  0% { filter: none; opacity: 1; }
-  25% { filter: grayscale(1) brightness(1.5); opacity: 1; }
-  100% { filter: grayscale(1) brightness(1.8) blur(2px); opacity: 0; transform: translateY(-46px) scale(0.86); }
+  0% { filter: none; transform: none; }
+  18% { filter: grayscale(1) brightness(1.7); transform: scale(1.1); animation-timing-function: steps(3); }
+  40% { filter: grayscale(1) brightness(2) blur(1px); transform: scale(0.4); opacity: 0.9; animation-timing-function: ease-in; }
+  100% { filter: grayscale(1) brightness(2) blur(1px); transform: translate(var(--to-x), var(--to-y)) scale(0.08); opacity: 0.3; }
 }
 .exhaust-puff {
   position: fixed;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
   background: #d8d8e0;
-  box-shadow: 0 0 0 3px #181010, 6px -6px 0 -1px #b8b8c8, -7px -3px 0 -2px #f0f0f8;
-  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px #181010, 7px -7px 0 -1px #b8b8c8, -8px -3px 0 -2px #f0f0f8;
   opacity: 0;
-  animation: exhaustPuff 0.55s steps(5) both;
+  animation: exhaustPuff 0.6s steps(5) both;
 }
 @keyframes exhaustPuff {
   0% { opacity: 0; scale: 0.4; }
-  30% { opacity: 1; }
-  100% { opacity: 0; scale: 1.8; translate: 0 -60px; }
+  25% { opacity: 1; scale: 1.2; }
+  100% { opacity: 0; scale: 1.9; translate: var(--dx) var(--dy); }
 }
+.pile.bump { animation: pileBump 0.35s steps(3); }
+@keyframes pileBump { 40% { scale: 1.35; } }

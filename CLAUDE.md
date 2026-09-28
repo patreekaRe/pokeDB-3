@@ -821,8 +821,10 @@ A card's pick from your hand (discard, exhaust, keep, Mimic's copy: `pickFromHan
 it like a played card with a button naming the verb (`PICK_VERBS`, `choosing.picked`), the second confirms (the user's call).
 While one is asked the battle dims under the hand and a banner names it (`renderPicking()`, `#pick-banner`, `PICK_TEXT`;
 `#battle-screen.picking`, `data-pick` colours it: exhaust purple, discard blue, keep green, copy gold, as are the pickable
-cards' pulsing rings and the risen card's button, `.pick-<verb>`), and an exhausted pick goes up in pixel smoke first
-(`smokeOut()`, skipped under reduced motion): the user exhausted a card thinking they were playing it (2026-09-28).
+cards' pulsing rings and the risen card's button, `.pick-<verb>`), and an exhausted pick goes poof first
+(`smokeOut()`, skipped under reduced motion: it flashes grey in a ring of pixel smoke, shrinks and flies into the exhaust pile,
+like an item into the Bag, showing the pile if it was hidden and bumping it; its rule is `.card.exhaust-ghost`, since
+`.card.focus-card`'s own animation would win): the user exhausted a card thinking they were playing it (2026-09-28).
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first
