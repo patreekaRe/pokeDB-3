@@ -122,7 +122,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   windows beside any blown-up card: battle's risen card (`placeTips()` in `js/battle.js`: beside it on
   whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()` and the reward /
   Mart focus (`openFocus()`); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
-  `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`; keep each box's text to one short line (~55 characters at most,
+  `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`; every term with a box is
+  coloured in the card's own text and on its box's name (`colourTerms()` / `TERM_KIND` in `js/ui.js`, `.term-*` in
+  `css/cards.css`: Burn orange-red, Tide blue, Leech Seed green, debuffs purple, Strength red, the rest keyword gold; StS 2's,
+  the user's pick 2026-09-28); keep each box's text to one short line (~55 characters at most,
   the user's call 2026-09-28: "Burn: Damage each enemy turn, then -1."). A card that makes cards (`addCard`, however nested) gets a box per made card with its cost,
   keywords and text (`addedCards()` / `madeCardText()`: Rage, Paralysis, Poison, Cinder...; Rage's says it's a copy of itself).
   Each type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /

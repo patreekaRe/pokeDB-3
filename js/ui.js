@@ -129,7 +129,7 @@ export function makeCard(card, options = {}) {
   const kw = ([label, tip]) => { const k = el('b', 'card-kw', `${label}.`); k.title = tip; return k; };
   // one wrapper, since .card-text is a grid and would give each piece its own row
   const line = el('span');
-  line.append(...words.lead.flatMap(w => [kw(w), ' ']), describe(card, options.stage || 0), ...words.tail.flatMap(w => [' ', kw(w)]));
+  line.append(...words.lead.flatMap(w => [kw(w), ' ']), ...colourTerms(describe(card, options.stage || 0), card), ...words.tail.flatMap(w => [' ', kw(w)]));
   const tips = termTips(card);
   if (tips.length) line.title = tips.join(' ');
   text.append(line);
@@ -189,6 +189,29 @@ function cardSprite(card) {
  * whenever it's blown up, since a phone can't reach a `title`. A card's DOM node works too (by its data-id).
  * Null when the card has no terms.
  */
+/* Each keyword that has a box beside the blown-up card is coloured in the card's text, and its box's name in the same
+   colour (StS 2's gold keywords, the user's pick 2026-09-28): the Fire / Water / Grass resources in their type's colour,
+   debuffs purple, Strength red, the rest the keyword gold. */
+const TERM_KIND = { Burn: 'burn', Tide: 'tide', 'Leech Seed': 'seed', Weak: 'debuff', Vulnerable: 'debuff', Sap: 'debuff', Debuffs: 'debuff', Strength: 'strength' };
+const termKind = (label) => TERM_KIND[label] || 'key';
+
+function colourTerms(text, card) {
+  const labels = cardTerms(card).map(([label]) => label).filter(l => l !== 'Upgraded' && l !== 'Losing HP' && !/^Combo /.test(l));
+  if (!labels.length) return [text];
+  const esc = labels.sort((a, b) => b.length - a.length).map(l => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const re = new RegExp(`\\b(${esc.join('|')})\\b`, 'gi');
+  const out = [];
+  let at = 0;
+  for (const m of text.matchAll(re)) {
+    if (m.index > at) out.push(text.slice(at, m.index));
+    const label = labels.find(l => l.toLowerCase() === m[0].toLowerCase());
+    out.push(el('span', `term term-${termKind(label)}`, m[0]));
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) out.push(text.slice(at));
+  return out;
+}
+
 export function cardTips(card, big) {
   if (card instanceof Element) card = card.classList.contains('card') && CARDS_BY_ID[card.dataset.id];
   const terms = card ? cardTerms(card) : [];
@@ -198,7 +221,7 @@ export function cardTips(card, big) {
   const box = el('div', 'card-tips');
   for (const [label, text] of terms) {
     const tip = el('div', 'card-tip');
-    tip.append(el('b', 'card-tip-name', label), el('span', '', text));
+    tip.append(el('b', `card-tip-name term-${termKind(label)}`, label), el('span', '', text));
     box.append(tip);
   }
   return box;

@@ -393,3 +393,13 @@
 }
 .pile.bump { animation: pileBump 0.35s steps(3); }
 @keyframes pileBump { 40% { scale: 1.35; } }
+
+/* keywords with a box beside the blown-up card, coloured in the card's text and on their box's name (colourTerms() in js/ui.js) */
+.card-text .term { font-weight: 800; }
+.term-key { color: #b05800; }
+.term-burn { color: #c83810; }
+.term-tide { color: #1d62c4; }
+.term-seed { color: #2a7c2a; }
+.term-debuff { color: #7a3aa8; }
+.term-strength { color: #b8201c; }
+.card-tip-name.term-key { color: var(--win-gold); }
