@@ -309,8 +309,10 @@ Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the 
 
 Optional, from the Poké Ball menu (the user's picks, 2026-09-28: Firebase, Google and email-link sign-in, ask when two
 saves differ). `js/cloud.js`; the project (`pokedb-42e7c`, the user's) and its public web config is `FIREBASE_CONFIG` in `js/cloud-config.js` (not a secret;
-the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) stays hidden and nothing
-changes. Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
+the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) and the title's PC stay
+hidden and nothing changes. The title's top-left corner has its own way in once the gems are up: the games' PC
+(`#title-account`, the 🖥️ pixel icon big, captioned Sign in / Cloud save, a green power light once signed in; the user's
+idea). Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
 when `pokedb.cloud.v1` (this device's `{ uid, rev, dirty, localAt }`) says you're signed in, the URL is an email sign-in
 link, or you open the window. Both localStorage keys (`SAVE_KEYS` in `js/storage.js`) go as they are into one Firestore
 document, `saves/<uid>` = `{ save, run, rev, savedAt, device }`; `onSaveWrite()` fires on every write, and the upload

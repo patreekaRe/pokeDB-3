@@ -64,6 +64,30 @@
 .title-screen.menu { cursor: default; }
 .title-screen.menu .press-start { display: none; }
 .title-screen.menu .title-menu { display: flex; }
+.title-account {
+  position: absolute; z-index: 3;
+  top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left));
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px 6px; border: 0; background: none; color: #fff; cursor: pointer;
+  font: inherit; font-size: 10px; letter-spacing: 0.04em;
+}
+.ta-pc { position: relative; font-size: 40px; line-height: 1; filter: drop-shadow(0 3px 0 rgba(10, 8, 40, 0.55)); }
+.ta-label { text-shadow: 2px 2px 0 #1c1440; }
+.title-account:hover .ta-label, .title-account:focus-visible .ta-label { color: #ffd070; }
+.title-account:active .ta-pc { translate: 0 2px; }
+/* signed in: the PC's power light is on */
+.title-account.on .ta-pc::after {
+  content: ''; position: absolute; right: 18%; top: 50%;
+  width: 4px; height: 4px; background: #58f048; box-shadow: 0 0 6px #58f048;
+  animation: taLed 1.6s steps(1) infinite;
+}
+@keyframes taLed { 50% { opacity: 0.35; } }
+@keyframes taBob { to { translate: 0 -3px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .title-account:hover .ta-pc, .title-account:focus-visible .ta-pc { animation: taBob 0.4s steps(2) infinite alternate; }
+}
+@media (prefers-reduced-motion: reduce) { .title-account.on .ta-pc::after { animation: none; } }
+.title-screen:not(.menu) .title-account { display: none; }
 .title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
 .title-big { transition: font-size 0.4s ease; }

@@ -307,6 +307,9 @@ function note(text) { $('cloud-note').textContent = text; }
 function render() {
   const signedIn = !!user;
   $('cloud-btn').querySelector('.mi-label').textContent = signedIn ? 'Cloud save' : 'Sign in';
+  $('title-account-text').textContent = signedIn ? 'Cloud save' : 'Sign in';
+  $('title-account').setAttribute('aria-label', signedIn ? 'Cloud save' : 'Sign in');
+  $('title-account').classList.toggle('on', signedIn);
   $('cloud-out').hidden = signedIn;
   $('cloud-in').hidden = !signedIn;
   $('cloud-signout').hidden = !signedIn;
@@ -331,7 +334,9 @@ function openCloud() {
 export function initCloud() {
   if (!FIREBASE_CONFIG) return;
   $('cloud-btn').hidden = false;
+  $('title-account').hidden = false;
   $('cloud-btn').addEventListener('click', openCloud);
+  $('title-account').addEventListener('click', openCloud);
   $('cloud-google').addEventListener('click', signInGoogle);
   $('cloud-email-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -345,8 +350,10 @@ export function initCloud() {
   addEventListener('online', flush);
   if (readState().uid || isEmailLink()) connect().catch(() => setStatus('offline'));
   // load the SDK while the window is open, so Google's popup opens straight from the tap (browsers block late ones)
-  $('cloud-btn').addEventListener('click', () => {
+  const preload = () => {
     connect().catch(() => { connecting = null; note('Can\'t reach the sign-in service. Are you online?'); });
-  });
+  };
+  $('cloud-btn').addEventListener('click', preload);
+  $('title-account').addEventListener('click', preload);
   render();
 }

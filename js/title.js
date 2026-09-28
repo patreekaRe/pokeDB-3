@@ -57,7 +57,7 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
-    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem') && gems[at]) { e.preventDefault(); gems[at].click(); }
+    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-account') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); } });
 }
