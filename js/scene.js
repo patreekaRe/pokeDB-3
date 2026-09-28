@@ -3928,7 +3928,7 @@ function drawLightning(t) {
     life.bolt = bolt;
     life.boltAt = t;
     life.nextBolt = t + (storm.on ? FPS * (2 + rand() * 3) : FPS * 7);
-    if (storm.on) playSound('thunder');
+    if (storm.on && !storm.thundered) { storm.thundered = true; playSound('thunder'); }   // once a storm (the user found it repeating too much); the lightning goes on silently
   }
   const cycle = t - life.boltAt;
   if (cycle <= 1) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle === 0 ? 1.9 : 1.35, cycle === 0 ? 40 : 14);
