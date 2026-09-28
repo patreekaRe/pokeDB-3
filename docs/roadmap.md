@@ -445,6 +445,13 @@ Done 2026-09-27 (the user's asks, no bot run): Pokédex payouts raised (research
 dex 1500, first 5000), a Rewards tab in the Pokédex, the Silph Scope (reveal a fight room's Pokémon, 1 a biome, 3 with the Game Corner's
 Scope Upgrade), a volume slider, a quieter low-HP beep, and Main menu keeping the run saved.
 
+**Pile bug (fixed 2026-09-28).** From 6c.11a (the Lum Berry change, 2026-09-27) a misplaced `else` in `resolveCard()`
+also put every played power and Exhaust card in the discard pile, so powers stacked every reshuffle (the user noticed Hot
+Coals) and Exhaust cards came back. The sim (`sim/engine.js`) had the same bug and is fixed too. Human bot, 300 runs/cell,
+fire / grass / water, before -> after: L0 78 / 82 / 75 -> 79 / 77 / 70, L3 59 / 57 / 60 -> 62 / 59 / 53, L5 29 / 31 / 30 ->
+34 / 33 / 29. Overall about the same (the bot rarely builds around powers or Exhaust); Water's L0 / L3 drop (-6 / -7) is
+about two standard errors, worth a re-check with more runs before retuning.
+
 ## Next sessions (queued 2026-09-27)
 
 Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
