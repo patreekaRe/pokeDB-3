@@ -136,7 +136,8 @@ function perkBox(p, count, done, pageName) {
 
 /* The Rewards tab (the user's call: what finishing the Pokédex pays should be easy to find): the jackpot, research and
    each page's perk, with how far along you are. */
-const REWARDS = DEX_PAGES.length;
+const MYSTERY = DEX_PAGES.length;   // the fourth biome's page, "???" until v1.0 brings it (docs/roadmap.md)
+const REWARDS = MYSTERY + 1;
 
 function prize(art, name, text) {
   const row = el('div', 'dex-prize');
@@ -200,9 +201,31 @@ function renderRewards() {
   $('dex-body').replaceChildren(jackpot, research, ...pages);
 }
 
+/** The fourth biome's page: nothing but silhouettes of question marks, a hint of what's coming. */
+function renderMystery() {
+  const box = el('div', 'dex-perk dex-mystery-box');
+  const text = el('div', 'dex-perk-text');
+  text.append(el('strong', '', '🔒 ???'), el('span', '', 'Something waits beyond the Ember Wastes.'), el('small', '', 'No trainer has found a way there... yet.'));
+  box.append(el('span', 'dex-perk-icon', '❓'), text);
+  const body = [box];
+  for (const [label, n] of [['Wild Pokémon', 12], ['Alphas', 3], ['???', 1]]) {
+    const head = el('div', 'index-head');
+    const title = el('h3', 'index-heading', label);
+    title.append(el('span', 'index-count', `?/${n > 1 ? '??' : '?'}`));
+    head.append(title);
+    body.push(head, ...Array.from({ length: n }, () => {
+      const tile = el('div', 'dex-entry locked dex-unknown');
+      tile.append(el('span', 'dex-no', 'No.???'), el('span', 'dex-sprite dex-unknown-mark', '?'), el('strong', 'dex-name', '???'));
+      return tile;
+    }));
+  }
+  $('dex-body').replaceChildren(...body);
+}
+
 function render() {
   const save = getSave();
   if (page === REWARDS) { renderRewards(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
+  if (page === MYSTERY) { renderMystery(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   const seen = new Set(save.dex.seen);
   const defeated = new Set(save.dex.defeated);
   const p = DEX_PAGES[page];
@@ -317,7 +340,7 @@ export function initPokedex() {
     return btn;
   };
   tabs.replaceChildren(...DEX_PAGES.map((p, i) => tab(i, `biome-${p.biome}`, ['🌳', '⛩️', '🌋'][i], p.name.split(' ').pop())),
-    tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
+    tab(MYSTERY, 'biome-mystery', '❓', '???'), tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
   tabs.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;

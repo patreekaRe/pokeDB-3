@@ -3202,6 +3202,11 @@ body.has-scene #scene-bg { display: block; }
 .dex-tab.biome-clearing { --c1: #72c860; --c2: #2f7a30; }
 .dex-tab.biome-shrine   { --c1: #b88ad8; --c2: #5a3488; }
 .dex-tab.biome-wastes   { --c1: #e8744a; --c2: #8a2e18; }
+.dex-tab.biome-mystery  { --c1: #8a6ad8; --c2: #3c2a78; }
+/* the fourth biome's "???" page: question marks where the sprites will be */
+.dex-mystery-box { border-color: #3c2a78; }
+.dex-entry.dex-unknown { cursor: default; }
+.dex-unknown-mark { display: grid; place-items: center; font: 2rem/1 var(--pixel-font); font-synthesis-weight: none; color: #3c2a78; opacity: 0.35; }
 .dex-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
 .dex-perk {
   grid-column: 1 / -1;

@@ -674,7 +674,7 @@ last act only a special run reaches.
   scaling), not just bigger HP.
 - **C. The final boss fight** as a set piece: several phases (Eternatus -> Eternamax, say), its own music, the storm at
   30% at its most dramatic.
-- **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page and its perk, achievements, the
+- **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page's perk (the page itself is a "???" tab since 2026-09-28, `renderMystery()` in `js/pokedex.js`, 12 + 3 + 1 placeholder tiles; part B swaps it for a real `DEX_PAGES` entry, and must keep it out of `ALL_IDS` / `dex.complete` until biome 4 exists, so the 55-entry jackpot isn't taken away), achievements, the
   completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
 
