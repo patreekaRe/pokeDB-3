@@ -1053,8 +1053,8 @@ whenever a run is saved or going). Continue's gem shimmers: `tick()` repaints it
 in a flash, `stat-up` then `ball-open`; straight through under reduced motion); the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
 top-left corner (`.title-corner`, gems up only) holds the cloud save's PC (see Cloud save) and a 🔊 Sound button whose
 `#title-sound-panel` (a `.ball-menu-panel`) has the same Sound toggle and volume slider as the Poké Ball menu
-(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide. Under them a
-small 🔄 Refresh (`#title-refresh`, `refreshGame()` in `js/title.js`, the user's ask) re-fetches every `.js` / `.css` file
+(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide, where the column also hugs the screen's corner. The column is left-aligned (`align-items: flex-start`), so the speaker and refresh keep clear of the logo instead of centring under the PC's caption (the user found them too close on phones). Under them a
+tiny 🔄 Refresh (20px, 16px on phones) (`#title-refresh`, `refreshGame()` in `js/title.js`, the user's ask) re-fetches every `.js` / `.css` file
 the page loaded with `cache: 'reload'` (a plain reload can show the old game for ~10 minutes after a push: GitHub Pages'
 cache), spinning meanwhile, then reloads; the save is untouched. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
 plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): a stack of pixel gems under the logo, each
