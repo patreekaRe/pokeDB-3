@@ -295,7 +295,7 @@ export const STARTERS = [
   },
 
   /* ---------- legendaries for mastery goals (step 9c) ----------
-     A finished Pokédex, a lean deck, no rest, a flood of Tide, 5 Water starters. */
+     A finished Pokédex, a lean deck, no rest, a flood of Tide, 3 Water starters. */
   {
     id: 'reshiram', type: 'fire', skinOf: 'charmander', legendary: true,
     line: [
@@ -343,7 +343,7 @@ export const STARTERS = [
       { id: 'keldeo',        name: 'Awakened Keldeo' },
       { id: 'keldeo-shiny',  name: 'Ascendant Keldeo' },
     ],
-    blurb: 'A legendary colt of the rivers, for wins with 5 different Water starters. Same water moves as Squirtle.',
+    blurb: 'A legendary colt of the rivers, for wins with 3 different Water starters. Same water moves as Squirtle.',
     deck: WATER_DECK,
   },
 
