@@ -60,7 +60,7 @@ to `main` (see Conventions), not open a branch or PR.
   a press starts and ends on its backdrop (with the `cancel` sound); the result and yes/no windows click
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
-  it); the starter sheet goes away on a tap on the page that isn't a button. The Bag, the Poké Ball menu, zooms and
+  it). The Bag, the Poké Ball menu, zooms and
   focus layers already did.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
@@ -87,7 +87,7 @@ to `main` (see Conventions), not open a branch or PR.
   `js/data/starters.js` moves an old id's unlock, wins and saved run over
   to the new one (add to it if a starter is ever replaced again).
 - **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
-  in the next grid slot like any other tile). It unlocks once every other starter
+  the last portrait in the character select's Legendaries tab). It unlocks once every other starter
   is unlocked; that achievement must stay last in `ACHIEVEMENTS`, since
   `checkAchievements()` grants in order (the shop also runs it after a
   purchase). It is `type: 'psychic'` with an empty deck, so `comingSoon: true`
@@ -231,7 +231,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   every skin shares it and nothing is saved (it comes from `starter.type`). Fire **Blaze**: attacks +3
   while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
   fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide. It's the first row of the
-  Bag's Relics pocket, a boxed "Ability: X" on the starter sheet (`#detail-ability`), an "Ability: X" line on
+  Bag's Relics pocket, an "Ability: X" line in the character select's panel (`#sel-ability`), an "Ability: X" line on
   the map's run card (`#run-ability`), and an Ability Capsule chip on your battle nameplate (`#player-ability`,
   tap for its text; the capsule, not the type icon, so it doesn't read as a type). When it does something,
   `abilityBanner()` in `js/battle.js` slides in Gen 5's "Charmander's Blaze" window (`#ability-banner`) on
@@ -265,8 +265,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   **Scout Report** (Question Card: `REWARD_CARDS`, 4 cards on a fight's card reward). Old saves merge the new
   passives in as 0/false. **Shiny starters** (cosmetic): the Game Corner's third row, one per starter but Mewtwo
   (`SHINY_COSTS`: 250 the free three, 350 skins, 500 legendaries, the user's call 2026-09-27; only once you own the starter, else a silhouette).
-  The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny toggle on the starter sheet
-  (`#shiny-toggle`) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
+  The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny pill in the character select's panel
+  (`#sel-shiny`, only once owned; a ✨ marks the portrait too) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
   (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows;
   a legendary's final stage is already shiny. The 126 GIFs are PokeAPI's black-white animated `shiny/` and
   `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
@@ -299,11 +299,10 @@ writes the room (`biome:nodeId`) into the saved run's `credited` list straight a
 research by refreshing, 2026-09-28). Refreshing mid-fight to restart one you're losing is allowed on purpose (the
 user's call: StS allows it too), so don't serialise battles to stop it.
 A version mismatch or any bad id (deck, relics, Mart stock) silently
-discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
-screen's Continue button (`renderContinue()` in `js/main.js`) holds the run's Poké Ball
-where the sprite goes; tapping it opens the lid and sends the starter out (white,
-then coloured in, with its cry) before the map loads, shows
-whenever a valid save exists, and Begin run confirms before replacing it.
+discards it: bump `RUN_SAVE_VERSION` when the shape changes. The title's
+Continue gem (`savedRunCard()` in `js/main.js`, drawn by `renderMenu()` in `js/title.js`) shows whenever a valid save
+exists, with the run's Pokémon as its icon and its biome and HP on a second line; tapping it flashes the Pokémon white
+and it hops off the gem with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 
 ## Deck thinning
 
@@ -713,8 +712,13 @@ first blows a copy of the tile up in the middle of a dimmed screen
 `confirm` ("Add to deck") under it; the big tile or that button takes it, the
 dimmed area or Escape backs out. "Add to deck" and Skip are `.ds-btn`s: End
 Turn's striped panel and white pill, green (`.ds-go`) or blue (`.ds-skip`),
-with a blinking ▶ in the pill. The menus use a size-down version (`.ds-sm`): How to play
-(gold `.ds-gold`, with its glint on the pill), See deck and Begin run (green), Back (blue). Battle's picked card / item shows a red `.ds-play` Play / Use button (`focusButton()` in `js/battle.js`) instead of "Tap again to play".
+with a blinking ▶ in the pill. The menus' own buttons are **pixel pills** instead (`.pxb` in
+`css/menus.css`, the user's reference, 2026-09-28): a button of two spans (`.pxb-o` the dark outline, `.pxb-i` the face, both
+clipped to stepped 3-2-1 pixel corners by `--steps`) with a light band on top, a shade band below, white glint dashes and a
+solid drop shadow; colours `.green` `.blue` `.purple` `.orange` `.sun` `.red`, `.white` for white labels, `.small`, `.on`
+for a lit toggle or tab (a tab that's off sits back). They're the character select's Back / Choose / tabs / Shiny, the
+Collection's Back and the deck screen's Back / Begin run. The reward, battle and Mart capsules (`.ds-btn`) stay as they are
+for now. Battle's picked card / item shows a red `.ds-play` Play / Use button (`focusButton()` in `js/battle.js`) instead of "Tap again to play".
 Titles are short headers on a pixel-font plate ("Learn a new move", "Item found").
 In the read-only deck views (the starting deck and the Bag's deck window,
 both filled by `fillDeck()` in `js/deckpreview.js`) a tap on a card blows it
@@ -966,8 +970,8 @@ unlocks. Escape closes it while nothing modal is open. The grille and ball are p
 
 ## Windows
 
-Every `.dialog`, every `.panel` (start screen, deck preview), the Bag, the
-Continue card and the Poké Ball menu are light Pokégear windows (a `.panel`
+Every `.dialog`, every `.panel` (deck preview), the Bag
+and the Poké Ball menu are light Pokégear windows (a `.panel`
 inside a `.dialog` is a flat inset box instead):
 muted parchment inside a chunky grey frame, softly rounded corners (`--round` 12px windows,
 `--round-sm` 8px buttons/tiles, `--round-xs` 4px tiny bits, all in `:root`;
@@ -1003,17 +1007,23 @@ hover/focus (left padding reserves its space; `.primary` = orange frame,
 
 ## Title screen
 
-Every page load opens on a Gold/Silver-style title screen (`#title-screen`,
-`showTitle()` in `js/title.js`, called at the end of `init()` in
-`js/main.js`) before the start screen. It's a fixed overlay above the top
-bar: a pixel night sky painted into a low-res `<canvas>` (dithered sky
-bands, moon, hills, the grassy ledge; stars twinkle at 10 fps and the odd
-shooting star crosses), Moltres flying past the moon as a silhouette, the
-three starters hopping on the ledge, and a blinking PRESS START (TAP TO
-START on touch). Any tap or key flashes white, fades out, then replays the
-start screen's logo bounce and opens the first-time How to play. That
-first tap also unlocks audio, so the title music starts with the menu.
-`--ground` (set from JS) keeps the CSS sprites on the painted ledge.
+The title screen (`#title-screen`, `js/title.js`) is the game's **home** since 2026-09-28 (the user's design, from
+Slay the Spire 2's title and pixel-art button references; mockups in `docs/mockups/`). It's a fixed overlay above the top
+bar: a pixel **dusk** sky painted into a low-res `<canvas>` (`SKY`: deep blue to a rose horizon, dithered; the moon up in the
+corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
+Moltres flying past as a silhouette and the three starters hopping on the ledge (the user asked about removing them; kept,
+since without them the scene is empty hills). Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
+plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): a stack of pixel gems under the logo, each
+painted on its own `<canvas>` by `paintGem()` (pointed ends, a dark outline, a two-tone bronze frame, an inner groove, a face
+with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a pixel, 4 or 3 on windows ≤700px tall, the
+canvas a whole number of pixels wide so they stay square) with a bare pixel icon on its left end (a dark pixel outline, no
+frame: the user's call): **Continue** (amber, only with a save; see Saved runs), **New game** (violet, a Poké Ball: the
+character select), **Collection** (gold, the Pokédex: the Collection screen) and **Game Corner** (coral: `toggleShop()`,
+whose dialog sits above the title at z-index 90). Hover, focus or ↑ ↓ move a blinking ▶ (`point()`), Enter / tap picks, a
+press sinks the gem. Leaving fades the title out over the screen you go to (`leaveTitle()`), and every way home (the Poké
+Ball menu's Main menu, a run's end, Back on the select or the Collection, the About erase) comes back to the gems with
+`showHome()`. The first PRESS START unlocks audio and opens the first-time How to play. `--ground` (set from JS) keeps the
+CSS sprites on the painted ledge.
 
 ## Top bar and start screen
 
@@ -1024,8 +1034,8 @@ the CSS `.pokeball`) opens a drop-down
 menu, Index, Stats, Achievements, Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
 letters in `PALETTE`). The
-**Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) is also a
-blue `.ds-btn` under How to play on the start screen: every card in `ALL_CARDS`,
+**Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the
+Poké Ball menu and the Collection's Moves, Relics and Items cards: every card in `ALL_CARDS`,
 a sticky tab row per type (Fire, Grass, Water, Neutral), grouped by rarity and
 then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name at
 stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
@@ -1035,8 +1045,8 @@ else the last tab; new cards show up there on their own. Two more tabs, Relics a
 Met means offered, sold or found: `markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`)
 is called by `relicOption()` / `itemOption()` in `js/rewards.js` (rewards and the Mart), `floatingThing()` (item
 balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gift. Saves from before start empty.
-The **Pokédex** (`js/pokedex.js`, `#dex-dialog`, roadmap step 7) sits beside it: a red `.ds-dex` button next to Index on
-the start screen and a Poké Ball menu item (so it opens from the map too, on the run's biome page). A page per biome
+The **Pokédex** (`js/pokedex.js`, `#dex-dialog`, roadmap step 7) opens from the Collection's Pokédex card
+and a Poké Ball menu item (so it opens from the map too, on the run's biome page). A page per biome
 (`DEX_PAGES` in `js/data/pokedex.js`, built from `BIOMES`: 12 wilds, then Alphas, then Bosses, numbered No.001-055);
 an entry is a dark "???" silhouette (`.dex-entry.locked`) until you've fought it (seen: picture, name, biome and research count only), then a
 Poké Ball mark once beaten (defeated), like the games' seen / caught; everything else waits for Research complete (the
@@ -1069,30 +1079,31 @@ hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké B
 menu instead. In battle on phones ≤420px the PokéCoins
 hide so the piles, ₽ and buttons fit on one row.
 In battle, the draw and discard piles sit beside the Poké Ball.
-The "Main menu" item hides itself on the start screen (`showScreen()`).
+The "Main menu" item takes you to the title's gem menu from anywhere.
 
-Tapping an unlocked starter picks it and shows `#starter-sheet`, a window
-pinned to the bottom of the screen like the deck screen's Begin run bar
-(`showSheet()` in `js/main.js`): a narrow (340px) window with the sprite,
-name, type chip, blurb and "See deck →" stacked and centred. It isn't modal, so you can keep scrolling and tapping
-other starters (the panel just switches); `body.sheet-open` pads the page
-by its height (`--sheet-h`) so it never covers the last row. ✕ hides it and
-keeps the pick; tapping the picked tile again brings it back.
-Starter tiles are all one size: a locked one shows a 💰 (Shop) or 🏆
-(achievement) corner badge instead of a text line, and an unlocked one shows
-nothing extra. The sprite GIFs pad their Pokémon very unevenly, so
-`fitSprite()` in `js/main.js` measures each one's visible pixels once and
-scales small ones up with a `transform` (layout untouched). The Shop marks
-owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
+**Character select** (`#start-screen.select-screen`, `js/select.js`, New game; Slay the Spire's, the user's call
+2026-09-28): the picked Pokémon stands big on its type's scene (`showMenuScene()`), its resting pose (`SPRITE_FIT`) scaled in
+half steps to fit the stage (`sizeSprite()`), with a see-through dark panel (name in big gold pixel letters, HP, type chip,
+blurb, Ability, a ✨ Shiny pill once that shiny is owned) and a strip of portraits along the bottom under two pill tabs,
+**Starters** and **Legendaries** (with unlocked/total counts; Mewtwo is the last legendary). A locked portrait is a silhouette
+with a 🔒, and picking it shows the silhouette big with how to get it: the achievement's text, or a 🎰 Game Corner pill
+(`#sel-corner`) that opens the Game Corner on that skin; Choose is greyed out for it (and for Mewtwo while `comingSoon`).
+Picking plays the cry and swaps the scene; ← → move along the strip, Enter chooses, Escape goes back. Choose opens the deck
+and level screen (`openPreview()`), whose Back returns here on the same starter. A Game Corner purchase refreshes it
+(`refreshSelect()` on the shop's `close`). Phones stack it (Pokémon, panel, Back / Choose, tabs, strip, which scrolls
+sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, Back / Choose on the sides, the strip centred at
+the bottom). The page's footer note hides here.
+
+**Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): six Pokégear cards with a coloured header
+(Pokédex, Moves, Relics, Items, Stats, Achievements), each with its art, a line and a progress count (defeated, moves,
+found, runs won, done), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
+3 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
 
 The logo is built from per-letter spans in `index.html`: "Poké" uses the
 Sniglet Google Font (loaded in `<head>`, logo only), "DB" uses the normal
-heavy font, and the "o" is a CSS Poké Ball (`.pokeball`). The "How to play"
-button's orbiting sparkle ring is drawn on a 2D canvas by `js/fx.js` with
-hand-rolled 3D projection, deliberately not Three.js, to keep the page
-light on phones. It only animates while the start screen is showing, and
-all start-screen motion stops under `prefers-reduced-motion`.
+heavy font, and the "o" is a CSS Poké Ball (`.pokeball`). Under `prefers-reduced-motion` the title, select and Collection skip their
+animations (the gems' rise, the send-out, the fades), but not their sounds.
 
 How to play (`#help-dialog`, `js/howto.js`) is a row of swipeable slides
 (native CSS scroll-snap, plus dots, Next/Prev and arrow keys). Open it with
@@ -1161,7 +1172,7 @@ or zoom), unless that click already started an effect of its own; cries don't co
 starter tap blips then cries. New buttons get it for free; to silence one, keep it out of `CONTROLS`),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or
-removal is paid for), `ball-throw` / `ball-open` (the battle intro's Poké Ball; `ball-open` also on the Continue card),
+removal is paid for), `ball-throw` / `ball-open` (the battle intro's Poké Ball; `ball-open` also on the title's Continue gem),
 `stat-up` (strength or focus gained, either side, enemy buffs and Enrage too), `stat-down` (the enemy gets
 Weak or Vulnerable), `item-get` (a relic or item received: reward picks via `confirmSound`, the Fan Club gift,
 the Shrine; not Mart buys), `low-hp` (looped with `setLoop()` in `js/audio.js` while your HP is at 20% or

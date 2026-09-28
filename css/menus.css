@@ -1,0 +1,316 @@
+/* ============================================================
+   menus.css  -  the title's gem menu, the character select, the
+   Collection, and the pixel pill buttons they share (2026-09-28, after
+   the user's references: pixel-art pill buttons, glossy hexagon gems,
+   Slay the Spire's title, character select and compendium).
+   ============================================================ */
+
+/* ---------- pixel pills ----------
+   A button in two spans so each can be clipped to stepped pixel corners (3-2-1 pixels of --p):
+   .pxb-o is the dark outline, .pxb-i the face, with a light band on top, a shade band below
+   and white glint dashes in its corners, over a solid drop shadow. */
+.pxb {
+  --p: 3px;
+  --base: #2ea84a; --hi: #62d474; --lo: #1c7a34; --ink: #0e2a16; --glint: #fff;
+  --steps: polygon(calc(3 * var(--p)) 0, calc(100% - 3 * var(--p)) 0, calc(100% - 3 * var(--p)) var(--p), calc(100% - 2 * var(--p)) var(--p), calc(100% - 2 * var(--p)) calc(2 * var(--p)), calc(100% - var(--p)) calc(2 * var(--p)), calc(100% - var(--p)) calc(3 * var(--p)), 100% calc(3 * var(--p)), 100% calc(100% - 3 * var(--p)), calc(100% - var(--p)) calc(100% - 3 * var(--p)), calc(100% - var(--p)) calc(100% - 2 * var(--p)), calc(100% - 2 * var(--p)) calc(100% - 2 * var(--p)), calc(100% - 2 * var(--p)) calc(100% - var(--p)), calc(100% - 3 * var(--p)) calc(100% - var(--p)), calc(100% - 3 * var(--p)) 100%, calc(3 * var(--p)) 100%, calc(3 * var(--p)) calc(100% - var(--p)), calc(2 * var(--p)) calc(100% - var(--p)), calc(2 * var(--p)) calc(100% - 2 * var(--p)), var(--p) calc(100% - 2 * var(--p)), var(--p) calc(100% - 3 * var(--p)), 0 calc(100% - 3 * var(--p)), 0 calc(3 * var(--p)), var(--p) calc(3 * var(--p)), var(--p) calc(2 * var(--p)), calc(2 * var(--p)) calc(2 * var(--p)), calc(2 * var(--p)) var(--p), calc(3 * var(--p)) var(--p));
+  display: inline-grid;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55));
+  transition: translate 0.08s steps(2), filter 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.pxb-o { display: grid; background: #181018; clip-path: var(--steps); }
+.pxb-i {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: var(--p);
+  padding: calc(4 * var(--p)) calc(8 * var(--p));
+  background: linear-gradient(var(--hi) 0 calc(2 * var(--p)), var(--base) calc(2 * var(--p)) calc(100% - 2 * var(--p)), var(--lo) calc(100% - 2 * var(--p)));
+  clip-path: var(--steps);
+  font: 0.95rem/1 var(--pixel-font); font-synthesis-weight: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.pxb-i::before, .pxb-i::after { content: ""; position: absolute; width: calc(3 * var(--p)); height: var(--p); background: var(--glint); opacity: 0.85; }
+.pxb-i::before { left: calc(3 * var(--p)); top: calc(2 * var(--p)); box-shadow: calc(4 * var(--p)) 0 0 0 var(--glint); width: calc(2 * var(--p)); }
+.pxb-i::after { right: calc(3 * var(--p)); bottom: calc(3 * var(--p)); opacity: 0.6; }
+.pxb.white .pxb-i { color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); }
+.pxb.small { --p: 2px; }
+.pxb.small .pxb-i { font-size: 0.68rem; padding: calc(4 * var(--p)) calc(8 * var(--p)) calc(3.5 * var(--p)); }
+.pxb.green  { --base: #2ea84a; --hi: #62d474; --lo: #1c7a34; --ink: #0e2a16; }
+.pxb.blue   { --base: #2f7de8; --hi: #6aaaf8; --lo: #1c52b0; }
+.pxb.purple { --base: #b43ad8; --hi: #d670f0; --lo: #7a2098; }
+.pxb.orange { --base: #f07a1e; --hi: #ffa650; --lo: #b85010; --ink: #3a1a06; }
+.pxb.sun    { --base: #f8c858; --hi: #ffe498; --lo: #c08a20; --ink: #3a2606; }
+.pxb.red    { --base: #e8483c; --hi: #ff8070; --lo: #a82420; }
+@media (hover: hover) { .pxb:not(:disabled):hover { translate: 0 -2px; filter: brightness(1.08) drop-shadow(0 calc(var(--p) + 2px) 0 rgba(20, 10, 30, 0.5)); } }
+.pxb:not(:disabled):active { translate: 0 var(--p); filter: drop-shadow(0 0 0 transparent); }
+.pxb:focus-visible { outline: none; filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)) drop-shadow(0 0 2px #f8e070) drop-shadow(0 0 1px #f8e070); }
+.pxb:disabled { cursor: default; filter: grayscale(0.85) brightness(0.8) drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.4)); }
+/* a toggle or tab that's on glows; the tab that's off sits back */
+.pxb.on { filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)) drop-shadow(0 0 4px rgba(248, 224, 112, 0.9)); }
+.pxb[role="tab"]:not(.on) { filter: saturate(0.45) brightness(0.8) drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.45)); }
+
+/* ---------- the title's gem menu ---------- */
+.title-menu { display: none; flex-direction: column; align-items: center; gap: 14px; }
+.title-screen.menu { cursor: default; }
+.title-screen.menu .press-start { display: none; }
+.title-screen.menu .title-menu { display: flex; }
+.title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
+.title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
+.title-big { transition: font-size 0.4s ease; }
+
+.gem {
+  --gp: 4px;   /* a gem pixel, as title.js draws it */
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 var(--gp) 0 rgba(20, 10, 30, 0.5));
+  transition: translate 0.08s steps(2), filter 0.1s;
+  animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms);
+  -webkit-tap-highlight-color: transparent;
+}
+@keyframes gemIn { from { opacity: 0; translate: 0 22px; } }
+.gem-face { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.gem-icon {
+  position: absolute;
+  left: calc(8 * var(--gp));
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  translate: 0 -50%;
+  pointer-events: none;
+  /* a dark pixel outline round the bare icon, so it reads on any gem */
+  filter: drop-shadow(2px 0 0 #2a1408) drop-shadow(-2px 0 0 #2a1408) drop-shadow(0 2px 0 #2a1408) drop-shadow(0 -2px 0 #2a1408) drop-shadow(0 3px 0 rgba(20, 10, 30, 0.45));
+}
+.gem-icon img { width: 60px; height: 60px; max-width: none; object-fit: contain; image-rendering: pixelated; margin-top: -8px; }
+.gem-icon .pokeball { font-size: 50px; animation: none; }
+.gem-emoji { font-size: 30px; line-height: 1; }
+.gem-label {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  height: 100%;
+  align-content: center;
+  padding-left: 40px;
+  font: 1rem/1 var(--pixel-font); font-synthesis-weight: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 2px 0 0 #3a1c0c, -2px 0 0 #3a1c0c, 0 2px 0 #3a1c0c, 0 -2px 0 #3a1c0c, 0 4px 0 rgba(20, 10, 30, 0.4);
+}
+.gem-run { display: flex; align-items: center; gap: 8px; font-size: 0.55rem; letter-spacing: 0.04em; text-transform: none; }
+.gem-place { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gem-hp { width: 58px; height: 8px; background: #3a1c0c; box-shadow: 0 0 0 2px #2a1408; }
+.gem-hp i { display: block; height: 100%; background: #58d048; box-shadow: inset 0 2px 0 #98f080; }
+.gem-hp[data-level="mid"] i { background: #f8c030; box-shadow: inset 0 2px 0 #fff080; }
+.gem-hp[data-level="low"] i { background: #f05030; box-shadow: inset 0 2px 0 #ff9878; }
+.gem.on { translate: 0 -2px; filter: brightness(1.08) drop-shadow(0 calc(var(--gp) + 2px) 0 rgba(20, 10, 30, 0.5)); }
+.gem.on::before {
+  content: "▶";
+  position: absolute;
+  left: -26px;
+  top: 50%;
+  translate: 0 -50%;
+  color: #f8e070;
+  font: 0.8rem var(--pixel-font);
+  text-shadow: 2px 2px 0 #181018;
+  animation: cursorBlink 1s steps(1) infinite;
+}
+.gem:active { translate: 0 var(--gp); filter: brightness(0.96); }
+.gem:focus-visible { outline: none; }
+/* Continue: the Pokémon on the gem flashes white and hops off it, like being sent out */
+.gem.going .gem-icon { animation: gemSendOut 0.7s steps(7) forwards; }
+@keyframes gemSendOut {
+  0% { filter: brightness(1); }
+  30% { filter: brightness(0) invert(1); scale: 1.2; }
+  60% { filter: brightness(0) invert(1); scale: 1.5; translate: 0 -90%; opacity: 1; }
+  100% { scale: 1.8; translate: 0 -120%; opacity: 0; }
+}
+/* PRESS START flashes white; the title fades out as it's left and back in when you come home */
+.title-screen.flash::after { content: ""; position: absolute; inset: 0; background: #fff; animation: titleFlash2 0.26s steps(2) forwards; pointer-events: none; }
+@keyframes titleFlash2 { 50% { opacity: 1; } 100% { opacity: 0; } }
+.title-screen:not([hidden]) { animation: titleIn 0.35s ease-out; }
+.title-screen.away { animation: titleAway 0.38s ease-in forwards; pointer-events: none; }
+@keyframes titleIn { from { opacity: 0; } }
+@keyframes titleAway { to { opacity: 0; scale: 1.03; } }
+/* short windows: smaller gem pixels (title.js reads --gp's value from the same breakpoint) */
+@media (max-height: 700px) {
+  .gem { --gp: 3px; }
+  .gem-label { font-size: 0.8rem; padding-left: 34px; }
+  .gem-icon { width: 36px; height: 36px; }
+  .gem-icon img { width: 48px; height: 48px; }
+  .gem-icon .pokeball { font-size: 40px; }
+  .gem-emoji { font-size: 24px; }
+  .title-menu { gap: 10px; }
+  .title-screen.menu .title-big { font-size: clamp(2.6rem, 12vw, 5rem); }
+  .title-screen.menu .title-big small { font-size: 0.85rem; }
+}
+
+/* ---------- the character select ---------- */
+body[data-screen="start-screen"] .fan-note { display: none; }
+.select-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: calc(var(--topbar-h) + 4px) 12px max(12px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  animation: screenIn 0.4s ease-out;
+}
+@keyframes screenIn { from { opacity: 0; translate: 0 12px; } }
+.sel-stage { position: relative; flex: 1 1 0; width: 100%; min-height: 110px; }
+.sel-stage img {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  max-width: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.3));
+  animation: selIn 0.35s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+.sel-stage img.locked { filter: brightness(0) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6)); opacity: 0.85; }
+.sel-stage::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: min(220px, 50%); height: 18px; translate: -50% 0; border-radius: 50%; background: rgba(0, 0, 0, 0.3); z-index: -1; }
+@keyframes selIn { from { opacity: 0; scale: 0.9; } }
+.sel-info {
+  flex: none;
+  width: min(440px, 100%);
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(14, 12, 30, 0.66);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+  color: #fff8e8;
+}
+.sel-name { margin: 0 0 10px; font: 1.5rem/1.1 var(--pixel-font); font-synthesis-weight: none; color: #f8d048; text-shadow: 3px 3px 0 #5a3010; }
+.sel-stats { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; font: 0.8rem var(--pixel-font); }
+.sel-type { padding: 2px 9px 2px 6px; color: #fff; background: #777; font-size: 0.7rem; }
+.sel-type.type-fire { background: #c9431f; }
+.sel-type.type-grass { background: #2f8f43; }
+.sel-type.type-water { background: #2569c7; }
+.sel-type.type-psychic { background: #b04a8a; }
+.sel-blurb { margin: 0 0 8px; font-size: 0.72rem; line-height: 1.6; }
+.sel-ability { margin: 0 0 10px; font-size: 0.66rem; line-height: 1.6; opacity: 0.9; }
+.sel-ability b { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; color: #f8d048; font-weight: 400; }
+.sel-ability b img { width: 22px; height: 22px; image-rendering: pixelated; }
+.sel-info .pxb { margin: 2px 8px 0 0; }
+.sel-actions { flex: none; display: flex; justify-content: space-between; width: min(440px, 100%); }
+.sel-strip { flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; }
+.sel-tabs { display: flex; gap: 10px; }
+.sel-thumbs { display: flex; gap: 6px; max-width: 100%; padding: 6px; overflow-x: auto; border-radius: 10px; background: rgba(14, 12, 30, 0.55); scrollbar-width: none; }
+.sel-thumbs::-webkit-scrollbar { display: none; }
+.sel-thumb {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  overflow: hidden;
+  border: 3px solid #504860;
+  border-radius: 8px;
+  background: #2a2640;
+  cursor: pointer;
+  transition: translate 0.1s, border-color 0.1s;
+}
+.sel-thumb img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.sel-thumb.locked img { filter: brightness(0) opacity(0.65); }
+.sel-thumb[aria-checked="true"] { border-color: #f8d048; translate: 0 -4px; box-shadow: 0 0 10px rgba(248, 208, 72, 0.8); }
+@media (hover: hover) { .sel-thumb:hover { border-color: #a8a0c0; } }
+.sel-lock { position: absolute; right: 1px; bottom: 1px; font-size: 13px; }
+.sel-sparkle { position: absolute; right: 1px; top: 1px; font-size: 12px; opacity: 0.55; }
+.sel-sparkle.on { opacity: 1; }
+/* short phones: the words get tighter so the Pokémon keeps room */
+@media (max-height: 700px) {
+  .select-screen { gap: 8px; }
+  .sel-info { padding: 10px 12px; }
+  .sel-name { font-size: 1.2rem; margin-bottom: 6px; }
+  .sel-blurb { margin-bottom: 4px; }
+  .sel-ability { margin-bottom: 6px; }
+  .sel-thumb { width: 46px; height: 46px; }
+}
+/* wide screens: StS's layout, the Pokémon on the right, its panel on the left, the strip along the bottom */
+@media (min-width: 900px) and (min-height: 560px) {
+  .select-screen { display: block; padding: 0; }
+  .sel-stage { position: absolute; left: 40%; right: 4%; top: calc(var(--topbar-h) + 4vh); bottom: 27vh; width: auto; }
+  .sel-info { position: absolute; left: max(28px, 5vw); top: calc(var(--topbar-h) + 8vh); width: min(420px, 34vw); padding: 20px 22px; }
+  .sel-name { font-size: 2rem; margin-bottom: 14px; }
+  .sel-blurb { font-size: 0.8rem; }
+  .sel-ability { font-size: 0.72rem; }
+  .sel-actions { position: absolute; left: max(28px, 5vw); right: max(28px, 5vw); bottom: calc(18vh + 20px); width: auto; }
+  .sel-strip { position: absolute; left: 50%; bottom: 18px; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); }
+}
+
+/* ---------- the Collection ---------- */
+.collection-screen { display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 12px; }
+.coll-title {
+  margin: 0;
+  font: 1.6rem/1 var(--pixel-font); font-synthesis-weight: none;
+  color: #fff8e0;
+  text-shadow: 2px 0 0 #14275e, -2px 0 0 #14275e, 0 2px 0 #14275e, 0 -2px 0 #14275e, 0 5px 0 #0d1a44;
+}
+.coll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; width: min(780px, 100%); }
+.coll-card {
+  --c1: #5868c8; --c2: #303890;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 14px;
+  overflow: hidden;
+  border: 3px solid #b8b8c8;
+  border-radius: var(--round);
+  background: linear-gradient(var(--c1) 0 44px, var(--c2) 44px 47px, var(--win-bg) 47px);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 5px 0 2px rgba(0, 0, 0, 0.35);
+  color: var(--win-ink);
+  text-align: center;
+  cursor: pointer;
+  transition: translate 0.12s;
+  animation: collIn 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 60ms);
+}
+@keyframes collIn { from { opacity: 0; translate: 0 18px; } }
+@media (hover: hover) { .coll-card:hover { translate: 0 -5px; } }
+.coll-card:active { translate: 0 2px; }
+.coll-card:focus-visible { outline: 3px solid #f8e070; outline-offset: 3px; }
+.coll-name { display: flex; align-items: center; height: 44px; font: 0.9rem var(--pixel-font); font-weight: 400; color: #fff; text-shadow: 2px 2px 0 var(--c2); }
+.coll-art { display: grid; place-items: center; width: 96px; height: 80px; border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.08); box-shadow: inset 0 0 0 2px rgba(48, 48, 56, 0.15); }
+.coll-art .item-sprite { width: 64px; height: 64px; image-rendering: pixelated; }
+.coll-emoji { font-size: 48px; line-height: 1; }
+.coll-text { font-size: 0.7rem; line-height: 1.6; color: var(--win-ink); }
+.coll-count { margin-top: auto; padding: 4px 10px 3px; border-radius: 999px; font: 0.62rem var(--pixel-font); color: #fff; background: var(--c2); }
+.coll-dex { --c1: #e05858; --c2: #a02c2c; }
+.coll-moves { --c1: #5a8ef0; --c2: #2c58b0; }
+.coll-relics { --c1: #e0a840; --c2: #9a6a18; }
+.coll-items { --c1: #e878b8; --c2: #983068; }
+.coll-stats { --c1: #4cb060; --c2: #2a7038; }
+.coll-achievements { --c1: #9a70d8; --c2: #5a3890; }
+.coll-foot { padding-bottom: 12px; }
+@media (max-width: 600px) {
+  .coll-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .coll-card { padding: 0 8px 12px; }
+  .coll-name { font-size: 0.75rem; }
+  .coll-text { font-size: 0.62rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gem, .coll-card, .select-screen, .sel-stage img, .title-screen:not([hidden]), .title-screen.away { animation: none; }
+  .title-screen.away { opacity: 0; }
+  .gem.going .gem-icon, .gem.on::before { animation: none; }
+}

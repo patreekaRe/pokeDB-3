@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/cards.css">
   <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/menus.css">
 </head>
 <body data-screen="start-screen">
 
@@ -45,6 +46,7 @@
         <small aria-hidden="true">Rogue-Like Deck Battler</small>
       </div>
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
+      <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
     </div>
     <div class="title-trio" aria-hidden="true">
       <img class="pixel" src="assets/pokemon/bulbasaur-front.gif" alt="" style="--d:0s">
@@ -132,60 +134,36 @@
   <main>
 
     <!-- ============ 1. START SCREEN ============ -->
-    <section id="start-screen" class="screen">
-      <div class="hero">
-        <h1 class="title" aria-label="PokéDB: Rogue-Like Deck Battler">
-          <span class="title-logo" aria-hidden="true">
-            <span class="tl" style="--i:0">P</span>
-            <span class="tl" style="--i:1"><span class="pokeball"></span></span>
-            <span class="tl" style="--i:2">k</span>
-            <span class="tl" style="--i:3">é</span>
-            <span class="tl db" style="--i:4">D</span>
-            <span class="tl db" style="--i:5">B</span>
-          </span>
-          <small aria-hidden="true">Rogue-Like Deck Battler</small>
-        </h1>
-        <div class="howto-cta">
-          <canvas id="howto-fx" aria-hidden="true"></canvas>
-          <button class="ds-btn ds-gold ds-sm howto-btn" id="howto-btn"><span class="pp-pill">📖 How to play</span></button>
+    <!-- Character select, Slay the Spire-style (js/select.js): the picked Pokémon big on its type's scene, its info
+         beside it, a strip of portraits along the bottom with Starters / Legendaries tabs -->
+    <section id="start-screen" class="screen select-screen">
+      <div class="sel-stage" aria-hidden="true"><img id="sel-sprite" class="pixel" alt=""></div>
+      <div class="sel-info" aria-live="polite">
+        <h2 class="sel-name" id="sel-name"></h2>
+        <div class="sel-stats"><span class="sel-hp" id="sel-hp"></span><span class="chip" id="sel-type"></span></div>
+        <p class="sel-blurb" id="sel-blurb"></p>
+        <p class="sel-ability" id="sel-ability"></p>
+        <button type="button" class="pxb sun small" id="sel-shiny" hidden aria-pressed="false"><span class="pxb-o"><span class="pxb-i">✨ Shiny</span></span></button>
+        <button type="button" class="pxb purple small white" id="sel-corner" hidden><span class="pxb-o"><span class="pxb-i">🎰 Game Corner</span></span></button>
+      </div>
+      <div class="sel-actions">
+        <button type="button" class="pxb blue white" id="sel-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
+        <button type="button" class="pxb green" id="sel-go"><span class="pxb-o"><span class="pxb-i">Choose</span></span></button>
+      </div>
+      <div class="sel-strip">
+        <div class="sel-tabs" role="tablist" aria-label="Starters or legendaries">
+          <button type="button" class="pxb orange small" id="sel-tab-starters" role="tab" data-tab="starters"><span class="pxb-o"><span class="pxb-i">Starters</span></span></button>
+          <button type="button" class="pxb purple small white" id="sel-tab-legends" role="tab" data-tab="legends"><span class="pxb-o"><span class="pxb-i">Legendaries</span></span></button>
         </div>
-        <div class="index-cta"><button class="ds-btn ds-skip ds-sm" id="home-index-btn" type="button"><span class="pp-pill">🃏 Index</span></button><button class="ds-btn ds-dex ds-sm" id="home-dex-btn" type="button"><span class="pp-pill">📕 Pokédex</span></button></div>
+        <div class="sel-thumbs" id="sel-thumbs" role="radiogroup" aria-label="Starter Pokémon"></div>
       </div>
+    </section>
 
-      <button class="continue-btn" id="continue-btn" type="button" hidden>
-        <span class="continue-sprite">   <!-- the ball waits here; tapping it sends the starter out (js/main.js) -->
-          <span class="continue-ball" aria-hidden="true"><span class="ball-bottom"></span><span class="ball-light"></span><span class="ball-top"></span></span>
-          <img id="continue-sprite" class="pixel" alt="">
-        </span>
-        <span class="continue-text">
-          <span class="continue-label">Continue run</span>
-          <strong id="continue-name"></strong>
-          <span class="continue-info" id="continue-info"></span>
-          <span class="continue-hp"><span class="bar-fill" id="continue-hp-fill"></span></span>
-        </span>
-      </button>
-
-      <div class="starter-panel panel">
-        <h2>Choose your starter</h2>
-        <div id="starter-grid" class="starter-grid" role="radiogroup" aria-label="Starter Pokémon"></div>
-        <button class="btn small secondary starter-more-btn" id="starter-more-btn" type="button">Show more starters ▾</button>
-      </div>
-
-      <!-- the picked starter, pinned to the bottom like the deck screen's bar, so the grid stays free to browse (selectStarter() in js/main.js) -->
-      <div id="starter-sheet" class="starter-sheet" hidden>
-        <button class="sheet-close" id="detail-close" type="button" aria-label="Close">✕</button>
-        <button class="shiny-toggle" id="shiny-toggle" type="button" aria-pressed="false" hidden>✨ Shiny</button>
-        <div class="starter-detail">
-          <img id="detail-sprite" class="pixel" alt="">
-          <div class="detail-text">
-            <h3><span id="detail-name"></span> <span class="detail-type" id="detail-type"></span></h3>
-            <p id="detail-blurb"></p>
-            <p id="detail-ability" class="detail-ability"></p>
-          </div>
-        </div>
-        <button class="ds-btn ds-sm" id="choose-btn" type="button"><span class="pp-pill">See deck</span></button>
-      </div>
-
+    <!-- Collection, the compendium (js/collection.js): a card per window, opened from the title's Collection gem -->
+    <section id="collection-screen" class="screen collection-screen" hidden>
+      <h2 class="coll-title">Collection</h2>
+      <div class="coll-grid" id="coll-grid"></div>
+      <div class="coll-foot"><button type="button" class="pxb blue white" id="coll-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button></div>
     </section>
 
     <!-- ============ 2. DECK PREVIEW (read-only) ============ -->
@@ -228,8 +206,8 @@
       </div>
 
       <div class="builder-bar">
-        <button class="ds-btn ds-skip ds-sm" id="preview-back"><span class="pp-pill">Back</span></button>
-        <button class="ds-btn ds-sm" id="preview-begin"><span class="pp-pill">Begin run</span></button>
+        <button type="button" class="pxb blue white" id="preview-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
+        <button type="button" class="pxb green" id="preview-begin"><span class="pxb-o"><span class="pxb-i">Begin run</span></span></button>
       </div>
     </section>
 

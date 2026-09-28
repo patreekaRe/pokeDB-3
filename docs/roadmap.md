@@ -457,35 +457,10 @@ about two standard errors, worth a re-check with more runs before retuning.
 Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
 
 1. ~~**Evolution overhaul.**~~ Done 2026-09-28 (see the Anytime entry below).
-2. **Title, starter select and Collection redesign** (the user's ask, 2026-09-28: before cries and cloud save; designed with
-   mockups the same day, in `docs/mockups/`). Run in: CLOUD (attach pokeDB-3).
-   > Read CLAUDE.md (Title screen; Top bar and start screen; Windows) and look at every image in `docs/mockups/` first:
-   > they're the agreed design (mockups layered over the real game; their fonts are fallbacks, the real ones are the pixel
-   > font). `docs/mockups/mockup.mjs` holds the mockup CSS (the `.pxb` pill, the `gem()` canvas drawing, the dusk palette)
-   > and `select.css` the character select's; reuse them. The user's references were Slay the Spire 2's title (a short
-   > centred list under the logo), StS's character select and compendium, and pixel-art game buttons.
-   > 1. **Title** (`js/title.js`): the dusk palette (sky `#1c2360 #2c3480 #46479a #7258a6 #b06c9e #ec9888`, halo `#9a88d0`,
-   >    hills `#5c4c96` / `#383274`, grass `#1e4a30 #2e6e42 #4c9e58 #86d470`); move the moon so the logo doesn't cover it.
-   >    Tapping anywhere still plays `confirm` (fixed 2026-09-28). After PRESS START a stack of **pixel gems** rises in under the
-   >    logo (after the glossy hexagon reference: bronze frame, pointed ends, two-tone face and glints, drawn as pixel art at
-   >    68x16 scaled up), each with a bare icon on its left end (no frame round it, the user's call: just a dark pixel outline and a
-   >    drop shadow): Continue (amber, the saved run's Pokémon; only with a save; a taller gem whose second line shows the
-   >    Pokémon, biome and a small HP bar, so the run is visible before tapping), New game (violet, a Poké Ball), Collection
-   >    (gold, the Pokédex), Game Corner (coral, the slot machine). Arrow keys / hover move a blinking ▶; press sinks the gem; smooth transitions between the title
-   >    and each screen. The Poké Ball menu stays as it is.
-   > 2. **Character select** (replaces the starter grid + sheet; StS-style): the picked Pokémon big (integer-ish scale,
-   >    pixelated) standing on its type's scene (`showMenuScene`), a see-through dark info panel (name in big gold pixel
-   >    letters, HP, type chip, blurb, Ability), a portrait strip along the bottom with Starters / Legendaries tabs (locked:
-   >    silhouettes with a 🔒 and the unlock hint on tap; Game Corner skins open the Game Corner), pill Back and Choose, and a
-   >    small ✨ Shiny pill per starter shown only once that shiny is owned (it replaces the sheet's toggle). Choosing goes on to
-   >    the existing deck / level screen. Tapping a portrait swaps the scene and plays the cry.
-   > 3. **Collection** (StS's compendium): a row of big Pokégear cards: Pokédex, Moves (the card Index), Relics, Items (the
-   >    Index's two tabs as their own cards), plus Stats and Achievements; each opens the existing window.
-   > 4. **Pixel pills** (`.pxb`: stepped 3-2-1 corners, dark outline, light top band, dark bottom band, white glint dashes,
-   >    a solid drop shadow, pixel-font labels, dark ink on light colours and white on deep ones) replace the striped `.ds-btn`
-   >    capsules everywhere smaller (Back, Choose, See deck, Begin run, Add to deck, Skip, End Turn and PP stay their own
-   >    shape unless the user says otherwise; ask). Keep glints clear of short labels.
-   > Test at 320, 375, 390 and 1280 widths with headless screenshots, check reduced motion, update CLAUDE.md, push to main.
+2. ~~**Title, starter select and Collection redesign**~~ Done 2026-09-28 (the dusk title with its gem menu, the StS-style
+   character select, the Collection, pixel pills for the menus' buttons; CLAUDE.md's Title screen and Top bar sections).
+   The mockups stay in `docs/mockups/`. Left for later, the user to decide: pills for the reward, battle and Mart capsules
+   (Add to deck, Skip, End Turn, PP).
 3. **Cries.** Run in: CLOUD (attach pokeDB-3).
    > Read CLAUDE.md (Music: Cries). Ask the user what they want changed about the cries (loudness, missing ones, wrong ones,
    > new places they play) before changing anything. PokeAPI's cries (`cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3 at

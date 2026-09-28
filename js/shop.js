@@ -68,7 +68,7 @@ export function initShop() {
   document.addEventListener('click', (e) => {
     const dialog = $('shop-dialog');
     if (!dialog.open || pressedInside || !e.detail || document.querySelector('dialog:modal')) return;
-    if (e.target.closest('#shop-dialog, .shop-btn, #menu-shop-btn, .starter-btn.locked')) return;
+    if (e.target.closest('#shop-dialog, .shop-btn, #menu-shop-btn, #sel-corner, .gem-corner')) return;
     e.preventDefault();
     e.stopPropagation();
     playSound('cancel', 'confirm');

@@ -1,18 +1,10 @@
 /* ============================================================
    screens.css  -  the layout of the screens:
-     1. Start screen   2. Deck preview   3. Map   4. Rewards   5. Battle
+     1. Title (the character select and Collection are in menus.css)   2. Deck preview   3. Map   4. Rewards   5. Battle
    Phone layouts are handled at the bottom in @media rules.
    ============================================================ */
 
-/* ============ 1. START SCREEN ============ */
-#start-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 22px;
-  max-width: 720px;
-}
-.hero { text-align: center; padding-top: 6px; }
+/* ============ 1. TITLE ============ */
 .title {
   font-size: clamp(3.4rem, 15vw, 6.5rem);
   line-height: 0.95;
@@ -106,37 +98,8 @@
   from { opacity: 0; letter-spacing: 0.3em; }
   to   { opacity: 1; letter-spacing: 0.08em; }
 }
-/* "How to play": a gold-framed menu button floating inside an orbiting sparkle ring (drawn by js/fx.js).
-   Its ▶ cursor always blinks, since it's the first thing to press, and a pixel glint sweeps across the face. */
-.howto-cta { position: relative; z-index: 2; display: inline-block; margin-top: 6px; animation: ctaFloat 3.4s ease-in-out infinite; }
-#howto-fx {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 320px;
-  height: 140px;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-#howto-btn .pp-pill { isolation: isolate; overflow: hidden; gap: 8px; align-items: center; font-size: 1rem; padding: 11px 22px 10px 32px; }   /* a touch bigger than the other menu capsules: the first thing to press */
-.howto-btn .pp-pill::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.9) 38% 45%, transparent 45% 49%, rgba(255, 255, 255, 0.9) 49% 52%, transparent 52%) no-repeat;
-  background-size: 250% 100%;
-  animation: ctaSheen 3.6s steps(14) infinite 1.5s;
-}
-@keyframes ctaFloat { 50% { transform: translateY(-5px); } }
-@keyframes ctaSheen {
-  0%, 55% { background-position: 160% 0; }
-  100%    { background-position: -60% 0; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .tl, .pokeball, .title small, .howto-cta, .howto-btn .pp-pill::after { animation: none; }
-  #howto-fx { display: none; }
+  .tl, .pokeball, .title small { animation: none; }
 }
 
 /* ---------- title screen (js/title.js): a Gold/Silver-style night sky over the start screen ---------- */
@@ -249,212 +212,6 @@ body.titling { overflow: hidden; }
   .title-trio img { animation: none; }
   .title-flyer { display: none; }
 }
-
-.continue-btn {
-  --type: var(--gold);
-  width: 100%;
-  max-width: 440px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px 12px 12px;
-  border-radius: var(--round);
-  border: 3px solid #b8b8c8;
-  background: var(--win-bg);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 4px 0 2px rgba(0, 0, 0, 0.4);
-  color: var(--win-ink);
-  font-family: var(--pixel-font); font-synthesis-weight: none;
-  text-align: left;
-  transition: transform 0.1s steps(2), border-color 0.15s;
-}
-.continue-btn.type-fire  { --type: #ff8a4c; }
-.continue-btn.type-water { --type: #55b6ff; }
-.continue-btn.type-grass { --type: #63dc7f; }
-.continue-btn:hover { transform: translateY(-2px); border-color: #f89030; }
-.continue-sprite {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--type) 45%, transparent), transparent 70%);
-}
-.continue-sprite { position: relative; }
-.continue-sprite img { width: 64px; height: 64px; object-fit: contain; transform: scale(0); }
-.continue-sprite .continue-ball { position: absolute; left: 50%; top: 50%; margin: -18px 0 0 -18px; }
-/* tapped: the ball goes, and the starter comes out white, then colours in, like the games' send-out */
-.continue-btn.out .continue-ball { animation: ballAway 0.2s steps(2) forwards; }
-.continue-btn.out .continue-sprite img { animation: sendOut 0.45s steps(5) forwards; }
-@keyframes ballAway { to { transform: scale(0.2); opacity: 0; } }
-@keyframes sendOut {
-  0%   { transform: scale(0.2); filter: brightness(0) invert(1); }
-  60%  { transform: scale(1.12); filter: brightness(0) invert(1); }
-  100% { transform: scale(1); filter: none; }
-}
-.continue-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
-.continue-label { padding: 2px 6px; background: #283060; color: #f8d030; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-.continue-text strong { font-size: 1.15rem; line-height: 1.15; }
-.continue-info { font-size: 0.85rem; color: var(--win-muted); }
-.continue-hp { display: block; align-self: stretch; height: 12px; margin-top: 4px; padding: 2px; border: 2px solid #181818; border-radius: 0 6px 6px 0; background: #f8f8f0; }
-.continue-hp .bar-fill { display: block; }
-.continue-ball { position: relative; flex: none; width: 36px; height: 36px; transform-origin: 50% 90%; }
-/* a 14x14 pixel Poké Ball, in two halves so the lid can still swing open (each half is 14x7, drawn crisp) */
-.ball-top, .ball-bottom {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  background: center / 100% 100% no-repeat;
-  image-rendering: pixelated;
-}
-.ball-top {
-  top: 0;
-  z-index: 2;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='4' y='0' width='6' height='1' fill='%23181010'/><rect x='2' y='1' width='2' height='1' fill='%23181010'/><rect x='4' y='1' width='6' height='1' fill='%23e83828'/><rect x='10' y='1' width='2' height='1' fill='%23181010'/><rect x='1' y='2' width='1' height='1' fill='%23181010'/><rect x='2' y='2' width='1' height='1' fill='%23e83828'/><rect x='3' y='2' width='1' height='1' fill='%23f8f8f8'/><rect x='4' y='2' width='7' height='1' fill='%23e83828'/><rect x='11' y='2' width='1' height='1' fill='%23a01818'/><rect x='12' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='1' height='1' fill='%23f8f8f8'/><rect x='3' y='3' width='8' height='1' fill='%23e83828'/><rect x='11' y='3' width='1' height='1' fill='%23a01818'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='0' y='4' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='4' height='1' fill='%23e83828'/><rect x='5' y='4' width='4' height='1' fill='%23181010'/><rect x='9' y='4' width='2' height='1' fill='%23e83828'/><rect x='11' y='4' width='2' height='1' fill='%23a01818'/><rect x='13' y='4' width='1' height='1' fill='%23181010'/><rect x='0' y='5' width='1' height='1' fill='%23181010'/><rect x='1' y='5' width='3' height='1' fill='%23e83828'/><rect x='4' y='5' width='2' height='1' fill='%23181010'/><rect x='6' y='5' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='5' width='2' height='1' fill='%23181010'/><rect x='10' y='5' width='1' height='1' fill='%23e83828'/><rect x='11' y='5' width='2' height='1' fill='%23a01818'/><rect x='13' y='5' width='1' height='1' fill='%23181010'/><rect x='0' y='6' width='5' height='1' fill='%23181010'/><rect x='5' y='6' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='6' width='5' height='1' fill='%23181010'/></svg>");
-  transform-origin: 6% 100%;   /* the hinge is at the back-left, so the lid swings up and away */
-  transition: transform 0.28s steps(3);
-}
-.ball-bottom {
-  bottom: 0;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='0' y='0' width='5' height='1' fill='%23181010'/><rect x='5' y='0' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='0' width='5' height='1' fill='%23181010'/><rect x='0' y='1' width='1' height='1' fill='%23181010'/><rect x='1' y='1' width='3' height='1' fill='%23f8f8f8'/><rect x='4' y='1' width='2' height='1' fill='%23181010'/><rect x='6' y='1' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='1' width='2' height='1' fill='%23181010'/><rect x='10' y='1' width='1' height='1' fill='%23f8f8f8'/><rect x='11' y='1' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='1' width='1' height='1' fill='%23181010'/><rect x='0' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='2' width='4' height='1' fill='%23f8f8f8'/><rect x='5' y='2' width='4' height='1' fill='%23181010'/><rect x='9' y='2' width='2' height='1' fill='%23f8f8f8'/><rect x='11' y='2' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='8' height='1' fill='%23f8f8f8'/><rect x='10' y='3' width='2' height='1' fill='%23c8c8d0'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='4' width='7' height='1' fill='%23f8f8f8'/><rect x='9' y='4' width='3' height='1' fill='%23c8c8d0'/><rect x='12' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='5' width='6' height='1' fill='%23c8c8d0'/><rect x='10' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='6' width='6' height='1' fill='%23181010'/></svg>");
-  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
-}
-.ball-light {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 1;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 12px 6px #fff, 0 0 30px 12px var(--type);
-  opacity: 0;
-}
-.continue-btn.opening .ball-top { transform: rotate(-38deg); }
-.continue-btn.opening .ball-light { animation: ballLight 0.45s ease-out forwards; }
-@keyframes ballLight {
-  0%   { opacity: 0; transform: scale(0.3); }
-  35%  { opacity: 1; transform: scale(1.4); }
-  100% { opacity: 0; transform: scale(3.5); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  /* ballWobble rests for its first half, so each shake is followed by a pause, like a catch in progress */
-  .continue-ball { animation: ballWobble 2.4s steps(24) infinite; }   /* stepped, so it ticks like a sprite */
-  .continue-btn.opening:not(.out) .continue-ball { animation: none; }
-}
-
-.starter-panel { width: fit-content; max-width: 100%; }   /* as wide as its grid, not the page */
-.starter-panel h2 { text-align: center; margin-bottom: 12px; }
-.starter-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 124px));   /* square tiles, just big enough for the sprite and name; equal even when a name is wider */
-  justify-content: center;
-  gap: 10px;
-}
-.starter-more-btn { display: block; margin: 12px auto 0; }
-.starter-btn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  gap: 2px;
-  padding: 8px 4px 10px;
-  border-radius: var(--round-sm);
-  border: 3px solid var(--win-edge);
-  background: var(--win-tile);
-  color: var(--win-ink);
-  box-shadow: 2px 2px 0 var(--win-shadow);
-  transition: transform 0.1s steps(2);
-}
-.starter-btn img { width: 72px; height: 72px; object-fit: contain; transform-origin: 0 0; }   /* main.js fitSprite() scales small sprites up */
-.starter-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 0.95rem; }
-@media (max-width: 480px) { .starter-name { font-size: 0.74rem; } }   /* "Charmander", the longest, fits a phone column */
-.starter-btn:hover { transform: translateY(-3px); background: #fffaf0; }
-/* the one you've picked gets its type's colour and the menu's blinking ▶ cursor */
-.starter-btn.selected { background: #fffaf0; border-color: #f89030; }
-.starter-btn.type-water.selected { border-color: #3878f0; }
-.starter-btn.type-grass.selected { border-color: #30a040; }
-.starter-btn.selected::before { content: '▶'; position: absolute; left: 6px; top: 6px; font-size: 0.7rem; animation: cursorBlink 1s steps(1) infinite; }
-.starter-btn.locked { opacity: 0.6; }
-.starter-btn.locked img { filter: brightness(0) opacity(0.6); }   /* silhouette */
-.starter-source { position: absolute; top: 5px; right: 6px; font-size: 1rem; line-height: 1; }   /* 💰 shop / 🏆 achievement */
-
-/* the picked starter: a window pinned to the bottom (like the deck screen's bar), so the grid above stays scrollable */
-.starter-sheet {
-  position: fixed;
-  left: 50%;
-  bottom: calc(10px + env(safe-area-inset-bottom));
-  z-index: 15;
-  width: min(340px, calc(100% - 20px));
-  translate: -50% 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px 16px;
-  border-radius: var(--round);
-  border: 3px solid #b8b8c8;
-  background: var(--win-bg);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 12px 40px rgba(0, 0, 0, 0.55);
-  color: var(--win-ink);
-  animation: sheetUp 0.22s ease-out;
-}
-@keyframes sheetUp { from { translate: -50% 30px; opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .starter-sheet { animation: none; } }
-body[data-screen="start-screen"].sheet-open { padding-bottom: var(--sheet-h, 200px); }
-.sheet-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 30px;
-  height: 30px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--win-muted);
-  font-size: 0.9rem;
-}
-.sheet-close:hover { background: rgba(0, 0, 0, 0.12); color: var(--win-ink); }
-/* a bought shiny's on/off switch (the Game Corner sells them), opposite the ✕ */
-.shiny-toggle {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border: 2px solid var(--win-edge);
-  border-radius: 999px;
-  background: var(--win-tile);
-  color: var(--win-muted);
-  font-family: var(--pixel-font);
-  font-size: 0.62rem;
-}
-.shiny-toggle[aria-pressed="true"] { border-color: #d8a020; background: #fff4c8; color: #8a5a00; }
-.shiny-toggle[aria-pressed="false"] .px-wrap { filter: grayscale(1); opacity: 0.6; }
-.starter-detail { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }   /* stacked and centred in a narrow window */
-.starter-detail img { flex: none; width: 64px; height: 64px; object-fit: contain; }
-.detail-text { min-width: 0; }
-.detail-text h3 { margin: 0 0 4px; font-size: 1.15rem; color: var(--win-ink); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px; }
-.detail-text p { margin: 0; color: var(--win-muted); font-size: 0.9rem; line-height: 1.35; }
-.detail-text .detail-ability {
-  margin-top: 6px; padding: 5px 8px;
-  border: 2px solid var(--win-edge); border-radius: var(--round-sm);
-  background: var(--win-tile);
-  font-size: 0.82rem;
-}
-.detail-ability b { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; color: var(--accent-dark); font-family: var(--pixel-font); font-synthesis-weight: none; font-weight: normal; font-size: 0.72rem; }
-.detail-type { padding: 1px 9px 1px 5px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: #fff; background: #777; }
-.detail-type.type-fire  { background: #c9431f; }
-.detail-type.type-grass { background: #2f8f43; }
-.detail-type.type-water { background: #2569c7; }
-.detail-type.type-psychic { background: #b04a8a; }
-.starter-sheet #choose-btn { align-self: center; }
 
 /* ============ 2. DECK PREVIEW ============ */
 #preview-screen { display: flex; flex-direction: column; gap: 14px; padding-bottom: 0; max-width: 680px; }   /* narrow like the start screen, so the scene shows either side */
@@ -1048,8 +805,6 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 /* ============ PHONES AND SMALL SCREENS ============ */
 @media (max-width: 720px) {
   .screen { padding: 14px 12px 20px; }
-  .starter-btn img { width: 60px; height: 60px; }
-  .starter-btn { padding: 4px 4px 6px; }   /* keeps the tile square in a phone column */
   .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 10px; }
   .builder-head h2 { font-size: 1.3rem; }
   #preview-screen { padding-left: 18px; padding-right: 18px; }
@@ -1180,7 +935,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; width: 190px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
 .run-info strong { font-size: 1.1rem; }
 .ability-chip .item-sprite { width: 1.3em; height: 1.3em; margin: -0.2em 0; }
-.run-ability .item-sprite, .detail-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
+.run-ability .item-sprite, .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
 .run-ability { align-self: flex-end; display: flex; align-items: center; gap: 4px; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.72rem; color: #ffe6a0; cursor: help; }
 
 /* The Bag button: a frameless pixel backpack in the top-right corner beside the coins and the Poké Mart.
@@ -2365,8 +2120,6 @@ body.battle-intro { pointer-events: none; }
 }
 
 /* ---------- CARD INDEX (js/cardindex.js): StS's Compendium, a tab per type ---------- */
-.index-cta { position: relative; z-index: 2; margin-top: 12px; }
-:is(#home-index-btn, #home-dex-btn) .pp-pill { gap: 8px; align-items: center; }
 .index-tabs {
   position: sticky;
   top: -22px;   /* the dialog's padding: the tabs stay put while the cards scroll under them */
@@ -3176,7 +2929,6 @@ body.has-scene #scene-bg { display: block; }
 
 /* ---------- POKÉDEX (js/pokedex.js): a page per biome, entries ??? until fought ---------- */
 .ds-btn.ds-dex { --stripe-a: #e05858; --stripe-b: #f07878; --rim: #a83030; }
-.index-cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
 #reward-reroll .pp-pill { gap: 8px; align-items: center; }
 .dex-tab.biome-clearing { --c1: #72c860; --c2: #2f7a30; }
 .dex-tab.biome-shrine   { --c1: #b88ad8; --c2: #5a3488; }

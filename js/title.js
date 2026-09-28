@@ -1,105 +1,286 @@
 /* ============================================================
-   title.js  -  the "PRESS START" title screen shown once per page
-   load, before the starter screen. A Gold/Silver homage: a pixel
-   night sky with a moon, Moltres crossing it as a silhouette, and
-   the three starters waiting on a grassy ledge.
+   title.js  -  the title screen, which is also the game's home.
 
-   The sky is painted into a small canvas (one canvas pixel = PIXEL
-   CSS pixels, upscaled with image-rendering: pixelated) so it stays
-   blocky on any screen. It only animates while the title is up.
+   Once per page load it opens on PRESS START (a Gold/Silver homage: a
+   pixel dusk sky with a moon, Moltres crossing it as a silhouette, the
+   three starters waiting on a grassy ledge). After that it's the main
+   menu: a stack of pixel gems under the logo (Continue, New game,
+   Collection, Game Corner, after the user's references: Slay the Spire 2's
+   short centred list and glossy hexagon buttons). "Main menu" anywhere
+   comes back here, straight to the gems.
+
+   The sky is painted into a small canvas (one canvas pixel = PIXEL CSS
+   pixels, upscaled with image-rendering: pixelated) so it stays blocky
+   on any screen, and so are the gems (gemPx() CSS pixels a pixel). It only
+   animates while the title is up.
    ============================================================ */
 
-import { $ } from './ui.js';
-import { playSound } from './audio.js';
+import { $, el } from './ui.js';
+import { playSound, playCry } from './audio.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
-const SKY = ['#0a0c26', '#12153a', '#1c1d4e', '#2a2660', '#3d3170', '#58407c'];
+// dusk rather than midnight (the user's call, 2026-09-28): deep blue up top, a warm rose horizon
+const SKY = ['#1c2360', '#2c3480', '#46479a', '#7258a6', '#b06c9e', '#ec9888'];
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-const MOON = '#f8f0c8', MOON_SHADE = '#d8cc98', HALO = '#6a5a9a';
-const FAR_HILLS = '#2a2358', NEAR_HILLS = '#1a1740';
-const GRASS = ['#183a26', '#24583a', '#3c8a4c', '#6cc060'];
+const MOON = '#f8f0c8', MOON_SHADE = '#d8cc98', HALO = '#9a88d0';
+const FAR_HILLS = '#5c4c96', NEAR_HILLS = '#383274';
+const GRASS = ['#1e4a30', '#2e6e42', '#4c9e58', '#86d470'];
 
-/** Show the title screen; resolves once the player presses start. */
-export function showTitle() {
+const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
+const GEM_H = 16, GEM_TALL = 19;   // gem heights in pixels; Continue's is taller for its run line
+// face, top light, bottom shade (the reference's amber, violet, gold and coral)
+const GEMS = {
+  continue: ['#f0a030', '#ffd070', '#c07018'],
+  new: ['#b848d8', '#e088f8', '#7a2098'],
+  collection: ['#e0bc28', '#fff080', '#a88410'],
+  corner: ['#f06038', '#ff9870', '#b83018'],
+};
+const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430', BRONZE_MID = '#a86c3c', GROOVE = '#3a1c0c';
+
+const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let actions = null;       // what the gems do, and the saved run for Continue (initTitle)
+let pressed = false;      // PRESS START happens once per page load
+let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0;
+
+/** Called once at startup with what the menu's gems do: { savedRun(), onContinue(run), onNewGame(), onCollection(), onGameCorner() }. */
+export function initTitle(handlers) {
+  actions = handlers;
   const screen = $('title-screen');
-  const canvas = $('title-sky');
-  const ctx = canvas.getContext('2d');
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
+  screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
+  document.addEventListener('keydown', (e) => {
+    if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
+    if (!pressed) return start(e);
+    const gems = [...screen.querySelectorAll('.gem')];
+    const at = gems.findIndex(g => g.classList.contains('on'));
+    const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
+    if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
+    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem') && gems[at]) { e.preventDefault(); gems[at].click(); }
+  });
+  addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); } });
+}
 
-  let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0;
+/** The first time: PRESS START. Resolves once it's pressed and the menu is up. */
+export function showTitle() {
+  pressed = false;
+  open();
+  $('press-start').focus({ preventScroll: true });
+  return new Promise(resolve => { showTitle.done = resolve; });
+}
 
-  function resize() {
-    const ground = Math.round(Math.min(150, Math.max(96, innerHeight * 0.17)));
-    screen.style.setProperty('--ground', `${ground}px`);
-    W = Math.ceil(innerWidth / PIXEL);
-    H = Math.ceil(innerHeight / PIXEL);
-    canvas.width = W;
-    canvas.height = H;
-    base = paintScenery(W, H, Math.round(ground / PIXEL));
-    stars = makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H));
-    draw();
-  }
+/** Back to the menu from anywhere (Main menu, a run's end, Back): straight to the gems. */
+export function showHome() {
+  pressed = true;
+  open();
+  renderMenu();
+}
 
-  function draw() {
-    ctx.drawImage(base, 0, 0);
-    for (const s of stars) {
-      const glow = still ? 1 : 0.5 + 0.5 * Math.sin(frame * s.speed + s.phase);
-      if (glow < 0.25) continue;
-      ctx.fillStyle = glow > 0.7 ? '#ffffff' : '#9aa4e8';
-      ctx.fillRect(s.x, s.y, 1, 1);
-      if (s.big && glow > 0.8) {
-        ctx.fillStyle = '#9aa4e8';
-        ctx.fillRect(s.x - 1, s.y, 1, 1); ctx.fillRect(s.x + 1, s.y, 1, 1);
-        ctx.fillRect(s.x, s.y - 1, 1, 1); ctx.fillRect(s.x, s.y + 1, 1, 1);
-      }
-    }
-    if (shooting) {
-      for (let i = 0; i < 7; i++) {
-        ctx.fillStyle = i === 0 ? '#ffffff' : i < 3 ? '#fff2b0' : '#8a86c8';
-        ctx.fillRect(Math.round(shooting.x - i * 2), Math.round(shooting.y - i), 2, 1);
-      }
-    }
-  }
+/** Leave the title for another screen: it fades while that screen comes in under it. */
+export function leaveTitle() {
+  const screen = $('title-screen');
+  if (screen.hidden) return;
+  screen.classList.add('away');
+  setTimeout(() => {
+    screen.hidden = true;
+    screen.classList.remove('away');
+    document.body.classList.remove('titling');
+    clearInterval(timer);
+    timer = 0;
+  }, still() ? 0 : 380);
+}
 
-  function tick() {
-    frame++;
-    if (!shooting && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
-    if (shooting) {
-      shooting.x -= 4; shooting.y += 2;
-      if (--shooting.life <= 0) shooting = null;
-    }
-    draw();
-  }
-
-  resize();
-  addEventListener('resize', resize);
-  if (!still) timer = setInterval(tick, 1000 / FPS);
+function open() {
+  const screen = $('title-screen');
+  screen.classList.toggle('menu', pressed);
+  screen.classList.remove('away');
   screen.hidden = false;
   document.body.classList.add('titling');
-  $('press-start').focus({ preventScroll: true });
+  paint();
+  clearInterval(timer);
+  if (!still()) timer = setInterval(tick, 1000 / FPS);
+}
 
-  return new Promise(resolve => {
-    const go = (e) => {
-      if (e.type === 'keydown' && (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key))) return;
-      e.preventDefault();
-      // the menu blip only answers buttons, and a tap on the sky isn't one: every way in says so (the user heard silence)
-      playSound('confirm');
-      screen.removeEventListener('click', go);
-      document.removeEventListener('keydown', go);
-      screen.classList.add('leaving');
-      setTimeout(() => {
-        clearInterval(timer);
-        removeEventListener('resize', resize);
-        screen.hidden = true;
-        document.body.classList.remove('titling');
-        resolve();
-      }, still ? 0 : 1100);
-    };
-    screen.addEventListener('click', go);
-    document.addEventListener('keydown', go);
-  });
+function start(e) {
+  if (e.type === 'keydown' && (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key))) return;
+  e.preventDefault();
+  pressed = true;
+  // the menu blip only answers buttons, and a tap on the sky isn't one: every way in says so (the user heard silence)
+  playSound('confirm');
+  const screen = $('title-screen');
+  screen.classList.add('flash');
+  setTimeout(() => {
+    screen.classList.remove('flash');
+    screen.classList.add('menu');
+    renderMenu();
+    showTitle.done?.();
+    showTitle.done = null;
+  }, still() ? 0 : 260);
+}
+
+/* ---------- the gem menu ---------- */
+
+function renderMenu() {
+  const run = actions.savedRun();
+  const gems = [
+    run && gem('continue', 'Continue', () => sendOut(run), runIcon(run), runLine(run)),
+    gem('new', 'New game', actions.onNewGame, el('span', 'pokeball')),
+    gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
+    gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
+  ].filter(Boolean);
+  gems.forEach((g, i) => g.style.setProperty('--i', i));
+  $('title-menu').replaceChildren(...gems);
+  sizeGems();
+  point(gems[0], true);
+}
+
+function gem(kind, label, onPick, icon, extra) {
+  const btn = el('button', `gem gem-${kind}`);
+  btn.type = 'button';
+  btn.dataset.kind = kind;
+  const name = el('span', 'gem-label');
+  name.append(el('span', 'gem-name', label));
+  if (extra) name.append(extra);
+  btn.append(el('canvas', 'gem-face'), el('span', 'gem-icon'), name);
+  btn.querySelector('.gem-icon').append(icon);
+  btn.addEventListener('pointerenter', () => point(btn, true));
+  btn.addEventListener('focus', () => point(btn, true));
+  btn.addEventListener('click', () => { if (!btn.disabled) onPick(); });
+  return btn;
+}
+
+/** The ▶ follows the pointer or the arrow keys, like the games' menus. */
+function point(btn, quiet = false) {
+  if (!btn) return;
+  const moved = !btn.classList.contains('on');
+  document.querySelectorAll('#title-menu .gem').forEach(g => g.classList.toggle('on', g === btn));
+  if (!quiet && moved) playSound('stick', 'confirm');
+  if (document.activeElement !== btn && document.activeElement?.closest?.('#title-menu')) btn.focus({ preventScroll: true });
+}
+
+/** Each gem's canvas is a whole number of gem pixels wide, so its pixels stay square at any screen width. */
+function sizeGems() {
+  const px = gemPx();
+  const cols = Math.floor(Math.min(300, innerWidth * 0.8) / px);
+  for (const btn of document.querySelectorAll('#title-menu .gem')) {
+    const rows = btn.dataset.kind === 'continue' ? GEM_TALL : GEM_H;
+    btn.style.width = `${cols * px}px`;
+    btn.style.height = `${rows * px}px`;
+    paintGem(btn.querySelector('.gem-face'), cols, rows, GEMS[btn.dataset.kind]);
+  }
+}
+
+/**
+ * A pixel gem, after the glossy hexagon reference: pointed ends, a dark outline, a two-tone bronze frame and an inner
+ * groove round a face with a light band on top, a shade band below, a gloss streak and white glints.
+ */
+function paintGem(canvas, cols, rows, [face, hi, lo]) {
+  canvas.width = cols;
+  canvas.height = rows;
+  const g = canvas.getContext('2d');
+  g.clearRect(0, 0, cols, rows);
+  const mid = (rows - 1) / 2;
+  const inset = (y) => Math.round(Math.abs(y - mid) * 0.75);   // how far in the pointed ends are on each row
+  for (let y = 0; y < rows; y++) {
+    const left = inset(y), right = cols - 1 - inset(y);
+    for (let x = left; x <= right; x++) {
+      const d = Math.min(x - left, right - x, y, rows - 1 - y);
+      let c;
+      if (d === 0) c = OUTLINE;
+      else if (d <= 2) c = d === 2 ? BRONZE_MID : y < mid ? BRONZE_LIGHT : BRONZE_DARK;
+      else if (d === 3) c = GROOVE;
+      else c = y <= 5 ? hi : y >= rows - 6 ? lo : face;
+      g.fillStyle = c;
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+  // a gloss streak across the upper face, broken like the reference's highlight
+  g.fillStyle = hi;
+  for (let x = Math.round(cols * 0.18); x < cols * 0.82; x++) if (x % 9 < 6) g.fillRect(x, 6, 1, 1);
+  g.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  g.fillRect(9, 4, 5, 1); g.fillRect(16, 4, 2, 1);
+  g.fillRect(cols - 15, rows - 5, 5, 1);
+}
+
+function runIcon(run) {
+  const img = el('img', 'pixel');
+  img.src = run.sprite;
+  img.alt = '';
+  return img;
+}
+
+function runLine(run) {
+  const line = el('span', 'gem-run');
+  const bar = el('span', 'gem-hp');
+  const fill = el('i');
+  const ratio = Math.max(0, run.hp / run.maxHp);
+  fill.style.width = `${ratio * 100}%`;
+  bar.dataset.level = ratio > 0.5 ? 'high' : ratio > 0.2 ? 'mid' : 'low';
+  bar.title = `${run.hp}/${run.maxHp} HP`;
+  bar.append(fill);
+  line.append(el('span', 'gem-place', run.place), bar);   // the icon is the Pokémon, so the line is where and how it is
+  return line;
+}
+
+/** Continue: the Pokémon on the gem flashes white and hops out with its cry, then the map comes in. */
+function sendOut(run) {
+  const btn = document.querySelector('#title-menu .gem-continue');
+  if (!btn || btn.classList.contains('going')) return;
+  btn.classList.add('going');
+  playSound('ball-open');
+  playCry(run.cry);
+  setTimeout(() => {
+    btn.classList.remove('going');
+    actions.onContinue(run.saved);
+  }, still() ? 0 : 700);
+}
+
+/* ---------- the sky ---------- */
+
+function paint() {
+  const screen = $('title-screen'), canvas = $('title-sky');
+  const ground = Math.round(Math.min(150, Math.max(96, innerHeight * 0.17)));
+  screen.style.setProperty('--ground', `${ground}px`);
+  W = Math.ceil(innerWidth / PIXEL);
+  H = Math.ceil(innerHeight / PIXEL);
+  canvas.width = W;
+  canvas.height = H;
+  base = paintScenery(W, H, Math.round(ground / PIXEL));
+  stars = makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H));
+  draw();
+}
+
+function draw() {
+  const ctx = $('title-sky').getContext('2d');
+  ctx.drawImage(base, 0, 0);
+  for (const s of stars) {
+    const glow = still() ? 1 : 0.5 + 0.5 * Math.sin(frame * s.speed + s.phase);
+    if (glow < 0.25) continue;
+    ctx.fillStyle = glow > 0.7 ? '#ffffff' : '#9aa4e8';
+    ctx.fillRect(s.x, s.y, 1, 1);
+    if (s.big && glow > 0.8) {
+      ctx.fillStyle = '#9aa4e8';
+      ctx.fillRect(s.x - 1, s.y, 1, 1); ctx.fillRect(s.x + 1, s.y, 1, 1);
+      ctx.fillRect(s.x, s.y - 1, 1, 1); ctx.fillRect(s.x, s.y + 1, 1, 1);
+    }
+  }
+  if (shooting) {
+    for (let i = 0; i < 7; i++) {
+      ctx.fillStyle = i === 0 ? '#ffffff' : i < 3 ? '#fff2b0' : '#8a86c8';
+      ctx.fillRect(Math.round(shooting.x - i * 2), Math.round(shooting.y - i), 2, 1);
+    }
+  }
+}
+
+function tick() {
+  frame++;
+  if (!shooting && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
+  if (shooting) {
+    shooting.x -= 4; shooting.y += 2;
+    if (--shooting.life <= 0) shooting = null;
+  }
+  draw();
 }
 
 /** The sky, moon and hills: everything that doesn't move, painted once per resize. */
@@ -182,8 +363,10 @@ function ridge(g, W, groundY, color, height, steep, rand) {
   }
 }
 
+// up in the corner, clear of the logo and the menu under it
 function moonOf(W, H) {
-  return { x: Math.round(W * 0.74), y: Math.round(Math.min(H * 0.2, 60)), r: Math.max(9, Math.round(Math.min(W, H) * 0.06)) };
+  const r = Math.max(8, Math.round(Math.min(W, H) * 0.05));
+  return { x: Math.round(W * 0.86), y: Math.round(Math.max(r + 6, Math.min(H * 0.07, 26))), r };
 }
 
 function makeStars(W, maxY, moon) {

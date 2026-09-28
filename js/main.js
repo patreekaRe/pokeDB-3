@@ -1,11 +1,12 @@
 /* ============================================================
    main.js  -  the front door of the game.
 
-   It builds the start screen (pick a starter), wires up the buttons
-   that are always on screen, and connects the screens:
+   It wires up the buttons that are always on screen and connects the
+   screens. The title's gem menu is home:
 
-       start screen -> deck preview -> map -> battle -> rewards -> map ...
-                                        (run.js is in charge of that loop)
+       title -> New game: character select -> deck preview -> map -> battle -> rewards -> map ...
+             -> Continue: map                                (run.js is in charge of that loop)
+             -> Collection, Game Corner
 
    The other files each do one job:
      data/*.js       cards, starters, enemies, relics, achievements (plain data)
@@ -19,213 +20,68 @@
      battle.js       the fight
      records.js      the Stats and Achievements windows
      howto.js        the swipeable How to play window
-     title.js        the PRESS START title screen before the start screen
+     title.js        the title screen: PRESS START, then the gem menu (home)
+     select.js       the character select (New game)
+     collection.js   the Collection (Pokédex, Moves, Relics, Items, Stats, Achievements)
      tips.js         tap-to-read hints (an element's title) on touch screens
    ============================================================ */
 
-import { STARTERS, spriteUrl, stageName, useShinies } from './data/starters.js';
-import { ACHIEVEMENT_FOR } from './data/achievements.js';
-import { TYPES } from './data/cards.js';
+import { spriteUrl, stageName, useShinies } from './data/starters.js';
+import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
-import { ABILITIES } from './data/relics.js';
 import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
-import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { openPreview } from './deckpreview.js';
 import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
-import { initAudio, playCry, playSound } from './audio.js';
-import { initHowtoFx } from './fx.js';
+import { initAudio, playSound } from './audio.js';
 import { initHowto, openHowto } from './howto.js';
-import { showTitle } from './title.js';
-import { showMenuScene } from './scene.js';
-import { initTips, tipAt } from './tips.js';
+import { initTitle, showTitle, showHome, leaveTitle } from './title.js';
+import { initSelect, showSelect, refreshSelect, pickedStarter } from './select.js';
+import { initCollection, showCollection } from './collection.js';
+import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
 import { initPokedex, openPokedex } from './pokedex.js';
-import {
-  $, el, showScreen, setTheme, openDialog, closeDialog, confirmDialog, refreshCoins, itemSprite,
-} from './ui.js';
-
-let selected = null;   // the starter picked on the start screen
-
-/* ---------- start screen ---------- */
-
-// Only the 3 real starters always show. Everything else (the shop skins,
-// the achievement-locked skins, and the legendaries) starts collapsed behind
-// "Show more", however many are unlocked, so the main page stays short.
-const ALWAYS_SHOWN = 3;
-let showAllStarters = false;
-
-function renderStarters() {
-  const grid = $('starter-grid');
-  grid.replaceChildren();
-
-  STARTERS.forEach((starter, i) => {
-    const unlocked = isStarterUnlocked(starter);
-    const btn = el('button', `starter-btn type-${starter.type}${starter.secret ? ' secret' : ''}`);
-    btn.type = 'button';
-    btn.setAttribute('role', 'radio');
-    btn.setAttribute('aria-checked', String(selected === starter));
-    btn.hidden = i >= ALWAYS_SHOWN && !showAllStarters;
-
-    const img = el('img', 'pixel');
-    img.src = spriteUrl(starter, 'front');
-    img.alt = '';
-    fitSprite(img);
-    btn.append(img, el('span', 'starter-name', unlocked ? starter.line[0].name : '???'));
-
-    // a locked tile's corner badge says how to get it, without adding a line that would make the tile taller than the rest
-    if (!unlocked) {
-      const shop = isShopUnlock(starter);
-      const badge = el('span', 'starter-source', shop ? '💰' : '🏆');
-      badge.setAttribute('aria-hidden', 'true');
-      btn.title = shop ? 'Trade PokéCoins for it at the Game Corner' : 'Earn it with an achievement';
-      btn.classList.add('locked');
-      btn.append(badge, el('span', 'sr-only', shop ? 'Locked: get it at the Game Corner' : 'Locked: earn an achievement'));
-    }
-    if (selected === starter) btn.classList.add('selected');
-
-    btn.addEventListener('click', () => {
-      if (unlocked) playCry(starter.line[0].id);
-      if (unlocked && selected === starter) return showSheet(true);
-      if (unlocked && starter.comingSoon) return tipAt(btn, `${starter.line[0].name}'s own moves are coming soon!`);
-      if (unlocked) return selectStarter(starter);
-      if (isShopUnlock(starter)) return toggleShop(starter.id);
-      tipAt(btn, `To unlock: ${ACHIEVEMENT_FOR[starter.id].text}`);
-    });
-    grid.append(btn);
-  });
-
-  const moreBtn = $('starter-more-btn');
-  moreBtn.textContent = showAllStarters ? 'Show fewer ▲' : `Show ${STARTERS.length - ALWAYS_SHOWN} more ▾`;
-}
-
-// The sprite GIFs pad their Pokémon with very different amounts of empty
-// canvas (Totodile or Moltres fill barely half of theirs), so at one tile
-// size some look tiny. Measure the visible pixels once per sprite and
-// transform the image so every Pokémon fills about the same share of its
-// box, feet near its bottom edge. A transform leaves the tile's layout alone.
-const SPRITE_FILL = 0.88;     // the visible Pokémon's longer side, as a share of the box
-const spriteFits = new Map(); // url -> transform string
-
-function fitSprite(img) {
-  const apply = () => { img.style.transform = spriteFits.get(img.src) || ''; };
-  if (spriteFits.has(img.src)) return apply();
-  img.addEventListener('load', () => {
-    if (!spriteFits.has(img.src)) spriteFits.set(img.src, measureFit(img));
-    apply();
-  }, { once: true });
-}
-
-function measureFit(img) {
-  const W = img.naturalWidth, H = img.naturalHeight;
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const g = canvas.getContext('2d', { willReadFrequently: true });
-  g.drawImage(img, 0, 0);
-  const alpha = g.getImageData(0, 0, W, H).data;
-  let x0 = W, y0 = H, x1 = -1, y1 = -1;
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      if (alpha[(y * W + x) * 4 + 3] < 20) continue;
-      if (x < x0) x0 = x; if (x > x1) x1 = x;
-      if (y < y0) y0 = y; if (y > y1) y1 = y;
-    }
-  }
-  if (x1 < 0) return '';
-  // in units of the (square) box: where object-fit: contain drew the Pokémon
-  const s = 1 / Math.max(W, H);
-  const ox = (1 - W * s) / 2, oy = (1 - H * s) / 2;
-  const k = Math.max(1, SPRITE_FILL / (Math.max(x1 - x0 + 1, y1 - y0 + 1) * s));
-  if (k < 1.05) return '';
-  const cx = ox + (x0 + x1 + 1) / 2 * s, feet = oy + (y1 + 1) * s;
-  const tx = 0.5 - k * cx, ty = 0.98 - k * feet;
-  return `translate(${(tx * 100).toFixed(1)}%, ${(ty * 100).toFixed(1)}%) scale(${k.toFixed(3)})`;
-}
-
-function selectStarter(starter) {
-  selected = starter;
-  renderStarters();
-
-  const type = TYPES[starter.type];
-  $('detail-sprite').src = spriteUrl(starter, 'front');
-  $('detail-sprite').alt = starter.line[0].name;
-  const owned = getSave().shiny.owned.includes(starter.id);
-  $('shiny-toggle').hidden = !owned;
-  $('shiny-toggle').setAttribute('aria-pressed', String(isShiny(starter.id)));
-  $('shiny-toggle').title = isShiny(starter.id) ? 'Shiny colours on: tap to switch them off.' : 'You own its shiny colours: tap to switch them on.';
-  $('detail-name').textContent = starter.line[0].name;
-  $('detail-type').textContent = `${type.icon} ${type.label}`;
-  $('detail-type').className = `detail-type type-${starter.type}`;
-  $('detail-blurb').textContent = starter.blurb;
-  const ability = ABILITIES[starter.type];   // shared by every skin of the type
-  $('detail-ability').hidden = !ability;
-  if (ability) {
-    const label = el('b');
-    label.append(itemSprite(ability), `Ability: ${ability.name}`);
-    $('detail-ability').replaceChildren(label, el('span', '', ability.text));
-    $('detail-ability').title = 'Every starter of this type has this Ability. It works in every fight, all run.';
-  }
-
-  setTheme(starter.type);
-  showMenuScene(starter.type);
-  showSheet(true);
-}
-
-/** The picked starter's panel: the page gets padding for it, so it never covers the last row of starters. */
-function showSheet(open) {
-  const sheet = $('starter-sheet');
-  sheet.hidden = !open;
-  document.body.classList.toggle('sheet-open', open);
-  if (open) document.body.style.setProperty('--sheet-h', `${sheet.offsetHeight + 16}px`);
-}
+import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
 
 /* ---------- moving between screens ---------- */
 
-let savedRun = null;   // a run saved from an earlier visit, offered by the Continue button
-
-function renderContinue() {
-  savedRun = loadSavedRun();
-  $('continue-btn').hidden = !savedRun;
-  if (!savedRun) return;
-  const { starter, stage, biome, hp, maxHp, level } = savedRun;
-  $('continue-btn').className = `continue-btn type-${starter.type}`;
-  $('continue-sprite').src = spriteUrl(starter, 'front', stage);
-  $('continue-name').textContent = stageName(starter, stage);
-  $('continue-info').textContent = `Biome ${biome + 1} · ${hp}/${maxHp} HP${level ? ` · Level ${level}` : ''}`;
-  const ratio = hp / maxHp;
-  $('continue-hp-fill').style.width = `${ratio * 100}%`;
-  $('continue-hp-fill').dataset.level = ratio > 0.6 ? 'high' : ratio > 0.3 ? 'mid' : 'low';
+/** The saved run as the title's Continue gem shows it, or null. */
+function savedRunCard() {
+  const saved = loadSavedRun();
+  if (!saved) return null;
+  const { starter, stage, biome, hp, maxHp } = saved;
+  return {
+    saved, hp, maxHp,
+    sprite: spriteUrl(starter, 'front', stage),
+    name: stageName(starter, stage),
+    place: BIOMES[biome]?.name.split(' ').pop() ?? `Biome ${biome + 1}`,   // Clearing, Shrine, Wastes: the full names don't fit a gem
+    cry: starter.line[stage]?.id ?? starter.line[0].id,
+  };
 }
 
-/** Show the start screen (keeps whichever starter you had picked). */
-function showStart() {
-  renderContinue();
-  renderStarters();
-  refreshCoins();
-  showScreen('start-screen');
-  setTheme(selected?.type);
-  showMenuScene(selected?.type);
-}
-
-function goToMenu() {
+/** The title's menu is home: Main menu, a run's end and every Back come here. */
+function goHome() {
   abandonRun();
-  selected = null;
-  showSheet(false);
-  showStart();
+  showHome();
+}
+
+/** New game: the character select, under the title as it fades. */
+function newGame(starter) {
+  showSelect(starter);
+  leaveTitle();
 }
 
 /** Look at a starter's deck, and start a run from there. */
 function previewStarter(starter) {
-  selected = starter;
   openPreview(starter, {
     onBegin: async (level) => {
       if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
       beginRun(starter, level);
     },
-    onBack: showStart,
+    onBack: () => showSelect(starter),
   });
 }
 
@@ -236,11 +92,9 @@ async function requestMenu() {
     if (document.body.dataset.screen !== 'map-screen'
       && !(await confirmDialog('Back to the menu? Your run is saved, but this room will start over when you continue.', 'Menu'))) return;
     suspendRun();
-    selected = null;
-    showSheet(false);
-    return showStart();
+    return showHome();
   }
-  goToMenu();
+  goHome();
 }
 
 /* ---------- the Poké Ball menu (top left) ---------- */
@@ -280,63 +134,31 @@ function init() {
   if (new URLSearchParams(location.search).has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   initAudio();
   initTips();
-  initHowtoFx();
   initHowto();
   // The top bar has no background, so once the page scrolls a fade keeps its numbers off whatever slides under them.
   const markScrolled = () => document.body.classList.toggle('scrolled', scrollY > 4);
   addEventListener('scroll', markScrolled, { passive: true });
   initBattle();
-  initRun({ onMenu: goToMenu, onNewRun: previewStarter });
+  initRun({ onMenu: goHome, onNewRun: previewStarter });
 
-  $('choose-btn').addEventListener('click', () => selected && previewStarter(selected));
-  $('detail-close').addEventListener('click', () => showSheet(false));
-  // a tap on the open page (not a button, another starter or a window) puts the starter's panel away, like ✕
-  document.addEventListener('click', (e) => {
-    if ($('starter-sheet').hidden || !e.detail || e.target.closest('#starter-sheet, button, a, input, dialog, .drop, .tap-tip')) return;
-    showSheet(false);
-  });
-  $('shiny-toggle').addEventListener('click', () => {
-    if (!selected) return;
-    const id = selected.id;
-    updateSave(d => { d.shiny.on = isShiny(id) ? d.shiny.on.filter(x => x !== id) : [...d.shiny.on, id]; });
-    playCry(selected.line[0].id);
-    selectStarter(selected);
-  });
-  $('continue-btn').addEventListener('click', () => {
-    const btn = $('continue-btn');
-    if (!savedRun || btn.classList.contains('opening')) return;
-    // the Poké Ball pops open, your Pokémon comes out with its cry, then the map loads
-    btn.classList.add('opening');
-    playSound('ball-open');
-    const run = savedRun, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setTimeout(() => { btn.classList.add('out'); playCry(run.starter.line[run.stage]?.id ?? run.starter.line[0].id); }, still ? 0 : 250);
-    setTimeout(() => continueRun(run), still ? 0 : 1100);
-  });
   initShop();
   $('shop-btn').addEventListener('click', () => toggleShop());
   $('menu-shop-btn').addEventListener('click', () => toggleShop());
-  $('starter-more-btn').addEventListener('click', () => { showAllStarters = !showAllStarters; renderStarters(); });
 
-  // A purchase made while the shop was open over some other screen (map,
-  // battle, a reward choice) should still be reflected once you're back
-  // looking at the start screen - refresh it every time the dialog closes.
+  // A purchase made while the shop was open (a skin, a shiny) shows on the character select at once.
   $('shop-dialog').addEventListener('close', () => {
     $('shop-btn').setAttribute('aria-expanded', 'false');
-    renderStarters();
-    if (selected && !$('starter-sheet').hidden) selectStarter(selected);   // a shiny bought for it shows at once
+    if (document.body.dataset.screen === 'start-screen') refreshSelect();
   });
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', openHowto);
-  $('howto-btn').addEventListener('click', openHowto);
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   initCardIndex();
-  $('index-btn').addEventListener('click', () => openCardIndex(selected?.type));
-  $('home-index-btn').addEventListener('click', () => openCardIndex(selected?.type));
+  $('index-btn').addEventListener('click', () => openCardIndex(pickedStarter()?.type));
   initPokedex();
   $('dex-btn').addEventListener('click', () => openPokedex(runBiome()));
-  $('home-dex-btn').addEventListener('click', () => openPokedex());
   $('stats-btn').addEventListener('click', openStats);
   $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();
@@ -346,16 +168,21 @@ function init() {
     resetSave();
     clearRunData();
     closeDialog('about-dialog');
-    goToMenu();
+    goHome();
   });
 
-  goToMenu();
+  initTitle({
+    savedRun: savedRunCard,
+    onContinue: (saved) => { leaveTitle(); continueRun(saved); },
+    onNewGame: () => newGame(),
+    onCollection: () => { showCollection(); leaveTitle(); },
+    onGameCorner: () => toggleShop(),
+  });
+  initSelect({ onChoose: previewStarter, onBack: showHome });
+  initCollection({ onBack: showHome });
 
+  showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {
-    // the logo's bounce-in already ran behind the title screen: play it again now it can be seen
-    const logo = document.querySelector('#start-screen .title');
-    logo.replaceWith(logo.cloneNode(true));
-
     // Show the how-to-play once, the very first time.
     if (!getSave().seenHelp) {
       updateSave(d => { d.seenHelp = true; });
