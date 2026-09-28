@@ -76,9 +76,9 @@ const SOUNDS = {
   bag:          { url: 'assets/audio/sfx/bag.mp3' },          // the Bag is opened
   'run-away':   { url: 'assets/audio/sfx/run-away.mp3' },     // you get away: the Poké Doll, or Team Rocket's "Run for it"
   evolved:      { url: 'assets/audio/sfx/evolved.mp3', gain: 0.55 },   // "Congratulations! Your X evolved into Y!" (evolution.js); mastered ~5 dB over item-get
-  'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },
+  'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
   'pc-on':      { url: 'assets/audio/sfx/pc-on.mp3' },        // the games' PC booting up: only the title's Sign in PC (the user's call)
-  'pc-off':     { url: 'assets/audio/sfx/pc-off.mp3' },       // ...and logging off as that window closes, in place of cancel   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
+  'pc-off':     { url: 'assets/audio/sfx/pc-off.mp3' },       // ...and logging off as that window closes, in place of cancel
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -380,10 +380,14 @@ function rampTo(gain, value) {
   gain.gain.linearRampToValueAtTime(value, now + FADE);
 }
 
+// a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
+const TRACK_GAIN = { boss: 1.15 };
+
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
-  if (instant) { gain.gain.cancelScheduledValues(ctx.currentTime); gain.gain.setValueAtTime(1, ctx.currentTime); }
-  else rampTo(gain, 1);
+  const level = TRACK_GAIN[name] ?? 1;
+  if (instant) { gain.gain.cancelScheduledValues(ctx.currentTime); gain.gain.setValueAtTime(level, ctx.currentTime); }
+  else rampTo(gain, level);
   el.play().catch(() => { /* blocked until the first tap; unlock() retries */ });
 }
 
