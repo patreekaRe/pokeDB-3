@@ -170,6 +170,7 @@ function init() {
 
   // Buttons that are always on screen
   $('help-btn').addEventListener('click', openHowto);
+  $('title-help').addEventListener('click', openHowto);
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   initCardIndex();

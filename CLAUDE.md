@@ -1088,7 +1088,7 @@ bar: a pixel **dusk** sky painted into a low-res `<canvas>` (`SKY`: deep blue to
 corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
 Moltres flying past as a silhouette over an empty ledge (the three starters that stood on it were removed, the user's
 call 2026-09-28). With a saved run a battle `.nameplate` sits right under the gems, in `.title-center`'s flow (`#title-run`,
-`renderRun()` in `js/title.js`; the user's call: neatly under Game Corner at every size) with the run's name and HP, the floor you stand on in that biome where the games' nameplate has its level (`#title-run-floor`: a grey pixel staircase, a small F and the number; `floor` in `savedRunCard()`, the current room's `floor` + 1, 0 on the road in, like StS's Neow floor), the
+`renderRun()` in `js/title.js`; the user's call: neatly under Game Corner at every size) with the run's name and HP, the floor you stand on in that biome where the games' nameplate has its level (`#title-run-floor`: a plain "F7" in the name's font and size, the user's call; `floor` in `savedRunCard()`, the current room's `floor` + 1, 0 on the road in, like StS's Neow floor), the
 biome's own map sign over it (`.title-biome`, a smaller `.biome-sign` that drops in: the Clearing's sways, the Shrine's has
 mist drifting across, the Wastes' rim flickers like embers) and a red Abandon run pill under it (`requestAbandon()` in
 `js/main.js`, after a confirm: the run is gone, nothing else changes; also an 🏳️ Abandon run item in the Poké Ball menu
@@ -1097,7 +1097,8 @@ whenever a run is saved or going). Continue's gem shimmers: `tick()` repaints it
 in a flash, `stat-up` then `ball-open`; straight through under reduced motion); the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
 top-left corner (`.title-corner`, gems up only) holds the cloud save's PC (see Cloud save) and a 🔊 Sound button whose
 `#title-sound-panel` (a `.ball-menu-panel`) has the same Sound toggle and volume slider as the Poké Ball menu
-(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide, where the row also hugs the screen's corner. On phones the three sit in one row along the top (PC, speaker, refresh, like battle's piles beside the Poké Ball; the refresh's margin centres it on the speaker), since stacked down the side they crowded the logo (2026-09-28). Over 600px wide there's room beside the logo, so it's one centred column (PC, speaker, refresh; the user's call). A
+(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide, where the row also hugs the screen's corner. On phones they sit in one row along the top (PC, speaker, ❓, refresh, like battle's piles beside the Poké Ball; the refresh's margin centres it on the speaker), since stacked down the side they crowded the logo (2026-09-28). Over 600px wide there's room beside the logo, so it's one centred column (PC, speaker, ❓, refresh; the user's call). A small ❓ How to play (`#title-help`, the user's ask: 26px, 22px on phones, between the speaker and Refresh; it calls
+`openHowto()`). A
 tiny 🔄 Refresh (20px, 16px on phones) (`#title-refresh`, `refreshGame()` in `js/title.js`, the user's ask) re-fetches every `.js` / `.css` file
 the page loaded with `cache: 'reload'` (a plain reload can show the old game for ~10 minutes after a push: GitHub Pages'
 cache), spinning meanwhile, then reloads; the save is untouched. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key

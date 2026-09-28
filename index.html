@@ -45,7 +45,7 @@
       <div class="title-run" id="title-run" hidden>
         <h3 class="biome-sign title-biome" id="title-run-biome"></h3>
         <div class="nameplate title-plate" id="title-plate">
-          <div class="nameplate-title"><strong id="title-run-name"></strong><span class="title-floor" id="title-run-floor"></span></div>
+          <div class="nameplate-title"><strong id="title-run-name"></strong><strong class="title-floor" id="title-run-floor"></strong></div>
           <div class="gb-hp" id="title-run-hp" role="progressbar" aria-label="HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="title-run-hp-fill"></span></span>
@@ -55,7 +55,7 @@
         <button type="button" class="pxb red white small title-abandon" id="title-abandon"><span class="pxb-o"><span class="pxb-i">Abandon run</span></span></button>
       </div>
     </div>
-    <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js), Sound and Refresh -->
+    <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js), Sound, How to play and Refresh -->
     <div class="title-corner">
       <button type="button" class="title-account" id="title-account" hidden aria-label="Sign in"><span class="ta-pc">🖥️</span><span class="ta-label" id="title-account-text">Sign in</span></button>
       <div class="title-sound">
@@ -65,6 +65,7 @@
           <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="title-volume" min="0" max="100" step="5" value="100"></label>
         </div>
       </div>
+      <button type="button" class="title-account title-help" id="title-help" aria-label="How to play"><span class="ta-pc">❓</span></button>
       <button type="button" class="title-account title-refresh" id="title-refresh" aria-label="Get the newest version"><span class="ta-pc">🔄</span></button>
     </div>
     <p class="title-foot">© 2026 PokéDB · a fan game, not affiliated with Nintendo</p>
