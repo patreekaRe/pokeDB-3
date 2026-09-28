@@ -452,6 +452,13 @@ fire / grass / water, before -> after: L0 78 / 82 / 75 -> 79 / 77 / 70, L3 59 / 
 34 / 33 / 29. Overall about the same (the bot rarely builds around powers or Exhaust); Water's L0 / L3 drop (-6 / -7) is
 about two standard errors, worth a re-check with more runs before retuning.
 
+**Grass/Water catch-up (2026-09-28).** Grass and Water died in biome 1 at Levels 3/5 (its Alpha and boss) while Fire
+walked it. Human bot, fire / grass / water, 500 runs/cell: L0 82 / 81 / 71, L3 61 / 54 / 56, L5 34 / 28 / 27. Screened at
+150 runs: Cotton Guard 9 grass 82 / 57 / 38, Absorb heal 4 85 / 61 / 47 (too much), Withdraw 7 water 89 / 73 / 45 (too much, as
+before), Bubble Weak 2 77 / 60 / 35. Shipped Cotton Guard 9 (upgrade 12) and Bubble Weak 2 (upgrade +2 damage only). Confirmed
+at 300 runs, L3 / L5: grass 65 / 37; water 63 / 42 with Bubble+ at Weak 3, so Bubble+ stayed at Weak 2 (the screened version).
+Runs are kept to hundreds now (the user's call, CLAUDE.md's Testing section).
+
 ## Next sessions (queued 2026-09-27)
 
 Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").

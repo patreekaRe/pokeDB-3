@@ -648,7 +648,7 @@ Roster balance pass (2026-09-26, after the new 54 Pokémon; the user found Fire
 easy): the human bot was back up to L0 ~83%, and biome 1 was a coin flip for
 Grass/Water at Levels 3-5 (Alpha elites out-HP'd the boss) while Fire walked
 it. Now `dmgBonus` 6/14/24, `bossBonus` 7/19/30, Elite Territory +15% HP
-(was 30), Fierce Bosses +10% HP (was 20), Cotton Guard 8, Dive 9, and the
+(was 30), Fierce Bosses +10% HP (was 20), Cotton Guard 8 (9 since the 2026-09-28 catch-up, with Bubble Weak 2), Dive 9, and the
 outliers evened within each biome (Arcanine, Flareon, Gyarados and Salamence
 softer; Gloom and Ursaring harder; since 6c.10 those slots are Kangaskhan, Linoone,
 Lickilicky, Porygon-Z and Raticate, same numbers). Human bot fire / grass / water: L0
