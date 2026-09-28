@@ -521,8 +521,14 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    lava fields -> the volcano's slope -> the crater rim. About half reuse today's painters with the dial, half are new
    ones. The stage decides what's there, the clock the light (step 6), so every stage gets every time for free. The map
    screen shows the stage you stand in. Not 10 unique floors: each is seen for one room, so most of that work would go unseen.
-   ▶ Run in: CLOUD. Prompt: "Do roadmap step 7 part 1: the per-floor progress dial for all three biomes' scenes
-   (floor / floors from the node, into showScene), then playtest shots at every floor and time of day."
+   Part 1 done 2026-09-28: the per-floor progress dial (CLAUDE.md's "Progress dial"): the Clearing's meadow thickens
+   into woods with big trees framing it and a canopy closing overhead, the Shrine gains a tunnel of torii, lantern pairs
+   along the path and thicker mist, the Wastes' volcano looms nearer with more lava. Checked in headless shots of every
+   floor (0-10 and the boss) at every time of day, at 1280x800 and 390x844.
+   ▶ Playtest on the live site (no session needed): https://patreekare.github.io/pokeDB-3/ and walk up a biome's map;
+   add `?time=night` (or dawn, dusk) to see it in other light.
+   ▶ Run in: CLOUD. Next prompt: "Do roadmap step 7 part 2: 3 stages plus a boss arena per biome on top of the progress
+   dial, and the map screen showing the stage you stand in; playtest shots at every stage and time of day."
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve

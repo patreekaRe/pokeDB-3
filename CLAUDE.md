@@ -865,6 +865,14 @@ from `GRADES`, switches, `addLife`), since elites and bosses follow the clock to
 hand-painted look is graded (`grade()` in `js/scene.js`: every colour but `GLOWS`, sky keys by the sky grade) and
 `relight()` swaps the sun for the moon and stars at night. The paint key includes the time, so the next screen after the
 hour turns repaints.
+**Progress dial** (roadmap step 7 part 1, 2026-09-28): `showScene(biome, kind, progress)` takes how far into the biome
+you are, `journey(map, node)` in `js/map.js` (floor / (floors + 1), 0 on the road in, 1 at the boss; the map, battles and
+outdoor ? events pass it; the paint key includes it). The painters read it as `dial()`: the Clearing's tree line grows and
+crowds, a far wood hides the hills (from ~F3), big near trees frame the scene (F7+) and a leaf fringe closes overhead
+(F9+), flowers thin out and shade creeps onto the grass; the Shrine gains up to 4 darker torii behind its gate (a tunnel)
+and up to 3 pairs of stouter lanterns lining the path, with thicker mist; the Wastes' volcano looms from 72% to 122% size
+with 1-3 lava flows running further down, more cracks, lava pools, embers and a brighter glow. The clock still decides the
+light, so every floor gets every time. Shots of every floor x time: a headless script calling `showScene()` per step.
 Clearing: sunny day / sunset with fireflies / moonlit night / rose dawn. Shrine: misty
 morning under pines with a torii, stone lanterns, light shafts and falling
 leaves / dusk with lit lanterns and autumn leaves / night with blue spirit
