@@ -28,6 +28,15 @@ const runCount = (stats) => `${plural(stats.runsStarted, 'run')} · ${plural(sta
 /** Called once at startup. */
 export function initCollection({ onBack }) {
   $('coll-back').addEventListener('click', onBack);
+  // a tap on the empty background, anywhere but a card or the top bar, goes back like a tap outside a window (the user's
+  // call); the press must start and end on the same spot, so a swipe to scroll isn't a tap
+  let downOn = null;
+  document.addEventListener('pointerdown', (e) => { downOn = e.target; }, true);
+  document.addEventListener('click', (e) => {
+    if (document.body.dataset.screen !== 'collection-screen' || !e.detail || downOn !== e.target) return;
+    if (document.querySelector('dialog[open], .card-zoom, .tap-tip') || e.target.closest('.coll-card, button, a, input, dialog, .topbar, .drop')) return;
+    $('coll-back').click();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.dataset.screen === 'collection-screen' && !document.querySelector('dialog:modal')) onBack();
   });
