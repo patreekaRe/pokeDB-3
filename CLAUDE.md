@@ -296,7 +296,8 @@ before the checkpoint, so refreshing on a reward screen can't pay twice.
 The Pokédex credit (defeats, research and its coins) is saved the moment a fight is won, so `creditRoom()` in `js/run.js`
 writes the room (`biome:nodeId`) into the saved run's `credited` list straight away: a refresh still replays the room
 (like restarting a StS fight), but winning it again doesn't count for the Pokédex twice (the user farmed Miltank's
-research by refreshing, 2026-09-28).
+research by refreshing, 2026-09-28). Refreshing mid-fight to restart one you're losing is allowed on purpose (the
+user's call: StS allows it too), so don't serialise battles to stop it.
 A version mismatch or any bad id (deck, relics, Mart stock) silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The start
 screen's Continue button (`renderContinue()` in `js/main.js`) holds the run's Poké Ball
