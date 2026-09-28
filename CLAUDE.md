@@ -38,7 +38,9 @@ first — a server from a previous session may already be running.
 
 `serve.ps1` is Windows-only. In a Linux/cloud session, serve the repo root
 with `python3 -m http.server 8123` instead. Cloud sessions should still push
-to `main` (see Conventions), not open a branch or PR.
+to `main` (see Conventions), not open a branch or PR. Even when a session is set up with its
+own branch, push the work to `main` too (`git push origin HEAD:main`; the user's call, 2026-09-28), so it reaches the
+live site.
 
 ## Architecture
 
