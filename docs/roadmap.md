@@ -499,6 +499,17 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    taken, biggest hit, ₽ earned and spent, rests, events, moves forgotten and upgraded). The Collection shows it as two cards,
    Record Book (every win) and Hall of Fame (Level 5 wins, the last card), each a ??? until its first win unlocks it.
    Every win plays the pedestal scene with its stats and deck; only a Level 5 one is the Hall of Fame (song, welcome).
+   Part 3, next (the user's ask): big celebration effects for Hall of Fame wins only.
+   ▶ Run in: CLOUD. "Read CLAUDE.md first (Level 5 rewards: the Hall of Fame). Add crazy, celebratory animations to the
+   Hall of Fame version of `winScene()` in `js/halloffame.js` (Level 5 wins only; normal wins keep their calm Victory):
+   pixel-art fireworks on a canvas behind the pedestal (bursts in the starters' type colours, trails, crackle sparks),
+   gold confetti and streamers raining down, shooting stars across the sky, spotlights sweeping side to side, a sparkle
+   burst and a little hop as the Pokémon lands on the pedestal, the HALL OF FAME title flashing in with a rainbow shimmer,
+   a white flash plus a small screen shake on the biggest firework, and anything else that fits the Gold/Silver style.
+   Keep it pixel art (whole-pixel steps, no blurry glows), keep the text box readable over it, and skip it all under
+   reduced motion. Sounds: firework pops as synths in `js/audio.js` (like `blockClink()`, normalized ~0.2), or ask the user
+   for MP3s. Test headless at phone and PC widths (screenshots mid-celebration), check phone performance (one canvas,
+   ~30 fps, stop it when the scene closes), update CLAUDE.md, then push to main."
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve
