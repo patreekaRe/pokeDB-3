@@ -1,10 +1,11 @@
 /* ============================================================
-   scene.js  -  the pixel-art scene behind every screen: one per biome
-   and fight kind (a normal fight, an elite's tenser light, a boss's
-   dramatic arena), plus the pads the two Pokémon stand on in battle,
+   scene.js  -  the pixel-art scene behind every screen: one per biome,
+   lit for the player's time of day (js/daytime.js: dawn, day, dusk,
+   night), with an elite's tenser light or a boss's dramatic arena laid
+   over it, plus the pads the two Pokémon stand on in battle,
    like the Gen 3/4 games. The map and reward screens show their
    biome's normal scene, the menus the one that goes with the picked
-   starter's type: its own canyon, seaside or jungle (a moonlit night
+   starter's type: its own canyon, seaside or jungle (the Clearing
    before one is picked), dimmed by
    #backdrop so the windows stay readable. When a boss is close to
    fainting, setStorm() turns the weather (rain, cinders, lightning).
@@ -22,13 +23,16 @@
 
 import { $ } from './ui.js';
 import { playSound } from './audio.js';
+import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;
 const dither = (x, y) => BAYER[((y % 4 + 4) % 4) * 4 + ((x % 4 + 4) % 4)];
 
 /* ---------- the scenes ----------
-   Each biome has its shared look, and `kinds` overrides it for wild / elite / boss fights.
+   Each biome has its shared look, `times` one per time of day (a `from` look is graded from that one under its own
+   sky; see biomeLook()), and `kinds` an elite's or a boss's mood laid over whatever time it is (a `grade` from GRADES
+   in js/daytime.js, anything else it switches, and `addLife`).
    sky: bands top to bottom. light: 'sun' | 'moon' | 'haze' | null. backdrop: 'hills' | 'shrine' | 'volcano'.
    floor: 'meadow' | 'moss' | 'basalt' (ground: its colour bands). life: the animated parts to run.
    storm: what setStorm() brings: its rain (or cinders) colours, fall speed and amount, and
@@ -46,8 +50,8 @@ const BIOME_ART = {
     bird: '#34405c',
     pollen: ['#fffce0', '#f8f0a0'],
     firefly: ['#f8f8a0', '#c8e858'],
-    kinds: {
-      wild: {
+    times: {
+      day: {
         sky: ['#4a90e4', '#5ca0ec', '#70b0f2', '#86c0f6', '#9ed0f8', '#b8e0f8', '#d0ecf8'],
         farHills: ['#b4d8d8', '#9cc8c8'],
         hills: ['#8cc8a0', '#74b48c', '#62a47c'],
@@ -59,7 +63,7 @@ const BIOME_ART = {
         life: ['clouds', 'birds', 'blades', 'butterflies', 'pollen'],
         pad: { style: 'grass', top: '#a8e078', mid: '#80c858', low: '#5ea840', rim: '#2e6a2c', earth: '#8a6a3a', blade: '#c0f088' },
       },
-      elite: {   // sunset: the light goes gold and the shadows long
+      dusk: {   // sunset: the light goes gold and the shadows long
         sky: ['#3a3a78', '#584a8c', '#8a5a94', '#c46a84', '#ec8a6c', '#f8ac70', '#f8cc90'],
         sun: ['#fff4d0', '#f8c868', '#f08848'], sunLow: true,
         cloud: ['#f8d8c8', '#eab0a8', '#c07890', '#8a5078'],
@@ -75,7 +79,7 @@ const BIOME_ART = {
         fireflyCount: 0.5,
         pad: { style: 'grass', top: '#a8c068', mid: '#88a850', low: '#6a8a40', rim: '#2e4a26', earth: '#7a5436', blade: '#d0d880' },
       },
-      boss: {   // a moonlit night
+      night: {   // a moonlit night
         light: 'moon', stars: true,
         sky: ['#080a24', '#0e1234', '#141a44', '#1c2452', '#262e60', '#30386a', '#3c4474'],
         cloud: ['#8088b0', '#646c94', '#4a5278', '#363c5e'],
@@ -93,6 +97,19 @@ const BIOME_ART = {
         fireflyCount: 1.4,
         pad: { style: 'grass', top: '#4a8a6a', mid: '#3a7458', low: '#2c5e48', rim: '#10281e', earth: '#3a2e2a', blade: '#70b08a' },
       },
+      dawn: {   // the sun just up: a rose and peach sky, dew on the grass, the last fireflies going out
+        from: 'day', sunLow: true,
+        sky: ['#6a7cc0', '#8a8cc8', '#b09ccc', '#d4a8c4', '#eeb8b4', '#f8cca8', '#f8e0b8'],
+        sun: ['#fffcec', '#fff0b8', '#f8d898'],
+        cloud: ['#fff4ec', '#f8dcd8', '#e0b8c4', '#b898b0'],
+        clouds: { count: 0.8 },
+        life: ['clouds', 'birds', 'blades', 'pollen', 'fireflies'],
+        fireflyCount: 0.3,
+      },
+    },
+    kinds: {
+      elite: { grade: 'elite' },
+      boss: { grade: 'boss', clouds: { count: 1.4 } },
     },
   },
 
@@ -104,9 +121,11 @@ const BIOME_ART = {
     stone: ['#b8b8a8', '#8c8c7e', '#5e5e54'],
     rock: ['#a8aa98', '#80826e', '#565848'],
     lantern: ['#b0b0a0', '#7a7a6c', '#4a4a40'],
+    lanternGlow: ['#fff0a0', '#f8b848', '#d87028'],
+    wisp: ['#f0ffff', '#98e0f8', '#4898c8'],
     flowers: [['#f8f0f8', '#f8d8e8']],
-    kinds: {
-      wild: {   // a misty morning under the trees
+    times: {
+      day: {   // a misty morning under the trees
         sky: ['#9cbcac', '#a8c6b4', '#b4d0bc', '#c0d8c4', '#ccdfcc', '#d8e6d4'],
         farForest: ['#9cbca8', '#8cae9a'],
         trees: ['#5a9a50', '#3e7e42', '#2a6034', '#1a4426'],
@@ -119,7 +138,7 @@ const BIOME_ART = {
         pollen: ['#f8f8e0', '#e0ecb0'],
         pad: { style: 'stone', top: '#b8baa8', mid: '#a0a290', low: '#88887a', rim: '#3a3c32', earth: '#686a5c', moss: '#6a9a4c' },
       },
-      elite: {   // dusk: the lanterns are lit
+      dusk: {   // dusk: the lanterns are lit
         sky: ['#241e44', '#342852', '#4c3462', '#6a426a', '#8a5470', '#a86a74'],
         farForest: ['#5a4a6a', '#4a3c5c'],
         trees: ['#4a6a48', '#34543a', '#243e2c', '#162a1e'],
@@ -133,7 +152,7 @@ const BIOME_ART = {
         life: ['mist', 'blades', 'leaves', 'fireflies', 'lanterns'],
         pad: { style: 'stone', top: '#9a9488', mid: '#847e74', low: '#6c6860', rim: '#28241e', earth: '#524c46', moss: '#5a7040' },
       },
-      boss: {   // night: spirits drift between the gates
+      night: {   // night: spirits drift between the gates
         light: 'moon', stars: true,
         sky: ['#06101a', '#0a1824', '#0e2030', '#14283a', '#1a3242', '#203a4a'],
         farForest: ['#16303a', '#10262e'],
@@ -149,6 +168,16 @@ const BIOME_ART = {
         life: ['stars', 'mist', 'blades', 'leaves', 'wisps', 'lanterns'],
         pad: { style: 'stone', top: '#5a6a70', mid: '#4a5a60', low: '#3c4a50', rim: '#101a1e', earth: '#2c3438', moss: '#2e5a48' },
       },
+      dawn: {   // pink first light through thick mist, the last lanterns still lit
+        from: 'day', mist: 58, shafts: true,
+        sky: ['#8a7c9c', '#a08aa4', '#b89aaa', '#cca8ac', '#dcb8b0', '#e8ccbc'],
+        lanternsLit: true, lanternGlow: ['#fff0c8', '#f8c878', '#d88a48'],
+        life: ['mist', 'blades', 'leaves', 'lanterns'],
+      },
+    },
+    kinds: {
+      elite: { grade: 'elite' },
+      boss: { grade: 'boss', lanternsLit: true, addLife: ['wisps', 'lanterns'] },   // the spirits come out whatever the hour
     },
   },
 
@@ -160,8 +189,8 @@ const BIOME_ART = {
     ember: ['#fff0a0', '#f8a830', '#e85820'],
     ash: ['#a8a09c', '#807874'],
     smoke: ['#8a7a78', '#6a5c5a', '#4e4240', '#3a302e'],
-    kinds: {
-      wild: {   // a hazy, ashen day on the volcano's flank
+    times: {
+      day: {   // a hazy, ashen day on the volcano's flank
         sky: ['#5a4448', '#74504c', '#8e5e50', '#a86e50', '#c08050', '#d49458', '#e0a868'],
         sun: ['#f8e8b8', '#f0c880', '#e0a060'],
         mountains: ['#6a4c48', '#56403c', '#463430'],
@@ -171,7 +200,7 @@ const BIOME_ART = {
         life: ['smoke', 'lava', 'embers', 'ash'],
         pad: { style: 'rock', top: '#7a6a62', mid: '#665850', low: '#544842', rim: '#1e1614', earth: '#3e3230', lava: '#f07820' },
       },
-      elite: {   // the air turns red
+      dusk: {   // the air turns red
         sky: ['#2c1216', '#44181a', '#5e201e', '#7c2a20', '#9c3a22', '#bc5028', '#d46a30'],
         sun: ['#f8d0a0', '#f09050', '#d05830'],
         mountains: ['#4a2a26', '#3a2220', '#2c1a18'],
@@ -181,23 +210,35 @@ const BIOME_ART = {
         life: ['smoke', 'lava', 'embers', 'ash'],
         pad: { style: 'rock', top: '#6a524a', mid: '#58443e', low: '#483834', rim: '#140c0a', earth: '#342624', lava: '#f89030' },
       },
-      boss: {   // the volcano erupts under a storm of ash and lightning
-        light: null, erupting: true,
+      night: {   // the dark lit from below: the cracks and the crater glow under a few stars
+        light: 'moon', stars: true,
         sky: ['#0c0606', '#160a0a', '#220e0c', '#30120e', '#421810', '#5a2012', '#742a14'],
+        cloud: ['#8a6a68'],
         mountains: ['#2a1614', '#221210', '#1a0e0c'],
         volcano: ['#4e3230', '#3a2422', '#261614'],
         ground: ['#3a2a26', '#342622', '#2e221e', '#281e1a', '#221a16', '#1c1612'],
         smoke: ['#5a4644', '#443634', '#322826', '#241c1a'],
-        crackGlow: 1.4, embers: 2,
-        life: ['smoke', 'lava', 'embers', 'ash', 'lightning', 'eruption'],
+        crackGlow: 1.4, embers: 1.6,
+        life: ['stars', 'smoke', 'lava', 'embers', 'ash'],
         pad: { style: 'rock', top: '#5a4640', mid: '#4a3a34', low: '#3c2e2a', rim: '#0c0606', earth: '#2a1e1c', lava: '#f8a830' },
       },
+      dawn: {   // first light behind the ash: a bruised violet sky going gold at the rim
+        from: 'day', sunLow: true,
+        sky: ['#2e2440', '#46304c', '#663c52', '#8a4c54', '#b06050', '#d07c50', '#e8a060'],
+        sun: ['#fff0c8', '#f8c070', '#e08850'],
+        life: ['smoke', 'lava', 'embers', 'ash'],
+      },
+    },
+    kinds: {
+      elite: { grade: 'elite' },
+      boss: { grade: 'boss', erupting: true, crackGlow: 1.4, embers: 2, addLife: ['lightning', 'eruption'] },   // the volcano erupts
     },
   },
 };
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
-   Same shape as a biome's scene, without kinds, pads or storms. */
+   Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
+   said); `times` gives the others their sky and switches, the rest graded (typeLook()) unless `grade: false`. */
 const TYPE_ART = {
   fire: {   // a red-rock canyon at sunset, a campfire throwing sparks
     backdrop: 'canyon', floor: 'desert', light: 'sun', sunLow: true,
@@ -213,6 +254,12 @@ const TYPE_ART = {
     flame: ['#fffce0', '#f8e060', '#f8a030', '#e05a20', '#a02c18'],
     bird: '#3a1e30',
     life: ['birds', 'campfire'],
+    native: 'dusk',
+    times: {
+      dawn: { grade: false, sky: ['#3a3468', '#5a4478', '#865486', '#b86a88', '#e08a84', '#f0aa88', '#f8c8a0', '#f8dcb8'], sun: ['#fffcec', '#f8e0a0', '#f0b078'] },
+      day: { grade: false, sunLow: false, sky: ['#3a7ad8', '#5090e0', '#68a4e8', '#84b8ec', '#a0caf0', '#bcd8ec', '#d8e4e0', '#ece8d0'], sun: ['#fffce8', '#fff0a0', '#f8e070'] },
+      night: { light: 'moon', stars: true, sky: ['#0a0a22', '#10102e', '#18163a', '#221c46', '#2e2450', '#3a2c58', '#48345e', '#583c62'], life: ['campfire'] },
+    },
   },
 
   water: {   // a bright seaside: surf running up the sand, a sail on the horizon, gulls
@@ -234,6 +281,11 @@ const TYPE_ART = {
     sail: ['#ffffff', '#c8d8e8', '#8a5a34'],
     bird: '#f8f8f8',
     life: ['clouds', 'birds', 'surf'],
+    times: {
+      dawn: { sunLow: true, sky: ['#6878c0', '#8888c8', '#aa98cc', '#cca4c8', '#e8b4c0', '#f8c8b8', '#f8dcc4'], sun: ['#fffcec', '#fff0b8', '#f8d898'] },
+      dusk: { sunLow: true, sky: ['#2a2a6a', '#46357a', '#6e4488', '#a05888', '#d07078', '#f0906a', '#f8b070'], sun: ['#fff4d0', '#f8c868', '#f08848'] },
+      night: { light: 'moon', stars: true, sky: ['#060a22', '#0a1030', '#10183e', '#16204a', '#1e2a56', '#263462', '#2e3c6a'], life: ['clouds', 'surf'] },
+    },
   },
 
   grass: {   // deep in a jungle: giant trunks, hanging vines, light pouring through the canopy
@@ -256,6 +308,12 @@ const TYPE_ART = {
     bird: '#1e3a1e',
     pollen: ['#fffce0', '#e8f8a0'],
     life: ['vines', 'blades', 'butterflies', 'pollen'],
+    firefly: ['#f8f8a0', '#c8e858'],
+    times: {
+      dawn: { sky: ['#f8e0d0', '#f0d4c0', '#e0ccb0', '#c8c4a0'] },
+      dusk: { sky: ['#f8c880', '#f0a868', '#d88a58', '#b07050'], fireflyCount: 0.5, life: ['vines', 'blades', 'pollen', 'fireflies'] },
+      night: { sky: ['#283e5a', '#20344c', '#1a2c40', '#142434'], fireflyCount: 1.4, life: ['vines', 'blades', 'fireflies'] },
+    },
   },
 };
 
@@ -380,7 +438,7 @@ const PLACE_ART = {
      bamboo spout (dip), a bamboo fence, a stone lantern, the ♨ sign and a bucket. Its own scene: `biomes` gives each
      its look (a sunny garden, misty cedars, a steaming volcanic rock wall). */
   spring: {
-    backdrop: 'onsen', floor: 'onsen', prop: 'spring', light: null, horizon: 0.48,
+    open: true, backdrop: 'onsen', floor: 'onsen', prop: 'spring', light: null, horizon: 0.48,
     water: ['#f0ffff', '#a8f0f0', '#60d0dc', '#3a9ac0', '#246a98'],
     steam: '#ffffff',
     poolStone: ['#e8e8e0', '#b8b8b0', '#86867e', '#3a3a38'],
@@ -516,7 +574,7 @@ const PLACE_ART = {
   /* the Day Care: the couple's clapboard house and its DAY CARE board behind a white picket fence, an Egg in a straw
      nest in the yard (trade), and two of the Pokémon they're raising (the page's figures) */
   daycare: {
-    backdrop: 'daycare', floor: 'yard', prop: 'daycare', light: null, horizon: 0.56, sky: ['#fff4dc'],
+    open: true, backdrop: 'daycare', floor: 'yard', prop: 'daycare', light: null, horizon: 0.56, sky: ['#fff4dc'],
     siding: ['#fff4dc', '#f0e0c0', '#d8c098', '#a88a60'],
     roof: ['#f87858', '#e04030', '#a82820', '#501010'],
     trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
@@ -558,7 +616,7 @@ const PLACE_ART = {
      your type's power glowing through its doorway, stone lanterns either side of you, a fence and the grove (or rock)
      behind. Its own scene, not a prop in the biome's: `biomes` gives each its look, `types` the glow. */
   altar: {
-    backdrop: 'altar', floor: 'altar', prop: 'altar', light: null, horizon: 0.52,
+    open: true, backdrop: 'altar', floor: 'altar', prop: 'altar', light: null, horizon: 0.52,
     sky: ['#2e6e30'],
     wood: ['#f0c888', '#c08850', '#7a4c28', '#3a2412'],
     roof: ['#b87860', '#8a4c3a', '#5e2e24', '#2a1410'],
@@ -616,10 +674,58 @@ let shown = '';                 // which scene is up, so going back to it doesn'
 let floorAt = null, spanAt = null;   // a place whose floor line and counter the page sets (showPlaceScene's `floor` and `span`)
 let storm = { on: false, level: 0 };
 
-/** The menus' scene: each starter type has its own (TYPE_ART); before one is picked, the Clearing's moonlit night, like the title screen. */
+/* ---------- the time of day (js/daytime.js) ----------
+   A biome has a hand-painted look per time (`times`; one with `from` is that time's look graded, under its own sky), and
+   `kinds` lays an elite's or a boss's mood over it. Everything else is graded from the look it was painted in. */
+
+// lights that glow of their own accord, so the dark doesn't dim them; `storm` has its own tints
+const GLOWS = new Set(['sun', 'flame', 'lanternGlow', 'glow', 'firefly', 'lava', 'ember', 'wisp', 'spot', 'vein', 'boom',
+  'wish', 'hp', 'heart', 'coin', 'crystal', 'steam', 'beam', 'mote', 'glint', 'storm', 'chalk', 'pollen']);
+const SKIES = new Set(['sky', 'cloud']);
+
+/** A copy of `art` with every colour but the glows run through a grade ({ sky, land } from GRADES); `only` limits it to those keys. */
+function grade(art, g, only = null) {
+  if (!g) return art;
+  const walk = (v, tone) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? gradeHex(v, tone)
+    : Array.isArray(v) ? v.map(x => walk(x, tone))
+    : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x, tone)])) : v;
+  return Object.fromEntries(Object.entries(art).map(([k, v]) =>
+    [k, GLOWS.has(k) || (only && !only.includes(k)) ? v : walk(v, SKIES.has(k) ? g.sky : g.land)]));
+}
+
+/** The sun and stars for the time, on a scene painted by day: the moon comes out at night, the sun sits low at either end. */
+function relight(art, time) {
+  if (time === 'night' && (art.light === 'sun' || art.light === 'haze')) return { ...art, light: 'moon', stars: true };
+  if ((time === 'dawn' || time === 'dusk') && art.light === 'sun') return { ...art, sunLow: true };
+  return art;
+}
+
+/** A biome's look at this time for a fight kind, or its plain look (the map's, an event's) with no kind. */
+function biomeLook(art, time, kind = null) {
+  const { times, kinds, ...shared } = art;
+  const { from, ...own } = times[time] || times.day;
+  let look = from ? { ...grade({ ...shared, ...times[from] }, GRADES[time]), ...own } : { ...shared, ...own };
+  const mood = kinds?.[kind];
+  if (mood) {
+    const { grade: g, addLife = [], ...rest } = mood;
+    look = { ...grade(look, GRADES[g]), ...rest, life: [...new Set([...look.life, ...addLife])] };
+  }
+  return look;
+}
+
+/** A menu's type scene at this time: its own sky and switches, the land graded unless the time says not to. */
+function typeLook(art, time) {
+  const { times, native = 'day', ...rest } = art;
+  if (time === native) return rest;
+  const { grade: g = true, ...own } = times?.[time] || {};
+  return { ...relight(g ? grade(rest, GRADES[time]) : rest, time), ...own };
+}
+
+/** The menus' scene: each starter type has its own (TYPE_ART); before one is picked, the Clearing, like the title screen. */
 export function showMenuScene(type) {
-  if (TYPE_ART[type]) paintScene(`menu/${type}`, TYPE_ART[type]);
-  else showScene('clearing', 'boss');
+  const time = timeOfDay();
+  if (TYPE_ART[type]) paintScene(`menu/${type}/${time}`, typeLook(TYPE_ART[type], time));
+  else showScene('clearing');
 }
 
 /** An indoor scene for a room on the map (PLACE_ART), e.g. 'center' for the Pokémon Center. `floor` (a function giving
@@ -629,14 +735,27 @@ export function showMenuScene(type) {
     `type`; an `outdoor` one (a ? event) stands in that biome's own scene. */
 export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null } = {}) {
   const { biomes, types, ...art } = PLACE_ART[place];
+  const time = timeOfDay(), g = GRADES[time];
   if (art.outdoor) {
-    const { kinds, storm, ...shared } = BIOME_ART[biome] || BIOME_ART.clearing;
-    const { pad, life: own, ...wild } = kinds.wild;
-    paintScene(`place/${place}/${biome}/${type}`, { ...shared, ...wild, ...art, ...biomes?.[biome], ...types?.[type], life: [...own, ...art.life] }, floor, span);
+    const { storm, pad, life: own, ...wild } = biomeLook(BIOME_ART[biome] || BIOME_ART.clearing, time);
+    const props = grade({ ...art, ...biomes?.[biome] }, g);
+    paintScene(`place/${place}/${biome}/${type}/${time}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life] }, floor, span);
     return;
   }
   const look = biomes && (biomes[biome] || Object.values(biomes)[0]), glow = types?.[type];
-  paintScene(`place/${place}${look ? `/${biome}` : ''}${glow ? `/${type}` : ''}`, { ...art, ...look, ...glow }, floor, span);
+  let lit = { ...art, ...look, ...glow };
+  // open-air close-ups take the light whole; indoors only the view through the windows changes
+  if (art.open) {
+    // an open sky (the Hot Spring's garden) is the biome's own for the time, not a graded blue
+    const sky = lit.sky?.length > 1 && g ? biomeLook(BIOME_ART[biome] || BIOME_ART.clearing, time).sky : null;
+    lit = relight(grade(lit, g), time);
+    if (sky) lit.sky = sky;
+  }
+  else if (g && (lit.view || lit.window)) {
+    lit = { ...lit, ...grade(lit, { sky: g.sky, land: g.sky }, ['view']) };
+    if (lit.window) { const [frame, ...rest] = lit.window; lit.window = [frame, ...rest.map(c => gradeHex(c, g.sky))]; }
+  }
+  paintScene(`place/${place}${look ? `/${biome}` : ''}${glow ? `/${type}` : ''}/${time}`, lit, floor, span);
 }
 
 const BALL_DROP = 4;   // frames before your Poké Ball settles into the healing machine
@@ -671,8 +790,8 @@ export function centerSpots() {
 export function showScene(biomeId, kind = 'wild') {
   const art = BIOME_ART[biomeId];
   if (!art) { paintScene('', null); return; }
-  const { kinds, ...shared } = art;
-  paintScene(`${biomeId}/${kind}`, { ...shared, ...(kinds[kind] || kinds.wild) });
+  const time = timeOfDay();
+  paintScene(`${biomeId}/${kind}/${time}`, biomeLook(art, time, kind));
 }
 
 function paintScene(key, raw, floor = null, span = null) {

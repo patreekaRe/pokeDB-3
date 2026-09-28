@@ -12,7 +12,8 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   It saves the user's data and has Node, Python and Chromium. Attach both `pokeDB-3` and `pokeDB-sim`.
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
-  Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing.
+  Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?time=dawn`, `day`, `dusk` or
+  `night` pins the day/night cycle for that page load (`js/daytime.js`).
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
@@ -851,27 +852,37 @@ sized from `--base` on `.enemy-zone` and sits so the feet land just below its mi
 `horizonRow()` in `js/scene.js` mirrors that. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
 Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
-Every screen is set in a pixel-art scene per biome *and* fight kind
+Every screen is set in a pixel-art scene per biome
 (`js/scene.js`, the user's call: the blurred photos clashed with the 8-bit
-look; there are no photo backdrops left): a normal fight, an elite's tenser
-light and a boss's dramatic arena.
-Clearing: sunny day / sunset with fireflies / moonlit night. Shrine: misty
+look; there are no photo backdrops left), lit for the time of day.
+**Day and night** (2026-09-28, the user's call): every scene follows the device's clock, `timeOfDay()` in
+`js/daytime.js` (dawn 5-7, day 7-17, dusk 17-20, night 20-5; `?time=` pins it). Scenery and light are kept apart so
+per-floor stages (roadmap step 7) can plug in: a biome's `times` are its hand-painted looks (a `from` one is another
+time's look graded under its own sky), and `kinds` lays an elite's or a boss's mood over whatever time it is (a `grade`
+from `GRADES`, switches, `addLife`), since elites and bosses follow the clock too (the user's call). Anything without a
+hand-painted look is graded (`grade()` in `js/scene.js`: every colour but `GLOWS`, sky keys by the sky grade) and
+`relight()` swaps the sun for the moon and stars at night. The paint key includes the time, so the next screen after the
+hour turns repaints.
+Clearing: sunny day / sunset with fireflies / moonlit night / rose dawn. Shrine: misty
 morning under pines with a torii, stone lanterns, light shafts and falling
 leaves / dusk with lit lanterns and autumn leaves / night with blue spirit
-wisps. Wastes: hazy volcano with glowing lava cracks, embers and ash / red
-sky / an eruption with lava rivers, flying lava and lightning. All of it is
-data in `BIOME_ART` (shared per biome, `kinds` override per fight; `life`
+wisps / pink misty dawn. Wastes: hazy volcano with glowing lava cracks, embers and ash / red
+sky / a glowing night under a few stars / a violet dawn; an elite is a shade tenser, a boss darker and redder, with the
+Shrine's spirits and lanterns out and the Wastes erupting (lava rivers, flying lava, lightning) at any hour. All of it is
+data in `BIOME_ART` (shared per biome, `times` per time of day, `kinds` per fight; `life`
 lists the animated parts), painted into `#scene-bg` (a fixed low-res canvas,
 one canvas pixel = 4 CSS px on phones, 5 on PCs) by
 `showScene(biomeId, kind)`: from `startBattle()`, and from `showMap()` with the
 biome's normal scene (reward, Center, Mart and event screens keep whatever is
-up, so an elite's rewards stay at sunset). The menus call
+up, so an elite's rewards keep its light). The menus call
 `showMenuScene(type)`: each starter type has its own scene, seen nowhere else
 (`TYPE_ART`, same shape as a biome without kinds, pads or storms): Fire a red-rock
-canyon at sunset with a sparking campfire, Water a seaside with surf, a
+canyon (painted at sunset, `native: 'dusk'`) with a sparking campfire, Water a seaside with surf, a
 lighthouse and a passing sail, Grass a jungle with giant trunks, swaying vines
-and light shafts. With none picked it's the Clearing's moonlit night, like
-the title. The Pokémon Center (`restSite()`) has an indoor scene instead
+and light shafts; each type's `times` gives the other times their sky and switches (`typeLook()`). With none picked
+it's the Clearing, like the title. ? events outdoors stand in the biome's look for the time with their props graded;
+`open: true` places (Hot Spring, Shrine, Day Care) are graded whole and take the biome's sky; indoor rooms keep their
+light and only their windows (`view`, the Mart's `window`) change. The Pokémon Center (`restSite()`) has an indoor scene instead
 (`PLACE_ART.center`, `showPlaceScene('center')`): a big Center logo (a Poké Ball
 with a red cross) on the wall behind the counter, hospital monitors on ceiling arms
 (a scrolling heartbeat, a party screen, and the big patient monitor: `centerVitals()` in
@@ -1092,7 +1103,8 @@ hover/focus (left padding reserves its space; `.primary` = orange frame,
 
 The title screen (`#title-screen`, `js/title.js`) is the game's **home** since 2026-09-28 (the user's design, from
 Slay the Spire 2's title and pixel-art button references; mockups in `docs/mockups/`). It's a fixed overlay above the top
-bar: a pixel **dusk** sky painted into a low-res `<canvas>` (`SKY`: deep blue to a rose horizon, dithered; the moon up in the
+bar: a pixel sky for the time of day painted into a low-res `<canvas>` (`SKIES` in `js/title.js`; dusk, the user's pick
+before the clock, is deep blue to a rose horizon, dithered; by day the moon is the sun and there are no stars; the moon up in the
 corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
 Moltres flying past as a silhouette over an empty ledge (the three starters that stood on it were removed, the user's
 call 2026-09-28). With a saved run a battle `.nameplate` sits right under the gems, in `.title-center`'s flow (`#title-run`,

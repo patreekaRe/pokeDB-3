@@ -2,7 +2,7 @@
    title.js  -  the title screen, which is also the game's home.
 
    Once per page load it opens on PRESS START (a Gold/Silver homage: a
-   pixel dusk sky with a moon, Moltres crossing it as a silhouette, the
+   pixel sky lit for the player's time of day (dusk: a moon), Moltres crossing it as a silhouette, the
    three starters waiting on a grassy ledge). After that it's the main
    menu: a stack of pixel gems under the logo (Continue, New game,
    Collection, Game Corner, after the user's references: Slay the Spire 2's
@@ -18,15 +18,35 @@
 import { $, el, setHpBar } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic } from './audio.js';
+import { timeOfDay } from './daytime.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
-// dusk rather than midnight (the user's call, 2026-09-28): deep blue up top, a warm rose horizon
-const SKY = ['#1c2360', '#2c3480', '#46479a', '#7258a6', '#b06c9e', '#ec9888'];
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-const MOON = '#f8f0c8', MOON_SHADE = '#d8cc98', HALO = '#9a88d0';
-const FAR_HILLS = '#5c4c96', NEAR_HILLS = '#383274';
-const GRASS = ['#1e4a30', '#2e6e42', '#4c9e58', '#86d470'];
+/* The sky follows the player's clock (js/daytime.js). Dusk is the one the user picked for the title (2026-09-28: deep
+   blue up top, a warm rose horizon); the moon is the sun by day, and the stars only come out at dusk and night. */
+const SKIES = {
+  dawn: {
+    sky: ['#3c4c9c', '#6a6cb0', '#a07cb8', '#d894b4', '#f8b4a8', '#f8d8b0'],
+    orb: ['#fffcec', '#f8e0a8', '#f8c8b8'], moon: false, stars: false,
+    farHills: '#8a78b0', nearHills: '#5a5494', grass: ['#2a5a3a', '#3e7e4a', '#62ae62', '#a0e080'],
+  },
+  day: {
+    sky: ['#3c88e0', '#58a0ea', '#74b4f0', '#94c8f4', '#b4dcf8', '#d4ecf8'],
+    orb: ['#fffce8', '#fff0a0', '#b8dcf8'], moon: false, stars: false,
+    farHills: '#7ab4c0', nearHills: '#4e8c7c', grass: ['#2e6a34', '#44904a', '#6ac060', '#a8e880'],
+  },
+  dusk: {
+    sky: ['#1c2360', '#2c3480', '#46479a', '#7258a6', '#b06c9e', '#ec9888'],
+    orb: ['#f8f0c8', '#d8cc98', '#9a88d0'], moon: true, stars: true,
+    farHills: '#5c4c96', nearHills: '#383274', grass: ['#1e4a30', '#2e6e42', '#4c9e58', '#86d470'],
+  },
+  night: {
+    sky: ['#060820', '#0a0e2e', '#10163c', '#161e4a', '#1e2856', '#283462'],
+    orb: ['#f8f4dc', '#d0ccb0', '#3a4880'], moon: true, stars: true,
+    farHills: '#1e2650', nearHills: '#121a3a', grass: ['#0e2a20', '#16402c', '#26603a', '#3e8a50'],
+  },
+};
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
 const GEM_H = 16, GEM_BIG = 19;   // gem heights in pixels: Continue's is bigger (the user's call)
@@ -43,7 +63,7 @@ const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let actions = null;       // what the gems do, and the saved run for Continue (initTitle)
 let pressed = false;      // PRESS START happens once per page load
-let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0;
+let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0, look = SKIES.dusk;
 
 /** Called once at startup with what the menu's gems do: { savedRun(), onContinue(run), onNewGame(), onCollection(), onGameCorner() }. */
 export function initTitle(handlers) {
@@ -327,8 +347,9 @@ function paint() {
   H = Math.ceil(innerHeight / PIXEL);
   canvas.width = W;
   canvas.height = H;
+  look = SKIES[timeOfDay()];
   base = paintScenery(W, H, Math.round(ground / PIXEL));
-  stars = makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H));
+  stars = look.stars ? makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H)) : [];
   draw();
 }
 
@@ -365,7 +386,7 @@ function tick() {
     else if (shine !== null) shine = shine + 3 > face.width + 4 ? null : shine + 3;
     paintGem(face, face.width, face.height, GEMS.continue, shine);
   }
-  if (!shooting && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
+  if (!shooting && look.stars && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
   if (shooting) {
     shooting.x -= 4; shooting.y += 2;
     if (--shooting.life <= 0) shooting = null;
@@ -383,7 +404,7 @@ function paintScenery(W, H, groundH) {
 
   // sky bands, ordered-dithered into each other like a GBC gradient
   const img = g.createImageData(W, H);
-  const rgb = SKY.map(hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)));
+  const rgb = look.sky.map(hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)));
   for (let y = 0; y < H; y++) {
     const t = Math.min(0.999, Math.max(0, (y / groundY) ** 1.6)) * (rgb.length - 1);
     const band = Math.floor(t), mix = t - band;
@@ -396,22 +417,22 @@ function paintScenery(W, H, groundH) {
   }
   g.putImageData(img, 0, 0);
 
-  // the moon, with a dithered halo and a shaded side
-  const { x: mx, y: my, r } = moonOf(W, H);
+  // the moon, with a dithered halo and a shaded side (the sun by day: a rim, not a shaded side, and no craters)
+  const { x: mx, y: my, r } = moonOf(W, H), [lit, shade, halo] = look.orb;
   for (let y = -r - 5; y <= r + 5; y++) {
     for (let x = -r - 5; x <= r + 5; x++) {
       const d = Math.hypot(x, y);
       if (d <= r) {
-        g.fillStyle = x + y > r * 0.9 ? MOON_SHADE : MOON;
+        g.fillStyle = (look.moon ? x + y > r * 0.9 : d > r - 1.5) ? shade : lit;
         g.fillRect(mx + x, my + y, 1, 1);
       } else if (d <= r + 5 && (x + y) % 2 === 0 && d <= r + 2 + rand() * 3) {
-        g.fillStyle = HALO;
+        g.fillStyle = halo;
         g.fillRect(mx + x, my + y, 1, 1);
       }
     }
   }
-  g.fillStyle = MOON_SHADE;
-  for (const [cx, cy, cr] of [[-0.35, -0.2, 0.18], [0.2, 0.3, 0.13], [0.1, -0.45, 0.1]]) {
+  g.fillStyle = shade;
+  if (look.moon) for (const [cx, cy, cr] of [[-0.35, -0.2, 0.18], [0.2, 0.3, 0.13], [0.1, -0.45, 0.1]]) {
     const R = Math.max(1, Math.round(cr * r));
     for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) {
       if (x * x + y * y <= R * R) g.fillRect(mx + Math.round(cx * r) + x, my + Math.round(cy * r) + y, 1, 1);
@@ -419,8 +440,9 @@ function paintScenery(W, H, groundH) {
   }
 
   // two rows of hills, then the ledge the starters stand on
-  ridge(g, W, groundY, FAR_HILLS, 52, 1.1, rand);
-  ridge(g, W, groundY, NEAR_HILLS, 26, 1.5, rand);
+  const GRASS = look.grass;
+  ridge(g, W, groundY, look.farHills, 52, 1.1, rand);
+  ridge(g, W, groundY, look.nearHills, 26, 1.5, rand);
   g.fillStyle = GRASS[0];
   g.fillRect(0, groundY, W, groundH);
   g.fillStyle = GRASS[1];

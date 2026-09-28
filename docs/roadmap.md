@@ -505,6 +505,24 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    "Welcome to the HALL OF FAME!". Firework sounds are synths; none of it runs under reduced motion.
    ▶ Playtest on the live site (no session needed): open https://patreekare.github.io/pokeDB-3/?levels and win a
    Level 5 run to see it.
+6. **Day/night cycle.** Done 2026-09-28 (the user's pick of the recommended scope; CLAUDE.md's "Day and night"): every
+   scene follows the device's clock, dawn 5-7, day 7-17, dusk 17-20, night 20-5 (`js/daytime.js`). Biomes use the day /
+   sunset / night looks that used to mean wild / elite / boss, plus a new dawn each; elites and bosses follow the clock too
+   (the user's call), with a tenser grade over it, the Shrine's spirits and lit lanterns at a boss, and the Wastes' eruption
+   and lightning at a boss at any hour. The character select's three scenes, ? events, the open-air rooms (Hot Spring,
+   Shrine, Day Care), the rooms' windows and the title's sky follow it too. Lighting is kept apart from scenery, so step 7
+   plugs in. `?time=dawn|day|dusk|night` pins it for playtesting.
+   ▶ Playtest on the live site (no session needed): https://patreekare.github.io/pokeDB-3/?time=night (or dawn, dusk, day).
+7. **A journey through each biome** (planned 2026-09-28, the user's ask: each floor should feel like travelling towards
+   the boss). The recommended shape: a "how far along" dial first (each floor moves the scenery a notch: the Wastes'
+   volcano grows nearer with more smoke and lava, the Clearing's meadow thickens into forest, the Shrine gains more torii,
+   lanterns and mist), then 3 stages plus a boss arena per biome, e.g. Clearing meadow -> forest edge -> deep woods -> an
+   ancient giant tree; Shrine foot of the steps -> torii path -> inner courtyard -> the main hall; Wastes ash plains ->
+   lava fields -> the volcano's slope -> the crater rim. About half reuse today's painters with the dial, half are new
+   ones. The stage decides what's there, the clock the light (step 6), so every stage gets every time for free. The map
+   screen shows the stage you stand in. Not 10 unique floors: each is seen for one room, so most of that work would go unseen.
+   ▶ Run in: CLOUD. Prompt: "Do roadmap step 7 part 1: the per-floor progress dial for all three biomes' scenes
+   (floor / floors from the node, into showScene), then playtest shots at every floor and time of day."
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve
