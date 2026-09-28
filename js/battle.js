@@ -98,7 +98,7 @@ function showPile(which) {
   const [, , , note] = PILES.find(([id]) => id === which);
   $('piles-note').textContent = groups.size ? note : 'Nothing here yet.';
   $('piles-cards').replaceChildren(...[...groups].map(([card, count]) =>
-    zoomable(makeCard(card, { stage: b.stage, count, cost: costOf(card) }), card, b.stage)));
+    zoomable(makeCard(asShown(card), { stage: b.stage, count, cost: costOf(card) }), asShown(card), b.stage)));
 }
 
 /** Leave the battle without finishing it (used when you abandon a run). */
@@ -427,6 +427,14 @@ function markHurt() {
 
 /** Lum Berry (StS's Medical Kit): status cards can be played for 0 PP, and exhaust. */
 const lumCures = (card) => !!card.status && hasRelic('lum-berry');
+const CURED = new WeakMap();
+/* How a card reads in battle: under Lum Berry a status card says what it really does (0 PP, draw 1, Exhaust), not
+   "Unplayable" (the user's call, 2026-09-28). The copy is only for show: the hand and piles keep the real card. */
+function asShown(card) {
+  if (!lumCures(card)) return card;
+  if (!CURED.has(card)) CURED.set(card, { ...card, cost: 0, unplayable: false, exhaust: true, effects: { ...card.effects, draw: (card.effects.draw || 0) + 1 } });
+  return CURED.get(card);
+}
 
 /** Blue Flare (StS's Corruption): cards that aren't attacks or powers cost 0 and exhaust. */
 const corrupts = (card) => !!battle.powers.corruption && !isAttack(card) && !card.power && !card.status;
@@ -884,7 +892,7 @@ function pickFromPile(cards, prompt, verb = 'Take back') {
     };
     const row = el('div', 'pile-pick');
     for (const card of cards) {
-      const node = makeCard(card, { stage: battle.stage });
+      const node = makeCard(asShown(card), { stage: battle.stage });
       node.classList.add('pile-card');
       node.tabIndex = 0;
       node.setAttribute('role', 'button');
@@ -1622,7 +1630,7 @@ function renderHand() {
 
   b.hand.forEach((entry, i) => {
     const { card } = entry;
-    const node = makeCard(card, { stage: b.stage, cost: costOf(card) });
+    const node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
     node.classList.add('in-hand');
 
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
@@ -1770,7 +1778,7 @@ function renderFocus() {
   const entry = b.hand.find(h => h.uid === (choosing ? choosing.picked : selectedUid));
   if (!entry) { layer.hidden = true; layer.replaceChildren(); return; }
 
-  const big = makeCard(entry.card, { stage: b.stage, cost: costOf(entry.card) });
+  const big = makeCard(asShown(entry.card), { stage: b.stage, cost: costOf(entry.card) });
   big.classList.add('focus-card');
   const problem = choosing ? null : whyNotPlayable(entry.card);
   if (problem) big.classList.add('unplayable');
@@ -1784,7 +1792,7 @@ function renderFocus() {
   });
   const extra = problem ? el('p', 'focus-hint', problem) : focusButton(verb, () => tapCard(entry.uid));
   if (choosing) extra.classList.add(`pick-${choosing.verb}`);
-  const tips = cardTips(entry.card, big);
+  const tips = cardTips(asShown(entry.card), big);
   layer.replaceChildren(big, extra, ...(tips ? [tips] : []));
   layer.classList.add('rise');
   layer.hidden = false;

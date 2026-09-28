@@ -696,7 +696,8 @@ Mushrooms = Snecko Eye (a drawn card is a copy costing 0-3 with `orig`, so `sett
 Champion Belt; Water: Blue Flute +1 Tide a turn, Lustrous Orb (spending Tide leaves half), Eviolite 3 block every turn (Orichalcum never fired: Water nearly always has block),
 Everstone = Calipers (block drops by 10), Slowpoke Tail = Runic Pyramid, Heart Scale = Tough Bandages). Any type:
 Casteliacone (Ice Cream: unspent PP carries over), Magnet (Unceasing Top), Lum Berry (Medical Kit: status cards
-cost 0, exhaust and draw a card, `lumCures()`), Strange Souvenir (a free random card of your type on turn 1), Fist Plate
+cost 0, exhaust and draw a card, `lumCures()`; in battle they read that way too, 0 PP "Draw 1 card. Exhaust.", via
+`asShown()` in `js/battle.js`, a display-only copy for the hand, risen card, piles and boxes), Strange Souvenir (a free random card of your type on turn 1), Fist Plate
 (Ornamental Fan), Dragon Fang (Akabeko, +10: `battle.firstAttack`), Big Malasada (Meal Ticket: heal 15 entering a Mart,
 in `enterNode()`), Lemonade (Lantern), Stone Plate (Horn Cleat). Relic damage that can end a fight off your turn
 (Smoke-Poke Tail on an Ethereal card, Enigma Berry off a Potion) is checked in
