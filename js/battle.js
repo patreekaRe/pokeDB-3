@@ -928,6 +928,7 @@ async function pickFromHand(n, verb, act, only = () => true) {
     log(`Choose a card to ${verb}.`);
     const uid = await new Promise(resolve => { choosing = { resolve, only, verb, picked: null }; renderAll(); });
     if (battle !== b) return;
+    if (verb === 'exhaust') { renderPicking(); await smokeOut(uid); if (battle !== b) return; }
     act(b.hand.find(h => h.uid === uid));
     renderAll();
   }
@@ -1418,6 +1419,62 @@ function renderAll() {
   renderStatus();
   renderItems();
   renderHand();
+  renderPicking();
+}
+
+const PICK_TEXT = {
+  exhaust: ['🌫️', 'Exhaust a card', 'It\'s gone for the rest of this fight.'],
+  discard: ['', 'Discard a card', 'It goes to your discard pile.'],
+  keep: ['', 'Keep a card', 'It stays in your hand for next turn.'],
+  copy: ['', 'Copy a card', 'A copy goes into your hand.'],
+};
+
+/* While a card asks you to pick one from your hand, the battle dims under the hand and a banner names the verb, so an
+   Exhaust can't be mistaken for playing a card (the user exhausted one by accident, 2026-09-28). */
+function renderPicking() {
+  const screen = $('battle-screen');
+  let banner = $('pick-banner');
+  if (!banner) {
+    banner = el('div', 'pick-banner');
+    banner.id = 'pick-banner';
+    banner.setAttribute('aria-live', 'polite');
+    screen.append(banner);
+  }
+  const verb = choosing?.verb;
+  screen.classList.toggle('picking', !!verb);
+  if (!verb) { banner.hidden = true; delete banner.dataset.verb; return; }
+  if (banner.dataset.verb === verb && !banner.hidden) return;
+  const [icon, title, line] = PICK_TEXT[verb] || ['', `Choose a card to ${verb}`, ''];
+  banner.dataset.verb = verb;
+  screen.dataset.pick = verb;
+  banner.replaceChildren(...[icon && el('span', 'pick-icon', icon), el('strong', 'pick-title', title), line && el('span', 'pick-line', line)].filter(Boolean));
+  banner.hidden = false;
+}
+
+/** A card exhausted from your hand goes up in smoke where it sat, before it leaves. */
+async function smokeOut(uid) {
+  const from = $('hand').querySelector(`[data-uid="${uid}"]`);
+  const risen = $('card-focus').querySelector('.focus-card');
+  const src = risen && !$('card-focus').hidden ? risen : from;
+  if (!src || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r = src.getBoundingClientRect();
+  const ghost = src.cloneNode(true);
+  ghost.classList.add('exhaust-ghost');
+  ghost.removeAttribute('id');
+  Object.assign(ghost.style, { position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: 0, rotate: '0deg', translate: '0', transform: 'none' });
+  const wrap = el('div', 'exhaust-fx');
+  wrap.append(ghost);
+  for (let i = 0; i < 7; i++) {
+    const puff = el('span', 'exhaust-puff');
+    puff.style.left = `${r.left + r.width * (0.1 + 0.8 * Math.random())}px`;
+    puff.style.top = `${r.top + r.height * (0.35 + 0.5 * Math.random())}px`;
+    puff.style.animationDelay = `${i * 45}ms`;
+    wrap.append(puff);
+  }
+  document.body.append(wrap);
+  src.style.visibility = 'hidden';
+  await sleep(620);
+  wrap.remove();
 }
 
 /** Items are used from the Bag's Items pocket (pickItem), not the battle screen: drop a pick that no longer stands. */
@@ -1710,6 +1767,7 @@ function renderFocus() {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
   const extra = problem ? el('p', 'focus-hint', problem) : focusButton(verb, () => tapCard(entry.uid));
+  if (choosing) extra.classList.add(`pick-${choosing.verb}`);
   const tips = cardTips(entry.card, big);
   layer.replaceChildren(big, extra, ...(tips ? [tips] : []));
   layer.classList.add('rise');

@@ -122,7 +122,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   windows beside any blown-up card: battle's risen card (`placeTips()` in `js/battle.js`: beside it on
   whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()` and the reward /
   Mart focus (`openFocus()`); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
-  `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`.
+  `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`. A card that makes cards (`addCard`, however nested) gets a box per made card with its cost,
+  keywords and text (`addedCards()` / `madeCardText()`: Rage, Paralysis, Poison, Cinder...; Rage's says it's a copy of itself).
   Each type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
   Drain / Spores, Water Tsunami / Shell / Flow.
   Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
@@ -818,6 +819,10 @@ the hover lift and deal animation (`transform`) stay separate; a hovered or pick
 card straightens and comes to the front.
 A card's pick from your hand (discard, exhaust, keep, Mimic's copy: `pickFromHand()`) takes two taps too: the first lifts
 it like a played card with a button naming the verb (`PICK_VERBS`, `choosing.picked`), the second confirms (the user's call).
+While one is asked the battle dims under the hand and a banner names it (`renderPicking()`, `#pick-banner`, `PICK_TEXT`;
+`#battle-screen.picking`, `data-pick` colours it: exhaust purple, discard blue, keep green, copy gold, as are the pickable
+cards' pulsing rings and the risen card's button, `.pick-<verb>`), and an exhausted pick goes up in pixel smoke first
+(`smokeOut()`, skipped under reduced motion): the user exhausted a card thinking they were playing it (2026-09-28).
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first

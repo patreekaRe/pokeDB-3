@@ -309,3 +309,83 @@
 /* soft corners inside a card, in step with its 7cqw outer corners */
 .card-art, .card-text { border-radius: 4cqw; }
 .lock-badge, .in-deck { border-radius: 3cqw; }
+
+/* ---------- picking a card from your hand (exhaust / discard / keep / copy): the battle dims under the hand, a banner
+   names the verb and the cards you can pick pulse in its colour, so it never reads as playing a card ---------- */
+#battle-screen { --pick: #8878b8; }
+#battle-screen[data-pick="discard"] { --pick: #4878d0; }
+#battle-screen[data-pick="keep"] { --pick: #40a050; }
+#battle-screen[data-pick="copy"] { --pick: #d0a020; }
+#battle-screen.picking::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(8, 10, 24, 0.66);
+  pointer-events: none;
+  animation: pickDim 0.25s steps(4) both;
+}
+#battle-screen.picking .hand { position: relative; z-index: 21; }
+@keyframes pickDim { from { opacity: 0; } }
+.pick-banner {
+  position: fixed;
+  left: 50%;
+  top: 30%;
+  z-index: 22;
+  translate: -50% 0;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px 10px;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  border: 4px solid var(--pick);
+  border-radius: var(--round-sm);
+  box-shadow: 0 0 0 3px #181010, 5px 5px 0 3px rgba(0, 0, 0, 0.45);
+  font-family: var(--pixel-font);
+  text-align: center;
+  pointer-events: none;
+  animation: pickBanner 0.4s steps(6) both;
+}
+.pick-banner[hidden] { display: none; }
+.pick-title { font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--pick); text-shadow: 2px 2px 0 #181010; }
+.pick-line { font-size: 0.7rem; color: var(--win-muted); }
+.pick-icon { font-size: 1.6rem; animation: pickPuff 1.2s steps(3) infinite; }
+@keyframes pickBanner { 0% { translate: -50% -40px; opacity: 0; } 70% { translate: -50% 6px; opacity: 1; } 100% { translate: -50% 0; } }
+@keyframes pickPuff { 50% { translate: 0 -4px; scale: 1.15; } }
+#battle-screen.picking .card.in-hand.choosable .card-face {
+  box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 2.6cqw var(--pick), 1.6cqw 1.6cqw 0 2.6cqw rgba(0, 0, 0, 0.4);
+  animation: pickGlow 1s steps(2) infinite;
+}
+#battle-screen.picking .card.in-hand:not(.choosable) { filter: grayscale(0.8) brightness(0.6); }
+@keyframes pickGlow { 50% { filter: brightness(1.18); } }
+.ds-btn.ds-play.pick-exhaust { --stripe-a: #8878b8; --stripe-b: #a090c8; --rim: #605090; }
+.ds-btn.ds-play.pick-discard { --stripe-a: #4878d0; --stripe-b: #6890e0; --rim: #3058a8; }
+.ds-btn.ds-play.pick-keep { --stripe-a: #40a050; --stripe-b: #60b868; --rim: #287838; }
+.ds-btn.ds-play.pick-copy { --stripe-a: #d0a020; --stripe-b: #e0b840; --rim: #a07808; }
+
+/* an exhausted card goes up in smoke where it sat: it greys, rises and breaks up while grey pixel puffs billow off it */
+.exhaust-fx { position: fixed; inset: 0; z-index: 130; pointer-events: none; }
+.exhaust-ghost { animation: exhaustGhost 0.62s steps(7) both; }
+@keyframes exhaustGhost {
+  0% { filter: none; opacity: 1; }
+  25% { filter: grayscale(1) brightness(1.5); opacity: 1; }
+  100% { filter: grayscale(1) brightness(1.8) blur(2px); opacity: 0; transform: translateY(-46px) scale(0.86); }
+}
+.exhaust-puff {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  background: #d8d8e0;
+  box-shadow: 0 0 0 3px #181010, 6px -6px 0 -1px #b8b8c8, -7px -3px 0 -2px #f0f0f8;
+  image-rendering: pixelated;
+  opacity: 0;
+  animation: exhaustPuff 0.55s steps(5) both;
+}
+@keyframes exhaustPuff {
+  0% { opacity: 0; scale: 0.4; }
+  30% { opacity: 1; }
+  100% { opacity: 0; scale: 1.8; translate: 0 -60px; }
+}

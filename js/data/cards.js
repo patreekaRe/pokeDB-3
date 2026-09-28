@@ -764,8 +764,30 @@ export function cardTerms(card) {
     e.combo && [`Combo ${e.combo.at}`, `The extra only happens if you've already played ${e.combo.at} other cards this turn.`],
     uses(/^ifHurt$|OnHurt$/) && ['Losing HP', 'Counts however it happens: your own cards, Poison, or the enemy\'s hits.'],
     card.upgraded && ['Upgraded', 'Made stronger with PP Up.'],
+    ...addedCards(card).map(c => [c.name, madeCardText(c, card)]),
   ].filter(Boolean);
   return terms.filter(([label], i) => terms.findIndex(t => t[0] === label) === i);
+}
+
+/** Every card a card makes (addCard, however deep), so a keyword box can say what a Rage or a Paralysis does. */
+function addedCards(card) {
+  const ids = new Set();
+  const walk = (obj) => {
+    for (const [k, v] of Object.entries(obj || {})) {
+      if (k === 'addCard' && v?.id) ids.add(v.id);
+      else if (v && typeof v === 'object') walk(v);
+    }
+  };
+  walk(card.effects); walk(card.onExhaust); walk(card.onDiscard);
+  return [...ids].map(id => CARDS_BY_ID[id]).filter(Boolean);
+}
+
+function madeCardText(c, card) {
+  if (baseId(c.id) === baseId(card.id)) return 'Another copy of this card, added for this fight only: your deck keeps just the one.';
+  const { lead, tail } = keywords(c);
+  const words = [...lead, ...tail].map(([label]) => `${label}.`);
+  const cost = c.unplayable ? '' : `Costs ${c.cost} PP. `;
+  return `${cost}${[...words, describe(c)].filter(Boolean).join(' ')}`;
 }
 
 /** The terms a card's text relies on, beyond its bold keywords (which explain themselves), as its text's tooltip. */
