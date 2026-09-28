@@ -1,17 +1,18 @@
-"""The Awakened and Ascendant sprites (a legendary's 2nd and 3rd stage, each a notch more intense). Ascendant: a legendary's final form when its shiny is switched on (spriteUrl() in js/data/starters.js), so
-evolving still changes something. The shiny GIF on a bigger canvas, every frame given (the user's ask: "obnoxiously
-different"): a 3-ring aura that cycles through its type's colours, flares licking up off the top of its body, sparkles
-orbiting it with trails, its type's particles rising (fire embers, water bubbles, grass leaves, psychic stars) and a power
-pulse that flashes the body twice a loop. Everything moves on the GIF's own loop, so it repeats seamlessly.
+"""A legendary's evolutions, Super Saiyan style (the user's call, 2026-09-28): it never changes species or colours, it
+powers up. spriteUrl() in js/data/starters.js picks the file for the stage, in its normal or shiny colours:
 
-Awakened (level 1, the 2nd stage) is the gentle version: two aura rings shimmering slowly, two orbiting sparkles and a few
-drifting particles, no flares or flash, on the normal GIF and on the shiny one (`-awakened` / `-shiny-awakened`).
+  Awakened  (stage 1, level 1: Super Saiyan) `<id>-awakened` / `<id>-shiny-awakened`: a flame aura in its type's colours
+            engulfing the body (tongues rising off every upward edge and licking up its sides), two shimmering aura rings,
+            a gentle pulse, a few of its type's particles drifting up and two sparkles circling it.
+  Ascendant (stage 2, level 2: Super Saiyan 2) `<id>-ascendant` / `<id>-shiny-ascendant`: the same aura taller and denser,
+            three rings pouring outwards, lightning crackling round it, a body flash twice a loop, a shower of particles
+            (fire embers, water bubbles, grass leaves, psychic stars) and sparkles orbiting with trails.
 
+Everything moves on the GIF's own loop (every frame keeps its timing), so it repeats seamlessly, on a padded canvas.
 Run from the repo root (needs Pillow):
-    python3 tools/ascendant-aura.py moltres fire
-It writes assets/pokemon/moltres-ascendant-*.gif (from the -shiny pair), moltres-awakened-*.gif and
-moltres-shiny-awakened-*.gif, front and back, and prints their SPRITE_FIT lines (the source's gaps plus the padding) for
-js/data/sprite-fit.js.
+    python3 tools/legendary-aura.py moltres fire
+It writes all four of the pair's files, front and back, and prints their SPRITE_FIT lines (the source's gaps plus the
+padding) for the end of js/data/sprite-fit.js.
 """
 import math
 import random
@@ -30,6 +31,7 @@ TYPES = {
                     bits=['#ffffff', '#ffb0f8', '#e070f0'], shape='star'),
 }
 SPARK = (255, 255, 255, 255)
+BOLT = [(255, 255, 255, 255), (184, 224, 255, 255), (120, 170, 255, 255)]   # lightning: core, glow, edge
 
 
 def rgba(h):
@@ -59,12 +61,12 @@ def ascend(src, dst, kind, seed, level=2):
     raw = [(f.convert('RGBA'), f.info.get('duration', 80)) for f in ImageSequence.Iterator(im)]
     n = len(raw)
     w0, h0 = raw[0][0].size
-    pad = max(12, round(max(w0, h0) * 0.14)) if level == 2 else max(7, round(max(w0, h0) * 0.07))
+    pad = max(14, round(max(w0, h0) * 0.16)) if level == 2 else max(10, round(max(w0, h0) * 0.1))
     w, h = w0 + pad * 2, h0 + pad * 2
     rnd = random.Random(seed)
     # particles: each rises from somewhere along the bottom half and comes round once a loop
     motes = [dict(x=rnd.uniform(pad * 0.6, w - pad * 0.6), phase=rnd.random(), sway=rnd.uniform(1, 3),
-                  speed=rnd.choice([1, 1, 2]), c=rnd.randrange(len(bits))) for _ in range(max(8, w // 9) if level == 2 else max(3, w // 30))]
+                  speed=rnd.choice([1, 1, 2]), c=rnd.randrange(len(bits))) for _ in range(max(8, w // 9) if level == 2 else max(4, w // 22))]
     orbiters = (3 if w < 110 else 4) if level == 2 else 2
     frames = []
     for i, (fr, _) in enumerate(raw):
@@ -74,26 +76,32 @@ def ascend(src, dst, kind, seed, level=2):
         px = f.load()
         body = {(x, y) for y in range(h) for x in range(w) if px[x, y][3] > 0}
         # the power pulse: the body flashes lighter twice a loop
-        pulse = max(0.0, math.cos(t * math.pi * 4)) ** 6 * 0.45 if level == 2 else 0
+        pulse = max(0.0, math.cos(t * math.pi * 4)) ** 6 * (0.45 if level == 2 else 0.18)
         if pulse > 0.02:
             for (x, y) in body:
                 px[x, y] = lighten(px[x, y], pulse)
-        # flares: from each column's topmost body pixel, a flickering tongue of the type's colours
-        tops = {}
+        # the flame aura: a flickering tongue up off every upward-facing edge (and shorter ones licking up the sides),
+        # tall at the top of the body, so the whole silhouette seems to burn with power
+        reach = max(pad * (0.6 if level == 2 else 0.4), 5 if level == 2 else 3)
+        tongues = []
         for (x, y) in body:
-            if x not in tops or y < tops[x]:
-                tops[x] = y
-        for x, y0 in (tops.items() if level == 2 else ()):
-            wave = math.sin(x * 0.9 + t * math.pi * 2 * 3) + math.sin(x * 0.37 - t * math.pi * 2 * 2 + seed)
-            tall = int(max(0, wave + 0.6) * max(pad * 0.55, 6))
+            up = (x, y - 1) not in body
+            side = (x - 1, y) not in body or (x + 1, y) not in body
+            if not (up or side):
+                continue
+            wave = math.sin(x * 0.9 + t * math.pi * 2 * 3) + math.sin(x * 0.37 + y * 0.2 - t * math.pi * 2 * 2 + seed)
+            tall = int(max(0, wave + (0.7 if up else -0.2)) * reach * (1 if up else 0.5))
+            if tall:
+                lean = 0 if up else (-1 if (x - 1, y) not in body else 1)
+                tongues.append((x, y, tall, lean))
+        for x, y0, tall, lean in tongues:
             for k in range(1, tall + 1):
-                y = y0 - 2 - k
-                if y < 0 or (x, y) in body:
+                xx, y = x + (lean * (k // 3)), y0 - 1 - k
+                if y < 0 or not (0 <= xx < w) or (xx, y) in body:
                     continue
-                c = flare[min(3, int((1 - k / (tall + 1)) * 4))]
-                if k == tall and (x + i) % 2:
+                if k == tall and (xx + i) % 2:
                     continue
-                px[x, y] = c
+                px[xx, y] = flare[min(3, int((1 - k / (tall + 1)) * 4))]
         # the aura: three rings, their colours cycling so the glow seems to pour outwards
         filled = set(body)
         for r in range(3 if level == 2 else 2):
@@ -134,6 +142,31 @@ def ascend(src, dst, kind, seed, level=2):
                         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                             if 0 <= x + dx < w and 0 <= y + dy < h and px[x + dx, y + dy][3] == 0:
                                 px[x + dx, y + dy] = aura[0]
+        # Super Saiyan 2's lightning, on top of everything: jagged bolts zigzagging out from the body, new ones every other frame
+        if level == 2:
+            zap = random.Random(seed * 131 + i // 2)
+            edge = sorted(ring(body, w, h))
+            for _ in range(3 if w < 110 else 4):
+                if not edge or zap.random() < 0.15:
+                    continue
+                x, y = edge[zap.randrange(len(edge))]
+                dx = 1 if x > w / 2 else -1
+                dy = -1 if y < h * 0.6 else 1
+                run = zap.randint(2, 4)
+                for step in range(zap.randint(12, 22)):
+                    if step % run == 0:
+                        dx, dy = (dx, -dy) if zap.random() < 0.5 else (-dx if zap.random() < 0.3 else dx, dy)
+                    x += dx
+                    y += dy if zap.random() < 0.7 else 0
+                    if not (0 <= x < w and 0 <= y < h):
+                        break
+                    if (x, y) in body:
+                        continue
+                    px[x, y] = BOLT[0]
+                    for ex, ey in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        q = (x + ex, y + ey)
+                        if 0 <= q[0] < w and 0 <= q[1] < h and q not in body and px[q][:3] != BOLT[0][:3]:
+                            px[q] = BOLT[1]
         frames.append(f)
     frames[0].save(dst, save_all=True, append_images=frames[1:], duration=[d for _, d in raw], loop=0, disposal=2)
     return pad
@@ -149,7 +182,8 @@ if __name__ == '__main__':
             name, nums = line.split(': [')
             fit[name.strip("'")] = [int(v) for v in nums.split(']')[0].split(',')]
     for side in ('front', 'back'):
-        for src, out, level in ((f'{mon}-shiny', f'{mon}-ascendant', 2), (mon, f'{mon}-awakened', 1), (f'{mon}-shiny', f'{mon}-shiny-awakened', 1)):
+        for src, out, level in ((mon, f'{mon}-awakened', 1), (mon, f'{mon}-ascendant', 2),
+                                (f'{mon}-shiny', f'{mon}-shiny-awakened', 1), (f'{mon}-shiny', f'{mon}-shiny-ascendant', 2)):
             pad = ascend(f'assets/pokemon/{src}-{side}.gif', f'assets/pokemon/{out}-{side}.gif', kind, sum(map(ord, out + side)), level)
             base = fit.get(f'{src}-{side}') or fit.get(f'{mon}-{side}') or [0, 0, 0, 0]
             print(f"  '{out}-{side}': [{', '.join(str(v + pad) for v in base)}],")

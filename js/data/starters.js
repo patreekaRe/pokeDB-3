@@ -198,7 +198,7 @@ export const STARTERS = [
 
   /* ---------- legendaries: the rarest unlock, one per type ----------
      They don't evolve into a different species - "evolving" just gives
-     them a title, and reaching the final one reveals their shiny colours. */
+     them a title and a Super Saiyan-style aura (spriteUrl()); their stage 2 `-shiny` id is only read for its cry, which drops the suffix. */
   {
     id: 'moltres', type: 'fire', skinOf: 'charmander', legendary: true,
     line: [
@@ -366,15 +366,14 @@ export const STARTERS = [
 export const STARTERS_BY_ID = Object.fromEntries(STARTERS.map(s => [s.id, s]));
 
 /** Path to one of a starter's images at a given evolution stage. kind is 'front' or 'back'. `shiny` defaults to
-    whether its shiny colours are switched on (the Game Corner sells them); a legendary's final stage already is. */
+    whether its shiny colours are switched on (the Game Corner sells them). */
 export function spriteUrl(starter, kind, stage = 0, shiny = shinyOn(starter.id)) {
   const id = starter.line[stage].id;
-  // a legendary keeps its sprite, so each stage turns up the power instead (tools/ascendant-aura.py): Awakened glows
-  // (`-awakened`, in its normal or shiny colours), Ascendant blazes in its shiny colours (`-ascendant`), shiny or not
+  // a legendary keeps its sprite and its colours (shiny only if bought), and powers up instead, Super Saiyan style
+  // (tools/legendary-aura.py): a flame aura at stage 1 (`-awakened`), bigger with lightning at stage 2 (`-ascendant`)
   if (starter.legendary && stage > 0) {
     const base = id.replace(/-shiny$/, '');
-    return stage === starter.line.length - 1 ? `assets/pokemon/${base}-ascendant-${kind}.gif`
-      : `assets/pokemon/${base}${shiny ? '-shiny' : ''}-awakened-${kind}.gif`;
+    return `assets/pokemon/${base}${shiny ? '-shiny' : ''}-${stage === starter.line.length - 1 ? 'ascendant' : 'awakened'}-${kind}.gif`;
   }
   return `assets/pokemon/${shiny && !id.endsWith('-shiny') ? `${id}-shiny` : id}-${kind}.gif`;
 }

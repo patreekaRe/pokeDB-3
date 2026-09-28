@@ -76,17 +76,16 @@ live site.
   (play.pokemonshowdown.com is blocked in cloud sessions: PokeAPI's `cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3
   at ~-14 dB mean, see the roadmap's step 3).
 - **Legendaries** don't evolve into a different species. Their `line` array
-  reuses the same sprite id for stages 0–1 and points stage 2 at a
-  `-shiny` suffixed sprite id, but `spriteUrl()` turns the power up a notch per stage instead (the user's asks, 2026-09-28:
-  "obnoxiously different", "increases in intensity"), shiny or not: stage 1 is `<id>-awakened-*.gif` (or
-  `<id>-shiny-awakened-*` with the shiny on: two aura rings in the type's colours shimmering slowly, two orbiting sparkles, a
-  few drifting particles) and stage 2 `<id>-ascendant-*.gif` (always the shiny colours, on a padded canvas: a 3-ring aura
-  cycling through the type's colours, flares licking up off its top edge, sparkles orbiting with trails, the type's
-  particles rising (embers, bubbles, leaves, stars) and a body flash twice a loop). So without the shiny it's normal → glow →
-  shiny ablaze, with it shiny → shiny glow → shiny ablaze. Baked into the GIFs, not CSS, since those sprites already carry
-  their own filters (the intro's silhouette, the evolution's flashes). `tools/ascendant-aura.py <id> <type>` (Pillow) makes
-  all six of a legendary's files and prints their `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of
-  `js/data/sprite-fit.js`; a new legendary needs both.
+  reuses the same sprite id for stages 0–1 and points stage 2 at a `-shiny` id (only read for its cry, which drops the
+  suffix). They never change colours: they power up, Super Saiyan style (the user's calls, 2026-09-28), in their normal
+  colours, or their shiny ones once bought and switched on. `spriteUrl()` gives stage 1 `<id>[-shiny]-awakened-*.gif` (Super
+  Saiyan: a flame aura in the type's colours engulfing the body, tongues off every upward edge and up its sides, two
+  shimmering rings, a gentle pulse, a few drifting particles, two circling sparkles) and stage 2 `<id>[-shiny]-ascendant-*.gif`
+  (Super Saiyan 2: the aura taller and denser, three rings pouring outwards, lightning crackling round it, a body flash
+  twice a loop, a shower of the type's particles (embers, bubbles, leaves, stars), orbiting sparkles with trails). Baked
+  into the GIFs, not CSS, since those sprites already carry their own filters (the intro's silhouette, the evolution's
+  flashes). `tools/legendary-aura.py <id> <type>` (Pillow) makes all eight of a legendary's files and prints their
+  `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of `js/data/sprite-fit.js`; a new legendary needs both.
   Sixteen earned ones: Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
   ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won with 15 cards or
@@ -280,8 +279,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`SHINY_COSTS`: 250 the free three, 350 skins, 500 legendaries, the user's call 2026-09-27; only once you own the starter, else a silhouette).
   The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny pill in the character select's panel
   (`#sel-shiny`, only once owned; a ✨ marks the portrait too) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
-  (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows;
-  a legendary's final stage is already shiny. The 126 GIFs are PokeAPI's black-white animated `shiny/` and
+  (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows,
+  a legendary's Super Saiyan forms too. The 126 GIFs are PokeAPI's black-white animated `shiny/` and
   `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
   `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
   burst of ✨ (`shinySparkle()` in `js/battle.js`).
@@ -846,7 +845,7 @@ CSS filters) and switches old/new forms, 560 ms down to 50 ms apart, then white 
 ending on the new form under a full-screen flash (`#evolve-flash`). The song is cut, the new form cries, `evolved`
 (`assets/audio/sfx/evolved.mp3`) plays with "Congratulations! Your X evolved into Y!" and the stats line. The last tap
 starts `victory` again, runs the next reward step (Signature move) under the white, then fades the white out onto it.
-Legendaries work unchanged (same sprite, stage 2 the `-shiny` one, cries strip `-shiny`), and so do bought shinies
+Legendaries power up in place (the aura forms from `spriteUrl()`, cries strip `-shiny`), and so do bought shinies
 (`spriteUrl()`). Under reduced motion the cries, song and chime stay; the white fades in, and the song plays ~5.5 s over
 the still first form before the swap, with no flashing. `fight()` preloads the song, chime and both cries before a boss.
 In battle, both sprites are sized from their GIF files instead (`sizeSprite()` in
