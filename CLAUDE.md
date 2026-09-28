@@ -1091,9 +1091,10 @@ else the last tab; new cards show up there on their own. Two more tabs, Relics a
 "N/M found" count: one you haven't taken (relics) or used (items) in a run is a dark silhouette of its sprite, "???" (`.index-thing.locked`).
 Moves work the same since 2026-09-28 (the user's call, Pokédex-style): an unmet card is a grey "???" card with a black
 silhouette of its art (`lockedCard()`, `.card.index-locked`, not zoomable), each rarity heading and the tab count "N/M".
-A card is met (`markSeen('cards', id)`, upgrades count as their base) only once you play it (`resolveCard()` in
-`js/battle.js`, Metronome's and the TM's too; the user's call 2026-09-28, like relics and items: being offered or held
-doesn't count). Saves from before seed `seen.cards` with the owned starters' decks and the run's deck (`seedCards()`).
+A card is met (`markSeen('cards', id)`, upgrades count as their base) once it's in your deck (the starting deck,
+a reward you took, a Mart buy, an event: `checkpoint()` in `js/run.js` marks the whole deck at every map checkpoint) or
+you play it (`resolveCard()` in `js/battle.js`: Metronome's and the TM's too). Being offered isn't enough (the user's call,
+2026-09-28). Saves from before seed `seen.cards` with the owned starters' decks and the run's deck (`seedCards()`).
 A relic or item is only met once it's really yours (the user's call, 2026-09-28; before, being offered was enough):
 `markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`) runs for a relic when you take it
 (`gainRelic()`, every reward / treasure / event relic; a Mart buy; the Relic Charm) and for an item when you use it

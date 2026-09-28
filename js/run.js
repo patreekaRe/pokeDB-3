@@ -102,6 +102,7 @@ const RUN_SAVE_VERSION = 8;
 
 function checkpoint() {
   const { floors, byId } = run.map;
+  for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
   saveRunData({
     version: RUN_SAVE_VERSION,
     starter: run.starter.id,
