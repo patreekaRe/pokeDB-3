@@ -932,7 +932,10 @@ Kept to three rows (the user found six "screen vomit"): the name with the Abilit
 text), the HP bar with Gold/Silver's thin blue EXP bar flush under it sharing the one "HP:" tag (`.gb-bars`; `showExp()` in
 `js/run.js` fills it floor / (floors + 1), full at the boss where you evolve, its `title` says so), then the numbers. Blaze's
 capsule (`showAbility()`, rerun after a map heal) is grey above half HP and glows orange and bobs below it, while your
-Pokémon flickers with flame (`.run-sprite[data-blaze]`).
+Pokémon flickers with flame (`.run-sprite[data-blaze]`). The sprite is a fidget (`#run-mon`, the user's idea): a tap
+recalls it in a red beam into the title's pixel Poké Ball (`.cball-ball` parts; `ball-throw`), which sits wobbling; a tap
+sends it out again (lid, flash, white then colour, `ball-open` and its cry). `toggleMon()` / `showMon()` in `js/run.js`;
+the state (`recalled`) lasts the page's life, not saved.
 
 Below it, `.map-head` holds the biome name alone as a pixel location sign
 (`.biome-sign`, wood / mossy stone / dark rock per `data-biome`) that drops

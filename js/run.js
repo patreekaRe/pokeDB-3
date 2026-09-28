@@ -278,6 +278,32 @@ function startBiome() {
   showMap();
 }
 
+// A fidget on the map's run card: tap your Pokémon to recall it into its ball, tap the ball to send it out again.
+// Kept for the page's life (not saved), so it stays in its ball from room to room until you let it out.
+let recalled = false;
+
+function showMon() {
+  const mon = $('run-mon');
+  mon.dataset.state = recalled ? 'in' : 'out';
+  mon.setAttribute('aria-pressed', String(recalled));
+  mon.setAttribute('aria-label', recalled ? `Send out ${stageName(run.starter, run.stage)}` : `Recall ${stageName(run.starter, run.stage)}`);
+  mon.title = recalled ? 'Tap to send it out' : 'Tap to recall it into its Poké Ball';
+}
+
+function toggleMon() {
+  const mon = $('run-mon');
+  if (!run || mon.dataset.state === 'recalling' || mon.dataset.state === 'releasing') return;
+  const wait = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
+  recalled = !recalled;
+  mon.dataset.state = recalled ? 'recalling' : 'releasing';
+  if (recalled) playSound('ball-throw');
+  else {
+    playSound('ball-open');
+    setTimeout(() => playCry(run.starter.line[run.stage]?.id ?? run.starter.line[0].id), 250 * wait);
+  }
+  setTimeout(showMon, 900 * wait);
+}
+
 // The Gold/Silver EXP bar under your HP fills as you climb the biome: full at the boss, where you evolve.
 function showExp(floor, floors) {
   const bar = $('run-exp');
@@ -311,11 +337,12 @@ function showMap() {
   const biome = BIOMES[run.biome];
   scoping = false;
   setTheme(run.starter.type);
-  preloadSounds('event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
+  preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
   $('run-sprite').dataset.stage = String(run.stage);
+  showMon();
   $('run-title').textContent = stageName(run.starter, run.stage);
   // The sign drops in like the games' location sign, but only when you arrive in a new biome.
   const sign = $('biome-name');
@@ -371,6 +398,7 @@ const POCKETS = ['deck', 'relics', 'items', 'key'];
 let pocket = 'relics';
 
 function initBag() {
+  $('run-mon').addEventListener('click', toggleMon);
   $('bag-btn').addEventListener('click', () => ($('bag').hidden ? openBag() : closeBag()));
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
