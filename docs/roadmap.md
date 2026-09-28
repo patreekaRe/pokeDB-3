@@ -461,10 +461,9 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    character select, the Collection, pixel pills for the menus' buttons; CLAUDE.md's Title screen and Top bar sections).
    The mockups stay in `docs/mockups/`. Left for later, the user to decide: pills for the reward, battle and Mart capsules
    (Add to deck, Skip, End Turn, PP).
-3. **Cries.** Run in: CLOUD (attach pokeDB-3).
-   > Read CLAUDE.md (Music: Cries). Ask the user what they want changed about the cries (loudness, missing ones, wrong ones,
-   > new places they play) before changing anything. PokeAPI's cries (`cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3 at
-   > ~-14 dB mean) are the source; play.pokemonshowdown.com is blocked in cloud sessions.
+3. ~~**Cries.**~~ Checked 2026-09-28: every starter, evolution, legendary and enemy (115 of the 117 Pokémon shown) has
+   its cry; only Chansey (the Center) and Kecleon (the Mart) have none, and nothing asks them to cry. Ideas the user may
+   pick up later: Chansey / Kecleon greeting you as you walk in, event figures crying in their rooms, a loudness pass.
 4. **Cloud save with login.** Run in: CLOUD (attach pokeDB-3).
    > Read CLAUDE.md (Saved runs, storage.js). Plan a cloud save with the user first: Firebase or Supabase (free tier), sign-in
    > by Google and/or an email link, a Sign in item in the Poké Ball menu, playing signed-out unchanged. The user's existing
