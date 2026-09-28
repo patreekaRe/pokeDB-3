@@ -593,8 +593,9 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     place(btn, nodeX(node), rowY(node.floor));
     let label = info.label;
 
-    // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites and bosses are scouted.
-    if (node.enemyId && (node.type !== 'fight' || node.revealed)) {
+    // Every fight is chosen ahead of time (so a refresh can't reroll it), but only elites are scouted: the boss stays a
+    // silhouette until you walk up to it (the user's call: its name in the room's tooltip gave it away).
+    if (node.enemyId && (node.type === 'elite' || node.revealed)) {
       const def = ENEMY_DEFS[node.enemyId];
       label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name}`;   // no type badge: elites and bosses are all Normal (the user's call)
     }

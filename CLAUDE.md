@@ -287,7 +287,8 @@ were in; a battle is replayed from the start, never serialised.
 is recomputed with `modsFor(level)`. The map's `floors` and `byId` share
 node objects, so restore rebuilds `floors` from `byId` to keep `visited`
 in sync. Every fight node gets its `enemyId` in `startBiome()` so a
-refresh can't reroll a fight (only elites/bosses name their Pokémon, in the room's `title`).
+refresh can't reroll a fight (only elites name their Pokémon, in the room's `title`; the boss's room just says Boss, the
+user's call 2026-09-28: its silhouette is the only hint).
 The save is cleared by `endRun()`, by starting a new run over it (Begin run confirms), and by the About dialog's
 erase. The Poké Ball menu's Main menu keeps it (`suspendRun()`, the user's call): straight from the map, and after a
 confirm from anywhere else, since that room replays from the map checkpoint; `abandonRun()` is only for the run's end. Fight coins and the enemiesDefeated stat
@@ -942,7 +943,7 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   `buildingSvg()` in `js/buildings.js`, drawn by rules on a 24x20 grid: blue
   or red gridded roof, emblem over the door, "MART"/"P.C" sign). Visited
   greys out, reachable blinks (buildings glow white). Elite and boss rooms carry no type badge
-  (the user's call: they're all Normal); their `title` names the Pokémon. Your starter's
+  (the user's call: they're all Normal); an elite's `title` names the Pokémon, the boss's doesn't. Your starter's
   sprite (`.map-trainer`) stands on the current room like the Pokégear's
   trainer head, and the biome's boss (`map.boss.enemyId`) stands above its
   room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
