@@ -607,7 +607,7 @@ Anytime, as a break from number work:
   - **Show your HP on event screens**: the Hot Spring's choice (soak vs dip) depends on your HP, but nothing there
     shows it. A small `.gb-hp` plate on every `showChoice` screen during a run (events, Center, Mart) would do.
 - Missing sound files `hit-super` / `hit-weak` (they fall back to `hit`; the user supplies MP3s).
-- Mewtwo's Psychic deck (much later).
+- Mewtwo's Psychic deck: now the v1.0 plan, see "v1.0: Mewtwo and the fourth biome" below.
 
 ### Rules for steps 3–4
 
@@ -629,6 +629,58 @@ Anytime, as a break from number work:
   Rocket's optional fight no harder than an elite.
 - A saved run holds map nodes with `enemyId`s: bump `RUN_SAVE_VERSION` (js/run.js) when
   enemy ids are removed, or old saves will point at missing Pokémon.
+
+## v1.0: Mewtwo and the fourth biome (the user's plan, 2026-09-28)
+
+The game's true ending, and what turns the title's v0.9 into v1.0 (`js/data/patchnotes.js`: a new `PATCHES` entry at the
+top, and the "Coming in v1.0" section of 0.9 stays as history). Slay the Spire's Act 4 / Heart is the model: a hidden
+last act only a special run reaches.
+
+**Settled (the user's calls):**
+- **Mewtwo is its own game mode.** Its run goes through the three biomes and then a **fourth biome** that only Mewtwo can
+  enter. No other starter ever sees it.
+- **Mewtwo should feel really strong**: it's meant to shred biomes 1-3 (a victory lap through places you struggled in),
+  then biome 4 is a real fight, strong but still a bit challenging.
+- **Biome 4 has one set difficulty.** Whatever Trainer Level the run is on, arriving in biome 4 always plays the same
+  numbers, so the ending is the same test for everyone.
+- **Its boss is the final boss: "the last energy".** My suggestion was Eternatus (a creature of raw energy, Sword/Shield's
+  Darkest Day, Eternamax as a giant last form); Arceus, Deoxys or Mew (a twist on Mewtwo's origin) are the others. The
+  user picks.
+
+**Open (ask the user before building each part):**
+1. **The final boss**: Eternatus, Arceus, Deoxys or Mew (above).
+2. **Biomes 1-3 for Mewtwo**: the full ten floors each, or a shorter "sprint" (fewer floors, or one place per biome)?
+   Ten easy floors three times may drag. If full length, make the speed itself fun (quick fights, big numbers).
+3. **Trainer Levels for biomes 1-3**: does Mewtwo's run pick a Level like any other (it only changes biomes 1-3, biome 4
+   stays fixed), or is it always one setting? Either way a Mewtwo win shouldn't count towards other starters' Level unlocks.
+4. **Biome 4's name, place and look**: e.g. a Cerulean Cave / Unknown Dungeon-style crystal cavern, a Darkest Day sky
+   (red clouds, Dynamax energy), or a space-like void. It needs three places + an arena like the others (`stages`),
+   `BIOME_ART` looks for every time of day (or a "no clock" look, since it may be underground or timeless), its own
+   map palette, `map4` music and a pad.
+5. **Rewards**: a 4th Pokédex page (its wilds, Alphas and boss, with a perk), its own Hall of Fame entry style (a
+   different pedestal or scene), and a title-screen touch once it's beaten (the final boss crossing the sky, say).
+   Mewtwo's shiny (`SHINY_COSTS` skips it today).
+
+**Parts, one session each:**
+- **A. Mewtwo's deck.** A Psychic pool in `js/data/cards.js`, each card on a StS model like the others (docs/card-design.md
+  style: archetypes, an `upgrade` each, `describe()` lines, `cardTerms()` for any new term). Psychic is new to the type
+  chart (`typeMultiplier()`): simplest is Neutral both ways, since biome 1-3 wilds are Fire/Grass/Water. Its Ability,
+  its evolution/power-up (a legendary: aura GIFs from `tools/legendary-aura.py mewtwo psychic`), then `comingSoon` off.
+  Sim: mirror any new mechanic in `sim/engine.js`; Mewtwo should win biomes 1-3 nearly always (strong bot ~95%+).
+- **B. The fourth biome.** `BIOMES` entry (floors, `dmgBonus` / `bossBonus` / `hpMult` fixed, ignoring `modsFor(level)`),
+  12 wilds + 3 Alphas + the final boss (the "Rules for steps 3-4" below still apply: sprites, cries, `SPRITE_FIT`), its
+  scenes and map, and the gate: after the biome 3 boss, a Mewtwo run carries on (`RUN_SAVE_VERSION` bump if the saved
+  run's shape changes); every other run ends as now. Enemies built to test a strong deck (punishing big turns, shields,
+  scaling), not just bigger HP.
+- **C. The final boss fight** as a set piece: several phases (Eternatus -> Eternamax, say), its own music, the storm at
+  30% at its most dramatic.
+- **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page and its perk, achievements, the
+  completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
+  Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
+
+**Run in: CLOUD.** Session prompt (part A first): "Read docs/roadmap.md's 'v1.0: Mewtwo and the fourth biome'. Ask me the
+open questions that part A needs, then build Mewtwo's Psychic deck and Ability (part A), check it with the bot, and update
+the roadmap and CLAUDE.md."
 
 ## The Pokémon list: 18 per biome, 54 in all
 
