@@ -3075,8 +3075,8 @@ function tutorScene() {
   if (W > s * 1.5) roomWindow(cx + u(0.9), ceil + 3, u(0.14), Math.min(u(0.2), railRow() - ceil - 8));
   life.board = board;
   life.bag = bag;
-  // the tutor stands behind the desk, cut off just above its top so the coin tray and the scroll stay in front of him
-  life.stands = { npc: { x: desk.cx, y: desk.top + 9, cut: desk.top - 3 } };
+  // the tutor stands behind the desk, his legs going down behind its top, between the coin tray and the scroll
+  life.stands = { npc: { x: desk.cx, y: desk.top + 9, cut: desk.top } };
   life.eventSpots = [
     { x0: desk.cx - desk.hw, x1: desk.cx + desk.hw, y0: board.y1 + 3, y1: foot },
     { x0: bag.x - bag.w - 4, x1: bag.x + bag.w + 4, y0: bag.top + bag.len - 4, y1: bag.top + bag.len + bag.h },
@@ -3119,11 +3119,11 @@ function lowDesk(cx, foot, hw, top) {
     solid(x - 1, y, wLine); solid(x, y, wood); solid(x + 1, y, wDark); solid(x + 2, y, wLine);
   }
   groundShadow(cx, foot + 1, hw + 2, 2);
-  const tx = cx - Math.round(hw * 0.4);   // the coin tray, heaped with coins
+  const tx = cx - hw + 6;   // the coin tray, heaped with coins, at one end (the tutor stands behind the middle)
   for (let x = tx - 4; x <= tx + 4; x++) { solid(x, top - 1, wLine); if (Math.abs(x - tx) < 4) solid(x, top - 2, wDark); }
   for (const [dx, dy] of [[-2, -3], [0, -3], [2, -3], [-1, -4], [1, -4], [0, -5]]) solid(tx + dx, top + dy, dy === -5 ? coinLit : coin);
   solid(tx - 3, top - 3, coinDark); solid(tx + 3, top - 3, coinDark);
-  const sx = cx + Math.round(hw * 0.35), [paper, paperShade] = S.scroll;   // a scroll, tied with a red cord
+  const sx = cx + hw - 7, [paper, paperShade] = S.scroll;   // a scroll, tied with a red cord
   for (let x = sx - 5; x <= sx + 5; x++) { solid(x, top - 3, wLine); solid(x, top - 2, x === sx ? S.cord : paper); solid(x, top - 1, x === sx ? S.cord : paperShade); }
   solid(sx - 6, top - 2, wLine); solid(sx + 6, top - 2, wLine); solid(sx - 6, top - 1, wLine); solid(sx + 6, top - 1, wLine);
 }
