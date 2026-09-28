@@ -472,8 +472,8 @@ Anytime, as a break from number work:
   `js/evolution.js`; CLAUDE.md's Battle screen layout has the details. Legendaries (same sprite, shiny final stage) and
   bought shinies work; reduced motion keeps the cries, song and chime but drops the flashing and wipes. Checked headless
   at 375, 390 and 1280px wide.
-  **For the user:** drop the two MP3s in: `assets/audio/evolution.mp3` (the song; ~128 kbps like the other tracks) and
-  `assets/audio/sfx/evolved.mp3` (the chime). Until then those two parts are silent (one 404 each in the console).
+  The user added the song (`assets/audio/evolution.mp3`, 28 s, as loud as the other tracks) and the chime
+  (`assets/audio/sfx/evolved.mp3`, played at 0.55 gain to match item-get / achievement) the same day.
 - ~~**The last 4 event scenes**~~ (done 2026-09-27): Move Tutor (a dojo: chalkboard and desk for ₽, a sandbag for HP),
   Move Deleter (a candle-lit study: a lectern's open book, a hypnotist's pendulum, a dozing Slowpoke), Day Care (the
   couple's house front, a picket fence, an Egg in a straw nest, Miltank and Marill) and Fan Club (portraits, pennants, a
