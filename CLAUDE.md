@@ -1204,7 +1204,7 @@ the bottom). The page's footer note hides here.
 
 **Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): eight Pokégear cards with a coloured header
 (Pokédex, Moves, Relics, Items, Stats, Achievements, Record Book, Hall of Fame), each with its art, a line and a progress count (defeated, moves,
-found, runs won, done), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
+found, done; Stats is a plain "12 runs · 3 wins", `runCount()`, since "0 of 1 runs won" read like a goal to the user), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
 4 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
 

@@ -21,6 +21,10 @@ import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
 import { $, el, showScreen, itemSprite } from './ui.js';
 
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+// a plain count, not "0 of 1 runs won": every other card's pill is a goal (N/M), and this one read like "win one run"
+const runCount = (stats) => `${plural(stats.runsStarted, 'run')} · ${plural(stats.runsWon, 'win')}`;
+
 /** Called once at startup. */
 export function initCollection({ onBack }) {
   $('coll-back').addEventListener('click', onBack);
@@ -58,7 +62,7 @@ export function showCollection() {
     ['items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), 'The one-use items for your Bag.',
       `${save.seen.items.length}/${ITEMS.length} found`, () => openCardIndex('items')],
     ['stats', 'Stats', el('span', 'coll-emoji', '📊'), 'Runs, wins and records.',
-      `${save.stats.runsWon} of ${save.stats.runsStarted} runs won`, openStats],
+      runCount(save.stats), openStats],
     ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
       `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
     book('record', 'Record Book', 'Every run you won: its deck, relics, items and numbers.', 'win',
