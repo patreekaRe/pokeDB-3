@@ -80,6 +80,8 @@
 .title-sound .title-account { margin-top: 4px; }
 /* the speaker beside the PC, refresh under it */
 .title-refresh { grid-column: 1; }
+/* wider screens have room beside the logo, so one column */
+@media (min-width: 601px) { .title-corner { grid-template-columns: auto; } }
 .title-refresh.spinning .ta-pc { animation: taSpin 0.6s steps(8) infinite; }
 @keyframes taSpin { to { rotate: 360deg; } }
 @media (max-width: 600px) { .title-refresh .ta-pc { font-size: 16px; } }
