@@ -11,6 +11,7 @@
    ============================================================ */
 
 .card {
+  font-family: var(--font); font-synthesis-weight: auto;   /* the page is pixel text; a card keeps its own type (its name and type are pixel) */
   --c1: #9aa2c8;          /* the card body (Normal type) */
   --c2: #565d84;          /* the frame */
 

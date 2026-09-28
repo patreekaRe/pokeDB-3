@@ -74,7 +74,7 @@ body {
   flex-direction: column;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font);
+  font-family: var(--pixel-font); font-synthesis-weight: none;   /* every word on screen is pixel text (the user's call, 2026-09-28); cards keep their own type */
   line-height: 1.4;
 }
 img { max-width: 100%; display: block; }
@@ -445,7 +445,6 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 }
 .dialog .panel { border: 2px solid var(--win-edge); background: var(--win-panel); box-shadow: none; }
 .ball-menu-panel { font-family: var(--pixel-font); font-synthesis-weight: none; }
-:is(.dialog, .panel) .card { font-family: var(--font); font-synthesis-weight: auto; }   /* cards keep their own type, so they read the same as in battle */
 :is(.dialog, .panel) h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
 :is(.dialog, .panel) h3 { color: #283060; }
 :is(.dialog, .panel) :not(.card, .card *) { text-shadow: none; }

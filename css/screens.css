@@ -1077,7 +1077,7 @@ body[data-screen="reward-screen"] .hp-plate { display: flex; }
   .badges { min-height: 32px; gap: 6px; }
   .enemy-zone { --base: clamp(80px, 13vh, 118px); }
   .hand { --hand-card-w: 108px; }
-  .fan-note { font-size: 0.64rem; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
+  .fan-note { font-size: 0.56rem; line-height: 1.5; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
   .battle-log { width: 96%; --log-font: 0.85rem; }
 }
 

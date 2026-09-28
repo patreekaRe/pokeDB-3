@@ -956,8 +956,10 @@ Window text (and the HP bar, biome sign, PP box...) uses Press Start 2P, the
 8x8 Game Boy-style font, as `var(--pixel-font)`. It's declared by hand as
 "PokeDB Pixel" at the top of `css/base.css` with `size-adjust: 66%` (its
 letters are far bigger than other fonts' at the same size; `font-size-adjust`
-measured it inconsistently, so don't go back to that). `.card` resets to the
-normal font so cards read the same as in battle. Every `.btn` is a Gen 1-3
+measured it inconsistently, so don't go back to that). Since 2026-09-28 it's the
+page's own font (`body` in `css/base.css`): the user wants no plain text anywhere (sheets, tiles, captions, footer), so
+don't set `var(--font)` on anything new. `.card` alone resets to the normal font (`css/cards.css`), since card text at
+card size needs it. Every `.btn` is a Gen 1-3
 menu option to match: cream box, pixel frame, and a blinking ▶ cursor on
 hover/focus (left padding reserves its space; `.primary` = orange frame,
 `.danger` = red). The How to play button is a gold `.ds-btn` capsule instead (see below).
