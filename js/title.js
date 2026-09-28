@@ -2,8 +2,8 @@
    title.js  -  the title screen, which is also the game's home.
 
    Once per page load it opens on PRESS START (a Gold/Silver homage: a
-   pixel sky lit for the player's time of day (dusk: a moon), Moltres crossing it as a silhouette, the
-   three starters waiting on a grassy ledge). After that it's the main
+   pixel sky lit for the player's time of day (dusk: a moon), the flying legendaries crossing it in turn,
+   over an empty grassy ledge). After that it's the main
    menu: a stack of pixel gems under the logo (Continue, New game,
    Collection, Game Corner, after the user's references: Slay the Spire 2's
    short centred list and glossy hexagon buttons). "Main menu" anywhere
@@ -19,6 +19,8 @@ import { $, el, setHpBar } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { timeOfDay } from './daytime.js';
+import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { isStarterUnlocked } from './progress.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -66,9 +68,29 @@ let pressed = false;      // PRESS START happens once per page load
 let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0, look = SKIES.dusk;
 
 /** Called once at startup with what the menu's gems do: { savedRun(), onContinue(run), onNewGame(), onCollection(), onGameCorner() }. */
+/* The legendaries that fly (or float) cross the sky one at a time, like Ho-Oh in the Gold intro: a black silhouette until
+   you've unlocked that one, then in its own colours (shiny if you've switched its shiny on). Each pass deals the next from
+   a shuffled round, so they all come by before any comes back. Mewtwo stays out of it: it's the secret. */
+const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini'];
+let flight = [], lastFlyer = null;
+
+function nextFlyer(img) {
+  if (!flight.length) {
+    flight = FLYERS.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
+    if (flight[0] === lastFlyer) flight.push(flight.shift());
+  }
+  const id = lastFlyer = flight.shift(), starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
+  img.onload = () => img.style.setProperty('--w', Math.max(64, img.naturalWidth));   // one scale, so Celebi stays small next to Lugia (not a speck)
+  img.src = lit ? spriteUrl(starter, 'front') : `assets/pokemon/${id}-front.gif`;
+  img.classList.toggle('lit', lit);
+}
+
 export function initTitle(handlers) {
   actions = handlers;
   const screen = $('title-screen');
+  const flyer = screen.querySelector('.title-flyer');
+  nextFlyer(flyer);
+  flyer.addEventListener('animationiteration', () => nextFlyer(flyer));   // swapped while it's off screen
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
   initSoundPanel();

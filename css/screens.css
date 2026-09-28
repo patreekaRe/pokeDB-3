@@ -148,17 +148,19 @@ body.titling { overflow: hidden; }
   padding: 0 16px;
 }
 
-/* Moltres crosses the moon as a silhouette, like Ho-Oh in the Gold intro */
+/* the flying legendaries cross the sky in turn (nextFlyer() in js/title.js): a silhouette until unlocked, like Ho-Oh in the
+   Gold intro, then in colour. One scale for all (Moltres's old 90-150px), from each GIF's own width (--w). */
 .title-flyer {
   position: absolute;
   top: clamp(4px, 7vh, 70px);
   left: 0;
-  width: clamp(90px, 20vw, 150px);
+  width: calc(var(--w, 128) * clamp(0.7px, 0.156vw, 1.17px));
   filter: brightness(0);
   opacity: 0.9;
   animation: flyAcross 13s linear infinite 1.2s;
   translate: 110vw 0;
 }
+.title-flyer.lit { filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); opacity: 1; }
 @keyframes flyAcross {
   0%   { translate: 110vw 30px; }
   45%  { translate: -40vw -10px; }

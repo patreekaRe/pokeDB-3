@@ -1130,8 +1130,10 @@ Slay the Spire 2's title and pixel-art button references; mockups in `docs/mocku
 bar: a pixel sky for the time of day painted into a low-res `<canvas>` (`SKIES` in `js/title.js`; dusk, the user's pick
 before the clock, is deep blue to a rose horizon, dithered; by day the moon is the sun and there are no stars; the moon up in the
 corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
-Moltres flying past as a silhouette over an empty ledge (the three starters that stood on it were removed, the user's
-call 2026-09-28). With a saved run a battle `.nameplate` sits right under the gems, in `.title-center`'s flow (`#title-run`,
+the flying legendaries crossing it one per pass over an empty ledge (the three starters that stood on it were removed, the
+user's call 2026-09-28): `nextFlyer()` in `js/title.js` deals Moltres, Ho-Oh, Lugia, Reshiram, Celebi and Victini (`FLYERS`;
+not Mewtwo, the secret) from a shuffled round on each `animationiteration`, a black silhouette until that one is unlocked,
+then in colour (`.lit`, shiny if switched on via `spriteUrl()`), all at one scale from each GIF's width (`--w`, 64 at least) (the user's ask, 2026-09-28). With a saved run a battle `.nameplate` sits right under the gems, in `.title-center`'s flow (`#title-run`,
 `renderRun()` in `js/title.js`; the user's call: neatly under Game Corner at every size) with the run's name and HP, the floor you stand on in that biome where the games' nameplate has its level (`#title-run-floor`: a grey pixel staircase, then "F7" in the name's font and size, the user's call; `floor` in `savedRunCard()`, the current room's `floor` + 1, 0 on the road in, like StS's Neow floor), the
 biome's own map sign over it (`.title-biome`, a smaller `.biome-sign` that drops in: the Clearing's sways, the Shrine's has
 mist drifting across, the Wastes' rim flickers like embers) and a red Abandon run pill under it (`requestAbandon()` in
