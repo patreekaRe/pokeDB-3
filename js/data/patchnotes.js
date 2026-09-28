@@ -8,36 +8,44 @@
 
 export const PATCHES = [
   {
-    version: '1.0',
-    name: 'The Journey Begins',
+    version: '0.9',
+    name: 'Almost Complete',
     date: '2026-09-28',
     sections: [
-      ['🏆', 'Hall of Fame & Record Book', [
-        'Every won run is kept in the Record Book: your deck, relics, items and the run\'s numbers.',
-        'Win on Trainer Level 5 to enter the Hall of Fame: a gold pedestal, fireworks and its own song.',
-        'A Level 5 win also gives that starter\'s shiny, a gold star on its portrait and a 500 PokéCoin jackpot once per type.',
+      ['🔥', 'Pick a starter, build a deck', [
+        'Choose Charmander, Bulbasaur or Squirtle and fight with a deck of moves, Slay the Spire style: 3 PP a turn, draw 5, play what you can.',
+        'Fire burns and hits recklessly, Grass drains and seeds, Water builds Tide and cashes it in. Each type has three ways to build.',
+        'Every starter has an Ability (Blaze, Overgrow, Torrent) and evolves after each boss.',
       ]],
-      ['🗺️', 'A world that changes', [
-        'Each biome is now three places and a boss arena, from the Clearing\'s meadow to its ancient giant tree.',
-        'Every floor has a landmark of its own, and the scenery builds up as you near the boss.',
-        'Day and night follow your clock: dawn, day, dusk and night each have their own light.',
+      ['🗺️', 'The journey', [
+        'Three biomes, each ten floors and a boss: Whispering Clearing, Overgrown Shrine and Ember Wastes.',
+        'Each biome changes as you go, with three places, a landmark per floor, and a boss arena. Day and night follow your clock.',
+        'Pick your route on the map: wild fights, Alphas, ? events, Poké Marts, Pokémon Centers and a treasure grotto.',
       ]],
-      ['✨', 'Legendaries', [
-        'Legendaries power up as they grow instead of changing: a blazing aura, then lightning and a shower of their type.',
-        'Entei, Celebi and Kyogre now unlock with a Level 3 win.',
-        'Keldeo needs wins with 3 different Water starters; Victini a win with 15 cards or fewer on Level 3 or higher.',
-        'The flying legendaries cross the title sky, in colour once they\'re yours.',
+      ['❓', 'Events and stops', [
+        'Ten events: Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.',
+        'Spend Pokédollars at the Poké Mart on moves, items and relics, or pay to forget a move.',
+        'Rest at a Pokémon Center, or power up a move with PP Up.',
       ]],
-      ['⚔️', 'Battles', [
-        'Wild Pokémon are dealt like a deck, so a route rarely meets the same one twice.',
-        'Look-alike cards got jobs of their own, and Brine blocks with the Tide it spends.',
-        'Relic rewards burst out in a flash of light and float up, like the treasure room\'s.',
+      ['⭐', 'Trainer Levels', [
+        'Win a run to unlock the next Trainer Level, up to Level 5. Each one adds a rule that makes runs harder.',
+        'Win on Level 5 to enter the Hall of Fame: a gold pedestal, fireworks, its own song, and that starter\'s shiny.',
+        'Every win goes in the Record Book with your deck, relics and the run\'s numbers.',
       ]],
-      ['📖', 'Quality of life', [
-        'The map shows the floor you\'re on, and so does a saved run on the title screen.',
-        'Tap your Pokémon on the map to call it back into its Poké Ball, and again to send it out.',
-        'The Index marks a move, relic or item found only once it has really been yours.',
-        'New on the title screen: How to play, Refresh (fetches the newest version) and these patch notes.',
+      ['🏆', 'For completionists', [
+        'Unlock all 30 starters: 12 from later generations, and 15 legendaries earned through achievements.',
+        'Collect a shiny of every starter from the Game Corner, or earn one with a Level 5 win.',
+        'Complete Pokédex research on all 55 Pokémon for PokéCoins, page perks and the Silph Scope.',
+        'Find every move, relic and item in the Index, and put a gold star on every starter.',
+      ]],
+      ['🎰', 'Between runs', [
+        'Spend PokéCoins at the Game Corner on starters, perks and shinies.',
+        'The Collection holds the Pokédex, Index, Stats, Achievements, Record Book and Hall of Fame.',
+        'Sign in from the Poké Ball menu to keep one save on your phone and PC.',
+      ]],
+      ['🔒', 'Coming in v1.0', [
+        'Mewtwo, the last secret starter, with a deck of its own.',
+        'A final balance pass, if the types need it.',
       ]],
     ],
   },
