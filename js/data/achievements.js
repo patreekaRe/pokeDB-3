@@ -13,7 +13,7 @@
    The early goals are deliberately forgiving: the two that used to
    need a flawless run ("no damage at all", "no rest site at all")
    were changed to "mostly" versions. Only the late legendaries
-   (steps 9b-9c: Level 5, no rest, the whole Pokédex) are meant as
+   (steps 9b-9c: no rest, the whole Pokédex) are meant as
    mastery goals.
    ============================================================ */
 
@@ -70,21 +70,21 @@ export const ACHIEVEMENTS = [
     text: 'Win a run on Trainer Level 3 with a Water starter',
     test: (s) => s.maxLevelWinByType.water >= 3,
   },
-  // The hardest goals (step 9b): the top Trainer Level per type, then a finished Pokédex page per biome.
+  // Step 9b: a second Level 3 legendary per type (Level 5 until 2026-09-28, the user's call), then a finished Pokédex page per biome.
   {
     starter: 'entei',
-    text: 'Win a run on Trainer Level 5 with a Fire starter',
-    test: (s) => s.maxLevelWinByType.fire >= 5,
+    text: 'Win a run on Trainer Level 3 with a Fire starter',
+    test: (s) => s.maxLevelWinByType.fire >= 3,
   },
   {
     starter: 'celebi',
-    text: 'Win a run on Trainer Level 5 with a Grass starter',
-    test: (s) => s.maxLevelWinByType.grass >= 5,
+    text: 'Win a run on Trainer Level 3 with a Grass starter',
+    test: (s) => s.maxLevelWinByType.grass >= 3,
   },
   {
     starter: 'kyogre',
-    text: 'Win a run on Trainer Level 5 with a Water starter',
-    test: (s) => s.maxLevelWinByType.water >= 5,
+    text: 'Win a run on Trainer Level 3 with a Water starter',
+    test: (s) => s.maxLevelWinByType.water >= 3,
   },
   {
     starter: 'hooh',
