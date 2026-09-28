@@ -2,13 +2,13 @@
    pokedex.js  -  the Pokédex window and its bookkeeping.
 
    A page per biome (data/pokedex.js). An entry is a dark "???"
-   silhouette until you've fought that Pokémon (seen: its name, type
-   and moves show), and complete once you've beaten it (defeated: a
-   Poké Ball mark, its flavour text and weakness), like the games'
-   seen / caught. Defeating every Pokémon on a page pays its PokéCoins
-   once and turns on its perk for every run after. On top, each entry
+   silhouette until you've fought that Pokémon (seen: its picture, name
+   and biome), and gets a Poké Ball mark once you've beaten it, like the
+   games' seen / caught. Defeating every Pokémon on a page pays its
+   PokéCoins once and turns on its perk for every run after. Each entry
    counts its defeats (research, Legends: Arceus-style): at its goal it's
-   Research complete, with a gold mark and its moves' numbers.
+   Research complete, with a gold mark, and only then shows its type,
+   role, flavour text, weakness, HP and moves with their numbers.
    ============================================================ */
 
 import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
@@ -112,7 +112,7 @@ function entryTile(id, role, seen, defeated) {
   tile.title = !known ? 'Not seen yet. Fight it in a run to fill this in.'
     : done ? `${def.name}: Research complete. Tap for its entry` : `${def.name}: defeated ${defeats(id)}/${goalOf(id)}. Tap for its entry`;
   tile.disabled = !known;
-  if (known) tile.addEventListener('click', () => openEntry(id, role, defeated.has(id), tile));
+  if (known) tile.addEventListener('click', () => openEntry(id, role, tile));
   return tile;
 }
 
@@ -245,46 +245,44 @@ function moveNumbers(m, extra) {
 }
 
 /** One entry blown up over the window, like a zoomed card: any tap or Escape closes it. */
-function openEntry(id, role, defeated, from) {
+function openEntry(id, role, from) {
   const base = ENEMY_DEFS[id];
   const def = role === 'elite' ? eliteOf(base) : base;
   const card = el('div', 'dex-detail');
   const head = el('div', 'dex-detail-head');
   const names = el('div', 'dex-detail-names');
-  names.append(el('span', 'dex-no', dexNo(id)), el('strong', 'dex-detail-name', base.name), typeChip(base.type));
+  const done = researched(id);
+  names.append(el('span', 'dex-no', dexNo(id)), el('strong', 'dex-detail-name', base.name), ...(done ? [typeChip(base.type)] : []));
   head.append(sprite(base, 'dex-detail-sprite'), names);
   card.append(head);
 
+  // until its research is complete an entry shows only its picture and where it lives (the user's call): the rest is the prize
   const facts = el('p', 'dex-detail-facts');
   const where = pageOf(id).name;
-  const done = researched(id);
-  facts.textContent = `${ROLE_LABEL[role]} · ${where}`;
+  facts.textContent = done ? `${ROLE_LABEL[role]} · ${where}` : where;
   card.append(facts);
-  if (defeated) {
-    card.append(el('p', `dex-detail-research${done ? ' done' : ''}`, done
-      ? `★ Research complete (defeated ${defeats(id)})`
-      : `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry shows its moves' numbers.`));
-  }
-  const foe = done && buildEncounter(BIOMES.findIndex(b => b.id === pageOf(id).biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
+  card.append(el('p', `dex-detail-research${done ? ' done' : ''}`, done
+    ? `★ Research complete (defeated ${defeats(id)})`
+    : `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
+  if (!done) return showEntry(card, from);
+  const foe = buildEncounter(BIOMES.findIndex(b => b.id === pageOf(id).biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
   if (foe) card.append(el('p', 'dex-detail-hp', `HP ${foe.maxHp} · numbers at Level 0, before types`));
-  if (defeated) {
-    card.append(el('p', 'dex-detail-text', base.description));
-    const weak = role === 'wild' && TYPES[base.type].losesTo;
-    card.append(el('p', 'dex-detail-weak', weak
-      ? `Weak to ${TYPES[weak].icon} ${TYPES[weak].label}. Resists ${TYPES[base.type].beats ? `${TYPES[TYPES[base.type].beats].icon} ${TYPES[TYPES[base.type].beats].label}` : 'nothing'}.`
-      : role === 'wild' ? 'No weakness: Neutral both ways.' : 'Alphas and bosses ignore types in battle.'));
-  } else {
-    card.append(el('p', 'dex-detail-text muted', 'Defeat it to complete this entry.'));
-  }
+  card.append(el('p', 'dex-detail-text', base.description));
+  const weak = role === 'wild' && TYPES[base.type].losesTo;
+  card.append(el('p', 'dex-detail-weak', weak
+    ? `Weak to ${TYPES[weak].icon} ${TYPES[weak].label}. Resists ${TYPES[base.type].beats ? `${TYPES[TYPES[base.type].beats].icon} ${TYPES[TYPES[base.type].beats].label}` : 'nothing'}.`
+    : role === 'wild' ? 'No weakness: Neutral both ways.' : 'Alphas and bosses ignore types in battle.'));
   const moves = el('ul', 'dex-moves');
   for (const m of def.moves) {
-    const [icon, label] = MOVE_KIND[m.kind] || ['❓', m.kind];
     const li = el('li', `dex-move kind-${m.kind}`);
-    li.append(el('span', 'dex-move-icon', icon), el('span', 'dex-move-name', m.name), el('small', '', foe ? moveNumbers(m, foe.strength) : label));
+    li.append(el('span', 'dex-move-icon', (MOVE_KIND[m.kind] || ['❓'])[0]), el('span', 'dex-move-name', m.name), el('small', '', moveNumbers(m, foe.strength)));
     moves.append(li);
   }
   card.append(el('h4', 'dex-moves-head', 'Moves, in order'), moves);
+  showEntry(card, from);
+}
 
+function showEntry(card, from) {
   const layer = el('div', 'card-zoom dex-zoom');
   layer.append(card, el('p', 'focus-hint', 'Tap anywhere to close'));
   const close = () => {

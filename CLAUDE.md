@@ -1002,8 +1002,9 @@ balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gi
 The **Pokédex** (`js/pokedex.js`, `#dex-dialog`, roadmap step 7) sits beside it: a red `.ds-dex` button next to Index on
 the start screen and a Poké Ball menu item (so it opens from the map too, on the run's biome page). A page per biome
 (`DEX_PAGES` in `js/data/pokedex.js`, built from `BIOMES`: 12 wilds, then Alphas, then Bosses, numbered No.001-055);
-an entry is a dark "???" silhouette (`.dex-entry.locked`) until you've fought it (seen: name, type, moves in order), then
-complete once beaten (defeated: a Poké Ball mark, flavour text, weakness), like the games' seen / caught; tap an entry for
+an entry is a dark "???" silhouette (`.dex-entry.locked`) until you've fought it (seen: picture, name, biome and research count only), then a
+Poké Ball mark once beaten (defeated), like the games' seen / caught; everything else waits for Research complete (the
+user's call 2026-09-27, `showEntry()`); tap an entry for
 it blown up (`.dex-zoom`, the zoom layer). The save's `dex: { seen, defeated, done }` (old saves merge in empty) is written
 by `dexSeen()` from `fight()` and `dexDefeated()` from `afterFight()` (Team Rocket's Alpha counts as its species). The
 first defeat says "X's data was added to the Pokédex!" in the reward text box (`pendingCoins.dex`, after the coin
@@ -1016,7 +1017,7 @@ Achievements window lists the three pages after the starters. Fight rooms prefer
 every defeat (`countDex()`; old saves seed 1 per `defeated` id in `seedCounts()`), and each win's reward text box says
 "X defeated n/3" until the entry's `RESEARCH_GOAL` (3, bosses 2, in `js/data/pokedex.js`). At the goal it's Research
 complete: a gold mark (`.dex-mark.gold`, a gold tile), `RESEARCH_COINS` once (wild 50 / Alpha 100 / boss 200), and its entry
-shows HP and each move's numbers at that biome on Level 0 (`buildEncounter()` + `moveNumbers()`, before types). Every entry
+shows its type, role, flavour text, weakness, HP and each move's numbers at that biome on Level 0 (`buildEncounter()` + `moveNumbers()`, before types). Every entry
 complete pays `DEX_COMPLETE_COINS` (1500) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
 saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. A fourth tab, **Rewards** (`renderRewards()`, the user's call: easy to find), lists
 the complete-Pokédex jackpot (1500 coins, Reshiram, the Silph Scope), research payouts and each page's perk with progress.
