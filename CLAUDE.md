@@ -1056,7 +1056,7 @@ plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): 
 painted on its own `<canvas>` by `paintGem()` (pointed ends, a dark outline, a two-tone bronze frame, an inner groove, a face
 with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a pixel, 4 or 3 on windows ≤700px tall, the
 canvas a whole number of pixels wide so they stay square) with a bare pixel icon on its left end (a dark pixel outline, no
-frame: the user's call): **Continue** (amber, only with a save; see Saved runs; the biggest gem, `GEM_BIG`, with a bigger ball and label), **New game** (violet, an Egg that wobbles while
+frame: the user's call): **Continue** (amber, only with a save; see Saved runs; the biggest gem, `GEM_BIG`, with a bigger label and a smaller ball, placed by `--icon-x` so it stays on the face), **New game** (violet, an Egg that wobbles while
 picked, since Continue has the Poké Ball: the character select), **Collection** (gold, the Pokédex: the Collection screen) and **Game Corner** (coral: `toggleShop()`,
 whose dialog sits above the title at z-index 90). Hover, focus or ↑ ↓ move a blinking ▶ (`point()`), Enter / tap picks, a
 press sinks the gem. Leaving fades the title out over the screen you go to (`leaveTitle()`), and every way home (the Poké

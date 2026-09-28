@@ -213,9 +213,8 @@
 @media (max-height: 700px) { .title-plate { width: 190px; padding: 4px 8px; } }
 /* Continue is the biggest gem (the user's call): a bigger ball and label */
 .gem-continue .gem-label { font-size: 1.15rem; }
-.gem-continue .cball { width: 52px; height: 52px; }
-.gem-continue .cball-ball { width: 42px; height: 42px; }
-@media (max-height: 700px) { .gem-continue .gem-label { font-size: 0.92rem; } .gem-continue .cball { width: 42px; height: 42px; } .gem-continue .cball-ball { width: 34px; height: 34px; } }
+.gem-continue .cball-ball { width: 34px; height: 34px; }   /* a touch smaller than the other gems' icons (the user's call) */
+@media (max-height: 700px) { .gem-continue .gem-label { font-size: 0.92rem; } .gem-continue .cball-ball { width: 28px; height: 28px; } }
 /* New game's Egg wobbles while it's the one picked, as if about to hatch */
 .gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; transform-origin: 50% 90%; }
 /* New game: the Egg hatches (hatch() in js/title.js): it shakes harder and harder, cracks, and bursts in a flash of light */

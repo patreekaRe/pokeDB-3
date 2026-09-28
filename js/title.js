@@ -176,8 +176,8 @@ function sizeGems() {
     const w = big ? cols + 2 * Math.round(cols * 0.04) : cols, h = big ? GEM_BIG : GEM_H;
     btn.style.width = `${w * px}px`;
     btn.style.height = `${h * px}px`;
-    // the icon keeps the same place on the face: Continue is wider (its ends further out) and its ball bigger
-    btn.style.setProperty('--icon-x', big ? 8 + (w - cols) / 2 + 2 : 8);
+    // the icon keeps the same place on the face: Continue is wider, so its ends are further out
+    btn.style.setProperty('--icon-x', big ? 8 + (w - cols) / 2 + 1 : 8);
     paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind], big ? shine : null);
   }
 }
