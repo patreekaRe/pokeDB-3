@@ -1214,7 +1214,10 @@ first defeat says "X's data was added to the Pokédex!" in the reward text box (
 lines); defeating the last entry on a page pays its PokéCoins once (300 / 400 / 500, `done` guards it) and turns on its
 perk (`DEX_PERKS`, `hasDexPerk()`): Mom's Savings (start runs with ₽50, `DEX_START_MONEY`), Chansey's Gift (start
 with a Potion), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
-`run.rerollBiome`, saved with the run). A final-boss page completion goes in the result window (`run.dexNews`). The
+`run.rerollBiome` / `run.rerollsUsed`, saved with the run). Researching every entry on a page raises its perk to **Lv 2**
+(the user's call, 2026-09-28): ₽100, a Super Potion, two rerolls a biome (`lv2` in `DEX_PERKS`; `DEX_START_MONEY` /
+`DEX_START_ITEM` / `DEX_REROLLS` by level). `dexPerkLevel()` in `js/pokedex.js` works it out from the save (0 / 1 / 2), so
+nothing new is saved; the page's perk box then tracks research, and the Rewards tab has a goal per page. A final-boss page completion goes in the result window (`run.dexNews`). The
 Achievements window lists the three pages after the starters. Fight rooms prefer unbeaten Pokémon 2:1
 (`pickEnemyId(biome, kind, dexWeight)`). The sim mirrors the perks as `cfg.dexPerks`. **Research** (step 7b, Legends: Arceus-style): the save's `dex.count: { id: n }` counts
 every defeat (`countDex()`; old saves seed 1 per `defeated` id in `seedCounts()`), and each win's reward text box says

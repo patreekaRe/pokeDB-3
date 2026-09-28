@@ -36,8 +36,8 @@ import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, mart
 import { battleWipe } from './transition.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
-import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
-import { DEX_START_MONEY, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
+import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
+import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
 let run = null;
 
@@ -139,6 +139,7 @@ function checkpoint() {
     removals: run.removals,
     rarePity: run.rarePity,
     rerollBiome: run.rerollBiome,
+    rerollsUsed: run.rerollsUsed,
     tutorLeft: run.tutorLeft,
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
@@ -238,7 +239,8 @@ export function beginRun(starter, level = 0) {
     money: 0,              // Pokédollars: prize money for the Poké Mart, lost when the run ends
     removals: 0,           // moves forgotten at a Poké Mart this run (each one costs more)
     rarePity: 0,           // extra rare weight on the next card reward (RARE_PITY in rewards.js)
-    rerollBiome: -1,       // the biome whose card reroll (Pokédex perk Oak's Advice) was used
+    rerollBiome: -1,       // the biome whose card rerolls (Pokédex perk Oak's Advice) were used
+    rerollsUsed: 0,        // how many, in that biome (Lv 2 gives two)
     tutorLeft: perkLevel('tutorNotes'),   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
@@ -252,8 +254,10 @@ export function beginRun(starter, level = 0) {
   }
 
   // Pokédex perks, earned by completing a biome's page
-  if (hasDexPerk('moms-savings')) { run.money += DEX_START_MONEY; tell(`Mom's Savings: you set out with ₽${DEX_START_MONEY}!`); }
-  if (hasDexPerk('chansey-gift')) { run.items.push('potion'); tell('Chansey\'s Gift: a Potion is in your Bag!'); }
+  const savings = DEX_START_MONEY[dexPerkLevel('moms-savings')];
+  if (savings) { run.money += savings; tell(`Mom's Savings: you set out with ₽${savings}!`); }
+  const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerkLevel('chansey-gift')]];
+  if (gift) { run.items.push(gift.id); tell(`Chansey's Gift: a ${gift.name} is in your Bag!`); }
 
   updateSave(d => { d.stats.runsStarted += 1; });
   startBiome();
@@ -712,16 +716,18 @@ function offerCard(source, next, rerolled = false) {
   const cards = cardChoices(run, source, REWARD_CARDS[perkLevel('scoutReport') ? 1 : 0], { reward: true });   // Scout Report: 4
   if (!cards.length) return next();
 
-  // Oak's Advice (a Pokédex perk): once per biome, swap the moves offered for new ones
-  const canReroll = hasDexPerk('oaks-advice') && run.rerollBiome !== run.biome;
+  // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
+  const used = run.rerollBiome !== run.biome ? 0 : run.rerollsUsed ?? 1;   // a run saved before Lv 2 had used its one
+  const left = DEX_REROLLS[dexPerkLevel('oaks-advice')] - used;
+  const canReroll = left > 0;
   showChoice({
     title: 'Learn a new move',
     sub: [rerolled && 'Oak\'s Advice: new moves to pick from!', `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
-      canReroll && 'Oak\'s Advice: you can reroll these once this biome.'],
+      canReroll && `Oak's Advice: you can reroll these ${left === 1 ? 'once' : 'twice'}${used ? ' more' : ''} this biome.`],
     options: cards.map(card => learnOption(card, next)),
     onSkip: next,
     coins: run.pendingCoins,
-    reroll: canReroll ? () => { run.rerollBiome = run.biome; offerCard(source, next, true); } : null,
+    reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); } : null,
   });
 }
 

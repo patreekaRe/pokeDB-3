@@ -3222,6 +3222,7 @@ body.has-scene #scene-bg { display: block; }
   color: var(--win-ink);
 }
 .dex-perk.earned { border-style: solid; border-color: #c89a18; background: #fbf0c8; }
+.dex-perk.mastered { border-color: #e0a800; box-shadow: inset 0 0 0 2px #ffe27a; }
 .dex-perk-icon { font-size: 2rem; line-height: 1; flex: none; }
 .dex-perk:not(.earned) .dex-perk-icon { filter: grayscale(1) opacity(0.6); }
 .dex-perk-text { flex: 1; display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem; min-width: 0; }
