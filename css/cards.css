@@ -288,6 +288,11 @@
 .card-tip-name { display: block; margin-bottom: 3px; color: var(--win-gold); font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.72rem; font-weight: normal; }
 /* beside the card on wide screens, under it on a phone */
 .tip-row { display: flex; align-items: flex-start; justify-content: center; gap: 12px; }
+/* the card stays centred, over its confirm button; the boxes hang off its right side instead of sharing the centring */
+@media (min-width: 721px) {
+  .tip-row { position: relative; }
+  .tip-row .card-tips { position: absolute; left: calc(100% + 12px); top: 0; }
+}
 .tip-row .card-tips { animation: tipsIn 0.2s ease-out 0.1s backwards; }
 @keyframes tipsIn { from { opacity: 0; transform: translateY(8px); } }
 /* in battle the boxes are placed by placeTips() in js/battle.js, and taps go through them to the layer */
