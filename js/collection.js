@@ -34,7 +34,7 @@ export function showCollection() {
   const cards = [
     ['dex', 'Pokédex', el('span', 'coll-emoji', '📕'), 'Every Pokémon you have met. Research them for PokéCoins.',
       `${save.dex.defeated.length}/${dexTotal} defeated`, () => openPokedex()],
-    ['moves', 'Moves', el('span', 'coll-emoji', '🃏'), 'Every move card in the game, by type.', `${ALL_CARDS.length} moves`, () => openCardIndex(pickedStarter()?.type ?? 'fire')],
+    ['moves', 'Moves', el('span', 'coll-emoji', '🃏'), 'Every move card in the game, by type.', `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length} found`, () => openCardIndex(pickedStarter()?.type ?? 'fire')],
     ['relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), 'The held items found climbing the biomes.',
       `${save.seen.relics.length}/${RELICS.length} found`, () => openCardIndex('relics')],
     ['items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), 'The one-use items for your Bag.',

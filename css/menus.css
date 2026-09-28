@@ -178,8 +178,9 @@
 @keyframes cballAway { to { transform: scale(0.2); opacity: 0; } }
 @keyframes cballOut { 0% { scale: 0.2; filter: brightness(0) invert(1); } 60% { scale: 1.12; filter: brightness(0) invert(1); } 100% { scale: 1; filter: none; } }
 @keyframes cballLight { 0% { opacity: 0; transform: scale(0.3); } 35% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: scale(3.5); } }
-/* A saved run: its nameplate on the ledge (name, biome, HP, like battle's); the Pokémon waits in Continue's ball */
-.title-run { position: absolute; left: 50%; bottom: calc(var(--ground) + 14px); translate: -50% 0; pointer-events: none; }
+/* A saved run: its nameplate right under the gems (name, biome, HP, like battle's); the Pokémon waits in Continue's ball */
+.title-run { pointer-events: none; }
+.title-screen:not(.menu) .title-run { display: none; }
 .title-plate { width: 210px; opacity: 0; }
 .title-screen.menu .title-plate { opacity: 1; animation: plateIn 0.3s steps(3); }
 .title-plate strong { font-size: 0.8rem; }
@@ -189,7 +190,7 @@
 .title-plate .gb-hp-tag { font-size: 0.55rem; line-height: 12px; }
 .title-plate .gb-hp-num { width: 100%; font-size: 0.7rem; }
 @keyframes plateIn { from { opacity: 0; translate: 0 8px; } }
-@media (max-height: 700px) { .title-plate { width: 190px; padding: 4px 8px; } .title-run { bottom: calc(var(--ground) + 8px); } }
+@media (max-height: 700px) { .title-plate { width: 190px; padding: 4px 8px; } }
 /* Continue is the biggest gem (the user's call): a bigger ball and label */
 .gem-continue .gem-label { font-size: 1.15rem; }
 .gem-continue .cball { width: 52px; height: 52px; }

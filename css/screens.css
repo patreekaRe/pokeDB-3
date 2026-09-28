@@ -2155,6 +2155,10 @@ body.battle-intro { pointer-events: none; }
 .index-thing .relic-text { font-size: 0.8rem; }
 .index-thing.locked .relic-icon img { filter: brightness(0) opacity(0.55); }   /* a silhouette until it's met in a run */
 .index-thing.locked .relic-name, .index-thing.locked .relic-text { color: var(--win-muted); }
+/* a move not met yet: a greyed card, its art a black silhouette, ??? for the rest (lockedCard() in js/cardindex.js) */
+.card.index-locked { filter: grayscale(1) brightness(0.7); cursor: default; }
+.card.index-locked .card-art > * { filter: brightness(0) opacity(0.6); }
+.card.index-locked .card-text { display: grid; place-items: center; font-size: 1.4em; color: #707078; }
 .index-only { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.6rem; padding: 3px 6px; border-radius: var(--round-xs); color: #fff; background: #777; }
 .index-only.type-fire { background: #c8402a; }
 .index-only.type-grass { background: #2e8a40; }

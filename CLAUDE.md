@@ -302,7 +302,7 @@ A version mismatch or any bad id (deck, relics, Mart stock) silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The title's
 Continue gem (`savedRunCard()` in `js/main.js`, drawn by `renderMenu()` in `js/title.js`) shows whenever a valid save
 exists, its icon the run's Poké Ball wobbling like a catch in progress (`.cball`, the old Continue card's pixel ball, which
-the user wanted back), its biome and HP on the ledge's nameplate; tapping it swings the lid open in a flash of light, and your
+the user wanted back), its biome and HP on the nameplate under the gems; tapping it swings the lid open in a flash of light, and your
 Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 
 ## Cloud save
@@ -1035,11 +1035,11 @@ Slay the Spire 2's title and pixel-art button references; mockups in `docs/mocku
 bar: a pixel **dusk** sky painted into a low-res `<canvas>` (`SKY`: deep blue to a rose horizon, dithered; the moon up in the
 corner clear of the logo, `moonOf()`; hills, the grassy ledge; stars twinkle at 10 fps and the odd shooting star crosses),
 Moltres flying past as a silhouette over an empty ledge (the three starters that stood on it were removed, the user's
-call 2026-09-28). With a saved run a battle `.nameplate` stands on the ledge (`#title-run`, `renderRun()` in `js/title.js`)
-with the run's name, biome and HP; the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
+call 2026-09-28). With a saved run a battle `.nameplate` sits right under the gems, in `.title-center`'s flow (`#title-run`,
+`renderRun()` in `js/title.js`; the user's call: neatly under Game Corner at every size) with the run's name, biome and HP; the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
 top-left corner (`.title-corner`, gems up only) holds the cloud save's PC (see Cloud save) and a 🔊 Sound button whose
 `#title-sound-panel` (a `.ball-menu-panel`) has the same Sound toggle and volume slider as the Poké Ball menu
-(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); both are a size smaller under 600px wide. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
+(`SOUND_TOGGLES` / `VOLUME_SLIDERS` in `js/audio.js` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
 plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): a stack of pixel gems under the logo, each
 painted on its own `<canvas>` by `paintGem()` (pointed ends, a dark outline, a two-tone bronze frame, an inner groove, a face
 with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a pixel, 4 or 3 on windows ≤700px tall, the
@@ -1069,6 +1069,11 @@ stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
 else the last tab; new cards show up there on their own. Two more tabs, Relics and Items (the user's call,
 2026-09-27), list every relic (the Abilities first, then by rarity, then Boss) and item (by rarity), with an
 "N/M found" count: one you haven't met in a run is a dark silhouette of its sprite, "???" (`.index-thing.locked`).
+Moves work the same since 2026-09-28 (the user's call, Pokédex-style): an unmet card is a grey "???" card with a black
+silhouette of its art (`lockedCard()`, `.card.index-locked`, not zoomable), each rarity heading and the tab count "N/M".
+A card is met (`markSeen('cards', id)`, upgrades count as their base) when it's offered (`cardOption()`: rewards, the Mart,
+events, evolution picks), in your starting deck (`beginRun()`), in your hand in battle (Metronome, the TM) or laid out by
+`pickFromPile()`. Saves from before seed `seen.cards` with the owned starters' decks and the run's deck (`seedCards()`).
 Met means offered, sold or found: `markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`)
 is called by `relicOption()` / `itemOption()` in `js/rewards.js` (rewards and the Mart), `floatingThing()` (item
 balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gift. Saves from before start empty.

@@ -282,7 +282,10 @@ function finishLine() {
 }
 
 /** Ready-made option tiles. */
-export const cardOption = (card, stage, onPick, count = 1) => ({ node: makeCard(card, { stage, count }), onPick });
+export const cardOption = (card, stage, onPick, count = 1) => {
+  markSeen('cards', card.id);
+  return { node: makeCard(card, { stage, count }), onPick };
+};
 export const relicOption = (relic, onPick) => {
   markSeen('relics', relic.id);
   return { node: makeRelic(relic), onPick };

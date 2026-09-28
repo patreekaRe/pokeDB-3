@@ -14,7 +14,7 @@
    still works, it just can't remember anything.
    ============================================================ */
 
-import { RENAMED_STARTERS } from './data/starters.js';
+import { RENAMED_STARTERS, STARTERS } from './data/starters.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
@@ -46,7 +46,7 @@ const freshSave = () => ({
     scopeUpgrade: 0,          // the Silph Scope reveals 1 more room a biome per level (0-2); needs a complete Pokédex
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
-  seen: { relics: [], items: [] },   // ids met in a run (offered or found), unlocked in the Index; others show as silhouettes
+  seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
@@ -74,7 +74,7 @@ function load() {
       const merged = {
         ...base, ...saved,
         passives: { ...base.passives, ...saved.passives },
-        seen: { ...base.seen, ...saved.seen },
+        seen: { ...base.seen, ...saved.seen, cards: saved.seen?.cards ?? seedCards(saved) },
         dex: seedCounts({ ...base.dex, ...saved.dex }),
         shiny: { ...base.shiny, ...saved.shiny },
         stats: {
@@ -86,6 +86,13 @@ function load() {
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
+}
+
+/** Saves from before the Index hid unmet moves: the starting decks you own and the run in progress count as met. */
+function seedCards(saved) {
+  const ids = STARTERS.filter(s => s.free || (saved.unlocked || []).includes(s.id)).flatMap(s => s.deck);
+  try { ids.push(...(JSON.parse(localStorage.getItem(RUN_KEY))?.deck || [])); } catch (err) { /* no run */ }
+  return [...new Set(ids.map(id => id.replace(/\+$/, '')))];
 }
 
 /** Saves from before research levels knew only who was beaten: each counts as beaten once. */
@@ -142,6 +149,7 @@ export function awardCoins(amount) {
 
 /** A relic or item was met in a run (offered, sold or found): the Index shows it from now on. */
 export function markSeen(kind, id) {
+  if (kind === 'cards') id = id.replace(/\+$/, '');   // an upgraded copy counts as its card
   if (data.seen[kind].includes(id)) return;
   data.seen[kind].push(id);
   persist();

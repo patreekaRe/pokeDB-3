@@ -22,7 +22,7 @@
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { isShiny, getSave, updateSave } from './storage.js';
+import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
@@ -878,6 +878,7 @@ function pickFromPile(cards, prompt, verb = 'Take back') {
     };
     const row = el('div', 'pile-pick');
     for (const card of cards) {
+      markSeen('cards', card.id);
       const node = makeCard(card, { stage: battle.stage });
       node.classList.add('pile-card');
       node.tabIndex = 0;
@@ -1529,6 +1530,7 @@ function renderHand() {
 
   b.hand.forEach((entry, i) => {
     const { card } = entry;
+    markSeen('cards', card.id);   // Metronome's and the TM's cards, too
     const node = makeCard(card, { stage: b.stage, cost: costOf(card) });
     node.classList.add('in-hand');
 
