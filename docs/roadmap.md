@@ -465,8 +465,8 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    its cry; only Chansey (the Center) and Kecleon (the Mart) have none, and nothing asks them to cry. Ideas the user may
    pick up later: Chansey / Kecleon greeting you as you walk in, event figures crying in their rooms, a loudness pass.
 4. **Cloud save with login.** Code done 2026-09-28 (CLAUDE.md's Cloud save): Firebase, Google and email-link sign-in,
-   and a "Two saves found" window when two devices both changed (the user's picks). It stays hidden until the user's
-   Firebase config is pasted into `js/cloud-config.js`. Checked headless with a stand-in Firebase at 390 and 1280px: the
+   and a "Two saves found" window when two devices both changed (the user's picks). The user's Firebase project
+   (`pokedb-42e7c`) was set up the same day and its config is in `js/cloud-config.js`; next is their first real sign-in. Checked headless with a stand-in Firebase at 390 and 1280px: the
    first sign-in uploads the device's save, a blank device takes the cloud's, changes upload, a reload picks up the other
    device's, a real clash asks, the email link signs in, sign out keeps the save, and signed out nothing loads.
    The user's setup (console.firebase.google.com):
