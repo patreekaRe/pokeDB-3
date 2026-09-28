@@ -21,9 +21,9 @@ import { MAX_LEVEL, LEVELS } from './data/difficulty.js';
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CRY_WAIT_MAX = 1500;
 
-/** Start downloading the song and the cry before the final boss, so the scene doesn't wait on them. */
-export function preloadHallOfFame(starter) {
-  preloadMusic('hall-of-fame');
+/** Start downloading the cry (and a Level 5 win's song) before the final boss, so the scene doesn't wait on them. */
+export function preloadWinScene(starter, fame) {
+  if (fame) preloadMusic('hall-of-fame');
   preloadCries(starter.line.at(-1).id);
 }
 
@@ -131,21 +131,41 @@ function fit(img, box) {
 const loaded = (img) => img.complete && img.naturalWidth ? null
   : new Promise(resolve => { img.onload = img.onerror = resolve; });
 
-/** Play the scene for a new entry. Resolves once the last line is tapped away and the scene has faded out. */
-export async function hallOfFameScene(entry) {
-  book = 'fame';
+/** A grid of the run's numbers, lit up tile by tile in the scene. */
+function statsPanel(entry) {
+  const grid = el('div', 'hof-scene-stats');
+  grid.append(...statList(entry).map(([icon, value, label, short], i) => {
+    const node = el('div', 'hof-stat');
+    node.title = label;
+    node.style.setProperty('--i', i);
+    node.append(el('span', 'hof-stat-icon', icon), el('b', '', String(value)), el('span', 'hof-stat-label', short));
+    return node;
+  }));
+  return grid;
+}
+
+/**
+ * Play the win scene for a new entry: every won run stands on the pedestal and shows its numbers, then its deck. A Level
+ * 5 win is the Hall of Fame (its title, song and welcome); any other is a plain Victory over the fanfare already
+ * playing. Resolves once the last line is tapped away and the scene has faded out.
+ */
+export async function winScene(entry) {
+  const fame = Boolean(fameNo(entry));
+  book = fame ? 'fame' : 'record';
   const scene = $('hof-scene');
   const img = $('hof-mon');
   const stage = $('hof-stage');
+  const extra = $('hof-deck-slot');
   const name = nameOf(entry);
   img.src = imgOf(entry);
   img.alt = name;
+  $('hof-title').textContent = fame ? 'Hall of Fame' : 'Victory!';
   $('hof-plate-slot').replaceChildren(plate(entry));
-  $('hof-deck-slot').replaceChildren(deckStrip(entry));
+  extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
-  playMusic('hall-of-fame', { restart: true });
+  if (fame) playMusic('hall-of-fame', { restart: true });   // otherwise the victory fanfare from the boss's faint plays on
 
   await Promise.all([loaded(img), sleep(still() ? 300 : 900)]);
   const refit = () => fit(img, stage);
@@ -156,13 +176,18 @@ export async function hallOfFameScene(entry) {
   await sleep(still() ? 200 : 900);
   await Promise.race([playCry(starterOf(entry).line[entry.stage].id), sleep(CRY_WAIT_MAX)]);
   scene.classList.add('plate-in');
-  await sceneSay('hof-scene', 'hof-log', ['Welcome to the HALL OF FAME!',
-    `${name} became a champion on Trainer Level ${entry.level}!`]);
+  await sceneSay('hof-scene', 'hof-log', fame
+    ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
+    : [`${name} conquered the wastes on Trainer Level ${entry.level}!`]);
 
   scene.classList.add('deck-in');
   await sleep(still() ? 0 : 500);
-  await sceneSay('hof-scene', 'hof-log', [`${name}'s final deck: ${entry.deck.length} cards.`,
-    `It is entered in the Hall of Fame as ${numberOf(entry)}. Congratulations!`]);
+  await sceneSay('hof-scene', 'hof-log', [`Here's how ${name}'s run went.`]);
+
+  extra.replaceChildren(deckStrip(entry));
+  await sceneSay('hof-scene', 'hof-log', [`${name}'s final deck: ${entry.deck.length} cards.`, fame
+    ? `It is entered in the Hall of Fame as ${numberOf(entry)}. Congratulations!`
+    : `The run is saved in the Record Book as ${winNo(entry)}. Well done!`]);
 
   scene.classList.add('out');
   await sleep(still() ? 0 : 600);
@@ -213,6 +238,28 @@ function showList() {
   $('hof-body').scrollTop = 0;
 }
 
+/** A run's numbers as [icon, value, label, short label], for the record's page and the scene (short labels there). Old entries show "-" for what they lack. */
+function statList(entry) {
+  const upgraded = entry.deck.filter(id => id.endsWith('+')).length;
+  return [
+    ['⚔️', num(entry.fights), 'Fights won', 'Fights'],
+    ['👑', num(entry.elites), 'Alphas beaten', 'Alphas'],
+    ['❤️', entry.hp != null ? `${entry.hp}/${entry.maxHp}` : '-', 'HP at the end', 'HP left'],
+    ['🔄', num(entry.turns), 'Turns', 'Turns'],
+    ['🃏', num(entry.played), 'Cards played', 'Played'],
+    ['💥', num(entry.dealt), 'Damage dealt', 'Dealt'],
+    ['🩸', num(entry.taken), 'Damage taken', 'Taken'],
+    ['🎯', num(entry.biggest), 'Biggest hit', 'Best hit'],
+    ['🎒', entry.itemsUsed ? entry.itemsUsed.length : '-', 'Items used', 'Items'],
+    ['💴', entry.earned != null ? `₽${num(entry.earned)}` : '-', '₽ earned', 'Earned'],
+    ['🏪', entry.spent != null ? `₽${num(entry.spent)}` : '-', '₽ spent', 'Spent'],
+    ['🏥', num(entry.rests), 'Rests', 'Rests'],
+    ['❓', num(entry.events), 'Events', 'Events'],
+    ['💻', num(entry.forgotten), 'Moves forgotten', 'Forgot'],
+    ['⏫', upgraded, 'Moves upgraded', 'PP Ups'],
+  ];
+}
+
 const num = (n) => (n ?? null) === null ? '-' : Number(n).toLocaleString();
 
 /** A stat tile, like the Stats window's. */
@@ -251,25 +298,8 @@ function showEntry(entry) {
     + (entry.started && entry.started !== entry.date ? ` · set out ${dateOf(entry.started)}` : '')));
   top.append(pic, info);
 
-  const upgraded = entry.deck.filter(id => id.endsWith('+')).length;
   const record = el('div', 'stat-grid hof-stats');
-  record.append(...[
-    ['⚔️', num(entry.fights), 'Fights won'],
-    ['👑', num(entry.elites), 'Alphas beaten'],
-    ['❤️', entry.hp != null ? `${entry.hp}/${entry.maxHp}` : '-', 'HP at the end'],
-    ['🔄', num(entry.turns), 'Turns'],
-    ['🃏', num(entry.played), 'Cards played'],
-    ['💥', num(entry.dealt), 'Damage dealt'],
-    ['🩸', num(entry.taken), 'Damage taken'],
-    ['🎯', num(entry.biggest), 'Biggest hit'],
-    ['🎒', entry.itemsUsed ? entry.itemsUsed.length : '-', 'Items used'],
-    ['💴', entry.earned != null ? `₽${num(entry.earned)}` : '-', '₽ earned'],
-    ['🏪', entry.spent != null ? `₽${num(entry.spent)}` : '-', '₽ spent'],
-    ['🏥', num(entry.rests), 'Rests'],
-    ['❓', num(entry.events), 'Events'],
-    ['💻', num(entry.forgotten), 'Moves forgotten'],
-    ['⏫', upgraded, 'Moves upgraded'],
-  ].map(tile));
+  record.append(...statList(entry).map(tile));
 
   const ability = ABILITIES[entry.type];
   const relics = things(entry.relics, RELICS_BY_ID, ability ? '' : 'No relics.');

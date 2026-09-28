@@ -288,8 +288,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `tally` from `onEnd` (`battle.tally` in `js/battle.js`: cards played, damage dealt without overkill via `enemyLoses()`
   for hits, Burn and Leech Seed, the biggest hit, items used, plus turns and damage taken) in `addTally()`, and counts
   Alphas, ❓ rooms, moves forgotten (`forgetMove()`) and ₽ spent (every Pokédollar payment goes through `spend()`; earned
-  is money left + spent). A Level 5 win also awaits `hallOfFameScene()` before opening the result window (a modal dialog
-  would sit in the top layer over it); other wins just get a line in the result window. The scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
+  is money left + spent). Every win awaits `winScene()` before opening the result window (a modal dialog would sit in the
+  top layer over it; the user wanted normal wins to feel satisfying too): the pedestal scene below, then the run's numbers
+  as a grid of dark tiles popping in (`statsPanel()`, short labels, from the same `statList()` as the record's page), then
+  the deck. A Level 5 win is the Hall of Fame version (gold pedestal, title, its song, "Welcome to the HALL OF FAME!");
+  any other is "Victory!" on a silver pedestal over the victory fanfare already playing, saved "as Win NNN". The Hall of Fame scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
   white flash onto a starry night, your Pokémon slides onto a gold pedestal under a spotlight (`SPRITE_FIT` feet, half
   steps) and cries, its plate pops up (No.NNN, name, type chip, date, Lv.5), "Welcome to the HALL OF FAME!", then the
   final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
@@ -298,8 +301,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection has two
   cards for it (the user's call: Level 5 champions and normal runs both worth seeing), each a grey "???" with a 🔒 until its
   first entry (`book()` in `js/collection.js`; a tap says how to unlock it, `tipAt()`), and the result window says "Record
-  Book unlocked!" / "Hall of Fame unlocked!" the first time: **Hall of Fame** (Level 5 wins, numbered No.NNN) and **Record
-  Book** (every win, "Win NNN", Level 5 ones with a ⭐). Both open `#hof-dialog` (`openRecords('fame' | 'record')`,
+  Book unlocked!" / "Hall of Fame unlocked!" the first time: **Record Book** (every win, "Win NNN", Level 5 ones with a ⭐)
+  and **Hall of Fame** (Level 5 wins, numbered No.NNN), the last card (the user's call). Both open `#hof-dialog` (`openRecords('fame' | 'record')`,
   `bookEntries()`): entries newest first; tap one for its page: plate, a grid of its numbers (old entries show "-" for what
   they lack), the Ability and relics, the items left in the Bag and the ones used (sprites; a tap shows their `title`), and
   the final deck (`fillDeck()` from `js/deckpreview.js`, each card `zoomable()`).
@@ -1189,7 +1192,7 @@ sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, 
 the bottom). The page's footer note hides here.
 
 **Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): eight Pokégear cards with a coloured header
-(Pokédex, Moves, Relics, Items, Stats, Achievements, Hall of Fame, Record Book), each with its art, a line and a progress count (defeated, moves,
+(Pokédex, Moves, Relics, Items, Stats, Achievements, Record Book, Hall of Fame), each with its art, a line and a progress count (defeated, moves,
 found, runs won, done), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
 4 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 

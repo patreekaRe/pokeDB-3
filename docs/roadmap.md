@@ -497,7 +497,8 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    supply; until then it plays `victory`. Then (the user's ask) every won run, at any Level, is saved as a record-book
    page: its deck, relics, items (left and used) and numbers (fights, Alphas, turns, cards played, damage dealt and
    taken, biggest hit, ₽ earned and spent, rests, events, moves forgotten and upgraded). The Collection shows it as two cards,
-   Hall of Fame (Level 5 wins) and Record Book (every win), each a ??? until its first win unlocks it.
+   Record Book (every win) and Hall of Fame (Level 5 wins, the last card), each a ??? until its first win unlocks it.
+   Every win plays the pedestal scene with its stats and deck; only a Level 5 one is the Hall of Fame (song, welcome).
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve

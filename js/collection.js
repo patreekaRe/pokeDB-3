@@ -61,10 +61,10 @@ export function showCollection() {
       `${save.stats.runsWon} of ${save.stats.runsStarted} runs won`, openStats],
     ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
       `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
-    book('fame', 'Hall of Fame', 'Your Trainer Level 5 champions, each with its full record.', 'champion',
-      'Win a run on Trainer Level 5 to unlock it.'),
     book('record', 'Record Book', 'Every run you won: its deck, relics, items and numbers.', 'win',
       'Win a run to unlock it.'),
+    book('fame', 'Hall of Fame', 'Your Trainer Level 5 champions, each with its full record.', 'champion',
+      'Win a run on Trainer Level 5 to unlock it.'),
   ];
   $('coll-grid').replaceChildren(...cards.map(([id, name, art, text, count, open, locked], i) => {
     const card = el('button', `coll-card coll-${id}`);

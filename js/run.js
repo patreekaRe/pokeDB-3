@@ -35,7 +35,7 @@ import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { recordWin, fameNo, hallOfFameScene, preloadHallOfFame } from './halloffame.js';
+import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
 import { DEX_START_MONEY, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
@@ -541,7 +541,7 @@ function enterNode(node) {
 
 async function fight(node) {
   if (node.type === 'boss' && run.biome < BIOMES.length - 1) preloadEvolution(run.starter, run.stage);
-  if (node.type === 'boss' && run.biome === BIOMES.length - 1 && run.level === MAX_LEVEL) preloadHallOfFame(run.starter);
+  if (node.type === 'boss' && run.biome === BIOMES.length - 1) preloadWinScene(run.starter, run.level === MAX_LEVEL);
   const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   dexSeen(node.enemyId);
@@ -1846,7 +1846,7 @@ function endRun(won) {
 
   let winCoins = 0;
   let level5 = [];
-  let fame = null;   // a Level 5 win's Hall of Fame entry, whose scene plays before the result window
+  let record = null;   // a won run's entry, whose win scene plays before the result window
   if (won) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
@@ -1862,13 +1862,12 @@ function endRun(won) {
     });
 
     if (run.level === MAX_LEVEL) level5 = level5Rewards();
-    // every win goes in the Record Book; a Level 5 one also enters the Hall of Fame, with its scene. The first of each
+    // every win goes in the Record Book, with its win scene; a Level 5 one also enters the Hall of Fame. The first of each
     // unlocks its card in the Collection (a ??? until then).
-    const entry = recordWin(run, getSave().shiny.on.includes(run.starter.id));
+    const entry = record = recordWin(run, getSave().shiny.on.includes(run.starter.id));
     if (entry.no === 1) level5.push('📖 Record Book unlocked! Every run you win is kept there, in the Collection.');
     else level5.push(`📖 This run was saved in the Record Book as Win ${String(entry.no).padStart(3, '0')}.`);
     if (fameNo(entry)) {
-      fame = entry;
       if (entry.fame === 1) level5.push('🏆 Hall of Fame unlocked! Your Level 5 champions stand there, in the Collection.');
       level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as ${fameNo(entry)}!`);
     }
@@ -1899,6 +1898,6 @@ function endRun(won) {
   list.replaceChildren(...lines.map(text => el('li', '', text)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
-  if (fame) hallOfFameScene(fame).then(() => openDialog('result-dialog'));
+  if (record) winScene(record).then(() => openDialog('result-dialog'));
   else openDialog('result-dialog');
 }
