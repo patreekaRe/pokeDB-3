@@ -161,6 +161,8 @@ function renderRewards() {
   const img = el('img', 'pixel dex-prize-sprite');
   img.src = spriteUrl(reshiram, 'front', 0);
   img.alt = '';
+  const secret = !save.dex.complete && !save.unlocked.includes(reshiram.id);   // a silhouette and ??? until it's won, like the achievements
+  if (secret) img.style.filter = 'brightness(0) opacity(0.6)';
 
   // one box per goal: what to do in a few words, the prizes as icon rows, and how far along you are
   const goal = (icon, title, how, prizes, n, of, earned, tip) => {
@@ -175,7 +177,7 @@ function renderRewards() {
 
   const jackpot = goal('🏆', 'Complete the Pokédex', `Research all ${all} entries`, [
     coins(DEX_COMPLETE_COINS),
-    prize(img, reshiram.line[0].name, 'New starter'),
+    prize(img, secret ? '???' : reshiram.line[0].name, 'New starter'),
     prize(itemSprite(SCOPE, 'dex-prize-icon'), SCOPE.name, SCOPE.short),
   ], done, all, save.dex.complete, 'Research an entry by beating it 3 times (a boss twice).');
   jackpot.classList.add('dex-jackpot');

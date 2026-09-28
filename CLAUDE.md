@@ -1069,7 +1069,8 @@ There's no bar: the top-left Poké Ball (`#brand-btn`: an 18x18 pixel sprite inl
 the CSS `.pokeball`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Index, Stats, Achievements, Sign in (the cloud save, see Cloud save), Sound, How to play and About (Stats and
-Achievements are windows built fresh from the save by `js/records.js`). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
+Achievements are windows built fresh from the save by `js/records.js`; a locked legendary's achievement shows "???" for
+its name, the user's call). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
 letters in `PALETTE`). The
 **Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the
 Poké Ball menu and the Collection's Moves, Relics and Items cards: every card in `ALL_CARDS`,
@@ -1108,7 +1109,7 @@ complete: a gold mark (`.dex-mark.gold`, a gold tile), `RESEARCH_COINS` once (wi
 shows its type, role, flavour text, weakness, HP and each move's numbers at that biome on Level 0 (`buildEncounter()` + `moveNumbers()`, before types). Every entry
 complete pays `DEX_COMPLETE_COINS` (1500) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
 saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. A fourth tab, **Rewards** (`renderRewards()`, the user's call: easy to find), lists
-the complete-Pokédex jackpot (1500 coins, Reshiram, the Silph Scope), research payouts and each page's perk with progress.
+the complete-Pokédex jackpot (1500 coins, Reshiram, shown as a "???" silhouette until won, the Silph Scope), research payouts and each page's perk with progress.
 **Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button under the map's biome sign
 (`#scope-btn`, `drawMap()` in `js/run.js`) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
 **Scope Upgrade** (`scopeUpgrade`, 2 levels, `needsDex`: greyed out until the Pokédex is complete). Tapping it lights up

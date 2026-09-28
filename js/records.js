@@ -70,7 +70,8 @@ export function openAchievements() {
     img.src = spriteUrl(starter, 'front');
     img.alt = '';
     const text = el('div', 'ach-text');
-    text.append(el('strong', '', got || !starter.secret ? starter.line[0].name : '???'), el('span', '', a.text));
+    const hidden = !got && (starter.legendary || starter.secret);   // a locked legendary stays a mystery (the user's call)
+    text.append(el('strong', '', hidden ? '???' : starter.line[0].name), el('span', '', a.text));
     row.append(img, text, el('span', 'ach-status', got ? '' : '🔒'));
     if (got) row.lastChild.append(el('span', 'pokeball'));
     row.title = got ? `Unlocked ${starter.line[0].name}` : `Locked: ${a.text}`;
