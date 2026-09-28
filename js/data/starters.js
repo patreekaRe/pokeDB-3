@@ -231,7 +231,7 @@ export const STARTERS = [
   },
 
   /* ---------- legendaries earned by the hardest goals (step 9b) ----------
-     A Level 3 win per type (Entei / Celebi / Kyogre, like Moltres / Virizion / Suicune), then a finished Pokédex
+     A Level 3 win per type (Entei / Celebi / Kyogre; Moltres / Virizion / Suicune take Level 2), then a finished Pokédex
      page per biome (Ho-Oh / Lugia / Palkia). Same one-sprite line as above. */
   {
     id: 'entei', type: 'fire', skinOf: 'charmander', legendary: true,

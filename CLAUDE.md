@@ -75,8 +75,8 @@ to `main` (see Conventions), not open a branch or PR.
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a
   `-shiny` suffixed sprite id for a visual payoff on final evolution.
-  Sixteen earned ones: Moltres / Virizion / Suicune (a Level 3 win per type), and since step 9b Entei / Celebi / Kyogre
-  (a Level 3 win per type too, so one win unlocks both; Level 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
+  Sixteen earned ones: Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
+  (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
   ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won with 15 cards or
   fewer), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
   in `gainTide()` in `js/battle.js`) and Keldeo (a win with every Water starter you own, Keldeo aside: `winsBy`).

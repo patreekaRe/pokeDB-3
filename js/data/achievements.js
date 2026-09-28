@@ -52,25 +52,24 @@ export const ACHIEVEMENTS = [
     text: 'Win a run with each Kanto starter',
     test: (s) => ['charmander', 'bulbasaur', 'squirtle'].every(id => (s.winsBy[id] || 0) >= 1),
   },
-  // Legendaries: still the hardest unlock in the game, but Level 5 (the bot's
-  // win rate there is ~10-18%) felt discouraging rather than aspirational.
-  // Level 3 (~35-50%) is still a real skill check.
+  // Legendaries: a Level 2 win per type, then a Level 3 one (the user's call,
+  // 2026-09-28: Level 5 felt out of reach, and one win shouldn't unlock two).
   {
     starter: 'moltres',
-    text: 'Win a run on Trainer Level 3 with a Fire starter',
-    test: (s) => s.maxLevelWinByType.fire >= 3,
+    text: 'Win a run on Trainer Level 2 with a Fire starter',
+    test: (s) => s.maxLevelWinByType.fire >= 2,
   },
   {
     starter: 'virizion',
-    text: 'Win a run on Trainer Level 3 with a Grass starter',
-    test: (s) => s.maxLevelWinByType.grass >= 3,
+    text: 'Win a run on Trainer Level 2 with a Grass starter',
+    test: (s) => s.maxLevelWinByType.grass >= 2,
   },
   {
     starter: 'suicune',
-    text: 'Win a run on Trainer Level 3 with a Water starter',
-    test: (s) => s.maxLevelWinByType.water >= 3,
+    text: 'Win a run on Trainer Level 2 with a Water starter',
+    test: (s) => s.maxLevelWinByType.water >= 2,
   },
-  // Step 9b: a second Level 3 legendary per type (Level 5 until 2026-09-28, the user's call), then a finished Pokédex page per biome.
+  // Step 9b: a Level 3 legendary per type, then a finished Pokédex page per biome.
   {
     starter: 'entei',
     text: 'Win a run on Trainer Level 3 with a Fire starter',
