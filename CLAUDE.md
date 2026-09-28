@@ -295,7 +295,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   top layer over it; the user wanted normal wins to feel satisfying too): the pedestal scene below, then the run's numbers
   as a grid of dark tiles popping in (`statsPanel()`, short labels, from the same `statList()` as the record's page), then
   the deck. A Level 5 win is the Hall of Fame version (gold pedestal, title, its song, "Welcome to the HALL OF FAME!");
-  any other is "Victory!" on a silver pedestal with its own song, `run-win` (`assets/audio/run-win.mp3`, the user supplies it; while it's missing the victory fanfare already playing carries on), saved "as Win NNN". A Level 5 win also throws a **party** (part 3, 2026-09-28; `.party`, never under reduced motion, where it
+  any other is "Victory!" on a silver pedestal with its own song, `run-win` (`assets/audio/run-win.mp3`, the user's, 112 s; if it's ever missing the victory fanfare already playing carries on), saved "as Win NNN". A Level 5 win also throws a **party** (part 3, 2026-09-28; `.party`, never under reduced motion, where it
   has no sound either): `celebrate()` in `js/celebrate.js` draws on `#hof-fx`, one low-res canvas behind the layout (3 CSS px a
   pixel on phones, 4 wider; ~30 fps; `stop()` when the scene closes), all in whole pixels, fading by stepping down a palette,
   never by alpha: two spotlights sweeping from the bottom corners (filled row by row), rockets on ember trails bursting in the
@@ -310,7 +310,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   steps) and cries, its plate pops up (No.NNN, name, type chip, date, Lv.5), "Welcome to the HALL OF FAME!", then the
   final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
   text box. Its text box is the evolution scene's, `sceneSay()` exported from `js/evolution.js`. Music: `hall-of-fame`
-  (`assets/audio/hall-of-fame.mp3`, the user supplies it), preloaded before a Level 5 final boss; while the file is missing
+  (`assets/audio/hall-of-fame.mp3`, the user's, 52 s), preloaded before a Level 5 final boss; while the file is missing
   `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection has two
   cards for it (the user's call: Level 5 champions and normal runs both worth seeing), each a grey "???" with a 🔒 until its
   first entry (`book()` in `js/collection.js`; a tap says how to unlock it, `tipAt()`), and the result window says "Record
