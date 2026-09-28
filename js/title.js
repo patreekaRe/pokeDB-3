@@ -234,6 +234,9 @@ function renderRun(run) {
   $('title-run').hidden = !run;
   if (!run) return;
   $('title-run-name').textContent = run.name;
+  const floor = $('title-run-floor');
+  floor.replaceChildren(el('small', '', 'F'), String(run.floor));
+  floor.setAttribute('aria-label', `Floor ${run.floor}`);
   const sign = $('title-run-biome');
   sign.textContent = run.place;
   sign.dataset.biome = run.biome;

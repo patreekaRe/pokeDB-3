@@ -208,6 +208,13 @@
 @keyframes signSway { 0%, 100% { rotate: -1.5deg; } 50% { rotate: 1.5deg; } }
 @keyframes signMist { to { background-position: 250% 0; } }
 @keyframes signEmber { 50% { box-shadow: inset 0 0 0 2px #ffb040, 0 0 10px 2px rgba(248, 120, 40, 0.55), 4px 4px 0 rgba(0, 0, 0, 0.45); } }
+/* the floor you stand on, where the games' nameplate has its level: a little pixel staircase, then a small F and the number */
+.title-floor { display: inline-flex; align-items: flex-end; gap: 1px; flex: none; font-size: 0.8rem; line-height: 1; color: var(--win-ink); }
+.title-floor small { font-size: 0.55rem; }
+.title-floor::before {
+  content: ''; width: 10px; height: 10px; margin-right: 4px; align-self: center; background: currentColor; opacity: 0.55;
+  clip-path: polygon(0 100%, 0 70%, 30% 70%, 30% 40%, 60% 40%, 60% 10%, 100% 10%, 100% 100%);
+}
 .title-abandon { margin-top: -2px; }
 .title-abandon .pxb-i { font-size: 0.6rem; }
 .title-screen:not(.menu) .title-run { display: none; }

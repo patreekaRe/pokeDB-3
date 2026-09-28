@@ -54,8 +54,10 @@ function savedRunCard() {
   const saved = loadSavedRun();
   if (!saved) return null;
   const { starter, stage, biome, hp, maxHp } = saved;
+  const here = saved.current && saved.map.byId[saved.current];
   return {
     saved, hp, maxHp,
+    floor: here ? here.floor + 1 : 0,   // the biome's floor you stand on; 0 on the road in, like StS's Neow floor
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
     place: BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
