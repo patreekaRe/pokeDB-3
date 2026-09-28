@@ -16,12 +16,14 @@ const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CRY_WAIT_MAX = 1500;   // a long cry mustn't hold the scene up
 const STILL_SONG_MS = 5500;  // under reduced motion the song plays about as long as the flashing would
 
-/** Start downloading the song, the chime and both cries, so the scene doesn't wait on them. */
+/** Start downloading the song, the chime, both cries and the new form's sprites (a legendary's aura GIFs run to ~650 KB),
+    so neither the scene nor the next battle waits on them. Called as the boss fight starts. */
 export function preloadEvolution(starter, stage) {
   if (!starter.line[stage + 1]) return;
   preloadMusic('evolution');
   preloadSounds('evolved');
   preloadCries(starter.line[stage].id, starter.line[stage + 1].id);
+  for (const kind of ['front', 'back']) new Image().src = spriteUrl(starter, kind, stage + 1);
 }
 
 /**
