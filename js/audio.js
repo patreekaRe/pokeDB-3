@@ -39,6 +39,7 @@ const TRACKS = {
   map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
+  evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
 };
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
@@ -74,6 +75,7 @@ const SOUNDS = {
   cancel:       { url: 'assets/audio/sfx/bag.mp3' },          // Back / Skip / Leave, closing a window, backing out of a pick: the Bag's file (the user's call)
   bag:          { url: 'assets/audio/sfx/bag.mp3' },          // the Bag is opened
   'run-away':   { url: 'assets/audio/sfx/run-away.mp3' },     // you get away: the Poké Doll, or Team Rocket's "Run for it"
+  evolved:      { url: 'assets/audio/sfx/evolved.mp3' },      // "Congratulations! Your X evolved into Y!" (evolution.js)
   'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
@@ -126,7 +128,7 @@ let lastCue = -1;          // ctx time the latest effect started
 // the dimmed area around a blown-up card, anything with a note in its title) plays the confirm sound, unless that tap already
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
-const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, .card-focus, .card-zoom, [title], [data-tip]';
+const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, #evolve-scene.waiting, .card-focus, .card-zoom, [title], [data-tip]';
 // ...except these back out (Back / Skip / Leave, No, a window's Close or ✕, a zoomed card), so they blip `cancel`
 const CANCELS = '#reward-skip, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {

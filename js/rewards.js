@@ -225,7 +225,7 @@ function closeFocus() {
 const TYPE_MS = 18;
 let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
-export function sayLines(lines, boxId = 'reward-log') {
+export function sayLines(lines, boxId = 'reward-log', onDone) {
   clearInterval(say.typing);
   say = { lines, at: 0, typing: 0, box: boxId };
   const box = $(boxId);
@@ -234,7 +234,7 @@ export function sayLines(lines, boxId = 'reward-log') {
     if (say.box !== boxId) return;
     if (say.typing) return finishLine();
     if (say.at < say.lines.length - 1) showLine(say.at + 1);
-    else box.hidden = true;   // like the games, a tap on the last line closes the box
+    else { box.hidden = true; onDone?.(); }   // like the games, a tap on the last line closes the box
   };
   if (lines.length) showLine(0);
 }

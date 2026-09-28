@@ -34,6 +34,7 @@ import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDial
 import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
+import { evolutionScene, preloadEvolution } from './evolution.js';
 import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
 import { DEX_START_MONEY, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
@@ -74,10 +75,8 @@ export function initRun({ onMenu, onNewRun }) {
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
 
-  // These pop-ups move the game along, so Escape must not just close them.
-  for (const id of ['result-dialog', 'evolve-dialog']) {
-    $(id).addEventListener('cancel', (e) => e.preventDefault());
-  }
+  // This pop-up moves the game along, so Escape must not just close it.
+  $('result-dialog').addEventListener('cancel', (e) => e.preventDefault());
 }
 
 /** Throw away the current run (used when you go back to the menu). */
@@ -492,6 +491,7 @@ function enterNode(node) {
    ============================================================ */
 
 async function fight(node) {
+  if (node.type === 'boss' && run.biome < BIOMES.length - 1) preloadEvolution(run.starter, run.stage);
   const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   dexSeen(node.enemyId);
@@ -1727,7 +1727,7 @@ function martRoom() {
 
 /* ---------- evolution ---------- */
 
-function evolve(next) {
+async function evolve(next) {
   const from = run.stage;
   run.stage += 1;
   run.maxHp += HP_PER_STAGE;
@@ -1735,18 +1735,15 @@ function evolve(next) {
   run.hp = Math.min(run.maxHp, Math.round(run.hp + (run.maxHp - run.hp) * run.mods.evolveHeal));
   const healed = run.mods.evolveHeal >= 1 ? 'fully healed' : 'healed by half of its missing HP';
 
-  const fromName = stageName(run.starter, from);
-  const toName = stageName(run.starter, run.stage);
-  $('evolve-from').src = spriteUrl(run.starter, 'front', from);
-  $('evolve-from').dataset.stage = String(from);
-  $('evolve-to').src = spriteUrl(run.starter, 'front', run.stage);
-  $('evolve-to').dataset.stage = String(run.stage);
-  $('evolve-title').textContent = `${fromName} is evolving!`;
-  $('evolve-text').textContent =
-    `${fromName} evolved into ${toName}! Max HP +${HP_PER_STAGE} and ${healed}. ` +
-    `All your moves are now ${STAGE_POWER * 100 * run.stage}% stronger.`;
-  $('evolve-continue').onclick = () => { closeDialog('evolve-dialog'); next(); };
-  openDialog('evolve-dialog');
+  const r = run;
+  await sleep(1300);   // let the victory fanfare play a moment first, like the games
+  if (run !== r) return;   // left for the menu meanwhile
+  const fadeOut = await evolutionScene(r.starter, from,
+    [`Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
+  if (run !== r) return fadeOut();   // left for the menu meanwhile
+  playMusic('victory');
+  next();
+  fadeOut();
 }
 
 /* ============================================================

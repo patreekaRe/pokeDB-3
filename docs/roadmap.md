@@ -449,13 +449,7 @@ Scope Upgrade), a volume slider, a quieter low-HP beep, and Main menu keeping th
 
 Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
 
-1. **Evolution overhaul.** Run in: CLOUD (attach pokeDB-3).
-   > Read CLAUDE.md and docs/roadmap.md ("Evolution overhaul" under Anytime). Build the games' evolve animation for the
-   > evolve pop-up: the Pokémon flashes white and its silhouette switches between the old and new forms, faster and faster,
-   > then the new form colours in with a flash, and "Congratulations! X evolved into Y!" in the text box. Cosmetic only (no
-   > stat or deck changes). The user supplies the evolution song as an MP3 (ask for it; if it isn't there yet, build it silent
-   > with a `SOUNDS`/track hook ready). Respect reduced motion. Test at phone and PC widths with Playwright, update CLAUDE.md
-   > and the roadmap, push to main.
+1. ~~**Evolution overhaul.**~~ Done 2026-09-28 (see the Anytime entry below).
 2. **Cries.** Run in: CLOUD (attach pokeDB-3).
    > Read CLAUDE.md (Music: Cries). Ask the user what they want changed about the cries (loudness, missing ones, wrong ones,
    > new places they play) before changing anything. PokeAPI's cries (`cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3 at
@@ -469,9 +463,17 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    > "copy / paste save code" buttons with no accounts.
 
 Anytime, as a break from number work:
-- **Evolution overhaul**: cosmetic only (the user's call, no stat or deck changes): the games'
-  evolve animation (flashing silhouette switching between the two forms) plus the evolution
-  song, which the user supplies as an MP3.
+- ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve
+  pop-up is gone; after a boss the victory fanfare plays a moment, the screen flashes white twice and holds white, the
+  Pokémon fades in alone and cries, "What? X is evolving!" waits for a tap, then the evolution song plays while it flashes
+  white and its dark silhouette switches between the two forms faster and faster; a flash colours the new form in with
+  its cry as the song cuts, the `evolved` chime plays with "Congratulations! Your X evolved into Y!" (plus the Max HP /
+  heal / move-power line the pop-up used to give), and a tap fades the white out onto the Signature move reward.
+  `js/evolution.js`; CLAUDE.md's Battle screen layout has the details. Legendaries (same sprite, shiny final stage) and
+  bought shinies work; reduced motion keeps the cries, song and chime but drops the flashing and wipes. Checked headless
+  at 375, 390 and 1280px wide.
+  **For the user:** drop the two MP3s in: `assets/audio/evolution.mp3` (the song; ~128 kbps like the other tracks) and
+  `assets/audio/sfx/evolved.mp3` (the chime). Until then those two parts are silent (one 404 each in the console).
 - ~~**The last 4 event scenes**~~ (done 2026-09-27): Move Tutor (a dojo: chalkboard and desk for ₽, a sandbag for HP),
   Move Deleter (a candle-lit study: a lectern's open book, a hypnotist's pendulum, a dozing Slowpoke), Day Care (the
   couple's house front, a picket fence, an Egg in a straw nest, Miltank and Marill) and Fan Club (portraits, pennants, a

@@ -71,7 +71,7 @@ export function closeDialog(id) {
 
 /* A tap on the dimmed backdrop, outside a window, closes it like Escape (the user's call: every window closes that way).
    A window that moves the game along has a button that stands in for closing it: No, the result's Main menu, Continue. */
-const OUTSIDE_TAP = { 'confirm-dialog': 'confirm-no', 'result-dialog': 'result-menu', 'evolve-dialog': 'evolve-continue' };
+const OUTSIDE_TAP = { 'confirm-dialog': 'confirm-no', 'result-dialog': 'result-menu' };
 let downOn = null;   // where the press began, so a drag that ends on the backdrop (selecting text, a swipe) isn't a tap outside
 document.addEventListener('pointerdown', (e) => { downOn = e.target; }, true);
 document.addEventListener('click', (e) => {

@@ -57,8 +57,8 @@ to `main` (see Conventions), not open a branch or PR.
   floats above whatever screen is showing without blocking or hiding it.
   That's intentional: don't "fix" it back to `showModal()`.
   **Every window closes on a tap outside it** (the user's call, 2026-09-27): `js/ui.js` closes any modal dialog when
-  a press starts and ends on its backdrop (with the `cancel` sound); the result, evolve and yes/no windows click
-  their stand-in button instead (`OUTSIDE_TAP`: Main menu, Continue, No). The Game Corner, having no backdrop,
+  a press starts and ends on its backdrop (with the `cancel` sound); the result and yes/no windows click
+  their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
   it); the starter sheet goes away on a tap on the page that isn't a button. The Bag, the Poké Ball menu, zooms and
   focus layers already did.
@@ -726,9 +726,24 @@ Tapping that big card plays it, tapping elsewhere or Escape cancels
 (`elementsFromPoint`, by `data-uid`). Items still blow up at the bottom middle. The pick clears
 itself whenever the battle is busy or the card leaves the hand.
 Your Pokémon grows as it evolves: its sprites (map card, map
-trainer, evolve pop-up) carry `data-stage`, and CSS scales stage 0 to 78% and
-stage 1 to 90% with the `scale` property (from the feet), so the attack and
-evolve animations' transforms and the layout are untouched.
+trainer) carry `data-stage`, and CSS scales stage 0 to 78% and
+stage 1 to 90% with the `scale` property (from the feet), so the attack
+animations' transforms and the layout are untouched.
+**Evolving** (roadmap's Evolution overhaul, 2026-09-28, cosmetic only) is Gold/Silver's scene, `evolutionScene()` in
+`js/evolution.js`, awaited by `evolve()` in `js/run.js` (the first boss reward step; the stage, HP and heal are already
+applied). ~1.3 s into the victory fanfare the screen flashes white twice like `battleWipe()` and holds white
+(`#evolve-scene`, a fixed layer at z-index 950 over everything; the music fades out). The Pokémon fades in alone, stood on
+its feet at 58% of the height (both forms share one scale fitted to the bigger resting pose, `SPRITE_FIT` for the feet,
+legendaries' 78/90% stage steps folded in), and cries; its text box (`#evolve-log`, `sayLines()` with an `onDone`, taps
+anywhere on the white or Enter advance) says "What? X is evolving!". The tap starts the `evolution` track
+(`assets/audio/evolution.mp3`); `morph()` flashes it white three times, goes to a dark silhouette (`.dark`, `.white` are
+CSS filters) and switches old/new forms, 560 ms down to 50 ms apart, then white flashes between the fastest switches,
+ending on the new form under a full-screen flash (`#evolve-flash`). The song is cut, the new form cries, `evolved`
+(`assets/audio/sfx/evolved.mp3`) plays with "Congratulations! Your X evolved into Y!" and the stats line. The last tap
+starts `victory` again, runs the next reward step (Signature move) under the white, then fades the white out onto it.
+Legendaries work unchanged (same sprite, stage 2 the `-shiny` one, cries strip `-shiny`), and so do bought shinies
+(`spriteUrl()`). Under reduced motion the cries, song and chime stay; the white fades in, and the song plays ~5.5 s over
+the still first form before the swap, with no flashing. `fight()` preloads the song, chime and both cries before a boss.
 In battle, both sprites are sized from their GIF files instead (`sizeSprite()` in
 `js/battle.js` sets `--size`): the Showdown sprites share one pixel scale, so
 Teddiursa (36px) is drawn small and Snorlax big rather than all filling one box. The
@@ -1099,7 +1114,7 @@ named after its id.
 `js/ui.js`), `map1`–`map3` on each biome's map (`showMap()` in `js/run.js`),
 `wild` / `elite` / `boss` chosen by `encounter.kind` in
 `startBattle()`, `victory` from the moment an enemy faints (`finish()` in
-`js/battle.js`) through the reward picks, and `center` at rest sites
+`js/battle.js`) through the reward picks (after a boss, paused for the evolution scene's `evolution` track), and `center` at rest sites
 (`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
@@ -1137,8 +1152,8 @@ so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, n
 backing out, `bag.mp3` too, so every window closes with the Bag's sound: `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕, a zoomed card; also Escape on a modal
 window or the Game Corner, the Game Corner's top-bar toggle closing it, and backing out of a picked card or reward; falls back to `confirm`), `stick` (synthesized, `stickTick()`: the Game Corner's joystick moves) and `run-away` (every way of running: the Poké Doll,
 in place of `item`, and Team Rocket's "Run for it"; there's no running-away relic) and `no-pp` (tapping a greyed-out card that costs more PP than you have, with the PP box's shake, in `playCard()`). The user picked those file reuses. Synths
-(`blockClink()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution pop-up has no sound on
-purpose: the user has a bigger plan for evolving. Battle sounds preload in
+(`blockClink()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution scene has its own track
+(`evolution`) and chime (`evolved`, see Evolving above). Battle sounds preload in
 `startBattle()` (`thunder` only for bosses), map ones in `showMap()`, `confirm` / `cancel` in `unlock()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat
 of the same sound within `SFX_MIN_GAP` (70 ms) and cuts a still-ringing

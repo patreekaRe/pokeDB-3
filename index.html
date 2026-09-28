@@ -498,18 +498,15 @@
     </div>
   </dialog>
 
-  <dialog id="evolve-dialog" class="dialog result">
-    <h2 id="evolve-title"></h2>
-    <div class="evolve-art">
+  <!-- The evolution scene (js/evolution.js): a white screen over everything, the Pokémon alone in the middle -->
+  <div id="evolve-scene" class="evo-scene" hidden>
+    <div class="evo-mon" id="evolve-mon">
       <img id="evolve-from" class="pixel" alt="">
-      <span class="evo-arrow">→</span>
-      <img id="evolve-to" class="pixel evolve-new" alt="">
+      <img id="evolve-to" class="pixel" alt="">
     </div>
-    <p id="evolve-text"></p>
-    <div class="dialog-actions">
-      <button class="btn primary" id="evolve-continue">Continue</button>
-    </div>
-  </dialog>
+    <div class="evo-flash" id="evolve-flash"></div>
+    <div class="evo-bottom"><div class="reward-log" id="evolve-log" hidden><span id="evolve-log-text" aria-hidden="true"></span><span class="sr-only" id="evolve-log-live" aria-live="polite"></span></div></div>
+  </div>
 
   <dialog id="deck-dialog" class="dialog wide-dialog">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
