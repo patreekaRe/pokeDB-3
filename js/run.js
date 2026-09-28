@@ -126,7 +126,24 @@ function checkpoint() {
     tutorLeft: run.tutorLeft,
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
+    credited: run.credited,
   });
+}
+
+/**
+ * A won fight's Pokédex credit (defeats, research and its PokéCoins) is saved the moment it's won, but the run only
+ * checkpoints on the map before the room, so a refresh replayed the fight and credited it again (the user farmed Miltank
+ * that way). The rooms already credited this run are written into the saved run straight away; a replay of one still
+ * plays and pays its run rewards once, but the Pokédex doesn't count it twice. False if this room was already credited.
+ */
+function creditRoom(node) {
+  const key = `${run.biome}:${node.id}`;
+  run.credited ??= [];
+  if (run.credited.includes(key)) return false;
+  run.credited.push(key);
+  const saved = loadRunData();
+  if (saved) saveRunData({ ...saved, credited: run.credited });
+  return true;
 }
 
 function restoreRun(saved) {
@@ -510,7 +527,7 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
-  const { lines: dexNews, complete: dexComplete } = dexDefeated(node.enemyId);
+  const { lines: dexNews, complete: dexComplete } = creditRoom(node) ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
