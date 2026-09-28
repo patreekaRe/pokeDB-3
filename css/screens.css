@@ -599,9 +599,13 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   60% { opacity: 1; }
   100% { opacity: 0; transform: rotate(var(--angle)) translateY(-90px) scale(1.1); }
 }
+/* white as it grows out of the ball, colour back by the time it settles: every step keeps the sprite's drop shadow, or the
+   filters can't blend and it held a bright glow, then snapped (the user saw Charmander glow after coming out) */
 @keyframes released {
-  from { transform: scale(0.15); filter: brightness(8); }
-  55%  { transform: scale(1.12); filter: brightness(2.5); }
+  from { transform: scale(0.15); filter: brightness(8) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+  55%  { transform: scale(1.12); filter: brightness(2.5) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+  75%  { filter: brightness(1) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+  to   { transform: scale(1); filter: brightness(1) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 }
 .intro-ball {
   position: absolute;
