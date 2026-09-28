@@ -643,6 +643,11 @@ last act only a special run reaches.
   then biome 4 is a real fight, strong but still a bit challenging.
 - **Biome 4 has one set difficulty.** Whatever Trainer Level the run is on, arriving in biome 4 always plays the same
   numbers, so the ending is the same test for everyone.
+- **Mewtwo has no Trainer Level** (the user's call, 2026-09-28). Its Prepare step (`prepare()` in `js/select.js`) hides the
+  ◀ n ▶ Level picker, its rule and "All rules", and the run plays one fixed setting from start to end: biomes 1-3 at a set
+  of numbers tuned for Mewtwo's strength (part B picks them; `modsFor()` isn't read), biome 4 at its own. A Mewtwo win
+  counts for nothing Level-based (no `maxLevel` unlock, no `level5WinsBy` star, no Level 5 jackpot or shiny); its own
+  rewards are part D's.
 - **Its boss is the final boss: "the last energy".** My suggestion was Eternatus (a creature of raw energy, Sword/Shield's
   Darkest Day, Eternamax as a giant last form); Arceus, Deoxys or Mew (a twist on Mewtwo's origin) are the others. The
   user picks.
@@ -651,8 +656,7 @@ last act only a special run reaches.
 1. **The final boss**: Eternatus, Arceus, Deoxys or Mew (above).
 2. **Biomes 1-3 for Mewtwo**: the full ten floors each, or a shorter "sprint" (fewer floors, or one place per biome)?
    Ten easy floors three times may drag. If full length, make the speed itself fun (quick fights, big numbers).
-3. **Trainer Levels for biomes 1-3**: does Mewtwo's run pick a Level like any other (it only changes biomes 1-3, biome 4
-   stays fixed), or is it always one setting? Either way a Mewtwo win shouldn't count towards other starters' Level unlocks.
+3. ~~Trainer Levels for biomes 1-3~~ settled, see above.
 4. **Biome 4's name, place and look**: e.g. a Cerulean Cave / Unknown Dungeon-style crystal cavern, a Darkest Day sky
    (red clouds, Dynamax energy), or a space-like void. It needs three places + an arena like the others (`stages`),
    `BIOME_ART` looks for every time of day (or a "no clock" look, since it may be underground or timeless), its own
