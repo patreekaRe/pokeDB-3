@@ -129,15 +129,37 @@
   -webkit-text-stroke: 0;
   rotate: 8deg;
   cursor: pointer;
-  animation: versionIn 0.4s steps(4) both 1.2s;
+  overflow: hidden;
+  animation: versionIn 0.4s steps(4) both 1.2s, versionNudge 4.5s steps(1) infinite 2.4s;
 }
+/* until this version's notes are opened: a sticker's wiggle and a glint of light every few seconds */
+.title-version::after {
+  content: '';
+  position: absolute;
+  inset: -4px auto -4px 0;
+  width: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  rotate: 20deg;
+  translate: -20px 0;
+  animation: versionShine 4.5s steps(8) infinite 2.4s;
+  pointer-events: none;
+}
+.title-version.seen { animation: versionIn 0.4s steps(4) both 1.2s; }
+.title-version.seen::after { display: none; }
+@keyframes versionNudge {
+  0%, 12%, 100% { rotate: 8deg; translate: 0 0; }
+  3% { rotate: 2deg; translate: 0 -3px; }
+  6% { rotate: 14deg; translate: 0 -3px; }
+  9% { rotate: 5deg; translate: 0 -1px; }
+}
+@keyframes versionShine { 0% { translate: -20px 0; } 16%, 100% { translate: 80px 0; } }
 .title-version:hover, .title-version:focus-visible { background: var(--gold); outline: none; }
 .title-version:active { translate: 0 2px; box-shadow: 0 1px 0 #0d1a44; }
 .title-screen:not(.menu) .title-version { display: none; }
 @keyframes versionIn { from { opacity: 0; scale: 0; } }
 @media (min-width: 900px) { .title-version { font-size: 14px; padding: 6px 9px 5px; } }
 @media (max-width: 600px) { .title-version { font-size: 9px; right: -6px; top: -10px; padding: 4px 5px 3px; } }
-@media (prefers-reduced-motion: reduce) { .title-version { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .title-version { animation: none; } .title-version::after { display: none; } }
 .title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
 .title-big { transition: font-size 0.4s ease; }

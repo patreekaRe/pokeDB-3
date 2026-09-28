@@ -8,10 +8,19 @@ import { PATCHES, IN_THE_GAME } from './data/patchnotes.js';
 import { $, el, openDialog } from './ui.js';
 
 const [latest] = PATCHES;
+const SEEN_KEY = 'pokedb.patchSeen';   // a per-device nicety (the tag stops beckoning), so not in the save or the cloud
+
+function markSeen() {
+  try { localStorage.setItem(SEEN_KEY, latest.version); } catch {}
+  $('title-version').classList.add('seen');
+}
 
 export function initPatchNotes() {
   $('title-version').textContent = `v${latest.version}`;
   $('title-version').addEventListener('click', openPatchNotes);
+  let seen = null;
+  try { seen = localStorage.getItem(SEEN_KEY); } catch {}
+  $('title-version').classList.toggle('seen', seen === latest.version);
 }
 
 const label = (text) => el('h3', 'records-label', text);
@@ -46,5 +55,6 @@ export function openPatchNotes() {
     ...(PATCHES.length > 1 ? [label('Earlier patches'), ...PATCHES.slice(1).map(patch)] : []),
   );
   openDialog('patch-dialog');
+  markSeen();
   $('patch-body').scrollTop = 0;
 }
