@@ -99,7 +99,7 @@
      power      true = playing it switches on its power effects for the
                 rest of the fight, and the card leaves the fight.
      retain     true = it stays in your hand when your turn ends.
-     growOnRetain  { damage: N } / { heal: N }: each time it stays in your hand at the end of your turn, it
+     growOnRetain  { damage: N } / { block: N } / { heal: N }: each time it stays in your hand at the end of your turn, it
                 gets that much stronger for the rest of the fight (StS's Windmill Strike)
      ethereal   true = exhausted if it's still in your hand when your turn ends.
      innate     true = always in your first hand of a fight.
@@ -196,7 +196,7 @@ const FIRE_CARDS = [
   { id: 'inferno',         name: 'Inferno',         type: 'fire', cost: 1, art: '🌪️', sprite: 'houndoominite', effects: { damage: 7, bonusPerBurn: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 9, bonusPerBurn: 3 } } },   // Bane, per stack
   { id: 'sunny-day',       name: 'Sunny Day',       type: 'fire', cost: 1, art: '☀️', sprite: 'sun-stone', effects: { burnEachTurn: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { burnEachTurn: 3 } } },   // Noxious Fumes
   { id: 'heat-wave',       name: 'Heat Wave',       type: 'fire', cost: 2, art: '♨️', sprite: 'blazikenite', effects: { damage: 5, hits: 3, burn: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 6, burn: 3 } } },   // Riddle with Holes
-  { id: 'burning-bulwark', name: 'Burning Bulwark', type: 'fire', cost: 1, art: '🛡️', sprite: 'rusted-shield', effects: { block: 11, burn: 3 }, rarity: 'uncommon', upgrade: { effects: { block: 14, burn: 4 } } },   // Flame Barrier
+  { id: 'burning-bulwark', name: 'Burning Bulwark', type: 'fire', cost: 1, art: '🛡️', sprite: 'rusted-shield', effects: { block: 10, ifEnemyAttacks: { burn: 5 } }, rarity: 'uncommon', upgrade: { effects: { block: 13, ifEnemyAttacks: { burn: 7 } } } },   // Flame Barrier: it burns the attacker
   { id: 'fan-the-flames',  name: 'Fan the Flames',  type: 'fire', cost: 1, art: '🌬️', sprite: 'fire-memory', effects: { burnMult: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Catalyst
   { id: 'ash-cloud',       name: 'Ash Cloud',       type: 'fire', cost: 2, art: '💨', sprite: 'soot-sack', effects: { burn: 5, weaken: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { burn: 7, weaken: 3 } } },   // Crippling Cloud
   { id: 'heat-haze',       name: 'Heat Haze',       type: 'fire', cost: 1, art: '♨️', sprite: 'bright-powder', effects: { block: 7, ifBurned: { block: 5 } }, rarity: 'uncommon', upgrade: { effects: { block: 9, ifBurned: { block: 6 } } } },   // Dodge and Roll
@@ -404,8 +404,8 @@ const WATER_CARDS = [
 
 const FIRE_EVO_MID = [
   { id: 'flame-charge', name: 'Flame Charge', type: 'fire', cost: 1, art: '⚡', sprite: 'power-anklet', effects: { damage: 10, nextEnergy: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 13 } } },   // Kindling
-  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', sprite: 'razor-fang', effects: { damage: 8, burn: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11, burn: 4 } } },   // Burn
-  { id: 'flame-wheel',  name: 'Flame Wheel',  type: 'fire', cost: 2, art: '🔥', sprite: 'tr-fire', effects: { selfDamage: 2, damage: 20 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26 } } },   // Reckless
+  { id: 'fire-fang',    name: 'Fire Fang',    type: 'fire', cost: 1, art: '🦷', sprite: 'razor-fang', effects: { damage: 8, burn: 3, ifEnemyAttacks: { weaken: 2 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11, burn: 4, ifEnemyAttacks: { weaken: 2 } } } },   // Burn: a fang that makes it flinch
+  { id: 'flame-wheel',  name: 'Flame Wheel',  type: 'fire', cost: 2, art: '🔥', sprite: 'tr-fire', effects: { selfDamage: 2, damage: 7, hits: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9 } } },   // Reckless: Sword Boomerang with a price
   { id: 'incinerate',   name: 'Incinerate',   type: 'fire', cost: 2, art: '🌪️', sprite: 'incinium-z', effects: { damage: 14, exhaustPick: 1, draw: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18 } } },   // Kindling
 ];
 const FIRE_EVO_HIGH = [
@@ -429,10 +429,10 @@ const GRASS_EVO_HIGH = [
 ];
 
 const WATER_EVO_MID = [
-  { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', sprite: 'aqua-suit', effects: { damage: 8, draw: 1, discard: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11 } } },   // Flow
-  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', sprite: 'squirt-bottle', effects: { damage: 6, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9, weaken: 3 } } },
-  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', sprite: 'shoal-salt', effects: { damage: 8, perTide: 4 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 10, perTide: 5 } } },   // Tsunami
-  { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', sprite: 'utility-umbrella', effects: { block: 10, heal: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 13, heal: 3 } } },   // Shell
+  { id: 'aqua-jet',    name: 'Aqua Jet',    type: 'water', cost: 1, art: '💨', sprite: 'aqua-suit', effects: { damage: 7, ifDiscarded: { bonus: 6 }, draw: 2, discard: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 10, ifDiscarded: { bonus: 8 } } } },   // Flow: Finisher-lite
+  { id: 'bubble-beam', name: 'Bubble Beam', type: 'water', cost: 1, art: '🫧', sprite: 'squirt-bottle', effects: { damage: 6, weaken: 2, tide: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9, weaken: 3, tide: 3 } } },   // Tsunami
+  { id: 'brine',       name: 'Brine',       type: 'water', cost: 2, art: '🌊', sprite: 'shoal-salt', effects: { damage: 8, perTide: 4, blockPerTide: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 10, perTide: 5, blockPerTide: 3 } } },   // Tsunami: the cash-in that shields too
+  { id: 'rain-shield', name: 'Rain Shield', type: 'water', cost: 1, art: '🌧️', sprite: 'utility-umbrella', effects: { block: 8, heal: 2 }, retain: true, growOnRetain: { block: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 11, heal: 3 } } },   // Shell: held, it grows
 ];
 const WATER_EVO_HIGH = [
   { id: 'scald',        name: 'Scald',        type: 'water', cost: 2, art: '♨️', sprite: 'douse-drive', effects: { damage: 20, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, weaken: 3 } } },
@@ -631,7 +631,7 @@ function sentences(e) {
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
-  if (e.blockPerTide) parts.push(`Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
+  if (e.blockPerTide) parts.push(e.perTide ? `Gain ${e.blockPerTide} block per Tide spent.` : `Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
   if (e.blur)         parts.push('Your block doesn\'t wear off at the start of your next turn.');
@@ -701,7 +701,7 @@ export function describe(card, stage = 0) {
   if (card.onDiscard) parts.push(`When discarded: ${sentences(card.onDiscard).join(' ')}`);
   if (card.growOnRetain) {
     const g = card.growOnRetain;
-    parts.push(`Grows ${[g.damage && `+${g.damage} damage`, g.heal && `+${g.heal} heal`].filter(Boolean).join(' and ')} each turn it stays.`);
+    parts.push(`Grows ${[g.damage && `+${g.damage} damage`, g.block && `+${g.block} block`, g.heal && `+${g.heal} heal`].filter(Boolean).join(' and ')} each turn it stays.`);
   }
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');

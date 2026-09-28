@@ -638,7 +638,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     if (b.attacks % 3 === 0 && hasRelic('fist-plate')) gainBlock(4);
     if (e.healDealt && healPlayer(through)) playSound('heal-hp');
     if (through > 0 && b.powers.attackHeal && healPlayer(b.powers.attackHeal)) playSound('heal-hp');
-    if (e.perTide) spendTide();
+    if (e.perTide) e.tideSpent = spendTide();   // Brine: its blockPerTide counts the same Tide
     if (e.feed && b.enemy.hp <= 0) {
       b.maxHp += e.feed;
       b.hp += e.feed;
@@ -700,7 +700,7 @@ function applyEffects(e) {
   if (e.sap)        applyDebuff('sap', e.sap);
   if (e.block)      gainBlock(e.block + (hasRelic('damp-rock') ? 2 : 0));
   if (e.blockMult && b.block) gainBlock(b.block * (e.blockMult - 1));
-  if (e.blockPerTide) { const spent = spendTide(); if (spent) gainBlock(spent * e.blockPerTide + (hasRelic('damp-rock') ? 2 : 0)); }
+  if (e.blockPerTide) { const spent = e.tideSpent ?? spendTide(); if (spent) gainBlock(spent * e.blockPerTide + (hasRelic('damp-rock') ? 2 : 0)); }
   if (e.blockPerCard) gainBlock(e.blockPerCard * b.hand.length + (hasRelic('damp-rock') ? 2 : 0));
   if (e.blockNext)  { b.blockNext += e.blockNext; pop('player-zone', `🛡️ +${e.blockNext} next turn`, 'block', 150); }
   if (e.blur)       { b.blur = Math.max(b.blur, e.blur); pop('player-zone', '🛡️ Block stays', 'block', 150); }

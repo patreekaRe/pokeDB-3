@@ -123,7 +123,7 @@ Tokens: **Cinder** (0: deal 4, Exhaust; Shiv). Status it makes itself: Paralysis
 | ★Will-O-Wisp | C | 1 | Burn 4, Weak 2 | Burn | Deadly Poison |
 | ★Mystical Fire | C | 1 | Deal 6, Weak 1 | — | Sucker Punch |
 | ★Fire Punch | C | 1 | Deal 10, draw 1 | — | Pommel Strike |
-| ★Flame Body | C | 1 | Block 8, Burn 2 | Burn | Iron Wave |
+| ★Flame Body | C | 1 | Block 10, Burn 2 | Burn | Iron Wave |
 | ★Fire Spin | C | 1 | Deal 6, Burn 3 | Burn | Poisoned Stab |
 | Flame Burst | C | 2 | Burn 3, three times | Burn | Bouncing Flask |
 | Scorching Sands | C | 1 | Deal 8; if the enemy is Burned, Vulnerable 1 | Burn | Bane-lite |
@@ -140,7 +140,7 @@ Tokens: **Cinder** (0: deal 4, Exhaust; Shiv). Status it makes itself: Paralysis
 | ★Inferno | U | 1 | Deal 7, +2 per Burn | Burn | Bane |
 | ★Sunny Day | U | 1 | Power: Burn 2 at the start of each turn | Burn | Noxious Fumes |
 | ★Heat Wave | U | 2 | Deal 5 three times, Burn 2 | Burn | Riddle with Holes |
-| ★Burning Bulwark | U | 1 | Block 11, Burn 3 | Burn | Flame Barrier |
+| ★Burning Bulwark | U | 1 | Block 10; if the enemy intends to attack, Burn 5 *(was Block 11, Burn 3: Flame Body +1)* | Burn | Flame Barrier |
 | Fan the Flames | U | 1 | Double the enemy's Burn. Exhaust | Burn | Catalyst |
 | Ash Cloud | U | 2 | Burn 5, Weak 2. Exhaust | Burn | Crippling Cloud |
 | Heat Haze | U | 1 | Block 7; +5 if the enemy is Burned | Burn | Dodge and Roll |
@@ -189,8 +189,8 @@ Evolution cards (evo-only, 1 copy; small reworks so each tier has one per archet
 | Card | Tier | Cost | Effect | Arch |
 |---|---|---|---|---|
 | ★Flame Charge | 1st | 1 | Deal 10, +1 PP next turn | Kindling |
-| ★Fire Fang | 1st | 1 | Deal 8, Burn 3 | Burn |
-| ★Flame Wheel | 1st | 2 | Deal 16 *(now: lose 2 HP, deal 20)* | Reckless |
+| ★Fire Fang | 1st | 1 | Deal 8, Burn 3; if the enemy intends to attack, Weak 2 *(was Fire Spin +2)* | Burn |
+| ★Flame Wheel | 1st | 2 | Lose 2 HP, deal 7 x3 *(was lose 2 HP, deal 20: a worse Flare Blitz)* | Reckless |
 | ★Incinerate | 1st | 2 | Deal 14, Weak 2 *(now: deal 14, exhaust a card from your hand, draw 1)* | Kindling |
 | ★Flamethrower | final | 2 | Deal 22, Burn 3 | Burn |
 | ★Fire Blast | final | 2 *(was 3)* | Deal 24, Burn 5 *(now: Burn 8, Vulnerable 2)* | Burn |
@@ -386,10 +386,10 @@ Evolution cards:
 
 | Card | Tier | Cost | Effect | Arch |
 |---|---|---|---|---|
-| ★Aqua Jet | 1st | 1 | Deal 8, draw 1, discard 1 *(was deal 10, block 4)* | Flow |
-| ★Bubble Beam | 1st | 1 | Deal 6, Weak 2 | — |
-| ★Brine | 1st | 2 | Deal 8, +4 per Tide | Tsunami |
-| ★Rain Shield | 1st | 1 | Block 10, heal 2 | Shell |
+| ★Aqua Jet | 1st | 1 | Deal 7 (+6 if you've discarded this turn), draw 2, discard 1 *(was deal 8, draw 1, discard 1: a worse Flip Turn)* | Flow |
+| ★Bubble Beam | 1st | 1 | Deal 6, Weak 2, gain 2 Tide *(was Whirlpool +1)* | Tsunami |
+| ★Brine | 1st | 2 | Deal 8, +4 per Tide, and 2 block per Tide spent | Tsunami |
+| ★Rain Shield | 1st | 1 | Block 8, heal 2, Retain, grows +3 block each turn kept *(was Block 10, heal 2)* | Shell |
 | ★Scald | final | 2 | Deal 20, Weak 2 | — |
 | ★Wave Crash | final | 1 *(was 2)* | Deal damage equal to your block x1.5 *(was deal 24, block 6)* | Shell |
 | ★Origin Pulse | final | 3 | Deal 26, Tide 3 | Tsunami |
