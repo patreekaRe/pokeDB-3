@@ -433,7 +433,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   color: #fff8e0;
   text-shadow: 2px 0 0 #14275e, -2px 0 0 #14275e, 0 2px 0 #14275e, 0 -2px 0 #14275e, 0 5px 0 #0d1a44;
 }
-.coll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; width: min(780px, 100%); }
+.coll-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; width: min(960px, 100%); }
 .coll-card {
   --c1: #5868c8; --c2: #303890;
   display: flex;
@@ -468,15 +468,17 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .coll-items { --c1: #e878b8; --c2: #983068; }
 .coll-stats { --c1: #4cb060; --c2: #2a7038; }
 .coll-achievements { --c1: #9a70d8; --c2: #5a3890; }
-.coll-hof { --c1: #3a4ea8; --c2: #1c2668; grid-column: 2; }   /* the seventh card, centred under the others */
-.coll-fame { max-width: 76px; max-height: 76px; image-rendering: pixelated; }
+.coll-fame { --c1: #d8a830; --c2: #8a5e10; }
+.coll-record { --c1: #3a4ea8; --c2: #1c2668; }
+.coll-card.locked { --c1: #8a8a98; --c2: #56566a; cursor: help; }
+.coll-card.locked .coll-art { filter: grayscale(1); opacity: 0.6; }
+.coll-winner { max-width: 76px; max-height: 76px; image-rendering: pixelated; }
 .coll-foot { padding-bottom: 12px; }
 @media (max-width: 600px) {
   .coll-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .coll-card { padding: 0 8px 12px; }
   .coll-name { font-size: 0.75rem; }
   .coll-text { font-size: 0.62rem; }
-  .coll-hof { grid-column: 1 / -1; justify-self: center; width: calc(50% - 6px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

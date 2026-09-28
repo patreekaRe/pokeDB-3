@@ -80,7 +80,10 @@ const typeOf = (entry) => TYPES[entry.type] ?? { label: entry.type, icon: '' };
 const pad3 = (n) => String(n).padStart(3, '0');
 /** A Level 5 win's Hall of Fame number (entries saved before every win was recorded were all Level 5: `no`). */
 export const fameNo = (entry) => entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
-const numberOf = (entry) => fameNo(entry) ?? `Win ${pad3(entry.no)}`;
+const winNo = (entry) => `Win ${pad3(entry.no)}`;
+// the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
+let book = 'fame';
+const numberOf = (entry) => (book === 'fame' && fameNo(entry)) || winNo(entry);
 /** "28 Sep 2026", read as a local date (a bare "2026-09-28" would parse as UTC midnight and show the day before in the Americas). */
 function dateOf(day) {
   const [y, m, d] = day.split('-').map(Number);
@@ -130,6 +133,7 @@ const loaded = (img) => img.complete && img.naturalWidth ? null
 
 /** Play the scene for a new entry. Resolves once the last line is tapped away and the scene has faded out. */
 export async function hallOfFameScene(entry) {
+  book = 'fame';
   const scene = $('hof-scene');
   const img = $('hof-mon');
   const stage = $('hof-stage');
@@ -167,22 +171,30 @@ export async function hallOfFameScene(entry) {
   scene.className = 'hof-scene';
 }
 
-/* ---------- the Collection's window: the record book ---------- */
+/* ---------- the Collection's two windows: the Hall of Fame and the Record Book ---------- */
 
-/** The Hall of Fame window: every won run, newest first; tapping one opens its page in the record book. */
-export function openHallOfFame() {
+const BOOKS = {
+  fame: { title: '🏆 Hall of Fame', has: (e) => fameNo(e) },
+  record: { title: '📖 Record Book', has: () => true },
+};
+/** The entries a book lists, oldest first: the Hall of Fame holds Level 5 wins, the Record Book every win. */
+export const bookEntries = (which) => getSave().hallOfFame.filter(BOOKS[which].has);
+
+/** Open the Hall of Fame ('fame') or the Record Book ('record'): its entries newest first; tapping one opens its page. */
+export function openRecords(which) {
+  book = which;
+  $('hof-dialog-title').textContent = BOOKS[which].title;
   showList();
   openDialog('hof-dialog');
 }
 
 function showList() {
-  const entries = getSave().hallOfFame;
-  const champions = entries.filter(e => e.level === MAX_LEVEL).length;
-  $('hof-dialog-sub').textContent = entries.length
-    ? `${entries.length} ${entries.length === 1 ? 'win' : 'wins'}, ${champions} on Trainer Level ${MAX_LEVEL}. Tap one for its record.`
-    : 'No wins yet. Every run you win is saved here, and a Trainer Level 5 win enters the Hall of Fame.';
+  const entries = bookEntries(book);
+  const count = `${entries.length} ${book === 'fame' ? (entries.length === 1 ? 'champion' : 'champions') : (entries.length === 1 ? 'win' : 'wins')}`;
+  $('hof-dialog-sub').textContent = `${count}. Tap one for its record.`;
   $('hof-body').replaceChildren(...[...entries].reverse().map(entry => {
-    const row = el('button', `hof-row type-${entry.type}${fameNo(entry) ? ' champion' : ''}`);
+    const star = book === 'record' && fameNo(entry);
+    const row = el('button', `hof-row type-${entry.type}${star ? ' champion' : ''}`);
     row.type = 'button';
     const pic = el('span', 'hof-row-pic');
     const img = el('img', 'pixel');
@@ -192,7 +204,7 @@ function showList() {
     const text = el('span', 'hof-row-text');
     const line = el('span', 'hof-row-line');
     line.append(chip(entry), el('span', 'hof-lv', `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
-    text.append(el('strong', '', `${fameNo(entry) ? '⭐ ' : ''}${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
+    text.append(el('strong', '', `${star ? '⭐ ' : ''}${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
       el('small', '', `${entry.deck.length} cards · ${entry.relics.length} relics · ${entry.fights} fights won`));
     row.append(pic, text, el('span', 'hof-row-go', '▶'));
     row.addEventListener('click', () => showEntry(entry));
@@ -225,7 +237,7 @@ function things(ids, table, empty) {
 }
 
 function showEntry(entry) {
-  const back = el('button', 'btn secondary hof-back', '◀ All wins');
+  const back = el('button', 'btn secondary hof-back', book === 'fame' ? '◀ All champions' : '◀ All wins');
   back.type = 'button';
   back.addEventListener('click', showList);
   const top = el('div', `hof-entry type-${entry.type}`);

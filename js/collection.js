@@ -14,7 +14,8 @@ import { getSave } from './storage.js';
 import { openPokedex } from './pokedex.js';
 import { openCardIndex } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
-import { openHallOfFame } from './halloffame.js';
+import { openRecords, bookEntries } from './halloffame.js';
+import { tipAt } from './tips.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
@@ -28,13 +29,19 @@ export function initCollection({ onBack }) {
   });
 }
 
-/** The newest winner stands on the Hall of Fame card; with none yet, a crown. */
+/** The newest entry stands on the Hall of Fame and Record Book cards. */
 function fameArt(entry) {
-  if (!entry) return el('span', 'coll-emoji', '👑');
-  const img = el('img', 'pixel coll-fame');
+  const img = el('img', 'pixel coll-winner');
   img.src = spriteUrl(STARTERS_BY_ID[entry.starter], 'front', entry.stage, entry.shiny);
   img.alt = '';
   return img;
+}
+
+/** The Hall of Fame's or the Record Book's card, a ??? until it holds an entry. */
+function book(which, name, text, noun, how) {
+  const entries = bookEntries(which);
+  if (!entries.length) return [which, '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
+  return [which, name, fameArt(entries.at(-1)), text, `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, () => openRecords(which)];
 }
 
 export function showCollection() {
@@ -54,17 +61,23 @@ export function showCollection() {
       `${save.stats.runsWon} of ${save.stats.runsStarted} runs won`, openStats],
     ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
       `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
-    ['hof', 'Hall of Fame', fameArt(save.hallOfFame.at(-1)), 'The record of every run you won: deck, relics, items and numbers.',
-      `${save.hallOfFame.length} ${save.hallOfFame.length === 1 ? 'win' : 'wins'}`, openHallOfFame],
+    book('fame', 'Hall of Fame', 'Your Trainer Level 5 champions, each with its full record.', 'champion',
+      'Win a run on Trainer Level 5 to unlock it.'),
+    book('record', 'Record Book', 'Every run you won: its deck, relics, items and numbers.', 'win',
+      'Win a run to unlock it.'),
   ];
-  $('coll-grid').replaceChildren(...cards.map(([id, name, art, text, count, open], i) => {
+  $('coll-grid').replaceChildren(...cards.map(([id, name, art, text, count, open, locked], i) => {
     const card = el('button', `coll-card coll-${id}`);
     card.type = 'button';
     card.style.setProperty('--i', i);
     const pic = el('span', 'coll-art');
     pic.append(art);
     card.append(el('strong', 'coll-name', name), pic, el('span', 'coll-text', text), el('span', 'coll-count', count));
-    card.addEventListener('click', open);
+    if (locked) {
+      // a ??? until its first entry (the user's call): a tap says how to unlock it
+      card.classList.add('locked');
+      card.addEventListener('click', () => tipAt(card, locked));
+    } else card.addEventListener('click', open);
     return card;
   }));
 }

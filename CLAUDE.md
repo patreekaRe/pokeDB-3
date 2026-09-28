@@ -295,12 +295,14 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
   text box. Its text box is the evolution scene's, `sceneSay()` exported from `js/evolution.js`. Music: `hall-of-fame`
   (`assets/audio/hall-of-fame.mp3`, the user supplies it), preloaded before a Level 5 final boss; while the file is missing
-  `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection's
-  seventh card, Hall of Fame (the newest winner's sprite, centred under the others), opens `#hof-dialog`
-  (`openHallOfFame()`): every win newest first (Level 5 ones with a ⭐ and their Hall of Fame number); tap one for its page:
-  plate, a grid of its numbers (old entries show "-" for what they lack), the Ability and relics, the items left in the
-  Bag and the ones used (sprites; a tap shows their `title`), and the final deck (`fillDeck()` from `js/deckpreview.js`,
-  each card `zoomable()`).
+  `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection has two
+  cards for it (the user's call: Level 5 champions and normal runs both worth seeing), each a grey "???" with a 🔒 until its
+  first entry (`book()` in `js/collection.js`; a tap says how to unlock it, `tipAt()`), and the result window says "Record
+  Book unlocked!" / "Hall of Fame unlocked!" the first time: **Hall of Fame** (Level 5 wins, numbered No.NNN) and **Record
+  Book** (every win, "Win NNN", Level 5 ones with a ⭐). Both open `#hof-dialog` (`openRecords('fame' | 'record')`,
+  `bookEntries()`): entries newest first; tap one for its page: plate, a grid of its numbers (old entries show "-" for what
+  they lack), the Ability and relics, the items left in the Bag and the ones used (sprites; a tap shows their `title`), and
+  the final deck (`fillDeck()` from `js/deckpreview.js`, each card `zoomable()`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
@@ -1186,10 +1188,10 @@ saved run) and Back / Escape return to the portraits (`showSelect()` clears it).
 sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, Back / Choose on the sides, the strip centred at
 the bottom). The page's footer note hides here.
 
-**Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): seven Pokégear cards with a coloured header
-(Pokédex, Moves, Relics, Items, Stats, Achievements, Hall of Fame), each with its art, a line and a progress count (defeated, moves,
+**Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): eight Pokégear cards with a coloured header
+(Pokédex, Moves, Relics, Items, Stats, Achievements, Hall of Fame, Record Book), each with its art, a line and a progress count (defeated, moves,
 found, runs won, done), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
-3 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
+4 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
 
 The logo is pixel art since 2026-09-28 (the user's pick of two mockups): `js/logo.js` paints each glyph of "PokéDB"

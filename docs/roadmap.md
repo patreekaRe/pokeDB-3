@@ -496,7 +496,8 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    Collection listing them (tap one for its deck). Its music is `assets/audio/hall-of-fame.mp3`, which the user will
    supply; until then it plays `victory`. Then (the user's ask) every won run, at any Level, is saved as a record-book
    page: its deck, relics, items (left and used) and numbers (fights, Alphas, turns, cards played, damage dealt and
-   taken, biggest hit, ₽ earned and spent, rests, events, moves forgotten and upgraded).
+   taken, biggest hit, ₽ earned and spent, rests, events, moves forgotten and upgraded). The Collection shows it as two cards,
+   Hall of Fame (Level 5 wins) and Record Book (every win), each a ??? until its first win unlocks it.
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve

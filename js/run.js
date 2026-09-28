@@ -1862,13 +1862,15 @@ function endRun(won) {
     });
 
     if (run.level === MAX_LEVEL) level5 = level5Rewards();
-    // every win goes in the record book (the Collection's Hall of Fame); a Level 5 one also gets the scene
+    // every win goes in the Record Book; a Level 5 one also enters the Hall of Fame, with its scene. The first of each
+    // unlocks its card in the Collection (a ??? until then).
     const entry = recordWin(run, getSave().shiny.on.includes(run.starter.id));
+    if (entry.no === 1) level5.push('📖 Record Book unlocked! Every run you win is kept there, in the Collection.');
+    else level5.push(`📖 This run was saved in the Record Book as Win ${String(entry.no).padStart(3, '0')}.`);
     if (fameNo(entry)) {
       fame = entry;
+      if (entry.fame === 1) level5.push('🏆 Hall of Fame unlocked! Your Level 5 champions stand there, in the Collection.');
       level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as ${fameNo(entry)}!`);
-    } else {
-      level5.push(`📖 This run's record was saved in the Collection's Hall of Fame.`);
     }
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.
