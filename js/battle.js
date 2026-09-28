@@ -28,6 +28,7 @@ import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, setStorm } from './scene.js';
 import { BIOMES } from './data/enemies.js';
+import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 
 const ENERGY_PER_TURN = 3;
@@ -200,7 +201,8 @@ export function startBattle({ run, encounter, onEnd }) {
 
   setTheme(run.starter.type);
   showScreen('battle-screen');
-  showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild');
+  showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
+    journey(run.map, run.map?.byId[run.current]));
   playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
   preloadMusic('victory');
   setupBattleScreen();

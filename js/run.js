@@ -26,7 +26,7 @@ import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
-import { generateMap, renderMap, scopeable } from './map.js';
+import { generateMap, renderMap, scopeable, journey } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
@@ -375,7 +375,7 @@ function showMap() {
   drawMap();
   showScreen('map-screen');
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
-  showScene(biome.id);
+  showScene(biome.id, 'wild', journey(run.map, here));
   playMusic(`map${run.biome + 1}`);
   if (run.tutorLeft > 0) return tutorNotes();
   showNotes();
@@ -1342,7 +1342,7 @@ function eventRoom(node, after) {
   });
   if (!scene) return;
   for (const [stand, figure] of Object.entries(figures || {})) $('reward-options').append(eventFigure(stand, figure));
-  showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type });
+  showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type, progress: journey(run.map, node) });
   placeEventSpots();
   if (!after) return;
   figureDoes('npc', after);

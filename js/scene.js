@@ -732,14 +732,14 @@ export function showMenuScene(type) {
     a page y) puts the floor line there instead, so a room drawn by the page (the Mart's counter) stands on the tiles, and
     `span` (one giving its page [left, right]) lets the scene dress its ends. A place with `biomes` (the treasure
     grotto, the Shrine) takes its look from `biome`, and its `types` (the Shrine's glow) retint it for your Pokémon's
-    `type`; an `outdoor` one (a ? event) stands in that biome's own scene. */
-export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null } = {}) {
+    `type`; an `outdoor` one (a ? event) stands in that biome's own scene, as far along as `progress` (see showScene). */
+export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null, progress = 0 } = {}) {
   const { biomes, types, ...art } = PLACE_ART[place];
   const time = timeOfDay(), g = GRADES[time];
   if (art.outdoor) {
     const { storm, pad, life: own, ...wild } = biomeLook(BIOME_ART[biome] || BIOME_ART.clearing, time);
     const props = grade({ ...art, ...biomes?.[biome] }, g);
-    paintScene(`place/${place}/${biome}/${type}/${time}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life] }, floor, span);
+    paintScene(`place/${place}/${biome}/${type}/${time}/${Math.round(progress * 100)}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life], progress }, floor, span);
     return;
   }
   const look = biomes && (biomes[biome] || Object.values(biomes)[0]), glow = types?.[type];
@@ -784,14 +784,17 @@ export function centerSpots() {
 
 /**
  * Paint the scene for a biome and fight kind ('wild' | 'elite' | 'boss') behind the page, or clear it.
+ * `progress` is how far into the biome you are, 0 on the road in to 1 at the boss (journey() in js/map.js): each floor
+ * moves the scenery a notch towards the boss (the Clearing's meadow thickens into woods, the Shrine gains gates,
+ * lanterns and mist, the Wastes' volcano looms nearer). The clock still decides the light.
  * Asking again for the scene that's already up leaves it running, except in battle, where the
  * horizon is fitted to the enemy's pad and every fight starts with calm weather.
  */
-export function showScene(biomeId, kind = 'wild') {
+export function showScene(biomeId, kind = 'wild', progress = 0) {
   const art = BIOME_ART[biomeId];
   if (!art) { paintScene('', null); return; }
   const time = timeOfDay();
-  paintScene(`${biomeId}/${kind}/${time}`, biomeLook(art, time, kind));
+  paintScene(`${biomeId}/${kind}/${time}/${Math.round(progress * 100)}`, { ...biomeLook(art, time, kind), progress });
 }
 
 function paintScene(key, raw, floor = null, span = null) {
@@ -887,6 +890,7 @@ function bands(y0, y1, list, curve = 1, mark = false) {
   }
 }
 const depthOf = (y) => (y - horizon) / Math.max(1, H - horizon);
+const dial = () => S.raw.progress || 0;   // how far into the biome, 0..1 (showScene)
 
 /* ============================================================
    THE STILL SCENE
@@ -1000,29 +1004,74 @@ function ridge(top, height, wave, seed, [lit, body, dark = body], shaded, jagged
 
 /* ---------- the Clearing ---------- */
 
+/* Further in, the open meadow thickens into forest: fewer flowers, more rough grass, the woods' shade creeping out from
+   the tree line, which crowds closer and grows taller, then a far wood hides the hills and big trees close in at the edges. */
 function meadow() {
+  const p = dial();
   bands(horizon, H, S.meadow, 0.8);
-  grassPatches(S.patch, Math.round(W / 10));
-  for (let n = 0; n < Math.max(2, Math.round(W / 60)); n++) {
+  grassPatches(S.patch, Math.round(W / 10 * (1 + p * 1.2)));
+  for (let n = 0; n < Math.max(2, Math.round(W / 60 * (1 + p))); n++) {
     const y = horizon + 6 + Math.floor(rand() * (H - horizon - 8));
     rock(Math.floor(rand() * W), y, depthOf(y) > 0.5 ? 2 : 1);
   }
-  flowerClusters(Math.round(W / (S.stars ? 14 : 9)));
+  flowerClusters(Math.round(W / (S.stars ? 14 : 9) * (1 - p * 0.75)));
+  // the trees' shade on the grass
+  const reach = Math.round((H - horizon) * 0.3 * p);
+  for (let y = horizon + 2; y < horizon + 2 + reach; y++) {
+    const fade = (y - horizon - 2) / Math.max(1, reach);
+    for (let x = 0; x < W; x++) if (dither(x, y) < 16 - fade * 16) tint(x, y, 0.8);
+  }
 }
 
 function treeLine() {
-  for (let x = Math.floor(rand() * 10); x < W + 8; x += 10 + Math.floor(rand() * 16)) {
-    roundTree(x, horizon - 9 - Math.floor(rand() * 4), 5 + Math.floor(rand() * 3), true);
+  const p = dial();
+  if (p > 0.25) {   // a far wood over the hills, in the hills' hazy colours
+    const far = [S.hills[0], S.hills[1], S.hills[2], S.hills[2]];
+    for (let x = Math.floor(rand() * 6); x < W + 6; x += 3 + Math.floor(rand() * 5 * (1.3 - p))) {
+      roundTree(x, horizon - 12 - Math.floor(rand() * (3 + p * 5)), 4 + Math.floor(rand() * 3), false, far);
+    }
+  }
+  for (let x = Math.floor(rand() * 10); x < W + 8; x += Math.round((10 + Math.floor(rand() * 16)) * (1 - p * 0.5))) {
+    roundTree(x, horizon - 9 - Math.floor(rand() * 4) - Math.round(p * horizon * 0.14), 5 + Math.floor(rand() * 3) + Math.round(p * horizon * 0.06), true);
   }
   for (let x = -4; x < W + 6; x += 3 + Math.floor(rand() * 4)) {
-    roundTree(x, horizon - 1 - Math.floor(rand() * 3), 3 + Math.floor(rand() * 3), false);
+    roundTree(x, horizon - 1 - Math.floor(rand() * 3), 3 + Math.floor(rand() * 3) + Math.round(p * 2), false);
   }
   for (let x = 0; x < W; x++) { put(x, horizon + 2, S.trees[3]); if (dither(x, horizon + 3) < 6) put(x, horizon + 3, S.trees[3]); }
+  if (p >= 0.6) nearTrees((p - 0.6) / 0.4);
 }
 
-/** A round canopy lit from the top right; tall ones stand on a visible trunk. */
-function roundTree(cx, cy, r, tall) {
+/** Deep in the woods (k 0..1 from there to the boss): two big near trees frame the scene, their crowns hanging in from
+    the top corners, and at the end a fringe of leaves closes the canopy overhead. */
+function nearTrees(k) {
   const [lit, leaf, shade, deep] = S.trees;
+  const r = Math.round(Math.min(W * 0.12, horizon * 0.5) * (0.8 + k * 0.5)), half = Math.max(1, Math.round(r * 0.16));
+  for (const [cx, reach] of [[Math.round(W * 0.03), 0.2], [Math.round(W * 0.96), 0.1]]) {
+    const foot = horizon + Math.round((H - horizon) * reach);
+    for (let y = 0; y <= foot; y++) {
+      const flare = y > foot - half * 2 ? Math.round((y - foot + half * 2) / 2) : 0;   // the roots spread at the foot
+      for (let x = -half - flare; x <= half + flare; x++) solid(cx + x, y, x > half * 0.3 ? S.trunk[1] : S.trunk[0]);
+    }
+    for (let x = -half * 3; x <= half * 3; x++) if (dither(x, foot) < 8) tint(cx + x, foot + 1, 0.8);
+    const cy = Math.round(r * 0.3);
+    for (let y = 0, rw = Math.round(r * 1.4); y <= cy + r; y++) for (let x = -rw; x <= rw; x++) {
+      const dx = x / 1.4, dy = y - cy, d = dx * dx + dy * dy;
+      if (d > r * r) continue;
+      const light = -dx + dy;
+      solid(cx + x, y, d > r * r * 0.8 && dither(x, y) < 6 ? deep : light < -r * 0.5 ? lit : light > r * 0.6 ? deep : light > r * 0.1 && dither(x, y) < 8 ? shade : leaf);
+    }
+  }
+  if (k < 0.5) return;
+  const fringe = Math.max(2, Math.round(horizon * 0.1 * (k - 0.3)));
+  for (let x = 0; x < W; x++) {
+    const h = Math.round(fringe * (1 + 0.5 * Math.sin(x / 5) + 0.3 * Math.sin(x / 2.3 + 1)));
+    for (let y = 0; y <= h; y++) solid(x, y, y === h ? deep : y === h - 1 && dither(x, y) < 8 ? shade : dither(x, y) < 3 ? lit : leaf);
+  }
+}
+
+/** A round canopy lit from the top right; tall ones stand on a visible trunk. `colours` for a far, hazy one. */
+function roundTree(cx, cy, r, tall, colours = S.trees) {
+  const [lit, leaf, shade, deep] = colours;
   if (tall) for (let y = cy + r - 1; y <= horizon + 1; y++) { solid(cx, y, S.trunk[0]); solid(cx + 1, y, S.trunk[1]); }
   for (let y = cy - r; y <= (tall ? cy + r : horizon + 1); y++) {
     for (let x = cx - r; x <= cx + r; x++) {
@@ -1087,9 +1136,14 @@ function shrineBackdrop() {
   }
   // the gate, framed by nearer trees, with a stone lantern either side
   const gx = Math.round(W * 0.52), size = Math.max(12, Math.round(Math.min(W * 0.4, horizon * 0.72)));
+  // further in, more gates stand behind it, smaller and higher up the path, like a tunnel of torii
+  for (let k = Math.round(dial() * 4); k >= 1; k--) {
+    torii(gx, horizon + 1 - k * Math.max(1, Math.round(size * 0.08)), Math.round(size * 0.74 ** k), k % 2 ? [S.torii[1], S.torii[2], S.torii[2]] : [S.torii[2], S.torii[2], S.torii[2]]);
+  }
   torii(gx, horizon + 1, size);
   life.lanterns = [];
-  for (const dx of [-0.95, 0.95]) lantern(gx + Math.round(dx * size), horizon + 2, Math.max(4, Math.round(size * 0.28)));
+  life.lanternSize = Math.max(4, Math.round(size * 0.28));
+  for (const dx of [-0.95, 0.95]) lantern(gx + Math.round(dx * size), horizon + 2, life.lanternSize);
   for (let x = -4; x < W + 6; x += 7 + Math.floor(rand() * 8)) {
     if (Math.abs(x - gx) < size * 0.8) continue;   // keep the gate clear
     pine(x, horizon - 4 - Math.floor(rand() * 6), 6 + Math.floor(rand() * 4), S.trees[1], S.trees[2], true);
@@ -1112,8 +1166,8 @@ function pine(cx, top, half, lit, dark, trunk = false) {
   for (let yy = y + Math.round(tierH * 0.4); yy <= foot; yy++) { solid(cx, yy, S.trunk[0]); solid(cx + 1, yy, S.trunk[1]); }
 }
 
-function torii(cx, foot, size) {
-  const [red, shade, deep] = S.torii;
+function torii(cx, foot, size, colours = S.torii) {
+  const [red, shade, deep] = colours;
   const halfW = Math.round(size * 0.55), post = Math.max(1, Math.round(size / 10)), topY = foot - size;
   for (const side of [-1, 1]) {
     const x0 = cx + side * Math.round(halfW * 0.72);
@@ -1134,7 +1188,7 @@ function lantern(cx, foot, size) {
   const h = size * 2;
   for (let y = 0; y < h; y++) {
     const yy = foot - y;
-    let w = y < 2 ? 2 : y < h * 0.45 ? 1 : y < h * 0.7 ? 2 : y < h * 0.8 ? 3 : 1;
+    const w = (y < 2 ? 2 : y < h * 0.45 ? 1 : y < h * 0.7 ? 2 : y < h * 0.8 ? 3 : 1) * Math.max(1, Math.round(size / 12));   // near ones (the path's) are stouter
     for (let x = -w; x <= w; x++) solid(cx + x, yy, x > 0 ? dark : x === -w ? lit : body);
   }
   const lightY = foot - Math.round(h * 0.6);
@@ -1167,6 +1221,13 @@ function mossGround() {
 
 function shrineFront() {
   for (let x = 0; x < W; x++) if (dither(x, horizon + 2) < 10) put(x, horizon + 2, S.trees[3]);
+  // further in, stone lanterns line the path towards you, a pair more every few floors
+  const gx = Math.round(W * 0.52);
+  for (let k = 1, pairs = Math.round(dial() * 3); k <= pairs; k++) {
+    const y = horizon + Math.round((H - horizon) * (0.04 + k * 0.1)), depth = depthOf(y);
+    const cx = gx - Math.round(W * 0.16 * depth * depth), spread = Math.round(W * (0.1 + depth * 0.8));
+    for (const side of [-1, 1]) lantern(cx + side * spread, y, Math.round(life.lanternSize * (1 + depth * 2.5)));
+  }
 }
 
 /* ---------- the Wastes ---------- */
@@ -1174,7 +1235,9 @@ function shrineFront() {
 function volcanoBackdrop() {
   ridge(horizon - 7, 5, 9, 0.7, S.mountains, true, true);
   // the volcano: a broad cone with a flat, glowing crater
-  const cx = Math.round(W * 0.5), baseHalf = Math.round(Math.min(W * 0.36, horizon * 1.3)), height = Math.round(horizon * 0.78);
+  // it looms nearer every floor: bigger, its lava running further down (the crater rim by the boss)
+  const p = dial(), near = 0.72 + p * 0.5;
+  const cx = Math.round(W * 0.5), baseHalf = Math.round(Math.min(W * 0.36, horizon * 1.3) * near), height = Math.round(horizon * Math.min(0.9, 0.78 * near));
   const crater = Math.max(4, Math.round(baseHalf * 0.12));
   const [lit, body, shade] = S.volcano;
   const peak = horizon - height;
@@ -1189,13 +1252,13 @@ function volcanoBackdrop() {
     solid(cx - half - 1, y, S.volcano[2]);
   }
   for (let x = -crater; x <= crater; x++) solid(cx + x, peak, S.lava[3]);
-  life.volcano = { x: cx, y: peak, crater, height };
+  life.volcano = { x: cx, y: peak, crater, height, near };
   // lava runs down the slope (all the way when it's erupting)
   life.flows = [];
-  const sides = S.raw.erupting ? [-0.55, 0.1, 0.6] : [0.2];
+  const sides = S.raw.erupting ? [-0.55, 0.1, 0.6] : [0.2, -0.5, 0.62].slice(0, 1 + (p >= 0.4) + (p >= 0.8));
   for (const side of sides) {
     const path = [];
-    for (let y = peak + 1; y < horizon && (S.raw.erupting || y < peak + height * 0.3); y++) {
+    for (let y = peak + 1; y < horizon && (S.raw.erupting || y < peak + height * (0.25 + p * 0.5)); y++) {
       const wobble = Math.round(Math.sin(y / 3 + side * 9));
       path.push([cx + Math.round(side * halfAt(y)) + wobble, y]);
     }
@@ -1214,7 +1277,7 @@ function basalt() {
   }
   // cracks with lava deep inside: random walks, wider closer in
   life.cracks = [];
-  const count = Math.round((W / 9) * (0.6 + S.raw.crackGlow * 0.4));
+  const p = dial(), count = Math.round((W / 9) * (0.6 + S.raw.crackGlow * 0.4) * (0.6 + p * 0.9));
   const walk = (x, y, len, dir, k0, depth) => {
     for (let k = 0; k < len; k++) {
       x += rand() < 0.75 ? dir : 0;
@@ -1228,6 +1291,16 @@ function basalt() {
   for (let n = 0; n < count; n++) {
     const y = horizon + 3 + Math.floor(rand() * (H - horizon - 4));
     walk(Math.floor(rand() * W), y, 8 + Math.floor(rand() * (12 + depthOf(y) * 30)), rand() < 0.5 ? -1 : 1, 0, 0);
+  }
+  // lava fields further in: pools of it in the rock, glowing like the cracks
+  for (let n = 0, pools = Math.round(p * W / 45); n < pools; n++) {
+    const cy = horizon + 5 + Math.floor(rand() * (H - horizon - 8)), depth = depthOf(cy);
+    const rx = 2 + Math.round(rand() * 3 + depth * 7), ry = Math.max(1, Math.round(rx * (0.2 + depth * 0.15))), cx = Math.floor(rand() * W);
+    for (let y = -ry - 1; y <= ry + 1; y++) for (let x = -rx - 1; x <= rx + 1; x++) {
+      const d = (x / rx) ** 2 + (y / ry) ** 2;
+      if (d <= 1) life.cracks.push([cx + x, cy + y, Math.round(d * 6)]);
+      else if (d <= 1.6 && dither(x, y) < 10) put(cx + x, cy + y, S.rock[2]);
+    }
   }
   for (const [x, y] of life.cracks) put(x, y, S.lava[2]);
 }
@@ -3718,7 +3791,7 @@ function makeLife() {
 
   if (has('embers')) {
     life.embers = [];
-    for (let i = 0, n = Math.round((W / 7) * S.raw.embers); i < n; i++) {
+    for (let i = 0, n = Math.round((W / 7) * S.raw.embers * (0.7 + dial() * 0.8)); i < n; i++) {
       life.embers.push({ x: rand() * W, y: rand() * H, vy: 0.3 + rand() * 0.5, phase: rand() * 30 });
     }
   }
@@ -3975,11 +4048,12 @@ function bird(x, y, up) {
 
 /** Mist banks drifting along the foot of the trees: they lighten (and wash out) what's behind. */
 function drawMist(t) {
-  for (let y = horizon - 8; y < horizon + 14 && y < H; y++) {
-    const fade = 1 - Math.abs(y - horizon - 2) / 12;
+  const p = dial(), reach = 12 + p * 10;   // thicker and deeper further in
+  for (let y = horizon - 8 - Math.round(p * 6); y < horizon + 2 + reach && y < H; y++) {
+    const fade = 1 - Math.abs(y - horizon - 2) / reach;
     for (let x = 0; x < W; x++) {
       const m = Math.sin((x + t * 0.5) / 13 + y * 0.6) + Math.sin((x - t * 0.3) / 7 + y * 0.2);
-      if (m > 1.1 - fade * 0.6 && dither(x, y) < 3 + fade * 9) tint(x, y, 0.8, S.mist);
+      if (m > 1.1 - fade * 0.6 - p * 0.5 && dither(x, y) < 3 + fade * 9 + p * 4) tint(x, y, 0.8, S.mist);
     }
   }
 }
@@ -3991,7 +4065,7 @@ function drawSmoke(t) {
   const erupting = S.raw.erupting;
   for (const p of life.smoke) {
     const age = (p.age + t * (erupting ? 0.9 : 0.5)) % 84;
-    const rise = age * (erupting ? 1.1 : 0.7), r = 2.5 + age * (erupting ? 0.22 : 0.16);
+    const rise = age * (erupting ? 1.1 : 0.7), r = (2.5 + age * (erupting ? 0.22 : 0.16)) * v.near;
     const x = v.x + Math.sin((age + p.wobble) / 9) * 2 + age * age * 0.012, y = v.y - 2 - rise;
     if (y < -r) continue;
     const shade = S.smoke[Math.min(3, Math.floor(age / 24))];
@@ -4007,7 +4081,7 @@ function drawSmoke(t) {
 
 /** Lava breathing in the cracks and running down the volcano. */
 function drawLava(t) {
-  const L = life, glow = S.raw.crackGlow;
+  const L = life, glow = S.raw.crackGlow + dial() * 0.4;
   if (L.cracks) {
     for (let i = 0; i < L.cracks.length; i++) {
       const [x, y, k] = L.cracks[i];

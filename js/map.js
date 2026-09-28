@@ -72,6 +72,12 @@ const randFloat = (min, max) => min + Math.random() * (max - min);
    BUILDING THE MAP
    ============================================================ */
 
+/** How far into its biome a room is, 0 on the road in to 1 at the boss (the scenery's progress dial, js/scene.js):
+    floor / (floors + 1), the same steps as the map's EXP bar. */
+export function journey(map, node) {
+  return node ? Math.min(1, (node.floor + 1) / (map.floors.length + 1)) : 0;
+}
+
 /** Build a random map. Returns { floors: [[room...]...], boss, byId }. */
 export function generateMap({ eliteMult = 1 } = {}) {
   const grid = Array.from({ length: FLOORS }, () => Array(COLS).fill(null));
