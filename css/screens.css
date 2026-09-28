@@ -877,6 +877,37 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .ability-chip .item-sprite { width: 1.3em; height: 1.3em; margin: -0.2em 0; }
 .run-ability .item-sprite, .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
 .run-ability { align-self: flex-end; display: flex; align-items: center; gap: 4px; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.72rem; color: #ffe6a0; cursor: help; }
+/* Blaze only counts below half HP: dim until then, lit orange (and your Pokémon flickering with flame) once it's on */
+.run-ability[data-state="off"] { opacity: 0.5; filter: grayscale(0.7); }
+.run-ability[data-state="on"] { color: #ffa030; animation: blazeLabel 1s steps(2) infinite; }
+@keyframes blazeLabel { 50% { color: #ffe060; } }
+.run-sprite[data-blaze] { animation: blazeAura 0.5s steps(1) infinite; }
+@keyframes blazeAura {
+  0% { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 3px #ff7a18) drop-shadow(0 -2px 2px #ffb020); }
+  50% { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 5px #ff5010) drop-shadow(0 -4px 3px #ffd040); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .run-ability[data-state="on"] { animation: none; }
+  .run-sprite[data-blaze] { animation: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 4px #ff7a18); }
+}
+
+/* Gold/Silver's EXP bar under the HP numbers: thin and blue, filling floor by floor up to the boss */
+.gb-exp { display: flex; align-items: center; width: min(190px, 100%); margin-top: 2px; cursor: help; }
+.gb-exp-tag {
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  padding: 0 3px 0 4px;
+  border: 2px solid #181818;
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+  background: #181818;
+  color: #58b8f8;
+  font-size: 0.5rem;
+  line-height: 8px;
+  padding-block: 0;
+}
+.gb-exp-track { flex: 1; height: 12px; padding: 2px; border: 2px solid #181818; border-radius: 0 5px 5px 0; background: #f8f8f0; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); }
+.gb-exp-fill { display: block; height: 100%; width: 0; background: #3890f8; transition: width 0.6s steps(10); }
+.gb-exp-note { align-self: flex-end; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.55rem; color: #a8d8ff; }
 
 /* The Bag button: a frameless pixel backpack in the top-right corner beside the coins and the Poké Mart.
    Shown only on run screens (showScreen() in js/ui.js); open (aria-expanded) looks pressed in. */

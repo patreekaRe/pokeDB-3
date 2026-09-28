@@ -928,6 +928,11 @@ The top `.run-card`, centred like everything below it, shows your Pokémon
 floating on the scenery, then its name and a Gold/Silver-style HP bar
 (`.gb-hp`: black "HP:" tag, outlined bar, the numbers underneath;
 `data-level` turns it yellow at 50% and red at 20%, the games' thresholds).
+Under it, Gold/Silver's thin blue EXP bar (`showExp()` in `js/run.js`) fills floor by floor (floor / (floors + 1)), full at
+the boss, captioned "Evolves at boss" (then "Boss" / "Final boss" once fully evolved). The "Ability: X" line
+(`showAbility()`, also rerun after a map heal) is dim for Blaze above half HP and lights up orange ("Blaze! +3 damage")
+below it, with your Pokémon flickering with a flame glow (`.run-sprite[data-blaze]`), so you can see it's on before a
+fight (the user's picks, 2026-09-28).
 
 Below it, `.map-head` holds the biome name alone as a pixel location sign
 (`.biome-sign`, wood / mossy stone / dark rock per `data-biome`) that drops

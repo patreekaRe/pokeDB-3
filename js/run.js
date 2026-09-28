@@ -278,6 +278,43 @@ function startBiome() {
   showMap();
 }
 
+// The Gold/Silver EXP bar under your HP fills as you climb the biome: full at the boss, where you evolve.
+function showExp(floor, floors) {
+  const bar = $('run-exp');
+  const steps = floors + 1;
+  const last = run.stage >= run.starter.line.length - 1;
+  $('run-exp-fill').style.width = `${Math.round(Math.min(1, floor / steps) * 100)}%`;
+  bar.setAttribute('aria-valuemax', String(steps));
+  bar.setAttribute('aria-valuenow', String(floor));
+  const goal = last ? (run.biome === BIOMES.length - 1 ? 'Final boss' : 'Boss') : 'Evolves at boss';
+  $('run-exp-note').textContent = goal;
+  bar.title = last
+    ? `Floor ${floor} of ${floors}: the bar fills as you near the boss.`
+    : `Floor ${floor} of ${floors}: beat the boss at the top of the map to evolve.`;
+}
+
+// Blaze only works below half HP, so the map says whether it's on: dim above half, lit (and your Pokémon aflame) below.
+function showAbility() {
+  const ability = ABILITIES[run.starter.type];
+  const el = $('run-ability');
+  el.hidden = !ability;
+  delete $('run-sprite').dataset.blaze;
+  if (!ability) return;
+  let label = `Ability: ${ability.name}`;
+  let state = '';
+  if (ability.id === 'blaze') {
+    const lit = run.hp > 0 && run.hp < run.maxHp / 2;
+    state = lit ? 'on' : 'off';
+    if (lit) {
+      label = `${ability.name}! +${ability.amount} damage`;
+      $('run-sprite').dataset.blaze = '';
+    }
+  }
+  el.dataset.state = state;
+  el.replaceChildren(itemSprite(ability), label);
+  el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ' (Active now!)' : ''}`;
+}
+
 function showMap() {
   const biome = BIOMES[run.biome];
   scoping = false;
@@ -309,12 +346,8 @@ function showMap() {
 
   setHpBar('run', run.hp, run.maxHp);
   setMoney(run.money);
-  const ability = ABILITIES[run.starter.type];
-  $('run-ability').hidden = !ability;
-  if (ability) {
-    $('run-ability').replaceChildren(itemSprite(ability), `Ability: ${ability.name}`);
-    $('run-ability').title = `Ability: ${ability.name}. ${ability.text}`;
-  }
+  showExp(floor, run.map.floors.length);
+  showAbility();
 
   renderRelicList();
   renderItemList();
@@ -458,6 +491,7 @@ function useItemOnMap(index) {
     tell(`Used ${item.name}: healed ${healed} HP.`);
   }
   setHpBar('run', run.hp, run.maxHp);
+  showAbility();
   afterBagChange();
 }
 
