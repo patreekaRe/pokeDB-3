@@ -140,6 +140,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const box = $('reward-options');
   box.replaceChildren();
   box.className = `reward-options${layout ? ` ${layout}` : ''}`;
+  box.style.zoom = '';   // fitMart()'s zoom-out would shrink the next screen too, and pull the Center's and events' fixed spots towards the top left
   const groups = {};
   const home = (group) => {
     if (!group) return box;

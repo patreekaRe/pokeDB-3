@@ -379,7 +379,8 @@ Removal reuses
 bought once per Mart (`stock.removed`, then the PC says "Sold out"). Every forget picker
 (Center, Mart, Cleanse Tag, events) takes two taps, like adding a card: `ask`/`confirm` "Forget it".
 On a short window (a 1280x800 PC, an iPhone SE) `fitMart()` in `js/run.js` zooms the shop out (CSS `zoom`, a binary
-search down to 0.6) until Leave and the text box fit without scrolling; it reruns on resize and as the text box grows.
+search down to 0.6) until Leave and the text box fit without scrolling; it reruns on resize and as the text box grows. `showChoice()` clears that zoom for
+the next screen: left on `#reward-options`, it pulled the Center's Chansey and signs (and events' spots, all `position: fixed`) towards the top left.
 Purchases are only saved when you leave for the map. Items are covered
 under Items below.
 
