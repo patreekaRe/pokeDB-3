@@ -672,7 +672,7 @@ function sentences(e) {
     parts.push(to === 'draw' ? `Shuffle ${some} into your draw pile.` : `Add ${some} to ${PILES[to]}.`);
   }
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
-  if (e.endTurnHurt)  parts.push(`If it's in your hand at the end of your turn, lose ${e.endTurnHurt} HP.`);
+  if (e.endTurnHurt)  parts.push(`Lose ${e.endTurnHurt} HP if in hand at turn end.`);
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
   if (e.needsEmptyDraw) parts.push('Only playable when your draw pile is empty.');
   if (e.ifBurned)     parts.push(`If the enemy is Burned: ${sentences(e.ifBurned).join(' ')}`);
@@ -711,14 +711,14 @@ export function describe(card, stage = 0) {
 export function keywords(card) {
   return {
     lead: [
-      card.unplayable && ['Unplayable', 'This card can\'t be played.'],
-      card.innate && ['Innate', 'Always in your first hand of a fight.'],
-      card.power && ['Power', 'Stays on for the rest of the fight. The card is played once per fight.'],
-      card.retain && ['Retain', 'Stays in your hand at the end of your turn instead of being discarded.'],
+      card.unplayable && ['Unplayable', 'Can\'t be played.'],
+      card.innate && ['Innate', 'Always in your first hand.'],
+      card.power && ['Power', 'Lasts all fight. Played once.'],
+      card.retain && ['Retain', 'Stays in your hand at turn end.'],
     ].filter(Boolean),
     tail: [
-      card.ethereal && ['Ethereal', 'If it\'s still in your hand at the end of your turn, it\'s exhausted.'],
-      card.exhaust && ['Exhaust', 'Gone for the rest of this fight once played. Back in your deck next fight.'],
+      card.ethereal && ['Ethereal', 'Exhausted if still in hand at turn end.'],
+      card.exhaust && ['Exhaust', 'Gone for this fight once played.'],
     ].filter(Boolean),
   };
 }
@@ -748,22 +748,22 @@ export function cardTerms(card) {
   const e = card.effects;
   const { lead, tail } = keywords(card);
   const terms = [...lead, ...tail,
-    card.growOnRetain && ['Retain', 'Stays in your hand at the end of your turn instead of being discarded.'],
-    uses(/^retain/) && ['Retain', 'A kept card stays in your hand at the end of your turn instead of being discarded.'],
-    (uses(/exhaust|^playTop$|^exhume$|^corruption$/) || card.onExhaust) && ['Exhaust', 'An exhausted card is gone for the rest of this fight. It\'s back in your deck next fight.'],
-    (uses(/discard/i) || card.onDiscard) && ['Discard', 'Moved from your hand to the discard pile. "When discarded" only triggers when a card makes you discard it.'],
-    uses(/tide|^drizzle$/i) && ['Tide', 'Builds up and lasts all fight. A move that says "per Tide" spends all of it for a bigger hit.'],
-    uses(/burn|^drought$/i) && ['Burn', 'The enemy takes that much damage at the start of its turn, then its Burn drops by 1.'],
-    uses(/seed/i) && ['Leech Seed', 'At the start of its turn the enemy loses that much HP and you heal as much, then it drops by 1.'],
-    uses(/^sap$/) && ['Sap', 'The enemy\'s attacks deal that much less, for the rest of the fight.'],
-    uses(/weak/i) && ['Weak', 'The enemy deals 25% less damage. Lasts that many enemy turns.'],
-    uses(/vulnerable/i) && ['Vulnerable', 'The enemy takes 50% more damage from your attacks. Lasts that many enemy turns.'],
-    uses(/strength|^flex$/i) && ['Strength', 'Added to every hit you deal, shown as your 💪 badge.'],
-    uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap and Burn.'],
-    (uses(/^perX$/) || card.cost === 'X') && ['X', 'This card spends all your PP, and X is how much it spent.'],
-    e.combo && [`Combo ${e.combo.at}`, `The extra only happens if you've already played ${e.combo.at} other cards this turn.`],
-    uses(/^ifHurt$|OnHurt$/) && ['Losing HP', 'Counts however it happens: your own cards, Poison, or the enemy\'s hits.'],
-    card.upgraded && ['Upgraded', 'Made stronger with PP Up.'],
+    card.growOnRetain && ['Retain', 'Stays in your hand at turn end.'],
+    uses(/^retain/) && ['Retain', 'A kept card stays in hand at turn end.'],
+    (uses(/exhaust|^playTop$|^exhume$|^corruption$/) || card.onExhaust) && ['Exhaust', 'Gone for this fight. Back next fight.'],
+    (uses(/discard/i) || card.onDiscard) && ['Discard', 'Hand to discard pile. Turn end doesn\'t count.'],
+    uses(/tide|^drizzle$/i) && ['Tide', 'Builds up all fight. "Per Tide" moves spend it all.'],
+    uses(/burn|^drought$/i) && ['Burn', 'Damage each enemy turn, then -1.'],
+    uses(/seed/i) && ['Leech Seed', 'Drains that much HP each enemy turn, then -1.'],
+    uses(/^sap$/) && ['Sap', 'Enemy attacks deal that much less, all fight.'],
+    uses(/weak/i) && ['Weak', 'Enemy deals 25% less. Counts down each turn.'],
+    uses(/vulnerable/i) && ['Vulnerable', 'Enemy takes 50% more. Counts down each turn.'],
+    uses(/strength|^flex$/i) && ['Strength', 'Added to every hit you deal.'],
+    uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],
+    (uses(/^perX$/) || card.cost === 'X') && ['X', 'Spends all your PP. X is how much.'],
+    e.combo && [`Combo ${e.combo.at}`, `Only if you've played ${e.combo.at} other cards this turn.`],
+    uses(/^ifHurt$|OnHurt$/) && ['Losing HP', 'Any HP loss counts, even your own.'],
+    card.upgraded && ['Upgraded', 'Boosted with PP Up.'],
     ...addedCards(card).map(c => [c.name, madeCardText(c, card)]),
   ].filter(Boolean);
   return terms.filter(([label], i) => terms.findIndex(t => t[0] === label) === i);
@@ -783,10 +783,10 @@ function addedCards(card) {
 }
 
 function madeCardText(c, card) {
-  if (baseId(c.id) === baseId(card.id)) return 'Another copy of this card, added for this fight only: your deck keeps just the one.';
+  if (baseId(c.id) === baseId(card.id)) return 'A copy of this card, for this fight only.';
   const { lead, tail } = keywords(c);
   const words = [...lead, ...tail].map(([label]) => `${label}.`);
-  const cost = c.unplayable ? '' : `Costs ${c.cost} PP. `;
+  const cost = c.unplayable ? '' : `${c.cost} PP. `;
   return `${cost}${[...words, describe(c)].filter(Boolean).join(' ')}`;
 }
 
