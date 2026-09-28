@@ -1018,7 +1018,9 @@ drop-down hanging from the right edge of `.topbar-actions`, with four
 pockets, like the
 Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics,
 Items (see Items below) and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
-through `POCKETS` in order, and the last pocket is remembered. It's wired by
+through `POCKETS` in order, and the last pocket is remembered. It never runs past the screen: a pocket scrolls inside it (`.bag:not([hidden])`
+is a column capped at the screen's height; the user couldn't read past 8 relics on a phone), and the Relics and Key
+pockets have no footnote (the user's call, 2026-09-28). It's wired by
 `initBag()` / `showPocket()` / `closeBag()` in `js/run.js` and closes on an
 outside tap, Escape, or whenever `showMap()` runs. Its rows reuse the How to
 play `.howto-li` / `.howto-node` styles (bare icons with no chip or frame, the user's call; map rooms add `.town`),

@@ -3345,3 +3345,7 @@ body.has-scene #scene-bg { display: block; }
 #unlock-text { margin: 0 0 6px; }
 .unlock-hint { margin: 0 0 4px; color: var(--muted); font-size: 0.75rem; }
 @media (prefers-reduced-motion: reduce) { .unlock-dialog[open], .unlock-kicker, .unlock-stage img { animation: none; } }
+
+/* the Bag never runs off a phone's screen: its pocket scrolls inside it (the user couldn't read past 8 relics) */
+.bag:not([hidden]) { display: flex; flex-direction: column; max-height: calc(100dvh - 84px); }
+.bag .bag-pocket-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 2px; }
