@@ -17,6 +17,15 @@
 import { RENAMED_STARTERS } from './data/starters.js';
 
 const KEY = 'pokedb.save.v2';
+const RUN_KEY = 'pokedb.run.v1';
+
+/** The two localStorage keys, for the cloud save (js/cloud.js), which copies them as they are. */
+export const SAVE_KEYS = { save: KEY, run: RUN_KEY };
+
+const listeners = [];
+/** Call fn after every write to either key (the cloud save uploads a little later). */
+export const onSaveWrite = (fn) => listeners.push(fn);
+const wrote = () => listeners.forEach(fn => fn());
 
 const freshSave = () => ({
   seenHelp: false,
@@ -100,6 +109,7 @@ function renameStarters(save) {
 function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(data)); }
   catch (err) { /* storage is full or blocked: ignore */ }
+  wrote();
 }
 
 /** Read-only look at the whole save. */
@@ -161,11 +171,10 @@ export function resetSave() {
    Kept under its own key so a broken or outdated run save can be thrown
    away without touching your long-term progress. run.js decides what goes in. */
 
-const RUN_KEY = 'pokedb.run.v1';
-
 export function saveRunData(saved) {
   try { localStorage.setItem(RUN_KEY, JSON.stringify(saved)); }
   catch (err) { /* storage is full or blocked: ignore */ }
+  wrote();
 }
 
 /** The saved run as plain data, or null if there isn't one (or it can't be read). */
@@ -179,4 +188,5 @@ export function loadRunData() {
 export function clearRunData() {
   try { localStorage.removeItem(RUN_KEY); }
   catch (err) { /* blocked: nothing to clear */ }
+  wrote();
 }

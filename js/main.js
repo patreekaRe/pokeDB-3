@@ -24,6 +24,7 @@
      select.js       the character select (New game)
      collection.js   the Collection (Pokédex, Moves, Relics, Items, Stats, Achievements)
      tips.js         tap-to-read hints (an element's title) on touch screens
+     cloud.js        the optional cloud save (Firebase sign-in, from the Poké Ball menu)
    ============================================================ */
 
 import { spriteUrl, stageName, useShinies } from './data/starters.js';
@@ -44,6 +45,7 @@ import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
 import { initPokedex, openPokedex } from './pokedex.js';
+import { initCloud } from './cloud.js';
 import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
 
 /* ---------- moving between screens ---------- */
@@ -162,6 +164,7 @@ function init() {
   $('stats-btn').addEventListener('click', openStats);
   $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();
+  initCloud();
 
   $('reset-btn').addEventListener('click', async () => {
     if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;

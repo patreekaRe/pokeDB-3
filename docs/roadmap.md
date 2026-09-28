@@ -464,13 +464,30 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
 3. ~~**Cries.**~~ Checked 2026-09-28: every starter, evolution, legendary and enemy (115 of the 117 Pokémon shown) has
    its cry; only Chansey (the Center) and Kecleon (the Mart) have none, and nothing asks them to cry. Ideas the user may
    pick up later: Chansey / Kecleon greeting you as you walk in, event figures crying in their rooms, a loudness pass.
-4. **Cloud save with login.** Run in: CLOUD (attach pokeDB-3).
-   > Read CLAUDE.md (Saved runs, storage.js). Plan a cloud save with the user first: Firebase or Supabase (free tier), sign-in
-   > by Google and/or an email link, a Sign in item in the Poké Ball menu, playing signed-out unchanged. The user's existing
-   > save on their phone (`pokedb.save.v2` and the run's `pokedb.run.v1` in localStorage) must upload as their first cloud
-   > save the first time they sign in on that device; decide with them what happens when two devices' saves differ (newest
-   > wins, or ask). Walk them through creating the project and pasting its public config. A simpler fallback if they'd rather:
-   > "copy / paste save code" buttons with no accounts.
+4. **Cloud save with login.** Code done 2026-09-28 (CLAUDE.md's Cloud save): Firebase, Google and email-link sign-in,
+   and a "Two saves found" window when two devices both changed (the user's picks). It stays hidden until the user's
+   Firebase config is pasted into `js/cloud-config.js`. Checked headless with a stand-in Firebase at 390 and 1280px: the
+   first sign-in uploads the device's save, a blank device takes the cloud's, changes upload, a reload picks up the other
+   device's, a real clash asks, the email link signs in, sign out keeps the save, and signed out nothing loads.
+   The user's setup (console.firebase.google.com):
+   1. Add project, any name, Google Analytics off.
+   2. Build > Authentication > Get started. Sign-in method: Google (enable, pick the support email, Save); Email/Password
+      (enable it and "Email link (passwordless sign-in)", Save). Settings > Authorized domains > Add domain
+      `patreekare.github.io`.
+   3. Build > Firestore Database > Create database, a location near them, production mode. Rules tab, paste and Publish:
+      ```
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /saves/{uid} {
+            allow read, write: if request.auth != null && request.auth.uid == uid;
+          }
+        }
+      }
+      ```
+   4. Project settings (gear) > General > Your apps > Web (`</>`), a nickname, no Hosting, Register; the
+      `firebaseConfig = { ... }` block goes into `js/cloud-config.js` as `FIREBASE_CONFIG`. Then playtest on the live site:
+      sign in on the phone first (its save becomes the cloud save), then on the PC.
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve

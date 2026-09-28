@@ -532,3 +532,29 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   * { scrollbar-color: #c8c8d0 #303038; }
   :is(.dialog, .panel, .bag), :is(.dialog, .panel, .bag) * { scrollbar-color: #888890 var(--win-panel); }
 }
+
+/* ---------- the cloud save windows (js/cloud.js) ---------- */
+.cloud-google { width: 100%; margin: 4px 0 12px; }
+.cloud-or { margin-bottom: 6px; }
+.cloud-email { display: flex; gap: 8px; flex-wrap: wrap; }
+.cloud-email input {
+  flex: 1 1 180px; min-width: 0;
+  padding: 10px; font: inherit; font-size: 0.8rem;
+  color: var(--win-ink); background: #fff;
+  border: 2px solid var(--win-edge); border-radius: var(--round-xs);
+}
+.cloud-email input:focus { outline: 3px solid #6890f0; outline-offset: 1px; }
+#cloud-note:empty { display: none; }
+#cloud-note { margin-top: 12px; }
+.cloud-saves { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.cloud-save { padding: 12px; display: flex; flex-direction: column; }
+.cloud-save h3 { margin: 0 0 4px; }
+.cloud-lines { list-style: none; padding: 0; margin: 6px 0 12px; flex: 1; font-size: 0.8rem; line-height: 1.5; }
+.dialog .cloud-lines li { margin: 0 0 2px; }
+.cloud-save .btn { align-self: stretch; }
+@media (max-width: 520px) {
+  .cloud-saves { grid-template-columns: 1fr; gap: 8px; }
+  .cloud-save { padding: 8px 10px; }
+  .cloud-save .hint { margin-bottom: 0; }
+  .cloud-lines { margin: 4px 0 8px; }
+}

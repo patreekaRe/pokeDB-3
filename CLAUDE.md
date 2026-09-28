@@ -305,6 +305,26 @@ exists, its icon the run's Poké Ball wobbling like a catch in progress (`.cball
 the user wanted back), its biome and HP on a second line; tapping it swings the lid open in a flash of light, and your
 Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 
+## Cloud save
+
+Optional, from the Poké Ball menu (the user's picks, 2026-09-28: Firebase, Google and email-link sign-in, ask when two
+saves differ). `js/cloud.js`; the project's public web config is `FIREBASE_CONFIG` in `js/cloud-config.js` (not a secret;
+the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) stays hidden and nothing
+changes. Signed out, the Firebase SDK (gstatic, 12.19.0, `firebase-firestore-lite`) is never downloaded: it loads only
+when `pokedb.cloud.v1` (this device's `{ uid, rev, dirty, localAt }`) says you're signed in, the URL is an email sign-in
+link, or you open the window. Both localStorage keys (`SAVE_KEYS` in `js/storage.js`) go as they are into one Firestore
+document, `saves/<uid>` = `{ save, run, rev, savedAt, device }`; `onSaveWrite()` fires on every write, and the upload
+follows 4 s later (and when the tab hides, or comes back online), in a transaction that refuses it if the cloud's `rev`
+isn't the one this device last agreed with. Rules: cloud moved and this device didn't → take the cloud's (write the keys,
+`location.reload()`; only on the title or right after signing in, else ask); this device moved → upload; both → the
+"Two saves found" window (`#cloud-pick-dialog`, a summary of each; closing it means ask again next load). The first
+sign-in on a device uploads its save if the cloud has none (the user's phone save becomes the first cloud save) and takes
+the cloud's if this device has no progress (`isBlank()`). Sign out keeps the local save. The About erase uploads the
+erased save too. Email links come back to the page with `?mode=signIn&oobCode=...`; the address is kept in
+`pokedb.cloud.email` (asked again if the link opens in another browser) and the URL is cleaned. Firestore rules, and the
+Firebase console steps, are in the roadmap's step 4. Headless tests route gstatic to stand-in modules (the real SDK
+can't be reached from a cloud session).
+
 ## Deck thinning
 
 The Pokémon Center (`restSite()` in `js/run.js`) offers Rest *or* **PP Up** (StS's campfire, the user's call
@@ -1032,7 +1052,7 @@ There's no bar: the top-left Poké Ball (`#brand-btn`: an 18x18 pixel sprite inl
 36px so each pixel is exactly 2x2, the user's call 2026-09-28: "between smooth and a hint of 8-bit"; the logo's "o" stays
 the CSS `.pokeball`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
-menu, Index, Stats, Achievements, Sound, How to play and About (Stats and
+menu, Index, Stats, Achievements, Sign in (the cloud save, see Cloud save), Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
 letters in `PALETTE`). The
 **Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the

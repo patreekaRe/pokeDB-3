@@ -67,6 +67,7 @@
         <button class="menu-item" id="dex-btn"><span class="mi-icon">📕</span><span class="mi-label">Pokédex</span></button>
         <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
         <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
+        <button class="menu-item" id="cloud-btn" hidden><span class="mi-icon">☁️</span><span class="mi-label">Sign in</span></button>
         <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
         <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="volume-slider" min="0" max="100" step="5" value="100"></label>
         <button class="menu-item" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
@@ -533,6 +534,40 @@
         <form method="dialog" class="gc-btn-wrap"><button class="gc-btn exit" aria-label="Close the Game Corner"></button><span class="gc-btn-label">Exit</span></form>
       </div>
     </div>
+  </dialog>
+
+  <!-- the cloud save (js/cloud.js): only once js/cloud-config.js holds a Firebase project -->
+  <dialog id="cloud-dialog" class="dialog small-dialog cloud-dialog">
+    <h2>Cloud save</h2>
+    <div id="cloud-out">
+      <p>Sign in to keep your progress safe in the cloud and carry on from your phone or PC. You can keep playing without it.</p>
+      <button class="btn primary cloud-google" id="cloud-google">Sign in with Google</button>
+      <p class="hint cloud-or">or get a sign-in link by email:</p>
+      <form class="cloud-email" id="cloud-email-form">
+        <input type="email" id="cloud-email" required autocomplete="email" placeholder="you@example.com" aria-label="Email">
+        <button class="btn" id="cloud-send">Send link</button>
+      </form>
+    </div>
+    <div id="cloud-in" hidden>
+      <p>Signed in as <strong id="cloud-who"></strong></p>
+      <p id="cloud-status"></p>
+      <button class="btn primary" id="cloud-choose" hidden>Choose a save</button>
+    </div>
+    <p class="hint" id="cloud-note" aria-live="polite"></p>
+    <div class="dialog-actions">
+      <button class="btn small" id="cloud-signout" hidden>Sign out</button>
+      <form method="dialog"><button class="btn">Close</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="cloud-pick-dialog" class="dialog cloud-pick-dialog">
+    <h2>Two saves found</h2>
+    <p>This device and the cloud have different progress. Which one do you want to keep? The other one will be replaced.</p>
+    <div class="cloud-saves">
+      <section class="panel cloud-save" id="cloud-save-here"></section>
+      <section class="panel cloud-save" id="cloud-save-cloud"></section>
+    </div>
+    <p class="hint">Not sure? Close this and it will ask again next time.</p>
   </dialog>
 
   <dialog id="confirm-dialog" class="dialog small-dialog">
