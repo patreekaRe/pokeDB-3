@@ -752,7 +752,7 @@ export function cardTerms(card) {
     uses(/^retain/) && ['Retain', 'A kept card stays in hand at turn end.'],
     (uses(/exhaust|^playTop$|^exhume$|^corruption$/) || card.onExhaust) && ['Exhaust', 'Gone for this fight. Back next fight.'],
     (uses(/discard/i) || card.onDiscard) && ['Discard', 'Hand to discard pile. Turn end doesn\'t count.'],
-    uses(/tide|^drizzle$/i) && ['Tide', 'Builds up all fight. "Per Tide" moves spend it all.'],
+    uses(/tide|^drizzle$/i) && ['Tide', 'A stack you build up all fight (your 🌊 badge). "Per Tide" moves get stronger per stack, then use it all up.'],
     uses(/burn|^drought$/i) && ['Burn', 'Damage each enemy turn, then -1.'],
     uses(/seed/i) && ['Leech Seed', 'Drains that much HP each enemy turn, then -1.'],
     uses(/^sap$/) && ['Sap', 'Enemy attacks deal that much less, all fight.'],
