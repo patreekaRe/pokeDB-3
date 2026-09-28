@@ -50,7 +50,7 @@ export const runBiome = () => (isRunActive() ? run.biome : undefined);
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
    ============================================================ */
-export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 50 };
+export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 100 };   // winBonus 50 until 2026-09-28 (the user's call)
 /** PokéCoins for the first Trainer Level 5 win with each type (Coin Finder adds to it). */
 export const LEVEL5_JACKPOT = 500;
 
@@ -645,18 +645,22 @@ function afterFight(node, result) {
   const unlock = () => { for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); } };
   if (!(node.type === 'boss' && run.biome === BIOMES.length - 1)) unlock();
 
-  const [low, high] = PRIZE_MONEY[node.type];
+  // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
+  const tough = node.type === 'fight' && TYPES[ENEMY_DEFS[node.enemyId]?.type]?.beats === run.starter.type;
+  const payAs = tough ? 'elite' : node.type;
+  if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
+  const [low, high] = PRIZE_MONEY[payAs];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
   const foe = ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
-    coins: coinsWithBonus(levelCoins(COIN_REWARDS[node.type])), money: prize, dex: dexNews,
+    coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs])), money: prize, dex: dexNews,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
     if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
-    awardCoins(levelCoins(COIN_REWARDS[node.type]));
+    awardCoins(levelCoins(COIN_REWARDS[payAs]));
     run.money += prize;
     setMoney(run.money);
     updateSave(d => {

@@ -280,7 +280,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
 - **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
   applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
-  `js/run.js`; fight and win coins grow +10% per Trainer Level played (`COIN_LEVEL_BONUS`, `levelCoins()`; shown
+  `js/run.js` (a won run pays 100 since 2026-09-28, was 50; a wild Pokémon whose type beats your starter's pays an
+  elite's coins and ₽, `tough` / `payAs` in `afterFight()`, with a "tough match-up" line in the reward box; the user's calls); fight and win coins grow +10% per Trainer Level played (`COIN_LEVEL_BONUS`, `levelCoins()`; shown
   on the Prepare step's coins chip and the How to play coins slide). Shop catalog is `js/data/shop.js`; `js/shop.js`
   renders it. **Game Corner perks** (step 8, 8 in all, each shown `Lv n/m`; `perkLevel(id)` in `js/storage.js` reads
   one, true/false or a number): Max HP Boost, Starting Relic Charm, Well-Fed, Coin Finder, and since step 8 **Bag
