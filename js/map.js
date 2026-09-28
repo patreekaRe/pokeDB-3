@@ -589,7 +589,7 @@ addEventListener('resize', () => {
 export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null } = {}) {
   lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal }];
   const box = $('map');
-  box.replaceChildren();
+  box.replaceChildren(...box.querySelectorAll(':scope > .map-keep'));
   fitGrid(box);
   box.style.setProperty('--grid-w', GRID_W);
   box.style.setProperty('--grid-h', GRID_H);

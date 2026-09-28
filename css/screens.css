@@ -953,9 +953,16 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 
 /* ---------- the biome's name: a pixel location sign, like the one the games show when you enter an area ---------- */
 .map-head { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 12px 0 14px; }
-/* the Silph Scope button (a complete Pokédex's prize): a small Pokégear capsule under the biome sign, "1/1" reveals left */
+/* the Silph Scope button (a complete Pokédex's prize): a small Pokégear capsule, "1/1" reveals left, lying in the map's
+   bottom-left corner (routes start from the middle, so it's always free). It's the map's one in-flow child, set down in the
+   corner by the map's flex column (not a top margin: a sticky box won't move its margin out of the map), and sticky, so on a
+   tall map scrolled up it waits at the screen's bottom instead. */
+.map:has(> .scope-btn:not([hidden])) { display: flex; flex-direction: column; justify-content: flex-end; }
+.map > .scope-btn { position: sticky; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); z-index: 3; margin: 0 0 12px 12px; }
 .scope-btn {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  height: 44px;
   align-items: center;
   gap: 6px;
   padding: 3px 12px 3px 6px;

@@ -1227,8 +1227,9 @@ shows its type, role, flavour text, weakness, HP and each move's numbers at that
 complete pays `DEX_COMPLETE_COINS` (1500) once (`dex.complete`), with a line in the result window (`run.dexComplete`,
 saved with the run) and a "Pokédex complete" row in the Achievements window. `dexDefeated()` returns `{ lines, complete }`. A fourth tab, **???** (`renderMystery()`, the user's ask 2026-09-28), stands in for the Mewtwo-only fourth biome (roadmap's v1.0 plan): question-mark tiles, counted nowhere, until part B gives it real entries. A fifth tab, **Rewards** (`renderRewards()`, the user's call: easy to find), lists
 the complete-Pokédex jackpot (1500 coins, Reshiram, shown as a "???" silhouette until won, the Silph Scope), research payouts and each page's perk with progress.
-**Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button under the map's biome sign
-(`#scope-btn`, `drawMap()` in `js/run.js`) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
+**Silph Scope** (`SCOPE` in `js/data/pokedex.js`, the complete Pokédex's prize): a button in the map's bottom-left corner
+(`#scope-btn`, `drawMap()` in `js/run.js`; the user's call 2026-09-28: a child of `#map` kept by `renderMap()` as `.map-keep`,
+sticky so a tall PC map scrolled up keeps it at the screen's bottom) with `SCOPE_REVEALS` (1) reveals a biome, +1 per level of the Game Corner's
 **Scope Upgrade** (`scopeUpgrade`, 2 levels, `needsDex`: greyed out until the Pokédex is complete). Tapping it lights up
 every unvisited fight / elite room (`scopeable()`, `.scope-pick`, `renderMap(..., { reveal })`); the one picked gets
 `node.revealed` (saved with the map's nodes, which also counts the biome's reveals used), cries, and shows its Pokémon above
