@@ -875,12 +875,15 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; width: 190px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
 .run-info strong { font-size: 1.1rem; }
 .ability-chip .item-sprite { width: 1.3em; height: 1.3em; margin: -0.2em 0; }
-.run-ability .item-sprite, .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
-.run-ability { align-self: flex-end; display: flex; align-items: center; gap: 4px; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.72rem; color: #ffe6a0; cursor: help; }
-/* Blaze only counts below half HP: dim until then, lit orange (and your Pokémon flickering with flame) once it's on */
-.run-ability[data-state="off"] { opacity: 0.5; filter: grayscale(0.7); }
-.run-ability[data-state="on"] { color: #ffa030; animation: blazeLabel 1s steps(2) infinite; }
-@keyframes blazeLabel { 50% { color: #ffe060; } }
+.sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
+.run-ability { display: inline-flex; cursor: help; }
+/* The Ability is just its capsule beside the name (tap for its text). Blaze only counts below half HP: dim until then,
+   then the capsule glows and bobs and your Pokémon flickers with flame */
+.run-name .run-ability { align-self: center; margin-left: 6px; }
+.run-ability .item-sprite { width: 1.4em; height: 1.4em; margin: -0.3em 0; }
+.run-ability[data-state="off"] { opacity: 0.45; filter: grayscale(0.8); }
+.run-ability[data-state="on"] { filter: sepia(1) saturate(4) hue-rotate(-20deg) drop-shadow(0 0 2px #ffd040) drop-shadow(0 0 5px #ff5010); animation: blazeCapsule 0.8s steps(2) infinite; }
+@keyframes blazeCapsule { 50% { translate: 0 -2px; } }
 .run-sprite[data-blaze] { animation: blazeAura 0.5s steps(1) infinite; }
 @keyframes blazeAura {
   0% { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 3px #ff7a18) drop-shadow(0 -2px 2px #ffb020); }
@@ -891,23 +894,12 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .run-sprite[data-blaze] { animation: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 4px #ff7a18); }
 }
 
-/* Gold/Silver's EXP bar under the HP numbers: thin and blue, filling floor by floor up to the boss */
-.gb-exp { display: flex; align-items: center; width: min(190px, 100%); margin-top: 2px; cursor: help; }
-.gb-exp-tag {
-  font-family: var(--pixel-font); font-synthesis-weight: none;
-  padding: 0 3px 0 4px;
-  border: 2px solid #181818;
-  border-right: 0;
-  border-radius: 4px 0 0 4px;
-  background: #181818;
-  color: #58b8f8;
-  font-size: 0.5rem;
-  line-height: 8px;
-  padding-block: 0;
-}
-.gb-exp-track { flex: 1; height: 12px; padding: 2px; border: 2px solid #181818; border-radius: 0 5px 5px 0; background: #f8f8f0; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); }
+/* HP and Gold/Silver's thin blue EXP bar share one tag, the EXP flush under the HP */
+.run-bars { align-items: flex-start; }
+.gb-bars { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gb-bars .gb-hp-track { flex: none; }
+.gb-exp { display: block; height: 10px; padding: 2px; border: 2px solid #181818; border-top: 0; border-radius: 0 0 6px 0; background: #f8f8f0; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); cursor: help; margin-top: -2px; }
 .gb-exp-fill { display: block; height: 100%; width: 0; background: #3890f8; transition: width 0.6s steps(10); }
-.gb-exp-note { align-self: flex-end; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.55rem; color: #a8d8ff; }
 
 /* The Bag button: a frameless pixel backpack in the top-right corner beside the coins and the Poké Mart.
    Shown only on run screens (showScreen() in js/ui.js); open (aria-expanded) looks pressed in. */

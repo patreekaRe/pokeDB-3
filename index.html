@@ -214,18 +214,16 @@
       <div class="run-card">
         <img id="run-sprite" class="run-sprite pixel" alt="">
         <div class="run-info">
-          <div class="run-name"><strong id="run-title"></strong> <span id="run-level" class="chip level-chip" hidden></span></div>
-          <div class="gb-hp" id="run-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
+          <div class="run-name"><strong id="run-title"></strong><span class="run-ability" id="run-ability"></span> <span id="run-level" class="chip level-chip" hidden></span></div>
+          <div class="gb-hp run-bars" id="run-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
-            <span class="gb-hp-track"><span class="gb-hp-fill" id="run-hp-fill"></span></span>
+            <span class="gb-bars">
+              <span class="gb-hp-track"><span class="gb-hp-fill" id="run-hp-fill"></span></span>
+              <!-- Gold/Silver's EXP bar, flush under HP: fills floor by floor up to the boss (showExp() in js/run.js) -->
+              <span class="gb-exp" id="run-exp" role="progressbar" aria-label="Progress to the boss" aria-valuemin="0"><span class="gb-exp-fill" id="run-exp-fill"></span></span>
+            </span>
           </div>
           <span class="gb-hp-num" id="run-hp-text"></span>
-          <div class="gb-exp" id="run-exp" role="progressbar" aria-label="Progress to the boss" aria-valuemin="0">
-            <span class="gb-exp-tag" aria-hidden="true">EXP</span>
-            <span class="gb-exp-track"><span class="gb-exp-fill" id="run-exp-fill"></span></span>
-          </div>
-          <span class="gb-exp-note" id="run-exp-note"></span>
-          <span class="run-ability" id="run-ability"></span>
         </div>
       </div>
 

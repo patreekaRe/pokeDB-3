@@ -286,11 +286,8 @@ function showExp(floor, floors) {
   $('run-exp-fill').style.width = `${Math.round(Math.min(1, floor / steps) * 100)}%`;
   bar.setAttribute('aria-valuemax', String(steps));
   bar.setAttribute('aria-valuenow', String(floor));
-  const goal = last ? (run.biome === BIOMES.length - 1 ? 'Final boss' : 'Boss') : 'Evolves at boss';
-  $('run-exp-note').textContent = goal;
-  bar.title = last
-    ? `Floor ${floor} of ${floors}: the bar fills as you near the boss.`
-    : `Floor ${floor} of ${floors}: beat the boss at the top of the map to evolve.`;
+  const goal = last ? (run.biome === BIOMES.length - 1 ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
+  bar.title = `EXP: floor ${floor} of ${floors}. Full at ${goal}.`;
 }
 
 // Blaze only works below half HP, so the map says whether it's on: dim above half, lit (and your Pokémon aflame) below.
@@ -300,19 +297,14 @@ function showAbility() {
   el.hidden = !ability;
   delete $('run-sprite').dataset.blaze;
   if (!ability) return;
-  let label = `Ability: ${ability.name}`;
   let state = '';
   if (ability.id === 'blaze') {
-    const lit = run.hp > 0 && run.hp < run.maxHp / 2;
-    state = lit ? 'on' : 'off';
-    if (lit) {
-      label = `${ability.name}! +${ability.amount} damage`;
-      $('run-sprite').dataset.blaze = '';
-    }
+    state = run.hp > 0 && run.hp < run.maxHp / 2 ? 'on' : 'off';
+    if (state === 'on') $('run-sprite').dataset.blaze = '';
   }
   el.dataset.state = state;
-  el.replaceChildren(itemSprite(ability), label);
-  el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ' (Active now!)' : ''}`;
+  el.replaceChildren(itemSprite(ability));
+  el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${ability.amount} damage!` : ''}`;
 }
 
 function showMap() {
