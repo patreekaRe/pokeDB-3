@@ -457,11 +457,15 @@ about two standard errors, worth a re-check with more runs before retuning.
 Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
 
 1. ~~**Evolution overhaul.**~~ Done 2026-09-28 (see the Anytime entry below).
-2. **Cries.** Run in: CLOUD (attach pokeDB-3).
+2. **Title and starter screen polish** (the user's ask, 2026-09-28: before cries and cloud save). Run in: CLOUD (attach pokeDB-3).
+   > Read CLAUDE.md (Title screen; Top bar and start screen). Ask the user what feels off about the title screen and the
+   > starter screen and what they'd like (mood, references, what to keep) before changing anything, then show headless
+   > screenshots at phone and PC widths for each change. Keep them pixel-art and Gold/Silver-flavoured like the rest.
+3. **Cries.** Run in: CLOUD (attach pokeDB-3).
    > Read CLAUDE.md (Music: Cries). Ask the user what they want changed about the cries (loudness, missing ones, wrong ones,
    > new places they play) before changing anything. PokeAPI's cries (`cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3 at
    > ~-14 dB mean) are the source; play.pokemonshowdown.com is blocked in cloud sessions.
-3. **Cloud save with login.** Run in: CLOUD (attach pokeDB-3).
+4. **Cloud save with login.** Run in: CLOUD (attach pokeDB-3).
    > Read CLAUDE.md (Saved runs, storage.js). Plan a cloud save with the user first: Firebase or Supabase (free tier), sign-in
    > by Google and/or an email link, a Sign in item in the Poké Ball menu, playing signed-out unchanged. The user's existing
    > save on their phone (`pokedb.save.v2` and the run's `pokedb.run.v1` in localStorage) must upload as their first cloud
