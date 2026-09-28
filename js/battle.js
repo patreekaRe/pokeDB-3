@@ -558,6 +558,7 @@ async function playCard(uid) {
   const cost = costOf(card);
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
+  if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) smokeOut(uid);   // it poofs into the exhaust pile as it's played
   b.hand.splice(index, 1);
   if (!await resolveCard(card, x)) return;       // the player left the battle
 
@@ -1451,8 +1452,9 @@ function renderPicking() {
   banner.hidden = false;
 }
 
-/** A card exhausted from your hand goes poof in a puff of smoke where it sat, then flies into the exhaust pile, the way
-    an item flies into the Bag (the user's call, 2026-09-28). */
+/** A card exhausted from your hand, picked or played (an Exhaust card, a status card under Lum Berry), goes poof in a
+    puff of smoke where it sat, then flies into the exhaust pile, the way an item flies into the Bag (the user's calls,
+    2026-09-28). */
 async function smokeOut(uid) {
   const from = $('hand').querySelector(`[data-uid="${uid}"]`);
   const risen = $('card-focus').querySelector('.focus-card');
