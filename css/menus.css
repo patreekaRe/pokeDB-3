@@ -98,7 +98,6 @@
   filter: drop-shadow(2px 0 0 #2a1408) drop-shadow(-2px 0 0 #2a1408) drop-shadow(0 2px 0 #2a1408) drop-shadow(0 -2px 0 #2a1408) drop-shadow(0 3px 0 rgba(20, 10, 30, 0.45));
 }
 .gem-icon img { width: 60px; height: 60px; max-width: none; object-fit: contain; image-rendering: pixelated; margin-top: -8px; }
-.gem-icon .pokeball { font-size: 50px; animation: none; }
 .gem-emoji { font-size: 30px; line-height: 1; }
 .gem-label {
   position: relative;
@@ -134,14 +133,30 @@
 }
 .gem:active { translate: 0 var(--gp); filter: brightness(0.96); }
 .gem:focus-visible { outline: none; }
-/* Continue: the Pokémon on the gem flashes white and hops off it, like being sent out */
-.gem.going .gem-icon { animation: gemSendOut 0.7s steps(7) forwards; }
-@keyframes gemSendOut {
-  0% { filter: brightness(1); }
-  30% { filter: brightness(0) invert(1); scale: 1.2; }
-  60% { filter: brightness(0) invert(1); scale: 1.5; translate: 0 -90%; opacity: 1; }
-  100% { scale: 1.8; translate: 0 -120%; opacity: 0; }
+/* Continue's icon: the run's Poké Ball, wobbling like a catch in progress (it used to sit on the old Continue card; the user
+   wanted it back). A press swings the lid open in a flash of light and your Pokémon comes out white, then in colour. */
+.cball { position: relative; display: grid; place-items: center; width: 44px; height: 44px; }
+.cball-ball { position: relative; width: 36px; height: 36px; transform-origin: 50% 90%; }
+.cball-top, .cball-bottom { position: absolute; left: 0; width: 100%; height: 50%; background: center / 100% 100% no-repeat; image-rendering: pixelated; }
+.cball-top { top: 0; z-index: 2; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='4' y='0' width='6' height='1' fill='%23181010'/><rect x='2' y='1' width='2' height='1' fill='%23181010'/><rect x='4' y='1' width='6' height='1' fill='%23e83828'/><rect x='10' y='1' width='2' height='1' fill='%23181010'/><rect x='1' y='2' width='1' height='1' fill='%23181010'/><rect x='2' y='2' width='1' height='1' fill='%23e83828'/><rect x='3' y='2' width='1' height='1' fill='%23f8f8f8'/><rect x='4' y='2' width='7' height='1' fill='%23e83828'/><rect x='11' y='2' width='1' height='1' fill='%23a01818'/><rect x='12' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='1' height='1' fill='%23f8f8f8'/><rect x='3' y='3' width='8' height='1' fill='%23e83828'/><rect x='11' y='3' width='1' height='1' fill='%23a01818'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='0' y='4' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='4' height='1' fill='%23e83828'/><rect x='5' y='4' width='4' height='1' fill='%23181010'/><rect x='9' y='4' width='2' height='1' fill='%23e83828'/><rect x='11' y='4' width='2' height='1' fill='%23a01818'/><rect x='13' y='4' width='1' height='1' fill='%23181010'/><rect x='0' y='5' width='1' height='1' fill='%23181010'/><rect x='1' y='5' width='3' height='1' fill='%23e83828'/><rect x='4' y='5' width='2' height='1' fill='%23181010'/><rect x='6' y='5' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='5' width='2' height='1' fill='%23181010'/><rect x='10' y='5' width='1' height='1' fill='%23e83828'/><rect x='11' y='5' width='2' height='1' fill='%23a01818'/><rect x='13' y='5' width='1' height='1' fill='%23181010'/><rect x='0' y='6' width='5' height='1' fill='%23181010'/><rect x='5' y='6' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='6' width='5' height='1' fill='%23181010'/></svg>"); transform-origin: 6% 100%; transition: transform 0.28s steps(3); }
+.cball-bottom { bottom: 0; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='0' y='0' width='5' height='1' fill='%23181010'/><rect x='5' y='0' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='0' width='5' height='1' fill='%23181010'/><rect x='0' y='1' width='1' height='1' fill='%23181010'/><rect x='1' y='1' width='3' height='1' fill='%23f8f8f8'/><rect x='4' y='1' width='2' height='1' fill='%23181010'/><rect x='6' y='1' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='1' width='2' height='1' fill='%23181010'/><rect x='10' y='1' width='1' height='1' fill='%23f8f8f8'/><rect x='11' y='1' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='1' width='1' height='1' fill='%23181010'/><rect x='0' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='2' width='4' height='1' fill='%23f8f8f8'/><rect x='5' y='2' width='4' height='1' fill='%23181010'/><rect x='9' y='2' width='2' height='1' fill='%23f8f8f8'/><rect x='11' y='2' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='8' height='1' fill='%23f8f8f8'/><rect x='10' y='3' width='2' height='1' fill='%23c8c8d0'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='4' width='7' height='1' fill='%23f8f8f8'/><rect x='9' y='4' width='3' height='1' fill='%23c8c8d0'/><rect x='12' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='5' width='6' height='1' fill='%23c8c8d0'/><rect x='10' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='6' width='6' height='1' fill='%23181010'/></svg>"); }
+.cball-light { position: absolute; left: 50%; top: 50%; z-index: 1; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 12px 6px #fff, 0 0 30px 12px #f8d048; opacity: 0; }
+.cball img { position: absolute; left: 50%; bottom: -4px; width: 60px; height: 60px; max-width: none; margin: 0 0 0 -30px; object-fit: contain; image-rendering: pixelated; scale: 0; }
+.gem.opening .cball-top { transform: rotate(-38deg); }
+.gem.opening .cball-light { animation: cballLight 0.45s ease-out forwards; }
+.gem.out .cball-ball { animation: cballAway 0.2s steps(2) forwards; }
+.gem.out .cball img { animation: cballOut 0.45s steps(5) forwards; }
+@keyframes cballLight { 0% { opacity: 0; transform: scale(0.3); } 35% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: scale(3.5); } }
+@keyframes cballAway { to { transform: scale(0.2); opacity: 0; } }
+@keyframes cballOut { 0% { scale: 0.2; filter: brightness(0) invert(1); } 60% { scale: 1.12; filter: brightness(0) invert(1); } 100% { scale: 1; filter: none; } }
+/* New game's Egg wobbles while it's the one picked, as if about to hatch */
+.gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; transform-origin: 50% 90%; }
+@keyframes eggWobble { 0%, 50%, 100% { rotate: 0deg; } 60% { rotate: -12deg; } 70% { rotate: 10deg; } 80% { rotate: -6deg; } 90% { rotate: 3deg; } }
+@media (prefers-reduced-motion: no-preference) {
+  .cball-ball { animation: ballWobble 2.4s steps(24) infinite; }
+  .gem.opening:not(.out) .cball-ball { animation: none; }
 }
+@media (max-height: 700px) { .cball { width: 36px; height: 36px; } .cball-ball { width: 28px; height: 28px; } .cball img { width: 48px; height: 48px; margin: 0 0 0 -24px; } }
 /* PRESS START flashes white; the title fades out as it's left and back in when you come home */
 .title-screen.flash::after { content: ""; position: absolute; inset: 0; background: #fff; animation: titleFlash2 0.26s steps(2) forwards; pointer-events: none; }
 @keyframes titleFlash2 { 50% { opacity: 1; } 100% { opacity: 0; } }
@@ -155,7 +170,6 @@
   .gem-label { font-size: 0.8rem; padding-left: 34px; }
   .gem-icon { width: 36px; height: 36px; }
   .gem-icon img { width: 48px; height: 48px; }
-  .gem-icon .pokeball { font-size: 40px; }
   .gem-emoji { font-size: 24px; }
   .title-menu { gap: 10px; }
   .title-screen.menu .title-big { font-size: clamp(2.6rem, 12vw, 5rem); }
@@ -312,5 +326,5 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .gem, .coll-card, .select-screen, .sel-stage img, .title-screen:not([hidden]), .title-screen.away { animation: none; }
   .title-screen.away { opacity: 0; }
-  .gem.going .gem-icon, .gem.on::before { animation: none; }
+  .gem.on::before, .gem.on .gem-egg { animation: none; }
 }

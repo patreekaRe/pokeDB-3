@@ -125,7 +125,7 @@ function renderMenu() {
   const run = actions.savedRun();
   const gems = [
     run && gem('continue', 'Continue', () => sendOut(run), runIcon(run), runLine(run)),
-    gem('new', 'New game', actions.onNewGame, el('span', 'pokeball')),
+    gem('new', 'New game', actions.onNewGame, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
     gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
     gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
   ].filter(Boolean);
@@ -203,11 +203,16 @@ function paintGem(canvas, cols, rows, [face, hi, lo]) {
   g.fillRect(cols - 15, rows - 5, 5, 1);
 }
 
+/** Continue's icon: the run's Poké Ball, wobbling, with your Pokémon waiting inside to be sent out. */
 function runIcon(run) {
+  const ball = el('span', 'cball');
+  const shell = el('span', 'cball-ball');
+  shell.append(el('span', 'cball-bottom'), el('span', 'cball-light'), el('span', 'cball-top'));
   const img = el('img', 'pixel');
   img.src = run.sprite;
   img.alt = '';
-  return img;
+  ball.append(shell, img);
+  return ball;
 }
 
 function runLine(run) {
@@ -223,17 +228,17 @@ function runLine(run) {
   return line;
 }
 
-/** Continue: the Pokémon on the gem flashes white and hops out with its cry, then the map comes in. */
+/** Continue, like the old Continue card: the ball's lid pops open in a flash, your Pokémon comes out with its cry, then the map. */
 function sendOut(run) {
   const btn = document.querySelector('#title-menu .gem-continue');
-  if (!btn || btn.classList.contains('going')) return;
-  btn.classList.add('going');
+  if (!btn || btn.classList.contains('opening')) return;
+  btn.classList.add('opening');
   playSound('ball-open');
-  playCry(run.cry);
+  setTimeout(() => { btn.classList.add('out'); playCry(run.cry); }, still() ? 0 : 250);
   setTimeout(() => {
-    btn.classList.remove('going');
+    btn.classList.remove('opening', 'out');
     actions.onContinue(run.saved);
-  }, still() ? 0 : 700);
+  }, still() ? 0 : 1100);
 }
 
 /* ---------- the sky ---------- */

@@ -301,8 +301,9 @@ user's call: StS allows it too), so don't serialise battles to stop it.
 A version mismatch or any bad id (deck, relics, Mart stock) silently
 discards it: bump `RUN_SAVE_VERSION` when the shape changes. The title's
 Continue gem (`savedRunCard()` in `js/main.js`, drawn by `renderMenu()` in `js/title.js`) shows whenever a valid save
-exists, with the run's Pokémon as its icon and its biome and HP on a second line; tapping it flashes the Pokémon white
-and it hops off the gem with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
+exists, its icon the run's Poké Ball wobbling like a catch in progress (`.cball`, the old Continue card's pixel ball, which
+the user wanted back), its biome and HP on a second line; tapping it swings the lid open in a flash of light, and your
+Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 
 ## Deck thinning
 
@@ -1017,8 +1018,8 @@ plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): 
 painted on its own `<canvas>` by `paintGem()` (pointed ends, a dark outline, a two-tone bronze frame, an inner groove, a face
 with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a pixel, 4 or 3 on windows ≤700px tall, the
 canvas a whole number of pixels wide so they stay square) with a bare pixel icon on its left end (a dark pixel outline, no
-frame: the user's call): **Continue** (amber, only with a save; see Saved runs), **New game** (violet, a Poké Ball: the
-character select), **Collection** (gold, the Pokédex: the Collection screen) and **Game Corner** (coral: `toggleShop()`,
+frame: the user's call): **Continue** (amber, only with a save; see Saved runs), **New game** (violet, an Egg that wobbles while
+picked, since Continue has the Poké Ball: the character select), **Collection** (gold, the Pokédex: the Collection screen) and **Game Corner** (coral: `toggleShop()`,
 whose dialog sits above the title at z-index 90). Hover, focus or ↑ ↓ move a blinking ▶ (`point()`), Enter / tap picks, a
 press sinks the gem. Leaving fades the title out over the screen you go to (`leaveTitle()`), and every way home (the Poké
 Ball menu's Main menu, a run's end, Back on the select or the Collection, the About erase) comes back to the gems with
