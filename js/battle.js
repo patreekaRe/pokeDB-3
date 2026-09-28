@@ -125,7 +125,7 @@ const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
  *   run        the current run (starter, stage, deck, hp, relics, biome)
  *   encounter  who you are fighting: { def, kind, maxHp, strength }
  *   onEnd      called when the fight is over with
- *              { won, hp, damageTaken }, plus fled: true after a Poké Doll
+ *              { won, hp, damageTaken, tally }, plus fled: true after a Poké Doll
  */
 export function startBattle({ run, encounter, onEnd }) {
   const def = encounter.def;
@@ -166,6 +166,7 @@ export function startBattle({ run, encounter, onEnd }) {
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
     damageTaken: 0,
+    tally: { played: 0, dealt: 0, biggest: 0, items: [] },   // this fight's share of the run's record (js/halloffame.js)
     hurtThisTurn: false,   // lost HP on this turn of yours (Temper Flare)
     timesHurt: 0,      // times you've lost HP this fight, however it happened (Mind Blown)
     played: 0,         // cards played this turn (this one included, while it resolves)
@@ -576,6 +577,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
   const b = battle;
   markSeen('cards', card.id);   // a move is met in the Index once played, not when offered (the user's call); Metronome's too
   b.played += 1;
+  b.tally.played += 1;
   if (isAttack(card)) b.attacks += 1;
   playSound('card');
 
@@ -950,6 +952,7 @@ async function useItem(index) {
 
   b.busy = true;
   b.items.splice(index, 1);
+  b.tally.items.push(item.id);
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   const e = item.effects;
   log(`You used ${item.name}!`);
@@ -962,7 +965,7 @@ async function useItem(index) {
     await sleep(900);
     if (battle !== b) return;
     $('player-sprite').classList.remove('fled');
-    return b.onEnd({ won: false, fled: true, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken });
+    return b.onEnd({ won: false, fled: true, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
   }
 
   if (e.burn)     { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
@@ -996,10 +999,21 @@ function hurtEnemy(amount) {
   const absorbed = Math.min(en.block, amount);
   en.block -= absorbed;
   const through = amount - absorbed;
-  en.hp = Math.max(0, en.hp - through);
+  enemyLoses(through);
+  battle.tally.biggest = Math.max(battle.tally.biggest, through);
   checkStorm();
   return through;
 }
+
+/** The enemy loses HP (a hit, Burn, Leech Seed), counted for the run's record without the overkill. */
+function enemyLoses(n) {
+  const en = battle.enemy;
+  battle.tally.dealt += Math.min(en.hp, n);
+  en.hp = Math.max(0, en.hp - n);
+}
+
+/** What this fight adds to the run's record. */
+const tallyOf = (b) => ({ ...b.tally, turns: b.turn, taken: b.damageTaken });
 
 
 /** Damage the player: block first, then HP. Returns the damage that got through. */
@@ -1033,6 +1047,7 @@ function revive() {
   if (index < 0) return;
   const item = ITEMS_BY_ID[b.items[index]];
   b.items.splice(index, 1);
+  b.tally.items.push(item.id);
   markSeen('items', item.id);
   b.hp = Math.max(1, Math.floor(b.maxHp * item.effects.revive));
   pop('player-zone', `✨ Revived! +${b.hp} HP`, 'heal', 350);
@@ -1124,7 +1139,7 @@ async function enemyTurn() {
   if (en.burn > 0) {
     const burnDamage = en.burn;
     en.burn -= 1;
-    en.hp = Math.max(0, en.hp - burnDamage);
+    enemyLoses(burnDamage);
     checkStorm();
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
@@ -1141,7 +1156,7 @@ async function enemyTurn() {
   if (en.seed > 0) {
     const n = en.seed;
     if (!b.powers.seedKeep) en.seed -= 1;
-    en.hp = Math.max(0, en.hp - n);
+    enemyLoses(n);
     checkStorm();
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${n} 🌱`, 'dmg');
@@ -1281,7 +1296,7 @@ async function finish(won) {
   if (battle !== b) return;
 
   closeDialog('piles-dialog');
-  b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken });
+  b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
 }
 
 /** Randomly reorder an array (returns a new array). */

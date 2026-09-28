@@ -1531,6 +1531,22 @@ body.battle-intro { pointer-events: none; }
 .hof-entry-pic img { max-width: 96px; max-height: 96px; image-rendering: pixelated; }
 .hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .hof-cards { margin-top: 6px; }
+.hof-row.champion { background: rgba(248, 208, 72, 0.18); }
+.hof-lv { font-size: 0.6rem; }
+.hof-rule { margin: 6px 0 0; font-size: 0.56rem; line-height: 1.6; color: var(--muted); }
+.hof-stats, .stat-grid.hof-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.hof-stats .stat-tile { padding: 6px 4px; gap: 2px; }
+.hof-stats .stat-value { font-size: 0.95rem; }
+.hof-stats .stat-icon { font-size: 1rem; }
+.hof-stats .stat-label { font-size: 0.56rem; line-height: 1.4; }
+.hof-things { display: flex; flex-wrap: wrap; gap: 8px; }
+.hof-thing {
+  display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px;
+  border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.07); box-shadow: inset 0 0 0 2px rgba(48, 48, 56, 0.12);
+  font-size: 0.58rem; cursor: help;
+}
+.hof-thing.ability { background: rgba(248, 208, 72, 0.2); }
+.hof-thing-icon .item-sprite { display: block; width: 32px; height: 32px; image-rendering: pixelated; }
 
 .wide-dialog { width: min(900px, 94vw); }
 .wide-dialog .card-pool { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }

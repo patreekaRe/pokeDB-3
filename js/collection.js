@@ -28,7 +28,7 @@ export function initCollection({ onBack }) {
   });
 }
 
-/** The newest champion stands on the Hall of Fame card; with none yet, a crown. */
+/** The newest winner stands on the Hall of Fame card; with none yet, a crown. */
 function fameArt(entry) {
   if (!entry) return el('span', 'coll-emoji', '👑');
   const img = el('img', 'pixel coll-fame');
@@ -54,8 +54,8 @@ export function showCollection() {
       `${save.stats.runsWon} of ${save.stats.runsStarted} runs won`, openStats],
     ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
       `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
-    ['hof', 'Hall of Fame', fameArt(save.hallOfFame.at(-1)), 'Every Trainer Level 5 win, with its final deck.',
-      `${save.hallOfFame.length} ${save.hallOfFame.length === 1 ? 'champion' : 'champions'}`, openHallOfFame],
+    ['hof', 'Hall of Fame', fameArt(save.hallOfFame.at(-1)), 'The record of every run you won: deck, relics, items and numbers.',
+      `${save.hallOfFame.length} ${save.hallOfFame.length === 1 ? 'win' : 'wins'}`, openHallOfFame],
   ];
   $('coll-grid').replaceChildren(...cards.map(([id, name, art, text, count, open], i) => {
     const card = el('button', `coll-card coll-${id}`);

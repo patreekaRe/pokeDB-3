@@ -6,7 +6,7 @@
  * card lists every entry; tapping one shows its deck. Under reduced motion nothing slides or flashes; the cry and
  * music stay.
  */
-import { $, el, sleep, openDialog, makeCard, groupDeck } from './ui.js';
+import { $, el, sleep, openDialog, makeCard, groupDeck, itemSprite } from './ui.js';
 import { playMusic, playCry, preloadMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
 import { fillDeck } from './deckpreview.js';
@@ -14,6 +14,9 @@ import { getSave, updateSave } from './storage.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { CARDS_BY_ID, TYPES } from './data/cards.js';
+import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
+import { ITEMS_BY_ID } from './data/items.js';
+import { MAX_LEVEL, LEVELS } from './data/difficulty.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CRY_WAIT_MAX = 1500;
@@ -24,21 +27,47 @@ export function preloadHallOfFame(starter) {
   preloadCries(starter.line.at(-1).id);
 }
 
-/** Enter a won Level 5 run in the save and return its entry. */
-export function enterHallOfFame(run, shiny) {
-  const now = new Date();
+const dayOf = (when) => {
   const pad = (n) => String(n).padStart(2, '0');
+  return `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`;
+};
+
+/**
+ * Save a won run in the record book (every Trainer Level; a Level 5 win also gets a Hall of Fame number, `fame`) and
+ * return its entry: the Pokémon, the date, the final deck, relics and Bag, the items used on the way, and the run's
+ * numbers (run.tally, added up by run.js from each fight).
+ */
+export function recordWin(run, shiny) {
+  const wins = getSave().hallOfFame;
+  const t = run.tally;
   const entry = {
-    no: getSave().hallOfFame.length + 1,
+    no: wins.length + 1,
+    fame: run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL).length + 1 : null,
     starter: run.starter.id,
     stage: run.stage,
     shiny,
     type: run.starter.type,
-    date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+    date: dayOf(new Date()),
+    started: t.startedAt ? dayOf(new Date(t.startedAt)) : null,
     level: run.level,
     deck: [...run.deck],
     relics: [...run.relics],
+    items: [...run.items],
+    itemsUsed: [...t.itemsUsed],
+    hp: run.hp,
+    maxHp: run.maxHp,
     fights: run.fights,
+    elites: t.elites,
+    turns: t.turns,
+    played: t.played,
+    dealt: t.dealt,
+    taken: t.taken,
+    biggest: t.biggest,
+    rests: run.restCount,
+    events: t.events,
+    forgotten: t.forgotten,
+    earned: run.money + t.spent,
+    spent: t.spent,
   };
   updateSave(d => { d.hallOfFame.push(entry); });
   return entry;
@@ -48,10 +77,13 @@ const starterOf = (entry) => STARTERS_BY_ID[entry.starter];
 const nameOf = (entry) => stageName(starterOf(entry), entry.stage);
 const imgOf = (entry) => spriteUrl(starterOf(entry), 'front', entry.stage, entry.shiny);
 const typeOf = (entry) => TYPES[entry.type] ?? { label: entry.type, icon: '' };
-const numberOf = (entry) => `No.${String(entry.no).padStart(3, '0')}`;
+const pad3 = (n) => String(n).padStart(3, '0');
+/** A Level 5 win's Hall of Fame number (entries saved before every win was recorded were all Level 5: `no`). */
+export const fameNo = (entry) => entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
+const numberOf = (entry) => fameNo(entry) ?? `Win ${pad3(entry.no)}`;
 /** "28 Sep 2026", read as a local date (a bare "2026-09-28" would parse as UTC midnight and show the day before in the Americas). */
-function dateOf(entry) {
-  const [y, m, d] = entry.date.split('-').map(Number);
+function dateOf(day) {
+  const [y, m, d] = day.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 const chip = (entry) => el('span', `index-only type-${entry.type}`, `${typeOf(entry).icon} ${typeOf(entry).label}`);
@@ -62,7 +94,7 @@ function plate(entry) {
   const head = el('div', 'hof-plate-head');
   head.append(el('span', 'hof-no', numberOf(entry)), el('strong', 'hof-name', `${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`));
   const foot = el('div', 'hof-plate-foot');
-  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry)), el('span', 'hof-level', `Lv.${entry.level}`));
+  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', `Lv.${entry.level}`));
   box.append(head, foot);
   return box;
 }
@@ -135,9 +167,9 @@ export async function hallOfFameScene(entry) {
   scene.className = 'hof-scene';
 }
 
-/* ---------- the Collection's window ---------- */
+/* ---------- the Collection's window: the record book ---------- */
 
-/** The Hall of Fame window: every entry, newest first; tapping one shows its deck. */
+/** The Hall of Fame window: every won run, newest first; tapping one opens its page in the record book. */
 export function openHallOfFame() {
   showList();
   openDialog('hof-dialog');
@@ -145,11 +177,12 @@ export function openHallOfFame() {
 
 function showList() {
   const entries = getSave().hallOfFame;
+  const champions = entries.filter(e => e.level === MAX_LEVEL).length;
   $('hof-dialog-sub').textContent = entries.length
-    ? `${entries.length} ${entries.length === 1 ? 'champion' : 'champions'}. Tap one to see its deck.`
-    : 'No champions yet. Win a run on Trainer Level 5 to enter the Hall of Fame.';
+    ? `${entries.length} ${entries.length === 1 ? 'win' : 'wins'}, ${champions} on Trainer Level ${MAX_LEVEL}. Tap one for its record.`
+    : 'No wins yet. Every run you win is saved here, and a Trainer Level 5 win enters the Hall of Fame.';
   $('hof-body').replaceChildren(...[...entries].reverse().map(entry => {
-    const row = el('button', `hof-row type-${entry.type}`);
+    const row = el('button', `hof-row type-${entry.type}${fameNo(entry) ? ' champion' : ''}`);
     row.type = 'button';
     const pic = el('span', 'hof-row-pic');
     const img = el('img', 'pixel');
@@ -158,8 +191,8 @@ function showList() {
     pic.append(img);
     const text = el('span', 'hof-row-text');
     const line = el('span', 'hof-row-line');
-    line.append(chip(entry), el('span', '', dateOf(entry)));
-    text.append(el('strong', '', `${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
+    line.append(chip(entry), el('span', 'hof-lv', `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
+    text.append(el('strong', '', `${fameNo(entry) ? '⭐ ' : ''}${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
       el('small', '', `${entry.deck.length} cards · ${entry.relics.length} relics · ${entry.fights} fights won`));
     row.append(pic, text, el('span', 'hof-row-go', '▶'));
     row.addEventListener('click', () => showEntry(entry));
@@ -168,8 +201,31 @@ function showList() {
   $('hof-body').scrollTop = 0;
 }
 
+const num = (n) => (n ?? null) === null ? '-' : Number(n).toLocaleString();
+
+/** A stat tile, like the Stats window's. */
+function tile([icon, value, label]) {
+  const node = el('div', 'stat-tile');
+  node.append(el('span', 'stat-icon', icon), el('b', 'stat-value', String(value)), el('span', 'stat-label', label));
+  return node;
+}
+
+/** A row of relic or item sprites with their names; a tap shows what one does (its title, js/tips.js). */
+function things(ids, table, empty) {
+  const box = el('div', 'hof-things');
+  const groups = groupDeck(ids, table).filter(g => g.card);
+  if (!groups.length && empty) box.append(el('p', 'records-empty', empty));
+  for (const { card: thing, count } of groups) {
+    const node = el('span', 'hof-thing');
+    node.title = `${thing.name}: ${thing.text}`;
+    node.append(itemSprite(thing, 'hof-thing-icon'), el('span', 'hof-thing-name', `${thing.name}${count > 1 ? ` ×${count}` : ''}`));
+    box.append(node);
+  }
+  return box;
+}
+
 function showEntry(entry) {
-  const back = el('button', 'btn secondary hof-back', '◀ All entries');
+  const back = el('button', 'btn secondary hof-back', '◀ All wins');
   back.type = 'button';
   back.addEventListener('click', showList);
   const top = el('div', `hof-entry type-${entry.type}`);
@@ -178,10 +234,50 @@ function showEntry(entry) {
   img.src = imgOf(entry);
   img.alt = nameOf(entry);
   pic.append(img);
-  top.append(pic, plate(entry));
+  const info = plate(entry);
+  info.append(el('p', 'hof-rule', `Trainer Level ${entry.level}: ${LEVELS[entry.level]?.name ?? ''}`
+    + (entry.started && entry.started !== entry.date ? ` · set out ${dateOf(entry.started)}` : '')));
+  top.append(pic, info);
+
+  const upgraded = entry.deck.filter(id => id.endsWith('+')).length;
+  const record = el('div', 'stat-grid hof-stats');
+  record.append(...[
+    ['⚔️', num(entry.fights), 'Fights won'],
+    ['👑', num(entry.elites), 'Alphas beaten'],
+    ['❤️', entry.hp != null ? `${entry.hp}/${entry.maxHp}` : '-', 'HP at the end'],
+    ['🔄', num(entry.turns), 'Turns'],
+    ['🃏', num(entry.played), 'Cards played'],
+    ['💥', num(entry.dealt), 'Damage dealt'],
+    ['🩸', num(entry.taken), 'Damage taken'],
+    ['🎯', num(entry.biggest), 'Biggest hit'],
+    ['🎒', entry.itemsUsed ? entry.itemsUsed.length : '-', 'Items used'],
+    ['💴', entry.earned != null ? `₽${num(entry.earned)}` : '-', '₽ earned'],
+    ['🏪', entry.spent != null ? `₽${num(entry.spent)}` : '-', '₽ spent'],
+    ['🏥', num(entry.rests), 'Rests'],
+    ['❓', num(entry.events), 'Events'],
+    ['💻', num(entry.forgotten), 'Moves forgotten'],
+    ['⏫', upgraded, 'Moves upgraded'],
+  ].map(tile));
+
+  const ability = ABILITIES[entry.type];
+  const relics = things(entry.relics, RELICS_BY_ID, ability ? '' : 'No relics.');
+  if (ability) {
+    const node = el('span', 'hof-thing ability');
+    node.title = `${ability.name}: ${ability.text}`;
+    node.append(itemSprite(ability, 'hof-thing-icon'), el('span', 'hof-thing-name', ability.name));
+    relics.prepend(node);
+  }
+  const label = (text) => el('h3', 'records-label', text);
   const cards = el('div', 'card-pool hof-cards');
   fillDeck(cards, entry.deck.filter(id => CARDS_BY_ID[id]), entry.stage);
-  $('hof-dialog-sub').textContent = `Final deck: ${entry.deck.length} cards. Tap a card to read it.`;
-  $('hof-body').replaceChildren(back, top, cards);
+
+  const parts = [back, top, label('The record'), record, label(`Relics (${entry.relics.length})`), relics];
+  if (entry.items) {
+    parts.push(label(`Items in the Bag (${entry.items.length})`), things(entry.items, ITEMS_BY_ID, 'The Bag was empty.'),
+      label(`Items used (${entry.itemsUsed.length})`), things(entry.itemsUsed, ITEMS_BY_ID, 'None used.'));
+  }
+  parts.push(label(`Final deck (${entry.deck.length})`), cards);
+  $('hof-dialog-sub').textContent = `${numberOf(entry)}: ${nameOf(entry)}'s run. Tap a card, relic or item to read it.`;
+  $('hof-body').replaceChildren(...parts);
   $('hof-body').scrollTop = 0;
 }

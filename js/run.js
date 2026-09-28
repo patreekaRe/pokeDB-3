@@ -35,7 +35,7 @@ import { playMusic, playSound, preloadSounds, playCry } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { enterHallOfFame, hallOfFameScene, preloadHallOfFame } from './halloffame.js';
+import { recordWin, fameNo, hallOfFameScene, preloadHallOfFame } from './halloffame.js';
 import { dexSeen, dexDefeated, dexWeight, hasDexPerk } from './pokedex.js';
 import { DEX_START_MONEY, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
@@ -103,6 +103,18 @@ export function abandonRun() {
 
 const RUN_SAVE_VERSION = 8;
 
+/** A run's record: what its fights add up to (battle.js hands each fight's share back), and the rest of the climb. */
+const freshTally = () => ({
+  turns: 0, played: 0, dealt: 0, taken: 0, biggest: 0, itemsUsed: [],
+  elites: 0, events: 0, spent: 0, forgotten: 0, startedAt: new Date().toISOString(),
+});
+
+/** Pay ₽ for something, counted in the run's record. */
+function spend(price) {
+  run.money -= price;
+  run.tally.spent += price;
+}
+
 function checkpoint() {
   const { floors, byId } = run.map;
   for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
@@ -131,6 +143,7 @@ function checkpoint() {
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
+    tally: run.tally,
   });
 }
 
@@ -178,6 +191,7 @@ function restoreRun(saved) {
     mods: modsFor(saved.level),
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
+    tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
     over: false,
   };
 }
@@ -228,6 +242,7 @@ export function beginRun(starter, level = 0) {
     tutorLeft: perkLevel('tutorNotes'),   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
+    tally: freshTally(),   // the run's record, kept for the Hall of Fame if it's won
     over: false,
   };
 
@@ -425,6 +440,7 @@ function renderItemList() {
 function useItemOnMap(index) {
   const item = ITEMS_BY_ID[run.items[index]];
   run.items.splice(index, 1);
+  run.tally.itemsUsed.push(item.id);
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   if (item.effects.maxHp) {
     run.maxHp += item.effects.maxHp;
@@ -494,6 +510,15 @@ function initScope() {
   $('scope-btn').addEventListener('click', toggleScope);
 }
 
+/** A fight's share of the run's record. */
+function addTally(t) {
+  if (!t) return;
+  const r = run.tally;
+  r.turns += t.turns; r.played += t.played; r.dealt += t.dealt; r.taken += t.taken;
+  r.biggest = Math.max(r.biggest, t.biggest);
+  r.itemsUsed.push(...t.items);
+}
+
 function enterNode(node) {
   run.current = node.id;
   node.visited = true;
@@ -506,7 +531,7 @@ function enterNode(node) {
     if (healed) { run.hp += healed; playSound('heal-hp'); tell(`You ate the Big Malasada. +${healed} HP!`); }
     return martRoom();
   }
-  if (node.type === 'event') { playSound('event'); return eventRoom(node); }
+  if (node.type === 'event') { run.tally.events += 1; playSound('event'); return eventRoom(node); }
   fight(node);   // 'fight', 'elite' or 'boss'
 }
 
@@ -525,6 +550,7 @@ async function fight(node) {
 }
 
 function afterFight(node, result) {
+  addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.fled) {
     run.hp = result.hp;
@@ -571,7 +597,10 @@ function afterFight(node, result) {
 
   const steps = [];   // screens to show one after another
   if (node.type === 'fight') steps.push(next => offerCard('fight', next));
-  if (node.type === 'elite') steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
+  if (node.type === 'elite') {
+    run.tally.elites += 1;
+    steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
+  }
 
   if (node.type === 'boss') {
     updateSave(d => {
@@ -1172,6 +1201,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
     options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => ({
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1);
+        run.tally.forgotten += 1;
         tell(`${card.name} was forgotten.`);
         done();
       }, count),
@@ -1399,7 +1429,7 @@ const EVENT_CHOICES = {
       if (await playOut(act)) tutorCards(back, pay, react('npc-nod'));
     };
     return { figures: { npc: { npc: 'alder' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
-      spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { run.money -= price; setMoney(run.money); }), run.money < price),
+      spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
     ] };
   },
@@ -1472,7 +1502,7 @@ const EVENT_CHOICES = {
       mon: { src: foe.image, alpha: true },
     }, sub: [event.text, `Pay ₽${toll}, battle the grunt's Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
       spotOption(`Pay ₽${toll}`, 'Walk on in peace.', async () => {
-        run.money -= toll;
+        spend(toll);
         setMoney(run.money);
         playSound('buy');
         figureDoes('trainer', 'hop');
@@ -1520,7 +1550,7 @@ const EVENT_CHOICES = {
       const cost = perBiome(price);
       const hint = relics.length ? `A ${Math.round(odds * 100)}% chance to find a relic.` : 'Nothing down there you don\'t already have.';
       return spotOption(`Toss ₽${cost}`, hint, async () => {
-        run.money -= cost;
+        spend(cost);
         setMoney(run.money);
         playSound('buy');
         const win = state.luck < odds;
@@ -1648,7 +1678,7 @@ function ware(option, price, onBuy, { group, name }) {
     ask: `Buy ${name} for ₽${price}?`,
     confirm: `Buy ₽${price}`,
     confirmSound: 'buy',
-    onPick: () => { run.money -= price; setMoney(run.money); onBuy(); },
+    onPick: () => { spend(price); setMoney(run.money); onBuy(); },
   };
 }
 
@@ -1706,7 +1736,7 @@ function martRoom() {
     disabled: stock.removed || atMin || removalPrice > run.money,
     onPick: () => forgetMove(martRoom, () => {
       stock.removed = true;   // once per Mart, like Slay the Spire's card removal
-      run.money -= removalPrice;
+      spend(removalPrice);
       run.removals += 1;
       setMoney(run.money);
       martRoom();
@@ -1831,10 +1861,14 @@ function endRun(won) {
       d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
     });
 
-    if (run.level === MAX_LEVEL) {
-      level5 = level5Rewards();
-      fame = enterHallOfFame(run, getSave().shiny.on.includes(run.starter.id));
-      level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as No.${String(fame.no).padStart(3, '0')}!`);
+    if (run.level === MAX_LEVEL) level5 = level5Rewards();
+    // every win goes in the record book (the Collection's Hall of Fame); a Level 5 one also gets the scene
+    const entry = recordWin(run, getSave().shiny.on.includes(run.starter.id));
+    if (fameNo(entry)) {
+      fame = entry;
+      level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as ${fameNo(entry)}!`);
+    } else {
+      level5.push(`📖 This run's record was saved in the Collection's Hall of Fame.`);
     }
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.

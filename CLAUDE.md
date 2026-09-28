@@ -279,18 +279,27 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   select's panel, `.sel-name-star`), gives the starter's shiny and switches it on if it isn't owned, and pays
   `LEVEL5_JACKPOT` (500, Coin Finder applies) once per type (`stats.level5Jackpot`). Each reward is a line in the
   result window. Old saves seed nothing (the user's call): rewards start from the next Level 5 win.
-  **Hall of Fame** (part 2, 2026-09-28): `endRun()` then enters the win in the save's `hallOfFame` list (oldest first;
-  `enterHallOfFame()` in `js/halloffame.js`: `no`, starter, stage, shiny, type, local `date` "YYYY-MM-DD", level, deck,
-  relics, fights; old saves start empty) and awaits `hallOfFameScene()` before opening the result window (a modal dialog
-  would sit in the top layer over it). The scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
+  **Hall of Fame** (part 2, 2026-09-28) and its **record book** (the user's follow-up, same day): `endRun()` saves *every*
+  won run, any Level, in the save's `hallOfFame` list (oldest first; `recordWin()` in `js/halloffame.js`): `no` (win
+  number), `fame` (Hall of Fame number, Level 5 wins only; `fameNo()`, and entries saved before the record book were all
+  Level 5, numbered by `no`), starter, stage, shiny, type, local `date` / `started` "YYYY-MM-DD", level, the final deck,
+  relics and Bag (`items`), `itemsUsed`, HP, and the run's numbers from `run.tally`. The tally (`freshTally()` in
+  `js/run.js`, saved with the run; a run saved before it counts from its restore, with no `startedAt`) adds up each fight's
+  `tally` from `onEnd` (`battle.tally` in `js/battle.js`: cards played, damage dealt without overkill via `enemyLoses()`
+  for hits, Burn and Leech Seed, the biggest hit, items used, plus turns and damage taken) in `addTally()`, and counts
+  Alphas, ❓ rooms, moves forgotten (`forgetMove()`) and ₽ spent (every Pokédollar payment goes through `spend()`; earned
+  is money left + spent). A Level 5 win also awaits `hallOfFameScene()` before opening the result window (a modal dialog
+  would sit in the top layer over it); other wins just get a line in the result window. The scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
   white flash onto a starry night, your Pokémon slides onto a gold pedestal under a spotlight (`SPRITE_FIT` feet, half
   steps) and cries, its plate pops up (No.NNN, name, type chip, date, Lv.5), "Welcome to the HALL OF FAME!", then the
   final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
   text box. Its text box is the evolution scene's, `sceneSay()` exported from `js/evolution.js`. Music: `hall-of-fame`
   (`assets/audio/hall-of-fame.mp3`, the user supplies it), preloaded before a Level 5 final boss; while the file is missing
   `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection's
-  seventh card, Hall of Fame (the newest champion's sprite, centred under the others), opens `#hof-dialog`
-  (`openHallOfFame()`): entries newest first, tap one for its plate and its deck (`fillDeck()` from `js/deckpreview.js`,
+  seventh card, Hall of Fame (the newest winner's sprite, centred under the others), opens `#hof-dialog`
+  (`openHallOfFame()`): every win newest first (Level 5 ones with a ⭐ and their Hall of Fame number); tap one for its page:
+  plate, a grid of its numbers (old entries show "-" for what they lack), the Ability and relics, the items left in the
+  Bag and the ones used (sprites; a tap shows their `title`), and the final deck (`fillDeck()` from `js/deckpreview.js`,
   each card `zoomable()`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between

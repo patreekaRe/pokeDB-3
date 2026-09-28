@@ -494,7 +494,9 @@ Start a fresh session for each (CLAUDE.md, "Keeping sessions cheap").
    2026-09-28: the Hall of Fame (CLAUDE.md's "Hall of Fame"): a Gold/Silver-style scene after a Level 5 win (your Pokémon
    on a pedestal, its name, the date, its type, the final deck), each entry saved, and a Hall of Fame card in the
    Collection listing them (tap one for its deck). Its music is `assets/audio/hall-of-fame.mp3`, which the user will
-   supply; until then it plays `victory`.
+   supply; until then it plays `victory`. Then (the user's ask) every won run, at any Level, is saved as a record-book
+   page: its deck, relics, items (left and used) and numbers (fights, Alphas, turns, cards played, damage dealt and
+   taken, biggest hit, ₽ earned and spent, rests, events, moves forgotten and upgraded).
 
 Anytime, as a break from number work:
 - ~~**Evolution overhaul**~~ (done 2026-09-28): cosmetic only (the user's call, no stat or deck changes). The evolve
