@@ -235,7 +235,7 @@ export function beginRun(starter, level = 0) {
 
   // Pokédex perks, earned by completing a biome's page
   if (hasDexPerk('moms-savings')) { run.money += DEX_START_MONEY; tell(`Mom's Savings: you set out with ₽${DEX_START_MONEY}!`); }
-  if (hasDexPerk('chansey-gift')) { run.items.push('potion'); markSeen('items', 'potion'); tell('Chansey\'s Gift: a Potion is in your Bag!'); }
+  if (hasDexPerk('chansey-gift')) { run.items.push('potion'); tell('Chansey\'s Gift: a Potion is in your Bag!'); }
 
   updateSave(d => { d.stats.runsStarted += 1; });
   startBiome();
@@ -422,6 +422,7 @@ function renderItemList() {
 function useItemOnMap(index) {
   const item = ITEMS_BY_ID[run.items[index]];
   run.items.splice(index, 1);
+  markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   if (item.effects.maxHp) {
     run.maxHp += item.effects.maxHp;
     run.hp += item.effects.maxHp;
@@ -665,8 +666,11 @@ function showRelics(title, relics, next) {
   });
 }
 
+/** Every relic you take (rewards, treasure, events) comes through here, and only then is it met in the Index (the user's
+    call, 2026-09-28: not when it's merely offered). */
 function gainRelic(relic, next) {
   run.relics.push(relic.id);
+  markSeen('relics', relic.id);
   tell(`Found ${relic.name}!`);
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
   next();
@@ -760,8 +764,6 @@ function offerItem(item, next, { opened = false } = {}) {
 
 /** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. */
 function floatingThing(thing, i = 0, size = 72) {
-  if (ITEMS_BY_ID[thing.id] === thing) markSeen('items', thing.id);
-  else if (RELICS_BY_ID[thing.id] === thing) markSeen('relics', thing.id);
   const btn = el('button', 'float-thing'), float = el('span', 'relic-float');
   btn.type = 'button';
   btn.style.setProperty('--i', i);
@@ -870,7 +872,6 @@ function treasureRoom() {
     btn.type = 'button';
     btn.setAttribute('aria-label', `${relic.name}: ${relic.text}`);
     btn.style.setProperty('--i', i);
-    markSeen('relics', relic.id);
     float.append(itemSprite(relic, 'treasure-sprite'));
     btn.append(el('span', 'relic-halo'), float, el('span', 'relic-label', relic.name));
     btn.addEventListener('click', () => (picked === relic ? takeIt() : choose(relic, btn)));
@@ -1540,7 +1541,6 @@ const EVENT_CHOICES = {
     const why = 'Healthy Pokémon (over half HP) get prize money; tired ones get looked after.';
     if (healthy) return { ...view, sub: [event.text, why], options: [spotOption('Show off', `The fans are thrilled! They give you ₽${money}.`, () => cheer(collect))] };
     if (run.items.length < itemSlots()) {
-      markSeen('items', item.id);
       return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => cheer(() => {
         figureDoes('npc', 'npc-jump');   // the Chairman, as he hands it over
         revealGift(item, [`The fans gave you a ${item.name}!`, item.text], () => {
@@ -1684,6 +1684,7 @@ function martRoom() {
     return ware(relicOption(relic), martPrice(item.price), () => {
       item.sold = true;
       run.relics.push(relic.id);
+      markSeen('relics', relic.id);
       tell(`Bought ${relic.name}!`);
       if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
       martRoom();

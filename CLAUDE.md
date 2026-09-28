@@ -1088,15 +1088,16 @@ then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name a
 stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
 else the last tab; new cards show up there on their own. Two more tabs, Relics and Items (the user's call,
 2026-09-27), list every relic (the Abilities first, then by rarity, then Boss) and item (by rarity), with an
-"N/M found" count: one you haven't met in a run is a dark silhouette of its sprite, "???" (`.index-thing.locked`).
+"N/M found" count: one you haven't taken (relics) or used (items) in a run is a dark silhouette of its sprite, "???" (`.index-thing.locked`).
 Moves work the same since 2026-09-28 (the user's call, Pokédex-style): an unmet card is a grey "???" card with a black
 silhouette of its art (`lockedCard()`, `.card.index-locked`, not zoomable), each rarity heading and the tab count "N/M".
 A card is met (`markSeen('cards', id)`, upgrades count as their base) when it's offered (`cardOption()`: rewards, the Mart,
 events, evolution picks), in your starting deck (`beginRun()`), in your hand in battle (Metronome, the TM) or laid out by
 `pickFromPile()`. Saves from before seed `seen.cards` with the owned starters' decks and the run's deck (`seedCards()`).
-Met means offered, sold or found: `markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`)
-is called by `relicOption()` / `itemOption()` in `js/rewards.js` (rewards and the Mart), `floatingThing()` (item
-balls, gifts), the treasure room's relics, the Relic Charm and the Fan Club's gift. Saves from before start empty.
+A relic or item is only met once it's really yours (the user's call, 2026-09-28; before, being offered was enough):
+`markSeen(kind, id)` in `js/storage.js` (the save's `seen: { relics, items }`) runs for a relic when you take it
+(`gainRelic()`, every reward / treasure / event relic; a Mart buy; the Relic Charm) and for an item when you use it
+(`useItem()` and `revive()` in `js/battle.js`, `useItemOnMap()`). Saves keep what they had already marked.
 The **Pokédex** (`js/pokedex.js`, `#dex-dialog`, roadmap step 7) opens from the Collection's Pokédex card
 and a Poké Ball menu item (so it opens from the map too, on the run's biome page). A page per biome
 (`DEX_PAGES` in `js/data/pokedex.js`, built from `BIOMES`: 12 wilds, then Alphas, then Bosses, numbered No.001-055);

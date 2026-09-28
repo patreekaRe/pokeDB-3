@@ -286,10 +286,7 @@ export const cardOption = (card, stage, onPick, count = 1) => {
   markSeen('cards', card.id);
   return { node: makeCard(card, { stage, count }), onPick };
 };
-export const relicOption = (relic, onPick) => {
-  markSeen('relics', relic.id);
-  return { node: makeRelic(relic), onPick };
-};
+export const relicOption = (relic, onPick) => ({ node: makeRelic(relic), onPick });
 
 /** A simple tile with an icon (an emoji, or an element such as itemSprite()) and text. */
 export function textOption(icon, title, text, onPick) {
@@ -312,7 +309,6 @@ export function itemChoices(run, count = 1) {
 }
 
 export const itemOption = (item, onPick) => {
-  markSeen('items', item.id);
   const node = makeRelic(item);
   node.classList.add('item-tile');
   return { node, onPick };

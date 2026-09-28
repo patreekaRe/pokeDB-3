@@ -950,6 +950,7 @@ async function useItem(index) {
 
   b.busy = true;
   b.items.splice(index, 1);
+  markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   const e = item.effects;
   log(`You used ${item.name}!`);
   playSound(e.flee ? 'run-away' : e.heal ? 'potion' : 'item', 'item');
@@ -1032,6 +1033,7 @@ function revive() {
   if (index < 0) return;
   const item = ITEMS_BY_ID[b.items[index]];
   b.items.splice(index, 1);
+  markSeen('items', item.id);
   b.hp = Math.max(1, Math.floor(b.maxHp * item.effects.revive));
   pop('player-zone', `✨ Revived! +${b.hp} HP`, 'heal', 350);
   b.revived = `${item.name} brought ${stageName(b.starter, b.stage)} back!`;   // told after the hit's own line (withRevive)
