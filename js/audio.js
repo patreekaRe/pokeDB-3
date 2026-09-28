@@ -83,6 +83,10 @@ const SOUNDS = {
   'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
   'pc-on':      { url: 'assets/audio/sfx/pc-on.mp3' },        // the games' PC booting up: only the title's Sign in PC (the user's call)
   'pc-off':     { url: 'assets/audio/sfx/pc-off.mp3' },       // ...and logging off as that window closes, in place of cancel
+  'fw-launch':  { synth: fireworkLaunch },   // the Hall of Fame's fireworks (celebrate.js): a rocket whistles up...
+  'fw-pop':     { synth: ac => fireworkPop(ac, 0.45, 90, 0.16) },   // ...and bursts
+  'fw-boom':    { synth: ac => fireworkPop(ac, 1.1, 55, 0.22) },    // ...the finale's biggest one
+  'fw-crackle': { synth: fireworkCrackle },  // ...and a crackler fizzes out
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -475,6 +479,64 @@ function stickTick(ac) {
     const pitch = t < 0.02 ? 1319 : 1760;
     const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.008));
     out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.04) * fade;
+  }
+  return normalize(buffer, 0.12);
+}
+
+/** The NES noise channel: random values held for `hold` samples, so it sounds crunchy rather than hissy. */
+function chipNoise(length, hold) {
+  const out = new Float32Array(length);
+  let v = 0;
+  for (let i = 0; i < length; i++) {
+    if (i % hold === 0) v = Math.random() * 2 - 1;
+    out[i] = v;
+  }
+  return out;
+}
+
+/** A firework rocket going up: a quiet square-wave whistle sliding up over a crunch of noise. */
+function fireworkLaunch(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.4);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 6);
+  let phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    phase += (500 + 1400 * (t / 0.4) ** 1.5) / rate;
+    const fade = Math.min(1, t / 0.02, (length - i) / (rate * 0.06));
+    out[i] = (Math.sign(Math.sin(2 * Math.PI * phase)) * 0.25 + noise[i] * 0.3) * fade;
+  }
+  return normalize(buffer, 0.06);
+}
+
+/** A firework bursting: a thump that drops in pitch under a burst of chip noise that thins out as it fades. */
+function fireworkPop(ac, seconds, thump, peak) {
+  const rate = ac.sampleRate, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 3), rough = chipNoise(length, 14);
+  let phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    phase += thump * (1 + 1.5 * Math.exp(-t / 0.04)) / rate;
+    const body = Math.sin(2 * Math.PI * phase) * Math.exp(-t / (seconds * 0.25));
+    const blast = (noise[i] * 0.6 + rough[i] * 0.4) * Math.exp(-t / (seconds * 0.22));
+    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.03));
+    out[i] = (body * 0.9 + blast) * fade;
+  }
+  return normalize(buffer, peak);
+}
+
+/** A crackler: a scatter of tiny noise snaps, thinning out over most of a second. */
+function fireworkCrackle(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.8);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const snap = Math.round(rate * 0.004);
+  for (let n = 0; n < 34; n++) {
+    const at = Math.floor(Math.random() ** 1.4 * (length - snap)), level = Math.random() * 0.6 + 0.4;
+    for (let i = 0; i < snap; i++) out[at + i] += (Math.random() * 2 - 1) * level * (1 - i / snap);
   }
   return normalize(buffer, 0.12);
 }

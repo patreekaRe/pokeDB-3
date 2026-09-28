@@ -292,7 +292,17 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   top layer over it; the user wanted normal wins to feel satisfying too): the pedestal scene below, then the run's numbers
   as a grid of dark tiles popping in (`statsPanel()`, short labels, from the same `statList()` as the record's page), then
   the deck. A Level 5 win is the Hall of Fame version (gold pedestal, title, its song, "Welcome to the HALL OF FAME!");
-  any other is "Victory!" on a silver pedestal over the victory fanfare already playing, saved "as Win NNN". The Hall of Fame scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
+  any other is "Victory!" on a silver pedestal over the victory fanfare already playing, saved "as Win NNN". A Level 5 win also throws a **party** (part 3, 2026-09-28; `.party`, never under reduced motion, where it
+  has no sound either): `celebrate()` in `js/celebrate.js` draws on `#hof-fx`, one low-res canvas behind the layout (3 CSS px a
+  pixel on phones, 4 wider; ~30 fps; `stop()` when the scene closes), all in whole pixels, fading by stepping down a palette,
+  never by alpha: two spotlights sweeping from the bottom corners (filled row by row), rockets on ember trails bursting in the
+  starters' type colours and gold (sphere, ring, Poké Ball, gold willow, a crackler fizzing into white sparks), shooting
+  stars, four-point twinkles; `land()` fountains gold sparkles off the pedestal as the Pokémon hops onto it (`.hop`); the
+  title's letters (`.hof-letter`, `setTitle()`) flash in one by one, then a rainbow sweeps across them every 2.6 s;
+  `finale()` at "Welcome to the HALL OF FAME!" launches a huge Poké Ball burst with a rainbow core (its `onBoom` flashes
+  `.hof-boom` white and shakes the layout, `.boom`), two side bursts and a 14 s rain of gold confetti and ribbon streamers.
+  Its sounds are synths in `js/audio.js` (`fw-launch`, `fw-pop`, `fw-boom`, `fw-crackle`: NES-style held noise,
+  `chipNoise()`). Headless at 390x844 and 1280x800 it held 30 fps. The Hall of Fame scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
   white flash onto a starry night, your Pokémon slides onto a gold pedestal under a spotlight (`SPRITE_FIT` feet, half
   steps) and cries, its plate pops up (No.NNN, name, type chip, date, Lv.5), "Welcome to the HALL OF FAME!", then the
   final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
@@ -1283,9 +1293,9 @@ so "Back" re-renders don't replay it), `heal-hp` (a card or a power heals you, n
 `coins` (a fight's PokéCoins and ₽ are paid, `collect()`; `buy.mp3`), `door` (walking into a Mart or Center, `enterNode()`; `event.mp3`, the same sound as a ❓ room),
 `achievement` (`checkAchievements()` grants a starter), `bag` (the Bag opens and closes, and so does the Poké Ball menu: `setOpen()` in `js/main.js`; the user's call), `cancel` (the menu blip for
 backing out, `bag.mp3` too, so every window closes with the Bag's sound: `CANCELS` in `js/audio.js`: Back / Skip / Leave, No, a window's Close or ✕, a zoomed card; also Escape on a modal
-window or the Game Corner, the Game Corner's top-bar toggle closing it, and backing out of a picked card or reward; falls back to `confirm`), `stick` (synthesized, `stickTick()`: the Game Corner's joystick moves) and `run-away` (every way of running: the Poké Doll,
+window or the Game Corner, the Game Corner's top-bar toggle closing it, and backing out of a picked card or reward; falls back to `confirm`), `stick` (synthesized, `stickTick()`: the Game Corner's joystick moves), `fw-launch` / `fw-pop` / `fw-boom` / `fw-crackle` (synthesized: the Hall of Fame's fireworks, `js/celebrate.js`) and `run-away` (every way of running: the Poké Doll,
 in place of `item`, and Team Rocket's "Run for it"; there's no running-away relic) and `no-pp` (tapping a greyed-out card that costs more PP than you have, with the PP box's shake, in `playCard()`). The user picked those file reuses. Synths
-(`blockClink()`, `stickTick()`) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution scene has its own track
+(`blockClink()`, `stickTick()`, the fireworks) should peak like the MP3s (~0.1–0.25, `normalize()`), or they come out far louder. The evolution scene has its own track
 (`evolution`) and chime (`evolved`, see Evolving above). Battle sounds preload in
 `startBattle()` (`thunder` only for bosses), map ones in `showMap()`, `confirm` / `cancel` in `unlock()`. A missing file is silent (one
 404 in the console per sound per page load). `playSound()` drops a repeat

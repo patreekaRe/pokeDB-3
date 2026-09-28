@@ -3,12 +3,14 @@
  * (`hallOfFame`, oldest first) and a scene plays before the result window: the screen flashes white and turns to a
  * starry night, your Pokémon slides in onto a pedestal under a spotlight and cries, its plate (entry number, name, type,
  * date) pops up, the text box welcomes it, and its final deck rises along the bottom. The Collection's Hall of Fame
- * card lists every entry; tapping one shows its deck. Under reduced motion nothing slides or flashes; the cry and
- * music stay.
+ * card lists every entry; tapping one shows its deck. A Level 5 win also throws a party (js/celebrate.js: fireworks,
+ * confetti, spotlights, a rainbow title, a hop and a big finale). Under reduced motion nothing slides or flashes and there
+ * is no party; the cry and music stay.
  */
 import { $, el, sleep, openDialog, makeCard, groupDeck, itemSprite } from './ui.js';
 import { playMusic, playCry, preloadMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
+import { celebrate } from './celebrate.js';
 import { fillDeck } from './deckpreview.js';
 import { getSave, updateSave } from './storage.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
@@ -144,6 +146,27 @@ function statsPanel(entry) {
   return grid;
 }
 
+/** The scene's title; at a party each letter is its own span, so they flash in one by one and a rainbow sweeps across. */
+function setTitle(text, party) {
+  const title = $('hof-title');
+  title.removeAttribute('aria-label');
+  if (!party) { title.textContent = text; return; }
+  title.setAttribute('aria-label', text);
+  title.replaceChildren(...[...text].map((ch, i) => {
+    const letter = el('span', 'hof-letter', ch);
+    letter.setAttribute('aria-hidden', 'true');
+    letter.style.setProperty('--i', i);
+    return letter;
+  }));
+}
+
+/** Restart a one-shot CSS animation keyed on a class of the scene (the hop, the finale's flash and shake). */
+function replay(scene, cls) {
+  scene.classList.remove(cls);
+  void scene.offsetWidth;
+  scene.classList.add(cls);
+}
+
 /**
  * Play the win scene for a new entry: every won run stands on the pedestal and shows its numbers, then its deck. A Level
  * 5 win is the Hall of Fame (its title, song and welcome); any other is a plain Victory over the fanfare already
@@ -159,13 +182,17 @@ export async function winScene(entry) {
   const name = nameOf(entry);
   img.src = imgOf(entry);
   img.alt = name;
-  $('hof-title').textContent = fame ? 'Hall of Fame' : 'Victory!';
+  const party = fame && !still();
+  setTitle(fame ? 'Hall of Fame' : 'Victory!', party);
   $('hof-plate-slot').replaceChildren(plate(entry));
   extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${fame ? ' fame' : ''}${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
   if (fame) playMusic('hall-of-fame', { restart: true });   // otherwise the victory fanfare from the boss's faint plays on
+  const canvas = $('hof-fx');
+  canvas.hidden = !party;
+  const fx = party ? celebrate(canvas, entry.type, { onBoom: () => replay(scene, 'boom') }) : null;
 
   await Promise.all([loaded(img), sleep(still() ? 300 : 900)]);
   const refit = () => fit(img, stage);
@@ -173,9 +200,16 @@ export async function winScene(entry) {
   addEventListener('resize', refit);
 
   scene.classList.add('mon-in');
-  await sleep(still() ? 200 : 900);
+  if (fx) {
+    await sleep(700);   // the slide's ease-out has all but stopped: it lands with a hop and a fountain of sparkles
+    replay(scene, 'hop');
+    const top = scene.querySelector('.hof-pedestal').getBoundingClientRect();
+    fx.land(top.left + top.width / 2, top.top);
+    await sleep(300);
+  } else await sleep(still() ? 200 : 900);
   await Promise.race([playCry(starterOf(entry).line[entry.stage].id), sleep(CRY_WAIT_MAX)]);
   scene.classList.add('plate-in');
+  fx?.finale();
   await sceneSay('hof-scene', 'hof-log', fame
     ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
     : [`${name} conquered the wastes on Trainer Level ${entry.level}!`]);
@@ -192,6 +226,8 @@ export async function winScene(entry) {
   scene.classList.add('out');
   await sleep(still() ? 0 : 600);
   removeEventListener('resize', refit);
+  fx?.stop();
+  canvas.hidden = true;
   scene.hidden = true;
   scene.className = 'hof-scene';
 }

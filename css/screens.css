@@ -1511,6 +1511,39 @@ body.battle-intro { pointer-events: none; }
 .hof-scene.still .hof-mon, .hof-scene.still .hof-plate { transition: none; }
 .hof-scene.still .hof-deck { animation: none; }
 .hof-scene.still.deck-in .hof-stat { animation: none; opacity: 1; }
+/* A Level 5 win's party (js/celebrate.js draws the fireworks, confetti and sweeping spotlights on .hof-fx, a low-res
+   canvas behind the layout): the title's letters flash in one by one and a rainbow sweeps across them, the Pokémon hops
+   as it lands, and the finale's big firework flashes the screen and shakes it. All in whole steps, no soft glows. */
+.hof-fx { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.hof-boom { position: absolute; inset: 0; background: #f8f8f8; pointer-events: none; opacity: 0; }
+.hof-scene.boom .hof-boom { animation: hofBoom 0.45s steps(1, end) both; }
+@keyframes hofBoom { 0% { opacity: 0.95; } 20% { opacity: 0; } 40% { opacity: 0.6; } 60%, 100% { opacity: 0; } }
+.hof-scene.boom .hof-layout, .hof-scene.boom .hof-fx { animation: hofShake 0.5s steps(1, end); }
+@keyframes hofShake {
+  0% { translate: 6px 0; } 12% { translate: -6px 3px; } 24% { translate: 4px -4px; } 36% { translate: -4px 2px; }
+  48% { translate: 3px 0; } 60% { translate: -2px 2px; } 72% { translate: 2px 0; } 84%, 100% { translate: 0 0; }
+}
+.hof-scene.party .hof-title { animation: hofTitleFlash 0.6s steps(1, end) both 1.5s; }
+@keyframes hofTitleFlash { 0% { filter: brightness(2.2); } 25% { filter: none; } 50% { filter: brightness(2.2); } 75%, 100% { filter: none; } }
+.hof-letter {
+  display: inline-block; white-space: pre;
+  animation: hofLetter 0.4s steps(4) both calc(0.5s + var(--i) * 70ms), hofShimmer 2.6s steps(1, end) infinite calc(2.2s + var(--i) * 60ms);
+}
+@keyframes hofLetter {
+  0% { opacity: 0; scale: 2.6; color: #f8f8f8; }
+  50% { opacity: 1; scale: 1.5; color: #f8f8f8; }
+  100% { opacity: 1; scale: 1; }
+}
+@keyframes hofShimmer {
+  0% { color: #f8d048; } 60% { color: #f85858; } 64% { color: #f8a038; } 68% { color: #f8f070; } 72% { color: #58d858; }
+  76% { color: #58b0f8; } 80% { color: #c080f8; } 84% { color: #f8f8f8; } 88%, 100% { color: #f8d048; }
+}
+.hof-scene.party.hop .hof-mon { animation: hofHop 0.6s steps(10) both; }
+@keyframes hofHop {
+  0% { transform: translateY(0); } 35% { transform: translateY(-26px); } 65% { transform: translateY(0); }
+  80% { transform: translateY(-8px); } 100% { transform: translateY(0); }
+}
+.hof-scene.party .hof-stat { background: rgba(10, 14, 44, 0.92); }
 @media (max-width: 720px) {
   .hof-bottom { width: min(calc(100% - 32px), 300px); }
   .hof-title { font-size: 1.15rem; }
