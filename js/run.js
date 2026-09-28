@@ -247,6 +247,7 @@ export function beginRun(starter, level = 0) {
 
 function startBiome() {
   const biome = BIOMES[run.biome];
+  updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.map = generateMap();
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   for (const node of Object.values(run.map.byId)) {
@@ -553,7 +554,10 @@ function afterFight(node, result) {
     awardCoins(levelCoins(COIN_REWARDS[node.type]));
     run.money += prize;
     setMoney(run.money);
-    updateSave(d => { d.stats.enemiesDefeated += 1; });
+    updateSave(d => {
+      d.stats.enemiesDefeated += 1;
+      if (node.type === 'elite') d.stats.elitesDefeated += 1;
+    });
     refreshCoins();
     playSound('coins');
     run.pendingCoins = null;
@@ -566,6 +570,7 @@ function afterFight(node, result) {
   if (node.type === 'boss') {
     updateSave(d => {
       d.stats.bossesDefeated[run.biome + 1] = true;
+      d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
     if (run.biome === BIOMES.length - 1) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!

@@ -35,7 +35,7 @@ function group(label, cards, seen, note) {
 function lockedCard(card) {
   const node = makeCard(card);
   node.classList.add('index-locked');
-  node.title = 'Not found yet. Meet it in a run to see what it does.';
+  node.querySelectorAll('[title]').forEach(n => n.removeAttribute('title'));   // its cost and text hints would give it away
   node.querySelector('.card-name').textContent = '???';
   node.querySelector('.card-text').replaceChildren('???');
   node.querySelector('.card-cost').textContent = '?';
@@ -46,11 +46,11 @@ function lockedCard(card) {
 function thingTile(thing, seen) {
   if (!seen) {
     const node = el('div', 'relic index-thing locked');
-    node.title = 'Not found yet. Meet it in a run to see what it does.';
     node.append(itemSprite(thing, 'relic-icon'), el('strong', 'relic-name', '???'), el('span', 'relic-text', 'Not found yet.'));
     return node;
   }
   const node = makeRelic(thing);
+  node.removeAttribute('title');   // its name and text are right there
   node.classList.add('index-thing');
   if (thing.only) node.append(el('span', `index-only type-${thing.only}`, `${TYPES[thing.only].label} only`));
   return node;

@@ -697,7 +697,9 @@ it), trims the space under your Pokémon so your nameplate clears the enemy's
 feet, and keeps room above the text box; the phone rules also keep a 10px
 gap between the two columns.
 Hints live in `title` attributes. `js/tips.js` shows a tapped or clicked
-element's `title` in `.tap-tip`, a mini copy of the battle text box that stays until the next tap or click
+element's `title` in `.tap-tip` (on `click`, not pointerup, and never within `SCROLL_QUIET` of a scroll: phones send no
+click for a swipe or for the tap that stops a gliding scroll, which used to pop tips up; don't give a `title` to things
+whose text already says it, like achievement rows, Index tiles or HP bars), a mini copy of the battle text box that stays until the next tap or click
 anywhere. A mouse also gets it on hover (after 350 ms, gone on leaving),
 in place of the native tooltip: while hovered the `title` moves to
 `data-tip` and comes back on leaving. Taps and clicks on buttons and other controls are skipped, since tapping
@@ -1070,7 +1072,12 @@ the CSS `.pokeball`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
 menu, Index, Stats, Achievements, Sign in (the cloud save, see Cloud save), Sound, How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`; a locked legendary's achievement shows "???" for
-its name, the user's call). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
+its name, the user's call). Stats (revamped 2026-09-28, the user found "0/3 bosses" meaningless) is in sections: Runs (won
+with win rate, lost, best level won, wins per type), Battles (Pokémon and Alphas defeated, furthest biome, each boss's kill
+count), Collection (bars: starters, shinies, Pokédex defeated / researched, moves / relics / items found), PokéCoins &
+records, and wins by starter. The newer counters live in `stats` (`bossKills`, `elitesDefeated`, `coinsEarned` in
+`awardCoins()`, `deepestBiome` in `startBiome()`); old saves are seeded by `seedStats()` in `js/storage.js` (each boss ever
+beaten counts once). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
 letters in `PALETTE`). The
 **Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the
 Poké Ball menu and the Collection's Moves, Relics and Items cards: every card in `ALL_CARDS`,

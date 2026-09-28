@@ -60,6 +60,10 @@ const freshSave = () => ({
     smallDeckWin: false,      // won a run with 15 cards or fewer
     noRestWin: false,         // won a run without resting at a Pokémon Center
     maxTide: 0,               // the most Tide held at once in a fight
+    bossKills: {},            // { 1: 3, 2: 1 }: times each biome's boss was beaten
+    elitesDefeated: 0,        // Alphas beaten (Team Rocket's too)
+    coinsEarned: 0,           // every PokéCoin ever paid out, spent or not
+    deepestBiome: 0,          // the furthest biome a run reached (1-3)
   },
 });
 
@@ -80,6 +84,7 @@ function load() {
         stats: {
           ...base.stats, ...saved.stats,
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },
+          ...seedStats(saved.stats || {}),
         },
       };
       return renameStarters(merged);
@@ -93,6 +98,15 @@ function seedCards(saved) {
   const ids = STARTERS.filter(s => s.free || (saved.unlocked || []).includes(s.id)).flatMap(s => s.deck);
   try { ids.push(...(JSON.parse(localStorage.getItem(RUN_KEY))?.deck || [])); } catch (err) { /* no run */ }
   return [...new Set(ids.map(id => id.replace(/\+$/, '')))];
+}
+
+/** Saves from before the Stats revamp knew only which bosses were ever beaten: count each once, and reach that far. */
+function seedStats(stats) {
+  const seed = {};
+  const beaten = Object.keys(stats.bossesDefeated || {}).map(Number);
+  if (!stats.bossKills) seed.bossKills = Object.fromEntries(beaten.map(b => [b, 1]));
+  if (stats.deepestBiome === undefined) seed.deepestBiome = stats.runsStarted ? Math.min(3, Math.max(0, ...beaten) + 1) : 0;
+  return seed;
 }
 
 /** Saves from before research levels knew only who was beaten: each counts as beaten once. */
@@ -143,7 +157,7 @@ export const isShiny = (id) => data.shiny.on.includes(id);
 /** Give the player PokéCoins, boosted by the Coin Finder passive if they own it. */
 export function awardCoins(amount) {
   const total = coinsWithBonus(amount);
-  updateSave(d => { d.coins += total; });
+  updateSave(d => { d.coins += total; d.stats.coinsEarned += total; });
   return total;
 }
 

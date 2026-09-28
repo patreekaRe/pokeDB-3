@@ -13,6 +13,8 @@
 const CONTROLS = 'button, a, input, select, textarea, label, summary, [role="button"], [role="radio"], [role="tab"], [role="checkbox"]';
 const MAX_MOVE = 10;        // px a finger can drift and still count as a tap
 const HOVER_DELAY = 350;    // ms, so sweeping the mouse across the screen doesn't flicker
+const SCROLL_QUIET = 400;   // ms after a scroll in which a tap is taken as stopping it, not asking for a hint
+let lastScroll = -Infinity;
 
 let tip = null;             // the bubble element
 let owner = null;           // the element whose hint is showing
@@ -42,8 +44,11 @@ export function initTips() {
     if (owner && !owner.contains(e.target)) hideTip();
   }, true);
 
-  document.addEventListener('pointerup', (e) => {
+  // `click`, not pointerup: phones send no click for a swipe, nor for the tap that stops a scroll still gliding, which
+  // popped tips up while scrolling (the user's report); a tap right after any scroll is ignored too
+  document.addEventListener('click', (e) => {
     if (!start || Math.hypot(e.clientX - start.x, e.clientY - start.y) > MAX_MOVE) return;
+    if (performance.now() - lastScroll < SCROLL_QUIET) return;
     start = null;
     const target = e.target instanceof Element ? e.target.closest('[title], [data-tip]') : null;
     if (!target || !hintOf(target) || e.target.closest(CONTROLS)) return;
@@ -71,7 +76,7 @@ export function initTips() {
     leave();
   }, true);
 
-  addEventListener('scroll', hideTip, true);
+  addEventListener('scroll', () => { lastScroll = performance.now(); hideTip(); }, true);
   addEventListener('resize', hideTip);
 }
 
