@@ -75,6 +75,11 @@
   font: inherit; font-size: 10px; letter-spacing: 0.04em;
 }
 .title-sound { position: relative; }
+/* Refresh: a smaller icon under the speaker, spinning while the newest files come in (refreshGame() in js/title.js) */
+.title-refresh .ta-pc { font-size: 26px; }
+.title-refresh.spinning .ta-pc { animation: taSpin 0.6s steps(8) infinite; }
+@keyframes taSpin { to { rotate: 360deg; } }
+@media (max-width: 600px) { .title-refresh .ta-pc { font-size: 22px; } }
 .title-sound-panel { min-width: 230px; z-index: 4; }
 .ta-pc { position: relative; font-size: 40px; line-height: 1; filter: drop-shadow(0 3px 0 rgba(10, 8, 40, 0.55)); }
 .ta-label { text-shadow: 2px 2px 0 #1c1440; }

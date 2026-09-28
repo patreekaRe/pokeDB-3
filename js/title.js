@@ -52,6 +52,7 @@ export function initTitle(handlers) {
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
   initSoundPanel();
+  $('title-refresh').addEventListener('click', refreshGame);
   paintLogo();
   $('title-abandon').addEventListener('click', () => actions.onAbandon());
   document.addEventListener('keydown', (e) => {
@@ -285,6 +286,21 @@ function hatch() {
 }
 
 /** The Sound button under the PC opens the Poké Ball menu's Sound toggle and slider (js/audio.js runs both). */
+/**
+ * The Refresh button (the user's ask): a plain reload can keep showing the old game for up to 10 minutes after a push,
+ * since the browser keeps its files (GitHub Pages caches them that long), so every file this page loaded is fetched
+ * again past the cache first, and then the page reloads onto them. The save is in localStorage, untouched.
+ */
+async function refreshGame() {
+  const btn = $('title-refresh');
+  if (btn.classList.contains('spinning')) return;
+  btn.classList.add('spinning');
+  const files = performance.getEntriesByType('resource').map(r => r.name)
+    .filter(url => url.startsWith(location.origin) && /\.(js|css)(\?|$)/.test(url));   // the code and styles: art and sound rarely change
+  await Promise.all([location.href, ...files].map(url => fetch(url, { cache: 'reload' }).catch(() => null)));
+  location.reload();
+}
+
 function initSoundPanel() {
   const btn = $('title-sound-btn'), panel = $('title-sound-panel');
   const setOpen = (open) => {
