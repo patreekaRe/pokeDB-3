@@ -21,6 +21,7 @@ export const PATCHES = [
         'Three biomes, each ten floors and a boss: Whispering Clearing, Overgrown Shrine and Ember Wastes.',
         'Each biome changes as you go, with three places, a landmark per floor, and a boss arena. Day and night follow your clock.',
         'Pick your route on the map: wild fights, Alphas, ? events, Poké Marts, Pokémon Centers and a treasure grotto.',
+        'Plan ahead mid-fight: the Bag\'s Map pocket shows the map from any battle or reward.',
       ]],
       ['❓', 'Events and stops', [
         'Ten events: Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.',

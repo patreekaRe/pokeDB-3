@@ -72,6 +72,7 @@ function randomStartingRelic() {
 /** Called once at startup. */
 export function initRun({ onMenu, onNewRun }) {
   $('run-deck-btn').addEventListener('click', () => run && showDeckDialog(run));
+  $('bag-map-btn').addEventListener('click', openMapPeek);
   initBag();
   trackHp(() => run);
   initScope();
@@ -435,6 +436,7 @@ function initBag() {
 function openBag() {
   playSound('bag');
   renderItemList();   // items can be used up in battle, so this pocket is redrawn each time
+  $('bag-map-btn').hidden = document.body.dataset.screen === 'map-screen';
   $('bag').hidden = false;
   $('bag-btn').setAttribute('aria-expanded', 'true');
   showPocket(pocket);
@@ -454,6 +456,20 @@ function showPocket(name) {
     $(tab.getAttribute('aria-controls')).hidden = !on;
     if (on) $('bag-title').textContent = tab.dataset.name;
   }
+}
+
+/* A look at the map from a battle or a reward, to plan the route ahead (the user's ask, 2026-09-29): the same map, rooms
+   you can go to next blinking, but nothing to tap. run.current is already the room you're in. */
+function openMapPeek() {
+  if (!run?.map) return;
+  closeBag(true);
+  const biome = BIOMES[run.biome];
+  renderMap(run.map, run.current, null, {
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'),
+  });
+  const stage = biome.stages?.[stageOf(run.map, run.map.byId[run.current]).stage];
+  $('map-dialog-title').textContent = stage ? `${biome.name}: ${stage}` : biome.name;
+  openDialog('map-dialog');
 }
 
 function renderRelicList() {

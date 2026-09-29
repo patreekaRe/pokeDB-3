@@ -1022,7 +1022,10 @@ Poké Mart. `showScreen()` in `js/ui.js` shows it only on `RUN_SCREENS`
 drop-down hanging from the right edge of `.topbar-actions`, with four
 pockets, like the
 Gold/Silver Bag: Deck (count + a button that opens the deck dialog), Relics,
-Items (see Items below) and the map Key. Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
+Items (see Items below) and the Map (the map key, plus a "Look at the map" button, hidden on the map itself, that
+opens `#map-dialog` from a battle or a reward: `openMapPeek()` in `js/run.js` calls `renderMap(..., { peek: box })`, a
+look-only copy with nothing to tap and the map screen's own state untouched; the user's ask, 2026-09-29, to plan a route
+mid-fight). Pocket tabs pick one, the ◀ ▶ header (and ← →) flips
 through `POCKETS` in order, and the last pocket is remembered. It never runs past the screen: a pocket scrolls inside it (`.bag:not([hidden])`
 is a column capped at the screen's height; the user couldn't read past 8 relics on a phone), and the Relics and Key
 pockets have no footnote (the user's call, 2026-09-28). It's wired by

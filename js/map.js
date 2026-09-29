@@ -507,7 +507,7 @@ const abgr = (color) => {
 
 const ripple = (x, y) => (((x + y) % 6) + 6) % 6 === 0 && ((x - y) & 7) < 4;   // short diagonal dashes
 
-function paintTerrain(canvas, map, biomeId, tiles) {
+function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
   const rand = seeded(`${biomeId}|${Object.keys(map.byId).sort().join()}`);
   const grid = terrainGrid(map, biomeId, tiles, rand);
   const w = GRID_W * TILE, h = GRID_H * TILE;
@@ -556,6 +556,7 @@ function paintTerrain(canvas, map, biomeId, tiles) {
   draw();
 
   // Water and lava drift, a pixel at a time, while the map is on screen.
+  if (!flow) return;
   clearInterval(flowTimer);
   if (!flowing.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   let tick = 0;
@@ -586,9 +587,10 @@ addEventListener('resize', () => {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null } = {}) {
-  lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal }];
-  const box = $('map');
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, peek = null } = {}) {
+  // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
+  if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal }];
+  const box = peek || $('map');
   box.replaceChildren(...box.querySelectorAll(':scope > .map-keep'));
   fitGrid(box);
   box.style.setProperty('--grid-w', GRID_W);
@@ -599,11 +601,14 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
   const canvas = el('canvas', 'map-terrain');
   canvas.setAttribute('aria-hidden', 'true');
-  paintTerrain(canvas, map, biome, routeTiles(lines));
-  routesSvg = drawRoutes(lines);
-  box.append(canvas, routesSvg);
-  trainerImg = null;
-  walkFrom = currentId && map.byId[currentId];
+  paintTerrain(canvas, map, biome, routeTiles(lines), !peek);
+  const routes = drawRoutes(lines);
+  box.append(canvas, routes);
+  if (!peek) {
+    routesSvg = routes;
+    trainerImg = null;
+    walkFrom = currentId && map.byId[currentId];
+  }
 
   for (const node of Object.values(map.byId)) {
     const info = NODE_INFO[node.type];
@@ -628,7 +633,10 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
     if (node.visited) btn.classList.add('visited');
     if (node.id === currentId) btn.classList.add('current');
-    if (reveal) {
+    if (peek) {
+      btn.classList.toggle('reachable', reachable.has(node.id));
+      btn.disabled = true;
+    } else if (reveal) {
       // picking a room for the Silph Scope: only unrevealed fight rooms you haven't been to light up
       const can = scopeable(node);
       btn.classList.toggle('scope-pick', can);
@@ -646,15 +654,17 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
   // The biome's boss waits above its room as a grey silhouette, a hint of what's coming.
   const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
-  bossShadow = null;
+  if (!peek) bossShadow = null;
   if (boss?.image) {
     const img = el('img', 'map-boss-shadow');
     img.src = boss.image;
     img.alt = '';
     place(img, CENTER_X, rowY(FLOORS));
     box.append(img);
-    bossShadow = img;
-    if (reachable.has(map.boss.id)) preloadBossReveal(boss.spriteId);
+    if (!peek) {
+      bossShadow = img;
+      if (reachable.has(map.boss.id)) preloadBossReveal(boss.spriteId);
+    }
   }
 
   if (trainer) {
@@ -665,7 +675,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     img.alt = '';
     place(img, (here ? nodeX(here) : CENTER_X), here ? rowY(here.floor) : START_ROW);
     box.append(img);
-    trainerImg = img;
+    if (!peek) trainerImg = img;
   }
 }
 
