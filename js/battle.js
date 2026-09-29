@@ -204,7 +204,7 @@ export function startBattle({ run, encounter, onEnd }) {
   showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
   playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
-  preloadMusic('victory');
+  preloadMusic(winTrack(encounter.kind));
   setupBattleScreen();
 
   log(encounter.kind === 'boss' ? `${def.name} blocks the way!` : `A wild ${def.name} appeared!`);
@@ -1287,6 +1287,9 @@ function attackDamage(move) {
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
+/** The fanfare after a win: the wild one, or Red/Blue's trainer victory after an Alpha (Team Rocket's too) or a boss. */
+const winTrack = (kind) => (kind === 'elite' || kind === 'boss' ? 'trainer-victory' : 'victory');
+
 async function finish(won) {
   const b = battle;
   b.over = true;
@@ -1299,7 +1302,7 @@ async function finish(won) {
     if (grew) abilityBanner();
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
-    playMusic('victory', { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
+    playMusic(winTrack(b.kind), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
     log(`${b.def.name} was defeated!`);
   } else {
     $('player-sprite').classList.add('defeated');

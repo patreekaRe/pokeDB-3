@@ -3,7 +3,7 @@
 
    MUSIC: one looping track plays at a time: 'title' on the menus,
    'map1' / 'map2' / 'map3' on each biome's map, 'wild' / 'elite' / 'boss'
-   during fights, 'victory' from the moment an enemy faints until you're
+   during fights, 'victory' ('trainer-victory' after an Alpha or a boss) from the moment an enemy faints until you're
    back on the map, and 'center' at a Pokémon Center. Switching tracks
    crossfades.
 
@@ -35,7 +35,8 @@ const TRACKS = {
   elite:   'assets/audio/elite.mp3',
   boss:    'assets/audio/boss.mp3',
   center:  'assets/audio/center.mp3',
-  victory: 'assets/audio/victory.mp3',
+  victory: 'assets/audio/victory.mp3',                  // after a wild fight
+  'trainer-victory': 'assets/audio/trainer-victory.mp3',   // after an Alpha (Team Rocket's too) or a boss: Red/Blue's trainer victory, the user's pick
   map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
@@ -57,9 +58,10 @@ const LOOP_POINTS = {
   map1:  [7.26172, 45.44, 0.3],    // 38.18 s
   map2:  [3.79134, 63.27, 0.3],    // 59.48 s
   map3:  [1.02, 39.2, 0.3],        // 38.18 s, the whole song
+  'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
-const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory' };
+const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory' };
 const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
@@ -533,7 +535,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15 };
+const TRACK_GAIN = { boss: 1.15, 'trainer-victory': 0.35 };   // trainer-victory comes mastered ~11 dB louder than victory
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);

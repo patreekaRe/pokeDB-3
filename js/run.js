@@ -1959,7 +1959,7 @@ async function evolve(next) {
   const fadeOut = await evolutionScene(r.starter, from,
     [`Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
   if (run !== r) return fadeOut();   // left for the menu meanwhile
-  playMusic('victory');
+  playMusic('trainer-victory');   // only a boss evolves you
   next();
   fadeOut();
 }

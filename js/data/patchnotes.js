@@ -23,6 +23,7 @@ export const PATCHES = [
         'Pick your route on the map: wild fights, Alphas, ? events, Poké Marts, Pokémon Centers and a treasure grotto.',
         'Plan ahead mid-fight: the Bag\'s Map pocket shows the map from any battle or reward.',
         'Battle and map music now loop seamlessly instead of stopping and starting the song over.',
+        'Beating an Alpha, Team Rocket or a boss plays Red and Blue\'s trainer victory theme.',
       ]],
       ['❓', 'Events and stops', [
         'Ten events: Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.',

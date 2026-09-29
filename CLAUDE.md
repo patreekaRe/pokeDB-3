@@ -1351,8 +1351,10 @@ named after its id.
 `title` on the menus (triggered in `showScreen()` in
 `js/ui.js`), `map1`–`map3` on each biome's map (`showMap()` in `js/run.js`),
 `wild` / `elite` / `boss` chosen by `encounter.kind` in
-`startBattle()`, `victory` from the moment an enemy faints (`finish()` in
-`js/battle.js`) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; after a Level 5
+`startBattle()`, `victory` from the moment a wild Pokémon faints (`finish()` in
+`js/battle.js`; after an Alpha, Team Rocket's included, or a boss it's `trainer-victory` instead, Red/Blue's trainer victory, the
+user's file and pick 2026-09-29, `winTrack()`, looped with a crossfade like the maps and at `TRACK_GAIN` 0.35 since it's
+mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; after a Level 5
 win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
