@@ -22,6 +22,7 @@ export const PATCHES = [
         'Each biome changes as you go, with three places, a landmark per floor, and a boss arena. Day and night follow your clock.',
         'Pick your route on the map: wild fights, Alphas, ? events, Poké Marts, Pokémon Centers and a treasure grotto.',
         'Plan ahead mid-fight: the Bag\'s Map pocket shows the map from any battle or reward.',
+        'Battle music now loops seamlessly instead of cutting back to the start of the song.',
       ]],
       ['❓', 'Events and stops', [
         'Ten events: Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.',

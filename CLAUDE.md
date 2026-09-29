@@ -1400,7 +1400,14 @@ earlier copy with a 30 ms fade, so multi-hits don't pile up; different
 sounds still overlap (a block card plays `card` + `block` together).
 Muted or still-locked audio plays nothing. Tracks crossfade and
 each file downloads only the first
-time it's needed. Title resumes where it left off; battle tracks restart
+time it's needed. The battle tracks (`wild`, `elite`, `boss`) are hard-cut clips of songs that keep repeating, so
+looping the whole file cut mid-phrase back to the intro (the user found it broke the immersion, 2026-09-29): they loop
+seamlessly inside the file instead, between `LOOP_POINTS` (seconds; the gap is the song's own repeat, 78.69 / 83.50 /
+60.64 s, found by correlating each file against itself, and the seam checked by rendering it offline against the file's
+own continuation). An `<audio>` element can only loop the whole file, so those play through `LoopedTrack` in
+`js/audio.js`, a stand-in with the element's `play` / `pause` / `paused` / `currentTime` over a decoded buffer's
+`loopStart` / `loopEnd`; only the playing one stays decoded (~50 MB each). Replacing one of those MP3s means finding its
+loop points again (or deleting its `LOOP_POINTS` line). Title resumes where it left off; battle tracks restart
 each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
 128 kbps).
 - Playback goes through the Web Audio API (a GainNode per track) because

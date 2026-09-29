@@ -43,6 +43,15 @@ const TRACKS = {
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
 };
+// The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
+// to the intro (the user found it broke the immersion). These loop inside the file instead, seamlessly: [loopStart,
+// loopEnd] in seconds, loopEnd - loopStart being the song's own repeat, found by correlating the file against itself
+// (both points sit well inside the part that repeats, so a decoder's few ms of padding doesn't matter).
+const LOOP_POINTS = {
+  wild:  [47.31002, 126],   // intro ~14 s, then a 78.69 s phrase
+  elite: [62.50379, 146],   // 83.50 s
+  boss:  [117.35612, 178],  // 60.64 s
+};
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
 const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory' };
 const missing = new Set();   // tracks whose file failed to load
@@ -127,7 +136,7 @@ let sfxBus = null;         // gain node every sound effect runs through
 let cryBus = null;         // gain node every cry runs through
 let masterBus = null;      // the volume slider: every bus runs through it
 let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
-const players = {};        // track name -> { el, gain }
+const players = {};        // track name -> { el, gain } (el is a LoopedTrack for LOOP_POINTS tracks)
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
 const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
 const loops = {};          // sound name -> { on, source } of an effect that repeats until turned off (setLoop)
@@ -372,20 +381,85 @@ function audioContext() {
 function player(name) {
   audioContext();
   if (!players[name]) {
-    const el = new Audio(TRACKS[name]);
-    el.loop = true;
-    el.addEventListener('error', () => {
+    const onError = () => {
       missing.add(name);
       if (current !== name) return;
       current = null;
       playMusic(TRACK_FALLBACK[name] ?? null);
-    });
+    };
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    ctx.createMediaElementSource(el).connect(gain).connect(musicBus);
+    gain.connect(musicBus);
+    let el;
+    if (LOOP_POINTS[name]) el = new LoopedTrack(TRACKS[name], LOOP_POINTS[name], gain, onError);
+    else {
+      el = new Audio(TRACKS[name]);
+      el.loop = true;
+      el.addEventListener('error', onError);
+      ctx.createMediaElementSource(el).connect(gain);
+    }
     players[name] = { el, gain };
   }
   return players[name];
+}
+
+/**
+ * A track that loops between two points inside its file, standing in for an <audio> element (play, pause, paused,
+ * currentTime) so the fades above treat both alike. An <audio> element can only loop the whole file, so this plays a
+ * decoded buffer instead. A decoded song is ~50 MB, so only the playing one is kept decoded: pausing drops it and keeps
+ * the MP3's bytes, which decode again in a moment next time.
+ */
+class LoopedTrack {
+  constructor(url, [loopStart, loopEnd], out, onError) {
+    Object.assign(this, { loopStart, loopEnd, out, onError });
+    this.paused = true;
+    this.offset = 0;        // where it resumes, in seconds into the file
+    this.source = null;
+    this.startedAt = 0;     // ctx time the file's second 0 would have played at
+    this.bytes = fetch(url)
+      .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
+      .catch(() => { onError(); return null; });
+    this.decode();
+  }
+  decode() {
+    this.decoded ||= this.bytes.then(data => data && ctx.decodeAudioData(data.slice(0))).catch(() => null);
+    return this.decoded;
+  }
+  get currentTime() {
+    if (this.paused || !this.source) return this.offset;
+    const t = ctx.currentTime - this.startedAt;
+    return t < this.loopEnd ? t : this.loopStart + (t - this.loopStart) % (this.loopEnd - this.loopStart);
+  }
+  set currentTime(t) {
+    const playing = !this.paused;
+    if (playing) this.pause(true);
+    this.offset = t;
+    if (playing) this.play();
+  }
+  play() {
+    if (!this.paused) return Promise.resolve();
+    this.paused = false;
+    return this.decode().then(buffer => {
+      if (this.paused || this.source || !buffer) return;
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.loopStart = this.loopStart;
+      source.loopEnd = this.loopEnd;
+      source.connect(this.out);
+      source.start(0, this.offset);
+      this.startedAt = ctx.currentTime - this.offset;
+      this.source = source;
+    });
+  }
+  pause(keep = false) {
+    if (this.paused) return;
+    this.offset = this.currentTime;
+    this.paused = true;
+    this.source?.stop();
+    this.source = null;
+    if (!keep) this.decoded = null;
+  }
 }
 
 function loadSound(name, url = SOUNDS[name]?.url) {
