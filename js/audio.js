@@ -58,6 +58,7 @@ const LOOP_POINTS = {
   map1:  [7.26172, 45.44, 0.3],    // 38.18 s
   map2:  [3.79134, 63.27, 0.3],    // 59.48 s
   map3:  [1.02, 39.2, 0.3],        // 38.18 s, the whole song
+  victory: [4.20957, 15.46, 0.3],   // the fanfare, then an 11.25 s loop the file starts again before it fades (chroma 0.985 over 6 s)
   'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).

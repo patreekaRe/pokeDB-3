@@ -1413,8 +1413,9 @@ loop points again (or deleting its `LOOP_POINTS` line). The map songs (`map1`-`m
 is one pass of its song then a fade-out over its start coming round again, which matches in melody and beat (chroma and
 onsets) but not sample for sample, so their `LOOP_POINTS` carry a third number, a 0.3 s equal-power crossfade across the
 phase-aligned join (`LoopedTrack` then plays each pass as its own source; a pass's `onended` queues the pass after next,
-from the audio thread, so a throttled background tab can't miss a join). `title` and `victory` have no convincing repeat
-in their files (best chroma matches ~0.87 / ~0.82 over 4 s), so they still loop the whole file. Title resumes where it left off; battle tracks restart
+from the audio thread, so a throttled background tab can't miss a join). `victory` loops too: its loop is short (11.25 s after a ~4 s
+fanfare), which a first search that only allowed loops of 15 s or more missed. `title` has no convincing repeat in its
+file (best chroma match ~0.87 over 4 s), so it still loops the whole file. Title resumes where it left off; battle tracks restart
 each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
 128 kbps).
 - Playback goes through the Web Audio API (a GainNode per track) because
