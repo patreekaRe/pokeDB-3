@@ -1407,7 +1407,12 @@ seamlessly inside the file instead, between `LOOP_POINTS` (seconds; the gap is t
 own continuation). An `<audio>` element can only loop the whole file, so those play through `LoopedTrack` in
 `js/audio.js`, a stand-in with the element's `play` / `pause` / `paused` / `currentTime` over a decoded buffer's
 `loopStart` / `loopEnd`; only the playing one stays decoded (~50 MB each). Replacing one of those MP3s means finding its
-loop points again (or deleting its `LOOP_POINTS` line). Title resumes where it left off; battle tracks restart
+loop points again (or deleting its `LOOP_POINTS` line). The map songs (`map1`-`map3`) loop too (2026-09-29): each file
+is one pass of its song then a fade-out over its start coming round again, which matches in melody and beat (chroma and
+onsets) but not sample for sample, so their `LOOP_POINTS` carry a third number, a 0.3 s equal-power crossfade across the
+phase-aligned join (`LoopedTrack` then plays each pass as its own source; a pass's `onended` queues the pass after next,
+from the audio thread, so a throttled background tab can't miss a join). `title` and `victory` have no convincing repeat
+in their files (best chroma matches ~0.87 / ~0.82 over 4 s), so they still loop the whole file. Title resumes where it left off; battle tracks restart
 each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
 128 kbps).
 - Playback goes through the Web Audio API (a GainNode per track) because

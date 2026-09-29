@@ -51,6 +51,12 @@ const LOOP_POINTS = {
   wild:  [47.31002, 126],   // intro ~14 s, then a 78.69 s phrase
   elite: [62.50379, 146],   // 83.50 s
   boss:  [117.35612, 178],  // 60.64 s
+  // The map files are one pass of their song, then a fade-out over its start coming round again. That start matches
+  // the file's own in melody and beat (chroma and onsets, 0.95-0.99) but not sample for sample, so these cross-fade
+  // (the third number, seconds) over the join, phase-aligned, instead of fading out and restarting.
+  map1:  [7.26172, 45.44, 0.3],    // 38.18 s
+  map2:  [3.79134, 63.27, 0.3],    // 59.48 s
+  map3:  [1.02, 39.2, 0.3],        // 38.18 s, the whole song
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
 const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory' };
@@ -408,14 +414,20 @@ function player(name) {
  * currentTime) so the fades above treat both alike. An <audio> element can only loop the whole file, so this plays a
  * decoded buffer instead. A decoded song is ~50 MB, so only the playing one is kept decoded: pausing drops it and keeps
  * the MP3's bytes, which decode again in a moment next time.
+ * With no crossfade the buffer loops natively, sample-exact (the battle songs repeat exactly). With one, each pass is
+ * its own source, handing over to the next with an equal-power crossfade centred on the loop points (the other songs'
+ * repeats match in melody and beat but not sample for sample). Each pass's end queues the pass after next, from the
+ * audio thread, so a throttled background tab can't miss a join.
  */
+const RISE = Float32Array.from({ length: 64 }, (_, i) => Math.sin(i / 63 * Math.PI / 2));
+const FALL = RISE.slice().reverse();
+
 class LoopedTrack {
-  constructor(url, [loopStart, loopEnd], out, onError) {
-    Object.assign(this, { loopStart, loopEnd, out, onError });
+  constructor(url, [loopStart, loopEnd, xfade = 0], out, onError) {
+    Object.assign(this, { loopStart, loopEnd, xfade, out, onError });
     this.paused = true;
     this.offset = 0;        // where it resumes, in seconds into the file
-    this.source = null;
-    this.startedAt = 0;     // ctx time the file's second 0 would have played at
+    this.passes = [];       // { source, when, offset } of the passes playing or queued, oldest first
     this.bytes = fetch(url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
       .catch(() => { onError(); return null; });
@@ -426,9 +438,10 @@ class LoopedTrack {
     return this.decoded;
   }
   get currentTime() {
-    if (this.paused || !this.source) return this.offset;
-    const t = ctx.currentTime - this.startedAt;
-    return t < this.loopEnd ? t : this.loopStart + (t - this.loopStart) % (this.loopEnd - this.loopStart);
+    const now = ctx?.currentTime ?? 0;
+    const pass = this.passes.filter(p => p.when <= now).at(-1);
+    if (this.paused || !pass) return this.offset;
+    return this.wrap(pass.offset + now - pass.when);
   }
   set currentTime(t) {
     const playing = !this.paused;
@@ -436,28 +449,66 @@ class LoopedTrack {
     this.offset = t;
     if (playing) this.play();
   }
+  /** The same moment in the song, brought back inside the loop (before the next crossfade starts). */
+  wrap(t) {
+    const length = this.loopEnd - this.loopStart;
+    while (t >= this.loopEnd - this.xfade / 2) t -= length;
+    return t;
+  }
   play() {
     if (!this.paused) return Promise.resolve();
     this.paused = false;
     return this.decode().then(buffer => {
-      if (this.paused || this.source || !buffer) return;
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.loop = true;
-      source.loopStart = this.loopStart;
-      source.loopEnd = this.loopEnd;
-      source.connect(this.out);
-      source.start(0, this.offset);
-      this.startedAt = ctx.currentTime - this.offset;
-      this.source = source;
+      if (this.paused || this.passes.length || !buffer) return;
+      this.buffer = buffer;
+      const offset = this.wrap(this.offset);
+      if (!this.xfade) {
+        const source = this.source(buffer);
+        source.loop = true;
+        source.loopStart = this.loopStart;
+        source.loopEnd = this.loopEnd;
+        source.connect(this.out);
+        source.start(0, offset);
+        this.passes = [{ source, when: ctx.currentTime, offset }];
+        return;
+      }
+      this.pass(offset, ctx.currentTime, false);
+      this.queue();
     });
+  }
+  source(buffer) {
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    return source;
+  }
+  /** One pass from `offset` to the loop's end, fading out across the join (and in, if it follows another). */
+  pass(offset, when, fadeIn) {
+    const source = this.source(this.buffer), gain = ctx.createGain();
+    source.connect(gain).connect(this.out);
+    if (fadeIn) { gain.gain.value = 0; gain.gain.setValueCurveAtTime(RISE, when, this.xfade); }
+    const handOver = when + (this.loopEnd - this.xfade / 2 - offset);
+    gain.gain.setValueCurveAtTime(FALL, handOver, this.xfade);
+    source.start(when, offset);
+    source.stop(handOver + this.xfade);
+    const pass = { source, when, offset, handOver };
+    source.onended = () => {
+      if (!this.passes.includes(pass)) return;   // stopped by a pause
+      this.passes = this.passes.filter(p => p !== pass);
+      if (!this.paused && this.passes.length < 2) this.queue();
+    };
+    this.passes.push(pass);
+  }
+  queue() {
+    const last = this.passes.at(-1);
+    if (last) this.pass(this.loopStart - this.xfade / 2, last.handOver, true);
   }
   pause(keep = false) {
     if (this.paused) return;
     this.offset = this.currentTime;
     this.paused = true;
-    this.source?.stop();
-    this.source = null;
+    const passes = this.passes;
+    this.passes = [];
+    passes.forEach(p => p.source.stop());
     if (!keep) this.decoded = null;
   }
 }
