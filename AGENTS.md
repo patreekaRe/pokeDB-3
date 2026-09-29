@@ -1,0 +1,60 @@
+# PokéDB: handoff for coding agents
+
+This project was built with Claude Code until 2026-09-29. It moved to opencode then. Everything an agent needs is in
+three places:
+
+1. **`CLAUDE.md`**: the architecture, every system, the conventions and how to test. It's long because it holds the
+   user's calls about the game. `opencode.json` loads it on every session, so treat it as your own instructions. Where
+   it says "Claude", read "you".
+2. **`docs/roadmap.md`**: the agreed plan, what's done and what's next. Read it before any roster, balance, Pokédex or
+   v1.0 task, and update it as steps land.
+3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.
+
+## Where we left off (2026-09-29)
+
+- `main` is up to date (last commit before this file: `bad9638`, victory and battle music looping cleanly). No
+  unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.
+- Roadmap steps 1-7 of "Next sessions" are done (evolution scene, title/select/Collection redesign, cries, cloud save
+  code, Level 5 rewards + Hall of Fame + Record Book, day/night cycle, the biome journey with places and landmarks).
+- **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Start with part A, Mewtwo's
+  Psychic deck and Ability. Before you build, ask the user the open questions that part needs. The session prompt is in
+  the roadmap.
+- Waiting on the user:
+  - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
+  - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
+  - Choosing whether the reward, battle and Mart capsules (`.ds-btn`) become pixel pills (`.pxb`).
+- Parked (don't start unprompted): Gen 6-9 starters (the sprites staged in `assets/pokemon/_incoming/` have no Grass
+  line), Mewtwo's shiny, and catching (dropped).
+
+## How the user works
+
+- The user is Patrick. They drive the project by playtesting and give concrete feedback ("the shop button should toggle,
+  not navigate"). Treat that feedback as the decision and act on it. Many "the user's call" notes in `CLAUDE.md` record
+  choices they made. Don't undo them.
+- **Every next step or session prompt starts with where to run it** (e.g. "▶ Run this in: LOCAL"). See the next section
+  for what CLOUD/LOCAL means now.
+- Keep sessions scoped to one feature or fix, and start fresh for the next one. Prefer text checks (reading the page,
+  `curl`) over screenshots, and one long wait over tight polling (e.g. GitHub Pages can take 10+ minutes).
+- **UI taste**: narrow, centred windows that let the pixel scene show around them; less text (details go in `title`
+  tooltips); the map is always upright; everything is pixel art and Pokémon-authentic (Gold/Silver, Gen 3-5), not
+  generic fantasy; size tweaks come in small steps. Check at phone portrait (375x812, 390x844), iPad (1024x700, 768x1024)
+  and PC (1280x800). **Landscape phones don't matter**: the user never plays sideways.
+- Plain, short explanations. Say whether something was actually tested in the browser.
+
+## Differences from Claude Code
+
+- **CLOUD vs LOCAL**: in `CLAUDE.md`, "CLOUD" meant a Claude Code web session (Linux with Node, Python and Chromium).
+  "LOCAL" meant the user's Windows PC, which has **no Node or Python**. With opencode on that PC:
+  - Serve the game with `powershell -ExecutionPolicy Bypass -File serve.ps1` → http://localhost:8123. Check
+    `netstat -ano | findstr LISTENING` first, in case a server is still running.
+  - The balance bot (see below) needs Node (`sim/run-node.mjs`) or a browser driving `sim/index.html`
+    (`../pokeDB-sim/serve-sim.ps1`). Installing Node is the easiest fix, but ask the user first.
+  - Playtesting is still on the live site: https://patreekare.github.io/pokeDB-3/ (`?levels` unlocks every Trainer
+    Level, `?time=dawn|day|dusk|night` pins the clock).
+- **Bot harness**: `../pokeDB-sim/` (next to this repo, never committed here). The local folder is not a git repo. The
+  copy with history is the user's private GitHub repo `patreekare/pokeDB-sim`. Its README says how to run it. Any balance
+  change needs before/after runs with the same bot (see "Testing a change before shipping" in `CLAUDE.md`).
+- **Git**: push straight to `main` (solo project, no PRs). Commit messages say *why*. Test in the browser before
+  committing. `.claude/worktrees/` holds old Claude Code worktrees; ignore them (the user can delete the folder).
+- Some parts of `CLAUDE.md` name Claude-only tools (the "browser pane", artifacts, `read_page`). Use whatever browser or
+  fetch tool you have instead.
