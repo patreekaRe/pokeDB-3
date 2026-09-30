@@ -75,7 +75,9 @@ What the overnight chain did, one session per big step (details and bot numbers 
    - Pidgey, Zubat, Machop, Geodude, Rhyhorn, Ponyta and Lapras left the game (sprites, cries,
      sprite-fit entries and defs removed), so `RUN_SAVE_VERSION` went 6 → 7.
    - Team Rocket's teams are now Rattata/Zigzagoon, Houndour/Aipom, Sharpedo/Zangoose: wilds of
-     that biome, so the Alpha is lighter than a real elite (no more 700+ HP Rhyhorn).
+     that biome, so the Alpha is lighter than a real elite (no more 700+ HP Rhyhorn). Since 2026-09-30
+     Teddiursa/Aipom and Bouffalant/Zangoose: every Alpha is Normal, and a "Neutral" Houndour using Fire
+     Fang read as a bug.
    - With 12 wilds a biome, a run rarely meets the same wild twice; nothing weights the picks yet
      (the Pokédex step may favour unregistered ones).
 5. **Big balance pass** — bots done (2026-09-26); the user's own playtest is next.

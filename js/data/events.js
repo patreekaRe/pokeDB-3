@@ -48,7 +48,7 @@ export const EVENTS = [
     toll: [30, 45, 60],        // ₽
     fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), picked per biome.
-    team: [['rattata', 'zigzagoon'], ['houndour', 'aipom'], ['sharpedo', 'zangoose']],
+    team: [['rattata', 'zigzagoon'], ['teddiursa', 'aipom'], ['bouffalant', 'zangoose']],   // all Normal, like every Alpha
     grunts: ['grunt-m', 'grunt-f'],   // the grunt himself (or herself), from assets/trainers/
   },
   {
