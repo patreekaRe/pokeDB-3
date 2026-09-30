@@ -1102,12 +1102,14 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   iris opens, the tiles fall away), so the battle screen never just appears: ~1.6 s, ~2.7 s for
   a boss. The boss silhouette stays grey on the map; its cry waits until battle. After the
   existing wipe opens, `playIntro()` holds the fighters and battle UI away while
-  `bossArenaPrelude()` in `js/scene.js` plays the empty arena: the Clearing's heartwood and
-  leaves wake, Shrine lanterns and wisps gather, or the Wastes' crater and embers flare. A
-  palette-matched portal ring and two quick flashes lead into the regular boss reveal/cry and
-  player Poké Ball entrance. Nothing checkpoints until `showMap()`, so a refresh mid-way resumes
-  before the room. Reduced motion keeps a brief static arena pause and the regular Pokémon cries,
-  but skips the scenery animation and portal flash.
+  `bossArenaPrelude()` in `js/scene.js` plays the empty arena. The Clearing's heartwood and
+  leaves wake; the Shrine lights its lanterns down the approach, gathers mist and wisps, and
+  raises a torii-shaped spirit gate over the Main Hall. The Shrine handoff opens the Hall's
+  shoji doors, pours spirit light through, and sends paper wards along the roof before two quick
+  flashes. The Wastes currently uses the shared crater/ember glow and portal fallback. Then the
+  regular boss reveal/cry and player Poké Ball entrance run. Nothing checkpoints until `showMap()`,
+  so a refresh mid-way resumes before the room. Reduced motion keeps a brief static arena pause
+  and the regular Pokémon cries, but skips the scenery animation and portal handoff.
 
 The home shop is the **Game Corner** (the user's call: the Gold/Silver prize
 counter, where coins buy Pokémon), so it can't be mistaken for the run's blue

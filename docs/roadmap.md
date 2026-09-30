@@ -588,6 +588,12 @@ Anytime, as a break from number work:
   there: every event where HP decides the choice (Hot Spring, Berry Tree, Shrine, Item Ball, Team Rocket, and the
   new scenes below) shows a slim HP row under the title (`eventVitals()`; first a full nameplate, slimmed the same day at the user's ask), and its bar runs to the new
   HP before the room closes (`showHpChange()`). The signs say where you'd end up ("Heal 11 HP, to 46/70").
+- **Biome 2 boss intro** (done 2026-09-30, `a71dc25`): on the map walk, the boss stays a grey silhouette. After the boss
+  wipe, the empty Main Hall wakes: lanterns light down the approach, mist rolls in, wisps gather into a torii-shaped
+  spirit gate, then the shoji doors open with spirit light and paper wards before the flashes, boss cry/reveal and player's
+  Poké Ball entrance. Reduced motion keeps the pause and regular cries/entrance but skips the scenery animation. The full
+  map-to-battle flow was checked at 375×812, 390×844, 768×1024, 1024×700 and 1280×800; no horizontal overflow, boss in
+  bounds, five-card hand present, and no console errors. The browser's local preview was also checked end to end.
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,
