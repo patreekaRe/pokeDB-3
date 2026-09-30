@@ -699,8 +699,13 @@ Fields: `only` = one type's starters; `rarity` = StS's tiers, 'common' / 'uncomm
 (`MART_RELIC_PRICES`) and the Starting Relic Charm never gives a rare. `boss` = only offered after a boss (normal
 ones once you own them all), never anywhere else. Six boss relics each give +1 PP with a catch (`ENERGY_RELICS`):
 Choice Band (no Rest), Choice Specs (draw 1 fewer), Toxic Orb (lose 1 HP a turn, never below 1), Room Service
-(StS's Velvet Choker: 6 cards a turn, `ROOM_SERVICE_CAP`), Griseous Orb (Philosopher's Stone: enemies start with 2
-strength), Dusk Stone (Runic Dome: `renderIntent()` shows a grey "???" bubble). Each type has 8 relics: its +2
+(StS's Velvet Choker: 6 cards a turn, `ROOM_SERVICE_CAP`), Griseous Orb (Mark of Pain: 2 Sludge shuffled
+into every fight's draw pile, `startBattle()`), Dusk Stone (Sozu: no new items; drops, the Item Ball (a relic instead), the
+Fan Club (₽ instead) and the Mart check it). Until 2026-09-30 they were Philosopher's Stone and Runic Dome; the user disliked
+the hidden intent. Relics get keyword boxes like cards: `relicTerms()` in `js/data/relics.js` finds terms in the text
+(the words are `TERMS` in `js/data/cards.js`, shared with `cardTerms()`), shown as lines under the tile (`relicTips()`,
+`makeRelic(relic, { tips: true })`: rewards, the Index, the Bag) or extra text box lines (`relicLines()`: treasure,
+floating relic rewards, the Shrine). Each type has 8 relics: its +2
 damage one plus two per archetype, one of them a rule-changer (Fire: Tamato Berry +2 per Burn (`burnEnemy()`), Spelon Berry half
 the Burn again at your turn's start, Black Sludge +3 per attack for 1 HP on the turn's first (`battle.sludged`), Salac Berry = Runic
 Cube (draws on every HP loss, in `markHurt()`), Dawn Stone = Dead Branch, Smoke-Poke Tail = Charon's Ashes (4); Grass: Protein = Shuriken, Muscle

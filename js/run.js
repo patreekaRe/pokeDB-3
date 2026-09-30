@@ -31,7 +31,7 @@ import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -477,6 +477,8 @@ function renderRelicList() {
     const li = el('div', 'howto-li');
     const text = el('span', 'howto-li-text');
     text.append(el('b', '', label), el('small', '', relic.text));
+    const tips = relicTips(relic);
+    if (tips) text.append(tips);
     li.append(itemSprite(relic, 'howto-node'), text);
     return li;
   };
@@ -713,7 +715,9 @@ function afterFight(node, result) {
   } else steps.unshift(next => unlockWindow(unlocked, next));
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
-  if (Math.random() < run.itemChance) {
+  if (run.relics.includes('dusk-stone')) {
+    // Dusk Stone (StS's Sozu): no new items
+  } else if (Math.random() < run.itemChance) {
     run.itemChance = Math.max(0, run.itemChance - ITEM_DROP.step);
     const [item] = itemChoices(run);
     if (item) steps.push(next => offerItem(item, next));
@@ -823,7 +827,7 @@ function showRelics(title, relics, next) {
     stage.classList.add('choosing');
     buttons.forEach(b => b.classList.toggle('chosen', b === btn));
     go.hidden = false;
-    sayLines([`${relic.name}: ${relic.text}`]);
+    sayLines(relicLines(relic));
   }
   go.addEventListener('click', take);
   async function take() {
@@ -1068,7 +1072,7 @@ function treasureRoom() {
     stage.classList.add('choosing');
     stage.querySelectorAll('.treasure-relic').forEach(b => b.classList.toggle('chosen', b === btn));
     take.hidden = false;
-    sayLines([`${relic.name}: ${relic.text}`]);
+    sayLines(relicLines(relic));
   }
 
   take.addEventListener('click', takeIt);
@@ -1608,7 +1612,7 @@ const EVENT_CHOICES = {
       spotOption('Pick it up', 'An item, maybe a relic... or a Voltorb that explodes.', async () => {
         if (!await playOut('pickup', { trap: state.trap })) return;
         if (state.relic) return offerRelic('Inside the Item Ball', showMap);
-        const [item] = state.trap ? [] : itemChoices(run);
+        const [item] = state.trap || run.relics.includes('dusk-stone') ? [] : itemChoices(run);   // Dusk Stone: a relic instead
         if (item) return offerItem(item, showMap, { opened: true });
         if (!state.trap) return offerRelic('Inside the Item Ball', showMap);
         loseHp(damage);
@@ -1725,7 +1729,7 @@ const EVENT_CHOICES = {
     const view = { figures: { left: { src: 'assets/pokemon/persian-front.gif', flip: true }, right: { src: 'assets/pokemon/cinccino-front.gif' }, npc: { npc: 'chairman' } } };
     const why = 'Healthy Pokémon (over half HP) get prize money; tired ones get looked after.';
     if (healthy) return { ...view, sub: [event.text, why], options: [spotOption('Show off', `The fans are thrilled! They give you ₽${money}.`, () => cheer(collect))] };
-    if (run.items.length < itemSlots()) {
+    if (run.items.length < itemSlots() && !run.relics.includes('dusk-stone')) {
       return { ...view, sub: [event.text, why], options: [spotOption('Accept their gift', `They worry about your Pokémon and give you a ${item.name}.`, () => cheer(() => {
         figureDoes('npc', 'npc-jump');   // the Chairman, as he hands it over
         revealGift(item, [`The fans gave you a ${item.name}!`, item.text], () => {
@@ -1747,7 +1751,7 @@ const EVENT_CHOICES = {
         if (!await playOut('pray')) return;
         loseHp(cost);
         await showHpChange();
-        revealGift(relic, [`The shrine gave you ${relic.name}!`, relic.text], () => gainRelic(relic, showMap));
+        revealGift(relic, [`The shrine gave you ${relic.name}!`, ...relicLines(relic).map((line, i) => (i ? line : relic.text))], () => gainRelic(relic, showMap));
       }, run.hp <= cost),
     ] };
   },
@@ -1865,11 +1869,12 @@ function martRoom() {
     }, { group: 'cards', name: card.name });
   });
 
-  const bagFull = run.items.length >= itemSlots();
+  const dusk = run.relics.includes('dusk-stone');
+  const bagFull = dusk || run.items.length >= itemSlots();
   const items = stock.items.filter(item => !item.sold).map(item => {
     const found = ITEMS_BY_ID[item.id];
     const option = itemOption(found);
-    if (bagFull) option.node.append(el('span', 'item-full', 'Bag full'));
+    if (bagFull) option.node.append(el('span', 'item-full', dusk ? 'Dusk Stone' : 'Bag full'));
     return ware({ ...option, disabled: bagFull }, martPrice(item.price), () => {
       item.sold = true;
       run.items.push(found.id);

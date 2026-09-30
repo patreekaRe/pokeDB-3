@@ -791,12 +791,28 @@ export function describe(card, stage = 0) {
 }
 
 /** Keywords shown in bold on the card, around describe()'s text: [label, what it means]. */
+/** The shared keyword box texts: cards' (cardTerms) and relics' (relicTerms in relics.js) say the same thing. */
+export const TERMS = {
+  Exhaust: 'Gone for this fight. Back next fight.',
+  Discard: 'Hand to discard pile. Turn end doesn\'t count.',
+  Tide: 'A stack you build up all fight (your 🌊 badge). "Per Tide" moves get stronger per stack, then use it all up.',
+  Burn: 'Damage each enemy turn, then -1.',
+  'Leech Seed': 'Drains that much HP each enemy turn, then -1.',
+  Sap: 'Enemy attacks deal that much less, all fight.',
+  Weak: 'Enemy deals 25% less. Counts down each turn.',
+  Vulnerable: 'Enemy takes 50% more. Counts down each turn.',
+  Strength: 'Added to every hit you deal.',
+  Focus: 'Adds damage to your next attack.',
+  Power: 'Lasts all fight. Played once.',
+};
+export const term = (label) => [label, TERMS[label]];
+
 export function keywords(card) {
   return {
     lead: [
       card.unplayable && ['Unplayable', 'Can\'t be played.'],
       card.innate && ['Innate', 'Always in your first hand.'],
-      card.power && ['Power', 'Lasts all fight. Played once.'],
+      card.power && term('Power'),
       card.retain && ['Retain', 'Stays in your hand at turn end.'],
     ].filter(Boolean),
     tail: [
@@ -833,16 +849,16 @@ export function cardTerms(card) {
   const terms = [...lead, ...tail,
     card.growOnRetain && ['Retain', 'Stays in your hand at turn end.'],
     uses(/^retain/) && ['Retain', 'A kept card stays in hand at turn end.'],
-    (uses(/exhaust|^playTop$|^exhume$|^corruption$/) || card.onExhaust) && ['Exhaust', 'Gone for this fight. Back next fight.'],
-    (uses(/discard/i) || card.onDiscard) && ['Discard', 'Hand to discard pile. Turn end doesn\'t count.'],
-    uses(/tide|^drizzle$/i) && ['Tide', 'A stack you build up all fight (your 🌊 badge). "Per Tide" moves get stronger per stack, then use it all up.'],
-    uses(/burn|^drought$/i) && ['Burn', 'Damage each enemy turn, then -1.'],
-    uses(/seed/i) && ['Leech Seed', 'Drains that much HP each enemy turn, then -1.'],
-    uses(/^sap$/) && ['Sap', 'Enemy attacks deal that much less, all fight.'],
-    uses(/weak/i) && ['Weak', 'Enemy deals 25% less. Counts down each turn.'],
-    uses(/vulnerable/i) && ['Vulnerable', 'Enemy takes 50% more. Counts down each turn.'],
-    uses(/strength|^flex$/i) && ['Strength', 'Added to every hit you deal.'],
-    uses(/^focus$/i) && ['Focus', 'Adds damage to your next attack.'],
+    (uses(/exhaust|^playTop$|^exhume$|^corruption$/) || card.onExhaust) && term('Exhaust'),
+    (uses(/discard/i) || card.onDiscard) && term('Discard'),
+    uses(/tide|^drizzle$/i) && term('Tide'),
+    uses(/burn|^drought$/i) && term('Burn'),
+    uses(/seed/i) && term('Leech Seed'),
+    uses(/^sap$/) && term('Sap'),
+    uses(/weak/i) && term('Weak'),
+    uses(/vulnerable/i) && term('Vulnerable'),
+    uses(/strength|^flex$/i) && term('Strength'),
+    uses(/^focus$/i) && term('Focus'),
     uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],
     (uses(/^perX$/) || card.cost === 'X') && ['X', 'Spends all your PP. X is how much.'],
     e.combo && [`Combo ${e.combo.at}`, `Only if you've played ${e.combo.at} other cards this turn.`],

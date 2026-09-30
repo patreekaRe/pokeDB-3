@@ -49,7 +49,7 @@ function thingTile(thing, seen) {
     node.append(itemSprite(thing, 'relic-icon'), el('strong', 'relic-name', '???'), el('span', 'relic-text', 'Not found yet.'));
     return node;
   }
-  const node = makeRelic(thing);
+  const node = makeRelic(thing, { tips: true });
   node.removeAttribute('title');   // its name and text are right there
   node.classList.add('index-thing');
   if (thing.only) node.append(el('span', `index-only type-${thing.only}`, `${TYPES[thing.only].label} only`));

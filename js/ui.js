@@ -5,6 +5,7 @@
 
 import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
+import { relicTerms } from './data/relics.js';
 import { getSave } from './storage.js';
 import { playMusic, playSound } from './audio.js';
 
@@ -288,12 +289,29 @@ export function itemSprite(thing, className = '') {
 }
 
 /** A relic tile: icon, name and what it does. */
-export function makeRelic(relic) {
+export function makeRelic(relic, { tips = false } = {}) {
   const node = el('div', 'relic');
   node.title = `${relic.name}: ${relic.text}`;
   node.append(itemSprite(relic, 'relic-icon'), el('strong', 'relic-name', relic.name), el('span', 'relic-text', relic.text));
+  if (tips) { const box = relicTips(relic); if (box) node.append(box); }
   return node;
 }
+
+/** A relic's keyword boxes, as small lines under its text (the cards' words and colours). */
+export function relicTips(relic) {
+  const terms = relicTerms(relic);
+  if (!terms.length) return null;
+  const box = el('span', 'relic-terms');
+  for (const [label, text] of terms) {
+    const line = el('small', 'relic-term');
+    line.append(el('b', `term-${termKind(label)}`, label), ` ${text}`);
+    box.append(line);
+  }
+  return box;
+}
+
+/** A relic's words for a text box: what it does, then a line per keyword. */
+export const relicLines = (relic) => [`${relic.name}: ${relic.text}`, ...relicTerms(relic).map(([label, text]) => `${label}: ${text}`)];
 
 /** Group a list of card ids into [{ card, count }], keeping first-seen order. */
 export function groupDeck(ids, cardsById) {

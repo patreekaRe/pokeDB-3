@@ -132,7 +132,8 @@ const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
 export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   const def = encounter.def;
   const ability = ABILITIES[run.starter.type] ?? null;
-  const deck = shuffle(run.deck.map(id => CARDS_BY_ID[id]));
+  const junk = run.relics.includes('griseous-orb') ? [CARDS_BY_ID.sludge, CARDS_BY_ID.sludge] : [];   // StS's Mark of Pain
+  const deck = shuffle([...run.deck.map(id => CARDS_BY_ID[id]), ...junk]);
   choosing = null;
 
   battle = {
@@ -188,7 +189,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       maxHp: encounter.maxHp,
       block: 0,
       dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
-      strength: run.relics.includes('griseous-orb') ? 2 : 0,   // gained in the fight (buff moves, Enrage, Griseous Orb), shown as a badge
+      strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
       burn: run.relics.includes('flame-orb') ? 3 : 0,
       seed: run.relics.includes('gooey-mulch') ? 2 : 0,   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
@@ -1592,14 +1593,6 @@ function renderIntent() {
   if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; return; }
 
   const move = currentMove();
-  if (hasRelic('dusk-stone')) {
-    // Dusk Stone (StS's Runic Dome): the enemy's next move stays hidden
-    box.className = 'intent status';
-    delete box.dataset.move;
-    box.replaceChildren(el('span', 'intent-icon', '❓'), el('b', 'intent-value', '?'), el('span', 'intent-name', '???'));
-    box.title = 'Dusk Stone: you can\'t see what the enemy will do next.';
-    return;
-  }
   let icon = '⚔️', value = '', kind = 'attack', detail = '';
   if (move.kind === 'attack' || move.kind === 'drain') {
     icon = move.kind === 'drain' ? '🩸' : '⚔️';

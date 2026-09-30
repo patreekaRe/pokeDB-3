@@ -286,7 +286,7 @@ function finishLine() {
 
 /** Ready-made option tiles. */
 export const cardOption = (card, stage, onPick, count = 1) => ({ node: makeCard(card, { stage, count }), onPick });
-export const relicOption = (relic, onPick) => ({ node: makeRelic(relic), onPick });
+export const relicOption = (relic, onPick) => ({ node: makeRelic(relic, { tips: true }), onPick });
 
 /** A simple tile with an icon (an emoji, or an element such as itemSprite()) and text. */
 export function textOption(icon, title, text, onPick) {
