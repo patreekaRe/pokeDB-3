@@ -14,7 +14,7 @@ import { MAX_LEVEL } from './data/difficulty.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { DEX_PAGES, DEX_COMPLETE_COINS } from './data/pokedex.js';
 import { researchCount, dexPerkLevel } from './pokedex.js';
-import { $, el, openDialog } from './ui.js';
+import { $, el, openDialog, itemSprite } from './ui.js';
 
 const tile = ([icon, value, label, note]) => {
   const node = el('div', 'stat-tile');
@@ -139,8 +139,16 @@ export function openAchievements() {
     const lv2 = dexPerkLevel(p.perk.id) === 2;
     const row = el('div', `ach dex-ach${got ? ' done' : ''}`);
     const text = el('div', 'ach-text');
-    text.append(el('strong', '', `${p.perk.name}${lv2 ? ' Lv 2' : ''}`), el('span', '', `Complete the Pokédex's ${p.name} page: ${p.perk.text}`),
-      el('span', '', `${lv2 ? '★ ' : ''}Research every entry on it for Lv 2: ${p.perk.lv2.text}`));
+    const gift = (how, level) => {
+      const line = el('span', 'perk-line', how);
+      const chip = el('span', 'perk-gift');
+      chip.append(level.item ? itemSprite({ id: level.item, icon: '🧴' }, 'perk-gift-icon') : el('span', 'perk-gift-icon', p.perk.icon),
+        el('span', '', level.gift));
+      line.append(chip);
+      return line;
+    };
+    text.append(el('strong', '', `${p.perk.name}${lv2 ? ' Lv 2' : ''}`), el('span', 'perk-where', `${p.name} · ${p.perk.every}`),
+      gift('Beat all', p.perk), gift(`${lv2 ? '★ ' : ''}Research all`, p.perk.lv2));
     row.append(el('span', 'dex-ach-icon', p.perk.icon), text, el('span', 'ach-status', got ? '' : '🔒'));
     if (got) row.lastChild.append(el('span', 'pokeball'));
     dex.append(row);
@@ -150,8 +158,11 @@ export function openAchievements() {
     const [n, total] = researchCount();
     const row = el('div', `ach dex-ach${got ? ' done' : ''}`);
     const text = el('div', 'ach-text');
-    text.append(el('strong', '', 'Pokédex complete'),
-      el('span', '', `Complete every entry's research (${n}/${total}): +${DEX_COMPLETE_COINS} PokéCoins.`));
+    const line = el('span', 'perk-line', `Research all (${n}/${total})`);
+    const chip = el('span', 'perk-gift');
+    chip.append(el('span', 'perk-gift-icon', '💰'), el('span', '', `${DEX_COMPLETE_COINS}`));
+    line.append(chip);
+    text.append(el('strong', '', 'Pokédex complete'), el('span', 'perk-where', 'Every page · once'), line);
     row.append(el('span', 'dex-ach-icon', '📕'), text, el('span', 'ach-status', got ? '' : '🔒'));
     if (got) row.lastChild.append(el('span', 'pokeball'));
     dex.append(row);

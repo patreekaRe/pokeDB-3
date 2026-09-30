@@ -3320,6 +3320,17 @@ body.has-scene #scene-bg { display: block; }
 .dex-move.kind-status { box-shadow: inset 4px 0 0 #888890; }
 .dex-ach-icon { width: 48px; text-align: center; font-size: 1.8rem; flex: none; }
 .dex-ach:not(.done) .dex-ach-icon { filter: grayscale(1) opacity(0.5); }
+.ach-text .perk-where { font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
+.perk-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 8px; margin-top: 4px; }
+.perk-gift { white-space: nowrap; }
+.perk-gift {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px 2px 4px;
+  color: var(--ink); background: rgba(255, 255, 255, 0.55);
+  border: 2px solid var(--win-edge); border-radius: var(--round-xs);
+}
+.ach:not(.done) .ach-text .perk-gift span { color: var(--ink); }
+.perk-gift-icon { display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; font-size: 1.1rem; }
+.perk-gift-icon .item-sprite { width: 24px; height: 24px; image-rendering: pixelated; }
 @media (max-width: 720px) {
   .dex-body { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .dex-sprite { width: 56px; height: 56px; }

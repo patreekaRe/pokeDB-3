@@ -15,18 +15,18 @@ import { BIOMES } from './enemies.js';
 export const DEX_PERKS = {
   clearing: {
     id: 'moms-savings', name: 'Mom\'s Savings', icon: '💴', coins: 300,
-    text: 'Start every run with ₽50.', short: 'Start runs with ₽50',
-    lv2: { text: 'Start every run with ₽100.', short: 'Start runs with ₽100' },
+    text: 'Start every run with ₽50.', short: 'Start runs with ₽50', gift: '₽50', every: 'every run',
+    lv2: { text: 'Start every run with ₽100.', short: 'Start runs with ₽100', gift: '₽100' },
   },
   shrine: {
     id: 'chansey-gift', name: 'Chansey\'s Gift', icon: '🧴', coins: 400,
-    text: 'Start every run with a Potion in the Bag.', short: 'Start runs with a Potion',
-    lv2: { text: 'Start every run with a Super Potion in the Bag.', short: 'Start runs with a Super Potion' },
+    text: 'Start every run with a Potion in the Bag.', short: 'Start runs with a Potion', gift: 'Potion', every: 'every run', item: 'potion',
+    lv2: { text: 'Start every run with a Super Potion in the Bag.', short: 'Start runs with a Super Potion', gift: 'Super Potion', item: 'super-potion' },
   },
   wastes: {
     id: 'oaks-advice', name: 'Oak\'s Advice', icon: '🎓', coins: 500,
-    text: 'Once per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward once a biome',
-    lv2: { text: 'Twice per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward twice a biome' },
+    text: 'Once per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward once a biome', gift: '1 reroll', every: 'card rerolls each biome',
+    lv2: { text: 'Twice per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward twice a biome', gift: '2 rerolls' },
   },
 };
 
