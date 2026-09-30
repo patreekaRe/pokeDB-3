@@ -361,6 +361,12 @@ body[data-screen="battle-screen"] .fan-note { display: none; }   /* it sat over 
   align-items: center;
   gap: 6px;
 }
+.enemy-zone.boss-waiting { visibility: hidden; }
+/* The Clearing's boss gets a scenery-only beat before any battle UI or Pokémon appears. */
+body.tree-prelude .topbar,
+body.tree-prelude #battle-screen :is(.nameplate, .intent, .battle-controls, .battle-log, .ability-banner) { visibility: hidden; }
+body.tree-prelude .enemy-zone::after,
+body.tree-prelude .player-zone::before { visibility: hidden; }
 /* The enemy's next move: a Pokégear speech bubble over its head (like the games' "!" emote), with a pixel
    tail pointing down at it. The frame says what kind of move: red attack, purple drain, blue defend, green buff. */
 .intent {

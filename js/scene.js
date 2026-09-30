@@ -49,6 +49,7 @@ const BIOME_ART = {
     butterflies: ['#ffffff', '#f8d848', '#f8a040'],
     bird: '#34405c',
     pollen: ['#fffce0', '#f8f0a0'],
+    leaves: [['#e0d88a', '#91b461'], ['#b8d078', '#71934d']],
     firefly: ['#f8f8a0', '#c8e858'],
     marks: {   // the places' own colours (the stream, the landmarks), painted by day
       water: ['#e0f8ff', '#78c8f0', '#4898d8', '#2e6cb0'], bank: ['#3a7a30'],
@@ -117,7 +118,7 @@ const BIOME_ART = {
     },
     kinds: {
       elite: { grade: 'elite' },
-      boss: { grade: 'boss', clouds: { count: 1.4 } },
+      boss: { grade: 'boss', clouds: { count: 1.4 }, addLife: ['leaves'] },
     },
   },
 
@@ -693,6 +694,7 @@ const PLACE_ART = {
 let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
 let life = {};
+let treePrelude = null;
 let shown = '';                 // which scene is up, so going back to it doesn't restart it
 let floorAt = null, spanAt = null;   // a place whose floor line and counter the page sets (showPlaceScene's `floor` and `span`)
 let storm = { on: false, level: 0 };
@@ -842,6 +844,7 @@ function paintScene(key, raw, floor = null, span = null) {
   spanAt = span;
   if (raw && key === shown && document.body.dataset.screen !== 'battle-screen') { if (floor) resize(); return; }
   shown = key;
+  treePrelude = null;
   clearInterval(timer);
   storm = { on: false, level: 0 };
   if (!raw) { S = null; return; }
@@ -859,6 +862,26 @@ export function setStorm(on) {
   storm.on = on;
   if (on && !life.rain) makeRain();
   if (!timer) { storm.level = on ? 1 : 0; draw(); }
+}
+
+/** Hold on the Clearing's empty Ancient Tree arena before the boss is revealed. */
+export async function ancientTreePrelude() {
+  if (S?.raw.backdrop !== 'hills' || S.raw.stage !== 3) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    if (S?.raw.backdrop === 'hills' && S.raw.stage === 3) { treePrelude = { phase: 'awake', at: tick }; draw(); }
+    return;
+  }
+  treePrelude = { phase: 'wake', at: tick };
+  draw();
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  if (S?.raw.backdrop !== 'hills' || S.raw.stage !== 3) return;
+  treePrelude = { phase: 'portal', at: tick };
+  draw();
+  await new Promise(resolve => setTimeout(resolve, 650));
+  if (S?.raw.backdrop !== 'hills' || S.raw.stage !== 3) return;
+  treePrelude = { phase: 'awake', at: tick };
+  draw();
 }
 
 addEventListener('resize', () => { if (S) resize(); });
@@ -1468,12 +1491,13 @@ function lightShafts(strength) {
 /** The boss's arena: an ancient giant tree, its trunk filling the back, roots spilling onto the grass, its crown the sky. */
 function giantTree() {
   const [lit, leaf, shade, deep] = S.trees, bark = M().bark;
-  const cx = Math.round(W * 0.5), half = Math.max(8, Math.round(Math.min(W * 0.13, horizon * 0.42))), foot = horizon + 3;
+  const cx = Math.round(W * 0.5), half = Math.max(10, Math.round(Math.min(W * 0.16, horizon * 0.52))), foot = horizon + 3;
   for (let y = 0; y <= foot; y++) {
     const flare = y > foot - half ? Math.round((y - foot + half) ** 2 / half * 1.2) : 0;
+    const lean = Math.round(Math.sin(y / Math.max(5, horizon * 0.12)) * Math.min(3, half * 0.08));
     for (let x = -half - flare; x <= half + flare; x++) {
-      const u = x / (half + flare), groove = Math.abs(Math.sin(x * 1.7 + y * 0.08)) < 0.18;
-      solid(cx + x, y, u < -0.7 ? bark[0] : u > 0.45 ? (u > 0.8 ? bark[3] : bark[2]) : groove ? bark[2] : bark[1]);
+      const u = x / (half + flare), groove = Math.abs(Math.sin(x * 1.15 + y * 0.07)) < 0.16;
+      solid(cx + x + lean, y, u < -0.72 ? bark[0] : u > 0.5 ? (u > 0.82 ? bark[3] : bark[2]) : groove ? bark[2] : bark[1]);
     }
   }
   // roots crawling out over the ground
@@ -1487,10 +1511,20 @@ function giantTree() {
     }
   }
   // a hollow and moss
-  const hy = Math.round(horizon * 0.62), hr = Math.max(2, Math.round(half * 0.28));
-  for (let y = -hr * 1.4; y <= hr * 1.4; y++) for (let x = -hr; x <= hr; x++) {
-    const d = (x / hr) ** 2 + (y / (hr * 1.4)) ** 2;
-    if (d <= 1) solid(cx - Math.round(half * 0.2) + x, hy + y, d > 0.7 && y < 0 ? bark[0] : bark[3]);
+  const hy = Math.round(horizon * 0.62), hr = Math.max(3, Math.round(half * 0.32));
+  for (let y = -hr * 1.5; y <= hr * 1.5; y++) for (let x = -hr - 1; x <= hr + 1; x++) {
+    const d = (x / hr) ** 2 + (y / (hr * 1.5)) ** 2;
+    if (d <= 1.45) {
+      const ring = Math.round(d * 5) % 2 === 0;
+      solid(cx - Math.round(half * 0.2) + x, hy + y,
+        d > 0.82 ? bark[0] : d > 0.56 ? (ring ? bark[1] : bark[2]) : d > 0.34 ? bark[3] : bark[2]);
+    }
+  }
+  const heartX = cx - Math.round(half * 0.2);
+  for (let y = -2; y <= 2; y++) for (let x = -3; x <= 3; x++) {
+    const d = (x / 3) ** 2 + (y / 2) ** 2;
+    if (d < 0.34) put(heartX + x, hy + y, S.pollen[0]);
+    else if (d < 1 && dither(x, y) < 6) put(heartX + x, hy + y, S.pollen[1]);
   }
   for (let n = 0; n < half * 3; n++) {
     const x = cx + Math.round((rand() * 2 - 1) * half * 0.9), y = Math.floor(rand() * foot);
@@ -1499,8 +1533,35 @@ function giantTree() {
   // the crown: a ceiling of leaves, heavier over the trunk
   for (let x = 0; x < W; x++) {
     const over = Math.max(0, 1 - Math.abs(x - cx) / (W * 0.5));
-    const h = Math.round(horizon * (0.18 + over * 0.14) + 3 * Math.sin(x / 5) + 2 * Math.sin(x / 2.3 + 1));
-    for (let y = 0; y <= h; y++) solid(x, y, y >= h - 1 ? deep : y > h - 4 && dither(x, y) < 9 ? shade : dither(x + 1, y) < 3 ? lit : leaf);
+    const h = Math.round(horizon * (0.14 + over * 0.2) + 4 * Math.sin(x / 5) + 3 * Math.sin(x / 2.3 + 1));
+    for (let y = 0; y <= h; y++) {
+      const opening = Math.abs(x - cx) < half * 0.22 && y < h - 5 && dither(x, y) < 5;
+      if (!opening) solid(x, y, y >= h - 1 ? deep : y > h - 4 && dither(x, y) < 9 ? shade : dither(x + 1, y) < 3 ? lit : leaf);
+    }
+  }
+  // Heavy, split boughs break up the crown and make the hollow feel sheltered, not like a flat trunk.
+  for (const [side, span, start, climb] of [[-1, 0.25, 0.44, 0.13], [1, 0.36, 0.5, 0.24]]) {
+    const length = Math.max(12, Math.round(Math.min(W * span, half * (side < 0 ? 1.55 : 2.4)))), rise = Math.max(5, Math.round(horizon * climb));
+    for (let n = 0; n <= length; n++) {
+      const p = n / length, x = cx + side * Math.round(half * 0.35 + p * length * 0.72);
+      const y = Math.round(horizon * start - p * rise + Math.sin(p * Math.PI) * 2 + Math.sin(p * Math.PI * 2) * 1.5);
+      const thick = Math.max(1, Math.round((1 - p * 0.76) * Math.max(2, half * 0.11)));
+      for (let dy = -thick; dy <= thick; dy++) solid(x, y + dy, dy === -thick ? bark[0] : dy === thick ? bark[3] : bark[1]);
+      if (n % 3 === 0) put(x + side, y - thick, bark[0]);
+      if (n === Math.round(length * 0.48)) {
+        const twig = Math.max(4, Math.round(horizon * 0.13));
+        for (let k = 0; k < twig; k++) {
+          const tx = x + side * Math.round(k * 0.42), ty = y - k;
+          solid(tx, ty, bark[0]); solid(tx + side, ty, bark[1]);
+        }
+      }
+    }
+  }
+  // Broken rings and moss on the exposed roots catch the light around the hollow.
+  for (let n = 0; n < half * 2; n++) {
+    const side = n % 2 ? -1 : 1, x = cx + side * Math.round(half * (0.7 + rand() * 1.4));
+    const y = foot - Math.round(rand() * Math.max(2, half * 0.45));
+    if (dither(x, y) < 7) solid(x, y, M().moss[n % 2]);
   }
 }
 
@@ -4863,8 +4924,58 @@ function draw() {
   }
 
   if (life.rain && storm.level > 0) drawRain(t);
+  if (treePrelude?.phase === 'portal') drawTreePortal(t);
+  else if (treePrelude) drawTreeAwakening(t);
 
   ctx.putImageData(img, 0, 0);
+}
+
+/** The Clearing's hollow lights up and shakes loose leaves before the boss appears. */
+function drawTreeAwakening(t) {
+  const awake = treePrelude.phase === 'awake', age = Math.max(0, t - treePrelude.at);
+  const progress = awake ? 0.38 : Math.min(1, age / (FPS * 2.1));
+  const light = awake ? 0.25 : progress;
+  const half = Math.max(10, Math.round(Math.min(W * 0.16, horizon * 0.52)));
+  const cx = Math.round(W * 0.5) - Math.round(half * 0.2), cy = Math.round(horizon * 0.62);
+  const pulse = (Math.sin(age * 0.75) + 1) * 0.5, r = awake ? 5 + pulse : 3 + progress * 13 + pulse * 2;
+  for (let y = -Math.ceil(r * 1.5); y <= r * 1.5; y++) for (let x = -Math.ceil(r); x <= r; x++) {
+    const d = (x / r) ** 2 + (y / (r * 1.5)) ** 2;
+    if (d <= 1 && (d < 0.5 || dither(cx + x, cy + y) < 9 + progress * 5)) {
+      put(cx + x, cy + y, d < 0.2 ? S.pollen[0] : d < 0.68 ? S.pollen[1] : S.firefly[1]);
+    }
+  }
+  // A stepped shaft climbs through the canopy as the hollow brightens.
+  if (light > 0.12) for (let y = cy - 2; y >= 0; y--) {
+    const spread = Math.round(1 + (cy - y) / Math.max(1, cy) * light * 7);
+    const drift = Math.round(Math.sin((y + age) / 7) * light * 3);
+    for (let dx = -spread; dx <= spread; dx++) {
+      const x = cx + drift + dx;
+      if (dither(x + age, y) < 4 + light * 7) tint(x, y, 1.18, 24 * light);
+    }
+  }
+  // Leaves orbit once, then peel away toward the sides of the arena.
+  for (let i = 0; i < 9; i++) {
+    const angle = age * 0.2 + i * Math.PI * 2 / 9;
+    const radius = 3 + (awake ? 5 : progress * (8 + i % 3 * 5));
+    const x = cx + Math.cos(angle) * radius, y = cy + Math.sin(angle) * radius * 0.55 - progress * 2;
+    const colour = i % 2 ? S.pollen[0] : S.firefly[0];
+    put(x, y, colour);
+    put(x + (i % 3) - 1, y + (i % 2), S.pollen[1]);
+  }
+}
+
+/** The hollow expands into a stepped ring, then flashes twice to hand off to the normal boss reveal. */
+function drawTreePortal(t) {
+  const age = Math.max(0, t - treePrelude.at), frame = age | 0;
+  if (frame === 3 || frame === 5) { px.fill(S.pollen[0]); return; }
+  const half = Math.max(10, Math.round(Math.min(W * 0.16, horizon * 0.52)));
+  const cx = Math.round(W * 0.5) - Math.round(half * 0.2), cy = Math.round(horizon * 0.62);
+  const radius = Math.hypot(W * 0.56, H * 0.58) * Math.min(1, age / 3);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const d = Math.hypot(x - cx, (y - cy) * 0.82);
+    if (d <= radius && d >= radius - 3) put(x, y, frame % 2 ? S.pollen[0] : S.firefly[0]);
+    else if (d < radius - 3 && dither(x, y) < 2) tint(x, y, 1.12, 12);
+  }
 }
 
 /* ---------- clouds, birds, weather ---------- */

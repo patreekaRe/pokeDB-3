@@ -1100,10 +1100,14 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   starts with the flash (no sound effect of its own: the games have none), so `startBattle()`'s `playMusic` is a no-op), starts the battle under
   the black, then opens onto it the same way (`.out`: the bars carry on off the far side, the
   iris opens, the tiles fall away), so the battle screen never just appears: ~1.6 s, ~2.7 s for
-  a boss. Before a boss, `walkTo()` runs
-  `bossReveal()`: the silhouette colours in (`.revealed`) with its cry, and `body.battle-intro`
-  blocks taps. Nothing checkpoints until `showMap()`, so a refresh mid-way resumes before the
-  room. Reduced motion keeps the reveal's cry and pause but skips the wipe.
+  a boss. Before bosses in Biomes 2-3, `walkTo()` runs `bossReveal()`: the map silhouette
+  colours in (`.revealed`) with its cry. The Clearing keeps its silhouette grey, then after
+  the existing wipe opens, `playIntro()` holds the fighters and battle UI away while
+  `ancientTreePrelude()` in `js/scene.js` plays the empty arena, a 3-second canopy/hollow wake,
+  and a portal ring with two quick flashes. The regular boss reveal/cry and player Poké Ball
+  entrance follow unchanged. Nothing checkpoints until `showMap()`, so a refresh mid-way resumes
+  before the room. Reduced motion keeps a brief static arena pause and the regular Pokémon cries,
+  but skips the scenery animation and portal flash.
 
 The home shop is the **Game Corner** (the user's call: the Gold/Silver prize
 counter, where coins buy Pokémon), so it can't be mistaken for the run's blue

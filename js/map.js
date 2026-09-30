@@ -651,7 +651,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       const canGo = reachable.has(node.id);
       if (canGo) btn.classList.add('reachable');
       btn.disabled = !canGo;
-      if (canGo) btn.addEventListener('click', () => walkTo(node, onPick));
+      if (canGo) btn.addEventListener('click', () => walkTo(node, onPick, biome));
     }
     box.append(btn);
     if (node.revealed && node.enemyId && !node.visited) box.append(revealedFigure(node));
@@ -715,12 +715,13 @@ function place(elem, x, y) {
 const WALK_MS = [500, 850];    // one link's walk, from a short straight link to the long start road (the user's pace: 0.3-0.5 s zoomed past, 0.65-1.1 s dragged)
 let walking = false, routesSvg = null, trainerImg = null, walkFrom = null, bossShadow = null;
 
-function walkTo(node, onPick) {
+function walkTo(node, onPick, biome) {
   if (walking) return;
   const img = trainerImg;
   walking = true;
   const arrive = async () => {
-    if (node.type === 'boss') await bossReveal(bossShadow, ENEMY_DEFS[node.enemyId]?.spriteId);
+    // The Clearing gets its own arena-first intro in battle; keep its boss a silhouette on the map.
+    if (node.type === 'boss' && biome !== 'clearing') await bossReveal(bossShadow, ENEMY_DEFS[node.enemyId]?.spriteId);
     walking = false;
     onPick(node);
   };

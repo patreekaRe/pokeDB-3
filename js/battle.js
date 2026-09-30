@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, setStorm } from './scene.js';
+import { showScene, setStorm, ancientTreePrelude } from './scene.js';
 import { BIOMES } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -128,7 +128,7 @@ const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
  *   onEnd      called when the fight is over with
  *              { won, hp, damageTaken, tally }, plus fled: true after a Poké Doll
  */
-export function startBattle({ run, encounter, onEnd }) {
+export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   const def = encounter.def;
   const ability = ABILITIES[run.starter.type] ?? null;
   const deck = shuffle(run.deck.map(id => CARDS_BY_ID[id]));
@@ -137,6 +137,7 @@ export function startBattle({ run, encounter, onEnd }) {
   battle = {
     starter: run.starter,
     stage: run.stage,
+    biome: run.biome,
     def,
     kind: encounter.kind,
     relics: [...run.relics],
@@ -207,7 +208,15 @@ export function startBattle({ run, encounter, onEnd }) {
   preloadMusic(winTrack(encounter.kind));
   setupBattleScreen();
 
-  log(encounter.kind === 'boss' ? `${def.name} blocks the way!` : `A wild ${def.name} appeared!`);
+  log(encounter.kind === 'boss'
+    ? run.biome === 0 ? 'The Ancient Tree stirs...' : `${def.name} blocks the way!`
+    : `A wild ${def.name} appeared!`);
+  if (deferIntro) {
+    document.body.classList.add('tree-prelude');
+    $('player-zone').classList.add('awaiting');
+    $('enemy-zone').classList.add('boss-waiting');
+    return () => playIntro();
+  }
   playIntro();
 }
 
@@ -231,6 +240,17 @@ async function playIntro() {
 
   zone.classList.add('awaiting');
   renderAll();
+  if (b.kind === 'boss' && b.biome === 0) {
+    document.body.classList.add('tree-prelude');
+    enemyZone.classList.add('boss-waiting');
+    try { await ancientTreePrelude(); }
+    finally {
+      document.body.classList.remove('tree-prelude');
+      enemyZone.classList.remove('boss-waiting');
+    }
+    if (!still()) return;
+    log(`${b.def.name} blocks the way!`);
+  }
   // each Pokémon only cries once it's actually there to see
   if (motion) {
     enemyZone.classList.add('entering');
@@ -286,12 +306,13 @@ function shinySparkle(zone) {
 
 /** Put the intro's pieces back to rest (also run before each battle, in case one was cut short). */
 function resetIntro() {
+  document.body.classList.remove('tree-prelude');
   const ball = $('intro-ball');
   ball.hidden = true;
   ball.classList.remove('thrown', 'open');
   $('player-sprite').classList.remove('released');
   $('player-zone').classList.remove('awaiting');
-  $('enemy-zone').classList.remove('entering', 'revealed');
+  $('enemy-zone').classList.remove('entering', 'revealed', 'boss-waiting');
 }
 
 function beginPlayerTurn() {
