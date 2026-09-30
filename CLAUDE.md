@@ -138,8 +138,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Each gameplay type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
   Drain / Spores, Water Tsunami / Shell / Flow, Psychic Force / Barrier / Mind Games.
   Psychic (Part A, 2026-09-29): 20 common / 26 uncommon / 14 rare + 8 evolution cards; Psychic is neutral both ways and
-  all cards use existing mechanics. Keep Mewtwo's type and card pool masked as `???` in player-facing selection and Index
-  screens until the starter is unlocked. Mewtwo's Pressure starts each fight with 2 Focus.
+  all cards use existing mechanics. Keep Mewtwo's type and all 68 cards masked as `???` in player-facing selection and
+  the Index until the starter is unlocked. Mewtwo's Pressure starts each fight with 2 Focus.
   Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
   "build up, cash in" resource, `battle.tide`, shown as a 🌊 nameplate badge and
   lasting all fight. `tide: N` cards build it (Bubble, Dive, Rain Dance, Surf,

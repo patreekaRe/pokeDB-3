@@ -31,13 +31,14 @@ function group(label, cards, seen, note) {
 }
 
 /** A move not met yet: its card's frame, a dark silhouette of its art, and ??? for its name and text. */
-function lockedCard(card) {
+function lockedCard(card, hideType = false) {
   const node = makeCard(card);
   node.classList.add('index-locked');
   node.querySelectorAll('[title]').forEach(n => n.removeAttribute('title'));   // its cost and text hints would give it away
   node.querySelector('.card-name').textContent = '???';
   node.querySelector('.card-text').replaceChildren('???');
   node.querySelector('.card-cost').textContent = '?';
+  if (hideType) node.querySelector('.card-type').textContent = '???';
   return node;
 }
 
@@ -98,18 +99,13 @@ function render() {
 }
 
 function renderMystery() {
-  const blank = () => {
-    const node = lockedCard(ALL_CARDS[0]);
-    node.querySelector('.card-art').replaceChildren();
-    node.querySelector('.card-type').textContent = '???';
-    return node;
-  };
+  const cards = ALL_CARDS.filter(card => card.type === 'psychic');
   const head = el('div', 'index-head');
   const title = el('h3', 'index-heading', '???');
-  title.append(el('span', 'index-count', '?/?'));
-  head.append(title, el('p', 'index-note', 'Moves no starter has learned yet.'));
-  $('index-cards').replaceChildren(head, ...Array.from({ length: 8 }, blank));
-  $('index-total').textContent = '?/? found';
+  title.append(el('span', 'index-count', String(cards.length)));
+  head.append(title, el('p', 'index-note', 'The secret starter\'s moves are still unknown.'));
+  $('index-cards').replaceChildren(head, ...cards.map(card => lockedCard(card, true)));
+  $('index-total').textContent = `0/${cards.length} found`;
 }
 
 function renderCards() {

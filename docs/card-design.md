@@ -405,7 +405,7 @@ Water: 20 common, 32 uncommon (with the bridges), 13 rare, 8 evolution = **73**.
 ## Psychic (Mewtwo): Force, Barrier, Mind Games
 
 **Built in v1.0 Part A (2026-09-29).** The user chose Force / Barrier / Mind Games and the **Pressure** Ability. Psychic
-is neutral against every type. Keep Mewtwo's type and card pool masked in player-facing screens until Mewtwo is unlocked.
+is neutral against every type. Keep Mewtwo's type and all 68 cards masked in player-facing screens until Mewtwo is unlocked.
 All cards use existing effects; no new battle mechanic was needed. Each card has a hand-picked
 upgrade, and every row's StS column matches the inline model comment in `js/data/cards.js`.
 Strong-bot check in `pokeDB-sim`: 495/500 wins (99%) at Level 0 through the first three biomes.
