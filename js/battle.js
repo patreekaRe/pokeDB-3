@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, setStorm, ancientTreePrelude } from './scene.js';
+import { showScene, setStorm, bossArenaPrelude } from './scene.js';
 import { BIOMES } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -38,6 +38,7 @@ const ROOM_SERVICE_CAP = 6;   // the Room Service boss relic's cards per turn (S
 const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
+const BOSS_PRELUDE_LINES = ['The Ancient Tree stirs...', 'The shrine lanterns answer...', 'The crater rumbles...'];
 
 /** Relics that boost attacks of one type, by the type of your starter. */
 const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
@@ -209,10 +210,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   setupBattleScreen();
 
   log(encounter.kind === 'boss'
-    ? run.biome === 0 ? 'The Ancient Tree stirs...' : `${def.name} blocks the way!`
+    ? BOSS_PRELUDE_LINES[run.biome] ?? 'A powerful presence stirs...'
     : `A wild ${def.name} appeared!`);
   if (deferIntro) {
-    document.body.classList.add('tree-prelude');
+    document.body.classList.add('boss-prelude');
     $('player-zone').classList.add('awaiting');
     $('enemy-zone').classList.add('boss-waiting');
     return () => playIntro();
@@ -240,12 +241,12 @@ async function playIntro() {
 
   zone.classList.add('awaiting');
   renderAll();
-  if (b.kind === 'boss' && b.biome === 0) {
-    document.body.classList.add('tree-prelude');
+  if (b.kind === 'boss') {
+    document.body.classList.add('boss-prelude');
     enemyZone.classList.add('boss-waiting');
-    try { await ancientTreePrelude(); }
+    try { await bossArenaPrelude(); }
     finally {
-      document.body.classList.remove('tree-prelude');
+      document.body.classList.remove('boss-prelude');
       enemyZone.classList.remove('boss-waiting');
     }
     if (!still()) return;
@@ -306,7 +307,7 @@ function shinySparkle(zone) {
 
 /** Put the intro's pieces back to rest (also run before each battle, in case one was cut short). */
 function resetIntro() {
-  document.body.classList.remove('tree-prelude');
+  document.body.classList.remove('boss-prelude');
   const ball = $('intro-ball');
   ball.hidden = true;
   ball.classList.remove('thrown', 'open');

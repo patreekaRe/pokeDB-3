@@ -34,7 +34,7 @@ import { buildingSvg } from './buildings.js';
 const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
 const TRANSITIONS = typeof document === 'undefined' ? {} : await import('./transition.js');
 const { $, el } = UI;
-const { bossReveal, preloadBossReveal } = TRANSITIONS;
+const { preloadBoss } = TRANSITIONS;
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
@@ -651,7 +651,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       const canGo = reachable.has(node.id);
       if (canGo) btn.classList.add('reachable');
       btn.disabled = !canGo;
-      if (canGo) btn.addEventListener('click', () => walkTo(node, onPick, biome));
+      if (canGo) btn.addEventListener('click', () => walkTo(node, onPick));
     }
     box.append(btn);
     if (node.revealed && node.enemyId && !node.visited) box.append(revealedFigure(node));
@@ -659,17 +659,13 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
   // The biome's boss waits above its room as a grey silhouette, a hint of what's coming.
   const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
-  if (!peek) bossShadow = null;
   if (boss?.image) {
     const img = el('img', 'map-boss-shadow');
     img.src = boss.image;
     img.alt = '';
     place(img, CENTER_X, rowY(FLOORS));
     box.append(img);
-    if (!peek) {
-      bossShadow = img;
-      if (reachable.has(map.boss.id)) preloadBossReveal(boss.spriteId);
-    }
+    if (!peek && reachable.has(map.boss.id)) preloadBoss(boss.spriteId);
   }
 
   if (trainer) {
@@ -713,15 +709,13 @@ function place(elem, x, y) {
  * arrives, and taps are ignored meanwhile. Showdown front sprites face left, so it flips to walk right.
  */
 const WALK_MS = [500, 850];    // one link's walk, from a short straight link to the long start road (the user's pace: 0.3-0.5 s zoomed past, 0.65-1.1 s dragged)
-let walking = false, routesSvg = null, trainerImg = null, walkFrom = null, bossShadow = null;
+let walking = false, routesSvg = null, trainerImg = null, walkFrom = null;
 
-function walkTo(node, onPick, biome) {
+function walkTo(node, onPick) {
   if (walking) return;
   const img = trainerImg;
   walking = true;
   const arrive = async () => {
-    // The Clearing gets its own arena-first intro in battle; keep its boss a silhouette on the map.
-    if (node.type === 'boss' && biome !== 'clearing') await bossReveal(bossShadow, ENEMY_DEFS[node.enemyId]?.spriteId);
     walking = false;
     onPick(node);
   };

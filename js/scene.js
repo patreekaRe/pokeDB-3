@@ -128,6 +128,7 @@ const BIOME_ART = {
     trunk: ['#5a4430', '#382818'],
     torii: ['#d84830', '#a82c20', '#6a1810'],
     stone: ['#b8b8a8', '#8c8c7e', '#5e5e54'],
+    mistColour: '#e8f0ec',
     rock: ['#a8aa98', '#80826e', '#565848'],
     lantern: ['#b0b0a0', '#7a7a6c', '#4a4a40'],
     lanternGlow: ['#fff0a0', '#f8b848', '#d87028'],
@@ -694,7 +695,7 @@ const PLACE_ART = {
 let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
 let life = {};
-let treePrelude = null;
+let bossPrelude = null;
 let shown = '';                 // which scene is up, so going back to it doesn't restart it
 let floorAt = null, spanAt = null;   // a place whose floor line and counter the page sets (showPlaceScene's `floor` and `span`)
 let storm = { on: false, level: 0 };
@@ -844,7 +845,7 @@ function paintScene(key, raw, floor = null, span = null) {
   spanAt = span;
   if (raw && key === shown && document.body.dataset.screen !== 'battle-screen') { if (floor) resize(); return; }
   shown = key;
-  treePrelude = null;
+  bossPrelude = null;
   clearInterval(timer);
   storm = { on: false, level: 0 };
   if (!raw) { S = null; return; }
@@ -864,23 +865,26 @@ export function setStorm(on) {
   if (!timer) { storm.level = on ? 1 : 0; draw(); }
 }
 
-/** Hold on the Clearing's empty Ancient Tree arena before the boss is revealed. */
-export async function ancientTreePrelude() {
-  if (S?.raw.backdrop !== 'hills' || S.raw.stage !== 3) return;
+/** Hold on an empty boss arena, awaken its landmark, then open a flash into the Pokémon reveal. */
+export async function bossArenaPrelude() {
+  if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
     await new Promise(resolve => setTimeout(resolve, 500));
-    if (S?.raw.backdrop === 'hills' && S.raw.stage === 3) { treePrelude = { phase: 'awake', at: tick }; draw(); }
+    if (['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) && S.raw.stage === 3) {
+      bossPrelude = { phase: 'awake', at: tick };
+      draw();
+    }
     return;
   }
-  treePrelude = { phase: 'wake', at: tick };
+  bossPrelude = { phase: 'wake', at: tick };
   draw();
   await new Promise(resolve => setTimeout(resolve, 3000));
-  if (S?.raw.backdrop !== 'hills' || S.raw.stage !== 3) return;
-  treePrelude = { phase: 'portal', at: tick };
+  if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
+  bossPrelude = { phase: 'portal', at: tick };
   draw();
-  await new Promise(resolve => setTimeout(resolve, 650));
-  if (S?.raw.backdrop !== 'hills' || S.raw.stage !== 3) return;
-  treePrelude = { phase: 'awake', at: tick };
+  await new Promise(resolve => setTimeout(resolve, S.raw.backdrop === 'shrine' ? 900 : 650));
+  if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
+  bossPrelude = { phase: 'awake', at: tick };
   draw();
 }
 
@@ -1266,6 +1270,14 @@ function torii(cx, foot, size, colours = S.torii) {
 }
 
 function lantern(cx, foot, size) {
+  lanternBody(cx, foot, size);
+  const lightY = foot - Math.round(size * 2 * 0.6);
+  life.lanterns.push({ x: cx, y: lightY });
+  put(cx, lightY, S.lantern[2]); put(cx - 1, lightY, S.lantern[2]);
+}
+
+/** Just the stone body of a lantern, without registering its light (the boss prelude draws its own). */
+function lanternBody(cx, foot, size) {
   const [lit, body, dark] = S.lantern;
   const h = size * 2;
   for (let y = 0; y < h; y++) {
@@ -1273,9 +1285,6 @@ function lantern(cx, foot, size) {
     const w = (y < 2 ? 2 : y < h * 0.45 ? 1 : y < h * 0.7 ? 2 : y < h * 0.8 ? 3 : 1) * Math.max(1, Math.round(size / 12));   // near ones (the path's) are stouter
     for (let x = -w; x <= w; x++) solid(cx + x, yy, x > 0 ? dark : x === -w ? lit : body);
   }
-  const lightY = foot - Math.round(h * 0.6);
-  life.lanterns.push({ x: cx, y: lightY });
-  put(cx, lightY, dark); put(cx - 1, lightY, dark);
 }
 
 function mossGround() {
@@ -4837,7 +4846,7 @@ function draw() {
   if (has('fans')) drawFans(t);
   if (has('vines')) drawVines(t);
 
-  if (L.lanterns && S.raw.lanternsLit) {
+  if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
     const [hot, warm, glow] = S.lanternGlow;
     for (const l of L.lanterns) {
       const f = Math.sin(t / 2 + l.x) + Math.sin(t / 5.3);
@@ -4880,7 +4889,7 @@ function draw() {
     }
   }
 
-  if (L.wisps) {
+  if (L.wisps && !shrinePrelude()) {
     const [core, body, trail] = S.wisp;
     for (const w of L.wisps) {
       w.x += w.vx;
@@ -4924,27 +4933,151 @@ function draw() {
   }
 
   if (life.rain && storm.level > 0) drawRain(t);
-  if (treePrelude?.phase === 'portal') drawTreePortal(t);
-  else if (treePrelude) drawTreeAwakening(t);
+  if (bossPrelude?.phase === 'portal') {
+    if (S.raw.backdrop === 'shrine') drawShrinePortal(t);
+    else drawBossPortal(t);
+  }
+  else if (bossPrelude) drawBossAwakening(t);
 
   ctx.putImageData(img, 0, 0);
 }
 
-/** The Clearing's hollow lights up and shakes loose leaves before the boss appears. */
-function drawTreeAwakening(t) {
-  const awake = treePrelude.phase === 'awake', age = Math.max(0, t - treePrelude.at);
-  const progress = awake ? 0.38 : Math.min(1, age / (FPS * 2.1));
-  const light = awake ? 0.25 : progress;
-  const half = Math.max(10, Math.round(Math.min(W * 0.16, horizon * 0.52)));
-  const cx = Math.round(W * 0.5) - Math.round(half * 0.2), cy = Math.round(horizon * 0.62);
+/** The Main Hall's geometry, recomputed from the canvas (the prelude draws over the painted scene). */
+function shrineHall() {
+  const gx = Math.round(W * 0.52), half = Math.round(Math.min(W * 0.34, horizon * 1.15)), base = Math.max(3, Math.round(horizon * 0.07));
+  const tall = Math.round(horizon * 0.4);
+  return { gx, half, base, tall, eave: horizon + 1 - base - tall };
+}
+
+/** True while the Shrine's ceremony is playing: the lanterns and wisps are redrawn as part of it. */
+const shrinePrelude = () => !!bossPrelude && S.raw.backdrop === 'shrine';
+
+function bossPreludeSource() {
+  if (S.raw.backdrop === 'hills') {
+    const half = Math.max(10, Math.round(Math.min(W * 0.16, horizon * 0.52)));
+    return { x: Math.round(W * 0.5) - Math.round(half * 0.2), y: Math.round(horizon * 0.62), kind: 'leaves', colours: [S.pollen[0], S.pollen[1], S.firefly[1]] };
+  }
+  if (S.raw.backdrop === 'shrine') {
+    return { x: Math.round(W * 0.52), y: Math.round(horizon * 0.68), kind: 'wisps', colours: S.wisp };
+  }
+  const crater = life.volcano;
+  return { x: crater?.x ?? Math.round(W * 0.5), y: crater?.y ?? Math.round(horizon * 0.62), kind: 'embers', colours: S.ember };
+}
+
+/** The Shrine's own ceremony: lanterns light along the approach to the Main Hall, mist rolls in, and the
+    spirit wisps gather at its door — a slow welcome, quite different from the other biomes' glow. */
+function drawShrineAwakening(t) {
+  const awake = bossPrelude.phase === 'awake', age = Math.max(0, t - bossPrelude.at);
+  const progress = awake ? 1 : Math.min(1, age / (FPS * 2.4));
+  const hall = shrineHall();
+  const [hot, warm, glow] = S.lanternGlow;
+
+  // The lanterns that will light, in order: the hall's own two first, then stone pairs leading down the
+  // approach toward the viewer, so a wave of light sweeps out from the hall.
+  const lights = [];
+  for (const l of life.lanterns) lights.push({ x: l.x, y: l.y, size: life.lanternSize, at: 0.1 });
+  const top = horizon + 4, bottom = H - 4;
+  for (let i = 0; i < 4; i++) {
+    const depth = (i + 1) / 5;
+    const foot = Math.round(top + (bottom - top) * depth);
+    const spread = Math.round(hall.half * (0.3 + depth * 0.5)) + 2;
+    const size = Math.max(3, Math.round(life.lanternSize * (0.6 + depth * 0.55)));
+    for (const side of [-1, 1]) lights.push({ x: hall.gx + side * spread, y: foot - Math.round(size * 1.2), size, foot, at: 0.5 + (i + 1) * 0.5 });
+  }
+  for (let i = 0; i < lights.length; i++) {
+    const L = lights[i], foot = L.foot ?? L.y + Math.round(L.size * 1.2);
+    lanternBody(L.x, foot, L.size);
+    const heat = awake ? 1 : age > L.at ? Math.min(1, (age - L.at) / 0.5) : 0;
+    if (heat <= 0) continue;
+    const flash = Math.max(0, 1 - heat * 2), reach = 2 + Math.round(L.size * 0.4) + Math.round(flash * 3);
+    put(L.x, L.y, heat > 0.5 ? hot : warm); put(L.x - 1, L.y, warm);
+    for (let dy = -reach; dy <= reach; dy++) for (let dx = -reach; dx <= reach; dx++) {
+      if ((dx || dy) && dx * dx + dy * dy <= reach * reach && dither(L.x + dx, L.y + dy) < 4) put(L.x + dx, L.y + dy, flash > 0.35 ? hot : glow);
+    }
+  }
+
+  // Mist banks drift in from the sides and settle thick around the hall's base and steps.
+  const mist = S.mistColour;
+  for (let i = 0; i < 7; i++) {
+    const side = i % 2 ? 1 : -1, k = (i + 1) / 7;
+    const homeX = hall.gx + side * Math.round(W * (0.3 + k * 0.25)), homeY = horizon + 2 + Math.round(k * (H - horizon) * 0.4);
+    const gx = hall.gx + side * Math.round(hall.half * (1.15 - k * 0.5)), gy = horizon + 1 + Math.round(hall.base * 0.5 + k * 3);
+    const x = Math.round(homeX + (gx - homeX) * progress), y = Math.round(homeY + (gy - homeY) * progress);
+    const r = Math.round(4 + k * 7 * progress), a = 0.12 + progress * 0.3;
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r * 2; dx <= r * 2; dx++) {
+      const d = (dx / (r * 2)) ** 2 + (dy / r) ** 2;
+      if (d <= 1 && (d < 0.45 || dither(x + dx, y + dy) < 8)) blend(x + dx, y + dy, mist, a * (1 - d * 0.6));
+    }
+  }
+
+  // The spirit wisps leave their drift and spiral in to gather at the hall's door.
+  const [core, body, trail] = S.wisp;
+  const cx = hall.gx, cy = Math.round(hall.eave + hall.tall * 0.45);
+  for (let i = 0; i < life.wisps.length; i++) {
+    const w = life.wisps[i], angle = w.phase + age * (0.5 + (i % 3) * 0.22);
+    const radius = Math.max(2, (14 + (i % 4) * 9) * (1 - progress * 0.82));
+    const x = cx + Math.cos(angle) * radius, y = cy + Math.sin(angle) * radius * 0.5;
+    for (let k = 1; k <= 3; k++) if (dither(Math.round(x), Math.round(y) + k) < 10 - k * 3) put(x + Math.sin((t - k * 2 + w.phase) / 9) * 2, y + k + 1, trail);
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const d = dx * dx + dy * dy;
+      if (d <= 1) put(x + dx, y + dy, d ? body : core);
+      else if (d <= 5 && dither(dx + t, dy) < 6) put(x + dx, y + dy, trail);
+    }
+  }
+
+  // The spirits raise a second torii-shaped gate over the Main Hall, not a circular portal. Keep
+  // the light in the skyline: the broad middle and foreground stay open for the two Pokémon.
+  const aura = awake ? 1 : Math.max(0, Math.min(1, (progress - 0.58) / 0.42));
+  if (aura > 0) {
+    const sx = hall.gx, sy = Math.round(hall.eave + hall.tall * 0.52);
+    const archHalf = Math.max(4, Math.round(hall.half * (0.12 + aura * 0.12)));
+    const archHeight = Math.max(3, Math.round(hall.tall * (0.18 + aura * 0.22)));
+    const topY = sy - archHeight, lintelY = topY + Math.max(2, Math.round(archHeight * 0.3));
+    const flicker = Math.sin(age / 2.5);
+    for (const side of [-1, 1]) {
+      const x = sx + side * Math.round(archHalf * 0.72);
+      for (let y = topY + 1; y <= sy + 1; y++) {
+        if (dither(x, y + t) < 10) { put(x, y, core); put(x + side, y, body); }
+      }
+    }
+    for (let x = -archHalf - 2; x <= archHalf + 2; x++) {
+      const lift = Math.abs(x) > archHalf ? 1 : 0;
+      if (dither(sx + x, topY + t) < 12) {
+        put(sx + x, topY - lift, flicker > 0.15 ? core : body);
+        put(sx + x, topY + 1 - lift, body);
+      }
+      if (x >= -archHalf && x <= archHalf && dither(sx + x, lintelY + t) < 9) put(sx + x, lintelY, trail);
+    }
+
+    // A narrow column crowns the gate without crossing into the fighters' space.
+    const crown = Math.round(aura * 8);
+    for (let y = Math.max(0, topY - crown); y < topY; y++) {
+      const width = Math.max(0, Math.round((1 - (topY - y) / Math.max(1, crown)) * (1 + aura * 2)));
+      for (let x = -width; x <= width; x++) if (dither(sx + x, y + t) < 8 + aura * 4) put(sx + x, y, flicker > 0.15 ? core : body);
+    }
+    for (const side of [-1, 1]) for (const y of [topY, sy]) {
+      const x = sx + side * Math.round(archHalf * 0.72);
+      if (Math.sin(age / 2 + side + y) > -0.15) {
+        put(x, y, core); put(x - 1, y, body); put(x + 1, y, body); put(x, y - 1, body); put(x, y + 1, body);
+      }
+    }
+  }
+}
+
+/** Existing life effects gather around the Clearing's heartwood or the Wastes' crater. */
+function drawBossAwakening(t) {
+  if (S.raw.backdrop === 'shrine') { drawShrineAwakening(t); return; }
+  const awake = bossPrelude.phase === 'awake', age = Math.max(0, t - bossPrelude.at);
+  const progress = awake ? 0.38 : Math.min(1, age / (FPS * 2.1)), light = awake ? 0.25 : progress;
+  const source = bossPreludeSource(), { x: cx, y: cy } = source;
   const pulse = (Math.sin(age * 0.75) + 1) * 0.5, r = awake ? 5 + pulse : 3 + progress * 13 + pulse * 2;
   for (let y = -Math.ceil(r * 1.5); y <= r * 1.5; y++) for (let x = -Math.ceil(r); x <= r; x++) {
     const d = (x / r) ** 2 + (y / (r * 1.5)) ** 2;
     if (d <= 1 && (d < 0.5 || dither(cx + x, cy + y) < 9 + progress * 5)) {
-      put(cx + x, cy + y, d < 0.2 ? S.pollen[0] : d < 0.68 ? S.pollen[1] : S.firefly[1]);
+      put(cx + x, cy + y, d < 0.2 ? source.colours[0] : d < 0.68 ? source.colours[1] : source.colours[2] ?? source.colours[1]);
     }
   }
-  // A stepped shaft climbs through the canopy as the hollow brightens.
+  // A stepped shaft or glow climbs from the biome's focal point.
   if (light > 0.12) for (let y = cy - 2; y >= 0; y--) {
     const spread = Math.round(1 + (cy - y) / Math.max(1, cy) * light * 7);
     const drift = Math.round(Math.sin((y + age) / 7) * light * 3);
@@ -4953,28 +5086,97 @@ function drawTreeAwakening(t) {
       if (dither(x + age, y) < 4 + light * 7) tint(x, y, 1.18, 24 * light);
     }
   }
-  // Leaves orbit once, then peel away toward the sides of the arena.
+  if (source.kind === 'wisps' && life.lanterns) {
+    const reach = 2 + Math.round(progress * 4);
+    for (const lantern of life.lanterns) for (let dy = -reach; dy <= reach; dy++) for (let dx = -reach; dx <= reach; dx++) {
+      if (dx * dx + dy * dy <= reach * reach && dither(lantern.x + dx, lantern.y + dy) < 5) put(lantern.x + dx, lantern.y + dy, S.lanternGlow[0]);
+    }
+  }
+  // Leaves, shrine spirits and volcanic embers circle the focal point before peeling outward.
   for (let i = 0; i < 9; i++) {
     const angle = age * 0.2 + i * Math.PI * 2 / 9;
     const radius = 3 + (awake ? 5 : progress * (8 + i % 3 * 5));
     const x = cx + Math.cos(angle) * radius, y = cy + Math.sin(angle) * radius * 0.55 - progress * 2;
-    const colour = i % 2 ? S.pollen[0] : S.firefly[0];
+    const colour = source.colours[i % 2];
     put(x, y, colour);
-    put(x + (i % 3) - 1, y + (i % 2), S.pollen[1]);
+    put(x + (i % 3) - 1, y + (i % 2), source.colours[1]);
   }
 }
 
-/** The hollow expands into a stepped ring, then flashes twice to hand off to the normal boss reveal. */
-function drawTreePortal(t) {
-  const age = Math.max(0, t - treePrelude.at), frame = age | 0;
-  if (frame === 3 || frame === 5) { px.fill(S.pollen[0]); return; }
-  const half = Math.max(10, Math.round(Math.min(W * 0.16, horizon * 0.52)));
-  const cx = Math.round(W * 0.5) - Math.round(half * 0.2), cy = Math.round(horizon * 0.62);
+/** The focal point expands into a stepped ring, then flashes twice to hand off to the normal boss reveal. */
+function drawBossPortal(t) {
+  const age = Math.max(0, t - bossPrelude.at), frame = age | 0, source = bossPreludeSource();
+  const flash = abgr('#fffce8');
+  if (frame === 3 || frame === 5) { px.fill(flash); return; }
   const radius = Math.hypot(W * 0.56, H * 0.58) * Math.min(1, age / 3);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const d = Math.hypot(x - cx, (y - cy) * 0.82);
-    if (d <= radius && d >= radius - 3) put(x, y, frame % 2 ? S.pollen[0] : S.firefly[0]);
+    const d = Math.hypot(x - source.x, (y - source.y) * 0.82);
+    if (d <= radius && d >= radius - 3) put(x, y, frame % 2 ? source.colours[0] : source.colours[1]);
     else if (d < radius - 3 && dither(x, y) < 2) tint(x, y, 1.12, 12);
+  }
+}
+
+/** The Shrine hands off through the Main Hall itself: its shoji doors slide apart, spirit light fills
+    the doorway, and paper wards stream from the roof before the paired white flashes. */
+function drawShrinePortal(t) {
+  const age = Math.max(0, t - bossPrelude.at), frame = age | 0;
+  if (frame === 4 || frame === 6) { px.fill(abgr('#fffce8')); return; }
+
+  const hall = shrineHall(), [core, spirit, trail] = S.wisp;
+  const [woodLit, wood, woodShade, woodDark] = S.marks.wood;
+  const paper = S.marks.paper, vermilion = S.marks.red[0];
+  const opening = Math.min(1, age / 3.2), cx = hall.gx;
+  const doorHalf = Math.max(3, Math.round(hall.half * 0.13));
+  const top = hall.eave + Math.max(2, Math.round(hall.tall * 0.42));
+  const bottom = Math.max(top + 3, horizon - hall.base - 1);
+  const slide = Math.round(doorHalf * opening);
+
+  // Darken the doorway first, then reveal a bright interior through the widening gap.
+  for (let y = top; y <= bottom; y++) {
+    solid(cx - doorHalf - 2, y, woodDark);
+    solid(cx + doorHalf + 2, y, woodDark);
+    for (let x = -doorHalf - 1; x <= doorHalf + 1; x++) solid(cx + x, y, S.trees[3]);
+    for (let x = -slide + 1; x < slide; x++) {
+      if (dither(cx + x, y + age) < 12) put(cx + x, y, y < top + 2 ? core : spirit);
+    }
+  }
+
+  // A carved lintel and frame make the opening read as the Hall, not a generic portal.
+  for (let x = -doorHalf - 3; x <= doorHalf + 3; x++) {
+    solid(cx + x, top - 1, woodLit);
+    solid(cx + x, top, woodShade);
+    solid(cx + x, bottom + 1, woodDark);
+  }
+  for (let y = top - 1; y <= bottom + 1; y++) {
+    solid(cx - doorHalf - 3, y, woodLit);
+    solid(cx - doorHalf - 2, y, woodShade);
+    solid(cx + doorHalf + 2, y, woodShade);
+    solid(cx + doorHalf + 3, y, woodDark);
+  }
+
+  // The two paper doors slide away from the center; their lattice stays visible in the glow.
+  for (const side of [-1, 1]) {
+    const left = side < 0 ? cx - doorHalf - slide : cx + slide;
+    for (let y = top + 1; y < bottom; y++) for (let x = 0; x < doorHalf; x++) {
+      const pxX = left + x, lattice = x === 0 || x === doorHalf - 1 || y === top + 2 || y === bottom - 1;
+      solid(pxX, y, lattice ? (x === 0 ? woodLit : woodShade) : paper);
+      if (!lattice && ((x + y) % 4 === 0)) put(pxX, y, side < 0 ? wood : woodLit);
+    }
+  }
+
+  // A narrow shaft crowns the roof, while ofuda stream sideways above it, away from the battle space.
+  const crown = Math.round(opening * 7);
+  for (let y = Math.max(0, hall.eave - crown); y < hall.eave; y++) {
+    const width = Math.max(0, Math.round((1 - (hall.eave - y) / Math.max(1, crown)) * 2));
+    for (let x = -width; x <= width; x++) if (dither(cx + x, y + t) < 10) put(cx + x, y, core);
+  }
+  for (let i = 0; i < 5; i++) for (const side of [-1, 1]) {
+    const flight = Math.max(0, Math.min(1, age / 3 - i * 0.13));
+    if (!flight) continue;
+    const x = cx + side * Math.round(doorHalf + 2 + flight * (hall.half * 0.72 + i));
+    const y = Math.max(0, hall.eave - Math.round(flight * (3 + i * 1.5)) + Math.round(Math.sin(t + i * 2) * 1.5));
+    put(x, y, paper); put(x, y + 1, paper); put(x, y + 2, i % 2 ? vermilion : trail);
+    put(x - side, y + 1, i % 2 ? vermilion : trail);
   }
 }
 

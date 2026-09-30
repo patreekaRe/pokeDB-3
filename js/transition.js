@@ -1,31 +1,21 @@
 /*
  * Battle transitions, Gen 3/4-style: every fight flashes white twice, then wipes to black its own way
  * (wild: bars slide in from the sides; elite: a closing iris; boss: the screen shatters), and the
- * battle theme starts with the flash. Before a boss, its grey silhouette over the map's boss room
- * colours in with its cry. Once the battle is set up under the black, the wipe opens back up onto it
+ * battle theme starts with the flash. Bosses keep their grey map silhouettes until the walk ends;
+ * the arena prelude and Pokémon reveal happen after the wipe. Once the battle is set up under the black, it opens back up onto it
  * the same way. Nothing here saves: a refresh mid-way resumes on the map before the room.
  */
 import { el, sleep } from './ui.js';
-import { playCry, playMusic, preloadCries, preloadMusic } from './audio.js';
+import { playMusic, preloadCries, preloadMusic } from './audio.js';
 
-const CRY_WAIT_MAX = 900;   // a long cry mustn't hold the whole reveal up
 const FLASH_MS = 400;
 const WIPE_MS = { fight: 450, elite: 550, boss: 620 };
 const TRACK = { fight: 'wild', elite: 'elite', boss: 'boss' };
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function preloadBossReveal(spriteId) {
+export function preloadBoss(spriteId) {
   preloadCries(spriteId);
   preloadMusic('boss');
-}
-
-/** The boss's silhouette on the map colours in and cries; taps are ignored until the fight. */
-export async function bossReveal(shadow, spriteId) {
-  document.body.classList.add('battle-intro');
-  shadow?.classList.add('revealed');
-  const cry = spriteId ? Promise.race([playCry(spriteId), sleep(CRY_WAIT_MAX)]) : null;
-  await Promise.all([cry, sleep(still() ? 500 : 750)]);
-  document.body.classList.remove('battle-intro');
 }
 
 /** Resolves once the screen is black, with a function that fades it back in; no motion under reduced motion. */

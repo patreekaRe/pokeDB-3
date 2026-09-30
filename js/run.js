@@ -638,7 +638,7 @@ async function fight(node) {
   const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   dexSeen(node.enemyId);
-  const deferIntro = node.type === 'boss' && run.biome === 0;
+  const deferIntro = node.type === 'boss';
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
     await enter();
