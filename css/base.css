@@ -539,12 +539,15 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .cloud-or { margin-bottom: 6px; }
 .cloud-email { display: flex; gap: 8px; flex-wrap: wrap; }
 .cloud-email input {
-  flex: 1 1 180px; min-width: 0;
+  flex: 1 1 100%; min-width: 0;
   padding: 10px; font: inherit; font-size: 0.8rem;
   color: var(--win-ink); background: #fff;
   border: 2px solid var(--win-edge); border-radius: var(--round-xs);
 }
 .cloud-email input:focus { outline: 3px solid #6890f0; outline-offset: 1px; }
+.cloud-email-actions, .cloud-email-extra { display: flex; gap: 8px; width: 100%; }
+.cloud-email-actions .btn { flex: 1; }
+.cloud-email-extra { justify-content: space-between; flex-wrap: wrap; }
 #cloud-note:empty { display: none; }
 #cloud-note { margin-top: 12px; }
 .cloud-saves { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }

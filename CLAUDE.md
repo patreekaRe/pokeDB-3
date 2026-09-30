@@ -387,7 +387,8 @@ Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the 
 ## Cloud save
 
 Optional, from the Poké Ball menu (the user's picks, 2026-09-28: Firebase, Google and email-link sign-in, ask when two
-saves differ). `js/cloud.js`; the project (`pokedb-42e7c`, the user's) and its public web config is `FIREBASE_CONFIG` in `js/cloud-config.js` (not a secret;
+saves differ). Since 2026-09-30 also email + password (Sign in / Sign up / Forgot password, `withPassword()`): iCloud
+Mail drops Firebase's default-sender emails, so the link never reached iCloud users; a password sends no email. `js/cloud.js`; the project (`pokedb-42e7c`, the user's) and its public web config is `FIREBASE_CONFIG` in `js/cloud-config.js` (not a secret;
 the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) and the title's PC stay
 hidden and nothing changes. The title's top-left corner has its own way in once the gems are up: the games' PC
 (`#title-account`, the 🖥️ pixel icon big, captioned Sign in / Cloud save, a green power light once signed in; the user's

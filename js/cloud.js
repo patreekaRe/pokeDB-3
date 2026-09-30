@@ -285,8 +285,36 @@ async function sendLink(email) {
   } catch (err) { note(failed(err)); }
 }
 
+async function withPassword(email, password, create) {
+  if (!email) return note('Type your email first.');
+  if (!password) return note('Type a password too, or tap "Email me a link instead".');
+  note(create ? 'Making your account…' : 'Signing in…');
+  try {
+    await connect();
+    const signIn = create ? fb.A.createUserWithEmailAndPassword : fb.A.signInWithEmailAndPassword;
+    await signIn(fb.auth, email, password);
+    $('cloud-password').value = '';
+    note('');
+  } catch (err) { note(failed(err)); }
+}
+
+async function resetPassword(email) {
+  if (!email) return note('Type your email first, then tap Forgot password.');
+  note('Sending…');
+  try {
+    await connect();
+    await fb.A.sendPasswordResetEmail(fb.auth, email);
+    note('If that address has an account, a reset email is on its way. Check your junk folder too.');
+  } catch (err) { note(failed(err)); }
+}
+
 const failed = (err) => (err.code === 'auth/network-request-failed' ? 'No connection. Try again when you\'re online.'
   : err.code === 'auth/invalid-email' ? 'That email address doesn\'t look right.'
+  : err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'
+    ? 'Wrong email or password. New here? Tap Sign up.'
+  : err.code === 'auth/email-already-in-use' ? 'That email already has an account. Tap Sign in instead.'
+  : err.code === 'auth/weak-password' ? 'Pick a password of at least 6 characters.'
+  : err.code === 'auth/too-many-requests' ? 'Too many tries. Wait a few minutes and try again.'
   : `Sign-in didn't work (${err.code || err.message}).`);
 
 async function signOut() {
@@ -314,8 +342,8 @@ function render() {
   $('cloud-out').hidden = signedIn;
   $('cloud-in').hidden = !signedIn;
   $('cloud-signout').hidden = !signedIn;
-  $('cloud-google').hidden = linkPending;
-  $('cloud-send').textContent = linkPending ? 'Sign in' : 'Send link';
+  // a link opened in a browser that doesn't know its address: only the email box and Sign in are needed
+  for (const id of ['cloud-google', 'cloud-or', 'cloud-password', 'cloud-create', 'cloud-extra']) $(id).hidden = linkPending;
   if (!signedIn) return;
   $('cloud-who').textContent = user.email || user.displayName || 'you';
   $('cloud-status').textContent = {
@@ -349,10 +377,18 @@ export function initCloud() {
     if (sound) playSound(sound);
   });
   $('cloud-google').addEventListener('click', signInGoogle);
+  const email = () => $('cloud-email').value.trim();
   $('cloud-email-form').addEventListener('submit', (e) => {
     e.preventDefault();
-    sendLink($('cloud-email').value.trim());
+    if (linkPending) sendLink(email());
+    else withPassword(email(), $('cloud-password').value, false);
   });
+  $('cloud-create').addEventListener('click', () => withPassword(email(), $('cloud-password').value, true));
+  $('cloud-link').addEventListener('click', () => {
+    if (!$('cloud-email').reportValidity()) return;
+    sendLink(email());
+  });
+  $('cloud-forgot').addEventListener('click', () => resetPassword(email()));
   $('cloud-signout').addEventListener('click', signOut);
   $('cloud-choose').addEventListener('click', () => ask(conflict));
   onSaveWrite(changed);
