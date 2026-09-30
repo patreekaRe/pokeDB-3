@@ -62,6 +62,7 @@
 body[data-theme="fire"]  { --accent: #ff7a45; --accent-dark: #d4501f; }
 body[data-theme="water"] { --accent: #3fa3ff; --accent-dark: #1f6fd0; }
 body[data-theme="grass"] { --accent: #4fcf6c; --accent-dark: #2a9a45; }
+body[data-theme="psychic"] { --accent: #c080f0; --accent-dark: #8a45c0; }
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }

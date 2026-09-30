@@ -44,7 +44,7 @@ export function recordWin(run, shiny) {
   const t = run.tally;
   const entry = {
     no: wins.length + 1,
-    fame: run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL).length + 1 : null,
+    fame: run.starter.id !== 'mewtwo' && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
     starter: run.starter.id,
     stage: run.stage,
     shiny,
@@ -81,7 +81,7 @@ const imgOf = (entry) => spriteUrl(starterOf(entry), 'front', entry.stage, entry
 const typeOf = (entry) => TYPES[entry.type] ?? { label: entry.type, icon: '' };
 const pad3 = (n) => String(n).padStart(3, '0');
 /** A Level 5 win's Hall of Fame number (entries saved before every win was recorded were all Level 5: `no`). */
-export const fameNo = (entry) => entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
+export const fameNo = (entry) => entry.starter !== 'mewtwo' && entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
 const winNo = (entry) => `Win ${pad3(entry.no)}`;
 // the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
 let book = 'fame';

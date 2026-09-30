@@ -100,4 +100,5 @@ export const ABILITIES = {
   fire:  { id: 'blaze',    name: 'Blaze',    icon: '🔥', sprite: 'ability-capsule', amount: 3, text: 'While your HP is below half, your attacks deal +3 damage.' },
   grass: { id: 'overgrow', name: 'Overgrow', icon: '🌿', sprite: 'ability-capsule', amount: 3, text: 'After each fight you win, heal 3 HP.' },
   water: { id: 'torrent',  name: 'Torrent',  icon: '🌊', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Tide.' },
+  psychic: { id: 'pressure', name: 'Pressure', icon: '🔮', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Focus: your next attack deals +2 damage.' },
 };

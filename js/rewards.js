@@ -6,8 +6,12 @@
 import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
-import { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar } from './ui.js';
 import { playSound } from './audio.js';
+
+// The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
+// worker can use cardChoices()/relicChoices() without evaluating UI code.
+const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
+const { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar } = UI;
 
 /* ---------- what you get offered ---------- */
 

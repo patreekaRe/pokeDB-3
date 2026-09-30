@@ -127,12 +127,13 @@ export const NOT_VERY_EFFECTIVE = 0.75;
 export const WEAK_MULT = 0.75;
 export const VULNERABLE_MULT = 1.5;
 
-/** The four card "types". Fire beats Grass, Grass beats Water, Water beats Fire. */
+/** The battle types. Psychic is neutral against every type, like Normal. */
 export const TYPES = {
   fire:   { label: 'Fire',    icon: '🔥', beats: 'grass', losesTo: 'water' },
   water:  { label: 'Water',   icon: '💧', beats: 'fire',  losesTo: 'grass' },
   grass:  { label: 'Grass',   icon: '🌿', beats: 'water', losesTo: 'fire'  },
   normal: { label: 'Neutral', icon: '🔯', beats: null,    losesTo: null    },
+  psychic: { label: 'Psychic', icon: '🔮', beats: null,    losesTo: null    },
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -169,7 +170,9 @@ const NEUTRAL_CARDS = [
      Water  Tide for every build: Tsunami builds it and cashes it in with one big wave (Watcher's Mantra),
             Shell keeps block and turns it into damage (Barricade + Body Slam, Juggernaut), Flow draws,
             discards and retains (Silent's discard, Watcher's retain)
-   Every starting deck is StS-shaped: 4 attacks, 4 blocks and 2 signature cards. */
+     Psychic Mewtwo: Force builds strength and Focus for huge hits; Barrier turns defense into offense;
+             Mind Games disrupts enemies and shapes the hand
+    Every starting deck is StS-shaped: 4 attacks, 4 blocks and 2 signature cards. */
 const FIRE_CARDS = [
   // Common: 20
   { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', sprite: 'fire-stone', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                          // Strike
@@ -385,6 +388,72 @@ const WATER_CARDS = [
   { id: 'primal-reversion', name: 'Primal Reversion', type: 'water', cost: 3, art: '🧿', sprite: 'sapphire', effects: { tideSurge: 1 }, power: true, ethereal: true, rarity: 'rare', upgrade: { ethereal: false } },   // Deva Form
 ];
 
+const PSYCHIC_CARDS = [
+  // Common: 20
+  { id: 'psywave',             name: 'Psywave',             type: 'psychic', cost: 1, art: '🌀', effects: { damage: 10 }, upgrade: { effects: { damage: 13 } } },                                    // Strike
+  { id: 'psychic-guard',       name: 'Psychic Guard',       type: 'psychic', cost: 1, art: '🛡️', effects: { block: 11 }, upgrade: { effects: { block: 14 } } },                                    // Defend
+  { id: 'psychic-confusion',   name: 'Confusion',           type: 'psychic', cost: 2, art: '💫', effects: { damage: 12, vulnerable: 2 }, upgrade: { effects: { damage: 14, vulnerable: 3 } } },      // Bash
+  { id: 'psystrike',           name: 'Psystrike',           type: 'psychic', cost: 1, art: '💥', effects: { damage: 10, weaken: 2 }, upgrade: { effects: { damage: 13, weaken: 3 } } },             // Sucker Punch
+  { id: 'mind-bolt',           name: 'Mind Bolt',           type: 'psychic', cost: 1, art: '✨', effects: { damage: 6, focus: 4 }, upgrade: { effects: { damage: 8, focus: 5 } } },                  // Strike + setup
+  { id: 'telekinetic-crush',   name: 'Telekinetic Crush',   type: 'psychic', cost: 1, art: '🌀', effects: { damage: 3, hits: 3 }, upgrade: { effects: { damage: 4 } } },                          // Sword Boomerang
+  { id: 'calm-mind',           name: 'Calm Mind',           type: 'psychic', cost: 1, art: '🧘', effects: { strength: 1, focus: 4 }, upgrade: { effects: { strength: 2 } } },                       // Inflame, half + Focus
+  { id: 'barrier',             name: 'Barrier',             type: 'psychic', cost: 1, art: '🟣', effects: { block: 7, blockNext: 3 }, upgrade: { effects: { block: 9, blockNext: 4 } } },          // Dodge and Roll
+  { id: 'recover',             name: 'Recover',             type: 'psychic', cost: 1, art: '💚', effects: { heal: 7 }, upgrade: { effects: { heal: 10 } } },                                        // Bandage Up
+  { id: 'future-sight',        name: 'Future Sight',        type: 'psychic', cost: 1, art: '🔮', effects: { focus: 8 }, upgrade: { effects: { focus: 11 } } },                                      // Predator, as setup
+  { id: 'mind-reader',         name: 'Mind Reader',         type: 'psychic', cost: 1, art: '👁️', effects: { vulnerable: 2, draw: 1 }, upgrade: { effects: { vulnerable: 3 } } },                   // Trip + draw
+  { id: 'telekinesis',         name: 'Telekinesis',         type: 'psychic', cost: 1, art: '✋', effects: { block: 6, draw: 1 }, upgrade: { effects: { block: 9 } } },                              // Shrug It Off
+  { id: 'reflective-screen',   name: 'Reflective Screen',   type: 'psychic', cost: 1, art: '🪞', effects: { block: 8, blur: 1 }, upgrade: { effects: { block: 11 } } },                            // Blur
+  { id: 'disable',             name: 'Disable',             type: 'psychic', cost: 1, art: '🚫', effects: { weaken: 2 }, exhaust: true, upgrade: { effects: { weaken: 3 } } },                       // Disarm, short-lived
+  { id: 'psybeam',             name: 'Psybeam',             type: 'psychic', cost: 1, art: '🌈', effects: { damage: 7, weaken: 1 }, upgrade: { effects: { damage: 9, weaken: 2 } } },             // Sucker Punch
+  { id: 'brain-wave',          name: 'Brain Wave',          type: 'psychic', cost: 0, art: '🧠', effects: { damage: 5, nextEnergy: 1 }, upgrade: { effects: { damage: 7 } } },                      // Flying Knee
+  { id: 'dissonant-pulse',     name: 'Dissonant Pulse',     type: 'psychic', cost: 1, art: '〰️', effects: { damage: 4, hits: 2 }, upgrade: { effects: { damage: 5 } } },                          // Twin Strike
+  { id: 'focus-blast',         name: 'Focus Blast',         type: 'psychic', cost: 2, art: '💫', effects: { damage: 14 }, upgrade: { effects: { damage: 19 } } },                                   // Carnage
+  { id: 'dream-eater',         name: 'Dream Eater',         type: 'psychic', cost: 1, art: '🌙', effects: { damage: 7, ifWeak: { bonus: 7 } }, upgrade: { effects: { damage: 9, ifWeak: { bonus: 9 } } } }, // Heel Hook
+  { id: 'mirror-image',        name: 'Mirror Image',        type: 'psychic', cost: 1, art: '🪞', effects: { block: 7, focus: 3 }, upgrade: { effects: { block: 9, focus: 4 } } },                  // Iron Wave, psychic setup
+  // Uncommon: 26
+  { id: 'psychic-surge',       name: 'Psychic Surge',       type: 'psychic', cost: 2, art: '🌌', effects: { strengthEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { effects: { strengthEachTurn: 2 } } }, // Demon Form
+  { id: 'kinetic-barrage',     name: 'Kinetic Barrage',     type: 'psychic', cost: 1, art: '🌀', effects: { damage: 4, hits: 3 }, rarity: 'uncommon', upgrade: { effects: { damage: 5 } } },          // Riddle with Holes
+  { id: 'psycho-cut',          name: 'Psycho Cut',          type: 'psychic', cost: 1, art: '🔪', effects: { damage: 8, strength: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 11, strength: 2 } } }, // Iron Wave + Inflame
+  { id: 'telekinetic-toss',    name: 'Telekinetic Toss',    type: 'psychic', cost: 1, art: '🪨', effects: { damage: 7, perPlayed: 3 }, rarity: 'uncommon', upgrade: { effects: { damage: 9, perPlayed: 4 } } }, // Dagger Spray payoff
+  { id: 'focus-punch',         name: 'Focus Punch',         type: 'psychic', cost: 1, art: '👊', effects: { damage: 9, focus: 5 }, rarity: 'uncommon', upgrade: { effects: { damage: 12, focus: 7 } } }, // Strike + setup
+  { id: 'aura-sphere',         name: 'Aura Sphere',         type: 'psychic', cost: 2, art: '🔵', effects: { damage: 12, strengthMult: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 16, strengthMult: 3 } } }, // Heavy Blade
+  { id: 'power-within',        name: 'Power Within',        type: 'psychic', cost: 1, art: '💪', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { strength: 3 } } }, // Inflame
+  { id: 'psychic-crush',       name: 'Psychic Crush',       type: 'psychic', cost: 2, art: '💥', effects: { damage: 18, vulnerable: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 23, vulnerable: 2 } } }, // Uppercut
+  { id: 'kinesis',             name: 'Kinesis',             type: 'psychic', cost: 1, art: '🧲', effects: { focus: 6, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { focus: 8 } } },         // Setup + draw
+  { id: 'light-screen',        name: 'Light Screen',        type: 'psychic', cost: 1, art: '✨', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 4 } } }, // Metallicize
+  { id: 'barrier-field',       name: 'Barrier Field',       type: 'psychic', cost: 2, art: '🟣', effects: { keepBlock: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },               // Barricade
+  { id: 'counter-guard',       name: 'Counter Guard',       type: 'psychic', cost: 1, art: '🛡️', effects: { block: 10, ifEnemyAttacks: { weaken: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 13, ifEnemyAttacks: { weaken: 2 } } } }, // Flame Barrier
+  { id: 'safeguard',           name: 'Safeguard',           type: 'psychic', cost: 1, art: '🔰', effects: { block: 7, guard: true }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } }, // Protect
+  { id: 'telekinetic-wall',    name: 'Telekinetic Wall',    type: 'psychic', cost: 2, art: '🧱', effects: { block: 15, blur: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 19 } } },       // Blur + block
+  { id: 'reflective-armor',    name: 'Reflective Armor',    type: 'psychic', cost: 1, art: '🪞', effects: { thorns: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { thorns: 7 } } }, // Caltrops
+  { id: 'psychic-rampart',     name: 'Psychic Rampart',     type: 'psychic', cost: 1, art: '🏰', effects: { block: 11, blockNext: 5 }, rarity: 'uncommon', upgrade: { effects: { block: 14, blockNext: 7 } } }, // Dodge and Roll
+  { id: 'force-bubble',        name: 'Force Bubble',        type: 'psychic', cost: 2, art: '🫧', effects: { block: 19 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { block: 24 } } }, // Ghostly Armor
+  { id: 'zen-focus',           name: 'Zen Focus',           type: 'psychic', cost: 1, art: '🧘', effects: { block: 7, focus: 5 }, rarity: 'uncommon', upgrade: { effects: { block: 10, focus: 6 } } }, // Iron Wave + Focus
+  { id: 'hypnosis',            name: 'Hypnosis',            type: 'psychic', cost: 2, art: '😴', effects: { weaken: 3, vulnerable: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { weaken: 4, vulnerable: 3 } } }, // Crippling Cloud
+  { id: 'trick-room',          name: 'Trick Room',          type: 'psychic', cost: 1, art: '🌀', effects: { vulnerable: 2, weaken: 1 }, rarity: 'uncommon', upgrade: { effects: { vulnerable: 3 } } }, // Trip + Weak
+  { id: 'mind-games',          name: 'Mind Games',          type: 'psychic', cost: 1, art: '🎭', effects: { vulnerable: 1, ifVulnerable: { draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { vulnerable: 2 } } }, // Dropkick
+  { id: 'thought-scan',        name: 'Thought Scan',        type: 'psychic', cost: 1, art: '👁️', effects: { draw: 2, discard: 1 }, rarity: 'uncommon', upgrade: { effects: { draw: 3 } } }, // Acrobatics
+  { id: 'disable-plus',        name: 'Disable+',            type: 'psychic', cost: 1, art: '🚫', effects: { weaken: 3 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },            // Disarm+
+  { id: 'future-shock',       name: 'Future Shock',        type: 'psychic', cost: 1, art: '🔮', effects: { damage: 9, focus: 6 }, rarity: 'uncommon', upgrade: { effects: { damage: 12, focus: 8 } } }, // Strike + setup
+  { id: 'telepathy',           name: 'Telepathy',           type: 'psychic', cost: 1, art: '🧠', effects: { drawEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },        // Tools of the Trade, without discard
+  { id: 'synchro-strike',      name: 'Synchro Strike',      type: 'psychic', cost: 1, art: '💫', effects: { damage: 8, ifVulnerable: { energy: 1, draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 11 } } }, // Dropkick
+  // Rare: 14
+  { id: 'psycho-boost',        name: 'Psycho Boost',        type: 'psychic', cost: 2, art: '🌠', effects: { damage: 30, nextEnergy: -1 }, rarity: 'rare', upgrade: { effects: { damage: 38 } } },  // Bludgeon, with recharge
+  { id: 'psyshock-wave',       name: 'Psyshock Wave',       type: 'psychic', cost: 2, art: '🌌', effects: { damage: 8, hits: 3 }, rarity: 'rare', upgrade: { effects: { damage: 10 } } },    // Riddle with Holes+
+  { id: 'unleashed-power',    name: 'Unleashed Power',    type: 'psychic', cost: 1, art: '💥', effects: { damage: 12, strengthMult: 4 }, retain: true, rarity: 'rare', upgrade: { effects: { damage: 16, strengthMult: 5 } } }, // Heavy Blade+
+  { id: 'psychic-mastery',     name: 'Psychic Mastery',     type: 'psychic', cost: 2, art: '🧠', effects: { strengthEachTurn: 2 }, power: true, rarity: 'rare', upgrade: { effects: { strengthEachTurn: 3 } } }, // Demon Form+
+  { id: 'amnesia',             name: 'Amnesia',             type: 'psychic', cost: 2, art: '🌫️', effects: { keepBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },             // Barricade+
+  { id: 'mirror-armor',        name: 'Mirror Armor',        type: 'psychic', cost: 2, art: '🪞', effects: { thorns: 8 }, power: true, rarity: 'rare', upgrade: { effects: { thorns: 11 } } }, // Caltrops+
+  { id: 'psychic-fortress',    name: 'Psychic Fortress',    type: 'psychic', cost: 2, art: '🏰', effects: { blockEachTurn: 5, drawEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } }, // Barricade + Tools
+  { id: 'precognition',        name: 'Precognition',        type: 'psychic', cost: 1, art: '🔮', effects: { focus: 10, draw: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { focus: 14 } } }, // Adrenaline, Focus
+  { id: 'mind-break',          name: 'Mind Break',          type: 'psychic', cost: 2, art: '💢', effects: { damage: 18, vulnerable: 3 }, rarity: 'rare', upgrade: { effects: { damage: 24, vulnerable: 4 } } }, // Uppercut+
+  { id: 'dream-world',         name: 'Dream World',         type: 'psychic', cost: 2, art: '🌙', effects: { drawEachTurn: 1, blockEachTurn: 3 }, power: true, rarity: 'rare', upgrade: { cost: 1 } }, // Tools of the Trade + Metallicize
+  { id: 'psychic-dominance',   name: 'Psychic Dominance',   type: 'psychic', cost: 2, art: '👁️', effects: { cardDamage: 2 }, power: true, rarity: 'rare', upgrade: { effects: { cardDamage: 3 } } }, // A Thousand Cuts
+  { id: 'mind-storm',          name: 'Mind Storm',          type: 'psychic', cost: 'X', art: '🌪️', effects: { damage: 7, perX: { hits: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 10 } } }, // Whirlwind
+  { id: 'psychic-overload',    name: 'Psychic Overload',    type: 'psychic', cost: 0, art: '⚡', effects: { focus: 8, energy: 1, draw: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { focus: 11 } } }, // Adrenaline
+  { id: 'mind-control',        name: 'Mind Control',        type: 'psychic', cost: 2, art: '🎭', effects: { vulnerable: 3, weaken: 3, sap: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { vulnerable: 4, weaken: 4, sap: 3 } } }, // Malaise, fixed cost
+];
+
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
    normal fights. There are two TIERS per type, one per evolution:
@@ -440,6 +509,18 @@ const WATER_EVO_HIGH = [
   { id: 'origin-pulse', name: 'Origin Pulse', type: 'water', cost: 3, art: '🌀', sprite: 'waterium-z', effects: { damage: 26, tide: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 32, tide: 4 } } },   // Tsunami
   { id: 'hydro-cannon', name: 'Hydro Cannon', type: 'water', cost: 3, art: '🚿', sprite: 'blastoisinite', effects: { damage: 34 }, retain: true, growOnRetain: { damage: 6 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42 } } },   // Flow: Windmill Strike
 ];
+const PSYCHIC_EVO_MID = [
+  { id: 'psycho-shift',   name: 'Psycho Shift',   type: 'psychic', cost: 1, art: '🌀', effects: { damage: 10, focus: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 14, focus: 10 } } }, // Force
+  { id: 'mind-over-matter', name: 'Mind Over Matter', type: 'psychic', cost: 1, art: '🧠', effects: { strength: 2, block: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { strength: 3, block: 10 } } }, // Force + Barrier
+  { id: 'psychic-reflection', name: 'Psychic Reflection', type: 'psychic', cost: 1, art: '🪞', effects: { block: 10, thorns: 6 }, power: true, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 13, thorns: 8 } } }, // Barrier: Caltrops + block
+  { id: 'mind-lance',     name: 'Mind Lance',     type: 'psychic', cost: 1, art: '🔮', effects: { damage: 8, vulnerable: 2, draw: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11, vulnerable: 3 } } }, // Mind Games
+];
+const PSYCHIC_EVO_HIGH = [
+  { id: 'psycho-break',   name: 'Psycho Break',   type: 'psychic', cost: 2, art: '💥', effects: { damage: 26, focus: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 33, focus: 10 } } }, // Force
+  { id: 'mindstorm',      name: 'Mindstorm',      type: 'psychic', cost: 'X', art: '🌪️', effects: { damage: 8, perX: { hits: 1 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11 } } }, // Force: Whirlwind
+  { id: 'absolute-barrier', name: 'Absolute Barrier', type: 'psychic', cost: 2, art: '🛡️', effects: { keepBlock: 1, blockEachTurn: 5 }, power: true, evoOnly: true, maxCopies: 1, upgrade: { cost: 1 } }, // Barrier: Barricade + Metallicize
+  { id: 'psycho-annihilation', name: 'Psycho Annihilation', type: 'psychic', cost: 3, art: '🌌', effects: { damage: 30, vulnerable: 3, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 38, vulnerable: 4 } } }, // Mind Games
+];
 
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
 const TOKEN_CARDS = [
@@ -459,8 +540,9 @@ const STATUS_CARDS = [
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
+  ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -502,13 +584,14 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
   fire:  { 1: FIRE_EVO_MID,  2: FIRE_EVO_HIGH },
   grass: { 1: GRASS_EVO_MID, 2: GRASS_EVO_HIGH },
   water: { 1: WATER_EVO_MID, 2: WATER_EVO_HIGH },
+  psychic: { 1: PSYCHIC_EVO_MID, 2: PSYCHIC_EVO_HIGH },
 };
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. */
@@ -551,7 +634,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -759,6 +842,7 @@ export function cardTerms(card) {
     uses(/weak/i) && ['Weak', 'Enemy deals 25% less. Counts down each turn.'],
     uses(/vulnerable/i) && ['Vulnerable', 'Enemy takes 50% more. Counts down each turn.'],
     uses(/strength|^flex$/i) && ['Strength', 'Added to every hit you deal.'],
+    uses(/^focus$/i) && ['Focus', 'Adds damage to your next attack.'],
     uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],
     (uses(/^perX$/) || card.cost === 'X') && ['X', 'Spends all your PP. X is how much.'],
     e.combo && [`Combo ${e.combo.at}`, `Only if you've played ${e.combo.at} other cards this turn.`],

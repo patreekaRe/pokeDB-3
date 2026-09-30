@@ -673,11 +673,14 @@ last act only a special run reaches.
    Mewtwo's shiny (`SHINY_COSTS` skips it today).
 
 **Parts, one session each:**
-- **A. Mewtwo's deck.** (The Index already has a "???" tab for it, `renderMystery()` in `js/cardindex.js`: swap `'mystery'` in `TABS` for `'psychic'` and drop it once the pool exists.; likewise the character select's type chip reads "???" via `PSYCHIC` in `js/select.js` until Psychic joins `TYPES`.) A Psychic pool in `js/data/cards.js`, each card on a StS model like the others (docs/card-design.md
-  style: archetypes, an `upgrade` each, `describe()` lines, `cardTerms()` for any new term). Psychic is new to the type
-  chart (`typeMultiplier()`): simplest is Neutral both ways, since biome 1-3 wilds are Fire/Grass/Water. Its Ability,
-  its evolution/power-up (a legendary: aura GIFs from `tools/legendary-aura.py mewtwo psychic`), then `comingSoon` off.
-  Sim: mirror any new mechanic in `sim/engine.js`; Mewtwo should win biomes 1-3 nearly always (strong bot ~95%+).
+- **A. Mewtwo's deck — built 2026-09-29.** The user chose Force / Barrier / Mind Games and Pressure (start each fight
+  with 2 Focus). The Psychic pool is 20 common / 26 uncommon / 14 rare plus 8 evolution cards; its 10-card starter deck
+  follows the existing 4 attacks / 4 blocks / 2 signatures pattern. Psychic is neutral both ways. The character select and
+  Card Index now show Psychic, Mewtwo's power-up GIFs already exist, and `comingSoon` is off. Run-end guards keep interim
+  Mewtwo runs out of Level-based rewards until Part B removes its Level picker. All card effects reuse existing mechanics;
+  the sim mirrors Pressure and those effects. Strong-bot check: 500 Level-0 runs with generic Water-ranked relic picks
+  won **495/500 (99%)**; no Biome-1 elite deaths, and all five losses were to Biome-3 bosses. This clears the ~95% target
+  for the first three biomes.
 - **B. The fourth biome.** `BIOMES` entry (floors, `dmgBonus` / `bossBonus` / `hpMult` fixed, ignoring `modsFor(level)`),
   12 wilds + 3 Alphas + the final boss (the "Rules for steps 3-4" below still apply: sprites, cries, `SPRITE_FIT`), its
   scenes and map, and the gate: after the biome 3 boss, a Mewtwo run carries on (`RUN_SAVE_VERSION` bump if the saved
@@ -689,9 +692,9 @@ last act only a special run reaches.
   completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
 
-**Run in: CLOUD.** Session prompt (part A first): "Read docs/roadmap.md's 'v1.0: Mewtwo and the fourth biome'. Ask me the
-open questions that part A needs, then build Mewtwo's Psychic deck and Ability (part A), check it with the bot, and update
-the roadmap and CLAUDE.md."
+**Run in: CLOUD.** Next-session prompt (part B): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
+fourth biome'. Part A (Mewtwo's Psychic deck and Pressure Ability) is done. Ask me the open questions part B needs, then
+build the fourth biome only."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

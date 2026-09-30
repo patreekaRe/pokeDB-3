@@ -13,7 +13,6 @@ import { ITEMS } from './data/items.js';
 import { getSave } from './storage.js';
 import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
 
-const TABS = ['fire', 'grass', 'water', 'normal', 'mystery', 'relics', 'items'];
 const TAB_LOOK = { mystery: { icon: '🔒', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
 
@@ -71,8 +70,11 @@ function renderThings() {
   const all = relics ? RELICS : ITEMS;
   const seen = new Set(getSave().seen[tab]);
   const body = [];
-  if (relics) body.push(...thingGroup('Abilities', Object.values(ABILITIES), new Set(Object.values(ABILITIES).map(a => a.id)),
-    'Every starter has its type\'s Ability from the start.'));
+  if (relics) {
+    const abilities = Object.values(ABILITIES).filter(a => a.id !== 'pressure' || getSave().unlocked.includes('mewtwo'));
+    body.push(...thingGroup('Abilities', abilities, new Set(abilities.map(a => a.id)),
+      'Every starter has its type\'s Ability from the start.'));
+  }
   for (const [rarity, label] of RARITIES) {
     const set = all.filter(t => !t.boss && t.rarity === rarity);
     if (set.length) body.push(...thingGroup(label, set, seen));
@@ -95,6 +97,21 @@ function render() {
   }
 }
 
+function renderMystery() {
+  const blank = () => {
+    const node = lockedCard(ALL_CARDS[0]);
+    node.querySelector('.card-art').replaceChildren();
+    node.querySelector('.card-type').textContent = '???';
+    return node;
+  };
+  const head = el('div', 'index-head');
+  const title = el('h3', 'index-heading', '???');
+  title.append(el('span', 'index-count', '?/?'));
+  head.append(title, el('p', 'index-note', 'Moves no starter has learned yet.'));
+  $('index-cards').replaceChildren(head, ...Array.from({ length: 8 }, blank));
+  $('index-total').textContent = '?/? found';
+}
+
 function renderCards() {
   const cards = ALL_CARDS.filter(c => c.type === tab);
   const seen = new Set(getSave().seen.cards);
@@ -113,31 +130,17 @@ function renderCards() {
   $('index-total').textContent = `${cards.filter(c => seen.has(c.id)).length}/${cards.length} found`;
 }
 
-/** The fourth type's tab (Mewtwo's, coming in v1.0): blank "???" cards, so there's nothing to give away yet. */
-function renderMystery() {
-  const blank = () => {
-    const node = lockedCard(ALL_CARDS[0]);
-    node.querySelector('.card-art').replaceChildren();
-    node.querySelector('.card-type').textContent = '???';
-    return node;
-  };
-  const head = el('div', 'index-head');
-  const title = el('h3', 'index-heading', '???');
-  title.append(el('span', 'index-count', '?/?'));
-  head.append(title, el('p', 'index-note', 'Moves no starter has learned yet.'));
-  $('index-cards').replaceChildren(head, ...Array.from({ length: 8 }, blank));
-  $('index-total').textContent = '?/? found';
+function visibleTabs() {
+  return [
+    'fire', 'grass', 'water', 'normal',
+    getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery',
+    'relics', 'items',
+  ];
 }
 
-function pick(type, focus = false) {
-  tab = type;
-  render();
-  if (focus) document.querySelector(`.index-tab[data-type="${type}"]`).focus();
-}
-
-export function initCardIndex() {
+function renderTabs() {
   const tabs = $('index-tabs');
-  tabs.replaceChildren(...TABS.map(type => {
+  tabs.replaceChildren(...visibleTabs().map(type => {
     const btn = el('button', `index-tab type-${type}`);
     btn.type = 'button';
     btn.dataset.type = type;
@@ -148,17 +151,33 @@ export function initCardIndex() {
     btn.addEventListener('click', () => pick(type));
     return btn;
   }));
+}
+
+function pick(type, focus = false) {
+  if (!visibleTabs().includes(type)) return;
+  tab = type;
+  render();
+  if (focus) document.querySelector(`.index-tab[data-type="${type}"]`)?.focus();
+}
+
+export function initCardIndex() {
+  const tabs = $('index-tabs');
+  renderTabs();
   tabs.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;
     e.preventDefault();
-    pick(TABS[(TABS.indexOf(tab) + step + TABS.length) % TABS.length], true);
+    const available = visibleTabs();
+    pick(available[(available.indexOf(tab) + step + available.length) % available.length], true);
   });
 }
 
 /** Opens on the given type's tab (the picked starter's), else the last one looked at. */
 export function openCardIndex(type) {
-  if (TABS.includes(type)) tab = type;
+  const available = visibleTabs();
+  if (available.includes(type)) tab = type;
+  if (!available.includes(tab)) tab = available.includes('psychic') ? 'psychic' : 'fire';
+  renderTabs();
   render();
   openDialog('index-dialog');
 }

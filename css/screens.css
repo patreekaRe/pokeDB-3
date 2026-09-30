@@ -1705,6 +1705,7 @@ body.battle-intro { pointer-events: none; }
 .hof-row.type-fire, .hof-entry.type-fire { border-left-color: #c8402a; }
 .hof-row.type-grass, .hof-entry.type-grass { border-left-color: #2e8a40; }
 .hof-row.type-water, .hof-entry.type-water { border-left-color: #2a68c8; }
+.hof-row.type-psychic, .hof-entry.type-psychic { border-left-color: #8a45c0; }
 @media (hover: hover) { .hof-row:hover { background: rgba(48, 48, 56, 0.13); } }
 .hof-row-pic { display: grid; place-items: center; flex: none; width: 64px; height: 64px; }
 .hof-row-pic img { max-width: 64px; max-height: 64px; image-rendering: pixelated; }
@@ -2388,7 +2389,7 @@ body.battle-intro { pointer-events: none; }
 .index-tab.type-fire  { --c1: #ff8f4d; --c2: #b8321a; }
 .index-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
 .index-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
-.index-tab.type-mystery { --c1: #8a6ad8; --c2: #3c2a78; }
+.index-tab.type-psychic { --c1: #d49aff; --c2: #7138a8; }
 .index-tab-icon { font-size: 1.1rem; line-height: 1; }
 .index-tab:hover { background: var(--win-tile); }
 .index-tab[aria-selected="true"] { border-color: var(--c2); background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); transform: translateY(-2px); box-shadow: 2px 4px 0 var(--win-shadow); }
@@ -2415,6 +2416,7 @@ body.battle-intro { pointer-events: none; }
 .index-only.type-fire { background: #c8402a; }
 .index-only.type-grass { background: #2e8a40; }
 .index-only.type-water { background: #2a68c8; }
+.index-only.type-psychic { background: #7138a8; }
 @media (max-width: 720px) {
   .index-dialog { padding: 16px; }
   .index-dialog h2 { font-size: 1.1rem; }

@@ -1,9 +1,10 @@
 # Card design: the StS feel (roadmap step 6c)
 
-**Status: approved (2026-09-26).** The user asked Claude to settle the open questions by whatever is closest to
-StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**, the three Abilities, **Fire's whole pool**
-(6c.3), **Water's whole pool** (6c.4) and **Grass's whole pool** (6c.5, see their sections). All three types are done,
-and 6c.9 built the **Neutral pool**, StS's **reward rules** (Decisions, 9) and gave enemies the **status cards**.
+**Status: approved (2026-09-26); Psychic pool added in Part A (2026-09-29).** The user asked Claude to settle the open
+questions by whatever is closest to StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**,
+the four Abilities, **Fire's whole pool** (6c.3), **Water's whole pool** (6c.4), **Grass's whole pool** (6c.5), and
+Mewtwo's Psychic pool (Part A, see below). Step 6c.9 built the **Neutral pool**, StS's **reward rules** (Decisions, 9) and
+gave enemies the **status cards**.
 
 The goal (the user's words): "I really want the StS feel... different builds, even if it means 70+ cards".
 There are only three characters, Fire, Grass and Water; every other starter stays a skin sharing its
@@ -40,6 +41,9 @@ The roadmap's proposals, with two changes and why.
 | Water | **Tsunami** | build Tide, cash it in with one big wave | Watcher's Mantra / Brilliance, Perfected Strike |
 | Water | **Shell** | block that stays (Shell Armor) and turns into damage (Razor Shell) | Ironclad's block (Barricade, Entrench, Body Slam, Juggernaut) |
 | Water | **Flow** | draw, discard for value, retain the right cards | Silent's discard (Acrobatics, Reflex, Tactician), Watcher's retain |
+| Psychic | **Force** | build strength and Focus, then land huge attacks | Ironclad's strength (Inflame, Heavy Blade) |
+| Psychic | **Barrier** | stack lasting block and reflect attacks | Ironclad's block (Barricade, Metallicize, Caltrops) |
+| Psychic | **Mind Games** | apply Weak/Vulnerable, draw and shape the hand | Silent's debuffs and draw (Crippling Cloud, Dropkick, Acrobatics) |
 
 Why the changes:
 - **Fire: Kindling instead of Momentum.** Momentum ("cheap attacks, energy, many cards a turn") overlapped
@@ -64,6 +68,7 @@ it can't be lost or swapped and old saves pick it up for free. It shows at the t
 | Fire | **Blaze** | While your HP is below half, your attacks deal +3 damage. | (the games' Blaze) | Aggressive like the games' Blaze; the payoff for Reckless, and a comeback for everyone. |
 | Grass | **Overgrow** | After each fight you win, heal 3 HP. | Burning Blood (6 of 80 HP) | Grass regrows; steady value for any Grass build. (5 HP was worth +10 to +22 points in the bot, far more than the others.) |
 | Water | **Torrent** | Start each fight with 2 Tide. | Pure Water / Ring of the Snake | Tide is Water's resource, so every build starts a wave ahead. |
+| Psychic | **Pressure** | Start each fight with 2 Focus: your next attack deals +2 damage. | A small first-turn starter relic | Mewtwo opens every fight with a psychic push, useful across all three archetypes. |
 
 The rare power card `blaze` ("+6 on attacks below half HP") is renamed **Solar Power** so it doesn't share the
 Ability's name (done in 6c.2; same id).
@@ -396,6 +401,90 @@ Evolution cards:
 | ★Hydro Cannon | final | 3 | Deal 34, Retain; +6 each turn retained *(was deal 34)* | Flow |
 
 Water: 20 common, 32 uncommon (with the bridges), 13 rare, 8 evolution = **73**.
+
+## Psychic (Mewtwo): Force, Barrier, Mind Games
+
+**Built in v1.0 Part A (2026-09-29).** The user chose Force / Barrier / Mind Games and the **Pressure** Ability. Psychic
+is neutral against every type. Keep Mewtwo's type and card pool masked in player-facing screens until Mewtwo is unlocked.
+All cards use existing effects; no new battle mechanic was needed. Each card has a hand-picked
+upgrade, and every row's StS column matches the inline model comment in `js/data/cards.js`.
+Strong-bot check in `pokeDB-sim`: 495/500 wins (99%) at Level 0 through the first three biomes.
+
+Starting deck (10): 4 Psywaves, 4 Psychic Guards, Confusion, Psystrike — 4 attacks, 4 blocks, and 2 signatures. Pressure
+starts every fight with 2 Focus (+2 to Mewtwo's first attack).
+
+| Card | Rarity | Cost | Effect (upgrade) | Archetype / StS |
+|---|---|---:|---|---|
+| Psywave | C | 1 | Deal 10 (13) | — / Strike |
+| Psychic Guard | C | 1 | Block 11 (14) | — / Defend |
+| Confusion | C | 2 | Deal 12, Vulnerable 2 (14, Vulnerable 3) | — / Bash |
+| Psystrike | C | 1 | Deal 10, Weak 2 (13, Weak 3) | Mind Games / Sucker Punch |
+| Mind Bolt | C | 1 | Deal 6, Focus 4 (8, Focus 5) | Force / Strike + setup |
+| Telekinetic Crush | C | 1 | Deal 3 three times (4 each) | Force / Sword Boomerang |
+| Calm Mind | C | 1 | +1 Strength, Focus 4 (+2 Strength) | Force / Inflame |
+| Barrier | C | 1 | Block 7, 3 block next turn (9, 4 next turn) | Barrier / Dodge and Roll |
+| Recover | C | 1 | Heal 7 (10) | Barrier / Bandage Up |
+| Future Sight | C | 1 | Focus 8 (11) | Force / Predator, as setup |
+| Mind Reader | C | 1 | Vulnerable 2, draw 1 (Vulnerable 3) | Mind Games / Trip + draw |
+| Telekinesis | C | 1 | Block 6, draw 1 (9 block) | Barrier / Shrug It Off |
+| Reflective Screen | C | 1 | Block 8, Blur 1 (11 block) | Barrier / Blur |
+| Disable | C | 1 | Weak 2. Exhaust (Weak 3) | Mind Games / Disarm |
+| Psybeam | C | 1 | Deal 7, Weak 1 (9, Weak 2) | Mind Games / Sucker Punch |
+| Brain Wave | C | 0 | Deal 5, +1 energy next turn (7) | Force / Flying Knee |
+| Dissonant Pulse | C | 1 | Deal 4 twice (5 twice) | Force / Twin Strike |
+| Focus Blast | C | 2 | Deal 14 (19) | Force / Carnage |
+| Dream Eater | C | 1 | Deal 7; +7 if the enemy is Weak (9; +9) | Mind Games / Heel Hook |
+| Mirror Image | C | 1 | Block 7, Focus 3 (9, Focus 4) | Barrier / Iron Wave |
+| Psychic Surge | U | 2 | Power: +1 Strength each turn (+2) | Force / Demon Form |
+| Kinetic Barrage | U | 1 | Deal 4 three times (5 each) | Force / Riddle with Holes |
+| Psycho Cut | U | 1 | Deal 8, +1 Strength (11, +2 Strength) | Force / Iron Wave + Inflame |
+| Telekinetic Toss | U | 1 | Deal 7, +3 per other card played this turn (9, +4) | Force / Finisher |
+| Focus Punch | U | 1 | Deal 9, Focus 5 (12, Focus 7) | Force / Strike + setup |
+| Aura Sphere | U | 2 | Deal 12, Strength counts twice (16, 3x) | Force / Heavy Blade |
+| Power Within | U | 1 | +2 Strength. Exhaust (+3) | Force / Inflame |
+| Psychic Crush | U | 2 | Deal 18, Vulnerable 1 (23, Vulnerable 2) | Force / Uppercut |
+| Kinesis | U | 1 | Focus 6, draw 1 (Focus 8) | Force / Setup + draw |
+| Light Screen | U | 1 | Power: block 3 each turn (4) | Barrier / Metallicize |
+| Barrier Field | U | 2 | Power: block stays between turns (cost 1) | Barrier / Barricade |
+| Counter Guard | U | 1 | Block 10; Weak 1 if the enemy attacks (13, Weak 2) | Barrier / Flame Barrier |
+| Safeguard | U | 1 | Block 7, Guard (10) | Barrier / Protect |
+| Telekinetic Wall | U | 2 | Block 15, Blur 1 (19) | Barrier / Blur + block |
+| Reflective Armor | U | 1 | Power: deal 5 when attacked (7) | Barrier / Caltrops |
+| Psychic Rampart | U | 1 | Block 11, 5 block next turn (14, 7 next turn) | Barrier / Dodge and Roll |
+| Force Bubble | U | 2 | Block 19. Ethereal (24) | Barrier / Ghostly Armor |
+| Zen Focus | U | 1 | Block 7, Focus 5 (10, Focus 6) | Barrier / Iron Wave + setup |
+| Hypnosis | U | 2 | Weak 3, Vulnerable 2. Exhaust (4, 3) | Mind Games / Crippling Cloud |
+| Trick Room | U | 1 | Vulnerable 2, Weak 1 (Vulnerable 3) | Mind Games / Trip + Weak |
+| Mind Games | U | 1 | Vulnerable 1; if already Vulnerable, draw 1 (Vulnerable 2) | Mind Games / Dropkick |
+| Thought Scan | U | 1 | Draw 2, discard 1 (draw 3) | Mind Games / Acrobatics |
+| Disable+ | U | 1 | Weak 3. Exhaust (cost 0) | Mind Games / Disarm+ |
+| Future Shock | U | 1 | Deal 9, Focus 6 (12, Focus 8) | Force / Strike + setup |
+| Telepathy | U | 1 | Power: draw 1 extra each turn (cost 0) | Mind Games / Tools of the Trade |
+| Synchro Strike | U | 1 | Deal 8; if Vulnerable, +1 energy and draw 1 (11) | Mind Games / Dropkick |
+| Psycho Boost | R | 2 | Deal 30, -1 energy next turn (38) | Force / Bludgeon + recharge |
+| Psyshock Wave | R | 2 | Deal 8 three times (10 each) | Force / Riddle with Holes+ |
+| Unleashed Power | R | 1 | Deal 12, Strength counts 4x. Retain (16, 5x) | Force / Heavy Blade+ |
+| Psychic Mastery | R | 2 | Power: +2 Strength each turn (+3) | Force / Demon Form+ |
+| Amnesia | R | 2 | Power: block stays between turns (cost 1) | Barrier / Barricade+ |
+| Mirror Armor | R | 2 | Power: deal 8 when attacked (11) | Barrier / Caltrops+ |
+| Psychic Fortress | R | 2 | Power: block 5 and draw 1 each turn (cost 1) | Barrier / Barricade + Tools |
+| Precognition | R | 1 | Focus 10, draw 2. Exhaust (Focus 14) | Force / Adrenaline + setup |
+| Mind Break | R | 2 | Deal 18, Vulnerable 3 (24, Vulnerable 4) | Mind Games / Uppercut+ |
+| Dream World | R | 2 | Power: draw 1 and block 3 each turn (cost 1) | Barrier / Tools + Metallicize |
+| Psychic Dominance | R | 2 | Power: cards deal 2 extra damage (3) | Force / A Thousand Cuts |
+| Mind Storm | R | X | Deal 7 X times (10 X times) | Force / Whirlwind |
+| Psychic Overload | R | 0 | Focus 8, +1 energy, draw 2. Exhaust (Focus 11) | Force / Adrenaline |
+| Mind Control | R | 2 | Vulnerable 3, Weak 3, Sap 2. Exhaust (4, 4, 3) | Mind Games / Malaise |
+| Psycho Shift | 1st evo | 1 | Deal 10, Focus 8 (14, Focus 10) | Force |
+| Mind Over Matter | 1st evo | 1 | +2 Strength, block 8 (+3, block 10) | Force / Barrier |
+| Psychic Reflection | 1st evo | 1 | Power: block 10 and deal 6 when attacked (13, 8) | Barrier / Caltrops + block |
+| Mind Lance | 1st evo | 1 | Deal 8, Vulnerable 2, draw 1 (11, Vulnerable 3) | Mind Games |
+| Psycho Break | final evo | 2 | Deal 26, Focus 8 (33, Focus 10) | Force |
+| Mindstorm | final evo | X | Deal 8 X times (11 X times) | Force / Whirlwind |
+| Absolute Barrier | final evo | 2 | Power: block stays; +5 block each turn (cost 1) | Barrier / Barricade + Metallicize |
+| Psycho Annihilation | final evo | 3 | Deal 30, Vulnerable 3, Weak 2 (38, Vulnerable 4) | Mind Games |
+
+Psychic: 20 common, 26 uncommon, 14 rare, 8 evolution = **68**.
 
 ## Neutral (~20) **(built in 6c.9, 2026-09-27)**
 

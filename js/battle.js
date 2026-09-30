@@ -113,7 +113,7 @@ export function abandonBattle() {
 export const isBattleRunning = () => battle !== null && !battle.over;
 
 const hasRelic = (id) => battle.relics.includes(id);
-/** The starter's Ability (Blaze / Overgrow / Torrent), from its type: ABILITIES in data/relics.js. */
+/** The starter's Ability (Blaze / Overgrow / Torrent / Pressure), from its type: ABILITIES in data/relics.js. */
 const hasAbility = (id) => battle.ability?.id === id;
 const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
 
@@ -150,7 +150,7 @@ export function startBattle({ run, encounter, onEnd }) {
     block: 0,
     energy: 0,
     nextEnergy: 0,     // bonus energy waiting for next turn
-    focus: 0,          // bonus damage waiting for your next attack
+    focus: ability?.id === 'pressure' ? ability.amount : 0, // Pressure: bonus damage waiting for Mewtwo's first attack
     guard: false,      // blocks the next enemy attack completely
     endure: false,     // can't drop below 1 HP until your next turn (Endure)
     tide: ability?.id === 'torrent' ? ability.amount : 0,   // Water's stored-up resource: built by `tide` cards, all spent by the next `perTide` card
@@ -297,7 +297,7 @@ function resetIntro() {
 function beginPlayerTurn() {
   const b = battle;
   b.turn += 1;
-  if (b.turn === 1 && hasAbility('torrent')) abilityBanner();
+  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure'))) abilityBanner();
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (b.turn === 2 && hasRelic('stone-plate') ? 12 : 0)

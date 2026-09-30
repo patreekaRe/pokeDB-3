@@ -25,11 +25,16 @@
    generateMap() builds the data. renderMap() draws it.
    ============================================================ */
 
-import { $, el } from './ui.js';
 import { TYPES } from './data/cards.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { buildingSvg } from './buildings.js';
-import { bossReveal, preloadBossReveal } from './transition.js';
+
+// Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
+// worker can share generateMap() without evaluating UI modules that need document/window.
+const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
+const TRANSITIONS = typeof document === 'undefined' ? {} : await import('./transition.js');
+const { $, el } = UI;
+const { bossReveal, preloadBossReveal } = TRANSITIONS;
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
@@ -573,7 +578,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
 
 // Turning a tablet or resizing the window can change how many tiles fit across, so the map is drawn again.
 let lastRender = null, resizeTimer = 0;
-addEventListener('resize', () => {
+if (typeof addEventListener === 'function') addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if (!lastRender || $('map-screen').hidden) return;

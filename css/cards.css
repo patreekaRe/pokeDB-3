@@ -27,6 +27,7 @@
 .card.type-fire   { --c1: #ff8f4d; --c2: #b8321a; }
 .card.type-water  { --c1: #5cbcff; --c2: #1d58b8; }
 .card.type-grass  { --c1: #72dc70; --c2: #257a38; }
+.card.type-psychic { --c1: #d49aff; --c2: #7138a8; }
 /* status cards (enemies' junk) are a dull grey; an upgraded card's name is green, like StS's */
 .card.status      { --c1: #8c8c94; --c2: #505058; }
 .card.upgraded .card-name { color: #208030; }

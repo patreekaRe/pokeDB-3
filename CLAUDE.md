@@ -105,8 +105,10 @@ live site.
   is unlocked and a run is won on Trainer Level 5 (`stats.level5WinsBy`, so only wins since 2026-09-28 count);
   that achievement must stay last in `ACHIEVEMENTS`, since
   `checkAchievements()` grants in order (the shop also runs it after a
-  purchase). It is `type: 'psychic'` with an empty deck, so `comingSoon: true`
-  stops it being picked for a run until its own cards exist.
+  purchase). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
+  cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
+  Ability landed; until Part B removes its Trainer Level picker, run-end guards keep Mewtwo out of Level-based rewards and
+  stats.
 - **Cards** (`js/data/cards.js`): every effect is a key in a card's
   `effects` (the header comment lists them all) and `describe()` writes
   the card text from them, so new mechanics need a line there too. Beyond
@@ -119,7 +121,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`keywords()` in `js/data/cards.js`, drawn by `makeCard()`, with a
   `title` explaining it); powers leave the fight once played, like StS.
   **Keyword boxes** (StS's): `cardTerms(card)` in `js/data/cards.js` lists every term a card uses as
-  `[label, text]` (its keywords, then Tide, Burn, Leech Seed, Weak, Vulnerable, Sap, Strength, Discard, X,
+  `[label, text]` (its keywords, then Tide, Burn, Leech Seed, Weak, Vulnerable, Sap, Strength, Focus, Discard, X,
   Combo... found by regex over its effect keys, nested ones too), and `termTips()` is the same minus the
   keywords, for the text's `title`. `cardTips()` / `withTips()` in `js/ui.js` draw them as little parchment
   windows beside any blown-up card: battle's risen card (`placeTips()` in `js/battle.js`: beside it on
@@ -133,8 +135,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   what it is and what spending it does (the user couldn't tell from "Builds up all fight"). Block, Draw and Heal get no box:
   their words say it (the user's call). A card that makes cards (`addCard`, however nested) gets a box per made card with its cost,
   keywords and text (`addedCards()` / `madeCardText()`: Rage, Paralysis, Poison, Cinder...; Rage's says it's a copy of itself).
-  Each type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
-  Drain / Spores, Water Tsunami / Shell / Flow.
+  Each gameplay type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
+  Drain / Spores, Water Tsunami / Shell / Flow, Psychic Force / Barrier / Mind Games.
+  Psychic (Part A, 2026-09-29): 20 common / 26 uncommon / 14 rare + 8 evolution cards; Psychic is neutral both ways and
+  all cards use existing mechanics. Keep Mewtwo's type and card pool masked as `???` in player-facing selection and Index
+  screens until the starter is unlocked. Mewtwo's Pressure starts each fight with 2 Focus.
   Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
   "build up, cash in" resource, `battle.tide`, shown as a 🌊 nameplate badge and
   lasting all fight. `tide: N` cards build it (Bubble, Dive, Rain Dance, Surf,
@@ -173,7 +178,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   So check defensive numbers first: +1 or +2 block on a starting card moves
   a type 10–30 points at Level 5. Don't remove a card id:
   a saved run holding it would be discarded.
-  **Card pool expansion (roadmap 6c)**: `docs/card-design.md` is the plan (9 archetypes, ~70 cards a
+  **Card pool expansion (roadmap 6c)**: `docs/card-design.md` is the plan (12 archetypes, ~70 cards a
   type, each on a StS card); the user approved it (2026-09-26); its Decisions section settles the open questions. The engine for it
   landed first (6c.2), all in `js/battle.js` and described by `describe()` (the header of
   `js/data/cards.js` lists every key): X cost (`cost: 'X'` + `perX`, `xPlus`), `discard` / `exhaustPick`
@@ -256,17 +261,18 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Starter Abilities** (StS's starter relics): `ABILITIES` in `js/data/relics.js`, one per type, so
   every skin shares it and nothing is saved (it comes from `starter.type`). Fire **Blaze**: attacks +3
   while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
-  fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide. It's the first row of the
+   fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide; Psychic **Pressure**:
+   start each fight with 2 Focus (Mewtwo's first attack deals +2). It's the first row of the
   Bag's Relics pocket, an "Ability: X" line in the character select's panel (`#sel-ability`), an "Ability: X" line on
   the map's run card (`#run-ability`), and an Ability Capsule chip on your battle nameplate (`#player-ability`,
   tap for its text; the capsule, not the type icon, so it doesn't read as a type). When it does something,
   `abilityBanner()` in `js/battle.js` slides in Gen 5's "Charmander's Blaze" window (`#ability-banner`) on
-  your side for 1.9 s: Torrent on turn 1, Blaze each time HP drops below half (`checkBlaze()` in
+   your side for 1.9 s: Torrent and Pressure on turn 1, Blaze each time HP drops below half (`checkBlaze()` in
   `renderAll()`, again after a heal took it back over), Overgrow when it heals after a win (the faint pause
   is 1.7 s then). The rare power card `blaze`
   is named Solar Power now (same id) so the two don't share a name.
-- **Types**: four types (fire/grass/water, and `normal`, shown as Neutral,
-  x1 both ways). `typeMultiplier()` in `js/battle.js` is the chart; a card
+- **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
+  `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,
   else the enemy's: moves whose real type isn't Fire/Grass/Water (Body Slam,
   Bite, Vice Grip, Acid) carry `type: 'normal'` in `js/data/enemies.js`, so

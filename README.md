@@ -10,7 +10,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 
 ## How to play
 
-1. **Pick a starter.** Charmander, Bulbasaur and Squirtle are free and are the only three with a truly unique deck. Everyone else is a **skin** - same moves as their type, different look - unlocked either in the **🛒 Shop** or through an achievement. Each starter has a fixed 10-card deck, which you can preview before you begin. There is no deck editor.
+1. **Pick a starter.** Charmander, Bulbasaur and Squirtle are free. Most other Pokémon are **skins** - same moves as their type, different look - unlocked either in the **🛒 Shop** or through an achievement. Secret legendary Mewtwo has its own Psychic deck and Ability. Each starter has a fixed 10-card deck, which you can preview before you begin. There is no deck editor.
 2. **Climb the map.** Start at the bottom and choose a path upward: ⚔️ fights, 💀 elites, 🏥 Pokémon Centers and 🎁 treasure. Your HP carries over between fights.
 3. **Battle.** Each turn you draw 5 cards and get 3 ⚡ energy. Tap a card to play it; the number in the gold corner is its cost. The bubble above the enemy shows what it will do next turn.
 4. **Grow your deck.** After a fight, pick 1 of 3 new moves. Elites, bosses and treasure give **relics**: held items with permanent bonuses. Winning fights also earns **PokéCoins** 💰 - more from elites, even more if the elite's type is strong against yours.
@@ -21,13 +21,13 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 
 **Enrage:** every 6 turns of a fight, the enemy gains +2 strength, so you can't stall behind block forever.
 
-**Type chart:** 🔥 Fire beats 🌿 Grass, 🌿 Grass beats 💧 Water, 💧 Water beats 🔥 Fire (30% more damage; the reverse does 25% less). It works both ways: enemy attacks use their own type against you, and a ▲ or ▼ on the enemy's intent shows whether it is strong or weak against your starter. Neutral enemies are always ×1.
+**Type chart:** 🔥 Fire beats 🌿 Grass, 🌿 Grass beats 💧 Water, 💧 Water beats 🔥 Fire (30% more damage; the reverse does 25% less). It works both ways: enemy attacks use their own type against you, and a ▲ or ▼ on the enemy's intent shows whether it is strong or weak against your starter. Neutral and Psychic are always ×1.
 
 **Status effects:** *Block* soaks up damage for one round, *Burn* damages the enemy at the start of its turn, *Focus* powers up your next attack, *Weak* makes the enemy deal 25% less damage for a few turns, *Vulnerable* makes it take 50% more from your attacks, and *Guard* stops it completely.
 
 ## Features
 
-- **19 starters, 3 of them gameplay-distinct.** Charmander, Bulbasaur and Squirtle each define their type's real deck; the other 15 are skins, 12 later-generation starters (Cyndaquil through Piplup) and one **legendary per type** (Moltres, Virizion, Suicune), all sharing their type's deck and evolution cards. The last is a secret: **Mewtwo**, unlocked by collecting everyone else (its own psychic deck is coming later).
+- **30 starters, 4 gameplay-distinct decks.** Charmander, Bulbasaur and Squirtle each define a type's deck; Mewtwo, the secret final unlock, has its own Psychic deck and Pressure Ability. Other starters share a type's deck and evolution cards.
 - A **branching map** for each of three biomes, generated the way Slay the Spire does it: random paths that never cross, rooms that only exist where a path went, a treasure floor in the middle, rest sites before the boss, and room rules like "no two rest sites in a row". A new map is generated for every biome.
 - **Card rewards and relics:** 32 cards across common, uncommon and rare rarities, and 11 relics (Charcoal, Leftovers, Focus Sash, Scope Lens…).
 - **Turn-based battles** with an energy system, draw and discard piles that reshuffle, enemy intent, type advantages and status effects.

@@ -16,9 +16,9 @@ three places:
   unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.
 - Roadmap steps 1-7 of "Next sessions" are done (evolution scene, title/select/Collection redesign, cries, cloud save
   code, Level 5 rewards + Hall of Fame + Record Book, day/night cycle, the biome journey with places and landmarks).
-- **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Start with part A, Mewtwo's
-  Psychic deck and Ability. Before you build, ask the user the open questions that part needs. The session prompt is in
-  the roadmap.
+- **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
+  Pressure Ability) landed 2026-09-29. Next is part B: ask the user the remaining open questions it needs before building
+  the fourth biome. The session prompt and settled decisions are in the roadmap.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.

@@ -632,7 +632,9 @@ function enterNode(node) {
 
 async function fight(node) {
   if (node.type === 'boss' && run.biome < BIOMES.length - 1) preloadEvolution(run.starter, run.stage);
-  if (node.type === 'boss' && run.biome === BIOMES.length - 1) preloadWinScene(run.starter, run.level === MAX_LEVEL);
+  if (node.type === 'boss' && run.biome === BIOMES.length - 1) {
+    preloadWinScene(run.starter, run.starter.id !== 'mewtwo' && run.level === MAX_LEVEL);
+  }
   const enter = await battleWipe(node.type);
   const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   dexSeen(node.enemyId);
@@ -2017,6 +2019,7 @@ function level5Rewards() {
 function endRun(won) {
   run.over = true;
   clearRunData();
+  const mewtwoRun = run.starter.id === 'mewtwo';
 
   let winCoins = 0;
   let level5 = [];
@@ -2030,12 +2033,14 @@ function endRun(won) {
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
       if (run.restCount <= 3) d.stats.lightRestWin = true;
       if (run.restCount === 0) d.stats.noRestWin = true;
-      if (run.deck.length <= 15 && run.level >= 3) d.stats.smallDeckWin = true;   // Level 3+ since 2026-09-28: at Level 0 Fire won ~80% of 15-card runs in the bot
-      const type = run.starter.type;
-      d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
+      if (!mewtwoRun && run.deck.length <= 15 && run.level >= 3) d.stats.smallDeckWin = true;   // Level 3+ since 2026-09-28
+      if (!mewtwoRun) {
+        const type = run.starter.type;
+        d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);
+      }
     });
 
-    if (run.level === MAX_LEVEL) level5 = level5Rewards();
+    if (!mewtwoRun && run.level === MAX_LEVEL) level5 = level5Rewards();
     // every win goes in the Record Book, with its win scene; a Level 5 one also enters the Hall of Fame. The first of each
     // unlocks its card in the Collection (a ??? until then).
     const entry = record = recordWin(run, getSave().shiny.on.includes(run.starter.id));
@@ -2047,7 +2052,7 @@ function endRun(won) {
     }
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.
-    if (run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
+    if (!mewtwoRun && run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
       run.levelUnlocked = run.level + 1;
       updateSave(d => { d.maxLevel = run.levelUnlocked; });
     }

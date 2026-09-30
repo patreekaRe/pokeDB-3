@@ -27,7 +27,7 @@ import { showMenuScene } from './scene.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
-const PSYCHIC = { label: '???', icon: '' };   // Mewtwo's type has no cards yet, so it isn't in TYPES; kept a mystery like the Index's ??? tab
+const PSYCHIC = { label: '???', icon: '' };
 
 let picked = null;        // the starter shown big
 let tab = 'starters';
@@ -139,7 +139,8 @@ function renderStrip() {
 
 function show(starter) {
   const unlocked = isStarterUnlocked(starter);
-  const type = TYPES[starter.type] || PSYCHIC;
+  const hiddenType = starter.secret && !unlocked;
+  const type = hiddenType ? PSYCHIC : TYPES[starter.type];
   const shop = !unlocked && isShopUnlock(starter);
   const sprite = $('sel-sprite');
   sprite.src = spriteUrl(starter, 'front');
@@ -154,7 +155,7 @@ function show(starter) {
   const hp = BASE_HP + (getSave().passives.hpBoost || 0) * 5;
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
   $('sel-type').textContent = [type.icon, type.label].filter(Boolean).join(' ');
-  $('sel-type').className = `chip sel-type type-${starter.type}`;
+  $('sel-type').className = `chip sel-type${hiddenType ? '' : ` type-${starter.type}`}`;
   $('sel-blurb').textContent = unlocked ? starter.blurb
     : starter.secret ? 'Unlock every other starter and win a run on Trainer Level 5 to meet it.'
     : shop ? 'Trade PokéCoins for it at the Game Corner.'

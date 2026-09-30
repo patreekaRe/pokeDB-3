@@ -38,6 +38,7 @@
 const FIRE_DECK  = ['ember', 'ember', 'ember', 'flame-body', 'flame-wall', 'flame-wall', 'flame-wall', 'flame-wall', 'scorch', 'will-o-wisp'];
 const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'vine-whip', 'cotton-guard', 'block', 'block', 'block', 'seed-bomb', 'absorb'];
 const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-pulse', 'withdraw', 'withdraw', 'withdraw', 'withdraw', 'bubble', 'dive'];
+const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
   /* ---------- the three real characters: free, and the only ones with a unique deck ---------- */
@@ -347,19 +348,18 @@ export const STARTERS = [
     deck: WATER_DECK,
   },
 
-  /* ---------- the secret final one ----------
-     Hidden as "???" until you unlock every other starter. Psychic isn't one of
-     the three battle types yet and it has no deck, so `comingSoon` keeps it
-     out of runs (main.js) until its own cards are built. */
+   /* ---------- the secret final one ----------
+      Hidden as "???" until you unlock every other starter. Its dedicated Psychic
+      deck and Pressure Ability make it the game's fourth playable character. */
   {
-    id: 'mewtwo', type: 'psychic', legendary: true, secret: true, comingSoon: true,
+    id: 'mewtwo', type: 'psychic', legendary: true, secret: true,
     line: [
       { id: 'mewtwo',        name: 'Mewtwo' },
       { id: 'mewtwo',        name: 'Awakened Mewtwo' },
       { id: 'mewtwo-shiny',  name: 'Ascendant Mewtwo' },
     ],
-    blurb: 'The final secret. Its own psychic moves are still being trained.',
-    deck: [],
+    blurb: 'A force of pure psychic power. Builds strength, raises barriers, and bends the enemy’s mind.',
+    deck: PSYCHIC_DECK,
   },
 ];
 
