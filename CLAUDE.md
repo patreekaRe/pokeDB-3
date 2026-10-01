@@ -439,6 +439,30 @@ usage fast even for small changes. Going forward:
 - Don't poll a slow external process (like CDN propagation) in tight
   loops — one longer wait beats several short ones.
 
+### Which app to work in
+
+The Desktop app carries ~50k of connector tools on every request; a terminal
+session carries none. That makes a terminal session roughly 5x cheaper per
+turn, but it can't take screenshots. So:
+
+- **Terminal** for balance, logic, enemies, moves, rewards, data, docs, git.
+- **Desktop app** for anything the user has to *see*: UI, layout, animation,
+  boss intros, events, art, sprites.
+- **Don't screenshot unless the user asks for a look, or the change is
+  inherently visual.** Confirm with `curl`, the console or the code first. A
+  screenshot stays in the context and is re-read on every later turn, so one
+  unasked-for image costs for the rest of the session. While iterating on an
+  animation, check one viewport and finish before checking the rest.
+- The user playtests on the live site themselves, at no usage cost. When a
+  visual judgement is needed, say what you need them to look at rather than
+  asking for a screenshot.
+
+Say which one you're in at the start of the first reply, and say so again if a
+session that started as code work turns visual — the user can move it rather
+than lose a round trip asking. If a visual task is asked for in a terminal
+session, do the code work there and tell the user the visual check needs the
+Desktop app.
+
 Every turn re-reads the whole context window, so both *how much* is in it and
 *how many turns* you take cost money. A measured session (2026-10-01) ran 92
 requests and re-read 8.9M tokens to finish one task, with only a quarter of that
