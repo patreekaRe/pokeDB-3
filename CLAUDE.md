@@ -1145,7 +1145,15 @@ at the grass line so they pop up out of it; `.unseen` is a black silhouette unti
 constants at the top (`TILT`, `PAN`, `POPS`, `TITLE_AT`, `END`); the title is DOM (`.bi-title`, letters dropping in,
 over the goal when upright, left of it when wide). Skies are hand-painted per time (`SKIES`), the land graded with
 `GRADES`. Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. Only the Clearing has one (`INTROS`); a
-biome without an entry resolves at once. Reduced motion shows the last frame and the title for 3.5 s.
+biome without an entry resolves at once. Reduced motion shows the last frame and the title for 3.5 s. Under the title only
+the place you start in shows, big (`.bi-place`: the later ones are for the walk to show; the user's call). Pokémon the
+Pokédex has met (seen, defeated or counted, `known()`) pop up as silhouettes and colour in; unmet ones stay black.
+**Place intros** (same day, the user's vision for every biome: travelling towards its goal): walking into the first room
+of a biome's 2nd or 3rd place plays `placeIntro(biome, stage, backSprite)` first (`walkInto()` in `js/run.js`, the
+map's room callback; before the room, so a refresh replays it), ~5 s: your Pokémon from behind walks up a dirt path
+towards the goal while every layer grows about the goal's foot (`DOLLY`, nearer layers faster), and the place's name
+drops in. Each place's look is the biome's `INTROS` entry's `stages[i]` (`tree` / `spread` / `mist`: the goal nearer;
+`forest`, `shade`, `frame`: trunks either side and a leafy fringe, `shafts`: light through the canopy).
 
 The home shop is the **Game Corner** (the user's call: the Gold/Silver prize
 counter, where coins buy Pokémon), so it can't be mistaken for the run's blue

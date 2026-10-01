@@ -22,6 +22,7 @@ export const PATCHES = [
         'Each biome changes as you go, with three places, a landmark per floor, and a boss arena. Day and night follow your clock.',
         'Each boss arena comes alive before the fight: the ancient tree wakes, the Shrine summons its spirits, the Wastes erupt.',
         'Arriving in the Whispering Clearing plays its own intro: drop through the clouds, meet its wild Pokémon, and see the Ancient Tree waiting.',
+        'Each new place in the Clearing (Forest Edge, Deep Woods) gets a short intro as you walk on towards the Ancient Tree. Pokémon you have met show in colour in the intro.',
         'Pick your route on the map: wild fights, Alphas, ? events, Poké Marts, Pokémon Centers and a treasure grotto.',
         'Plan ahead mid-fight: the Bag\'s Map pocket shows the map from any battle or reward.',
         'Battle, map and victory music now loop seamlessly instead of stopping and starting the song over.',

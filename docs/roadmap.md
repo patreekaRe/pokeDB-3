@@ -624,7 +624,17 @@ Anytime, as a break from number work:
   glowing on the horizon as "BIOME 1 / WHISPERING CLEARING" drops in letter by letter with the four places underneath.
   Lit for the time of day. New synths `rustle` and `biome-title`. Checked at 375x812 and 1280x800, day / dusk / night,
   through New game, no console errors. **Next:** the Shrine's and the Wastes' (an `INTROS` entry each, their own
-  painters and a different camera move); **for the user to check:** on the live site with sound.
+  painters, a different camera move, and the same walk on through their places towards the Main Hall / the crater);
+  **for the user to check:** on the live site with sound.
+  The user's follow-up (same day): only the place you're in shows under the title, bigger ("- MEADOW -", `.bi-place`; the
+  list of all four gave the later places away); Pokémon the Pokédex has met (seen, defeated or counted) pop up as
+  silhouettes and colour in a beat later, unmet ones stay black; and every later place gets a **mini intro**
+  (`placeIntro()`, ~5 s, from `walkInto()` in `js/run.js` when you walk into the first room of Forest Edge / Deep Woods,
+  before the room opens, so a refresh replays it): your Pokémon's back sprite walks up a dirt path towards the Ancient
+  Tree while the layers grow about its foot (nearer ones faster), the place's name drops in under the biome's. Per place
+  in `INTROS.clearing.stages`: the Tree nearer each time (taller upright, its crown spreading on wide screens), the tree
+  line taller, the land and sky shaded; Deep Woods adds great trunks either side, a leafy fringe with vines, light shafts,
+  fireflies and falling leaves. This is the pattern for every biome: travelling towards its goal.
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,

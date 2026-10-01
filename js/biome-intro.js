@@ -17,7 +17,9 @@
    at its own speed. Lit for the time of day: hand-painted skies, the land
    graded with GRADES like every other scene.
 
-   Only the Clearing has one so far; INTROS gets an entry per biome.
+   Every later place in a biome gets a short walk on towards the goal
+   (placeIntro(), each `stages[i]` look nearer). Only the Clearing has
+   one so far; INTROS gets an entry per biome.
    ============================================================ */
 
 import { el } from './ui.js';
@@ -56,8 +58,11 @@ const INTROS = {
       water: ['#58a8f0', '#78bcf4', '#c8e8fc', '#3a78b8'],
       flowers: ['#f878a8', '#f8d030', '#ffffff', '#a878f8'],
       fore: ['#6ab84c', '#4e9a3c', '#357a2e', '#1e5020'],
+      path: ['#e0c888', '#c8a868', '#8a7044'],
     },
     glow: { aura: ['#fffce0', '#f8f0a0', '#c8f080'], firefly: ['#f8ffb0', '#c8f060'], petal: ['#f8a8c8', '#fff0f8'] },
+    // each later place's walk on (placeIntro()): the Tree looms bigger, the woods grow taller and darker round the path
+    stages: [null, { tree: 1.2, spread: 1.05, mist: 0.2, forest: 1.7, shade: 0.15 }, { tree: 2.2, spread: 1.7, mist: 0.08, forest: 2.4, shade: 0.5, frame: true, shafts: true }],
   },
 };
 
@@ -154,10 +159,10 @@ function mix(a, b, t) {
 
 /** The goal on the horizon: the Ancient Tree, far off yet towering over everything, a vast spreading crown on a
     buttressed trunk with roots like ridges, softened by the haze of distance. Returns the crown's middle and size. */
-function paintTree(g, cx, base, height, { bark, crown }, haze, rand) {
-  const far = (list) => list.map(c => mix(c, haze, 0.28));
+function paintTree(g, cx, base, height, { bark, crown }, haze, rand, { mist = 0.28, spread = 1 } = {}) {
+  const far = (list) => list.map(c => mix(c, haze, mist));
   const [b0, b1, b2] = far(bark), leaf = far(crown);
-  const cw = height * 0.62, ch = height * 0.3, cy = base - height + ch;
+  const cw = height * 0.62 * spread, ch = height * 0.3, cy = base - height + ch;
   // the trunk, flaring into buttress roots at the foot
   const top = Math.round(cy), trunk = height * 0.07;
   for (let y = top; y <= base; y++) {
@@ -204,10 +209,10 @@ function paintHills(g, w, H, hz, colours, rand) {
 }
 
 /** The tree line: a row of round crowns on trunks, lighter where the light catches them. */
-function paintForest(g, w, H, hz, [lit, body, shade, dark], rand) {
-  g.fillStyle = dark; g.fillRect(0, hz + 1, w, Math.ceil(H * 0.06));
+function paintForest(g, w, H, hz, [lit, body, shade, dark], rand, grow = 1) {
+  g.fillStyle = dark; g.fillRect(0, hz + 1, w, Math.ceil(H * 0.06 * grow));
   for (let x = -6; x < w + 6; x += 3 + Math.floor(rand() * 4)) {
-    const r = 3 + Math.floor(rand() * (H * 0.022)), y = hz - r * 0.4 + rand() * 3;
+    const r = 3 + Math.floor(rand() * (H * 0.022 * grow)), y = hz - r * 0.4 + rand() * 3;
     g.fillStyle = dark; g.fillRect(x, y, 1, r * 2);
     disc(g, x, y + 1, r, shade);
     disc(g, x, y, r - 1, body);
@@ -216,7 +221,7 @@ function paintForest(g, w, H, hz, [lit, body, shade, dark], rand) {
 }
 
 /** The meadow: grass to the bottom, a stream winding down from the woods, flowers, and patches of the games' tall grass. */
-function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patches) {
+function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patches, withStream = true) {
   for (let y = top; y < H; y++) {
     const t = (y - top) / (H - top), i = Math.min(2, Math.floor(t * 3));
     for (let x = 0; x < w; x++) {
@@ -230,7 +235,7 @@ function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patch
   }
   // the stream: in from the trees, wider as it nears; returns where it can glint
   const sx = w * (0.25 + rand() * 0.2), phase = rand() * 6, stream = [];
-  for (let y = top; y < H; y++) {
+  for (let y = top; withStream && y < H; y++) {
     const t = (y - top) / (H - top), cx = sx + Math.sin(t * 5 + phase) * w * 0.05 + t * w * 0.12, half = 1 + t * w * 0.025;
     g.fillStyle = water[3]; g.fillRect(Math.round(cx - half - 1), y, Math.round(half * 2 + 2), 1);
     g.fillStyle = water[0]; g.fillRect(Math.round(cx - half), y, Math.round(half * 2), 1);
@@ -275,10 +280,50 @@ function paintFore(g, w, H, [lit, body, shade, dark], flowers, rand) {
   }
 }
 
+/** A dirt path from your feet to the goal's foot, narrowing into the distance. */
+function paintPath(g, H, top, vx, [lit, body, edge], rand) {
+  for (let y = top; y < H; y++) {
+    const t = (y - top) / (H - top), cx = vx + Math.sin(t * 4) * t * 3, half = 0.5 + t * t * H * 0.16 + t * 2;
+    g.fillStyle = edge; g.fillRect(Math.round(cx - half - 1), y, Math.round(half * 2 + 2), 1);
+    g.fillStyle = body; g.fillRect(Math.round(cx - half), y, Math.round(half * 2), 1);
+    if (rand() < 0.4) { g.fillStyle = lit; g.fillRect(Math.round(cx - half + rand() * half * 2), y, 1, 1); }
+  }
+}
+
+/** The deep woods close in: great dark trunks either side and a fringe of leaves overhead, passed as you walk on. */
+function paintFrame(g, w, H, bark, crown, rand) {
+  const dark = (c, t) => mix(c, '#06100a', t);
+  for (const side of [0, 1]) {
+    const tw = Math.round(w * (0.17 + rand() * 0.05)), x0 = side ? w - tw : 0;
+    for (let y = 0; y < H; y++) {
+      const flare = y > H * 0.8 ? Math.round(((y - H * 0.8) / (H * 0.2)) ** 2 * tw * 0.8) : 0;
+      const x = side ? x0 - flare : x0, wide = tw + flare;
+      g.fillStyle = dark(bark[1], 0.45); g.fillRect(x, y, wide, 1);
+      g.fillStyle = dark(bark[0], 0.35); g.fillRect(side ? x : x + wide - 2, y, 2, 1);
+      if ((y * 5) % 9 < 2) { g.fillStyle = dark(bark[2], 0.55); g.fillRect(x + Math.round(wide * 0.4), y, 1, 2); }
+    }
+  }
+  const puffs = [];
+  for (let x = -4; x < w + 4; x += 3 + Math.floor(rand() * 4)) puffs.push([x, Math.round(rand() * H * 0.06), 5 + Math.floor(rand() * H * 0.05)]);
+  for (const [x, y, r] of puffs) disc(g, x, y + 1, r, dark(crown[3], 0.4));
+  for (const [x, y, r] of puffs) disc(g, x, y, r - 1, dark(crown[2], 0.3));
+  for (let n = 0; n < w / 3; n++) {   // vines hanging into view
+    const x = Math.floor(rand() * w), len = 3 + Math.floor(rand() * H * 0.1);
+    g.fillStyle = dark(crown[3], 0.3); g.fillRect(x, 0, 1, len);
+    g.fillStyle = dark(crown[1], 0.2); g.fillRect(x, len, 1, 1);
+  }
+}
+
 function pickMons(biome, n) {
   const pool = [...biome.normals];
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
   return pool.slice(0, n);
+}
+
+/** Has the Pokédex met this Pokémon (fought it, beaten it, or counted it for research)? */
+function known(save, id) {
+  const dex = save.dex;
+  return dex.seen.includes(id) || dex.defeated.includes(id) || (dex.count?.[id] || 0) > 0;
 }
 
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -287,73 +332,97 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 export function biomeIntro(biome, number) {
   const film = INTROS[biome.id];
   if (!film) return Promise.resolve();
-  return new Promise(resolve => run(film, biome, number, resolve));
+  return new Promise(resolve => run(film, biome, { number, stage: 0 }, resolve));
 }
 
-function run(film, biome, number, resolve) {
+/** Walking into the next place of a biome (stage 1 or 2): a short film of your Pokémon walking on towards the goal,
+    which looms bigger each time, and the place's name. `walker` is your Pokémon's back sprite. */
+export function placeIntro(biome, stage, walker) {
+  const film = INTROS[biome.id];
+  if (!film?.stages?.[stage]) return Promise.resolve();
+  return new Promise(resolve => run(film, biome, { stage, walker }, resolve));
+}
+
+function run(film, biome, { number, stage, walker }, resolve) {
+  const mini = stage > 0, look = film.stages?.[stage] || {};
   const time = timeOfDay(), g = GRADES[time];
-  const land = Object.fromEntries(Object.entries(film.land).map(([k, v]) => [k, g ? v.map(c => gradeHex(c, g.land)) : v]));
+  const dim = (k, c) => look.shade && ['ground', 'fore', 'forest', 'hill', 'tall', 'path'].includes(k) ? mix(c, '#0c2014', look.shade) : c;
+  const land = Object.fromEntries(Object.entries(film.land).map(([k, v]) => [k, v.map(c => { c = dim(k, c); return g ? gradeHex(c, g.land) : c; })]));
   const { sky, cloud } = SKIES[time] || SKIES.day;
   const P = innerWidth <= 720 ? 4 : 5;
   const W = Math.ceil(innerWidth / P), H = Math.ceil(innerHeight / P);
   const tall = H > W, hz = Math.round(H * (tall ? 0.6 : 0.56));
-  const rand = prng(biome.id.length * 7919 + W * 31 + H);
-  const PAN_PX = Math.round(W * 1.5);
+  const rand = prng(biome.id.length * 7919 + W * 31 + H + stage * 101);
+  // the full film drops through the clouds and pans across the land; a place's mini film walks straight on instead
+  const beats = mini
+    ? { TILT: [0, 1], PAN: [0, 1], POPS: [], TITLE_AT: 700, END: 5000 }
+    : { TILT, PAN, POPS, TITLE_AT, END };
+  const PAN_PX = mini ? 0 : Math.round(W * 1.5);
   const SPEED = { far: 0.1, hill: 0.35, forest: 0.6, meadow: 0.85, fore: 1.3 };
+  const DOLLY = { far: 0.03, hill: 0.25, forest: 0.45, meadow: 0.75, fore: 1.2 };   // how much each layer grows as you walk on
   const wide = (k) => W + Math.ceil(PAN_PX * SPEED[k]) + 8;
 
   // ---- paint every layer once ----
   const skyC = layer(W, H);
-  paintSky(skyC.getContext('2d'), W, H, hz, sky, time, rand);
+  paintSky(skyC.getContext('2d'), W, H, hz, look.shade ? sky.map(c => mix(c, '#0c2014', look.shade * 0.6)) : sky, time, rand);   // the woods' shade dims the sky too
   const far = layer(wide('far'), H);
   paintFar(far.getContext('2d'), far.width, H, hz, land.far, rand);
   const hill = layer(wide('hill'), H);
-  // upright, the goal ends in the middle under the title; wide, on the right with the title beside it
-  const treeX = Math.round(W * (tall ? 0.5 : 0.68) + PAN_PX * SPEED.hill), treeH = Math.round(Math.min(H * (tall ? 0.36 : 0.5), W * 0.75));
-  const crown = paintTree(hill.getContext('2d'), treeX, hz - Math.round(H * 0.03), treeH, land, sky[sky.length - 1], rand);
+  // upright, the goal ends in the middle under the title; wide, on the right with the title beside it (a place's film: straight ahead)
+  const treeX = Math.round(W * (tall || mini ? 0.5 : 0.68) + PAN_PX * SPEED.hill);
+  // each place nearer: taller upright; wide, where it already stands tall, its crown spreads instead (always kept on screen)
+  const base = Math.round(Math.min(H * (tall ? 0.36 : 0.5), W * 0.75)), near = look.tree || 1;
+  const treeH = mini ? Math.min(Math.round(base * (tall ? near : 1 + (near - 1) * 0.25)), hz - Math.round(H * 0.02)) : base;
+  const reach = { mist: look.mist, spread: (look.spread || 1) * (tall ? 1 : near ** 0.6) };
+  const crown = paintTree(hill.getContext('2d'), treeX, hz - Math.round(H * 0.03), treeH, land, sky[sky.length - 1], rand, reach);
   paintHills(hill.getContext('2d'), hill.width, H, hz, land.hill, rand);
   const forest = layer(wide('forest'), H);
-  paintForest(forest.getContext('2d'), forest.width, H, hz, land.forest, rand);
+  paintForest(forest.getContext('2d'), forest.width, H, hz, land.forest, rand, look.forest || 1);
 
   // where the Pokémon pop up: in view at their moment, nearer ones lower down
-  const camAt = (ms) => Math.round(ease(span(PAN, ms)) * PAN_PX);
+  const camAt = (ms) => Math.round(ease(span(beats.PAN, ms)) * PAN_PX);
   const meadowTop = hz + Math.round(H * 0.035);
-  const spots = POPS.map((ms, i) => {
+  const spots = beats.POPS.map((ms, i) => {
     const sx = W * [0.3, 0.68, 0.42][i], depth = [0.45, 0.3, 0.7][i];
     const y = Math.round(meadowTop + (H - meadowTop) * depth);
     return { ms, x: Math.round(sx + camAt(ms + 700) * SPEED.meadow), y, size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6 };
   });
   const meadow = layer(wide('meadow'), H);
-  const stream = paintMeadow(meadow.getContext('2d'), meadow.width, H, meadowTop, land, rand, spots);
+  const stream = paintMeadow(meadow.getContext('2d'), meadow.width, H, meadowTop, land, rand, spots, !mini);
+  if (mini) paintPath(meadow.getContext('2d'), H, meadowTop, treeX, land.path, rand);
   const fore = layer(wide('fore'), H);
   paintFore(fore.getContext('2d'), fore.width, H, land.fore, land.flowers, rand);
+  if (look.frame) paintFrame(fore.getContext('2d'), W, H, land.bark, land.crown, rand);
   const tufts = spots.map(s => { const c = layer(s.size * 2 + 4, s.size + 2); tallGrass(c.getContext('2d'), 0, 0, s.size * 2 + 4, Math.ceil(s.size * 0.6), land.tall); return c; });
 
   // the sky's life
   const clouds = [];
   for (let n = 0; n < 7; n++) clouds.push({ img: cloudImage(Math.round(W * (0.25 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.5 + rand() * H * 0.85, lift: 0.5, drift: 0.6 + rand() });
-  for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
+  if (!mini) for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
   const motes = Array.from({ length: 24 }, () => ({ a: rand() * Math.PI * 2, r: rand(), speed: 0.3 + rand() * 0.6, phase: rand() }));
   const petals = Array.from({ length: 22 }, () => ({ x: rand(), y: rand(), speed: 0.6 + rand(), wob: rand() * 6, c: rand() < 0.6 ? 0 : 1 }));
-  const flies = time === 'night' || time === 'dusk' ? Array.from({ length: 14 }, () => ({ x: rand(), y: rand(), phase: rand() * 6 })) : [];
+  const flies = time === 'night' || time === 'dusk' || look.shafts ? Array.from({ length: 14 }, () => ({ x: rand(), y: rand(), phase: rand() * 6 })) : [];
+  const shafts = look.shafts ? Array.from({ length: 3 }, (_, i) => ({ x: W * (0.12 + i * 0.3 + rand() * 0.1), w: 3 + rand() * 5, phase: rand() * 6 })) : [];
+  const leafy = look.shafts ? [land.crown[0], land.crown[1]] : film.glow.petal;
 
   // ---- the page ----
-  const box = el('div', 'biome-intro');
+  const box = el('div', `biome-intro${mini ? ' mini' : ''}`);
   box.setAttribute('role', 'dialog');
-  box.setAttribute('aria-label', `${biome.name}. Tap to skip.`);
+  const place = biome.stages[stage];
+  box.setAttribute('aria-label', `${mini ? place : biome.name}. Tap to skip.`);
   const back = layer(W, H), front = layer(W, H);
   back.className = 'bi-canvas'; front.className = 'bi-canvas';
   for (const c of [back, front]) { c.style.width = `${W * P}px`; c.style.height = `${H * P}px`; }
   const mons = el('div', 'bi-mons');
   const save = getSave();
-  const ids = pickMons(biome, POPS.length);
+  const ids = pickMons(biome, beats.POPS.length);
   preloadCries(...ids);
   preloadSounds('biome-title', 'rustle');
+  // every one pops up as a silhouette; the ones the Pokédex has met colour in a beat later, like "Who's that Pokémon?"
   const figures = ids.map((id, i) => {
-    const wrap = el('div', 'bi-mon'), img = el('img', 'pixel');
+    const wrap = el('div', 'bi-mon'), img = el('img', 'pixel unseen');
     img.alt = '';
     img.src = `assets/pokemon/${id}-front.gif`;
-    if (!save.dex.seen.includes(id)) img.classList.add('unseen');
     const s = spots[i], scale = s.scale * (P / 4) * (tall ? 1.6 : 2);
     img.addEventListener('load', () => {
       const [, bottom] = spriteFit(img.src);
@@ -362,36 +431,58 @@ function run(film, biome, number, resolve) {
     });
     wrap.append(img);
     mons.append(wrap);
-    return { wrap, img, spot: s, id, shown: false };
+    return { wrap, img, spot: s, id, known: known(save, id), shown: false };
   });
+  let hiker = null;
+  if (mini && walker) {
+    hiker = el('div', 'bi-walker');
+    const img = el('img', 'pixel');
+    img.alt = '';
+    img.src = walker;
+    hiker.append(img);
+    mons.append(hiker);
+    hiker.base = (P / 4) * (tall ? 1.7 : 2.1);
+    img.addEventListener('load', () => { hiker.img = img; hiker.feet = spriteFit(img.src)[1]; });
+  }
   const card = el('div', 'bi-title');
-  const kicker = el('div', 'bi-kicker', `Biome ${number}`);
+  const kicker = el('div', 'bi-kicker', mini ? biome.name : `Biome ${number}`);
   const name = el('div', 'bi-name');
   name.style.setProperty('--ink', film.ink[0]);
   name.style.setProperty('--edge', film.ink[1]);
   name.style.setProperty('--deep', film.ink[2]);
   let k = 0;
-  for (const word of film.title) {
+  for (const word of mini ? place.toUpperCase().split(' ') : film.title) {
     const line = el('div', 'bi-word');
     for (const ch of word) { const letter = el('span', 'bi-letter', ch); letter.style.setProperty('--i', String(k++)); line.append(letter); }
     name.append(line);
   }
-  const places = el('div', 'bi-places');   // the places ahead, each kept on one line
-  biome.stages.forEach((stage, i) => places.append(el('span', '', i ? `▸ ${stage}` : stage)));
-  card.append(kicker, name, places);
+  card.append(kicker, name);
+  if (!mini) card.append(el('div', 'bi-place', place));   // only where you are: the places ahead are for the walk to show
   const skip = el('div', 'bi-skip', 'Tap to skip');
   box.append(back, mons, front, el('div', 'bi-bars'), card, skip);
   document.body.append(box);
 
   const bg = back.getContext('2d'), fg = front.getContext('2d');
+  bg.imageSmoothingEnabled = false; fg.imageSmoothingEnabled = false;
   const still = reduced();
-  const start = performance.now() - (still ? END : 0);
+  const start = performance.now() - (still ? beats.END : 0);
   let raf = 0, done = false, titled = false, finishing = false, holdTimer = 0;
+
+  // walking on: each layer grows about the goal's foot, nearer ones faster, so you close in on it
+  const VX = treeX, VY = hz;
+  const grow = (ms) => mini ? 0.32 * ease(Math.min(1, ms / beats.END)) : 0;
+  const scaleOf = (z, key) => 1 + z * DOLLY[key];
+  const at = (x, y, s) => [VX + (x - VX) * s, VY + (y - VY) * s];
+  const put = (ctx, img, x, y, s) => {
+    if (s === 1) return ctx.drawImage(img, x, y);
+    const [dx, dy] = at(x, y, s);
+    ctx.drawImage(img, Math.round(dx), Math.round(dy), Math.round(img.width * s), Math.round(img.height * s));
+  };
 
   function frame(now) {
     const ms = Math.max(0, now - start);   // a frame's time can be from just before the film started
-    const lift = Math.round((1 - easeOut(span(TILT, ms))) * H * 1.05);
-    const cam = camAt(ms);
+    const lift = mini ? 0 : Math.round((1 - easeOut(span(beats.TILT, ms))) * H * 1.05);
+    const cam = camAt(ms), z = grow(ms);
     const tick = ms / 1000;
 
     bg.drawImage(skyC, 0, 0);
@@ -399,7 +490,7 @@ function run(film, biome, number, resolve) {
       const x = Math.round(((c.x - cam * 0.05 + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
       if (c.lift < 1) bg.drawImage(c.img, x, Math.round(c.y + lift * c.lift));
     }
-    if (ms < 3400) {   // a flock crossing as you come down
+    if (!mini && ms < 3400) {   // a flock crossing as you come down
       const fx = -10 + (ms / 3400) * (W + 30), fy = H * 0.42 + lift * 0.3 - ms / 300;
       bg.fillStyle = '#20283a';
       for (let n = 0; n < 5; n++) {
@@ -407,28 +498,37 @@ function run(film, biome, number, resolve) {
         bg.fillRect(bx - 1, by - up, 1, 1); bg.fillRect(bx, by, 1, 1); bg.fillRect(bx + 1, by - up, 1, 1);
       }
     }
-    bg.drawImage(far, -Math.round(cam * SPEED.far), Math.round(lift * 0.7));
+    put(bg, far, -Math.round(cam * SPEED.far), Math.round(lift * 0.7), scaleOf(z, 'far'));
     // the goal's light: a slow-breathing halo behind the crown, motes spiralling up round it
-    const tx = crown.x - cam * SPEED.hill, ty = crown.y + lift * 0.8;
+    const sh = scaleOf(z, 'hill');
+    const [tx, ty] = at(crown.x - cam * SPEED.hill, crown.y + lift * 0.8, sh), cw = crown.w * sh, ch = crown.h * sh;
     const breath = 0.5 + 0.5 * Math.sin(tick * 1.6);
     for (const [k, r] of [[0.1, 1.5], [0.14, 1.2], [0.18, 0.95]]) {
       bg.globalAlpha = k * (0.7 + 0.5 * breath) * (time === 'night' ? 1.6 : 1);
       bg.fillStyle = film.glow.aura[1];
-      bg.beginPath(); bg.ellipse(Math.round(tx), Math.round(ty), crown.w * r, crown.h * r * 1.3, 0, 0, Math.PI * 2); bg.fill();
+      bg.beginPath(); bg.ellipse(Math.round(tx), Math.round(ty), cw * r, ch * r * 1.3, 0, 0, Math.PI * 2); bg.fill();
     }
     bg.globalAlpha = 1;
-    bg.drawImage(hill, -Math.round(cam * SPEED.hill), Math.round(lift * 0.8));
+    put(bg, hill, -Math.round(cam * SPEED.hill), Math.round(lift * 0.8), sh);
     for (const m of motes) {
       const t = (tick * m.speed * 0.25 + m.phase) % 1, a = m.a + tick * m.speed;
-      const x = tx + Math.cos(a) * crown.w * (0.4 + m.r * 0.8), y = ty + crown.h - t * crown.h * 3;
+      const x = tx + Math.cos(a) * cw * (0.4 + m.r * 0.8), y = ty + ch - t * ch * 3;
       bg.fillStyle = film.glow.aura[(m.r * 3) | 0] || film.glow.aura[0];
       if (t < 0.92) bg.fillRect(Math.round(x), Math.round(y), 1, 1);
     }
-    bg.drawImage(forest, -Math.round(cam * SPEED.forest), Math.round(lift * 0.9));
+    for (const s of shafts) {   // light falling through the canopy
+      bg.globalAlpha = 0.1 + 0.05 * Math.sin(tick * 1.3 + s.phase);
+      bg.fillStyle = film.glow.aura[0];
+      bg.beginPath();
+      bg.moveTo(s.x, 0); bg.lineTo(s.x + s.w, 0); bg.lineTo(s.x + s.w + H * 0.35, hz + 6); bg.lineTo(s.x + H * 0.35, hz + 6);
+      bg.fill();
+    }
+    bg.globalAlpha = 1;
+    put(bg, forest, -Math.round(cam * SPEED.forest), Math.round(lift * 0.9), scaleOf(z, 'forest'));
     const meadowX = -Math.round(cam * SPEED.meadow);
-    bg.drawImage(meadow, meadowX, lift);
+    put(bg, meadow, meadowX, lift, scaleOf(z, 'meadow'));
     bg.fillStyle = land.water[2];   // the stream glints
-    for (let n = 0; n < 5; n++) {
+    for (let n = 0; n < 5 && stream.length; n++) {
       const [cx, y, half] = stream[(n * 41 + Math.floor(tick * 5) * 17) % stream.length];
       bg.fillRect(Math.round(cx + meadowX + ((n * 7) % 3 - 1) * half * 0.5), y + lift, 2, 1);
     }
@@ -443,14 +543,23 @@ function run(film, biome, number, resolve) {
       if (!f.shown && ms >= s.ms) {
         f.shown = true;
         f.wrap.classList.add('up');
+        if (f.known) setTimeout(() => f.img.classList.remove('unseen'), 750);
         if (!still) { playSound('rustle'); setTimeout(() => !done && playCry(f.id), 220); }
       }
     }
-    if (ms > 1800) {   // petals on the breeze
+    if (hiker?.img) {   // your Pokémon, from behind, walking up the path ahead of you
+      const p = Math.min(1, ms / beats.END), step = still ? 0 : Math.floor(ms / 230) % 2;
+      const scale = hiker.base * (1 - 0.15 * p);
+      hiker.img.style.width = `${hiker.img.naturalWidth * scale}px`;
+      hiker.img.style.marginBottom = `${-hiker.feet * scale}px`;
+      hiker.style.left = `${(VX + (step ? 0.5 : -0.5)) * P}px`;
+      hiker.style.top = `${Math.round(H * (0.93 - 0.07 * p) - step) * P}px`;
+    }
+    if (mini || ms > 1800) {   // petals on the breeze (leaves in the deep woods)
       for (const p of petals) {
         const x = Math.round(((p.x * W * 1.3 + tick * p.speed * 18 - cam * 0.3) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
         const y = Math.round(((p.y * H + tick * p.speed * 6 + Math.sin(tick * 2 + p.wob) * 4) % H + H) % H);
-        fg.fillStyle = film.glow.petal[p.c];
+        fg.fillStyle = leafy[p.c];
         fg.fillRect(x, y, (Math.floor(tick * 4 + p.wob) % 2) + 1, 1);
       }
     }
@@ -460,7 +569,7 @@ function run(film, biome, number, resolve) {
       fg.fillStyle = film.glow.firefly[0];
       fg.fillRect(Math.round(f.x * W + Math.sin(tick + f.phase) * 4), Math.round(meadowTop - 6 + f.y * (H - meadowTop) * 0.8 + lift), 1, 1);
     }
-    fg.drawImage(fore, -Math.round(cam * SPEED.fore), Math.round(lift * 1.3));
+    put(fg, fore, -Math.round(cam * SPEED.fore), Math.round(lift * 1.3), scaleOf(z, 'fore'));
     for (const c of clouds) {   // the big near clouds you fall through
       if (c.lift < 1) continue;
       const y = Math.round(c.y + lift * c.lift);
@@ -468,12 +577,12 @@ function run(film, biome, number, resolve) {
       fg.drawImage(c.img, Math.round(c.x - cam * 0.2 + tick * c.drift), y);
     }
 
-    if (!titled && ms >= TITLE_AT) {
+    if (!titled && ms >= beats.TITLE_AT) {
       titled = true;
       card.classList.add('on');
       if (!still) setTimeout(() => !done && playSound('biome-title'), 250);
     }
-    if (!still && ms >= END) return finish();
+    if (!still && ms >= beats.END) return finish();
     if (!still) raf = requestAnimationFrame(frame);
   }
 
@@ -495,8 +604,9 @@ function run(film, biome, number, resolve) {
   addEventListener('keydown', onKey, true);
 
   if (still) {
-    for (const f of figures) { f.shown = true; f.wrap.classList.add('up'); }
-    frame(start + END);
+    for (const f of figures) { f.shown = true; f.wrap.classList.add('up'); if (f.known) f.img.classList.remove('unseen'); }
+    if (walker) hiker.querySelector('img').addEventListener('load', () => frame(start + beats.END));
+    frame(start + beats.END);
     holdTimer = setTimeout(finish, 3500);
   } else raf = requestAnimationFrame(frame);
 }
