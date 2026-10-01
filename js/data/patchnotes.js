@@ -20,6 +20,7 @@ export const PATCHES = [
       ['🗺️', 'The journey', [
         'Three biomes, each ten floors and a boss: Whispering Clearing, Overgrown Shrine and Ember Wastes.',
         'Each biome changes as you go, with three places, a landmark per floor, and a boss arena. Day and night follow your clock.',
+        'Each boss arena comes alive before the fight: the ancient tree wakes, the Shrine summons its spirits, the Wastes erupt.',
         'Pick your route on the map: wild fights, Alphas, ? events, Poké Marts, Pokémon Centers and a treasure grotto.',
         'Plan ahead mid-fight: the Bag\'s Map pocket shows the map from any battle or reward.',
         'Battle, map and victory music now loop seamlessly instead of stopping and starting the song over.',

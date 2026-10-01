@@ -238,7 +238,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []));
 
   zone.classList.add('awaiting');
   renderAll();

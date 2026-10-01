@@ -12,14 +12,16 @@ three places:
 
 ## Where we left off (2026-10-01)
 
-- `main` is up to date (last task: `f3bc32a`, the Wastes boss eruption intro). No
+- `main` is up to date (last task: the epic boss intros for Biomes 1 and 2). No
   unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.
 - Roadmap steps 1-7 of "Next sessions" are done (evolution scene, title/select/Collection redesign, cries, cloud save
   code, Level 5 rewards + Hall of Fame + Record Book, day/night cycle, the biome journey with places and landmarks).
 - Biome 1's tree intro was already shipped as `ec686c8`; the Biome 2 Shrine intro landed in `a71dc25` and was checked
   through the actual map walk, wipe, empty-arena sequence, boss cry/reveal and player Poké Ball entrance at the five
   viewport sizes listed in `docs/roadmap.md`. Reduced motion and the browser console were also checked. Biome 3 got its
-  own eruption intro on 2026-10-01 (`f3bc32a`; the user wanted it nothing like Biome 1's). All three boss intros are done.
+  own eruption intro on 2026-10-01 (`f3bc32a`; the user wanted it nothing like Biome 1's). The same day Biomes 1 and 2
+  got an epic pass to match it (the tree's heart bursting into a pillar of light; the Shrine's bell tolls, ghost torii
+  and spirit flood). All three boss intros are done; the user still has to see the new two in a real fight.
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Next is part B: ask the user the remaining open questions it needs before building

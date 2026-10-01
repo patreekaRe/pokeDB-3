@@ -601,6 +601,15 @@ Anytime, as a break from number work:
   your feet, the lake boils and swells into a dome, then bursts into a lava column throwing bombs that splat on the
   foreground, and the column floods sideways into the white flashes (CLAUDE.md, Map screen). New synth sounds `quake` and
   `eruption`. Checked in a real Wastes boss fight at ~580x783; **for the user to check:** the sounds' volume, and PC size.
+- **Biome 1 and 2 boss intros, epic pass** (done 2026-10-01): the user asked for both to be "just as insanely epic" as
+  the eruption. Both now run the Wastes' timing (3.6 s wake + 1.1 s handoff, with screen shake). The Clearing's tree
+  wakes: sap veins, roots tearing towards you, a blooming wave, a leaf cyclone, light motes and a beating heart, then a
+  pillar of light, a shockwave and a leaf-storm flood. The Shrine summons its spirits: three bell tolls, night falling,
+  lanterns turning to blue spirit fire, a cyclone of paper wards, a colossal ghost torii rising to frame the screen, and
+  spirit fire along the roof, then a burst through the roof and the spirit light flooding out of the doors (CLAUDE.md,
+  Map screen). New synths `bloom`, `bell`, `spirit`. Checked frame by frame (contact sheets of the canvas) at 375x812
+  and PC size, no console errors; **for the user to check:** in a real boss fight on the live site, and the new
+  sounds' volume.
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,

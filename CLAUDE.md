@@ -1108,11 +1108,22 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   iris opens, the tiles fall away), so the battle screen never just appears: ~1.6 s, ~2.7 s for
   a boss. The boss silhouette stays grey on the map; its cry waits until battle. After the
   existing wipe opens, `playIntro()` holds the fighters and battle UI away while
-  `bossArenaPrelude()` in `js/scene.js` plays the empty arena. The Clearing's heartwood and
-  leaves wake; the Shrine lights its lanterns down the approach, gathers mist and wisps, and
-  raises a torii-shaped spirit gate over the Main Hall. The Shrine handoff opens the Hall's
-  shoji doors, pours spirit light through, and sends paper wards along the roof before two quick
-  flashes. The Wastes erupts instead (`drawWastesAwakening()` / `drawWastesPortal()`, 3.6 s + 1.1 s; the user wanted it
+  `bossArenaPrelude()` in `js/scene.js` plays the empty arena: 3.6 s of wake, 1.1 s of handoff, each biome's sounds cued
+  on its frames by `preludeSounds()`. All three are set pieces of their own (the user wanted Biomes 1 and 2 as "insanely
+  epic" as the eruption, 2026-10-01). The Clearing's ancient tree wakes (`drawClearingAwakening()`): the ground
+  trembles and the light drains green, sap veins climb the trunk, glowing roots tear up through the grass towards you
+  flinging clods, the meadow blooms in a wave out from the tree, a leaf cyclone winds round the trunk and motes of light
+  spiral into the heartwood, which beats faster with rays wheeling out; at `BLOOM_AT` it bursts into a pillar of light
+  with a shockwave ring, the crown's leaves torn loose, and the handoff floods a leaf storm out from the pillar into the
+  flashes; over the fight short dark roots, a third of the flowers, pulses of sap and a small heart glow stay. Sounds
+  `quake` then `bloom` (`powerSurge()`). The Shrine summons its spirits (`drawShrineAwakening()`): the temple bell tolls
+  at `BELL_TOLLS` (`bell`, `templeBell()`), each toll a ring rolling out from the roof; night falls over everything, the
+  lanterns light in a wave down the approach and turn to blue spirit fire at the second toll, mist rolls in, wisps
+  gather into the small torii of light at the door, paper wards lift out of the gravel into a cyclone round the
+  courtyard, a colossal see-through torii (`ghostTorii()`) rises out of the ground framing the screen (drawn over
+  everything, since a phone's sky is a sliver), and spirit fire runs along the ridge; at `SPIRIT_AT` (`spirit`) a pillar
+  bursts up through the roof and blasts the wards outwards. Its handoff opens the Hall's shoji doors and the spirit light
+  floods the screen (`curtain()`, shared with the Clearing) before two flashes. The Wastes erupts instead (`drawWastesAwakening()` / `drawWastesPortal()`, 3.6 s + 1.1 s; the user wanted it
   nothing like the Clearing's glow, 2026-10-01): the picture shakes (`draw()` offsets `putImageData`), the sky reddens,
   fissures split the far wall and the rim at your feet, the lake boils and swells into a dome, then at `ERUPT_AT` it
   bursts into a lava column throwing bombs that splat on the foreground, and the column floods sideways into two white

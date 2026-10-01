@@ -108,6 +108,9 @@ const SOUNDS = {
   'fw-crackle': { synth: fireworkCrackle },  // ...and a crackler fizzes out
   quake:        { synth: quakeRumble },      // the Wastes' boss arena: the crater rumbles before it erupts (scene.js)
   eruption:     { synth: ac => fireworkPop(ac, 2.2, 38, 0.26) },   // ...and blows
+  bloom:        { synth: ac => powerSurge(ac, [523, 659, 784, 1047, 1319, 1568], 2) },     // the Clearing's: the ancient tree's heart bursts
+  bell:         { synth: templeBell },       // the Shrine's: the temple bell tolls three times...
+  spirit:       { synth: ac => powerSurge(ac, [440, 523, 622, 880, 1047, 1245], 2.4) },   // ...and the spirits surge
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -688,6 +691,45 @@ function quakeRumble(ac) {
     for (let i = 0; i < knock && start + i < length; i++) out[start + i] += (Math.random() * 2 - 1) * 0.6 * (1 - i / knock);
   }
   return normalize(buffer, 0.2);
+}
+
+/** A temple bell struck once: a thud, then bronze partials (not whole multiples of the low one, which is what makes it a
+    bell) that beat slowly against each other and ring out, the high ones dying first. */
+function templeBell(ac) {
+  const rate = ac.sampleRate, seconds = 3, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const partials = [[98, 1, 2.6], [99.4, 0.6, 2.4], [196.5, 0.55, 1.8], [272, 0.45, 1.3], [418, 0.32, 0.9], [538, 0.25, 0.6], [873, 0.14, 0.35]];
+  const thud = chipNoise(Math.round(rate * 0.05), 8);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = 0;
+    for (const [f, a, d] of partials) v += Math.sin(2 * Math.PI * f * t) * a * Math.exp(-t / d);
+    if (i < thud.length) v += thud[i] * 0.5 * (1 - i / thud.length);
+    out[i] = v * Math.min(1, t / 0.003, (length - i) / (rate * 0.05));
+  }
+  return normalize(buffer, 0.22);
+}
+
+/** A surge of power: rushing noise that bursts open bright and closes down, over a thump and a rising chip arpeggio. */
+function powerSurge(ac, notes, seconds) {
+  const rate = ac.sampleRate, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 2);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const cut = 200 + 5000 * Math.exp(-t / (seconds * 0.3));
+    low += (1 - Math.exp(-2 * Math.PI * cut / rate)) * (noise[i] - low);
+    const rush = low * Math.min(1, t / 0.02) * Math.exp(-t / (seconds * 0.4));
+    phase += 45 * (1 + 2 * Math.exp(-t / 0.05)) / rate;
+    const thump = Math.sin(2 * Math.PI * phase) * Math.exp(-t / 0.25);
+    let arp = 0;
+    notes.forEach((f, n) => { const s = t - n * 0.07; if (s >= 0) arp += Math.sign(Math.sin(2 * Math.PI * f * s)) * Math.exp(-s / 0.35) * 0.18; });
+    out[i] = (rush * 1.4 + thump * 0.9 + arp) * Math.min(1, (length - i) / (rate * 0.05));
+  }
+  return normalize(buffer, 0.24);
 }
 
 /** A crackler: a scatter of tiny noise snaps, thinning out over most of a second. */
