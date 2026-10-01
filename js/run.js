@@ -144,6 +144,7 @@ function checkpoint() {
     rerollBiome: run.rerollBiome,
     rerollsUsed: run.rerollsUsed,
     tutorLeft: run.tutorLeft,
+    charm: run.charm,
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
@@ -193,6 +194,7 @@ function restoreRun(saved) {
     ...saved,
     starter,
     mods: modsFor(saved.level),
+    charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
     tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
@@ -245,6 +247,7 @@ export function beginRun(starter, level = 0) {
     rerollBiome: -1,       // the biome whose card rerolls (Pokédex perk Oak's Advice) were used
     rerollsUsed: 0,        // how many, in that biome (Lv 2 gives two)
     tutorLeft: perkLevel('tutorNotes'),   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
+    charm: null,           // the Starting Relic Charm's relic, until it's been presented and taken
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     tally: freshTally(),   // the run's record, kept for the Hall of Fame if it's won
@@ -252,8 +255,7 @@ export function beginRun(starter, level = 0) {
   };
 
   if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
-    const relic = randomStartingRelic();
-    if (relic) { run.relics.push(relic.id); markSeen('relics', relic.id); tell(`Starting relic: ${relic.name}!`); }
+    run.charm = randomStartingRelic()?.id ?? null;   // handed over on the map by relicCharm()
   }
 
   // Pokédex perks, earned by completing a biome's page
@@ -400,8 +402,19 @@ function showMap() {
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
   showScene(biome.id, 'wild', journey(run.map, here));
   playMusic(`map${run.biome + 1}`);
+  if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
   showNotes();
+}
+
+/** The Starting Relic Charm (a Game Corner perk): its relic bursts out in the middle of the screen like a relic reward,
+    a tap says what it does, and Take it flies it into the Bag. Saved as `charm` until taken, so a refresh shows it again. */
+function relicCharm() {
+  const relic = RELICS_BY_ID[run.charm];
+  showRelics('Relic Charm', [relic], () => { run.charm = null; showMap(); }, {
+    sub: ['Your Starting Relic Charm glows...', `It gave you ${/^[AEIOU]/.test(relic.name) ? 'an' : 'a'} ${relic.name}!`, 'Tap it to see what it does.'],
+    skip: false,
+  });
 }
 
 /** Move Tutor Notes (a Game Corner perk, Neow's "upgrade a card"): before the first room, PP Up starting moves.
@@ -809,15 +822,15 @@ function offerRelic(title, next, { boss = false, source = 'normal' } = {}) {
     tiles (the user's call, 2026-09-28: the list of windows looked plain): they burst out in a flash and bob in a row in
     a shaft of light, gold for a boss. Tap one to read it in the text box, then tap it again (or Take it) and it flies
     into the Bag. */
-function showRelics(title, relics, next) {
+function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
   if (!relics.length) return next();
   const thisRun = run, boss = relics[0].boss, size = innerWidth <= 720 ? 72 : 88;
   showChoice({
     title,
-    sub: [boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
+    sub: sub ?? [boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
       'Tap one to see what it does.'],
     options: [],
-    onSkip: next,
+    onSkip: skip ? next : null,
     layout: 'item-found relic-drop',
     coins: run.pendingCoins,
   });

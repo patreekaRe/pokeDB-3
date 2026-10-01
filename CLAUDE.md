@@ -289,7 +289,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `js/run.js` (a won run pays 100 since 2026-09-28, was 50; a wild Pokémon whose type beats your starter's pays an
   elite's coins and ₽, `tough` / `payAs` in `afterFight()`, with a "tough match-up" line in the reward box; the user's calls); fight and win coins grow +10% per Trainer Level played (`COIN_LEVEL_BONUS`, `levelCoins()`; shown
   on the Prepare step's coins chip and the How to play coins slide). Shop catalog is `js/data/shop.js`; `js/shop.js`
-  renders it. **Game Corner perks** (step 8, 8 in all, each shown `Lv n/m`; `perkLevel(id)` in `js/storage.js` reads
+  renders it. The Starting Relic Charm's relic is saved as `run.charm` and handed over on the map by `relicCharm()` in `js/run.js` (`showRelics()` with one relic and no Skip: it floats in the middle, a tap says what it does, Take it flies it into the Bag; the user's call, 2026-10-01). **Game Corner perks** (step 8, 8 in all, each shown `Lv n/m`; `perkLevel(id)` in `js/storage.js` reads
   one, true/false or a number): Max HP Boost, Starting Relic Charm, Well-Fed, Coin Finder, and since step 8 **Bag
   Pocket** (StS's Potion Belt: `itemSlots()` in `js/run.js`, 4 items), **Mart Card** (Membership Card, 3 levels:
   `MART_DISCOUNT` 10/15/20% off every Mart price and the removal, applied at the counter by `martPrice()`, so the
