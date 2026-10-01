@@ -1337,7 +1337,8 @@ The "Main menu" item takes you to the title's gem menu from anywhere.
 **Character select** (`#start-screen.select-screen`, `js/select.js`, New game; Slay the Spire's, the user's call
 2026-09-28): the picked Pokémon stands big on its type's scene (`showMenuScene()`), its resting pose (`SPRITE_FIT`) scaled in
 half steps to fit the stage (`sizeSprite()`), with a see-through dark panel (name in big gold pixel letters, HP, type chip,
-blurb, Ability, a ✨ Shiny pill once that shiny is owned) and a strip of portraits along the bottom under two pill tabs,
+blurb, Ability, a ✨ Shiny pill once that shiny is owned; its wins at any Level, `stats.winsBy`, as "🏆 N wins" beside the
+HP, `#sel-wins`, and as a 🏆N tag on the portrait's bottom left once it has one, `.sel-thumb-wins`; the user's ask, 2026-10-01) and a strip of portraits along the bottom under two pill tabs,
 **Starters** and **Legendaries** (with unlocked/total counts; Mewtwo is the last legendary). A locked portrait is a silhouette
 with a 🔒, and picking it shows the silhouette big with how to get it: the achievement's text, or a 🎰 Game Corner pill
 (`#sel-corner`) that opens the Game Corner on that skin; Choose is greyed out for it (and for Mewtwo while `comingSoon`).

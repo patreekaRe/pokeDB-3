@@ -93,6 +93,7 @@ export const pickedStarter = () => picked;
 const inTab = () => STARTERS.filter(s => (tab === 'legends') === Boolean(LEGENDS(s)));
 const usable = (s) => isStarterUnlocked(s) && !s.comingSoon;
 const level5Wins = (s) => getSave().stats.level5WinsBy[s.id] || 0;
+const winsOf = (s) => getSave().stats.winsBy[s.id] || 0;
 
 function pick(starter, quiet = false) {
   const changed = picked !== starter;
@@ -130,6 +131,8 @@ function renderStrip() {
     btn.append(img);
     if (!unlocked) btn.append(el('span', 'sel-lock', '🔒'));
     if (unlocked && level5Wins(starter)) btn.append(Object.assign(el('span', 'sel-star', '⭐'), { title: 'Won on Trainer Level 5' }));
+    if (unlocked && winsOf(starter)) btn.append(Object.assign(el('span', 'sel-thumb-wins', `🏆${winsOf(starter)}`),
+      { title: `${winsOf(starter)} run${winsOf(starter) > 1 ? 's' : ''} won` }));
     if (unlocked && getSave().shiny.owned.includes(starter.id)) btn.append(el('span', `sel-sparkle${isShiny(starter.id) ? ' on' : ''}`, '✨'));
     btn.addEventListener('click', () => pick(starter));
     return btn;
@@ -156,6 +159,10 @@ function show(starter) {
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
   $('sel-type').textContent = [type.icon, type.label].filter(Boolean).join(' ');
   $('sel-type').className = `chip sel-type${hiddenType ? '' : ` type-${starter.type}`}`;
+  const won = winsOf(starter);
+  $('sel-wins').hidden = !unlocked;
+  $('sel-wins').textContent = `🏆 ${won} ${won === 1 ? 'win' : 'wins'}`;
+  $('sel-wins').classList.toggle('none', !won);
   $('sel-blurb').textContent = unlocked ? starter.blurb
     : starter.secret ? 'Unlock every other starter and win a run on Trainer Level 5 to meet it.'
     : shop ? 'Trade PokéCoins for it at the Game Corner.'

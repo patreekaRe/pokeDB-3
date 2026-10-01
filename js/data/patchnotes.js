@@ -37,6 +37,7 @@ export const PATCHES = [
         'Win a run to unlock the next Trainer Level, up to Level 5. Each one adds a rule that makes runs harder.',
         'Win on Level 5 to enter the Hall of Fame: a gold pedestal, fireworks, its own song, and that starter\'s shiny.',
         'Every win goes in the Record Book with your deck, relics and the run\'s numbers.',
+        'The character select shows how many runs each Pokémon has won, on its portrait and beside its HP.',
       ]],
       ['🏆', 'For completionists', [
         'Unlock all 30 starters: 12 from later generations, and 15 legendaries earned through achievements.',
