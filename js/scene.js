@@ -876,13 +876,18 @@ export async function bossArenaPrelude() {
     }
     return;
   }
+  const wastes = S.raw.backdrop === 'volcano';
   bossPrelude = { phase: 'wake', at: tick };
   draw();
-  await new Promise(resolve => setTimeout(resolve, 3000));
+  if (wastes) {
+    playSound('quake');
+    setTimeout(() => { if (bossPrelude?.phase === 'wake' && S?.raw.backdrop === 'volcano') playSound('eruption'); }, ERUPT_AT * 1000 / FPS);
+  }
+  await new Promise(resolve => setTimeout(resolve, wastes ? 3600 : 3000));
   if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
   bossPrelude = { phase: 'portal', at: tick };
   draw();
-  await new Promise(resolve => setTimeout(resolve, S.raw.backdrop === 'shrine' ? 900 : 650));
+  await new Promise(resolve => setTimeout(resolve, S.raw.backdrop === 'shrine' ? 900 : wastes ? 1100 : 650));
   if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
   bossPrelude = { phase: 'awake', at: tick };
   draw();
@@ -4933,13 +4938,16 @@ function draw() {
   }
 
   if (life.rain && storm.level > 0) drawRain(t);
+  let shake = 0;
   if (bossPrelude?.phase === 'portal') {
     if (S.raw.backdrop === 'shrine') drawShrinePortal(t);
+    else if (S.raw.backdrop === 'volcano') shake = drawWastesPortal(t);
     else drawBossPortal(t);
   }
-  else if (bossPrelude) drawBossAwakening(t);
+  else if (bossPrelude) shake = drawBossAwakening(t) || 0;
 
-  ctx.putImageData(img, 0, 0);
+  // the whole picture jolts a pixel or two; the strip it uncovers keeps last frame's colours, which reads as blur
+  ctx.putImageData(img, shake ? (t % 2 ? shake : -shake) : 0, shake > 1 && t % 3 === 0 ? 1 : 0);
 }
 
 /** The Main Hall's geometry, recomputed from the canvas (the prelude draws over the painted scene). */
@@ -5067,6 +5075,7 @@ function drawShrineAwakening(t) {
 /** Existing life effects gather around the Clearing's heartwood or the Wastes' crater. */
 function drawBossAwakening(t) {
   if (S.raw.backdrop === 'shrine') { drawShrineAwakening(t); return; }
+  if (S.raw.backdrop === 'volcano') return drawWastesAwakening(t);
   const awake = bossPrelude.phase === 'awake', age = Math.max(0, t - bossPrelude.at);
   const progress = awake ? 0.38 : Math.min(1, age / (FPS * 2.1)), light = awake ? 0.25 : progress;
   const source = bossPreludeSource(), { x: cx, y: cy } = source;
@@ -5101,6 +5110,196 @@ function drawBossAwakening(t) {
     put(x, y, colour);
     put(x + (i % 3) - 1, y + (i % 2), source.colours[1]);
   }
+}
+
+/* ----- the Wastes' boss prelude: the crater wakes up and erupts -----
+   Not a glow like the other two: the ground shakes, the far wall splits with lava, the lake boils and swells into a dome,
+   then bursts into a column of lava that throws bombs across the sky; the column floods sideways into the flash. */
+
+const ERUPT_AT = 20;   // frames into the wake (8 fps) when the dome bursts; the `eruption` sound is timed to it
+
+/** The lake's surface and middle, and the top of the far wall in a column (the first pixel that isn't sky). */
+function wastesCrater() {
+  const lake = Math.max(4, Math.round(horizon * 0.14));
+  return { cx: life.volcano?.x ?? Math.round(W * 0.5), surface: horizon - lake, lake };
+}
+function wallTopAt(x) {
+  x = Math.max(0, Math.min(W - 1, x | 0));
+  for (let y = 0; y < horizon; y++) if (!sky[y * W + x]) return y;
+  return horizon;
+}
+
+/** Glowing fissures running down the far wall, `reach` (0-1) of the way to the lake. */
+function wastesFissures(age, reach, dim) {
+  const count = Math.max(4, Math.round(W / 40)), { surface } = wastesCrater();
+  for (let i = 0; i < count; i++) {
+    const x0 = Math.round((i + 0.5 + (noise(i, 1, 0) - 0.5) * 0.6) * W / count), top = wallTopAt(x0);
+    const grow = dim ? 1 : Math.max(0, Math.min(1, (reach * 1.4 - i / count * 0.4)));
+    const end = top + Math.round((surface - top) * grow);
+    const hot = dim ? Math.sin(age / 3 + i) > 0.3 : true;
+    for (let y = top + 1; y <= end; y++) {
+      const x = x0 + Math.round(Math.sin(y * 0.7 + i * 3) * 1.4 + (noise(i, y >> 2, 2) - 0.5) * 3);
+      const tip = y > end - 2 && !dim;
+      put(x, y, tip || hot ? S.lava[0] : S.lava[1]);
+      put(x + 1, y, dim ? S.lava[2] : S.lava[1]);
+      for (const dx of [-2, -1, 2, 3]) if (dither(x + dx, y + age) < (dim ? 3 : 6)) tint(x + dx, y, 1.15, 34);
+    }
+  }
+}
+
+/** The lake boils: bubbles swell, pop into rings and fling a drop. */
+function wastesBoil(age, many) {
+  const { surface, lake } = wastesCrater();
+  for (let j = 0; j < many; j++) {
+    const off = (noise(j, 3, 0) * 4) | 0, cycle = ((age + off) / 4) | 0, step = (age + off) % 4;
+    const x = Math.round(noise(j, cycle, 4) * W), y = surface + 1 + Math.round(noise(j, cycle, 5) * (lake - 2));
+    if (step === 0) put(x, y, S.lava[0]);
+    else if (step === 1) { put(x, y - 1, S.lava[0]); put(x - 1, y, S.lava[0]); put(x + 1, y, S.lava[0]); put(x, y, S.lava[0]); }
+    else if (step === 2) { for (const dx of [-2, 2]) put(x + dx, y, S.lava[1]); for (const dx of [-1, 1]) put(x + dx, y - 1, S.lava[1]); put(x, y - 3, S.lava[0]); }
+  }
+}
+
+/** A column of lava shooting from the lake to the top of the screen, `half` pixels either side of x = cx. */
+function lavaColumn(cx, from, to, half, age) {
+  const white = abgr('#fffce8');
+  for (let y = Math.max(0, to); y <= from; y++) {
+    const wob = Math.round(Math.sin(y * 0.45 + age * 1.7) * Math.min(2, half * 0.2));
+    const w = half + wob + (noise(y, age, 7) < 0.3 ? 1 : 0);
+    for (let dx = -w; dx <= w; dx++) {
+      const x = cx + dx, rel = Math.abs(dx) / Math.max(1, w);
+      if (rel > 0.85 && dither(x, y + age) > 9) continue;
+      const crust = noise(x, (y + age * 5) >> 1, 8) < 0.05;
+      put(x, y, crust ? S.rock[2] : rel < 0.3 ? white : rel < 0.62 ? S.lava[0] : rel < 0.85 ? S.lava[1] : S.lava[2]);
+    }
+    for (const side of [-1, 1]) for (let k = 1; k <= 3; k++) if (dither(cx + side * (w + k), y) < 8 - k * 2) tint(cx + side * (w + k), y, 1.2, 40);
+  }
+}
+
+/** Lava bombs thrown out of the column, arcing high and crashing onto the rim at your feet: the nearer they land, the bigger
+    they are, and each leaves a splat that cools from white to rock. Several sub-steps a frame, so the arcs read at 8 fps. */
+function lavaBombs(cx, surface, e) {
+  const white = abgr('#fffce8');
+  for (let i = 0; i < 22; i++) {
+    const launch = noise(i, 9, 0) * 5, flight = 3 + noise(i, 9, 1) * 3;
+    const lx = cx + (noise(i, 9, 2) - 0.5) * W * 1.2, ly = horizon + 4 + noise(i, 9, 3) ** 0.7 * (H - horizon) * 0.85;
+    const arc = horizon * (0.5 + noise(i, 9, 4) * 0.6) + (ly - horizon) * 0.4, near = (ly - horizon) / (H - horizon);
+    const size = 1 + Math.round(near * 3);
+    const a = e - launch;
+    if (a < 0) continue;
+    if (a < flight) {
+      for (let s = 3; s >= 0; s--) {
+        const u = Math.max(0, (a - s * 0.22) / flight), grow = 1 + Math.round((size - 1) * u);
+        const x = cx + (lx - cx) * u, y = surface + (ly - surface) * u - arc * 4 * u * (1 - u);
+        if (s) { if (dither(x, y + s) < 13 - s * 3) for (let k = 0; k < grow; k++) put(x + k, y, S.ember[s > 1 ? 2 : 1]); continue; }
+        for (let dy = 0; dy <= grow; dy++) for (let dx = 0; dx <= grow; dx++) {
+          put(x + dx, y + dy, dx + dy === 0 ? white : dx === grow || dy === grow ? S.lava[2] : S.lava[dx + dy < grow ? 0 : 1]);
+        }
+      }
+      continue;
+    }
+    // the splat: a flattened blob that spits a few drops, then cools
+    const cool = a - flight, r = size + 1;
+    if (cool > 7) continue;
+    const c = cool < 1 ? white : cool < 3 ? S.lava[0] : cool < 5 ? S.lava[1] : cool < 6.5 ? S.lava[2] : S.rock[2];
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r * 2; dx <= r * 2; dx++) {
+      const d = (dx / (r * 2)) ** 2 + (dy / r) ** 2;
+      if (d <= 1 && (d < 0.5 || dither(lx + dx, ly + dy) < 9)) put(lx + dx, ly + dy, d < 0.3 || cool > 4 ? c : S.lava[Math.min(3, (cool | 0) + 1)]);
+    }
+    if (cool < 3) for (let k = 0; k < 4; k++) put(lx + (k - 1.5) * (2 + cool * 2), ly - (2 - Math.abs(k - 1.5)) * cool, S.ember[0]);
+  }
+}
+
+/** The rim at your feet splits: glowing cracks run from the lake's edge down towards you, branching as they go. */
+function groundFissures(age, reach, dim) {
+  const count = Math.max(3, Math.round(W / 70)), top = horizon + 3;
+  for (let i = 0; i < count; i++) {
+    let x = (i + 0.5 + (noise(i, 21, 0) - 0.5) * 0.5) * W / count;
+    const lean = (x - W / 2) / W * 1.2, end = top + (H - top) * Math.max(0, Math.min(1, reach * 1.3 - noise(i, 21, 1) * 0.3));
+    for (let y = top; y < end; y++) {
+      const near = (y - top) / (H - top), w = dim ? 0 : Math.round(near * 2.2);   // cooled, they stay as hairlines under the fight
+      x += lean + (noise(i, y >> 1, 22) - 0.5) * 1.6;
+      for (let dx = -w; dx <= w; dx++) put(x + dx, y, dim ? (Math.abs(dx) < w || !w ? S.lava[2] : S.lava[3]) : Math.abs(dx) < Math.max(1, w) ? S.lava[0] : S.lava[1]);
+      if (!dim) for (const dx of [-w - 2, -w - 1, w + 1, w + 2]) if (dither(x + dx, y + age) < 7) tint(x + dx, y, 1.2, 40);
+      // a branch splits off now and then
+      if (noise(i, y, 23) < 0.04) {
+        const side = noise(i, y, 24) < 0.5 ? -1 : 1, len = 3 + Math.round(noise(i, y, 25) * 8 * (1 + near));
+        for (let k = 1; k <= len; k++) put(x + side * k, y + Math.round(k * 0.6), dim ? S.lava[3] : S.lava[1]);
+      }
+    }
+  }
+}
+
+/** Returns how many pixels the picture shakes this frame. */
+function drawWastesAwakening(t) {
+  const awake = bossPrelude.phase === 'awake', age = Math.max(0, t - bossPrelude.at);
+  const { cx, surface, lake } = wastesCrater();
+
+  // the sky reddens as the crater wakes (and stays a little red over the fight)
+  const red = awake ? 0.18 : Math.min(0.42, age / ERUPT_AT * 0.42), blood = abgr('#701410');
+  for (let y = 0; y < surface; y++) for (let x = 0; x < W; x++) if (sky[y * W + x]) blend(x, y, blood, red * (1 - y / surface * 0.4));
+
+  if (awake) { wastesFissures(age, 1, true); groundFissures(age, 1, true); wastesBoil(age, 5); return 0; }
+
+  wastesFissures(age, Math.min(1, age / 14), false);
+  groundFissures(age, Math.max(0, (age - 5) / 17), false);
+  wastesBoil(age, 4 + Math.round(Math.min(1, age / ERUPT_AT) * 16));
+
+  // rocks shaken loose from the rim tumble down the wall
+  for (let i = 0; i < 12; i++) {
+    const start = noise(i, 11, 0) * 16, x = Math.round(noise(i, 11, 1) * W), a = age - start;
+    if (a < 0) continue;
+    const y = wallTopAt(x) + a * a * 0.5;
+    if (y < surface) { put(x, y, S.rock[2]); put(x + 1, y, S.rock[1]); }
+  }
+
+  if (age < ERUPT_AT) {
+    // the lake's middle swells into a glowing dome
+    const s = Math.max(0, (age - 8) / (ERUPT_AT - 8));
+    if (s > 0) {
+      const hw = 3 + s * W * 0.09, hh = Math.max(1, Math.round(s * lake * 1.3 + s * s * 4));
+      for (let dy = -hh - 3; dy <= 0; dy++) for (let dx = -Math.ceil(hw) - 3; dx <= hw + 3; dx++) {
+        const d = (dx / hw) ** 2 + (dy / hh) ** 2, x = cx + dx, y = surface + dy;
+        if (d < 1) put(x, y, noise(x, (y + age * 3) >> 1, 6) < 0.07 ? S.rock[2] : d < 0.25 ? S.lava[0] : d < 0.6 ? S.lava[1] : S.lava[2]);
+        else if (d < 1.6 && dither(x, y + age) < 5) tint(x, y, 1.2, 36);
+      }
+    }
+    return age > 2 ? (age > 12 ? 2 : 1) : 0;
+  }
+
+  // the dome bursts: a white flash, then the column and its bombs
+  const e = age - ERUPT_AT;
+  if (e === 0) { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70); }
+  const reach = Math.min(1, (e + 1) / 2.5), top = surface - Math.round((surface + 4) * reach);
+  lavaColumn(cx, surface, top, Math.round(3 + Math.min(e, 5) * W * 0.02), age);
+  lavaBombs(cx, surface, e);
+  // a splash ring races out across the lake from the column's foot
+  const ring = e * W * 0.12;
+  if (e < 5) for (let x = 0; x < W; x++) {
+    const d = Math.abs(x - cx);
+    if (d > ring - 3 && d < ring) { put(x, surface, S.lava[0]); put(x, surface - 1, S.lava[1]); if (dither(x, e) < 6) put(x, surface - 2, S.ember[0]); }
+  }
+  return 2;
+}
+
+/** The column floods sideways into a curtain of lava that fills the screen, then the white flashes. */
+function drawWastesPortal(t) {
+  const age = Math.max(0, t - bossPrelude.at), frame = age | 0;
+  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  const { cx, surface } = wastesCrater();
+  groundFissures(age, 1, false);
+  for (let y = surface; y <= horizon; y++) for (let x = 0; x < W; x++) if (dither(x, y + age) < 10) put(x, y, S.lava[1]);
+  const half = Math.round(W * 0.04 + W * 0.62 * Math.min(1, (age / 5) ** 2));
+  const white = abgr('#fffce8');
+  for (let y = 0; y < H; y++) {
+    const edge = half + Math.round(Math.sin(y * 0.9 + age * 2) * 2 + noise(y, age, 12) * 3);
+    for (let dx = -edge - 3; dx <= edge + 3; dx++) {
+      const x = cx + dx, rel = Math.abs(dx) / Math.max(1, edge);
+      if (rel > 1) { if (dither(x, y + age) < 6) put(x, y, S.lava[2]); continue; }
+      put(x, y, rel > 0.5 && noise(x, (y + age * 6) >> 1, 13) < 0.05 ? S.rock[2] : rel < 0.45 ? white : rel < 0.75 ? S.lava[0] : S.lava[1]);
+    }
+  }
+  lavaBombs(cx, surface, age + 9);
+  return frame < 6 ? 2 : 0;
 }
 
 /** The focal point expands into a stepped ring, then flashes twice to hand off to the normal boss reveal. */

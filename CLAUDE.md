@@ -1112,7 +1112,11 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   leaves wake; the Shrine lights its lanterns down the approach, gathers mist and wisps, and
   raises a torii-shaped spirit gate over the Main Hall. The Shrine handoff opens the Hall's
   shoji doors, pours spirit light through, and sends paper wards along the roof before two quick
-  flashes. The Wastes currently uses the shared crater/ember glow and portal fallback. Then the
+  flashes. The Wastes erupts instead (`drawWastesAwakening()` / `drawWastesPortal()`, 3.6 s + 1.1 s; the user wanted it
+  nothing like the Clearing's glow, 2026-10-01): the picture shakes (`draw()` offsets `putImageData`), the sky reddens,
+  fissures split the far wall and the rim at your feet, the lake boils and swells into a dome, then at `ERUPT_AT` it
+  bursts into a lava column throwing bombs that splat on the foreground, and the column floods sideways into two white
+  flashes; the cracks stay as hairlines through the fight. Sounds: synths `quake` and `eruption` in `js/audio.js`. Then the
   regular boss reveal/cry and player Poké Ball entrance run. Nothing checkpoints until `showMap()`,
   so a refresh mid-way resumes before the room. Reduced motion keeps a brief static arena pause
   and the regular Pokémon cries, but skips the scenery animation and portal handoff.

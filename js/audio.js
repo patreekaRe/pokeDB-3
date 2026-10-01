@@ -106,6 +106,8 @@ const SOUNDS = {
   'fw-pop':     { synth: ac => fireworkPop(ac, 0.45, 90, 0.16) },   // ...and bursts
   'fw-boom':    { synth: ac => fireworkPop(ac, 1.1, 55, 0.22) },    // ...the finale's biggest one
   'fw-crackle': { synth: fireworkCrackle },  // ...and a crackler fizzes out
+  quake:        { synth: quakeRumble },      // the Wastes' boss arena: the crater rumbles before it erupts (scene.js)
+  eruption:     { synth: ac => fireworkPop(ac, 2.2, 38, 0.26) },   // ...and blows
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -666,6 +668,26 @@ function fireworkPop(ac, seconds, thump, peak) {
     out[i] = (body * 0.9 + blast) * fade;
   }
   return normalize(buffer, peak);
+}
+
+/** The ground rumbling: low chip noise and a wobbling sub-bass that swell over a few seconds, with a few rock knocks. */
+function quakeRumble(ac) {
+  const rate = ac.sampleRate, seconds = 2.8, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const low = chipNoise(length, 90), grit = chipNoise(length, 24);
+  let phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, swell = (t / seconds) ** 1.3;
+    phase += (34 + 6 * Math.sin(t * 9)) / rate;
+    const fade = Math.min(1, t / 0.15, (length - i) / (rate * 0.05));
+    out[i] = (Math.sin(2 * Math.PI * phase) * 0.8 + low[i] * 0.7 + grit[i] * 0.25 * swell) * (0.25 + 0.75 * swell) * (0.75 + 0.25 * Math.sin(t * 23)) * fade;
+  }
+  for (const at of [0.5, 1.15, 1.7, 2.2]) {
+    const start = Math.round(rate * at), knock = Math.round(rate * 0.09);
+    for (let i = 0; i < knock && start + i < length; i++) out[start + i] += (Math.random() * 2 - 1) * 0.6 * (1 - i / knock);
+  }
+  return normalize(buffer, 0.2);
 }
 
 /** A crackler: a scatter of tiny noise snaps, thinning out over most of a second. */
