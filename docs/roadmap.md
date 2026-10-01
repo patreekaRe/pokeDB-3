@@ -596,6 +596,11 @@ Anytime, as a break from number work:
   Poké Ball entrance. Reduced motion keeps the pause and regular cries/entrance but skips the scenery animation. The full
   map-to-battle flow was checked at 375×812, 390×844, 768×1024, 1024×700 and 1280×800; no horizontal overflow, boss in
   bounds, five-card hand present, and no console errors. The browser's local preview was also checked end to end.
+- **Biome 3 boss intro** (done 2026-10-01, `f3bc32a`): the user found the shared fallback the same as Biome 1's and wanted
+  something "way cooler". The crater erupts: the screen shakes, the sky reddens, fissures split the far wall and the rim at
+  your feet, the lake boils and swells into a dome, then bursts into a lava column throwing bombs that splat on the
+  foreground, and the column floods sideways into the white flashes (CLAUDE.md, Map screen). New synth sounds `quake` and
+  `eruption`. Checked in a real Wastes boss fight at ~580x783; **for the user to check:** the sounds' volume, and PC size.
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,

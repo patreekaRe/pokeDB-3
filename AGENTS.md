@@ -10,16 +10,17 @@ three places:
    v1.0 task, and update it as steps land.
 3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.
 
-## Where we left off (2026-09-30)
+## Where we left off (2026-10-01)
 
-- `main` is up to date (last commit: `a71dc25`, Shrine boss intro through the Main Hall). No
+- `main` is up to date (last task: `f3bc32a`, the Wastes boss eruption intro). No
   unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.
 - Roadmap steps 1-7 of "Next sessions" are done (evolution scene, title/select/Collection redesign, cries, cloud save
   code, Level 5 rewards + Hall of Fame + Record Book, day/night cycle, the biome journey with places and landmarks).
 - Biome 1's tree intro was already shipped as `ec686c8`; the Biome 2 Shrine intro landed in `a71dc25` and was checked
   through the actual map walk, wipe, empty-arena sequence, boss cry/reveal and player Poké Ball entrance at the five
-  viewport sizes listed in `docs/roadmap.md`. Reduced motion and the browser console were also checked. Biome 3 currently
-  has the shared fallback intro; its distinct Wastes animation was not part of the narrowed Biome 2 session.
+  viewport sizes listed in `docs/roadmap.md`. Reduced motion and the browser console were also checked. Biome 3 got its
+  own eruption intro on 2026-10-01 (`f3bc32a`; the user wanted it nothing like Biome 1's). All three boss intros are done.
+- **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Next is part B: ask the user the remaining open questions it needs before building
   the fourth biome. The session prompt and settled decisions are in the roadmap.
