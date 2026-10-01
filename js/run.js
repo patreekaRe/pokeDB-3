@@ -1814,8 +1814,8 @@ function tutorCards(back, pay, done = showMap) {
   const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
   const cards = rares.length ? rares.sort(() => Math.random() - 0.5).slice(0, 3) : cardChoices(run, 'boss');
   showChoice({
-    title: 'Move Tutor',
-    sub: 'Which move should your Pokémon learn?',
+    title: 'Chad Master Kenmatta',
+    sub: 'Kenmatta: Which move should your Pokémon learn?',
     options: cards.map(card => cardOption(card, run.stage, () => {
       pay();
       run.deck.push(card.id);
