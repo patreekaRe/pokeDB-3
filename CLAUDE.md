@@ -420,7 +420,7 @@ for its `<id>+` in place): each a `showChoice` picker of the deck
 grouped with `groupDeck` (×N badges), "Back" returns to the Center. The Center
 has no tiles (the user's call, for immersion): its three options (`layout:
 'center-room'`) are see-through buttons laid over the scene's healing machine,
-PC and Chansey (PP Up, a purple sign; her rect is worked out from `spots.nurse`; each sign has a caption line, `captionedSign()`)
+PC and Chansey (PP Up, a purple sign; her rect is worked out from `spots.nurse`; each sign is one or two words, "Heal +N", "Upgrade card", "Forget card", with no caption line, `shortSign()`: the user found the captions covered the scene, 2026-10-01; the text box says the rest)
 (`placeCenterSpots()`, from `centerSpots()` in `js/scene.js`, rerun on the
 scene's `scenepaint` event), each under a bouncing `.center-label` sign, and the
 scene isn't dimmed. Its text box sits just under the counter (`--counter-foot`) with

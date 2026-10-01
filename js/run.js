@@ -1143,11 +1143,11 @@ function restSite() {
   showChoice({
     title: 'Pokémon Center',
     sub: ['A safe place to catch your breath.', herb ? 'Use the healing machine to rest, the PC to forget a move (your Mental Herb), or ask Chansey for a PP Up.'
-      : 'Use the healing machine to rest, or ask Chansey for a PP Up.'],
+      : 'Use the healing machine to rest, or ask Chansey for a PP Up. The PC can forget a move once you hold a Mental Herb.'],
     options: [
       {
-        node: captionedSign(banned ? 'No rest' : heal ? `Rest +${heal} HP` : 'Rest',
-          banned ? 'Your Choice Band won\'t let you rest.' : heal ? `Heal ${heal} HP.` : 'You\'re already at full HP.'),
+        node: shortSign(banned ? 'No rest' : heal ? `Heal +${heal}` : 'Full HP',
+          banned ? 'Your Choice Band won\'t let you rest.' : heal ? `Rest: heal ${heal} HP.` : 'You\'re already at full HP.'),
         disabled: banned,
         onPick: async () => {
           const thisRun = run;
@@ -1175,14 +1175,14 @@ function restSite() {
         },
       },
       {
-        node: captionedSign('Forget',
+        node: shortSign(herb ? 'Forget card' : '🔒 Forget',
           !herb ? 'Needs a Mental Herb.'
             : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : 'Remove a card from your deck.'),
         disabled: !herb || atMin,
         onPick: () => forgetMove(restSite),
       },
       {
-        node: captionedSign('PP Up', upgradable ? 'Upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
+        node: shortSign(upgradable ? 'Upgrade card' : 'All upgraded', upgradable ? 'PP Up: upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
         disabled: !upgradable,
         onPick: () => upgradeMove(restSite),
       },
@@ -1244,6 +1244,14 @@ function centerVitals(hp, heal) {
 function captionedSign(text, caption) {
   const sign = el('span', 'center-label', text);
   sign.append(el('span', 'spot-caption', caption));
+  return sign;
+}
+
+/** The Center's signs are one or two words (the user found captions covered the scene); the room's text box says the
+ *  rest, and the hint is on hover. */
+function shortSign(text, hint) {
+  const sign = el('span', 'center-label', text);
+  sign.title = hint;
   return sign;
 }
 
