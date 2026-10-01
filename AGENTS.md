@@ -23,6 +23,9 @@ three places:
   got an epic pass to match it (the tree's heart bursting into a colossal blossom; the Shrine's bell tolls, ghost torii,
   a spirit seal and fox-fires). Their climaxes were vertical beams like the eruption's lava column at first; the user
   wanted each biome to end differently, so only the Wastes goes straight up now. All three boss intros are done; the user still has to see the new two in a real fight.
+- 2026-10-01: Chad Master Kenmatta is a special boss fight (Challenge sign in the Move Tutor's dojo) whose win gives the
+  unique Exp. Share relic (+1 PP, +1 draw, +1 strength). Checked headless through the room, fight, rewards and the next
+  fight; the user still has to playtest it and judge his difficulty (HP 130/220/370, never bot-tested).
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Next is part B: ask the user the remaining open questions it needs before building

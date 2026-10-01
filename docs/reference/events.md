@@ -86,7 +86,14 @@ the Fan Club's Chairman (on the stage). They're still sprites from Pokéngine (k
 a whole sprite pixel at a time: the upper body breathes (a 2.8 s loop, random phase), the head bobs while the text box
 types (`sayLines()` puts `.typing` on it), and the eyes-closed head blinks in for 120 ms every 2-6 s (`blinkNow()`).
 Reactions go through `figureDoes(stand, move)`: `npc-nod`, `npc-no` (head shake), `npc-jump`, `npc-turn` (faces the other
-way until the room closes). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
+way until the room closes). **Challenge Kenmatta** (2026-10-01, the user's call): the dojo has a third sign, on Ken himself (the lesson's ₽ sign is on
+the chalkboard now, the HP one on the sandbag: `tutorScene()`'s `eventSpots` in that order). It runs
+`fight({ ...node, type: 'ken' })`: `KEN` in `js/data/enemies.js` (not in `ENEMY_DEFS`, so never in the Pokédex; Alder's
+sprite, HP per biome `[130, 220, 370]`, the biome's `bossBonus`, built by `buildKenEncounter()`) fought as a boss (shatter
+wipe, boss music and arena, Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
+A win pays a boss's coins and ₽ ("You defeated Chad Master Kenmatta!", `pendingCoins.beaten`), then his **Exp. Share**
+(no Skip, in the gold boss shaft) and a boss card reward. Once you hold it, the sign is greyed out ("You already won his
+Exp. Share."). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
 when you back out of his picker; the Day-Care Lady turns on a trade; the Chairman jumps handing over his gift. A done
 picker comes back to the room (`eventRoom(node, after)`, from the choice's `react(move)`): no choices, the NPC does `after`
 (the Tutor nods, the Deleter and the Day-Care Lady jump) while the text box says what happened, and closing the box or

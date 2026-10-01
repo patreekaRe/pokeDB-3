@@ -161,7 +161,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     surgeTurns: 0,     // turns Primal Reversion has already paid out: it pays 1 more each turn
     blockNext: 0,      // block waiting for your next turn (Shelter)
     blur: 0,           // turns your block survives the start of your turn (Aqua Veil)
-    strength: run.relics.includes('black-belt') ? 1 : 0,   // extra damage on every hit, for the rest of this fight
+    strength: (run.relics.includes('black-belt') ? 1 : 0) + (run.relics.includes('exp-share') ? 1 : 0),   // extra damage on every hit, for the rest of this fight
     firstAttack: run.relics.includes('dragon-fang'),   // Dragon Fang's bonus is still waiting for your first attack
     flex: 0,           // the part of `strength` that goes away at the end of this turn (Rototiller, StS's Flex)
     healedThisTurn: false,   // healed on this turn of yours (Grassy Glide)
@@ -211,7 +211,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   setupBattleScreen();
 
   log(encounter.kind === 'boss'
-    ? BOSS_PRELUDE_LINES[run.biome] ?? 'A powerful presence stirs...'
+    ? def.prelude ?? BOSS_PRELUDE_LINES[run.biome] ?? 'A powerful presence stirs...'
     : `A wild ${def.name} appeared!`);
   if (deferIntro) {
     document.body.classList.add('boss-prelude');
@@ -251,7 +251,7 @@ async function playIntro() {
       enemyZone.classList.remove('boss-waiting');
     }
     if (!still()) return;
-    log(`${b.def.name} blocks the way!`);
+    log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
   // each Pokémon only cries once it's actually there to see
   if (motion) {
@@ -331,7 +331,7 @@ function beginPlayerTurn() {
   if (b.block) statFx('player');
   const bossEnergy = ENERGY_RELICS.filter(hasRelic).length;
   const leftover = hasRelic('casteliacone') ? b.energy : 0;   // Casteliacone (StS's Ice Cream): unspent PP carries over
-  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + bossEnergy + leftover
+  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover
     + (b.turn === 1 && hasRelic('lemonade') ? 1 : 0);
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
@@ -360,7 +360,7 @@ function beginPlayerTurn() {
     pop('enemy-zone', `-${dealt} 🔥`, 'dmg', 150);
     playSound('burn');
   }
-  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
+  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0));
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry

@@ -81,6 +81,7 @@ function renderThings() {
     if (set.length) body.push(...thingGroup(label, set, seen));
   }
   if (relics) body.push(...thingGroup('Boss', all.filter(t => t.boss), seen, 'Only offered after beating a boss.'));
+  if (relics) body.push(...thingGroup('Special', all.filter(t => t.unique), seen, 'Won by beating Chad Master Kenmatta in his dojo.'));
   $('index-cards').replaceChildren(...body);
   $('index-cards').classList.add('index-things');
   $('index-total').textContent = `${all.filter(t => seen.has(t.id)).length}/${all.length} found`;

@@ -14,7 +14,7 @@
      deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, buildEncounter, dealEnemies, ENEMY_DEFS } from './data/enemies.js';
+import { BIOMES, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
@@ -66,7 +66,7 @@ const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perkLevel('ma
 
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
-  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
+  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && !r.unique && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -670,10 +670,11 @@ async function fight(node) {
   if (node.type === 'boss' && run.biome === BIOMES.length - 1) {
     preloadWinScene(run.starter, run.starter.id !== 'mewtwo' && run.level === MAX_LEVEL);
   }
-  const enter = await battleWipe(node.type);
-  const encounter = buildEncounter(run.biome, node.type, run.mods, node.enemyId);
-  dexSeen(node.enemyId);
-  const deferIntro = node.type === 'boss';
+  const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
+  const enter = await battleWipe(ken ? 'boss' : node.type);
+  const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
+  if (!ken) dexSeen(node.enemyId);
+  const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
     await enter();
@@ -704,14 +705,15 @@ function afterFight(node, result) {
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
   const tough = node.type === 'fight' && TYPES[ENEMY_DEFS[node.enemyId]?.type]?.beats === run.starter.type;
-  const payAs = tough ? 'elite' : node.type;
+  const payAs = tough ? 'elite' : node.type === 'ken' ? 'boss' : node.type;
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
   const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
-  const foe = ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
+  const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs])), money: prize, dex: dexNews,
+    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : null,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
@@ -734,6 +736,10 @@ function afterFight(node, result) {
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
+  }
+  if (node.type === 'ken') {
+    steps.push(next => showRelics('Kenmatta\'s relic', [RELICS_BY_ID['exp-share']], next, { skip: false,
+      sub: ['"You hit like a true chad. Take this, and share what you learned."', 'Tap it to see what it does.'] }), next => offerCard('boss', next));
   }
 
   if (node.type === 'boss') {
@@ -830,7 +836,7 @@ function offerRelic(title, next, { boss = false, source = 'normal' } = {}) {
     into the Bag. */
 function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
   if (!relics.length) return next();
-  const thisRun = run, boss = relics[0].boss, size = innerWidth <= 720 ? 72 : 88;
+  const thisRun = run, boss = relics[0].boss || relics[0].unique, size = innerWidth <= 720 ? 72 : 88;
   showChoice({
     title,
     sub: sub ?? [boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
@@ -1624,9 +1630,14 @@ const EVENT_CHOICES = {
       figureDoes('npc', act === 'train' ? 'npc-turn' : 'npc-nod');
       if (await playOut(act)) tutorCards(back, pay, react('npc-nod'));
     };
-    return { figures: { npc: { npc: 'alder' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`], options: [
+    // or challenge the master himself (once a run: his Exp. Share is the prize)
+    const node = run.map.byId[run.current], beaten = run.relics.includes('exp-share');
+    const challenge = () => { figureDoes('npc', 'npc-jump'); fight({ ...node, type: 'ken' }); };
+    return { figures: { npc: { npc: 'alder' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`,
+      !beaten && 'Or challenge the master himself, if you dare.'], options: [
       spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
+      spotOption('Challenge!', beaten ? 'You already won his Exp. Share.' : 'A boss fight against Kenmatta. Win his Exp. Share.', challenge, beaten),
     ] };
   },
 

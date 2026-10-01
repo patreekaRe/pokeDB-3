@@ -546,6 +546,33 @@ export const ENEMY_DEFS = {
   },
 };
 
+/* Chad Master Kenmatta, the Move Tutor, fought in person from his dojo (the Move Tutor event's Challenge). Not in
+   ENEMY_DEFS, so he never joins the Pokédex. A boss fight in any biome: `hp` is per biome, and the biome's bossBonus
+   adds to his attacks like any boss. Winning gives his Exp. Share (a `unique` relic in relics.js). */
+export const KEN = {
+  id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370], boss: true,
+  image: 'assets/trainers/alder.png', art: false,
+  description: 'The Move Tutor. He teaches by hitting you.',
+  prelude: 'Kenmatta closes his eyes and breathes...',
+  intro: 'Chad Master Kenmatta wants to battle!',
+  moves: [
+    { kind: 'attack', name: 'Karate Chop',  amount: 9 },
+    { kind: 'buff',   name: 'Bulk Up',      amount: 2 },
+    { kind: 'attack', name: 'Cross Chop',   amount: 12 },
+    { kind: 'defend', name: 'Detect',       amount: 14 },
+    { kind: 'attack', name: 'Close Combat', amount: 18 },
+  ],
+};
+
+export function buildKenEncounter(biomeIndex, mods) {
+  const biome = BIOMES[biomeIndex];
+  return {
+    def: KEN, kind: 'boss',
+    maxHp: Math.round(KEN.hp[biomeIndex] * mods.bossHp),
+    strength: biome.bossBonus + mods.bossDmg + mods.enemyDmg,
+  };
+}
+
 /** Elite version of an enemy: bigger, meaner, with an extra move. */
 export const ELITE = { hpMult: 1.6, rampage: 14 };
 

@@ -84,7 +84,7 @@ const TIERS = ['common', 'uncommon', 'rare'];
  * A boss offers its own boss relics, or the normal pool once you hold them all.
  */
 export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
-  const fits = RELICS.filter(r => !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
+  const fits = RELICS.filter(r => !r.unique && !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
   const bossPool = boss ? fits.filter(r => r.boss) : [];
   if (bossPool.length) return bossPool.sort(() => Math.random() - 0.5).slice(0, 3);
   let pool = fits.filter(r => !r.boss);
@@ -133,7 +133,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (coins) coins.told = true;
   const lines = [
     ...notes.splice(0),
-    ...(news ? [`${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins!`, `You got ₽${coins.money} for winning!`, ...(coins.dex || [])] : []),
+    ...(news ? [coins.beaten ?? `${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins!`, `You got ₽${coins.money} for winning!`, ...(coins.dex || [])] : []),
     ...[].concat(sub),   // sub is one line, or a list of them
   ];
   sayLines(lines.filter(Boolean));

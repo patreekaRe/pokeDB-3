@@ -4195,11 +4195,13 @@ function tutorScene() {
   if (W > s * 1.5) roomWindow(cx + u(0.9), ceil + 3, u(0.14), Math.min(u(0.2), railRow() - ceil - 8));
   life.board = board;
   life.bag = bag;
-  // Alder (62x66, drawn at half the scene's pixel size) sits cross-legged in the middle of the mat; his sign is on him
+  // Alder (62x66, drawn at half the scene's pixel size) sits cross-legged in the middle of the mat; the lesson's sign is
+  // on the board, the training's on the sandbag, and the Challenge's on him
   life.stands = { npc: { x: seat.x, y: seat.y + 2 } };
   life.eventSpots = [
-    { x0: seat.x - 16, x1: seat.x + 16, y0: seat.y + 2 - 33, y1: seat.y + 2 },
+    board,
     { x0: bag.x - bag.w - 4, x1: bag.x + bag.w + 4, y0: bag.top + bag.len - 4, y1: bag.top + bag.len + bag.h },
+    { x0: seat.x - 16, x1: seat.x + 16, y0: seat.y + 2 - 33, y1: seat.y + 2 },
   ];
   life.foot = foot + 4;
 }
