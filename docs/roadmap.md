@@ -610,6 +610,11 @@ Anytime, as a break from number work:
   Map screen). New synths `bloom`, `bell`, `spirit`. Checked frame by frame (contact sheets of the canvas) at 375x812
   and PC size, no console errors; **for the user to check:** in a real boss fight on the live site, and the new
   sounds' volume.
+  Follow-up (same day): the user saw that all three climaxes were a big vertical beam and wanted each biome to end
+  differently. The Clearing's heart now bursts into one colossal pink blossom with a sideways petal gust, its handoff
+  flowers opening over the whole screen; the Shrine's burst is a spinning seal of spirit light (round the hall and flat
+  across the courtyard) that flares and throws fox-fires, its handoff a ring flood out of the doors. Only the Wastes
+  keeps a column. Checked frame by frame at PC size; **for the user to check:** in a real boss fight.
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,

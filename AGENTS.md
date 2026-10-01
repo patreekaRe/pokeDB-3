@@ -20,8 +20,9 @@ three places:
   through the actual map walk, wipe, empty-arena sequence, boss cry/reveal and player Poké Ball entrance at the five
   viewport sizes listed in `docs/roadmap.md`. Reduced motion and the browser console were also checked. Biome 3 got its
   own eruption intro on 2026-10-01 (`f3bc32a`; the user wanted it nothing like Biome 1's). The same day Biomes 1 and 2
-  got an epic pass to match it (the tree's heart bursting into a pillar of light; the Shrine's bell tolls, ghost torii
-  and spirit flood). All three boss intros are done; the user still has to see the new two in a real fight.
+  got an epic pass to match it (the tree's heart bursting into a colossal blossom; the Shrine's bell tolls, ghost torii,
+  a spirit seal and fox-fires). Their climaxes were vertical beams like the eruption's lava column at first; the user
+  wanted each biome to end differently, so only the Wastes goes straight up now. All three boss intros are done; the user still has to see the new two in a real fight.
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Next is part B: ask the user the remaining open questions it needs before building

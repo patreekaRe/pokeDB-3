@@ -1113,17 +1113,20 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   epic" as the eruption, 2026-10-01). The Clearing's ancient tree wakes (`drawClearingAwakening()`): the ground
   trembles and the light drains green, sap veins climb the trunk, glowing roots tear up through the grass towards you
   flinging clods, the meadow blooms in a wave out from the tree, a leaf cyclone winds round the trunk and motes of light
-  spiral into the heartwood, which beats faster with rays wheeling out; at `BLOOM_AT` it bursts into a pillar of light
-  with a shockwave ring, the crown's leaves torn loose, and the handoff floods a leaf storm out from the pillar into the
-  flashes; over the fight short dark roots, a third of the flowers, pulses of sap and a small heart glow stay. Sounds
+  spiral into the heartwood, which beats faster with rays wheeling out; at `BLOOM_AT` it bursts open into one colossal
+  turning blossom (`giantBlossom()`, pink, `BLOSSOM`) with a shockwave ring and a gust of petals blowing sideways across
+  the screen (`petalGale()`), and the handoff opens flowers all over the screen in a wave out from it into the flashes; over the fight short dark roots, a third of the flowers, pulses of sap and a small heart glow stay. Sounds
   `quake` then `bloom` (`powerSurge()`). The Shrine summons its spirits (`drawShrineAwakening()`): the temple bell tolls
   at `BELL_TOLLS` (`bell`, `templeBell()`), each toll a ring rolling out from the roof; night falls over everything, the
   lanterns light in a wave down the approach and turn to blue spirit fire at the second toll, mist rolls in, wisps
   gather into the small torii of light at the door, paper wards lift out of the gravel into a cyclone round the
   courtyard, a colossal see-through torii (`ghostTorii()`) rises out of the ground framing the screen (drawn over
-  everything, since a phone's sky is a sliver), and spirit fire runs along the ridge; at `SPIRIT_AT` (`spirit`) a pillar
-  bursts up through the roof and blasts the wards outwards. Its handoff opens the Hall's shoji doors and the spirit light
-  floods the screen (`curtain()`, shared with the Clearing) before two flashes. The Wastes erupts instead (`drawWastesAwakening()` / `drawWastesPortal()`, 3.6 s + 1.1 s; the user wanted it
+  everything, since a phone's sky is a sliver), and spirit fire runs along the ridge; meanwhile a great seal of spirit light
+  (`spiritSeal()`: rings, an eight-point star, orbiting runes) draws itself round the hall with a flattened twin across
+  the courtyard; at `SPIRIT_AT` (`spirit`) it flares, spins faster and throws fox-fires off its ring (`foxFires()`) that
+  blast the wards outwards. Its handoff opens the Hall's shoji doors with the seal spinning tight round them, and the
+  spirit light floods out in rippling rings before two flashes. Only the Wastes has a vertical column at its climax (the
+  user's call, 2026-10-01: all three had a big beam, and each biome should end differently). The Wastes erupts instead (`drawWastesAwakening()` / `drawWastesPortal()`, 3.6 s + 1.1 s; the user wanted it
   nothing like the Clearing's glow, 2026-10-01): the picture shakes (`draw()` offsets `putImageData`), the sky reddens,
   fissures split the far wall and the rim at your feet, the lake boils and swells into a dome, then at `ERUPT_AT` it
   bursts into a lava column throwing bombs that splat on the foreground, and the column floods sideways into two white
