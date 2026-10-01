@@ -35,6 +35,7 @@ import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDial
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
+import { biomeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
@@ -282,6 +283,10 @@ function startBiome() {
   rollEvents();
   run.current = null;
   showMap();
+  // the biome's intro plays over the map (already checkpointed, so a refresh skips it), then its signs arrive again
+  biomeIntro(biome, run.biome + 1).then(() => {
+    for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
+  });
 }
 
 // A fidget on the map's run card: tap your Pokémon to recall it into its ball, tap the ball to send it out again.

@@ -615,6 +615,16 @@ Anytime, as a break from number work:
   flowers opening over the whole screen; the Shrine's burst is a spinning seal of spirit light (round the hall and flat
   across the courtyard) that flares and throws fox-fires, its handoff a ring flood out of the doors. Only the Wastes
   keeps a column. Checked frame by frame at PC size; **for the user to check:** in a real boss fight.
+- **Biome intros** (Biome 1 done 2026-10-01): the user asked for a 5-10 s intro on entering each biome, clearly
+  showing its title and "a cool scenery thing", inviting rather than menacing like the boss intros. `js/biome-intro.js`,
+  played over the map by `startBiome()` (after the checkpoint, so a refresh skips it), ~9 s, tap / Enter / Escape skips.
+  The Clearing's: letterbox bars, the camera drops through the clouds past a flock of birds, then glides sideways in
+  parallax (mountains, hills, tree line, a meadow with a stream) while three of the biome's wild Pokémon pop out of tall
+  grass with a rustle and their cry (silhouettes until the Pokédex has seen them), and comes to rest on the Ancient Tree
+  glowing on the horizon as "BIOME 1 / WHISPERING CLEARING" drops in letter by letter with the four places underneath.
+  Lit for the time of day. New synths `rustle` and `biome-title`. Checked at 375x812 and 1280x800, day / dusk / night,
+  through New game, no console errors. **Next:** the Shrine's and the Wastes' (an `INTROS` entry each, their own
+  painters and a different camera move); **for the user to check:** on the live site with sound.
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,

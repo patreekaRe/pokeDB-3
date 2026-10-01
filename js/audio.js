@@ -111,6 +111,8 @@ const SOUNDS = {
   bloom:        { synth: ac => powerSurge(ac, [523, 659, 784, 1047, 1319, 1568], 2) },     // the Clearing's: the ancient tree's heart bursts
   bell:         { synth: templeBell },       // the Shrine's: the temple bell tolls three times...
   spirit:       { synth: ac => powerSurge(ac, [440, 523, 622, 880, 1047, 1245], 2.4) },   // ...and the spirits surge
+  rustle:       { synth: grassRustle },      // a wild Pokémon pops out of the tall grass in a biome's intro (biome-intro.js)
+  'biome-title': { synth: arrivalChime },    // ...and the biome's name lands: a bright, welcoming chime
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -743,4 +745,36 @@ function fireworkCrackle(ac) {
     for (let i = 0; i < snap; i++) out[at + i] += (Math.random() * 2 - 1) * level * (1 - i / snap);
   }
   return normalize(buffer, 0.12);
+}
+
+/** Tall grass shaken: three quick soft swishes of chip noise, the games' rustle. */
+function grassRustle(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.32);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 4);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, s = (t % 0.1) / 0.1;
+    low += 0.35 * (noise[i] - low);
+    out[i] = low * Math.sin(Math.PI * s) * (1 - t / 0.32);
+  }
+  return normalize(buffer, 0.1);
+}
+
+/** Arriving somewhere new: a rising major arpeggio on a soft square wave, then a shimmer of high notes ringing out. */
+function arrivalChime(ac) {
+  const rate = ac.sampleRate, seconds = 2.2, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const notes = [[392, 0], [523, 0.09], [659, 0.18], [784, 0.27], [1047, 0.4]];
+  const sparkle = [[2093, 0.55], [2637, 0.63], [3136, 0.71], [2637, 0.82], [3951, 0.93]];
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = 0;
+    for (const [f, at] of notes) { const s = t - at; if (s >= 0) v += Math.sign(Math.sin(2 * Math.PI * f * s)) * 0.16 * Math.exp(-s / (at === 0.4 ? 0.9 : 0.3)) * Math.min(1, s / 0.004); }
+    for (const [f, at] of sparkle) { const s = t - at; if (s >= 0) v += Math.sin(2 * Math.PI * f * s) * 0.12 * Math.exp(-s / 0.35); }
+    out[i] = v * Math.min(1, (length - i) / (rate * 0.05));
+  }
+  return normalize(buffer, 0.18);
 }

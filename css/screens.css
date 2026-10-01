@@ -3394,3 +3394,48 @@ body.has-scene #scene-bg { display: block; }
 .card-reveal .card { --card-w: min(56vw, 220px); position: relative; animation: cardReveal 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
 @keyframes cardReveal { from { scale: 0.2; rotate: -12deg; opacity: 0; } 60% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .card-reveal .card, .card-reveal .chest-rays { animation: none; opacity: 1; } }
+
+/* ---------- a biome's intro (js/biome-intro.js): a short film over the map as the biome starts ---------- */
+.biome-intro { position: fixed; inset: 0; z-index: 940; overflow: hidden; background: #000; cursor: pointer; animation: biIn 0.5s both; }
+.biome-intro.leaving { animation: biOut 0.65s ease-in both; pointer-events: none; }
+@keyframes biIn { from { opacity: 0; } }
+@keyframes biOut { to { opacity: 0; } }
+.bi-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.bi-mons { position: absolute; inset: 0; }
+.bi-mon { position: absolute; transform: translate(-50%, -100%); overflow: hidden; padding-top: 48px; }
+.bi-mon img { display: block; image-rendering: pixelated; transform: translateY(110%); }
+.bi-mon.up img { animation: biPop 0.7s cubic-bezier(.2, .9, .3, 1.2) both; }
+.bi-mon img.unseen { filter: brightness(0); }
+@keyframes biPop { 0% { transform: translateY(110%); } 55% { transform: translateY(-22%); } 75% { transform: translateY(4%); } 100% { transform: none; } }
+.bi-bars::before, .bi-bars::after { content: ''; position: absolute; left: 0; right: 0; height: 7vh; background: #000; z-index: 2; animation: biBar 0.8s ease-out both; }
+.bi-bars::before { top: 0; --from: -100%; }
+.bi-bars::after { bottom: 0; --from: 100%; }
+.biome-intro.leaving .bi-bars::before, .biome-intro.leaving .bi-bars::after { animation: biBar 0.6s ease-in reverse both; }
+@keyframes biBar { from { transform: translateY(var(--from)); } }
+.bi-title { position: absolute; left: 0; right: 0; top: 9vh; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 1.6vh;
+  text-align: center; pointer-events: none; padding: 0 12px; }
+.bi-title::before { content: ''; position: absolute; inset: -4vh 0; z-index: -1; opacity: 0; background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(0, 10, 20, .55), transparent 75%); }
+.bi-title.on::before { animation: biGlow 1s 0.1s both; }
+.bi-kicker { font-size: clamp(10px, 2.6vw, 16px); color: #f8e070; letter-spacing: .3em; text-shadow: 2px 2px 0 #000; opacity: 0; }
+.bi-name { display: flex; flex-direction: column; align-items: center; gap: .25em; font-size: clamp(26px, 11.5vw, 84px); line-height: 1; color: var(--ink); }
+.bi-word { display: flex; }
+.bi-letter { display: inline-block; opacity: 0;
+  text-shadow: 0 .08em 0 var(--edge), .08em 0 0 var(--edge), -.08em 0 0 var(--edge), 0 -.08em 0 var(--edge), .08em .08em 0 var(--edge), -.08em .08em 0 var(--edge), .08em -.08em 0 var(--edge), -.08em -.08em 0 var(--edge), .1em .18em 0 var(--deep); }
+.bi-places { font-size: clamp(9px, 2.6vw, 13px); color: #fff8e0; text-shadow: 2px 2px 0 #000; line-height: 1.8; opacity: 0; max-width: 32em; display: flex; flex-wrap: wrap; justify-content: center; column-gap: .9em; }
+.bi-places span { white-space: nowrap; }
+.bi-title.on .bi-kicker { animation: biRise .5s both; }
+.bi-title.on .bi-letter { animation: biDrop .55s calc(.25s + var(--i) * 55ms) cubic-bezier(.2, .9, .3, 1.4) both, biShine 2.4s calc(1.6s + var(--i) * 60ms) infinite; }
+.bi-title.on .bi-places { animation: biRise .6s 1.5s both; }
+@keyframes biRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes biGlow { to { opacity: 1; } }
+@keyframes biDrop { 0% { opacity: 0; transform: translateY(-1.2em) scale(1.4); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes biShine { 0%, 12%, 100% { color: var(--ink); } 5% { color: #ffffff; } }
+@media (min-aspect-ratio: 1/1) {
+  .bi-title { right: 40%; top: 16vh; }
+  .bi-name { font-size: clamp(26px, 6.5vw, 84px); }
+}
+.bi-skip { position: absolute; right: 14px; bottom: calc(7vh + 10px); z-index: 3; font-size: 9px; color: #fff; opacity: .55; text-shadow: 1px 1px 0 #000; animation: biRise .5s 1.2s both; }
+@media (prefers-reduced-motion: reduce) {
+  .biome-intro, .biome-intro *, .biome-intro *::before, .biome-intro *::after { animation-duration: .01s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
+  .bi-mon img { transform: none; }
+}

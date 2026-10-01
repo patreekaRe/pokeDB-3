@@ -1135,6 +1135,18 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   so a refresh mid-way resumes before the room. Reduced motion keeps a brief static arena pause
   and the regular Pokémon cries, but skips the scenery animation and portal handoff.
 
+**Biome intros** (`js/biome-intro.js`, 2026-10-01, the user's call: inviting, not like the boss intros): `startBiome()`
+in `js/run.js` plays `biomeIntro(biome, number)` over the map after `showMap()` (so after the checkpoint: a refresh or
+Continue never replays it), then drops the biome and place signs in again. A fixed `.biome-intro` layer (z-index 940)
+with two low-res canvases (4 / 5 CSS px a pixel, like the scenes): `back` (sky, clouds, far / hill / forest / meadow
+layers, each painted once from a seeded PRNG and slid by the camera at its own `SPEED`) and `front` (near grass, the
+tall-grass tufts hiding the Pokémon's feet, petals, the big near clouds), with real GIFs between them (`.bi-mon`, clipped
+at the grass line so they pop up out of it; `.unseen` is a black silhouette until `dex.seen` has them). The beats are the
+constants at the top (`TILT`, `PAN`, `POPS`, `TITLE_AT`, `END`); the title is DOM (`.bi-title`, letters dropping in,
+over the goal when upright, left of it when wide). Skies are hand-painted per time (`SKIES`), the land graded with
+`GRADES`. Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. Only the Clearing has one (`INTROS`); a
+biome without an entry resolves at once. Reduced motion shows the last frame and the title for 3.5 s.
+
 The home shop is the **Game Corner** (the user's call: the Gold/Silver prize
 counter, where coins buy Pokémon), so it can't be mistaken for the run's blue
 Poké Mart: PokéCoins buy starters and perks at the Game Corner, ₽ buys cards and
