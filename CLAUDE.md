@@ -1144,7 +1144,7 @@ tall-grass tufts hiding the Pokémon's feet, petals, the big near clouds), with 
 at the grass line so they pop up out of it; `.unseen` is a black silhouette until `dex.seen` has them). The beats are the
 constants at the top (`TILT`, `PAN`, `POPS`, `TITLE_AT`, `END`); the title is DOM (`.bi-title`, letters dropping in,
 over the goal when upright, left of it when wide). Skies are hand-painted per time (`SKIES`), the land graded with
-`GRADES`. Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. Only the Clearing has one (`INTROS`); a
+`GRADES`. The Tree (`paintTree()`) stands on a knoll of the hills (`hillLine()`, its foot just in the grass, roots crawling down it, `paintRoots()`; before 2026-10-01 it stopped short of the hills and looked like it floated) and carries the boss arena tree's glowing hollow and moss, so it reads as the same tree; clouds keep their puffs inside the canvas, biggest in the middle (`cloudImage()`: clipped puffs looked like squares). Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. Only the Clearing has one (`INTROS`); a
 biome without an entry resolves at once. Reduced motion shows the last frame and the title for 3.5 s. Under the title only
 the place you start in shows, big (`.bi-place`: the later ones are for the walk to show; the user's call). Pokémon the
 Pokédex has met (seen, defeated or counted, `known()`) pop up as silhouettes and colour in; unmet ones stay black.

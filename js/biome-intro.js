@@ -125,8 +125,12 @@ function paintSky(g, W, H, hz, sky, time, rand) {
 function cloudImage(w, colours, rand) {
   const h = Math.ceil(w * 0.5), c = layer(w + 2, h + 2), g = c.getContext('2d');
   const puffs = [];
+  // puffs biggest in the middle and kept inside the canvas, so the cloud is a dome and never cut off square
+  const most = Math.min(w * 0.22, h * 0.6);
   for (let n = 0; n < 4 + w / 6; n++) {
-    const x = 2 + rand() * (w - 4), r = 2 + rand() * Math.min(w * 0.22, h * 0.6);
+    const u = rand(), dome = Math.sin(Math.PI * (0.08 + u * 0.84));
+    const r = Math.max(2, most * dome * (0.6 + rand() * 0.4));
+    const x = Math.min(w - r - 1, Math.max(r + 1, 1 + u * w));
     puffs.push([x, h - r * 0.7, r]);
   }
   for (const [x, y, r] of puffs) disc(g, x, y + 1, r, colours[2]);
@@ -159,7 +163,7 @@ function mix(a, b, t) {
 
 /** The goal on the horizon: the Ancient Tree, far off yet towering over everything, a vast spreading crown on a
     buttressed trunk with roots like ridges, softened by the haze of distance. Returns the crown's middle and size. */
-function paintTree(g, cx, base, height, { bark, crown }, haze, rand, { mist = 0.28, spread = 1 } = {}) {
+function paintTree(g, cx, base, height, { bark, crown }, haze, rand, { mist = 0.28, spread = 1 } = {}, glow) {
   const far = (list) => list.map(c => mix(c, haze, mist));
   const [b0, b1, b2] = far(bark), leaf = far(crown);
   const cw = height * 0.62 * spread, ch = height * 0.3, cy = base - height + ch;
@@ -171,7 +175,17 @@ function paintTree(g, cx, base, height, { bark, crown }, haze, rand, { mist = 0.
     g.fillStyle = b0; g.fillRect(cx - half, y, Math.max(1, Math.round(half * 0.45)), 1);
     g.fillStyle = b2; g.fillRect(cx + Math.round(half * 0.55), y, Math.max(1, Math.round(half * 0.45)), 1);
     if (t > 0.15 && (y * 7) % 11 < 2) { g.fillStyle = b2; g.fillRect(cx - Math.round(half * 0.2), y, 1, 2); }   // bark furrows
+    if (t > 0.1 && rand() < 0.35) { g.fillStyle = leaf[2]; g.fillRect(cx - half + Math.floor(rand() * half * 2), y, 1, 1); }   // moss
   }
+  // the boss arena's hollow, its heart glowing (the same tree, seen from afar)
+  const hy = Math.round(top + (base - top) * 0.45), hx = cx - Math.round(trunk * 0.25), hr = Math.max(2, Math.round(trunk * 0.45));
+  for (let y = -Math.round(hr * 1.5); y <= Math.round(hr * 1.5); y++) for (let x = -hr; x <= hr; x++) {
+    const d = (x / hr) ** 2 + (y / (hr * 1.5)) ** 2;
+    if (d > 1) continue;
+    g.fillStyle = d > 0.6 ? b0 : d > 0.3 ? b2 : mix(b2, '#000000', 0.3);
+    g.fillRect(hx + x, hy + y, 1, 1);
+  }
+  if (glow) { g.fillStyle = glow[1]; g.fillRect(hx - 1, hy - 1, 2, 3); g.fillStyle = glow[0]; g.fillRect(hx, hy, 1, 1); }
   for (const side of [-1, 1]) {   // great boughs out to the crown's wings
     for (let k = 0; k < cw * 0.7; k++) {
       const x = cx + side * k, y = top + ch * 0.35 - k * 0.45 + (k / (cw * 0.7)) ** 2 * ch * 0.5;
@@ -196,13 +210,37 @@ function paintTree(g, cx, base, height, { bark, crown }, haze, rand, { mist = 0.
     g.fillStyle = leaf[3]; g.fillRect(x, y, 1, len);
     g.fillStyle = leaf[1]; g.fillRect(x, y + len, 1, 1);
   }
-  return { x: cx, y: cy, w: cw, h: ch };
+  return { x: cx, y: cy, w: cw, h: ch, foot: trunk + height * 0.12 };
 }
 
-function paintHills(g, w, H, hz, colours, rand) {
+/** Roots crawling out of the trunk's foot down over its knoll, like the boss arena's. */
+function paintRoots(g, cx, ground, foot, { bark }, haze, rand, mist = 0.28) {
+  const [b0, b1, b2] = bark.map(c => mix(c, haze, mist));
+  for (const side of [-1, 1]) for (let r = 0; r < 2; r++) {
+    let x = cx + side * foot * (0.55 + r * 0.25), y = ground(x) - 1;
+    const len = Math.round(foot * (0.6 + r * 0.4) + 2);
+    for (let n = 0; n < len; n++) {
+      const thick = Math.max(0, Math.round((1 - n / len) * (2 - r)));
+      x += side * (0.9 + rand() * 0.3);
+      y = Math.max(y, ground(x) - thick) + 0.15;
+      for (let t = -thick; t <= thick; t++) { g.fillStyle = t === -thick ? b0 : t === thick ? b2 : b1; g.fillRect(Math.round(x), Math.round(y + t), 1, 1); }
+    }
+  }
+}
+
+/** The rolling hills' top at any x, rising into a knoll where the Tree stands (`knoll`: its middle, half-width, height). */
+function hillLine(H, hz, rand, knoll) {
   const phase = rand() * 6;
+  return (x) => {
+    const d = Math.abs(x - knoll.x) / knoll.w;
+    const rise = d < 1 ? knoll.h * (0.5 + 0.5 * Math.cos(Math.PI * d)) : 0;
+    return Math.round(hz - H * 0.025 - H * 0.03 * (0.6 * Math.sin(x * 0.045 + phase) + 0.4 * Math.sin(x * 0.11 + phase * 3)) - rise);
+  };
+}
+
+function paintHills(g, w, hz, colours, ground) {
   for (let x = 0; x < w; x++) {
-    const top = Math.round(hz - H * 0.025 - H * 0.03 * (0.6 * Math.sin(x * 0.045 + phase) + 0.4 * Math.sin(x * 0.11 + phase * 3)));
+    const top = ground(x);
     g.fillStyle = colours[1]; g.fillRect(x, top, 1, hz - top + 6);
     g.fillStyle = colours[0]; g.fillRect(x, top, 1, 1);
   }
@@ -374,8 +412,12 @@ function run(film, biome, { number, stage, walker }, resolve) {
   const base = Math.round(Math.min(H * (tall ? 0.36 : 0.5), W * 0.75)), near = look.tree || 1;
   const treeH = mini ? Math.min(Math.round(base * (tall ? near : 1 + (near - 1) * 0.25)), hz - Math.round(H * 0.02)) : base;
   const reach = { mist: look.mist, spread: (look.spread || 1) * (tall ? 1 : near ** 0.6) };
-  const crown = paintTree(hill.getContext('2d'), treeX, hz - Math.round(H * 0.03), treeH, land, sky[sky.length - 1], rand, reach);
-  paintHills(hill.getContext('2d'), hill.width, H, hz, land.hill, rand);
+  // the Tree stands on a knoll, its foot just in the grass (it used to stop short of the hills, on the far mountains)
+  const foot = treeH * 0.19, ground = hillLine(H, hz, rand, { x: treeX, w: foot * 2.6, h: Math.round(H * 0.035 + foot * 0.25) });
+  const footY = ground(treeX) + 2, crownTop = hz - Math.round(H * 0.03) - treeH;
+  const crown = paintTree(hill.getContext('2d'), treeX, footY, footY - crownTop, land, sky[sky.length - 1], rand, reach, film.glow.aura);
+  paintHills(hill.getContext('2d'), hill.width, hz, land.hill, ground);
+  paintRoots(hill.getContext('2d'), treeX, ground, crown.foot, land, sky[sky.length - 1], rand, reach.mist);
   const forest = layer(wide('forest'), H);
   paintForest(forest.getContext('2d'), forest.width, H, hz, land.forest, rand, look.forest || 1);
 
