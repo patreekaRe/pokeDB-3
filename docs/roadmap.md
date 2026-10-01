@@ -629,8 +629,8 @@ Anytime, as a break from number work:
   The user's follow-up (same day): only the place you're in shows under the title, bigger ("- MEADOW -", `.bi-place`; the
   list of all four gave the later places away); Pokémon the Pokédex has met (seen, defeated or counted) pop up as
   silhouettes and colour in a beat later, unmet ones stay black; and every later place gets a **mini intro**
-  (`placeIntro()`, ~5 s, from `walkInto()` in `js/run.js` when you walk into the first room of Forest Edge / Deep Woods,
-  before the room opens, so a refresh replays it): your Pokémon's back sprite walks up a dirt path towards the Ancient
+  (`placeIntro()`, ~5 s, from `nextPlace()` in `showMap()` once the last room of Meadow / Forest Edge is
+  won or left, 2026-10-01; it used to wait for a tap on the next room and cut that room's music): your Pokémon's back sprite walks up a dirt path towards the Ancient
   Tree while the layers grow about its foot (nearer ones faster), the place's name drops in under the biome's. Per place
   in `INTROS.clearing.stages`: the Tree nearer each time (taller upright, its crown spreading on wide screens), the tree
   line taller, the land and sky shaded; Deep Woods adds great trunks either side, a leafy fringe with vines, light shafts,

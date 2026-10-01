@@ -139,9 +139,10 @@ over the goal when upright, left of it when wide). Skies are hand-painted per ti
 biome without an entry resolves at once. Reduced motion shows the last frame and the title for 3.5 s. Under the title only
 the place you start in shows, big (`.bi-place`: the later ones are for the walk to show; the user's call). Pokémon the
 Pokédex has met (seen, defeated or counted, `known()`) pop up as silhouettes and colour in; unmet ones stay black.
-**Place intros** (same day, the user's vision for every biome: travelling towards its goal): walking into the first room
-of a biome's 2nd or 3rd place plays `placeIntro(biome, stage, backSprite)` first (`walkInto()` in `js/run.js`, the
-map's room callback; before the room, so a refresh replays it), ~5 s: your Pokémon from behind walks up a dirt path
+**Place intros** (same day, the user's vision for every biome: travelling towards its goal): coming back to the map from the
+last room of a biome's 1st or 2nd place (won or left) plays the next place's `placeIntro(biome, stage, backSprite)` over
+it (`nextPlace()` in `showMap()`, `js/run.js`, under the map's music; the user's call 2026-10-01: played on the tap into
+the next room, it cut off that room's music; kept in memory only, so a refresh plays it once more), ~5 s: your Pokémon from behind walks up a dirt path
 towards the goal while every layer grows about the goal's foot (`DOLLY`, nearer layers faster), and the place's name
 drops in. Each place's look is the biome's `INTROS` entry's `stages[i]` (`tree` / `spread` / `mist`: the goal nearer;
 `forest`, `shade`, `frame`: trunks either side and a leafy fringe, `shafts`: light through the canopy).

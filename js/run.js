@@ -404,7 +404,22 @@ function showMap() {
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
-  showNotes();
+  const next = nextPlace(here);
+  if (next) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
+  else showNotes();
+}
+
+// Back on the map after a place's last room, the next place's short film plays over the map, with the map's music
+// (it used to wait for a tap on the next room, and cut off whatever that room was playing). Kept for the page's life,
+// not saved, so a refresh plays it once more.
+let placeShownAt = null;
+function nextPlace(here) {
+  if (!here) return 0;
+  const key = `${run.biome}:${here.id}`;
+  const stage = stageOf(run.map, here).stage, next = stageOf(run.map, { floor: here.floor + 1 }).stage;
+  if (next <= stage || next > 2 || placeShownAt === key) return 0;
+  placeShownAt = key;
+  return next;
 }
 
 /** The Starting Relic Charm (a Game Corner perk): its relic bursts out in the middle of the screen like a relic reward,
@@ -585,7 +600,7 @@ function drawMap() {
   const biome = BIOMES[run.biome];
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
-  renderMap(run.map, run.current, walkInto, {
+  renderMap(run.map, run.current, enterNode, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null,
   });
   const total = scopeReveals(), left = total - scopeUsed();
@@ -628,15 +643,6 @@ function addTally(t) {
   r.turns += t.turns; r.played += t.played; r.dealt += t.dealt; r.taken += t.taken;
   r.biggest = Math.max(r.biggest, t.biggest);
   r.itemsUsed.push(...t.items);
-}
-
-// Walking into the first room of the next place in a biome plays its short film first (nothing is saved until the
-// room is done, so a refresh walks in and plays it again).
-function walkInto(node) {
-  const here = run.current && run.map.byId[run.current];
-  const { stage } = stageOf(run.map, node);
-  if (stage > 2 || stage <= stageOf(run.map, here).stage) return enterNode(node);
-  placeIntro(BIOMES[run.biome], stage, spriteUrl(run.starter, 'back', run.stage)).then(() => enterNode(node));
 }
 
 function enterNode(node) {
