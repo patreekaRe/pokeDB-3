@@ -267,9 +267,14 @@ function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patch
       g.fillRect(x, y, 1, 1);
     }
   }
-  for (let n = 0; n < w * (H - top) / 30; n++) {   // grass blades, bigger nearer
+  for (let n = 0; n < w * (H - top) / 30; n++) {   // grass blades, bigger nearer: a dot far off, a V of blades close up
     const y = top + Math.floor(rand() ** 0.7 * (H - top)), x = Math.floor(rand() * w), near = (y - top) / (H - top);
-    g.fillStyle = ground[3]; g.fillRect(x, y, 1, near > 0.5 ? 2 : 1);
+    g.fillStyle = ground[3];
+    if (near < 0.3) { g.fillRect(x, y, 1, 1); continue; }
+    const tall = near > 0.65 ? 3 : 2;
+    g.fillRect(x, y - tall + 1, 1, tall);
+    g.fillRect(x - 1, y - 1, 1, 1); g.fillRect(x + 1, y - 1, 1, 1);
+    if (tall > 2) { g.fillRect(x - 2, y - 2, 1, 1); g.fillRect(x + 2, y - 2, 1, 1); }
   }
   // the stream: in from the trees, wider as it nears; returns where it can glint
   const sx = w * (0.25 + rand() * 0.2), phase = rand() * 6, stream = [];
@@ -284,31 +289,50 @@ function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patch
     const fx = rand() * w, fy = top + 4 + rand() * (H - top - 4), colour = flowers[Math.floor(rand() * flowers.length)];
     for (let k = 0; k < 5; k++) { g.fillStyle = colour; g.fillRect(Math.round(fx + (rand() - 0.5) * 8), Math.round(fy + (rand() - 0.5) * 4), 1, 1); }
   }
-  for (const { x, y, size } of patches) tallGrass(g, x - size, y - 2, size * 2, size, tall);
+  for (const { x, y, size } of patches) tallGrass(g, x - size - 2, y - 2 - Math.round(size * 0.4), size * 2 + 4, Math.ceil(size * 0.6) + Math.round(size * 0.4), tall);   // rises behind the Pokémon, ending with the tuft in front
   return stream;
 }
 
-/** The games' tall grass: rows of outlined little Ws. */
+/** A clump of tall grass: leaning blades tapering to points, out of a low rounded mound, outlined round the whole silhouette. */
 function tallGrass(g, x0, y0, w, h, [lit, body, dark]) {
-  for (let y = y0; y < y0 + h; y += 3) {
-    for (let x = x0 + ((y - y0) / 3 % 2) * 2; x < x0 + w; x += 4) {
-      g.fillStyle = dark; g.fillRect(x, y, 4, 4);
-      g.fillStyle = body; g.fillRect(x, y + 1, 1, 2); g.fillRect(x + 2, y + 1, 1, 2); g.fillRect(x + 1, y + 2, 1, 1);
-      g.fillStyle = lit; g.fillRect(x, y, 1, 1); g.fillRect(x + 2, y, 1, 1);
+  const hash = (n) => ((Math.sin(n * 127.1 + x0 * 3.7 + y0 * 1.3) * 43758.5) % 1 + 1) % 1;
+  const px = [];   // [x, y, width, colour, height]: drawn twice, outlined first
+  const round = (x) => Math.sqrt(Math.max(0, 1 - ((x + 0.5) / w * 2 - 1) ** 2));
+  for (let x = 1; x < w - 1; x++) {   // a low mound the blades grow out of
+    const band = Math.max(1, Math.round(h * 0.4 * round(x)));
+    px.push([x, h - band, 1, body, band]);
+  }
+  for (let x = 1, n = 0; x < w - 1; x += 2, n++) {   // blades, tallest mid-patch, each leaning and tapering to a point
+    const hb = Math.min(h - 1, Math.max(2, Math.round(h * (0.5 + 0.5 * hash(n)) * (0.45 + 0.55 * round(x)))));
+    const lean = (hash(n + 50) - 0.5) * 1.6, colour = n % 2 ? lit : body;
+    for (let k = 0; k < hb; k++) {
+      const bx = Math.min(w - 3, Math.max(1, Math.round(x + lean * (1 - k / hb) ** 2 * hb * 0.5)));
+      px.push([bx, h - hb + k, k > hb * 0.45 ? 2 : 1, k < hb * 0.5 ? colour : body, 1]);
     }
   }
+  g.fillStyle = dark;
+  for (const [x, y, wd, , ht] of px) g.fillRect(x0 + x - 1, y0 + y - 1, wd + 2, ht + 2);
+  for (const [x, y, wd, colour, ht] of px) { g.fillStyle = colour; g.fillRect(x0 + x, y0 + y, wd, ht); }
 }
 
 /** The near grass along the bottom edge, passing faster than the land, with a few flowers on stalks. */
 function paintFore(g, w, H, [lit, body, shade, dark], flowers, rand) {
-  for (let x = 0; x < w; x++) {
-    const h = Math.round(H * 0.05 + rand() * H * 0.05 + Math.sin(x * 0.2) * 2);
-    const lean = rand() < 0.5 ? -1 : 1;
-    for (let k = 0; k < h; k++) {
-      g.fillStyle = k < 2 ? lit : k < h * 0.5 ? body : shade;
-      g.fillRect(x + (k < h * 0.3 ? lean : 0), H - h + k, 1, 1);
+  const low = Math.round(H * 0.035);
+  for (let y = H - low; y < H; y++) { g.fillStyle = y > H - 3 ? dark : shade; g.fillRect(0, y, w, 1); }
+  // blades: 2px at the root tapering to a 1px tip that bends over, darker ones behind, lit ones in front
+  for (let pass = 0; pass < 2; pass++) {
+    for (let x = -2; x < w + 2; x += 2) {
+      const h = Math.round(H * 0.04 + rand() * H * 0.06 + Math.sin(x * 0.2) * 2) - pass * 2;
+      const lean = (rand() - 0.5) * 0.9, [c1, c2] = pass ? [lit, body] : [body, shade];
+      for (let k = 0; k < h; k++) {   // k from the tip down
+        const bx = Math.round(x + lean * (1 - k / h) ** 2 * h * 0.5 + pass);
+        g.fillStyle = k < h * 0.35 ? c1 : c2;
+        g.fillRect(bx, H - h + k, k > h * 0.4 ? 2 : 1, 1);
+      }
     }
-    g.fillStyle = dark; g.fillRect(x, H - 2, 1, 2);
+  }
+  for (let x = 0; x < w; x++) {
+    const h = Math.round(H * 0.07);
     if (rand() < 0.05) {
       const fy = H - h - 2, colour = flowers[Math.floor(rand() * flowers.length)];
       g.fillStyle = shade; g.fillRect(x, fy + 2, 1, 2);
