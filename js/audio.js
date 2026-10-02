@@ -127,6 +127,8 @@ const SOUNDS = {
   // the Safari Zone's catch (battle.js): each wobble of the ball on the ground, then the latch and jingle of a catch. The
   // user's own files once they're in assets/audio/sfx/; until then (or if one fails to load) the synth stands in
   'catch-shake':   { url: 'assets/audio/sfx/catch-shake.mp3', synth: catchShake },
+  'catch-shake-2': { url: 'assets/audio/sfx/catch-shake-2.mp3', synth: catchShake },   // the user's recording's 2nd and 3rd wobbles
+  'catch-shake-3': { url: 'assets/audio/sfx/catch-shake-3.mp3', synth: catchShake },
   'catch-success': { url: 'assets/audio/sfx/catch-success.mp3', synth: catchSuccess },
   'gate-hum':   { synth: gateHum },          // the Sealed Gate's scene (gatescene.js): the seal's low, uneasy drone...
   'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
