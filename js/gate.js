@@ -2,9 +2,10 @@
  * The Sealed Gate's art (docs/roadmap.md, "The Sealed Gate", part B): a door of dark crystal in a carved obsidian frame
  * trimmed with gold, its runes glowing, between two spires of ice-blue crystal, with shards floating beside it. It's
  * chained shut, and Eternatus's seal turns on it as a magic circle. It shows its damage as it falls: cracks spread out
- * from the seal and leak light, the crystal cracks too, the frame's runes go out from the bottom up, a chain snaps at half
- * HP and the other near the end, chunks of the door fall away, and from about half HP the light behind the door rises and
- * Mewtwo's silhouette shows against it, its eyes glowing now and then. Broken, the arch stands open over steps down into
+ * from the seal and leak light, the crystal cracks too, the frame's runes go out from the bottom up, a chain snaps, chunks
+ * of the door fall away, and the light behind the door rises and Mewtwo's silhouette shows against it, its eyes glowing
+ * now and then. The damage shows in steps (GATE_STAGES): past 75% the first cracks; past 50% more, a chain snaps and the
+ * silhouette shows; past 25% the other chain and the holes. Broken, the arch stands open over steps down into
  * the Crystal Depths' violet light. (It was a stone arch in a brick wall until 2026-10-02; the user wanted it less blocky
  * and more fantasy.)
  *
@@ -12,7 +13,10 @@
  * crack, chunk and mote comes from a seeded random, so a gate at a given HP always looks the same.
  */
 import { getSave } from './storage.js';
-import { GATE_HP } from './data/gate.js';
+import { GATE_HP, GATE_STAGES, gateStage } from './data/gate.js';
+
+// the damage each stage paints (as an HP share: cracks, light behind the door, holes), whole to past 25%
+const STAGE_LOOK = [1, 0.68, 0.4, 0.1];
 
 const rgb = (hex) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
 const P = Object.fromEntries(Object.entries({
@@ -50,6 +54,36 @@ export function gateHp() {
   const pin = new URLSearchParams(location.search).get('gate');
   if (pin !== null && pin !== '' && !Number.isNaN(Number(pin))) return Math.max(0, Math.min(GATE_HP, Math.round(Number(pin))));
   return getSave().gateHp;
+}
+
+/**
+ * The gate's HP bar (title, gate scene, result window): a dark crystal track in a stone frame, the seal's gem at its
+ * head, a rune at each of GATE_STAGES that goes out once passed, and a pale trail that lags behind a hit.
+ */
+export function gateBar(size = '') {
+  const bar = document.createElement('div');
+  bar.className = `seal-bar ${size}`.trim();
+  bar.setAttribute('role', 'progressbar');
+  bar.setAttribute('aria-label', 'The Sealed Gate\'s HP');
+  bar.setAttribute('aria-valuemin', '0');
+  bar.setAttribute('aria-valuemax', String(GATE_HP));
+  bar.innerHTML = '<span class="seal-bar-gem"></span><span class="seal-bar-track"><span class="seal-bar-trail"></span><span class="seal-bar-fill"></span>'
+    + GATE_STAGES.map((s, k) => `<i class="seal-bar-rune" data-k="${k + 1}" style="left:${s * 100}%"></i>`).join('') + '</span>';
+  return bar;
+}
+
+/** Set the bar to hp; the trail stays where it was until settleGateBar() (or at once, if trail is false). */
+export function setGateBar(bar, hp, trail = false) {
+  hp = Math.max(0, hp);
+  bar.style.setProperty('--hp', String(hp / GATE_HP));
+  if (!trail) settleGateBar(bar);
+  bar.dataset.stage = String(gateStage(hp));
+  bar.setAttribute('aria-valuenow', String(Math.round(hp)));
+}
+
+/** The trail drains down to the bar. */
+export function settleGateBar(bar) {
+  bar.style.setProperty('--trail', bar.style.getPropertyValue('--hp') || '1');
 }
 
 /* Mewtwo's silhouette, from its front sprite's first frame: a mask, and where its eyes are (sprite pixels). */
@@ -241,7 +275,10 @@ export function makeGate(W, H) {
   const glow = new Float32Array(W * H);
 
   function paint(ctx, state = {}) {
-    const { hp = 1, t = 0, flash = 0, seal = 0, eyes = 0, open = false, mute = false } = state;
+    const { t = 0, flash = 0, seal = 0, eyes = 0, open = false, mute = false } = state;
+    // the damage shows in steps, not smoothly: whole, then past 75%, 50% and 25% (below 0 is the break, which runs on)
+    const share = state.hp ?? 1, stage = share > 0 ? gateStage(share * GATE_HP) : 4;
+    const hp = share > 0 ? STAGE_LOOK[stage] : share;
     if (!fig && figure) fig = fitFigure();
     const dmg = 1 - hp;
     const data = img.data;
@@ -266,7 +303,7 @@ export function makeGate(W, H) {
     // from about half HP the light behind the door rises, and the silhouette blocks it
     const back = open ? 0 : clamp01((0.55 - hp) / 0.5) * (mute ? 0.4 : 1);
     const holes = clamp01((dmg - 0.72) / 0.28);
-    const chainsLeft = state.chains ?? (open ? 0 : hp <= 0.06 ? 0 : hp <= 0.5 ? 1 : 2);
+    const chainsLeft = state.chains ?? (open ? 0 : stage >= 3 ? 0 : stage === 2 ? 1 : 2);
     const pulse = mute ? 0.3 : 0.7 + 0.3 * Math.sin(t * 2.6) + seal;
     const unstable = hp < 0.3 && !mute ? (hash(Math.floor(t * 12), 3) < (0.3 - hp) * 1.6 ? 0.35 : 1) : 1;
     const figMask = fig?.mask;
@@ -306,7 +343,7 @@ export function makeGate(W, H) {
         c = edge ? P.outline : (x + y) % 3 === 0 ? mix(P.gem1, P.gem2, pulseGem) : y < gemY ? P.gem2 : P.gem1;
         if (hp <= 0 || open) c = edge ? P.outline : P.stone1;   // the gem goes dark once the gate falls
       } else {
-        c = m === 2 ? frame(i, x, y, open ? 0 : hp, t, mute) : stone(m, x, y, t);
+        c = m === 2 ? frame(i, x, y, open || stage >= 4 ? 0 : 1 - stage * 0.25, t, mute) : stone(m, x, y, t);
         const seam = (m === 1 || m === 6) && (at(x - 1, y) === 2 || at(x + 1, y) === 2);
         if ((edge && m !== 7) || seam) c = P.outline;
       }

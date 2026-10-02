@@ -106,20 +106,26 @@ live site.
   the last portrait in the character select's Legendaries tab). It unlocks when the **Sealed Gate** breaks (2026-10-02; it was
   every other starter + a Level 5 win): the save's `gateHp` (`js/data/gate.js`: 1000 HP) takes `GATE_HIT[level]`
   (40/50/60/75/90/120) after every won run; a loss at the last biome's boss still plays the scene, but your Pokémon is
-  too weak to harm it (the user's call, 2026-10-02: no more loss chip) (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and a plain bar in the result window); only a
+  too weak to harm it (the user's call, 2026-10-02: no more loss chip) (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and the seal bar in the result window); only a
   Level 5 win takes it below `GATE_SLIVER` (50). Mewtwo's own runs leave it be. Old saves: `seedGate()` counts each
   Record Book win once (never past the sliver), and anyone who has Mewtwo gets 0. That achievement (`gateHp <= 0`) must
   stay last in `ACHIEVEMENTS`, since `checkAchievements()` grants in order (the shop also runs it after a purchase).
   **The gate's art and scenes** (part B, 2026-10-02): `makeGate(W, H)` in `js/gate.js` paints it pixel by pixel at any
   size from its HP (since 2026-10-02 fantasy, not bricks, the user's call: ice-crystal spires, floating shards, an obsidian
   frame trimmed in gold whose glyphs glow, a dark crystal door chained shut, Eternatus's seal as a turning magic circle;
-  seeded cracks spread out from the seal leaking light, the crystal cracks, a chain snaps at half HP and the other near
-  6%, chunks fall out, the frame's glyphs go out bottom-up, and from ~55% the light behind the door rises with Mewtwo's silhouette, from its sprite, eyes glowing; broken,
-  steps down into violet light). After the win scene (or straight away for a loss at the last boss), `endRun()` plays
+  the damage in steps, not smoothly (`GATE_STAGES` / `gateStage()` in `js/data/gate.js`: past 75%, 50%, 25%, then broken;
+  the user's call, 2026-10-02; `STAGE_LOOK` in `js/gate.js` is what each step paints): past 75% seeded cracks out from the
+  seal leaking light; past 50% more, the crystal cracks, a chain snaps, the light behind the door rises with Mewtwo's
+  silhouette, from its sprite, eyes glowing; past 25% the other chain, chunks fall out; the frame's glyphs go out a quarter
+  at a time; broken, steps down into violet light). **The seal bar** (`gateBar()` / `setGateBar()` in `js/gate.js`,
+  `.seal-bar` in `css/base.css`, `.big` in the scene) is its HP in the scene and the result window: the seal's gem at its
+  head, a crystal track in a stone frame with light running along it, a rune at each stage that goes dark once passed, a
+  pale trail lagging behind a hit (`settleGateBar()`), a flicker past 25%. After the win scene (or straight away for a loss at the last boss), `endRun()` plays
   `gateScene()` in `js/gatescene.js` (`#gate-scene`, z-index 950): a crystal cavern on one low-res canvas, the gate's
-  HP in a battle nameplate, your Pokémon from behind using its type's move (`MOVES`: a loss Ember / Water Gun / Vine
+  HP in a boss plate (`.gate-plate`, the big seal bar), your Pokémon from behind using its type's move (`MOVES`: a loss Ember / Water Gun / Vine
   Whip, a win Flamethrower / Hydro Pump / Leaf Storm, a Level 5 win Blast Burn / Hydro Cannon / Frenzy Plant, charged
-  first), then the flash, shake, -N and the bar and cracks running down together. The breaking blow: shudder, light rays,
+  first), then the flash, shake, -N and the bar running down; each stage it passes jolts the gate a step more broken
+  (`crackOpen()`: crack, flash, shake, the bar's rune shattering) and adds its lines (`STAGE_LINES`). The breaking blow: shudder, light rays,
   chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
   its aura GIF and cry; the unlock window follows. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
   `js/audio.js`. **The gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to

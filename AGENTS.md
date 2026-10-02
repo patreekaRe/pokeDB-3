@@ -41,6 +41,10 @@ three places:
   and ~800x760 through `?strike=` (a win, a loss chip, the seal holding at the sliver, the break), no console errors;
   the real end-of-run path was only checked by reading the code. The user still has to watch it on the live site
   (`?strike=120&gate=50` for the break).
+- 2026-10-02: **The Sealed Gate's stages and seal bar** (Desktop app, the user's ask): its damage shows in steps at
+  75 / 50 / 25% then the break, each step crossed mid-hit jolting it open with its lines, and its HP is a new seal bar
+  (gem, stage runes, trailing damage) in the scene and the result window. Checked in the browser pane through
+  `?gate=780&strike=300` and `?gate=520&strike=300`; the result window's bar only by reading the code.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.

@@ -24,6 +24,7 @@ import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunDa
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
+import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
@@ -2134,11 +2135,10 @@ function strikeGate(won, atLastBoss) {
     : !won ? `⚔️ ${name} was too weak to harm the Sealed Gate. Only a won run wears it down.`
     : before === hp ? `⚔️ ${name} struck the Sealed Gate, but it holds. Only a Trainer Level 5 win can break it.`
     : `⚔️ ${name} struck the Sealed Gate: -${before - hp}.${hp === GATE_SLIVER ? ' Only a Trainer Level 5 win can break it now.' : ''}`;
-  const bar = el('div', 'gate-bar');
-  bar.append(el('div', 'gate-fill'), el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
-  bar.firstChild.style.width = `${(hp / GATE_HP) * 100}%`;
+  const bar = gateBar();
+  setGateBar(bar, hp);
   const li = el('li', 'gate-line', text);
-  li.append(bar);
+  li.append(bar, el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
   const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
   return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first } };
 }

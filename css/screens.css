@@ -1762,10 +1762,22 @@ body.battle-intro { pointer-events: none; }
 .gate-scene.out { opacity: 0; transition: opacity 0.7s ease-in; }
 .gate-scene.waiting { cursor: pointer; }
 .gate-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-.gate-plate { position: absolute; left: 50%; top: var(--gate-top, 16px); width: min(calc(100% - 32px), 260px); translate: -50% 0; opacity: 0; animation: gatePlateIn 0.3s steps(3) 0.9s forwards; }
+/* its HP, a boss bar: the name between two diamonds, the seal bar (base.css), the number under its right end */
+.gate-plate {
+  position: absolute; left: 50%; top: var(--gate-top, 16px); width: min(calc(100% - 32px), 320px); translate: -50% 0;
+  display: flex; flex-direction: column; gap: 6px; padding: 8px 14px 6px 10px;
+  background: linear-gradient(rgba(34, 18, 62, 0.92), rgba(12, 6, 24, 0.92));
+  box-shadow: 0 0 0 2px #0e0818, 0 0 0 4px #544a78, 0 0 0 6px #0e0818, 0 0 24px 4px rgba(224, 42, 112, 0.25);
+  font-family: var(--pixel-font); font-synthesis-weight: none; color: #ffd0e8;
+  opacity: 0; animation: gatePlateIn 0.3s steps(3) 0.9s forwards;
+}
 @keyframes gatePlateIn { from { opacity: 0; translate: -50% 8px; } to { opacity: 1; translate: -50% 0; } }
-.gate-plate .gb-hp-fill { transition: none; }
-.gate-plate strong { letter-spacing: 0.04em; }
+.gate-plate-name { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.gate-plate-name strong { font-size: 0.85rem; font-weight: normal; letter-spacing: 0.18em; text-transform: uppercase; text-shadow: 2px 2px 0 #0e0818, 0 0 8px #e02a70; }
+.gate-plate-name i { width: 6px; height: 6px; rotate: 45deg; background: #ff6aa8; box-shadow: 0 0 0 1px #0e0818, 0 0 6px #ff6aa8; }
+.gate-plate-num { align-self: flex-end; font-size: 0.65rem; color: #c8b8e8; text-shadow: 1px 1px 0 #0e0818; }
+.gate-plate.jolt { animation: gateJolt 0.45s steps(6); opacity: 1; }
+@keyframes gateJolt { 0%, 100% { translate: -50% 0; } 20% { translate: calc(-50% - 5px) 2px; } 40% { translate: calc(-50% + 4px) -2px; } 60% { translate: calc(-50% - 3px) 1px; } 80% { translate: calc(-50% + 2px) 0; } }
 /* your Pokémon, from behind: it rises into place, lunges as it attacks */
 .gate-mon {
   position: absolute; left: 30%; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 74px);
@@ -1795,7 +1807,7 @@ body.battle-intro { pointer-events: none; }
 .gate-free.dark img { filter: brightness(0) drop-shadow(0 0 2px #e0c0ff) drop-shadow(0 0 1px #b070ff); }
 .gate-free.flash img { animation: gateFreeFlash 0.5s steps(1, end); }
 @keyframes gateFreeFlash { 0%, 40% { filter: brightness(0) invert(1); } 20%, 60% { filter: brightness(0); } 100% { filter: none; } }
-.gate-scene.still, .gate-scene.still .gate-plate { animation: none; opacity: 1; }
+.gate-scene.still, .gate-scene.still .gate-plate, .gate-scene.still .gate-plate.jolt { animation: none; opacity: 1; }
 .gate-scene.still .gate-mon, .gate-scene.still .gate-free img { transition: none; }
 .gate-scene.still .gate-mon.lunge, .gate-scene.still .gate-dmg.go, .gate-scene.still .gate-free.flash img { animation: none; }
 .gate-scene.still .gate-dmg.go { opacity: 1; }

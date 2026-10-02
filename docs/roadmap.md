@@ -847,6 +847,9 @@ and whether Mewtwo mode stays out of it (it should: Mewtwo is what's behind it).
   (each type's move, stronger for a win and an ultimate for a Level 5 win; a loss chip uses the weakest), the bar and
   cracks running down together; the break whites out, blows the door apart and Mewtwo steps out in colour with its aura.
   Playtest links: `?gate=NNN`, `?strike=NN` (see CLAUDE.md).
+  **Stages and bar (2026-10-02, the user's call):** the damage shows in steps, past 75 / 50 / 25% then broken (a chain
+  snaps at 50%, the other at 25%), each step jolting the gate open mid-hit with its lines; its HP is the seal bar (gem,
+  stage runes, trailing damage) in the scene and the result window.
   **Follow-up (2026-10-02, the user's calls):** the gate left the title screen (and Mewtwo the flyers): it's only seen
   at a run's end, so its progress is a reason to win another. A loss at the last boss deals nothing now; the scene still
   plays, and your Pokémon is too weak to harm the seal. The story is told in the scene (the first visit's lore, then

@@ -531,13 +531,10 @@
   <!-- After a run, your Pokémon attacks the Sealed Gate (js/gatescene.js); the blow that breaks it frees Mewtwo -->
   <div id="gate-scene" class="gate-scene" hidden>
     <canvas id="gate-canvas" class="gate-canvas pixel" aria-hidden="true"></canvas>
-    <div class="nameplate gate-plate" id="gate-plate">
-      <div class="nameplate-title"><strong>Sealed Gate</strong></div>
-      <div class="gb-hp" id="gate-hp" role="progressbar" aria-label="The Sealed Gate's HP" aria-valuemin="0">
-        <span class="gb-hp-tag" aria-hidden="true">HP:</span>
-        <span class="gb-hp-track"><span class="gb-hp-fill" id="gate-hp-fill"></span></span>
-      </div>
-      <span class="gb-hp-num" id="gate-hp-text"></span>
+    <!-- its HP: the bar (gateBar() in js/gate.js) goes between the name and the number -->
+    <div class="gate-plate" id="gate-plate">
+      <div class="gate-plate-name"><i aria-hidden="true"></i><strong>Sealed Gate</strong><i aria-hidden="true"></i></div>
+      <span class="gate-plate-num" id="gate-hp-text"></span>
     </div>
     <span class="gate-dmg" id="gate-dmg" aria-hidden="true"></span>
     <img id="gate-mon" class="gate-mon pixel" alt="">

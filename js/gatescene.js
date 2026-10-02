@@ -11,11 +11,11 @@
  * Everything is painted on one low-res canvas (P CSS px a pixel) so the cavern, gate and effects share their pixels; the
  * Pokémon are the GIFs. Under reduced motion nothing shakes, flashes or flies; the lines, bar and sounds stay.
  */
-import { $, sleep, setHpBar } from './ui.js';
+import { $, sleep } from './ui.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
-import { makeGate, gateReady } from './gate.js';
-import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
+import { makeGate, gateReady, gateBar, setGateBar, settleGateBar } from './gate.js';
+import { GATE_HP, GATE_HIT, GATE_SLIVER, gateStage } from './data/gate.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 
@@ -42,7 +42,7 @@ const SHARDS = ['#341c58', '#22123e', '#5a3a8a', '#ff6aa8', '#ffd0e8'];
 let P = 4, W = 0, H = 0, gx = 0, gy = 0;
 let gate = null, bg = null, halo = null, ctx = null, gateCanvas = null;
 let parts = [], beams = [], rays = 0, raf = 0, last = 0, t = 0;
-let shake = 0, view = null;   // view: what the gate shows this frame (makeGate's state)
+let shake = 0, view = null, bar = null;   // view: what the gate shows this frame (makeGate's state)
 
 /**
  * Play the scene: `before` and `after` are the gate's HP, `kind` 'loss' | 'win' | 'ultimate', `level` the run's Trainer
@@ -68,6 +68,7 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
   mon.alt = name;
   mon.className = 'gate-mon pixel';
   view = { hp: before / GATE_HP, t: 0, flash: 0, seal: 0, eyes: 0 };
+  bar ??= $('gate-plate').insertBefore(gateBar('big'), $('gate-hp-text'));
   parts = []; beams = []; rays = 0; shake = 0;
   showHp(before);
   layout();
@@ -119,17 +120,18 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
     lines.push(`The seal took ${hit} damage!`);
     if (first) lines.push('Every run you win weakens the seal. The higher your Trainer Level, the harder the blow.');
   } else lines.push('The seal flared and threw the blow back!');
-  if (before > GATE_HP / 2 && after <= GATE_HP / 2) {
-    view.eyes = 1;
-    playSound('gate-hum');
-    lines.push('...Something is moving behind the gate!');
-  }
+  const from = gateStage(before), to = gateStage(after);
+  for (let k = from + 1; k <= Math.min(to, 3); k++) lines.push(...STAGE_LINES[k]);
+  if (from < 2 && to >= 2) { view.eyes = 1; playSound('gate-hum'); }
   if (after === GATE_SLIVER) lines.push(hit > 0 ? 'The seal hangs by a thread! Only a Trainer Level 5 victory can break it now.' : 'Only a Trainer Level 5 victory can break it now.');
   else if (kind === 'win' && level < GATE_HIT.length - 1 && !first) lines.push(`A Trainer Level ${level + 1} victory would strike for ${GATE_HIT[level + 1]}.`);
   else if (hit > 0 && after <= GATE_HP / 2) lines.push('It won\'t hold much longer...');
   await say(lines);
   await leave(scene);
 }
+
+// what each stage crossed says: past 75%, 50%, 25%
+const STAGE_LINES = [[], ['Cracks split the seal!'], ['A chain snapped!', '...Something is moving behind the gate!'], ['The last chain gave way!', 'The seal is failing...']];
 
 const say = (lines) => sceneSay('gate-scene', 'gate-log', lines);
 
@@ -186,8 +188,10 @@ function fitMon() {
 
 const loaded = (img) => img.complete && img.naturalWidth ? null : new Promise(resolve => { img.onload = img.onerror = resolve; });
 
-function showHp(hp) {
-  setHpBar('gate', Math.round(hp), GATE_HP);
+/** The bar and number at hp; with trail, the bar's pale trail holds where it was until the hit settles. */
+function showHp(hp, trail = false) {
+  setGateBar(bar, hp, trail);
+  $('gate-hp-text').textContent = `${Math.max(0, Math.round(hp))} / ${GATE_HP}`;
 }
 
 /* ---------- painting ---------- */
@@ -449,21 +453,45 @@ function impact(type, kind) {
   }
 }
 
-/** Run the bar and the cracks down together. */
-function drain(from, to, ms) {
+/** Run the bar down, its trail following after; each stage it passes, the gate cracks open another step. */
+async function drain(from, to, ms) {
   if (still()) { view.hp = to / GATE_HP; showHp(to); return sleep(300); }
-  return new Promise(resolve => {
+  let stage = gateStage(from);
+  await new Promise(resolve => {
     const start = performance.now();
     const step = (now) => {
       const k = Math.min(1, (now - start) / ms), e = 1 - (1 - k) ** 2;
       const hp = from + (to - from) * e;
       view.hp = hp / GATE_HP;
-      showHp(hp);
+      showHp(hp, true);
+      if (hp > 0 && gateStage(hp) > stage) { stage = gateStage(hp); crackOpen(); }
       if (k < 1) requestAnimationFrame(step);
       else resolve();
     };
     requestAnimationFrame(step);
   });
+  await sleep(250);
+  settleGateBar(bar);
+  await sleep(600);
+}
+
+/** A stage passed: the gate jolts, a burst of light and crystal off it, and the bar's rune there shatters. */
+function crackOpen() {
+  playSound('gate-crack');
+  view.flash = Math.max(view.flash, 0.8);
+  view.seal = 1;
+  shake = 3;
+  setTimeout(() => { shake = 0; }, 450);
+  const plate = $('gate-plate');
+  plate.classList.remove('jolt');
+  void plate.offsetWidth;
+  plate.classList.add('jolt');
+  const [x, y] = target();
+  for (let i = 0; i < 50; i++) {
+    const a = Math.random() * Math.PI * 2, v = 30 + Math.random() * 70;
+    spark(x, y, Math.cos(a) * v, Math.sin(a) * v, 0.6 + Math.random() * 0.4, ['#ffffff', '#ffd0e8', '#ff6aa8', '#e02a70'], { drag: 2 });
+  }
+  for (let i = 0; i < 14; i++) spark(gx + 6 + Math.random() * (GW - 12), gy + Math.random() * GH * 0.6, (Math.random() - 0.5) * 30, -30, 1.4, STONE, { grav: 160, size: 2 });
 }
 
 function popDamage(n) {

@@ -468,11 +468,53 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 }
 .unlocks { list-style: none; padding: 0; }
 .unlocks li { background: rgba(88, 214, 141, 0.18); border-radius: 8px; padding: 6px 10px; }
-/* the Sealed Gate's plain bar (part A; its art comes in part B) */
+/* the Sealed Gate's HP bar (gateBar() in js/gate.js: the gate scene and the result window): the seal's gem at
+   its head, a dark crystal track in a stone frame, a rune at 75 / 50 / 25% that goes dark once passed, and a pale trail
+   that lags behind a hit. Sizes: default, .big (the scene). */
 .unlocks .gate-line { background: rgba(160, 120, 255, 0.18); }
-.gate-bar { position: relative; height: 14px; margin-top: 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.35); overflow: hidden; }
-.gate-fill { height: 100%; background: #9b6bff; }
-.gate-hp { position: absolute; inset: 0; font-size: 0.7rem; line-height: 14px; text-align: center; color: #fff; text-shadow: 0 1px 1px #000; }
+.unlocks .seal-bar { margin: 8px 2px 2px; }
+.gate-hp { display: block; margin-top: 2px; font-size: 0.65rem; text-align: right; color: #d8c8f8; }
+.seal-bar { --gem: 16px; --tall: 10px; --edge: 2px; position: relative; display: flex; align-items: center; height: var(--gem); }
+.seal-bar.big { --gem: 22px; --tall: 14px; }
+.seal-bar-track {
+  position: relative; flex: 1; height: var(--tall); margin-left: calc(var(--gem) * -0.4);
+  background: repeating-linear-gradient(-45deg, #170c2c 0 3px, #0c0618 3px 6px);
+  box-shadow: 0 0 0 var(--edge) #0e0818, 0 0 0 calc(var(--edge) * 2) #7a6ea2, 0 0 0 calc(var(--edge) * 3) #0e0818, inset 0 var(--edge) 0 rgba(0, 0, 0, 0.6);
+}
+.seal-bar-fill, .seal-bar-trail { position: absolute; left: 0; top: 0; bottom: 0; }
+.seal-bar-trail { width: calc(var(--trail, 1) * 100%); background: #fff0f8; transition: width 0.6s ease-in; }
+.seal-bar-fill {
+  width: calc(var(--hp, 1) * 100%); overflow: hidden;
+  background: linear-gradient(#ffd0e8 0 20%, #ff6aa8 20% 50%, #e02a70 50% 80%, #8a1040 80%);
+}
+.seal-bar-fill::after {   /* light running along it */
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 42%, rgba(255, 255, 255, 0.6) 50%, transparent 58%) no-repeat;
+  background-size: 250% 100%; animation: sealShine 2.8s linear infinite;
+}
+@keyframes sealShine { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+.seal-bar-gem {
+  position: relative; z-index: 2; flex: none; width: var(--gem); height: var(--gem); rotate: 45deg; scale: 0.72;
+  background: linear-gradient(135deg, #ffd0e8 0 22%, #ff70b0 22% 45%, #c02068 45% 75%, #5a0c38 75%);
+  box-shadow: 0 0 0 var(--edge) #0e0818, 0 0 0 calc(var(--edge) * 2) #a498c8, 0 0 0 calc(var(--edge) * 3) #0e0818, 0 0 10px 2px rgba(255, 90, 170, 0.55);
+  animation: sealGem 2.4s ease-in-out infinite;
+}
+@keyframes sealGem { 50% { box-shadow: 0 0 0 var(--edge) #0e0818, 0 0 0 calc(var(--edge) * 2) #a498c8, 0 0 0 calc(var(--edge) * 3) #0e0818, 0 0 16px 4px rgba(255, 120, 190, 0.8); } }
+.seal-bar-rune {
+  position: absolute; top: 50%; z-index: 1; width: calc(var(--tall) * 0.8 + 2px); aspect-ratio: 1; translate: -50% -50%; rotate: 45deg;
+  background: #ffd0e8; box-shadow: 0 0 0 var(--edge) #0e0818, 0 0 6px 1px rgba(255, 106, 168, 0.9);
+}
+.seal-bar:is([data-stage="1"], [data-stage="2"], [data-stage="3"], [data-stage="4"]) .seal-bar-rune[data-k="1"],
+.seal-bar:is([data-stage="2"], [data-stage="3"], [data-stage="4"]) .seal-bar-rune[data-k="2"],
+.seal-bar:is([data-stage="3"], [data-stage="4"]) .seal-bar-rune[data-k="3"] { background: #3a3256; box-shadow: 0 0 0 var(--edge) #0e0818; }
+.seal-bar.big:is([data-stage="1"], [data-stage="2"], [data-stage="3"]) .seal-bar-rune[data-k="1"],
+.seal-bar.big:is([data-stage="2"], [data-stage="3"]) .seal-bar-rune[data-k="2"],
+.seal-bar.big[data-stage="3"] .seal-bar-rune[data-k="3"] { animation: runeBreak 0.7s steps(7) both; }
+@keyframes runeBreak { 0% { background: #fff; scale: 2.2; box-shadow: 0 0 0 var(--edge) #0e0818, 0 0 18px 6px #fff; } 40% { background: #ff6aa8; scale: 1.4; } }
+/* past 25% the seal is failing: the bar and its gem flicker */
+.seal-bar[data-stage="3"] .seal-bar-fill, .seal-bar[data-stage="3"] .seal-bar-gem { animation: sealFail 1.3s steps(1) infinite; }
+@keyframes sealFail { 0%, 62%, 74%, 100% { filter: none; } 66%, 86% { filter: brightness(1.7) saturate(1.2); } 70% { filter: brightness(0.6); } }
+@media (prefers-reduced-motion: reduce) { .seal-bar *, .seal-bar *::after { animation: none !important; } .seal-bar-trail { transition: none; } }
 
 .noscript { padding: 20px; text-align: center; }
 
