@@ -982,16 +982,32 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    (3.2 catches a run): inside the noise, no retune. Checked headless at 390x844: a Safari run's first fight against
    Mareep (53 HP, Discharge 16, its moves cycling), the Safari Pokédex's pages and a caught entry's card, no console
    errors. Not checked on a phone.
-   ~380 Gen 1-5 non-legendary species are still unused, so batches can go on for a while.
+   **Batch 2 built 2026-10-02** (cloud): **84 more Pokémon**, 14 an area (12 wilds + 2 rare spawns), same templates (no new
+   one needed), 188 Safari Pokédex entries. Meadow Spearow, Nidoran♀, Nidoran♂, Jigglypuff, Doduo, Skitty, Bidoof, Shinx,
+   Starly, Kricketot, Combee, Blitzle (rare Farfetch'd, Audino); Forest Caterpie, Weedle, Ledyba, Spinarak, Wurmple,
+   Nincada, Burmy, Venipede, Exeggcute, Murkrow, Pachirisu, Shuckle (rare Scyther, Pinsir); Wetland Magikarp, Shellder,
+   Chinchou, Corphish, Finneon, Remoraid, Basculin, Frillish, Carvanha, Wailmer, Mantyke, Azurill (rare Feebas, Lapras);
+   Marsh Gastly, Duskull, Shuppet, Drifloon, Trubbish, Stunky, Tynamo, Seviper, Roselia, Qwilfish, Shelmet, Lickitung (rare
+   Gengar, Rotom); Peak Zubat, Geodude, Machop, Onix, Seel, Snover, Delibird, Smoochum, Vanillite, Aron, Magby, Mankey
+   (rare Aerodactyl, Riolu); Desert Rhyhorn, Phanpy, Gligar, Baltoy, Cacnea, Bonsly, Dwebble, Scraggy, Drilbur, Natu,
+   Anorith, Lileep (rare Gible, Darmanitan). Claude's calls: left out Budew / Sewaddle / Lotad / Horsea / Spheal / Tympole
+   and their lines (the user turned them down as skins); the borrowed wilds stay (old catches keep their entries). Areas
+   now hold 25-28 wilds and 4-5 rare spawns. 8 signature cards were retuned to stop reading like another card.
+   Bot (human bot, random Safari days, same bot): knocking out 73.7 -> 81.3 (300 runs/cell), throwing at 50%+ 69.3 -> 67.3
+   (150, 3.4 catches a run). The knock-out gap (+7.6) is just inside the ~8 noise line, so no retune; if batch 3 pushes it
+   further, trim the strongest new cards (Swords Dance, Shadow Ball, Karate Chop) or the template HP. Checked headless at
+   390x844: every new GIF decodes, a Safari run's first fight, the Safari Pokédex (188), no console errors.
+   ~300 Gen 1-5 non-legendary species are still unused, so batches can go on for a while.
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 4, batch 2): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0:
-the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 2: ~50 more Gen 1-5 Pokémon as lines in
-js/data/safari-mons.js on the existing templates (add a template only if a role is missing), spread over the 6 areas by
-habitat, ~8 each plus a rare spawn per area, with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median
-bbox) and a signature card each; tests/safarimons.test.mjs must stay green. Consider retiring the borrowed main-game wilds
-from the areas once each area has ~15 of its own (keep their cards so old catches still read). Bot-check a few Safari
-days before and after (~300 runs). Also settle with me whether a complete area gives a reward. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (phase 4, batch 3): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0:
+the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 3: ~70 more Gen 1-5 non-legendary Pokémon (none
+the game uses; still leave out the Budew / Sewaddle / Lotad / Horsea / Spheal / Tympole lines) as lines in
+js/data/safari-mons.js on the existing templates, spread over the 6 areas by habitat with a couple of rare spawns each
+(evolved forms are fine there), with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median bbox) and a
+signature card each; tests/safarimons.test.mjs must stay green. Batch 2 left knock-out runs +7.6 easier: bot-check before
+and after (human bot, ~150 runs a cell, knock out and throw at 50%+) and retune if the gap passes ~8. Also settle with me
+whether a complete area gives a reward. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

@@ -72,6 +72,10 @@ three places:
   Pokémon (`js/data/safari-mons.js`, one line each, 6 of them rare spawns), each with a PokeAPI GIF, a `SPRITE_FIT` line
   and a signature card; borrowed wilds now live in one area each. 104 Safari Pokédex entries. Bot within noise (knock
   out 76.0 -> 77.3, catching 58.7 -> 64.0). Next: batch 2 (prompt in the roadmap); the area reward is still open.
+- 2026-10-02: **Safari Zone phase 4, batch 2** (cloud, pushed to `main`): 84 more Gen 1-5 Pokémon, 12 wilds + 2 rare
+  spawns an area, each with a GIF, a `SPRITE_FIT` line and a signature card; 188 Safari Pokédex entries. Bot: knock out
+  73.7 -> 81.3 (300 runs, just inside noise), throw at 50%+ 69.3 -> 67.3; no retune. Next: batch 3 (prompt in the roadmap);
+  the area reward is still open.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
