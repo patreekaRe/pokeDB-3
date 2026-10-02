@@ -37,3 +37,21 @@ export function modsFor(level) {
   for (let i = 1; i <= level; i++) Object.assign(mods, LEVELS[i].mods);
   return mods;
 }
+
+/* Mewtwo's run is its own game mode (v1.0, the user's calls 2026-09-28 / 2026-10-02): no Trainer Level, one fixed
+   setting from start to end. Biomes 1-3 are a short sprint (a victory lap: `floors` per biome instead of the map's 10)
+   at Level 0's rules, then the Crystal Depths, which only Mewtwo enters, at its own BIOMES numbers. */
+export const MEWTWO_MODE = {
+  floors: [5, 5, 5, 10],
+  mods: [{}, {}, {}, {}],   // on top of Level 0's, per biome
+};
+
+export const isMewtwoRun = (starter) => starter?.id === 'mewtwo';
+
+/** The rules a run plays in a biome: its Trainer Level's, or Mewtwo's fixed ones. */
+export function runMods(starter, level, biome) {
+  return isMewtwoRun(starter) ? { ...BASE_MODS, ...MEWTWO_MODE.mods[biome] } : modsFor(level);
+}
+
+/** How many floors a biome's map has in this run (undefined: the map's own 10). */
+export const runFloors = (starter, biome) => (isMewtwoRun(starter) ? MEWTWO_MODE.floors[biome] : undefined);

@@ -38,23 +38,25 @@ const { preloadBoss } = TRANSITIONS;
 
 /* ---------- the knobs you can turn ---------- */
 const COLS = 7;       // columns in the grid
-const FLOORS = 10;    // floors per biome (Slay the Spire uses 15: a much longer run)
+const MAP_FLOORS = 10;   // floors per biome (Slay the Spire uses 15: a much longer run)
 const PATHS = 6;      // how many random paths are walked
 
 // Chance (in %) of each room type on floors that are not fixed.
 // Marts aren't rolled: placeMarts() puts them where most routes pass (see MART_ROUTE_SHARE).
 const ROOM_ODDS = { fight: 45, event: 22, elite: 16, rest: 12, shop: 0 };
 
-// Where the special floors are, scaled to the number of floors
+// Where the special floors are, scaled to the number of floors (a map's own: Mewtwo's sprint biomes have fewer)
 // (for 15 floors this gives: treasure on floor 9, no elites/rests below floor 6).
-const TREASURE_FLOOR = Math.max(2, Math.round(FLOORS * 0.6) - 1);   // index, 0 = bottom
-const MIN_ELITE_REST_FLOOR = Math.max(2, Math.round(FLOORS * 0.4) - 1);
-const TOP_FLOOR = FLOORS - 1;                                         // always rest sites
-const MIN_SHOP_FLOOR = MIN_ELITE_REST_FLOOR + 1;                      // a few fights in, so you have prize money to spend
-
-// Prize money is only spent at a Mart, so after rolling, fights/events on these floors (after the
-// treasure, when you have ~5 fights of ₽) become Marts until this share of start-to-boss routes pass one.
-const MART_FLOORS = [TREASURE_FLOOR + 1, TOP_FLOOR - 1];
+let TREASURE_FLOOR, MIN_ELITE_REST_FLOOR, TOP_FLOOR, MIN_SHOP_FLOOR, MART_FLOORS;
+function setFloors(floors) {
+  TREASURE_FLOOR = Math.max(2, Math.round(floors * 0.6) - 1);   // index, 0 = bottom
+  MIN_ELITE_REST_FLOOR = Math.max(2, Math.round(floors * 0.4) - 1);
+  TOP_FLOOR = floors - 1;                                        // always rest sites
+  MIN_SHOP_FLOOR = MIN_ELITE_REST_FLOOR + 1;                     // a few fights in, so you have prize money to spend
+  // Prize money is only spent at a Mart, so after rolling, fights/events on these floors (after the
+  // treasure, when you have ~5 fights of ₽) become Marts until this share of start-to-boss routes pass one.
+  MART_FLOORS = [TREASURE_FLOOR + 1, Math.max(TREASURE_FLOOR + 1, TOP_FLOOR - 1)];
+}
 const MART_ROUTE_SHARE = 0.75;
 
 // Rooms drawn as a building standing on the map instead of a framed square (js/buildings.js).
@@ -78,13 +80,15 @@ const randFloat = (min, max) => min + Math.random() * (max - min);
    ============================================================ */
 
 /* A biome is 3 places plus the boss's arena (the scenery's stages, js/scene.js; their names are each biome's `stages`
-   in js/data/enemies.js): floors 1-3, 4-6, 7-10, then the boss. The road in (floor 0) is the first place's too. */
+   in js/data/enemies.js): floors 1-3, 4-6, 7-10, then the boss. The road in (floor 0) is the first place's too.
+   A shorter map (Mewtwo's sprint through biomes 1-3) stays in the first place all the way to the boss. */
 const STAGE_OF_FLOOR = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2];
 
 /** Which place a room is in (0-2, 3 the boss's arena) and how many floors into it (`step`, 0 at its first). */
 export function stageOf(map, node) {
   if (node?.type === 'boss') return { stage: 3, step: 0 };
   const floor = node ? node.floor + 1 : 0;
+  if (map && map.floors.length < MAP_FLOORS) return { stage: 0, step: floor };
   const stage = STAGE_OF_FLOOR[Math.min(floor, STAGE_OF_FLOOR.length - 1)];
   return { stage, step: floor - STAGE_OF_FLOOR.indexOf(stage) };
 }
@@ -101,9 +105,10 @@ export function journey(map, node) {
   return { progress, ...stageOf(map, node), seed: seed >>> 0 };
 }
 
-/** Build a random map. Returns { floors: [[room...]...], boss, byId }. */
-export function generateMap({ eliteMult = 1 } = {}) {
-  const grid = Array.from({ length: FLOORS }, () => Array(COLS).fill(null));
+/** Build a random map, `floors` high. Returns { floors: [[room...]...], boss, byId }. */
+export function generateMap({ eliteMult = 1, floors: count = MAP_FLOORS } = {}) {
+  setFloors(count);
+  const grid = Array.from({ length: count }, () => Array(COLS).fill(null));
 
   // Rooms are made on demand, so only rooms that a path visits exist.
   const roomAt = (floor, col) => {
@@ -129,7 +134,7 @@ export function generateMap({ eliteMult = 1 } = {}) {
     if (p === 0) firstStart = col;
 
     let room = roomAt(0, col);
-    for (let floor = 0; floor < FLOORS - 1; floor++) {
+    for (let floor = 0; floor < count - 1; floor++) {
       col = nextColumn(grid, floor, col);
       const above = roomAt(floor + 1, col);
       link(room, above);
@@ -140,7 +145,7 @@ export function generateMap({ eliteMult = 1 } = {}) {
   // 2. Collect the rooms that exist (pathless ones were never created).
   const floors = grid.map(row => row.filter(Boolean));
   const boss = {
-    id: 'boss', floor: FLOORS, col: Math.floor(COLS / 2), type: 'boss',
+    id: 'boss', floor: count, col: Math.floor(COLS / 2), type: 'boss',
     next: [], prev: [], visited: false, jx: 0, jy: 0,
   };
   floors[TOP_FLOOR].forEach(room => link(room, boss));
@@ -309,10 +314,16 @@ const WIDEST_W = 72;                              // tiles across at most, on a 
 const WIDE_TILE = 11;                             // CSS px per tile on a wide screen (css/screens.css)
 let GRID_W = NARROW_W;                            // set per render by fitGrid()
 const BOSS_ROW = 10;                              // leaves room above the boss for its silhouette
-const rowY = (floor) => floor >= FLOORS ? BOSS_ROW : BOSS_ROW + 7 + (FLOORS - 1 - floor) * 6;   // tile row (boss on top)
-const JOIN_ROW = rowY(0) + 3;                      // where the routes from the first rooms meet
-const START_ROW = JOIN_ROW + 6;                    // the end of the single road up the middle, where you start
-const GRID_H = START_ROW + 4;                      // room under the road for your Pokémon to stand at the start
+let rows = MAP_FLOORS;                            // the drawn map's floors (setRows())
+const rowY = (floor) => floor >= rows ? BOSS_ROW : BOSS_ROW + 7 + (rows - 1 - floor) * 6;   // tile row (boss on top)
+let JOIN_ROW, START_ROW, GRID_H;
+function setRows(n) {
+  rows = n;
+  JOIN_ROW = rowY(0) + 3;                          // where the routes from the first rooms meet
+  START_ROW = JOIN_ROW + 6;                        // the end of the single road up the middle, where you start
+  GRID_H = START_ROW + 4;                          // room under the road for your Pokémon to stand at the start
+}
+setRows(MAP_FLOORS);
 const BOSS_COL = Math.floor(COLS / 2);
 let CENTER_X = 3 + BOSS_COL * 5;                  // tile column of the boss and the start road
 const MAX_STEP = 8;                               // widest gap between columns on a phone, so a narrow map isn't stretched thin
@@ -343,6 +354,7 @@ const PALETTES = {
   clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
   shrine:   { ground: 'moss',  blobs: [['trees', 9, 14, 40], ['water', 3, 12, 28], ['mountain', 2, 8, 16]] },
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
+  depths:   { ground: 'cave',  blobs: [['crystal', 7, 10, 30], ['pool', 4, 12, 30], ['boulder', 5, 8, 22]] },   // placeholder until its art lands
 };
 
 // base, light, dark, edge (the 1px line where it meets other terrain)
@@ -354,12 +366,18 @@ const TERRAIN = {
   lava:     ['#e04818', '#f8c030', '#a02808', '#601800'],
   mountain: ['#c08040', '#e8b070', '#7a4a20', '#5a3010'],
   trees:    ['#2f8a2f', '#58b848', '#185018', '#103810'],
+  cave:     ['#4a4058', '#625674', '#362e42'],
+  crystal:  ['#5a3c8a', '#c8a8f8', '#3a2460', '#201438'],
+  pool:     ['#2a5ab0', '#88e0f8', '#1a3a80', '#d8f8ff'],
+  boulder:  ['#6a6078', '#9a90a8', '#40384c', '#241e2c'],
 };
 
 // 8x8 motifs: . base, L light, D dark
 const MOTIFS = {
   mountain: ['........', '...LL...', '..LL.D..', '.LL...D.', '.L....DD', 'L.....DD', '......DD', 'DDDDDDDD'],
   trees:    ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
+  crystal:  ['...L....', '..LL..L.', '..LD.LL.', '.LLD.LD.', '.LDD.LD.', 'LLDD.LDD', 'LLDDLLDD', 'DDDDDDDD'],
+  boulder:  ['........', '..LLL...', '.LL..D..', '.L....D.', 'L.....DD', 'L....DDD', '.DDDDDD.', '........'],
 };
 
 const ROUTE = { edge: '#9a8448', fill: '#f8f0b8', walked: '#e83030', active: '#ffffff' };
@@ -533,9 +551,9 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
     for (let ly = 0; ly < TILE; ly++) for (let lx = 0; lx < TILE; lx++) {
       const x = tx * TILE + lx, y = ty * TILE + ly;
       let c = base;
-      if (kind === 'water' || kind === 'lava') {
+      if (kind === 'water' || kind === 'lava' || kind === 'pool') {
         if (ripple(x, y)) c = light;
-        flowing.push([x, y, base, light, kind === 'water' ? 1 : -0.5]);
+        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : 1]);
       } else if (motif) {
         const m = motif[ly][lx];
         c = m === 'L' ? light : m === 'D' ? dark : base;
@@ -597,6 +615,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
   if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal }];
   const box = peek || $('map');
   box.replaceChildren(...box.querySelectorAll(':scope > .map-keep'));
+  setRows(map.floors.length);
   fitGrid(box);
   box.style.setProperty('--grid-w', GRID_W);
   box.style.setProperty('--grid-h', GRID_H);
@@ -663,7 +682,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     const img = el('img', 'map-boss-shadow');
     img.src = boss.image;
     img.alt = '';
-    place(img, CENTER_X, rowY(FLOORS));
+    place(img, CENTER_X, rowY(rows));
     box.append(img);
     if (!peek && reachable.has(map.boss.id)) preloadBoss(boss.spriteId);
   }

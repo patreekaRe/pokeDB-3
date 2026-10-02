@@ -358,6 +358,125 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  /* ----- Biome 4: the Crystal Depths, Mewtwo's own (v1.0). Shown as Neutral or Psychic whatever their real types:
+     Mewtwo is neutral to every type. Built to test a strong deck: shields, scaling, and a `trait` that answers what you
+     play (TRAITS below). ----- */
+  crobat: {
+    name: 'Crobat', type: 'normal', hp: 66, ...sprite('crobat'),
+    description: 'Four wings and no sound at all. You feel the bite before you see it.',
+    moves: [
+      { kind: 'attack', name: 'Cross Poison', amount: 8, adds: { card: 'poison', n: 1 } },
+      { kind: 'buff',   name: 'Agility',      amount: 3 },
+      { kind: 'drain',  name: 'Leech Life',   amount: 10, heal: 8 },
+    ],
+  },
+  sableye: {
+    name: 'Sableye', type: 'normal', hp: 62, ...sprite('sableye'),
+    description: 'Eats the crystals off the walls, and its eyes became gems.',
+    moves: [
+      { kind: 'status', name: 'Confuse Ray', adds: { card: 'confusion', n: 2, to: 'draw' } },
+      { kind: 'attack', name: 'Shadow Claw', amount: 10 },
+      { kind: 'buff',   name: 'Nasty Plot',  amount: 3 },
+      { kind: 'attack', name: 'Power Gem',   amount: 13 },
+    ],
+  },
+  gigalith: {
+    name: 'Gigalith', type: 'normal', hp: 78, ...sprite('gigalith'),
+    trait: { id: 'stamina', name: 'Sturdy', after: 4, amount: 6 },
+    description: 'Soaks up the cave\'s energy in its crystals, and fires it all at once.',
+    moves: [
+      { kind: 'defend', name: 'Iron Defense', amount: 14 },
+      { kind: 'attack', name: 'Rock Blast',   amount: 9 },
+      { kind: 'attack', name: 'Solar Beam',   amount: 15, type: 'normal' },
+    ],
+  },
+  steelix: {
+    name: 'Steelix', type: 'normal', hp: 80, ...sprite('steelix'),
+    trait: { id: 'barbs', name: 'Iron Barbs', amount: 3 },
+    description: 'Tunnels through the crystal rock. Hitting it hurts your hands.',
+    moves: [
+      { kind: 'attack', name: 'Iron Tail', amount: 10 },
+      { kind: 'defend', name: 'Harden',    amount: 12 },
+      { kind: 'attack', name: 'Crunch',    amount: 13 },
+    ],
+  },
+  excadrill: {
+    name: 'Excadrill', type: 'normal', hp: 70, ...sprite('excadrill'),
+    trait: { id: 'barbs', name: 'Rough Skin', amount: 2 },
+    description: 'Drills through the cave floor faster than a train runs.',
+    moves: [
+      { kind: 'buff',   name: 'Hone Claws', amount: 3 },
+      { kind: 'attack', name: 'Metal Claw', amount: 9 },
+      { kind: 'attack', name: 'Drill Run',  amount: 14 },
+    ],
+  },
+  haxorus: {
+    name: 'Haxorus', type: 'normal', hp: 72, ...sprite('haxorus'),
+    description: 'Its tusks cut through steel. It sharpens them on the crystals.',
+    moves: [
+      { kind: 'buff',   name: 'Dragon Dance', amount: 4 },
+      { kind: 'attack', name: 'Dragon Claw',  amount: 10 },
+      { kind: 'attack', name: 'Outrage',      amount: 16 },
+    ],
+  },
+  golurk: {
+    name: 'Golurk', type: 'normal', hp: 82, ...sprite('golurk'),
+    trait: { id: 'stamina', name: 'No Guard', after: 4, amount: 5 },
+    description: 'An ancient guardian of clay, still walking the halls it was made to watch.',
+    moves: [
+      { kind: 'attack', name: 'Shadow Punch', amount: 10 },
+      { kind: 'defend', name: 'Iron Defense', amount: 12 },
+      { kind: 'attack', name: 'Hammer Arm',   amount: 15 },
+    ],
+  },
+  bronzong: {
+    name: 'Bronzong', type: 'psychic', hp: 76, ...sprite('bronzong'),
+    description: 'Rings once, deep in the cave, and the crystals answer.',
+    moves: [
+      { kind: 'defend', name: 'Iron Defense', amount: 13 },
+      { kind: 'buff',   name: 'Calm Mind',    amount: 3 },
+      { kind: 'attack', name: 'Extrasensory', amount: 12 },
+    ],
+  },
+  claydol: {
+    name: 'Claydol', type: 'psychic', hp: 70, ...sprite('claydol'),
+    trait: { id: 'analytic', name: 'Levitate', amount: 3 },
+    description: 'Floats in the dark, studying whatever comes near with all its eyes.',
+    moves: [
+      { kind: 'attack', name: 'Psybeam',     amount: 9, adds: { card: 'confusion', n: 1, to: 'draw' } },
+      { kind: 'defend', name: 'Cosmic Power', amount: 12 },
+      { kind: 'attack', name: 'Earth Power', amount: 14 },
+    ],
+  },
+  dusknoir: {
+    name: 'Dusknoir', type: 'normal', hp: 74, ...sprite('dusknoir'),
+    description: 'Comes up out of the deepest cracks to lead lost things away.',
+    moves: [
+      { kind: 'status', name: 'Curse',        adds: { card: 'sludge', n: 2, to: 'draw' } },
+      { kind: 'drain',  name: 'Shadow Sneak', amount: 9, heal: 8 },
+      { kind: 'attack', name: 'Shadow Punch', amount: 14 },
+    ],
+  },
+  lanturn: {
+    name: 'Lanturn', type: 'normal', hp: 72, ...sprite('lanturn'),
+    description: 'Lights the underground lakes. Swim towards it and the light bites.',
+    moves: [
+      { kind: 'attack', name: 'Spark',       amount: 9, adds: { card: 'paralysis', n: 1, to: 'draw' } },
+      { kind: 'drain',  name: 'Aqua Ring',   amount: 6, heal: 12 },
+      { kind: 'attack', name: 'Thunderbolt', amount: 14 },
+    ],
+  },
+  magnezone: {
+    name: 'Magnezone', type: 'normal', hp: 74, ...sprite('magnezone'),
+    trait: { id: 'analytic', name: 'Analytic', amount: 4 },
+    description: 'Drawn to the depths by the strange energy pulsing below.',
+    moves: [
+      { kind: 'defend', name: 'Magnet Rise',   amount: 12 },
+      { kind: 'attack', name: 'Flash Cannon',  amount: 11 },
+      { kind: 'attack', name: 'Zap Cannon',    amount: 15, adds: { card: 'paralysis', n: 1, to: 'draw' } },
+    ],
+  },
+
   /* ----- the bases of the elites (they only appear as "Alpha" versions), 3 per biome ----- */
   /* Elites and bosses are all pure Normal: they fight as Neutral, and a Gloom that isn't weak to Fire looked like a bug. */
   raticate: {
@@ -440,6 +559,39 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Dizzy Punch', amount: 8 },
       { kind: 'buff',   name: 'Agility',     amount: 2 },
       { kind: 'attack', name: 'Return',      amount: 13 },
+    ],
+  },
+
+  clefable: {
+    name: 'Clefable', type: 'normal', hp: 80, ...sprite('clefable'),
+    trait: { id: 'stamina', name: 'Magic Guard', after: 4, amount: 7 },
+    description: 'Dances under the moonstones in the deepest cave, and hates being watched.',
+    moves: [
+      { kind: 'defend', name: 'Cosmic Power', amount: 14 },
+      { kind: 'drain',  name: 'Moonlight',    amount: 9, heal: 12 },
+      { kind: 'buff',   name: 'Calm Mind',    amount: 4 },
+      { kind: 'attack', name: 'Metronome',    amount: 17 },
+    ],
+  },
+  ditto: {
+    name: 'Ditto', type: 'normal', hp: 74, ...sprite('ditto'),
+    trait: { id: 'analytic', name: 'Imposter', amount: 5 },
+    description: 'It turns into you. Every trick you learn, it learns too.',
+    moves: [
+      { kind: 'buff',   name: 'Transform', amount: 5 },
+      { kind: 'attack', name: 'Pound',     amount: 11 },
+      { kind: 'attack', name: 'Struggle',  amount: 15 },
+    ],
+  },
+  smeargle: {
+    name: 'Smeargle', type: 'normal', hp: 76, ...sprite('smeargle'),
+    trait: { id: 'barbs', name: 'Own Tempo', amount: 3 },
+    description: 'Paints the cave walls with its tail. Its signature move copies yours.',
+    moves: [
+      { kind: 'status', name: 'Spore',  adds: { card: 'paralysis', n: 2, to: 'draw' } },
+      { kind: 'attack', name: 'Sketch', amount: 12 },
+      { kind: 'buff',   name: 'Spore Dance', amount: 3 },
+      { kind: 'attack', name: 'Explosion', amount: 18 },
     ],
   },
 
@@ -544,13 +696,27 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Hyper Beam', amount: 20 },
     ],
   },
+
+  /* the final boss: "the last energy". Its set piece (phases, Eternamax, its own music) is v1.0 part C. */
+  eternatus: {
+    name: 'Eternatus', type: 'normal', hp: 800, ...sprite('eternatus'), boss: true,
+    trait: { id: 'stamina', name: 'Pressure', after: 4, amount: 8 },
+    description: 'The energy at the bottom of everything. It has been waiting a very long time.',
+    moves: [
+      { kind: 'attack', name: 'Dynamax Cannon', amount: 14 },
+      { kind: 'defend', name: 'Cosmic Power',   amount: 22 },
+      { kind: 'status', name: 'Toxic',          adds: { card: 'poison', n: 2, to: 'draw' } },
+      { kind: 'buff',   name: 'Dragon Dance',   amount: 4 },
+      { kind: 'attack', name: 'Eternabeam',     amount: 26 },
+    ],
+  },
 };
 
 /* Chad Master Kenmatta, the Move Tutor, fought in person from his dojo (the Move Tutor event's Challenge). Not in
    ENEMY_DEFS, so he never joins the Pokédex. A boss fight in any biome: `hp` is per biome, and the biome's bossBonus
    adds to his attacks like any boss. Winning gives his Mata-Mindset (the `unique` relic `exp-share` in relics.js). */
 export const KEN = {
-  id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370], boss: true,
+  id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370, 560], boss: true,
   image: 'assets/trainers/alder.png', art: false, arena: 'kombat',   // his own stage (PLACE_ART.kombat in js/scene.js)
   aura: true,   // goes Super Saiyan 2 below half HP (js/aura.js; the user's joke)
   music: 'kombat',   // his own theme, the user's (an 8-bit Mortal Kombat theme), in place of the boss music
@@ -631,7 +797,28 @@ export const BIOMES = [
     elites: ['purugly', 'cinccino', 'lopunny'], bosses: ['slaking', 'regigigas', 'lickilicky', 'porygonz'],
     hpMult: 5.2, dmgBonus: 27, bossBonus: 33,
   },
+  {
+    // Mewtwo's alone (v1.0): `secret` keeps it out of every other run, the Pokédex and the records. Its numbers are fixed:
+    // no Trainer Level reaches it (MEWTWO_MODE in difficulty.js). Placeholder scenery until its art lands.
+    id: 'depths', name: 'Crystal Depths', secret: true,
+    stages: ['Cave Mouth', 'Crystal Halls', 'Deep Core', 'Energy Well'],
+    normals: ['crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus',
+      'golurk', 'bronzong', 'claydol', 'dusknoir', 'lanturn', 'magnezone'],
+    elites: ['clefable', 'ditto', 'smeargle'], bosses: ['eternatus'],
+    hpMult: 7.5, dmgBonus: 38, bossBonus: 58,
+  },
 ];
+
+/** The biome a run ends in: the third, or for Mewtwo its secret fourth. */
+export const finalBiome = (starter) => (starter?.id === 'mewtwo' ? BIOMES.length : BIOMES.filter(b => !b.secret).length) - 1;
+
+/* Traits: what some of the Crystal Depths' Pokémon do whenever you play a card (enemyTrait() in js/battle.js). Each
+   enemy's `trait` names one by `id`, with its own `name` (an Ability) and numbers. */
+export const TRAITS = {
+  barbs:    { icon: '🦔', text: t => `${t.name}: every attack you play hurts you ${t.amount} (block soaks it, and it can't knock you out)` },
+  analytic: { icon: '🧠', text: t => `${t.name}: it gains ${t.amount} strength whenever you play a Power` },
+  stamina:  { icon: '💎', text: t => `${t.name}: every card you play past your ${t.after}th in a turn gives it ${t.amount} block` },
+};
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 

@@ -50,7 +50,9 @@ export const SCOPE = {
 };
 export const SCOPE_REVEALS = 1;
 
-export const DEX_PAGES = BIOMES.map(b => ({
+// Mewtwo's Crystal Depths stays a ??? tab (renderMystery() in js/pokedex.js) until v1.0 part D gives it a page and a perk,
+// so dex.complete and its jackpot don't move.
+export const DEX_PAGES = BIOMES.filter(b => !b.secret).map(b => ({
   biome: b.id,
   name: b.name,
   ids: [...b.normals, ...b.elites, ...b.bosses],

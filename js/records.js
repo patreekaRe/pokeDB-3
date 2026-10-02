@@ -63,8 +63,10 @@ export function openStats() {
   const battles = grid([
     ['⚔️', s.enemiesDefeated, 'Pokémon defeated'],
     ['👑', s.elitesDefeated, 'Alphas defeated', 'counted since 28 Sep 2026'],
-    ['🗺️', s.deepestBiome ? `${s.deepestBiome}/3` : '-', 'Furthest biome', furthest],
-    ...BIOMES.map((biome, i) => ['👹', `×${s.bossKills[i + 1] || 0}`, `${biome.name.split(' ').pop()} boss`, 'times beaten']),
+    ['🗺️', s.deepestBiome ? `${s.deepestBiome}/${s.deepestBiome > 3 ? BIOMES.length : 3}` : '-', 'Furthest biome', furthest],
+    // Mewtwo's secret biome only shows once it's been reached
+    ...BIOMES.filter((biome, i) => !biome.secret || s.deepestBiome > i)
+      .map((biome, i) => ['👹', `×${s.bossKills[i + 1] || 0}`, `${biome.name.split(' ').pop()} boss`, 'times beaten']),
   ]);
   const collection = el('div', 'stat-rows');
   collection.append(...[

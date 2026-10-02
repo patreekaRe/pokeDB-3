@@ -27,7 +27,7 @@ import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, setStorm, bossArenaPrelude } from './scene.js';
-import { BIOMES } from './data/enemies.js';
+import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
@@ -39,7 +39,7 @@ const ROOM_SERVICE_CAP = 6;   // the Room Service boss relic's cards per turn (S
 const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
-const BOSS_PRELUDE_LINES = ['The Ancient Tree stirs...', 'The shrine lanterns answer...', 'The crater rumbles...'];
+const BOSS_PRELUDE_LINES = ['The Ancient Tree stirs...', 'The shrine lanterns answer...', 'The crater rumbles...', 'The crystals hum with a terrible energy...'];
 
 /** Relics that boost attacks of one type, by the type of your starter. */
 const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
@@ -710,6 +710,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
   if (card.power && hasRelic('power-herb')) draw(1);
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
+  enemyTrait(card);
 
   for (let i = 0; i < (e.playTop || 0) && b.enemy.hp > 0; i++) {
     const top = drawTop();
@@ -722,6 +723,29 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     else if (!await resolveCard(top, 0, { exhaust: true })) return false;
   }
   return battle === b;
+}
+
+/** Some of the Crystal Depths' Pokémon answer every card you play (their `trait`, TRAITS in js/data/enemies.js):
+    Iron Barbs hurts you for each attack, Analytic gains strength from your Powers, Sturdy blocks a big turn. */
+function enemyTrait(card) {
+  const b = battle, t = b.def.trait, en = b.enemy;
+  if (!t || en.hp <= 0 || card.status) return;
+  if (t.id === 'barbs' && isAttack(card)) {
+    const soaked = Math.min(b.block, t.amount), lost = Math.min(t.amount - soaked, b.hp - 1);
+    b.block -= soaked;
+    if (lost > 0) { b.hp -= lost; b.damageTaken += lost; markHurt(); }
+    pop('player-zone', lost > 0 ? `-${lost} ${TRAITS.barbs.icon}` : `${TRAITS.barbs.icon} Blocked`, lost > 0 ? 'dmg' : 'note', 120);
+  }
+  if (t.id === 'analytic' && card.power) {
+    en.strength += t.amount;
+    pop('enemy-zone', `${TRAITS.analytic.icon} 💪 +${t.amount}`, 'note bad', 150);
+    playSound('stat-up');
+    statFx('enemy');
+  }
+  if (t.id === 'stamina' && b.played > t.after) {
+    en.block += t.amount;
+    pop('enemy-zone', `${TRAITS.stamina.icon} +${t.amount} 🛡️`, 'block', 150);
+  }
 }
 
 /** Block, Weak, draw... everything a card does besides its damage. Also used for a card's combo and for
@@ -1671,6 +1695,7 @@ function renderStatus() {
   if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
+  if (b.def.trait) enemyBadges.push([TRAITS[b.def.trait.id].icon, '', TRAITS[b.def.trait.id].text(b.def.trait), 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 
   const playerBadges = [];

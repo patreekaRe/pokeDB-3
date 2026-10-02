@@ -108,8 +108,20 @@ live site.
   `checkAchievements()` grants in order (the shop also runs it after a
   purchase). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
-  Ability landed; until Part B removes its Trainer Level picker, run-end guards keep Mewtwo out of Level-based rewards and
-  stats.
+  Ability landed; run-end guards (`isMewtwoRun()`) keep Mewtwo out of Level-based rewards and stats.
+  **Mewtwo's run is its own game mode** (v1.0 part B, 2026-10-02): no Trainer Level (`prepare()` in `js/select.js` hides
+  the picker and shows its rule), one fixed setting, `MEWTWO_MODE` in `js/data/difficulty.js` (`runMods()` per biome,
+  `runFloors()`): biomes 1-3 are a 5-floor sprint at Level 0's rules (`generateMap({ floors })`: fight, fight/event,
+  treasure, Mart/elite, Center, boss; a short map stays in its first place, `stageOf()`), then the **Crystal Depths**, the
+  `secret` 4th `BIOMES` entry only Mewtwo enters (`finalBiome(starter)` in `js/data/enemies.js` is every "is this the last
+  biome?" check). Mewtwo is fully powered up after Boss 2, so the Biome 3 boss opens `depthsGate()` in `js/run.js` (a full
+  heal, StS's between-acts heal) instead of evolving. Its 12 wilds, 3 Alphas and boss Eternatus (Gen 8: its sprite is
+  PokeAPI's `other/showdown/` Gen 5-style GIF) are themed to a crystal cave and shown as Neutral or Psychic. Some carry a
+  `trait` (`TRAITS` in `js/data/enemies.js`, `enemyTrait()` in `js/battle.js`, a nameplate badge): `barbs` (each attack you
+  play hurts you, block first, never fatal), `analytic` (strength per Power you play), `stamina` (block per card past the
+  Nth in a turn). Every per-biome array (events, Kenmatta's HP) has a 4th value. `secret` keeps it out of `DEX_PAGES` and
+  the records until reached. Its scenery is a **placeholder** (`BIOME_ART.depths`: the Treasure grotto, `bare`, no clock;
+  map `PALETTES.depths`; `map4` plays `map3.mp3`) until a Desktop session paints it.
 - **Cards** (`js/data/cards.js`): every effect is a key in a card's
   `effects` (the header comment lists them all) and `describe()` writes
   the card text from them, so new mechanics need a line there too. Beyond

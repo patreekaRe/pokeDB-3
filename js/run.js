@@ -14,7 +14,7 @@
      deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, KEN } from './data/enemies.js';
+import { BIOMES, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
@@ -22,7 +22,7 @@ import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { modsFor, MAX_LEVEL, LEVELS } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
@@ -196,7 +196,7 @@ function restoreRun(saved) {
   return {
     ...saved,
     starter,
-    mods: modsFor(saved.level),
+    mods: runMods(starter, saved.level, saved.biome),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
@@ -230,7 +230,7 @@ export function beginRun(starter, level = 0, peek = null) {
   run = {
     starter,
     level,
-    mods: modsFor(level),   // the rules of this Trainer Level
+    mods: runMods(starter, level, 0),   // the rules of this Trainer Level (Mewtwo's: its own, per biome)
     levelUnlocked: null,    // set if winning this run unlocks the next level
     stage: 0,
     maxHp: startHp,
@@ -299,7 +299,8 @@ function peekRoom(id) {
 function startBiome() {
   const biome = BIOMES[run.biome];
   updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
-  run.map = generateMap();
+  run.mods = runMods(run.starter, run.level, run.biome);
+  run.map = generateMap({ floors: runFloors(run.starter, run.biome) });
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) {
@@ -349,7 +350,7 @@ function showExp(floor, floors) {
   $('run-exp-fill').style.width = `${Math.round(Math.min(1, floor / steps) * 100)}%`;
   bar.setAttribute('aria-valuemax', String(steps));
   bar.setAttribute('aria-valuenow', String(floor));
-  const goal = last ? (run.biome === BIOMES.length - 1 ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
+  const goal = last ? (run.biome === finalBiome(run.starter) ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
   bar.title = `EXP: floor ${floor} of ${floors}. Full at ${goal}.`;
 }
 
@@ -401,7 +402,8 @@ function showMap() {
     board.textContent = place;
     board.dataset.biome = biome.id;
     board.dataset.stage = String(stage);
-    board.title = stage < 3 ? `${place}: floors ${['1-3', '4-6', '7-10'][stage]} of ${biome.name}` : `${place}: the boss's arena`;
+    const span = run.map.floors.length < 10 ? `1-${run.map.floors.length}` : ['1-3', '4-6', '7-10'][stage];
+    board.title = stage < 3 ? `${place}: floors ${span} of ${biome.name}` : `${place}: the boss's arena`;
     board.classList.remove('arrive');
     void board.offsetWidth;
     board.classList.add('arrive');
@@ -690,9 +692,10 @@ function enterNode(node) {
    ============================================================ */
 
 async function fight(node) {
-  if (node.type === 'boss' && run.biome < BIOMES.length - 1) preloadEvolution(run.starter, run.stage);
-  if (node.type === 'boss' && run.biome === BIOMES.length - 1) {
-    preloadWinScene(run.starter, run.starter.id !== 'mewtwo' && run.level === MAX_LEVEL);
+  const last = run.biome === finalBiome(run.starter);
+  if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
+  if (node.type === 'boss' && last) {
+    preloadWinScene(run.starter, !isMewtwoRun(run.starter) && run.level === MAX_LEVEL);
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
@@ -725,7 +728,7 @@ function afterFight(node, result) {
   // A boss win's unlocks wait until after the evolution: the jingle sounds just like its chime (the user heard it early).
   const unlocked = [];
   const unlock = () => { for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); } };
-  if (!(node.type === 'boss' && run.biome === BIOMES.length - 1)) unlock();
+  if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
   const tough = node.type === 'fight' && TYPES[ENEMY_DEFS[node.enemyId]?.type]?.beats === run.starter.type;
@@ -772,9 +775,12 @@ function afterFight(node, result) {
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
-    if (run.biome === BIOMES.length - 1) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!
+    if (run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!
     unlock();
-    steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next), next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
+    // Mewtwo is fully powered up after biome 2, so its third boss opens the gate to the Crystal Depths instead
+    if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
+    else steps.push(next => depthsGate(next), next => unlockWindow(unlocked, next));
+    steps.push(next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
   } else steps.unshift(next => unlockWindow(unlocked, next));
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
@@ -792,6 +798,26 @@ function afterFight(node, result) {
     collect();
     if (node.type === 'boss') { run.biome += 1; startBiome(); }
     else showMap();
+  });
+}
+
+const canEvolve = () => run.stage < run.starter.line.length - 1;
+
+/** After the biome 3 boss, a Mewtwo run carries on into the Crystal Depths (v1.0's secret biome), healed in full like
+    Slay the Spire between acts, since it has no form left to evolve into. */
+function depthsGate(next) {
+  const healed = run.maxHp - run.hp;
+  run.hp = run.maxHp;
+  setHpBar('run', run.hp, run.maxHp);
+  if (healed) playSound('heal-hp');
+  showChoice({
+    title: 'The Crystal Depths',
+    sub: [`${stageName(run.starter, run.stage)} senses a power far below the crater...`,
+      `A way down opens into the Crystal Depths.${healed ? ` ${stageName(run.starter, run.stage)} gathers its strength: HP fully restored!` : ''}`],
+    options: [],
+    skipLabel: 'Go down',
+    onSkip: next,
+    coins: run.pendingCoins,
   });
 }
 
@@ -939,7 +965,7 @@ function offerItem(item, next, { opened = false } = {}) {
   tips.hidden = true;
   let toss = null, taking = false;
 
-  const art = itemBallArt(['poke', 'great', 'ultra'][run.biome] || 'poke'), ball = el('button', 'item-ball');
+  const art = itemBallArt(['poke', 'great', 'ultra', 'master'][run.biome] || 'poke'), ball = el('button', 'item-ball');
   ball.type = 'button';
   ball.setAttribute('aria-label', 'Open the Poké Ball');
   const half = (name) => {
@@ -2114,7 +2140,7 @@ function level5Rewards() {
 function endRun(won) {
   run.over = true;
   if (!peeking) clearRunData();
-  const mewtwoRun = run.starter.id === 'mewtwo';
+  const mewtwoRun = isMewtwoRun(run.starter);
 
   let winCoins = 0;
   let level5 = [];
@@ -2157,9 +2183,9 @@ function endRun(won) {
 
   const name = stageName(run.starter, run.stage);
   const biome = BIOMES[run.biome];
-  $('result-title').textContent = won ? '🏆 You conquered the wastes!' : '💀 Your run has ended';
+  $('result-title').textContent = won ? (mewtwoRun ? '🏆 You reached the last energy!' : '🏆 You conquered the wastes!') : '💀 Your run has ended';
   $('result-text').textContent = won
-    ? `${name} beat all three bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
+    ? `${name} beat all ${mewtwoRun ? 'four' : 'three'} bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
     : `${name} fainted in Biome ${run.biome + 1} (${biome.name}) after ${run.fights} won fights. Try a different path or a different starter!`;
 
   dropNotes();   // the result window lists the unlocks itself

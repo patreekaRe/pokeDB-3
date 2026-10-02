@@ -721,14 +721,14 @@ last act only a special run reaches.
   user picks.
 
 **Open (ask the user before building each part):**
-1. **The final boss**: Eternatus, Arceus, Deoxys or Mew (above).
-2. **Biomes 1-3 for Mewtwo**: the full ten floors each, or a shorter "sprint" (fewer floors, or one place per biome)?
-   Ten easy floors three times may drag. If full length, make the speed itself fun (quick fights, big numbers).
+1. ~~The final boss~~ settled 2026-10-02: **Eternatus**.
+2. ~~Biomes 1-3 for Mewtwo~~ settled 2026-10-02: a **short sprint**, one place per biome (5 floors).
 3. ~~Trainer Levels for biomes 1-3~~ settled, see above.
-4. **Biome 4's name, place and look**: e.g. a Cerulean Cave / Unknown Dungeon-style crystal cavern, a Darkest Day sky
-   (red clouds, Dynamax energy), or a space-like void. It needs three places + an arena like the others (`stages`),
-   `BIOME_ART` looks for every time of day (or a "no clock" look, since it may be underground or timeless), its own
-   map palette, `map4` music and a pad.
+4. ~~Biome 4's name, place and look~~ settled 2026-10-02: a **crystal cavern** with no day/night clock, the **Crystal
+   Depths** (Cave Mouth, Crystal Halls, Deep Core, and the arena Energy Well). Its wilds are themed to the place (strong,
+   fully evolved cave Pokémon shown as Neutral or Psychic), its Alphas and boss pure Normal as everywhere. Its art is
+   still to paint: `BIOME_ART` look(s), the places' painters and landmarks, a boss intro and a biome intro, a real map
+   palette, `map4` music (a placeholder borrows `map3.mp3`).
 5. **Rewards**: a 4th Pokédex page (its wilds, Alphas and boss, with a perk), its own Hall of Fame entry style (a
    different pedestal or scene), and a title-screen touch once it's beaten (the final boss crossing the sky, say).
    Mewtwo's shiny (`SHINY_COSTS` skips it today).
@@ -742,20 +742,45 @@ last act only a special run reaches.
   the sim mirrors Pressure and those effects. Strong-bot check: 500 Level-0 runs with generic Water-ranked relic picks
   won **495/500 (99%)**; no Biome-1 elite deaths, and all five losses were to Biome-3 bosses. This clears the ~95% target
   for the first three biomes.
-- **B. The fourth biome.** `BIOMES` entry (floors, `dmgBonus` / `bossBonus` / `hpMult` fixed, ignoring `modsFor(level)`),
-  12 wilds + 3 Alphas + the final boss (the "Rules for steps 3-4" below still apply: sprites, cries, `SPRITE_FIT`), its
-  scenes and map, and the gate: after the biome 3 boss, a Mewtwo run carries on (`RUN_SAVE_VERSION` bump if the saved
-  run's shape changes); every other run ends as now. Enemies built to test a strong deck (punishing big turns, shields,
-  scaling), not just bigger HP.
+- **B. The fourth biome — gameplay built 2026-10-02** (scenery is placeholder, see B2). The user's answers are under Open
+  above. What landed (CLAUDE.md, Mewtwo, has the map of it):
+  - **Mewtwo mode**: `MEWTWO_MODE` / `runMods()` / `runFloors()` in `js/data/difficulty.js`. No Level picker; biomes 1-3
+    are 5-floor sprints at Level 0's rules (fight, fight/event, treasure, Mart/elite, Center, boss; `generateMap({ floors })`,
+    `setFloors()` / `setRows()` in `js/map.js`), the Crystal Depths 10 floors at its own `BIOMES` numbers. No save version
+    bump: the saved run's shape didn't change (a part A Mewtwo run in progress just carries on under the new rules).
+  - **The gate**: `finalBiome(starter)` replaced every `BIOMES.length - 1`. After the Biome 3 boss a Mewtwo run gets
+    `depthsGate()` (a full heal and "Go down", since it has no form left) and its card / relic rewards, then the Depths.
+  - **Roster** (sprites, cries at ~-14 dB, `SPRITE_FIT` by the PIL median bbox, which matched six existing entries
+    exactly): wilds Crobat, Sableye, Gigalith, Steelix, Excadrill, Haxorus, Golurk, Bronzong, Claydol, Dusknoir, Lanturn,
+    Magnezone; Alphas Clefable, Ditto, Smeargle; boss **Eternatus** (800 HP; PokeAPI's `other/showdown/890.gif`, a Gen
+    5-style pixel GIF). Tests for a strong deck: heavy shields (Iron Defense / Cosmic Power 12-22), scaling (Dragon Dance
+    4, Calm Mind), status cards, and **traits** (`TRAITS`): Iron Barbs / Rough Skin / Own Tempo (`barbs`: each attack you
+    play hurts you 2-3), Analytic / Levitate / Imposter (`analytic`: +3-5 strength per Power you play), Sturdy / No Guard /
+    Magic Guard / Eternatus's Pressure (`stamina`: block for every card past your 4th in a turn).
+  - Pokédex: the Depths stays the ??? tab (`DEX_PAGES` skips `secret` biomes), so `dex.complete` doesn't move. Records show
+    its boss row and "x/4" only once it's been reached. Per-biome event numbers and Kenmatta's HP have a 4th value; Team
+    Rocket brings Crobat / Sableye there.
+  - **Bot check** (pokeDB-sim now mirrors Pressure, the Mewtwo mode and the traits; Mewtwo borrows Water's relic ranks):
+    first cut (hpMult 7, dmgBonus 34, bossBonus 40, Eternatus 720) strong 89.3 / human 88.0 (150 each), every loss in
+    biome 4; biomes 1-3 kill ~0-1% (the victory lap works). Screened at 150 strong: dmg 38 / boss 46 / hp 7.5 85.3, dmg 42
+    / boss 50 / hp 8 74.7 (15 of its 25 points lost to wilds), dmg 40 / boss 54 / Eternatus 820 76.7, **dmg 38 / boss 58 /
+    hp 7.5 / Eternatus 800 78.7** (losses: boss 9, wilds 7, Alphas 5), shipped. Confirmed at 300: strong 78.3 (biome 4 deaths: boss 8, wilds 7, Alphas 6);
+    human 72.3 (boss 11, wilds 9, Alphas 6); biome 3's boss took 1% in each. Part D's final pass re-checks it.
+  - **B2 (Desktop, LOCAL or CLOUD with screenshots): the Crystal Depths' art.** Its scenery, places and landmarks, the
+    biome intro and the boss intro, the map palette, a pad, `map4` music from the user.
 - **C. The final boss fight** as a set piece: several phases (Eternatus -> Eternamax, say), its own music, the storm at
   30% at its most dramatic.
 - **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page's perk (the page itself is a "???" tab since 2026-09-28, `renderMystery()` in `js/pokedex.js`, 12 + 3 + 1 placeholder tiles; part B swaps it for a real `DEX_PAGES` entry, and must keep it out of `ALL_IDS` / `dex.complete` until biome 4 exists, so the 55-entry jackpot isn't taken away), achievements, the
   completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
 
-**Run in: CLOUD.** Next-session prompt (part B): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
-fourth biome'. Part A (Mewtwo's Psychic deck and Pressure Ability) is done. Ask me the open questions part B needs, then
-build the fourth biome only."
+**Run in: CLOUD.** Next-session prompt (part C): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
+fourth biome'. Parts A and B (Mewtwo's deck, the Crystal Depths' gameplay) are done. Ask me what part C needs, then build
+Eternatus's final boss fight as a set piece (phases, Eternamax), with a bot check. Attach pokeDB-sim too."
+
+**Run in: Desktop app (visual).** Next-session prompt (part B2): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0:
+Mewtwo and the fourth biome'. Paint the Crystal Depths: replace the placeholder `BIOME_ART.depths` with its own scenery,
+places, landmarks, biome and boss intros, and map palette."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

@@ -28,12 +28,17 @@ three places:
   fight; the user still has to playtest it and judge his difficulty (HP 130/220/370, never bot-tested).
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
-  Pressure Ability) landed 2026-09-29. Next is part B: ask the user the remaining open questions it needs before building
-  the fourth biome. The session prompt and settled decisions are in the roadmap.
+  Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
+  through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the gate
+  after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery is a
+  placeholder (B2, a Desktop session), and `map4` borrows `map3.mp3` until the user supplies one. Next is part C (the
+  Eternatus set piece) or B2; both prompts are in the roadmap.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
   - Choosing whether the reward, battle and Mart capsules (`.ds-btn`) become pixel pills (`.pxb`).
+  - `assets/audio/map4.mp3` for the Crystal Depths (until then `map4` plays `map3.mp3`, `TRACKS` in `js/audio.js`).
+  - Playtesting a Mewtwo run to the Crystal Depths (Mewtwo must be unlocked; the `?levels` trick doesn't unlock it).
 - Parked (don't start unprompted): Gen 6-9 starters (the sprites staged in `assets/pokemon/_incoming/` have no Grass
   line), Mewtwo's shiny, and catching (dropped).
 

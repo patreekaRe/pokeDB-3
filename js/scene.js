@@ -261,6 +261,32 @@ const BIOME_ART = {
   },
 };
 
+/* The Crystal Depths, Mewtwo's own biome (v1.0): a PLACEHOLDER until its art lands in a Desktop session. It borrows the
+   Treasure room's grotto (crystals, stalactites, a shaft of light) without the hoard, in violet and cyan, and has no
+   clock: underground, every time of day is the same. */
+BIOME_ART.depths = {
+  backdrop: 'treasure', floor: 'treasure', bare: true, light: null,
+  storm: { rain: ['#e0fcff', '#88e0f8'], fall: 1.6, count: 0.5, sky: [0.7, 10, 0, 30], ground: [0.8, 8, 0, 20] },   // a fall of crystal dust
+  coin: ['#fff8b0', '#f8c830', '#b07818'], gem: ['#f878f8', '#58e0f8', '#a8f878', '#c878f8'],
+  sky: ['#e8f8ff', '#a8d8f8'],
+  rock: ['#5e5276', '#4a405e', '#3a324c', '#2a2438', '#181424'],
+  crystal: ['#f8f0ff', '#d0a8f8', '#9058e0', '#502898'],
+  ground: ['#3e3650', '#383048', '#322a40', '#2c2438', '#241e30'],
+  stone: ['#a8a0c0', '#867ea0', '#645c7c', '#443e58'],
+  beam: '#e0f0ff', drip: '#a8f0ff', mote: '#f0f8ff',
+  ember: ['#f0ffff', '#88e8f8', '#5890e8'], embers: 0.4,
+  times: {
+    day: {
+      life: ['treasure', 'drips', 'embers'],
+      pad: { style: 'rock', top: '#6a5e86', mid: '#564c70', low: '#463e5c', rim: '#141020', earth: '#2e2840', lava: '#88e8f8' },
+    },
+  },
+  kinds: {
+    elite: { grade: 'elite' },
+    boss: { grade: 'boss', embers: 1.2 },
+  },
+};
+
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
    said); `times` gives the others their sky and switches, the rest graded (typeLook()) unless `grade: false`. */
@@ -2948,6 +2974,7 @@ function grottoFloor() {
 
   const dy = horizon + Math.round((H - horizon) * 0.34), rx = CHEST_W / 2 + 8, ry = 5;
   life.dais = { x: cx, y: dy };
+  if (S.raw.bare) return;   // the Crystal Depths' placeholder: the grotto without its hoard
   dais(cx, dy, rx, ry);
 
   // gold spilled round the dais, with a Poké Ball or two

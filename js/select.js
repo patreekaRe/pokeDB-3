@@ -15,7 +15,7 @@
 import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
-import { LEVELS, MAX_LEVEL } from './data/difficulty.js';
+import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
@@ -198,7 +198,7 @@ export function prepare(starter, on) {
   show(starter);
   renderEvo(starter);
   renderDeck(starter);
-  level = getSave().maxLevel;   // start on your highest unlocked level
+  level = isMewtwoRun(starter) ? 0 : getSave().maxLevel;   // start on your highest unlocked level
   renderLevel();
   setPreparing(on);
 }
@@ -243,6 +243,7 @@ function renderDeck(starter) {
 }
 
 function setLevel(to) {
+  if (isMewtwoRun(picked)) return;
   const max = getSave().maxLevel;
   const next = Math.max(0, Math.min(max, to));
   if (next === level) return;
@@ -253,6 +254,17 @@ function setLevel(to) {
 
 /** The picked level: its name, the rule it adds (the full list folds away), and the coin bonus. */
 function renderLevel() {
+  // Mewtwo's run is its own game mode with one fixed setting: no Level picker, its rules, coins or "All rules"
+  const own = isMewtwoRun(picked);
+  document.querySelector('.prep-level').hidden = own;
+  if (own) {
+    const sprint = MEWTWO_MODE.floors[0];
+    $('level-name').textContent = 'Mewtwo\'s own run';
+    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a quick sprint (${sprint} floors each), then a fourth biome only Mewtwo can enter.`;
+    $('level-coins').hidden = true;
+    $('level-rules').closest('details').hidden = true;
+    return;
+  }
   const max = getSave().maxLevel;
   $('level-num').textContent = String(level);
   $('level-name').textContent = LEVELS[level].name;
