@@ -161,7 +161,10 @@ live site.
   play hurts you, block first, never fatal), `analytic` (strength per Power you play), `stamina` (block per card past the
   Nth in a turn). **Eternatus is a two-bar set piece** (part C, 2026-10-02, the user's calls): its `phase2` def, Eternamax,
   rises when it faints (`finish()` hands over to `rebirth()` in `js/battle.js`: it sinks into the Well, `bossRebirth()` in
-  `js/scene.js` replays the Well's prelude, then a fresh bar scaled by `b.hpScale`, its debuffs / block / strength gone, its
+  `js/scene.js` plays the Darkest Day (C2, the user's pick: the cave goes dark, red cracks race over the roof, it splits on a
+  blood-red sky with Dynamax hexagons, rock rains down, Eternamax's silhouette from its sprite comes down through the rift,
+  its markings ignite, a crimson burst; `depthsMax()` / `darkestDay()`, `MAX_*` frames; the rift stays open all fight and the
+  sprite drops in from above, `.emerging`), then a fresh bar scaled by `b.hpScale`, its debuffs / block / strength gone, its
   own sprite (`eternamax-front.gif`, PokeAPI's showdown 10190 at every 2nd frame), cry, music and a red `.max` glow, in the
   storm at its fiercest, `storm.fury`; a tap skips the show; risen on its own turn, rising was that turn). The storm waits
   for Eternamax (`checkStorm()`). Its moves: `kind: 'charge'` (a turn's warning, its intent shows the next move's hit) and

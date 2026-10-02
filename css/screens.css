@@ -1978,7 +1978,8 @@ body.battle-intro { pointer-events: none; }
 .enemy-portrait.sprite.elite img { --rest: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.sprite.boss img  { --rest: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 /* a boss's second form (Eternamax, rebirth() in js/battle.js): a crimson glow in place of the gold, breathing; it pulses
-   hot while it charges a huge hit; the first form sinks into the Well, brightening, and the second rises out of it */
+   hot while it charges a huge hit; the first form sinks into the Well, brightening, and the second comes down from the
+   rift in the roof (bossRebirth() in js/scene.js), a black silhouette taking on its colours as it lands */
 .enemy-portrait.sprite.boss.max img { --rest: drop-shadow(0 0 14px #ff2a6a) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); animation: maxBreath 2.4s ease-in-out infinite; }
 @keyframes maxBreath { 50% { filter: drop-shadow(0 0 22px #ff2a6a) drop-shadow(0 0 4px #fff0f6) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); } }
 .enemy-portrait.sprite.boss.charging img { animation: maxCharge 0.5s steps(4) infinite; }
@@ -1990,11 +1991,12 @@ body.battle-intro { pointer-events: none; }
   15%, 25% { transform: translateX(6px); }
   100% { transform: translateY(40px) scale(0.5, 0.2); filter: brightness(3) saturate(0) drop-shadow(0 0 20px #ff2a6a); opacity: 0; }
 }
-.enemy-zone.emerging .enemy-portrait { animation: bossEmerge 1.4s cubic-bezier(0.2, 0.8, 0.3, 1.2) both; }
+.enemy-zone.emerging .enemy-portrait { animation: bossEmerge 1.4s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
 @keyframes bossEmerge {
-  from { transform: translateY(30px) scale(0.3, 0.1); filter: brightness(4) saturate(0); opacity: 0; }
-  40% { opacity: 1; filter: brightness(2.5) saturate(0.4); }
-  to { transform: none; filter: none; opacity: 1; }
+  from { transform: translateY(-70%) scale(1.5); filter: brightness(0) drop-shadow(0 0 10px #ff2a6a); }
+  55% { filter: brightness(0) drop-shadow(0 0 14px #ff2a6a); }
+  80% { filter: brightness(2) saturate(0.5) drop-shadow(0 0 18px #ff2a6a); }
+  to { transform: none; filter: none; }
 }
 /* Kenmatta's Super Saiyan aura (js/aura.js): a canvas laid over his sprite, hidden while he's still a silhouette */
 .aura-fx { position: absolute; image-rendering: pixelated; pointer-events: none; }

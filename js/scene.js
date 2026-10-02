@@ -1182,10 +1182,11 @@ export async function bossArenaPrelude() {
 }
 let preludeRun = 0;
 
-/** A boss rising in its second form (Eternatus into Eternamax, rebirth() in js/battle.js): the arena's prelude again,
-    the core rising and bursting and the energy flooding out, then the arena as it was but in the storm at its fiercest
-    (`storm.fury`: twice the rain, lightning every second or two, a darker sky, the Well's column and vortex at full
-    stretch). `skipped` resolves on a tap, cutting to that. */
+/** A boss rising in its second form (Eternatus into Eternamax, rebirth() in js/battle.js): the Darkest Day (the
+    user's pick, 2026-10-02, over replaying the Well's prelude). The cavern goes dark, red cracks race across the roof,
+    it splits open on a blood-red sky, and Eternamax's colossal silhouette comes down through the rift (depthsMax()).
+    After it the arena stays open to that sky in the storm at its fiercest (`storm.fury`: more rain, lightning every
+    second or two, the Well's column climbing into the rift). `skipped` resolves on a tap, cutting to that. */
 export async function bossRebirth(skipped) {
   if (!hasPrelude()) return;
   storm.fury = true;
@@ -1194,24 +1195,22 @@ export async function bossRebirth(skipped) {
   let skip = false;
   skipped?.then(() => { skip = true; });
   const wait = (ms) => Promise.race([new Promise(resolve => setTimeout(resolve, ms)), skipped]);
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    bossPrelude = { phase: 'wake', at: tick };
-    draw();
-    for (const [frame, sound] of preludeSounds()[preludeKey()]) {
-      setTimeout(() => { if (bossPrelude?.phase === 'wake' && still() && !skip) playSound(sound); }, frame * 1000 / FPS);
-    }
-    await wait(3600);
+  if (S.raw.backdrop === 'depths' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    await Promise.race([maxFigureReady(), wait(800)]);
     if (!still()) return;
-    if (!skip) {
-      bossPrelude = { phase: 'portal', at: tick };
-      draw();
-      await wait(1100);
-      if (!still()) return;
+    bossPrelude = { phase: 'max', at: tick };
+    draw();
+    for (const [frame, sound] of MAX_SOUNDS) {
+      setTimeout(() => { if (bossPrelude?.phase === 'max' && still() && !skip) playSound(sound); }, frame * 1000 / FPS);
     }
+    await wait(MAX_END * 1000 / FPS);
+    if (!still()) return;
   }
   bossPrelude = { phase: 'awake', at: tick };
   draw();
 }
+/** The sounds the second form's cutscene plays, to load ahead. */
+export const bossRebirthSounds = () => MAX_SOUNDS.map(([, sound]) => sound);
 /** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
 const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
 const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
@@ -5650,7 +5649,8 @@ function draw() {
 
   if (life.rain && storm.level > 0) drawRain(t);
   let shake = 0;
-  if (bossPrelude?.phase === 'portal') {
+  if (bossPrelude?.phase === 'max') shake = depthsMax(t);
+  else if (bossPrelude?.phase === 'portal') {
     if (S.raw.backdrop === 'safari') shake = SAFARI_PRELUDES[S.raw.area].portal(t);
     else if (S.raw.backdrop === 'shrine') shake = drawShrinePortal(t);
     else if (S.raw.backdrop === 'volcano') shake = drawWastesPortal(t);
@@ -9469,7 +9469,11 @@ function wellState(t) {
   const calm = { width: 1, vortex: 0.22, spin: t * 0.06, red: 0, speed: 1 };
   if (!bossPrelude) return calm;
   const age = preludeAge(t);
-  if (bossPrelude.phase === 'awake') return storm.fury ? { width: 2.4, vortex: 0.95, spin: t * 0.16, red: 0.26, speed: 2.4 } : { width: 1.5, vortex: 0.62, spin: t * 0.09, red: 0.16, speed: 1.6 };
+  if (bossPrelude.phase === 'awake') return storm.fury ? { width: 2.4, vortex: 0, spin: t * 0.16, red: 0.26, speed: 2.4 } : { width: 1.5, vortex: 0.62, spin: t * 0.09, red: 0.16, speed: 1.6 };
+  if (bossPrelude.phase === 'max') {   // the Well dies as the dark comes down, and comes back roaring with the burst
+    const s = Math.max(0, 1 - age / 9);
+    return age >= MAX_BURST ? { width: 3, vortex: 0, spin: t * 0.3, red: 0.3, speed: 3 } : { width: s, vortex: 0.22 * s, spin: t * 0.06, red: 0, speed: 1 + (1 - s) * 2 };
+  }
   if (bossPrelude.phase === 'portal') return { width: 3, vortex: 0.9, spin: t * 0.3, red: 0.35, speed: 3 };
   if (age < CORE_AT) { const s = age / CORE_AT; return { width: Math.max(0.15, 1 - s * 0.85), vortex: 0.22 - s * 0.14, spin: t * (0.06 + s * 0.2), red: s * 0.3, speed: 1 + s * 4 }; }
   const e = age - CORE_AT;
@@ -9566,6 +9570,7 @@ function drawDepths(t) {
 function drawEnergyWell(t) {
   const s = wellState(t), { x: cx } = wellAt(), e = S.energy, roofTop = life.roof[cx] ?? Math.round(horizon * 0.05);
   if (s.red) veil(e[4], s.red, true);
+  darkestDay(t);
   const orbit = (m) => {
     const a = m.a + t * 0.035 * s.speed, near = Math.sin(a);
     return { x: cx + Math.cos(a) * W * 0.3, y: horizon * 0.52 + near * horizon * 0.1 + Math.sin((t + m.bob) / 6) * 1.5 - (s.speed - 1) * 2, k: 0.75 + near * 0.3, near };
@@ -9579,7 +9584,7 @@ function drawEnergyWell(t) {
     put(o.x, o.y, e[0]); put(o.x, o.y - 1, e[1]);
   };
   for (const m of life.monoliths) if (orbit(m).near < 0) monolith(m);
-  energyColumn(cx, horizon + 2, roofTop, Math.max(1.5, W * 0.03 * s.width), t);
+  if (s.width > 0.08) energyColumn(cx, horizon + 2, roofTop, Math.max(1.5 * Math.min(1, s.width * 2), W * 0.03 * s.width), t);
   vortex(cx, roofTop + 2, Math.round(W * s.vortex), s.spin, 0.85);
   for (const m of life.monoliths) if (orbit(m).near >= 0) monolith(m);
 }
@@ -9691,6 +9696,192 @@ function depthsPortal(t) {
   }
   core(cx, cy - 1 - Math.round(11 * horizon * 0.035), Math.min(W, H) * (0.25 + age * 0.05), age + 30);
   return frame < 6 ? 2 : 0;
+}
+
+/* ----- Eternamax: the Darkest Day (bossRebirth) -----
+   Eternatus has sunk into the Well. The Well's column dies and the cavern goes dark; red cracks race out across the roof
+   from above the Well, glowing hotter; the roof splits open in a jagged rift on a blood-red sky of churning cloud laced
+   with Dynamax hexagons, rock raining down and red light pouring in. Eternamax's colossal silhouette comes down through
+   the rift, backlit, until its markings ignite, a crimson burst, and the Well roars back. The rift stays open all fight. */
+
+const MAX_CRACK = 3, MAX_SPLIT = 16, MAX_OPEN = 8, MAX_DESCEND = 21, MAX_LANDED = 39, MAX_BURST = 50, MAX_END = 58;
+const MAX_SOUNDS = [[0, 'quake'], [MAX_CRACK, 'gate-crack'], [10, 'gate-crack'], [MAX_SPLIT, 'gate-shatter'], [MAX_SPLIT + 1, 'thunder'],
+  [MAX_DESCEND, 'gate-hum'], [MAX_LANDED, 'charge'], [MAX_BURST, 'core-surge']];
+const DARKEST = ['#ffe4ec', '#ff5a78', '#d81838', '#8a0a24', '#4a0414', '#1c0108'].map(abgr);
+
+/* Eternamax's silhouette, from its front sprite's first frame: where it is solid, and where it shines (its brightest
+   markings, which ignite as it lands). Cropped to the figure. */
+let maxFig = null, maxFigLoad = null;
+function maxFigureReady() {
+  return maxFigLoad ||= new Promise(resolve => {
+    const pic = new Image();
+    pic.onload = () => {
+      const c = document.createElement('canvas'), w = pic.naturalWidth, h = pic.naturalHeight;
+      c.width = w; c.height = h;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(pic, 0, 0);
+      const d = g.getImageData(0, 0, w, h).data;
+      let top = h, bottom = 0, left = w, right = 0;
+      for (let i = 0; i < w * h; i++) if (d[i * 4 + 3] >= 128) {
+        const x = i % w, y = (i / w) | 0;
+        top = Math.min(top, y); bottom = Math.max(bottom, y); left = Math.min(left, x); right = Math.max(right, x);
+      }
+      const cw = right - left + 1, ch = bottom - top + 1, mask = new Uint8Array(cw * ch), glow = new Uint8Array(cw * ch);
+      for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+        const i = ((y + top) * w + x + left) * 4;
+        if (d[i + 3] < 128) continue;
+        mask[y * cw + x] = 1;
+        if (d[i] + d[i + 1] + d[i + 2] > 520 || (d[i] > 220 && d[i + 1] < 120 && d[i + 2] > 120)) glow[y * cw + x] = 1;
+      }
+      maxFig = { w: cw, h: ch, mask, glow };
+      resolve();
+    };
+    pic.onerror = () => resolve();
+    pic.src = 'assets/pokemon/eternamax-front.gif';
+  });
+}
+
+const maxAge = (t) => (bossPrelude?.phase === 'max' ? preludeAge(t) : null);
+/** How far the roof has split open, 0..1: all the way once Eternamax is up. */
+function riftOpen(t) {
+  if (bossPrelude?.phase === 'awake') return storm.fury ? 1 : 0;
+  const age = maxAge(t);
+  if (age == null || age < MAX_SPLIT) return 0;
+  return 1 - (1 - Math.min(1, (age - MAX_SPLIT) / MAX_OPEN)) ** 3;
+}
+const riftMid = () => Math.round(horizon * 0.3);
+/** The rows the rift spans in column x, opened k of the way: it tears further up than down, ragged at both lips. */
+function riftSpan(x, k) {
+  const hw = W * 0.46 * k, u = (x + 0.5 - wellAt().x) / Math.max(1, hw);
+  if (Math.abs(u) >= 1) return null;
+  const half = (1 - u * u) ** 0.7 * horizon * 0.45 * k, jag = ((noise(x >> 1, 7, 90) - 0.5) * 4 + Math.sin(x * 0.9)) * k;
+  return [Math.round(riftMid() - half * 1.6 + jag), Math.round(riftMid() + half + (noise(x, 3, 91) - 0.5) * 3 * k)];
+}
+
+/** The Darkest Day's sky: red cloud churning round a hot heart over the Well, faint Dynamax hexagons through it. */
+function darkestSky(x, y, t) {
+  const u = x / W, v = y / Math.max(1, horizon), cx = wellAt().x;
+  const churn = Math.sin(u * 9 + t * 0.11 + Math.sin(v * 7 - t * 0.07) * 1.5) + 0.7 * Math.sin(v * 13 - u * 4 + t * 0.09) + 0.3 * Math.sin((u + v) * 21 + t * 0.2);
+  const heart = Math.max(0, 1 - Math.hypot((x - cx) / (W * 0.3), (y - riftMid()) / (horizon * 0.3)));
+  const lvl = Math.max(0, Math.min(0.999, 0.25 + churn * 0.12 + heart * 0.55)), f = lvl * 5, i = Math.floor(f);
+  let c = DARKEST[5 - Math.min(5, i + ((f - i) * 16 > dither(x, y) ? 1 : 0))];
+  const hex = Math.max(4, Math.round(horizon * 0.09)), q = (0.577 * (x - cx) - (y - t * 0.15) / 3) / hex, r = (2 / 3) * (y - t * 0.15) / hex;
+  if (hexEdge(q, r) && churn > 0.2 && dither(x, y + t) < 9) c = DARKEST[2];
+  return c;
+}
+/** True where (q, r), in hex cell units, lies on its cell's edge (cube coordinates, rounded). */
+function hexEdge(q, r) {
+  const s = -q - r;
+  let rq = Math.round(q), rr = Math.round(r), rs = Math.round(s);
+  const eq = Math.abs(rq - q), er = Math.abs(rr - r), es = Math.abs(rs - s);
+  if (eq > er && eq > es) rq = -rr - rs; else if (er > es) rr = -rq - rs; else rs = -rq - rr;
+  const dq = q - rq, dr = r - rr, ds = s - rs;
+  return Math.max(Math.abs(dq - dr), Math.abs(dr - ds), Math.abs(ds - dq)) > 0.85;
+}
+
+/** The sky's half of it, drawn behind the Well's column and the near monoliths: the dark coming down, the cracks, the
+    rift and its sky, red bolts in it, and Eternamax's silhouette coming down through it. */
+function darkestDay(t) {
+  const age = maxAge(t), k = riftOpen(t), cx = wellAt().x;
+  if (age != null) {
+    const dark = age < MAX_SPLIT ? Math.min(0.62, age * 0.07) : Math.max(0.3, 0.62 - (age - MAX_SPLIT) * 0.04);
+    veil(abgr('#060004'), dark);
+    if (age >= MAX_CRACK && age < MAX_SPLIT + 3) riftCracks(age);
+  }
+  if (k <= 0) return;
+  const lip = deepRock()[4], hot = age != null && age < MAX_SPLIT + MAX_OPEN;
+  for (let x = 0; x < W; x++) {
+    const span = riftSpan(x, k);
+    if (!span) continue;
+    const [top, bot] = span;
+    for (let y = Math.max(0, top); y <= bot; y++) putSky(x, y, y === bot || y === top ? DARKEST[hot ? 0 : 1] : darkestSky(x, y, t));
+    putSky(x, bot + 1, DARKEST[3]); putSky(x, bot + 2, lip); if (top > 0) putSky(x, top - 1, lip);
+  }
+  const n = Math.floor(t / 13);   // a red bolt down the rift now and then
+  if (t % 13 < 2 && noise(n, 1, 92) < 0.7) {
+    let x = cx + Math.round((noise(n, 2, 92) - 0.5) * W * 0.5);
+    const span = riftSpan(x, k);
+    if (span) for (let y = Math.max(0, span[0]); y < span[1]; y++) { putSky(x, y, DARKEST[0]); putSky(x + 1, y, DARKEST[1]); if (noise(n, y, 93) < 0.4) x += noise(n, y, 94) < 0.5 ? -1 : 1; }
+  }
+}
+
+/** Red cracks racing out across the roof from above the Well, flickering hotter as they near the split. */
+function riftCracks(age) {
+  const paths = life.maxCracks ||= Array.from({ length: 9 }, (_, i) => {
+    const out = [], side = i % 2 ? 1 : -1;
+    let x = wellAt().x + side, y = riftMid() + (noise(i, 1, 95) - 0.5) * 4, a = (side < 0 ? Math.PI : 0) + (noise(i, 2, 95) - 0.5) * 1.6;
+    for (let n = 0; n < W * 0.5; n++) {
+      out.push([x | 0, y | 0]);
+      a += (noise(i, n, 96) - 0.5) * 0.7;
+      x += Math.cos(a); y += Math.sin(a) * 0.7;
+    }
+    return out;
+  });
+  const p = Math.min(1, (age - MAX_CRACK) / (MAX_SPLIT - MAX_CRACK - 2)), e = S.energy;
+  paths.forEach((path, i) => {
+    const len = Math.round(path.length * Math.min(1, p * (0.6 + noise(i, 3, 95) * 0.6)));
+    for (let n = 0; n < len; n++) {
+      const [x, y] = path[n];
+      putSky(x, y, (n + age) % 4 && p > 0.6 ? DARKEST[0] : DARKEST[1]);
+      if (dither(x, y + age) < 4 + p * 6) { blend(x, y - 1, DARKEST[2], 0.5); blend(x, y + 1, e[3], 0.5); }
+    }
+  });
+}
+
+/** Eternamax, colossal, coming down through the rift into the arena: black against the red, rimmed in its light, its
+    markings smouldering and then igniting as it lands. Wider than the screen. */
+function maxSilhouette(t, age) {
+  const f = maxFig, fw = W * 1.2, s = f.w / fw, fh = f.h / s;
+  const p = Math.min(1, (age - MAX_DESCEND) / (MAX_LANDED - MAX_DESCEND)), ease = 1 - (1 - p) ** 3;
+  const bottom = -2 + (horizon + (H - horizon) * 0.08 + 2) * ease, fx = Math.round(wellAt().x - fw / 2), fy = Math.round(bottom - fh);
+  const lit = age >= MAX_LANDED ? Math.min(1, (age - MAX_LANDED) / 4) : p * 0.3, body = abgr('#14000a');
+  const at = (sx, sy) => sx >= 0 && sy >= 0 && sx < f.w && sy < f.h ? f.mask[sy * f.w + sx] : 0;
+  for (let y = Math.max(0, fy); y < Math.min(H, bottom + 1); y++) for (let x = Math.max(0, fx); x < Math.min(W, fx + fw); x++) {
+    const sx = ((x - fx) * s) | 0, sy = ((y - fy) * s) | 0;
+    if (!at(sx, sy)) continue;
+    const step = Math.max(1, Math.round(s)), rim = !at(sx, sy - step) || !at(sx - step, sy) || !at(sx + step, sy);
+    let c = rim ? DARKEST[2] : body;
+    if (f.glow[sy * f.w + sx] && dither(x, y + t) < lit * 16) c = lit > 0.8 && (x + y + t) % 3 ? DARKEST[0] : DARKEST[1];
+    put(x, y, c);
+  }
+}
+
+/** The front half: rock raining from the rift, red light pouring down through it, and the burst as Eternamax ignites. */
+function depthsMax(t) {
+  const age = preludeAge(t), e = S.energy, { x: cx } = wellAt(), k = riftOpen(t);
+  if (age >= MAX_BURST) {
+    const b = age - MAX_BURST;
+    if (b < 2) { px.fill(DARKEST[b ? 1 : 0]); return 2; }
+    for (let r = 0; r < 3; r++) shockRing(cx, riftMid() + horizon * 0.3, (b - 2 + r * 0.7) * W * 0.18, [DARKEST[0], DARKEST[2]], 0.35);
+    veil(DARKEST[2], Math.max(0, 0.7 - (b - 2) * 0.14));
+    return b < 5 ? 2 : 1;
+  }
+  if (age >= MAX_DESCEND && maxFig) maxSilhouette(t, age);
+  if (k > 0) {
+    const fall = Math.min(1, (age - MAX_SPLIT) / 3) * Math.max(0.35, 1 - (age - MAX_SPLIT) / 30), mid = riftMid();
+    for (let y = mid; y < H; y++) {   // the light pouring down out of the rift, widening as it falls
+      const hw = W * 0.3 * k + (y - mid) * 0.22;
+      for (let x = Math.floor(cx - hw); x <= cx + hw; x++) blend(x, y, DARKEST[2], fall * 0.3 * (1 - Math.abs(x - cx) / hw) * (1 - (y - mid) / (H - mid) * 0.6));
+    }
+    const rocks = life.maxRocks ||= Array.from({ length: 28 }, (_, i) => ({
+      x: cx + (noise(i, 1, 97) - 0.5) * W * 0.8, vx: (noise(i, 2, 97) - 0.5) * 0.8, delay: noise(i, 3, 97) * 12, r: 1 + Math.floor(noise(i, 4, 97) * 2.5),
+    }));
+    const R = deepRock();
+    for (const rock of rocks) {
+      const a = age - MAX_SPLIT - rock.delay;
+      if (a < 0) continue;
+      const span = riftSpan(rock.x | 0, 1), y0 = span ? span[1] : riftMid();
+      const x = rock.x + rock.vx * a, y = y0 + a * 1.5 + a * a * 0.35;
+      if (y > H + 3) continue;
+      for (let dy = -rock.r; dy <= rock.r; dy++) for (let dx = -rock.r; dx <= rock.r; dx++) {
+        if (dx * dx + dy * dy > rock.r * rock.r + 1) continue;
+        put(x + dx, y + dy, dy === -rock.r ? DARKEST[2] : dx > 0 || dy > 0 ? R[4] : R[3]);
+      }
+      put(x, y - rock.r - 1, e[3]);   // an ember trail off its top
+    }
+  }
+  if (age < MAX_SPLIT) return age > 10 ? 1 : age > MAX_CRACK && age % 4 < 2 ? 1 : 0;
+  return age < MAX_SPLIT + 4 ? 2 : age >= MAX_LANDED ? 1 : 0;
 }
 
 LANDMARKS.depths = DEEP_MARKS;

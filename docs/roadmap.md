@@ -821,13 +821,16 @@ last act only a special run reaches.
     console errors but the two missing music files. **Still open: the user's `eternatus.mp3` / `eternamax.mp3`** (in
     `assets/audio/`; until then both play `boss.mp3`; if they're clips of a looping song, `LOOP_POINTS` in `js/audio.js`
     wants their loop points) and a playtest of the cutscene on a phone.
-  - **C2: a new Eternamax cutscene** (the user's playtest, 2026-10-02: "looks pretty good", but the change into the
-    second form should be completely different, not the boss prelude replayed). Its own visual session.
-
-**Run in: LOCAL (or the Desktop app).** Next-session prompt (part C2): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's
-part C. Eternatus's change into Eternamax replays the Energy Well's boss prelude (`bossRebirth()` in js/scene.js, called by
-`rebirth()` in js/battle.js). Ask me what I want instead, then build a completely different cutscene for it. Playtest with
-`?bossfight=depths&hp=0.1`."
+  - **C2: a new Eternamax cutscene — done 2026-10-02** (Desktop app; the user's playtest: "looks pretty good", but the
+    change should be completely different, not the boss prelude replayed). The user picked **the Darkest Day**, ~7 s: the
+    Well's column dies and the cavern goes dark, red cracks race out over the roof, it splits open on a blood-red sky of
+    churning cloud and Dynamax hexagons (rock raining down, red light pouring in), Eternamax's colossal silhouette (its
+    sprite's mask, wider than the screen) comes down through the rift, its markings ignite, a crimson burst, and the Well
+    roars back. The rift stays open for the rest of the fight (the vortex gives way to it), and the sprite drops in from
+    above as a silhouette taking on its colours. Sounds reuse `quake`, `gate-crack`, `gate-shatter`, `thunder`,
+    `gate-hum`, `charge`, `core-surge`. Checked in the browser pane at 375x812 through `?bossfight=depths&hp=0.03`; the
+    1280x800 pass couldn't be clicked in the pane, so wider screens are unchecked (all of it is sized from the canvas).
+    The user still has to see it on the live site.
 - **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page's perk (the page itself is a "???" tab since 2026-09-28, `renderMystery()` in `js/pokedex.js`, 12 + 3 + 1 placeholder tiles; part B swaps it for a real `DEX_PAGES` entry, and must keep it out of `ALL_IDS` / `dex.complete` until biome 4 exists, so the 55-entry jackpot isn't taken away), achievements, the
   completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).

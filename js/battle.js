@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth } from './scene.js';
+import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -264,7 +264,7 @@ async function playIntro() {
     preloadMusic(b.def.phase2.music);
   }
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge', ...bossRebirthSounds()] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -1612,8 +1612,8 @@ async function finish(won) {
 }
 
 /**
- * A boss with a second form (Eternatus) doesn't faint: it sinks into the Energy Well, the Well's energy bursts out again
- * (the arena's prelude replayed, bossRebirth() in scene.js), and it rises as `def.phase2` (Eternamax) with a fresh bar,
+ * A boss with a second form (Eternatus) doesn't faint: it sinks into the Energy Well, the roof splits open on the Darkest
+ * Day (bossRebirth() in scene.js), and it comes down through the rift as `def.phase2` (Eternamax) with a fresh bar,
  * its own music and cry, in the arena's storm at its fiercest. Its debuffs, block and strength are gone, like StS's
  * Awakened One; your side keeps everything. A tap skips the show. Felled on your turn, the turn goes on; on its own
  * (Burn, Leech Seed, Rocky Helmet), rising is its turn.
@@ -1629,7 +1629,7 @@ async function rebirth() {
   box.classList.remove('charging');
   box.classList.add('sinking');
   playSound('faint');
-  log(`${b.def.name} fell... but the Well's energy is pouring into it!`);
+  log(`${b.def.name} fell... but the cavern is going dark!`);
   playMusic(null);
   await sleep(motion ? 1800 : 900);
   if (!still()) return;
