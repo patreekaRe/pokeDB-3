@@ -101,9 +101,9 @@ holds a roaring Dragonite in relief for the MK dragon (`DRAGONITE`, a 32x32 pixe
 red, blazing in the storm). `kombatLayout()` places it from the real battle layout: between the two Pokémon, below the
 enemy's nameplate where that's over the wall (phones), and clear of the steps. Braziers on red pillars flank it, banners
 and pillars repeat in bays across the wall, and the boss storm brings cinders, red light and lightning.
-A win pays a boss's coins and ₽ ("You defeated Chad Master Kenmatta!", `pendingCoins.beaten`), then his **Exp. Share**
+Entering the dojo, Ken brags (`hello` in `EVENT_CHOICES['move-tutor']`); tapping Challenge! makes him jump and talk trash in the text box like a trainer, ending on "TEST YOUR MIGHT!", and tapping past that starts the fight. A `mightPlaque()` in `tutorScene()` hangs TEST YOUR MIGHT in gold on a red plaque (between the alcove and the sandbag, else left of the scroll, else one line across the alcove's top on phones). The relic is named Mata-Mindset (id still `exp-share`). A win pays a boss's coins and ₽ ("You defeated Chad Master Kenmatta!", `pendingCoins.beaten`), then his **Mata-Mindset**
 (no Skip, in the gold boss shaft) and a boss card reward. Once you hold it, the sign is greyed out ("You already won his
-Exp. Share."). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
+Mata-Mindset."). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
 when you back out of his picker; the Day-Care Lady turns on a trade; the Chairman jumps handing over his gift. A done
 picker comes back to the room (`eventRoom(node, after)`, from the choice's `react(move)`): no choices, the NPC does `after`
 (the Tutor nods, the Deleter and the Day-Care Lady jump) while the text box says what happened, and closing the box or

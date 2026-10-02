@@ -90,7 +90,7 @@ export const RELICS = [
   { id: 'dusk-stone',    name: 'Dusk Stone',    icon: '💎', boss: true, text: 'Gain 1 extra PP every turn. You can\'t get any more items (you keep the ones in your Bag).' },   // Sozu (was Runic Dome: hid the enemy's intent, the user disliked it)
 
   // `unique`: never offered anywhere; only won by beating Chad Master Kenmatta in his dojo (the Move Tutor event)
-  { id: 'exp-share', name: 'Exp. Share', icon: '🎓', unique: true, text: 'Gain 1 extra PP and draw 1 extra card every turn. Start each battle with 1 strength.' },
+  { id: 'exp-share', name: 'Mata-Mindset', icon: '🎓', unique: true, text: 'Gain 1 extra PP and draw 1 extra card every turn. Start each battle with 1 strength.' },
 ];
 
 /** Boss relics that give +1 energy every turn (Choice Band and the rest). */

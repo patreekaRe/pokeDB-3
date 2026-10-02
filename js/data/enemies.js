@@ -548,13 +548,13 @@ export const ENEMY_DEFS = {
 
 /* Chad Master Kenmatta, the Move Tutor, fought in person from his dojo (the Move Tutor event's Challenge). Not in
    ENEMY_DEFS, so he never joins the Pokédex. A boss fight in any biome: `hp` is per biome, and the biome's bossBonus
-   adds to his attacks like any boss. Winning gives his Exp. Share (a `unique` relic in relics.js). */
+   adds to his attacks like any boss. Winning gives his Mata-Mindset (the `unique` relic `exp-share` in relics.js). */
 export const KEN = {
   id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370], boss: true,
   image: 'assets/trainers/alder.png', art: false, arena: 'kombat',   // his own stage (PLACE_ART.kombat in js/scene.js)
   music: 'kombat',   // his own theme, the user's (an 8-bit Mortal Kombat theme), in place of the boss music
   description: 'The Move Tutor. He teaches by hitting you.',
-  prelude: 'Kenmatta closes his eyes and breathes...',
+  prelude: 'Kenmatta cracks his neck. "Try not to cry, bro."',
   intro: 'Chad Master Kenmatta wants to battle!',
   moves: [
     { kind: 'attack', name: 'Mata Chop',    amount: 9 },

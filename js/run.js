@@ -739,7 +739,7 @@ function afterFight(node, result) {
   }
   if (node.type === 'ken') {
     steps.push(next => showRelics('Kenmatta\'s relic', [RELICS_BY_ID['exp-share']], next, { skip: false,
-      sub: ['"You hit like a true chad. Take this, and share what you learned."', 'Tap it to see what it does.'] }), next => offerCard('boss', next));
+      sub: ['"...Okay. OKAY. Lucky shot, bro. I wasn\'t even warmed up."', '"Fine. Take my Mata-Mindset. Don\'t say I never gave you anything."', 'Tap it to see what it does.'] }), next => offerCard('boss', next));
   }
 
   if (node.type === 'boss') {
@@ -1630,14 +1630,24 @@ const EVENT_CHOICES = {
       figureDoes('npc', act === 'train' ? 'npc-turn' : 'npc-nod');
       if (await playOut(act)) tutorCards(back, pay, react('npc-nod'));
     };
-    // or challenge the master himself (once a run: his Exp. Share is the prize)
+    // or challenge the master himself (once a run: his Mata-Mindset is the prize); like a trainer in the games, he talks
+    // his trash first, and the fight starts once you tap past "TEST YOUR MIGHT!"
     const node = run.map.byId[run.current], beaten = run.relics.includes('exp-share');
-    const challenge = () => { figureDoes('npc', 'npc-jump'); fight({ ...node, type: 'ken' }); };
-    return { figures: { npc: { npc: 'alder' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`,
-      !beaten && 'Or challenge the master himself, if you dare.'], options: [
+    const challenge = () => {
+      figureDoes('npc', 'npc-jump');
+      sayLines(['"Oh, you wanna go? Bro. BRO. I bench more than your whole team."',
+        '"I\'ve been training since before you could say Pokémon. Every day. No rest days. Rest is for betas."',
+        '"Don\'t worry, I\'ll go easy on you. Kidding. I never go easy."',
+        '"TEST YOUR MIGHT!"'], 'reward-log', () => fight({ ...node, type: 'ken' }));
+    };
+    const hello = beaten
+      ? ['"Oh, it\'s you. The lucky one. Rematch? Nah, I\'m on my cooldown. Still need a lesson though, right?"']
+      : ['"Yo. Chad Master Kenmatta. Yeah, THE Kenmatta. You\'ve heard of me."', '"I teach rare moves. Not to everyone. Only to people who can afford my genius."'];
+    return { figures: { npc: { npc: 'alder' } }, sub: [...hello, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`,
+      !beaten && '"Or step up and fight me, if you dare. You won\'t."'], options: [
       spotOption(`Pay ₽${price}`, 'A lesson from the scroll: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
-      spotOption('Challenge!', beaten ? 'You already won his Exp. Share.' : 'A boss fight against Kenmatta. Win his Exp. Share.', challenge, beaten),
+      spotOption('Challenge!', beaten ? 'You already won his Mata-Mindset.' : 'A boss fight against Kenmatta. Win his Mata-Mindset.', challenge, beaten),
     ] };
   },
 

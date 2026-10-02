@@ -4233,6 +4233,7 @@ function tutorScene() {
   for (let x = bag.x - u(0.16); x <= bag.x + u(0.16); x++) { solid(x, bag.top - 2, wLine); solid(x, bag.top - 1, wLit); solid(x, bag.top, wood); solid(x, bag.top + 1, wDark); solid(x, bag.top + 2, wLine); }
   groundShadow(bag.x, foot - u(0.02), bag.w + 2, 2);
   if (W > s * 1.5) weaponRack(cx + u(0.9), top + 4, u(0.1));
+  mightPlaque(ax1 + 3, bag.x - bag.w - 3, scroll.x0 - 3, top + 2);
   life.scroll = scroll;
   life.bag = bag;
   // Alder (62x66, drawn at half the scene's pixel size) sits cross-legged on the cushion; the lesson's sign is on the
@@ -4313,6 +4314,29 @@ function hangingScroll({ x0, x1, y0, y1 }) {
       else for (let y = cy; y < cy + cw; y++) solid(px0 + at, y, ink);
     }
   }
+}
+
+/** Kenmatta's motto, TEST YOUR MIGHT (the user's), in gold on a red lacquer plaque on the back wall: in the gap between
+    the alcove and the sandbag's rope if it fits, else left of the scroll, else as one line over the top of the wall. */
+function mightPlaque(rx0, rx1, lx1, y0) {
+  const [lit, body, line] = S.cushion, [shine, gold, , goldDark] = S.gold;
+  const lines = ['TEST YOUR', 'MIGHT'], width = (t) => [...t].reduce((n, ch) => n + (ch === ' ' ? 3 : 4), -1);
+  const fits = (text) => Math.max(...text.map(width)) + 6;
+  let text = lines, w = fits(lines), x0;
+  if (rx1 - rx0 >= w) x0 = Math.round((rx0 + rx1 - w) / 2);
+  else if (lx1 - 2 >= w) x0 = Math.round((2 + lx1 - w) / 2);
+  else { text = ['TEST YOUR MIGHT']; w = fits(text); x0 = Math.round((W - w) / 2); }
+  const h = text.length * 7 + 4;
+  for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
+    const edge = x === x0 || x === x0 + w - 1 || y === y0 || y === y0 + h - 1, rim = x === x0 + 1 || x === x0 + w - 2 || y === y0 + 1 || y === y0 + h - 2;
+    solid(x, y, edge ? line : rim ? (y === y0 + 1 ? shine : gold) : y < y0 + 3 ? lit : body);
+  }
+  for (let x = x0 + 1; x < x0 + w - 1; x++) tint(x, y0 + h, 0.7);   // its shadow on the wall
+  text.forEach((t, i) => {
+    const tx = x0 + Math.round((w - width(t)) / 2), ty = y0 + 3 + i * 7;
+    pixelText(tx + 1, ty + 1, t, goldDark);
+    pixelText(tx, ty, t, shine);
+  });
 }
 
 /** A round red meditation cushion on the mats. */
@@ -4932,6 +4956,9 @@ function drawKombat(t) {
 const GLYPHS = {
   A: ['.#.', '#.#', '###', '#.#', '#.#'], C: ['.##', '#..', '#..', '#..', '.##'], D: ['##.', '#.#', '#.#', '#.#', '##.'],
   E: ['###', '#..', '##.', '#..', '###'], R: ['##.', '#.#', '##.', '#.#', '#.#'], Y: ['#.#', '#.#', '.#.', '.#.', '.#.'], ' ': ['...'],
+  T: ['###', '.#.', '.#.', '.#.', '.#.'], S: ['.##', '#..', '.#.', '..#', '##.'], O: ['.#.', '#.#', '#.#', '#.#', '.#.'],
+  U: ['#.#', '#.#', '#.#', '#.#', '.##'], M: ['#.#', '###', '###', '#.#', '#.#'], I: ['###', '.#.', '.#.', '.#.', '###'],
+  G: ['.##', '#..', '#.#', '#.#', '.##'], H: ['#.#', '#.#', '###', '#.#', '#.#'],
 };
 
 /** Letters in the 3x5 pixel font, a pixel apart, their top left at x, y. */
