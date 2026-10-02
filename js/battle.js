@@ -361,6 +361,7 @@ function beginPlayerTurn() {
     pop('enemy-zone', `-${dealt} 🔥`, 'dmg', 150);
     playSound('burn');
   }
+  if (hasRelic('exp-share')) { playSound('fortify'); pop('player-zone', '🎓 +1 card', 'block', 150); }   // the user's call: his shout every time his relic draws
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0));
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);

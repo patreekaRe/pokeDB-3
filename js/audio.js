@@ -104,7 +104,7 @@ const SOUNDS = {
   'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
   'pc-on':      { url: 'assets/audio/sfx/pc-on.mp3' },        // the games' PC booting up: only the title's Sign in PC (the user's call)
   'pc-off':     { url: 'assets/audio/sfx/pc-off.mp3' },       // ...and logging off as that window closes, in place of cancel
-  fortify:      { url: 'assets/audio/sfx/fortify.mp3', length: 2.6, gain: 0.8 },   // Kenmatta's FORTIFY YOUR MIND: Wong's shout, the clip's first 2.6 s (the rest is the scene going on)
+  fortify:      { url: 'assets/audio/sfx/fortify.mp3', gain: 0.8 },   // Kenmatta's FORTIFY YOUR MIND: Wong's shout (the user's clip); also his Exp. Share's extra draw each turn
   'fw-launch':  { synth: fireworkLaunch },   // the Hall of Fame's fireworks (celebrate.js): a rocket whistles up...
   'fw-pop':     { synth: ac => fireworkPop(ac, 0.45, 90, 0.16) },   // ...and bursts
   'fw-boom':    { synth: ac => fireworkPop(ac, 1.1, 55, 0.22) },    // ...the finale's biggest one

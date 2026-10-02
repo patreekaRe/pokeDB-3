@@ -92,7 +92,7 @@ way until the room closes). **Challenge Kenmatta** (2026-10-01, the user's call)
 the hanging scroll, the HP one on the sandbag: `tutorScene()`'s `eventSpots` in that order). It runs
 `fight({ ...node, type: 'ken' })`: `KEN` in `js/data/enemies.js` (not in `ENEMY_DEFS`, so never in the Pokédex; Alder's
 sprite, HP per biome `[130, 220, 370]`, the biome's `bossBonus`, built by `buildKenEncounter()`) fought as a boss (shatter
-wipe, his own music (`music: 'kombat'`), FORTIFY YOUR MIND with Wong's shout (`sound: 'fortify'`, the clip's first 2.6 s), Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
+wipe, his own music (`music: 'kombat'`), FORTIFY YOUR MIND with Wong's shout (`sound: 'fortify'`, the user's trimmed clip), Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
 His arena is his own (`arena: 'kombat'` on `KEN`; `startBattle()` calls `showPlaceScene(def.arena)` instead of the
 biome's scene; the user's call, 2026-10-01): a Mortal Kombat courtyard, `PLACE_ART.kombat` in `js/scene.js`, always night.
 Laid out like an MK stage, a tall temple backdrop over a strip of floor: the floor line sits just above your pad
