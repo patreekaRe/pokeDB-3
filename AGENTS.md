@@ -27,7 +27,10 @@ three places:
   unique Exp. Share relic (+1 PP, +1 draw, +1 strength). Checked headless through the room, fight, rewards and the next
   fight; the user still has to playtest it and judge his difficulty (HP 130/220/370, never bot-tested).
 - 2026-10-02 (Small asks 1): Ken's first defeat pops an achievement window, and from then on every map shows his
-  dojo's ❓ room with his pixel face (`save.kenBeaten`) plus a "Ken's dojo" row in the Bag's Map key. Checked at 375x812.
+  dojo's ❓ room with his pixel face (`save.kenBeaten`) plus a "Ken's dojo" row in the Bag's Map key. Checked at 375x812. Same day, the user's call: the map
+  icon now takes 3 wins (`save.kenWins`); the first win's window is the relic's achievement and says so, the Challenge sign
+  counts "Beaten n/3". Safari polish (Small asks 2): the rare spawn's ✦ sits centred over its room, and the prep window's
+  balls are a big swipeable row. Checked at 375x812 and 768x1024.
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint

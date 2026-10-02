@@ -37,6 +37,14 @@ export function initSafariPrep(handlers) {
   $('sp-dex').addEventListener('click', () => openSafariDex(safariDaily().areas[0].id));
   $('sp-board').addEventListener('click', () => openLeaderboard());
   // the Game Corner pops up over this window (modal, so it isn't hidden under it); its balls show here once it closes
+  // the balls are a sideways strip: a mouse wheel scrolls it too, and its edges fade while there's more that way
+  const balls = $('sp-balls');
+  balls.addEventListener('scroll', () => ballEdges(balls), { passive: true });
+  balls.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX) || balls.scrollWidth <= balls.clientWidth) return;
+    e.preventDefault();
+    balls.scrollLeft += e.deltaY;
+  }, { passive: false });
   $('sp-corner').addEventListener('click', () => { if (!$('shop-dialog').open) toggleShop('balls', { modal: true }); });
   // a ball bought in the Game Corner, or anything changed in a window opened on top, shows once it closes
   for (const id of ['safari-dex-dialog', 'board-dialog', 'shop-dialog']) $(id).addEventListener('close', () => { if ($('safari-prep-dialog').open) render(); });
@@ -98,4 +106,10 @@ function render() {
     slot.setAttribute('aria-label', `${ball.name}, ${left === '∞' ? 'always' : left} in your bag`);
     return slot;
   }));
+  requestAnimationFrame(() => ballEdges($('sp-balls')));
+}
+
+function ballEdges(strip) {
+  strip.classList.toggle('more-l', strip.scrollLeft > 2);
+  strip.classList.toggle('more-r', strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 2);
 }

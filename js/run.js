@@ -861,9 +861,17 @@ function afterFight(node, result) {
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
   }
   if (node.type === 'ken') {
-    if (!getSave().kenBeaten) unlocked.push(KEN_UNLOCK);
-    steps.push(next => showRelics('Kenmatta\'s relic', [RELICS_BY_ID['exp-share']], next, { skip: false,
-      sub: ['"...Okay. OKAY. Lucky shot, bro. I wasn\'t even warmed up."', '"Fine. Take my Mata-Mindset. Don\'t say I never gave you anything."', 'Tap it to see what it does.'] }), next => offerCard('boss', next));
+    // his first defeat is the Mata-Mindset's achievement, his third finds his dojo on every map (the user's call,
+    // 2026-10-02); the count is saved as a max, so a refresh replaying these steps can't count a win twice
+    const wins = (getSave().kenWins || 0) + 1, mapped = getSave().kenBeaten, left = KEN_WINS - wins;
+    if (wins === 1) unlocked.push({ ...KEN_RELIC, wins });
+    if (!mapped && left <= 0) unlocked.push({ ...KEN_MAP, wins });
+    const countLine = !mapped && left > 0 && `Beat him ${left} more time${left === 1 ? '' : 's'} to find his dojo on every map.`;
+    steps.push(next => {
+      if (!peeking) updateSave(s => { s.kenWins = Math.max(s.kenWins || 0, wins); });
+      showRelics('Kenmatta\'s relic', [RELICS_BY_ID['exp-share']], next, { skip: false,
+        sub: ['"...Okay. OKAY. Lucky shot, bro. I wasn\'t even warmed up."', '"Fine. Take my Mata-Mindset. Don\'t say I never gave you anything."', countLine, 'Tap it to see what it does.'].filter(Boolean) });
+    }, next => offerCard('boss', next));
   }
 
   if (node.type === 'boss') {
@@ -1830,7 +1838,7 @@ const EVENT_CHOICES = {
       !beaten && '"Or step up and fight me, if you dare. You won\'t."'], options: [
       spotOption(`Pay ₽${price}`, 'A lesson from the scroll: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
-      spotOption('Challenge!', beaten ? 'You already won his Mata-Mindset.' : 'A boss fight against Kenmatta. Win his Mata-Mindset.', challenge, beaten),
+      spotOption('Challenge!', beaten ? 'You already won his Mata-Mindset.' : `A boss fight against Kenmatta. Win his Mata-Mindset.${getSave().kenBeaten ? '' : ` Beaten ${getSave().kenWins || 0}/${KEN_WINS}.`}`, challenge, beaten),
     ] };
   },
 
@@ -2229,10 +2237,10 @@ async function evolve(next) {
 function unlockWindow(list, next) {
   const [starter, ...rest] = list;
   if (!starter) return next();
-  const d = $('unlock-dialog'), ken = starter === KEN_UNLOCK;
-  // Kenmatta's first defeat is an achievement too: from then on every map shows his dojo (the flag is saved as its
-  // window opens, so a refresh before it replays the window; a ?event= playtest never saves it)
-  if (ken && !peeking) updateSave(s => { s.kenBeaten = true; });
+  const d = $('unlock-dialog'), ken = !!starter.ken;
+  // Kenmatta's defeats are achievements too, saved as the window opens (a refresh before it replays the window; a
+  // ?event= playtest never saves): the first wins his relic, the third shows his dojo on every map
+  if (ken && !peeking) updateSave(s => { s.kenWins = Math.max(s.kenWins || 0, starter.wins); if (starter.map) s.kenBeaten = true; });
   $('unlock-sprite').hidden = ken;
   $('unlock-face').hidden = !ken;
   if (!ken) {
@@ -2240,8 +2248,8 @@ function unlockWindow(list, next) {
     $('unlock-sprite').alt = starter.line[0].name;
   }
   $('unlock-name').textContent = ken ? KEN.name : starter.line[0].name;
-  $('unlock-text').textContent = ken ? KEN_UNLOCK.text : ACHIEVEMENT_FOR[starter.id]?.text ?? '';
-  $('unlock-hint').textContent = ken ? KEN_UNLOCK.hint : 'Choose it at New game.';
+  $('unlock-text').textContent = ken ? starter.text : ACHIEVEMENT_FOR[starter.id]?.text ?? '';
+  $('unlock-hint').textContent = ken ? starter.hint : 'Choose it at New game.';
   d.addEventListener('close', () => unlockWindow(rest, next), { once: true });
   openDialog('unlock-dialog');
   duckMusic(4.6);   // the jingle over a quieter song, not fighting it (the user heard it clash with the win song)
@@ -2249,7 +2257,14 @@ function unlockWindow(list, next) {
     if (d.open) ken ? playSound('fortify') : playCry(starter.line[0].id);
   }, Math.max(0, len * 1000 - 600)));
 }
-const KEN_UNLOCK = {
+const KEN_WINS = 3;   // Kenmatta's defeats (one a run at most) before his dojo shows on every map
+const KEN_RELIC = {
+  ken: true,
+  text: 'You beat Chad Master Kenmatta and won his Mata-Mindset!',
+  hint: `Beat him ${KEN_WINS} times to find his dojo on every map.`,
+};
+const KEN_MAP = {
+  ken: true, map: true,
   text: 'Find the Ken icon on the map to find Ken!',
   hint: 'Every run\'s map now shows which ❓ room is his dojo.',
 };

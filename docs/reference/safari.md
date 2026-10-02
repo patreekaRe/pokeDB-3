@@ -59,7 +59,7 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - `markRares()` in `js/data/safari.js`, from `startBiome()` after the wilds are dealt, on the biome's seed: each wild room
   has `RARE.odds` (12%) to hold one of its area's `rares` instead (Chansey, Kecleon and the `rare` lines of `safari-mons.js`
   are Safari-only, the rest are the main game's elite species as plain wilds), with `node.rare` saved on the map.
-- The map shows a gold ✦ over its room (`.map-rare`, its title says so; since 2026-10-02 22px with a soft glow that swells as
+- The map shows a gold ✦ over its room (`.map-rare`, its title says so; centred right above the room since 2026-10-02, the user couldn't tell which room it marked from the corner; 22px with a soft glow that swells as
   it bobs and twinkles, `rareTwinkle`, eased and slow, never flashing, the user's "more obvious but not too obvious"; the
   prep window's rare-spawn rule shows the same star, `.map-rare.inline`); in battle the name gets a ✨, the nameplate a gold
   rim (`#enemy-plate.rare`) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
@@ -91,8 +91,9 @@ replay today's Safari as often as you like to keep catching; only the first try 
 the perks back; the user wanted it prominent, not in the rules), 📕 Pokédex (on the day's first area) and 🏆
 Leaderboard buttons, the rules in short lines (`RULES`; the rare-spawn line carries the map's own ✦; Bait's and Rock's lines say they're Safari-only card rewards after fights and
 carry the card itself as a `.card.small`, `zoomable()`: a tap opens it big with its keyword boxes; each line has a pixel icon that `js/icons.js` has: an emoji
-without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row like an item bar
-(a slot each, sprite and ×count, greyed at 0, the Safari Ball's ∞ big at the sprite's bottom centre; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
+without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row you swipe sideways like the character select's
+portraits (since 2026-10-02, the user's ask: big 72px slots, 62 on phones, 80 wider; scroll-snap; a mouse wheel scrolls
+it; its edges fade while there's more that way, `.more-l` / `.more-r` from `ballEdges()` in `js/safariprep.js`) (a slot each, sprite and ×count, greyed at 0, the Safari Ball's ∞ big at the sprite's bottom centre; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
 end for the Game Corner, and Back / Start. Start keeps the "your saved run will be lost" confirm (`onStart` in
 `js/main.js`; No reopens the window). The Game Corner pops up over this window, which stays open
 underneath (the user's ask): Buy calls `toggleShop('balls', { modal: true })`, the one place the shop opens with

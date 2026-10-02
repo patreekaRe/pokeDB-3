@@ -857,9 +857,13 @@ Split into sessions by where they run:
    is recorded), every run's map shows which ❓ room holds the Move Tutor, with a tiny pixel Ken's face (from Alder's
    sprite) as its icon instead of the ❓, and a legend/tooltip saying so. Beating him the first time pops a real
    achievement window ("Find the Ken icon on the map to find Ken!", `unlockWindow()`), not just the relic.
+   **Changed the same day (the user's call):** the map icon takes 3 wins (`save.kenWins`, one a run); the first win's
+   window is the relic's achievement and tells you to beat him 3 times, the Challenge sign counts "Beaten n/3", the third
+   win's window is the map one. Detail in docs/reference/events.md.
    **Run in: Desktop app.** Prompt: "Read CLAUDE.md, docs/reference/events.md and docs/reference/map-screen.md, then
    docs/roadmap.md's 'Small asks' item 1. Build it, check it on a phone-sized pane (`?event=move-tutor`), push to main."
-2. **Safari polish** (Desktop app, visual). (a) The rare spawn's floating ✨/star on the map should sit centred right
+2. ✅ **Done 2026-10-02** (the ✦ centred over its room; the balls 72px slots in a swipeable strip with fading edges,
+   checked at 375x812 and 768x1024). **Safari polish** (Desktop app, visual). (a) The rare spawn's floating ✨/star on the map should sit centred right
    above the room it marks; today it's hard to tell which room it's over. (b) The Safari prep window's balls: bigger
    ball icons, laid out as a row you swipe left/right like the starter carousel.
    **Run in: Desktop app.** Prompt: "Read CLAUDE.md and docs/reference/safari.md, then docs/roadmap.md's 'Small asks'
