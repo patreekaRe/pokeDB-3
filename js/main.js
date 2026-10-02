@@ -34,7 +34,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, isPeeking } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, closeSoundPops } from './audio.js';
@@ -264,6 +264,8 @@ function init() {
   // ...and ?event=move-tutor (any event id) walks a throwaway, never-saved run straight into that event's room
   if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
   // ...and ?bossfight=wetland (any Safari area; &starter=id) walks one straight into that area's boss fight, prelude and arena included
+  // ?bossfight=depths: Mewtwo (or &starter=id) straight into Eternatus, the final boss; &hp=0.1 shrinks its bars
+  if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   if (SAFARI_AREAS.some(a => a.id === params.get('bossfight'))) return peekSafariBoss(params.get('bossfight'), STARTERS_BY_ID[params.get('starter')]);
 
   showSelect();   // under the title, so the menu scene is ready behind it

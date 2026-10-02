@@ -336,8 +336,26 @@ export function peekSafariBoss(areaId, starter = null) {
   beginRun(starter ?? daily.starter, 0, ':boss', { day: daily.day, seed: daily.seed, areas: [areaId], first: false });
 }
 
+/** Playtest shortcut: ?bossfight=depths walks a throwaway Mewtwo run (or &starter=id) straight into Eternatus, the final
+    boss, fully powered up; &hp=0.1 scales the boss's bars (both forms) to see the set piece through quickly. Nothing about
+    the run is saved. */
+export function peekFinalBoss(starter, bossHp = 1) {
+  peeking = true;
+  finalPeekHp = bossHp > 0 ? bossHp : 1;
+  beginRun(starter, 0, ':final');
+}
+let finalPeekHp = 1;
+
 function peekRoom(id) {
   if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
+  if (id === ':final') {
+    run.biome = finalBiome(run.starter);
+    run.stage = run.starter.line.length - 1;
+    run.maxHp = run.hp = 300;   // a starting deck at the bottom of the Depths: sturdy enough to see both forms through
+    startBiome(true);
+    run.mods = { ...run.mods, bossHp: (run.mods.bossHp ?? 1) * finalPeekHp };
+    return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss'));
+  }
   run.map = generateMap();
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
@@ -2283,11 +2301,11 @@ function endRun(won, atLastBoss = false) {
   let winCoins = 0;
   let level5 = [];
   let record = null;   // a won run's entry, whose win scene plays before the result window
-  if (won) {
+  if (won && !peeking) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
   }
-  if (won && !safari) {
+  if (won && !safari && !peeking) {
     updateSave(d => {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;

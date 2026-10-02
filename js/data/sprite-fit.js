@@ -66,6 +66,7 @@ export const SPRITE_FIT = {
   'entei-front': [2, 0, 1, 1],
   'entei-shiny-back': [1, 0, 4, 4],
   'entei-shiny-front': [2, 0, 1, 1],
+  'eternamax-front': [2, 3, 2, 1],
   'eternatus-front': [5, 2, 2, 2],
   'excadrill-front': [7, 7, 3, 11],
   'exploud-front': [2, 0, 4, 4],

@@ -1181,6 +1181,37 @@ export async function bossArenaPrelude() {
   draw();
 }
 let preludeRun = 0;
+
+/** A boss rising in its second form (Eternatus into Eternamax, rebirth() in js/battle.js): the arena's prelude again,
+    the core rising and bursting and the energy flooding out, then the arena as it was but in the storm at its fiercest
+    (`storm.fury`: twice the rain, lightning every second or two, a darker sky, the Well's column and vortex at full
+    stretch). `skipped` resolves on a tap, cutting to that. */
+export async function bossRebirth(skipped) {
+  if (!hasPrelude()) return;
+  storm.fury = true;
+  if (life.rain) makeRain();
+  const run = ++preludeRun, still = () => hasPrelude() && run === preludeRun;
+  let skip = false;
+  skipped?.then(() => { skip = true; });
+  const wait = (ms) => Promise.race([new Promise(resolve => setTimeout(resolve, ms)), skipped]);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    bossPrelude = { phase: 'wake', at: tick };
+    draw();
+    for (const [frame, sound] of preludeSounds()[preludeKey()]) {
+      setTimeout(() => { if (bossPrelude?.phase === 'wake' && still() && !skip) playSound(sound); }, frame * 1000 / FPS);
+    }
+    await wait(3600);
+    if (!still()) return;
+    if (!skip) {
+      bossPrelude = { phase: 'portal', at: tick };
+      draw();
+      await wait(1100);
+      if (!still()) return;
+    }
+  }
+  bossPrelude = { phase: 'awake', at: tick };
+  draw();
+}
 /** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
 const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
 const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
@@ -5451,7 +5482,7 @@ function makeLife() {
 /** Each drop lands on its own row of the ground (or falls past the bottom), splashes, and starts again at the top. */
 function makeRain() {
   life.rain = [];
-  for (let i = 0, n = Math.round((W * H / 130) * S.storm.count); i < n; i++) {
+  for (let i = 0, n = Math.round((W * H / 130) * S.storm.count * (storm.fury ? 1.8 : 1)); i < n; i++) {
     life.rain.push({ x: rand() * (W + H * 0.5), y: rand() * H, land: horizon + rand() * (H - horizon + 6), speed: 0.8 + rand() * 0.4, phase: rand() * 30 });
   }
 }
@@ -6500,7 +6531,7 @@ function drawLightning(t) {
     while (y < end) { bolt.push([x, y]); y++; if (rand() < 0.5) x += rand() < 0.5 ? -1 : 1; }
     life.bolt = bolt;
     life.boltAt = t;
-    life.nextBolt = t + (storm.on ? FPS * (2 + rand() * 3) : FPS * 7);
+    life.nextBolt = t + (storm.fury ? FPS * (0.8 + rand() * 1.5) : storm.on ? FPS * (2 + rand() * 3) : FPS * 7);
     if (storm.on && !storm.thundered) { storm.thundered = true; playSound('thunder'); }   // once a storm (the user found it repeating too much); the lightning goes on silently
   }
   const cycle = t - life.boltAt;
@@ -6510,7 +6541,8 @@ function drawLightning(t) {
 
 /** The storm's light: the sky and the ground darken (or redden) as it rolls in. */
 function stormLight() {
-  const mix = ([k, r, g, b]) => [1 - (1 - k) * storm.level, r * storm.level, g * storm.level, b * storm.level];
+  const L = storm.level * (storm.fury ? 1.4 : 1);   // the fiercest storm (a second form's) goes darker and redder
+  const mix = ([k, r, g, b]) => [Math.max(0.15, 1 - (1 - k) * L), r * L, g * L, b * L];
   const up = mix(S.storm.sky), down = mix(S.storm.ground);
   for (let i = 0; i < px.length; i++) {
     const [k, r, g, b] = sky[i] ? up : down, c = px[i];
@@ -9437,7 +9469,7 @@ function wellState(t) {
   const calm = { width: 1, vortex: 0.22, spin: t * 0.06, red: 0, speed: 1 };
   if (!bossPrelude) return calm;
   const age = preludeAge(t);
-  if (bossPrelude.phase === 'awake') return { width: 1.5, vortex: 0.62, spin: t * 0.09, red: 0.16, speed: 1.6 };
+  if (bossPrelude.phase === 'awake') return storm.fury ? { width: 2.4, vortex: 0.95, spin: t * 0.16, red: 0.26, speed: 2.4 } : { width: 1.5, vortex: 0.62, spin: t * 0.09, red: 0.16, speed: 1.6 };
   if (bossPrelude.phase === 'portal') return { width: 3, vortex: 0.9, spin: t * 0.3, red: 0.35, speed: 3 };
   if (age < CORE_AT) { const s = age / CORE_AT; return { width: Math.max(0.15, 1 - s * 0.85), vortex: 0.22 - s * 0.14, spin: t * (0.06 + s * 0.2), red: s * 0.3, speed: 1 + s * 4 }; }
   const e = age - CORE_AT;

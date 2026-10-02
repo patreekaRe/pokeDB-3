@@ -13,7 +13,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
+  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
@@ -159,7 +159,15 @@ live site.
   PokeAPI's `other/showdown/` Gen 5-style GIF) are themed to a crystal cave and shown as Neutral or Psychic. Some carry a
   `trait` (`TRAITS` in `js/data/enemies.js`, `enemyTrait()` in `js/battle.js`, a nameplate badge): `barbs` (each attack you
   play hurts you, block first, never fatal), `analytic` (strength per Power you play), `stamina` (block per card past the
-  Nth in a turn). Every per-biome array (events, Kenmatta's HP) has a 4th value. `secret` keeps it out of `DEX_PAGES` and
+  Nth in a turn). **Eternatus is a two-bar set piece** (part C, 2026-10-02, the user's calls): its `phase2` def, Eternamax,
+  rises when it faints (`finish()` hands over to `rebirth()` in `js/battle.js`: it sinks into the Well, `bossRebirth()` in
+  `js/scene.js` replays the Well's prelude, then a fresh bar scaled by `b.hpScale`, its debuffs / block / strength gone, its
+  own sprite (`eternamax-front.gif`, PokeAPI's showdown 10190 at every 2nd frame), cry, music and a red `.max` glow, in the
+  storm at its fiercest, `storm.fury`; a tap skips the show; risen on its own turn, rising was that turn). The storm waits
+  for Eternamax (`checkStorm()`). Its moves: `kind: 'charge'` (a turn's warning, its intent shows the next move's hit) and
+  `grow` (the move hits N harder each use, `enemy.grown`). Music `eternatus` / `eternamax` play `boss` until the user's
+  files arrive. Playtest: `?bossfight=depths` (`&hp=0.1` shrinks both bars; Mewtwo at 300 HP; `peekFinalBoss()`, never saved).
+  Every per-biome array (events, Kenmatta's HP) has a 4th value. `secret` keeps it out of `DEX_PAGES` and
   the records until reached. **Its scenery** (B2, 2026-10-02): `BIOME_ART.depths` in `js/scene.js`, no clock (one `day` look,
   `marks` skipped so nothing is graded), each place its own palette (`voids` / `rocks` / `floors` by stage), its glows
   (`crystal`, `amethyst`, `ruby`, `energy`...) in `GLOWS`. One painter (`depthsBackdrop()` / `depthsFloor()` / `depthsFront()`,

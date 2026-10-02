@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds } from './scene.js';
+import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth } from './scene.js';
 import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -161,6 +161,9 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown once its HP is red
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
+    hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
+    phased: false,     // the boss has already risen in its second form
+    enemyActing: false,   // the enemy's turn is under way (a second form rising then ends it)
 
     // the player
     hp: run.hp,
@@ -213,6 +216,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
       rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
       moveIndex: randIndex(def.moves.length),
+      grown: {},                      // what each `grow` move has gained so far, by name (Eternamax's Dynamax Cannon)
     },
 
     busy: true,        // true while animations play, so clicks are ignored
@@ -254,9 +258,13 @@ async function playIntro() {
   const cry = (id) => id ? Promise.race([playCry(id), sleep(CRY_WAIT_MAX)]) : null;
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const playerSpriteId = b.starter.line[b.stage].id;
-  preloadCries(b.def.spriteId ?? '', playerSpriteId);
+  preloadCries(b.def.spriteId ?? '', playerSpriteId, b.def.phase2?.spriteId ?? '');
+  if (b.def.phase2) {
+    new Image().src = b.def.phase2.image;
+    preloadMusic(b.def.phase2.music);
+  }
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -1407,6 +1415,7 @@ async function enemyTurn() {
   const en = b.enemy;
   const move = currentMove();
   if (runsOff()) return runAway();
+  b.enemyActing = true;
   en.block = 0;                                   // enemy block only lasts one round
 
   // 1. Burn hurts the enemy first.
@@ -1449,6 +1458,7 @@ async function enemyTurn() {
     if (battle !== b) return;
   }
   if (move.sound) playSound(move.sound);
+  $('enemy-portrait-box').classList.remove('charging');
   if (move.kind === 'attack' || move.kind === 'drain') {
     const damage = attackDamage(move);
     $('enemy-portrait-box').classList.add('attacking');
@@ -1488,6 +1498,17 @@ async function enemyTurn() {
       en.hp = Math.min(en.maxHp, en.hp + move.heal);
       pop('enemy-zone', `+${move.heal} HP`, 'heal', 200);
     }
+    if (move.grow) {
+      en.grown[move.name] = (en.grown[move.name] || 0) + move.grow;
+      pop('enemy-zone', `📈 ${move.name} +${move.grow}`, 'note bad', 450);
+    }
+  } else if (move.kind === 'charge') {
+    // a turn's warning before a huge hit: the intent already showed it, so there's time to block it or finish the boss
+    pop('enemy-zone', '⚠️ Charging!', 'note bad');
+    playSound('charge');
+    statFx('enemy');
+    $('enemy-portrait-box').classList.add('charging');
+    log(`${b.def.name} is gathering energy for ${move.name}! Brace yourself!`);
   } else if (move.kind === 'defend') {
     en.block += move.amount;
     pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
@@ -1526,6 +1547,7 @@ async function enemyTurn() {
   if (battle !== b) return;
   if (b.hp <= 0) return finish(false);
   if (b.enemy.hp <= 0) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
+  b.enemyActing = false;
   beginPlayerTurn();
 }
 
@@ -1550,7 +1572,7 @@ function enemyTypeMultiplier(move) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round(Math.max(0, move.amount + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
@@ -1559,6 +1581,7 @@ const winTrack = (kind) => (kind === 'elite' || kind === 'boss' ? 'trainer-victo
 
 async function finish(won) {
   const b = battle;
+  if (won && b.def.phase2 && !b.phased) return rebirth();
   b.over = true;
   setStorm(false);
   b.busy = true;
@@ -1586,6 +1609,66 @@ async function finish(won) {
   stopAura();
   closeDialog('piles-dialog');
   b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+}
+
+/**
+ * A boss with a second form (Eternatus) doesn't faint: it sinks into the Energy Well, the Well's energy bursts out again
+ * (the arena's prelude replayed, bossRebirth() in scene.js), and it rises as `def.phase2` (Eternamax) with a fresh bar,
+ * its own music and cry, in the arena's storm at its fiercest. Its debuffs, block and strength are gone, like StS's
+ * Awakened One; your side keeps everything. A tap skips the show. Felled on your turn, the turn goes on; on its own
+ * (Burn, Leech Seed, Rocky Helmet), rising is its turn.
+ */
+async function rebirth() {
+  const b = battle, en = b.enemy, next = b.def.phase2, still = () => battle === b;
+  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  b.phased = true;
+  b.busy = true;
+  setStorm(false);
+  renderAll();
+  const box = $('enemy-portrait-box'), zone = $('enemy-zone');
+  box.classList.remove('charging');
+  box.classList.add('sinking');
+  playSound('faint');
+  log(`${b.def.name} fell... but the Well's energy is pouring into it!`);
+  playMusic(null);
+  await sleep(motion ? 1800 : 900);
+  if (!still()) return;
+
+  let skip;
+  const skipped = new Promise(resolve => { skip = resolve; });
+  const onTap = () => skip();
+  document.addEventListener('pointerdown', onTap);
+  document.body.classList.add('boss-prelude');
+  zone.classList.add('boss-waiting');
+  try { await bossRebirth(skipped); }
+  finally { document.removeEventListener('pointerdown', onTap); }
+  if (!still()) return;
+
+  b.def = next;
+  Object.assign(en, {
+    hp: Math.round(next.hp * b.hpScale), block: 0, strength: 0, burn: 0, seed: 0, sap: 0, weak: 0, vulnerable: 0, moveIndex: 0, grown: {},
+  });
+  en.maxHp = en.hp;
+  box.classList.remove('sinking', 'defeated', 'hit');
+  setupEnemy();
+  document.body.classList.remove('boss-prelude');
+  zone.classList.remove('boss-waiting');
+  setStorm(true);
+  playMusic(next.music ?? 'boss', { restart: true });
+  if (motion) zone.classList.add('emerging');
+  renderAll();
+  await Promise.all([Promise.race([playCry(next.spriteId), sleep(CRY_WAIT_MAX)]), sleep(motion ? 1400 : 300)]);
+  if (!still()) return;
+  zone.classList.remove('emerging');
+  log(`${next.name}! Its power has no limit!`);
+  await sleep(1300);
+  if (!still()) return;
+  if (b.enemyActing) {
+    b.enemyActing = false;
+    return beginPlayerTurn();
+  }
+  b.busy = false;
+  renderAll();
 }
 
 /** Randomly reorder an array (returns a new array). */
@@ -1692,7 +1775,13 @@ function setupBattleScreen() {
   const oneSprite = b.starter.line.every(form => form.id.replace(/-shiny$/, '') === b.starter.line[0].id);
   sizeSprite($('player-sprite'), 0.5, 1.1, 0.75, 1.25, oneSprite ? [0.78, 0.9, 1][b.stage] : 1);
   resetIntro();
+  setupEnemy();
+  log('');
+}
 
+/** The enemy's sprite, plate and type: at the start of a fight, and again when a boss rises in its second form. */
+function setupEnemy() {
+  const b = battle;
   const img = $('enemy-img');
   img.src = b.def.image;
   img.alt = b.def.name;
@@ -1703,7 +1792,7 @@ function setupBattleScreen() {
   box.classList.toggle('sprite', !b.def.art);
   const zone = $('enemy-zone');
   if (b.def.art) ['--size', '--shift', '--drop', '--head-room'].forEach(name => zone.style.removeProperty(name));
-  else sizeSprite(img, 0.6, 1, 0.7, 1.3, 1, zone);
+  else sizeSprite(img, 0.6, 1, 0.7, 1.3, b.phased ? 1.25 : 1, zone);   // a boss's second form towers over the first
   box.classList.toggle('elite', b.kind === 'elite');
   box.classList.toggle('boss', b.kind === 'boss');
   box.title = b.def.description;
@@ -1717,7 +1806,7 @@ function setupBattleScreen() {
   $('enemy-type').textContent = TYPES[type].icon;
   $('enemy-type').title = `${TYPES[type].label} type`;
   $('enemy-type').className = `chip type-${type}`;
-  log('');
+  box.classList.toggle('max', !!b.phased);
 }
 
 function renderAll() {
@@ -1888,6 +1977,10 @@ function renderIntent() {
     icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
   } else if (move.kind === 'status') {
     icon = CARDS_BY_ID[move.adds.card].art; kind = 'status'; value = `+${move.adds.n || 1}`; detail = '';
+  } else if (move.kind === 'charge') {
+    // shows the hit it's charging (the next move), so the warning carries its number
+    const hit = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
+    icon = '⚠️'; kind = 'charge'; value = String(attackDamage(hit)); detail = `charging: the turn after, ${hit.name} deals ${attackDamage(hit)} damage`;
   } else {
     icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
@@ -2222,7 +2315,7 @@ function bigHit(through, maxHp) {
 /** A boss close to fainting brings the weather in (see setStorm in scene.js). */
 function checkStorm() {
   const en = battle.enemy;
-  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3) setStorm(true);
+  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !battle.phased)) setStorm(true);
 }
 
 /** A number or word that floats up from a spot on screen. */

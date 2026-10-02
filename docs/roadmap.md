@@ -804,15 +804,31 @@ last act only a special run reaches.
     the prelude frame by frame, the film and the Deep Core walk-on, the map, the grotto) and 1280x800 (the Halls); no
     console errors. Not yet seen in a real Mewtwo run or under a real battle's pads. `?area=depths` walks it (`&stage=0-3`,
     `&intro=0`). Still open: `map4` music from the user.
-- **C. The final boss fight** as a set piece: several phases (Eternatus -> Eternamax, say), its own music, the storm at
-  30% at its most dramatic.
+- **C. The final boss fight** as a set piece — **done 2026-10-02** (cloud). The user's calls: two bars (StS's Awakened
+  One), a full cutscene for the change, their own music to come, the rest "balanced difficulty" left to me.
+  - **Eternatus** (440 HP, was 800) keeps its moves; when it faints it sinks into the Well, the Well's prelude plays again
+    (the core rises and bursts, the energy floods out) and it rises as **Eternamax** (460 HP, both scaled by the mode's
+    `bossHp`) with its own Gen 5-style sprite and cry, a red glow, and the storm at its fiercest (twice the dust, lightning
+    every second or two, the Well's column and vortex at full stretch). The storm no longer comes at 30% of the first bar.
+    Its debuffs, block and strength are wiped (your side keeps everything). A tap skips the show.
+  - **Eternamax's moves, in order from the first**: Dynamax Cannon 12 that **grows** +5 every use (a clock), Cosmic Power 26,
+    **Eternabeam charging** (a blinking ⚠️ intent with the hit to come), Eternabeam 34, Toxic (2 Poison). Pressure blocks 10
+    (was 8) per card past the 4th.
+  - **Bot check** (sim mirrors the rebirth, `charge` and `grow`; psychic, before at 150 / after at 300 runs): strong 94.7 ->
+    92.3, human 92.0 -> 90.0; Eternatus/Eternamax ends 6% / 9% of the runs that reach it (was 4% / 6%), in ~11 turns
+    (was ~9.5); the same data at 150 runs read 88.0 / 92.7, so the gap is within noise.
+  - Checked headless at 390x844 through `?bossfight=depths&hp=0.25`: both forms, the cutscene, the charge, a win; no
+    console errors but the two missing music files. **Still open: the user's `eternatus.mp3` / `eternamax.mp3`** (in
+    `assets/audio/`; until then both play `boss.mp3`; if they're clips of a looping song, `LOOP_POINTS` in `js/audio.js`
+    wants their loop points) and a playtest of the cutscene on a phone.
 - **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page's perk (the page itself is a "???" tab since 2026-09-28, `renderMystery()` in `js/pokedex.js`, 12 + 3 + 1 placeholder tiles; part B swaps it for a real `DEX_PAGES` entry, and must keep it out of `ALL_IDS` / `dex.complete` until biome 4 exists, so the 55-entry jackpot isn't taken away), achievements, the
   completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
 
-**Run in: CLOUD.** Next-session prompt (part C): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
-fourth biome'. Parts A and B (Mewtwo's deck, the Crystal Depths' gameplay) are done. Ask me what part C needs, then build
-Eternatus's final boss fight as a set piece (phases, Eternamax), with a bot check. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (part D): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
+fourth biome'. Parts A-C (Mewtwo's deck, the Crystal Depths, Eternatus's two-bar set piece) are done. Ask me what part D
+needs (the ending, the 4th Pokédex page and its perk, achievements, patch notes), then build it and run the final
+balance pass. Attach pokeDB-sim too."
 
 ## The Sealed Gate: why every run matters (the user's idea, agreed 2026-10-02)
 

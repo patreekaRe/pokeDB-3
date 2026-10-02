@@ -44,6 +44,8 @@ const TRACKS = {
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
+  eternatus: 'assets/audio/eternatus.mp3',   // the final boss's own theme (v1.0 part C): the user's to supply...
+  eternamax: 'assets/audio/eternamax.mp3',   // ...and its second form's; each plays `boss` until its file arrives
   kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
@@ -66,7 +68,7 @@ const LOOP_POINTS = {
   kombat: [30, 115.97016, 0.3],   // an 85.97 s repeat (0.81 sample correlation at the join, so cross-faded); the file fades out at 194 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
-const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss' };
+const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
 const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
@@ -126,6 +128,7 @@ const SOUNDS = {
   'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
   // the Crystal Depths (scene.js, depths-intro.js): the Energy Well's prelude opens on gate-hum and quake, then Eternatus's core bursts
   'core-surge': { synth: ac => powerSurge(ac, [73, 110, 147, 156, 220, 311], 3) },
+  charge:       { synth: chargeUp },       // ...Eternamax charging Eternabeam (battle.js): a whine climbing over a throb
   'crystal-0':  { synth: ac => windChime(ac, 2349), gain: 0.5 },   // ...and its intro: crystals chiming as the light catches them
   'crystal-1':  { synth: ac => windChime(ac, 2794), gain: 0.5 },
   'crystal-2':  { synth: ac => windChime(ac, 3136), gain: 0.5 },
@@ -178,7 +181,7 @@ const CRIES = new Set([
   'snorlax', 'kangaskhan', 'miltank', 'ursaring', 'stoutland', 'exploud',
   'slaking', 'regigigas', 'lickilicky', 'porygonz',
   'crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus', 'golurk', 'bronzong',
-  'claydol', 'dusknoir', 'lanturn', 'magnezone', 'clefable', 'ditto', 'smeargle', 'eternatus',
+  'claydol', 'dusknoir', 'lanturn', 'magnezone', 'clefable', 'ditto', 'smeargle', 'eternatus', 'eternamax',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1
@@ -860,6 +863,25 @@ function powerSurge(ac, notes, seconds) {
     out[i] = (rush * 1.4 + thump * 0.9 + arp) * Math.min(1, (length - i) / (rate * 0.05));
   }
   return normalize(buffer, 0.24);
+}
+
+/** Energy gathering for a huge attack: a square-wave whine sweeping up two octaves with a quickening wobble, over a low
+    throb and a rising hiss, cut off at the top. */
+function chargeUp(ac) {
+  const rate = ac.sampleRate, seconds = 1.4, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const hiss = chipNoise(length, 2);
+  let phase = 0, low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, p = t / seconds;
+    phase += 110 * 4 ** p * (1 + 0.03 * Math.sin(2 * Math.PI * (6 + 18 * p) * t)) / rate;
+    low += (0.01 + 0.2 * p) * (hiss[i] - low);
+    const whine = Math.sign(Math.sin(2 * Math.PI * phase)) * 0.3 * p;
+    const throb = Math.sin(2 * Math.PI * 49 * t) * (0.6 + 0.4 * Math.sin(2 * Math.PI * 5 * t));
+    out[i] = (whine + throb * 0.5 + low * 1.4 * p) * Math.min(1, t / 0.05, (length - i) / (rate * 0.02));
+  }
+  return normalize(buffer, 0.2);
 }
 
 /** A crackler: a scatter of tiny noise snaps, thinning out over most of a second. */

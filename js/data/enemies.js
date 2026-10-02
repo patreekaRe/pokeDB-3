@@ -700,9 +700,12 @@ export const ENEMY_DEFS = {
     ],
   },
 
-  /* the final boss: "the last energy". Its set piece (phases, Eternamax, its own music) is v1.0 part C. */
+  /* the final boss: "the last energy". A set piece in two bars (v1.0 part C, the user's calls 2026-10-02): when this one
+     faints it draws the Well's energy in and rises again as `phase2`, Eternamax, with a fresh bar (its `hp` scaled like
+     this one's) and its own moves, music and cry (rebirth() in js/battle.js). Eternamax charges Eternabeam a turn ahead
+     (`kind: 'charge'`: the intent shows the hit to come) and its Dynamax Cannon `grow`s every time it fires. */
   eternatus: {
-    name: 'Eternatus', type: 'normal', hp: 800, ...sprite('eternatus'), boss: true,
+    name: 'Eternatus', type: 'normal', hp: 440, ...sprite('eternatus'), boss: true, music: 'eternatus',
     trait: { id: 'stamina', name: 'Pressure', after: 4, amount: 8 },
     description: 'The energy at the bottom of everything. It has been waiting a very long time.',
     moves: [
@@ -712,6 +715,18 @@ export const ENEMY_DEFS = {
       { kind: 'buff',   name: 'Dragon Dance',   amount: 4 },
       { kind: 'attack', name: 'Eternabeam',     amount: 26 },
     ],
+    phase2: {
+      name: 'Eternamax', type: 'normal', hp: 460, ...sprite('eternamax'), boss: true, music: 'eternamax',
+      trait: { id: 'stamina', name: 'Pressure', after: 4, amount: 10 },
+      description: 'Eternatus filled with all the energy of the Well: its true, limitless form.',
+      moves: [
+        { kind: 'attack', name: 'Dynamax Cannon', amount: 12, grow: 5 },
+        { kind: 'defend', name: 'Cosmic Power',   amount: 26 },
+        { kind: 'charge', name: 'Eternabeam' },
+        { kind: 'attack', name: 'Eternabeam',     amount: 34 },
+        { kind: 'status', name: 'Toxic',          adds: { card: 'poison', n: 2, to: 'draw' } },
+      ],
+    },
   },
 
   /* ----- the Safari Zone's rare spawns (SAFARI_AREAS' `rares` in safari.js): only ever met there ----- */

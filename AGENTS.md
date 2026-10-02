@@ -31,8 +31,10 @@ three places:
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
   through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the gate
   after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery was
-  painted the same day (B2, below), and `map4` borrows `map3.mp3` until the user supplies one. Next is part C (the
-  Eternatus set piece); its prompt is in the roadmap.
+  painted the same day (B2, below), and `map4` borrows `map3.mp3` until the user supplies one. Part C landed the
+  same day: Eternatus is a two-bar set piece (it rises as Eternamax in a cutscene, charges Eternabeam, its Dynamax
+  Cannon grows); strong / human bot 92 / 90%; `?bossfight=depths&hp=0.1` playtests it. The user still owes its two music
+  files and a phone playtest. Next is part D (the ending); its prompt is in the roadmap.
 - 2026-10-02: **The Crystal Depths painted** (v1.0 part B2, Desktop app): four places each deeper and stranger (Cave
   Mouth, Crystal Halls, Deep Core, Energy Well), landmarks per place, Eternatus's boss prelude (its core rises out of the
   Well and bursts), an intro film down a crystal shaft (`js/depths-intro.js`), a map palette with energy rifts, crystal
