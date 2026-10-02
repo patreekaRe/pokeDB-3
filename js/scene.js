@@ -577,6 +577,29 @@ const PLACE_ART = {
     },
   },
 
+  /* Chad Master Kenmatta's arena, after Mortal Kombat's courtyards: a temple wall under a blood-red night, its gate tower
+     bearing a gold medallion with a roaring Dragonite for the MK dragon, braziers on red pillars either side, banners,
+     stone flags. Always night (the clock doesn't reach it). A battle scene, so no `horizon`: it follows the enemy's pad. */
+  kombat: {
+    backdrop: 'kombat', floor: 'kombat', light: null,
+    sky: ['#0c0612', '#1e0a1e', '#3a0e22', '#6a1620', '#a8301a'],
+    cloud: ['#fff0e0'],
+    peaks: ['#3e1a26', '#2a1220', '#1c0c16'],
+    stone: ['#8a7870', '#6c5c56', '#52443f', '#2c2224', '#160e10'],
+    roof: ['#4a4248', '#2e282e', '#1a1418', '#a82820'],
+    lacquer: ['#f05038', '#b82820', '#781418', '#2a0808'],
+    gold: ['#fff4b8', '#f8c830', '#c88a18', '#7a4c10', '#2e1806'],
+    medal: ['#2a0a10', '#1a060a'],
+    eye: ['#fff8f0', '#ff3828', '#a01010'],
+    flame: ['#fffce0', '#fff070', '#f8a830', '#e85820', '#a82818'],
+    banner: ['#d83830', '#a01c1c', '#5a0c10'],
+    tile: ['#6a5e58', '#564c48', '#463e3c', '#1e1618'],
+    ember: ['#fff0a0', '#f8a830', '#e85820'], embers: 0.7,
+    pad: { style: 'stone', top: '#7a6e66', mid: '#645a54', low: '#504844', rim: '#160e10', earth: '#2e2628', moss: '#b82820' },
+    storm: { rain: ['#fff0a0', '#f06820'], fall: 1.1, count: 0.5, sky: [0.75, 40, 0, 6], ground: [0.85, 22, 0, 0] },
+    life: ['kombat', 'embers'],
+  },
+
   /* the Move Deleter's study: dim striped paper, shelves of old books, a lectern with a big open book (forget one) and a
      hypnotist's pendulum (forget two), candles, a Slowpoke dozing (the page's figure) */
   deleter: {
@@ -902,7 +925,7 @@ function resize() {
   canvas.width = W;
   canvas.height = H;
   horizon = floorAt ? Math.max(Math.round(H * 0.3), Math.min(H - 8, Math.round(floorAt() * H / innerHeight)))
-    : S.raw.horizon ? Math.round(H * S.raw.horizon) : horizonRow(scale);
+    : S.raw.horizon ? Math.round(H * S.raw.horizon) : S.raw.backdrop === 'kombat' ? kombatFloorRow(scale) : horizonRow(scale);
   rand = seeded(W * 131 + H);
   img = ctx.createImageData(W, H);
   px = new Uint32Array(img.data.buffer);
@@ -989,6 +1012,7 @@ function paintBase() {
   if (S.raw.backdrop === 'study') roomWall({ stripes: 3 });
   if (S.raw.backdrop === 'fanclub') fanWall();
   if (S.raw.backdrop === 'daycare') daycareHouse();
+  if (S.raw.backdrop === 'kombat') kombatBackdrop();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
@@ -1004,6 +1028,7 @@ function paintBase() {
   if (S.raw.floor === 'desert') desert();
   if (S.raw.floor === 'beach') beach();
   if (S.raw.floor === 'jungleFloor') jungleFloor();
+  if (S.raw.floor === 'kombat') kombatFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
@@ -4558,6 +4583,252 @@ function drawFans(t) {
   }
 }
 
+/* ----- Chad Master Kenmatta's arena (PLACE_ART.kombat): Mortal Kombat's courtyard, a Dragonite for its dragon ----- */
+
+/* Laid out like a Mortal Kombat stage, a tall backdrop over a strip of floor: the floor line sits just above your
+   Pokémon's pad (kombatFloorRow), Kenmatta meditates on temple steps raised to his pad, and the medallion hangs in the
+   open wall between you, all measured from the battle's real layout (CSS px, then canvas pixels). */
+const TOP_BAR = 56;   // CSS px the top bar covers
+
+function kombatFloorRow(scale) {
+  const box = $('player-zone').getBoundingClientRect();
+  if (!box.height) return Math.round(H * 0.6);
+  const padW = Math.max(130, Math.min(innerHeight * 0.25, 290));
+  return Math.round((box.bottom + box.height * 0.04 - padW / 3 - 4) / scale);
+}
+
+function kombatLayout() {
+  const sx = innerWidth / W, floorCss = horizon * sx;
+  const eb = $('enemy-portrait-box').getBoundingClientRect(), pb = $('player-zone').getBoundingClientRect();
+  if (!eb.height) {
+    const R = Math.max(9, Math.round(Math.min(W * 0.2, (horizon - TOP_BAR / sx) * 0.4, 34)));
+    return { R, cx: W >> 1, cy: Math.round(TOP_BAR / sx + (horizon - TOP_BAR / sx) / 2), dais: null };
+  }
+  const base = eb.width / (parseFloat(getComputedStyle($('enemy-zone')).getPropertyValue('--size')) || 1);
+  const padW = base * 1.5, padBottom = eb.bottom + base * 0.2, padTop = padBottom - padW / 3, padX = (eb.left + eb.right) / 2;
+  let R = Math.min(170, innerWidth * 0.22, (eb.left - 8) / 1.9, (floorCss - TOP_BAR) / 2);
+  let cx = Math.max(R + 4, Math.min((pb.left + pb.right) / 2 + (padX - (pb.left + pb.right) / 2) / 2, eb.left - R * 0.8));
+  // on a phone the enemy's nameplate is over that wall: hang it below, or the Dragonite's head hides behind it
+  const plate = $('enemy-plate').getBoundingClientRect(), top = plate.height && plate.right > cx - R * 0.8 ? plate.bottom + 2 : TOP_BAR;
+  const cy = Math.max(top + R + 2, Math.min(padTop, floorCss - R - 6));
+  // and clear of the steps (templeSteps: a pixel wider every 3 rows), shrinking it where there's no room
+  const daisTop = padTop + padW / 9, hw = padW * 0.5, room = padX - hw - Math.max(0, cy + R * 0.5 - daisTop) / 3 - 6;
+  if (cx + R > room) { R = Math.min(R, (room - 4) / 2); cx = Math.max(R + 4, room - R); }
+  return {
+    R: Math.max(9, Math.round(R / sx)), cx: Math.round(cx / sx), cy: Math.round(cy / sx),
+    dais: padBottom / sx < horizon - 3 ? { x: Math.round(padX / sx), top: Math.round(daisTop / sx), hw: Math.round(hw / sx) } : null,
+  };
+}
+
+function kombatBackdrop() {
+  const { R, cx, cy, dais } = kombatLayout(), half = Math.round(R * 1.3), roof = Math.max(4, Math.round(R * 0.4));
+  const towerTop = Math.max(1, cy - R - roof - 4), wallTop = Math.max(towerTop + roof + 2, Math.round(horizon * 0.3));
+  bands(0, wallTop, S.sky, 1, true);
+  stars();
+  ridge(wallTop - 3, Math.max(3, Math.round(wallTop * 0.25)), 9, 1.7, S.peaks, true, true);
+  templeWall(wallTop);
+  const bay = 34;   // bays of pillars and banners out from the tower, both ways
+  for (const side of [-1, 1]) for (let x = cx + side * (half + 6); x > -bay && x < W + bay; x += side * bay) {
+    kombatBanner(x + side * Math.round(bay / 2), wallTop + 2, Math.round((horizon - wallTop) * 0.55));
+    lacquerPillar(x + side * bay, wallTop - 4);
+  }
+  gateTower(cx, towerTop, roof, half);
+  medallion(cx, cy, R);
+  life.braziers = [];
+  for (const side of [-1, 1]) {
+    const x = cx + side * (half + 6), py = Math.round(cy - R * 0.1);
+    if (dais && Math.abs(x - dais.x) < dais.hw + 8) continue;   // the steps stand in front of it
+    lacquerPillar(x, py);
+    pixelMap(x - 3, py - 3, ['ooooooo', 'olggggo', '.odddo.', '..ooo..'], { o: S.gold[4], l: S.gold[0], g: S.gold[1], d: S.gold[3] });
+    life.braziers.push({ x, y: py - 4 });
+  }
+  if (dais) templeSteps(dais);
+  const Ri = R * 0.78, n = DRAGONITE.length, ey = DRAGONITE.findIndex(row => row.includes('e')), ex = DRAGONITE[ey].indexOf('e');
+  life.kombat = { eye: { x: cx + Math.round(((ex + 0.5) * 2 / n - 1) * Ri), y: cy + Math.round(((ey + 0.5) * 2 / n - 1) * Ri) } };
+}
+
+/** Kenmatta's dais: a stone platform under his pad and steps down to the floor, widening, a red carpet down the middle. */
+function templeSteps({ x: cx, top, hw }) {
+  const [lit, body, dark, line, deep] = S.stone, [cLit, carpet, cDark] = S.banner, gold = S.gold;
+  const run = Math.max(2, Math.round(hw * 0.32));
+  let w = hw, y = top;
+  for (; y < top + 3; y++) for (let x = cx - w; x <= cx + w; x++) solid(x, y, Math.abs(x - cx) === w ? line : y === top ? lit : body);
+  for (let step = 0; y < horizon; step++) {
+    w += 1;
+    for (let k = 0; k < 3 && y < horizon; k++, y++) for (let x = cx - w; x <= cx + w; x++) {
+      const d = Math.abs(x - cx), onCarpet = d < run, edge = d === run;
+      solid(x, y, d === w ? line : edge ? gold[k ? 2 : 0] : onCarpet ? (k ? (k === 2 ? cDark : carpet) : cLit) : k === 0 ? lit : k === 2 ? dark : (dither(x, y) < 3 ? dark : body));
+    }
+  }
+  for (let x = cx - w - 1; x <= cx + w + 1; x++) solid(x, horizon - 1, deep);
+}
+
+/** The courtyard's back wall: big stone blocks under a tiled cap with a red trim, darkening to a plinth at the ground. */
+function templeWall(wallTop) {
+  const [lit, body, dark, line, deep] = S.stone, [tLit, tile, tDark, trim] = S.roof, gold = S.gold;
+  const plinth = horizon - Math.max(4, Math.round((horizon - wallTop) * 0.12));
+  for (let y = wallTop; y < horizon; y++) {
+    const low = y >= plinth, rh = low ? 99 : 5, course = Math.floor((y - wallTop) / rh), seamY = !low && (y - wallTop) % rh === rh - 1;
+    for (let x = 0; x < W; x++) {
+      const bx = x + (course % 2) * 6, seamX = !low && bx % 12 === 0;
+      const shade = 3 + (y - wallTop) / (horizon - wallTop) * 8;
+      let c = seamY || seamX ? line : low ? (dither(x, y) < 9 ? deep : line) : dither(x, y) < shade ? dark : noise(Math.floor(bx / 12), course, 2) > 0.75 ? lit : body;
+      if (!low && !seamY && !seamX && (y - wallTop) % rh === 0) c = lit;
+      if (y === plinth - 2) c = gold[2];
+      if (y === plinth - 1) c = trim;
+      solid(x, y, c);
+    }
+  }
+  for (let x = 0; x < W; x++) {
+    solid(x, wallTop - 3, tLit); solid(x, wallTop - 2, x % 2 ? tile : tDark); solid(x, wallTop - 1, trim); solid(x, wallTop, deep);
+  }
+}
+
+/** The gate tower in the middle: a stone face under a sweeping pagoda roof, its eaves turned up, gold finials. */
+function gateTower(cx, top, roof, half) {
+  const [lit, body, dark, line] = S.stone, [tLit, tile, tDark, trim] = S.roof, gold = S.gold;
+  for (let y = top + roof; y < horizon; y++) for (let x = cx - half; x <= cx + half; x++) {
+    const edge = Math.abs(x - cx) === half, course = Math.floor((y - top) / 4), seam = (y - top) % 4 === 3 || (x - cx + 100 + (course % 2) * 5) % 10 === 0;
+    solid(x, y, edge ? gold[3] : Math.abs(x - cx) === half - 1 ? gold[2] : seam ? line : x > cx + half * 0.5 && dither(x, y) < 6 ? dark : body);
+  }
+  for (let y = top; y < top + roof; y++) {
+    const k = (y - top) / (roof - 1), w = Math.round(half * 0.45 + (half + roof * 1.2 - half * 0.45) * Math.pow(k, 0.8));
+    for (let x = cx - w; x <= cx + w; x++) solid(x, y, y === top + roof - 1 ? trim : y === top ? tLit : (x - cx) % 2 ? tile : tDark);
+    if (y === top + roof - 1) for (const s of [-1, 1]) { solid(cx + s * (w + 1), y - 1, trim); solid(cx + s * (w + 2), y - 2, gold[1]); }
+  }
+  for (let y = top - 3; y < top; y++) solid(cx, y, gold[y === top - 3 ? 0 : 1]);
+  solid(cx - 1, top - 1, gold[2]); solid(cx + 1, top - 1, gold[2]);
+  for (let x = cx - half; x <= cx + half; x++) solid(x, top + roof, dark);
+  for (let x = cx - half + 2; x <= cx + half - 2; x++) if (x % 3 === 0) solid(x, top + roof + 1, lit);
+}
+
+/** A red lacquer pillar from `top` down to the ground, gold-banded at both ends. */
+function lacquerPillar(x, top) {
+  const [lit, body, dark, line] = S.lacquer, gold = S.gold;
+  for (let y = top; y < horizon; y++) {
+    const band = y - top < 2 || horizon - y <= 2;
+    [line, band ? gold[0] : lit, band ? gold[1] : body, band ? gold[2] : body, band ? gold[3] : dark, line].forEach((c, i) => solid(x - 3 + i, y, c));
+  }
+}
+
+/** A red banner hanging from a gold rod, swallow-tailed, a gold ring on it like the medallion. */
+function kombatBanner(cx, top, len) {
+  const [lit, body, dark] = S.banner, gold = S.gold, hw = 3;
+  for (let x = cx - hw - 1; x <= cx + hw + 1; x++) solid(x, top, gold[x === cx - hw - 1 ? 0 : 2]);
+  for (let y = top + 1; y < top + len; y++) for (let x = cx - hw; x <= cx + hw; x++) {
+    if (y > top + len - 4 && Math.abs(x - cx) < top + len - y) continue;   // the swallow tail
+    solid(x, y, x === cx - hw ? lit : x === cx + hw ? dark : body);
+  }
+  const ry = top + Math.round(len * 0.38);
+  for (let a = 0; a < 8; a++) solid(cx + Math.round(Math.cos(a * Math.PI / 4) * 2), ry + Math.round(Math.sin(a * Math.PI / 4) * 2), gold[1]);
+  solid(cx, ry, gold[0]);
+}
+
+/* The medallion's Dragonite, roaring to the left like the MK dragon with its wing raised: antennae, open jaws, a reaching
+   claw, the striped belly, its tail curling round the ring. # body, w wing, = belly, e the eye (drawKombat lights it). */
+const DRAGONITE = [
+  '................................',
+  '..............##................',
+  '.............#..##..............',
+  '............#.....#.............',
+  '.......#####.#..................',
+  '.....#########.#................',
+  '...#############...............w',
+  '..###e##########.............ww.',
+  '..##############...........www..',
+  '..##############..........wwww..',
+  '...#....########.........wwwww..',
+  '....#############.......wwwwww..',
+  '.....###########.......wwwwww...',
+  '.....######=######....wwwwww....',
+  '.......##=========####wwwww.....',
+  '.......#==========######ww......',
+  '..#######=========#######.......',
+  '.##....#==========########......',
+  '..#....#==========#########.....',
+  '.......#==========#########.....',
+  '.......#==========##########....',
+  '........#=========##########....',
+  '........#=========###########...',
+  '.........#=======############...',
+  '..........#=====##############..',
+  '...........###################..',
+  '..........######.....#####.####.',
+  '.........######.......####..###.',
+  '.......#######..........#..####.',
+  '......######...............###..',
+  '...........................#....',
+  '................................',
+];
+const DRAGONITE_KIND = { '#': 1, e: 1, w: 2, '=': 3 };
+
+/** The Dragonite at u, v in the unit circle: 0 none, 1 body, 2 wing, 3 belly. */
+function dragoniteAt(u, v) {
+  const n = DRAGONITE.length, x = Math.floor((u + 1) * n / 2), y = Math.floor((v + 1) * n / 2);
+  return DRAGONITE_KIND[DRAGONITE[y]?.[x]] || 0;
+}
+
+/** The gold medallion: a bevelled ring round a dark field, the Dragonite raised on it in relief, lit from the top left. */
+function medallion(cx, cy, R) {
+  const [lit, gold, mid, dark, deep] = S.gold, [field, fieldDark] = S.medal, Ri = R * 0.78;
+  const kind = (x, y) => (x * x + y * y > Ri * Ri) ? 0 : dragoniteAt(x / Ri, y / Ri);
+  for (let y = -R - 1; y <= R + 1; y++) for (let x = -R - 1; x <= R + 1; x++) {
+    const d = Math.sqrt(x * x + y * y);
+    if (d > R + 0.5) continue;
+    let c;
+    if (d > Ri + 0.5) {
+      const a = (-x - y) / Math.max(1, d), outerHalf = d > (R + Ri) / 2;
+      c = d > R - 0.5 || d < Ri + 1.3 ? deep : (outerHalf ? a : -a) > 0.35 ? lit : (outerHalf ? a : -a) < -0.35 ? mid : gold;
+    } else {
+      const k = kind(x, y);
+      if (!k) c = kind(x - 1, y - 1) ? deep : dither(x, y) < 5 ? fieldDark : field;
+      else if (!kind(x - 1, y - 1)) c = lit;
+      else if (!kind(x + 1, y + 1)) c = dark;
+      else c = k === 2 ? mid : k === 3 ? ((y + R * 4) % 3 === 0 ? mid : lit) : gold;
+    }
+    solid(cx + x, cy + y, c);
+  }
+  const studR = Math.round((R + Ri) / 2);
+  for (let a = 0; a < 8; a++) solid(cx + Math.round(Math.cos(a * Math.PI / 4 + Math.PI / 8) * studR), cy + Math.round(Math.sin(a * Math.PI / 4 + Math.PI / 8) * studR), lit);
+}
+
+/** Big stone flags running away from you, darkest under the wall. */
+function kombatFloor() {
+  const [lit, body, dark, line] = S.tile, cx = W / 2, vy = horizon - (H - horizon) * 1.4;
+  const bottom = H - vy, ku = bottom / 26, kv = bottom * bottom / 9;
+  for (let y = horizon; y < H; y++) {
+    const dz = y - vy, v = Math.floor(kv / dz), rowEdge = v !== Math.floor(kv / (dz + 1));
+    for (let x = 0; x < W; x++) {
+      const u = (x - cx) * ku / dz + (v % 2) * 0.5, flag = Math.floor(u), seam = u - flag < ku / dz;
+      const tone = noise(flag, v, 7);
+      put(x, y, seam || rowEdge ? line : tone < 0.2 ? lit : tone > 0.7 || dither(x, y) < 2 ? dark : body);
+    }
+  }
+  for (let y = horizon; y < horizon + 4; y++) for (let x = 0; x < W; x++) tint(x, y, 0.55 + (y - horizon) * 0.12);
+}
+
+/** The braziers' flames lick and throw light on the wall; the Dragonite's eye smoulders, blazing once the storm is up. */
+function drawKombat(t) {
+  const [white, yellow, orange, red] = S.flame;
+  for (const b of life.braziers) {
+    const f = Math.sin(t / 2 + b.x) + noise(t, b.x, 1);
+    for (let y = -9; y <= 3; y++) for (let x = -8; x <= 8; x++) {
+      if (x * x + y * y * 1.4 < 50 + f * 8 && dither(b.x + x, b.y + y) < 3) tint(b.x + x, b.y + y, 1.3, 16);
+    }
+    const tall = 5 + Math.round(f * 1.2);
+    for (let dy = 0; dy < tall; dy++) {
+      const k = dy / tall, half = Math.round(2.4 * Math.pow(1 - k, 0.8) * (0.8 + 0.4 * noise(dy, t, b.x)));
+      const sway = Math.round(Math.sin((t + dy) / 2 + b.x) * k * 1.3);
+      for (let dx = -half; dx <= half; dx++) {
+        put(b.x + dx + sway, b.y - dy, Math.abs(dx) < Math.max(1, half * 0.5) && k < 0.6 ? (k < 0.3 ? white : yellow) : k > 0.7 ? red : orange);
+      }
+    }
+  }
+  const e = life.kombat.eye, [hot, glow, ember] = S.eye, p = Math.sin(t / 3) + storm.level * 2;
+  put(e.x, e.y, p > 0 ? hot : glow);
+  if (p > 0.4) for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) put(e.x + dx, e.y + dy, p > 1.4 ? glow : ember);
+}
+
 // a 3x5 pixel font for signs, just the letters they use
 const GLYPHS = {
   A: ['.#.', '#.#', '###', '#.#', '#.#'], C: ['.##', '#..', '#..', '#..', '.##'], D: ['##.', '#.#', '#.#', '#.#', '##.'],
@@ -4850,6 +5121,7 @@ function draw() {
   if (has('deleter')) drawDeleter(t);
   if (has('daycare')) drawDaycare(t);
   if (has('fans')) drawFans(t);
+  if (has('kombat')) drawKombat(t);
   if (has('vines')) drawVines(t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {

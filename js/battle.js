@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, setStorm, bossArenaPrelude } from './scene.js';
+import { showScene, showPlaceScene, setStorm, bossArenaPrelude } from './scene.js';
 import { BIOMES } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -204,7 +204,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
 
   setTheme(run.starter.type);
   showScreen('battle-screen');
-  showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
+  if (def.arena) showPlaceScene(def.arena);
+  else showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
   playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
   preloadMusic(winTrack(encounter.kind));

@@ -568,6 +568,8 @@ Anytime, as a break from number work:
   a boss fight against him (Alder's sprite, HP 130/220/370 by biome, the biome's boss damage); winning gives his unique
   **Exp. Share** relic (+1 PP and +1 card a turn, 1 strength each battle) and a boss card reward. Not bot-tested: the sim
   has no events. **For the user to check:** how hard he is, and whether the relic is too strong for an optional fight.
+  His own stage (2026-10-01): a Mortal Kombat courtyard, Ken on temple steps, a gold Dragonite medallion for the MK dragon
+  (`PLACE_ART.kombat`; see `docs/reference/events.md`).
 - ~~**The last 4 event scenes**~~ (done 2026-09-27): Move Tutor (a dojo: chalkboard and desk for ₽, a sandbag for HP),
   Move Deleter (a candle-lit study: a lectern's open book, a hypnotist's pendulum, a dozing Slowpoke), Day Care (the
   couple's house front, a picket fence, an Egg in a straw nest, Miltank and Marill) and Fan Club (portraits, pennants, a

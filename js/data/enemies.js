@@ -551,7 +551,7 @@ export const ENEMY_DEFS = {
    adds to his attacks like any boss. Winning gives his Exp. Share (a `unique` relic in relics.js). */
 export const KEN = {
   id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370], boss: true,
-  image: 'assets/trainers/alder.png', art: false,
+  image: 'assets/trainers/alder.png', art: false, arena: 'kombat',   // his own stage (PLACE_ART.kombat in js/scene.js)
   description: 'The Move Tutor. He teaches by hitting you.',
   prelude: 'Kenmatta closes his eyes and breathes...',
   intro: 'Chad Master Kenmatta wants to battle!',

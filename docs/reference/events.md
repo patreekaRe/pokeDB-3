@@ -90,7 +90,15 @@ way until the room closes). **Challenge Kenmatta** (2026-10-01, the user's call)
 the chalkboard now, the HP one on the sandbag: `tutorScene()`'s `eventSpots` in that order). It runs
 `fight({ ...node, type: 'ken' })`: `KEN` in `js/data/enemies.js` (not in `ENEMY_DEFS`, so never in the Pokédex; Alder's
 sprite, HP per biome `[130, 220, 370]`, the biome's `bossBonus`, built by `buildKenEncounter()`) fought as a boss (shatter
-wipe, boss music and arena, Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
+wipe, boss music, Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
+His arena is his own (`arena: 'kombat'` on `KEN`; `startBattle()` calls `showPlaceScene(def.arena)` instead of the
+biome's scene; the user's call, 2026-10-01): a Mortal Kombat courtyard, `PLACE_ART.kombat` in `js/scene.js`, always night.
+Laid out like an MK stage, a tall temple backdrop over a strip of floor: the floor line sits just above your pad
+(`kombatFloorRow()`), Ken meditates on red-carpeted temple steps raised to his pad (`templeSteps()`), and a gold medallion
+holds a roaring Dragonite in relief for the MK dragon (`DRAGONITE`, a 32x32 pixel map scaled into the ring; its eye glows
+red, blazing in the storm). `kombatLayout()` places it from the real battle layout: between the two Pokémon, below the
+enemy's nameplate where that's over the wall (phones), and clear of the steps. Braziers on red pillars flank it, banners
+and pillars repeat in bays across the wall, and the boss storm brings cinders, red light and lightning.
 A win pays a boss's coins and ₽ ("You defeated Chad Master Kenmatta!", `pendingCoins.beaten`), then his **Exp. Share**
 (no Skip, in the gold boss shaft) and a boss card reward. Once you hold it, the sign is greyed out ("You already won his
 Exp. Share."). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head

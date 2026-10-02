@@ -349,7 +349,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   they lack), the Ability and relics, the items left in the Bag and the ones used (sprites; a tap shows their `title`), and
   the final deck (`fillDeck()` from `js/deckpreview.js`, each card `zoomable()`).
 - **Chad Master Kenmatta** (2026-10-01): the Move Tutor can be challenged to a boss fight from his dojo (a third sign,
-  on him); beating him gives his `unique` Exp. Share relic (+1 PP, +1 draw, +1 strength). See `docs/reference/events.md`.
+  on him); beating him gives his `unique` Exp. Share relic (+1 PP, +1 draw, +1 strength). He's fought in his own Mortal
+  Kombat arena with a Dragonite medallion (`arena: 'kombat'`, `PLACE_ART.kombat`). See `docs/reference/events.md`.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
