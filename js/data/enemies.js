@@ -556,7 +556,7 @@ export const KEN = {
   prelude: 'Kenmatta closes his eyes and breathes...',
   intro: 'Chad Master Kenmatta wants to battle!',
   moves: [
-    { kind: 'attack', name: 'Karate Chop',  amount: 9 },
+    { kind: 'attack', name: 'Mata Chop',    amount: 9 },
     { kind: 'buff',   name: 'FORTIFY YOUR MIND', amount: 2 },
     { kind: 'attack', name: 'Cross Chop',   amount: 12 },
     { kind: 'defend', name: 'Mata-Manspread', amount: 14 },
