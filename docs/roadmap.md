@@ -962,15 +962,36 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    round) plus PokéCoins, like the main Pokédex's pages. Checked headless at 390x844 and 1280x800, no console errors;
    the in-run button only by reading the code.
 4. **The roster at scale**: role templates, then batches of ~50 Pokémon a session.
+   **Batch 1 built 2026-10-02** (cloud; detail in `docs/reference/safari.md`): `js/data/safari-mons.js`, one line per
+   Pokémon (id, name, type, area, template, its 3 move names, a Pokédex line, its signature card, `rare`). 10 templates
+   (`TEMPLATES`, Biome 1 numbers): striker, bruiser, tank, heavy, speedster, drainer, poisoner (Poison into the discard),
+   paralyzer (Paralysis into the draw pile), confuser (Confusion), clogger (2 Sludge). `PLACE` grows them with the area's
+   place in the run (HP x1 / 1.16 / 1.42, attacks +0 / 1 / 2, as the main game's wilds grow from biome to biome), in
+   `buildEncounter()`. **58 new Pokémon**, Gen 1-5, none the game used: Meadow Pidgey, Pidove, Ponyta, Sunkern, Cottonee,
+   Mareep, Lillipup, Petilil (rare Eevee); Forest Venonat, Pineco, Shroomish, Pansage, Foongus, Karrablast, Hoothoot,
+   Deerling (rare Heracross); Wetland Goldeen, Tentacool, Wooper, Surskit, Buizel, Panpour, Wingull, Ducklett, Yanma (rare
+   Dratini); Marsh Grimer, Ekans, Croagunk, Stunfisk, Barboach, Gulpin, Koffing, Misdreavus, Carnivine (rare Spiritomb);
+   Peak Swinub, Snorunt, Cubchoo, Sneasel, Larvitar, Roggenrola, Slugma, Numel, Meditite (rare Absol); Desert Sandshrew,
+   Diglett, Cubone, Trapinch, Sandile, Hippopotas, Skorupi, Yamask, Sigilyph (rare Larvesta). Claude's calls: types stay
+   the main game's four (a Psychic chip would show Mewtwo's type before it's unlocked): Bug is Grass, Ice is Water, Rock /
+   Ground / Poison / Ghost / Flying / Psychic are Normal. The 36 borrowed wilds stay (they're in the Safari Pokédex and
+   have cards) but each lives in one area now, not two or three: areas hold 13-16 wilds and 3 rare spawns, 104 entries.
+   `tests/safarimons.test.mjs`: every line has a def, a GIF on disk, a `SPRITE_FIT`, a card and an area; no signature
+   card reads like another card a run can meet (same cost, text and keywords; 7 were retuned for it); `PLACE`.
+   Bot (human bot, random Safari days, 300 runs/cell, same bot): knocking out 76.0 -> 77.3, throwing at 50%+ 58.7 -> 64.0
+   (3.2 catches a run): inside the noise, no retune. Checked headless at 390x844: a Safari run's first fight against
+   Mareep (53 HP, Discharge 16, its moves cycling), the Safari Pokédex's pages and a caught entry's card, no console
+   errors. Not checked on a phone.
+   ~380 Gen 1-5 non-legendary species are still unused, so batches can go on for a while.
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 4): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0: the Safari
-Zone daily run' and docs/reference/safari.md. Build phase 4, the roster at scale: ~10 enemy role templates (striker,
-tank, debuffer, status-spammer...) scaled by the area's place in the run, so a new Safari Pokémon is one data line
-(species, type, area, template, signature move and its card), then a first batch of ~50 Gen 1-5 Pokémon spread over the
-6 areas by habitat, with PokeAPI black-white animated sprites and a signature card each (no same cost + same text as the
-run's pools). They appear in the Safari Pokédex on their own (it's built from `SAFARI_AREAS`). Bot-check a few Safari
-days before and after. Also settle with me whether a complete area gives a reward. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (phase 4, batch 2): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0:
+the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 2: ~50 more Gen 1-5 Pokémon as lines in
+js/data/safari-mons.js on the existing templates (add a template only if a role is missing), spread over the 6 areas by
+habitat, ~8 each plus a rare spawn per area, with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median
+bbox) and a signature card each; tests/safarimons.test.mjs must stay green. Consider retiring the borrowed main-game wilds
+from the areas once each area has ~15 of its own (keep their cards so old catches still read). Bot-check a few Safari
+days before and after (~300 runs). Also settle with me whether a complete area gives a reward. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

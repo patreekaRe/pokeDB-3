@@ -25,6 +25,7 @@
    ============================================================ */
 
 import { random, pickOne } from '../rng.js';
+import { SAFARI_MONS, safariMonDef, PLACE } from './safari-mons.js';
 
 /** Pixel sprite from assets/pokemon/ (Gen 5 art from PokeAPI/sprites). */
 const sprite = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false, spriteId: name });
@@ -734,6 +735,9 @@ export const ENEMY_DEFS = {
   },
 };
 
+// the Safari Zone's own Pokémon, one data line each on a role template (js/data/safari-mons.js)
+for (const m of SAFARI_MONS) ENEMY_DEFS[m.id] = safariMonDef(m);
+
 /* Chad Master Kenmatta, the Move Tutor, fought in person from his dojo (the Move Tutor event's Challenge). Not in
    ENEMY_DEFS, so he never joins the Pokédex. A boss fight in any biome: `hp` is per biome, and the biome's bossBonus
    adds to his attacks like any boss. Winning gives his Mata-Mindset (the `unique` relic `exp-share` in relics.js). */
@@ -913,10 +917,11 @@ export function buildEncounter(biomeIndex, kind, mods, enemyId) {
 
   const base = ENEMY_DEFS[enemyId || pick(kind === 'elite' ? biome.elites : biome.normals)];
   const def = kind === 'elite' ? eliteOf(base) : base;
+  const place = (def.template && PLACE[biomeIndex]) || { hp: 1, dmg: 0 };   // a Safari template Pokémon grows with its area's place
   return {
     def,
     kind,
-    maxHp: Math.round(def.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),
-    strength: biome.dmgBonus + mods.enemyDmg,
+    maxHp: Math.round(def.hp * place.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),
+    strength: biome.dmgBonus + place.dmg + mods.enemyDmg,
   };
 }

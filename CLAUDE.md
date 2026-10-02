@@ -417,6 +417,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
   `#safari-dex-dialog`) is a page per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
   joins it; it opens from the Collection, the main Pokédex's Safari tab and, in a Safari run, the Pokédex button.
+  **Its own Pokémon** (phase 4) are one line each in `js/data/safari-mons.js` (species, type, area, one of 10 role
+  `TEMPLATES`, move names, Pokédex line, signature card); `PLACE` grows them with the area's place in the run. A new one
+  also needs its front GIF and `SPRITE_FIT` line; `tests/safarimons.test.mjs` checks it all.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

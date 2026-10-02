@@ -68,6 +68,10 @@ three places:
   rosters, so phase 4's Pokémon appear by themselves. Checked headless at 390x844 and 1280x800; the in-run button only
   by reading the code. Open question for the user: a reward for a complete area (proposal in the roadmap). Next is
   phase 4, the roster at scale (prompt in the roadmap).
+- 2026-10-02: **Safari Zone phase 4, batch 1** (cloud, pushed to `main`): 10 enemy role templates and 58 new Gen 1-5
+  Pokémon (`js/data/safari-mons.js`, one line each, 6 of them rare spawns), each with a PokeAPI GIF, a `SPRITE_FIT` line
+  and a signature card; borrowed wilds now live in one area each. 104 Safari Pokédex entries. Bot within noise (knock
+  out 76.0 -> 77.3, catching 58.7 -> 64.0). Next: batch 2 (prompt in the roadmap); the area reward is still open.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.

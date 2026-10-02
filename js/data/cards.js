@@ -119,6 +119,8 @@
    often a card shows up as a reward, and in which biome.
    ============================================================ */
 
+import { SAFARI_MONS } from './safari-mons.js';
+
 /** How strong the type chart is. Attacks that beat the target's type do this much more damage, and attacks that lose do this much less. It works both ways: on your attacks and on the enemy's attacks. */
 export const SUPER_EFFECTIVE = 1.3;
 export const NOT_VERY_EFFECTIVE = 0.75;
@@ -597,6 +599,8 @@ const SIGNATURE_CARDS = [
   sig('slowpoke',   'Slack Off',      'normal', 1, '🥱', { heal: 7 }, { retain: true }),
   sig('crawdaunt',  'Night Slash',    'water', 1, '🌙', { damage: 10 }, { retain: true }),
   sig('sharpedo',   'Ice Fang',       'water', 1, '🦈', { damage: 9, weaken: 1 }),
+  // the Safari Zone's own Pokémon carry theirs on their data line (js/data/safari-mons.js); the card's type is the Pokémon's
+  ...SAFARI_MONS.map(m => { const [name, cost, art, effects, more = {}] = m.sig; return sig(m.id, name, m.type, cost, art, effects, more); }),
 ];
 /** A Pokémon's signature card (by its ENEMY_DEFS id), offered when it's caught in the Safari Zone; null if it has none. */
 export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from, c.id]));

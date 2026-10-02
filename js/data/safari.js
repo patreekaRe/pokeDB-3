@@ -7,9 +7,8 @@
    leaderboard is fair). Everything else the run rolls comes from the
    same seed through js/rng.js.
 
-   Each area is a habitat with its own wild roster. Until the Safari's
-   own Pokémon land (phase 4), the rosters borrow the main game's wilds;
-   the area's place in the run (1st, 2nd or 3rd) sets their strength,
+   Each area is a habitat with its own wild roster: its own Pokémon
+   (safari-mons.js, phase 4) and a few of the main game's wilds; the area's place in the run (1st, 2nd or 3rd) sets their strength,
    elites and boss, from that biome of BIOMES. `rares` are the area's
    rare spawns (markRares()): Pokémon met nowhere else in the area, which
    run off after a few turns unless caught or knocked out.
@@ -18,15 +17,23 @@
 import { makeRng, hashString, shuffled, pickOne, random } from '../rng.js';
 import { STARTERS } from './starters.js';
 import { RARE } from './balls.js';
+import { SAFARI_MONS } from './safari-mons.js';
 
-export const SAFARI_AREAS = [
-  { id: 'meadow',  name: 'Meadow',  normals: ['rattata', 'sentret', 'zigzagoon', 'hoppip', 'oddish', 'vulpix', 'aipom', 'tauros'], rares: ['chansey', 'furret'] },
-  { id: 'forest',  name: 'Forest',  normals: ['seedot', 'paras', 'bellsprout', 'cherubi', 'tangela', 'teddiursa', 'aipom', 'growlithe'], rares: ['kecleon', 'ambipom'] },
-  { id: 'wetland', name: 'Wetland', normals: ['poliwag', 'psyduck', 'marill', 'krabby', 'shellos', 'staryu', 'slowpoke', 'zigzagoon'], rares: ['chansey', 'linoone'] },
-  { id: 'marsh',   name: 'Marsh',   normals: ['psyduck', 'slowpoke', 'shellos', 'crawdaunt', 'oddish', 'tangela', 'litwick', 'bouffalant'], rares: ['kecleon', 'watchog'] },
-  { id: 'peak',    name: 'Peak',    normals: ['stantler', 'teddiursa', 'darumaka', 'torkoal', 'houndour', 'sharpedo', 'bouffalant', 'zangoose'], rares: ['persian', 'lopunny'] },
-  { id: 'desert',  name: 'Desert',  normals: ['cacturne', 'maractus', 'magmar', 'heatmor', 'pansear', 'growlithe', 'sentret', 'zangoose'], rares: ['cinccino', 'purugly'] },
+/* The borrowed main-game wilds each live in one area since phase 4 (they were in two or three), so the areas' own
+   Pokémon (SAFARI_MONS in safari-mons.js, listed after them) are most of every roster. */
+const BORROWED = [
+  { id: 'meadow',  name: 'Meadow',  normals: ['rattata', 'zigzagoon', 'hoppip', 'vulpix', 'tauros'], rares: ['chansey', 'furret'] },
+  { id: 'forest',  name: 'Forest',  normals: ['seedot', 'paras', 'bellsprout', 'cherubi', 'teddiursa', 'aipom', 'growlithe'], rares: ['kecleon', 'ambipom'] },
+  { id: 'wetland', name: 'Wetland', normals: ['poliwag', 'psyduck', 'marill', 'krabby', 'staryu'], rares: ['chansey', 'linoone'] },
+  { id: 'marsh',   name: 'Marsh',   normals: ['slowpoke', 'shellos', 'crawdaunt', 'oddish', 'tangela', 'litwick'], rares: ['kecleon', 'watchog'] },
+  { id: 'peak',    name: 'Peak',    normals: ['stantler', 'darumaka', 'torkoal', 'houndour', 'sharpedo', 'bouffalant'], rares: ['persian', 'lopunny'] },
+  { id: 'desert',  name: 'Desert',  normals: ['cacturne', 'maractus', 'magmar', 'heatmor', 'pansear', 'sentret', 'zangoose'], rares: ['cinccino', 'purugly'] },
 ];
+
+export const SAFARI_AREAS = BORROWED.map(a => {
+  const own = SAFARI_MONS.filter(m => m.area === a.id);
+  return { ...a, normals: [...a.normals, ...own.filter(m => !m.rare).map(m => m.id)], rares: [...a.rares, ...own.filter(m => m.rare).map(m => m.id)] };
+});
 
 export const SAFARI_AREAS_BY_ID = Object.fromEntries(SAFARI_AREAS.map(a => [a.id, a]));
 

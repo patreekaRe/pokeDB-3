@@ -54,8 +54,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 ## Rare spawns
 
 - `markRares()` in `js/data/safari.js`, from `startBiome()` after the wilds are dealt, on the biome's seed: each wild room
-  has `RARE.odds` (12%) to hold one of its area's `rares` instead (Chansey and Kecleon are Safari-only `ENEMY_DEFS`, the
-  rest are the main game's elite species as plain wilds), with `node.rare` saved on the map.
+  has `RARE.odds` (12%) to hold one of its area's `rares` instead (Chansey, Kecleon and the `rare` lines of `safari-mons.js`
+  are Safari-only, the rest are the main game's elite species as plain wilds), with `node.rare` saved on the map.
 - The map shows a gold ✦ over its room (`.map-rare`, its title says so); in battle the name gets a ✨, the nameplate a gold
   rim (`#enemy-plate.rare`) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
   RARE.turns - rock` (4 of your turns): `runAway()` -> `onEnd({ escaped: true })`, and the map says "ran away. Nothing
@@ -97,6 +97,27 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   window and opens this one), and the Poké Ball menu's Pokédex button during a Safari run, on the run's area
   (`runSafariArea()` in `js/run.js`).
 - No reward for completing an area yet (see the roadmap's phase 3 note).
+
+## The Safari's own Pokémon (phase 4)
+
+- `js/data/safari-mons.js`: `SAFARI_MONS`, one line each: `mon(id, name, type, area, template, [3 move names], description,
+  [card name, cost, art, effects, card extras], { rare })`. A move name wrapped in `N()` is x1 (`type: 'normal'`), for an
+  off-type move. `safariMonDef()` builds the `ENEMY_DEFS` entry (enemies.js adds them all, `safari: true`, `template`);
+  cards.js builds each line's `sig-<id>` card (the card's type is the Pokémon's); safari.js appends each area's lines to
+  its `normals` (or `rares`), after the borrowed wilds.
+- `TEMPLATES` (Biome 1 numbers): striker 42 HP 6/5/9; bruiser 46, 6 / +2 strength / 9; tank 52, 8 block / 6 / 9; heavy 56,
+  9 block / 5 / 11; speedster 36, 7/6/10; drainer 46, drain 5 (+4) / 6 / drain 8 (+5); poisoner 44, 5 + Poison / 6 block /
+  9; paralyzer 44, 6 + Paralysis (draw pile) / +1 strength / 9; confuser 44, 5 / 6 block / 9 + Confusion (draw pile);
+  clogger 46, 2 Sludge / 6 / 9.
+- `PLACE`: a template Pokémon in the run's 2nd / 3rd area has x1.16 / x1.42 HP and +1 / +2 on its attacks (its
+  `strength` from `buildEncounter()`), on top of that biome's `hpMult` / `dmgBonus`, like the main game's wilds grow. The
+  borrowed wilds keep their own numbers.
+- Types: only the main game's four (a Psychic chip would give Mewtwo's type away): Bug is Grass, Ice is Water, the rest
+  of the off types Normal.
+- A new Pokémon: its line, `assets/pokemon/<id>-front.gif` (PokeAPI's `versions/generation-v/black-white/animated/<dex>.gif`
+  from raw.githubusercontent.com) and its `SPRITE_FIT` line (a PIL median bbox over all frames). `tests/safarimons.test.mjs`
+  checks them all, that it isn't a main-game Pokémon, and that no signature card has the same cost, text and keywords as
+  another card a Fire / Grass / Water run can meet (Mewtwo's Psychic cards are left out: it never walks the Safari).
 
 ## The bot (`../pokeDB-sim`)
 
