@@ -102,11 +102,13 @@ live site.
   `js/data/starters.js` moves an old id's unlock, wins and saved run over
   to the new one (add to it if a starter is ever replaced again).
 - **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
-  the last portrait in the character select's Legendaries tab). It unlocks once every other starter
-  is unlocked and a run is won on Trainer Level 5 (`stats.level5WinsBy`, so only wins since 2026-09-28 count);
-  that achievement must stay last in `ACHIEVEMENTS`, since
-  `checkAchievements()` grants in order (the shop also runs it after a
-  purchase). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
+  the last portrait in the character select's Legendaries tab). It unlocks when the **Sealed Gate** breaks (2026-10-02; it was
+  every other starter + a Level 5 win): the save's `gateHp` (`js/data/gate.js`: 1000 HP) takes `GATE_HIT[level]`
+  (40/50/60/75/90/120) after every won run and `GATE_LOSS_CHIP` (15) after a loss at the last biome's boss
+  (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and a plain bar in the result window); only a
+  Level 5 win takes it below `GATE_SLIVER` (50). Mewtwo's own runs leave it be. Old saves: `seedGate()` counts each
+  Record Book win once (never past the sliver), and anyone who has Mewtwo gets 0. That achievement (`gateHp <= 0`) must
+  stay last in `ACHIEVEMENTS`, since `checkAchievements()` grants in order (the shop also runs it after a purchase). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
   Ability landed; run-end guards (`isMewtwoRun()`) keep Mewtwo out of Level-based rewards and stats.
   **Mewtwo's run is its own game mode** (v1.0 part B, 2026-10-02): no Trainer Level (`prepare()` in `js/select.js` hides

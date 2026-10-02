@@ -23,6 +23,7 @@ import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
+import { GATE_HP, GATE_HIT, GATE_SLIVER, GATE_LOSS_CHIP } from './data/gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
@@ -717,7 +718,7 @@ function afterFight(node, result) {
     tell('Got away safely!');
     return showMap();
   }
-  if (!result.won) return endRun(false);
+  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter));
 
   run.hp = result.hp;
   run.fights += 1;
@@ -2116,8 +2117,30 @@ function announceUnlocks() {
   return fresh;
 }
 
+/** After a run, the starter attacks the Sealed Gate: a win by its Trainer Level, a loss at the last boss a chip. Only a
+    Level 5 win can take it past the sliver. Mewtwo's own runs leave it be (it's the one behind it). Runs before
+    announceUnlocks(), which frees Mewtwo once it breaks. Returns the result window's line, if any. */
+function strikeGate(won, atLastBoss) {
+  const before = getSave().gateHp;
+  const hit = won ? GATE_HIT[run.level] : atLastBoss ? GATE_LOSS_CHIP : 0;
+  if (peeking || isMewtwoRun(run.starter) || before <= 0 || !hit) return null;
+  const hp = Math.max(won && run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - hit);
+  updateSave(d => { d.gateHp = hp; });
+  const name = stageName(run.starter, run.stage);
+  const text = hp === 0 ? `💥 ${name} broke the Sealed Gate! Something stirs behind it...`
+    : before === hp ? `⚔️ ${name} struck the Sealed Gate, but it holds. Only a Trainer Level 5 win can break it.`
+    : won ? `⚔️ ${name} struck the Sealed Gate: -${before - hp}.${hp === GATE_SLIVER ? ' Only a Trainer Level 5 win can break it now.' : ''}`
+    : `⚔️ Before fainting, ${name} chipped the Sealed Gate: -${before - hp}.`;
+  const bar = el('div', 'gate-bar');
+  bar.append(el('div', 'gate-fill'), el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
+  bar.firstChild.style.width = `${(hp / GATE_HP) * 100}%`;
+  const li = el('li', 'gate-line', text);
+  li.append(bar);
+  return li;
+}
+
 /** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.
-    Returns the result window's lines. Mewtwo's unlock reads level5WinsBy too, so this runs before announceUnlocks(). */
+    Returns the result window's lines. */
 function level5Rewards() {
   const { id, type } = run.starter;
   const name = run.starter.line[0].name;
@@ -2139,7 +2162,7 @@ function level5Rewards() {
   return lines;
 }
 
-function endRun(won) {
+function endRun(won, atLastBoss = false) {
   run.over = true;
   if (!peeking) clearRunData();
   const mewtwoRun = isMewtwoRun(run.starter);
@@ -2181,6 +2204,7 @@ function endRun(won) {
     }
   }
 
+  const gate = strikeGate(won, atLastBoss);
   const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
 
   const name = stageName(run.starter, run.stage);
@@ -2194,10 +2218,10 @@ function endRun(won) {
   const list = $('result-unlocks');
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.dexNews || []).map(line => `📕 ${line}`)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
-  lines.unshift(...level5);
+  lines.unshift(...level5, ...(gate ? [gate] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
-  list.replaceChildren(...lines.map(text => el('li', '', text)));
+  list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));

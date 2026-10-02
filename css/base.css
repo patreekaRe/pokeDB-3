@@ -468,6 +468,11 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 }
 .unlocks { list-style: none; padding: 0; }
 .unlocks li { background: rgba(88, 214, 141, 0.18); border-radius: 8px; padding: 6px 10px; }
+/* the Sealed Gate's plain bar (part A; its art comes in part B) */
+.unlocks .gate-line { background: rgba(160, 120, 255, 0.18); }
+.gate-bar { position: relative; height: 14px; margin-top: 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.35); overflow: hidden; }
+.gate-fill { height: 100%; background: #9b6bff; }
+.gate-hp { position: absolute; inset: 0; font-size: 0.7rem; line-height: 14px; text-align: center; color: #fff; text-shadow: 0 1px 1px #000; }
 
 .noscript { padding: 20px; text-align: center; }
 

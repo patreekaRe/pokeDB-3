@@ -128,13 +128,12 @@ export const ACHIEVEMENTS = [
     text: 'Win a run with 3 different Water starters',
     test: (s) => STARTERS.filter(st => st.type === 'water' && st.id !== 'keldeo' && (s.winsBy[st.id] || 0) >= 1).length >= 3,
   },
-  // Must stay last: checkAchievements() grants in order, so this sees any
-  // starter unlocked by the entries above in the same check.
+  // Must stay last (the shop runs checkAchievements() after a buy too). Breaking the Sealed Gate is the whole unlock since
+  // 2026-10-02 (the user's call; it was every other starter plus a Level 5 win): only a Level 5 win deals the final blow.
   {
     starter: 'mewtwo',
-    text: 'Unlock every other Pokémon and win a run on Trainer Level 5',
-    test: (s, save) => Object.keys(s.level5WinsBy).length > 0
-      && STARTERS.every(st => st.id === 'mewtwo' || st.free || save.unlocked.includes(st.id)),
+    text: 'Break the Sealed Gate: every run you win wears it down, and only a Trainer Level 5 win can break it',
+    test: (s, save) => save.gateHp <= 0,
   },
 ];
 

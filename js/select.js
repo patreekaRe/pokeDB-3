@@ -16,6 +16,7 @@ import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
 import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
+import { GATE_HP } from './data/gate.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
@@ -164,7 +165,7 @@ function show(starter) {
   $('sel-wins').textContent = `🏆 ${won} ${won === 1 ? 'win' : 'wins'}`;
   $('sel-wins').classList.toggle('none', !won);
   $('sel-blurb').textContent = unlocked ? starter.blurb
-    : starter.secret ? 'Unlock every other starter and win a run on Trainer Level 5 to meet it.'
+    : starter.secret ? `Something is trapped behind the Sealed Gate (HP ${getSave().gateHp}/${GATE_HP}). Every run you win wears it down; only a Trainer Level 5 win can break it.`
     : shop ? 'Trade PokéCoins for it at the Game Corner.'
     : `To unlock: ${ACHIEVEMENT_FOR[starter.id]?.text ?? 'keep playing.'}`;
   if (unlocked && starter.comingSoon) $('sel-blurb').textContent += ` Its own moves are coming soon.`;

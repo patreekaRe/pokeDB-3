@@ -834,7 +834,11 @@ high Levels), the loss chip, where the gate lives in the UI between runs (title 
 and whether Mewtwo mode stays out of it (it should: Mewtwo is what's behind it).
 
 **Parts:**
-- **A. Gameplay (CLOUD)**: the save field, damage per run in `endRun()`, the Record Book back-fill, swapping Mewtwo's
+- **A. Gameplay (CLOUD)**: **done 2026-10-02.** Numbers (the user approved): 1000 HP; a win hits 40 / 50 / 60 / 75 / 90 /
+  120 at Levels 0-5; below Level 5 it stops at 50; a loss at the third biome's boss chips 15; Mewtwo's runs don't count.
+  So ~11 wins climbing the Levels once, ~13-15 mixed, ~9 mostly Level 5. The back-fill stops at the sliver too, so an old
+  save's next Level 5 win breaks it (and gets part B's break scene). The locked Mewtwo's panel shows the gate's HP. Was:
+  the save field, damage per run in `endRun()`, the Record Book back-fill, swapping Mewtwo's
   achievement for the gate (keeping it last in `ACHIEVEMENTS`, and existing unlocks), a plain health bar and a line in
   the result window. No bot check needed (no fight changes).
 - **B. The scene and art (Desktop, LOCAL or CLOUD with screenshots)**: the gate's sprite in its damage stages, the

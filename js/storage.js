@@ -15,6 +15,7 @@
    ============================================================ */
 
 import { RENAMED_STARTERS, STARTERS } from './data/starters.js';
+import { GATE_HP, seedGate } from './data/gate.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
@@ -48,6 +49,7 @@ const freshSave = () => ({
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
   seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
+  gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
@@ -80,6 +82,7 @@ function load() {
       const base = freshSave();
       const merged = {
         ...base, ...saved,
+        gateHp: saved.gateHp ?? seedGate(saved),
         passives: { ...base.passives, ...saved.passives },
         seen: { ...base.seen, ...saved.seen, cards: saved.seen?.cards ?? seedCards(saved) },
         dex: seedCounts({ ...base.dex, ...saved.dex }),

@@ -33,6 +33,10 @@ three places:
   after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery is a
   placeholder (B2, a Desktop session), and `map4` borrows `map3.mp3` until the user supplies one. Next is part C (the
   Eternatus set piece) or B2; both prompts are in the roadmap.
+- 2026-10-02: **The Sealed Gate, part A** (roadmap section of that name): breaking the gate is Mewtwo's unlock now
+  (1000 HP, hits by Trainer Level after each win, only Level 5 breaks it; old saves back-filled from the Record Book,
+  Mewtwo owners keep it). Tested headless (back-fill, every hit case, the break unlocking Mewtwo). Part B (the gate's
+  art, attack and break scenes, title screen) is next, a Desktop session.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
