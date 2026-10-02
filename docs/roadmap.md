@@ -623,7 +623,7 @@ Anytime, as a break from number work:
   flowers opening over the whole screen; the Shrine's burst is a spinning seal of spirit light (round the hall and flat
   across the courtyard) that flares and throws fox-fires, its handoff a ring flood out of the doors. Only the Wastes
   keeps a column. Checked frame by frame at PC size; **for the user to check:** in a real boss fight.
-- **Biome intros** (Biome 1 and 2 done 2026-10-01): the user asked for a 5-10 s intro on entering each biome, clearly
+- **Biome intros** (Biome 1 and 2 done 2026-10-01, Biome 3 2026-10-02): the user asked for a 5-10 s intro on entering each biome, clearly
   showing its title and "a cool scenery thing", inviting rather than menacing like the boss intros. `js/biome-intro.js`,
   played over the map by `startBiome()` (after the checkpoint, so a refresh skips it), ~9 s, tap / Enter / Escape skips.
   The Clearing's: letterbox bars, the camera drops through the clouds past a flock of birds, then glides sideways in
@@ -649,6 +649,13 @@ Anytime, as a break from number work:
   walks: Torii Path (gates close together) and Inner Court (gravel, walls, the hall up close). Checked at 375x812 and
   1280x720, day and dusk, no console errors. **Next:** the Wastes' (towards the crater); **for the user to check:** on the
   live site with sound (the chimes' and the bell's volume).
+  **Biome 3** (2026-10-02): a rush forward. It bursts out of an ash cloud and swoops low over the Ash Plains (a Mode 7
+  ground redrawn each frame, rocks / dead trees / vents as billboards, ash and embers streaking past) to the smoking
+  volcano, which huffs (smoke, sparks, a soft rumble) as "EMBER WASTES" lands; Pokémon pop up from behind rocks. Place
+  walks up a trail: Lava Fields (lava pools and a river) and Volcano Slope (the cone filling the sky, lava channels). New
+  synths `gust` and `rumble-far`. Checked frame by frame at 390x844 and 1280x800, day / dawn / dusk / night, no console
+  errors. **For the user to check:** on the live site with sound (the gust's and rumble's volume). Still to do: the Crystal
+  Depths' (with its art).
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,

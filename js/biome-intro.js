@@ -21,7 +21,8 @@
    (placeIntro(), each `stages[i]` look nearer). INTROS has an entry per
    biome with its own `scene` painter and camera move: the Clearing drops
    through the clouds and pans; the Shrine cranes up its steps while the
-   lanterns light one by one. The Wastes has none yet.
+   lanterns light one by one; the Wastes bursts out of an ash cloud and
+   rushes low over the plains (a Mode 7 ground) to the smoking volcano.
    ============================================================ */
 
 import { el } from './ui.js';
@@ -104,6 +105,34 @@ const INTROS = {
     beats: { RISE: [300, 6800], POPS: [3000, 4000, 5000], TITLE_AT: 5600, END: 9300 },
     sounds: ['furin-0', 'furin-1', 'furin-2', 'bell-far'],
     scene: shrineScene,
+  },
+  wastes: {
+    title: ['EMBER', 'WASTES'], ink: ['#fff0c8', '#d04818', '#3a0c06'],
+    // ashen, like the Wastes' scenes in js/scene.js
+    skies: {
+      day: { sky: ['#5a4448', '#74504c', '#8e5e50', '#a86e50', '#c08050', '#d49458', '#e0a868'], cloud: ['#c0aca2', '#9a8680', '#76645e'] },
+      dawn: { sky: ['#2e2440', '#46304c', '#663c52', '#8a4c54', '#b06050', '#d07c50', '#e8a060'], cloud: ['#c8a0a0', '#a07c84', '#785c68'] },
+      dusk: { sky: ['#2c1216', '#44181a', '#5e201e', '#7c2a20', '#9c3a22', '#bc5028', '#d46a30'], cloud: ['#b86a50', '#8a4a40', '#5a3030'] },
+      night: { sky: ['#0c0606', '#160a0a', '#220e0c', '#30120e', '#421810', '#5a2012', '#742a14'], cloud: ['#4a3432', '#3a2826', '#2a1c1a'] },
+    },
+    land: {
+      ash: ['#a49c94', '#988f88', '#8c847c', '#807870', '#746c64', '#686058'],
+      basalt: ['#5e4e48', '#564842', '#4e423c', '#463a36', '#3e3430', '#362e2a'],
+      rock: ['#d0c8bc', '#a89e94', '#766c64', '#3a322e'],
+      dark: ['#6e6874', '#4c4852', '#34313a', '#18161c'],
+      dead: ['#7a6a60', '#54463e', '#362c26', '#1a1412'],
+      grass: ['#d8d078', '#a8a048', '#403c18'],
+      volcano: ['#8a6a5c', '#6a5048', '#4a3632'],
+      mountains: ['#6a4c48', '#56403c', '#463430', '#a89890'],
+      smoke: ['#9a8a86', '#76686a', '#544848'],
+      path: ['#c8bcac', '#b0a494', '#4a403a'],
+    },
+    glow: { lava: ['#fff0a0', '#f8b830', '#f06820', '#b03010'], ember: ['#fff0a0', '#f8a830', '#e85820'] },
+    // each later place's walk on: the Lava Fields' pools and river, then up the Volcano Slope, the cone filling the sky
+    stages: [null, { volcano: 1.45, cracks: 2.2, pools: 9, river: true, ground: 'basalt', haze: 0.22 }, { volcano: 2.05, cracks: 3, pools: 14, flows: true, ground: 'basalt', haze: 0.1, ash: 1.6 }],
+    beats: { DOLLY: [0, 3600], POPS: [3700, 4500, 5300], HUFF: 5600, TITLE_AT: 5800, END: 9400 },
+    sounds: ['gust', 'rumble-far'],
+    scene: wastesScene,
   },
 };
 
@@ -1151,4 +1180,369 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
   }
 
   return { spots, walkX: W * 0.5, draw, monAt: (i, ms) => [spots[i].x, spots[i].y + offY('slope', ms)] };
+}
+
+/* ----- the Ember Wastes: out of an ash cloud, rushing low over the plains, to the smoking volcano ----- */
+
+/** A rock: a few lumps, lit on the top left, its foot flat on the ground. */
+function rockImage(w, [lit, body, shade, dark], rand, h = Math.max(2, Math.ceil(w * 0.7))) {
+  const c = layer(w + 2, h + 1), g = c.getContext('2d'), lumps = [];
+  for (let n = 0; n < 2 + Math.floor(w / 5); n++) {
+    const r = Math.max(1, w * (0.25 + rand() * 0.15)), x = Math.min(w - r, Math.max(r, rand() * w)) + 1;
+    lumps.push([x, h - r * (0.55 + rand() * 0.3), Math.min(r, h * 0.62)]);
+  }
+  for (const [x, y, r] of lumps) disc(g, x, y, r + 1, dark);
+  for (const [x, y, r] of lumps) disc(g, x, y, r, shade);
+  for (const [x, y, r] of lumps) disc(g, x - r * 0.15, y - r * 0.2, r * 0.75, body);
+  for (const [x, y, r] of lumps) disc(g, x - r * 0.4, y - r * 0.45, Math.max(0.5, r * 0.35), lit);
+  return c;
+}
+
+/** A dead tree: a bare trunk forking into crooked branches. */
+function deadTreeImage(h, [lit, body, dark], rand) {
+  const w = Math.ceil(h * 0.9), c = layer(w, h + 1), g = c.getContext('2d'), cx = Math.round(w / 2) - 1;
+  const branch = (x, y, len, dir, width) => {
+    for (let k = 0; k < len; k++) {
+      x += dir * (0.3 + rand() * 0.5); y -= 0.8 + rand() * 0.3;
+      for (let i = 0; i < width; i++) { g.fillStyle = i ? dark : lit; g.fillRect(Math.round(x + i), Math.round(y), 1, 1); }
+      if (width > 1 && k > 1 && rand() < 0.22) branch(x, y, Math.round(len * 0.55), rand() < 0.5 ? -1 : 1, width - 1);
+    }
+  };
+  const trunk = Math.max(2, Math.round(h * 0.08));
+  for (let y = h; y > h * 0.55; y--) for (let i = 0; i < trunk; i++) { g.fillStyle = i ? (i === trunk - 1 ? dark : body) : lit; g.fillRect(cx + i, y, 1, 1); }
+  branch(cx, h * 0.55, Math.round(h * 0.5), -1, Math.max(1, trunk - 1));
+  branch(cx + 1, h * 0.6, Math.round(h * 0.45), 1, Math.max(1, trunk - 1));
+  return c;
+}
+
+/** Basalt columns: hexagonal pillars packed together, their flat tops lit, heights stepping. */
+function columnsImage(h, [lit, body, shade, line], rand) {
+  const count = 2 + Math.floor(rand() * 3), cw = Math.max(2, Math.round(h * 0.22)), c = layer(count * cw + 1, h + 1), g = c.getContext('2d');
+  for (let n = 0; n < count; n++) {
+    const ch = Math.round(h * (0.45 + 0.55 * rand())), x = n * cw;
+    for (let y = h - ch; y <= h; y++) for (let k = 0; k < cw; k++) {
+      g.fillStyle = y === h - ch ? lit : k === 0 ? line : k === cw - 1 ? shade : y === h - ch + 1 ? shade : body;
+      g.fillRect(x + k, y, 1, 1);
+    }
+  }
+  return c;
+}
+
+/** A steam vent: a low cone of rock with a glowing mouth (the steam is drawn live). */
+function ventImage(w, [lit, body, shade, dark], glow) {
+  const h = Math.max(2, Math.round(w * 0.4)), c = layer(w + 2, h + 1), g = c.getContext('2d');
+  for (let y = 0; y <= h; y++) {
+    const half = Math.round(1 + (w / 2 - 1) * (y / h));
+    g.fillStyle = dark; g.fillRect(w / 2 - half, y, half * 2 + 2, 1);
+    g.fillStyle = y < h * 0.5 ? body : shade; g.fillRect(w / 2 - half + 1, y, half * 2, 1);
+    g.fillStyle = lit; g.fillRect(w / 2 - half + 1, y, 1, 1);
+  }
+  g.fillStyle = glow[1]; g.fillRect(Math.round(w / 2) - 1, 0, 3, 1);
+  g.fillStyle = glow[0]; g.fillRect(Math.round(w / 2), 0, 1, 1);
+  return c;
+}
+
+/** The volcano on the horizon: a broad cone lit on the left, gullied, its crater's lip glowing and lava running down. */
+function volcanoImage(half, vh, [lit, body, shade], lava, flows, reach) {
+  const crater = Math.max(2, Math.round(half * 0.13)), c = layer(half * 2 + 3, vh + 2), g = c.getContext('2d'), cx = half + 1;
+  const halfAt = (y) => crater + (half - crater) * (y / vh) ** 1.4;
+  for (let y = 0; y <= vh; y++) {
+    const hw = Math.round(halfAt(y));
+    for (let x = -hw; x <= hw; x++) {
+      const u = x / Math.max(1, hw), gully = y > 2 && (((Math.round(x * 0.9 + y * 0.35) % 7) + 7) % 7) === 0;
+      g.fillStyle = u < -0.7 || (u < -0.35 && dither(x, y, 0.4)) ? lit : u > 0.25 && (u > 0.55 || dither(x, y, 0.55)) ? shade : gully ? shade : body;
+      g.fillRect(cx + x, y + 1, 1, 1);
+    }
+  }
+  for (const side of [0.2, -0.5, 0.62].slice(0, flows)) {
+    for (let y = 1; y < vh * reach; y++) {
+      const x = cx + Math.round(side * halfAt(y) + Math.sin(y / 3 + side * 9));
+      g.fillStyle = lava[3]; g.fillRect(x + 1, y + 1, 1, 1);
+      g.fillStyle = y < vh * reach * 0.7 ? lava[2] : lava[3]; g.fillRect(x, y + 1, 1, 1);
+    }
+  }
+  g.fillStyle = lava[2]; g.fillRect(cx - crater, 0, crater * 2 + 1, 2);
+  g.fillStyle = lava[1]; g.fillRect(cx - crater + 1, 0, crater * 2 - 1, 1);
+  return { img: c, cx, crater };
+}
+
+/** The ground's texture, 256 texels square and tiling: ash or basalt in soft patches, pebbles, cracks glowing with lava,
+    and further in pools of lava and a river of it. Codes: 0-5 the ground's tones, 6 a dark rim, 7 a pebble, 10-13 lava. */
+function wastesTexture(look, rand) {
+  const T = 256, tex = new Uint8Array(T * T);
+  const noise = (cell) => {
+    const n = T / cell, v = Float32Array.from({ length: n * n }, () => rand());
+    return (u, w) => {
+      const gx = u / cell, gy = w / cell, x0 = Math.floor(gx), y0 = Math.floor(gy), fx = gx - x0, fy = gy - y0;
+      const at = (x, y) => v[((y % n + n) % n) * n + ((x % n + n) % n)], sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+      return (at(x0, y0) * (1 - sx) + at(x0 + 1, y0) * sx) * (1 - sy) + (at(x0, y0 + 1) * (1 - sx) + at(x0 + 1, y0 + 1) * sx) * sy;
+    };
+  };
+  const big = noise(32), small = noise(8);
+  for (let w = 0; w < T; w++) for (let u = 0; u < T; u++) {
+    const t = Math.min(4.99, Math.max(0, (big(u, w) * 0.65 + small(u, w) * 0.35) * 7 - 1)), i = Math.floor(t);
+    tex[w * T + u] = Math.min(5, dither(u, w, t - i) ? i + 1 : i);
+  }
+  const set = (u, w, code) => { tex[((w & 255) * T) + (u & 255)] = code; };
+  const get = (u, w) => tex[((w & 255) * T) + (u & 255)];
+  for (let n = 0; n < 200; n++) { const u = Math.floor(rand() * T), w = Math.floor(rand() * T); set(u, w, 7); set(u, w - 1, 6); }
+  const rim = (u, w) => { if (get(u, w) < 10) set(u, w, 6); };
+  for (let n = 0; n < Math.round(40 * (look.cracks || 1)); n++) {   // cracks: random walks with lava deep inside
+    let u = Math.floor(rand() * T), w = Math.floor(rand() * T);
+    const dir = rand() < 0.5 ? -1 : 1, len = 10 + Math.floor(rand() * 30);
+    for (let k = 0; k < len; k++) {
+      u += rand() < 0.75 ? dir : 0;
+      if (rand() < 0.35) w += rand() < 0.5 ? -1 : 1;
+      set(u, w, 11 + ((k >> 2) & 1));
+      rim(u, w - 1); rim(u, w + 1);
+    }
+  }
+  for (let n = 0; n < (look.pools || 0); n++) {   // pools of lava, brightest in the middle
+    const cu = Math.floor(rand() * T), cw = Math.floor(rand() * T), rx = 3 + rand() * 6, ry = rx * (0.6 + rand() * 0.5);
+    for (let y = -Math.ceil(ry) - 1; y <= ry + 1; y++) for (let x = -Math.ceil(rx) - 1; x <= rx + 1; x++) {
+      const d = (x / rx) ** 2 + (y / ry) ** 2;
+      if (d <= 1) set(cu + x, cw + y, d < 0.25 ? 10 : d < 0.6 ? 11 : 12);
+      else if (d <= 1.5) rim(cu + x, cw + y);
+    }
+  }
+  const stream = (at, wide) => {   // a river of lava winding towards you
+    for (let w = 0; w < T; w++) {
+      const cx = at + Math.sin(w * Math.PI * 2 / 128) * 9 + Math.sin(w * Math.PI * 2 / 64) * 3;
+      for (let x = -wide - 1; x <= wide + 1; x++) {
+        const d = Math.abs(x) / wide;
+        if (d > 1) rim(Math.round(cx + x), w);
+        else set(Math.round(cx + x), w, d < 0.35 ? 10 : d < 0.75 ? 11 : 12);
+      }
+    }
+  };
+  if (look.river) stream(70, 3.5);
+  if (look.flows) { stream(40, 1.5); stream(196, 2); }
+  return tex;
+}
+
+function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, rand, beats, live }) {
+  const hz = Math.round(H * (tall ? 0.58 : 0.55)), ROWS = H - hz - 1;
+  const D0 = 10, F = 2 * D0, REF = 8, FOGD = 110;   // the bottom row is D0 texels off, 2 px a texel there
+  const DOLLY = beats.DOLLY || [0, 1], RUN = mini ? 26 : 340;
+  const camZ = (ms) => mini ? RUN * ease(Math.min(1, ms / beats.END)) : RUN * (1 - (1 - span(DOLLY, ms)) ** 2);
+  // the full film swoops down out of the ash cloud: the camera starts high and drops to just over the ground
+  const K = (ms) => D0 * ROWS * (mini ? 1 : 1 + 1.3 * (1 - easeOut(span([0, DOLLY[1] * 0.8], ms))));
+  const VX = Math.round(W * (tall || mini ? 0.5 : 0.68));
+  const haze = sky[sky.length - 1], night = time === 'night', dark = night || time === 'dusk';
+  const ground = look.ground === 'basalt' ? land.basalt : land.ash, rocks = look.ground === 'basalt' ? land.dark : land.rock;
+  const huffAt = (mini ? 2600 : beats.HUFF) / 1000;
+
+  // ---- the sky, the far ranges, the volcano ----
+  const skyC = layer(W, H);
+  paintSky(skyC.getContext('2d'), W, H, hz, sky, time, rand);
+  const farC = layer(W, H);
+  {
+    const [m0, m1, , ash] = land.mountains;
+    paintFar(farC.getContext('2d'), W, H, hz + 1, [mix(m1, haze, 0.45), mix(m0, haze, 0.62), mix(ash, haze, 0.4)], rand);
+  }
+  const clouds = Array.from({ length: 5 }, () => ({ img: cloudImage(Math.round(W * (0.25 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: H * 0.02 + rand() * hz * 0.45, drift: 0.4 + rand() * 0.6 }));
+  const big = look.volcano || 1, grows = mini ? 1.12 : 1;
+  const vh0 = Math.min(hz * 0.92, Math.round(hz * (tall ? 0.4 : 0.46) * big * grows));
+  const vhalf0 = Math.min(Math.round(W * (tall ? 0.6 : 0.4) * Math.min(big, 1.6)), Math.round(vh0 * 1.5));
+  const mist = look.haze ?? 0.35;
+  const volc = volcanoImage(vhalf0, vh0, land.volcano.map(c => mix(c, haze, mist)), film.glow.lava, mini ? 1 + (look.flows ? 2 : 1) : 1, look.flows ? 0.85 : 0.45);
+  // drawn at `vs` of its painted size: far off at first, it looms as you rush in (and on each walk on)
+  const volScale = (ms) => mini ? (1 + (grows - 1) * ease(Math.min(1, ms / beats.END))) / grows : 0.72 + 0.28 * (camZ(ms) / RUN);
+
+  // ---- the ground: a Mode 7 plane, sampled every frame ----
+  const tex = wastesTexture(look, rand);
+  const packed = (hex) => { const n = parseInt(hex.slice(1), 16); return (255 << 24 | (n & 255) << 16 | (n >> 8 & 255) << 8 | n >> 16) >>> 0; };
+  const base = [...ground, rocks[3], rocks[0], land.path[1], land.path[0], land.path[2]];
+  const pal = Array.from({ length: 8 }, (_, l) => base.map(c => packed(mix(c, haze, l / 8 * 0.95))));
+  const glowPal = Array.from({ length: 8 }, (_, l) => film.glow.lava.map(c => packed(mix(c, haze, l / 8 * 0.5))));
+  const groundC = layer(W, ROWS), gctx = groundC.getContext('2d'), groundImg = gctx.createImageData(W, ROWS);
+  const out = new Uint32Array(groundImg.data.buffer);
+  const PATH = 5;
+  function paintGround(cz, k, tick) {
+    for (let r = 1; r <= ROWS; r++) {
+      const d = k / r, vz = cz + d, fog = (1 - Math.exp(-d / FOGD)) * 8, v = (Math.floor(vz) & 255) * 256, row = (r - 1) * W, step = d / F;
+      let wx = (0 - VX) * step;
+      for (let x = 0; x < W; x++, wx += step) {
+        const u = Math.floor(wx), l = Math.max(0, Math.min(7, Math.floor(fog + BAYER[(r & 3) * 4 + (x & 3)] / 16 - 0.5)));
+        if (mini && wx > -PATH && wx < PATH) {   // the trodden path you walk on up
+          out[row + x] = pal[l][Math.abs(wx) > PATH - 0.8 ? 10 : ((u + Math.floor(vz * 0.5)) & 3) ? 8 : 9];
+          continue;
+        }
+        const code = tex[v + (u & 255)];
+        if (code >= 10) out[row + x] = glowPal[l][Math.max(0, code - 10 - (Math.sin(tick * 2.6 + u * 0.7 + vz * 0.45) > 0.55 ? 1 : 0))];
+        else out[row + x] = pal[l][code];
+      }
+    }
+    gctx.putImageData(groundImg, 0, 0);
+  }
+
+  // ---- what stands on the plain: rocks, dead trees, dry grass, basalt columns, steam vents ----
+  const fogged = (paint) => { const seed = Math.floor(rand() * 1e9); return [0, 0.3, 0.55, 0.8].map(t => paint(t, prng(seed))); };
+  const tone = (list, t) => list.map(c => mix(c, haze, t));
+  const ppt = F / REF;   // px a texel, as painted
+  const kinds = {
+    rock: () => fogged((t, r) => rockImage(Math.round((3.5 + r() * 5) * ppt), tone(rocks, t), r)),
+    tree: () => fogged((t, r) => deadTreeImage(Math.round((12 + r() * 10) * ppt), tone(land.dead, t).slice(0, 3), r)),
+    grass: () => fogged((t, r) => { const w = Math.round((3.5 + r() * 3) * ppt), c = layer(w + 2, Math.ceil(w * 0.7) + 2); tallGrass(c.getContext('2d'), 1, 1, w, Math.ceil(w * 0.6), tone(land.grass, t)); return c; }),
+    columns: () => fogged((t, r) => columnsImage(Math.round((8 + r() * 9) * ppt), tone(land.dark, t), r)),
+    vent: () => fogged((t) => ventImage(Math.round(5 * ppt), tone(rocks, t), film.glow.lava)),
+  };
+  const mixOf = look.ground === 'basalt' ? { rock: 5, columns: 3, vent: 3, tree: 1 } : { rock: 5, tree: 3, grass: 4, vent: 1 };
+  const library = Object.fromEntries(Object.keys(mixOf).map(k => [k, Array.from({ length: 6 }, kinds[k])]));
+  const picks = Object.entries(mixOf).flatMap(([k, n]) => Array(n).fill(k));
+
+  // where the Pokémon pop up: from behind rocks ahead of where the camera comes to rest, nearer ones lower down
+  const zEnd = camZ(beats.END);
+  const spots = beats.POPS.map((ms, i) => {
+    const depth = [0.45, 0.3, 0.7][i], x = Math.round(W * [0.3, 0.68, 0.42][i]), dz = D0 / depth;
+    return { ms, x, y: Math.round(hz + ROWS * depth), size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6, wx: (x - VX) * dz / F, wz: zEnd + dz, dz };
+  });
+  const spotRocks = spots.map(s => rockImage(s.size * 2 + 4, rocks, rand, Math.round(s.size * 0.7)));
+  const things = [];
+  const lateral = W * 0.9;
+  for (let z = 4; z < zEnd + 320; z += 0.35 + rand() * (2.2 * 100 / W)) {
+    const x = (rand() * 2 - 1) * lateral * Math.min(1, 0.25 + z / 200), kind = picks[Math.floor(rand() * picks.length)];
+    if (mini && Math.abs(x) < PATH + 4) continue;
+    if (spots.some(s => Math.abs(x - s.wx) < 8 && Math.abs(z - s.wz) < 10)) continue;
+    // in front of where the Pokémon pop up, only at the edges, so none hides them
+    if (!mini && z > zEnd && z < zEnd + 30 && Math.abs(x) * F / (z - zEnd) < W * 0.42) continue;
+    things.push({ x, z, kind, look: library[kind][Math.floor(rand() * 6)], phase: rand() * 6 });
+  }
+
+  // ---- the air: ash and embers flying at you as you rush in, then drifting down; sparks off the cracks ----
+  const camH = D0 * ROWS / F;
+  const motes = Array.from({ length: Math.round(70 * (look.ash || 1)) }, () => ({ x: 0, y: 0, z: -1, ember: rand() < 0.3 }));
+  const spawn = (m, cz, first) => {
+    m.z = cz + (first ? 4 : 30) + rand() * 150;
+    const dz = m.z - cz;
+    m.x = (rand() * 2 - 1) * (W * 0.6) * dz / F;
+    m.y = rand() * camH * 1.4;
+  };
+  let lastMs = -1, lastCz = 0, lastK = K(0), gusted = false, rumbled = false;
+  const nearAsh = mini ? [] : Array.from({ length: 5 }, (_, i) => ({ img: cloudImage(Math.round(W * (0.9 + rand() * 0.5)), cloud, rand), x: W * (i / 4) - W * 0.5, y: H * (0.1 + rand() * 0.6) - H * 0.2, dir: i < 2 ? -1 : i > 2 ? 1 : (rand() < 0.5 ? -1 : 1) }));
+
+  const project = (wx, wz, cz, k) => { const dz = wz - cz; return [VX + wx * F / dz, hz + k / dz, dz]; };
+
+  function draw(bg, fg, ms, tick) {
+    const cz = camZ(ms), k = K(ms), dt = lastMs < 0 ? 0 : Math.min(0.1, (ms - lastMs) / 1000);
+    if (!gusted && !mini) { gusted = true; if (live()) playSound('gust'); }
+    if (!rumbled && tick >= huffAt - 0.25) { rumbled = true; if (live()) playSound('rumble-far'); }
+    const huff = tick - huffAt, shake = huff > 0 && huff < 0.5 ? (Math.floor(ms / 50) % 2) : 0;
+
+    bg.drawImage(skyC, 0, 0);
+    for (const c of clouds) {
+      const x = Math.round(((c.x + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
+      bg.drawImage(c.img, x, Math.round(c.y));
+    }
+    bg.drawImage(farC, 0, shake);
+
+    // the volcano, its crater breathing light and a plume of smoke leaning on the wind
+    const vs = volScale(ms), vw = volc.img.width * vs, vhh = volc.img.height * vs;
+    const vx = Math.round(VX - volc.cx * vs), vy = Math.round(hz + 2 - vhh) + shake, cx = VX, cy = vy + Math.max(1, Math.round(vs));
+    const breath = 0.5 + 0.5 * Math.sin(tick * 1.5) + (huff > 0 && huff < 1.2 ? (1 - huff / 1.2) * 1.5 : 0);
+    for (const [a, r] of [[0.1, 3], [0.16, 1.8], [0.24, 1.1]]) {
+      bg.globalAlpha = a * (0.6 + 0.4 * breath) * (dark ? 1.6 : 1);
+      bg.fillStyle = film.glow.ember[1];
+      bg.beginPath(); bg.ellipse(cx, cy, Math.max(2, volc.crater * vs * r * 1.6), Math.max(1.5, volc.crater * vs * r * 0.8), 0, 0, Math.PI * 2); bg.fill();
+    }
+    bg.globalAlpha = 1;
+    bg.drawImage(volc.img, vx, vy, Math.round(vw), Math.round(vhh));
+    const PERIOD = 0.32, LIFE = 5.5, unit = Math.max(6, vh0 * vs);
+    const hash = (n) => ((Math.sin(n * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    for (let n = Math.floor((tick - LIFE) / PERIOD); n <= Math.floor(tick / PERIOD); n++) {
+      const born = n * PERIOD, age = tick - born;
+      if (age < 0 || age > LIFE) continue;
+      const boost = born >= huffAt && born < huffAt + 0.8 ? 1.9 : 1;
+      const x = cx + (hash(n) - 0.5) * volc.crater * vs + age ** 1.4 * unit * 0.09 + Math.sin(age + n) * 1.5;
+      const y = cy - age * unit * 0.17 * boost - 1;
+      const r = Math.max(1, (volc.crater * vs * 0.6 + age * unit * 0.05) * (boost > 1 ? 1.5 : 1));
+      bg.globalAlpha = Math.min(1, age * 3) * (1 - age / LIFE) * 0.8;
+      disc(bg, x + 1, y + 1, r, land.smoke[2]);
+      disc(bg, x, y, r, age < 0.6 && dark ? mix(land.smoke[1], film.glow.lava[2], 0.5) : land.smoke[1]);
+      disc(bg, x - r * 0.3, y - r * 0.3, r * 0.5, land.smoke[0]);
+    }
+    bg.globalAlpha = 1;
+    if (huff > 0 && huff < 1.8) {   // the volcano huffs: a spray of sparks out of the crater
+      for (let n = 0; n < 22; n++) {
+        const ang = (hash(n + 7) - 0.5) * 1.3, v = (0.5 + hash(n + 31)) * unit * 1.1, a = huff;
+        const x = cx + Math.sin(ang) * v * a, y = cy - Math.cos(ang) * v * a + 0.5 * unit * 1.5 * a * a;
+        if (a > 0.9 + hash(n) * 0.9) continue;
+        bg.fillStyle = film.glow.ember[n % 3];
+        bg.fillRect(Math.round(x), Math.round(y), 1, 1);
+      }
+    }
+
+    paintGround(cz, k, tick);
+    bg.drawImage(groundC, 0, hz + 1 + shake);
+
+    // the plain's rocks and trees, far to near; the ones nearer than a Pokémon's rock go in front of it
+    const front = spots.length ? Math.min(...spots.map(s => s.wz - cz)) : 0;
+    const seen = [];
+    for (const t of things) {
+      const dz = t.z - cz;
+      if (dz < 5 || dz > 420) continue;
+      const s = REF / dz, img = t.look[0];
+      if (img.height * s < 1.5) continue;
+      const [sx, sy] = project(t.x, t.z, cz, k);
+      if (sx < -img.width * s || sx > W + img.width * s) continue;
+      seen.push({ t, dz, s, sx, sy });
+    }
+    seen.sort((a, b) => b.dz - a.dz);
+    fg.clearRect(0, 0, W, H);
+    const fogIdx = (dz) => Math.min(3, Math.floor((1 - Math.exp(-dz / FOGD)) * 4.6));
+    for (const { t, dz, s, sx, sy } of seen) {
+      const img = t.look[fogIdx(dz)], ctx = dz < front ? fg : bg, w = Math.max(1, Math.round(img.width * s)), h = Math.max(1, Math.round(img.height * s));
+      ctx.drawImage(img, Math.round(sx - w / 2), Math.round(sy - h + 1 + (ctx === bg ? shake : 0)), w, h);
+      if (t.kind === 'vent' && s > 0.12) {   // steam curling up out of it
+        for (let n = 0; n < 3; n++) {
+          const a = (tick * 0.5 + n / 3 + t.phase) % 1, r = Math.max(1, (1 + a * 3) * s * 2.2);
+          ctx.globalAlpha = 0.45 * (1 - a);
+          disc(ctx, sx + Math.sin(tick * 2 + t.phase + n) * s * 3 + a * s * 6, sy - h - a * s * 22, r, land.smoke[0]);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+    for (const [i, s] of spots.entries()) {   // the rocks the Pokémon hide behind, shaking just before one pops out
+      const dz = s.wz - cz, sc = s.dz / dz, img = spotRocks[i], [sx, sy] = project(s.wx, s.wz, cz, k);
+      const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0;
+      const w = Math.round(img.width * sc), h = Math.round(img.height * sc);
+      if (w > 1) fg.drawImage(img, Math.round(sx - w / 2 + rustle), Math.round(sy + 2 * sc - h + 1), w, h);
+    }
+
+    // sparks rising off the cracks
+    for (let n = 0; n < Math.round(W / 6 * (look.cracks || 1) ** 0.5); n++) {
+      const cyc = tick * (0.35 + hash(n) * 0.3) + hash(n + 99), i = Math.floor(cyc), p = cyc - i;
+      if (p > 0.85) continue;
+      const x = hash(n * 7 + i * 13) * W + Math.sin(tick * 3 + n) * 1.5, y = hz + 3 + hash(n * 3 + i * 5) * ROWS - p * H * 0.12;
+      fg.fillStyle = film.glow.ember[(n + i) % 3];
+      fg.fillRect(Math.round(x), Math.round(y), 1, 1);
+    }
+    // ash and embers in the air: streaking past while you rush, falling softly once you stop
+    for (const m of motes) {
+      if (m.z < 0) spawn(m, cz, true);
+      m.y -= dt * (m.ember ? -1.5 : 2.2);
+      m.x += dt * 2.5;
+      const [px, , dz] = project(m.x, m.z, cz, k), sy = hz + (k - F * m.y) / dz;
+      if (dz < 1.5 || px < -4 || px > W + 4 || sy > H + 4 || m.y < -2 || m.y > camH * 2) { spawn(m, cz, false); continue; }
+      const [ox, oz] = [VX + m.x * F / (m.z - lastCz), hz + (lastK - F * m.y) / (m.z - lastCz)];
+      fg.fillStyle = m.ember ? film.glow.ember[Math.floor(tick * 6 + m.z) % 2] : land.ash[0];
+      const len = Math.min(10, Math.max(Math.abs(px - ox), Math.abs(sy - oz)));
+      for (let q = 0; q <= len; q++) {
+        const f = len ? q / len : 0;
+        fg.fillRect(Math.round(ox + (px - ox) * f), Math.round(oz + (sy - oz) * f), 1, 1);
+      }
+    }
+
+    if (!mini && ms < 2400) {   // bursting out of the ash cloud: its billows part either side, the haze thins
+      const p = ms / 1000;
+      for (const c of nearAsh) fg.drawImage(c.img, Math.round(c.x + c.dir * p * p * W * 0.55), Math.round(c.y + p * p * H * 0.35));
+      fg.globalAlpha = Math.max(0, 1 - easeOut(span([0, 1900], ms))) * 0.95;
+      fg.fillStyle = cloud[1];
+      fg.fillRect(0, 0, W, H);
+      fg.globalAlpha = 1;
+    }
+    lastMs = ms; lastCz = cz; lastK = k;
+  }
+
+  return { spots, walkX: VX, draw, monAt: (i, ms) => { const [x, y] = project(spots[i].wx, spots[i].wz, camZ(ms), K(ms)); return [Math.round(x), Math.round(y)]; } };
 }

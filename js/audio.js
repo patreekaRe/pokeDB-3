@@ -122,6 +122,8 @@ const SOUNDS = {
   'furin-1':    { synth: ac => windChime(ac, 1760), gain: 0.6 },
   'furin-2':    { synth: ac => windChime(ac, 2093), gain: 0.6 },
   'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
+  gust:         { synth: hotGust },          // the Wastes' intro: a hot wind as you burst out of the ash cloud...
+  'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -771,6 +773,37 @@ function grassRustle(ac) {
     out[i] = low * Math.sin(Math.PI * s) * (1 - t / 0.32);
   }
   return normalize(buffer, 0.1);
+}
+
+/** A hot wind: soft noise swelling and passing, its brightness opening and closing with it. */
+function hotGust(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 2);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, swell = Math.sin(Math.PI * Math.min(1, t / seconds)) ** 1.5;
+    low += (1 - Math.exp(-2 * Math.PI * (250 + 1600 * swell) / rate)) * (noise[i] - low);
+    out[i] = low * swell * (0.85 + 0.15 * Math.sin(t * 11));
+  }
+  return normalize(buffer, 0.1);
+}
+
+/** A volcano far off letting out a breath: a soft, deep rumble that swells and dies away. */
+function farRumble(ac) {
+  const rate = ac.sampleRate, seconds = 2.4, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const rough = chipNoise(length, 140);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, env = Math.min(1, t / 0.25) * Math.exp(-t / 0.9);
+    low += 0.02 * (rough[i] - low);
+    phase += (30 + 4 * Math.sin(t * 5)) / rate;
+    out[i] = (Math.sin(2 * Math.PI * phase) * 0.7 + low * 3) * env * Math.min(1, (length - i) / (rate * 0.05));
+  }
+  return normalize(buffer, 0.16);
 }
 
 /** A shrine's wind chime (furin): a glassy tink, its high partials dying first. */

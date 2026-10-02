@@ -137,7 +137,19 @@ constants at the top (`TILT`, `PAN`, `POPS`, `TITLE_AT`, `END`); the title is DO
 over the goal when upright, left of it when wide). Skies are hand-painted per time (`SKIES`), the land graded with
 `GRADES`. The Tree (`paintTree()`) stands on a knoll of the hills (`hillLine()`, its foot just in the grass, roots crawling down it, `paintRoots()`; before 2026-10-01 it stopped short of the hills and looked like it floated) and carries the boss arena tree's glowing hollow and moss, so it reads as the same tree; clouds keep their puffs inside the canvas, biggest in the middle (`cloudImage()`: clipped puffs looked like squares). Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. `run()` is the shell every biome shares (page,
 title, pops, walker, skip); each `INTROS` entry brings its own `scene` painter (`clearingScene()`, `shrineScene()`) and
-`beats`, optionally `skies`, `sounds` and `shaded`. The Wastes has none yet; a biome without an entry resolves at once.
+`beats`, optionally `skies`, `sounds` and `shaded`. A biome without an entry (the Crystal Depths, so far) resolves at once.
+**The Wastes'** (`wastesScene()`, 2026-10-02): a third camera move, a rush forward. It bursts out of an ash cloud (big ash
+billows parting either side as the haze thins, synth `gust`) and swoops down low over the Ash Plains (`DOLLY`: the camera
+drops as it flies, `K()`) towards the smoking volcano on the horizon. The ground is a Mode 7 plane redrawn every frame
+(`paintGround()`: a 256-texel tiling texture from `wastesTexture()`, ash or basalt patches, pebbles, lava cracks that
+shimmer, pools and rivers further in, fogged into the horizon's haze in 8 dithered steps); the rocks, dead trees, dry grass,
+basalt columns and steaming vents on it are billboards projected each frame (`project()`), painted in 4 fogged versions,
+with ash and embers streaking past (`motes`) and sparks rising off the cracks. The volcano (`volcanoImage()`) looms as you
+rush in, its crater breathing light under a plume of smoke leaning on the wind; it huffs as the title lands (`HUFF`: a
+bigger puff, a spray of sparks, a small shake, synth `rumble-far`). The Pokémon pop up from behind low rocks ahead of where
+the camera stops; anything nearer than them is drawn on `front`. Place walks: Lava Fields (basalt, lava pools and a river,
+the volcano 1.45x) and Volcano Slope (lava channels running at you, the cone 2.05x with three flows, more ash), your
+Pokémon walking up a trodden trail (`PATH`) as the camera creeps on and the volcano huffs once.
 **The Shrine's** (`shrineScene()`, 2026-10-01): a different camera move, a crane shot. It opens at the foot of a cedar and
 autumn-maple hillside and rises up mossy stone steps through a tunnel of torii (`RISE`, each layer slid down at its own
 `SPEED`) while stone lanterns light in pairs as they come into view, each pair with a wind chime (synths `furin-0..2`),
