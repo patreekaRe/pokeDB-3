@@ -102,7 +102,7 @@ export function initTitle(handlers) {
   initSoundPanel();
   $('title-refresh').addEventListener('click', refreshGame);
   paintLogo();
-  $('title-abandon').addEventListener('click', () => actions.onAbandon());
+  initRope();
   $('title-gate').addEventListener('click', enterGate);
   gateReady().then(paintGate);
   document.addEventListener('keydown', (e) => {
@@ -210,23 +210,20 @@ function gem(kind, label, onPick, icon, extra) {
   return btn;
 }
 
-/** The Safari Zone, the daily run: today's starter on its face and today's areas under its name. Locked (a padlock)
-    until the Pokédex is fully researched; a tap then says so. */
+/** The Safari Zone, the daily run: today's starter on its face and today's areas under its name. Locked (the whole gem
+    greyed out, a Safari Ball on it) until the Pokédex is fully researched; a tap then says so. */
 function safariGem() {
   const open = getSave().dex.complete;
   const daily = safariDaily();
-  const line = open ? `Today: ${daily.areas.map(a => a.name).join(' · ')}` : 'Locked: finish the Pokédex';
-  let icon = el('span', 'gem-emoji', '🔒');
-  if (open) {
-    icon = el('img', 'pixel');
-    icon.src = spriteUrl(daily.starter, 'front', 0);
-    icon.alt = '';
-  }
+  const line = `Today: ${daily.areas.map(a => a.name).join(' · ')}`;
+  const icon = el('img', open ? 'pixel' : 'pixel gem-ball');
+  icon.src = open ? spriteUrl(daily.starter, 'front', 0) : 'assets/items/safari-ball.png';
+  icon.alt = '';
   const btn = gem('safari', 'Safari Zone', () => {
     if (open) return actions.onSafari();
     playSound('cancel');
     tipAt(btn, 'The Safari Zone opens once every Pokédex entry is researched.');
-  }, icon, el('span', 'gem-sub', line));
+  }, icon, open && el('span', 'gem-sub', line));   // locked, just the name: a tap says why
   btn.classList.toggle('locked', !open);
   btn.title = open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Research every Pokédex entry to open the Safari Zone.';
   return btn;
@@ -302,8 +299,36 @@ function runIcon(run) {
   return ball;
 }
 
+/** The Escape Rope beside the nameplate: a tap rings it red and swings it (a phone's hover) and asks in a bubble over
+    it rather than a window, so the rope stays in sight; Yes abandons the run, No or a tap anywhere else puts it away. */
+function initRope() {
+  const rope = $('title-rope'), ask = $('rope-ask'), btn = $('title-abandon');
+  const set = (open) => {
+    rope.classList.toggle('armed', open);
+    ask.hidden = !open;
+    btn.setAttribute('aria-expanded', open);
+  };
+  closeRope = (sound) => {
+    if (ask.hidden) return;
+    if (sound) playSound('cancel');
+    set(false);
+  };
+  btn.addEventListener('click', () => {
+    if (!ask.hidden) return closeRope(true);
+    playSound('stick');
+    set(true);
+    $('rope-no').focus({ preventScroll: true });
+  });
+  $('rope-no').addEventListener('click', () => closeRope(true));
+  $('rope-yes').addEventListener('click', () => { set(false); actions.onAbandon(true); });
+  document.addEventListener('pointerdown', (e) => { if (!rope.contains(e.target)) closeRope(true); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRope(true); });
+}
+let closeRope = () => {};
+
 /** A saved run's nameplate stands on the ledge (the user's call): its name, biome and HP, like battle's. */
 function renderRun(run) {
+  closeRope(false);
   $('title-run').hidden = !run;
   if (!run) return;
   $('title-run-name').textContent = run.name;

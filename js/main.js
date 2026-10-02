@@ -107,10 +107,11 @@ async function requestMenu() {
   goHome();
 }
 
-/** Throw the run away for good (the user's ask): from the Poké Ball menu, or the title's nameplate. */
-async function requestAbandon() {
+/** Throw the run away for good (the user's ask): from the Poké Ball menu, or the title's Escape Rope, which has already
+    asked in its own bubble (`sure`). */
+async function requestAbandon(sure) {
   if (!hasSavedRun() && !isRunActive()) return;
-  if (!(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return;
+  if (sure !== true && !(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return;
   abandonRun();
   if (!isPeeking()) clearRunData();   // a ?event= playtest run leaves the real saved run alone
   showHome();

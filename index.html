@@ -47,6 +47,7 @@
       <!-- a saved run: its nameplate, right under the gems (renderRun() in js/title.js); the Pokémon waits in Continue's ball -->
       <div class="title-run" id="title-run" hidden>
         <h3 class="biome-sign title-biome" id="title-run-biome"></h3>
+        <div class="title-run-row">
         <div class="nameplate title-plate" id="title-plate">
           <div class="nameplate-title"><strong id="title-run-name"></strong><strong class="title-floor" id="title-run-floor"></strong></div>
           <div class="gb-hp" id="title-run-hp" role="progressbar" aria-label="HP" aria-valuemin="0">
@@ -55,7 +56,18 @@
           </div>
           <span class="gb-hp-num" id="title-run-hp-text"></span>
         </div>
-        <button type="button" class="pxb red white small title-abandon" id="title-abandon"><span class="pxb-o"><span class="pxb-i">Abandon run</span></span></button>
+        <!-- the games' Escape Rope, out of the dungeon: a tap swings it and asks in a bubble over it (js/title.js) -->
+        <div class="title-rope" id="title-rope">
+          <div class="rope-ask" id="rope-ask" role="dialog" aria-label="Abandon run?" hidden>
+            <p>Use the Escape Rope? Your run will be gone for good.</p>
+            <div class="rope-ask-btns">
+              <button type="button" class="pxb red white small" id="rope-yes"><span class="pxb-o"><span class="pxb-i">Yes</span></span></button>
+              <button type="button" class="pxb blue white small" id="rope-no"><span class="pxb-o"><span class="pxb-i">No</span></span></button>
+            </div>
+          </div>
+          <button type="button" class="title-abandon" id="title-abandon" aria-label="Abandon run" aria-expanded="false" aria-controls="rope-ask"><img class="pixel" src="assets/items/escape-rope.png" alt=""></button>
+        </div>
+        </div>
       </div>
     </div>
     <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js), Sound, How to play and Refresh -->
