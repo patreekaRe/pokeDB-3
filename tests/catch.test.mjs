@@ -1,7 +1,7 @@
 // The Safari Zone's catch odds (js/data/balls.js) and its seeded rolls: the same throw must land the same for everyone.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BALLS, CATCH_HP, CATCH_BASE, CATCH_CAP, RARE, baseOdds, catchChance, ballWeek, ballsInBag } from '../js/data/balls.js';
+import { BALLS, CATCH_HP, CATCH_BASE, CATCH_CAP, RARE, baseOdds, catchChance, ballWeek, ballsInBag, migrateBalls, UNLOCK_REFUND } from '../js/data/balls.js';
 import { SAFARI_AREAS, SAFARI_ROSTER, markRares, safariSeed } from '../js/data/safari.js';
 import { CARDS_BY_ID, SIGNATURE_FOR, ALL_CARDS, poolForType } from '../js/data/cards.js';
 import { ENEMY_DEFS } from '../js/data/enemies.js';
@@ -69,13 +69,29 @@ test('the Master Ball comes back every UTC week, from Monday', () => {
   assert.equal(ballWeek(new Date('2026-10-04T23:59:59Z')), '2026-W40');   // a Sunday
   assert.equal(ballWeek(new Date('2026-10-05T00:00:00Z')), '2026-W41');   // Monday
   assert.equal(ballWeek(new Date('2027-01-01T12:00:00Z')), '2026-W53');   // ISO weeks: Friday 1 Jan is still 2026's last week
-  const owned = { great: 2, ultra: 0, owned: ['master', 'net'], masterWeek: null };
+  const owned = { great: 2, ultra: 0, net: 1, owned: ['master'], masterWeek: null };
   const ids = (bag) => bag.map(x => x.ball.id);
   assert.deepEqual(ids(ballsInBag(owned, '2026-W41')), ['safari', 'great', 'net', 'master']);
   assert.deepEqual(ids(ballsInBag({ ...owned, masterWeek: '2026-W41' }, '2026-W41')), ['safari', 'great', 'net']);
   assert.deepEqual(ids(ballsInBag({ ...owned, masterWeek: '2026-W40' }, '2026-W41')), ['safari', 'great', 'net', 'master']);
   assert.equal(ballsInBag(owned).find(x => x.ball.id === 'great').left, 2);
   assert.ok(BALLS.find(b => b.free));
+});
+
+test('the special balls come in packs of 3; an old unlock becomes throws', () => {
+  for (const id of ['dusk', 'quick', 'timer', 'net', 'luxury']) {
+    const b = BALLS.find(x => x.id === id);
+    assert.ok(b.stock && b.pack === 3 && !b.unlock, id);
+    assert.equal(b.cost, id === 'luxury' ? 100 : 150);
+  }
+  assert.ok(BALLS.every(b => b.free || b.stock || b.weekly));
+  const old = { great: 1, ultra: 0, dusk: 2, owned: ['dusk', 'master', 'luxury'], masterWeek: null };
+  const now = migrateBalls(old);
+  assert.deepEqual(now.owned, ['master']);
+  assert.equal(now.dusk, 2 + UNLOCK_REFUND);
+  assert.equal(now.luxury, UNLOCK_REFUND);
+  assert.equal(now.great, 1);
+  assert.equal(migrateBalls(now), now);
 });
 
 test('a throw rolls the same on the same seed and room', () => {

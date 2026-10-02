@@ -29,7 +29,7 @@ with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a p
 canvas a whole number of pixels wide so they stay square) with a bare pixel icon on its left end (a dark pixel outline, no
 frame: the user's call): **Continue** (amber, only with a save; see Saved runs; the biggest gem, `GEM_BIG`, with a bigger label and a smaller ball, placed by `--icon-x` so it stays on the face), **New game** (violet, an Egg that wobbles while
 picked, since Continue has the Poké Ball: the character select), **Collection** (gold, the Pokédex: the Collection screen) and **Game Corner** (coral: `toggleShop()`,
-whose dialog sits above the title at z-index 90). Hover, focus or ↑ ↓ move a blinking ▶ (`point()`), Enter / tap picks, a
+whose dialog sits above the title at z-index 90). Last, **Safari Zone** (green, `safariGem()`: today's starter and areas; greyed out with a Safari Ball until `safariOpen()`), which opens the Safari's prep window (`openSafariPrep()`, see `docs/reference/safari.md`); once open, a 🏆 sign hangs off its right edge (`.gem-row` / `.gem-side`, `#title-board`, 36px under 420px wide so it stays on screen) and opens the day's leaderboard. Hover, focus or ↑ ↓ move a blinking ▶ (`point()`), Enter / tap picks, a
 press sinks the gem. Leaving fades the title out over the screen you go to (`leaveTitle()`), and every way home (the Poké
 Ball menu's Main menu, a run's end, Back on the select or the Collection, the About erase) comes back to the gems with
 `showHome()`. The first PRESS START unlocks audio and opens the first-time How to play. `--ground` (set from JS) keeps the

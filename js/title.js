@@ -113,7 +113,7 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
-    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-corner, .title-gate') && gems[at]) { e.preventDefault(); gems[at].click(); }
+    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
 }
@@ -190,7 +190,7 @@ function renderMenu() {
     gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
     safariGem(),
   ].filter(Boolean);
-  gems.forEach((g, i) => g.style.setProperty('--i', i));
+  gems.forEach((g, i) => g.style.setProperty('--i', i));   // inherited, so the Safari gem's row passes it on
   $('title-menu').replaceChildren(...gems);
   sizeGems();
   point(gems[0], true);
@@ -229,7 +229,17 @@ function safariGem() {
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
   btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
-  return btn;
+  if (!open) return btn;
+  // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
+  const row = el('div', 'gem-row');
+  const board = el('button', 'gem-side', '🏆');
+  board.type = 'button';
+  board.id = 'title-board';
+  board.title = 'Today\'s Safari Zone leaderboard';
+  board.setAttribute('aria-label', 'Safari Zone leaderboard');
+  board.addEventListener('click', () => { playSound('confirm'); actions.onBoard(); });
+  row.append(btn, board);
+  return row;
 }
 
 /** The ▶ follows the pointer or the arrow keys, like the games' menus. */

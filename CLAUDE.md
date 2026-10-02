@@ -418,7 +418,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
   `#safari-dex-dialog`) is a page per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
   joins it; it opens from the Collection, the main Pokédex's Safari tab and, in a Safari run, the Pokédex button.
-  **Completion rewards** (2026-10-02): a page with every Pokémon caught pays 300 PokéCoins once and doubles its rare spawns
+  **Prep window** (2026-10-02): the title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`: today's run,
+  the rules, your balls, the Safari Pokédex / Leaderboard / Game Corner, then Start); a 🏆 beside the gem
+  (`#title-board`) opens the leaderboard. Every ball but the Safari and Master Balls is a pack used up when thrown
+  (Great / Ultra 5, the special ones 3); `migrateBalls()` turned old one-time unlocks into 10 throws.
+  **Completion rewards** (2026-10-02): a page with every Pokémon caught pays 1000 PokéCoins once and doubles its rare spawns
   on replays (`rareOdds()`, never the first try); the whole Safari Pokédex unlocks Rayquaza. `creditSafari()` in
   `js/run.js`; earned stays earned in `save.safariDex.done` / `complete`, however the roster grows.
   **Its own Pokémon** (phase 4) are one line each in `js/data/safari-mons.js` (species, type, area, one of 10 role

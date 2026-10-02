@@ -97,7 +97,7 @@ export function safariProgress(ids, dex = { seen: [], caught: [] }) {
    A page is complete when every Pokémon on it is caught: SAFARI_AREA_COINS once and its rare spawns RARE_BOOST times as
    often on replays (never the day's first try). Every page caught: Rayquaza (achievements.js). Judged against the roster
    of the day it happens; once earned it stays earned (save.safariDex.done / complete), as the roster grows. */
-export const SAFARI_AREA_COINS = 300;
+export const SAFARI_AREA_COINS = 1000;
 export const RARE_BOOST = 2;
 
 /** Is every Pokémon on this page caught? */

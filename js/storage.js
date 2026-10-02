@@ -16,6 +16,7 @@
 
 import { RENAMED_STARTERS, STARTERS } from './data/starters.js';
 import { GATE_HP, seedGate } from './data/gate.js';
+import { migrateBalls } from './data/balls.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
@@ -53,7 +54,7 @@ const freshSave = () => ({
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
-  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock, unlocked balls, the week the Master Ball was thrown
+  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
@@ -92,7 +93,7 @@ function load() {
         dex: seedCounts({ ...base.dex, ...saved.dex }),
         shiny: { ...base.shiny, ...saved.shiny },
         safariDex: { ...base.safariDex, ...saved.safariDex },
-        balls: { ...base.balls, ...saved.balls },
+        balls: migrateBalls({ ...base.balls, ...saved.balls }),
         stats: {
           ...base.stats, ...saved.stats,
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },

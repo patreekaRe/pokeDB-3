@@ -192,6 +192,21 @@
 }
 /* a full Safari Pokédex: a gold ✦ in the Safari Zone gem's corner (safariGem() in js/title.js) */
 .gem-badge { position: absolute; top: calc(var(--gp) * 1.5); right: calc(var(--gp) * 2.5); z-index: 2; pointer-events: none; font: 1.1rem/1 var(--pixel-font); color: #ffe060; text-shadow: 2px 0 0 #6a4000, -2px 0 0 #6a4000, 0 2px 0 #6a4000, 0 -2px 0 #6a4000; }
+/* the Safari gem's leaderboard: a little cream sign hung off the gem's right edge (safariGem() in js/title.js) */
+.gem-row { position: relative; flex: none; }
+.gem-side {
+  position: absolute; left: calc(100% + 8px); top: 50%; translate: 0 -50%;
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; cursor: pointer;
+  border: 3px solid #b8b8c8; border-radius: var(--round-sm); background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 4px 0 2px rgba(20, 10, 30, 0.5);
+  font-size: 22px; line-height: 1;
+  animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms + 120ms);
+  -webkit-tap-highlight-color: transparent;
+}
+.gem-side:active { translate: 0 calc(-50% + 3px); }
+@media (max-width: 420px) { .gem-side { left: calc(100% + 4px); width: 36px; height: 36px; font-size: 18px; } }
+.gem-side:focus-visible { outline: 3px solid #f8e070; outline-offset: 2px; }
+@media (hover: hover) { .gem-side:hover { filter: brightness(1.08); } }
 .gem-sub { font-size: 0.6rem; letter-spacing: 0.04em; text-transform: none; }
 .gem.locked .gem-face { filter: grayscale(1) brightness(0.8); }
 .gem.locked .gem-icon img { filter: grayscale(1) brightness(0.9); }
@@ -343,6 +358,7 @@
   .gem-icon img { width: 48px; height: 48px; }
   .gem-emoji { font-size: 24px; }
   .title-menu { gap: 10px; }
+  .gem-side { left: calc(100% + 5px); width: 36px; height: 36px; font-size: 18px; }
   .title-screen.menu .title-big { font-size: clamp(2.6rem, 12vw, 5rem); }
   .title-screen.menu .title-big small { font-size: 0.85rem; }
 }
@@ -570,7 +586,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gem, .coll-card, .select-screen, .sel-stage img, .title-screen:not([hidden]), .title-screen.away { animation: none; }
+  .gem, .gem-side, .coll-card, .select-screen, .sel-stage img, .title-screen:not([hidden]), .title-screen.away { animation: none; }
   .title-screen.away { opacity: 0; }
   .gem.on::before, .gem.on .gem-egg { animation: none; }
 }

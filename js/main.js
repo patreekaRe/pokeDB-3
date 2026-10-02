@@ -50,6 +50,7 @@ import { initCardIndex, openCardIndex } from './cardindex.js';
 import { initPokedex, openPokedex } from './pokedex.js';
 import { initSafariDex, openSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
+import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
 import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
 import { showPlaceScene } from './scene.js';
@@ -209,6 +210,13 @@ function init() {
   initCloud();
   initLeaderboard();
   $('safari-dex-board').addEventListener('click', () => openLeaderboard());
+  initSafariPrep({
+    onStart: async () => {
+      if (hasSavedRun() && !(await confirmDialog('Start today\'s Safari Zone run? Your saved run will be lost.', 'Start'))) return openSafariPrep();
+      leaveTitle();
+      beginSafari();
+    },
+  });
 
   $('reset-btn').addEventListener('click', async () => {
     if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
@@ -224,11 +232,8 @@ function init() {
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
     onGameCorner: () => toggleShop(),
-    onSafari: async () => {
-      if (hasSavedRun() && !(await confirmDialog('Start today\'s Safari Zone run? Your saved run will be lost.', 'Start'))) return;
-      leaveTitle();
-      beginSafari();
-    },
+    onSafari: openSafariPrep,
+    onBoard: () => openLeaderboard(),
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
   });

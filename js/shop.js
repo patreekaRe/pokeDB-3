@@ -37,13 +37,15 @@ const TRAVEL = 12;    // px the ball can lean
  *  blocking it - the map, a battle, a reward choice underneath stays fully
  *  clickable, and the shop button in the topbar stays clickable too, so it
  *  really is a toggle rather than a one-way trip.
- *  highlightId opens on one skin (used when you tap a shop-locked starter). */
+ *  highlightId opens on one skin (used when you tap a shop-locked starter), or a row's id on that row. */
 export function toggleShop(highlightId) {
   const dialog = $('shop-dialog');
   if (dialog.open) { playSound('cancel', 'confirm'); return dialog.close(); }
 
   const at = SKIN_SHOP_ITEMS.findIndex(item => item.id === highlightId);
   if (at >= 0) { cursor.row = 0; cursor.col[0] = at; }
+  const row = ROWS.findIndex(r => r.id === highlightId);   // a row's id opens on that row: 'balls' from the Safari's prep window
+  if (row >= 0) cursor.row = row;
   cursor.armed = false;
   cursor.news = null;
   preloadSounds('stick', 'buy');
@@ -148,7 +150,7 @@ function shinyEntry(starter) {
   };
 }
 
-/** A Poké Ball for the Safari Zone: Great and Ultra Balls in packs (used up when thrown), the special balls bought once.
+/** A Poké Ball for the Safari Zone: every ball but the Master Ball comes in packs (used up when thrown).
     Only for sale once the Safari Zone is open (every Pokémon beaten). */
 function ballEntry(ball) {
   const balls = getSave().balls;
@@ -163,7 +165,7 @@ function ballEntry(ball) {
     cost: ball.cost,
     bought() {
       updateSave(d => { if (ball.stock) d.balls[ball.id] = (d.balls[ball.id] || 0) + ball.pack; else d.balls.owned.push(ball.id); });
-      return ball.stock ? [`${ball.pack} ${ball.name}s! You have ${have + ball.pack}.`] : [`The ${ball.name} is yours!`, 'It\'s in your Bag on every Safari Zone run.'];
+      return ball.stock ? [`${ball.pack} ${ball.name}s! You have ${have + ball.pack}.`] : [`The ${ball.name} is yours!`, 'It\'s in your Bag on every Safari Zone run, one throw a week.'];
     },
   };
 }

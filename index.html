@@ -623,6 +623,26 @@
   </dialog>
 
   <!-- the cloud save (js/cloud.js): only once js/cloud-config.js holds a Firebase project -->
+  <!-- the Safari Zone's prep window: today's run, the rules, your balls, then Start (js/safariprep.js) -->
+  <dialog id="safari-prep-dialog" class="dialog safari-prep-dialog">
+    <h2 tabindex="-1" autofocus>🌿 Safari Zone</h2>
+    <div class="panel sp-today" id="sp-today"></div>
+    <div class="sp-links">
+      <button class="btn secondary" id="sp-dex" type="button">📖 Safari Pokédex</button>
+      <button class="btn secondary" id="sp-board" type="button">🏆 Leaderboard</button>
+    </div>
+    <h3>How it works</h3>
+    <ul class="sp-rules" id="sp-rules"></ul>
+    <h3>Your Poké Balls</h3>
+    <div class="sp-balls" id="sp-balls"></div>
+    <p class="hint sp-corner-hint">Buy more balls at the Game Corner, with PokéCoins.</p>
+    <button class="btn secondary sp-corner" id="sp-corner" type="button">🎰 Game Corner</button>
+    <div class="dialog-actions sp-actions">
+      <button class="btn secondary" id="sp-close" type="button">Back</button>
+      <button class="btn primary" id="sp-start" type="button">Start</button>
+    </div>
+  </dialog>
+
   <!-- the Safari Zone's daily leaderboard: today's and yesterday's boards (js/leaderboard.js) -->
   <dialog id="board-dialog" class="dialog board-dialog">
     <h2 tabindex="-1" autofocus>🏆 Safari Leaderboard</h2>

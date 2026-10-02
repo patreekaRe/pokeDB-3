@@ -33,8 +33,7 @@ export const CATCH_PRIZE = 0.5;
 export const LUXURY_COINS = 10;
 
 /**
- * The balls. `stock`: a consumable bought in packs at the Game Corner (save.balls[id]); `unlock`: bought once, then
- * thrown as often as you like; the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free.
+ * The balls. `stock`: a consumable bought in packs at the Game Corner (save.balls[id]); the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free.
  * `mult(ctx)` is the ball's multiplier for a throw: ctx = { night, turn, type } (the wild Pokémon's type).
  */
 export const BALLS = [
@@ -44,16 +43,16 @@ export const BALLS = [
     text: 'Better odds than a Safari Ball (x1.5). Used up when thrown.', mult: () => 1.5 },
   { id: 'ultra', name: 'Ultra Ball', sprite: 'ultra-ball', stock: true, pack: 5, cost: 90,
     text: 'Even better odds (x2). Used up when thrown.', mult: () => 2 },
-  { id: 'dusk', name: 'Dusk Ball', sprite: 'dusk-ball', unlock: true, cost: 300,
-    text: 'x3 at night (your clock), x1 otherwise. Never runs out.', mult: (c) => (c.night ? 3 : 1) },
-  { id: 'quick', name: 'Quick Ball', sprite: 'quick-ball', unlock: true, cost: 300,
-    text: 'x4 in a fight\'s first 3 turns, x1 after. Never runs out.', mult: (c) => (c.turn <= 3 ? 4 : 1) },
-  { id: 'timer', name: 'Timer Ball', sprite: 'timer-ball', unlock: true, cost: 300,
-    text: 'Better the longer the fight: x1 on turn 1, +0.25 a turn, up to x3. Never runs out.', mult: (c) => Math.min(3, 1 + 0.25 * (c.turn - 1)) },
-  { id: 'net', name: 'Net Ball', sprite: 'net-ball', unlock: true, cost: 300,
-    text: 'x3 on Water and Grass Pokémon, x1 otherwise. Never runs out.', mult: (c) => (c.type === 'water' || c.type === 'grass' ? 3 : 1) },
-  { id: 'luxury', name: 'Luxury Ball', sprite: 'luxury-ball', unlock: true, cost: 250,
-    text: `Plain odds (x1), but a catch pays ${LUXURY_COINS} more PokéCoins. Never runs out.`, mult: () => 1 },
+  { id: 'dusk', name: 'Dusk Ball', sprite: 'dusk-ball', stock: true, pack: 3, cost: 150,
+    text: 'x3 at night (your clock), x1 otherwise. Used up when thrown.', mult: (c) => (c.night ? 3 : 1) },
+  { id: 'quick', name: 'Quick Ball', sprite: 'quick-ball', stock: true, pack: 3, cost: 150,
+    text: 'x4 in a fight\'s first 3 turns, x1 after. Used up when thrown.', mult: (c) => (c.turn <= 3 ? 4 : 1) },
+  { id: 'timer', name: 'Timer Ball', sprite: 'timer-ball', stock: true, pack: 3, cost: 150,
+    text: 'Better the longer the fight: x1 on turn 1, +0.25 a turn, up to x3. Used up when thrown.', mult: (c) => Math.min(3, 1 + 0.25 * (c.turn - 1)) },
+  { id: 'net', name: 'Net Ball', sprite: 'net-ball', stock: true, pack: 3, cost: 150,
+    text: 'x3 on Water and Grass Pokémon, x1 otherwise. Used up when thrown.', mult: (c) => (c.type === 'water' || c.type === 'grass' ? 3 : 1) },
+  { id: 'luxury', name: 'Luxury Ball', sprite: 'luxury-ball', stock: true, pack: 3, cost: 100,
+    text: `Plain odds (x1), but a catch pays ${LUXURY_COINS} more PokéCoins. Used up when thrown.`, mult: () => 1 },
   { id: 'master', name: 'Master Ball', sprite: 'master-ball', weekly: true, cost: 1500,
     text: 'Never misses, even on a rare spawn. One throw a week (UTC, from Monday).', mult: () => Infinity },
 ];
@@ -89,11 +88,23 @@ export function ballWeek(date = new Date()) {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
-/** The balls a save can throw right now, each with how many are left (Infinity for the free and unlocked ones). */
+/** The balls a save can throw right now, each with how many are left (Infinity for the Safari Ball). */
 export function ballsInBag(balls, week = ballWeek()) {
   return BALLS.map(b => ({ ball: b, left: b.free ? Infinity
     : b.stock ? balls[b.id] || 0
-      : b.unlock ? (balls.owned.includes(b.id) ? Infinity : 0)
-        : balls.owned.includes(b.id) && balls.masterWeek !== week ? 1 : 0 }))
+      : balls.owned.includes(b.id) && balls.masterWeek !== week ? 1 : 0 }))
     .filter(x => x.left > 0);
+}
+
+/** Throws given for a special ball bought back when it was a one-time unlock (300 coins, thrown freely). */
+export const UNLOCK_REFUND = 10;
+
+/** Saves from before the special balls came in packs: an owned Dusk / Quick / Timer / Net / Luxury Ball becomes
+    UNLOCK_REFUND throws of it; `owned` keeps only the Master Ball. */
+export function migrateBalls(balls) {
+  const gone = balls.owned.filter(id => BALLS_BY_ID[id]?.stock);
+  if (!gone.length) return balls;
+  const out = { ...balls, owned: balls.owned.filter(id => !gone.includes(id)) };
+  for (const id of gone) out[id] = (out[id] || 0) + UNLOCK_REFUND;
+  return out;
 }

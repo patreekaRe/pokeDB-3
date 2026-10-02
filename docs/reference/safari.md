@@ -63,13 +63,30 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 
 ## Poké Balls (the Game Corner's fourth row)
 
-- `BALLS` in `js/data/balls.js`; `save.balls = { great, ultra, owned, masterWeek }`. The row is for sale once the Pokédex
+- `BALLS` in `js/data/balls.js`; `save.balls = { great, ultra, dusk, ..., owned, masterWeek }` (a count per pack ball,
+  `owned` the Master Ball). The row is for sale once the Pokédex
   is complete (the Safari's own lock).
-- Safari Ball: free, always. Great (x1.5) and Ultra (x2): packs of 5 (40 / 90 coins), used up when thrown (the save is
-  written as the ball is thrown, so a refresh that replays the room doesn't give it back). Unlocked once, thrown freely:
-  Dusk (x3 at `timeOfDay()` night), Quick (x4 in turns 1-3: "turn 1" alone could never be used, since a throw needs red
-  HP), Timer (x1 +0.25 a turn, up to x3), Net (x3 on Water and Grass), Luxury (x1, +10 PokéCoins on a catch). Master Ball
-  (1500): a sure catch, one throw a UTC ISO week (`ballWeek()`, `masterWeek`).
+- Safari Ball: free, always. Every other ball but the Master Ball comes in packs, used up when thrown (the save is
+  written as the ball is thrown, so a refresh that replays the room doesn't give it back): Great (x1.5) and Ultra (x2),
+  5 for 40 / 90 coins; Dusk (x3 at `timeOfDay()` night), Quick (x4 in turns 1-3: "turn 1" alone could never be used,
+  since a throw needs red HP), Timer (x1 +0.25 a turn, up to x3) and Net (x3 on Water and Grass), 3 for 150; Luxury (x1,
+  +10 PokéCoins on a catch), 3 for 100. Master Ball (1500): a sure catch, one throw a UTC ISO week (`ballWeek()`,
+  `masterWeek`).
+- Until 2026-10-02 Dusk / Quick / Timer / Net / Luxury were one-time unlocks (300 / 250, thrown freely, in
+  `save.balls.owned`); the user found 300 too much. `migrateBalls()` (from `load()` in `js/storage.js`) turns an owned
+  one into `UNLOCK_REFUND` (10) throws of it, and `owned` keeps only the Master Ball. Pinned by `tests/catch.test.mjs`.
+
+## The prep window (2026-10-02)
+
+The title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`), not the run (the user's ask: "like setting
+your loadout"). It holds today's run (the starter, the 3 areas with each page's caught count, and whether this is the
+first try or a replay), buttons to the Safari Pokédex (on the day's first area) and the Leaderboard, the rules in short
+lines (`RULES`), your Poké Balls (a tile each with how many you hold, Safari ∞, the Master Ball's "next week" once
+thrown) and a 🎰 Game Corner button, then Back / Start (sticky at the bottom, so Start stays in reach on a phone). Start
+keeps the "your saved run will be lost" confirm (`onStart` in `js/main.js`; No reopens the window). The Game Corner is
+non-modal, so it would sit under this modal window: the button closes it, opens the shop on its Poké Balls row
+(`toggleShop('balls')`) and reopens it, refreshed, when the shop closes. The Safari Pokédex and the Leaderboard are
+modal and simply stack on top.
 
 ## The fair first try
 
@@ -99,7 +116,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 
 ## Completion rewards (2026-10-02, the user's design)
 
-- **A page** (an area with every Pokémon on it caught, `safariPageDone()`): `SAFARI_AREA_COINS` (300, Coin Finder applies)
+- **A page** (an area with every Pokémon on it caught, `safariPageDone()`): `SAFARI_AREA_COINS` (1000 since 2026-10-02, was 300: the user found it too small; Coin Finder applies)
   once, and that area's rare spawns `RARE_BOOST` (x2) as often when it comes up, on replays only: `rareOdds(area, dex,
   fairTry())` in `startBiome()` feeds `markRares()`. `creditSafari()` in `js/run.js` pays it after every won Safari fight
   (`safariNews(dex)` lists what's newly done), before `checkAchievements()`, with reward-box lines. Paid on any try: the
@@ -172,8 +189,9 @@ phase 1 run.
   "Your try" line with your own entry. A day's entries are one `where('day', '==', day)` query (up to 1000, no index
   needed), sorted on the device and cached a minute.
 - **The window** (`#board-dialog`, `.board-*` in `css/screens.css`): Today / Yesterday tabs, the day's starter and areas,
-  then the three boards. Opens from the Safari Pokédex's 🏆 Leaderboard button (`#safari-dex-board`) and a Safari run's
-  result window (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
+  then the three boards. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open), the prep
+  window, the Safari Pokédex's 🏆 Leaderboard button (`#safari-dex-board`) and a Safari run's result window
+  (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
   No config / Firebase unreachable: "can't be reached right now", the game unaffected. Every Firebase call is caught.
 - **Rules**: `firestore.rules` (the cloud save's `saves/<uid>` rule plus `safariBoard`): anyone reads; a signed-in player
   creates only their own `<day>_<uid>`, day within ±1 of the server's date, every field typed and bounded, `won` only with
