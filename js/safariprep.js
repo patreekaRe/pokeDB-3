@@ -6,8 +6,9 @@
    ============================================================ */
 
 import { safariDaily, SAFARI_DEX_PAGES, SAFARI_AREA_COINS, RARE_BOOST, safariProgress } from './data/safari.js';
-import { BALLS, RARE, ballWeek } from './data/balls.js';
-import { spriteUrl } from './data/starters.js';
+import { BALLS, CATCH_HP, RARE, ballWeek } from './data/balls.js';
+import { CARDS_BY_ID } from './data/cards.js';
+import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
 import { openSafariDex } from './safaridex.js';
 import { openLeaderboard } from './leaderboard.js';
@@ -18,15 +19,16 @@ import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
 let actions = {};
 let backFromShop = false;   // the Game Corner is non-modal, so this window steps aside for it and comes back after
 
+const ROCK_HIT = CARDS_BY_ID.rock.effects.damage;
 const RULES = [
   ['🔄', 'One run a day, the same for everyone.'],
-  ['🔴', 'Red HP? Throw a ball. It costs your turn.'],
-  ['🎯', 'Debuffs and Bait raise the odds. Rock may scare it off.'],
+  ['🔴', `Once a wild Pokémon's HP bar turns red (below ${CATCH_HP * 100}%), throw a ball. It takes your turn.`],
+  ['🎯', 'Debuffs and Bait raise the odds.'],
+  ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, so its HP drops fast, but it may run off.`],
   ['💨', `Rare spawns flee after ${RARE.turns} turns.`],
-  ['🃏', 'A catch: its Pokédex entry and its card.'],
+  ['🃏', 'Each Pokémon you catch offers its own signature card for your deck.'],
   ['🏆', 'First try: no perks, and it goes on the leaderboard.'],
   ['💰', `Catch a whole area: ${SAFARI_AREA_COINS} coins, x${RARE_BOOST} rare spawns.`],
-  ['👑', 'Catch them all: Rayquaza joins you.'],
 ];
 
 export function initSafariPrep(handlers) {
@@ -76,7 +78,10 @@ function render() {
     el('span', `sp-try${first ? ' first' : ''}`, first ? '🏆 First try: it counts!' : `Replay · try ${save.safari.tries + 1}`));
   $('sp-today').replaceChildren(mon, info);
 
-  $('sp-rules').replaceChildren(...RULES.map(([icon, text]) => {
+  // the full Safari Pokédex's prize stays unnamed until it's won
+  const prize = save.unlocked.includes('rayquaza') ? `Catch them all: ${STARTERS_BY_ID.rayquaza.line[0].name} joins you.`
+    : 'Complete the Safari Pokédex: a new Legendary awaits you.';
+  $('sp-rules').replaceChildren(...[...RULES, ['👑', prize]].map(([icon, text]) => {
     const li = el('li');
     li.append(el('span', 'sp-rule-icon', icon), el('span', '', text));
     return li;
@@ -87,7 +92,7 @@ function render() {
     const left = ball.free ? '∞' : ball.stock ? save.balls[ball.id] || 0
       : !save.balls.owned.includes(ball.id) ? 0 : save.balls.masterWeek === week ? 0 : 1;
     const slot = el('div', `sp-ball${left === 0 ? ' none' : ''}`);
-    slot.append(itemSprite(ball, 'sp-ball-icon'), el('b', 'sp-ball-left', typeof left === 'number' ? `×${left}` : left));
+    slot.append(itemSprite(ball, 'sp-ball-icon'), el('b', `sp-ball-left${left === '∞' ? ' inf' : ''}`, typeof left === 'number' ? `×${left}` : left));
     slot.title = `${ball.name}: ${ball.text}`;
     slot.setAttribute('aria-label', `${ball.name}, ${left === '∞' ? 'always' : left} in your bag`);
     return slot;

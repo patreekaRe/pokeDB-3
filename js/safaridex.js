@@ -14,7 +14,6 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { TYPES, CARDS_BY_ID, SIGNATURE_FOR } from './data/cards.js';
 import { SAFARI_DEX_PAGES, SAFARI_NUMBER, SAFARI_ROSTER, SAFARI_AREA_COINS, RARE_BOOST, safariHomes, safariProgress } from './data/safari.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { getSave } from './storage.js';
 import { $, el, openDialog, makeCard } from './ui.js';
 
@@ -67,7 +66,7 @@ function areaBox(p, rec) {
   return box;
 }
 
-/** The whole Safari Pokédex's prize, on every page: Rayquaza, a silhouette until earned. */
+/** The whole Safari Pokédex's prize, on every page: Rayquaza, a silhouette and never named until it's unlocked. */
 function prizeBox(rec) {
   const ray = STARTERS_BY_ID.rayquaza;
   const won = !!rec.dex.complete;
@@ -77,8 +76,9 @@ function prizeBox(rec) {
   img.src = spriteUrl(ray, 'front', 0);
   img.alt = '';
   const text = el('div', 'dex-perk-text');
-  text.append(el('strong', '', `${won ? '✅ ' : '🔒 '}Every page: ${won ? ray.line[0].name : '???'}`),
-    el('span', '', won ? `${ray.line[0].name} is yours: a Grass legendary.` : `${ACHIEVEMENT_FOR.rayquaza.text}. A legendary waits.`));
+  const named = getSave().unlocked.includes('rayquaza');
+  text.append(el('strong', '', `${won ? '✅ ' : '🔒 '}Every page: ${named ? ray.line[0].name : '???'}`),
+    el('span', '', named ? `${ray.line[0].name} is yours: a Grass legendary.` : 'Complete the Safari Pokédex: a new Legendary awaits you.'));
   box.append(img, text, el('b', 'dex-perk-count', `${all.caught}/${all.total}`));
   return box;
 }

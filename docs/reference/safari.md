@@ -84,7 +84,7 @@ pixel heads, pixel pill buttons (`.pxb`), bigger text (rules 0.82rem, 0.78 on ph
 starter, the 3 areas with each page's caught count, first try or replay), 📕 Pokédex (on the day's first area) and 🏆
 Leaderboard buttons, the rules in eight short lines (`RULES`, each with a pixel icon that `js/icons.js` has: an emoji
 without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row like an item bar
-(a slot each, sprite and ×count, greyed at 0; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
+(a slot each, sprite and ×count, greyed at 0, the Safari Ball's ∞ big at the sprite's bottom centre; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
 end for the Game Corner, and Back / Start. Start keeps the "your saved run will be lost" confirm (`onStart` in
 `js/main.js`; No reopens the window). The Game Corner is non-modal, so it would sit under this modal window: Buy closes
 it, opens the shop on its Poké Balls row (`toggleShop('balls')`) and reopens it, refreshed, when the shop closes. The
@@ -128,7 +128,8 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - Earned stays earned: `save.safariDex.done` (area ids) and `complete` are saved, so a later batch adding Pokémon to a page
   takes nothing back (the tab keeps its ✦, the box says Earned).
 - **On screen**: each page's box shows its reward (🔒 until earned, gold once earned, ✦ on the count), a Rayquaza box on
-  every page (a silhouette until won), a gold ✦ on finished tabs (`.safari-tab.complete .safari-tab-star`), and a gold ✦
+  every page (a silhouette until won; the Safari UI never names Rayquaza until it's unlocked, the user's call: "Complete the
+  Safari Pokédex: a new Legendary awaits you." there and in the prep window's last rule), a gold ✦ on finished tabs (`.safari-tab.complete .safari-tab-star`), and a gold ✦
   badge on the title's Safari Zone gem once complete (`.gem-badge`, `safariGem()` in `js/title.js`).
 - **Rayquaza** (`safariPrize: true`) is left out of `safariStarters()`: listing it would have changed every day's dealt
   starter. Pinned by `tests/safarireward.test.mjs` (page / whole-dex news once, the boost, Rayquaza's assets).
@@ -181,8 +182,11 @@ phase 1 run.
   The result window gets a 📮 line saying which.
 - **An entry** is `safariBoard/<day>_<uid>` in the cloud save's Firestore: `{ day, uid, name, starter, won, area, bosses,
   turns, time, caught, at }` (`at` the server's time; `time` is wall-clock seconds from `run.tally.startedAt`). The name
-  is the sign-in's display name, trimmed to 16 (`cleanName()`); with none (email sign-in) the Leaderboard asks for one
-  (`pokedb.safari.name`) before posting. It can't be changed after.
+  is always a nickname the player picked (`pokedb.safari.name`, `nameFor()`), never the sign-in's display name, which
+  would put real names on a public board (the user's call, 2026-10-02). Signed in with no nickname yet, the Leaderboard
+  opens with a gold-rimmed name box at the top (`nameRow()`, prefilled with the Google first name only as a suggestion),
+  and posting waits (`post()` returns 'name') until one is saved. Trimmed to 16 (`cleanName()`); it can't be changed
+  after posting.
 - **Pure part**: `js/data/leaderboard.js` (`runResult()`, `buildEntry()`, `checkEntry()` mirroring the rules,
   `rankBoards()`, `formatTime()`), pinned by `tests/leaderboard.test.mjs`, which also checks `firestore.rules` keeps the
   same bounds (`LIMITS`, `NAME_MAX`, the keys).

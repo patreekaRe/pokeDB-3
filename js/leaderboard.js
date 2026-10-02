@@ -43,7 +43,10 @@ function pending() {
   return p;
 }
 
-const nameFor = (user) => cleanName(user?.displayName || '') || cleanName(store.get(NAME_KEY) || '');
+/** The board only ever shows a nickname the player picked, never the sign-in's real name. */
+const nameFor = () => cleanName(store.get(NAME_KEY) || '');
+/** A suggestion for the name box: the sign-in's first name, only ever posted if the player keeps it. */
+const suggestName = (user) => cleanName((user?.displayName || '').split(/\s+/)[0] || '');
 
 function say(text) {
   if (resultLine) resultLine.textContent = `📮 ${text}`;
@@ -58,7 +61,7 @@ async function post() {
     let s;
     try { s = await cloudSession(); } catch (err) { return 'offline'; }
     if (!s.user) return 'signin';
-    const name = nameFor(s.user);
+    const name = nameFor();
     if (!name) return 'name';
     const entry = buildEntry(result, s.user.uid, name);
     if (checkEntry(entry, safariDay())) { store.set(POST_KEY, null); return 'stale'; }
@@ -146,17 +149,18 @@ function signInRow(text) {
   return box;
 }
 
-function nameRow(user) {
+function nameRow(user, waiting) {
   const form = el('form', 'board-name-form');
   const input = el('input', 'board-name-input');
   input.maxLength = NAME_MAX;
   input.placeholder = 'Your name';
   input.required = true;
   input.autocomplete = 'nickname';
-  input.value = cleanName(store.get(NAME_KEY) || '');
-  const btn = el('button', 'btn primary', 'Post');
+  input.value = nameFor() || suggestName(user);
+  const btn = el('button', 'btn primary', waiting ? 'Post' : 'Save');
   btn.type = 'submit';
-  form.append(el('p', 'hint', `Pick a name for the board (up to ${NAME_MAX} letters). It can't be changed once posted.`), input, btn);
+  form.append(el('strong', 'board-name-head', 'Pick your leaderboard name'),
+    el('p', 'hint', `A nickname others will see (up to ${NAME_MAX} letters). Your real name is never posted. It can't be changed once posted.`), input, btn);
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = cleanName(input.value);
@@ -181,10 +185,10 @@ async function render() {
   const top = [];
   const waiting = pending();
   if (!s.user) top.push(signInRow(waiting ? 'Your first try is waiting on this device: sign in to post it.' : 'Sign in to post your first try of the day.'));
+  else if (!nameFor()) top.push(nameRow(s.user, waiting));   // signed in with no nickname yet: ask first, at the top
   else if (waiting) {
     const state = await post();
-    if (state === 'name') top.push(nameRow(s.user));
-    else if (POST_TEXT[state] && state !== 'none') top.push(el('p', 'hint board-note', POST_TEXT[state]));
+    if (POST_TEXT[state] && state !== 'none') top.push(el('p', 'hint board-note', POST_TEXT[state]));
   }
   let boards, mine;
   try {

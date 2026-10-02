@@ -3738,6 +3738,8 @@ body.scene-peek #backdrop { display: none; }
   position: absolute; right: 1px; bottom: 0; font-size: 0.62rem; font-weight: 400; color: #fff;
   text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
 }
+/* the Safari Ball never runs out: a big ∞ under its sprite, overlapping it a little */
+.safari-prep-dialog .sp-ball-left.inf { right: auto; left: 50%; bottom: -3px; translate: -50% 0; font-size: 1.35rem; line-height: 1; }
 /* the Game Corner: a purple slot at the bar's end */
 .sp-corner {
   flex: none; width: 54px; align-content: center; gap: 2px; padding: 0; border: 0; cursor: pointer;
@@ -3780,5 +3782,9 @@ body.scene-peek #backdrop { display: none; }
 .board-value { white-space: nowrap; }
 .board-gap { text-align: center; color: var(--muted); font-size: 0.7rem; }
 .board-signin, .board-name-form { display: grid; justify-items: center; gap: 6px; text-align: center; }
+/* signed in with no nickname yet: the name box leads the window, a gold-rimmed box so it can't be missed */
+.board-name-form { padding: 10px; border: 3px solid #d8a820; border-radius: var(--round-sm); background: #fbf3d0; box-shadow: 2px 2px 0 var(--win-shadow); }
+.board-name-head { font-size: 0.85rem; color: #6a4000; }
+.board-name-form .hint { margin: 0; font-size: 0.7rem; }
 .board-name-input { font: inherit; font-size: 0.8rem; padding: 6px 8px; width: min(220px, 100%); border: 3px solid var(--win-edge); border-radius: var(--round-sm); background: #fff; color: var(--win-ink); }
 .board-open { display: block; margin: 0 auto 8px; }
