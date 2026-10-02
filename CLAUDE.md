@@ -12,7 +12,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   It saves the user's data and has Node, Python and Chromium. Attach both `pokeDB-3` and `pokeDB-sim`.
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
-  Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?time=dawn`, `day`, `dusk` or
+  Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?time=dawn`, `day`, `dusk` or
   `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`) shows just that room's painted scene, without starting a run.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
