@@ -559,13 +559,15 @@ const PLACE_ART = {
     },
   },
 
-  /* the Move Tutor's dojo: plaster between timber posts, a chalkboard over Alder's straw mat (pay ₽), a sandbag (pay HP) */
+  /* the Move Tutor's dojo: plaster between timber posts, his arena's Dragonite medallion over Alder's straw mat, a
+     chalkboard beside it (pay ₽), a sandbag (pay HP) */
   tutor: {
     backdrop: 'dojo', floor: 'planks', prop: 'tutor', light: null, horizon: 0.6, sky: ['#f4ead0'],
     wall: ['#f4ead0', '#e4d6b4', '#c8b490', '#fff8e4'],
     trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
     plank: ['#d8a868', '#c49058', '#a87444', '#6a4424'],
     board: ['#2e6a48', '#285c3e'], chalk: '#f0f8f0',
+    gold: ['#fff4b8', '#f8c830', '#c88a18', '#7a4c10', '#2e1806'], medal: ['#2a0a10', '#1a060a'], eye: ['#fff8f0', '#ff3828'],
     coin: ['#fff8b0', '#f8c830', '#b07818'],
     tatami: ['#d8d890', '#b8b870', '#3a5a30'],
     bag: ['#f0d8a8', '#d8b880', '#a88050', '#3a2412'], rope: ['#e8d098', '#a88850'],
@@ -4203,14 +4205,18 @@ function roomWindow(cx, top, hw, hh) {
   for (let x = cx - hw - 2; x <= cx + hw + 2; x++) { solid(x, top - 2, wLine); solid(x, top - 1, wLit); solid(x, top + (hh >> 1), wood); solid(x, top + hh + 1, wLit); solid(x, top + hh + 2, wLine); }
 }
 
-/* ----- the Move Tutor's dojo: Alder sits on a straw mat before a chalkboard of moves (pay ₽), and a sandbag hangs
-   from a beam (pay HP) ----- */
+/* ----- the Move Tutor's dojo: Alder sits on a straw mat under his arena's Dragonite medallion, beside a chalkboard of
+   moves (pay ₽), and a sandbag hangs from a beam (pay HP) ----- */
 
 function tutorScene() {
   const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
-  const board = { x0: cx - u(0.46), x1: cx + u(0.1), y0: ceil + 3, y1: Math.min(railRow() - 3, ceil + 3 + u(0.32)) };
+  const seat = { x: cx - u(0.1), y: foot - 1 }, top = ceil + 3, low = Math.min(railRow() - 3, ceil + 3 + u(0.32));
+  // his arena's Dragonite medallion hangs on the wall behind him, the chalkboard beside it
+  const size = Math.min(u(0.15), (low - top) / 2 + 2), { R } = medallionFit(size), my = Math.round((top + low) / 2);
+  for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) if (Math.hypot(x + 0.5, y + 0.5) <= R + 0.5) tint(seat.x + x + 1, my + y + 2, 0.82);
+  medallion(seat.x, my, size);
+  const x1 = seat.x - R - 5, board = { x0: Math.max(3, x1 - u(0.5)), x1, y0: top, y1: low };
   chalkboard(board);
-  const seat = { x: Math.round((board.x0 + board.x1) / 2), y: foot - 1 };
   mat(seat.x, seat.y, 22);
   const bag = { x: cx + u(0.32), top: ceil, w: Math.max(5, u(0.09)), h: u(0.38) };
   bag.len = foot - u(0.05) - bag.h - bag.top;
@@ -4621,7 +4627,7 @@ function kombatLayout() {
 }
 
 function kombatBackdrop() {
-  const { R, cx, cy, dais } = kombatLayout(), half = Math.round(R * 1.3), roof = Math.max(4, Math.round(R * 0.4));
+  const { R: room, cx, cy, dais } = kombatLayout(), { R } = medallionFit(room), half = Math.round(R * 1.3), roof = Math.max(4, Math.round(R * 0.4));
   const towerTop = Math.max(1, cy - R - roof - 4), wallTop = Math.max(towerTop + roof + 2, Math.round(horizon * 0.3));
   bands(0, wallTop, S.sky, 1, true);
   stars();
@@ -4633,7 +4639,7 @@ function kombatBackdrop() {
     lacquerPillar(x + side * bay, wallTop - 4);
   }
   gateTower(cx, towerTop, roof, half);
-  medallion(cx, cy, R);
+  const { eye } = medallion(cx, cy, room);
   life.braziers = [];
   for (const side of [-1, 1]) {
     const x = cx + side * (half + 6), py = Math.round(cy - R * 0.1);
@@ -4643,8 +4649,7 @@ function kombatBackdrop() {
     life.braziers.push({ x, y: py - 4 });
   }
   if (dais) templeSteps(dais);
-  const Ri = R * 0.78, n = DRAGONITE.length, ey = DRAGONITE.findIndex(row => row.includes('e')), ex = DRAGONITE[ey].indexOf('e');
-  life.kombat = { eye: { x: cx + Math.round(((ex + 0.5) * 2 / n - 1) * Ri), y: cy + Math.round(((ey + 0.5) * 2 / n - 1) * Ri) } };
+  life.kombat = { eye };
 }
 
 /** Kenmatta's dais: a stone platform under his pad and steps down to the floor, widening, a red carpet down the middle. */
@@ -4725,71 +4730,99 @@ function kombatBanner(cx, top, len) {
 }
 
 /* The medallion's Dragonite, roaring to the left like the MK dragon with its wing raised: antennae, open jaws, a reaching
-   claw, the striped belly, its tail curling round the ring. # body, w wing, = belly, e the eye (drawKombat lights it). */
+   claw, the striped belly, its tail hooking up the ring. # body, w wing, = belly, e the eye (drawKombat lights it). Two
+   sizes, each drawn at a whole number of pixels a cell (medallionFit), since squeezing one grid to fit blurred it. */
 const DRAGONITE = [
   '................................',
-  '..............##................',
-  '.............#..##..............',
-  '............#.....#.............',
-  '.......#####.#..................',
-  '.....#########.#................',
-  '...#############...............w',
-  '..###e##########.............ww.',
-  '..##############...........www..',
-  '..##############..........wwww..',
-  '...#....########.........wwwww..',
-  '....#############.......wwwwww..',
-  '.....###########.......wwwwww...',
-  '.....######=######....wwwwww....',
-  '.......##=========####wwwww.....',
-  '.......#==========######ww......',
-  '..#######=========#######.......',
-  '.##....#==========########......',
-  '..#....#==========#########.....',
-  '.......#==========#########.....',
-  '.......#==========##########....',
-  '........#=========##########....',
-  '........#=========###########...',
-  '.........#=======############...',
-  '..........#=====##############..',
-  '...........###################..',
-  '..........######.....#####.####.',
-  '.........######.......####..###.',
-  '.......#######..........#..####.',
-  '......######...............###..',
-  '...........................#....',
+  '................................',
+  '................................',
+  '..........##.##.................',
+  '.........#..#...................',
+  '........#..#.............w......',
+  '.......######...........ww......',
+  '.....#########.........wwww.....',
+  '....##e########.......wwwww.....',
+  '..#############......wwwwwww....',
+  '..#############.....wwwwwwww....',
+  '.......########....wwwwwwww.....',
+  '...#############..wwwwwwww......',
+  '.....############.wwwwww........',
+  '.......##=====####wwww..........',
+  '..#.#.##=======#####............',
+  '..######========#####...........',
+  '......#=========######..........',
+  '......#=========#######.........',
+  '......#=========#######.........',
+  '......#=========########........',
+  '......#=========########........',
+  '.......#========#########....#..',
+  '.......#=======###########...#..',
+  '........#======############.##..',
+  '.........#====################..',
+  '.........#####...#####.######...',
+  '........######...######.#####...',
+  '......########..#######.........',
+  '................................',
+  '................................',
   '................................',
 ];
-const DRAGONITE_KIND = { '#': 1, e: 1, w: 2, '=': 3 };
+const DRAGONITE_SMALL = [
+  '..................',
+  '......#..#........',
+  '.....#..#.....w...',
+  '....#####....ww...',
+  '...##e####..wwww..',
+  '..########.wwwww..',
+  '.....#####wwwww...',
+  '..#########ww.....',
+  '.#.###==####......',
+  '.####====####.....',
+  '....#====####.....',
+  '....#====#####....',
+  '....#====######...',
+  '.....#==########..',
+  '.....####.###.##..',
+  '....#####.####.#..',
+  '..............##..',
+  '..................',
+];
+const DRAGONITE_KIND = { '#': 1, e: 4, w: 2, '=': 3 };
 
-/** The Dragonite at u, v in the unit circle: 0 none, 1 body, 2 wing, 3 belly. */
-function dragoniteAt(u, v) {
-  const n = DRAGONITE.length, x = Math.floor((u + 1) * n / 2), y = Math.floor((v + 1) * n / 2);
-  return DRAGONITE_KIND[DRAGONITE[y]?.[x]] || 0;
+/** The medallion that fits radius R: the bigger Dragonite at the most whole pixels a cell, its field (Ri) exactly that
+    wide and the ring (R) round it; the small one, a pixel a cell, when nothing else fits. */
+function medallionFit(R) {
+  const fits = [DRAGONITE, DRAGONITE_SMALL].map(grid => ({ grid, k: Math.floor(R * 0.78 * 2 / grid.length) }));
+  const { grid, k } = fits.reduce((a, b) => b.k && b.grid.length * b.k > a.grid.length * a.k ? b : a, { grid: DRAGONITE_SMALL, k: 1 });
+  const Ri = grid.length * k / 2;
+  return { grid, k, Ri, R: Math.max(Ri + 3, Math.round(Ri / 0.78)) };
 }
 
-/** The gold medallion: a bevelled ring round a dark field, the Dragonite raised on it in relief, lit from the top left. */
-function medallion(cx, cy, R) {
-  const [lit, gold, mid, dark, deep] = S.gold, [field, fieldDark] = S.medal, Ri = R * 0.78;
-  const kind = (x, y) => (x * x + y * y > Ri * Ri) ? 0 : dragoniteAt(x / Ri, y / Ri);
+/** The gold medallion: a bevelled ring round a dark field, the Dragonite raised on it in relief, lit from the top left.
+    Returns its fitted radius and the eye's pixel. */
+function medallion(cx, cy, size) {
+  const [lit, gold, mid, dark, deep] = S.gold, [field, fieldDark] = S.medal, { grid, k, Ri, R } = medallionFit(size);
+  const kind = (x, y) => DRAGONITE_KIND[grid[Math.floor((y + Ri) / k)]?.[Math.floor((x + Ri) / k)]] || 0;
   for (let y = -R - 1; y <= R + 1; y++) for (let x = -R - 1; x <= R + 1; x++) {
-    const d = Math.sqrt(x * x + y * y);
+    const d = Math.hypot(x + 0.5, y + 0.5);
     if (d > R + 0.5) continue;
     let c;
-    if (d > Ri + 0.5) {
+    if (d > Ri) {
       const a = (-x - y) / Math.max(1, d), outerHalf = d > (R + Ri) / 2;
-      c = d > R - 0.5 || d < Ri + 1.3 ? deep : (outerHalf ? a : -a) > 0.35 ? lit : (outerHalf ? a : -a) < -0.35 ? mid : gold;
+      c = d > R - 0.5 || d < Ri + 1 ? deep : (outerHalf ? a : -a) > 0.35 ? lit : (outerHalf ? a : -a) < -0.35 ? mid : gold;
     } else {
-      const k = kind(x, y);
-      if (!k) c = kind(x - 1, y - 1) ? deep : dither(x, y) < 5 ? fieldDark : field;
+      const kd = kind(x, y);
+      if (!kd) c = kind(x - 1, y - 1) ? deep : dither(x, y) < 5 ? fieldDark : field;
+      else if (kd === 4) c = S.eye ? S.eye[1] : deep;
       else if (!kind(x - 1, y - 1)) c = lit;
       else if (!kind(x + 1, y + 1)) c = dark;
-      else c = k === 2 ? mid : k === 3 ? ((y + R * 4) % 3 === 0 ? mid : lit) : gold;
+      else c = kd === 2 ? mid : kd === 3 ? ((y + R * 4) % 3 === 0 ? mid : lit) : gold;
     }
     solid(cx + x, cy + y, c);
   }
-  const studR = Math.round((R + Ri) / 2);
-  for (let a = 0; a < 8; a++) solid(cx + Math.round(Math.cos(a * Math.PI / 4 + Math.PI / 8) * studR), cy + Math.round(Math.sin(a * Math.PI / 4 + Math.PI / 8) * studR), lit);
+  const studR = (R + Ri) / 2;
+  for (let a = 0; a < 8; a++) solid(cx + Math.round(Math.cos(a * Math.PI / 4 + Math.PI / 8) * studR - 0.5), cy + Math.round(Math.sin(a * Math.PI / 4 + Math.PI / 8) * studR - 0.5), lit);
+  const ey = grid.findIndex(row => row.includes('e')), ex = grid[ey].indexOf('e');
+  return { R, eye: { x: cx - Ri + ex * k + (k >> 1), y: cy - Ri + ey * k + (k >> 1) } };
 }
 
 /** Big stone flags running away from you, darkest under the wall. */

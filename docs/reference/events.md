@@ -71,7 +71,7 @@ Leave), besides the Shrine: the **Hot Spring** (`PLACE_ART.spring`, `springLayou
 and a little one fed by a bamboo spout (dip), a bamboo fence with the ♨ board, stone lanterns; per biome a sunny garden,
 misty cedars, or a milky pool under volcanic rock with steam vents), and four rooms laid out by `roomLayout()` (its
 `ceil` is the wall's top under the title and HP window, so wall props hang below it; `roomWall()`, `plankFloor()`,
-`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (Alder sitting cross-legged on a straw mat before a chalkboard, the Pay sign on him: pay ₽,
+`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (Alder sitting cross-legged on a straw mat under his arena's Dragonite medallion, a chalkboard beside it, the Pay sign on him: pay ₽,
 act `lesson`; a sandbag: pay HP, act `train`), the **Move Deleter**'s study (bookcases, a lectern's open book: forget one,
 act `erase`; a hypnotist's pendulum: forget two, act `hypno`; a dozing Slowpoke figure), the **Day Care** (the house's
 clapboard front with a DAY CARE board in the 3x5 `pixelText()` font, a picket fence, an Egg in a straw nest, act

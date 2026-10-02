@@ -570,6 +570,8 @@ Anytime, as a break from number work:
   has no events. **For the user to check:** how hard he is, and whether the relic is too strong for an optional fight.
   His own stage (2026-10-01): a Mortal Kombat courtyard, Ken on temple steps, a gold Dragonite medallion for the MK dragon
   (`PLACE_ART.kombat`; see `docs/reference/events.md`).
+  The medallion was redrawn (2026-10-01) as two hand-drawn grids, 32 and 18 cells, each drawn at whole pixels a cell
+  (`medallionFit()`), and also hangs on the dojo wall behind Ken, the chalkboard moved beside it.
 - ~~**The last 4 event scenes**~~ (done 2026-09-27): Move Tutor (a dojo: chalkboard and desk for ₽, a sandbag for HP),
   Move Deleter (a candle-lit study: a lectern's open book, a hypnotist's pendulum, a dozing Slowpoke), Day Care (the
   couple's house front, a picket fence, an Egg in a straw nest, Miltank and Marill) and Fan Club (portraits, pennants, a
