@@ -19,9 +19,9 @@ export function preloadBoss(spriteId) {
 }
 
 /** Resolves once the screen is black, with a function that fades it back in; no motion under reduced motion. */
-export async function battleWipe(kind) {
+export async function battleWipe(kind, track = TRACK[kind] ?? 'wild') {   // Kenmatta brings his own theme, so the boss song never starts
   if (still()) return () => {};
-  playMusic(TRACK[kind] ?? 'wild', { restart: true, cut: true });
+  playMusic(track, { restart: true, cut: true });
   const wipe = el('div', `battle-wipe wipe-${kind}`);
   (kind === 'boss' ? shatter : kind === 'elite' ? iris : bars)(wipe);
   document.body.append(wipe);

@@ -695,7 +695,7 @@ async function fight(node) {
     preloadWinScene(run.starter, run.starter.id !== 'mewtwo' && run.level === MAX_LEVEL);
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
-  const enter = await battleWipe(ken ? 'boss' : node.type);
+  const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   if (!ken) dexSeen(node.enemyId);
   const deferIntro = node.type === 'boss' || ken;
