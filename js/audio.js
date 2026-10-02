@@ -43,6 +43,7 @@ const TRACKS = {
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
+  kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
 // to the intro (the user found it broke the immersion). These loop inside the file instead, seamlessly: [loopStart,
@@ -60,9 +61,10 @@ const LOOP_POINTS = {
   map3:  [1.02, 39.2, 0.3],        // 38.18 s, the whole song
   victory: [4.20957, 15.46, 0.3],   // the fanfare, then an 11.25 s loop the file starts again before it fades (chroma 0.985 over 6 s)
   'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
+  kombat: [30, 115.97016, 0.3],   // an 85.97 s repeat (0.81 sample correlation at the join, so cross-faded); the file fades out at 194 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
-const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory' };
+const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss' };
 const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
@@ -102,6 +104,7 @@ const SOUNDS = {
   'no-pp':      { url: 'assets/audio/sfx/no-pp.mp3', gain: 0.5 },   // a card is tapped without enough PP left (the greyed-out ones): a dense buzz, so at half gain
   'pc-on':      { url: 'assets/audio/sfx/pc-on.mp3' },        // the games' PC booting up: only the title's Sign in PC (the user's call)
   'pc-off':     { url: 'assets/audio/sfx/pc-off.mp3' },       // ...and logging off as that window closes, in place of cancel
+  fortify:      { url: 'assets/audio/sfx/fortify.mp3', length: 2.6, gain: 0.8 },   // Kenmatta's FORTIFY YOUR MIND: Wong's shout, the clip's first 2.6 s (the rest is the scene going on)
   'fw-launch':  { synth: fireworkLaunch },   // the Hall of Fame's fireworks (celebrate.js): a rocket whistles up...
   'fw-pop':     { synth: ac => fireworkPop(ac, 0.45, 90, 0.16) },   // ...and bursts
   'fw-boom':    { synth: ac => fireworkPop(ac, 1.1, 55, 0.22) },    // ...the finale's biggest one
@@ -547,7 +550,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, 'trainer-victory': 0.35 };   // trainer-victory comes mastered ~11 dB louder than victory
+const TRACK_GAIN = { boss: 1.15, 'trainer-victory': 0.35, kombat: 0.25 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);

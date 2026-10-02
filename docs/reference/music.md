@@ -4,7 +4,8 @@
 `title` on the menus (triggered in `showScreen()` in
 `js/ui.js`), `map1`–`map3` on each biome's map (`showMap()` in `js/run.js`),
 `wild` / `elite` / `boss` chosen by `encounter.kind` in
-`startBattle()`, `victory` from the moment a wild Pokémon faints (`finish()` in
+`startBattle()` (an enemy's own `music` overrides it: Kenmatta's `kombat`, the user's 8-bit Mortal Kombat theme, 2026-10-01,
+at `TRACK_GAIN` 0.25 since it's ~13 dB louder than `boss`, looped over its 85.97 s repeat with a crossfade, `boss` while missing), `victory` from the moment a wild Pokémon faints (`finish()` in
 `js/battle.js`; after an Alpha, Team Rocket's included, or a boss it's `trainer-victory` instead, Red/Blue's trainer victory, the
 user's file and pick 2026-09-29, `winTrack()`, looped with a crossfade like the maps and at `TRACK_GAIN` 0.35 since it's
 mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; after a Level 5

@@ -559,17 +559,18 @@ const PLACE_ART = {
     },
   },
 
-  /* the Move Tutor's dojo: plaster between timber posts, his arena's Dragonite medallion over Alder's straw mat, a
-     chalkboard beside it (pay ₽), a sandbag (pay HP) */
+  /* the Move Tutor's dojo: shoji screens between timber posts over a tatami floor, his arena's Dragonite medallion big in
+     a dark wood alcove under a shimenawa rope, Alder on a cushion below it, a hanging scroll (pay ₽), a sandbag (pay HP) */
   tutor: {
-    backdrop: 'dojo', floor: 'planks', prop: 'tutor', light: null, horizon: 0.6, sky: ['#f4ead0'],
-    wall: ['#f4ead0', '#e4d6b4', '#c8b490', '#fff8e4'],
+    backdrop: 'dojo', floor: 'tatami', prop: 'tutor', light: null, horizon: 0.6, sky: ['#f8f2e0'],
+    wall: ['#f8f2e0', '#ece2c8', '#c8b490', '#fffaec'],
     trim: ['#c08850', '#8a5a30', '#5e3a1c', '#2e1a0c'],
     plank: ['#d8a868', '#c49058', '#a87444', '#6a4424'],
-    board: ['#2e6a48', '#285c3e'], chalk: '#f0f8f0',
+    chalk: '#f0f8f0', paper: ['#f8f0d8', '#e0d4b4'], ink: '#2a1c18', silk: ['#4a5a7a', '#36425e'],
+    cushion: ['#d05048', '#a03038', '#5a1420'], shide: ['#ffffff', '#c8c8d0'],
     gold: ['#fff4b8', '#f8c830', '#c88a18', '#7a4c10', '#2e1806'], medal: ['#2a0a10', '#1a060a'], eye: ['#fff8f0', '#ff3828'],
     coin: ['#fff8b0', '#f8c830', '#b07818'],
-    tatami: ['#d8d890', '#b8b870', '#3a5a30'],
+    tatami: ['#d8d890', '#c4c47c', '#2e3a26', '#e6e6a8', '#a8a868'],
     bag: ['#f0d8a8', '#d8b880', '#a88050', '#3a2412'], rope: ['#e8d098', '#a88850'],
     view: ['#a0dcf8', '#d0f0f8', '#58a044', '#88c070'],
     life: ['tutor'],
@@ -1010,7 +1011,7 @@ function paintBase() {
   if (S.raw.backdrop === 'treasure') grottoWall();
   if (S.raw.backdrop === 'altar') shrineGrove();
   if (S.raw.backdrop === 'onsen') onsenWall();
-  if (S.raw.backdrop === 'dojo') roomWall({ posts: 26 });
+  if (S.raw.backdrop === 'dojo') roomWall({ posts: 28, shoji: true });
   if (S.raw.backdrop === 'study') roomWall({ stripes: 3 });
   if (S.raw.backdrop === 'fanclub') fanWall();
   if (S.raw.backdrop === 'daycare') daycareHouse();
@@ -1020,6 +1021,7 @@ function paintBase() {
   if (S.raw.floor === 'altar') shrineApproach();
   if (S.raw.floor === 'onsen') flagstones();
   if (S.raw.floor === 'planks') plankFloor();
+  if (S.raw.floor === 'tatami') tatamiFloor();
   if (S.raw.floor === 'carpet') carpet();
   if (S.raw.floor === 'yard') yardGrass();
   if (S.raw.floor === 'center') centerFloor();
@@ -4155,7 +4157,7 @@ const railRow = () => horizon - Math.max(6, Math.round(horizon * 0.2));
 
 /** A room's back wall down to the floor line: plaster (or striped paper) under a ceiling beam, timber posts where the
     room has them, and a wooden wainscot. Returns the rail's row. */
-function roomWall({ posts = 0, stripes = 0 } = {}) {
+function roomWall({ posts = 0, stripes = 0, shoji = false } = {}) {
   const [face, low, seam, shine] = S.wall, [wLit, wood, wDark, wLine] = S.trim, cx = W >> 1;
   const rail = railRow(), beam = Math.max(3, Math.round(horizon * 0.05));
   for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
@@ -4168,6 +4170,8 @@ function roomWall({ posts = 0, stripes = 0 } = {}) {
     } else {
       const shade = Math.pow(1 - (y - beam) / (rail - beam), 2) * 12;
       c = dither(x, y) < shade ? low : face;
+      // shoji: a light wood lattice over the paper, its bars lined up between the posts
+      if (shoji && ((x - cx + 700) % 7 === 0 || (y - beam) % 9 === 5)) c = wLit;
     }
     solid(x, y, c);
   }
@@ -4205,75 +4209,137 @@ function roomWindow(cx, top, hw, hh) {
   for (let x = cx - hw - 2; x <= cx + hw + 2; x++) { solid(x, top - 2, wLine); solid(x, top - 1, wLit); solid(x, top + (hh >> 1), wood); solid(x, top + hh + 1, wLit); solid(x, top + hh + 2, wLine); }
 }
 
-/* ----- the Move Tutor's dojo: Alder sits on a straw mat under his arena's Dragonite medallion, beside a chalkboard of
-   moves (pay ₽), and a sandbag hangs from a beam (pay HP) ----- */
+/* ----- the Move Tutor's dojo: his arena's Dragonite medallion hangs big in a dark wood alcove (tokonoma) under a
+   shimenawa rope, Alder meditates on a cushion below it, a hanging scroll beside it (pay ₽), and a sandbag hangs from a
+   beam (pay HP) ----- */
 
 function tutorScene() {
   const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
-  const seat = { x: cx - u(0.1), y: foot - 1 }, top = ceil + 3, low = Math.min(railRow() - 3, ceil + 3 + u(0.32));
-  // his arena's Dragonite medallion hangs on the wall behind him, the chalkboard beside it
-  const size = Math.min(u(0.15), (low - top) / 2 + 2), { R } = medallionFit(size), my = Math.round((top + low) / 2);
-  for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) if (Math.hypot(x + 0.5, y + 0.5) <= R + 0.5) tint(seat.x + x + 1, my + y + 2, 0.82);
+  const seat = { x: cx - u(0.1), y: foot - 1 }, top = ceil + 3;
+  // the medallion as big as the wall under the title allows, hanging just under the rope
+  const size = Math.min(u(0.32), (horizon - top - 2) / 2), { R } = medallionFit(size);
+  const my = Math.min(horizon - R - 2, top + 5 + R), ax0 = seat.x - R - 5, ax1 = seat.x + R + 5;
+  tokonoma(ax0, ax1);
+  for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) if (Math.hypot(x + 0.5, y + 0.5) <= R + 0.5) tint(seat.x + x + 1, my + y + 2, 0.7);
   medallion(seat.x, my, size);
-  const x1 = seat.x - R - 5, board = { x0: Math.max(3, x1 - u(0.5)), x1, y0: top, y1: low };
-  chalkboard(board);
-  mat(seat.x, seat.y, 22);
+  shimenawa(ax0, ax1, top);
+  const sw = Math.max(8, u(0.1)), scroll = { x0: Math.max(2, ax0 - 3 - sw), x1: ax0 - 3, y0: top + 3 };
+  scroll.y1 = Math.min(railRow() + 2, scroll.y0 + Math.max(sw * 3, u(0.45)));
+  hangingScroll(scroll);
+  cushion(seat.x, seat.y, 14);
   const bag = { x: cx + u(0.32), top: ceil, w: Math.max(5, u(0.09)), h: u(0.38) };
   bag.len = foot - u(0.05) - bag.h - bag.top;
   const [wLit, wood, wDark, wLine] = S.trim;   // the beam it hangs from, across the ceiling
   for (let x = bag.x - u(0.16); x <= bag.x + u(0.16); x++) { solid(x, bag.top - 2, wLine); solid(x, bag.top - 1, wLit); solid(x, bag.top, wood); solid(x, bag.top + 1, wDark); solid(x, bag.top + 2, wLine); }
   groundShadow(bag.x, foot - u(0.02), bag.w + 2, 2);
-  if (W > s * 1.5) roomWindow(cx + u(0.9), ceil + 3, u(0.14), Math.min(u(0.2), railRow() - ceil - 8));
-  life.board = board;
+  if (W > s * 1.5) weaponRack(cx + u(0.9), top + 4, u(0.1));
+  life.scroll = scroll;
   life.bag = bag;
-  // Alder (62x66, drawn at half the scene's pixel size) sits cross-legged in the middle of the mat; the lesson's sign is
-  // on the board, the training's on the sandbag, and the Challenge's on him
+  // Alder (62x66, drawn at half the scene's pixel size) sits cross-legged on the cushion; the lesson's sign is on the
+  // scroll, the training's on the sandbag, and the Challenge's on him
   life.stands = { npc: { x: seat.x, y: seat.y + 2 } };
   life.eventSpots = [
-    board,
+    scroll,
     { x0: bag.x - bag.w - 4, x1: bag.x + bag.w + 4, y0: bag.top + bag.len - 4, y1: bag.top + bag.len + bag.h },
     { x0: seat.x - 16, x1: seat.x + 16, y0: seat.y + 2 - 33, y1: seat.y + 2 },
   ];
   life.foot = foot + 4;
 }
 
-/** A green chalkboard in a wooden frame, chalked with a lesson: a Poké Ball, arrows between moves, lines of notes. */
-function chalkboard({ x0, x1, y0, y1 }) {
-  const [green, dark] = S.board, chalk = S.chalk, [wLit, wood, , wLine] = S.trim;
-  for (let y = y0 - 2; y <= y1 + 2; y++) for (let x = x0 - 2; x <= x1 + 2; x++) {
-    const frame = x < x0 || x > x1 || y < y0 || y > y1, edge = x === x0 - 2 || x === x1 + 2 || y === y0 - 2 || y === y1 + 2;
-    solid(x, y, edge ? wLine : frame ? (y < y0 ? wLit : wood) : dither(x, y) < 3 ? dark : green);
+/** Tatami mats running away from you in a running bond: dark cloth edges, the straw's weave, a few mats a shade older
+    than the rest, darkening to the wall. */
+function tatamiFloor() {
+  const [straw, weave, edge, lit, old] = S.tatami, cx = W / 2, vy = horizon - (H - horizon) * 1.8;
+  const bottom = H - vy, ku = bottom / 14, kv = bottom * bottom / 5;
+  for (let y = horizon; y < H; y++) {
+    const dz = y - vy, v = Math.floor(kv / dz), row = Math.floor(v / 3), rowEdge = row !== Math.floor(Math.floor(kv / (dz + 1)) / 3);
+    for (let x = 0; x < W; x++) {
+      const u = (x - cx) * ku / dz + (row % 2) + 99, m = Math.floor(u / 2), seam = u / 2 - m < ku / dz / 2;
+      const aged = noise(m, row, 9) > 0.75, stripe = Math.floor(u * 8) % 3 === 0 && dither(x, y) < 10;
+      put(x, y, seam || rowEdge ? edge : aged ? (stripe ? old : weave) : stripe ? weave : u / 2 - m < 0.12 || u / 2 - m > 0.88 ? lit : straw);
+    }
   }
-  for (let x = x0 + 2; x < x1 - 1; x += 3) solid(x, y1 - 1, chalk);   // chalk dust along the ledge
-  const bw = x1 - x0, bh = y1 - y0, r = Math.max(3, Math.round(Math.min(bw, bh) * 0.18)), bx = x0 + r + 3, by = y0 + r + 3;
-  for (let a = 0; a < Math.PI * 2; a += 0.35 / r) put(bx + Math.round(Math.cos(a) * r), by + Math.round(Math.sin(a) * r), chalk);
-  for (let x = -r; x <= r; x++) put(bx + x, by, chalk);
-  put(bx, by, green); put(bx - 1, by, chalk); put(bx + 1, by, chalk);
-  const ax = bx + r + 3, ay = by;   // an arrow to the notes
-  for (let x = 0; x < Math.max(3, bw * 0.15); x++) put(ax + x, ay, chalk);
-  const tip = ax + Math.round(Math.max(3, bw * 0.15));
-  put(tip - 1, ay - 1, chalk); put(tip - 1, ay + 1, chalk);
-  for (let row = 0; row < 3; row++) {
-    const y = y0 + 3 + row * Math.max(3, Math.round(bh * 0.18));
-    for (let x = tip + 3; x < x1 - 3; x++) if (noise(x >> 1, row, 3) > 0.25) put(x, y, chalk);
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.6); tint(x, horizon + 1, 0.8); tint(x, horizon + 2, 0.9); }
+}
+
+/** The alcove the medallion hangs in: dark wood panels between polished posts, down to its raised lacquer sill. */
+function tokonoma(x0, x1) {
+  const [wLit, wood, wDark, wLine] = S.trim;
+  for (let y = 0; y < horizon; y++) for (let x = x0; x <= x1; x++) {
+    const post = x - x0 < 3 || x1 - x < 3, sill = horizon - y <= 3;
+    let c;
+    if (post) c = x === x0 || x === x1 ? wLine : (x - x0 === 1 || x1 - x === 2) ? wLit : wood;
+    else if (sill) c = horizon - y === 3 ? wLit : horizon - y === 1 ? wLine : wDark;
+    else c = (x - x0) % 6 === 0 ? wLine : dither(x, y) < 2 ? wood : wDark;
+    solid(x, y, c);
   }
-  for (let row = 0; row < 2; row++) {
-    const y = by + r + 3 + row * 3;
-    if (y < y1 - 2) for (let x = x0 + 3; x < x1 - 4; x++) if (noise(x >> 1, row + 5, 3) > 0.3) put(x, y, chalk);
+  for (let y = 0; y < horizon - 3; y++) tint(x0 + 3, y, 0.6);   // the post's shadow on the back panel
+}
+
+/** A thick twisted straw rope sagging across the alcove's top, white zigzag paper streamers hanging from it. */
+function shimenawa(x0, x1, y0) {
+  const [hi, lo] = S.rope, [white, grey] = S.shide, mid = (x0 + x1) / 2, half = (x1 - x0) / 2;
+  const sag = (x) => y0 + Math.round(3 * (1 - Math.pow((x - mid) / half, 2)));
+  for (let x = x0 - 1; x <= x1 + 1; x++) {
+    const y = sag(x);
+    for (let k = 0; k < 3; k++) solid(x, y + k, (x + k) % 3 === 0 ? lo : hi);
+    solid(x, y + 3, S.trim[3]);
+  }
+  for (const f of [0.3, 0.5, 0.7]) {
+    const sx = Math.round(x0 + (x1 - x0) * f), sy = sag(sx) + 3;
+    for (let k = 0; k < 7; k++) { const dx = [0, 1, 1, 0, 0, 1, 1][k]; solid(sx + dx, sy + k, white); solid(sx + dx + 1, sy + k, grey); }
   }
 }
 
-/** A thin straw mat (tatami) on the floor. */
-function mat(cx, foot, hw) {
-  const [straw, strawDark, border] = S.tatami, hh = Math.max(2, Math.round(hw * 0.2));
-  for (let y = foot - hh; y <= foot + hh; y++) for (let x = cx - hw; x <= cx + hw; x++) {
-    const edge = Math.abs(y - foot) === hh || Math.abs(x - cx) >= hw - 1;
-    put(x, y, edge ? border : (x + y) % 3 ? straw : strawDark);
+/** A hanging scroll: a silk mount round a paper panel brushed with a column of characters, on a cord from a nail, a
+    wooden roller at the top and a knobbed one at the bottom. */
+function hangingScroll({ x0, x1, y0, y1 }) {
+  const [paper, paperDark] = S.paper, [silk, silkDark] = S.silk, ink = S.ink, [wLit, wood, , wLine] = S.trim;
+  const mx = (x0 + x1) >> 1;
+  for (let k = 1; k <= 3; k++) { solid(mx - k, y0 - 4 + k, wLine); solid(mx + k, y0 - 4 + k, wLine); }
+  solid(mx, y0 - 4, wLit);
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const inner = x > x0 + 1 && x < x1 - 1 && y > y0 + 3 && y < y1 - 3;
+    solid(x, y, inner ? (dither(x, y) < 2 ? paperDark : paper) : x === x1 ? silkDark : silk);
+  }
+  for (let x = x0 - 1; x <= x1 + 1; x++) { solid(x, y0, wood); solid(x, y0 + 1, wLine); }
+  for (let x = x0 - 2; x <= x1 + 2; x++) { solid(x, y1, x < x0 || x > x1 ? wLine : wood); solid(x, y1 + 1, wLine); }
+  // brushed characters down the middle, each a few strokes picked by noise
+  const px0 = x0 + 3, cw = x1 - 3 - px0 + 1, step = Math.max(4, cw + 2);
+  for (let cy = y0 + 6, n = 0; cy + cw <= y1 - 5; cy += step, n++) {
+    for (let k = 0; k < 3; k++) {
+      const at = Math.floor(noise(n, k, 5) * cw);
+      if (noise(n, k, 4) < 0.5) for (let x = px0; x < px0 + cw; x++) solid(x, cy + at, ink);
+      else for (let y = cy; y < cy + cw; y++) solid(px0 + at, y, ink);
+    }
   }
 }
 
-/** The sandbag swings on its rope (hard while you train, knocking out dust and stars), and chalk writes itself on the
-    board during a lesson. */
+/** A round red meditation cushion on the mats. */
+function cushion(cx, foot, hw) {
+  const [lit, body, line] = S.cushion, hh = Math.max(2, Math.round(hw * 0.25));
+  groundShadow(cx, foot + 1, hw + 1, hh);
+  for (let y = -hh; y <= hh; y++) for (let x = -hw; x <= hw; x++) {
+    const d = Math.pow(x / hw, 2) + Math.pow(y / hh, 2);
+    if (d <= 1) put(cx + x, foot + y, d > 0.7 ? line : y < 0 && x < 0 ? lit : body);
+  }
+}
+
+/** A wall rack of training staffs and wooden swords against the shoji. */
+function weaponRack(cx, top, hw) {
+  const [wLit, wood, wDark, wLine] = S.trim, foot = horizon + 2;
+  for (const y of [top + 4, foot - 6]) for (let x = cx - hw - 1; x <= cx + hw + 1; x++) { solid(x, y, wLit); solid(x, y + 1, wLine); }
+  for (const x of [cx - hw - 1, cx + hw + 1]) for (let y = top + 3; y <= foot; y++) { solid(x, y, wood); solid(x + 1, y, wLine); }
+  const n = Math.max(3, Math.floor(hw / 2));
+  for (let i = 0; i < n; i++) {
+    const x = cx - hw + 2 + Math.round(i * (hw * 2 - 4) / (n - 1)), sword = i % 2;
+    for (let y = top + (sword ? 6 : 0); y < foot - 1; y++) { solid(x, y, sword ? wDark : wLit); solid(x + 1, y, wLine); }
+    if (sword) for (let d = -2; d <= 3; d++) solid(x + d, foot - 12, wLine);   // the sword's guard
+  }
+}
+
+/** The sandbag swings on its rope (hard while you train, knocking out dust and stars), and ink brushes itself down the
+    scroll during a lesson. */
 function drawTutor(t) {
   const b = life.bag, f = actFrame('train'), [canvas, shade, dark, line] = S.bag;
   const hit = f >= 0 && f < 18 ? [2, 6, 10].some(k => f >= k && f < k + 3) : false;
@@ -4294,12 +4360,12 @@ function drawTutor(t) {
     for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + f; put(hx + Math.round(Math.cos(a) * 3), hy + Math.round(Math.sin(a) * 3), S.chalk); }
     sparkle(hx, hy, S.coin[0]);
   }
-  const l = actFrame('lesson'), bd = life.board;
+  const l = actFrame('lesson'), sc = life.scroll;
   if (l >= 0) {
-    const n = Math.min(l * 6, (bd.x1 - bd.x0 - 8) * 2);
-    for (let i = 0; i < n; i++) put(bd.x0 + 4 + (i >> 1), bd.y1 - 4 - Math.round(Math.sin(i / 3) * 1.5), S.chalk);
-    const tipX = bd.x0 + 4 + (n >> 1), tipY = bd.y1 - 4 - Math.round(Math.sin(n / 3) * 1.5);
-    sparkle(tipX, tipY - 1, S.coin[0]);
+    const mid = (sc.x0 + sc.x1) / 2, w = (sc.x1 - sc.x0 - 6) / 2, len = sc.y1 - sc.y0 - 10, n = Math.min(l * 2, len);
+    const at = (i) => [Math.round(mid + Math.sin(i / 2) * w), sc.y0 + 5 + i];
+    for (let i = 0; i < n; i++) put(...at(i), S.ink);
+    if (n < len) sparkle(...at(n), S.coin[0]);
   }
 }
 

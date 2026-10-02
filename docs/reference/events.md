@@ -71,8 +71,10 @@ Leave), besides the Shrine: the **Hot Spring** (`PLACE_ART.spring`, `springLayou
 and a little one fed by a bamboo spout (dip), a bamboo fence with the ♨ board, stone lanterns; per biome a sunny garden,
 misty cedars, or a milky pool under volcanic rock with steam vents), and four rooms laid out by `roomLayout()` (its
 `ceil` is the wall's top under the title and HP window, so wall props hang below it; `roomWall()`, `plankFloor()`,
-`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (Alder sitting cross-legged on a straw mat under his arena's Dragonite medallion, a chalkboard beside it, the Pay sign on him: pay ₽,
-act `lesson`; a sandbag: pay HP, act `train`), the **Move Deleter**'s study (bookcases, a lectern's open book: forget one,
+`roomWindow()` onto the biome outside): the **Move Tutor**'s dojo (shoji walls between timber posts, a tatami floor (`tatamiFloor()`), Alder sitting cross-legged
+on a red cushion under his arena's Dragonite medallion, big (the 32-cell Dragonite) in a dark wood alcove (`tokonoma()`) under a
+shimenawa rope; the chalkboard is gone (the user's call, 2026-10-01): a hanging scroll beside the alcove, ink brushing itself
+down it during a lesson: pay ₽, act `lesson`; on wider screens a weapon rack where the window was; a sandbag: pay HP, act `train`), the **Move Deleter**'s study (bookcases, a lectern's open book: forget one,
 act `erase`; a hypnotist's pendulum: forget two, act `hypno`; a dozing Slowpoke figure), the **Day Care** (the house's
 clapboard front with a DAY CARE board in the 3x5 `pixelText()` font, a picket fence, an Egg in a straw nest, act
 `trade`; Miltank and Marill figures) and the **Fan Club** (striped paper, portraits, pennants, a red carpet to a stage
@@ -87,10 +89,10 @@ a whole sprite pixel at a time: the upper body breathes (a 2.8 s loop, random ph
 types (`sayLines()` puts `.typing` on it), and the eyes-closed head blinks in for 120 ms every 2-6 s (`blinkNow()`).
 Reactions go through `figureDoes(stand, move)`: `npc-nod`, `npc-no` (head shake), `npc-jump`, `npc-turn` (faces the other
 way until the room closes). **Challenge Kenmatta** (2026-10-01, the user's call): the dojo has a third sign, on Ken himself (the lesson's ₽ sign is on
-the chalkboard now, the HP one on the sandbag: `tutorScene()`'s `eventSpots` in that order). It runs
+the hanging scroll, the HP one on the sandbag: `tutorScene()`'s `eventSpots` in that order). It runs
 `fight({ ...node, type: 'ken' })`: `KEN` in `js/data/enemies.js` (not in `ENEMY_DEFS`, so never in the Pokédex; Alder's
 sprite, HP per biome `[130, 220, 370]`, the biome's `bossBonus`, built by `buildKenEncounter()`) fought as a boss (shatter
-wipe, boss music, Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
+wipe, his own music (`music: 'kombat'`), FORTIFY YOUR MIND with Wong's shout (`sound: 'fortify'`, the clip's first 2.6 s), Neutral, no running) with his own `prelude` / `intro` lines, but it doesn't end the biome.
 His arena is his own (`arena: 'kombat'` on `KEN`; `startBattle()` calls `showPlaceScene(def.arena)` instead of the
 biome's scene; the user's call, 2026-10-01): a Mortal Kombat courtyard, `PLACE_ART.kombat` in `js/scene.js`, always night.
 Laid out like an MK stage, a tall temple backdrop over a strip of floor: the floor line sits just above your pad

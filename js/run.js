@@ -1624,7 +1624,7 @@ const EVENT_CHOICES = {
   'move-tutor'(event, state, back, react) {
     const price = perBiome(event.price);
     const hpCost = perBiome(event.hpCost);
-    // the lesson plays out first (he nods along at the board, or turns to watch you at the sandbag); you pay only once a
+    // the lesson plays out first (he nods along at the scroll, or turns to watch you at the sandbag); you pay only once a
     // move is picked, so backing out of the picker is free, and then he nods: well learned
     const teach = (act, pay) => async () => {
       figureDoes('npc', act === 'train' ? 'npc-turn' : 'npc-nod');
@@ -1635,7 +1635,7 @@ const EVENT_CHOICES = {
     const challenge = () => { figureDoes('npc', 'npc-jump'); fight({ ...node, type: 'ken' }); };
     return { figures: { npc: { npc: 'alder' } }, sub: [event.text, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`,
       !beaten && 'Or challenge the master himself, if you dare.'], options: [
-      spotOption(`Pay ₽${price}`, 'A lesson at the board: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
+      spotOption(`Pay ₽${price}`, 'A lesson from the scroll: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
       spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
       spotOption('Challenge!', beaten ? 'You already won his Exp. Share.' : 'A boss fight against Kenmatta. Win his Exp. Share.', challenge, beaten),
     ] };

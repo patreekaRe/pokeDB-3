@@ -207,7 +207,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   if (def.arena) showPlaceScene(def.arena);
   else showScene(BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
-  playMusic(encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild', { restart: true });
+  playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind));
   setupBattleScreen();
 
@@ -239,7 +239,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -1205,7 +1205,8 @@ async function enemyTurn() {
     if (b.enemy.hp <= 0) return finish(true);
   }
 
-  // 2. Then it uses its move.
+  // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND).
+  if (move.sound) playSound(move.sound);
   if (move.kind === 'attack' || move.kind === 'drain') {
     const damage = attackDamage(move);
     $('enemy-portrait-box').classList.add('attacking');

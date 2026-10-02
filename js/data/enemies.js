@@ -552,6 +552,7 @@ export const ENEMY_DEFS = {
 export const KEN = {
   id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370], boss: true,
   image: 'assets/trainers/alder.png', art: false, arena: 'kombat',   // his own stage (PLACE_ART.kombat in js/scene.js)
+  music: 'kombat',   // his own theme, the user's (an 8-bit Mortal Kombat theme), in place of the boss music
   description: 'The Move Tutor. He teaches by hitting you.',
   prelude: 'Kenmatta closes his eyes and breathes...',
   intro: 'Chad Master Kenmatta wants to battle!',
@@ -559,7 +560,7 @@ export const KEN = {
     { kind: 'attack', name: 'Mata Chop',    amount: 9 },
     { kind: 'buff',   name: 'Mata-Manspread', amount: 2 },
     { kind: 'attack', name: 'Kraber Crush', amount: 12 },
-    { kind: 'defend', name: 'FORTIFY YOUR MIND', amount: 14 },
+    { kind: 'defend', name: 'FORTIFY YOUR MIND', amount: 14, sound: 'fortify' },   // Wong's shout, the user's
     { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 18 },
   ],
 };
