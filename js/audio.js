@@ -124,6 +124,20 @@ const SOUNDS = {
   'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
   gust:         { synth: hotGust },          // the Wastes' intro: a hot wind as you burst out of the ash cloud...
   'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
+  // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
+  'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
+  flock:        { synth: flockBurst },       // ...and its birds burst out
+  'glade-hum':  { synth: gladeHum },         // the Forest's: a hush as the light gathers over the glade...
+  sunburst:     { synth: ac => powerSurge(ac, [784, 988, 1175, 1568, 1976, 2349], 2.4) },   // ...and floods it
+  'lake-churn': { synth: lakeChurn },        // the Wetland's: the lake heaves...
+  'wave-crash': { synth: waveCrash },        // ...and surges up into a wave
+  'mist-drone': { synth: mistDrone },        // the Marsh's: the mist closes in round an uneasy drone...
+  creak:        { synth: woodCreak },        // ...the Great Snag groans...
+  loom:         { synth: ac => powerSurge(ac, [208, 220, 311, 415, 440, 622], 2.6) },   // ...and looms out of it
+  'ice-crack':  { synth: gateCrack },        // the Peak's: the summit's snow cracks...
+  avalanche:    { synth: avalancheRoar },    // ...and the avalanche comes down
+  mirage:       { synth: mirageShimmer },    // the Desert's: the oasis wavers in the heat...
+  sandstorm:    { synth: sandstormRoar },    // ...and the sandstorm hits
   // the Safari Zone's catch (battle.js): each wobble of the ball on the ground, then the latch and jingle of a catch. The
   // user's own files once they're in assets/audio/sfx/; until then (or if one fails to load) the synth stands in
   'catch-shake':   { url: 'assets/audio/sfx/catch-shake.mp3', synth: catchShake, gain: 0.25 },
@@ -984,4 +998,172 @@ function gateShatter(ac) {
     for (let i = 0; at + i < length && i < rate * d * 4; i++) out[at + i] += Math.sin(2 * Math.PI * f * i / rate) * amp * Math.exp(-i / (rate * d));
   }
   return normalize(buffer, 0.22);
+}
+
+/** A rising wind thrashing a tree's crown: noise opening up and swelling, fluttering like leaves, a thin whistle over it. */
+function leafStorm(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 2);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, swell = Math.min(1, t / seconds * 1.3) ** 1.4;
+    low += (1 - Math.exp(-2 * Math.PI * (300 + 2600 * swell) / rate)) * (noise[i] - low);
+    const flutter = 0.55 + 0.45 * Math.abs(Math.sin(t * 41) * Math.sin(t * 17 + 1));
+    phase += (420 + 380 * swell + 30 * Math.sin(t * 3)) / rate;
+    out[i] = (low * flutter * 1.2 + Math.sin(2 * Math.PI * phase) * 0.06 * swell) * (0.2 + 0.8 * swell) * Math.min(1, (length - i) / (rate * 0.1));
+  }
+  return normalize(buffer, 0.12);
+}
+
+/** A flock taking off: a flurry of wingbeats, thick at first and thinning out, with chirps scattered through it. */
+function flockBurst(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 2);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (let n = 0; n < 70; n++) {
+    const at = Math.floor(Math.random() ** 1.6 * rate * 1.5), len = Math.round(rate * 0.035), level = 0.5 + Math.random() * 0.5;
+    let low = 0;
+    for (let i = 0; i < len && at + i < length; i++) { low += 0.3 * ((Math.random() * 2 - 1) - low); out[at + i] += low * level * Math.sin(Math.PI * i / len); }
+  }
+  for (let n = 0; n < 18; n++) {
+    const at = Math.floor(Math.random() * rate * 1.4), len = Math.round(rate * (0.04 + Math.random() * 0.05)), f = 1800 + Math.random() * 1600;
+    let phase = 0;
+    for (let i = 0; i < len; i++) { phase += f * (1 + 0.5 * i / len) / rate; out[at + i] += Math.sign(Math.sin(2 * Math.PI * phase)) * 0.12 * Math.sin(Math.PI * i / len); }
+  }
+  return normalize(buffer, 0.18);
+}
+
+/** Light gathering: a soft chord whose notes come in one by one, a faint shimmer rising over it. */
+function gladeHum(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const notes = [[262, 0], [392, 0.3], [523, 0.7], [659, 1.1], [784, 1.5]];
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = 0;
+    for (const [f, at] of notes) { const s = t - at; if (s >= 0) v += Math.sin(2 * Math.PI * f * t) * 0.2 * Math.min(1, s / 0.6) * (1 + 0.1 * Math.sin(t * 5 + f)); }
+    v += Math.sin(2 * Math.PI * 2093 * t + Math.sin(t * 7) * 2) * 0.03 * t / seconds;
+    out[i] = v * Math.min(1, t / 0.4, (length - i) / (rate * 0.2));
+  }
+  return normalize(buffer, 0.12);
+}
+
+/** A lake heaving: low, sloshing noise in slow waves over a wobbling sub-bass, building. */
+function lakeChurn(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 6);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, swell = (t / seconds) ** 1.2;
+    low += (1 - Math.exp(-2 * Math.PI * (250 + 450 * swell) / rate)) * (noise[i] - low);
+    phase += (42 + 5 * Math.sin(t * 4)) / rate;
+    const slosh = 0.45 + 0.55 * Math.max(0, Math.sin(t * (3.5 + swell * 3)));
+    out[i] = (low * 1.6 * slosh + Math.sin(2 * Math.PI * phase) * 0.5) * (0.3 + 0.7 * swell) * Math.min(1, t / 0.2, (length - i) / (rate * 0.05));
+  }
+  return normalize(buffer, 0.18);
+}
+
+/** A wave breaking: a thump and a roar of noise that darkens as it falls, then a long hiss of foam. */
+function waveCrash(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 1);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    low += (1 - Math.exp(-2 * Math.PI * (600 + 5400 * Math.exp(-t / 0.5)) / rate)) * (noise[i] - low);
+    phase += 50 * (1 + Math.exp(-t / 0.05)) / rate;
+    const roar = low * Math.min(1, t / 0.01) * Math.exp(-t / 0.8), foam = noise[i] * 0.12 * Math.exp(-t / 1.2) * Math.min(1, t / 0.3);
+    out[i] = (roar * 1.3 + foam + Math.sin(2 * Math.PI * phase) * Math.exp(-t / 0.3)) * Math.min(1, (length - i) / (rate * 0.1));
+  }
+  return normalize(buffer, 0.24);
+}
+
+/** A bog's unease: two low tones a semitone apart grinding slowly, a thin high note wavering over them. */
+function mistDrone(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const hiss = chipNoise(length, 3);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, env = Math.min(1, t / 0.8) * Math.min(1, (length - i) / (rate * 0.3));
+    low += 0.015 * (hiss[i] - low);
+    const tone = Math.sin(2 * Math.PI * 73.4 * t) + Math.sin(2 * Math.PI * 77.8 * t) * 0.8 + Math.sin(2 * Math.PI * (1174 + 20 * Math.sin(t * 6)) * t) * 0.05 * t / seconds;
+    out[i] = (tone * 0.5 + low * 1.4) * env;
+  }
+  return normalize(buffer, 0.16);
+}
+
+/** Old wood groaning: a rough, stick-slip buzz whose pitch sags and catches. */
+function woodCreak(ac) {
+  const rate = ac.sampleRate, seconds = 0.9, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  let phase = 0, low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, f = 38 + 26 * Math.sin(t * 3.4) + (Math.random() - 0.5) * 18;
+    phase += f / rate;
+    const saw = 2 * (phase % 1) - 1, env = Math.sin(Math.PI * t / seconds) * (0.7 + 0.3 * Math.sin(t * 31));
+    low += 0.25 * (saw - low);
+    out[i] = low * (0.6 + 0.4 * Math.sin(2 * Math.PI * 310 * t)) * env;
+  }
+  return normalize(buffer, 0.14);
+}
+
+/** An avalanche: a roar of low noise that swells fast and rolls on, tumbling knocks inside it. */
+function avalancheRoar(ac) {
+  const rate = ac.sampleRate, seconds = 3.2, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const rough = chipNoise(length, 40), hiss = chipNoise(length, 3);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, env = Math.min(1, t / 0.35) * Math.min(1, (length - i) / (rate * 0.8));
+    low += 0.08 * (hiss[i] - low);
+    phase += (30 + 5 * Math.sin(t * 7)) / rate;
+    out[i] = (rough[i] * 0.6 + low * 1.5 + Math.sin(2 * Math.PI * phase) * 0.6) * env * (0.8 + 0.2 * Math.sin(t * 19));
+  }
+  for (let n = 0; n < 10; n++) {
+    const start = Math.round(rate * (0.3 + Math.random() * 2.4)), knock = Math.round(rate * 0.07);
+    for (let i = 0; i < knock && start + i < length; i++) out[start + i] += (Math.random() * 2 - 1) * 0.5 * (1 - i / knock);
+  }
+  return normalize(buffer, 0.24);
+}
+
+/** A mirage: two high tones a hair apart, wavering in and out like heat off the sand. */
+function mirageShimmer(ac) {
+  const rate = ac.sampleRate, seconds = 2.2, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  let a = 0, b = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, wobble = Math.sin(t * 9) * 14;
+    a += (1320 + wobble) / rate; b += (1326 - wobble * 0.7 - t * 60) / rate;
+    const env = Math.sin(Math.PI * t / seconds) * (0.6 + 0.4 * Math.sin(t * 13));
+    out[i] = (Math.sin(2 * Math.PI * a) + Math.sin(2 * Math.PI * b) * 0.8 + Math.sin(2 * Math.PI * a * 0.5) * 0.3) * env;
+  }
+  return normalize(buffer, 0.08);
+}
+
+/** A sandstorm hitting: gritty noise roaring in, a low howl gliding under it. */
+function sandstormRoar(ac) {
+  const rate = ac.sampleRate, seconds = 3, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 1);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, env = Math.min(1, t / 0.25) * Math.min(1, (length - i) / (rate * 0.8));
+    low += (1 - Math.exp(-2 * Math.PI * (900 + 1600 * Math.sin(t * 2.3) ** 2) / rate)) * (noise[i] - low);
+    phase += (180 + 70 * Math.sin(t * 1.7)) / rate;
+    out[i] = (low * 1.2 + noise[i] * 0.15 + Math.sign(Math.sin(2 * Math.PI * phase)) * 0.04) * env * (0.8 + 0.2 * Math.sin(t * 23));
+  }
+  return normalize(buffer, 0.16);
 }

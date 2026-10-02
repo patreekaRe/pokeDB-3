@@ -328,7 +328,16 @@ export function peekEvent(starter, id) {
   return true;
 }
 
+/** Playtest shortcut: ?bossfight=wetland (any Safari area) walks a throwaway Safari run straight into that area's boss
+    fight, its prelude and arena included (&starter=id picks who you play). Nothing about the run is saved. */
+export function peekSafariBoss(areaId, starter = null) {
+  const daily = safariDaily();
+  peeking = true;
+  beginRun(starter ?? daily.starter, 0, ':boss', { day: daily.day, seed: daily.seed, areas: [areaId], first: false });
+}
+
 function peekRoom(id) {
+  if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
   run.map = generateMap();
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
@@ -343,7 +352,7 @@ function peekRoom(id) {
    THE MAP
    ============================================================ */
 
-function startBiome() {
+function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   reseed(`biome:${run.biome}`);
   if (!isSafari()) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.mods = runMods(run.starter, run.level, run.biome);
@@ -358,6 +367,7 @@ function startBiome() {
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   run.current = null;
+  if (quiet) return;
   showMap();
   // the biome's (or Safari area's) intro plays over the map (already checkpointed, so a refresh skips it), then its signs arrive again
   biomeIntro(land(), run.biome + 1).then(() => {

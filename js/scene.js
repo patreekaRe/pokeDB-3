@@ -1114,30 +1114,39 @@ export function setStorm(on) {
 
 /** Hold on an empty boss arena, awaken its landmark, then open a flash into the Pokémon reveal. */
 export async function bossArenaPrelude() {
-  if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
+  if (!hasPrelude()) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
     await new Promise(resolve => setTimeout(resolve, 500));
-    if (['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) && S.raw.stage === 3) {
+    if (hasPrelude()) {
       bossPrelude = { phase: 'awake', at: tick };
+      enterArena(true);
       draw();
     }
     return;
   }
-  const backdrop = S.raw.backdrop;
+  const key = preludeKey(), run = ++preludeRun, still = () => hasPrelude() && run === preludeRun;
+  enterArena(false);   // a replay (the ?area= peek) starts from the place itself
   bossPrelude = { phase: 'wake', at: tick };
   draw();
-  for (const [frame, sound] of preludeSounds()[backdrop]) {
-    setTimeout(() => { if (bossPrelude?.phase === 'wake' && S?.raw.backdrop === backdrop) playSound(sound); }, frame * 1000 / FPS);
+  for (const [frame, sound] of preludeSounds()[key]) {
+    setTimeout(() => { if (bossPrelude?.phase === 'wake' && still()) playSound(sound); }, frame * 1000 / FPS);
   }
   await new Promise(resolve => setTimeout(resolve, 3600));
-  if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
+  if (!still()) return;
   bossPrelude = { phase: 'portal', at: tick };
   draw();
   await new Promise(resolve => setTimeout(resolve, 1100));
-  if (!['hills', 'shrine', 'volcano'].includes(S?.raw.backdrop) || S.raw.stage !== 3) return;
+  if (!still()) return;
   bossPrelude = { phase: 'awake', at: tick };
+  enterArena(true);   // under the last white flash, the place becomes the boss's arena
   draw();
 }
+let preludeRun = 0;
+/** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
+const hasPrelude = () => ['hills', 'shrine', 'volcano', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
+const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
+/** The sounds the boss prelude on screen will play, to load ahead. */
+export const bossPreludeSounds = () => (hasPrelude() ? preludeSounds()[preludeKey()].map(([, sound]) => sound) : []);
 
 addEventListener('resize', () => { if (S) resize(); });
 
@@ -5566,7 +5575,8 @@ function draw() {
   if (life.rain && storm.level > 0) drawRain(t);
   let shake = 0;
   if (bossPrelude?.phase === 'portal') {
-    if (S.raw.backdrop === 'shrine') shake = drawShrinePortal(t);
+    if (S.raw.backdrop === 'safari') shake = SAFARI_PRELUDES[S.raw.area].portal(t);
+    else if (S.raw.backdrop === 'shrine') shake = drawShrinePortal(t);
     else if (S.raw.backdrop === 'volcano') shake = drawWastesPortal(t);
     else shake = drawClearingPortal(t);
   }
@@ -6017,6 +6027,13 @@ function petalGale(cx, cy, e) {
 }
 
 function drawBossAwakening(t) {
+  if (S.raw.arena) {   // the arena, coming up out of the white
+    const age = preludeAge(t);
+    ARENAS[S.raw.area].life(t);
+    if (age < 5 && !matchMedia('(prefers-reduced-motion: reduce)').matches) veil(abgr('#fffce8'), 1 - age / 5);
+    return 0;
+  }
+  if (S.raw.backdrop === 'safari') return SAFARI_PRELUDES[S.raw.area].wake(t);
   if (S.raw.backdrop === 'shrine') return drawShrineAwakening(t);
   if (S.raw.backdrop === 'volcano') return drawWastesAwakening(t);
   return drawClearingAwakening(t);
@@ -6217,6 +6234,7 @@ const preludeSounds = () => ({
   hills: [[0, 'quake'], [BLOOM_AT, 'bloom']],
   shrine: [...BELL_TOLLS.map(at => [at, 'bell']), [SPIRIT_AT, 'spirit']],
   volcano: [[0, 'quake'], [ERUPT_AT, 'eruption']],
+  ...Object.fromEntries(Object.entries(SAFARI_PRELUDES).map(([area, p]) => [area, p.sounds])),
 });
 
 /** A flattened ring of radius r racing outwards. */
@@ -6863,8 +6881,12 @@ function cairn(cx, foot, s) {
 /* ----- each area's goal, far down the road ----- */
 
 function meadowFront() {   // the Lone Tree, where the area's boss waits
-  const k = along(), { x, foot } = approach(landmarkSide(), k), r = Math.max(3, Math.round(Math.min(W * 0.12, horizon * 0.3) * (0.25 + 0.75 * k)));
+  const { x, foot, r } = loneTree();
   acacia(x, foot, r, r < 4);
+}
+function loneTree() {
+  const k = along(), { x, foot } = approach(landmarkSide(), k), r = Math.max(3, Math.round(Math.min(W * 0.12, horizon * 0.3) * (0.25 + 0.75 * k)));
+  return { x, foot, r, top: foot - Math.round(r * 1.7) };
 }
 
 /** The Peak's summit straight ahead, past the far ranges: taller and nearer every floor. */
@@ -6885,10 +6907,12 @@ function safariBackdrop() {
   // every floor deals its props from its own seed, so neighbouring floors never look alike
   rand = seeded(W * 131 + H + ((S.raw.seed || 0) % 9973) + (S.raw.step ?? 0) * 7919 + stage() * 104729);
   areaPaint().back();
+  if (S.raw.arena) ARENAS[S.raw.area].back();
 }
-function safariFloor() { areaPaint().floor(); }
+function safariFloor() { (S.raw.arena ? ARENAS[S.raw.area] : areaPaint()).floor(); }
 
 function safariFront() {
+  if (S.raw.arena) { ARENAS[S.raw.area].front(); return; }
   areaPaint().front?.();
   const st = stage(), side = landmarkSide();
   if (S.raw.area !== 'peak' || st < 2) ranchFence(horizon + 3);
@@ -7226,8 +7250,8 @@ function marshFront() {
   const st = stage();
   for (let x = 0; x < W; x++) if (dither(x, horizon + 2) < 9) put(x, horizon + 2, S.trees[3]);
   // the Great Snag: a huge dead tree in the mist, far down the walkway, where the area's boss waits
-  const k = along(), { x: gx, foot: gfoot } = approach(landmarkSide(), k), [far, farDark] = S.farForest;
-  deadTree(gx, gfoot, Math.round(horizon * (0.3 + 0.7 * k)), k < 0.4 ? [far, farDark, farDark] : S.dead);
+  const k = along(), { x: gx, foot: gfoot, h: gh } = greatSnag(), [far, farDark] = S.farForest;
+  deadTree(gx, gfoot, gh, k < 0.4 ? [far, farDark, farDark] : S.dead);
   for (let x = Math.floor(rand() * 8); x < W + 6; x += 10 + Math.floor(rand() * 12)) {
     if (Math.abs(x - vanishX()) < W * 0.12 || Math.abs(x - gx) < 6) continue;
     willow(x, horizon + 1, 4 + Math.floor(rand() * 3), S.trees);
@@ -7238,6 +7262,11 @@ function marshFront() {
   }
   const big = Math.max(6, Math.round(Math.min(W * 0.08, horizon * 0.25)));
   willow(landmarkSide() < 0 ? Math.round(W * 0.94) : Math.round(W * 0.06), horizon + Math.round((H - horizon) * 0.2), big, S.trees);
+}
+
+function greatSnag() {
+  const k = along();
+  return { ...approach(landmarkSide(), k), h: Math.round(horizon * (0.3 + 0.7 * k)) };
 }
 
 /** A weeping willow: a short trunk, a round crown, and long strands hanging down from it. */
@@ -7480,6 +7509,1076 @@ function drawSafari(t) {
   }
 }
 
+/* ----- the Safari areas' boss preludes: the area's goal wakes before its boss steps out (bossArenaPrelude()) -----
+   The main biomes' beats: a wake of about 29 frames (8 fps) building to its climax, a portal of 9 that floods the
+   screen into the paired white flashes, and an `awake` look that lingers, quietly, over the fight. */
+
+const FLOCK_AT = 17, SUNBURST_AT = 18, SURGE_AT = 17, LOOM_AT = 18, AVALANCHE_AT = 16, HABOOB_AT = 17;   // each climax's frame
+
+const SAFARI_PRELUDES = {
+  meadow: { wake: meadowWake, portal: meadowPortal, sounds: [[0, 'leaf-storm'], [FLOCK_AT, 'flock']] },
+  forest: { wake: forestWake, portal: forestPortal, sounds: [[0, 'glade-hum'], [SUNBURST_AT, 'sunburst']] },
+  wetland: { wake: wetlandWake, portal: wetlandPortal, sounds: [[0, 'lake-churn'], [SURGE_AT, 'wave-crash']] },
+  marsh: { wake: marshWake, portal: marshPortal, sounds: [[0, 'mist-drone'], [7, 'creak'], [13, 'creak'], [LOOM_AT, 'loom']] },
+  peak: { wake: peakWake, portal: peakPortal, sounds: [[0, 'quake'], [7, 'ice-crack'], [AVALANCHE_AT, 'avalanche']] },
+  desert: { wake: desertWake, portal: desertPortal, sounds: [[0, 'mirage'], [HABOOB_AT, 'sandstorm']] },
+};
+
+const preludeAge = (t) => Math.max(0, t - bossPrelude.at);
+function flashScreen(k = 1.35, add = 70) { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, k, add); }
+/** Lays colour `c` over the picture (only the sky with `skyOnly`), `k` of the way. */
+function veil(c, k, skyOnly = false) {
+  if (k <= 0) return;
+  for (let i = 0; i < W * H; i++) if (!skyOnly || sky[i]) blend(i % W, (i / W) | 0, c, Math.min(1, k));
+}
+
+/* --- the Meadow: the Lone Tree's crown thrashes in a rising wind, then a flock bursts out of it --- */
+
+/** A bird, `s` pixels a wing, wings up or down: one pixel far off, a big silhouette close up. */
+function flyer(x, y, s, up, c) {
+  const thick = Math.max(1, Math.round(s / 6));
+  for (let k = -s; k <= s; k++) {
+    const a = Math.abs(k), lift = up ? -Math.round(a * 0.6) : Math.round(a * 0.35 + (a / s) ** 3 * s * 0.25);
+    for (let w = 0, n = Math.max(1, Math.round(thick * (1 - a / (s + 1)) + 0.5)); w < n; w++) put(x + k, y + lift + w, c);
+  }
+  for (let w = 0; w <= thick; w++) { put(x, y + w, c); put(x, y + w + 1, c); }
+}
+
+/** The crown swaying: each row shifted sideways, the top the most (from this frame's picture, so clouds behind it stay). */
+function swayCrown(time, amp) {
+  const { x: cx, r, top } = loneTree(), y0 = Math.max(0, top - r - 3), y1 = top + Math.round(r * 0.5);
+  const x0 = Math.max(0, cx - r * 3 - 4), x1 = Math.min(W - 1, cx + r * 3 + 6), src = px.slice();
+  for (let y = y0; y <= y1; y++) {
+    const dx = Math.round(Math.sin(time * 1.9 + y * 0.35) * amp * (0.4 + 0.6 * (y1 - y) / (y1 - y0 + 1)));
+    if (dx) for (let x = x0; x <= x1; x++) px[y * W + x] = src[y * W + Math.max(0, Math.min(W - 1, x - dx))];
+  }
+}
+
+/** Leaves torn off the crown, blown downwind and fluttering down. */
+function leafFlurry(cx, cy, r, age, n) {
+  for (let i = 0; i < n; i++) {
+    const span = 14, run = age + noise(i, 31, 0) * span, lap = Math.floor(run / span), a = run % span;
+    const x = cx + (noise(i, lap, 32) - 0.5) * r * 5 + a * (1.2 + noise(i, lap, 33) * 2) * W / 200;
+    const y = cy + (noise(i, lap, 34) - 0.5) * r * 1.2 + a * a * 0.02 * r + Math.sin(a + i) * 1.5;
+    put(x, y, S.trees[i % 2]);
+    if (i % 3 === 0) put(x + 1, y, S.trees[2]);
+  }
+}
+
+/** Gusts streaking across the sky and the grass. */
+function windStreaks(age, k, speed = 1) {
+  for (let i = 0, n = Math.round(W / 10 * k); i < n; i++) {
+    const y = Math.round(noise(i, 35, 0) * H), len = 3 + Math.round(noise(i, 35, 1) * 6 * (0.5 + Math.max(0, depthOf(y))));
+    const x = ((noise(i, 35, 2) * W + age * W * 0.09 * speed * (0.7 + noise(i, 35, 3))) % (W + 20)) - 10;
+    for (let d = 0; d < len; d++) if (dither(Math.round(x + d), y) < 9) tint(x + d, y, 1.12, 26);
+  }
+}
+
+/** The flock, `e` frames after it burst out of the crown: most climb away, a few come straight at you, growing. */
+function flock(cx, cy, r, e, n) {
+  for (let i = 0; i < n; i++) {
+    const a = e - noise(i, 41, 0) * 3;
+    if (a < 0) continue;
+    const ang = -Math.PI / 2 + (noise(i, 41, 1) - 0.5) * 2.8, v = W * (0.012 + noise(i, 41, 2) * 0.022), near = noise(i, 41, 3) < 0.25;
+    const sx = cx + (noise(i, 41, 4) - 0.5) * r * 4, sy = cy + (noise(i, 41, 5) - 0.3) * r;
+    const x = sx + Math.cos(ang) * v * a * (near ? 0.6 : 1) + Math.sin(a * 0.9 + i) * 2;
+    const y = sy + Math.sin(ang) * v * a * 0.7 + (near ? a * a * 0.12 * H / 120 : 0);
+    flyer(Math.round(x), Math.round(y), near ? 1 + Math.round(a * 0.5) : 1 + (i % 3 === 0), (Math.floor(a) + i) % 2 === 0, S.bird);
+  }
+}
+
+function meadowWake(t) {
+  const awake = bossPrelude.phase === 'awake', age = preludeAge(t);
+  const { x: cx, r, top } = loneTree(), cy = top - Math.round(r * 0.3);
+  if (awake) {   // the crown still stirs, and a few birds wheel over it
+    swayCrown(t / 3, 0.6);
+    for (let i = 0; i < 5; i++) {
+      const ang = t * 0.12 + i * Math.PI * 0.4;
+      flyer(Math.round(cx + Math.cos(ang) * r * 2.6), Math.round(cy - r * 1.4 + Math.sin(ang) * r * 0.5), 1, (t + i) % 2 === 0, S.bird);
+    }
+    return 0;
+  }
+  const s = Math.min(1, age / FLOCK_AT), e = age - FLOCK_AT;
+  swayCrown(age, e < 0 ? 0.5 + s * 2.2 : Math.max(1, 3 - e * 0.2));
+  veil(abgr('#3a4a5a'), s * 0.3, true);   // clouds gather
+  windStreaks(age, s);
+  leafFlurry(cx, cy, r, age, e < 0 ? Math.round(6 + s * 30) : 50);
+  if (e < 0) return age > 8 ? 1 : 0;
+  if (e === 0) flashScreen(1.2, 34);
+  shockRing(cx, cy, e * W * 0.1, [S.trees[0], S.trees[1]], 0.5);   // a ring of leaves blown outwards
+  flock(cx, cy, r, e, 60);
+  return e < 3 ? 2 : 0;
+}
+
+/** The whole flock wheels round and pours at you, every bird bigger than the last, until they black out the screen. */
+function meadowPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  const { x: cx, r, top } = loneTree(), cy = top - Math.round(r * 0.3);
+  swayCrown(age, 2);
+  veil(abgr('#3a4a5a'), 0.3, true);
+  windStreaks(age, 1, 1.5);
+  flock(cx, cy, r, age + 12, 60);
+  for (let i = 0; i < 90; i++) {
+    const a = age - noise(i, 43, 0) * 3;
+    if (a < 0) continue;
+    const u = Math.min(1, a / 4), ang = noise(i, 43, 1) * Math.PI * 2;
+    const x = cx + (W / 2 - cx) * u + Math.cos(ang) * W * 0.6 * u * (0.3 + noise(i, 43, 2));
+    const y = cy + (H / 2 - cy) * u + Math.sin(ang) * H * 0.6 * u * (0.3 + noise(i, 43, 3));
+    flyer(Math.round(x), Math.round(y), Math.round(1 + u * u * Math.min(W, H) * 0.22), (frame + i) % 2 === 0, S.bird);
+  }
+  return frame < 6 ? 1 : 0;
+}
+
+/* --- the Forest: the wood goes dark, beams reach down through the opening in the leaves, then the glade floods with light --- */
+
+const gladeLight = () => ({ vx: vanishX(), cy: horizon + Math.round((H - horizon) * 0.35), rx: Math.round(W * 0.34), ry: Math.round((H - horizon) * 0.3) });
+const GLOW = () => [abgr('#fffce8'), S.pollen[0], S.pollen[1]];
+
+/** Beams fanning down from the opening to the glade floor; `k` 0..2, how bright. */
+function sunbeams({ vx, cy }, time, k) {
+  for (let b = -3; b <= 3; b++) {
+    const foot = vx + b * W * 0.1 + Math.sin(time * 0.2 + b) * 2;
+    for (let y = 0; y < cy; y++) {
+      const u = y / cy, mid = vx + b * W * 0.03 + (foot - vx - b * W * 0.03) * u, half = 1 + u * W * 0.025;
+      for (let x = Math.floor(mid - half); x <= mid + half; x++) if (dither(x, y + (time | 0)) < k * 5) tint(x, y, 1.12 + k * 0.08, 14 + k * 14);
+    }
+  }
+}
+
+/** Specks of light drifting up through the beams. */
+function motes({ vx, cy }, age, n) {
+  const [white, hot] = GLOW();
+  for (let i = 0; i < n; i++) {
+    const x = vx + (noise(i, 47, 0) - 0.5) * W * 0.6 + Math.sin(age * 0.4 + i) * 2;
+    const y = cy - ((age * (0.5 + noise(i, 47, 1)) + noise(i, 47, 2) * cy) % cy);
+    if (Math.sin(age * 0.8 + i) > -0.3) put(x, y, i % 4 ? hot : white);
+  }
+}
+
+/** The glade washed with light out to `flood` (0..1, then wider than the clearing). */
+function gladeFlood({ vx, cy, rx, ry }, flood) {
+  const R = rx * (0.5 + flood * 1.3), Ry = ry * (0.5 + flood * 1.6);
+  for (let y = Math.max(0, Math.floor(cy - Ry)); y < Math.min(H, cy + Ry); y++) for (let x = Math.max(0, Math.floor(vx - R)); x < Math.min(W, vx + R); x++) {
+    const d = ((x - vx) / R) ** 2 + ((y - cy) / Ry) ** 2;
+    if (d < 1 && dither(x, y) < (1 - d) * 18 * flood) tint(x, y, 1.18, 34);
+  }
+}
+
+/** Flowers opening one by one across the glade. */
+function bloomGlade({ vx, cy, rx, ry }, e) {
+  for (let i = 0; i < 44; i++) {
+    const a = e - noise(i, 49, 0) * 6;
+    if (a < 0) continue;
+    const ang = noise(i, 49, 1) * Math.PI * 2, d = Math.sqrt(noise(i, 49, 2));
+    const x = Math.round(vx + Math.cos(ang) * rx * d), y = Math.round(cy + Math.sin(ang) * ry * d), [petal, heart] = S.flowers[i % S.flowers.length];
+    put(x, y, heart);
+    if (a >= 1) { put(x - 1, y, petal); put(x + 1, y, petal); put(x, y - 1, petal); }
+    if (a >= 2 && depthOf(y) > 0.4) { put(x, y + 1, petal); put(x - 1, y - 1, heart); }
+  }
+}
+
+function forestWake(t) {
+  const awake = bossPrelude.phase === 'awake', age = preludeAge(t), g = gladeLight(), [white, hot, glow] = GLOW();
+  if (awake) { sunbeams(g, t, 0.5); motes(g, t, 12); bloomGlade(g, 20); return 0; }
+  const s = Math.min(1, age / SUNBURST_AT), e = age - SUNBURST_AT;
+  if (e < 0) {
+    veil(abgr('#06180c'), Math.min(0.45, age / 8 * 0.45) * (1 - Math.max(0, s - 0.55)));   // the wood goes dark...
+    sunbeams(g, age, s * 1.2);   // ...but for the light reaching down through the leaves
+    motes(g, age, Math.round(10 + s * 40));
+    heartGlow(g.vx, 0, 2 + s * W * 0.06, [white, hot, glow]);
+    return 0;
+  }
+  if (e === 0) flashScreen(1.4, 80);
+  const flood = Math.min(1, (e + 1) / 5);
+  gladeFlood(g, flood);
+  sunbeams(g, age, 1 + flood);
+  bloomGlade(g, e);
+  motes(g, age, 60);
+  heartGlow(g.vx, 0, W * 0.06 + e * 1.5, [white, hot, glow]);
+  return e < 2 ? 1 : 0;
+}
+
+/** The light pours down out of the opening, wheeling rays and all, until it fills the screen. */
+function forestPortal(t) {
+  const age = preludeAge(t), frame = age | 0, [white, hot, glow] = GLOW();
+  if (frame === 6 || frame === 8) { px.fill(white); return 0; }
+  const g = gladeLight();
+  gladeFlood(g, 1);
+  sunbeams(g, age, 2);
+  bloomGlade(g, 20);
+  const R = Math.hypot(W, H) * Math.min(1.2, ((age + 1) / 5) ** 1.5);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const d = Math.hypot(x - g.vx, y), rel = d / R;
+    if (rel > 1 || (rel > 0.85 && dither(x, y) > 8)) continue;
+    put(x, y, rel < 0.5 ? white : Math.sin(Math.atan2(y, x - g.vx) * 14 + age * 0.6) > 0.3 ? hot : glow);
+  }
+  return 0;
+}
+
+/* --- the Wetland: a squall darkens the lake, rings pulse across it as it heaves and rises, then it surges up into a great wave --- */
+
+function lakeRing(cx, cy, r, top) {
+  if (r < 1) return;
+  for (let a = 0; a < Math.PI * 2; a += 0.6 / r) {
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * 0.18;
+    if (y > top && y < horizon) { put(x, y, S.ripple[0]); if (dither(x | 0, y | 0) < 6) put(x, y + 1, S.ripple[1]); }
+  }
+}
+
+/** The lake's surface lifted `rise` pixels over the far shore, choppy and capped with foam. */
+function lakeRise(top, rise, time) {
+  if (rise < 1) return;
+  for (let x = 0; x < W; x++) {
+    const crest = top - rise + Math.round(Math.sin(x * 0.3 + time * 0.9) * 1.2);
+    for (let y = Math.max(0, crest); y <= top; y++) put(x, y, y === crest ? S.ripple[0] : y - crest < 2 ? S.lake[1] : S.lake[2]);
+  }
+}
+
+function whitecaps(top, time, n) {
+  for (let i = 0; i < n; i++) {
+    const lap = Math.floor((time + noise(i, 51, 0) * 6) / 6), x = noise(i, lap, 52) * W, y = top + 1 + noise(i, lap, 53) * (horizon - top - 1);
+    const len = 1 + Math.round(noise(i, lap, 54) * 3 * (1 + Math.max(0, depthOf(y))));
+    for (let k = 0; k < len; k++) put(x + k, y, k === 1 ? S.glint[0] : S.ripple[0]);
+  }
+}
+
+/** The wave, `e` frames after the lake burst: it rises off the far side and rolls in, foam blowing off its crest. */
+function greatWave(top, e) {
+  const u = Math.min(1, (e + 1) / 10), foot = top + Math.round((horizon - top + (H - horizon) * 0.4) * u);
+  const tall = Math.round((horizon * 0.35 + H * 0.12) * Math.min(1, (e + 1) / 6)), white = abgr('#fffce8');
+  for (let x = 0; x < W; x++) {
+    const crest = foot - Math.round(tall * (0.8 + 0.2 * Math.sin(x * 0.07 + e * 0.4) + 0.08 * Math.sin(x * 0.31 - e)));
+    for (let y = Math.max(0, crest); y <= foot && y < H; y++) {
+      const d = (y - crest) / Math.max(1, foot - crest);
+      put(x, y, d < 0.06 || y >= foot - 1 ? white : d < 0.15 ? (dither(x, y + e) < 8 ? white : S.lake[0]) : d < 0.35 ? S.lake[1] : d < 0.6 ? S.lake[2] : d < 0.85 ? S.lake[3] : S.lake[4]);
+    }
+    for (let k = 1; k < 5; k++) if (noise(x, e * 5 + k, 55) < 0.25 - k * 0.04) put(x + k, crest - k * 2 - Math.floor(noise(x, e, 56) * 3), k < 2 ? white : S.ripple[0]);
+  }
+}
+
+function wetlandWake(t) {
+  const awake = bossPrelude.phase === 'awake', age = preludeAge(t), top = lakeTop(), cx = vanishX(), cy = Math.round((top + horizon) / 2);
+  if (awake) { lakeRise(top, 1, t); whitecaps(top, t, Math.round(W / 30)); return 0; }
+  const s = Math.min(1, age / SURGE_AT), e = age - SURGE_AT, white = abgr('#fffce8');
+  veil(abgr('#1c3050'), s * 0.35, true);   // a squall comes over
+  for (let y = top; y <= horizon; y++) for (let x = 0; x < W; x++) blend(x, y, S.lake[4], s * 0.35);   // the water darkens
+  lakeRise(top, Math.round((e < 0 ? s * s : 1) * (horizon - top) * 0.6), age);
+  whitecaps(top, age, Math.round(4 + s * W / 3));
+  if (e < 0) {
+    for (let k = 0; k < 4; k++) lakeRing(cx, cy, ((age + k * 4) % 16) * W * 0.04, top);   // rings pulse out of the middle
+    const swell = Math.max(0, (age - 8) / (SURGE_AT - 8)), half = W * 0.12 * swell;
+    if (swell) for (let dx = -Math.round(half); dx <= half; dx++) {   // and it heaves up into a mound
+      const h = Math.round((1 - (dx / (half + 1)) ** 2) * swell * (horizon - top) * 0.9);
+      for (let y = cy - h; y <= cy; y++) put(cx + dx, y, y === cy - h ? white : y - (cy - h) < 2 ? S.lake[0] : S.lake[1]);
+    }
+    return age > 8 ? 1 : 0;
+  }
+  if (e === 0) flashScreen(1.3, 60);
+  if (e < 6) {   // the mound bursts into a column of water...
+    const h = Math.round(horizon * Math.min(1, (e + 1) / 2)), half = 2 + e;
+    for (let y = Math.max(0, cy - h); y <= cy; y++) for (let dx = -half; dx <= half; dx++) {
+      const rel = Math.abs(dx) / half;
+      if (rel > 0.8 && dither(cx + dx, y + e) > 9) continue;
+      put(cx + dx, y, rel < 0.35 ? white : rel < 0.7 ? S.lake[0] : S.lake[1]);
+    }
+  }
+  greatWave(top, e);   // ...and the lake rises behind it in one great wave
+  return e < 4 ? 2 : 1;
+}
+
+/** The wave breaks over you: a curtain of water and foam coming down the screen. */
+function wetlandPortal(t) {
+  const age = preludeAge(t), frame = age | 0, white = abgr('#fffce8');
+  if (frame === 6 || frame === 8) { px.fill(white); return 0; }
+  veil(abgr('#1c3050'), 0.35, true);
+  greatWave(lakeTop(), 12 + age);
+  const fall = H * Math.min(1.1, ((age + 1) / 5) ** 1.4);
+  for (let x = 0; x < W; x++) {
+    const edge = fall + Math.sin(x * 0.2 + age) * 3 + noise(x >> 1, frame, 57) * 5;
+    for (let y = 0; y < Math.min(H, edge); y++) {
+      const d = edge - y;
+      put(x, y, d < 3 ? white : d < 6 ? (dither(x, y) < 9 ? white : S.lake[0]) : ((x + y * 2 - age * 9) % 23 + 23) % 23 < 2 ? S.lake[0] : y % 3 ? S.lake[3] : S.lake[2]);
+    }
+  }
+  return frame < 6 ? 2 : 0;
+}
+
+/* --- the Marsh: the light goes, the mist thickens, and the Great Snag looms out of it, bigger than it was, eyes kindling --- */
+
+function mistVeil(time, k) {
+  const c = S.mistColour;
+  for (let y = 0; y < H; y++) {
+    const near = 0.6 + 0.6 * (1 - Math.abs(y - horizon) / H);
+    for (let x = 0; x < W; x++) {
+      const m = Math.sin((x + time * 0.7) / 14 + y * 0.12) + Math.sin((x - time * 0.45) / 7 - y * 0.27);
+      blend(x, y, c, Math.max(0, Math.min(1, k * near * (0.75 + 0.15 * m))));
+    }
+  }
+}
+
+/** The Snag as a silhouette `h` tall: a gnarled trunk, roots clawing the ground, crooked limbs (`reach` stretches
+    them) and one reaching in over the middle; laid over the picture `k` of the way. Shaped by noise, so it holds still. */
+function snagShape(cx, foot, h, reach, sway, c, k, painted = false) {
+  const mask = new Uint8Array(W * H), w0 = Math.max(2, Math.round(h * 0.07)), side = cx < W / 2 ? 1 : -1;
+  const mark = (x, y, w) => { for (let a = 0; a < w; a++) for (let b = 0; b < w; b++) { const X = (x + a) | 0, Y = (y + b) | 0; if (inside(X, Y)) mask[Y * W + X] = 1; } };
+  for (let y = 0; y < h * 0.5; y++) mark(cx - (w0 >> 1) + Math.round(Math.sin(y * 0.15)), foot - y, Math.round(w0 * (1 - y / h * 0.6)));
+  for (const d of [-1, 1]) for (let j = 0; j < w0 * 2.5; j++) mark(cx + d * (w0 / 2 + j) - (d < 0), foot - Math.round(w0 * 0.7 * Math.exp(-j / w0)), Math.max(1, Math.round(w0 * 0.4 * Math.exp(-j / w0))));
+  const limb = (x, y, len, ang, w, depth, id) => {
+    for (let s = 0; s < len; s++) {
+      ang += (noise(id, s, 91) - 0.5) * 0.35 + sway * 0.05;
+      x += Math.cos(ang); y += Math.sin(ang);
+      mark(x, y, Math.max(1, Math.round(w * (1 - s / len * 0.6))));
+      if (depth < 3 && s > 2 && noise(id, s, 92) < 0.09) limb(x, y, len * 0.5, ang + (noise(id, s, 93) < 0.5 ? -0.8 : 0.8), Math.max(1, w - 1), depth + 1, id * 13 + s);
+    }
+  };
+  const fork = foot - h * 0.5, w1 = Math.max(1, Math.round(w0 * 0.55));
+  limb(cx, fork, h * 0.55 * reach, -Math.PI / 2 - 1 - sway, w1, 0, 1);
+  limb(cx, fork + h * 0.05, h * 0.5 * reach, -Math.PI / 2 + 1.1 - sway, w1, 0, 2);
+  limb(cx, fork, h * 0.45, -Math.PI / 2 - 0.2 + sway, w1, 0, 3);
+  limb(cx, foot - h * 0.3, h * 0.5 * reach, side > 0 ? -0.35 + sway : Math.PI + 0.35 + sway, w1, 1, 4);
+  for (let i = 0; i < W * H; i++) if (mask[i]) painted ? solid(i % W, (i / W) | 0, c) : blend(i % W, (i / W) | 0, c, k);
+}
+
+/** Two hollows in the Snag's trunk, glowing `glow` (0..1); past the climax a sickly light spills round them. */
+function snagEyes(cx, foot, h, glow, e) {
+  if (glow < 0.15) return;
+  const w0 = Math.max(2, Math.round(h * 0.07)), y = Math.round(foot - h * 0.36), r = Math.max(1, Math.round(w0 * 0.2)), [hot, dim] = S.firefly;
+  for (const d of [-1, 1]) {
+    const ex = cx + d * Math.max(1, Math.round(w0 * 0.25));
+    if (e >= 0) for (let yy = -r * 3; yy <= r * 3; yy++) for (let xx = -r * 4; xx <= r * 4; xx++) if (dither(ex + xx, y + yy) < 6 - Math.hypot(xx / 2, yy)) tint(ex + xx, y + yy, 1.3, 40);
+    for (let yy = -r; yy <= r; yy++) for (let xx = -r - 1; xx <= r + 1; xx++) if ((xx / (r + 1)) ** 2 + (yy / r) ** 2 <= 1) put(ex + xx, y + yy, glow > 0.6 && Math.abs(xx) + Math.abs(yy) < r ? hot : dim);
+  }
+}
+
+/** Will-o'-wisps drawn in out of the mist, circling ever closer. */
+function wisps(cx, cy, age, n) {
+  const [hot, dim] = S.firefly;
+  for (let i = 0; i < n; i++) {
+    const ang = i * 2.4 + age * 0.25 * (i % 2 ? 1 : -1), rad = 6 + W * 0.4 * (1 - Math.min(1, age / 26)) * (0.5 + noise(i, 59, 0));
+    const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad * 0.5;
+    put(x, y, hot); put(x + 1, y, dim); put(x, y + 1, dim);
+    for (const [dx, dy] of [[-1, 0], [2, 0], [0, -1], [1, 2]]) tint(x + dx, y + dy, 1.2, 30);
+  }
+}
+
+function marshWake(t) {
+  const awake = bossPrelude.phase === 'awake', age = preludeAge(t), { x: gx, foot, h } = greatSnag();
+  if (awake) { mistVeil(t, 0.2); return 0; }
+  const s = Math.min(1, age / LOOM_AT), e = age - LOOM_AT, loom = Math.min(1, Math.max(0, (age - 4) / (LOOM_AT - 4)));
+  veil(abgr('#101810'), s * 0.3);   // the light goes
+  mistVeil(age, 0.1 + s * 0.45);   // the mist thickens round everything...
+  const tall = Math.round(h * (1 + loom * 0.55 + Math.max(0, e) * 0.02)), reach = 1 + Math.min(0.35, Math.max(0, e) * 0.08);
+  snagShape(gx, foot, tall, reach, Math.sin(age * 0.5) * 0.06, abgr('#141c16'), 0.25 + loom * 0.7);   // ...and the Snag looms out of it
+  for (let y = foot - Math.round((H - horizon) * 0.2); y < H; y++) for (let x = 0; x < W; x++) if (dither(x, y + (age >> 1)) < 5) blend(x, y, S.mistColour, 0.5);   // mist curling round its roots
+  snagEyes(gx, foot, tall, e < 0 ? loom * (0.5 + 0.5 * Math.sin(age * 1.3)) : 1, e);
+  wisps(gx, foot - tall * 0.4, age, Math.round(4 + s * 10));
+  if (e === 0) flashScreen(1.15, 30);
+  return e >= 0 && e < 3 ? 1 : 0;
+}
+
+/** The mist closes in solid, the Snag's eyes the last thing showing, then the white. */
+function marshPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  const { x: gx, foot, h } = greatSnag(), tall = Math.round(h * 1.6);
+  veil(abgr('#101810'), 0.3);
+  snagShape(gx, foot, tall, 1.35 + age * 0.04, Math.sin(age * 0.5) * 0.06, abgr('#141c16'), 0.95);
+  mistVeil(age, 0.55 + age * 0.09);
+  snagEyes(gx, foot, tall, 1, 10 + age);
+  wisps(gx, foot - tall * 0.4, 26 + age, 14);
+  return frame < 6 ? 1 : 0;
+}
+
+/* --- the Peak: the summit shakes and cracks, snow slides off the far range, then an avalanche's powder cloud rolls in --- */
+
+const summitCloud = () => horizon - Math.round(horizon * 0.12);   // the sea of cloud's top (peakBack)
+
+/** A round billow of cloud or powder, lit from the top left. */
+function puff(cx, cy, r, [lit, body, shade]) {
+  for (let y = -Math.ceil(r); y <= r; y++) for (let x = -Math.ceil(r); x <= r; x++) {
+    const d = (x * x + y * y) / (r * r);
+    if (d > 1 || (d > 0.75 && dither(cx + x, cy + y) > 8)) continue;
+    const l = (x + y) / r;
+    put(cx + x, cy + y, l < -0.5 ? lit : l > 0.6 ? shade : body);
+  }
+}
+
+/** Cracks racing across the summit's rock and snow towards you. */
+function summitCracks(reach) {
+  const count = Math.max(3, Math.round(W / 60)), top = horizon + 3;
+  for (let i = 0; i < count; i++) {
+    let x = (i + 0.5 + (noise(i, 63, 0) - 0.5) * 0.5) * W / count;
+    const end = top + (H - top) * Math.max(0, Math.min(1, reach * 1.3 - noise(i, 63, 1) * 0.3));
+    for (let y = top; y < end; y++) {
+      x += (x - W / 2) / W * 1.2 + (noise(i, y >> 1, 64) - 0.5) * 1.6;
+      const w = Math.round(depthOf(y) * 1.6);
+      for (let dx = 0; dx <= w; dx++) put(x + dx, y, S.cliff[3]);
+      put(x + w + 1, y, S.snow[0]);
+    }
+  }
+}
+
+/** Snow sliding down the far range's faces into the sea of cloud, powder puffing off each slide's head. */
+function rangeSlides(a) {
+  const cloud = summitCloud(), count = Math.max(4, Math.round(W / 18)), [snow, shade, deep] = S.snow;
+  for (let i = 0; i < count; i++) {
+    const go = a - noise(i, 65, 0) * 6;
+    if (go < 0) continue;
+    const x0 = Math.round((i + 0.5 + (noise(i, 65, 1) - 0.5) * 0.6) * W / count), y0 = wallTopAt(x0);
+    if (y0 >= cloud) continue;
+    const len = Math.min(cloud - y0, Math.round(go * 1.5));
+    for (let y = y0; y <= y0 + len; y++) {
+      const w = 1 + Math.round((y - y0) / 5);
+      for (let dx = -w; dx <= w; dx++) if (dither(x0 + dx, y + (a | 0)) < 12) put(x0 + dx + Math.round((y - y0) * 0.2), y, Math.abs(dx) < w ? snow : shade);
+    }
+    puff(x0 + Math.round(len * 0.2), y0 + len - 1, 1 + Math.min(4, go * 0.3), [snow, shade, deep]);
+  }
+}
+
+/** The avalanche's powder cloud, `e` frames after it broke: billows boiling up out of the sea of cloud and rolling at you. */
+function powderCloud(age, e) {
+  const u = Math.min(1, (e + 1) / 12), cloud = summitCloud(), front = cloud + Math.round((H - cloud) * 0.55 * u);
+  const cols = Math.max(6, Math.round(W / 14)), [snow, shade, deep] = S.snow;
+  for (let j = 3; j >= 0; j--) for (let i = 0; i < cols; i++) {
+    const r = (W / cols) * (0.7 + 0.5 * noise(i, j, 62)) * (0.5 + u * 1.2);
+    const x = (i + 0.5) * W / cols + (noise(i, j, 61) - 0.5) * W / cols, y = front - j * r * 0.9 - Math.sin(age * 0.6 + i + j) * 1.5;
+    puff(Math.round(x), Math.round(y), r, [snow, j ? shade : snow, j ? deep : shade]);
+  }
+  for (let y = front; y < Math.min(H, front + 4); y++) for (let x = 0; x < W; x++) if (dither(x, y) < 12 - (y - front) * 3) put(x, y, shade);
+}
+
+/** Ice and rock tumbling down ahead of it. */
+function tumblingIce(e) {
+  for (let i = 0; i < 14; i++) {
+    const a = e - noise(i, 67, 0) * 4;
+    if (a < 0) continue;
+    const y = horizon + (H - horizon) * Math.min(1, a / 8) * (0.4 + noise(i, 67, 1) * 0.6) - Math.abs(Math.sin(a * 1.6 + i)) * 4;
+    const x = noise(i, 67, 2) * W + Math.sin(a + i) * 2, size = 1 + Math.round(Math.max(0, depthOf(y)) * 3);
+    for (let dy = 0; dy <= size; dy++) for (let dx = 0; dx <= size; dx++) put(x + dx, y + dy, dx + dy === 0 ? S.snow[0] : dx === size || dy === size ? S.cliff[2] : S.snow[1]);
+  }
+}
+
+function peakWake(t) {
+  const awake = bossPrelude.phase === 'awake', age = preludeAge(t);
+  if (awake) {   // powder still hanging over the clouds
+    for (let y = summitCloud() - 10; y < horizon + 4; y++) for (let x = 0; x < W; x++) if (dither(x, y) < 5) blend(x, y, S.snow[0], 0.5);
+    return 0;
+  }
+  const s = Math.min(1, age / AVALANCHE_AT), e = age - AVALANCHE_AT;
+  veil(abgr('#5a6a88'), s * 0.3, true);
+  summitCracks(Math.min(1, age / 12));
+  for (let i = 0, n = Math.round(W / 6 * s); i < n; i++) {   // snow shaken up off the ground
+    const y = horizon + 3 + noise(i, 69, 0) * (H - horizon - 3), hop = Math.abs(Math.sin(age * 1.5 + i)) * 3 * s * (0.5 + depthOf(y));
+    put(noise(i, 69, 1) * W, y - hop, S.snow[0]);
+  }
+  if (age > 4) rangeSlides(age - 4);
+  if (e < 0) return age > 2 ? 1 : 0;
+  if (e === 0) flashScreen(1.25, 50);
+  powderCloud(age, e);
+  tumblingIce(e);
+  return e < 6 ? 2 : 1;
+}
+
+/** The powder cloud engulfs you: a white-out. */
+function peakPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  veil(abgr('#5a6a88'), 0.3, true);
+  powderCloud(age, 12 + age * 3);
+  tumblingIce(12 + age);
+  const [snow, shade] = S.snow;
+  for (let i = 0; i < 16; i++) {
+    const a = age - noise(i, 71, 0) * 2;
+    if (a > 0) puff(Math.round(noise(i, 71, 1) * W), Math.round(H * (0.3 + noise(i, 71, 2) * 0.7)), a * Math.min(W, H) * 0.12, [snow, snow, shade]);
+  }
+  veil(S.snow[0], ((age + 1) / 6) ** 2);
+  return frame < 6 ? 2 : 0;
+}
+
+/* --- the Desert: the heat shimmers, false oases flicker along the horizon, the sky yellows and a wall of sand rolls in --- */
+
+/** The air wavers: rows near the horizon slide back and forth. */
+function heatShimmer(time, amp) {
+  const src = px.slice(), y1 = Math.min(H, horizon + Math.round((H - horizon) * 0.3));
+  for (let y = 0; y < y1; y++) {
+    const dx = Math.round(Math.sin(y * 0.9 + time * 1.7) * amp * Math.max(0, 1 - Math.abs(y - horizon) / horizon));
+    if (dx) for (let x = 0; x < W; x++) px[y * W + x] = src[y * W + Math.max(0, Math.min(W - 1, x - dx))];
+  }
+}
+
+/** Oases that aren't there: palms over a shining pool, flickering along the horizon, and a mirage lake mirroring the sky. */
+function mirage(age, s) {
+  const src = px.slice(), keep = sky.slice(), o = life.oasis, white = abgr('#fffce8');
+  for (let y = horizon - 2; y <= horizon + 3; y++) for (let x = 0; x < W; x++) {   // the shining band
+    const from = Math.max(0, 2 * (horizon - 3) - y);
+    if (dither(x, y + age) < s * 12) px[y * W + x] = src[from * W + Math.max(0, Math.min(W - 1, x + Math.round(Math.sin(y + age) * 2)))];
+    if (dither(x, y) < s * 6) blend(x, y, S.lake[1], 0.5);
+  }
+  [0.32, 0.55, 0.72].forEach((at, i) => {
+    const x = Math.round(W * at) + (o && Math.abs(W * at - o.x) < W * 0.12 ? Math.round(W * 0.12) : 0);
+    const p = Math.min(1, Math.max(0, s * 1.6 - 0.25 - i * 0.15)) * (0.55 + 0.45 * Math.sin(age * 1.1 + i * 2)) * Math.min(1, Math.max(0, (HABOOB_AT - age) / 4));
+    if (p < 0.08) return;
+    const h = Math.round(horizon * (0.18 + 0.05 * i)), snap = px.slice();
+    palm(x - Math.round(h * 0.25), horizon, h, -0.6);
+    palm(x + Math.round(h * 0.2), horizon, Math.round(h * 0.8), 0.8);
+    for (let dx = -Math.round(h * 0.6); dx <= h * 0.6; dx++) { put(x + dx, horizon + 1, S.lake[1]); if (dither(x + dx, age) < 3) put(x + dx, horizon + 1, white); }
+    for (let y = horizon - h - 4; y <= horizon + 1; y++) for (let xx = x - h; xx <= x + h; xx++) {
+      if (!inside(xx, y) || px[y * W + xx] === snap[y * W + xx]) continue;
+      if ((y + (age | 0)) % 2 && p < 0.7) px[y * W + xx] = snap[y * W + xx];   // a mirage is scanlines of light
+      else blend(xx, y, snap[y * W + xx], 1 - p);
+    }
+  });
+  sky.set(keep);   // palm() paints its pixels solid; these are only light
+}
+
+/** The haboob: a wall of dust rising off the horizon, `a` frames in; past the climax its foot rolls towards you. */
+function haboob(a, e) {
+  const tall = Math.min(horizon * 0.95, a * horizon * 0.07), foot = horizon + Math.round((H - horizon) * Math.min(1, Math.max(0, e) / 10));
+  const dust = ['#f0d8a0', '#d0a868', '#a88050', '#7a5a34'].map(abgr);
+  if (tall < 1) return;
+  for (let x = 0; x < W; x++) {
+    const top = foot - Math.round(tall * (0.8 + 0.12 * Math.sin(x * 0.08 + a * 0.3) + 0.08 * Math.abs(Math.sin(x * 0.23 - a * 0.5))));
+    for (let y = Math.max(0, top); y <= foot && y < H; y++) {
+      const d = (y - top) / Math.max(1, foot - top), swirl = Math.sin(x * 0.15 + y * 0.3 - a * 0.8) + Math.sin(x * 0.05 - y * 0.2 + a * 0.4);
+      if (d < 0.08 && dither(x, y) > 10) continue;
+      put(x, y, dust[Math.min(3, Math.max(0, Math.floor(d * 3 + (swirl > 1 ? -1 : swirl < -1 ? 1 : 0))))]);
+    }
+  }
+}
+
+/** Sand driven hard across the screen. */
+function sandStreaks(time, n, speed) {
+  for (let i = 0; i < n; i++) {
+    const y = Math.round(noise(i, 73, 0) * H), len = 3 + Math.round(noise(i, 73, 1) * 5);
+    const x = ((noise(i, 73, 2) * W + time * W * 0.14 * speed * (0.7 + noise(i, 73, 3))) % (W + 20)) - 10;
+    for (let d = 0; d < len; d++) put(x + d, y, S.ember[(i + d) % 3]);
+  }
+}
+
+function desertWake(t) {
+  const awake = bossPrelude.phase === 'awake', age = preludeAge(t);
+  if (awake) { veil(abgr('#d8b070'), 0.15, true); sandStreaks(t, 18, 0.6); return 0; }
+  const s = Math.min(1, age / HABOOB_AT), e = age - HABOOB_AT;
+  if (e < 0) mirage(age, s);
+  heatShimmer(age, Math.min(2, 0.5 + age / 6) * (e < 0 ? 1 : 0.5));
+  veil(abgr('#c89048'), s * 0.35, true);   // the sky yellows
+  if (age > 5) haboob(age - 5, e);
+  if (e < 0) return 0;
+  sandStreaks(age, Math.round(30 + e * 25), 1 + e * 0.1);
+  veil(abgr('#c8a060'), Math.min(0.45, e * 0.05));
+  return e < 8 ? 1 : 2;
+}
+
+/** The sandstorm swallows the screen. */
+function desertPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  veil(abgr('#c89048'), 0.35, true);
+  haboob(HABOOB_AT + 7 + age * 2, 12 + age * 2);
+  sandStreaks(age + 30, 300, 2);
+  veil(abgr('#c8a060'), 0.45 + ((age + 1) / 6) ** 2 * 0.55);
+  sandStreaks(age + 30, 120, 2.5);
+  return 2;
+}
+
+/* ----- the Safari areas' boss arenas: under the prelude's last white flash the boss's place becomes the area's arena
+   (`S.raw.arena`, enterArena()), the area's sky and far backdrop kept, its ground and foreground repainted as a stage
+   for the fight: a round floor laid on the ground under the two Pokémon (arenaGround()), the big set pieces out at the
+   edges. ----- */
+
+const ARENAS = {
+  meadow: { back: stormSky, floor: cropCircle, front: standingStones, life: meadowArenaLife, noSun: true },
+  forest: { back: () => {}, floor: fairyRing, front: grandTrunks, life: forestArenaLife },
+  wetland: { back: waterfalls, floor: lilyThrone, front: () => reedCorners(), life: wetlandArenaLife },
+  marsh: { back: bogSky, floor: bogIsland, front: snagHollow, life: marshArenaLife, noSun: true },
+  peak: { back: auroraSky, floor: iceSheet, front: iceSpires, life: peakArenaLife, noSun: true },
+  desert: { back: duskRuins, floor: sandDais, front: ruinColumns, life: desertArenaLife, noSun: true },
+};
+
+/** The arena's floor, laid on the ground in perspective: a disc centred on the camera's line, its near rim just in front of
+    your Pokémon, its far rim just behind the boss's (or across the middle of the ground on the ?area= peek). Everything on
+    it is laid out in ground units (X across, Z away), so it shrinks and flattens into the distance. The ground's vanishing
+    line sits `off` rows above the painted horizon, so the far rim is DEPTH times as far off as the near one: true to the
+    horizon, a disc reaching back to the boss (who stands right at it) would be dozens of screens wide with straight rims,
+    and much less makes the floor's courses all the same height, a wall rather than a floor (the user's eye, 2026-10-02). */
+const DEPTH = 3.4;
+function arenaGround() {
+  const pads = battlePads(), camX = W / 2, camH = H - horizon;
+  const yb = pads ? Math.min(H - 2, pads.p.y + pads.p.half * 0.5) : horizon + camH * 0.9;
+  const yt = pads ? Math.max(horizon + 1, pads.e.y - pads.e.half * 0.5) : horizon + Math.max(1, camH * 0.06);
+  const off = Math.max(0, ((yb - horizon) - DEPTH * (yt - horizon)) / (DEPTH - 1));
+  const hz = horizon - off, K = camH + off, Zf = K / (yt - hz), Zn = K / (yb - hz), Zc = (Zf + Zn) / 2, R = (Zf - Zn) / 2;
+  const toGround = (x, y) => { const Z = K / Math.max(0.01, y - hz); return { X: (x - camX) * Z / K, Z }; };
+  const toScreen = (X, Z) => ({ x: camX + X * K / Z, y: hz + K / Z, s: K / Z });   // s: screen pixels per ground unit there
+  return {
+    camX, hz, K, Zc, R, toGround, toScreen,
+    d: (x, y) => { const { X, Z } = toGround(x, y); return Math.hypot(X, Z - Zc) / R; },
+    /** A point on the floor `r` radii from its middle, `a` round from your right (π/2 is the far side). */
+    at: (a, r) => toScreen(Math.cos(a) * r * R, Zc + Math.sin(a) * r * R),
+  };
+}
+
+/** Paints the floor's disc (`k` radii) pixel by pixel with `paint(x, y, g)` (g: d 0..1 out from its middle, a its angle,
+    X and Z, unit: ground units a pixel there), leaves it bare of blades, and hangs a face `lip` ground units deep
+    under its near rim, coloured by `face(x, y, t)` (t 0 at the top of the face, 1 at its foot). */
+function fillDisc(G, k, paint, lip = 0, face = null) {
+  const r = G.R * k, far = G.toScreen(0, G.Zc + r).y, near = G.toScreen(0, Math.max(G.Zc - r, 1e-3)).y, low = new Int32Array(W).fill(-1);
+  for (let y = Math.max(horizon + 1, Math.floor(far)); y <= Math.min(H - 1, Math.ceil(near)); y++) for (let x = 0; x < W; x++) {
+    const { X, Z } = G.toGround(x, y), d = Math.hypot(X, Z - G.Zc) / r;
+    if (d > 1) continue;
+    const c = paint(x, y, { d, a: Math.atan2(Z - G.Zc, X), X, Z, unit: Z / G.K });
+    if (c == null) continue;
+    put(x, y, c); bare(x, y);
+    low[x] = y;
+  }
+  if (lip && face) for (let x = 0; x < W; x++) {
+    if (low[x] < 0) continue;
+    const deep = Math.max(1, Math.round(lip * G.K / G.toGround(x, low[x]).Z));
+    for (let t = 1; t <= deep; t++) { put(x, low[x] + t, face(x, low[x] + t, t / deep)); bare(x, low[x] + t); }
+  }
+}
+const frac = (v) => v - Math.floor(v);
+
+/** Where the two Pokémon's pads are on the canvas (their middles and half-widths), or null when no battle is laid out. */
+function battlePads() {
+  if (document.body.dataset.screen !== 'battle-screen') return null;
+  const ez = $('enemy-zone').getBoundingClientRect(), pz = $('player-zone').getBoundingClientRect(), box = $('enemy-portrait-box').getBoundingClientRect();
+  if (!ez.height || !pz.height || !box.width) return null;
+  const k = W / innerWidth, base = box.width / (parseFloat(getComputedStyle($('enemy-zone')).getPropertyValue('--size')) || 1);
+  const ew = base * 1.5, pw = Math.min(290, Math.max(130, innerHeight * 0.25));   // the pads' widths (.enemy-zone::after, .player-zone::before)
+  return {
+    e: { x: (ez.left + ez.right) / 2 * k, y: (ez.bottom + base * 0.2 - ew / 6) * k, half: ew / 2 * k },
+    p: { x: (pz.left + pz.right) / 2 * k, y: (pz.bottom + pz.height * 0.04 - pw / 6) * k, half: pw / 2 * k },
+  };
+}
+
+/** Lays a vertical gradient (top colour to bottom colour) over the sky, `k` of the way. */
+function skyGrade(top, bottom, k) {
+  const a = abgr(top), b = abgr(bottom), mix = (s, u) => Math.round(((a >> s) & 255) * (1 - u) + ((b >> s) & 255) * u);
+  for (let y = 0; y < horizon; y++) {
+    const u = y / Math.max(1, horizon - 1), c = ((255 << 24) | (mix(16, u) << 16) | (mix(8, u) << 8) | mix(0, u)) >>> 0;
+    for (let x = 0; x < W; x++) if (sky[y * W + x]) blend(x, y, c, k);
+  }
+}
+
+const lighten = (c, k) => { const f = (s) => Math.min(255, Math.round(((c >> s) & 255) * (1 - k) + 255 * k)); return ((255 << 24) | (f(16) << 16) | (f(8) << 8) | f(0)) >>> 0; };
+const darken = (c, k) => { const f = (s) => Math.round(((c >> s) & 255) * (1 - k)); return ((255 << 24) | (f(16) << 16) | (f(8) << 8) | f(0)) >>> 0; };
+
+function enterArena(on) {
+  if (S?.raw.backdrop !== 'safari' || !!S.raw.arena === on) return;
+  S.raw = { ...S.raw, arena: on };
+  S.light = on && ARENAS[S.raw.area].noSun ? null : S.raw.light;   // the arena's sky has its own light, or none
+  resize();
+}
+
+/* --- the Meadow: a storm gathering over a crop circle flattened in the grass, a ring of standing stones, the Lone Tree huge --- */
+
+function stormSky() {
+  skyGrade('#20263a', '#e89a48', 0.62);
+  // a dark cloud bank over the top, its underside hanging in round lobes lit amber from below
+  const [top, body, under, lit] = ['#24283c', '#34384e', '#4e4a5e', '#c88a5a'].map(abgr);
+  for (let x = 0; x < W; x++) {
+    const low = Math.round(horizon * (0.16 + 0.09 * Math.abs(Math.sin(x / 8)) + 0.035 * Math.abs(Math.sin(x / 3.3 + 1))));
+    for (let y = 0; y < low; y++) if (sky[y * W + x]) put(x, y, y === low - 1 ? lit : y > low - 3 ? under : y < low * 0.4 || dither(x, y) < 5 ? top : body);
+  }
+  // shafts of gold light slanting down through a break in it
+  const gap = Math.round(W * 0.62), gold = abgr('#f8d070');
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    const band = ((x - gap) + y * 0.45) / (W * 0.06);
+    if (Math.abs(band) < 2.2 && Math.abs(band % 1) < 0.62 && dither(x, y) < 7) blend(x, y, gold, 0.22 * (y / horizon + 0.3));
+  }
+}
+
+function cropCircle() {
+  safariFloor0();
+  const G = arenaGround(), flat = M().straw, ground = S.ground;
+  fillDisc(G, 1, (x, y, { d, a, unit }) => {
+    if (d > 0.96) return dither(x, y) < 8 ? ground[4] : ground[5];   // the standing edge
+    const ring = Math.floor(d * 7), spiral = Math.sin(a * 3 + d * 9) > 0.55 && d > 0.25 && d < 0.85;
+    // the flattened stalks lie in lines round the circle, narrowing into the distance (dropped where they'd be under a pixel)
+    const P = G.R * 0.03, lay = P / unit > 2.5 && frac(d * G.R / P) < 0.3;
+    if (d < 0.14) return lay ? flat[2] : dither(x, y) < 4 ? flat[0] : flat[1];
+    if (spiral || ring % 2 === 0) return lay ? flat[2] : dither(x, y) < 3 ? flat[0] : flat[1];   // flattened, swirled one way
+    return dither(x, y) < 6 ? ground[2] : ground[3];   // a ring left standing
+  });
+}
+
+/** A standing stone: a rough grey slab, lit down its left side, moss at its foot. */
+function menhir(cx, foot, h) {
+  const w = Math.max(1, Math.round(h * 0.28)), [lit, body, shade, line] = M().stone, moss = S.trees[1];
+  for (let y = 0; y < h; y++) {
+    const half = Math.round(w * (1 - (y / h) ** 3 * 0.5));
+    for (let x = -half; x <= half; x++) solid(cx + x, foot - y, x === half || (y === h - 1 && Math.abs(x) === half) ? line : x < -half * 0.3 ? lit : x > half * 0.4 ? shade : y < h * 0.2 && dither(x, y) < 6 ? moss : body);
+  }
+}
+
+function standingStones() {
+  const side = landmarkSide(), G = arenaGround();
+  for (let k = 0; k < 14; k++) {   // a ring of stones round the circle, far ones small, the ones at your sides big
+    const a = -0.35 + k / 13 * (Math.PI + 0.7), p = G.at(a, 1.06);
+    if (p.y <= horizon + 1 || p.x < -4 || p.x > W + 4 || Math.abs(p.x - vanishX()) < W * 0.04) continue;
+    menhir(Math.round(p.x), Math.round(p.y), Math.max(2, Math.round(G.R * 0.13 * p.s)));
+  }
+  for (const s of [-1, 1]) menhir(Math.round(W * (0.5 + s * 0.5)) - s * Math.round(W * 0.04), H - Math.round((H - horizon) * 0.05), Math.round((H - horizon) * 0.55));
+  const r = Math.round(Math.min(W * 0.16, horizon * 0.42));   // the Lone Tree, huge now, its crown over the corner
+  acacia(side < 0 ? Math.round(W * 0.08) : Math.round(W * 0.92), horizon + Math.round((H - horizon) * 0.12), r, false);
+  tallGrass(-2, Math.round(W * 0.14), H + 1, Math.round((H - horizon) * 0.18));
+  tallGrass(W - Math.round(W * 0.12), W + 2, H + 1, Math.round((H - horizon) * 0.15));
+}
+
+function meadowArenaLife(t) {
+  const r = Math.round(Math.min(W * 0.16, horizon * 0.42)), tx = landmarkSide() < 0 ? Math.round(W * 0.08) : Math.round(W * 0.92), tTop = horizon + Math.round((H - horizon) * 0.12) - Math.round(r * 1.7);
+  leafFlurry(tx, tTop, r, t, 16);
+  windStreaks(t, 0.5);
+  for (let i = 0; i < 6; i++) {   // birds wheeling over the circle
+    const ang = t * 0.1 + i * Math.PI / 3;
+    flyer(Math.round(W * 0.5 + Math.cos(ang) * W * 0.3), Math.round(horizon * 0.45 + Math.sin(ang) * horizon * 0.12), 1, (t + i) % 2 === 0, S.bird);
+  }
+  if (t % 53 < 2) for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) if (sky[y * W + x]) tint(x, y, 1.3, 50);   // lightning in the clouds
+}
+
+/* --- the Forest: a fairy ring on mossy flagstones between two colossal trunks, the canopy arching overhead --- */
+
+function fairyRing() {
+  safariFloor0();
+  const G = arenaGround(), [lit, body, shade, line] = M().stone, moss = [S.ground[1], S.ground[3]], T = G.R * 0.16;
+  // flagstones in courses running across, laid on the ground, so they shrink and flatten into the distance; mossier out
+  // towards the edge, and a step's face under the near rim
+  fillDisc(G, 0.92, (x, y, { d, X, Z, unit }) => {
+    const v = (Z - G.Zc) / T, row = Math.floor(v), u = X / T + (row & 1) * 0.5, col = Math.floor(u);
+    if (frac(v) < unit / T || frac(u) < unit * 1.2 / T) return dither(x, y) < 7 ? moss[1] : line;
+    const mossy = noise(col, row, 7) < 0.15 + d * 0.5;
+    return mossy && dither(x, y) < 10 ? moss[dither(x, y) < 4 ? 0 : 1] : noise(col, row, 8) < 0.3 ? lit : noise(col, row, 9) < 0.3 ? shade : body;
+  }, G.R * 0.025, (x, y, t) => (t < 0.35 ? shade : line));
+  for (let k = 0; k < 26; k++) {   // the fairy ring: pale mushrooms all round the stones, glowing
+    const p = G.at(k / 26 * Math.PI * 2, 0.97);
+    if (p.y > horizon + 1) mushroom(Math.round(p.x), Math.round(p.y), Math.max(1, Math.round(G.R * 0.03 * p.s)), ['#c8f8f0', '#68c8c0', '#ffffff'].map(abgr));
+  }
+}
+
+/** A colossal trunk rising out of the frame, buttress roots spreading over the floor. */
+function colossalTrunk(cx, half) {
+  const [bark, barkDark] = S.trunk, line = M().bark[3], foot = horizon + Math.round((H - horizon) * 0.55);
+  for (let y = 0; y <= foot; y++) {
+    const flare = y > foot - half * 2 ? Math.round((y - (foot - half * 2)) ** 2 / (half * 2)) : 0, w = half + flare;
+    for (let x = -w; x <= w; x++) {
+      const u = x / w, groove = Math.sin(x * 1.3 + Math.sin(y * 0.15) * 2) > 0.7;
+      solid(cx + x, y, Math.abs(u) > 0.94 ? line : groove ? barkDark : u < -0.4 ? (dither(x, y) < 6 ? M().bark[0] : bark) : u > 0.3 ? barkDark : bark);
+    }
+  }
+  for (const d of [-1, 1]) for (let j = 0; j < half * 4; j++) {   // roots
+    const x = cx + d * (half + j), y = foot - Math.round(half * 0.8 * Math.exp(-j / half)) + Math.round(j * 0.15);
+    for (let k = 0; k <= Math.max(1, Math.round(half * 0.5 * Math.exp(-j / (half * 1.5)))); k++) solid(x, y + k, k === 0 ? bark : barkDark);
+  }
+  for (let n = 0; n < half; n++) {   // ivy up the trunk
+    const y = Math.floor(rand() * foot), x = cx + Math.round((rand() - 0.5) * half * 1.6);
+    solid(x, y, S.trees[1]); solid(x + 1, y + 1, S.trees[2]);
+  }
+}
+
+function grandTrunks() {
+  const half = Math.max(4, Math.round(W * 0.07));
+  colossalTrunk(Math.round(W * 0.06), half);
+  colossalTrunk(Math.round(W * 0.94), half);
+  // the canopy arching between them, open in the middle
+  const [lit, leaf, shade, deep] = S.trees;
+  for (let x = 0; x < W; x++) {
+    const u = Math.abs(x - W / 2) / (W / 2), h = Math.round(horizon * (0.06 + 0.5 * u ** 2.2) + 2 * Math.sin(x / 5));
+    for (let y = 0; y <= h; y++) solid(x, y, y >= h - 1 ? deep : dither(x, y) < 2 ? lit : y > h - 4 && dither(x, y) < 8 ? shade : leaf);
+    if (x % 7 === 0 && u > 0.35) for (let y = h; y < h + Math.round(horizon * 0.3 * u); y++) solid(x + (y % 5 === 0), y, y % 3 ? S.trees[1] : S.trees[2]);   // hanging vines
+  }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {   // shafts of light down the middle
+    const band = ((x - W / 2) - (y - horizon) * 0.25) / (W * 0.035);
+    if (Math.abs(band) < 3.5 && Math.abs(band % 1) < 0.45 && dither(x, y) < 4) tint(x, y, 1.12, 22);
+  }
+}
+
+function forestArenaLife(t) {
+  const g = gladeLight(), G = life.ground ||= arenaGround();
+  sunbeams(g, t, 0.4);
+  motes(g, t, 18);
+  for (let k = 0; k < 26; k++) {   // the ring's glow pulsing round it
+    if (Math.sin(t * 0.3 - k * 0.6) < 0.6) continue;
+    const p = G.at(k / 26 * Math.PI * 2, 0.97), x = Math.round(p.x), y = Math.round(p.y), r = Math.max(1, Math.round(G.R * 0.03 * p.s));
+    for (let dy = -r * 3; dy <= 0; dy++) for (let dx = -r - 2; dx <= r + 2; dx++) if (dither(x + dx, y + dy) < 6) tint(x + dx, y + dy - r, 1.25, 34);
+  }
+}
+
+/* --- the Wetland: out on the lake itself, a giant lily pad for a stage, waterfalls pouring off the far hills --- */
+
+function waterfalls() {
+  const top = lakeTop();
+  for (const at of [0.22, 0.78]) {
+    const x0 = Math.round(W * at), fall = wallTopAt(x0), w = Math.max(2, Math.round(W * 0.025));
+    for (let y = Math.max(0, fall - 2); y < top; y++) for (let dx = -w; dx <= w; dx++) solid(x0 + dx, y, Math.abs(dx) === w ? S.lake[3] : (dx + y) % 4 === 0 ? S.lake[0] : S.lake[1]);
+    for (let dx = -w * 2; dx <= w * 2; dx++) for (let k = 0; k < 2; k++) if (dither(x0 + dx, top + k) < 10) put(x0 + dx, top + k, abgr('#ffffff'));
+  }
+  life.falls = [0.22, 0.78].map(at => ({ x: Math.round(W * at), top: wallTopAt(Math.round(W * at)), w: Math.max(2, Math.round(W * 0.025)), foot: top }));
+}
+
+function lilyThrone() {
+  const [leaf, leafDark, petal, petalLit] = S.lily, white = abgr('#ffffff');
+  for (let y = horizon; y < H; y++) for (let x = 0; x < W; x++) {   // the lake right up to your feet
+    const u = (y - horizon) / (H - horizon), i = Math.min(S.lake.length - 1, 1 + Math.floor(u * 3.2 + dither(x, y) / 16));
+    put(x, y, S.lake[i]);
+    bare(x, y);
+  }
+  for (let n = 0; n < Math.round(W / 4); n++) { const y = horizon + 2 + Math.floor(rand() * (H - horizon - 2)), x = Math.floor(rand() * W); for (let k = 0; k < 1 + depthOf(y) * 5; k++) put(x + k, y, S.ripple[rand() < 0.6 ? 0 : 1]); }
+  // the giant pad: veins running out from the middle, an upturned rim lit on the far side, a notch cut towards the front
+  // right, a thin dark edge showing under its near rim and its shadow on the water
+  const G = arenaGround(), notch = (a) => a > -0.78 && a < -0.48;
+  fillDisc(G, 1.035, (x, y, { a, d }) => (notch(a) || d < 0.95 ? null : S.lake[4]));
+  fillDisc(G, 1, (x, y, { d, a, unit }) => {
+    if (notch(a)) return null;
+    const vein = Math.abs(Math.sin(a * 9)) / 9 * d * G.R < unit * 0.7 && d > 0.07;
+    return d > 1 - 1.5 * unit / G.R ? (a > 0 ? lighten(leaf, 0.35) : leafDark) : vein ? lighten(leaf, 0.25) : d < 0.07 ? leafDark : dither(x, y) < 3 + d * 6 ? leafDark : leaf;
+  }, G.R * 0.012, () => leafDark);
+  // lotus flowers and smaller pads out on the water round it, laid on the same ground, smaller further off
+  const onWater = (d) => d > 1.12;
+  for (let n = 0; n < 30; n++) {
+    const a = rand() * Math.PI * 2, p = G.at(a, 1.15 + rand() * 0.9);
+    if (p.y <= horizon + 1 || p.y >= H || p.x < -6 || p.x > W + 6) continue;
+    lilyPad(Math.round(p.x), Math.round(p.y), Math.max(1, Math.round(G.R * 0.05 * p.s)));
+  }
+  for (const a of [-0.25, 0.9, 2.25, 3.4]) {
+    const p = G.at(a, 1.25), x = Math.round(p.x), y = Math.round(p.y), r = Math.max(1, Math.round(G.R * 0.05 * p.s));
+    if (y <= horizon + 1 || y >= H || x < 0 || x >= W) continue;
+    lilyPad(x, y + 1, r + 1);
+    for (let k = 0; k < 6; k++) {   // a lotus: pink petals in a cup, gold in the middle
+      const ang = -Math.PI / 2 + (k - 2.5) * 0.45, len = r * 2;
+      for (let j = 0; j <= len; j++) solid(x + Math.round(Math.cos(ang) * j * 0.7), y - Math.round(Math.abs(Math.sin(ang)) * j), j > len * 0.6 ? petalLit : petal);
+    }
+    solid(x, y - 1, abgr('#f8d848'));
+  }
+  life.glints = Array.from({ length: Math.round(W / 5) }, () => { let x, y; for (let n = 0; n < 40 && (x == null || !onWater(G.d(x, y))); n++) { x = Math.floor(rand() * W); y = horizon + 2 + Math.floor(rand() * (H - horizon - 2)); } return { x, y, phase: rand() * 40 }; });
+  life.glintColour = white;
+}
+
+function reedCorners() {
+  for (let n = 0; n < 8; n++) { const s = n % 2 ? 1 : -1, y = horizon + Math.round((H - horizon) * (0.3 + rand() * 0.7)); reeds(s < 0 ? Math.floor(rand() * W * 0.1) : W - 1 - Math.floor(rand() * W * 0.1), y, 2 + Math.round(depthOf(y) * 4)); }
+}
+
+function wetlandArenaLife(t) {
+  for (const fall of life.falls || []) for (let y = Math.max(0, fall.top); y < fall.foot; y++) {   // the falls pouring
+    for (let dx = -fall.w + 1; dx < fall.w; dx++) if ((y - t * 2 + dx * 3) % 6 === 0) put(fall.x + dx, y, S.ripple[0]);
+  }
+  const G = life.ground ||= arenaGround();
+  for (let k = 0; k < 3; k++) {   // ripples running out from the pad's edge, on the water's own perspective
+    const grow = ((t + k * 8) % 24) / 24;
+    for (let a = 0; a < Math.PI * 2; a += 0.01) {
+      const { x, y } = G.at(a, 1.04 + grow * 0.3);
+      if (y > horizon + 1 && dither(x | 0, y | 0) < 9 - grow * 9) put(x, y, S.ripple[0]);
+    }
+  }
+}
+
+/* --- the Marsh: a mud island in a glowing bog, lantern stakes round it, the Great Snag towering over the corner --- */
+
+function bogSky() {
+  skyGrade('#0c1612', '#5a7060', 0.6);
+}
+
+function bogIsland() {
+  const G = arenaGround(), [lit, body, shade, deep] = S.bog, [algae, algaeDark] = S.algae, glow = abgr('#3a7a50'), cell = G.R * 0.012;
+  for (let y = horizon; y < H; y++) for (let x = 0; x < W; x++) {   // the bog: scum and glowing slicks laid flat on the water
+    const { X, Z } = G.toGround(x, y), u = Z / G.K, n = noise(Math.floor(X / Math.min(cell, u * 3)), Math.floor(Z / Math.min(cell, Z * u * 2)), 13);   // specks no bigger than a few pixels up close (a pixel is Z/K across, Z²/K deep)
+    const slick = Math.sin(X / (G.R * 0.35) + Math.sin(Z / (G.R * 0.2)) * 2) + Math.sin(Z / (G.R * 0.09)) > 1.35;
+    put(x, y, n < 0.08 ? algaeDark : n < 0.13 ? algae : slick ? glow : dither(x, y) < 3 ? body : n < 0.6 ? shade : deep);
+    bare(x, y);
+  }
+  const [mud, mudDark] = S.mud, hum = G.R * 0.03, pud = G.R * 0.09, root = G.R * 0.3;
+  // the island: dark peat, mossy hummocks, puddles of bog water, roots snaking across it, a mossy bank and a muddy face
+  fillDisc(G, 0.95, (x, y, { d, a, X, Z, unit }) => {
+    if (d > 0.93) return a > 0 ? (dither(x, y) < 8 ? S.ground[3] : S.ground[4]) : dither(x, y) < 6 ? S.ground[4] : S.ground[5];
+    if (noise(Math.floor(X / pud), Math.floor(Z / pud), 12) < 0.1 && d < 0.8) return dither(x, y) < 3 ? S.bog[0] : S.bog[2];
+    const wave = (Z - G.Zc) - Math.sin(X / (G.R * 0.12)) * G.R * 0.05;
+    if (frac(wave / root) < unit * 1.3 / root && d > 0.25 && d < 0.85) return M().bark[1];
+    if (noise(Math.floor(X / Math.min(hum, unit * 4)), Math.floor(Z / Math.min(hum, Z * unit * 3)), 11) < 0.42) return dither(x, y) < 5 ? S.ground[2] : S.ground[4];
+    return dither(x, y) < 4 ? mudDark : mud;
+  }, G.R * 0.04, (x, y, t) => (t < 0.3 ? mudDark : t > 0.85 ? S.bog[3] : dither(x, y) < 5 ? S.mud[0] : mudDark));
+  life.lanterns2 = [];
+  for (let k = 0; k < 12; k++) {   // crooked stakes round the island, each hung with a wisp-lit lantern
+    const p = G.at(-0.3 + k / 11 * (Math.PI + 0.6), 0.98), x = Math.round(p.x), foot = Math.round(p.y);
+    if (foot <= horizon + 1 || x < -2 || x > W + 2 || Math.abs(x - W / 2) < W * 0.05) continue;
+    const h = Math.max(3, Math.round(G.R * (0.16 + (k % 3 ? 0 : 0.04)) * p.s));
+    for (let y = 0; y < h; y++) solid(x + (y > h * 0.6 && k % 2 ? 1 : 0), foot - y, y > h - 2 ? S.dead[0] : S.dead[1]);
+    life.lanterns2.push({ x: x + (k % 2 ? 2 : -1), y: foot - h + 1, r: Math.max(1, Math.round(G.R * 0.025 * p.s)) });
+  }
+  for (const s of [-1, 1]) for (let k = 0; k < 2; k++) {   // nearer stakes either side of you
+    const x = s < 0 ? Math.round(W * (0.05 + k * 0.1)) : Math.round(W * (0.95 - k * 0.1)), foot = H - 2 - k * Math.round((H - horizon) * 0.2), h = Math.round((H - horizon) * (0.4 - k * 0.1));
+    for (let y = 0; y < h; y++) { solid(x, foot - y, S.dead[1]); solid(x + 1, foot - y, S.dead[2]); }
+    life.lanterns2.push({ x: x + 2, y: foot - h + 2, r: 2 + (1 - k) });
+  }
+}
+
+function snagHollow() {
+  const side = landmarkSide(), cx = side < 0 ? Math.round(W * 0.1) : Math.round(W * 0.9), foot = horizon + Math.round((H - horizon) * 0.3);
+  snagShape(cx, foot, Math.round(horizon * 1.5), 1.25, 0, abgr('#18201a'), 1, true);
+  for (const s of [-1, 1]) if (s !== side) for (let k = 0; k < 2; k++) deadTree(s < 0 ? Math.round(W * (0.04 + k * 0.08)) : Math.round(W * (0.96 - k * 0.08)), horizon + 4 + k * 6, Math.round(horizon * (0.6 - k * 0.15)), S.dead);
+  for (let x = 0; x < W; x += 3 + Math.floor(rand() * 3)) {   // moss hanging from above the frame
+    const len = Math.round(horizon * 0.12 * (0.5 + rand()) * (Math.abs(x - W / 2) / (W / 2) + 0.3));
+    for (let y = 0; y < len; y++) solid(x + (y % 4 === 3), y, y > len - 2 ? S.trees[0] : S.trees[2]);
+  }
+}
+
+function marshArenaLife(t) {
+  const side = landmarkSide(), cx = side < 0 ? Math.round(W * 0.1) : Math.round(W * 0.9), foot = horizon + Math.round((H - horizon) * 0.3), h = Math.round(horizon * 1.5);
+  snagEyes(cx, foot, h, 0.7 + 0.3 * Math.sin(t * 0.4), Math.sin(t * 0.4) > 0.6 ? 1 : -1);
+  const [hot, dim] = S.firefly;
+  for (const l of life.lanterns2 || []) {
+    const on = Math.sin(t * 0.5 + l.x) > -0.6;
+    for (let dy = -l.r - 2; dy <= l.r + 2; dy++) for (let dx = -l.r - 3; dx <= l.r + 3; dx++) if (dither(l.x + dx, l.y + dy) < (on ? 5 : 2) - Math.hypot(dx, dy) / 3) tint(l.x + dx, l.y + dy, 1.3, 40);
+    for (let dy = 0; dy <= l.r; dy++) for (let dx = 0; dx <= l.r; dx++) put(l.x + dx, l.y + dy, on && dx + dy < l.r + 1 ? hot : dim);
+  }
+  wisps(W / 2, horizon + (H - horizon) * 0.3, 26 + t, 8);
+  for (let y = horizon - 6; y < horizon + Math.round((H - horizon) * 0.4); y++) for (let x = 0; x < W; x++) {   // mist drifting low over the bog
+    const m = Math.sin((x + t * 0.6) / 12 + y * 0.4) + Math.sin((x - t * 0.35) / 6 + y * 0.15);
+    if (m > 1 && dither(x, y) < 6) blend(x, y, S.mistColour, 0.35);
+  }
+}
+
+/* --- the Peak: an ice sheet on the summit under the aurora, crystal spires rising either side --- */
+
+const AURORA = () => ['#58f0a8', '#40c8c8', '#a070f0'].map(abgr);
+
+function auroraSky() {
+  skyGrade('#060a24', '#2a3a6a', 0.75);
+  const [green, teal, violet] = AURORA();
+  for (let x = 0; x < W; x++) for (let c = 0; c < 2; c++) {
+    const crest = Math.round(horizon * (0.12 + c * 0.16) + Math.sin(x / (11 + c * 5) + c) * horizon * 0.06 + Math.sin(x / 4.3) * 1.5);
+    const len = Math.round(horizon * (0.25 - c * 0.06));
+    for (let y = crest; y < crest + len; y++) {
+      const u = (y - crest) / len;
+      if (y >= 0 && sky[y * W + x] && dither(x, y) < (1 - u) * 14) blend(x, y, u < 0.3 ? (c ? violet : green) : teal, 0.55 * (1 - u));
+    }
+  }
+  for (let n = 0; n < Math.round(W / 5); n++) { const x = Math.floor(rand() * W), y = Math.floor(rand() * horizon * 0.6); if (sky[y * W + x]) put(x, y, abgr('#ffffff')); }
+}
+
+function iceSheet() {
+  safariFloor0();
+  const G = arenaGround(), ice = ['#f0fcff', '#c8ecfa', '#a0d4f0', '#78b4e0'].map(abgr), [snow, snowShade, snowDeep] = S.snow;
+  fillDisc(G, 1.05, (x, y, { d, a }) => (d > 0.9 ? (a > 0 ? (dither(x, y) < 10 ? snow : snowShade) : dither(x, y) < 5 ? snow : snowShade) : null),
+    G.R * 0.025, (x, y, t) => (t < 0.5 ? snowShade : snowDeep));   // a drift of snow round it
+  const P = G.R * 0.22;
+  fillDisc(G, 0.96, (x, y, { d, X, Z, unit }) => {
+    // the sky's light lying across the ice in long parallel streaks (on the ground, so they converge into the distance)
+    const streak = frac((X * 0.7 + (Z - G.Zc)) / P) < unit * 1.6 / P && d < 0.85;
+    if (streak) return ice[0];
+    return d < 0.4 ? (dither(x, y) < 6 ? ice[0] : ice[1]) : d < 0.75 ? (dither(x, y) < 6 ? ice[1] : ice[2]) : dither(x, y) < 8 ? ice[2] : ice[3];
+  }, G.R * 0.02, (x, y, t) => (t < 0.5 ? ice[2] : ice[3]));
+  for (let n = 0; n < 7; n++) {   // cracks wandering across it, walked in ground units
+    const a0 = rand() * Math.PI * 2, r0 = Math.sqrt(rand()) * 0.7;
+    let X = Math.cos(a0) * r0 * G.R, Z = G.Zc + Math.sin(a0) * r0 * G.R, dir = rand() * Math.PI * 2;
+    for (let k = 0, len = 20 + Math.floor(rand() * 30); k < len && Math.hypot(X, Z - G.Zc) < G.R * 0.9; k++) {
+      dir += (rand() - 0.5) * 0.9; X += Math.cos(dir) * G.R * 0.012; Z += Math.sin(dir) * G.R * 0.012;
+      const p = G.toScreen(X, Z);
+      if (p.y > horizon + 1) { put(p.x, p.y, ice[3]); put(p.x, p.y - 1, ice[0]); }
+    }
+  }
+  life.glints = Array.from({ length: Math.round(W / 6) }, () => { const p = G.at(rand() * Math.PI * 2, Math.sqrt(rand()) * 0.9); return { x: Math.round(p.x), y: Math.max(horizon + 2, Math.round(p.y)), phase: rand() * 40 }; });
+  life.glintColour = abgr('#ffffff');
+  for (let k = 0; k < 9; k++) {   // shards of ice rising round the far side of the sheet
+    const p = G.at(0.2 + k / 8 * (Math.PI - 0.4), 1.12);
+    if (p.y > horizon + 1 && Math.abs(p.x - W / 2) > W * 0.06) crystalSpire(Math.round(p.x), Math.round(p.y), Math.max(3, Math.round(G.R * 0.22 * p.s)), (p.x - W / 2) / W * 0.6);
+  }
+}
+
+/** A cluster of ice crystals, `h` tall: long hexagonal shards, a lit face and a shaded one each. */
+function crystalSpire(cx, foot, h, lean) {
+  const faces = ['#ffffff', '#d0f0ff', '#90c8f0', '#5a8ac8', '#2a4a80'].map(abgr);
+  for (const [dx, k, tilt] of [[0, 1, 0], [-0.35, 0.65, -0.35], [0.38, 0.55, 0.4], [-0.6, 0.35, -0.6], [0.65, 0.3, 0.7]]) {
+    const hh = Math.round(h * k), w = Math.max(1, Math.round(h * 0.09 * (0.6 + k * 0.4))), bx = cx + Math.round(dx * h * 0.35);
+    for (let y = 0; y < hh; y++) {
+      const off = Math.round((tilt + lean) * y * 0.3), tip = y > hh - w * 2 ? hh - y : w * 2, half = Math.min(w, Math.ceil(tip / 2));
+      for (let x = -half; x <= half; x++) solid(bx + off + x, foot - y, x === -half || x === half ? faces[4] : x < 0 ? (y % 9 === 0 ? faces[0] : faces[1]) : x === 0 ? faces[0] : faces[2 + (dither(x, y) < 4)]);
+    }
+  }
+}
+
+function iceSpires() {
+  crystalSpire(Math.round(W * 0.07), horizon + Math.round((H - horizon) * 0.45), Math.round(horizon * 1.1), -0.2);
+  crystalSpire(Math.round(W * 0.93), horizon + Math.round((H - horizon) * 0.4), Math.round(horizon * 0.95), 0.2);
+  for (const s of [-1, 1]) crystalSpire(s < 0 ? Math.round(W * 0.02) : Math.round(W * 0.98), H + 2, Math.round((H - horizon) * 0.7), s * 0.3);
+}
+
+function peakArenaLife(t) {
+  const [green, teal] = AURORA();
+  for (let x = 0; x < W; x++) {   // the aurora rippling
+    const y0 = Math.round(horizon * 0.12 + Math.sin(x / 11) * horizon * 0.06), wave = Math.sin(x / 6 - t * 0.35);
+    if (wave > 0.6) for (let y = y0; y < y0 + Math.round(horizon * 0.15); y++) if (y >= 0 && sky[y * W + x] && dither(x, y + t) < 5) blend(x, y, wave > 0.85 ? green : teal, 0.4);
+  }
+}
+
+/* --- the Desert: a sandstone dais in ancient ruins, a pyramid and a swollen red sun behind, columns either side --- */
+
+function duskRuins() {
+  skyGrade('#3a1430', '#f88848', 0.6);
+  const sx = Math.round(W * 0.38), sy = horizon - Math.round(horizon * 0.25), r = Math.round(Math.min(W, horizon) * 0.2);
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {   // a swollen red sun, banded by the haze
+    const d = Math.hypot(x, y) / r;
+    if (d <= 1 && sky[(sy + y) * W + sx + x] && !(y > 0 && (y % 4 === 0 || (y % 4 === 1 && y > r * 0.5)))) put(sx + x, sy + y, d < 0.7 ? abgr('#f8c070') : abgr('#f07040'));
+  }
+  // a pyramid far off, its sunlit face and its shadowed one, steps picked out
+  const px0 = Math.round(W * 0.7), ph = Math.round(horizon * 0.42), [lit, body, strata, shade] = S.mesas;
+  for (let y = 0; y < ph; y++) for (let x = -y; x <= y; x++) {
+    const yy = horizon - 2 - ph + y;
+    solid(px0 + x, yy, (yy % 3 === 0) ? strata : x < 0 ? (dither(x, y) < 3 ? lit : body) : shade);
+  }
+}
+
+function sandDais() {
+  safariFloor0();
+  const G = arenaGround(), stone = ['#f8e0b0', '#e0c088', '#c09c64', '#7a5a34'].map(abgr), glyph = abgr('#8a4a28'), drift = G.R * 0.12;
+  // two steps up, each with its face under the near rim; the top laid in rings of blocks round the middle (rings and
+  // joints on the ground, so they flatten and shrink into the distance), a band of carved glyphs, sand drifted over it
+  fillDisc(G, 1.06, (x, y, { d }) => (d > 0.92 ? stone[1] : null), G.R * 0.03, (x, y, t) => (t < 0.4 ? stone[2] : stone[3]));
+  const ringW = 0.13;
+  fillDisc(G, 0.97, (x, y, { d, a, X, Z, unit }) => {
+    const r = d * 0.97 * G.R, ring = Math.floor(d / ringW), n = 6 + ring * 6;
+    if (frac(d / ringW) < unit / (ringW * 0.97 * G.R)) return stone[2];
+    if (frac(a / (Math.PI * 2) * n + ring * 0.5) < unit * 1.1 / (r * Math.PI * 2 / n + 1e-6)) return stone[2];
+    if (d > 0.62 && d < 0.75) {   // the glyph band: marks carved in each block
+      const cell = Math.floor(frac(a / (Math.PI * 2)) * 32), u = frac(frac(a / (Math.PI * 2)) * 32), v = (d - 0.62) / 0.13;
+      const gx = Math.floor(u * 4), gy = Math.floor(v * 4);
+      if (gx > 0 && gx < 3 && gy > 0 && gy < 3 && noise(cell, gx * 4 + gy, 5) < 0.55) return glyph;
+    }
+    if (noise(Math.floor(X / drift), Math.floor(Z / drift), 6) < 0.1 && dither(x, y) < 10) return S.ground[1];
+    return dither(x, y) < 4 ? stone[0] : stone[1];
+  }, G.R * 0.03, (x, y, t) => (t < 0.4 ? stone[1] : stone[2]));
+}
+
+/** A sandstone column: fluted, a capital on top, or broken off short. */
+function column(cx, foot, h, half, broken) {
+  const stone = ['#f8e0b0', '#e0c088', '#b08858', '#6a4a2a'].map(abgr), top = foot - h;
+  for (let y = top; y <= foot; y++) for (let x = -half; x <= half; x++) {
+    const jag = broken && y < top + 3 && noise(x, 0, 9) * 3 > y - top;
+    if (jag) continue;
+    solid(cx + x, y, Math.abs(x) === half ? stone[3] : (x + half) % 3 === 0 ? stone[2] : x < 0 ? stone[0] : stone[1]);
+  }
+  if (!broken) for (let y = top - Math.max(2, Math.round(half * 0.7)); y < top; y++) for (let x = -half - 2; x <= half + 2; x++) solid(cx + x, y, Math.abs(x) === half + 2 || y === top - 1 ? stone[3] : stone[0]);
+  for (let x = -half - 1; x <= half + 1; x++) { solid(cx + x, foot, stone[3]); solid(cx + x, foot - 1, stone[2]); }
+}
+
+function ruinColumns() {
+  desertFront();   // the oasis's palms stay
+  const side = landmarkSide(), far = -side;
+  for (const [at, k, broken] of [[0.04, 1, false], [0.15, 0.7, true], [0.27, 0.35, false]]) {
+    const x = far < 0 ? Math.round(W * at) : Math.round(W * (1 - at)), foot = horizon + Math.round((H - horizon) * (0.55 - k * 0.45));
+    column(x, foot, Math.round((foot - horizon) * 0.4 + horizon * 0.9 * k), Math.max(2, Math.round(W * 0.03 * (0.4 + k))), broken);
+  }
+  const x = side < 0 ? Math.round(W * 0.3) : Math.round(W * 0.7);   // a toppled drum half sunk in the sand on the oasis side
+  for (let y = -3; y <= 3; y++) for (let dx = -8; dx <= 8; dx++) if (Math.abs(y) + Math.abs(dx) * 0.2 < 4) solid(x + dx, horizon + 6 + y, y < 0 ? abgr('#f8e0b0') : abgr('#b08858'));
+}
+
+function desertArenaLife(t) {
+  sandStreaks(t, 26, 0.7);
+  heatShimmer(t, 0.6);
+}
+
+/** The area's own floor, painted as usual under an arena laid over it. */
+function safariFloor0() { areaPaint().floor(); }
 /* ---------- helpers ---------- */
 
 function colours(s) {

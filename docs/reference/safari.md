@@ -238,6 +238,43 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - **Playtest**: `?area=<area>` plays the area's film first, then each new place's walk-on as you tap through the floors
   (`peekSafari()` in `js/main.js`; `&intro=0` leaves them out). `body.scene-peek` lets `.biome-intro` show.
 
+## The areas' boss preludes (phase 5d, 2026-10-02)
+
+- `bossArenaPrelude()` in `js/scene.js` plays for a Safari area's boss place too (`hasPrelude()`: stage 3, not an event's
+  room), on the main biomes' beats: a 3.6 s wake building to its climax, a 1.1 s portal into the paired white flashes,
+  then an `awake` look that stays, quietly, over the fight. `SAFARI_PRELUDES` holds each area's `wake`, `portal` and
+  `sounds` (frame, sound), all built on the area's goal (`loneTree()`, `greatSnag()`, `lakeTop()`, `life.oasis`...):
+  - Meadow: the wind rises, the Lone Tree's crown thrashes and sheds leaves, then a flock bursts out of it; the portal is
+    the flock pouring at you until it blacks out the screen. Sounds `leaf-storm`, `flock`.
+  - Forest: the wood goes dark, beams reach down through the opening in the leaves, then the glade floods with light and
+    flowers open across it; the light pours down over the screen. `glade-hum`, `sunburst`.
+  - Wetland: a squall, rings pulsing across the darkening lake as it rises and heaves into a mound, which bursts into a
+    column and one great wave; the wave breaks over the screen. `lake-churn`, `wave-crash`.
+  - Marsh: the light goes, the mist thickens, and the Great Snag looms out of it as a bigger, clawing silhouette with
+    glowing hollows for eyes, will-o'-wisps circling in; the mist closes in solid. `mist-drone`, `creak` x2, `loom`.
+  - Peak: the summit shakes and cracks, snow slides down the far range, then an avalanche's powder cloud boils up out of
+    the sea of cloud and rolls at you, ice tumbling ahead of it; a white-out. `quake`, `ice-crack`, `avalanche`.
+  - Desert: heat shimmer, false oases flickering along a mirage lake on the horizon, the sky yellowing, then a haboob
+    rises and rolls in; the sandstorm swallows the screen. `mirage`, `sandstorm`.
+- **The arenas** (the user's ask, 2026-10-02: the boss room looked like any other): under the portal's last white flash
+  `enterArena(true)` repaints the place as the area's boss arena (`S.raw.arena`, `ARENAS` in `js/scene.js`: `back` over the
+  area's own sky and far backdrop, `floor`, `front`, and `life` for its `awake` animation, which fades up out of the white;
+  `noSun` hides the sun where the arena lights its own sky). The floor is a disc laid on the ground in perspective
+  (`arenaGround()` / `fillDisc()`: every ring, tile, vein and streak is placed in ground units, so it shrinks and flattens
+  into the distance, and raised floors hang a face under their near rim; `DEPTH` sets how much farther the far rim is than
+  the near one, since the user saw flat ellipses as "circles slapped onto the screen"):
+  Meadow a crop circle under a gathering storm, standing stones round it, the Lone Tree huge in the corner; Forest a fairy
+  ring of glowing mushrooms on mossy flagstones between two colossal trunks; Wetland a giant lily pad out on the lake, lotus
+  flowers, waterfalls off the far hills; Marsh a peat island in a glowing bog, lantern stakes, the Great Snag towering;
+  Peak an ice sheet under the aurora between crystal spires; Desert a carved sandstone dais in ruins, a pyramid and a
+  swollen red sun behind. A replay of the prelude puts the place back first. In a battle the disc is fitted to the two pads
+  (`battlePads()`: its far rim just behind the boss's, its near rim just in front of yours); `?bossfight=<area>` shows it in
+  a real fight.
+- The battle preloads the scene's own prelude sounds (`bossPreludeSounds()`), and a Safari boss opens with its area's
+  line (`SAFARI_PRELUDE_LINES` in `js/battle.js`).
+- **Playtest**: `?area=<area>&stage=3` plays the boss place's walk-on, then its prelude; a tap replays the prelude, a
+  tap on the label walks on (`&intro=0` skips the walk-on).
+
 ## The bot (`../pokeDB-sim`)
 
 `cfg.safari` (`safariCfg()` in `sim/run-node.mjs`) plays a Safari day: `true` deals a random day per run (its starter,

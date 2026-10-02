@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, showPlaceScene, setStorm, bossArenaPrelude } from './scene.js';
+import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds } from './scene.js';
 import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -43,6 +43,7 @@ const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 const BOSS_PRELUDE_LINES = ['The Ancient Tree stirs...', 'The shrine lanterns answer...', 'The crater rumbles...', 'The crystals hum with a terrible energy...'];
+const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
 const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
@@ -228,7 +229,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   setupBattleScreen();
 
   log(encounter.kind === 'boss'
-    ? def.prelude ?? BOSS_PRELUDE_LINES[run.biome] ?? 'A powerful presence stirs...'
+    ? def.prelude ?? (run.safari ? SAFARI_PRELUDE_LINES[run.safari.areas[run.biome]] : BOSS_PRELUDE_LINES[run.biome]) ?? 'A powerful presence stirs...'
     : `A wild ${def.name} appeared!`);
   if (deferIntro) {
     document.body.classList.add('boss-prelude');
@@ -255,7 +256,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
