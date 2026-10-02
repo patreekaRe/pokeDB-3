@@ -846,9 +846,12 @@ and whether Mewtwo mode stays out of it (it should: Mewtwo is what's behind it).
   silhouette from ~55% HP, broken steps down into violet light. After the win scene, `js/gatescene.js` plays the attack
   (each type's move, stronger for a win and an ultimate for a Level 5 win; a loss chip uses the weakest), the bar and
   cracks running down together; the break whites out, blows the door apart and Mewtwo steps out in colour with its aura.
-  The title shows the gate on the ledge with a thin HP bar; once broken, Mewtwo joins the flyers. Playtest links:
-  `?gate=NNN`, `?strike=NN` (see CLAUDE.md). Left for the user to judge: the pacing (how many taps), the cavern's look,
-  and whether a loss chip should play the scene at all.
+  Playtest links: `?gate=NNN`, `?strike=NN` (see CLAUDE.md).
+  **Follow-up (2026-10-02, the user's calls):** the gate left the title screen (and Mewtwo the flyers): it's only seen
+  at a run's end, so its progress is a reason to win another. A loss at the last boss deals nothing now; the scene still
+  plays, and your Pokémon is too weak to harm the seal. The story is told in the scene (the first visit's lore, then
+  what higher Levels would deal). The art is fantasy rather than bricks: crystal spires, an obsidian and gold frame of
+  glowing glyphs, a turning magic-circle seal. `?lockmewtwo` relocks a playtest unlock.
 
 **Run in: CLOUD.** Next-session prompt (part A): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'The Sealed Gate'.
 Build part A: the saved gate HP, damage after each won run (more at higher Trainer Levels; only a Level 5 win can break

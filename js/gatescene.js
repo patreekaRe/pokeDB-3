@@ -15,7 +15,7 @@ import { $, sleep, setHpBar } from './ui.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
 import { makeGate, gateReady } from './gate.js';
-import { GATE_HP, GATE_SLIVER } from './data/gate.js';
+import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 
@@ -36,7 +36,7 @@ const FX = {
   grass: ['#e8ffb0', '#a8e858', '#58b838', '#2c7a28', '#184818'],
   psychic: ['#ffe8ff', '#f0a0f8', '#c060e8', '#8030c0', '#401870'],
 };
-const STONE = ['#a498c8', '#7a6ea2', '#544a78', '#3a3256'];
+const STONE = ['#c8f0ff', '#78a0e8', '#4656b8', '#2c2a78'];   // chips of the crystal spires
 const SHARDS = ['#341c58', '#22123e', '#5a3a8a', '#ff6aa8', '#ffd0e8'];
 
 let P = 4, W = 0, H = 0, gx = 0, gy = 0;
@@ -45,11 +45,12 @@ let parts = [], beams = [], rays = 0, raf = 0, last = 0, t = 0;
 let shake = 0, view = null;   // view: what the gate shows this frame (makeGate's state)
 
 /**
- * Play the scene: `before` and `after` are the gate's HP, `kind` 'loss' | 'win' | 'ultimate', `music` the song to bring
- * back after the break's silence. Resolves once the last
+ * Play the scene: `before` and `after` are the gate's HP, `kind` 'loss' | 'win' | 'ultimate', `level` the run's Trainer
+ * Level, `first` the first time it's ever reached (its story is told), `music` the song to bring back after the break's
+ * silence. Resolves once the last
  * line is tapped away and the scene has faded out.
  */
-export async function gateScene({ starter, stage = 0, shiny = false, before, after, kind = 'win', music = 'run-win' }) {
+export async function gateScene({ starter, stage = 0, shiny = false, before, after, kind = 'win', level = 0, first = false, music = 'run-win' }) {
   await gateReady();
   const scene = $('gate-scene'), mon = $('gate-mon');
   const name = stageName(starter, stage);
@@ -80,14 +81,22 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
   await sleep(still() ? 200 : 900);
   scene.classList.add('mon-in');
   await sleep(still() ? 0 : 500);
-  await say([kind === 'loss' ? `With the last of its strength, ${name} lashes out at the Sealed Gate!` : `${name} stands before the Sealed Gate.`]);
-
-  // the attack
-  tellNow(`${name} used ${move}!`);
+  // the story, told in the scene rather than a menu (the user's call, 2026-10-02): the gate is only ever seen down here
+  const story = first ? [
+    'Far beneath the wastes lies a chamber no map shows...',
+    'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.',
+  ] : [];
+  if (kind === 'loss') {
+    await say([...story, `${name} fainted... but its last spark of strength is drawn down into the chamber.`]);
+    tellNow(`${name} reaches for the seal...`);
+  } else {
+    await say([...story, first ? `The strength of ${name}'s victory echoes down into the chamber!` : `${name}'s victory echoes down to the Sealed Gate!`]);
+    tellNow(`${name} used ${move}!`);
+  }
   await attack(type, kind);
   const hit = before - after;
   if (hit > 0) {
-    playSound(kind === 'loss' ? 'hit' : 'hit-super');
+    playSound(kind === 'ultimate' ? 'hit-super' : 'hit');
     playSound('gate-crack');
     impact(type, kind);
     popDamage(hit);
@@ -101,14 +110,21 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
 
   if (breaks) return breakFree(scene, music);
 
-  const lines = [hit > 0 ? `The Sealed Gate took ${hit} damage!` : 'But the seal held!'];
+  const lines = [];
+  if (kind === 'loss') {
+    lines.push(`But ${name} is too weak to harm the seal!`, 'Only the strength of a victory can wear it down. Win a run, and the seal will feel it.');
+  } else if (hit > 0) {
+    lines.push(`The seal took ${hit} damage!`);
+    if (first) lines.push('Every run you win weakens the seal. The higher your Trainer Level, the harder the blow.');
+  } else lines.push('The seal flared and threw the blow back!');
   if (before > GATE_HP / 2 && after <= GATE_HP / 2) {
     view.eyes = 1;
     playSound('gate-hum');
     lines.push('...Something is moving behind the gate!');
   }
-  if (after === GATE_SLIVER) lines.push(hit > 0 ? 'The gate hangs by a thread! Only a Trainer Level 5 win can break it now.' : 'Only a Trainer Level 5 win can break it.');
-  else if (hit > 0) lines.push(after > GATE_HP / 2 ? 'Every run you win wears it down.' : 'It won\'t hold much longer...');
+  if (after === GATE_SLIVER) lines.push(hit > 0 ? 'The seal hangs by a thread! Only a Trainer Level 5 victory can break it now.' : 'Only a Trainer Level 5 victory can break it now.');
+  else if (kind === 'win' && level < GATE_HIT.length - 1 && !first) lines.push(`A Trainer Level ${level + 1} victory would strike for ${GATE_HIT[level + 1]}.`);
+  else if (hit > 0 && after <= GATE_HP / 2) lines.push('It won\'t hold much longer...');
   await say(lines);
   await leave(scene);
 }

@@ -1,13 +1,15 @@
 /*
- * The Sealed Gate's art (docs/roadmap.md, "The Sealed Gate", part B): a stone arch round a door of dark crystal, chained
- * shut, with Eternatus's seal glowing on it. It shows its damage as it falls: cracks spread out from the seal and leak
- * light, the stone cracks too, a chain snaps at half HP and the other near the end, chunks of the door fall away, and from
- * about half HP the light behind the door rises and Mewtwo's silhouette shows against it, its eyes glowing now and then.
- * Broken, the arch stands open over steps down into the Crystal Depths' violet light.
+ * The Sealed Gate's art (docs/roadmap.md, "The Sealed Gate", part B): a door of dark crystal in a carved obsidian frame
+ * trimmed with gold, its runes glowing, between two spires of ice-blue crystal, with shards floating beside it. It's
+ * chained shut, and Eternatus's seal turns on it as a magic circle. It shows its damage as it falls: cracks spread out
+ * from the seal and leak light, the crystal cracks too, the frame's runes go out from the bottom up, a chain snaps at half
+ * HP and the other near the end, chunks of the door fall away, and from about half HP the light behind the door rises and
+ * Mewtwo's silhouette shows against it, its eyes glowing now and then. Broken, the arch stands open over steps down into
+ * the Crystal Depths' violet light. (It was a stone arch in a brick wall until 2026-10-02; the user wanted it less blocky
+ * and more fantasy.)
  *
- * Painted pixel by pixel into a W x H buffer at any size (the title's small gate and the scene's big one are the same
- * drawing), so it stays crisp when scaled up with image-rendering: pixelated. Every crack, chunk and mote comes from a
- * seeded random, so a gate at a given HP always looks the same.
+ * Painted pixel by pixel into a W x H buffer, so it stays crisp when scaled up with image-rendering: pixelated. Every
+ * crack, chunk and mote comes from a seeded random, so a gate at a given HP always looks the same.
  */
 import { getSave } from './storage.js';
 import { GATE_HP } from './data/gate.js';
@@ -15,6 +17,9 @@ import { GATE_HP } from './data/gate.js';
 const rgb = (hex) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
 const P = Object.fromEntries(Object.entries({
   outline: '#0e0818',
+  ice0: '#1c1448', ice1: '#2c2a78', ice2: '#4656b8', ice3: '#78a0e8', ice4: '#c8f0ff',
+  frame0: '#120c22', frame1: '#21183c', frame2: '#302652',
+  gold0: '#5a3c14', gold1: '#a87c2c', gold2: '#e8c460', gold3: '#fff2b8',
   stone0: '#221c36', stone1: '#3a3256', stone2: '#544a78', stone3: '#7a6ea2', stone4: '#a498c8',
   mortar: '#18122a',
   door0: '#0c0618', door1: '#170c2c', door2: '#22123e', door3: '#341c58', doorEdge: '#5a3a8a',
@@ -83,39 +88,89 @@ export const gateReady = () => figureReady;
 export function makeGate(W, H) {
   const steps = Math.max(2, Math.round(H * 0.05));
   const floorY = H - steps;
-  const pw = Math.max(4, Math.round(W * 0.17));
-  const lintel = Math.max(4, Math.round(H * 0.11));
-  const band = Math.max(2, Math.round(W * 0.05));   // the arch's ring of wedge stones
-  const ox0 = pw + 1, ox1 = W - pw - 2;
+  const pw = Math.max(4, Math.round(W * 0.15));      // the crystal spires either side
+  const band = Math.max(3, Math.round(W * 0.055));   // the carved frame round the door
+  const top = Math.max(3, Math.round(H * 0.07));     // the frame's crown
+  const ox0 = pw + band + 1, ox1 = W - pw - band - 2;
   const r = (ox1 - ox0 + 1) / 2, cx = (ox0 + ox1) / 2;
-  const archY = lintel + band + r;
-  const crown = Math.max(3, Math.round(W * 0.09));   // the keystone's half width
-  const sealY = Math.round(archY + (floorY - archY) * 0.22);
-  const sealR = Math.max(3, Math.round(r * 0.42));
-  const gemY = Math.round((lintel + band) / 2), gemR = Math.max(1.5, crown * 0.7);
+  const archY = top + band + r;
+  const sealY = Math.round(archY + (floorY - archY) * 0.2);
+  const sealR = Math.max(3, Math.round(r * 0.55));
+  const gemY = top + Math.floor(band / 2), gemR = Math.max(1.5, band * 0.75);
+  const baseH = Math.max(3, Math.round(H * 0.07));
 
-  // materials: 0 empty, 1 wall stone, 2 arch ring, 3 door, 4 steps, 5 keystone gem, 6 plinth
+  // the spires: a tall one and a small shard leaning on its outer side, each a point on top of a straight shaft
+  const SPIRES = [
+    { xc: pw * 0.55, half: pw * 0.45, tip: 1, shoulder: Math.round(H * 0.3) },
+    { xc: pw * 0.15, half: pw * 0.24, tip: Math.round(H * 0.38), shoulder: Math.round(H * 0.55) },
+  ];
+  const spireAt = (x, y) => {
+    const fx = x < W / 2 ? x : W - 1 - x;
+    for (let k = SPIRES.length - 1; k >= 0; k--) {   // the small one stands in front
+      const sp = SPIRES[k];
+      if (y < sp.tip || y >= floorY) continue;
+      const half = y >= sp.shoulder ? sp.half : sp.half * (y - sp.tip + 0.5) / (sp.shoulder - sp.tip);
+      if (Math.abs(fx - sp.xc) <= half) return { sp, rel: (fx - sp.xc) / Math.max(0.5, half), mirror: x >= W / 2 };
+    }
+    return null;
+  };
+
+  // materials: 0 empty, 1 crystal spire, 2 frame, 3 door, 4 steps, 5 crown gem, 6 rock under the spires, 7 gold crown
   const mat = new Uint8Array(W * H);
-  const inArch = (x, y) => x >= ox0 && x <= ox1 && y < floorY && y > lintel && (y >= archY || Math.hypot(x - cx, y - archY) <= r - 0.25);
+  const inArch = (x, y) => x >= ox0 && x <= ox1 && y < floorY && y > top && (y >= archY || Math.hypot(x - cx, y - archY) <= r - 0.25);
+  const inFrame = (x, y) => {
+    if (y >= floorY || inArch(x, y)) return false;
+    if (y >= archY) return (x >= ox0 - band && x < ox0) || (x > ox1 && x <= ox1 + band);
+    const d = Math.hypot(x - cx, y - archY);
+    return d > r - 0.25 && d <= r + band - 0.25;
+  };
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     let m = 0;
+    const fx = x < W / 2 ? x : W - 1 - x;
     if (y >= floorY) {
       const k = y - floorY, inset = Math.max(0, steps - 1 - k);   // each step a little wider than the one above
       if (x >= inset && x < W - inset) m = 4;
     } else if (inArch(x, y)) m = 3;
-    else if (y >= 2 && y < lintel) m = 1;
-    else if (y >= lintel) {
-      const pillar = (x >= 1 && x <= pw) || (x >= W - 1 - pw && x <= W - 2);
-      const plinth = y >= floorY - Math.max(3, Math.round(H * 0.05)) && (x <= pw + 1 || x >= W - 2 - pw);
-      if (plinth) m = 6;
-      else if (pillar) m = 1;
-      else if (x > pw && x < W - 1 - pw && y < archY) m = Math.hypot(x - cx, y - archY) <= r + band ? 2 : 1;
+    else if (inFrame(x, y)) m = 2;
+    else if (fx <= pw + 1 && y >= floorY - baseH + Math.round(((fx - pw * 0.5) / (pw * 0.75)) ** 2 * baseH * 0.6)) m = 6;
+    else if (spireAt(x, y)) m = 1;
+    // the crown: a spike over the gem and two horns curling out from it
+    const dx = Math.abs(x - cx);
+    if (!m && dx < 0.6 && y >= gemY - gemR - Math.max(2, band) && y < gemY) m = 7;
+    if (!m && dx >= gemR && dx <= gemR + band * 2) {
+      const hy = top - Math.round(((dx - gemR) / (band * 2)) ** 0.8 * Math.min(top - 1, band));
+      if (y === hy || y === hy + 1) m = 7;
     }
-    if (y < 2 && Math.abs(x - cx) <= crown - (1 - y)) m = 1;   // the keystone's block rises over the lintel
     if (Math.abs(x - cx) + Math.abs(y - gemY) * 0.8 <= gemR) m = 5;
     mat[y * W + x] = m;
   }
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : mat[y * W + x];
+
+  // where each frame pixel is along the frame (s, from its foot up to the crown) and across it (k, 0 at the door's edge)
+  const fs = new Float32Array(W * H), fk = new Int8Array(W * H);
+  const frameLen = (floorY - archY) + Math.PI / 2 * (r + band / 2);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (mat[i] !== 2) continue;
+    if (y >= archY) { fs[i] = floorY - 1 - y; fk[i] = x < cx ? ox0 - 1 - x : x - ox1 - 1; }
+    else {
+      const d = Math.hypot(x - cx, y - archY);
+      fk[i] = Math.min(band - 1, Math.floor(d - (r - 0.25)));
+      fs[i] = (floorY - archY) + Math.atan2(archY - y, Math.abs(x - cx)) * (r + band / 2);
+    }
+  }
+  const GLYPHS = [0b101111, 0b111010, 0b010111, 0b110011, 0b011110, 0b101101, 0b111001, 0b100111];
+
+  // crystal shards floating in the corners between the spires and the frame
+  const floaters = [];
+  for (const [fx, fy, h] of [[pw + band * 0.5, top + H * 0.02, 4], [pw + band * 1.4, top + H * 0.12, 3], [pw + 1, top + H * 0.2, 3]]) {
+    for (const x of [Math.round(fx), Math.round(W - 1 - fx)]) {
+      const y = Math.round(fy);
+      let clear = true;
+      for (let dy = -1; dy <= h + 2; dy++) for (let dx = -2; dx <= 2; dx++) if (at(x + dx, y + dy)) clear = false;
+      if (clear) floaters.push([x, y, h, floaters.length]);
+    }
+  }
 
   // the cracks: lines out from the seal across the door, branches off them, and a few in the stone. Each starts showing at
   // its own damage and grows from there.
@@ -149,11 +204,11 @@ export function makeGate(W, H) {
       cracks.push({ pts: pts2, start: start + 0.2 + rand() * 0.2, grow: 0.2, glow: true });
     }
   }
-  for (let i = 0; i < 9; i++) {   // the stone: down the pillars, across the lintel, along the steps
-    const left = rand() < 0.5;
+  for (let i = 0; i < 9; i++) {   // down the spires, across the frame, along the steps
+    const left = rand() < 0.5, a0 = Math.PI * (1.1 + rand() * 0.8);
     const spots = [
-      [left ? 2 + rand() * (pw - 3) : W - 3 - rand() * (pw - 3), lintel + rand() * (floorY - lintel - 4), Math.PI / 2 + (rand() - 0.5)],
-      [W * (0.15 + rand() * 0.7), 3, Math.PI / 2 + (rand() - 0.5) * 1.4],
+      [left ? pw * 0.55 : W - 1 - pw * 0.55, H * (0.3 + rand() * 0.5), Math.PI / 2 + (rand() - 0.5)],
+      [cx + Math.cos(a0) * (r + 1), archY + Math.sin(a0) * (r + 1), a0 + (rand() - 0.5) * 0.8],
       [W * (0.1 + rand() * 0.8), floorY, (rand() - 0.5) * 0.6 + (rand() < 0.5 ? 0 : Math.PI)],
     ];
     const [x, y, a] = spots[i % 3];
@@ -225,7 +280,7 @@ export function makeGate(W, H) {
         if (open) c = depths(x, y, t);
         else {
           // dark crystal: a sheen down it, a groove inside the arch, the seam between its two leaves
-          const v = (y - lintel) / (floorY - lintel);
+          const v = (y - top) / (floorY - top);
           const sheen = ((x - ox0) + y * 0.5) % 11 < 2 ? 1 : 0;
           c = v < 0.3 ? P.door2 : v < 0.75 ? P.door1 : P.door0;
           if (sheen && dither(x, y) < 0.6) c = mix(c, P.door3, 0.7);
@@ -233,6 +288,9 @@ export function makeGate(W, H) {
           if (inner && inArch(x - 1, y) && inArch(x + 1, y) && inArch(x, y - 1)) c = P.door3;
           if (!inArch(x - 1, y) || !inArch(x + 1, y) || !inArch(x, y - 1)) c = P.door0;
           if (Math.abs(x - cx) < 0.6 && y > archY - r * 0.6) c = P.door0;
+          // the seal's glow on the crystal round it
+          const sd = Math.hypot(x - cx, y - sealY) - sealR;
+          if (!mute && sd > 0 && sd < 4 && dither(x, y) < (1 - sd / 4) * 0.5 * pulse) c = mix(c, P.seal0, 0.6);
           if (back > 0) {
             const near = 1 - Math.min(1, Math.hypot(x - cx, (y - sealY) * 0.8) / (r * 1.5));
             const amount = back * (0.55 + 0.45 * near) * (0.88 + 0.12 * Math.sin(t * 2 + y * 0.3));
@@ -245,11 +303,12 @@ export function makeGate(W, H) {
         }
       } else if (m === 5) {
         const pulseGem = mute ? 0.2 : 0.6 + 0.4 * Math.sin(t * 2.6);
-        c = edge ? P.outline : (x + y) % 3 === 0 ? mix(P.gem1, P.gem2, pulseGem) : y < lintel / 2 ? P.gem2 : P.gem1;
+        c = edge ? P.outline : (x + y) % 3 === 0 ? mix(P.gem1, P.gem2, pulseGem) : y < gemY ? P.gem2 : P.gem1;
         if (hp <= 0 || open) c = edge ? P.outline : P.stone1;   // the gem goes dark once the gate falls
       } else {
-        c = stone(m, x, y);
-        if (edge) c = P.outline;
+        c = m === 2 ? frame(i, x, y, open ? 0 : hp, t, mute) : stone(m, x, y, t);
+        const seam = (m === 1 || m === 6) && (at(x - 1, y) === 2 || at(x + 1, y) === 2);
+        if ((edge && m !== 7) || seam) c = P.outline;
       }
       if (lit[i]) c = lit[i] === 2 ? (mute ? P.door0 : mix(P.leak, P.leakHot, clamp01(dmg * 1.1 - 0.2) * flicker)) : P.mortar;
       else if (glow[i] && m === 3) c = mix(c, P.leak, glow[i] * (0.6 + 0.4 * dmg) * flicker);
@@ -257,11 +316,11 @@ export function makeGate(W, H) {
       data[i * 4] = c[0]; data[i * 4 + 1] = c[1]; data[i * 4 + 2] = c[2]; data[i * 4 + 3] = 255;
     }
 
-    runes(data, open ? 0 : hp, t, flash, mute);
+    floating(data, t, flash);
     if (!open) {
       drawChain(data, chainA, chainsLeft >= 1 ? 1 : 0.32, flash);
       drawChain(data, chainB, chainsLeft >= 2 ? 1 : 0.32, flash);
-      drawSeal(data, pulse * unstable, hp, flash, mute);
+      drawSeal(data, pulse * unstable, hp, flash, mute, t);
       if (fig && back > 0.15 && eyes > 0) for (const [ex, ey] of fig.eyes) {
         put(data, ex, ey, mix(P.eye, P.white, eyes * 0.6), eyes);
         put(data, ex, ey - 1, P.eye, eyes * 0.4); put(data, ex - 1, ey, P.eye, eyes * 0.3); put(data, ex + 1, ey, P.eye, eyes * 0.3);
@@ -284,71 +343,60 @@ export function makeGate(W, H) {
     }
   }
 
-  // stone blocks with dark mortar, lit from the top left; the arch ring is wedge stones pointing at its centre
-  function stone(m, x, y) {
-    if (m === 4) {   // steps: a light tread on top of each
+  // the spires, the rock they grow from and the steps, lit from the top left
+  function stone(m, x, y, t) {
+    if (m === 4) {   // smooth steps, a light tread on each, a gold inlay along the top one
       const k = y - floorY;
-      return k === 0 ? P.stone3 : (x + k * 3) % 9 === 0 ? P.mortar : k === steps - 1 ? P.stone0 : P.stone1;
+      if (k === 1 && Math.abs(x - cx) < r + band && x % 4 === 1) return P.gold1;
+      return k === 0 ? P.stone3 : k === steps - 1 ? P.stone0 : k % 2 ? P.stone1 : P.stone2;
     }
-    if (m === 2) {
-      const a = Math.atan2(y - archY, x - cx);
-      const wedge = Math.floor((a + Math.PI) / (Math.PI / 9));
-      const edgeA = Math.abs(((a + Math.PI) / (Math.PI / 9)) - Math.round((a + Math.PI) / (Math.PI / 9))) < 0.12;
-      const d = Math.hypot(x - cx, y - archY) - r;
-      if (edgeA) return P.mortar;
-      return d < 1 ? P.stone4 : wedge % 2 ? P.stone3 : P.stone2;
+    if (m === 7) return y < top - 1 || Math.abs(x - cx) < 0.6 ? P.gold2 : P.gold1;
+    if (m === 6) {   // dark rock with a crystal or two poking out
+      const yTop = at(x, y - 1) !== 6;
+      if (hash(x, y) < 0.06) return P.ice2;
+      return yTop ? P.stone2 : hash(x * 3, y) < 0.2 ? P.stone0 : P.stone1;
     }
-    const pillar = y >= lintel && (x <= pw || x >= W - 1 - pw);
-    if (m === 6) {   // the plinths: a moulded top
-      const top = floorY - Math.max(3, Math.round(H * 0.05));
-      return y === top ? P.stone4 : y === top + 1 ? P.stone3 : y === floorY - 1 ? P.stone1 : P.stone2;
-    }
-    if (pillar) {
-      // stacked drums: only level joints, a capital under the lintel, lit on the outer face and shaded on the inner one
-      if (y <= lintel + 1) return y === lintel ? P.stone4 : P.stone3;
-      const dh = Math.max(4, Math.round(H * 0.09));
-      if ((y - lintel - 2) % dh === dh - 1) return P.mortar;
-      const left = x <= pw, u = left ? x - 1 : W - 2 - x;   // 0 at the outer face
-      let c = u <= 0 ? P.stone3 : u >= pw - 2 ? P.stone1 : P.stone2;
-      if (!left && u <= 0) c = P.stone1;   // the light comes from the left
-      if (left && u >= pw - 2) c = P.stone1;
-      if (hash(x, y) < 0.05) c = P.stone1;
-      return c;
-    }
-    // the lintel and the wall over the arch: big dressed blocks
-    const bh = Math.max(4, Math.round(H * 0.075)), bw = Math.max(6, Math.round(W * 0.17));
-    const row = Math.floor((y - 2) / bh), off = row % 2 ? Math.floor(bw / 2) : 0;
-    const bx = (x + off) % bw, by = (y - 2) % bh;
-    if (y === lintel - 1) return P.stone1;   // the lintel's shadowed underside
-    if (by === bh - 1 || bx === bw - 1) return P.mortar;
-    let c = by === 0 ? P.stone4 : bx === 0 ? P.stone3 : P.stone2;
-    if (hash(x, y) < 0.05) c = P.stone1;
+    // ice crystal: a bright ridge down the middle, the lit left face, the shaded right one, facet lines across
+    const { sp, rel, mirror } = spireAt(x, y);
+    const lr = mirror ? -rel : rel;   // the light comes from the left on both sides
+    const facet = ((y + Math.abs(x - (mirror ? W - 1 - sp.xc : sp.xc)) * 1.6) | 0) % 9 === 0;
+    let c = Math.abs(rel) < 0.2 ? P.ice4 : lr < -0.5 ? P.ice3 : lr < 0 ? P.ice2 : lr < 0.6 ? P.ice1 : P.ice0;
+    if (facet) c = lr < 0 ? P.ice1 : P.ice2;
+    if (y < sp.tip + 3) c = mix(c, P.ice4, 0.5);
+    if (hash(x, y) < 0.025 && Math.sin(t * 3 + hash(y, x) * 20) > 0.6) c = P.white;   // a glint now and then
     return c;
   }
 
-  /* The pillars' runes: a column of little glyphs carved in each, glowing with the seal. They go out from the bottom up
-     as the gate weakens, the seal's power failing. */
-  const GLYPHS = [[1, 0, 1, 0, 1, 0, 1, 1, 1], [1, 1, 1, 1, 0, 0, 1, 1, 1], [0, 1, 0, 1, 1, 1, 0, 1, 0], [1, 1, 0, 0, 1, 0, 0, 1, 1], [1, 0, 1, 1, 1, 1, 1, 0, 1], [0, 1, 1, 1, 0, 1, 1, 1, 0]];
-  const runeSpots = [];
-  if (pw >= 6) {
-    const gap = Math.max(5, Math.round(H * 0.075));
-    for (const px of [1 + Math.floor((pw - 3) / 2), W - 2 - Math.floor((pw - 3) / 2) - 2]) {
-      let k = 0;
-      for (let y = lintel + 4; y + 3 < floorY - Math.max(3, Math.round(H * 0.05)) - 1; y += gap, k++) runeSpots.push([px, y, GLYPHS[(k * 5 + px) % GLYPHS.length]]);
+  /* The frame: obsidian with gold trim, and a line of glyphs running up both sides and round the arch, glowing with the
+     seal. They go out from the bottom up as the gate weakens, the seal's power failing. */
+  function frame(i, x, y, hp, t, mute) {
+    const k = fk[i], s = fs[i];
+    const lit = y < archY - r * 0.4 || x < cx;
+    if (k === 0) return P.gold1;
+    if (k === band - 1) return lit ? P.gold2 : P.gold1;
+    const row = k - 1, col = Math.floor(s) % 4;
+    const glyph = GLYPHS[(Math.floor(s / 4) * 5 + (x < cx ? 0 : 3)) % GLYPHS.length];
+    const on = col < 3 && row < 2 && (glyph >> (row * 3 + col)) & 1;
+    if (!on) return (x + y) % 7 === 0 ? P.frame2 : P.frame1;
+    if (mute || s / frameLen < 1 - hp) return P.frame0;
+    const shimmer = 0.6 + 0.4 * Math.sin(t * 2.6 - s * 0.15);
+    return mix(P.seal1, P.seal3, shimmer * 0.5);
+  }
+
+  // the floating shards bob up and down
+  function floating(data, t, flash) {
+    for (const [x, y0, h, n] of floaters) {
+      const y = y0 + Math.round(Math.sin(t * 1.6 + n * 1.3));
+      for (let dy = 0; dy < h; dy++) {
+        const w = dy === 0 || dy === h - 1 ? 0 : 1;
+        for (let dx = -w; dx <= w; dx++) plot(data, x + dx, y + dy, mix(dy === 0 ? P.ice4 : dx < 0 ? P.ice3 : dx > 0 ? P.ice1 : P.ice2, P.white, flash));
+      }
     }
   }
-  function runes(data, hp, t, flash, mute) {
-    const rows = runeSpots.length / 2;
-    runeSpots.forEach(([x0, y0, glyph], n) => {
-      const k = n % rows;   // 0 at the top
-      const on = !mute && hp > 0 && (rows - k) / rows <= hp + 0.5 / rows;
-      const shimmer = 0.6 + 0.4 * Math.sin(t * 2.6 - k * 0.5);
-      glyph.forEach((bit, j) => {
-        if (!bit) return;
-        const c = on ? mix(mix(P.seal1, P.seal3, shimmer * 0.5), P.white, flash) : P.stone0;
-        put(data, x0 + (j % 3), y0 + Math.floor(j / 3), c);
-      });
-    });
+  function plot(data, x, y, c) {
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    const i = (y * W + x) * 4;
+    data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2]; data[i + 3] = 255;
   }
 
   function put(data, x, y, c, a = 1) {
@@ -378,28 +426,38 @@ export function makeGate(W, H) {
     }
   }
 
-  // the seal: a ring, a six-point star in it, rune ticks round it and a burning core
-  function drawSeal(data, glowAmt, hp, flash, mute) {
+  // the seal: a magic circle turning slowly, a ring of rune ticks inside its rim, a six-point star turning the other way
+  // with an orb on each point, and a burning core that cracks white once the gate is below half
+  function drawSeal(data, glowAmt, hp, flash, mute, t) {
     const g = clamp01(glowAmt);
     const hot = mute ? P.seal0 : mix(P.seal1, P.seal3, Math.max(0, glowAmt - 0.8));
     const mid = mute ? P.door3 : mix(P.seal0, P.seal2, g);
     const f = (c) => mix(c, P.white, flash);
-    for (let a = 0; a < 360; a += 3) {
+    const spin = mute ? 0 : t * 0.3;
+    const at2 = (a, rr) => [cx + Math.cos(a) * rr, sealY + Math.sin(a) * rr];
+    for (let a = 0; a < 360; a += 2) {
       const rad = a * Math.PI / 180;
-      put(data, cx + Math.cos(rad) * sealR, sealY + Math.sin(rad) * sealR, f(hot));
-      put(data, cx + Math.cos(rad) * (sealR + 1), sealY + Math.sin(rad) * (sealR + 1), f(P.seal0), 0.7);
-      if (sealR >= 6 && a % 45 === 0) put(data, cx + Math.cos(rad) * (sealR - 2), sealY + Math.sin(rad) * (sealR - 2), f(mid));
+      put(data, ...at2(rad, sealR), f(hot));
+      put(data, ...at2(rad, sealR + 1), f(P.seal0), 0.6);
     }
+    for (let k = 0; k < 24; k++) {
+      if (k % 4 === 3) continue;
+      const a = k * Math.PI / 12 + spin;
+      put(data, ...at2(a, sealR - 2), f(mid));
+      if (k % 4 === 0 && sealR >= 8) put(data, ...at2(a, sealR - 3), f(mid), 0.8);
+    }
+    const inner = Math.max(2, sealR * 0.62);
+    for (let a = 0; a < 360; a += 6) put(data, ...at2(a * Math.PI / 180, inner), f(P.seal0), 0.8);
     for (const turn of [0, Math.PI]) {
-      const pts = [0, 1, 2].map(k => [cx + Math.cos(turn - Math.PI / 2 + k * 2 * Math.PI / 3) * (sealR - 1), sealY + Math.sin(turn - Math.PI / 2 + k * 2 * Math.PI / 3) * (sealR - 1)]);
+      const pts = [0, 1, 2].map(k => at2(turn - Math.PI / 2 - spin * 1.5 + k * 2 * Math.PI / 3, inner));
       for (let k = 0; k < 3; k++) {
         const [ax, ay] = pts[k], [bx, by] = pts[(k + 1) % 3];
         const n = Math.ceil(Math.hypot(bx - ax, by - ay));
         for (let s = 0; s <= n; s++) put(data, ax + (bx - ax) * s / n, ay + (by - ay) * s / n, f(mid));
       }
+      for (const [px, py] of pts) put(data, px, py, f(hot));
     }
-    // the core, cracked open as the gate weakens
-    const core = Math.max(1, Math.round(sealR * 0.25));
+    const core = Math.max(1, Math.round(sealR * 0.2));
     for (let dy = -core; dy <= core; dy++) for (let dx = -core; dx <= core; dx++) {
       if (Math.abs(dx) + Math.abs(dy) > core) continue;
       put(data, cx + dx, sealY + dy, f(Math.abs(dx) + Math.abs(dy) < core ? (hp < 0.5 && !mute ? P.white : hot) : mid));
@@ -463,7 +521,7 @@ export function makeGate(W, H) {
   }
 
   return {
-    W, H, cx, sealY, sealR, archY, r, floorY, ox0, ox1, lintel,
+    W, H, cx, sealY, sealR, archY, r, floorY, ox0, ox1, top,
     paint,
     /** The door's pixels, for the break scene to throw as shards. */
     doorPixels: () => { const out = []; for (let i = 0; i < mat.length; i++) if (mat[i] === 3) out.push(i); return out; },

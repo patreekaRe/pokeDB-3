@@ -105,26 +105,31 @@ live site.
 - **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
   the last portrait in the character select's Legendaries tab). It unlocks when the **Sealed Gate** breaks (2026-10-02; it was
   every other starter + a Level 5 win): the save's `gateHp` (`js/data/gate.js`: 1000 HP) takes `GATE_HIT[level]`
-  (40/50/60/75/90/120) after every won run and `GATE_LOSS_CHIP` (15) after a loss at the last biome's boss
-  (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and a plain bar in the result window); only a
+  (40/50/60/75/90/120) after every won run; a loss at the last biome's boss still plays the scene, but your Pokémon is
+  too weak to harm it (the user's call, 2026-10-02: no more loss chip) (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and a plain bar in the result window); only a
   Level 5 win takes it below `GATE_SLIVER` (50). Mewtwo's own runs leave it be. Old saves: `seedGate()` counts each
   Record Book win once (never past the sliver), and anyone who has Mewtwo gets 0. That achievement (`gateHp <= 0`) must
   stay last in `ACHIEVEMENTS`, since `checkAchievements()` grants in order (the shop also runs it after a purchase).
   **The gate's art and scenes** (part B, 2026-10-02): `makeGate(W, H)` in `js/gate.js` paints it pixel by pixel at any
-  size from its HP (a stone arch, a dark crystal door chained shut, Eternatus's seal; seeded cracks spread out from the seal
-  leaking light, stone cracks, a chain snaps at half HP and the other near 6%, chunks fall out, the pillars' runes go out
-  bottom-up, and from ~55% the light behind the door rises with Mewtwo's silhouette, from its sprite, eyes glowing; broken,
-  steps down into violet light). After the win scene (or straight away for a loss chip), `endRun()` plays
+  size from its HP (since 2026-10-02 fantasy, not bricks, the user's call: ice-crystal spires, floating shards, an obsidian
+  frame trimmed in gold whose glyphs glow, a dark crystal door chained shut, Eternatus's seal as a turning magic circle;
+  seeded cracks spread out from the seal leaking light, the crystal cracks, a chain snaps at half HP and the other near
+  6%, chunks fall out, the frame's glyphs go out bottom-up, and from ~55% the light behind the door rises with Mewtwo's silhouette, from its sprite, eyes glowing; broken,
+  steps down into violet light). After the win scene (or straight away for a loss at the last boss), `endRun()` plays
   `gateScene()` in `js/gatescene.js` (`#gate-scene`, z-index 950): a crystal cavern on one low-res canvas, the gate's
   HP in a battle nameplate, your Pokémon from behind using its type's move (`MOVES`: a loss Ember / Water Gun / Vine
   Whip, a win Flamethrower / Hydro Pump / Leaf Storm, a Level 5 win Blast Burn / Hydro Cannon / Frenzy Plant, charged
   first), then the flash, shake, -N and the bar and cracks running down together. The breaking blow: shudder, light rays,
   chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
   its aura GIF and cry; the unlock window follows. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
-  `js/audio.js`. The title shows the gate on the ledge in the right-hand gutter (`sizeGate()` / `paintGate()` in
-  `js/title.js`, 2 CSS px a pixel on phones, 3 wider) with a thin HP bar; a tap says how it stands; once broken Mewtwo
-  joins the title's flyers. Playtest: `?gate=NNN` shows that HP (never saved), `?strike=90` (with `&starter=`,
-  `&stage=`, `&kind=loss`) plays the scene after PRESS START; a strike past the HP plays the break. It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
+  `js/audio.js`. **The gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
+  win another run): not on the title (it stood on the ledge until then; Mewtwo never flies by either, it has no flying
+  sprite), and the locked "???" panel only hints. The story is told in the scene: the first time (`save.gateSeen`) it
+  opens with the chamber's lore and, after the hit, that every win weakens the seal and higher Trainer Levels hit
+  harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
+  `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`) plays the scene after PRESS START; a
+  strike past the HP plays the break. `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo
+  run, and re-seeds the gate from the Record Book; only while Mewtwo is unlocked). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
   Ability landed; run-end guards (`isMewtwoRun()`) keep Mewtwo out of Level-based rewards and stats.
   **Mewtwo's run is its own game mode** (v1.0 part B, 2026-10-02): no Trainer Level (`prepare()` in `js/select.js` hides

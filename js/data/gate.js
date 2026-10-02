@@ -3,7 +3,6 @@
 export const GATE_HP = 1000;
 export const GATE_HIT = [40, 50, 60, 75, 90, 120];   // a won run's damage, by Trainer Level
 export const GATE_SLIVER = 50;                        // the lowest anything but a Level 5 win can take it
-export const GATE_LOSS_CHIP = 15;                     // a run lost at the third biome's boss
 
 /** Where an old save's gate stands: each win already in the Record Book counted once, never past the sliver. */
 export function seedGate(saved) {

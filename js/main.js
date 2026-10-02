@@ -32,7 +32,8 @@ import { gateScene } from './gatescene.js';
 import { gateHp } from './gate.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
-import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
+import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { seedGate } from './data/gate.js';
 import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, peekEvent, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
@@ -156,6 +157,17 @@ function init() {
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
+  // ?lockmewtwo undoes it: Mewtwo locked again, its shiny dropped, a saved Mewtwo run gone, and the Sealed Gate back where
+  // the Record Book's wins leave it. Only while Mewtwo is unlocked, so a bookmarked link can't reset the gate's progress.
+  if (query.has('lockmewtwo') && getSave().unlocked.includes('mewtwo')) {
+    if (loadRunData()?.starter === 'mewtwo') clearRunData();
+    updateSave(d => {
+      d.unlocked = d.unlocked.filter(id => id !== 'mewtwo');
+      d.shiny.owned = d.shiny.owned.filter(id => id !== 'mewtwo');
+      d.shiny.on = d.shiny.on.filter(id => id !== 'mewtwo');
+      d.gateHp = seedGate(d);
+    });
+  }
   initAudio();
   initTips();
   initHowto();
@@ -222,7 +234,7 @@ function init() {
 
   showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {
-    // ?strike=90 (with &gate=HP, &starter=id, &stage=0-2, &kind=loss) plays the Sealed Gate's scene after PRESS START,
+    // ?strike=90 (with &gate=HP, &starter=id, &stage=0-2, &level=0-5, &kind=loss, &first) plays the Sealed Gate's scene after PRESS START,
     // from the gate's HP, without saving anything; a strike past its HP is the break that frees Mewtwo
     if (params.has('strike')) return peekStrike(params);
     // Show the how-to-play once, the very first time.
@@ -239,7 +251,8 @@ function peekStrike(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
-  gateScene({ starter, stage, before, after, kind: params.get('kind') || (after === 0 ? 'ultimate' : 'win'), music: 'title' });
+  const kind = params.get('kind') || (after === 0 ? 'ultimate' : 'win');
+  gateScene({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' });
 }
 
 init();

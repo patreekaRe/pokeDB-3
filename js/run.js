@@ -23,7 +23,7 @@ import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
-import { GATE_HP, GATE_HIT, GATE_SLIVER, GATE_LOSS_CHIP } from './data/gate.js';
+import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements } from './progress.js';
@@ -2118,28 +2118,29 @@ function announceUnlocks() {
   return fresh;
 }
 
-/** After a run, the starter attacks the Sealed Gate: a win by its Trainer Level, a loss at the last boss a chip. Only a
-    Level 5 win can take it past the sliver. Mewtwo's own runs leave it be (it's the one behind it). Runs before
-    announceUnlocks(), which frees Mewtwo once it breaks. Returns the result window's line and what the gate scene
-    (js/gatescene.js) needs, if it was struck. */
+/** After a run, the starter attacks the Sealed Gate: a win wears it down by its Trainer Level; a loss at the last boss
+    still goes down to the chamber, but the fainted Pokémon is too weak to harm it (the user's call, 2026-10-02: the gate
+    is only ever seen there, so a near miss shows how far you have to go). Only a Level 5 win can take it past the sliver.
+    Mewtwo's own runs leave it be (it's the one behind it). Runs before announceUnlocks(), which frees Mewtwo once it
+    breaks. Returns the result window's line and what the gate scene (js/gatescene.js) needs, if it was reached. */
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
-  const hit = won ? GATE_HIT[run.level] : atLastBoss ? GATE_LOSS_CHIP : 0;
-  if (peeking || isMewtwoRun(run.starter) || before <= 0 || !hit) return null;
-  const hp = Math.max(won && run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - hit);
-  updateSave(d => { d.gateHp = hp; });
+  if (peeking || isMewtwoRun(run.starter) || before <= 0 || !(won || atLastBoss)) return null;
+  const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
+  const first = !getSave().gateSeen;
+  updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
   const name = stageName(run.starter, run.stage);
   const text = hp === 0 ? `💥 ${name} broke the Sealed Gate! Something stirs behind it...`
+    : !won ? `⚔️ ${name} was too weak to harm the Sealed Gate. Only a won run wears it down.`
     : before === hp ? `⚔️ ${name} struck the Sealed Gate, but it holds. Only a Trainer Level 5 win can break it.`
-    : won ? `⚔️ ${name} struck the Sealed Gate: -${before - hp}.${hp === GATE_SLIVER ? ' Only a Trainer Level 5 win can break it now.' : ''}`
-    : `⚔️ Before fainting, ${name} chipped the Sealed Gate: -${before - hp}.`;
+    : `⚔️ ${name} struck the Sealed Gate: -${before - hp}.${hp === GATE_SLIVER ? ' Only a Trainer Level 5 win can break it now.' : ''}`;
   const bar = el('div', 'gate-bar');
   bar.append(el('div', 'gate-fill'), el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
   bar.firstChild.style.width = `${(hp / GATE_HP) * 100}%`;
   const li = el('li', 'gate-line', text);
   li.append(bar);
   const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
-  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind } };
+  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first } };
 }
 
 /** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.
@@ -2228,7 +2229,7 @@ function endRun(won, atLastBoss = false) {
   list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
-  // after the win scene, your Pokémon attacks the Sealed Gate (a lost run's too, if it got as far as the last boss)
+  // after the win scene, your Pokémon attacks the Sealed Gate (a run lost at the last boss goes down there too, and fails)
   const strike = () => (gate ? gateScene(gate.scene) : Promise.resolve());
   (record ? winScene(record) : Promise.resolve()).then(strike).then(result);
 }
