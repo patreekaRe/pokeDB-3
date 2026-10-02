@@ -74,10 +74,15 @@
   padding: 4px 6px; border: 0; background: none; color: #fff; cursor: pointer;
   font: inherit; font-size: 10px; letter-spacing: 0.04em;
 }
-.title-sound { position: relative; }
+/* Sound: the speaker with its volume bar to the right (.sound-ctl in css/base.css) */
+.title-sound { gap: 2px; }
+.title-sound .vol-slider { width: 104px; flex: none; }
+@media (max-width: 600px) { .title-sound .vol-slider { width: 72px; } }
+/* wider screens: the column stays centred on the speaker, the bar hangs off its right */
+@media (min-width: 601px) { .title-sound { position: relative; } .title-sound .vol-slider { position: absolute; left: 100%; top: 50%; translate: 0 -50%; } }
 /* Refresh: a smaller icon under the speaker, spinning while the newest files come in (refreshGame() in js/title.js) */
 .title-refresh .ta-pc { font-size: 20px; }
-.title-sound .title-account { margin-top: 4px; }
+.title-sound .title-account { padding: 4px 2px; }
 /* phones: one row along the top, refresh centred on the speaker */
 /* wider screens have room beside the logo, so one column */
 @media (min-width: 601px) { .title-corner { grid-template-columns: auto; } }
@@ -87,7 +92,6 @@
 /* How to play: a small ❓ between the speaker and Refresh, centred on the speaker in the phones' row */
 .title-help .ta-pc { font-size: 26px; }
 @media (max-width: 600px) { .title-help .ta-pc { font-size: 22px; } .title-help { margin-top: 9px; } }
-.title-sound-panel { min-width: 230px; z-index: 4; }
 .ta-pc { position: relative; font-size: 40px; line-height: 1; filter: drop-shadow(0 3px 0 rgba(10, 8, 40, 0.55)); }
 .ta-label { text-shadow: 2px 2px 0 #1c1440; }
 .title-account:hover .ta-label, .title-account:focus-visible .ta-label, .title-account[aria-expanded="true"] .ta-label { color: #ffd070; }

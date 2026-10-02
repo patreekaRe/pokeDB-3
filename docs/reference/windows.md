@@ -35,3 +35,8 @@ menu option to match: cream box, pixel frame, and a blinking ▶ cursor on
 hover/focus (left padding reserves its space; `.primary` = orange frame,
 `.danger` = red). The How to play button is a gold `.ds-btn` capsule instead (see below).
 
+**Sound control** (`.sound-ctl` in `css/base.css`, 2026-10-02, the user's call: no window for it): a speaker button
+(`.sound-mute`, its icon `.snd-icon`, 🔊 / 🔇) and a `.vol-slider` to its right, a pixel track (the HP bar's outline, green
+fill from `--v`) with a square knob; `.muted` on the row greys the bar. It's a row in the Poké Ball menu (`.menu-sound`)
+and on the title's corner (`.title-sound`). The speaker's icon is swapped as it's tapped, so the menu's outside-tap check
+uses `e.composedPath()`, not `e.target.closest()` (a detached target read as outside and closed the menu).

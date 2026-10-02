@@ -200,7 +200,6 @@ body.scrolled .topbar::before { opacity: 1; }
   font-size: 1rem;
   flex: 0 0 auto;
 }
-#music-btn[aria-pressed="false"] .mi-label { color: var(--muted); }
 
 /* The menu is a light Pokégear window too, with a blinking ▶ cursor on the item you point at, like the Gold/Silver start menu */
 .ball-menu-panel {
@@ -227,25 +226,34 @@ body.scrolled .topbar::before { opacity: 1; }
 }
 @keyframes cursorBlink { 50% { opacity: 0; } }
 .ball-menu-panel .mi-icon { background: none; border-radius: 0; }
-/* the volume slider under Sound: a pixel track (the HP bar's outline) and a square knob */
-.menu-volume { display: block; padding: 2px 14px 10px 68px; }
-.menu-volume input {
+/* Sound: a speaker (tap to mute; js/audio.js's SOUND_TOGGLES) and a volume slider beside it (VOLUME_SLIDERS),
+   in the Poké Ball menu and on the title; a pixel track (the HP bar's outline) and a square knob */
+.sound-ctl { display: flex; align-items: center; gap: 8px; }
+.sound-mute { flex: none; display: grid; place-items: center; padding: 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: var(--round-sm); }
+.sound-mute:active .snd-icon { translate: 0 2px; }
+.menu-sound { padding: 4px 14px 6px 20px; }
+.menu-sound .sound-mute:hover, .menu-sound .sound-mute:focus-visible { background: var(--win-panel); }
+.vol-slider {
   --fill: calc(var(--v, 100) * 1%);
+  flex: 1 1 auto;
+  min-width: 0;
   display: block;
-  width: 100%;
-  height: 22px;
+  height: 26px;
   margin: 0;
   background: none;
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
+  touch-action: none;
 }
-.menu-volume input::-webkit-slider-runnable-track { height: 10px; border: 2px solid #181818; border-radius: 3px; background: linear-gradient(90deg, #48c848 var(--fill), #f0f0e8 var(--fill)); }
-.menu-volume input::-moz-range-track { height: 6px; border: 2px solid #181818; border-radius: 3px; background: #f0f0e8; }
-.menu-volume input::-moz-range-progress { height: 6px; border: 2px solid #181818; border-radius: 3px 0 0 3px; background: #48c848; }
-.menu-volume input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 18px; margin-top: -6px; border: 2px solid #181818; border-radius: 3px; background: #f8f8f8; box-shadow: inset -2px -2px 0 #b8b8c8; }
-.menu-volume input::-moz-range-thumb { width: 12px; height: 14px; border: 2px solid #181818; border-radius: 3px; background: #f8f8f8; box-shadow: inset -2px -2px 0 #b8b8c8; }
-.menu-volume input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.vol-slider::-webkit-slider-runnable-track { height: 10px; border: 2px solid #181818; border-radius: 3px; background: linear-gradient(90deg, #48c848 var(--fill), #f0f0e8 var(--fill)); }
+.vol-slider::-moz-range-track { height: 6px; border: 2px solid #181818; border-radius: 3px; background: #f0f0e8; }
+.vol-slider::-moz-range-progress { height: 6px; border: 2px solid #181818; border-radius: 3px 0 0 3px; background: #48c848; }
+.vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 18px; margin-top: -6px; border: 2px solid #181818; border-radius: 3px; background: #f8f8f8; box-shadow: inset -2px -2px 0 #b8b8c8; }
+.vol-slider::-moz-range-thumb { width: 12px; height: 14px; border: 2px solid #181818; border-radius: 3px; background: #f8f8f8; box-shadow: inset -2px -2px 0 #b8b8c8; }
+.vol-slider:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* muted: the bar greys out, still draggable (turning it up unmutes) */
+.sound-ctl.muted .vol-slider { filter: grayscale(1); opacity: 0.55; }
 @keyframes menuDrop {
   from { opacity: 0; transform: translateY(-6px) scale(0.92); }
   to   { opacity: 1; transform: none; }

@@ -140,13 +140,14 @@ function initBallMenu() {
   $('abandon-btn').addEventListener('click', requestAbandon);
   $('home-btn').addEventListener('click', requestMenu);
 
-  // picking an item closes the menu, except Sound, so you can see it switch on/off
+  // picking an item closes the menu (the speaker isn't one, so you can see it switch on/off)
   panel.addEventListener('click', (e) => {
     const item = e.target.closest('.menu-item');
-    if (item && item.id !== 'music-btn') setOpen(false, true);
+    if (item) setOpen(false, true);
   });
   document.addEventListener('click', (e) => {
-    if (!panel.hidden && !e.target.closest('.ball-menu')) setOpen(false);
+    // the path, not e.target.closest(): the speaker's icon is swapped as it's tapped, so the target is already detached
+    if (!panel.hidden && !e.composedPath().includes(ball.parentElement)) setOpen(false);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !panel.hidden) { setOpen(false); ball.focus(); }

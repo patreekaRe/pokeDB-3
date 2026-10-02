@@ -73,12 +73,9 @@
     <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js), Sound, How to play and Refresh -->
     <div class="title-corner">
       <button type="button" class="title-account" id="title-account" hidden aria-label="Sign in"><span class="ta-pc">🖥️</span><span class="ta-label" id="title-account-text">Sign in</span></button>
-      <div class="title-sound">
-        <button type="button" class="title-account" id="title-sound-btn" aria-label="Sound" aria-expanded="false" aria-controls="title-sound-panel"><span class="ta-pc" id="title-sound-icon">🔊</span></button>
-        <div class="ball-menu-panel title-sound-panel" id="title-sound-panel" hidden>
-          <button class="menu-item" id="title-music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
-          <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="title-volume" min="0" max="100" step="5" value="100"></label>
-        </div>
+      <div class="title-sound sound-ctl">
+        <button type="button" class="title-account sound-mute" id="title-music-btn" aria-pressed="true"><span class="ta-pc snd-icon">🔊</span></button>
+        <input type="range" class="vol-slider" id="title-volume" min="0" max="100" step="5" value="100" aria-label="Volume">
       </div>
       <button type="button" class="title-account title-help" id="title-help" aria-label="How to play"><span class="ta-pc">❓</span></button>
       <button type="button" class="title-account title-refresh" id="title-refresh" aria-label="Get the newest version"><span class="ta-pc">🔄</span></button>
@@ -98,8 +95,10 @@
         <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
         <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
         <button class="menu-item" id="cloud-btn" hidden><span class="mi-icon">☁️</span><span class="mi-label">Sign in</span></button>
-        <button class="menu-item" id="music-btn" aria-pressed="true"><span class="mi-icon">🔊</span><span class="mi-label">Sound on</span></button>
-        <label class="menu-volume"><span class="sr-only">Volume</span><input type="range" id="volume-slider" min="0" max="100" step="5" value="100"></label>
+        <div class="menu-sound sound-ctl">
+          <button type="button" class="sound-mute" id="music-btn" aria-pressed="true"><span class="mi-icon snd-icon">🔊</span></button>
+          <input type="range" class="vol-slider" id="volume-slider" min="0" max="100" step="5" value="100" aria-label="Volume">
+        </div>
         <button class="menu-item" id="abandon-btn" hidden><span class="mi-icon">🏳️</span><span class="mi-label">Abandon run</span></button>
         <button class="menu-item" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
         <button class="menu-item" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>

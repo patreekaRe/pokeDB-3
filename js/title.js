@@ -101,14 +101,13 @@ export function initTitle(handlers) {
   flyer.addEventListener('animationiteration', () => nextFlyer(flyer));   // swapped while it's off screen
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
-  initSoundPanel();
   $('title-refresh').addEventListener('click', refreshGame);
   paintLogo();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
   gateReady().then(paintGate);
   document.addEventListener('keydown', (e) => {
-    if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
+    if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')) return;
     if (!pressed) return start(e);
     const gems = [...screen.querySelectorAll('.gem')];
     const at = gems.findIndex(g => g.classList.contains('on'));
@@ -140,8 +139,6 @@ export function leaveTitle() {
   const screen = $('title-screen');
   if (screen.hidden) return;
   screen.classList.add('away');
-  $('title-sound-panel').hidden = true;
-  $('title-sound-btn').setAttribute('aria-expanded', 'false');
   setTimeout(() => {
     screen.hidden = true;
     screen.classList.remove('away');
@@ -471,19 +468,6 @@ async function refreshGame() {
     .filter(url => url.startsWith(location.origin) && /\.(js|css)(\?|$)/.test(url));   // the code and styles: art and sound rarely change
   await Promise.all([location.href, ...files].map(url => fetch(url, { cache: 'reload' }).catch(() => null)));
   location.reload();
-}
-
-function initSoundPanel() {
-  const btn = $('title-sound-btn'), panel = $('title-sound-panel');
-  const setOpen = (open) => {
-    if (open === !panel.hidden) return;
-    playSound('bag');
-    panel.hidden = !open;
-    btn.setAttribute('aria-expanded', String(open));
-  };
-  btn.addEventListener('click', () => setOpen(panel.hidden));
-  document.addEventListener('click', (e) => { if (!panel.hidden && !e.target.closest('.title-sound')) setOpen(false); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); } });
 }
 
 /* ---------- the sky ---------- */

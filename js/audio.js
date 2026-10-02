@@ -200,11 +200,15 @@ function menuBlip(e) {
 /** Called once at startup. */
 export function initAudio() {
   renderButton();
-  // the Poké Ball menu's Sound and the title's are the same control twice
+  // the Poké Ball menu's speaker + slider and the title's are the same control twice
   for (const id of SOUND_TOGGLES) $(id).addEventListener('click', () => setMuted(!getSave().muted));
   for (const id of VOLUME_SLIDERS) {
     const slider = $(id);
-    slider.addEventListener('input', () => { setVolume(slider.value / 100); paintSliders(); });
+    slider.addEventListener('input', () => {
+      setVolume(slider.value / 100);
+      if (getSave().muted && +slider.value > 0) setMuted(false);   // turning it up means you want to hear it
+      paintSliders();
+    });
     slider.addEventListener('change', () => playSound('confirm'));   // a blip at the new level, so you hear what you picked
   }
   paintSliders();
@@ -379,12 +383,12 @@ function renderButton() {
   const muted = getSave().muted;
   for (const id of SOUND_TOGGLES) {
     const btn = $(id);
-    btn.querySelector('.mi-icon').textContent = muted ? '🔇' : '🔊';
-    btn.querySelector('.mi-label').textContent = muted ? 'Sound off' : 'Sound on';
+    btn.querySelector('.snd-icon').textContent = muted ? '🔇' : '🔊';
     btn.title = muted ? 'Turn sound on' : 'Mute sound';
+    btn.setAttribute('aria-label', btn.title);
     btn.setAttribute('aria-pressed', String(!muted));
+    btn.closest('.sound-ctl')?.classList.toggle('muted', muted);
   }
-  $('title-sound-icon').textContent = muted ? '🔇' : '🔊';
 }
 
 /** Every slider shows the saved volume, its green part painted from --v (WebKit has no ::range-progress). */

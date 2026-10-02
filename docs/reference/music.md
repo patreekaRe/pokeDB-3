@@ -86,8 +86,8 @@ each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
   iOS ignores `<audio>.volume`, so plain elements can't fade there.
 - Browsers block sound until the first tap or key press; `unlock()` starts
   the pending track then. Don't "fix" music not starting on page load.
-- The Sound item in the Poké Ball menu saves `muted` in the save file (`js/storage.js`); the slider under it (`#volume-slider`)
-  saves `volume` (0-1), squared onto `masterBus`, which every other bus runs through. `low-hp` plays at 0.35 gain (the user's call). On iPhone,
+- The speaker in the Poké Ball menu and on the title (`SOUND_TOGGLES`) saves `muted` in the save file (`js/storage.js`); the
+  bar beside it (`VOLUME_SLIDERS`: `#volume-slider`, `#title-volume`) saves `volume` (0-1); dragging it up while muted unmutes, squared onto `masterBus`, which every other bus runs through. `low-hp` plays at 0.35 gain (the user's call). On iPhone,
   Web Audio also respects the silent switch, which is intended.
 - **Cries** (`playCry()`): one MP3 per sprite id in `assets/audio/cries/`
   (from play.pokemonshowdown.com/audio/cries/). Add the id to `CRIES` in
