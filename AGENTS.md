@@ -26,6 +26,8 @@ three places:
 - 2026-10-01: Chad Master Kenmatta is a special boss fight (Challenge sign in the Move Tutor's dojo) whose win gives the
   unique Exp. Share relic (+1 PP, +1 draw, +1 strength). Checked headless through the room, fight, rewards and the next
   fight; the user still has to playtest it and judge his difficulty (HP 130/220/370, never bot-tested).
+- 2026-10-02 (Small asks 1): Ken's first defeat pops an achievement window, and from then on every map shows his
+  dojo's ❓ room with his pixel face (`save.kenBeaten`) plus a "Ken's dojo" row in the Bag's Map key. Checked at 375x812.
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
