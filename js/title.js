@@ -217,7 +217,9 @@ function gem(kind, label, onPick, icon, extra) {
 function safariGem() {
   const open = safariOpen(getSave());
   const daily = safariDaily();
-  const line = `Today: ${daily.areas.map(a => a.name).join(' · ')}`;
+  const line = daily.areas.map(a => a.name).join(' · ');
+  const areas = el('span', 'gem-areas');   // today's areas, a chip each so they read at gem size
+  areas.append(...daily.areas.map(a => el('span', `gem-area area-${a.id}`, a.name)));
   const icon = el('img', open ? 'pixel gem-mon' : 'pixel gem-ball');
   icon.alt = '';
   if (open) icon.addEventListener('load', () => fitMon(icon), { once: true });
@@ -226,11 +228,11 @@ function safariGem() {
     if (open) return actions.onSafari();
     playSound('cancel');
     tipAt(btn, 'The Safari Zone opens once you\'ve beaten every Pokémon in the Pokédex.');
-  }, icon, open && el('span', 'gem-sub', line));   // locked, just the name: a tap says why
+  }, icon, open && areas);   // locked, just the name: a tap says why
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
-  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');

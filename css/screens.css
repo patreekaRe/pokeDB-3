@@ -2082,6 +2082,8 @@ body.battle-intro { pointer-events: none; }
   margin: 0;
   z-index: 90;
 }
+/* opened modally over the Safari's prep window: undo the top layer's inset: 0, or it stretches down to the bottom */
+#shop-dialog:modal { right: auto; bottom: auto; }
 /* An arcade cabinet in pixel art (after the user's reference photo): a charcoal body between brass side trims, two
    speaker grilles round the sign, a teal CRT in a curved black bezel, and a control deck with one red ball-top
    joystick and two round buttons. Hard-edged bands everywhere instead of soft gradients, to match the 8-bit look. */
@@ -3696,11 +3698,11 @@ body.scene-peek #backdrop { display: none; }
 .safari-prep-dialog .sp-name { font-size: 1.15rem; font-weight: 400; color: #f8d048; text-shadow: 2px 2px 0 #5a3010; }
 .sp-areas { display: flex; flex-wrap: wrap; gap: 6px; }
 .sp-area {
-  display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 7px; font-size: 0.72rem;
+  display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 8px; font-size: 0.86rem;
   border: 2px solid var(--c2); border-radius: 6px; background: var(--c1); color: #102010;
 }
 .sp-area b { font-weight: 400; }
-.sp-area small { font-size: 0.62rem; opacity: 0.8; }
+.sp-area small { font-size: 0.74rem; opacity: 0.85; }
 .sp-area.area-meadow  { --c1: #d4ecb0; --c2: #4a8a24; }
 .sp-area.area-forest  { --c1: #b8dcb4; --c2: #1e5a24; }
 .sp-area.area-wetland { --c1: #c4e0f8; --c2: #2050a0; }

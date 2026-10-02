@@ -37,8 +37,9 @@ const TRAVEL = 12;    // px the ball can lean
  *  blocking it - the map, a battle, a reward choice underneath stays fully
  *  clickable, and the shop button in the topbar stays clickable too, so it
  *  really is a toggle rather than a one-way trip.
- *  highlightId opens on one skin (used when you tap a shop-locked starter), or a row's id on that row. */
-export function toggleShop(highlightId) {
+ *  highlightId opens on one skin (used when you tap a shop-locked starter), or a row's id on that row. `modal` puts it
+ *  in the top layer, over a modal window that opened it (the Safari's prep window), which a plain show() would sit under. */
+export function toggleShop(highlightId, { modal = false } = {}) {
   const dialog = $('shop-dialog');
   if (dialog.open) { playSound('cancel', 'confirm'); return dialog.close(); }
 
@@ -50,7 +51,7 @@ export function toggleShop(highlightId) {
   cursor.news = null;
   preloadSounds('stick', 'buy');
   render();
-  dialog.show();
+  if (modal) dialog.showModal(); else dialog.show();
   $('shop-btn').setAttribute('aria-expanded', 'true');
   $('gc-buy').focus({ preventScroll: true });
   if (at >= 0) flash('flash');
@@ -83,7 +84,7 @@ export function initShop() {
 
   document.addEventListener('keydown', (e) => {
     const dialog = $('shop-dialog');
-    if (!dialog.open || document.querySelector('dialog:modal')) return;
+    if (!dialog.open || (document.querySelector('dialog:modal') && !dialog.matches(':modal'))) return;
     const focus = document.activeElement;
     if (focus && focus !== document.body && !dialog.contains(focus) && !focus.closest('.shop-btn, #menu-shop-btn')) return;
     if (e.key === 'Escape') { playSound('cancel', 'confirm'); dialog.close(); return; }

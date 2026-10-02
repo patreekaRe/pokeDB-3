@@ -17,7 +17,6 @@ import { playSound } from './audio.js';
 import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
 
 let actions = {};
-let backFromShop = false;   // the Game Corner is non-modal, so this window steps aside for it and comes back after
 
 const ROCK_HIT = CARDS_BY_ID.rock.effects.damage;
 const RULES = [
@@ -37,18 +36,10 @@ export function initSafariPrep(handlers) {
   $('sp-close').addEventListener('click', () => { playSound('cancel', 'confirm'); closeDialog('safari-prep-dialog'); });
   $('sp-dex').addEventListener('click', () => openSafariDex(safariDaily().areas[0].id));
   $('sp-board').addEventListener('click', () => openLeaderboard());
-  $('sp-corner').addEventListener('click', () => {
-    backFromShop = true;
-    closeDialog('safari-prep-dialog');
-    if (!$('shop-dialog').open) toggleShop('balls');
-  });
-  $('shop-dialog').addEventListener('close', () => {
-    if (!backFromShop) return;
-    backFromShop = false;
-    openSafariPrep();
-  });
-  // a catch counted or a ball bought while the Pokédex or leaderboard was open on top shows when it closes
-  for (const id of ['safari-dex-dialog', 'board-dialog']) $(id).addEventListener('close', () => { if ($('safari-prep-dialog').open) render(); });
+  // the Game Corner pops up over this window (modal, so it isn't hidden under it); its balls show here once it closes
+  $('sp-corner').addEventListener('click', () => { if (!$('shop-dialog').open) toggleShop('balls', { modal: true }); });
+  // a ball bought in the Game Corner, or anything changed in a window opened on top, shows once it closes
+  for (const id of ['safari-dex-dialog', 'board-dialog', 'shop-dialog']) $(id).addEventListener('close', () => { if ($('safari-prep-dialog').open) render(); });
 }
 
 export function openSafariPrep() {

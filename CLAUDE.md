@@ -60,7 +60,8 @@ live site.
   in `js/ui.js`, which wrap `.showModal()`/`.close()`. The **shop dialog is
   the exception** — it uses `.show()`/`.close()` directly (non-modal), so it
   floats above whatever screen is showing without blocking or hiding it.
-  That's intentional: don't "fix" it back to `showModal()`.
+  That's intentional: don't "fix" it back to `showModal()`. The one exception: the Safari's prep window opens it with
+  `toggleShop('balls', { modal: true })`, since it must pop up over that modal window (`docs/reference/safari.md`).
   **Every window closes on a tap outside it** (the user's call, 2026-09-27): `js/ui.js` closes any modal dialog when
   a press starts and ends on its backdrop (with the `cancel` sound); the result and yes/no windows click
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,

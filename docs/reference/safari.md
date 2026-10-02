@@ -89,9 +89,12 @@ carry the card itself as a `.card.small`, `zoomable()`: a tap opens it big with 
 without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row like an item bar
 (a slot each, sprite and ×count, greyed at 0, the Safari Ball's ∞ big at the sprite's bottom centre; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
 end for the Game Corner, and Back / Start. Start keeps the "your saved run will be lost" confirm (`onStart` in
-`js/main.js`; No reopens the window). The Game Corner is non-modal, so it would sit under this modal window: Buy closes
-it, opens the shop on its Poké Balls row (`toggleShop('balls')`) and reopens it, refreshed, when the shop closes. The
-Safari Pokédex and the Leaderboard are modal and simply stack on top.
+`js/main.js`; No reopens the window). The Game Corner pops up over this window, which stays open
+underneath (the user's ask): Buy calls `toggleShop('balls', { modal: true })`, the one place the shop opens with
+`showModal()`, since a plain `show()` would sit under this modal window. Modal, its outside tap is `js/ui.js`'s backdrop
+close (the shop's own click-elsewhere handler stands aside while any modal is open), Escape and the joystick keys still
+work, and its `close` re-renders this window, so bought balls show at once. The Safari Pokédex and the Leaderboard are
+modal and simply stack on top too. The area chips are 0.86rem with 0.74rem counts.
 
 ## The fair first try
 
