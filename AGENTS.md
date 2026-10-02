@@ -45,6 +45,10 @@ three places:
   75 / 50 / 25% then the break, each step crossed mid-hit jolting it open with its lines, and its HP is a new seal bar
   (gem, stage runes, trailing damage) in the scene and the result window. Checked in the browser pane through
   `?gate=780&strike=300` and `?gate=520&strike=300`; the result window's bar only by reading the code.
+- 2026-10-02: **The broken gate on the title** (Desktop app, the user's ask): once the Sealed Gate is broken and Mewtwo
+  is free, the open gate stands on the title's ledge; a tap swells its violet light with Mewtwo's cry, then opens
+  Mewtwo's Prepare step. Checked in the browser pane at 375x812 with `?mewtwo&gate=0` (hidden without them, no overlap
+  with the gems, the tap lands on Prepare, Back on the select).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.

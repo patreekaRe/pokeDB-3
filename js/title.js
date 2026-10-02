@@ -21,6 +21,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
+import { makeGate, gateHp, gateReady } from './gate.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -98,6 +99,8 @@ export function initTitle(handlers) {
   $('title-refresh').addEventListener('click', refreshGame);
   paintLogo();
   $('title-abandon').addEventListener('click', () => actions.onAbandon());
+  $('title-gate').addEventListener('click', enterGate);
+  gateReady().then(paintGate);
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
     if (!pressed) return start(e);
@@ -105,7 +108,7 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
-    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-corner') && gems[at]) { e.preventDefault(); gems[at].click(); }
+    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .title-corner, .title-gate') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
 }
@@ -373,7 +376,62 @@ function paint() {
   look = SKIES[timeOfDay()];
   base = paintScenery(W, H, Math.round(ground / PIXEL));
   stars = look.stars ? makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H)) : [];
+  sizeGate();
   draw();
+}
+
+/* ---------- the broken Sealed Gate on the ledge ---------- */
+
+/* Only once it's broken and Mewtwo is free: before that the gate is only ever seen at a run's end (the user's call,
+   2026-10-02). Then it stands open on the ledge, and a tap is a shortcut to Mewtwo's Prepare step. */
+let gateArt = null, entering = false;
+const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
+
+/** It stands in the right-hand gutter, clear of the gems and a saved run's nameplate: small on phones. */
+function sizeGate() {
+  const btn = $('title-gate'), canvas = $('title-gate-art');
+  btn.hidden = !gateOpen();
+  if (btn.hidden) return;
+  const phone = innerWidth < 600;
+  const [w, h, px] = phone ? [36, 44, 2] : innerHeight <= 700 ? [46, 56, 3] : [56, 68, 3];
+  if (!gateArt || gateArt.W !== w) gateArt = Object.assign(makeGate(w, h), { W: w });
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = `${w * px}px`;
+  canvas.style.height = `${h * px}px`;
+  const gutter = (innerWidth - Math.min(300, innerWidth * 0.8)) / 2;
+  btn.style.right = `${phone ? 4 : Math.max(16, Math.round((gutter - w * px) / 2))}px`;
+  paintGate();
+}
+
+function paintGate(flash = 0) {
+  if (!gateArt || $('title-gate').hidden) return;
+  gateArt.paint($('title-gate-art').getContext('2d'), { hp: 0, open: true, t: frame / FPS, flash });
+}
+
+/** A tap: the violet light swells out of the arch and Mewtwo cries, then its Prepare step (actions.onGate). */
+function enterGate() {
+  if (!pressed || entering) return;   // before PRESS START a tap anywhere just starts
+  const mewtwo = STARTERS_BY_ID.mewtwo;
+  playCry(mewtwo.line[0].id);
+  if (still()) return actions.onGate(mewtwo);
+  entering = true;
+  const screen = $('title-screen'), btn = $('title-gate'), box = btn.getBoundingClientRect();
+  screen.style.setProperty('--gate-x', `${box.left + box.width / 2}px`);
+  screen.style.setProperty('--gate-y', `${box.top + box.height * 0.6}px`);
+  screen.classList.add('gate-opening');
+  playSound('gate-hum');
+  const t0 = performance.now();
+  const swell = () => {
+    const k = Math.min(1, (performance.now() - t0) / 1100);
+    paintGate(k * 0.8);
+    if (k < 1) requestAnimationFrame(swell);
+  };
+  requestAnimationFrame(swell);
+  setTimeout(() => {
+    actions.onGate(mewtwo);
+    setTimeout(() => { screen.classList.remove('gate-opening'); entering = false; }, 400);
+  }, 1100);
 }
 
 function draw() {
@@ -415,6 +473,7 @@ function tick() {
     if (--shooting.life <= 0) shooting = null;
   }
   draw();
+  if (!entering) paintGate();
 }
 
 /** The sky, moon and hills: everything that doesn't move, painted once per resize. */

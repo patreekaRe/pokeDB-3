@@ -216,6 +216,7 @@ function init() {
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
     onGameCorner: () => toggleShop(),
+    onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
   });
   initSelect({ onChoose: previewStarter, onBack: showHome });

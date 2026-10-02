@@ -35,3 +35,11 @@ Ball menu's Main menu, a run's end, Back on the select or the Collection, the Ab
 `showHome()`. The first PRESS START unlocks audio and opens the first-time How to play. `--ground` (set from JS) keeps the
 CSS sprites on the painted ledge.
 
+Once the Sealed Gate is broken and Mewtwo unlocked, the **open gate** stands on the ledge in the right-hand gutter
+(`#title-gate`, `sizeGate()` / `paintGate()`, `makeGate()` from `js/gate.js` with `open: true`, repainted each tick;
+36x44 at 2px on phones, 46x56 or 56x68 at 3px wider), glowing violet. Before that it isn't there at all (the user's call:
+the gate's progress is only seen at a run's end). After PRESS START a tap (`enterGate()`) plays Mewtwo's cry and
+`gate-hum`, swells the arch's light over the whole screen from the gate (`.gate-opening`, 1.1 s; straight through under
+reduced motion), then `actions.onGate` opens the character select on Mewtwo's Prepare step; Back leaves you on the select.
+Playtest: `?mewtwo&gate=0`.
+

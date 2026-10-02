@@ -167,6 +167,32 @@ body.titling { overflow: hidden; }
   100% { translate: -40vw -10px; }
 }
 
+/* the broken Sealed Gate stands open on the ledge once Mewtwo is free (sizeGate() in js/title.js), its feet sunk a little
+   into the grass; a tap swells its violet light over the screen (.gate-opening) on the way to Mewtwo's Prepare step */
+.title-gate {
+  position: absolute; bottom: calc(var(--ground) - 20px); z-index: 1;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  filter: drop-shadow(0 0 12px rgba(150, 90, 255, 0.5));
+  animation: gateGlow 3s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+.title-gate[hidden] { display: none; }
+.title-gate canvas { display: block; image-rendering: pixelated; }
+.title-gate:hover, .title-gate:focus-visible { filter: drop-shadow(0 0 18px rgba(170, 110, 255, 0.85)); outline: none; }
+@keyframes gateGlow { 50% { filter: drop-shadow(0 0 18px rgba(150, 90, 255, 0.7)); } }
+.title-screen.gate-opening { cursor: default; pointer-events: none; }
+.title-screen.gate-opening::after {
+  content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: radial-gradient(circle at var(--gate-x) var(--gate-y), #fff 0, #e0c0ff 6%, #9a60f0 22%, #4a2490 48%, #1a0c38 80%);
+  animation: gateSwell 1.1s ease-in forwards;
+}
+@keyframes gateSwell {
+  0%   { opacity: 0; clip-path: circle(0 at var(--gate-x) var(--gate-y)); }
+  40%  { opacity: 0.85; }
+  100% { opacity: 1; clip-path: circle(150% at var(--gate-x) var(--gate-y)); }
+}
+@media (max-width: 599px) { .title-gate { bottom: calc(var(--ground) - 15px); } }
+
 /* pressing start: the prompt flickers fast, a white flash, then the sky fades away */
 .title-screen.leaving { cursor: default; }
 .title-screen.leaving .press-start { animation: pressBlink 0.12s steps(1) infinite; }

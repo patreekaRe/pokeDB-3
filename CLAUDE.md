@@ -128,9 +128,12 @@ live site.
   (`crackOpen()`: crack, flash, shake, the bar's rune shattering) and adds its lines (`STAGE_LINES`). The breaking blow: shudder, light rays,
   chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
   its aura GIF and cry; the unlock window follows. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
-  `js/audio.js`. **The gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
-  win another run): not on the title (it stood on the ledge until then; Mewtwo never flies by either, it has no flying
-  sprite), and the locked "???" panel only hints. The story is told in the scene: the first time (`save.gateSeen`) it
+  `js/audio.js`. **Until it breaks, the gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
+  win another run): not on the title (Mewtwo never flies by either, it has no flying sprite), and the locked "???" panel
+  only hints. **Once broken** (and Mewtwo unlocked) it stands open on the title's ledge (`sizeGate()` / `paintGate()` in
+  `js/title.js`, `.title-gate` in `css/screens.css`): a tap swells its violet light over the screen (`.gate-opening`)
+  with Mewtwo's cry, then `onGate` in `js/main.js` opens Mewtwo's Prepare step, a shortcut to the same screen as its
+  Legendaries portrait (the user's ask, 2026-10-02). Playtest: `?mewtwo&gate=0`. The story is told in the scene: the first time (`save.gateSeen`) it
   opens with the chamber's lore (plus a line that past victories already cracked it, if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
   harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
   `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`) plays the scene after PRESS START; a

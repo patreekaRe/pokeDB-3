@@ -855,6 +855,9 @@ and whether Mewtwo mode stays out of it (it should: Mewtwo is what's behind it).
   plays, and your Pokémon is too weak to harm the seal. The story is told in the scene (the first visit's lore, then
   what higher Levels would deal). The art is fantasy rather than bricks: crystal spires, an obsidian and gold frame of
   glowing glyphs, a turning magic-circle seal. `?lockmewtwo` relocks a playtest unlock.
+  **The broken gate on the title (2026-10-02, the user's ask):** once broken and Mewtwo is free, the open gate stands on
+  the title's ledge; a tap swells its violet light with Mewtwo's cry and opens Mewtwo's Prepare step. Before the break
+  the title still shows nothing. Playtest: `?mewtwo&gate=0`.
 
 **Run in: CLOUD.** Next-session prompt (part A): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'The Sealed Gate'.
 Build part A: the saved gate HP, damage after each won run (more at higher Trainer Levels; only a Level 5 win can break
