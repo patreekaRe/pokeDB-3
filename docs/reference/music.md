@@ -17,6 +17,12 @@ Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 the map. `heal` is for rest sites only (the user's call): don't reuse it
 for potions or other heals. Sound effects are decoded buffers played with `playSound()`; to
 add one, list it in `SOUNDS` (`{ url, gain }`, gain boosts a quiet file) and drop the MP3 in `assets/audio/sfx/`.
+An entry with both `url` and `synth` plays the file when it's there and the synth while it's missing (`loadSound()`
+falls back on a failed fetch, which logs one 404 per page load until the file exists). The Safari Zone's catch uses this
+(2026-10-02): **`catch-shake`** (each wobble of the ball on the ground) and **`catch-success`** (the ball latching shut on a
+catch, with the "caught a Pokémon!" jingle) wait for the user's own files at `assets/audio/sfx/catch-shake.mp3` and
+`assets/audio/sfx/catch-success.mp3`; until then `catchShake()` (a hollow knock and a plastic rattle click) and
+`catchSuccess()` (a double latch click, then a four-note chiptune "Gotcha!") stand in.
 `start`/`length` play only part of a file with a short fade-out, so a long or late-starting
 effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` is
 `blockClink()` at the end of `js/audio.js`, an 8-bit shield clink (the user swapped their MP3 for a generated one), normalized to 0.2 like the other synths (at 0.9 it was far too loud).

@@ -255,7 +255,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []), ...(b.catchable ? ['ball-shake', 'ball-click', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []), ...(b.catchable ? ['catch-shake', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -1191,14 +1191,14 @@ async function ballAnimation(ball, shakes, caught) {
   for (let i = 0; i < shakes; i++) {
     await sleep(motion ? 380 : 250);
     if (battle !== b) { thrown.remove(); return false; }
-    playSound('ball-shake');
+    playSound('catch-shake');
     if (motion) await thrown.animate([{ transform: `${at(x, ground)} rotate(0deg)` }, { transform: `${at(x, ground)} rotate(-24deg)` },
       { transform: `${at(x, ground)} rotate(18deg)` }, { transform: `${at(x, ground)} rotate(0deg)` }], { duration: 420, easing: 'steps(6)' }).finished;
   }
   await sleep(motion ? 420 : 250);
   if (battle !== b) { thrown.remove(); return false; }
   if (caught) {
-    playSound('ball-click');
+    playSound('catch-success');
     thrown.classList.add('caught');
     for (let i = 0; i < 3; i++) pop('enemy-zone', '✦', 'note good catch-star', i * 90);
     return true;

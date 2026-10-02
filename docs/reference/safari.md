@@ -16,6 +16,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 
 ## Catching (phase 2)
 
+- **The Throw button on phones** (≤720px): PP | Throw | End Turn, Throw centred on the screen (`.battle-controls:has(.throw-btn:not([hidden]))`
+  makes it a 3-column grid and `.turn-side` `display: contents`, the user's call 2026-10-02).
 - **When**: a Safari run's wild rooms only (`battle.catchable`: `run.safari` and kind `fight`; Alphas and bosses can't be
   caught), once the HP is red, below `CATCH_HP` (25%). The **Throw** button (`#throw-btn`, green, beside End Turn; on
   phones on the PP row) shows then.
@@ -28,8 +30,9 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   kind of debuff on it: Burn, Leech Seed, Weak, Sap) x (1 + 0.5 per Bait) x 0.5 for a rare spawn; capped at 95%
   (`CATCH_CAP`); the Master Ball is 100%. The roll is `random()`, on the room's seeded stream.
 - **The throw on screen** (`ballAnimation()`): the ball's sprite arcs to the Pokémon (Web Animations), it's pulled in
-  (`.enemy-portrait.captured`), the ball drops and shakes 0-3 times (`ball-shake`, a synth; near misses shake more, like
-  the games), then clicks shut (`ball-click`) or bursts open.
+  (`.enemy-portrait.captured`), the ball drops and shakes 0-3 times (`catch-shake`; near misses shake more, like the
+  games), then latches shut with the catch jingle (`catch-success`) or bursts open. Both play the user's files in
+  `assets/audio/sfx/` once they're there, synths until then (`docs/reference/music.md`).
 - **A catch** (`caughtIt()`): `onEnd({ won: true, caught: true, ball })`. `afterFight()` pays `CATCH_PRIZE` (half) of the
   knockout's ₽, the same PokéCoins (+`LUXURY_COINS` with a Luxury Ball), the usual item odds, and instead of the card
   reward `offerSignature()`: the Pokémon's signature card, take or skip (skipped silently if you already hold it). The

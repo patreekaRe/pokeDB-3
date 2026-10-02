@@ -124,8 +124,10 @@ const SOUNDS = {
   'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
   gust:         { synth: hotGust },          // the Wastes' intro: a hot wind as you burst out of the ash cloud...
   'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
-  'ball-shake': { synth: ballShake },        // a thrown ball wobbles on the ground (the Safari Zone's catch, battle.js)...
-  'ball-click': { synth: ballClick },        // ...and clicks shut: caught!
+  // the Safari Zone's catch (battle.js): each wobble of the ball on the ground, then the latch and jingle of a catch. The
+  // user's own files once they're in assets/audio/sfx/; until then (or if one fails to load) the synth stands in
+  'catch-shake':   { url: 'assets/audio/sfx/catch-shake.mp3', synth: catchShake },
+  'catch-success': { url: 'assets/audio/sfx/catch-success.mp3', synth: catchSuccess },
   'gate-hum':   { synth: gateHum },          // the Sealed Gate's scene (gatescene.js): the seal's low, uneasy drone...
   'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
   'gate-shatter': { synth: gateShatter },    // ...and the door blows apart in crystal shards
@@ -543,12 +545,12 @@ class LoopedTrack {
 
 function loadSound(name, url = SOUNDS[name]?.url) {
   const synth = SOUNDS[name]?.synth;
-  if (synth && !(name in buffers)) buffers[name] = Promise.resolve(synth(audioContext()));
+  if (synth && !url && !(name in buffers)) buffers[name] = Promise.resolve(synth(audioContext()));
   if (!(name in buffers)) {
     buffers[name] = fetch(url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
       .then(data => audioContext().decodeAudioData(data))
-      .catch(() => null);
+      .catch(() => (synth ? synth(audioContext()) : null));   // a file with a synth behind it: the synth while the file is missing
   }
   return buffers[name];
 }
@@ -648,34 +650,49 @@ function stickTick(ac) {
   return normalize(buffer, 0.12);
 }
 
-/** A Poké Ball wobbling on the ground: a dull square-wave knock, low then lower. */
-function ballShake(ac) {
-  const rate = ac.sampleRate, length = Math.round(rate * 0.14);
-  const buffer = ac.createBuffer(1, length, rate);
-  const out = buffer.getChannelData(0);
-  for (let i = 0; i < length; i++) {
-    const t = i / rate;
-    const pitch = t < 0.05 ? 220 : 165;
-    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));
-    out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.05) * fade;
+/** A filtered click: a burst of noise rung through a resonant band at `freq`, the body of every plastic and metal tick below. */
+function click(out, rate, at, freq, decay, level) {
+  const start = Math.round(at * rate), w = 2 * Math.PI * freq / rate, r = Math.exp(-1 / (decay * rate));
+  let y1 = 0, y2 = 0;
+  for (let i = 0; start + i < out.length && i < rate * decay * 8; i++) {
+    const x = i < rate * 0.0015 ? Math.random() * 2 - 1 : 0;
+    const y = x + 2 * r * Math.cos(w) * y1 - r * r * y2;
+    y2 = y1; y1 = y;
+    out[start + i] += y * level;
   }
-  return normalize(buffer, 0.14);
 }
 
-/** The ball clicking shut on a catch: a sharp tick, then two bright blips. */
-function ballClick(ac) {
-  const rate = ac.sampleRate, length = Math.round(rate * 0.32);
+/** The ball rocking on the ground, like the games' "clack": a hollow knock as it tips, a plastic click as the halves rattle. */
+function catchShake(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.22);
   const buffer = ac.createBuffer(1, length, rate);
   const out = buffer.getChannelData(0);
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {   // the knock: a low thump sliding down
     const t = i / rate;
-    const tick = (Math.random() * 2 - 1) * Math.exp(-t / 0.003);
-    const pitch = t < 0.08 ? 0 : t < 0.16 ? 1568 : 2093;
-    const blip = pitch ? Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.4 * Math.exp(-(t - (t < 0.16 ? 0.08 : 0.16)) / 0.06) : 0;
-    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));
-    out[i] = (tick * 0.6 + blip) * fade;
+    out[i] += Math.sin(2 * Math.PI * (150 - 260 * t) * t) * Math.exp(-t / 0.035) * 0.9;
   }
-  return normalize(buffer, 0.16);
+  click(out, rate, 0, 2400, 0.012, 0.5);
+  click(out, rate, 0.045, 1800, 0.01, 0.35);   // the rock back
+  return normalize(buffer, 0.5);
+}
+
+/** A catch: the button latching shut (a sharp double click, the second ringing), then a short bright chiptune "Gotcha!". */
+function catchSuccess(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 1.0);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  click(out, rate, 0, 3200, 0.008, 0.9);
+  click(out, rate, 0.028, 4200, 0.03, 0.7);
+  const notes = [[0.2, 1047, 0.09], [0.29, 1319, 0.09], [0.38, 1568, 0.09], [0.47, 2093, 0.45]];
+  for (const [at, f, dur] of notes) {
+    const start = Math.round(at * rate);
+    for (let i = 0; i < dur * rate && start + i < length; i++) {
+      const t = i / rate;
+      const env = Math.min(1, t / 0.004) * (t < dur - 0.02 ? Math.exp(-t / (dur * 2)) : Math.max(0, (dur - t) / 0.02));
+      out[start + i] += (Math.sin(2 * Math.PI * f * t) > 0 ? 1 : -1) * 0.22 * env;
+    }
+  }
+  return normalize(buffer, 0.45);
 }
 
 /** The NES noise channel: random values held for `hold` samples, so it sounds crunchy rather than hissy. */

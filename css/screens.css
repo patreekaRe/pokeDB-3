@@ -885,7 +885,12 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .energy-orb, .howto-endturn { padding: 6px 7px; }
   .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
-  .turn-side:has(.throw-btn:not([hidden])) { flex-direction: row; justify-content: flex-end; align-items: center; gap: 10px; }
+  /* Throw shows: PP | Throw | End Turn, with Throw in the middle of the screen (the user's call: it sat off to the right) */
+  .battle-controls:has(.throw-btn:not([hidden])) { grid-template-columns: 1fr auto 1fr; grid-template-areas: "orb throw side" "hand hand hand"; }
+  .battle-controls:has(.throw-btn:not([hidden])) .turn-side { display: contents; }
+  .battle-controls:has(.throw-btn:not([hidden])) .orb-wrap { justify-self: start; }
+  .battle-controls .throw-btn { grid-area: throw; align-self: center; }
+  .battle-controls:has(.throw-btn:not([hidden])) #end-turn-btn { grid-area: side; justify-self: end; align-self: center; }
   .battle-controls .throw-btn { padding: 5px 6px; }
   .throw-btn .pp-pill { font-size: 0.8rem; gap: 4px; padding: 3px 10px 2px 6px; }
   .throw-ball-icon { width: 26px; height: 26px; }

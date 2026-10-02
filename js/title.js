@@ -212,12 +212,12 @@ function gem(kind, label, onPick, icon, extra) {
   return btn;
 }
 
-/** The Safari Zone, the daily run: today's starter on its face and today's areas under its name. Locked (the whole gem
+/** The Safari Zone, the daily run: today's starter on its face (its areas on the signpost beside it). Locked (the whole gem
     greyed out, a Safari Ball on it) until every Pokédex entry has been beaten; a tap then says so. */
 function safariGem() {
   const open = safariOpen(getSave());
   const daily = safariDaily();
-  const line = `Today: ${daily.areas.map(a => a.name).join(' · ')}`;
+  const line = daily.areas.map(a => a.name).join(' · ');
   const icon = el('img', open ? 'pixel gem-mon' : 'pixel gem-ball');
   icon.alt = '';
   if (open) icon.addEventListener('load', () => fitMon(icon), { once: true });
@@ -226,11 +226,11 @@ function safariGem() {
     if (open) return actions.onSafari();
     playSound('cancel');
     tipAt(btn, 'The Safari Zone opens once you\'ve beaten every Pokémon in the Pokédex.');
-  }, icon, open && el('span', 'gem-sub', line));   // locked, just the name: a tap says why
+  }, icon);   // today's areas are on the signpost beside it (the user's call); locked, a tap says why
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
-  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');
@@ -241,10 +241,8 @@ function safariGem() {
   board.title = 'Today\'s Safari Zone leaderboard';
   board.setAttribute('aria-label', 'Safari Zone leaderboard');
   board.addEventListener('click', () => { playSound('confirm'); actions.onBoard(); });
-  const sides = el('div', 'gem-sides');
   closeAreas();
-  sides.append(board, areaSign(daily));
-  row.append(btn, sides, areasPop);
+  row.append(areaSign(daily), btn, board, areasPop);
   return row;
 }
 
