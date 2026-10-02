@@ -805,7 +805,7 @@ export const BIOMES = [
     normals: ['crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus',
       'golurk', 'bronzong', 'claydol', 'dusknoir', 'lanturn', 'magnezone'],
     elites: ['clefable', 'ditto', 'smeargle'], bosses: ['eternatus'],
-    hpMult: 7.5, dmgBonus: 38, bossBonus: 58,
+    hpMult: 7.5, dmgBonus: 31, bossBonus: 58,
   },
 ];
 

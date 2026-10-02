@@ -780,6 +780,10 @@ last act only a special run reaches.
     / boss 50 / hp 8 74.7 (15 of its 25 points lost to wilds), dmg 40 / boss 54 / Eternatus 820 76.7, **dmg 38 / boss 58 /
     hp 7.5 / Eternatus 800 78.7** (losses: boss 9, wilds 7, Alphas 5), shipped. Confirmed at 300: strong 78.3 (biome 4 deaths: boss 8, wilds 7, Alphas 6);
     human 72.3 (boss 11, wilds 9, Alphas 6); biome 3's boss took 1% in each. Part D's final pass re-checks it.
+  - **Softer wilds (the user's playtest, 2026-10-02)**: they died to a Depths wild fight ("the enemies hit hard"). A
+    14-damage move landed for 52 (+38); the bot blocks it all (it lost only 2-15% HP a wild fight), a person doesn't. The
+    Depths' `dmgBonus` is now 31 (wilds and Alphas -7; Eternatus's `bossBonus` 58 unchanged). Human bot, 150 runs each
+    (sim now mirrors `playerDmg`): before 88.0 / 91.3, after 94.7 / 92.7; nearly every loss is Eternatus.
   - **B2 (Desktop, LOCAL or CLOUD with screenshots): the Crystal Depths' art.** Its scenery, places and landmarks, the
     biome intro and the boss intro, the map palette, a pad, `map4` music from the user.
 - **C. The final boss fight** as a set piece: several phases (Eternatus -> Eternamax, say), its own music, the storm at
