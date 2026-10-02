@@ -125,7 +125,7 @@ live site.
   `js/audio.js`. **The gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
   win another run): not on the title (it stood on the ledge until then; Mewtwo never flies by either, it has no flying
   sprite), and the locked "???" panel only hints. The story is told in the scene: the first time (`save.gateSeen`) it
-  opens with the chamber's lore and, after the hit, that every win weakens the seal and higher Trainer Levels hit
+  opens with the chamber's lore (plus a line that past victories already cracked it, if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
   harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
   `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`) plays the scene after PRESS START; a
   strike past the HP plays the break. `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo

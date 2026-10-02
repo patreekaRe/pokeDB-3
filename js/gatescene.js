@@ -85,6 +85,8 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
   const story = first ? [
     'Far beneath the wastes lies a chamber no map shows...',
     'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.',
+    // a save whose earlier wins were counted before it ever got here (seedGate())
+    ...(before < GATE_HP ? ['Cracks already run through the seal... your past victories have been reaching it all along.'] : []),
   ] : [];
   if (kind === 'loss') {
     await say([...story, `${name} fainted... but its last spark of strength is drawn down into the chamber.`]);
