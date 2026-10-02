@@ -807,6 +807,59 @@ Eternatus's final boss fight as a set piece (phases, Eternamax), with a bot chec
 Mewtwo and the fourth biome'. Paint the Crystal Depths: replace the placeholder `BIOME_ART.depths` with its own scenery,
 places, landmarks, biome and boss intros, and map palette."
 
+## Post-v1.0: the Safari Zone daily run (the user's idea, planned 2026-10-02)
+
+A daily seeded run in a new place of its own, the **Safari Zone**, with a **capture** mechanic and hundreds more Pokémon
+to collect in a **Safari Pokédex**. Catching stays out of the main game (see Catching below); here it's the point of the
+mode, so it makes sense. It unlocks once the main Pokédex is fully researched (`dex.complete`, Reshiram's achievement).
+
+**Settled (the user's calls, 2026-10-02):**
+- **One theme, the Safari Zone**, not separate leaderboard biomes. It has ~6 **areas** (Johto's Safari Zone is the model):
+  Meadow, Forest, Wetland, Marsh, Peak, Desert. Each day's seed picks **3 of them** as that run's three biomes. Each area
+  is a habitat whose roster fits it (Wetland: Water; Peak: Rock/Ice...), so a wanted Pokémon means waiting for its area's
+  day: the daily hook. Art is one look (fences, tall grass, Safari signs) with 6 painted area scenes.
+- **The daily seed**: the same run for everyone on a UTC date: map, enemies, rewards, and a **fixed starter** the seed
+  picks (any starter but Mewtwo, owned or not, so the leaderboard is fair).
+- **Attempts**: the **first try of the day counts for the leaderboard**; after it, unlimited replays of the same seed for
+  catching (they count for the Safari Pokédex, not the board).
+- **Capture**: once an enemy's HP is red (below 25%), a **Throw Ball** button appears. Throwing costs the turn's energy;
+  a miss and the enemy acts. Odds rise with lower HP, the ball, and your debuffs on it (Burn, Leech Seed, Weak, Sap: the
+  games' sleep/paralysis bonus, so every type helps). A catch pays less ₽ than a knockout (money vs a card and an entry).
+- **What a catch gives** (Claude's recommendation, the user agreed): the Pokémon's **Safari Pokédex** entry, plus its
+  **signature card offered for the run, take or skip** like a card reward, so catching never bloats a leaderboard deck.
+- **Poké Balls in the Game Corner**: cheap ones as consumable stock (Great, Ultra), special ones as permanent unlocks:
+  Dusk Ball (better at night, `js/daytime.js`), Quick Ball (turn 1), Timer Ball (better the longer the fight), Net Ball
+  (Water and Grass), Luxury Ball (bonus coins), and a Master Ball, one a week.
+
+**Proposed, to confirm with the user when its phase comes:**
+- **Rare spawns** that flee after a few turns if not caught (weaken it fast without knocking it out).
+- **Safari-only cards**: Bait (easier to catch, but it hits harder) and Rock (takes more damage, more likely to flee).
+- **Daily modifiers** on top of the areas ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
+- **The third area's boss**: the Safari Warden's ace, or a weekly "zone legend" catchable only on the last floor.
+- **Roster at scale**: ~10 enemy role templates (striker, tank, debuffer, status-spammer...) scaled per biome, so each new
+  Pokémon is a data line (species, type, area, template, signature move + its card), added ~50 a session. Sprites from
+  PokeAPI, loaded on demand (hundreds are a few MB, fine on Pages).
+- **Leaderboard** on the existing Firebase (`js/cloud.js`): fastest win, fewest turns, most caught. Needs sign-in.
+
+**Engineering note**: every gameplay roll must come from a seeded RNG for a daily seed to be the same run for everyone.
+About 40 `Math.random` calls today (run.js 13, rewards.js 7, battle.js 7, map.js 4, data/enemies.js 3...); gameplay ones
+move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, scene) stay as they are.
+
+**Phases, one or more sessions each:**
+1. **Seeded RNG + the Daily button**: the seeded generator through every gameplay roll, a Daily entry on the start screen
+   (locked until `dex.complete`), the day's 3 areas and fixed starter, the first-try flag, a small starting roster per
+   area. Playable day one, without capture yet.
+2. **Capture and Poké Balls**: Throw Ball at red HP, catch odds, the take-or-skip card, the Game Corner balls. Bot check
+   (the sim needs the seeded run and the throw) that catching doesn't make the run easier than knocking out.
+3. **The Safari Pokédex**: its own window/tab, entries by area, caught/seen marks, area progress.
+4. **The roster at scale**: role templates, then batches of ~50 Pokémon a session.
+5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
+
+**Run in: CLOUD.** Next-session prompt (phase 1): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'Post-v1.0: the
+Safari Zone daily run'. Build phase 1: a seeded RNG for every gameplay roll, the Daily button (locked until the Pokédex is
+fully researched), the day's 3 Safari areas and fixed starter from a UTC-date seed, the first-try leaderboard flag, and a
+small starting roster per area. Ask me about anything the plan leaves open first. Attach pokeDB-sim too."
+
 ## The Pokémon list: 18 per biome, 54 in all
 
 Each biome: 12 wild (3 Fire, 3 Grass, 3 Water, 3 pure Normal, so every starter meets the same
@@ -856,6 +909,8 @@ Possible later expansion to ~70 (per biome: 3 wild, 1 elite, 1 boss):
 
 The user's call (2026-09-27): it doesn't make sense for this game. (The idea was Poké Balls from the Mart that end a
 fight early at low HP.)
+Exception (2026-10-02): the **Safari Zone daily run** is built around catching, in its own mode; see "Post-v1.0: the
+Safari Zone daily run". The main game still has none.
 
 ## Bot harness in a cloud session
 
