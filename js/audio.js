@@ -129,6 +129,7 @@ const SOUNDS = {
   'catch-shake':   { url: 'assets/audio/sfx/catch-shake.mp3', synth: catchShake, gain: 0.25 },
   'catch-shake-2': { url: 'assets/audio/sfx/catch-shake-2.mp3', synth: catchShake, gain: 0.25 },   // the user's recording's 2nd and 3rd wobbles
   'catch-shake-3': { url: 'assets/audio/sfx/catch-shake-3.mp3', synth: catchShake, gain: 0.25 },
+  'catch-click':   { synth: catchClick, gain: 0.7 },   // the ball latching shut, alone, before the jingle
   'catch-success': { url: 'assets/audio/sfx/catch-success.mp3', synth: catchSuccess, gain: 0.35 },
   'gate-hum':   { synth: gateHum },          // the Sealed Gate's scene (gatescene.js): the seal's low, uneasy drone...
   'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
@@ -675,6 +676,16 @@ function catchShake(ac) {
   }
   click(out, rate, 0, 2400, 0.012, 0.5);
   click(out, rate, 0.045, 1800, 0.01, 0.35);   // the rock back
+  return normalize(buffer, 0.5);
+}
+
+/** The ball's button latching shut on a catch: a sharp double click, the second ringing. */
+function catchClick(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.12);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  click(out, rate, 0, 3200, 0.008, 0.9);
+  click(out, rate, 0.028, 4200, 0.03, 0.7);
   return normalize(buffer, 0.5);
 }
 

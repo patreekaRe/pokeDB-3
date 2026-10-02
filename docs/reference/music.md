@@ -21,8 +21,10 @@ An entry with both `url` and `synth` plays the file when it's there and the synt
 falls back on a failed fetch, which logs one 404 per page load until the file exists). The Safari Zone's catch uses this
 (2026-10-02): **`catch-shake`** (each wobble of the ball on the ground) and **`catch-success`** (the ball latching shut on a
 catch, with the "caught a Pokémon!" jingle) play the user's own files in `assets/audio/sfx/`. His shake recording had three wobbles, so it's cut into
-`catch-shake.mp3` / `-2` / `-3`, one per wobble, and `SHAKE_GAPS` in `js/battle.js` spaces the ball's wobbles to its
-rhythm (2026-10-02, his call); `catch-success.mp3` is his jingle, its trailing silence cut. If a file fails to load,
+`catch-shake.mp3` / `-2` / `-3`, one per wobble, and `SHAKE_GAPS` in `js/battle.js` spaces the ball's wobbles (wider
+than his recording, for suspense; 2026-10-02, his calls). A catch plays one sound at a time: the battle music cuts, the
+`catch-click` synth latches, then his jingle alone, and only once it ends does the victory music start, as the reward
+opens (`ballAnimation()` / `caughtIt()`); `catch-success.mp3` is his jingle, its trailing silence cut. If a file fails to load,
 `catchShake()` (a hollow knock and a plastic rattle click) and `catchSuccess()` (a double latch click, then a four-note
 chiptune "Gotcha!") stand in.
 `start`/`length` play only part of a file with a short fade-out, so a long or late-starting

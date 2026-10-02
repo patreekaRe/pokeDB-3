@@ -255,7 +255,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-success', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -1161,8 +1161,8 @@ async function throwBall(id) {
 
 /** The throw on screen: an arc to the Pokémon, a white flash as it's pulled in, the ball dropping and shaking, then the
     click (a catch) or the ball bursting open. Resolves false if the fight was left meanwhile. */
-/** The pause before each wobble (ms), so with the 420 ms wobble it keeps the user's recording's rhythm (onsets ~1.15 s, then ~0.85 s apart). */
-const SHAKE_GAPS = [380, 730, 430];
+/** The pause before each wobble (ms): longer than the user's recording's rhythm, for suspense (his call). */
+const SHAKE_GAPS = [600, 1100, 1000];
 
 async function ballAnimation(ball, shakes, caught) {
   const b = battle;
@@ -1201,10 +1201,14 @@ async function ballAnimation(ball, shakes, caught) {
   await sleep(motion ? 420 : 250);
   if (battle !== b) { thrown.remove(); return false; }
   if (caught) {
-    playSound('catch-success');
+    // one at a time, like the games (the user's call): the click, then the jingle alone, then the victory music in caughtIt()
+    playMusic(null, { cut: true });
+    playSound('catch-click');
     thrown.classList.add('caught');
     for (let i = 0; i < 3; i++) pop('enemy-zone', '✦', 'note good catch-star', i * 90);
-    return true;
+    await sleep(600);
+    b.jingle = await playSound('catch-success');
+    return battle === b;
   }
   playSound('ball-open');
   thrown.classList.add('burst');
@@ -1222,11 +1226,11 @@ async function caughtIt(ballId) {
   closeBallPicker();
   const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
   if (grew) abilityBanner();
-  playMusic(winTrack(b.kind), { restart: true, cut: true });
   log(`Gotcha! The wild ${b.def.name} was caught!`);
   renderAll();
-  await sleep(grew ? 1900 : 1500);
+  await sleep(Math.max(grew ? 1900 : 1500, (b.jingle || 0) * 1000 + 150));
   if (battle !== b) return;
+  playMusic(winTrack(b.kind), { restart: true, cut: true });
   document.querySelector('.thrown-ball')?.remove();
   $('enemy-portrait-box').classList.remove('captured');
   $('enemy-portrait-box').classList.add('defeated');
