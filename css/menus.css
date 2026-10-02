@@ -364,6 +364,8 @@
 .title-run-row { position: relative; }
 .title-rope { position: absolute; left: 100%; top: 50%; margin: -32px 0 0 4px; width: 64px; height: 64px; opacity: 0; }
 .title-screen.menu .title-rope { opacity: 1; animation: plateIn 0.3s steps(3); }
+/* only where it would land on the open gate (placeRope() in js/title.js): it hangs from the plate's top-right corner */
+.title-rope.tucked { left: auto; right: -12px; top: auto; bottom: calc(100% - 22px); margin: 0; }
 .title-abandon {
   width: 64px; height: 64px; padding: 0; border: 0; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;

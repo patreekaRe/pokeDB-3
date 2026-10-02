@@ -327,6 +327,7 @@ function sizeGems() {
     btn.style.setProperty('--icon-x', big ? 8 + (w - cols) / 2 + 1 : 8);
     paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind], big ? shine : null);
   }
+  placeRope();
 }
 
 /**
@@ -420,6 +421,17 @@ function renderRun(run) {
   void sign.offsetWidth;
   sign.classList.add('arrive');
   setHpBar('title-run', run.hp, run.maxHp);
+  placeRope();
+}
+
+/** On small phones the rope beside the plate lands on the open gate in the right-hand gutter: only then does it hang from
+    the plate's top-right corner instead (.tucked), so every screen where they don't touch keeps it where it was. */
+function placeRope() {
+  const rope = $('title-rope'), gate = $('title-gate');
+  rope.classList.remove('tucked');
+  if ($('title-run').hidden || gate.hidden || !$('title-screen').classList.contains('menu')) return;
+  const a = rope.getBoundingClientRect(), b = gate.getBoundingClientRect();
+  rope.classList.toggle('tucked', a.right > b.left && b.right > a.left && a.bottom > b.top && b.bottom > a.top);
 }
 
 /** Continue: the ball's lid pops open in a flash, your Pokémon comes out with its cry, then the map. */
@@ -518,6 +530,7 @@ function sizeGate() {
   canvas.style.height = `${h * px}px`;
   const gutter = (innerWidth - Math.min(300, innerWidth * 0.8)) / 2;
   btn.style.right = `${phone ? 4 : Math.max(16, Math.round((gutter - w * px) / 2))}px`;
+  placeRope();
   paintGate();
 }
 
