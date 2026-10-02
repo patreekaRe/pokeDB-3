@@ -20,7 +20,7 @@ import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { safariDaily } from './data/safari.js';
+import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { getSave } from './storage.js';
 import { safariOpen } from './data/pokedex.js';
 import { tipAt } from './tips.js';
@@ -217,9 +217,7 @@ function gem(kind, label, onPick, icon, extra) {
 function safariGem() {
   const open = safariOpen(getSave());
   const daily = safariDaily();
-  const line = daily.areas.map(a => a.name).join(' · ');
-  const areas = el('span', 'gem-areas');   // today's areas, a chip each so they read at gem size
-  areas.append(...daily.areas.map(a => el('span', `gem-area area-${a.id}`, a.name)));
+  const line = `Today: ${daily.areas.map(a => a.name).join(' · ')}`;
   const icon = el('img', open ? 'pixel gem-mon' : 'pixel gem-ball');
   icon.alt = '';
   if (open) icon.addEventListener('load', () => fitMon(icon), { once: true });
@@ -228,24 +226,68 @@ function safariGem() {
     if (open) return actions.onSafari();
     playSound('cancel');
     tipAt(btn, 'The Safari Zone opens once you\'ve beaten every Pokémon in the Pokédex.');
-  }, icon, open && areas);   // locked, just the name: a tap says why
+  }, icon, open && el('span', 'gem-sub', line));   // locked, just the name: a tap says why
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
-  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');
-  const board = el('button', 'gem-side');
+  const board = el('button', 'gem-side gem-board');
   board.append(el('span', 'gem-side-icon', '🏆'));
   board.type = 'button';
   board.id = 'title-board';
   board.title = 'Today\'s Safari Zone leaderboard';
   board.setAttribute('aria-label', 'Safari Zone leaderboard');
   board.addEventListener('click', () => { playSound('confirm'); actions.onBoard(); });
-  row.append(btn, board);
+  const sides = el('div', 'gem-sides');
+  closeAreas();
+  sides.append(board, areaSign(daily));
+  row.append(btn, sides, areasPop);
   return row;
 }
+
+/** A wooden signpost beside the Safari gem: a tap pops up today's three areas, readable, with each page's caught count.
+    A tap elsewhere or Escape puts it away. */
+const areasPop = el('div', 'gem-areas-pop');
+areasPop.id = 'title-areas';
+areasPop.hidden = true;
+function areaSign(daily) {
+  const sign = el('button', 'gem-side gem-sign');
+  sign.append(el('span', 'gem-side-icon', '🪧'));
+  sign.type = 'button';
+  sign.id = 'title-sign';
+  sign.title = 'Today\'s Safari Zone areas';
+  sign.setAttribute('aria-label', 'Today\'s Safari Zone areas');
+  sign.setAttribute('aria-expanded', 'false');
+  sign.setAttribute('aria-controls', 'title-areas');
+  sign.addEventListener('click', () => {
+    const open = areasPop.hidden;
+    playSound(open ? 'stick' : 'cancel', 'confirm');
+    if (open) {
+      const dex = getSave().safariDex;
+      const list = el('ol');
+      list.append(...daily.areas.map((area, i) => {
+        const page = SAFARI_DEX_PAGES.find(p => p.area === area.id);
+        const li = el('li', `area-${area.id}`);
+        li.append(el('span', '', `${i + 1}. ${area.name}`), el('small', '', `${safariProgress(page.ids, dex).caught}/${page.ids.length} caught`));
+        return li;
+      }));
+      areasPop.replaceChildren(el('strong', '', 'Today\'s Safari areas'), list);
+    }
+    areasPop.hidden = !open;
+    sign.setAttribute('aria-expanded', String(open));
+  });
+  return sign;
+}
+function closeAreas() {
+  if (areasPop.hidden) return;
+  areasPop.hidden = true;
+  document.getElementById('title-sign')?.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest?.('#title-areas, #title-sign')) closeAreas(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAreas(); });
 
 /** A Pokémon GIF has empty space round it (more under its feet), so it sat off-centre in the gem's icon slot: scale its
     visible pixels (SPRITE_FIT's gaps) to fill the slot, a little over, and centre them, in % of the square slot. */

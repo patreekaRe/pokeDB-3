@@ -199,3 +199,5 @@ place of the item's text (`cursor.news`: never a toast), including any starter `
 unlocks. Escape closes it while nothing modal is open. The grille and ball are pixel maps drawn as SVG
 (`pixelSvg()`). Tapping a shop-locked starter opens it on that skin.
 
+A Safari rare spawn's room has a gold ✦ over it (`.map-rare`, added in `js/map.js`; see `docs/reference/safari.md`): 22px,
+with a soft glow that swells as it slowly bobs and twinkles (`rareTwinkle`), still under reduced motion.

@@ -25,7 +25,7 @@ const RULES = [
   ['🎯', 'Debuffs on it raise the odds.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
-  ['💨', `Rare spawns flee after ${RARE.turns} turns.`],
+  ['✦', `A room marked with this star on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],
   ['🃏', 'Each Pokémon you catch offers its own signature card for your deck.'],
   ['💰', `Catch a whole area: ${SAFARI_AREA_COINS} coins, x${RARE_BOOST} rare spawns.`],
 ];
@@ -74,7 +74,9 @@ function render() {
     : 'Complete the Safari Pokédex: a new Legendary awaits you.';
   $('sp-rules').replaceChildren(...[...RULES, ['👑', prize]].map(([icon, text, cardId]) => {
     const li = el('li', cardId ? 'with-card' : '');
-    li.append(el('span', 'sp-rule-icon', icon), el('span', '', text));
+    const mark = el('span', 'sp-rule-icon');
+    mark.append(icon === '✦' ? el('span', 'map-rare inline', '✦') : icon);   // the map's own rare-spawn star, not a stand-in
+    li.append(mark, el('span', '', text));
     if (cardId) {   // a Safari-only card: tap to read it big, with its keyword boxes
       const card = makeCard(CARDS_BY_ID[cardId]);
       card.classList.add('small', 'sp-card');

@@ -1285,10 +1285,17 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .map-node.scope-pick:hover .map-town, .map-node.scope-pick:focus-visible .map-town { transform: scale(1.15); }
 @keyframes scopePick { 50% { border-color: #fff; box-shadow: 0 0 0 2px var(--gold); } }
 /* a revealed room's Pokémon stands above it in full colour, like the boss above its room, with its type beside it */
-/* a Safari rare spawn's room: a gold sparkle bobbing over it (js/map.js) */
-.map-rare { position: absolute; top: -14px; right: -6px; z-index: 2; color: #f8d030; font-size: 18px; line-height: 1; pointer-events: none;
-  text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038; animation: rareTwinkle 1.2s steps(2) infinite; }
-@keyframes rareTwinkle { 50% { translate: 0 -3px; color: #fff8b0; } }
+/* a Safari rare spawn's room: a gold star over it (js/map.js), with a soft glow that swells as it bobs and twinkles; slow
+   and eased so it catches the eye without flashing. The prep window's rare-spawn rule shows the same star (.inline) */
+.map-rare { position: absolute; top: -17px; right: -9px; z-index: 2; color: #f8d030; font-size: 22px; line-height: 1; pointer-events: none;
+  text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038;
+  filter: drop-shadow(0 0 3px rgba(255, 224, 96, 0.7)); animation: rareTwinkle 2.2s ease-in-out infinite; }
+.map-rare.inline { position: static; display: inline-block; font-size: 1.25rem; }
+.dialog .map-rare.inline { text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038; }
+@keyframes rareTwinkle {
+  0%, 100% { translate: 0 0; scale: 1; color: #f8d030; filter: drop-shadow(0 0 2px rgba(255, 224, 96, 0.55)); }
+  50% { translate: 0 -3px; scale: 1.15; color: #fff4b0; filter: drop-shadow(0 0 6px rgba(255, 236, 140, 0.95)); }
+}
 @media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
 .map-revealed {
   position: absolute;

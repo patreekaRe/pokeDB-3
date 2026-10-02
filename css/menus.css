@@ -192,41 +192,63 @@
 }
 /* a full Safari Pokédex: a gold ✦ in the Safari Zone gem's corner (safariGem() in js/title.js) */
 .gem-badge { position: absolute; top: calc(var(--gp) * 1.5); right: calc(var(--gp) * 2.5); z-index: 2; pointer-events: none; font: 1.1rem/1 var(--pixel-font); color: #ffe060; text-shadow: 2px 0 0 #6a4000, -2px 0 0 #6a4000, 0 2px 0 #6a4000, 0 -2px 0 #6a4000; }
-/* the Safari gem's leaderboard: a little cream sign hung off the gem's right edge (safariGem() in js/title.js) */
+/* beside the Safari gem (safariGem() in js/title.js): the day's leaderboard, a trophy on a little cream sign, and a
+   wooden signpost that pops up today's areas. Hung off the gem's right edge so the gem stays centred in the stack; side
+   by side when there's room, stacked in the narrow gutter of a phone */
 .gem-row { position: relative; flex: none; }
+.gem-sides { position: absolute; left: calc(100% + 8px); top: 50%; translate: 0 -50%; display: flex; align-items: center; gap: 6px; }
 .gem-side {
-  position: absolute; left: calc(100% + 8px); top: 50%; translate: 0 -50%;
-  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; cursor: pointer;
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; cursor: pointer;
   border: 3px solid #b8b8c8; border-radius: var(--round-sm); background: var(--win-bg);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 4px 0 2px rgba(20, 10, 30, 0.5);
   font-size: 22px; line-height: 1;
   animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms + 120ms);
   -webkit-tap-highlight-color: transparent;
 }
-.gem-side:active { translate: 0 calc(-50% + 3px); }
-/* idle: the trophy bobs and sways a little, and a glint crosses the sign every few seconds */
+.gem-side:active { translate: 0 3px; }
+/* idle: the trophy bobs and sways a little, and a glint crosses its sign every few seconds */
 .gem-side { overflow: hidden; }
 .gem-side-icon { display: grid; place-items: center; transform-origin: 50% 85%; }
-.gem-side::after {
+.gem-board::after {
   content: ""; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 35%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
   transform: skewX(-20deg); opacity: 0; pointer-events: none;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .gem-side-icon { animation: trophyBob 2.4s ease-in-out infinite; }
-  .gem-side::after { animation: trophyGlint 4.8s ease-in-out infinite 1.2s; }
+  .gem-board .gem-side-icon { animation: trophyBob 2.4s ease-in-out infinite; }
+  .gem-board::after { animation: trophyGlint 4.8s ease-in-out infinite 1.2s; }
 }
 @keyframes trophyBob { 0%, 100% { translate: 0 1px; rotate: -5deg; } 50% { translate: 0 -2px; rotate: 5deg; } }
 @keyframes trophyGlint { 0%, 78% { left: -60%; opacity: 0; } 80% { opacity: 1; } 96% { left: 130%; opacity: 1; } 100% { left: 130%; opacity: 0; } }
-@media (max-width: 420px) { .gem-side { left: calc(100% + 4px); width: 36px; height: 36px; font-size: 18px; } }
-.gem-side:focus-visible { outline: 3px solid #f8e070; outline-offset: 2px; }
-@media (hover: hover) { .gem-side:hover { filter: brightness(1.08); } }
-.gem-areas { display: flex; gap: 4px; justify-content: center; text-transform: none; letter-spacing: 0.02em; }
-.gem-area {
-  padding: 3px 5px 2px; border-radius: 4px; font-size: 0.68rem; line-height: 1; color: #fff;
-  background: rgba(20, 50, 12, 0.55); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
-  text-shadow: 1px 0 0 #1a3008, -1px 0 0 #1a3008, 0 1px 0 #1a3008, 0 -1px 0 #1a3008;
+/* the signpost is just the wooden sign, no box */
+.gem-side.gem-sign { overflow: visible; border: 0; background: none; box-shadow: none; font-size: 36px; filter: drop-shadow(0 3px 0 rgba(20, 10, 30, 0.5)); }
+.gem-sign[aria-expanded="true"] { filter: drop-shadow(0 0 4px #f8e070) drop-shadow(0 3px 0 rgba(20, 10, 30, 0.5)); }
+@media (max-width: 420px) {
+  .gem-sides { left: calc(100% + 4px); flex-direction: column; gap: 4px; }
+  .gem-side { width: 30px; height: 30px; font-size: 15px; border-width: 2px; }
+  .gem-side.gem-sign { font-size: 28px; }
 }
+.gem-side:focus-visible { outline: 3px solid #f8e070; outline-offset: 2px; }
+@media (hover: hover) { .gem-side:hover { filter: brightness(1.08); } .gem-sign:hover { translate: 0 -2px; } }
+.gem-sub { font-size: 0.6rem; letter-spacing: 0.04em; text-transform: none; }
+/* the signpost's pop-up: today's three areas and how much of each page is caught, a little window under the gem */
+.gem-areas-pop {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 6; width: min(240px, 80vw); padding: 10px 12px;
+  border: 3px solid #b8b8c8; border-radius: var(--round-sm); background: var(--win-bg); color: var(--win-ink);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  font-family: var(--pixel-font); font-synthesis-weight: none; animation: plateIn 0.2s steps(2);
+}
+.gem-areas-pop[hidden] { display: none; }
+.gem-areas-pop strong { display: block; margin-bottom: 8px; font-size: 0.75rem; font-weight: 400; color: #283060; text-align: center; }
+.gem-areas-pop ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.gem-areas-pop li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 5px 8px; border: 2px solid var(--c2); border-radius: 6px; background: var(--c1); font-size: 0.85rem; color: #102010; }
+.gem-areas-pop li small { font-size: 0.7rem; opacity: 0.8; }
+.gem-areas-pop .area-meadow  { --c1: #d4ecb0; --c2: #4a8a24; }
+.gem-areas-pop .area-forest  { --c1: #b8dcb4; --c2: #1e5a24; }
+.gem-areas-pop .area-wetland { --c1: #c4e0f8; --c2: #2050a0; }
+.gem-areas-pop .area-marsh   { --c1: #d4dcc8; --c2: #3e5232; }
+.gem-areas-pop .area-peak    { --c1: #dde4ee; --c2: #4a5878; }
+.gem-areas-pop .area-desert  { --c1: #f4e2b0; --c2: #9a6a20; }
 .gem.locked .gem-face { filter: grayscale(1) brightness(0.8); }
 .gem.locked .gem-icon img { filter: grayscale(1) brightness(0.9); }
 .gem.locked .gem-label { color: #c8c8d0; }
@@ -379,8 +401,6 @@
   .gem-icon img { width: 48px; height: 48px; }
   .gem-emoji { font-size: 24px; }
   .title-menu { gap: 10px; }
-  .gem-side { left: calc(100% + 5px); width: 36px; height: 36px; font-size: 18px; }
-  .gem-area { font-size: 0.56rem; padding: 2px 4px 1px; }
   .title-screen.menu .title-big { font-size: clamp(2.6rem, 12vw, 5rem); }
   .title-screen.menu .title-big small { font-size: 0.85rem; }
 }

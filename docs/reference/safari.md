@@ -56,7 +56,9 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - `markRares()` in `js/data/safari.js`, from `startBiome()` after the wilds are dealt, on the biome's seed: each wild room
   has `RARE.odds` (12%) to hold one of its area's `rares` instead (Chansey, Kecleon and the `rare` lines of `safari-mons.js`
   are Safari-only, the rest are the main game's elite species as plain wilds), with `node.rare` saved on the map.
-- The map shows a gold ✦ over its room (`.map-rare`, its title says so); in battle the name gets a ✨, the nameplate a gold
+- The map shows a gold ✦ over its room (`.map-rare`, its title says so; since 2026-10-02 22px with a soft glow that swells as
+  it bobs and twinkles, `rareTwinkle`, eased and slow, never flashing, the user's "more obvious but not too obvious"; the
+  prep window's rare-spawn rule shows the same star, `.map-rare.inline`); in battle the name gets a ✨, the nameplate a gold
   rim (`#enemy-plate.rare`) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
   RARE.turns - rock` (4 of your turns): `runAway()` -> `onEnd({ escaped: true })`, and the map says "ran away. Nothing
   won." Its catch odds are halved (`RARE.mult`).
@@ -84,7 +86,7 @@ pixel heads, pixel pill buttons (`.pxb`), bigger text (rules 0.82rem, 0.78 on ph
 starter, the 3 areas with each page's caught count, first try or replay), a gold-rimmed replay box under it (`#sp-replay`:
 replay today's Safari as often as you like to keep catching; only the first try counts for the leaderboard, replays get
 the perks back; the user wanted it prominent, not in the rules), 📕 Pokédex (on the day's first area) and 🏆
-Leaderboard buttons, the rules in short lines (`RULES`; Bait's and Rock's lines say they're Safari-only card rewards after fights and
+Leaderboard buttons, the rules in short lines (`RULES`; the rare-spawn line carries the map's own ✦; Bait's and Rock's lines say they're Safari-only card rewards after fights and
 carry the card itself as a `.card.small`, `zoomable()`: a tap opens it big with its keyword boxes; each line has a pixel icon that `js/icons.js` has: an emoji
 without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row like an item bar
 (a slot each, sprite and ×count, greyed at 0, the Safari Ball's ∞ big at the sprite's bottom centre; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
