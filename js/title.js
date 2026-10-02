@@ -113,7 +113,7 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
-    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate') && gems[at]) { e.preventDefault(); gems[at].click(); }
+    if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate, .title-signpost, .title-areas') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
 }
@@ -215,6 +215,7 @@ function gem(kind, label, onPick, icon, extra) {
 function safariGem() {
   const open = safariOpen(getSave());
   const daily = safariDaily();
+  plantSign(open && daily);
   const line = daily.areas.map(a => a.name).join(' · ');
   const icon = el('img', open ? 'pixel gem-mon' : 'pixel gem-ball');
   icon.alt = '';
@@ -224,7 +225,7 @@ function safariGem() {
     if (open) return actions.onSafari();
     playSound('cancel');
     tipAt(btn, 'The Safari Zone opens once you\'ve beaten every Pokémon in the Pokédex.');
-  }, icon);   // today's areas are on the signpost beside it (the user's call); locked, a tap says why
+  }, icon);   // today's areas are on the signpost in the grass (the user's call); locked, a tap says why
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
@@ -239,19 +240,25 @@ function safariGem() {
   board.title = 'Today\'s Safari Zone leaderboard';
   board.setAttribute('aria-label', 'Safari Zone leaderboard');
   board.addEventListener('click', () => { playSound('confirm'); actions.onBoard(); });
-  closeAreas();
-  row.append(areaSign(daily), btn, board, areasPop);
+  row.append(btn, board);
   return row;
 }
 
-/** A wooden signpost beside the Safari gem: a tap pops up today's three areas, readable, with each page's caught count.
+/** A wooden signpost planted in the grass at the bottom left, part of the scene (the user's call, 2026-10-02), only while
+    the Safari Zone is open: a tap pops up today's three areas, readable, with each page's caught count, over the sign.
     A tap elsewhere or Escape puts it away. */
-const areasPop = el('div', 'gem-areas-pop');
+const areasPop = el('div', 'gem-areas-pop title-areas');
 areasPop.id = 'title-areas';
 areasPop.hidden = true;
+function plantSign(daily) {
+  closeAreas();
+  document.getElementById('title-sign')?.remove();
+  if (!daily) return areasPop.remove();
+  $('title-screen').append(areaSign(daily), areasPop);
+}
 function areaSign(daily) {
-  const sign = el('button', 'gem-side gem-sign');
-  sign.append(el('span', 'gem-side-icon', '🪧'));
+  const sign = el('button', 'title-signpost');
+  sign.append(el('span', 'signpost-art', '🪧'), el('span', 'signpost-bang', '!'));
   sign.type = 'button';
   sign.id = 'title-sign';
   sign.title = 'Today\'s Safari Zone areas';
