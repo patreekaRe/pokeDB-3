@@ -54,7 +54,8 @@ import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
 import { $, el, openDialog, closeDialog, confirmDialog } from './ui.js';
 import { showPlaceScene, showScene } from './scene.js';
-import { SAFARI_AREAS } from './data/safari.js';
+import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
+import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 
 /* ---------- moving between screens ---------- */
@@ -65,13 +66,18 @@ function savedRunCard() {
   if (!saved) return null;
   const { starter, stage, biome, hp, maxHp } = saved;
   const here = saved.current && saved.map.byId[saved.current];
+  // a Safari run is in today's area, not the main game's biome: the same names as its map's signs
+  const area = saved.safari && SAFARI_AREAS_BY_ID[saved.safari.areas?.[biome]];
+  const land = area || BIOMES[biome];
   return {
     saved, hp, maxHp,
     floor: here ? here.floor + 1 : 0,   // the biome's floor you stand on; 0 on the road in, like StS's Neow floor
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
-    place: BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
-    biome: BIOMES[biome]?.id,
+    place: area ? `Safari Zone: ${area.name}` : BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
+    spot: land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
+    biome: land?.id,
+    safari: !!area,
     cry: starter.line[stage]?.id ?? starter.line[0].id,
   };
 }

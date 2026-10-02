@@ -414,6 +414,8 @@ function renderRun(run) {
   const sign = $('title-run-biome');
   sign.textContent = run.place;
   sign.dataset.biome = run.biome;
+  sign.toggleAttribute('data-safari', run.safari);   // the Safari Zone's green signboard, as on its map
+  sign.title = run.spot ? `${run.place}: ${run.spot}` : run.place;
   sign.classList.remove('arrive');
   void sign.offsetWidth;
   sign.classList.add('arrive');
