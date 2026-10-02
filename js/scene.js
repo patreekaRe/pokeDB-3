@@ -7205,7 +7205,7 @@ function wetlandFloor() {
   for (let n = 0; n < 7 + st * 2; n++) { const x = n < 4 ? edgeX(undefined, 0.3) : Math.floor(rand() * W); reeds(x, horizon + 3 + Math.floor(rand() * 4), 2 + Math.floor(rand() * 2)); }
   // puddles and a pond in a near corner (the Lily Lake's, big and covered in lilies)
   for (let n = 0; n < 1 + st; n++) { const y = groundY(0.2, 0.5); groundPool(edgeX(), y, 2 + Math.round(depthOf(y) * 6), 1 + Math.round(depthOf(y) * 2), water, M().bank[0], 1); }
-  const s = landmarkSide(), cy = groundY(0.62, 0.7), rx = Math.round(W * (st === 3 ? 0.2 : 0.12)), ry = Math.round((H - horizon) * (st === 3 ? 0.14 : 0.08));
+  const s = landmarkSide(), cy = groundY(0.62, 0.7), rx = Math.round(W * (st === 3 ? 0.2 : 0.12)), ry = Math.max(2, Math.round(rx * (0.2 + depthOf(cy) * 0.12)));   // flattened like the Marsh's pools: from the screen's height it came out round, seen from above
   groundPool(s < 0 ? Math.round(rx * 0.6) : W - Math.round(rx * 0.6), cy, rx, ry, water, M().bank[0], st === 3 ? 7 : 2);
   for (let n = 0; n < 3; n++) reeds((s < 0 ? rx : W - rx) + Math.round((rand() - 0.5) * rx), cy - ry + Math.floor(rand() * 3), 2 + Math.floor(depthOf(cy) * 3));
   paintTrail();
@@ -8242,17 +8242,20 @@ function meadowArenaLife(t) {
 
 function fairyRing() {
   safariFloor0();
-  const G = arenaGround(), [lit, body, shade, line] = M().stone, moss = [S.ground[1], S.ground[3]], T = G.R * 0.16;
-  // flagstones in courses running across, laid on the ground, so they shrink and flatten into the distance; mossier out
-  // towards the edge, and a step's face under the near rim
-  fillDisc(G, 0.92, (x, y, { d, X, Z, unit }) => {
-    const v = (Z - G.Zc) / T, row = Math.floor(v), u = X / T + (row & 1) * 0.5, col = Math.floor(u);
-    if (frac(v) < unit / T || frac(u) < unit * 1.2 / T) return dither(x, y) < 7 ? moss[1] : line;
-    const mossy = noise(col, row, 7) < 0.15 + d * 0.5;
-    return mossy && dither(x, y) < 10 ? moss[dither(x, y) < 4 ? 0 : 1] : noise(col, row, 8) < 0.3 ? lit : noise(col, row, 9) < 0.3 ? shade : body;
+  const G = arenaGround(), [lit, body, shade, line] = M().stone, moss = [S.ground[1], S.ground[3]], RW = 0.15;
+  // flagstones in rings round a round middle slab, so their curves show the floor lying flat; mossier out towards the
+  // edge, a pool of the glade's light on the middle, and a step's face under the near rim. Courses running straight
+  // across, with the light shafts striped down over them, read as a wall standing up (the user's eye, 2026-10-02).
+  fillDisc(G, 0.8, (x, y, { d, a, unit }) => {
+    const v = d / RW, ring = Math.floor(v), n = Math.max(1, Math.round(Math.PI * 2 * ring)), u = (a / (Math.PI * 2) + 1) * n + (ring & 1) * 0.5, col = Math.floor(u);
+    if (ring % 3 === 2) return dither(x, y) < 6 ? S.ground[2] : S.ground[3];   // a ring of moss between the courses, bold enough to show its curve
+    if (frac(v) * RW * G.R < unit || (ring > 0 && frac(u) * Math.PI * 2 * d * G.R / n < unit * 1.2)) return dither(x, y) < 7 ? moss[1] : line;
+    if (ring > 0 && noise(col, ring, 7) < 0.05 + d * 0.35 && dither(x, y) < 10) return moss[dither(x, y) < 4 ? 0 : 1];
+    const c = noise(col, ring, 8) < 0.3 ? lit : noise(col, ring, 9) < 0.3 ? shade : body;
+    return d < 0.5 && dither(x, y) < 12 * (1 - d / 0.5) ? lighten(c, 0.18) : c;
   }, G.R * 0.025, (x, y, t) => (t < 0.35 ? shade : line));
   for (let k = 0; k < 26; k++) {   // the fairy ring: pale mushrooms all round the stones, glowing
-    const p = G.at(k / 26 * Math.PI * 2, 0.97);
+    const p = G.at(k / 26 * Math.PI * 2, 0.85);
     if (p.y > horizon + 1) mushroom(Math.round(p.x), Math.round(p.y), Math.max(1, Math.round(G.R * 0.03 * p.s)), ['#c8f8f0', '#68c8c0', '#ffffff'].map(abgr));
   }
 }
@@ -8278,9 +8281,17 @@ function colossalTrunk(cx, half) {
 }
 
 function grandTrunks() {
-  const half = Math.max(4, Math.round(W * 0.07));
-  colossalTrunk(Math.round(W * 0.06), half);
-  colossalTrunk(Math.round(W * 0.94), half);
+  const half = Math.max(3, Math.round(Math.min(W * 0.07, horizon * 0.09)));
+  // dark undergrowth closing the glade behind the floor's far rim, so the pale sky gap doesn't run on down into the
+  // stones as one tall column (on a phone that read as a wall)
+  const [, , fernShade, fernDeep] = [...M().fern, S.trees[3]];
+  for (let x = 0; x < W; x++) {
+    const h = Math.max(2, Math.round(horizon * 0.07 + 2 * Math.sin(x / 3.3) + 1.5 * Math.sin(x / 1.7 + 1)));
+    for (let y = horizon - h; y <= horizon; y++) solid(x, y, y < horizon - h + 2 && dither(x, y) < 6 ? fernShade : fernDeep);
+  }
+  for (let x = Math.floor(rand() * 5); x < W; x += 5 + Math.floor(rand() * 5)) ferns(x, horizon, 2 + Math.floor(rand() * 2));
+  colossalTrunk(Math.round(W * 0.03), half);
+  colossalTrunk(Math.round(W * 0.97), half);
   // the canopy arching between them, open in the middle
   const [lit, leaf, shade, deep] = S.trees;
   for (let x = 0; x < W; x++) {
@@ -8288,7 +8299,7 @@ function grandTrunks() {
     for (let y = 0; y <= h; y++) solid(x, y, y >= h - 1 ? deep : dither(x, y) < 2 ? lit : y > h - 4 && dither(x, y) < 8 ? shade : leaf);
     if (x % 7 === 0 && u > 0.35) for (let y = h; y < h + Math.round(horizon * 0.3 * u); y++) solid(x + (y % 5 === 0), y, y % 3 ? S.trees[1] : S.trees[2]);   // hanging vines
   }
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {   // shafts of light down the middle
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {   // shafts of light down the middle, through the air only
     const band = ((x - W / 2) - (y - horizon) * 0.25) / (W * 0.035);
     if (Math.abs(band) < 3.5 && Math.abs(band % 1) < 0.45 && dither(x, y) < 4) tint(x, y, 1.12, 22);
   }
@@ -8300,7 +8311,7 @@ function forestArenaLife(t) {
   motes(g, t, 18);
   for (let k = 0; k < 26; k++) {   // the ring's glow pulsing round it
     if (Math.sin(t * 0.3 - k * 0.6) < 0.6) continue;
-    const p = G.at(k / 26 * Math.PI * 2, 0.97), x = Math.round(p.x), y = Math.round(p.y), r = Math.max(1, Math.round(G.R * 0.03 * p.s));
+    const p = G.at(k / 26 * Math.PI * 2, 0.85), x = Math.round(p.x), y = Math.round(p.y), r = Math.max(1, Math.round(G.R * 0.03 * p.s));
     for (let dy = -r * 3; dy <= 0; dy++) for (let dx = -r - 2; dx <= r + 2; dx++) if (dither(x + dx, y + dy) < 6) tint(x + dx, y + dy - r, 1.25, 34);
   }
 }

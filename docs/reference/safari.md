@@ -190,7 +190,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   - Forest (Woodland Path, Old Growth, Thicket, Sunlit Glade): trunks rising into a leaf roof, light falling through,
     ferns, mushrooms, stumps and logs; the Thicket closes in and darkens, the Glade opens a sunlit hole.
   - Wetland (Lakeshore, Pier, Boardwalk, Lily Lake): a lake under wooded hills with glints and the odd splash, reed beds,
-    a stream across the grass, a pier on stilts (longer on the Boardwalk), a lily pond in a near corner.
+    a stream across the grass, a pier on stilts (longer on the Boardwalk), a lily pond in a near corner, flattened in perspective (rx x 0.2-0.32, like the Marsh pools; sized from the screen height it looked seen from above, the user, 2026-10-02).
   - Marsh (Bog, Willow Bank, Sunken Woods, Misty Mire): an overcast sky, weeping willows and dead trees, murky pools that
     bubble, mud, cattails, mist thickening further in (`S.mist` + 8 a place).
   - Peak (Foothills, Pine Slopes, Snowfield, Summit): snow-capped ranges, snow-dusted pines, snow drifts growing to a
@@ -264,7 +264,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   into the distance, and raised floors hang a face under their near rim; `DEPTH` sets how much farther the far rim is than
   the near one, since the user saw flat ellipses as "circles slapped onto the screen"):
   Meadow a crop circle under a gathering storm, standing stones round it, the Lone Tree huge in the corner; Forest a fairy
-  ring of glowing mushrooms on mossy flagstones between two colossal trunks; Wetland a giant lily pad out on the lake, lotus
+  ring of glowing mushrooms on flagstones laid in rings round a middle slab, every third ring moss, between two colossal trunks out at the edges, dark undergrowth closing the glade behind (straight courses and light shafts down over the floor read as a wall on a phone; the user, 2026-10-02); Wetland a giant lily pad out on the lake, lotus
   flowers, waterfalls off the far hills; Marsh a peat island in a glowing bog, lantern stakes, the Great Snag towering;
   Peak an ice sheet under the aurora between crystal spires; Desert a carved sandstone dais in ruins, a pyramid and a
   swollen red sun behind. A replay of the prelude puts the place back first. In a battle the disc is fitted to the two pads
