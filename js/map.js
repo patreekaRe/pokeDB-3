@@ -28,6 +28,7 @@
 import { TYPES } from './data/cards.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { buildingSvg } from './buildings.js';
+import { random } from './rng.js';
 
 // Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
 // worker can share generateMap() without evaluating UI modules that need document/window.
@@ -72,8 +73,8 @@ export const NODE_INFO = {
   boss:     { icon: '👹', label: 'Boss' },
 };
 
-const randInt = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
-const randFloat = (min, max) => min + Math.random() * (max - min);
+const randInt = (min, max) => min + Math.floor(random() * (max - min + 1));
+const randFloat = (min, max) => min + random() * (max - min);
 
 /* ============================================================
    BUILDING THE MAP
@@ -241,7 +242,7 @@ function placeMarts(floors, byId) {
     for (const room of spots) {
       const type = room.type;
       room.type = 'shop';
-      const gain = martRouteShare(floors, byId) + Math.random() * 1e-6;
+      const gain = martRouteShare(floors, byId) + random() * 1e-6;
       room.type = type;
       if (!best || gain > best.gain) best = { room, gain };
     }
@@ -266,7 +267,7 @@ function martRouteShare(floors, byId) {
 
 function rollType(odds) {
   const total = Object.values(odds).reduce((sum, n) => sum + n, 0);
-  let roll = Math.random() * total;
+  let roll = random() * total;
   for (const [type, chance] of Object.entries(odds)) {
     if ((roll -= chance) < 0) return type;
   }

@@ -190,6 +190,8 @@
   color: #fff;
   text-shadow: 2px 0 0 #3a1c0c, -2px 0 0 #3a1c0c, 0 2px 0 #3a1c0c, 0 -2px 0 #3a1c0c, 0 4px 0 rgba(20, 10, 30, 0.4);
 }
+.gem-sub { font-size: 0.6rem; letter-spacing: 0.04em; text-transform: none; }
+.gem.locked .gem-face { filter: saturate(0.35) brightness(0.85); }
 .gem.on { translate: 0 -2px; filter: brightness(1.08) drop-shadow(0 calc(var(--gp) + 2px) 0 rgba(20, 10, 30, 0.5)); }
 .gem.on::before {
   content: "▶";

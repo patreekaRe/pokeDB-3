@@ -34,7 +34,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, peekEvent, isPeeking } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, peekEvent, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound } from './audio.js';
@@ -216,6 +216,11 @@ function init() {
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
     onGameCorner: () => toggleShop(),
+    onSafari: async () => {
+      if (hasSavedRun() && !(await confirmDialog('Start today\'s Safari Zone run? Your saved run will be lost.', 'Start'))) return;
+      leaveTitle();
+      beginSafari();
+    },
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
   });

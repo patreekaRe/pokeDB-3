@@ -31,6 +31,7 @@ import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
+import { randIndex, pickOne } from './rng.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -147,6 +148,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     ability,
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
+    safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
 
     // the player
@@ -197,7 +199,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       sap: 0,                         // its attacks deal this much less, all fight
       weak: 0,                        // turns left dealing WEAK_MULT damage
       vulnerable: 0,                  // turns left taking VULNERABLE_MULT damage from your attacks
-      moveIndex: Math.floor(Math.random() * def.moves.length),
+      moveIndex: randIndex(def.moves.length),
     },
 
     busy: true,        // true while animations play, so clicks are ignored
@@ -495,7 +497,7 @@ function draw(count) {
     if (!top) return;                            // nothing left anywhere
     // Max Mushrooms (StS's Snecko Eye): a drawn card costs 0-3 while it's in your hand (settled() puts it back)
     const card = hasRelic('max-mushrooms') && typeof top.cost === 'number' && !top.unplayable
-      ? { ...top, cost: Math.floor(Math.random() * 4), orig: top } : top;
+      ? { ...top, cost: randIndex(4), orig: top } : top;
     b.hand.push({ uid: nextUid++, card, fresh: true });
   }
 }
@@ -822,7 +824,7 @@ function gainTide(n) {
   const add = n + (b.powers.drizzle || 0);
   b.tide += add;
   b.tideGained += add;
-  if (b.tide > getSave().stats.maxTide) updateSave(d => { d.stats.maxTide = b.tide; });   // Manaphy's goal
+  if (!b.safari && b.tide > getSave().stats.maxTide) updateSave(d => { d.stats.maxTide = b.tide; });   // Manaphy's goal
   pop('player-zone', `🌊 Tide +${add}`, 'note good');
 }
 
@@ -844,7 +846,7 @@ function addCards({ id, n = 1, to = 'hand' }) {
   const card = CARDS_BY_ID[id];
   for (let i = 0; i < n; i++) {
     if (to === 'hand' && b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
-    else if (to === 'draw') b.drawPile.splice(Math.floor(Math.random() * (b.drawPile.length + 1)), 0, card);
+    else if (to === 'draw') b.drawPile.splice(randIndex(b.drawPile.length + 1), 0, card);
     else b.discard.push(card);
   }
   pop('player-zone', `🃏 +${n} ${card.name}`, card.status ? 'note bad' : 'note good', 120);
@@ -866,7 +868,7 @@ function addRandomCards(n) {
   const b = battle;
   const pool = typePool(b.starter.type).filter(c => !c.evoOnly);
   for (let i = 0; i < n && pool.length; i++) {
-    const card = pool[Math.floor(Math.random() * pool.length)];
+    const card = pickOne(pool);
     const free = { ...card, discount: typeof card.cost === 'number' ? card.cost : 0, orig: card };
     if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card: free, fresh: true });
     else b.discard.push(card);
@@ -880,7 +882,7 @@ async function discoverCard(n) {
   const b = battle;
   const pool = [...typePool(b.starter.type).filter(c => !c.evoOnly)];
   const options = [];
-  while (options.length < n && pool.length) options.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  while (options.length < n && pool.length) options.push(pool.splice(randIndex(pool.length), 1)[0]);
   if (!options.length) return;
   const card = await pickFromPile(options, 'Choose a move to learn.', 'Learn');
   if (battle !== b) return;
@@ -910,7 +912,7 @@ function exhaustCard(card) {
 function addTypeCard() {
   const b = battle;
   const pool = typePool(b.starter.type).filter(c => !c.evoOnly);
-  const card = pool[Math.floor(Math.random() * pool.length)];
+  const card = pickOne(pool);
   if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
   else b.discard.push(card);
   pop('player-zone', `💎 ${card.name}`, 'note good', 250);
@@ -1382,7 +1384,7 @@ async function finish(won) {
 function shuffle(list) {
   const a = [...list];
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = randIndex(i + 1);
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;

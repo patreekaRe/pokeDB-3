@@ -20,6 +20,9 @@ import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { safariDaily } from './data/safari.js';
+import { getSave } from './storage.js';
+import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 
@@ -59,6 +62,7 @@ const GEMS = {
   new: ['#b848d8', '#e088f8', '#7a2098'],
   collection: ['#e0bc28', '#fff080', '#a88410'],
   corner: ['#f06038', '#ff9870', '#b83018'],
+  safari: ['#58a838', '#98e070', '#2e7020'],
 };
 const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430', BRONZE_MID = '#a86c3c', GROOVE = '#3a1c0c';
 
@@ -183,6 +187,7 @@ function renderMenu() {
     gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
     gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
     gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
+    safariGem(),
   ].filter(Boolean);
   gems.forEach((g, i) => g.style.setProperty('--i', i));
   $('title-menu').replaceChildren(...gems);
@@ -202,6 +207,28 @@ function gem(kind, label, onPick, icon, extra) {
   btn.addEventListener('pointerenter', () => point(btn, true));
   btn.addEventListener('focus', () => point(btn, true));
   btn.addEventListener('click', () => { if (!btn.disabled) onPick(); });
+  return btn;
+}
+
+/** The Safari Zone, the daily run: today's starter on its face and today's areas under its name. Locked (a padlock)
+    until the Pokédex is fully researched; a tap then says so. */
+function safariGem() {
+  const open = getSave().dex.complete;
+  const daily = safariDaily();
+  const line = open ? `Today: ${daily.areas.map(a => a.name).join(' · ')}` : 'Locked: finish the Pokédex';
+  let icon = el('span', 'gem-emoji', '🔒');
+  if (open) {
+    icon = el('img', 'pixel');
+    icon.src = spriteUrl(daily.starter, 'front', 0);
+    icon.alt = '';
+  }
+  const btn = gem('safari', 'Safari Zone', () => {
+    if (open) return actions.onSafari();
+    playSound('cancel');
+    tipAt(btn, 'The Safari Zone opens once every Pokédex entry is researched.');
+  }, icon, el('span', 'gem-sub', line));
+  btn.classList.toggle('locked', !open);
+  btn.title = open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Research every Pokédex entry to open the Safari Zone.';
   return btn;
 }
 

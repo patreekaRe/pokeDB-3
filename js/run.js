@@ -42,7 +42,9 @@ import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
+import { SAFARI_AREAS_BY_ID, safariDaily } from './data/safari.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
+import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 
 let run = null;
 let peeking = false;   // a ?event= playtest run (peekEvent()): nothing about it is saved, so the real saved run is safe
@@ -52,6 +54,19 @@ export const isRunActive = () => run !== null && !run.over;
 
 /** The biome the run in progress is in (the Pokédex opens on its page), or undefined. */
 export const runBiome = () => (isRunActive() ? run.biome : undefined);
+
+/** A Safari Zone daily run (js/data/safari.js): the date's seed drives every roll, through js/rng.js. */
+const isSafari = () => Boolean(run?.safari);
+
+/** Roll on the Safari seed's `key` stream from here on (each biome and each room has its own, so a room plays the same
+    whatever came before it, and a refresh replays it exactly); any other run rolls with Math.random. */
+const reseed = (key) => useStream(run?.safari ? run.safari.seed : null, key);
+
+/** The Safari area a biome of the run is (null outside the Safari Zone). */
+const safariArea = (biome = run.biome) => (run?.safari ? SAFARI_AREAS_BY_ID[run.safari.areas[biome]] : null);
+
+/** The name the map's sign shows for the biome you're in. */
+const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : BIOMES[run.biome].name);
 
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
@@ -72,7 +87,7 @@ const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perkLevel('ma
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
   const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && !r.unique && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
-  return pool[Math.floor(Math.random() * pool.length)];
+  return pickOne(pool);
 }
 
 /** Called once at startup. */
@@ -84,7 +99,7 @@ export function initRun({ onMenu, onNewRun }) {
   initScope();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
-  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); onNewRun(run.starter); });
+  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) beginSafari(); else onNewRun(run.starter); });
 
   // This pop-up moves the game along, so Escape must not just close it.
   $('result-dialog').addEventListener('cancel', (e) => e.preventDefault());
@@ -155,6 +170,7 @@ function checkpoint() {
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
     tally: run.tally,
+    safari: run.safari,
   });
 }
 
@@ -181,7 +197,7 @@ function restoreRun(saved) {
   const known = (ids, table) => ids.every(id => table[id]);
   if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0) || !(saved.money >= 0)
       || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.items, ITEMS_BY_ID) || !(saved.itemChance >= 0)
-      || !saved.unlocks.every(starterById)) {
+      || !saved.unlocks.every(starterById) || (saved.safari && !saved.safari.areas.every(id => SAFARI_AREAS_BY_ID[id]))) {
     throw new Error('bad run save');
   }
 
@@ -221,11 +237,12 @@ export const hasSavedRun = () => loadSavedRun() !== null;
 /** Pick a saved run (from loadSavedRun) back up on its map. */
 export function continueRun(saved) {
   run = saved;
+  reseed(`map:${run.biome}:${run.current}`);
   showMap();
 }
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
-export function beginRun(starter, level = 0, peek = null) {
+export function beginRun(starter, level = 0, peek = null, safari = null) {
   dropNotes();
   const passives = getSave().passives;
   const startHp = BASE_HP + passives.hpBoost * 5;   // shop passive: Max HP Boost
@@ -257,8 +274,10 @@ export function beginRun(starter, level = 0, peek = null) {
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     tally: freshTally(),   // the run's record, kept for the Hall of Fame if it's won
+    safari,                // a Safari Zone daily run: { day, seed, areas, first } (beginSafari())
     over: false,
   };
+  reseed('start');
 
   if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
     run.charm = randomStartingRelic()?.id ?? null;   // handed over on the map by relicCharm()
@@ -273,6 +292,14 @@ export function beginRun(starter, level = 0, peek = null) {
   if (peek) return peekRoom(peek);
   updateSave(d => { d.stats.runsStarted += 1; });
   startBiome();
+}
+
+/** Today's Safari Zone run: the date's starter and areas at Level 0's rules. Only the day's first try counts for the
+    leaderboard; after it the same seed replays as often as you like. */
+export function beginSafari(daily = safariDaily()) {
+  const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
+  updateSave(d => { d.safari = { day: daily.day, tries: tries + 1 }; });   // counted at the start, so quitting can't retry the first
+  beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
 }
 
 /** Playtest shortcut (the user's ask): ?event=move-tutor (any event id) starts a throwaway run and walks straight into
@@ -301,13 +328,15 @@ function peekRoom(id) {
 
 function startBiome() {
   const biome = BIOMES[run.biome];
-  updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
+  reseed(`biome:${run.biome}`);
+  if (!isSafari()) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.mods = runMods(run.starter, run.level, run.biome);
   run.map = generateMap({ floors: runFloors(run.starter, run.biome) });
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) {
-    dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
+    // a Safari area has its own wilds, and the main Pokédex's favourites would make the day's run differ between players
+    dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
@@ -387,8 +416,8 @@ function showMap() {
   $('run-title').textContent = stageName(run.starter, run.stage);
   // The sign drops in like the games' location sign, but only when you arrive in a new biome.
   const sign = $('biome-name');
-  if (sign.textContent !== biome.name) {
-    sign.textContent = biome.name;
+  if (sign.textContent !== biomeName()) {
+    sign.textContent = biomeName();
     sign.dataset.biome = biome.id;
     sign.classList.remove('arrive');
     void sign.offsetWidth;
@@ -676,6 +705,7 @@ function addTally(t) {
 
 function enterNode(node) {
   run.current = node.id;
+  reseed(`room:${run.biome}:${node.id}`);
   node.visited = true;
 
   if (node.type === 'rest' || node.type === 'shop') playSound('door');
@@ -703,7 +733,7 @@ async function fight(node) {
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
-  if (!ken) dexSeen(node.enemyId);
+  if (!ken && !isSafari()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex (phase 3), not this one
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
@@ -725,7 +755,7 @@ function afterFight(node, result) {
   run.hp = result.hp;
   run.fights += 1;
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
-  const sprint = isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter);
+  const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari();
   const { lines: dexNews, complete: dexComplete } = creditRoom(node) && !sprint ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
@@ -740,7 +770,7 @@ function afterFight(node, result) {
   const payAs = tough ? 'elite' : node.type === 'ken' ? 'boss' : node.type;
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
-  const prize = Math.round((low + Math.floor(Math.random() * (high - low + 1))) * run.mods.prizeMult) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const prize = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult) * (run.relics.includes('amulet-coin') ? 2 : 1);
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
@@ -775,7 +805,7 @@ function afterFight(node, result) {
   }
 
   if (node.type === 'boss') {
-    updateSave(d => {
+    if (!isSafari()) updateSave(d => {   // a Safari area isn't one of the main game's biomes
       d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
@@ -791,7 +821,7 @@ function afterFight(node, result) {
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
   if (run.relics.includes('dusk-stone')) {
     // Dusk Stone (StS's Sozu): no new items
-  } else if (Math.random() < run.itemChance) {
+  } else if (random() < run.itemChance) {
     run.itemChance = Math.max(0, run.itemChance - ITEM_DROP.step);
     const [item] = itemChoices(run);
     if (item) steps.push(next => offerItem(item, next));
@@ -1478,37 +1508,36 @@ function rollEvents() {
   let bag = [];
   for (const node of Object.values(run.map.byId)) {
     if (node.type !== 'event') continue;
-    if (!bag.length) bag = [...EVENTS].sort(() => Math.random() - 0.5);
+    if (!bag.length) bag = shuffled(EVENTS);
     const event = bag.pop();
     node.event = { id: event.id };
     if (event.trapChance) {
-      const roll = Math.random();
+      const roll = random();
       node.event.trap = roll < event.trapChance;
       node.event.relic = !node.event.trap && roll < event.trapChance + event.relicChance;   // else an item
     }
     if (event.team) {
       const team = event.team[run.biome];
-      node.event.enemyId = team[Math.floor(Math.random() * team.length)];
-      node.event.grunt = event.grunts[Math.floor(Math.random() * event.grunts.length)];
+      node.event.enemyId = pickOne(team);
+      node.event.grunt = pickOne(event.grunts);
     }
     if (event.upgrade) {
       // every card of each rarity in a shuffled order: the trade takes the first one you don't already hold MAX_COPIES of
       const pool = poolForType(run.starter.type);
       node.event.offers = Object.fromEntries(Object.values(event.upgrade).map(rarity =>
-        [rarity, shuffle(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
+        [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
     }
     if (event.tosses) {
-      node.event.luck = Math.random();   // one roll for every toss, so the bigger toss wins whenever the small one would
+      node.event.luck = random();   // one roll for every toss, so the bigger toss wins whenever the small one would
       node.event.relics = relicChoices(run).map(r => r.id);
     }
     if (event.offering) {
-      const typeRelics = shuffle(RELICS.filter(r => r.only === run.starter.type));
+      const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type));
       node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
     }
   }
 }
 
-const shuffle = (list) => [...list].sort(() => Math.random() - 0.5);
 
 /** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
 const eventIdsKnown = (state) => Object.values(state.offers || {}).flat().every(id => CARDS_BY_ID[id])
@@ -1915,7 +1944,7 @@ function revealCard(title, card, lines, done) {
 function tutorCards(back, pay, done = showMap) {
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
-  const cards = rares.length ? rares.sort(() => Math.random() - 0.5).slice(0, 3) : cardChoices(run, 'boss');
+  const cards = rares.length ? shuffled(rares).slice(0, 3) : cardChoices(run, 'boss');
   showChoice({
     title: 'Chad Master Kenmatta',
     sub: 'Kenmatta: Which move should your Pokémon learn?',
@@ -1932,7 +1961,7 @@ function tutorCards(back, pay, done = showMap) {
 
 /* ---------- the Poké Mart ---------- */
 
-const jitter = (price) => Math.round(price * (1 + (Math.random() * 2 - 1) * MART_JITTER));
+const jitter = (price) => Math.round(price * (1 + (random() * 2 - 1) * MART_JITTER));
 
 /** Rolled when the biome starts and saved on the node, so a refresh can't reroll the shelves. */
 function martStock() {
@@ -2126,7 +2155,7 @@ function announceUnlocks() {
     breaks. Returns the result window's line and what the gate scene (js/gatescene.js) needs, if it was reached. */
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
-  if (peeking || isMewtwoRun(run.starter) || before <= 0 || !(won || atLastBoss)) return null;
+  if (peeking || isMewtwoRun(run.starter) || isSafari() || before <= 0 || !(won || atLastBoss)) return null;
   const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
@@ -2170,6 +2199,7 @@ function endRun(won, atLastBoss = false) {
   run.over = true;
   if (!peeking) clearRunData();
   const mewtwoRun = isMewtwoRun(run.starter);
+  const safari = isSafari();   // the daily run pays its coins, but its starter isn't yours: no records, stats or Levels
 
   let winCoins = 0;
   let level5 = [];
@@ -2177,7 +2207,8 @@ function endRun(won, atLastBoss = false) {
   if (won) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
-
+  }
+  if (won && !safari) {
     updateSave(d => {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
@@ -2213,9 +2244,10 @@ function endRun(won, atLastBoss = false) {
 
   const name = stageName(run.starter, run.stage);
   const biome = BIOMES[run.biome];
-  $('result-title').textContent = won ? (mewtwoRun ? '🏆 You reached the last energy!' : '🏆 You conquered the wastes!') : '💀 Your run has ended';
+  $('result-title').textContent = won ? (safari ? '🏆 You crossed the Safari Zone!' : mewtwoRun ? '🏆 You reached the last energy!' : '🏆 You conquered the wastes!') : '💀 Your run has ended';
   $('result-text').textContent = won
     ? `${name} beat all ${mewtwoRun ? 'four' : 'three'} bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
+    : safari ? `${name} fainted in the Safari Zone's ${safariArea().name} after ${run.fights} won fights. Today's run is the same every try: try another path!`
     : `${name} fainted in Biome ${run.biome + 1} (${biome.name}) after ${run.fights} won fights. Try a different path or a different starter!`;
 
   dropNotes();   // the result window lists the unlocks itself
@@ -2224,10 +2256,11 @@ function endRun(won, atLastBoss = false) {
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   lines.unshift(...level5, ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
+  if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day: this is the one that counts.' : '🦺 A replay: only the first try of the day counts.');
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
   list.hidden = lines.length === 0;
-  $('result-again').textContent = 'New run';
+  $('result-again').textContent = safari ? 'Try again' : 'New run';
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
   // after the win scene, your Pokémon attacks the Sealed Gate (a run lost at the last boss goes down there too, and fails)
   const strike = () => (gate ? gateScene(gate.scene) : Promise.resolve());

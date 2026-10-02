@@ -402,6 +402,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   on him); beating him gives his `unique` Mata-Mindset relic (+1 PP, +1 draw, +1 strength). He's fought in his own Mortal
   Kombat arena with a Dragonite medallion (`arena: 'kombat'`, `PLACE_ART.kombat`), to his own music (`KEN.music`), and
   FORTIFY YOUR MIND shouts Wong's line (a move's `sound`, played as the enemy uses it). See `docs/reference/events.md`.
+- **Seeded rolls** (Safari Zone phase 1, 2026-10-02): every gameplay roll goes through `random()` / `randIndex()` /
+  `pickOne()` / `shuffled()` in `js/rng.js`, never `Math.random` (cosmetic rolls stay on it). A Safari run
+  (`run.safari`, `js/data/safari.js`) seeds a stream per biome and per room (`reseed()` in `js/run.js`); every other run
+  is unseeded. A new gameplay roll that skips `js/rng.js` breaks the daily run being the same for everyone. Tests:
+  `node --test` (`tests/`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

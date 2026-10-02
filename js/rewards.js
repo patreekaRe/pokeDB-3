@@ -7,6 +7,7 @@ import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { playSound } from './audio.js';
+import { random, shuffled, pickOne } from './rng.js';
 
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
@@ -41,7 +42,7 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
 
   while (chosen.length < count && pool.length) {
     const weightOf = (c) => Math.max(1, weights[c.rarity || 'common']);
-    let roll = Math.random() * pool.reduce((sum, c) => sum + weightOf(c), 0);
+    let roll = random() * pool.reduce((sum, c) => sum + weightOf(c), 0);
     const card = pool.find(c => (roll -= weightOf(c)) < 0) || pool[0];
     chosen.push(card);
     pool = pool.filter(c => c !== card);
@@ -52,7 +53,7 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
   run.rarePity = chosen.some(c => rarity(c) === 'rare') ? 0
     : Math.min(RARE_PITY.max, (run.rarePity || 0) + RARE_PITY.step * chosen.filter(c => rarity(c) === 'common').length);
   const odds = REWARD_UPGRADE_ODDS[b] ?? 0;
-  return chosen.map(c => (rarity(c) !== 'rare' && Math.random() < odds ? CARDS_BY_ID[upgradeId(c.id)] : c));
+  return chosen.map(c => (rarity(c) !== 'rare' && random() < odds ? CARDS_BY_ID[upgradeId(c.id)] : c));
 }
 
 /**
@@ -66,7 +67,7 @@ export function evolutionChoices(run) {
     const copies = run.deck.filter(x => baseId(x) === c.id).length;
     return copies < (c.maxCopies || MAX_COPIES);
   });
-  return pool.sort(() => Math.random() - 0.5).slice(0, 2);
+  return shuffled(pool).slice(0, 2);
 }
 
 /** StS's relic tiers: each relic offered rolls common / uncommon / rare by these weights (StS's 50 / 33 / 17),
@@ -86,16 +87,16 @@ const TIERS = ['common', 'uncommon', 'rare'];
 export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
   const fits = RELICS.filter(r => !r.unique && !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
   const bossPool = boss ? fits.filter(r => r.boss) : [];
-  if (bossPool.length) return bossPool.sort(() => Math.random() - 0.5).slice(0, 3);
+  if (bossPool.length) return shuffled(bossPool).slice(0, 3);
   let pool = fits.filter(r => !r.boss);
   const odds = RELIC_ODDS[source] || RELIC_ODDS.normal;
   const chosen = [];
   while (chosen.length < 3 && pool.length) {
-    let roll = Math.random() * TIERS.reduce((sum, t) => sum + odds[t], 0);
+    let roll = random() * TIERS.reduce((sum, t) => sum + odds[t], 0);
     const at = TIERS.findIndex(t => (roll -= odds[t]) < 0);
     const order = [...TIERS.slice(at), ...TIERS.slice(0, at).reverse()];
     const tier = order.map(t => pool.filter(r => r.rarity === t)).find(list => list.length);
-    const relic = tier[Math.floor(Math.random() * tier.length)];
+    const relic = pickOne(tier);
     chosen.push(relic);
     pool = pool.filter(r => r !== relic);
   }
@@ -300,7 +301,7 @@ export function itemChoices(run, count = 1) {
   let pool = itemsForType(run.starter.type);
   const chosen = [];
   while (chosen.length < count && pool.length) {
-    let roll = Math.random() * pool.reduce((sum, i) => sum + ITEM_WEIGHTS[i.rarity], 0);
+    let roll = random() * pool.reduce((sum, i) => sum + ITEM_WEIGHTS[i.rarity], 0);
     const item = pool.find(i => (roll -= ITEM_WEIGHTS[i.rarity]) < 0) || pool[0];
     chosen.push(item);
     pool = pool.filter(i => i !== item);

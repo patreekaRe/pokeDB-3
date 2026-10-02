@@ -918,6 +918,21 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
 1. **Seeded RNG + the Daily button**: the seeded generator through every gameplay roll, a Safari Zone button on the start screen
    (today's areas under it; locked until `dex.complete`), the day's 3 areas and fixed starter, the first-try flag, a small starting roster per
    area. Playable day one, without capture yet.
+   **Built 2026-10-02** (cloud, a draft PR): `js/rng.js` (mulberry32; `random()` is Math.random unless a Safari run set a
+   stream: one per biome, `biome:N`, and one per room, `room:N:id`, so a room plays the same whatever came before it and a
+   refresh replays it exactly), every gameplay roll moved onto it (Fisher-Yates instead of `sort(() => Math.random() - 0.5)`,
+   which differs between browsers). `js/data/safari.js`: the 6 areas with borrowed wild rosters (8 each, from the main game's
+   wilds; the area's place in the run sets their strength, elites and boss), `safariDaily(day)` = seed, 3 areas, starter.
+   The title's 5th gem, **Safari Zone** (green; greyed with a padlock until `dex.complete`, a tap says why), shows today's
+   starter and areas and starts the run (`beginSafari()` in `js/run.js`: Level 0 rules, `run.safari`, saved with the run).
+   `save.safari = { day, tries }`: the try is counted at the start, so quitting can't retry the first; the result window
+   says whether it counted, and its button is "Try again". A Safari run adds nothing to the main Pokédex, Record Book,
+   Trainer Levels, the Sealed Gate, or the per-starter/per-biome stats (its starter isn't yours); it pays PokéCoins.
+   Tests: `node --test` (tests/seed.test.mjs; a GitHub Action runs it). Checked headless: two fresh browsers on the same day
+   got the same map, enemies and opening hand.
+   **Open for the user**: Game Corner and Pokédex perks still apply in a Safari run (HP Boost, Relic Charm, Scout Report...),
+   so two players' runs differ; strip them for the leaderboard try? The map and battles still use the main biomes' scenery
+   and music until the areas' art (phase 5).
 2. **Capture and Poké Balls**: Throw Ball at red HP, catch odds, the take-or-skip card, the Game Corner balls. Bot check
    (the sim needs the seeded run and the throw) that catching doesn't make the run easier than knocking out.
 3. **The Safari Pokédex**: its own window/tab, entries by area, caught/seen marks, area progress.

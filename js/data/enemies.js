@@ -24,6 +24,8 @@
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
    ============================================================ */
 
+import { random, pickOne } from '../rng.js';
+
 /** Pixel sprite from assets/pokemon/ (Gen 5 art from PokeAPI/sprites). */
 const sprite = (name) => ({ image: `assets/pokemon/${name}-front.gif`, art: false, spriteId: name });
 
@@ -820,7 +822,7 @@ export const TRAITS = {
   stamina:  { icon: '💎', text: t => `${t.name}: every card you play past your ${t.after}th in a turn gives it ${t.amount} block` },
 };
 
-const pick = (list) => list[Math.floor(Math.random() * list.length)];
+const pick = (list) => pickOne(list);
 
 /**
  * Build one fight. kind is 'fight', 'elite' or 'boss'. mods are the Trainer Level rules.
@@ -833,7 +835,7 @@ export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
   const biome = BIOMES[biomeIndex];
   const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals;
   const weights = list.map(weight);
-  let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
+  let roll = random() * weights.reduce((a, b) => a + b, 0);
   return list.find((id, i) => (roll -= weights[i]) < 0) ?? list[list.length - 1];
 }
 
@@ -843,9 +845,9 @@ export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
  * the routes into it already met it, and deals one met on the fewest (almost always none); among those the deck makes
  * every Pokémon come up about as often as the rest, and `weight(id)` favours the Pokédex's unbeaten ones.
  */
-export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1) {
+export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1, normals = null) {
   const biome = BIOMES[biomeIndex];
-  const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals;
+  const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : normals ?? biome.normals;   // normals: a Safari area's wilds
   const routes = new Map(), met = new Map();   // node id -> routes from the start into it / { id: routes into it that met id }
   const count = (node) => {
     if (!routes.has(node.id)) routes.set(node.id, node.prev.length ? node.prev.reduce((n, id) => n + count(byId[id]), 0) : 1);
@@ -870,7 +872,7 @@ export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1) {
     if (!deck.some(x => fresh.includes(x))) deck = [...list];
     const options = deck.filter(x => fresh.includes(x));
     const weights = options.map(weight);
-    let roll = Math.random() * weights.reduce((x, y) => x + y, 0);
+    let roll = random() * weights.reduce((x, y) => x + y, 0);
     const id = options.find((_, i) => (roll -= weights[i]) < 0) ?? options[options.length - 1];
     room.enemyId = id;
     deck.splice(deck.indexOf(id), 1);

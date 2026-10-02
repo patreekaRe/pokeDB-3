@@ -52,6 +52,10 @@ three places:
 - 2026-10-02: **The strike card** (Desktop app, the user's ask): the gate scene's move is a card you hold to charge and
   let go to throw (`strikeCard()` in `js/gatescene.js`), phone-safe long press. Checked in the browser pane at 375x812
   with `?strike=90&gate=400` and `?strike=700&gate=600&starter=squirtle&stage=2` (the gold break card); not on a real phone.
+- 2026-10-02: **Safari Zone phase 1** (cloud, on branch `claude/project-thread-6d3v6i` with a draft PR, not yet on
+  `main`): the seeded RNG (`js/rng.js`) under every gameplay roll, the daily seed / areas / starter (`js/data/safari.js`),
+  the title's Safari Zone gem (locked until `dex.complete`), a playable daily run with borrowed rosters and the first-try
+  flag. `node --test` runs the seed tests. Checked headless (same map, enemies and opening hand in two fresh browsers).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
