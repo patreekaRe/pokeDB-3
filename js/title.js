@@ -22,6 +22,7 @@ import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily } from './data/safari.js';
 import { getSave } from './storage.js';
+import { safariOpen } from './data/pokedex.js';
 import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
@@ -211,9 +212,9 @@ function gem(kind, label, onPick, icon, extra) {
 }
 
 /** The Safari Zone, the daily run: today's starter on its face and today's areas under its name. Locked (the whole gem
-    greyed out, a Safari Ball on it) until the Pokédex is fully researched; a tap then says so. */
+    greyed out, a Safari Ball on it) until every Pokédex entry has been beaten; a tap then says so. */
 function safariGem() {
-  const open = getSave().dex.complete;
+  const open = safariOpen(getSave());
   const daily = safariDaily();
   const line = `Today: ${daily.areas.map(a => a.name).join(' · ')}`;
   const icon = el('img', open ? 'pixel' : 'pixel gem-ball');
@@ -222,12 +223,12 @@ function safariGem() {
   const btn = gem('safari', 'Safari Zone', () => {
     if (open) return actions.onSafari();
     playSound('cancel');
-    tipAt(btn, 'The Safari Zone opens once every Pokédex entry is researched.');
+    tipAt(btn, 'The Safari Zone opens once you\'ve beaten every Pokémon in the Pokédex.');
   }, icon, open && el('span', 'gem-sub', line));   // locked, just the name: a tap says why
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
-  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Research every Pokédex entry to open the Safari Zone.');
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Beat every Pokémon in the Pokédex to open the Safari Zone.');
   return btn;
 }
 

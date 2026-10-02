@@ -9,7 +9,7 @@ import { ALL_CARDS } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
-import { DEX_PAGES } from './data/pokedex.js';
+import { DEX_PAGES, safariOpen } from './data/pokedex.js';
 import { getSave } from './storage.js';
 import { openPokedex } from './pokedex.js';
 import { openSafariDex, safariDexCount } from './safaridex.js';
@@ -67,10 +67,10 @@ function book(which, name, text, noun, how) {
   return [which, name, fameArt(entries.at(-1)), text, `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, () => openRecords(which)];
 }
 
-/** The Safari Pokédex's card, a ??? until the Safari Zone opens (a complete Pokédex). */
+/** The Safari Pokédex's card, a ??? until the Safari Zone opens (every Pokémon beaten). */
 function safariCard(save) {
-  const how = 'Complete the Pokédex to open the Safari Zone.';
-  if (!save.dex.complete) return ['safari', '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
+  const how = 'Beat every Pokémon in the Pokédex to open the Safari Zone.';
+  if (!safariOpen(save)) return ['safari', '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
   const n = safariDexCount();
   return ['safari', 'Safari Pokédex', el('span', 'coll-emoji', '🌿'), 'The Pokémon of the Safari Zone, area by area. Catch them all.',
     `${n.caught}/${n.total} caught`, () => openSafariDex()];
