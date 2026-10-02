@@ -3788,3 +3788,4 @@ body.scene-peek #backdrop { display: none; }
 .board-name-form .hint { margin: 0; font-size: 0.7rem; }
 .board-name-input { font: inherit; font-size: 0.8rem; padding: 6px 8px; width: min(220px, 100%); border: 3px solid var(--win-edge); border-radius: var(--round-sm); background: #fff; color: var(--win-ink); }
 .board-open { display: block; margin: 0 auto 8px; }
+.board-name-line { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }

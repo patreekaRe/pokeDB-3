@@ -149,6 +149,17 @@ function signInRow(text) {
   return box;
 }
 
+let editingName = false;
+
+function nameLine() {
+  const row = el('div', 'board-name-line');
+  const btn = el('button', 'btn small', 'Change');
+  btn.type = 'button';
+  btn.addEventListener('click', () => { editingName = true; render(); });
+  row.append(el('span', 'hint', `Your leaderboard name: ${nameFor()}`), btn);
+  return row;
+}
+
 function nameRow(user, waiting) {
   const form = el('form', 'board-name-form');
   const input = el('input', 'board-name-input');
@@ -160,12 +171,13 @@ function nameRow(user, waiting) {
   const btn = el('button', 'btn primary', waiting ? 'Post' : 'Save');
   btn.type = 'submit';
   form.append(el('strong', 'board-name-head', 'Pick your leaderboard name'),
-    el('p', 'hint', `A nickname others will see (up to ${NAME_MAX} letters). Your real name is never posted. It can't be changed once posted.`), input, btn);
+    el('p', 'hint', `A nickname others will see (up to ${NAME_MAX} letters). Your real name is never posted. A result already posted keeps the name it went up with.`), input, btn);
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = cleanName(input.value);
     if (!name) return;
     store.set(NAME_KEY, name);
+    editingName = false;
     render();
   });
   return form;
@@ -184,9 +196,10 @@ async function render() {
   catch (err) { body.replaceChildren(el('p', 'hint board-note', 'The leaderboard can\'t be reached right now (offline?). The game itself is unaffected.')); return; }
   const top = [];
   const waiting = pending();
+  if (!nameFor() || editingName) top.push(nameRow(s.user, waiting && s.user));   // a nickname first, signed in or not
+  else top.push(nameLine());
   if (!s.user) top.push(signInRow(waiting ? 'Your first try is waiting on this device: sign in to post it.' : 'Sign in to post your first try of the day.'));
-  else if (!nameFor()) top.push(nameRow(s.user, waiting));   // signed in with no nickname yet: ask first, at the top
-  else if (waiting) {
+  else if (nameFor() && !editingName && waiting) {
     const state = await post();
     if (POST_TEXT[state] && state !== 'none') top.push(el('p', 'hint board-note', POST_TEXT[state]));
   }

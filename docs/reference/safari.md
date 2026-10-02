@@ -183,10 +183,11 @@ phase 1 run.
 - **An entry** is `safariBoard/<day>_<uid>` in the cloud save's Firestore: `{ day, uid, name, starter, won, area, bosses,
   turns, time, caught, at }` (`at` the server's time; `time` is wall-clock seconds from `run.tally.startedAt`). The name
   is always a nickname the player picked (`pokedb.safari.name`, `nameFor()`), never the sign-in's display name, which
-  would put real names on a public board (the user's call, 2026-10-02). Signed in with no nickname yet, the Leaderboard
-  opens with a gold-rimmed name box at the top (`nameRow()`, prefilled with the Google first name only as a suggestion),
-  and posting waits (`post()` returns 'name') until one is saved. Trimmed to 16 (`cleanName()`); it can't be changed
-  after posting.
+  would put real names on a public board (the user's call, 2026-10-02). With no nickname yet, signed in or not, the
+  Leaderboard opens with a gold-rimmed name box at the top (`nameRow()`, prefilled with the Google first name only as a
+  suggestion), and posting waits (`post()` returns 'name') until one is saved. Once saved it shows as a line with a
+  Change button (`nameLine()`, `editingName`); a result already posted keeps the name it went up with. Trimmed to 16
+  (`cleanName()`).
 - **Pure part**: `js/data/leaderboard.js` (`runResult()`, `buildEntry()`, `checkEntry()` mirroring the rules,
   `rankBoards()`, `formatTime()`), pinned by `tests/leaderboard.test.mjs`, which also checks `firestore.rules` keeps the
   same bounds (`LIMITS`, `NAME_MAX`, the keys).
