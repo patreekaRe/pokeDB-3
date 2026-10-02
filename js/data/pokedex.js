@@ -60,5 +60,9 @@ export const DEX_PAGES = BIOMES.filter(b => !b.secret).map(b => ({
   perk: DEX_PERKS[b.id],
 }));
 
+/** The Safari Zone opens once every entry has been beaten at least once (every page complete), not researched:
+    3 defeats of each felt like a grind for a door (the user's call, 2026-10-02). */
+export const safariOpen = (save) => DEX_PAGES.every(p => save.dex.done.includes(p.biome));
+
 /** Every entry in dex order, numbered from 1 like the games. */
 export const DEX_NUMBER = Object.fromEntries(DEX_PAGES.flatMap(p => p.ids).map((id, i) => [id, i + 1]));

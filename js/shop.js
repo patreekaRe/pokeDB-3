@@ -16,6 +16,7 @@ import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS, SHINY_COSTS } from './data/shop.js
 import { BALLS } from './data/balls.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, perkLevel } from './storage.js';
+import { safariOpen } from './data/pokedex.js';
 import { checkAchievements, isStarterUnlocked } from './progress.js';
 import { playSound, preloadSounds } from './audio.js';
 import { $, el, refreshCoins } from './ui.js';
@@ -148,14 +149,14 @@ function shinyEntry(starter) {
 }
 
 /** A Poké Ball for the Safari Zone: Great and Ultra Balls in packs (used up when thrown), the special balls bought once.
-    Only for sale once the Safari Zone is open (a complete Pokédex). */
+    Only for sale once the Safari Zone is open (every Pokémon beaten). */
 function ballEntry(ball) {
   const balls = getSave().balls;
-  const open = getSave().dex.complete;
+  const open = safariOpen(getSave());
   const have = balls[ball.id] || 0;
   return {
     id: ball.id, name: ball.stock ? `${ball.pack} ${ball.name}s` : ball.name, sprite: `assets/items/${ball.sprite}.png`,
-    text: !open ? 'For the Safari Zone, which opens once every Pokédex entry is researched.' : ball.text,
+    text: !open ? 'For the Safari Zone, which opens once you\'ve beaten every Pokémon in the Pokédex.' : ball.text,
     blocked: !open,
     level: ball.stock ? `Have ${have}` : null,
     done: !ball.stock && balls.owned.includes(ball.id) && 'Owned',

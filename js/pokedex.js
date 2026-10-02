@@ -15,7 +15,7 @@
 import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
 import { TYPES, CARDS_BY_ID } from './data/cards.js';
 import { modsFor } from './data/difficulty.js';
-import { DEX_PAGES, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
+import { DEX_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
@@ -76,6 +76,7 @@ export function dexDefeated(id) {
     updateSave(d => { d.dex.done.push(p.biome); });
     const coins = awardCoins(p.perk.coins);
     lines.push(`The ${p.name} page is complete! +${coins} PokéCoins.`, `New perk: ${p.perk.name}. ${p.perk.text}`);
+    if (safariOpen(getSave())) lines.push('Every Pokémon is in the Pokédex! The Safari Zone is open on the title screen.');
   }
   if (n === goal && pageResearched(p)) {
     lines.push(`Every ${p.name} entry is researched!`, `${p.perk.name} is now Lv 2: ${p.perk.lv2.text}`);
@@ -239,7 +240,7 @@ function renderMystery() {
 
 function render() {
   const save = getSave();
-  $('dex-safari-tab').hidden = !save.dex.complete;
+  $('dex-safari-tab').hidden = !safariOpen(save);
   if (page === REWARDS) { renderRewards(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   if (page === MYSTERY) { renderMystery(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   const seen = new Set(save.dex.seen);

@@ -875,7 +875,8 @@ scene that frees Mewtwo, and the gate on the title screen."
 
 A daily seeded run in a new place of its own, the **Safari Zone**, with a **capture** mechanic and hundreds more Pokémon
 to collect in a **Safari Pokédex**. Catching stays out of the main game (see Catching below); here it's the point of the
-mode, so it makes sense. It unlocks once the main Pokédex is fully researched (`dex.complete`, Reshiram's achievement).
+mode, so it makes sense. It unlocks once every main Pokédex entry has been beaten at least once (`safariOpen(save)` in `js/data/pokedex.js`: every
+page in `dex.done`; it was full research, `dex.complete`, until 2026-10-02, the user found it tedious).
 
 **Settled (the user's calls, 2026-10-02):**
 - **One theme, the Safari Zone**, not separate leaderboard biomes. It has ~6 **areas** (Johto's Safari Zone is the model):
@@ -885,7 +886,7 @@ mode, so it makes sense. It unlocks once the main Pokédex is fully researched (
 - **The daily seed**: the same run for everyone on a UTC date: map, enemies, rewards, and a **fixed starter** the seed
   picks (any starter but Mewtwo, owned or not, so the leaderboard is fair).
 - **One button, one mode** (the user's call, 2026-10-02): the Safari Zone *is* the daily run. A single **Safari Zone**
-  button on the start screen (locked until `dex.complete`), with a line under it naming today's areas ("Today: Wetland ·
+  button on the start screen (locked until `safariOpen(save)`), with a line under it naming today's areas ("Today: Wetland ·
   Peak · Desert"). No separate Daily button.
 - **Catching on the first try too** (the user's call, 2026-10-02): every Safari run can catch, the leaderboard try
   included; it costs the turn and a miss gives the enemy a free hit, so it's a risk, not a shortcut.
