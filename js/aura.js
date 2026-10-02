@@ -1,6 +1,6 @@
 /*
  * The legendaries' Super Saiyan auras (tools/legendary-aura.py bakes theirs into GIFs), drawn live on a canvas over a
- * still sprite instead: Kenmatta powers up when you fight him (level 1) and goes Super Saiyan 2 at half HP (level 2),
+ * still sprite instead: Kenmatta goes Super Saiyan 2 (level 2) at half HP (level 1 is kept for the port's sake),
  * the user's joke. The same steps as the script, frame by frame on its 16-frame loop: a body flash, flame tongues off
  * every upward edge and up the sides, rings of aura, rising embers, orbiting sparkles, and level 2's lightning. Only the
  * effect is drawn (the body's pixels stay clear, but for the flash), so the <img> underneath keeps its own animations.

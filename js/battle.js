@@ -1462,7 +1462,7 @@ function setupBattleScreen() {
   img.src = b.def.image;
   img.alt = b.def.name;
   img.classList.toggle('pixel', !b.def.art);
-  setAura(img, b.def.aura ? 1 : 0);   // Kenmatta's Super Saiyan aura (aura.js)
+  setAura(img, 0);   // puts out Kenmatta's aura from a previous fight (aura.js)
   const box = $('enemy-portrait-box');
   box.classList.remove('defeated', 'hit', 'attacking');
   box.classList.toggle('sprite', !b.def.art);
