@@ -17,7 +17,7 @@
 
 import { $, el, setHpBar } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
-import { playSound, playCry, playMusic } from './audio.js';
+import { playSound, playCry, playMusic, closeSoundPops } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
@@ -139,6 +139,7 @@ export function leaveTitle() {
   const screen = $('title-screen');
   if (screen.hidden) return;
   screen.classList.add('away');
+  closeSoundPops();
   setTimeout(() => {
     screen.hidden = true;
     screen.classList.remove('away');

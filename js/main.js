@@ -37,7 +37,7 @@ import { seedGate } from './data/gate.js';
 import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
-import { initAudio, playSound } from './audio.js';
+import { initAudio, playSound, closeSoundPops } from './audio.js';
 import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle } from './title.js';
@@ -131,6 +131,7 @@ function initBallMenu() {
     if (!quiet && open === panel.hidden) playSound('bag');
     panel.hidden = !open;
     ball.setAttribute('aria-expanded', String(open));
+    if (!open) closeSoundPops();
   };
 
   ball.addEventListener('click', () => {
@@ -140,10 +141,10 @@ function initBallMenu() {
   $('abandon-btn').addEventListener('click', requestAbandon);
   $('home-btn').addEventListener('click', requestMenu);
 
-  // picking an item closes the menu (the speaker isn't one, so you can see it switch on/off)
+  // picking an item closes the menu, except Sound, which opens its speaker and volume bar
   panel.addEventListener('click', (e) => {
     const item = e.target.closest('.menu-item');
-    if (item) setOpen(false, true);
+    if (item && item.id !== 'menu-sound-btn') setOpen(false, true);
   });
   document.addEventListener('click', (e) => {
     // the path, not e.target.closest(): the speaker's icon is swapped as it's tapped, so the target is already detached

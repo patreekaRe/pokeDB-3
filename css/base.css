@@ -226,12 +226,14 @@ body.scrolled .topbar::before { opacity: 1; }
 }
 @keyframes cursorBlink { 50% { opacity: 0; } }
 .ball-menu-panel .mi-icon { background: none; border-radius: 0; }
-/* Sound: a speaker (tap to mute; js/audio.js's SOUND_TOGGLES) and a volume slider beside it (VOLUME_SLIDERS),
-   in the Poké Ball menu and on the title; a pixel track (the HP bar's outline) and a square knob */
+/* Sound's pop-out (SOUND_POPS in js/audio.js): a speaker (tap to mute; SOUND_TOGGLES) and a volume bar beside it
+   (VOLUME_SLIDERS), under the Poké Ball menu's Sound item and under the title's speaker; a pixel track (the HP bar's outline) and a square knob */
 .sound-ctl { display: flex; align-items: center; gap: 8px; }
 .sound-mute { flex: none; display: grid; place-items: center; padding: 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: var(--round-sm); }
 .sound-mute:active .snd-icon { translate: 0 2px; }
-.menu-sound { padding: 4px 14px 6px 20px; }
+.menu-sound { padding: 0 14px 6px 58px; }
+.menu-sound[hidden] { display: none; }
+.menu-sound .snd-icon { font-size: 1rem; }
 .menu-sound .sound-mute:hover, .menu-sound .sound-mute:focus-visible { background: var(--win-panel); }
 .vol-slider {
   --fill: calc(var(--v, 100) * 1%);

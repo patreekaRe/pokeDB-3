@@ -4,7 +4,7 @@ There's no bar: the top-left Poké Ball (`#brand-btn`: an 18x18 pixel sprite inl
 36px so each pixel is exactly 2x2, the user's call 2026-09-28: "between smooth and a hint of 8-bit"; the logo's "o" stays
 the CSS `.pokeball`) opens a drop-down
 (`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
-menu, Index, Stats, Achievements, Sign in (the cloud save, see Cloud save), Sound (one row, `.menu-sound`: a speaker that mutes on a tap and keeps the menu open, then the volume bar; see Windows), How to play and About (Stats and
+menu, Index, Stats, Achievements, Sign in (the cloud save, see Cloud save), Sound (opens `#menu-sound-pop` under it, a speaker that mutes and the volume bar, and keeps the menu open; see Windows), How to play and About (Stats and
 Achievements are windows built fresh from the save by `js/records.js`; a locked legendary's achievement shows "???" for
 its name, the user's call). Stats (revamped 2026-09-28, the user found "0/3 bosses" meaningless) is in sections: Runs (won
 with win rate, lost, best level won, wins per type), Battles (Pokémon and Alphas defeated, furthest biome, each boss's kill

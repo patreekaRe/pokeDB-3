@@ -35,8 +35,10 @@ menu option to match: cream box, pixel frame, and a blinking ▶ cursor on
 hover/focus (left padding reserves its space; `.primary` = orange frame,
 `.danger` = red). The How to play button is a gold `.ds-btn` capsule instead (see below).
 
-**Sound control** (`.sound-ctl` in `css/base.css`, 2026-10-02, the user's call: no window for it): a speaker button
-(`.sound-mute`, its icon `.snd-icon`, 🔊 / 🔇) and a `.vol-slider` to its right, a pixel track (the HP bar's outline, green
-fill from `--v`) with a square knob; `.muted` on the row greys the bar. It's a row in the Poké Ball menu (`.menu-sound`)
-and on the title's corner (`.title-sound`). The speaker's icon is swapped as it's tapped, so the menu's outside-tap check
-uses `e.composedPath()`, not `e.target.closest()` (a detached target read as outside and closed the menu).
+**Sound control** (`.sound-ctl` in `css/base.css`, 2026-10-02, the user's calls): a Sound button opens a pop-out with no
+frame (`.sound-pop`, `SOUND_POPS` in `js/audio.js`: the button again, a tap elsewhere or Escape close it): a speaker
+(`.sound-mute`, 🔊 / 🔇, every `.snd-icon` follows the mute) and a `.vol-slider` to its right, a pixel track (the HP bar's
+outline, green fill from `--v`) with a square knob; `.muted` on the row greys the bar, and dragging it up unmutes. In the
+Poké Ball menu it opens under the Sound item (`#menu-sound-pop`), on the title under or beside the speaker on a soft dark
+backing (`#title-sound-pop`). The speaker's icon is swapped as it's tapped, so the outside-tap checks use
+`e.composedPath()`, not `e.target.closest()` (a detached target read as outside and closed the menu).

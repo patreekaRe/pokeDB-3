@@ -212,6 +212,7 @@ export function initAudio() {
     slider.addEventListener('change', () => playSound('confirm'));   // a blip at the new level, so you hear what you picked
   }
   paintSliders();
+  initSoundPops();
 
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
   document.addEventListener('click', menuBlip);
@@ -379,15 +380,41 @@ function setVolume(volume) {
 const SOUND_TOGGLES = ['music-btn', 'title-music-btn'];
 const VOLUME_SLIDERS = ['volume-slider', 'title-volume'];
 
+// a Sound button opens its pop-out: the speaker that mutes and the volume bar (the user's call, 2026-10-02)
+const SOUND_POPS = [['title-sound-btn', 'title-sound-pop'], ['menu-sound-btn', 'menu-sound-pop']];
+
 function renderButton() {
   const muted = getSave().muted;
+  for (const icon of document.querySelectorAll('.snd-icon')) icon.textContent = muted ? '🔇' : '🔊';
   for (const id of SOUND_TOGGLES) {
     const btn = $(id);
-    btn.querySelector('.snd-icon').textContent = muted ? '🔇' : '🔊';
     btn.title = muted ? 'Turn sound on' : 'Mute sound';
     btn.setAttribute('aria-label', btn.title);
     btn.setAttribute('aria-pressed', String(!muted));
     btn.closest('.sound-ctl')?.classList.toggle('muted', muted);
+  }
+}
+
+/** Put every Sound pop-out away (leaving the title, closing the Poké Ball menu). */
+export function closeSoundPops() {
+  for (const [btnId, popId] of SOUND_POPS) { $(popId).hidden = true; $(btnId).setAttribute('aria-expanded', 'false'); }
+}
+
+function initSoundPops() {
+  for (const [btnId, popId] of SOUND_POPS) {
+    const btn = $(btnId), pop = $(popId);
+    const setOpen = (open) => {
+      if (open === !pop.hidden) return;
+      playSound('bag');
+      pop.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+    };
+    btn.addEventListener('click', () => setOpen(pop.hidden));
+    // the path, not e.target.closest(): the speaker's icon is swapped as it's tapped, so the target is already detached
+    document.addEventListener('click', (e) => {
+      if (!pop.hidden && !e.composedPath().some(n => n === pop || n === btn)) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.hidden) { setOpen(false); btn.focus(); } });
   }
 }
 
