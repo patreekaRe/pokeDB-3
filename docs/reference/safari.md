@@ -81,8 +81,11 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 The title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`), not the run (the user's ask: "like setting
 your loadout"). Styled like the character select's Prepare step (the user's ask after a playtest): a dark panel, gold
 pixel heads, pixel pill buttons (`.pxb`), bigger text (rules 0.82rem, 0.78 on phones). It holds today's run (the
-starter, the 3 areas with each page's caught count, first try or replay), 📕 Pokédex (on the day's first area) and 🏆
-Leaderboard buttons, the rules in eight short lines (`RULES`, each with a pixel icon that `js/icons.js` has: an emoji
+starter, the 3 areas with each page's caught count, first try or replay), a gold-rimmed replay box under it (`#sp-replay`:
+replay today's Safari as often as you like to keep catching; only the first try counts for the leaderboard, replays get
+the perks back; the user wanted it prominent, not in the rules), 📕 Pokédex (on the day's first area) and 🏆
+Leaderboard buttons, the rules in short lines (`RULES`; Bait's and Rock's lines say they're Safari-only card rewards after fights and
+carry the card itself as a `.card.small`, `zoomable()`: a tap opens it big with its keyword boxes; each line has a pixel icon that `js/icons.js` has: an emoji
 without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row like an item bar
 (a slot each, sprite and ×count, greyed at 0, the Safari Ball's ∞ big at the sprite's bottom centre; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
 end for the Game Corner, and Back / Start. Start keeps the "your saved run will be lost" confirm (`onStart` in

@@ -14,7 +14,7 @@ import { openSafariDex } from './safaridex.js';
 import { openLeaderboard } from './leaderboard.js';
 import { toggleShop } from './shop.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
+import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
 
 let actions = {};
 let backFromShop = false;   // the Game Corner is non-modal, so this window steps aside for it and comes back after
@@ -23,11 +23,11 @@ const ROCK_HIT = CARDS_BY_ID.rock.effects.damage;
 const RULES = [
   ['🔄', 'One run a day, the same for everyone.'],
   ['🔴', `Once a wild Pokémon's HP bar turns red (below ${CATCH_HP * 100}%), throw a ball. It takes your turn.`],
-  ['🎯', 'Debuffs and Bait raise the odds.'],
-  ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, so its HP drops fast, but it may run off.`],
+  ['🎯', 'Debuffs on it raise the odds.'],
+  ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
+  ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
   ['💨', `Rare spawns flee after ${RARE.turns} turns.`],
   ['🃏', 'Each Pokémon you catch offers its own signature card for your deck.'],
-  ['🏆', 'First try: no perks, and it goes on the leaderboard.'],
   ['💰', `Catch a whole area: ${SAFARI_AREA_COINS} coins, x${RARE_BOOST} rare spawns.`],
 ];
 
@@ -81,11 +81,19 @@ function render() {
   // the full Safari Pokédex's prize stays unnamed until it's won
   const prize = save.unlocked.includes('rayquaza') ? `Catch them all: ${STARTERS_BY_ID.rayquaza.line[0].name} joins you.`
     : 'Complete the Safari Pokédex: a new Legendary awaits you.';
-  $('sp-rules').replaceChildren(...[...RULES, ['👑', prize]].map(([icon, text]) => {
-    const li = el('li');
+  $('sp-rules').replaceChildren(...[...RULES, ['👑', prize]].map(([icon, text, cardId]) => {
+    const li = el('li', cardId ? 'with-card' : '');
     li.append(el('span', 'sp-rule-icon', icon), el('span', '', text));
+    if (cardId) {   // a Safari-only card: tap to read it big, with its keyword boxes
+      const card = makeCard(CARDS_BY_ID[cardId]);
+      card.classList.add('small', 'sp-card');
+      zoomable(card, CARDS_BY_ID[cardId]);
+      li.append(card);
+    }
     return li;
   }));
+  $('sp-replay').replaceChildren(el('strong', '', first ? 'After this first try, replay as often as you like' : 'Replay as often as you like'),
+    el('span', '', 'Keep catching all day. Only the first try counts for the leaderboard; replays get your perks back.'));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {

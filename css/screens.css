@@ -3709,6 +3709,11 @@ body.scene-peek #backdrop { display: none; }
 .sp-area.area-desert  { --c1: #f4e2b0; --c2: #9a6a20; }
 .sp-try { font-size: 0.7rem; color: #c8c0a8; }
 .sp-try.first { color: #f8d048; }
+/* replays: unlimited, perks back, off the board; said right under the day's status, not in the rules */
+.sp-replay { display: grid; gap: 4px; margin: 10px 0 0; padding: 8px 12px; border: 2px solid #f8d048; border-radius: 10px; background: rgba(248, 208, 72, 0.12); font-size: 0.72rem; line-height: 1.5; color: #fff8e8; }
+.sp-replay strong { font-size: 0.82rem; font-weight: 400; color: #f8d048; }
+.dialog .sp-rules li.with-card { grid-template-columns: 1.5em 1fr auto; }
+.sp-card { width: 62px; cursor: zoom-in; flex: none; }
 .sp-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
 .dialog .sp-head {
   margin: 16px 0 8px; padding-top: 10px; border-top: 2px dashed rgba(255, 255, 255, 0.18);
@@ -3721,7 +3726,7 @@ body.scene-peek #backdrop { display: none; }
 /* the balls and Back / Start stay on the window's bottom edge, like an item bar, while the rules scroll on a phone */
 .sp-foot {
   position: sticky; bottom: 0; margin: 14px -20px 0; padding: 0 20px 16px;
-  background: rgba(14, 12, 30, 0.98); box-shadow: 0 -10px 12px rgba(14, 12, 30, 0.9);
+  background: #0f0d20; box-shadow: 0 -10px 12px #0f0d20;
 }
 .sp-foot .sp-head { margin-top: 0; }
 .sp-bar { display: flex; gap: 6px; padding: 6px; border-radius: 10px; background: rgba(0, 0, 0, 0.4); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08); }
