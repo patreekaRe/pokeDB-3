@@ -159,6 +159,7 @@ function init() {
   const query = new URLSearchParams(location.search);
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
+  if (query.has('safari')) updateSave(d => { d.safariPass = true; });
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
   // ?lockmewtwo undoes it: Mewtwo locked again, its shiny dropped, a saved Mewtwo run gone, and the Sealed Gate back where
   // the Record Book's wins leave it. Only while Mewtwo is unlocked, so a bookmarked link can't reset the gate's progress.
