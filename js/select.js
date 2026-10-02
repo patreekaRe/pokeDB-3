@@ -258,9 +258,8 @@ function renderLevel() {
   const own = isMewtwoRun(picked);
   document.querySelector('.prep-level').hidden = own;
   if (own) {
-    const sprint = MEWTWO_MODE.floors[0];
     $('level-name').textContent = 'Mewtwo\'s own run';
-    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a quick sprint (${sprint} floors each), then a fourth biome only Mewtwo can enter.`;
+    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a speedrun, one road each (${MEWTWO_MODE.floors[0].length} rooms and a boss), then a fourth biome only Mewtwo can enter.`;
     $('level-coins').hidden = true;
     $('level-rules').closest('details').hidden = true;
     return;

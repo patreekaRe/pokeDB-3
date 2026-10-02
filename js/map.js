@@ -105,8 +105,10 @@ export function journey(map, node) {
   return { progress, ...stageOf(map, node), seed: seed >>> 0 };
 }
 
-/** Build a random map, `floors` high. Returns { floors: [[room...]...], boss, byId }. */
+/** Build a random map, `floors` high, or a single fixed road when `floors` is a list of room types (Mewtwo's sprint).
+    Returns { floors: [[room...]...], boss, byId }. */
 export function generateMap({ eliteMult = 1, floors: count = MAP_FLOORS } = {}) {
+  if (Array.isArray(count)) return roadMap(count);
   setFloors(count);
   const grid = Array.from({ length: count }, () => Array(COLS).fill(null));
 
@@ -156,6 +158,19 @@ export function generateMap({ eliteMult = 1, floors: count = MAP_FLOORS } = {}) 
   const byId = {};
   [...floors.flat(), boss].forEach(room => { byId[room.id] = room; });
   return { floors, boss, byId };
+}
+
+function roadMap(types) {
+  const col = Math.floor(COLS / 2);
+  const rooms = types.map((type, floor) => ({
+    id: `f${floor}c${col}`, floor, col, type, decided: true, next: [], prev: [], visited: false,
+    jx: randFloat(-2, 2), jy: randFloat(-1.2, 1.2),
+  }));
+  const boss = { id: 'boss', floor: types.length, col, type: 'boss', next: [], prev: [], visited: false, jx: 0, jy: 0 };
+  [...rooms, boss].forEach((room, i, all) => {
+    if (i) { room.prev.push(all[i - 1].id); all[i - 1].next.push(room.id); }
+  });
+  return { floors: rooms.map(room => [room]), boss, byId: Object.fromEntries([...rooms, boss].map(room => [room.id, room])) };
 }
 
 /**

@@ -722,7 +722,8 @@ last act only a special run reaches.
 
 **Open (ask the user before building each part):**
 1. ~~The final boss~~ settled 2026-10-02: **Eternatus**.
-2. ~~Biomes 1-3 for Mewtwo~~ settled 2026-10-02: a **short sprint**, one place per biome (5 floors).
+2. ~~Biomes 1-3 for Mewtwo~~ settled 2026-10-02: a **short sprint**, one place per biome; after the user's playtest the
+   same day, one road per biome (fight, fight, elite, Mart, Center, boss) that Mewtwo shreds, with money to shop.
 3. ~~Trainer Levels for biomes 1-3~~ settled, see above.
 4. ~~Biome 4's name, place and look~~ settled 2026-10-02: a **crystal cavern** with no day/night clock, the **Crystal
    Depths** (Cave Mouth, Crystal Halls, Deep Core, and the arena Energy Well). Its wilds are themed to the place (strong,
@@ -748,6 +749,14 @@ last act only a special run reaches.
     are 5-floor sprints at Level 0's rules (fight, fight/event, treasure, Mart/elite, Center, boss; `generateMap({ floors })`,
     `setFloors()` / `setRows()` in `js/map.js`), the Crystal Depths 10 floors at its own `BIOMES` numbers. No save version
     bump: the saved run's shape didn't change (a part A Mewtwo run in progress just carries on under the new rules).
+  - **Sprint rework (after the user's playtest, 2026-10-02)**: they died in biome 3, had no ₽ for the first Mart, and
+    wanted a speedrun. Biomes 1-3 are now one fixed road each, `['fight', 'fight', 'elite', 'shop', 'rest']` then the boss
+    (`roadMap()` in `js/map.js`), with `prizeMult` 2.5 (new mod, ~₽150 at the first Mart), and biome 2 `normalHp` 0.7 /
+    `bossHp` 0.85 / `enemyDmg` -5, biome 3 0.55 / 0.7 / -12. Human bot, 150 runs: road alone 76.7 (5 biome-3 deaths: the
+    elite is no longer optional), mid trim (0.8 / 0.9 / -3, 0.65 / 0.8 / -8) 82.0, **strong (shipped)** 76.0; at 300,
+    82.3, every loss in the Depths. Biome 2-3 fights now cost 2-5% HP in 3-5 turns, like biome 1's wilds (biome 3's were
+    ~10% in 6 turns). The first biome's elite and boss (~15% each) are the sprint's hardest fights.
+    `?mewtwo` unlocks Mewtwo for playtests.
   - **The gate**: `finalBiome(starter)` replaced every `BIOMES.length - 1`. After the Biome 3 boss a Mewtwo run gets
     `depthsGate()` (a full heal and "Go down", since it has no form left) and its card / relic rewards, then the Depths.
   - **Roster** (sprites, cries at ~-14 dB, `SPRITE_FIT` by the PIL median bbox, which matched six existing entries

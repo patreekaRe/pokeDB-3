@@ -735,7 +735,7 @@ function afterFight(node, result) {
   const payAs = tough ? 'elite' : node.type === 'ken' ? 'boss' : node.type;
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
-  const prize = (low + Math.floor(Math.random() * (high - low + 1))) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const prize = Math.round((low + Math.floor(Math.random() * (high - low + 1))) * run.mods.prizeMult) * (run.relics.includes('amulet-coin') ? 2 : 1);
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
