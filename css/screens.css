@@ -1310,6 +1310,14 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { translate: 0 -3px; scale: 1.15; color: #fff4b0; filter: drop-shadow(0 0 6px rgba(255, 236, 140, 0.95)); }
 }
 @media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
+/* Kenmatta's face for his dojo's room once he's been beaten: a 26x26 crop of Alder's sprite (62x66), head and spiky hair */
+.ken-face { display: block; width: 1.25em; aspect-ratio: 1; background: url(../assets/trainers/alder.png) 47.22% 12.5% / 238.46% 253.85% no-repeat;
+  image-rendering: pixelated; }
+.ken-face[hidden] { display: none; }
+.map-node.ken .map-town { background: #f8e8c8; overflow: hidden; }
+.map-node.ken .ken-face { width: 100%; }
+.unlock-stage .ken-face { width: 104px; animation: unlockHop 0.9s steps(4) infinite; transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: reduce) { .unlock-stage .ken-face { animation: none; } }
 .map-revealed {
   position: absolute;
   z-index: 1;

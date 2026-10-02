@@ -853,7 +853,7 @@ Then the user wants a look on the live site at the Hall of Fame scene, the credi
 
 Split into sessions by where they run:
 
-1. **Ken's dojo on the map** (Desktop app, visual). Once Kenmatta has been beaten once (a save flag, set where his win
+1. ✅ **Done 2026-10-02.** **Ken's dojo on the map** (Desktop app, visual). Once Kenmatta has been beaten once (a save flag, set where his win
    is recorded), every run's map shows which ❓ room holds the Move Tutor, with a tiny pixel Ken's face (from Alder's
    sprite) as its icon instead of the ❓, and a legend/tooltip saying so. Beating him the first time pops a real
    achievement window ("Find the Ken icon on the map to find Ken!", `unlockWindow()`), not just the relic.

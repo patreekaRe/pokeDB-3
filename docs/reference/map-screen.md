@@ -199,5 +199,8 @@ place of the item's text (`cursor.news`: never a toast), including any starter `
 unlocks. Escape closes it while nothing modal is open. The grille and ball are pixel maps drawn as SVG
 (`pixelSvg()`). Tapping a shop-locked starter opens it on that skin.
 
+Once Kenmatta has been beaten (`save.kenBeaten`, see `docs/reference/events.md`), the Move Tutor's ❓ room shows his
+pixel face instead (`.map-node.ken`, `.ken-face`: a 26x26 crop of Alder's sprite on a cream square, the event's purple frame).
+
 A Safari rare spawn's room has a gold ✦ over it (`.map-rare`, added in `js/map.js`; see `docs/reference/safari.md`): 22px,
 with a soft glow that swells as it slowly bobs and twinkles (`rareTwinkle`), still under reduced motion.

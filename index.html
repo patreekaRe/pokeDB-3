@@ -160,6 +160,7 @@
             <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
             <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, items, relics or forgetting a move.</small></span></div>
             <div class="howto-li"><span class="howto-node town event">❓</span><span class="howto-li-text"><b>Mystery event</b><small>Something happens. Choose what to do: most rewards have a cost.</small></span></div>
+            <div class="howto-li" id="key-ken" hidden><span class="howto-node town event"><span class="ken-face"></span></span><span class="howto-li-text"><b>Ken's dojo</b><small>The Move Tutor, Chad Master Kenmatta: rare moves, or fight him again.</small></span></div>
             <div class="howto-li"><span class="howto-node town boss">👹</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
           </div>
         </div>
@@ -706,10 +707,10 @@
   <!-- a starter a won fight just unlocked (unlockWindow() in js/run.js) -->
   <dialog id="unlock-dialog" class="dialog small-dialog unlock-dialog">
     <p class="unlock-kicker">🏆 Achievement unlocked!</p>
-    <div class="unlock-stage"><img id="unlock-sprite" class="pixel" alt=""></div>
+    <div class="unlock-stage"><img id="unlock-sprite" class="pixel" alt=""><span id="unlock-face" class="ken-face" hidden></span></div>
     <h2 id="unlock-name"></h2>
     <p id="unlock-text"></p>
-    <p class="unlock-hint">Choose it at New game.</p>
+    <p class="unlock-hint" id="unlock-hint">Choose it at New game.</p>
     <form method="dialog" class="dialog-actions"><button class="btn primary" id="unlock-ok">Great!</button></form>
   </dialog>
 

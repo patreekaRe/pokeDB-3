@@ -606,7 +606,7 @@ function openMapPeek() {
   closeBag(true);
   const biome = land();
   renderMap(run.map, run.current, null, {
-    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'),
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten,
   });
   const stage = biome.stages?.[stageOf(run.map, run.map.byId[run.current]).stage];
   $('map-dialog-title').textContent = stage ? `${biome.name}: ${stage}` : biome.name;
@@ -709,8 +709,9 @@ function drawMap() {
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
   renderMap(run.map, run.current, enterNode, {
-    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null,
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null, ken: getSave().kenBeaten,
   });
+  $('key-ken').hidden = !getSave().kenBeaten;
   const total = scopeReveals(), left = total - scopeUsed();
   const btn = $('scope-btn');
   btn.hidden = !total;
@@ -860,6 +861,7 @@ function afterFight(node, result) {
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
   }
   if (node.type === 'ken') {
+    if (!getSave().kenBeaten) unlocked.push(KEN_UNLOCK);
     steps.push(next => showRelics('Kenmatta\'s relic', [RELICS_BY_ID['exp-share']], next, { skip: false,
       sub: ['"...Okay. OKAY. Lucky shot, bro. I wasn\'t even warmed up."', '"Fine. Take my Mata-Mindset. Don\'t say I never gave you anything."', 'Tap it to see what it does.'] }), next => offerCard('boss', next));
   }
@@ -2227,16 +2229,30 @@ async function evolve(next) {
 function unlockWindow(list, next) {
   const [starter, ...rest] = list;
   if (!starter) return next();
-  const d = $('unlock-dialog');
-  $('unlock-sprite').src = spriteUrl(starter, 'front', 0);
-  $('unlock-sprite').alt = starter.line[0].name;
-  $('unlock-name').textContent = starter.line[0].name;
-  $('unlock-text').textContent = ACHIEVEMENT_FOR[starter.id]?.text ?? '';
+  const d = $('unlock-dialog'), ken = starter === KEN_UNLOCK;
+  // Kenmatta's first defeat is an achievement too: from then on every map shows his dojo (the flag is saved as its
+  // window opens, so a refresh before it replays the window; a ?event= playtest never saves it)
+  if (ken && !peeking) updateSave(s => { s.kenBeaten = true; });
+  $('unlock-sprite').hidden = ken;
+  $('unlock-face').hidden = !ken;
+  if (!ken) {
+    $('unlock-sprite').src = spriteUrl(starter, 'front', 0);
+    $('unlock-sprite').alt = starter.line[0].name;
+  }
+  $('unlock-name').textContent = ken ? KEN.name : starter.line[0].name;
+  $('unlock-text').textContent = ken ? KEN_UNLOCK.text : ACHIEVEMENT_FOR[starter.id]?.text ?? '';
+  $('unlock-hint').textContent = ken ? KEN_UNLOCK.hint : 'Choose it at New game.';
   d.addEventListener('close', () => unlockWindow(rest, next), { once: true });
   openDialog('unlock-dialog');
   duckMusic(4.6);   // the jingle over a quieter song, not fighting it (the user heard it clash with the win song)
-  playSound('achievement').then(len => setTimeout(() => { if (d.open) playCry(starter.line[0].id); }, Math.max(0, len * 1000 - 600)));
+  playSound('achievement').then(len => setTimeout(() => {
+    if (d.open) ken ? playSound('fortify') : playCry(starter.line[0].id);
+  }, Math.max(0, len * 1000 - 600)));
 }
+const KEN_UNLOCK = {
+  text: 'Find the Ken icon on the map to find Ken!',
+  hint: 'Every run\'s map now shows which ❓ room is his dojo.',
+};
 
 /** Check achievements and tell the player about any new starters. */
 function announceUnlocks() {

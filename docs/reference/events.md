@@ -103,7 +103,12 @@ enemy's nameplate where that's over the wall (phones), and clear of the steps. B
 and pillars repeat in bays across the wall, and the boss storm brings cinders, red light and lightning.
 Entering the dojo, Ken brags (`hello` in `EVENT_CHOICES['move-tutor']`); tapping Challenge! makes him jump and talk trash in the text box like a trainer, ending on "TEST YOUR MIGHT!", and tapping past that starts the fight. A `mightPlaque()` in `tutorScene()` hangs TEST YOUR MIGHT in gold on a red plaque (between the alcove and the sandbag, else left of the scroll, else one line across the alcove's top on phones). The relic is named Mata-Mindset (id still `exp-share`). Mid-fight he talks like a Gen 5 gym leader: `KEN.taunts` (`half` / `low` once his HP drops below 1/2 and 1/5, `win` after you faint; `checkTaunts()` in `js/battle.js`), and a move's `say` is yelled in the battle text before it (TEST YOUR MIGHT). He also powers up like a legendary (`aura: true`): `js/aura.js` ports `tools/legendary-aura.py` to a live canvas over his still sprite (`.aura-fx`, in Super Saiyan gold), only level 2 (the user dropped level 1), with a `power` sound once he drops below half HP (`checkTaunts()`). A win pays a boss's coins and ₽ ("You defeated Chad Master Kenmatta!", `pendingCoins.beaten`), then his **Mata-Mindset**
 (no Skip, in the gold boss shaft) and a boss card reward. Once you hold it, the sign is greyed out ("You already won his
-Mata-Mindset."). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
+Mata-Mindset."). **Ken on the map** (Small asks 1, 2026-10-02): his first defeat ever is an achievement, `KEN_UNLOCK` in
+`js/run.js`, shown by `unlockWindow()` (his face from Alder's sprite, "Find the Ken icon on the map to find Ken!", the
+`achievement` jingle then `fortify`) as the first reward step; the window saves `save.kenBeaten` as it opens (never in a
+`?event=` peek, which shows the window every time). From then on `renderMap(..., { ken })` gives the Move Tutor's ❓ room his
+face (`.ken-face`, a CSS crop of `alder.png`) and the Bag's Map key a "Ken's dojo" row (`#key-ken`, shown by `drawMap()`;
+not on the How to play slide, it's the achievement's secret). The Tutor nods through a lesson and turns to the sandbag to train; the Deleter shakes his head
 when you back out of his picker; the Day-Care Lady turns on a trade; the Chairman jumps handing over his gift. A done
 picker comes back to the room (`eventRoom(node, after)`, from the choice's `react(move)`): no choices, the NPC does `after`
 (the Tutor nods, the Deleter and the Day-Care Lady jump) while the text box says what happened, and closing the box or

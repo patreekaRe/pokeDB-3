@@ -646,9 +646,10 @@ if (typeof addEventListener === 'function') addEventListener('resize', () => {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, peek = null } = {}) {
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, peek = null, ken = false } = {}) {
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
-  if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal }];
+  // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
+  if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal, ken }];
   const box = peek || $('map');
   box.replaceChildren(...box.querySelectorAll(':scope > .map-keep'));
   setRows(map.floors.length);
@@ -681,6 +682,11 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     } else btn.append(el('span', 'map-town', info.icon));
     place(btn, nodeX(node), rowY(node.floor));
     let label = info.label;
+    if (ken && node.event?.id === 'move-tutor') {
+      btn.querySelector('.map-town').replaceChildren(el('span', 'ken-face'));
+      btn.classList.add('ken');
+      label = 'Ken\'s dojo: the Move Tutor, Chad Master Kenmatta';
+    }
 
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but no room names its Pokémon (the user's call:
     // the tooltip gave elites and the boss away) unless the Silph Scope revealed it.
