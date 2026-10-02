@@ -560,7 +560,7 @@ export const KEN = {
     { kind: 'buff',   name: 'Bulk Up',      amount: 2 },
     { kind: 'attack', name: 'Cross Chop',   amount: 12 },
     { kind: 'defend', name: 'Detect',       amount: 14 },
-    { kind: 'attack', name: 'Close Combat', amount: 18 },
+    { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 18 },
   ],
 };
 
