@@ -34,7 +34,7 @@ three places:
   painted the same day (B2, below), and `map4` borrows `map3.mp3` until the user supplies one. Part C landed the
   same day: Eternatus is a two-bar set piece (it rises as Eternamax in a cutscene, charges Eternabeam, its Dynamax
   Cannon grows); strong / human bot 92 / 90%; `?bossfight=depths&hp=0.1` playtests it. The user still owes its two music
-  files and a phone playtest. Next is part D (the ending); its prompt is in the roadmap.
+  files; they want the Eternamax cutscene redone as something completely different (part C2, a visual session). Next is part D (the ending); its prompt is in the roadmap.
 - 2026-10-02: **The Crystal Depths painted** (v1.0 part B2, Desktop app): four places each deeper and stranger (Cave
   Mouth, Crystal Halls, Deep Core, Energy Well), landmarks per place, Eternatus's boss prelude (its core rises out of the
   Well and bursts), an intro film down a crystal shaft (`js/depths-intro.js`), a map palette with energy rifts, crystal
