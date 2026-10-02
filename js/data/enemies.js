@@ -558,7 +558,7 @@ export const KEN = {
   moves: [
     { kind: 'attack', name: 'Mata Chop',    amount: 9 },
     { kind: 'buff',   name: 'Mata-Manspread', amount: 2 },
-    { kind: 'attack', name: 'Cross Chop',   amount: 12 },
+    { kind: 'attack', name: 'Kraber Crush', amount: 12 },
     { kind: 'defend', name: 'FORTIFY YOUR MIND', amount: 14 },
     { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 18 },
   ],
