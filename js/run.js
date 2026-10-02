@@ -42,7 +42,7 @@ import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariDaily, markRares } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
@@ -349,7 +349,7 @@ function startBiome() {
     // a Safari area has its own wilds, and the main Pokédex's favourites would make the day's run differ between players
     dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
-  if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea());   // rare spawns, on the biome's seed
+  if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea(), rareOdds(safariArea().id, getSave().safariDex, fairTry()));   // rare spawns, on the biome's seed (more on a replay once the area's page is complete)
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   run.current = null;
@@ -777,7 +777,6 @@ function afterFight(node, result) {
   // A boss win's unlocks wait until after the evolution: the jingle sounds just like its chime (the user heard it early).
   const unlocked = [];
   const unlock = () => { for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); } };
-  if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
   const tough = node.type === 'fight' && TYPES[ENEMY_DEFS[node.enemyId]?.type]?.beats === run.starter.type;
@@ -792,6 +791,8 @@ function afterFight(node, result) {
     if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
+  if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
+  if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
@@ -903,6 +904,26 @@ function offerCard(source, next, rerolled = false) {
     coins: run.pendingCoins,
     reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); } : null,
   });
+}
+
+/** Pays a Safari Pokédex page's reward once, the first won Safari fight after its last Pokémon is caught (any try: the
+    coins don't touch the leaderboard; the rare boost waits for a replay, rareOdds()), and marks a full Safari Pokédex,
+    Rayquaza's achievement. Returns the reward box's lines. */
+function creditSafari() {
+  const news = safariNews(getSave().safariDex);
+  const lines = [];
+  for (const area of news.areas) {
+    updateSave(d => { d.safariDex.done.push(area); });
+    const coins = awardCoins(SAFARI_AREA_COINS);
+    const { name } = SAFARI_AREAS_BY_ID[area];
+    lines.push(`The ${name} page of the Safari Pokédex is complete! +${coins} PokéCoins.`,
+      `${name}'s rare spawns now come ${RARE_BOOST === 2 ? 'twice' : `${RARE_BOOST} times`} as often (on replays, not the day's first try).`);
+  }
+  if (news.complete) {
+    updateSave(d => { d.safariDex.complete = true; });
+    lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
+  }
+  return lines;
 }
 
 /** A caught Pokémon offers its signature card for the run, take it or leave it, like a card reward (one copy a run). */

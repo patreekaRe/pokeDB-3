@@ -88,11 +88,12 @@ live site.
   into the GIFs, not CSS, since those sprites already carry their own filters (the intro's silhouette, the evolution's
   flashes). `tools/legendary-aura.py <id> <type>` (Pillow) makes all eight of a legendary's files and prints their
   `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of `js/data/sprite-fit.js`; a new legendary needs both.
-  Sixteen earned ones: Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
+  Fifteen earned ones (plus Mewtwo, below; this said sixteen before Rayquaza, a miscount): Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
   ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.smallDeckWin`: won on Level 3+ with 15 cards or
   fewer, any Level until 2026-09-28), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
-  in `gainTide()` in `js/battle.js`) and Keldeo (wins with 3 different Water starters, Keldeo aside: `winsBy`; was every one you own until 2026-09-28).
+  in `gainTide()` in `js/battle.js`) and Keldeo (wins with 3 different Water starters, Keldeo aside: `winsBy`; was every one you own until 2026-09-28), and since 2026-10-02 Rayquaza (Grass, the full Safari
+  Pokédex: `save.safariDex.complete`; `safariPrize: true` keeps it out of the Safari's daily starters).
   `checkAchievements()` runs after every won fight's Pokédex update (`afterFight()`, quietly: `{ sound: false }`; its
   unlocks get a window of their own, `unlockWindow()` / `#unlock-dialog`, with the `achievement` jingle then the cry, as the
   first reward step, or after the evolution for a boss, whose chime sounds just like it; the user heard it early, 2026-09-28;
@@ -417,6 +418,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
   `#safari-dex-dialog`) is a page per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
   joins it; it opens from the Collection, the main Pokédex's Safari tab and, in a Safari run, the Pokédex button.
+  **Completion rewards** (2026-10-02): a page with every Pokémon caught pays 300 PokéCoins once and doubles its rare spawns
+  on replays (`rareOdds()`, never the first try); the whole Safari Pokédex unlocks Rayquaza. `creditSafari()` in
+  `js/run.js`; earned stays earned in `save.safariDex.done` / `complete`, however the roster grows.
   **Its own Pokémon** (phase 4) are one line each in `js/data/safari-mons.js` (species, type, area, one of 10 role
   `TEMPLATES`, move names, Pokédex line, signature card); `PLACE` grows them with the area's place in the run. A new one
   also needs its front GIF and `SPRITE_FIT` line; `tests/safarimons.test.mjs` checks it all.

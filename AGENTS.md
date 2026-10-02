@@ -88,6 +88,12 @@ three places:
   - Playtesting a Mewtwo run to the Crystal Depths (Mewtwo must be unlocked; the `?levels` trick doesn't unlock it).
 - Parked (don't start unprompted): Gen 6-9 starters (the sprites staged in `assets/pokemon/_incoming/` have no Grass
   line), Mewtwo's shiny, and catching in the main game (dropped; the Safari Zone has its own).
+- 2026-10-02: **Safari Pokédex completion rewards** (cloud, the user's design): a page with every Pokémon caught pays 300
+  PokéCoins once and doubles that area's rare spawns on replays (not the day's first try); the whole Safari Pokédex
+  unlocks **Rayquaza**, a Grass legendary skin (Grass had only 2 legendaries), with every asset (GIFs, shiny, auras, fits,
+  cry). Gold ✦ on finished tabs and on the title's Safari Zone gem. `tests/safarireward.test.mjs`; checked headless at
+  390x844 (a Master Ball catch finishing the Meadow page and the whole dex: reward lines, Rayquaza's unlock window, the
+  Safari Pokédex, the gem badge, Rayquaza in the character select), no console errors. The user still has to see it live.
 
 ## How the user works
 

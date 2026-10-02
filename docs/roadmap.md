@@ -957,9 +957,11 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    caught / seen / total. Opened from a Collection card (a ??? until `dex.complete`), a Safari tab on the main Pokédex
    (same lock), and the Poké Ball menu's Pokédex button during a Safari run (on the run's area). The pages come from
    `SAFARI_AREAS` (`SAFARI_DEX_PAGES` in `js/data/safari.js`), so phase 4's Pokémon join it by being listed in an area;
-   numbers follow `SAFARI_ROSTER` order (`tests/safaridex.test.mjs`). No reward for a complete area yet: Claude's
-   proposal, for the user to settle, is a small Safari perk per area (e.g. its rare spawns' odds up when that area comes
-   round) plus PokéCoins, like the main Pokédex's pages. Checked headless at 390x844 and 1280x800, no console errors;
+   numbers follow `SAFARI_ROSTER` order (`tests/safaridex.test.mjs`). **Completion rewards built 2026-10-02** (cloud, the user's
+   design; detail in `docs/reference/safari.md`): a page with every Pokémon caught pays 300 PokéCoins once and doubles that
+   area's rare spawns on replays; the whole Safari Pokédex unlocks **Rayquaza**, a Grass legendary (Grass had 2, Fire and
+   Water 6 each); a gold ✦ on finished tabs and on the title's Safari Zone gem. Stored in `save.safariDex.done` /
+   `complete`, so later batches don't take them back. Checked headless at 390x844 and 1280x800, no console errors;
    the in-run button only by reading the code.
 4. **The roster at scale**: role templates, then batches of ~50 Pokémon a session.
    **Batch 1 built 2026-10-02** (cloud; detail in `docs/reference/safari.md`): `js/data/safari-mons.js`, one line per
@@ -1026,7 +1028,8 @@ favour Grass and Water species and Normal ones that fit) as lines in js/data/saf
 an area with 2 rare spawns each, with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median bbox) and a
 signature card each; tests/safarimons.test.mjs must stay green. Bot-check before and after (human bot, ~150 runs a cell,
 knock out and throw at 50%+; knock out was 74.0 after batch 3's template HP x1.1) and retune the templates if knock-out
-drifts past ~82. Also settle with me whether a complete area gives a reward. Attach pokeDB-sim too."
+drifts past ~82. A complete page already pays (300 coins, rare spawns x2 on replays, Rayquaza for all of them); new
+Pokémon don't take an earned page back. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

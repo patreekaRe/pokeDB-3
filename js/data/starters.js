@@ -347,6 +347,18 @@ export const STARTERS = [
     blurb: 'A legendary colt of the rivers, for wins with 3 different Water starters. Same water moves as Squirtle.',
     deck: WATER_DECK,
   },
+  {
+    // a green sky dragon: Grass had the fewest legendaries (2, against Fire's 6 and Water's 6). `safariPrize` keeps it out
+    // of the Safari's daily starters (safariStarters()), which were dealt before it existed.
+    id: 'rayquaza', type: 'grass', skinOf: 'bulbasaur', legendary: true, safariPrize: true,
+    line: [
+      { id: 'rayquaza',        name: 'Rayquaza' },
+      { id: 'rayquaza',        name: 'Awakened Rayquaza' },
+      { id: 'rayquaza-shiny',  name: 'Ascendant Rayquaza' },
+    ],
+    blurb: 'The legendary lord of the sky, drawn by a Safari Pokédex with every Pokémon caught. Same grass moves as Bulbasaur.',
+    deck: GRASS_DECK,
+  },
 
    /* ---------- the secret final one ----------
       Hidden as "???" until you unlock every other starter. Its dedicated Psychic

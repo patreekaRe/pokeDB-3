@@ -34,7 +34,7 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   knockout's ₽, the same PokéCoins (+`LUXURY_COINS` with a Luxury Ball), the usual item odds, and instead of the card
   reward `offerSignature()`: the Pokémon's signature card, take or skip (skipped silently if you already hold it). The
   reward box says "Gotcha! X was caught!".
-- **The record**: `save.safariDex = { seen, caught }` (`markSafari()` in `js/storage.js`): `seen` when a Safari wild fight
+- **The record**: `save.safariDex = { seen, caught, done, complete }` (`markSafari()` in `js/storage.js`): `seen` when a Safari wild fight
   starts, `caught` on a catch, any try. Phase 3's Safari Pokédex will show them. A catch also counts `run.tally.caught`
   (a line in the result window).
 
@@ -96,7 +96,23 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   `dex.complete`), the main Pokédex's last tab **Safari** (`#dex-safari-tab`, hidden until `dex.complete`; it closes that
   window and opens this one), and the Poké Ball menu's Pokédex button during a Safari run, on the run's area
   (`runSafariArea()` in `js/run.js`).
-- No reward for completing an area yet (see the roadmap's phase 3 note).
+
+## Completion rewards (2026-10-02, the user's design)
+
+- **A page** (an area with every Pokémon on it caught, `safariPageDone()`): `SAFARI_AREA_COINS` (300, Coin Finder applies)
+  once, and that area's rare spawns `RARE_BOOST` (x2) as often when it comes up, on replays only: `rareOdds(area, dex,
+  fairTry())` in `startBiome()` feeds `markRares()`. `creditSafari()` in `js/run.js` pays it after every won Safari fight
+  (`safariNews(dex)` lists what's newly done), before `checkAchievements()`, with reward-box lines. Paid on any try: the
+  coins don't touch the leaderboard, the boost waits for a replay.
+- **The whole Safari Pokédex** (every `SAFARI_ROSTER` id caught, judged on the roster of that day): `save.safariDex.complete`,
+  Rayquaza's achievement.
+- Earned stays earned: `save.safariDex.done` (area ids) and `complete` are saved, so a later batch adding Pokémon to a page
+  takes nothing back (the tab keeps its ✦, the box says Earned).
+- **On screen**: each page's box shows its reward (🔒 until earned, gold once earned, ✦ on the count), a Rayquaza box on
+  every page (a silhouette until won), a gold ✦ on finished tabs (`.safari-tab.complete .safari-tab-star`), and a gold ✦
+  badge on the title's Safari Zone gem once complete (`.gem-badge`, `safariGem()` in `js/title.js`).
+- **Rayquaza** (`safariPrize: true`) is left out of `safariStarters()`: listing it would have changed every day's dealt
+  starter. Pinned by `tests/safarireward.test.mjs` (page / whole-dex news once, the boost, Rayquaza's assets).
 
 ## The Safari's own Pokémon (phase 4)
 

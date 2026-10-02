@@ -46,8 +46,9 @@ export const safariDay = (date = new Date()) => date.toISOString().slice(0, 10);
 /** The seed for a day: every roll of that day's run comes from it. */
 export const safariSeed = (day) => hashString(`safari:${day}`);
 
-/** The starters a day can deal: every one but secret Mewtwo. */
-export const safariStarters = (starters = STARTERS) => starters.filter(s => !s.secret);
+/** The starters a day can deal: every one but secret Mewtwo, and Rayquaza, the Safari Pokédex's own prize (`safariPrize`;
+    it came after the first days were dealt, and listing it would have changed every day's starter). */
+export const safariStarters = (starters = STARTERS) => starters.filter(s => !s.secret && !s.safariPrize);
 
 /** A day's run: its seed, 3 areas (in order) and fixed starter. Same day, same answer, on any device. */
 export function safariDaily(day = safariDay(), starters = STARTERS) {
@@ -62,9 +63,9 @@ export const SAFARI_ROSTER = [...new Set(SAFARI_AREAS.flatMap(a => [...a.normals
 
 /** Turn some of a biome's wild rooms into rare spawns (rolled on the biome's seed, js/rng.js, so it's the same day for
     everyone): `rare` on the room, and its Pokémon from the area's `rares`. */
-export function markRares(rooms, area) {
+export function markRares(rooms, area, odds = RARE.odds) {
   for (const room of rooms) {
-    if (random() >= RARE.odds) continue;
+    if (random() >= odds) continue;
     room.rare = true;
     room.enemyId = pickOne(area.rares);
   }
@@ -91,3 +92,24 @@ export function safariProgress(ids, dex = { seen: [], caught: [] }) {
   const seen = new Set([...dex.seen, ...dex.caught]);
   return { caught: ids.filter(id => caught.has(id)).length, seen: ids.filter(id => seen.has(id)).length, total: ids.length };
 }
+
+/* ---------- completion rewards (the user's design, 2026-10-02) ----------
+   A page is complete when every Pokémon on it is caught: SAFARI_AREA_COINS once and its rare spawns RARE_BOOST times as
+   often on replays (never the day's first try). Every page caught: Rayquaza (achievements.js). Judged against the roster
+   of the day it happens; once earned it stays earned (save.safariDex.done / complete), as the roster grows. */
+export const SAFARI_AREA_COINS = 300;
+export const RARE_BOOST = 2;
+
+/** Is every Pokémon on this page caught? */
+export const safariPageDone = (page, dex) => safariProgress(page.ids, dex).caught === page.ids.length;
+
+/** What a save's `safariDex` has newly finished, not yet in `done` / `complete`: `areas` (ids) and `complete`. */
+export function safariNews(dex) {
+  const done = dex.done ?? [];
+  const areas = SAFARI_DEX_PAGES.filter(p => !done.includes(p.area) && safariPageDone(p, dex)).map(p => p.area);
+  const complete = !dex.complete && safariProgress(SAFARI_ROSTER, dex).caught === SAFARI_ROSTER.length;   // today's roster, every one
+  return { areas, complete };
+}
+
+/** A rare spawn's odds in an area: doubled once its page was completed, on a replay. */
+export const rareOdds = (area, dex, fair) => RARE.odds * (!fair && (dex.done ?? []).includes(area) ? RARE_BOOST : 1);

@@ -190,6 +190,8 @@
   color: #fff;
   text-shadow: 2px 0 0 #3a1c0c, -2px 0 0 #3a1c0c, 0 2px 0 #3a1c0c, 0 -2px 0 #3a1c0c, 0 4px 0 rgba(20, 10, 30, 0.4);
 }
+/* a full Safari Pokédex: a gold ✦ in the Safari Zone gem's corner (safariGem() in js/title.js) */
+.gem-badge { position: absolute; top: calc(var(--gp) * 1.5); right: calc(var(--gp) * 2.5); z-index: 2; pointer-events: none; font: 1.1rem/1 var(--pixel-font); color: #ffe060; text-shadow: 2px 0 0 #6a4000, -2px 0 0 #6a4000, 0 2px 0 #6a4000, 0 -2px 0 #6a4000; }
 .gem-sub { font-size: 0.6rem; letter-spacing: 0.04em; text-transform: none; }
 .gem.locked .gem-face { filter: grayscale(1) brightness(0.8); }
 .gem.locked .gem-icon img { filter: grayscale(1) brightness(0.9); }

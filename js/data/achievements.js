@@ -128,6 +128,12 @@ export const ACHIEVEMENTS = [
     text: 'Win a run with 3 different Water starters',
     test: (s) => STARTERS.filter(st => st.type === 'water' && st.id !== 'keldeo' && (s.winsBy[st.id] || 0) >= 1).length >= 3,
   },
+  {
+    // the Safari Zone's prize (2026-10-02): every Pokémon in the Safari Pokédex caught, judged on the day's roster
+    starter: 'rayquaza',
+    text: 'Complete the Safari Pokédex: catch every Safari Pokémon',
+    test: (s, save) => !!save.safariDex?.complete,
+  },
   // Must stay last (the shop runs checkAchievements() after a buy too). Breaking the Sealed Gate is the whole unlock since
   // 2026-10-02 (the user's call; it was every other starter plus a Level 5 win): only a Level 5 win deals the final blow.
   {

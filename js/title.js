@@ -77,7 +77,7 @@ let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0
    you've unlocked that one, then in its own colours (shiny if you've switched its shiny on). Each pass deals the next from
    a shuffled round, so they all come by before any comes back. Never Mewtwo: it has no flying sprite, and it's the secret
    (the user's call, 2026-10-02). */
-const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini'];
+const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini', 'rayquaza'];
 let flight = [], lastFlyer = null;
 
 function nextFlyer(img) {
@@ -225,7 +225,9 @@ function safariGem() {
     tipAt(btn, 'The Safari Zone opens once every Pokédex entry is researched.');
   }, icon, open && el('span', 'gem-sub', line));   // locked, just the name: a tap says why
   btn.classList.toggle('locked', !open);
-  btn.title = open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Research every Pokédex entry to open the Safari Zone.';
+  const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
+  if (full) btn.append(el('span', 'gem-badge', '✦'));
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line.slice(7)}. Only the first try counts.` : 'Research every Pokédex entry to open the Safari Zone.');
   return btn;
 }
 

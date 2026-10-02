@@ -3557,6 +3557,10 @@ body.has-scene #scene-bg { display: block; }
 .safari-tab.area-desert  { --c1: #e8c060; --c2: #9a6a20; }
 .safari-tab.complete:not([aria-selected="true"]) { border-color: #d8a820; background: #fbf3d0; }   /* every one caught */
 .safari-area-box { border-color: #4a8a24; }
+.safari-tab-star { display: none; margin-left: 4px; color: #c89000; text-shadow: 0 0 4px rgba(248, 208, 48, 0.9); }   /* a page's reward earned */
+.safari-tab.complete .safari-tab-star { display: inline; }
+.safari-prize-sprite { width: 56px; height: 56px; flex: none; object-fit: contain; image-rendering: pixelated; }
+.safari-prize-sprite.silhouette { filter: brightness(0) opacity(0.55); }
 .dex-entry.safari-caught { border-color: #58a048; background: #eef8e4; }
 .dex-entry.safari-rare { border-color: #d8a820; }
 .dex-entry.safari-rare.safari-caught { background: #fbf3d0; }

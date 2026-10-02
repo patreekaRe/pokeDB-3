@@ -171,6 +171,10 @@ export const SPRITE_FIT = {
   'purugly-front': [6, 0, 5, 2],
   'quilava-back': [2, 0, 5, 2],
   'quilava-front': [8, 0, 2, 4],
+  'rayquaza-back': [6, 5, 5, 18],
+  'rayquaza-front': [11, 4, 20, 1],
+  'rayquaza-shiny-back': [6, 5, 5, 18],
+  'rayquaza-shiny-front': [11, 4, 20, 1],
   'raticate-front': [3, 0, 0, 1],
   'rattata-front': [2, 0, 1, 4],
   'regigigas-front': [0, 1, 3, 4],
@@ -591,6 +595,14 @@ export const SPRITE_FIT = {
   'archen-front': [10, 5, 2, 3],
   'volcarona-front': [8, 8, 11, 11],
   'gabite-front': [1, 0, 4, 2],
+  'rayquaza-awakened-front': [22, 15, 31, 12],
+  'rayquaza-ascendant-front': [29, 22, 38, 19],
+  'rayquaza-shiny-awakened-front': [22, 15, 31, 12],
+  'rayquaza-shiny-ascendant-front': [29, 22, 38, 19],
+  'rayquaza-awakened-back': [17, 16, 16, 29],
+  'rayquaza-ascendant-back': [23, 22, 22, 35],
+  'rayquaza-shiny-awakened-back': [17, 16, 16, 29],
+  'rayquaza-shiny-ascendant-back': [23, 22, 22, 35],
 };
 
 /** The gaps for a sprite's URL or file name. A starter's bought shiny is the same animation recoloured, so it

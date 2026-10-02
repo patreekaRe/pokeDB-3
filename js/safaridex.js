@@ -12,7 +12,9 @@
 
 import { ENEMY_DEFS } from './data/enemies.js';
 import { TYPES, CARDS_BY_ID, SIGNATURE_FOR } from './data/cards.js';
-import { SAFARI_DEX_PAGES, SAFARI_NUMBER, SAFARI_ROSTER, safariHomes, safariProgress } from './data/safari.js';
+import { SAFARI_DEX_PAGES, SAFARI_NUMBER, SAFARI_ROSTER, SAFARI_AREA_COINS, RARE_BOOST, safariHomes, safariProgress } from './data/safari.js';
+import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { getSave } from './storage.js';
 import { $, el, openDialog, makeCard } from './ui.js';
 
@@ -49,16 +51,35 @@ function entryTile(id, rare, { seen, caught }) {
 
 function areaBox(p, rec) {
   const { caught, seen, total } = safariProgress(p.ids, rec.dex);
-  const box = el('div', `dex-perk safari-area-box${caught === total ? ' earned' : ''}`);
+  const earned = (rec.dex.done ?? []).includes(p.area);   // stays earned when a later batch adds Pokémon to the page
+  const box = el('div', `dex-perk safari-area-box${earned ? ' earned' : ''}`);
   const text = el('div', 'dex-perk-text');
   const bar = el('div', 'ach-bar dex-bar');
   const fill = el('div', 'ach-fill');
   fill.style.width = `${(caught / total) * 100}%`;
   bar.append(fill);
-  text.append(el('strong', '', `${p.name}${caught === total ? ' complete!' : ''}`),
-    el('small', '', `${caught} caught · ${seen} seen of ${total}`), bar);
-  box.append(el('span', 'dex-perk-icon', AREA_ICON[p.area] ?? '🌿'), text, el('b', 'dex-perk-count', `${caught}/${total}`));
+  text.append(el('strong', '', `${earned ? '' : '🔒 '}${p.name}${caught === total ? ' complete!' : ''}`),
+    el('span', '', `Reward: rare spawns ${RARE_BOOST === 2 ? 'twice' : `${RARE_BOOST}x`} as often here, on replays.`),
+    el('small', '', earned ? `Earned, with 💰 ${SAFARI_AREA_COINS}. ${caught} caught · ${seen} seen of ${total}`
+      : `Catch all ${total} to earn it, plus 💰 ${SAFARI_AREA_COINS}. ${caught} caught · ${seen} seen`), bar);
+  box.append(el('span', 'dex-perk-icon', AREA_ICON[p.area] ?? '🌿'), text, el('b', 'dex-perk-count', `${earned ? '✦' : ''}${caught}/${total}`));
   box.title = `${p.name}: ${caught} of ${total} caught, ${seen} seen. Its days come round in the Safari Zone's daily run.`;
+  return box;
+}
+
+/** The whole Safari Pokédex's prize, on every page: Rayquaza, a silhouette until earned. */
+function prizeBox(rec) {
+  const ray = STARTERS_BY_ID.rayquaza;
+  const won = !!rec.dex.complete;
+  const all = safariProgress(SAFARI_ROSTER, rec.dex);
+  const box = el('div', `dex-perk dex-goal safari-prize${won ? ' earned' : ''}`);
+  const img = el('img', `pixel safari-prize-sprite${won ? '' : ' silhouette'}`);
+  img.src = spriteUrl(ray, 'front', 0);
+  img.alt = '';
+  const text = el('div', 'dex-perk-text');
+  text.append(el('strong', '', `${won ? '✅ ' : '🔒 '}Every page: ${won ? ray.line[0].name : '???'}`),
+    el('span', '', won ? `${ray.line[0].name} is yours: a Grass legendary.` : `${ACHIEVEMENT_FOR.rayquaza.text}. A legendary waits.`));
+  box.append(img, text, el('b', 'dex-perk-count', `${all.caught}/${all.total}`));
   return box;
 }
 
@@ -73,7 +94,7 @@ function section(label, ids, rare, rec) {
 function render() {
   const rec = record();
   const p = SAFARI_DEX_PAGES[page];
-  const body = [areaBox(p, rec), ...section('Wild Pokémon', p.wild, false, rec)];
+  const body = [areaBox(p, rec), prizeBox(rec), ...section('Wild Pokémon', p.wild, false, rec)];
   if (p.rare.length) body.push(...section('Rare spawns', p.rare, true, rec));
   $('safari-dex-body').replaceChildren(...body);
   $('safari-dex-dialog').scrollTop = 0;
@@ -84,8 +105,7 @@ function render() {
     const on = Number(btn.dataset.page) === page;
     btn.setAttribute('aria-selected', String(on));
     btn.tabIndex = on ? 0 : -1;
-    const done = safariProgress(SAFARI_DEX_PAGES[btn.dataset.page].ids, rec.dex);
-    btn.classList.toggle('complete', done.caught === done.total);
+    btn.classList.toggle('complete', (rec.dex.done ?? []).includes(SAFARI_DEX_PAGES[btn.dataset.page].area));
   }
 }
 
@@ -142,7 +162,7 @@ export function initSafariDex() {
     btn.dataset.page = String(i);
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-controls', 'safari-dex-body');
-    btn.append(el('span', 'index-tab-icon', AREA_ICON[p.area] ?? '🌿'), el('span', 'index-tab-label', p.name));
+    btn.append(el('span', 'index-tab-icon', AREA_ICON[p.area] ?? '🌿'), el('span', 'index-tab-label', p.name), el('span', 'safari-tab-star', '✦'));
     btn.addEventListener('click', () => pick(i));
     return btn;
   }));
