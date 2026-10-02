@@ -173,6 +173,50 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   checks them all, that it isn't a main-game Pokémon, and that no signature card has the same cost, text and keywords as
   another card a Fire / Grass / Water run can meet (Mewtwo's Psychic cards are left out: it never walks the Safari).
 
+## The areas' scenes (phase 5b, 2026-10-02)
+
+- **One look, six places**: `SAFARI_ART` in `js/scene.js` becomes six `BIOME_ART` entries (ids = the area ids,
+  `backdrop` / `floor` `'safari'`, `area`), so `showScene(areaId, kind, journey)` paints them like a main biome. Every
+  area gets the Zone's own parts from `safariFront()`: a ranch fence along the back (gaps in the wilder areas; none on the
+  Peak's snow), the games' tall grass in the near corners (more further in), the Zone's green signboard at the entrance
+  (place 0) and a green-roofed rest house by the boss (place 3). An event room (`S.raw.prop`) leaves out the sign and house.
+- **The areas** (`SAFARI_PAINT`: `back`, `floor`, `front`), each with 4 places (`STAGES` in `js/data/safari.js`,
+  floors 1-3, 4-6, 7-10, the boss; the map's stage sign shows them):
+  - Meadow (Grassland, Flower Field, Tall Grass, Lone Tree): rolling hills, far flat-topped acacias, a dirt track; the
+    Flower Field is thick with flowers, the Tall Grass has clumps mid-field, the boss waits under a big acacia.
+  - Forest (Woodland Path, Old Growth, Thicket, Sunlit Glade): trunks rising into a leaf roof, light falling through,
+    ferns, mushrooms, stumps and logs; the Thicket closes in and darkens, the Glade opens a sunlit hole.
+  - Wetland (Lakeshore, Pier, Boardwalk, Lily Lake): a lake under wooded hills with glints and the odd splash, reed beds,
+    a stream across the grass, a pier on stilts (longer on the Boardwalk), a lily pond in a near corner.
+  - Marsh (Bog, Willow Bank, Sunken Woods, Misty Mire): an overcast sky, weeping willows and dead trees, murky pools that
+    bubble, mud, cattails, mist thickening further in (`S.mist` + 8 a place).
+  - Peak (Foothills, Pine Slopes, Snowfield, Summit): snow-capped ranges, snow-dusted pines, snow drifts growing to a
+    snowfield, flakes falling; the Summit is cracked bare rock above a sea of cloud with a cairn.
+  - Desert (Dunes, Cactus Flats, Canyon, Oasis): dunes and far mesas, wind ripples, cacti, bleached bones, blowing sand
+    and a tumbleweed now and then; the Canyon's red walls, the Oasis's pool under palms.
+- **One road** (the user's ask, 2026-10-02: "as if we're actually traveling through a linear place"): every floor shows the
+  same trail running from your feet to the vanishing point (`trailAt(t)`, bending a little differently per floor;
+  `paintTrail()`, styles `dirt` / `planks` / `snow` / `sand` from the area's `trail` list, by place: the Wetland's
+  shore path turns into a boardwalk, the Peak's into a snow track), lined with `trailMarkers()` (rope posts, stones,
+  railings, stakes, orange-tipped snow poles), through a gate in the ranch fence. The area's **goal** stands by the road
+  far ahead and comes nearer every floor (`along()` = the journey's progress, `approach(side, k)`: it drifts out to the
+  edge and down as you reach it): the Meadow's Lone Tree, the Forest's sunlit opening, the Wetland's lake widening, the
+  Marsh's Great Snag in the mist (which thickens), the Peak's summit, the Desert's oasis palms. At the boss you're there.
+  Each floor also gets a **roadside landmark** just past the fence (`floorLandmark()`, `ROADSIDE`: a fingerpost, Safari
+  Ball crates, a bench, a lookout, a ranger's tent, plus the area's own: hay bales, a log pile, a rowboat, a stilt hut, a
+  cairn, bones or a dead snag), dealt by the map's seed and the floor, so neighbouring floors differ. The Zone's
+  signboard stands only on the first floor; the boss's floor has the rest house instead of a landmark.
+- **Times**: only the day is hand-painted; dawn, dusk and night are it graded under their own sky (`safariTimes()`), the
+  moon and stars at night. Elite and boss moods are the main biomes' grades. Storms: rain, the Peak a snowstorm, the
+  Desert a sandstorm. Battle pads: grass, the Peak's stone with snow on its rim, the Desert's new `sand` style.
+- **Rooms**: an area's `kin` (meadow / wetland / peak -> clearing, forest / marsh -> shrine, desert -> wastes) picks the
+  look of the rooms that have one per main biome (treasure grotto, Hot Spring, Shrine, event props); outdoor ? events
+  stand in the area's own scene.
+- **The run**: `land()` in `js/run.js` (the Safari area, or the main biome) feeds the scene, the map (`PALETTES` in
+  `js/map.js` has the six, with `bog`, `sand`, `snow` and `dune` terrain) and the signs (`data-safari`: the Zone's
+  green board and a tan stage sign). The main biomes' intro films don't play in a Safari run (their titles would be wrong);
+  the areas have none yet. Playtest: `?area=wetland` (`&stage`, `&kind`, `&time`), a tap walks on a floor.
+
 ## The bot (`../pokeDB-sim`)
 
 `cfg.safari` (`safariCfg()` in `sim/run-node.mjs`) plays a Safari day: `true` deals a random day per run (its starter,

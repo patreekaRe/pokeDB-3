@@ -1079,14 +1079,31 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    `firestore.rules` guards it (own entry, once, bounded, day ±1). Tested with a stand-in Firebase only.
    **To switch it on** (the user, once): Firebase console > pokedb project > Firestore Database > Rules: paste all of
    `firestore.rules` (it keeps the cloud save's rule), Publish. Then sign in on the live site and play the day's first
-   Safari try. Still to do: the 6 areas' art and music (5b, Desktop).
+   Safari try.
+   **5b, the 6 areas' scenes, built 2026-10-02** (Desktop; detail in `docs/reference/safari.md`): Meadow, Forest, Wetland,
+   Marsh, Peak and Desert painted in `js/scene.js` (`SAFARI_ART`), 4 places each with their own names, under one Safari
+   look (ranch fence, tall grass, the Zone's signboard, a rest house by the boss), lit for every time of day; the map's
+   palette and signs follow the area. Playtest: `?area=<area>`. Then (same day, the user's ask) each area became one
+   road: a trail to the horizon, the area's goal ahead growing nearer every floor, a roadside landmark per floor.
+   **Next, one session each (Desktop):**
+   - **5c, the areas' intro films and place intros.** **Run in: LOCAL (Desktop app).** Prompt: "Read CLAUDE.md,
+     docs/reference/safari.md (the areas' scenes) and js/biome-intro.js. Give the Safari Zone's six areas their own intro
+     film (INTROS entries: the camera move and painter per area, like the Clearing / Shrine / Wastes ones, its title
+     'SAFARI ZONE' over the area's name, a few of the area's own wild Pokémon popping out of the tall grass) and the
+     short walk-on for each later place (placeIntro(), the area's goal nearer each time). Turn them on for Safari runs in
+     startBiome() / showMap() in js/run.js (they're skipped there now). Don't push: show me with ?area=<area> first."
+   - **5d, the areas' boss intros.** **Run in: LOCAL (Desktop app).** Prompt: "Read CLAUDE.md, docs/reference/safari.md
+     (the areas' scenes) and bossArenaPrelude() / drawBossAwakening() and the three portals in js/scene.js. Give each
+     Safari area's boss floor its own prelude before the boss appears, built on the area's goal (the Lone Tree's crown
+     rustling and birds bursting out, the Forest's glade flooding with light, the Wetland's lake surging, the Marsh's
+     Great Snag looming out of thickening mist, the Peak's summit avalanche, the Desert's oasis mirage and sandstorm),
+     with synth sounds in js/audio.js like the main biomes'. Don't push: show me with ?area=<area>&stage=3 first."
 
 **Run in: CLOUD.** Next-session prompt (phase 5a, the leaderboard): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's
 'Post-v1.0: the Safari Zone daily run', docs/reference/safari.md and docs/reference/cloud-save.md. Build the Safari
 leaderboard on the existing Firebase (js/cloud.js): the day's first try posts its result (win or not, turns, time,
 caught), a board per day (fastest win, fewest turns, most caught) shown from the Safari gem and the result window, sign-in
 needed to post. Keep it safe against a replay posting (only `fairTry()` runs). `node --test` green, headless smoke test."
-The areas' art (phase 5b) is a Desktop session: **Run in: LOCAL** (the user sees it change live).
 
 ## The Pokémon list: 18 per biome, 54 in all
 

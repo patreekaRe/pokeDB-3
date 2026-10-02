@@ -30,9 +30,20 @@ const BORROWED = [
   { id: 'desert',  name: 'Desert',  normals: ['cacturne', 'maractus', 'magmar', 'heatmor', 'pansear', 'sentret', 'zangoose'], rares: ['cinccino', 'purugly'] },
 ];
 
+/* Each area's places, floors 1-3, 4-6, 7-10 and the boss's (the map's floor sign; js/scene.js paints them), like a
+   main biome's `stages`. */
+const STAGES = {
+  meadow: ['Grassland', 'Flower Field', 'Tall Grass', 'Lone Tree'],
+  forest: ['Woodland Path', 'Old Growth', 'Thicket', 'Sunlit Glade'],
+  wetland: ['Lakeshore', 'Pier', 'Boardwalk', 'Lily Lake'],
+  marsh: ['Bog', 'Willow Bank', 'Sunken Woods', 'Misty Mire'],
+  peak: ['Foothills', 'Pine Slopes', 'Snowfield', 'Summit'],
+  desert: ['Dunes', 'Cactus Flats', 'Canyon', 'Oasis'],
+};
+
 export const SAFARI_AREAS = BORROWED.map(a => {
   const own = SAFARI_MONS.filter(m => m.area === a.id);
-  return { ...a, normals: [...a.normals, ...own.filter(m => !m.rare).map(m => m.id)], rares: [...a.rares, ...own.filter(m => m.rare).map(m => m.id)] };
+  return { ...a, stages: STAGES[a.id], normals: [...a.normals, ...own.filter(m => !m.rare).map(m => m.id)], rares: [...a.rares, ...own.filter(m => m.rare).map(m => m.id)] };
 });
 
 export const SAFARI_AREAS_BY_ID = Object.fromEntries(SAFARI_AREAS.map(a => [a.id, a]));

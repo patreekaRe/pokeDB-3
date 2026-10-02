@@ -52,8 +52,9 @@ import { initSafariDex, openSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
-import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
-import { showPlaceScene } from './scene.js';
+import { $, el, openDialog, closeDialog, confirmDialog } from './ui.js';
+import { showPlaceScene, showScene } from './scene.js';
+import { SAFARI_AREAS } from './data/safari.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -243,6 +244,9 @@ function init() {
   // Playtest shortcut (the user's ask): ?scene=tutor (or kombat, center...) shows just that room's painted scene, no
   // run started, so the saved run is untouched; &biome=shrine or wastes picks the biome outside its windows.
   const params = new URLSearchParams(location.search), place = params.get('scene');
+  // ?area=wetland (any Safari area; &stage=0-3, &kind=elite or boss) shows that area's scene the same way, and each
+  // tap walks on to its next place, then the next area
+  if (params.has('area')) return peekSafari(params);
   if (place) {
     document.body.classList.add('scene-peek');
     showPlaceScene(place, { biome: params.get('biome') || 'clearing' });
@@ -265,6 +269,24 @@ function init() {
 }
 
 /** The ?strike= playtest: the gate scene on its own, nothing saved. */
+/** The Safari areas' scenes, a floor at a time as you'd walk them (a playtest view: no run, nothing saved): floors 1-3,
+    4-6 and 7-10 are an area's first three places (stageOf() in js/map.js), then the boss's. */
+const PEEK_FLOORS = 11, PLACE_START = [0, 3, 6, 10];
+function peekSafari(params) {
+  document.body.classList.add('scene-peek');
+  let i = Math.max(0, SAFARI_AREAS.findIndex(a => a.id === params.get('area')));
+  let floor = PLACE_START[Math.min(3, Math.max(0, +params.get('stage') || 0))];
+  const kind = params.get('kind') || 'wild', label = el('div', 'peek-label');
+  document.body.append(label);
+  const show = () => {
+    const area = SAFARI_AREAS[i], stage = PLACE_START.findLastIndex(f => floor >= f);
+    showScene(area.id, stage === 3 && kind === 'wild' ? 'boss' : kind, { progress: (floor + 1) / PEEK_FLOORS, stage, step: floor - PLACE_START[stage], seed: 1000 + i * 37 });
+    label.textContent = `${area.name}, ${stage === 3 ? 'boss' : `floor ${floor + 1}`}: ${area.stages[stage]}. Tap for the next.`;
+  };
+  addEventListener('pointerup', () => { if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % SAFARI_AREAS.length; } show(); });
+  show();
+}
+
 function peekStrike(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);

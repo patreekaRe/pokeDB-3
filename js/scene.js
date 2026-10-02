@@ -287,6 +287,200 @@ BIOME_ART.depths = {
   },
 };
 
+/* ---------- the Safari Zone's six areas (roadmap phase 5b) ----------
+   One look for the whole Zone (a ranch fence along the back, the games' tall grass in the near corners, the Zone's
+   green signboard at an area's entrance and a rest house by its boss) over each area's own land (`area`, painted by
+   safariBackdrop() / safariFloor()). Each area's floors are its `stages` (js/data/safari.js): its painters ask stage()
+   for what changes, and every floor deals its props from its own seed. Only the day is hand-painted; the other times
+   are it graded under their own sky. */
+const SAFARI_MARKS = {
+  ...BIOME_ART.clearing.marks,
+  wood: ['#e8b878', '#b88048', '#7a5028', '#3a2410'],
+  sign: ['#fff8e0', '#e8dcb0', '#48a848', '#2a7030', '#3a2410'],   // the board, its shade, the Zone's green band and its shade, the lettering
+  roof: ['#68c058', '#3e9038', '#245a22'], wall: ['#fff4dc', '#e0cca0', '#a88c60'],
+  rope: ['#f0dca0', '#b09060'], straw: ['#f8e090', '#d8b858', '#9a7a34', '#5a4420'],
+};
+const safariTimes = ({ dawn, dusk, night }) => ({
+  dawn: { from: 'day', sunLow: true, sky: ['#6a7cc0', '#8a8cc8', '#b09ccc', '#d4a8c4', '#eeb8b4', '#f8cca8', '#f8e0b8'], sun: ['#fffcec', '#fff0b8', '#f8d898'], ...dawn },
+  dusk: { from: 'day', sunLow: true, sky: ['#3a3a78', '#584a8c', '#8a5a94', '#c46a84', '#ec8a6c', '#f8ac70', '#f8cc90'], sun: ['#fff4d0', '#f8c868', '#f08848'], ...dusk },
+  night: { from: 'day', light: 'moon', stars: true, sky: ['#080a24', '#0e1234', '#141a44', '#1c2452', '#262e60', '#30386a', '#3c4474'], ...night },
+});
+const SAFARI_ART = {
+  meadow: {   // open grassland: rolling hills, flat-topped trees far off, golden-green grass, a dirt track
+    light: 'sun',
+    storm: { rain: ['#e0ecff', '#98b0d8'], fall: 3.5, count: 1, sky: [0.55, 4, 8, 22], ground: [0.72, 0, 2, 10] },
+    sun: ['#fffce8', '#fff0a0', '#f8e070'],
+    cloud: ['#ffffff', '#eef4fb', '#c8dcee', '#a8c4e0'], clouds: { count: 1.1, shadows: true },
+    sky: ['#4a98e8', '#5ea8ee', '#74b8f2', '#8cc8f6', '#a6d6f8', '#c0e4f8', '#d8eef4'],
+    farHills: ['#b0d4c8', '#9cc4b8'], hills: ['#a8d078', '#90bc64', '#7aa854'],
+    trees: ['#88c058', '#62a040', '#468030', '#2e5a24'], trunk: ['#7a5430', '#4e3418'],
+    ground: ['#b8dc74', '#aad268', '#9cc85e', '#8ebc54', '#80b04a', '#72a442'],
+    blade: ['#d8f498', '#94c858', '#508a34'], patch: '#7cac44',
+    tall: ['#78c850', '#4e9a38', '#2e7228', '#164418'],
+    trail: [{ at: 0, style: 'dirt', c: ['#f0dca8', '#dcc08a', '#b89c68', '#8aa050'], edge: 'rope' }],
+    flowers: [['#ffffff', '#f8d848'], ['#f8e048', '#f89830'], ['#f8a0c8', '#f8f0f8'], ['#f87850', '#f8e8a0']],
+    rock: ['#d8d4c8', '#a8a498', '#706c66'],
+    butterflies: ['#ffffff', '#f8d848', '#f8a040'], bird: '#34405c',
+    pollen: ['#fffce0', '#f8f0a0'], firefly: ['#f8f8a0', '#c8e858'],
+    pad: { style: 'grass', top: '#c0e480', mid: '#9cc85e', low: '#78a844', rim: '#3a6a2c', earth: '#8a6a3a', blade: '#d8f498' },
+    life: ['clouds', 'birds', 'blades', 'butterflies', 'pollen'],
+    times: safariTimes({
+      dusk: { life: ['clouds', 'birds', 'blades', 'pollen', 'fireflies'], fireflyCount: 0.5 },
+      night: { clouds: { count: 0.5 }, life: ['stars', 'clouds', 'blades', 'fireflies'], fireflyCount: 1.2 },
+    }),
+  },
+
+  forest: {   // a cool old wood: misty pines behind, broadleaf trees, light falling through, ferns and fallen logs
+    light: null,
+    storm: { rain: ['#d0e8f0', '#80a0b0'], fall: 3.5, count: 1, sky: [0.55, 0, 10, 18], ground: [0.72, 0, 4, 8] },
+    sky: ['#8cbcd8', '#9ec8dc', '#b0d2e0', '#c2dce2', '#d2e6e2'],
+    farForest: ['#8cb4a0', '#7aa490'],
+    pines: ['#4e9058', '#2e6a40'],
+    trees: ['#64b050', '#44903e', '#2c6e32', '#1a4c24'], trunk: ['#6a4a30', '#3e2a1a'],
+    ground: ['#6aa44a', '#5e9844', '#528c3e', '#468038', '#3a7432', '#2e682c'],
+    blade: ['#a0d070', '#5e9448', '#2e5c2a'], patch: '#3e7a30',
+    tall: ['#62b048', '#3e8a36', '#246428', '#103a16'],
+    trail: [{ at: 0, style: 'dirt', c: ['#b89a70', '#9a7c56', '#7a5e3e', '#4e7a34'], edge: 'stone' }],
+    leaves: [['#d8c050', '#a08828'], ['#88c058', '#5a9040'], ['#e88a38', '#b05a20']],
+    flowers: [['#f8f0f8', '#f8d848'], ['#b0a0f8', '#f8f8f8']],
+    rock: ['#b8bcb0', '#8a8e82', '#5a5e54'],
+    butterflies: ['#f8f8f8', '#f8d848', '#78c8f8'], bird: '#1e3a24',
+    pollen: ['#f8fce0', '#e0f0b0'], firefly: ['#f8f8a0', '#c8e858'],
+    pad: { style: 'grass', top: '#88c060', mid: '#64a048', low: '#4a8038', rim: '#1e4220', earth: '#5e4430', blade: '#a8d878' },
+    life: ['blades', 'leaves', 'butterflies', 'pollen'],
+    times: safariTimes({
+      dawn: { sky: ['#a898b8', '#bca4b8', '#d0b0b4', '#e0c0b4', '#ecd2bc'] },
+      dusk: { sky: ['#3a3460', '#5a4470', '#8a5878', '#b86e74', '#d88c74'], life: ['blades', 'leaves', 'fireflies'], fireflyCount: 0.8 },
+      night: { sky: ['#06101e', '#0a1828', '#102034', '#162a40', '#1e344a'], life: ['stars', 'blades', 'fireflies'], fireflyCount: 1.5 },
+    }),
+  },
+
+  wetland: {   // a bright lake behind a reedy shore: lily pads, a wooden pier, wooded hills across the water
+    light: 'sun',
+    storm: { rain: ['#e0ecff', '#98b0d8'], fall: 3.5, count: 1.2, sky: [0.55, 4, 8, 22], ground: [0.72, 0, 2, 10] },
+    sun: ['#fffce8', '#fff0a0', '#f8e070'],
+    cloud: ['#ffffff', '#eef4fb', '#c8dcee', '#a8c4e0'], clouds: { count: 1 },
+    sky: ['#4890e8', '#5aa0ee', '#70b2f2', '#88c4f6', '#a2d4f8', '#bce2f8', '#d4eef8'],
+    farHills: ['#a0c8d8', '#88b4c8'],
+    trees: ['#70c068', '#50a058', '#368048', '#226038'], trunk: ['#7a5430', '#4e3418'],
+    lake: ['#c8f0ff', '#90d4f4', '#68bcec', '#4ca4e0', '#3a8cd0'],
+    ripple: ['#e8fcff', '#3070b8'], glint: ['#ffffff'],
+    lily: ['#68c050', '#3e9038', '#f8a8d0', '#fff4fa'],
+    reed: ['#d0e078', '#90b048', '#5a7a30'],
+    trail: [
+      { at: 0, style: 'dirt', c: ['#ece0b4', '#d8c896', '#b8a874', '#7aa848'], edge: 'post' },
+      { at: 1, style: 'planks', c: ['#e8b878', '#c89458', '#8a5e30', '#4a2e14'], edge: 'rail' },   // the boardwalk
+    ],
+    ground: ['#a0d870', '#90cc62', '#80c056', '#70b44a', '#62a840', '#549c38'],
+    blade: ['#c8f090', '#80c050', '#3e8830'], patch: '#5ca23c',
+    tall: ['#6cc048', '#46963a', '#2a6e2c', '#123e18'],
+    flowers: [['#ffffff', '#f8d848'], ['#a8c8f8', '#ffffff']],
+    rock: ['#d0d0c8', '#a0a098', '#6c6c68'],
+    butterflies: ['#78d8f8', '#ffffff', '#f8d848'], bird: '#f8f8f8',
+    pollen: ['#fffce0', '#f8f0a0'], firefly: ['#f8f8a0', '#c8e858'],
+    pad: { style: 'grass', top: '#a8e078', mid: '#80c858', low: '#5ea840', rim: '#2e6a2c', earth: '#6a5a3a', blade: '#c0f088' },
+    life: ['clouds', 'birds', 'blades', 'butterflies', 'safari'],
+    times: safariTimes({
+      dusk: { life: ['clouds', 'birds', 'blades', 'fireflies', 'safari'], fireflyCount: 0.6 },
+      night: { clouds: { count: 0.5 }, life: ['stars', 'clouds', 'blades', 'fireflies', 'safari'], fireflyCount: 1.3 },
+    }),
+  },
+
+  marsh: {   // a grey-green bog under a low sky: drooping willows, dead trees, murky pools, cattails, mist
+    light: null,
+    storm: { rain: ['#d0e0d8', '#80988c'], fall: 3.5, count: 1.4, sky: [0.55, 0, 6, 10], ground: [0.72, 0, 4, 6] },
+    sky: ['#7a8c84', '#8a9a90', '#9aa89c', '#aab6a8', '#bac2b2', '#c8cebc'],
+    farForest: ['#7a8a7c', '#6a7a6c'],
+    trees: ['#6a8a50', '#527440', '#3e5c34', '#2a4226'], trunk: ['#5a4836', '#3a2e22'],
+    dead: ['#8a7c68', '#625646', '#3e342a'],
+    bog: ['#9aa898', '#4a5a4a', '#3a4a3e', '#283430'], algae: ['#9ab848', '#6a8a34'], mud: ['#5e5642', '#4c4434'], lily: ['#6a9a48', '#4a7438', '#f8f0f8', '#ffffff'],
+    ground: ['#6e8448', '#627842', '#566c3c', '#4a6036', '#3e5430', '#32482a'],
+    blade: ['#98b068', '#5e7c40', '#34502a'], patch: '#3e5628',
+    tall: ['#6a9048', '#4a7036', '#2e5026', '#162c14'],
+    reed: ['#b8b860', '#7e8a3c', '#4e5a28'],
+    trail: [{ at: 0, style: 'planks', c: ['#a8987a', '#8a7a5e', '#6a5a44', '#2e261c'], edge: 'stake' }],   // an old plank walkway over the bog
+    mist: 36, mistColour: '#e0e8e0',
+    flowers: [['#f8f0f8', '#f8e070']],
+    rock: ['#a0a494', '#767a6a', '#4e5246'],
+    firefly: ['#e8f8a0', '#a8d858'], bird: '#2a3428', butterflies: ['#c8d878'],
+    pad: { style: 'grass', top: '#7e9a58', mid: '#647e46', low: '#4e6638', rim: '#1e2e18', earth: '#4a3e2c', blade: '#9ab870' },
+    life: ['mist', 'blades', 'fireflies', 'safari'], fireflyCount: 0.3,
+    times: safariTimes({
+      dawn: { sky: ['#8a8098', '#9c8ea0', '#b09ea4', '#c2aea8', '#d2bcae', '#dccab8'] },
+      dusk: { sky: ['#2e2c44', '#443a52', '#60485a', '#7c5a60', '#987068', '#ae8470'], fireflyCount: 0.9 },
+      night: { sky: ['#060c10', '#0a141a', '#0e1c22', '#14242a', '#1a2c32', '#203438'], fireflyCount: 1.6 },
+    }),
+  },
+
+  peak: {   // the mountainside: snow-capped peaks, pines dusted white, alpine grass giving way to snowfields
+    light: 'sun',
+    storm: { rain: ['#ffffff', '#c8d8f0'], fall: 1.2, count: 1.4, sky: [0.6, 10, 14, 30], ground: [0.78, 8, 10, 24] },   // a snowstorm
+    sun: ['#ffffff', '#fffce0', '#f8f0c0'],
+    cloud: ['#ffffff', '#f0f6fc', '#d0e0f0', '#b0c8e0'], clouds: { count: 0.9 },
+    sky: ['#3880d8', '#4a90e0', '#60a2e8', '#7ab6f0', '#96c8f4', '#b4dcf8', '#d2ecfa'],
+    range: ['#b0c4e0', '#98aed0', '#8098c0'], snow: ['#ffffff', '#e4eef8', '#bccfe6'],
+    cliff: ['#a8a8b4', '#86868e', '#62626c', '#3e3e46'],
+    pines: ['#4a8462', '#2c5c46'], trunk: ['#5a4030', '#38281c'],
+    ground: ['#b0c890', '#a0bc84', '#90b078', '#80a46c', '#729862', '#648c58'],
+    snowField: ['#ffffff', '#f2f8fc', '#e4eef8', '#d6e2f2', '#c8d8ec', '#bacce4'],
+    blade: ['#d0e4b0', '#90ac78', '#566e48'], patch: '#6e8e56',
+    tall: ['#88b870', '#5e9054', '#3a6a3e', '#1c3e24'],
+    trail: [
+      { at: 0, style: 'dirt', c: ['#d0c4a8', '#b0a488', '#8c8068', '#6a7a50'], edge: 'pole' },
+      { at: 2, style: 'snow', c: ['#ffffff', '#e4ecf6', '#b8c6dc', '#c8d8ec'], edge: 'pole' },   // a track trodden in the snow
+    ],
+    pole: ['#ffffff', '#f07830', '#a84818'],
+    flowers: [['#b0a0f8', '#ffffff'], ['#ffffff', '#f8e048']],
+    rock: ['#d0d0d8', '#9c9ca8', '#6a6a78'],
+    bird: '#3a4058', flake: ['#ffffff', '#d8e4f4'],
+    pad: { style: 'stone', top: '#c8ccd4', mid: '#a8acb6', low: '#8a8e98', rim: '#3a3e48', earth: '#5e626c', moss: '#ffffff' },
+    life: ['clouds', 'birds', 'blades', 'safari'],
+    times: safariTimes({
+      dawn: { sky: ['#5a6cb8', '#7a7cc0', '#a08cc4', '#c89cc0', '#e8b0b8', '#f8c8b4', '#fce0c8'] },
+      night: { clouds: { count: 0.4 }, life: ['stars', 'clouds', 'blades', 'safari'] },
+    }),
+  },
+
+  desert: {   // sand to the horizon: dunes, far mesas, cacti, sun-bleached bones, an oasis at the end
+    light: 'sun',
+    storm: { rain: ['#f8e8b8', '#d8b878'], fall: 2.6, count: 1.2, sky: [0.75, 30, 16, 0], ground: [0.85, 20, 10, 0] },   // a sandstorm
+    sun: ['#fffff0', '#fff8c0', '#f8e890'],
+    cloud: ['#ffffff', '#f8f4ec', '#e8dcc8', '#d0c0a8'], clouds: { count: 0.4 },
+    sky: ['#3a88e0', '#529ae6', '#70aeea', '#90c2ec', '#b2d4ea', '#d0e0e0', '#ece8cc'],
+    farDunes: ['#ecd4a0', '#dcc08a'], dunes: ['#f4dca4', '#e4c486', '#c8a46a'],
+    mesas: ['#e89a68', '#c87448', '#a05838', '#7a402c'], farMesas: ['#d8a888', '#c8987a'],
+    ground: ['#f6e0a8', '#f0d8a0', '#e8ce94', '#dec288', '#d4b67e', '#c8aa72'],
+    blade: ['#e8d890', '#b8a058', '#7a6a34'], patch: '#d2b47a',
+    tall: ['#d8c870', '#b0a048', '#7e7430', '#4a4418'],
+    cactus: ['#80a850', '#5a8a3c', '#3a5e28'],
+    bone: ['#fffcf0', '#d8d0bc', '#8a8070'],
+    palm: ['#80c858', '#50983c', '#2e6a2a'], palmTrunk: ['#c09060', '#8a6438', '#5a4022'],
+    lake: ['#c8f0ff', '#90d4f4', '#68bcec', '#4ca4e0', '#3a8cd0'], glint: ['#ffffff'],
+    weed: ['#c8a868', '#8a6c3c'],
+    trail: [{ at: 0, style: 'sand', c: ['#fff0cc', '#f0dcb0', '#d8bc88', '#e0c890'], edge: 'stone' }],
+    dead: ['#e0d0b8', '#b0a088', '#7a6a58'],
+    rock: ['#e0c8a0', '#b09070', '#7a604a'],
+    bird: '#3a2a28', ember: ['#fff8d8', '#f8e8b0', '#e8d090'], embers: 0.25,
+    pad: { style: 'sand', top: '#f8e4b0', mid: '#e8cc94', low: '#d0b07a', rim: '#7a5a34', earth: '#a8844e', blade: '#c8a868' },
+    life: ['clouds', 'birds', 'safari'],
+    times: safariTimes({
+      dusk: { sky: ['#2c1e50', '#4a2a62', '#7a3a6a', '#b0506a', '#e07060', '#f89a5a', '#f8c06a'] },
+      night: { clouds: { count: 0.3 }, life: ['stars', 'safari'] },
+    }),
+  },
+};
+for (const [area, art] of Object.entries(SAFARI_ART)) {
+  BIOME_ART[area] = {
+    backdrop: 'safari', floor: 'safari', area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[area],
+    marks: SAFARI_MARKS, ...art,
+    times: { day: {}, ...art.times },
+    kinds: {
+      elite: { grade: 'elite' },
+      boss: { grade: 'boss', clouds: { count: 1.4, shadows: art.clouds?.shadows } },
+    },
+  };
+}
+
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
    said); `times` gives the others their sky and switches, the rest graded (typeLook()) unless `grade: false`. */
@@ -818,14 +1012,15 @@ export function showMenuScene(type) {
 export function showPlaceScene(place, { floor = null, span = null, biome = null, type = null, where = 0 } = {}) {
   const { biomes, types, ...art } = PLACE_ART[place];
   const time = timeOfDay(), g = GRADES[time];
+  const kin = BIOME_ART[biome]?.kin || biome;   // a Safari area dresses its rooms like the main biome it's nearest
   if (art.outdoor) {
     const { storm, pad, life: own, ...wild } = biomeLook(BIOME_ART[biome] || BIOME_ART.clearing, time);
-    const props = grade({ ...art, ...biomes?.[biome] }, g);
+    const props = grade({ ...art, ...biomes?.[kin] }, g);
     const at = { ...journeyOf(where), step: null };
     paintScene(`place/${place}/${biome}/${type}/${time}/${placeKey(at)}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life], ...at }, floor, span);
     return;
   }
-  const look = biomes && (biomes[biome] || Object.values(biomes)[0]), glow = types?.[type];
+  const look = biomes && (biomes[kin] || Object.values(biomes)[0]), glow = types?.[type];
   let lit = { ...art, ...look, ...glow };
   // open-air close-ups take the light whole; indoors only the view through the windows changes
   if (art.open) {
@@ -1042,6 +1237,7 @@ function paintBase() {
   if (S.raw.backdrop === 'fanclub') fanWall();
   if (S.raw.backdrop === 'daycare') daycareHouse();
   if (S.raw.backdrop === 'kombat') kombatBackdrop();
+  if (S.raw.backdrop === 'safari') safariBackdrop();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
@@ -1059,6 +1255,7 @@ function paintBase() {
   if (S.raw.floor === 'beach') beach();
   if (S.raw.floor === 'jungleFloor') jungleFloor();
   if (S.raw.floor === 'kombat') kombatFloor();
+  if (S.raw.floor === 'safari') safariFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
@@ -1066,6 +1263,7 @@ function paintBase() {
   if (S.raw.backdrop === 'center') centerFront();
   if (S.raw.backdrop === 'mart') martFront();
   if (S.raw.backdrop === 'treasure') grottoFront();
+  if (S.raw.backdrop === 'safari') safariFront();
   if (S.raw.backdrop === 'hills' || S.raw.backdrop === 'shrine' || S.raw.backdrop === 'volcano') { stageFront(); landmark(); }
   if (S.raw.prop) eventProps();
 
@@ -5099,7 +5297,7 @@ function makeLife() {
 
   if (has('blades')) {
     life.blades = [];
-    const density = S.raw.floor === 'moss' ? (S.raw.backdrop === 'shrine' && S.raw.stage >= 2 ? 0.05 : 0.6) : 1;   // raked gravel grows next to nothing
+    const density = S.raw.floor === 'moss' ? (S.raw.backdrop === 'shrine' && S.raw.stage >= 2 ? 0.05 : 0.6) : life.bladeDensity ?? 1;   // raked gravel (or the Peak's snow) grows next to nothing
     for (let y = horizon + 4; y < H; y++) {
       const depth = depthOf(y);
       for (let n = 0, c = Math.round(W * (0.012 + depth * 0.035) * density); n < c; n++) {
@@ -5188,6 +5386,7 @@ function makeLife() {
     }
     life.boat = { x: rand() * W };
   }
+  if (has('safari')) makeSafariLife();
   if (has('vines')) {
     life.vines = [];
     for (let i = 0, n = Math.round(W / 9); i < n; i++) {
@@ -5276,6 +5475,7 @@ function draw() {
   if (has('fans')) drawFans(t);
   if (has('kombat')) drawKombat(t);
   if (has('vines')) drawVines(t);
+  if (has('safari')) drawSafari(t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
     const [hot, warm, glow] = S.lanternGlow;
@@ -6451,6 +6651,11 @@ function padImage({ style, top, mid, low, rim, earth, blade, moss, lava }) {
     for (let x = 2; x < w - 2; x++) if ((x * 5) % 7 < 3) dot(x, edge(x), moss);
     for (const [x, y] of [[6, 9], [7, 10], [40, 9], [41, 8], [20, 11], [28, 3]]) dot(x, y, moss);
   }
+  if (style === 'sand') {
+    // wind ripples across the top, a few dry tufts at the rim
+    for (const [x0, y0, len] of [[7, 5, 10], [20, 7, 13], [12, 9, 9], [30, 4, 8]]) for (let k = 0; k < len; k++) if (within(x0 + k, y0 + (k % 5 < 2 ? 0 : 1))) dot(x0 + k, y0 + (k % 5 < 2 ? 0 : 1), low);
+    for (const x of [5, 6, 41, 42, 24]) dot(x, edge(x) - 1, blade);
+  }
   if (style === 'rock') {
     // glowing cracks across the top
     for (const [x0, y0, len] of [[8, 6, 9], [26, 8, 11], [18, 4, 6]]) {
@@ -6459,6 +6664,820 @@ function padImage({ style, top, mid, low, rim, earth, blade, moss, lava }) {
     }
   }
   return c.toDataURL();
+}
+
+/* ============================================================
+   THE SAFARI ZONE (SAFARI_ART): each area's back, floor and front, then the Zone's own fence, sign, rest house and
+   tall grass over every one. Big things keep to the back and the edges: the middle is the two Pokémon's.
+   ============================================================ */
+
+const SAFARI_PAINT = {
+  meadow: { back: meadowBack, floor: meadowFloor, front: meadowFront },
+  forest: { back: forestBack, floor: forestFloor, front: forestFront },
+  wetland: { back: wetlandBack, floor: wetlandFloor },
+  marsh: { back: marshBack, floor: marshFloor, front: marshFront },
+  peak: { back: peakBack, floor: peakFloor, front: peakFront },
+  desert: { back: desertBack, floor: desertFloor, front: desertFront },
+};
+const areaPaint = () => SAFARI_PAINT[S.raw.area];
+const landmarkSide = () => (S.raw.seed & 1 ? -1 : 1);   // which edge an area's big landmark takes; the rest house the other
+/** A spot near one edge (`side` -1 left, 1 right, or either), clear of the two Pokémon in the middle. */
+const edgeX = (side = rand() < 0.5 ? -1 : 1, reach = 0.24) => (side < 0 ? Math.floor(rand() * W * reach) : W - 1 - Math.floor(rand() * W * reach));
+const groundY = (lo, hi) => horizon + Math.round((H - horizon) * (lo + rand() * (hi - lo)));
+
+/* ----- the road through an area: every floor you walk on down the same trail towards the area's goal, which stands
+   off to one side of the road far ahead, grows nearer every floor and drifts out to the edge as you come up to it ----- */
+
+/** The trail's middle and half-width at depth t (0 at the horizon, 1 at your feet), bending a little differently on every floor. */
+function trailAt(t) {
+  const bend = ((((S.raw.seed || 0) >>> 3) + (S.raw.step ?? 0) + stage()) % 5 - 2) * 0.035;
+  return { x: W * (0.48 - 0.07 * t) + Math.sin(t * Math.PI) * W * bend, half: 0.6 + t * W * 0.17 };
+}
+const vanishX = () => Math.round(trailAt(0).x);
+const trailSpec = () => (S.trail || []).filter(s => stage() >= s.at).pop();
+const along = () => dial();   // 0 at the area's entrance .. 1 at its boss
+/** Where the goal stands when you're `k` of the way to it (0..1): far off by the vanishing point, out by the edge and lower once you're there. */
+const approach = (side, k) => ({ x: Math.round(vanishX() + side * W * (0.06 + 0.34 * k * k)), foot: horizon - 1 + Math.round((H - horizon) * 0.14 * k * k) });
+
+function paintTrail() {
+  const spec = trailSpec();
+  if (!spec || S.raw.prop) return;
+  const [lit, body, shade, edge] = spec.c, style = spec.style;
+  const plank = (y) => Math.floor(2.4 / (depthOf(y) + 0.1)), pace = (y) => Math.floor(3 / (depthOf(y) + 0.12));
+  for (let y = horizon + 2; y < H; y++) {
+    const t = depthOf(y), { x: cx, half } = trailAt(t), seam = plank(y) !== plank(y + 1);
+    for (let x = Math.floor(cx - half - 1); x <= Math.ceil(cx + half + 1); x++) {
+      const a = Math.abs((x - cx) / Math.max(0.6, half));
+      if (a > 1) { if (style === 'planks' || dither(x, y) < 6) put(x, y, edge); continue; }   // the rim: the walkway's beam, or worn grass
+      if (style === 'sand' && a > 0.6 && dither(x, y) < (a - 0.6) * 40) continue;   // trodden sand fades into the dunes
+      const c = style === 'planks' ? (seam ? edge : a > 0.86 ? shade : (x * 3 + plank(y) * 5) % 9 === 0 ? shade : plank(y) % 2 ? body : lit)
+        : style === 'snow' ? (dither(x, y) < 5 ? lit : a > 0.8 ? shade : body)
+        : t > 0.12 && Math.abs(a - 0.45) < 0.1 ? shade : dither(x, y) < 3 ? lit : a > 0.85 && dither(x, y) < 8 ? shade : body;   // dirt: two worn ruts
+      put(x, y, c);
+      bare(x, y);
+    }
+    if (style !== 'planks' && style !== 'dirt' && pace(y) !== pace(y + 1)) {   // footprints in the snow or sand
+      const fx = Math.round(cx + (pace(y) % 2 ? 1 : -1) * Math.max(1, half * 0.2));
+      put(fx, y, shade);
+      if (t > 0.45) { put(fx + 1, y, shade); put(fx, y - 1, shade); }
+    }
+  }
+}
+
+/** The posts, stones, poles or stakes lining the trail, smaller and closer together into the distance. */
+function trailMarkers() {
+  const spec = trailSpec();
+  if (!spec?.edge || S.raw.prop) return;
+  const [lit, , shade] = M().wood, tops = [[], []];
+  for (let k = 0; k < 6; k++) {
+    const t = 0.05 + (k / 5) ** 1.5 * 0.6, y = horizon + 2 + Math.round(t * (H - horizon - 2)), { x: cx, half } = trailAt(t);
+    const h = Math.max(2, Math.round(1 + t * Math.min(W, H) * 0.1)), wide = t > 0.35;
+    [-1, 1].forEach((side, i) => {
+      const x = Math.round(cx + side * (half + 1 + t * 3));
+      if (spec.edge === 'stone') { rock(x, y, t > 0.3 ? 2 : 1); return; }
+      const [a, b] = spec.edge === 'pole' ? [S.pole[0], S.pole[0]] : spec.edge === 'stake' ? [S.dead[0], S.dead[2]] : [lit, shade];
+      for (let yy = y - h + 1; yy <= y; yy++) { solid(x, yy, a); if (wide) solid(x + 1, yy, b); }
+      if (spec.edge === 'pole') for (let yy = y - h + 1; yy < y - h + 1 + Math.max(1, Math.round(h * 0.3)); yy++) { solid(x, yy, S.pole[1]); if (wide) solid(x + 1, yy, S.pole[2]); }   // a snow pole's orange tip
+      tops[i].push([x, y - h + 1 + (spec.edge === 'rope' ? Math.round(h * 0.2) : 0), h]);
+    });
+  }
+  if (spec.edge === 'rope' || spec.edge === 'rail') for (const list of tops) for (let k = 1; k < list.length; k++) {
+    const [x0, y0] = list[k - 1], [x1, y1, h] = list[k];
+    strokeLine(x0, y0, x1, y1, spec.edge === 'rope' ? M().rope[0] : lit, spec.edge === 'rope' ? Math.max(1, h * 0.15) : 0);
+  }
+}
+
+function strokeLine(x0, y0, x1, y1, c, sag = 0) {
+  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
+  for (let i = 0; i <= n; i++) { const t = i / n; solid(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t + Math.sin(t * Math.PI) * sag), c); }
+}
+
+/* ----- a landmark by the road on every floor, so neighbouring floors never look alike ----- */
+
+const ROADSIDE = {
+  shared: ['signpost', 'crates', 'bench', 'lookout', 'tent'],
+  meadow: ['haybales'], forest: ['logpile'], wetland: ['rowboat'], marsh: ['stilthut'], peak: ['cairn'], desert: ['bones', 'snag'],
+};
+
+function floorLandmark() {
+  const st = stage(), step = S.raw.step;
+  if (step == null || S.raw.prop || st === 3 || (st === 0 && step === 0)) return;   // the entrance has its sign, the boss its rest house
+  const list = [...ROADSIDE.shared, ...ROADSIDE[S.raw.area]];
+  const kind = list[(((S.raw.seed || 0) >>> 2) + step * 3 + st * 5) % list.length];
+  // just past the fence, so it stands behind both Pokémon in battle, not over yours
+  const side = (step + st) % 2 ? -1 : 1, y = horizon + 5 + Math.round((H - horizon) * (((S.raw.seed || 0) >>> 5) + step) % 3 * 0.03);
+  const x = side < 0 ? Math.round(W * 0.14) : Math.round(W * 0.86), s = Math.max(1, Math.round(Math.min(W, H) / 55));
+  ({
+    signpost: () => signpost(x, y, s, -side), crates: () => crates(x, y, s), bench: () => bench(x, y, s), lookout: () => lookout(x, y, s),
+    tent: () => tent(x, y, s), haybales: () => haybales(x, y, s), logpile: () => logpile(x, y, s), rowboat: () => rowboat(x, y, s),
+    stilthut: () => stiltHut(x, y, s), cairn: () => cairn(x, y, s), bones: () => bones(x, y), snag: () => deadTree(x, y, 10 * s, S.dead),
+  })[kind]();
+}
+
+/** A fingerpost: two arrow boards, one pointing on down the road, one back the way you came. */
+function signpost(cx, foot, s, dir) {
+  const [lit, body, shade] = M().wood, ink = M().sign[4];
+  for (let y = foot - 9 * s; y <= foot; y++) { solid(cx, y, lit); if (s > 1) solid(cx + 1, y, shade); }
+  for (const [row, d] of [[foot - 8 * s, dir], [foot - 5 * s, -dir]]) {
+    const len = 5 * s;
+    for (let k = 0; k <= len + s; k++) for (let y = 0; y < 2 * s; y++) {
+      if (k > len && Math.abs(y - (s - 0.5)) > len + s - k) continue;   // the arrow's point
+      solid(cx + d * (k - s), row + y, y === 0 ? lit : y === 2 * s - 1 ? shade : k % 3 === 1 && k < len - 1 && y === s ? ink : body);
+    }
+  }
+}
+
+/** Safari Ball crates stacked by the road, the Zone's green band on each. */
+function crates(cx, foot, s) {
+  const [, body, shade, line] = M().wood, [board, , green] = M().sign;
+  const box = (x0, y1, w, h) => {
+    for (let y = y1 - h; y <= y1; y++) for (let x = x0; x <= x0 + w; x++) {
+      const edge = y === y1 - h || y === y1 || x === x0 || x === x0 + w;
+      solid(x, y, edge ? line : y <= y1 - h + Math.max(1, Math.round(h * 0.3)) ? green : x > x0 + w * 0.6 || (x - x0 + y) % 4 === 0 ? shade : body);
+    }
+    solid(x0 + Math.round(w / 2), y1 - h + 1, board);
+  };
+  box(cx - 4 * s, foot, 5 * s, 4 * s);
+  box(cx + s + 1, foot, 4 * s, 3 * s);
+  box(cx - 3 * s, foot - 4 * s, 4 * s, 3 * s);
+}
+
+function bench(cx, foot, s) {
+  const [lit, body, shade, line] = M().wood, w = 5 * s;
+  for (let x = -w; x <= w; x++) { solid(cx + x, foot - 2 * s, lit); solid(cx + x, foot - 2 * s + 1, shade); solid(cx + x, foot - 4 * s, body); }
+  for (const lx of [-w + 1, w - 1]) for (let y = foot - 4 * s; y <= foot; y++) solid(cx + lx, y, line);
+}
+
+/** A ranger's lookout: a railed platform on stilts under a little green roof. */
+function lookout(cx, foot, s) {
+  const [lit, body, shade, line] = M().wood, [roof, roofShade, roofDark] = M().roof;
+  const half = 4 * s, deck = foot - 9 * s;
+  for (const lx of [-half + 1, half - 1]) for (let y = deck; y <= foot; y++) { solid(cx + lx, y, body); solid(cx + lx + 1, y, shade); }
+  for (let k = 0, n = 2 * half - 2; k <= n; k++) { solid(cx - half + 2 + k, deck + 2 + Math.round(k * (foot - deck - 3) / n), line); solid(cx + half - 1 - k, deck + 2 + Math.round(k * (foot - deck - 3) / n), line); }   // cross bracing
+  for (let x = -half - 1; x <= half + 2; x++) { solid(cx + x, deck, lit); solid(cx + x, deck + 1, line); solid(cx + x, deck - 2 * s, body); }
+  for (const lx of [-half - 1, half + 1]) for (let y = deck - 4 * s; y < deck; y++) solid(cx + lx, y, line);
+  for (let k = 0; k <= 2 * s; k++) for (let x = -half - 2 + k * 2; x <= half + 3 - k * 2; x++) solid(cx + x, deck - 4 * s - k, k === 0 ? roofDark : x > 0 ? roofShade : roof);
+}
+
+/** A ranger's tent, its flap open, a pennant on top. */
+function tent(cx, foot, s) {
+  const [, , green, greenDark, ink] = M().sign, h = 5 * s;
+  for (let k = 0; k <= h; k++) { const w = Math.round(k * 1.3); for (let x = -w; x <= w; x++) solid(cx + x, foot - h + k, x === -w || x === w ? ink : x > 0 ? greenDark : green); }
+  for (let k = Math.round(h * 0.4); k <= h; k++) { const w = Math.round((k - h * 0.4) * 0.6); for (let x = -w; x <= w; x++) solid(cx + x, foot - h + k, ink); }
+  solid(cx, foot - h - 1, ink); solid(cx, foot - h - 2, ink); solid(cx + 1, foot - h - 2, M().roof[0]);
+}
+
+function haybales(cx, foot, s) {
+  const [lit, body, shade, line] = M().straw;
+  for (const [dx, r] of [[-2 * s, 2.4 * s], [2 * s + 1, 2 * s]]) for (let y = -Math.ceil(r); y <= r; y++) for (let x = -Math.ceil(r); x <= r; x++) {
+    const d = Math.hypot(x, y);
+    if (d <= r) solid(cx + dx + x, foot - Math.round(r) + y, d > r - 1 ? line : Math.round(d) % 2 ? shade : x + y < 0 ? lit : body);
+  }
+}
+
+function logpile(cx, foot, s) {
+  const [ring, ringDark, , line] = M().wood, r = s + 0.5;
+  for (let j = 0; j < 3; j++) for (let k = 0; k < 3 - j; k++) {
+    const x0 = cx + Math.round((k - (2 - j) / 2) * (2 * r + 1)), y0 = foot - Math.round(r) - Math.round(j * 2 * r);
+    for (let y = -Math.ceil(r); y <= r; y++) for (let x = -Math.ceil(r); x <= r; x++) { const d = Math.hypot(x, y); if (d <= r) solid(x0 + x, y0 + y, d > r - 0.8 ? line : d < r * 0.4 ? ringDark : ring); }
+  }
+}
+
+function rowboat(cx, foot, s) {
+  const [lit, body, shade, line] = M().wood, w = 6 * s, h = 2 * s;
+  for (let y = 0; y <= h; y++) { const half = w - Math.round((y / h) * 2 * s); for (let x = -half; x <= half; x++) solid(cx + x, foot - h + y, y === 0 ? lit : x === -half || x === half || y === h ? line : y <= s ? shade : body); }
+  strokeLine(cx - Math.round(w * 0.4), foot - h - 2 * s, cx + Math.round(w * 0.9), foot - h + s, line);   // an oar resting across it
+}
+
+/** A fisher's hut up on stilts out of the bog. */
+function stiltHut(cx, foot, s) {
+  const lift = 4 * s;
+  for (const dx of [-5 * s, 0, 5 * s]) for (let y = foot - lift; y <= foot; y++) solid(cx + dx, y, S.dead[2]);
+  restHouse(cx, foot - lift, s);
+}
+
+function cairn(cx, foot, s) {
+  for (let k = 0; k < 4; k++) mound(cx + (k % 2 ? 1 : -1), foot - Math.round(k * s * 1.6), Math.round(s * (2.6 - k * 0.5)), Math.max(1, Math.round(s * 0.9)), M().stone);
+}
+
+/* ----- each area's goal, far down the road ----- */
+
+function meadowFront() {   // the Lone Tree, where the area's boss waits
+  const k = along(), { x, foot } = approach(landmarkSide(), k), r = Math.max(3, Math.round(Math.min(W * 0.12, horizon * 0.3) * (0.25 + 0.75 * k)));
+  acacia(x, foot, r, r < 4);
+}
+
+/** The Peak's summit straight ahead, past the far ranges: taller and nearer every floor. */
+function summit() {
+  const k = along(), side = landmarkSide(), cx = vanishX() + Math.round(side * W * 0.12 * k);
+  const top = horizon - Math.round(horizon * (0.62 + 0.3 * k)), half = Math.round((horizon - top) * 1.1);
+  const [lit, body, shade] = k < 0.4 ? S.range : S.cliff, [snow, snowShade] = S.snow, snowline = top + Math.round((horizon - top) * (0.3 + 0.15 * k));
+  for (let x = -half; x <= half; x++) {
+    const y0 = top + Math.round(Math.abs(x) / half * (horizon - top) + Math.sin(x * 0.9) * 1.2 + Math.abs(Math.sin(x * 0.31)) * 2);
+    for (let y = Math.max(0, y0); y < horizon; y++) {
+      const sunny = x < 0, snowy = y < snowline + Math.round(Math.sin(x * 1.3) * 2);
+      solid(cx + x, y, snowy ? (sunny ? (dither(x, y) < 13 ? snow : snowShade) : snowShade) : sunny ? (dither(x, y) < 4 ? lit : body) : dither(x, y) < 10 ? shade : body);
+    }
+  }
+}
+
+function safariBackdrop() {
+  // every floor deals its props from its own seed, so neighbouring floors never look alike
+  rand = seeded(W * 131 + H + ((S.raw.seed || 0) % 9973) + (S.raw.step ?? 0) * 7919 + stage() * 104729);
+  areaPaint().back();
+}
+function safariFloor() { areaPaint().floor(); }
+
+function safariFront() {
+  areaPaint().front?.();
+  const st = stage(), side = landmarkSide();
+  if (S.raw.area !== 'peak' || st < 2) ranchFence(horizon + 3);
+  trailMarkers();
+  floorLandmark();
+  if (st === 0 && !S.raw.step && !S.raw.prop) safariSign(Math.round(W * (side < 0 ? 0.86 : 0.14)), horizon + 4 + Math.round((H - horizon) * 0.04));
+  if (st === 3 && !S.raw.prop) restHouse(Math.round(W * (side < 0 ? 0.86 : 0.14)), horizon + 4);
+  // the games' tall grass in the near corners, more of it further in
+  const h = Math.round((H - horizon) * (0.13 + st * 0.02)) * (S.raw.area === 'peak' && st >= 2 ? 0 : 1);   // no grass on the snow and bare rock up top
+  if (h) tallGrass(-2, Math.round(W * (0.12 + st * 0.03)), H + 1, h);
+  if (h) tallGrass(W - Math.round(W * (0.1 + st * 0.03)), W + 2, H + 1, Math.round(h * 0.85));
+  if (S.raw.area === 'meadow' && st === 2) {   // the Tall Grass: whole meadows of it, either side of the track
+    for (const s of [-1, 1]) {
+      const y = groundY(0.3, 0.45), x = s < 0 ? Math.round(W * 0.02) : Math.round(W * 0.8);
+      tallGrass(x, x + Math.round(W * 0.16), y, Math.round(h * (0.7 + depthOf(y))));
+    }
+  }
+}
+
+/** The Zone's ranch fence along the back: posts and two rails, with a few gaps (more in the wilder areas). */
+function ranchFence(foot) {
+  const [lit, body, shade, line] = M().wood, gaps = { marsh: 0.3, desert: 0.25, forest: 0.2 }[S.raw.area] ?? 0.1;
+  const step = Math.max(5, Math.round(W / 18)), gate = vanishX(), wide = Math.max(3, Math.round(W * 0.04));
+  const open = (x) => !S.raw.prop && Math.abs(x - gate) < wide;   // the gateway the trail runs through
+  for (let x = -1; x < W; x += step) {
+    if (rand() < gaps) continue;
+    for (let dx = 0; dx <= step; dx++) if (!open(x + dx)) { solid(x + dx, foot - 3, body); solid(x + dx, foot - 1, shade); }
+    if (!open(x)) for (let y = foot - 4; y <= foot; y++) { solid(x, y, y === foot - 4 ? lit : line); solid(x + 1, y, shade); }
+  }
+}
+
+/** The Safari Zone's signboard at an area's entrance: a cream board under the Zone's green band, on two posts. */
+function safariSign(cx, foot) {
+  const s = Math.max(1, Math.round(Math.min(W, H) / 90)), [board, boardDark, green, greenDark, ink] = M().sign;
+  const [lit, body, shade, line] = M().wood;
+  const w = 7 * s, h = 9 * s, top = foot - h - 3 * s;
+  for (const px0 of [cx - w + s, cx + w - 2 * s]) for (let y = top; y <= foot; y++) for (let k = 0; k < s + 1; k++) solid(px0 + k, y, k === s ? shade : body);
+  for (let y = top; y <= top + h; y++) for (let x = cx - w; x <= cx + w; x++) {
+    const edge = y === top || y === top + h || x === cx - w || x === cx + w;
+    solid(x, y, edge ? line : y < top + 3 * s ? (y === top + 3 * s - 1 ? greenDark : green) : x > cx + w - 2 || y === top + h - 1 ? boardDark : board);
+  }
+  // a little Safari Ball on the band, and rows of lettering
+  const by = top + Math.round(1.5 * s), bx = cx - w + 2 * s;
+  for (let y = -s; y <= s; y++) for (let x = -s; x <= s; x++) if (x * x + y * y <= s * s + s) solid(bx + x, by + y, y < 0 ? board : y === 0 ? ink : boardDark);
+  for (let x = cx - w + 4 * s; x < cx + w - s; x++) if ((x + 1) % (s + 2) < s + 1) solid(x, by, board);
+  for (let row = top + 4 * s; row < top + h - s; row += 2 * s) {
+    for (let x = cx - w + 2 * s; x < cx + w - 2 * s; x++) if (dither(x, row) < 11 && (x * 7 + row) % 9 !== 0) for (let k = 0; k < s; k++) solid(x, row + k, ink);
+  }
+}
+
+/** A Safari rest house by the boss, like Johto's: cream walls under a green roof, a door and a window. */
+function restHouse(cx, foot, s = Math.max(1, Math.round(Math.min(W, H) / 80))) {
+  const [wall, wallShade, wallLine] = M().wall, [roof, roofShade, roofDark] = M().roof;
+  const [, , , line] = M().wood;
+  const half = 7 * s, tall = 6 * s, eave = foot - tall;
+  for (let y = eave; y <= foot; y++) for (let x = -half; x <= half; x++) solid(cx + x, y, Math.abs(x) === half || y === foot ? wallLine : x > half * 0.5 ? wallShade : wall);
+  for (let k = 0, rise = 5 * s; k <= rise; k++) {
+    const w = half + 2 - Math.round(k * (half + 2) / (rise + 1) * 0.9);
+    for (let x = -w; x <= w; x++) solid(cx + x, eave - k, k === 0 ? roofDark : x > w * 0.4 ? roofShade : (k % 2 && dither(x, k) < 4) ? roofShade : roof);
+  }
+  for (let y = foot - 4 * s; y < foot; y++) for (let x = -s; x <= s; x++) solid(cx + x, y, line);
+  for (let y = eave + s + 1; y <= eave + 3 * s; y++) for (let x = half - 5 * s; x <= half - 2 * s; x++) solid(cx + x, y, y === eave + s + 1 ? line : M().water[1]);
+  for (let x = -half - 2; x <= half + 2; x++) if (dither(x, foot) < 9) tint(cx + x, foot + 1, 0.8);
+}
+
+/** A clump of the games' tall grass: tall pointed blades over a dark heart. */
+function tallGrass(x0, x1, foot, h) {
+  const [lit, body, shade, deep] = S.tall, span = Math.max(1, x1 - x0);
+  const taper = (x) => Math.min(1, Math.min(x - x0, x1 - x) / Math.max(2, span * 0.18) + 0.4);   // the clump rounds off at its ends
+  for (let x = x0; x <= x1; x++) for (let y = foot - Math.round(h * 0.45 * taper(x) * (0.8 + 0.2 * Math.sin(x * 1.3))); y <= foot; y++) solid(x, y, dither(x, y) < 7 ? shade : deep);
+  for (let x = x0; x <= x1; x += 2) {
+    const bh = Math.max(2, Math.round(h * taper(x) * (0.7 + rand() * 0.3))), lean = rand() < 0.5 ? -1 : 1;
+    for (let k = 0; k < bh; k++) {
+      const xx = x + (k > bh * 0.65 ? lean : 0), y = foot - k;
+      solid(xx, y, k >= bh - 2 ? lit : k > bh * 0.45 ? body : shade);
+      if (k < bh * 0.75) solid(xx + 1, y, k < bh * 0.35 ? deep : shade);
+    }
+  }
+}
+
+/** Rocks and pebbles scattered over the ground. */
+function scatterRocks(count) {
+  for (let n = 0; n < count; n++) {
+    const y = horizon + 5 + Math.floor(rand() * (H - horizon - 6));
+    rock(Math.floor(rand() * W), y, depthOf(y) > 0.4 ? 2 : 1);
+  }
+}
+
+/** A clump of reeds, and cattails among them where the area has them. */
+function reeds(cx, foot, size, cattails = true) {
+  const [lit, body, shade] = S.reed, [head, headDark] = M().cattail;
+  for (let k = -size; k <= size; k += 1 + (k & 1)) {
+    const h = Math.round(size * (1.4 + rand() * 1.4)), lean = k < 0 ? -1 : 1;
+    for (let y = 0; y < h; y++) solid(cx + k + (y > h * 0.7 ? lean : 0), foot - y, y > h * 0.6 ? lit : y > h * 0.3 ? body : shade);
+    if (cattails && rand() < 0.4) for (let y = Math.round(h * 0.55); y < Math.round(h * 0.55) + Math.max(2, Math.round(size * 0.6)); y++) {
+      solid(cx + k, foot - y, head); solid(cx + k + 1, foot - y, headDark);
+    }
+  }
+  for (let x = -size - 1; x <= size + 1; x++) bare(cx + x, foot);
+}
+
+/** A still pool on the ground: its water from `fill(x, y, d)`, a dark wet rim, lily pads if `lilies`. */
+function groundPool(cx, cy, rx, ry, fill, rim, lilies = 0) {
+  pool(cx, cy, rx, ry, fill, rim);
+  for (let n = 0; n < lilies; n++) {
+    const a = rand() * Math.PI * 2, r = Math.sqrt(rand()) * 0.75, x = cx + Math.round(Math.cos(a) * rx * r), y = cy + Math.round(Math.sin(a) * ry * r);
+    lilyPad(x, y, 1 + Math.round(depthOf(y) * 2));
+  }
+}
+
+function lilyPad(x, y, r) {
+  const [leaf, leafDark, petal, petalLit] = S.lily;
+  for (let dy = -Math.ceil(r * 0.5); dy <= Math.ceil(r * 0.5); dy++) for (let dx = -r; dx <= r; dx++) {
+    if ((dx / r) ** 2 + (dy / Math.max(0.6, r * 0.5)) ** 2 <= 1 && !(dx === 1 && dy === 0)) solid(x + dx, y + dy, dy > 0 ? leafDark : leaf);
+  }
+  if (rand() < 0.35) { solid(x - 1, y - 1, petal); solid(x, y - 1, petalLit); solid(x - 1, y - 2, petalLit); }
+}
+
+/* ----- the Meadow ----- */
+
+function meadowBack() {
+  ridge(horizon - 10, 5, 26, 0.4, S.farHills, false);
+  ridge(horizon - 5, 3, 15, 2.3, S.hills, true);
+  // flat-topped trees standing alone far off over the grass
+  for (let x = Math.floor(rand() * 16); x < W; x += 14 + Math.floor(rand() * 26)) acacia(x, horizon - 2 - Math.floor(rand() * 3), 2 + Math.floor(rand() * 2), true);
+}
+
+function meadowFloor() {
+  const st = stage();
+  bands(horizon, H, S.ground, 0.8);
+  grassPatches(S.patch, Math.round(W / 9 * (1 + st * 0.3)));
+  flowerClusters(Math.round(W / (st === 1 ? 4 : 12)));   // the Flower Field
+  paintTrail();
+  scatterRocks(Math.max(2, Math.round(W / 50)));
+}
+
+/** A savanna tree: a bare trunk forking under a wide, flat crown, lit on top. `far` ones in the hills' hazy colours. */
+function acacia(cx, foot, r, far) {
+  const [lit, leaf, shade, deep] = far ? [S.hills[0], S.hills[1], S.hills[2], S.hills[2]] : S.trees;
+  const [bark, barkDark] = far ? [S.hills[2], S.hills[2]] : S.trunk;
+  const tall = Math.round(r * 1.7), top = foot - tall, rx = Math.round(r * 2.3), ry = Math.max(1, Math.round(r * 0.55));
+  for (let y = top; y <= foot; y++) {
+    const lean = Math.round((foot - y) * 0.12);
+    solid(cx + lean, y, bark);
+    if (r > 3) solid(cx + lean + 1, y, barkDark);
+    if (!far && y < foot - tall * 0.45) solid(cx - Math.round((foot - tall * 0.45 - y) * 0.9), y, bark);   // the fork
+  }
+  // the crown: flat clumps side by side, an umbrella with a dark, level underside
+  const flat = top + Math.round(ry * 0.5);
+  for (let i = 0, n = far ? 2 : 5; i < n; i++) {
+    const u = n > 1 ? i / (n - 1) * 2 - 1 : 0, ccx = cx + Math.round(u * rx * 0.72), rc = Math.max(1, r * (far ? 0.9 : 0.75) * (1 - 0.3 * Math.abs(u)));
+    const ccy = top - Math.round(ry * 0.35 * (1 - Math.abs(u)));
+    for (let y = Math.floor(ccy - rc); y <= flat; y++) for (let x = Math.floor(-rc * 1.8); x <= rc * 1.8; x++) {
+      const dx = x / 1.8, dy = y - ccy;
+      if (dx * dx + dy * dy > rc * rc) continue;
+      const light = -dx * 0.6 + dy;
+      solid(ccx + x, y, y >= flat ? deep : light < -rc * 0.55 ? lit : light > rc * 0.45 ? shade : dither(x, y) < 2 ? lit : leaf);
+    }
+  }
+  if (!far) for (let y = 0; y <= 1; y++) for (let x = -rx; x <= rx; x++) if (dither(x, y) < 8) tint(cx + x + 2, foot + y, 0.82);
+}
+
+/* ----- the Forest ----- */
+
+/** Under the trees: trunks at every depth rising into a roof of leaves, the wood dim between them with a little sky
+    showing through; the Thicket closes in and darkens, the boss's glade opens a hole in the middle. */
+function forestBack() {
+  const st = stage(), [lit, leaf, shade, deep] = S.trees;
+  const [far, farDark] = S.farForest;
+  for (let x = -6; x < W + 6; x += 4 + Math.floor(rand() * 4)) pine(x, horizon - 12 - Math.floor(rand() * 6), 4 + Math.floor(rand() * 3), far, farDark);
+  const vx = vanishX(), R = Math.max(2, W * (0.02 + 0.1 * along()));   // the light at the end of the road, nearer every floor
+  const ahead = (x, y) => st < 3 && ((x - vx) / R) ** 2 + ((y - (horizon - R * 0.8)) / (R * 1.4)) ** 2 < 1;
+  const glade = (x) => (st === 3 ? Math.max(0, 1 - Math.abs(x - vx) / (W * 0.3)) : 0);   // 1 in the glade's middle
+  const open = [0.25, 0.1, -0.25, 0.1][st], roof = Math.round(horizon * [0.24, 0.3, 0.42, 0.3][st]);
+  for (let y = roof - 2; y < horizon; y++) for (let x = 0; x < W; x++) {
+    const gap = Math.sin(x / 7 + y / 11) + Math.sin(x / 3.1 - y / 9) > 1.35 - (horizon - y) / horizon * 0.5 - open - glade(x) * 5;
+    if (!gap && !ahead(x, y)) { solid(x, y, dither(x, y) < 5 ? shade : deep); tint(x, y, st === 2 ? 0.75 : 0.88); }
+  }
+  for (let x = Math.floor(rand() * 4); x < W; x += 4 + Math.floor(rand() * (st === 2 ? 6 : 10))) {
+    if (glade(x) > 0.3 || (st < 3 && Math.abs(x - vx) < R)) continue;
+    const w = 1 + Math.floor(rand() * 3), far = rand() < 0.5;
+    for (let y = roof - 2; y < horizon; y++) for (let dx = 0; dx < w; dx++) {
+      solid(x + dx, y, dx === w - 1 ? S.trunk[1] : S.trunk[0]);
+      tint(x + dx, y, far ? 0.5 : 0.75);
+    }
+  }
+  for (let x = 0; x < W; x++) {
+    const h = Math.round(roof * (1 - glade(x) * 0.85) + 2.5 * Math.sin(x / 6) + 1.5 * Math.sin(x / 2.7 + 2));
+    for (let y = 0; y <= h; y++) {
+      const hole = Math.sin(x / 9 + y / 4) + Math.sin(x / 4.3 - y / 3) > 1.55 + st * 0.15 && y < h - 3;   // sky through the leaves
+      if (!hole) solid(x, y, y >= h - 1 ? deep : dither(x, y) < 2 ? lit : y > h - 4 && dither(x, y) < 8 ? shade : leaf);
+    }
+  }
+}
+
+function forestFloor() {
+  const st = stage();
+  bands(horizon, H, S.ground, 0.8);
+  grassPatches(S.patch, Math.round(W / 8));
+  paintTrail();
+  // last autumn's leaves on the ground
+  for (let n = 0; n < Math.round(W * (H - horizon) / 40); n++) {
+    const y = horizon + 3 + Math.floor(rand() * (H - horizon - 3)), [a, b] = S.leaves[n % S.leaves.length];
+    put(Math.floor(rand() * W), y, depthOf(y) > 0.5 && n % 2 ? b : a);
+  }
+  for (let n = 0; n < 3 + st; n++) { const y = groundY(0.1, 0.9); ferns(edgeX(), y, 2 + Math.round(depthOf(y) * 7)); }
+  for (let n = 0; n < 2 + st; n++) { const y = groundY(0.05, 0.6); mushroom(edgeX(), y, 1 + Math.round(depthOf(y) * 2), M().cap); }
+  scatterRocks(Math.max(2, Math.round(W / 60)));
+  if (st >= 1) { const y = groundY(0.12, 0.22); stump(edgeX(-landmarkSide(), 0.18), y, 1 + Math.round(depthOf(y) * 3), 2 + Math.round(depthOf(y) * 4), M().bark, M().wood, true); }
+  if (st === 2) { const y = groundY(0.3, 0.4), s = landmarkSide(); fallenLog(s < 0 ? Math.round(W * 0.1) : Math.round(W * 0.86), y, Math.round(W * 0.07), 1 + Math.round(depthOf(y) * 2), true); }
+}
+
+/** The wood itself: broadleaf trees and pines along the back, light falling through; further in, big trees close in,
+    and the boss's glade opens in a ring of them with the sun pouring down the middle. */
+function forestFront() {
+  const st = stage(), glade = st === 3, vx = vanishX();
+  for (let x = -4; x < W + 6; x += 12 + Math.floor(rand() * 14)) {
+    if (Math.abs(x - vx) < W * (glade ? 0.2 : 0.06)) continue;
+    pine(x, horizon - 9 - Math.floor(rand() * 6), 4 + Math.floor(rand() * 3), S.pines[0], S.pines[1], true);
+  }
+  for (let x = -4; x < W + 6; x += 3 + Math.floor(rand() * 4)) if (Math.abs(x - vx) > 4) roundTree(x, horizon - 1 - Math.floor(rand() * 3), 2 + Math.floor(rand() * 3), false);   // the undergrowth
+  for (let x = 0; x < W; x++) { put(x, horizon + 2, S.trees[3]); if (dither(x, horizon + 3) < 6) put(x, horizon + 3, S.trees[3]); }
+  // light falling through the leaves (not across the open sky, where it would read as rain), and the wood's shade on the grass
+  const low = horizon + Math.round((H - horizon) * 0.5), strength = glade ? 1.8 : 1;
+  for (let y = 0; y < low; y++) for (let x = 0; x < W; x++) {
+    const band = ((x - y * 0.45) % 38 + 38) % 38;
+    if (band < 5 && !sky[y * W + x] && dither(x, y) < (band < 2 ? 5 : 3) * strength) tint(x, y, 1.08, 16);
+  }
+  for (let y = horizon + 3, reach = Math.round((H - horizon) * 0.3); y < horizon + 3 + reach; y++) for (let x = 0; x < W; x++) {
+    if (dither(x, y) < 14 - (y - horizon - 3) / reach * 14 && !(glade && Math.abs(x - vx) < W * 0.25)) tint(x, y, 0.85);
+  }
+  if (glade) {   // a pool of sunlight on the grass
+    const cy = horizon + Math.round((H - horizon) * 0.35), rx = Math.round(W * 0.34), ry = Math.round((H - horizon) * 0.3);
+    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
+      const d = (x / rx) ** 2 + (y / ry) ** 2;
+      if (d < 1 && dither(x, y) < (d < 0.5 ? 10 : 4)) tint(vx + x, cy + y, 1.08, 14);
+    }
+  }
+  nearTrees([0.1, 0.4, 0.9, 0.3][st]);
+}
+
+/* ----- the Wetland ----- */
+
+const lakeTop = () => horizon - Math.max(6, Math.round(horizon * (0.14 + 0.3 * along())));   // the lake opens out as you come to it
+
+function wetlandBack() {
+  const top = lakeTop(), st = stage();
+  ridge(top - 6, 4, 22, 1.7, S.farHills, false);
+  for (let x = -4; x < W + 6; x += 3 + Math.floor(rand() * 4)) roundTree(x, top - 1 - Math.floor(rand() * 3), 2 + Math.floor(rand() * 3), false);
+  // the lake, ripples running across it, glints sparkling
+  const [glint] = S.glint, [ripLit, ripDark] = S.ripple;
+  for (let y = top; y < horizon + 1; y++) for (let x = 0; x < W; x++) {
+    const t = (y - top) / Math.max(1, horizon - top) * (S.lake.length - 1), i = Math.floor(t);
+    solid(x, y, S.lake[Math.min(S.lake.length - 1, i + ((t - i) * 16 > dither(x, y) ? 1 : 0))]);
+  }
+  for (let x = 0; x < W; x++) solid(x, top, S.trees[3]);
+  for (let n = 0, count = Math.round(W * (horizon - top) / 40); n < count; n++) {
+    const y = top + 2 + Math.floor(rand() * (horizon - top - 2)), x = Math.floor(rand() * W), len = 1 + Math.round(rand() * 3 * (y - top) / (horizon - top));
+    for (let k = 0; k < len; k++) solid(x + k, y, rand() < 0.6 ? ripLit : ripDark);
+  }
+  life.glints = [];
+  life.glintColour = glint;
+  for (let n = 0; n < Math.round(W / 6); n++) life.glints.push({ x: Math.floor(rand() * W), y: top + 2 + Math.floor(rand() * (horizon - top - 2)), phase: rand() * 40 });
+  for (let n = 0, pads = Math.round(W / (st === 3 ? 8 : 20)); n < pads; n++) lilyPad(Math.floor(rand() * W), top + 3 + Math.floor(rand() * (horizon - top - 3)), 1);
+  life.lake = { top };
+  if (st >= 1) pier(landmarkSide(), top, st === 2 ? 0.34 : 0.22);
+}
+
+/** A wooden pier on stilts running out over the lake from one edge. */
+function pier(side, top, reach) {
+  const [lit, body, shade, line] = M().wood, deck = horizon - Math.max(2, Math.round((horizon - top) * 0.22));
+  const x0 = side < 0 ? -1 : W - Math.round(W * reach), x1 = side < 0 ? Math.round(W * reach) : W + 1;
+  for (let x = x0; x <= x1; x++) {
+    solid(x, deck, lit); solid(x, deck + 1, x % 3 ? body : shade); solid(x, deck + 2, line);
+    if ((x - x0) % 6 === 2) for (let y = deck + 2; y <= horizon + 1; y++) { solid(x, y, line); if (y < horizon) tint(x + 1, y, 0.75); }
+  }
+  for (const x of [side < 0 ? x1 : x0]) for (let y = deck - 3; y < deck; y++) solid(x, y, line);   // a mooring post at its end
+}
+
+function wetlandFloor() {
+  const st = stage();
+  bands(horizon, H, S.ground, 0.8);
+  // a muddy shore along the water
+  for (let x = 0; x < W; x++) { solid(x, horizon + 1, M().wood[2]); if (dither(x, horizon + 2) < 8) put(x, horizon + 2, M().wood[1]); }
+  grassPatches(S.patch, Math.round(W / 10));
+  flowerClusters(Math.round(W / 16));
+  scatterRocks(Math.max(2, Math.round(W / 60)));
+  const [, lit, body, deep] = S.lake;
+  const water = (x, y, d) => (d > 0.6 ? deep : dither(x, y) < 3 ? lit : body);
+  for (let n = 0; n < 7 + st * 2; n++) { const x = n < 4 ? edgeX(undefined, 0.3) : Math.floor(rand() * W); reeds(x, horizon + 3 + Math.floor(rand() * 4), 2 + Math.floor(rand() * 2)); }
+  // puddles and a pond in a near corner (the Lily Lake's, big and covered in lilies)
+  for (let n = 0; n < 1 + st; n++) { const y = groundY(0.2, 0.5); groundPool(edgeX(), y, 2 + Math.round(depthOf(y) * 6), 1 + Math.round(depthOf(y) * 2), water, M().bank[0], 1); }
+  const s = landmarkSide(), cy = groundY(0.62, 0.7), rx = Math.round(W * (st === 3 ? 0.2 : 0.12)), ry = Math.round((H - horizon) * (st === 3 ? 0.14 : 0.08));
+  groundPool(s < 0 ? Math.round(rx * 0.6) : W - Math.round(rx * 0.6), cy, rx, ry, water, M().bank[0], st === 3 ? 7 : 2);
+  for (let n = 0; n < 3; n++) reeds((s < 0 ? rx : W - rx) + Math.round((rand() - 0.5) * rx), cy - ry + Math.floor(rand() * 3), 2 + Math.floor(depthOf(cy) * 3));
+  paintTrail();
+}
+
+/* ----- the Marsh ----- */
+
+function marshBack() {
+  S.mist = S.raw.mist + Math.round(along() * 26);   // thicker towards the Misty Mire
+  const [far, farDark] = S.farForest;
+  ridge(horizon - 6, 3, 18, 0.9, [far, far, farDark], false);
+  for (let x = Math.floor(rand() * 10); x < W; x += 9 + Math.floor(rand() * 12)) {
+    if (rand() < 0.5) deadTree(x, horizon - 3, 8 + Math.floor(rand() * 8), [far, farDark, farDark]);
+    else willow(x, horizon - 2, 3 + Math.floor(rand() * 2), [far, far, farDark, farDark]);
+  }
+}
+
+function marshFloor() {
+  const st = stage();
+  bands(horizon, H, S.ground, 0.8);
+  grassPatches(S.patch, Math.round(W / 7));
+  grassPatches(S.mud[0], Math.round(W / 14));
+  grassPatches(S.mud[1], Math.round(W / 24));
+  // bog pools, scummed with algae
+  const [lit, body, shade, deep] = S.bog, [algae, algaeDark] = S.algae;
+  const murk = (x, y, d) => ((x * 7 + y * 13) % 11 === 0 ? algae : (x * 5 + y * 3) % 13 === 0 ? algaeDark : d > 0.65 ? deep : dither(x, y) < 3 ? lit : d > 0.35 ? shade : body);
+  life.pools = [];
+  for (let n = 0, count = 3 + st * 2; n < count; n++) {
+    const y = groundY(0.08, 0.8), depth = depthOf(y), rx = 4 + Math.round(rand() * 5 + depth * 14), ry = Math.max(1, Math.round(rx * (0.2 + depth * 0.12)));
+    const x = n < 2 ? edgeX() : Math.floor(rand() * W);
+    groundPool(x, y, rx, ry, murk, S.mud[1], Math.round(rx / 4));
+    life.pools.push({ x, y, rx, ry });
+    reeds(x + (rand() < 0.5 ? -rx : rx), y, 1 + Math.round(depth * 3));
+  }
+  paintTrail();
+  scatterRocks(Math.max(2, Math.round(W / 70)));
+  for (let n = 0; n < 2 + st; n++) { const y = groundY(0.05, 0.5); stump(edgeX(), y, 1 + Math.round(depthOf(y) * 2), 1 + Math.round(depthOf(y) * 4), [...S.dead, M().bark[3]], M().wood); }
+}
+
+/** Willows at the edges, drooping over the water; the Sunken Woods put dead trees standing in it. */
+function marshFront() {
+  const st = stage();
+  for (let x = 0; x < W; x++) if (dither(x, horizon + 2) < 9) put(x, horizon + 2, S.trees[3]);
+  // the Great Snag: a huge dead tree in the mist, far down the walkway, where the area's boss waits
+  const k = along(), { x: gx, foot: gfoot } = approach(landmarkSide(), k), [far, farDark] = S.farForest;
+  deadTree(gx, gfoot, Math.round(horizon * (0.3 + 0.7 * k)), k < 0.4 ? [far, farDark, farDark] : S.dead);
+  for (let x = Math.floor(rand() * 8); x < W + 6; x += 10 + Math.floor(rand() * 12)) {
+    if (Math.abs(x - vanishX()) < W * 0.12 || Math.abs(x - gx) < 6) continue;
+    willow(x, horizon + 1, 4 + Math.floor(rand() * 3), S.trees);
+  }
+  if (st >= 2) for (const s of [-1, 1]) {
+    const y = groundY(0.15, 0.3);
+    deadTree(edgeX(s, 0.14), y, Math.round((H - horizon) * 0.4 + depthOf(y) * 20), S.dead);
+  }
+  const big = Math.max(6, Math.round(Math.min(W * 0.08, horizon * 0.25)));
+  willow(landmarkSide() < 0 ? Math.round(W * 0.94) : Math.round(W * 0.06), horizon + Math.round((H - horizon) * 0.2), big, S.trees);
+}
+
+/** A weeping willow: a short trunk, a round crown, and long strands hanging down from it. */
+function willow(cx, foot, r, [lit, leaf, shade, deep]) {
+  const top = foot - r * 3, cy = top + r;
+  for (let y = cy; y <= foot; y++) { solid(cx, y, S.trunk[0]); solid(cx + 1, y, S.trunk[1]); }
+  for (let y = top; y <= cy + Math.round(r * 0.4); y++) for (let x = -r - 1; x <= r + 1; x++) {
+    const dx = x / (r + 1), dy = (y - cy) / r;
+    if (dx * dx + dy * dy > 1) continue;
+    solid(cx + x, y, dx + dy < -0.6 ? lit : dx + dy > 0.5 ? deep : dither(x, y) < 6 ? shade : leaf);
+  }
+  for (let x = -r - 1; x <= r + 1; x++) {
+    if ((x + cx) % 2) continue;
+    const len = Math.round(r * (1.2 + 0.8 * Math.abs(Math.sin(x * 2.3 + cx)))), start = cy + Math.round(r * 0.3 * (1 - Math.abs(x) / (r + 1)));
+    for (let k = 0; k < len && start + k <= foot; k++) solid(cx + x, start + k, k > len - 2 ? lit : x > 0 ? shade : leaf);
+  }
+}
+
+/* ----- the Peak ----- */
+
+/** A range of jagged peaks, sunlit faces to the left, snow above `snowline` (a fraction down from the top). */
+function peaks(top, height, wave, seed, [lit, body, shade], snowline) {
+  const ys = [];
+  for (let x = -1; x <= W + 1; x++) {
+    const tri = (w, s) => Math.abs(((x / w + s) % 2 + 2) % 2 - 1) * 2 - 1;
+    const swell = 0.75 + 0.35 * Math.sin(x / (wave * 2.3) + seed * 3);   // some peaks stand taller than others
+    const shape = Math.min(tri(wave, seed) * swell, tri(wave * 0.43, seed * 2.7) * 0.5 + 0.35) + 0.12 * Math.sin(x / (wave * 0.27) + seed * 5);
+    ys.push(top + Math.round(height * (shape * 0.8 + 0.5)));
+  }
+  const [snow, snowShade, snowDeep] = S.snow;
+  for (let x = 0; x < W; x++) {
+    const y0 = ys[x + 1], sunny = ys[x + 2] < y0 || (ys[x + 2] === y0 && ys[x] > y0);
+    const snowTo = y0 + Math.round(height * snowline * (0.7 + 0.5 * Math.abs(Math.sin(x * 0.7 + seed))));
+    for (let y = Math.max(0, y0); y < horizon; y++) {
+      const snowy = y < snowTo || (y < snowTo + 2 && dither(x, y) < 6);
+      solid(x, y, snowy ? (sunny ? (y === y0 ? snow : dither(x, y) < 12 ? snow : snowShade) : snowShade) : sunny ? (dither(x, y) < 4 ? lit : body) : (dither(x, y) < 10 ? shade : body));
+      if (snowy && !sunny && y > y0 + 1 && dither(x, y) < 3) solid(x, y, snowDeep);
+    }
+  }
+}
+
+function peakBack() {
+  const st = stage();
+  if (st === 3) {   // the Summit: the far range below you, a sea of cloud filling the valleys
+    peaks(horizon - Math.round(horizon * 0.18), Math.round(horizon * 0.12), 13, 0.6, S.range, 0.5);
+    const [white, pale, shade] = S.cloud;
+    for (let y = horizon - Math.round(horizon * 0.12); y < horizon; y++) for (let x = 0; x < W; x++) {
+      const crest = Math.sin(x / 6 + y * 0.4) + Math.sin(x / 2.6 - y);
+      if (y > horizon - Math.round(horizon * 0.08) || crest > 0.4) solid(x, y, crest > 1.2 ? white : crest > 0 ? pale : shade);
+    }
+    return;
+  }
+  peaks(horizon - Math.round(horizon * 0.62), Math.round(horizon * 0.3), 19, 0.3, S.range, 0.45);
+  peaks(horizon - Math.round(horizon * (0.32 + st * 0.08)), Math.round(horizon * 0.18), 11, 1.9, S.cliff, 0.25 + st * 0.15);
+  summit();   // it towers over the nearer ridge
+}
+
+function peakFloor() {
+  const st = stage();
+  if (st === 2) { bands(horizon, H, S.snowField, 0.8); life.bladeDensity = 0.12; }   // the Snowfield
+  else if (st === 3) {   // the bare rock of the summit, snow in its hollows
+    bands(horizon, H, [S.cliff[0], S.cliff[0], S.cliff[1], S.cliff[1], S.cliff[2]], 0.8);
+    life.bladeDensity = 0.08;
+  }
+  else bands(horizon, H, S.ground, 0.8);
+  if (st < 2) grassPatches(S.patch, Math.round(W / 10));
+  // snow lying in drifts, more the higher you climb
+  const [snow, snowShade] = S.snow;
+  grassPatches(st === 2 ? S.snowField[4] : snowShade, Math.round(W / 14 * (0.5 + st)));
+  if (st !== 2) grassPatches(snow, Math.round(W / 18 * (st === 3 ? 0.8 : 0.3 + st)));
+  if (st === 3) for (let n = 0; n < Math.round(W / 10); n++) {   // cracks in the summit's rock
+    let x = Math.floor(rand() * W), y = horizon + 3 + Math.floor(rand() * (H - horizon - 4));
+    for (let k = 0, len = 4 + Math.floor(rand() * (6 + depthOf(y) * 20)); k < len; k++) { x += rand() < 0.7 ? 1 : 0; if (rand() < 0.35) y += rand() < 0.5 ? -1 : 1; put(x, y, S.cliff[3]); if (depthOf(y) > 0.5) put(x, y - 1, S.cliff[0]); }
+  }
+  if (st < 2) flowerClusters(Math.round(W / 24));
+  paintTrail();
+  scatterRocks(Math.round(W / 30));
+  for (let n = 0; n < 2 + st; n++) { const y = groundY(0.05, 0.6); mound(edgeX(), y, 2 + Math.round(depthOf(y) * 5), 1 + Math.round(depthOf(y) * 3), M().stone); }
+}
+
+/** Snow-dusted pines along the back (none on the summit, above the trees), and a cairn marking the top. */
+function peakFront() {
+  const st = stage();
+  if (st < 3) {
+    const [snow] = S.snow;
+    for (let x = -4; x < W + 6; x += (st === 2 ? 11 : 5) + Math.floor(rand() * 6)) {
+      if (Math.abs(x - vanishX()) < 5) continue;
+      const top = horizon - 6 - Math.floor(rand() * 5), half = 4 + Math.floor(rand() * 3);
+      pine(x, top, half, S.pines[0], S.pines[1], true);
+      for (let k = 0, tierH = Math.max(3, Math.round(half * 1.1)); k < 3; k++) {   // snow on each tier's shoulders
+        const y = top + Math.round(tierH * 0.6) * k + 1, w = Math.round(half * (0.45 + 0.55 * k / 2) * 0.5);
+        for (let dx = -w; dx <= Math.max(0, w - 1); dx++) put(x + dx, y + Math.round(Math.abs(dx) * 0.8), snow);
+      }
+    }
+  } else {
+    const s = landmarkSide(), foot = groundY(0.1, 0.14), cx = s < 0 ? Math.round(W * 0.1) : Math.round(W * 0.9), size = Math.max(2, Math.round(W / 60));
+    for (let k = 0; k < 4; k++) mound(cx + (k % 2 ? 1 : -1), foot - k * size * 1.4, Math.round(size * (2.4 - k * 0.45)), Math.round(size * 0.8), M().stone);
+  }
+}
+
+/* ----- the Desert ----- */
+
+function desertBack() {
+  const st = stage();
+  const [far, farDark] = S.farMesas;
+  for (const [at, rise, width] of [[0.18, 0.2, 0.06], [0.5, 0.14, 0.09], [0.8, 0.24, 0.05]]) {
+    mesa(Math.round(W * (at + (rand() - 0.5) * 0.1)), horizon - Math.round(horizon * rise), Math.max(3, Math.round(W * width)), [far, far, farDark, farDark]);
+  }
+  ridge(horizon - 6, 4, 30, 1.1 + rand(), [...S.farDunes, S.farDunes[1]], false);
+  ridge(horizon - 2, 3, 17, 2.7 + rand(), S.dunes, true);
+  if (st === 2) for (const [at, rise, width] of [[0.05, 0.62, 0.14], [0.96, 0.54, 0.12]]) {   // the Canyon's walls
+    mesa(Math.round(W * at), horizon - Math.round(horizon * rise), Math.max(5, Math.round(W * width)), S.mesas);
+  }
+}
+
+function desertFloor() {
+  const st = stage();
+  bands(horizon, H, S.ground, 0.8);
+  // ripples the wind leaves in the sand
+  const ripple = S.ground[5], lit = S.ground[0];
+  for (let y = horizon + 3; y < H; y += 3 + Math.round(depthOf(y) * 6)) {
+    for (let x = 0; x < W; x++) {
+      const yy = y + Math.round(Math.sin(x / (5 + depthOf(y) * 8) + y) * (1 + depthOf(y)));
+      if (Math.sin(x / 13 + y * 1.7) > -0.3) { put(x, yy, ripple); if (depthOf(y) > 0.4) put(x, yy - 1, lit); }
+    }
+  }
+  grassPatches(S.patch, Math.round(W / 14));
+  paintTrail();
+  scatterRocks(Math.round(W / 24));
+  for (let n = 0; n < 3 + st; n++) { const y = groundY(0.04, 0.7); cactus(edgeX(undefined, 0.3), y, 3 + Math.round(depthOf(y) * 18)); }
+  for (let n = 0; n < 1 + (st === 1); n++) { const y = groundY(0.3, 0.8); bones(edgeX(undefined, 0.3), y); }
+  if (st === 3) {   // the Oasis: a spring-fed pool under palms
+    const s = landmarkSide(), cy = groundY(0.1, 0.14), rx = Math.round(W * 0.14), ry = Math.max(2, Math.round((H - horizon) * 0.05));
+    const [, wlit, wbody, wdeep] = S.lake;
+    life.oasis = { x: s < 0 ? Math.round(W * 0.14) : Math.round(W * 0.86), y: cy, rx, ry };
+    groundPool(life.oasis.x, cy, rx, ry, (x, y, d) => (d > 0.6 ? wdeep : dither(x, y) < 3 ? wlit : wbody), S.cactus[2]);
+    life.glints = Array.from({ length: Math.round(rx / 2) }, () => ({ x: life.oasis.x + Math.round((rand() - 0.5) * rx * 1.4), y: cy + Math.round((rand() - 0.5) * ry), phase: rand() * 40 }));
+    life.glintColour = S.glint[0];
+  }
+}
+
+function desertFront() {
+  const o = life.oasis;
+  if (!o) {   // the oasis's palms far down the track, shimmering in the heat, nearer every floor
+    const k = along(), { x, foot } = approach(landmarkSide(), k), h = Math.max(4, Math.round(horizon * (0.1 + 0.3 * k)));
+    for (let dx = -Math.round(h * 0.5); dx <= Math.round(h * 0.5); dx++) if (dither(x + dx, foot) < 12) put(x + dx, foot + 1, S.lake[2]);
+    palm(x - Math.round(h * 0.25), foot, h, -0.6);
+    palm(x + Math.round(h * 0.2), foot, Math.round(h * 0.8), 0.8);
+    life.glints = Array.from({ length: 6 }, () => ({ x: x + Math.round((rand() - 0.5) * h), y: foot + 1, phase: rand() * 40 }));
+    life.glintColour = S.glint[0];
+    return;
+  }
+  for (const [dx, h, lean] of [[-0.9, 1.4, -1], [-0.3, 2, -0.4], [0.7, 1.7, 1]]) palm(o.x + Math.round(dx * o.rx), o.y - Math.round(o.ry * 0.6), Math.round(horizon * h * 0.36), lean);
+}
+
+/** A date palm: a curving ringed trunk under a burst of drooping fronds. */
+function palm(cx, foot, h, lean) {
+  const [lit, body, shade] = S.palmTrunk, [leaf, leafBody, leafDark] = S.palm;
+  let x = cx;
+  for (let y = 0; y < h; y++) {
+    x = cx + Math.round(lean * (y / h) ** 2 * h * 0.3);
+    solid(x, foot - y, y % 3 === 0 ? shade : lit); solid(x + 1, foot - y, y % 3 === 0 ? shade : body);
+  }
+  const tx = x, ty = foot - h, len = Math.max(4, Math.round(h * 0.45));
+  for (const a of [-2.7, -2.1, -1.4, -0.4, 0.3, 0.9, -1.75]) {
+    for (let s = 0; s <= len; s++) {
+      const fx = tx + Math.cos(a) * s, fy = ty + Math.sin(a) * s * 0.6 + (s / len) ** 2 * len * 0.7;
+      solid(fx, fy, s < 2 ? leafDark : leafBody);
+      if (s % 2 === 0 && s > 1) { solid(fx, fy + 1, leafDark); solid(fx, fy - 1, leaf); }
+    }
+  }
+}
+
+/** A bleached skull and a scatter of bones half sunk in the sand. */
+function bones(cx, y) {
+  const [lit, body, line] = S.bone;
+  const big = depthOf(y) > 0.5;
+  pixelMap(cx - 2, y - 3, big ? ['.LLL.', 'LbLbL', 'LLLLo', '.LoL.'] : ['.LL.', 'LbLo'], { L: lit, b: line, o: body });
+  for (let k = 0; k < (big ? 5 : 3); k++) put(cx + 4 + k, y - (k % 2), k % 2 ? body : lit);
+}
+
+/* ----- what moves: splashes on the lake, bubbles in the bog, snow on the peak, sand and tumbleweed in the desert ----- */
+
+function makeSafariLife() {
+  const a = S.raw.area, st = stage();
+  if (a === 'wetland') life.splash = { next: tick + FPS * 2 };
+  if (a === 'marsh') life.bubbles = (life.pools || []).map(p => ({ ...p, at: Math.floor(rand() * 60) }));
+  if (a === 'peak' && (st >= 1 || S.stars)) life.flakes = Array.from({ length: Math.round(W / 10 * [0.4, 0.6, 1.6, 1][st]) }, () => ({ x: rand() * W, y: rand() * H, vy: 0.25 + rand() * 0.3, phase: rand() * 30 }));
+  if (a === 'desert') {
+    life.sand = Array.from({ length: Math.round(W / 9) }, () => ({ x: rand() * W, y: horizon - 6 + rand() * (H - horizon + 6), vx: 0.5 + rand() * 0.6, phase: rand() * 30 }));
+    life.weed = { next: tick + FPS * 3 };
+  }
+}
+
+function drawSafari(t) {
+  const L = life;
+  if (L.splash) {   // now and then something jumps in the lake and rings spread where it went back in
+    const s = L.splash;
+    if (!s.x && t >= s.next) Object.assign(s, { x: 2 + rand() * (W - 4), y: L.lake.top + 2 + rand() * (horizon - L.lake.top - 3), at: t });
+    if (s.x) {
+      const age = t - s.at, r = age * 0.7;
+      if (age < 3) { put(s.x, s.y - 2 + age, S.ripple[0]); put(s.x + 1, s.y - 3 + age, S.ripple[0]); }
+      for (let x = -r - 1; x <= r + 1; x++) { const k = 1 - (x / (r + 1)) ** 2; if (age > 1 && k > 0) put(s.x + x, s.y + Math.round(Math.sqrt(k) * (r * 0.3 + 0.5)) * (x % 2 ? 1 : -1), S.ripple[0]); }
+      if (age > 10) { s.x = 0; s.next = t + FPS * (3 + rand() * 6); }
+    }
+  }
+  if (L.bubbles) for (const b of L.bubbles) {   // marsh gas bubbling up through the pools
+    const age = (t + b.at) % 50;
+    if (age === 0) { b.bx = b.x + Math.round((rand() - 0.5) * b.rx); b.by = b.y + Math.round((rand() - 0.5) * b.ry); }
+    if (b.bx == null || age > 8) continue;
+    const [lit, body] = S.bog;
+    if (age < 6) { put(b.bx, b.by - (age > 3 ? 1 : 0), lit); if (age > 2) put(b.bx + 1, b.by, body); }
+    else { put(b.bx - 1, b.by, lit); put(b.bx + 2, b.by, lit); }
+  }
+  if (L.flakes) for (const f of L.flakes) {
+    f.y += f.vy * (1 + storm.level * 2); f.x += Math.sin((t + f.phase) / 6) * 0.3 - storm.level * 0.6;
+    if (f.y > H + 1) { f.y = -1; f.x = rand() * W; }
+    if (f.x < -1) f.x = W;
+    put(f.x, f.y, S.flake[(f.phase | 0) % 2]);
+  }
+  if (L.sand) for (const m of L.sand) {   // grains blowing low over the sand
+    m.x += m.vx * (1 + storm.level * 2); m.y += Math.sin((t + m.phase) / 5) * 0.08;
+    if (m.x > W + 1) { m.x = -1; m.y = horizon - 6 + rand() * (H - horizon + 6); }
+    if (Math.sin((t + m.phase) / 4) > -0.2) put(m.x, m.y, S.ember[(m.phase | 0) % 3]);
+  }
+  if (L.weed) {   // a tumbleweed bowling across the sand now and then
+    const w = L.weed;
+    if (!w.y && t >= w.next) Object.assign(w, { x: -6, y: groundY(0.3, 0.85), r: 0 });
+    if (w.y) {
+      w.r = 1 + Math.round(depthOf(w.y) * 3);
+      w.x += 0.8 + depthOf(w.y) * 1.2;
+      const hop = Math.abs(Math.sin((w.x / (w.r * 3 + 2)))) * w.r, [a, b] = S.weed;
+      for (let y = -w.r; y <= w.r; y++) for (let x = -w.r; x <= w.r; x++) {
+        const d = x * x + y * y;
+        if (d <= w.r * w.r && (d >= (w.r - 1) * (w.r - 1) || (x * 3 + y * 5 + Math.round(w.x)) % 4 === 0)) put(w.x + x, w.y - w.r - hop + y, (x + y + Math.round(w.x)) % 3 ? a : b);
+      }
+      for (let x = -w.r; x <= w.r; x++) if (dither(x, w.y) < 6) tint(w.x + x, w.y + 1, 0.85);
+      if (w.x > W + 6) { w.y = 0; w.next = t + FPS * (6 + rand() * 10); }
+    }
+  }
 }
 
 /* ---------- helpers ---------- */

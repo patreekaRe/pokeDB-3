@@ -14,7 +14,8 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?time=dawn`, `day`, `dusk` or
   `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
-  `center`...; `&biome=shrine` / `wastes`) shows just that room's painted scene, without starting a run. `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
+  `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area;
+  `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
@@ -432,6 +433,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   **Leaderboard** (phase 5a, 2026-10-02): the day's first try posts once to Firestore (`safariBoard/<day>_<uid>`) through
   the cloud save's sign-in (`js/leaderboard.js`, pure part `js/data/leaderboard.js`, guarded by `firestore.rules`, which
   the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged.
+  **Its scenery** (phase 5b): each area is a `BIOME_ART` entry built from `SAFARI_ART` in `js/scene.js` (Meadow, Forest,
+  Wetland, Marsh, Peak, Desert; painted by `SAFARI_PAINT`, with the Zone's own fence, sign, rest house and tall grass over
+  all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's
+  goal ahead growing nearer every floor, a different roadside landmark each floor. A Safari run asks for its area (`land()` in `js/run.js`)
+  for the scene, the map's palette and the signs; detail in `docs/reference/safari.md`.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

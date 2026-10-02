@@ -70,6 +70,9 @@ const reseed = (key) => useStream(run?.safari ? run.safari.seed : null, key);
 /** The Safari area a biome of the run is (null outside the Safari Zone). */
 const safariArea = (biome = run.biome) => (run?.safari ? SAFARI_AREAS_BY_ID[run.safari.areas[biome]] : null);
 
+/** Where the run is: its Safari area, or the main game's biome. Both have an id (its scene), a name and `stages`. */
+const land = () => safariArea() || BIOMES[run.biome];
+
 /** The Safari Zone's first try of the day is the leaderboard's, so it's played without Game Corner or Pokédex perks
     (the user's call, 2026-10-02): every player starts it the same. Replays keep them. Coin Finder only touches PokéCoins,
     so it stays. Every perk the run reads goes through these two. */
@@ -357,6 +360,7 @@ function startBiome() {
   rollEvents();
   run.current = null;
   showMap();
+  if (isSafari()) return;   // the intro films are the main biomes' (the Safari's areas have none yet)
   // the biome's intro plays over the map (already checkpointed, so a refresh skips it), then its signs arrive again
   biomeIntro(biome, run.biome + 1).then(() => {
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
@@ -419,7 +423,7 @@ function showAbility() {
 }
 
 function showMap() {
-  const biome = BIOMES[run.biome];
+  const biome = land();
   scoping = false;
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
@@ -434,6 +438,7 @@ function showMap() {
   if (sign.textContent !== biomeName()) {
     sign.textContent = biomeName();
     sign.dataset.biome = biome.id;
+    sign.toggleAttribute('data-safari', isSafari());
     sign.classList.remove('arrive');
     void sign.offsetWidth;
     sign.classList.add('arrive');
@@ -448,6 +453,7 @@ function showMap() {
   if (board.textContent !== place || board.dataset.biome !== biome.id) {
     board.textContent = place;
     board.dataset.biome = biome.id;
+    board.toggleAttribute('data-safari', isSafari());
     board.dataset.stage = String(stage);
     const span = run.map.floors.length < 10 ? `1-${run.map.floors.length}` : ['1-3', '4-6', '7-10'][stage];
     board.title = stage < 3 ? `${place}: floors ${span} of ${biome.name}` : `${place}: the boss's arena`;
@@ -478,7 +484,7 @@ function showMap() {
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
   const next = nextPlace(here);
-  if (next) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
+  if (next && !isSafari()) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
   else showNotes();
 }
 
@@ -569,7 +575,7 @@ function showPocket(name) {
 function openMapPeek() {
   if (!run?.map) return;
   closeBag(true);
-  const biome = BIOMES[run.biome];
+  const biome = land();
   renderMap(run.map, run.current, null, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'),
   });
@@ -670,7 +676,7 @@ const scopeReveals = () => (getSave().dex.complete && !fairTry() ? SCOPE_REVEALS
 const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).length;   // saved with the map's nodes
 
 function drawMap() {
-  const biome = BIOMES[run.biome];
+  const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
   renderMap(run.map, run.current, enterNode, {
@@ -1202,7 +1208,7 @@ function treasureRoom() {
     onSkip: showMap,
     layout: 'treasure-room',
   });
-  showPlaceScene('treasure', { biome: BIOMES[run.biome].id });
+  showPlaceScene('treasure', { biome: land().id });
 
   const art = treasureChest(), stage = el('div', 'treasure-stage');
   const part = (name) => {
@@ -1632,7 +1638,7 @@ function eventRoom(node, after) {
   });
   if (!scene) return;
   for (const [stand, figure] of Object.entries(figures || {})) $('reward-options').append(eventFigure(stand, figure));
-  showPlaceScene(scene, { biome: BIOMES[run.biome].id, type: run.starter.type, where: journey(run.map, node) });
+  showPlaceScene(scene, { biome: land().id, type: run.starter.type, where: journey(run.map, node) });
   placeEventSpots();
   if (!after) return;
   figureDoes('npc', after);

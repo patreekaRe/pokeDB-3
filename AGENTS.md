@@ -97,6 +97,12 @@ three places:
   yesterday, from the Safari Pokédex and a Safari run's result window; `firestore.rules`; `tests/leaderboard.test.mjs`.
   Checked headless with a stand-in Firebase (blocked, signed out, signed in with a name to pick and a post). Next: the
   user publishes `firestore.rules`; phase 5b, the areas' art (Desktop).
+- 2026-10-02: **Safari Zone phase 5b, the 6 areas' scenes** (Desktop, not pushed yet: the user asked to hold it while
+  another session builds the Safari prep screen and leaderboard): Meadow, Forest, Wetland, Marsh, Peak and Desert in
+  `js/scene.js` (`SAFARI_ART` / `SAFARI_PAINT`), 4 named places each (`js/data/safari.js`), the map's palettes and signs,
+  `?area=<area>` to look at them. Then each area became one road you walk (a trail to the horizon, the goal ahead
+  nearer every floor, a roadside landmark per floor). Detail in `docs/reference/safari.md`. Next: 5c intros, 5d boss
+  intros (prompts in the roadmap).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - Publishing `firestore.rules` in the Firebase console (Firestore > Rules), which switches the Safari leaderboard on.

@@ -371,6 +371,13 @@ const PALETTES = {
   shrine:   { ground: 'moss',  blobs: [['trees', 9, 14, 40], ['water', 3, 12, 28], ['mountain', 2, 8, 16]] },
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
   depths:   { ground: 'cave',  blobs: [['crystal', 7, 10, 30], ['pool', 4, 12, 30], ['boulder', 5, 8, 22]] },   // placeholder until its art lands
+  // the Safari Zone's areas (js/data/safari.js)
+  meadow:   { ground: 'grass', blobs: [['trees', 3, 6, 14], ['water', 2, 10, 24], ['mountain', 2, 8, 16]] },
+  forest:   { ground: 'moss',  blobs: [['trees', 12, 14, 44], ['water', 2, 8, 18]] },
+  wetland:  { ground: 'grass', blobs: [['water', 9, 16, 50], ['trees', 3, 6, 16]] },
+  marsh:    { ground: 'bog',   blobs: [['pool', 8, 10, 30], ['trees', 5, 8, 22]] },
+  peak:     { ground: 'grass', blobs: [['snow', 7, 14, 40], ['mountain', 5, 10, 28], ['trees', 3, 6, 14]] },
+  desert:   { ground: 'sand',  blobs: [['mountain', 5, 12, 30], ['dune', 6, 12, 34], ['pool', 1, 8, 14]] },
 };
 
 // base, light, dark, edge (the 1px line where it meets other terrain)
@@ -386,6 +393,10 @@ const TERRAIN = {
   crystal:  ['#5a3c8a', '#c8a8f8', '#3a2460', '#201438'],
   pool:     ['#2a5ab0', '#88e0f8', '#1a3a80', '#d8f8ff'],
   boulder:  ['#6a6078', '#9a90a8', '#40384c', '#241e2c'],
+  bog:      ['#5e7a42', '#7e9a58', '#465e32'],
+  sand:     ['#e8c888', '#f8e0a8', '#c8a468'],
+  snow:     ['#e8f0f8', '#ffffff', '#b8c8e0', '#90a4c4'],
+  dune:     ['#d8b070', '#f0d098', '#b08848', '#8a6a34'],
 };
 
 // 8x8 motifs: . base, L light, D dark
@@ -394,6 +405,8 @@ const MOTIFS = {
   trees:    ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
   crystal:  ['...L....', '..LL..L.', '..LD.LL.', '.LLD.LD.', '.LDD.LD.', 'LLDD.LDD', 'LLDDLLDD', 'DDDDDDDD'],
   boulder:  ['........', '..LLL...', '.LL..D..', '.L....D.', 'L.....DD', 'L....DDD', '.DDDDDD.', '........'],
+  snow:     ['........', '...L....', '..LLL...', '........', '......L.', '.....LL.', '........', '........'],
+  dune:     ['........', '..LLLL..', '.L....DD', 'L.......', '........', '...LLL..', '..L...DD', '........'],
 };
 
 const ROUTE = { edge: '#9a8448', fill: '#f8f0b8', walked: '#e83030', active: '#ffffff' };
