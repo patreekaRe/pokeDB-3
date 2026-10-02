@@ -682,6 +682,18 @@ const PLACE_ART = {
         chest: { ...BALL_CHEST, lid: ['#70707e', '#46464e', '#303036', '#1c1c22'], trim: ['#fff080', '#f8d030', '#c09818'], marks: 'ultra' },   // an Ultra Ball
         life: ['treasure', 'embers'],
       },
+      depths: {   // the Crystal Depths: a geode vault, amethyst crystal, energy in the cracks, and a Master Ball for a chest
+        sky: ['#f4ecff', '#c8a8f8'],
+        rock: ['#5e5276', '#4a405e', '#3a324c', '#2a2438', '#181424'],
+        vein: ['#ff8ae0', '#f0349a'],
+        crystal: ['#f8f0ff', '#d0a8f8', '#9058e0', '#502898'],
+        ground: ['#3e3650', '#383048', '#322a40', '#2c2438', '#241e30'],
+        stone: ['#a8a0c0', '#867ea0', '#645c7c', '#443e58'],
+        beam: '#f0e0ff', drip: '#a8f0ff', mote: '#f8f0ff',
+        ember: ['#f0ffff', '#88e8f8', '#c878f8'], embers: 0.4,
+        chest: { ...BALL_CHEST, lid: ['#d0a0ff', '#8048c8', '#5a2c98', '#381a68'], trim: ['#fff0ff', '#d8b8f0', '#9878b8'], mark: ['#ffb0d8', '#f070a8'], marks: 'master' },
+        life: ['treasure', 'drips', 'embers'],
+      },
     },
   },
 
@@ -3211,7 +3223,6 @@ function grottoFloor() {
 
   const dy = horizon + Math.round((H - horizon) * 0.34), rx = CHEST_W / 2 + 8, ry = 5;
   life.dais = { x: cx, y: dy };
-  if (S.raw.bare) return;   // the Crystal Depths' placeholder: the grotto without its hoard
   dais(cx, dy, rx, ry);
 
   // gold spilled round the dais, with a Poké Ball or two
@@ -3394,6 +3405,8 @@ function chestLid() {
     const shade = y <= 2 ? 0 : y <= 6 ? 1 : y <= 8 ? 2 : 3;
     if (marks === 'great' && k <= 7 && y >= 2 && y <= 8) return S.chest.mark[Math.max(0, shade - 1)];   // the Great Ball's red patches
     if (marks === 'ultra' && y <= 8 && ((x >= 10 && x <= 12) || (x >= 23 && x <= 25))) return trim[x === 10 || x === 23 ? 0 : 1];   // the Ultra Ball's H
+    if (marks === 'master' && ((x - 9) ** 2 + (y - 5) ** 2 <= 5 || (x - 26) ** 2 + (y - 5) ** 2 <= 5)) return S.chest.mark[y < 5 ? 0 : 1];   // the Master Ball's pink bumps
+    if (marks === 'master' && y >= 3 && y <= 7 && (x === 15 || x === 21 || (y === 3 + Math.abs(x - 18) && x > 15 && x < 21))) return trim[0];   // ...and its M
     if (shade === 1 && y <= 4 && x >= 7 && x <= 10 && x - 7 <= y - 2) return lid[0];   // the shine
     return lid[shade];
   });

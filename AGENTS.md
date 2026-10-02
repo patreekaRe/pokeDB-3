@@ -30,9 +30,15 @@ three places:
 - **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
   through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the gate
-  after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery is a
-  placeholder (B2, a Desktop session), and `map4` borrows `map3.mp3` until the user supplies one. Next is part C (the
-  Eternatus set piece) or B2; both prompts are in the roadmap.
+  after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery was
+  painted the same day (B2, below), and `map4` borrows `map3.mp3` until the user supplies one. Next is part C (the
+  Eternatus set piece); its prompt is in the roadmap.
+- 2026-10-02: **The Crystal Depths painted** (v1.0 part B2, Desktop app): four places each deeper and stranger (Cave
+  Mouth, Crystal Halls, Deep Core, Energy Well), landmarks per place, Eternatus's boss prelude (its core rises out of the
+  Well and bursts), an intro film down a crystal shaft (`js/depths-intro.js`), a map palette with energy rifts, crystal
+  signs, a red pad deeper down, its own treasure grotto. `?area=depths` walks it. Checked in the browser pane at 375x812
+  and 1280x800, no console errors; not yet seen in a real Mewtwo run. The user still has to playtest it
+  (`?mewtwo`, or `?area=depths` for a look).
 - 2026-10-02: **The Sealed Gate, part A** (roadmap section of that name): breaking the gate is Mewtwo's unlock now
   (1000 HP, hits by Trainer Level after each win, only Level 5 breaks it; old saves back-filled from the Record Book,
   Mewtwo owners keep it). Tested headless (back-fill, every hit case, the break unlocking Mewtwo). **Part B landed the

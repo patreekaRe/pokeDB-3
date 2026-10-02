@@ -734,9 +734,8 @@ last act only a special run reaches.
 3. ~~Trainer Levels for biomes 1-3~~ settled, see above.
 4. ~~Biome 4's name, place and look~~ settled 2026-10-02: a **crystal cavern** with no day/night clock, the **Crystal
    Depths** (Cave Mouth, Crystal Halls, Deep Core, and the arena Energy Well). Its wilds are themed to the place (strong,
-   fully evolved cave Pokémon shown as Neutral or Psychic), its Alphas and boss pure Normal as everywhere. Its art is
-   still to paint: `BIOME_ART` look(s), the places' painters and landmarks, a boss intro and a biome intro, a real map
-   palette, `map4` music (a placeholder borrows `map3.mp3`).
+   fully evolved cave Pokémon shown as Neutral or Psychic), its Alphas and boss pure Normal as everywhere. Its art was
+   painted 2026-10-02 (B2 below); `map4` music still borrows `map3.mp3` until the user supplies one.
 5. **Rewards**: a 4th Pokédex page (its wilds, Alphas and boss, with a perk), its own Hall of Fame entry style (a
    different pedestal or scene), and a title-screen touch once it's beaten (the final boss crossing the sky, say).
    Mewtwo's shiny (`SHINY_COSTS` skips it today).
@@ -791,8 +790,20 @@ last act only a special run reaches.
     14-damage move landed for 52 (+38); the bot blocks it all (it lost only 2-15% HP a wild fight), a person doesn't. The
     Depths' `dmgBonus` is now 31 (wilds and Alphas -7; Eternatus's `bossBonus` 58 unchanged). Human bot, 150 runs each
     (sim now mirrors `playerDmg`): before 88.0 / 91.3, after 94.7 / 92.7; nearly every loss is Eternatus.
-  - **B2 (Desktop, LOCAL or CLOUD with screenshots): the Crystal Depths' art.** Its scenery, places and landmarks, the
-    biome intro and the boss intro, the map palette, a pad, `map4` music from the user.
+  - **B2: the Crystal Depths' art — done 2026-10-02** (Desktop app). Each place deeper and stranger: the Cave Mouth (a
+    tunnel of rock arches, a crack of daylight fading as you go in, moss, glowing mushrooms, small crystals), the Crystal
+    Halls (giant crystal columns, hex crystals off the walls, prism-light shafts, a mirror lake), the Deep Core (black
+    rock split by pulsing energy veins, glowing floor cracks, floating boulders, a red fissure), and the Energy Well (a
+    bottomless pit, its energy column climbing to a vortex on the roof, orbiting monoliths, cracks fanning out of it).
+    Landmarks per place (miner's lamp, mine cart, geode, stalagmites, mushrooms; Unown tablet, crystal spire, arch, pool;
+    energy vent, corrupted crystal, obelisk, floating boulder). Boss prelude: Eternatus's core rises out of the Well and
+    bursts, the vortex spreads over the roof, the energy floods out in a hex grid. Intro film (`js/depths-intro.js`): down
+    a crystal shaft, the cavern's crystals lighting one by one with chimes, a push towards the far Well; walk-ons for the
+    Halls and the red Deep Core. Map palette with flowing energy rifts and twinkling crystals, crystal signs, a red pad
+    from the Deep Core on, its own treasure grotto (Master Ball chest). Checked in the browser pane at 375x812 (every place,
+    the prelude frame by frame, the film and the Deep Core walk-on, the map, the grotto) and 1280x800 (the Halls); no
+    console errors. Not yet seen in a real Mewtwo run or under a real battle's pads. `?area=depths` walks it (`&stage=0-3`,
+    `&intro=0`). Still open: `map4` music from the user.
 - **C. The final boss fight** as a set piece: several phases (Eternatus -> Eternamax, say), its own music, the storm at
   30% at its most dramatic.
 - **D. The ending**: its Hall of Fame / Record Book entry, the 4th Pokédex page's perk (the page itself is a "???" tab since 2026-09-28, `renderMystery()` in `js/pokedex.js`, 12 + 3 + 1 placeholder tiles; part B swaps it for a real `DEX_PAGES` entry, and must keep it out of `ALL_IDS` / `dex.complete` until biome 4 exists, so the 55-entry jackpot isn't taken away), achievements, the
@@ -802,10 +813,6 @@ last act only a special run reaches.
 **Run in: CLOUD.** Next-session prompt (part C): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
 fourth biome'. Parts A and B (Mewtwo's deck, the Crystal Depths' gameplay) are done. Ask me what part C needs, then build
 Eternatus's final boss fight as a set piece (phases, Eternamax), with a bot check. Attach pokeDB-sim too."
-
-**Run in: Desktop app (visual).** Next-session prompt (part B2): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0:
-Mewtwo and the fourth biome'. Paint the Crystal Depths: replace the placeholder `BIOME_ART.depths` with its own scenery,
-places, landmarks, biome and boss intros, and map palette."
 
 ## The Sealed Gate: why every run matters (the user's idea, agreed 2026-10-02)
 

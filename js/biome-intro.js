@@ -31,6 +31,7 @@ import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { getSave } from './storage.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { SAFARI_INTROS } from './safari-intro.js';
+import { DEPTHS_INTRO } from './depths-intro.js';
 
 // the film's beats, in ms
 const TILT = [0, 2600];        // down through the clouds
@@ -135,6 +136,7 @@ const INTROS = {
     sounds: ['gust', 'rumble-far'],
     scene: wastesScene,
   },
+  depths: DEPTHS_INTRO,   // Mewtwo's Crystal Depths: down a crystal shaft into the cavern as its lights come on (js/depths-intro.js)
   ...SAFARI_INTROS,   // the Safari Zone's six areas, one painter with a camera move each (js/safari-intro.js)
 };
 

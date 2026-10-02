@@ -14,7 +14,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?time=dawn`, `day`, `dusk` or
   `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
-  `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area;
+  `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
@@ -160,8 +160,25 @@ live site.
   `trait` (`TRAITS` in `js/data/enemies.js`, `enemyTrait()` in `js/battle.js`, a nameplate badge): `barbs` (each attack you
   play hurts you, block first, never fatal), `analytic` (strength per Power you play), `stamina` (block per card past the
   Nth in a turn). Every per-biome array (events, Kenmatta's HP) has a 4th value. `secret` keeps it out of `DEX_PAGES` and
-  the records until reached. Its scenery is a **placeholder** (`BIOME_ART.depths`: the Treasure grotto, `bare`, no clock;
-  map `PALETTES.depths`; `map4` plays `map3.mp3`) until a Desktop session paints it.
+  the records until reached. **Its scenery** (B2, 2026-10-02): `BIOME_ART.depths` in `js/scene.js`, no clock (one `day` look,
+  `marks` skipped so nothing is graded), each place its own palette (`voids` / `rocks` / `floors` by stage), its glows
+  (`crystal`, `amethyst`, `ruby`, `energy`...) in `GLOWS`. One painter (`depthsBackdrop()` / `depthsFloor()` / `depthsFront()`,
+  life in `drawDepths()`): **Cave Mouth** a tunnel of rock arches, a crack of daylight fading as you go in, glowing
+  mushrooms; **Crystal Halls** giant crystal columns, prism-light shafts, a mirror lake (landmarks keep to the right there);
+  **Deep Core** black rock split by energy veins (`wallVeins()`), glowing floor cracks, floating boulders, a red fissure;
+  **Energy Well** a bottomless pit whose energy column climbs to a vortex on the roof, five black crystal monoliths
+  orbiting, cracks fanning out of the pit, an energy ring under the fight. Every crystal is `prism()` / `gemCluster()`; the
+  energy in the veins and seams pulses towards the Well (`life.veins` / `life.seams`). From the Deep Core on the battle
+  pad turns red (`padDeep`). Landmarks are `DEEP_MARKS` (lamp, mine cart, geode, Unown tablet, crystal arch, vent,
+  obelisk, floating boulder...). Its boss prelude (`depthsWake()` / `depthsPortal()`, `CORE_AT`): the column is drawn
+  down, the seams light inwards, Eternatus's five-sided core rises out of the Well and bursts (a shock ring, shards off the
+  walls, the vortex spreading over the roof), then the energy floods out in a hex grid; the arena keeps the big column and
+  red vortex (`wellState()`). Sounds `gate-hum`, `quake`, `eruption`, `core-surge`. Its intro film is `js/depths-intro.js`
+  (`DEPTHS_INTRO`): down a crystal shaft into the cavern, its crystals lighting one by one with `crystal-0..2` chimes, a
+  push towards the far Well; walk-ons for the Halls and the red Deep Core. Map: `PALETTES.depths` with `rift` (flowing
+  energy), `crystal` and `geode` (crystal tips twinkle); signs `[data-biome="depths"]` in `css/screens.css`; its own
+  treasure grotto (`PLACE_ART.treasure.biomes.depths`, a Master Ball chest). `map4` still plays `map3.mp3` until the user
+  supplies one.
 - **Cards** (`js/data/cards.js`): every effect is a key in a card's
   `effects` (the header comment lists them all) and `describe()` writes
   the card text from them, so new mechanics need a line there too. Beyond

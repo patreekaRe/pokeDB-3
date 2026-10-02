@@ -370,7 +370,7 @@ const PALETTES = {
   clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
   shrine:   { ground: 'moss',  blobs: [['trees', 9, 14, 40], ['water', 3, 12, 28], ['mountain', 2, 8, 16]] },
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
-  depths:   { ground: 'cave',  blobs: [['crystal', 7, 10, 30], ['pool', 4, 12, 30], ['boulder', 5, 8, 22]] },   // placeholder until its art lands
+  depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)
   meadow:   { ground: 'grass', blobs: [['trees', 3, 6, 14], ['water', 2, 10, 24], ['mountain', 2, 8, 16]] },
   forest:   { ground: 'moss',  blobs: [['trees', 12, 14, 44], ['water', 2, 8, 18]] },
@@ -389,8 +389,10 @@ const TERRAIN = {
   lava:     ['#e04818', '#f8c030', '#a02808', '#601800'],
   mountain: ['#c08040', '#e8b070', '#7a4a20', '#5a3010'],
   trees:    ['#2f8a2f', '#58b848', '#185018', '#103810'],
-  cave:     ['#4a4058', '#625674', '#362e42'],
-  crystal:  ['#5a3c8a', '#c8a8f8', '#3a2460', '#201438'],
+  cave:     ['#3a3250', '#4e446a', '#2a2440'],
+  crystal:  ['#6a40a8', '#d8b0ff', '#3e2468', '#1c1034'],
+  geode:    ['#2a78b8', '#b0f0ff', '#184880', '#0c2240'],
+  rift:     ['#c0207a', '#ff9ae0', '#7a0c48', '#3a0624'],   // Eternatus's energy breaking through the floor
   pool:     ['#2a5ab0', '#88e0f8', '#1a3a80', '#d8f8ff'],
   boulder:  ['#6a6078', '#9a90a8', '#40384c', '#241e2c'],
   bog:      ['#5e7a42', '#7e9a58', '#465e32'],
@@ -403,6 +405,7 @@ const TERRAIN = {
 const MOTIFS = {
   mountain: ['........', '...LL...', '..LL.D..', '.LL...D.', '.L....DD', 'L.....DD', '......DD', 'DDDDDDDD'],
   trees:    ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
+  geode:    ['..L.....', '..LL.L..', '.LLD.LL.', '.LDD.LD.', 'LLDD.LDD', 'LDDD.LDD', 'LDDDLLDD', 'DDDDDDDD'],
   crystal:  ['...L....', '..LL..L.', '..LD.LL.', '.LLD.LD.', '.LDD.LD.', 'LLDD.LDD', 'LLDDLLDD', 'DDDDDDDD'],
   boulder:  ['........', '..LLL...', '.LL..D..', '.L....D.', 'L.....DD', 'L....DDD', '.DDDDDD.', '........'],
   snow:     ['........', '...L....', '..LLL...', '........', '......L.', '.....LL.', '........', '........'],
@@ -571,6 +574,8 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
   const put = (x, y, c) => { px[y * w + x] = c; };
   const terrain = Object.fromEntries(Object.entries(TERRAIN).map(([k, v]) => [k, v.map(abgr)]));
   const flowing = [];   // [x, y, base, light, speed] for every water/lava pixel, redrawn as it drifts
+  const sparks = [];    // [x, y, colour] crystal tips that glint now and then
+  const white = abgr('#ffffff');
 
   for (let ty = 0; ty < GRID_H; ty++) for (let tx = 0; tx < GRID_W; tx++) {
     const kind = grid[ty][tx];
@@ -580,12 +585,13 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
     for (let ly = 0; ly < TILE; ly++) for (let lx = 0; lx < TILE; lx++) {
       const x = tx * TILE + lx, y = ty * TILE + ly;
       let c = base;
-      if (kind === 'water' || kind === 'lava' || kind === 'pool') {
+      if (kind === 'water' || kind === 'lava' || kind === 'pool' || kind === 'rift') {
         if (ripple(x, y)) c = light;
-        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : 1]);
+        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : kind === 'rift' ? 0.7 : 1]);
       } else if (motif) {
         const m = motif[ly][lx];
         c = m === 'L' ? light : m === 'D' ? dark : base;
+        if ((kind === 'crystal' || kind === 'geode') && m === 'L' && ly <= 1) sparks.push([x, y, light]);   // a crystal's tip, to twinkle
       } else if (tuft && ly === tuft[1] + 1 && (lx === tuft[0] || lx === tuft[0] + 2)) {
         c = dark;
       } else if (tuft && ly === tuft[1] && lx === tuft[0] + 1) {
@@ -610,7 +616,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
   // Water and lava drift, a pixel at a time, while the map is on screen.
   if (!flow) return;
   clearInterval(flowTimer);
-  if (!flowing.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!flowing.length && !sparks.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   let tick = 0;
   flowTimer = setInterval(() => {
     if (!canvas.isConnected) return clearInterval(flowTimer);
@@ -619,6 +625,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
     for (const [x, y, base, light, speed] of flowing) {
       put(x, y, ripple(x - Math.floor(tick * speed), y) ? light : base);
     }
+    for (const [i, [x, y, light]] of sparks.entries()) put(x, y, (i * 7 + tick) % 23 === 0 ? white : light);
     draw();
   }, 220);
 }
