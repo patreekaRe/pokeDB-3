@@ -27,7 +27,9 @@
      cloud.js        the optional cloud save (Firebase sign-in, from the Poké Ball menu)
    ============================================================ */
 
-import { STARTERS, spriteUrl, stageName, useShinies } from './data/starters.js';
+import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
+import { gateScene } from './gatescene.js';
+import { gateHp } from './gate.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
@@ -220,12 +222,24 @@ function init() {
 
   showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {
+    // ?strike=90 (with &gate=HP, &starter=id, &stage=0-2, &kind=loss) plays the Sealed Gate's scene after PRESS START,
+    // from the gate's HP, without saving anything; a strike past its HP is the break that frees Mewtwo
+    if (params.has('strike')) return peekStrike(params);
     // Show the how-to-play once, the very first time.
     if (!getSave().seenHelp) {
       updateSave(d => { d.seenHelp = true; });
       setTimeout(openHowto, 400);
     }
   });
+}
+
+/** The ?strike= playtest: the gate scene on its own, nothing saved. */
+function peekStrike(params) {
+  const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
+  const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
+  const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
+  const after = Math.max(0, before - hit);
+  gateScene({ starter, stage, before, after, kind: params.get('kind') || (after === 0 ? 'ultimate' : 'win'), music: 'title' });
 }
 
 init();

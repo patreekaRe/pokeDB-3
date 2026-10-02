@@ -124,6 +124,9 @@ const SOUNDS = {
   'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
   gust:         { synth: hotGust },          // the Wastes' intro: a hot wind as you burst out of the ash cloud...
   'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
+  'gate-hum':   { synth: gateHum },          // the Sealed Gate's scene (gatescene.js): the seal's low, uneasy drone...
+  'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
+  'gate-shatter': { synth: gateShatter },    // ...and the door blows apart in crystal shards
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -836,4 +839,56 @@ function arrivalChime(ac) {
     out[i] = v * Math.min(1, (length - i) / (rate * 0.05));
   }
   return normalize(buffer, 0.18);
+}
+
+/** The Sealed Gate's drone: two low tones a few hertz apart, beating slowly, under a thin hiss, swelling and dying away. */
+function gateHum(ac) {
+  const rate = ac.sampleRate, seconds = 2.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const hiss = chipNoise(length, 3);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, env = Math.sin(Math.PI * t / seconds) ** 1.5;
+    low += 0.02 * (hiss[i] - low);
+    const tone = Math.sin(2 * Math.PI * 55 * t) + Math.sin(2 * Math.PI * 58.5 * t) * 0.8 + Math.sign(Math.sin(2 * Math.PI * 110.4 * t)) * 0.12;
+    out[i] = (tone * 0.5 + low * 1.2) * env;
+  }
+  return normalize(buffer, 0.16);
+}
+
+/** Stone and crystal cracking: a sharp snap, then a crunch of short ticks running off. */
+function gateCrack(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.7);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const snap = chipNoise(Math.round(rate * 0.03), 1);
+  snap.forEach((v, i) => { out[i] += v * (1 - i / snap.length); });
+  let at = Math.round(rate * 0.02);
+  while (at < length - 400) {
+    const tick = Math.round(rate * (0.002 + Math.random() * 0.004)), level = 0.8 * (1 - at / length);
+    for (let i = 0; i < tick; i++) out[at + i] += (Math.random() * 2 - 1) * level * (1 - i / tick);
+    at += Math.round(rate * (0.008 + Math.random() * 0.03) * (1 + at / length * 2));
+  }
+  let phase = 0;
+  for (let i = 0; i < Math.round(rate * 0.25); i++) {
+    phase += (90 - 50 * i / (rate * 0.25)) / rate;
+    out[i] += Math.sin(2 * Math.PI * phase) * 0.6 * Math.exp(-i / (rate * 0.08));
+  }
+  return normalize(buffer, 0.2);
+}
+
+/** The door shattering: a burst of noise, and a shower of glassy pings scattering high and dying away. */
+function gateShatter(ac) {
+  const rate = ac.sampleRate, seconds = 2.2, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const burst = chipNoise(length, 1);
+  for (let i = 0; i < length; i++) out[i] = burst[i] * 0.7 * Math.exp(-i / (rate * 0.12));
+  for (let n = 0; n < 60; n++) {
+    const at = Math.floor(Math.random() ** 1.8 * rate * 1.6), f = 1800 + Math.random() * 4200, d = 0.05 + Math.random() * 0.25;
+    const amp = 0.25 + Math.random() * 0.35;
+    for (let i = 0; at + i < length && i < rate * d * 4; i++) out[at + i] += Math.sin(2 * Math.PI * f * i / rate) * amp * Math.exp(-i / (rate * d));
+  }
+  return normalize(buffer, 0.22);
 }

@@ -21,6 +21,9 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
+import { makeGate, gateHp, gateReady } from './gate.js';
+import { GATE_HP } from './data/gate.js';
+import { tipAt } from './tips.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -70,13 +73,15 @@ let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0
 /** Called once at startup with what the menu's gems do: { savedRun(), onContinue(run), onNewGame(), onCollection(), onGameCorner() }. */
 /* The legendaries that fly (or float) cross the sky one at a time, like Ho-Oh in the Gold intro: a black silhouette until
    you've unlocked that one, then in its own colours (shiny if you've switched its shiny on). Each pass deals the next from
-   a shuffled round, so they all come by before any comes back. Mewtwo stays out of it: it's the secret. */
+   a shuffled round, so they all come by before any comes back. Mewtwo stays out of it, the secret, until the Sealed
+   Gate is broken and it's free: then it floats by too. */
 const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini'];
 let flight = [], lastFlyer = null;
 
 function nextFlyer(img) {
   if (!flight.length) {
-    flight = FLYERS.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
+    const free = gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
+    flight = [...FLYERS, ...(free ? ['mewtwo'] : [])].map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
     if (flight[0] === lastFlyer) flight.push(flight.shift());
   }
   const id = lastFlyer = flight.shift(), starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
@@ -97,6 +102,14 @@ export function initTitle(handlers) {
   $('title-refresh').addEventListener('click', refreshGame);
   paintLogo();
   $('title-abandon').addEventListener('click', () => actions.onAbandon());
+  $('title-gate').addEventListener('click', () => {
+    if (!pressed) return;   // before PRESS START a tap anywhere just starts
+    const hp = gateHp();
+    tipAt($('title-gate'), hp > 0
+      ? `The Sealed Gate · HP ${hp}/${GATE_HP}. Something is trapped behind it. Every run you win wears it down.`
+      : 'The Sealed Gate lies broken. Mewtwo is free, and the way down is open.');
+  });
+  gateReady().then(paintGate);   // Mewtwo's silhouette comes from its sprite
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]')) return;
     if (!pressed) return start(e);
@@ -372,7 +385,38 @@ function paint() {
   look = SKIES[timeOfDay()];
   base = paintScenery(W, H, Math.round(ground / PIXEL));
   stars = look.stars ? makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H)) : [];
+  sizeGate();
   draw();
+}
+
+/* ---------- the Sealed Gate on the ledge ---------- */
+
+let gateArt = null;
+
+/** It stands on the ledge in the right-hand gutter, clear of the gems and a saved run's nameplate: small on phones. */
+function sizeGate() {
+  const btn = $('title-gate'), canvas = $('title-gate-art');
+  const phone = innerWidth < 600;
+  const [w, h, px] = phone ? [36, 44, 2] : innerHeight <= 700 ? [46, 56, 3] : [56, 68, 3];
+  if (!gateArt || gateArt.W !== w) gateArt = makeGate(w, h);
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = `${w * px}px`;
+  canvas.style.height = `${h * px}px`;
+  const gutter = (innerWidth - Math.min(300, innerWidth * 0.8)) / 2;
+  btn.style.right = `${phone ? 4 : Math.max(16, Math.round((gutter - w * px) / 2))}px`;
+  paintGate();
+}
+
+function paintGate() {
+  if (!gateArt) return;
+  const hp = gateHp(), f = hp / GATE_HP;
+  // below half its HP, the eyes behind it light up now and then
+  const eyes = f < 0.5 && !still() && frame % 90 < 5 ? 1 : 0;
+  gateArt.paint($('title-gate-art').getContext('2d'), { hp: f, t: frame / FPS, eyes, open: hp <= 0 });
+  $('title-gate').classList.toggle('broken', hp <= 0);
+  $('title-gate-fill').style.width = `${f * 100}%`;
+  $('title-gate-fill').dataset.level = f > 0.5 ? 'high' : f > 0.2 ? 'mid' : 'low';
 }
 
 function draw() {
@@ -414,6 +458,7 @@ function tick() {
     if (--shooting.life <= 0) shooting = null;
   }
   draw();
+  paintGate();
 }
 
 /** The sky, moon and hills: everything that doesn't move, painted once per resize. */

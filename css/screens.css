@@ -167,6 +167,24 @@ body.titling { overflow: hidden; }
   100% { translate: -40vw -10px; }
 }
 
+/* the Sealed Gate stands on the ledge (sizeGate() / paintGate() in js/title.js, the art in js/gate.js), its feet sunk a
+   little into the grass, a thin HP bar under it on the dark earth; a tap says how it stands */
+.title-gate {
+  position: absolute; bottom: calc(var(--ground) - 20px); z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 0; border: 0; background: none; cursor: help;
+  filter: drop-shadow(0 0 10px rgba(200, 60, 140, 0.25));
+  -webkit-tap-highlight-color: transparent;
+}
+.title-gate canvas { image-rendering: pixelated; }
+.title-gate-bar { display: block; width: 70%; height: 6px; border: 2px solid #181018; background: #3a2c48; }
+.title-gate-fill { display: block; height: 100%; background: #58d058; }
+.title-gate-fill[data-level="mid"] { background: #f8c030; }
+.title-gate-fill[data-level="low"] { background: #f84830; }
+.title-gate.broken { filter: drop-shadow(0 0 12px rgba(150, 90, 255, 0.45)); }
+.title-gate.broken .title-gate-bar { visibility: hidden; }
+@media (max-width: 599px) { .title-gate { bottom: calc(var(--ground) - 15px); } .title-gate-bar { height: 4px; border-width: 1px; } }
+
 /* pressing start: the prompt flickers fast, a white flash, then the sky fades away */
 .title-screen.leaving { cursor: default; }
 .title-screen.leaving .press-start { animation: pressBlink 0.12s steps(1) infinite; }
@@ -1754,6 +1772,52 @@ body.battle-intro { pointer-events: none; }
 
 .wide-dialog { width: min(900px, 94vw); }
 .wide-dialog .card-pool { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+
+/* ---------- the Sealed Gate's scene (js/gatescene.js): your Pokémon attacks the gate after a run; the last blow frees
+   Mewtwo. The cavern, gate and effects are one low-res canvas; it fades in from black and out again. ---------- */
+.gate-scene { position: fixed; inset: 0; z-index: 950; overflow: hidden; background: #05020c; animation: gateIn 0.8s ease-out both; }
+@keyframes gateIn { from { opacity: 0; } }
+.gate-scene.out { opacity: 0; transition: opacity 0.7s ease-in; }
+.gate-scene.waiting { cursor: pointer; }
+.gate-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.gate-plate { position: absolute; left: 50%; top: var(--gate-top, 16px); width: min(calc(100% - 32px), 260px); translate: -50% 0; opacity: 0; animation: gatePlateIn 0.3s steps(3) 0.9s forwards; }
+@keyframes gatePlateIn { from { opacity: 0; translate: -50% 8px; } to { opacity: 1; translate: -50% 0; } }
+.gate-plate .gb-hp-fill { transition: none; }
+.gate-plate strong { letter-spacing: 0.04em; }
+/* your Pokémon, from behind: it rises into place, lunges as it attacks */
+.gate-mon {
+  position: absolute; left: 30%; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 74px);
+  max-width: none; translate: -50% calc(var(--foot, 0px) + 40px); opacity: 0;
+  transition: translate 0.5s cubic-bezier(0.2, 1.4, 0.4, 1), opacity 0.3s; image-rendering: pixelated;
+}
+.gate-scene.mon-in .gate-mon { translate: -50% var(--foot, 0px); opacity: 1; }
+.gate-mon.lunge { animation: gateLunge 0.6s steps(6) both; }
+@keyframes gateLunge { 0%, 100% { scale: 1; } 30% { scale: 1.08; translate: -40% calc(var(--foot, 0px) - 18px); } 60% { scale: 1; } }
+@media (min-width: 900px) { .gate-mon { left: 36%; } }
+/* the damage, popping up off the seal like battle's numbers */
+.gate-dmg {
+  position: absolute; translate: -50% -50%; opacity: 0; pointer-events: none;
+  font: 2rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff;
+  text-shadow: 3px 0 0 #8a1040, -3px 0 0 #8a1040, 0 3px 0 #8a1040, 0 -3px 0 #8a1040, 3px 3px 0 #2a0414;
+}
+.gate-dmg.go { animation: gateDmg 1.4s steps(14) both; }
+@keyframes gateDmg { 0% { opacity: 1; translate: -50% -50%; scale: 0.6; } 15% { scale: 1.3; } 25% { scale: 1; } 75% { opacity: 1; } 100% { opacity: 0; translate: -50% -180%; } }
+/* the break: the screen whites out, then Mewtwo steps out of the arch, a silhouette until its colours flood in */
+.gate-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.gate-scene.white .gate-flash { opacity: 1; transition: opacity 0.22s ease-in; }
+.gate-scene.after-white .gate-flash { opacity: 0; transition: opacity 1.4s ease-out; }
+.gate-scene.white .gate-mon, .gate-scene.after-white .gate-mon { filter: brightness(0.6); }
+.gate-free { position: fixed; width: 0; height: 0; }
+.gate-free img { position: absolute; left: 0; bottom: 0; max-width: none; translate: calc(-50% + var(--dx, 0px)) var(--foot, 0px); scale: 0.55; transform-origin: 50% 100%; image-rendering: pixelated; }
+.gate-free.step img { scale: 1; translate: calc(-50% + var(--dx, 0px)) calc(var(--foot, 0px) + 6vh); transition: scale 1s steps(10), translate 1s steps(10); }
+.gate-free.dark img { filter: brightness(0) drop-shadow(0 0 2px #e0c0ff) drop-shadow(0 0 1px #b070ff); }
+.gate-free.flash img { animation: gateFreeFlash 0.5s steps(1, end); }
+@keyframes gateFreeFlash { 0%, 40% { filter: brightness(0) invert(1); } 20%, 60% { filter: brightness(0); } 100% { filter: none; } }
+.gate-scene.still, .gate-scene.still .gate-plate { animation: none; opacity: 1; }
+.gate-scene.still .gate-mon, .gate-scene.still .gate-free img { transition: none; }
+.gate-scene.still .gate-mon.lunge, .gate-scene.still .gate-dmg.go, .gate-scene.still .gate-free.flash img { animation: none; }
+.gate-scene.still .gate-dmg.go { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .gate-scene.white .gate-flash { opacity: 0.6; } }
 
 /* ---------- enemy portraits: pixel sprites, elites and bosses ---------- */
 /* pixel sprites stand in the scene frameless, like your Pokémon; the glow marks elites and bosses */

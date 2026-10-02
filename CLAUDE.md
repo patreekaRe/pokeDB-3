@@ -14,7 +14,8 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?time=dawn`, `day`, `dusk` or
   `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
-  `center`...; `&biome=shrine` / `wastes`) shows just that room's painted scene, without starting a run.
+  `center`...; `&biome=shrine` / `wastes`) shows just that room's painted scene, without starting a run. `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
+  break that frees Mewtwo) after PRESS START. Neither is saved.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
@@ -108,7 +109,22 @@ live site.
   (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and a plain bar in the result window); only a
   Level 5 win takes it below `GATE_SLIVER` (50). Mewtwo's own runs leave it be. Old saves: `seedGate()` counts each
   Record Book win once (never past the sliver), and anyone who has Mewtwo gets 0. That achievement (`gateHp <= 0`) must
-  stay last in `ACHIEVEMENTS`, since `checkAchievements()` grants in order (the shop also runs it after a purchase). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
+  stay last in `ACHIEVEMENTS`, since `checkAchievements()` grants in order (the shop also runs it after a purchase).
+  **The gate's art and scenes** (part B, 2026-10-02): `makeGate(W, H)` in `js/gate.js` paints it pixel by pixel at any
+  size from its HP (a stone arch, a dark crystal door chained shut, Eternatus's seal; seeded cracks spread out from the seal
+  leaking light, stone cracks, a chain snaps at half HP and the other near 6%, chunks fall out, the pillars' runes go out
+  bottom-up, and from ~55% the light behind the door rises with Mewtwo's silhouette, from its sprite, eyes glowing; broken,
+  steps down into violet light). After the win scene (or straight away for a loss chip), `endRun()` plays
+  `gateScene()` in `js/gatescene.js` (`#gate-scene`, z-index 950): a crystal cavern on one low-res canvas, the gate's
+  HP in a battle nameplate, your Pokémon from behind using its type's move (`MOVES`: a loss Ember / Water Gun / Vine
+  Whip, a win Flamethrower / Hydro Pump / Leaf Storm, a Level 5 win Blast Burn / Hydro Cannon / Frenzy Plant, charged
+  first), then the flash, shake, -N and the bar and cracks running down together. The breaking blow: shudder, light rays,
+  chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
+  its aura GIF and cry; the unlock window follows. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
+  `js/audio.js`. The title shows the gate on the ledge in the right-hand gutter (`sizeGate()` / `paintGate()` in
+  `js/title.js`, 2 CSS px a pixel on phones, 3 wider) with a thin HP bar; a tap says how it stands; once broken Mewtwo
+  joins the title's flyers. Playtest: `?gate=NNN` shows that HP (never saved), `?strike=90` (with `&starter=`,
+  `&stage=`, `&kind=loss`) plays the scene after PRESS START; a strike past the HP plays the break. It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
   Ability landed; run-end guards (`isMewtwoRun()`) keep Mewtwo out of Level-based rewards and stats.
   **Mewtwo's run is its own game mode** (v1.0 part B, 2026-10-02): no Trainer Level (`prepare()` in `js/select.js` hides

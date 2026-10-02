@@ -39,6 +39,7 @@ import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
+import { gateScene } from './gatescene.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
@@ -2119,7 +2120,8 @@ function announceUnlocks() {
 
 /** After a run, the starter attacks the Sealed Gate: a win by its Trainer Level, a loss at the last boss a chip. Only a
     Level 5 win can take it past the sliver. Mewtwo's own runs leave it be (it's the one behind it). Runs before
-    announceUnlocks(), which frees Mewtwo once it breaks. Returns the result window's line, if any. */
+    announceUnlocks(), which frees Mewtwo once it breaks. Returns the result window's line and what the gate scene
+    (js/gatescene.js) needs, if it was struck. */
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
   const hit = won ? GATE_HIT[run.level] : atLastBoss ? GATE_LOSS_CHIP : 0;
@@ -2136,7 +2138,8 @@ function strikeGate(won, atLastBoss) {
   bar.firstChild.style.width = `${(hp / GATE_HP) * 100}%`;
   const li = el('li', 'gate-line', text);
   li.append(bar);
-  return li;
+  const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
+  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind } };
 }
 
 /** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.
@@ -2218,13 +2221,14 @@ function endRun(won, atLastBoss = false) {
   const list = $('result-unlocks');
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.dexNews || []).map(line => `📕 ${line}`)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
-  lines.unshift(...level5, ...(gate ? [gate] : []));
+  lines.unshift(...level5, ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = 'New run';
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
-  if (record) winScene(record).then(result);
-  else result();
+  // after the win scene, your Pokémon attacks the Sealed Gate (a lost run's too, if it got as far as the last boss)
+  const strike = () => (gate ? gateScene(gate.scene) : Promise.resolve());
+  (record ? winScene(record) : Promise.resolve()).then(strike).then(result);
 }

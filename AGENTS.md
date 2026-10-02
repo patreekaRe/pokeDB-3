@@ -35,8 +35,12 @@ three places:
   Eternatus set piece) or B2; both prompts are in the roadmap.
 - 2026-10-02: **The Sealed Gate, part A** (roadmap section of that name): breaking the gate is Mewtwo's unlock now
   (1000 HP, hits by Trainer Level after each win, only Level 5 breaks it; old saves back-filled from the Record Book,
-  Mewtwo owners keep it). Tested headless (back-fill, every hit case, the break unlocking Mewtwo). Part B (the gate's
-  art, attack and break scenes, title screen) is next, a Desktop session.
+  Mewtwo owners keep it). Tested headless (back-fill, every hit case, the break unlocking Mewtwo). **Part B landed the
+  same day** (Desktop app): the gate's pixel art in its damage stages (`js/gate.js`), the after-run attack scene and the
+  break that frees Mewtwo (`js/gatescene.js`), and the gate on the title's ledge. Checked in the browser pane at 375x812
+  and ~800x760 through `?strike=` (a win, a loss chip, the seal holding at the sliver, the break), no console errors;
+  the real end-of-run path was only checked by reading the code. The user still has to watch it on the live site
+  (`?strike=120&gate=50` for the break).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
