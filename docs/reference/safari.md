@@ -79,14 +79,16 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 ## The prep window (2026-10-02)
 
 The title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`), not the run (the user's ask: "like setting
-your loadout"). It holds today's run (the starter, the 3 areas with each page's caught count, and whether this is the
-first try or a replay), buttons to the Safari Pokédex (on the day's first area) and the Leaderboard, the rules in short
-lines (`RULES`), your Poké Balls (a tile each with how many you hold, Safari ∞, the Master Ball's "next week" once
-thrown) and a 🎰 Game Corner button, then Back / Start (sticky at the bottom, so Start stays in reach on a phone). Start
-keeps the "your saved run will be lost" confirm (`onStart` in `js/main.js`; No reopens the window). The Game Corner is
-non-modal, so it would sit under this modal window: the button closes it, opens the shop on its Poké Balls row
-(`toggleShop('balls')`) and reopens it, refreshed, when the shop closes. The Safari Pokédex and the Leaderboard are
-modal and simply stack on top.
+your loadout"). Styled like the character select's Prepare step (the user's ask after a playtest): a dark panel, gold
+pixel heads, pixel pill buttons (`.pxb`), bigger text (rules 0.82rem, 0.78 on phones). It holds today's run (the
+starter, the 3 areas with each page's caught count, first try or replay), 📕 Pokédex (on the day's first area) and 🏆
+Leaderboard buttons, the rules in eight short lines (`RULES`, each with a pixel icon that `js/icons.js` has: an emoji
+without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row like an item bar
+(a slot each, sprite and ×count, greyed at 0; the Master Ball ×1 or ×0 once thrown this week), a purple 🎰 Buy slot at its
+end for the Game Corner, and Back / Start. Start keeps the "your saved run will be lost" confirm (`onStart` in
+`js/main.js`; No reopens the window). The Game Corner is non-modal, so it would sit under this modal window: Buy closes
+it, opens the shop on its Poké Balls row (`toggleShop('balls')`) and reopens it, refreshed, when the shop closes. The
+Safari Pokédex and the Leaderboard are modal and simply stack on top.
 
 ## The fair first try
 

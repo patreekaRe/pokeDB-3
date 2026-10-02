@@ -26,6 +26,7 @@ import { safariOpen } from './data/pokedex.js';
 import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
+import { spriteFit } from './data/sprite-fit.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -217,9 +218,10 @@ function safariGem() {
   const open = safariOpen(getSave());
   const daily = safariDaily();
   const line = `Today: ${daily.areas.map(a => a.name).join(' · ')}`;
-  const icon = el('img', open ? 'pixel' : 'pixel gem-ball');
-  icon.src = open ? spriteUrl(daily.starter, 'front', 0) : 'assets/items/safari-ball.png';
+  const icon = el('img', open ? 'pixel gem-mon' : 'pixel gem-ball');
   icon.alt = '';
+  if (open) icon.addEventListener('load', () => fitMon(icon), { once: true });
+  icon.src = open ? spriteUrl(daily.starter, 'front', 0) : 'assets/items/safari-ball.png';
   const btn = gem('safari', 'Safari Zone', () => {
     if (open) return actions.onSafari();
     playSound('cancel');
@@ -232,7 +234,8 @@ function safariGem() {
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');
-  const board = el('button', 'gem-side', '🏆');
+  const board = el('button', 'gem-side');
+  board.append(el('span', 'gem-side-icon', '🏆'));
   board.type = 'button';
   board.id = 'title-board';
   board.title = 'Today\'s Safari Zone leaderboard';
@@ -240,6 +243,19 @@ function safariGem() {
   board.addEventListener('click', () => { playSound('confirm'); actions.onBoard(); });
   row.append(btn, board);
   return row;
+}
+
+/** A Pokémon GIF has empty space round it (more under its feet), so it sat off-centre in the gem's icon slot: scale its
+    visible pixels (SPRITE_FIT's gaps) to fill the slot, a little over, and centre them, in % of the square slot. */
+function fitMon(img) {
+  const [top, bottom, left, right] = spriteFit(img.src);
+  const w = img.naturalWidth - left - right, h = img.naturalHeight - top - bottom;
+  const k = 1.2 / Math.max(w, h);
+  const pct = (n) => `${(n * 100).toFixed(2)}%`;
+  Object.assign(img.style, {
+    width: pct(img.naturalWidth * k), height: pct(img.naturalHeight * k),
+    left: pct(-left * k + (1 - w * k) / 2), top: pct(-top * k + (1 - h * k) / 2),
+  });
 }
 
 /** The ▶ follows the pointer or the arrow keys, like the games' menus. */

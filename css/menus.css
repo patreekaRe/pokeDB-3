@@ -204,6 +204,20 @@
   -webkit-tap-highlight-color: transparent;
 }
 .gem-side:active { translate: 0 calc(-50% + 3px); }
+/* idle: the trophy bobs and sways a little, and a glint crosses the sign every few seconds */
+.gem-side { overflow: hidden; }
+.gem-side-icon { display: grid; place-items: center; transform-origin: 50% 85%; }
+.gem-side::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  transform: skewX(-20deg); opacity: 0; pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gem-side-icon { animation: trophyBob 2.4s ease-in-out infinite; }
+  .gem-side::after { animation: trophyGlint 4.8s ease-in-out infinite 1.2s; }
+}
+@keyframes trophyBob { 0%, 100% { translate: 0 1px; rotate: -5deg; } 50% { translate: 0 -2px; rotate: 5deg; } }
+@keyframes trophyGlint { 0%, 78% { left: -60%; opacity: 0; } 80% { opacity: 1; } 96% { left: 130%; opacity: 1; } 100% { left: 130%; opacity: 0; } }
 @media (max-width: 420px) { .gem-side { left: calc(100% + 4px); width: 36px; height: 36px; font-size: 18px; } }
 .gem-side:focus-visible { outline: 3px solid #f8e070; outline-offset: 2px; }
 @media (hover: hover) { .gem-side:hover { filter: brightness(1.08); } }
@@ -211,6 +225,8 @@
 .gem.locked .gem-face { filter: grayscale(1) brightness(0.8); }
 .gem.locked .gem-icon img { filter: grayscale(1) brightness(0.9); }
 .gem.locked .gem-label { color: #c8c8d0; }
+/* today's starter, sized and centred on its visible pixels by fitMon() in js/title.js */
+.gem-icon img.gem-mon { position: absolute; max-width: none; margin: 0; object-fit: fill; }
 /* 2x, wider than its 44px slot, so negative margins centre it like the other icons */
 .gem-icon img.gem-ball { width: 60px; height: 60px; margin: calc((100% - 60px) / 2); }
 .gem.on { translate: 0 -2px; filter: brightness(1.08) drop-shadow(0 calc(var(--gp) + 2px) 0 rgba(20, 10, 30, 0.5)); }

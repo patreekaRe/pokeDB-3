@@ -624,22 +624,25 @@
 
   <!-- the cloud save (js/cloud.js): only once js/cloud-config.js holds a Firebase project -->
   <!-- the Safari Zone's prep window: today's run, the rules, your balls, then Start (js/safariprep.js) -->
-  <dialog id="safari-prep-dialog" class="dialog safari-prep-dialog">
-    <h2 tabindex="-1" autofocus>🌿 Safari Zone</h2>
-    <div class="panel sp-today" id="sp-today"></div>
+  <dialog id="safari-prep-dialog" class="dialog safari-prep-dialog" aria-labelledby="sp-title">
+    <h2 class="sp-title" id="sp-title" tabindex="-1" autofocus>Safari Zone</h2>
+    <div class="sp-today" id="sp-today"></div>
     <div class="sp-links">
-      <button class="btn secondary" id="sp-dex" type="button">📖 Safari Pokédex</button>
-      <button class="btn secondary" id="sp-board" type="button">🏆 Leaderboard</button>
+      <button type="button" class="pxb sun small" id="sp-dex"><span class="pxb-o"><span class="pxb-i">📕 Pokédex</span></span></button>
+      <button type="button" class="pxb orange small" id="sp-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>
     </div>
-    <h3>How it works</h3>
+    <h4 class="sp-head">How it works</h4>
     <ul class="sp-rules" id="sp-rules"></ul>
-    <h3>Your Poké Balls</h3>
-    <div class="sp-balls" id="sp-balls"></div>
-    <p class="hint sp-corner-hint">Buy more balls at the Game Corner, with PokéCoins.</p>
-    <button class="btn secondary sp-corner" id="sp-corner" type="button">🎰 Game Corner</button>
-    <div class="dialog-actions sp-actions">
-      <button class="btn secondary" id="sp-close" type="button">Back</button>
-      <button class="btn primary" id="sp-start" type="button">Start</button>
+    <div class="sp-foot">
+      <h4 class="sp-head">Your Poké Balls</h4>
+      <div class="sp-bar">
+        <div class="sp-balls" id="sp-balls"></div>
+        <button type="button" class="sp-corner" id="sp-corner" title="Buy more balls at the Game Corner" aria-label="Buy more balls at the Game Corner">🎰<b>Buy</b></button>
+      </div>
+      <div class="sp-actions">
+        <button type="button" class="pxb blue white" id="sp-close"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
+        <button type="button" class="pxb green" id="sp-start"><span class="pxb-o"><span class="pxb-i">Start</span></span></button>
+      </div>
     </div>
   </dialog>
 

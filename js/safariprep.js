@@ -6,7 +6,7 @@
    ============================================================ */
 
 import { safariDaily, SAFARI_DEX_PAGES, SAFARI_AREA_COINS, RARE_BOOST, safariProgress } from './data/safari.js';
-import { BALLS, CATCH_HP, RARE, ballWeek } from './data/balls.js';
+import { BALLS, RARE, ballWeek } from './data/balls.js';
 import { spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
 import { openSafariDex } from './safaridex.js';
@@ -19,14 +19,14 @@ let actions = {};
 let backFromShop = false;   // the Game Corner is non-modal, so this window steps aside for it and comes back after
 
 const RULES = [
-  ['📅', 'One run a day, the same for everyone: same starter, areas, map and wild Pokémon.'],
-  ['🔴', `Once a wild Pokémon's HP is red (below ${CATCH_HP * 100}%), throw a ball. A throw is your whole turn; if it breaks free, it attacks.`],
-  ['🍓', 'Debuffs on it (Burn, Leech Seed, Weak, Sap) and Bait raise the odds. Bait makes it hit harder; Rock may scare it off.'],
-  ['✦', `Rare spawns are harder to catch and run off after ${RARE.turns} turns.`],
-  ['📖', 'A catch fills its Safari Pokédex entry and offers its signature card.'],
-  ['🏆', 'The day\'s first try has no Game Corner perks and goes on the leaderboard. Replays keep your perks.'],
-  ['💰', `Catch every Pokémon in an area: ${SAFARI_AREA_COINS} PokéCoins, and its rare spawns x${RARE_BOOST} on replays.`],
-  ['🐉', 'Catch them all, every area: Rayquaza joins you.'],
+  ['🔄', 'One run a day, the same for everyone.'],
+  ['🔴', 'Red HP? Throw a ball. It costs your turn.'],
+  ['🎯', 'Debuffs and Bait raise the odds. Rock may scare it off.'],
+  ['💨', `Rare spawns flee after ${RARE.turns} turns.`],
+  ['🃏', 'A catch: its Pokédex entry and its card.'],
+  ['🏆', 'First try: no perks, and it goes on the leaderboard.'],
+  ['💰', `Catch a whole area: ${SAFARI_AREA_COINS} coins, x${RARE_BOOST} rare spawns.`],
+  ['👑', 'Catch them all: Rayquaza joins you.'],
 ];
 
 export function initSafariPrep(handlers) {
@@ -72,9 +72,8 @@ function render() {
     areas.append(chip);
   });
   const info = el('div', 'sp-info');
-  info.append(el('span', 'sp-kicker', `Today · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
-    el('span', `sp-try${first ? ' first' : ''}`, first ? '🏆 First try: it counts for the leaderboard.'
-      : `Replay (try ${save.safari.tries + 1}): perks on, not on the leaderboard.`));
+  info.append(el('span', 'sp-kicker', `Today's starter · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
+    el('span', `sp-try${first ? ' first' : ''}`, first ? '🏆 First try: it counts!' : `Replay · try ${save.safari.tries + 1}`));
   $('sp-today').replaceChildren(mon, info);
 
   $('sp-rules').replaceChildren(...RULES.map(([icon, text]) => {
@@ -86,11 +85,11 @@ function render() {
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {
     const left = ball.free ? '∞' : ball.stock ? save.balls[ball.id] || 0
-      : !save.balls.owned.includes(ball.id) ? 0 : save.balls.masterWeek === week ? 'used' : 1;
-    const tile = el('div', `sp-ball${left === 0 ? ' none' : ''}`);
-    tile.append(itemSprite(ball, 'sp-ball-icon'), el('span', 'sp-ball-name', ball.name.replace(' Ball', '')),
-      el('b', 'sp-ball-left', left === 'used' ? 'next week' : typeof left === 'number' ? `×${left}` : left));
-    tile.title = `${ball.name}: ${ball.text}`;
-    return tile;
+      : !save.balls.owned.includes(ball.id) ? 0 : save.balls.masterWeek === week ? 0 : 1;
+    const slot = el('div', `sp-ball${left === 0 ? ' none' : ''}`);
+    slot.append(itemSprite(ball, 'sp-ball-icon'), el('b', 'sp-ball-left', typeof left === 'number' ? `×${left}` : left));
+    slot.title = `${ball.name}: ${ball.text}`;
+    slot.setAttribute('aria-label', `${ball.name}, ${left === '∞' ? 'always' : left} in your bag`);
+    return slot;
   }));
 }
