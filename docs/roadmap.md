@@ -1033,25 +1033,37 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    Sneasel. Bot (human bot, random Safari days, same bot, 300 runs/cell): knock out 80.0 -> 75.0, throw at 50%+ 59.7 ->
    60.3 (3.5 catches a run); at 150 it was 78.0 -> 72.0 and 59.3 -> 63.3. Within noise of 75, so no retune. Checked headless
    at 390x844: all 81 GIFs decode, a Safari run's first fight, the Safari Pokédex (354), no console errors.
-   **Left** (Gen 1-5 non-legendary, not in the game, not the left-out lines; shown type): Grass 11 (Kakuna, Exeggutor,
-   Silcoon, Cascoon, Ninjask, Tropius, Kricketune, Wormadam, Mothim, Cherrim, Whirlipede), Water 5 (Starmie, Omastar,
-   Wailord, Carracosta, Vanilluxe), Fire 0, Neutral ~144 (Pidgeot, Fearow, Raichu, the Nidos, Abra line, Machamp, Golem,
-   Magnemite line, Voltorb line, Hitmons, Electabuzz, Jolteon, Espeon, Umbreon, Porygon, Dragonite, Ralts line, Aron line,
-   Beldum line, Tyranitar, Salamence, Garchomp, Luxray, Staraptor, Togekiss, Gothita / Solosis lines, Klink line, Deino
-   line, Pawniard, Rufflet, Vullaby and more).
+   **Batch 5 built 2026-10-02** (cloud): **80 more Pokémon**, 434 Safari Pokédex entries, the last 11 Grass and 5 Water
+   species plus 64 Neutral ones: Meadow Kricketune, Cherrim, Mothim, Pidgeot, Raichu, Pichu, Cleffa, Delcatty, Plusle,
+   Minun, Staravia, Herdier (rare Togekiss, Jolteon); Forest Kakuna, Silcoon, Cascoon, Wormadam, Mightyena, Liepard,
+   Vigoroth, Honchkrow, Emolga, Woobat, Munna (rare Umbreon, Druddigon); Wetland Starmie, Wailord, Tropius, Swellow,
+   Unfezant, Chatot, Castform, Ralts, Kirlia, Mime Jr., Mr. Mime (rare Dragonite, Espeon); Marsh Whirlipede, Garbodor,
+   Eelektrik, Drifblim, Drowzee, Hypno, Gothita, Gothorita, Solosis, Duosion, Golett (rare Eelektross, Reuniclus); Peak
+   Vanilluxe, Golem, Machamp, Primeape, Boldore, Aggron, Hariyama, Conkeldurr, Medicham, Altaria, Pupitar, Shelgon (rare
+   Tyranitar, Salamence); Desert Omastar, Carracosta, Exeggutor, Ninjask, Rhydon, Gliscor, Archeops, Rampardos,
+   Bastiodon, Scrafty, Vullaby (rare Garchomp, Mandibuzz). Claude's call: the Wetland had no Fire Pokémon at all (a Water
+   starter met no good match-up there, a Grass one no bad one), and no Fire species are left, so **Numel and Magby moved
+   from the Peak to the Wetland's hot springs** (their catches stay; only their page changed). Wild shown types per area
+   after it (Neutral / Grass / Water / Fire): Meadow 34/19/2/5, Forest 17/41/1/2, Wetland 13/4/44/2, Marsh 35/14/11/2,
+   Peak 34/3/18/6, Desert 40/13/6/4: every starter meets good and bad match-ups in every area. 17 signature cards were
+   nudged to stop reading like another card (the test). Bot (human bot, random Safari days, same bot): knock out 74.3 ->
+   76.7, throw at 50%+ 62.7 -> 62.7 (300 runs/cell, 3.7 catches a run); at 150 it was 78.7 -> 72.0 and 64.7 -> 67.3.
+   Within noise of 75, so no retune. Checked headless at 390x844: all 80 GIFs decode, a Safari run's first fight, the
+   Safari Pokédex (434), no console errors.
+   **Left** (Gen 1-5 non-legendary, not in the game, not the left-out lines): **80, all shown as Neutral** (no Fire,
+   Grass or Water species remain): Fearow, Nidorina, Nidoqueen, Nidorino, Nidoking, Abra, Kadabra, Alakazam, Magnemite, Magneton, Dodrio, Voltorb, Electrode, Hitmonlee, Hitmonchan, Electabuzz, Porygon, Igglybuff, Xatu, Unown, Wobbuffet, Girafarig, Dunsparce, Snubbull, Granbull, Porygon2, Tyrogue, Hitmontop, Elekid, Blissey, Gardevoir, Whismur, Loudred, Mawile, Electrike, Manectric, Spoink, Grumpig, Spinda, Chimecho, Wynaut, Beldum, Metang, Metagross, Staraptor, Luxio, Luxray, Buneary, Glameow, Chingling, Bronzor, Happiny, Munchlax, Rhyperior, Electivire, Gallade, Probopass, Musharna, Zebstrika, Swoobat, Throh, Sawk, Minccino, Gothitelle, Klink, Klang, Klinklang, Elgyem, Beheeyem, Axew, Fraxure, Mienfoo, Mienshao, Pawniard, Bisharp, Rufflet, Braviary, Deino, Zweilous, Hydreigon.
+
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 4, batch 5): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0:
-the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 5: the last 16 Grass / Water species (batch 4's
-'Left' list: Kakuna, Exeggutor, Silcoon, Cascoon, Ninjask, Tropius, Kricketune, Wormadam, Mothim, Cherrim, Whirlipede,
-Starmie, Omastar, Wailord, Carracosta, Vanilluxe) plus ~60 Neutral-shown ones that fit an area's habitat (still none of the
-Budew / Sewaddle / Lotad / Horsea / Spheal / Tympole lines), as lines in js/data/safari-mons.js on the existing templates,
-~13 an area with 2 rare spawns each, with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median_low bbox
-over all frames) and a signature card each; tests/safarimons.test.mjs must stay green. Since Grass and Water run out here,
-batch 5 tilts every area toward Neutral: check that Fire, Grass and Water starters still meet a fair share of match-ups.
-Bot-check before and after (human bot, ~150 runs a cell, confirm at 300; knock out was 75.0, throw at 50%+ 60.3 after
-batch 4) and retune the templates if knock-out drifts more than ~8 from 75. Earned pages stay earned. Attach pokeDB-sim
-too."
+**Run in: CLOUD.** Next-session prompt (phase 4, batch 6, the last): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's
+'Post-v1.0: the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 6: the last 80 Gen 1-5
+non-legendary species, all Neutral-shown (batch 5's 'Left' list: Fearow, Nidorina, Nidoqueen, Nidorino, Nidoking, Abra, Kadabra, Alakazam, Magnemite, Magneton, Dodrio, Voltorb, Electrode, Hitmonlee, Hitmonchan, Electabuzz, Porygon, Igglybuff, Xatu, Unown, Wobbuffet, Girafarig, Dunsparce, Snubbull, Granbull, Porygon2, Tyrogue, Hitmontop, Elekid, Blissey, Gardevoir, Whismur, Loudred, Mawile, Electrike, Manectric, Spoink, Grumpig, Spinda, Chimecho, Wynaut, Beldum, Metang, Metagross, Staraptor, Luxio, Luxray, Buneary, Glameow, Chingling, Bronzor, Happiny, Munchlax, Rhyperior, Electivire, Gallade, Probopass, Musharna, Zebstrika, Swoobat, Throh, Sawk, Minccino, Gothitelle, Klink, Klang, Klinklang, Elgyem, Beheeyem, Axew, Fraxure, Mienfoo, Mienshao, Pawniard, Bisharp, Rufflet, Braviary, Deino, Zweilous, Hydreigon), as lines in js/data/safari-mons.js on the
+existing templates, ~13 an area by habitat with 2 rare spawns each (pseudo-legendaries and Blissey make good rares), with
+PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median_low bbox over all frames) and a signature card each;
+tests/safarimons.test.mjs must stay green. Every area tilts further toward Neutral: report each area's shown-type counts
+and keep every starter meeting good and bad match-ups. Bot-check before and after (human bot, ~150 runs a cell, confirm
+at 300; knock out was 76.7, throw at 50%+ 62.7 after batch 5) and retune the templates if knock-out drifts more than ~8
+from 75. Earned pages stay earned. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

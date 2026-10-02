@@ -84,6 +84,10 @@ three places:
   25 Neutral; no Fire species were left), 11-12 wilds + 2 rare spawns an area; 354 Safari Pokédex entries. Bot (300 runs):
   knock out 80.0 -> 75.0, throw at 50%+ 59.7 -> 60.3; no retune. Only 16 Grass / Water species are left (listed in the
   roadmap). Next: batch 5 (prompt in the roadmap).
+- 2026-10-02: **Safari Zone phase 4, batch 5** (cloud, pushed to `main`): 80 more Gen 1-5 Pokémon (the last 11 Grass
+  and 5 Water species, 64 Neutral), 11-12 wilds + 2 rare spawns an area; 434 Safari Pokédex entries. Numel and Magby moved
+  to the Wetland (it had no Fire Pokémon). Bot (300 runs): knock out 74.3 -> 76.7, throw at 50%+ 62.7 -> 62.7; no retune.
+  80 species are left, all Neutral (listed in the roadmap). Next: batch 6, the last (prompt in the roadmap).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
