@@ -736,9 +736,14 @@ last act only a special run reaches.
    Depths** (Cave Mouth, Crystal Halls, Deep Core, and the arena Energy Well). Its wilds are themed to the place (strong,
    fully evolved cave Pokémon shown as Neutral or Psychic), its Alphas and boss pure Normal as everywhere. Its art was
    painted 2026-10-02 (B2 below); `map4` music still borrows `map3.mp3` until the user supplies one.
-5. **Rewards**: a 4th Pokédex page (its wilds, Alphas and boss, with a perk), its own Hall of Fame entry style (a
-   different pedestal or scene), and a title-screen touch once it's beaten (the final boss crossing the sky, say).
-   Mewtwo's shiny (`SHINY_COSTS` skips it today).
+5. ~~Rewards~~ settled 2026-10-02 (the user's picks):
+   - **A won Mewtwo run gets its own Hall of Fame**: a "Champion of the Depths" scene (a crystal pedestal in the cavern,
+     violet light, Mewtwo's cry), then a credits roll, and a gold-violet entry style in the Record Book / Hall of Fame.
+   - **The Crystal Depths' Pokédex page** (its 12 wilds, 3 Alphas, Eternatus) becomes a real tab; completing it unlocks
+     **shiny Mewtwo** (it can't be bought). Keep the page out of `dex.complete` / `ALL_IDS` so the 55-entry jackpot and
+     Reshiram aren't taken away from anyone.
+   - **Title touch**: once Eternatus is beaten, Eternatus drifts across the title's sky now and then, like the flying
+     starters (it needs a flying-style sprite or the showdown GIF scaled).
 
 **Parts, one session each:**
 - **A. Mewtwo's deck — built 2026-09-29.** The user chose Force / Barrier / Mind Games and Pressure (start each fight
@@ -836,9 +841,36 @@ last act only a special run reaches.
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
 
 **Run in: CLOUD.** Next-session prompt (part D): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
-fourth biome'. Parts A-C (Mewtwo's deck, the Crystal Depths, Eternatus's two-bar set piece) are done. Ask me what part D
-needs (the ending, the 4th Pokédex page and its perk, achievements, patch notes), then build it and run the final
-balance pass. Attach pokeDB-sim too."
+fourth biome'. Parts A-C (Mewtwo's deck, the Crystal Depths, Eternatus's two-bar set piece) are done, and my picks for
+part D are under Open item 5. Build part D: Mewtwo's own Hall of Fame scene + credits + Record Book style, the Crystal
+Depths Pokédex page (its completion unlocks shiny Mewtwo, kept out of dex.complete), Eternatus crossing the title sky once
+beaten, an achievement for beating Eternatus, the v1.0 patch notes, then the final balance pass (all three types at
+Levels 0/3/5, and Mewtwo, small runs). Don't ask again about what's settled. Attach pokeDB-sim too."
+
+Then the user wants a look on the live site at the Hall of Fame scene, the credits and the title sky (`?bossfight=depths&hp=0.05`).
+
+## Small asks (the user's list, 2026-10-02)
+
+Split into sessions by where they run:
+
+1. **Ken's dojo on the map** (Desktop app, visual). Once Kenmatta has been beaten once (a save flag, set where his win
+   is recorded), every run's map shows which ❓ room holds the Move Tutor, with a tiny pixel Ken's face (from Alder's
+   sprite) as its icon instead of the ❓, and a legend/tooltip saying so. Beating him the first time pops a real
+   achievement window ("Find the Ken icon on the map to find Ken!", `unlockWindow()`), not just the relic.
+   **Run in: Desktop app.** Prompt: "Read CLAUDE.md, docs/reference/events.md and docs/reference/map-screen.md, then
+   docs/roadmap.md's 'Small asks' item 1. Build it, check it on a phone-sized pane (`?event=move-tutor`), push to main."
+2. **Safari polish** (Desktop app, visual). (a) The rare spawn's floating ✨/star on the map should sit centred right
+   above the room it marks; today it's hard to tell which room it's over. (b) The Safari prep window's balls: bigger
+   ball icons, laid out as a row you swipe left/right like the starter carousel.
+   **Run in: Desktop app.** Prompt: "Read CLAUDE.md and docs/reference/safari.md, then docs/roadmap.md's 'Small asks'
+   item 2. Fix both, check at 375x812 and an iPad size (`?safari`, `?area=meadow`), push to main."
+3. **Throw like the games** (logic + balance). The Throw button is there in every wild Safari fight, not only at red
+   HP; a throw costs 1 PP (energy) and ends your turn. `catchChance()` drops the 25% `CATCH_HP` gate for a curve on the
+   HP left (the games' formula shape: low at full HP, high near 0), so a throw at full HP is a long shot. Update the
+   rules text (prep window, How to play, the reference doc), `tests/catch.test.mjs`, and the sim's `cfg.catch`.
+   **Run in: CLOUD.** Prompt: "Read CLAUDE.md and docs/reference/safari.md, then docs/roadmap.md's 'Small asks' item 3.
+   Build it, keep `node --test` green, run a small Safari bot check on catches per run before/after, push to main.
+   Attach pokeDB-sim too."
 
 ## The Sealed Gate: why every run matters (the user's idea, agreed 2026-10-02)
 
