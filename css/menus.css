@@ -358,21 +358,18 @@
   content: ''; width: 0.75em; height: 0.75em; margin-right: 0.35em; background: currentColor; opacity: 0.55;
   clip-path: polygon(0 100%, 0 70%, 30% 70%, 30% 40%, 60% 40%, 60% 10%, 100% 10%, 100% 100%);
 }
-/* the plate stays centred under the sign; the Escape Rope hangs off its right edge, just the sprite (2x, whole pixels),
-   with a drop shadow so it reads on the night sky. Hover (a mouse) or a tap (.armed, which also opens the bubble over
-   it) rings it red and swings it */
+/* the Escape Rope sits inside the plate, under its HP: tag, where the plate is empty left of the HP numbers (the user's
+   pick, 2026-10-02: hung off the plate's right edge it ran into the open gate on phones). The sprite at 1x, whole
+   pixels, in a bigger tap target. Hover (a mouse) or a tap (.armed, which also opens the bubble over it) rings it red
+   and swings it */
 .title-run-row { position: relative; }
-.title-rope { position: absolute; left: 100%; top: 50%; margin: -32px 0 0 4px; width: 64px; height: 64px; opacity: 0; }
+.title-rope { position: absolute; left: 6px; bottom: 0; width: 40px; height: 36px; opacity: 0; }
 .title-screen.menu .title-rope { opacity: 1; animation: plateIn 0.3s steps(3); }
-/* only where it would land on the open gate (placeRope() in js/title.js): smaller, low by the plate's bottom-right corner,
-   under the gate (the user's pick, 2026-10-02: hung from the plate's top corner it covered the biome sign) */
-.title-rope.tucked { top: auto; bottom: -26px; margin: 0 0 0 2px; width: 48px; height: 48px; }
-.title-rope.tucked .title-abandon, .title-rope.tucked .title-abandon img { width: 48px; height: 48px; }
 .title-abandon {
-  width: 64px; height: 64px; padding: 0; border: 0; background: none; cursor: pointer;
+  width: 40px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;
 }
-.title-abandon img { width: 64px; height: 64px; image-rendering: pixelated; pointer-events: none; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.55)); }
+.title-abandon img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.3)); }
 .title-rope.armed img, .title-abandon:focus-visible img { filter: drop-shadow(2px 0 0 #e05048) drop-shadow(-2px 0 0 #e05048) drop-shadow(0 2px 0 #e05048) drop-shadow(0 -2px 0 #e05048); }
 @media (hover: hover) { .title-abandon:hover img { filter: drop-shadow(2px 0 0 #e05048) drop-shadow(-2px 0 0 #e05048) drop-shadow(0 2px 0 #e05048) drop-shadow(0 -2px 0 #e05048); } }
 .title-abandon:focus-visible { outline: none; }
@@ -382,9 +379,10 @@
   @media (hover: hover) { .title-abandon:hover img { animation: ropeSwing 0.6s steps(4) infinite; } }
 }
 @keyframes ropeSwing { 0%, 100% { rotate: -8deg; } 50% { rotate: 8deg; } }
-/* the ask: a little window over the rope, right-aligned so it stays on a phone's screen, its tail pointing down at it */
+/* the ask: a little window over the rope, left-aligned with the plate so it stays on a phone's screen, its tail pointing
+   down at it */
 .rope-ask {
-  position: absolute; right: 0; bottom: calc(100% + 10px); z-index: 5; width: 176px; padding: 8px 9px 9px;
+  position: absolute; left: -10px; bottom: calc(100% + 10px); z-index: 5; width: 176px; padding: 8px 9px 9px;
   border: 3px solid #b8b8c8; background: var(--win-bg); color: var(--win-ink);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
   font-family: var(--pixel-font); font-synthesis-weight: none; text-align: center;
@@ -392,10 +390,9 @@
 }
 .rope-ask[hidden] { display: none; }
 .rope-ask::after {
-  content: ''; position: absolute; right: 24px; top: 100%; width: 12px; height: 8px; margin-top: 2px;
+  content: ''; position: absolute; left: 24px; top: 100%; width: 12px; height: 8px; margin-top: 2px;
   background: #303038; clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
-.title-rope.tucked .rope-ask::after { right: 18px; }
 .rope-ask p { margin: 0 0 8px; font-size: 0.55rem; line-height: 1.5; }
 .rope-ask-btns { display: flex; justify-content: center; gap: 8px; }
 .title-screen:not(.menu) .title-run { display: none; }
