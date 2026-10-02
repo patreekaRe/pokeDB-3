@@ -101,8 +101,8 @@ three places:
   another session builds the Safari prep screen and leaderboard): Meadow, Forest, Wetland, Marsh, Peak and Desert in
   `js/scene.js` (`SAFARI_ART` / `SAFARI_PAINT`), 4 named places each (`js/data/safari.js`), the map's palettes and signs,
   `?area=<area>` to look at them. Then each area became one road you walk (a trail to the horizon, the goal ahead
-  nearer every floor, a roadside landmark per floor). Detail in `docs/reference/safari.md`. 5c (same day, Desktop, not
-  pushed: the user is still making aesthetic changes): each area's intro film and walk-ons, `js/safari-intro.js`. Next: 5d boss
+  nearer every floor, a roadside landmark per floor). Detail in `docs/reference/safari.md`. 5c (same day, Desktop, pushed):
+  each area's intro film and walk-ons, `js/safari-intro.js`. Next: 5d boss
   intros (prompts in the roadmap).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).

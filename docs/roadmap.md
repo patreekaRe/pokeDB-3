@@ -1086,8 +1086,8 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    palette and signs follow the area. Playtest: `?area=<area>`. Then (same day, the user's ask) each area became one
    road: a trail to the horizon, the area's goal ahead growing nearer every floor, a roadside landmark per floor.
    **Next, one session each (Desktop):**
-   - **5c, the areas' intro films and place intros.** **Done 2026-10-02 (Desktop, not pushed: the user is still making
-     aesthetic changes).** `js/safari-intro.js`, a camera move per area; see docs/reference/safari.md. Was: **Run in: LOCAL (Desktop app).** Prompt: "Read CLAUDE.md,
+   - **5c, the areas' intro films and place intros.** **Done 2026-10-02 (Desktop, pushed to `main`).**
+     `js/safari-intro.js`, a camera move per area; see docs/reference/safari.md. Was: **Run in: LOCAL (Desktop app).** Prompt: "Read CLAUDE.md,
      docs/reference/safari.md (the areas' scenes) and js/biome-intro.js. Give the Safari Zone's six areas their own intro
      film (INTROS entries: the camera move and painter per area, like the Clearing / Shrine / Wastes ones, its title
      'SAFARI ZONE' over the area's name, a few of the area's own wild Pokémon popping out of the tall grass) and the
