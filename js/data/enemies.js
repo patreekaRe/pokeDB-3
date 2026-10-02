@@ -557,7 +557,7 @@ export const KEN = {
   intro: 'Chad Master Kenmatta wants to battle!',
   moves: [
     { kind: 'attack', name: 'Karate Chop',  amount: 9 },
-    { kind: 'buff',   name: 'Bulk Up',      amount: 2 },
+    { kind: 'buff',   name: 'FORTIFY YOUR MIND', amount: 2 },
     { kind: 'attack', name: 'Cross Chop',   amount: 12 },
     { kind: 'defend', name: 'Mata-Manspread', amount: 14 },
     { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 18 },
