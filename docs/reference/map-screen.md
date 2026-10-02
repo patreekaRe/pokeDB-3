@@ -135,8 +135,18 @@ tall-grass tufts hiding the Pokémon's feet, petals, the big near clouds), with 
 at the grass line so they pop up out of it; `.unseen` is a black silhouette until `dex.seen` has them). The beats are the
 constants at the top (`TILT`, `PAN`, `POPS`, `TITLE_AT`, `END`); the title is DOM (`.bi-title`, letters dropping in,
 over the goal when upright, left of it when wide). Skies are hand-painted per time (`SKIES`), the land graded with
-`GRADES`. The Tree (`paintTree()`) stands on a knoll of the hills (`hillLine()`, its foot just in the grass, roots crawling down it, `paintRoots()`; before 2026-10-01 it stopped short of the hills and looked like it floated) and carries the boss arena tree's glowing hollow and moss, so it reads as the same tree; clouds keep their puffs inside the canvas, biggest in the middle (`cloudImage()`: clipped puffs looked like squares). Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. Only the Clearing has one (`INTROS`); a
-biome without an entry resolves at once. Reduced motion shows the last frame and the title for 3.5 s. Under the title only
+`GRADES`. The Tree (`paintTree()`) stands on a knoll of the hills (`hillLine()`, its foot just in the grass, roots crawling down it, `paintRoots()`; before 2026-10-01 it stopped short of the hills and looked like it floated) and carries the boss arena tree's glowing hollow and moss, so it reads as the same tree; clouds keep their puffs inside the canvas, biggest in the middle (`cloudImage()`: clipped puffs looked like squares). Sounds: synths `rustle` and `biome-title`, plus the Pokémon's cries. `run()` is the shell every biome shares (page,
+title, pops, walker, skip); each `INTROS` entry brings its own `scene` painter (`clearingScene()`, `shrineScene()`) and
+`beats`, optionally `skies`, `sounds` and `shaded`. The Wastes has none yet; a biome without an entry resolves at once.
+**The Shrine's** (`shrineScene()`, 2026-10-01): a different camera move, a crane shot. It opens at the foot of a cedar and
+autumn-maple hillside and rises up mossy stone steps through a tunnel of torii (`RISE`, each layer slid down at its own
+`SPEED`) while stone lanterns light in pairs as they come into view, each pair with a wind chime (synths `furin-0..2`),
+until the Main Hall (`paintHall()`, the boss arena's: red pillars, green copper roof, straw rope) stands on the summit above
+a bank of mist, its doorway glowing and fox-fire wisps circling it, and its bell tolls far off (`bell-far`, `templeBell` at
+half gain). The Pokémon pop out of shrubs beside the steps; gates and trees nearer than them are drawn again over them
+(`coverC`) so they peek out from behind. Its place walks: Torii Path (`tunnel`: gates every few steps, the hall nearer) and
+Inner Court (`court`: raked gravel, a flagstone walk, plaster walls either side of the hall, lanterns). Its skies are its
+own misty ones (`skies`, from js/scene.js's Shrine). Reduced motion shows the last frame and the title for 3.5 s. Under the title only
 the place you start in shows, big (`.bi-place`: the later ones are for the walk to show; the user's call). Pokémon the
 Pokédex has met (seen, defeated or counted, `known()`) pop up as silhouettes and colour in; unmet ones stay black.
 **Place intros** (same day, the user's vision for every biome: travelling towards its goal): coming back to the map from the

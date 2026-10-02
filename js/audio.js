@@ -113,6 +113,10 @@ const SOUNDS = {
   spirit:       { synth: ac => powerSurge(ac, [440, 523, 622, 880, 1047, 1245], 2.4) },   // ...and the spirits surge
   rustle:       { synth: grassRustle },      // a wild Pokémon pops out of the tall grass in a biome's intro (biome-intro.js)
   'biome-title': { synth: arrivalChime },    // ...and the biome's name lands: a bright, welcoming chime
+  'furin-0':    { synth: ac => windChime(ac, 1568), gain: 0.6 },   // the Shrine's intro: a wind chime as each pair of lanterns lights...
+  'furin-1':    { synth: ac => windChime(ac, 1760), gain: 0.6 },
+  'furin-2':    { synth: ac => windChime(ac, 2093), gain: 0.6 },
+  'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -760,6 +764,21 @@ function grassRustle(ac) {
     out[i] = low * Math.sin(Math.PI * s) * (1 - t / 0.32);
   }
   return normalize(buffer, 0.1);
+}
+
+/** A shrine's wind chime (furin): a glassy tink, its high partials dying first. */
+function windChime(ac, f) {
+  const rate = ac.sampleRate, length = Math.round(rate * 1.2);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const partials = [[f, 1, 0.5], [f * 1.004, 0.5, 0.45], [f * 2.76, 0.4, 0.2], [f * 5.4, 0.22, 0.07]];
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = 0;
+    for (const [p, a, d] of partials) v += Math.sin(2 * Math.PI * p * t) * a * Math.exp(-t / d);
+    out[i] = v * Math.min(1, t / 0.002, (length - i) / (rate * 0.05));
+  }
+  return normalize(buffer, 0.12);
 }
 
 /** Arriving somewhere new: a rising major arpeggio on a soft square wave, then a shimmer of high notes ringing out. */

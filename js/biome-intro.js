@@ -18,8 +18,10 @@
    graded with GRADES like every other scene.
 
    Every later place in a biome gets a short walk on towards the goal
-   (placeIntro(), each `stages[i]` look nearer). Only the Clearing has
-   one so far; INTROS gets an entry per biome.
+   (placeIntro(), each `stages[i]` look nearer). INTROS has an entry per
+   biome with its own `scene` painter and camera move: the Clearing drops
+   through the clouds and pans; the Shrine cranes up its steps while the
+   lanterns light one by one. The Wastes has none yet.
    ============================================================ */
 
 import { el } from './ui.js';
@@ -63,6 +65,45 @@ const INTROS = {
     glow: { aura: ['#fffce0', '#f8f0a0', '#c8f080'], firefly: ['#f8ffb0', '#c8f060'], petal: ['#f8a8c8', '#fff0f8'] },
     // each later place's walk on (placeIntro()): the Tree looms bigger, the woods grow taller and darker round the path
     stages: [null, { tree: 1.2, spread: 1.05, mist: 0.2, forest: 1.7, shade: 0.15 }, { tree: 2.2, spread: 1.7, mist: 0.08, forest: 2.4, shade: 0.5, frame: true, shafts: true }],
+    shaded: ['ground', 'fore', 'forest', 'hill', 'tall', 'path'], shadeTo: '#0c2014',
+    beats: { TILT, PAN, POPS, TITLE_AT, END },
+    scene: clearingScene,
+  },
+  shrine: {
+    title: ['OVERGROWN', 'SHRINE'], ink: ['#fff0e0', '#b0301e', '#3a0c08'],
+    // misty, like the Shrine's scenes in js/scene.js
+    skies: {
+      day: { sky: ['#8ab4c4', '#9cc0c8', '#acc8c8', '#bcd2cc', '#ccdccf', '#dce6d4'], cloud: ['#f8fcf8', '#dce8e0', '#b4c8bc'] },
+      dawn: { sky: ['#6a6890', '#8a7ca0', '#a890a8', '#c8a2ac', '#dcb4b0', '#ecccbc'], cloud: ['#f8e0dc', '#dcb0b8', '#a88898'] },
+      dusk: { sky: ['#241e44', '#342852', '#4c3462', '#6a426a', '#8a5470', '#a86a74'], cloud: ['#e8a088', '#b06878', '#6a4060'] },
+      night: { sky: ['#06101a', '#0a1824', '#0e2030', '#14283a', '#1a3242', '#203a4a'], cloud: ['#2a3a48', '#1e2c38', '#142028'] },
+    },
+    land: {
+      far: ['#8aaca4', '#a4c0b8', '#c4d8d0'],
+      ridge: ['#7aa890', '#5e8e78', '#4a7a64'],
+      hill: ['#4a7a48', '#3a6a40', '#2a5434'],
+      cedar: ['#5a9a60', '#3a7048', '#24503a'],
+      maple: ['#f8a048', '#e05830', '#a02c20'],
+      trunk: ['#6a4a34', '#4a3424'],
+      stone: ['#c8c8b8', '#a2a294', '#7a7a6e', '#50504a'],
+      moss: ['#7aa858', '#4e7a3a'],
+      torii: ['#e05038', '#a83020', '#5a1410'],
+      lantern: ['#bcbcac', '#8a8a7c', '#565650'],
+      wood: ['#c08858', '#8a5430', '#5c361c', '#2e1a0c'],
+      roof: ['#88d0b0', '#4aa080', '#2e7458', '#123828'],
+      plaster: ['#f4f0e4', '#d8d4c8', '#a8a498'],
+      rope: ['#e8d8a0', '#b8a870', '#f8f4e8'],
+      gravel: ['#d8d4c8', '#ccc8bc', '#bcb8ac', '#a8a498'],
+      bush: ['#78c880', '#4e9a58', '#2e6e40', '#143820'],
+      blossom: ['#f8a8c8', '#ffffff', '#f87898'],
+      mist: ['#e8f0ec'],
+    },
+    glow: { aura: ['#fff8e0', '#f8e0a0', '#f0b860'], lamp: ['#fff0a0', '#f8b848', '#d87028'], wisp: ['#f0ffff', '#98e0f8', '#4898c8'], firefly: ['#f8e888', '#d8b848'] },
+    // each later place's walk on: the Torii Path's tunnel of gates, then through the gateway into the Inner Court
+    stages: [null, { hall: 1.5, tunnel: true }, { hall: 1.9, court: true }],
+    beats: { RISE: [300, 6800], POPS: [3000, 4000, 5000], TITLE_AT: 5600, END: 9300 },
+    sounds: ['furin-0', 'furin-1', 'furin-2', 'bell-far'],
+    scene: shrineScene,
   },
 };
 
@@ -405,71 +446,25 @@ export function placeIntro(biome, stage, walker) {
   return new Promise(resolve => run(film, biome, { stage, walker }, resolve));
 }
 
+/* The film around any biome's scenery: the page, the title, the Pokémon popping up, your Pokémon walking on, skipping.
+   The biome's `scene(env)` paints its layers once and returns { spots, walkX, monAt(i, ms), draw(bg, fg, ms, tick) }. */
 function run(film, biome, { number, stage, walker }, resolve) {
   const mini = stage > 0, look = film.stages?.[stage] || {};
   const time = timeOfDay(), g = GRADES[time];
-  const dim = (k, c) => look.shade && ['ground', 'fore', 'forest', 'hill', 'tall', 'path'].includes(k) ? mix(c, '#0c2014', look.shade) : c;
+  const dim = (k, c) => look.shade && film.shaded?.includes(k) ? mix(c, film.shadeTo, look.shade) : c;
   const land = Object.fromEntries(Object.entries(film.land).map(([k, v]) => [k, v.map(c => { c = dim(k, c); return g ? gradeHex(c, g.land) : c; })]));
-  const { sky, cloud } = SKIES[time] || SKIES.day;
+  const skies = film.skies || SKIES, { sky, cloud } = skies[time] || skies.day;
   const P = innerWidth <= 720 ? 4 : 5;
   const W = Math.ceil(innerWidth / P), H = Math.ceil(innerHeight / P);
-  const tall = H > W, hz = Math.round(H * (tall ? 0.6 : 0.56));
+  if (!W || !H) return resolve();   // no window to paint in yet
+  const tall = H > W;
   const rand = prng(biome.id.length * 7919 + W * 31 + H + stage * 101);
-  // the full film drops through the clouds and pans across the land; a place's mini film walks straight on instead
-  const beats = mini
-    ? { TILT: [0, 1], PAN: [0, 1], POPS: [], TITLE_AT: 700, END: 5000 }
-    : { TILT, PAN, POPS, TITLE_AT, END };
-  const PAN_PX = mini ? 0 : Math.round(W * 1.5);
-  const SPEED = { far: 0.1, hill: 0.35, forest: 0.6, meadow: 0.85, fore: 1.3 };
-  const DOLLY = { far: 0.03, hill: 0.25, forest: 0.45, meadow: 0.75, fore: 1.2 };   // how much each layer grows as you walk on
-  const wide = (k) => W + Math.ceil(PAN_PX * SPEED[k]) + 8;
-
-  // ---- paint every layer once ----
-  const skyC = layer(W, H);
-  paintSky(skyC.getContext('2d'), W, H, hz, look.shade ? sky.map(c => mix(c, '#0c2014', look.shade * 0.6)) : sky, time, rand);   // the woods' shade dims the sky too
-  const far = layer(wide('far'), H);
-  paintFar(far.getContext('2d'), far.width, H, hz, land.far, rand);
-  const hill = layer(wide('hill'), H);
-  // upright, the goal ends in the middle under the title; wide, on the right with the title beside it (a place's film: straight ahead)
-  const treeX = Math.round(W * (tall || mini ? 0.5 : 0.68) + PAN_PX * SPEED.hill);
-  // each place nearer: taller upright; wide, where it already stands tall, its crown spreads instead (always kept on screen)
-  const base = Math.round(Math.min(H * (tall ? 0.36 : 0.5), W * 0.75)), near = look.tree || 1;
-  const treeH = mini ? Math.min(Math.round(base * (tall ? near : 1 + (near - 1) * 0.25)), hz - Math.round(H * 0.02)) : base;
-  const reach = { mist: look.mist, spread: (look.spread || 1) * (tall ? 1 : near ** 0.6) };
-  // the Tree stands on a knoll, its foot just in the grass (it used to stop short of the hills, on the far mountains)
-  const foot = treeH * 0.19, ground = hillLine(H, hz, rand, { x: treeX, w: foot * 2.6, h: Math.round(H * 0.035 + foot * 0.25) });
-  const footY = ground(treeX) + 2, crownTop = hz - Math.round(H * 0.03) - treeH;
-  const crown = paintTree(hill.getContext('2d'), treeX, footY, footY - crownTop, land, sky[sky.length - 1], rand, reach, film.glow.aura);
-  paintHills(hill.getContext('2d'), hill.width, hz, land.hill, ground);
-  paintRoots(hill.getContext('2d'), treeX, ground, crown.foot, land, sky[sky.length - 1], rand, reach.mist);
-  const forest = layer(wide('forest'), H);
-  paintForest(forest.getContext('2d'), forest.width, H, hz, land.forest, rand, look.forest || 1);
-
-  // where the Pokémon pop up: in view at their moment, nearer ones lower down
-  const camAt = (ms) => Math.round(ease(span(beats.PAN, ms)) * PAN_PX);
-  const meadowTop = hz + Math.round(H * 0.035);
-  const spots = beats.POPS.map((ms, i) => {
-    const sx = W * [0.3, 0.68, 0.42][i], depth = [0.45, 0.3, 0.7][i];
-    const y = Math.round(meadowTop + (H - meadowTop) * depth);
-    return { ms, x: Math.round(sx + camAt(ms + 700) * SPEED.meadow), y, size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6 };
-  });
-  const meadow = layer(wide('meadow'), H);
-  const stream = paintMeadow(meadow.getContext('2d'), meadow.width, H, meadowTop, land, rand, spots, !mini);
-  if (mini) paintPath(meadow.getContext('2d'), H, meadowTop, treeX, land.path, rand);
-  const fore = layer(wide('fore'), H);
-  paintFore(fore.getContext('2d'), fore.width, H, land.fore, land.flowers, rand);
-  if (look.frame) paintFrame(fore.getContext('2d'), W, H, land.bark, land.crown, rand);
-  const tufts = spots.map(s => { const c = layer(s.size * 2 + 4, s.size + 2); tallGrass(c.getContext('2d'), 0, 0, s.size * 2 + 4, Math.ceil(s.size * 0.6), land.tall); return c; });
-
-  // the sky's life
-  const clouds = [];
-  for (let n = 0; n < 7; n++) clouds.push({ img: cloudImage(Math.round(W * (0.25 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.5 + rand() * H * 0.85, lift: 0.5, drift: 0.6 + rand() });
-  if (!mini) for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
-  const motes = Array.from({ length: 24 }, () => ({ a: rand() * Math.PI * 2, r: rand(), speed: 0.3 + rand() * 0.6, phase: rand() }));
-  const petals = Array.from({ length: 22 }, () => ({ x: rand(), y: rand(), speed: 0.6 + rand(), wob: rand() * 6, c: rand() < 0.6 ? 0 : 1 }));
-  const flies = time === 'night' || time === 'dusk' || look.shafts ? Array.from({ length: 14 }, () => ({ x: rand(), y: rand(), phase: rand() * 6 })) : [];
-  const shafts = look.shafts ? Array.from({ length: 3 }, (_, i) => ({ x: W * (0.12 + i * 0.3 + rand() * 0.1), w: 3 + rand() * 5, phase: rand() * 6 })) : [];
-  const leafy = look.shafts ? [land.crown[0], land.crown[1]] : film.glow.petal;
+  // the full film has the biome's own beats; a place's mini film walks straight on instead
+  const beats = mini ? { POPS: [], TITLE_AT: 700, END: 5000 } : film.beats;
+  const still = reduced();
+  let done = false;
+  const scene = film.scene({ film, look, mini, time, land, sky, cloud, W, H, P, tall, rand, beats, live: () => !done && !still });
+  const spots = scene.spots;
 
   // ---- the page ----
   const box = el('div', `biome-intro${mini ? ' mini' : ''}`);
@@ -483,7 +478,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
   const save = getSave();
   const ids = pickMons(biome, beats.POPS.length);
   preloadCries(...ids);
-  preloadSounds('biome-title', 'rustle');
+  preloadSounds('biome-title', 'rustle', ...(film.sounds || []));
   // every one pops up as a silhouette; the ones the Pokédex has met colour in a beat later, like "Who's that Pokémon?"
   const figures = ids.map((id, i) => {
     const wrap = el('div', 'bi-mon'), img = el('img', 'pixel unseen');
@@ -530,9 +525,121 @@ function run(film, biome, { number, stage, walker }, resolve) {
 
   const bg = back.getContext('2d'), fg = front.getContext('2d');
   bg.imageSmoothingEnabled = false; fg.imageSmoothingEnabled = false;
-  const still = reduced();
   const start = performance.now() - (still ? beats.END : 0);
-  let raf = 0, done = false, titled = false, finishing = false, holdTimer = 0;
+  let raf = 0, titled = false, finishing = false, holdTimer = 0;
+
+  function frame(now) {
+    const ms = Math.max(0, now - start);   // a frame's time can be from just before the film started
+    scene.draw(bg, fg, ms, ms / 1000);
+    for (const [i, f] of figures.entries()) {
+      const [x, y] = scene.monAt(i, ms);
+      f.wrap.style.left = `${x * P}px`;
+      f.wrap.style.top = `${(y + 1) * P}px`;
+      if (!f.shown && ms >= f.spot.ms) {
+        f.shown = true;
+        f.wrap.classList.add('up');
+        if (f.known) setTimeout(() => f.img.classList.remove('unseen'), 750);
+        if (!still) { playSound('rustle'); setTimeout(() => !done && playCry(f.id), 220); }
+      }
+    }
+    if (hiker?.img) {   // your Pokémon, from behind, walking up the path ahead of you
+      const p = Math.min(1, ms / beats.END), step = still ? 0 : Math.floor(ms / 230) % 2;
+      const scale = hiker.base * (1 - 0.15 * p);
+      hiker.img.style.width = `${hiker.img.naturalWidth * scale}px`;
+      hiker.img.style.marginBottom = `${-hiker.feet * scale}px`;
+      hiker.style.left = `${(scene.walkX + (step ? 0.5 : -0.5)) * P}px`;
+      hiker.style.top = `${Math.round(H * (0.93 - 0.07 * p) - step) * P}px`;
+    }
+    if (!titled && ms >= beats.TITLE_AT) {
+      titled = true;
+      card.classList.add('on');
+      if (!still) setTimeout(() => !done && playSound('biome-title'), 250);
+    }
+    if (!still && ms >= beats.END) return finish();
+    if (!still) raf = requestAnimationFrame(frame);
+  }
+
+  function finish() {
+    if (finishing) return;
+    finishing = true;
+    cancelAnimationFrame(raf);
+    clearTimeout(holdTimer);
+    removeEventListener('keydown', onKey, true);
+    box.classList.add('leaving');
+    setTimeout(() => { done = true; box.remove(); resolve(); }, still ? 200 : FADE);
+  }
+  const onKey = (e) => {
+    if (!['Enter', ' ', 'Escape'].includes(e.key)) return;
+    e.preventDefault(); e.stopPropagation();
+    finish();
+  };
+  box.addEventListener('pointerup', finish);
+  addEventListener('keydown', onKey, true);
+
+  if (still) {
+    for (const f of figures) { f.shown = true; f.wrap.classList.add('up'); if (f.known) f.img.classList.remove('unseen'); }
+    if (walker) hiker.querySelector('img').addEventListener('load', () => frame(start + beats.END));
+    frame(start + beats.END);
+    holdTimer = setTimeout(finish, 3500);
+  } else raf = requestAnimationFrame(frame);
+}
+
+/* ----- the Whispering Clearing: down through the clouds, across the meadow, to the Ancient Tree ----- */
+function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, rand, beats }) {
+  const hz = Math.round(H * (tall ? 0.6 : 0.56));
+  const TILT_ = beats.TILT || [0, 1], PAN_ = beats.PAN || [0, 1];
+  const PAN_PX = mini ? 0 : Math.round(W * 1.5);
+  const SPEED = { far: 0.1, hill: 0.35, forest: 0.6, meadow: 0.85, fore: 1.3 };
+  const DOLLY = { far: 0.03, hill: 0.25, forest: 0.45, meadow: 0.75, fore: 1.2 };   // how much each layer grows as you walk on
+  const wide = (k) => W + Math.ceil(PAN_PX * SPEED[k]) + 8;
+
+  // ---- paint every layer once ----
+  const skyC = layer(W, H);
+  paintSky(skyC.getContext('2d'), W, H, hz, look.shade ? sky.map(c => mix(c, '#0c2014', look.shade * 0.6)) : sky, time, rand);   // the woods' shade dims the sky too
+  const far = layer(wide('far'), H);
+  paintFar(far.getContext('2d'), far.width, H, hz, land.far, rand);
+  const hill = layer(wide('hill'), H);
+  // upright, the goal ends in the middle under the title; wide, on the right with the title beside it (a place's film: straight ahead)
+  const treeX = Math.round(W * (tall || mini ? 0.5 : 0.68) + PAN_PX * SPEED.hill);
+  // each place nearer: taller upright; wide, where it already stands tall, its crown spreads instead (always kept on screen)
+  const base = Math.round(Math.min(H * (tall ? 0.36 : 0.5), W * 0.75)), near = look.tree || 1;
+  const treeH = mini ? Math.min(Math.round(base * (tall ? near : 1 + (near - 1) * 0.25)), hz - Math.round(H * 0.02)) : base;
+  const reach = { mist: look.mist, spread: (look.spread || 1) * (tall ? 1 : near ** 0.6) };
+  // the Tree stands on a knoll, its foot just in the grass (it used to stop short of the hills, on the far mountains)
+  const foot = treeH * 0.19, ground = hillLine(H, hz, rand, { x: treeX, w: foot * 2.6, h: Math.round(H * 0.035 + foot * 0.25) });
+  const footY = ground(treeX) + 2, crownTop = hz - Math.round(H * 0.03) - treeH;
+  const crown = paintTree(hill.getContext('2d'), treeX, footY, footY - crownTop, land, sky[sky.length - 1], rand, reach, film.glow.aura);
+  paintHills(hill.getContext('2d'), hill.width, hz, land.hill, ground);
+  paintRoots(hill.getContext('2d'), treeX, ground, crown.foot, land, sky[sky.length - 1], rand, reach.mist);
+  const forest = layer(wide('forest'), H);
+  paintForest(forest.getContext('2d'), forest.width, H, hz, land.forest, rand, look.forest || 1);
+
+  // where the Pokémon pop up: in view at their moment, nearer ones lower down
+  const camAt = (ms) => Math.round(ease(span(PAN_, ms)) * PAN_PX);
+  const liftAt = (ms) => mini ? 0 : Math.round((1 - easeOut(span(TILT_, ms))) * H * 1.05);
+  const meadowTop = hz + Math.round(H * 0.035);
+  const spots = beats.POPS.map((ms, i) => {
+    const sx = W * [0.3, 0.68, 0.42][i], depth = [0.45, 0.3, 0.7][i];
+    const y = Math.round(meadowTop + (H - meadowTop) * depth);
+    return { ms, x: Math.round(sx + camAt(ms + 700) * SPEED.meadow), y, size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6 };
+  });
+  const meadow = layer(wide('meadow'), H);
+  const stream = paintMeadow(meadow.getContext('2d'), meadow.width, H, meadowTop, land, rand, spots, !mini);
+  if (mini) paintPath(meadow.getContext('2d'), H, meadowTop, treeX, land.path, rand);
+  const fore = layer(wide('fore'), H);
+  paintFore(fore.getContext('2d'), fore.width, H, land.fore, land.flowers, rand);
+  if (look.frame) paintFrame(fore.getContext('2d'), W, H, land.bark, land.crown, rand);
+  const tufts = spots.map(s => { const c = layer(s.size * 2 + 4, s.size + 2); tallGrass(c.getContext('2d'), 0, 0, s.size * 2 + 4, Math.ceil(s.size * 0.6), land.tall); return c; });
+
+  // the sky's life
+  const clouds = [];
+  for (let n = 0; n < 7; n++) clouds.push({ img: cloudImage(Math.round(W * (0.25 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.5 + rand() * H * 0.85, lift: 0.5, drift: 0.6 + rand() });
+  if (!mini) for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
+  const motes = Array.from({ length: 24 }, () => ({ a: rand() * Math.PI * 2, r: rand(), speed: 0.3 + rand() * 0.6, phase: rand() }));
+  const petals = Array.from({ length: 22 }, () => ({ x: rand(), y: rand(), speed: 0.6 + rand(), wob: rand() * 6, c: rand() < 0.6 ? 0 : 1 }));
+  const flies = time === 'night' || time === 'dusk' || look.shafts ? Array.from({ length: 14 }, () => ({ x: rand(), y: rand(), phase: rand() * 6 })) : [];
+  const shafts = look.shafts ? Array.from({ length: 3 }, (_, i) => ({ x: W * (0.12 + i * 0.3 + rand() * 0.1), w: 3 + rand() * 5, phase: rand() * 6 })) : [];
+  const leafy = look.shafts ? [land.crown[0], land.crown[1]] : film.glow.petal;
 
   // walking on: each layer grows about the goal's foot, nearer ones faster, so you close in on it
   const VX = treeX, VY = hz;
@@ -545,12 +652,8 @@ function run(film, biome, { number, stage, walker }, resolve) {
     ctx.drawImage(img, Math.round(dx), Math.round(dy), Math.round(img.width * s), Math.round(img.height * s));
   };
 
-  function frame(now) {
-    const ms = Math.max(0, now - start);   // a frame's time can be from just before the film started
-    const lift = mini ? 0 : Math.round((1 - easeOut(span(beats.TILT, ms))) * H * 1.05);
-    const cam = camAt(ms), z = grow(ms);
-    const tick = ms / 1000;
-
+  function draw(bg, fg, ms, tick) {
+    const lift = liftAt(ms), cam = camAt(ms), z = grow(ms);
     bg.drawImage(skyC, 0, 0);
     for (const c of clouds) {
       const x = Math.round(((c.x - cam * 0.05 + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
@@ -600,26 +703,9 @@ function run(film, biome, { number, stage, walker }, resolve) {
     }
 
     fg.clearRect(0, 0, W, H);
-    for (const [i, f] of figures.entries()) {
-      const s = f.spot, x = s.x + meadowX, y = s.y + lift;
+    for (const [i, s] of spots.entries()) {   // the tall grass each Pokémon hides in, shaking just before it pops out
       const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0;
-      fg.drawImage(tufts[i], Math.round(x - s.size - 2 + rustle), Math.round(y - 2));
-      f.wrap.style.left = `${x * P}px`;
-      f.wrap.style.top = `${(y + 1) * P}px`;
-      if (!f.shown && ms >= s.ms) {
-        f.shown = true;
-        f.wrap.classList.add('up');
-        if (f.known) setTimeout(() => f.img.classList.remove('unseen'), 750);
-        if (!still) { playSound('rustle'); setTimeout(() => !done && playCry(f.id), 220); }
-      }
-    }
-    if (hiker?.img) {   // your Pokémon, from behind, walking up the path ahead of you
-      const p = Math.min(1, ms / beats.END), step = still ? 0 : Math.floor(ms / 230) % 2;
-      const scale = hiker.base * (1 - 0.15 * p);
-      hiker.img.style.width = `${hiker.img.naturalWidth * scale}px`;
-      hiker.img.style.marginBottom = `${-hiker.feet * scale}px`;
-      hiker.style.left = `${(VX + (step ? 0.5 : -0.5)) * P}px`;
-      hiker.style.top = `${Math.round(H * (0.93 - 0.07 * p) - step) * P}px`;
+      fg.drawImage(tufts[i], Math.round(s.x + meadowX - s.size - 2 + rustle), Math.round(s.y + lift - 2));
     }
     if (mini || ms > 1800) {   // petals on the breeze (leaves in the deep woods)
       for (const p of petals) {
@@ -642,37 +728,427 @@ function run(film, biome, { number, stage, walker }, resolve) {
       if (y < -c.img.height || y > H) continue;
       fg.drawImage(c.img, Math.round(c.x - cam * 0.2 + tick * c.drift), y);
     }
+  }
 
-    if (!titled && ms >= beats.TITLE_AT) {
-      titled = true;
-      card.classList.add('on');
-      if (!still) setTimeout(() => !done && playSound('biome-title'), 250);
+  return { spots, walkX: VX, draw, monAt: (i, ms) => [spots[i].x - Math.round(camAt(ms) * SPEED.meadow), spots[i].y + liftAt(ms)] };
+}
+
+/* ----- the Overgrown Shrine: a crane shot up the mossy steps, through a tunnel of torii, to the Main Hall ----- */
+
+/** A cedar: three tiers, each wider than the one above, lit on the left, on a short trunk. */
+function cedar(g, cx, foot, h, [lit, body, dark], [bark, barkDark]) {
+  const half = Math.max(1, Math.round(h * 0.3)), tierH = Math.max(3, Math.round(h * 0.36));
+  let y = foot - h;
+  for (let i = 0; i < 3; i++) {
+    const widest = Math.max(1, Math.round(half * (0.45 + 0.275 * i)));
+    for (let k = 0; k < tierH; k++) {
+      const w = Math.round(k / (tierH - 1) * widest), row = y + k;
+      g.fillStyle = k === tierH - 1 ? dark : body; g.fillRect(cx - w, row, w * 2 + 1, 1);
+      if (k === tierH - 1) continue;
+      g.fillStyle = lit; g.fillRect(cx - w, row, Math.max(1, Math.round(w * 0.6)), 1);
+      g.fillStyle = dark; g.fillRect(cx + Math.round(w * 0.45), row, w - Math.round(w * 0.45) + 1, 1);
     }
-    if (!still && ms >= beats.END) return finish();
-    if (!still) raf = requestAnimationFrame(frame);
+    y += Math.round(tierH * 0.62);
+  }
+  const top = y + Math.round(tierH * 0.38), tw = Math.max(1, Math.round(h * 0.05));
+  if (top >= foot) return;
+  g.fillStyle = barkDark; g.fillRect(cx - (tw >> 1), top, tw, foot - top + 1);
+  g.fillStyle = bark; g.fillRect(cx - (tw >> 1), top, 1, foot - top + 1);
+}
+
+/** An autumn maple: a round crown of red puffs on a thin trunk. */
+function maple(g, cx, foot, h, [lit, body, dark], [, barkDark], jit) {
+  const r = Math.max(2, Math.round(h * 0.3)), cy = foot - h + r;
+  g.fillStyle = barkDark; g.fillRect(cx, cy, Math.max(1, Math.round(h * 0.06)), foot - cy + 1);
+  const puffs = [[cx, cy, r], [cx - r * 0.7, cy + r * 0.35, r * 0.7], [cx + r * 0.7, cy + r * 0.3, r * 0.72], [cx + (jit - 0.5) * r * 0.6, cy - r * 0.45, r * 0.6]];
+  for (const [x, y, s] of puffs) disc(g, x, y + 1, s, dark);
+  for (const [x, y, s] of puffs) disc(g, x, y, s - 0.5, body);
+  for (const [x, y, s] of puffs) disc(g, x - s * 0.25, y - s * 0.3, s * 0.5, lit);
+}
+
+/** A torii: two posts, the tie beam, and the top beam overhanging with its ends swept up. Everything scales with its
+    half-width, so a huge near one can be wider than it is tall. */
+function torii(g, cx, foot, size, [red, shade, deep], halfW = Math.round(size * 0.55)) {
+  const post = Math.max(1, Math.round(halfW / 6)), beam = Math.max(1, Math.round(halfW / 11)), topY = foot - size;
+  for (const side of [-1, 1]) {
+    const x0 = cx + side * Math.round(halfW * 0.72) - (post >> 1), edge = Math.max(1, Math.round(post / 3)), cap = Math.max(1, Math.round(halfW * 0.06));
+    g.fillStyle = red; g.fillRect(x0, topY + beam * 2, post, foot - topY - beam * 2 + 1);
+    g.fillStyle = shade; g.fillRect(x0 + post - edge, topY + beam * 2, edge, foot - topY - beam * 2 + 1);
+    g.fillStyle = deep; g.fillRect(x0 - (post > 2 ? 1 : 0), foot - cap + 1, post + (post > 2 ? 2 : 0), cap);   // the black foot caps
+  }
+  const over = Math.max(2, Math.round(halfW * 0.15)), sweep = Math.max(1, Math.round(halfW * 0.12));
+  for (let x = -halfW - over; x <= halfW + over; x++) {
+    const out = Math.max(0, Math.abs(x) - halfW * 0.6) / (halfW * 0.4 + over), lift = Math.round(out * out * sweep);
+    g.fillStyle = deep; g.fillRect(cx + x, topY - lift, 1, beam);
+    g.fillStyle = red; g.fillRect(cx + x, topY - lift + beam, 1, beam);
+    g.fillStyle = shade; g.fillRect(cx + x, topY - lift + beam * 2, 1, Math.max(1, Math.round(beam * 0.6)));
+  }
+  const tie = topY + Math.max(4, Math.round(halfW * 0.45));
+  g.fillStyle = red; g.fillRect(cx - halfW, tie, halfW * 2 + 1, beam);
+  g.fillStyle = shade; g.fillRect(cx - halfW, tie + beam, halfW * 2 + 1, Math.max(1, Math.round(beam * 0.6)));
+  if (halfW >= 8) {   // the plaque between the beams
+    const pw = Math.max(1, Math.round(halfW * 0.09));
+    g.fillStyle = deep; g.fillRect(cx - pw, topY + beam * 3, pw * 2 + 1, tie - topY - beam * 3);
+  }
+}
+
+/** A stone lantern (tōrō): base, pillar, platform, firebox, wide roof. Returns the height of its light. */
+function stoneLantern(g, cx, foot, size, [lit, body, dark]) {
+  const h = size * 2, s = Math.max(1, Math.round(size / 4));
+  for (let y = 0; y < h; y++) {
+    const f = y / h, hw = Math.round((f < 0.14 ? 1.6 : f < 0.45 ? 0.8 : f < 0.55 ? 1.6 : f < 0.72 ? 1.2 : f < 0.86 ? 2.4 : 0.6) * s);
+    g.fillStyle = body; g.fillRect(cx - hw, foot - y, hw * 2 + 1, 1);
+    g.fillStyle = lit; g.fillRect(cx - hw, foot - y, 1, 1);
+    if (hw) { g.fillStyle = dark; g.fillRect(cx + 1, foot - y, hw, 1); }
+  }
+  const fy = foot - Math.round(h * 0.63);
+  g.fillStyle = dark; g.fillRect(cx - (s > 1 ? 1 : 0), fy, s > 1 ? 3 : 1, s > 1 ? 2 : 1);   // its window, lit later
+  return fy;
+}
+
+/** The Main Hall, as the boss arena has it: a stone plinth, red pillars between dark bays, a green copper roof sweeping
+    up at the ends, the straw rope with its paper zigzags. Returns its doorway, which glows. */
+function paintHall(g, cx, foot, half, { stone, wood, torii: red, roof, rope }) {
+  const px = (x, y, c) => { g.fillStyle = c; g.fillRect(x, y, 1, 1); };
+  const base = Math.max(2, Math.round(half * 0.12)), tall = Math.max(4, Math.round(half * 0.4)), roofH = Math.max(4, Math.round(half * 0.5));
+  const eave = foot - base - tall;
+  for (let y = foot - base; y <= foot; y++) { g.fillStyle = y === foot - base ? stone[0] : y === foot ? stone[3] : stone[1]; g.fillRect(cx - half - 2, y, half * 2 + 5, 1); }
+  const bay = Math.max(4, Math.round(half / 3));
+  for (let y = eave; y < foot - base; y++) for (let x = -half; x <= half; x++) {
+    const b = (x + half) % bay;
+    px(cx + x, y, b === 0 ? red[0] : b === 1 ? red[2] : y - eave < 2 ? red[1] : (x + y) % 2 && y - eave > 3 ? wood[2] : wood[3]);
+  }
+  for (let k = 0; k < roofH; k++) {
+    const w = Math.round(half * (1.28 - k / roofH * 0.62)), y = eave - 1 - k;
+    for (let x = -w; x <= w; x++) {
+      const lift = k < 2 && Math.abs(x) > w - 3 ? (Math.abs(x) - (w - 3)) * 0.6 : 0;
+      px(cx + x, Math.round(y - lift), k === 0 ? roof[3] : k === roofH - 1 ? roof[0] : (x + k) % 3 ? roof[1] : roof[2]);
+    }
+  }
+  const ridge = eave - roofH, rw = Math.round(half * 0.66), chigi = Math.max(3, Math.round(half * 0.14));
+  g.fillStyle = roof[3]; g.fillRect(cx - rw, ridge, rw * 2 + 1, 1);
+  for (const side of [-1, 1]) for (let k = 0; k < chigi; k++) { px(cx + side * (rw + k), ridge - k, wood[3]); px(cx + side * (rw + chigi - 1 - k), ridge - k, wood[3]); }
+  // the doorway, and stone steps up to it
+  const door = Math.max(1, Math.round(half * 0.18)), top = eave + 3;
+  g.fillStyle = wood[1]; g.fillRect(cx - door, top, door * 2 + 1, foot - base - top);
+  for (let k = 0; k < base + 2; k++) { g.fillStyle = k % 2 ? stone[2] : stone[0]; g.fillRect(cx - door - 1 - k, foot - base + k, (door + 1 + k) * 2 + 1, 1); }
+  const sag = Math.max(1, Math.round(half * 0.08)), every = Math.max(4, Math.round(half / 4));
+  for (let x = -half + 2; x <= half - 2; x++) {
+    const y = eave + 2 + Math.round(Math.sin((x + half) / (half * 2) * Math.PI) * sag);
+    px(cx + x, y, x % 2 ? rope[0] : rope[1]);
+    if ((x + half) % every === 0) for (let k = 1; k <= sag + 1; k++) px(cx + x + (k % 2), y + k, rope[2]);
+  }
+  return { x: cx, y: Math.round((top + foot - base) / 2), w: door * 2 + 1, top, bottom: foot - base, half };
+}
+
+/** Mossy stone steps climbing away to the hall, narrowing into the distance: each a lit edge over its shaded face. */
+function paintSteps(g, top, bottom, xAt, halfAt, [lit, body, dark, line], moss, rand) {
+  for (let y = top; y < bottom;) {
+    const t = (y - top) / (bottom - top), rise = Math.max(2, Math.round(1.5 + t * 6));
+    for (let k = 0; k < rise && y + k < bottom; k++) {
+      const yy = y + k, x0 = Math.round(xAt(yy) - halfAt(yy)), w = Math.round(halfAt(yy) * 2) + 1, kerb = Math.max(1, Math.round(t * 3));
+      g.fillStyle = k === 0 ? lit : k === rise - 1 ? line : k === 1 ? body : dark;
+      g.fillRect(x0, yy, w, 1);
+      g.fillStyle = line; g.fillRect(x0 - kerb, yy, kerb, 1); g.fillRect(x0 + w, yy, kerb, 1);
+      if (rand() < 0.3) { g.fillStyle = moss[rand() < 0.5 ? 0 : 1]; g.fillRect(rand() < 0.5 ? x0 + Math.floor(rand() * 3) : x0 + w - 2 - Math.floor(rand() * 3), yy, 1 + Math.floor(rand() * 2), 1); }
+    }
+    y += rise;
+  }
+}
+
+/** The Inner Court: raked gravel, and a flagstone walk up the middle to the hall. */
+function paintCourt(g, W, top, bottom, xAt, halfAt, { gravel: [gl, gb, , groove], stone }, rand) {
+  for (let y = top; y < bottom; y++) {
+    const t = (y - top) / (bottom - top), step = Math.max(2, Math.round(2 + t * 4));
+    for (let x = 0; x < W; x++) {
+      g.fillStyle = (y + Math.round(Math.sin(x / (6 + t * 10)) * (1 + t))) % step === 0 ? groove : dither(x, y, 0.3) ? gb : gl;
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+  for (let y = top, row = 0; y < bottom; row++) {
+    const t = (y - top) / (bottom - top), slab = Math.max(2, Math.round(1.5 + t * 7));
+    for (let k = 0; k < slab && y + k < bottom; k++) {
+      const yy = y + k, half = halfAt(yy) * 0.6, x0 = Math.round(xAt(yy) - half), w = Math.round(half * 2) + 1;
+      g.fillStyle = k === 0 ? stone[0] : k === slab - 1 ? stone[3] : stone[1];
+      g.fillRect(x0, yy, w, 1);
+      g.fillStyle = stone[3]; g.fillRect(x0 + Math.round(w * (row % 2 ? 0.35 : 0.65)), yy, 1, 1);
+      if (rand() < 0.15) { g.fillStyle = stone[2]; g.fillRect(x0 + Math.floor(rand() * w), yy, 1, 1); }
+    }
+    y += slab;
+  }
+}
+
+/** A plaster wall with a tiled cap either side of the hall. */
+function paintWall(g, W, foot, height, from, to, { plaster, roof, wood }) {
+  for (const [a, b] of [[0, from], [to, W]]) for (let x = a; x < b; x++) for (let k = 0; k <= height; k++) {
+    g.fillStyle = k === 0 ? roof[0] : k === 1 ? roof[1] : k === 2 ? roof[3] : k === height ? wood[3] : k === 3 ? plaster[2] : x % 12 === 0 ? plaster[1] : plaster[0];
+    g.fillRect(x, foot - height + k, 1, 1);
+  }
+}
+
+/** A round shrub to hide a Pokémon in: overlapping puffs, outlined, lit on top, a few blossoms. */
+function bushImage(size, [lit, body, shade, dark], blossom, rand) {
+  const w = size * 2 + 4, h = Math.ceil(size * 1.5) + 4, c = layer(w, h), g = c.getContext('2d');
+  const puffs = [];
+  for (let n = 0; n < 5; n++) {
+    const u = n / 4, r = Math.max(2, size * (0.42 + Math.sin(Math.PI * u) * 0.25));
+    puffs.push([Math.min(w - r - 2, Math.max(r + 1, 2 + u * (w - 4))), h - 2 - r * 0.8 - Math.sin(Math.PI * u) * size * 0.3, r]);
+  }
+  for (const [x, y, r] of puffs) disc(g, x, y, r + 1, dark);
+  for (const [x, y, r] of puffs) disc(g, x, y + 1, r, shade);
+  for (const [x, y, r] of puffs) disc(g, x, y, r - 1, body);
+  for (const [x, y, r] of puffs) disc(g, x - r * 0.3, y - r * 0.35, Math.max(1, r * 0.5), lit);
+  for (let n = 0; n < size; n++) {
+    const [x, y, r] = puffs[Math.floor(rand() * puffs.length)];
+    g.fillStyle = blossom[n % blossom.length];
+    g.fillRect(Math.round(x + (rand() - 0.5) * r * 1.4), Math.round(y + (rand() - 0.6) * r), 1, 1);
+  }
+  return c;
+}
+
+function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, rand, beats, live }) {
+  const RISE = beats.RISE || [0, 1];
+  // the full film starts at the foot of the hill and cranes up it; a place's mini film stands at the top and walks on
+  const RISE_PX = mini ? 0 : Math.round(H * 1.15);
+  const SPEED = { far: 0.12, ridge: 0.4, slope: 1, near: 1.5 };
+  const DOLLY = { far: 0.03, ridge: 0.15, slope: 0.7, near: 1.2 };
+  const drop = (k) => Math.ceil(RISE_PX * SPEED[k]);
+  const riseAt = (ms) => mini ? 1 : ease(span(RISE, ms));
+  const offY = (k, ms) => -Math.round(drop(k) * (1 - riseAt(ms)));
+  // upright, the hall ends in the middle under the title; wide, on the right with the title beside it
+  const hallX = Math.round(W * (tall || mini ? 0.5 : 0.68)), Hy = Math.round(H * (tall ? 0.5 : 0.56));
+  const hallHalf = Math.round(Math.min(W * 0.42, Math.min(W * 0.17, H * 0.16) * (look.hall || 1)));
+  const lamp = time === 'night' ? film.glow.wisp : film.glow.lamp, dark = time === 'night' || time === 'dusk';
+  const haze = (list, t) => list.map(c => mix(c, land.mist[0], t));
+
+  // ---- the sky and the far ranges ----
+  const skyC = layer(W, H);
+  paintSky(skyC.getContext('2d'), W, H, Hy, sky, time, rand);
+  const farC = layer(W, H + drop('far'));
+  {
+    const g = farC.getContext('2d'), fz = Hy - Math.round(H * 0.05);
+    paintFar(g, W, H, fz, land.far, rand);
+    g.fillStyle = land.far[0]; g.fillRect(0, fz + 4, W, farC.height);
+  }
+  const ridgeC = layer(W, H + drop('ridge'));
+  {
+    const g = ridgeC.getContext('2d'), [lit, body, shade] = land.ridge, ph = rand() * 6;
+    const top = (x) => Math.round(Hy - H * 0.03 - H * 0.025 * (Math.sin(x * 0.07 + ph) * 0.6 + Math.sin(x * 0.17 + ph * 2) * 0.4));
+    for (let x = 0; x < W; x++) { const y = top(x); g.fillStyle = body; g.fillRect(x, y, 1, ridgeC.height - y); }
+    for (let x = 0; x < W; x += 2 + Math.floor(rand() * 3)) {   // a fringe of far cedars
+      const y = top(x), h = 3 + Math.floor(rand() * 4);
+      for (let k = 0; k < h; k++) { const w = k >> 1; g.fillStyle = shade; g.fillRect(x - w, y - h + k, w * 2 + 1, 1); g.fillStyle = lit; g.fillRect(x - w, y - h + k, 1, 1); }
+    }
   }
 
-  function finish() {
-    if (finishing) return;
-    finishing = true;
-    cancelAnimationFrame(raf);
-    clearTimeout(holdTimer);
-    removeEventListener('keydown', onKey, true);
-    box.classList.add('leaving');
-    setTimeout(() => { done = true; box.remove(); resolve(); }, still ? 200 : FADE);
+  // ---- the hill: the hall on its summit, the steps, gates, lanterns and trees down its face ----
+  const slopeC = layer(W, mini ? H : H + drop('slope')), sg = slopeC.getContext('2d'), slopeH = slopeC.height;
+  const L = slopeH - Hy, tOf = (y) => Math.min(1, Math.max(0, (y - Hy) / L));
+  const h0 = Math.max(1.5, hallHalf * 0.22);
+  const pathHalf = (t) => h0 + (W * 0.3 - h0) * t ** 1.5;
+  const pathX = (t) => hallX + (W * 0.5 - hallX) * t ** 0.7 + Math.sin(t * 6) * W * 0.08 * t * (1 - t);
+  const room = (t) => 2 + t * W * 0.06;   // the verge beside the steps, where the lanterns stand
+  const sumY = (x) => Hy + 1 + Math.round((Math.max(0, Math.abs(x - hallX) - hallHalf * 1.8) / (W * 0.5)) ** 1.4 * H * (tall ? 0.12 : 0.3));
+  const [hLit, hBody, hDark] = land.hill;
+  for (let x = 0; x < W; x++) {
+    const top = sumY(x);
+    sg.fillStyle = hBody; sg.fillRect(x, top, 1, slopeH - top);
+    sg.fillStyle = hLit; sg.fillRect(x, top, 1, 1);
+    sg.fillStyle = hDark;
+    for (let y = top + 2; y < slopeH; y++) if (dither(x, y, 0.15 + tOf(y) * 0.3)) sg.fillRect(x, y, 1, 1);
   }
-  const onKey = (e) => {
-    if (!['Enter', ' ', 'Escape'].includes(e.key)) return;
-    e.preventDefault(); e.stopPropagation();
-    finish();
+  // the old cedars behind the hall (in the court, all along the wall)
+  const grove = look.court ? Math.ceil(W / (hallHalf * 0.45)) : 7;
+  for (let k = 0; k < grove; k++) {
+    const x = look.court ? Math.round((k + 0.5) * W / grove + (rand() - 0.5) * 4) : Math.round(hallX + (k - 3) * hallHalf * 0.62 + (rand() - 0.5) * hallHalf * 0.3);
+    const h = Math.min(Math.round(Hy * 0.85), Math.round(hallHalf * (look.court ? 1.1 : 1.5) + rand() * hallHalf * 0.8 + H * 0.04));
+    cedar(sg, x, Hy - 1 - Math.floor(rand() * 2), h, haze(land.cedar, 0.18), land.trunk);
+  }
+  // where the Pokémon pop up: out of shrubs beside the steps, in view at their moment
+  const spots = beats.POPS.map((ms, i) => {
+    const y = Math.round(H * [0.66, 0.56, 0.8][i] - offY('slope', ms + 700)), t = tOf(y), size = Math.round(5 + t * 12), side = [-1, 1, -1][i];
+    const x = Math.round(Math.min(W - size - 3, Math.max(size + 3, pathX(t) + side * (pathHalf(t) + room(t) * 0.6 + size))));
+    return { ms, x, y, size, scale: 0.6 + t * 0.6 };
+  });
+  const bushes = spots.map(s => bushImage(s.size, land.bush, land.blossom, rand));
+  const ops = [], lights = [];   // everything standing on the hill, drawn far to near
+  // gates and trees nearer than the shrubs are drawn again over them (`cover`), so a Pokémon peeks out behind them
+  const stand = (y, draw, cover) => ops.push({ y, draw, cover });
+  let door = null;
+  stand(Hy, () => { door = paintHall(sg, hallX, Hy, hallHalf, land); });
+  const lanternPair = (t, out = 0) => {
+    const y = Math.round(Hy + t * L), size = Math.max(2, Math.round(1.5 + t * W * 0.045)), off = pathHalf(t) + 1 + size * 0.6 + out;
+    for (const side of [-1, 1]) {
+      const x = Math.round(pathX(t) + side * off), fy = y - Math.round(size * 2 * 0.63);
+      lights.push({ x, y: fy, size, t, side });
+      stand(y, () => stoneLantern(sg, x, y, size, haze(land.lantern, (1 - t) * 0.3)));
+    }
   };
-  box.addEventListener('pointerup', finish);
-  addEventListener('keydown', onKey, true);
+  if (look.court) {
+    const wall = Math.max(5, Math.round(hallHalf * 0.22));
+    paintWall(sg, W, Hy, wall, hallX - hallHalf - 2, hallX + hallHalf + 3, land);
+    paintCourt(sg, W, Hy + 1, slopeH, (y) => pathX(tOf(y)), (y) => pathHalf(tOf(y)), land, rand);
+    for (const t of [0.15, 0.4, 0.75]) lanternPair(t, W * 0.04);
+  } else {
+    paintSteps(sg, Hy + 2, slopeH, (y) => pathX(tOf(y)), (y) => pathHalf(tOf(y)), land.stone, land.moss, rand);
+    const gates = look.tunnel ? [0.04, 0.09, 0.15, 0.22, 0.3, 0.39, 0.5, 0.63, 0.78] : [0.07, 0.15, 0.26, 0.4, 0.58, 0.8];
+    for (const t of gates) {
+      const y = Math.round(Hy + t * L), size = Math.round((pathHalf(t) + 1.5) / 0.4);
+      stand(y, (g) => torii(g, Math.round(pathX(t)), y, size, haze(land.torii, (1 - t) * 0.35)), true);
+    }
+    for (const t of look.tunnel ? [0.06, 0.18, 0.34, 0.56, 0.86] : [0.03, 0.11, 0.2, 0.33, 0.48, 0.68, 0.9]) lanternPair(t);
+    for (let y = Hy - 1; y < slopeH + 6;) {   // cedars and autumn maples down the hillside, clear of the steps and the hall
+      const t = tOf(y), h = Math.round(4 + t * H * 0.2 + rand() * (2 + t * 5)), gap = Math.max(2, h * 0.42);
+      for (let x = -4 + rand() * gap; x < W + 4; x += gap * (0.7 + rand() * 0.8)) {
+        const rx = Math.round(x), hh = h + Math.floor(rand() * 3), m = rand() < 0.06 + t * 0.12, jit = rand(), mist = (1 - t) * 0.35;
+        if (Math.abs(rx - pathX(t)) < pathHalf(t) + room(t) + hh * 0.3) continue;
+        if (y < sumY(rx) + 1) continue;
+        if (Math.abs(rx - hallX) < hallHalf * 1.3 + hh * 0.3 && y - hh < Hy) continue;
+        stand(y, m ? (g) => maple(g, rx, y, hh, haze(land.maple, mist), land.trunk, jit) : (g) => cedar(g, rx, y, hh, haze(land.cedar, mist), haze(land.trunk, mist)), true);
+      }
+      y += Math.max(1, Math.round(1 + t * 6));
+    }
+  }
+  ops.sort((a, b) => a.y - b.y);
+  for (const o of ops) o.draw(sg);
+  const coverFrom = Math.min(...spots.map(s => s.y + 1)), coverC = spots.length ? layer(W, slopeH) : null;
+  for (const o of ops) if (coverC && o.cover && o.y > coverFrom) o.draw(coverC.getContext('2d'));
+  // the lanterns light in pairs, nearest first, then each pair as it comes into view up the hill
+  const pairs = [...new Set(lights.map(l => l.t))].sort((a, b) => b - a);
+  for (const l of lights) l.rank = pairs.indexOf(l.t);
 
-  if (still) {
-    for (const f of figures) { f.shown = true; f.wrap.classList.add('up'); if (f.known) f.img.classList.remove('unseen'); }
-    if (walker) hiker.querySelector('img').addEventListener('load', () => frame(start + beats.END));
-    frame(start + beats.END);
-    holdTimer = setTimeout(finish, 3500);
-  } else raf = requestAnimationFrame(frame);
+  // ---- the near layer: old trunks at the edges, maple boughs overhead, shrubs ----
+  const nearC = layer(W, mini ? H : H + drop('near')), ng = nearC.getContext('2d'), Ln = nearC.height;
+  const bark = land.trunk.map(c => mix(c, '#000000', 0.35)), tw = Math.max(3, Math.round(W * 0.05));
+  for (const side of [0, 1]) {
+    const x0 = side ? W - tw : 0;
+    ng.fillStyle = bark[1]; ng.fillRect(x0, 0, tw, Ln);
+    ng.fillStyle = bark[0]; ng.fillRect(side ? x0 : x0 + tw - 1, 0, 1, Ln);
+    for (let y = 0; y < Ln; y += 3 + Math.floor(rand() * 5)) { ng.fillStyle = mix(bark[1], '#000000', 0.3); ng.fillRect(x0 + 1 + Math.floor(rand() * (tw - 2)), y, 1, 2 + Math.floor(rand() * 3)); }
+  }
+  for (const side of [-1, 1]) {   // maple boughs reaching in from the top corners
+    const len = W * (tall ? 0.36 : 0.22), y0 = H * (side < 0 ? 0.03 : 0.08), clumps = [];
+    for (let k = 0; k <= len; k++) {
+      const x = side < 0 ? k : W - 1 - k, y = y0 + (k / len) ** 2 * H * 0.08 + Math.sin(k * 0.3) * 1.2;
+      ng.fillStyle = bark[1]; ng.fillRect(Math.round(x), Math.round(y), 1, k < len * 0.5 ? 2 : 1);
+      if (k % 4 === 2) clumps.push([x, y + 1, 2 + rand() * (2 + (1 - k / len) * 3)]);
+    }
+    for (const [x, y, r] of clumps) disc(ng, x, y + 1, r, land.maple[2]);
+    for (const [x, y, r] of clumps) disc(ng, x, y, r - 0.5, land.maple[1]);
+    for (const [x, y, r] of clumps) disc(ng, x - r * 0.3, y - r * 0.3, r * 0.45, land.maple[0]);
+  }
+  for (let x = -4; x < W + 4; x += 4 + Math.floor(rand() * 6)) {   // shrubs along the bottom, either side of the steps
+    if (Math.abs(x - W * 0.5) < W * 0.34) continue;
+    const r = H * 0.035 + rand() * H * 0.03, cy = Ln - r * 0.5;
+    disc(ng, x, cy, r + 1, land.bush[3]); disc(ng, x, cy, r, land.bush[1]); disc(ng, x - r * 0.3, cy - r * 0.35, r * 0.5, land.bush[0]);
+    if (rand() < 0.6) { ng.fillStyle = land.blossom[Math.floor(rand() * land.blossom.length)]; ng.fillRect(Math.round(x + (rand() - 0.5) * r), Math.round(cy - r * 0.5), 1, 1); }
+  }
+
+  // ---- the air's life ----
+  const clouds = Array.from({ length: 5 }, () => ({ img: cloudImage(Math.round(W * (0.2 + rand() * 0.25)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: H * 0.04 + rand() * Hy * 0.5, drift: 0.5 + rand() * 0.8 }));
+  const bands = [0.04, 0.3, 0.62, 1.0].map((k, i) => ({ y: Hy + H * k, ry: H * (0.018 + i * 0.01), speed: 3 + i * 3, phase: rand() * W }));
+  const wisps = Array.from({ length: time === 'night' ? 9 : 5 }, () => ({ a: rand() * 6.28, r: 0.9 + rand() * 0.9, speed: 0.4 + rand() * 0.5, bob: rand() * 6 }));
+  const leaves = Array.from({ length: 18 }, () => ({ x: rand(), y: rand(), speed: 0.5 + rand(), wob: rand() * 6, c: Math.floor(rand() * 3) }));
+  const flies = dark ? Array.from({ length: 12 }, () => ({ x: rand(), y: rand(), phase: rand() * 6 })) : [];
+  const mistAlpha = time === 'dawn' ? 0.3 : time === 'night' ? 0.1 : 0.2;
+  let belled = false;
+
+  // walking on: each layer grows about the hall's foot, nearer ones faster
+  const VX = hallX, VY = Hy;
+  const put = (ctx, img, y, key, z) => {
+    const s = 1 + z * DOLLY[key];
+    if (s === 1) return ctx.drawImage(img, 0, y);
+    ctx.drawImage(img, Math.round(VX - VX * s), Math.round(VY + (y - VY) * s), Math.round(img.width * s), Math.round(img.height * s));
+  };
+
+  function draw(bg, fg, ms, tick) {
+    const z = mini ? 0.32 * ease(Math.min(1, ms / beats.END)) : 0, ss = 1 + z * DOLLY.slope, oy = offY('slope', ms);
+    const at = (x, y) => [VX + (x - VX) * ss, VY + (y + oy - VY) * ss];
+    bg.drawImage(skyC, 0, 0);
+    for (const c of clouds) {
+      const x = Math.round(((c.x + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
+      bg.drawImage(c.img, x, Math.round(c.y + offY('far', ms) * 0.5));
+    }
+    put(bg, farC, offY('far', ms), 'far', z);
+    put(bg, ridgeC, offY('ridge', ms), 'ridge', z);
+    put(bg, slopeC, oy, 'slope', z);
+
+    // the hall's doorway glows, breathing, and fox-fires drift round it
+    const breath = 0.5 + 0.5 * Math.sin(tick * 1.4);
+    const [dx, dy] = at(door.x, door.y);
+    for (const [k, r] of [[0.08, 2.4], [0.12, 1.6], [0.18, 1]]) {
+      bg.globalAlpha = k * (0.7 + 0.5 * breath) * (dark ? 1.7 : 1);
+      bg.fillStyle = film.glow.aura[1];
+      bg.beginPath(); bg.ellipse(Math.round(dx), Math.round(dy), door.half * 0.55 * r * ss, door.half * 0.4 * r * ss, 0, 0, Math.PI * 2); bg.fill();
+    }
+    bg.globalAlpha = 0.65 + 0.3 * breath;
+    const [x0, y0] = at(door.x - (door.w >> 1), door.top);
+    bg.fillStyle = film.glow.aura[0];
+    bg.fillRect(Math.round(x0), Math.round(y0), Math.max(1, Math.round(door.w * ss)), Math.max(1, Math.round((door.bottom - door.top) * ss)));
+    bg.globalAlpha = 1;
+
+    for (const l of lights) {   // the lanterns, lit by the spirits as you climb
+      const [x, y] = at(l.x, l.y);
+      if (!l.lit && y > H * 0.08 && y < H && ms >= 300 + l.rank * 140) {
+        l.lit = true;
+        if (l.side < 0 && live()) playSound(`furin-${l.rank % 3}`);
+      }
+      if (!l.lit) continue;
+      const flicker = 0.85 + 0.15 * Math.sin(tick * 9 + l.x);
+      bg.globalAlpha = (dark ? 0.35 : 0.2) * flicker;
+      bg.fillStyle = lamp[1];
+      bg.beginPath(); bg.ellipse(Math.round(x), Math.round(y), l.size * 1.6 * ss, l.size * 1.3 * ss, 0, 0, Math.PI * 2); bg.fill();
+      bg.globalAlpha = 1;
+      bg.fillStyle = lamp[0];
+      bg.fillRect(Math.round(x) - (l.size > 5 ? 1 : 0), Math.round(y), l.size > 5 ? 3 : 1, l.size > 5 ? 2 : 1);
+    }
+
+    bg.fillStyle = land.mist[0];   // banks of mist drifting across the hill
+    for (const b of bands) {
+      const [, y] = at(0, b.y);
+      if (y < -b.ry * 2 || y > H + b.ry * 2) continue;
+      bg.globalAlpha = mistAlpha;
+      for (let n = 0; n < 4; n++) {
+        const x = ((b.phase + n * W * 0.42 + tick * b.speed) % (W * 1.68)) - W * 0.34;
+        bg.beginPath(); bg.ellipse(Math.round(x), Math.round(y + Math.sin(n * 2.1) * 2), W * 0.28, b.ry * ss, 0, 0, Math.PI * 2); bg.fill();
+      }
+    }
+    bg.globalAlpha = 1;
+
+    for (const w of wisps) {
+      const a = w.a + tick * w.speed;
+      const spot = (a2) => at(door.x + Math.cos(a2) * door.half * w.r * 1.2, door.y - door.half * 0.3 + Math.sin(a2) * door.half * 0.25 * w.r - Math.sin(tick * 1.3 + w.bob) * door.half * 0.3);
+      const [x, y] = spot(a), [px, py] = spot(a - 0.2);
+      bg.fillStyle = film.glow.wisp[2]; bg.fillRect(Math.round(px), Math.round(py), 1, 1);
+      bg.fillStyle = film.glow.wisp[1]; bg.fillRect(Math.round(x), Math.round(y), 2, 2);
+      bg.fillStyle = film.glow.wisp[0]; bg.fillRect(Math.round(x), Math.round(y), 1, 1);
+    }
+
+    fg.clearRect(0, 0, W, H);
+    for (const [i, s] of spots.entries()) {   // the shrubs the Pokémon hide in, shaking just before one pops out
+      const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0, img = bushes[i];
+      fg.drawImage(img, Math.round(s.x - img.width / 2 + rustle), Math.round(s.y + oy + s.size * 0.6 - img.height));
+    }
+    if (coverC) fg.drawImage(coverC, 0, oy);
+    for (const p of leaves) {   // maple leaves tumbling down
+      const x = Math.round(((p.x * W * 1.3 + tick * p.speed * 7 + Math.sin(tick * 1.5 + p.wob) * 5) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
+      const y = Math.round(((p.y * H + tick * p.speed * 14) % H + H) % H);
+      fg.fillStyle = land.maple[p.c];
+      const flip = Math.floor(tick * 5 + p.wob) % 3;
+      fg.fillRect(x, y, flip ? 2 : 1, flip === 1 ? 1 : 2);
+    }
+    for (const f of flies) {
+      if (Math.sin(tick * 3 + f.phase) < 0.2) continue;
+      fg.fillStyle = film.glow.firefly[0];
+      fg.fillRect(Math.round(f.x * W + Math.sin(tick + f.phase) * 4), Math.round(H * (0.45 + f.y * 0.5) + Math.cos(tick * 0.7 + f.phase) * 3), 1, 1);
+    }
+    put(fg, nearC, offY('near', ms), 'near', z);
+
+    if (!mini && !belled && ms >= RISE[1] - 900) {   // the hall comes into view: its bell tolls, far off
+      belled = true;
+      if (live()) playSound('bell-far');
+    }
+  }
+
+  return { spots, walkX: W * 0.5, draw, monAt: (i, ms) => [spots[i].x, spots[i].y + offY('slope', ms)] };
 }

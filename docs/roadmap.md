@@ -619,7 +619,7 @@ Anytime, as a break from number work:
   flowers opening over the whole screen; the Shrine's burst is a spinning seal of spirit light (round the hall and flat
   across the courtyard) that flares and throws fox-fires, its handoff a ring flood out of the doors. Only the Wastes
   keeps a column. Checked frame by frame at PC size; **for the user to check:** in a real boss fight.
-- **Biome intros** (Biome 1 done 2026-10-01): the user asked for a 5-10 s intro on entering each biome, clearly
+- **Biome intros** (Biome 1 and 2 done 2026-10-01): the user asked for a 5-10 s intro on entering each biome, clearly
   showing its title and "a cool scenery thing", inviting rather than menacing like the boss intros. `js/biome-intro.js`,
   played over the map by `startBiome()` (after the checkpoint, so a refresh skips it), ~9 s, tap / Enter / Escape skips.
   The Clearing's: letterbox bars, the camera drops through the clouds past a flock of birds, then glides sideways in
@@ -639,6 +639,12 @@ Anytime, as a break from number work:
   in `INTROS.clearing.stages`: the Tree nearer each time (taller upright, its crown spreading on wide screens), the tree
   line taller, the land and sky shaded; Deep Woods adds great trunks either side, a leafy fringe with vines, light shafts,
   fireflies and falling leaves. This is the pattern for every biome: travelling towards its goal.
+  **Biome 2** (same day): `run()` split into a shared shell and a per-biome `scene`. The Shrine's film is a crane shot up
+  its mossy steps through a tunnel of torii, the lanterns lighting in pairs with a wind chime each, to the Main Hall above
+  the mist (a distant temple bell, fox-fires round its glowing doorway); Pokémon pop out of shrubs by the steps. Place
+  walks: Torii Path (gates close together) and Inner Court (gravel, walls, the hall up close). Checked at 375x812 and
+  1280x720, day and dusk, no console errors. **Next:** the Wastes' (towards the crater); **for the user to check:** on the
+  live site with sound (the chimes' and the bell's volume).
 - **Make the game explain itself: done (2026-09-27, overnight session).** All three notes below landed:
   - Abilities: an Ability Capsule chip on your battle nameplate (tap it for the text), Gen 5's "Charmander's Blaze"
     banner sliding in on your side when it does something (Torrent on turn 1, Blaze whenever HP drops below half,
