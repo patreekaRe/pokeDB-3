@@ -261,29 +261,54 @@ const BIOME_ART = {
   },
 };
 
-/* The Crystal Depths, Mewtwo's own biome (v1.0): a PLACEHOLDER until its art lands in a Desktop session. It borrows the
-   Treasure room's grotto (crystals, stalactites, a shaft of light) without the hoard, in violet and cyan, and has no
-   clock: underground, every time of day is the same. */
+/* The Crystal Depths, Mewtwo's own biome (v1.0): a cavern under the three biomes where Eternatus's energy leaks out of
+   the rock (painted by depthsBackdrop() / depthsFloor() / depthsFront(), its life in drawDepths()). No clock: underground
+   every hour is the same, so it has only a `day` look. Each place is its own palette (`voids`, `rocks`, `floors`, by
+   stage); the glowing colours (crystal, amethyst, ruby, energy...) are GLOWS, so an elite's or boss's grade leaves them lit. */
 BIOME_ART.depths = {
-  backdrop: 'treasure', floor: 'treasure', bare: true, light: null,
-  storm: { rain: ['#e0fcff', '#88e0f8'], fall: 1.6, count: 0.5, sky: [0.7, 10, 0, 30], ground: [0.8, 8, 0, 20] },   // a fall of crystal dust
-  coin: ['#fff8b0', '#f8c830', '#b07818'], gem: ['#f878f8', '#58e0f8', '#a8f878', '#c878f8'],
-  sky: ['#e8f8ff', '#a8d8f8'],
-  rock: ['#5e5276', '#4a405e', '#3a324c', '#2a2438', '#181424'],
-  crystal: ['#f8f0ff', '#d0a8f8', '#9058e0', '#502898'],
-  ground: ['#3e3650', '#383048', '#322a40', '#2c2438', '#241e30'],
-  stone: ['#a8a0c0', '#867ea0', '#645c7c', '#443e58'],
-  beam: '#e0f0ff', drip: '#a8f0ff', mote: '#f0f8ff',
-  ember: ['#f0ffff', '#88e8f8', '#5890e8'], embers: 0.4,
+  backdrop: 'depths', floor: 'depths', light: null,
+  storm: { rain: ['#ffd8f4', '#e04cb0'], fall: 1.3, count: 0.7, sky: [0.72, 50, 0, 26], ground: [0.8, 28, 0, 14] },   // a fall of red crystal dust
+  sky: ['#020208', '#131c30'],
+  voids: [   // the dark at the far end of the cavern, top to horizon
+    ['#020208', '#04060e', '#070a16', '#0a101e', '#0e1626', '#121c2e', '#16223a'],
+    ['#05030c', '#0a0718', '#100c24', '#171230', '#1f183e', '#281e4c', '#30245a'],
+    ['#060206', '#0c040a', '#140610', '#1c0816', '#280a1c', '#360c22', '#460e2a'],
+    ['#070206', '#10040a', '#1a0610', '#260816', '#340a1c', '#460c24', '#5a0e2c'],
+  ],
+  rocks: [   // the walls: lit, body, shade, deep, line
+    ['#5c5e7c', '#46485e', '#34364a', '#242638', '#101020'],
+    ['#6c5c98', '#52467a', '#3e3460', '#2a2446', '#141026'],
+    ['#4c3448', '#382638', '#281a2a', '#1a111c', '#0a050a'],
+    ['#50344e', '#3c243c', '#2c182e', '#1e0f20', '#0c040c'],
+  ],
+  floors: [   // the ground, horizon to the bottom
+    ['#3a3a52', '#35354c', '#303046', '#2b2b40', '#262638', '#202030'],
+    ['#4a4070', '#443a68', '#3e3460', '#382e58', '#30284c', '#2a2242'],
+    ['#30222e', '#2a1d29', '#251924', '#20151f', '#1b111a', '#160d15'],
+    ['#2e1e2e', '#291a2a', '#241625', '#1f1220', '#1a0e1b', '#140a15'],
+  ],
+  crystal: ['#ffffff', '#b8f4ff', '#58d0f0', '#2a7ab8', '#143e6e'],
+  amethyst: ['#fff4ff', '#e8b8ff', '#b070f0', '#7038c0', '#381870'],
+  ruby: ['#fff0f4', '#ff9ac8', '#f03c80', '#a81450', '#500828'],
+  energy: ['#fff4fa', '#ff8ae0', '#f0349a', '#a8106a', '#4a0630'],
+  shroom: ['#e8fff6', '#68f0c8', '#20a890', '#145c58'],
+  daylight: ['#fffbe8', '#e0f0ff', '#b0d0f0'],
+  lamp: ['#fff4c0', '#f8c050', '#c07020'],
+  mote: ['#e8ffff', '#88e0f8'],
+  moss: ['#5a9a6a', '#3e7a54', '#285a40'],
+  water: ['#a8f0ff', '#48b0d8', '#206898', '#0e3458'],
+  wood: ['#a07850', '#704e30', '#46301c', '#20140a'],
+  metal: ['#b8b8c8', '#7c7c94', '#4c4c60', '#24242e'],
   times: {
     day: {
-      life: ['treasure', 'drips', 'embers'],
-      pad: { style: 'rock', top: '#6a5e86', mid: '#564c70', low: '#463e5c', rim: '#141020', earth: '#2e2840', lava: '#88e8f8' },
+      life: ['depths'],
+      pad: { style: 'rock', top: '#5e5a80', mid: '#4a466a', low: '#3a3656', rim: '#0c0a16', earth: '#221e36', lava: '#7ae8ff' },
+      padDeep: { style: 'rock', top: '#4e3650', mid: '#3e2a40', low: '#301e32', rim: '#0a040a', earth: '#1c0e1c', lava: '#ff5ab0' },
     },
   },
   kinds: {
     elite: { grade: 'elite' },
-    boss: { grade: 'boss', embers: 1.2 },
+    boss: { grade: 'boss' },
   },
 };
 
@@ -952,7 +977,8 @@ let storm = { on: false, level: 0 };
 
 // lights that glow of their own accord, so the dark doesn't dim them; `storm` has its own tints
 const GLOWS = new Set(['sun', 'flame', 'lanternGlow', 'glow', 'firefly', 'lava', 'ember', 'wisp', 'spot', 'vein', 'boom',
-  'wish', 'hp', 'heart', 'coin', 'crystal', 'steam', 'beam', 'mote', 'glint', 'storm', 'chalk', 'pollen']);
+  'wish', 'hp', 'heart', 'coin', 'crystal', 'steam', 'beam', 'mote', 'glint', 'storm', 'chalk', 'pollen',
+  'amethyst', 'ruby', 'energy', 'shroom', 'daylight', 'lamp']);
 const SKIES = new Set(['sky', 'cloud']);
 
 /** A copy of `art` with every colour but the glows run through a grade ({ sky, land } from GRADES); `only` limits it to those keys. */
@@ -1099,7 +1125,8 @@ function paintScene(key, raw, floor = null, span = null) {
   S = colours(raw);
   S.raw = raw;
   S.storm = raw.storm && { ...raw.storm, rain: raw.storm.rain.map(abgr) };
-  if (raw.pad) $('battle-screen').style.setProperty('--pad', `url("${padImage(raw.pad)}")`);
+  const pad = raw.padDeep && raw.stage >= 2 ? raw.padDeep : raw.pad;   // the Crystal Depths' rock turns red from the Deep Core on
+  if (pad) $('battle-screen').style.setProperty('--pad', `url("${padImage(pad)}")`);
   resize();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(frame, 1000 / FPS);
 }
@@ -1143,7 +1170,7 @@ export async function bossArenaPrelude() {
 }
 let preludeRun = 0;
 /** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
-const hasPrelude = () => ['hills', 'shrine', 'volcano', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
+const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
 const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
 /** The sounds the boss prelude on screen will play, to load ahead. */
 export const bossPreludeSounds = () => (hasPrelude() ? preludeSounds()[preludeKey()].map(([, sound]) => sound) : []);
@@ -1247,6 +1274,7 @@ function paintBase() {
   if (S.raw.backdrop === 'daycare') daycareHouse();
   if (S.raw.backdrop === 'kombat') kombatBackdrop();
   if (S.raw.backdrop === 'safari') safariBackdrop();
+  if (S.raw.backdrop === 'depths') depthsBackdrop();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
@@ -1265,6 +1293,7 @@ function paintBase() {
   if (S.raw.floor === 'jungleFloor') jungleFloor();
   if (S.raw.floor === 'kombat') kombatFloor();
   if (S.raw.floor === 'safari') safariFloor();
+  if (S.raw.floor === 'depths') depthsFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
@@ -1274,6 +1303,7 @@ function paintBase() {
   if (S.raw.backdrop === 'treasure') grottoFront();
   if (S.raw.backdrop === 'safari') safariFront();
   if (S.raw.backdrop === 'hills' || S.raw.backdrop === 'shrine' || S.raw.backdrop === 'volcano') { stageFront(); landmark(); }
+  if (S.raw.backdrop === 'depths') { depthsFront(); landmark(); }
   if (S.raw.prop) eventProps();
 
   return Uint32Array.from(px);
@@ -1686,7 +1716,7 @@ function basalt() {
 
 const stage = () => S.raw.stage ?? 0;
 const within = () => { const n = [4, 3, 4][stage()]; return n ? Math.min(1, (S.raw.step || 0) / (n - 1)) : 1; };   // 0..1 through the place
-const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes' })[S.raw.backdrop];
+const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths' })[S.raw.backdrop];
 const M = () => S.marks;
 
 /** Mark ground where grass shouldn't grow (water, lava, a landmark's footprint). */
@@ -2466,8 +2496,8 @@ function landmark() {
   if (!b || S.raw.step == null || st > 2) return;
   const r = seeded((S.raw.seed ^ (st * 7919 + 17)) >>> 0), order = shuffled(Object.entries(LANDMARKS[b][st]), r);
   const [name, mark] = order[S.raw.step % order.length];
-  // the deep woods' big trees frame the left edge, so there the landmark stands on the right
-  const paint = mark.paint || mark, side = mark.side || (b === 'clearing' && st === 2 ? 1 : r() < 0.5 ? -1 : 1);
+  // the deep woods' big trees frame the left edge, and the Crystal Halls' lake fills the back of it, so there it stands on the right
+  const paint = mark.paint || mark, side = mark.side || ((b === 'clearing' && st === 2) || (b === 'depths' && st === 1) ? 1 : r() < 0.5 ? -1 : 1);
   const cx = side < 0 ? Math.max(12, Math.round(W * 0.08)) : Math.min(W - 13, Math.round(W * 0.91));
   const foot = groundAt(side < 0 ? 0.1 : 0.26);
   const keep = { x0: cx - 14, x1: cx + 14, y0: foot - 24, y1: foot + 2 };
@@ -5396,6 +5426,7 @@ function makeLife() {
     life.boat = { x: rand() * W };
   }
   if (has('safari')) makeSafariLife();
+  if (has('depths')) makeDepthsLife();
   if (has('vines')) {
     life.vines = [];
     for (let i = 0, n = Math.round(W / 9); i < n; i++) {
@@ -5485,6 +5516,7 @@ function draw() {
   if (has('kombat')) drawKombat(t);
   if (has('vines')) drawVines(t);
   if (has('safari')) drawSafari(t);
+  if (has('depths')) drawDepths(t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
     const [hot, warm, glow] = S.lanternGlow;
@@ -5578,6 +5610,7 @@ function draw() {
     if (S.raw.backdrop === 'safari') shake = SAFARI_PRELUDES[S.raw.area].portal(t);
     else if (S.raw.backdrop === 'shrine') shake = drawShrinePortal(t);
     else if (S.raw.backdrop === 'volcano') shake = drawWastesPortal(t);
+    else if (S.raw.backdrop === 'depths') shake = depthsPortal(t);
     else shake = drawClearingPortal(t);
   }
   else if (bossPrelude) shake = drawBossAwakening(t) || 0;
@@ -6036,6 +6069,7 @@ function drawBossAwakening(t) {
   if (S.raw.backdrop === 'safari') return SAFARI_PRELUDES[S.raw.area].wake(t);
   if (S.raw.backdrop === 'shrine') return drawShrineAwakening(t);
   if (S.raw.backdrop === 'volcano') return drawWastesAwakening(t);
+  if (S.raw.backdrop === 'depths') return depthsWake(t);
   return drawClearingAwakening(t);
 }
 
@@ -6234,6 +6268,7 @@ const preludeSounds = () => ({
   hills: [[0, 'quake'], [BLOOM_AT, 'bloom']],
   shrine: [...BELL_TOLLS.map(at => [at, 'bell']), [SPIRIT_AT, 'spirit']],
   volcano: [[0, 'quake'], [ERUPT_AT, 'eruption']],
+  depths: [[0, 'gate-hum'], [2, 'quake'], [CORE_AT, 'eruption'], [CORE_AT + 1, 'core-surge']],
   ...Object.fromEntries(Object.entries(SAFARI_PRELUDES).map(([area, p]) => [area, p.sounds])),
 });
 
@@ -8590,6 +8625,1031 @@ function desertArenaLife(t) {
 
 /** The area's own floor, painted as usual under an arena laid over it. */
 function safariFloor0() { areaPaint().floor(); }
+/* ============================================================
+   THE CRYSTAL DEPTHS (v1.0 part B2): one painter for its four places, each deeper and stranger than the last.
+     Cave Mouth     the way in: a crack of daylight in the roof with moss and roots round it, glowing mushrooms, the
+                    first small crystals, a tunnel of rock arches yawning on into the dark
+     Crystal Halls  a geode cathedral: giant crystal columns to the roof, hex crystals jutting from the walls, prism
+                    light falling in rainbow shafts, a still lake mirroring it all
+     Deep Core      the rock turns black and the energy shows: crimson veins pulsing through the walls and the floor's
+                    seams, the crystals gone red, boulders floating on the energy, a red glow ahead
+     Energy Well    the source: a bottomless well whose column of energy climbs to a vortex on the roof, crystal
+                    monoliths orbiting it, every seam in the floor pulsing towards it
+   Big things keep to the back and the edges, the middle is the two Pokémon's, like every other biome.
+   ============================================================ */
+
+const mixC = (a, b, k) => { const f = (s) => Math.round(((a >> s) & 255) * (1 - k) + ((b >> s) & 255) * k); return ((255 << 24) | (f(16) << 16) | (f(8) << 8) | f(0)) >>> 0; };
+const deepVoid = () => S.voids[stage()];
+const deepRock = () => S.rocks[stage()];
+const deepGlow = () => (stage() >= 2 ? S.energy : S.crystal);   // the light the place is lit by
+const deepGems = () => [[S.crystal, S.crystal], [S.crystal, S.amethyst], [S.ruby, S.amethyst], [S.ruby, S.energy]][stage()];
+const wellAt = () => ({ x: Math.round(W / 2), y: horizon + 1 + Math.max(1, Math.round((H - horizon) * 0.02)) });
+
+/** A crystal: a six-sided prism from its foot (fx, fy) out along angle `a` (0 right, -π/2 up), `len` long and `hw` half
+    wide, coming to a point; its lit face up-left with a white streak down it, outlined in its deepest colour. `halo`
+    pixels of glow spill round it on whatever is behind; `fade` mixes it `fade` of the way `into` the haze (far off).
+    `paint` is solid() by default (putSky() keeps it behind the walls). Returns its tip. */
+function prism(fx, fy, a, len, hw, pal, { halo = 0, fade = 0, into = 0, paint = solid } = {}) {
+  const dx = Math.cos(a), dy = Math.sin(a);
+  let ax = -dy, ay = dx;
+  if (ax + ay < 0) { ax = -ax; ay = -ay; }   // across, towards the shaded down-right side
+  const c = fade ? pal.map(k => mixC(k, into, fade)) : pal;
+  const point = Math.max(1.4, hw * 1.7), reach = len + hw + halo + 2;
+  for (let y = Math.floor(fy - reach); y <= fy + reach; y++) for (let x = Math.floor(fx - reach); x <= fx + reach; x++) {
+    if (!inside(x, y)) continue;
+    const rx = x + 0.5 - fx, ry = y + 0.5 - fy, u = rx * dx + ry * dy, v = rx * ax + ry * ay;
+    if (u < -0.5 || u > len + halo) continue;
+    const w = u > len - point ? hw * Math.max(0, (len - u) / point) : hw, av = Math.abs(v);
+    if (av > w || u > len) {
+      if (halo && u > -0.5 && av - w < halo && dither(x, y) < 10) blend(x, y, c[3], 0.3 * (1 - (av - w) / halo));
+      continue;
+    }
+    const s = v / Math.max(0.5, w), tip = u > len - point;
+    let col;
+    if (av > w - 0.7 && w > 1) col = c[4];
+    else if (tip) col = s < -0.2 ? c[0] : s < 0.3 ? c[1] : c[2];
+    else if (s > -0.7 && s < -0.42) col = c[0];
+    else col = s < -0.42 ? c[1] : s < 0.25 ? c[2] : c[3];
+    paint(x, y, col);
+  }
+  return { x: Math.round(fx + dx * len), y: Math.round(fy + dy * len) };
+}
+
+/** A few crystals fanning out of one spot, the tallest in the middle; every tip twinkles (drawDepths). */
+function gemCluster(fx, fy, size, pal, { up = -Math.PI / 2, spread = 0.55, n = 3, halo = 2, pal2 = null, paint = solid } = {}) {
+  const parts = [[2, 0.36, 0.55], [-2, 0.4, 0.6], [1, 0.58, 0.78], [-1, 0.66, 0.82], [0, 1, 1]].slice(5 - Math.min(5, n));
+  for (const [k, l, w] of parts) {
+    const a = up + k * spread * 0.5 + (noise(fx, fy + k, 40) - 0.5) * 0.18;
+    const ox = Math.cos(up + Math.PI / 2) * k * size * 0.16, oy = Math.sin(up + Math.PI / 2) * k * size * 0.16;
+    const tip = prism(fx + ox, fy + oy + Math.abs(k) * 0.4, a, size * l, Math.max(0.9, size * 0.13 * w), pal2 && k % 2 ? pal2 : pal, { halo, paint });
+    (life.twinkles ||= []).push({ x: tip.x, y: tip.y, phase: noise(tip.x, tip.y, 41) * 80 });
+  }
+}
+
+/* ---------- the cavern's back: the far dark, the place's own set piece, then the arch of rock round it ---------- */
+
+const ARCH = [{ top: 0.1, p: 2.2, side: 1.08 }, { top: 0.04, p: 3.6, side: 0.97 }, { top: 0.07, p: 2.6, side: 1.05 }, { top: 0.03, p: 4.4, side: 0.92 }];
+
+/** For each column, the row the rock comes down to: the roof in the middle, the walls at the edges. */
+function caveRoof() {
+  const { top, p, side } = ARCH[stage()], roof = new Int16Array(W), cx = W / 2;
+  for (let x = 0; x < W; x++) {
+    const u = Math.abs(x + 0.5 - cx) / cx;
+    const jag = (noise(x >> 1, 3, 31) - 0.5) * 3 + Math.sin(x * 0.7) * 0.8 + (noise(x >> 3, 5, 32) - 0.5) * horizon * 0.09;
+    roof[x] = Math.round(horizon * (top + (1 - top) * Math.min(1.25, Math.pow(u, p) * side)) + jag);
+  }
+  return roof;
+}
+
+function depthsBackdrop() {
+  const st = stage(), cx = W / 2, glow = deepGlow();
+  life.twinkles = []; life.seams = []; life.veins = []; life.shrooms = []; life.lamps = []; life.glimmers = []; life.tips = [];
+  bands(0, horizon, deepVoid(), 1, true);
+
+  // the far end of the cavern glows: faint cyan at the mouth, brighter in the halls, crimson from the Deep Core on
+  const gk = [0.16 + dial() * 0.5, 0.32, 0.5, 0.7][st];
+  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
+    const d = Math.hypot((x + 0.5 - cx) / (W * 0.6), (y - horizon) / (horizon * 0.95));
+    if (d < 1 && dither(x, y) < 15) blend(x, y, glow[3], gk * (1 - d) * (1 - d));
+  }
+  // crystals glimmering far off in the dark, like stars
+  for (let n = 0, count = Math.round(W * horizon / [90, 40, 70, 80][st]); n < count; n++) {
+    const x = Math.floor(rand() * W), y = Math.floor(rand() * horizon * 0.92), c = rand() < 0.5 ? glow[3] : deepGems()[1][3];
+    put(x, y, c);
+    if (rand() < 0.25) life.glimmers.push({ x, y, phase: rand() * 60, c: rand() < 0.5 ? glow[1] : deepGems()[1][1] });
+  }
+  if (st === 0) caveTunnel();
+  if (st === 1) crystalHall();
+  if (st === 2) deepCore();
+  if (st === 3) wellCavern();
+  farRidges();
+  const roof = life.roof = caveRoof();
+  caveWalls(roof);
+  wallCrystals(roof);
+  stalactites(roof);
+  if (st === 0) daylightCrack(roof);
+}
+
+/** Rock ridges and crystal spires along the back, faded into the dark. */
+function farRidges() {
+  const st = stage(), R = deepRock(), v = deepVoid(), haze = v[v.length - 1], rim = deepGlow()[st >= 2 ? 2 : 3];
+  const range = (top, amp, seed, k) => {
+    for (let x = 0; x < W; x++) {
+      const jag = Math.abs(((x / (5 + seed) + seed) % 2) - 1), y0 = Math.round(top - amp * (0.35 + 0.4 * jag + 0.25 * Math.sin(x / 13 + seed)) * (0.7 + 0.3 * noise(x >> 1, seed, 36)));
+      for (let y = Math.max(0, y0); y < horizon; y++) solid(x, y, y === y0 && dither(x, y) < 10 ? mixC(rim, haze, 0.55 + k * 0.3) : mixC(R[3], haze, k));
+    }
+  };
+  if (st === 0) return;   // the Cave Mouth's tunnel is its back
+  const low = st === 3 ? 0.5 : 1;
+  range(horizon - horizon * 0.13 * low, horizon * 0.11 * low, 1.3 + st, 0.6);
+  const [a, b] = deepGems();
+  for (let n = 0; n < Math.round(W / 22); n++) {
+    const x = Math.round(rand() * W);
+    if (st === 3 && Math.abs(x - cx0()) < W * 0.14) continue;   // clear of the column
+    prism(x, horizon - Math.round(horizon * 0.05), -Math.PI / 2 + (rand() - 0.5) * 0.4, horizon * (0.1 + rand() * 0.2) * low, 1.5 + rand() * 1.5, n % 2 ? a : b, { fade: 0.45, into: haze, halo: 2 });
+  }
+  range(horizon - horizon * 0.05 * low, horizon * 0.06 * low, 4.1 + st, 0.32);
+}
+const cx0 = () => Math.round(W / 2);
+
+/* ----- the Cave Mouth ----- */
+
+/** Arches of rock, smaller and darker into the distance: the tunnel goes on down, the last opening on a faint glow. */
+function caveTunnel() {
+  const R = deepRock(), v = deepVoid(), cx = Math.round(W * 0.53), deeper = Math.min(1, dial() * 3.5);
+  const rings = [0.58, 0.42, 0.29, 0.19, 0.11];
+  rings.forEach((s, i) => {
+    const hw = W * 0.5 * s, ht = horizon * 1.05 * s * (1.1 + 0.15 * i), k = Math.min(0.9, 0.45 + i * 0.12);
+    const body = mixC(R[3], v[2], k), lit = mixC(mixC(R[1], S.crystal[3], 0.3 + i * 0.1), v[3], i * 0.12), last = i === rings.length - 1;
+    for (let y = Math.floor(horizon - ht - 2); y < horizon; y++) for (let x = Math.floor(cx - hw - 3); x <= cx + hw + 3; x++) {
+      const jag = (noise(x >> 1, y >> 1, 42 + i) - 0.5) * 0.2 + (noise(x >> 2, 9, 43 + i) - 0.5) * 0.15;
+      const d = Math.hypot((x + 0.5 - cx) / hw, (y + 0.5 - horizon) / ht) + jag;
+      if (d > 1) continue;
+      if (last) { put(x, y, d < 0.5 ? S.crystal[3] : dither(x, y) < (1 - d) * 24 ? S.crystal[4] : body); continue; }
+      put(x, y, d > 0.93 ? lit : d > 0.86 && dither(x, y) < 6 ? mixC(lit, body, 0.5) : noise(x >> 1, y, 44) < 0.12 ? mixC(body, v[0], 0.5) : body);
+    }
+  });
+  // the glow through the last arch: the crystals the tunnel leads to, brighter as you go in
+  const last = rings[rings.length - 1], hw = W * 0.5 * last, ht = horizon * 1.05 * last * 1.7;
+  for (let n = 0; n < 6 + deeper * 6; n++) {
+    const x = Math.round(cx + (rand() - 0.5) * hw * 1.4), foot = horizon - 1;
+    prism(x, foot, -Math.PI / 2 + (rand() - 0.5) * 0.6, ht * (0.25 + rand() * 0.4), 0.8, S.crystal, { fade: 0.35 });
+  }
+}
+
+/** A crack in the roof letting a shaft of daylight in (fading the further in you go), moss and roots round its rim. */
+function daylightCrack(roof) {
+  const hx = Math.round(W * 0.3), top = 0, bottom = Math.max(4, roof[hx] - 1), hw = Math.max(2, Math.round(W * 0.025));
+  life.crack = { x: hx, y: bottom, hw };
+  for (let y = top; y <= bottom + 1; y++) {
+    const w = hw * (0.6 + 0.4 * Math.sin(y / bottom * Math.PI)) + (noise(y, 1, 43) - 0.5) * 1.5, mid = hx + Math.sin(y / 3) * 1.2;
+    for (let x = Math.floor(mid - w - 1); x <= mid + w + 1; x++) {
+      const e = Math.abs(x + 0.5 - mid) - w;
+      if (e < 0) { put(x, y, y < bottom * 0.5 ? S.daylight[0] : S.daylight[1]); sky[y * W + x] = 1; }
+      else if (e < 1.2) solid(x, y, S.moss[e < 0.6 ? 0 : 2]);
+    }
+  }
+  for (let x = hx - hw - 3; x <= hx + hw + 3; x++) {   // moss and roots hanging from its lip
+    if (noise(x, 2, 44) < 0.3) continue;
+    const len = 1 + Math.floor(noise(x, 3, 44) * (horizon * 0.12));
+    for (let k = 0; k < len; k++) solid(x, bottom + 1 + k, k === len - 1 ? S.moss[0] : noise(x, k, 45) < 0.3 ? S.wood[2] : S.moss[1 + (k & 1)]);
+  }
+}
+
+/** The daylight's shaft, from the crack to the floor, with a patch of moss and ferns where it lands. */
+function daylightShaft() {
+  const c = life.crack;
+  if (!c) return;
+  const k = Math.max(0.14, 1 - dial() * 2.6), lx = Math.round(c.x + W * 0.09), ly = groundAt(0.24);
+  life.shaft = { x0: c.x, y0: c.y, x1: lx, y1: ly, k };
+  for (let y = c.y; y <= ly; y++) {
+    const f = (y - c.y) / Math.max(1, ly - c.y), mid = c.x + (lx - c.x) * f, hw = c.hw + f * W * 0.06;
+    for (let x = Math.floor(mid - hw - 3); x <= mid + hw + 3; x++) {
+      const e = Math.abs(x + 0.5 - mid) - hw;
+      if (e < -1) blend(x, y, S.daylight[0], 0.34 * k);
+      else if (dither(x, y) < (3 - e) * 3) blend(x, y, S.daylight[1], 0.18 * k);
+    }
+  }
+  const rx = Math.round(W * 0.09), ry = Math.max(2, Math.round((H - horizon) * 0.05));
+  for (let y = ly - ry; y <= ly + ry; y++) for (let x = lx - rx; x <= lx + rx; x++) {
+    const d = Math.hypot((x - lx) / rx, (y - ly) / ry);
+    if (d < 1) {
+      if (noise(x, y, 46) < 0.55 * (1 - d) + 0.15) put(x, y, S.moss[(x + y) % 3 === 0 ? 0 : d < 0.5 ? 1 : 2]);
+      if (d < 0.8) blend(x, y, S.daylight[0], 0.18 * k);
+    }
+  }
+  for (let n = 0; n < 4; n++) {   // ferns in the light
+    const fx = Math.round(lx + (noise(n, 1, 47) - 0.5) * rx * 1.6), fy = Math.round(ly + (noise(n, 2, 47) - 0.5) * ry);
+    for (let k2 = 0; k2 < 4; k2++) { solid(fx - k2, fy - k2, S.moss[1]); solid(fx + k2, fy - k2, S.moss[0]); if (k2 > 1) solid(fx, fy - k2, S.moss[2]); }
+  }
+}
+
+/* ----- the Crystal Halls ----- */
+
+/** Giant crystal columns from the floor to the roof far off, and the lake's far shore under them. */
+function crystalHall() {
+  const v = deepVoid(), haze = v[v.length - 1];
+  const cols = W > 160 ? [0.17, 0.34, 0.68, 0.86] : [0.2, 0.78];
+  cols.forEach((at, i) => {
+    const x = Math.round(W * at), hw = Math.max(2, Math.round(W * (0.02 + noise(i, 1, 38) * 0.012)));
+    prism(x, horizon + 1, -Math.PI / 2 + (noise(i, 2, 38) - 0.5) * 0.1, horizon * 1.15, hw, i % 2 ? S.amethyst : S.crystal, { fade: 0.42, into: haze, halo: 3 });
+  });
+  // a far cluster of spires in the middle distance, half hidden
+  for (let n = 0; n < Math.round(W / 10); n++) {
+    const x = Math.round(W * (0.3 + rand() * 0.4));
+    prism(x, horizon, -Math.PI / 2 + (rand() - 0.5) * 0.5, horizon * (0.15 + rand() * 0.25), 1 + rand(), n % 2 ? S.amethyst : S.crystal, { fade: 0.62, into: haze });
+  }
+}
+
+/** Shafts of light falling through the halls, split into a rainbow at their edges; motes sparkle in them (drawDepths). */
+function prismBeams() {
+  const rainbow = ['#ff6a8a', '#ffc860', '#f8f888', '#78f0a0', '#68c8ff', '#b088ff'].map(abgr), roof = life.roof;
+  const beams = W > 160 ? [[0.36, 0.16], [0.62, -0.12], [0.8, -0.2]] : [[0.4, 0.14], [0.64, -0.16]];
+  life.beams = [];
+  for (const [at, lean] of beams) {
+    const x0 = Math.round(W * at), y0 = Math.max(0, roof[x0] - 1), y1 = groundAt(0.18 + Math.abs(lean));
+    const hw0 = Math.max(1, W * 0.012), hw1 = Math.max(3, W * 0.04);
+    life.beams.push({ x0, y0, y1, lean, hw0, hw1 });
+    for (let y = y0; y <= y1; y++) {
+      const f = (y - y0) / Math.max(1, y1 - y0), mid = x0 + lean * (y - y0), hw = hw0 + (hw1 - hw0) * f;
+      for (let x = Math.floor(mid - hw - 4); x <= mid + hw + 4; x++) {
+        const e = x + 0.5 - mid;
+        if (Math.abs(e) <= hw) blend(x, y, S.crystal[1], 0.16 + 0.06 * (1 - f));
+        else if (Math.abs(e) <= hw + 3 && dither(x, y) < 11) blend(x, y, rainbow[Math.min(5, Math.floor((e + hw + 3) / ((hw + 3) * 2) * 6))], 0.2 * (1 - f * 0.5));
+      }
+    }
+  }
+}
+
+/* ----- the Deep Core ----- */
+
+/** A red haze lying along the back, and a glowing fissure splitting the far dark. */
+function deepCore() {
+  const e = S.energy, cx = Math.round(W * (0.4 + noise(S.raw.seed & 255, 1, 48) * 0.2));
+  for (let y = Math.round(horizon * 0.55); y < horizon; y++) for (let x = 0; x < W; x++) {
+    const k = (y - horizon * 0.55) / (horizon * 0.45);
+    if (dither(x, y + (x >> 3)) < k * 9) blend(x, y, e[3], 0.32 * k);
+  }
+  let x = cx;
+  for (let y = Math.round(horizon * 0.12); y < horizon; y++) {   // the fissure, zigzagging down to the floor
+    x += noise(y, 2, 48) < 0.5 ? -1 : 1;
+    const w = 0.5 + (y / horizon) * 1.5;
+    for (let dx = -Math.ceil(w) - 2; dx <= w + 2; dx++) {
+      const a = Math.abs(dx);
+      if (a <= w) { put(x + dx, y, a < w * 0.4 ? e[0] : e[1]); life.seams.push([x + dx, y, y / 3]); }
+      else if (dither(x + dx, y) < 8) blend(x + dx, y, e[2], 0.5 - (a - w) * 0.15);
+    }
+  }
+}
+
+/** A boulder adrift on the energy: rock tapering to a point below, a crystal or two on top, its underside glowing.
+    Painted into a sprite once ([dx, dy, colour] from its top centre) and drawn every frame, bobbing. */
+function floaterSprite(r, gems) {
+  const R = deepRock(), e = S.energy, out = [];
+  const h = Math.round(r * 1.7);
+  for (let dy = 0; dy <= h; dy++) {
+    const half = dy < r * 0.5 ? r * (0.75 + dy / r * 0.5) : r * Math.max(0, 1 - (dy - r * 0.5) / (h - r * 0.5)) * 1.0;
+    for (let dx = -Math.ceil(half); dx <= half; dx++) {
+      const edge = Math.abs(dx) > half - 1 || dy === 0;
+      const c = dy > h - 2 ? e[1] : dy > h * 0.7 && dither(dx, dy) < 9 ? e[3] : edge ? R[4] : dy < 2 ? R[0] : dx < -half * 0.3 ? R[1] : dx > half * 0.4 ? R[3] : R[2];
+      out.push([dx, dy, c]);
+    }
+  }
+  if (gems) {
+    const [a] = deepGems();
+    for (const [ox, len] of [[-r * 0.3, r * 0.9], [r * 0.25, r * 0.6]]) for (let k = 0; k < len; k++) {
+      const w = k > len - 2 ? 0 : 1;
+      for (let dx = -w; dx <= w; dx++) out.push([Math.round(ox) + dx, -1 - k, dx < 0 ? a[1] : dx > 0 ? a[3] : a[2]]);
+      if (k === Math.floor(len) - 1) out.push([Math.round(ox), -1 - k, a[0]]);
+    }
+  }
+  out.bottom = h;
+  return out;
+}
+
+/* ----- the Energy Well ----- */
+
+/** The vast last cavern: the Well's emblem glowing faint on the far wall behind where the column rises, ledges
+    stepping down into the dark round it. */
+function wellCavern() {
+  const e = S.energy, cx = cx0(), cy = Math.round(horizon * 0.5), haze = deepVoid()[6];
+  for (const [r, k] of [[0.42, 0.22], [0.3, 0.3], [0.2, 0.38]]) {   // nested pentagons, Eternatus's mark
+    const R = Math.min(W, horizon * 1.6) * r;
+    for (let a = 0; a < Math.PI * 2; a += 0.6 / R) {
+      const seg = Math.PI * 2 / 5, s = Math.floor((a + Math.PI / 2) / seg), a0 = s * seg - Math.PI / 2, a1 = a0 + seg;
+      const f = (a + Math.PI / 2 - s * seg) / seg;
+      const x = cx + R * (Math.cos(a0) * (1 - f) + Math.cos(a1) * f), y = cy + R * 0.8 * (Math.sin(a0) * (1 - f) + Math.sin(a1) * f);
+      if (sky[(y | 0) * W + (x | 0)]) { blend(x, y, e[2], k); if (dither(x | 0, y | 0) < 6) blend(x, y + 1, e[3], k * 0.6); }
+    }
+  }
+  for (let y = Math.round(horizon * 0.7); y < horizon; y++) for (let x = 0; x < W; x++) {   // the light welling up from the pit
+    const k = (y - horizon * 0.7) / (horizon * 0.3), d = Math.abs(x - cx) / (W * 0.5);
+    if (d < 1 && dither(x, y) < 14) blend(x, y, e[2], 0.35 * k * (1 - d));
+  }
+  void haze;
+}
+
+/* ----- the walls and roof ----- */
+
+/** The arch of rock round the far dark, broken into lit facets (like the treasure grotto's), its rim lit by the glow;
+    from the Deep Core on, energy veins run through its cracks and pulse (drawDepths). */
+function caveWalls(roof) {
+  const st = stage(), R = deepRock(), G = 7, GY = 5, veined = st >= 2, rim = mixC(R[0], deepGlow()[2], 0.4);
+  const feature = (i, j) => [(i + noise(i, j, 33)) * G, (j + noise(i, j, 34)) * GY];
+  for (let y = 0; y < horizon; y++) for (let x0 = 0; x0 < W; x0++) {
+    const inner = roof[x0] - y;
+    if (inner <= 0) continue;
+    const x = x0 + Math.sin(y * 0.45) * 1.6, yy = y + Math.sin(x0 * 0.37) * 1.6;
+    const i0 = Math.floor(x / G), j0 = Math.floor(yy / GY);
+    let d1 = 1e9, d2 = 1e9, f = null;
+    for (let j = j0 - 1; j <= j0 + 1; j++) for (let i = i0 - 1; i <= i0 + 1; i++) {
+      const p = feature(i, j), d = Math.hypot(x - p[0], yy - p[1]);
+      if (d < d1) { d2 = d1; d1 = d; f = p; } else if (d < d2) d2 = d;
+    }
+    if (inner <= 1) { solid(x0, y, rim); continue; }
+    if (inner === 2 && dither(x0, y) < 8) { solid(x0, y, mixC(rim, R[2], 0.5)); continue; }
+    const deep = inner / (horizon * 0.16);
+    if (d2 - d1 < 1.1) { solid(x0, y, R[4]); continue; }
+    const lit = ((f[0] - x) / G + (f[1] - yy) / GY) * 0.8 + (dither(x0, y) / 16 - 0.5) * 0.35;
+    const shade = (lit > 0.35 ? 0 : lit > 0 ? 1 : lit > -0.35 ? 2 : 3) + Math.floor(Math.min(3, deep) + dither(x0 + 1, y) / 16);
+    solid(x0, y, shade > 4 && dither(x0, y) < 10 ? R[4] : R[Math.min(3, shade)]);
+  }
+  if (veined) wallVeins(roof);
+}
+
+/** From the Deep Core on, energy has split the walls: veins creeping up out of the floor and in from the rim, forking
+    as they go, glowing on the rock round them; a pulse runs along each, out from where the energy leaks in (drawDepths). */
+function wallVeins(roof) {
+  const e = S.energy, mask = new Uint8Array(W * H), count = Math.round(W / (stage() === 3 ? 6 : 9));
+  const rock = (x, y) => inside(x, y) && y < horizon && roof[x] - y > 1;
+  const grow = (x, y, a, len, d) => {
+    for (let k = 0; k < len; k++) {
+      a += (rand() - 0.5) * 0.8;
+      const dx = Math.cos(a), dy = Math.sin(a), m = Math.max(Math.abs(dx), Math.abs(dy));
+      x += dx / m; y += dy / m;
+      const ix = Math.round(x), iy = Math.round(y);
+      if (!rock(ix, iy)) return;
+      if (!mask[iy * W + ix]) { mask[iy * W + ix] = 1; life.veins.push([ix, iy, (d + k) / 3]); }
+      if (rand() < 0.06 && len > 6) grow(x, y, a + (rand() < 0.5 ? -1 : 1) * (0.6 + rand() * 0.6), len * 0.45, d + k);
+    }
+  };
+  for (let n = 0; n < count; n++) {
+    const side = n % 2 ? 1 : -1, x = Math.round(side < 0 ? rand() * W * 0.3 : W - 1 - rand() * W * 0.3);
+    if (n % 3 === 0) grow(x, horizon - 1, -Math.PI / 2 + (rand() - 0.5) * 0.8, horizon * (0.4 + rand() * 0.5), 0);   // up out of the floor
+    else grow(x, roof[x] - 2, side < 0 ? Math.PI + (rand() - 0.5) * 1.6 : (rand() - 0.5) * 1.6, horizon * (0.3 + rand() * 0.4), 0);   // in from the rim
+  }
+  for (const [x, y] of life.veins) {
+    solid(x, y, e[3]);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]]) {
+      const i = (y + dy) * W + x + dx;
+      if (inside(x + dx, y + dy) && !mask[i] && dither(x + dx, y + dy) < 9) blend(x + dx, y + dy, Math.abs(dx) + Math.abs(dy) > 1 ? e[4] : e[3], 0.45);
+    }
+  }
+}
+
+/** Crystals growing out of the walls, pointing into the cavern: a few small ones at the mouth, big hex prisms in the
+    halls, red ones further down. */
+function wallCrystals(roof) {
+  const st = stage(), [a, b] = deepGems(), count = [3, 7, 5, 4][st] + (W > 160 ? [2, 5, 3, 2][st] : 0), size = [0.12, 0.3, 0.2, 0.22][st];
+  for (let n = 0; n < count; n++) {
+    const side = n % 2 ? 1 : -1, x = Math.round(side < 0 ? W * (0.03 + rand() * 0.16) : W * (0.81 + rand() * 0.16));
+    const y = Math.min(horizon - 3, Math.max(3, roof[x] - 1 - Math.round(rand() * horizon * 0.25)));
+    if (roof[x] - y < 1 && y < horizon - 4) continue;
+    // aimed from the wall into the cavern, slanting up or down
+    const out = side < 0 ? 0 : Math.PI, tilt = (y < horizon * 0.5 ? 0.6 : -0.55) * (side < 0 ? 1 : -1) + (rand() - 0.5) * 0.4;
+    const s = horizon * size * (0.6 + rand() * 0.6);
+    gemCluster(x, y, s, n % 3 ? a : b, { up: out + tilt, n: st === 1 ? 4 : 3, spread: 0.7, halo: st === 0 ? 1 : 3, pal2: st === 1 ? b : null });
+  }
+}
+
+/** Stalactites along the roof, rock or crystal, lit from below at their tips; their tips drip (drawDepths). */
+function stalactites(roof) {
+  const st = stage(), R = deepRock(), [a, b] = deepGems(), tipLit = mixC(R[0], deepGlow()[1], 0.4), scale = Math.max(0.7, horizon / 70);
+  for (let x = 3 + Math.floor(rand() * 4); x < W - 3; x += 3 + Math.floor(rand() * 6)) {
+    const y0 = roof[x];
+    if (y0 >= horizon * 0.8 || (life.crack && Math.abs(x - life.crack.x) < life.crack.hw + 4)) continue;
+    const len = Math.round((3 + rand() * 9) * scale * (st === 3 ? 0.7 : 1)), w = 1 + Math.floor(rand() * (len > 8 ? 3 : 2));
+    if ((st === 1 || st === 2) && rand() < 0.45) {
+      const tip = prism(x, y0 - 2, Math.PI / 2 + (rand() - 0.5) * 0.2, len + 2, w * 0.8, rand() < 0.5 ? a : b, { halo: 2 });
+      life.twinkles.push({ x: tip.x, y: tip.y, phase: rand() * 80 });
+      continue;
+    }
+    for (let k = 0; k < len; k++) {
+      const half = Math.round((1 - k / len) * w);
+      for (let dx = -half; dx <= half; dx++) solid(x + dx, y0 + k, k >= len - 2 ? tipLit : dx < 0 ? R[1] : dx > 0 ? R[3] : R[2]);
+    }
+    if (rand() < 0.55) life.tips.push({ x, y: y0 + len, floor: horizon + 2 + Math.floor(rand() * (H - horizon) * 0.55), at: Math.floor(rand() * 90) });
+  }
+}
+
+/* ---------- the cavern's floor ---------- */
+
+/** Smooth value noise (0..1) at (x, y), for broad swells of light and dark. */
+function smooth(x, y, seed) {
+  const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+  const n = (a, b) => noise(a, b, seed);
+  return (n(i, j) * (1 - u) + n(i + 1, j) * u) * (1 - v) + (n(i, j + 1) * (1 - u) + n(i + 1, j + 1) * u) * v;
+}
+
+function depthsFloor() {
+  const st = stage(), F = S.floors[st], cx = W / 2, hot = st >= 2, span = Math.max(1, H - horizon), glow = deepGlow();
+  bands(horizon, H, F, 0.8);
+  // the rock underfoot: broad lighter and darker swells laid on the ground in perspective, dithered, fading into the dark
+  for (let y = horizon + 1; y < H; y++) {
+    const gy = (y - horizon) / span + 0.03, Zg = 8 / gy, fade = Math.min(1, gy * 3);
+    for (let x = 0; x < W; x++) {
+      const X = (x + 0.5 - cx) / W * 4 / gy;
+      const m = smooth(X * 0.5, Zg * 0.5, 70 + st) * 0.65 + smooth(X * 1.6, Zg * 1.6, 72 + st) * 0.35;
+      const lift = ((m - 0.5) * 2.4 + (dither(x, y) / 16 - 0.5) * 0.45) * fade;
+      if (lift > 0.5) tint(x, y, 1.14, 4); else if (lift > 0.2) tint(x, y, 1.06, 2); else if (lift < -0.45) tint(x, y, 0.8); else if (lift < -0.18) tint(x, y, 0.91);
+    }
+  }
+  if (st === 0) {   // a trodden way into the tunnel, worn smoother and paler than the rock round it
+    for (let y = horizon + 1; y < H; y++) {
+      const g = (y - horizon) / span, mid = W * 0.53 + (W * 0.5 - W * 0.53) * g + Math.sin(g * 5) * W * 0.03, hw = 1 + g * W * 0.2;
+      for (let x = Math.floor(mid - hw - 2); x <= mid + hw + 2; x++) {
+        const e2 = Math.abs(x + 0.5 - mid) - hw;
+        if (e2 < 0) tint(x, y, 1.1, 5); else if (e2 < 2 && dither(x, y) < 6) tint(x, y, 1.05, 2);
+      }
+    }
+  }
+  // the far glow lies on the floor too, at the back
+  for (let y = horizon + 1; y < horizon + span * 0.3; y++) for (let x = 0; x < W; x++) {
+    const d = Math.hypot((x + 0.5 - cx) / (W * 0.42), (y - horizon) / (span * 0.3));
+    if (d < 1 && dither(x, y) < (1 - d) * 26) blend(x, y, glow[3], [0.22, 0.26, 0.3, 0.42][st]);
+  }
+  for (let x = 0; x < W; x++) { tint(x, horizon, 0.6); tint(x, horizon + 1, 0.8); }   // the walls' shadow at their foot
+
+  // cracks: dark at the mouth and in the halls, running with energy from the Deep Core on; at the Well they all fan out from it
+  const well = wellAt(), e = S.energy;
+  const crackAt = (x, y) => {
+    if (!inside(x, y) || y <= horizon + 1) return;
+    if (hot) {
+      put(x, y, e[3]); life.seams.push([x, y, Math.hypot(x - well.x, (y - well.y) * 2.5) / 3]);
+      for (const dy of [-1, 1]) if (dither(x, y + dy) < 9) blend(x, y + dy, e[3], 0.4);
+    } else { put(x, y, F[5]); if (dither(x, y) < 6) put(x, y + 1, mixC(F[0], F[1], 0.5)); }
+  };
+  const walk = (x, y, a, len, branch, wander = 0.7) => {
+    for (let k = 0; k < len; k++) {
+      const depth = depthOf(y);
+      const dx = Math.cos(a), dy = Math.sin(a) * (0.45 + depth * 0.55), m = Math.max(Math.abs(dx), Math.abs(dy));
+      x += dx / m; y += dy / m;
+      a += (rand() - 0.5) * wander;
+      crackAt(Math.round(x), Math.round(y));
+      if (branch && rand() < (wander < 0.5 ? 0.012 : 0.04)) walk(x, y, a + (rand() < 0.5 ? -0.9 : 0.9), Math.min(len * 0.3, 14), false, wander);
+      if (y > H) return;
+    }
+  };
+  if (st === 3) {
+    const { rx } = { rx: Math.max(14, Math.round(W * 0.2)) };
+    for (let n = 0; n < 7; n++) {
+      const a = Math.PI * (0.08 + 0.84 * n / 6) + (rand() - 0.5) * 0.15;
+      walk(well.x + Math.cos(a) * rx, well.y + Math.sin(a) * 3, a, 400, true, 0.3);
+    }
+  } else {
+    for (let n = 0, count = hot ? 7 : 5; n < count; n++) {
+      const right = rand() < 0.5;
+      walk(right ? W * (0.55 + rand() * 0.4) : W * rand() * 0.45, horizon + 3 + rand() * span * 0.75, (right ? Math.PI : 0) + (rand() - 0.5) * 1.2, 12 + rand() * 30, true);
+    }
+  }
+
+  // pebbles and a few crystal shards
+  const [a, b] = deepGems();
+  for (let n = 0, count = Math.round(W * span / 150); n < count; n++) {
+    const x = Math.floor(rand() * W), y = horizon + 3 + Math.floor(rand() * (span - 3)), near = depthOf(y) > 0.45;
+    if (rand() < 0.25) {
+      const g = rand() < 0.5 ? a : b;
+      put(x, y, g[2]); put(x, y - 1, g[1]);
+      if (near) { put(x + 1, y, g[3]); put(x, y - 2, g[0]); }
+    } else { put(x, y, F[0]); if (near) { put(x + 1, y, F[0]); put(x, y + 1, F[5]); put(x + 1, y + 1, F[5]); } }
+  }
+  if (st === 0) puddles(3, false);
+  if (st === 1) { mirrorLake(); puddles(2, true); }
+  if (st === 3) theWell();
+}
+
+/** Still puddles that catch the glow, a glint or two on them. */
+function puddles(n, gems) {
+  const [w0, w1, w2] = S.water;
+  for (let i = 0; i < n + (W > 160 ? 2 : 0); i++) {
+    const cx = Math.round(W * (i % 2 ? 0.62 + rand() * 0.3 : 0.06 + rand() * 0.3)), cy = groundAt(0.3 + rand() * 0.55);
+    const rx = Math.round(4 + depthOf(cy) * W * 0.07), ry = Math.max(2, Math.round(rx * 0.32));
+    for (let y = cy - ry; y <= cy + ry; y++) for (let x = cx - rx; x <= cx + rx; x++) {
+      const d = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2;
+      if (d > 1) continue;
+      put(x, y, d > 0.7 ? (y < cy ? S.water[3] : w2) : y === cy - ry + 1 && dither(x, y) < 8 ? w1 : (x + y * 3) % 9 === 0 ? w0 : mixC(S.water[3], deepVoid()[6], 0.3));
+      bare(x, y);
+    }
+    life.twinkles.push({ x: cx - (rx >> 1), y: cy, phase: rand() * 80 });
+    if (gems) prism(cx + (rx >> 1), cy, -Math.PI / 2 + 0.3, ry * 4 + 3, 1, S.amethyst, { halo: 1 });
+  }
+}
+
+/** The Crystal Halls' lake: a still band across the back of the floor mirroring the hall above it, rippling. */
+function mirrorLake() {
+  const deep = Math.max(3, Math.round((H - horizon) * 0.075)), [w0, , w2] = S.water;
+  life.lake = { top: horizon + 1, deep };
+  for (let y = horizon + 1; y <= horizon + deep; y++) for (let x = 0; x < W; x++) {
+    const sy = 2 * horizon - y, sx = x + Math.round(Math.sin(y * 1.7) * 0.8);
+    const c = inside(sx, sy) ? px[sy * W + sx] : w2;
+    put(x, y, mixC(c, w2, 0.35 + (y - horizon) / deep * 0.2));
+    bare(x, y);
+  }
+  for (let x = 0; x < W; x++) if (dither(x, 1) < 7) put(x, horizon + deep + 1, mixC(w0, S.floors[1][1], 0.7));   // the near shore, catching the light
+}
+
+/** The Energy Well: a bottomless pit at the back of the floor, lit crimson from far below, crystal ledges round its rim. */
+function theWell() {
+  const { x: cx, y: cy } = wellAt(), rx = Math.max(14, Math.round(W * 0.2)), ry = Math.max(2, Math.round((H - horizon) * 0.06)), e = S.energy;
+  life.well = { x: cx, y: cy, rx, ry };
+  for (let y = cy - ry - 2; y <= cy + ry + 2; y++) for (let x = cx - rx - 3; x <= cx + rx + 3; x++) {
+    const d = Math.hypot((x + 0.5 - cx) / rx, (y + 0.5 - cy) / ry);
+    if (d <= 1) {
+      // the far inner wall, lit from below, then the dark, then the glow at the bottom
+      const far = y < cy;
+      put(x, y, d > 0.86 ? (far ? e[2] : e[4]) : far && d > 0.6 ? (dither(x, y) < 8 ? e[3] : e[4]) : d < 0.4 ? (dither(x, y) < 10 ? e[2] : e[3]) : e[4]);
+      bare(x, y);
+    } else if (d < 1.35 && y >= cy) { put(x, y, S.rocks[3][d < 1.15 ? 0 : 1]); bare(x, y); }
+  }
+  for (let n = 0; n < 9; n++) {   // crystal ledges round the rim
+    const a = Math.PI * (0.05 + 0.9 * n / 8), x = cx + Math.cos(a) * rx * 1.08, y = cy + Math.sin(a) * ry * 1.15 + 1;
+    prism(x, y, -Math.PI / 2 + Math.cos(a) * 0.5, 2 + noise(n, 1, 54) * 4 * (0.5 + Math.sin(a)), 0.9, n % 2 ? S.ruby : S.energy, { halo: 1 });
+  }
+}
+
+/* ---------- the near corners: what frames each place ---------- */
+
+function depthsFront() {
+  const st = stage(), R = deepRock(), [a, b] = deepGems(), near = H - horizon;
+  if (st === 0) daylightShaft();
+  if (st === 1) prismBeams();
+  if (st === 3) energyRing();
+  // a stalagmite or boulder in each near corner, crystals or mushrooms growing off it
+  const corner = (x0, x1, tall) => {
+    for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) {
+      const k = Math.abs(x - x0) / Math.abs(x1 - x0), h = Math.round(tall * Math.sqrt(Math.max(0, 1 - k * k)) + Math.sin(x * 1.7) * 0.8);
+      for (let y = H - h; y < H; y++) solid(x, y, y === H - h ? R[1] : y < H - h + 2 ? R[2] : R[4]);
+    }
+  };
+  corner(-1, Math.round(W * 0.17), Math.round(near * 0.18));
+  corner(W, Math.round(W * 0.85), Math.round(near * 0.14));
+  if (st === 0) {
+    stalagmite(Math.round(W * 0.05), H - Math.round(near * 0.14), Math.round(near * 0.32));
+    stalagmite(Math.round(W * 0.95), H - Math.round(near * 0.1), Math.round(near * 0.22));
+    for (const [at, k] of [[0.12, 0.13], [0.09, 0.1], [0.89, 0.1], [0.92, 0.13]]) shroom(Math.round(W * at), H - Math.round(near * k), 2 + Math.round(near / 70));
+    gemCluster(Math.round(W * 0.82), H - Math.round(near * 0.12), near * 0.12, S.crystal, { n: 3, halo: 2 });
+  }
+  if (st === 1) {
+    gemCluster(Math.round(W * 0.07), H - Math.round(near * 0.12), near * 0.36, S.crystal, { n: 5, halo: 3, pal2: S.amethyst });
+    gemCluster(Math.round(W * 0.93), H - Math.round(near * 0.09), near * 0.28, S.amethyst, { n: 4, halo: 3, pal2: S.crystal });
+    for (const [x, c] of [[Math.round(W * 0.08), S.crystal], [Math.round(W * 0.92), S.amethyst]]) {   // their light pooling on the floor
+      const cy = H - Math.round(near * 0.12), rx = Math.round(W * 0.14), ry = Math.round(near * 0.12);
+      for (let y = cy - ry; y < H; y++) for (let xx = x - rx; xx <= x + rx; xx++) {
+        const d = Math.hypot((xx - x) / rx, (y - cy) / ry);
+        if (d < 1 && dither(xx, y) < (1 - d) * 22) blend(xx, y, c[2], 0.2);
+      }
+    }
+  }
+  if (st === 2) {
+    gemCluster(Math.round(W * 0.06), H - Math.round(near * 0.14), near * 0.26, S.ruby, { n: 4, halo: 3, spread: 0.9 });
+    gemCluster(Math.round(W * 0.95), H - Math.round(near * 0.1), near * 0.2, S.ruby, { n: 3, halo: 3, pal2: S.amethyst, spread: 0.9 });
+    rubble(Math.round(W * 0.2), H - Math.round(near * 0.04), 5);
+    rubble(Math.round(W * 0.78), H - Math.round(near * 0.03), 4);
+  }
+  if (st === 3) {
+    brokenPillar(Math.round(W * 0.06), H - Math.round(near * 0.12), Math.round(near * 0.34));
+    brokenPillar(Math.round(W * 0.94), H - Math.round(near * 0.08), Math.round(near * 0.24));
+    gemCluster(Math.round(W * 0.15), H - Math.round(near * 0.05), near * 0.12, S.energy, { n: 3, halo: 2 });
+  }
+  void a; void b;
+}
+
+/** A pointed column of dripstone rising off the floor, banded, lit up its left side. */
+function stalagmite(cx, foot, h) {
+  const R = deepRock(), half = Math.max(2, Math.round(h * 0.22));
+  for (let k = 0; k < h; k++) {
+    const w = Math.max(0, Math.round(half * (1 - k / h) ** 0.8));
+    for (let dx = -w - 1; dx <= w + 1; dx++) {
+      const edge = Math.abs(dx) > w;
+      solid(cx + dx, foot - k, edge ? R[4] : dx < -w * 0.3 ? R[0] : dx > w * 0.4 ? R[3] : (k % 4 === 0 ? R[3] : R[1]));
+    }
+  }
+}
+
+/** A mushroom glowing in the dark: a pale stem, a luminous cap with brighter spots; its glow breathes (drawDepths). */
+function shroom(cx, foot, r) {
+  const [spot, cap, under, stem] = S.shroom, sh = r + 1;
+  for (let k = 0; k < sh; k++) { solid(cx, foot - k, stem); if (r > 2) solid(cx + 1, foot - k, mixC(stem, under, 0.5)); }
+  const cy = foot - sh;
+  for (let y = -r; y <= 0; y++) for (let x = -r - 1; x <= r + 1; x++) {
+    const d = (x / (r + 1)) ** 2 + (y / r) ** 2;
+    if (d <= 1) solid(cx + x, cy + y, y === 0 ? under : (x * 3 + y * 5) % 7 === 0 ? spot : d < 0.4 && y < -1 ? spot : cap);
+  }
+  life.shrooms.push({ x: cx, y: cy - (r >> 1), r: r + 2, phase: noise(cx, foot, 55) * 40 });
+}
+
+/** A scatter of broken rock and red shards. */
+function rubble(cx, foot, n) {
+  const R = deepRock();
+  for (let i = 0; i < n; i++) {
+    const x = cx + Math.round((noise(cx, i, 56) - 0.5) * 14), y = foot - Math.round(noise(cx, i, 57) * 3), s = 1 + Math.floor(noise(i, cx, 58) * 3);
+    for (let dy = -s; dy <= 0; dy++) for (let dx = -s; dx <= s; dx++) if (Math.abs(dx) + Math.abs(dy) <= s) solid(x + dx, y + dy, dy === -s ? R[0] : dx > 0 ? R[3] : R[2]);
+    if (i % 2) prism(x + s, y, -Math.PI / 2 - 0.4, 3 + s, 0.9, S.ruby, { halo: 1 });
+  }
+}
+
+/** A shattered crystal pillar: its stump, the break jagged and glowing. */
+function brokenPillar(cx, foot, h) {
+  const R = deepRock(), half = Math.max(3, Math.round(h * 0.2)), e = S.energy;
+  for (let k = 0; k < h; k++) {
+    const top = k > h - 4 - Math.round(noise(cx, 1, 59) * 3);
+    for (let dx = -half; dx <= half; dx++) {
+      if (top && noise(dx, k, 59) < (k - (h - 6)) / 6) continue;
+      solid(cx + dx, foot - k, Math.abs(dx) === half ? R[4] : dx < -half * 0.4 ? R[0] : dx > half * 0.5 ? R[3] : (k % 6 === 0 ? R[3] : R[1]));
+    }
+  }
+  for (let dx = -half + 1; dx < half; dx++) if (noise(dx, cx, 60) < 0.5) { put(cx + dx, foot - h + 4, e[1]); life.seams.push([cx + dx, foot - h + 4, dx]); }
+  for (let k = 3; k < h - 4; k += 5) { const dx = Math.round((noise(k, cx, 61) - 0.5) * half); put(cx + dx, foot - k, e[2]); life.seams.push([cx + dx, foot - k, k]); }
+}
+
+/** The Energy Well's floor: a ring of energy round the two Pokémon, rune marks between its lines, laid in perspective. */
+function energyRing() {
+  const G = arenaGround(), e = S.energy;
+  fillDisc(G, 1.05, (x, y, g) => {
+    const px1 = g.unit / (G.R * 1.05);   // one pixel there, in radii
+    if (Math.abs(g.d - 0.97) < px1 * 0.7) { life.seams.push([x, y, g.a * 6]); return e[3]; }
+    if (Math.abs(g.d - 0.7) < px1 * 0.6) return e[4];
+    if (Math.abs(g.d - 0.97) < px1 * 2.2 && dither(x, y) < 5) return null;
+    if (g.d > 0.74 && g.d < 0.9) {
+      const a = ((g.a / (Math.PI * 2)) * 15 + 15) % 1, r = (g.d - 0.74) / 0.16;
+      if (a > 0.35 && a < 0.65 && r > 0.25 && r < 0.75 && ((a * 20 | 0) + (r * 6 | 0)) % 2) return e[4];
+    }
+    return null;
+  });
+}
+
+/* ---------- landmarks: one per floor at an edge (landmark()), each place its own ---------- */
+
+function deepLamp(cx, foot) {
+  const [lit, body, shade, line] = S.wood;
+  for (let y = foot - 16; y <= foot; y++) { solid(cx, y, line); solid(cx + 1, y, lit); solid(cx + 2, y, shade); }
+  for (let x = cx; x <= cx + 6; x++) { solid(x, foot - 16, body); solid(x, foot - 17, line); }
+  const lx = cx + 6, ly = foot - 13, [mLit, mBody, , mLine] = S.metal;
+  solid(lx, ly - 2, mLine); solid(lx, ly - 1, mBody);
+  for (let y = 0; y < 5; y++) for (let x = -2; x <= 2; x++) solid(lx + x, ly + y, Math.abs(x) === 2 || y === 0 || y === 4 ? (x < 0 ? mLit : mLine) : y === 2 && x === 0 ? S.lamp[0] : S.lamp[1]);
+  life.lamps.push({ x: lx, y: ly + 2 });
+}
+
+function deepCart(cx, foot) {
+  const [mLit, mBody, mShade, mLine] = S.metal, [wLit, , wShade] = S.wood;
+  for (let x = -13; x <= 13; x++) { put(cx + x, foot + 1, mShade); put(cx + x, foot - 1, mLit); if ((x + 13) % 4 === 0) { put(cx + x, foot, wShade); put(cx + x + 1, foot, wLit); } }
+  for (let y = -8; y <= -2; y++) for (let x = -7 + (y > -4 ? 1 : 0); x <= 7 - (y > -4 ? 1 : 0); x++) {
+    solid(cx + x, foot + y, Math.abs(x) >= 6 || y === -8 ? (x < 0 ? mLit : mLine) : y === -6 ? mBody : (x + y) % 5 === 0 ? mShade : mBody);
+  }
+  for (const wx of [-4, 4]) for (const [dx, dy] of [[0, 0], [1, 0], [0, -1], [1, -1]]) solid(cx + wx + dx, foot + dy, mLine);
+  for (let x = -5; x <= 5; x += 2) {   // a load of crystals heaped in it
+    const g = x % 4 ? S.crystal : S.amethyst, tip = prism(cx + x, foot - 8, -Math.PI / 2 + x * 0.06, 2 + noise(x, 1, 62) * 3, 0.9, g);
+    life.twinkles.push({ x: tip.x, y: tip.y, phase: noise(x, 2, 62) * 80 });
+  }
+  for (let x = -13; x <= 13; x++) bare(cx + x, foot);
+}
+
+function deepGeode(cx, foot) {
+  const R = deepRock();
+  mound(cx, foot, 9, 6, [R[0], R[1], R[3], R[4]], (x, y, u, v) => {
+    const d = Math.hypot(u * 1.25, (v + 0.1) * 1.25);
+    if (d < 0.55) return (x + y) % 3 === 0 ? S.amethyst[0] : d < 0.3 ? S.amethyst[3] : (x - y) % 2 ? S.amethyst[1] : S.amethyst[2];
+    if (d < 0.7) return S.amethyst[4];
+    return null;
+  });
+  for (let n = 0; n < 4; n++) life.twinkles.push({ x: cx - 2 + n, y: foot - 6 - (n & 1), phase: n * 20 });
+}
+
+function deepStalagmites(cx, foot) {
+  stalagmite(cx - 4, foot, 18); stalagmite(cx + 3, foot + 1, 12); stalagmite(cx + 8, foot, 7);
+  for (let x = -8; x <= 11; x++) bare(cx + x, foot);
+}
+
+function deepShrooms(cx, foot) {
+  shroom(cx - 3, foot, 4); shroom(cx + 4, foot + 1, 3); shroom(cx + 8, foot, 2); shroom(cx - 8, foot + 1, 2);
+}
+
+function deepTablet(cx, foot) {
+  const R = S.rocks[1], glyphs = ['.#.#.', '#...#', '.###.', '#.#.#', '##..#', '.#.##'];
+  for (let y = -20; y <= 0; y++) for (let x = -7; x <= 7; x++) {
+    if (y < -18 && Math.abs(x) > 7 - (y + 21)) continue;
+    solid(cx + x, foot + y, Math.abs(x) === 7 || y === -20 ? R[4] : x < -4 ? R[0] : x > 4 ? R[3] : R[1]);
+  }
+  // Unown carved into it, glowing
+  for (let row = 0; row < 3; row++) for (let col = 0; col < 2; col++) {
+    const g = glyphs[(row * 2 + col + (S.raw.seed & 7)) % glyphs.length];
+    for (let k = 0; k < 5; k++) if (g[k] === '#') { const x = cx - 5 + col * 6 + k % 3, y = foot - 17 + row * 5 + Math.floor(k / 3) * 2; put(x, y, S.crystal[1]); life.seams.push([x, y, row * 3 + col]); }
+  }
+  for (let x = -8; x <= 8; x++) bare(cx + x, foot);
+}
+
+function deepSpire(cx, foot) {
+  const tip = prism(cx, foot, -Math.PI / 2 + 0.06, 22, 2.6, S.crystal, { halo: 3 });
+  life.twinkles.push({ x: tip.x, y: tip.y, phase: 0 });
+  gemCluster(cx - 4, foot + 1, 9, S.amethyst, { n: 3 });
+  gemCluster(cx + 5, foot + 1, 7, S.crystal, { n: 2 });
+}
+
+function deepArch(cx, foot) {
+  prism(cx - 7, foot, -Math.PI / 2 + 0.5, 20, 2, S.amethyst, { halo: 2 });
+  prism(cx + 7, foot, -Math.PI / 2 - 0.5, 20, 2, S.crystal, { halo: 2 });
+  gemCluster(cx, foot + 1, 6, S.amethyst, { n: 3 });
+}
+
+function deepCrystalPool(cx, foot) {
+  const [w0, w1, w2] = S.water, rx = 11, ry = 3;
+  for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
+    const d = (x / rx) ** 2 + (y / ry) ** 2;
+    if (d <= 1) { put(cx + x, foot + y, d > 0.7 ? w2 : (x + y) % 5 === 0 ? w0 : w1); bare(cx + x, foot + y); }
+  }
+  for (const [x, l, g] of [[-8, 9, S.crystal], [-4, 5, S.amethyst], [6, 11, S.crystal], [9, 6, S.amethyst]]) {
+    const tip = prism(cx + x, foot - (x > 0 ? 1 : 0), -Math.PI / 2 + x * 0.04, l, 1.2, g, { halo: 1 });
+    life.twinkles.push({ x: tip.x, y: tip.y, phase: x * 9 });
+  }
+}
+
+function deepVent(cx, foot) {
+  const e = S.energy, R = deepRock();
+  for (let x = -9; x <= 9; x++) for (let k = 0; k < 3 - Math.abs(x) / 4; k++) solid(cx + x, foot - k, k ? R[2] : R[3]);
+  let x = cx - 8;
+  for (let k = 0; k < 17; k++, x++) {   // the split, glowing
+    const y = foot - 1 + (k % 3 === 1 ? -1 : 0);
+    put(x, y, k > 4 && k < 12 ? e[0] : e[1]); life.seams.push([x, y, k]);
+  }
+  life.vents = [{ x: cx, y: foot - 2 }];
+  for (let x2 = -9; x2 <= 9; x2++) bare(cx + x2, foot);
+}
+
+function deepCorrupt(cx, foot) {
+  gemCluster(cx, foot, 20, S.ruby, { n: 5, halo: 3, spread: 0.8 });
+  for (let k = 0; k < 6; k++) { put(cx - 1 + (k & 1), foot - 4 - k * 2, S.energy[4]); }   // a dark heart in it
+}
+
+function deepObelisk(cx, foot) {
+  const R = S.rocks[2], e = S.energy;
+  for (let y = -22; y <= 0; y++) {
+    const half = y < -18 ? Math.max(0, 22 + y) : 4 + (y > -3 ? 1 : 0);
+    for (let x = -half; x <= half; x++) solid(cx + x, foot + y, Math.abs(x) === half ? R[4] : x < -1 ? R[0] : x > 1 ? R[3] : R[1]);
+  }
+  for (let a = 0; a < Math.PI * 2; a += 0.15) {   // Eternatus's mark, glowing on its face
+    const s = Math.floor((a + Math.PI / 2) / (Math.PI * 0.4)), a0 = s * Math.PI * 0.4 - Math.PI / 2, f = (a + Math.PI / 2 - s * Math.PI * 0.4) / (Math.PI * 0.4);
+    const x = cx + Math.round(3 * (Math.cos(a0) * (1 - f) + Math.cos(a0 + Math.PI * 0.4) * f)), y = foot - 11 + Math.round(3 * (Math.sin(a0) * (1 - f) + Math.sin(a0 + Math.PI * 0.4) * f));
+    put(x, y, e[1]); life.seams.push([x, y, a * 2]);
+  }
+  put(cx, foot - 11, e[0]);
+  for (let x = -6; x <= 6; x++) bare(cx + x, foot);
+}
+
+function deepFloater(cx, foot) {
+  // a boulder hovering over its own glowing shadow; it bobs in drawDepths
+  for (let x = -6; x <= 6; x++) if (dither(cx + x, foot) < 12 - Math.abs(x)) blend(cx + x, foot, S.energy[3], 0.6);
+  (life.floaters ||= []).push({ x: cx, y: foot - 20, sprite: floaterSprite(6, true), phase: 0, onGround: true });
+}
+
+const DEEP_MARKS = [
+  { lamp: deepLamp, cart: deepCart, geode: deepGeode, stalagmites: deepStalagmites, shrooms: deepShrooms },
+  { tablet: deepTablet, spire: deepSpire, arch: deepArch, pool: deepCrystalPool, geode: deepGeode },
+  { vent: deepVent, corrupt: deepCorrupt, obelisk: deepObelisk, floater: deepFloater },
+];
+
+/* ---------- what moves ---------- */
+
+function makeDepthsLife() {
+  const st = stage(), cold = st < 2;
+  life.deepMotes = Array.from({ length: Math.round(W / (cold ? 14 : 7)) }, () => ({
+    x: rand() * W, y: rand() * H, vy: cold ? 0.08 + rand() * 0.1 : 0.2 + rand() * 0.35, phase: rand() * 40, red: !cold && rand() < 0.75,
+  }));
+  life.drops = life.tips.map(tip => ({ ...tip }));
+  life.bat = null; life.nextBat = tick + FPS * (3 + Math.floor(rand() * 6));
+  if (st >= 2) {
+    life.floaters ||= [];
+    const n = st === 2 ? 3 + (W > 160 ? 2 : 0) : 0;
+    for (let i = 0; i < n; i++) {
+      const r = 3 + Math.floor(rand() * 5);
+      life.floaters.push({ x: Math.round(W * (0.22 + rand() * 0.56)), y: Math.round(horizon * (0.2 + rand() * 0.45)), sprite: floaterSprite(r, r > 3), phase: rand() * 40, far: true });
+    }
+  }
+  if (st === 3) {
+    life.monoliths = Array.from({ length: 5 }, (_, i) => ({ a: i * Math.PI * 2 / 5, h: 5 + Math.round(noise(i, 1, 63) * 4), hw: 3 + (i % 2), bob: rand() * 40, tilt: (noise(i, 2, 63) - 0.5) * 0.5 }));
+  }
+}
+
+/** How the Well behaves this frame: the column's width and the vortex's reach and spin; its boss prelude shapes them. */
+function wellState(t) {
+  const calm = { width: 1, vortex: 0.22, spin: t * 0.06, red: 0, speed: 1 };
+  if (!bossPrelude) return calm;
+  const age = preludeAge(t);
+  if (bossPrelude.phase === 'awake') return { width: 1.5, vortex: 0.62, spin: t * 0.09, red: 0.16, speed: 1.6 };
+  if (bossPrelude.phase === 'portal') return { width: 3, vortex: 0.9, spin: t * 0.3, red: 0.35, speed: 3 };
+  if (age < CORE_AT) { const s = age / CORE_AT; return { width: Math.max(0.15, 1 - s * 0.85), vortex: 0.22 - s * 0.14, spin: t * (0.06 + s * 0.2), red: s * 0.3, speed: 1 + s * 4 }; }
+  const e = age - CORE_AT;
+  return { width: 1.5 + 2.5 / (1 + e * 0.6), vortex: Math.min(0.75, 0.15 + e * 0.12), spin: t * 0.22, red: 0.3, speed: 2.5 };
+}
+
+function drawDepths(t) {
+  const L = life, st = stage(), e = S.energy;
+
+  for (const g of L.glimmers) if (Math.sin((t + g.phase) / 7) > 0.8) putSky(g.x, g.y, g.c);
+
+  if (L.veins.length || L.seams.length) {   // the energy pulses through the veins and seams, towards the Well
+    const shade = (w) => (w > 0.8 ? e[0] : w > 0.4 ? e[1] : w > -0.2 ? e[2] : e[3]);
+    for (const [x, y, d] of L.veins) put(x, y, shade(Math.sin(t / 4 - d) * 1.6 - 0.6));
+    for (const [x, y, d] of L.seams) put(x, y, shade(Math.sin(t / (st === 3 ? 2 : 3) + d) * 1.5 - 0.5));
+  }
+
+  if (st === 3) drawEnergyWell(t);
+
+  if (L.floaters) for (const f of L.floaters) {
+    const bob = Math.round(Math.sin((t + f.phase) / 6) * (f.far ? 1 : 1.5)), p = f.far ? putSky : put;
+    for (const [dx, dy, c] of f.sprite) p(f.x + dx, f.y + dy + bob, c);
+    if (Math.sin((t + f.phase) / 3) > 0.3) p(f.x, f.y + f.sprite.bottom + bob + 2, e[1]);   // a drip of energy off its point
+  }
+
+  if (L.beams) for (const b of L.beams) {   // motes turning in the halls' light
+    for (let n = 0; n < 6; n++) {
+      const f = ((t * 0.02 + n / 6 + b.x0 * 0.01) % 1), y = b.y0 + (b.y1 - b.y0) * f, hw = b.hw0 + (b.hw1 - b.hw0) * f;
+      const x = b.x0 + b.lean * (y - b.y0) + Math.sin(t / 5 + n * 2) * hw * 0.7;
+      if (Math.sin(t / 2 + n) > 0) put(x, y, S.crystal[0]);
+    }
+  }
+
+  if (L.shaft) for (let n = 0; n < 8; n++) {   // dust turning in the daylight
+    const s = L.shaft, f = ((t * 0.012 + n / 8) % 1), y = s.y0 + (s.y1 - s.y0) * f, x = s.x0 + (s.x1 - s.x0) * f + Math.sin(t / 6 + n * 3) * 2;
+    if (Math.sin(t / 3 + n) > 0.2 && s.k > 0.3) put(x, y, S.daylight[0]);
+  }
+
+  for (const s of L.shrooms) {   // the mushrooms' glow breathes
+    const k = 0.5 + 0.5 * Math.sin((t + s.phase) / 6);
+    for (let dy = -s.r; dy <= s.r; dy++) for (let dx = -s.r - 1; dx <= s.r + 1; dx++) {
+      const d = Math.hypot(dx / (s.r + 1), dy / s.r);
+      if (d > 0.55 && d < 1 && dither(s.x + dx, s.y + dy) < k * 6) put(s.x + dx, s.y + dy, S.shroom[2]);
+    }
+  }
+
+  for (const l of L.lamps) {
+    const f = Math.sin(t / 2 + l.x) + Math.sin(t / 5.3);
+    put(l.x, l.y, f > -0.5 ? S.lamp[0] : S.lamp[1]);
+    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) if ((dx || dy) && dx * dx + dy * dy <= 14 + f * 2 && dither(l.x + dx, l.y + dy) < 3) blend(l.x + dx, l.y + dy, S.lamp[1], 0.4);
+  }
+
+  if (L.vents) for (const v of L.vents) for (let n = 0; n < 6; n++) {   // sparks spat up out of the vent
+    const a = ((t * 0.9 + n * 7) % 24) / 24, x = v.x + Math.sin(n * 2.3 + t / 7) * 6 * a, y = v.y - a * 22;
+    if (a < 0.9) put(x, y, e[n % 3]);
+  }
+
+  for (const g of L.twinkles) {
+    const s = Math.sin((t + g.phase) / 6);
+    if (s > 0.9) { put(g.x, g.y, S.crystal[0]); put(g.x - 1, g.y, S.crystal[1]); put(g.x + 1, g.y, S.crystal[1]); put(g.x, g.y - 1, S.crystal[1]); put(g.x, g.y + 1, S.crystal[1]); }
+    else if (s > 0.7) put(g.x, g.y, S.crystal[0]);
+  }
+
+  for (const d of L.drops) {   // water dripping off the stalactites, a splash where it lands
+    const a = (t + d.at) % 90;
+    if (a < 50) { if (a > 40 && a % 2) put(d.x, d.y, S.water[0]); continue; }
+    const y = d.y + ((a - 50) ** 2) * 0.12;
+    if (y < d.floor) put(d.x, y, S.water[0]);
+    else if (y < d.floor + 8) { put(d.x - 1, d.floor - 1, S.water[1]); put(d.x + 1, d.floor - 1, S.water[1]); put(d.x - 2, d.floor, S.water[2]); put(d.x + 2, d.floor, S.water[2]); }
+  }
+
+  for (const m of L.deepMotes) {
+    m.y -= m.vy; m.x += Math.sin((t + m.phase) / 6) * 0.25;
+    if (m.y < -1) { m.y = H + 1; m.x = rand() * W; }
+    const f = Math.sin((t + m.phase) / 4);
+    if (f > -0.2) put(m.x, m.y, m.red ? e[f > 0.6 ? 0 : f > 0.2 ? 1 : 2] : S.mote[f > 0.5 ? 0 : 1]);
+  }
+
+  if (st < 2) {   // now and then a Zubat flits across the far dark
+    if (!L.bat && t >= L.nextBat) L.bat = { x: rand() < 0.5 ? -4 : W + 4, y: Math.round(horizon * (0.25 + rand() * 0.5)), dir: 0 };
+    if (L.bat) {
+      const b = L.bat;
+      if (!b.dir) b.dir = b.x < 0 ? 1 : -1;
+      b.x += b.dir * 1.6;
+      const y = b.y + Math.round(Math.sin(t / 2) * 2), up = t % 2, c = deepRock()[4];
+      putSky(b.x, y, c); putSky(b.x - 1, y + (up ? -1 : 1), c); putSky(b.x + 1, y + (up ? -1 : 1), c); putSky(b.x - 2, y + (up ? -1 : 0), c); putSky(b.x + 2, y + (up ? -1 : 0), c);
+      if (b.x < -6 || b.x > W + 6) { L.bat = null; L.nextBat = t + FPS * (6 + Math.floor(rand() * 10)); }
+    }
+  }
+}
+
+/* ----- the Energy Well's column, its vortex on the roof and the monoliths circling it ----- */
+
+function drawEnergyWell(t) {
+  const s = wellState(t), { x: cx } = wellAt(), e = S.energy, roofTop = life.roof[cx] ?? Math.round(horizon * 0.05);
+  if (s.red) veil(e[4], s.red, true);
+  const orbit = (m) => {
+    const a = m.a + t * 0.035 * s.speed, near = Math.sin(a);
+    return { x: cx + Math.cos(a) * W * 0.3, y: horizon * 0.52 + near * horizon * 0.1 + Math.sin((t + m.bob) / 6) * 1.5 - (s.speed - 1) * 2, k: 0.75 + near * 0.3, near };
+  };
+  const monolith = (m) => {
+    const o = orbit(m), h = Math.round(m.h * o.k * (horizon / 60)), hw = Math.max(1, Math.round(m.hw * o.k)), R = S.rocks[2];
+    for (let k = -h; k <= h; k++) {   // a shard of black crystal, edged in the energy it drinks
+      const w = Math.round(hw * (1 - Math.abs(k) / (h + 1)) + 0.4), sx = Math.round(k * m.tilt);
+      for (let dx = -w; dx <= w; dx++) put(o.x + dx + sx, o.y + k, Math.abs(dx) === w ? (dx < 0 ? e[1] : e[3]) : dx === 0 ? (k < 0 ? R[0] : R[1]) : dx < 0 ? R[1] : R[3]);
+    }
+    put(o.x, o.y, e[0]); put(o.x, o.y - 1, e[1]);
+  };
+  for (const m of life.monoliths) if (orbit(m).near < 0) monolith(m);
+  energyColumn(cx, horizon + 2, roofTop, Math.max(1.5, W * 0.03 * s.width), t);
+  vortex(cx, roofTop + 2, Math.round(W * s.vortex), s.spin, 0.85);
+  for (const m of life.monoliths) if (orbit(m).near >= 0) monolith(m);
+}
+
+/** A column of energy from the floor to the roof: a white-hot core, crimson edges, bands spiralling up it, a glow round it. */
+function energyColumn(cx, from, to, hw, t) {
+  const e = S.energy;
+  for (let y = Math.max(0, to); y <= from; y++) {
+    const w = hw * (1 + 0.15 * Math.sin(y / 3 + t * 0.8)) + (y > from - 4 ? (y - from + 4) * 0.6 : 0);
+    for (let dx = -Math.ceil(w * 2.2); dx <= w * 2.2; dx++) {
+      const rel = Math.abs(dx) / Math.max(0.5, w), x = cx + dx;
+      if (rel > 1) { if (rel < 2.2 && dither(x, y + t) < (2.2 - rel) * 6) blend(x, y, e[2], 0.35); continue; }
+      const band = ((y + t * 3 + dx * 2) % 8 + 8) % 8 < 2;
+      put(x, y, rel < 0.3 ? e[0] : rel < 0.6 ? (band ? e[0] : e[1]) : rel < 0.85 ? (band ? e[1] : e[2]) : e[3]);
+    }
+  }
+}
+
+/** Eternatus's vortex on the roof: red cloud wound into spiral arms round the top of the column, `R` wide. */
+function vortex(cx, cy, R, spin, k) {
+  if (R < 3) return;
+  const e = S.energy, ry = R * 0.38;
+  for (let y = Math.max(0, Math.floor(cy - ry)); y <= cy + ry; y++) for (let x = Math.floor(cx - R); x <= cx + R; x++) {
+    const dx = (x - cx) / R, dy = (y - cy) / ry, r = Math.hypot(dx, dy);
+    if (r > 1 || !inside(x, y)) continue;
+    const arm = Math.sin(Math.atan2(dy, dx) * 3 + Math.log(r + 0.05) * 5 - spin);
+    if (arm < -0.1 && r > 0.15) continue;
+    const fade = (1 - r) * 18 * k;
+    if (dither(x, y) >= fade + 2) continue;
+    put(x, y, r < 0.12 ? e[0] : arm > 0.75 ? e[1] : arm > 0.35 ? e[2] : r > 0.7 ? e[4] : e[3]);
+  }
+}
+
+/* ----- the Energy Well's boss prelude: Eternatus wakes -----
+   The seal's hum, the cavern shakes; the column is drawn back down into the Well and the vortex shrinks while every seam
+   lights from the edges in, the monoliths whirl faster and the dark reddens. Eternatus's core rises out of the pit, a
+   five-sided crystal of light swelling over the floor; then it bursts: a white flash, the column erupts three times as
+   wide, a ring of force races out across the floor, crystal shards blow off the walls and the vortex spreads over the
+   whole roof, the Darkest Day. Then the energy floods out of the Well over everything (the portal) into the white. */
+
+const CORE_AT = 18;   // frames into the wake (8 fps) when the core bursts; the `eruption` and `core-surge` sounds are timed to it
+
+function depthsWake(t) {
+  const age = preludeAge(t), e = S.energy, { x: cx, y: cy } = wellAt();
+  if (bossPrelude.phase === 'awake') return 0;
+  const reach = Math.min(1, age / 14);
+  // the seams light from the edges in, towards the Well
+  const far = Math.hypot(W, H);
+  for (const [x, y] of life.seams) if (Math.hypot(x - cx, (y - cy) * 2.5) > far * (1 - reach) * 0.6) put(x, y, (x + y + age) % 3 ? e[1] : e[0]);
+  if (age < CORE_AT) {
+    for (let i = 0; i < 30; i++) {   // motes drawn in towards the Well, spiralling
+      const p = ((age / CORE_AT) * 2 + noise(i, 64, 0)) % 1, a = noise(i, 64, 1) * Math.PI * 2 + p * 4, r = (1 - p) * W * 0.6;
+      put(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.35 - (1 - p) * horizon * 0.3, e[i % 3]);
+    }
+    if (age > 7) core(cx, cy - 1 - Math.round((age - 7) * horizon * 0.035), Math.min(W, H) * 0.012 * (age - 6), age);
+    return age > 12 ? 2 : age > 3 ? 1 : 0;
+  }
+  const b = age - CORE_AT;
+  if (b === 0) flashScreen(1.4, 80);
+  if (b < 6) shockRing(cx, cy, b * W * 0.16, [e[0], e[2]], 0.3);
+  for (let i = 0; i < 26; i++) {   // shards blown off the walls
+    const side = i % 2 ? 1 : -1, a = noise(i, 65, 0), x = side < 0 ? W * a * 0.25 : W - W * a * 0.25, y = horizon * (0.15 + noise(i, 65, 1) * 0.7);
+    const fx = x - side * b * (2 + noise(i, 65, 2) * 5), fy = y + b * b * 0.35 - b * 1.5;
+    if (fy < H) { put(fx, fy, i % 3 ? S.ruby[1] : S.crystal[0]); put(fx + side, fy, S.ruby[3]); }
+  }
+  core(cx, cy - 1 - Math.round(11 * horizon * 0.035), Math.min(W, H) * (0.13 + b * 0.02), age);
+  return b < 5 ? 2 : 1;
+}
+
+/** Eternatus's core: a five-sided crystal of energy, spinning, cut into facets round a white heart, a ray of light off
+    each point. */
+function core(cx, cy, r, age) {
+  if (r < 1) return;
+  const e = S.energy, spin = age * 0.25, seg = Math.PI * 0.4;
+  for (let n = 0; n < 5; n++) {   // the rays
+    const a = spin + n * seg - Math.PI / 2, len = r * (1.9 + 0.3 * Math.sin(age * 0.9 + n));
+    for (let k = r; k < len; k += 0.6) {
+      const w = (1 - (k - r) / (len - r)) * Math.max(0.6, r * 0.09);
+      for (let s = -w; s <= w; s += 0.6) put(cx + Math.cos(a) * k - Math.sin(a) * s, cy + Math.sin(a) * k + Math.cos(a) * s, k > len * 0.8 ? e[2] : Math.abs(s) < w * 0.4 ? e[0] : e[1]);
+    }
+  }
+  for (let y = Math.floor(cy - r - 1); y <= cy + r + 1; y++) for (let x = Math.floor(cx - r - 1); x <= cx + r + 1; x++) {
+    const dx = x + 0.5 - cx, dy = y + 0.5 - cy, a = Math.atan2(dy, dx) - spin + Math.PI / 2, d = Math.hypot(dx, dy);
+    const f = ((a % seg) + seg) % seg, edge = r * Math.cos(seg / 2) / Math.cos(f - seg / 2);
+    if (d > edge + 1) continue;
+    const rel = d / edge, facet = Math.floor((((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / seg), lit = (f < seg / 2) !== (facet % 2 === 0);
+    put(x, y, d > edge ? e[4] : rel > 0.84 ? e[3] : rel < 0.24 ? e[0] : rel < 0.4 ? e[1] : lit ? e[1] : e[2]);
+  }
+}
+
+/** The energy floods out of the Well: a swell of crimson light, laced with hexagons like the Darkest Day's sky, over
+    everything; then the paired white flashes. */
+function depthsPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  const e = S.energy, { x: cx, y: cy } = wellAt(), R = Math.hypot(W, H) * 1.1 * Math.min(1, ((age + 1) / 6) ** 1.6), hex = Math.max(5, Math.round(Math.min(W, H) / 9));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const d = Math.hypot(x - cx, (y - cy) * 1.4), edge = R + Math.sin(Math.atan2(y - cy, x - cx) * 7 + age * 2) * 3;
+    if (d > edge + 3) continue;
+    if (d > edge) { if (dither(x, y + age) < 7) put(x, y, e[2]); continue; }
+    // a hex grid (cube coordinates, rounded): how near the pixel is to its cell's edge
+    const q = (0.577 * (x - cx) - (y - cy) / 3) / hex, r = (2 / 3) * (y - cy) / hex, sq = -q - r;
+    let rq = Math.round(q), rr = Math.round(r), rs = Math.round(sq);
+    const eq = Math.abs(rq - q), er = Math.abs(rr - r), es = Math.abs(rs - sq);
+    if (eq > er && eq > es) rq = -rr - rs; else if (er > es) rr = -rq - rs; else rs = -rq - rr;
+    const dq = q - rq, dr = r - rr, ds = sq - rs, rel = d / Math.max(1, edge);
+    const line = Math.max(Math.abs(dq - dr), Math.abs(dr - ds), Math.abs(ds - dq)) > 0.85;
+    put(x, y, line ? (rel < 0.5 ? e[0] : e[1]) : rel < 0.3 ? e[0] : ((d - age * 4) / 5 | 0) % 2 ? e[2] : e[3]);
+  }
+  core(cx, cy - 1 - Math.round(11 * horizon * 0.035), Math.min(W, H) * (0.25 + age * 0.05), age + 30);
+  return frame < 6 ? 2 : 0;
+}
+
+LANDMARKS.depths = DEEP_MARKS;
+
 /* ---------- helpers ---------- */
 
 function colours(s) {

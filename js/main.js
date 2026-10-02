@@ -286,7 +286,8 @@ function init() {
 const PEEK_FLOORS = 11, PLACE_START = [0, 3, 6, 10];
 function peekSafari(params) {
   document.body.classList.add('scene-peek');
-  let i = Math.max(0, SAFARI_AREAS.findIndex(a => a.id === params.get('area')));
+  const AREAS = BIOMES.some(b => b.id === params.get('area')) ? BIOMES : SAFARI_AREAS;   // a main biome too: ?area=depths
+  let i = Math.max(0, AREAS.findIndex(a => a.id === params.get('area')));
   let floor = PLACE_START[Math.min(3, Math.max(0, +params.get('stage') || 0))];
   const kind = params.get('kind') || 'wild', label = el('div', 'peek-label');
   document.body.append(label);
@@ -295,7 +296,7 @@ function peekSafari(params) {
   // the boss's place plays its prelude too, after its walk-on; a tap there plays it again, a tap on the label walks on
   const play = (steps) => { busy = true; steps.reduce((done, step) => done.then(step), Promise.resolve()).then(() => { busy = false; }); };
   const show = () => {
-    const area = SAFARI_AREAS[i], stage = PLACE_START.findLastIndex(f => floor >= f);
+    const area = AREAS[i], stage = PLACE_START.findLastIndex(f => floor >= f);
     const key = i * 4 + stage, steps = [];
     if (key !== shown && films) steps.push(() => stage === 0 ? biomeIntro(area, i + 1) : placeIntro(area, stage, walker));
     shown = key;
@@ -309,7 +310,7 @@ function peekSafari(params) {
   addEventListener('pointerup', (e) => {
     if (busy) return;
     if (boss && e.target !== label) { play([bossArenaPrelude]); return; }
-    if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % SAFARI_AREAS.length; }
+    if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % AREAS.length; }
     show();
   });
   show();

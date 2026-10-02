@@ -124,6 +124,11 @@ const SOUNDS = {
   'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
   gust:         { synth: hotGust },          // the Wastes' intro: a hot wind as you burst out of the ash cloud...
   'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
+  // the Crystal Depths (scene.js, depths-intro.js): the Energy Well's prelude opens on gate-hum and quake, then Eternatus's core bursts
+  'core-surge': { synth: ac => powerSurge(ac, [73, 110, 147, 156, 220, 311], 3) },
+  'crystal-0':  { synth: ac => windChime(ac, 2349), gain: 0.5 },   // ...and its intro: crystals chiming as the light catches them
+  'crystal-1':  { synth: ac => windChime(ac, 2794), gain: 0.5 },
+  'crystal-2':  { synth: ac => windChime(ac, 3136), gain: 0.5 },
   // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
   'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
   flock:        { synth: flockBurst },       // ...and its birds burst out
