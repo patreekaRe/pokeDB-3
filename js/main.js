@@ -34,7 +34,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, peekEvent, isPeeking } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound } from './audio.js';
@@ -48,6 +48,7 @@ import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
 import { initPokedex, openPokedex } from './pokedex.js';
+import { initSafariDex, openSafariDex } from './safaridex.js';
 import { initCloud } from './cloud.js';
 import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
 import { showPlaceScene } from './scene.js';
@@ -196,7 +197,9 @@ function init() {
   initCardIndex();
   $('index-btn').addEventListener('click', () => openCardIndex(pickedStarter()?.type));
   initPokedex();
-  $('dex-btn').addEventListener('click', () => openPokedex(runBiome()));
+  initSafariDex();
+  // in a Safari run the button opens the Safari Pokédex on the run's area: its catches never touch the main one
+  $('dex-btn').addEventListener('click', () => (runSafariArea() ? openSafariDex(runSafariArea()) : openPokedex(runBiome())));
   $('stats-btn').addEventListener('click', openStats);
   $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();

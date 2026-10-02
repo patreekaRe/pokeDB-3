@@ -951,13 +951,26 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    A throw is a turn of damage taken, so catching never makes a run easier than knocking out; no retune. Checked headless at 390x844: catches, misses, the signature card, a rare spawn running off,
    Rock, the Game Corner row, no console errors. Not checked on a real phone.
 3. **The Safari Pokédex**: its own window/tab, entries by area, caught/seen marks, area progress.
+   **Built 2026-10-02** (cloud; detail in `docs/reference/safari.md`): `#safari-dex-dialog` (`js/safaridex.js`), the main
+   Pokédex's look, a tab per area (wilds, then its rare spawns with a gold ✦), each a ??? silhouette until seen, its
+   sprite once seen, a Poké Ball once caught; a caught entry's page shows its signature card. Each area's box counts
+   caught / seen / total. Opened from a Collection card (a ??? until `dex.complete`), a Safari tab on the main Pokédex
+   (same lock), and the Poké Ball menu's Pokédex button during a Safari run (on the run's area). The pages come from
+   `SAFARI_AREAS` (`SAFARI_DEX_PAGES` in `js/data/safari.js`), so phase 4's Pokémon join it by being listed in an area;
+   numbers follow `SAFARI_ROSTER` order (`tests/safaridex.test.mjs`). No reward for a complete area yet: Claude's
+   proposal, for the user to settle, is a small Safari perk per area (e.g. its rare spawns' odds up when that area comes
+   round) plus PokéCoins, like the main Pokédex's pages. Checked headless at 390x844 and 1280x800, no console errors;
+   the in-run button only by reading the code.
 4. **The roster at scale**: role templates, then batches of ~50 Pokémon a session.
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 3): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0: the Safari
-Zone daily run' and docs/reference/safari.md. Build phase 3, the Safari Pokédex: its own window or tab (from the Safari
-Zone gem or the Collection), entries by area from `save.safariDex` (seen / caught marks, the rare spawns too), each
-area's progress. Ask me about anything the plan leaves open first. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (phase 4): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0: the Safari
+Zone daily run' and docs/reference/safari.md. Build phase 4, the roster at scale: ~10 enemy role templates (striker,
+tank, debuffer, status-spammer...) scaled by the area's place in the run, so a new Safari Pokémon is one data line
+(species, type, area, template, signature move and its card), then a first batch of ~50 Gen 1-5 Pokémon spread over the
+6 areas by habitat, with PokeAPI black-white animated sprites and a signature card each (no same cost + same text as the
+run's pools). They appear in the Safari Pokédex on their own (it's built from `SAFARI_AREAS`). Bot-check a few Safari
+days before and after. Also settle with me whether a complete area gives a reward. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 

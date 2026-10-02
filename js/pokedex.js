@@ -18,7 +18,8 @@ import { modsFor } from './data/difficulty.js';
 import { DEX_PAGES, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
-import { $, el, openDialog, itemSprite } from './ui.js';
+import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
+import { openSafariDex } from './safaridex.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
 const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defend: ['🛡️', 'Block'], buff: ['💪', 'Buff'], status: ['🗂️', 'Status'] };
@@ -238,6 +239,7 @@ function renderMystery() {
 
 function render() {
   const save = getSave();
+  $('dex-safari-tab').hidden = !save.dex.complete;
   if (page === REWARDS) { renderRewards(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   if (page === MYSTERY) { renderMystery(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   const seen = new Set(save.dex.seen);
@@ -355,6 +357,14 @@ export function initPokedex() {
   };
   tabs.replaceChildren(...DEX_PAGES.map((p, i) => tab(i, `biome-${p.biome}`, ['🌳', '⛩️', '🌋'][i], p.name.split(' ').pop())),
     tab(MYSTERY, 'biome-mystery', '🔒', '???'), tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
+  // the Safari Pokédex is its own window: this tab hands over to it, once the Safari Zone is open
+  const safari = el('button', 'index-tab dex-safari-tab');
+  safari.type = 'button';
+  safari.id = 'dex-safari-tab';
+  safari.title = 'The Safari Zone\'s own Pokédex';
+  safari.append(el('span', 'index-tab-icon', '🌿'), el('span', 'index-tab-label', 'Safari'));
+  safari.addEventListener('click', () => { closeDialog('dex-dialog'); openSafariDex(); });
+  tabs.append(safari);
   tabs.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;

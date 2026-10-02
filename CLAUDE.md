@@ -414,6 +414,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Safari Pokémon needs one. `save.safariDex` and `save.balls` (the Game Corner's 4th row). Rare spawns (`markRares()`) run
   off after 4 turns; Bait / Rock (`SAFARI_ONLY_CARDS`) are Safari-only rewards. The day's first try reads every perk
   through `perk()` / `dexPerk()` in `js/run.js`, which are off for it (`fairTry()`): read any new perk through them.
+- **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
+  `#safari-dex-dialog`) is a page per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
+  joins it; it opens from the Collection, the main Pokédex's Safari tab and, in a Safari run, the Pokédex button.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

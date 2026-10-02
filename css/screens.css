@@ -3545,6 +3545,29 @@ body.has-scene #scene-bg { display: block; }
   .dex-detail-sprite { width: 88px; height: 88px; }
 }
 
+/* ---------- the SAFARI POKÉDEX (js/safaridex.js): the main one's look, a page per Safari area ---------- */
+#safari-dex-total { white-space: nowrap; }
+.dex-safari-tab { --c1: #58b048; --c2: #2c6a24; }
+.dex-safari-tab[hidden] { display: none; }
+.safari-tab.area-meadow  { --c1: #a8d860; --c2: #4a8a24; }
+.safari-tab.area-forest  { --c1: #4aa048; --c2: #1e5a24; }
+.safari-tab.area-wetland { --c1: #58a8e8; --c2: #2050a0; }
+.safari-tab.area-marsh   { --c1: #8aa070; --c2: #3e5232; }
+.safari-tab.area-peak    { --c1: #a8b8d0; --c2: #4a5878; }
+.safari-tab.area-desert  { --c1: #e8c060; --c2: #9a6a20; }
+.safari-tab.complete:not([aria-selected="true"]) { border-color: #d8a820; background: #fbf3d0; }   /* every one caught */
+.safari-area-box { border-color: #4a8a24; }
+.dex-entry.safari-caught { border-color: #58a048; background: #eef8e4; }
+.dex-entry.safari-rare { border-color: #d8a820; }
+.dex-entry.safari-rare.safari-caught { background: #fbf3d0; }
+.safari-rare-mark { position: absolute; top: 4px; left: 50%; translate: -50% 0; font-size: 0.85rem; color: #c89000; text-shadow: 0 0 4px rgba(248, 208, 48, 0.9); }
+.dex-entry.safari-rare.locked .safari-rare-mark { opacity: 0.6; }
+.dex-entry.safari-rare .dex-no { padding-right: 14px; }
+.safari-sig { display: flex; justify-content: center; padding: 4px 0 2px; }
+.safari-sig .card { width: 150px; flex: none; }
+.safari-sig-locked { display: grid; place-items: center; width: 150px; aspect-ratio: 5 / 7; border: 3px dashed var(--win-edge); border-radius: var(--round-sm); background: var(--win-panel); font: 2.4rem/1 var(--pixel-font); font-synthesis-weight: none; color: var(--win-muted); }
+@media (max-width: 720px) { #safari-dex-total { font-size: 0.62rem; } }
+
 /* a starter a won fight just unlocked (unlockWindow() in js/run.js): a gold banner, the Pokémon hopping on a spotlight */
 .unlock-dialog { text-align: center; width: min(340px, calc(100vw - 32px)); }
 .unlock-dialog[open] { animation: unlockIn 0.45s steps(6) both; }

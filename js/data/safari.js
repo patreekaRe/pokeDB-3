@@ -62,3 +62,25 @@ export function markRares(rooms, area) {
     room.enemyId = pickOne(area.rares);
   }
 }
+
+/* ---------- the Safari Pokédex (phase 3): built from the area rosters, so new Pokémon join it by being listed above ---------- */
+
+/** Each Safari Pokémon's number, in roster order, like the games' regional dex. */
+export const SAFARI_NUMBER = Object.fromEntries(SAFARI_ROSTER.map((id, i) => [id, i + 1]));
+
+/** One page per area: its wilds, then its rare spawns (a Pokémon can live in several areas and shows on each). */
+export const SAFARI_DEX_PAGES = SAFARI_AREAS.map(a => {
+  const wild = [...new Set(a.normals)];
+  const rare = [...new Set(a.rares)].filter(id => !wild.includes(id));
+  return { area: a.id, name: a.name, wild, rare, ids: [...wild, ...rare] };
+});
+
+/** The areas a Pokémon lives in, by name, and whether it's a rare spawn in each. */
+export const safariHomes = (id) => SAFARI_DEX_PAGES.filter(p => p.ids.includes(id)).map(p => ({ name: p.name, rare: p.rare.includes(id) }));
+
+/** How far along a list of ids is in a save's `safariDex`: caught, seen (caught counts as seen) and total. */
+export function safariProgress(ids, dex = { seen: [], caught: [] }) {
+  const caught = new Set(dex.caught);
+  const seen = new Set([...dex.seen, ...dex.caught]);
+  return { caught: ids.filter(id => caught.has(id)).length, seen: ids.filter(id => seen.has(id)).length, total: ids.length };
+}

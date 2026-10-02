@@ -434,6 +434,14 @@
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
+  <!-- the Safari Zone's own Pokédex, a page per area: ??? until met, a Poké Ball once caught (js/safaridex.js) -->
+  <dialog id="safari-dex-dialog" class="dialog wide-dialog index-dialog dex-dialog safari-dex-dialog">
+    <h2 tabindex="-1" autofocus>🌿 Safari Pokédex <span id="safari-dex-total" class="count"></span></h2>
+    <div class="index-tabs" id="safari-dex-tabs" role="tablist" aria-label="Safari areas"></div>
+    <div id="safari-dex-body" class="dex-body" role="tabpanel"></div>
+    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  </dialog>
+
   <dialog id="stats-dialog" class="dialog records-dialog">
     <h2 tabindex="-1" autofocus>📊 Stats</h2>
     <div id="stats-body"></div>

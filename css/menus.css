@@ -511,6 +511,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .coll-text { font-size: 0.7rem; line-height: 1.6; color: var(--win-ink); }
 .coll-count { margin-top: auto; padding: 4px 10px 3px; border-radius: 999px; font: 0.62rem var(--pixel-font); color: #fff; background: var(--c2); }
 .coll-dex { --c1: #e05858; --c2: #a02c2c; }
+.coll-safari { --c1: #58b048; --c2: #2c6a24; }
 .coll-moves { --c1: #5a8ef0; --c2: #2c58b0; }
 .coll-relics { --c1: #e0a840; --c2: #9a6a18; }
 .coll-items { --c1: #e878b8; --c2: #983068; }

@@ -78,6 +78,26 @@ The day's first try is the leaderboard's, so `fairTry()` in `js/run.js` turns of
 Silph Scope's reveals and Scope Upgrade, Mom's Savings, Chansey's Gift, Oak's Advice). Coin Finder stays (it only touches
 PokéCoins). The map says so at the start, and the result window's first-try line too. Replays keep the perks.
 
+## The Safari Pokédex (phase 3)
+
+- `#safari-dex-dialog` (`js/safaridex.js`, `index.html`), the main Pokédex's classes (`.dex-entry`, `.dex-perk`,
+  `.dex-detail`) plus `.safari-*` in `css/screens.css`. A tab per area (`.safari-tab.area-<id>`, gold once every entry is
+  caught); each page has the area's box (caught / seen / total, a bar of the caught) then **Wild Pokémon** and **Rare
+  spawns** (`.safari-rare`, gold rim and ✦). An entry is a silhouette and ??? until seen, its sprite and name once seen,
+  plus a Poké Ball mark once caught (`.safari-caught`). The header counts caught / all and seen.
+- **Entry page** (a tap, like the main Pokédex's): sprite, number, type, the areas it lives in (✦ rare where it's a rare
+  spawn), caught or not, its description, and its signature card (`SIGNATURE_FOR`, a 150px `makeCard()`), a dashed ?
+  until caught.
+- **Data** (`js/data/safari.js`): `SAFARI_DEX_PAGES` (one per `SAFARI_AREAS` entry: `wild`, `rare` without repeats,
+  `ids`), `SAFARI_NUMBER` (`SAFARI_ROSTER` order, so phase 4's Pokémon get numbers by being listed), `safariHomes(id)`,
+  `safariProgress(ids, dex)` (caught counts as seen). Pinned by `tests/safaridex.test.mjs` (every entry has a picture,
+  a number and a signature card).
+- **Where it opens**: the Collection's **Safari Pokédex** card (`safariCard()` in `js/collection.js`, a 🔒 ??? until
+  `dex.complete`), the main Pokédex's last tab **Safari** (`#dex-safari-tab`, hidden until `dex.complete`; it closes that
+  window and opens this one), and the Poké Ball menu's Pokédex button during a Safari run, on the run's area
+  (`runSafariArea()` in `js/run.js`).
+- No reward for completing an area yet (see the roadmap's phase 3 note).
+
 ## The bot (`../pokeDB-sim`)
 
 `cfg.safari` (`safariCfg()` in `sim/run-node.mjs`) plays a Safari day: `true` deals a random day per run (its starter,

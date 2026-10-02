@@ -12,6 +12,7 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { DEX_PAGES } from './data/pokedex.js';
 import { getSave } from './storage.js';
 import { openPokedex } from './pokedex.js';
+import { openSafariDex, safariDexCount } from './safaridex.js';
 import { openCardIndex } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
 import { openRecords, bookEntries } from './halloffame.js';
@@ -66,6 +67,15 @@ function book(which, name, text, noun, how) {
   return [which, name, fameArt(entries.at(-1)), text, `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, () => openRecords(which)];
 }
 
+/** The Safari Pokédex's card, a ??? until the Safari Zone opens (a complete Pokédex). */
+function safariCard(save) {
+  const how = 'Complete the Pokédex to open the Safari Zone.';
+  if (!save.dex.complete) return ['safari', '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
+  const n = safariDexCount();
+  return ['safari', 'Safari Pokédex', el('span', 'coll-emoji', '🌿'), 'The Pokémon of the Safari Zone, area by area. Catch them all.',
+    `${n.caught}/${n.total} caught`, () => openSafariDex()];
+}
+
 export function showCollection() {
   showScreen('collection-screen');
   showMenuScene();
@@ -74,6 +84,7 @@ export function showCollection() {
   const cards = [
     ['dex', 'Pokédex', el('span', 'coll-emoji', '📕'), 'Every Pokémon you have met. Research them for PokéCoins.',
       `${save.dex.defeated.length}/${dexTotal} defeated`, () => openPokedex()],
+    safariCard(save),
     ['moves', 'Moves', el('span', 'coll-emoji', '🃏'), 'Every move card in the game, by type.', `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length} found`, () => openCardIndex(pickedStarter()?.type ?? 'fire')],
     ['relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), 'The held items found climbing the biomes.',
       `${save.seen.relics.length}/${RELICS.length} found`, () => openCardIndex('relics')],

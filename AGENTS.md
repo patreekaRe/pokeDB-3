@@ -62,6 +62,12 @@ three places:
   `docs/reference/safari.md`. Bot: catching costs win rate (300 runs: knock out 74.0, throw at 50%+ 62.7), so no retune.
   Checked headless at 390x844 (plus layout at 768x1024 and 1280x800); the user still has to try it on a phone. Next is
   phase 3, the Safari Pokédex (prompt in the roadmap).
+- 2026-10-02: **Safari Zone phase 3** (cloud, pushed to `main`): the Safari Pokédex (`js/safaridex.js`), a tab per area
+  (wilds, then rare spawns), ??? / seen / caught marks, each area's caught count, a caught entry's signature card. Opens
+  from the Collection, a Safari tab on the main Pokédex, and the Pokédex button in a Safari run. Built from the area
+  rosters, so phase 4's Pokémon appear by themselves. Checked headless at 390x844 and 1280x800; the in-run button only
+  by reading the code. Open question for the user: a reward for a complete area (proposal in the roadmap). Next is
+  phase 4, the roster at scale (prompt in the roadmap).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
