@@ -807,6 +807,48 @@ Eternatus's final boss fight as a set piece (phases, Eternamax), with a bot chec
 Mewtwo and the fourth biome'. Paint the Crystal Depths: replace the placeholder `BIOME_ART.depths` with its own scenery,
 places, landmarks, biome and boss intros, and map palette."
 
+## The Sealed Gate: why every run matters (the user's idea, agreed 2026-10-02)
+
+A story for doing run after run, like Slay the Spire's climb to the Heart: something is sealed below the three biomes,
+the Crystal Depths, and Eternatus's energy leaking out of it is **why the wild Pokémon and bosses are so aggressive**.
+Every run fights its way down to the seal. **Mewtwo is trapped behind it** (as it hid in Cerulean Cave). Breaking the
+gate frees Mewtwo as a starter, and its own run (Mewtwo mode, v1.0 above) goes down into the Depths to face Eternatus,
+the source.
+
+**Settled (the user's calls, 2026-10-02):**
+- **After every won run, the starter attacks the gate**: a short scene after the win scene (before the result window),
+  the gate's health bar drops, and its HP is **saved** (a new save field, old saves start it full).
+- **Harder Trainer Levels hit harder** (small at Level 0, big at Level 5), so everyone gets there and skilled players
+  faster. **Losses that reach the third biome's boss chip it a little** (StS: a lost run is still progress).
+- **The gate replaces Mewtwo's current unlock** (every other starter unlocked + a Level 5 win, the last `ACHIEVEMENTS`
+  entry): breaking the gate *is* the unlock.
+- **Only a Level 5 win can deal the final blow**: lower Levels can take it down to a sliver, never to 0, so Mewtwo still
+  feels earned.
+- **Old saves**: Mewtwo stays unlocked for anyone who has it. Wins already in the Record Book (`hallOfFame`) count as
+  damage already dealt, so long-time players don't start from zero.
+- **It shows its damage**: cracks, light through them, and from about half HP Mewtwo's silhouette behind it. Also on the
+  title screen, so progress shows every time the game opens.
+
+**To settle when it's built**: the gate's HP and the hit per Level (aim: ~10-15 wins at mixed Levels, fewer if most are
+high Levels), the loss chip, where the gate lives in the UI between runs (title screen, start screen, its own window),
+and whether Mewtwo mode stays out of it (it should: Mewtwo is what's behind it).
+
+**Parts:**
+- **A. Gameplay (CLOUD)**: the save field, damage per run in `endRun()`, the Record Book back-fill, swapping Mewtwo's
+  achievement for the gate (keeping it last in `ACHIEVEMENTS`, and existing unlocks), a plain health bar and a line in
+  the result window. No bot check needed (no fight changes).
+- **B. The scene and art (Desktop, LOCAL or CLOUD with screenshots)**: the gate's sprite in its damage stages, the
+  attack scene with the starter's own attack and the bar dropping, the break scene freeing Mewtwo, the title-screen gate.
+
+**Run in: CLOUD.** Next-session prompt (part A): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'The Sealed Gate'.
+Build part A: the saved gate HP, damage after each won run (more at higher Trainer Levels; only a Level 5 win can break
+it) and a small chip for losses at the third biome's boss, the Record Book back-fill for old saves, and the gate
+replacing Mewtwo's current unlock (players who have Mewtwo keep it). Propose the HP numbers before building."
+
+**Run in: Desktop app (visual).** Next-session prompt (part B): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'The
+Sealed Gate'. Part A is done. Build part B: the gate's art in its damage stages, the after-run attack scene, the break
+scene that frees Mewtwo, and the gate on the title screen."
+
 ## Post-v1.0: the Safari Zone daily run (the user's idea, planned 2026-10-02)
 
 A daily seeded run in a new place of its own, the **Safari Zone**, with a **capture** mechanic and hundreds more Pokémon
