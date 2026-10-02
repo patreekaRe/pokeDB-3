@@ -1206,7 +1206,12 @@ async function enemyTurn() {
     if (b.enemy.hp <= 0) return finish(true);
   }
 
-  // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND).
+  // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND), yelling its `say` first.
+  if (move.say) {
+    log(`${b.def.name}: "${move.say}"`);
+    await sleep(1100);
+    if (battle !== b) return;
+  }
   if (move.sound) playSound(move.sound);
   if (move.kind === 'attack' || move.kind === 'drain') {
     const damage = attackDamage(move);
@@ -1336,6 +1341,11 @@ async function finish(won) {
   }
   await sleep(won && hasAbility('overgrow') ? 1700 : 1200);   // time to read Overgrow's banner
   if (battle !== b) return;
+  if (!won && b.def.taunts?.win) {
+    log(b.def.taunts.win);
+    await sleep(2200);
+    if (battle !== b) return;
+  }
 
   closeDialog('piles-dialog');
   b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
@@ -1408,6 +1418,20 @@ function checkBlaze() {
   b.blazeLit = lit;
 }
 
+/** A foe with `taunts` (Kenmatta) talks once as its HP drops below half and below a fifth. Said a beat after the hit,
+    so the card's own line is read first. */
+function checkTaunts() {
+  const b = battle, t = b.def.taunts, en = b.enemy;
+  if (!t || b.over || en.hp <= 0) return;
+  b.taunted ??= {};
+  const say = (key) => {
+    b.taunted[key] = true;
+    setTimeout(() => { if (battle === b && !b.over) log(t[key]); }, 900);
+  };
+  if (t.low && !b.taunted.low && en.hp <= en.maxHp / 5) { b.taunted.half = true; say('low'); }
+  else if (t.half && !b.taunted.half && en.hp <= en.maxHp / 2) say('half');
+}
+
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   const b = battle;
@@ -1453,6 +1477,7 @@ function setupBattleScreen() {
 function renderAll() {
   if (!battle) return;
   checkBlaze();
+  checkTaunts();
   renderBars();
   renderIntent();
   renderStatus();

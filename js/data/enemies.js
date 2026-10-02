@@ -556,12 +556,18 @@ export const KEN = {
   description: 'The Move Tutor. He teaches by hitting you.',
   prelude: 'Kenmatta cracks his neck. "Try not to cry, bro."',
   intro: 'Chad Master Kenmatta wants to battle!',
+  // what he says mid-fight, like a Gen 5 gym leader (checkTaunts() in battle.js): below half HP, below a fifth, and if you faint
+  taunts: {
+    half: '"Bro, that was a warm-up. I\'m literally not even sweating."',
+    low: '"Okay, okay, you got some moves... for a beta."',
+    win: '"Skill issue. Come back when you\'ve hit the gym."',
+  },
   moves: [
     { kind: 'attack', name: 'Mata Chop',    amount: 9 },
     { kind: 'buff',   name: 'Mata-Manspread', amount: 2 },
     { kind: 'attack', name: 'Kraber Crush', amount: 12 },
     { kind: 'defend', name: 'FORTIFY YOUR MIND', amount: 14, sound: 'fortify' },   // Wong's shout, the user's
-    { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 18 },
+    { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 18, say: 'TEST YOUR MIGHT!' },   // `say`: he yells it before the move
   ],
 };
 
