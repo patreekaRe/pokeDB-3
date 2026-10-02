@@ -42,6 +42,8 @@ import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 
 let run = null;
+let peeking = false;   // a ?event= playtest run (peekEvent()): nothing about it is saved, so the real saved run is safe
+export const isPeeking = () => peeking;
 
 export const isRunActive = () => run !== null && !run.over;
 
@@ -94,7 +96,7 @@ export function suspendRun() {
 
 export function abandonRun() {
   abandonBattle();
-  if (run) clearRunData();
+  if (run && !peeking) clearRunData();
   run = null;
 }
 
@@ -119,6 +121,7 @@ function spend(price) {
 }
 
 function checkpoint() {
+  if (peeking) return;   // a ?event= playtest run is never saved
   const { floors, byId } = run.map;
   for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
   saveRunData({
@@ -164,7 +167,7 @@ function creditRoom(node) {
   if (run.credited.includes(key)) return false;
   run.credited.push(key);
   const saved = loadRunData();
-  if (saved) saveRunData({ ...saved, credited: run.credited });
+  if (saved && !peeking) saveRunData({ ...saved, credited: run.credited });
   return true;
 }
 
@@ -219,7 +222,7 @@ export function continueRun(saved) {
 }
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
-export function beginRun(starter, level = 0) {
+export function beginRun(starter, level = 0, peek = null) {
   dropNotes();
   const passives = getSave().passives;
   const startHp = BASE_HP + passives.hpBoost * 5;   // shop passive: Max HP Boost
@@ -264,8 +267,29 @@ export function beginRun(starter, level = 0) {
   const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerkLevel('chansey-gift')]];
   if (gift) { run.items.push(gift.id); tell(`Chansey's Gift: a ${gift.name} is in your Bag!`); }
 
+  if (peek) return peekRoom(peek);
   updateSave(d => { d.stats.runsStarted += 1; });
   startBiome();
+}
+
+/** Playtest shortcut (the user's ask): ?event=move-tutor (any event id) starts a throwaway run and walks straight into
+    that event's room, so it can be seen on a phone without playing to it. Nothing about the run is saved. */
+export function peekEvent(starter, id) {
+  if (!EVENTS_BY_ID[id]) return false;
+  peeking = true;
+  beginRun(starter, 0, id);
+  return true;
+}
+
+function peekRoom(id) {
+  run.map = generateMap();
+  const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
+  for (const kind of ['fight', 'elite', 'boss']) dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
+  for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
+  rollEvents();
+  const node = nodes.find(n => n.event?.id === id) ?? nodes.find(n => n.type === 'event') ?? nodes[0];   // a rolled one keeps its dice (Team Rocket's team)
+  if (node.event?.id !== id) { node.type = 'event'; node.event = { id }; }
+  enterNode(node);
 }
 
 /* ============================================================
@@ -2089,7 +2113,7 @@ function level5Rewards() {
 
 function endRun(won) {
   run.over = true;
-  clearRunData();
+  if (!peeking) clearRunData();
   const mewtwoRun = run.starter.id === 'mewtwo';
 
   let winCoins = 0;

@@ -27,11 +27,11 @@
      cloud.js        the optional cloud save (Firebase sign-in, from the Poké Ball menu)
    ============================================================ */
 
-import { spriteUrl, stageName, useShinies } from './data/starters.js';
+import { STARTERS, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, isShiny } from './storage.js';
-import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome } from './run.js';
+import { initRun, beginRun, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, peekEvent, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound } from './audio.js';
@@ -108,7 +108,7 @@ async function requestAbandon() {
   if (!hasSavedRun() && !isRunActive()) return;
   if (!(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return;
   abandonRun();
-  clearRunData();
+  if (!isPeeking()) clearRunData();   // a ?event= playtest run leaves the real saved run alone
   showHome();
 }
 
@@ -212,6 +212,8 @@ function init() {
     showPlaceScene(place, { biome: params.get('biome') || 'clearing' });
     return;
   }
+  // ...and ?event=move-tutor (any event id) walks a throwaway, never-saved run straight into that event's room
+  if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
 
   showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {
