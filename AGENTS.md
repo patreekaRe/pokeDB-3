@@ -76,6 +76,9 @@ three places:
   `docs/reference/safari.md`. Bot: catching costs win rate (300 runs: knock out 74.0, throw at 50%+ 62.7), so no retune.
   Checked headless at 390x844 (plus layout at 768x1024 and 1280x800); the user still has to try it on a phone. Next is
   phase 3, the Safari Pokédex (prompt in the roadmap).
+- 2026-10-02: **Throw like the games** (cloud, pushed to `main`; roadmap 'Small asks' 3): the Throw button shows every
+  wild Safari turn, a throw costs 1 PP and ends your turn, and `catchChance()` is a curve on the HP left (5% at full HP,
+  70% near 0) instead of the red-HP gate. Bot: catches a run about the same, win rate no longer drops when throwing.
 - 2026-10-02: **Safari Zone phase 3** (cloud, pushed to `main`): the Safari Pokédex (`js/safaridex.js`), a tab per area
   (wilds, then rare spawns), ??? / seen / caught marks, each area's caught count, a caught entry's signature card. Opens
   from the Collection, a Safari tab on the main Pokédex, and the Pokédex button in a Safari run. Built from the area

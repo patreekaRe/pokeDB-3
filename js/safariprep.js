@@ -6,7 +6,7 @@
    ============================================================ */
 
 import { safariDaily, SAFARI_DEX_PAGES, SAFARI_AREA_COINS, RARE_BOOST, safariProgress } from './data/safari.js';
-import { BALLS, CATCH_HP, RARE, ballWeek } from './data/balls.js';
+import { BALLS, THROW_PP, RARE, ballWeek } from './data/balls.js';
 import { CARDS_BY_ID } from './data/cards.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
@@ -21,7 +21,7 @@ let actions = {};
 const ROCK_HIT = CARDS_BY_ID.rock.effects.damage;
 const RULES = [
   ['🔄', 'One run a day, the same for everyone.'],
-  ['🔴', `Once a wild Pokémon's HP bar turns red (below ${CATCH_HP * 100}%), throw a ball. It takes your turn.`],
+  ['🔴', `Throw a ball at any wild Pokémon: ${THROW_PP} PP, and it ends your turn. At full HP it's a long shot; the lower its HP, the better.`],
   ['🎯', 'Debuffs on it raise the odds.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],

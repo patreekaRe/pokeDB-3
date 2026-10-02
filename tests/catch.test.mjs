@@ -1,7 +1,7 @@
 // The Safari Zone's catch odds (js/data/balls.js) and its seeded rolls: the same throw must land the same for everyone.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BALLS, CATCH_HP, CATCH_BASE, CATCH_CAP, RARE, baseOdds, catchChance, ballWeek, ballsInBag, migrateBalls, UNLOCK_REFUND } from '../js/data/balls.js';
+import { BALLS, THROW_PP, CATCH_BASE, CATCH_CAP, RARE, baseOdds, catchChance, ballWeek, ballsInBag, migrateBalls, UNLOCK_REFUND } from '../js/data/balls.js';
 import { SAFARI_AREAS, SAFARI_ROSTER, markRares, safariSeed } from '../js/data/safari.js';
 import { CARDS_BY_ID, SIGNATURE_FOR, ALL_CARDS, poolForType } from '../js/data/cards.js';
 import { ENEMY_DEFS } from '../js/data/enemies.js';
@@ -11,18 +11,23 @@ import { STARTERS_BY_ID } from '../js/data/starters.js';
 
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-9, `${a} vs ${b}`);
 
-test('no throw above red HP or at 0 HP', () => {
-  assert.equal(catchChance({ hpFrac: CATCH_HP }), 0);
-  assert.equal(catchChance({ hpFrac: 0.5 }), 0);
+test('a throw at any HP but 0, costing 1 PP', () => {
+  assert.equal(THROW_PP, 1);
   assert.equal(catchChance({ hpFrac: 0 }), 0);
+  assert.ok(catchChance({ hpFrac: 1 }) > 0);
+  assert.ok(catchChance({ hpFrac: 0.5 }) > 0);
 });
 
-test('a plain Safari Ball: the base odds, rising as HP falls', () => {
-  close(catchChance({ hpFrac: CATCH_HP - 1e-12 }), CATCH_BASE.at);
+test('a plain Safari Ball: a long shot at full HP, rising steeply as HP falls', () => {
+  close(catchChance({ hpFrac: 1 }), CATCH_BASE.full);
   close(baseOdds(0), CATCH_BASE.low);
-  close(catchChance({ hpFrac: 0.125 }), (CATCH_BASE.at + CATCH_BASE.low) / 2);
+  assert.ok(catchChance({ hpFrac: 1 }) <= 0.1, 'full HP should be a long shot');
+  assert.ok(catchChance({ hpFrac: 0.5 }) < 0.2, 'half HP should still be unlikely');
+  const red = catchChance({ hpFrac: 0.25 });
+  assert.ok(red > 0.25 && red < 0.4, `the red line was 30% before the curve: ${red}`);
+  close(catchChance({ hpFrac: 0.5 }), CATCH_BASE.full + (CATCH_BASE.low - CATCH_BASE.full) * 0.5 ** CATCH_BASE.curve);
   let last = 0;
-  for (let hp = 0.24; hp > 0; hp -= 0.02) {
+  for (let hp = 1; hp > 0; hp -= 0.02) {
     const p = catchChance({ hpFrac: hp });
     assert.ok(p > last, `odds fall at ${hp}`);
     last = p;

@@ -124,7 +124,7 @@ function openEntry(id, from) {
   head.append(img, names);
   card.append(head);
   card.append(el('p', 'dex-detail-facts', safariHomes(id).map(h => `${AREA_ICON[SAFARI_DEX_PAGES.find(p => p.name === h.name).area] ?? ''} ${h.name}${h.rare ? ' ✦ rare' : ''}`).join(' · ')));
-  card.append(el('p', `dex-detail-research${got ? ' done' : ''}`, got ? 'Caught!' : 'Seen, not caught yet. Catch it at red HP for its card.'));
+  card.append(el('p', `dex-detail-research${got ? ' done' : ''}`, got ? 'Caught!' : 'Seen, not caught yet. Wear it down and throw a ball for its card.'));
   if (def.description) card.append(el('p', 'dex-detail-text', def.description));
   const sig = CARDS_BY_ID[SIGNATURE_FOR[id]];
   if (sig) {

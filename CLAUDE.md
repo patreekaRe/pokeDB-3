@@ -441,7 +441,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   is unseeded. A new gameplay roll that skips `js/rng.js` breaks the daily run being the same for everyone. Tests:
   `node --test` (`tests/`).
 - **Catching** (Safari Zone phase 2, 2026-10-02; detail in `docs/reference/safari.md`): only in a Safari run's wild rooms,
-  once the HP is red a Throw button (`#throw-btn`) opens a ball picker (`#ball-picker`); a throw is the whole turn and its
+  any turn a Throw button (`#throw-btn`) opens a ball picker (`#ball-picker`); a throw costs 1 PP and ends your turn, and its
   odds are `catchChance()` in `js/data/balls.js` (pure, `tests/catch.test.mjs`), rolled on the seed. A catch pays half the ₽
   and offers the Pokémon's signature card (`SIGNATURE_FOR` / `sig-*` cards, `safari: true`, never in `ALL_CARDS`); a new
   Safari Pokémon needs one. `save.safariDex` and `save.balls` (the Game Corner's 4th row). Rare spawns (`markRares()`) run

@@ -19,14 +19,16 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - **The Throw button on phones** (≤720px): PP | Throw | End Turn, Throw centred on the screen (`.battle-controls:has(.throw-btn:not([hidden]))`
   makes it a 3-column grid and `.turn-side` `display: contents`, the user's call 2026-10-02).
 - **When**: a Safari run's wild rooms only (`battle.catchable`: `run.safari` and kind `fight`; Alphas and bosses can't be
-  caught), once the HP is red, below `CATCH_HP` (25%). The **Throw** button (`#throw-btn`, green, beside End Turn; on
-  phones on the PP row) shows then.
-- **Cost**: a throw is the whole turn. It needs your PP untouched (`whyNotThrow()`: `energy >= turnEnergy`; 0-cost cards
-  and items are fine first), sets PP to 0, and a miss runs `endTurn()`, so the enemy acts.
+  caught), every turn, at any HP (like the games; until 2026-10-02 only once the HP was red, below 25%). The **Throw**
+  button (`#throw-btn`, green, beside End Turn; on phones on the PP row) shows all fight.
+- **Cost**: a throw costs `THROW_PP` (1 PP) and ends your turn (`whyNotThrow()`: `energy >= THROW_PP`); cards and items
+  can be played first, so wear it down, then throw with the PP you kept. A miss runs `endTurn()`, so the enemy acts.
+  (Until 2026-10-02 it needed your PP untouched and took all of it.)
 - **Picker**: a tap opens `#ball-picker` over the button, one row per ball you can throw now (`ballsInBag()`), with how
   many are left and its odds; a tap throws. A tap elsewhere closes it.
-- **Odds** (`catchChance()` in `js/data/balls.js`, pure, pinned by `tests/catch.test.mjs`): base 30% at 25% HP rising to
-  70% at 1 HP (`CATCH_BASE`); a multiplier m turns the miss chance q into q^m (the games' shape), m = ball x (1 + 0.25 per
+- **Odds** (`catchChance()` in `js/data/balls.js`, pure, pinned by `tests/catch.test.mjs`): a curve on the HP left
+  (`CATCH_BASE`: 5% at full HP + 65% x (HP lost)^3, so ~13% at half, ~32% at 25%, 70% near 0: a throw at full HP is a
+  long shot, the games' shape); a multiplier m turns the miss chance q into q^m (the games' shape), m = ball x (1 + 0.25 per
   kind of debuff on it: Burn, Leech Seed, Weak, Sap) x (1 + 0.5 per Bait) x 0.5 for a rare spawn; capped at 95%
   (`CATCH_CAP`); the Master Ball is 100%. The roll is `random()`, on the room's seeded stream.
 - **The throw on screen** (`ballAnimation()`): the ball's sprite arcs to the Pokémon (Web Animations), it's pulled in
@@ -73,8 +75,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   is complete (the Safari's own lock).
 - Safari Ball: free, always. Every other ball but the Master Ball comes in packs, used up when thrown (the save is
   written as the ball is thrown, so a refresh that replays the room doesn't give it back): Great (x1.5) and Ultra (x2),
-  5 for 40 / 90 coins; Dusk (x3 at `timeOfDay()` night), Quick (x4 in turns 1-3: "turn 1" alone could never be used,
-  since a throw needs red HP), Timer (x1 +0.25 a turn, up to x3) and Net (x3 on Water and Grass), 3 for 150; Luxury (x1,
+  5 for 40 / 90 coins; Dusk (x3 at `timeOfDay()` night), Quick (x4 in turns 1-3; chosen when a throw needed red HP, so
+  turn 1 alone could never be used; kept now a throw can open the fight), Timer (x1 +0.25 a turn, up to x3) and Net (x3 on Water and Grass), 3 for 150; Luxury (x1,
   +10 PokéCoins on a catch), 3 for 100. Master Ball (1500): a sure catch, one throw a UTC ISO week (`ballWeek()`,
   `masterWeek`).
 - Until 2026-10-02 Dusk / Quick / Timer / Net / Luxury were one-time unlocks (300 / 250, thrown freely, in
@@ -280,7 +282,8 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 
 `cfg.safari` (`safariCfg()` in `sim/run-node.mjs`) plays a Safari day: `true` deals a random day per run (its starter,
 areas, seeded maps, wilds and rare spawns via the game's own `dealEnemies()` / `markRares()`), with each type's relic
-ranks. `cfg.catch` throws a Safari Ball at the start of a turn at red HP once the odds reach `cfg.catchAt`; the engine
+ranks. `cfg.catch` keeps 1 PP back while the bot plays its cards, then throws a Safari Ball if the odds reach
+`cfg.catchAt` (else it spends the PP); the engine
 mirrors Bait, Rock, running off and the catch's prize and signature card. Variants `noSafariCards` and `noRares` give the
 phase 1 run.
 

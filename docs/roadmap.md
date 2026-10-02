@@ -868,7 +868,11 @@ Split into sessions by where they run:
    ball icons, laid out as a row you swipe left/right like the starter carousel.
    **Run in: Desktop app.** Prompt: "Read CLAUDE.md and docs/reference/safari.md, then docs/roadmap.md's 'Small asks'
    item 2. Fix both, check at 375x812 and an iPad size (`?safari`, `?area=meadow`), push to main."
-3. **Throw like the games** (logic + balance). The Throw button is there in every wild Safari fight, not only at red
+3. ✅ **Done 2026-10-02.** Throw any turn for 1 PP (it ends your turn); the odds are 5% at full HP + 65% x (HP lost)^3
+   (~13% at half, ~32% at 25%, 70% near 0). Bot (human, Safari days, 150 runs/cell), caught a run / win, before -> after:
+   throw at 30%+ 4.73 / 48.7 -> 5.37 / 78.0; at 50%+ 3.71 / 58.0 -> 3.15 / 77.3; knock out only 76.7. Catching no longer
+   costs win rate (a throw is 1 PP after your cards, not the whole turn), and the catches a run barely move, so no retune.
+   **Throw like the games** (logic + balance). The Throw button is there in every wild Safari fight, not only at red
    HP; a throw costs 1 PP (energy) and ends your turn. `catchChance()` drops the 25% `CATCH_HP` gate for a curve on the
    HP left (the games' formula shape: low at full HP, high near 0), so a throw at full HP is a long shot. Update the
    rules text (prep window, How to play, the reference doc), `tests/catch.test.mjs`, and the sim's `cfg.catch`.

@@ -1,9 +1,10 @@
 /* ============================================================
    balls.js  -  catching in the Safari Zone (docs/reference/safari.md).
 
-   Once a wild Pokémon's HP is red (below CATCH_HP), a Safari run's battle
-   shows a Throw Ball button. A throw takes your whole turn's PP; a miss and
-   the Pokémon acts. The odds rise with lower HP, the ball, your debuffs on
+   Every wild fight in a Safari run shows a Throw button. A throw costs 1 PP
+   and ends your turn; a miss and the Pokémon acts. Like the games, a throw
+   at full HP is a long shot and the odds climb as its HP drops (a curve,
+   CATCH_BASE). They rise with the ball too, your debuffs on
    it (Burn, Leech Seed, Weak, Sap: the games' sleep and paralysis bonus,
    so every type can help) and Bait; a rare spawn is harder.
 
@@ -12,10 +13,11 @@
    everyone who throws the same ball on the same turn.
    ============================================================ */
 
-/** The Throw Ball button shows below this share of the wild Pokémon's max HP (the HP bar's red). */
-export const CATCH_HP = 0.25;
-/** The base odds with a plain Safari Ball: CATCH_BASE.at at CATCH_HP, rising to CATCH_BASE.low at 1 HP. */
-export const CATCH_BASE = { at: 0.3, low: 0.7 };
+/** What a throw costs (and it ends your turn). */
+export const THROW_PP = 1;
+/** The base odds with a plain Safari Ball: CATCH_BASE.full at full HP, rising to CATCH_BASE.low near 0 along
+    (1 - HP share)^CATCH_BASE.curve, so it stays a long shot until the HP is low (~13% at half, ~32% at the red line). */
+export const CATCH_BASE = { full: 0.05, low: 0.7, curve: 3 };
 /** No ball but the Master Ball is ever sure. */
 export const CATCH_CAP = 0.95;
 /** Each kind of debuff on it (Burn, Leech Seed, Weak, Sap) adds this to the ball's multiplier. */
@@ -58,10 +60,10 @@ export const BALLS = [
 ];
 export const BALLS_BY_ID = Object.fromEntries(BALLS.map(b => [b.id, b]));
 
-/** The base odds at a share of max HP (only meaningful below CATCH_HP). */
+/** The base odds at a share of max HP. */
 export function baseOdds(hpFrac) {
-  const low = Math.max(0, Math.min(1, 1 - hpFrac / CATCH_HP));
-  return CATCH_BASE.at + (CATCH_BASE.low - CATCH_BASE.at) * low;
+  const lost = Math.max(0, Math.min(1, 1 - hpFrac));
+  return CATCH_BASE.full + (CATCH_BASE.low - CATCH_BASE.full) * Math.pow(lost, CATCH_BASE.curve);
 }
 
 /**
@@ -70,7 +72,7 @@ export function baseOdds(hpFrac) {
  * raised to the multiplier's power, so better balls help a lot at low odds and never quite reach a sure thing.
  */
 export function catchChance({ hpFrac, ball = 'safari', turn = 1, night = false, type = 'normal', debuffs = 0, bait = 0, rare = false }) {
-  if (hpFrac <= 0 || hpFrac >= CATCH_HP) return 0;
+  if (hpFrac <= 0) return 0;
   const def = BALLS_BY_ID[ball] ?? BALLS_BY_ID.safari;
   const mult = def.mult({ night, turn, type });
   if (mult === Infinity) return 1;

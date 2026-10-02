@@ -32,7 +32,7 @@ import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
-import { BALLS_BY_ID, CATCH_HP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag } from './data/balls.js';
+import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 
 const ENERGY_PER_TURN = 3;
@@ -158,7 +158,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
-    catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown once its HP is red
+    catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
@@ -1084,14 +1084,14 @@ async function useItem(index) {
 
 /* ---------- catching: the Safari Zone's Throw Ball (js/data/balls.js, docs/reference/safari.md) ---------- */
 
-/** The wild Pokémon's HP is red, in a Safari wild fight: the Throw Ball button shows. */
-const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0 && battle.enemy.hp < battle.enemy.maxHp * CATCH_HP;
+/** A Safari wild fight: the Throw Ball button shows all fight (the odds are low at high HP, catchChance()). */
+const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0;
 
-/** Why a throw can't be made now, or null. A throw is your whole turn: it needs your PP untouched (0-cost cards are fine). */
+/** Why a throw can't be made now, or null. A throw costs THROW_PP and ends your turn, so cards can be played first. */
 function whyNotThrow() {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
-  if (b.energy <= 0 || b.energy < b.turnEnergy) return 'A throw takes your whole turn\'s PP: throw before you spend any.';
+  if (b.energy < THROW_PP) return `A throw costs ${THROW_PP} PP.`;
   return null;
 }
 
@@ -1144,7 +1144,7 @@ async function throwBall(id) {
   const ball = BALLS_BY_ID[id];
   const chance = catchOdds(id);
   b.busy = true;
-  b.energy = 0;
+  b.energy -= THROW_PP;
   b.thrown = (b.thrown || 0) + 1;
   // the ball is spent as it's thrown (a refresh replays the room, but not the ball)
   updateSave(d => {
@@ -1951,7 +1951,7 @@ function renderBars() {
   else {
     const problem = whyNotThrow();
     $('throw-btn').classList.toggle('spent', !!problem);
-    $('throw-btn').title = problem ?? 'Its HP is in the red: throw a ball! It takes your whole turn; if it breaks free, the enemy acts.';
+    $('throw-btn').title = problem ?? `Throw a ball: ${THROW_PP} PP, and it ends your turn. The lower its HP, the better the odds.`;
   }
   // nothing left to play: End Turn hops and blinks so it's clear that's the move (items don't count, they're optional)
   $('end-turn-btn').classList.toggle('nudge', !b.busy && !b.over && b.hand.every(h => whyNotPlayable(h.card)));
