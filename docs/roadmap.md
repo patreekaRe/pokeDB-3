@@ -1050,20 +1050,35 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    76.7, throw at 50%+ 62.7 -> 62.7 (300 runs/cell, 3.7 catches a run); at 150 it was 78.7 -> 72.0 and 64.7 -> 67.3.
    Within noise of 75, so no retune. Checked headless at 390x844: all 80 GIFs decode, a Safari run's first fight, the
    Safari Pokédex (434), no console errors.
-   **Left** (Gen 1-5 non-legendary, not in the game, not the left-out lines): **80, all shown as Neutral** (no Fire,
-   Grass or Water species remain): Fearow, Nidorina, Nidoqueen, Nidorino, Nidoking, Abra, Kadabra, Alakazam, Magnemite, Magneton, Dodrio, Voltorb, Electrode, Hitmonlee, Hitmonchan, Electabuzz, Porygon, Igglybuff, Xatu, Unown, Wobbuffet, Girafarig, Dunsparce, Snubbull, Granbull, Porygon2, Tyrogue, Hitmontop, Elekid, Blissey, Gardevoir, Whismur, Loudred, Mawile, Electrike, Manectric, Spoink, Grumpig, Spinda, Chimecho, Wynaut, Beldum, Metang, Metagross, Staraptor, Luxio, Luxray, Buneary, Glameow, Chingling, Bronzor, Happiny, Munchlax, Rhyperior, Electivire, Gallade, Probopass, Musharna, Zebstrika, Swoobat, Throh, Sawk, Minccino, Gothitelle, Klink, Klang, Klinklang, Elgyem, Beheeyem, Axew, Fraxure, Mienfoo, Mienshao, Pawniard, Bisharp, Rufflet, Braviary, Deino, Zweilous, Hydreigon.
+   **Batch 6 built 2026-10-02** (cloud), the last: **80 more Pokémon**, all Neutral-shown, **514 Safari Pokédex
+   entries: the roster is complete** (every Gen 1-5 non-legendary not in the main game, but the Budew / Sewaddle / Lotad /
+   Horsea / Spheal / Tympole lines the user turned down as skins). Claude's call: Forest and Wetland had the fewest Neutral
+   Pokémon, so they took 20 each and the rest 9-11, so no area's Fire / Grass / Water Pokémon are swamped: Meadow Fearow,
+   Dodrio, Igglybuff, Whismur, Loudred, Buneary, Minccino, Happiny, Luxio (rare Blissey, Luxray); Forest the Nidoran lines'
+   middle and last forms, Snubbull, Granbull, Munchlax, Mienfoo, Mienshao, Throh, Sawk, Pawniard, Girafarig, Spinda,
+   Glameow, Axew, Fraxure, Staraptor (rare Bisharp, Gallade); Wetland Magnemite, Magneton, Voltorb, Electrode, Electrike,
+   Manectric, Elekid, Electabuzz, Wynaut, Wobbuffet, Chingling, Chimecho, Spoink, Grumpig, Xatu, Dunsparce, Musharna,
+   Swoobat (rare Electivire, Gardevoir); Marsh Abra, Kadabra, Gothitelle, Bronzor, Elgyem, Beheeyem, Porygon (rare
+   Alakazam, Hydreigon); Peak Beldum, Metang, Tyrogue, Hitmonlee, Hitmonchan, Hitmontop, Deino, Zweilous, Rufflet (rare
+   Metagross, Braviary); Desert Unown, Mawile, Probopass, Klink, Klang, Klinklang, Zebstrika (rare Rhyperior, Porygon2).
+   Wild shown types per area after it (Neutral / Grass / Water / Fire): Meadow 43/19/2/5, Forest 35/41/1/2, Wetland
+   31/4/44/2, Marsh 42/14/11/2, Peak 43/3/18/6, Desert 47/13/6/4: every starter still meets good and bad match-ups in every
+   area. 26 signature cards were nudged to stop reading like another card (the test). Bot (human bot, random Safari days,
+   same bot): knock out 75.3 -> 79.2, throw at 50%+ 64.7 -> 65.0 (300 runs before, two 300-run batches after: 83.0 and 75.3, 61.0 and 69.0); at 150 it was 76.0 -> 74.0 and
+   69.3 -> 65.3. Within noise of 75, so no retune. Checked headless at 390x844: all 80 GIFs decode, a Safari run's first
+   fight, the Safari Pokédex (514), no console errors.
+   **What phase 5 needs**: no more Pokémon; the Safari now waits on the leaderboard (Firebase sign-in, the first try's
+   result posted per day: fastest win, fewest turns, most caught) and the 6 areas' own art and music (a Desktop session;
+   the map and battles still borrow the main biomes'). Optional later: the daily modifiers and the "zone legend" ideas above.
 
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 4, batch 6, the last): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's
-'Post-v1.0: the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 6: the last 80 Gen 1-5
-non-legendary species, all Neutral-shown (batch 5's 'Left' list: Fearow, Nidorina, Nidoqueen, Nidorino, Nidoking, Abra, Kadabra, Alakazam, Magnemite, Magneton, Dodrio, Voltorb, Electrode, Hitmonlee, Hitmonchan, Electabuzz, Porygon, Igglybuff, Xatu, Unown, Wobbuffet, Girafarig, Dunsparce, Snubbull, Granbull, Porygon2, Tyrogue, Hitmontop, Elekid, Blissey, Gardevoir, Whismur, Loudred, Mawile, Electrike, Manectric, Spoink, Grumpig, Spinda, Chimecho, Wynaut, Beldum, Metang, Metagross, Staraptor, Luxio, Luxray, Buneary, Glameow, Chingling, Bronzor, Happiny, Munchlax, Rhyperior, Electivire, Gallade, Probopass, Musharna, Zebstrika, Swoobat, Throh, Sawk, Minccino, Gothitelle, Klink, Klang, Klinklang, Elgyem, Beheeyem, Axew, Fraxure, Mienfoo, Mienshao, Pawniard, Bisharp, Rufflet, Braviary, Deino, Zweilous, Hydreigon), as lines in js/data/safari-mons.js on the
-existing templates, ~13 an area by habitat with 2 rare spawns each (pseudo-legendaries and Blissey make good rares), with
-PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median_low bbox over all frames) and a signature card each;
-tests/safarimons.test.mjs must stay green. Every area tilts further toward Neutral: report each area's shown-type counts
-and keep every starter meeting good and bad match-ups. Bot-check before and after (human bot, ~150 runs a cell, confirm
-at 300; knock out was 76.7, throw at 50%+ 62.7 after batch 5) and retune the templates if knock-out drifts more than ~8
-from 75. Earned pages stay earned. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (phase 5a, the leaderboard): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's
+'Post-v1.0: the Safari Zone daily run', docs/reference/safari.md and docs/reference/cloud-save.md. Build the Safari
+leaderboard on the existing Firebase (js/cloud.js): the day's first try posts its result (win or not, turns, time,
+caught), a board per day (fastest win, fewest turns, most caught) shown from the Safari gem and the result window, sign-in
+needed to post. Keep it safe against a replay posting (only `fairTry()` runs). `node --test` green, headless smoke test."
+The areas' art (phase 5b) is a Desktop session: **Run in: LOCAL** (the user sees it change live).
 
 ## The Pokémon list: 18 per biome, 54 in all
 

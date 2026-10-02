@@ -126,8 +126,9 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   batch 2 had only two; evolved forms of earlier Pokémon count as new species) and 4 (81, under `Batch 4` headers: 11-12
   wilds + 2 rare spawns an area, 29 Grass, 27 Water, 25 Neutral, since no Fire species were left) and 5 (80, under
   `Batch 5` headers: 11-12 wilds + 2 rare spawns an area, the last 11 Grass and 5 Water species and 64 Neutral; Numel and
-  Magby moved from the Peak to the Wetland, which had no Fire Pokémon); 434 Safari Pokédex entries with the borrowed
-  wilds. 80 species, all Neutral-shown, are left for batch 6 (listed in the roadmap). The Budew / Sewaddle / Lotad / Horsea / Spheal /
+  Magby moved from the Peak to the Wetland, which had no Fire Pokémon) and 6, the last (80, under `Batch 6` headers, all
+  Neutral-shown: 20 each to the Forest and Wetland, which had the fewest Neutral Pokémon, 9-11 to the rest, 2 rare spawns
+  each); **514 Safari Pokédex entries with the borrowed wilds: every Gen 1-5 non-legendary is in**. The Budew / Sewaddle / Lotad / Horsea / Spheal /
   Tympole lines stay out (the user turned them down as skins).
 - `TEMPLATES` (Biome 1 numbers): striker 46 HP 6/5/9; bruiser 51, 6 / +2 strength / 9; tank 57, 8 block / 6 / 9; heavy 62,
   9 block / 5 / 11; speedster 40, 7/6/10; drainer 51, drain 5 (+4) / 6 / drain 8 (+5); poisoner 48, 5 + Poison / 6 block /
