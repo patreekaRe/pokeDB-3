@@ -102,8 +102,10 @@ three places:
   `js/scene.js` (`SAFARI_ART` / `SAFARI_PAINT`), 4 named places each (`js/data/safari.js`), the map's palettes and signs,
   `?area=<area>` to look at them. Then each area became one road you walk (a trail to the horizon, the goal ahead
   nearer every floor, a roadside landmark per floor). Detail in `docs/reference/safari.md`. 5c (same day, Desktop, pushed):
-  each area's intro film and walk-ons, `js/safari-intro.js`. Next: 5d boss
-  intros (prompts in the roadmap).
+  each area's intro film and walk-ons, `js/safari-intro.js`. 5d (same day, Desktop, not pushed yet: the user wants to see
+  it first): each area's boss prelude (`SAFARI_PRELUDES` in `js/scene.js`, synths in `js/audio.js`) and, after it, the boss's arena
+  (`ARENAS`), seen with
+  `?area=<area>&stage=3`.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - Publishing `firestore.rules` in the Firebase console (Firestore > Rules), which switches the Safari leaderboard on.

@@ -1093,7 +1093,8 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
      'SAFARI ZONE' over the area's name, a few of the area's own wild Pokémon popping out of the tall grass) and the
      short walk-on for each later place (placeIntro(), the area's goal nearer each time). Turn them on for Safari runs in
      startBiome() / showMap() in js/run.js (they're skipped there now). Don't push: show me with ?area=<area> first."
-   - **5d, the areas' boss intros.** **Run in: LOCAL (Desktop app).** Prompt: "Read CLAUDE.md, docs/reference/safari.md
+   - **5d, the areas' boss intros.** **Built 2026-10-02 (Desktop), not pushed: the user is looking at it with
+     `?area=<area>&stage=3`.** `SAFARI_PRELUDES` in `js/scene.js`; see docs/reference/safari.md. Was: **Run in: LOCAL (Desktop app).** Prompt: "Read CLAUDE.md, docs/reference/safari.md
      (the areas' scenes) and bossArenaPrelude() / drawBossAwakening() and the three portals in js/scene.js. Give each
      Safari area's boss floor its own prelude before the boss appears, built on the area's goal (the Lone Tree's crown
      rustling and birds bursting out, the Forest's glade flooding with light, the Wetland's lake surging, the Marsh's

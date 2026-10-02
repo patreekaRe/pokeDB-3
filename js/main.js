@@ -34,7 +34,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, isPeeking } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, isPeeking } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, closeSoundPops } from './audio.js';
@@ -53,7 +53,7 @@ import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
 import { $, el, openDialog, closeDialog, confirmDialog } from './ui.js';
-import { showPlaceScene, showScene } from './scene.js';
+import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
@@ -263,6 +263,8 @@ function init() {
   }
   // ...and ?event=move-tutor (any event id) walks a throwaway, never-saved run straight into that event's room
   if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
+  // ...and ?bossfight=wetland (any Safari area; &starter=id) walks one straight into that area's boss fight, prelude and arena included
+  if (SAFARI_AREAS.some(a => a.id === params.get('bossfight'))) return peekSafariBoss(params.get('bossfight'), STARTERS_BY_ID[params.get('starter')]);
 
   showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {
@@ -289,20 +291,27 @@ function peekSafari(params) {
   const kind = params.get('kind') || 'wild', label = el('div', 'peek-label');
   document.body.append(label);
   const films = params.get('intro') !== '0', walker = spriteUrl(STARTERS.find(s => s.free), 'back', 0);
-  let busy = false, shown = -1;
-  const film = (play) => { if (!films) return; busy = true; play().then(() => { busy = false; }); };
+  let busy = false, shown = -1, boss = false;
+  // the boss's place plays its prelude too, after its walk-on; a tap there plays it again, a tap on the label walks on
+  const play = (steps) => { busy = true; steps.reduce((done, step) => done.then(step), Promise.resolve()).then(() => { busy = false; }); };
   const show = () => {
     const area = SAFARI_AREAS[i], stage = PLACE_START.findLastIndex(f => floor >= f);
-    const key = i * 4 + stage;
-    if (key !== shown) {
-      if (stage === 0 || shown < 0 || Math.floor(shown / 4) !== i) film(() => stage === 0 ? biomeIntro(area, i + 1) : placeIntro(area, stage, walker));
-      else film(() => placeIntro(area, stage, walker));
-      shown = key;
-    }
-    showScene(area.id, stage === 3 && kind === 'wild' ? 'boss' : kind, { progress: (floor + 1) / PEEK_FLOORS, stage, step: floor - PLACE_START[stage], seed: 1000 + i * 37 });
-    label.textContent = `${area.name}, ${stage === 3 ? 'boss' : `floor ${floor + 1}`}: ${area.stages[stage]}. Tap for the next.`;
+    const key = i * 4 + stage, steps = [];
+    if (key !== shown && films) steps.push(() => stage === 0 ? biomeIntro(area, i + 1) : placeIntro(area, stage, walker));
+    shown = key;
+    boss = stage === 3 && kind !== 'elite';
+    showScene(area.id, boss ? 'boss' : kind, { progress: (floor + 1) / PEEK_FLOORS, stage, step: floor - PLACE_START[stage], seed: 1000 + i * 37 });
+    label.textContent = boss ? `${area.name}, boss: ${area.stages[3]}. Tap to replay, tap here for the next.`
+      : `${area.name}, floor ${floor + 1}: ${area.stages[stage]}. Tap for the next.`;
+    if (boss) steps.push(bossArenaPrelude);
+    if (steps.length) play(steps);
   };
-  addEventListener('pointerup', () => { if (busy) return; if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % SAFARI_AREAS.length; } show(); });
+  addEventListener('pointerup', (e) => {
+    if (busy) return;
+    if (boss && e.target !== label) { play([bossArenaPrelude]); return; }
+    if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % SAFARI_AREAS.length; }
+    show();
+  });
   show();
 }
 
