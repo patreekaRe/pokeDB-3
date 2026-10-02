@@ -757,6 +757,11 @@ last act only a special run reaches.
     82.3, every loss in the Depths. Biome 2-3 fights now cost 2-5% HP in 3-5 turns, like biome 1's wilds (biome 3's were
     ~10% in 6 turns). The first biome's elite and boss (~15% each) are the sprint's hardest fights.
     `?mewtwo` unlocks Mewtwo for playtests.
+  - **Events and power (the user's calls, 2026-10-02)**: the road is now fight, fight, ? event, elite, Mart, Center, boss;
+    Mewtwo's attacks deal 25% more in biomes 1-3 (`playerDmg` 1.25, `battle.dmgMult`, a 🧬 "Unleashed" badge), on top of
+    the trims above; and those biomes' defeats don't count for Pokédex research (`afterFight()`: a sprint would farm it).
+    Achievements can't be farmed anyway: Mewtwo only unlocks once every starter is (Reshiram needs the whole Pokédex).
+    Not yet bot-checked: `sim/engine.js` needs `playerDmg` and the event room before it can be.
   - **The gate**: `finalBiome(starter)` replaced every `BIOMES.length - 1`. After the Biome 3 boss a Mewtwo run gets
     `depthsGate()` (a full heal and "Go down", since it has no form left) and its card / relic rewards, then the Depths.
   - **Roster** (sprites, cries at ~-14 dB, `SPRITE_FIT` by the PIL median bbox, which matched six existing entries

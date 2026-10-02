@@ -721,7 +721,9 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
-  const { lines: dexNews, complete: dexComplete } = creditRoom(node) ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
+  const sprint = isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter);
+  const { lines: dexNews, complete: dexComplete } = creditRoom(node) && !sprint ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.

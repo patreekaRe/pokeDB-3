@@ -19,6 +19,7 @@ const BASE_MODS = {
   enemyDmg: 0,      // extra damage on every enemy attack (bosses too)
   evolveHeal: 1,    // fraction of your missing HP that evolving heals
   prizeMult: 1,     // multiplies the ₽ a won fight pays
+  playerDmg: 1,     // multiplies the damage of your attacks (Mewtwo's sprint)
 };
 
 export const LEVELS = [
@@ -42,14 +43,15 @@ export function modsFor(level) {
 /* Mewtwo's run is its own game mode (v1.0, the user's calls 2026-09-28 / 2026-10-02): no Trainer Level, one fixed
    setting from start to end. Biomes 1-3 are a speedrun to build the deck for the Crystal Depths, the biome only Mewtwo
    enters (at its own BIOMES numbers, on a normal map): one road each, no forks (the user's call after a playtest,
-   2026-10-02), enemies Mewtwo should shred, and prize money enough to shop at every Mart. */
-const SPRINT = ['fight', 'fight', 'elite', 'shop', 'rest'];   // then the boss
+   2026-10-02) with a ? room, enemies Mewtwo shreds (its attacks also hit 25% harder there, the user's call: lore-accurate),
+   and prize money enough to shop at every Mart. */
+const SPRINT = ['fight', 'fight', 'event', 'elite', 'shop', 'rest'];   // then the boss
 export const MEWTWO_MODE = {
   floors: [SPRINT, SPRINT, SPRINT, 10],   // a list is a fixed road (generateMap())
   mods: [   // on top of Level 0's, per biome
-    { prizeMult: 2.5 },
-    { prizeMult: 2.5, normalHp: 0.7, bossHp: 0.85, enemyDmg: -5 },
-    { prizeMult: 2.5, normalHp: 0.55, bossHp: 0.7, enemyDmg: -12 },
+    { prizeMult: 2.5, playerDmg: 1.25 },
+    { prizeMult: 2.5, playerDmg: 1.25, normalHp: 0.7, bossHp: 0.85, enemyDmg: -5 },
+    { prizeMult: 2.5, playerDmg: 1.25, normalHp: 0.55, bossHp: 0.7, enemyDmg: -12 },
     {},
   ],
 };

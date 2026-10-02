@@ -147,6 +147,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     ability,
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
+    dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
 
     // the player
     hp: run.hp,
@@ -571,7 +572,7 @@ function damageFor(card, e) {
   const vulnerable = b.enemy.vulnerable > 0 ? VULNERABLE_MULT : 1;
   const count = e.hitsPerAttack ? b.attacks : e.hitsPerExhausted ? e.exhausted || 0
     : e.perX?.hits ? e.hits : e.hits || 1;   // an X card played with X = 0 doesn't hit
-  const hits = Array.from({ length: count }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier) * vulnerable));
+  const hits = Array.from({ length: count }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier * b.dmgMult) * vulnerable));
   return { hits, multiplier };
 }
 
@@ -1701,6 +1702,7 @@ function renderStatus() {
   const playerBadges = [];
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
   if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit${b.flex ? ` (${b.flex} of it wears off at the end of this turn)` : ''}`, 'good']);
+  if (b.dmgMult > 1) playerBadges.push(['🧬', '', `Unleashed: your attacks deal ${Math.round((b.dmgMult - 1) * 100)}% more damage in this biome`, 'good']);
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, b.nextEnergy > 0 ? `+${b.nextEnergy} energy next turn` : `${-b.nextEnergy} less energy next turn`, b.nextEnergy > 0 ? 'good' : 'bad']);

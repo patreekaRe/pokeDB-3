@@ -112,7 +112,7 @@ live site.
   **Mewtwo's run is its own game mode** (v1.0 part B, 2026-10-02): no Trainer Level (`prepare()` in `js/select.js` hides
   the picker and shows its rule), one fixed setting, `MEWTWO_MODE` in `js/data/difficulty.js` (`runMods()` per biome,
   `runFloors()`): biomes 1-3 are a speedrun, one road with no forks (`generateMap({ floors: [types] })` builds it,
-  `roadMap()`: fight, fight, elite, Mart, Center, boss; a short map stays in its first place, `stageOf()`), at Level 0's
+  `roadMap()`: fight, fight, ? event, elite, Mart, Center, boss; Mewtwo's attacks +25% there, `playerDmg`, and no Pokédex research; a short map stays in its first place, `stageOf()`), at Level 0's
   rules with 2.5x prize money (`prizeMult`) and biomes 2-3 trimmed so Mewtwo shreds them (the user's calls after a
   playtest, 2026-10-02), then the **Crystal Depths**, the
   `secret` 4th `BIOMES` entry only Mewtwo enters (`finalBiome(starter)` in `js/data/enemies.js` is every "is this the last

@@ -259,7 +259,7 @@ function renderLevel() {
   document.querySelector('.prep-level').hidden = own;
   if (own) {
     $('level-name').textContent = 'Mewtwo\'s own run';
-    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a speedrun, one road each (${MEWTWO_MODE.floors[0].length} rooms and a boss), then a fourth biome only Mewtwo can enter.`;
+    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a speedrun, one road each (${MEWTWO_MODE.floors[0].length} rooms and a boss) where its attacks hit 25% harder and nothing counts for Pokédex research, then a fourth biome only Mewtwo can enter.`;
     $('level-coins').hidden = true;
     $('level-rules').closest('details').hidden = true;
     return;
