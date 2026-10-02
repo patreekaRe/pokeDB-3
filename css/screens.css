@@ -1833,6 +1833,58 @@ body.battle-intro { pointer-events: none; }
 .gate-free.dark img { filter: brightness(0) drop-shadow(0 0 2px #e0c0ff) drop-shadow(0 0 1px #b070ff); }
 .gate-free.flash img { animation: gateFreeFlash 0.5s steps(1, end); }
 @keyframes gateFreeFlash { 0%, 40% { filter: brightness(0) invert(1); } 20%, 60% { filter: brightness(0); } 100% { filter: none; } }
+/* the strike card (strikeCard() in js/gatescene.js): hold it to charge the move, let go and it flies into the seal. A long
+   press on a phone would select text, pop the image callout or scroll the page, so all three are off on it */
+.gate-strike {
+  --charge: 0;
+  position: absolute; z-index: 2; right: max(16px, 7vw); bottom: calc(max(16px, env(safe-area-inset-bottom)) + 124px);
+  width: min(46vw, 210px, 28vh); display: flex; flex-direction: column; align-items: center; gap: 10px;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; -webkit-tap-highlight-color: transparent;
+  cursor: pointer; outline: none; animation: strikeIn 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.gate-strike * { pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+@keyframes strikeIn { from { translate: 0 60vh; rotate: 12deg; } }
+.gate-strike .card {
+  scale: calc(1 + var(--charge) * 0.1); transition: none;
+  filter: drop-shadow(0 0 calc(4px + var(--charge) * 24px) var(--c1)) brightness(calc(1 + var(--charge) * 0.35));
+  animation: strikeBob 1.6s ease-in-out infinite;
+}
+@keyframes strikeBob { 50% { translate: 0 -6px; } }
+.gate-strike.held .card, .gate-strike.full .card { animation: strikeShake 0.09s steps(2) infinite; }
+@keyframes strikeShake { 0% { translate: calc(var(--charge) * -3px) calc(var(--charge) * 2px); } 100% { translate: calc(var(--charge) * 3px) calc(var(--charge) * -2px); } }
+.gate-strike:focus-visible .card-face { outline: 3px solid #ffd0e8; outline-offset: 4px; }
+/* the charge: a ring filling round, and HOLD turning to LET GO! once it's full */
+.gate-strike-hint { display: flex; align-items: center; gap: 8px; font: 0.8rem/1 var(--pixel-font); font-synthesis-weight: none; color: #ffd0e8; text-shadow: 2px 2px 0 #0e0818; }
+.gate-strike-ring {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: conic-gradient(#ff6aa8 calc(var(--charge) * 360deg), rgba(255, 255, 255, 0.16) 0);
+  -webkit-mask: radial-gradient(circle, transparent 9px, #000 10px); mask: radial-gradient(circle, transparent 9px, #000 10px);
+}
+.gate-strike:not(.held):not(.full) .gate-strike-label { animation: strikeBlink 1s steps(1) infinite; }
+@keyframes strikeBlink { 50% { opacity: 0.35; } }
+.gate-strike.full .gate-strike-ring { background: #ffd040; box-shadow: 0 0 12px #ffd040; }
+.gate-strike.full .gate-strike-label { color: #fff8c0; text-shadow: 2px 2px 0 #0e0818, 0 0 8px #ffd040; }
+/* the breaking blow's card is gold foil; a lost run's is grey and cracked */
+.gate-strike.gold .card-face { border-color: #d8a020; box-shadow: 0 0 0 1.2cqw #181010, inset 0 0 0 1cqw rgba(255, 240, 160, 0.6), 0 0 18px 4px rgba(255, 208, 64, 0.6); }
+.gate-foil {
+  position: absolute; inset: 0; border-radius: inherit; mix-blend-mode: screen;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 240, 170, 0.75) 48%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 200, 80, 0.6) 53%, transparent 65%) 0 0 / 300% 100%;
+  animation: strikeFoil 2s linear infinite;
+}
+@keyframes strikeFoil { from { background-position: 100% 0; } to { background-position: -50% 0; } }
+.gate-strike.weak .card-face::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; opacity: 0.8;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 74' fill='none' stroke='%23202028' stroke-width='1.2'%3E%3Cpath d='M30 0 L26 14 L32 22 L24 34 L28 44 L20 58 L23 74'/%3E%3Cpath d='M32 22 L42 28 M24 34 L12 38 M28 44 L38 52'/%3E%3C/svg%3E") 0 0 / 100% 100%;
+}
+/* let go: it flies into the seal, shrinking and burning white */
+.gate-strike.thrown { animation: strikeThrow 0.4s ease-in forwards; }
+.gate-strike.thrown .gate-strike-hint { visibility: hidden; }
+@keyframes strikeThrow { from { translate: 0 0; } 25% { translate: 0 18px; scale: 1.05; } to { translate: var(--tx) var(--ty); scale: 0.12; rotate: -30deg; opacity: 0; filter: brightness(4); } }
+/* your Pokémon glows brighter and trembles as the charge builds */
+.gate-scene.charging .gate-mon { filter: brightness(calc(1 + var(--charge) * 0.7)); animation: strikeTremble 0.08s steps(2) infinite; }
+@keyframes strikeTremble { 0% { transform: translateX(calc(var(--charge) * -2px)); } 100% { transform: translateX(calc(var(--charge) * 2px)); } }
+.gate-scene.still .gate-strike, .gate-scene.still .gate-strike .card, .gate-scene.still .gate-strike-label, .gate-scene.still .gate-foil, .gate-scene.still.charging .gate-mon { animation: none; }
+.gate-scene.still .gate-strike.thrown { opacity: 0; }
 .gate-scene.still, .gate-scene.still .gate-plate, .gate-scene.still .gate-plate.jolt { animation: none; opacity: 1; }
 .gate-scene.still .gate-mon, .gate-scene.still .gate-free img { transition: none; }
 .gate-scene.still .gate-mon.lunge, .gate-scene.still .gate-dmg.go, .gate-scene.still .gate-free.flash img { animation: none; }

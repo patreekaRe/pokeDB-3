@@ -858,6 +858,9 @@ and whether Mewtwo mode stays out of it (it should: Mewtwo is what's behind it).
   **The broken gate on the title (2026-10-02, the user's ask):** once broken and Mewtwo is free, the open gate stands on
   the title's ledge; a tap swells its violet light with Mewtwo's cry and opens Mewtwo's Prepare step. Before the break
   the title still shows nothing. Playtest: `?mewtwo&gate=0`.
+  **The strike card (2026-10-02, the user's ask):** every gate scene deals your move as a card: hold to charge (a ring
+  fills, your Pokémon gathers energy, Android buzzes), let go and it flies into the seal. Gold foil for the break, grey and
+  cracked for a loss. Damage unchanged. Built for phones (no long-press menus or selection). Playtest: `?strike=90&gate=400`.
 
 **Run in: CLOUD.** Next-session prompt (part A): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'The Sealed Gate'.
 Build part A: the saved gate HP, damage after each won run (more at higher Trainer Levels; only a Level 5 win can break

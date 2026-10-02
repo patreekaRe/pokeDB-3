@@ -11,7 +11,8 @@
  * Everything is painted on one low-res canvas (P CSS px a pixel) so the cavern, gate and effects share their pixels; the
  * Pokémon are the GIFs. Under reduced motion nothing shakes, flashes or flies; the lines, bar and sounds stay.
  */
-import { $, sleep } from './ui.js';
+import { $, el, sleep, makeCard } from './ui.js';
+import { ALL_CARDS } from './data/cards.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
 import { makeGate, gateReady, gateBar, setGateBar, settleGateBar } from './gate.js';
@@ -43,6 +44,7 @@ let P = 4, W = 0, H = 0, gx = 0, gy = 0;
 let gate = null, bg = null, halo = null, ctx = null, gateCanvas = null;
 let parts = [], beams = [], rays = 0, raf = 0, last = 0, t = 0;
 let shake = 0, view = null, bar = null;   // view: what the gate shows this frame (makeGate's state)
+let charging = 0, chargeType = 'fire';   // the strike card's charge while it builds, drawn gathering round your Pokémon
 
 /**
  * Play the scene: `before` and `after` are the gate's HP, `kind` 'loss' | 'win' | 'ultimate', `level` the run's Trainer
@@ -89,19 +91,17 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
     // a save whose earlier wins were counted before it ever got here (seedGate())
     ...(before < GATE_HP ? ['Cracks already run through the seal... your past victories have been reaching it all along.'] : []),
   ] : [];
-  if (kind === 'loss') {
-    await say([...story, `${name} fainted... but its last spark of strength is drawn down into the chamber.`]);
-    tellNow(`${name} reaches for the seal...`);
-  } else {
-    await say([...story, first ? `The strength of ${name}'s victory echoes down into the chamber!` : `${name}'s victory echoes down to the Sealed Gate!`]);
-    tellNow(`${name} used ${move}!`);
-  }
+  if (kind === 'loss') await say([...story, `${name} fainted... but its last spark of strength is drawn down into the chamber.`]);
+  else await say([...story, first ? `The strength of ${name}'s victory echoes down into the chamber!` : `${name}'s victory echoes down to the Sealed Gate!`]);
+  tellNow(`Hold the card to charge ${move}, then let go!`);
+  const power = await strikeCard({ type, kind, move, hit: before - after, breaks });
+  tellNow(kind === 'loss' ? `${name} reaches for the seal...` : `${name} used ${move}!`);
   await attack(type, kind);
   const hit = before - after;
   if (hit > 0) {
     playSound(kind === 'ultimate' ? 'hit-super' : 'hit');
     playSound('gate-crack');
-    impact(type, kind);
+    impact(type, kind, power);
     popDamage(hit);
     await drain(before, after, kind === 'ultimate' ? 1300 : 900);
   } else {
@@ -305,6 +305,7 @@ function frame(now) {
   ctx.drawImage(gateCanvas, gx + sx, gy + sy);
   view.flash = Math.max(0, view.flash - dt * 2.2);
   view.seal = Math.max(0, view.seal - dt * 1.5);
+  if (charging > 0) gather(charging);
   for (const b of beams) b.draw(dt);
   beams = beams.filter(b => !b.done);
   stepParts(dt);
@@ -333,6 +334,124 @@ function stepParts(dt) {
 
 /* ---------- the attack ---------- */
 
+/** Energy of the move's colours drawn in round your Pokémon, thicker and faster the fuller the charge. */
+function gather(k) {
+  const [x0, y0] = mouth();
+  for (let i = 0; i < 1 + Math.round(k * 4); i++) {
+    const a = Math.random() * Math.PI * 2, d = 12 + Math.random() * 10 + k * 6;
+    const v = 1.8 + k * 1.6;
+    spark(x0 + Math.cos(a) * d, y0 + Math.sin(a) * d, -Math.cos(a) * d * v, -Math.sin(a) * d * v, 0.5 / v * 1.6, FX[chargeType].slice(0, 3), { size: k > 0.7 && Math.random() < 0.3 ? 2 : 1 });
+  }
+}
+
+const ART = { fire: '🔥', water: '💧', grass: '🍃', psychic: '🔮' };
+const FULL = 1200, QUICK = 350, IDLE = 4000, HOLD_MAX = 2000;
+
+/**
+ * The strike, dealt as a card (the user's call, 2026-10-02): hold it to charge the move, let go to throw it at the seal.
+ * On phones a long press would select text, open the image callout or scroll, so the card turns all three off (CSS, and
+ * contextmenu / selectstart here), and pointer capture keeps the hold if the finger slides off it; Android buzzes as it
+ * charges (iOS lets no page vibrate). A quick tap charges it for you, and left alone it plays itself, so a run's end never
+ * stalls. The damage is fixed: it resolves with the charge (0-1), which only scales the show.
+ */
+function strikeCard({ type, kind, move, hit, breaks }) {
+  const scene = $('gate-scene');
+  const base = ALL_CARDS.find(c => c.name === move && c.type === type);
+  const card = makeCard({ id: 'gate-strike', name: move, type, cost: 0, art: base?.art || ART[type], sprite: base?.sprite, effects: {}, status: kind === 'loss' });
+  card.querySelector('.card-cost').hidden = true;
+  card.querySelector('.card-text').textContent = breaks ? 'Shatter the Sealed Gate.' : kind === 'loss' ? 'A last spark of strength.' : `Strike the seal for ${hit}.`;
+  if (breaks) card.querySelector('.card-face').append(el('span', 'gate-foil'));
+  for (const img of card.querySelectorAll('img')) img.draggable = false;
+
+  const label = el('span', 'gate-strike-label', 'HOLD');
+  const hint = el('div', 'gate-strike-hint');
+  hint.append(el('span', 'gate-strike-ring'), label);
+  const wrap = el('div', `gate-strike${breaks ? ' gold' : ''}${kind === 'loss' ? ' weak' : ''}`);
+  wrap.tabIndex = 0;
+  wrap.setAttribute('role', 'button');
+  wrap.setAttribute('aria-label', `${move}: hold to charge, let go to strike`);
+  wrap.append(card, hint);
+  scene.append(wrap);
+  wrap.focus({ preventScroll: true });
+  chargeType = type;
+
+  const vibe = (p) => { if (navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(p); };
+  return new Promise(resolve => {
+    let charge = 0, mode = null, pressAt = 0, fullAt = 0, buzzAt = 0, done = false, last = performance.now();
+    const idle = setTimeout(() => (still() ? release() : (mode = 'auto')), IDLE);
+    const tick = (now) => {
+      if (done) return;
+      const dt = now - last;
+      last = now;
+      if (mode) charge = Math.min(1, charge + dt / (mode === 'quick' ? QUICK : FULL));
+      wrap.style.setProperty('--charge', charge.toFixed(3));
+      scene.style.setProperty('--charge', charge.toFixed(3));
+      charging = mode && !still() ? charge : 0;
+      if (mode === 'hold' && now >= buzzAt && charge < 1) { vibe(12); buzzAt = now + 220 - 160 * charge; }
+      if (charge >= 1 && !fullAt) {
+        fullAt = now;
+        wrap.classList.add('full');
+        label.textContent = 'LET GO!';
+        playSound('power');
+        vibe(40);
+      }
+      if (fullAt && (mode !== 'hold' || now - fullAt > HOLD_MAX)) return release();
+      requestAnimationFrame(tick);
+    };
+    const press = (e) => {
+      if (done || mode === 'hold') return;
+      e.preventDefault();
+      if (e.pointerId !== undefined) wrap.setPointerCapture(e.pointerId);
+      clearTimeout(idle);
+      if (still()) return release();
+      mode = 'hold';
+      pressAt = performance.now();
+      wrap.classList.add('held');
+      scene.classList.add('charging');
+      playSound('gate-hum');
+    };
+    // a quick tap (or someone who doesn't know to hold) charges it the rest of the way by itself
+    const lift = () => {
+      if (mode !== 'hold') return;
+      if (performance.now() - pressAt < 200 && charge < 0.5) { mode = 'quick'; return; }
+      release();
+    };
+    const key = (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      if (e.type === 'keydown' && !e.repeat) press(e);
+      else if (e.type === 'keyup') lift();
+    };
+    const block = (e) => e.preventDefault();
+    wrap.addEventListener('pointerdown', press);
+    wrap.addEventListener('pointerup', lift);
+    wrap.addEventListener('pointercancel', lift);
+    wrap.addEventListener('contextmenu', block);
+    wrap.addEventListener('selectstart', block);
+    document.addEventListener('keydown', key);
+    document.addEventListener('keyup', key);
+
+    function release() {
+      if (done) return;
+      done = true;
+      charging = 0;
+      clearTimeout(idle);
+      document.removeEventListener('keydown', key);
+      document.removeEventListener('keyup', key);
+      scene.classList.remove('charging');
+      vibe(breaks ? [70, 40, 160] : 60);
+      // it flies into the seal and burns up
+      const r = wrap.getBoundingClientRect();
+      wrap.style.setProperty('--tx', `${(gx + gate.cx) * P - (r.left + r.width / 2)}px`);
+      wrap.style.setProperty('--ty', `${(gy + gate.sealY) * P - (r.top + r.height / 2)}px`);
+      wrap.classList.add('thrown');
+      setTimeout(() => wrap.remove(), still() ? 0 : 420);
+      resolve(Math.max(charge, 0.3));
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
 function mouth() {
   const r = $('gate-mon').getBoundingClientRect();
   return [(r.left + r.width * 0.55) / P, (r.top + r.height * 0.35) / P];
@@ -350,14 +469,6 @@ async function attack(type, kind) {
   const [x0, y0] = mouth(), [x1, y1] = target();
   const len = Math.hypot(x1 - x0, y1 - y0), ux = (x1 - x0) / len, uy = (y1 - y0) / len;
   const time = big ? 1.3 : small ? 0.6 : 0.95;
-  if (big) {   // the ultimate moves charge first: energy gathers round your Pokémon
-    playSound('power');
-    for (let i = 0; i < 70; i++) {
-      const a = Math.random() * Math.PI * 2, d = 14 + Math.random() * 10;
-      spark(x0 + Math.cos(a) * d, y0 + Math.sin(a) * d, -Math.cos(a) * d * 2.2, -Math.sin(a) * d * 2.2, 0.45, colors.slice(0, 3));
-    }
-    await sleep(500);
-  }
   playSound(type === 'fire' ? 'burn' : type === 'water' ? 'item' : 'ball-throw');
   if (type === 'water') {
     // a jet, a solid beam that wobbles, with bubbles thrown off it
@@ -434,15 +545,15 @@ function beam(x0, y0, x1, y1, time, width, colors, ring = false) {
 }
 
 /** The hit lands: a flash on the gate, a shake, sparks of the move and chips of stone. 'held': it bounces off the seal. */
-function impact(type, kind) {
+function impact(type, kind, power = 1) {
   const [x, y] = target();
   const big = kind === 'ultimate';
   view.flash = kind === 'held' ? 0.3 : big ? 1 : 0.7;
   if (!still()) {
-    shake = kind === 'held' ? 1 : big ? 3 : 2;
+    shake = kind === 'held' ? 1 : big ? 3 : power < 0.6 ? 1 : 2;
     setTimeout(() => { shake = 0; }, big ? 700 : 400);
   }
-  const n = kind === 'held' ? 30 : big ? 120 : kind === 'loss' ? 25 : 60;
+  const n = Math.round((kind === 'held' ? 30 : big ? 120 : kind === 'loss' ? 25 : 60) * (0.5 + power / 2));
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2, v = 20 + Math.random() * (big ? 90 : 55);
     spark(x, y, Math.cos(a) * v, Math.sin(a) * v, 0.4 + Math.random() * 0.4, kind === 'held' ? ['#ffd0e8', '#ff6aa8', '#e02a70'] : FX[type], { drag: 2, grav: type === 'water' ? 120 : 0 });

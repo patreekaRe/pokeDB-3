@@ -49,6 +49,9 @@ three places:
   is free, the open gate stands on the title's ledge; a tap swells its violet light with Mewtwo's cry, then opens
   Mewtwo's Prepare step. Checked in the browser pane at 375x812 with `?mewtwo&gate=0` (hidden without them, no overlap
   with the gems, the tap lands on Prepare, Back on the select).
+- 2026-10-02: **The strike card** (Desktop app, the user's ask): the gate scene's move is a card you hold to charge and
+  let go to throw (`strikeCard()` in `js/gatescene.js`), phone-safe long press. Checked in the browser pane at 375x812
+  with `?strike=90&gate=400` and `?strike=700&gate=600&starter=squirtle&stage=2` (the gold break card); not on a real phone.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
