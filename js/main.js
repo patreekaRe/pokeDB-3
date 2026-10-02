@@ -55,6 +55,7 @@ import { initCloud } from './cloud.js';
 import { $, el, openDialog, closeDialog, confirmDialog } from './ui.js';
 import { showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS } from './data/safari.js';
+import { biomeIntro, placeIntro } from './biome-intro.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -270,7 +271,8 @@ function init() {
 
 /** The ?strike= playtest: the gate scene on its own, nothing saved. */
 /** The Safari areas' scenes, a floor at a time as you'd walk them (a playtest view: no run, nothing saved): floors 1-3,
-    4-6 and 7-10 are an area's first three places (stageOf() in js/map.js), then the boss's. */
+    4-6 and 7-10 are an area's first three places (stageOf() in js/map.js), then the boss's. Each area opens with its
+    intro film and each later place with its walk on, as a run plays them (&intro=0 leaves them out). */
 const PEEK_FLOORS = 11, PLACE_START = [0, 3, 6, 10];
 function peekSafari(params) {
   document.body.classList.add('scene-peek');
@@ -278,12 +280,21 @@ function peekSafari(params) {
   let floor = PLACE_START[Math.min(3, Math.max(0, +params.get('stage') || 0))];
   const kind = params.get('kind') || 'wild', label = el('div', 'peek-label');
   document.body.append(label);
+  const films = params.get('intro') !== '0', walker = spriteUrl(STARTERS.find(s => s.free), 'back', 0);
+  let busy = false, shown = -1;
+  const film = (play) => { if (!films) return; busy = true; play().then(() => { busy = false; }); };
   const show = () => {
     const area = SAFARI_AREAS[i], stage = PLACE_START.findLastIndex(f => floor >= f);
+    const key = i * 4 + stage;
+    if (key !== shown) {
+      if (stage === 0 || shown < 0 || Math.floor(shown / 4) !== i) film(() => stage === 0 ? biomeIntro(area, i + 1) : placeIntro(area, stage, walker));
+      else film(() => placeIntro(area, stage, walker));
+      shown = key;
+    }
     showScene(area.id, stage === 3 && kind === 'wild' ? 'boss' : kind, { progress: (floor + 1) / PEEK_FLOORS, stage, step: floor - PLACE_START[stage], seed: 1000 + i * 37 });
     label.textContent = `${area.name}, ${stage === 3 ? 'boss' : `floor ${floor + 1}`}: ${area.stages[stage]}. Tap for the next.`;
   };
-  addEventListener('pointerup', () => { if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % SAFARI_AREAS.length; } show(); });
+  addEventListener('pointerup', () => { if (busy) return; if (++floor >= PEEK_FLOORS) { floor = 0; i = (i + 1) % SAFARI_AREAS.length; } show(); });
   show();
 }
 

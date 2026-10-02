@@ -3672,6 +3672,11 @@ body.has-scene #scene-bg { display: block; }
 .bi-title.on .bi-kicker { animation: biRise .5s both; }
 .bi-title.on .bi-letter { animation: biDrop .55s calc(.25s + var(--i) * 55ms) cubic-bezier(.2, .9, .3, 1.4) both, biShine 2.4s calc(1.6s + var(--i) * 60ms) infinite; }
 .bi-title.on .bi-place { animation: biRise .6s 1.3s both; }
+/* a Safari area's name under SAFARI ZONE, on the Zone's green board */
+.bi-area { font-size: clamp(15px, 5.2vw, 30px); color: #fff8e0; letter-spacing: .14em; text-transform: uppercase; opacity: 0; padding: .3em .8em .25em;
+  background: #2e8a34; border: 3px solid #14501c; box-shadow: inset 0 3px 0 #68c858, 0 4px 0 rgba(0, 0, 0, .45); text-shadow: 2px 2px 0 #14501c; }
+.bi-title.on .bi-area { animation: biRise .6s 1s both; }
+.bi-title.on .bi-area ~ .bi-place { animation-delay: 1.5s; }
 @keyframes biRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes biGlow { to { opacity: 1; } }
 @keyframes biDrop { 0% { opacity: 0; transform: translateY(-1.2em) scale(1.4); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
@@ -3688,7 +3693,7 @@ body.has-scene #scene-bg { display: block; }
 }
 
 /* ?scene=<place> (init() in js/main.js): only the painted scene, for a look at a room */
-body.scene-peek > :not(#scene-bg):not(.peek-label) { visibility: hidden !important; }
+body.scene-peek > :not(#scene-bg):not(.peek-label):not(.biome-intro) { visibility: hidden !important; }
 .peek-label { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 5; padding: 4px 10px; border: 2px solid #183a14; background: #3e8a3a; color: #fff8d8; font-family: var(--pixel-font); font-size: 0.75rem; white-space: nowrap; }
 body.scene-peek #backdrop { display: none; }
 

@@ -30,6 +30,7 @@ import { playSound, playCry, preloadCries, preloadSounds } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { getSave } from './storage.js';
 import { spriteFit } from './data/sprite-fit.js';
+import { SAFARI_INTROS } from './safari-intro.js';
 
 // the film's beats, in ms
 const TILT = [0, 2600];        // down through the clouds
@@ -134,6 +135,7 @@ const INTROS = {
     sounds: ['gust', 'rumble-far'],
     scene: wastesScene,
   },
+  ...SAFARI_INTROS,   // the Safari Zone's six areas, one painter with a camera move each (js/safari-intro.js)
 };
 
 const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
@@ -453,7 +455,8 @@ function pickMons(biome, n) {
 }
 
 /** Has the Pokédex met this Pokémon (fought it, beaten it, or counted it for research)? */
-function known(save, id) {
+function known(save, id, safari) {
+  if (safari) return save.safariDex?.seen?.includes(id) || save.safariDex?.caught?.includes(id);
   const dex = save.dex;
   return dex.seen.includes(id) || dex.defeated.includes(id) || (dex.count?.[id] || 0) > 0;
 }
@@ -492,7 +495,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
   const beats = mini ? { POPS: [], TITLE_AT: 700, END: 5000 } : film.beats;
   const still = reduced();
   let done = false;
-  const scene = film.scene({ film, look, mini, time, land, sky, cloud, W, H, P, tall, rand, beats, live: () => !done && !still });
+  const scene = film.scene({ film, look, stage, mini, time, land, sky, cloud, W, H, P, tall, rand, beats, live: () => !done && !still });
   const spots = scene.spots;
 
   // ---- the page ----
@@ -521,7 +524,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
     });
     wrap.append(img);
     mons.append(wrap);
-    return { wrap, img, spot: s, id, known: known(save, id), shown: false };
+    return { wrap, img, spot: s, id, known: known(save, id, film.safari), shown: false };
   });
   let hiker = null;
   if (mini && walker) {
@@ -535,7 +538,8 @@ function run(film, biome, { number, stage, walker }, resolve) {
     img.addEventListener('load', () => { hiker.img = img; hiker.feet = spriteFit(img.src)[1]; });
   }
   const card = el('div', 'bi-title');
-  const kicker = el('div', 'bi-kicker', mini ? biome.name : `Biome ${number}`);
+  // a Safari area: SAFARI ZONE over the area's name
+  const kicker = el('div', 'bi-kicker', film.safari ? (mini ? `Safari Zone - ${biome.name}` : `Area ${number}`) : mini ? biome.name : `Biome ${number}`);
   const name = el('div', 'bi-name');
   name.style.setProperty('--ink', film.ink[0]);
   name.style.setProperty('--edge', film.ink[1]);
@@ -547,6 +551,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
     name.append(line);
   }
   card.append(kicker, name);
+  if (film.safari && !mini) card.append(el('div', 'bi-area', biome.name));
   if (!mini) card.append(el('div', 'bi-place', place));   // only where you are: the places ahead are for the walk to show
   const skip = el('div', 'bi-skip', 'Tap to skip');
   box.append(back, mons, front, el('div', 'bi-bars'), card, skip);
@@ -1546,3 +1551,6 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
 
   return { spots, walkX: VX, draw, monAt: (i, ms) => { const [x, y] = project(spots[i].wx, spots[i].wz, camZ(ms), K(ms)); return [Math.round(x), Math.round(y)]; } };
 }
+
+// the Safari areas' films (js/safari-intro.js) paint with the same brushes
+export { ease, easeOut, span, layer, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage };

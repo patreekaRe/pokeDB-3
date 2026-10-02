@@ -217,8 +217,26 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   stand in the area's own scene.
 - **The run**: `land()` in `js/run.js` (the Safari area, or the main biome) feeds the scene, the map (`PALETTES` in
   `js/map.js` has the six, with `bog`, `sand`, `snow` and `dune` terrain) and the signs (`data-safari`: the Zone's
-  green board and a tan stage sign). The main biomes' intro films don't play in a Safari run (their titles would be wrong);
-  the areas have none yet. Playtest: `?area=wetland` (`&stage`, `&kind`, `&time`), a tap walks on a floor.
+  green board and a tan stage sign). Playtest: `?area=wetland` (`&stage`, `&kind`, `&time`), a tap walks on a floor.
+
+## The areas' intro films (phase 5c, 2026-10-02)
+
+- `js/safari-intro.js`: `SAFARI_INTROS`, spread into `INTROS` in `js/biome-intro.js`, whose `run()` plays them like the
+  main biomes' (title, Pokémon popping out of the tall grass, the walk-on, tap to skip). One painter, `safariScene()`: five
+  layers (far, mid with the goal, back, ground, fore; the Forest adds near trunks) slid and grown about the goal by the
+  area's camera (`CAMS`): Meadow `drop` (down through the clouds, a pan to the Lone Tree), Forest `push` (in between the
+  trunks to the sunlit glade), Wetland `glide` (down and along the lake to the lilies' bloom), Marsh `mist` (the mist
+  parting on the Great Snag), Peak `crane` (rising out of the alpine grass to the summit), Desert `sweep` (a whip pan
+  over the dunes, pulling back to the oasis, heat shimmer). Each area's `far` / `mid` / `back` / `ground` painters are
+  plain functions there; the Zone's fence, signboard (the full film's first frame), trail and tall grass are shared.
+- **Title**: kicker "Area N", SAFARI ZONE in the area's ink, the area's name on a green board (`.bi-area`), then the
+  place. Silhouettes colour in from the **Safari** Pokédex (`known(..., film.safari)`).
+- **Walk-ons**: `placeIntro()` for places 1, 2 and 3; unlike the main biomes, the boss's place gets one too (`nextPlace()`
+  in `js/run.js`, `toBoss`), with the rest house by the goal. Each place's `look.goal` (1.35 / 1.8 / 2.4) brings the goal
+  nearer; where it can't grow taller (wide screens) it grows wider (`spread`). Area extras: the Meadow's flowers and
+  tall grass, the Forest's shade, the Wetland's lake widening, the Marsh's mist, the Peak's snow.
+- **Playtest**: `?area=<area>` plays the area's film first, then each new place's walk-on as you tap through the floors
+  (`peekSafari()` in `js/main.js`; `&intro=0` leaves them out). `body.scene-peek` lets `.biome-intro` show.
 
 ## The bot (`../pokeDB-sim`)
 

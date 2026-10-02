@@ -344,7 +344,6 @@ function peekRoom(id) {
    ============================================================ */
 
 function startBiome() {
-  const biome = BIOMES[run.biome];
   reseed(`biome:${run.biome}`);
   if (!isSafari()) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.mods = runMods(run.starter, run.level, run.biome);
@@ -360,9 +359,8 @@ function startBiome() {
   rollEvents();
   run.current = null;
   showMap();
-  if (isSafari()) return;   // the intro films are the main biomes' (the Safari's areas have none yet)
-  // the biome's intro plays over the map (already checkpointed, so a refresh skips it), then its signs arrive again
-  biomeIntro(biome, run.biome + 1).then(() => {
+  // the biome's (or Safari area's) intro plays over the map (already checkpointed, so a refresh skips it), then its signs arrive again
+  biomeIntro(land(), run.biome + 1).then(() => {
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
   });
 }
@@ -484,7 +482,7 @@ function showMap() {
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
   const next = nextPlace(here);
-  if (next && !isSafari()) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
+  if (next) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
   else showNotes();
 }
 
@@ -495,8 +493,11 @@ let placeShownAt = null;
 function nextPlace(here) {
   if (!here) return 0;
   const key = `${run.biome}:${here.id}`;
-  const stage = stageOf(run.map, here).stage, next = stageOf(run.map, { floor: here.floor + 1 }).stage;
-  if (next <= stage || next > 2 || placeShownAt === key) return 0;
+  const stage = stageOf(run.map, here).stage;
+  // a Safari area walks on to its boss's place too (the rest house by the goal); a main biome's boss has its own intro
+  const toBoss = isSafari() && here.floor === run.map.floors.length - 1 && run.map.floors.length >= 10;
+  const next = toBoss ? 3 : stageOf(run.map, { floor: here.floor + 1 }).stage;
+  if (next <= stage || next > (toBoss ? 3 : 2) || placeShownAt === key) return 0;
   placeShownAt = key;
   return next;
 }
