@@ -364,8 +364,10 @@
 .title-run-row { position: relative; }
 .title-rope { position: absolute; left: 100%; top: 50%; margin: -32px 0 0 4px; width: 64px; height: 64px; opacity: 0; }
 .title-screen.menu .title-rope { opacity: 1; animation: plateIn 0.3s steps(3); }
-/* only where it would land on the open gate (placeRope() in js/title.js): it hangs from the plate's top-right corner */
-.title-rope.tucked { left: auto; right: -12px; top: auto; bottom: calc(100% - 22px); margin: 0; }
+/* only where it would land on the open gate (placeRope() in js/title.js): smaller, low by the plate's bottom-right corner,
+   under the gate (the user's pick, 2026-10-02: hung from the plate's top corner it covered the biome sign) */
+.title-rope.tucked { top: auto; bottom: -26px; margin: 0 0 0 2px; width: 48px; height: 48px; }
+.title-rope.tucked .title-abandon, .title-rope.tucked .title-abandon img { width: 48px; height: 48px; }
 .title-abandon {
   width: 64px; height: 64px; padding: 0; border: 0; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;
@@ -393,6 +395,7 @@
   content: ''; position: absolute; right: 24px; top: 100%; width: 12px; height: 8px; margin-top: 2px;
   background: #303038; clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
+.title-rope.tucked .rope-ask::after { right: 18px; }
 .rope-ask p { margin: 0 0 8px; font-size: 0.55rem; line-height: 1.5; }
 .rope-ask-btns { display: flex; justify-content: center; gap: 8px; }
 .title-screen:not(.menu) .title-run { display: none; }
