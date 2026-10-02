@@ -884,6 +884,11 @@ mode, so it makes sense. It unlocks once the main Pokédex is fully researched (
   day: the daily hook. Art is one look (fences, tall grass, Safari signs) with 6 painted area scenes.
 - **The daily seed**: the same run for everyone on a UTC date: map, enemies, rewards, and a **fixed starter** the seed
   picks (any starter but Mewtwo, owned or not, so the leaderboard is fair).
+- **One button, one mode** (the user's call, 2026-10-02): the Safari Zone *is* the daily run. A single **Safari Zone**
+  button on the start screen (locked until `dex.complete`), with a line under it naming today's areas ("Today: Wetland ·
+  Peak · Desert"). No separate Daily button.
+- **Catching on the first try too** (the user's call, 2026-10-02): every Safari run can catch, the leaderboard try
+  included; it costs the turn and a miss gives the enemy a free hit, so it's a risk, not a shortcut.
 - **Attempts**: the **first try of the day counts for the leaderboard**; after it, unlimited replays of the same seed for
   catching (they count for the Safari Pokédex, not the board).
 - **Capture**: once an enemy's HP is red (below 25%), a **Throw Ball** button appears. Throwing costs the turn's energy;
@@ -910,8 +915,8 @@ About 40 `Math.random` calls today (run.js 13, rewards.js 7, battle.js 7, map.js
 move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, scene) stay as they are.
 
 **Phases, one or more sessions each:**
-1. **Seeded RNG + the Daily button**: the seeded generator through every gameplay roll, a Daily entry on the start screen
-   (locked until `dex.complete`), the day's 3 areas and fixed starter, the first-try flag, a small starting roster per
+1. **Seeded RNG + the Daily button**: the seeded generator through every gameplay roll, a Safari Zone button on the start screen
+   (today's areas under it; locked until `dex.complete`), the day's 3 areas and fixed starter, the first-try flag, a small starting roster per
    area. Playable day one, without capture yet.
 2. **Capture and Poké Balls**: Throw Ball at red HP, catch odds, the take-or-skip card, the Game Corner balls. Bot check
    (the sim needs the seeded run and the throw) that catching doesn't make the run easier than knocking out.
@@ -920,7 +925,7 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
 **Run in: CLOUD.** Next-session prompt (phase 1): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'Post-v1.0: the
-Safari Zone daily run'. Build phase 1: a seeded RNG for every gameplay roll, the Daily button (locked until the Pokédex is
+Safari Zone daily run'. Build phase 1: a seeded RNG for every gameplay roll, the Safari Zone button showing today's areas (locked until the Pokédex is
 fully researched), the day's 3 Safari areas and fixed starter from a UTC-date seed, the first-try leaderboard flag, and a
 small starting roster per area. Ask me about anything the plan leaves open first. Attach pokeDB-sim too."
 
