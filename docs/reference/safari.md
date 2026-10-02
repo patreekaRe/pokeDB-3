@@ -105,13 +105,16 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   off-type move. `safariMonDef()` builds the `ENEMY_DEFS` entry (enemies.js adds them all, `safari: true`, `template`);
   cards.js builds each line's `sig-<id>` card (the card's type is the Pokémon's); safari.js appends each area's lines to
   its `normals` (or `rares`), after the borrowed wilds.
-- Batches: 1 (58 Pokémon, ~9 an area + a rare spawn) and 2 (84, 12 an area + 2 rare spawns, appended per area under
-  `Batch 2` headers); 188 Safari Pokédex entries with the borrowed wilds. The Budew / Sewaddle / Lotad / Horsea / Spheal /
+- Batches: 1 (58 Pokémon, ~9 an area + a rare spawn), 2 (84, 12 an area + 2 rare spawns, appended per area under
+  `Batch 2` headers) and 3 (85, under `Batch 3` headers: 12-13 wilds + 2 rare spawns an area, 12 of them Fire, since
+  batch 2 had only two; evolved forms of earlier Pokémon count as new species); 273 Safari Pokédex entries with the
+  borrowed wilds. The Budew / Sewaddle / Lotad / Horsea / Spheal /
   Tympole lines stay out (the user turned them down as skins).
-- `TEMPLATES` (Biome 1 numbers): striker 42 HP 6/5/9; bruiser 46, 6 / +2 strength / 9; tank 52, 8 block / 6 / 9; heavy 56,
-  9 block / 5 / 11; speedster 36, 7/6/10; drainer 46, drain 5 (+4) / 6 / drain 8 (+5); poisoner 44, 5 + Poison / 6 block /
-  9; paralyzer 44, 6 + Paralysis (draw pile) / +1 strength / 9; confuser 44, 5 / 6 block / 9 + Confusion (draw pile);
-  clogger 46, 2 Sludge / 6 / 9.
+- `TEMPLATES` (Biome 1 numbers): striker 46 HP 6/5/9; bruiser 51, 6 / +2 strength / 9; tank 57, 8 block / 6 / 9; heavy 62,
+  9 block / 5 / 11; speedster 40, 7/6/10; drainer 51, drain 5 (+4) / 6 / drain 8 (+5); poisoner 48, 5 + Poison / 6 block /
+  9; paralyzer 48, 6 + Paralysis (draw pile) / +1 strength / 9; confuser 48, 5 / 6 block / 9 + Confusion (draw pile);
+  clogger 51, 2 Sludge / 6 / 9. HP x1.1 since batch 3 (2026-10-02): the template Pokémon had become most of every
+  roster and knock-out runs drifted to 83.7% (human bot); with it 74.0.
 - `PLACE`: a template Pokémon in the run's 2nd / 3rd area has x1.16 / x1.42 HP and +1 / +2 on its attacks (its
   `strength` from `buildEncounter()`), on top of that biome's `hpMult` / `dmgBonus`, like the main game's wilds grow. The
   borrowed wilds keep their own numbers.

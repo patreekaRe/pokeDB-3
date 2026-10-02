@@ -76,6 +76,10 @@ three places:
   spawns an area, each with a GIF, a `SPRITE_FIT` line and a signature card; 188 Safari Pokédex entries. Bot: knock out
   73.7 -> 81.3 (300 runs, just inside noise), throw at 50%+ 69.3 -> 67.3; no retune. Next: batch 3 (prompt in the roadmap);
   the area reward is still open.
+- 2026-10-02: **Safari Zone phase 4, batch 3** (cloud, pushed to `main`): 85 more Gen 1-5 Pokémon (12 Fire: every unused
+  Gen 1-5 Fire species), 12-13 wilds + 2 rare spawns an area; 273 Safari Pokédex entries. Knock-out runs had drifted to
+  83.7, so every template's HP is x1.1: knock out 74.0, throw at 50%+ 58.3 (300 runs). Next: batch 4 (prompt in the
+  roadmap); the area reward is still open.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.

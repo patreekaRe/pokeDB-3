@@ -998,16 +998,35 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    further, trim the strongest new cards (Swords Dance, Shadow Ball, Karate Chop) or the template HP. Checked headless at
    390x844: every new GIF decodes, a Safari run's first fight, the Safari Pokédex (188), no console errors.
    ~300 Gen 1-5 non-legendary species are still unused, so batches can go on for a while.
+   **Batch 3 built 2026-10-02** (cloud): **85 more Pokémon**, 273 Safari Pokédex entries, 12 of them Fire (batch 2 had
+   two): Meadow Ninetales, Rapidash, Arcanine, Pikachu, Clefairy, Meowth, Taillow, Patrat, Sunflora, Skiploom, Volbeat,
+   Illumise (rare Flareon, Togepi); Forest Simisear, Simipour, Butterfree, Beedrill, Gloom, Parasect, Nuzleaf, Joltik,
+   Ferroseed, Slakoth, Poochyena, Purrloin (rare Leafeon, Zorua); Wetland Golduck, Poliwhirl, Kingler, Corsola, Octillery,
+   Luvdisc, Clamperl, Pelipper, Seaking, Swanna, Bibarel, Masquerain (rare Vaporeon, Dragonair); Marsh Lampent, Haunter,
+   Muk, Weezing, Arbok, Swalot, Quagsire, Whiscash, Gastrodon, Amoonguss, Dustox, Banette (rare Chandelure, Mismagius);
+   Peak Magcargo, Camerupt, Graveler, Machoke, Golbat, Piloswine, Glalie, Beartic, Cryogonal, Timburr, Swablu, Abomasnow
+   (rare Magmortar, Bagon); Desert Houndoom, Sandslash, Dugtrio, Marowak, Vibrava, Krokorok, Hippowdon, Solrock, Lunatone,
+   Cofagrigus, Crustle, Cradily, Archen (rare Volcarona, Gabite). Claude's call: evolved forms of earlier Pokémon count as
+   new species (the Fire pool needed them: every unused Gen 1-5 Fire non-legendary is in now). 11 signature cards were
+   nudged to stop reading like another card.
+   **Retune**: knock-out runs had drifted to 83.7 (78.7 before batch 3, 300 runs/cell, human bot). Signature cards can't
+   cause it (a knock-out run never catches), so the fix is the templates: **every template's HP x1.1** (striker 46,
+   bruiser 51, tank 57, heavy 62, speedster 40, drainer 51, poisoner/paralyzer/confuser 48, clogger 51). Screened at 150:
+   HP x1.1 74.7, attacks +1 77.3, PLACE HP 1/1.25/1.6 76.7; confirmed at 300: knock out **74.0**, throw at 50%+ 58.3
+   (67.0 before batch 3, 3.5 catches a run). Catching stays costlier than knocking out, so the signature cards (Swords Dance,
+   Shadow Ball, Karate Chop) were left as they are. Checked headless at 390x844: all 85 GIFs decode, a Safari fight, the
+   Safari Pokédex (273), no console errors.
+   ~240 Gen 1-5 non-legendary species are still unused (no Fire ones left).
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 4, batch 3): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0:
-the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 3: ~70 more Gen 1-5 non-legendary Pokémon (none
-the game uses; still leave out the Budew / Sewaddle / Lotad / Horsea / Spheal / Tympole lines) as lines in
-js/data/safari-mons.js on the existing templates, spread over the 6 areas by habitat with a couple of rare spawns each
-(evolved forms are fine there), with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median bbox) and a
-signature card each; tests/safarimons.test.mjs must stay green. Batch 2 left knock-out runs +7.6 easier: bot-check before
-and after (human bot, ~150 runs a cell, knock out and throw at 50%+) and retune if the gap passes ~8. Also settle with me
-whether a complete area gives a reward. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (phase 4, batch 4): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0:
+the Safari Zone daily run' and docs/reference/safari.md. Add Safari batch 4: ~80 more Gen 1-5 non-legendary Pokémon (none
+the game uses; still leave out the Budew / Sewaddle / Lotad / Horsea / Spheal / Tympole lines; no Fire ones are left, so
+favour Grass and Water species and Normal ones that fit) as lines in js/data/safari-mons.js on the existing templates, ~13
+an area with 2 rare spawns each, with PokeAPI black-white animated front GIFs, SPRITE_FIT lines (PIL median bbox) and a
+signature card each; tests/safarimons.test.mjs must stay green. Bot-check before and after (human bot, ~150 runs a cell,
+knock out and throw at 50%+; knock out was 74.0 after batch 3's template HP x1.1) and retune the templates if knock-out
+drifts past ~82. Also settle with me whether a complete area gives a reward. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 
