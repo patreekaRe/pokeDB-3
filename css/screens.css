@@ -1761,6 +1761,9 @@ body.battle-intro { pointer-events: none; }
 .enemy-portrait.sprite img { object-fit: contain; object-position: 50% 100%; translate: calc(var(--shift, 0) * 100%) calc(var(--drop, 0) * 100%); --rest: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); filter: var(--rest); }
 .enemy-portrait.sprite.elite img { --rest: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
 .enemy-portrait.sprite.boss img  { --rest: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+/* Kenmatta's Super Saiyan aura (js/aura.js): a canvas laid over his sprite, hidden while he's still a silhouette */
+.aura-fx { position: absolute; image-rendering: pixelated; pointer-events: none; }
+.enemy-zone.entering .aura-fx, .enemy-zone.boss-waiting .aura-fx { visibility: hidden; }
 .enemy-portrait.elite:not(.sprite) { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 30px #ff3b3b, 0 10px 24px rgba(0, 0, 0, 0.6); }
 .enemy-portrait.boss:not(.sprite)  { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 36px var(--gold), 0 10px 24px rgba(0, 0, 0, 0.6); }
 

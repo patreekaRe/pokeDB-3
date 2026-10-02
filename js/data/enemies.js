@@ -552,6 +552,7 @@ export const ENEMY_DEFS = {
 export const KEN = {
   id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: [130, 220, 370], boss: true,
   image: 'assets/trainers/alder.png', art: false, arena: 'kombat',   // his own stage (PLACE_ART.kombat in js/scene.js)
+  aura: true,   // Super Saiyan gold from the start, Super Saiyan 2 below half HP (js/aura.js; the user's joke)
   music: 'kombat',   // his own theme, the user's (an 8-bit Mortal Kombat theme), in place of the boss music
   description: 'The Move Tutor. He teaches by hitting you.',
   prelude: 'Kenmatta cracks his neck. "Try not to cry, bro."',

@@ -30,6 +30,7 @@ import { showScene, showPlaceScene, setStorm, bossArenaPrelude } from './scene.j
 import { BIOMES } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
+import { setAura, stopAura } from './aura.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -1347,6 +1348,7 @@ async function finish(won) {
     if (battle !== b) return;
   }
 
+  stopAura();
   closeDialog('piles-dialog');
   b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
 }
@@ -1422,6 +1424,11 @@ function checkBlaze() {
     so the card's own line is read first. */
 function checkTaunts() {
   const b = battle, t = b.def.taunts, en = b.enemy;
+  if (b.def.aura && !b.over && en.hp > 0 && en.hp <= en.maxHp / 2 && !b.ascended) {   // Super Saiyan 2 at half HP
+    b.ascended = true;
+    setAura($('enemy-img'), 2);
+    playSound('power');
+  }
   if (!t || b.over || en.hp <= 0) return;
   b.taunted ??= {};
   const say = (key) => {
@@ -1455,6 +1462,7 @@ function setupBattleScreen() {
   img.src = b.def.image;
   img.alt = b.def.name;
   img.classList.toggle('pixel', !b.def.art);
+  setAura(img, b.def.aura ? 1 : 0);   // Kenmatta's Super Saiyan aura (aura.js)
   const box = $('enemy-portrait-box');
   box.classList.remove('defeated', 'hit', 'attacking');
   box.classList.toggle('sprite', !b.def.art);
