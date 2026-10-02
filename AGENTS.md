@@ -80,6 +80,10 @@ three places:
   Gen 1-5 Fire species), 12-13 wilds + 2 rare spawns an area; 273 Safari Pokédex entries. Knock-out runs had drifted to
   83.7, so every template's HP is x1.1: knock out 74.0, throw at 50%+ 58.3 (300 runs). Next: batch 4 (prompt in the
   roadmap); the area reward is still open.
+- 2026-10-02: **Safari Zone phase 4, batch 4** (cloud, pushed to `main`): 81 more Gen 1-5 Pokémon (29 Grass, 27 Water,
+  25 Neutral; no Fire species were left), 11-12 wilds + 2 rare spawns an area; 354 Safari Pokédex entries. Bot (300 runs):
+  knock out 80.0 -> 75.0, throw at 50%+ 59.7 -> 60.3; no retune. Only 16 Grass / Water species are left (listed in the
+  roadmap). Next: batch 5 (prompt in the roadmap).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
