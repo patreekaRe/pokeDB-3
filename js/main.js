@@ -47,6 +47,7 @@ import { initCardIndex, openCardIndex } from './cardindex.js';
 import { initPokedex, openPokedex } from './pokedex.js';
 import { initCloud } from './cloud.js';
 import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
+import { showPlaceScene } from './scene.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -202,6 +203,15 @@ function init() {
   });
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({ onBack: showHome });
+
+  // Playtest shortcut (the user's ask): ?scene=tutor (or kombat, center...) shows just that room's painted scene, no
+  // run started, so the saved run is untouched; &biome=shrine or wastes picks the biome outside its windows.
+  const params = new URLSearchParams(location.search), place = params.get('scene');
+  if (place) {
+    document.body.classList.add('scene-peek');
+    showPlaceScene(place, { biome: params.get('biome') || 'clearing' });
+    return;
+  }
 
   showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {

@@ -3444,3 +3444,7 @@ body.has-scene #scene-bg { display: block; }
   .biome-intro, .biome-intro *, .biome-intro *::before, .biome-intro *::after { animation-duration: .01s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
   .bi-mon img { transform: none; }
 }
+
+/* ?scene=<place> (init() in js/main.js): only the painted scene, for a look at a room */
+body.scene-peek > :not(#scene-bg) { visibility: hidden !important; }
+body.scene-peek #backdrop { display: none; }
