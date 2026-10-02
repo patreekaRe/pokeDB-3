@@ -50,8 +50,10 @@ const freshSave = () => ({
   seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
-  gateSeen: false,
-  safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts            // the gate's scene has played once, so its story is told (js/gatescene.js)
+  gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
+  safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts
+  safariDex: { seen: [], caught: [] },   // Safari Pokémon met and caught, on any try (the Safari Pokédex, roadmap phase 3)
+  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock, unlocked balls, the week the Master Ball was thrown
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
@@ -89,6 +91,8 @@ function load() {
         seen: { ...base.seen, ...saved.seen, cards: saved.seen?.cards ?? seedCards(saved) },
         dex: seedCounts({ ...base.dex, ...saved.dex }),
         shiny: { ...base.shiny, ...saved.shiny },
+        safariDex: { ...base.safariDex, ...saved.safariDex },
+        balls: { ...base.balls, ...saved.balls },
         stats: {
           ...base.stats, ...saved.stats,
           maxLevelWinByType: { ...base.stats.maxLevelWinByType, ...(saved.stats && saved.stats.maxLevelWinByType) },
@@ -175,6 +179,14 @@ export function markSeen(kind, id) {
   if (data.seen[kind].includes(id)) return;
   data.seen[kind].push(id);
   persist();
+}
+
+/** The Safari Pokédex: `list` is 'seen' or 'caught'. Returns true the first time. */
+export function markSafari(list, id) {
+  if (data.safariDex[list].includes(id)) return false;
+  data.safariDex[list].push(id);
+  persist();
+  return true;
 }
 
 /** The Pokédex: `list` is 'seen' (fought it) or 'defeated' (beat it). Returns true the first time. */

@@ -124,6 +124,8 @@ const SOUNDS = {
   'bell-far':   { synth: templeBell, gain: 0.5 },   // ...and the Main Hall's bell tolls far off as it comes into view
   gust:         { synth: hotGust },          // the Wastes' intro: a hot wind as you burst out of the ash cloud...
   'rumble-far': { synth: farRumble },        // ...and the volcano huffs, far off, as its name lands
+  'ball-shake': { synth: ballShake },        // a thrown ball wobbles on the ground (the Safari Zone's catch, battle.js)...
+  'ball-click': { synth: ballClick },        // ...and clicks shut: caught!
   'gate-hum':   { synth: gateHum },          // the Sealed Gate's scene (gatescene.js): the seal's low, uneasy drone...
   'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
   'gate-shatter': { synth: gateShatter },    // ...and the door blows apart in crystal shards
@@ -644,6 +646,36 @@ function stickTick(ac) {
     out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.04) * fade;
   }
   return normalize(buffer, 0.12);
+}
+
+/** A Poké Ball wobbling on the ground: a dull square-wave knock, low then lower. */
+function ballShake(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.14);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const pitch = t < 0.05 ? 220 : 165;
+    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));
+    out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.05) * fade;
+  }
+  return normalize(buffer, 0.14);
+}
+
+/** The ball clicking shut on a catch: a sharp tick, then two bright blips. */
+function ballClick(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.32);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const tick = (Math.random() * 2 - 1) * Math.exp(-t / 0.003);
+    const pitch = t < 0.08 ? 0 : t < 0.16 ? 1568 : 2093;
+    const blip = pitch ? Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.4 * Math.exp(-(t - (t < 0.16 ? 0.08 : 0.16)) / 0.06) : 0;
+    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));
+    out[i] = (tick * 0.6 + blip) * fade;
+  }
+  return normalize(buffer, 0.16);
 }
 
 /** The NES noise channel: random values held for `hold` samples, so it sounds crunchy rather than hissy. */

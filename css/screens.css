@@ -746,6 +746,56 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   #end-turn-btn.nudge { animation: none; box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 0 0 0 5px #f8d030, 4px 4px 0 5px rgba(0, 0, 0, 0.45); }
   #end-turn-btn.nudge .pp-pill::before { animation: none; }
 }
+/* The Safari Zone's Throw Ball (js/battle.js): the End Turn capsule in the Safari's green, the Safari Ball in its pill.
+   .spent: PP already used this turn (a tap says why). On phones it sits left of End Turn on the PP row. */
+.throw-btn {
+  position: relative; padding: 8px 9px; border: 0; border-radius: 999px; cursor: pointer;
+  background: repeating-linear-gradient(#58a838 0 4px, #78c850 4px 8px);
+  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #2e7020, 4px 4px 0 2px rgba(0, 0, 0, 0.45);
+  font-family: var(--pixel-font); font-synthesis-weight: none; line-height: 1;
+  animation: throwHop 1.6s steps(1) infinite;
+}
+.throw-btn .pp-pill { --rim: #2e7020; justify-content: center; align-items: center; gap: 8px; font-size: 1.05rem; }
+.battle-controls .throw-btn .pp-pill { min-width: 0; }
+.throw-ball-icon { width: 30px; height: 30px; image-rendering: pixelated; }
+.throw-btn:hover .pp-pill { background: #fff; }
+.throw-btn:active { transform: translate(2px, 2px); }
+.throw-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
+.throw-btn.spent { animation: none; filter: grayscale(0.8) brightness(0.9); }
+@keyframes throwHop { 0%, 70%, 90%, 100% { translate: 0 0; } 80% { translate: 0 -5px; } }
+@media (prefers-reduced-motion: reduce) { .throw-btn { animation: none; } }
+/* the picker: a DS menu window over the Throw button, one row per ball (sprite, name, stock, odds) */
+.ball-picker {
+  position: fixed; z-index: 60; width: min(17rem, calc(100vw - 16px)); padding: 6px;
+  background: #f8f8f8; border-radius: 6px;
+  box-shadow: 0 0 0 3px #303038, inset 0 0 0 3px #78c850, inset 0 0 0 5px #f8f8f8, inset 0 0 0 6px #2e7020, 4px 4px 0 3px rgba(0, 0, 0, 0.45);
+  font-family: var(--pixel-font); color: #404048;
+}
+.ball-picker-title { padding: 6px 10px 4px; font-size: 0.8rem; color: #2e7020; }
+.ball-row {
+  display: grid; grid-template-columns: 32px 1fr auto auto; align-items: center; gap: 8px; width: 100%;
+  min-height: 44px; padding: 4px 10px; border: 0; border-radius: 4px; background: none;
+  font: inherit; font-size: 0.85rem; color: inherit; text-align: left; cursor: pointer;
+  text-shadow: 1px 1px 0 #d0d0d8;
+}
+.ball-row:hover, .ball-row:focus-visible { background: #e0f0d0; outline: none; }
+.ball-row:hover .ball-name::before, .ball-row:focus-visible .ball-name::before { content: "▶"; margin-right: 4px; font-size: 0.7em; color: #e03828; }
+.ball-icon .item-sprite { width: 30px; height: 30px; image-rendering: pixelated; display: block; }
+.ball-left { font-size: 0.75rem; color: #707078; }
+.ball-odds { min-width: 3ch; text-align: right; font-weight: 400; color: #2e7020; }
+/* the thrown ball (ballAnimation()): moved by the Web Animations API, from the arena's top-left corner */
+.thrown-ball { position: absolute; left: 0; top: 0; z-index: 4; width: 0; height: 0; pointer-events: none; }
+.thrown-ball .item-sprite { position: absolute; width: 40px; height: 40px; translate: -50% -50%; image-rendering: pixelated; }
+.thrown-ball.caught .item-sprite { filter: brightness(0.6); transition: filter 0.4s steps(3); }
+.thrown-ball.burst .item-sprite { animation: ballPop 0.3s ease-in both; }
+/* pulled into the ball: a white flash and a shrink into it, like the games */
+.enemy-portrait.captured { transition: transform 0.4s steps(5), opacity 0.4s steps(5), filter 0.2s steps(2); transform: scale(0.05) translateY(40%); opacity: 0; filter: brightness(8); }
+.enemy-portrait.ran { transition: transform 1s steps(8), opacity 1s steps(8); transform: translateX(140px); opacity: 0; }
+.catch-star { color: #f8d030; }
+/* a rare spawn's nameplate: a gold rim and a slow shimmer on its name */
+#enemy-plate.rare { box-shadow: 0 0 0 2px #f8d030, 0 0 14px rgba(248, 208, 48, 0.6); }
+#enemy-plate.rare #enemy-name { color: #a07000; }
+
 /* PP and End Turn are one size, so the two ends of the controls match (wrap + align-content centres the PP's baseline row).
    Big here, on PCs and phones held sideways; the phone rules shrink them so the hand keeps the room. */
 .battle-controls :is(.energy-orb, #end-turn-btn) { padding: 8px 9px; }
@@ -835,6 +885,10 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .energy-orb, .howto-endturn { padding: 6px 7px; }
   .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
+  .turn-side:has(.throw-btn:not([hidden])) { flex-direction: row; justify-content: flex-end; align-items: center; gap: 10px; }
+  .battle-controls .throw-btn { padding: 5px 6px; }
+  .throw-btn .pp-pill { font-size: 0.8rem; gap: 4px; padding: 3px 10px 2px 6px; }
+  .throw-ball-icon { width: 26px; height: 26px; }
   #end-turn-btn { padding: 6px 7px; }
   .battle-controls :is(.energy-orb, #end-turn-btn) { padding: 5px 6px; }
   .battle-controls .pp-pill { min-width: 5.9rem; height: 2.2rem; gap: 10px; padding: 7px 11px 6px; }
@@ -864,6 +918,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .battle-controls { grid-template-columns: auto 1fr; grid-template-areas: "orb side" "hand hand"; gap: 6px 12px; }
   .battle-controls > :is(.orb-wrap, .turn-side) { translate: 0; }
   .turn-side { align-items: flex-end; }
+  .turn-side:has(.throw-btn:not([hidden])) { flex-direction: row; justify-content: flex-end; align-items: center; gap: 12px; }
   .hand { --hand-card-w: clamp(112px, 16vw, 160px); }
 }
 
@@ -1230,6 +1285,11 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .map-node.scope-pick:hover .map-town, .map-node.scope-pick:focus-visible .map-town { transform: scale(1.15); }
 @keyframes scopePick { 50% { border-color: #fff; box-shadow: 0 0 0 2px var(--gold); } }
 /* a revealed room's Pokémon stands above it in full colour, like the boss above its room, with its type beside it */
+/* a Safari rare spawn's room: a gold sparkle bobbing over it (js/map.js) */
+.map-rare { position: absolute; top: -14px; right: -6px; z-index: 2; color: #f8d030; font-size: 18px; line-height: 1; pointer-events: none;
+  text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038; animation: rareTwinkle 1.2s steps(2) infinite; }
+@keyframes rareTwinkle { 50% { translate: 0 -3px; color: #fff8b0; } }
+@media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
 .map-revealed {
   position: absolute;
   z-index: 1;

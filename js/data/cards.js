@@ -537,6 +537,70 @@ const STATUS_CARDS = [
   { id: 'sludge',    name: 'Sludge',    type: 'normal', cost: 1, art: '🟣', effects: {}, status: true, exhaust: true },                       // Slimed
 ];
 
+/* The Safari Zone's cards (docs/reference/safari.md): never offered outside a Safari run, never in ALL_CARDS (so not in
+   the Card index). Bait and Rock join a Safari run's card rewards; a caught Pokémon offers its signature card, built
+   from its own best-known move with the cards' existing mechanics, one copy a run. `from` is the Pokémon's ENEMY_DEFS id. */
+export const SAFARI_ONLY_CARDS = [
+  { id: 'bait', name: 'Bait', type: 'normal', cost: 0, art: '🍓', effects: { bait: 1 }, safari: true },   // the Safari Zone's Bait
+  { id: 'rock', name: 'Rock', type: 'normal', cost: 0, art: '🪨', effects: { damage: 4, vulnerable: 1, rock: 1 }, safari: true },   // ...and its Rock
+];
+const sig = (from, name, type, cost, art, effects, more = {}) =>
+  ({ id: `sig-${from}`, name, type, cost, art, effects, rarity: 'uncommon', maxCopies: 1, safari: true, from, ...more });
+const SIGNATURE_CARDS = [
+  // Neutral
+  sig('rattata',    'Hyper Fang',     'normal', 2, '🦷', { damage: 18, vulnerable: 1 }),
+  sig('sentret',    'Fury Swipes',    'normal', 1, '🐾', { damage: 2, hits: 5 }),
+  sig('zigzagoon',  'Headbutt',       'normal', 1, '💢', { damage: 7, weaken: 2 }),
+  sig('aipom',      'Swift',          'normal', 1, '⭐', { damage: 3, hits: 3 }, { retain: true }),
+  sig('tauros',     'Thrash',         'normal', 2, '🐂', { damage: 9, hits: 2, addCard: { id: 'confusion', n: 1, to: 'discard' } }),
+  sig('teddiursa',  'Slash',          'normal', 1, '🐻', { damage: 8, draw: 1, focus: 3 }),
+  sig('stantler',   'Psyshield Bash', 'normal', 1, '🦌', { damage: 7, block: 7 }),
+  sig('bouffalant', 'Head Charge',    'normal', 2, '🦬', { selfDamage: 4, damage: 24 }),
+  sig('zangoose',   'Crush Claw',     'normal', 2, '🩸', { damage: 14, vulnerable: 2 }),
+  sig('chansey',    'Soft-Boiled',    'normal', 2, '🥚', { heal: 16 }, { exhaust: true }),
+  sig('kecleon',    'Camouflage',     'normal', 1, '🦎', { block: 7, randomCard: 1 }),
+  sig('furret',     'Body Slam',      'normal', 1, '🐿️', { block: 5, blockDamage: true }),
+  sig('linoone',    'Extreme Speed',  'normal', 0, '💨', { damage: 6 }, { innate: true, exhaust: true }),
+  sig('ambipom',    'Fake Out',       'normal', 0, '👐', { damage: 5, weaken: 1 }, { innate: true, exhaust: true }),
+  sig('persian',    'Nasty Plot',     'normal', 1, '😼', { focus: 10, draw: 1 }),
+  sig('watchog',    'Confuse Ray',    'normal', 0, '👁️', { weaken: 2, vulnerable: 1 }, { exhaust: true }),
+  sig('lopunny',    'Bounce',         'normal', 1, '🐰', { damage: 7, blockNext: 7 }),
+  sig('cinccino',   'Tail Slap',      'normal', 2, '🧹', { damage: 4, hits: 5 }),
+  sig('purugly',    'Slam',           'normal', 1, '🐈', { damage: 13, nextEnergy: -1 }),
+  // Grass
+  sig('hoppip',     'Acrobatics',     'grass', 0, '🎈', { damage: 5, draw: 1 }),
+  sig('oddish',     'Acid',           'grass', 1, '🧪', { damage: 7, sap: 1 }),
+  sig('seedot',     'Harden',         'grass', 1, '🌰', { block: 9, blockNext: 4 }),
+  sig('paras',      'X-Scissor',      'grass', 1, '✂️', { damage: 6, hits: 2 }),
+  sig('bellsprout', 'Wrap',           'grass', 1, '🌱', { damage: 3, seed: 3 }),
+  sig('cherubi',    'Morning Sun',    'grass', 1, '🌅', { heal: 5, block: 6 }),
+  sig('tangela',    'Constrict',      'grass', 1, '🪢', { damage: 6, sap: 2 }),
+  sig('cacturne',   'Sucker Punch',   'grass', 1, '🌵', { damage: 4, ifEnemyAttacks: { bonus: 8 } }),
+  sig('maractus',   'Pin Missile',    'grass', 1, '📌', { damage: 3, hits: 4 }),
+  // Fire
+  sig('vulpix',     'Weather Ball',   'fire', 1, '☀️', { damage: 8, burn: 2 }),
+  sig('growlithe',  'Crunch',         'normal', 1, '🐕', { damage: 9, vulnerable: 1 }),
+  sig('pansear',    'Fling',          'fire', 1, '🍒', { damage: 9, discard: 1 }),
+  sig('litwick',    'Hex',            'fire', 1, '🕯️', { damage: 6, ifBurned: { bonus: 7 } }),
+  sig('houndour',   'Foul Play',      'normal', 1, '😈', { damage: 7, strengthMult: 3 }),
+  sig('darumaka',   'Belly Drum',     'normal', 1, '🥁', { selfDamage: 8, strength: 3 }, { exhaust: true }),
+  sig('torkoal',    'Protect',        'normal', 1, '🛡️', { guard: true }, { exhaust: true }),
+  sig('magmar',     'Smog',           'fire', 1, '🌫️', { damage: 4, burn: 3 }),
+  sig('heatmor',    'Hone Claws',     'normal', 0, '🔪', { strength: 1, draw: 1 }, { exhaust: true }),
+  // Water
+  sig('poliwag',    'Wake-Up Slap',   'normal', 1, '👋', { damage: 6, ifWeak: { bonus: 6 } }),
+  sig('psyduck',    'Zen Headbutt',   'water', 2, '🦆', { damage: 13, weaken: 1 }),
+  sig('marill',     'Rollout',        'water', 1, '🔵', { damage: 6 }, { retain: true, growOnRetain: { damage: 4 } }),
+  sig('krabby',     'Vice Grip',      'normal', 1, '🦀', { damage: 7, block: 4 }),
+  sig('shellos',    'Mud-Slap',       'water', 0, '🟤', { damage: 3, weaken: 1 }),
+  sig('staryu',     'Power Gem',      'water', 1, '💎', { damage: 8, tide: 1 }),
+  sig('slowpoke',   'Slack Off',      'normal', 1, '🥱', { heal: 7 }, { retain: true }),
+  sig('crawdaunt',  'Night Slash',    'water', 1, '🌙', { damage: 10 }, { retain: true }),
+  sig('sharpedo',   'Ice Fang',       'water', 1, '🦈', { damage: 9, weaken: 1 }),
+];
+/** A Pokémon's signature card (by its ENEMY_DEFS id), offered when it's caught in the Safari Zone; null if it has none. */
+export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from, c.id]));
+
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
@@ -581,8 +645,8 @@ function upgradeOf(card) {
 }
 const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id), name: `${card.name}+`, base: card.id, upgraded: true });
 
-export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS].map(c => [c.id, c]));
-for (const card of [...ALL_CARDS, ...TOKEN_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
+export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
+for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
 const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
@@ -755,6 +819,8 @@ function sentences(e) {
     parts.push(to === 'draw' ? `Shuffle ${some} into your draw pile.` : `Add ${some} to ${PILES[to]}.`);
   }
   for (const [key, power] of Object.entries(POWERS)) if (e[key]) parts.push(power.text(e[key]));
+  if (e.bait)         parts.push(`Throw Bait${e.bait > 1 ? ` x${e.bait}` : ''}: it's easier to catch, but hits harder.`);
+  if (e.rock)         parts.push('It may run off.');
   if (e.endTurnHurt)  parts.push(`Lose ${e.endTurnHurt} HP if in hand at turn end.`);
   if (e.needsWounded) parts.push('Only playable if you are hurt.');
   if (e.needsEmptyDraw) parts.push('Only playable when your draw pile is empty.');
@@ -804,6 +870,8 @@ export const TERMS = {
   Strength: 'Added to every hit you deal.',
   Focus: 'Adds damage to your next attack.',
   Power: 'Lasts all fight. Played once.',
+  Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
+  Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
 };
 export const term = (label) => [label, TERMS[label]];
 
@@ -859,6 +927,8 @@ export function cardTerms(card) {
     uses(/vulnerable/i) && term('Vulnerable'),
     uses(/strength|^flex$/i) && term('Strength'),
     uses(/^focus$/i) && term('Focus'),
+    uses(/^bait$/) && term('Bait'),
+    uses(/^rock$/) && term('Rock'),
     uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],
     (uses(/^perX$/) || card.cost === 'X') && ['X', 'Spends all your PP. X is how much.'],
     e.combo && [`Combo ${e.combo.at}`, `Only if you've played ${e.combo.at} other cards this turn.`],

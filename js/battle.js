@@ -31,7 +31,9 @@ import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
-import { randIndex, pickOne } from './rng.js';
+import { randIndex, pickOne, random } from './rng.js';
+import { BALLS_BY_ID, CATCH_HP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag } from './data/balls.js';
+import { timeOfDay } from './daytime.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -52,6 +54,11 @@ let nextUid = 1;
 /** Called once at startup. */
 export function initBattle() {
   $('end-turn-btn').addEventListener('click', endTurn);
+  $('throw-btn').addEventListener('click', toggleBallPicker);
+  // the ball picker floats over the battle like a menu: a tap anywhere else closes it
+  document.addEventListener('pointerdown', (e) => {
+    if (!$('ball-picker').hidden && !e.target.closest('#ball-picker, #throw-btn')) closeBallPicker();
+  }, true);
   // tapping the battle around a picked card, or Escape, puts it back; tapping another card in the hand picks that one
   $('card-focus').addEventListener('click', (e) => {
     if (pilePick || e.target.closest('.focus-card, .focus-play')) return;
@@ -106,6 +113,7 @@ function showPile(which) {
 
 /** Leave the battle without finishing it (used when you abandon a run). */
 export function abandonBattle() {
+  closeBallPicker();
   battle = null;
   closeDialog('piles-dialog');
   choosing = null;
@@ -149,6 +157,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
+    catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown once its HP is red
+    rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
 
     // the player
@@ -199,6 +209,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       sap: 0,                         // its attacks deal this much less, all fight
       weak: 0,                        // turns left dealing WEAK_MULT damage
       vulnerable: 0,                  // turns left taking VULNERABLE_MULT damage from your attacks
+      bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
+      rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
       moveIndex: randIndex(def.moves.length),
     },
 
@@ -243,7 +255,7 @@ async function playIntro() {
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId);
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', 'quake', 'eruption', 'bloom', 'bell', 'spirit'] : []), ...(b.catchable ? ['ball-shake', 'ball-click', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -786,6 +798,8 @@ function applyEffects(e) {
   if (e.drawPerDebuff) draw(e.drawPerDebuff * debuffKinds());
   if (e.drawTo)     draw(e.drawTo - b.hand.length);
   if (e.addCard)    addCards(e.addCard);
+  if (e.bait)       { b.enemy.bait += e.bait; pop('enemy-zone', `🍓 Bait${e.bait > 1 ? ` ×${e.bait}` : ''}`, 'note', 150); }
+  if (e.rock)       { b.enemy.rock += e.rock; pop('enemy-zone', '🪨 Rock!', 'note', 150); }
 }
 
 /** A card's "for each card discarded" extras, times that many: numbers multiply, an addCard makes that many. */
@@ -1059,6 +1073,191 @@ async function useItem(index) {
   renderAll();
 }
 
+/* ---------- catching: the Safari Zone's Throw Ball (js/data/balls.js, docs/reference/safari.md) ---------- */
+
+/** The wild Pokémon's HP is red, in a Safari wild fight: the Throw Ball button shows. */
+const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0 && battle.enemy.hp < battle.enemy.maxHp * CATCH_HP;
+
+/** Why a throw can't be made now, or null. A throw is your whole turn: it needs your PP untouched (0-cost cards are fine). */
+function whyNotThrow() {
+  const b = battle;
+  if (b.busy || b.over) return 'Wait for your turn.';
+  if (b.energy <= 0 || b.energy < b.turnEnergy) return 'A throw takes your whole turn\'s PP: throw before you spend any.';
+  return null;
+}
+
+/** The odds a ball catches right now, 0-1. */
+function catchOdds(ball) {
+  const b = battle, en = b.enemy;
+  return catchChance({
+    hpFrac: en.hp / en.maxHp, ball, turn: b.turn, night: timeOfDay() === 'night', type: b.def.type,
+    debuffs: [en.burn, en.seed, en.weak, en.sap].filter(n => n > 0).length, bait: en.bait, rare: b.rare,
+  });
+}
+
+function closeBallPicker() {
+  $('ball-picker').hidden = true;
+  $('throw-btn').setAttribute('aria-expanded', 'false');
+}
+
+/** The ball picker: the balls you can throw now, each with how many are left and its odds; a tap throws it. */
+function toggleBallPicker() {
+  const picker = $('ball-picker'), btn = $('throw-btn');
+  if (!picker.hidden) return closeBallPicker();
+  if (!canCatch()) return;
+  const problem = whyNotThrow();
+  if (problem) { log(problem); playSound('no-pp'); return; }
+  playSound('bag');
+  const rows = ballsInBag(getSave().balls, ballWeek()).map(({ ball, left }) => {
+    const row = el('button', 'ball-row');
+    row.type = 'button';
+    const odds = Math.round(catchOdds(ball.id) * 100);
+    row.append(itemSprite(ball, 'ball-icon'), el('span', 'ball-name', ball.name),
+      el('span', 'ball-left', left === Infinity ? '' : `×${left}`), el('b', 'ball-odds', `${odds}%`));
+    row.title = ball.text;
+    row.setAttribute('aria-label', `${ball.name}${left === Infinity ? '' : `, ${left} left`}: ${odds}% to catch`);
+    row.addEventListener('click', () => { closeBallPicker(); throwBall(ball.id); });
+    return row;
+  });
+  picker.replaceChildren(el('div', 'ball-picker-title', 'Throw which ball?'), ...rows);
+  picker.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  // over the Throw button, kept inside the window
+  const at = btn.getBoundingClientRect(), w = picker.offsetWidth, h = picker.offsetHeight;
+  picker.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, at.right - w))}px`;
+  picker.style.top = `${Math.max(8, at.top - h - 8)}px`;
+}
+
+/** Throw a ball: it flies at the wild Pokémon, swallows it and shakes; a catch ends the fight as a win, a miss ends your turn. */
+async function throwBall(id) {
+  const b = battle;
+  if (!canCatch() || whyNotThrow()) return;
+  const ball = BALLS_BY_ID[id];
+  const chance = catchOdds(id);
+  b.busy = true;
+  b.energy = 0;
+  b.thrown = (b.thrown || 0) + 1;
+  // the ball is spent as it's thrown (a refresh replays the room, but not the ball)
+  updateSave(d => {
+    if (ball.stock) d.balls[id] = Math.max(0, (d.balls[id] || 0) - 1);
+    if (ball.weekly) d.balls.masterWeek = ballWeek();
+  });
+  renderAll();
+  const roll = random();
+  const caught = roll < chance;
+  // like the games, a near miss shakes more: three shakes and a click is a catch
+  const miss = (roll - chance) / (1 - chance || 1);
+  const shakes = caught ? 3 : miss < 1 / 3 ? 2 : miss < 2 / 3 ? 1 : 0;
+  log(`You threw a ${ball.name}!`);
+  const done = await ballAnimation(ball, shakes, caught);
+  if (battle !== b || !done) return;
+  if (caught) return caughtIt(id);
+  log(shakes === 2 ? 'Aargh! Almost had it!' : shakes === 1 ? 'Aww! It appeared to be caught!' : `Oh no! The wild ${b.def.name} broke free!`);
+  await sleep(700);
+  if (battle !== b) return;
+  b.busy = false;
+  await endTurn();
+}
+
+/** The throw on screen: an arc to the Pokémon, a white flash as it's pulled in, the ball dropping and shaking, then the
+    click (a catch) or the ball bursting open. Resolves false if the fight was left meanwhile. */
+async function ballAnimation(ball, shakes, caught) {
+  const b = battle;
+  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const box = $('enemy-portrait-box'), arena = $('arena');
+  const thrown = el('span', 'thrown-ball');
+  thrown.append(itemSprite(ball));
+  arena.append(thrown);
+  const a = arena.getBoundingClientRect(), target = box.getBoundingClientRect(), from = $('player-zone').getBoundingClientRect();
+  const x = target.left + target.width / 2 - a.left, y = target.top + target.height * 0.45 - a.top;
+  const ground = target.bottom - a.top - 18;
+  const sx = from.left + from.width * 0.3 - a.left, sy = from.top + from.height * 0.6 - a.top;
+  const at = (px, py) => `translate(${Math.round(px)}px, ${Math.round(py)}px)`;
+  playSound('ball-throw');
+  if (motion) {
+    await thrown.animate([
+      { transform: `${at(sx, sy)} rotate(0deg)` },
+      { transform: `${at((sx + x) / 2, Math.min(sy, y) - 90)} rotate(-540deg)`, offset: 0.5 },
+      { transform: `${at(x, y)} rotate(-1080deg)` },
+    ], { duration: 650, easing: 'linear', fill: 'forwards' }).finished;
+  }
+  thrown.style.transform = at(x, y);
+  if (battle !== b) { thrown.remove(); return false; }
+  playSound('ball-open');
+  box.classList.add('captured');
+  await sleep(motion ? 450 : 200);
+  if (motion) await thrown.animate([{ transform: at(x, y) }, { transform: at(x, ground) }], { duration: 260, easing: 'ease-in', fill: 'forwards' }).finished;
+  thrown.style.transform = at(x, ground);
+  for (let i = 0; i < shakes; i++) {
+    await sleep(motion ? 380 : 250);
+    if (battle !== b) { thrown.remove(); return false; }
+    playSound('ball-shake');
+    if (motion) await thrown.animate([{ transform: `${at(x, ground)} rotate(0deg)` }, { transform: `${at(x, ground)} rotate(-24deg)` },
+      { transform: `${at(x, ground)} rotate(18deg)` }, { transform: `${at(x, ground)} rotate(0deg)` }], { duration: 420, easing: 'steps(6)' }).finished;
+  }
+  await sleep(motion ? 420 : 250);
+  if (battle !== b) { thrown.remove(); return false; }
+  if (caught) {
+    playSound('ball-click');
+    thrown.classList.add('caught');
+    for (let i = 0; i < 3; i++) pop('enemy-zone', '✦', 'note good catch-star', i * 90);
+    return true;
+  }
+  playSound('ball-open');
+  thrown.classList.add('burst');
+  box.classList.remove('captured');
+  await sleep(300);
+  thrown.remove();
+  return battle === b;
+}
+
+/** Gotcha! The fight ends as a win, without the knockout (run.js pays less ₽ and offers its signature card). */
+async function caughtIt(ballId) {
+  const b = battle;
+  b.over = true;
+  setStorm(false);
+  closeBallPicker();
+  const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
+  if (grew) abilityBanner();
+  playMusic(winTrack(b.kind), { restart: true, cut: true });
+  log(`Gotcha! The wild ${b.def.name} was caught!`);
+  renderAll();
+  await sleep(grew ? 1900 : 1500);
+  if (battle !== b) return;
+  document.querySelector('.thrown-ball')?.remove();
+  $('enemy-portrait-box').classList.remove('captured');
+  $('enemy-portrait-box').classList.add('defeated');
+  stopAura();
+  closeDialog('piles-dialog');
+  b.onEnd({ won: true, caught: true, ball: ballId, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+}
+
+/** On its turn, before anything else: does the wild Pokémon run off? A rare spawn leaves after RARE.turns of your turns
+    (a turn sooner per Rock); any other Safari wild may, once it's been hit by a Rock. */
+function runsOff() {
+  const b = battle, en = b.enemy;
+  if (!b.catchable) return false;
+  if (b.rare) return b.turn >= RARE.turns - en.rock;
+  return en.rock > 0 && random() < ROCK_FLEE * en.rock;
+}
+
+/** It got away: the fight ends with nothing won (run.js says so and goes back to the map). */
+async function runAway() {
+  const b = battle;
+  b.over = true;
+  setStorm(false);
+  closeBallPicker();
+  renderAll();
+  playSound('run-away');
+  log(`The wild ${b.def.name} ran away!`);
+  $('enemy-portrait-box').classList.add('ran');
+  await sleep(1300);
+  if (battle !== b) return;
+  stopAura();
+  closeDialog('piles-dialog');
+  b.onEnd({ won: false, escaped: true, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+}
+
 /** Damage the enemy: its block soaks it up first. Returns the damage that got through. */
 function hurtEnemy(amount) {
   const en = battle.enemy;
@@ -1199,6 +1398,7 @@ async function enemyTurn() {
   const b = battle;
   const en = b.enemy;
   const move = currentMove();
+  if (runsOff()) return runAway();
   en.block = 0;                                   // enemy block only lasts one round
 
   // 1. Burn hurts the enemy first.
@@ -1342,7 +1542,7 @@ function enemyTypeMultiplier(move) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round(Math.max(0, move.amount + en.dmgBonus + en.strength - en.sap) * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
@@ -1502,7 +1702,10 @@ function setupBattleScreen() {
 
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
-  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : '') + b.def.name;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.rare ? '✨ ' : '') + b.def.name;
+  $('enemy-plate').classList.toggle('rare', b.rare);
+  box.classList.remove('captured', 'ran');
+  closeBallPicker();
   $('enemy-type').textContent = TYPES[type].icon;
   $('enemy-type').title = `${TYPES[type].label} type`;
   $('enemy-type').className = `chip type-${type}`;
@@ -1645,6 +1848,14 @@ function renderBars() {
   $('exhaust-count').hidden = !exhausted.length;
   $('exhaust-count').replaceChildren(el('span', 'pile-icon', '🌫️'), el('b', '', String(exhausted.length)));
   $('end-turn-btn').disabled = b.busy || b.over;
+  const throwable = canCatch();
+  $('throw-btn').hidden = !throwable;
+  if (!throwable) closeBallPicker();
+  else {
+    const problem = whyNotThrow();
+    $('throw-btn').classList.toggle('spent', !!problem);
+    $('throw-btn').title = problem ?? 'Its HP is in the red: throw a ball! It takes your whole turn; if it breaks free, the enemy acts.';
+  }
   // nothing left to play: End Turn hops and blinks so it's clear that's the move (items don't count, they're optional)
   $('end-turn-btn').classList.toggle('nudge', !b.busy && !b.over && b.hand.every(h => whyNotPlayable(h.card)));
 }
@@ -1698,6 +1909,9 @@ function renderStatus() {
   if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
+  if (en.bait)     enemyBadges.push(['🍓', en.bait, `Bait ${en.bait}: easier to catch, but its attacks deal ${en.bait * BAIT.damage} more`, 'bad']);
+  if (en.rock)     enemyBadges.push(['🪨', en.rock, b.rare ? `Rock ${en.rock}: it runs off ${en.rock} turn${en.rock > 1 ? 's' : ''} sooner` : `Rock ${en.rock}: ${Math.round(ROCK_FLEE * en.rock * 100)}% chance it runs off on its turn`]);
+  if (b.rare && !b.over) { const left = Math.max(0, RARE.turns - en.rock - b.turn + 1); enemyBadges.push(['💨', left, `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`, 'bad']); }
   if (b.def.trait) enemyBadges.push([TRAITS[b.def.trait.id].icon, '', TRAITS[b.def.trait.id].text(b.def.trait), 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
 

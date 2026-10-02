@@ -10,7 +10,7 @@ three places:
    v1.0 task, and update it as steps land.
 3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.
 
-## Where we left off (2026-10-01)
+## Where we left off (2026-10-02)
 
 - `main` is up to date (last task: the epic boss intros for Biomes 1 and 2). No
   unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.
@@ -52,10 +52,16 @@ three places:
 - 2026-10-02: **The strike card** (Desktop app, the user's ask): the gate scene's move is a card you hold to charge and
   let go to throw (`strikeCard()` in `js/gatescene.js`), phone-safe long press. Checked in the browser pane at 375x812
   with `?strike=90&gate=400` and `?strike=700&gate=600&starter=squirtle&stage=2` (the gold break card); not on a real phone.
-- 2026-10-02: **Safari Zone phase 1** (cloud, on branch `claude/project-thread-6d3v6i` with a draft PR, not yet on
-  `main`): the seeded RNG (`js/rng.js`) under every gameplay roll, the daily seed / areas / starter (`js/data/safari.js`),
+- 2026-10-02: **Safari Zone phase 1** (cloud, on branch `claude/project-thread-6d3v6i`, reached
+  `main` with phase 2): the seeded RNG (`js/rng.js`) under every gameplay roll, the daily seed / areas / starter (`js/data/safari.js`),
   the title's Safari Zone gem (locked until `dex.complete`), a playable daily run with borrowed rosters and the first-try
   flag. `node --test` runs the seed tests. Checked headless (same map, enemies and opening hand in two fresh browsers).
+- 2026-10-02: **Safari Zone phase 2** (cloud, pushed to `main`): catching at red HP (a Throw button and a ball picker; a
+  throw is the whole turn), a caught Pokémon's signature card (take or skip), `save.safariDex`, Poké Balls in the Game
+  Corner (4th row), rare spawns that run off, Bait and Rock, and the first try of the day without perks. Detail:
+  `docs/reference/safari.md`. Bot: catching costs win rate (300 runs: knock out 74.0, throw at 50%+ 62.7), so no retune.
+  Checked headless at 390x844 (plus layout at 768x1024 and 1280x800); the user still has to try it on a phone. Next is
+  phase 3, the Safari Pokédex (prompt in the roadmap).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
@@ -63,7 +69,7 @@ three places:
   - `assets/audio/map4.mp3` for the Crystal Depths (until then `map4` plays `map3.mp3`, `TRACKS` in `js/audio.js`).
   - Playtesting a Mewtwo run to the Crystal Depths (Mewtwo must be unlocked; the `?levels` trick doesn't unlock it).
 - Parked (don't start unprompted): Gen 6-9 starters (the sprites staged in `assets/pokemon/_incoming/` have no Grass
-  line), Mewtwo's shiny, and catching (dropped).
+  line), Mewtwo's shiny, and catching in the main game (dropped; the Safari Zone has its own).
 
 ## How the user works
 

@@ -4,7 +4,8 @@
    this file draws it on an arcade cabinet's screen, character-select
    style, and handles the joystick and buying.
 
-   The screen holds three rows, Pokémon, Perks and Shiny: the joystick's
+   The screen holds four rows, Pokémon, Perks, Shiny and Poké Balls (the
+   Safari Zone's, js/data/balls.js): the joystick's
    up/down switches row, left/right moves along it, and the choice under
    the cursor is shown big. A row longer than WINDOW cells shows the
    WINDOW around the cursor, with arrows for the rest. Buy takes two
@@ -12,6 +13,7 @@
    ============================================================ */
 
 import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS, SHINY_COSTS } from './data/shop.js';
+import { BALLS } from './data/balls.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, perkLevel } from './storage.js';
 import { checkAchievements, isStarterUnlocked } from './progress.js';
@@ -22,8 +24,9 @@ const ROWS = [
   { id: 'skins', name: 'Pokémon', entries: () => SKIN_SHOP_ITEMS.map(skinEntry) },
   { id: 'perks', name: 'Perks', entries: () => PASSIVE_SHOP_ITEMS.map(perkEntry) },
   { id: 'shiny', name: 'Shiny', entries: () => STARTERS.filter(s => !s.secret).map(shinyEntry) },
+  { id: 'balls', name: 'Poké Balls', entries: () => BALLS.filter(b => !b.free).map(ballEntry) },
 ];
-const cursor = { row: 0, col: [0, 0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
+const cursor = { row: 0, col: [0, 0, 0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
 const WINDOW = 6;     // cells a row shows at once
 const PUSH = 16;      // px the stick must be dragged before it counts as a push
 const TRAVEL = 12;    // px the ball can lean
@@ -140,6 +143,26 @@ function shinyEntry(starter) {
     bought() {
       updateSave(d => { d.shiny.owned.push(starter.id); d.shiny.on.push(starter.id); });
       return [`Shiny ${name} is yours!`, 'It\'s switched on: tap ✨ on its card to switch.'];
+    },
+  };
+}
+
+/** A Poké Ball for the Safari Zone: Great and Ultra Balls in packs (used up when thrown), the special balls bought once.
+    Only for sale once the Safari Zone is open (a complete Pokédex). */
+function ballEntry(ball) {
+  const balls = getSave().balls;
+  const open = getSave().dex.complete;
+  const have = balls[ball.id] || 0;
+  return {
+    id: ball.id, name: ball.stock ? `${ball.pack} ${ball.name}s` : ball.name, sprite: `assets/items/${ball.sprite}.png`,
+    text: !open ? 'For the Safari Zone, which opens once every Pokédex entry is researched.' : ball.text,
+    blocked: !open,
+    level: ball.stock ? `Have ${have}` : null,
+    done: !ball.stock && balls.owned.includes(ball.id) && 'Owned',
+    cost: ball.cost,
+    bought() {
+      updateSave(d => { if (ball.stock) d.balls[ball.id] = (d.balls[ball.id] || 0) + ball.pack; else d.balls.owned.push(ball.id); });
+      return ball.stock ? [`${ball.pack} ${ball.name}s! You have ${have + ball.pack}.`] : [`The ${ball.name} is yours!`, 'It\'s in your Bag on every Safari Zone run.'];
     },
   };
 }

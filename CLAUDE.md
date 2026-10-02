@@ -407,6 +407,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`run.safari`, `js/data/safari.js`) seeds a stream per biome and per room (`reseed()` in `js/run.js`); every other run
   is unseeded. A new gameplay roll that skips `js/rng.js` breaks the daily run being the same for everyone. Tests:
   `node --test` (`tests/`).
+- **Catching** (Safari Zone phase 2, 2026-10-02; detail in `docs/reference/safari.md`): only in a Safari run's wild rooms,
+  once the HP is red a Throw button (`#throw-btn`) opens a ball picker (`#ball-picker`); a throw is the whole turn and its
+  odds are `catchChance()` in `js/data/balls.js` (pure, `tests/catch.test.mjs`), rolled on the seed. A catch pays half the ₽
+  and offers the Pokémon's signature card (`SIGNATURE_FOR` / `sig-*` cards, `safari: true`, never in `ALL_CARDS`); a new
+  Safari Pokémon needs one. `save.safariDex` and `save.balls` (the Game Corner's 4th row). Rare spawns (`markRares()`) run
+  off after 4 turns; Bait / Rock (`SAFARI_ONLY_CARDS`) are Safari-only rewards. The day's first try reads every perk
+  through `perk()` / `dexPerk()` in `js/run.js`, which are off for it (`fairTry()`): read any new perk through them.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
@@ -432,6 +439,7 @@ one, which is the point: it costs nothing until it's needed.
 - Map screen - `docs/reference/map-screen.md`
 - Windows - `docs/reference/windows.md`
 - Title screen - `docs/reference/title-screen.md`
+- Safari Zone (seed, catching, balls, rare spawns) - `docs/reference/safari.md`
 - Top bar and start screen - `docs/reference/top-bar-and-start-screen.md`
 - Pixel icons - `docs/reference/pixel-icons.md`
 - Music - `docs/reference/music.md`

@@ -668,6 +668,12 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       const def = ENEMY_DEFS[node.enemyId];
       label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name}`;   // no type badge: elites and bosses are all Normal (the user's call)
     }
+    // a Safari rare spawn (markRares() in js/data/safari.js) shows as a sparkle over its room, like the games' shaking grass
+    if (node.rare && !node.visited) {
+      label = `${label}: a rare Pokémon was sighted! It runs off after a few turns.`;
+      btn.classList.add('rare');
+      btn.append(el('span', 'map-rare', '✦'));
+    }
     btn.title = label;
     btn.setAttribute('aria-label', label);
 

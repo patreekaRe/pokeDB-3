@@ -17,10 +17,10 @@
 import { BIOMES, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade } from './data/cards.js';
+import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, perkLevel } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
@@ -42,7 +42,8 @@ import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariDaily } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariDaily, markRares } from './data/safari.js';
+import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 
@@ -65,6 +66,13 @@ const reseed = (key) => useStream(run?.safari ? run.safari.seed : null, key);
 /** The Safari area a biome of the run is (null outside the Safari Zone). */
 const safariArea = (biome = run.biome) => (run?.safari ? SAFARI_AREAS_BY_ID[run.safari.areas[biome]] : null);
 
+/** The Safari Zone's first try of the day is the leaderboard's, so it's played without Game Corner or Pokédex perks
+    (the user's call, 2026-10-02): every player starts it the same. Replays keep them. Coin Finder only touches PokéCoins,
+    so it stays. Every perk the run reads goes through these two. */
+const fairTry = (r = run) => Boolean(r?.safari?.first);
+const perk = (id) => (fairTry() ? 0 : perkLevel(id));
+const dexPerk = (id) => (fairTry() ? 0 : dexPerkLevel(id));
+
 /** The name the map's sign shows for the biome you're in. */
 const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : BIOMES[run.biome].name);
 
@@ -79,10 +87,10 @@ export const LEVEL5_JACKPOT = 500;
 const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
 
 /** How many items the Bag holds: the Game Corner's Bag Pocket adds one. */
-const itemSlots = () => ITEM_SLOTS + (perkLevel('bagPocket') ? 1 : 0);
+const itemSlots = () => ITEM_SLOTS + (perk('bagPocket') ? 1 : 0);
 
 /** A Poké Mart price after the Game Corner's Mart Card (read at the counter, so buying it mid-run counts at once). */
-const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perkLevel('martCard')]));
+const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perk('martCard')]));
 
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
@@ -244,8 +252,8 @@ export function continueRun(saved) {
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
 export function beginRun(starter, level = 0, peek = null, safari = null) {
   dropNotes();
-  const passives = getSave().passives;
-  const startHp = BASE_HP + passives.hpBoost * 5;   // shop passive: Max HP Boost
+  const perks = !safari?.first;   // the Safari's first try of the day goes without perks (fairTry())
+  const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
 
   run = {
     starter,
@@ -269,7 +277,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null) {
     rarePity: 0,           // extra rare weight on the next card reward (RARE_PITY in rewards.js)
     rerollBiome: -1,       // the biome whose card rerolls (Pokédex perk Oak's Advice) were used
     rerollsUsed: 0,        // how many, in that biome (Lv 2 gives two)
-    tutorLeft: perkLevel('tutorNotes'),   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
+    tutorLeft: perks ? perkLevel('tutorNotes') : 0,   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
     charm: null,           // the Starting Relic Charm's relic, until it's been presented and taken
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
@@ -279,14 +287,15 @@ export function beginRun(starter, level = 0, peek = null, safari = null) {
   };
   reseed('start');
 
-  if (passives.relicCharm) {                         // shop passive: Starting Relic Charm
+  if (perk('relicCharm')) {                          // shop passive: Starting Relic Charm
     run.charm = randomStartingRelic()?.id ?? null;   // handed over on the map by relicCharm()
   }
 
   // Pokédex perks, earned by completing a biome's page
-  const savings = DEX_START_MONEY[dexPerkLevel('moms-savings')];
+  if (!perks) tell('First try of the day: no Game Corner or Pokédex perks, so every trainer starts the same.');
+  const savings = DEX_START_MONEY[dexPerk('moms-savings')];
   if (savings) { run.money += savings; tell(`Mom's Savings: you set out with ₽${savings}!`); }
-  const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerkLevel('chansey-gift')]];
+  const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerk('chansey-gift')]];
   if (gift) { run.items.push(gift.id); tell(`Chansey's Gift: a ${gift.name} is in your Bag!`); }
 
   if (peek) return peekRoom(peek);
@@ -338,6 +347,7 @@ function startBiome() {
     // a Safari area has its own wilds, and the main Pokédex's favourites would make the day's run differ between players
     dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
+  if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea());   // rare spawns, on the biome's seed
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   run.current = null;
@@ -651,7 +661,7 @@ function afterBagChange() {
 
 let scoping = false;   // picking a room to reveal: the map's fight rooms light up instead of the reachable ones
 
-const scopeReveals = () => (getSave().dex.complete ? SCOPE_REVEALS + perkLevel('scopeUpgrade') : 0);
+const scopeReveals = () => (getSave().dex.complete && !fairTry() ? SCOPE_REVEALS + perk('scopeUpgrade') : 0);
 const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).length;   // saved with the map's nodes
 
 function drawMap() {
@@ -733,7 +743,9 @@ async function fight(node) {
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
-  if (!ken && !isSafari()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex (phase 3), not this one
+  if (!ken && !isSafari()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
+  if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
+  encounter.rare = isSafari() && Boolean(node.rare);
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
@@ -745,9 +757,9 @@ async function fight(node) {
 function afterFight(node, result) {
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
-  if (result.fled) {
+  if (result.fled || result.escaped) {
     run.hp = result.hp;
-    tell('Got away safely!');
+    tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
     return showMap();
   }
   if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter));
@@ -770,18 +782,25 @@ function afterFight(node, result) {
   const payAs = tough ? 'elite' : node.type === 'ken' ? 'boss' : node.type;
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
-  const prize = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  // a catch pays less ₽ than a knockout: it pays in a card and a Safari Pokédex entry (the user's call)
+  const prize = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
+  if (result.caught) {
+    run.tally.caught = (run.tally.caught || 0) + 1;
+    if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
+  }
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
-    coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs])), money: prize, dex: dexNews,
-    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : null,
+    coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews,
+    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${foe} was caught!` : null,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
     if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
-    awardCoins(levelCoins(COIN_REWARDS[payAs]));
+    awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     run.money += prize;
     setMoney(run.money);
     updateSave(d => {
@@ -794,7 +813,7 @@ function afterFight(node, result) {
   };
 
   const steps = [];   // screens to show one after another
-  if (node.type === 'fight') steps.push(next => offerCard('fight', next));
+  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next) : offerCard('fight', next)));
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
@@ -866,12 +885,12 @@ function runSteps(steps, done) {
 /* ---------- rewards ---------- */
 
 function offerCard(source, next, rerolled = false) {
-  const cards = cardChoices(run, source, REWARD_CARDS[perkLevel('scoutReport') ? 1 : 0], { reward: true });   // Scout Report: 4
+  const cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0], { reward: true });   // Scout Report: 4
   if (!cards.length) return next();
 
   // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
   const used = run.rerollBiome !== run.biome ? 0 : run.rerollsUsed ?? 1;   // a run saved before Lv 2 had used its one
-  const left = DEX_REROLLS[dexPerkLevel('oaks-advice')] - used;
+  const left = DEX_REROLLS[dexPerk('oaks-advice')] - used;
   const canReroll = left > 0;
   showChoice({
     title: 'Learn a new move',
@@ -881,6 +900,23 @@ function offerCard(source, next, rerolled = false) {
     onSkip: next,
     coins: run.pendingCoins,
     reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); } : null,
+  });
+}
+
+/** A caught Pokémon offers its signature card for the run, take it or leave it, like a card reward (one copy a run). */
+function offerSignature(enemyId, next) {
+  const card = CARDS_BY_ID[SIGNATURE_FOR[enemyId]];
+  const name = ENEMY_DEFS[enemyId].name;
+  if (!card) return next();
+  const known = run.deck.some(id => baseId(id) === card.id);
+  showChoice({
+    title: `${name}'s move`,
+    sub: known ? `You already know ${card.name}, ${name}'s signature move.`
+      : `${name} can teach you its signature move, ${card.name}. Add it to your deck, or skip.`,
+    options: known ? [] : [learnOption(card, next)],
+    onSkip: next,
+    skipLabel: known ? 'Continue' : 'Skip',
+    coins: run.pendingCoins,
   });
 }
 
@@ -1243,7 +1279,7 @@ addEventListener('scenepaint', placeTreasure);
 const MIN_DECK = 7;
 
 function restSite() {
-  const restHeal = run.mods.restHeal + (getSave().passives.wellFed ? 0.05 : 0);   // shop passive: Well-Fed Bonus
+  const restHeal = run.mods.restHeal + (perk('wellFed') ? 0.05 : 0);   // shop passive: Well-Fed Bonus
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   const banned = run.relics.includes('choice-band');
   const atMin = run.deck.length <= MIN_DECK;
@@ -2061,7 +2097,7 @@ function martRoom() {
 
   showChoice({
     title: 'Poké Mart',
-    sub: [`Welcome! You have ₽${run.money} to spend.`, perkLevel('martCard') && `Your Mart Card takes ${Math.round(MART_DISCOUNT[perkLevel('martCard')] * 100)}% off every price.`],
+    sub: [`Welcome! You have ₽${run.money} to spend.`, perk('martCard') && `Your Mart Card takes ${Math.round(MART_DISCOUNT[perk('martCard')] * 100)}% off every price.`],
     options: [...cards, ...items, ...relics, removal],
     skipLabel: 'Leave',
     onSkip: showMap,
@@ -2256,7 +2292,8 @@ function endRun(won, atLastBoss = false) {
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   lines.unshift(...level5, ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
-  if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day: this is the one that counts.' : '🦺 A replay: only the first try of the day counts.');
+  if (safari && run.tally.caught) lines.push(`🎯 Caught ${run.tally.caught} Pokémon this run.`);
+  if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
   list.hidden = lines.length === 0;

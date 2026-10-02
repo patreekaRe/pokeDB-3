@@ -30,6 +30,7 @@ export const SPRITE_FIT = {
   'celebi-front': [16, 8, 3, 1],
   'celebi-shiny-back': [13, 9, 5, 4],
   'celebi-shiny-front': [16, 8, 3, 1],
+  'chansey-front': [2, 1, 4, 6],
   'charizard-back': [6, 1, 15, 1],
   'charizard-front': [3, 0, 1, 14],
   'charmander-back': [4, 1, 3, 4],

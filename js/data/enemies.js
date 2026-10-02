@@ -712,6 +712,26 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Eternabeam',     amount: 26 },
     ],
   },
+
+  /* ----- the Safari Zone's rare spawns (SAFARI_AREAS' `rares` in safari.js): only ever met there ----- */
+  chansey: {
+    name: 'Chansey', type: 'normal', hp: 70, ...sprite('chansey'), safari: true,
+    description: 'Shy, lucky, and gone before you know it.',
+    moves: [
+      { kind: 'attack', name: 'Pound',       amount: 6 },
+      { kind: 'defend', name: 'Soft-Boiled', amount: 10 },
+      { kind: 'attack', name: 'Double-Edge', amount: 11 },
+    ],
+  },
+  kecleon: {
+    name: 'Kecleon', type: 'normal', hp: 62, ...sprite('kecleon'), safari: true,
+    description: 'You only spot it when it wants you to.',
+    moves: [
+      { kind: 'attack', name: 'Shadow Sneak', amount: 6 },
+      { kind: 'defend', name: 'Camouflage',   amount: 9 },
+      { kind: 'attack', name: 'Feint Attack', amount: 10 },
+    ],
+  },
 };
 
 /* Chad Master Kenmatta, the Move Tutor, fought in person from his dojo (the Move Tutor event's Challenge). Not in

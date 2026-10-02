@@ -3,7 +3,7 @@
    which cards and relics you are offered.
    ============================================================ */
 
-import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID } from './data/cards.js';
+import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID, SAFARI_ONLY_CARDS } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { playSound } from './audio.js';
@@ -37,7 +37,8 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
   if (reward) weights.rare += run.rarePity || 0;
 
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
-  let pool = poolForType(run.starter.type).filter(c => copies(c.id) < MAX_COPIES);
+  // Bait and Rock are only ever offered in the Safari Zone
+  let pool = [...poolForType(run.starter.type), ...(run.safari ? SAFARI_ONLY_CARDS : [])].filter(c => copies(c.id) < MAX_COPIES);
   const chosen = [];
 
   while (chosen.length < count && pool.length) {

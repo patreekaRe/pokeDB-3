@@ -930,19 +930,34 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    Trainer Levels, the Sealed Gate, or the per-starter/per-biome stats (its starter isn't yours); it pays PokéCoins.
    Tests: `node --test` (tests/seed.test.mjs; a GitHub Action runs it). Checked headless: two fresh browsers on the same day
    got the same map, enemies and opening hand.
-   **Open for the user**: Game Corner and Pokédex perks still apply in a Safari run (HP Boost, Relic Charm, Scout Report...),
-   so two players' runs differ; strip them for the leaderboard try? The map and battles still use the main biomes' scenery
-   and music until the areas' art (phase 5).
+   The map and battles still use the main biomes' scenery and music until the areas' art (phase 5). (Perks: settled in
+   phase 2, the first try goes without them.)
 2. **Capture and Poké Balls**: Throw Ball at red HP, catch odds, the take-or-skip card, the Game Corner balls. Bot check
    (the sim needs the seeded run and the throw) that catching doesn't make the run easier than knocking out.
+   **Built 2026-10-02** (cloud; per-system detail in `docs/reference/safari.md`). The user's calls, all in: Throw Ball at
+   red HP (below 25%) in Safari wild rooms; a throw is the whole turn (PP untouched, then 0; a miss and the enemy acts);
+   odds from HP, the ball, your debuffs (Burn, Leech Seed, Weak, Sap) and Bait, rolled on the room's seed
+   (`js/data/balls.js`, `tests/catch.test.mjs`); a catch pays half the ₽ and offers the Pokémon's signature card, take or
+   skip (46 `sig-*` cards in `js/data/cards.js`, one per Safari Pokémon, never offered outside the Safari); `save.safariDex
+   = { seen, caught }` for phase 3. Game Corner's 4th row: Great and Ultra Balls in packs of 5, Dusk / Quick / Timer / Net /
+   Luxury bought once, the Master Ball once and then one throw a UTC week; the Safari Ball is free. Rare spawns (12% of
+   Safari wild rooms, on the seed, from each area's `rares`: Chansey and Kecleon are new Safari-only Pokémon, the rest are
+   the elites' species) run off after 4 of your turns; Bait (easier to catch, hits +3) and Rock (4 damage, Vulnerable 1,
+   a wild may run off, a rare leaves sooner) are Safari-only rewards. The first try of the day goes without any Game
+   Corner or Pokédex perk (Coin Finder stays). Claude's calls: Alphas and bosses can't be caught; Quick Ball counts turns
+   1-3 (a throw needs red HP, so turn 1 alone could never be used); a caught Pokémon whose card you hold offers nothing.
+   Bot check (human bot on random Safari days, `safariCfg()` in the sim): 150 runs/cell, the phase 1 run 79.3, knocking
+   out only 74.7, always throwing 48.0, throwing at 50%+ odds 67.3; confirm at 300: 77.3 / 74.0 / 62.7 (2.9 catches a run).
+   A throw is a turn of damage taken, so catching never makes a run easier than knocking out; no retune. Checked headless at 390x844: catches, misses, the signature card, a rare spawn running off,
+   Rock, the Game Corner row, no console errors. Not checked on a real phone.
 3. **The Safari Pokédex**: its own window/tab, entries by area, caught/seen marks, area progress.
 4. **The roster at scale**: role templates, then batches of ~50 Pokémon a session.
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
 
-**Run in: CLOUD.** Next-session prompt (phase 1): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'Post-v1.0: the
-Safari Zone daily run'. Build phase 1: a seeded RNG for every gameplay roll, the Safari Zone button showing today's areas (locked until the Pokédex is
-fully researched), the day's 3 Safari areas and fixed starter from a UTC-date seed, the first-try leaderboard flag, and a
-small starting roster per area. Ask me about anything the plan leaves open first. Attach pokeDB-sim too."
+**Run in: CLOUD.** Next-session prompt (phase 3): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's 'Post-v1.0: the Safari
+Zone daily run' and docs/reference/safari.md. Build phase 3, the Safari Pokédex: its own window or tab (from the Safari
+Zone gem or the Collection), entries by area from `save.safariDex` (seen / caught marks, the rare spawns too), each
+area's progress. Ask me about anything the plan leaves open first. Attach pokeDB-sim too."
 
 ## The Pokémon list: 18 per biome, 54 in all
 
