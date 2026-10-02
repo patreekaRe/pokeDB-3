@@ -3674,3 +3674,25 @@ body.has-scene #scene-bg { display: block; }
 /* ?scene=<place> (init() in js/main.js): only the painted scene, for a look at a room */
 body.scene-peek > :not(#scene-bg) { visibility: hidden !important; }
 body.scene-peek #backdrop { display: none; }
+
+/* ---------- the Safari leaderboard (js/leaderboard.js): narrow, centred, a box per board ---------- */
+.dialog.board-dialog { width: min(440px, 94vw); }
+.board-tabs { position: static; margin: 0 0 6px; padding: 4px 0 10px; }
+.board-day { text-align: center; font-size: 0.7rem; margin: 0 0 8px; }
+.board-body { display: grid; gap: 10px; }
+.board-note { text-align: center; }
+.board-box { background: var(--win-panel); border: 3px solid var(--win-edge); border-radius: var(--round-sm); padding: 8px 10px; box-shadow: 2px 2px 0 var(--win-shadow); }
+.board-box h3 { margin: 0 0 6px; font-size: 0.85rem; text-align: center; }
+.board-box .hint { margin: 4px 0; text-align: center; font-size: 0.7rem; }
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.board-row { display: grid; grid-template-columns: 2.2em 28px 1fr auto; align-items: center; gap: 6px; font-size: 0.7rem; padding: 1px 4px; border-radius: var(--round-xs); min-width: 0; }
+.board-row.mine { background: #fbf3d0; outline: 2px solid #d8a820; }
+.board-rank { text-align: right; color: var(--muted); }
+.board-row:nth-child(1) .board-rank { color: #c89000; }
+.board-mon { width: 28px; height: 28px; object-fit: contain; }
+.board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-value { white-space: nowrap; }
+.board-gap { text-align: center; color: var(--muted); font-size: 0.7rem; }
+.board-signin, .board-name-form { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.board-name-input { font: inherit; font-size: 0.8rem; padding: 6px 8px; width: min(220px, 100%); border: 3px solid var(--win-edge); border-radius: var(--round-sm); background: #fff; color: var(--win-ink); }
+.board-open { display: block; margin: 0 auto 8px; }

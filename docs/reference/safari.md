@@ -152,3 +152,36 @@ areas, seeded maps, wilds and rare spawns via the game's own `dealEnemies()` / `
 ranks. `cfg.catch` throws a Safari Ball at the start of a turn at red HP once the odds reach `cfg.catchAt`; the engine
 mirrors Bait, Rock, running off and the catch's prize and signature card. Variants `noSafariCards` and `noRares` give the
 phase 1 run.
+
+## The leaderboard (phase 5a, 2026-10-02)
+
+- **What posts**: only the day's first try (`run.safari.first`, never a `?event=` peek), once, when it ends, won or lost
+  (`endRun()` in `js/run.js` -> `postSafariResult()` in `js/leaderboard.js`). Abandoning it posts nothing. The result is
+  kept on this device (`pokedb.safari.post`) until it's posted, so signed out, offline or with no name yet it goes up later:
+  on sign-in (`onCloudSignIn()` in `js/cloud.js`) or when the Leaderboard opens, while its day is within a day of today.
+  The result window gets a 📮 line saying which.
+- **An entry** is `safariBoard/<day>_<uid>` in the cloud save's Firestore: `{ day, uid, name, starter, won, area, bosses,
+  turns, time, caught, at }` (`at` the server's time; `time` is wall-clock seconds from `run.tally.startedAt`). The name
+  is the sign-in's display name, trimmed to 16 (`cleanName()`); with none (email sign-in) the Leaderboard asks for one
+  (`pokedb.safari.name`) before posting. It can't be changed after.
+- **Pure part**: `js/data/leaderboard.js` (`runResult()`, `buildEntry()`, `checkEntry()` mirroring the rules,
+  `rankBoards()`, `formatTime()`), pinned by `tests/leaderboard.test.mjs`, which also checks `firestore.rules` keeps the
+  same bounds (`LIMITS`, `NAME_MAX`, the keys).
+- **Boards** (`BOARDS`): Fastest win (wins, time then turns), Fewest turns (wins, turns then time), Most caught (caught > 0;
+  then wins, bosses, turns). Ties: the earlier post first. Top 10 each, plus your row under a ⋯ when you're below, and a
+  "Your try" line with your own entry. A day's entries are one `where('day', '==', day)` query (up to 1000, no index
+  needed), sorted on the device and cached a minute.
+- **The window** (`#board-dialog`, `.board-*` in `css/screens.css`): Today / Yesterday tabs, the day's starter and areas,
+  then the three boards. Opens from the Safari Pokédex's 🏆 Leaderboard button (`#safari-dex-board`) and a Safari run's
+  result window (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
+  No config / Firebase unreachable: "can't be reached right now", the game unaffected. Every Firebase call is caught.
+- **Rules**: `firestore.rules` (the cloud save's `saves/<uid>` rule plus `safariBoard`): anyone reads; a signed-in player
+  creates only their own `<day>_<uid>`, day within ±1 of the server's date, every field typed and bounded, `won` only with
+  3 bosses, `at == request.time`; no updates or deletes, so each day posts once.
+- **Switching it on** (the user, once, in the Firebase console for `pokedb-42e7c`):
+  1. console.firebase.google.com > the pokedb project > Build > Firestore Database (if it says Create database: create
+     it, a location near you, production mode).
+  2. Its **Rules** tab: replace everything with the contents of `firestore.rules` from the repo, then **Publish**.
+  3. Nothing else: no index, no new sign-in method. Sign in on the live site and play the day's first Safari try.
+- Headless tests route gstatic to stand-in modules (an in-memory Firestore), as the cloud save's did. A cheater with the
+  console can still post a made-up (in-bounds) result for their own account: there's no server replay check.

@@ -449,6 +449,7 @@
   <!-- the Safari Zone's own Pokédex, a page per area: ??? until met, a Poké Ball once caught (js/safaridex.js) -->
   <dialog id="safari-dex-dialog" class="dialog wide-dialog index-dialog dex-dialog safari-dex-dialog">
     <h2 tabindex="-1" autofocus>🌿 Safari Pokédex <span id="safari-dex-total" class="count"></span></h2>
+    <button class="btn secondary board-open" id="safari-dex-board" type="button">🏆 Leaderboard</button>
     <div class="index-tabs" id="safari-dex-tabs" role="tablist" aria-label="Safari areas"></div>
     <div id="safari-dex-body" class="dex-body" role="tabpanel"></div>
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
@@ -511,6 +512,7 @@
     <ul id="result-unlocks" class="unlocks"></ul>
     <div class="dialog-actions">
       <button class="btn secondary" id="result-menu">Main menu</button>
+      <button class="btn secondary" id="result-board" hidden>🏆 Leaderboard</button>
       <button class="btn primary" id="result-again">New run</button>
     </div>
   </dialog>
@@ -621,6 +623,18 @@
   </dialog>
 
   <!-- the cloud save (js/cloud.js): only once js/cloud-config.js holds a Firebase project -->
+  <!-- the Safari Zone's daily leaderboard: today's and yesterday's boards (js/leaderboard.js) -->
+  <dialog id="board-dialog" class="dialog board-dialog">
+    <h2 tabindex="-1" autofocus>🏆 Safari Leaderboard</h2>
+    <div class="index-tabs board-tabs" role="tablist" aria-label="Day">
+      <button class="index-tab board-tab" type="button" role="tab" data-day="0">Today</button>
+      <button class="index-tab board-tab" type="button" role="tab" data-day="-1">Yesterday</button>
+    </div>
+    <p class="hint board-day" id="board-day"></p>
+    <div id="board-body" class="board-body" role="tabpanel"></div>
+    <div class="dialog-actions"><button class="btn secondary" id="board-close" type="button">Close</button></div>
+  </dialog>
+
   <dialog id="cloud-dialog" class="dialog small-dialog cloud-dialog">
     <h2>Cloud save</h2>
     <div id="cloud-out">

@@ -92,8 +92,14 @@ three places:
   Neutral-shown, 20 each to the Forest and Wetland (fewest Neutral there), 9-11 to the rest, 2 rare spawns an area;
   **514 Safari Pokédex entries, the roster is complete**. Bot (300 runs): knock out 75.3 -> 79.2 (600 runs), throw at 50%+ 64.7 ->
   65.0; no retune. Next: phase 5, the leaderboard (cloud) and the areas' art (Desktop); prompts in the roadmap.
+- 2026-10-02: **Safari Zone phase 5a, the leaderboard's code** (cloud, pushed to `main`): the day's first try posts its
+  result once to Firestore (`safariBoard/<day>_<uid>`), boards for fastest win / fewest turns / most caught, today and
+  yesterday, from the Safari Pokédex and a Safari run's result window; `firestore.rules`; `tests/leaderboard.test.mjs`.
+  Checked headless with a stand-in Firebase (blocked, signed out, signed in with a name to pick and a post). Next: the
+  user publishes `firestore.rules`; phase 5b, the areas' art (Desktop).
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
+  - Publishing `firestore.rules` in the Firebase console (Firestore > Rules), which switches the Safari leaderboard on.
   - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
   - Choosing whether the reward, battle and Mart capsules (`.ds-btn`) become pixel pills (`.pxb`).
   - `assets/audio/map4.mp3` for the Crystal Depths (until then `map4` plays `map3.mp3`, `TRACKS` in `js/audio.js`).

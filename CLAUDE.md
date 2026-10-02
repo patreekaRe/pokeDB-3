@@ -424,6 +424,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   **Its own Pokémon** (phase 4) are one line each in `js/data/safari-mons.js` (species, type, area, one of 10 role
   `TEMPLATES`, move names, Pokédex line, signature card); `PLACE` grows them with the area's place in the run. A new one
   also needs its front GIF and `SPRITE_FIT` line; `tests/safarimons.test.mjs` checks it all.
+  **Leaderboard** (phase 5a, 2026-10-02): the day's first try posts once to Firestore (`safariBoard/<day>_<uid>`) through
+  the cloud save's sign-in (`js/leaderboard.js`, pure part `js/data/leaderboard.js`, guarded by `firestore.rules`, which
+  the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
@@ -449,7 +452,7 @@ one, which is the point: it costs nothing until it's needed.
 - Map screen - `docs/reference/map-screen.md`
 - Windows - `docs/reference/windows.md`
 - Title screen - `docs/reference/title-screen.md`
-- Safari Zone (seed, catching, balls, rare spawns) - `docs/reference/safari.md`
+- Safari Zone (seed, catching, balls, rare spawns, leaderboard) - `docs/reference/safari.md`
 - Top bar and start screen - `docs/reference/top-bar-and-start-screen.md`
 - Pixel icons - `docs/reference/pixel-icons.md`
 - Music - `docs/reference/music.md`

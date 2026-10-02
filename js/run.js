@@ -41,6 +41,8 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
+import { postSafariResult, openLeaderboard } from './leaderboard.js';
+import { runResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
@@ -110,6 +112,7 @@ export function initRun({ onMenu, onNewRun }) {
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
   $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) beginSafari(); else onNewRun(run.starter); });
+  $('result-board').addEventListener('click', () => openLeaderboard());
 
   // This pop-up moves the game along, so Escape must not just close it.
   $('result-dialog').addEventListener('cancel', (e) => e.preventDefault());
@@ -2317,10 +2320,16 @@ function endRun(won, atLastBoss = false) {
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (safari && run.tally.caught) lines.push(`🎯 Caught ${run.tally.caught} Pokémon this run.`);
   if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');
+  if (safari && run.safari.first && !peeking) {   // the leaderboard's: posted once, never in the way of the end screens
+    const line = postSafariResult(runResult({ day: run.safari.day, starter: run.starter.id, won, biome: run.biome,
+      turns: run.tally.turns, startedAt: run.tally.startedAt, caught: run.tally.caught || 0 }));
+    if (line) lines.push(line);
+  }
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
   list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = safari ? 'Try again' : 'New run';
+  $('result-board').hidden = !safari;
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
   // after the win scene, your Pokémon attacks the Sealed Gate (a run lost at the last boss goes down there too, and fails)
   const strike = () => (gate ? gateScene(gate.scene) : Promise.resolve());

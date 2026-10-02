@@ -1072,6 +1072,14 @@ move to a seeded generator, cosmetic ones (celebrate, audio, title, transition, 
    the map and battles still borrow the main biomes'). Optional later: the daily modifiers and the "zone legend" ideas above.
 
 5. **Leaderboard** on Firebase, and the 6 areas' art (Desktop).
+   **5a, the leaderboard's code, built 2026-10-02** (cloud; docs/reference/safari.md's "The leaderboard"): the day's
+   first try posts its result once (`safariBoard/<day>_<uid>`: starter, won, area, bosses, turns, time, caught), signed
+   in through the cloud save; signed out it waits on the device and posts on sign-in. Boards: fastest win, fewest turns,
+   most caught, today and yesterday, from the Safari Pokédex's and the result window's 🏆 Leaderboard button.
+   `firestore.rules` guards it (own entry, once, bounded, day ±1). Tested with a stand-in Firebase only.
+   **To switch it on** (the user, once): Firebase console > pokedb project > Firestore Database > Rules: paste all of
+   `firestore.rules` (it keeps the cloud save's rule), Publish. Then sign in on the live site and play the day's first
+   Safari try. Still to do: the 6 areas' art and music (5b, Desktop).
 
 **Run in: CLOUD.** Next-session prompt (phase 5a, the leaderboard): "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's
 'Post-v1.0: the Safari Zone daily run', docs/reference/safari.md and docs/reference/cloud-save.md. Build the Safari

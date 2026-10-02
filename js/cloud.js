@@ -243,14 +243,18 @@ async function finishEmailLink(email) {
 
 let connecting = null;
 const connect = () => (connecting ||= start());
+let authKnown;                               // resolves once Firebase has said who's signed in (or nobody)
+const authReady = new Promise(resolve => { authKnown = resolve; });
+const userListeners = [];
 
 async function start() {
   await sdk();
   fb.A.onAuthStateChanged(fb.auth, (u) => {
     const was = user;
     user = u;
+    authKnown();
     render();
-    if (u && u.uid !== was?.uid) reconcile();
+    if (u && u.uid !== was?.uid) { reconcile(); for (const fn of userListeners) { try { fn(u); } catch (err) { /* never the save's problem */ } } }
     if (!u && readState().uid && !linkPending) writeState({});
   });
   if (isEmailLink() && fb.A.isSignInWithEmailLink(fb.auth, location.href)) {
@@ -355,10 +359,25 @@ function render() {
   $('cloud-choose').hidden = status.kind !== 'conflict';
 }
 
-function openCloud() {
+export function openCloud() {
   render();
   if (!$('cloud-dialog').open) openDialog('cloud-dialog');
 }
+
+/* ---------- for the Safari leaderboard (js/leaderboard.js) ---------- */
+
+export const cloudConfigured = () => Boolean(FIREBASE_CONFIG);
+/** Signed in on this device, by its last known state, without loading anything. */
+export const cloudRemembered = () => Boolean(readState().uid);
+/** Firestore and the signed-in user (or null), loading the SDK if needed. Throws when Firebase can't be reached. */
+export async function cloudSession() {
+  if (!FIREBASE_CONFIG) throw new Error('no config');
+  try { await connect(); } catch (err) { connecting = null; throw err; }
+  await Promise.race([authReady, new Promise(resolve => setTimeout(resolve, 8000))]);
+  return { F: fb.F, db: fb.db, user };
+}
+/** Called with the user each time someone signs in. */
+export const onCloudSignIn = (fn) => { userListeners.push(fn); };
 
 export function initCloud() {
   if (!FIREBASE_CONFIG) return;

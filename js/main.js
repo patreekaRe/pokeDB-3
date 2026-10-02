@@ -49,6 +49,7 @@ import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
 import { initPokedex, openPokedex } from './pokedex.js';
 import { initSafariDex, openSafariDex } from './safaridex.js';
+import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initCloud } from './cloud.js';
 import { $, openDialog, closeDialog, confirmDialog } from './ui.js';
 import { showPlaceScene } from './scene.js';
@@ -205,6 +206,8 @@ function init() {
   $('achievements-btn').addEventListener('click', openAchievements);
   initBallMenu();
   initCloud();
+  initLeaderboard();
+  $('safari-dex-board').addEventListener('click', () => openLeaderboard());
 
   $('reset-btn').addEventListener('click', async () => {
     if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
