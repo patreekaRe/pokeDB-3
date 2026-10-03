@@ -100,7 +100,7 @@ function render() {
   const pill = (cls, text, tip) => Object.assign(el('span', `sp-pill ${cls}`, text), { title: tip });
   $('sp-replay').replaceChildren(...(first
     ? [pill('daily', 'Daily run', 'Your one try today'), el('span', 'sp-eq', '='), pill('board', 'Leaderboard', 'This try goes on the leaderboard'), pill('perks off', 'Perks', 'Perks are off for this try')]
-    : [pill('replay', 'Replay', "Today's try is played: from now on it's replays"), el('span', 'sp-eq', '='), pill('inf', 'Infinite', 'Play again as much as you like, off the leaderboard'), pill('perks', 'Perks', 'Your perks are back')]));
+    : [pill('replay', 'Replay', "Today's try is played: from now on it's replays"), el('span', 'sp-eq', '='), pill('board off', 'Leaderboard', "Replays don't go on the leaderboard"), pill('perks', 'Perks', 'Your perks are back')]));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {
