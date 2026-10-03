@@ -23,6 +23,17 @@ export function el(tag, className = '', text = '') {
   return node;
 }
 
+/** A pixel-art ∞ (the pixel font has none), 9x5 pixels, sized by `--ip` in CSS (`.inf-px`). */
+export function infGlyph() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 9 5');
+  svg.setAttribute('class', 'inf-px');
+  svg.setAttribute('shape-rendering', 'crispEdges');
+  svg.setAttribute('aria-label', 'unlimited');
+  svg.innerHTML = '<path fill="currentColor" d="M1 0h2v1h-2zM6 0h2v1h-2zM0 1h1v3h-1zM8 1h1v3h-1zM3 1h1v1h-1zM5 1h1v1h-1zM4 2h1v1h-1zM3 3h1v1h-1zM5 3h1v1h-1zM1 4h2v1h-2zM6 4h2v1h-2z"/>';
+  return svg;
+}
+
 /* ---------- screens ---------- */
 
 const SCREENS = ['start-screen', 'collection-screen', 'map-screen', 'reward-screen', 'battle-screen'];

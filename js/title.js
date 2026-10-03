@@ -15,7 +15,7 @@
    animates while the title is up.
    ============================================================ */
 
-import { $, el, setHpBar } from './ui.js';
+import { $, el, setHpBar, infGlyph } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic, closeSoundPops } from './audio.js';
 import { timeOfDay } from './daytime.js';
@@ -244,7 +244,9 @@ function safariGem() {
   if (full) btn.append(el('span', 'gem-badge', '✦'));
   // today's try still to play (1/1), or played and only replays left (∞)
   const played = getSave().safari.day === daily.day && getSave().safari.tries;
-  if (open) btn.append(el('span', `try-count gem-tries${played ? ' inf' : ''}`, played ? '∞' : '1/1'));
+  const tries = played ? infGlyph() : el('span', 'try-count', '1/1');
+  tries.classList.add('gem-tries');
+  if (open) btn.append(tries);
   btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts${played ? ": you've played it, so it's replays from here" : ''}.` : 'Beat every Pokémon in all three biomes to open the Safari Zone.');
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack

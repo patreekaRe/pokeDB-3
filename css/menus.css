@@ -228,16 +228,21 @@
 }
 /* a full Safari Pokédex: a gold ✦ in the Safari Zone gem's corner (safariGem() in js/title.js) */
 .gem-badge { position: absolute; top: calc(var(--gp) * 1.5); right: calc(var(--gp) * 2.5); z-index: 2; pointer-events: none; font: 1.1rem/1 var(--pixel-font); color: #ffe060; text-shadow: 2px 0 0 #6a4000, -2px 0 0 #6a4000, 0 2px 0 #6a4000, 0 -2px 0 #6a4000; }
-/* the day's Safari try: 1/1 still to play, ∞ once only replays are left (the gem and the prep window's Start) */
+/* the day's Safari try: 1/1 still to play, ∞ once only replays are left (the gem and the prep window's Start);
+   bare pixel text with the gem's own outline, no chip */
 .try-count {
-  display: inline-block; margin-left: 0.6em; padding: 3px 5px 2px; vertical-align: middle;
-  font: 0.7rem/1 var(--pixel-font); letter-spacing: 0; text-shadow: none;
-  color: #ffe060; background: #2a1408; border: 2px solid #ffe060; border-radius: 4px;
+  font: 1.15rem/1 var(--pixel-font); letter-spacing: 0; color: #ffe060;
+  text-shadow: 2px 0 0 #3a1c0c, -2px 0 0 #3a1c0c, 0 2px 0 #3a1c0c, 0 -2px 0 #3a1c0c;
 }
-.try-count.inf { color: #a8d8f8; border-color: #a8d8f8; padding: 0 6px; font: 700 1.05rem/0.9 system-ui, sans-serif; }   /* the pixel font has no ∞ */
-.gem-safari:has(.gem-tries) .gem-label { padding-right: 34px; }   /* centred between the icon and the chip */
-.gem-tries { position: absolute; top: 50%; right: calc(var(--gp) * 7); translate: 0 -50%; z-index: 2; margin: 0; pointer-events: none; }
-@media (max-width: 600px) { .gem-tries { right: calc(var(--gp) * 6); font-size: 0.6rem; } .gem-tries.inf { font-size: 0.95rem; } }
+.inf-px {   /* infGlyph() in js/ui.js: --ip is one of its pixels */
+  --ip: 3px; flex: none; display: inline-block; width: calc(9 * var(--ip)); height: calc(5 * var(--ip)); vertical-align: middle;
+  color: #a8d8f8; overflow: visible;
+  filter: drop-shadow(2px 0 0 #3a1c0c) drop-shadow(-2px 0 0 #3a1c0c) drop-shadow(0 2px 0 #3a1c0c) drop-shadow(0 -2px 0 #3a1c0c);
+}
+.pxb-i .try-count, .pxb-i .inf-px { margin-left: 4px; }
+.gem-safari:has(.gem-tries) .gem-label { padding-right: 40px; }   /* centred between the icon and the count */
+.gem-tries { position: absolute; top: 50%; right: calc(var(--gp) * 6); translate: 0 -50%; z-index: 2; pointer-events: none; }
+@media (max-width: 600px) { .gem-tries { right: calc(var(--gp) * 5); } .try-count.gem-tries { font-size: 1rem; } }
 /* beside the Safari gem (safariGem() in js/title.js): on its right the day's leaderboard, a bare trophy,
    hung off the gem's edge so the gem stays centred in the stack */
 .gem-row { position: relative; flex: none; }

@@ -14,7 +14,7 @@ import { openSafariDex } from './safaridex.js';
 import { openLeaderboard } from './leaderboard.js';
 import { toggleShop } from './shop.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
+import { $, el, infGlyph, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
 
 let actions = {};
 
@@ -74,10 +74,11 @@ function render() {
   });
   const info = el('div', 'sp-info');
   info.append(el('span', 'sp-kicker', `Today's starter · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
-    el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : '🔁 Daily run: 0/1 · Replays: '));
-  if (!first) info.lastChild.append(el('span', 'inf-glyph', '∞'));   // the pixel font has no ∞
+    el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : '🏆 Daily run: 0/1'));
+  if (!first) info.append(el('span', 'sp-try replay', '🔁 Replays: '));
+  if (!first) info.lastChild.append(infGlyph());
   $('sp-today').replaceChildren(mon, info);
-  $('sp-start').querySelector('.pxb-i').replaceChildren(first ? 'Start' : 'Replay', el('span', `try-count${first ? '' : ' inf'}`, first ? '1/1' : '∞'));
+  $('sp-start').querySelector('.pxb-i').replaceChildren(first ? 'Start' : 'Replay', first ? el('span', 'try-count', '1/1') : infGlyph());
 
   // the full Safari Pokédex's prize stays unnamed until it's won
   const prize = save.unlocked.includes('rayquaza') ? `Catch them all: ${STARTERS_BY_ID.rayquaza.line[0].name} joins you.`
