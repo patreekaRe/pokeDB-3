@@ -159,7 +159,7 @@ function ballEntry(ball) {
   const have = balls[ball.id] || 0;
   return {
     id: ball.id, name: ball.stock ? `${ball.pack} ${ball.name}s` : ball.name, sprite: `assets/items/${ball.sprite}.png`,
-    text: !open ? 'For the Safari Zone, which opens once you\'ve beaten every Pokémon in the Pokédex.' : ball.text,
+    text: !open ? 'For the Safari Zone, which opens once you\'ve beaten every Pokémon in all three biomes.' : ball.text,
     blocked: !open,
     level: ball.stock ? `Have ${have}` : null,
     done: !ball.stock && balls.owned.includes(ball.id) && 'Owned',

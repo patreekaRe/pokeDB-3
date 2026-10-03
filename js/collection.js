@@ -69,7 +69,7 @@ function book(which, name, text, noun, how) {
 
 /** The Safari Pokédex's card, a ??? until the Safari Zone opens (every Pokémon beaten). */
 function safariCard(save) {
-  const how = 'Beat every Pokémon in the Pokédex to open the Safari Zone.';
+  const how = 'Beat every Pokémon in all three biomes to open the Safari Zone.';
   if (!safariOpen(save)) return ['safari', '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
   const n = safariDexCount();
   return ['safari', 'Safari Pokédex', el('span', 'coll-emoji', '🌿'), 'The Pokémon of the Safari Zone, area by area. Catch them all.',

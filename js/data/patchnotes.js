@@ -34,7 +34,7 @@ export const PATCHES = [
         'Once Eternatus is beaten it crosses the title screen\'s sky now and then, and an achievement pays 1000 PokéCoins.',
       ]],
       ['🌿', 'The Safari Zone', [
-        'Complete the Pokédex to open a daily run, the same for everyone: today\'s starter through three Safari areas.',
+        'Beat every Pokémon in all three biomes to open a daily run, the same for everyone: today\'s starter through three Safari areas.',
         'Throw Poké Balls at wild Pokémon in any turn. 514 Pokémon to catch, each with its own signature move.',
         'The first try of the day counts for the leaderboard; after it, the Safari window and the map say when you\'re on a replay.',
         'Fill the Safari Pokédex to unlock Rayquaza.',
