@@ -291,7 +291,7 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
   // ---- where the Pokémon step out: from behind crystal outcrops ahead of where the camera comes to rest ----
   const spots = beats.POPS.map((ms, i) => {
     const depth = [0.4, 0.25, 0.62][i], y = Math.round(hz + span0 * depth), g = depth + 0.03;   // beside the way worn to the Well, not on it
-    const x = offTheWay(Math.round(W * [0.3, 0.68, 0.44][i]), Math.round(5 + depth * 12) + 3, VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16, 0, W);
+    const x = offTheWay(Math.round(W * [0.3, 0.68, 0.44][i]), Math.round(5 + depth * 12) + 3, VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16, 0, W, [-1, 1, 1][i]);
     return { ms, x, y, scale: 0.6 + depth * 0.6, size: Math.round(5 + depth * 12) };
   });
   const outcrops = spots.map((s, i) => {

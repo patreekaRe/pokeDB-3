@@ -255,9 +255,9 @@ function paintTrail(g, H, top, vx, style, [lit, body, edge, verge], rand, marks)
       g.fillStyle = marks[0]; g.fillRect(x, y - ph, pw, Math.max(1, Math.round(ph * 0.3)));
     }
   }
-  return (y) => {   // the road's centre and half width at a row, out to its posts
+  return (y) => {   // the road's centre and half width at a row, with its verge (grass may hide the posts)
     const t = Math.min(1, Math.max(0, (y - top) / (H - top)));
-    return [vx + Math.sin(t * 4 + bend) * t * 3, 0.5 + t * t * H * 0.15 + t * 2 + 1 + t * 4 + Math.max(1, Math.round(t * 2.5))];
+    return [vx + Math.sin(t * 4 + bend) * t * 3, 1.5 + t * t * H * 0.15 + t * 2];
   };
 }
 
@@ -809,10 +809,11 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   if (look.house && art.house === 'back') restHouse(L.back.getContext('2d'), Math.round(P.back.gx - W * (tall ? 0.3 : 0.24)), gTop + 1, Math.max(4, H * 0.045), land);   // by the road, in front of the trees
 
   // where the Pokémon pop up: in view at their moment, nearer ones lower down
+  const end = camAt(b.END), rest = [toLayer('ground', 0, 0, end)[0], toLayer('ground', W, 0, end)[0]];   // the view once the camera settles
   const spots = b.POPS.map((ms, i) => {
     const depth = [0.4, 0.22, 0.68][i], c = camAt(ms + 700);
     const [u, v] = toLayer('ground', W * [0.27, 0.72, 0.44][i], gTop + (H * 0.93 - gTop) * depth, c);
-    const view = [toLayer('ground', 0, 0, c)[0], toLayer('ground', W, 0, c)[0]];
+    const view = [Math.max(toLayer('ground', 0, 0, c)[0], rest[0]), Math.min(toLayer('ground', W, 0, c)[0], rest[1])];   // in view as it pops up and once settled
     return { ms, u: Math.round(u), v: Math.round(v), size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6, view };
   });
   const gg = L.ground.getContext('2d');
@@ -828,7 +829,13 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
     const s = 6 + Math.floor(rand() * 8), x = Math.floor(rand() * P.ground.w), y = Math.round(gTop + 4 + rand() * (H - gTop) * 0.6);
     tallGrass(gg, offTheWay(x + s, s, ...wayAt(y), 0, P.ground.w) - s, y, s * 2, Math.ceil(s * 0.6), land.tall);
   }
-  for (const s of spots) s.u = offTheWay(s.u, s.size + 2, ...wayAt(s.v), ...s.view);   // nobody hides on the road
+  // nobody hides on the road, and the ones still in view once the camera settles stand either side of it
+  const away = (s, side = 0) => offTheWay(s.u, s.size + 2, ...wayAt(s.v), ...s.view, side), sideOf = (s) => Math.sign(s.u - wayAt(s.v)[0]);
+  for (const s of spots) s.u = away(s);
+  const shown = spots.filter(s => s.u > rest[0] && s.u < rest[1]);
+  if (shown.length > 1 && shown.every(s => sideOf(s) === sideOf(shown[0]))) {
+    for (const s of [...shown].reverse()) { const u = away(s, -sideOf(s)); if (u !== s.u) { s.u = u; break; } }
+  }
   for (const s of spots) tallGrass(gg, s.u - s.size - 2, s.v - 2 - Math.round(s.size * 0.4), s.size * 2 + 4, Math.ceil(s.size * 0.6) + Math.round(s.size * 0.4), land.tall);
   const tufts = spots.map(s => { const c = layer(s.size * 2 + 4, s.size + 2); tallGrass(c.getContext('2d'), 0, 0, s.size * 2 + 4, Math.ceil(s.size * 0.6), land.tall); return c; });
   const fg2 = L.fore.getContext('2d');

@@ -333,11 +333,16 @@ function paintForest(g, w, H, hz, [lit, body, shade, dark], rand, grow = 1) {
 }
 
 /** Where a Pokémon (or a clump `size` across each way) stands clear of a road or stream at that row, centred `cx`, `half`
-    wide: out to the side it's already on, unless that leaves it off the view (`lo`..`hi`) and the other side doesn't. */
-export function offTheWay(x, size, cx, half, lo, hi) {
+    wide: out to the side it's already on, unless that leaves it off the view (`lo`..`hi`) and the other side doesn't.
+    A `side` (-1 left, 1 right) mirrors it over to that side first, so a film's Pokémon don't all end up on one side. */
+export function offTheWay(x, size, cx, half, lo, hi, side = 0) {
   const clear = half + size + 2;
+  const fits = (v) => v >= lo + 2 && v <= hi - 2;   // a clump half past the edge still reads, and the camera brings it in
+  if (side && Math.sign(x - cx) !== side) {
+    const mirrored = cx + side * Math.max(clear, Math.abs(x - cx));
+    if (fits(mirrored)) return Math.round(mirrored);
+  }
   if (Math.abs(x - cx) >= clear) return x;
-  const fits = (v) => v >= lo + size && v <= hi - size;
   const near = x < cx ? cx - clear : cx + clear, far = x < cx ? cx + clear : cx - clear;
   return Math.round(fits(near) || !fits(far) ? near : far);
 }
