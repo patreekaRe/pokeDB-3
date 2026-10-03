@@ -576,8 +576,30 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 @keyframes bigFlash { from { opacity: 0.5; } to { opacity: 0; } }
 #player-sprite.lunge { animation: lunge 0.38s ease-out; }
 @keyframes lunge { 40% { transform: translate(40px, -14px); } }
-.enemy-portrait.attacking { animation: enemyLunge 0.25s ease-in; }
-@keyframes enemyLunge { 60% { transform: translate(-46px, 24px) scale(1.06); } }
+/* the enemy winds up, then lunges; a big hit makes its sprite reel back (bigHit()), on the img so it doesn't fight the box's shake */
+.enemy-portrait.attacking { animation: enemyLunge 0.3s ease-in; }
+@keyframes enemyLunge { 25% { transform: translate(12px, -6px) scale(0.97); } 65% { transform: translate(-46px, 24px) scale(1.06); } }
+#enemy-img.recoil { transform-origin: 50% 100%; animation: enemyRecoil 0.52s ease-out; }
+@keyframes enemyRecoil { 18% { translate: 12px -8px; rotate: 9deg; scale: 0.94; } 50% { translate: 5px -3px; rotate: 4deg; scale: 0.98; } }
+@media (prefers-reduced-motion: reduce) { .enemy-portrait.attacking, #enemy-img.recoil { animation: none; } }
+/* a super-effective hit's number is red and a notch bigger */
+.pop.dmg.super { color: #ff5a3a; -webkit-text-stroke-color: #3a0000; font-size: 2.35rem; }
+/* the damage preview (showPreview() in battle.js): the chunk a raised card would take blinks, and the block it would add */
+.nameplate .gb-hp-track { position: relative; }
+.gb-hp-ghost {
+  position: absolute; top: 3px; bottom: 3px;
+  left: calc(3px + (100% - 6px) * var(--from));
+  width: calc((100% - 6px) * var(--size));
+  background: #f8f8f0;
+  box-shadow: inset 0 0 0 2px #e83020;
+  animation: hpGhost 0.7s steps(1) infinite;
+}
+@keyframes hpGhost { 50% { background: #e83020; } }
+.nameplate.block-preview .gb-hp-track { animation: blockGhost 0.7s steps(1) infinite; }
+@keyframes blockGhost { 50% { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); } }
+.badge.preview { animation: badgeGhost 0.7s steps(1) infinite; }
+@keyframes badgeGhost { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .gb-hp-ghost, .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } .gb-hp-ghost { background: #f0a090; } }
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }

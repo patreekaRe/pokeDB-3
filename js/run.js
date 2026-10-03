@@ -33,7 +33,7 @@ import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -2169,8 +2169,10 @@ function martRoom() {
     // a small card on the shelf, blown up full size when you tap it
     const option = { ...cardOption(card, run.stage), zoom: makeCard(card, { stage: run.stage }) };
     option.node.classList.add('small');
+    if (card.rarity === 'rare') option.zoom.classList.add('shimmer');
     return ware(option, martPrice(item.price), () => {
       item.sold = true;
+      if (card.upgraded) upgradeBurst(option.node);
       run.deck.push(card.id);
       tell(`Bought ${card.name}.`);
       martRoom();

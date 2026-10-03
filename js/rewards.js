@@ -12,7 +12,7 @@ import { random, shuffled, pickOne } from './rng.js';
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
 const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
-const { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar } = UI;
+const { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar, upgradeBurst } = UI;
 
 /* ---------- what you get offered ---------- */
 
@@ -287,7 +287,11 @@ function finishLine() {
 }
 
 /** Ready-made option tiles. */
-export const cardOption = (card, stage, onPick, count = 1) => ({ node: makeCard(card, { stage, count }), onPick });
+export function cardOption(card, stage, onPick, count = 1) {
+  const node = makeCard(card, { stage, count });
+  if (card.rarity === 'rare') node.classList.add('shimmer');
+  return { node, onPick: onPick && (() => { if (card.upgraded) upgradeBurst(node); onPick(); }) };
+}
 export const relicOption = (relic, onPick) => ({ node: makeRelic(relic, { tips: true }), onPick });
 
 /** A simple tile with an icon (an emoji, or an element such as itemSprite()) and text. */

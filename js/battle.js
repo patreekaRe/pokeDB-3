@@ -25,7 +25,7 @@ import { ITEMS_BY_ID } from './data/items.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
@@ -613,6 +613,7 @@ async function playCard(uid) {
   }
 
   b.busy = true;
+  clearPreview();
   const cost = costOf(card);
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
@@ -682,8 +683,8 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
       if (dealt > 0 && b.powers.attackSeed) applyDebuff('seed', b.powers.attackSeed);
       hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
-      bigHit(dealt, b.enemy.maxHp);
-      pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
+      bigHit(dealt, b.enemy.maxHp, 'enemy-img');
+      pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
       if (b.enemy.hp <= 0) break;
       if (i < hits.length - 1) { renderBars(); await sleep(200); }
     }
@@ -1472,7 +1473,7 @@ async function enemyTurn() {
   if (move.kind === 'attack' || move.kind === 'drain') {
     const damage = attackDamage(move);
     $('enemy-portrait-box').classList.add('attacking');
-    await sleep(250);
+    await sleep(300);
     $('enemy-portrait-box').classList.remove('attacking');
     if (battle !== b) return;
 
@@ -1487,7 +1488,7 @@ async function enemyTurn() {
       hitSound(through, effect);
       hitEffect('player-sprite');
       bigHit(through, b.maxHp);
-      pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? 'dmg' : 'block');
+      pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? (effect > 1 ? 'dmg super' : 'dmg') : 'block');
       if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
       if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
       log(withRevive(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`));
@@ -2184,6 +2185,7 @@ function focusButton(label, onClick) {
 /** The picked card, risen out of the hand (popFromHand()), or the picked item blown up at the bottom middle over a dimmed battle. */
 function renderFocus() {
   const b = battle;
+  clearPreview();
   if (pilePick) return;                           // Fusion Flare's picker owns the layer until a card is taken
   const layer = $('card-focus');
   layer.classList.remove('rise');
@@ -2213,6 +2215,7 @@ function renderFocus() {
   big.classList.add('focus-card');
   const problem = choosing ? null : whyNotPlayable(entry.card);
   if (problem) big.classList.add('unplayable');
+  else if (!choosing) showPreview(entry);
   big.tabIndex = 0;
   big.setAttribute('role', 'button');
   const verb = choosing ? PICK_VERBS[choosing.verb] ?? choosing.verb : 'Play';
@@ -2229,6 +2232,48 @@ function renderFocus() {
   layer.hidden = false;
   popFromHand(big, extra, $('hand').querySelector(`[data-uid="${entry.uid}"]`), tips);
   big.focus({ preventScroll: true });
+}
+
+/**
+ * StS's damage preview: while a card is raised, the enemy's HP bar flashes the chunk it would take (after its block,
+ * Vulnerable, strength, Focus...) and your nameplate the block it would add. It asks damageFor() as if the card were
+ * being played (played/attacks already counted, Aqua Tail's block first), then puts the numbers back.
+ */
+function showPreview(entry) {
+  const b = battle, card = entry.card;
+  const x = costOf(card) === 'X' ? b.energy : 0;
+  const e = effectsOf(card, x);
+  const damp = hasRelic('damp-rock') ? 2 : 0;
+  if (e.exhaustHand) {
+    e.exhausted = b.hand.filter(h => h !== entry && (e.exhaustHand === 'all' || (e.exhaustHand === 'status' ? h.card.status : !isAttack(h.card)))).length;
+  }
+  const saved = { block: b.block, played: b.played, attacks: b.attacks };
+  let block = 0;
+  if (e.blockDamage && e.block) { block += e.block + damp; b.block += e.block + damp; e.block = 0; }
+  b.played += 1;
+  if (isAttack(card)) b.attacks += 1;
+  const { hits } = damageFor(card, e);
+  Object.assign(b, saved);
+
+  const total = hits.reduce((sum, n) => sum + n, 0);
+  previewHp('enemy', b.enemy.hp, Math.max(0, total - b.enemy.block), b.enemy.maxHp);
+  if (e.selfDamage) previewHp('player', b.hp, Math.min(e.selfDamage, b.hp - 1), b.maxHp);
+
+  if (e.block) block += e.block + damp;
+  if (e.blockPerCard) block += e.blockPerCard * (b.hand.length - 1) + damp;
+  if (e.blockMult) block += (b.block + block) * (e.blockMult - 1);
+  if (e.blockPerExhausted && e.exhausted) block += e.blockPerExhausted * e.exhausted + damp;
+  if (block > 0) {
+    $('player-plate').classList.add('block-preview');
+    $('player-status').prepend(badgeFor(['🛡️', `+${block}`, `Playing it adds ${block} block`, 'block preview']));
+  }
+}
+
+function clearPreview() {
+  previewHp('enemy', 0, 0, 1);
+  previewHp('player', 0, 0, 1);
+  $('player-plate').classList.remove('block-preview');
+  $('player-status').querySelector('.badge.preview')?.remove();
 }
 
 /**
@@ -2316,10 +2361,11 @@ function hitSound(through, multiplier) {
   else playSound(multiplier > 1 ? 'hit-super' : multiplier < 1 ? 'hit-weak' : 'hit', 'hit');
 }
 
-/** A hit that takes a big bite out of someone (a quarter of their HP, or 25) jolts the arena and flashes the screen. */
-function bigHit(through, maxHp) {
+/** A hit that takes a big bite out of someone (a quarter of their HP, or 25) jolts the arena and flashes the screen; the enemy reels back from it (`recoil`, its sprite). */
+function bigHit(through, maxHp, recoil) {
   if (through < Math.max(12, Math.min(25, maxHp * 0.25)) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   flash('battle-screen', 'big-hit', 450);
+  if (recoil) flash(recoil, 'recoil', 520);
 }
 
 /** A boss close to fainting brings the weather in (see setStorm in scene.js). */

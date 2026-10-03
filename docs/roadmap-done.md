@@ -1321,3 +1321,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   a switch (lower snap over a thunk, no ring).
 - Tap tips only on a tap (`js/tips.js`): hovering no longer pops a `title` up (it covered the title's gems and the Safari
   Pokédex's tabs and grid); tips dodge buttons and tabs; unseen Pokédex tiles explain themselves on a tap.
+- Battle feel (polish batch 1): a raised card flashes the chunk of the enemy's HP bar it would take (`showPreview()` in
+  `js/battle.js` asks `damageFor()`; its own HP for self-damage) and a blinking `+N` block badge; the enemy winds up
+  before its lunge and reels back on a big hit (`#enemy-img.recoil`); super-effective numbers are red (`.pop.dmg.super`);
+  rare cards shimmer in rewards and the Mart (`.card.shimmer`, from `cardOption()`); taking a `+` card bursts
+  (`upgradeBurst()` in `js/ui.js`). All off under reduced motion.

@@ -11,11 +11,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
-1. **Battle feel.** Run in: LOCAL (Desktop app). Read `docs/reference/battle-screen-layout.md` first. (a) Damage
-   preview: while a card is raised, the enemy's HP bar flashes the chunk it would lose (after block, Vulnerable,
-   strength, Focus), and your block bar the block it would add. (b) The enemy lunges a little on its attack and recoils
-   on a big hit; a super-effective hit's number shows red. (c) Rare cards shimmer in rewards and the Mart; taking an
-   upgraded `+` card gives a small burst. Respect reduced motion.
 2. **World polish.** Run in: LOCAL (Desktop app). Read `docs/reference/map-screen.md` first. (a) Light weather in battle
    that matches the biome and the time of day (`js/daytime.js`), in whole pixels like the scenery: rain, falling leaves,
    ash. (b) The draw and discard piles take the biome's colour. (c) Footprints on the map path already walked. (d) A

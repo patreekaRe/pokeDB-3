@@ -10,7 +10,10 @@ three places:
    work (and "the roadmap's step N" in older notes) is in `docs/roadmap-done.md`; move an entry there when it lands.
 3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.
 
-## Where we left off (2026-10-02)
+## Where we left off (2026-10-03)
+
+- Polish batch item 1 (battle feel) is done: damage/block preview on a raised card, enemy wind-up and recoil, red
+  super-effective numbers, rare-card shimmer and the upgraded-card burst. Next in `docs/roadmap.md`: World polish.
 
 - `main` is up to date (last task: the epic boss intros for Biomes 1 and 2). No
   unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.

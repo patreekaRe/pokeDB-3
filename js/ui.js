@@ -345,6 +345,37 @@ export function setHpBar(prefix, hp, max) {
   $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/${max}`;
 }
 
+/** A raised card's damage preview: the chunk of the HP bar it would take flashes (lose 0 clears it). */
+export function previewHp(prefix, hp, lose, max) {
+  const track = $(`${prefix}-hp`).querySelector('.gb-hp-track');
+  let ghost = track.querySelector('.gb-hp-ghost');
+  if (!(lose > 0)) { ghost?.remove(); return; }
+  if (!ghost) track.append(ghost = el('span', 'gb-hp-ghost'));
+  lose = Math.min(lose, Math.max(0, hp));
+  ghost.style.setProperty('--from', String((hp - lose) / max));
+  ghost.style.setProperty('--size', String(lose / max));
+}
+
+/** Taking an upgraded card: a little burst of green and gold sparks off its tile. */
+export function upgradeBurst(node) {
+  playSound('stat-up');
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r = node.getBoundingClientRect();
+  const burst = el('div', 'up-burst');
+  burst.style.left = `${r.width ? r.left + r.width / 2 : innerWidth / 2}px`;
+  burst.style.top = `${r.height ? r.top + r.height / 2 : innerHeight / 2}px`;
+  for (let i = 0; i < 14; i++) {
+    const angle = (i / 14) * Math.PI * 2, dist = 46 + (i % 3) * 18;
+    const spark = el('i', i % 2 ? 'gold' : '');
+    spark.style.setProperty('--dx', `${Math.round(Math.cos(angle) * dist)}px`);
+    spark.style.setProperty('--dy', `${Math.round(Math.sin(angle) * dist)}px`);
+    burst.append(spark);
+  }
+  burst.append(el('b', '', '+'));
+  document.body.append(burst);
+  setTimeout(() => burst.remove(), 800);
+}
+
 /** Show the run's Pokédollars in the top bar (it's only visible on the run screens). */
 export function setMoney(amount) {
   $('money-value').textContent = String(amount);

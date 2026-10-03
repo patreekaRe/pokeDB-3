@@ -264,6 +264,13 @@ with the sprite's own GIF (`mask`, contain, 50% 100%, the same fit as the `<img>
 rise warm (`up`) or sink blue (`down`) for 0.9 s. It sits in `#player-zone` / `#enemy-portrait-box` so it moves
 with a shake. Raises: strength, focus, Guard and block too (the user's call: block is Defense), either side,
 including block at the start of a turn; drops: Weak and Vulnerable. Skipped under reduced motion.
+**Damage preview** (StS's, 2026-10-03): while a card is raised, `showPreview()` in `js/battle.js` runs `damageFor()` as if it
+were being played (played/attacks counted, Aqua Tail's block first, the X of an X card, Blast Burn's exhaust count) and
+`previewHp()` in `js/ui.js` blinks that chunk of the enemy's HP bar, after its block (`.gb-hp-ghost`; your own bar for
+self-damage); the block it would add blinks as a `+N` badge and the blue rim (`.block-preview`). `clearPreview()` runs
+on every `renderFocus()` and as the card is played. The enemy winds up before it lunges (`enemyLunge`), and a big hit
+makes its sprite reel back (`#enemy-img.recoil`, on the img so it doesn't fight the box's shake animation); a
+super-effective hit's number is red (`.pop.dmg.super`), either side.
 Battle moments: a hit that takes at least a quarter of the target's HP
 (clamped to 12–25) runs `bigHit()` in `js/battle.js`, which jolts `.arena`
 (the `translate` property, so sprite transforms are untouched) and flashes the
