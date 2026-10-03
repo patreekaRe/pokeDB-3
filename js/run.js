@@ -504,8 +504,13 @@ function showMap() {
   $('run-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = String(run.relics.length);
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
-  $('run-level').hidden = run.level === 0;
-  $('run-level').textContent = `Level ${run.level}`;
+  // a Safari run says whether it's the day's counted try or a replay, where a normal run shows its Trainer Level
+  const tag = run.safari ? (run.safari.first ? '🏆 Counts' : '🔁 Replay') : `Level ${run.level}`;
+  $('run-level').hidden = !run.safari && run.level === 0;
+  $('run-level').textContent = tag;
+  $('run-level').classList.toggle('replay', !!run.safari && !run.safari.first);
+  $('run-level').title = !run.safari ? '' : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
+    : 'Today\'s run is used up: this replay doesn\'t count for the leaderboard.';
 
   setHpBar('run', run.hp, run.maxHp);
   setMoney(run.money);

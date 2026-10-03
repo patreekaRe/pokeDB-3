@@ -2130,6 +2130,7 @@ body.battle-intro { pointer-events: none; }
 
 .run-name { display: flex; align-items: center; gap: 8px; }
 .level-chip { background: #6b4b00; color: #ffe27a; border: 1px solid var(--gold); }
+.level-chip.replay { background: #1f3a5a; color: #cfe8ff; border-color: #6aa8e0; }
 
 /* ---------- coin display (topbar + shop) ---------- */
 .coin-pill {
@@ -3842,6 +3843,7 @@ body.scene-peek #backdrop { display: none; }
 .sp-area.area-desert  { --c1: #f4e2b0; --c2: #9a6a20; }
 .sp-try { font-size: 0.7rem; color: #c8c0a8; }
 .sp-try.first { color: #f8d048; }
+.sp-try.replay { color: #a8d8f8; }
 /* replays: unlimited, perks back, off the board; said right under the day's status, not in the rules */
 .sp-replay { display: grid; gap: 4px; margin: 10px 0 0; padding: 8px 12px; border: 2px solid #f8d048; border-radius: 10px; background: rgba(248, 208, 72, 0.12); font-size: 0.72rem; line-height: 1.5; color: #fff8e8; }
 .sp-replay strong { font-size: 0.82rem; font-weight: 400; color: #f8d048; }

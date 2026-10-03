@@ -74,8 +74,9 @@ function render() {
   });
   const info = el('div', 'sp-info');
   info.append(el('span', 'sp-kicker', `Today's starter · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
-    el('span', `sp-try${first ? ' first' : ''}`, first ? '🏆 First try: it counts!' : `Replay · try ${save.safari.tries + 1}`));
+    el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 First try: it counts!' : `🔁 Today's run is used up · replay ${save.safari.tries}`));
   $('sp-today').replaceChildren(mon, info);
+  $('sp-start').querySelector('.pxb-i').textContent = first ? 'Start' : 'Start replay';
 
   // the full Safari Pokédex's prize stays unnamed until it's won
   const prize = save.unlocked.includes('rayquaza') ? `Catch them all: ${STARTERS_BY_ID.rayquaza.line[0].name} joins you.`
@@ -93,8 +94,9 @@ function render() {
     }
     return li;
   }));
-  $('sp-replay').replaceChildren(el('strong', '', first ? 'After this first try, replay as often as you like' : 'Replay as often as you like'),
-    el('span', '', 'Keep catching all day. Only the first try counts for the leaderboard; replays get your perks back.'));
+  $('sp-replay').replaceChildren(el('strong', '', first ? 'After this first try, replay as often as you like' : 'You\'ve played today\'s run: from now on it\'s replays'),
+    el('span', '', first ? 'Keep catching all day. Only the first try counts for the leaderboard; replays get your perks back.'
+      : 'Your leaderboard result is in. Replays don\'t count for it, but your perks are back and every catch still goes in your Safari Pokédex.'));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {

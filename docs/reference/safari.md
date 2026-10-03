@@ -90,7 +90,7 @@ your loadout"). Styled like the character select's Prepare step (the user's ask 
 pixel heads, pixel pill buttons (`.pxb`), bigger text (rules 0.82rem, 0.78 on phones). It holds today's run (the
 starter, the 3 areas with each page's caught count, first try or replay), a gold-rimmed replay box under it (`#sp-replay`:
 replay today's Safari as often as you like to keep catching; only the first try counts for the leaderboard, replays get
-the perks back; the user wanted it prominent, not in the rules), 📕 Pokédex (on the day's first area) and 🏆
+the perks back; the user wanted it prominent, not in the rules; once the day's try is played it says so, "Today's run is used up · replay N", and Start reads "Start replay", the user's ask 2026-10-02; in the run the map's run card shows a 🏆 Counts or blue 🔁 Replay chip in the Level chip's place), 📕 Pokédex (on the day's first area) and 🏆
 Leaderboard buttons, the rules in short lines (`RULES`; the rare-spawn line carries the map's own ✦; Bait's and Rock's lines say they're Safari-only card rewards after fights and
 carry the card itself as a `.card.small`, `zoomable()`: a tap opens it big with its keyword boxes; each line has a pixel icon that `js/icons.js` has: an emoji
 without one would show as a plain emoji), then a sticky foot (`.sp-foot`): your Poké Balls in one row you swipe sideways like the character select's
