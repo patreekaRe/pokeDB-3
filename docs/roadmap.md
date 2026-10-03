@@ -9,31 +9,31 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-1. **A loudness pass on the cries** (the user's idea, 2026-09-28; optional). Some cries are louder than others.
-
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
-2. **Battle feel.** Run in: LOCAL (Desktop app). Read `docs/reference/battle-screen-layout.md` first. (a) Damage
+1. **Battle feel.** Run in: LOCAL (Desktop app). Read `docs/reference/battle-screen-layout.md` first. (a) Damage
    preview: while a card is raised, the enemy's HP bar flashes the chunk it would lose (after block, Vulnerable,
    strength, Focus), and your block bar the block it would add. (b) The enemy lunges a little on its attack and recoils
    on a big hit; a super-effective hit's number shows red. (c) Rare cards shimmer in rewards and the Mart; taking an
    upgraded `+` card gives a small burst. Respect reduced motion.
-3. **World polish.** Run in: LOCAL (Desktop app). Read `docs/reference/map-screen.md` first. (a) Light weather in battle
+2. **World polish.** Run in: LOCAL (Desktop app). Read `docs/reference/map-screen.md` first. (a) Light weather in battle
    that matches the biome and the time of day (`js/daytime.js`), in whole pixels like the scenery: rain, falling leaves,
    ash. (b) The draw and discard piles take the biome's colour. (c) Footprints on the map path already walked. (d) A
    Pokédex entry plays its cry and a small idle bounce when opened.
-4. **Settings and battle QoL.** Run in: CLOUD. (a) Separate music and effects volume (the 🔊 button mutes both now,
+3. **Settings and battle QoL.** Run in: CLOUD. (a) Separate music and effects volume (the 🔊 button mutes both now,
    `js/audio.js`), saved. (b) A 1x / 2x battle speed toggle for the enemy turn and hit animations. (c) An end-turn
    warning when PP is left and a card is playable, which can be switched off. (d) Sort and filter in the deck view
    (cost, attack / skill / power).
-5. **Records QoL.** Run in: CLOUD. Read `docs/reference/safari.md` for (c). (a) A "New!" badge on cards and relics never
+4. **Records QoL.** Run in: CLOUD. Read `docs/reference/safari.md` for (c). (a) A "New!" badge on cards and relics never
    seen before, in rewards and the Mart (`save.seen`). (b) Lost runs keep a short line too (where you fell, to what),
    beside the Record Book's wins. (c) A Safari result line to copy and share ("Safari 2026-10-03: 4 caught, floor 11").
    (d) **Ask the user first:** holding a boss shows its next 2 moves (might be too generous).
-6. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
+5. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
    (`LOOP_POINTS`), drop its fallback. Wired already: `map4`, `eternatus`, `eternamax`. New tracks to wire if supplied:
    a Safari theme, a credits song, the Sealed Gate scene, the Mart and the Game Corner. Real recordings can also replace
    synths (block, stick, gate-hum / gate-crack / gate-shatter, fireworks).
+6. **A loudness pass on the cries** (the user's idea, 2026-09-28; last, after the polish batch). Run in: CLOUD.
+   Some cries in `assets/audio/cries/` are louder than others: measure every file's loudness and even them out.
 
 ## Ideas, not agreed yet (ask the user before building)
 
