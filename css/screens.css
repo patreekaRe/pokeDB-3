@@ -1303,7 +1303,8 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .map-rare { position: absolute; top: -24px; left: 0; right: 0; z-index: 2; text-align: center; color: #f8d030; font-size: 22px; line-height: 1; pointer-events: none;
   text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038;
   filter: drop-shadow(0 0 3px rgba(255, 224, 96, 0.7)); animation: rareTwinkle 2.2s ease-in-out infinite; }
-.map-rare.inline { position: static; display: inline-block; font-size: 1.25rem; }
+/* z-index: auto, since a grid item (the Safari prep's rule icon) honours z-index even unpositioned and drew over the sticky Poké Ball bar */
+.map-rare.inline { position: static; z-index: auto; display: inline-block; font-size: 1.25rem; }
 .dialog .map-rare.inline { text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038; }
 @keyframes rareTwinkle {
   0%, 100% { translate: 0 0; scale: 1; color: #f8d030; filter: drop-shadow(0 0 2px rgba(255, 224, 96, 0.55)); }
