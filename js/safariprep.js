@@ -96,9 +96,10 @@ function render() {
     }
     return li;
   }));
-  $('sp-replay').replaceChildren(el('strong', '', first ? '1/1 try left today: it counts!' : '0/1: your score is in'),
-    el('span', '', first ? 'This try goes on the leaderboard, no perks. Then replay as much as you like.'
-      : 'Unlimited replays skip the leaderboard. Perks are back; catches still count.'));
+  // one short fact a line (the user's ask, 2026-10-03)
+  const lines = first ? ['Your first try today goes on the leaderboard.', 'Your perks are off for it.', 'After that, play again as much as you like.']
+    : ['Play again as much as you like.', "Replays don't go on the leaderboard.", 'Your perks are back.', 'Catches still go in your Pokédex.'];
+  $('sp-replay').replaceChildren(el('strong', '', first ? '1/1 try left today' : '0/1: your score is in'), ...lines.map(line => el('span', '', line)));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {
