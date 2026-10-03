@@ -41,6 +41,7 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
+import { descent } from './descent.js';
 import { postSafariResult, openLeaderboard } from './leaderboard.js';
 import { runResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
@@ -2410,8 +2411,17 @@ function endRun(won, atLastBoss = false) {
   list.hidden = lines.length === 0;
   $('result-again').textContent = safari ? 'Try again' : 'New run';
   $('result-board').hidden = !safari;
+  // Mewtwo's unlock comes last, after the pedestal, so the run ends on the reveal
+  fresh.sort((a, b) => (a.id === 'mewtwo') - (b.id === 'mewtwo'));
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
-  // after the win scene, your Pokémon attacks the Sealed Gate (a run lost at the last boss goes down there too, and fails)
-  const strike = () => (gate ? gateScene(gate.scene) : Promise.resolve());
-  (record ? winScene(record) : Promise.resolve()).then(strike).then(result);
+  // the last boss falls, the floor splits and your Pokémon drops down to the Sealed Gate and strikes it (a run lost at the
+  // last boss is dragged down too, and fails); then the win scene, the unlocks and the result (the user's order, 2026-10-02)
+  playGate(gate?.scene).then(() => (record ? winScene(record) : null)).then(result);
+}
+
+/** The descent and the gate's scene, one over the other so the page never shows between them. */
+export async function playGate(scene) {
+  if (!scene) return;
+  const close = await descent(scene);
+  await gateScene({ ...scene, onShow: close });
 }

@@ -66,6 +66,11 @@ three places:
 - 2026-10-02: **The strike card** (Desktop app, the user's ask): the gate scene's move is a card you hold to charge and
   let go to throw (`strikeCard()` in `js/gatescene.js`), phone-safe long press. Checked in the browser pane at 375x812
   with `?strike=90&gate=400` and `?strike=700&gate=600&starter=squirtle&stage=2` (the gold break card); not on a real phone.
+- 2026-10-02: **The descent to the Sealed Gate** (Desktop app, roadmap 'Small asks' 4): after the last boss the arena
+  splits and your Pokémon falls down a crystal shaft to the gate (`js/descent.js`), then the strike, then the win scene,
+  the unlocks (Mewtwo's last) and the result. Checked in the browser pane at 375x812 through `?strike=90`, `&first`,
+  `&kind=loss` and `?strike=400&gate=50`; the real end of a run only by reading the code. The user still has to watch it
+  live. Item 5 (Mewtwo's fall into the Depths) reuses it.
 - 2026-10-02: **Safari Zone phase 1** (cloud, on branch `claude/project-thread-6d3v6i`, reached
   `main` with phase 2): the seeded RNG (`js/rng.js`) under every gameplay roll, the daily seed / areas / starter (`js/data/safari.js`),
   the title's Safari Zone gem (locked until `dex.complete`), a playable daily run with borrowed rosters and the first-try

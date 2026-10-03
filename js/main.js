@@ -28,13 +28,12 @@
    ============================================================ */
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
-import { gateScene } from './gatescene.js';
 import { gateHp } from './gate.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, isPeeking } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, isPeeking, playGate } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, closeSoundPops } from './audio.js';
@@ -271,7 +270,7 @@ function init() {
 
   showSelect();   // under the title, so the menu scene is ready behind it
   showTitle().then(() => {
-    // ?strike=90 (with &gate=HP, &starter=id, &stage=0-2, &level=0-5, &kind=loss, &first) plays the Sealed Gate's scene after PRESS START,
+    // ?strike=90 (with &gate=HP, &starter=id, &stage=0-2, &level=0-5, &kind=loss, &first) plays the descent and the Sealed Gate's scene after PRESS START,
     // from the gate's HP, without saving anything; a strike past its HP is the break that frees Mewtwo
     if (params.has('strike')) return peekStrike(params);
     // Show the how-to-play once, the very first time.
@@ -282,7 +281,7 @@ function init() {
   });
 }
 
-/** The ?strike= playtest: the gate scene on its own, nothing saved. */
+
 /** The Safari areas' scenes, a floor at a time as you'd walk them (a playtest view: no run, nothing saved): floors 1-3,
     4-6 and 7-10 are an area's first three places (stageOf() in js/map.js), then the boss's. Each area opens with its
     intro film and each later place with its walk on, as a run plays them (&intro=0 leaves them out). */
@@ -319,13 +318,14 @@ function peekSafari(params) {
   show();
 }
 
+/** The ?strike= playtest: the descent and the gate scene on their own, nothing saved. */
 function peekStrike(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
   const kind = params.get('kind') || (after === 0 ? 'ultimate' : 'win');
-  gateScene({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' });
+  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' });
 }
 
 init();

@@ -123,8 +123,17 @@ live site.
   at a time; broken, steps down into violet light). **The seal bar** (`gateBar()` / `setGateBar()` in `js/gate.js`,
   `.seal-bar` in `css/base.css`, `.big` in the scene) is its HP in the scene and the result window: the seal's gem at its
   head, a crystal track in a stone frame with light running along it, a rune at each stage that goes dark once passed, a
-  pale trail lagging behind a hit (`settleGateBar()`), a flicker past 25%. After the win scene (or straight away for a loss at the last boss), `endRun()` plays
-  `gateScene()` in `js/gatescene.js` (`#gate-scene`, z-index 950): a crystal cavern on one low-res canvas, the gate's
+  pale trail lagging behind a hit (`settleGateBar()`), a flicker past 25%. **The run's end order** (the user's pick, 2026-10-02): last boss falls → the
+  **descent** → the gate strike → the win scene / Hall of Fame with its song → the unlock windows (Mewtwo's last, so the run
+  ends on the reveal) → the result window; a loss at the last boss gets the descent and the strike, no pedestal.
+  `playGate()` in `js/run.js` chains the first two: `descent()` in `js/descent.js` (`#descent-scene`, z-index 949, one
+  low-res canvas) shakes the arena (a dusky wasteland), opens a violet crack under your Pokémon, and drops it down an
+  endless crystal shaft (walls, crystals and strata painted every frame from the depth; crystals chime as they pass) for as
+  long as its lines last, then the light below floods up and it goes dark; it resolves with a `close()` the gate scene
+  calls once it covers the screen (`onShow`). Its lines are `descentLines()` (first time: the chamber's lore; later wins one
+  line each way; a loss "Something drags it down..."), or handed in as `lines` (Mewtwo's fall, roadmap Small asks 5). The
+  win's fanfare fades as it starts; the break no longer brings a song back (`music` is null), the win scene starts its own.
+  Then `gateScene()` in `js/gatescene.js` (`#gate-scene`, z-index 950): a crystal cavern on one low-res canvas, the gate's
   HP in a boss plate (`.gate-plate`, the big seal bar), your Pokémon from behind using its type's move (`MOVES`: a loss Ember / Water Gun / Vine
   Whip, a win Flamethrower / Hydro Pump / Leaf Storm, a Level 5 win Blast Burn / Hydro Cannon / Frenzy Plant), played
   as a **strike card** you hold to charge and let go to throw (`strikeCard()`, `.gate-strike`, every time, the user's call
@@ -133,16 +142,16 @@ live site.
   capture, Android vibration), then the flash, shake, -N and the bar running down; each stage it passes jolts the gate a step more broken
   (`crackOpen()`: crack, flash, shake, the bar's rune shattering) and adds its lines (`STAGE_LINES`). The breaking blow: shudder, light rays,
   chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
-  its aura GIF and cry; the unlock window follows. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
+  its aura GIF and cry; the pedestal follows, then its unlock window. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
   `js/audio.js`. **Until it breaks, the gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
   win another run): not on the title (Mewtwo never flies by either, it has no flying sprite), and the locked "???" panel
   only hints. **Once broken** (and Mewtwo unlocked) it stands open on the title's ledge (`sizeGate()` / `paintGate()` in
   `js/title.js`, `.title-gate` in `css/screens.css`): a tap swells its violet light over the screen (`.gate-opening`)
   with Mewtwo's cry, then `onGate` in `js/main.js` opens Mewtwo's Prepare step, a shortcut to the same screen as its
-  Legendaries portrait (the user's ask, 2026-10-02). Playtest: `?mewtwo&gate=0`. The story is told in the scene: the first time (`save.gateSeen`) it
-  opens with the chamber's lore (plus a line that past victories already cracked it, if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
+  Legendaries portrait (the user's ask, 2026-10-02). Playtest: `?mewtwo&gate=0`. The story is told on the way: the first time (`save.gateSeen`) the
+  descent tells the chamber's lore, the gate scene a line that past victories already cracked it (if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
   harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
-  `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`) plays the scene after PRESS START; a
+  `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`) plays the descent and the scene after PRESS START; a
   strike past the HP plays the break. `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo
   run, and re-seeds the gate from the Record Book; only while Mewtwo is unlocked). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and

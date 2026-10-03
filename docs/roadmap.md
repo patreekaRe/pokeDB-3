@@ -910,7 +910,12 @@ Split into sessions by where they run:
    **Run in: CLOUD.** Prompt: "Read CLAUDE.md and docs/reference/safari.md, then docs/roadmap.md's 'Small asks' item 3.
    Build it, keep `node --test` green, run a small Safari bot check on catches per run before/after, push to main.
    Attach pokeDB-sim too."
-4. **The descent to the Sealed Gate** (the user's ask, 2026-10-02; Desktop app or cloud, visual). Today a won run cuts
+4. ✅ **Done 2026-10-02** (Desktop app): `js/descent.js` (the arena splits, a fall down a crystal shaft into violet light),
+   `playGate()` in `js/run.js` chains it into the gate scene, and `endRun()` plays descent → strike → win scene → unlocks
+   (Mewtwo's last) → result. The lore moved into the descent; `descent({ lines })` takes item 5's own lines. Checked at
+   375x812: `?strike=90`, `&first`, `&kind=loss`, `?strike=400&gate=50` (the break), no new console errors; the real
+   end-of-run path only by reading the code.
+   **The descent to the Sealed Gate** (the user's ask, 2026-10-02; Desktop app or cloud, visual). Was: a won run cut
    from the victory pedestal straight into the crystal cavern. New order (the user's pick): last boss falls → a descent
    scene (the arena shakes, a crack opens with violet light under it, your Pokémon drops down a crystal shaft, a small
    take on `js/depths-intro.js`, with a few lines) → the gate strike (`gateScene()`) → **then** the win scene /

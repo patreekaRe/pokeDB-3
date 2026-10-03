@@ -1,6 +1,6 @@
 /*
- * The Sealed Gate's scenes (docs/roadmap.md, "The Sealed Gate", part B), after a run's win scene and before its result
- * window. Deep in a crystal cavern the gate looms, its HP in a battle nameplate; your Pokémon (from behind, like battle)
+ * The Sealed Gate's scenes (docs/roadmap.md, "The Sealed Gate", part B), after the descent (js/descent.js) and before
+ * the run's win scene and result window. Deep in a crystal cavern the gate looms, its HP in a battle nameplate; your Pokémon (from behind, like battle)
  * attacks it with its type's move (Ember / Flamethrower / Blast Burn by how the run went), the hit flashes and shakes
  * it, the cracks spread across it as its HP runs down, and from half HP Mewtwo's silhouette shows behind the door.
  *
@@ -48,11 +48,11 @@ let charging = 0, chargeType = 'fire';   // the strike card's charge while it bu
 
 /**
  * Play the scene: `before` and `after` are the gate's HP, `kind` 'loss' | 'win' | 'ultimate', `level` the run's Trainer
- * Level, `first` the first time it's ever reached (its story is told), `music` the song to bring back after the break's
- * silence. Resolves once the last
- * line is tapped away and the scene has faded out.
+ * Level, `first` the first time it's ever reached, `music` the song to bring back after the break's silence (none when
+ * the win scene follows with its own), `onShow` called once it covers the screen. Resolves once the last line is
+ * tapped away and the scene has faded out.
  */
-export async function gateScene({ starter, stage = 0, shiny = false, before, after, kind = 'win', level = 0, first = false, music = 'run-win' }) {
+export async function gateScene({ starter, stage = 0, shiny = false, before, after, kind = 'win', level = 0, first = false, music = null, onShow = null }) {
   await gateReady();
   const scene = $('gate-scene'), mon = $('gate-mon');
   const name = stageName(starter, stage);
@@ -79,20 +79,17 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
   addEventListener('resize', relayout);
   last = performance.now();
   raf = requestAnimationFrame(frame);
+  if (onShow) setTimeout(onShow, still() ? 0 : 800);   // its fade-in (gateIn) has covered whatever was under it
 
   playSound('gate-hum');
   await sleep(still() ? 200 : 900);
   scene.classList.add('mon-in');
   await sleep(still() ? 0 : 500);
-  // the story, told in the scene rather than a menu (the user's call, 2026-10-02): the gate is only ever seen down here
-  const story = first ? [
-    'Far beneath the wastes lies a chamber no map shows...',
-    'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.',
-    // a save whose earlier wins were counted before it ever got here (seedGate())
-    ...(before < GATE_HP ? ['Cracks already run through the seal... your past victories have been reaching it all along.'] : []),
-  ] : [];
-  if (kind === 'loss') await say([...story, `${name} fainted... but its last spark of strength is drawn down into the chamber.`]);
-  else await say([...story, first ? `The strength of ${name}'s victory echoes down into the chamber!` : `${name}'s victory echoes down to the Sealed Gate!`]);
+  // the chamber's lore is told on the way down (js/descent.js); here only what the gate itself shows. A save whose
+  // earlier wins were counted before it ever got here (seedGate()) sees their cracks.
+  const story = first && before < GATE_HP ? ['Cracks already run through the seal... your past victories have been reaching it all along.'] : [];
+  if (kind === 'loss') await say([...story, `${name} stirs before the seal, a last spark of strength left in it.`]);
+  else await say([...story, `${name} faces the Sealed Gate, its victory still burning in it!`]);
   tellNow(`Hold the card to charge ${move}, then let go!`);
   const power = await strikeCard({ type, kind, move, hit: before - after, breaks });
   tellNow(kind === 'loss' ? `${name} reaches for the seal...` : `${name} used ${move}!`);
@@ -696,7 +693,7 @@ async function breakFree(scene, music) {
   aura();
   await Promise.race([playCry('mewtwo'), sleep(1500)]);
   await say(['Mewtwo is free!', 'It will fight beside you now: choose it at New game.']);
-  playMusic(music);   // the win's song comes back for the result window
+  if (music) playMusic(music);
   await leave(scene);
 }
 

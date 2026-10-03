@@ -560,6 +560,18 @@
     <div class="hof-boom" aria-hidden="true"></div>
   </div>
 
+  <!-- After the last boss, the floor splits and your Pokémon falls down a crystal shaft to the Sealed Gate (js/descent.js) -->
+  <div id="descent-scene" class="descent-scene" hidden>
+    <div class="descent-world">
+      <canvas id="descent-canvas" class="descent-canvas pixel" aria-hidden="true"></canvas>
+      <img id="descent-mon" class="descent-mon pixel" alt="">
+    </div>
+    <div class="descent-light" aria-hidden="true"></div>
+    <div class="descent-flash" aria-hidden="true"></div>
+    <div class="evo-bottom"><div class="reward-log" id="descent-log" hidden><span id="descent-log-text" aria-hidden="true"></span><span class="sr-only" id="descent-log-live" aria-live="polite"></span></div></div>
+    <div class="descent-dark" aria-hidden="true"></div>
+  </div>
+
   <!-- After a run, your Pokémon attacks the Sealed Gate (js/gatescene.js); the blow that breaks it frees Mewtwo -->
   <div id="gate-scene" class="gate-scene" hidden>
     <canvas id="gate-canvas" class="gate-canvas pixel" aria-hidden="true"></canvas>
