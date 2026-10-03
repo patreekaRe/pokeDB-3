@@ -108,8 +108,8 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'victini',
-    text: 'Win a run on Trainer Level 3 or higher with no two copies of the same card',
-    test: (s) => s.uniqueDeckWin,
+    text: 'Win 3 runs in a row on Trainer Level 2 or higher',
+    test: (s) => s.bestStreak >= 3,
   },
   {
     starter: 'heatran',

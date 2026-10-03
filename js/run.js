@@ -129,6 +129,22 @@ export function suspendRun() {
   run = null;
 }
 
+/** Victini's goal counts wins in a row on this Level or higher; a win below it neither counts nor breaks the streak. */
+const STREAK_LEVEL = 2;
+
+/** A lost or abandoned run breaks the win streak, unless it was Mewtwo's or the Safari's (they never count). */
+function breakStreak(starterId, safari) {
+  if (peeking || safari || starterId === 'mewtwo') return;
+  updateSave(d => { d.stats.winStreak = 0; });
+}
+
+/** The Abandon button's: a run thrown away mid-way counts as a loss for the win streak, saved or loaded. */
+export function forfeitRun() {
+  if (run && !run.over) breakStreak(run.starter.id, !!run.safari);
+  else if (!run) { const saved = loadRunData(); if (saved) breakStreak(saved.starter, !!saved.safari); }
+  abandonRun();
+}
+
 export function abandonRun() {
   abandonBattle();
   if (run && !peeking) clearRunData();
@@ -2370,13 +2386,17 @@ function endRun(won, atLastBoss = false) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
   }
+  if (!won) breakStreak(run.starter.id, safari);
   if (won && !safari && !peeking) {
     updateSave(d => {
       d.stats.runsWon += 1;
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
       if (run.restCount <= 3) d.stats.lightRestWin = true;
       if (run.restCount === 0) d.stats.noRestWin = true;
-      if (!mewtwoRun && new Set(run.deck.map(baseId)).size === run.deck.length && run.level >= 3) d.stats.uniqueDeckWin = true;
+      if (!mewtwoRun && run.level >= STREAK_LEVEL) {
+        d.stats.winStreak += 1;
+        d.stats.bestStreak = Math.max(d.stats.bestStreak, d.stats.winStreak);
+      }
       if (!mewtwoRun) {
         const type = run.starter.type;
         d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);

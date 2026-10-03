@@ -33,7 +33,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, closeSoundPops } from './audio.js';
@@ -121,7 +121,7 @@ async function requestMenu() {
 async function requestAbandon(sure) {
   if (!hasSavedRun() && !isRunActive()) return;
   if (sure !== true && !(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return;
-  abandonRun();
+  forfeitRun();
   if (!isPeeking()) clearRunData();   // a ?event= playtest run leaves the real saved run alone
   showHome();
 }
