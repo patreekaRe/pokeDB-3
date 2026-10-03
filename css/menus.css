@@ -148,8 +148,9 @@
   font-synthesis-weight: none;
   -webkit-text-stroke: 0;
   rotate: -8deg;
+  transform-origin: left center;   /* it swells away from the logo, not over it */
   cursor: pointer;
-  animation: versionIn 0.4s steps(4) both 1.2s, versionBob 1.4s steps(2) infinite alternate 1.6s;
+  animation: versionIn 0.4s steps(4) both 1.2s, versionPulse 1.1s ease-in-out infinite 1.6s;
 }
 .title-version::after {
   content: "";
@@ -163,9 +164,9 @@
 }
 .title-version:not(.seen) {
   background: var(--gold);
-  animation: versionIn 0.4s steps(4) both 1.2s, versionBob 1.4s steps(2) infinite alternate 1.6s, versionGlow 1.4s steps(4) infinite alternate 1.6s;
+  animation: versionIn 0.4s steps(4) both 1.2s, versionPulse 1.1s ease-in-out infinite 1.6s, versionGlow 1.4s steps(4) infinite alternate 1.6s;
 }
-@keyframes versionBob { to { translate: 0 -4px; } }
+@keyframes versionPulse { 0%, 100% { scale: 1; } 50% { scale: var(--pulse, 1.35); } }
 @keyframes versionGlow { from { box-shadow: 0 3px 0 #0d1a44, 0 0 0 0 rgba(255, 224, 96, 0); } to { box-shadow: 0 3px 0 #0d1a44, 0 0 10px 3px rgba(255, 224, 96, 0.7); } }
 @keyframes versionShine { 0%, 65% { left: -40%; } 100% { left: 130%; } }
 .title-version:hover, .title-version:focus-visible { background: var(--gold); outline: none; }
@@ -174,7 +175,7 @@
 .title-screen:not(.menu) .title-version { display: none; }
 @keyframes versionIn { from { opacity: 0; scale: 0; } }
 @media (min-width: 900px) { .title-version { font-size: 14px; padding: 6px 9px 5px; } }
-@media (max-width: 600px) { .title-version { font-size: 9px; left: calc(100% - 4px); bottom: 0; padding: 4px 5px 3px; } }
+@media (max-width: 600px) { .title-version { --pulse: 1.2; font-size: 9px; left: calc(100% - 4px); bottom: 0; padding: 4px 5px 3px; } }
 @media (prefers-reduced-motion: reduce) { .title-version, .title-version::after { animation: none; } .title-version::after { display: none; } }
 .title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
