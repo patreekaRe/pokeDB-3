@@ -79,7 +79,10 @@
         <button type="button" class="title-account" id="title-sound-btn" aria-label="Sound" aria-expanded="false" aria-controls="title-sound-pop"><span class="ta-pc snd-icon">🔊</span></button>
         <div class="sound-pop sound-ctl" id="title-sound-pop" hidden>
           <button type="button" class="sound-mute" id="title-music-btn" aria-pressed="true"><span class="snd-icon">🔊</span></button>
-          <input type="range" class="vol-slider" id="title-volume" min="0" max="100" step="5" value="100" aria-label="Volume">
+          <div class="vol-rows">
+            <label class="vol-row"><span class="vol-tag" aria-hidden="true">🎵</span><input type="range" class="vol-slider" id="title-volume" min="0" max="100" step="5" value="100" aria-label="Music volume"></label>
+            <label class="vol-row"><span class="vol-tag" aria-hidden="true">🔔</span><input type="range" class="vol-slider" id="title-sfx" min="0" max="100" step="5" value="100" aria-label="Sound effects volume"></label>
+          </div>
         </div>
       </div>
       <button type="button" class="title-account title-help" id="title-help" aria-label="How to play"><span class="ta-pc">❓</span></button>
@@ -100,10 +103,18 @@
         <button class="menu-item" id="stats-btn"><span class="mi-icon">📊</span><span class="mi-label">Stats</span></button>
         <button class="menu-item" id="achievements-btn"><span class="mi-icon">🏆</span><span class="mi-label">Achievements</span></button>
         <button class="menu-item" id="cloud-btn" hidden><span class="mi-icon">☁️</span><span class="mi-label">Sign in</span></button>
-        <button class="menu-item" id="menu-sound-btn" aria-expanded="false" aria-controls="menu-sound-pop"><span class="mi-icon snd-icon">🔊</span><span class="mi-label">Sound</span></button>
-        <div class="sound-pop menu-sound sound-ctl" id="menu-sound-pop" hidden>
-          <button type="button" class="sound-mute" id="music-btn" aria-pressed="true"><span class="snd-icon">🔊</span></button>
-          <input type="range" class="vol-slider" id="volume-slider" min="0" max="100" step="5" value="100" aria-label="Volume">
+        <button class="menu-item" id="menu-sound-btn" aria-expanded="false" aria-controls="menu-sound-pop"><span class="mi-icon">⚙️</span><span class="mi-label">Settings</span></button>
+        <div class="sound-pop menu-sound" id="menu-sound-pop" hidden>
+          <div class="sound-ctl">
+            <button type="button" class="sound-mute" id="music-btn" aria-pressed="true"><span class="snd-icon">🔊</span></button>
+            <div class="vol-rows">
+              <label class="vol-row"><span class="vol-tag" aria-hidden="true">🎵</span><input type="range" class="vol-slider" id="volume-slider" min="0" max="100" step="5" value="100" aria-label="Music volume"></label>
+              <label class="vol-row"><span class="vol-tag" aria-hidden="true">🔔</span><input type="range" class="vol-slider" id="sfx-slider" min="0" max="100" step="5" value="100" aria-label="Sound effects volume"></label>
+            </div>
+          </div>
+          <!-- js/settings.js -->
+          <div class="set-row"><span class="set-label">Battle speed</span><button type="button" class="set-toggle" id="set-speed" aria-label="Battle speed">1x</button></div>
+          <div class="set-row"><span class="set-label">Warn before ending a turn with PP left</span><button type="button" class="set-toggle" id="set-warn" role="switch" aria-checked="true" aria-label="Warn before ending a turn with PP left">On</button></div>
         </div>
         <button class="menu-item" id="abandon-btn" hidden><span class="mi-icon">🏳️</span><span class="mi-label">Abandon run</span></button>
         <button class="menu-item" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
@@ -604,7 +615,17 @@
 
   <dialog id="deck-dialog" class="dialog wide-dialog">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
+    <!-- sort and filter (js/deckpreview.js), remembered in the save -->
+    <div class="deck-tools">
+      <div class="deck-seg" id="deck-filter" role="group" aria-label="Show">
+        <button type="button" data-v="all">All</button><button type="button" data-v="attack">Attacks</button><button type="button" data-v="skill">Skills</button><button type="button" data-v="power">Powers</button>
+      </div>
+      <div class="deck-seg" id="deck-sort" role="group" aria-label="Sort by">
+        <button type="button" data-v="got" title="The order you got them in">Added</button><button type="button" data-v="cost">Cost</button><button type="button" data-v="name">A-Z</button>
+      </div>
+    </div>
     <div id="deck-dialog-cards" class="card-pool"></div>
+    <p class="deck-empty" id="deck-empty" hidden>No cards like that in your deck.</p>
     <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 

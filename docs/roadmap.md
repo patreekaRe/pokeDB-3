@@ -11,10 +11,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
-3. **Settings and battle QoL.** Run in: CLOUD. (a) Separate music and effects volume (the 🔊 button mutes both now,
-   `js/audio.js`), saved. (b) A 1x / 2x battle speed toggle for the enemy turn and hit animations. (c) An end-turn
-   warning when PP is left and a card is playable, which can be switched off. (d) Sort and filter in the deck view
-   (cost, attack / skill / power).
 4. **Records QoL.** Run in: CLOUD. Read `docs/reference/safari.md` for (c). (a) A "New!" badge on cards and relics never
    seen before, in rewards and the Mart (`save.seen`). (b) Lost runs keep a short line too (where you fell, to what),
    beside the Record Book's wins. (c) A Safari result line to copy and share ("Safari 2026-10-03: 4 caught, floor 11").

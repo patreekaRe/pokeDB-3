@@ -25,7 +25,7 @@ import { ITEMS_BY_ID } from './data/items.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
@@ -54,7 +54,7 @@ let nextUid = 1;
 
 /** Called once at startup. */
 export function initBattle() {
-  $('end-turn-btn').addEventListener('click', endTurn);
+  $('end-turn-btn').addEventListener('click', askEndTurn);
   $('throw-btn').addEventListener('click', toggleBallPicker);
   // the ball picker floats over the battle like a menu: a tap anywhere else closes it
   document.addEventListener('pointerdown', (e) => {
@@ -127,6 +127,11 @@ export const isBattleRunning = () => battle !== null && !battle.over;
 const hasRelic = (id) => battle.relics.includes(id);
 /** The starter's Ability (Blaze / Overgrow / Torrent / Pressure), from its type: ABILITIES in data/relics.js. */
 const hasAbility = (id) => battle.ability?.id === id;
+/** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
+    animations under `.fast-battle`. Read live, so flipping it mid-fight counts from the next wait. */
+const speed = () => ((getSave().battleSpeed ?? 1) > 1 ? 2 : 1);
+const pause = (ms) => sleep(ms / speed());
+
 const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
 
 /* ============================================================
@@ -625,7 +630,7 @@ async function playCard(uid) {
   if (!await resolveCard(card, x)) return;       // the player left the battle
 
   renderAll();
-  await sleep(220);
+  await pause(220);
 
   if (battle !== b) return;                      // the player left the battle
   if (b.enemy.hp <= 0) return finish(true);
@@ -678,7 +683,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     let through = 0;
     for (const [i, amount] of hits.entries()) {
       lunge('player-sprite');
-      await sleep(180);
+      await pause(180);
       if (battle !== b) return false;
       const dealt = hurtEnemy(amount);
       through += dealt;
@@ -688,7 +693,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
       bigHit(dealt, b.enemy.maxHp, 'enemy-img');
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
       if (b.enemy.hp <= 0) break;
-      if (i < hits.length - 1) { renderBars(); await sleep(200); }
+      if (i < hits.length - 1) { renderBars(); await pause(200); }
     }
     if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
     if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
@@ -744,7 +749,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
     if (!top) break;
     pop('player-zone', `🌪️ ${top.name}!`, 'note good');
     renderAll();
-    await sleep(350);
+    await pause(350);
     if (battle !== b) return false;
     if (top.unplayable) exhaustCard(top);
     else if (!await resolveCard(top, 0, { exhaust: true })) return false;
@@ -1358,6 +1363,19 @@ function withRevive(message) {
   return out;
 }
 
+/** End Turn with PP left and a card you could play asks first, unless Settings switched that off. */
+async function askEndTurn() {
+  const b = battle;
+  if (!b || b.busy || b.over) return;
+  const playable = b.energy > 0 ? b.hand.filter(h => !whyNotPlayable(h.card)).length : 0;
+  if (playable && (getSave().endTurnWarn ?? true)) {
+    const cards = playable === 1 ? 'a card' : `${playable} cards`;
+    const ok = await confirmDialog(`You still have ${b.energy} PP and ${cards} you can play. End your turn anyway? (Settings in the Poké Ball menu can turn this off.)`, 'End turn');
+    if (!ok || battle !== b) return;
+  }
+  endTurn();
+}
+
 async function endTurn() {
   const b = battle;
   if (!b || b.busy || b.over) return;
@@ -1372,7 +1390,7 @@ async function endTurn() {
     playSound(dealt > 0 ? 'hit' : 'block');
     log(`Eruption hit ${b.def.name} for ${b.powers.combust}!`);
     renderAll();
-    await sleep(500);
+    await pause(500);
     if (battle !== b) return;
     if (b.enemy.hp <= 0) return finish(true);
   }
@@ -1385,7 +1403,7 @@ async function endTurn() {
     pop('player-zone', through > 0 ? `-${through} ☠️` : 'Blocked', through > 0 ? 'dmg' : 'block');
     log(withRevive(`The Poison in your hand hurt ${stageName(b.starter, b.stage)} for ${hurt}.`));
     renderAll();
-    await sleep(500);
+    await pause(500);
     if (battle !== b) return;
     if (b.hp <= 0) return finish(false);
   }
@@ -1418,7 +1436,7 @@ async function endTurn() {
   }
   renderAll();
 
-  await sleep(500);
+  await pause(500);
   if (battle !== b) return;                      // the player left the battle
   await enemyTurn();
 }
@@ -1443,7 +1461,7 @@ async function enemyTurn() {
     playSound('burn');
     if (hasRelic('heat-rock')) healPlayer(2);
     renderAll();
-    await sleep(600);
+    await pause(600);
     if (battle !== b) return;
     if (b.enemy.hp <= 0) return finish(true);
   }
@@ -1459,7 +1477,7 @@ async function enemyTurn() {
     log(`Leech Seed sapped ${n} HP from ${b.def.name}!`);
     if (healPlayer(n)) playSound('heal-hp');
     renderAll();
-    await sleep(600);
+    await pause(600);
     if (battle !== b) return;
     if (b.enemy.hp <= 0) return finish(true);
   }
@@ -1467,7 +1485,7 @@ async function enemyTurn() {
   // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND), yelling its `say` first.
   if (move.say) {
     log(`${b.def.name}: "${move.say}"`);
-    await sleep(1100);
+    await pause(1100);
     if (battle !== b) return;
   }
   if (move.sound) playSound(move.sound);
@@ -1475,7 +1493,7 @@ async function enemyTurn() {
   if (move.kind === 'attack' || move.kind === 'drain') {
     const damage = attackDamage(move);
     $('enemy-portrait-box').classList.add('attacking');
-    await sleep(300);
+    await pause(300);
     $('enemy-portrait-box').classList.remove('attacking');
     if (battle !== b) return;
 
@@ -1555,7 +1573,7 @@ async function enemyTurn() {
 
   en.moveIndex += 1;                              // pick the next move
   renderAll();
-  await sleep(700);
+  await pause(700);
 
   if (battle !== b) return;
   if (b.hp <= 0) return finish(false);
@@ -2380,9 +2398,10 @@ function checkStorm() {
 function pop(zoneId, text, kind = '', delay = 0) {
   const zone = $(zoneId);
   const node = el('span', `pop ${kind}`, text);
+  delay /= speed();
   node.style.animationDelay = `${delay}ms`;
   zone.append(node);
-  setTimeout(() => node.remove(), 1400 + delay);
+  setTimeout(() => node.remove(), 1400 / speed() + delay);
 }
 
 /* The battle text types itself out like the games' text box; the full line goes to screen readers at once. */
@@ -2406,7 +2425,7 @@ function log(message) {
     shown += 2;
     text.textContent = letters.slice(0, shown).join('');
     if (shown >= letters.length) { clearInterval(typing); box.classList.add('done'); }
-  }, 18);
+  }, 18 / speed());
 }
 
 /** The text box is two lines tall, like the games': a message that would wrap onto a third line

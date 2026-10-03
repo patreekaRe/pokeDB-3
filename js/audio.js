@@ -23,7 +23,7 @@
 
    Browsers refuse to play sound until the player has tapped or pressed a
    key, so the first track requested is held until then (see unlock()).
-   The 🔊 button mutes music and effects together.
+   The 🔊 button mutes music and effects together; each has its own volume bar (🎵 / 🔔, cries go with effects).
    ============================================================ */
 
 import { getSave, updateSave } from './storage.js';
@@ -196,7 +196,8 @@ let ctx = null;            // the AudioContext, created the first time any sound
 let musicBus = null;       // gain node every music track runs through
 let sfxBus = null;         // gain node every sound effect runs through
 let cryBus = null;         // gain node every cry runs through
-let masterBus = null;      // the volume slider: every bus runs through it
+let musicVol = null;       // the 🎵 slider: the music bus runs through it
+let sfxVol = null;         // the 🔔 slider: effects and cries run through it
 let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
 const players = {};        // track name -> { el, gain } (el is a LoopedTrack for LOOP_POINTS tracks)
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
@@ -225,10 +226,10 @@ export function initAudio() {
   renderButton();
   // the Poké Ball menu's speaker + slider and the title's are the same control twice
   for (const id of SOUND_TOGGLES) $(id).addEventListener('click', () => setMuted(!getSave().muted));
-  for (const id of VOLUME_SLIDERS) {
+  for (const [id, key] of VOLUME_SLIDERS) {
     const slider = $(id);
     slider.addEventListener('input', () => {
-      setVolume(slider.value / 100);
+      setVolume(key, slider.value / 100);
       if (getSave().muted && +slider.value > 0) setMuted(false);   // turning it up means you want to hear it
       paintSliders();
     });
@@ -392,16 +393,19 @@ function setMuted(muted) {
   else fadeIn(current);
 }
 
+// an old save's single `volume` is where both bars start
+const volumeOf = (key) => getSave()[key] ?? getSave().volume ?? 1;
 // squared, so the slider's low half isn't nearly all loud (ears hear loudness roughly logarithmically)
-const volumeGain = () => (getSave().volume ?? 1) ** 2;
+const volumeGain = (key) => volumeOf(key) ** 2;
 
-function setVolume(volume) {
-  updateSave(d => { d.volume = volume; });
-  if (masterBus) masterBus.gain.setTargetAtTime(volumeGain(), ctx.currentTime, 0.02);
+function setVolume(key, volume) {
+  updateSave(d => { d[key] = volume; });
+  const node = key === 'musicVolume' ? musicVol : sfxVol;
+  if (node) node.gain.setTargetAtTime(volumeGain(key), ctx.currentTime, 0.02);
 }
 
 const SOUND_TOGGLES = ['music-btn', 'title-music-btn'];
-const VOLUME_SLIDERS = ['volume-slider', 'title-volume'];
+const VOLUME_SLIDERS = [['volume-slider', 'musicVolume'], ['title-volume', 'musicVolume'], ['sfx-slider', 'sfxVolume'], ['title-sfx', 'sfxVolume']];
 
 // a Sound button opens its pop-out: the speaker that mutes and the volume bar (the user's call, 2026-10-02)
 const SOUND_POPS = [['title-sound-btn', 'title-sound-pop'], ['menu-sound-btn', 'menu-sound-pop']];
@@ -443,9 +447,8 @@ function initSoundPops() {
 
 /** Every slider shows the saved volume, its green part painted from --v (WebKit has no ::range-progress). */
 function paintSliders() {
-  const value = Math.round((getSave().volume ?? 1) * 100);
-  for (const id of VOLUME_SLIDERS) {
-    const slider = $(id);
+  for (const [id, key] of VOLUME_SLIDERS) {
+    const slider = $(id), value = Math.round(volumeOf(key) * 100);
     slider.value = value;
     slider.style.setProperty('--v', value);
   }
@@ -454,18 +457,21 @@ function paintSliders() {
 function audioContext() {
   if (!ctx) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
-    masterBus = ctx.createGain();
-    masterBus.gain.value = volumeGain();
-    masterBus.connect(ctx.destination);
+    musicVol = ctx.createGain();
+    musicVol.gain.value = volumeGain('musicVolume');
+    musicVol.connect(ctx.destination);
+    sfxVol = ctx.createGain();
+    sfxVol.gain.value = volumeGain('sfxVolume');
+    sfxVol.connect(ctx.destination);
     musicBus = ctx.createGain();
     musicBus.gain.value = MUSIC_VOLUME;
-    musicBus.connect(masterBus);
+    musicBus.connect(musicVol);
     sfxBus = ctx.createGain();
     sfxBus.gain.value = SFX_VOLUME;
-    sfxBus.connect(masterBus);
+    sfxBus.connect(sfxVol);
     cryBus = ctx.createGain();
     cryBus.gain.value = CRY_VOLUME;
-    cryBus.connect(masterBus);
+    cryBus.connect(sfxVol);
   }
   return ctx;
 }

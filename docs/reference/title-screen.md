@@ -18,7 +18,7 @@ whenever a run is saved or going). Continue's gem shimmers: `tick()` repaints it
 in a flash, `stat-up` then `ball-open`; straight through under reduced motion); the Pokémon itself waits in Continue's ball and pops out of it when you continue. The
 top-left corner (`.title-corner`, gems up only) holds the cloud save's PC (see Cloud save) and a 🔊 Sound button
 (`#title-sound-btn`, 🔇 while muted) that toggles a pop-out (`#title-sound-pop`, a `.sound-ctl`): a speaker that mutes on a
-tap and the volume bar, on a soft dark backing with no frame (the user's calls, 2026-10-02: the old window was too big, but
+tap and two volume bars (🎵 music, 🔔 effects and cries; 2026-10-03), on a soft dark backing with no frame (the user's calls, 2026-10-02: the old window was too big, but
 the button should still come first). The button again, a tap elsewhere or Escape put it away (`SOUND_POPS` in
 `js/audio.js`). It drops under the speaker on phones and opens to its right over 600px, where the ❓ sits under it. Same
 control as the Poké Ball menu's (`SOUND_TOGGLES` / `VOLUME_SLIDERS` keep both in step); the PC is captioned, the speaker isn't (the user's call); both are a size smaller under 600px wide, where the row also hugs the screen's corner. On phones they sit in one row along the top (PC, speaker, ❓, refresh, like battle's piles beside the Poké Ball; the refresh's margin centres it on the speaker), since stacked down the side they crowded the logo (2026-09-28). Over 600px wide there's room beside the logo, so it's one centred column (PC, speaker, ❓, refresh; the user's call). A small ❓ How to play (`#title-help`, the user's ask: 26px, 22px on phones, between the speaker and Refresh; it calls

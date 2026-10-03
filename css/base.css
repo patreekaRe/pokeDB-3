@@ -231,8 +231,22 @@ body.scrolled .topbar::before { opacity: 1; }
 .sound-ctl { display: flex; align-items: center; gap: 8px; }
 .sound-mute { flex: none; display: grid; place-items: center; padding: 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: var(--round-sm); }
 .sound-mute:active .snd-icon { translate: 0 2px; }
-.menu-sound { padding: 0 14px 6px 58px; }
+.menu-sound { padding: 0 10px 6px 20px; }
 .menu-sound[hidden] { display: none; }
+/* two bars, music (🎵) over effects and cries (🔔): VOLUME_SLIDERS */
+.vol-rows { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vol-row { display: flex; align-items: center; gap: 6px; }
+.vol-tag { flex: none; font-size: 0.85rem; line-height: 1; }
+/* the menu's other settings (js/settings.js): a label and a pill that flips */
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; font-size: 0.78rem; line-height: 1.25; color: var(--win-ink); }
+.set-label { min-width: 0; }
+.set-toggle {
+  flex: none; min-width: 48px; padding: 5px 8px 4px; border: 3px solid var(--win-edge); border-radius: var(--round-sm);
+  background: var(--win-panel); box-shadow: 2px 2px 0 var(--win-shadow); color: var(--win-ink);
+  font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.75rem; cursor: pointer;
+}
+.set-toggle.on { border-color: #257a38; background: #72dc70; color: #fff; text-shadow: 1px 1px 0 #257a38; }
+.set-toggle:active { translate: 1px 1px; box-shadow: 1px 1px 0 var(--win-shadow); }
 .menu-sound .snd-icon { font-size: 1rem; }
 .menu-sound .sound-mute:hover, .menu-sound .sound-mute:focus-visible { background: var(--win-panel); }
 .vol-slider {

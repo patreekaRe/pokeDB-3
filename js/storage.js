@@ -32,7 +32,13 @@ const wrote = () => listeners.forEach(fn => fn());
 const freshSave = () => ({
   seenHelp: false,
   muted: false,              // background music switched off with the 🔊 button
-  volume: 1,                 // the Poké Ball menu's volume slider, 0-1 (js/audio.js squares it)
+  volume: 1,                 // the old single volume slider, 0-1: where both bars below start on an old save
+  musicVolume: null,         // the 🎵 bar, 0-1 (js/audio.js squares it); null = `volume`
+  sfxVolume: null,           // the 🔔 bar: effects and cries
+  battleSpeed: 1,            // 1 or 2: the enemy's turn and the hit animations (battleSpeed() in js/battle.js)
+  endTurnWarn: true,         // ask before ending a turn with PP left and a card you could play
+  deckSort: 'got',           // the deck view's sort: 'got' (the order you got them), 'cost', 'name'
+  deckFilter: 'all',         // and its filter: 'all', 'attack', 'skill', 'power'
   maxLevel: 0,               // the highest Trainer Level you have unlocked (see data/difficulty.js)
   unlocked: [],               // ids of starters unlocked, either by achievement OR by buying them in the shop
   coins: 0,                  // PokéCoins: the shop currency (see data/shop.js)

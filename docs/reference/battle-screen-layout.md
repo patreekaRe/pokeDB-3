@@ -25,7 +25,7 @@ on the right, on a salmon striped panel; the max is `b.turnEnergy`, the
 energy the turn started with; `data-shown` remembers the last value so the
 number bumps when it changes, and `.empty` turns the numbers red) | hand | End Turn
 (`#end-turn-btn`, not a `.btn`: the same salmon panel and white pill, so the
-two match; greyed out while disabled; when no card in hand can be played, `.nudge` (set in `renderAll()`, items don't count) makes it hop, scroll its stripes and blink a gold ring, the user's call, so it's clear to end the turn; the ▶ it also blinked in the pill went 2026-10-03: it widened the button and crowded the Safari row). The
+two match; greyed out while disabled; when no card in hand can be played, `.nudge` (set in `renderAll()`, items don't count) makes it hop, scroll its stripes and blink a gold ring, the user's call, so it's clear to end the turn; the ▶ it also blinked in the pill went 2026-10-03: it widened the button and crowded the Safari row); a tap with PP left and a playable card asks first, `askEndTurn()`, unless Settings turned that off). At 2x battle speed (Settings) `pause()` halves the enemy turn's and your hits' waits and `.fast-battle` halves the hit, lunge and pop animations. The
 draw/discard/exhaust piles (`.piles` / `button.pile`: a floating pixel card and the
 count, on a pixel plate in the biome's colour, `body[data-biome]` set by `startBattle()`, polish batch 2) live in the top bar beside the Poké Ball, shown only
 while `body[data-screen="battle-screen"]`. The exhaust pile (🌫️, its own icon: 💨 is shared) only shows once a card

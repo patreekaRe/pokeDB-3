@@ -86,6 +86,7 @@
 .title-sound .sound-pop[hidden] { display: none; }
 .title-sound .sound-mute { font-size: 26px; color: #fff; filter: drop-shadow(0 2px 0 rgba(10, 8, 40, 0.55)); }
 .title-sound .vol-slider { width: 120px; flex: none; }
+.title-sound .vol-tag { filter: drop-shadow(0 1px 0 rgba(10, 8, 40, 0.6)); }
 @keyframes soundPop { from { opacity: 0; translate: 0 -4px; } }
 /* wider screens: the corner is a column, so it opens to the speaker's right instead of over the ❓ under it */
 @media (min-width: 601px) { .title-sound .sound-pop { top: 50%; left: calc(100% + 4px); translate: 0 -50%; animation-name: soundPopSide; } }

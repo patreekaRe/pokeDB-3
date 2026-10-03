@@ -13,7 +13,8 @@
      storage.js      saving to localStorage
      progress.js     unlocking starters
      ui.js           small helpers (dialogs, card element)
-     deckpreview.js  the run's deck window (read-only)
+     deckpreview.js  the run's deck window (read-only, sort and filter)
+     settings.js     the Poké Ball menu's Settings toggles (battle speed, end-turn warning)
      run.js          one run: the map loop, rewards, evolution, the end
      map.js          building and drawing the branching map
      rewards.js      the "choose one" screen
@@ -37,6 +38,7 @@ import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRu
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, closeSoundPops } from './audio.js';
+import { initSettings } from './settings.js';
 import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
@@ -146,7 +148,7 @@ function initBallMenu() {
   $('abandon-btn').addEventListener('click', requestAbandon);
   $('home-btn').addEventListener('click', requestMenu);
 
-  // picking an item closes the menu, except Sound, which opens its speaker and volume bar
+  // picking an item closes the menu, except Settings, which opens its speaker, volume bars and toggles
   panel.addEventListener('click', (e) => {
     const item = e.target.closest('.menu-item');
     if (item && item.id !== 'menu-sound-btn') setOpen(false, true);
@@ -183,6 +185,7 @@ function init() {
     });
   }
   initAudio();
+  initSettings();
   initTips();
   initHowto();
   // The top bar has no background, so once the page scrolls a fade keeps its numbers off whatever slides under them.
