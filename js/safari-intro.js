@@ -95,7 +95,7 @@ export const SAFARI_INTROS = {
     },
     glow: { aura: ['#fffce8', '#fff4b8', '#f0f0a0'], leaf: ['#d8c050', '#88c058', '#e88a38'], firefly: ['#f8f8a0', '#c8e858'] },
     stages: nearer([null, { shade: 0.12 }, { shade: 0.3 }, { shade: 0 }]),
-    beats: { PUSH: [0, 7600], POPS: [2400, 3400, 4400], TITLE_AT: 5000, END: 9000 },
+    beats: { PUSH: [0, 7600], POPS: [2400, 3400], TITLE_AT: 5000, END: 9000 },
     art: { move: 'push', far: forestFar, mid: forestMid, back: forestBack, ground: forestGround, near: forestNear, trail: [{ at: 0, style: 'dirt' }], air: ['shafts', 'leaves'] },
   }),
   wetland: film('wetland', {
@@ -147,7 +147,7 @@ export const SAFARI_INTROS = {
     },
     glow: { aura: ['#ffffff', '#fff8e0', '#f8f0c0'], flake: ['#ffffff', '#d8e4f4'], firefly: ['#f8f8a0', '#c8e858'] },
     stages: nearer([null, { snow: 0.25 }, { snow: 0.7 }, { snow: 1 }]),
-    beats: { RISE: [200, 4000], POPS: [4300, 5000, 5700], TITLE_AT: 5300, END: 9200 },
+    beats: { RISE: [200, 4000], POPS: [4300, 5000], TITLE_AT: 5300, END: 9200 },
     sounds: ['gust'],
     art: { move: 'crane', house: 'back', far: peakFar, mid: peakMid, back: peakBack, ground: peakGround, fence: false, trail: [{ at: 0, style: 'dirt' }, { at: 2, style: 'snow', key: 'track' }], birds: '#3a4058', air: ['snow'] },
   }),
@@ -167,7 +167,7 @@ export const SAFARI_INTROS = {
     },
     glow: { aura: ['#fffff0', '#e8fcff', '#c8f0ff'], glint: ['#ffffff', '#e8fcff'], firefly: ['#f8f8a0', '#c8e858'] },
     stages: nearer(),
-    beats: { PAN: [0, 5200], PULL: [0, 5600], POPS: [3000, 3900, 4800], TITLE_AT: 5200, END: 9000 },
+    beats: { PAN: [0, 5200], PULL: [0, 5600], POPS: [3000, 3900], TITLE_AT: 5200, END: 9000 },
     sounds: ['gust'],
     art: { move: 'sweep', house: 'back', far: desertFar, mid: desertMid, back: desertBack, ground: desertGround, trail: [{ at: 0, style: 'sand' }], birds: '#3a2a28', air: ['sand', 'tumbleweed', 'shimmer'] },
   }),
@@ -811,9 +811,9 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   // where the Pokémon pop up: in view at their moment, nearer ones lower down
   const end = camAt(b.END), rest = [toLayer('ground', 0, 0, end)[0], toLayer('ground', W, 0, end)[0]];   // the view once the camera settles
   const spots = b.POPS.map((ms, i) => {
-    const depth = [0.4, 0.22, 0.68][i], c = camAt(ms + 700);
-    const [u, v] = toLayer('ground', W * [0.27, 0.72, 0.44][i], gTop + (H * 0.93 - gTop) * depth, c);
-    const view = [Math.max(toLayer('ground', 0, 0, c)[0], rest[0]), Math.min(toLayer('ground', W, 0, c)[0], rest[1])];   // in view as it pops up and once settled
+    const k = i + 3 - b.POPS.length, depth = [0.4, 0.22, 0.68][k], c = camAt(ms + 700);   // two pops take the last two places
+    const [u, v] = toLayer('ground', W * [0.27, 0.72, 0.44][k], gTop + (H * 0.93 - gTop) * depth, c);
+    const view = [toLayer('ground', 0, 0, c)[0], toLayer('ground', W, 0, c)[0]];   // the view as it pops up
     return { ms, u: Math.round(u), v: Math.round(v), size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6, view };
   });
   const gg = L.ground.getContext('2d');

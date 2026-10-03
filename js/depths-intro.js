@@ -290,10 +290,11 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
 
   // ---- where the Pokémon step out: from behind crystal outcrops ahead of where the camera comes to rest ----
   const spots = beats.POPS.map((ms, i) => {
-    const depth = [0.4, 0.25, 0.62][i], y = Math.round(hz + span0 * depth), x = Math.round(W * [0.3, 0.68, 0.44][i]);
+    const k = i + 3 - beats.POPS.length, depth = [0.4, 0.25, 0.62][k], y = Math.round(hz + span0 * depth), x = Math.round(W * [0.3, 0.68, 0.44][k]);
     return { ms, x, y, scale: 0.6 + depth * 0.6, size: Math.round(5 + depth * 12) };
   });
-  settle(spots, { way: (s) => { const g = (s.y - hz) / span0 + 0.03; return [VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16]; }, view: () => [0, W], rest: [0, W] });   // beside the way worn to the Well, either side of it
+  const end = grow(beats.END, PUSH.ground);   // how far the camera has pushed in once it settles
+  settle(spots, { way: (s) => { const g = (s.y - hz) / span0 + 0.03; return [VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16]; }, view: () => [0, W], rest: [VX - VX / end, VX + (W - VX) / end] });   // either side of the way worn to the Well
   const outcrops = spots.map((s, i) => {
     const w = s.size * 2 + 6, h = s.size * 2 + 4, p = pixels(w, h), cx = w / 2, foot = h - 1;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -420,7 +421,7 @@ export const DEPTHS_INTRO = {
   land: {},
   // the Crystal Halls' walk-on, then the Deep Core's, the Well nearer each time and the rock gone red
   stages: [null, { goal: 1.6 }, { goal: 2.5, red: true }],
-  beats: { DROP: [0, 3000], PUSH: [2700, 9600], LIGHTS: [3000, 3350, 3700, 4000, 4250, 4500], POPS: [4700, 5400, 6100], TITLE_AT: 6400, END: 9800 },
+  beats: { DROP: [0, 3000], PUSH: [2700, 9600], LIGHTS: [3000, 3350, 3700, 4000, 4250, 4500], POPS: [4700, 5400], TITLE_AT: 6400, END: 9800 },
   sounds: ['gate-hum', 'crystal-0', 'crystal-1', 'crystal-2'],
   scene: depthsScene,
 };

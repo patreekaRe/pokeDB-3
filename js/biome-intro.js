@@ -342,32 +342,36 @@ export function offTheWay(x, size, cx, half, lo, hi) {
   return Math.round(fits(near) || !fits(far) ? near : far);
 }
 
-/** Places a film's Pokémon (each `{ [x], [y], size }`, its grass `size` + 2 each way, from `size` above its foot to below
-    it) as near where it was put as it can, off the road or stream (`way(s)` → [centre, half width]), in the view
-    (`view(s)` → [lo, hi]: a clump may hang half past the edge, the camera brings it in) and its grass clear of the ones placed
-    before it. With `rest` (the view once the camera settles), if every one still in view there is on one side of the
-    road, the nearest of them goes over to the other (popping up just out of view if it must: the camera brings it in).
+/** The nearest whole position to `from` that `ok` takes, either way, or null. */
+function nearest(from, ok) {
+  for (let d = 0; d <= 400; d++) for (const v of [from + d, from - d]) if (ok(v)) return v;
+  return null;
+}
+
+/** Places a film's Pokémon (each `{ [x], [y], size }`, its grass `size` + 2 each way over the rows `band()` gives) as
+    near where it was put as it can, off the road or stream (`way(s)` → [centre, half width]), in the view as it pops up
+    (`view(s)` → [lo, hi]: a clump may hang half past the edge, the camera brings it in) and its grass clear of the ones
+    placed before it. With `rest` (the view once the camera settles), the last two stay in it, one either side of the
+    road (the user's call: two at the end, evenly), and any before them pop up on the way and are panned out of it.
     `x` / `y` name the keys: films keep them in layer or screen pixels. */
 export function settle(spots, { way, view, rest, x = 'x', y = 'y' }) {
-  const from = spots.map(s => s[x]);
-  const sideOf = (s) => Math.sign(s[x] - way(s)[0]);
-  const place = (want) => spots.forEach((s, i) => {
-    const [cx, half] = way(s), band = (p) => [p[y] - p.size * 0.4 - 2, p[y] + p.size * 0.6];   // the rows its grass covers
-    const clear = (v) => spots.slice(0, i).every(p => Math.abs(v - p[x]) >= p.size + s.size + 5 || band(p)[1] < band(s)[0] || band(s)[1] < band(p)[0]);
-    const ok = (v, side, apart) => {
-      const [lo, hi] = side && rest ? rest : view(s);
-      return v >= lo + 2 && v <= hi - 2 && Math.abs(v - cx) >= half + s.size + 4 && (!side || Math.sign(v - cx) === side) && (!apart || clear(v));
-    };
-    for (const [side, apart] of [[want.get(s), true], [0, true], [0, false]]) {
-      for (let d = 0; d <= 400; d++) for (const v of [from[i] + d, from[i] - d]) if (ok(v, side, apart)) { s[x] = Math.round(v); return; }
+  const band = (p) => [p[y] - p.size * 0.4 - 2, p[y] + p.size * 0.6];   // the rows its grass covers
+  const done = [], last = spots.length - 1;
+  const order = rest ? [...spots.slice(-2), ...spots.slice(0, -2)] : spots;   // the two that stay first: the others have room to spare
+  for (const s of order) {
+    const i = spots.indexOf(s), from = s[x], [cx, half] = way(s), stays = rest && i >= last - 1, prev = spots[last - 1];
+    const side = stays && i === last && last > 0 ? -Math.sign(prev[x] - way(prev)[0]) : 0;
+    const clear = (v) => done.every(p => Math.abs(v - p[x]) >= p.size + s.size + 5 || band(p)[1] < band(s)[0] || band(s)[1] < band(p)[0]);
+    const placed = (v, [lo, hi], strict) => v >= lo + 2 && v <= hi - 2 && Math.abs(v - cx) >= half + s.size + 4 && (!strict || (clear(v)
+      && (!side || Math.sign(v - cx) === side)
+      && (!rest || (stays ? v >= rest[0] + s.size * 0.7 && v <= rest[1] - s.size * 0.7 : v < rest[0] - s.size - 2 || v > rest[1] + s.size + 2))));
+    const [lo, hi] = view(s), settled = rest ? [Math.max(lo, rest[0]), Math.min(hi, rest[1])] : [lo, hi];
+    for (const [bounds, strict] of [[stays ? settled : [lo, hi], true], [stays ? rest : [lo, hi], true], [[lo, hi], false]]) {
+      const v = nearest(from, (v) => placed(v, bounds, strict));
+      if (v !== null) { s[x] = Math.round(v); break; }
     }
-    s[x] = offTheWay(from[i], s.size + 2, cx, half, ...view(s));
-  });
-  place(new Map());
-  const shown = rest ? spots.filter(s => s[x] > rest[0] && s[x] < rest[1]) : [];
-  if (shown.length > 1 && shown.every(s => sideOf(s) === sideOf(shown[0]))) {
-    const nearest = shown.reduce((a, b) => (b[y] > a[y] ? b : a));
-    place(new Map([[nearest, -sideOf(nearest)]]));
+    if (s[x] === from && !placed(from, [lo, hi], false)) s[x] = offTheWay(from, s.size + 2, cx, half, lo, hi);
+    done.push(s);
   }
 }
 

@@ -1315,5 +1315,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - The pile picker (Fusion Flare, TM) takes two taps: the first shows the card's keyword boxes and the take button.
 - Intro films keep their Pokémon off the road: `settle()` in `js/biome-intro.js` places each spot (and its grass) beside
   the Safari trail (and its random patches), the Clearing's stream and the Depths' worn way; the Pokémon still in view
-  once the camera settles stand either side of it, and no two clumps of grass overlap. The catch latch sounds like
+  once the camera settles stand either side of it, and no two clumps of grass overlap. Each film ends on exactly two,
+  one each side; Meadow / Wetland / Marsh pop a third on the pan that leaves the frame, while Forest / Peak / Desert /
+  Depths (no sideways pan to carry it off) have two. The catch latch sounds like
   a switch (lower snap over a thunk, no ring).
