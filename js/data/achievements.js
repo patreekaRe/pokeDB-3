@@ -108,8 +108,8 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'victini',
-    text: 'Win a run on Trainer Level 3 or higher without forgetting a move',
-    test: (s) => s.noForgetWin,
+    text: 'Win a run on Trainer Level 3 or higher with no two copies of the same card',
+    test: (s) => s.uniqueDeckWin,
   },
   {
     starter: 'heatran',

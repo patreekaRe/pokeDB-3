@@ -23,7 +23,7 @@ What the second chain did (details and "For the user" notes in each step below):
 
 **For you to check:** the new blurbs, types (Lugia / Palkia / Manaphy / Keldeo as Water, Ho-Oh / Reshiram / Victini / Heatran
 as Fire; Grass has only Celebi and Virizion) and cries by ear; research numbers show Level 0's values; Keldeo's
-Victini at ≤15 cards may be easy (it was: since 2026-09-28 it needs Level 3+, where the capped bot won 63 / 39 / 42% fire / grass / water); since 2026-10-03 it is "win on Level 3+ without forgetting a move" instead (the user's pick, `stats.noForgetWin`); the Game Corner's
+Victini at ≤15 cards may be easy (it was: since 2026-09-28 it needs Level 3+, where the capped bot won 63 / 39 / 42% fire / grass / water); since 2026-10-03 it is "win on Level 3+ with no two copies of the same card" instead (the user's pick, `stats.uniqueDeckWin`; "without forgetting a move" for an hour first); the Game Corner's
 total is now ~14400 PokéCoins (~20200 since shinies went to 250 / 350 / 500, the user's call the same day). Mewtwo's "unlock every other Pokémon" now needs all 25 others (31 before the 9a skins were removed), the new legendaries included.
 
 ## Overnight summary (2026-09-27)

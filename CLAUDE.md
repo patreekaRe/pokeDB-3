@@ -94,7 +94,7 @@ live site.
   `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of `js/data/sprite-fit.js`; a new legendary needs both.
   Fifteen earned ones (plus Mewtwo, below; this said sixteen before Rayquaza, a miscount): Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
   (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
-  ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.noForgetWin`: won on Level 3+ without forgetting a move, `run.tally.forgotten` 0; 15 cards or fewer until 2026-10-03
+  ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.uniqueDeckWin`: won on Level 3+ with no two copies of a card, by `baseId()`; 15 cards or fewer until 2026-10-03
   (any Level until 2026-09-28)), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
   in `gainTide()` in `js/battle.js`) and Keldeo (wins with 3 different Water starters, Keldeo aside: `winsBy`; was every one you own until 2026-09-28), and since 2026-10-02 Rayquaza (Grass, the full Safari
   Pokédex: `save.safariDex.complete`; `safariPrize: true` keeps it out of the Safari's daily starters).
