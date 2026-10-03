@@ -11,10 +11,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
-4. **Records QoL.** Run in: CLOUD. Read `docs/reference/safari.md` for (c). (a) A "New!" badge on cards and relics never
-   seen before, in rewards and the Mart (`save.seen`). (b) Lost runs keep a short line too (where you fell, to what),
-   beside the Record Book's wins. (c) A Safari result line to copy and share ("Safari 2026-10-03: 4 caught, floor 11").
-   (d) **Ask the user first:** holding a boss shows its next 2 moves (might be too generous).
 5. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
    (`LOOP_POINTS`), drop its fallback. Wired already: `map4`, `eternatus`, `eternamax`. New tracks to wire if supplied:
    a Safari theme, a credits song, the Sealed Gate scene, the Mart and the Game Corner. Real recordings can also replace

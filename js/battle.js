@@ -1639,7 +1639,7 @@ async function finish(won) {
 
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+  b.onEnd({ won, foe: b.def.name, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
 }
 
 /**

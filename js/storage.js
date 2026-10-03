@@ -64,6 +64,7 @@ const freshSave = () => ({
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
   balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown
+  losses: [],                 // lost runs, a short line each (js/halloffame.js recordLoss()): where it fell and to what, newest LOSS_KEEP
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
     runsStarted: 0,
@@ -191,6 +192,9 @@ export function markSeen(kind, id) {
   data.seen[kind].push(id);
   persist();
 }
+
+/** A card or relic never met before (not in the Index yet): rewards and the Mart badge it "New!". */
+export const isNew = (kind, id) => !data.seen[kind].includes(kind === 'cards' ? id.replace(/\+$/, '') : id);
 
 /** The Safari Pokédex: `list` is 'seen' or 'caught'. Returns true the first time. */
 export function markSafari(list, id) {

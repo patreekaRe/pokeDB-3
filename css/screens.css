@@ -1966,6 +1966,12 @@ body.battle-intro { pointer-events: none; }
 .hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .hof-cards { margin-top: 6px; }
 .hof-row.champion { background: rgba(248, 208, 72, 0.18); }
+/* a lost run: a short grey line, nothing to open */
+.hof-row.lost { padding: 4px 12px; cursor: default; opacity: 0.8; background: rgba(48, 48, 56, 0.04); }
+.hof-row.lost .hof-row-pic { width: 44px; height: 44px; }
+.hof-row.lost .hof-row-pic img { max-width: 44px; max-height: 44px; filter: grayscale(1); }
+.hof-row.lost strong { font-size: 0.66rem; }
+@media (hover: hover) { .hof-row.lost:hover { background: rgba(48, 48, 56, 0.04); } }
 /* a Champion of the Depths: gold and violet */
 .hof-row.depths, .hof-entry.depths {
   border-left-color: #d8b048;
@@ -4050,3 +4056,24 @@ body.scene-peek #backdrop { display: none; }
 .descent-scene.still, .descent-scene.still .descent-mon, .descent-scene.still.flash .descent-flash { animation: none; }
 .descent-scene.still.falling .descent-mon { top: 40%; }
 .descent-scene.still.landing .descent-mon { animation: none; opacity: 0; }
+
+/* "New!": a card or relic you've never had (not in the Index yet), on rewards and the Mart's shelves */
+.new-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 3;
+  padding: 3px 5px 2px;
+  font-family: var(--pixel-font);
+  font-size: 0.55rem;
+  line-height: 1;
+  color: #181010;
+  background: #f8d030;
+  border: 2px solid #181010;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+  rotate: 8deg;
+  pointer-events: none;
+}
+.relic:has(> .new-badge) { position: relative; }
+.card.small > .new-badge { font-size: 0.45rem; top: -5px; right: -5px; }
+.float-thing > .new-badge { top: 0; right: -4px; }

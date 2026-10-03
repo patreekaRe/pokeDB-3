@@ -20,7 +20,7 @@ import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, sta
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
@@ -39,11 +39,11 @@ import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, mart
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { recordWin, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
+import { recordWin, recordLoss, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { postSafariResult, openLeaderboard } from './leaderboard.js';
-import { runResult } from './data/leaderboard.js';
+import { runResult, shareLine } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
@@ -853,7 +853,7 @@ function afterFight(node, result) {
     tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
     return showMap();
   }
-  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter));
+  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter), { foe: result.foe, kind: node.type });
 
   run.hp = result.hp;
   run.fights += 1;
@@ -1060,13 +1060,21 @@ function offerEvolutionCard(next) {
 }
 
 /** A card reward tile: first tap picks it, then "Add to deck" (or a second tap) takes it. */
+/** A "New!" corner on a card or relic you've never had (never met in the Index), in rewards and the Mart. */
+function newBadge(node, kind, thing) {
+  if (!thing.safari && isNew(kind, thing.id)) node.append(el('span', 'new-badge', 'New!'));
+  return node;
+}
+
 function learnOption(card, next) {
-  return {
-    ...cardOption(card, run.stage, () => {
+  const option = cardOption(card, run.stage, () => {
       run.deck.push(card.id);
       tell(`${card.name} added to your deck!`);
       next();
-    }),
+    });
+  newBadge(option.node, 'cards', card);
+  return {
+    ...option,
     ask: `Add ${card.name} to your deck?`,
     confirm: 'Add to deck',
   };
@@ -1096,7 +1104,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
   const go = goButton('Take it');
   let picked = null, taking = false;
   const buttons = relics.map((relic, i) => {
-    const btn = floatingThing(relic, i, size);
+    const btn = newBadge(floatingThing(relic, i, size), 'relics', relic);
     btn.addEventListener('click', () => (picked === relic ? take() : choose(relic, btn)));
     return btn;
   });
@@ -2167,7 +2175,8 @@ function martRoom() {
   const cards = stock.cards.filter(item => !item.sold && copies(item.id) < MAX_COPIES).map(item => {
     const card = CARDS_BY_ID[item.id];
     // a small card on the shelf, blown up full size when you tap it
-    const option = { ...cardOption(card, run.stage), zoom: makeCard(card, { stage: run.stage }) };
+    const option = { ...cardOption(card, run.stage), zoom: newBadge(makeCard(card, { stage: run.stage }), 'cards', card) };
+    newBadge(option.node, 'cards', card);
     option.node.classList.add('small');
     if (card.rarity === 'rare') option.zoom.classList.add('shimmer');
     return ware(option, martPrice(item.price), () => {
@@ -2195,7 +2204,9 @@ function martRoom() {
 
   const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
     const relic = RELICS_BY_ID[item.id];
-    return ware(relicOption(relic), martPrice(item.price), () => {
+    const option = relicOption(relic);
+    newBadge(option.node, 'relics', relic);
+    return ware(option, martPrice(item.price), () => {
       item.sold = true;
       run.relics.push(relic.id);
       markSeen('relics', relic.id);
@@ -2386,7 +2397,26 @@ function level5Rewards() {
   return lines;
 }
 
-function endRun(won, atLastBoss = false) {
+/** The Safari result's Share button: copies its line (the phone's share sheet if the clipboard is blocked). */
+async function copyShare(text) {
+  const btn = $('result-share');
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = '✅ Copied!';
+  } catch (err) {
+    try { await navigator.share({ text }); } catch (e) { btn.textContent = '❌ Copy failed'; }
+  }
+  playSound('confirm');
+  setTimeout(() => { btn.textContent = '📋 Share'; }, 1600);
+}
+
+/** Where the run stands, for a lost run's line in the Record Book: the biome, the place in it and the floor. */
+function whereNow() {
+  const here = run.current && run.map.byId[run.current];
+  return { biomeName: BIOMES[run.biome].name, place: BIOMES[run.biome].stages?.[stageOf(run.map, here).stage] ?? null, floor: here ? here.floor + 1 : 0 };
+}
+
+function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
   if (!peeking) clearRunData();
   const mewtwoRun = isMewtwoRun(run.starter);
@@ -2401,6 +2431,7 @@ function endRun(won, atLastBoss = false) {
   }
   const lost = won ? 0 : breakStreak(run.starter.id, safari);
   let streak = won ? null : streakLine(false, lost);
+  if (!won && !safari && !peeking) recordLoss(run, { ...loss, ...whereNow() }, getSave().shiny.on.includes(run.starter.id));
   if (won && !safari && !peeking) {
     updateSave(d => {
       d.stats.runsWon += 1;
@@ -2471,6 +2502,15 @@ function endRun(won, atLastBoss = false) {
   list.hidden = lines.length === 0;
   $('result-again').textContent = safari ? 'Try again' : 'New run';
   $('result-board').hidden = !safari;
+  $('result-share').hidden = !safari;
+  if (safari) {
+    const per = run.map.floors.length + 1, where = whereNow();   // an area's floors and its boss
+    const share = shareLine({ day: run.safari.day, won, caught: run.tally.caught || 0, floor: run.biome * per + where.floor,
+      floors: per * run.safari.areas.length, area: safariArea().name, first: run.safari.first });
+    list.append(el('li', '', `📋 ${share}`));
+    list.hidden = false;
+    $('result-share').onclick = () => copyShare(share);
+  }
   // Mewtwo's unlock comes last, after the pedestal, so the run ends on the reveal
   fresh.sort((a, b) => (a.id === 'mewtwo') - (b.id === 'mewtwo'));
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));

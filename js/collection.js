@@ -94,7 +94,7 @@ export function showCollection() {
       runCount(save.stats), openStats],
     ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
       `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
-    book('record', 'Record Book', 'Every run you won: its deck, relics, items and numbers.', 'win',
+    book('record', 'Record Book', 'Every run you won: its deck, relics, items and numbers. Lost runs get a line too.', 'win',
       'Win a run to unlock it.'),
     book('fame', 'Hall of Fame', 'Your Trainer Level 5 champions, each with its full record.', 'champion',
       'Win a run on Trainer Level 5 to unlock it.'),
