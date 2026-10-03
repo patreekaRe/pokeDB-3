@@ -19,6 +19,7 @@ import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOA
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
+import { playCry } from './audio.js';
 import { tipAt } from './tips.js';
 import { openSafariDex } from './safaridex.js';
 
@@ -337,6 +338,7 @@ function openEntry(id, role, from) {
   names.append(el('span', 'dex-no', dexNo(id)), el('strong', 'dex-detail-name', base.name), ...(done ? [typeChip(base.type)] : []));
   head.append(sprite(base, 'dex-detail-sprite'), names);
   card.append(head);
+  playCry(base.spriteId);
 
   // until its research is complete an entry shows only its picture and where it lives (the user's call): the rest is the prize
   const facts = el('p', 'dex-detail-facts');

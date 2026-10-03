@@ -13,7 +13,8 @@ three places:
 ## Where we left off (2026-10-03)
 
 - Polish batch item 1 (battle feel) is done: damage/block preview on a raised card, enemy wind-up and recoil, red
-  super-effective numbers, rare-card shimmer and the upgraded-card burst. Next in `docs/roadmap.md`: World polish.
+  super-effective numbers, rare-card shimmer and the upgraded-card burst. Item 2 (world polish) is done too: battle
+  weather, biome-coloured piles, map footprints, Pokédex cries. Next in `docs/roadmap.md`: Settings and battle QoL.
 
 - `main` is up to date (last task: the epic boss intros for Biomes 1 and 2). No
   unfinished work in the tree, and every `claude/*` branch on GitHub has been merged into `main`.

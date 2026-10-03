@@ -16,6 +16,7 @@ import { SAFARI_DEX_PAGES, SAFARI_NUMBER, SAFARI_ROSTER, SAFARI_AREA_COINS, RARE
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
 import { $, el, openDialog, makeCard } from './ui.js';
+import { playCry } from './audio.js';
 import { tipAt } from './tips.js';
 
 const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵' };
@@ -124,6 +125,7 @@ function openEntry(id, from) {
     el('span', `index-only type-${def.type}`, `${TYPES[def.type].icon} ${TYPES[def.type].label}`));
   head.append(img, names);
   card.append(head);
+  playCry(def.spriteId);
   card.append(el('p', 'dex-detail-facts', safariHomes(id).map(h => `${AREA_ICON[SAFARI_DEX_PAGES.find(p => p.name === h.name).area] ?? ''} ${h.name}${h.rare ? ' ✦ rare' : ''}`).join(' · ')));
   card.append(el('p', `dex-detail-research${got ? ' done' : ''}`, got ? 'Caught!' : 'Seen, not caught yet. Wear it down and throw a ball for its card.'));
   if (def.description) card.append(el('p', 'dex-detail-text', def.description));

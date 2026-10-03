@@ -225,8 +225,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
 
   setTheme(run.starter.type);
   showScreen('battle-screen');
+  const land = run.safari?.areas[run.biome] ?? BIOMES[run.biome]?.id;
+  document.body.dataset.biome = land || '';   // the piles' colour
   if (def.arena) showPlaceScene(def.arena);
-  else showScene(run.safari?.areas[run.biome] ?? BIOMES[run.biome]?.id, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
+  else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
   playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind));

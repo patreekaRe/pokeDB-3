@@ -1112,7 +1112,93 @@ export function showScene(biomeId, kind = 'wild', where = 0) {
   const art = BIOME_ART[biomeId];
   if (!art) { paintScene('', null); return; }
   const time = timeOfDay(), at = journeyOf(where);
-  paintScene(`${biomeId}/${kind}/${time}/${placeKey(at)}`, { ...biomeLook(art, time, kind), ...at });
+  // light weather only behind a fight; a boss brings its own storm (setStorm)
+  const weather = document.body.dataset.screen === 'battle-screen' && kind !== 'boss' ? weatherFor(biomeId, time) : null;
+  paintScene(`${biomeId}/${kind}/${time}/${placeKey(at)}/${weather?.kind}`, { ...biomeLook(art, time, kind), ...at, weather });
+}
+
+/* ---------- battle weather ----------
+   A light fall over every wild and elite fight, matched to the biome and the hour. `glow` kinds keep their colours in
+   the dark; the rest are graded with the land (js/daytime.js), so night leaves don't shine. */
+const WEATHER = {
+  clearing: { dawn: 'drizzle', day: 'leaves', dusk: 'leaves', night: 'drizzle' },
+  shrine: { dawn: 'drizzle', day: 'drizzle', dusk: 'leaves', night: 'drizzle' },
+  wastes: 'ash',
+  depths: 'dust',
+  meadow: { dawn: 'drizzle', dusk: 'leaves', night: 'drizzle' },
+  forest: 'leaves',
+  wetland: 'drizzle',
+  marsh: 'drizzle',
+  peak: 'snow',
+  desert: 'sand',
+};
+const WEATHER_LOOK = {
+  drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },
+  leaves: { colours: ['#e8b040', '#b07020', '#d86830', '#983818', '#a8c858', '#688a30'], per: 1500 },
+  ash: { colours: ['#d0c8c4', '#9a928e', '#6a6260', '#f8a830'], per: 700 },
+  dust: { colours: ['#ffffff', '#b8f4ff', '#e8b8ff'], per: 900, glow: true },
+  snow: { colours: ['#ffffff', '#dce6f4'], per: 600, glow: true },
+  sand: { colours: ['#f4dca8', '#d4b478'], per: 450 },
+};
+
+function weatherFor(biomeId, time) {
+  const w = WEATHER[biomeId], kind = typeof w === 'string' ? w : w?.[time];
+  if (!kind) return null;
+  const { colours, per, glow } = WEATHER_LOOK[kind], g = !glow && GRADES[time];
+  return { kind, per, colours: colours.map(c => abgr(g ? gradeHex(c, g.land) : c)) };
+}
+
+function makeWeather() {
+  const w = S.raw.weather;
+  life.weather = !w || matchMedia('(prefers-reduced-motion: reduce)').matches ? null
+    : Array.from({ length: Math.round(W * H / w.per) }, () => ({ x: rand() * (W + 20) - 10, y: rand() * H, speed: 0.7 + rand() * 0.6, phase: rand() * 60 }));
+}
+
+/** The weather's fall; it thins out as a storm rolls in, and every flake starts again at the top once past the bottom. */
+function drawWeather(t) {
+  const { kind, colours: c } = S.raw.weather, keep = 1 - storm.level;
+  const reset = (p) => { p.y = -2 - rand() * 6; p.x = rand() * (W + 20) - 10; };
+  for (let i = 0, n = Math.round(life.weather.length * keep); i < n; i++) {
+    const p = life.weather[i], s = p.speed;
+    if (kind === 'drizzle') {
+      p.y += 2.2 * s; p.x -= 0.7 * s;
+      if (p.y > H) reset(p);
+      put(p.x, p.y, c[0]); put(p.x + 1, p.y - 2, c[1]);
+      if (s > 1) put(p.x + 1, p.y - 1, c[1]);
+    } else if (kind === 'leaves') {
+      p.y += 0.35 * s; p.x += 0.35 + Math.sin((t + p.phase) / 6) * 0.6;
+      if (p.y > H + 2 || p.x > W + 3) reset(p);
+      const pair = (i % 3) * 2, [a, b] = [c[pair], c[pair + 1]], spin = Math.floor((t + p.phase) / 3) % 4;
+      put(p.x, p.y, a);
+      if (spin === 0) { put(p.x + 1, p.y, a); put(p.x + 1, p.y + 1, b); }
+      else if (spin === 1) { put(p.x, p.y + 1, b); }
+      else if (spin === 2) { put(p.x - 1, p.y, a); put(p.x - 1, p.y + 1, b); }
+      else put(p.x + 1, p.y, b);
+    } else if (kind === 'ash') {
+      p.y += 0.3 * s; p.x += 0.2 + Math.sin((t + p.phase) / 7) * 0.25;
+      if (p.y > H + 1) reset(p);
+      if (i % 9 === 0) { if (Math.sin((t + p.phase) / 2) > -0.3) put(p.x, p.y, c[3]); continue; }   // a stray ember among the flakes
+      const shade = c[i % 3];
+      put(p.x, p.y, shade);
+      if (s > 1.05) put(p.x + (Math.floor((t + p.phase) / 4) % 2 ? 1 : -1), p.y, shade);
+    } else if (kind === 'dust') {
+      p.y += 0.18 * s; p.x += Math.sin((t + p.phase) / 9) * 0.2;
+      if (p.y > H) reset(p);
+      const b = Math.sin((t + p.phase) / 3);
+      if (b > 0.85) { put(p.x - 1, p.y, c[1 + i % 2]); put(p.x + 1, p.y, c[1 + i % 2]); put(p.x, p.y - 1, c[1 + i % 2]); put(p.x, p.y + 1, c[1 + i % 2]); }
+      if (b > -0.2) put(p.x, p.y, b > 0.6 ? c[0] : c[1 + i % 2]);
+    } else if (kind === 'snow') {
+      p.y += 0.4 * s; p.x += Math.sin((t + p.phase) / 5) * 0.4 - 0.1;
+      if (p.y > H) reset(p);
+      put(p.x, p.y, c[i % 2]);
+      if (s > 1.1) { put(p.x + 1, p.y, c[1]); put(p.x, p.y + 1, c[1]); }
+    } else if (kind === 'sand') {
+      p.x += 2.6 * s; p.y += 0.25 * s + Math.sin((t + p.phase) / 4) * 0.2;
+      if (p.x > W + 3 || p.y > H) { p.x = -3 - rand() * 10; p.y = rand() * H; }
+      put(p.x, p.y, c[0]); put(p.x - 1, p.y, c[1]);
+      if (s > 1) put(p.x - 2, p.y, c[1]);
+    }
+  }
 }
 
 function journeyOf(where) {
@@ -5446,6 +5532,7 @@ function makeLife() {
   life.nextBolt = tick + FPS * 2;
   life.blobs = [];
   if (storm.on) makeRain();
+  makeWeather();
   if (has('campfire')) life.sparks = [];
   if (has('treasure')) {
     const d = life.dais;
@@ -5647,6 +5734,7 @@ function draw() {
     }
   }
 
+  if (life.weather && storm.level < 1) drawWeather(t);
   if (life.rain && storm.level > 0) drawRain(t);
   let shake = 0;
   if (bossPrelude?.phase === 'max') shake = depthsMax(t);

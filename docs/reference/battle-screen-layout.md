@@ -27,7 +27,7 @@ number bumps when it changes, and `.empty` turns the numbers red) | hand | End T
 (`#end-turn-btn`, not a `.btn`: the same salmon panel and white pill, so the
 two match; greyed out while disabled; when no card in hand can be played, `.nudge` (set in `renderAll()`, items don't count) makes it hop, scroll its stripes and blink a gold ring, the user's call, so it's clear to end the turn; the ▶ it also blinked in the pill went 2026-10-03: it widened the button and crowded the Safari row). The
 draw/discard/exhaust piles (`.piles` / `button.pile`: a floating pixel card and the
-count, like the coins) live in the top bar beside the Poké Ball, shown only
+count, on a pixel plate in the biome's colour, `body[data-biome]` set by `startBattle()`, polish batch 2) live in the top bar beside the Poké Ball, shown only
 while `body[data-screen="battle-screen"]`. The exhaust pile (🌫️, its own icon: 💨 is shared) only shows once a card
 has been exhausted; played powers also go to `b.exhaust` (so they leave the fight) but, as in StS, never count as
 exhausted (`exhaustedCards()`). Tapping a pile opens `#piles-dialog` (`openPiles()` in `js/battle.js`, the user's call

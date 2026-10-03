@@ -71,7 +71,8 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   the start road still jog on a shared row, since those all merge anyway.
   Links used to jog on a shared row halfway up, which joined routes from
   different rooms and showed ways that didn't exist on almost every map.
-  Routes are cream; walked ones get thick red dashes and the routes you can
+  Routes are cream; walked ones carry your Pokémon's red paw prints (`footprints()`, left and right of the line, pointing
+  the way it went; red dashes until 2026-10-03, polish batch 2), laid one by one as it walks, and the routes you can
   take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
   drawn inside, for tap size): orange, red for elites, a gold boss. Poké

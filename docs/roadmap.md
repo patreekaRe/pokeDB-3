@@ -11,10 +11,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
-2. **World polish.** Run in: LOCAL (Desktop app). Read `docs/reference/map-screen.md` first. (a) Light weather in battle
-   that matches the biome and the time of day (`js/daytime.js`), in whole pixels like the scenery: rain, falling leaves,
-   ash. (b) The draw and discard piles take the biome's colour. (c) Footprints on the map path already walked. (d) A
-   Pokédex entry plays its cry and a small idle bounce when opened.
 3. **Settings and battle QoL.** Run in: CLOUD. (a) Separate music and effects volume (the 🔊 button mutes both now,
    `js/audio.js`), saved. (b) A 1x / 2x battle speed toggle for the enemy turn and hit animations. (c) An end-turn
    warning when PP is left and a card is playable, which can be switched off. (d) Sort and filter in the deck view

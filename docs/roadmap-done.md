@@ -1326,3 +1326,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   before its lunge and reels back on a big hit (`#enemy-img.recoil`); super-effective numbers are red (`.pop.dmg.super`);
   rare cards shimmer in rewards and the Mart (`.card.shimmer`, from `cardOption()`); taking a `+` card bursts
   (`upgradeBurst()` in `js/ui.js`). All off under reduced motion.
+- World polish (polish batch 2): light weather behind every wild and elite fight (`WEATHER` / `drawWeather()` in
+  `js/scene.js`: the Clearing's leaves by day and dusk, drizzle at dawn and night; the Shrine's drizzle, maple leaves at
+  dusk; the Wastes' ash with stray embers; the Depths' crystal dust; Safari snow / sand / drizzle / leaves). It thins out
+  as a boss storm rolls in; bosses have none. The piles sit on plates in the biome's colour; walked map routes carry paw
+  prints (`footprints()` in `js/map.js`); a Pokédex entry (main and Safari) cries and hops, then idles with a bounce.
