@@ -42,3 +42,12 @@ outline, green fill from `--v`) with a square knob; `.muted` on the row greys th
 Poké Ball menu it opens under the Sound item (`#menu-sound-pop`), on the title under or beside the speaker on a soft dark
 backing (`#title-sound-pop`). The speaker's icon is swapped as it's tapped, so the outside-tap checks use
 `e.composedPath()`, not `e.target.closest()` (a detached target read as outside and closed the menu).
+
+**Tap tips** (`js/tips.js`, `.tap-tip`): any `title` pops up in a little text box, but **only on a deliberate tap** of
+the thing it explains (the user's call, 2026-10-03: hover tips popped up on their own over the title's gems and the
+Safari Pokédex, since a screen opening under a resting mouse counts as a hover). Hover only hides the browser's own
+tooltip (the title moves to `data-tip` meanwhile); nothing shows on focus, scroll or load. The next tap anywhere, or the
+same thing again, puts it away. Taps on buttons and other controls do their own thing, not the tip; code that wants a
+note there calls `tipAt()` (a locked starter, the locked Safari gem, an unseen Pokédex tile: those tiles are
+`aria-disabled`, not `disabled`, so the tap reaches them). `showTip()` tries above, below, right and left of the thing
+and takes the first spot that covers no button or tab (else the one covering least).

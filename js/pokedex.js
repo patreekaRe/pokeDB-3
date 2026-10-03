@@ -19,6 +19,7 @@ import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOA
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
+import { tipAt } from './tips.js';
 import { openSafariDex } from './safaridex.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
@@ -124,8 +125,8 @@ function entryTile(id, role, seen, defeated) {
   }
   tile.title = !known ? 'Not seen yet. Fight it in a run to fill this in.'
     : done ? `${def.name}: Research complete. Tap for its entry` : `${def.name}: defeated ${defeats(id)}/${goalOf(id)}. Tap for its entry`;
-  tile.disabled = !known;
-  if (known) tile.addEventListener('click', () => openEntry(id, role, tile));
+  if (!known) tile.setAttribute('aria-disabled', 'true');
+  tile.addEventListener('click', () => (known ? openEntry(id, role, tile) : tipAt(tile, tile.dataset.tip || tile.title)));
   return tile;
 }
 

@@ -16,6 +16,7 @@ import { SAFARI_DEX_PAGES, SAFARI_NUMBER, SAFARI_ROSTER, SAFARI_AREA_COINS, RARE
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
 import { $, el, openDialog, makeCard } from './ui.js';
+import { tipAt } from './tips.js';
 
 const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵' };
 
@@ -43,8 +44,8 @@ function entryTile(id, rare, { seen, caught }) {
   if (rare) tile.append(el('span', 'safari-rare-mark', '✦'));
   tile.title = !known ? `Not seen yet.${rare ? ' A rare spawn: look for a gold ✦ on the map.' : ''}`
     : got ? `${def.name}: caught. Tap for its entry` : `${def.name}: seen, not caught yet. Tap for its entry`;
-  tile.disabled = !known;
-  if (known) tile.addEventListener('click', () => openEntry(id, tile));
+  if (!known) tile.setAttribute('aria-disabled', 'true');
+  tile.addEventListener('click', () => (known ? openEntry(id, tile) : tipAt(tile, tile.dataset.tip || tile.title)));
   return tile;
 }
 

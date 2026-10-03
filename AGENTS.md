@@ -158,7 +158,7 @@ three places:
 - Keep sessions scoped to one feature or fix, and start fresh for the next one. Prefer text checks (reading the page,
   `curl`) over screenshots, and one long wait over tight polling (e.g. GitHub Pages can take 10+ minutes).
 - **UI taste**: narrow, centred windows that let the pixel scene show around them; less text (details go in `title`
-  tooltips); the map is always upright; everything is pixel art and Pokémon-authentic (Gold/Silver, Gen 3-5), not
+  tooltips, shown only on a deliberate tap, never on hover, focus or load); the map is always upright; everything is pixel art and Pokémon-authentic (Gold/Silver, Gen 3-5), not
   generic fantasy; size tweaks come in small steps. Check at phone portrait (375x812, 390x844), iPad (1024x700, 768x1024)
   and PC (1280x800). **Landscape phones don't matter**: the user never plays sideways.
 - Plain, short explanations. Say whether something was actually tested in the browser.

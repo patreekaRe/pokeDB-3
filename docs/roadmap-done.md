@@ -1319,3 +1319,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   one each side; Meadow / Wetland / Marsh pop a third on the pan that leaves the frame, while Forest / Peak / Desert /
   Depths (no sideways pan to carry it off) have two. The catch latch sounds like
   a switch (lower snap over a thunk, no ring).
+- Tap tips only on a tap (`js/tips.js`): hovering no longer pops a `title` up (it covered the title's gems and the Safari
+  Pokédex's tabs and grid); tips dodge buttons and tabs; unseen Pokédex tiles explain themselves on a tap.

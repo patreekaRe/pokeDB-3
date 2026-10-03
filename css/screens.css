@@ -3608,8 +3608,8 @@ body.has-scene #scene-bg { display: block; }
   font: inherit;
   cursor: pointer;
 }
-.dex-entry:disabled { cursor: default; }
-.dex-entry:not(:disabled):hover { background: var(--win-tile); }
+.dex-entry:disabled, .dex-entry[aria-disabled="true"] { cursor: default; }
+.dex-entry:not(:disabled):not([aria-disabled="true"]):hover { background: var(--win-tile); }
 .dex-entry:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
 .dex-no { font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.8rem; color: var(--win-ink); align-self: flex-start; }   /* the user found 0.6rem too small to read */
 .dex-sprite { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
