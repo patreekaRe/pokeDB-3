@@ -27,7 +27,6 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { newsOnMenu } from './patchnotes.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -187,7 +186,6 @@ function start(e) {
     screen.classList.remove('flash');
     screen.classList.add('menu');
     renderMenu();
-    newsOnMenu();
     showTitle.done?.();
     showTitle.done = null;
   }, still() ? 0 : 260);

@@ -6,7 +6,6 @@
 
 import { PATCHES, IN_THE_GAME } from './data/patchnotes.js';
 import { $, el, openDialog } from './ui.js';
-import { getSave } from './storage.js';
 
 const [latest] = PATCHES;
 const SEEN_KEY = 'pokedb.patchSeen';   // a per-device nicety (the tag stops beckoning), so not in the save or the cloud
@@ -26,13 +25,6 @@ export function initPatchNotes() {
   $('title-version').classList.toggle('seen', seen);
 }
 
-/** Once per device, the first time the title menu comes up after a new version (the user's ask, 2026-10-03: players
-    should know what changed), its notes open by themselves. Only for someone who has played before, and never on a
-    playtest link, whose own scene comes after PRESS START. */
-export function newsOnMenu() {
-  if (seenNow() || !getSave().stats.runsStarted || location.search) return;
-  setTimeout(() => { if (!seenNow() && !document.querySelector('dialog[open]')) openPatchNotes(); }, 700);
-}
 
 const label = (text) => el('h3', 'records-label', text);
 

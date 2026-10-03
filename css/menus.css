@@ -148,16 +148,40 @@
 /* until this version's notes are opened: a slight bob, so it looks tappable */
 .title-version.seen { animation: versionIn 0.4s steps(4) both 1.2s; }
 /* a new version not yet read: a gold "NEW!" sticker that bobs higher, so returning players spot it */
-.title-version:not(.seen) { background: var(--gold); }
+.title-version:not(.seen) {
+  background: var(--gold);
+  overflow: hidden;
+  animation: versionIn 0.4s steps(4) both 1.2s, versionHop 2.4s steps(1) infinite 1.6s, versionGlow 1.2s steps(3) infinite alternate 1.6s;
+}
+/* a shine sweeps across it, and every few seconds it hops and tilts like a sticker someone flicked */
+.title-version:not(.seen)::after {
+  content: "";
+  position: absolute;
+  inset: -2px auto -2px -40%;
+  width: 30%;
+  background: rgba(255, 255, 255, 0.75);
+  skew: -20deg;
+  pointer-events: none;
+  animation: versionShine 2.4s steps(8) infinite 1.6s;
+}
+@keyframes versionHop {
+  0%, 70% { translate: 0 0; rotate: 8deg; }
+  76% { translate: 0 -6px; rotate: 2deg; }
+  82% { translate: 0 -3px; rotate: 14deg; }
+  88% { translate: 0 -5px; rotate: 4deg; }
+  94% { translate: 0 0; rotate: 10deg; }
+}
+@keyframes versionGlow { from { box-shadow: 0 3px 0 #0d1a44, 0 0 0 0 rgba(255, 224, 96, 0.9); } to { box-shadow: 0 3px 0 #0d1a44, 0 0 0 5px rgba(255, 224, 96, 0); } }
+@keyframes versionShine { 0%, 55% { left: -40%; } 100% { left: 120%; } }
 .title-version:not(.seen):hover, .title-version:not(.seen):focus-visible { background: #fff8e0; }
-@keyframes versionBob { to { translate: 0 -4px; } }
+@keyframes versionBob { to { translate: 0 -2px; } }
 .title-version:hover, .title-version:focus-visible { background: var(--gold); outline: none; }
 .title-version:active { translate: 0 2px; box-shadow: 0 1px 0 #0d1a44; }
 .title-screen:not(.menu) .title-version { display: none; }
 @keyframes versionIn { from { opacity: 0; scale: 0; } }
 @media (min-width: 900px) { .title-version { font-size: 14px; padding: 6px 9px 5px; } }
 @media (max-width: 600px) { .title-version { font-size: 9px; right: -6px; top: -10px; padding: 4px 5px 3px; } }
-@media (prefers-reduced-motion: reduce) { .title-version { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .title-version, .title-version::after { animation: none; } .title-version::after { display: none; } }
 .title-screen.menu .title-center { justify-content: flex-start; padding-top: max(64px, 9vh); gap: clamp(18px, 4vh, 40px); }
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
 .title-big { transition: font-size 0.4s ease; }
