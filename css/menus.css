@@ -243,6 +243,8 @@
 .gem-safari:has(.gem-tries) .gem-label { padding-right: 40px; }   /* centred between the icon and the count */
 .gem-tries { position: absolute; top: 50%; right: calc(var(--gp) * 6 + 3px); translate: 0 -50%; z-index: 2; pointer-events: none; }
 @media (max-width: 600px) { .gem-tries { right: calc(var(--gp) * 5 + 3px); } .try-count.gem-tries { font-size: 1.05rem; } }
+.inf-px.gem-tries { right: calc(var(--gp) * 9); }   /* the ∞ sat too near the edge (the user's ask) */
+@media (max-width: 600px) { .inf-px.gem-tries { right: calc(var(--gp) * 8); } }
 /* beside the Safari gem (safariGem() in js/title.js): on its right the day's leaderboard, a bare trophy,
    hung off the gem's edge so the gem stays centred in the stack */
 .gem-row { position: relative; flex: none; }
