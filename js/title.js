@@ -242,7 +242,10 @@ function safariGem() {
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
-  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts${getSave().safari.day === daily.day && getSave().safari.tries ? ": you've played it, so it's replays from here" : ''}.` : 'Beat every Pokémon in all three biomes to open the Safari Zone.');
+  // today's try still to play (1/1), or played and only replays left (∞)
+  const played = getSave().safari.day === daily.day && getSave().safari.tries;
+  if (open) btn.append(el('span', `try-count gem-tries${played ? ' inf' : ''}`, played ? '∞' : '1/1'));
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts${played ? ": you've played it, so it's replays from here" : ''}.` : 'Beat every Pokémon in all three biomes to open the Safari Zone.');
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');
