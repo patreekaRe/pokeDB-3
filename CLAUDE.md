@@ -138,7 +138,7 @@ live site.
   Whip, a win Flamethrower / Hydro Pump / Leaf Storm, a Level 5 win Blast Burn / Hydro Cannon / Frenzy Plant), played
   as a **strike card** you hold to charge and let go to throw (`strikeCard()`, `.gate-strike`, every time, the user's call
   2026-10-02: gold foil for the breaking blow, grey and cracked for a loss; the damage is fixed, the charge only scales the
-  show; a quick tap charges it for you and it plays itself after 4 s; no long-press select/callout/scroll on phones, pointer
+  show; a quick tap charges it for you, and it waits for the player, never playing itself (the user's call, 2026-10-02); no long-press select/callout/scroll on phones, pointer
   capture, Android vibration), then the flash, shake, -N and the bar running down; each stage it passes jolts the gate a step more broken
   (`crackOpen()`: crack, flash, shake, the bar's rune shattering) and adds its lines (`STAGE_LINES`). The breaking blow: shudder, light rays,
   chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with

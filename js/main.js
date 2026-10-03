@@ -189,7 +189,8 @@ function init() {
   const markScrolled = () => document.body.classList.toggle('scrolled', scrollY > 4);
   addEventListener('scroll', markScrolled, { passive: true });
   initBattle();
-  initRun({ onMenu: goHome, onNewRun: previewStarter });
+  // the result window sits over the battle screen: the finished run goes, and the character select comes up under Prepare
+  initRun({ onMenu: goHome, onNewRun: (starter) => { abandonRun(); showSelect(starter); previewStarter(starter); } });
 
   initShop();
   $('shop-btn').addEventListener('click', () => toggleShop());

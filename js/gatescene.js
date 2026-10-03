@@ -342,14 +342,14 @@ function gather(k) {
 }
 
 const ART = { fire: '🔥', water: '💧', grass: '🍃', psychic: '🔮' };
-const FULL = 1200, QUICK = 350, IDLE = 4000, HOLD_MAX = 2000;
+const FULL = 1200, QUICK = 350, HOLD_MAX = 2000;
 
 /**
  * The strike, dealt as a card (the user's call, 2026-10-02): hold it to charge the move, let go to throw it at the seal.
  * On phones a long press would select text, open the image callout or scroll, so the card turns all three off (CSS, and
  * contextmenu / selectstart here), and pointer capture keeps the hold if the finger slides off it; Android buzzes as it
- * charges (iOS lets no page vibrate). A quick tap charges it for you, and left alone it plays itself, so a run's end never
- * stalls. The damage is fixed: it resolves with the charge (0-1), which only scales the show.
+ * charges (iOS lets no page vibrate). A quick tap charges it for you; it waits for the player however long they take (the
+ * user's call: the blow is theirs to land). The damage is fixed: it resolves with the charge (0-1), which only scales the show.
  */
 function strikeCard({ type, kind, move, hit, breaks }) {
   const scene = $('gate-scene');
@@ -375,7 +375,6 @@ function strikeCard({ type, kind, move, hit, breaks }) {
   const vibe = (p) => { if (navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(p); };
   return new Promise(resolve => {
     let charge = 0, mode = null, pressAt = 0, fullAt = 0, buzzAt = 0, done = false, last = performance.now();
-    const idle = setTimeout(() => (still() ? release() : (mode = 'auto')), IDLE);
     const tick = (now) => {
       if (done) return;
       const dt = now - last;
@@ -399,7 +398,6 @@ function strikeCard({ type, kind, move, hit, breaks }) {
       if (done || mode === 'hold') return;
       e.preventDefault();
       if (e.pointerId !== undefined) wrap.setPointerCapture(e.pointerId);
-      clearTimeout(idle);
       if (still()) return release();
       mode = 'hold';
       pressAt = performance.now();
@@ -432,7 +430,6 @@ function strikeCard({ type, kind, move, hit, breaks }) {
       if (done) return;
       done = true;
       charging = 0;
-      clearTimeout(idle);
       document.removeEventListener('keydown', key);
       document.removeEventListener('keyup', key);
       scene.classList.remove('charging');
