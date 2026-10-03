@@ -2857,6 +2857,7 @@ body.battle-intro { pointer-events: none; }
 .ach.done img { filter: none; }
 .ach-text { flex: 1; display: flex; flex-direction: column; font-size: 0.85rem; }
 .ach-text strong { font-size: 0.95rem; }
+.ach-text .ach-count { font-size: 0.75rem; color: var(--gold); margin-top: 2px; }
 .ach:not(.done) .ach-text span { color: var(--muted); }
 .ach-status { font-size: 1.2rem; }
 .ach-status .pokeball { font-size: 2rem; margin: 0; animation: none; }   /* a caught Poké Ball, sized in em */

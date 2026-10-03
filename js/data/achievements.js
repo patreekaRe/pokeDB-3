@@ -110,6 +110,7 @@ export const ACHIEVEMENTS = [
     starter: 'victini',
     text: 'Win 3 runs in a row on Trainer Level 2 or higher',
     test: (s) => s.bestStreak >= 3,
+    progress: (s) => `Current streak: ${s.winStreak}/3`,
   },
   {
     starter: 'heatran',

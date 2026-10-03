@@ -132,10 +132,21 @@ export function suspendRun() {
 /** Victini's goal counts wins in a row on this Level or higher; a win below it neither counts nor breaks the streak. */
 const STREAK_LEVEL = 2;
 
-/** A lost or abandoned run breaks the win streak, unless it was Mewtwo's or the Safari's (they never count). */
+/** A lost or abandoned run breaks the win streak, unless it was Mewtwo's or the Safari's (they never count). Returns
+    the streak it broke. */
 function breakStreak(starterId, safari) {
-  if (peeking || safari || starterId === 'mewtwo') return;
-  updateSave(d => { d.stats.winStreak = 0; });
+  if (peeking || safari || starterId === 'mewtwo') return 0;
+  const lost = getSave().stats.winStreak;
+  if (lost) updateSave(d => { d.stats.winStreak = 0; });
+  return lost;
+}
+
+/** The result window's line on Victini's streak (null when the run didn't touch it). */
+function streakLine(won, lost) {
+  if (!won) return lost ? `💔 Your ${lost}-win streak is over.` : null;
+  const n = getSave().stats.winStreak;
+  const goal = n >= 3 || getSave().unlocked.includes('victini') ? '' : ` (3 unlocks a legendary)`;
+  return `🔥 Win streak: ${n} in a row${goal}!`;
 }
 
 /** The Abandon button's: a run thrown away mid-way counts as a loss for the win streak, saved or loaded. */
@@ -2386,7 +2397,8 @@ function endRun(won, atLastBoss = false) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
     refreshCoins();
   }
-  if (!won) breakStreak(run.starter.id, safari);
+  const lost = won ? 0 : breakStreak(run.starter.id, safari);
+  let streak = won ? null : streakLine(false, lost);
   if (won && !safari && !peeking) {
     updateSave(d => {
       d.stats.runsWon += 1;
@@ -2396,6 +2408,7 @@ function endRun(won, atLastBoss = false) {
       if (!mewtwoRun && run.level >= STREAK_LEVEL) {
         d.stats.winStreak += 1;
         d.stats.bestStreak = Math.max(d.stats.bestStreak, d.stats.winStreak);
+        streak = true;
       }
       if (!mewtwoRun) {
         const type = run.starter.type;
@@ -2403,6 +2416,7 @@ function endRun(won, atLastBoss = false) {
       }
     });
 
+    if (streak) streak = streakLine(true);
     if (!mewtwoRun && run.level === MAX_LEVEL) level5 = level5Rewards();
     // every win goes in the Record Book, with its win scene; a Level 5 one also enters the Hall of Fame. The first of each
     // unlocks its card in the Collection (a ??? until then).
@@ -2441,7 +2455,7 @@ function endRun(won, atLastBoss = false) {
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.paid ? ` +${f.paid} PokéCoins.` : ''}`),
     ...(run.dexNews || []).map(line => `📕 ${line}`)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
-  lines.unshift(...level5, ...(gate ? [gate.li] : []));
+  lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (safari && run.tally.caught) lines.push(`🎯 Caught ${run.tally.caught} Pokémon this run.`);
   if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');

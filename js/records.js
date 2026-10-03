@@ -131,6 +131,7 @@ export function openAchievements() {
     const text = el('div', 'ach-text');
     const hidden = !got && (starter.legendary || starter.secret);   // a locked legendary stays a mystery (the user's call)
     text.append(el('strong', '', hidden ? '???' : starter.line[0].name), el('span', '', a.text));
+    if (!got && a.progress) text.append(el('span', 'ach-count', a.progress(getSave().stats, getSave())));
     row.append(img, text, el('span', 'ach-status', got ? '' : '🔒'));
     if (got) row.lastChild.append(el('span', 'pokeball'));
     list.append(row);
