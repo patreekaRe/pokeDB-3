@@ -38,9 +38,11 @@
     <button type="button" class="title-gate" id="title-gate" aria-label="The broken Sealed Gate: play as Mewtwo" hidden><canvas class="title-gate-art" id="title-gate-art" aria-hidden="true"></canvas></button>
     <div class="title-center">
       <div class="title title-big" aria-label="PokéDB: Rogue-Like Deck Battler">
-        <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
+        <span class="title-logo-wrap">
+          <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
+          <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js -->
+        </span>
         <small aria-hidden="true">Rogue-Like Deck Battler</small>
-        <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js -->
       </div>
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
