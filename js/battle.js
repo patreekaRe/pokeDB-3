@@ -967,21 +967,31 @@ function pickFromPile(cards, prompt, verb = 'Take back') {
       layer.replaceChildren();
       resolve(card);
     };
-    const row = el('div', 'pile-pick');
+    // two taps, like a card in the hand: the first picks it and shows its keyword boxes and a button under the row
+    // (a phone has no hover to read them by), the second (or the button) takes it
+    const row = el('div', 'pile-pick'), below = el('div', 'pile-below');
+    let picked = null;
+    const pick = (card, node) => {
+      if (picked === card) return done(card);
+      picked = card;
+      row.querySelectorAll('.pile-card.picked').forEach(n => n.classList.remove('picked'));
+      node.classList.add('picked');
+      below.replaceChildren(...[cardTips(asShown(card)), focusButton(verb, () => done(card))].filter(Boolean));
+    };
     for (const card of cards) {
       const node = makeCard(asShown(card), { stage: battle.stage });
       node.classList.add('pile-card');
       node.tabIndex = 0;
       node.setAttribute('role', 'button');
       node.setAttribute('aria-label', `${verb} ${card.name}`);
-      node.addEventListener('click', () => done(card));
-      node.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); done(card); } });
+      node.addEventListener('click', () => pick(card, node));
+      node.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(card, node); } });
       row.append(node);
     }
     pilePick = { done };
     layer.classList.remove('rise');
     layer.classList.add('pile-picking');
-    layer.replaceChildren(el('p', 'focus-hint', prompt), row);
+    layer.replaceChildren(el('p', 'focus-hint', prompt), row, below);
     layer.hidden = false;
     row.firstChild.focus({ preventScroll: true });
   });

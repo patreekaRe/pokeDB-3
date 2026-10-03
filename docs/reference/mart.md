@@ -34,7 +34,7 @@ the items and relics shelves, added by `martRoom()`: an icon, outlined pixel let
 the top shelf as `.card.small` thumbnails (a pixel shine sweeps across them; the tap
 blows up a full card, `option.zoom`), the items on the next shelf and the relics under
 them in the gaps, a 3-2 pyramid, as bobbing bare icons with plain printed prices (no
-tag boxes). Kecleon (2x, flipped to face the shelves) stands at the counter's left end,
+tag boxes). Kecleon (2x, flipped to face the shelves; it cries as you come in, `enterNode()`) stands at the counter's left end,
 and forgetting a move is the 💻 PC on its right (`martPc()`, under the Center's bouncing
 `.center-label` sign, which shows the price: "Forget 💴50"). (Not `.mart`: that's the top bar's Mart icon.)
 The room is its own indoor scene (`PLACE_ART.mart`, after the Gen 3 Marts): teal-banded

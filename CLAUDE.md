@@ -236,8 +236,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Combo... found by regex over its effect keys, nested ones too), and `termTips()` is the same minus the
   keywords, for the text's `title`. `cardTips()` / `withTips()` in `js/ui.js` draw them as little parchment
   windows beside any blown-up card: battle's risen card (`placeTips()` in `js/battle.js`: beside it on
-  whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()` and the reward /
-  Mart focus (`openFocus()`); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
+  whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()`, the reward /
+  Mart focus (`openFocus()`) and the pile picker (`pickFromPile()`: since 2026-10-03 a first tap picks a card and shows its boxes and the take button under the row, a second takes it); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
   `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`; every term with a box is
   coloured in the card's own text and on its box's name (`colourTerms()` / `TERM_KIND` in `js/ui.js`, `.term-*` in
   `css/cards.css`: Burn orange-red, Tide blue, Leech Seed green, debuffs purple, Strength red, the rest keyword gold; StS 2's,
@@ -315,7 +315,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `effectsOf()` as the card is played), `costDownOnHurt` (Mind Blown), `exhaustHand: 'all' | 'skills'` with
   `perExhausted` / `hitsPerExhausted` / `blockPerExhausted` (resolved before the damage), `playTop` (Wildfire, StS's
   Havoc: `resolveCard()` plays the top card free and exhausts it), `exhume` (Fusion Flare: `pickFromPile()` lays the
-  exhaust pile over the dimmed battle, `.pile-pick`), `healDealt`, powers `rupture`, `combust` (end of your turn,
+  exhaust pile over the dimmed battle, `.pile-pick`; two taps, like TM's picker), `healDealt`, powers `rupture`, `combust` (end of your turn,
   in `endTurn()`), `brutality`, `corruption` (Blue Flare: `costOf()` makes non-attacks 0 and `resolveCard()`
   exhausts them), `cinderDamage`, `exhaustBurn`. `loseHp()` is every self-inflicted HP loss (Raging Fury triggers
   on it) and `markHurt()` counts every HP loss, the enemy's too (`battle.hurtThisTurn`, `battle.timesHurt`). A card's

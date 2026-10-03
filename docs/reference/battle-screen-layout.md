@@ -236,7 +236,7 @@ with a red cross) on the wall behind the counter, hospital monitors on ceiling a
 `js/run.js` lays your Pokémon's sprite, name and a green-phosphor HP bar over it, with what
 Rest would heal blinking on the bar's end and "+N"; resting runs the bar and numbers up in
 real time for the chime's length), and on wider walls a clock showing the real
-time and the town map. Chansey is the real sprite (`assets/pokemon/chansey-front.gif`,
+time and the town map. Chansey is the real sprite and cries as you come in (`enterNode()`; `assets/pokemon/chansey-front.gif`,
 `.center-nurse`, cropped at the counter top by `placeCenterSpots()`); on the counter
 are the games' PC (a cream CRT with a blue menu, a keyboard) and the healing machine
 (a tray of six slots and a screen), both outlined, shaded pixel maps (`pixelMap()`: one letter per pixel, the user wanted them detailed); a Poké Ball rug in front. Its `horizon: 0.6` puts

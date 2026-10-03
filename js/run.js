@@ -778,7 +778,11 @@ function enterNode(node) {
   reseed(`room:${run.biome}:${node.id}`);
   node.visited = true;
 
-  if (node.type === 'rest' || node.type === 'shop') playSound('door');
+  if (node.type === 'rest' || node.type === 'shop') {
+    playSound('door');
+    // Chansey or Kecleon greets you once the door has chimed (here, not in the room, which redraws after every purchase)
+    setTimeout(() => playCry(node.type === 'rest' ? 'chansey' : 'kecleon'), 700);
+  }
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
   if (node.type === 'shop') {

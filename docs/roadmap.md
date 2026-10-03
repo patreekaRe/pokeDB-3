@@ -9,18 +9,7 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-1. **Chansey and Kecleon greet you** (the user's idea, 2026-09-28; small, Desktop app). Their sprites stand in the
-   Center and the Mart, but neither cries. Give them a cry as you walk in (PokeAPI cries, as CLAUDE.md's starters
-   note says), and maybe the event figures in their rooms too (Slowpoke, Miltank, Marill, Persian, Cinccino).
-   **Run in: CLOUD** (cry downloads), then a look on the live site. Prompt: "Read CLAUDE.md and docs/reference/events.md,
-   then docs/roadmap.md's open item 1. Add Chansey's and Kecleon's cries and play them as you enter the Center / Mart;
-   push to main."
-2. **Keyword boxes in the pile picker** (left over from "Make the game explain itself", 2026-09-27; small, Desktop app).
-   Fusion Flare's exhaust pick and TM's pick (`pickFromPile()` in `js/battle.js`, `.pile-pick`) show cards without the
-   keyword boxes every other blown-up card has (`cardTips()` / `withTips()` in `js/ui.js`).
-   **Run in: Desktop app.** Prompt: "Read CLAUDE.md, then docs/roadmap.md's open item 2. Give the pile picker's cards
-   keyword boxes like the reward focus; check at 375x812 and 1280x800; push to main."
-3. **A loudness pass on the cries** (the user's idea, 2026-09-28; optional). Some cries are louder than others.
+1. **A loudness pass on the cries** (the user's idea, 2026-09-28; optional). Some cries are louder than others.
 
 ## Ideas, not agreed yet (ask the user before building)
 

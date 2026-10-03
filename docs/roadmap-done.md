@@ -1305,3 +1305,11 @@ next to this repo). It runs in a browser: serve this repo on port 8130 with the 
 folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8130`; add `sim` to
 `.git/info/exclude`), and drive `sim/index.html` headless with Playwright (Chromium is at
 `/opt/pw-browsers/chromium`). `sim/run-headless.mjs` in that repo does this.
+
+## Done after the split (2026-10-03)
+
+- Choice screens' HP: a bare bar and outlined numbers, no window (the user's call); "70/70" without the gap; the Hot
+  Spring greys out both pools at full HP.
+- The Safari prep's rare-spawn ✦ no longer draws over the pinned Poké Ball bar (`.map-rare.inline { z-index: auto }`).
+- Chansey and Kecleon cry as you walk into the Center / Mart (Showdown MP3s, ~-14 dB like the rest; `enterNode()`).
+- The pile picker (Fusion Flare, TM) takes two taps: the first shows the card's keyword boxes and the take button.

@@ -182,6 +182,7 @@ const CRIES = new Set([
   'slaking', 'regigigas', 'lickilicky', 'porygonz',
   'crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus', 'golurk', 'bronzong',
   'claydol', 'dusknoir', 'lanturn', 'magnezone', 'clefable', 'ditto', 'smeargle', 'eternatus', 'eternamax',
+  'chansey', 'kecleon',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1
