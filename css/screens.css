@@ -3849,7 +3849,8 @@ body.scene-peek #backdrop { display: none; }
 .sp-try.replay { color: #a8d8f8; }
 .sp-try .inf-px { --ip: 2px; margin-left: 2px; filter: none; color: inherit; }
 /* replays: unlimited, perks back, off the board; said right under the day's status, not in the rules */
-.sp-replay { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 10px 0 0; }
+.sp-replay { display: grid; justify-items: center; gap: 8px; margin: 10px 0 0; }
+.sp-pill-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; }
 .sp-pill { padding: 5px 10px 4px; border: 2px solid; border-radius: 999px; font: 0.68rem/1 var(--pixel-font); letter-spacing: 0.04em; text-transform: uppercase; }
 .sp-pill.daily { color: #2a1408; background: #f8d048; border-color: #fff0a0; }
 .sp-pill.board { color: #f8d048; background: rgba(248, 208, 72, 0.14); border-color: #f8d048; }

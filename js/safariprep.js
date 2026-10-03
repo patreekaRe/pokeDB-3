@@ -75,8 +75,6 @@ function render() {
   const info = el('div', 'sp-info');
   info.append(el('span', 'sp-kicker', `Today's starter · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
     el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : '🏆 Daily run: 0/1'));
-  if (!first) info.append(el('span', 'sp-try replay', '🔁 Replays: '));
-  if (!first) info.lastChild.append(infGlyph());
   $('sp-today').replaceChildren(mon, info);
   $('sp-start').querySelector('.pxb-i').replaceChildren(first ? 'Start' : 'Replay', first ? el('span', 'try-count', '1/1') : infGlyph());
 
@@ -96,11 +94,11 @@ function render() {
     }
     return li;
   }));
-  // the day's rules as pills, no sentences (the user's ask, 2026-10-03): the try = what it gets, perks grey when off
+  // the day's rules as pills, both rows always, no sentences (the user's asks, 2026-10-03): the try = what it gets, grey when off
   const pill = (cls, text, tip) => Object.assign(el('span', `sp-pill ${cls}`, text), { title: tip });
-  $('sp-replay').replaceChildren(...(first
-    ? [pill('daily', 'Daily run', 'Your one try today'), el('span', 'sp-eq', '='), pill('board', 'Leaderboard', 'This try goes on the leaderboard'), pill('perks off', 'Perks', 'Perks are off for this try')]
-    : [pill('replay', 'Replay', "Today's try is played: from now on it's replays"), el('span', 'sp-eq', '='), pill('board off', 'Leaderboard', "Replays don't go on the leaderboard"), pill('perks', 'Perks', 'Your perks are back')]));
+  const row = (...pills) => { const r = el('span', 'sp-pill-row'); r.append(...pills); return r; };
+  $('sp-replay').replaceChildren(row(pill('daily', 'Daily run', 'Your one try today'), el('span', 'sp-eq', '='), pill('board', 'Leaderboard', 'This try goes on the leaderboard'), pill('perks off', 'Perks', 'Perks are off for this try')),
+    row(pill('replay', 'Replay', 'After your daily run, replay as much as you like'), el('span', 'sp-eq', '='), pill('board off', 'Leaderboard', "Replays don't go on the leaderboard"), pill('perks', 'Perks', 'Your perks are back')));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {
