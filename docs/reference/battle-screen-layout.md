@@ -75,8 +75,8 @@ how-to-unlock), and the Game Corner says its own on the CRT.
 Scrollbars are chunky square pixel bars (end of `css/base.css`: `::-webkit-scrollbar`, `scrollbar-color`
 only for browsers without it, since Chrome drops the webkit rules once it's set): a bevelled grey thumb in
 a dark slot, a parchment slot inside windows.
-Every `showChoice` screen also shows your HP: `#choice-plate` in the top bar beside the Poké Ball (a small
-Pokégear window with a `.gb-hp` bar, shown only on `body[data-screen="reward-screen"]`), filled by
+Every `showChoice` screen also shows your HP: `#choice-plate` in the top bar beside the Poké Ball (since 2026-10-03
+just the `.gb-hp` bar and its outlined numbers over the scene, no window behind them: the user's call; shown only on `body[data-screen="reward-screen"]`), filled by
 `showChoiceHp()` in `js/rewards.js` from `trackHp()` (run.js hands it the run); the Center's Rest refreshes it
 as the heal runs. On ≤420px the bar drops its HP: tag, and on ≤340px the PokéCoins step aside for it.
 Every `showChoice` screen (rewards, Center, events, Mart) puts its `sub` text

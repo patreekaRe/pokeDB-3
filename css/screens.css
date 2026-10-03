@@ -825,13 +825,13 @@ body[data-screen="map-screen"] .floor-tag { display: flex; }
   display: block; width: 18px; height: 18px; background: #fff8e0;
   clip-path: polygon(0 100%, 0 67%, 33% 67%, 33% 33%, 67% 33%, 67% 0, 100% 0, 100% 100%);
 }
-/* your HP on every choice screen (showChoiceHp() in js/rewards.js): a small Pokégear window beside the Poké Ball */
+/* your HP on every choice screen (showChoiceHp() in js/rewards.js): just the bar and its numbers over the scene, no
+   window behind them (the user's call, 2026-10-03), the numbers outlined like the map's floor tag */
 .hp-plate {
   display: none; align-items: center; gap: 6px; margin: 0 auto 0 10px;
-  padding: 4px 8px 3px;
-  border: 3px solid #b8b8c8; border-radius: var(--round-sm);
-  background: var(--win-bg); color: var(--win-ink);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.35);
+  color: #fff8e0;
+  text-shadow: 2px 2px 0 #181010, -1px -1px 0 #181010, 1px -1px 0 #181010, -1px 1px 0 #181010;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
 body[data-screen="reward-screen"] .hp-plate { display: flex; }
 .hp-plate .gb-hp-fill { transition: width 0.8s steps(16), background 0.3s; }   /* an event's HP change runs down visibly (showHpChange())*/
@@ -2182,7 +2182,7 @@ body.battle-intro { pointer-events: none; }
   /* in battle the piles would crowd the row out, so the PokéCoins (which can't change mid-fight) step aside for the ₽ */
   body[data-screen="battle-screen"] .coin-pill:not(.money-pill) { display: none; }
   /* the HP plate squeezes in beside the Poké Ball: its bar's HP: tag goes, the numbers shrink */
-  .hp-plate { gap: 4px; margin-left: 4px; padding: 3px 5px 2px; }
+  .hp-plate { gap: 4px; margin-left: 4px; }
   .hp-plate .gb-hp { width: 50px; }
   .hp-plate .gb-hp-tag { display: none; }
   .hp-plate .gb-hp-track { border-radius: 6px; }
