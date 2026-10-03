@@ -332,6 +332,16 @@ function paintForest(g, w, H, hz, [lit, body, shade, dark], rand, grow = 1) {
   }
 }
 
+/** Where a Pokémon (or a clump `size` across each way) stands clear of a road or stream at that row, centred `cx`, `half`
+    wide: out to the side it's already on, unless that leaves it off the view (`lo`..`hi`) and the other side doesn't. */
+export function offTheWay(x, size, cx, half, lo, hi) {
+  const clear = half + size + 2;
+  if (Math.abs(x - cx) >= clear) return x;
+  const fits = (v) => v >= lo + size && v <= hi - size;
+  const near = x < cx ? cx - clear : cx + clear, far = x < cx ? cx + clear : cx - clear;
+  return Math.round(fits(near) || !fits(far) ? near : far);
+}
+
 /** The meadow: grass to the bottom, a stream winding down from the woods, flowers, and patches of the games' tall grass. */
 function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patches, withStream = true) {
   for (let y = top; y < H; y++) {
@@ -358,6 +368,10 @@ function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patch
     g.fillStyle = water[0]; g.fillRect(Math.round(cx - half), y, Math.round(half * 2), 1);
     if (rand() < 0.35) { g.fillStyle = water[1]; g.fillRect(Math.round(cx - half + rand() * half * 1.5), y, 2, 1); }
     stream.push([cx, y, half]);
+  }
+  for (const p of withStream ? patches : []) {   // nobody hides in the water
+    const [cx, , half] = stream[Math.min(stream.length - 1, Math.max(0, p.y - top))];
+    p.x = offTheWay(p.x, p.size + 2, cx, half + 1, ...(p.view || [0, w]));
   }
   for (let n = 0; n < w / 7; n++) {   // flower patches
     const fx = rand() * w, fy = top + 4 + rand() * (H - top - 4), colour = flowers[Math.floor(rand() * flowers.length)];
@@ -657,7 +671,8 @@ function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, r
   const spots = beats.POPS.map((ms, i) => {
     const sx = W * [0.3, 0.68, 0.42][i], depth = [0.45, 0.3, 0.7][i];
     const y = Math.round(meadowTop + (H - meadowTop) * depth);
-    return { ms, x: Math.round(sx + camAt(ms + 700) * SPEED.meadow), y, size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6 };
+    const off = camAt(ms + 700) * SPEED.meadow;
+    return { ms, x: Math.round(sx + off), y, size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6, view: [off, off + W] };
   });
   const meadow = layer(wide('meadow'), H);
   const stream = paintMeadow(meadow.getContext('2d'), meadow.width, H, meadowTop, land, rand, spots, !mini);

@@ -1313,3 +1313,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - The Safari prep's rare-spawn ✦ no longer draws over the pinned Poké Ball bar (`.map-rare.inline { z-index: auto }`).
 - Chansey and Kecleon cry as you walk into the Center / Mart (Showdown MP3s, ~-14 dB like the rest; `enterNode()`).
 - The pile picker (Fusion Flare, TM) takes two taps: the first shows the card's keyword boxes and the take button.
+- Intro films keep their Pokémon off the road: `offTheWay()` in `js/biome-intro.js` moves a spot (and its grass) beside
+  the Safari trail (and its random patches), the Clearing's stream and the Depths' worn way. The catch latch sounds like
+  a switch (lower snap over a thunk, no ring).

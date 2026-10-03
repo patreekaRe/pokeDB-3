@@ -21,7 +21,7 @@
    running from your feet to the goal.
    ============================================================ */
 
-import { ease, easeOut, span, layer, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage } from './biome-intro.js';
+import { ease, easeOut, span, layer, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage, offTheWay } from './biome-intro.js';
 import { playSound } from './audio.js';
 
 const SPEED = { far: 0.1, mid: 0.35, back: 0.6, ground: 0.85, fore: 1.3, near: 1.6 };
@@ -255,6 +255,10 @@ function paintTrail(g, H, top, vx, style, [lit, body, edge, verge], rand, marks)
       g.fillStyle = marks[0]; g.fillRect(x, y - ph, pw, Math.max(1, Math.round(ph * 0.3)));
     }
   }
+  return (y) => {   // the road's centre and half width at a row, out to its posts
+    const t = Math.min(1, Math.max(0, (y - top) / (H - top)));
+    return [vx + Math.sin(t * 4 + bend) * t * 3, 0.5 + t * t * H * 0.15 + t * 2 + 1 + t * 4 + Math.max(1, Math.round(t * 2.5))];
+  };
 }
 
 /** The Zone's ranch fence along the back of the land, gaps in the wilder areas. */
@@ -808,18 +812,23 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   const spots = b.POPS.map((ms, i) => {
     const depth = [0.4, 0.22, 0.68][i], c = camAt(ms + 700);
     const [u, v] = toLayer('ground', W * [0.27, 0.72, 0.44][i], gTop + (H * 0.93 - gTop) * depth, c);
-    return { ms, u: Math.round(u), v: Math.round(v), size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6 };
+    const view = [toLayer('ground', 0, 0, c)[0], toLayer('ground', W, 0, c)[0]];
+    return { ms, u: Math.round(u), v: Math.round(v), size: Math.round(7 + depth * 12), scale: 0.6 + depth * 0.6, view };
   });
   const gg = L.ground.getContext('2d');
   paintGround(gg, P.ground.w, P.ground.h, H, gTop, land.ground, land.blade, rand);
   art.ground?.(gg, P.ground);
   const road = [...art.trail].reverse().find(t => stage >= t.at);
-  paintTrail(gg, H, gTop, P.ground.gx, road.style, land[road.key || 'trail'], rand, road.style === 'snow' ? land.pole : road.style === 'planks' ? [land.trail[2], land.trail[3]] : land.fence);
+  const wayAt = paintTrail(gg, H, gTop, P.ground.gx, road.style, land[road.key || 'trail'], rand, road.style === 'snow' ? land.pole : road.style === 'planks' ? [land.trail[2], land.trail[3]] : land.fence);
   if (!mini) {   // the Zone's signboard at the entrance, where the film starts
     const [u] = toLayer('ground', W * (tall ? 0.16 : 0.2), 0, camAt(0));
     signboard(gg, Math.round(u), Math.round(gTop + (H - gTop) * 0.22), Math.max(3, Math.round(H * 0.022)), land);
   }
-  if (look.patches) for (let n = 0; n < 6; n++) { const s = 6 + Math.floor(rand() * 8); tallGrass(gg, Math.floor(rand() * P.ground.w), Math.round(gTop + 4 + rand() * (H - gTop) * 0.6), s * 2, Math.ceil(s * 0.6), land.tall); }
+  if (look.patches) for (let n = 0; n < 6; n++) {
+    const s = 6 + Math.floor(rand() * 8), x = Math.floor(rand() * P.ground.w), y = Math.round(gTop + 4 + rand() * (H - gTop) * 0.6);
+    tallGrass(gg, offTheWay(x + s, s, ...wayAt(y), 0, P.ground.w) - s, y, s * 2, Math.ceil(s * 0.6), land.tall);
+  }
+  for (const s of spots) s.u = offTheWay(s.u, s.size + 2, ...wayAt(s.v), ...s.view);   // nobody hides on the road
   for (const s of spots) tallGrass(gg, s.u - s.size - 2, s.v - 2 - Math.round(s.size * 0.4), s.size * 2 + 4, Math.ceil(s.size * 0.6) + Math.round(s.size * 0.4), land.tall);
   const tufts = spots.map(s => { const c = layer(s.size * 2 + 4, s.size + 2); tallGrass(c.getContext('2d'), 0, 0, s.size * 2 + 4, Math.ceil(s.size * 0.6), land.tall); return c; });
   const fg2 = L.fore.getContext('2d');

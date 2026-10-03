@@ -17,7 +17,7 @@
    and slid and grown about the Well by the camera at their own speeds.
    ============================================================ */
 
-import { ease, span, layer } from './biome-intro.js';
+import { ease, span, layer, offTheWay } from './biome-intro.js';
 import { playSound } from './audio.js';
 
 const PUSH = { sky: 0.04, far: 0.12, mid: 0.3, wall: 0.55, ground: 0.6, fore: 1.1 };
@@ -290,7 +290,8 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
 
   // ---- where the Pokémon step out: from behind crystal outcrops ahead of where the camera comes to rest ----
   const spots = beats.POPS.map((ms, i) => {
-    const depth = [0.4, 0.25, 0.62][i], x = Math.round(W * [0.3, 0.68, 0.44][i]), y = Math.round(hz + span0 * depth);
+    const depth = [0.4, 0.25, 0.62][i], y = Math.round(hz + span0 * depth), g = depth + 0.03;   // beside the way worn to the Well, not on it
+    const x = offTheWay(Math.round(W * [0.3, 0.68, 0.44][i]), Math.round(5 + depth * 12) + 3, VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16, 0, W);
     return { ms, x, y, scale: 0.6 + depth * 0.6, size: Math.round(5 + depth * 12) };
   });
   const outcrops = spots.map((s, i) => {
