@@ -104,8 +104,3 @@ export function formatTime(sec) {
 /** A board row's number. */
 export const boardValue = (id, e) => (id === 'fastest' ? formatTime(e.time) : id === 'turns' ? `${e.turns} turn${e.turns === 1 ? '' : 's'}` : `${e.caught} caught`);
 
-/** A Safari run's line to copy and share, e.g. "Safari 2026-10-03: 4 caught, floor 11 (Wetland)". */
-export function shareLine({ day, won, caught = 0, floor, floors, area, first = true }) {
-  const end = won ? `crossed all ${floors} floors!` : `floor ${floor}/${floors}${area ? ` (${area})` : ''}`;
-  return `Safari ${day}: ${caught} caught, ${end}${first ? '' : ' (replay)'}`;
-}

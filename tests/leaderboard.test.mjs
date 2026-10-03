@@ -91,10 +91,3 @@ test('firestore.rules keeps the same bounds', () => {
   for (const key of ENTRY_KEYS) assert.ok(rules.includes(`'${key}'`), key);
   assert.match(rules, /allow update, delete: if false/);
 });
-
-test('shareLine: a short line to copy, a loss with its floor and area, a replay marked', async () => {
-  const { shareLine } = await import('../js/data/leaderboard.js');
-  assert.equal(shareLine({ day: DAY, won: false, caught: 4, floor: 11, floors: 33, area: 'Wetland' }), `Safari ${DAY}: 4 caught, floor 11/33 (Wetland)`);
-  assert.equal(shareLine({ day: DAY, won: true, caught: 7, floors: 33 }), `Safari ${DAY}: 7 caught, crossed all 33 floors!`);
-  assert.match(shareLine({ day: DAY, won: true, floors: 33, first: false }), /0 caught.*\(replay\)$/);
-});

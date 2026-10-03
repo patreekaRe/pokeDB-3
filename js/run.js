@@ -43,7 +43,7 @@ import { recordWin, recordLoss, draftWin, fameNo, winScene, preloadWinScene } fr
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { postSafariResult, openLeaderboard } from './leaderboard.js';
-import { runResult, shareLine } from './data/leaderboard.js';
+import { runResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
@@ -2397,19 +2397,6 @@ function level5Rewards() {
   return lines;
 }
 
-/** The Safari result's Share button: copies its line (the phone's share sheet if the clipboard is blocked). */
-async function copyShare(text) {
-  const btn = $('result-share');
-  try {
-    await navigator.clipboard.writeText(text);
-    btn.textContent = '✅ Copied!';
-  } catch (err) {
-    try { await navigator.share({ text }); } catch (e) { btn.textContent = '❌ Copy failed'; }
-  }
-  playSound('confirm');
-  setTimeout(() => { btn.textContent = '📋 Share'; }, 1600);
-}
-
 /** Where the run stands, for a lost run's line in the Record Book: the biome, the place in it and the floor. */
 function whereNow() {
   const here = run.current && run.map.byId[run.current];
@@ -2502,15 +2489,6 @@ function endRun(won, atLastBoss = false, loss = null) {
   list.hidden = lines.length === 0;
   $('result-again').textContent = safari ? 'Try again' : 'New run';
   $('result-board').hidden = !safari;
-  $('result-share').hidden = !safari;
-  if (safari) {
-    const per = run.map.floors.length + 1, where = whereNow();   // an area's floors and its boss
-    const share = shareLine({ day: run.safari.day, won, caught: run.tally.caught || 0, floor: run.biome * per + where.floor,
-      floors: per * run.safari.areas.length, area: safariArea().name, first: run.safari.first });
-    list.append(el('li', '', `📋 ${share}`));
-    list.hidden = false;
-    $('result-share').onclick = () => copyShare(share);
-  }
   // Mewtwo's unlock comes last, after the pedestal, so the run ends on the reveal
   fresh.sort((a, b) => (a.id === 'mewtwo') - (b.id === 'mewtwo'));
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));

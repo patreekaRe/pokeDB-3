@@ -290,10 +290,6 @@ phase 1 run.
 
 ## The leaderboard (phase 5a, 2026-10-02)
 
-- **Share** (2026-10-03): the result window's 📋 Share button (`#result-share`, Safari runs only) copies `shareLine()`
-  (`js/data/leaderboard.js`, pinned by `tests/leaderboard.test.mjs`): "Safari <day>: N caught, floor F/33 (Area)", or
-  "crossed all 33 floors!", "(replay)" on a replay; the line is also the window's last row. No clipboard: the share sheet.
-
 - **What posts**: only the day's first try (`run.safari.first`, never a `?event=` peek), once, when it ends, won or lost
   (`endRun()` in `js/run.js` -> `postSafariResult()` in `js/leaderboard.js`). Abandoning it posts nothing. The result is
   kept on this device (`pokedb.safari.post`) until it's posted, so signed out, offline or with no name yet it goes up later:

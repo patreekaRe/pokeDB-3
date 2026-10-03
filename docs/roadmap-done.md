@@ -1342,6 +1342,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `js/storage.js`, `.new-badge`) on a card or relic not yet in the Index (`save.seen`), on card rewards, relic drops and
   the Mart's shelves (Safari-only cards never get it). Lost runs keep a short line (`recordLoss()` in `js/halloffame.js`,
   `save.losses`, newest `LOSS_KEEP` 100; never the Safari's or a peek's): who fell, biome / place / floor, to what (the
-  battle's `onEnd` passes `foe`), shown greyed between the Record Book's wins by `after` (the win count then). A Safari
-  result carries a 📋 Share button and line (`shareLine()` in `js/data/leaderboard.js`, "Safari 2026-10-03: 4 caught,
-  floor 11/33 (Wetland)"; clipboard, else the share sheet). (d) "holding a boss shows its next 2 moves": the user said skip.
+  battle's `onEnd` passes `foe`), shown greyed between the Record Book's wins by `after` (the win count then). (c), a Safari
+  result's 📋 Share button and line, was built, then removed the same day (the user's call). (d) "holding a boss shows its next 2 moves": the user said skip.
