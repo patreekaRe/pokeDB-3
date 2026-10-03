@@ -68,7 +68,7 @@ const freshSave = () => ({
     maxLevelWinByType: { fire: -1, grass: -1, water: -1 },   // highest Trainer Level won with each type, -1 = never
     healthyBossWin: false,    // beat a boss with over half your HP left
     lightRestWin: false,      // won a run resting at most 3 times (at most 1 before, which still counts)
-    smallDeckWin: false,      // won a run on Level 3+ with 15 cards or fewer
+    noForgetWin: false,       // won a run on Level 3+ without forgetting a move (Mart, Center, Cleanse Tag, Move Deleter)
     noRestWin: false,         // won a run without resting at a Pokémon Center
     maxTide: 0,               // the most Tide held at once in a fight
     bossKills: {},            // { 1: 3, 2: 1 }: times each biome's boss was beaten

@@ -2376,7 +2376,7 @@ function endRun(won, atLastBoss = false) {
       d.stats.winsBy[run.starter.id] = (d.stats.winsBy[run.starter.id] || 0) + 1;
       if (run.restCount <= 3) d.stats.lightRestWin = true;
       if (run.restCount === 0) d.stats.noRestWin = true;
-      if (!mewtwoRun && run.deck.length <= 15 && run.level >= 3) d.stats.smallDeckWin = true;   // Level 3+ since 2026-09-28
+      if (!mewtwoRun && !run.tally.forgotten && run.level >= 3) d.stats.noForgetWin = true;   // was 15 cards or fewer until 2026-10-03
       if (!mewtwoRun) {
         const type = run.starter.type;
         d.stats.maxLevelWinByType[type] = Math.max(d.stats.maxLevelWinByType[type], run.level);

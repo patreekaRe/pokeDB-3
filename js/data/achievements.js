@@ -108,8 +108,8 @@ export const ACHIEVEMENTS = [
   },
   {
     starter: 'victini',
-    text: 'Win a run on Trainer Level 3 or higher with a deck of 15 cards or fewer',
-    test: (s) => s.smallDeckWin,
+    text: 'Win a run on Trainer Level 3 or higher without forgetting a move',
+    test: (s) => s.noForgetWin,
   },
   {
     starter: 'heatran',
