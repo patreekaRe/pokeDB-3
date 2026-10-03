@@ -733,13 +733,18 @@ function catchShake(ac) {
   return normalize(buffer, 0.5);
 }
 
-/** The ball's button latching shut on a catch: a sharp double click, the second ringing. */
+/** The ball's button latching shut on a catch, like a light switch flipping: a dull snap with a hollow body, no ring. */
 function catchClick(ac) {
-  const rate = ac.sampleRate, length = Math.round(rate * 0.12);
+  const rate = ac.sampleRate, length = Math.round(rate * 0.09);
   const buffer = ac.createBuffer(1, length, rate);
   const out = buffer.getChannelData(0);
-  click(out, rate, 0, 3200, 0.008, 0.9);
-  click(out, rate, 0.028, 4200, 0.03, 0.7);
+  for (let i = 0; i < length; i++) {   // the casing's thunk
+    const t = i / rate;
+    out[i] += Math.sin(2 * Math.PI * (210 - 900 * t) * t) * Math.exp(-t / 0.012) * 0.8;
+  }
+  click(out, rate, 0, 1300, 0.004, 1);      // the lever tipping over
+  click(out, rate, 0.006, 650, 0.006, 0.8);  // and seating
+  click(out, rate, 0.006, 2000, 0.002, 0.4);
   return normalize(buffer, 0.5);
 }
 
