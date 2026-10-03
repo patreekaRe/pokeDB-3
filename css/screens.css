@@ -3849,8 +3849,15 @@ body.scene-peek #backdrop { display: none; }
 .sp-try.replay { color: #a8d8f8; }
 .sp-try .inf-px { --ip: 2px; margin-left: 2px; filter: none; color: inherit; }
 /* replays: unlimited, perks back, off the board; said right under the day's status, not in the rules */
-.sp-replay { display: grid; gap: 4px; margin: 10px 0 0; padding: 8px 12px; border: 2px solid #f8d048; border-radius: 10px; background: rgba(248, 208, 72, 0.12); font-size: 0.72rem; line-height: 1.5; color: #fff8e8; }
-.sp-replay strong { font-size: 0.82rem; font-weight: 400; color: #f8d048; }
+.sp-replay { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 10px 0 0; }
+.sp-pill { padding: 5px 10px 4px; border: 2px solid; border-radius: 999px; font: 0.68rem/1 var(--pixel-font); letter-spacing: 0.04em; text-transform: uppercase; }
+.sp-pill.daily { color: #2a1408; background: #f8d048; border-color: #fff0a0; }
+.sp-pill.board { color: #f8d048; background: rgba(248, 208, 72, 0.14); border-color: #f8d048; }
+.sp-pill.replay { color: #0c2034; background: #a8d8f8; border-color: #e0f4ff; }
+.sp-pill.inf { color: #a8d8f8; background: rgba(168, 216, 248, 0.14); border-color: #a8d8f8; }
+.sp-pill.perks { color: #98f0a0; background: rgba(152, 240, 160, 0.14); border-color: #98f0a0; }
+.sp-pill.perks.off { color: #6a6878; background: rgba(255, 255, 255, 0.04); border-color: #4a4858; }
+.sp-eq { font: 0.9rem/1 var(--pixel-font); color: #c8c0a8; }
 .dialog .sp-rules li.with-card { grid-template-columns: 1.5em 1fr auto; }
 .sp-card { width: 62px; cursor: zoom-in; flex: none; }
 .sp-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }

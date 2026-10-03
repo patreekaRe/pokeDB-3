@@ -96,10 +96,11 @@ function render() {
     }
     return li;
   }));
-  // one short fact a line (the user's ask, 2026-10-03)
-  const lines = first ? ['Your first try today goes on the leaderboard.', 'Your perks are off for it.', 'After that, play again as much as you like.']
-    : ['Play again as much as you like.', "Replays don't go on the leaderboard.", 'Your perks are back.', 'Catches still go in your Pokédex.'];
-  $('sp-replay').replaceChildren(el('strong', '', first ? '1/1 try left today' : '0/1: your score is in'), ...lines.map(line => el('span', '', line)));
+  // the day's rules as pills, no sentences (the user's ask, 2026-10-03): the try = what it gets, perks grey when off
+  const pill = (cls, text, tip) => Object.assign(el('span', `sp-pill ${cls}`, text), { title: tip });
+  $('sp-replay').replaceChildren(...(first
+    ? [pill('daily', 'Daily run', 'Your one try today'), el('span', 'sp-eq', '='), pill('board', 'Leaderboard', 'This try goes on the leaderboard'), pill('perks off', 'Perks', 'Perks are off for this try')]
+    : [pill('replay', 'Replay', "Today's try is played: from now on it's replays"), el('span', 'sp-eq', '='), pill('inf', 'Infinite', 'Play again as much as you like, off the leaderboard'), pill('perks', 'Perks', 'Your perks are back')]));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {
