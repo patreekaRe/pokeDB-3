@@ -1331,3 +1331,4 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   dusk; the Wastes' ash with stray embers; the Depths' crystal dust; Safari snow / sand / drizzle / leaves). It thins out
   as a boss storm rolls in; bosses have none. The piles sit on plates in the biome's colour; walked map routes carry paw
   prints (`footprints()` in `js/map.js`); a Pokédex entry (main and Safari) cries and hops, then idles with a bounce.
+- Item found (2026-10-03): tapping the item before Put in Bag says what it does first, then asks (it only asked).

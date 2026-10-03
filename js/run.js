@@ -1206,7 +1206,7 @@ function offerItem(item, next, { opened = false } = {}) {
   }
   thing.addEventListener('click', () => {
     if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
-    if (!full && go.hidden) { thing.classList.add('chosen'); go.hidden = false; return sayLines([`Put the ${item.name} in your Bag?`]); }
+    if (!full && go.hidden) { thing.classList.add('chosen'); go.hidden = false; return sayLines([`${item.name}: ${item.text}`, `Put the ${item.name} in your Bag?`]); }
     take();
   });
   go.addEventListener('click', take);
