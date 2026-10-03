@@ -15,8 +15,6 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
    (`LOOP_POINTS`), drop its fallback. Wired already: `map4`, `eternatus`, `eternamax`. New tracks to wire if supplied:
    a Safari theme, a credits song, the Sealed Gate scene, the Mart and the Game Corner. Real recordings can also replace
    synths (block, stick, gate-hum / gate-crack / gate-shatter, fireworks).
-6. **A loudness pass on the cries** (the user's idea, 2026-09-28; last, after the polish batch). Run in: CLOUD.
-   Some cries in `assets/audio/cries/` are louder than others: measure every file's loudness and even them out.
 
 ## Ideas, not agreed yet (ask the user before building)
 
@@ -49,7 +47,7 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
 - Each Pokémon appears in exactly one biome; none are starter lines or used elsewhere (Chansey, Kecleon...).
 - A new Pokémon needs its Gen 5 animated front GIF (`assets/pokemon/<id>-front.gif`, PokeAPI black-white animated), its
   cry (`assets/audio/cries/` + `CRIES` in `js/audio.js`; PokeAPI's `cries/pokemon/latest/<dex>.ogg` as mono 64 kbps MP3
-  at ~-14 dB mean), a `js/data/sprite-fit.js` entry and its `ENEMY_DEFS` entry. A Safari Pokémon follows
+  at -13 LUFS, CLAUDE.md), a `js/data/sprite-fit.js` entry and its `ENEMY_DEFS` entry. A Safari Pokémon follows
   `docs/reference/safari.md` instead.
 - Removing one: also update Team Rocket's `team` lists in `js/data/events.js`, and bump `RUN_SAVE_VERSION` in
   `js/run.js` (saved maps hold `enemyId`s).

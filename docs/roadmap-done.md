@@ -1344,3 +1344,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `save.losses`, newest `LOSS_KEEP` 100; never the Safari's or a peek's): who fell, biome / place / floor, to what (the
   battle's `onEnd` passes `foe`), shown greyed between the Record Book's wins by `after` (the win count then). (c), a Safari
   result's 📋 Share button and line, was built, then removed the same day (the user's call). (d) "holding a boss shows its next 2 moves": the user said skip.
+- Cry loudness pass (polish batch 6, 2026-10-03): every cry measured with ffmpeg's `ebur128` (integrated LUFS, each
+  padded with 0.4 s of silence so cries under 0.4 s, like Sentret's, measure at all). They ran -17.7 (Oddish) to -9.8
+  (Chimchar) LUFS, mean -13.2. The 71 more than 0.8 LU off -13 were re-encoded from their originals (gain, then a -1 dBFS
+  `alimiter`, mono 64 kbps at their own sample rate; the gain corrected from a re-measure); now -14.3 (Tepig, limiter-bound)
+  to -12.2, mean -13.1, so `CRY_VOLUME` is unchanged. New cries: aim for -13 LUFS.

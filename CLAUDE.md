@@ -80,7 +80,8 @@ live site.
   needs front/back GIFs and their `shiny/` pair for every stage (PokeAPI black-white animated), `SPRITE_FIT` lines for
   the normal ones (a PIL median bbox over all frames matches the ImageDecoder numbers exactly), and a cry in `CRIES`
   (play.pokemonshowdown.com is blocked in cloud sessions: PokeAPI's `cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3
-  at ~-14 dB mean, see the roadmap's step 3).
+  at -13 LUFS integrated (ffmpeg `ebur128`, padded with 0.4 s of silence for short cries; see the archive's
+  "Cry loudness pass").
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a `-shiny` id (only read for its cry, which drops the
   suffix). They never change colours: they power up, Super Saiyan style (the user's calls, 2026-09-28), in their normal
