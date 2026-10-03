@@ -1902,8 +1902,9 @@ const EVENT_CHOICES = {
   'hot-spring'(event) {
     const loss = perBiome(event.soakMaxHpLoss);
     const dip = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.dipHeal));
+    const full = run.hp >= run.maxHp;   // at full HP a soak would only cost max HP, so neither pool is offered
     return { sub: [event.text, `Soak in the big pool for a full heal (max HP -${loss}), or take a quick dip.`], options: [
-      spotOption('Soak: full HP', `Fully heal to ${run.maxHp - loss}/${run.maxHp - loss} HP, but lose ${loss} max HP.`, async () => {
+      spotOption('Soak: full HP', full ? 'You\'re already at full HP.' : `Fully heal to ${run.maxHp - loss}/${run.maxHp - loss} HP, but lose ${loss} max HP.`, async () => {
         if (!await playOut('soak')) return;
         run.maxHp -= loss;
         run.hp = run.maxHp;
@@ -1911,7 +1912,7 @@ const EVENT_CHOICES = {
         await showHpChange();
         tell(`Fully healed. Max HP -${loss}.`);
         showMap();
-      }),
+      }, full),
       spotOption(dip ? `Dip +${dip} HP` : 'Dip', dip ? `Heal ${dip} HP, to ${run.hp + dip}/${run.maxHp}.` : 'You\'re already at full HP.', async () => {
         if (!await playOut('dip')) return;
         run.hp += dip;
@@ -1919,7 +1920,7 @@ const EVENT_CHOICES = {
         await showHpChange();
         tell(`Healed ${dip} HP.`);
         showMap();
-      }),
+      }, full),
     ] };
   },
 

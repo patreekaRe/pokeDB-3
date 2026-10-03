@@ -331,7 +331,7 @@ export function setHpBar(prefix, hp, max) {
   bar.setAttribute('aria-valuemax', String(max));
   bar.setAttribute('aria-valuenow', String(Math.max(0, hp)));
   $(`${prefix}-hp-fill`).style.width = `${ratio * 100}%`;
-  $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/ ${max}`;
+  $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/${max}`;
 }
 
 /** Show the run's Pokédollars in the top bar (it's only visible on the run screens). */
