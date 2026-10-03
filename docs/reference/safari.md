@@ -17,7 +17,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 ## Catching (phase 2)
 
 - **The Throw button on phones** (≤720px): PP | Throw | End Turn, Throw centred on the screen (`.battle-controls:has(.throw-btn:not([hidden]))`
-  makes it a 3-column grid and `.turn-side` `display: contents`, the user's call 2026-10-02).
+  makes it a grid of three equal columns, each capsule stretched to fill its own, and `.turn-side` `display: contents`; the user's calls
+  2026-10-02 and 2026-10-03, when End Turn was squeezed and its label sat low). Normal fights keep PP left, End Turn right.
 - **When**: a Safari run's wild rooms only (`battle.catchable`: `run.safari` and kind `fight`; Alphas and bosses can't be
   caught), every turn, at any HP (like the games; until 2026-10-02 only once the HP was red, below 25%). The **Throw**
   button (`#throw-btn`, green, beside End Turn; on phones on the PP row) shows all fight.
