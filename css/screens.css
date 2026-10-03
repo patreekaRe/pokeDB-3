@@ -3657,7 +3657,7 @@ body.has-scene #scene-bg { display: block; }
 .dex-ach-icon { width: 48px; text-align: center; font-size: 1.8rem; flex: none; }
 .dex-ach:not(.done) .dex-ach-icon { filter: grayscale(1) opacity(0.5); }
 .ach-text .perk-where { font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
-.perk-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 8px; margin-top: 4px; }
+.perk-line { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 4px; }
 .perk-gift { white-space: nowrap; }
 .perk-gift {
   display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px 2px 4px;
