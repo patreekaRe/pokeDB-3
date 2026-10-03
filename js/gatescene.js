@@ -1,5 +1,5 @@
 /*
- * The Sealed Gate's scenes (docs/roadmap.md, "The Sealed Gate", part B), after the descent (js/descent.js) and before
+ * The Sealed Gate's scenes (docs/roadmap-done.md, "The Sealed Gate", part B), after the descent (js/descent.js) and before
  * the run's win scene and result window. Deep in a crystal cavern the gate looms, its HP in a battle nameplate; your Pokémon (from behind, like battle)
  * attacks it with its type's move (Ember / Flamethrower / Blast Burn by how the run went), the hit flashes and shakes
  * it, the cracks spread across it as its HP runs down, and from half HP Mewtwo's silhouette shows behind the door.

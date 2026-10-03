@@ -1,5 +1,5 @@
 /*
- * The Sealed Gate's art (docs/roadmap.md, "The Sealed Gate", part B): a door of dark crystal in a carved obsidian frame
+ * The Sealed Gate's art (docs/roadmap-done.md, "The Sealed Gate", part B): a door of dark crystal in a carved obsidian frame
  * trimmed with gold, its runes glowing, between two spires of ice-blue crystal, with shards floating beside it. It's
  * chained shut, and Eternatus's seal turns on it as a magic circle. It shows its damage as it falls: cracks spread out
  * from the seal and leak light, the crystal cracks too, the frame's runes go out from the bottom up, a chain snaps, chunks

@@ -1,4 +1,4 @@
-// The Sealed Gate (docs/roadmap.md): Mewtwo is trapped behind it, and every won run wears it down. Numbers agreed with the
+// The Sealed Gate (docs/roadmap-done.md): Mewtwo is trapped behind it, and every won run wears it down. Numbers agreed with the
 // user, 2026-10-02: ~11 wins climbing the Levels once, ~13-15 at mixed Levels, ~9 mostly on Level 5.
 export const GATE_HP = 1000;
 export const GATE_HIT = [40, 50, 60, 75, 90, 120];   // a won run's damage, by Trainer Level

@@ -6,8 +6,8 @@ three places:
 1. **`CLAUDE.md`**: the architecture, every system, the conventions and how to test. It's long because it holds the
    user's calls about the game. `opencode.json` loads it on every session, so treat it as your own instructions. Where
    it says "Claude", read "you".
-2. **`docs/roadmap.md`**: the agreed plan, what's done and what's next. Read it before any roster, balance, Pokédex or
-   v1.0 task, and update it as steps land.
+2. **`docs/roadmap.md`**: only what's still open, plus the rules for adding Pokémon. Read it before any task. Finished
+   work (and "the roadmap's step N" in older notes) is in `docs/roadmap-done.md`; move an entry there when it lands.
 3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.
 
 ## Where we left off (2026-10-02)
@@ -31,6 +31,8 @@ three places:
   icon now takes 3 wins (`save.kenWins`); the first win's window is the relic's achievement and says so, the Challenge sign
   counts "Beaten n/3". Safari polish (Small asks 2): the rare spawn's ✦ sits centred over its room, and the prep window's
   balls are a big swipeable row. Checked at 375x812 and 768x1024.
+- 2026-10-03: the roadmap was split: `docs/roadmap.md` now lists only open work; the old 1300-line file is
+  `docs/roadmap-done.md` (it listed done things as open, e.g. the HP plate on event screens and the pixel pills).
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **v1.0, Mewtwo and the fourth biome** (done 2026-10-03, part D below) (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
@@ -136,12 +138,7 @@ three places:
   (no change); Eternatus +8 damage / +30% HP (Mewtwo strong / human 93 / 93 -> 86 / 83). Checked headless at 390x844
   through `?bossfight=depths&hp=0.01`. **v1.0 is complete.** The user still has to see the ending on the live site.
 - Waiting on the user:
-  - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
-  - Publishing `firestore.rules` in the Firebase console (Firestore > Rules), which switches the Safari leaderboard on.
-  - `assets/audio/hall-of-fame.mp3`, which the user will supply. Until then `victory` plays.
-  - Choosing whether the reward, battle and Mart capsules (`.ds-btn`) become pixel pills (`.pxb`).
-  - `assets/audio/map4.mp3` for the Crystal Depths (until then `map4` plays `map3.mp3`, `TRACKS` in `js/audio.js`).
-  - Playtesting a Mewtwo run to the Crystal Depths (Mewtwo must be unlocked; the `?levels` trick doesn't unlock it).
+  - Now kept in one place: `docs/roadmap.md`'s "Waiting on the user" (since 2026-10-03).
 - Parked (don't start unprompted): Gen 6-9 starters (the sprites staged in `assets/pokemon/_incoming/` have no Grass
   line), Mewtwo's shiny, and catching in the main game (dropped; the Safari Zone has its own).
 - 2026-10-02: **Safari Pokédex completion rewards** (cloud, the user's design): a page with every Pokémon caught pays 300

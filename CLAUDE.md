@@ -23,9 +23,11 @@ Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep a
 
 ## Roadmap
 
-The agreed plan (task order, the new 54-Pokémon roster per biome, rules for adding
-enemies, Pokédex/catching ideas) is in `docs/roadmap.md`. Read it before starting a
-roster, balance or Pokédex task, and keep it up to date as steps land.
+`docs/roadmap.md` is short: only what's still open (ready to build, ideas, parked, waiting on the user) and the rules
+for adding Pokémon. Read it before starting a task. Everything finished is in `docs/roadmap-done.md` (the archive, split
+off 2026-10-03), with its decisions, bot numbers and old prompts; "the roadmap's step N" / "Small asks N" in these notes
+means that file. When a task lands, move its entry from the roadmap to the archive in a line or two, so the roadmap never
+again lists finished work as open.
 
 ## Running it locally
 

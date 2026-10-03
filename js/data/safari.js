@@ -1,5 +1,5 @@
 /* ============================================================
-   safari.js  -  the Safari Zone daily run (docs/roadmap.md, "Post-v1.0:
+   safari.js  -  the Safari Zone daily run (docs/roadmap-done.md, "Post-v1.0:
    the Safari Zone daily run"): the same run for everyone on a UTC date.
 
    The date is the seed. It picks 3 of the 6 areas as the run's three

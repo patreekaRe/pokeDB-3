@@ -1,5 +1,5 @@
 /*
- * The descent to the Sealed Gate (docs/roadmap.md, "Small asks" item 4): after the last boss falls (or your Pokémon
+ * The descent to the Sealed Gate (docs/roadmap-done.md, "Small asks" item 4): after the last boss falls (or your Pokémon
  * faints before it), the arena shakes, a crack opens under your Pokémon with violet light pouring out of it, the floor
  * gives way, and it drops down a crystal shaft towards the light below, where js/gatescene.js takes over.
  *
