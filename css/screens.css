@@ -903,6 +903,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .battle-controls:has(.throw-btn:not([hidden])) :is(.orb-wrap, .throw-btn, #end-turn-btn) { justify-self: stretch; }
   .battle-controls:has(.throw-btn:not([hidden])) :is(.energy-orb, .throw-btn, #end-turn-btn) { width: 100%; padding: 5px 6px; }
   .battle-controls:has(.throw-btn:not([hidden])) .pp-pill { min-width: 0; height: 2.2rem; padding: 7px 8px 6px; flex-wrap: nowrap; }
+  .battle-controls:has(.throw-btn:not([hidden])) #end-turn-btn .pp-pill { align-items: center; }   /* nowrap drops align-content's centring, and baseline sat the label high */
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }
