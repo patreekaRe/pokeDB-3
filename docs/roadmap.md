@@ -910,6 +910,27 @@ Split into sessions by where they run:
    **Run in: CLOUD.** Prompt: "Read CLAUDE.md and docs/reference/safari.md, then docs/roadmap.md's 'Small asks' item 3.
    Build it, keep `node --test` green, run a small Safari bot check on catches per run before/after, push to main.
    Attach pokeDB-sim too."
+4. **The descent to the Sealed Gate** (the user's ask, 2026-10-02; Desktop app or cloud, visual). Today a won run cuts
+   from the victory pedestal straight into the crystal cavern. New order (the user's pick): last boss falls → a descent
+   scene (the arena shakes, a crack opens with violet light under it, your Pokémon drops down a crystal shaft, a small
+   take on `js/depths-intro.js`, with a few lines) → the gate strike (`gateScene()`) → **then** the win scene /
+   Hall of Fame with its song → result window. The first time (`save.gateSeen`) the descent carries the chamber's lore
+   lines (moved out of the gate scene so they don't come twice); later wins get 1-2 short lines; a loss at the last boss
+   gets the same descent with a darker line ("something drags you down..."), then the strike and the result, no pedestal.
+   On the breaking blow, Mewtwo's unlock window waits until after the pedestal so the run ends on the reveal. Build the
+   descent once (say `js/descent.js`), its lines picked per case, so item 5 reuses it. Mewtwo's own runs skip the gate as now.
+   **Run in: CLOUD** (or the Desktop app to watch it live). Prompt: "Read CLAUDE.md, then docs/roadmap.md's 'The Sealed
+   Gate' and 'Small asks' item 4. Build the descent scene and reorder `endRun()` (descent → gate strike → win scene →
+   result, Mewtwo's unlock last). Check `?strike=90`, `?strike=90&first`, `?strike=90&kind=loss` and `?strike=400&gate=50`
+   on a phone-sized pane, update CLAUDE.md's Sealed Gate notes and this item, push to main."
+5. **Mewtwo's fall into the Crystal Depths** (the user's ask, 2026-10-02; needs item 4's descent). After Mewtwo beats
+   the Biome 3 boss: rewards (card, relic) as now → the descent scene with Mewtwo's lines (it senses the call from below,
+   the crystals' energy restores it, which is the full heal `depthsGate()` gives, told in the story instead of a bare
+   window) → the Depths intro film → the Depths map. No pedestal or victory song until Eternamax falls.
+   **Run in: CLOUD** (or the Desktop app). Prompt: "Read CLAUDE.md, then docs/roadmap.md's 'Small asks' items 4-5.
+   Using item 4's descent scene, replace `depthsGate()`'s heal window in `js/run.js` with Mewtwo's descent into the
+   Crystal Depths, after the Biome 3 boss's rewards. Check it with `?mewtwo` (and add a `?descent=mewtwo` peek if
+   there's no quick way to reach it), update CLAUDE.md's Mewtwo notes and this item, push to main."
 
 ## The Sealed Gate: why every run matters (the user's idea, agreed 2026-10-02)
 
