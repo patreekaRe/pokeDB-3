@@ -6,21 +6,32 @@
 
 import { PATCHES, IN_THE_GAME } from './data/patchnotes.js';
 import { $, el, openDialog } from './ui.js';
+import { getSave } from './storage.js';
 
 const [latest] = PATCHES;
 const SEEN_KEY = 'pokedb.patchSeen';   // a per-device nicety (the tag stops beckoning), so not in the save or the cloud
 
+const seenNow = () => { try { return localStorage.getItem(SEEN_KEY) === latest.version; } catch { return true; } };
+
 function markSeen() {
   try { localStorage.setItem(SEEN_KEY, latest.version); } catch {}
   $('title-version').classList.add('seen');
+  $('title-version').textContent = `v${latest.version}`;
 }
 
 export function initPatchNotes() {
-  $('title-version').textContent = `v${latest.version}`;
+  const seen = seenNow();
+  $('title-version').textContent = seen ? `v${latest.version}` : `v${latest.version} NEW!`;
   $('title-version').addEventListener('click', openPatchNotes);
-  let seen = null;
-  try { seen = localStorage.getItem(SEEN_KEY); } catch {}
-  $('title-version').classList.toggle('seen', seen === latest.version);
+  $('title-version').classList.toggle('seen', seen);
+}
+
+/** Once per device, the first time the title menu comes up after a new version (the user's ask, 2026-10-03: players
+    should know what changed), its notes open by themselves. Only for someone who has played before, and never on a
+    playtest link, whose own scene comes after PRESS START. */
+export function newsOnMenu() {
+  if (seenNow() || !getSave().stats.runsStarted || location.search) return;
+  setTimeout(() => { if (!seenNow() && !document.querySelector('dialog[open]')) openPatchNotes(); }, 700);
 }
 
 const label = (text) => el('h3', 'records-label', text);
@@ -54,6 +65,7 @@ export function openPatchNotes() {
     label('In the game'), contents(),
     ...(PATCHES.length > 1 ? [label('Earlier patches'), ...PATCHES.slice(1).map(patch)] : []),
   );
+  $('patch-dialog').querySelector('h2').textContent = seenNow() ? '📖 Patch notes' : `✨ New in v${latest.version}!`;
   openDialog('patch-dialog');
   markSeen();
   $('patch-body').scrollTop = 0;

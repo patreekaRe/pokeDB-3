@@ -36,7 +36,8 @@ export const PATCHES = [
       ['🌿', 'The Safari Zone', [
         'Complete the Pokédex to open a daily run, the same for everyone: today\'s starter through three Safari areas.',
         'Throw Poké Balls at wild Pokémon in any turn. 514 Pokémon to catch, each with its own signature move.',
-        'The first try of the day counts for the leaderboard. Fill the Safari Pokédex to unlock Rayquaza.',
+        'The first try of the day counts for the leaderboard; after it, the Safari window and the map say when you\'re on a replay.',
+        'Fill the Safari Pokédex to unlock Rayquaza.',
       ]],
       ['🥋', 'Chad Master Kenmatta', [
         'Challenge the Move Tutor himself to a boss fight in his dojo, for his Mata-Mindset relic.',

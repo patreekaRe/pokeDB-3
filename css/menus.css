@@ -147,7 +147,10 @@
 }
 /* until this version's notes are opened: a slight bob, so it looks tappable */
 .title-version.seen { animation: versionIn 0.4s steps(4) both 1.2s; }
-@keyframes versionBob { to { translate: 0 -2px; } }
+/* a new version not yet read: a gold "NEW!" sticker that bobs higher, so returning players spot it */
+.title-version:not(.seen) { background: var(--gold); }
+.title-version:not(.seen):hover, .title-version:not(.seen):focus-visible { background: #fff8e0; }
+@keyframes versionBob { to { translate: 0 -4px; } }
 .title-version:hover, .title-version:focus-visible { background: var(--gold); outline: none; }
 .title-version:active { translate: 0 2px; box-shadow: 0 1px 0 #0d1a44; }
 .title-screen:not(.menu) .title-version { display: none; }
