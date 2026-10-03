@@ -347,7 +347,20 @@ export function peekFinalBoss(starter, bossHp = 1) {
 }
 let finalPeekHp = 1;
 
+/** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
+    fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
+export function peekDescent(starter) {
+  peeking = true;
+  beginRun(starter, 0, ':descent');
+}
+
 function peekRoom(id) {
+  if (id === ':descent') {
+    run.biome = finalBiome(run.starter) - 1;
+    run.stage = run.starter.line.length - 1;
+    run.hp = Math.ceil(run.maxHp / 2);
+    return fallIn();
+  }
   if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
   if (id === ':final') {
     run.biome = finalBiome(run.starter);
@@ -373,7 +386,7 @@ function peekRoom(id) {
 
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   reseed(`biome:${run.biome}`);
-  if (!isSafari()) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
+  if (!isSafari() && !peeking) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.mods = runMods(run.starter, run.level, run.biome);
   run.map = generateMap({ floors: runFloors(run.starter, run.biome) });
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
@@ -886,9 +899,9 @@ function afterFight(node, result) {
     });
     if (run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!
     unlock();
-    // Mewtwo is fully powered up after biome 2, so its third boss opens the gate to the Crystal Depths instead
+    // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
     if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
-    else steps.push(next => depthsGate(next), next => unlockWindow(unlocked, next));
+    else steps.push(next => unlockWindow(unlocked, next));
     steps.push(next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
   } else steps.unshift(next => unlockWindow(unlocked, next));
 
@@ -905,29 +918,30 @@ function afterFight(node, result) {
 
   runSteps(steps, () => {
     collect();
-    if (node.type === 'boss') { run.biome += 1; startBiome(); }
-    else showMap();
+    if (node.type !== 'boss') showMap();
+    else if (run.biome + 1 === finalBiome(run.starter)) fallIn();
+    else { run.biome += 1; startBiome(); }
   });
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;
 
-/** After the biome 3 boss, a Mewtwo run carries on into the Crystal Depths (v1.0's secret biome), healed in full like
-    Slay the Spire between acts, since it has no form left to evolve into. */
-function depthsGate(next) {
-  const healed = run.maxHp - run.hp;
+/** After the biome 3 boss and its rewards, Mewtwo falls into the Crystal Depths (v1.0's secret biome, roadmap Small asks
+    5): item 4's descent with its own lines, healed in full by the crystals (Slay the Spire's between-acts heal, since it
+    has no form left to evolve into), then the Depths' intro film over their map. */
+async function fallIn() {
+  const name = stageName(run.starter, run.stage), healed = run.hp < run.maxHp;
+  const close = await descent({ starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), lines: {
+    arena: ['The crater trembles beneath the arena...', `${name} senses something calling from far below.`],
+    fall: [`${name} dives into the dark towards the call!`, 'Crystals line the shaft, glowing with a strange energy...',
+      healed ? `The crystals' energy floods into ${name}: HP fully restored!` : `The crystals' energy surges through ${name}!`],
+  } });
   run.hp = run.maxHp;
-  setHpBar('run', run.hp, run.maxHp);
   if (healed) playSound('heal-hp');
-  showChoice({
-    title: 'The Crystal Depths',
-    sub: [`${stageName(run.starter, run.stage)} senses a power far below the crater...`,
-      `A way down opens into the Crystal Depths.${healed ? ` ${stageName(run.starter, run.stage)} gathers its strength: HP fully restored!` : ''}`],
-    options: [],
-    skipLabel: 'Go down',
-    onSkip: next,
-    coins: run.pendingCoins,
-  });
+  setHpBar('run', run.hp, run.maxHp);
+  run.biome += 1;
+  startBiome();   // the map, and the Depths' intro film over it, before the dark lifts
+  close();
 }
 
 /** Run a list of steps in order. Each step gets a function to call when it is finished. */

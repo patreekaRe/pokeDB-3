@@ -33,7 +33,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
-import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, isPeeking, playGate } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, closeSoundPops } from './audio.js';
@@ -266,6 +266,8 @@ function init() {
   // ?bossfight=depths: Mewtwo (or &starter=id) straight into Eternatus, the final boss; &hp=0.1 shrinks its bars
   if (params.get('bossfight') === 'depths') eternatusGuest();   // back on the title, it crosses the sky
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
+  // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map
+  if (params.get('descent') === 'mewtwo') return peekDescent(STARTERS_BY_ID.mewtwo);
   if (SAFARI_AREAS.some(a => a.id === params.get('bossfight'))) return peekSafariBoss(params.get('bossfight'), STARTERS_BY_ID[params.get('starter')]);
 
   showSelect();   // under the title, so the menu scene is ready behind it

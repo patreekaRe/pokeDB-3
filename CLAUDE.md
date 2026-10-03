@@ -13,7 +13,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?scene=tutor` (any `PLACE_ART` room: `kombat`,
+  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
@@ -163,8 +163,11 @@ live site.
   rules with 2.5x prize money (`prizeMult`) and biomes 2-3 trimmed so Mewtwo shreds them (the user's calls after a
   playtest, 2026-10-02), then the **Crystal Depths**, the
   `secret` 4th `BIOMES` entry only Mewtwo enters (`finalBiome(starter)` in `js/data/enemies.js` is every "is this the last
-  biome?" check). Mewtwo is fully powered up after Boss 2, so the Biome 3 boss opens `depthsGate()` in `js/run.js` (a full
-  heal, StS's between-acts heal) instead of evolving. Its 12 wilds, 3 Alphas and boss Eternatus (Gen 8: its sprite is
+  biome?" check). Mewtwo is fully powered up after Boss 2, so after the Biome 3 boss's rewards (card, relic, item) it
+  falls in instead of evolving: `fallIn()` in `js/run.js` plays the Sealed Gate's `descent()` with Mewtwo's own lines (it
+  senses a call from below, dives, and the shaft's crystals restore it: the full heal, StS's between-acts heal), then
+  `startBiome()` brings the Depths' map and intro film up under the dark before `close()` takes the descent away. No pedestal
+  or victory song until Eternamax falls. Playtest: `?descent=mewtwo` (`peekDescent()`, a throwaway run at half HP, never saved). Its 12 wilds, 3 Alphas and boss Eternatus (Gen 8: its sprite is
   PokeAPI's `other/showdown/` Gen 5-style GIF) are themed to a crystal cave and shown as Neutral or Psychic. Some carry a
   `trait` (`TRAITS` in `js/data/enemies.js`, `enemyTrait()` in `js/battle.js`, a nameplate badge): `barbs` (each attack you
   play hurts you, block first, never fatal), `analytic` (strength per Power you play), `stamina` (block per card past the

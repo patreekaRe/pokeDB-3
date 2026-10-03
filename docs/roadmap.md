@@ -928,7 +928,12 @@ Split into sessions by where they run:
    Gate' and 'Small asks' item 4. Build the descent scene and reorder `endRun()` (descent → gate strike → win scene →
    result, Mewtwo's unlock last). Check `?strike=90`, `?strike=90&first`, `?strike=90&kind=loss` and `?strike=400&gate=50`
    on a phone-sized pane, update CLAUDE.md's Sealed Gate notes and this item, push to main."
-5. **Mewtwo's fall into the Crystal Depths** (the user's ask, 2026-10-02; needs item 4's descent). After Mewtwo beats
+5. ✅ **Done 2026-10-02** (Desktop app): `depthsGate()`'s window is gone; `fallIn()` in `js/run.js` runs once the Biome 3
+   boss's rewards are done: `descent({ lines })` with Mewtwo's lines (the crater trembles, it senses the call, dives, the
+   crystals restore its HP), then `startBiome()` (the Depths' map and intro film) under the dark, then the descent closes.
+   Playtest `?descent=mewtwo` (`peekDescent()`, starts at half HP). Checked at 375x812: the lines, the fall, the film, the
+   map at full HP, no console errors; the real path after a Biome 3 boss only by reading the code.
+   **Mewtwo's fall into the Crystal Depths** (the user's ask, 2026-10-02; needs item 4's descent). After Mewtwo beats
    the Biome 3 boss: rewards (card, relic) as now → the descent scene with Mewtwo's lines (it senses the call from below,
    the crystals' energy restores it, which is the full heal `depthsGate()` gives, told in the story instead of a bare
    window) → the Depths intro film → the Depths map. No pedestal or victory song until Eternamax falls.

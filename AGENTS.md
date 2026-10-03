@@ -34,8 +34,9 @@ three places:
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **v1.0, Mewtwo and the fourth biome** (done 2026-10-03, part D below) (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
-  through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the gate
-  after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery was
+  through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the way
+  down after the Biome 3 boss (since 2026-10-02 Mewtwo's fall, `fallIn()`: the descent scene with the full heal told in its
+  lines, then the Depths' film; `?descent=mewtwo` playtests it; roadmap Small asks 5), Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery was
   painted the same day (B2, below), and `map4` borrows `map3.mp3` until the user supplies one. Part C landed the
   same day: Eternatus is a two-bar set piece (it rises as Eternamax in a cutscene, charges Eternabeam, its Dynamax
   Cannon grows); strong / human bot 92 / 90%; `?bossfight=depths&hp=0.1` playtests it. The user still owes its two music
