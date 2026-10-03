@@ -11,9 +11,11 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
-import { ACHIEVEMENTS } from './data/achievements.js';
+import { ACHIEVEMENTS, FEATS } from './data/achievements.js';
 import { DEX_PAGES, DEX_COMPLETE_COINS } from './data/pokedex.js';
 import { researchCount, dexPerkLevel } from './pokedex.js';
+
+const DEX_IDS = new Set(DEX_PAGES.flatMap(p => p.ids));   // the Depths' page is counted apart
 import { $, el, openDialog, itemSprite } from './ui.js';
 
 const tile = ([icon, value, label, note]) => {
@@ -48,7 +50,7 @@ export function openStats() {
   const bestLevel = Math.max(...Object.values(s.maxLevelWinByType));
   const winsOf = (type) => STARTERS.filter(st => st.type === type).reduce((n, st) => n + (s.winsBy[st.id] || 0), 0);
   const owned = STARTERS.filter(st => st.free || save.unlocked.includes(st.id)).length;
-  const shinyable = STARTERS.filter(st => !st.secret).length;
+  const shinyable = STARTERS.filter(st => !st.secret || save.shiny.owned.includes(st.id)).length;   // Mewtwo's shiny is the Depths page's prize
   const [researched, entries] = researchCount();
   const seenCards = new Set(save.seen.cards);
 
@@ -72,7 +74,7 @@ export function openStats() {
   collection.append(...[
     ['🔓', 'Starters', owned, STARTERS.length],
     ['✨', 'Shinies', save.shiny.owned.length, shinyable],
-    ['📕', 'Pokédex defeated', save.dex.defeated.length, entries],
+    ['📕', 'Pokédex defeated', save.dex.defeated.filter(id => DEX_IDS.has(id)).length, entries],
     ['⭐', 'Research complete', researched, entries],
     ['🃏', 'Moves found', ALL_CARDS.filter(c => seenCards.has(c.id)).length, ALL_CARDS.length],
     ['💎', 'Relics found', save.seen.relics.length, RELICS.length],
@@ -170,6 +172,24 @@ export function openAchievements() {
     dex.append(row);
   }
 
-  $('achievements-body').replaceChildren(header, list, el('h3', 'records-label', 'Pokédex pages'), dex);
+  // feats: Mewtwo's ending, ??? until Mewtwo is free
+  const feats = el('div', 'ach-list');
+  const free = getSave().unlocked.includes('mewtwo');
+  for (const f of FEATS) {
+    const got = getSave().feats.includes(f.id);
+    const hidden = !got && f.secret && !free;
+    const row = el('div', `ach feat${got ? ' done' : ''}`);
+    const img = el('img', 'pixel');
+    img.src = f.shiny ? spriteUrl(STARTERS_BY_ID[f.shiny], 'front', 0, true) : f.sprite;
+    img.alt = '';
+    const text = el('div', 'ach-text');
+    text.append(el('strong', '', hidden ? '???' : f.name), el('span', '', hidden ? 'Something sleeps behind the Sealed Gate.' : f.text));
+    if (f.coins && !hidden) text.append(el('span', 'perk-where', `💰 ${f.coins} PokéCoins`));
+    row.append(img, text, el('span', 'ach-status', got ? '' : '🔒'));
+    if (got) row.lastChild.append(el('span', 'pokeball'));
+    feats.append(row);
+  }
+
+  $('achievements-body').replaceChildren(header, list, el('h3', 'records-label', 'Pokédex pages'), dex, el('h3', 'records-label', 'The Crystal Depths'), feats);
   openDialog('achievements-dialog');
 }

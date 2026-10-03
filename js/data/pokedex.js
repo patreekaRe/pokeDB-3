@@ -50,19 +50,26 @@ export const SCOPE = {
 };
 export const SCOPE_REVEALS = 1;
 
-// Mewtwo's Crystal Depths stays a ??? tab (renderMystery() in js/pokedex.js) until v1.0 part D gives it a page and a perk,
-// so dex.complete and its jackpot don't move.
-export const DEX_PAGES = BIOMES.filter(b => !b.secret).map(b => ({
+// Mewtwo's Crystal Depths has a page of its own (DEPTHS_PAGE, below), never in DEX_PAGES: only Mewtwo reaches it, so the
+// whole-dex jackpot, Reshiram and the Safari Zone's door must not wait on it.
+const pageFor = (b) => ({
   biome: b.id,
   name: b.name,
   ids: [...b.normals, ...b.elites, ...b.bosses],
   role: Object.fromEntries([...b.normals.map(id => [id, 'wild']), ...b.elites.map(id => [id, 'elite']), ...b.bosses.map(id => [id, 'boss'])]),
-  perk: DEX_PERKS[b.id],
-}));
+});
+
+export const DEX_PAGES = BIOMES.filter(b => !b.secret).map(b => ({ ...pageFor(b), perk: DEX_PERKS[b.id] }));
+
+/** The Crystal Depths' page (v1.0 part D, the user's pick): a "???" tab until a Mewtwo run reaches it. Beating all 16 once
+    unlocks shiny Mewtwo, which can't be bought (FEATS in achievements.js grants it). */
+export const DEPTHS_PAGE = { ...pageFor(BIOMES.find(b => b.secret)), prize: { icon: '✨', name: 'Shiny Mewtwo', text: 'Mewtwo in its shiny colours. It can\'t be bought.' } };
+/** Every page the Pokédex window shows, the Depths last. */
+export const ALL_PAGES = [...DEX_PAGES, DEPTHS_PAGE];
 
 /** The Safari Zone opens once every entry has been beaten at least once (every page complete), not researched:
     3 defeats of each felt like a grind for a door (the user's call, 2026-10-02). */
 export const safariOpen = (save) => save.safariPass || DEX_PAGES.every(p => save.dex.done.includes(p.biome));
 
 /** Every entry in dex order, numbered from 1 like the games. */
-export const DEX_NUMBER = Object.fromEntries(DEX_PAGES.flatMap(p => p.ids).map((id, i) => [id, i + 1]));
+export const DEX_NUMBER = Object.fromEntries(ALL_PAGES.flatMap(p => p.ids).map((id, i) => [id, i + 1]));

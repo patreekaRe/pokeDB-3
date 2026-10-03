@@ -27,8 +27,8 @@ import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
-import { checkAchievements } from './progress.js';
-import { ACHIEVEMENT_FOR } from './data/achievements.js';
+import { checkAchievements, checkFeats } from './progress.js';
+import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
@@ -39,7 +39,7 @@ import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, mart
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { recordWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
+import { recordWin, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { postSafariResult, openLeaderboard } from './leaderboard.js';
 import { runResult } from './data/leaderboard.js';
@@ -779,7 +779,7 @@ async function fight(node) {
   const last = run.biome === finalBiome(run.starter);
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
-    preloadWinScene(run.starter, !isMewtwoRun(run.starter) && run.level === MAX_LEVEL);
+    preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
@@ -809,13 +809,16 @@ function afterFight(node, result) {
   run.fights += 1;
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari();
-  const { lines: dexNews, complete: dexComplete } = creditRoom(node) && !sprint ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  const { lines: dexNews, complete: dexComplete } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
   // A boss win's unlocks wait until after the evolution: the jingle sounds just like its chime (the user heard it early).
   const unlocked = [];
-  const unlock = () => { for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); } };
+  const unlock = () => {
+    for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); }
+    if (!peeking) unlocked.push(...checkFeats());   // the Depths page's shiny Mewtwo
+  };
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
   const tough = node.type === 'fight' && TYPES[ENEMY_DEFS[node.enemyId]?.type]?.beats === run.starter.type;
@@ -875,7 +878,7 @@ function afterFight(node, result) {
   }
 
   if (node.type === 'boss') {
-    if (!isSafari()) updateSave(d => {   // a Safari area isn't one of the main game's biomes
+    if (!isSafari() && !peeking) updateSave(d => {   // a Safari area isn't one of the main game's biomes (nor is a playtest saved)
       d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
@@ -2237,24 +2240,28 @@ async function evolve(next) {
 function unlockWindow(list, next) {
   const [starter, ...rest] = list;
   if (!starter) return next();
-  const d = $('unlock-dialog'), ken = !!starter.ken;
+  const d = $('unlock-dialog'), ken = !!starter.ken, feat = !!starter.feat;
   // Kenmatta's defeats are achievements too, saved as the window opens (a refresh before it replays the window; a
   // ?event= playtest never saves): the first wins his relic, the third shows his dojo on every map
   if (ken && !peeking) updateSave(s => { s.kenWins = Math.max(s.kenWins || 0, starter.wins); if (starter.map) s.kenBeaten = true; });
   $('unlock-sprite').hidden = ken;
   $('unlock-face').hidden = !ken;
-  if (!ken) {
+  if (feat) {
+    $('unlock-sprite').src = starter.shiny ? spriteUrl(STARTERS_BY_ID[starter.shiny], 'front', 0, true) : starter.sprite;
+    $('unlock-sprite').alt = starter.name;
+  } else if (!ken) {
     $('unlock-sprite').src = spriteUrl(starter, 'front', 0);
     $('unlock-sprite').alt = starter.line[0].name;
   }
-  $('unlock-name').textContent = ken ? KEN.name : starter.line[0].name;
-  $('unlock-text').textContent = ken ? starter.text : ACHIEVEMENT_FOR[starter.id]?.text ?? '';
-  $('unlock-hint').textContent = ken ? starter.hint : 'Choose it at New game.';
+  $('unlock-name').textContent = ken ? KEN.name : feat ? starter.name : starter.line[0].name;
+  $('unlock-text').textContent = ken || feat ? starter.text : ACHIEVEMENT_FOR[starter.id]?.text ?? '';
+  $('unlock-hint').textContent = ken ? starter.hint : feat ? [starter.paid ? `+${starter.paid} PokéCoins!` : '', starter.hint].filter(Boolean).join(' ')
+    : 'Choose it at New game.';
   d.addEventListener('close', () => unlockWindow(rest, next), { once: true });
   openDialog('unlock-dialog');
   duckMusic(4.6);   // the jingle over a quieter song, not fighting it (the user heard it clash with the win song)
   playSound('achievement').then(len => setTimeout(() => {
-    if (d.open) ken ? playSound('fortify') : playCry(starter.line[0].id);
+    if (d.open) ken ? playSound('fortify') : playCry(feat ? starter.cry : starter.line[0].id);
   }, Math.max(0, len * 1000 - 600)));
 }
 const KEN_WINS = 3;   // Kenmatta's defeats (one a run at most) before his dojo shows on every map
@@ -2273,7 +2280,9 @@ const KEN_MAP = {
 function announceUnlocks() {
   const fresh = checkAchievements({ sound: false });   // their windows play the jingle, after the win scene
   run.unlocks.push(...fresh);
-  return fresh;
+  const feats = peeking ? [] : checkFeats();
+  run.feats = feats;
+  return [...fresh, ...feats];
 }
 
 /** After a run, the starter attacks the Sealed Gate: a win wears it down by its Trainer Level; a loss at the last boss
@@ -2359,6 +2368,7 @@ function endRun(won, atLastBoss = false) {
       if (entry.fame === 1) level5.push('🏆 Hall of Fame unlocked! Your Level 5 champions stand there, in the Collection.');
       level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as ${fameNo(entry)}!`);
     }
+    if (mewtwoRun) level5.push(`💎 ${stageName(run.starter, run.stage)} entered the Hall of Fame as Champion of the Depths No.${String(entry.champ).padStart(3, '0')}!`);
 
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (!mewtwoRun && run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
@@ -2367,8 +2377,11 @@ function endRun(won, atLastBoss = false) {
     }
   }
 
+  // ?bossfight=depths: the ending plays (scene, credits, the achievement's window) without a thing saved
+  if (won && peeking && mewtwoRun) record = draftWin(run, getSave().shiny.on.includes(run.starter.id));
   const gate = strikeGate(won, atLastBoss);
   const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
+  if (won && peeking && mewtwoRun) fresh.push({ ...FEATS.find(f => f.id === 'eternatus'), feat: true, paid: 0 });
 
   const name = stageName(run.starter, run.stage);
   const biome = BIOMES[run.biome];
@@ -2380,7 +2393,8 @@ function endRun(won, atLastBoss = false) {
 
   dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
-  const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.dexNews || []).map(line => `📕 ${line}`)];
+  const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.paid ? ` +${f.paid} PokéCoins.` : ''}`),
+    ...(run.dexNews || []).map(line => `📕 ${line}`)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   lines.unshift(...level5, ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);

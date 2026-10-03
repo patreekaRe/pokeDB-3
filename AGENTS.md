@@ -32,7 +32,7 @@ three places:
   counts "Beaten n/3". Safari polish (Small asks 2): the rare spawn's ✦ sits centred over its room, and the prep window's
   balls are a big swipeable row. Checked at 375x812 and 768x1024.
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
-- **Next big task: v1.0, Mewtwo and the fourth biome** (roadmap section of that name). Part A (Mewtwo's Psychic deck and
+- **v1.0, Mewtwo and the fourth biome** (done 2026-10-03, part D below) (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
   through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the gate
   after the Biome 3 boss, Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery was
@@ -123,6 +123,12 @@ three places:
   it first): each area's boss prelude (`SAFARI_PRELUDES` in `js/scene.js`, synths in `js/audio.js`) and, after it, the boss's arena
   (`ARENAS`), seen with
   `?area=<area>&stage=3`.
+- 2026-10-03: **v1.0 part D, the ending** (cloud, pushed to `main`): a Mewtwo win plays the Champion of the Depths scene
+  (a violet crystal cavern) and the credits (`js/credits.js`), gold-violet entries in both books; the Crystal Depths'
+  Pokédex page (completing it unlocks shiny Mewtwo); feats (`FEATS`: Champion of the Depths pays 1000 PokéCoins, Shiny
+  Mewtwo); Eternatus crosses the title sky once beaten; the v1.0 patch notes. Final balance pass: the three types are level
+  (no change); Eternatus +8 damage / +30% HP (Mewtwo strong / human 93 / 93 -> 86 / 83). Checked headless at 390x844
+  through `?bossfight=depths&hp=0.01`. **v1.0 is complete.** The user still has to see the ending on the live site.
 - Waiting on the user:
   - The first real cloud-save sign-in (Firebase project `pokedb-42e7c`; setup steps are in the roadmap's step 4).
   - Publishing `firestore.rules` in the Firebase console (Firestore > Rules), which switches the Safari leaderboard on.

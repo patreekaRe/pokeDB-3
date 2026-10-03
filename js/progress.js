@@ -3,9 +3,9 @@
    you just earned a new one.
    ============================================================ */
 
-import { getSave, updateSave } from './storage.js';
+import { getSave, updateSave, awardCoins } from './storage.js';
 import { playSound } from './audio.js';
-import { ACHIEVEMENTS } from './data/achievements.js';
+import { ACHIEVEMENTS, FEATS } from './data/achievements.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 
@@ -33,5 +33,21 @@ export function checkAchievements({ sound = true } = {}) {
     earned.push(STARTERS_BY_ID[a.starter]);
   }
   if (earned.length && sound) playSound('achievement');   // after a fight, unlockWindow() in run.js plays it with its window
+  return earned;
+}
+
+/** Grant every feat (FEATS) newly earned: its PokéCoins or shiny, saved at once. Returns them, for their windows. */
+export function checkFeats() {
+  const earned = [];
+  for (const f of FEATS) {
+    const save = getSave();
+    if (save.feats.includes(f.id) || !f.test(save.stats, save)) continue;
+    updateSave(d => {
+      d.feats.push(f.id);
+      if (f.shiny && !d.shiny.owned.includes(f.shiny)) d.shiny.owned.push(f.shiny);
+      if (f.shiny && !d.shiny.on.includes(f.shiny)) d.shiny.on.push(f.shiny);
+    });
+    earned.push({ ...f, feat: true, paid: f.coins ? awardCoins(f.coins) : 0 });
+  }
   return earned;
 }

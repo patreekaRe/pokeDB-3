@@ -190,6 +190,22 @@ live site.
   energy), `crystal` and `geode` (crystal tips twinkle); signs `[data-biome="depths"]` in `css/screens.css`; its own
   treasure grotto (`PLACE_ART.treasure.biomes.depths`, a Master Ball chest). `map4` still plays `map3.mp3` until the user
   supplies one.
+  **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in
+  `js/halloffame.js` plays its own version (`.hof-scene.depths`: a violet cavern with crystal clusters and stalactites, a
+  crystal pedestal trimmed in gold, the party in violet / crystal / gold, `celebrate()`'s `psychic` palette), then
+  `rollCredits()` (`js/credits.js`, `.hof-credits`: the staff roll with the cast's sprites, THE END; a tap skips to it).
+  Its entry (`isDepths()`, numbered `champ`, "Depths 001") stands in the Hall of Fame and the Record Book in gold and violet
+  (`.hof-row.depths`). Achievements that unlock something other than a starter are **feats** (`FEATS` in
+  `js/data/achievements.js`, `checkFeats()` in `js/progress.js`, saved in `save.feats`, their own window in `unlockWindow()`,
+  a "Crystal Depths" section in the Achievements window, ??? until Mewtwo is free): **Champion of the Depths** (beat
+  Eternatus, `bossesDefeated[4]`: 1000 PokéCoins) and **Shiny Mewtwo** (the Depths page done; it can't be bought). The
+  Depths' **Pokédex page** is `DEPTHS_PAGE` in `js/data/pokedex.js` (in `ALL_PAGES` and `DEX_NUMBER`, No.056-071, never in
+  `DEX_PAGES`, so `dex.complete`, Reshiram, the Safari Zone and the Collection / Stats counts never wait on it); its tab is
+  "???" until a Mewtwo run reaches the Depths (`depthsKnown()` in `js/pokedex.js`), and Eternatus's entry lists Eternamax's
+  moves too. Once its feat is earned **Eternatus crosses the title sky** in the flyers' round (`nextFlyer()` in
+  `js/title.js`). `?bossfight=depths` plays the whole ending without saving anything (`draftWin()`, a preview of the feat's
+  window) and lends Eternatus to the title sky for that page load (`eternatusGuest()`); peeked runs no longer count for the
+  Pokédex or `bossesDefeated`.
 - **Cards** (`js/data/cards.js`): every effect is a key in a card's
   `effects` (the header comment lists them all) and `describe()` writes
   the card text from them, so new mechanics need a line there too. Beyond

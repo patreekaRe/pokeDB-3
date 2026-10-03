@@ -11,6 +11,7 @@ import { $, el, sleep, openDialog, makeCard, groupDeck, itemSprite } from './ui.
 import { playMusic, playCry, preloadMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
 import { celebrate } from './celebrate.js';
+import { rollCredits } from './credits.js';
 import { fillDeck } from './deckpreview.js';
 import { getSave, updateSave } from './storage.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
@@ -40,11 +41,20 @@ const dayOf = (when) => {
  * numbers (run.tally, added up by run.js from each fight).
  */
 export function recordWin(run, shiny) {
+  const entry = draftWin(run, shiny);
+  updateSave(d => { d.hallOfFame.push(entry); });
+  return entry;
+}
+
+/** A won run's entry, unsaved (recordWin() saves it; a ?bossfight=depths playtest only plays its scene). */
+export function draftWin(run, shiny) {
   const wins = getSave().hallOfFame;
   const t = run.tally;
-  const entry = {
+  const mewtwo = run.starter.id === 'mewtwo';
+  return {
     no: wins.length + 1,
-    fame: run.starter.id !== 'mewtwo' && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
+    fame: !mewtwo && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
+    champ: mewtwo ? wins.filter(isDepths).length + 1 : null,   // a Champion of the Depths' own number
     starter: run.starter.id,
     stage: run.stage,
     shiny,
@@ -71,8 +81,6 @@ export function recordWin(run, shiny) {
     earned: run.money + t.spent,
     spent: t.spent,
   };
-  updateSave(d => { d.hallOfFame.push(entry); });
-  return entry;
 }
 
 const starterOf = (entry) => STARTERS_BY_ID[entry.starter];
@@ -83,9 +91,13 @@ const pad3 = (n) => String(n).padStart(3, '0');
 /** A Level 5 win's Hall of Fame number (entries saved before every win was recorded were all Level 5: `no`). */
 export const fameNo = (entry) => entry.starter !== 'mewtwo' && entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
 const winNo = (entry) => `Win ${pad3(entry.no)}`;
+/** A Mewtwo win: Eternatus beaten, the Champion of the Depths (v1.0's ending), gold-violet in both books. */
+export const isDepths = (entry) => entry.starter === 'mewtwo';
+/** Its number among them; entries from before part D are numbered by their place. */
+const champNo = (entry) => `Depths ${pad3(entry.champ ?? getSave().hallOfFame.filter(isDepths).indexOf(entry) + 1)}`;
 // the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
 let book = 'fame';
-const numberOf = (entry) => (book === 'fame' && fameNo(entry)) || winNo(entry);
+const numberOf = (entry) => (book === 'fame' && (fameNo(entry) || (isDepths(entry) && champNo(entry)))) || winNo(entry);
 /** "28 Sep 2026", read as a local date (a bare "2026-09-28" would parse as UTC midnight and show the day before in the Americas). */
 function dateOf(day) {
   const [y, m, d] = day.split('-').map(Number);
@@ -99,7 +111,7 @@ function plate(entry) {
   const head = el('div', 'hof-plate-head');
   head.append(el('span', 'hof-no', numberOf(entry)), el('strong', 'hof-name', `${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`));
   const foot = el('div', 'hof-plate-foot');
-  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', `Lv.${entry.level}`));
+  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', isDepths(entry) ? '💎 Depths' : `Lv.${entry.level}`));
   box.append(head, foot);
   return box;
 }
@@ -173,7 +185,8 @@ function replay(scene, cls) {
  * playing. Resolves once the last line is tapped away and the scene has faded out.
  */
 export async function winScene(entry) {
-  const fame = Boolean(fameNo(entry));
+  const depths = isDepths(entry);
+  const fame = Boolean(fameNo(entry)) || depths;
   book = fame ? 'fame' : 'record';
   const scene = $('hof-scene');
   const img = $('hof-mon');
@@ -183,11 +196,11 @@ export async function winScene(entry) {
   img.src = imgOf(entry);
   img.alt = name;
   const party = fame && !still();
-  setTitle(fame ? 'Hall of Fame' : 'Victory!', party);
+  setTitle(depths ? 'Champion of the Depths' : fame ? 'Hall of Fame' : 'Victory!', party);
   $('hof-plate-slot').replaceChildren(plate(entry));
   extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${fame ? ' fame' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
   playMusic(fame ? 'hall-of-fame' : 'run-win', { restart: true });   // while its file is missing, the victory fanfare from the boss's faint plays on
   const canvas = $('hof-fx');
@@ -210,8 +223,9 @@ export async function winScene(entry) {
   await Promise.race([playCry(starterOf(entry).line[entry.stage].id), sleep(CRY_WAIT_MAX)]);
   scene.classList.add('plate-in');
   fx?.finale();
-  await sceneSay('hof-scene', 'hof-log', fame
-    ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
+  await sceneSay('hof-scene', 'hof-log', depths
+    ? ['Eternatus\'s energy is spent. The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
+    : fame ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
     : [`${name} conquered the wastes on Trainer Level ${entry.level}!`]);
 
   scene.classList.add('deck-in');
@@ -219,9 +233,12 @@ export async function winScene(entry) {
   await sceneSay('hof-scene', 'hof-log', [`Here's how ${name}'s run went.`]);
 
   extra.replaceChildren(deckStrip(entry));
-  await sceneSay('hof-scene', 'hof-log', [`${name}'s final deck: ${entry.deck.length} cards.`, fame
-    ? `It is entered in the Hall of Fame as ${numberOf(entry)}. Congratulations!`
+  await sceneSay('hof-scene', 'hof-log', [`${name}'s final deck: ${entry.deck.length} cards.`, depths
+    ? `It is entered in the Hall of Fame as ${numberOf(entry)}. The wild Pokémon above can rest at last.`
+    : fame ? `It is entered in the Hall of Fame as ${numberOf(entry)}. Congratulations!`
     : `The run is saved in the Record Book as ${winNo(entry)}. Well done!`]);
+
+  if (depths) await rollCredits(scene, entry);   // the true ending's credits, over the cavern
 
   scene.classList.add('out');
   await sleep(still() ? 0 : 600);
@@ -235,7 +252,7 @@ export async function winScene(entry) {
 /* ---------- the Collection's two windows: the Hall of Fame and the Record Book ---------- */
 
 const BOOKS = {
-  fame: { title: '🏆 Hall of Fame', has: (e) => fameNo(e) },
+  fame: { title: '🏆 Hall of Fame', has: (e) => fameNo(e) || isDepths(e) },
   record: { title: '📖 Record Book', has: () => true },
 };
 /** The entries a book lists, oldest first: the Hall of Fame holds Level 5 wins, the Record Book every win. */
@@ -251,11 +268,11 @@ export function openRecords(which) {
 
 function showList() {
   const entries = bookEntries(book);
-  const count = `${entries.length} ${book === 'fame' ? (entries.length === 1 ? 'champion' : 'champions') : (entries.length === 1 ? 'win' : 'wins')}`;
+  const count = `${entries.length} ${book === 'fame' ? (entries.length === 1 ? 'champion' : 'champions') : (entries.length === 1 ? 'win' : 'wins')}`;   // a Champion of the Depths counts among them
   $('hof-dialog-sub').textContent = `${count}. Tap one for its record.`;
   $('hof-body').replaceChildren(...[...entries].reverse().map(entry => {
     const star = book === 'record' && fameNo(entry);
-    const row = el('button', `hof-row type-${entry.type}${star ? ' champion' : ''}`);
+    const row = el('button', `hof-row type-${entry.type}${star ? ' champion' : ''}${isDepths(entry) ? ' depths' : ''}`);
     row.type = 'button';
     const pic = el('span', 'hof-row-pic');
     const img = el('img', 'pixel');
@@ -264,8 +281,8 @@ function showList() {
     pic.append(img);
     const text = el('span', 'hof-row-text');
     const line = el('span', 'hof-row-line');
-    line.append(chip(entry), el('span', 'hof-lv', `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
-    text.append(el('strong', '', `${star ? '⭐ ' : ''}${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
+    line.append(chip(entry), el('span', 'hof-lv', isDepths(entry) ? 'Depths' : `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
+    text.append(el('strong', '', `${star ? '⭐ ' : isDepths(entry) ? '💎 ' : ''}${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
       el('small', '', `${entry.deck.length} cards · ${entry.relics.length} relics · ${entry.fights} fights won`));
     row.append(pic, text, el('span', 'hof-row-go', '▶'));
     row.addEventListener('click', () => showEntry(entry));
@@ -323,14 +340,14 @@ function showEntry(entry) {
   const back = el('button', 'btn secondary hof-back', book === 'fame' ? '◀ All champions' : '◀ All wins');
   back.type = 'button';
   back.addEventListener('click', showList);
-  const top = el('div', `hof-entry type-${entry.type}`);
+  const top = el('div', `hof-entry type-${entry.type}${isDepths(entry) ? ' depths' : ''}`);
   const pic = el('span', 'hof-entry-pic');
   const img = el('img', 'pixel');
   img.src = imgOf(entry);
   img.alt = nameOf(entry);
   pic.append(img);
   const info = plate(entry);
-  info.append(el('p', 'hof-rule', `Trainer Level ${entry.level}: ${LEVELS[entry.level]?.name ?? ''}`
+  info.append(el('p', 'hof-rule', (isDepths(entry) ? 'Champion of the Depths: Eternatus beaten' : `Trainer Level ${entry.level}: ${LEVELS[entry.level]?.name ?? ''}`)
     + (entry.started && entry.started !== entry.date ? ` · set out ${dateOf(entry.started)}` : '')));
   top.append(pic, info);
 

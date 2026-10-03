@@ -83,7 +83,7 @@ export function showCollection() {
   const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
   const cards = [
     ['dex', 'Pokédex', el('span', 'coll-emoji', '📕'), 'Every Pokémon you have met. Research them for PokéCoins.',
-      `${save.dex.defeated.length}/${dexTotal} defeated`, () => openPokedex()],
+      `${save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length}/${dexTotal} defeated`, () => openPokedex()],
     safariCard(save),
     ['moves', 'Moves', el('span', 'coll-emoji', '🃏'), 'Every move card in the game, by type.', `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length} found`, () => openCardIndex(pickedStarter()?.type ?? 'fire')],
     ['relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), 'The held items found climbing the biomes.',

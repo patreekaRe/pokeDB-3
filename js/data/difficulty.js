@@ -52,7 +52,7 @@ export const MEWTWO_MODE = {
     { prizeMult: 2.5, playerDmg: 1.25 },
     { prizeMult: 2.5, playerDmg: 1.25, normalHp: 0.7, bossHp: 0.85, enemyDmg: -5 },
     { prizeMult: 2.5, playerDmg: 1.25, normalHp: 0.55, bossHp: 0.7, enemyDmg: -12 },
-    {},
+    { bossDmg: 8, bossHp: 1.3 },   // Eternatus, the ending (v1.0's final balance pass): the bot won 91-95% without it
   ],
 };
 

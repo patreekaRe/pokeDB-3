@@ -840,7 +840,35 @@ last act only a special run reaches.
   completionist extras above, then the v1.0 patch notes and a final balance pass (bot runs over all three types, and
   Mewtwo's biome 4 win rate: aim for Mewtwo winning most runs but able to lose, e.g. strong bot ~70-80% in biome 4).
 
-**Run in: CLOUD.** Next-session prompt (part D): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
+- **D. The ending — done 2026-10-03** (cloud). What landed (CLAUDE.md, Mewtwo, "The ending", has the map of it):
+  - **Champion of the Depths**: a Mewtwo win's own Hall of Fame scene (a violet crystal cavern, a gold-trimmed crystal
+    pedestal, a violet / crystal / gold party, Mewtwo's cry, "Eternatus's energy is spent"), then a **credits roll**
+    (`js/credits.js`: staff, sources, the cast's sprites, THE END; a tap skips). Its entries are numbered "Depths 001" and
+    stand in both books in gold and violet.
+  - **The Crystal Depths' Pokédex page** (No.056-071): a "???" tab until a Mewtwo run gets there, then 12 wilds, 3 Alphas
+    and Eternatus (its entry also lists Eternamax's moves); research works as on the other pages. Beating all 16 unlocks
+    **shiny Mewtwo** (switched on). Kept out of `DEX_PAGES` / `dex.complete` and the Collection / Stats counts.
+  - **Feats** (achievements that don't unlock a starter, `FEATS`): **Champion of the Depths** (beat Eternatus, 1000
+    PokéCoins) and **Shiny Mewtwo**, each with its own achievement window and a "Crystal Depths" section in the Achievements
+    window (??? until Mewtwo is free).
+  - **Title sky**: once Eternatus is beaten it joins the flyers' round (its showdown GIF, always in colour).
+  - **v1.0 patch notes** ("The Last Energy") and an updated "What's in the game" (31 starters, 310 moves, 4 biomes, the
+    Safari Zone).
+  - `?bossfight=depths&hp=0.05` now plays the whole ending without saving anything, and Eternatus crosses the title sky
+    straight after. Peeked runs no longer count for the Pokédex or bosses beaten.
+  - Checked headless at 390x844: the scene, the credits, THE END, the Depths page (15/16 then complete: shiny Mewtwo's
+    feat), the Achievements window, and `?bossfight=depths&hp=0.01` played through (scene, credits, the feat's window, the
+    result window, Eternatus as the title's next flyer, nothing saved). No console errors but the missing music files.
+  - **Final balance pass** (human bot, 150 runs/cell, fire / grass / water): L0 88.0 / 83.3 / 80.7, L3 63.3 / 59.3 / 54.7,
+    L5 40.0 / 36.7 / 35.3. Every cell is within noise of the others, so no change. **Mewtwo** was too easy (strong / human
+    95.3 / 91.3 at 150, 93.0 / 93.3 at 300; every loss in the Depths, mostly Eternatus). Screened at 150 (strong / human):
+    Eternatus +6 dmg 92.0 / 86.7, +20% HP 94.0 / 82.7, +4 / +15% 88.7 / 85.3, +8 / +30% 86.7 / 86.7, +12 dmg 88.7 / 86.7,
+    +10 / +40% 90.7 / 75.3; the strong bot blocks nearly everything, so boss numbers barely move it. **Shipped +8 / +30%**
+    (`MEWTWO_MODE.mods[3]`: `bossDmg` 8, `bossHp` 1.3, both forms), confirmed at 300: 86.0 / 83.0 (Eternatus ends ~13%
+    of runs, was ~6%). The Depths' wilds stay as the user softened them. Below the old 70-80% aim on purpose: the user
+    found the Depths hard already; their playtest decides if the ending needs more.
+
+**Run in: CLOUD.** Next-session prompt (part D, done 2026-10-03): "Read AGENTS.md, CLAUDE.md, and docs/roadmap.md's 'v1.0: Mewtwo and the
 fourth biome'. Parts A-C (Mewtwo's deck, the Crystal Depths, Eternatus's two-bar set piece) are done, and my picks for
 part D are under Open item 5. Build part D: Mewtwo's own Hall of Fame scene + credits + Record Book style, the Crystal
 Depths Pokédex page (its completion unlocks shiny Mewtwo, kept out of dex.complete), Eternatus crossing the title sky once
@@ -848,6 +876,9 @@ beaten, an achievement for beating Eternatus, the v1.0 patch notes, then the fin
 Levels 0/3/5, and Mewtwo, small runs). Don't ask again about what's settled. Attach pokeDB-sim too."
 
 Then the user wants a look on the live site at the Hall of Fame scene, the credits and the title sky (`?bossfight=depths&hp=0.05`).
+**Next (PLAYTEST ON THE LIVE SITE):** `?bossfight=depths&hp=0.05` for the ending (scene, credits, the achievement's
+window), then wait on the title for Eternatus to fly by; a real Mewtwo run judges Eternatus's new numbers. Still open:
+the user's `eternatus.mp3` / `eternamax.mp3` / `map4.mp3` / `hall-of-fame.mp3`.
 
 ## Small asks (the user's list, 2026-10-02)
 

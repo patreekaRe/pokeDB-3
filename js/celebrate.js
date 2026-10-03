@@ -18,6 +18,8 @@ const PALETTES = {
   water: ['#f0f8ff', '#a8e0f8', '#50a8f8', '#2860d0', '#183888'],
   gold: ['#ffffff', '#fff0a0', '#f8d048', '#c88820', '#7a4c10'],
   rainbow: ['#ffffff', '#f85858', '#f8e048', '#58d858', '#58a8f8'],
+  psychic: ['#fff0ff', '#e8a8f8', '#c060f0', '#8030c0', '#481878'],
+  crystal: ['#ffffff', '#c8f8ff', '#78d8f8', '#5890e0', '#383890'],
 };
 const CONFETTI = [['#fff0a0', '#c88820'], ['#f8d048', '#9a6a18'], ['#fff0a0', '#c88820'], ['#f8f8f8', '#a8a8c0'], ['#f85858', '#982828']];
 const STREAMERS = [['#f85858', '#f8f8f8'], ['#f8d048', '#c88820'], ['#50a8f8', '#f8f8f8'], ['#58d048', '#f8e048']];
@@ -47,7 +49,8 @@ export function celebrate(canvas, type, { onBoom } = {}) {
   size();
   addEventListener('resize', size);
 
-  const colours = [type, type, 'fire', 'grass', 'water', 'gold', 'gold'].filter(c => PALETTES[c]);
+  // Mewtwo's party is the Depths' own: violet, crystal and gold
+  const colours = (type === 'psychic' ? ['psychic', 'psychic', 'crystal', 'gold', 'gold'] : [type, type, 'fire', 'grass', 'water', 'gold', 'gold']).filter(c => PALETTES[c]);
   const rockets = [], parts = [], sparks = [], confetti = [], streamers = [], stars = [], twinkles = [];
   let t = 0, last = 0, frame = 0, raf = 0, nextLaunch = 0.4, nextStar = 1.2, nextTwinkle = 0.3, rain = 0;
 

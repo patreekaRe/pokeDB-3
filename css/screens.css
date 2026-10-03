@@ -1820,6 +1820,71 @@ body.battle-intro { pointer-events: none; }
   .hof-deck-slot { min-height: 74px; }
 }
 
+/* A Mewtwo win, the Champion of the Depths (v1.0 part D): the scene in the Crystal Depths, violet light, crystal clusters
+   either side and stalactites above, a crystal pedestal trimmed in gold; then the credits roll (js/credits.js). */
+.hof-scene.depths { background: radial-gradient(ellipse at 50% 42%, #5a2c8a, #2a1050 55%, #0c0418); }
+.hof-scene.depths .hof-sky { filter: hue-rotate(250deg) saturate(1.4); }
+.hof-cave { position: absolute; inset: 0; pointer-events: none; display: none; }
+.hof-scene.depths .hof-cave { display: block; }
+.hof-cave::before, .hof-cave::after {
+  content: ''; position: absolute; bottom: 0; width: min(46vw, 340px); height: min(46vh, 360px);
+  background: linear-gradient(90deg, #7848c8 0 18%, #b088f0 18% 30%, #5830a0 30% 52%, #9868e0 52% 64%, #3a1c70 64%);
+  clip-path: polygon(0 100%, 0 30%, 8% 8%, 16% 34%, 22% 46%, 28% 14%, 36% 0, 42% 22%, 46% 52%, 54% 36%, 60% 60%, 68% 44%,
+    74% 70%, 82% 62%, 88% 84%, 100% 100%);
+  opacity: 0.85;
+}
+.hof-cave::before { left: 0; }
+.hof-cave::after { right: 0; scale: -1 1; height: min(38vh, 300px); }
+.hof-scene.depths .hof-layout::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 64px; pointer-events: none;
+  background: #1a0a34;
+  clip-path: polygon(0 0, 100% 0, 100% 30%, 96% 70%, 92% 30%, 86% 90%, 80% 34%, 74% 60%, 68% 26%, 60% 100%, 54% 30%, 48% 56%,
+    42% 22%, 36% 80%, 30% 30%, 24% 64%, 18% 24%, 12% 86%, 6% 32%, 0 54%);
+}
+.hof-scene.depths .hof-light { background: linear-gradient(rgba(220, 180, 255, 0.05), rgba(200, 140, 255, 0.36)); }
+.hof-scene.depths .hof-pedestal {
+  background: linear-gradient(#fff0a0 0 4px, #e8d0ff 4px 8px, #b088f0 8px 12px, #f8d048 12px 16px, #7848c8 16px 21px, #5830a0 21px 36px, #2a1050 36px);
+}
+.hof-scene.depths .hof-title { color: #f8d048; text-shadow: 2px 0 0 #4a1880, -2px 0 0 #4a1880, 0 2px 0 #4a1880, 0 -2px 0 #4a1880, 0 5px 0 #0c0418; }
+.hof-scene.depths .hof-plate { border-color: #d8b048; box-shadow: 0 0 0 2px #4a1880, inset 0 0 0 2px #4a1880, 3px 3px 0 2px rgba(0, 0, 0, 0.4); }
+.hof-scene.depths .hof-stat { border-color: #b088f0; background: rgba(28, 8, 52, 0.85); }
+.hof-scene.depths .hof-mon img { filter: drop-shadow(0 0 10px rgba(190, 120, 255, 0.7)); }
+@media (max-width: 720px) { .hof-scene.depths .hof-title { font-size: 0.95rem; } }
+
+.hof-credits {
+  position: absolute; inset: 0; z-index: 5; overflow: hidden; cursor: pointer;
+  background: rgba(8, 2, 20, 0.7); color: #f0e8ff; text-align: center;
+  opacity: 0; transition: opacity 0.8s;
+}
+.hof-credits.in { opacity: 1; }
+.hof-scene:has(.hof-credits.in) .hof-layout { opacity: 0; transition: opacity 0.8s; }
+.hof-credits.out { opacity: 0; transition-duration: 0.5s; }
+.credits-roll { position: absolute; left: 0; right: 0; top: 100%; padding: 0 16px; }
+.credits-roll.rolling { animation: creditsRoll var(--secs, 38s) linear forwards; }
+@keyframes creditsRoll { to { translate: 0 calc(-100% - 100vh); } }
+.hof-credits.ended .credits-roll { opacity: 0; transition: opacity 0.5s; }
+.credits-logo { margin: 0; font: 2rem/1.2 var(--pixel-font); color: #f8d048; text-shadow: 3px 3px 0 #4a1880; }
+.credits-version { margin: 6px 0 0; font-size: 0.7rem; color: #c8a8f0; }
+.credits-part { margin: 64px auto 0; max-width: 440px; }
+.credits-head { margin: 0 0 10px; font: 0.72rem/1.4 var(--pixel-font); font-weight: 400; color: #f8d048; letter-spacing: 0.08em; text-transform: uppercase; }
+.credits-line { margin: 4px 0; font-size: 0.8rem; line-height: 1.5; }
+.credits-cast { display: flex; justify-content: center; align-items: flex-end; gap: 14px; }
+.credits-cast img { height: 72px; width: auto; image-rendering: pixelated; }
+.credits-cast.big img { height: 150px; filter: drop-shadow(0 0 10px rgba(190, 120, 255, 0.7)); }
+.credits-caption { margin: 8px 0 0; font-size: 0.66rem; color: #c8a8f0; }
+.credits-end {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  opacity: 0; pointer-events: none;
+}
+.hof-credits.ended .credits-end { opacity: 1; transition: opacity 0.9s 0.3s; }
+.credits-end h2 { margin: 0; font: 2.2rem/1.2 var(--pixel-font); color: #f8d048; text-shadow: 3px 3px 0 #4a1880; }
+.credits-end p { margin: 0; font-size: 0.85rem; }
+.credits-tap { animation: hofTwinkle 1s steps(2) infinite; color: #f8d048; }
+@media (prefers-reduced-motion: reduce) {
+  .credits-roll { position: static; padding: 24px 16px 40vh; }
+  .hof-credits { overflow-y: auto; }
+}
+
 /* the Collection's Hall of Fame window */
 .hof-body { display: flex; flex-direction: column; gap: 8px; }
 .hof-row {
@@ -1850,6 +1915,16 @@ body.battle-intro { pointer-events: none; }
 .hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .hof-cards { margin-top: 6px; }
 .hof-row.champion { background: rgba(248, 208, 72, 0.18); }
+/* a Champion of the Depths: gold and violet */
+.hof-row.depths, .hof-entry.depths {
+  border-left-color: #d8b048;
+  background: linear-gradient(90deg, rgba(248, 208, 72, 0.22), rgba(150, 90, 230, 0.2));
+  box-shadow: inset 0 0 0 2px rgba(150, 90, 230, 0.45);
+}
+.hof-row.depths .hof-row-go { color: #8a45c0; }
+.dex-perk-mon { width: 56px; height: 56px; object-fit: contain; flex: none; image-rendering: pixelated; }
+.dex-depths { border-color: rgba(150, 90, 230, 0.5); }
+.dex-depths.earned { background: linear-gradient(90deg, rgba(248, 208, 72, 0.14), rgba(150, 90, 230, 0.14)); }
 .hof-lv { font-size: 0.6rem; }
 .hof-rule { margin: 6px 0 0; font-size: 0.56rem; line-height: 1.6; color: var(--muted); }
 .hof-stats, .stat-grid.hof-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }

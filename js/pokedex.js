@@ -15,7 +15,7 @@
 import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
 import { TYPES, CARDS_BY_ID } from './data/cards.js';
 import { modsFor } from './data/difficulty.js';
-import { DEX_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
+import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
@@ -27,7 +27,7 @@ const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defe
 let page = 0;
 
 const dexNo = (id) => `No.${String(DEX_NUMBER[id]).padStart(3, '0')}`;
-const pageOf = (id) => DEX_PAGES.find(p => p.ids.includes(id));
+const pageOf = (id) => ALL_PAGES.find(p => p.ids.includes(id));
 const pageDone = (p, defeated) => p.ids.every(id => defeated.has(id));
 const ALL_IDS = DEX_PAGES.flatMap(p => p.ids);
 const roleOf = (id) => pageOf(id).role[id];
@@ -72,13 +72,16 @@ export function dexDefeated(id) {
 
   const p = pageOf(id);
   const save = getSave();
-  if (!save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
+  if (p === DEPTHS_PAGE && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
+    updateSave(d => { d.dex.done.push(p.biome); });   // its prize, shiny Mewtwo, is a feat (checkFeats()), with its own window
+    lines.push(`The ${p.name} page is complete! ${p.prize.icon} ${p.prize.name} unlocked!`);
+  } else if (!save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });
     const coins = awardCoins(p.perk.coins);
     lines.push(`The ${p.name} page is complete! +${coins} PokéCoins.`, `New perk: ${p.perk.name}. ${p.perk.text}`);
     if (safariOpen(getSave())) lines.push('Every Pokémon is in the Pokédex! The Safari Zone is open on the title screen.');
   }
-  if (n === goal && pageResearched(p)) {
+  if (n === goal && p.perk && pageResearched(p)) {
     lines.push(`Every ${p.name} entry is researched!`, `${p.perk.name} is now Lv 2: ${p.perk.lv2.text}`);
   }
   let complete = false;
@@ -127,6 +130,7 @@ function entryTile(id, role, seen, defeated) {
 }
 
 function perkBox(p, count, done) {
+  if (!p.perk) return depthsBox(p, count, done);
   const lv = levelOf(p);
   const box = el('div', `dex-perk${done ? ' earned' : ''}${lv === 2 ? ' mastered' : ''}`);
   const icon = el('span', 'dex-perk-icon', p.perk.icon);
@@ -145,9 +149,28 @@ function perkBox(p, count, done) {
   return box;
 }
 
+/** The Depths page's prize, shiny Mewtwo, in the perk's place. */
+function depthsBox(p, count, done) {
+  const box = el('div', `dex-perk dex-depths${done ? ' earned' : ''}`);
+  const img = el('img', 'pixel dex-perk-mon');
+  img.src = 'assets/pokemon/mewtwo-shiny-front.gif';
+  img.alt = '';
+  if (!done) img.style.filter = 'brightness(0) opacity(0.6)';
+  const text = el('div', 'dex-perk-text');
+  text.append(
+    el('strong', '', `${done ? '' : '🔒 '}${p.prize.name}`),
+    el('span', '', p.prize.text),
+    el('small', '', done ? 'Earned: switch it on or off in Mewtwo\'s panel.' : `Defeat all ${p.ids.length} to earn it. Only Mewtwo comes down here.`),
+    progressBar(count, p.ids.length));
+  box.append(img, text, el('b', 'dex-perk-count', `${count}/${p.ids.length}`));
+  return box;
+}
+
 /* The Rewards tab (the user's call: what finishing the Pokédex pays should be easy to find): the jackpot, research and
    each page's perk, with how far along you are. */
-const MYSTERY = DEX_PAGES.length;   // the fourth biome's page, "???" until v1.0 brings it (docs/roadmap.md)
+const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
+/** A Mewtwo run has been down into the Depths (or met one of its Pokémon), so its page shows. */
+const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
 const REWARDS = MYSTERY + 1;
 
 function prize(art, name, text) {
@@ -214,7 +237,17 @@ function renderRewards() {
     prize(el('span', 'dex-prize-icon', p.perk.icon), `${p.perk.name} Lv 2`, p.perk.lv2.short),
   ], p.ids.filter(researched).length, p.ids.length, levelOf(p) === 2, `${p.perk.name} Lv 2: ${p.perk.lv2.text}`));
 
-  $('dex-body').replaceChildren(jackpot, research, ...pages, ...masters);
+  const depths = [];
+  if (depthsKnown()) {
+    const p = DEPTHS_PAGE;
+    const shiny = el('img', 'pixel dex-prize-sprite');
+    shiny.src = 'assets/pokemon/mewtwo-shiny-front.gif';
+    shiny.alt = '';
+    depths.push(goal('💎', 'Depths page', `Beat all ${p.ids.length} once`, [prize(shiny, p.prize.name, 'Can\'t be bought')],
+      p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.prize.name}: ${p.prize.text}`));
+    depths[0].classList.add('dex-depths');
+  }
+  $('dex-body').replaceChildren(jackpot, research, ...pages, ...masters, ...depths);
 }
 
 /** The fourth biome's page: nothing but silhouettes of question marks, a hint of what's coming. */
@@ -242,10 +275,10 @@ function render() {
   const save = getSave();
   $('dex-safari-tab').hidden = !safariOpen(save);
   if (page === REWARDS) { renderRewards(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
-  if (page === MYSTERY) { renderMystery(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
+  if (page === MYSTERY && !depthsKnown()) { renderMystery(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
   const seen = new Set(save.dex.seen);
   const defeated = new Set(save.dex.defeated);
-  const p = DEX_PAGES[page];
+  const p = ALL_PAGES[page];
   const count = p.ids.filter(id => defeated.has(id)).length;
   const body = [perkBox(p, count, save.dex.done.includes(p.biome))];
   for (const role of ['wild', 'elite', 'boss']) {
@@ -259,6 +292,12 @@ function render() {
   $('dex-body').replaceChildren(...body);
   $('dex-dialog').scrollTop = 0;
   const [done] = researchCount();
+  if (p === DEPTHS_PAGE) {   // a page apart from the Pokédex's total: count its own
+    const ids = p.ids;
+    $('dex-total').textContent = `${ids.filter(id => defeated.has(id)).length}/${ids.length} · ${ids.filter(id => seen.has(id)).length} seen · ★${ids.filter(researched).length}`;
+    $('dex-total').title = 'The Crystal Depths, Mewtwo\'s alone: kept apart from the Pokédex\'s total';
+    return markTabs();
+  }
   $('dex-total').textContent = `${ALL_IDS.filter(id => defeated.has(id)).length}/${ALL_IDS.length} · ${ALL_IDS.filter(id => seen.has(id)).length} seen · ★${done}`;
   $('dex-total').title = `${ALL_IDS.filter(id => defeated.has(id)).length} defeated, ${ALL_IDS.filter(id => seen.has(id)).length} seen, ${done} with Research complete`;
   markTabs();
@@ -308,7 +347,7 @@ function openEntry(id, role, from) {
     : `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
   if (!done) return showEntry(card, from);
   const foe = buildEncounter(BIOMES.findIndex(b => b.id === pageOf(id).biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
-  if (foe) card.append(el('p', 'dex-detail-hp', `HP ${foe.maxHp} · numbers at Level 0, before types`));
+  if (foe) card.append(el('p', 'dex-detail-hp', `HP ${foe.maxHp} · ${pageOf(id) === DEPTHS_PAGE ? 'numbers in the Depths' : 'numbers at Level 0, before types'}`));
   card.append(el('p', 'dex-detail-text', base.description));
   const weak = role === 'wild' && TYPES[base.type].losesTo;
   card.append(el('p', 'dex-detail-weak', weak
@@ -321,6 +360,16 @@ function openEntry(id, role, from) {
     moves.append(li);
   }
   card.append(el('h4', 'dex-moves-head', 'Moves, in order'), moves);
+  if (def.phase2) {   // Eternatus's second bar
+    const next = el('ul', 'dex-moves');
+    for (const m of def.phase2.moves) {
+      const li = el('li', `dex-move kind-${m.kind}`);
+      li.append(el('span', 'dex-move-icon', (MOVE_KIND[m.kind] || ['⚠️'])[0]), el('span', 'dex-move-name', m.name),
+        el('small', '', m.kind === 'charge' ? 'charging' : `${moveNumbers(m, foe.strength)}${m.grow ? `, +${m.grow} each use` : ''}`));
+      next.append(li);
+    }
+    card.append(el('h4', 'dex-moves-head', `Then it rises as ${def.phase2.name}`), next);
+  }
   showEntry(card, from);
 }
 
@@ -376,7 +425,12 @@ export function initPokedex() {
 
 /** Opens on the given biome's page (the run's), else the last one looked at. */
 export function openPokedex(biome) {
-  if (Number.isInteger(biome) && DEX_PAGES[biome]) page = biome;
+  if (Number.isInteger(biome) && ALL_PAGES[biome]) page = biome;
+  const tab = document.querySelector(`.dex-tab[data-page="${MYSTERY}"]`);   // the Depths' tab, once a Mewtwo run has been down
+  const known = depthsKnown();
+  tab.classList.toggle('biome-depths', known);
+  tab.querySelector('.index-tab-icon').textContent = known ? '💎' : '🔒';
+  tab.querySelector('.index-tab-label').textContent = known ? 'Depths' : '???';
   render();
   openDialog('dex-dialog');
 }

@@ -144,3 +144,24 @@ export const ACHIEVEMENTS = [
 ];
 
 export const ACHIEVEMENT_FOR = Object.fromEntries(ACHIEVEMENTS.map(a => [a.starter, a]));
+
+/* Feats: achievements that unlock something other than a starter (v1.0 part D). Each is granted once, saved in the save's
+   `feats`, and opens its own achievement window (unlockWindow() in js/run.js) with its sprite and cry. They're listed apart
+   from ACHIEVEMENTS, so Mewtwo's gate stays the last starter goal. `secret` ones are ??? in the Achievements window until
+   Mewtwo is free. */
+export const FEATS = [
+  {
+    id: 'eternatus', name: 'Champion of the Depths', secret: true,
+    text: 'Beat Eternatus, the last energy, with Mewtwo',
+    test: (s) => !!s.bossesDefeated[4],
+    sprite: 'assets/pokemon/eternatus-front.gif', cry: 'eternatus', coins: 1000,
+    hint: 'Eternatus now crosses the title screen\'s sky now and then.',
+  },
+  {
+    id: 'depths-dex', name: 'Shiny Mewtwo', secret: true,
+    text: 'Complete the Crystal Depths page of the Pokédex',
+    test: (s, save) => save.dex.done.includes('depths'),
+    shiny: 'mewtwo', cry: 'mewtwo',
+    hint: 'It\'s switched on: the ✨ pill in Mewtwo\'s panel switches it back.',
+  },
+];

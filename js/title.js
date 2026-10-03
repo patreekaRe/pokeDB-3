@@ -81,13 +81,26 @@ let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0
    (the user's call, 2026-10-02). */
 const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini', 'rayquaza'];
 let flight = [], lastFlyer = null;
+/* Once Eternatus is beaten (its feat, v1.0 part D) it joins the round: its showdown GIF, always in colour. ?bossfight=depths
+   lends it for that page load (eternatusGuest()), so a playtest shows it too. */
+const ETERNATUS = 'eternatus';
+let guest = false;
+export const eternatusGuest = () => { guest = true; flight = [ETERNATUS]; };   // the next pass is its
 
 function nextFlyer(img) {
   if (!flight.length) {
-    flight = FLYERS.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
+    const round = guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS;
+    flight = round.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
     if (flight[0] === lastFlyer) flight.push(flight.shift());
   }
-  const id = lastFlyer = flight.shift(), starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
+  const id = lastFlyer = flight.shift();
+  if (id === ETERNATUS) {
+    img.onload = () => img.style.setProperty('--w', img.naturalWidth);
+    img.src = `assets/pokemon/${ETERNATUS}-front.gif`;
+    img.classList.add('lit');
+    return;
+  }
+  const starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
   img.onload = () => img.style.setProperty('--w', Math.max(64, img.naturalWidth));   // one scale, so Celebi stays small next to Lugia (not a speck)
   img.src = lit ? spriteUrl(starter, 'front') : `assets/pokemon/${id}-front.gif`;
   img.classList.toggle('lit', lit);
