@@ -332,19 +332,43 @@ function paintForest(g, w, H, hz, [lit, body, shade, dark], rand, grow = 1) {
   }
 }
 
-/** Where a Pokémon (or a clump `size` across each way) stands clear of a road or stream at that row, centred `cx`, `half`
-    wide: out to the side it's already on, unless that leaves it off the view (`lo`..`hi`) and the other side doesn't.
-    A `side` (-1 left, 1 right) mirrors it over to that side first, so a film's Pokémon don't all end up on one side. */
-export function offTheWay(x, size, cx, half, lo, hi, side = 0) {
+/** Where a clump `size` across each way stands clear of a road or stream at that row, centred `cx`, `half` wide: out to
+    the side it's already on, unless that leaves it off the view (`lo`..`hi`) and the other side doesn't. */
+export function offTheWay(x, size, cx, half, lo, hi) {
   const clear = half + size + 2;
-  const fits = (v) => v >= lo + 2 && v <= hi - 2;   // a clump half past the edge still reads, and the camera brings it in
-  if (side && Math.sign(x - cx) !== side) {
-    const mirrored = cx + side * Math.max(clear, Math.abs(x - cx));
-    if (fits(mirrored)) return Math.round(mirrored);
-  }
   if (Math.abs(x - cx) >= clear) return x;
+  const fits = (v) => v >= lo + 2 && v <= hi - 2;
   const near = x < cx ? cx - clear : cx + clear, far = x < cx ? cx + clear : cx - clear;
   return Math.round(fits(near) || !fits(far) ? near : far);
+}
+
+/** Places a film's Pokémon (each `{ [x], [y], size }`, its grass `size` + 2 each way, from `size` above its foot to below
+    it) as near where it was put as it can, off the road or stream (`way(s)` → [centre, half width]), in the view
+    (`view(s)` → [lo, hi]: a clump may hang half past the edge, the camera brings it in) and its grass clear of the ones placed
+    before it. With `rest` (the view once the camera settles), if every one still in view there is on one side of the
+    road, the nearest of them goes over to the other (popping up just out of view if it must: the camera brings it in).
+    `x` / `y` name the keys: films keep them in layer or screen pixels. */
+export function settle(spots, { way, view, rest, x = 'x', y = 'y' }) {
+  const from = spots.map(s => s[x]);
+  const sideOf = (s) => Math.sign(s[x] - way(s)[0]);
+  const place = (want) => spots.forEach((s, i) => {
+    const [cx, half] = way(s), band = (p) => [p[y] - p.size * 0.4 - 2, p[y] + p.size * 0.6];   // the rows its grass covers
+    const clear = (v) => spots.slice(0, i).every(p => Math.abs(v - p[x]) >= p.size + s.size + 5 || band(p)[1] < band(s)[0] || band(s)[1] < band(p)[0]);
+    const ok = (v, side, apart) => {
+      const [lo, hi] = side && rest ? rest : view(s);
+      return v >= lo + 2 && v <= hi - 2 && Math.abs(v - cx) >= half + s.size + 4 && (!side || Math.sign(v - cx) === side) && (!apart || clear(v));
+    };
+    for (const [side, apart] of [[want.get(s), true], [0, true], [0, false]]) {
+      for (let d = 0; d <= 400; d++) for (const v of [from[i] + d, from[i] - d]) if (ok(v, side, apart)) { s[x] = Math.round(v); return; }
+    }
+    s[x] = offTheWay(from[i], s.size + 2, cx, half, ...view(s));
+  });
+  place(new Map());
+  const shown = rest ? spots.filter(s => s[x] > rest[0] && s[x] < rest[1]) : [];
+  if (shown.length > 1 && shown.every(s => sideOf(s) === sideOf(shown[0]))) {
+    const nearest = shown.reduce((a, b) => (b[y] > a[y] ? b : a));
+    place(new Map([[nearest, -sideOf(nearest)]]));
+  }
 }
 
 /** The meadow: grass to the bottom, a stream winding down from the woods, flowers, and patches of the games' tall grass. */
@@ -374,10 +398,7 @@ function paintMeadow(g, w, H, top, { ground, water, flowers, tall }, rand, patch
     if (rand() < 0.35) { g.fillStyle = water[1]; g.fillRect(Math.round(cx - half + rand() * half * 1.5), y, 2, 1); }
     stream.push([cx, y, half]);
   }
-  for (const p of withStream ? patches : []) {   // nobody hides in the water
-    const [cx, , half] = stream[Math.min(stream.length - 1, Math.max(0, p.y - top))];
-    p.x = offTheWay(p.x, p.size + 2, cx, half + 1, ...(p.view || [0, w]));
-  }
+  if (withStream) settle(patches, { way: (p) => { const [cx, , half] = stream[Math.min(stream.length - 1, Math.max(0, p.y - top))]; return [cx, half + 1]; }, view: (p) => p.view || [0, w] });   // nobody hides in the water
   for (let n = 0; n < w / 7; n++) {   // flower patches
     const fx = rand() * w, fy = top + 4 + rand() * (H - top - 4), colour = flowers[Math.floor(rand() * flowers.length)];
     for (let k = 0; k < 5; k++) { g.fillStyle = colour; g.fillRect(Math.round(fx + (rand() - 0.5) * 8), Math.round(fy + (rand() - 0.5) * 4), 1, 1); }

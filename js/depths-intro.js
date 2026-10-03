@@ -17,7 +17,7 @@
    and slid and grown about the Well by the camera at their own speeds.
    ============================================================ */
 
-import { ease, span, layer, offTheWay } from './biome-intro.js';
+import { ease, span, layer, settle } from './biome-intro.js';
 import { playSound } from './audio.js';
 
 const PUSH = { sky: 0.04, far: 0.12, mid: 0.3, wall: 0.55, ground: 0.6, fore: 1.1 };
@@ -290,10 +290,10 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
 
   // ---- where the Pokémon step out: from behind crystal outcrops ahead of where the camera comes to rest ----
   const spots = beats.POPS.map((ms, i) => {
-    const depth = [0.4, 0.25, 0.62][i], y = Math.round(hz + span0 * depth), g = depth + 0.03;   // beside the way worn to the Well, not on it
-    const x = offTheWay(Math.round(W * [0.3, 0.68, 0.44][i]), Math.round(5 + depth * 12) + 3, VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16, 0, W, [-1, 1, 1][i]);
+    const depth = [0.4, 0.25, 0.62][i], y = Math.round(hz + span0 * depth), x = Math.round(W * [0.3, 0.68, 0.44][i]);
     return { ms, x, y, scale: 0.6 + depth * 0.6, size: Math.round(5 + depth * 12) };
   });
+  settle(spots, { way: (s) => { const g = (s.y - hz) / span0 + 0.03; return [VX + Math.sin(g * 4) * W * 0.04, 1 + g * W * 0.16]; }, view: () => [0, W], rest: [0, W] });   // beside the way worn to the Well, either side of it
   const outcrops = spots.map((s, i) => {
     const w = s.size * 2 + 6, h = s.size * 2 + 4, p = pixels(w, h), cx = w / 2, foot = h - 1;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
