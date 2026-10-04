@@ -1167,7 +1167,9 @@ function offerItem(item, next, { opened = false } = {}) {
   // picking one of yours to toss shows what each does, side by side, so you know what you're trading (the user's call)
   const tips = el('div', 'swap-tips');
   tips.hidden = true;
-  let toss = null, taking = false;
+  // the item rises where the ball was, so a quick second tap on the ball, or a double tap, used to bag it unseen:
+  // taps wait until it has risen, and the tap that picks it can't also take it
+  let toss = null, taking = false, ready = opened, pickedAt = 0;
 
   const art = itemBallArt(['poke', 'great', 'ultra', 'master'][run.biome] || 'poke'), ball = el('button', 'item-ball');
   ball.type = 'button';
@@ -1192,6 +1194,7 @@ function offerItem(item, next, { opened = false } = {}) {
     stage.classList.replace('sealed', 'open');
     await sleep(reduced ? 0 : 900);
     if (run !== thisRun || !ball.isConnected) return;
+    ready = true;
     sayLines(found);
   });
 
@@ -1213,11 +1216,20 @@ function offerItem(item, next, { opened = false } = {}) {
     stage.append(el('p', 'float-caption', 'Your Bag'), row, tips);
   }
   thing.addEventListener('click', () => {
+    if (!ready || performance.now() - pickedAt < 400) return;
     if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
-    if (!full && go.hidden) { thing.classList.add('chosen'); go.hidden = false; return sayLines([`${item.name}: ${item.text}`, `Put the ${item.name} in your Bag?`]); }
+    if (!full && go.hidden) {
+      pickedAt = performance.now();
+      thing.classList.add('chosen');
+      tips.replaceChildren(swapTip('in', item.name, item.text));
+      tips.hidden = false;
+      go.hidden = false;
+      return sayLines([`Put the ${item.name} in your Bag?`]);
+    }
     take();
   });
   go.addEventListener('click', take);
+  if (!full) stage.append(tips);
   stage.append(go);
   $('reward-options').append(stage);
 

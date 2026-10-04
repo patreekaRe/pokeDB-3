@@ -1332,6 +1332,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   as a boss storm rolls in; bosses have none. The piles sit on plates in the biome's colour; walked map routes carry paw
   prints (`footprints()` in `js/map.js`); a Pokédex entry (main and Safari) cries and hops, then idles with a bounce.
 - Item found (2026-10-03): tapping the item before Put in Bag says what it does first, then asks (it only asked).
+- Item found, part 2 (2026-10-03): the first tap on the item only picks it: its description box and Put in Bag come up together
+  (the text box just asks); a second tap or the button bags it. Taps wait until it has risen out of the ball and a double
+  tap counts once, since a quick second tap on the ball used to bag it unseen.
 - Settings and battle QoL (polish batch 3, 2026-10-03): the Poké Ball menu's Sound is Settings (⚙️) now: the speaker,
   a 🎵 music bar and a 🔔 effects bar (cries go with effects; `musicVolume` / `sfxVolume`, an old save's `volume` seeds
   both), Battle speed 1x / 2x (`battleSpeed`: `pause()` in `js/battle.js` halves the enemy turn's and your hits' waits,
