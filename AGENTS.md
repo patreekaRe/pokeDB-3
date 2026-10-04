@@ -14,7 +14,7 @@ three places:
 
 - Polish batch item 1 (battle feel) is done: damage/block preview on a raised card, enemy wind-up and recoil, red
   super-effective numbers, rare-card shimmer and the upgraded-card burst. Item 2 (world polish) is done too: battle
-  weather, biome-coloured piles, map footprints, Pokédex cries. Item 3 (settings and battle QoL) is done: music and
+  weather, map footprints, Pokédex cries. Item 3 (settings and battle QoL) is done: music and
   effects volume apart, a 1x / 2x battle speed, the end-turn warning, the deck view's sort and filter (checked headless at
   390x844 and 1280x800; the user still has to try 2x in a real fight). Next in `docs/roadmap.md`: Records QoL.
 
