@@ -205,6 +205,7 @@
 .card.small .card-name { font-size: calc(10cqw * var(--name-fit, 1)); height: 24cqw; padding: 0 16.5cqw; }
 .card.small .card-art { height: auto; flex: 1; font-size: 30cqw; --box-w: 64cqw; --box-h: 60cqw; }
 .card-cost.cheaper { color: #189038; text-shadow: 0.9cqw 0.9cqw 0 #a8d8b0; }
+.card-cost.dearer { color: #c82828; text-shadow: 0.9cqw 0.9cqw 0 #f0b0a8; }
 .card.small .card-cost { top: 9.5cqw; left: 3.5cqw; width: 15cqw; height: 15cqw; font-size: 10.5cqw; }
 
 /* ---------- cards in your battle hand ---------- */

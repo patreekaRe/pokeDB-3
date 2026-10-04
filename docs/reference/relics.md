@@ -23,7 +23,7 @@ damage one plus two per archetype, one of them a rule-changer (Fire: Tamato Berr
 the Burn again at your turn's start, Black Sludge +3 per attack for 1 HP on the turn's first (`battle.sludged`), Salac Berry = Runic
 Cube (draws on every HP loss, in `markHurt()`), Dawn Stone = Dead Branch, Smoke-Poke Tail = Charon's Ashes (4); Grass: Protein = Shuriken, Muscle
 Wing +1 to every strength gain, Gooey Mulch 2 Leech Seed at the start, Enigma Berry (heals hit the enemy), Max
-Mushrooms = Snecko Eye (a drawn card is a copy costing 0-3 with `orig`, so `settled()` restores it), Toxic Plate =
+Mushrooms = Snecko Eye (a drawn card is a copy costing 0-3 with `orig`, so `settled()` restores it; `makeCard()` compares against `orig.cost`, so a roll shows green when cheaper, red when dearer), Toxic Plate =
 Champion Belt; Water: Blue Flute +1 Tide a turn, Lustrous Orb (spending Tide leaves half), Eviolite 3 block every turn (Orichalcum never fired: Water nearly always has block),
 Everstone = Calipers (block drops by 10), Slowpoke Tail = Runic Pyramid, Heart Scale = Tough Bandages). Any type:
 Casteliacone (Ice Cream: unspent PP carries over), Magnet (Unceasing Top), Lum Berry (Medical Kit: status cards

@@ -124,10 +124,13 @@ export function makeCard(card, options = {}) {
   const node = el('div', `card type-${card.type}${card.upgraded ? ' upgraded' : ''}${card.status ? ' status' : ''}`);
   node.dataset.id = card.id;
 
-  // options.cost: what it costs right now in battle (Mind Blown, Blue Flare), shown green when it's cheaper
+  // options.cost: what it costs right now in battle (Mind Blown, Blue Flare), green when cheaper, red when dearer.
+  // A Max Mushrooms roll is a copy with the rolled cost that keeps the real card as `orig`, so compare against that.
   const shown = options.cost ?? card.cost;
-  const cost = el('span', `card-cost${shown !== card.cost ? ' cheaper' : ''}`, String(shown));
-  cost.title = card.cost === 'X' ? 'Costs all your energy' : `Costs ${shown} energy${shown !== card.cost ? ` right now (normally ${card.cost})` : ''}`;
+  const normal = card.orig?.cost ?? card.cost;
+  const shift = typeof shown !== 'number' || shown === normal ? '' : shown < normal ? ' cheaper' : ' dearer';
+  const cost = el('span', `card-cost${shift}`, String(shown));
+  cost.title = card.cost === 'X' ? 'Costs all your energy' : `Costs ${shown} energy${shift ? ` right now (normally ${normal})` : ''}`;
   if (card.unplayable) cost.hidden = true;
 
   const name = el('h3', 'card-name', card.name);
