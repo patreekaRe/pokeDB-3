@@ -1059,27 +1059,17 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-foot .level-chip { font-size: 0.7rem; padding: 1px 8px; }
 .ability-chip .item-sprite { width: 1.3em; height: 1.3em; margin: -0.2em 0; }
 .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
-.run-ability { display: inline-flex; cursor: help; }
-/* The Ability is just its capsule beside the name (tap for its text). Blaze only counts below half HP: dim until then,
-   then the capsule glows and bobs and your Pokémon flickers with flame */
-/* On the map it's a little cream tile in the HP tag's look, a shine sweeping across it now and then, so it reads as something to tap */
-.run-name .run-ability {
-  flex: none; position: relative; overflow: hidden; align-items: center; justify-content: center;
-  width: 28px; height: 26px; margin: -5px 0 -5px 8px;
-  border: 2px solid #181818; border-radius: 6px;
-  background: #f8f8f0;
-  box-shadow: inset 0 -3px 0 #d8d0b8, 2px 2px 0 rgba(0, 0, 0, 0.45);
-}
-.run-name .run-ability::after {
-  content: ""; position: absolute; top: -4px; bottom: -4px; left: 0; width: 6px;
-  background: rgba(255, 255, 255, 0.85); transform: translateX(-12px) skewX(-20deg);
-  pointer-events: none; animation: abilityShine 3.5s steps(10) infinite 1s;
-}
-@keyframes abilityShine { 0% { transform: translateX(-12px) skewX(-20deg); } 25%, 100% { transform: translateX(34px) skewX(-20deg); } }
-.run-ability .item-sprite { width: 22px; height: 22px; margin: 0; filter: drop-shadow(0 1px 0 #000); }
-.run-ability[data-state="off"] .item-sprite { opacity: 0.5; filter: grayscale(0.8); }
-.run-ability[data-state="on"] { border-color: #ff8a20; box-shadow: 0 0 0 2px #181818, 0 0 8px 2px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
-.run-ability[data-state="on"] .item-sprite { filter: sepia(1) saturate(4) hue-rotate(-20deg) drop-shadow(0 0 2px #ffd040); }
+/* The Ability is a pill in the starter's colour left of the Level chip (tap for its text). Blaze only counts below half
+   HP: the pill is dim until then, then it glows and bobs and your Pokémon flickers with flame */
+.run-ability { flex: none; cursor: help; }
+.run-ability .pxb-i { font-size: 0.6rem; padding: calc(2.5 * var(--p)) calc(5 * var(--p)) calc(2 * var(--p)); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); }
+.run-ability .pxb-i::after { display: none; }
+.run-ability[data-type="grass"]   { --base: #2ea84a; --hi: #62d474; --lo: #1c7a34; }
+.run-ability[data-type="fire"]    { --base: #f07a1e; --hi: #ffa650; --lo: #b85010; }
+.run-ability[data-type="water"]   { --base: #2f7de8; --hi: #6aaaf8; --lo: #1c52b0; }
+.run-ability[data-type="psychic"] { --base: #b43ad8; --hi: #d670f0; --lo: #7a2098; }
+.run-ability[data-state="off"] { filter: saturate(0.7) brightness(0.85) drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)); }
+.run-ability[data-state="on"] { filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)) drop-shadow(0 0 4px #ff5010); animation: blazeCapsule 0.8s steps(2) infinite; }
 @keyframes blazeCapsule { 50% { translate: 0 -2px; } }
 .run-sprite[data-blaze] { animation: blazeAura 0.5s steps(1) infinite; }
 @keyframes blazeAura {
@@ -1087,14 +1077,14 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 5px #ff5010) drop-shadow(0 -4px 3px #ffd040); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .run-ability[data-state="on"], .run-name .run-ability::after { animation: none; }
+  .run-ability[data-state="on"] { animation: none; }
   .run-sprite[data-blaze] { animation: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 4px #ff7a18); }
 }
 
 /* HP and Gold/Silver's thin blue EXP bar share one tag, the EXP flush under the HP */
 .run-bars { align-items: stretch; }
 /* the tag runs down beside the EXP bar too, so HP and EXP read as one block */
-.run-bars .gb-hp-tag { border-radius: 6px 0 0 6px; }
+.run-bars .gb-hp-tag { border-radius: 6px 0 0 6px; display: flex; align-items: center; }
 .gb-bars { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .gb-bars .gb-hp-track { flex: none; }
 .gb-exp { display: block; height: 10px; padding: 2px; border: 2px solid #181818; border-top: 0; border-radius: 0 0 6px 0; background: #f8f8f0; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); cursor: help; margin-top: -2px; }

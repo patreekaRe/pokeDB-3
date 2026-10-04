@@ -496,7 +496,7 @@ function showAbility() {
     if (state === 'on') $('run-sprite').dataset.blaze = '';
   }
   el.dataset.state = state;
-  el.replaceChildren(itemSprite(ability));
+  el.dataset.type = run.starter.type;
   el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${ability.amount} damage!` : ''}`;
 }
 
