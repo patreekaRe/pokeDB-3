@@ -1061,15 +1061,13 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
 /* The Ability is a pill in the starter's colour left of the Level chip (tap for its text). Blaze only counts below half
    HP: the pill is dim until then, then it glows and bobs and your Pokémon flickers with flame */
-.run-foot .run-ability { flex: none; cursor: help; margin-right: auto; --p: 2px; }
-.run-foot .run-ability .pxb-i { font-size: 0.5rem; letter-spacing: 0.06em; padding: calc(1.5 * var(--p)) calc(3 * var(--p)) var(--p); color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4); }
-.run-foot .run-ability .pxb-i::after { display: none; }
-.run-ability[data-type="grass"]   { --base: #2ea84a; --hi: #62d474; --lo: #1c7a34; }
-.run-ability[data-type="fire"]    { --base: #f07a1e; --hi: #ffa650; --lo: #b85010; }
-.run-ability[data-type="water"]   { --base: #2f7de8; --hi: #6aaaf8; --lo: #1c52b0; }
-.run-ability[data-type="psychic"] { --base: #b43ad8; --hi: #d670f0; --lo: #7a2098; }
-.run-ability[data-state="off"] { filter: saturate(0.7) brightness(0.85) drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)); }
-.run-ability[data-state="on"] { filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)) drop-shadow(0 0 4px #ff5010); animation: blazeCapsule 0.8s steps(2) infinite; }
+.run-foot .run-ability { flex: none; cursor: help; margin-right: auto; font-size: 0.7rem; padding: 1px 8px; border: 1px solid; }
+.run-ability[data-type="grass"]   { background: #1c5a2c; color: #b8f0c0; border-color: #62d474; }
+.run-ability[data-type="fire"]    { background: #6a3008; color: #ffd0a0; border-color: #ffa650; }
+.run-ability[data-type="water"]   { background: #173a78; color: #cfe2ff; border-color: #6aaaf8; }
+.run-ability[data-type="psychic"] { background: #4e1666; color: #f0c8ff; border-color: #d670f0; }
+.run-ability[data-state="off"] { filter: saturate(0.7) brightness(0.85); }
+.run-ability[data-state="on"] { box-shadow: 0 0 6px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
 @keyframes blazeCapsule { 50% { translate: 0 -2px; } }
 .run-sprite[data-blaze] { animation: blazeAura 0.5s steps(1) infinite; }
 @keyframes blazeAura {
