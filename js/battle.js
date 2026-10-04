@@ -401,8 +401,21 @@ function beginPlayerTurn() {
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry
   b.busy = false;
+  if (b.turn === 1) lockDeal(b.hand.filter(h => h.fresh).length);
   renderAll();
 }
+
+/* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
+   card mid-slide, picked a card before the player had seen the hand. Matches .card.deal's 0.4 s and its 70 ms stagger. */
+let dealLockUntil = 0;
+function lockDeal(n) {
+  const ms = n ? (n - 1) * 70 + 400 : 0;
+  dealLockUntil = performance.now() + ms;
+  const box = $('hand');
+  box.classList.add('dealing');
+  setTimeout(() => box.classList.remove('dealing'), ms);
+}
+const dealing = () => performance.now() < dealLockUntil;
 
 /** Big Root: extra healing on heals that come from cards and powers (not other relics). */
 const healBonus = () => (hasRelic('big-root') ? 2 : 0);
@@ -2131,6 +2144,7 @@ let choosing = null;       // { resolve } while a card asks you to pick a card i
 let pilePick = null;       // { done } while a card asks you to pick a card from a pile (pickFromPile)
 
 function tapCard(uid) {
+  if (dealing()) return;
   if (choosing) {
     // like playing a card: the first tap lifts it with a button naming what happens, the second confirms
     const entry = battle.hand.find(h => h.uid === uid);

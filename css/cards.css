@@ -219,7 +219,7 @@
 .card.in-hand + .card.in-hand { margin-left: calc(-1 * var(--overlap, 0px)); }
 .card.in-hand:is(:hover:not(.unplayable), .selected) { rotate: 0deg; translate: 0; z-index: 2; }
 .card.in-hand.unplayable { filter: grayscale(0.7) brightness(0.7); }
-.card.in-hand.waiting { pointer-events: none; }
+.card.in-hand.waiting, #hand.dealing .card { pointer-events: none; }
 .card.in-hand:hover:not(.unplayable) { transform: translateY(-16px) scale(1.06); }
 
 .card.deal { animation: deal 0.4s ease-out backwards; }   /* backwards, not both: holding the end state would block the hover lift */
