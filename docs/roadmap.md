@@ -30,7 +30,6 @@ The user's second pick (2026-10-03), one session each:
   attack is raised and swaying at low HP, quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
-- **A Safari "zone legend"**: a weekly Pokémon catchable only on the last floor.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
 
@@ -39,6 +38,7 @@ The user's second pick (2026-10-03), one session each:
 - Gen 6-9 starters: the sprites staged in `assets/pokemon/_incoming/` have no Grass line.
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
+- A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
 
 ## Waiting on the user
 
