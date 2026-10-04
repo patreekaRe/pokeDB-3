@@ -503,43 +503,9 @@ function drawRoutes(lines) {
   svg.path = path;   // walkTo() draws the walked trail with it
   for (const line of lines) path(line, ROUTE.edge, 1);
   for (const state of ['fill', 'walked', 'active']) {
-    for (const line of lines.filter(l => l.state === state)) {
-      path(line, ROUTE[state === 'walked' ? 'fill' : state], 0.75);
-      if (state === 'walked') footprints(svg, line.points);
-    }
+    for (const line of lines.filter(l => l.state === state)) path(line, ROUTE[state], 0.75);
   }
   return svg;
-}
-
-/* Your Pokémon's footprints along the routes it has walked (they were red dashes): little paw prints, left then right
-   of the line, pointing the way it went. Returns reveal(distance), showing the prints up to that far, for walkTo(). */
-const PRINT_GAP = 0.42;   // tiles between prints
-function footprints(svg, points) {
-  const NS = 'http://www.w3.org/2000/svg', group = document.createElementNS(NS, 'g'), prints = [];
-  group.setAttribute('fill', ROUTE.walked);
-  group.setAttribute('shape-rendering', 'crispEdges');
-  let along = 0, next = PRINT_GAP * 0.6, side = 1;
-  for (let i = 1; i < points.length; i++) {
-    const [[x1, y1], [x2, y2]] = [points[i - 1], points[i]], len = Math.hypot(x2 - x1, y2 - y1);
-    if (!len) continue;
-    const ux = (x2 - x1) / len, uy = (y2 - y1) / len, turn = Math.atan2(ux, -uy) * 180 / Math.PI;
-    for (; next <= along + len; next += PRINT_GAP, side = -side) {
-      const k = next - along, x = x1 + ux * k - uy * side * 0.13 + 0.5, y = y1 + uy * k + ux * side * 0.13 + 0.5;
-      const print = document.createElementNS(NS, 'g');
-      print.setAttribute('transform', `translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${turn.toFixed(1)})`);
-      for (const [rx, ry, w, h] of [[-0.09, -0.04, 0.18, 0.15], [-0.11, -0.15, 0.07, 0.07], [0.04, -0.15, 0.07, 0.07]]) {
-        const r = document.createElementNS(NS, 'rect');
-        r.setAttribute('x', rx); r.setAttribute('y', ry); r.setAttribute('width', w); r.setAttribute('height', h);
-        print.append(r);
-      }
-      print.at = next;
-      prints.push(print);
-      group.append(print);
-    }
-    along += len;
-  }
-  svg.append(group);
-  return (upTo) => { for (const p of prints) p.style.visibility = p.at <= upTo ? '' : 'hidden'; };
 }
 
 /** Which tiles are what: ground, water, mountain... Blobs grow in the gaps between routes. */
@@ -803,7 +769,7 @@ function place(elem, x, y) {
 
 /*
  * Tapping a reachable room walks your Pokémon there along its route a tile at a time, bobbing every other
- * step like the overworld walk, leaving its footprints behind it; the room opens once it
+ * step like the overworld walk, painting the road red behind it; the room opens once it
  * arrives, and taps are ignored meanwhile. Showdown front sprites face left, so it flips to walk right.
  */
 const WALK_MS = [500, 850];    // one link's walk, from a short straight link to the long start road (the user's pace: 0.3-0.5 s zoomed past, 0.65-1.1 s dragged)
@@ -825,18 +791,13 @@ function walkTo(node, onPick) {
   img.classList.remove('at-start');
   img.classList.add('walking');
   if (dx) img.style.setProperty('--face', dx > 0 ? -1 : 1);
-  const trail = routesSvg.path({ points: [] }, ROUTE.fill, 0.75);
-  const reveal = footprints(routesSvg, points);
-  const far = steps.map((p, k) => (k ? Math.hypot(p[0] - steps[k - 1][0], p[1] - steps[k - 1][1]) : 0));
-  for (let k = 1; k < far.length; k++) far[k] += far[k - 1];
-  reveal(0);
+  const trail = routesSvg.path({ points: [] }, ROUTE.walked, 0.75);
   let i = 0;
   const step = () => {
     i++;
     place(img, ...steps[i]);
     img.classList.toggle('bob', i % 4 < 2);
     trail.setAttribute('points', polyPoints(steps.slice(0, i + 1)));
-    reveal(far[i]);
     if (i < steps.length - 1) return setTimeout(step, ms);
     img.classList.remove('bob');
     setTimeout(arrive, 120);

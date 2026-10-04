@@ -1352,3 +1352,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (Chimchar) LUFS, mean -13.2. The 71 more than 0.8 LU off -13 were re-encoded from their originals (gain, then a -1 dBFS
   `alimiter`, mono 64 kbps at their own sample rate; the gain corrected from a re-measure); now -14.3 (Tepig, limiter-bound)
   to -12.2, mean -13.1, so `CRY_VOLUME` is unchanged. New cries: aim for -13 LUFS.
+- Map trail (2026-10-03): walked routes are filled solid red over the road's full width, painted in as your Pokémon walks;
+  the paw prints (`footprints()`) were too small (the user's call).

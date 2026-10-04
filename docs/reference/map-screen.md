@@ -71,8 +71,8 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   the start road still jog on a shared row, since those all merge anyway.
   Links used to jog on a shared row halfway up, which joined routes from
   different rooms and showed ways that didn't exist on almost every map.
-  Routes are cream; walked ones carry your Pokémon's red paw prints (`footprints()`, left and right of the line, pointing
-  the way it went; red dashes until 2026-10-03, polish batch 2), laid one by one as it walks, and the routes you can
+  Routes are cream; walked ones are filled solid red, the road's full width (red dashes, then little paw prints until
+  2026-10-03: the user found the prints too small), painted in as it walks, and the routes you can
   take next are white.
 - Rooms are `.map-node` buttons (a tile bigger than the `.map-town` square
   drawn inside, for tap size): orange, red for elites, a gold boss. Poké
@@ -89,7 +89,7 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
 - Tapping a reachable room walks your sprite there first (`walkTo()`):
   along the same route `linkPoints()` gives `routeLines()`, one tile a step,
   bobbing every other step, flipped (`--face`) to walk right (Showdown
-  front sprites face left), with the red walked dashes trailing it. 500–850
+  front sprites face left), filling the road red behind it. 500–850
   ms a link (`WALK_MS`; faster looked like zooming), then the room opens; taps are ignored meanwhile,
   and reduced motion skips it (the user's picks: brisk, stepped, trailed).
 - Every battle opens with a Gen 3/4-style transition (`js/transition.js`, the user's call):
