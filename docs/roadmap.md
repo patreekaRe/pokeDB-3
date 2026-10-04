@@ -26,8 +26,8 @@ The user's second pick (2026-10-03), one session each:
 ## Ideas, not agreed yet (ask the user before building)
 
 - More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
-  Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting, enemies bracing when an
-  attack is raised and swaying at low HP, quiet background sounds for each place under the music.
+  Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting,
+  quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s

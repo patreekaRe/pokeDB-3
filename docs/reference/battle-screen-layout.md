@@ -179,7 +179,7 @@ Re-measure (ImageDecoder over all frames) when adding a sprite. The enemy's pad 
 sized from `--base` on `.enemy-zone` and sits so the feet land just below its middle;
 `horizonRow()` in `js/scene.js` mirrors that. The deck
 preview's swipeable evolution line uses bigger steps (64/88/116px).
-Enemy sprites are frameless; elites and bosses are marked by a red/gold glow.
+Enemy sprites are frameless; elites and bosses are marked by a red/gold glow. **Body language** (2026-10-03): the GIF sits in `#enemy-pose` (`.enemy-pose`), a wrapper of its own between the box (whose `.attacking` / `.sinking` / `.emerging` / `.hit` animate it) and the GIF (`.recoil`, Eternamax's breath and charge, the reveal), so `renderPose()` in `js/battle.js` can animate it without clashing: `.bracing` (a crouch and flinch, `transform`) while the risen card is an attack, `.swaying` (`rotate`, so the two stack) below 25% HP, both from the feet (`transform-origin: 50% 100%`, where `sizeSprite()` stands them). It runs from `renderHand()` and `renderBars()`; off under reduced motion and on a `.defeated` / `.sinking` / `.captured` / `.ran` box. Kenmatta's aura canvas goes in it too (`img.after()`), so it moves with him.
 Every screen is set in a pixel-art scene per biome
 (`js/scene.js`, the user's call: the blurred photos clashed with the 8-bit
 look; there are no photo backdrops left), lit for the time of day.

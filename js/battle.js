@@ -1922,6 +1922,7 @@ function renderBars() {
   setHpBar('player', b.hp, b.maxHp);
   setLoop('low-hp', !b.over && b.hp > 0 && b.hp <= b.maxHp * 0.2);   // the games' low-HP beeping
   setHpBar('enemy', b.enemy.hp, b.enemy.maxHp);
+  renderPose();
   $('player-plate').classList.toggle('has-block', b.block > 0);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
@@ -2076,6 +2077,17 @@ function renderHand() {
   });
   fanHand();
   renderFocus();
+  renderPose();
+}
+
+/* The enemy's body language, on #enemy-pose (between the box's lunges and the GIF's own animations): it braces while a
+   raised attack is aimed at it, and sways on its feet below a quarter of its HP. */
+function renderPose() {
+  const b = battle, pose = $('enemy-pose');
+  const up = !choosing && b.hand.find(h => h.uid === selectedUid);
+  const standing = !b.over && b.enemy.hp > 0;
+  pose.classList.toggle('bracing', standing && !!up && isAttack(up.card));
+  pose.classList.toggle('swaying', standing && b.enemy.hp < b.enemy.maxHp * 0.25);
 }
 
 /** Fans the hand in a gentle arc, like cards held in a hand: each overlaps the last a little,

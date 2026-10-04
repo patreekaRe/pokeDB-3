@@ -1366,3 +1366,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   droplets, Grass leaves, Psychic sparkles, Neutral white) and an exhausted one burns away from the bottom up into embers,
   replacing the grey smoke puff; ethereal and Burning Jealousy exhausts burn too. `js/cardfx.js`, one low-res canvas;
   halved at 2x speed, off under reduced motion, never awaited except a picked exhaust's burn (0.56 s, was 0.9 s).
+- Enemy reactions (polish idea, the user's pick, 2026-10-03): the enemy braces (crouches and flinches back) while a raised
+  card is an attack, relaxing when it's lowered or another kind is raised, and sways on its feet below 25% HP until healed
+  back over. `renderPose()` in `js/battle.js` toggles `.bracing` / `.swaying` on `#enemy-pose`, a wrapper between the box
+  (lunge, sink, drop-in) and the GIF (recoil, glow), pivoting on the feet; off under reduced motion and while it faints,
+  sinks, is caught or runs.
