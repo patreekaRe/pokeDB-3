@@ -16,7 +16,28 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
    a Safari theme, a credits song, the Sealed Gate scene, the Mart and the Game Corner. Real recordings can also replace
    synths (block, stick, gate-hum / gate-crack / gate-shatter, fireworks).
 
+The user's second pick (2026-10-03), one session each:
+
+7. **Loss recap.** Run in: CLOUD. A lost run gets its own short page before the result window, the way wins get
+   `statsPanel()` in `js/halloffame.js`: who beat you and with what move (the battle's `onEnd` already passes `foe`),
+   the run's numbers from `run.tally`, your HP over the run (a small line chart, one point a floor), and the final deck
+   (`fillDeck()`). Quiet and short, never the Safari's or a peek's. Wire it in `endRun()` in `js/run.js` beside
+   `recordLoss()`; save the HP points in the tally so the Record Book's lost-run lines can open the same page.
+8. **Card trails.** Run in: LOCAL (Desktop app). A played attack arcs from the hand to the enemy with a trail in its
+   type's colour (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white), a block card flies to your
+   Pokémon, and an exhausted card burns away into embers (every exhaust goes through `exhaustCard()` in
+   `js/battle.js`; plays through `playCard()` / `resolveCard()`). Pixel art, whole pixels; halved under 2x battle speed
+   (`.fast-battle`), off under reduced motion. Must never delay the next card being playable.
+9. **Seasonal title screen.** Run in: LOCAL (Desktop app). The title dresses up by the date, the way `js/daytime.js`
+   follows the clock: October Halloween (pumpkins on the ledge, Gastly / Haunter in the flyers' round, an orange dusk
+   tint), December snow, and room for more. A `season(now)` helper like `timeOfDay()`, and `?season=halloween` to pin it
+   for a playtest (as `?time=` does). Title only; battles and the map are untouched.
+
 ## Ideas, not agreed yet (ask the user before building)
+
+- More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
+  Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting, enemies bracing when an
+  attack is raised and swaying at low HP, quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **A Safari "zone legend"**: a weekly Pokémon catchable only on the last floor.
