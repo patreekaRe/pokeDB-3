@@ -212,7 +212,7 @@ let lastCue = -1;          // ctx time the latest effect started
 // the dimmed area around a blown-up card, anything with a note in its title) plays the confirm sound, unless that tap already
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
-const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, #evolve-scene.waiting, #hof-scene.waiting, .card-focus, .card-zoom, [title], [data-tip]';
+const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, #map-log, #evolve-scene.waiting, #hof-scene.waiting, #descent-scene.waiting, #gate-scene.waiting, .card-focus, .card-zoom, [title], [data-tip]';
 // ...except these back out (Back / Skip / Leave, No, a window's Close or ✕, a zoomed card), so they blip `cancel`
 const CANCELS = '#reward-skip, #coll-back, #sel-back, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {
