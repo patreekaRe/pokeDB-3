@@ -1767,10 +1767,22 @@ function abilityBanner() {
 /* Blaze lights up whenever HP falls below half (again after a heal took it back over); not during the intro. */
 function checkBlaze() {
   const b = battle;
+  showAbilityState();
   if (!hasAbility('blaze') || !b.turn) return;
   const lit = b.hp > 0 && b.hp < b.maxHp / 2;
   if (lit && !b.blazeLit) abilityBanner();
   b.blazeLit = lit;
+}
+
+/** The nameplate's Ability pill, like the map's: Blaze's is dim above half HP and lit below. */
+function showAbilityState() {
+  const b = battle, el = $('player-ability');
+  if (!b.ability) return;
+  const blaze = b.ability.id === 'blaze';
+  const state = !blaze ? '' : b.hp > 0 && b.hp < b.maxHp / 2 ? 'on' : 'off';
+  if (el.dataset.state === state && el.title) return;
+  el.dataset.state = state;
+  el.title = `Ability: ${b.ability.name}. ${b.ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${b.ability.amount} damage!` : ''}`;
 }
 
 /** A foe with `taunts` (Kenmatta) talks once as its HP drops below half and below a fifth. Said a beat after the hit,
@@ -1796,11 +1808,13 @@ function checkTaunts() {
 function setupBattleScreen() {
   const b = battle;
   $('player-name').textContent = stageName(b.starter, b.stage);
+  const type = b.starter.type;
+  $('player-type').textContent = TYPES[type].icon;
+  $('player-type').title = `${TYPES[type].label} type`;
+  $('player-type').className = `chip type-${type}`;
   $('player-ability').hidden = !b.ability;
-  if (b.ability) {
-    $('player-ability').replaceChildren(itemSprite(b.ability));   // the Bag's Ability Capsule, so it doesn't read as a type
-    $('player-ability').title = `Ability: ${b.ability.name}. ${b.ability.text}`;
-  }
+  $('player-ability').dataset.type = type;
+  showAbilityState();
   $('ability-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
