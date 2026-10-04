@@ -96,7 +96,7 @@
    in (refreshGame() in js/title.js) */
 .title-refresh .ta-pc { font-size: 24px; }
 .refresh-ico { display: block; width: 1em; height: 1em; fill: #fff; stroke: #1c1440; stroke-width: 0.6; paint-order: stroke; }
-.title-refresh .refresh-ico { animation: refreshNudge 4.5s ease-in-out 1.5s infinite; }
+.title-refresh .refresh-ico { animation: refreshNudge 2s ease-in-out 1s infinite; }
 @keyframes refreshNudge {
   0%, 70% { rotate: 0deg; scale: 1; filter: none; }
   80% { scale: 1.2; filter: drop-shadow(0 0 4px #ffd070); }
