@@ -1403,3 +1403,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the Sealed Gate at half HP or less, 35% of trips get Eternatus instead: a red glow pulsing three times behind the far
   hills (`redGlow()`) with `rumble-far`. `pickGuest()` rolls from `run.tally.startedAt` and the trip, so a refresh shows the
   same one. Playtest `?travel=shrine&flyer=lugia` (`eternatus`, `none`).
+
+- **Index filter and sort** (2026-10-04, the user's ask): the Index's card tabs get the deck view's All / Attacks / Skills /
+  Powers filter and a Cost / A-Z sort (`indexFilter` / `indexSort` in the save, `filtered()` in `js/cardindex.js`, reusing
+  `kindOf` / `costRank` from `js/deckpreview.js`); rarity groups stay, an emptied one is dropped, and A-Z sorts unseen cards
+  as ??? so their names stay hidden. Hidden on the Relics / Items tabs.

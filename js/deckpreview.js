@@ -17,9 +17,9 @@ export function fillDeck(container, ids, stage = 0) {
   );
 }
 
-const kindOf = (card) => card.power ? 'power' : (card.effects.damage || card.effects.blockDamage) ? 'attack' : 'skill';
+export const kindOf = (card) =>card.power ? 'power' : (card.effects.damage || card.effects.blockDamage) ? 'attack' : 'skill';
 // X after every number, unplayable cards last
-const costRank = (card) => card.unplayable ? 99 : card.cost === 'X' ? 98 : card.cost;
+export const costRank = (card) => card.unplayable ? 99 : card.cost === 'X' ? 98 : card.cost;
 const SORTS = {
   got: () => 0,
   cost: (a, b) => costRank(a.card) - costRank(b.card) || a.card.name.localeCompare(b.card.name),

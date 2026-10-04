@@ -10,24 +10,37 @@
 import { ALL_CARDS, TYPES, evolutionCardsFor } from './data/cards.js';
 import { RELICS, ABILITIES } from './data/relics.js';
 import { ITEMS } from './data/items.js';
-import { getSave } from './storage.js';
+import { getSave, updateSave } from './storage.js';
 import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
+import { kindOf, costRank } from './deckpreview.js';
 
 const TAB_LOOK = { mystery: { icon: '🔒', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
 
 let tab = 'fire';
 
-const costRank = (c) => (c.cost === 'X' ? 9 : c.cost);
-const byCost = (a, b) => costRank(a) - costRank(b) || a.name.localeCompare(b.name);
+const SORTS = {
+  cost: (a, b) => costRank(a) - costRank(b) || a.name.localeCompare(b.name),
+  name: (a, b) => a.name.localeCompare(b.name),
+};
 
-function group(label, cards, seen, note) {
+// the deck window's filter and sort; a locked card sorts as ??? so A-Z can't give its name away
+function filtered(cards, seen) {
+  const { indexFilter = 'all', indexSort = 'cost' } = getSave();
+  const nameOf = (c) => (seen.has(c.id) ? c.name : '???');
+  const sort = indexSort === 'name' ? (a, b) => nameOf(a).localeCompare(nameOf(b)) || SORTS.cost(a, b) : SORTS.cost;
+  return cards.filter(c => indexFilter === 'all' || kindOf(c) === indexFilter).sort(sort);
+}
+
+function group(label, all, seen, note) {
+  const cards = filtered(all, seen);
+  if (!cards.length) return [];
   const head = el('div', 'index-head');
   const title = el('h3', 'index-heading', label);
   title.append(el('span', 'index-count', `${cards.filter(c => seen.has(c.id)).length}/${cards.length}`));
   head.append(title);
   if (note) head.append(el('p', 'index-note', note));
-  return [head, ...cards.sort(byCost).map(card => (seen.has(card.id) ? zoomable(makeCard(card), card, 0) : lockedCard(card)))];
+  return [head, ...cards.map(card => (seen.has(card.id) ? zoomable(makeCard(card), card, 0) : lockedCard(card)))];
 }
 
 /** A move not met yet: its card's frame, a dark silhouette of its art, and ??? for its name and text. */
@@ -89,9 +102,18 @@ function renderThings() {
 
 function render() {
   $('index-cards').classList.remove('index-things');
+  const cardTab = !TAB_LOOK[tab];
+  $('index-tools').hidden = !cardTab;
+  if (cardTab) {
+    const { indexFilter = 'all', indexSort = 'cost' } = getSave();
+    for (const [id, value] of [['index-filter', indexFilter], ['index-sort', indexSort]]) {
+      for (const btn of $(id).children) btn.setAttribute('aria-pressed', String(btn.dataset.v === value));
+    }
+  }
   if (tab === 'mystery') renderMystery();
   else if (TAB_LOOK[tab]) renderThings();
   else renderCards();
+  $('index-empty').hidden = !cardTab || $('index-cards').children.length > 0;
   $('index-dialog').scrollTop = 0;
   for (const btn of document.querySelectorAll('.index-tab')) {
     btn.setAttribute('aria-selected', String(btn.dataset.type === tab));
@@ -100,13 +122,14 @@ function render() {
 }
 
 function renderMystery() {
-  const cards = ALL_CARDS.filter(card => card.type === 'psychic');
+  const all = ALL_CARDS.filter(card => card.type === 'psychic');
+  const cards = filtered([...all], new Set());
   const head = el('div', 'index-head');
   const title = el('h3', 'index-heading', '???');
-  title.append(el('span', 'index-count', String(cards.length)));
+  title.append(el('span', 'index-count', String(all.length)));
   head.append(title, el('p', 'index-note', 'The secret starter\'s moves are still unknown.'));
-  $('index-cards').replaceChildren(head, ...cards.map(card => lockedCard(card, true)));
-  $('index-total').textContent = `0/${cards.length} found`;
+  $('index-cards').replaceChildren(...(cards.length ? [head, ...cards.map(card => lockedCard(card, true))] : []));
+  $('index-total').textContent = `0/${all.length} found`;
 }
 
 function renderCards() {
@@ -160,6 +183,14 @@ function pick(type, focus = false) {
 export function initCardIndex() {
   const tabs = $('index-tabs');
   renderTabs();
+  for (const [id, key] of [['index-filter', 'indexFilter'], ['index-sort', 'indexSort']]) {
+    $(id).addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      updateSave(d => { d[key] = btn.dataset.v; });
+      render();
+    });
+  }
   tabs.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;

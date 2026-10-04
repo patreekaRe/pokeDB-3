@@ -2038,6 +2038,7 @@ button.hof-row.lost { cursor: pointer; }
 .deck-seg button:first-child { border-left: 0; }
 .deck-seg button:hover { background: var(--win-tile); }
 .deck-seg button[aria-pressed="true"] { background: #9aa2c8; color: #fff; text-shadow: 1px 1px 0 #565d84; }
+.index-tools { margin: 12px 0 0; }
 .deck-empty { margin: 12px 0; text-align: center; color: var(--muted); }
 @media (max-width: 420px) { .deck-seg button { padding: 6px 7px 5px; font-size: 0.62rem; } }
 

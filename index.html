@@ -451,7 +451,17 @@
   <dialog id="index-dialog" class="dialog wide-dialog index-dialog">
     <h2 tabindex="-1" autofocus>🃏 Index <span id="index-total" class="count"></span></h2>
     <div class="index-tabs" id="index-tabs" role="tablist" aria-label="Index tabs"></div>
+    <!-- the deck window's filter and sort, on the card tabs only (js/cardindex.js), remembered in the save -->
+    <div class="deck-tools index-tools" id="index-tools">
+      <div class="deck-seg" id="index-filter" role="group" aria-label="Show">
+        <button type="button" data-v="all">All</button><button type="button" data-v="attack">Attacks</button><button type="button" data-v="skill">Skills</button><button type="button" data-v="power">Powers</button>
+      </div>
+      <div class="deck-seg" id="index-sort" role="group" aria-label="Sort by">
+        <button type="button" data-v="cost">Cost</button><button type="button" data-v="name">A-Z</button>
+      </div>
+    </div>
     <div id="index-cards" class="card-pool" role="tabpanel"></div>
+    <p class="deck-empty" id="index-empty" hidden>No cards like that here.</p>
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
