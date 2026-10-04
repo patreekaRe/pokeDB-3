@@ -123,11 +123,11 @@ A card's pick from your hand (discard, exhaust, keep, Mimic's copy: `pickFromHan
 it like a played card with a button naming the verb (`PICK_VERBS`, `choosing.picked`), the second confirms (the user's call).
 While one is asked the battle dims under the hand and a banner names it (`renderPicking()`, `#pick-banner`, `PICK_TEXT`;
 `#battle-screen.picking`, `data-pick` colours it: exhaust purple, discard blue, keep green, copy gold, as are the pickable
-cards' pulsing rings and the risen card's button, `.pick-<verb>`), and an exhausted pick goes poof first, as does a card exhausted as it's played (an Exhaust card,
-Corruption, a status card under Lum Berry: `playCard()` starts it without waiting)
-(`smokeOut()`, skipped under reduced motion: it flashes grey in a ring of pixel smoke, shrinks and flies into the exhaust pile,
-like an item into the Bag, showing the pile if it was hidden and bumping it; its rule is `.card.exhaust-ghost`, since
-`.card.focus-card`'s own animation would win): the user exhausted a card thinking they were playing it (2026-09-28).
+cards' pulsing rings and the risen card's button, `.pick-<verb>`), and an exhausted pick burns away first, as does a card exhausted as it's played (an Exhaust card,
+Corruption, a status card under Lum Berry: `playCard()` starts it without waiting), an ethereal card at the end of the turn
+and Burning Jealousy's hand (`burnOut()` -> `burnAway()` in js/cardfx.js, roadmap 8, 2026-10-03; skipped under reduced motion,
+half as long under 2x speed: a ragged, glowing edge eats it from the bottom up, charring, its embers rising and a few drifting into
+the exhaust pile, which it shows if hidden and bumps): the user exhausted a card thinking they were playing it (2026-09-28).
 Playing a card takes two taps (clicks or Enter presses too), except a card that
 can't be played: one tap logs why and shakes the PP box, with no big preview
 covering it. `tapCard()` first
@@ -136,9 +136,12 @@ big copy straight up out of its place in the hand, StS-style (the user's call:
 it used to blow up in the middle over a dimmed screen): `popFromHand()` places it
 in `#card-focus` (a see-through full-screen layer, `.rise`), grows it from the hand
 card's box, hides the hand's copy (`.lifted`) and sets a small Play button under it.
-Once played it flies off to where it acts (`flyCard()`, the user's call 2026-09-28, 0.4 s, not awaited): an attack
-spins into the enemy as the hit lands, anything else drops glowing into your Pokémon; a card that exhausts poofs into the
-exhaust pile instead (`smokeOut()`). Tapping that big card plays it, tapping elsewhere or Escape cancels
+Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,
+0.2 s at 2x, never awaited): an attack arcs high, spinning, into the enemy as the hit lands, anything else drops glowing into your
+Pokémon, both shedding a trail in the card's type (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white;
+roadmap 8, 2026-10-03) with a burst where it lands. The particles are whole pixels on one low-res canvas (`.card-fx`, 3 CSS px
+a pixel on phones, 4 wider), faded by stepping down a palette; the card is a clone moved by hand. A card that exhausts burns
+away instead (`burnOut()`). Tapping that big card plays it, tapping elsewhere or Escape cancels
 (`cancelPick()`), and tapping another hand card through the layer switches
 (`elementsFromPoint`, by `data-uid`). Items still blow up at the bottom middle. The pick clears
 itself whenever the battle is busy or the card leaves the hand.

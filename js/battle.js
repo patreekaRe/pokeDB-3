@@ -34,6 +34,7 @@ import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
+import { flyTrail, burnAway } from './cardfx.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -624,8 +625,8 @@ async function playCard(uid) {
   const cost = costOf(card);
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
-  if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) smokeOut(uid);   // it poofs into the exhaust pile as it's played
-  else flyCard(uid, isAttack(card) ? 'enemy-img' : 'player-sprite');
+  if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) burnOut(uid);   // it burns away as it's played
+  else flyCard(uid, card);
   b.hand.splice(index, 1);
   if (!await resolveCard(card, x)) return;       // the player left the battle
 
@@ -658,6 +659,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
   if (e.exhaustHand) {
     // before the damage, which counts them (Burning Jealousy, Blast Burn)
     const going = b.hand.filter(h => e.exhaustHand === 'all' || (e.exhaustHand === 'status' ? h.card.status : !isAttack(h.card)));
+    going.forEach(h => burnOut(h.uid));
     b.hand = b.hand.filter(h => !going.includes(h));
     going.forEach(h => exhaustCard(h.card));
     e.exhausted = going.length;
@@ -1032,7 +1034,7 @@ async function pickFromHand(n, verb, act, only = () => true) {
     log(`Choose a card to ${verb}.`);
     const uid = await new Promise(resolve => { choosing = { resolve, only, verb, picked: null }; renderAll(); });
     if (battle !== b) return;
-    if (verb === 'exhaust') { renderPicking(); await smokeOut(uid); if (battle !== b) return; }
+    if (verb === 'exhaust') { renderPicking(); await burnOut(uid); if (battle !== b) return; }
     act(b.hand.find(h => h.uid === uid));
     renderAll();
   }
@@ -1410,6 +1412,7 @@ async function endTurn() {
   if (b.flex) { b.strength -= b.flex; b.flex = 0; }
   for (const h of b.hand) h.card = settled(h.card);   // Metronome's cards are only free this turn
   const fading = b.hand.filter(h => h.card.ethereal);
+  fading.forEach(h => burnOut(h.uid));
   b.hand = b.hand.filter(h => !h.card.ethereal);
   fading.forEach(h => exhaustCard(h.card));
   if (b.enemy.hp <= 0) { renderAll(); return finish(true); }   // Smoke-Poke Tail off a faded card
@@ -1881,67 +1884,32 @@ function renderPicking() {
   banner.hidden = false;
 }
 
-/** A played card flies off to where it acts, StS-style: an attack at the enemy, landing as the hit does (~0.2 s), and
-    a block, buff or power into your Pokémon (the user's call, 2026-09-28). It shrinks as it goes, so it reads as thrown. */
-function flyCard(uid, at) {
-  const from = $('hand').querySelector(`[data-uid="${uid}"]`);
+/** A card in your hand on screen: the risen one if it's up, else its spot in the hand. */
+function handCard(uid) {
   const risen = $('card-focus').querySelector('.focus-card');
-  const src = risen && !$('card-focus').hidden ? risen : from;
-  const target = $(at);
-  if (!src || !target || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const r = src.getBoundingClientRect(), to = target.getBoundingClientRect();
-  const ghost = src.cloneNode(true);
-  ghost.classList.add('fly-ghost', at === 'enemy-img' ? 'fly-attack' : 'fly-self');
-  ghost.removeAttribute('id');
-  Object.assign(ghost.style, { position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: 0, rotate: '0deg', translate: '0', transform: 'none' });
-  ghost.style.setProperty('--to-x', `${to.left + to.width / 2 - (r.left + r.width / 2)}px`);
-  ghost.style.setProperty('--to-y', `${to.top + to.height / 2 - (r.top + r.height / 2)}px`);
-  const wrap = el('div', 'exhaust-fx');
-  wrap.append(ghost);
-  document.body.append(wrap);
-  src.style.visibility = 'hidden';
-  setTimeout(() => wrap.remove(), 420);
+  if (risen && !$('card-focus').hidden && Number(risen.dataset.focusUid) === uid) return risen;
+  return $('hand').querySelector(`[data-uid="${uid}"]`);
 }
 
-/** A card exhausted from your hand, picked or played (an Exhaust card, a status card under Lum Berry), goes poof in a
-    puff of smoke where it sat, then flies into the exhaust pile, the way an item flies into the Bag (the user's calls,
-    2026-09-28). */
-async function smokeOut(uid) {
-  const from = $('hand').querySelector(`[data-uid="${uid}"]`);
-  const risen = $('card-focus').querySelector('.focus-card');
-  const src = risen && !$('card-focus').hidden ? risen : from;
-  if (!src || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+/** A played card flies off to where it acts, StS-style: an attack arcs at the enemy, landing as the hit does (~0.2 s),
+    and a block, buff or power drops into your Pokémon (the user's call, 2026-09-28), with a trail in the card's type's
+    colours (roadmap 8, `flyTrail()` in js/cardfx.js). */
+function flyCard(uid, card) {
+  const attack = isAttack(card);
+  flyTrail(handCard(uid), $(attack ? 'enemy-img' : 'player-sprite'), { type: card.type, attack, fast: speed() > 1 });
+}
+
+/** A card exhausted from your hand, picked, played or faded (an Exhaust card, a status card under Lum Berry, an
+    ethereal card, Burning Jealousy's hand) burns away into embers that drift into the exhaust pile (roadmap 8). */
+function burnOut(uid) {
+  const src = handCard(uid);
+  if (!src) return Promise.resolve();
   const pile = $('exhaust-count');
-  if (pile.hidden) {   // the first exhaust of the fight: the pile appears for the card to land in
+  if (pile.hidden) {   // the first exhaust of the fight: the pile appears for the embers to land in
     pile.replaceChildren(el('span', 'pile-icon', '🌫️'), el('b', '', String(exhaustedCards(battle).length)));
     pile.hidden = false;
   }
-  const r = src.getBoundingClientRect(), to = pile.getBoundingClientRect();
-  const ghost = src.cloneNode(true);
-  ghost.classList.add('exhaust-ghost');
-  ghost.removeAttribute('id');
-  Object.assign(ghost.style, { position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: 0, rotate: '0deg', translate: '0', transform: 'none' });
-  ghost.style.setProperty('--to-x', `${to.left + to.width / 2 - (r.left + r.width / 2)}px`);
-  ghost.style.setProperty('--to-y', `${to.top + to.height / 2 - (r.top + r.height / 2)}px`);
-  const wrap = el('div', 'exhaust-fx');
-  wrap.append(ghost);
-  for (let i = 0; i < 9; i++) {
-    const puff = el('span', 'exhaust-puff');
-    const a = (i / 9) * Math.PI * 2;
-    puff.style.left = `${r.left + r.width / 2 + Math.cos(a) * r.width * 0.3}px`;
-    puff.style.top = `${r.top + r.height / 2 + Math.sin(a) * r.height * 0.25}px`;
-    puff.style.setProperty('--dx', `${Math.cos(a) * 40}px`);
-    puff.style.setProperty('--dy', `${Math.sin(a) * 30 - 20}px`);
-    puff.style.animationDelay = `${(i % 3) * 40}ms`;
-    wrap.append(puff);
-  }
-  document.body.append(wrap);
-  src.style.visibility = 'hidden';
-  await sleep(900);
-  pile.classList.remove('bump');
-  void pile.offsetWidth;
-  pile.classList.add('bump');
-  wrap.remove();
+  return burnAway(src, pile, { fast: speed() > 1 });
 }
 
 /** Items are used from the Bag's Items pocket (pickItem), not the battle screen: drop a pick that no longer stands. */
@@ -2233,6 +2201,7 @@ function renderFocus() {
 
   const big = makeCard(asShown(entry.card), { stage: b.stage, cost: costOf(entry.card) });
   big.classList.add('focus-card');
+  big.dataset.focusUid = entry.uid;
   const problem = choosing ? null : whyNotPlayable(entry.card);
   if (problem) big.classList.add('unplayable');
   else if (!choosing) showPreview(entry);

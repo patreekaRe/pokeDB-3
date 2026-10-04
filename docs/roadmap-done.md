@@ -1362,3 +1362,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   max HP dashed and a line per biome, the run's numbers (`statList()`, minus HP left) and the final deck. `recordLoss()`
   now keeps the same record a win does (`runRecord()`, shared with `draftWin()`), so the Record Book's lost-run lines open
   the page (older ones stay plain lines).
+- Card trails (roadmap 8, 2026-10-03): a played card arcs to where it acts shedding its type's trail (Fire embers, Water
+  droplets, Grass leaves, Psychic sparkles, Neutral white) and an exhausted one burns away from the bottom up into embers,
+  replacing the grey smoke puff; ethereal and Burning Jealousy exhausts burn too. `js/cardfx.js`, one low-res canvas;
+  halved at 2x speed, off under reduced motion, never awaited except a picked exhaust's burn (0.56 s, was 0.9 s).
