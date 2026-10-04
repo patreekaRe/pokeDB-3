@@ -371,31 +371,10 @@
 .ds-btn.ds-play.pick-keep { --stripe-a: #40a050; --stripe-b: #60b868; --rim: #287838; }
 .ds-btn.ds-play.pick-copy { --stripe-a: #d0a020; --stripe-b: #e0b840; --rim: #a07808; }
 
-/* an exhausted card goes poof: it flashes grey in a ring of pixel smoke, shrinks to a wisp and flies into the exhaust
-   pile beside the Poké Ball, like an item into the Bag (smokeOut() in js/battle.js) */
+/* card trails (js/cardfx.js): a played card's clone arcs to where it acts and an exhausted one burns away; their
+   particles are drawn on one low-res canvas over everything, in whole pixels */
 .exhaust-fx { position: fixed; inset: 0; z-index: 130; pointer-events: none; }
-.card.exhaust-ghost, .card.focus-card.exhaust-ghost { animation: exhaustGhost 0.9s both; transform-origin: 50% 50%; }
-@keyframes exhaustGhost {
-  0% { filter: none; transform: none; }
-  18% { filter: grayscale(1) brightness(1.7); transform: scale(1.1); animation-timing-function: steps(3); }
-  40% { filter: grayscale(1) brightness(2) blur(1px); transform: scale(0.4); opacity: 0.9; animation-timing-function: ease-in; }
-  100% { filter: grayscale(1) brightness(2) blur(1px); transform: translate(var(--to-x), var(--to-y)) scale(0.08); opacity: 0.3; }
-}
-.exhaust-puff {
-  position: fixed;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
-  background: #d8d8e0;
-  box-shadow: 0 0 0 3px #181010, 7px -7px 0 -1px #b8b8c8, -8px -3px 0 -2px #f0f0f8;
-  opacity: 0;
-  animation: exhaustPuff 0.6s steps(5) both;
-}
-@keyframes exhaustPuff {
-  0% { opacity: 0; scale: 0.4; }
-  25% { opacity: 1; scale: 1.2; }
-  100% { opacity: 0; scale: 1.9; translate: var(--dx) var(--dy); }
-}
+.card-fx { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 131; pointer-events: none; image-rendering: pixelated; }
 .pile.bump { animation: pileBump 0.35s steps(3); }
 @keyframes pileBump { 40% { scale: 1.35; } }
 
@@ -408,24 +387,6 @@
 .term-debuff { color: #7a3aa8; }
 .term-strength { color: #b8201c; }
 .card-tip-name.term-key { color: var(--win-gold); }
-
-/* a played card flies off to where it acts (flyCard() in js/battle.js): an attack at the enemy, spinning a little as
-   it's thrown; a block, buff or power drops into your Pokémon with a soft glow */
-.card.fly-ghost, .card.focus-card.fly-ghost { transform-origin: 50% 50%; }
-.card.fly-attack, .card.focus-card.fly-attack { animation: flyAttack 0.4s both; }
-.card.fly-self, .card.focus-card.fly-self { animation: flySelf 0.4s both; }
-@keyframes flyAttack {
-  0% { transform: none; }
-  15% { transform: translateY(-14px) scale(1.04); animation-timing-function: ease-in; }
-  55% { transform: translate(var(--to-x), var(--to-y)) scale(0.22) rotate(-18deg); opacity: 1; }
-  100% { transform: translate(var(--to-x), var(--to-y)) scale(0.1) rotate(-30deg); opacity: 0; }
-}
-@keyframes flySelf {
-  0% { transform: none; filter: none; }
-  15% { transform: translateY(-10px) scale(1.04); animation-timing-function: ease-in; }
-  60% { transform: translate(var(--to-x), var(--to-y)) scale(0.25); filter: brightness(1.6) drop-shadow(0 0 8px #a8d8ff); opacity: 1; }
-  100% { transform: translate(var(--to-x), var(--to-y)) scale(0.15); filter: brightness(2); opacity: 0; }
-}
 
 /* a rare card shimmers where it's offered (rewards, the Mart): a gold sheen sweeps across it now and then */
 .card.shimmer { filter: drop-shadow(0 0 1.5cqw rgba(255, 208, 64, 0.75)); }

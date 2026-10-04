@@ -2180,6 +2180,20 @@ button.hof-row.lost { cursor: pointer; }
   80% { filter: brightness(2) saturate(0.5) drop-shadow(0 0 18px #ff2a6a); }
   to { transform: none; filter: none; }
 }
+/* The enemy's body language (renderPose() in js/battle.js), on its own wrapper so it never fights the box's lunge, sink
+   and drop-in or the GIF's recoil and glow. Both pivot on the feet, which sizeSprite() puts at the box's bottom middle:
+   a raised attack makes it crouch and flinch back (transform), low HP makes it sway (rotate), so the two stack. */
+.enemy-pose { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; transition: transform 0.16s steps(3); }
+.enemy-pose.bracing { transform: translateX(4px) skewX(-3deg) scale(1.05, 0.9); }
+.enemy-pose.swaying { animation: lowSway 2.8s ease-in-out infinite; }
+@keyframes lowSway {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -3.5deg; }
+  50% { rotate: 0.5deg; }
+  75% { rotate: 2.5deg; }
+}
+.enemy-portrait:is(.defeated, .sinking, .captured, .ran) .enemy-pose { transform: none; animation: none; }
+@media (prefers-reduced-motion: reduce) { .enemy-pose { transform: none !important; animation: none !important; transition: none; } }
 /* Kenmatta's Super Saiyan aura (js/aura.js): a canvas laid over his sprite, hidden while he's still a silhouette */
 .aura-fx { position: absolute; image-rendering: pixelated; pointer-events: none; }
 .enemy-zone.entering .aura-fx, .enemy-zone.boss-waiting .aura-fx { visibility: hidden; }

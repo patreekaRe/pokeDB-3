@@ -18,11 +18,6 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
 
 The user's second pick (2026-10-03), one session each:
 
-8. **Card trails.** Run in: LOCAL (Desktop app). A played attack arcs from the hand to the enemy with a trail in its
-   type's colour (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white), a block card flies to your
-   Pokémon, and an exhausted card burns away into embers (every exhaust goes through `exhaustCard()` in
-   `js/battle.js`; plays through `playCard()` / `resolveCard()`). Pixel art, whole pixels; halved under 2x battle speed
-   (`.fast-battle`), off under reduced motion. Must never delay the next card being playable.
 9. **Seasonal title screen.** Run in: LOCAL (Desktop app). The title dresses up by the date, the way `js/daytime.js`
    follows the clock: October Halloween (pumpkins on the ledge, Gastly / Haunter in the flyers' round, an orange dusk
    tint), December snow, and room for more. A `season(now)` helper like `timeOfDay()`, and `?season=halloween` to pin it
@@ -31,11 +26,10 @@ The user's second pick (2026-10-03), one session each:
 ## Ideas, not agreed yet (ask the user before building)
 
 - More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
-  Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting, enemies bracing when an
-  attack is raised and swaying at low HP, quiet background sounds for each place under the music.
+  Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting,
+  quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
-- **A Safari "zone legend"**: a weekly Pokémon catchable only on the last floor.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
 
@@ -44,6 +38,7 @@ The user's second pick (2026-10-03), one session each:
 - Gen 6-9 starters: the sprites staged in `assets/pokemon/_incoming/` have no Grass line.
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
+- A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
 
 ## Waiting on the user
 
