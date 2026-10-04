@@ -462,8 +462,11 @@
 .gem-continue .gem-label { font-size: 1.15rem; }
 .gem-continue .cball-ball { width: 34px; height: 34px; }   /* a touch smaller than the other gems' icons (the user's call) */
 @media (max-height: 700px) { .gem-continue .gem-label { font-size: 0.92rem; } .gem-continue .cball-ball { width: 28px; height: 28px; } }
-/* New game's Egg wobbles while it's the one picked, as if about to hatch */
-.gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; transform-origin: 50% 90%; }
+/* New game's Egg stirs now and then, like Continue's ball (the user's ask, 2026-10-03): a little hop and a rock, as if
+   something inside moved; while it's the one picked it wobbles faster, about to hatch */
+.gem-egg { transform-origin: 50% 90%; }
+@media (prefers-reduced-motion: no-preference) { .gem-egg { animation: eggStir 2.8s steps(28) infinite; } }
+.gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; }
 /* New game: the Egg hatches (hatch() in js/title.js): it shakes harder and harder, cracks, and bursts in a flash of light */
 .gem.hatching .gem-egg { animation: eggShake 0.65s steps(10) forwards; transform-origin: 50% 90%; }
 .gem.cracked .gem-egg { animation: eggShake2 0.2s steps(4) infinite; }
@@ -481,6 +484,14 @@
 @keyframes eggShake2 { 0%, 100% { translate: -2px 0; } 50% { translate: 2px 0; } }
 @keyframes eggBurst { to { scale: 1.8; opacity: 0; filter: brightness(0) invert(1); } }
 @keyframes eggWobble { 0%, 50%, 100% { rotate: 0deg; } 60% { rotate: -12deg; } 70% { rotate: 10deg; } 80% { rotate: -6deg; } 90% { rotate: 3deg; } }
+@keyframes eggStir {
+  0%, 55%, 100% { translate: 0 0; rotate: 0deg; }
+  62% { translate: 0 -4px; rotate: -6deg; }
+  69% { translate: 0 0; rotate: 6deg; }
+  75% { rotate: -4deg; }
+  81% { rotate: 2deg; }
+  86% { rotate: 0deg; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .cball-ball { animation: ballWobble 2.4s steps(24) infinite; }
   .gem.opening:not(.out) .cball-ball { animation: none; }
