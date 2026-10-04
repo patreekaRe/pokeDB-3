@@ -2118,7 +2118,7 @@ function fanHand() {
   const step = n > 1 ? Math.max(w * 0.12, Math.min(w * 0.88, (room - w) / (n - 1))) : w;
   const edge = (n - 1) / 2;
   box.style.setProperty('--overlap', `${w - step}px`);
-  box.style.setProperty('--fan-tilt', `${edge ? Math.min(4, 14 / edge) : 0}deg`);
+  box.style.setProperty('--fan-tilt', `${edge ? Math.min(2.5, 9 / edge) : 0}deg`);
   box.style.setProperty('--fan-drop', `${edge ? Math.min(3, 14 / (edge * edge)) : 0}px`);
   cards.forEach((card, i) => card.style.setProperty('--fan', i - edge));
 }
@@ -2306,10 +2306,11 @@ function popFromHand(big, extra, from, tips) {
   const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
   const above = 14;   // clears the card's gold ring and drop shadow, which stick out ~8px past its box
   const left = Math.max(gap, Math.min(innerWidth - w - gap, r.left + r.width / 2 - w / 2));
-  const foot = Math.min(r.top + r.height * 0.62, innerHeight - gap);   // low, so it stays in the thumb's reach
+  const foot = Math.min(r.top + r.height * 0.85, innerHeight - gap);   // low, so it stays in the thumb's reach
   const eh = extra ? extra.offsetHeight + above : 0;
   const top = Math.max(gap + eh, foot - h);
-  Object.assign(big.style, { left: `${left}px`, top: `${top}px` });
+  const tilt = parseFloat(from.style.getPropertyValue('--fan')) * parseFloat(getComputedStyle($('hand')).getPropertyValue('--fan-tilt'));
+  Object.assign(big.style, { left: `${left}px`, top: `${top}px`, rotate: `${tilt || 0}deg` });   // keeps its slant in the fan (the user's call)
   if (extra) {
     const ew = extra.offsetWidth;
     const ex = Math.max(gap, Math.min(innerWidth - ew - gap, left + w / 2 - ew / 2));
@@ -2336,7 +2337,6 @@ function spreadHand(uid) {
     const push = at < 0 || !d ? 0 : Math.sign(d) * w * 0.28 / Math.sqrt(near);
     card.style.setProperty('--push', `${push.toFixed(1)}px`);
     card.style.setProperty('--shift', step ? (push / step).toFixed(3) : 0);
-    card.style.setProperty('--lean', `${at < 0 || !d ? 0 : (Math.sign(d) * 9 / near ** 0.7).toFixed(1)}deg`);   // the shift alone tilts too little to see
   });
 }
 

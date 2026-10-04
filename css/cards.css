@@ -212,8 +212,7 @@
 /* held in a fan (fanHand() in js/battle.js sets --fan, the offset from the middle): tilted, sinking towards the edges, overlapping.
    rotate/translate, not transform, so the hover lift and the deal animation stay separate */
 .card.in-hand {
-  rotate: calc((var(--fan, 0) + var(--shift, 0)) * var(--fan-tilt, 0deg) + var(--lean, 0deg));
-  transform-origin: 50% 90%;   /* pivots near the foot, so a lean splays the top out like a held card */
+  rotate: calc((var(--fan, 0) + var(--shift, 0)) * var(--fan-tilt, 0deg));
   translate: var(--push, 0px) calc((var(--fan, 0) + var(--shift, 0)) * (var(--fan, 0) + var(--shift, 0)) * var(--fan-drop, 0px));
   transition: transform 0.15s, filter 0.15s, rotate 0.18s ease-out, translate 0.18s ease-out;
 }
