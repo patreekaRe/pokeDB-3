@@ -58,6 +58,7 @@ import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
+import { travel } from './travel.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -279,6 +280,9 @@ function init() {
     // ?strike=90 (with &gate=HP, &starter=id, &stage=0-2, &level=0-5, &kind=loss, &first) plays the descent and the Sealed Gate's scene after PRESS START,
     // from the gate's HP, without saving anything; a strike past its HP is the break that frees Mewtwo
     if (params.has('strike')) return peekStrike(params);
+    // ?travel=shrine (the biome you walk to; &starter=id, &stage=0-2) plays that journey film after PRESS START, its
+    // first-time lines included, without saving anything; &at=0.5 holds it at that point of the trip, no lines
+    if (params.has('travel')) return peekTravel(params);
     // Show the how-to-play once, the very first time.
     if (!getSave().seenHelp) {
       updateSave(d => { d.seenHelp = true; });
@@ -333,6 +337,16 @@ function peekStrike(params) {
   const kind = params.get('kind') || (after === 0 ? 'ultimate' : 'win');
   playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' })
     .then(() => playMusic('title'));   // back to the title's song after the seal's
+}
+
+/** The ?travel= playtest: a journey film on its own, nothing saved. */
+async function peekTravel(params) {
+  const to = BIOMES.findIndex(b => b.id === params.get('travel'));
+  const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
+  const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? to) || 0);
+  const at = params.has('at') ? Number(params.get('at')) : null;   // &at=0.5 holds the film there
+  const close = await travel({ from: BIOMES[to - 1]?.id, to: BIOMES[to]?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at });
+  close();
 }
 
 init();

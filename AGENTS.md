@@ -40,6 +40,9 @@ three places:
 - 2026-10-03: the roadmap was split: `docs/roadmap.md` now lists only open work; the old 1300-line file is
   `docs/roadmap-done.md` (it listed done things as open, e.g. the HP plate on event screens and the pixel pills).
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
+- **Journey films, step 10** (done 2026-10-04): `js/travel.js` plays the walk from the Clearing to the Shrine between Boss 1's
+  rewards and Biome 2 (`walkOn()` in `js/run.js`; not Mewtwo, not the Safari); `?travel=shrine&at=0.5` playtests it. Next: step 11
+  (Shrine → Wastes, a new `ROUTES` entry), then the optional step 12.
 - **v1.0, Mewtwo and the fourth biome** (done 2026-10-03, part D below) (roadmap section of that name). Part A (Mewtwo's Psychic deck and
   Pressure Ability) landed 2026-09-29. Part B's gameplay landed 2026-10-02 (the user's answers: Eternatus, a 5-floor sprint
   through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the way

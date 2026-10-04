@@ -42,6 +42,7 @@ import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, recordLoss, lossRecap, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
+import { travel, hasTravel } from './travel.js';
 import { postSafariResult, openLeaderboard } from './leaderboard.js';
 import { runResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
@@ -967,8 +968,23 @@ function afterFight(node, result) {
     collect();
     if (node.type !== 'boss') showMap();
     else if (isMewtwoRun(run.starter) && run.biome + 1 === finalBiome(run.starter)) fallIn();   // everyone else's last biome is Biome 3
-    else { run.biome += 1; startBiome(); }
+    else walkOn();
   });
+}
+
+/** On to the next biome: the journey film there first (js/travel.js; not on Mewtwo's speedrun or in the Safari), ending
+    dark while the next biome's map and intro film come up beneath it. */
+async function walkOn() {
+  const from = BIOMES[run.biome]?.id, to = BIOMES[run.biome + 1]?.id;
+  let close = null;
+  if (!isSafari() && !isMewtwoRun(run.starter) && hasTravel(from, to)) {
+    const first = !getSave().travelSeen;
+    close = await travel({ from, to, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), first });
+    if (!peeking) updateSave(d => { d.travelSeen = true; });
+  }
+  run.biome += 1;
+  startBiome();
+  close?.();
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;

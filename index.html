@@ -585,6 +585,17 @@
     <div class="descent-dark" aria-hidden="true"></div>
   </div>
 
+  <!-- Between a boss and the next biome, the walk there as the land turns and the night passes (js/travel.js) -->
+  <div id="travel-scene" class="travel-scene" hidden>
+    <canvas id="travel-back" class="travel-canvas pixel" aria-hidden="true"></canvas>
+    <img id="travel-mon" class="travel-mon pixel" alt="">
+    <canvas id="travel-front" class="travel-canvas pixel" aria-hidden="true"></canvas>
+    <div class="travel-bars" aria-hidden="true"></div>
+    <div class="travel-skip" aria-hidden="true">Tap to skip</div>
+    <div class="evo-bottom"><div class="reward-log" id="travel-log" hidden><span id="travel-log-text" aria-hidden="true"></span><span class="sr-only" id="travel-log-live" aria-live="polite"></span></div></div>
+    <div class="travel-dark" aria-hidden="true"></div>
+  </div>
+
   <!-- After a run, your Pokémon attacks the Sealed Gate (js/gatescene.js); the blow that breaks it frees Mewtwo -->
   <div id="gate-scene" class="gate-scene" hidden>
     <canvas id="gate-canvas" class="gate-canvas pixel" aria-hidden="true"></canvas>

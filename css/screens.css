@@ -4099,6 +4099,19 @@ body.scene-peek #backdrop { display: none; }
 .descent-scene.still.falling .descent-mon { top: 40%; }
 .descent-scene.still.landing .descent-mon { animation: none; opacity: 0; }
 
+/* ---------- journey films (js/travel.js): your Pokémon walks to the next biome between two canvases ---------- */
+.travel-scene { position: fixed; inset: 0; z-index: 945; overflow: hidden; background: #000; cursor: pointer; animation: biIn 0.5s both; }
+.travel-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.travel-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); scale: -1 1; image-rendering: pixelated;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
+.travel-bars::before, .travel-bars::after { content: ''; position: absolute; left: 0; right: 0; height: 5vh; background: #000; pointer-events: none; }
+.travel-bars::before { top: 0; } .travel-bars::after { bottom: 0; }
+.travel-skip { position: absolute; right: 12px; top: calc(5vh + 8px); font-size: 10px; color: rgba(255, 255, 255, 0.6); text-shadow: 1px 1px 0 #000; pointer-events: none; }
+.travel-scene.waiting .travel-skip { visibility: hidden; }
+.travel-dark { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+.travel-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
+.travel-scene.still { animation: none; }
+
 /* "New!": a card or relic you've never had (not in the Index yet), on rewards and the Mart's shelves */
 .new-badge {
   position: absolute;

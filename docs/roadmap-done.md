@@ -1385,3 +1385,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the card and its button when you hold copies (`deckNote()` in `js/rewards.js`, an option's `note`, `.focus-note`).
 - Depths fall fix (the user's report, 2026-10-03): normal starters fell into Biome 3 after Boss 2 with Mewtwo's lines
   and a free full heal, since "the next biome is the last" was the only check; `fallIn()` now also needs `isMewtwoRun()`.
+- Journey films, step 10 (2026-10-04): `js/travel.js` (`travel()`, `#travel-scene`, z-index 945 over the biome film's
+  940) plays between a boss's rewards and the next biome (`walkOn()` in `js/run.js`; not Mewtwo, not the Safari), ending
+  dark while `startBiome()` brings the map and `biomeIntro()` up beneath it. Clearing → Shrine: dusk → night → dawn (the
+  land graded between `GRADES`), the meadow's trees thinning into cedars, maples, torii and stone lanterns, mist in soft
+  noise wisps (an ordered dither read as a fence); mid-way the road climbs the Ancient Tree's roots past its trunk while
+  a stair of lanterns lights up the Shrine's mountain, the Main Hall on top at dawn. `ROUTES` takes one entry per trip;
+  lines once (`save.travelSeen`). Playtest `?travel=shrine` (`&starter=`, `&stage=`, `&at=0.5` holds a moment, no lines).

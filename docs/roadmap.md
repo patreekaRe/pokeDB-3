@@ -26,21 +26,10 @@ The user's second pick (2026-10-03), one session each:
 **Journey films** (the user's pick, 2026-10-03: "like the fall into the Depths, but travelling"). Between a boss's
 evolution and the next biome's `biomeIntro()`, a short film of the trip there: your evolved Pokémon walks a side-on
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
-crossing set piece in the middle. One session each, in order:
-
-10. **Travel engine + Clearing → Shrine.** Run in: LOCAL (Desktop app). Prompt: "Read CLAUDE.md, `js/descent.js` and
-    `js/biome-intro.js`. Build `js/travel.js`: `travel(from, to, starter)` returns a promise, one low-res canvas like the
-    descent, ~6-8 s, tap to skip. Your Pokémon (its back or front GIF, its current stage) walks left to right in parallax
-    while the layers cross-fade from the Clearing's look to the Shrine's (meadow trees thin, stone lanterns and torii
-    appear, mist rolls in), the sky graded through dusk, night and dawn (`GRADES` in `js/daytime.js`). Mid-way set piece:
-    a cliff path up the Ancient Tree's roots, the Shrine's lanterns lighting through the mist above. A few lines in the
-    descent's text box the first time (`save.travelSeen`), none later. Call it in `js/run.js` after the evolution and
-    before `startBiome()`'s `biomeIntro()`, normal runs only (not Mewtwo's speedrun, not Safari). Add `?travel=shrine`
-    (`&starter=`, `&stage=`) to play it after PRESS START, never saved, and note it in CLAUDE.md's playtest list. Check it
-    at 390x844 and 1280x800, one screenshot each when finished."
+crossing set piece in the middle. One session each, in order (step 10, the engine and Clearing → Shrine, is done: `js/travel.js`):
 
 11. **Shrine → Wastes.** Run in: LOCAL (Desktop app). Prompt: "Read CLAUDE.md and `js/travel.js`. Add the Shrine → Wastes
-    trip: moss dries out, dead trees, ash starts to fall, the volcano's red glow rising on the horizon. Set piece: a rope
+    trip (a `ROUTES` entry like `CLEARING_SHRINE`; make `save.travelSeen` per trip): moss dries out, dead trees, ash starts to fall, the volcano's red glow rising on the horizon. Set piece: a rope
     bridge over a chasm that sways as your Pokémon crosses, embers drifting up from below. Its own first-time lines.
     `?travel=wastes` plays it. One screenshot per viewport when finished."
 
