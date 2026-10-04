@@ -208,7 +208,7 @@
 .card.small .card-cost { top: 9.5cqw; left: 3.5cqw; width: 15cqw; height: 15cqw; font-size: 10.5cqw; }
 
 /* ---------- cards in your battle hand ---------- */
-.card.in-hand { --card-w: var(--hand-card-w); flex: 0 0 auto; }
+.card.in-hand { --card-w: var(--hand-card-w); flex: 0 0 auto; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 /* held in a fan (fanHand() in js/battle.js sets --fan, the offset from the middle): tilted, sinking towards the edges, overlapping.
    rotate/translate, not transform, so the hover lift and the deal animation stay separate */
 .card.in-hand {
@@ -246,7 +246,7 @@
   padding: 0 16px calc(24px + env(safe-area-inset-bottom));
   background: rgba(8, 10, 24, 0.45);
 }
-.card.focus-card { --card-w: min(48vw, 205px); animation: focusIn 0.18s ease-out; }
+.card.focus-card { --card-w: min(48vw, 205px); animation: focusIn 0.18s ease-out; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 .card.focus-card[role="button"]:hover { transform: none; }
 .card.focus-card.unplayable { filter: grayscale(0.6) brightness(0.8); }
 .focus-hint {

@@ -1413,3 +1413,4 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 
 - **Map run card polish** (2026-10-04, the user's ask): the name starts where the HP bar does (an invisible "HP:" before it, `.run-info .run-name::before`), the map's "HP:" tag is cream instead of black, and the Ability is a round gold-rimmed badge with a ring pulsing out every few seconds so it reads as tappable.
 - **Poké Mart song** (2026-10-04, the user's file): `mart` plays in `martRoom()`, looped over a 48.71 s repeat at 38.75 s (0.997 at the join, 0.3 s crossfade), `TRACK_GAIN` 0.27 (~11.5 dB louder than `center`).
+- **Slide to pick** (2026-10-04, the user's ask): hold a hand card and slide along the hand; the card under the finger rises, letting go keeps it up for a tap to play (`initScrub()` in `js/battle.js`).

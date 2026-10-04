@@ -68,6 +68,7 @@ export function initBattle() {
     if (other && (selectedUid !== null || choosing?.picked)) tapCard(Number(other.dataset.uid));
     else cancelPick();
   });
+  initScrub();
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && battle) cancelPick(); });
   addEventListener('resize', () => { if (battle) { fanHand(); renderFocus(); } });
   document.querySelectorAll('.piles .pile').forEach(btn => btn.addEventListener('click', () => openPiles(btn.dataset.pile)));
@@ -2169,6 +2170,66 @@ function tapCard(uid) {
   selectedUid = uid;
   renderItems();
   renderHand();
+}
+
+/* Hold a card and slide along the hand: whichever card the finger is over rises, and letting go leaves it up for a
+   tap to play (the user's ask, 2026-10-04). Only the finger's x counts, so it can drift up off the fan. Cards are
+   found by their place in the fan (offsetLeft, which ignores the spread's translate), so parting the hand around the
+   risen card doesn't move the targets. The slide's own click is swallowed, so letting go never plays a card. */
+function initScrub() {
+  let drag = null;
+  const handCardAt = (x, y) => document.elementsFromPoint(x, y).find(node => node.matches('.card.in-hand, .focus-card'));
+  const nearest = (x) => {
+    const box = $('hand'), left = box.getBoundingClientRect().left - box.scrollLeft;
+    let best = null, gap = Infinity;
+    for (const card of box.children) {
+      const d = Math.abs(left + card.offsetLeft + card.offsetWidth / 2 - x);
+      if (d < gap) { gap = d; best = card; }
+    }
+    return best && Number(best.dataset.uid);
+  };
+  const pick = (uid) => {
+    const entry = battle.hand.find(h => h.uid === uid);
+    if (!entry) return;
+    if (choosing) {
+      if (!choosing.only(entry) || choosing.picked === uid) return;
+      choosing.picked = uid;
+    } else {
+      if (selectedUid === uid) return;
+      selectedUid = uid;
+      selectedItem = null;
+      renderItems();
+    }
+    renderHand();
+    playSound('stick');
+    if (navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(8);
+  };
+  document.addEventListener('pointerdown', (e) => {
+    drag = null;
+    if (!battle || battle.busy || battle.over || pilePick || dealing() || !e.isPrimary || e.button > 0) return;
+    if (!handCardAt(e.clientX, e.clientY)) return;
+    drag = { x: e.clientX, id: e.pointerId, on: false };
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id || !battle || battle.busy) return;
+    if (!drag.on) {
+      if (Math.abs(e.clientX - drag.x) < 12) return;
+      drag.on = true;
+    }
+    e.preventDefault();
+    pick(nearest(e.clientX));
+  }, { passive: false });
+  const release = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const slid = drag.on;
+    drag = null;
+    if (!slid) return;
+    const swallow = (c) => { c.stopPropagation(); c.preventDefault(); };
+    document.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => document.removeEventListener('click', swallow, { capture: true }), 400);
+  };
+  document.addEventListener('pointerup', release);
+  document.addEventListener('pointercancel', (e) => { if (drag?.id === e.pointerId) drag = null; });
 }
 
 function tapItem(index) {

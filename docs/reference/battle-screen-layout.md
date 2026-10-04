@@ -136,6 +136,10 @@ big copy straight up out of its place in the hand, StS-style (the user's call:
 it used to blow up in the middle over a dimmed screen): `popFromHand()` places it
 in `#card-focus` (a see-through full-screen layer, `.rise`), grows it from the hand
 card's box, hides the hand's copy (`.lifted`) and sets a small Play button under it. Since 2026-10-04 it is
+**Sliding through the hand** (2026-10-04, the user's ask): hold a hand card (or the risen one) and slide sideways: `initScrub()` in
+`js/battle.js` raises whichever card is nearest the finger's x (by `offsetLeft`, so the spread doesn't move the targets), with
+the `stick` tick and a short Android buzz; letting go leaves it up and swallows that click, so only a fresh tap plays it.
+Works for discard / exhaust picks too. Hand cards and the risen card are `touch-action: none` so phones don't pan.
 smaller (`--card-w: min(38vw, 160px)`) and its Play button stands just above the hand card, so the rest of the hand stays
 in view (the user found it too much in the way).
 Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,
