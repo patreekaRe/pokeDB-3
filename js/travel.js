@@ -15,9 +15,13 @@
 import { $, sleep } from './ui.js';
 import { playSound, preloadSounds } from './audio.js';
 import { sceneSay } from './evolution.js';
-import { spriteUrl, stageName } from './data/starters.js';
+import { spriteUrl, stageName, STARTERS_BY_ID } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { GRADES, gradeHex } from './daytime.js';
+import { GATE_HP } from './data/gate.js';
+import { isStarterUnlocked } from './progress.js';
+import { gateHp } from './gate.js';
+import { FLYERS } from './title.js';
 
 const DUR = 7600;   // ms from the first step to dawn; the walk carries on while lines are still being read
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -87,6 +91,7 @@ const CLEARING_SHRINE = {
     flowers: ['#f878a8', '#f8d030', '#ffffff', '#a878f8'],
     mist: ['#e8f0ec', '#c8d8d4'],
   },
+  fly: 0.03,   // when the flyover starts (pickGuest()), in the dusk, before the Ancient Tree fills the sky
   morph: (f) => smooth((f - 0.18) / 0.5),   // the land turns over the trip's first two thirds
   rise: (f) => 0.15 * smooth((f - 0.42) / 0.14),   // up the Ancient Tree's roots, onto the Shrine's mountain
   ramp: [0.39, 0.59],
@@ -136,6 +141,7 @@ const SHRINE_WASTES = {
     smoke: ['#8a7a76', '#6a5c58', '#4a3e3c'],
     ash: ['#e0d8d0', '#a8a098'],
   },
+  fly: 0.05,
   morph: (f) => smooth((f - 0.08) / 0.64),   // 0 the Shrine, 0.5 dried out, 1 the Wastes
   rise: () => 0,
   walk: (trip) => trip - 0.07 * smooth((trip - 0.34) / 0.3),   // careful steps over the bridge
@@ -160,6 +166,7 @@ export const hasTravel = (from, to) => !!ROUTES[`${from}>${to}`];
 
 let P = 4, W = 0, H = 0, tall = false, hz = 0, GY = 0, mx = 0, TRIP = 1;
 let back = null, front = null, bimg = null, fimg = null, buf = null, fbuf = null;
+let guest = null;
 let route = null, lit = new Set(), chimeAt = 0, belled = false, cued = new Set(), camX = 0, clock = 0;
 
 /**
@@ -167,9 +174,10 @@ let route = null, lit = new Set(), chimeAt = 0, belled = false, cued = new Set()
  * that takes the film away: call it once the next biome's map and intro film are up beneath it. `first` (the save's
  * travelSeen) adds the trip's lines.
  */
-export async function travel({ from, to, starter, stage = 0, shiny = false, first = false, at = null }) {
+export async function travel({ from, to, starter, stage = 0, shiny = false, first = false, at = null, seed = '', flyer = null }) {
   route = ROUTES[`${from}>${to}`];
   if (!route) return () => {};
+  guest = pickGuest(`${seed}|${from}>${to}`, flyer);
   const scene = $('travel-scene'), mon = $('travel-mon');
   const name = stageName(starter, stage);
   const calm = still();
@@ -178,10 +186,13 @@ export async function travel({ from, to, starter, stage = 0, shiny = false, firs
   $('travel-log').hidden = true;
   mon.src = spriteUrl(starter, 'front', stage, shiny);
   mon.alt = name;
-  preloadSounds(...route.sounds);
+  preloadSounds(...route.sounds, 'gust', 'rumble-far');
   lit = new Set(); chimeAt = 0; belled = false; cued = new Set();
   layout();
-  await loaded(mon);
+  const fl = $('travel-flyer');
+  fl.hidden = true;
+  if (guest && guest !== ETERNATUS) fl.src = `assets/pokemon/${guest}-front.gif`;
+  await Promise.all([loaded(mon), guest && guest !== ETERNATUS && loaded(fl)]);
   fit();
   addEventListener('resize', relayout);
 
@@ -303,14 +314,78 @@ function frame(ms, walked = ms) {
     d: route.d && tone(route.d, sky.land),
   };
   paintSky(e, sky);
+  if (guest === ETERNATUS) redGlow(e);
   fbuf.fill(0);
   route.paint(e);
+  flyBy(e);
   back.getContext('2d').putImageData(bimg, 0, 0);
   front.getContext('2d').putImageData(fimg, 0, 0);
   // your Pokémon, its feet on the road, a step up and down as it walks
   const mon = $('travel-mon');
   const step = still() ? 0 : Math.floor(walked / 220) % 2;
   mon.style.top = `${(groundY(mx + cam) + camY - step) * P}px`;
+}
+
+/* ---------- the flyover (roadmap step 12) ---------- */
+
+/* Mid-trip a legendary you haven't unlocked yet crosses the sky as a black silhouette, its shadow sweeping the road: a
+   tease, like the title's flyers. Once the Sealed Gate is below half, sometimes Eternatus stirs instead, a red glow pulsing
+   on the horizon. Picked from the run's seed and the trip, so a refresh shows the same one; nothing once you own them all. */
+const ETERNATUS = 'eternatus';
+const FLY_LEN = 0.3;   // of the trip
+const RED = ['#ff8060', '#d02838', '#701020'].map(abgr);   // ungraded, like the lanterns
+
+function pickGuest(seed, forced) {
+  if (forced) return forced === 'none' ? null : forced;
+  let n = 7;
+  for (const ch of seed) n = (n * 31 + ch.charCodeAt(0)) % 100003;
+  const roll = (k) => hash(n / 97 + k);
+  if (gateHp() <= GATE_HP / 2 && roll(1) < 0.35) return ETERNATUS;
+  const locked = FLYERS.filter(id => STARTERS_BY_ID[id] && !isStarterUnlocked(STARTERS_BY_ID[id]));
+  return locked.length ? locked[Math.floor(roll(2) * locked.length)] : null;
+}
+
+/** 0-1 through the flyover, or null outside it. */
+const flyK = (e) => { const k = (e.trip - route.fly) / FLY_LEN; return k > 0 && k < 1 && !still() ? k : null; };
+
+/** The silhouette from right to left high over the road (the way the title's go), its shadow on the ground beneath. */
+function flyBy(e) {
+  const fl = $('travel-flyer'), k = guest && guest !== ETERNATUS ? flyK(e) : null;
+  fl.hidden = k === null;
+  if (k === null) return;
+  const s = Math.max(1, Math.round((Math.min(innerWidth * 0.3, 240) / Math.max(64, fl.naturalWidth)) * 2) / 2);
+  const w = fl.naturalWidth * s, x = innerWidth + w / 2 - k * (innerWidth + w);
+  fl.style.width = `${w}px`;
+  fl.style.left = `${x}px`;
+  fl.style.top = `${(hz * 0.32 + Math.sin(k * Math.PI * 3) * 3) * P}px`;
+  if (k > 0.38) cue('fly', 'gust');
+  // the shadow, a little behind it (the light's low), a dark smear over the road's band of ground
+  const cx = x / P + w / P * 0.2, rx = Math.max(10, w / P * 0.4);
+  const dark = (c) => (0xff000000 | ((c & 0xfefefe) >>> 1)) >>> 0;
+  for (let gx = Math.floor(cx - rx); gx <= cx + rx; gx++) {
+    if (gx < 0 || gx >= W) continue;
+    const d = Math.abs(gx - cx) / rx, gy = groundY(gx + e.cam) + e.camY;
+    for (let dy = -3; dy <= 4; dy++) {
+      const y = gy + dy;
+      if (y < 0 || y >= H || Math.hypot(d, dy / 4.5) >= 1 || bay(gx, y) > 0.75 * (1 - d * d)) continue;
+      const i = y * W + gx;
+      buf[i] = dark(buf[i]);
+      if (fbuf[i]) fbuf[i] = dark(fbuf[i]);
+    }
+  }
+}
+
+/** Eternatus stirs far below: a red glow swelling behind the horizon's hills three times, with a far rumble. */
+function redGlow(e) {
+  const k = flyK(e);
+  if (k === null) return;
+  const pulse = Math.sin(k * Math.PI) * Math.pow(Math.sin(k * Math.PI * 3), 2);
+  if (k > 0.1) cue('stir', 'rumble-far');
+  const cx = W * 0.68, rx = W * 0.32, ry = Math.max(8, H * 0.12);
+  for (let y = Math.floor(hz - ry); y <= hz + 2; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+    const d = Math.hypot((x - cx) / rx, (y - hz) / ry);
+    if (d < 1 && bay(x, y) < (1 - d) * 0.9 * pulse) put(x, y, RED[d < 0.25 ? 0 : d < 0.55 ? 1 : 2]);
+  }
 }
 
 /* ---------- painting helpers ---------- */

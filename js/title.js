@@ -79,7 +79,7 @@ let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0
    you've unlocked that one, then in its own colours (shiny if you've switched its shiny on). Each pass deals the next from
    a shuffled round, so they all come by before any comes back. Never Mewtwo: it has no flying sprite, and it's the secret
    (the user's call, 2026-10-02). */
-const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini', 'rayquaza'];
+export const FLYERS = ['moltres', 'hooh', 'lugia', 'reshiram', 'celebi', 'victini', 'rayquaza'];
 let flight = [], lastFlyer = null;
 /* Once Eternatus is beaten (its feat, v1.0 part D) it joins the round: its showdown GIF, always in colour. ?bossfight=depths
    lends it for that page load (eternatusGuest()), so a playtest shows it too. */

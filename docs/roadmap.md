@@ -26,13 +26,7 @@ The user's second pick (2026-10-03), one session each:
 **Journey films** (the user's pick, 2026-10-03: "like the fall into the Depths, but travelling"). Between a boss's
 evolution and the next biome's `biomeIntro()`, a short film of the trip there: your evolved Pokémon walks a side-on
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
-crossing set piece in the middle. Steps 10 (the engine, Clearing → Shrine) and 11 (Shrine → Wastes) are done, `js/travel.js`; what's left:
-
-12. **A legendary flies over** (optional, after 10-11). Run in: LOCAL (Desktop app). Prompt: "Read CLAUDE.md and
-    `js/travel.js`. Add a beat to the journey films: mid-trip a shadow sweeps the ground and a legendary crosses the sky
-    (its flying sprite from the title's flyers, `js/title.js`), one you haven't unlocked yet as a tease, or nothing once
-    you own them all. Once the Sealed Gate is cracked below 50%, sometimes a red glow pulses on the horizon instead
-    (Eternatus). Seeded per run so a refresh shows the same one."
+crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the archive has them).
 
 ## Ideas, not agreed yet (ask the user before building)
 

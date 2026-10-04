@@ -345,7 +345,7 @@ async function peekTravel(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? to) || 0);
   const at = params.has('at') ? Number(params.get('at')) : null;   // &at=0.5 holds the film there
-  const close = await travel({ from: BIOMES[to - 1]?.id, to: BIOMES[to]?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at });
+  const close = await travel({ from: BIOMES[to - 1]?.id, to: BIOMES[to]?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at, flyer: params.get('flyer') });
   close();
 }
 

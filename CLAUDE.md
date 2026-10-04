@@ -508,7 +508,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (three looks, `a` / `d` dried out / `b`; a rope bridge over a lava chasm that sags and sways under your Pokémon, a
   route's `deck` in `groundY()`, its `walk` slowing the steps; ash falls, the volcano rises glowing on the horizon);
   a trip without one is skipped. First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
-  old save's `true` counts as the Clearing's). Playtest `?travel=shrine` / `?travel=wastes` (`&at=0.5`).
+  old save's `true` counts as the Clearing's). Early in each trip (a route's `fly`) a legendary you haven't unlocked flies
+  over as a silhouette with its shadow on the road, or, with the Sealed Gate at half HP or less, sometimes Eternatus's red
+  glow pulses on the horizon (`pickGuest()`, seeded by `run.tally.startedAt` and the trip). Playtest `?travel=shrine` /
+  `?travel=wastes` (`&at=0.5`, `&flyer=lugia` / `eternatus` / `none`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

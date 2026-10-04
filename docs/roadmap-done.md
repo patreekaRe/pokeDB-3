@@ -1397,3 +1397,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   volcano rising on the horizon with a red sky glow, a smoke plume and lava runs by night, lava cracks in the ground. Set
   piece: a rope bridge over a lava-lit chasm (`bridgeDeck()`: sag, sway, a dip under your Pokémon), embers drifting up, the
   walk slowed over it (`walk`). `save.travelSeen` became per trip. Playtest `?travel=wastes`.
+- Journey films, step 12 (2026-10-04): the flyover. At a route's `fly` (early, in the dusk, so the silhouette reads) a
+  legendary from the title's `FLYERS` you haven't unlocked crosses the sky right to left as a moon-rimmed silhouette
+  (`#travel-flyer`, `flyBy()`), its shadow darkening the road beneath, with a `gust`; nothing once you own them all. With
+  the Sealed Gate at half HP or less, 35% of trips get Eternatus instead: a red glow pulsing three times behind the far
+  hills (`redGlow()`) with `rumble-far`. `pickGuest()` rolls from `run.tally.startedAt` and the trip, so a refresh shows the
+  same one. Playtest `?travel=shrine&flyer=lugia` (`eternatus`, `none`).

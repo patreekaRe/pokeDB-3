@@ -4104,6 +4104,8 @@ body.scene-peek #backdrop { display: none; }
 .travel-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 .travel-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); scale: -1 1; image-rendering: pixelated;
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
+.travel-flyer { position: absolute; max-width: none; translate: -50% -50%; image-rendering: pixelated; pointer-events: none;
+  filter: brightness(0) drop-shadow(0 0 1px rgba(220, 228, 255, 0.85)); }   /* a silhouette, rimmed by the moon so it reads at night */
 .travel-bars::before, .travel-bars::after { content: ''; position: absolute; left: 0; right: 0; height: 5vh; background: #000; pointer-events: none; }
 .travel-bars::before { top: 0; } .travel-bars::after { bottom: 0; }
 .travel-skip { position: absolute; right: 12px; top: calc(5vh + 8px); font-size: 10px; color: rgba(255, 255, 255, 0.6); text-shadow: 1px 1px 0 #000; pointer-events: none; }
