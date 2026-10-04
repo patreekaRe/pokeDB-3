@@ -978,9 +978,11 @@ async function walkOn() {
   const from = BIOMES[run.biome]?.id, to = BIOMES[run.biome + 1]?.id;
   let close = null;
   if (!isSafari() && !isMewtwoRun(run.starter) && hasTravel(from, to)) {
-    const first = !getSave().travelSeen;
+    // travelSeen is per trip; an old save's `true` was the only trip there was then
+    const key = `${from}>${to}`, seenOf = (v) => (v === true ? { 'clearing>shrine': true } : v || {});
+    const first = !seenOf(getSave().travelSeen)[key];
     close = await travel({ from, to, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), first });
-    if (!peeking) updateSave(d => { d.travelSeen = true; });
+    if (!peeking) updateSave(d => { d.travelSeen = { ...seenOf(d.travelSeen), [key]: true }; });
   }
   run.biome += 1;
   startBiome();

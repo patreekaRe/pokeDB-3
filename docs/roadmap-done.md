@@ -1392,3 +1392,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   noise wisps (an ordered dither read as a fence); mid-way the road climbs the Ancient Tree's roots past its trunk while
   a stair of lanterns lights up the Shrine's mountain, the Main Hall on top at dawn. `ROUTES` takes one entry per trip;
   lines once (`save.travelSeen`). Playtest `?travel=shrine` (`&starter=`, `&stage=`, `&at=0.5` holds a moment, no lines).
+- Journey films, step 11 (2026-10-04): Shrine → Wastes (`SHRINE_WASTES`): the land in three looks (Shrine, dried out,
+  Wastes), mist thinning, the Shrine's last weathered torii, cedars browning into dead trees and boulders, ash falling, a
+  volcano rising on the horizon with a red sky glow, a smoke plume and lava runs by night, lava cracks in the ground. Set
+  piece: a rope bridge over a lava-lit chasm (`bridgeDeck()`: sag, sway, a dip under your Pokémon), embers drifting up, the
+  walk slowed over it (`walk`). `save.travelSeen` became per trip. Playtest `?travel=wastes`.

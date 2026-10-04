@@ -26,12 +26,7 @@ The user's second pick (2026-10-03), one session each:
 **Journey films** (the user's pick, 2026-10-03: "like the fall into the Depths, but travelling"). Between a boss's
 evolution and the next biome's `biomeIntro()`, a short film of the trip there: your evolved Pokémon walks a side-on
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
-crossing set piece in the middle. One session each, in order (step 10, the engine and Clearing → Shrine, is done: `js/travel.js`):
-
-11. **Shrine → Wastes.** Run in: LOCAL (Desktop app). Prompt: "Read CLAUDE.md and `js/travel.js`. Add the Shrine → Wastes
-    trip (a `ROUTES` entry like `CLEARING_SHRINE`; make `save.travelSeen` per trip): moss dries out, dead trees, ash starts to fall, the volcano's red glow rising on the horizon. Set piece: a rope
-    bridge over a chasm that sways as your Pokémon crosses, embers drifting up from below. Its own first-time lines.
-    `?travel=wastes` plays it. One screenshot per viewport when finished."
+crossing set piece in the middle. Steps 10 (the engine, Clearing → Shrine) and 11 (Shrine → Wastes) are done, `js/travel.js`; what's left:
 
 12. **A legendary flies over** (optional, after 10-11). Run in: LOCAL (Desktop app). Prompt: "Read CLAUDE.md and
     `js/travel.js`. Add a beat to the journey films: mid-trip a shadow sweeps the ground and a legendary crosses the sky

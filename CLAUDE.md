@@ -499,13 +499,16 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's
   goal ahead growing nearer every floor, a different roadside landmark each floor. A Safari run asks for its area (`land()` in `js/run.js`)
   for the scene, the map's palette and the signs; detail in `docs/reference/safari.md`.
-- **Journey films** (roadmap step 10, 2026-10-04): between a boss's rewards and the next biome, `walkOn()` in `js/run.js`
+- **Journey films** (roadmap steps 10-11, 2026-10-04): between a boss's rewards and the next biome, `walkOn()` in `js/run.js`
   plays `travel()` from `js/travel.js` (not on Mewtwo's runs or in the Safari): your Pokémon (front GIF, flipped) walks a
   side-on parallax road on two low-res canvases (`#travel-scene`, z-index 945), the land turning from one biome into the
   next by where each thing stands on the road, the sky dusk → night → dawn (land graded between `GRADES`), one set piece
   mid-way. It ends dark and resolves with a `close()` called once `startBiome()` has the map and biome film up beneath.
-  One `ROUTES` entry per trip (only `clearing>shrine` so far: the Ancient Tree's roots, the Shrine's lantern stair);
-  a trip without one is skipped. First-time lines once, `save.travelSeen`.
+  One `ROUTES` entry per trip: `clearing>shrine` (the Ancient Tree's roots, the Shrine's lantern stair) and `shrine>wastes`
+  (three looks, `a` / `d` dried out / `b`; a rope bridge over a lava chasm that sags and sways under your Pokémon, a
+  route's `deck` in `groundY()`, its `walk` slowing the steps; ash falls, the volcano rises glowing on the horizon);
+  a trip without one is skipped. First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
+  old save's `true` counts as the Clearing's). Playtest `?travel=shrine` / `?travel=wastes` (`&at=0.5`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
