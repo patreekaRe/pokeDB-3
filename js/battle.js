@@ -420,15 +420,11 @@ function lockDeal(n) {
 const dealing = () => performance.now() < dealLockUntil;
 
 /* Every battle teaches the hand's slide and swipe (the user's ask, 2026-10-04): two lines take turns fading in just
-   above the cards, behind them, three times each (.hand-hint's animations), then it's gone. */
+   above the cards, behind them, all battle long (.hand-hint's animations), so nobody misses that the gestures exist. */
 let hintTimer = 0;
 function showHandHint(delay) {
   hideHandHint();
-  hintTimer = setTimeout(() => {
-    const hint = $('hand-hint');
-    hint.hidden = false;
-    hint.lastElementChild.addEventListener('animationend', hideHandHint, { once: true });
-  }, delay + 300);
+  hintTimer = setTimeout(() => { $('hand-hint').hidden = false; }, delay + 300);
 }
 function hideHandHint() {
   clearTimeout(hintTimer);

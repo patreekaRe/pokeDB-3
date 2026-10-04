@@ -144,7 +144,7 @@ follows the finger; once it is `FLING` (40px) above where the finger started and
 letting go plays it (or confirms the pick), like a second tap. The whole `#battle-screen` is `touch-action: none` with no
 long-press select/callout, and the page has `overscroll-behavior: none` there, so the fighters, nameplates and bars never pan
 or pull to refresh (the pile picker keeps `pan-y` to scroll).
-Every battle shows `.hand-hint` in the gap over the fan, behind the cards (absolute in `.hand-wrap`, `isolation: isolate`, `z-index: -1`): "<— hold to drag —>" and "swipe up to play" fade in turn, three times each (~18 s), then it hides.
+Every battle shows `.hand-hint` in the gap over the fan, behind the cards (absolute in `.hand-wrap`, `isolation: isolate`, `z-index: -1`): "<— hold to drag —>" and "swipe up to play" fade in turn all battle long, gold on a dark pill so they read over any scenery.
 smaller (`--card-w: min(38vw, 160px)`) and its Play button stands just above the hand card, so the rest of the hand stays
 in view (the user found it too much in the way).
 Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,
