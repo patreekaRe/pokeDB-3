@@ -1408,3 +1408,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Powers filter and a Cost / A-Z sort (`indexFilter` / `indexSort` in the save, `filtered()` in `js/cardindex.js`, reusing
   `kindOf` / `costRank` from `js/deckpreview.js`); rarity groups stay, an emptied one is dropped, and A-Z sorts unseen cards
   as ??? so their names stay hidden. Hidden on the Relics / Items tabs.
+
+- **Safari unlock progress** (2026-10-04, the user's ask): the locked Safari Zone gem's tip ends with Pokémon beaten / all main-biome entries (`safariUnlockProgress()` in `js/data/pokedex.js`).
