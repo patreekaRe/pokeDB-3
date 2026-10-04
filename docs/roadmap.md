@@ -13,7 +13,7 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
 
 5. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
    (`LOOP_POINTS`), drop its fallback. Wired already: `eternatus`, `eternamax` (`map4` and the Sealed Gate's `seal` arrived
-   2026-10-04). New tracks to wire if supplied: a Safari theme, a credits song, the Mart and the Game Corner. Real recordings can also replace
+   2026-10-04, `mart` too). New tracks to wire if supplied: a Safari theme, a credits song and the Game Corner. Real recordings can also replace
    synths (block, stick, gate-hum / gate-crack / gate-shatter, fireworks).
 
 The user's second pick (2026-10-03), one session each:

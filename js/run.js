@@ -2307,6 +2307,7 @@ function martRoom() {
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
   const shop = () => $('reward-options').getBoundingClientRect();
   showPlaceScene('mart', { floor: () => shop().bottom, span: () => [shop().left, shop().right] });
+  playMusic('mart');
 
   // on a phone the counter spans the screen, so the plants and ball bins stand in front of it, against its foot
   const props = martProps();

@@ -4,7 +4,7 @@
    MUSIC: one looping track plays at a time: 'title' on the menus,
    'map1' / 'map2' / 'map3' on each biome's map, 'wild' / 'elite' / 'boss'
    during fights, 'victory' ('trainer-victory' after an Alpha or a boss) from the moment an enemy faints until you're
-   back on the map, and 'center' at a Pokémon Center. Switching tracks
+   back on the map, 'center' at a Pokémon Center and 'mart' in a Poké Mart. Switching tracks
    crossfades.
 
    Why the Web Audio API instead of plain <audio> elements: iPhones ignore
@@ -35,6 +35,7 @@ const TRACKS = {
   elite:   'assets/audio/elite.mp3',
   boss:    'assets/audio/boss.mp3',
   center:  'assets/audio/center.mp3',
+  mart:    'assets/audio/mart.mp3',     // a Poké Mart, the user's (2026-10-04)
   victory: 'assets/audio/victory.mp3',                  // after a wild fight
   'trainer-victory': 'assets/audio/trainer-victory.mp3',   // after an Alpha (Team Rocket's too) or a boss: Red/Blue's trainer victory, the user's pick
   map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
@@ -67,6 +68,7 @@ const LOOP_POINTS = {
   victory: [4.20957, 15.46, 0.3],   // the fanfare, then an 11.25 s loop the file starts again before it fades (chroma 0.985 over 6 s)
   'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
   kombat: [30, 115.97016, 0.3],   // an 85.97 s repeat (0.81 sample correlation at the join, so cross-faded); the file fades out at 194 s
+  mart: [38.75, 87.45907, 0.3],   // a 48.71 s repeat (0.997 sample correlation at the join); the file fades out from ~101 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
 const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
@@ -627,7 +629,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1)
+const TRACK_GAIN = { boss: 1.15, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
