@@ -2306,7 +2306,7 @@ function popFromHand(big, extra, from, tips) {
   const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
   const above = 14;   // clears the card's gold ring and drop shadow, which stick out ~8px past its box
   const left = Math.max(gap, Math.min(innerWidth - w - gap, r.left + r.width / 2 - w / 2));
-  const foot = Math.min(r.top + r.height * 0.33, innerHeight - gap);
+  const foot = Math.min(r.top + r.height * 0.62, innerHeight - gap);   // low, so it stays in the thumb's reach
   const eh = extra ? extra.offsetHeight + above : 0;
   const top = Math.max(gap + eh, foot - h);
   Object.assign(big.style, { left: `${left}px`, top: `${top}px` });
@@ -2324,16 +2324,18 @@ function popFromHand(big, extra, from, tips) {
   extra?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, delay: 60, fill: 'backwards' });
 }
 
-/* StS's hand: while a card is up, the cards beside it lean and slide away from it, most the nearest, opening its gap. */
+/* StS's hand: while a card is up, the cards beside it slide away from it along the fan's arc, most the nearest, opening
+   its gap; --shift moves each one's place in the fan too, so it tilts and sinks like a card held where it slid to. */
 function spreadHand(uid) {
   const cards = [...$('hand').children];
   const at = cards.findIndex(card => Number(card.dataset.uid) === uid);
   const w = cards[0]?.offsetWidth ?? 0;
+  const step = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft || w : w;
   cards.forEach((card, i) => {
     const d = i - at, near = Math.abs(d);
     const push = at < 0 || !d ? 0 : Math.sign(d) * w * 0.28 / Math.sqrt(near);
     card.style.setProperty('--push', `${push.toFixed(1)}px`);
-    card.style.setProperty('--lean', `${at < 0 || !d ? 0 : Math.sign(d) * Math.max(1, 4 - near)}deg`);
+    card.style.setProperty('--shift', step ? (push / step).toFixed(3) : 0);
   });
 }
 
