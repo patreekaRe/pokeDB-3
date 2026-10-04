@@ -901,11 +901,11 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 /* --- hand --- */
 .hand-wrap { grid-area: hand; min-width: 0; padding-top: 4px; position: relative; isolation: isolate; }
 /* the slide / swipe hint (showHandHint() in js/battle.js): in the gap over the fan, behind the cards, so it moves nothing;
-   a dark pill so it reads over any scenery, the two lines taking turns all battle long */
+   a dark pill so it reads over any scenery, the two lines taking turns until the third turn */
 .hand-hint { position: absolute; z-index: -1; top: 0; left: 0; right: 0; height: 1.5em; font-size: 0.72rem; pointer-events: none; white-space: nowrap; }
 .hand-hint > span {
   position: absolute; top: 0; left: 50%; translate: -50% 0; padding: 2px 10px; line-height: 1.2;
-  color: #ffe680; text-shadow: 1px 1px 0 #181818; background: rgb(16 16 28 / 0.82); border: 1px solid rgb(255 230 128 / 0.55); border-radius: 999px;
+  color: #ffe680; text-shadow: 1px 1px 0 #181818; background: rgb(16 16 28 / 0.45); border: 1px solid rgb(255 230 128 / 0.35); border-radius: 999px;
   opacity: 0; animation: handHintA 5s ease-in-out infinite;
 }
 .hand-hint > span + span { animation-name: handHintB; }

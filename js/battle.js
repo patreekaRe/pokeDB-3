@@ -403,6 +403,7 @@ function beginPlayerTurn() {
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry
   b.busy = false;
   if (b.turn === 1) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));
+  else if (b.turn === HINT_TURNS + 1) hideHandHint();
   renderAll();
 }
 
@@ -420,7 +421,8 @@ function lockDeal(n) {
 const dealing = () => performance.now() < dealLockUntil;
 
 /* Every battle teaches the hand's slide and swipe (the user's ask, 2026-10-04): two lines take turns fading in just
-   above the cards, behind them, all battle long (.hand-hint's animations), so nobody misses that the gestures exist. */
+   above the cards, behind them, through the first HINT_TURNS turns (.hand-hint's animations), then it goes. */
+const HINT_TURNS = 2;
 let hintTimer = 0;
 function showHandHint(delay) {
   hideHandHint();
