@@ -57,7 +57,6 @@ const freshSave = () => ({
   seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
-  handHints: 0,               // battles that showed the hand's slide / swipe hint (showHandHint() in js/battle.js)
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face

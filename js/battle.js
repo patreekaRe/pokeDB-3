@@ -419,15 +419,11 @@ function lockDeal(n) {
 }
 const dealing = () => performance.now() < dealLockUntil;
 
-/* The player's first HAND_HINTS battles teach the hand's slide and swipe (the user's ask, 2026-10-04): two lines
-   take turns fading in just above the cards, behind them, twice each (.hand-hint's animations), then it's gone.
-   Using either gesture puts it away early. */
-const HAND_HINTS = 3;
+/* Every battle teaches the hand's slide and swipe (the user's ask, 2026-10-04): two lines take turns fading in just
+   above the cards, behind them, three times each (.hand-hint's animations), then it's gone. */
 let hintTimer = 0;
 function showHandHint(delay) {
   hideHandHint();
-  if ((getSave().handHints ?? 0) >= HAND_HINTS) return;
-  updateSave(d => { d.handHints = (d.handHints ?? 0) + 1; });
   hintTimer = setTimeout(() => {
     const hint = $('hand-hint');
     hint.hidden = false;
@@ -2250,7 +2246,6 @@ function initScrub() {
     if (!drag.on) {
       if (Math.abs(dx) < 12 && dy > -12) return;
       drag.on = true;
-      hideHandHint();
       if (Math.abs(dx) < -dy && drag.uid != null) pick(drag.uid);   // straight up: lift the card it started on
     }
     e.preventDefault();
