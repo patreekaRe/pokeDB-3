@@ -1545,6 +1545,18 @@ body.battle-intro { pointer-events: none; }
 /* a picked reward, blown up in the middle (rewards.js openFocus); the confirm sits under it like battle's "Tap to play" */
 .card-focus.reward-focus { justify-content: center; padding-bottom: 16px; background: rgba(8, 10, 24, 0.6); }
 .reward-focus .card.focus-card { --card-w: min(64vw, 260px, 45vh); }
+/* deckNote(): a little parchment tag between the picked card and its button */
+.focus-note {
+  margin: 0;
+  padding: 5px 10px 4px;
+  border: 2px solid #181010;
+  border-radius: 4px;
+  background: var(--win-bg);
+  color: var(--win-ink);
+  font-family: var(--pixel-font);
+  font-size: 0.7rem;
+  line-height: 1.2;
+}
 /* Reward buttons ("Add to deck", Skip): End Turn's striped panel and white pill, in their own colours
    (green to take, blue to pass) and with the menus' blinking ▶ cursor in the pill */
 .ds-btn {

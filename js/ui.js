@@ -150,6 +150,13 @@ export function makeCard(card, options = {}) {
   // (Text inside sizes itself from the card's width, see cards.css.)
   const face = el('div', 'card-face');
   face.append(cost, name, art, tag, text);
+  // the TCG's rarity symbol (● ◆ ★) opposite the cost; a starting card counts as common, signature moves and junk have none
+  const rarity = card.rarity || (card.evoOnly || card.token || card.status || card.safari ? null : 'common');
+  if (rarity) {
+    const gem = el('span', `card-rarity ${rarity}`);
+    gem.title = rarity[0].toUpperCase() + rarity.slice(1);
+    face.append(gem);
+  }
   node.append(face);
 
   if (options.count > 1) node.append(el('span', 'in-deck', `×${options.count}`));

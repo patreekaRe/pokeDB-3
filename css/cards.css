@@ -142,6 +142,26 @@
 }
 .card-kw { font-weight: 900; color: #b05800; }
 
+/* rarity, the TCG's way (makeCard()): a dot, a diamond or a star in the name band's right corner, mirroring the cost */
+.card-rarity {
+  position: absolute;
+  top: 12cqw;
+  right: 6cqw;
+  width: 7cqw;
+  height: 7cqw;
+  filter: drop-shadow(0.7cqw 0 0 #181010) drop-shadow(-0.7cqw 0 0 #181010) drop-shadow(0 0.7cqw 0 #181010) drop-shadow(0 -0.7cqw 0 #181010);
+}
+.card-rarity::before { content: ''; position: absolute; inset: 0; }
+.card-rarity.common::before { inset: 1cqw; border-radius: 50%; background: #e8e8f0; }
+.card-rarity.uncommon::before { inset: 0.5cqw; rotate: 45deg; scale: 0.85; background: #a8d8ff; }
+.card-rarity.rare { top: 11cqw; right: 5cqw; width: 9cqw; height: 9cqw; }
+.card-rarity.rare::before {
+  background: #f8d030;
+  clip-path: polygon(50% 0, 62% 36%, 100% 38%, 70% 61%, 80% 98%, 50% 76%, 20% 98%, 30% 61%, 0 38%, 38% 36%);
+}
+.card.small .card-rarity { top: 13cqw; right: 6.5cqw; }
+.card.small .card-rarity.rare { top: 12cqw; right: 5.5cqw; }
+
 /* Interactive cards lift up when you point at them */
 .card[role="button"] { cursor: pointer; }
 .card[role="button"]:hover { transform: translateY(-5px) scale(1.03); z-index: 2; }

@@ -1379,3 +1379,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - Evolution skip (the user's ask, 2026-10-03): a tap (or Enter) during the evolution song skips the flashing straight to
   the white flash and the new form's cry (`skipper()` in `js/evolution.js`, on pointerdown so the tap that dismissed
   "is evolving!" can't count).
+- Card rarity and "already in your deck" (the user's ask, 2026-10-03): every card shows the TCG's rarity symbol opposite
+  its cost (`.card-rarity` from `makeCard()`: ● common, starting cards included; ◆ uncommon; ★ rare; none on signature
+  moves, tokens, status and Safari cards). Picking a card reward or a Mart card says "Already in your deck (×N)" between
+  the card and its button when you hold copies (`deckNote()` in `js/rewards.js`, an option's `note`, `.focus-note`).

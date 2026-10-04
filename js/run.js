@@ -31,7 +31,7 @@ import { checkAchievements, checkFeats } from './progress.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, relicOption, itemOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
@@ -1088,6 +1088,7 @@ function learnOption(card, next) {
     ...option,
     ask: `Add ${card.name} to your deck?`,
     confirm: 'Add to deck',
+    note: deckNote(card, run.deck),
   };
 }
 
@@ -2184,6 +2185,7 @@ function ware(option, price, onBuy, { group, name }) {
     group,
     disabled: option.disabled || dear,
     ask: `Buy ${name} for ₽${price}?`,
+    note: option.note,
     confirm: `Buy ₽${price}`,
     confirmSound: 'buy',
     onPick: () => { spend(price); setMoney(run.money); onBuy(); },
@@ -2199,6 +2201,7 @@ function martRoom() {
     const card = CARDS_BY_ID[item.id];
     // a small card on the shelf, blown up full size when you tap it
     const option = { ...cardOption(card, run.stage), zoom: newBadge(makeCard(card, { stage: run.stage }), 'cards', card) };
+    option.note = deckNote(card, run.deck);
     newBadge(option.node, 'cards', card);
     option.node.classList.add('small');
     if (card.rarity === 'rare') option.zoom.classList.add('shimmer');

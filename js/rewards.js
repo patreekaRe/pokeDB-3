@@ -112,7 +112,8 @@ export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
  *   options   [{ node, onPick, disabled, ask, confirm }]   node is the element to show, onPick runs when chosen.
  *             With `ask` (the question, read out to screen readers) the pick takes two taps, like a card in
  *             battle: the first blows the tile up with a `confirm` button under it (openFocus). Taking it
- *             plays the confirm sound, or `confirmSound` (a Mart purchase's own).
+ *             plays the confirm sound, or `confirmSound` (a Mart purchase's own). A `note` is a line over the
+ *             confirm button (deckNote(): how many copies you already have).
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  *   coins     after a fight, { foe, coins, money }: an icon row, and (on the first screen only) the text box's first lines
  *   layout    extra class for the options box ('mart-window'); options may carry a `group` and a `zoom` tile
@@ -195,7 +196,7 @@ function openFocus(option, btn, take) {
   yes.append(el('span', 'pp-pill', option.confirm || 'Choose'));
   yes.type = 'button';
   const layer = el('div', 'card-focus reward-focus');
-  layer.append(withTips(big), yes);
+  layer.append(withTips(big), ...(option.note ? [el('p', 'focus-note', option.note)] : []), yes);
   layer.addEventListener('click', (e) => {
     if (e.target.closest('.card-tips')) return;
     if (e.target.closest('.focus-card, .focus-confirm')) take(); else backOut();
@@ -292,7 +293,12 @@ export function cardOption(card, stage, onPick, count = 1) {
   if (card.rarity === 'rare') node.classList.add('shimmer');
   return { node, onPick: onPick && (() => { if (card.upgraded) upgradeBurst(node); onPick(); }) };
 }
-export const relicOption = (relic, onPick) => ({ node: makeRelic(relic, { tips: true }), onPick });
+/** The picked card's "already in your deck" line, counting upgraded copies too; null if you have none. */
+export function deckNote(card, deck) {
+  const n = deck.filter(id => baseId(id) === baseId(card.id)).length;
+  return n ? `Already in your deck${n > 1 ? ` (×${n})` : ''}` : null;
+}
+export const relicOption =(relic, onPick) => ({ node: makeRelic(relic, { tips: true }), onPick });
 
 /** A simple tile with an icon (an emoji, or an element such as itemSprite()) and text. */
 export function textOption(icon, title, text, onPick) {
