@@ -2173,9 +2173,13 @@ function tapCard(uid) {
 }
 
 /* Hold a card and slide along the hand: whichever card the finger is over rises, and letting go leaves it up for a
-   tap to play (the user's ask, 2026-10-04). Only the finger's x counts, so it can drift up off the fan. Cards are
-   found by their place in the fan (offsetLeft, which ignores the spread's translate), so parting the hand around the
-   risen card doesn't move the targets. The slide's own click is swallowed, so letting go never plays a card. */
+   tap to play (the user's ask, 2026-10-04). Only the finger's x counts while it's over the hand. Cards are found by
+   their place in the fan (offsetLeft, which ignores the spread's translate), so parting the hand around the risen card
+   doesn't move the targets. The slide's own click is swallowed, so letting go never plays a card by accident.
+   Swipe up to play (the user's ask, same day): drag a card up out of the hand and the risen card follows the finger;
+   once the finger is FLING px above where it started and above the hand, the card is armed (it stops tracking x and
+   glows), and letting go there plays it, or confirms a discard / exhaust pick, just as a second tap would. */
+const FLING = 40;
 function initScrub() {
   let drag = null;
   const handCardAt = (x, y) => document.elementsFromPoint(x, y).find(node => node.matches('.card.in-hand, .focus-card'));
@@ -2187,6 +2191,12 @@ function initScrub() {
       if (d < gap) { gap = d; best = card; }
     }
     return best && Number(best.dataset.uid);
+  };
+  const risen = () => $('card-focus').querySelector('.focus-card:not(.focus-item)');
+  const current = () => (choosing ? choosing.picked : selectedUid);
+  const settle = () => {
+    const card = risen();
+    if (card) { card.style.translate = ''; card.classList.remove('flinging'); }
   };
   const pick = (uid) => {
     const entry = battle.hand.find(h => h.uid === uid);
@@ -2207,29 +2217,43 @@ function initScrub() {
   document.addEventListener('pointerdown', (e) => {
     drag = null;
     if (!battle || battle.busy || battle.over || pilePick || dealing() || !e.isPrimary || e.button > 0) return;
-    if (!handCardAt(e.clientX, e.clientY)) return;
-    drag = { x: e.clientX, id: e.pointerId, on: false };
+    const card = handCardAt(e.clientX, e.clientY);
+    if (!card) return;
+    const uid = card.classList.contains('focus-card') ? current() : Number(card.dataset.uid);
+    drag = { x: e.clientX, y: e.clientY, id: e.pointerId, uid, on: false, armed: false };
   });
   document.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id || !battle || battle.busy) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (!drag.on) {
-      if (Math.abs(e.clientX - drag.x) < 12) return;
+      if (Math.abs(dx) < 12 && dy > -12) return;
       drag.on = true;
+      if (Math.abs(dx) < -dy && drag.uid != null) pick(drag.uid);   // straight up: lift the card it started on
     }
     e.preventDefault();
-    pick(nearest(e.clientX));
+    const handTop = $('hand').getBoundingClientRect().top;
+    drag.armed = current() != null && -dy >= FLING && e.clientY < handTop;
+    if (!drag.armed && e.clientY >= handTop) pick(nearest(e.clientX));
+    const card = risen();
+    if (card) {
+      card.style.translate = `0 ${Math.min(0, dy)}px`;
+      card.classList.toggle('flinging', drag.armed);
+    }
   }, { passive: false });
   const release = (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    const slid = drag.on;
+    const { on: slid, armed } = drag;
     drag = null;
     if (!slid) return;
     const swallow = (c) => { c.stopPropagation(); c.preventDefault(); };
     document.addEventListener('click', swallow, { capture: true, once: true });
     setTimeout(() => document.removeEventListener('click', swallow, { capture: true }), 400);
+    const uid = current();
+    if (armed && battle && !battle.busy && uid != null) return tapCard(uid);
+    settle();
   };
   document.addEventListener('pointerup', release);
-  document.addEventListener('pointercancel', (e) => { if (drag?.id === e.pointerId) drag = null; });
+  document.addEventListener('pointercancel', (e) => { if (drag?.id === e.pointerId) { drag = null; settle(); } });
 }
 
 function tapItem(index) {

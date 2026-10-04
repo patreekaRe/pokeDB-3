@@ -233,6 +233,9 @@ body.titling { overflow: hidden; }
 /* ============ 3. BATTLE ============ */
 body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hidden; }
 body[data-screen="battle-screen"] .fan-note { display: none; }   /* it sat over the fanned hand's sunk ends; the menus and About still show it */
+/* nothing on the battle screen pans, zooms, pulls to refresh or long-press selects on a phone; the hand has its own slide (initScrub()) */
+html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] { overscroll-behavior: none; }
+#battle-screen { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 
 #battle-screen {
   display: grid;

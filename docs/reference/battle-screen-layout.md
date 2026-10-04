@@ -139,7 +139,11 @@ card's box, hides the hand's copy (`.lifted`) and sets a small Play button under
 **Sliding through the hand** (2026-10-04, the user's ask): hold a hand card (or the risen one) and slide sideways: `initScrub()` in
 `js/battle.js` raises whichever card is nearest the finger's x (by `offsetLeft`, so the spread doesn't move the targets), with
 the `stick` tick and a short Android buzz; letting go leaves it up and swallows that click, so only a fresh tap plays it.
-Works for discard / exhaust picks too. Hand cards and the risen card are `touch-action: none` so phones don't pan.
+Works for discard / exhaust picks too. **Swipe up to play** (same day): drag a card up out of the hand and the risen card
+follows the finger; once it is `FLING` (40px) above where the finger started and above the hand it glows (`.flinging`) and
+letting go plays it (or confirms the pick), like a second tap. The whole `#battle-screen` is `touch-action: none` with no
+long-press select/callout, and the page has `overscroll-behavior: none` there, so the fighters, nameplates and bars never pan
+or pull to refresh (the pile picker keeps `pan-y` to scroll).
 smaller (`--card-w: min(38vw, 160px)`) and its Play button stands just above the hand card, so the rest of the hand stays
 in view (the user found it too much in the way).
 Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,

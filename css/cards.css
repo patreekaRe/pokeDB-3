@@ -263,7 +263,7 @@
 /* Fusion Flare / TM: the pile's cards laid out over the dimmed battle; a tap picks one (lifted, gold-rimmed) and shows
    its keyword boxes and the take button under the row, a second tap takes it */
 .card-focus.pile-picking { justify-content: center; background: rgba(8, 10, 24, 0.7); }
-.pile-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 760px; max-height: 55vh; overflow-y: auto; padding: 8px; }
+.pile-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 760px; max-height: 55vh; overflow-y: auto; padding: 8px; touch-action: pan-y; }
 .card.pile-card { --card-w: min(28vw, 130px); cursor: pointer; }
 .card.pile-card:is(:hover, :focus-visible) { transform: translateY(-6px); }
 .card.pile-card.picked { transform: translateY(-6px); outline: 3px solid var(--win-gold); outline-offset: 2px; }
@@ -276,6 +276,8 @@
 .card-focus.rise > * { position: fixed; margin: 0; }
 .card-focus.rise .card.focus-card { --card-w: min(38vw, 160px); animation: none; transform-origin: 50% 100%; }
 .card-focus.rise .card.focus-card .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
+/* armed by a swipe up (initScrub() in js/battle.js): letting go plays it */
+.card-focus.rise .card.focus-card.flinging { filter: brightness(1.15) drop-shadow(0 0 10px #f8e070); }
 .card.in-hand.lifted { visibility: hidden; }
 .card-focus.rise .focus-play { padding: 2px 3px; }
 .card-focus.rise .focus-play .pp-pill { font-size: 0.6rem; padding: 4px 8px 3px 17px; }
