@@ -34,6 +34,7 @@ import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { seedGate } from './data/gate.js';
+import { DEPTHS_PAGE } from './data/pokedex.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
@@ -183,6 +184,18 @@ function init() {
       d.shiny.owned = d.shiny.owned.filter(id => id !== 'mewtwo');
       d.shiny.on = d.shiny.on.filter(id => id !== 'mewtwo');
       d.gateHp = seedGate(d);
+    });
+  }
+  // ?lockdepths forgets the Crystal Depths' Pokédex page and how deep runs have gone, for a save whose playtests (before
+  // peeked runs stopped counting) revealed the page early. Not while a saved run is down there.
+  if (query.has('lockdepths') && !(loadRunData()?.starter === 'mewtwo' && loadRunData().biome >= 3)) {
+    const deep = new Set([...DEPTHS_PAGE.ids, 'eternamax']);
+    updateSave(d => {
+      d.dex.seen = d.dex.seen.filter(id => !deep.has(id));
+      d.dex.defeated = d.dex.defeated.filter(id => !deep.has(id));
+      for (const id of deep) delete d.dex.count?.[id];
+      d.dex.done = d.dex.done.filter(b => b !== DEPTHS_PAGE.biome);
+      d.stats.deepestBiome = Math.min(d.stats.deepestBiome, 3);
     });
   }
   initAudio();
