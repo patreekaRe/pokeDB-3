@@ -46,7 +46,8 @@ const TRACKS = {
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
   eternatus: 'assets/audio/eternatus.mp3',   // the final boss's own theme (v1.0 part C): the user's to supply...
   eternamax: 'assets/audio/eternamax.mp3',   // ...and its second form's; each plays `boss` until its file arrives
-  kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
+  kombat:  'assets/audio/kombat.mp3',
+  seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break; silent while missing   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
 // to the intro (the user found it broke the immersion). These loop inside the file instead, seamlessly: [loopStart,

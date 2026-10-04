@@ -2526,4 +2526,5 @@ export async function playGate(scene) {
   if (!scene) return;
   const close = await descent(scene);
   await gateScene({ ...scene, onShow: close });
+  if (scene.kind === 'loss') playMusic(null);   // the seal's song fades: a lost run's recap and result are quiet, as before
 }

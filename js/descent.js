@@ -80,7 +80,7 @@ export async function descent({ starter, stage = 0, shiny = false, kind = 'win',
   addEventListener('resize', relayout);
   last = performance.now();
   raf = requestAnimationFrame(frame);
-  playMusic(null);   // the win's fanfare fades: from here it's the seal's own silence until the win scene
+  playMusic('seal', { restart: true });   // the win's fanfare fades into the seal's song, through the gate scene until the win scene
 
   await sleep(still() ? 200 : 700);
   // the arena shakes, and the crack opens under your Pokémon while its lines are read

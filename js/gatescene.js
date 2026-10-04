@@ -631,7 +631,6 @@ async function breakFree(scene, music) {
   img.src = spriteUrl(mewtwo, 'front', 0, false);
   new Image().src = AURA_SRC;
   tellNow('The Sealed Gate is breaking!');
-  playMusic(null);
   playSound('quake');
   // it shudders harder and harder, light bursting out of every crack, the runes dying and the chains giving way
   const end = performance.now() + (still() ? 600 : 2600);

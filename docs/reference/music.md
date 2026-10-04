@@ -8,7 +8,7 @@
 at `TRACK_GAIN` 0.25 since it's ~13 dB louder than `boss`, looped over its 85.97 s repeat with a crossfade, `boss` while missing), `victory` from the moment a wild Pokémon faints (`finish()` in
 `js/battle.js`; after an Alpha, Team Rocket's included, or a boss it's `trainer-victory` instead, Red/Blue's trainer victory, the
 user's file and pick 2026-09-29, `winTrack()`, looped with a crossfade like the maps and at `TRACK_GAIN` 0.35 since it's
-mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; after a Level 5
+mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; `seal`, the user's song, from the descent's start (`descent()`, Mewtwo's fall too) through the Sealed Gate's strike and break, faded on a loss in `playGate()`, silent while `assets/audio/seal.mp3` is missing, preloaded at a Biome 3+ boss; after a Level 5
 win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.

@@ -37,7 +37,7 @@ import { seedGate } from './data/gate.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
-import { initAudio, playSound, closeSoundPops } from './audio.js';
+import { initAudio, playSound, playMusic, closeSoundPops } from './audio.js';
 import { initSettings } from './settings.js';
 import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
@@ -331,7 +331,8 @@ function peekStrike(params) {
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
   const kind = params.get('kind') || (after === 0 ? 'ultimate' : 'win');
-  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' });
+  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' })
+    .then(() => playMusic('title'));   // back to the title's song after the seal's
 }
 
 init();

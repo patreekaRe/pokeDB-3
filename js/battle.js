@@ -237,6 +237,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     journey(run.map, run.map?.byId[run.current]));
   playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind));
+  if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
   setupBattleScreen();
 
   log(encounter.kind === 'boss'
