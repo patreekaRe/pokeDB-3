@@ -347,19 +347,27 @@ body[data-screen="battle-screen"] .fan-note { display: none; }   /* it sat over 
 .badge.bad  { border-color: var(--bad); }
 .badge.bad b { background: var(--bad); color: #fff; }
 @keyframes badgeIn { from { transform: scale(0.4); opacity: 0; } }
-/* In the nameplates, status sits under the HP bar like PSN / PAR in the games: small chips, icon then number */
-.nameplate .badges { flex: 1 1 0; min-width: 0; justify-content: flex-start; flex-wrap: wrap; gap: 2px 8px; min-height: 0; align-items: center; }
+/* Status floats just outside the nameplate (the user's call, 2026-10-03), so the plate stays one size: under the
+   enemy's, over yours, each a small window-coloured chip, icon then number. Yours wraps upwards. */
+.nameplate { position: relative; }
+.nameplate .badges {
+  position: absolute; left: 0; right: 0; z-index: 3;
+  justify-content: flex-start; flex-wrap: wrap; gap: 5px 6px; min-height: 0; align-items: center;
+}
+#enemy-plate .badges  { top: calc(100% + 9px); }
+#player-plate .badges { bottom: calc(100% + 9px); flex-wrap: wrap-reverse; }
 .nameplate .badges:empty { display: none; }
 .nameplate .badge {
   width: auto;
-  height: 20px;
-  padding: 0;
+  height: 22px;
+  padding: 0 6px 0 4px;
   display: inline-flex;
   align-items: center;
   gap: 2px;
   border: 0;
-  border-radius: 0;
-  background: none;
+  border-radius: var(--round-sm);
+  background: var(--win-bg);
+  box-shadow: 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.35);
   font-size: 0.85rem;
 }
 .nameplate .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.8rem; }

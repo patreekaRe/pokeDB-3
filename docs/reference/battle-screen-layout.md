@@ -9,11 +9,11 @@ with its nameplate bottom right. The nameplates are direct children of
 `pop()` numbers) on a 2-column, 3-row grid; the two sprites share the middle
 row in opposite columns, which keeps the scene short. The title row holds
 just the name (and the enemy's type chip); under the HP bar, `.nameplate-foot`
-has the **status badges** on the left and the HP numbers on the right. The
-badges read like PSN/PAR in the games: no box,
-just icon then number, coloured blue/green/red for block/buff/debuff (block, burn, Weak, Vulnerable, strength, focus,
-guard, next-turn energy, your own strength, and one per active power), built by `badgeFor()` in `js/battle.js`. They fill
-in from the left and wrap onto a second line when they reach the HP numbers. A badge
+has the HP numbers on the right. The **status badges** (`.badges`, still inside the nameplate in the DOM) float
+just outside it since 2026-10-03 (the user's call): under the enemy's plate, over yours (absolute, so the plate never
+changes size; yours wraps upwards). Each is a small window-coloured chip, icon then number,
+the number coloured blue/green/red for block/buff/debuff (block, burn, Weak, Vulnerable, strength, focus,
+guard, next-turn energy, your own strength, and one per active power), built by `badgeFor()` in `js/battle.js`. A badge
 only renders while its status is active, and each one explains itself in
 its `title` tooltip. The biome's and level's extra enemy damage (`encounter.strength`)
 is kept in `enemy.dmgBonus`, not `strength`, so an enemy doesn't walk in with a 💪
