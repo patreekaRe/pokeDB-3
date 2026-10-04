@@ -547,7 +547,7 @@ function showMap() {
   $('run-level').hidden = !run.safari && run.level === 0;
   $('run-level').textContent = tag;
   $('run-level').classList.toggle('replay', !!run.safari && !run.safari.first);
-  $('run-level').title = !run.safari ? '' : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
+  $('run-level').title = !run.safari ? `Trainer Level ${run.level}.` : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
     : 'Today\'s run is used up: this replay doesn\'t count for the leaderboard.';
 
   setHpBar('run', run.hp, run.maxHp);

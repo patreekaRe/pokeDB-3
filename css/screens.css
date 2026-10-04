@@ -1056,14 +1056,14 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 /* the Level chip sits under the bars, left of the HP numbers, so the name row stays short */
 .run-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: min(190px, 100%); }
 .run-foot .gb-hp-num { width: auto; }
-.run-foot .level-chip { font-size: 0.7rem; padding: 1px 8px; }
+.run-foot .level-chip { font-size: 0.7rem; padding: 1px 8px; cursor: help; }
 .ability-chip .item-sprite { width: 1.3em; height: 1.3em; margin: -0.2em 0; }
 .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
 /* The Ability is a pill in the starter's colour left of the Level chip (tap for its text). Blaze only counts below half
    HP: the pill is dim until then, then it glows and bobs and your Pokémon flickers with flame */
-.run-ability { flex: none; cursor: help; }
-.run-ability .pxb-i { font-size: 0.6rem; padding: calc(2.5 * var(--p)) calc(5 * var(--p)) calc(2 * var(--p)); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); }
-.run-ability .pxb-i::after { display: none; }
+.run-foot .run-ability { flex: none; cursor: help; margin-right: auto; --p: 2px; }
+.run-foot .run-ability .pxb-i { font-size: 0.5rem; letter-spacing: 0.06em; padding: calc(1.5 * var(--p)) calc(3 * var(--p)) var(--p); color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4); }
+.run-foot .run-ability .pxb-i::after { display: none; }
 .run-ability[data-type="grass"]   { --base: #2ea84a; --hi: #62d474; --lo: #1c7a34; }
 .run-ability[data-type="fire"]    { --base: #f07a1e; --hi: #ffa650; --lo: #b85010; }
 .run-ability[data-type="water"]   { --base: #2f7de8; --hi: #6aaaf8; --lo: #1c52b0; }
