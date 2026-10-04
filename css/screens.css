@@ -1061,13 +1061,25 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .sel-ability .item-sprite { width: 1.5em; height: 1.5em; margin: -0.3em 0; }
 /* The Ability is a pill in the starter's colour left of the Level chip (tap for its text). Blaze only counts below half
    HP: the pill is dim until then, then it glows and bobs and your Pokémon flickers with flame */
-.run-foot .run-ability { flex: none; cursor: help; margin-right: auto; font-size: 0.7rem; padding: 1px 8px; border: 1px solid; }
-.run-ability[data-type="grass"]   { background: #1c5a2c; color: #b8f0c0; border-color: #62d474; }
-.run-ability[data-type="fire"]    { background: #6a3008; color: #ffd0a0; border-color: #ffa650; }
-.run-ability[data-type="water"]   { background: #173a78; color: #cfe2ff; border-color: #6aaaf8; }
-.run-ability[data-type="psychic"] { background: #4e1666; color: #f0c8ff; border-color: #d670f0; }
+/* Always alive: a soft glow breathing in its type colour and a sheen of light sweeping across every few seconds */
+.run-foot .run-ability {
+  flex: none; cursor: help; margin-right: auto; font-size: 0.7rem; padding: 1px 8px; border: 1px solid;
+  background-image: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.28) 50%, transparent 60%);
+  background-size: 300% 100%; background-repeat: no-repeat; background-position: 150% 0;
+  animation: abilitySheen 4.5s ease-in-out infinite, abilityGlow 2.6s ease-in-out infinite;
+}
+.run-ability[data-type="grass"]   { background-color: #1c5a2c; color: #b8f0c0; border-color: #62d474; }
+.run-ability[data-type="fire"]    { background-color: #6a3008; color: #ffd0a0; border-color: #ffa650; }
+.run-ability[data-type="water"]   { background-color: #173a78; color: #cfe2ff; border-color: #6aaaf8; }
+.run-ability[data-type="psychic"] { background-color: #4e1666; color: #f0c8ff; border-color: #d670f0; }
+@keyframes abilitySheen { 0%, 55% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
+@keyframes abilityGlow { 0%, 100% { box-shadow: 0 0 0 transparent; } 50% { box-shadow: 0 0 5px var(--glow, currentColor); } }
+.run-ability[data-type="grass"]   { --glow: #62d474; }
+.run-ability[data-type="fire"]    { --glow: #ffa650; }
+.run-ability[data-type="water"]   { --glow: #6aaaf8; }
+.run-ability[data-type="psychic"] { --glow: #d670f0; }
 .run-ability[data-state="off"] { filter: saturate(0.7) brightness(0.85); }
-.run-ability[data-state="on"] { box-shadow: 0 0 6px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
+.run-ability[data-state="on"] { box-shadow: 0 0 6px #ff5010; animation: abilitySheen 1.8s ease-in-out infinite, blazeCapsule 0.8s steps(2) infinite; }
 @keyframes blazeCapsule { 50% { translate: 0 -2px; } }
 .run-sprite[data-blaze] { animation: blazeAura 0.5s steps(1) infinite; }
 @keyframes blazeAura {
@@ -1075,7 +1087,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 5px #ff5010) drop-shadow(0 -4px 3px #ffd040); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .run-ability[data-state="on"] { animation: none; }
+  .run-foot .run-ability, .run-ability[data-state="on"] { animation: none; }
   .run-sprite[data-blaze] { animation: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 4px #ff7a18); }
 }
 
