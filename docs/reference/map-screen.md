@@ -63,6 +63,9 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   the gaps between routes (`routeTiles()`) by a PRNG seeded from the node
   ids + biome, so a refresh draws the same terrain. Water and lava drift on
   a timer while the map screen shows (off under `prefers-reduced-motion`).
+  The Shrine's map is its own (2026-10-03: the user found it looked like the Clearing's): dark moss strewn with
+  cherry petals, mossy paving ruins, bamboo groves, pink cherry trees, a lotus pond with lily pads, and `props`
+  (`PROPS` / `PROP_INK`: torii gates, stone lanterns whose flames flicker) standing on open ground clear of the routes.
 - Routes are smooth SVG polylines over the canvas (`.map-routes`,
   `routeLines()` / `drawRoutes()`), deliberately not pixel art: the user
   found pixel-staircase diagonals too ugly. Every link is its own straight

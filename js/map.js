@@ -368,7 +368,8 @@ const nodeX = (node) => (node.type === 'boss' ? CENTER_X : colX(node.col));
 
 const PALETTES = {
   clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
-  shrine:   { ground: 'moss',  blobs: [['trees', 9, 14, 40], ['water', 3, 12, 28], ['mountain', 2, 8, 16]] },
+  shrine:   { ground: 'mossy', blobs: [['ruins', 6, 10, 30], ['bamboo', 4, 10, 26], ['sakura', 5, 5, 14], ['lotus', 2, 10, 22], ['trees', 4, 8, 20]],
+              props: [['torii', 2], ['lantern', 7]] },   // an overgrown temple ground, not the Clearing's meadow
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
   depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)
@@ -399,7 +400,22 @@ const TERRAIN = {
   sand:     ['#e8c888', '#f8e0a8', '#c8a468'],
   snow:     ['#e8f0f8', '#ffffff', '#b8c8e0', '#90a4c4'],
   dune:     ['#d8b070', '#f0d098', '#b08848', '#8a6a34'],
+  // the Shrine's; a fifth colour is a motif's G (moss on stone, a bamboo node)
+  mossy:    ['#3e7a3a', '#5e9a4a', '#2a5a2a'],
+  ruins:    ['#8a9078', '#b2b69a', '#58624c', '#38422e', '#4e8a3a'],
+  bamboo:   ['#24522a', '#8ccc58', '#5aa040', '#163a1a', '#d0ec90'],
+  sakura:   ['#e890b8', '#ffd0e4', '#b05888', '#6a2848'],
+  lotus:    ['#2a6a78', '#7cc0c0', '#1a4a58', '#c8e8d8'],
 };
+
+// the Shrine's landmarks, drawn over the ground: . see-through, R vermilion, K its shade, G moss, S stone, D its shade, Y lamp glow
+const PROPS = {
+  torii: ['................', 'RR............RR', 'RRRRRRRRRRRRRRRR', '.KKGKKKKKKKKGKK.', '...RR..G...RR...', '..RRRRRRRRRRRR..',
+          '..KKKKKKKKKKKK..', '...RR......RR...', '...RG......RR...', '...RR......GR...', '...RR......RR...', '...GR......RR...',
+          '...RR......RG...', '...RR......RR...', '..SSSS....SSSS..', '................'],
+  lantern: ['...SS...', '.SGSSSG.', '..DDDD..', '..DYYD..', '..SSSS..', '...SD...', '...GD...', '..SSSS..'],
+};
+const PROP_INK = { R: '#c84a32', K: '#7a2418', G: '#58a040', S: '#d4d6c0', D: '#8a8e78', Y: '#ffe070' };
 
 // 8x8 motifs: . base, L light, D dark
 const MOTIFS = {
@@ -410,6 +426,9 @@ const MOTIFS = {
   boulder:  ['........', '..LLL...', '.LL..D..', '.L....D.', 'L.....DD', 'L....DDD', '.DDDDDD.', '........'],
   snow:     ['........', '...L....', '..LLL...', '........', '......L.', '.....LL.', '........', '........'],
   dune:     ['........', '..LLLL..', '.L....DD', 'L.......', '........', '...LLL..', '..L...DD', '........'],
+  ruins:    ['LLL.DLL.', 'L...DL..', '....D...', 'DGDDDDGD', 'D.LLL...', 'D.L.....', 'G.......', 'DDDGDDGD'],
+  bamboo:   ['.L..D.L.', '.G..D.L.', '.L..G.L.', '.L..D.G.', '.L..D.L.', '.L..D.L.', '.G..D.L.', '.L..G.L.'],
+  sakura:   ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
 };
 
 const ROUTE = { edge: '#9a8448', fill: '#f8f0b8', walked: '#e83030', active: '#ffffff' };
@@ -548,6 +567,27 @@ function terrainGrid(map, biomeId, tiles, rand) {
       }
     }
   }
+
+  // Landmarks stand on open ground clear of the routes, never touching each other: [kind, tile x, tile y].
+  grid.props = [];
+  for (const [kind, count] of palette.props || []) {
+    const span = PROPS[kind].length / TILE;
+    for (let n = 0; n < Math.round(count * GRID_W / NARROW_W); n++) {
+      const spots = [];
+      for (let y = 0; y + span <= GRID_H; y++) for (let x = 0; x + span <= GRID_W; x++) {
+        let open = true;
+        for (let dy = -1; dy <= span && open; dy++) for (let dx = -1; dx <= span && open; dx++) {
+          const inside = dy >= 0 && dy < span && dx >= 0 && dx < span;
+          if (inside ? !(dist[y + dy][x + dx] >= 2 && grid[y + dy][x + dx] === palette.ground) : grid[y + dy]?.[x + dx] === 'prop') open = false;
+        }
+        if (open) spots.push([x, y]);
+      }
+      if (!spots.length) break;
+      const [x, y] = spots[Math.floor(rand() * spots.length)];
+      for (let dy = 0; dy < span; dy++) for (let dx = 0; dx < span; dx++) grid[y + dy][x + dx] = 'prop';
+      grid.props.push([kind, x, y]);
+    }
+  }
   return grid;
 }
 
@@ -573,22 +613,31 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
   const flowing = [];   // [x, y, base, light, speed] for every water/lava pixel, redrawn as it drifts
   const sparks = [];    // [x, y, colour] crystal tips that glint now and then
   const white = abgr('#ffffff');
+  const [lily, lilyShade, lilyBloom] = ['#58a848', '#2e7a30', '#f8a8c8'].map(abgr);
 
   for (let ty = 0; ty < GRID_H; ty++) for (let tx = 0; tx < GRID_W; tx++) {
-    const kind = grid[ty][tx];
-    const [base, light, dark, edge] = terrain[kind];
+    const kind = grid[ty][tx] === 'prop' ? (PALETTES[biomeId] || PALETTES.clearing).ground : grid[ty][tx];   // a landmark is painted over its ground below
+    const [base, light, dark, edge, moss] = terrain[kind];
     const motif = MOTIFS[kind];
     const tuft = !motif && rand() < 0.22 ? [1 + Math.floor(rand() * 4), 1 + Math.floor(rand() * 5)] : null;
+    const petal = kind === 'mossy' && rand() < 0.14 ? [Math.floor(rand() * TILE), Math.floor(rand() * TILE)] : null;   // fallen cherry petals
+    const pad = kind === 'lotus' && rand() < 0.4 ? [1 + Math.floor(rand() * 4), 1 + Math.floor(rand() * 5), rand() < 0.4] : null;   // a lily pad, maybe in flower
     for (let ly = 0; ly < TILE; ly++) for (let lx = 0; lx < TILE; lx++) {
       const x = tx * TILE + lx, y = ty * TILE + ly;
       let c = base;
-      if (kind === 'water' || kind === 'lava' || kind === 'pool' || kind === 'rift') {
+      const onPad = pad && ly >= pad[1] && ly <= pad[1] + 1 && lx >= pad[0] && lx <= pad[0] + 2 && !(ly === pad[1] && lx === pad[0] + 2);
+      if (onPad) {
+        c = pad[2] && ly === pad[1] && lx === pad[0] + 1 ? lilyBloom : ly === pad[1] + 1 ? lilyShade : lily;
+      } else if (kind === 'water' || kind === 'lava' || kind === 'pool' || kind === 'rift' || kind === 'lotus') {
         if (ripple(x, y)) c = light;
-        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : kind === 'rift' ? 0.7 : 1]);
+        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : kind === 'rift' ? 0.7 : kind === 'lotus' ? 0.5 : 1]);
       } else if (motif) {
         const m = motif[ly][lx];
-        c = m === 'L' ? light : m === 'D' ? dark : base;
+        c = m === 'L' ? light : m === 'D' ? dark : m === 'G' ? moss : base;
+        if (kind === 'ruins' && m === '.' && rand() < 0.07) c = moss;   // moss creeping over the paving
         if ((kind === 'crystal' || kind === 'geode') && m === 'L' && ly <= 1) sparks.push([x, y, light]);   // a crystal's tip, to twinkle
+      } else if (petal && lx === petal[0] && ly === petal[1]) {
+        c = terrain.sakura[1];
       } else if (tuft && ly === tuft[1] + 1 && (lx === tuft[0] || lx === tuft[0] + 2)) {
         c = dark;
       } else if (tuft && ly === tuft[1] && lx === tuft[0] + 1) {
@@ -605,6 +654,15 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
         if (other(1, 0)) put(tx * TILE + TILE - 1, ty * TILE + i, edge);
       }
     }
+  }
+
+  for (const [kind, tx, ty] of grid.props) {
+    PROPS[kind].forEach((row, ly) => [...row].forEach((m, lx) => {
+      if (m === '.') return;
+      const [x, y] = [tx * TILE + lx, ty * TILE + ly];
+      put(x, y, abgr(PROP_INK[m]));
+      if (m === 'Y') sparks.push([x, y, abgr(PROP_INK.Y)]);   // a lantern's flame flickers
+    }));
   }
 
   const draw = () => ctx.putImageData(img, 0, 0);
