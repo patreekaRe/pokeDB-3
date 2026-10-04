@@ -870,12 +870,12 @@ function afterFight(node, result) {
   run.fights += 1;
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari();
-  const { lines: dexNews, complete: dexComplete } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
   // A boss win's unlocks wait until after the evolution: the jingle sounds just like its chime (the user heard it early).
-  const unlocked = [];
+  const unlocked = research ? [research] : [];
   const unlock = () => {
     for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); }
     if (!peeking) unlocked.push(...checkFeats());   // the Depths page's shiny Mewtwo
@@ -944,7 +944,7 @@ function afterFight(node, result) {
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
-    if (run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; collect(); return endRun(true); }       // final boss: you win!
+    if (run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
     // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
     if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
@@ -2332,6 +2332,7 @@ function unlockWindow(list, next) {
   // Kenmatta's defeats are achievements too, saved as the window opens (a refresh before it replays the window; a
   // ?event= playtest never saves): the first wins his relic, the third shows his dojo on every map
   if (ken && !peeking) updateSave(s => { s.kenWins = Math.max(s.kenWins || 0, starter.wins); if (starter.map) s.kenBeaten = true; });
+  d.querySelector('.unlock-kicker').textContent = starter.kicker ?? '🏆 Achievement unlocked!';
   $('unlock-sprite').hidden = ken;
   $('unlock-face').hidden = !ken;
   if (feat) {
@@ -2483,6 +2484,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   if (won && peeking && mewtwoRun) record = draftWin(run, getSave().shiny.on.includes(run.starter.id));
   const gate = strikeGate(won, atLastBoss);
   const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
+  if (won && run.research) fresh.unshift(run.research);   // the last boss's own research, first so Mewtwo's reveal stays last
   if (won && peeking && mewtwoRun) fresh.push({ ...FEATS.find(f => f.id === 'eternatus'), feat: true, paid: 0 });
 
   const name = stageName(run.starter, run.stage);

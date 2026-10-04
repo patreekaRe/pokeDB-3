@@ -1372,3 +1372,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   back over. `renderPose()` in `js/battle.js` toggles `.bracing` / `.swaying` on `#enemy-pose`, a wrapper between the box
   (lunge, sink, drop-in) and the GIF (recoil, glow), pivoting on the feet; off under reduced motion and while it faints,
   sinks, is caught or runs.
+- Research complete window (the user's ask, 2026-10-03): an entry's research finishing opens the achievement window
+  (`#unlock-dialog`, kicker "📖 Research complete!") with its sprite, the achievement jingle, its cry and the PokéCoins paid,
+  before that fight's rewards. `dexDefeated()` in `js/pokedex.js` returns it as `research` (a `feat`-shaped entry with a
+  `kicker`); the last boss's waits for the run's end windows (`run.research`).

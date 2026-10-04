@@ -58,7 +58,7 @@ export function dexSeen(id) {
  * whole-dex bonuses, all paid here, once, however the run ends) and whether this finished the Pokédex.
  */
 export function dexDefeated(id) {
-  if (!ENEMY_DEFS[id] || !pageOf(id)) return { lines: [], complete: false };
+  if (!ENEMY_DEFS[id] || !pageOf(id)) return { lines: [], complete: false, research: null };
   const name = ENEMY_DEFS[id].name;
   const lines = [];
   markDex('seen', id);
@@ -66,10 +66,17 @@ export function dexDefeated(id) {
 
   const goal = goalOf(id);
   const n = countDex(id);
+  let research = null;   // its own window, like an achievement's (the user's ask, 2026-10-03)
   if (n < goal) lines.push(`${name} defeated ${n}/${goal}.`);
   else if (n === goal) {
     const coins = awardCoins(RESEARCH_COINS[roleOf(id)]);
     lines.push(`${name} defeated ${n}/${goal}: Research complete! +${coins} PokéCoins.`);
+    const def = ENEMY_DEFS[id];
+    research = {
+      feat: true, kicker: '📖 Research complete!', name, sprite: def.image, cry: def.spriteId, paid: coins,
+      text: `You defeated ${name} ${goal} time${goal === 1 ? '' : 's'}.`,
+      hint: 'Its Pokédex entry now shows its type, moves and their numbers.',
+    };
   }
 
   const p = pageOf(id);
@@ -93,7 +100,7 @@ export function dexDefeated(id) {
     lines.push(`Pokédex complete! Every entry's research is done. +${coins} PokéCoins!`, `New on the map: the ${SCOPE.name}. ${SCOPE.text}`);
     complete = true;
   }
-  return { lines, complete };
+  return { lines, complete, research };
 }
 
 /** How many entries' research is complete, of how many. */

@@ -137,6 +137,8 @@ three places:
   it first): each area's boss prelude (`SAFARI_PRELUDES` in `js/scene.js`, synths in `js/audio.js`) and, after it, the boss's arena
   (`ARENAS`), seen with
   `?area=<area>&stage=3`.
+- 2026-10-03: **Research complete window** (local, pushed to `main`): finishing an entry's research opens the achievement
+  window ("📖 Research complete!", sprite, jingle, cry, PokéCoins) before the fight's rewards (`research` from `dexDefeated()`).
 - 2026-10-03: **v1.0 part D, the ending** (cloud, pushed to `main`): a Mewtwo win plays the Champion of the Depths scene
   (a violet crystal cavern) and the credits (`js/credits.js`), gold-violet entries in both books; the Crystal Depths'
   Pokédex page (completing it unlocks shiny Mewtwo); feats (`FEATS`: Champion of the Depths pays 1000 PokéCoins, Shiny
