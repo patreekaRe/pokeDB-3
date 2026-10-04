@@ -402,7 +402,7 @@ function beginPlayerTurn() {
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry
   b.busy = false;
-  if (b.turn === 1) lockDeal(b.hand.filter(h => h.fresh).length);
+  if (b.turn === 1) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));
   renderAll();
 }
 
@@ -415,8 +415,29 @@ function lockDeal(n) {
   const box = $('hand');
   box.classList.add('dealing');
   setTimeout(() => box.classList.remove('dealing'), ms);
+  return ms;
 }
 const dealing = () => performance.now() < dealLockUntil;
+
+/* The player's first HAND_HINTS battles teach the hand's slide and swipe (the user's ask, 2026-10-04): two lines
+   take turns fading in just above the cards, behind them, twice each (.hand-hint's animations), then it's gone.
+   Using either gesture puts it away early. */
+const HAND_HINTS = 3;
+let hintTimer = 0;
+function showHandHint(delay) {
+  hideHandHint();
+  if ((getSave().handHints ?? 0) >= HAND_HINTS) return;
+  updateSave(d => { d.handHints = (d.handHints ?? 0) + 1; });
+  hintTimer = setTimeout(() => {
+    const hint = $('hand-hint');
+    hint.hidden = false;
+    hint.lastElementChild.addEventListener('animationend', hideHandHint, { once: true });
+  }, delay + 300);
+}
+function hideHandHint() {
+  clearTimeout(hintTimer);
+  $('hand-hint').hidden = true;
+}
 
 /** Big Root: extra healing on heals that come from cards and powers (not other relics). */
 const healBonus = () => (hasRelic('big-root') ? 2 : 0);
@@ -1820,6 +1841,7 @@ function checkTaunts() {
 
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
+  hideHandHint();
   const b = battle;
   $('player-name').textContent = stageName(b.starter, b.stage);
   const type = b.starter.type;
@@ -2228,6 +2250,7 @@ function initScrub() {
     if (!drag.on) {
       if (Math.abs(dx) < 12 && dy > -12) return;
       drag.on = true;
+      hideHandHint();
       if (Math.abs(dx) < -dy && drag.uid != null) pick(drag.uid);   // straight up: lift the card it started on
     }
     e.preventDefault();

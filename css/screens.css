@@ -899,7 +899,13 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .pile b { font-size: 1.15rem; font-weight: 400; }
 
 /* --- hand --- */
-.hand-wrap { grid-area: hand; min-width: 0; padding-top: 4px; }
+.hand-wrap { grid-area: hand; min-width: 0; padding-top: 4px; position: relative; isolation: isolate; }
+/* the first battles' slide / swipe hint (showHandHint() in js/battle.js): in the gap over the fan, behind the cards, so it moves nothing */
+.hand-hint { position: absolute; z-index: -1; top: -3px; left: 0; right: 0; height: 1.2em; font-size: 0.6rem; text-align: center; color: #f0f0e8; text-shadow: 1px 1px 0 #181818; pointer-events: none; white-space: nowrap; }
+.hand-hint > span { position: absolute; inset: 0; opacity: 0; animation: handHintA 6s ease-in-out 2; }
+.hand-hint > span + span { animation-name: handHintB; }
+@keyframes handHintA { 0% { opacity: 0; } 8%, 40% { opacity: 0.9; } 48%, 100% { opacity: 0; } }
+@keyframes handHintB { 0%, 50% { opacity: 0; } 58%, 90% { opacity: 0.9; } 98%, 100% { opacity: 0; } }
 .hand {
   --hand-card-w: clamp(112px, 12vw, 148px);
   display: flex;
