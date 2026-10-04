@@ -348,7 +348,7 @@ body[data-screen="battle-screen"] .fan-note { display: none; }   /* it sat over 
 .badge.bad b { background: var(--bad); color: #fff; }
 @keyframes badgeIn { from { transform: scale(0.4); opacity: 0; } }
 /* Status floats just outside the nameplate (the user's call, 2026-10-03), so the plate stays one size: under the
-   enemy's, over yours, each a small window-coloured chip, icon then number. Yours wraps upwards. */
+   enemy's, over yours, icon then number. Yours wraps upwards. */
 .nameplate { position: relative; }
 .nameplate .badges {
   position: absolute; left: 0; right: 0; z-index: 3;
@@ -365,16 +365,20 @@ body[data-screen="battle-screen"] .fan-note { display: none; }   /* it sat over 
   align-items: center;
   gap: 2px;
   border: 0;
-  border-radius: var(--round-sm);
-  background: var(--win-bg);
-  box-shadow: 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.35);
+  background: none;
   font-size: 0.85rem;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
 }
-.nameplate .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.8rem; }
-/* no boxes: the number's colour says what kind of status it is */
-.nameplate .badge.block b { color: #2060d8; }
-.nameplate .badge.good b { color: #208030; }
-.nameplate .badge.bad b { color: #c02020; }
+/* No chip behind them (the user's call, 2026-10-03), so the numbers carry a dark outline to read over the arena.
+   Their colour says what kind of status it is. */
+.nameplate .badge b {
+  position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none;
+  color: #fff; font-size: 0.8rem;
+  text-shadow: 1px 0 0 #181820, -1px 0 0 #181820, 0 1px 0 #181820, 0 -1px 0 #181820;
+}
+.nameplate .badge.block b { color: #8cc8ff; }
+.nameplate .badge.good b { color: #7ee08a; }
+.nameplate .badge.bad b { color: #ff7a6a; }
 
 /* --- enemy --- */
 /* the enemy's frame takes its own type colour */

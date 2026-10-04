@@ -11,7 +11,7 @@ row in opposite columns, which keeps the scene short. The title row holds
 just the name (and the enemy's type chip); under the HP bar, `.nameplate-foot`
 has the HP numbers on the right. The **status badges** (`.badges`, still inside the nameplate in the DOM) float
 just outside it since 2026-10-03 (the user's call): under the enemy's plate, over yours (absolute, so the plate never
-changes size; yours wraps upwards). Each is a small window-coloured chip, icon then number,
+changes size; yours wraps upwards). Each is icon then number with no chip behind it (the user's call, 2026-10-03; the number has a dark outline to read over the arena),
 the number coloured blue/green/red for block/buff/debuff (block, burn, Weak, Vulnerable, strength, focus,
 guard, next-turn energy, your own strength, and one per active power), built by `badgeFor()` in `js/battle.js`. A badge
 only renders while its status is active, and each one explains itself in
