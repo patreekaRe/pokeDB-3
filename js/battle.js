@@ -2204,6 +2204,7 @@ function renderFocus() {
   if (pilePick) return;                           // Fusion Flare's picker owns the layer until a card is taken
   const layer = $('card-focus');
   layer.classList.remove('rise');
+  spreadHand(selectedItem == null ? (choosing ? choosing.picked : selectedUid) : null);
   const item = ITEMS_BY_ID[b.items[selectedItem]];
   if (item) {
     const index = selectedItem;
@@ -2240,10 +2241,11 @@ function renderFocus() {
   big.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
   });
-  const extra = problem ? el('p', 'focus-hint', problem) : focusButton(verb, () => tapCard(entry.uid));
+  // a playable card has no Play button: a second tap on it plays it (the user's call, 2026-10-04)
+  const extra = problem ? el('p', 'focus-hint', problem) : choosing ? focusButton(verb, () => tapCard(entry.uid)) : null;
   if (choosing) extra.classList.add(`pick-${choosing.verb}`);
   const tips = cardTips(asShown(entry.card), big);
-  layer.replaceChildren(big, extra, ...(tips ? [tips] : []));
+  layer.replaceChildren(big, ...(extra ? [extra] : []), ...(tips ? [tips] : []));
   layer.classList.add('rise');
   layer.hidden = false;
   popFromHand(big, extra, $('hand').querySelector(`[data-uid="${entry.uid}"]`), tips);
@@ -2293,30 +2295,46 @@ function clearPreview() {
 }
 
 /**
- * Like Slay the Spire, the picked card rises out of its own place in the hand, bigger and straight,
- * instead of jumping to the middle of the screen; a small Play button sits under it
- * (the user's call). The hand's copy hides so it reads as the same card lifting.
+ * Like Slay the Spire, the picked card rises out of its own place in the hand, bigger and straight, its foot dipping
+ * into the hand (the user's call, 2026-10-04); a hint or a pick button, if any, sits above it. The hand's copy hides so
+ * it reads as the same card lifting, and spreadHand() parts the cards beside it.
  */
 function popFromHand(big, extra, from, tips) {
   if (!from) { tips?.remove(); return; }
   from.classList.add('lifted');
   const r = from.getBoundingClientRect();
   const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
-  const under = 16;   // clears the card's gold ring and drop shadow, which stick out ~8px past its box
-  const ew = extra.offsetWidth, eh = extra.offsetHeight;
+  const above = 14;   // clears the card's gold ring and drop shadow, which stick out ~8px past its box
   const left = Math.max(gap, Math.min(innerWidth - w - gap, r.left + r.width / 2 - w / 2));
-  const foot = Math.min(r.top - 2, innerHeight - gap);   // the Play button stands just above the hand, so the cards beside it stay in view
-  const top = Math.max(gap, foot - eh - under - h);
+  const foot = Math.min(r.top + r.height * 0.33, innerHeight - gap);
+  const eh = extra ? extra.offsetHeight + above : 0;
+  const top = Math.max(gap + eh, foot - h);
   Object.assign(big.style, { left: `${left}px`, top: `${top}px` });
-  const ex = Math.max(gap, Math.min(innerWidth - ew - gap, left + w / 2 - ew / 2));
-  Object.assign(extra.style, { left: `${ex}px`, top: `${top + h + under}px` });
-  if (tips) placeTips(tips, left, top, w, gap);
+  if (extra) {
+    const ew = extra.offsetWidth;
+    const ex = Math.max(gap, Math.min(innerWidth - ew - gap, left + w / 2 - ew / 2));
+    Object.assign(extra.style, { left: `${ex}px`, top: `${top - eh}px` });
+  }
+  if (tips) placeTips(tips, left, top - eh, w, gap);
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const dx = r.left + r.width / 2 - (left + w / 2), dy = r.bottom - (top + h);
   big.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${r.width / w})` }, { transform: 'none' }],
     { duration: 140, easing: 'ease-out' });
-  extra.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, delay: 60, fill: 'backwards' });
+  extra?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, delay: 60, fill: 'backwards' });
+}
+
+/* StS's hand: while a card is up, the cards beside it lean and slide away from it, most the nearest, opening its gap. */
+function spreadHand(uid) {
+  const cards = [...$('hand').children];
+  const at = cards.findIndex(card => Number(card.dataset.uid) === uid);
+  const w = cards[0]?.offsetWidth ?? 0;
+  cards.forEach((card, i) => {
+    const d = i - at, near = Math.abs(d);
+    const push = at < 0 || !d ? 0 : Math.sign(d) * w * 0.28 / Math.sqrt(near);
+    card.style.setProperty('--push', `${push.toFixed(1)}px`);
+    card.style.setProperty('--lean', `${at < 0 || !d ? 0 : Math.sign(d) * Math.max(1, 4 - near)}deg`);
+  });
 }
 
 /* The keyword boxes go beside the risen card, StS-style, on whichever side has room; a phone rarely has it, so
