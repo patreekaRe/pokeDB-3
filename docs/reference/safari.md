@@ -28,8 +28,9 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - **Picker**: a tap opens `#ball-picker` over the button, one row per ball you can throw now (`ballsInBag()`), with how
   many are left and its odds; a tap throws. A tap elsewhere closes it.
 - **Odds** (`catchChance()` in `js/data/balls.js`, pure, pinned by `tests/catch.test.mjs`): a curve on the HP left
-  (`CATCH_BASE`: 5% at full HP + 65% x (HP lost)^3, so ~13% at half, ~32% at 25%, 70% near 0: a throw at full HP is a
-  long shot, the games' shape); a multiplier m turns the miss chance q into q^m (the games' shape), m = ball x (1 + 0.25 per
+  (`CATCH_BASE`: 8% at full HP + 67% x (HP lost)^1.5, so ~32% at half (yellow), ~56% at a fifth (red), 75% near 0: a
+  throw at full HP is a long shot; it was cubic, 13% at half and 38% at red, until 2026-10-04, when the user found
+  yellow/red catches far harsher than the games); a multiplier m turns the miss chance q into q^m (the games' shape), m = ball x (1 + 0.25 per
   kind of debuff on it: Burn, Leech Seed, Weak, Sap) x (1 + 0.5 per Bait) x 0.5 for a rare spawn; capped at 95%
   (`CATCH_CAP`); the Master Ball is 100%. The roll is `random()`, on the room's seeded stream.
 - **The throw on screen** (`ballAnimation()`): the ball's sprite arcs to the Pokémon (Web Animations), it's pulled in

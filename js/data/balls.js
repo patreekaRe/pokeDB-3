@@ -3,7 +3,7 @@
 
    Every wild fight in a Safari run shows a Throw button. A throw costs 1 PP
    and ends your turn; a miss and the Pokémon acts. Like the games, a throw
-   at full HP is a long shot and the odds climb as its HP drops (a curve,
+   at full HP is a long shot and the odds climb steadily as its HP drops (a curve,
    CATCH_BASE). They rise with the ball too, your debuffs on
    it (Burn, Leech Seed, Weak, Sap: the games' sleep and paralysis bonus,
    so every type can help) and Bait; a rare spawn is harder.
@@ -16,8 +16,9 @@
 /** What a throw costs (and it ends your turn). */
 export const THROW_PP = 1;
 /** The base odds with a plain Safari Ball: CATCH_BASE.full at full HP, rising to CATCH_BASE.low near 0 along
-    (1 - HP share)^CATCH_BASE.curve, so it stays a long shot until the HP is low (~13% at half, ~32% at the red line). */
-export const CATCH_BASE = { full: 0.05, low: 0.7, curve: 3 };
+    (1 - HP share)^CATCH_BASE.curve: ~32% at half (yellow), ~56% at a fifth (red). It was cubic (13% / 38%) until
+    2026-10-04, which felt far harsher than the games, whose odds climb in a straight line as HP falls. */
+export const CATCH_BASE = { full: 0.08, low: 0.75, curve: 1.5 };
 /** No ball but the Master Ball is ever sure. */
 export const CATCH_CAP = 0.95;
 /** Each kind of debuff on it (Burn, Leech Seed, Weak, Sap) adds this to the ball's multiplier. */

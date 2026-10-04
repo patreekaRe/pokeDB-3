@@ -18,13 +18,14 @@ test('a throw at any HP but 0, costing 1 PP', () => {
   assert.ok(catchChance({ hpFrac: 0.5 }) > 0);
 });
 
-test('a plain Safari Ball: a long shot at full HP, rising steeply as HP falls', () => {
+test('a plain Safari Ball: a long shot at full HP, a fair shot in the yellow, likely in the red', () => {
   close(catchChance({ hpFrac: 1 }), CATCH_BASE.full);
   close(baseOdds(0), CATCH_BASE.low);
   assert.ok(catchChance({ hpFrac: 1 }) <= 0.1, 'full HP should be a long shot');
-  assert.ok(catchChance({ hpFrac: 0.5 }) < 0.2, 'half HP should still be unlikely');
-  const red = catchChance({ hpFrac: 0.25 });
-  assert.ok(red > 0.25 && red < 0.4, `the red line was 30% before the curve: ${red}`);
+  const yellow = catchChance({ hpFrac: 0.5 });
+  assert.ok(yellow > 0.25 && yellow < 0.4, `half HP (the yellow line) should be a fair shot: ${yellow}`);
+  const red = catchChance({ hpFrac: 0.2 });
+  assert.ok(red > 0.5 && red < 0.65, `a fifth (the red line) should be more likely than not: ${red}`);
   close(catchChance({ hpFrac: 0.5 }), CATCH_BASE.full + (CATCH_BASE.low - CATCH_BASE.full) * 0.5 ** CATCH_BASE.curve);
   let last = 0;
   for (let hp = 1; hp > 0; hp -= 0.02) {
