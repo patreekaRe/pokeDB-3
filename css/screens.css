@@ -1062,19 +1062,20 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-ability { display: inline-flex; cursor: help; }
 /* The Ability is just its capsule beside the name (tap for its text). Blaze only counts below half HP: dim until then,
    then the capsule glows and bobs and your Pokémon flickers with flame */
-/* On the map it's a round gold-rimmed badge with a ring pulsing out of it now and then, so it reads as something to tap */
+/* On the map it's a little cream tile in the HP tag's look, a shine sweeping across it now and then, so it reads as something to tap */
 .run-name .run-ability {
-  flex: none; position: relative; align-items: center; justify-content: center;
-  width: 30px; height: 30px; margin: -6px 0 -6px 8px;
-  border: 2px solid #f8d048; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #4a5a8a, #1a2240 70%);
-  box-shadow: 0 0 0 2px #181818, 2px 3px 0 2px rgba(0, 0, 0, 0.45);
+  flex: none; position: relative; overflow: hidden; align-items: center; justify-content: center;
+  width: 28px; height: 26px; margin: -5px 0 -5px 8px;
+  border: 2px solid #181818; border-radius: 6px;
+  background: #f8f8f0;
+  box-shadow: inset 0 -3px 0 #d8d0b8, 2px 2px 0 rgba(0, 0, 0, 0.45);
 }
 .run-name .run-ability::after {
-  content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #ffe890;
-  pointer-events: none; opacity: 0; animation: abilityPing 3s steps(8) infinite 1s;
+  content: ""; position: absolute; top: -4px; bottom: -4px; left: 0; width: 6px;
+  background: rgba(255, 255, 255, 0.85); transform: translateX(-12px) skewX(-20deg);
+  pointer-events: none; animation: abilityShine 3.5s steps(10) infinite 1s;
 }
-@keyframes abilityPing { 0% { opacity: 0.9; transform: scale(1); } 30%, 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes abilityShine { 0% { transform: translateX(-12px) skewX(-20deg); } 25%, 100% { transform: translateX(34px) skewX(-20deg); } }
 .run-ability .item-sprite { width: 22px; height: 22px; margin: 0; filter: drop-shadow(0 1px 0 #000); }
 .run-ability[data-state="off"] .item-sprite { opacity: 0.5; filter: grayscale(0.8); }
 .run-ability[data-state="on"] { border-color: #ff8a20; box-shadow: 0 0 0 2px #181818, 0 0 8px 2px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
@@ -1091,7 +1092,9 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 }
 
 /* HP and Gold/Silver's thin blue EXP bar share one tag, the EXP flush under the HP */
-.run-bars { align-items: flex-start; }
+.run-bars { align-items: stretch; }
+/* the tag runs down beside the EXP bar too, so HP and EXP read as one block */
+.run-bars .gb-hp-tag { border-radius: 6px 0 0 6px; }
 .gb-bars { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .gb-bars .gb-hp-track { flex: none; }
 .gb-exp { display: block; height: 10px; padding: 2px; border: 2px solid #181818; border-top: 0; border-radius: 0 0 6px 0; background: #f8f8f0; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); cursor: help; margin-top: -2px; }
