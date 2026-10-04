@@ -2,7 +2,7 @@
  * The evolution scene, after Gold/Silver's: once a boss faints the screen washes to white, the Pokémon fades in alone
  * and cries, "What? X is evolving!" waits for a tap, then the evolution song plays while it flashes white and its dark
  * silhouette switches between the old and new forms, faster and faster, until a flash colours the new form in with its
- * cry. The chime and "Congratulations!" follow, and the next tap fades the white out onto whatever was set up under it.
+ * cry (a tap during the song skips straight there). The chime and "Congratulations!" follow, and the next tap fades the white out onto whatever was set up under it.
  * Cosmetic only: run.js has already changed the stage, HP and deck. Under reduced motion the cries, song and chime stay,
  * but nothing flashes or wipes.
  */
@@ -62,8 +62,11 @@ export async function evolutionScene(starter, from, after = []) {
   await say([`What? ${fromName} is evolving!`]);
 
   playMusic('evolution', { restart: true, cut: true });
-  if (still()) await sleep(STILL_SONG_MS);
-  else await morph(mon, oldImg, newImg);
+  const skip = skipper(scene);
+  if (still()) await skip.wait(STILL_SONG_MS);
+  else await morph(mon, oldImg, newImg, skip);
+  skip.off();
+  if (skip.done && !still()) await whiteFlash();
 
   playMusic(null, { cut: true });
   oldImg.style.visibility = 'hidden';
@@ -110,15 +113,16 @@ export function sceneSay(sceneId, logId, lines) {
 }
 
 /** It flashes white three times and goes dark, then the silhouette switches forms faster and faster, flashing at the end. */
-async function morph(mon, oldImg, newImg) {
+async function morph(mon, oldImg, newImg, skip) {
+  const wait = skip.wait;
   for (let i = 0; i < 3; i++) {
     mon.classList.add('white');
-    await sleep(170);
+    if (await wait(170)) return;
     mon.classList.remove('white');
-    await sleep(210);
+    if (await wait(210)) return;
   }
   mon.classList.add('dark');
-  await sleep(800);
+  if (await wait(800)) return;
   let showNew = false, flips = 0;
   const flip = () => {
     showNew = !showNew;
@@ -127,20 +131,48 @@ async function morph(mon, oldImg, newImg) {
   };
   for (let gap = 560; gap > 50; gap *= 0.85) {
     flip();
-    await sleep(gap);
+    if (await wait(gap)) return;
   }
   // the fastest stretch: white flashes between the switches, ending on the new form
   while (flips < 14 || !showNew) {
     flip();
     mon.classList.toggle('white', ++flips % 3 === 0);
-    await sleep(50);
+    if (await wait(50)) return;
   }
   mon.classList.remove('white');
+  await whiteFlash();
+}
+
+async function whiteFlash() {
   const flash = $('evolve-flash');
   flash.classList.remove('go');
   void flash.offsetWidth;
   flash.classList.add('go');
   await sleep(120);   // the flash is at full white now, so the colours come back under it
+}
+
+/** A tap or Enter while the song plays skips straight to the new form's cry. Pointerdown, not click, so the tap that
+    dismissed "is evolving!" can't count; `wait(ms)` resolves true once skipped. */
+function skipper(scene) {
+  let fire;
+  const tapped = new Promise(resolve => { fire = resolve; });
+  const s = {
+    done: false,
+    wait: (ms) => Promise.race([sleep(ms).then(() => s.done), tapped.then(() => true)]),
+    off: () => {
+      scene.removeEventListener('pointerdown', onTap);
+      document.removeEventListener('keydown', onKey);
+    },
+  };
+  const onTap = () => { s.done = true; fire(); };
+  const onKey = (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    onTap();
+  };
+  scene.addEventListener('pointerdown', onTap);
+  document.addEventListener('keydown', onKey);
+  return s;
 }
 
 const loaded = (img) => img.complete && img.naturalWidth ? null

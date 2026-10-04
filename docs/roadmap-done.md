@@ -1376,3 +1376,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (`#unlock-dialog`, kicker "📖 Research complete!") with its sprite, the achievement jingle, its cry and the PokéCoins paid,
   before that fight's rewards. `dexDefeated()` in `js/pokedex.js` returns it as `research` (a `feat`-shaped entry with a
   `kicker`); the last boss's waits for the run's end windows (`run.research`).
+- Evolution skip (the user's ask, 2026-10-03): a tap (or Enter) during the evolution song skips the flashing straight to
+  the white flash and the new form's cry (`skipper()` in `js/evolution.js`, on pointerdown so the tap that dismissed
+  "is evolving!" can't count).
