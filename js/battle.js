@@ -1844,6 +1844,7 @@ function setupBattleScreen() {
   $('player-type').className = `chip type-${type}`;
   $('player-ability').hidden = !b.ability;
   $('player-ability').dataset.type = type;
+  if (b.ability) $('player-ability').textContent = b.ability.name;
   showAbilityState();
   $('ability-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
