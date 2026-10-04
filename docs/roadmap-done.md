@@ -1365,7 +1365,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - Card trails (roadmap 8, 2026-10-03): a played card arcs to where it acts shedding its type's trail (Fire embers, Water
   droplets, Grass leaves, Psychic sparkles, Neutral white) and an exhausted one burns away from the bottom up into embers,
   replacing the grey smoke puff; ethereal and Burning Jealousy exhausts burn too. `js/cardfx.js`, one low-res canvas;
-  halved at 2x speed, off under reduced motion, never awaited except a picked exhaust's burn (0.56 s, was 0.9 s).
+  halved at 2x speed, off under reduced motion, never awaited except a picked exhaust's burn. Slowed the same day (the user couldn't see them): trail specks 2 px
+  and ~1.8x longer-lived, denser, a bigger landing burst; non-attack drops 0.65 s, burns 1 s; attacks still land with the hit.
 - Enemy reactions (polish idea, the user's pick, 2026-10-03): the enemy braces (crouches and flinches back) while a raised
   card is an attack, relaxing when it's lowered or another kind is raised, and sways on its feet below 25% HP until healed
   back over. `renderPose()` in `js/battle.js` toggles `.bracing` / `.swaying` on `#enemy-pose`, a wrapper between the box

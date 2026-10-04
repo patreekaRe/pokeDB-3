@@ -72,8 +72,8 @@ function frame(now) {
 
 function draw(p) {
   const step = Math.min(p.pal.length - 1, Math.floor((p.age / p.life) * p.pal.length));
-  const x = Math.floor(p.x), y = Math.floor(p.y);
-  const dot = (dx, dy, c) => { ctx.fillStyle = c; ctx.fillRect(x + dx, y + dy, 1, 1); };
+  const x = Math.floor(p.x), y = Math.floor(p.y), s = p.size || 1;
+  const dot = (dx, dy, c) => { ctx.fillStyle = c; ctx.fillRect(x + dx * s, y + dy * s, s, s); };
   const c = p.pal[step];
   switch (p.kind) {
     case 'ember':
@@ -112,6 +112,7 @@ function spawn(type, x, y, { burst = 0, fast = false, ember = false } = {}) {
   else if (kind === 'leaf') { p.vx += rand(-0.4, 0.4); p.vy += rand(-0.3, 0.1); p.g = 0.012; p.sway = 0.35; p.life = rand(30, 46); }
   else if (kind === 'spark') { p.vx += rand(-0.35, 0.35); p.vy += rand(-0.35, 0.35); p.drag = 0.93; p.life = rand(18, 30); }
   else { p.vx += rand(-0.25, 0.25); p.vy += rand(-0.3, 0.1); p.drag = 0.94; p.life = rand(14, 24); }
+  if (!ember) { p.size = 2; p.life *= 1.8; }   // the trail hangs on after the card lands: at 1 px and ~0.4 s it was gone before you saw it (the user, 2026-10-03)
   if (fast) p.life /= 2;
   parts.push(p);
   return p;
@@ -145,7 +146,7 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
   const x2 = to.left + to.width / 2, y2 = to.top + to.height / 2;
   const lift = attack ? Math.max(70, Math.hypot(x2 - x0, y2 - y0) * 0.4) : 40;
   const x1 = (x0 + x2) / 2 + (attack ? (x0 - x2) * 0.15 : 0), y1 = Math.min(y0, y2) - lift;
-  const total = fast ? 200 : 400, arrive = 0.55;
+  const total = attack ? (fast ? 200 : 400) : (fast ? 330 : 650), arrive = 0.55;   // an attack still lands with its hit
   const t0 = performance.now();
   let lastX = x0, lastY = y0, landed = false;
   jobs.push((now) => {
@@ -160,7 +161,7 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
     ghost.style.opacity = String(1 - after);
     if (!attack) ghost.style.filter = `brightness(${1 + e * 0.6 + after * 0.4}) drop-shadow(0 0 ${Math.round(8 * e)}px #a8d8ff)`;
     if (u < 1) {   // a trail as dense as the distance covered, from across the card's shrinking width
-      const steps = Math.max(1, Math.round(Math.hypot(x - lastX, y - lastY) / 7));
+      const steps = Math.max(1, Math.round(Math.hypot(x - lastX, y - lastY) / 4.5));
       const half = (r.width * scale) / 2;
       for (let i = 1; i <= steps; i++) {
         const sx = lastX + ((x - lastX) * i) / steps, sy = lastY + ((y - lastY) * i) / steps;
@@ -169,8 +170,8 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
       lastX = x; lastY = y;
     } else if (!landed) {
       landed = true;
-      for (let i = 0; i < (attack ? 14 : 8); i++) {
-        const p = spawn(type, x2 / PX, y2 / PX, { burst: attack ? 2.2 : 1, fast });
+      for (let i = 0; i < (attack ? 26 : 12); i++) {
+        const p = spawn(type, x2 / PX, y2 / PX, { burst: attack ? 3 : 1.2, fast });
         if (!attack) p.vy -= 0.6;   // the glow rises off your Pokémon
       }
     }
@@ -187,7 +188,7 @@ export function burnAway(src, pile, { fast = false } = {}) {
   if (!src || reduced()) return Promise.resolve();
   ensureCanvas();
   const { ghost, wrap, r } = ghostOf(src, 'burn-ghost');
-  const total = fast ? 280 : 560;
+  const total = fast ? 500 : 1000;
   const cols = Math.max(4, Math.round(r.width / (PX * 3)));   // one ragged step every 3 canvas pixels
   const jag = Array.from({ length: cols }, () => rand(0, 1));
   const to = pile?.getBoundingClientRect();
@@ -211,6 +212,7 @@ export function burnAway(src, pile, { fast = false } = {}) {
           ctx.fillStyle = PALETTES.fire[(i + Math.floor(now / 60)) % 2]; ctx.fillRect(cx, cy, cw, 1);
           if (Math.random() < (fast ? 0.5 : 0.3)) {
             const p = spawn('fire', cx + rand(0, cw), cy, { ember: true, fast });
+            if (Math.random() < 0.4) p.size = 2;
             if (home && Math.random() < 0.12) { p.home = home; p.life *= 1.6; p.g = 0; }
           }
         }
