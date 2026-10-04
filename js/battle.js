@@ -2118,7 +2118,7 @@ function fanHand() {
   const step = n > 1 ? Math.max(w * 0.12, Math.min(w * 0.88, (room - w) / (n - 1))) : w;
   const edge = (n - 1) / 2;
   box.style.setProperty('--overlap', `${w - step}px`);
-  box.style.setProperty('--fan-tilt', `${edge ? Math.min(2.5, 9 / edge) : 0}deg`);
+  box.style.setProperty('--fan-tilt', `${edge ? Math.min(4, 14 / edge) : 0}deg`);
   box.style.setProperty('--fan-drop', `${edge ? Math.min(3, 14 / (edge * edge)) : 0}px`);
   cards.forEach((card, i) => card.style.setProperty('--fan', i - edge));
 }
@@ -2336,6 +2336,7 @@ function spreadHand(uid) {
     const push = at < 0 || !d ? 0 : Math.sign(d) * w * 0.28 / Math.sqrt(near);
     card.style.setProperty('--push', `${push.toFixed(1)}px`);
     card.style.setProperty('--shift', step ? (push / step).toFixed(3) : 0);
+    card.style.setProperty('--lean', `${at < 0 || !d ? 0 : (Math.sign(d) * 9 / near ** 0.7).toFixed(1)}deg`);   // the shift alone tilts too little to see
   });
 }
 
