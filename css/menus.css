@@ -91,15 +91,27 @@
 /* wider screens: the corner is a column, so it opens to the speaker's right instead of over the ❓ under it */
 @media (min-width: 601px) { .title-sound .sound-pop { top: 50%; left: calc(100% + 4px); translate: 0 -50%; animation-name: soundPopSide; } }
 @keyframes soundPopSide { from { opacity: 0; translate: -4px -50%; } }
-/* Refresh: a smaller icon under the speaker, spinning while the newest files come in (refreshGame() in js/title.js) */
-.title-refresh .ta-pc { font-size: 20px; }
+/* Refresh: a smooth (not pixel) arrow under the speaker that spins and glows every few seconds, so players can tell
+   it's a refresh button (the user's call, 2026-10-03: players didn't know); spinning fast while the newest files come
+   in (refreshGame() in js/title.js) */
+.title-refresh .ta-pc { font-size: 24px; }
+.refresh-ico { display: block; width: 1em; height: 1em; fill: #fff; stroke: #1c1440; stroke-width: 0.6; paint-order: stroke; }
+.title-refresh .refresh-ico { animation: refreshNudge 4.5s ease-in-out 1.5s infinite; }
+@keyframes refreshNudge {
+  0%, 70% { rotate: 0deg; scale: 1; filter: none; }
+  80% { scale: 1.2; filter: drop-shadow(0 0 4px #ffd070); }
+  92% { rotate: 360deg; scale: 1.2; filter: drop-shadow(0 0 4px #ffd070); }
+  100% { rotate: 360deg; scale: 1; filter: none; }
+}
+.title-refresh:hover .refresh-ico, .title-refresh:focus-visible .refresh-ico { fill: #ffd070; }
+.title-refresh.spinning .refresh-ico { animation: taSpin 0.7s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .title-refresh .refresh-ico { animation: none; } }
 .title-sound .title-account { margin-top: 4px; }
 /* phones: one row along the top, refresh centred on the speaker */
 /* wider screens have room beside the logo, so one column */
 @media (min-width: 601px) { .title-corner { grid-template-columns: auto; } }
-.title-refresh.spinning .ta-pc { animation: taSpin 0.6s steps(8) infinite; }
 @keyframes taSpin { to { rotate: 360deg; } }
-@media (max-width: 600px) { .title-refresh .ta-pc { font-size: 16px; } .title-refresh { margin: 13px 0 0 4px; } }
+@media (max-width: 600px) { .title-refresh .ta-pc { font-size: 20px; } .title-refresh { margin: 11px 0 0 4px; } }
 /* How to play: a small ❓ between the speaker and Refresh, centred on the speaker in the phones' row */
 .title-help .ta-pc { font-size: 26px; }
 @media (max-width: 600px) { .title-help .ta-pc { font-size: 22px; } .title-help { margin-top: 9px; } }
