@@ -12,8 +12,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
 5. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
-   (`LOOP_POINTS`), drop its fallback. Wired already: `map4`, `eternatus`, `eternamax`. New tracks to wire if supplied:
-   a Safari theme, a credits song, the Sealed Gate scene, the Mart and the Game Corner. Real recordings can also replace
+   (`LOOP_POINTS`), drop its fallback. Wired already: `eternatus`, `eternamax` (`map4` and the Sealed Gate's `seal` arrived
+   2026-10-04). New tracks to wire if supplied: a Safari theme, a credits song, the Mart and the Game Corner. Real recordings can also replace
    synths (block, stick, gate-hum / gate-crack / gate-shatter, fireworks).
 
 The user's second pick (2026-10-03), one session each:
@@ -42,7 +42,7 @@ The user's second pick (2026-10-03), one session each:
 
 ## Waiting on the user
 
-- Music: `assets/audio/eternatus.mp3`, `eternamax.mp3` and `map4.mp3` (they borrow `boss` / `map3` until then).
+- Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
   Safari leaderboard. The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and
   `docs/reference/cloud-save.md`.

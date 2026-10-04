@@ -45,7 +45,7 @@ three places:
   through biomes 1-3, a crystal cavern with themed wilds): the Crystal Depths, its 16 Pokémon with enemy traits, the way
   down after the Biome 3 boss (since 2026-10-02 Mewtwo's fall, `fallIn()`: the descent scene with the full heal told in its
   lines, then the Depths' film; `?descent=mewtwo` playtests it; roadmap Small asks 5), Mewtwo's fixed mode with no Level picker; strong / human bot 78 / 72%. Its scenery was
-  painted the same day (B2, below), and `map4` borrows `map3.mp3` until the user supplies one. Part C landed the
+  painted the same day (B2, below), and `map4` has the user's own song since 2026-10-04. Part C landed the
   same day: Eternatus is a two-bar set piece (it rises as Eternamax in a cutscene, charges Eternabeam, its Dynamax
   Cannon grows); strong / human bot 92 / 90%; `?bossfight=depths&hp=0.1` playtests it. The user still owes its two music
   files; the Eternamax cutscene was redone the same day as the Darkest Day (part C2: the roof splits on a red sky and

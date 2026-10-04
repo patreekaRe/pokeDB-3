@@ -203,8 +203,8 @@ live site.
   (`DEPTHS_INTRO`): down a crystal shaft into the cavern, its crystals lighting one by one with `crystal-0..2` chimes, a
   push towards the far Well; walk-ons for the Halls and the red Deep Core. Map: `PALETTES.depths` with `rift` (flowing
   energy), `crystal` and `geode` (crystal tips twinkle); signs `[data-biome="depths"]` in `css/screens.css`; its own
-  treasure grotto (`PLACE_ART.treasure.biomes.depths`, a Master Ball chest). `map4` still plays `map3.mp3` until the user
-  supplies one.
+  treasure grotto (`PLACE_ART.treasure.biomes.depths`, a Master Ball chest). `map4` is the user's own song (2026-10-04,
+  looped at 6.0-45.747 s, `TRACK_GAIN` 0.18).
   **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in
   `js/halloffame.js` plays its own version (`.hof-scene.depths`: a violet cavern with crystal clusters and stalactites, a
   crystal pedestal trimmed in gold, the party in violet / crystal / gold, `celebrate()`'s `psychic` palette), then

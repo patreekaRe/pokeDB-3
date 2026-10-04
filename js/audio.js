@@ -40,7 +40,7 @@ const TRACKS = {
   map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
-  map4:    'assets/audio/map3.mp3',   // PLACEHOLDER: the Crystal Depths borrow the Wastes' theme until its own map4.mp3 arrives
+  map4:    'assets/audio/map4.mp3',   // the Crystal Depths' map, the user's (2026-10-04)
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
@@ -63,7 +63,7 @@ const LOOP_POINTS = {
   map1:  [7.26172, 45.44, 0.3],    // 38.18 s
   map2:  [3.79134, 63.27, 0.3],    // 59.48 s
   map3:  [1.02, 39.2, 0.3],        // 38.18 s, the whole song
-  map4:  [1.02, 39.2, 0.3],        // map3's, while it plays map3.mp3
+  map4:  [6.0, 45.747, 0.3],       // 39.747 s, the user's clip: its end replays its start (0.63 at the join, so cross-faded)
   victory: [4.20957, 15.46, 0.3],   // the fanfare, then an 11.25 s loop the file starts again before it fades (chroma 0.985 over 6 s)
   'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
   kombat: [30, 115.97016, 0.3],   // an 85.97 s repeat (0.81 sample correlation at the join, so cross-faded); the file fades out at 194 s
@@ -627,7 +627,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS)
+const TRACK_GAIN = { boss: 1.15, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
