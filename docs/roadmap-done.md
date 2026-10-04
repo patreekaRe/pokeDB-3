@@ -1383,3 +1383,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   its cost (`.card-rarity` from `makeCard()`: ● common, starting cards included; ◆ uncommon; ★ rare; none on signature
   moves, tokens, status and Safari cards). Picking a card reward or a Mart card says "Already in your deck (×N)" between
   the card and its button when you hold copies (`deckNote()` in `js/rewards.js`, an option's `note`, `.focus-note`).
+- Depths fall fix (the user's report, 2026-10-03): normal starters fell into Biome 3 after Boss 2 with Mewtwo's lines
+  and a free full heal, since "the next biome is the last" was the only check; `fallIn()` now also needs `isMewtwoRun()`.

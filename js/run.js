@@ -966,7 +966,7 @@ function afterFight(node, result) {
   runSteps(steps, () => {
     collect();
     if (node.type !== 'boss') showMap();
-    else if (run.biome + 1 === finalBiome(run.starter)) fallIn();
+    else if (isMewtwoRun(run.starter) && run.biome + 1 === finalBiome(run.starter)) fallIn();   // everyone else's last biome is Biome 3
     else { run.biome += 1; startBiome(); }
   });
 }
