@@ -1410,3 +1410,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   as ??? so their names stay hidden. Hidden on the Relics / Items tabs.
 
 - **Safari unlock progress** (2026-10-04, the user's ask): the locked Safari Zone gem's tip ends with Pokémon beaten / all main-biome entries (`safariUnlockProgress()` in `js/data/pokedex.js`).
+
+- **Map run card polish** (2026-10-04, the user's ask): the name starts where the HP bar does (an invisible "HP:" before it, `.run-info .run-name::before`), the map's "HP:" tag is cream instead of black, and the Ability is a round gold-rimmed badge with a ring pulsing out every few seconds so it reads as tappable.

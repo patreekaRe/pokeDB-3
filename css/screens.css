@@ -1044,8 +1044,15 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .gb-hp-fill { display: block; height: 100%; width: 100%; background: var(--hp-color); transition: width 0.6s steps(12), background 0.3s; }
 .gb-hp-num { font-family: var(--pixel-font); font-synthesis-weight: none; align-self: flex-start; width: min(190px, 100%); text-align: right; font-size: 0.9rem; font-weight: 900; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
 
-.run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; width: 190px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
+.run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; width: 210px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }
 .run-info strong { font-size: 1.1rem; }
+/* the name starts where the bar does: an invisible copy of the "HP:" tag in front of it */
+.run-info .run-name { gap: 0; }
+.run-info .run-name::before { content: "HP:"; visibility: hidden; flex: none; font-family: var(--pixel-font); font-size: 0.68rem; font-weight: 900; padding: 0 4px 0 5px; border-left: 2px solid transparent; }
+.run-info .run-name strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.run-info .gb-hp, .run-info .run-foot { width: 100%; }
+/* the map's "HP:" tag sits on the bar's cream, not black */
+.run-bars .gb-hp-tag { background: #f8f8f0; color: #e06818; text-shadow: none; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); }
 /* the Level chip sits under the bars, left of the HP numbers, so the name row stays short */
 .run-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: min(190px, 100%); }
 .run-foot .gb-hp-num { width: auto; }
@@ -1055,10 +1062,23 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-ability { display: inline-flex; cursor: help; }
 /* The Ability is just its capsule beside the name (tap for its text). Blaze only counts below half HP: dim until then,
    then the capsule glows and bobs and your Pokémon flickers with flame */
-.run-name .run-ability { align-self: center; margin-left: 6px; }
-.run-ability .item-sprite { width: 1.4em; height: 1.4em; margin: -0.3em 0; }
-.run-ability[data-state="off"] { opacity: 0.45; filter: grayscale(0.8); }
-.run-ability[data-state="on"] { filter: sepia(1) saturate(4) hue-rotate(-20deg) drop-shadow(0 0 2px #ffd040) drop-shadow(0 0 5px #ff5010); animation: blazeCapsule 0.8s steps(2) infinite; }
+/* On the map it's a round gold-rimmed badge with a ring pulsing out of it now and then, so it reads as something to tap */
+.run-name .run-ability {
+  flex: none; position: relative; align-items: center; justify-content: center;
+  width: 30px; height: 30px; margin: -6px 0 -6px 8px;
+  border: 2px solid #f8d048; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #4a5a8a, #1a2240 70%);
+  box-shadow: 0 0 0 2px #181818, 2px 3px 0 2px rgba(0, 0, 0, 0.45);
+}
+.run-name .run-ability::after {
+  content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #ffe890;
+  pointer-events: none; opacity: 0; animation: abilityPing 3s steps(8) infinite 1s;
+}
+@keyframes abilityPing { 0% { opacity: 0.9; transform: scale(1); } 30%, 100% { opacity: 0; transform: scale(1.6); } }
+.run-ability .item-sprite { width: 22px; height: 22px; margin: 0; filter: drop-shadow(0 1px 0 #000); }
+.run-ability[data-state="off"] .item-sprite { opacity: 0.5; filter: grayscale(0.8); }
+.run-ability[data-state="on"] { border-color: #ff8a20; box-shadow: 0 0 0 2px #181818, 0 0 8px 2px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
+.run-ability[data-state="on"] .item-sprite { filter: sepia(1) saturate(4) hue-rotate(-20deg) drop-shadow(0 0 2px #ffd040); }
 @keyframes blazeCapsule { 50% { translate: 0 -2px; } }
 .run-sprite[data-blaze] { animation: blazeAura 0.5s steps(1) infinite; }
 @keyframes blazeAura {
@@ -1066,7 +1086,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 5px #ff5010) drop-shadow(0 -4px 3px #ffd040); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .run-ability[data-state="on"] { animation: none; }
+  .run-ability[data-state="on"], .run-name .run-ability::after { animation: none; }
   .run-sprite[data-blaze] { animation: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 4px #ff7a18); }
 }
 
