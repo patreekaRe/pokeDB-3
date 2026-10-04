@@ -2306,7 +2306,7 @@ function popFromHand(big, extra, from, tips) {
   const w = big.offsetWidth, h = big.offsetHeight, gap = 8;
   const above = 14;   // clears the card's gold ring and drop shadow, which stick out ~8px past its box
   const left = Math.max(gap, Math.min(innerWidth - w - gap, r.left + r.width / 2 - w / 2));
-  const foot = Math.min(r.top + r.height * 0.80, innerHeight - gap);   // low, so it stays in the thumb's reach
+  const foot = Math.min(r.top + r.height * 0.75, innerHeight - gap);   // low, so it stays in the thumb's reach
   const eh = extra ? extra.offsetHeight + above : 0;
   const top = Math.max(gap + eh, foot - h);
   const tilt = parseFloat(from.style.getPropertyValue('--fan')) * parseFloat(getComputedStyle($('hand')).getPropertyValue('--fan-tilt'));
