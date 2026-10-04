@@ -375,8 +375,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
    fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide; Psychic **Pressure**:
    start each fight with 2 Focus (Mewtwo's first attack deals +2). It's the first row of the
-  Bag's Relics pocket, an "Ability: X" line in the character select's panel (`#sel-ability`), an "Ability: X" line on
-  the map's run card (`#run-ability`), and an Ability Capsule chip on your battle nameplate (`#player-ability`,
+  Bag's Relics pocket, an "Ability: X" line in the character select's panel (`#sel-ability`), an "Ability" pill in the
+  starter's type colour beside the map run card's Level chip (`#run-ability`, the `.pxb` look), and an Ability Capsule chip on your battle nameplate (`#player-ability`,
   tap for its text; the capsule, not the type icon, so it doesn't read as a type). When it does something,
   `abilityBanner()` in `js/battle.js` slides in Gen 5's "Charmander's Blaze" window (`#ability-banner`) on
    your side for 1.9 s: Torrent and Pressure on turn 1, Blaze each time HP drops below half (`checkBlaze()` in
