@@ -50,14 +50,17 @@ export function recordWin(run, shiny) {
 export const LOSS_KEEP = 100;
 
 /**
- * Save a lost run's short line for the Record Book: who fell, where (biome, place, floor) and to what. `after` is how
- * many wins came before it, which places it among them in the list.
+ * Save a lost run in the Record Book: who fell, where (biome, place, floor) and to what move, with the same record a win
+ * keeps plus its HP over the run (one point a floor, then the faint), for the loss recap. `after` is how many wins came
+ * before it, which places it among them in the list.
  */
-export function recordLoss(run, { foe = null, kind = null, biomeName, place, floor }, shiny) {
+export function recordLoss(run, { foe = null, move = null, kind = null, biomeName, place, floor }, shiny) {
+  const trail = run.tally.hpTrail || [];
   const entry = {
+    ...runRecord(run, shiny), hp: 0,
     after: getSave().hallOfFame.length,
-    starter: run.starter.id, stage: run.stage, shiny, type: run.starter.type, level: run.level,
-    date: dayOf(new Date()), biome: run.biome, biomeName, place, floor, foe, kind, fights: run.fights,
+    biome: run.biome, biomeName, place, floor, foe, move, kind,
+    hpTrail: [...trail.map(([hp, max, biome]) => [hp, max, biome]), [0, run.maxHp, run.biome]],   // it ends where it fainted
   };
   updateSave(d => { d.losses = [...(d.losses || []), entry].slice(-LOSS_KEEP); });
   return entry;
@@ -66,12 +69,19 @@ export function recordLoss(run, { foe = null, kind = null, biomeName, place, flo
 /** A won run's entry, unsaved (recordWin() saves it; a ?bossfight=depths playtest only plays its scene). */
 export function draftWin(run, shiny) {
   const wins = getSave().hallOfFame;
-  const t = run.tally;
   const mewtwo = run.starter.id === 'mewtwo';
   return {
     no: wins.length + 1,
     fame: !mewtwo && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
     champ: mewtwo ? wins.filter(isDepths).length + 1 : null,   // a Champion of the Depths' own number
+    ...runRecord(run, shiny),
+  };
+}
+
+/** What a run's record holds, won or lost: the Pokémon, the dates, the final deck, relics and Bag, and run.tally's numbers. */
+function runRecord(run, shiny) {
+  const t = run.tally;
+  return {
     starter: run.starter.id,
     stage: run.stage,
     shiny,
@@ -288,7 +298,7 @@ function showList() {
   const losses = book === 'record' ? getSave().losses || [] : [];
   const wins = `${entries.length} ${book === 'fame' ? (entries.length === 1 ? 'champion' : 'champions') : (entries.length === 1 ? 'win' : 'wins')}`;   // a Champion of the Depths counts among them
   const count = losses.length ? `${wins}, ${losses.length} ${losses.length === 1 ? 'loss' : 'losses'}` : wins;
-  $('hof-dialog-sub').textContent = `${count}. Tap a win for its record.`;
+  $('hof-dialog-sub').textContent = `${count}. Tap a ${losses.some(l => l.deck) ? 'run' : 'win'} for its record.`;
   // a lost run sits after the wins that came before it (`after`), so the book reads as one history
   const rows = [];
   entries.forEach((entry, i) => {
@@ -323,18 +333,26 @@ function winRow(entry) {
   return row;
 }
 
-/** A lost run's short line: no page to open, just where it fell and to what. */
+/** A lost run's short line: where it fell and to what. Losses saved since the recap open it; older ones have no page. */
 function lossRow(entry) {
-  const row = el('div', `hof-row lost type-${entry.type}`);
+  const page = Boolean(entry.deck);
+  const row = el(page ? 'button' : 'div', `hof-row lost type-${entry.type}${page ? ' recap' : ''}`);
   const text = el('span', 'hof-row-text');
   const line = el('span', 'hof-row-line');
   line.append(chip(entry), el('span', 'hof-lv', entry.starter === 'mewtwo' ? 'Mewtwo' : `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
-  const where = `${entry.biomeName}${entry.place ? `, ${entry.place}` : ''}${entry.kind === 'boss' ? ' (boss)' : entry.floor ? ` F${entry.floor}` : ''}`;
   text.append(el('strong', '', `💀 Lost ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
-    el('small', '', `${entry.foe ? `Fell to ${entry.foe}` : 'Fainted'} in ${where} · ${entry.fights} fights won`));
+    el('small', '', `${entry.foe ? `Fell to ${entry.foe}` : 'Fainted'} in ${whereOf(entry)} · ${entry.fights} fights won`));
   row.append(rowPic(entry), text);
+  if (page) {
+    row.type = 'button';
+    row.append(el('span', 'hof-row-go', '▶'));
+    row.addEventListener('click', () => showLoss(entry));
+  }
   return row;
 }
+
+const whereOf = (entry) => `${entry.biomeName}${entry.place ? `, ${entry.place}` : ''}${entry.kind === 'boss' ? ' (boss)' : entry.floor ? ` F${entry.floor}` : ''}`;
+const blowOf = (entry) => !entry.foe ? 'Fainted' : entry.move ? `Fell to ${entry.foe}'s ${entry.move}` : `Fell to ${entry.foe}`;
 
 /** A run's numbers as [icon, value, label, short label], for the record's page and the scene (short labels there). Old entries show "-" for what they lack. */
 function statList(entry) {
@@ -342,7 +360,7 @@ function statList(entry) {
   return [
     ['⚔️', num(entry.fights), 'Fights won', 'Fights'],
     ['👑', num(entry.elites), 'Alphas beaten', 'Alphas'],
-    ['❤️', entry.hp != null ? `${entry.hp}/${entry.maxHp}` : '-', 'HP at the end', 'HP left'],
+    ...(entry.hpTrail ? [] : [['❤️', entry.hp != null ? `${entry.hp}/${entry.maxHp}` : '-', 'HP at the end', 'HP left']]),   // a loss ends at 0
     ['🔄', num(entry.turns), 'Turns', 'Turns'],
     ['🃏', num(entry.played), 'Cards played', 'Played'],
     ['💥', num(entry.dealt), 'Damage dealt', 'Dealt'],
@@ -420,4 +438,90 @@ function showEntry(entry) {
   $('hof-dialog-sub').textContent = `${numberOf(entry)}: ${nameOf(entry)}'s run. Tap a card, relic or item to read it.`;
   $('hof-body').replaceChildren(...parts);
   $('hof-body').scrollTop = 0;
+}
+
+/* ---------- the loss recap: a lost run's short page, after its last fight and in the Record Book ---------- */
+
+const SVG = 'http://www.w3.org/2000/svg';
+function svg(tag, attrs) {
+  const node = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  return node;
+}
+
+/** HP over the run: a point a floor, max HP a faint line over it, a dashed line and a label where each biome begins. */
+function hpChart(entry) {
+  const trail = entry.hpTrail;
+  const W = 100, H = 40;
+  const top = Math.max(...trail.map(p => p[1]), 1);
+  const x = (i) => (trail.length > 1 ? (i / (trail.length - 1)) * W : W / 2);
+  const y = (hp) => H - (hp / top) * H;
+  const line = trail.map(([hp], i) => `${x(i).toFixed(2)},${y(hp).toFixed(2)}`).join(' ');
+  const box = el('div', `loss-chart type-${entry.type}`);
+  const plot = el('div', 'loss-plot');
+  box.append(plot);
+  const art = svg('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', 'aria-hidden': 'true' });
+  art.append(
+    svg('polyline', { class: 'loss-max', points: trail.map(([, max], i) => `${x(i).toFixed(2)},${y(max).toFixed(2)}`).join(' ') }),
+    svg('polygon', { class: 'loss-area', points: `0,${H} ${line} ${x(trail.length - 1).toFixed(2)},${H}` }),
+    svg('polyline', { class: 'loss-line', points: line }));
+  plot.append(art);
+  trail.forEach(([, , biome], i) => {
+    if (i && biome === trail[i - 1][2]) return;
+    if (i) art.append(svg('line', { class: 'loss-biome', x1: x(i), x2: x(i), y1: 0, y2: H }));
+    const tag = el('span', 'loss-biome-tag', `B${biome + 1}`);
+    tag.style.left = `${x(i)}%`;
+    plot.append(tag);
+  });
+  const end = el('span', 'loss-end', '💀');
+  end.style.left = `${x(trail.length - 1)}%`;
+  plot.append(end);
+  const low = Math.min(...trail.slice(0, -1).map(p => p[0]));
+  const caption = el('p', 'loss-caption',
+    `Set out with ${trail[0][0]}/${trail[0][1]} HP · ${trail.length - 1} floors${trail.length > 2 ? ` · lowest before the end ${low}` : ''}`);
+  caption.title = 'HP as each floor began';
+  return [box, caption];
+}
+
+/** A lost run's page: who beat it and with what, its numbers, its HP over the run and its final deck. */
+function lossPage(entry) {
+  const top = el('div', `hof-entry lost type-${entry.type}`);
+  const pic = el('span', 'hof-entry-pic');
+  const img = el('img', 'pixel');
+  img.src = imgOf(entry);
+  img.alt = nameOf(entry);
+  pic.append(img);
+  const info = el('div', 'hof-plate');
+  const head = el('div', 'hof-plate-head');
+  head.append(el('strong', 'hof-name', `${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`));
+  const foot = el('div', 'hof-plate-foot');
+  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', entry.starter === 'mewtwo' ? 'Mewtwo' : `Lv.${entry.level}`));
+  info.append(head, foot, el('p', 'loss-blow', `💀 ${blowOf(entry)}`), el('p', 'hof-rule', `in ${whereOf(entry)}`));
+  top.append(pic, info);
+
+  const label = (text) => el('h3', 'records-label', text);
+  const record = el('div', 'stat-grid hof-stats');
+  record.append(...statList(entry).map(tile));
+  const cards = el('div', 'card-pool hof-cards');
+  fillDeck(cards, entry.deck.filter(id => CARDS_BY_ID[id]), entry.stage);
+  return [top, label('HP over the run'), ...hpChart(entry), label('The record'), record, label(`Final deck (${entry.deck.length})`), cards];
+}
+
+function showLoss(entry) {
+  const back = el('button', 'btn secondary hof-back', '◀ All runs');
+  back.type = 'button';
+  back.addEventListener('click', showList);
+  $('hof-dialog-sub').textContent = `${nameOf(entry)}'s lost run. Tap a card to read it.`;
+  $('hof-body').replaceChildren(back, ...lossPage(entry));
+  $('hof-body').scrollTop = 0;
+}
+
+/** At a lost run's end, before the result window: its recap in a quiet window. Resolves once it's closed. */
+export function lossRecap(entry) {
+  const d = $('loss-dialog');
+  $('loss-sub').textContent = `${nameOf(entry)}'s run is over. It's kept in the Record Book.`;
+  $('loss-body').replaceChildren(...lossPage(entry));
+  openDialog('loss-dialog');
+  $('loss-body').scrollTop = 0;
+  return new Promise(resolve => d.addEventListener('close', resolve, { once: true }));
 }

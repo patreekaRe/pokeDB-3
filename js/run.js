@@ -39,7 +39,7 @@ import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, mart
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { recordWin, recordLoss, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
+import { recordWin, recordLoss, lossRecap, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { postSafariResult, openLeaderboard } from './leaderboard.js';
@@ -174,7 +174,17 @@ const RUN_SAVE_VERSION = 8;
 const freshTally = () => ({
   turns: 0, played: 0, dealt: 0, taken: 0, biggest: 0, itemsUsed: [],
   elites: 0, events: 0, spent: 0, forgotten: 0, startedAt: new Date().toISOString(),
+  hpTrail: [],   // [hp, max HP, biome, floor] as each floor's room begins, for the loss recap's chart
 });
+
+/** One point of the HP chart a floor; a room entered again after a refresh replaces its own point. */
+function markHp(node) {
+  const trail = run.tally.hpTrail;
+  const point = [run.hp, run.maxHp, run.biome, node.floor];
+  const last = trail.at(-1);
+  if (last && last[2] === run.biome && last[3] === node.floor) trail[trail.length - 1] = point;
+  else trail.push(point);
+}
 
 /** Pay ₽ for something, counted in the run's record. */
 function spend(price) {
@@ -803,6 +813,7 @@ function addTally(t) {
 function enterNode(node) {
   run.current = node.id;
   reseed(`room:${run.biome}:${node.id}`);
+  markHp(node);
   node.visited = true;
 
   if (node.type === 'rest' || node.type === 'shop') {
@@ -853,7 +864,7 @@ function afterFight(node, result) {
     tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
     return showMap();
   }
-  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter), { foe: result.foe, kind: node.type });
+  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter), { foe: result.foe, move: result.move, kind: node.type });
 
   run.hp = result.hp;
   run.fights += 1;
@@ -2430,7 +2441,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   }
   const lost = won ? 0 : breakStreak(run.starter.id, safari);
   let streak = won ? null : streakLine(false, lost);
-  if (!won && !safari && !peeking) recordLoss(run, { ...loss, ...whereNow() }, getSave().shiny.on.includes(run.starter.id));
+  const lostEntry = !won && !safari && !peeking ? recordLoss(run, { ...loss, ...whereNow() }, getSave().shiny.on.includes(run.starter.id)) : null;
   if (won && !safari && !peeking) {
     updateSave(d => {
       d.stats.runsWon += 1;
@@ -2506,7 +2517,8 @@ function endRun(won, atLastBoss = false, loss = null) {
   const result = () => unlockWindow(fresh, () => openDialog('result-dialog'));
   // the last boss falls, the floor splits and your Pokémon drops down to the Sealed Gate and strikes it (a run lost at the
   // last boss is dragged down too, and fails); then the win scene, the unlocks and the result (the user's order, 2026-10-02)
-  playGate(gate?.scene).then(() => (record ? winScene(record) : null)).then(result);
+  // a lost run's recap (who beat it, its numbers, its HP over the run, its deck) comes after the gate, before the rest
+  playGate(gate?.scene).then(() => (record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null)).then(result);
 }
 
 /** The descent and the gate's scene, one over the other so the page never shows between them. */

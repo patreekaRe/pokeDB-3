@@ -1315,8 +1315,8 @@ function enemyLoses(n) {
 const tallyOf = (b) => ({ ...b.tally, turns: b.turn, taken: b.damageTaken });
 
 
-/** Damage the player: block first, then HP. Returns the damage that got through. */
-function hurtPlayer(amount) {
+/** Damage the player: block first, then HP. Returns the damage that got through. `source` names a fatal blow for the loss recap. */
+function hurtPlayer(amount, source = null) {
   const b = battle;
   const absorbed = Math.min(b.block, amount);
   b.block -= absorbed;
@@ -1335,7 +1335,7 @@ function hurtPlayer(amount) {
   b.hp = Math.max(0, b.hp - through);
   b.damageTaken += through;
   if (through > 0) markHurt();
-  if (b.hp <= 0) revive();
+  if (b.hp <= 0) { b.blow = source; revive(); }
   return through;
 }
 
@@ -1398,7 +1398,7 @@ async function endTurn() {
   // Status cards that hurt while held (Poison), then Ethereal cards fade away (exhausted).
   const hurt = b.hand.reduce((sum, h) => sum + (h.card.effects.endTurnHurt || 0), 0);
   if (hurt) {
-    const through = hurtPlayer(hurt);
+    const through = hurtPlayer(hurt, 'Poison');
     hitEffect('player-sprite');
     pop('player-zone', through > 0 ? `-${through} ☠️` : 'Blocked', through > 0 ? 'dmg' : 'block');
     log(withRevive(`The Poison in your hand hurt ${stageName(b.starter, b.stage)} for ${hurt}.`));
@@ -1503,7 +1503,7 @@ async function enemyTurn() {
       log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
     } else {
       const shield = b.block;
-      const through = hurtPlayer(damage);
+      const through = hurtPlayer(damage, move.name);
       const effect = enemyTypeMultiplier(move);
       hitSound(through, effect);
       hitEffect('player-sprite');
@@ -1639,7 +1639,7 @@ async function finish(won) {
 
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won, foe: b.def.name, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+  b.onEnd({ won, foe: b.def.name, move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
 }
 
 /**

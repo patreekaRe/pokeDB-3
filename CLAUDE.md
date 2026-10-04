@@ -457,7 +457,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   first entry (`book()` in `js/collection.js`; a tap says how to unlock it, `tipAt()`), and the result window says "Record
   Book unlocked!" / "Hall of Fame unlocked!" the first time: **Record Book** (every win, "Win NNN", Level 5 ones with a ⭐)
   and **Hall of Fame** (Level 5 wins, numbered No.NNN), the last card (the user's call). Both open `#hof-dialog` (`openRecords('fame' | 'record')`,
-  `bookEntries()`): entries newest first, the Record Book's lost runs as greyed lines between them (`save.losses`, `recordLoss()`); tap one for its page: plate, a grid of its numbers (old entries show "-" for what
+  `bookEntries()`): entries newest first, the Record Book's lost runs as greyed lines between them (`save.losses`, `recordLoss()`; since 2026-10-04 one opens its **loss recap**, `lossPage()`, the same page a lost run shows before its result window: the fatal move, HP over the run from `run.tally.hpTrail`, its numbers and deck); tap one for its page: plate, a grid of its numbers (old entries show "-" for what
   they lack), the Ability and relics, the items left in the Bag and the ones used (sprites; a tap shows their `title`), and
   the final deck (`fillDeck()` from `js/deckpreview.js`, each card `zoomable()`).
 - **Chad Master Kenmatta** (2026-10-01): the Move Tutor can be challenged to a boss fight from his dojo (a third sign,

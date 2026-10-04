@@ -1354,3 +1354,11 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   to -12.2, mean -13.1, so `CRY_VOLUME` is unchanged. New cries: aim for -13 LUFS.
 - Map trail (2026-10-03): walked routes are filled solid red over the road's full width, painted in as your Pokémon walks;
   the paw prints (`footprints()`) were too small (the user's call).
+- Loss recap (polish batch 7, 2026-10-04): a lost run's own page (`lossPage()` in `js/halloffame.js`) in `#loss-dialog`
+  after the gate scene, before the unlock windows and the result window (`lossRecap()` from `endRun()`; never the
+  Safari's or a peek's): the grey Pokémon, "Fell to Pidgeot's Wing Attack" (the fatal hit's `source` in `hurtPlayer()`,
+  passed as `onEnd`'s `move`; Poison for the card), where, an SVG chart of HP as each floor began (`run.tally.hpTrail`,
+  `[hp, maxHp, biome, floor]` from `markHp()` in `enterNode()`, a refreshed room replacing its own point) ending at 0, with
+  max HP dashed and a line per biome, the run's numbers (`statList()`, minus HP left) and the final deck. `recordLoss()`
+  now keeps the same record a win does (`runRecord()`, shared with `draftWin()`), so the Record Book's lost-run lines open
+  the page (older ones stay plain lines).

@@ -1980,6 +1980,28 @@ body.battle-intro { pointer-events: none; }
 .hof-row.lost .hof-row-pic img { max-width: 44px; max-height: 44px; filter: grayscale(1); }
 .hof-row.lost strong { font-size: 0.66rem; }
 @media (hover: hover) { .hof-row.lost:hover { background: rgba(48, 48, 56, 0.04); } }
+button.hof-row.lost { cursor: pointer; }
+@media (hover: hover) { button.hof-row.lost:hover { background: rgba(48, 48, 56, 0.1); } }
+/* the loss recap (lossPage()): a grey Pokémon, the blow that ended it, HP over the run */
+.hof-entry.lost .hof-entry-pic img { filter: grayscale(1); opacity: 0.85; }
+.loss-blow { margin: 8px 0 0; font-size: 0.66rem; line-height: 1.6; color: #a02020; }
+.loss-chart {
+  margin: 14px 0 0; padding: 8px 12px 6px;
+  border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.07); box-shadow: inset 0 0 0 2px rgba(48, 48, 56, 0.15);
+  --hp: #2e8a40;
+}
+.loss-chart.type-fire { --hp: #c8402a; }
+.loss-chart.type-water { --hp: #2a68c8; }
+.loss-chart.type-psychic { --hp: #8a45c0; }
+.loss-plot { position: relative; height: 84px; }
+.loss-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.loss-line { fill: none; stroke: var(--hp); stroke-width: 3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.loss-area { fill: var(--hp); opacity: 0.18; stroke: none; }
+.loss-max { fill: none; stroke: rgba(48, 48, 56, 0.35); stroke-width: 1.5px; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+.loss-biome { stroke: rgba(48, 48, 56, 0.4); stroke-width: 1.5px; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+.loss-biome-tag { position: absolute; top: 2px; translate: 4px 0; font-size: 0.5rem; color: var(--muted); pointer-events: none; }
+.loss-end { position: absolute; bottom: 0; translate: -50% 40%; font-size: 0.8rem; pointer-events: none; }
+.loss-caption { margin: 6px 0 0; font-size: 0.56rem; color: var(--muted); }
 /* a Champion of the Depths: gold and violet */
 .hof-row.depths, .hof-entry.depths {
   border-left-color: #d8b048;

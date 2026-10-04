@@ -18,11 +18,6 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
 
 The user's second pick (2026-10-03), one session each:
 
-7. **Loss recap.** Run in: CLOUD. A lost run gets its own short page before the result window, the way wins get
-   `statsPanel()` in `js/halloffame.js`: who beat you and with what move (the battle's `onEnd` already passes `foe`),
-   the run's numbers from `run.tally`, your HP over the run (a small line chart, one point a floor), and the final deck
-   (`fillDeck()`). Quiet and short, never the Safari's or a peek's. Wire it in `endRun()` in `js/run.js` beside
-   `recordLoss()`; save the HP points in the tally so the Record Book's lost-run lines can open the same page.
 8. **Card trails.** Run in: LOCAL (Desktop app). A played attack arcs from the hand to the enemy with a trail in its
    type's colour (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white), a block card flies to your
    Pokémon, and an exhausted card burns away into embers (every exhaust goes through `exhaustCard()` in
