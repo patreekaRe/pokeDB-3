@@ -71,5 +71,12 @@ export const ALL_PAGES = [...DEX_PAGES, DEPTHS_PAGE];
     3 defeats of each felt like a grind for a door (the user's call, 2026-10-02). */
 export const safariOpen = (save) => save.safariPass || DEX_PAGES.every(p => save.dex.done.includes(p.biome));
 
+/** How far along the Safari Zone's unlock is: "12/48", Pokémon beaten over every entry in the three biomes. */
+export function safariUnlockProgress(save) {
+  const ids = DEX_PAGES.flatMap(p => p.ids);
+  const beaten = new Set(save.dex.defeated);
+  return `${ids.filter(id => beaten.has(id)).length}/${ids.length}`;
+}
+
 /** Every entry in dex order, numbered from 1 like the games. */
 export const DEX_NUMBER = Object.fromEntries(ALL_PAGES.flatMap(p => p.ids).map((id, i) => [id, i + 1]));

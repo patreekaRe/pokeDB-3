@@ -22,7 +22,7 @@ import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { getSave } from './storage.js';
-import { safariOpen } from './data/pokedex.js';
+import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
@@ -237,7 +237,7 @@ function safariGem() {
   const btn = gem('safari', 'Safari Zone', () => {
     if (open) return actions.onSafari();
     playSound('cancel');
-    tipAt(btn, 'The Safari Zone opens once you\'ve beaten every Pokémon in all three biomes.');
+    tipAt(btn, `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(getSave())}`);
   }, icon);   // today's areas are on the signpost in the grass (the user's call); locked, a tap says why
   btn.classList.toggle('locked', !open);
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
