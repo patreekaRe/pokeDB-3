@@ -274,7 +274,7 @@
    and the hand's copy hides so it reads as the same card lifting */
 .card-focus.rise { display: block; padding: 0; background: none; }
 .card-focus.rise > * { position: fixed; margin: 0; }
-.card-focus.rise .card.focus-card { animation: none; transform-origin: 50% 100%; }
+.card-focus.rise .card.focus-card { --card-w: min(38vw, 160px); animation: none; transform-origin: 50% 100%; }
 .card-focus.rise .card.focus-card .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }
 .card.in-hand.lifted { visibility: hidden; }
 .card-focus.rise .focus-play { padding: 2px 3px; }

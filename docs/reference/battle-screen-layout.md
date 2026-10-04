@@ -135,7 +135,9 @@ picks it (`selectedUid`, `.selected` in the hand) and `renderFocus()` lifts a
 big copy straight up out of its place in the hand, StS-style (the user's call:
 it used to blow up in the middle over a dimmed screen): `popFromHand()` places it
 in `#card-focus` (a see-through full-screen layer, `.rise`), grows it from the hand
-card's box, hides the hand's copy (`.lifted`) and sets a small Play button under it.
+card's box, hides the hand's copy (`.lifted`) and sets a small Play button under it. Since 2026-10-04 it is
+smaller (`--card-w: min(38vw, 160px)`) and its Play button stands just above the hand card, so the rest of the hand stays
+in view (the user found it too much in the way).
 Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,
 0.2 s at 2x, never awaited): an attack arcs high, spinning, into the enemy as the hit lands, anything else drops glowing into your
 Pokémon, both shedding a trail in the card's type (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white;
