@@ -1506,7 +1506,7 @@ async function enemyTurn() {
 
   // 1b. Leech Seed drains it and heals you (Grassy Surge keeps it from dropping).
   if (en.seed > 0) {
-    const n = en.seed;
+    const n = Math.min(en.seed, en.hp);
     if (!b.powers.seedKeep) en.seed -= 1;
     enemyLoses(n);
     checkStorm();
