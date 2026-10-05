@@ -23,11 +23,11 @@ import { hashString, makeRng, pickOne, random, shuffled } from '../rng.js';
 
 export const FLIGHT = 10;                // floors a flight: its landings, then the guardian
 export const LANDINGS = FLIGHT - 1;
-export const GUARDIAN_HEAL = 0.3;        // of max HP, after every guardian (the user's call)
+export const GUARDIAN_HEAL = 0.5;        // of max HP, after every guardian (30% until the top was capped at 100; the user's pick, 2026-10-05: Fire needs it most)
 export const TOP_FLOOR = 100;            // Rayquaza's floor, the summit: the climb is won there
 export const TOP_FLIGHT = TOP_FLOOR / FLIGHT - 1;
 export const RAYQUAZA = 'rayquaza-guardian';
-export const PAST_TOP = { hp: 1.35, dmg: 8, dmgMult: 1.15 };   // every flight past the third: enemy HP x1.35, +8 damage, then every attack x1.15, compounding (bot-tuned: x1.15 / +4 let the human bot's median climb reach 45; without dmgMult Grass's healing outgrew it, median 56, 24% to floor 100)
+export const PAST_TOP = { hp: 1.12, dmg: 4, dmgMult: 1.1 };   // every flight past the third: enemy HP x1.12, +4 damage, then every attack x1.1, compounding (bot-tuned for a 100-floor top: x1.35 / +8 / x1.15 let no climb reach it; HP growth stalls Fire, damage growth checks Grass's healing)
 export const DOOR_ODDS = { fight: 50, elite: 14, event: 16, shop: 10, rest: 10 };
 export const TOWER_BADGE_FLOORS = [25, 50, 100];
 

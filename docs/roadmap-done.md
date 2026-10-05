@@ -1442,3 +1442,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   aurora, stars, the planet's dawn curve at the summit), lit floors with a statue of every beaten foe, guardian halls and
   intros (Rayquaza's at the summit), the fall on a loss, a tower-room battle arena, the lobby's plaque of the week's top five,
   and the summit win scene painted as floor 100. Checked at 375x812 and 1280x800 with `?tower=`.
+- **Sky Pillar: a top at floor 100, rebalanced to reach it** (2026-10-05, cloud; the user's calls: no endless mode,
+  Rayquaza saved for the top, ship with a 50% guardian heal): beating Rayquaza on floor 100 wins the climb (summit scene,
+  `save.tower.summits` / `bestTurns`; the board already ranks by floor, turns, time). `PAST_TOP` x1.35 / +8 / x1.15 ->
+  x1.12 / +4 / x1.1 and `GUARDIAN_HEAL` 0.3 -> 0.5. Human bot, 60 climbs a type, reach 100: before 0 / 0 / 0%, after
+  Fire 0%, Grass 7%, Water 7% (screens in `docs/reference/sky-pillar.md`); Fire's late game is still open.

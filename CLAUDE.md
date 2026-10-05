@@ -542,7 +542,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   replays and Practice (any owned starter but Mewtwo) don't. Flights of 10 floors: 9 landings of 2-3 doors, then a guardian
   (a biome boss in turn; Rayquaza on floor 100, `rayquaza-guardian`, the top: beating it wins the climb, `TOP_FLOOR`, with a
   summit version of the win scene, `draftSummit()` / `.hof-scene.summit`, never saved as a run); a guardian evolves you at 10
-  and 20 and heals 30%.
+  and 20 and heals 50%.
   Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
   `run.tower` (`isTower()`, seeded streams keyed by `zone()`); each flight is still a `landingMap()` (`js/map.js`) underneath,
   but since part b (2026-10-05) the tower is the map: `js/tower.js` paints a side-on cutaway behind the run card (doors with

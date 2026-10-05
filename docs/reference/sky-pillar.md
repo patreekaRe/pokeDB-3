@@ -20,12 +20,16 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   the last landing always has a Center), then a **guardian** on every 10th floor (`guardianOf()`: a boss of the Clearing,
   Shrine, Wastes in turn; **Rayquaza** on floor 100 only, `rayquaza-guardian` in `ENEMY_DEFS`, never in the Pokédex).
 - **Beating a guardian**: its rewards (card, boss relic, item odds), an evolution at floors 10 and 20 (with its own heal),
-  then **30% of max HP** (`GUARDIAN_HEAL`, `guardianHeal()`), and on to the next flight (`climbOn()`).
+  then **50% of max HP** (`GUARDIAN_HEAL`, `guardianHeal()`), and on to the next flight (`climbOn()`).
 - **How it gets harder**: floors 1-30 are the three biomes in order, their Pokémon and numbers (`towerBiome()`,
   `towerMods()`: Level 0's rules at that biome). Past 30 the fights and Alphas come from all three biomes (`towerPools()`)
-  at the Wastes' numbers, and every flight adds `PAST_TOP` on top, compounding, so every climb ends: enemy HP x1.35,
-  +8 damage, then every attack x1.15 (`enemyDmgMult`, applied in `attackDamage()` after strength, before type and Weak;
-  2026-10-05, the user's pick: without it Grass's healing outgrew a flat +8 and 24% of its climbs reached floor 100).
+  at the Wastes' numbers, and every flight adds `PAST_TOP` on top, compounding: enemy HP x1.12, +4 damage, then every
+  attack x1.1 (`enemyDmgMult`, applied in `attackDamage()` after strength, before type and Weak). Retuned when the top was
+  capped at 100 (2026-10-05, the user's picks): the old x1.35 / +8 / x1.15 let no bot climb past floor 71. Human bot, 60
+  climbs a type, reach 50 / 100: Fire 25 / 0%, Grass 60 / 7%, Water 43 / 7% (medians 35 / 65 / 45). Slower HP growth
+  is what helps Fire (its fights are short or fatal); damage growth is what checks Grass's healing. Fire's best climbs
+  stop in the 75-99 range in single fights, and a bigger guardian heal (50%, 70%) lifts its middle but not the top: the
+  user chose to ship and look at Fire's late game separately.
 - **What it counts for**: your highest floor (`save.tower.bestEver`, any climb) and the week's counted floor
   (`save.tower.best`, its first try only), saved floor by floor as they're cleared (`climbed()`), so an abandoned climb
   keeps what it reached; the **Tower Badges** at 25 / 50 / 100 (`js/data/badges.js`). No starter unlocks, feats, gate
