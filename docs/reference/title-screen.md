@@ -38,15 +38,21 @@ Ball menu's Main menu, a run's end, Back on the select or the Collection, the Ab
 `showHome()`. The first PRESS START unlocks audio and opens the first-time How to play. `--ground` (set from JS) keeps the
 CSS sprites on the painted ledge.
 
-**Game modes share one slot** (2026-10-04, the user's ask: more modes are coming, so the stack mustn't grow): the last gem is
-`pageSlot(MODES)` in `js/title.js`, one mode at a time from `MODES` (the Safari Zone, then the Sky Pillar), flipped by the ◀ ▶
-pager under it (with a dot per mode), a sideways swipe on the gem (it doesn't count as a tap) or ← → while it's pointed at;
-the new gem slides in from that side. The Safari's signpost only stands while its gem shows. The Sky Pillar's gem
-(`pillarGem()`, blue, `GEMS.pillar`) is greyed out with "Win a run" until a run is won (`towerOpen()`), then opens the
-Sky Pillar's window (`actions.onTower`, `js/towerprep.js`) and shows your best floor ("Best F<n>"). A new mode is one more
-`MODES` entry and a `GEMS` colour.
-
-**Collection, Trainer Card and Game Corner share one slot too** (`HUB` in `js/title.js`, the user's ask, 2026-10-04, after the modes slot): the same `pageSlot()` / `flipSlot()` as the modes, under New game. The Trainer Card's gem (`trainerGem()`, teal, `GEMS.trainer`) wears the pixel card (`cardIcon()`) in its tier colour (`data-tier`, set by `showBadgeNews()`), with a bouncing gold "!" (`.badge-news`) while an earned badge isn't in `save.badgesSeen`; while one waits the slot opens on that page. It replaced the corner row's Trainer button, which was only there for a day.
+**Four signs, two sub-menus** (2026-10-05, the user's pick: the two flipped slots with ◀ ▶ and pips under them looked
+busy; they were 2026-10-04's `pageSlot()`): the main stack is Continue, New game, **Game Modes ▸** (rose, `GEMS.modes`,
+`modesGem()`) and **Collection ▸** (gold, `GEMS.hub`, kind `hub`). A sign with a ▶ on its right end (`more()`, `.gem-arrow`,
+nudging while pointed at) opens a sub-menu in place (`goTo()`): the stack slides out left and the sub-menu's signs slide in
+from the right (`#title-menu[data-slide]`, `menuOutL` / `menuInR`), the sky, logo and nameplate staying put, the games'
+way. Each sub-menu ends in a slate **Back** sign (`backGem()`, `GEMS.back`); Back, Escape / Backspace or a tap on the empty
+sky (`goBack()`) slides back with the ▶ on the sign you came from. `page` (`main` / `modes` / `hub`) is reset to `main` by
+every `renderMenu()` without a direction, so `showHome()` always lands on the main stack.
+- **Game Modes**: the Safari Zone (`safariGem()`, its 🏆 and signpost, which stands only on this page), the Sky Pillar
+  (`pillarGem()`, blue, greyed with "Win a run" until `towerOpen()`, then "Best F<n>", opening `actions.onTower`), Back.
+  Locked modes still show, greyed, and a tap says how to open them. The Game Modes sign itself is greyed with "Win a run"
+  (a tap says so) until either mode is open. A new mode is one more gem in `renderMenu()`'s `modes` list and a `GEMS` colour.
+- **Collection**: the Collection, the Trainer Card (teal, `GEMS.trainer`, the pixel card `cardIcon()` in its tier colour,
+  `data-tier` from `showBadgeNews()`) and the Game Corner, then Back. While an earned badge isn't in `save.badgesSeen`,
+  the gold "!" (`.badge-news`) bounces on both the Collection ▸ sign and the Trainer Card sign.
 
 Once the Sealed Gate is broken and Mewtwo unlocked, the **open gate** stands on the ledge in the right-hand gutter
 (`#title-gate`, `sizeGate()` / `paintGate()`, `makeGate()` from `js/gate.js` with `open: true`, repainted each tick;

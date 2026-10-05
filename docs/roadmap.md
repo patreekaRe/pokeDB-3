@@ -44,8 +44,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 17. **Badges** are done (parts a and b: `js/data/badges.js`, the Trainer Card in `js/trainercard.js`; see the archive).
     The Explorer and three Tower Badges stay locked slots: drop their `locked: true` and give them a `test` when
     branching biomes / the Sky Pillar land.
-    The title already has the Sky Pillar's gem in its modes slot, greyed "Coming soon" (`pillarGem()` in `js/title.js`):
-    when it lands, give it its `onPick` and drop `locked`.
+    The title's Game Modes sub-menu has the Sky Pillar's gem (`pillarGem()` in `js/title.js`).
 
 18. **The Sky Pillar** is done (parts a and b, 2026-10-05: the rules, then the painted tower; see
     `docs/reference/sky-pillar.md` and the archive). Still the user's: publish `firestore.rules` for the tower board and plaque.

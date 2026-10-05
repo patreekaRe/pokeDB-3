@@ -28,7 +28,7 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { openTrainerCard, cardIcon, showBadgeNews, badgeNews } from './trainercard.js';
+import { openTrainerCard, cardIcon, showBadgeNews } from './trainercard.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -69,6 +69,9 @@ const GEMS = {
   trainer: ['#38b0a0', '#80e8d8', '#1e7468'],
   safari: ['#58a838', '#98e070', '#2e7020'],
   pillar: ['#4088c8', '#88c8f8', '#20508a'],
+  modes: ['#d84868', '#ff90a8', '#902038'],
+  hub: ['#e0bc28', '#fff080', '#a88410'],
+  back: ['#78849a', '#b0bccf', '#4a5468'],
 };
 const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430', BRONZE_MID = '#a86c3c', GROOVE = '#3a1c0c';
 
@@ -117,7 +120,11 @@ export function initTitle(handlers) {
   nextFlyer(flyer);
   flyer.addEventListener('animationiteration', () => nextFlyer(flyer));   // swapped while it's off screen
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
-  screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
+  screen.addEventListener('click', (e) => {
+    if (!pressed && !e.target.closest('.gem')) return start(e);
+    // a sub-menu goes back on a tap on the empty sky, like every window closes on a tap outside it
+    if (pressed && page !== 'main' && !e.target.closest('button, a, input, .nameplate, .title-areas, .title-corner')) goBack();
+  });
   $('title-refresh').addEventListener('click', refreshGame);
   paintLogo();
   initRope();
@@ -130,8 +137,7 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
-    const side = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-    if (side && gems[at]?.closest('.mode-slot')) { e.preventDefault(); flipSlot(gems[at].closest('.mode-slot'), side); }
+    if ((e.key === 'Escape' || e.key === 'Backspace') && page !== 'main' && areasPop.hidden) { e.preventDefault(); goBack(); }
     if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate, .title-signpost, .title-areas') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
@@ -199,19 +205,38 @@ function start(e) {
 
 /* ---------- the gem menu ---------- */
 
-function renderMenu() {
+/* The main stack is four signs (the user's call, 2026-10-05: two flipped slots with pips under them looked busy):
+   Continue, New game, and two that slide the stack sideways to a sub-menu of the same signs with a Back sign, the games'
+   way, while the sky, logo and nameplate stay put. Game modes live in theirs, so a new mode never lengthens the title. */
+let page = 'main';      // 'main', 'modes' or 'hub'
+let swapping = 0;
+
+function renderMenu(dir = 0, from = null) {
+  if (!dir) page = 'main';
   const run = actions.savedRun();
-  const gems = [
-    run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
-    gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
-    pageSlot(HUB),
-    pageSlot(MODES),
-  ].filter(Boolean);
-  showBadgeNews();
+  const gems = {
+    main: () => [
+      run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
+      gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
+      modesGem(),
+      more(gem('hub', 'Collection', () => goTo('hub'), el('span', 'gem-emoji', '📕'))),
+    ],
+    modes: () => [safariGem(), pillarGem(), backGem()],
+    hub: () => [
+      gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
+      gem('trainer', 'Trainer Card', () => { playSound('confirm'); openTrainerCard(); }, cardIcon()),
+      gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
+      backGem(),
+    ],
+  }[page]().filter(Boolean);
+  if (page !== 'modes') plantSign(null);   // the signpost is the Safari's
   gems.forEach((g, i) => g.style.setProperty('--i', i));   // inherited, so the Safari gem's row passes it on
-  $('title-menu').replaceChildren(...gems);
+  const menu = $('title-menu');
+  menu.dataset.slide = dir > 0 ? 'in-r' : dir < 0 ? 'in-l' : '';
+  menu.replaceChildren(...gems);
+  showBadgeNews();
   sizeGems();
-  point(gems[0], true);
+  point((from && menu.querySelector(`.gem-${from}`)) || menu.querySelector('.gem'), true);
 }
 
 function gem(kind, label, onPick, icon, extra) {
@@ -229,69 +254,49 @@ function gem(kind, label, onPick, icon, extra) {
   return btn;
 }
 
-/* Slots of gems that share one place in the stack, flipped with the arrows under it, a swipe or ← →, so the stack stays
-   the same height however many there are (the user's calls, 2026-10-04: the game modes, then Collection / Trainer Card /
-   Game Corner). The hub opens on the Trainer Card while a new badge waits, so its "!" is seen. */
-const HUB = {
-  pages: [
-    () => gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
-    () => trainerGem(),
-    () => gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
-  ], at: 0, label: 'menu',
-};
-const MODES = { pages: [() => safariGem(), () => pillarGem()], at: 0, label: 'mode' };
-const SLOTS = [HUB, MODES];
-
-const trainerGem = () => gem('trainer', 'Trainer Card', () => { playSound('confirm'); openTrainerCard(); }, cardIcon());
-
-function pageSlot(set) {
-  if (set === HUB && badgeNews()) set.at = 1;
-  const slot = el('div', 'mode-slot');
-  slot.dataset.slot = SLOTS.indexOf(set);
-  slot.append(set.pages[set.at]());
-  if (set.pages.length < 2) return slot;
-  const pager = el('div', 'mode-pager');
-  const arrow = (dir, label) => {
-    const b = el('button', 'mode-flip', dir < 0 ? '◀' : '▶');
-    b.type = 'button';
-    b.setAttribute('aria-label', label);
-    b.addEventListener('click', () => flipSlot(slot, dir));
-    return b;
-  };
-  const dots = el('span', 'mode-dots');
-  dots.append(...set.pages.map((_, i) => el('i', i === set.at ? 'on' : '')));
-  pager.append(arrow(-1, `Previous ${set.label}`), dots, arrow(1, `Next ${set.label}`));
-  slot.append(pager);
-  // a sideways swipe on the gem flips too, and doesn't count as a tap on it
-  let x0 = null, swiped = false;
-  slot.addEventListener('pointerdown', (e) => { x0 = e.clientX; swiped = false; });
-  slot.addEventListener('pointerup', (e) => {
-    if (x0 === null || e.target.closest('.mode-pager')) return;
-    const dx = e.clientX - x0;
-    x0 = null;
-    if (Math.abs(dx) > 40) { swiped = true; flipSlot(slot, dx < 0 ? 1 : -1); }
-  });
-  slot.addEventListener('click', (e) => { if (swiped) { e.stopPropagation(); swiped = false; } }, true);
-  return slot;
+function goTo(next) {
+  if (swapping) return;
+  playSound('confirm');
+  slide(1, next);
 }
-function flipSlot(slot, dir) {
-  const set = SLOTS[slot?.dataset.slot];
-  if (!set || set.pages.length < 2) return;
-  set.at = (set.at + dir + set.pages.length) % set.pages.length;
-  playSound('stick', 'confirm');
-  const next = set.pages[set.at]();
-  next.classList.add(dir > 0 ? 'from-right' : 'from-left');
-  slot.firstChild.replaceWith(next);
-  slot.querySelectorAll('.mode-dots i').forEach((d, i) => d.classList.toggle('on', i === set.at));
-  sizeGems();
-  showBadgeNews();
-  point(next.matches('.gem') ? next : next.querySelector('.gem'), true);
+function goBack() {
+  if (swapping) return;
+  playSound('cancel');
+  slide(-1, 'main', page);
+}
+/** The stack slides out one way and the next comes in from the other side; back on the main stack the ▶ is on the sign
+    you came from. */
+function slide(dir, next, from = null) {
+  const swap = () => { swapping = 0; page = next; renderMenu(dir, from); };
+  if (still()) return swap();
+  closeAreas();
+  $('title-menu').dataset.slide = dir > 0 ? 'out-l' : 'out-r';
+  swapping = setTimeout(swap, 140);
+}
+
+/** A sign that opens a sub-menu: a ▶ on its right end says so. */
+function more(btn) {
+  btn.classList.add('gem-more');
+  btn.append(el('span', 'gem-arrow', '▶'));
+  return btn;
+}
+const backGem = () => gem('back', 'Back', goBack, el('span', 'gem-emoji gem-back-icon', '◀'));
+
+/** Game Modes: greyed out until one of its modes is open (the Sky Pillar, after a won run); a tap then says so. */
+function modesGem() {
+  const save = getSave(), open = safariOpen(save) || towerOpen(save);
+  const btn = more(gem('modes', 'Game Modes', () => {
+    if (open) return goTo('modes');
+    playSound('cancel');
+    tipAt(btn, 'Win a run to open the game modes, starting with the Sky Pillar: a 100-floor tower climb with a weekly leaderboard.');
+  }, el('span', 'gem-emoji', '🗺️'), open ? null : el('span', 'gem-soon', 'Win a run')));
+  btn.classList.toggle('locked', !open);
+  return btn;
 }
 
 /** The Sky Pillar, the 100-floor tower climb (js/data/tower.js): open once you've won a run (greyed out till then, a tap says
     so); its face shows your best floor. */
 function pillarGem() {
-  plantSign(null);   // the signpost is the Safari's
   const open = towerOpen(getSave());
   const best = getSave().tower?.bestEver || 0;
   const btn = gem('pillar', 'Sky Pillar', () => {

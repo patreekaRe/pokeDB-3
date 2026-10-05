@@ -529,12 +529,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   write an old save over a cloud download), the partner, and the Badge Case. Each badge is painted from `LOOK` (a shape
   polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line. Its colour steps up with badges
   (`cardTier()`: green, bronze 5, silver 10, gold 15, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
-  the next time it opens. **Getting to it** (2026-10-04): the title's Collection / Trainer Card / Game Corner slot (`HUB` in `js/title.js`, flipped like the modes slot), the
+  the next time it opens. **Getting to it** (2026-10-04): the title's Collection ▸ sub-menu (Collection, Trainer Card, Game Corner; `renderMenu()` in `js/title.js`), the
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
-  (`badgeItem()`); `showBadgeNews()` colours the title's Trainer Card gem and the Bag by tier and puts a gold "!" on them while a badge
-  is unseen (after a fight that earns one, too). The title's last gem is a **game modes slot** (`pageSlot(MODES)` in
-  `js/title.js`: Safari Zone, Sky Pillar), flipped with ◀ ▶, a swipe or ← →, so new modes never lengthen
-  the stack (`docs/reference/title-screen.md`).
+  (`badgeItem()`); `showBadgeNews()` colours the title's Collection ▸ and Trainer Card signs and the Bag by tier and puts a gold "!" on them while a badge
+  is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Collection ▸** (2026-10-05, the user's pick over
+  two flipped slots): the ▸ ones slide the stack sideways to a sub-menu with a Back sign (`renderMenu()` / `goTo()` in
+  `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
+  (`docs/reference/title-screen.md`).
 - **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
   100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
   seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),
@@ -549,8 +550,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   statue of every foe beaten, `run.tower.trail`), the guardian intros (Rayquaza's the grandest) and the fall on a loss, all
   from `js/tower-art.js`'s painters, which also give its fights a tower-room arena (`showTowerScene()` in `js/scene.js`) and
   the summit win scene its backdrop (`paintSummit()`). The windows show the sky by height. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
-  Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's modes
-  slot, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
+  Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's Game
+  Modes, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

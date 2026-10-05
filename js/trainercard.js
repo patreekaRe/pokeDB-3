@@ -293,7 +293,7 @@ export function cardIcon() {
 /** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen. */
 export function showBadgeNews(save = getSave()) {
   const tier = cardTier(save).id, news = badgeNews(save);
-  for (const node of document.querySelectorAll('#title-menu .gem-trainer, #bag-btn, .bag-pocket[data-pocket="trainer"]')) {
+  for (const node of document.querySelectorAll('#title-menu .gem-trainer, #title-menu .gem-hub, #bag-btn, .bag-pocket[data-pocket="trainer"]')) {
     node.dataset.tier = tier;
     node.classList.toggle('badge-news', news);
   }
