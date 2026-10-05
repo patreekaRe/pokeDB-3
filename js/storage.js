@@ -62,6 +62,7 @@ const freshSave = () => ({
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
   badges: [],                 // BADGES ids earned (js/data/badges.js), oldest first: the Trainer Card's Badge Case
+  badgesSeen: [],             // the badges the Trainer Card has shown: one not in here pops in with a shine (js/trainercard.js)
   feats: [],                  // FEATS ids granted (js/data/achievements.js): Eternatus beaten, the Depths page's shiny Mewtwo
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
@@ -87,6 +88,7 @@ const freshSave = () => ({
     deepestBiome: 0,          // the furthest biome a run reached (1-3)
     level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
     level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
+    playMs: 0,                // play time while the page is visible, counted from the Trainer Card's release (initPlayTime())
   },
 });
 
@@ -157,6 +159,20 @@ function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(data)); }
   catch (err) { /* storage is full or blocked: ignore */ }
   wrote();
+}
+
+/** Play time added in memory and to the save on disk, without writing the rest of the in-memory save or waking the cloud
+ * save: a page hiding just after a cloud download (or another tab) wrote a newer save must not put its old one back.
+ * The cloud gets it with the next real save. */
+export function addPlayTime(ms) {
+  if (!(ms > 0)) return;
+  data.stats.playMs = (data.stats.playMs || 0) + ms;
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    if (!raw) return;
+    raw.stats = { ...raw.stats, playMs: (raw.stats?.playMs || 0) + ms };
+    localStorage.setItem(KEY, JSON.stringify(raw));
+  } catch (err) { /* blocked: the in-memory count still rides along with the next save */ }
 }
 
 /** Read-only look at the whole save. */

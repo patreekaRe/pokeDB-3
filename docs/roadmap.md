@@ -41,24 +41,9 @@ crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the arch
 **The user's suggested order (2026-10-05): badges, then the Sky Pillar, then branching biomes.** Each part has a CLOUD
 session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). Each prompt is the whole first message.
 
-17. **Badges: a Gold/Silver Trainer Card with a Badge Case.** One case, four groups (a badge earned from old saves
-    wherever the save can already prove it):
-    - Journey: Clearing / Shrine / Ember Badge (beat that biome's boss, `stats.bossesDefeated`), Champion (win a run),
-      three Type Badges (win with a Fire, a Water and a Grass starter, `winsBy`).
-    - Trainer Levels: Bronze (win at Level 2), Silver (Level 3), Gold (Level 5), Master (Level 5 with all three types).
-      Old saves: the Level 2 / 3 legendaries, `maxLevelWinByType`, the Hall of Fame, `level5WinsBy`.
-    - Secrets: Dojo (beat Kenmatta, `kenWins`), Seal (break the Sealed Gate), Depths (beat Eternatus), Pokédex (finish
-      the main Pokédex, `dex.complete`), Safari (finish one Safari area page, `safariDex.done`), Streak (`bestStreak` 3).
-    - New content, locked for everyone: Explorer (see every biome, once branching biomes exist) and three Tower Badges
-      (Sky Pillar floors 25 / 50 / 100); they show as locked slots until their content lands.
-    a. Done 2026-10-05 (the badge rules, `save.badges`, old saves' day-one grant, `tests/badges.test.mjs`; see the archive).
-    b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17 (part a is
-       done: js/data/badges.js and `save.badges`). Build the Gold/Silver-style Trainer Card as a Collection card: name
-       (the cloud save's or TRAINER), runs won, Pokédex and Safari counts, gold stars, play time from now on
-       (`stats.playMs`), and the Badge Case: four rows of pixel badges, earned ones shining and tappable for how they
-       were earned, locked ones as dark outlines with a hint. The card's colour steps up with badges (green, bronze,
-       silver, gold, violet once Eternatus is beaten). A new badge pops in with a shine the first time the card opens
-       after it. Check at 375x812 and 1280x800, push to main."
+17. **Badges** are done (parts a and b: `js/data/badges.js`, the Trainer Card in `js/trainercard.js`; see the archive).
+    The Explorer and three Tower Badges stay locked slots: drop their `locked: true` and give them a `test` when
+    branching biomes / the Sky Pillar land.
 
 18. **The Sky Pillar: an endless tower climb with a weekly leaderboard.** No map screen: the tower is the map. A side-on
     cutaway panning upward as you rise; each landing has 2-3 doors with room icons (fight, Alpha, Mart, Center, ?) and

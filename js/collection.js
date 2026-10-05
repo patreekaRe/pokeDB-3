@@ -17,6 +17,7 @@ import { openCardIndex } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
 import { openRecords, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
+import { openTrainerCard, trainerTile } from './trainercard.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
@@ -81,7 +82,9 @@ export function showCollection() {
   showMenuScene();
   const save = getSave();
   const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
+  const tc = trainerTile(save);
   const cards = [
+    ['trainer', 'Trainer Card', tc.art, 'Your name, your numbers and the Badge Case.', tc.count, openTrainerCard],
     ['dex', 'Pokédex', el('span', 'coll-emoji', '📕'), 'Every Pokémon you have met. Research them for PokéCoins.',
       `${save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length}/${dexTotal} defeated`, () => openPokedex()],
     safariCard(save),
@@ -103,6 +106,7 @@ export function showCollection() {
     const card = el('button', `coll-card coll-${id}`);
     card.type = 'button';
     card.style.setProperty('--i', i);
+    if (id === 'trainer') card.dataset.tier = tc.tier;
     const pic = el('span', 'coll-art');
     pic.append(art);
     card.append(el('strong', 'coll-name', name), pic, el('span', 'coll-text', text), el('span', 'coll-count', count));

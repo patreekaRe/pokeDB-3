@@ -42,8 +42,10 @@ three places:
 - 2026-10-05: **Badges, part a** (cloud, pushed to `main`; roadmap item 17): the badge rules in `js/data/badges.js`,
   `save.badges`, `checkBadges()` after fights, at a run's end and at load (old saves earn what they can prove; checked
   headless with an old save), a quiet "Badge earned!" line in the reward box and result window; `tests/badges.test.mjs`.
-  The in-run lines were only checked by reading the code. Next: part b, the Trainer Card (LOCAL, Desktop app; prompt in
-  the roadmap).
+  The in-run lines were only checked by reading the code.
+- 2026-10-04: **Badges, part b** (Desktop app, pushed): the Trainer Card and Badge Case (`js/trainercard.js`), the
+  Collection's first card; play time counts from now on. Checked at 375x812 and 1280x800 with a seeded save (new-badge
+  pop-in, tap hints, violet tier). The user still has to see the pop-in animation on a phone. Next: the Sky Pillar (18a).
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Journey films, steps 10-11** (done 2026-10-04): `js/travel.js` plays the walk between biomes after Boss 1 and Boss 2
   (`walkOn()` in `js/run.js`; not Mewtwo, not the Safari): Clearing → Shrine, and Shrine → Wastes (moss drying out, dead

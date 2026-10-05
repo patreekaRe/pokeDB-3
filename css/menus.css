@@ -730,6 +730,68 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .coll-card.locked .coll-art { filter: grayscale(1); opacity: 0.6; }
 .coll-winner { max-width: 76px; max-height: 76px; image-rendering: pixelated; }
 .coll-foot { padding-bottom: 12px; }
+
+/* ---------- the Trainer Card (js/trainercard.js): its colour steps up with badges ---------- */
+[data-tier="green"] { --tc1: #58b048; --tc2: #3c8a30; --tc3: #1e4e18; }
+[data-tier="bronze"] { --tc1: #c88040; --tc2: #a06028; --tc3: #5a3010; }
+[data-tier="silver"] { --tc1: #a8b0c0; --tc2: #808898; --tc3: #444a58; }
+[data-tier="gold"] { --tc1: #e8b830; --tc2: #c09018; --tc3: #6a4a08; }
+[data-tier="violet"] { --tc1: #9a60e0; --tc2: #7040b8; --tc3: #361a68; }
+.coll-trainer { --c1: var(--tc1); --c2: var(--tc3); }
+.coll-badge { width: 72px; height: 72px; image-rendering: pixelated; }
+
+.trainer-dialog { width: min(460px, 94vw); padding: 16px; border-color: var(--tc3);
+  background: repeating-linear-gradient(135deg, var(--tc1) 0 8px, var(--tc2) 8px 10px); }
+.trainer-dialog .records-close { margin-top: 12px; }
+.tc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.trainer-dialog .tc-title { margin: 0; padding: 0; border: 0; outline: none; font-size: 1rem; color: #fff; text-shadow: 2px 2px 0 var(--tc3); }
+.tc-tier { padding: 4px 10px 3px; border-radius: 999px; font-size: 0.55rem; color: #fff; background: var(--tc3); }
+.tc-info { display: grid; grid-template-columns: 1fr 84px; align-items: center; gap: 8px; padding: 10px 12px;
+  border-radius: var(--round-sm); background: var(--win-bg); box-shadow: 0 0 0 3px #303038, 4px 4px 0 3px rgba(0, 0, 0, 0.25); }
+.tc-lines { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; margin: 0; font-size: 0.62rem; }
+.tc-lines dt { color: var(--muted); }
+.tc-lines dd { margin: 0; text-align: right; color: var(--win-ink); overflow-wrap: anywhere; }
+.tc-partner { display: grid; place-items: center; height: 84px; border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.08); }
+.tc-partner img { max-width: 76px; max-height: 76px; image-rendering: pixelated; }
+.tc-case-label { display: block; margin: 14px 0 6px; font-size: 0.55rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
+.tc-case { display: grid; gap: 8px; padding: 10px; border-radius: var(--round-sm); background: #2a3048;
+  box-shadow: 0 0 0 3px #181820, inset 0 3px 0 rgba(0, 0, 0, 0.35); }
+.tc-row { display: grid; gap: 4px; }
+.tc-group { font-size: 0.5rem; color: #a8b0d0; }
+.tc-badges { display: grid; grid-template-columns: repeat(7, minmax(0, 44px)); gap: 4px; }
+.tc-badge { position: relative; display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: 0;
+  border-radius: var(--round-xs); background: rgba(255, 255, 255, 0.05); cursor: pointer; }
+.tc-badge:focus-visible { outline: 2px solid #f8e070; }
+.tc-badge-art { width: 36px; height: 36px; image-rendering: pixelated; }
+/* a band of light sweeps over each earned badge, in steps, cut to its shape by its own art */
+.tc-badge.earned::after { content: ''; position: absolute; inset: 4px; pointer-events: none;
+  -webkit-mask: var(--art) center / 36px 36px no-repeat; mask: var(--art) center / 36px 36px no-repeat;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.8) 42% 50%, transparent 50% 54%, rgba(255, 255, 255, 0.5) 54% 57%, transparent 57%) 100% 0 / 300% 100% no-repeat;
+  animation: tcShine 4s steps(16) infinite; }
+.tc-badge.earned:nth-child(3n+2)::after { animation-delay: -1.3s; }
+.tc-badge.earned:nth-child(3n)::after { animation-delay: -2.6s; }
+@keyframes tcShine { 0%, 55% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+.tc-badge.locked { background: rgba(0, 0, 0, 0.2); }
+/* new since the card last opened: it pops in, flashes white and throws four pixel sparks */
+.tc-badge.fresh .tc-badge-art { animation: tcPop 0.5s steps(5) calc(0.45s + var(--i) * 0.26s) backwards; }
+.tc-badge.fresh::before { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; background: #fff;
+  box-shadow: 0 -18px #fff, 0 18px #fff, -18px 0 #fff, 18px 0 #fff, -13px -13px #fff8a0, 13px -13px #fff8a0, -13px 13px #fff8a0, 13px 13px #fff8a0;
+  opacity: 0; animation: tcSpark 0.7s steps(4) calc(0.65s + var(--i) * 0.26s); pointer-events: none; }
+.tc-badge.fresh.earned::after { animation: tcFlash 0.6s steps(3) calc(0.75s + var(--i) * 0.26s) backwards, tcShine 4s steps(16) calc(1.35s + var(--i) * 0.26s) infinite;
+  background-color: transparent; }
+@keyframes tcPop { 0% { transform: scale(0); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+@keyframes tcSpark { 0% { opacity: 1; transform: scale(0.5); } 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes tcFlash { 0% { background-color: #fff; } 100% { background-color: transparent; } }
+.tc-foot { margin: 10px 0 0; text-align: center; font-size: 0.55rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
+@media (max-width: 600px) {
+  .tc-badges { gap: 3px; }
+  .tc-badge-art { width: 32px; height: 32px; }
+  .tc-badge.earned::after { inset: 4px; -webkit-mask-size: 32px 32px; mask-size: 32px 32px; }
+  .tc-lines { font-size: 0.55rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tc-badge.earned::after, .tc-badge.fresh .tc-badge-art, .tc-badge.fresh::before { animation: none; }
+}
 @media (max-width: 600px) {
   .coll-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .coll-card { padding: 0 8px 12px; }

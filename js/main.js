@@ -46,6 +46,7 @@ import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection } from './collection.js';
+import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { openStats, openAchievements } from './records.js';
@@ -203,6 +204,7 @@ function init() {
   initAudio();
   initSettings();
   initTips();
+  initPlayTime();
   initHowto();
   // The top bar has no background, so once the page scrolls a fade keeps its numbers off whatever slides under them.
   const markScrolled = () => document.body.classList.toggle('scrolled', scrollY > 4);

@@ -522,7 +522,14 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   in `js/main.js`, silent) gives an old save everything it can prove on day one. In a run it's quiet, no window: a
   `badgeLine()` in the fight's reward box (`unlock()` in `afterFight()`; Kenmatta's Dojo Badge in his relic window, once
   `kenWins` is saved) and in the result window (`announceUnlocks()` keeps them in `run.badges`). Peeked runs grant none.
-  Tests: `tests/badges.test.mjs`. Part b (the Trainer Card and Badge Case's look) is the roadmap's.
+  Tests: `tests/badges.test.mjs`. **The Trainer Card** (part b, 2026-10-04): `js/trainercard.js`, the Collection's first card
+  (`trainerTile()`) opening `#trainer-dialog`: the leaderboard nickname (`trainerName()`, never the sign-in's real name) or
+  TRAINER, wins, Pokédex / Safari counts, gold stars, play time (`stats.playMs`: `initPlayTime()` feeds `addPlayTime()` in
+  `js/storage.js`, which adds only its own minutes to the save on disk and never wakes the cloud, so a hiding page can't
+  write an old save over a cloud download), the partner, and the Badge Case. Each badge is painted from `LOOK` (a shape
+  polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line. Its colour steps up with badges
+  (`cardTier()`: green, bronze 5, silver 10, gold 15, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
+  the next time it opens.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

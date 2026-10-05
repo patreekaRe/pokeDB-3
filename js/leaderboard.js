@@ -46,6 +46,8 @@ function pending() {
 /** The board only ever shows a nickname the player picked, never the sign-in's real name. */
 const nameFor = () => cleanName(store.get(NAME_KEY) || '');
 /** A suggestion for the name box: the sign-in's first name, only ever posted if the player keeps it. */
+/** The Trainer Card's name: the leaderboard nickname the player picked, never the sign-in's real name. */
+export const trainerName = () => nameFor() || 'Trainer';
 const suggestName = (user) => cleanName((user?.displayName || '').split(/\s+/)[0] || '');
 
 function say(text) {
