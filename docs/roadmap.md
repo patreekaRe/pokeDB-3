@@ -28,7 +28,8 @@ evolution and the next biome's `biomeIntro()`, a short film of the trip there: y
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
 crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the archive has them).
 
-**The user's third pick (2026-10-05): all nine of these, one session each, in any order.** Each prompt below is the
+**The user's third pick (2026-10-05), one session each, in any order** (15, a holo shine on rares, and 16, your Pokémon
+walking the map, were already in the game: `.card.shimmer` and the map's `trainerImg` walk). Each prompt below is the
 whole message to start its session with.
 
 13. **Shiny wild Pokémon.** Run in: CLOUD (sprite downloads).
@@ -47,19 +48,6 @@ whole message to start its session with.
     first bar keeps its own rebirth hand-off. Pixel-style only (steps, no soft glows); nothing under reduced motion
     beyond the number. Check at 375x812 with `?bossfight=depths&hp=0.05` and an Alpha via `?event=` or a run, push to
     main."
-
-15. **Holo shine on rare cards.** Run in: Desktop app (visual).
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 15, then css/cards.css. Give rare cards a slow holo
-    foil sweep (a pixel-stepped diagonal sheen every few seconds, the TCG's holo look) wherever they're offered or
-    bought: card rewards, the Mart, the zoom and focus layers. Not in the hand during battle (too busy) or the Index.
-    Keep it cheap: one CSS animation, none under reduced motion. Check at 375x812 and 1280x800, push to main."
-
-16. **Your Pokémon walks the map.** Run in: Desktop app (visual).
-    Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 16 and docs/reference/map-screen.md. Like HeartGold's
-    following Pokémon, your starter's sprite stands on the room you're in and hops along the path to the next room you
-    tap before it opens (a short walk, ~0.6 s; a tap skips it). Now and then it shows a tiny pixel emote bubble: ♥
-    after a won boss or a Center rest, ! when a ? room or a treasure is next to it, ... at low HP. Shiny and stage
-    follow spriteUrl(). Check at 375x812 and 768x1024 in a real run, push to main."
 
 17. **Trainer Card.** Run in: Desktop app (visual).
     Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17, then js/collection.js and js/records.js. Add a
