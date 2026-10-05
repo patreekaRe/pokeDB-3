@@ -28,8 +28,7 @@ evolution and the next biome's `biomeIntro()`, a short film of the trip there: y
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
 crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the archive has them).
 
-**The user's third pick (2026-10-05), one session each:** the finishing blow and the Trainer Card with its badges. Each prompt below is the
-whole message to start its session with.
+**The user's third pick (2026-10-05):** the finishing blow (and the Trainer Card, now part of item 17 below).
 
 14. **A finishing blow.** Run in: Desktop app (visual).
     Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 14 and docs/reference/battle-screen-layout.md. When the
@@ -39,13 +38,81 @@ whole message to start its session with.
     beyond the number. Check at 375x812 with `?bossfight=depths&hp=0.05` and an Alpha via `?event=` or a run, push to
     main."
 
-17. **Trainer Card.** Run in: Desktop app (visual).
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17, then js/collection.js and js/records.js. Add a
-    Gen 3-style Trainer Card as a Collection card: your cloud-save name or 'TRAINER', play time (count it from now on,
-    `save.stats.playMs`, ticking while the page is visible), runs won, Pokédex and Safari Pokédex counts, gold stars,
-    the Sealed Gate's state, and a badge case with one pixel badge per biome boss beaten (`stats.bossesDefeated`), the
-    Depths' badge last and rarest. Its colour steps up with progress like the games' card (green, bronze, silver, gold,
-    then violet once Eternatus is beaten). Check at 375x812 and 1280x800, push to main."
+**The user's suggested order (2026-10-05): badges, then the Sky Pillar, then branching biomes.** Each part has a CLOUD
+session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). Each prompt is the whole first message.
+
+17. **Badges: a Gold/Silver Trainer Card with a Badge Case.** One case, four groups (a badge earned from old saves
+    wherever the save can already prove it):
+    - Journey: Clearing / Shrine / Ember Badge (beat that biome's boss, `stats.bossesDefeated`), Champion (win a run),
+      three Type Badges (win with a Fire, a Water and a Grass starter, `winsBy`).
+    - Trainer Levels: Bronze (win at Level 2), Silver (Level 3), Gold (Level 5), Master (Level 5 with all three types).
+      Old saves: the Level 2 / 3 legendaries, `maxLevelWinByType`, the Hall of Fame, `level5WinsBy`.
+    - Secrets: Dojo (beat Kenmatta, `kenWins`), Seal (break the Sealed Gate), Depths (beat Eternatus), Pokédex (finish
+      the main Pokédex, `dex.complete`), Safari (finish one Safari area page, `safariDex.done`), Streak (`bestStreak` 3).
+    - New content, locked for everyone: Explorer (see every biome, once branching biomes exist) and three Tower Badges
+      (Sky Pillar floors 25 / 50 / 100); they show as locked slots until their content lands.
+    a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17. Build the badge rules: a
+       `BADGES` list in js/data/badges.js (id, name, group, icon, how to earn, a test on the save like ACHIEVEMENTS' and
+       FEATS'), `checkBadges()` granting into `save.badges` from the same places checkAchievements() runs (after fights,
+       at a run's end, at load so old saves get theirs on day one), a quiet 'Badge earned!' line in the reward box and the
+       result window (no window of its own). Explorer and the Tower Badges are listed but can't be earned yet. Add
+       `tests/badges.test.mjs` (an old save earns what it can prove; a fresh one nothing). Update CLAUDE.md, AGENTS.md
+       and the roadmap, push to main."
+    b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17 (part a is
+       done: js/data/badges.js and `save.badges`). Build the Gold/Silver-style Trainer Card as a Collection card: name
+       (the cloud save's or TRAINER), runs won, Pokédex and Safari counts, gold stars, play time from now on
+       (`stats.playMs`), and the Badge Case: four rows of pixel badges, earned ones shining and tappable for how they
+       were earned, locked ones as dark outlines with a hint. The card's colour steps up with badges (green, bronze,
+       silver, gold, violet once Eternatus is beaten). A new badge pops in with a shine the first time the card opens
+       after it. Check at 375x812 and 1280x800, push to main."
+
+18. **The Sky Pillar: an endless tower climb with a weekly leaderboard.** No map screen: the tower is the map. A side-on
+    cutaway panning upward as you rise; each landing has 2-3 doors with room icons (fight, Alpha, Mart, Center, ?) and
+    your Pokémon walks through the one you pick; between floors a spiral-stair climb, the floor number stamped on a stone
+    plate, an altitude gauge. The windows show the height: treetops, clouds (10), storm (20), sunset above the clouds
+    (30), aurora (50), stars and space (100). A guardian boss every 10 floors with its own intro and room, Rayquaza every
+    50. Floors you've beaten stay lit below you, each fallen foe a statue. Losing: the floor gives way and you fall past
+    every floor you climbed, then the result window. A weekly seeded tower (the Safari's seed system), ranked by highest
+    floor on the Safari leaderboard's Firestore setup, the top names engraved on a plaque in the lobby. Its floors 25 /
+    50 / 100 earn the Tower Badges.
+    a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 18 and docs/reference/safari.md
+       (the seed and the leaderboard). Propose the Sky Pillar's rules to me first: who can enter, floor scaling, the
+       door mix per landing, guardians every 10 floors (Rayquaza every 50), rewards between floors, what it counts for
+       (no unlocks, gate or streaks; the Tower Badges). Then build the gameplay on a plain placeholder screen (doors as
+       buttons, a floor counter), the weekly seed, the leaderboard by highest floor (`towerBoard/<week>_<uid>`, rules
+       in firestore.rules), the Tower Badges, and a `?tower=floor` playtest link. Bot-check floors 1-30 at 150 runs
+       with pokeDB-sim. Update the docs and push to main. Attach pokeDB-sim too."
+    b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 18 (part a is
+       done: the Sky Pillar's rules on a placeholder screen). Paint it: the side-on cutaway panning upward, doors with
+       room icons and the walk through them, the spiral-stair climb with the stamped floor plate and altitude gauge, the
+       windows' sky by height (treetops, clouds, storm, sunset, aurora, space), the lit floors and statues below, the
+       guardian rooms and intros, the fall on a loss, and the lobby's plaque of top climbers. Check at 375x812 and
+       1280x800 with `?tower=`, push to main."
+
+19. **Branching biomes.** After each boss's rewards, a crossroads: a painted scene with a signpost and two paths, each
+    showing its biome's name, a glimpse of its scenery, its boss's silhouette (??? until met) and which types live there.
+    Biome 2: Overgrown Shrine or **Sunken Ruins** (a flooded temple, mostly Water). Biome 3: Ember Wastes (mostly Fire) or
+    **Thornwood Jungle** (a primeval forest, mostly Grass). Each new biome is built as fully as the others: 12 wilds, 3
+    Alphas, 3 bosses (GIF, cry, sprite fit, enemy entry), 4 painted places, an intro film, a boss walk-on and boss intro,
+    a map palette and signs, a treasure grotto, a Pokédex page and map music. Journey films go from 2 routes to 6:
+    Clearing → Ruins (wading down a flooded stairwell), Ruins → Wastes (steam as the water boils away), Shrine → Jungle
+    (a vine-choked torii), Ruins → Jungle (a waterfall crossing). Seeing every biome earns the Explorer Badge. Roughly
+    6-10 sessions a biome. **To decide first:** do the new Pokédex pages count towards finishing the Pokédex (suggested:
+    no, bonus pages with their own reward, so Reshiram and the Safari don't move); does Mewtwo's speedrun get the
+    crossroads or keep its fixed road; the bot checks each new biome against the one it pairs with.
+    a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 19 and its 'Rules for adding
+       Pokémon'. Ask me the three open decisions in item 19 first. Then build the crossroads' logic (the run picks a
+       biome per slot, saved with the run; a plain two-button choice for now) and the Sunken Ruins' gameplay: its 12
+       wilds, 3 Alphas and 3 bosses (sprites, cries at -13 LUFS, SPRITE_FIT, ENEMY_DEFS), its Pokédex page and
+       events' per-biome values, with `?biome=ruins` to playtest. Bot-check it against the Overgrown Shrine at 150 runs
+       a cell (fire / grass / water, Levels 0 and 3). Bump RUN_SAVE_VERSION if needed, update the docs, push to main.
+       Attach pokeDB-sim too."
+    b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (part a is
+       done: the crossroads logic and the Sunken Ruins' gameplay). Paint the crossroads scene (signpost, two paths, each
+       biome's glimpse, boss silhouette, type icons) and the Sunken Ruins: its 4 places, intro film, boss walk-on and
+       boss intro, map palette and signs, treasure grotto, and the Clearing → Ruins and Ruins → Wastes journey films.
+       Check at 375x812 and 1280x800, push to main."
+    Then the same two sessions again for the Thornwood Jungle (and its Shrine → Jungle and Ruins → Jungle films).
 
 ## Ideas, not agreed yet (ask the user before building)
 
