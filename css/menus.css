@@ -814,11 +814,11 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .tc-icon .hi { fill: #fff; opacity: 0.35; }
 .tc-icon .pic { fill: #f8f0d8; }
 .tc-icon .gold { fill: #ffd040; }
-.title-card .ta-pc { font-size: 34px; }
-@media (max-width: 600px) { .title-card .ta-pc { font-size: 28px; } .title-card { margin-top: 3px; } }
+.gem-icon .tc-icon { width: 40px; }
+@media (max-width: 600px) { .gem-icon .tc-icon { width: 32px; } }
 /* a new badge waits: a gold "!" bounces on the card (and the Bag) until the card is opened */
 .badge-news { position: relative; }
-.title-card.badge-news .ta-pc::after, .bag-btn.badge-news::after, .bag-pocket.badge-news::before {
+.gem-trainer.badge-news .gem-icon::after, .bag-btn.badge-news::after, .bag-pocket.badge-news::before {
   content: '!'; position: absolute; top: -6px; right: -8px; z-index: 2;
   display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
   background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
@@ -826,7 +826,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 }
 .bag-pocket.badge-news::before { top: -9px; left: -9px; right: auto; }
 @keyframes newsBob { to { translate: 0 -3px; } }
-@media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .ta-pc::after { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .gem-icon::after { animation: none !important; } }
 .bag-pocket .tc-icon { width: 30px; }
 .bag-trainer { display: grid; justify-items: center; gap: 12px; text-align: center; }
 .bag-trainer .tc-icon { width: 64px; }

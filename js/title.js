@@ -27,7 +27,7 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { openTrainerCard, cardIcon, showBadgeNews } from './trainercard.js';
+import { openTrainerCard, cardIcon, showBadgeNews, badgeNews } from './trainercard.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -65,6 +65,7 @@ const GEMS = {
   new: ['#b848d8', '#e088f8', '#7a2098'],
   collection: ['#e0bc28', '#fff080', '#a88410'],
   corner: ['#f06038', '#ff9870', '#b83018'],
+  trainer: ['#38b0a0', '#80e8d8', '#1e7468'],
   safari: ['#58a838', '#98e070', '#2e7020'],
   pillar: ['#4088c8', '#88c8f8', '#20508a'],
 };
@@ -117,8 +118,6 @@ export function initTitle(handlers) {
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
   $('title-refresh').addEventListener('click', refreshGame);
-  $('title-card').querySelector('.ta-pc').append(cardIcon());
-  $('title-card').addEventListener('click', () => { playSound('confirm'); openTrainerCard(); });
   paintLogo();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
@@ -131,7 +130,7 @@ export function initTitle(handlers) {
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
     const side = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-    if (side && gems[at]?.closest('.mode-slot')) { e.preventDefault(); flipMode(side); }
+    if (side && gems[at]?.closest('.mode-slot')) { e.preventDefault(); flipSlot(gems[at].closest('.mode-slot'), side); }
     if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate, .title-signpost, .title-areas') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
@@ -204,9 +203,8 @@ function renderMenu() {
   const gems = [
     run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
     gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
-    gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
-    gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
-    modeSlot(),
+    pageSlot(HUB),
+    pageSlot(MODES),
   ].filter(Boolean);
   showBadgeNews();
   gems.forEach((g, i) => g.style.setProperty('--i', i));   // inherited, so the Safari gem's row passes it on
@@ -230,25 +228,38 @@ function gem(kind, label, onPick, icon, extra) {
   return btn;
 }
 
-/* The game modes share one slot under the gems, flipped with the arrows under it, a swipe or ← →, so the stack stays
-   the same height however many modes there are (the user's call, 2026-10-04: more modes are coming). */
-const MODES = [() => safariGem(), () => pillarGem()];
-let modeAt = 0;
-function modeSlot() {
+/* Slots of gems that share one place in the stack, flipped with the arrows under it, a swipe or ← →, so the stack stays
+   the same height however many there are (the user's calls, 2026-10-04: the game modes, then Collection / Trainer Card /
+   Game Corner). The hub opens on the Trainer Card while a new badge waits, so its "!" is seen. */
+const HUB = {
+  pages: [
+    () => gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
+    () => trainerGem(),
+    () => gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
+  ], at: 0, label: 'menu',
+};
+const MODES = { pages: [() => safariGem(), () => pillarGem()], at: 0, label: 'mode' };
+const SLOTS = [HUB, MODES];
+
+const trainerGem = () => gem('trainer', 'Trainer Card', () => { playSound('confirm'); openTrainerCard(); }, cardIcon());
+
+function pageSlot(set) {
+  if (set === HUB && badgeNews()) set.at = 1;
   const slot = el('div', 'mode-slot');
-  slot.append(MODES[modeAt]());
-  if (MODES.length < 2) return slot;
+  slot.dataset.slot = SLOTS.indexOf(set);
+  slot.append(set.pages[set.at]());
+  if (set.pages.length < 2) return slot;
   const pager = el('div', 'mode-pager');
   const arrow = (dir, label) => {
     const b = el('button', 'mode-flip', dir < 0 ? '◀' : '▶');
     b.type = 'button';
     b.setAttribute('aria-label', label);
-    b.addEventListener('click', () => flipMode(dir));
+    b.addEventListener('click', () => flipSlot(slot, dir));
     return b;
   };
   const dots = el('span', 'mode-dots');
-  dots.append(...MODES.map((_, i) => el('i', i === modeAt ? 'on' : '')));
-  pager.append(arrow(-1, 'Previous mode'), dots, arrow(1, 'Next mode'));
+  dots.append(...set.pages.map((_, i) => el('i', i === set.at ? 'on' : '')));
+  pager.append(arrow(-1, `Previous ${set.label}`), dots, arrow(1, `Next ${set.label}`));
   slot.append(pager);
   // a sideways swipe on the gem flips too, and doesn't count as a tap on it
   let x0 = null, swiped = false;
@@ -257,21 +268,22 @@ function modeSlot() {
     if (x0 === null || e.target.closest('.mode-pager')) return;
     const dx = e.clientX - x0;
     x0 = null;
-    if (Math.abs(dx) > 40) { swiped = true; flipMode(dx < 0 ? 1 : -1); }
+    if (Math.abs(dx) > 40) { swiped = true; flipSlot(slot, dx < 0 ? 1 : -1); }
   });
   slot.addEventListener('click', (e) => { if (swiped) { e.stopPropagation(); swiped = false; } }, true);
   return slot;
 }
-function flipMode(dir) {
-  const slot = document.querySelector('#title-menu .mode-slot');
-  if (!slot || MODES.length < 2) return;
-  modeAt = (modeAt + dir + MODES.length) % MODES.length;
+function flipSlot(slot, dir) {
+  const set = SLOTS[slot?.dataset.slot];
+  if (!set || set.pages.length < 2) return;
+  set.at = (set.at + dir + set.pages.length) % set.pages.length;
   playSound('stick', 'confirm');
-  const next = MODES[modeAt]();
+  const next = set.pages[set.at]();
   next.classList.add(dir > 0 ? 'from-right' : 'from-left');
   slot.firstChild.replaceWith(next);
-  slot.querySelectorAll('.mode-dots i').forEach((d, i) => d.classList.toggle('on', i === modeAt));
+  slot.querySelectorAll('.mode-dots i').forEach((d, i) => d.classList.toggle('on', i === set.at));
   sizeGems();
+  showBadgeNews();
   point(next.matches('.gem') ? next : next.querySelector('.gem'), true);
 }
 
