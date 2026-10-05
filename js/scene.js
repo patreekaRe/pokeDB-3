@@ -24,6 +24,7 @@
 import { $ } from './ui.js';
 import { playSound } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
+import { paintArena } from './tower-art.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;
@@ -1108,6 +1109,14 @@ export function centerSpots() {
  * Asking again for the scene that's already up leaves it running, except in battle, where the
  * horizon is fitted to the enemy's pad and every fight starts with calm weather.
  */
+/** A Sky Pillar fight's room (js/tower-art.js's paintArena()): `look` is { alt, kind, banner }. */
+export function showTowerScene(look) {
+  paintScene(`tower/${look.alt}/${look.kind}/${look.banner}`, {
+    backdrop: 'tower', light: null, sky: ['#0a0c1c'], tower: look, life: ['tower'],
+    pad: { style: 'stone', top: '#a49c8e', mid: '#867e70', low: '#6a6256', rim: '#2a2622', earth: '#3e3830', moss: look.alt >= 100 ? '#3aa860' : '#5a8a3a' },
+  });
+}
+
 export function showScene(biomeId, kind = 'wild', where = 0) {
   const art = BIOME_ART[biomeId];
   if (!art) { paintScene('', null); return; }
@@ -5647,6 +5656,7 @@ function draw() {
   if (has('vines')) drawVines(t);
   if (has('safari')) drawSafari(t);
   if (has('depths')) drawDepths(t);
+  if (has('tower')) paintArena({ W, H, px }, horizon, S.raw.tower, t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
     const [hot, warm, glow] = S.lanternGlow;

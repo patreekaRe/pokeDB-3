@@ -20,6 +20,7 @@ import { CARDS_BY_ID, TYPES } from './data/cards.js';
 import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { MAX_LEVEL, LEVELS } from './data/difficulty.js';
+import { paintSummit } from './tower-art.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CRY_WAIT_MAX = 1500;
@@ -232,6 +233,12 @@ export async function winScene(entry) {
   $('hof-log').hidden = true;
   scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
+  const peak = $('hof-summit-bg');
+  peak.hidden = !summit;
+  if (summit) {   // floor 100 behind the pedestal, painted like the climb's top floor and Rayquaza's fight (js/tower-art.js)
+    const ped = scene.querySelector('.hof-pedestal').getBoundingClientRect();
+    paintSummit(peak, ped.top + ped.height * 0.6);
+  }
   playMusic(fame ? 'hall-of-fame' : 'run-win', { restart: true });   // while its file is missing, the victory fanfare from the boss's faint plays on
   const canvas = $('hof-fx');
   canvas.hidden = !party;

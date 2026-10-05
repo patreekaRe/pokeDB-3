@@ -533,7 +533,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
   (`badgeItem()`); `showBadgeNews()` colours the title's Trainer Card gem and the Bag by tier and puts a gold "!" on them while a badge
   is unseen (after a fight that earns one, too). The title's last gem is a **game modes slot** (`pageSlot(MODES)` in
-  `js/title.js`: Safari Zone, Sky Pillar "Coming soon"), flipped with ◀ ▶, a swipe or ← →, so new modes never lengthen
+  `js/title.js`: Safari Zone, Sky Pillar), flipped with ◀ ▶, a swipe or ← →, so new modes never lengthen
   the stack (`docs/reference/title-screen.md`).
 - **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
   100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
@@ -543,8 +543,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   summit version of the win scene, `draftSummit()` / `.hof-scene.summit`, never saved as a run); a guardian evolves you at 10
   and 20 and heals 30%.
   Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
-  `run.tower` (`isTower()`, seeded streams keyed by `zone()`); part a plays each flight on the normal map (`landingMap()`
-  in `js/map.js`) until part b paints the tower. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
+  `run.tower` (`isTower()`, seeded streams keyed by `zone()`); each flight is still a `landingMap()` (`js/map.js`) underneath,
+  but since part b (2026-10-05) the tower is the map: `js/tower.js` paints a side-on cutaway behind the run card (doors with
+  room icons, the walk in, the spiral-stair climb with the stamped floor plate and altitude gauge, lit floors below with a
+  statue of every foe beaten, `run.tower.trail`), the guardian intros (Rayquaza's the grandest) and the fall on a loss, all
+  from `js/tower-art.js`'s painters, which also give its fights a tower-room arena (`showTowerScene()` in `js/scene.js`) and
+  the summit win scene its backdrop (`paintSummit()`). The windows show the sky by height. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
   Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's modes
   slot, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`

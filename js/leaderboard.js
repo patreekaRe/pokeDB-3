@@ -254,6 +254,17 @@ async function render() {
   body.replaceChildren(...top, ...boards.map(boardBox));
 }
 
+/** The week's top climbers, for the lobby's plaque (js/towerprep.js): up to `n` entries, best first, each with `mine`;
+    null when the board can't be reached (no config, offline). */
+export async function towerTop(n = 5) {
+  if (!cloudConfigured()) return null;
+  try {
+    const s = await cloudSession();
+    const entries = await entriesFor(towerWeek(), s, KINDS.tower);
+    return rankTower(entries, s.user?.uid)[0].rows.slice(0, n).map(r => ({ ...r.entry, mine: r.mine }));
+  } catch (err) { return null; }
+}
+
 /** Open a board: `which` is 'safari' (the daily one) or 'tower' (the Sky Pillar's weekly one); `day` 0 the current day or
     week, -1 the one before. */
 export function openLeaderboard(day = 0, which = 'safari') {

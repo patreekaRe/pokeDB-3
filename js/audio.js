@@ -116,6 +116,7 @@ const SOUNDS = {
   'fw-pop':     { synth: ac => fireworkPop(ac, 0.45, 90, 0.16) },   // ...and bursts
   'fw-boom':    { synth: ac => fireworkPop(ac, 1.1, 55, 0.22) },    // ...the finale's biggest one
   'fw-crackle': { synth: fireworkCrackle },  // ...and a crackler fizzes out
+  stamp:        { synth: ac => fireworkPop(ac, 0.28, 70, 0.2) },   // the Sky Pillar's floor plate: a new number stamped into stone (tower.js)
   quake:        { synth: quakeRumble },      // the Wastes' boss arena: the crater rumbles before it erupts (scene.js)
   eruption:     { synth: ac => fireworkPop(ac, 2.2, 38, 0.26) },   // ...and blows
   bloom:        { synth: ac => powerSurge(ac, [523, 659, 784, 1047, 1319, 1568], 2) },     // the Clearing's: the ancient tree's heart bursts

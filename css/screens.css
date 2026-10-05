@@ -1948,24 +1948,12 @@ body.battle-intro { pointer-events: none; }
 .hof-scene.depths .hof-mon img { filter: drop-shadow(0 0 10px rgba(190, 120, 255, 0.7)); }
 @media (max-width: 720px) { .hof-scene.depths .hof-title { font-size: 0.95rem; } }
 
-/* A Sky Pillar summit (Rayquaza beaten on floor 100): dawn over a sea of clouds, the last stars fading, the Pillar's own
-   mossy stone for the pedestal, trimmed in Rayquaza's green and gold. */
-.hof-scene.summit { background: linear-gradient(#141a48 0%, #2c3478 22%, #6a4c98 40%, #d8708a 56%, #f8a860 66%, #f8d890 74%, #f8f0d0 80%); }
-.hof-scene.summit .hof-sky { opacity: 0.45; -webkit-mask-image: linear-gradient(#000 0 30%, transparent 55%); mask-image: linear-gradient(#000 0 30%, transparent 55%); }
-.hof-clouds { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; pointer-events: none; display: none; }
-.hof-scene.summit .hof-clouds { display: block; }
-.hof-clouds::before, .hof-clouds::after {
-  content: ''; position: absolute; left: -10%; right: -10%; bottom: 0; height: 100%;
-  clip-path: polygon(0 34%, 6% 22%, 12% 30%, 19% 12%, 27% 26%, 34% 18%, 41% 32%, 49% 14%, 57% 28%, 64% 20%, 71% 34%,
-    78% 16%, 85% 28%, 92% 20%, 100% 30%, 100% 100%, 0 100%);
-  background: linear-gradient(#f8e8d8 0 6px, #f0c8b8 6px 14px, #d8a0b0 14px 30px, #a888b8 30px 60%, #786898 60%);
-  animation: summitDrift 40s steps(80) infinite alternate;
-}
-.hof-clouds::after {
-  height: 62%; opacity: 0.9; scale: -1 1; animation-duration: 28s;
-  background: linear-gradient(#fff4ec 0 6px, #f8d8c8 6px 12px, #e0b0c0 12px 26px, #b898c8 26px);
-}
-@keyframes summitDrift { to { translate: 6% 0; } }
+/* A Sky Pillar summit (Rayquaza beaten on floor 100): the top floor itself, painted by js/tower-art.js's paintSummit() as the
+   climb and Rayquaza's fight show it (stars, the planet's curve far below with dawn breaking along it, the broken pillars,
+   the mossy flagstones), the Pillar's own mossy stone for the pedestal, trimmed in Rayquaza's green and gold. */
+.hof-scene.summit { background: #02030c; }
+.hof-summit-bg { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.hof-scene.summit .hof-sky { display: none; }
 .hof-scene.summit .hof-light { background: linear-gradient(rgba(255, 240, 200, 0.05), rgba(255, 220, 150, 0.32)); }
 .hof-scene.summit .hof-pedestal {
   background: linear-gradient(#f8e078 0 4px, #48c070 4px 8px, #a8b0a0 8px 12px, #d8b048 12px 16px, #788878 16px 21px, #586858 21px 36px, #304030 36px);
@@ -1975,7 +1963,6 @@ body.battle-intro { pointer-events: none; }
 .hof-scene.summit .hof-stat { border-color: #58c080; background: rgba(20, 26, 72, 0.88); }
 .hof-scene.summit .hof-mon img { filter: drop-shadow(0 0 10px rgba(255, 220, 140, 0.7)); }
 @media (max-width: 720px) { .hof-scene.summit .hof-title { font-size: 1rem; } }
-@media (prefers-reduced-motion: reduce) { .hof-clouds::before, .hof-clouds::after { animation: none; } }
 
 .hof-credits {
   position: absolute; inset: 0; z-index: 5; overflow: hidden; cursor: pointer;
@@ -4216,3 +4203,82 @@ body.scene-peek #backdrop { display: none; }
 .tower-picks { display: flex; flex-wrap: wrap; gap: 6px; max-height: 40vh; overflow-y: auto; }
 .tower-pick { width: 52px; height: 52px; padding: 2px; border: 2px solid rgba(48, 48, 56, 0.25); border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.06); cursor: pointer; }
 .tower-pick img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+
+/* ---------- the Sky Pillar's climb (js/tower.js): the tower is the map, painted behind the run card ---------- */
+.tower-view { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #0a0c1c; }
+#map-screen.tower .map-head, #map-screen.tower .map-wrap { display: none; }
+#map-screen.tower .run-card { z-index: 2; }
+.tw-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.tw-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); image-rendering: pixelated; pointer-events: none;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.4)); }
+.tw-mon.flip { scale: -1 1; }
+.tw-mon.behind { filter: brightness(0.55) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.4)); }
+.tw-doors { position: absolute; inset: 0; pointer-events: none; }
+.tw-door { position: absolute; pointer-events: auto; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 40% 40% 4px 4px / 22% 22% 4px 4px; }
+.tw-door:hover, .tw-door:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--gem), 0 0 18px 2px var(--gem); background: color-mix(in srgb, var(--gem) 14%, transparent); }
+/* each door's room on a little hanging sign over its arch, bobbing like the map's rooms */
+.tw-door-tag { position: absolute; left: 50%; bottom: 100%; translate: -50% -2px; display: grid; place-items: center; min-width: 30px; height: 26px; padding: 0 4px;
+  border: 2px solid #2a2028; border-radius: 4px; background: linear-gradient(#f8ecd0, #d8c49c); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18), 0 0 0 2px var(--gem), 2px 3px 0 rgba(0, 0, 0, 0.45);
+  font-size: 0.95rem; line-height: 1; animation: twTag 1.6s ease-in-out infinite; }
+.tw-door-tag::before { content: ''; position: absolute; left: 50%; bottom: 100%; width: 2px; height: 6px; translate: -50% 0; background: #2a2028; }
+.tw-door:nth-child(2) .tw-door-tag { animation-delay: -0.5s; } .tw-door:nth-child(3) .tw-door-tag { animation-delay: -1s; }
+.tw-door.guardian .tw-door-tag { min-width: 40px; height: 32px; font-size: 1.2rem; background: linear-gradient(#fff4b8, #f8c830); }
+@keyframes twTag { 50% { translate: -50% -6px; } }
+/* the stone plate a floor's number is stamped on */
+.tw-plate { position: absolute; left: 50%; top: calc(var(--topbar-h, 52px) + 132px); translate: -50% 0; display: grid; justify-items: center; gap: 4px; min-width: 132px; padding: 8px 16px 9px;
+  border: 3px solid #2a2622; border-radius: 6px; background: linear-gradient(#a8a090, #8a8274 55%, #6e6758); color: #2e2a24;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.35), inset -2px -3px 0 rgba(0, 0, 0, 0.25), 3px 4px 0 rgba(0, 0, 0, 0.45); pointer-events: none; z-index: 1; }
+.tw-plate-num { font-size: 1.35rem; letter-spacing: 2px; color: #3a342c; text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4), -1px -1px 0 rgba(0, 0, 0, 0.35); }
+.tw-plate-sub { font-size: 0.55rem; color: #3e382e; }
+.tw-plate.guardian { background: linear-gradient(#f0d890, #c8a048 55%, #9a7428); border-color: #4a3410; }
+.tw-plate.stamp { animation: twStamp 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+.tw-plate.stamp .tw-plate-num { animation: twCarve 0.9s steps(6) both; }
+@keyframes twStamp { 0% { scale: 1.9; opacity: 0; rotate: -6deg; } 45% { scale: 0.92; opacity: 1; rotate: 1deg; } 70% { scale: 1.04; } 100% { scale: 1; rotate: 0deg; } }
+@keyframes twCarve { 0%, 30% { color: transparent; text-shadow: none; } }
+/* the altitude gauge: the sky's colours by height, a tick every 10 floors, your floor and your best */
+.tw-gauge { position: absolute; left: 4px; top: calc(var(--topbar-h, 52px) + 126px); bottom: 70px; width: 12px; pointer-events: none; z-index: 1; }
+.tw-gauge-cap { position: absolute; top: -16px; left: 50%; translate: -50% 0; font-size: 0.45rem; color: #f8f0d8; text-shadow: 1px 1px 0 #000; }
+.tw-gauge-track { position: absolute; inset: 0; border: 2px solid #1a1620; border-radius: 6px; box-shadow: 0 0 0 2px #8a8274, 2px 3px 0 2px rgba(0, 0, 0, 0.4); }
+.tw-tick { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, 0.55); }
+.tw-mark { position: absolute; left: 100%; translate: 3px 50%; display: none; align-items: center; gap: 3px; font-size: 0.7rem; color: #f8f0d8; text-shadow: 1px 1px 0 #000; white-space: nowrap; }
+.tw-mark b { font-weight: normal; font-size: 0.5rem; }
+.tw-gauge.wide { width: 16px; }
+.tw-gauge.wide .tw-mark { display: flex; }
+.tw-here { position: absolute; left: 50%; width: 22px; height: 10px; translate: -50% 50%; border: 2px solid #1a1620; border-radius: 3px; background: #f8f0d8; box-shadow: 0 0 8px 2px rgba(255, 240, 180, 0.8); transition: bottom 1.4s ease-in-out; }
+.tw-best { position: absolute; left: -4px; right: -4px; height: 3px; translate: 0 50%; background: #f8c830; box-shadow: 0 0 0 1px #4a3410; }
+
+/* the guardian intros and the fall (js/tower.js): one overlay over everything */
+.tower-fx { position: fixed; inset: 0; z-index: 946; overflow: hidden; background: #000; cursor: pointer; animation: biIn 0.4s both; }
+.tower-fx.shake .tw-canvas, .tower-fx.shake .tw-fx-mon { animation: twShake 0.45s steps(9); }
+@keyframes twShake { 20% { translate: 4px 2px; } 40% { translate: -5px -1px; } 60% { translate: 3px -2px; } 80% { translate: -2px 2px; } }
+.tw-fx-mon { position: absolute; max-width: none; translate: -50% -100%; transform-origin: 50% 100%; image-rendering: pixelated; pointer-events: none; opacity: 0;
+  filter: brightness(0) drop-shadow(0 0 3px rgba(255, 90, 60, 0.9)) drop-shadow(0 0 12px rgba(255, 60, 40, 0.6)); }
+.tw-fx-mon.rayquaza { filter: brightness(0) drop-shadow(0 0 3px #a0ffc8) drop-shadow(0 0 16px #30d880) drop-shadow(0 0 30px rgba(60, 220, 140, 0.6)); }
+.tw-fx-mon.faller { translate: -50% -50%; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.4)); transform-origin: 50% 50%; }
+.tw-fx-text { position: absolute; left: 50%; top: 22%; translate: -50% 0; display: grid; justify-items: center; gap: 10px; width: min(92vw, 520px); text-align: center; pointer-events: none; }
+.tw-fx-text.in { animation: twSlam 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+.tw-fx-top { font-size: 0.62rem; letter-spacing: 3px; color: #f8d878; text-shadow: 2px 2px 0 #000; }
+.tw-fx-name { font-weight: normal; font-size: clamp(1.1rem, 5vw, 2rem); color: #fff; text-shadow: 3px 0 0 #2a0c10, -3px 0 0 #2a0c10, 0 3px 0 #2a0c10, 0 -3px 0 #2a0c10, 0 7px 0 rgba(0, 0, 0, 0.5); }
+@keyframes twSlam { 0% { scale: 2.4; opacity: 0; } 60% { scale: 0.94; opacity: 1; } 100% { scale: 1; } }
+.tw-fx-dark { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+.tower-fx.flash .tw-fx-dark { background: #fff; animation: twFlash 0.5s both; }
+@keyframes twFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.tower-fx.dark .tw-fx-dark { background: #000; opacity: 1; transition: opacity 0.45s ease-in; animation: none; }
+@media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-plate.stamp, .tw-plate.stamp .tw-plate-num, .tw-fx-text.in { animation: none; } }
+.tw-fx-text.high { top: 7%; }
+/* the lobby's plaque (js/towerprep.js): the week's top climbers engraved in a bronze plate, riveted at the corners */
+.tower-plaque { position: relative; margin: 10px 0 6px; padding: 10px 18px 12px; border: 3px solid #4a3410; border-radius: 6px;
+  background: linear-gradient(160deg, #f0d088 0%, #c89a48 35%, #a87830 70%, #c89a48 100%); color: #3a2408;
+  box-shadow: inset 2px 2px 0 rgba(255, 248, 210, 0.6), inset -2px -2px 0 rgba(60, 36, 8, 0.4), 3px 4px 0 rgba(0, 0, 0, 0.35); }
+.tower-plaque::before, .tower-plaque::after { content: ''; position: absolute; top: 5px; width: 6px; height: 6px; border-radius: 50%; background: #6a4818; box-shadow: inset 1px 1px 0 #f8e0a0; }
+.tower-plaque::before { left: 5px; } .tower-plaque::after { right: 5px; }
+.tower-plaque-title { margin: 0 0 8px; font-size: 0.62rem; text-align: center; letter-spacing: 1px; color: #3a2408; text-shadow: 1px 1px 0 rgba(255, 240, 190, 0.7); }
+.tower-plaque-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: 0.6rem; }
+.tower-plaque-row { display: grid; grid-template-columns: 18px 26px 1fr auto; align-items: center; gap: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(74, 52, 16, 0.35);
+  text-shadow: 1px 1px 0 rgba(255, 240, 190, 0.6); }
+.tower-plaque-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.tower-plaque-row img { width: 26px; height: 26px; object-fit: contain; image-rendering: pixelated; filter: sepia(1) saturate(0.6) brightness(0.8) contrast(1.3); }
+.tower-plaque-row.mine .tower-plaque-name { color: #1a5a28; }
+.tower-plaque-rank { text-align: right; }
+.tower-plaque-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tower-plaque-note { text-align: center; font-size: 0.58rem; opacity: 0.85; }

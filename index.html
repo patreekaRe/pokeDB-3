@@ -249,6 +249,14 @@
 
     <!-- ============ 3. MAP ============ -->
     <section id="map-screen" class="screen" hidden>
+      <!-- a Sky Pillar climb: the tower is the map (js/tower.js), behind the run card -->
+      <div class="tower-view" id="tower-view" hidden>
+        <canvas id="tw-canvas" class="tw-canvas" aria-hidden="true"></canvas>
+        <img id="tw-mon" class="tw-mon pixel" alt="">
+        <div class="tw-doors" id="tw-doors"></div>
+        <div class="tw-gauge" id="tw-gauge" aria-hidden="true"></div>
+        <div class="tw-plate" id="tw-plate" aria-live="polite"><span class="tw-plate-num"></span><span class="tw-plate-sub"></span></div>
+      </div>
       <div class="run-card">
         <!-- a fidget: tap to recall your Pokémon into its ball, tap again to send it out (toggleMon() in js/run.js) -->
         <button type="button" class="run-mon" id="run-mon" data-state="out" aria-pressed="false" title="Tap to recall it into its Poké Ball">
@@ -581,8 +589,8 @@
   <!-- The win scene (js/halloffame.js): a starry night, your Pokémon on a pedestal, its numbers and deck; a Level 5 win's is the Hall of Fame -->
   <div id="hof-scene" class="hof-scene" hidden>
     <div class="hof-sky" aria-hidden="true"></div>
+    <canvas class="hof-summit-bg" id="hof-summit-bg" aria-hidden="true" hidden></canvas>
     <div class="hof-cave" aria-hidden="true"></div>
-    <div class="hof-clouds" aria-hidden="true"></div>
     <canvas class="hof-fx" id="hof-fx" aria-hidden="true" hidden></canvas>
     <div class="hof-flash" aria-hidden="true"></div>
     <div class="hof-layout">
@@ -609,6 +617,15 @@
     <div class="descent-flash" aria-hidden="true"></div>
     <div class="evo-bottom"><div class="reward-log" id="descent-log" hidden><span id="descent-log-text" aria-hidden="true"></span><span class="sr-only" id="descent-log-live" aria-live="polite"></span></div></div>
     <div class="descent-dark" aria-hidden="true"></div>
+  </div>
+
+  <!-- the Sky Pillar's guardian intros and the fall on a loss (js/tower.js) -->
+  <div id="tower-fx" class="tower-fx" hidden>
+    <canvas id="tw-fx-canvas" class="tw-canvas" aria-hidden="true"></canvas>
+    <img id="tw-fx-mon" class="tw-fx-mon pixel" alt="">
+    <div class="tw-fx-text" aria-live="polite"></div>
+    <div class="travel-skip" aria-hidden="true">Tap to skip</div>
+    <div class="tw-fx-dark"></div>
   </div>
 
   <!-- Between a boss and the next biome, the walk there as the land turns and the night passes (js/travel.js) -->
@@ -714,6 +731,8 @@
     <p class="hint" id="tower-week"></p>
     <div class="tower-climber"><img id="tower-mon" class="pixel" alt=""><strong id="tower-name"></strong></div>
     <p class="hint" id="tower-best"></p>
+    <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js) -->
+    <div class="tower-plaque"><h3 class="tower-plaque-title">This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div>
     <ul class="tower-rules" id="tower-rules"></ul>
     <div class="dialog-actions">
       <button type="button" class="pxb orange small" id="tower-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>

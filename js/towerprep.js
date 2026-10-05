@@ -7,10 +7,10 @@
    ============================================================ */
 
 import { towerWeekly, FLIGHT, GUARDIAN_HEAL, TOP_FLOOR, TOWER_BADGE_FLOORS } from './data/tower.js';
-import { STARTERS, spriteUrl } from './data/starters.js';
+import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { getSave } from './storage.js';
-import { openLeaderboard } from './leaderboard.js';
+import { openLeaderboard, towerTop } from './leaderboard.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 
@@ -31,6 +31,24 @@ export function initTowerPrep(handlers) {
   $('tower-close').addEventListener('click', () => { playSound('cancel', 'confirm'); closeDialog('tower-dialog'); });
 }
 
+/** The lobby's plaque: the week's top climbers engraved in bronze, filled in once the board answers. */
+async function engrave() {
+  const list = $('tower-plaque-list');
+  list.replaceChildren(el('li', 'tower-plaque-note', 'Engraving…'));
+  const top = await towerTop(5);
+  if (!top) { list.replaceChildren(el('li', 'tower-plaque-note', "The plaque can't be read right now.")); return; }
+  if (!top.length) { list.replaceChildren(el('li', 'tower-plaque-note', 'No names yet this week. Be the first!')); return; }
+  list.replaceChildren(...top.map((e, i) => {
+    const li = el('li', `tower-plaque-row${e.mine ? ' mine' : ''}`);
+    const img = el('img', 'pixel');
+    const starter = STARTERS_BY_ID[e.starter];
+    if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
+    li.append(el('span', 'tower-plaque-rank', `${i + 1}`), img, el('span', 'tower-plaque-name', e.name), el('span', 'tower-plaque-floor', e.floor >= TOP_FLOOR ? `🏔️ ${e.turns}t` : `${e.floor}F`));
+    li.title = `${e.name}: floor ${e.floor}, ${e.turns} turns`;
+    return li;
+  }));
+}
+
 export function openTowerPrep() {
   const weekly = towerWeekly();
   const t = getSave().tower;
@@ -43,6 +61,7 @@ export function openTowerPrep() {
   $('tower-name').textContent = `This week's climber: ${weekly.starter.line[0].name}`;
   $('tower-best').textContent = `${first ? 'Your counted climb is ready.' : `Your counted climb: floor ${thisWeek ? t.best : 0}.`} Your best ever: floor ${t.bestEver || 0}.`;
   $('tower-go').querySelector('.pxb-i').textContent = first ? '🏆 Climb (counts)' : '🔁 Climb again';
+  engrave();
   $('tower-rules').replaceChildren(...RULES.map(([icon, text]) => {
     const li = el('li', '');
     li.append(el('span', 'tower-rule-icon', icon), el('span', '', text));

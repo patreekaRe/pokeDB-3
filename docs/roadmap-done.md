@@ -1435,3 +1435,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   x1.35 HP and +8. Human bot, 60 climbs a cell, median floor (reach 50 / 100): before Fire 36, Water 32, Grass 56 (24% to
   100); x1.1 33 / 35 / 42; x1.15 31 (3% / 0) / 34 (22% / 0) / 41 (28% / 0); x1.2 34 / 29 / 40. Shipped x1.15: Grass still
   climbs highest, but no climb reaches 100 and Fire / Water barely move (Fire is held back by the HP growth).
+- **The Sky Pillar, part b: the painted tower** (2026-10-05, Desktop app; roadmap item 18): the tower is the map (`js/tower.js`,
+  painters in `js/tower-art.js`): a side-on cutaway with doors and room icons, the walk in, the spiral-stair climb, the stamped
+  floor plate, an altitude gauge to 100, the windows' sky by height (treetops, clouds, storm, sunset over the cloud sea,
+  aurora, stars, the planet's dawn curve at the summit), lit floors with a statue of every beaten foe, guardian halls and
+  intros (Rayquaza's at the summit), the fall on a loss, a tower-room battle arena, the lobby's plaque of the week's top five,
+  and the summit win scene painted as floor 100. Checked at 375x812 and 1280x800 with `?tower=`.

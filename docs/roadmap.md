@@ -47,23 +47,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     The title already has the Sky Pillar's gem in its modes slot, greyed "Coming soon" (`pillarGem()` in `js/title.js`):
     when it lands, give it its `onPick` and drop `locked`.
 
-18. **The Sky Pillar: an endless tower climb with a weekly leaderboard.** No map screen: the tower is the map. A side-on
-    cutaway panning upward as you rise; each landing has 2-3 doors with room icons (fight, Alpha, Mart, Center, ?) and
-    your Pokémon walks through the one you pick; between floors a spiral-stair climb, the floor number stamped on a stone
-    plate, an altitude gauge. The windows show the height: treetops, clouds (10), storm (20), sunset above the clouds
-    (30), aurora (50), stars and space (100). A guardian boss every 10 floors with its own intro and room, Rayquaza every
-    50. Floors you've beaten stay lit below you, each fallen foe a statue. Losing: the floor gives way and you fall past
-    every floor you climbed, then the result window. A weekly seeded tower (the Safari's seed system), ranked by highest
-    floor on the Safari leaderboard's Firestore setup, the top names engraved on a plaque in the lobby. Its floors 25 /
-    50 / 100 earn the Tower Badges.
-    a. **Done 2026-10-05** (cloud): the rules, seed, leaderboard, Tower Badges and `?tower=` on the normal map; see
-       `docs/reference/sky-pillar.md` and the archive.
-    b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 18 (part a is
-       done: the Sky Pillar's rules on a placeholder screen). Paint it: the side-on cutaway panning upward, doors with
-       room icons and the walk through them, the spiral-stair climb with the stamped floor plate and altitude gauge, the
-       windows' sky by height (treetops, clouds, storm, sunset, aurora, space), the lit floors and statues below, the
-       guardian rooms and intros, the fall on a loss, and the lobby's plaque of top climbers. Check at 375x812 and
-       1280x800 with `?tower=`, push to main."
+18. **The Sky Pillar** is done (parts a and b, 2026-10-05: the rules, then the painted tower; see
+    `docs/reference/sky-pillar.md` and the archive). Still the user's: publish `firestore.rules` for the tower board and plaque.
 
 19. **Branching biomes.** After each boss's rewards, a crossroads: a painted scene with a signpost and two paths, each
     showing its biome's name, a glimpse of its scenery, its boss's silhouette (??? until met) and which types live there.
@@ -114,10 +99,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
-  Safari leaderboard. The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and
+  Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and
   `docs/reference/cloud-save.md`.
 - Playtests on the live site: a real Mewtwo run (Eternatus's numbers, the fall into the Depths), Ken's difficulty, the
-  boss intros' and biome films' sound levels.
+  boss intros' and biome films' sound levels; the Sky Pillar's walk and climb pacing and its guardian intros on a phone.
 
 ## Rules for adding Pokémon (still in force)
 

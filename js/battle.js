@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
-import { showScene, showPlaceScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
+import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { BIOMES, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -236,6 +236,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   const land = run.safari?.areas[run.biome] ?? BIOMES[run.biome]?.id;
   document.body.dataset.biome = land || '';   // the piles' colour
   if (def.arena) showPlaceScene(def.arena);
+  else if (run.tower) {   // a Sky Pillar fight: one of the tower's rooms, its windows on the sky at that height (js/tower-art.js)
+    const { flight } = run.tower, here = run.map?.byId[run.current];
+    showTowerScene({ alt: flight * 10 + (here ? here.floor + 1 : 1), kind: encounter.kind, banner: flight >= 9 ? 'top' : flight % 3 });
+  }
   else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
   playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });

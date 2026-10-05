@@ -46,6 +46,7 @@ import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winSce
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
+import { renderTower, hideTower, guardianIntro, towerFall } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
@@ -652,7 +653,8 @@ function showMap() {
   drawMap();
   showScreen('map-screen');
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
-  showScene(biome.id, 'wild', journey(run.map, here));
+  if (isTower()) showScene(null);   // the tower is its own picture (js/tower.js)
+  else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
@@ -863,6 +865,8 @@ const scopeReveals = () => (getSave().dex.complete && !fairTry() ? SCOPE_REVEALS
 const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).length;   // saved with the map's nodes
 
 function drawMap() {
+  if (isTower()) return renderTower({ map: run.map, current: run.current, flight: run.tower.flight, trail: run.tower.trail, best: peeking ? 0 : getSave().tower.bestEver || 0,
+    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode });
   const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
@@ -917,6 +921,10 @@ function enterNode(node) {
   reseed(`room:${zone()}:${node.id}`);
   markHp(node);
   node.visited = true;
+  if (isTower()) {   // the tower's screen draws a statue of every foe beaten before the door it came through
+    const row = node.type === 'boss' ? [node] : run.map.floors[node.floor], f = floorOf(run.tower.flight, node.floor);
+    run.tower.trail = [...(run.tower.trail || []).filter(e => e.f !== f), { f, type: node.type, enemy: node.enemyId || null, n: row.length, k: row.indexOf(node) }];
+  }
 
   if (node.type === 'rest' || node.type === 'shop') {
     playSound('door');
@@ -945,7 +953,9 @@ async function fight(node) {
     preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
+  const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
+  intro?.();
   const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
   if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
@@ -2579,6 +2589,10 @@ async function endTower(won) {
     d.tower.bestTurns = d.tower.bestTurns ? Math.min(d.tower.bestTurns, turns) : turns;
   });
   const save = getSave().tower;
+  // the floor gives way: the fall stays dark behind the result window until it closes
+  const fell = won ? null : await towerFall({ floor: t.floor + 1, trail: t.trail || [], sprite: spriteUrl(run.starter, 'front', run.stage) });
+  if (fell) $('result-dialog').addEventListener('close', fell, { once: true });
+  hideTower();
   if (won) await winScene(draftSummit(run, getSave().shiny.on.includes(run.starter.id), t.first));
   $('result-title').textContent = won ? '🗼 The Sky Pillar: the summit!' : '🗼 The Sky Pillar';
   $('result-text').textContent = won ? `${name} beat Rayquaza and cleared all ${TOP_FLOOR} floors in ${turns} turns.`

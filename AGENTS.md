@@ -156,6 +156,13 @@ three places:
   Mewtwo); Eternatus crosses the title sky once beaten; the v1.0 patch notes. Final balance pass: the three types are level
   (no change); Eternatus +8 damage / +30% HP (Mewtwo strong / human 93 / 93 -> 86 / 83). Checked headless at 390x844
   through `?bossfight=depths&hp=0.01`. **v1.0 is complete.** The user still has to see the ending on the live site.
+- 2026-10-05: **The Sky Pillar, part b** (Desktop app, pushed; roadmap item 18; `docs/reference/sky-pillar.md`'s "The
+  look"): the painted tower replaces the placeholder map (`js/tower.js` + `js/tower-art.js`): the cutaway, doors with room
+  icons and the walk in, the spiral-stair climb, the stamped plate, the altitude gauge, the sky by height through the
+  windows, statues of beaten foes, the guardian intros (Rayquaza's at the summit), the fall on a loss, a tower-room battle
+  arena, the lobby's plaque of the week's top climbers, and the summit win scene painted as floor 100. Checked at 375x812
+  and 1280x800 (`?tower=1/9/22/31/70/99`, a won fight's climb, Rayquaza's intro and fight, a loss's fall). The plaque reads
+  "can't be read" until the user publishes `firestore.rules` (Firestore said permission-denied for `towerBoard`).
 - 2026-10-05: **The Sky Pillar, part a** (cloud, roadmap item 18; `docs/reference/sky-pillar.md`): the endless weekly
   tower climb's rules (`js/data/tower.js`, shared with the bot), played on the normal map as a placeholder, its window
   (`js/towerprep.js`), the weekly leaderboard (`towerBoard`, the same window as the Safari's), the Tower Badges, Rayquaza as
