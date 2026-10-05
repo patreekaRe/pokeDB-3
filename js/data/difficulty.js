@@ -17,6 +17,7 @@ const BASE_MODS = {
   bossHp: 1,        // multiplies boss HP
   bossDmg: 0,       // extra damage on every boss attack
   enemyDmg: 0,      // extra damage on every enemy attack (bosses too)
+  enemyDmgMult: 1,  // multiplies every enemy attack, after enemyDmg (the Sky Pillar past floor 30)
   evolveHeal: 1,    // fraction of your missing HP that evolving heals
   prizeMult: 1,     // multiplies the ₽ a won fight pays
   playerDmg: 1,     // multiplies the damage of your attacks (Mewtwo's sprint)

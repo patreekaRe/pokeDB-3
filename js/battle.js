@@ -215,6 +215,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       block: 0,
       dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
       strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
+      dmgMult: encounter.dmgMult ?? 1,  // the Sky Pillar's compounding damage past floor 30
       burn: run.relics.includes('flame-orb') ? 3 : 0,
       seed: run.relics.includes('gooey-mulch') ? 2 : 0,   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
@@ -1636,7 +1637,7 @@ function enemyTypeMultiplier(move) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * en.dmgMult * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 

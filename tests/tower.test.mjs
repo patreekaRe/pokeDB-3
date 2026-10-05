@@ -68,6 +68,8 @@ test('floors 1-30 are the biomes in order; past 30 every flight grows', () => {
   const m2 = towerMods(charmander, 2), m3 = towerMods(charmander, 3), m5 = towerMods(charmander, 5);
   assert.equal(m3.normalHp, m2.normalHp * PAST_TOP.hp);
   assert.equal(m5.enemyDmg, m2.enemyDmg + 3 * PAST_TOP.dmg);
+  assert.equal(m2.enemyDmgMult, 1);
+  assert.equal(m5.enemyDmgMult, PAST_TOP.dmgMult ** 3);
   assert.equal(towerPools(1).normals, null);
   assert.ok(towerPools(3).normals.length >= 36);
   assert.equal(FLIGHT, 10);

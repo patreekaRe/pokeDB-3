@@ -25,7 +25,7 @@ export const LANDINGS = FLIGHT - 1;
 export const GUARDIAN_HEAL = 0.3;        // of max HP, after every guardian (the user's call)
 export const RAYQUAZA_EVERY = 50;        // floors between Rayquaza's guardian rooms
 export const RAYQUAZA = 'rayquaza-guardian';
-export const PAST_TOP = { hp: 1.35, dmg: 8 };   // every flight past the third: enemy HP x1.35 and +8 damage, compounding (bot-tuned: x1.15 / +4 let the human bot's median climb reach 45)
+export const PAST_TOP = { hp: 1.35, dmg: 8, dmgMult: 1.15 };   // every flight past the third: enemy HP x1.35, +8 damage, then every attack x1.15, compounding (bot-tuned: x1.15 / +4 let the human bot's median climb reach 45; without dmgMult healing Grass outgrew it)
 export const DOOR_ODDS = { fight: 50, elite: 14, event: 16, shop: 10, rest: 10 };
 export const TOWER_BADGE_FLOORS = [25, 50, 100];
 
@@ -65,7 +65,8 @@ export const towerBiome = (flight) => Math.min(flight, 2);
 export function towerMods(starter, flight) {
   const mods = runMods(starter, 0, towerBiome(flight));
   const k = Math.max(0, flight - 2);
-  return { ...mods, normalHp: mods.normalHp * PAST_TOP.hp ** k, bossHp: mods.bossHp * PAST_TOP.hp ** k, enemyDmg: mods.enemyDmg + PAST_TOP.dmg * k };
+  return { ...mods, normalHp: mods.normalHp * PAST_TOP.hp ** k, bossHp: mods.bossHp * PAST_TOP.hp ** k, enemyDmg: mods.enemyDmg + PAST_TOP.dmg * k,
+    enemyDmgMult: (mods.enemyDmgMult ?? 1) * PAST_TOP.dmgMult ** k };
 }
 
 function roll(odds) {

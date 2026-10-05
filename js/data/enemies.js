@@ -798,6 +798,7 @@ export function buildKenEncounter(biomeIndex, mods) {
     def: KEN, kind: 'boss',
     maxHp: Math.round(KEN.hp[biomeIndex] * mods.bossHp),
     strength: biome.bossBonus + mods.bossDmg + mods.enemyDmg,
+    dmgMult: mods.enemyDmgMult ?? 1,
   };
 }
 
@@ -940,6 +941,7 @@ export function buildEncounter(biomeIndex, kind, mods, enemyId) {
       def, kind,
       maxHp: Math.round(def.hp * mods.bossHp),
       strength: biome.bossBonus + mods.bossDmg + mods.enemyDmg,
+      dmgMult: mods.enemyDmgMult ?? 1,
     };
   }
 
@@ -951,5 +953,6 @@ export function buildEncounter(biomeIndex, kind, mods, enemyId) {
     kind,
     maxHp: Math.round(def.hp * place.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),
     strength: biome.dmgBonus + place.dmg + mods.enemyDmg,
+    dmgMult: mods.enemyDmgMult ?? 1,
   };
 }
