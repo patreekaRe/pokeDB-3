@@ -10,8 +10,9 @@
    intros (bossArenaPrelude() in js/scene.js) are menacing: a journey, not
    one set piece.
 
-   Two low-res canvases (one canvas pixel = 4 CSS px on phones, 5 wider,
-   like js/scene.js) sandwich the Pokémon, real GIFs: `back` is the sky and
+   Two canvases (one art pixel = 4 CSS px on phones, 5 wider, like
+   js/scene.js; drawn one canvas pixel a CSS px by fineCtx(), so the camera
+   glides in screen pixels while the art stays chunky) sandwich the Pokémon, real GIFs: `back` is the sky and
    the land, `front` the near grass that hides their feet. Every layer is
    painted once (seeded, so it's the same each time) and slid by the camera
    at its own speed. Lit for the time of day: hand-painted skies, the land

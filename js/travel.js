@@ -3,8 +3,8 @@
  * the trip there. Your evolved Pokémon walks left to right along a side-on road in parallax while the land turns from
  * one biome into the next and the sky runs dusk → night → dawn, with one set piece mid-way.
  *
- * Like the descent (js/descent.js): low-res canvases (P CSS px a pixel) painted whole every frame, the Pokémon a real GIF
- * between them (`back`: sky and land; `front`: the near grass). Everything is a function of the camera, so the road never
+ * Like the descent (js/descent.js): low-res canvases (P CSS px a pixel) painted whole every frame, one per parallax layer
+ * (LAYERS, into()), the Pokémon a real GIF between them (`sky`... `road` behind; `roadFront` and `near`, the near grass, in front). Everything is a function of the camera, so the road never
  * ends and the land changes by where a thing stands along it: a column's look is the trip's progress when it passes
  * your Pokémon, so the next biome rolls in from the right. Palettes cross over by dithering, never by alpha. The sky's
  * colours are painted per time; the land is graded with GRADES like every scene, blended between the times.

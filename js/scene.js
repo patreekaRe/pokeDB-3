@@ -27,8 +27,9 @@ import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-const FPS = 8;
-const dither = (x, y) => BAYER[((y % 4 + 4) % 4) * 4 + ((x % 4 + 4) % 4)];
+const FPS = 8;   // the scenery's clock: everything below is timed in these ticks a second
+const RATE = 30, DT = FPS / RATE;   // drawn this many times a second, the clock moving DT ticks a frame
+const dither = (x, y) => BAYER[(((y | 0) % 4 + 4) % 4) * 4 + (((x | 0) % 4 + 4) % 4)];
 
 /* ---------- the scenes ----------
    Each biome has its shared look, `times` one per time of day (a `from` look is graded from that one under its own
@@ -976,7 +977,7 @@ const PLACE_ART = {
 };
 
 
-let canvas = null, ctx = null, S = null, timer = 0, tick = 0;
+let canvas = null, ctx = null, S = null, timer = 0, tick = 0, last = 0;   // `last`: the clock as the frame before was drawn
 let W = 0, H = 0, horizon = 0, base = null, img = null, px = null, sky = null, rand = Math.random;
 let life = {};
 let bossPrelude = null;
@@ -1170,12 +1171,12 @@ function drawWeather(t) {
   for (let i = 0, n = Math.round(life.weather.length * keep); i < n; i++) {
     const p = life.weather[i], s = p.speed;
     if (kind === 'drizzle') {
-      p.y += 2.2 * s; p.x -= 0.7 * s;
+      p.y += (2.2 * s) * DT; p.x -= (0.7 * s) * DT;
       if (p.y > H) reset(p);
       put(p.x, p.y, c[0]); put(p.x + 1, p.y - 2, c[1]);
       if (s > 1) put(p.x + 1, p.y - 1, c[1]);
     } else if (kind === 'leaves') {
-      p.y += 0.35 * s; p.x += 0.35 + Math.sin((t + p.phase) / 6) * 0.6;
+      p.y += (0.35 * s) * DT; p.x += (0.35 + Math.sin((t + p.phase) / 6) * 0.6) * DT;
       if (p.y > H + 2 || p.x > W + 3) reset(p);
       const pair = (i % 3) * 2, [a, b] = [c[pair], c[pair + 1]], spin = Math.floor((t + p.phase) / 3) % 4;
       put(p.x, p.y, a);
@@ -1184,25 +1185,25 @@ function drawWeather(t) {
       else if (spin === 2) { put(p.x - 1, p.y, a); put(p.x - 1, p.y + 1, b); }
       else put(p.x + 1, p.y, b);
     } else if (kind === 'ash') {
-      p.y += 0.3 * s; p.x += 0.2 + Math.sin((t + p.phase) / 7) * 0.25;
+      p.y += (0.3 * s) * DT; p.x += (0.2 + Math.sin((t + p.phase) / 7) * 0.25) * DT;
       if (p.y > H + 1) reset(p);
       if (i % 9 === 0) { if (Math.sin((t + p.phase) / 2) > -0.3) put(p.x, p.y, c[3]); continue; }   // a stray ember among the flakes
       const shade = c[i % 3];
       put(p.x, p.y, shade);
       if (s > 1.05) put(p.x + (Math.floor((t + p.phase) / 4) % 2 ? 1 : -1), p.y, shade);
     } else if (kind === 'dust') {
-      p.y += 0.18 * s; p.x += Math.sin((t + p.phase) / 9) * 0.2;
+      p.y += (0.18 * s) * DT; p.x += (Math.sin((t + p.phase) / 9) * 0.2) * DT;
       if (p.y > H) reset(p);
       const b = Math.sin((t + p.phase) / 3);
       if (b > 0.85) { put(p.x - 1, p.y, c[1 + i % 2]); put(p.x + 1, p.y, c[1 + i % 2]); put(p.x, p.y - 1, c[1 + i % 2]); put(p.x, p.y + 1, c[1 + i % 2]); }
       if (b > -0.2) put(p.x, p.y, b > 0.6 ? c[0] : c[1 + i % 2]);
     } else if (kind === 'snow') {
-      p.y += 0.4 * s; p.x += Math.sin((t + p.phase) / 5) * 0.4 - 0.1;
+      p.y += (0.4 * s) * DT; p.x += (Math.sin((t + p.phase) / 5) * 0.4 - 0.1) * DT;
       if (p.y > H) reset(p);
       put(p.x, p.y, c[i % 2]);
       if (s > 1.1) { put(p.x + 1, p.y, c[1]); put(p.x, p.y + 1, c[1]); }
     } else if (kind === 'sand') {
-      p.x += 2.6 * s; p.y += 0.25 * s + Math.sin((t + p.phase) / 4) * 0.2;
+      p.x += (2.6 * s) * DT; p.y += (0.25 * s + Math.sin((t + p.phase) / 4) * 0.2) * DT;
       if (p.x > W + 3 || p.y > H) { p.x = -3 - rand() * 10; p.y = rand() * H; }
       put(p.x, p.y, c[0]); put(p.x - 1, p.y, c[1]);
       if (s > 1) put(p.x - 2, p.y, c[1]);
@@ -1235,7 +1236,7 @@ function paintScene(key, raw, floor = null, span = null) {
   const pad = raw.padDeep && raw.stage >= 2 ? raw.padDeep : raw.pad;   // the Crystal Depths' rock turns red from the Deep Core on
   if (pad) $('battle-screen').style.setProperty('--pad', `url("${padImage(pad)}")`);
   resize();
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(frame, 1000 / FPS);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(frame, 1000 / RATE);
 }
 
 /** Bring the weather in (a boss close to fainting) or let it pass. Under reduced motion only the light changes. */
@@ -1347,10 +1348,17 @@ function horizonRow(scale) {
 
 function frame() {
   if (document.hidden || !$('title-screen').hidden) return;
-  tick++;
-  storm.level = Math.max(0, Math.min(1, storm.level + (storm.on ? 1 : -1) / (FPS * 2)));
+  tick += DT;
+  storm.level = Math.max(0, Math.min(1, storm.level + (storm.on ? 1 : -1) * DT / (FPS * 2)));
   draw();
 }
+
+/* The clock runs in fractions of a tick, so a one-off at a tick (a sound, a spawn) fires on the frame that passes it, not
+   on every frame drawn during it. A draw() outside the clock (a resize) passes nothing. */
+/** Did this frame pass tick `n`? */
+const reached = (n) => last < n && tick >= n;
+/** Did this frame pass a tick `k`, `k` + n, `k` + 2n...? */
+const everyAt = (n, k = 0) => Math.floor((tick - k) / n) !== Math.floor((last - k) / n);
 
 /* ---------- pixel helpers ---------- */
 
@@ -3427,7 +3435,7 @@ function drawGrotto(t) {
     for (let x = Math.ceil(cx - hw); x < cx + hw; x++) if (dither(x, y) < 10) blend(x, y, S.beam, 0.1);
   }
   for (const m of life.beamMotes) {
-    m.y += m.drift;
+    m.y += (m.drift) * DT;
     if (m.y > d.y) m.y = 3;
     const x = cx + m.side * beamWidth(m.y) * 0.9 + Math.sin((t + m.phase) / 9) * 1.5;
     if (Math.sin((t + m.phase) / 4) > -0.2) put(x, m.y, S.mote);
@@ -3635,7 +3643,7 @@ export function sceneAct(name, opts = {}) {
 const actFrame = (name) => (life.act?.name === name ? tick - life.act.at : -1);
 function actCues() {
   const { name, at, ...opts } = life.act;
-  for (const [f, sound] of ACTS[name].cues?.(opts) || []) if (tick - at === f) playSound(sound);
+  for (const [f, sound] of ACTS[name].cues?.(opts) || []) if (reached(at + f)) playSound(sound);
 }
 
 /* ---------- the Berry Tree ---------- */
@@ -3953,12 +3961,12 @@ function drawSpring(t) {
 
   const s = life.spout, small = life.pools[1];   // the spout's stream, bending as it falls, and its splash
   for (let y = s.y; y <= s.to; y++) {
-    const x = s.x - Math.round(Math.sqrt(y - s.y) * 0.6), c = (y + t) % 3 ? light : foam;
+    const x = s.x - Math.round(Math.sqrt(y - s.y) * 0.6), c = (y + Math.floor(t)) % 3 ? light : foam;
     put(x, y, c);
-    if ((y + t) % 4 === 0) put(x - 1, y, foam);
+    if ((y + Math.floor(t)) % 4 === 0) put(x - 1, y, foam);
   }
   const sx = s.x - Math.round(Math.sqrt(s.to - s.y) * 0.6);
-  for (const dx of [-2, 2]) put(sx + dx, s.to - ((t + (dx > 0 ? 1 : 0)) % 2), foam);
+  for (const dx of [-2, 2]) put(sx + dx, s.to - ((Math.floor(t) + (dx > 0 ? 1 : 0)) % 2), foam);
   if (inPool(small, sx, s.to + 1)) put(sx, s.to + 1, foam);
 
   const big = life.pools[0], [yellow, shade, beak] = S.duck;   // the duck, a little Psyduck-yellow
@@ -4113,11 +4121,11 @@ function tuft(x, y, lean) {
 function drawItemBall(t) {
   const f = actFrame('pickup'), trap = life.act?.trap, b = life.ball, [white, grey, red, dark, line] = S.ball;
   const boomAt = 11, gone = f >= (trap ? boomAt : 10);
-  const rustle = f < 0 && t % 48 < 4 ? (t % 2 ? 1 : -1) : 0;
+  const rustle = f < 0 && t % 48 < 4 ? (Math.floor(t) % 2 ? 1 : -1) : 0;
   const drawBall = () => {
     if (gone) return;
-    const dx = f >= 0 && f < 6 ? [0, -1, 0, 1, 0, -1][f] : 0, lift = !trap && f >= 6 ? f - 5 : 0;
-    const flash = trap && f >= 8 && f % 2 === 0;
+    const dx = f >= 0 && f < 6 ? [0, -1, 0, 1, 0, -1][Math.floor(f)] : 0, lift = !trap && f >= 6 ? f - 5 : 0;
+    const flash = trap && f >= 8 && Math.floor(f) % 2 === 0;
     const key = flash ? { k: white, R: white, D: grey, W: white, G: grey } : { k: line, R: red, D: dark, W: white, G: grey };
     (trap && f >= 6 ? VOLTORB : BALL).forEach((row, r) => {
       for (let i = 0; i < 7; i++) if (row[i] !== '.') put(b.x - 3 + i + dx, b.y - 6 + r - (r < 4 ? lift : 0), key[row[i]]);
@@ -4209,7 +4217,7 @@ function barricade(cx, foot, hw) {
     the grunt's hand; running shakes the bush and throws leaves out of it. */
 function drawRocket() {
   const pay = actFrame('pay'), flee = actFrame('run'), g = life.stands.trainer, bush = life.bush;
-  const [lit, leaf, dark, bLine] = S.bush, rustle = flee >= 0 && flee < 8 ? (flee % 2 ? 1 : -1) : 0;
+  const [lit, leaf, dark, bLine] = S.bush, rustle = flee >= 0 && flee < 8 ? (Math.floor(flee) % 2 ? 1 : -1) : 0;
   const clumps = [[-4, -5, 4.5], [4, -5, 4.5], [0, -7, 5], [-5, -2, 4], [5, -2, 4], [0, -3, 5.5]];
   const inBush = (x, y) => clumps.some(([dx, dy, r]) => Math.hypot(x - bush.x - dx - rustle, (y - bush.y - dy) * 1.1) <= r);
   outlined(bush.x - 11, bush.y - 13, bush.x + 11, bush.y, inBush, (x, y) => {
@@ -5072,7 +5080,7 @@ function drawFans(t) {
   if (f < 0) return;
   for (const c of life.confetti) {
     const y = c.y + f * c.vy * 2.2, x = c.x + f * c.vx + Math.sin((f + c.x) / 2) * 1.5;
-    if (y > 0 && y < H) { put(x, y, S.flags[c.c]); if ((f + c.c) % 3) put(x + 1, y, S.flags[c.c]); }
+    if (y > 0 && y < H) { put(x, y, S.flags[c.c]); if ((Math.floor(f) + c.c) % 3) put(x + 1, y, S.flags[c.c]); }
   }
   for (let i = 0; i < 5; i++) {   // hearts rising off the stage
     const age = (f + i * 3) % 14, x = st.x + (i - 2) * Math.max(3, Math.round(st.rx / 2.5)), y = st.y - st.ry - age * 2;
@@ -5336,13 +5344,13 @@ function kombatFloor() {
 function drawKombat(t) {
   const [white, yellow, orange, red] = S.flame;
   for (const b of life.braziers) {
-    const f = Math.sin(t / 2 + b.x) + noise(t, b.x, 1);
+    const f = Math.sin(t / 2 + b.x) + noise(Math.floor(t), b.x, 1);
     for (let y = -9; y <= 3; y++) for (let x = -8; x <= 8; x++) {
       if (x * x + y * y * 1.4 < 50 + f * 8 && dither(b.x + x, b.y + y) < 3) tint(b.x + x, b.y + y, 1.3, 16);
     }
     const tall = 5 + Math.round(f * 1.2);
     for (let dy = 0; dy < tall; dy++) {
-      const k = dy / tall, half = Math.round(2.4 * Math.pow(1 - k, 0.8) * (0.8 + 0.4 * noise(dy, t, b.x)));
+      const k = dy / tall, half = Math.round(2.4 * Math.pow(1 - k, 0.8) * (0.8 + 0.4 * noise(dy, Math.floor(t), b.x)));
       const sway = Math.round(Math.sin((t + dy) / 2 + b.x) * k * 1.3);
       for (let dx = -half; dx <= half; dx++) {
         put(b.x + dx + sway, b.y - dy, Math.abs(dx) < Math.max(1, half * 0.5) && k < 0.6 ? (k < 0.3 ? white : yellow) : k > 0.7 ? red : orange);
@@ -5600,7 +5608,7 @@ function draw() {
   if (L.smoke) drawSmoke(t);
   if (L.clouds) {
     for (const c of L.clouds) {
-      c.x += c.speed * (1 + 3 * storm.level);
+      c.x += (c.speed * (1 + 3 * storm.level)) * DT;
       const x = (c.x % (W + c.w * 2)) - c.w;
       if (c.near && S.raw.clouds.shadows) cloudShadow(x, c);
       cloud(Math.round(x), c.y, c.w, c.h, c.near);
@@ -5608,11 +5616,11 @@ function draw() {
   }
 
   if (has('birds')) {
-    if (!L.flock && t % (FPS * 14) === FPS * 3) {
+    if (!L.flock && everyAt(FPS * 14, FPS * 3)) {
       L.flock = { x: -12, y: 4 + Math.floor(rand() * Math.max(1, horizon * 0.5)), birds: [[0, 0], [-5, 3], [-9, -2]].slice(0, 2 + Math.floor(rand() * 2)) };
     }
     if (L.flock) {
-      L.flock.x += 0.9;
+      L.flock.x += (0.9) * DT;
       for (const [dx, dy] of L.flock.birds) bird(L.flock.x + dx, L.flock.y + dy + Math.round(Math.sin((t + dx) / 3)), (t + dx) % 4 < 2);
       if (L.flock.x > W + 14) L.flock = null;
     }
@@ -5671,9 +5679,9 @@ function draw() {
 
   if (L.butterflies) {
     for (const f of L.butterflies) {
-      f.x += f.vx;
+      f.x += (f.vx) * DT;
       if (f.x < -4) f.x = W + 3; else if (f.x > W + 4) f.x = -3;
-      const y = f.y + Math.sin((t + f.phase) / 4) * 2.5, open = (t + Math.round(f.phase)) % 3 !== 0;
+      const y = f.y + Math.sin((t + f.phase) / 4) * 2.5, open = (Math.floor(t) + Math.round(f.phase)) % 3 !== 0;
       put(f.x, y, S.bird);
       if (open) { put(f.x - 1, y - 1, f.colour); put(f.x + 1, y - 1, f.colour); put(f.x - 1, y, f.colour); put(f.x + 1, y, f.colour); }
       else { put(f.x, y - 1, f.colour); put(f.x, y - 2, f.colour); }
@@ -5682,7 +5690,7 @@ function draw() {
 
   if (L.leaves) {
     for (const l of L.leaves) {
-      l.y += l.vy; l.x += Math.sin((t + l.phase) / 5) * 0.45 + 0.08;
+      l.y += (l.vy) * DT; l.x += (Math.sin((t + l.phase) / 5) * 0.45 + 0.08) * DT;
       if (l.y > H + 2) { l.y = -2; l.x = rand() * W; }
       if (l.x > W + 2) l.x = -2;
       const [a, b] = l.colour, flip = Math.floor((t + l.phase) / 3) % 2;
@@ -5704,7 +5712,7 @@ function draw() {
   if (L.wisps && !shrinePrelude()) {
     const [core, body, trail] = S.wisp;
     for (const w of L.wisps) {
-      w.x += w.vx;
+      w.x += (w.vx) * DT;
       if (w.x < -6) w.x = W + 5; else if (w.x > W + 6) w.x = -5;
       const x = w.x + Math.sin((t + w.phase) / 9) * 3, y = w.y + Math.sin((t + w.phase) / 6) * 4;
       for (let k = 1; k <= 4; k++) if (dither(Math.round(x), Math.round(y) + k) < 12 - k * 3) put(x + Math.sin((t - k * 2 + w.phase) / 9) * 2, y + k + 1, trail);
@@ -5718,7 +5726,7 @@ function draw() {
 
   if (L.motes) {
     for (const m of L.motes) {
-      m.x += m.vx; m.y += m.vy + Math.sin((t + m.phase) / 6) * 0.05;
+      m.x += (m.vx) * DT; m.y += (m.vy + Math.sin((t + m.phase) / 6) * 0.05) * DT;
       if (m.x > W + 2) m.x = -2;
       if (m.y < horizon - 14) m.y = H - 1;
       const s = Math.sin((t + m.phase) / 5);
@@ -5728,7 +5736,7 @@ function draw() {
 
   if (L.ash) {
     for (const a of L.ash) {
-      a.y += a.vy; a.x += 0.15 + Math.sin((t + a.phase) / 8) * 0.1;
+      a.y += (a.vy) * DT; a.x += (0.15 + Math.sin((t + a.phase) / 8) * 0.1) * DT;
       if (a.y > H + 1) { a.y = -1; a.x = rand() * W; }
       if (a.x > W + 1) a.x = -1;
       put(a.x, a.y, S.ash[(a.phase | 0) % 2]);
@@ -5737,7 +5745,7 @@ function draw() {
 
   if (L.embers) {
     for (const e of L.embers) {
-      e.y -= e.vy; e.x += Math.sin((t + e.phase) / 4) * 0.35;
+      e.y -= (e.vy) * DT; e.x += (Math.sin((t + e.phase) / 4) * 0.35) * DT;
       if (e.y < -1) { e.y = H + 1; e.x = rand() * W; }
       const f = Math.sin((t + e.phase) / 2.5);
       if (f > -0.4) put(e.x, e.y, S.ember[f > 0.6 ? 0 : f > 0 ? 1 : 2]);
@@ -5758,7 +5766,8 @@ function draw() {
   else if (bossPrelude) shake = drawBossAwakening(t) || 0;
 
   // the whole picture jolts a pixel or two; the strip it uncovers keeps last frame's colours, which reads as blur
-  ctx.putImageData(img, shake ? (t % 2 ? shake : -shake) : 0, shake > 1 && t % 3 === 0 ? 1 : 0);
+  ctx.putImageData(img, shake ? (Math.floor(t) % 2 ? shake : -shake) : 0, shake > 1 && Math.floor(t) % 3 === 0 ? 1 : 0);
+  last = tick;
 }
 
 /** The Main Hall's geometry, recomputed from the canvas (the prelude draws over the painted scene). */
@@ -5797,7 +5806,7 @@ function drawShrineAwakening(t) {
   if (!awake) for (const at of BELL_TOLLS) {
     const a = age - at;
     if (a < 0 || a >= 7) continue;
-    if (a === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.12, 22);
+    if (Math.floor(a) === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.12, 22);
     shockRing(hall.gx, ridge, a * W * 0.11, [S.wisp[0], S.wisp[1]], 0.4);
     if (a < 2) shake = 1;
   }
@@ -5901,7 +5910,7 @@ function drawShrineAwakening(t) {
     return shake;
   }
   // the last toll lands: the seal flares white and fox-fires burst off its ring, blasting the wards outwards
-  if (e === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70);
+  if (Math.floor(e) === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70);
   roofFlames(hall, ridge, age, 1.4);
   foxFires(hall.gx, sealY, sealR * grow, e, age);
   shockRing(hall.gx, floorY, e * W * 0.15, [white, body], 0.28);
@@ -6010,7 +6019,7 @@ function ofudaVortex(age, hall, ridge, burst) {
 function roofFlames(hall, ridge, age, s) {
   const [core, body, trail] = S.wisp, w = Math.round(hall.half * 0.67);
   for (let x = -w; x <= w; x += 2) {
-    const h = Math.round((2 + noise(x, age, 62) * 5) * s * (1 - Math.abs(x) / w * 0.4));
+    const h = Math.round((2 + noise(x, Math.floor(age), 62) * 5) * s * (1 - Math.abs(x) / w * 0.4));
     for (let k = 0; k < h; k++) {
       const sway = Math.round(Math.sin(age * 1.3 + x * 0.7 + k * 0.5) * k * 0.25);
       put(hall.gx + x + sway, ridge - 1 - k, k < h * 0.35 ? core : k < h * 0.75 ? body : trail);
@@ -6155,7 +6164,7 @@ function drawClearingAwakening(t) {
     return age > 2 ? (age > 12 ? 2 : 1) : 0;
   }
   // it bursts: a white flash, and the heartwood unfurls into one colossal blossom that gusts petals across the meadow
-  if (e === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70);
+  if (Math.floor(e) === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70);
   const big = blossomSize(), open = Math.min(1, (e + 1) / 3) ** 0.7;
   shockRing(hx, hy + 4, e * W * 0.13, [white, hot], 0.45);
   giantBlossom(hx, hy, big * open, age, BLOSSOM());
@@ -6254,7 +6263,7 @@ function wastesFissures(age, reach, dim) {
 function wastesBoil(age, many) {
   const { surface, lake } = wastesCrater();
   for (let j = 0; j < many; j++) {
-    const off = (noise(j, 3, 0) * 4) | 0, cycle = ((age + off) / 4) | 0, step = (age + off) % 4;
+    const off = (noise(j, 3, 0) * 4) | 0, cycle = ((age + off) / 4) | 0, step = Math.floor(age + off) % 4;
     const x = Math.round(noise(j, cycle, 4) * W), y = surface + 1 + Math.round(noise(j, cycle, 5) * (lake - 2));
     if (step === 0) put(x, y, S.lava[0]);
     else if (step === 1) { put(x, y - 1, S.lava[0]); put(x - 1, y, S.lava[0]); put(x + 1, y, S.lava[0]); put(x, y, S.lava[0]); }
@@ -6267,7 +6276,7 @@ function lavaColumn(cx, from, to, half, age) {
   const white = abgr('#fffce8');
   for (let y = Math.max(0, to); y <= from; y++) {
     const wob = Math.round(Math.sin(y * 0.45 + age * 1.7) * Math.min(2, half * 0.2));
-    const w = half + wob + (noise(y, age, 7) < 0.3 ? 1 : 0);
+    const w = half + wob + (noise(y, Math.floor(age), 7) < 0.3 ? 1 : 0);
     for (let dx = -w; dx <= w; dx++) {
       const x = cx + dx, rel = Math.abs(dx) / Math.max(1, w);
       if (rel > 0.85 && dither(x, y + age) > 9) continue;
@@ -6371,7 +6380,7 @@ function drawWastesAwakening(t) {
 
   // the dome bursts: a white flash, then the column and its bombs
   const e = age - ERUPT_AT;
-  if (e === 0) { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70); }
+  if (Math.floor(e) === 0) { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70); }
   const reach = Math.min(1, (e + 1) / 2.5), top = surface - Math.round((surface + 4) * reach);
   lavaColumn(cx, surface, top, Math.round(3 + Math.min(e, 5) * W * 0.02), age);
   lavaBombs(cx, surface, e);
@@ -6394,7 +6403,7 @@ function drawWastesPortal(t) {
   const half = Math.round(W * 0.04 + W * 0.62 * Math.min(1, (age / 5) ** 2));
   const white = abgr('#fffce8');
   for (let y = 0; y < H; y++) {
-    const edge = half + Math.round(Math.sin(y * 0.9 + age * 2) * 2 + noise(y, age, 12) * 3);
+    const edge = half + Math.round(Math.sin(y * 0.9 + age * 2) * 2 + noise(y, Math.floor(age), 12) * 3);
     for (let dx = -edge - 3; dx <= edge + 3; dx++) {
       const x = cx + dx, rel = Math.abs(dx) / Math.max(1, edge);
       if (rel > 1) { if (dither(x, y + age) < 6) put(x, y, S.lava[2]); continue; }
@@ -6611,9 +6620,9 @@ function drawLava(t) {
 function drawEruption(t) {
   const v = life.volcano;
   if (!v) return;
-  if (t % (storm.on ? 2 : 5) === 0) life.blobs.push({ x: v.x + (rand() - 0.5) * v.crater, y: v.y - 1, vx: (rand() - 0.5) * 1.6, vy: -1.6 - rand() * 1.4 });
+  if (everyAt(storm.on ? 2 : 5)) life.blobs.push({ x: v.x + (rand() - 0.5) * v.crater, y: v.y - 1, vx: (rand() - 0.5) * 1.6, vy: -1.6 - rand() * 1.4 });
   life.blobs = life.blobs.filter(b => {
-    b.x += b.vx; b.y += b.vy; b.vy += 0.12;
+    b.x += (b.vx) * DT; b.y += (b.vy) * DT; b.vy += (0.12) * DT;
     if (b.y > v.y + v.height * 0.6) return false;
     put(b.x, b.y, S.lava[0]); put(b.x, b.y + 1, S.lava[2]);
     return true;
@@ -6633,8 +6642,8 @@ function drawLightning(t) {
     if (storm.on && !storm.thundered) { storm.thundered = true; playSound('thunder'); }   // once a storm (the user found it repeating too much); the lightning goes on silently
   }
   const cycle = t - life.boltAt;
-  if (cycle <= 1) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle === 0 ? 1.9 : 1.35, cycle === 0 ? 40 : 14);
-  if (cycle <= 2 && life.bolt) for (const [x, y] of life.bolt) { put(x, y, abgr('#fffff0')); put(x + 1, y, abgr('#c8c0ff')); }
+  if (cycle < 2) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle < 1 ? 1.9 : 1.35, cycle < 1 ? 40 : 14);
+  if (cycle < 3 && life.bolt) for (const [x, y] of life.bolt) { put(x, y, abgr('#fffff0')); put(x + 1, y, abgr('#c8c0ff')); }
 }
 
 /** The storm's light: the sky and the ground darken (or redden) as it rolls in. */
@@ -6655,8 +6664,8 @@ function drawRain(t) {
   const count = Math.round(life.rain.length * storm.level);
   for (let i = 0; i < count; i++) {
     const d = life.rain[i];
-    d.y += S.storm.fall * d.speed;
-    d.x -= fast ? S.storm.fall * d.speed * 0.4 : 0.2 + Math.sin((t + d.phase) / 4) * 0.3;
+    d.y += (S.storm.fall * d.speed) * DT;
+    d.x -= (fast ? S.storm.fall * d.speed * 0.4 : 0.2 + Math.sin((t + d.phase) / 4) * 0.3) * DT;
     if (d.y >= d.land) {
       if (fast && d.land < H) { put(d.x - 1, d.land, dim); put(d.x + 1, d.land, dim); }
       d.y = -rand() * 10; d.x = rand() * (W + H * 0.5); d.land = horizon + rand() * (H - horizon + 6);
@@ -6679,22 +6688,22 @@ const noise = (a, b, c) => { const s = Math.sin(a * 12.9898 + b * 78.233 + c * 3
 /** The campfire: flickering flames over the logs, sparks rising and winking out, and the light breathing on the sand. */
 function drawCampfire(t) {
   const { x: fx, y: fy, size } = life.fire, [white, yellow, orange, red, deep] = S.flame;
-  const tall = size * 1.6 + Math.sin(t / 2) * 1.2 + noise(t, 1, 2) * 1.5;
+  const tall = size * 1.6 + Math.sin(t / 2) * 1.2 + noise(Math.floor(t), 1, 2) * 1.5;
   for (let dy = 0; dy < tall; dy++) {
-    const k = dy / tall, half = size * 0.75 * Math.pow(1 - k, 0.7) * (0.8 + 0.4 * noise(dy, t, 3));
+    const k = dy / tall, half = size * 0.75 * Math.pow(1 - k, 0.7) * (0.8 + 0.4 * noise(dy, Math.floor(t), 3));
     const sway = Math.sin(t / 3 + dy / 3) * k * 1.5;
     for (let dx = -Math.ceil(half); dx <= Math.ceil(half); dx++) {
       const e = Math.abs(dx) / Math.max(0.5, half);
       if (e > 1) continue;
-      const heat = (1 - k) * (1 - e * 0.8) + noise(dx, dy, t) * 0.25;
+      const heat = (1 - k) * (1 - e * 0.8) + noise(dx, dy, Math.floor(t)) * 0.25;
       put(fx + dx + sway, fy - 1 - dy, heat > 0.75 ? white : heat > 0.55 ? yellow : heat > 0.35 ? orange : heat > 0.18 ? red : deep);
     }
   }
-  if (t % 2 === 0) life.sparks.push({ x: fx + (rand() - 0.5) * size, y: fy - tall * 0.6, vx: (rand() - 0.5) * 0.4, vy: -0.6 - rand() * 0.6, age: 0, life: 14 + rand() * 20 });
+  if (everyAt(2)) life.sparks.push({ x: fx + (rand() - 0.5) * size, y: fy - tall * 0.6, vx: (rand() - 0.5) * 0.4, vy: -0.6 - rand() * 0.6, age: 0, life: 14 + rand() * 20 });
   life.sparks = life.sparks.filter(s => {
-    s.x += s.vx + Math.sin((t + s.life) / 3) * 0.3; s.y += s.vy; s.age++;
+    s.x += (s.vx + Math.sin((t + s.life) / 3) * 0.3) * DT; s.y += s.vy * DT; s.age += DT;
     if (s.age > s.life) return false;
-    if (noise(s.life, s.age, 7) > 0.15) put(s.x, s.y, s.age < s.life * 0.4 ? yellow : s.age < s.life * 0.75 ? orange : red);
+    if (noise(s.life, Math.floor(s.age), 7) > 0.15) put(s.x, s.y, s.age < s.life * 0.4 ? yellow : s.age < s.life * 0.75 ? orange : red);
     return true;
   });
   const glow = Math.sin(t / 2.3) + Math.sin(t / 3.7);
@@ -6728,8 +6737,8 @@ function drawCenter(t) {
     if (mon.kind === 'pulse') {
       const mid = (mon.y0 + mon.y1) >> 1, beat = [0, 0, 0, 0, 0, -1, -4, 3, 0, 0, 0, 0, 0, 0];
       for (let x = mon.x0; x <= mon.x1; x++) {
-        const phase = ((x - mon.x0 - t) % beat.length + beat.length) % beat.length;
-        const lead = ((t % (mon.x1 - mon.x0 + 1)) + mon.x0);
+        const phase = ((x - mon.x0 - Math.floor(t)) % beat.length + beat.length) % beat.length;
+        const lead = ((Math.floor(t) % (mon.x1 - mon.x0 + 1)) + mon.x0);
         put(x, Math.max(mon.y0, Math.min(mon.y1, mid + beat[phase])), Math.abs(x - lead) < 2 ? S.glow[1] : bright);
       }
     } else if (t % 16 < 8) {
@@ -6767,7 +6776,7 @@ function drawMart(t) {
     }
   }
   for (const m of life.dust) {
-    m.y -= m.drift;
+    m.y -= (m.drift) * DT;
     if (m.y < 8) m.y = horizon - 2;
     if (Math.sin((t + m.phase) / 5) > 0.2) put(m.x + Math.sin((t + m.phase) / 11) * 2, m.y, S.mote);
   }
@@ -6792,7 +6801,7 @@ function drawSea(t) {
     if (dither(x + t, reach) < 5) put(x, reach - 1, S.foam[1]);
   }
   const b = life.boat;
-  b.x += 0.08;
+  b.x += (0.08) * DT;
   if (b.x > W + 6) b.x = -6;
   const bx = Math.round(b.x), by = horizon, [sail, sailShade, hull] = S.sail;
   for (let k = -2; k <= 2; k++) put(bx + k, by, hull);
@@ -7653,20 +7662,20 @@ function drawSafari(t) {
   }
   if (L.bubbles) for (const b of L.bubbles) {   // marsh gas bubbling up through the pools
     const age = (t + b.at) % 50;
-    if (age === 0) { b.bx = b.x + Math.round((rand() - 0.5) * b.rx); b.by = b.y + Math.round((rand() - 0.5) * b.ry); }
+    if (everyAt(50, -b.at)) { b.bx = b.x + Math.round((rand() - 0.5) * b.rx); b.by = b.y + Math.round((rand() - 0.5) * b.ry); }
     if (b.bx == null || age > 8) continue;
     const [lit, body] = S.bog;
     if (age < 6) { put(b.bx, b.by - (age > 3 ? 1 : 0), lit); if (age > 2) put(b.bx + 1, b.by, body); }
     else { put(b.bx - 1, b.by, lit); put(b.bx + 2, b.by, lit); }
   }
   if (L.flakes) for (const f of L.flakes) {
-    f.y += f.vy * (1 + storm.level * 2); f.x += Math.sin((t + f.phase) / 6) * 0.3 - storm.level * 0.6;
+    f.y += (f.vy * (1 + storm.level * 2)) * DT; f.x += (Math.sin((t + f.phase) / 6) * 0.3 - storm.level * 0.6) * DT;
     if (f.y > H + 1) { f.y = -1; f.x = rand() * W; }
     if (f.x < -1) f.x = W;
     put(f.x, f.y, S.flake[(f.phase | 0) % 2]);
   }
   if (L.sand) for (const m of L.sand) {   // grains blowing low over the sand
-    m.x += m.vx * (1 + storm.level * 2); m.y += Math.sin((t + m.phase) / 5) * 0.08;
+    m.x += (m.vx * (1 + storm.level * 2)) * DT; m.y += (Math.sin((t + m.phase) / 5) * 0.08) * DT;
     if (m.x > W + 1) { m.x = -1; m.y = horizon - 6 + rand() * (H - horizon + 6); }
     if (Math.sin((t + m.phase) / 4) > -0.2) put(m.x, m.y, S.ember[(m.phase | 0) % 3]);
   }
@@ -7675,7 +7684,7 @@ function drawSafari(t) {
     if (!w.y && t >= w.next) Object.assign(w, { x: -6, y: groundY(0.3, 0.85), r: 0 });
     if (w.y) {
       w.r = 1 + Math.round(depthOf(w.y) * 3);
-      w.x += 0.8 + depthOf(w.y) * 1.2;
+      w.x += (0.8 + depthOf(w.y) * 1.2) * DT;
       const hop = Math.abs(Math.sin((w.x / (w.r * 3 + 2)))) * w.r, [a, b] = S.weed;
       for (let y = -w.r; y <= w.r; y++) for (let x = -w.r; x <= w.r; x++) {
         const d = x * x + y * y;
@@ -7772,7 +7781,7 @@ function meadowWake(t) {
     swayCrown(t / 3, 0.6);
     for (let i = 0; i < 5; i++) {
       const ang = t * 0.12 + i * Math.PI * 0.4;
-      flyer(Math.round(cx + Math.cos(ang) * r * 2.6), Math.round(cy - r * 1.4 + Math.sin(ang) * r * 0.5), 1, (t + i) % 2 === 0, S.bird);
+      flyer(Math.round(cx + Math.cos(ang) * r * 2.6), Math.round(cy - r * 1.4 + Math.sin(ang) * r * 0.5), 1, (Math.floor(t) + i) % 2 === 0, S.bird);
     }
     return 0;
   }
@@ -7782,7 +7791,7 @@ function meadowWake(t) {
   windStreaks(age, s);
   leafFlurry(cx, cy, r, age, e < 0 ? Math.round(6 + s * 30) : 50);
   if (e < 0) return age > 8 ? 1 : 0;
-  if (e === 0) flashScreen(1.2, 34);
+  if (Math.floor(e) === 0) flashScreen(1.2, 34);
   shockRing(cx, cy, e * W * 0.1, [S.trees[0], S.trees[1]], 0.5);   // a ring of leaves blown outwards
   flock(cx, cy, r, e, 60);
   return e < 3 ? 2 : 0;
@@ -7867,7 +7876,7 @@ function forestWake(t) {
     heartGlow(g.vx, 0, 2 + s * W * 0.06, [white, hot, glow]);
     return 0;
   }
-  if (e === 0) flashScreen(1.4, 80);
+  if (Math.floor(e) === 0) flashScreen(1.4, 80);
   const flood = Math.min(1, (e + 1) / 5);
   gladeFlood(g, flood);
   sunbeams(g, age, 1 + flood);
@@ -7952,7 +7961,7 @@ function wetlandWake(t) {
     }
     return age > 8 ? 1 : 0;
   }
-  if (e === 0) flashScreen(1.3, 60);
+  if (Math.floor(e) === 0) flashScreen(1.3, 60);
   if (e < 6) {   // the mound bursts into a column of water...
     const h = Math.round(horizon * Math.min(1, (e + 1) / 2)), half = 2 + e;
     for (let y = Math.max(0, cy - h); y <= cy; y++) for (let dx = -half; dx <= half; dx++) {
@@ -8051,7 +8060,7 @@ function marshWake(t) {
   for (let y = foot - Math.round((H - horizon) * 0.2); y < H; y++) for (let x = 0; x < W; x++) if (dither(x, y + (age >> 1)) < 5) blend(x, y, S.mistColour, 0.5);   // mist curling round its roots
   snagEyes(gx, foot, tall, e < 0 ? loom * (0.5 + 0.5 * Math.sin(age * 1.3)) : 1, e);
   wisps(gx, foot - tall * 0.4, age, Math.round(4 + s * 10));
-  if (e === 0) flashScreen(1.15, 30);
+  if (Math.floor(e) === 0) flashScreen(1.15, 30);
   return e >= 0 && e < 3 ? 1 : 0;
 }
 
@@ -8152,7 +8161,7 @@ function peakWake(t) {
   }
   if (age > 4) rangeSlides(age - 4);
   if (e < 0) return age > 2 ? 1 : 0;
-  if (e === 0) flashScreen(1.25, 50);
+  if (Math.floor(e) === 0) flashScreen(1.25, 50);
   powderCloud(age, e);
   tumblingIce(e);
   return e < 6 ? 2 : 1;
@@ -8411,7 +8420,7 @@ function meadowArenaLife(t) {
   windStreaks(t, 0.5);
   for (let i = 0; i < 6; i++) {   // birds wheeling over the circle
     const ang = t * 0.1 + i * Math.PI / 3;
-    flyer(Math.round(W * 0.5 + Math.cos(ang) * W * 0.3), Math.round(horizon * 0.45 + Math.sin(ang) * horizon * 0.12), 1, (t + i) % 2 === 0, S.bird);
+    flyer(Math.round(W * 0.5 + Math.cos(ang) * W * 0.3), Math.round(horizon * 0.45 + Math.sin(ang) * horizon * 0.12), 1, (Math.floor(t) + i) % 2 === 0, S.bird);
   }
   if (t % 53 < 2) for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) if (sky[y * W + x]) tint(x, y, 1.3, 50);   // lightning in the clouds
 }
@@ -8550,7 +8559,7 @@ function reedCorners() {
 
 function wetlandArenaLife(t) {
   for (const fall of life.falls || []) for (let y = Math.max(0, fall.top); y < fall.foot; y++) {   // the falls pouring
-    for (let dx = -fall.w + 1; dx < fall.w; dx++) if ((y - t * 2 + dx * 3) % 6 === 0) put(fall.x + dx, y, S.ripple[0]);
+    for (let dx = -fall.w + 1; dx < fall.w; dx++) if ((y - Math.floor(t) * 2 + dx * 3) % 6 === 0) put(fall.x + dx, y, S.ripple[0]);
   }
   const G = life.ground ||= arenaGround();
   for (let k = 0; k < 3; k++) {   // ripples running out from the pad's edge, on the water's own perspective
@@ -9637,14 +9646,14 @@ function drawDepths(t) {
 
   for (const d of L.drops) {   // water dripping off the stalactites, a splash where it lands
     const a = (t + d.at) % 90;
-    if (a < 50) { if (a > 40 && a % 2) put(d.x, d.y, S.water[0]); continue; }
+    if (a < 50) { if (a > 40 && Math.floor(a) % 2) put(d.x, d.y, S.water[0]); continue; }
     const y = d.y + ((a - 50) ** 2) * 0.12;
     if (y < d.floor) put(d.x, y, S.water[0]);
     else if (y < d.floor + 8) { put(d.x - 1, d.floor - 1, S.water[1]); put(d.x + 1, d.floor - 1, S.water[1]); put(d.x - 2, d.floor, S.water[2]); put(d.x + 2, d.floor, S.water[2]); }
   }
 
   for (const m of L.deepMotes) {
-    m.y -= m.vy; m.x += Math.sin((t + m.phase) / 6) * 0.25;
+    m.y -= (m.vy) * DT; m.x += (Math.sin((t + m.phase) / 6) * 0.25) * DT;
     if (m.y < -1) { m.y = H + 1; m.x = rand() * W; }
     const f = Math.sin((t + m.phase) / 4);
     if (f > -0.2) put(m.x, m.y, m.red ? e[f > 0.6 ? 0 : f > 0.2 ? 1 : 2] : S.mote[f > 0.5 ? 0 : 1]);
@@ -9655,8 +9664,8 @@ function drawDepths(t) {
     if (L.bat) {
       const b = L.bat;
       if (!b.dir) b.dir = b.x < 0 ? 1 : -1;
-      b.x += b.dir * 1.6;
-      const y = b.y + Math.round(Math.sin(t / 2) * 2), up = t % 2, c = deepRock()[4];
+      b.x += (b.dir * 1.6) * DT;
+      const y = b.y + Math.round(Math.sin(t / 2) * 2), up = Math.floor(t) % 2, c = deepRock()[4];
       putSky(b.x, y, c); putSky(b.x - 1, y + (up ? -1 : 1), c); putSky(b.x + 1, y + (up ? -1 : 1), c); putSky(b.x - 2, y + (up ? -1 : 0), c); putSky(b.x + 2, y + (up ? -1 : 0), c);
       if (b.x < -6 || b.x > W + 6) { L.bat = null; L.nextBat = t + FPS * (6 + Math.floor(rand() * 10)); }
     }
@@ -9731,7 +9740,7 @@ function depthsWake(t) {
   const reach = Math.min(1, age / 14);
   // the seams light from the edges in, towards the Well
   const far = Math.hypot(W, H);
-  for (const [x, y] of life.seams) if (Math.hypot(x - cx, (y - cy) * 2.5) > far * (1 - reach) * 0.6) put(x, y, (x + y + age) % 3 ? e[1] : e[0]);
+  for (const [x, y] of life.seams) if (Math.hypot(x - cx, (y - cy) * 2.5) > far * (1 - reach) * 0.6) put(x, y, (x + y + Math.floor(age)) % 3 ? e[1] : e[0]);
   if (age < CORE_AT) {
     for (let i = 0; i < 30; i++) {   // motes drawn in towards the Well, spiralling
       const p = ((age / CORE_AT) * 2 + noise(i, 64, 0)) % 1, a = noise(i, 64, 1) * Math.PI * 2 + p * 4, r = (1 - p) * W * 0.6;
@@ -9741,7 +9750,7 @@ function depthsWake(t) {
     return age > 12 ? 2 : age > 3 ? 1 : 0;
   }
   const b = age - CORE_AT;
-  if (b === 0) flashScreen(1.4, 80);
+  if (Math.floor(b) === 0) flashScreen(1.4, 80);
   if (b < 6) shockRing(cx, cy, b * W * 0.16, [e[0], e[2]], 0.3);
   for (let i = 0; i < 26; i++) {   // shards blown off the walls
     const side = i % 2 ? 1 : -1, a = noise(i, 65, 0), x = side < 0 ? W * a * 0.25 : W - W * a * 0.25, y = horizon * (0.15 + noise(i, 65, 1) * 0.7);
@@ -9920,7 +9929,7 @@ function riftCracks(age) {
     const len = Math.round(path.length * Math.min(1, p * (0.6 + noise(i, 3, 95) * 0.6)));
     for (let n = 0; n < len; n++) {
       const [x, y] = path[n];
-      putSky(x, y, (n + age) % 4 && p > 0.6 ? DARKEST[0] : DARKEST[1]);
+      putSky(x, y, (n + Math.floor(age)) % 4 && p > 0.6 ? DARKEST[0] : DARKEST[1]);
       if (dither(x, y + age) < 4 + p * 6) { blend(x, y - 1, DARKEST[2], 0.5); blend(x, y + 1, e[3], 0.5); }
     }
   });
@@ -9939,7 +9948,7 @@ function maxSilhouette(t, age) {
     if (!at(sx, sy)) continue;
     const step = Math.max(1, Math.round(s)), rim = !at(sx, sy - step) || !at(sx - step, sy) || !at(sx + step, sy);
     let c = rim ? DARKEST[2] : body;
-    if (f.glow[sy * f.w + sx] && dither(x, y + t) < lit * 16) c = lit > 0.8 && (x + y + t) % 3 ? DARKEST[0] : DARKEST[1];
+    if (f.glow[sy * f.w + sx] && dither(x, y + t) < lit * 16) c = lit > 0.8 && (x + y + Math.floor(t)) % 3 ? DARKEST[0] : DARKEST[1];
     put(x, y, c);
   }
 }
@@ -9949,7 +9958,7 @@ function depthsMax(t) {
   const age = preludeAge(t), e = S.energy, { x: cx } = wellAt(), k = riftOpen(t);
   if (age >= MAX_BURST) {
     const b = age - MAX_BURST;
-    if (b < 2) { px.fill(DARKEST[b ? 1 : 0]); return 2; }
+    if (b < 2) { px.fill(DARKEST[Math.floor(b) ? 1 : 0]); return 2; }
     for (let r = 0; r < 3; r++) shockRing(cx, riftMid() + horizon * 0.3, (b - 2 + r * 0.7) * W * 0.18, [DARKEST[0], DARKEST[2]], 0.35);
     veil(DARKEST[2], Math.max(0, 0.7 - (b - 2) * 0.14));
     return b < 5 ? 2 : 1;

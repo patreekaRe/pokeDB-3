@@ -501,7 +501,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   for the scene, the map's palette and the signs; detail in `docs/reference/safari.md`.
 - **Journey films** (roadmap steps 10-11, 2026-10-04): between a boss's rewards and the next biome, `walkOn()` in `js/run.js`
   plays `travel()` from `js/travel.js` (not on Mewtwo's runs or in the Safari): your Pokémon (front GIF, flipped) walks a
-  side-on parallax road on two low-res canvases (`#travel-scene`, z-index 945), the land turning from one biome into the
+  side-on parallax road, a low-res canvas per layer slid the last fraction of a pixel by CSS so it glides (`into()`; `#travel-scene`, z-index 945), the land turning from one biome into the
   next by where each thing stands on the road, the sky dusk → night → dawn (land graded between `GRADES`), one set piece
   mid-way. It ends dark and resolves with a `close()` called once `startBiome()` has the map and biome film up beneath.
   One `ROUTES` entry per trip: `clearing>shrine` (the Ancient Tree's roots, the Shrine's lantern stair) and `shrine>wastes`

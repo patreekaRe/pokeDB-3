@@ -264,9 +264,15 @@ Asking for the scene already up leaves it
 running (except in battle). Outside battles `#backdrop` (above the canvas)
 dims it so windows stay readable; `setTheme(type)` in `js/ui.js` only sets
 the accent colour now. Still parts are painted
-once into `base`; `draw()` copies it every frame (8 fps, paused while the tab
+once into `base`; `draw()` copies it every frame (30 fps, paused while the tab
 or title screen hides it) and adds the living
-ones. `sky` masks where clouds, smoke and birds may draw, so they pass behind
+ones. Since 2026-10-05 (the user's call) everything is still timed in 8-a-second
+ticks (`FPS`; prelude beats, cue frames, `FPS * 2` timers), but `tick` moves
+`DT` = 8/30 a frame: every per-frame move is scaled by `DT`, a check on a whole
+tick (a flash on frame 0, `t % 2` blinks, random flame flicker) rounds the tick
+down so it holds for an eighth of a second as before, and a one-off at a tick (a
+sound cue, a spawn) uses `reached(n)` / `everyAt(n, k)` so it fires once, not on
+every frame drawn during it. New life code must follow the same three rules. `sky` masks where clouds, smoke and birds may draw, so they pass behind
 hills, trees and the volcano. `horizonRow()` puts the horizon at ~38% of the
 screen but always above the enemy's pad, so the layout can move. Both
 Pokémon stand on Gen 3/4-style pads (`--pad`, a data-URL pixel image: grass,

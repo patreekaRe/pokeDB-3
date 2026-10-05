@@ -1447,3 +1447,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `save.tower.summits` / `bestTurns`; the board already ranks by floor, turns, time). `PAST_TOP` x1.35 / +8 / x1.15 ->
   x1.12 / +4 / x1.1 and `GUARDIAN_HEAL` 0.3 -> 0.5. Human bot, 60 climbs a type, reach 100: before 0 / 0 / 0%, after
   Fire 0%, Grass 7%, Water 7% (screens in `docs/reference/sky-pillar.md`); Fire's late game is still open.
+- **Smoother motion** (2026-10-05, desktop; the user asked for both fixes): the films (biome / Safari / Depths intros,
+  journey films) glide in screen pixels with the art pixels unchanged (`fineCtx()` in `js/biome-intro.js`, a canvas per
+  layer in `js/travel.js`), and the places' scenery (`js/scene.js`) draws at 30 fps instead of 8, still timed in 8-a-second
+  ticks (rules in `docs/reference/battle-screen-layout.md`).
