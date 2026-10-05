@@ -1430,3 +1430,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   50, 7% to 100; x1.3 / +8 median 36, 21% to 50, best 76; x1.45 / +10 median 35, 9%, best 62; **shipped x1.35 / +8**:
   median 36, 17% to 50, best 83; Water median 32 but 29% to 50, 3% to 100; Grass median 56, 51% to 50, **24% to 100**
   (its sustain outgrows the climb: open question for the user, roadmap item 18). Detail in `docs/reference/sky-pillar.md`.
+- **Sky Pillar: enemy damage compounds past floor 30** (2026-10-05, cloud; the user's pick of the two options): every
+  flight past 30 now also multiplies enemy attacks by x1.15 (`PAST_TOP.dmgMult`, `enemyDmgMult` in the mods), on top of
+  x1.35 HP and +8. Human bot, 60 climbs a cell, median floor (reach 50 / 100): before Fire 36, Water 32, Grass 56 (24% to
+  100); x1.1 33 / 35 / 42; x1.15 31 (3% / 0) / 34 (22% / 0) / 41 (28% / 0); x1.2 34 / 29 / 40. Shipped x1.15: Grass still
+  climbs highest, but no climb reaches 100 and Fire / Water barely move (Fire is held back by the HP growth).

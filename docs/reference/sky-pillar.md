@@ -23,7 +23,9 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   then **30% of max HP** (`GUARDIAN_HEAL`, `guardianHeal()`), and on to the next flight (`climbOn()`).
 - **How it gets harder**: floors 1-30 are the three biomes in order, their Pokémon and numbers (`towerBiome()`,
   `towerMods()`: Level 0's rules at that biome). Past 30 the fights and Alphas come from all three biomes (`towerPools()`)
-  at the Wastes' numbers, and every flight adds `PAST_TOP` on top, compounding, so every climb ends.
+  at the Wastes' numbers, and every flight adds `PAST_TOP` on top, compounding, so every climb ends: enemy HP x1.35,
+  +8 damage, then every attack x1.15 (`enemyDmgMult`, applied in `attackDamage()` after strength, before type and Weak;
+  2026-10-05, the user's pick: without it Grass's healing outgrew a flat +8 and 24% of its climbs reached floor 100).
 - **What it counts for**: your highest floor (`save.tower.bestEver`, any climb) and the week's counted floor
   (`save.tower.best`, its first try only), saved floor by floor as they're cleared (`climbed()`), so an abandoned climb
   keeps what it reached; the **Tower Badges** at 25 / 50 / 100 (`js/data/badges.js`). No starter unlocks, feats, gate
