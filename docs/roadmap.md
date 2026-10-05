@@ -28,18 +28,8 @@ evolution and the next biome's `biomeIntro()`, a short film of the trip there: y
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
 crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the archive has them).
 
-**The user's third pick (2026-10-05), one session each, in any order** (15, a holo shine on rares, and 16, your Pokémon
-walking the map, were already in the game: `.card.shimmer` and the map's `trainerImg` walk). Each prompt below is the
+**The user's third pick (2026-10-05), one session each:** the finishing blow and the Trainer Card with its badges. Each prompt below is the
 whole message to start its session with.
-
-13. **Shiny wild Pokémon.** Run in: CLOUD (sprite downloads).
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 13, then docs/reference/saved-runs.md. Add shiny wild
-    Pokémon: about 1 in 100 wild fights (not Alphas, bosses or the Safari) is a shiny, rolled through js/rng.js. It
-    comes out with the shiny sparkle (reuse shinySparkle() in js/battle.js), uses `<id>-shiny-front.gif` (download the
-    PokeAPI black-white animated shiny front for every main-game and Depths wild Pokémon, the same source as the normal
-    GIFs; SPRITE_FIT lends a shiny its normal entry), pays double PokéCoins and ₽, and its Pokédex entry gets a ✨ mark
-    (`save.dex.shiny`). The map room keeps no hint. Add `?shiny=1` to force the next wild fight shiny for a playtest.
-    Check headless at 390x844, update CLAUDE.md, AGENTS.md and the roadmap, push to main."
 
 14. **A finishing blow.** Run in: Desktop app (visual).
     Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 14 and docs/reference/battle-screen-layout.md. When the
@@ -57,37 +47,10 @@ whole message to start its session with.
     Depths' badge last and rarest. Its colour steps up with progress like the games' card (green, bronze, silver, gold,
     then violet once Eternatus is beaten). Check at 375x812 and 1280x800, push to main."
 
-18. **Share a win.** Run in: CLOUD.
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 18, then js/halloffame.js. Add a 'Save image' button
-    to a won run's result window and to every Record Book page: it paints a pixel picture on a canvas (the champion on
-    its pedestal, name, Level or 'Champion of the Depths', date, the run's top numbers, and the deck as a grid of small
-    card frames with names) and shares it with navigator.share where it exists (phones), else downloads the PNG.
-    Nothing leaves the device otherwise. Check headless that the PNG is made at 390x844, push to main."
-
-19. **Endless mode.** Run in: CLOUD (with bot checks). Ask the user to confirm the rules below before building.
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19. Plan, then build, Slay the Spire's Endless: once
-    Eternatus has been beaten (its feat), the Prepare step offers Endless for any starter you own. After the last boss
-    the run loops back to biome 1, each loop harder (enemy HP and damage up, and one 'blight' a loop from a short list
-    such as -1 draw, elites everywhere, Centers heal less). It ends when you faint; your best loop and floor go in the
-    Record Book and Stats. No unlocks, gate hits, streaks or Level rewards from it. Propose the numbers and blights to
-    the user first, then bot-check loops 1-3 at 150 runs with pokeDB-sim (it may need an engine change). Push to main."
-
-20. **Custom runs.** Run in: CLOUD.
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 20, then js/data/difficulty.js and js/select.js. Add
-    Slay the Spire's Custom mode as a third choice in the Prepare step, unlocked by any won run: a list of switches,
-    each a small change to run.mods or the run's start (e.g. start with 15 cards, every fight an Alpha, no Centers,
-    double ₽, start with a random rare, enemies +50% HP, all Trainer Level rules). Custom runs never count for unlocks,
-    achievements, the gate, streaks, the Record Book or research; the result window says so. Check headless, push to
-    main."
-
-21. **Unown secret in the Depths.** Run in: CLOUD for the logic, then a Desktop app pass for the look.
-    Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 21, then the Crystal Depths parts of js/scene.js
-    (DEEP_MARKS, the Unown tablet). In each Mewtwo run, one Depths landmark hides an Unown letter: tapping it on the map's
-    scene or the battle backdrop collects it (`save.unown`, one new letter a run, in a fixed order that spells a word,
-    e.g. MEW). A collected letter shows on the Depths' Pokédex page. The full word unlocks a small secret (ask the user:
-    a cosmetic, e.g. a Mew silhouette flying the title sky, or a Pokédex note). Check headless, push to main."
-
 ## Ideas, not agreed yet (ask the user before building)
+
+- Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
+  win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
 - More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
   Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting,
