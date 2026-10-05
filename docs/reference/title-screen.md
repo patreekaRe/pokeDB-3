@@ -42,7 +42,7 @@ CSS sprites on the painted ledge.
 busy; they were 2026-10-04's `pageSlot()`): the main stack is Continue, New game, **Game Modes ▸** (rose, `GEMS.modes`,
 `modesGem()`) and **Collection ▸** (gold, `GEMS.hub`, kind `hub`). A sign with a ▶ on its right end (`more()`, `.gem-arrow`,
 nudging while pointed at) opens a sub-menu in place (`goTo()`): the stack slides out left and the sub-menu's signs slide in
-from the right (`#title-menu[data-slide]`, `menuOutL` / `menuInR`), the sky, logo and nameplate staying put, the games'
+from the right at the same time, one push (`slide()` moves the old signs into a `.title-menu-ghost` layer; `menuOutL` / `menuInR` on `transform` with `will-change`, since out-then-in on `translate` read as choppy, 2026-10-05), the sky, logo and nameplate staying put, the games'
 way. The menu keeps its tallest page's height (`sizeGems()` sets `min-height`), so the place sign and nameplate never rise on a shorter sub-menu (the user's ask, 2026-10-05). Each sub-menu ends in a small slate **Back** gem, just its ◀ (`backGem()`, `GEMS.back`, `BACK_W` pixels wide; the user's ask, 2026-10-05); the slide-in animations fill `backwards` and are dropped once done (`data-slide="done"`), since iPhone Safari left the second sign stuck a step short (12-15px off centre); Back, Escape / Backspace or a tap on the empty
 sky (`goBack()`) slides back with the ▶ on the sign you came from. `page` (`main` / `modes` / `hub`) is reset to `main` by
 every `renderMenu()` without a direction, so `showHome()` always lands on the main stack.
