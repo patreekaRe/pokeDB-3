@@ -58,6 +58,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     50 / 100 earn the Tower Badges.
     a. **Done 2026-10-05** (cloud): the rules, seed, leaderboard, Tower Badges and `?tower=` on the normal map; see
        `docs/reference/sky-pillar.md` and the archive.
+       **Open (ask the user):** Grass climbs far too high (bot, 150 climbs past floor 30 at x1.35 HP / +8 dmg a flight:
+       Fire median 36, 0% to 100; Water median 32, 3% to 100; Grass median 56, 24% to 100): its healing outgrows enemy
+       damage that only grows by +8 a flight. Options: damage that compounds too, or healing that shrinks with height.
     b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 18 (part a is
        done: the Sky Pillar's rules on a placeholder screen). Paint it: the side-on cutaway panning upward, doors with
        room icons and the walk through them, the spiral-stair climb with the stamped floor plate and altitude gauge, the

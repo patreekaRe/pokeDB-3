@@ -1428,4 +1428,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (`landingMap()`), `js/towerprep.js`, `towerBoard` in `js/leaderboard.js` and `firestore.rules`, the Tower Badges,
   `tests/tower.test.mjs`. Bot (human, 150 climbs, Fire): past floor 30 x1.15 HP / +4 dmg a flight gave median 45, 41% to
   50, 7% to 100; x1.3 / +8 median 36, 21% to 50, best 76; x1.45 / +10 median 35, 9%, best 62; **shipped x1.35 / +8**:
-  median 36, 17% to 50, best 83. Detail in `docs/reference/sky-pillar.md`.
+  median 36, 17% to 50, best 83; Water median 32 but 29% to 50, 3% to 100; Grass median 56, 51% to 50, **24% to 100**
+  (its sustain outgrows the climb: open question for the user, roadmap item 18). Detail in `docs/reference/sky-pillar.md`.
