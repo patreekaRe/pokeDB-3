@@ -32,7 +32,7 @@ import { badgeLine } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
-import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL } from './data/tower.js';
+import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
@@ -42,7 +42,7 @@ import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, mart
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { recordWin, recordLoss, lossRecap, draftWin, fameNo, winScene, preloadWinScene } from './halloffame.js';
+import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
@@ -1049,6 +1049,7 @@ function afterFight(node, result) {
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
+    if (isTower() && run.tower.flight >= TOP_FLIGHT) { collect(); climbed(TOP_FLOOR); return endRun(true); }   // Rayquaza on floor 100: the summit
     if (!isTower() && run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
     // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
@@ -2566,15 +2567,24 @@ function whereNow() {
   return { biomeName: BIOMES[run.biome].name, place: BIOMES[run.biome].stages?.[stageOf(run.map, here).stage] ?? null, floor: here ? here.floor + 1 : 0 };
 }
 
-/** A Sky Pillar climb always ends in a faint (or an abandon, which posts nothing): its height, your bests, the week's
-    leaderboard for its first try. No Record Book, gate, streak, Levels or unlocks (the user's call). */
-function endTower() {
-  const t = run.tower, save = getSave().tower;
+/** A Sky Pillar climb ends in a faint, at the summit (Rayquaza beaten on floor 100: its scene first), or in an abandon,
+    which posts nothing: its height, your bests, the week's leaderboard for its first try. No Record Book, gate, streak,
+    Levels or unlocks (the user's call). */
+async function endTower(won) {
+  const t = run.tower, turns = run.tally.turns;
   const name = stageName(run.starter, run.stage);
   dropNotes();
-  $('result-title').textContent = '🗼 The Sky Pillar';
-  $('result-text').textContent = `${name} fainted on floor ${t.floor + 1} after clearing ${t.floor} floor${t.floor === 1 ? '' : 's'}.`;
-  const lines = [`🏔️ Your highest floor ever: ${save.bestEver}.`];
+  if (won && !peeking) updateSave(d => {
+    d.tower.summits = (d.tower.summits || 0) + 1;
+    d.tower.bestTurns = d.tower.bestTurns ? Math.min(d.tower.bestTurns, turns) : turns;
+  });
+  const save = getSave().tower;
+  if (won) await winScene(draftSummit(run, getSave().shiny.on.includes(run.starter.id), t.first));
+  $('result-title').textContent = won ? '🗼 The Sky Pillar: the summit!' : '🗼 The Sky Pillar';
+  $('result-text').textContent = won ? `${name} beat Rayquaza and cleared all ${TOP_FLOOR} floors in ${turns} turns.`
+    : `${name} fainted on floor ${t.floor + 1} after clearing ${t.floor} floor${t.floor === 1 ? '' : 's'}.`;
+  const lines = won ? [`🏔️ Summits: ${save.summits || 1}. Your fewest turns to the top: ${save.bestTurns || turns}.`]
+    : [`🏔️ Your highest floor ever: ${save.bestEver}.`];
   lines.push(t.first ? `🏆 The week's counted climb: floor ${t.floor}. It goes on the leaderboard.`
     : t.practice ? '🔁 A practice climb: it doesn\'t go on the leaderboard.' : '🔁 A replay: only the week\'s first climb goes on the leaderboard.');
   if (t.first && !peeking) {
@@ -2592,7 +2602,7 @@ function endTower() {
 function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
   if (!peeking) clearRunData();
-  if (isTower()) return endTower();
+  if (isTower()) return endTower(won);
   const mewtwoRun = isMewtwoRun(run.starter);
   const safari = isSafari();   // the daily run pays its coins, but its starter isn't yours: no records, stats or Levels
 

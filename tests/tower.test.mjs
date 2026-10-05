@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { towerWeek, weekOffset, towerWeekly, landingTypes, guardianOf, towerMods, towerPools, towerBiome, floorOf, towerOpen,
-  LANDINGS, FLIGHT, RAYQUAZA, PAST_TOP } from '../js/data/tower.js';
+  LANDINGS, FLIGHT, RAYQUAZA, PAST_TOP, TOP_FLOOR, TOP_FLIGHT } from '../js/data/tower.js';
 import { towerResult, checkTowerEntry, rankTower, TOWER_LIMITS, TOWER_KEYS, boardValue } from '../js/data/leaderboard.js';
 import { BADGES_BY_ID, newBadges } from '../js/data/badges.js';
 import { ENEMY_DEFS, BIOMES } from '../js/data/enemies.js';
@@ -51,15 +51,19 @@ test('landings keep their rules', () => {
   }
 });
 
-test('guardians: a boss of the flight\'s biome, Rayquaza every 50th floor', () => {
+test('guardians: a boss of the flight\'s biome, Rayquaza only on the top floor', () => {
   useStream(9, 'g');
   assert.ok(BIOMES[0].bosses.includes(guardianOf(0)));
   assert.ok(BIOMES[1].bosses.includes(guardianOf(1)));
-  assert.equal(guardianOf(4), RAYQUAZA);   // floor 50
+  assert.notEqual(guardianOf(4), RAYQUAZA);   // floor 50
   assert.equal(guardianOf(9), RAYQUAZA);   // floor 100
   useStream(null);
   assert.ok(ENEMY_DEFS[RAYQUAZA]?.boss);
   assert.equal(floorOf(4, LANDINGS), 50);
+  assert.equal(floorOf(TOP_FLIGHT, LANDINGS), TOP_FLOOR);
+  useStream(9, 'g');
+  assert.equal(Array.from({ length: TOP_FLIGHT + 1 }, (_, f) => guardianOf(f)).filter(g => g === RAYQUAZA).length, 1);
+  useStream(null);
 });
 
 test('floors 1-30 are the biomes in order; past 30 every flight grows', () => {

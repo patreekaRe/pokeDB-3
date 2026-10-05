@@ -288,7 +288,7 @@ function flipSlot(slot, dir) {
   point(next.matches('.gem') ? next : next.querySelector('.gem'), true);
 }
 
-/** The Sky Pillar, the endless tower climb (js/data/tower.js): open once you've won a run (greyed out till then, a tap says
+/** The Sky Pillar, the 100-floor tower climb (js/data/tower.js): open once you've won a run (greyed out till then, a tap says
     so); its face shows your best floor. */
 function pillarGem() {
   plantSign(null);   // the signpost is the Safari's
@@ -297,7 +297,7 @@ function pillarGem() {
   const btn = gem('pillar', 'Sky Pillar', () => {
     if (open) return actions.onTower();
     playSound('cancel');
-    tipAt(btn, 'Win a run to open the Sky Pillar, an endless tower climb with a weekly leaderboard.');
+    tipAt(btn, 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.');
   }, el('span', 'gem-emoji', '🗼'), open ? (best ? el('span', 'gem-soon', `Best F${best}`) : null) : el('span', 'gem-soon', 'Win a run'));
   btn.classList.toggle('locked', !open);
   return btn;

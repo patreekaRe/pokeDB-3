@@ -1,6 +1,6 @@
 # The Sky Pillar
 
-The endless tower climb with a weekly leaderboard (roadmap item 18). Part a (2026-10-05, cloud) built the rules, the
+The 100-floor tower climb with a weekly leaderboard (roadmap item 18). Part a (2026-10-05, cloud) built the rules, the
 seed, the leaderboard and the Tower Badges on a placeholder: the climb plays on the normal map screen. Part b (Desktop
 app) gives it its own painted screen.
 
@@ -18,7 +18,7 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
 - **Flights of 10 floors** (`FLIGHT`): nine landings, each with 2-3 doors (`landingTypes()`: every landing has a fight;
   no Alpha before floor 3, no Center on floor 1; one Mart, Center and ? at most a landing; a Mart somewhere in every flight;
   the last landing always has a Center), then a **guardian** on every 10th floor (`guardianOf()`: a boss of the Clearing,
-  Shrine, Wastes in turn; **Rayquaza** every 50th, `rayquaza-guardian` in `ENEMY_DEFS`, never in the Pokédex).
+  Shrine, Wastes in turn; **Rayquaza** on floor 100 only, `rayquaza-guardian` in `ENEMY_DEFS`, never in the Pokédex).
 - **Beating a guardian**: its rewards (card, boss relic, item odds), an evolution at floors 10 and 20 (with its own heal),
   then **30% of max HP** (`GUARDIAN_HEAL`, `guardianHeal()`), and on to the next flight (`climbOn()`).
 - **How it gets harder**: floors 1-30 are the three biomes in order, their Pokémon and numbers (`towerBiome()`,
@@ -30,7 +30,13 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   (`save.tower.best`, its first try only), saved floor by floor as they're cleared (`climbed()`), so an abandoned climb
   keeps what it reached; the **Tower Badges** at 25 / 50 / 100 (`js/data/badges.js`). No starter unlocks, feats, gate
   hits, win streak, Record Book, Stats runs or Pokédex research (`isTower()` guards in `js/run.js`).
-- **The end**: a climb always ends in a faint: `endTower()` shows the floor reached, your best, and posts the week's first
+- **The top** (2026-10-05, the user's call: no endless mode): floor 100 (`TOP_FLOOR`, `TOP_FLIGHT`) is the summit. Beating
+  Rayquaza there skips the guardian's rewards and ends the climb won: `climbed(100)`, then `endTower(true)` plays the summit
+  version of the win scene (`winScene(draftSummit(...))` in `js/halloffame.js`, `.hof-scene.summit`: dawn over a sea of
+  clouds, a mossy stone pedestal in Rayquaza's green and gold, the Hall of Fame's party and song; never saved in the
+  Record Book) and counts `save.tower.summits` and `bestTurns`. The leaderboard already ranks a summit by fewer turns,
+  then the faster climb, so there's a reason to climb again after it.
+- **The end**: otherwise a climb ends in a faint: `endTower()` shows the floor reached, your best, and posts the week's first
   try. "Climb again" starts the same kind of climb.
 
 ## How it runs (part a's placeholder)

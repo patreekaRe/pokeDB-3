@@ -729,7 +729,7 @@ export const ENEMY_DEFS = {
     },
   },
 
-  /* the Sky Pillar's guardian every 50th floor (js/data/tower.js): Rayquaza, the tower's master. Never in a biome, so never
+  /* the Sky Pillar's guardian on its top floor, 100 (js/data/tower.js): Rayquaza, the tower's master. Never in a biome, so never
      in the Pokédex; its numbers grow with the floor like every guardian's. */
   'rayquaza-guardian': {
     name: 'Rayquaza', type: 'normal', hp: 520, ...sprite('rayquaza'), boss: true,

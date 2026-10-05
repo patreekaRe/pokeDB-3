@@ -1,12 +1,13 @@
 /* ============================================================
    tower.js  -  the Sky Pillar's rules (roadmap item 18, the user's calls 2026-10-05).
 
-   An endless climb, a floor at a time. Floors come in flights of 10: nine
-   landings, each with 2-3 doors to pick from (fight, Alpha, Mart, Center,
-   ? event), then a guardian on every 10th floor. Floors 1-30 climb through
-   the three biomes' Pokémon and numbers in order; past 30 they come from
-   all three, and every flight adds PAST_TOP on top of the Wastes' numbers,
-   so every climb ends. Rayquaza guards every 50th floor.
+   A climb of 100 floors, a floor at a time. Floors come in flights of 10:
+   nine landings, each with 2-3 doors to pick from (fight, Alpha, Mart,
+   Center, ? event), then a guardian on every 10th floor. Floors 1-30 climb
+   through the three biomes' Pokémon and numbers in order; past 30 they come
+   from all three, and every flight adds PAST_TOP on top of the Wastes'
+   numbers, so most climbs end part-way. Rayquaza guards the top, floor 100:
+   beating it wins the climb (the user's call, 2026-10-05: no endless mode).
 
    The week deals the tower: one seed and one starter for everyone. The
    week's first try is the leaderboard's (played without perks, like the
@@ -23,7 +24,8 @@ import { hashString, makeRng, pickOne, random, shuffled } from '../rng.js';
 export const FLIGHT = 10;                // floors a flight: its landings, then the guardian
 export const LANDINGS = FLIGHT - 1;
 export const GUARDIAN_HEAL = 0.3;        // of max HP, after every guardian (the user's call)
-export const RAYQUAZA_EVERY = 50;        // floors between Rayquaza's guardian rooms
+export const TOP_FLOOR = 100;            // Rayquaza's floor, the summit: the climb is won there
+export const TOP_FLIGHT = TOP_FLOOR / FLIGHT - 1;
 export const RAYQUAZA = 'rayquaza-guardian';
 export const PAST_TOP = { hp: 1.35, dmg: 8, dmgMult: 1.15 };   // every flight past the third: enemy HP x1.35, +8 damage, then every attack x1.15, compounding (bot-tuned: x1.15 / +4 let the human bot's median climb reach 45; without dmgMult Grass's healing outgrew it, median 56, 24% to floor 100)
 export const DOOR_ODDS = { fight: 50, elite: 14, event: 16, shop: 10, rest: 10 };
@@ -101,10 +103,10 @@ export function landingTypes(flight) {
   return rows;
 }
 
-/** The guardian of a flight: Rayquaza every RAYQUAZA_EVERY floors, else a boss of the biome the flight's number
-    points at (Clearing, Shrine, Wastes, round again). */
+/** The guardian of a flight: Rayquaza on the top floor, else a boss of the biome the flight's number points at
+    (Clearing, Shrine, Wastes, round again). */
 export function guardianOf(flight) {
-  if (floorOf(flight, LANDINGS) % RAYQUAZA_EVERY === 0) return RAYQUAZA;
+  if (flight >= TOP_FLIGHT) return RAYQUAZA;
   return pickOne(BIOMES[flight % 3].bosses);
 }
 

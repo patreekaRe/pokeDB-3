@@ -78,6 +78,9 @@ export function draftWin(run, shiny) {
   };
 }
 
+/** A Sky Pillar summit's entry for its scene (never saved: a climb isn't a run for the Record Book). */
+export const draftSummit = (run, shiny, counts) => ({ ...runRecord(run, shiny), summit: true, floor: run.tower.floor, counts });
+
 /** What a run's record holds, won or lost: the Pokémon, the dates, the final deck, relics and Bag, and run.tally's numbers. */
 function runRecord(run, shiny) {
   const t = run.tally;
@@ -124,7 +127,7 @@ export const isDepths = (entry) => entry.starter === 'mewtwo';
 const champNo = (entry) => `Depths ${pad3(entry.champ ?? getSave().hallOfFame.filter(isDepths).indexOf(entry) + 1)}`;
 // the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
 let book = 'fame';
-const numberOf = (entry) => (book === 'fame' && (fameNo(entry) || (isDepths(entry) && champNo(entry)))) || winNo(entry);
+const numberOf = (entry) => (entry.summit && `Floor ${entry.floor}`) || (book === 'fame' && (fameNo(entry) || (isDepths(entry) && champNo(entry)))) || winNo(entry);
 /** "28 Sep 2026", read as a local date (a bare "2026-09-28" would parse as UTC midnight and show the day before in the Americas). */
 function dateOf(day) {
   const [y, m, d] = day.split('-').map(Number);
@@ -138,7 +141,7 @@ function plate(entry) {
   const head = el('div', 'hof-plate-head');
   head.append(el('span', 'hof-no', numberOf(entry)), el('strong', 'hof-name', `${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`));
   const foot = el('div', 'hof-plate-foot');
-  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', isDepths(entry) ? '💎 Depths' : `Lv.${entry.level}`));
+  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', isDepths(entry) ? '💎 Depths' : entry.summit ? '🗼 Summit' : `Lv.${entry.level}`));
   box.append(head, foot);
   return box;
 }
@@ -212,8 +215,8 @@ function replay(scene, cls) {
  * playing. Resolves once the last line is tapped away and the scene has faded out.
  */
 export async function winScene(entry) {
-  const depths = isDepths(entry);
-  const fame = Boolean(fameNo(entry)) || depths;
+  const depths = isDepths(entry), summit = Boolean(entry.summit);
+  const fame = Boolean(fameNo(entry)) || depths || summit;
   book = fame ? 'fame' : 'record';
   const scene = $('hof-scene');
   const img = $('hof-mon');
@@ -223,11 +226,11 @@ export async function winScene(entry) {
   img.src = imgOf(entry);
   img.alt = name;
   const party = fame && !still();
-  setTitle(depths ? 'Champion of the Depths' : fame ? 'Hall of Fame' : 'Victory!', party);
+  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : fame ? 'Hall of Fame' : 'Victory!', party);
   $('hof-plate-slot').replaceChildren(plate(entry));
   extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
   playMusic(fame ? 'hall-of-fame' : 'run-win', { restart: true });   // while its file is missing, the victory fanfare from the boss's faint plays on
   const canvas = $('hof-fx');
@@ -252,16 +255,19 @@ export async function winScene(entry) {
   fx?.finale();
   await sceneSay('hof-scene', 'hof-log', depths
     ? ['Eternatus\'s energy is spent. The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
+    : summit ? ['Rayquaza bows its head and soars off. Above the summit there is only sky.', `${name} climbed all ${entry.floor} floors of the SKY PILLAR!`]
     : fame ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
     : [`${name} conquered the wastes on Trainer Level ${entry.level}!`]);
 
   scene.classList.add('deck-in');
   await sleep(still() ? 0 : 500);
-  await sceneSay('hof-scene', 'hof-log', [`Here's how ${name}'s run went.`]);
+  await sceneSay('hof-scene', 'hof-log', [`Here's how ${name}'s ${summit ? 'climb' : 'run'} went.`]);
 
   extra.replaceChildren(deckStrip(entry));
   await sceneSay('hof-scene', 'hof-log', [`${name}'s final deck: ${entry.deck.length} cards.`, depths
     ? `It is entered in the Hall of Fame as ${numberOf(entry)}. The wild Pokémon above can rest at last.`
+    : summit ? (entry.counts ? `${entry.turns} turns to the top: the week's leaderboard ranks summits by fewest turns. Congratulations!`
+      : `${entry.turns} turns to the top. Congratulations!`)
     : fame ? `It is entered in the Hall of Fame as ${numberOf(entry)}. Congratulations!`
     : `The run is saved in the Record Book as ${winNo(entry)}. Well done!`]);
 

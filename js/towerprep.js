@@ -6,7 +6,7 @@
    your own. A plain window for now; part b paints the tower's lobby.
    ============================================================ */
 
-import { towerWeekly, FLIGHT, GUARDIAN_HEAL, RAYQUAZA_EVERY, TOWER_BADGE_FLOORS } from './data/tower.js';
+import { towerWeekly, FLIGHT, GUARDIAN_HEAL, TOP_FLOOR, TOWER_BADGE_FLOORS } from './data/tower.js';
 import { STARTERS, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { getSave } from './storage.js';
@@ -18,9 +18,9 @@ let actions = {};
 
 const RULES = [
   ['🚪', 'Each floor, pick a door: a fight, an Alpha, a Mart, a Pokémon Center or a ❓ room.'],
-  ['👹', `A guardian waits every ${FLIGHT} floors: beat it to evolve, heal ${Math.round(GUARDIAN_HEAL * 100)}% and climb on. Rayquaza guards every ${RAYQUAZA_EVERY}th.`],
-  ['📈', 'It never ends: the higher you go, the stronger they get.'],
-  ['🏆', 'The week\'s first climb, with the week\'s starter and no perks, goes on the leaderboard. Climb again as often as you like.'],
+  ['👹', `A guardian waits every ${FLIGHT} floors: beat it to evolve, heal ${Math.round(GUARDIAN_HEAL * 100)}% and climb on.`],
+  ['📈', `The higher you go, the stronger they get. Rayquaza guards the top, floor ${TOP_FLOOR}: beat it to win the climb.`],
+  ['🏆', 'The week\'s first climb, with the week\'s starter and no perks, goes on the leaderboard: highest floor, then for a summit fewer turns, then the faster climb. Climb again as often as you like.'],
   ['🗼', `Clear floor ${TOWER_BADGE_FLOORS.join(', ')} for the Tower Badges (any climb).`],
 ];
 

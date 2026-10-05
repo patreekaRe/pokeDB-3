@@ -535,14 +535,16 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   is unseen (after a fight that earns one, too). The title's last gem is a **game modes slot** (`pageSlot(MODES)` in
   `js/title.js`: Safari Zone, Sky Pillar "Coming soon"), flipped with ◀ ▶, a swipe or ← →, so new modes never lengthen
   the stack (`docs/reference/title-screen.md`).
-- **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): an
-  endless climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
+- **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
+  100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
   seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),
   replays and Practice (any owned starter but Mewtwo) don't. Flights of 10 floors: 9 landings of 2-3 doors, then a guardian
-  (a biome boss in turn, Rayquaza every 50th: `rayquaza-guardian`); a guardian evolves you at 10 and 20 and heals 30%.
+  (a biome boss in turn; Rayquaza on floor 100, `rayquaza-guardian`, the top: beating it wins the climb, `TOP_FLOOR`, with a
+  summit version of the win scene, `draftSummit()` / `.hof-scene.summit`, never saved as a run); a guardian evolves you at 10
+  and 20 and heals 30%.
   Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
   `run.tower` (`isTower()`, seeded streams keyed by `zone()`); part a plays each flight on the normal map (`landingMap()`
-  in `js/map.js`) until part b paints the tower. It counts only for `save.tower` (`bestEver`, the week's `best`) and the
+  in `js/map.js`) until part b paints the tower. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
   Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's modes
   slot, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
