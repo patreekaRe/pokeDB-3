@@ -272,11 +272,19 @@ function goBack() {
 /** The stack slides out one way and the next comes in from the other side; back on the main stack the ▶ is on the sign
     you came from. */
 function slide(dir, next, from = null) {
-  const swap = () => { swapping = 0; page = next; renderMenu(dir, from); };
-  if (still()) return swap();
+  page = next;
+  if (still()) return renderMenu(dir, from);
   closeAreas();
-  $('title-menu').dataset.slide = dir > 0 ? 'out-l' : 'out-r';
-  swapping = setTimeout(swap, 180);
+  // the old signs leave in a layer of their own while the new ones come in, both at once: one push, with no empty beat
+  // between them (the out-then-in version read as choppy)
+  const menu = $('title-menu');
+  const ghost = el('div', 'title-menu-ghost');
+  ghost.dataset.slide = dir > 0 ? 'out-l' : 'out-r';
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.append(...menu.children);
+  renderMenu(dir, from);
+  menu.append(ghost);
+  swapping = setTimeout(() => { swapping = 0; ghost.remove(); }, 420);
 }
 
 /** A sign that opens a sub-menu: a ▶ on its right end says so. */

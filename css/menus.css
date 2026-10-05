@@ -833,15 +833,21 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .bag-trainer p { margin: 0; }
 
 /* ---------- the sub-menus: Game Modes and Collection slide the stack sideways (renderMenu() in js/title.js) ---------- */
-.title-menu[data-slide="out-l"] > * { animation: menuOutL 0.18s cubic-bezier(0.4, 0, 1, 1) forwards; }
-.title-menu[data-slide="out-r"] > * { animation: menuOutR 0.18s cubic-bezier(0.4, 0, 1, 1) forwards; }
-.title-menu[data-slide="in-r"] > .gem, .title-menu[data-slide="in-r"] > .gem-row > .gem { animation: menuInR 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) backwards calc(var(--i) * 45ms); }
-.title-menu[data-slide="in-l"] > .gem, .title-menu[data-slide="in-l"] > .gem-row > .gem { animation: menuInL 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) backwards calc(var(--i) * 45ms); }
+/* the old stack leaves in .title-menu-ghost while the new one comes in. transform, not translate, and will-change, so
+   phones move the (drop-shadowed) signs on the GPU instead of repainting them every frame */
+.title-menu { position: relative; }
+.title-menu-ghost { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; gap: inherit; pointer-events: none; }
+.title-menu-ghost > * { will-change: transform, opacity; }
+.title-menu-ghost .gem-row > .gem { animation: none; }   /* moved, it would replay .gem's own entrance */
+.title-menu-ghost[data-slide="out-l"] > * { animation: menuOutL 0.3s cubic-bezier(0.3, 0, 0.2, 1) both calc(var(--i) * 25ms); }
+.title-menu-ghost[data-slide="out-r"] > * { animation: menuOutR 0.3s cubic-bezier(0.3, 0, 0.2, 1) both calc(var(--i) * 25ms); }
+.title-menu[data-slide="in-r"] > .gem, .title-menu[data-slide="in-r"] > .gem-row > .gem { will-change: transform, opacity; animation: menuInR 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards calc(60ms + var(--i) * 30ms); }
+.title-menu[data-slide="in-l"] > .gem, .title-menu[data-slide="in-l"] > .gem-row > .gem { will-change: transform, opacity; animation: menuInL 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards calc(60ms + var(--i) * 30ms); }
 .title-menu[data-slide="done"] > .gem, .title-menu[data-slide="done"] > .gem-row > .gem { animation: none; }
-@keyframes menuOutL { to { opacity: 0; translate: -60px 0; } }
-@keyframes menuOutR { to { opacity: 0; translate: 60px 0; } }
-@keyframes menuInR { from { opacity: 0; translate: 60px 0; } }
-@keyframes menuInL { from { opacity: 0; translate: -60px 0; } }
+@keyframes menuOutL { from { transform: translate3d(0, 0, 0); } to { opacity: 0; transform: translate3d(-110px, 0, 0); } }
+@keyframes menuOutR { from { transform: translate3d(0, 0, 0); } to { opacity: 0; transform: translate3d(110px, 0, 0); } }
+@keyframes menuInR { from { opacity: 0; transform: translate3d(110px, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes menuInL { from { opacity: 0; transform: translate3d(-110px, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 /* a sign that opens a sub-menu: a ▶ on its right end */
 .gem-arrow {
   position: absolute; top: 50%; right: calc(var(--gp) * 7); translate: 0 -50%; z-index: 2; pointer-events: none;
