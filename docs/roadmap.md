@@ -44,6 +44,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 17. **Badges** are done (parts a and b: `js/data/badges.js`, the Trainer Card in `js/trainercard.js`; see the archive).
     The Explorer and three Tower Badges stay locked slots: drop their `locked: true` and give them a `test` when
     branching biomes / the Sky Pillar land.
+    The title already has the Sky Pillar's gem in its modes slot, greyed "Coming soon" (`pillarGem()` in `js/title.js`):
+    when it lands, give it its `onPick` and drop `locked`.
 
 18. **The Sky Pillar: an endless tower climb with a weekly leaderboard.** No map screen: the tower is the map. A side-on
     cutaway panning upward as you rise; each landing has 2-3 doors with room icons (fight, Alpha, Mart, Center, ?) and

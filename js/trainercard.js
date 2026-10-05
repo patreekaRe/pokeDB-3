@@ -262,6 +262,40 @@ export function openTrainerCard() {
     // each new badge pops in with a shine the first time the card opens after it
     fresh.forEach((id, i) => setTimeout(() => { if (dialog.open) playSound(`crystal-${i % 3}`); }, 450 + i * 260));
     updateSave(d => { d.badgesSeen = [...earned]; });
+    showBadgeNews();
+  }
+}
+
+/** Earned badges the card hasn't shown yet. */
+export const badgeNews = (save = getSave()) => [...earnedIds(save)].some(id => !(save.badgesSeen || []).includes(id));
+
+/** A little pixel Trainer Card in the card's colours ([data-tier] sets --tc1..3): the title's corner and the Bag's pocket. */
+export function cardIcon() {
+  const rects = [
+    [1, 0, 14, 1, 'o'], [0, 1, 1, 10, 'o'], [15, 1, 1, 10, 'o'], [1, 11, 14, 1, 'o'],
+    [1, 1, 14, 10, 'c1'], [1, 1, 14, 2, 'c2'], [2, 1, 12, 1, 'hi'],
+    [2, 4, 5, 6, 'pic'], [3, 5, 3, 2, 'c3'], [2, 8, 5, 2, 'c3'],
+    [8, 5, 6, 1, 'c3'], [8, 7, 4, 1, 'c3'], [12, 8, 2, 2, 'gold'],
+  ];
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 16 12');
+  svg.setAttribute('shape-rendering', 'crispEdges');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.classList.add('tc-icon');
+  for (const [x, y, w, h, c] of rects) {
+    const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    Object.entries({ x, y, width: w, height: h, class: c }).forEach(([k, v]) => r.setAttribute(k, v));
+    svg.append(r);
+  }
+  return svg;
+}
+
+/** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen. */
+export function showBadgeNews(save = getSave()) {
+  const tier = cardTier(save).id, news = badgeNews(save);
+  for (const node of document.querySelectorAll('#title-card, #bag-btn, .bag-pocket[data-pocket="trainer"]')) {
+    node.dataset.tier = tier;
+    node.classList.toggle('badge-news', news);
   }
 }
 

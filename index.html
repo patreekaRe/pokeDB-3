@@ -75,6 +75,8 @@
     <!-- top left once the gems are up: the cloud save's Sign in (the games' PC, shown by js/cloud.js), Sound, How to play and Refresh -->
     <div class="title-corner">
       <button type="button" class="title-account" id="title-account" hidden aria-label="Sign in"><span class="ta-pc">🖥️</span><span class="ta-label" id="title-account-text">Sign in</span></button>
+      <!-- the Trainer Card (js/trainercard.js): in the card's colour, glinting while a new badge waits -->
+      <button type="button" class="title-account title-card" id="title-card" aria-label="Trainer Card"><span class="ta-pc"></span><span class="ta-label">Trainer</span></button>
       <div class="title-sound">
         <button type="button" class="title-account" id="title-sound-btn" aria-label="Sound" aria-expanded="false" aria-controls="title-sound-pop"><span class="ta-pc snd-icon">🔊</span></button>
         <div class="sound-pop sound-ctl" id="title-sound-pop" hidden>
@@ -152,6 +154,7 @@
           <button class="bag-pocket" role="tab" data-pocket="relics" data-name="Relics" aria-label="Relics" aria-controls="bag-relics"><span aria-hidden="true">💎</span><b id="run-relic-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="items" data-name="Items" aria-label="Items" aria-controls="bag-items"><span aria-hidden="true"><img class="item-sprite" src="assets/items/potion.png" alt=""></span><b id="run-item-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="key" data-name="Map" aria-label="Map" aria-controls="bag-key"><span aria-hidden="true">🗺️</span></button>
+          <button class="bag-pocket" role="tab" data-pocket="trainer" data-name="Trainer Card" aria-label="Trainer Card" aria-controls="bag-trainer"><span aria-hidden="true" id="bag-trainer-icon"></span></button>
         </div>
         <div class="bag-pocket-body" id="bag-deck" role="tabpanel" hidden>
           <p class="bag-deck-text" id="bag-deck-text"></p>
@@ -163,6 +166,11 @@
         <div class="bag-pocket-body" id="bag-items" role="tabpanel" hidden>
           <div id="items-list" class="howto-list"></div>
           <p class="drop-note" id="items-note"></p>
+        </div>
+        <div class="bag-pocket-body bag-trainer" id="bag-trainer" role="tabpanel" hidden>
+          <span id="bag-trainer-art"></span>
+          <p id="bag-trainer-text"></p>
+          <button class="btn" id="bag-trainer-btn">Look at your Trainer Card</button>
         </div>
         <div class="bag-pocket-body" id="bag-key" role="tabpanel" hidden>
           <button class="btn" id="bag-map-btn">Look at the map</button>

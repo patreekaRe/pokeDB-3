@@ -29,6 +29,7 @@ import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { badgeLine } from './data/badges.js';
+import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
@@ -612,7 +613,7 @@ function tutorNotes() {
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
    The tabs pick a pocket, and the arrows flip through them in order. */
-const POCKETS = ['deck', 'relics', 'items', 'key'];
+const POCKETS = ['deck', 'relics', 'items', 'key', 'trainer'];
 let pocket = 'relics';
 
 function initBag() {
@@ -622,6 +623,9 @@ function initBag() {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
   const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
+  $('bag-trainer-icon').append(cardIcon());
+  $('bag-trainer-art').append(cardIcon());
+  $('bag-trainer-btn').addEventListener('click', () => { closeBag(true); openTrainerCard(); });
   $('bag-prev').addEventListener('click', () => flip(-1));
   $('bag-next').addEventListener('click', () => flip(1));
   document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #bag')) closeBag(); });
@@ -636,10 +640,18 @@ function initBag() {
 function openBag() {
   playSound('bag');
   renderItemList();   // items can be used up in battle, so this pocket is redrawn each time
+  renderTrainerPocket();
   $('bag-map-btn').hidden = document.body.dataset.screen === 'map-screen';
   $('bag').hidden = false;
   $('bag-btn').setAttribute('aria-expanded', 'true');
   showPocket(pocket);
+}
+
+function renderTrainerPocket() {
+  const save = getSave(), tier = cardTier(save);
+  $('bag-trainer-art').dataset.tier = tier.id;
+  $('bag-trainer-text').textContent = `${tier.name} card · ${trainerTile(save).count.replace(' · New!', '')}${badgeNews(save) ? '. A new badge is waiting in the Badge Case!' : ''}`;
+  showBadgeNews(save);
 }
 
 function closeBag(quiet = false) {
@@ -883,6 +895,7 @@ function afterFight(node, result) {
     for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); }
     if (!peeking) unlocked.push(...checkFeats());   // the Depths page's shiny Mewtwo
     if (!peeking) dexNews.push(...checkBadges().map(badgeLine));   // quiet: a line in the reward box, no window
+    showBadgeNews();   // and the Bag glints till the card is opened
   };
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
@@ -2525,7 +2538,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.paid ? ` +${f.paid} PokéCoins.` : ''}`),
-    ...(run.dexNews || []).map(line => `📕 ${line}`), ...(run.badges || []).map(badgeLine)];
+    ...(run.dexNews || []).map(line => `📕 ${line}`), ...(run.badges || []).map(badgeItem)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
@@ -2548,6 +2561,17 @@ function endRun(won, atLastBoss = false, loss = null) {
   // last boss is dragged down too, and fails); then the win scene, the unlocks and the result (the user's order, 2026-10-02)
   // a lost run's recap (who beat it, its numbers, its HP over the run, its deck) comes after the gate, before the rest
   playGate(gate?.scene).then(() => (record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null)).then(result);
+}
+
+/** A badge earned this run, in the result window: a tap opens the Trainer Card to see it in the Badge Case. */
+function badgeItem(badge) {
+  const li = el('li', 'result-badge');
+  const btn = el('button', 'result-badge-btn', `${badgeLine(badge)} ▸`);
+  btn.type = 'button';
+  btn.title = 'See it on your Trainer Card';
+  btn.addEventListener('click', () => { playSound('confirm'); openTrainerCard(); });
+  li.append(btn);
+  return li;
 }
 
 /** The descent and the gate's scene, one over the other so the page never shows between them. */

@@ -67,7 +67,7 @@
 .title-corner {
   position: absolute; z-index: 3;
   top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left));
-  display: grid; grid-template-columns: repeat(4, auto); align-items: start; justify-items: center; gap: 6px;
+  display: grid; grid-template-columns: repeat(5, auto); align-items: start; justify-items: center; gap: 6px;
 }
 .title-account {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -804,3 +804,52 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   .title-screen.away { opacity: 0; }
   .gem.on::before, .gem.on .gem-egg { animation: none; }
 }
+
+/* ---------- the Trainer Card on the title and in the Bag (cardIcon() / showBadgeNews() in js/trainercard.js) ---------- */
+.tc-icon { display: block; width: 1.25em; height: auto; image-rendering: pixelated; }
+.tc-icon .o { fill: #1c1440; }
+.tc-icon .c1 { fill: var(--tc1, #58b048); }
+.tc-icon .c2 { fill: var(--tc2, #3c8a30); }
+.tc-icon .c3 { fill: var(--tc3, #1e4e18); }
+.tc-icon .hi { fill: #fff; opacity: 0.35; }
+.tc-icon .pic { fill: #f8f0d8; }
+.tc-icon .gold { fill: #ffd040; }
+.title-card .ta-pc { font-size: 34px; }
+@media (max-width: 600px) { .title-card .ta-pc { font-size: 28px; } .title-card { margin-top: 3px; } }
+/* a new badge waits: a gold "!" bounces on the card (and the Bag) until the card is opened */
+.badge-news { position: relative; }
+.title-card.badge-news .ta-pc::after, .bag-btn.badge-news::after, .bag-pocket.badge-news::before {
+  content: '!'; position: absolute; top: -6px; right: -8px; z-index: 2;
+  display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
+  background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
+  font: 10px/1 var(--pixel-font); animation: newsBob 0.8s steps(2) infinite alternate;
+}
+.bag-pocket.badge-news::before { top: -9px; left: -9px; right: auto; }
+@keyframes newsBob { to { translate: 0 -3px; } }
+@media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .ta-pc::after { animation: none !important; } }
+.bag-pocket .tc-icon { width: 30px; }
+.bag-trainer { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.bag-trainer .tc-icon { width: 64px; }
+.bag-trainer p { margin: 0; }
+
+/* ---------- the game modes' slot: one gem at a time, flipped with the arrows under it (modeSlot() in js/title.js) ---------- */
+.mode-slot { display: grid; justify-items: center; gap: 6px; }
+.mode-slot > .gem-row, .mode-slot > .gem { animation-delay: calc(var(--i) * 70ms); }
+.mode-slot .from-right, .mode-slot .from-right .gem { animation: modeInR 0.22s steps(4) both; }
+.mode-slot .from-left, .mode-slot .from-left .gem { animation: modeInL 0.22s steps(4) both; }
+@keyframes modeInR { from { opacity: 0; translate: 40px 0; } }
+@keyframes modeInL { from { opacity: 0; translate: -40px 0; } }
+.mode-pager { display: flex; align-items: center; gap: 10px; animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms + 160ms); }
+.mode-flip {
+  padding: 4px 8px; border: 0; background: none; cursor: pointer; color: #f8e070;
+  font: 0.75rem/1 var(--pixel-font); text-shadow: 2px 2px 0 #181018; -webkit-tap-highlight-color: transparent;
+}
+.mode-flip:hover, .mode-flip:focus-visible { color: #fff; outline: none; }
+.mode-flip:active { translate: 0 2px; }
+.mode-dots { display: flex; gap: 6px; }
+.mode-dots i { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.3); box-shadow: 0 0 0 2px #181018; }
+.mode-dots i.on { background: #f8e070; }
+.gem-soon { font-size: 0.55rem; letter-spacing: 0.06em; color: #e0e4f0; }
+/* a badge line in the result window opens the Trainer Card (badgeItem() in js/run.js) */
+.result-badge-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.result-badge-btn:hover, .result-badge-btn:focus-visible { color: #c08a10; outline: none; }

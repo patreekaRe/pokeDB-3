@@ -27,6 +27,7 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
+import { openTrainerCard, cardIcon, showBadgeNews } from './trainercard.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -65,6 +66,7 @@ const GEMS = {
   collection: ['#e0bc28', '#fff080', '#a88410'],
   corner: ['#f06038', '#ff9870', '#b83018'],
   safari: ['#58a838', '#98e070', '#2e7020'],
+  pillar: ['#4088c8', '#88c8f8', '#20508a'],
 };
 const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430', BRONZE_MID = '#a86c3c', GROOVE = '#3a1c0c';
 
@@ -115,6 +117,8 @@ export function initTitle(handlers) {
   $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
   screen.addEventListener('click', (e) => { if (!pressed && !e.target.closest('.gem')) start(e); });
   $('title-refresh').addEventListener('click', refreshGame);
+  $('title-card').querySelector('.ta-pc').append(cardIcon());
+  $('title-card').addEventListener('click', () => { playSound('confirm'); openTrainerCard(); });
   paintLogo();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
@@ -126,6 +130,8 @@ export function initTitle(handlers) {
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); point(gems[(at + step + gems.length) % gems.length]); }
+    const side = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (side && gems[at]?.closest('.mode-slot')) { e.preventDefault(); flipMode(side); }
     if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate, .title-signpost, .title-areas') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
@@ -200,8 +206,9 @@ function renderMenu() {
     gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
     gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
     gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
-    safariGem(),
+    modeSlot(),
   ].filter(Boolean);
+  showBadgeNews();
   gems.forEach((g, i) => g.style.setProperty('--i', i));   // inherited, so the Safari gem's row passes it on
   $('title-menu').replaceChildren(...gems);
   sizeGems();
@@ -220,6 +227,62 @@ function gem(kind, label, onPick, icon, extra) {
   btn.addEventListener('pointerenter', () => point(btn, true));
   btn.addEventListener('focus', () => point(btn, true));
   btn.addEventListener('click', () => { if (!btn.disabled) onPick(); });
+  return btn;
+}
+
+/* The game modes share one slot under the gems, flipped with the arrows under it, a swipe or ← →, so the stack stays
+   the same height however many modes there are (the user's call, 2026-10-04: more modes are coming). */
+const MODES = [() => safariGem(), () => pillarGem()];
+let modeAt = 0;
+function modeSlot() {
+  const slot = el('div', 'mode-slot');
+  slot.append(MODES[modeAt]());
+  if (MODES.length < 2) return slot;
+  const pager = el('div', 'mode-pager');
+  const arrow = (dir, label) => {
+    const b = el('button', 'mode-flip', dir < 0 ? '◀' : '▶');
+    b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.addEventListener('click', () => flipMode(dir));
+    return b;
+  };
+  const dots = el('span', 'mode-dots');
+  dots.append(...MODES.map((_, i) => el('i', i === modeAt ? 'on' : '')));
+  pager.append(arrow(-1, 'Previous mode'), dots, arrow(1, 'Next mode'));
+  slot.append(pager);
+  // a sideways swipe on the gem flips too, and doesn't count as a tap on it
+  let x0 = null, swiped = false;
+  slot.addEventListener('pointerdown', (e) => { x0 = e.clientX; swiped = false; });
+  slot.addEventListener('pointerup', (e) => {
+    if (x0 === null || e.target.closest('.mode-pager')) return;
+    const dx = e.clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 40) { swiped = true; flipMode(dx < 0 ? 1 : -1); }
+  });
+  slot.addEventListener('click', (e) => { if (swiped) { e.stopPropagation(); swiped = false; } }, true);
+  return slot;
+}
+function flipMode(dir) {
+  const slot = document.querySelector('#title-menu .mode-slot');
+  if (!slot || MODES.length < 2) return;
+  modeAt = (modeAt + dir + MODES.length) % MODES.length;
+  playSound('stick', 'confirm');
+  const next = MODES[modeAt]();
+  next.classList.add(dir > 0 ? 'from-right' : 'from-left');
+  slot.firstChild.replaceWith(next);
+  slot.querySelectorAll('.mode-dots i').forEach((d, i) => d.classList.toggle('on', i === modeAt));
+  sizeGems();
+  point(next.matches('.gem') ? next : next.querySelector('.gem'), true);
+}
+
+/** The Sky Pillar, the endless tower climb (roadmap item 18): greyed out until it lands; a tap says so. */
+function pillarGem() {
+  plantSign(null);   // the signpost is the Safari's
+  const btn = gem('pillar', 'Sky Pillar', () => {
+    playSound('cancel');
+    tipAt(btn, 'The Sky Pillar, an endless tower climb with a weekly leaderboard, is coming soon.');
+  }, el('span', 'gem-emoji', '🗼'), el('span', 'gem-soon', 'Coming soon'));
+  btn.classList.add('locked');
   return btn;
 }
 

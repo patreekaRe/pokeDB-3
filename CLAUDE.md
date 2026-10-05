@@ -529,7 +529,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   write an old save over a cloud download), the partner, and the Badge Case. Each badge is painted from `LOOK` (a shape
   polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line. Its colour steps up with badges
   (`cardTier()`: green, bronze 5, silver 10, gold 15, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
-  the next time it opens.
+  the next time it opens. **Getting to it** (2026-10-04): a pixel card button in the title's corner row (`#title-card`), the
+  Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
+  (`badgeItem()`); `showBadgeNews()` colours the title button and the Bag by tier and puts a gold "!" on them while a badge
+  is unseen (after a fight that earns one, too). The title's last gem is a **game modes slot** (`modeSlot()` / `MODES` in
+  `js/title.js`: Safari Zone, Sky Pillar "Coming soon"), flipped with ◀ ▶, a swipe or ← →, so new modes never lengthen
+  the stack (`docs/reference/title-screen.md`).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
