@@ -162,12 +162,48 @@ function layer(w, h) {
   return c;
 }
 
+/* A film's canvas, Q times finer than its art (one canvas px a CSS px): drawn in art pixels, scaled up unsmoothed, so the
+   art keeps its chunky pixels while the camera glides in 1/Q steps instead of jumping a whole art pixel. `snap` rounds a
+   position to that step. Paths (the glows' ellipses, light shafts) are filled on an art-sized scratch canvas and scaled
+   up, so their edges stay as blocky as before. */
+function fineCtx(g, Q, W, H) {
+  g.setTransform(Q, 0, 0, Q, 0, 0);
+  g.imageSmoothingEnabled = false;
+  const lo = layer(W, H).getContext('2d');
+  const snap = (v) => Math.round(v * Q) / Q;
+  const own = {
+    snap,
+    drawImage: (img, ...a) => g.drawImage(img, ...(a.length === 8 ? [...a.slice(0, 4), ...a.slice(4).map(snap)] : a.map(snap))),
+    fillRect: (x, y, w, h) => g.fillRect(snap(x), snap(y), snap(w), snap(h)),
+    beginPath: () => lo.beginPath(),
+    closePath: () => lo.closePath(),
+    moveTo: (x, y) => lo.moveTo(x, y),
+    lineTo: (x, y) => lo.lineTo(x, y),
+    ellipse: (...a) => lo.ellipse(...a),
+    arc: (...a) => lo.arc(...a),
+    fill: () => {
+      lo.fillStyle = g.fillStyle;
+      lo.fill();
+      g.drawImage(lo.canvas, 0, 0, W, H);
+      lo.clearRect(0, 0, W, H);
+    },
+  };
+  return new Proxy(g, {
+    get: (t, k) => (k in own ? own[k] : typeof t[k] === 'function' ? t[k].bind(t) : t[k]),
+    set: (t, k, v) => { t[k] = v; return true; },
+  });
+}
+
+/** Round to the canvas's finest step when it has one (a film's fineCtx), else to whole pixels. */
+const snapOf = (g) => g.snap || Math.round;
+
 /** Fill a pixel disc (a crown, a puff of cloud). */
 function disc(g, cx, cy, r, colour) {
   g.fillStyle = colour;
+  const R = snapOf(g);
   for (let y = -r; y <= r; y++) {
     const half = Math.floor(Math.sqrt(r * r - y * y));
-    g.fillRect(Math.round(cx - half), Math.round(cy + y), half * 2 + 1, 1);
+    g.fillRect(R(cx - half), R(cy + y), half * 2 + 1, 1);
   }
 }
 
@@ -549,7 +585,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
   box.setAttribute('role', 'dialog');
   const place = biome.stages[stage];
   box.setAttribute('aria-label', `${mini ? place : biome.name}. Tap to skip.`);
-  const back = layer(W, H), front = layer(W, H);
+  const back = layer(W * P, H * P), front = layer(W * P, H * P);
   back.className = 'bi-canvas'; front.className = 'bi-canvas';
   for (const c of [back, front]) { c.style.width = `${W * P}px`; c.style.height = `${H * P}px`; }
   const mons = el('div', 'bi-mons');
@@ -603,8 +639,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
   box.append(back, mons, front, el('div', 'bi-bars'), card, skip);
   document.body.append(box);
 
-  const bg = back.getContext('2d'), fg = front.getContext('2d');
-  bg.imageSmoothingEnabled = false; fg.imageSmoothingEnabled = false;
+  const bg = fineCtx(back.getContext('2d'), P, W, H), fg = fineCtx(front.getContext('2d'), P, W, H);
   const start = performance.now() - (still ? beats.END : 0);
   let raf = 0, titled = false, finishing = false, holdTimer = 0;
 
@@ -613,8 +648,8 @@ function run(film, biome, { number, stage, walker }, resolve) {
     scene.draw(bg, fg, ms, ms / 1000);
     for (const [i, f] of figures.entries()) {
       const [x, y] = scene.monAt(i, ms);
-      f.wrap.style.left = `${x * P}px`;
-      f.wrap.style.top = `${(y + 1) * P}px`;
+      f.wrap.style.left = `${Math.round(x * P)}px`;
+      f.wrap.style.top = `${Math.round((y + 1) * P)}px`;
       if (!f.shown && ms >= f.spot.ms) {
         f.shown = true;
         f.wrap.classList.add('up');
@@ -628,7 +663,7 @@ function run(film, biome, { number, stage, walker }, resolve) {
       hiker.img.style.width = `${hiker.img.naturalWidth * scale}px`;
       hiker.img.style.marginBottom = `${-hiker.feet * scale}px`;
       hiker.style.left = `${(scene.walkX + (step ? 0.5 : -0.5)) * P}px`;
-      hiker.style.top = `${Math.round(H * (0.93 - 0.07 * p) - step) * P}px`;
+      hiker.style.top = `${Math.round((H * (0.93 - 0.07 * p) - step) * P)}px`;
     }
     if (!titled && ms >= beats.TITLE_AT) {
       titled = true;
@@ -695,8 +730,8 @@ function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, r
   paintForest(forest.getContext('2d'), forest.width, H, hz, land.forest, rand, look.forest || 1);
 
   // where the Pokémon pop up: in view at their moment, nearer ones lower down
-  const camAt = (ms) => Math.round(ease(span(PAN_, ms)) * PAN_PX);
-  const liftAt = (ms) => mini ? 0 : Math.round((1 - easeOut(span(TILT_, ms))) * H * 1.05);
+  const camAt = (ms) => ease(span(PAN_, ms)) * PAN_PX;
+  const liftAt = (ms) => mini ? 0 : (1 - easeOut(span(TILT_, ms))) * H * 1.05;
   const meadowTop = hz + Math.round(H * 0.035);
   const spots = beats.POPS.map((ms, i) => {
     const sx = W * [0.3, 0.68, 0.42][i], depth = [0.45, 0.3, 0.7][i];
@@ -728,27 +763,29 @@ function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, r
   const scaleOf = (z, key) => 1 + z * DOLLY[key];
   const at = (x, y, s) => [VX + (x - VX) * s, VY + (y - VY) * s];
   const put = (ctx, img, x, y, s) => {
+    const R = snapOf(ctx);
     if (s === 1) return ctx.drawImage(img, x, y);
     const [dx, dy] = at(x, y, s);
-    ctx.drawImage(img, Math.round(dx), Math.round(dy), Math.round(img.width * s), Math.round(img.height * s));
+    ctx.drawImage(img, R(dx), R(dy), R(img.width * s), R(img.height * s));
   };
 
   function draw(bg, fg, ms, tick) {
+    const R = bg.snap;
     const lift = liftAt(ms), cam = camAt(ms), z = grow(ms);
     bg.drawImage(skyC, 0, 0);
     for (const c of clouds) {
-      const x = Math.round(((c.x - cam * 0.05 + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
-      if (c.lift < 1) bg.drawImage(c.img, x, Math.round(c.y + lift * c.lift));
+      const x = R(((c.x - cam * 0.05 + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
+      if (c.lift < 1) bg.drawImage(c.img, x, R(c.y + lift * c.lift));
     }
     if (!mini && ms < 3400) {   // a flock crossing as you come down
       const fx = -10 + (ms / 3400) * (W + 30), fy = H * 0.42 + lift * 0.3 - ms / 300;
       bg.fillStyle = '#20283a';
       for (let n = 0; n < 5; n++) {
-        const bx = Math.round(fx - Math.abs(n - 2) * 4), by = Math.round(fy + Math.abs(n - 2) * 3), up = (Math.floor(ms / 140) + n) % 2;
+        const bx = R(fx - Math.abs(n - 2) * 4), by = R(fy + Math.abs(n - 2) * 3), up = (Math.floor(ms / 140) + n) % 2;
         bg.fillRect(bx - 1, by - up, 1, 1); bg.fillRect(bx, by, 1, 1); bg.fillRect(bx + 1, by - up, 1, 1);
       }
     }
-    put(bg, far, -Math.round(cam * SPEED.far), Math.round(lift * 0.7), scaleOf(z, 'far'));
+    put(bg, far, -R(cam * SPEED.far), R(lift * 0.7), scaleOf(z, 'far'));
     // the goal's light: a slow-breathing halo behind the crown, motes spiralling up round it
     const sh = scaleOf(z, 'hill');
     const [tx, ty] = at(crown.x - cam * SPEED.hill, crown.y + lift * 0.8, sh), cw = crown.w * sh, ch = crown.h * sh;
@@ -756,15 +793,15 @@ function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, r
     for (const [k, r] of [[0.1, 1.5], [0.14, 1.2], [0.18, 0.95]]) {
       bg.globalAlpha = k * (0.7 + 0.5 * breath) * (time === 'night' ? 1.6 : 1);
       bg.fillStyle = film.glow.aura[1];
-      bg.beginPath(); bg.ellipse(Math.round(tx), Math.round(ty), cw * r, ch * r * 1.3, 0, 0, Math.PI * 2); bg.fill();
+      bg.beginPath(); bg.ellipse(R(tx), R(ty), cw * r, ch * r * 1.3, 0, 0, Math.PI * 2); bg.fill();
     }
     bg.globalAlpha = 1;
-    put(bg, hill, -Math.round(cam * SPEED.hill), Math.round(lift * 0.8), sh);
+    put(bg, hill, -R(cam * SPEED.hill), R(lift * 0.8), sh);
     for (const m of motes) {
       const t = (tick * m.speed * 0.25 + m.phase) % 1, a = m.a + tick * m.speed;
       const x = tx + Math.cos(a) * cw * (0.4 + m.r * 0.8), y = ty + ch - t * ch * 3;
       bg.fillStyle = film.glow.aura[(m.r * 3) | 0] || film.glow.aura[0];
-      if (t < 0.92) bg.fillRect(Math.round(x), Math.round(y), 1, 1);
+      if (t < 0.92) bg.fillRect(R(x), R(y), 1, 1);
     }
     for (const s of shafts) {   // light falling through the canopy
       bg.globalAlpha = 0.1 + 0.05 * Math.sin(tick * 1.3 + s.phase);
@@ -774,24 +811,24 @@ function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, r
       bg.fill();
     }
     bg.globalAlpha = 1;
-    put(bg, forest, -Math.round(cam * SPEED.forest), Math.round(lift * 0.9), scaleOf(z, 'forest'));
-    const meadowX = -Math.round(cam * SPEED.meadow);
+    put(bg, forest, -R(cam * SPEED.forest), R(lift * 0.9), scaleOf(z, 'forest'));
+    const meadowX = -R(cam * SPEED.meadow);
     put(bg, meadow, meadowX, lift, scaleOf(z, 'meadow'));
     bg.fillStyle = land.water[2];   // the stream glints
     for (let n = 0; n < 5 && stream.length; n++) {
       const [cx, y, half] = stream[(n * 41 + Math.floor(tick * 5) * 17) % stream.length];
-      bg.fillRect(Math.round(cx + meadowX + ((n * 7) % 3 - 1) * half * 0.5), y + lift, 2, 1);
+      bg.fillRect(R(cx + meadowX + ((n * 7) % 3 - 1) * half * 0.5), y + lift, 2, 1);
     }
 
     fg.clearRect(0, 0, W, H);
     for (const [i, s] of spots.entries()) {   // the tall grass each Pokémon hides in, shaking just before it pops out
       const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0;
-      fg.drawImage(tufts[i], Math.round(s.x + meadowX - s.size - 2 + rustle), Math.round(s.y + lift - 2));
+      fg.drawImage(tufts[i], R(s.x + meadowX - s.size - 2 + rustle), R(s.y + lift - 2));
     }
     if (mini || ms > 1800) {   // petals on the breeze (leaves in the deep woods)
       for (const p of petals) {
-        const x = Math.round(((p.x * W * 1.3 + tick * p.speed * 18 - cam * 0.3) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
-        const y = Math.round(((p.y * H + tick * p.speed * 6 + Math.sin(tick * 2 + p.wob) * 4) % H + H) % H);
+        const x = R(((p.x * W * 1.3 + tick * p.speed * 18 - cam * 0.3) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
+        const y = R(((p.y * H + tick * p.speed * 6 + Math.sin(tick * 2 + p.wob) * 4) % H + H) % H);
         fg.fillStyle = leafy[p.c];
         fg.fillRect(x, y, (Math.floor(tick * 4 + p.wob) % 2) + 1, 1);
       }
@@ -800,18 +837,18 @@ function clearingScene({ film, look, mini, time, land, sky, cloud, W, H, tall, r
       const on = Math.sin(tick * 3 + f.phase) > 0.2;
       if (!on) continue;
       fg.fillStyle = film.glow.firefly[0];
-      fg.fillRect(Math.round(f.x * W + Math.sin(tick + f.phase) * 4), Math.round(meadowTop - 6 + f.y * (H - meadowTop) * 0.8 + lift), 1, 1);
+      fg.fillRect(R(f.x * W + Math.sin(tick + f.phase) * 4), R(meadowTop - 6 + f.y * (H - meadowTop) * 0.8 + lift), 1, 1);
     }
-    put(fg, fore, -Math.round(cam * SPEED.fore), Math.round(lift * 1.3), scaleOf(z, 'fore'));
+    put(fg, fore, -R(cam * SPEED.fore), R(lift * 1.3), scaleOf(z, 'fore'));
     for (const c of clouds) {   // the big near clouds you fall through
       if (c.lift < 1) continue;
-      const y = Math.round(c.y + lift * c.lift);
+      const y = R(c.y + lift * c.lift);
       if (y < -c.img.height || y > H) continue;
-      fg.drawImage(c.img, Math.round(c.x - cam * 0.2 + tick * c.drift), y);
+      fg.drawImage(c.img, R(c.x - cam * 0.2 + tick * c.drift), y);
     }
   }
 
-  return { spots, walkX: VX, draw, monAt: (i, ms) => [spots[i].x - Math.round(camAt(ms) * SPEED.meadow), spots[i].y + liftAt(ms)] };
+  return { spots, walkX: VX, draw, monAt: (i, ms) => [spots[i].x - camAt(ms) * SPEED.meadow, spots[i].y + liftAt(ms)] };
 }
 
 /* ----- the Overgrown Shrine: a crane shot up the mossy steps, through a tunnel of torii, to the Main Hall ----- */
@@ -995,7 +1032,7 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
   const DOLLY = { far: 0.03, ridge: 0.15, slope: 0.7, near: 1.2 };
   const drop = (k) => Math.ceil(RISE_PX * SPEED[k]);
   const riseAt = (ms) => mini ? 1 : ease(span(RISE, ms));
-  const offY = (k, ms) => -Math.round(drop(k) * (1 - riseAt(ms)));
+  const offY = (k, ms) => -drop(k) * (1 - riseAt(ms));
   // upright, the hall ends in the middle under the title; wide, on the right with the title beside it
   const hallX = Math.round(W * (tall || mini ? 0.5 : 0.68)), Hy = Math.round(H * (tall ? 0.5 : 0.56));
   const hallHalf = Math.round(Math.min(W * 0.42, Math.min(W * 0.17, H * 0.16) * (look.hall || 1)));
@@ -1137,18 +1174,20 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
   // walking on: each layer grows about the hall's foot, nearer ones faster
   const VX = hallX, VY = Hy;
   const put = (ctx, img, y, key, z) => {
+    const R = snapOf(ctx);
     const s = 1 + z * DOLLY[key];
     if (s === 1) return ctx.drawImage(img, 0, y);
-    ctx.drawImage(img, Math.round(VX - VX * s), Math.round(VY + (y - VY) * s), Math.round(img.width * s), Math.round(img.height * s));
+    ctx.drawImage(img, R(VX - VX * s), R(VY + (y - VY) * s), R(img.width * s), R(img.height * s));
   };
 
   function draw(bg, fg, ms, tick) {
+    const R = bg.snap;
     const z = mini ? 0.32 * ease(Math.min(1, ms / beats.END)) : 0, ss = 1 + z * DOLLY.slope, oy = offY('slope', ms);
     const at = (x, y) => [VX + (x - VX) * ss, VY + (y + oy - VY) * ss];
     bg.drawImage(skyC, 0, 0);
     for (const c of clouds) {
-      const x = Math.round(((c.x + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
-      bg.drawImage(c.img, x, Math.round(c.y + offY('far', ms) * 0.5));
+      const x = R(((c.x + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
+      bg.drawImage(c.img, x, R(c.y + offY('far', ms) * 0.5));
     }
     put(bg, farC, offY('far', ms), 'far', z);
     put(bg, ridgeC, offY('ridge', ms), 'ridge', z);
@@ -1160,12 +1199,12 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
     for (const [k, r] of [[0.08, 2.4], [0.12, 1.6], [0.18, 1]]) {
       bg.globalAlpha = k * (0.7 + 0.5 * breath) * (dark ? 1.7 : 1);
       bg.fillStyle = film.glow.aura[1];
-      bg.beginPath(); bg.ellipse(Math.round(dx), Math.round(dy), door.half * 0.55 * r * ss, door.half * 0.4 * r * ss, 0, 0, Math.PI * 2); bg.fill();
+      bg.beginPath(); bg.ellipse(R(dx), R(dy), door.half * 0.55 * r * ss, door.half * 0.4 * r * ss, 0, 0, Math.PI * 2); bg.fill();
     }
     bg.globalAlpha = 0.65 + 0.3 * breath;
     const [x0, y0] = at(door.x - (door.w >> 1), door.top);
     bg.fillStyle = film.glow.aura[0];
-    bg.fillRect(Math.round(x0), Math.round(y0), Math.max(1, Math.round(door.w * ss)), Math.max(1, Math.round((door.bottom - door.top) * ss)));
+    bg.fillRect(R(x0), R(y0), Math.max(1, R(door.w * ss)), Math.max(1, R((door.bottom - door.top) * ss)));
     bg.globalAlpha = 1;
 
     for (const l of lights) {   // the lanterns, lit by the spirits as you climb
@@ -1178,10 +1217,10 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
       const flicker = 0.85 + 0.15 * Math.sin(tick * 9 + l.x);
       bg.globalAlpha = (dark ? 0.35 : 0.2) * flicker;
       bg.fillStyle = lamp[1];
-      bg.beginPath(); bg.ellipse(Math.round(x), Math.round(y), l.size * 1.6 * ss, l.size * 1.3 * ss, 0, 0, Math.PI * 2); bg.fill();
+      bg.beginPath(); bg.ellipse(R(x), R(y), l.size * 1.6 * ss, l.size * 1.3 * ss, 0, 0, Math.PI * 2); bg.fill();
       bg.globalAlpha = 1;
       bg.fillStyle = lamp[0];
-      bg.fillRect(Math.round(x) - (l.size > 5 ? 1 : 0), Math.round(y), l.size > 5 ? 3 : 1, l.size > 5 ? 2 : 1);
+      bg.fillRect(R(x) - (l.size > 5 ? 1 : 0), R(y), l.size > 5 ? 3 : 1, l.size > 5 ? 2 : 1);
     }
 
     bg.fillStyle = land.mist[0];   // banks of mist drifting across the hill
@@ -1191,7 +1230,7 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
       bg.globalAlpha = mistAlpha;
       for (let n = 0; n < 4; n++) {
         const x = ((b.phase + n * W * 0.42 + tick * b.speed) % (W * 1.68)) - W * 0.34;
-        bg.beginPath(); bg.ellipse(Math.round(x), Math.round(y + Math.sin(n * 2.1) * 2), W * 0.28, b.ry * ss, 0, 0, Math.PI * 2); bg.fill();
+        bg.beginPath(); bg.ellipse(R(x), R(y + Math.sin(n * 2.1) * 2), W * 0.28, b.ry * ss, 0, 0, Math.PI * 2); bg.fill();
       }
     }
     bg.globalAlpha = 1;
@@ -1200,20 +1239,20 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
       const a = w.a + tick * w.speed;
       const spot = (a2) => at(door.x + Math.cos(a2) * door.half * w.r * 1.2, door.y - door.half * 0.3 + Math.sin(a2) * door.half * 0.25 * w.r - Math.sin(tick * 1.3 + w.bob) * door.half * 0.3);
       const [x, y] = spot(a), [px, py] = spot(a - 0.2);
-      bg.fillStyle = film.glow.wisp[2]; bg.fillRect(Math.round(px), Math.round(py), 1, 1);
-      bg.fillStyle = film.glow.wisp[1]; bg.fillRect(Math.round(x), Math.round(y), 2, 2);
-      bg.fillStyle = film.glow.wisp[0]; bg.fillRect(Math.round(x), Math.round(y), 1, 1);
+      bg.fillStyle = film.glow.wisp[2]; bg.fillRect(R(px), R(py), 1, 1);
+      bg.fillStyle = film.glow.wisp[1]; bg.fillRect(R(x), R(y), 2, 2);
+      bg.fillStyle = film.glow.wisp[0]; bg.fillRect(R(x), R(y), 1, 1);
     }
 
     fg.clearRect(0, 0, W, H);
     for (const [i, s] of spots.entries()) {   // the shrubs the Pokémon hide in, shaking just before one pops out
       const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0, img = bushes[i];
-      fg.drawImage(img, Math.round(s.x - img.width / 2 + rustle), Math.round(s.y + oy + s.size * 0.6 - img.height));
+      fg.drawImage(img, R(s.x - img.width / 2 + rustle), R(s.y + oy + s.size * 0.6 - img.height));
     }
     if (coverC) fg.drawImage(coverC, 0, oy);
     for (const p of leaves) {   // maple leaves tumbling down
-      const x = Math.round(((p.x * W * 1.3 + tick * p.speed * 7 + Math.sin(tick * 1.5 + p.wob) * 5) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
-      const y = Math.round(((p.y * H + tick * p.speed * 14) % H + H) % H);
+      const x = R(((p.x * W * 1.3 + tick * p.speed * 7 + Math.sin(tick * 1.5 + p.wob) * 5) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
+      const y = R(((p.y * H + tick * p.speed * 14) % H + H) % H);
       fg.fillStyle = land.maple[p.c];
       const flip = Math.floor(tick * 5 + p.wob) % 3;
       fg.fillRect(x, y, flip ? 2 : 1, flip === 1 ? 1 : 2);
@@ -1221,7 +1260,7 @@ function shrineScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
     for (const f of flies) {
       if (Math.sin(tick * 3 + f.phase) < 0.2) continue;
       fg.fillStyle = film.glow.firefly[0];
-      fg.fillRect(Math.round(f.x * W + Math.sin(tick + f.phase) * 4), Math.round(H * (0.45 + f.y * 0.5) + Math.cos(tick * 0.7 + f.phase) * 3), 1, 1);
+      fg.fillRect(R(f.x * W + Math.sin(tick + f.phase) * 4), R(H * (0.45 + f.y * 0.5) + Math.cos(tick * 0.7 + f.phase) * 3), 1, 1);
     }
     put(fg, nearC, offY('near', ms), 'near', z);
 
@@ -1476,6 +1515,7 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
   const project = (wx, wz, cz, k) => { const dz = wz - cz; return [VX + wx * F / dz, hz + k / dz, dz]; };
 
   function draw(bg, fg, ms, tick) {
+    const R = bg.snap;
     const cz = camZ(ms), k = K(ms), dt = lastMs < 0 ? 0 : Math.min(0.1, (ms - lastMs) / 1000);
     if (!gusted && !mini) { gusted = true; if (live()) playSound('gust'); }
     if (!rumbled && tick >= huffAt - 0.25) { rumbled = true; if (live()) playSound('rumble-far'); }
@@ -1483,14 +1523,14 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
 
     bg.drawImage(skyC, 0, 0);
     for (const c of clouds) {
-      const x = Math.round(((c.x + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
-      bg.drawImage(c.img, x, Math.round(c.y));
+      const x = R(((c.x + tick * c.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
+      bg.drawImage(c.img, x, R(c.y));
     }
     bg.drawImage(farC, 0, shake);
 
     // the volcano, its crater breathing light and a plume of smoke leaning on the wind
     const vs = volScale(ms), vw = volc.img.width * vs, vhh = volc.img.height * vs;
-    const vx = Math.round(VX - volc.cx * vs), vy = Math.round(hz + 2 - vhh) + shake, cx = VX, cy = vy + Math.max(1, Math.round(vs));
+    const vx = R(VX - volc.cx * vs), vy = R(hz + 2 - vhh) + shake, cx = VX, cy = vy + Math.max(1, R(vs));
     const breath = 0.5 + 0.5 * Math.sin(tick * 1.5) + (huff > 0 && huff < 1.2 ? (1 - huff / 1.2) * 1.5 : 0);
     for (const [a, r] of [[0.1, 3], [0.16, 1.8], [0.24, 1.1]]) {
       bg.globalAlpha = a * (0.6 + 0.4 * breath) * (dark ? 1.6 : 1);
@@ -1498,7 +1538,7 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
       bg.beginPath(); bg.ellipse(cx, cy, Math.max(2, volc.crater * vs * r * 1.6), Math.max(1.5, volc.crater * vs * r * 0.8), 0, 0, Math.PI * 2); bg.fill();
     }
     bg.globalAlpha = 1;
-    bg.drawImage(volc.img, vx, vy, Math.round(vw), Math.round(vhh));
+    bg.drawImage(volc.img, vx, vy, R(vw), R(vhh));
     const PERIOD = 0.32, LIFE = 5.5, unit = Math.max(6, vh0 * vs);
     const hash = (n) => ((Math.sin(n * 12.9898) * 43758.5453) % 1 + 1) % 1;
     for (let n = Math.floor((tick - LIFE) / PERIOD); n <= Math.floor(tick / PERIOD); n++) {
@@ -1520,7 +1560,7 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
         const x = cx + Math.sin(ang) * v * a, y = cy - Math.cos(ang) * v * a + 0.5 * unit * 1.5 * a * a;
         if (a > 0.9 + hash(n) * 0.9) continue;
         bg.fillStyle = film.glow.ember[n % 3];
-        bg.fillRect(Math.round(x), Math.round(y), 1, 1);
+        bg.fillRect(R(x), R(y), 1, 1);
       }
     }
 
@@ -1543,8 +1583,8 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
     fg.clearRect(0, 0, W, H);
     const fogIdx = (dz) => Math.min(3, Math.floor((1 - Math.exp(-dz / FOGD)) * 4.6));
     for (const { t, dz, s, sx, sy } of seen) {
-      const img = t.look[fogIdx(dz)], ctx = dz < front ? fg : bg, w = Math.max(1, Math.round(img.width * s)), h = Math.max(1, Math.round(img.height * s));
-      ctx.drawImage(img, Math.round(sx - w / 2), Math.round(sy - h + 1 + (ctx === bg ? shake : 0)), w, h);
+      const img = t.look[fogIdx(dz)], ctx = dz < front ? fg : bg, w = Math.max(1, R(img.width * s)), h = Math.max(1, R(img.height * s));
+      ctx.drawImage(img, R(sx - w / 2), R(sy - h + 1 + (ctx === bg ? shake : 0)), w, h);
       if (t.kind === 'vent' && s > 0.12) {   // steam curling up out of it
         for (let n = 0; n < 3; n++) {
           const a = (tick * 0.5 + n / 3 + t.phase) % 1, r = Math.max(1, (1 + a * 3) * s * 2.2);
@@ -1557,8 +1597,8 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
     for (const [i, s] of spots.entries()) {   // the rocks the Pokémon hide behind, shaking just before one pops out
       const dz = s.wz - cz, sc = s.dz / dz, img = spotRocks[i], [sx, sy] = project(s.wx, s.wz, cz, k);
       const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0;
-      const w = Math.round(img.width * sc), h = Math.round(img.height * sc);
-      if (w > 1) fg.drawImage(img, Math.round(sx - w / 2 + rustle), Math.round(sy + 2 * sc - h + 1), w, h);
+      const w = R(img.width * sc), h = R(img.height * sc);
+      if (w > 1) fg.drawImage(img, R(sx - w / 2 + rustle), R(sy + 2 * sc - h + 1), w, h);
     }
 
     // sparks rising off the cracks
@@ -1567,7 +1607,7 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
       if (p > 0.85) continue;
       const x = hash(n * 7 + i * 13) * W + Math.sin(tick * 3 + n) * 1.5, y = hz + 3 + hash(n * 3 + i * 5) * ROWS - p * H * 0.12;
       fg.fillStyle = film.glow.ember[(n + i) % 3];
-      fg.fillRect(Math.round(x), Math.round(y), 1, 1);
+      fg.fillRect(R(x), R(y), 1, 1);
     }
     // ash and embers in the air: streaking past while you rush, falling softly once you stop
     for (const m of motes) {
@@ -1581,13 +1621,13 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
       const len = Math.min(10, Math.max(Math.abs(px - ox), Math.abs(sy - oz)));
       for (let q = 0; q <= len; q++) {
         const f = len ? q / len : 0;
-        fg.fillRect(Math.round(ox + (px - ox) * f), Math.round(oz + (sy - oz) * f), 1, 1);
+        fg.fillRect(R(ox + (px - ox) * f), R(oz + (sy - oz) * f), 1, 1);
       }
     }
 
     if (!mini && ms < 2400) {   // bursting out of the ash cloud: its billows part either side, the haze thins
       const p = ms / 1000;
-      for (const c of nearAsh) fg.drawImage(c.img, Math.round(c.x + c.dir * p * p * W * 0.55), Math.round(c.y + p * p * H * 0.35));
+      for (const c of nearAsh) fg.drawImage(c.img, R(c.x + c.dir * p * p * W * 0.55), R(c.y + p * p * H * 0.35));
       fg.globalAlpha = Math.max(0, 1 - easeOut(span([0, 1900], ms))) * 0.95;
       fg.fillStyle = cloud[1];
       fg.fillRect(0, 0, W, H);
@@ -1596,8 +1636,8 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
     lastMs = ms; lastCz = cz; lastK = k;
   }
 
-  return { spots, walkX: VX, draw, monAt: (i, ms) => { const [x, y] = project(spots[i].wx, spots[i].wz, camZ(ms), K(ms)); return [Math.round(x), Math.round(y)]; } };
+  return { spots, walkX: VX, draw, monAt: (i, ms) => { const [x, y] = project(spots[i].wx, spots[i].wz, camZ(ms), K(ms)); return [x, y]; } };
 }
 
 // the Safari areas' films (js/safari-intro.js) paint with the same brushes
-export { ease, easeOut, span, layer, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage };
+export { ease, easeOut, span, layer, snapOf, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage };

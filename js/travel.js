@@ -26,9 +26,11 @@ import { FLYERS } from './title.js';
 const DUR = 7600;   // ms from the first step to dawn; the walk carries on while lines are still being read
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-const bay = (x, y) => BAYER[(y & 3) * 4 + (x & 3)] / 16;
+let LX = 0, LY = 0;   // the whole-pixel offset of the layer being painted (into()), so its dithers stay put on the land
+const bay = (x, y) => BAYER[((y + LY) & 3) * 4 + ((x + LX) & 3)] / 16;
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const abgr = (h) => { const n = parseInt(h.slice(1), 16); return (0xff000000 | ((n & 255) << 16) | (n & 0xff00) | (n >> 16)) >>> 0; };
+const dev = (v) => Math.round(v * devicePixelRatio) / devicePixelRatio;   // CSS px, on a whole device pixel
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const smooth = (v) => { v = clamp01(v); return v * v * (3 - 2 * v); };
 /** a's colour where the dither says so, b's past it: `m` 0 is all a, 1 all b. */
@@ -165,7 +167,23 @@ export const hasTravel = (from, to) => !!ROUTES[`${from}>${to}`];
 /* ---------- the engine ---------- */
 
 let P = 4, W = 0, H = 0, tall = false, hz = 0, GY = 0, mx = 0, TRIP = 1;
-let back = null, front = null, bimg = null, fimg = null, buf = null, fbuf = null;
+/* Each parallax layer is its own canvas, painted at its camera offset rounded down to a whole pixel and slid the rest of
+   the way by CSS, so it glides in screen pixels while its art keeps its chunky ones. Back to front; your Pokémon walks
+   between `road` and `roadFront` (the road's things that pass in front of it), and the flyer between `road` and it. */
+const LAYERS = ['sky', 'far', 'hill', 'mid', 'road', 'roadFront', 'near'];
+let layers = {}, buf = null, fbuf = null;
+
+/** Paint the next things into a layer at camera offset (ox, oy): its whole-pixel part comes back to paint with, the rest
+    is left for CSS. `road` also takes `roadFront` as the front buffer, `near` is front only. */
+function into(name, ox = 0, oy = 0) {
+  const l = layers[name], ix = Math.floor(ox), iy = Math.floor(oy);
+  l.fx = ox - ix; l.fy = oy - iy;
+  LX = ix; LY = -iy;
+  if (name === 'near') fbuf = l.buf;
+  else buf = l.buf;
+  if (name === 'road') { const f = layers.roadFront; f.fx = l.fx; f.fy = l.fy; fbuf = f.buf; }
+  return [ix, iy];
+}
 let guest = null;
 let route = null, lit = new Set(), chimeAt = 0, belled = false, cued = new Set(), camX = 0, clock = 0;
 
@@ -253,19 +271,35 @@ const loaded = (el) => el.complete && el.naturalWidth ? null : new Promise(resol
 
 function layout() {
   P = innerWidth <= 720 ? 4 : 5;
-  W = Math.ceil(innerWidth / P);
-  H = Math.ceil(innerHeight / P);
+  W = Math.ceil(innerWidth / P) + 1;   // a pixel spare each way for the layers' slide
+  H = Math.ceil(innerHeight / P) + 1;
   tall = H > W;
   hz = Math.round(H * (tall ? 0.56 : 0.5));
   GY = Math.round(H * (tall ? 0.8 : 0.78));
   mx = Math.round(W * (tall ? 0.4 : 0.36));
   TRIP = Math.round(Math.max(W, 150) * 2.1);   // ground pixels walked from the first step to dawn
-  back = $('travel-back'); front = $('travel-front');
-  for (const c of [back, front]) { c.width = W; c.height = H; c.style.width = `${W * P}px`; c.style.height = `${H * P}px`; }
-  bimg = back.getContext('2d').createImageData(W, H);
-  fimg = front.getContext('2d').createImageData(W, H);
-  buf = new Uint32Array(bimg.data.buffer);
-  fbuf = new Uint32Array(fimg.data.buffer);
+  layers = {};
+  for (const name of LAYERS) {
+    const c = layerCanvas(name), g = c.getContext('2d');
+    c.width = W; c.height = H; c.style.width = `${W * P}px`; c.style.height = `${H * P}px`;
+    const img = g.createImageData(W, H);
+    layers[name] = { c, g, img, buf: new Uint32Array(img.data.buffer), fx: 0, fy: 0 };
+  }
+}
+
+/** The canvas for a layer: the page's two (sky at the back, near grass at the front), the rest made beside them once. */
+function layerCanvas(name) {
+  if (name === 'sky') return $('travel-back');
+  if (name === 'near') return $('travel-front');
+  let c = $(`travel-${name}`);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.id = `travel-${name}`;
+    c.className = 'travel-canvas pixel';
+    c.setAttribute('aria-hidden', 'true');
+    $(name === 'roadFront' ? 'travel-front' : 'travel-flyer').before(c);
+  }
+  return c;
 }
 
 function relayout() { layout(); fit(); }
@@ -305,7 +339,7 @@ function frame(ms, walked = ms) {
   // `pos` is how far along the road (a route's `walk` can slow the steps); `trip` stays the clock
   const pos = route.walk ? route.walk(trip) : trip;
   const cam = pos * TRIP;
-  const camY = Math.round(route.rise(pos) * H * 0.75);
+  const camY = route.rise(pos) * H * 0.75;
   camX = cam; clock = walked / 1000;
   const sky = skyAt(p);
   const e = {
@@ -313,17 +347,20 @@ function frame(ms, walked = ms) {
     a: tone(route.a, sky.land), b: tone(route.b, sky.land), c: tone(route.shared, sky.land), glow: GLOW.map(abgr),
     d: route.d && tone(route.d, sky.land),
   };
+  for (const l of Object.values(layers)) l.buf.fill(0);
+  into('sky');
   paintSky(e, sky);
   if (guest === ETERNATUS) redGlow(e);
-  fbuf.fill(0);
   route.paint(e);
   flyBy(e);
-  back.getContext('2d').putImageData(bimg, 0, 0);
-  front.getContext('2d').putImageData(fimg, 0, 0);
+  for (const l of Object.values(layers)) {
+    l.g.putImageData(l.img, 0, 0);
+    l.c.style.transform = l.fx || l.fy ? `translate(${dev(-l.fx * P)}px, ${dev(l.fy * P)}px)` : '';
+  }
   // your Pokémon, its feet on the road, a step up and down as it walks
   const mon = $('travel-mon');
   const step = still() ? 0 : Math.floor(walked / 220) % 2;
-  mon.style.top = `${(groundY(mx + cam) + camY - step) * P}px`;
+  mon.style.top = `${dev((groundY(mx + cam) + camY - step) * P)}px`;
 }
 
 /* ---------- the flyover (roadmap step 12) ---------- */
@@ -364,12 +401,12 @@ function flyBy(e) {
   const dark = (c) => (0xff000000 | ((c & 0xfefefe) >>> 1)) >>> 0;
   for (let gx = Math.floor(cx - rx); gx <= cx + rx; gx++) {
     if (gx < 0 || gx >= W) continue;
-    const d = Math.abs(gx - cx) / rx, gy = groundY(gx + e.cam) + e.camY;
+    const d = Math.abs(gx - cx) / rx, gy = groundY(gx + e.cam) + Math.round(e.camY);
     for (let dy = -3; dy <= 4; dy++) {
       const y = gy + dy;
       if (y < 0 || y >= H || Math.hypot(d, dy / 4.5) >= 1 || bay(gx, y) > 0.75 * (1 - d * d)) continue;
       const i = y * W + gx;
-      buf[i] = dark(buf[i]);
+      if (buf[i]) buf[i] = dark(buf[i]);
       if (fbuf[i]) fbuf[i] = dark(fbuf[i]);
     }
   }
@@ -478,7 +515,8 @@ function torii(cx, y, h, { torii: red }) {
 /* ---------- Clearing → Shrine ---------- */
 
 function paintClearingShrine(e) {
-  const { cam, camY, trip, a, b, c, glow, t } = e;
+  const { trip, a, b, c, glow, t } = e;
+  let { cam, camY } = e;
   const R = CLEARING_SHRINE, morph = R.morph;
   // a far layer's look runs on the clock, the right edge a little ahead (true world positions would put the Shrine at
   // its edge from the start, it moves so little)
@@ -486,7 +524,7 @@ function paintClearingShrine(e) {
   const lightK = 0.5 + 0.5 * e.night;
 
   // the far mountains: snow-capped blue ranges, turning to the Shrine's misty green ridges
-  const fu = cam * 0.05, fy = Math.round(camY * 0.05);
+  const [fu, fy] = into('far', cam * 0.05, camY * 0.05);
   for (let x = 0; x < W; x++) {
     const u = x + fu, m = ahead(x, 0.25);
     const top1 = Math.round(hz - H * 0.05 - H * 0.07 * (0.55 * Math.sin(u * 0.045 + 1) + 0.3 * Math.sin(u * 0.11 + 2) + 0.15 * Math.sin(u * 0.23))) + fy;
@@ -498,7 +536,7 @@ function paintClearingShrine(e) {
   }
 
   // the hills
-  const hu = cam * 0.18, hy = Math.round(camY * 0.18);
+  const [hu, hy] = into('hill', cam * 0.18, camY * 0.18);
   for (let x = 0; x < W; x++) {
     const u = x + hu, m = ahead(x, 0.4);
     const top = Math.round(hz + H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.04 + 3) + 0.4 * Math.sin(u * 0.09))) + hy;
@@ -510,7 +548,7 @@ function paintClearingShrine(e) {
 
   // the woods (true positions from here on): the meadow's round trees thin out, cedars and maples come in, and the
   // Shrine's mountain rises out of them, a stair of lanterns climbing it
-  const S = 0.45, mu = cam * S, my = Math.round(camY * S), MB = GY - Math.round(H * 0.07);
+  const S = 0.45, [mu, my] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
   const fAt = (u) => (u - mx) / (S * TRIP);
   const slope = (f) => smooth((f - 0.5) / 0.3);
   const midTop = (u) => {
@@ -575,6 +613,7 @@ function paintClearingShrine(e) {
     }
   }
 
+  [cam, camY] = into('road', cam, camY);
   // the road: the Clearing's dirt path and meadow, the Ancient Tree's roots up the climb, the Shrine's gravel and moss
   const [r0, r1] = R.ramp;
   for (let x = 0; x < W; x++) {
@@ -633,7 +672,7 @@ function paintClearingShrine(e) {
   }
 
   // the near grass along the bottom, passing faster than the road
-  const nu = cam * 1.35, ny = Math.round(camY * 1.35);
+  const [nu, ny] = into('near', e.cam * 1.35, e.camY * 1.35);
   for (let x = 0; x < W; x++) {
     const u = x + nu, m = morph((u - mx) / (1.35 * TRIP));
     const h = Math.round(H * 0.04 + hash(Math.floor(u)) * H * 0.05 + Math.sin(u * 0.21) * 2);
@@ -736,7 +775,8 @@ function boulder(x, base, r, col) {
 }
 
 function paintShrineWastes(e) {
-  const { cam, camY, pos, a, d, c, glow, t, night } = e;
+  const { pos, a, d, c, glow, t, night } = e;
+  let { cam, camY } = e;
   const R = SHRINE_WASTES, morph = R.morph, [g0, g1] = R.gorge;
   // the land's three looks: the Shrine's, dried out half-way, the Wastes'
   const L = (key, k, m, x, y) => (m < 0.5 ? dd(a[key][k], d[key][k], m * 2, x, y) : dd(d[key][k], e.b[key][k], m * 2 - 1, x, y));
@@ -746,7 +786,8 @@ function paintShrineWastes(e) {
 
   // the volcano rises over the horizon, its red glow in the sky behind it, smoke trailing off its crater
   const grow = smooth((pos - 0.12) / 0.62);
-  const vx = Math.round(W * (tall ? 0.8 : 0.84) - cam * 0.05), vh = Math.round(H * (tall ? 0.08 : 0.11) * (0.7 + 0.5 * grow));
+  const [fu] = into('far', cam * 0.05);
+  const vx = Math.round(W * (tall ? 0.8 : 0.84)) - fu, vh = Math.round(H * (tall ? 0.08 : 0.11) * (0.7 + 0.5 * grow));
   const vtop = Math.round(hz + 4 + (1 - grow) * H * 0.14 - vh);
   const glowK = grow * (0.35 + 0.65 * night), gr = Math.round(Math.max(W * 0.32, H * 0.17));
   for (let y = Math.max(0, vtop - gr); y < Math.min(H, hz + 8); y++) {
@@ -780,7 +821,6 @@ function paintShrineWastes(e) {
   }
 
   // the far ranges: the Shrine's misty green ridges, then dry, then the Wastes' ashen peaks
-  const fu = cam * 0.05;
   for (let x = 0; x < W; x++) {
     const u = x + fu, m = ahead(x, 0.25);
     const top1 = Math.round(hz - H * 0.04 - H * 0.06 * (0.55 * Math.sin(u * 0.045 + 1) + 0.3 * Math.sin(u * 0.11 + 2) + 0.15 * Math.sin(u * 0.23)));
@@ -792,7 +832,7 @@ function paintShrineWastes(e) {
   }
 
   // the hills
-  const hu = cam * 0.18;
+  const [hu] = into('hill', cam * 0.18);
   for (let x = 0; x < W; x++) {
     const u = x + hu, m = ahead(x, 0.4);
     const top = Math.round(hz + H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.04 + 3) + 0.4 * Math.sin(u * 0.09)));
@@ -800,7 +840,7 @@ function paintShrineWastes(e) {
   }
 
   // the woods: the Shrine's cedars brown and die, dead trees and boulders take over
-  const S = 0.45, mu = cam * S, MB = GY - Math.round(H * 0.07);
+  const S = 0.45, [mu] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
   const fAt = (u) => (u - mx) / (S * TRIP);
   const midTop = (u) => MB + Math.round(Math.sin(u * 0.13)) + camY;
   for (let x = 0; x < W; x++) {
@@ -836,6 +876,7 @@ function paintShrineWastes(e) {
     }
   }
 
+  [cam, camY] = into('road', cam, camY);
   // the road: the Shrine's gravel and moss, dry earth, the Wastes' ash, cut by the chasm; its cliffs are bare rock
   const uL = mx + g0 * TRIP, uR = mx + g1 * TRIP, rim = GY + camY;
   for (let x = 0; x < W; x++) {
@@ -932,7 +973,7 @@ function paintShrineWastes(e) {
   }
 
   // the near grass along the bottom, drying and thinning, none over the chasm
-  const nu = cam * 1.35;
+  const [nu] = into('near', e.cam * 1.35);
   for (let x = 0; x < W; x++) {
     const u = x + nu, fn = (u - mx) / (1.35 * TRIP), m = morph(fn);
     if (fn > g0 - 0.015 && fn < g1 + 0.01) continue;

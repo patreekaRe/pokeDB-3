@@ -316,13 +316,14 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
   const chimed = new Set();
 
   function draw(bg, fg, ms, tick) {
+    const R = bg.snap;
     const dt = Math.min(0.1, (ms - lastMs) / 1000);
     lastMs = ms;
     if (!hummed && live()) { hummed = true; playSound('gate-hum'); }
 
     const layerAt = (g, img, k, l) => {
       const s = grow(ms, k), off = l ? lift(ms, l) : 0;
-      g.drawImage(img, Math.round(VX - VX * s), Math.round(hz - hz * s + off), Math.round(W * s), Math.round(H * s));
+      g.drawImage(img, R(VX - VX * s), R(hz - hz * s + off), R(W * s), R(H * s));
     };
     bg.drawImage(skyC, 0, 0);
     for (const g of glimmers) if (Math.sin(tick * 1.4 + g.ph) > 0.75) { bg.fillStyle = g.c; bg.fillRect(g.x, g.y, 1, 1); }
@@ -333,10 +334,10 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
       const s = grow(ms, PUSH.far) * goal, off = lift(ms, LIFT.far), x = VX, base = hz + off, top = Math.max(0, hz * (1 - 0.92 * Math.min(1, s * 0.75)) + off - hz * 0.1);
       const w = Math.max(1, Math.round(s * 0.7 + Math.sin(tick * 7) * 0.3));
       bg.globalAlpha = 0.25;
-      bg.fillStyle = ENERGY[3]; bg.fillRect(x - w * 4, Math.round(top), w * 8 + 1, Math.round(base - top));
+      bg.fillStyle = ENERGY[3]; bg.fillRect(x - w * 4, R(top), w * 8 + 1, R(base - top));
       bg.globalAlpha = 1;
       for (let y = Math.round(top); y < base; y++) {
-        const wob = Math.round(Math.sin(y * 0.4 + tick * 6) * 0.6);
+        const wob = R(Math.sin(y * 0.4 + tick * 6) * 0.6);
         bg.fillStyle = ENERGY[2]; bg.fillRect(x - w - 1 + wob, y, w * 2 + 3, 1);
         bg.fillStyle = (y + Math.floor(tick * 20)) % 6 < 2 ? ENERGY[0] : ENERGY[1]; bg.fillRect(x - w + 1 + wob, y, Math.max(1, w * 2 - 1), 1);
       }
@@ -344,7 +345,7 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
       for (let n = 0; n < 90; n++) {
         const a = n / 90 * Math.PI * 8 + tick * 1.8, r = (n / 90) * vr;
         bg.fillStyle = ENERGY[n % 3 + 1];
-        bg.fillRect(Math.round(x + Math.cos(a) * r), Math.round(top + Math.sin(a) * r * 0.35), 1, 1);
+        bg.fillRect(R(x + Math.cos(a) * r), R(top + Math.sin(a) * r * 0.35), 1, 1);
       }
       bg.globalAlpha = 0.35 + 0.15 * Math.sin(tick * 3);
       bg.fillStyle = ENERGY[2];
@@ -363,7 +364,7 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
         if (k < 1) {   // a flash as it catches
           const s = grow(ms, PUSH.mid), [x, y] = [VX + (l.x - VX) * s, hz + (l.y - hz) * s + lift(ms, LIFT.mid)];
           bg.fillStyle = '#ffffff';
-          bg.fillRect(Math.round(x) - 2, Math.round(y), 5, 1); bg.fillRect(Math.round(x), Math.round(y) - 2, 1, 5);
+          bg.fillRect(R(x) - 2, R(y), 5, 1); bg.fillRect(R(x), R(y) - 2, 1, 5);
         }
         bg.globalAlpha = 1;
       }
@@ -375,8 +376,8 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
     for (const [i, s] of spots.entries()) {   // the outcrops, shaking just before one steps out
       const img = outcrops[i], [x, y] = at(s.x, s.y, ms, PUSH.ground), sc = grow(ms, PUSH.ground);
       const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0;
-      const w = Math.round(img.width * sc), h = Math.round(img.height * sc);
-      fg.drawImage(img, Math.round(x - w / 2 + rustle), Math.round(y + 2 * sc - h + 1), w, h);
+      const w = R(img.width * sc), h = R(img.height * sc);
+      fg.drawImage(img, R(x - w / 2 + rustle), R(y + 2 * sc - h + 1), w, h);
     }
     layerAt(fg, foreC, PUSH.fore, LIFT.fore);
 
@@ -384,18 +385,18 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
       m.y -= m.v * dt * 6;
       if (m.y < -2) { m.y = H + 2; m.x = Math.random() * W; }
       const y = ((m.y + lift(ms, 1.2)) % (H + 4) + H + 4) % (H + 4) - 2;
-      if (Math.sin(tick * 2.5 + m.ph) > -0.2) { fg.fillStyle = (look.red && m.ph > 3) ? ENERGY[1] : C.mote[m.ph > 4 ? 0 : 1]; fg.fillRect(Math.round(m.x), Math.round(y), 1, 1); }
+      if (Math.sin(tick * 2.5 + m.ph) > -0.2) { fg.fillStyle = (look.red && m.ph > 3) ? ENERGY[1] : C.mote[m.ph > 4 ? 0 : 1]; fg.fillRect(R(m.x), R(y), 1, 1); }
     }
 
     if (!mini && foot(ms) > 0) {   // the shaft: its walls slide up past you, and its foot opens onto the cavern
       const speed = (shaftH + H * 0.1) * 1.15 / (B.DROP[1] / 1000);
-      fg.drawImage(shaftC, 0, Math.round(shaftY(ms)));
+      fg.drawImage(shaftC, 0, R(shaftY(ms)));
       for (const d of dust) {
         d.y -= speed * dt * d.k * 0.5;
         if (d.y < -10) { d.y = H + Math.random() * 20; d.x = W * (0.32 + Math.random() * 0.36); }
         const len = Math.min(12, Math.max(1, speed * 0.012 * d.k));
         fg.fillStyle = C.mote[1];
-        fg.fillRect(Math.round(d.x), Math.round(d.y), 1, Math.round(len));
+        fg.fillRect(R(d.x), R(d.y), 1, R(len));
       }
       const above = Math.max(0, 1 - ms / 1800);   // the light from the hole you came down, fading above you
       if (above > 0) {
@@ -409,7 +410,7 @@ function depthsScene({ look, mini, W, H, tall, rand, beats, live }) {
 
   return {
     spots, walkX: VX, draw,
-    monAt: (i, ms) => { const s = spots[i], [x, y] = at(s.x, s.y, ms, PUSH.ground); return [Math.round(x), Math.round(y)]; },
+    monAt: (i, ms) => { const s = spots[i], [x, y] = at(s.x, s.y, ms, PUSH.ground); return [x, y]; },
   };
 }
 

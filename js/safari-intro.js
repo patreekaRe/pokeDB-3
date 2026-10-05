@@ -21,7 +21,7 @@
    running from your feet to the goal.
    ============================================================ */
 
-import { ease, easeOut, span, layer, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage, offTheWay, settle } from './biome-intro.js';
+import { ease, easeOut, span, layer, snapOf, disc, mix, dither, paintSky, cloudImage, paintFar, tallGrass, paintFore, rockImage, deadTreeImage, offTheWay, settle } from './biome-intro.js';
 import { playSound } from './audio.js';
 
 const SPEED = { far: 0.1, mid: 0.35, back: 0.6, ground: 0.85, fore: 1.3, near: 1.6 };
@@ -786,13 +786,14 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   const cap = hz - Math.round(H * 0.07);
   const spread = Math.max(1, goal / cap) ** 0.7;   // a goal that can't grow taller grows wider as you near it
 
-  const view = (k, c) => ({ x0: -Math.round(c.pan * PAN_PX * SPEED[k]), y0: Math.round(c.lift * LIFT[k]), s: 1 + c.z * DOLLY[k] });
+  const view = (k, c) => ({ x0: -c.pan * PAN_PX * SPEED[k], y0: c.lift * LIFT[k], s: 1 + c.z * DOLLY[k] });
   const toScreen = (k, u, v, c) => { const { x0, y0, s } = view(k, c); return [VX + (x0 + u - VX) * s, VY + (y0 + v - VY) * s, s]; };
   const toLayer = (k, X, Y, c) => { const { x0, y0, s } = view(k, c); return [(X - VX) / s + VX - x0, (Y - VY) / s + VY - y0]; };
   const put = (ctx, img, k, c) => {
+    const R = snapOf(ctx);
     const { x0, y0, s } = view(k, c);
     if (s === 1) return ctx.drawImage(img, x0, y0);
-    ctx.drawImage(img, Math.round(VX + (x0 - VX) * s), Math.round(VY + (y0 - VY) * s), Math.round(img.width * s), Math.round(img.height * s));
+    ctx.drawImage(img, R(VX + (x0 - VX) * s), R(VY + (y0 - VY) * s), R(img.width * s), R(img.height * s));
   };
 
   // ---- paint every layer once ----
@@ -857,19 +858,20 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   let gusted = false;
 
   function draw(bg, fg, ms, tick) {
+    const R = bg.snap, Q = bg.canvas.width / W;
     const c = camAt(ms), lift = c.lift;
     if (!gusted && !mini && film.sounds) { gusted = true; if (live()) playSound('gust'); }
     bg.drawImage(skyC, 0, 0);
     for (const cl of clouds) {
       if (cl.lift > 1) continue;
-      const x = Math.round(((cl.x - c.pan * PAN_PX * 0.05 + tick * cl.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
-      bg.drawImage(cl.img, x, Math.round(cl.y + Math.max(0, lift) * cl.lift + Math.min(0, lift) * 0.5));
+      const x = R(((cl.x - c.pan * PAN_PX * 0.05 + tick * cl.drift) % (W * 1.8) + W * 1.8) % (W * 1.8) - W * 0.4);
+      bg.drawImage(cl.img, x, R(cl.y + Math.max(0, lift) * cl.lift + Math.min(0, lift) * 0.5));
     }
     if (art.birds && !mini && ms < 5200) {   // a flock crossing as you arrive
       const fx = -10 + (ms / 5200) * (W + 30), fy = H * 0.3 + lift * 0.3 - ms / 400;
       bg.fillStyle = art.birds;
       for (let n = 0; n < 5; n++) {
-        const bx = Math.round(fx - Math.abs(n - 2) * 4), by = Math.round(fy + Math.abs(n - 2) * 3), up = (Math.floor(ms / 140) + n) % 2;
+        const bx = R(fx - Math.abs(n - 2) * 4), by = R(fy + Math.abs(n - 2) * 3), up = (Math.floor(ms / 140) + n) % 2;
         bg.fillRect(bx - 1, by - up, 1, 1); bg.fillRect(bx, by, 1, 1); bg.fillRect(bx + 1, by - up, 1, 1);
       }
     }
@@ -879,7 +881,7 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
       for (const [k, r] of [[0.08, 1.6], [0.12, 1.2], [0.16, 0.9]]) {
         bg.globalAlpha = k * (0.7 + 0.5 * breath) * (time === 'night' ? 1.5 : 1);
         bg.fillStyle = film.glow.aura[1];
-        bg.beginPath(); bg.ellipse(Math.round(tx), Math.round(ty), Math.max(2, crown.w * sh * r), Math.max(2, crown.h * sh * r * 1.4), 0, 0, Math.PI * 2); bg.fill();
+        bg.beginPath(); bg.ellipse(R(tx), R(ty), Math.max(2, crown.w * sh * r), Math.max(2, crown.h * sh * r * 1.4), 0, 0, Math.PI * 2); bg.fill();
       }
       bg.globalAlpha = 1;
     }
@@ -887,12 +889,12 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
     for (const [n, [gx, gy]] of glints.entries()) {   // the lake sparkling
       if (Math.sin(tick * 3 + n * 1.7) < 0.6) continue;
       const [x, y] = toScreen('mid', gx, gy, c);
-      bg.fillStyle = film.glow.glint[n % 2]; bg.fillRect(Math.round(x), Math.round(y), 2, 1);
+      bg.fillStyle = film.glow.glint[n % 2]; bg.fillRect(R(x), R(y), 2, 1);
     }
     if (air.has('shimmer')) {   // the heat over the sand
       for (let y = Math.max(0, hz - Math.round(H * 0.18)); y < hz + 3; y++) {
-        const off = Math.round(Math.sin(y * 0.9 + tick * 7) * 0.8);
-        if (off) bg.drawImage(bg.canvas, 0, y, W, 1, off, y, W, 1);
+        const off = R(Math.sin(y * 0.9 + tick * 7) * 0.8);
+        if (off) bg.drawImage(bg.canvas, 0, y * Q, W * Q, Q, off, y, W, 1);
       }
     }
     for (const s of shafts) {   // light falling out of the glade
@@ -909,7 +911,7 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
     if (mists.length) {   // mist lying over the bog
       for (const m of mists) {
         bg.globalAlpha = 0.28 * Math.min(1.6, look.mist || 1);
-        bg.drawImage(m.img, Math.round(((m.x + tick * m.drift - c.pan * PAN_PX * 0.5) % (W * 1.6) + W * 1.6) % (W * 1.6) - W * 0.5), Math.round(m.y));
+        bg.drawImage(m.img, R(((m.x + tick * m.drift - c.pan * PAN_PX * 0.5) % (W * 1.6) + W * 1.6) % (W * 1.6) - W * 0.5), R(m.y));
       }
       bg.globalAlpha = 1;
     }
@@ -919,36 +921,36 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
     for (const [i, s] of spots.entries()) {   // the tall grass each Pokémon hides in, shaking just before it pops out
       const [x, y, sc] = toScreen('ground', s.u, s.v, c), img = tufts[i];
       const rustle = ms > s.ms - 350 && ms < s.ms + 200 ? ((Math.floor(ms / 60) % 2) ? 1 : -1) : 0;
-      if (sc === 1) fg.drawImage(img, Math.round(x - s.size - 2 + rustle), Math.round(y - 2));
-      else fg.drawImage(img, Math.round(x - (s.size + 2) * sc + rustle), Math.round(y - 2 * sc), Math.round(img.width * sc), Math.round(img.height * sc));
+      if (sc === 1) fg.drawImage(img, R(x - s.size - 2 + rustle), R(y - 2));
+      else fg.drawImage(img, R(x - (s.size + 2) * sc + rustle), R(y - 2 * sc), R(img.width * sc), R(img.height * sc));
     }
     const drift = c.pan * PAN_PX * 0.3;
     if (air.has('pollen') || air.has('leaves')) for (const p of motes.slice(0, 24)) {
       const leaf = air.has('leaves');
-      const x = Math.round(((p.x * W * 1.3 + tick * p.speed * (leaf ? 6 : 14) + Math.sin(tick * 2 + p.wob) * (leaf ? 6 : 2) - drift) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
-      const y = Math.round(((p.y * H + tick * p.speed * (leaf ? 14 : 4)) % H + H) % H);
+      const x = R(((p.x * W * 1.3 + tick * p.speed * (leaf ? 6 : 14) + Math.sin(tick * 2 + p.wob) * (leaf ? 6 : 2) - drift) % (W * 1.3) + W * 1.3) % (W * 1.3) - W * 0.15);
+      const y = R(((p.y * H + tick * p.speed * (leaf ? 14 : 4)) % H + H) % H);
       fg.fillStyle = leaf ? film.glow.leaf[p.c] : film.glow.pollen[p.c % 2];
       fg.fillRect(x, y, leaf ? (Math.floor(tick * 4 + p.wob) % 2) + 1 : 1, 1);
     }
     if (air.has('snow')) for (const p of motes) {
-      const x = Math.round(((p.x * W * 1.2 + tick * p.speed * 9 + Math.sin(tick * 1.5 + p.wob) * 3) % (W * 1.2) + W * 1.2) % (W * 1.2) - W * 0.1);
-      const y = Math.round(((p.y * H + tick * p.speed * 12 + Math.max(0, -lift) * 0.4) % H + H) % H);
+      const x = R(((p.x * W * 1.2 + tick * p.speed * 9 + Math.sin(tick * 1.5 + p.wob) * 3) % (W * 1.2) + W * 1.2) % (W * 1.2) - W * 0.1);
+      const y = R(((p.y * H + tick * p.speed * 12 + Math.max(0, -lift) * 0.4) % H + H) % H);
       fg.fillStyle = film.glow.flake[p.c % 2]; fg.fillRect(x, y, p.c ? 1 : 2, p.c ? 1 : 2);
     }
     if (air.has('sand')) {   // sand blowing low across
       fg.globalAlpha = 0.55;
       for (const p of motes) {
-        const x = Math.round(((p.x * W * 1.5 + tick * p.speed * W * 0.5 - drift) % (W * 1.5) + W * 1.5) % (W * 1.5) - W * 0.25);
-        fg.fillStyle = land.sand[p.c % 2]; fg.fillRect(x, Math.round(gTop + p.y * (H - gTop) + Math.sin(tick * 3 + p.wob) * 2), 2 + p.c * 2, 1);
+        const x = R(((p.x * W * 1.5 + tick * p.speed * W * 0.5 - drift) % (W * 1.5) + W * 1.5) % (W * 1.5) - W * 0.25);
+        fg.fillStyle = land.sand[p.c % 2]; fg.fillRect(x, R(gTop + p.y * (H - gTop) + Math.sin(tick * 3 + p.wob) * 2), 2 + p.c * 2, 1);
       }
       fg.globalAlpha = 1;
     }
     if (air.has('tumbleweed') && (mini || ms > 1800)) {
       const t = (tick * 0.12 + 0.3) % 1, x = -6 + t * (W + 12), y = gTop + (H - gTop) * 0.35 - Math.abs(Math.sin(tick * 4)) * H * 0.03, r = Math.max(2, H * 0.02);
-      for (let a = 0; a < 10; a++) { const ang = a * 0.63 + tick * 5; fg.fillStyle = land.weed[a % 2]; fg.fillRect(Math.round(x + Math.cos(ang) * r), Math.round(y + Math.sin(ang) * r), 1, 1); fg.fillRect(Math.round(x + Math.cos(ang * 1.7) * r * 0.5), Math.round(y + Math.sin(ang * 1.3) * r * 0.5), 1, 1); }
+      for (let a = 0; a < 10; a++) { const ang = a * 0.63 + tick * 5; fg.fillStyle = land.weed[a % 2]; fg.fillRect(R(x + Math.cos(ang) * r), R(y + Math.sin(ang) * r), 1, 1); fg.fillRect(R(x + Math.cos(ang * 1.7) * r * 0.5), R(y + Math.sin(ang * 1.3) * r * 0.5), 1, 1); }
     }
     if (air.has('butterflies') && !dark) for (const f of wings) {
-      const x = Math.round(f.x * W + Math.sin(tick * 0.7 + f.phase) * W * 0.15), y = Math.round(gTop - H * 0.02 + f.y * (H - gTop) * 0.6 + Math.sin(tick * 2.3 + f.phase) * 4);
+      const x = R(f.x * W + Math.sin(tick * 0.7 + f.phase) * W * 0.15), y = R(gTop - H * 0.02 + f.y * (H - gTop) * 0.6 + Math.sin(tick * 2.3 + f.phase) * 4);
       const open = Math.floor(tick * 8 + f.phase) % 2;
       fg.fillStyle = film.glow.wing?.[f.c] || '#ffffff';
       fg.fillRect(x - open, y, 1 + open * 2, 1);
@@ -956,15 +958,15 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
     for (const f of flies) {
       if (Math.sin(tick * 3 + f.phase) < 0.2) continue;
       fg.fillStyle = (film.glow.wisp || film.glow.firefly)[0];
-      fg.fillRect(Math.round(f.x * W + Math.sin(tick + f.phase) * 4), Math.round(gTop - 8 + f.y * (H - gTop) * 0.8 + Math.sin(tick * 0.8 + f.phase) * 3), 1, 1);
+      fg.fillRect(R(f.x * W + Math.sin(tick + f.phase) * 4), R(gTop - 8 + f.y * (H - gTop) * 0.8 + Math.sin(tick * 0.8 + f.phase) * 3), 1, 1);
     }
     put(fg, L.fore, 'fore', c);
     if (nearC) put(fg, nearC, 'near', c);
     for (const cl of clouds) {   // the big near clouds you fall through
       if (cl.lift <= 1) continue;
-      const y = Math.round(cl.y + lift * cl.lift);
+      const y = R(cl.y + lift * cl.lift);
       if (y < -cl.img.height || y > H) continue;
-      fg.drawImage(cl.img, Math.round(cl.x - c.pan * PAN_PX * 0.2 + tick * cl.drift), y);
+      fg.drawImage(cl.img, R(cl.x - c.pan * PAN_PX * 0.2 + tick * cl.drift), y);
     }
     if (art.move === 'mist' && !mini) {   // the mist parting as you come in
       fg.globalAlpha = (1 - easeOut(span(b.CLEAR, ms))) * 0.92;
@@ -973,6 +975,6 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
     }
   }
 
-  const monAt = (i, ms) => { const [x, y] = toScreen('ground', spots[i].u, spots[i].v, camAt(ms)); return [Math.round(x), Math.round(y)]; };
+  const monAt = (i, ms) => { const [x, y] = toScreen('ground', spots[i].u, spots[i].v, camAt(ms)); return [x, y]; };
   return { spots, walkX: VX, draw, monAt };
 }
