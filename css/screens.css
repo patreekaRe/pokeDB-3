@@ -878,7 +878,7 @@ body[data-screen="map-screen"] .floor-tag { display: flex; }
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
 body[data-screen="reward-screen"] .hp-plate { display: flex; }
-.hp-plate .gb-hp-fill { transition: width 0.8s steps(16), background 0.3s; }   /* an event's HP change runs down visibly (showHpChange())*/
+.hp-plate .gb-hp-fill { transition-duration: 0.8s, 0.3s; }   /* an event's HP change runs down visibly (showHpChange())*/
 .hp-plate .gb-hp { width: 96px; margin: 0; }
 .hp-plate .gb-hp-track { height: 14px; padding: 2px; }
 .hp-plate .gb-hp-tag { line-height: 14px; font-size: 0.6rem; }
@@ -1056,7 +1056,8 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   background: #f8f8f0;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
 }
-.gb-hp-fill { display: block; height: 100%; width: 100%; background: var(--hp-color); transition: width 0.6s steps(12), background 0.3s; }
+/* scaled, not resized, and eased, not stepped (the user found the 12-step drain choppy): it runs on the GPU */
+.gb-hp-fill { display: block; height: 100%; width: 100%; background: var(--hp-color); transform: scaleX(var(--hp, 1)); transform-origin: left; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.3, 1), background 0.3s; }
 .gb-hp-num { font-family: var(--pixel-font); font-synthesis-weight: none; align-self: flex-start; width: min(190px, 100%); text-align: right; font-size: 0.9rem; font-weight: 900; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
 
 .run-info { flex: 0 1 auto; display: flex; flex-direction: column; gap: 3px; width: 222px; min-width: 0; text-shadow: 0 1px 3px #000, 0 2px 10px rgba(0, 0, 0, 0.6); }

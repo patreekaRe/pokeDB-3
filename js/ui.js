@@ -351,7 +351,7 @@ export function setHpBar(prefix, hp, max) {
   bar.dataset.level = ratio > 0.5 ? 'high' : ratio > 0.2 ? 'mid' : 'low';
   bar.setAttribute('aria-valuemax', String(max));
   bar.setAttribute('aria-valuenow', String(Math.max(0, hp)));
-  $(`${prefix}-hp-fill`).style.width = `${ratio * 100}%`;
+  $(`${prefix}-hp-fill`).style.setProperty('--hp', Math.min(1, ratio));
   $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/${max}`;
 }
 
