@@ -656,7 +656,8 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
    colours in (.revealed) as it cries. The `translate` property, so the sprite's own transforms are untouched. */
 html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sideways scroll while it's off-screen (on body, phones could still swipe) */
 .enemy-zone.entering { animation: enemySlideIn 0.8s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
-@keyframes enemySlideIn { from { translate: 100vw 0; } }
+.enemy-zone.entering { will-change: transform; }
+@keyframes enemySlideIn { from { transform: translate3d(100vw, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 .enemy-zone.entering .intent { visibility: hidden; }
 .enemy-zone.entering #enemy-img { filter: brightness(0) opacity(0.85); }
 .enemy-zone.revealed #enemy-img { animation: enemyReveal 0.4s ease-out; }
@@ -1815,9 +1816,9 @@ body.battle-intro { pointer-events: none; }
   clip-path: polygon(0 0, 100% 0, 100% 8px, calc(100% - 8px) 8px, calc(100% - 8px) calc(100% - 8px), 100% calc(100% - 8px), 100% 100%,
     0 100%, 0 calc(100% - 8px), 8px calc(100% - 8px), 8px 8px, 0 8px);
 }
-.hof-mon { position: absolute; left: 50%; bottom: 40px; width: 0; height: 0; translate: 60vw 0; }
+.hof-mon { position: absolute; left: 50%; bottom: 40px; width: 0; height: 0; transform: translate3d(60vw, 0, 0); }
 .hof-mon img { position: absolute; left: 0; bottom: 0; max-width: none; image-rendering: pixelated; }
-.hof-scene.mon-in .hof-mon { translate: 0 0; transition: translate 0.8s cubic-bezier(0.2, 0.8, 0.3, 1); }
+.hof-scene.mon-in .hof-mon { transform: translate3d(0, 0, 0); transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .hof-scene.mon-in .hof-light { opacity: 1; }
 .hof-plate-slot { min-height: 64px; width: min(calc(100% - 32px), 440px); }
 .hof-plate {
@@ -1838,7 +1839,7 @@ body.battle-intro { pointer-events: none; }
   overflow-x: auto; padding: 4px 16px 14px;
   animation: hofRise 0.4s ease-out both;
 }
-@keyframes hofRise { from { opacity: 0; translate: 0 30px; } }
+@keyframes hofRise { from { opacity: 0; transform: translate3d(0, 30px, 0); } to { transform: translate3d(0, 0, 0); } }
 /* the run's numbers, before the deck: small dark pixel panels that pop in one after another */
 .hof-scene-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: min(calc(100% - 32px), 620px); margin: 0 auto; }
 .hof-stat {
@@ -1974,7 +1975,8 @@ body.battle-intro { pointer-events: none; }
 .hof-credits.out { opacity: 0; transition-duration: 0.5s; }
 .credits-roll { position: absolute; left: 0; right: 0; top: 100%; padding: 0 16px; }
 .credits-roll.rolling { animation: creditsRoll var(--secs, 38s) linear forwards; }
-@keyframes creditsRoll { to { translate: 0 calc(-100% - 100vh); } }
+.credits-roll.rolling { will-change: transform; }
+@keyframes creditsRoll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, calc(-100% - 100vh), 0); } }
 .hof-credits.ended .credits-roll { opacity: 0; transition: opacity 0.5s; }
 .credits-logo { margin: 0; font: 2rem/1.2 var(--pixel-font); color: #f8d048; text-shadow: 3px 3px 0 #4a1880; }
 .credits-version { margin: 6px 0 0; font-size: 0.7rem; color: #c8a8f0; }
@@ -2160,7 +2162,7 @@ button.hof-row.lost { cursor: pointer; }
   cursor: pointer; outline: none; animation: strikeIn 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 .gate-strike * { pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-@keyframes strikeIn { from { translate: 0 60vh; rotate: 12deg; } }
+@keyframes strikeIn { from { transform: translate3d(0, 60vh, 0); rotate: 12deg; } to { transform: translate3d(0, 0, 0); } }
 .gate-strike .card {
   scale: calc(1 + var(--charge) * 0.1); transition: none;
   filter: drop-shadow(0 0 calc(4px + var(--charge) * 24px) var(--c1)) brightness(calc(1 + var(--charge) * 0.35));
@@ -4139,14 +4141,15 @@ body.scene-peek #backdrop { display: none; }
 .descent-scene.loss .descent-mon { filter: grayscale(0.7) brightness(0.6); }
 .descent-scene.falling .descent-mon { translate: -50% calc(-50% + var(--mid, 0px)); animation: descentDrop 0.7s cubic-bezier(0.3, 0, 0.4, 1) both, descentTumble 2.4s steps(12) 0.7s infinite; filter: drop-shadow(0 6px 10px rgba(176, 96, 240, 0.55)); }
 .descent-scene.falling.loss .descent-mon { filter: grayscale(0.7) brightness(0.6) drop-shadow(0 6px 10px rgba(120, 40, 160, 0.5)); }
-@keyframes descentDrop { from { top: -30%; rotate: -30deg; } }
+/* transform, not top, so the fall moves on the GPU: falling, place() puts it at 40% of the height, so -30% is -70vh */
+@keyframes descentDrop { from { transform: translate3d(0, -70vh, 0); rotate: -30deg; } to { transform: translate3d(0, 0, 0); } }
 @keyframes descentTumble { 0%, 100% { rotate: -8deg; translate: -50% calc(-50% + var(--mid, 0px) - 4px); } 50% { rotate: 8deg; translate: -50% calc(-50% + var(--mid, 0px) + 4px); } }
 /* the landing: the light below floods up, your Pokémon drops into it, then dark for the gate */
 .descent-light { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse 90% 60% at 50% 115%, #f6dcff 0%, #c070ff 30%, rgba(122, 48, 192, 0.6) 55%, transparent 80%); }
 .descent-scene.falling .descent-light { opacity: 0.35; transition: opacity 3s; }
 .descent-scene.landing .descent-light { opacity: 1; transition: opacity 1s ease-in; }
 .descent-scene.landing .descent-mon { animation: descentLand 1.1s cubic-bezier(0.5, 0, 0.9, 0.6) forwards; }
-@keyframes descentLand { to { top: 120%; rotate: 20deg; } }
+@keyframes descentLand { to { transform: translate3d(0, 80vh, 0); rotate: 20deg; } }
 .descent-flash { position: absolute; inset: 0; background: #f0c8ff; opacity: 0; pointer-events: none; }
 .descent-scene.flash .descent-flash { animation: descentFlash 0.7s ease-out; }
 @keyframes descentFlash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
