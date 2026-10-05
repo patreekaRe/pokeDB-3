@@ -31,7 +31,8 @@ import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { badgeLine } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
+import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL } from './data/tower.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
@@ -45,8 +46,8 @@ import { recordWin, recordLoss, lossRecap, draftWin, fameNo, winScene, preloadWi
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
-import { postSafariResult, openLeaderboard } from './leaderboard.js';
-import { runResult } from './data/leaderboard.js';
+import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
+import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
@@ -67,9 +68,15 @@ export const runSafariArea = () => (isRunActive() && run.safari ? run.safari.are
 /** A Safari Zone daily run (js/data/safari.js): the date's seed drives every roll, through js/rng.js. */
 const isSafari = () => Boolean(run?.safari);
 
+/** A Sky Pillar climb (js/data/tower.js): `run.tower = { week, seed, first, practice, flight, floor }`, the week's seed
+    driving every roll like the Safari's, `flight` the guardians beaten, `floor` the highest floor cleared. */
+const isTower = () => Boolean(run?.tower);
+/** The seeded streams' biome part: the Sky Pillar's flight (past floor 30 they all share the Wastes' biome). */
+const zone = () => (run?.tower ? `t${run.tower.flight}` : run.biome);
+
 /** Roll on the Safari seed's `key` stream from here on (each biome and each room has its own, so a room plays the same
     whatever came before it, and a refresh replays it exactly); any other run rolls with Math.random. */
-const reseed = (key) => useStream(run?.safari ? run.safari.seed : null, key);
+const reseed = (key) => useStream(run?.safari?.seed ?? run?.tower?.seed ?? null, key);
 
 /** The Safari area a biome of the run is (null outside the Safari Zone). */
 const safariArea = (biome = run.biome) => (run?.safari ? SAFARI_AREAS_BY_ID[run.safari.areas[biome]] : null);
@@ -80,12 +87,12 @@ const land = () => safariArea() || BIOMES[run.biome];
 /** The Safari Zone's first try of the day is the leaderboard's, so it's played without Game Corner or Pokédex perks
     (the user's call, 2026-10-02): every player starts it the same. Replays keep them. Coin Finder only touches PokéCoins,
     so it stays. Every perk the run reads goes through these two. */
-const fairTry = (r = run) => Boolean(r?.safari?.first);
+const fairTry = (r = run) => Boolean(r?.safari?.first || r?.tower?.first);
 const perk = (id) => (fairTry() ? 0 : perkLevel(id));
 const dexPerk = (id) => (fairTry() ? 0 : dexPerkLevel(id));
 
 /** The name the map's sign shows for the biome you're in. */
-const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : BIOMES[run.biome].name);
+const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTower() ? 'Sky Pillar' : BIOMES[run.biome].name);
 
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
@@ -118,8 +125,8 @@ export function initRun({ onMenu, onNewRun }) {
   initScope();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
-  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) beginSafari(); else onNewRun(run.starter); });
-  $('result-board').addEventListener('click', () => openLeaderboard());
+  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) beginSafari(); else if (run.tower) beginTower(run.tower.practice ? run.starter : null); else onNewRun(run.starter); });
+  $('result-board').addEventListener('click', () => openLeaderboard(0, run?.tower ? 'tower' : 'safari'));
 
   // This pop-up moves the game along, so Escape must not just close it.
   $('result-dialog').addEventListener('cancel', (e) => e.preventDefault());
@@ -154,8 +161,8 @@ function streakLine(won, lost) {
 
 /** The Abandon button's: a run thrown away mid-way counts as a loss for the win streak, saved or loaded. */
 export function forfeitRun() {
-  if (run && !run.over) breakStreak(run.starter.id, !!run.safari);
-  else if (!run) { const saved = loadRunData(); if (saved) breakStreak(saved.starter, !!saved.safari); }
+  if (run && !run.over) breakStreak(run.starter.id, !!run.safari || !!run.tower);
+  else if (!run) { const saved = loadRunData(); if (saved) breakStreak(saved.starter, !!saved.safari || !!saved.tower); }
   abandonRun();
 }
 
@@ -228,6 +235,7 @@ function checkpoint() {
     credited: run.credited,
     tally: run.tally,
     safari: run.safari,
+    tower: run.tower,
   });
 }
 
@@ -272,7 +280,7 @@ function restoreRun(saved) {
   return {
     ...saved,
     starter,
-    mods: runMods(starter, saved.level, saved.biome),
+    mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
@@ -294,14 +302,14 @@ export const hasSavedRun = () => loadSavedRun() !== null;
 /** Pick a saved run (from loadSavedRun) back up on its map. */
 export function continueRun(saved) {
   run = saved;
-  reseed(`map:${run.biome}:${run.current}`);
+  reseed(`map:${zone()}:${run.current}`);
   showMap();
 }
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
-export function beginRun(starter, level = 0, peek = null, safari = null) {
+export function beginRun(starter, level = 0, peek = null, safari = null, tower = null) {
   dropNotes();
-  const perks = !safari?.first;   // the Safari's first try of the day goes without perks (fairTry())
+  const perks = !safari?.first && !tower?.first;   // the Safari's first try of the day goes without perks (fairTry())
   const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
 
   run = {
@@ -332,6 +340,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null) {
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     tally: freshTally(),   // the run's record, kept for the Hall of Fame if it's won
     safari,                // a Safari Zone daily run: { day, seed, areas, first } (beginSafari())
+    tower,                 // a Sky Pillar climb (beginTower(), isTower())
     over: false,
   };
   reseed('start');
@@ -341,14 +350,14 @@ export function beginRun(starter, level = 0, peek = null, safari = null) {
   }
 
   // Pokédex perks, earned by completing a biome's page
-  if (!perks) tell('First try of the day: no Game Corner or Pokédex perks, so every trainer starts the same.');
+  if (!perks) tell(tower ? 'The week\'s first climb: no Game Corner or Pokédex perks, so every trainer starts the same.' : 'First try of the day: no Game Corner or Pokédex perks, so every trainer starts the same.');
   const savings = DEX_START_MONEY[dexPerk('moms-savings')];
   if (savings) { run.money += savings; tell(`Mom's Savings: you set out with ₽${savings}!`); }
   const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerk('chansey-gift')]];
   if (gift) { run.items.push(gift.id); tell(`Chansey's Gift: a ${gift.name} is in your Bag!`); }
 
   if (peek) return peekRoom(peek);
-  updateSave(d => { d.stats.runsStarted += 1; });
+  if (!tower) updateSave(d => { d.stats.runsStarted += 1; });   // a climb always ends in a faint: not a run for the win rate
   startBiome();
 }
 
@@ -359,6 +368,30 @@ export function beginSafari(daily = safariDaily()) {
   updateSave(d => { d.safari = { day: daily.day, tries: tries + 1 }; });   // counted at the start, so quitting can't retry the first
   beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
 }
+
+/** The Sky Pillar (js/data/tower.js): the week's tower with the week's starter, or `practice` with a starter of your own.
+    The week's first try counts for the leaderboard and is played without perks; the rest are replays, as often as you
+    like. Tries are counted at the start, so quitting can't retry the first. */
+export function beginTower(practice = null) {
+  const weekly = towerWeekly();
+  const saved = getSave().tower;
+  const thisWeek = saved.week === weekly.week;
+  const first = !practice && !(thisWeek && saved.tries);
+  if (!practice) updateSave(d => { d.tower = { ...d.tower, week: weekly.week, tries: (thisWeek ? d.tower.tries : 0) + 1, best: thisWeek ? d.tower.best : 0 }; });
+  beginRun(practice ?? weekly.starter, 0, null, null, { week: weekly.week, seed: weekly.seed, first, practice: Boolean(practice), flight: 0, floor: 0 });
+}
+
+/** Playtest shortcut: ?tower=25 starts a throwaway climb at that floor (the week's tower and starter, evolved as far as
+    its guardians would have taken it). Nothing about it is saved. */
+export function peekTower(floor, enemyHp = 1) {
+  const weekly = towerWeekly();
+  floor = Math.max(1, Math.floor(floor) || 1);
+  peeking = true;
+  towerPeekHp = enemyHp > 0 ? enemyHp : 1;
+  beginRun(weekly.starter, 0, ':tower', null, { week: weekly.week, seed: weekly.seed, first: false, practice: true, flight: Math.floor((floor - 1) / FLIGHT), floor: floor - 1, at: (floor - 1) % FLIGHT });
+}
+
+let towerPeekHp = 1;   // ?tower=25&hp=0.1 shrinks every foe's HP, to see guardians and flights through quickly
 
 /** Playtest shortcut (the user's ask): ?event=move-tutor (any event id) starts a throwaway run and walks straight into
     that event's room, so it can be seen on a phone without playing to it. Nothing about the run is saved. */
@@ -395,6 +428,14 @@ export function peekDescent(starter) {
 }
 
 function peekRoom(id) {
+  if (id === ':tower') {
+    const { flight, at } = run.tower;
+    run.stage = Math.min(flight, run.starter.line.length - 1);
+    run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
+    startBiome(true);
+    if (at > 0) run.current = run.map.floors[at - 1][0].id;
+    return showMap();
+  }
   if (id === ':descent') {
     run.biome = finalBiome(run.starter) - 1;
     run.stage = run.starter.line.length - 1;
@@ -425,7 +466,8 @@ function peekRoom(id) {
    ============================================================ */
 
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
-  reseed(`biome:${run.biome}`);
+  reseed(`biome:${zone()}`);
+  if (isTower()) return startFlight(quiet);
   if (!isSafari() && !peeking) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
   run.mods = runMods(run.starter, run.level, run.biome);
   run.map = generateMap({ floors: runFloors(run.starter, run.biome) });
@@ -445,6 +487,46 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
   biomeIntro(land(), run.biome + 1).then(() => {
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
   });
+}
+
+/** A Sky Pillar flight: its landings' doors on the map (the placeholder until the tower gets its own screen, roadmap
+    item 18 b), each door's Pokémon dealt now from the week's seed, and the guardian on top. */
+function startFlight(quiet) {
+  const { flight } = run.tower;
+  run.biome = towerBiome(flight);
+  run.mods = towerMods(run.starter, flight);
+  if (peeking && towerPeekHp !== 1) run.mods = { ...run.mods, normalHp: run.mods.normalHp * towerPeekHp, bossHp: run.mods.bossHp * towerPeekHp };
+  run.map = landingMap(landingTypes(flight));
+  const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || a.col - b.col);
+  const { normals, elites } = towerPools(flight);
+  for (const kind of ['fight', 'elite']) dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, undefined, normals, elites);
+  run.map.boss.enemyId = guardianOf(flight);
+  for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
+  rollEvents();
+  run.current = null;
+  if (flight) climbed(flight * FLIGHT);   // the guardian below is beaten
+  if (!quiet) showMap();
+}
+
+/** A floor of the Sky Pillar is cleared: the climb's height, your best ever (the Tower Badges, any climb) and the
+    week's counted best (its first try only), saved as you go, so a climb abandoned half-way still counts what it reached. */
+function climbed(floor) {
+  const t = run.tower;
+  if (floor <= t.floor) return;
+  t.floor = floor;
+  if (peeking) return;
+  updateSave(d => {
+    d.tower.bestEver = Math.max(d.tower.bestEver || 0, floor);
+    if (t.first && d.tower.week === t.week) d.tower.best = Math.max(d.tower.best || 0, floor);
+  });
+  for (const b of checkBadges()) tell(badgeLine(b));
+  showBadgeNews();
+}
+
+/** After a guardian's rewards, on up to the next flight. */
+function climbOn() {
+  run.tower.flight += 1;
+  startBiome();
 }
 
 // A fidget on the map's run card: tap your Pokémon to recall it into its ball, tap the ball to send it out again.
@@ -481,7 +563,7 @@ function showExp(floor, floors) {
   $('run-exp-fill').style.width = `${Math.round(Math.min(1, floor / steps) * 100)}%`;
   bar.setAttribute('aria-valuemax', String(steps));
   bar.setAttribute('aria-valuenow', String(floor));
-  const goal = last ? (run.biome === finalBiome(run.starter) ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
+  const goal = last ? (!isTower() && run.biome === finalBiome(run.starter) ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
   bar.title = `EXP: floor ${floor} of ${floors}. Full at ${goal}.`;
 }
 
@@ -526,8 +608,10 @@ function showMap() {
   }
   const here = run.current && run.map.byId[run.current];
   const floor = here ? here.floor + 1 : 0;   // 0 on the road in, like StS's Neow floor (the title's Continue plate counts the same)
-  $('floor-num').textContent = `F${floor}`;
-  const { stage } = stageOf(run.map, here), place = biome.stages[stage];
+  if (isTower() && here?.visited) climbed(floorOf(run.tower.flight, here.floor));
+  $('floor-num').textContent = `F${isTower() ? floorOf(run.tower.flight, floor - 1) : floor}`;
+  const { stage } = stageOf(run.map, here);
+  const place = isTower() ? `Floors ${run.tower.flight * FLIGHT + 1}-${(run.tower.flight + 1) * FLIGHT}` : biome.stages[stage];
   $('floor-tag').title = `Floor ${floor} of ${run.map.floors.length} in ${biome.name} (${place}), then the boss`;
   // the place you stand in swings in under the sign whenever you reach a new one (showScene() paints it)
   const board = $('stage-name');
@@ -546,11 +630,14 @@ function showMap() {
   $('run-relic-count').textContent = String(run.relics.length);
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
   // a Safari run says whether it's the day's counted try or a replay, where a normal run shows its Trainer Level
-  const tag = run.safari ? (run.safari.first ? '🏆 Counts' : '🔁 Replay') : `Level ${run.level}`;
-  $('run-level').hidden = !run.safari && run.level === 0;
+  const trial = run.safari || run.tower;   // a Safari day or a Sky Pillar week: counted or not, where a run shows its Level
+  const tag = trial ? (trial.first ? '🏆 Counts' : run.tower?.practice ? '🔁 Practice' : '🔁 Replay') : `Level ${run.level}`;
+  $('run-level').hidden = !trial && run.level === 0;
   $('run-level').textContent = tag;
-  $('run-level').classList.toggle('replay', !!run.safari && !run.safari.first);
-  $('run-level').title = !run.safari ? `Trainer Level ${run.level}.` : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
+  $('run-level').classList.toggle('replay', !!trial && !trial.first);
+  $('run-level').title = run.tower ? (run.tower.first ? 'The week\'s first climb: its height goes on the leaderboard.'
+    : 'Practice: this climb doesn\'t go on the leaderboard (the Tower Badges still count).')
+    : !run.safari ? `Trainer Level ${run.level}.` : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
     : 'Today\'s run is used up: this replay doesn\'t count for the leaderboard.';
 
   setHpBar('run', run.hp, run.maxHp);
@@ -569,7 +656,7 @@ function showMap() {
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
-  const next = nextPlace(here);
+  const next = isTower() ? 0 : nextPlace(here);
   if (next) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
   else showNotes();
 }
@@ -827,7 +914,7 @@ function addTally(t) {
 
 function enterNode(node) {
   run.current = node.id;
-  reseed(`room:${run.biome}:${node.id}`);
+  reseed(`room:${zone()}:${node.id}`);
   markHp(node);
   node.visited = true;
 
@@ -852,7 +939,7 @@ function enterNode(node) {
    ============================================================ */
 
 async function fight(node) {
-  const last = run.biome === finalBiome(run.starter);
+  const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
     preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
@@ -860,7 +947,7 @@ async function fight(node) {
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
-  if (!ken && !isSafari()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
+  if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
   const deferIntro = node.type === 'boss' || ken;
@@ -884,7 +971,7 @@ function afterFight(node, result) {
   run.hp = result.hp;
   run.fights += 1;
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
-  const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari();
+  const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
   const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
@@ -892,8 +979,8 @@ function afterFight(node, result) {
   // A boss win's unlocks wait until after the evolution: the jingle sounds just like its chime (the user heard it early).
   const unlocked = research ? [research] : [];
   const unlock = () => {
-    for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); }
-    if (!peeking) unlocked.push(...checkFeats());   // the Depths page's shiny Mewtwo
+    if (!isTower()) for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); }
+    if (!peeking && !isTower()) unlocked.push(...checkFeats());   // the Depths page's shiny Mewtwo
     if (!peeking) dexNews.push(...checkBadges().map(badgeLine));   // quiet: a line in the reward box, no window
     showBadgeNews();   // and the Bag glints till the card is opened
   };
@@ -957,16 +1044,17 @@ function afterFight(node, result) {
   }
 
   if (node.type === 'boss') {
-    if (!isSafari() && !peeking) updateSave(d => {   // a Safari area isn't one of the main game's biomes (nor is a playtest saved)
+    if (!isSafari() && !isTower() && !peeking) updateSave(d => {   // a Safari area or a guardian isn't one of the main game's biomes (nor is a playtest saved)
       d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
-    if (run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
+    if (!isTower() && run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
     // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
     if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
     else steps.push(next => unlockWindow(unlocked, next));
+    if (isTower()) steps.push(next => { guardianHeal(); next(); });
     steps.push(next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
   } else steps.unshift(next => unlockWindow(unlocked, next));
 
@@ -984,6 +1072,7 @@ function afterFight(node, result) {
   runSteps(steps, () => {
     collect();
     if (node.type !== 'boss') showMap();
+    else if (isTower()) climbOn();
     else if (isMewtwoRun(run.starter) && run.biome + 1 === finalBiome(run.starter)) fallIn();   // everyone else's last biome is Biome 3
     else walkOn();
   });
@@ -1007,6 +1096,16 @@ async function walkOn() {
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;
+
+/** Every Sky Pillar guardian heals GUARDIAN_HEAL of your max HP (the user's call), on top of an evolution's heal. */
+function guardianHeal() {
+  const gain = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * GUARDIAN_HEAL));
+  if (!gain) return;
+  run.hp += gain;
+  playSound('heal-hp');
+  setHpBar('run', run.hp, run.maxHp);
+  tell(`The guardian's fall clears the air: +${gain} HP.`);
+}
 
 /** After the biome 3 boss and its rewards, Mewtwo falls into the Crystal Depths (v1.0's secret biome, roadmap Small asks
     5): item 4's descent with its own lines, healed in full by the crystals (Slay the Spire's between-acts heal, since it
@@ -2467,9 +2566,33 @@ function whereNow() {
   return { biomeName: BIOMES[run.biome].name, place: BIOMES[run.biome].stages?.[stageOf(run.map, here).stage] ?? null, floor: here ? here.floor + 1 : 0 };
 }
 
+/** A Sky Pillar climb always ends in a faint (or an abandon, which posts nothing): its height, your bests, the week's
+    leaderboard for its first try. No Record Book, gate, streak, Levels or unlocks (the user's call). */
+function endTower() {
+  const t = run.tower, save = getSave().tower;
+  const name = stageName(run.starter, run.stage);
+  dropNotes();
+  $('result-title').textContent = '🗼 The Sky Pillar';
+  $('result-text').textContent = `${name} fainted on floor ${t.floor + 1} after clearing ${t.floor} floor${t.floor === 1 ? '' : 's'}.`;
+  const lines = [`🏔️ Your highest floor ever: ${save.bestEver}.`];
+  lines.push(t.first ? `🏆 The week's counted climb: floor ${t.floor}. It goes on the leaderboard.`
+    : t.practice ? '🔁 A practice climb: it doesn\'t go on the leaderboard.' : '🔁 A replay: only the week\'s first climb goes on the leaderboard.');
+  if (t.first && !peeking) {
+    const line = postTowerResult(towerResult({ week: t.week, starter: run.starter.id, floor: t.floor, turns: run.tally.turns, startedAt: run.tally.startedAt }));
+    if (line) lines.push(line);
+  }
+  const list = $('result-unlocks');
+  list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
+  list.hidden = false;
+  $('result-again').textContent = 'Climb again';
+  $('result-board').hidden = false;
+  openDialog('result-dialog');
+}
+
 function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
   if (!peeking) clearRunData();
+  if (isTower()) return endTower();
   const mewtwoRun = isMewtwoRun(run.starter);
   const safari = isSafari();   // the daily run pays its coins, but its starter isn't yours: no records, stats or Levels
 

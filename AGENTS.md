@@ -156,6 +156,12 @@ three places:
   Mewtwo); Eternatus crosses the title sky once beaten; the v1.0 patch notes. Final balance pass: the three types are level
   (no change); Eternatus +8 damage / +30% HP (Mewtwo strong / human 93 / 93 -> 86 / 83). Checked headless at 390x844
   through `?bossfight=depths&hp=0.01`. **v1.0 is complete.** The user still has to see the ending on the live site.
+- 2026-10-05: **The Sky Pillar, part a** (cloud, roadmap item 18; `docs/reference/sky-pillar.md`): the endless weekly
+  tower climb's rules (`js/data/tower.js`, shared with the bot), played on the normal map as a placeholder, its window
+  (`js/towerprep.js`), the weekly leaderboard (`towerBoard`, the same window as the Safari's), the Tower Badges, Rayquaza as
+  the 50th-floor guardian, `?tower=25&hp=0.1`. Bot (human, Fire, 150 climbs): growth past floor 30 retuned from x1.15 HP /
+  +4 dmg a flight (median floor 45, 7% reached 100) to x1.35 / +8 (median 36, 17% reach 50, best 83). Checked headless.
+  Next: part b, the painted tower (Desktop app); the user must publish `firestore.rules` again for the tower board.
 - Waiting on the user:
   - Now kept in one place: `docs/roadmap.md`'s "Waiting on the user" (since 2026-10-03).
 - Parked (don't start unprompted): Gen 6-9 starters (the sprites staged in `assets/pokemon/_incoming/` have no Grass

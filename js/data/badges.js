@@ -87,12 +87,12 @@ export const BADGES = [
   // New content: shown as locked slots until it lands
   { id: 'explorer', group: 'new', name: 'Explorer Badge', icon: 'explorer', emoji: '🧭', locked: true,
     text: 'See every biome (coming with branching biomes)', test: () => false },
-  { id: 'tower-25', group: 'new', name: 'Tower Badge 25F', icon: 'tower-25', emoji: '🗼', locked: true,
-    text: 'Reach floor 25 of the Sky Pillar (coming soon)', test: () => false },
-  { id: 'tower-50', group: 'new', name: 'Tower Badge 50F', icon: 'tower-50', emoji: '🗼', locked: true,
-    text: 'Reach floor 50 of the Sky Pillar (coming soon)', test: () => false },
-  { id: 'tower-100', group: 'new', name: 'Tower Badge 100F', icon: 'tower-100', emoji: '🗼', locked: true,
-    text: 'Reach floor 100 of the Sky Pillar (coming soon)', test: () => false },
+  { id: 'tower-25', group: 'new', name: 'Tower Badge 25F', icon: 'tower-25', emoji: '🗼',
+    text: 'Clear floor 25 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 25 },
+  { id: 'tower-50', group: 'new', name: 'Tower Badge 50F', icon: 'tower-50', emoji: '🗼',
+    text: 'Clear floor 50 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 50 },
+  { id: 'tower-100', group: 'new', name: 'Tower Badge 100F', icon: 'tower-100', emoji: '🗼',
+    text: 'Clear floor 100 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 100 },
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

@@ -85,6 +85,6 @@ test('a granted badge is never new again, and the new-content badges can\'t be e
   save.stats.runsWon = 1;
   save.badges = ['champion'];
   assert.deepEqual(ids(save), []);
-  for (const b of BADGES.filter(x => x.group === 'new')) assert.ok(b.locked, b.id);
+  for (const b of BADGES.filter(x => x.group === 'new' && !x.id.startsWith('tower-'))) assert.ok(b.locked, b.id);
   assert.match(badgeLine(BADGES_BY_ID.champion), /Badge earned: Champion Badge!/);
 });

@@ -13,7 +13,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?lockdepths` hides the Depths' Pokédex tab again (forgets its Pokémon and `deepestBiome` 4), for a save an old playtest revealed it on. `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
+  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `peekTower()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
@@ -535,6 +535,16 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   is unseen (after a fight that earns one, too). The title's last gem is a **game modes slot** (`pageSlot(MODES)` in
   `js/title.js`: Safari Zone, Sky Pillar "Coming soon"), flipped with ◀ ▶, a swipe or ← →, so new modes never lengthen
   the stack (`docs/reference/title-screen.md`).
+- **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): an
+  endless climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
+  seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),
+  replays and Practice (any owned starter but Mewtwo) don't. Flights of 10 floors: 9 landings of 2-3 doors, then a guardian
+  (a biome boss in turn, Rayquaza every 50th: `rayquaza-guardian`); a guardian evolves you at 10 and 20 and heals 30%.
+  Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
+  `run.tower` (`isTower()`, seeded streams keyed by `zone()`); part a plays each flight on the normal map (`landingMap()`
+  in `js/map.js`) until part b paints the tower. It counts only for `save.tower` (`bestEver`, the week's `best`) and the
+  Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's modes
+  slot, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
@@ -561,6 +571,7 @@ one, which is the point: it costs nothing until it's needed.
 - Windows - `docs/reference/windows.md`
 - Title screen - `docs/reference/title-screen.md`
 - Safari Zone (seed, catching, balls, rare spawns, leaderboard) - `docs/reference/safari.md`
+- Sky Pillar (the tower climb, its week, the tower leaderboard) - `docs/reference/sky-pillar.md`
 - Top bar and start screen - `docs/reference/top-bar-and-start-screen.md`
 - Pixel icons - `docs/reference/pixel-icons.md`
 - Music - `docs/reference/music.md`

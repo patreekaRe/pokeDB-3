@@ -2,7 +2,8 @@ rules_version = '2';
 // Paste into the Firebase console: Firestore Database > Rules > Publish (docs/reference/safari.md).
 // saves/<uid>: the cloud save (js/cloud.js). safariBoard/<day>_<uid>: the Safari Zone's daily leaderboard
 // (js/leaderboard.js; its bounds match LIMITS in js/data/leaderboard.js): anyone reads, a signed-in player posts
-// their own entry for a day once, and nobody edits or deletes one.
+// their own entry for a day once, and nobody edits or deletes one. towerBoard/<week>_<uid>: the Sky Pillar's, the same
+// way once a week.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /saves/{uid} {
@@ -37,6 +38,30 @@ service cloud.firestore {
     match /safariBoard/{id} {
       allow read: if true;
       allow create: if request.auth != null && validEntry(id, request.resource.data);
+      allow update, delete: if false;
+    }
+
+    // towerBoard/<week>_<uid>: the Sky Pillar's weekly leaderboard (js/data/tower.js; bounds match TOWER_LIMITS in
+    // js/data/leaderboard.js). The week is its Monday; it's posted that week or the day after it ends.
+    function nearWeek(week) {
+      let p = week.split('-');
+      let start = timestamp.date(int(p[0]), int(p[1]), int(p[2]));
+      return request.time >= start && request.time < start + duration.value(8, 'd');
+    }
+    function validClimb(id, d) {
+      return d.keys().hasOnly(['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at'])
+        && d.keys().hasAll(['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at'])
+        && d.uid == request.auth.uid
+        && isDay(d.week) && id == d.week + '_' + request.auth.uid && nearWeek(d.week)
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && d.starter is string && d.starter.size() >= 1 && d.starter.size() <= 32
+        && inRange(d.floor, 0, 999) && inRange(d.turns, 0, 60000) && inRange(d.time, 0, 691200)
+        && d.at == request.time;
+    }
+
+    match /towerBoard/{id} {
+      allow read: if true;
+      allow create: if request.auth != null && validClimb(id, request.resource.data);
       allow update, delete: if false;
     }
   }

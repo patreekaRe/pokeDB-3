@@ -56,13 +56,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     every floor you climbed, then the result window. A weekly seeded tower (the Safari's seed system), ranked by highest
     floor on the Safari leaderboard's Firestore setup, the top names engraved on a plaque in the lobby. Its floors 25 /
     50 / 100 earn the Tower Badges.
-    a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 18 and docs/reference/safari.md
-       (the seed and the leaderboard). Propose the Sky Pillar's rules to me first: who can enter, floor scaling, the
-       door mix per landing, guardians every 10 floors (Rayquaza every 50), rewards between floors, what it counts for
-       (no unlocks, gate or streaks; the Tower Badges). Then build the gameplay on a plain placeholder screen (doors as
-       buttons, a floor counter), the weekly seed, the leaderboard by highest floor (`towerBoard/<week>_<uid>`, rules
-       in firestore.rules), the Tower Badges, and a `?tower=floor` playtest link. Bot-check floors 1-30 at 150 runs
-       with pokeDB-sim. Update the docs and push to main. Attach pokeDB-sim too."
+    a. **Done 2026-10-05** (cloud): the rules, seed, leaderboard, Tower Badges and `?tower=` on the normal map; see
+       `docs/reference/sky-pillar.md` and the archive.
     b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 18 (part a is
        done: the Sky Pillar's rules on a placeholder screen). Paint it: the side-on cutaway panning upward, doors with
        room icons and the walk through them, the spiral-stair climb with the stamped floor plate and altitude gauge, the

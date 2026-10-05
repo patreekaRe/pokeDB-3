@@ -102,5 +102,48 @@ export function formatTime(sec) {
 }
 
 /** A board row's number. */
-export const boardValue = (id, e) => (id === 'fastest' ? formatTime(e.time) : id === 'turns' ? `${e.turns} turn${e.turns === 1 ? '' : 's'}` : `${e.caught} caught`);
+export const boardValue = (id, e) => (id === 'floor' ? `F${e.floor}` : id === 'fastest' ? formatTime(e.time) : id === 'turns' ? `${e.turns} turn${e.turns === 1 ? '' : 's'}` : `${e.caught} caught`);
 
+
+/* ---------- the Sky Pillar's weekly board (js/data/tower.js): towerBoard/<week>_<uid>, the week's first climb only ---------- */
+
+export const TOWER_COLLECTION = 'towerBoard';
+export const TOWER_LIMITS = { floor: [0, 999], turns: [0, 60000], time: [0, 8 * 24 * 3600] };
+export const TOWER_KEYS = ['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at'];
+
+/** What a finished climb posts, before the uid and name: the week (its Monday), starter, highest floor cleared, turns,
+    climb time in seconds. */
+export function towerResult({ week, starter, floor, turns, startedAt, endedAt = Date.now() }) {
+  const start = Date.parse(startedAt);
+  return {
+    week,
+    starter: String(starter),
+    floor: clamp(floor, TOWER_LIMITS.floor),
+    turns: clamp(turns, TOWER_LIMITS.turns),
+    time: Number.isFinite(start) ? clamp((endedAt - start) / 1000, TOWER_LIMITS.time) : 0,
+  };
+}
+
+/** Why the rules would refuse a climb's entry (null when they'd take it). `thisWeek` is the Monday it's posted in: the
+    entry's week is this one or the last (a climb started on a Sunday can end on Monday). */
+export function checkTowerEntry(e, thisWeek) {
+  if (!e || typeof e !== 'object') return 'no entry';
+  const extra = Object.keys(e).filter(k => !TOWER_KEYS.includes(k));
+  if (extra.length) return `unknown field ${extra[0]}`;
+  if (typeof e.week !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(e.week)) return 'bad week';
+  if (![dayOffset(thisWeek, -7), thisWeek].includes(e.week)) return 'week too far from now';
+  if (typeof e.uid !== 'string' || !e.uid) return 'no uid';
+  if (typeof e.name !== 'string' || !e.name || [...e.name].length > NAME_MAX) return 'bad name';
+  if (typeof e.starter !== 'string' || !e.starter || e.starter.length > 32) return 'bad starter';
+  for (const key of Object.keys(TOWER_LIMITS)) if (!inRange(e[key], TOWER_LIMITS[key])) return `bad ${key}`;
+  return null;
+}
+
+/** A week's climbs as one board, highest floor first (then fewer turns, then the faster climb, then the earlier post). */
+export function rankTower(entries, uid, top = BOARD_TOP) {
+  const rows = entries.filter(e => e && typeof e === 'object')
+    .sort((a, b) => b.floor - a.floor || a.turns - b.turns || a.time - b.time || when(a.at) - when(b.at))
+    .map((entry, i) => ({ rank: i + 1, entry, mine: Boolean(uid) && entry.uid === uid }));
+  const me = rows.slice(top).find(r => r.mine) || null;
+  return [{ id: 'floor', name: 'Highest floor', rows: rows.slice(0, top), me, total: rows.length }];
+}

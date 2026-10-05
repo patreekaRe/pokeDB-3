@@ -11,12 +11,15 @@
    ============================================================ */
 
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
-import { BOARD_COLLECTION, entryId, dayOffset, cleanName, buildEntry, checkEntry, rankBoards, boardValue, formatTime, NAME_MAX } from './data/leaderboard.js';
+import { BOARD_COLLECTION, entryId, dayOffset, cleanName, buildEntry, checkEntry, rankBoards, boardValue, formatTime, NAME_MAX,
+  TOWER_COLLECTION, checkTowerEntry, rankTower } from './data/leaderboard.js';
 import { safariDay, safariDaily } from './data/safari.js';
+import { towerWeek, weekOffset, towerWeekly } from './data/tower.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 
 const POST_KEY = 'pokedb.safari.post';
+const TOWER_POST_KEY = 'pokedb.tower.post';
 const NAME_KEY = 'pokedb.safari.name';
 const FETCH_LIMIT = 1000;
 const CACHE_MS = 60000;
@@ -29,17 +32,40 @@ const store = {
   },
 };
 
-let shown = 0;           // 0 today, -1 yesterday
-let posting = null;
+/* The two boards: the Safari Zone's daily one and the Sky Pillar's weekly one (js/data/tower.js). Each posts its first
+   try once, as <period>_<uid> in its own collection, the same way. */
+const KINDS = {
+  safari: {
+    collection: BOARD_COLLECTION, postKey: POST_KEY, field: 'day', title: '🏆 Safari Leaderboard', tabs: ['Today', 'Yesterday'],
+    now: () => safariDay(), offset: dayOffset, step: 1,
+    check: (entry) => checkEntry(entry, safariDay()), rank: rankBoards,
+    header: (day) => { const d = safariDaily(day); return `${day} · ${d.starter.line[0].name} · ${d.areas.map(a => a.name).join(' · ')}`; },
+    mine: (e) => `Your try: ${e.won ? 'crossed the Safari Zone' : `fainted in area ${e.area}`} · ${e.turns} turn${e.turns === 1 ? '' : 's'} · ${formatTime(e.time)} · ${e.caught} caught`,
+    signin: 'Sign in to post your first try of the day.', period: 'today\'s',
+  },
+  tower: {
+    collection: TOWER_COLLECTION, postKey: TOWER_POST_KEY, field: 'week', title: '🗼 Sky Pillar Leaderboard', tabs: ['This week', 'Last week'],
+    now: () => towerWeek(), offset: (week, n) => weekOffset(week, n), step: 1,
+    check: (entry) => checkTowerEntry(entry, towerWeek()), rank: rankTower,
+    header: (week) => `Week of ${week} · ${towerWeekly(week).starter.line[0].name}`,
+    mine: (e) => `Your climb: floor ${e.floor} · ${e.turns} turn${e.turns === 1 ? '' : 's'} · ${formatTime(e.time)}`,
+    signin: 'Sign in to post your first climb of the week.', period: 'this week\'s',
+  },
+};
+let kind = 'safari';
+const K = () => KINDS[kind];
+
+let shown = 0;           // 0 today / this week, -1 the one before
+const posting = new Map();   // per board: the post in flight
 const cache = new Map(); // day -> { at, entries }
 let resultLine = null;   // the result window's line, kept up to date while it posts
 
-/** The result still waiting to go up, if its day can still be posted. */
-function pending() {
-  const p = store.get(POST_KEY);
-  if (!p?.day) return null;
-  const today = safariDay();
-  if (![dayOffset(today, -1), today].includes(p.day)) { store.set(POST_KEY, null); return null; }
+/** The result still waiting to go up, if its day (or week) can still be posted. */
+function pending(k = K()) {
+  const p = store.get(k.postKey);
+  if (!p?.[k.field]) return null;
+  const now = k.now();
+  if (![k.offset(now, -1), now].includes(p[k.field])) { store.set(k.postKey, null); return null; }
   return p;
 }
 
@@ -55,10 +81,10 @@ function say(text) {
 }
 
 /** Posts the waiting result: 'posted', 'already', 'signin', 'name', 'none', 'stale' or 'offline'. Never throws. */
-async function post() {
-  if (posting) return posting;
-  posting = (async () => {
-    const result = pending();
+async function post(k = K()) {
+  if (posting.has(k)) return posting.get(k);
+  posting.set(k, (async () => {
+    const result = pending(k);
     if (!result) return 'none';
     let s;
     try { s = await cloudSession(); } catch (err) { return 'offline'; }
@@ -66,20 +92,20 @@ async function post() {
     const name = nameFor();
     if (!name) return 'name';
     const entry = buildEntry(result, s.user.uid, name);
-    if (checkEntry(entry, safariDay())) { store.set(POST_KEY, null); return 'stale'; }
-    const ref = s.F.doc(s.db, BOARD_COLLECTION, entryId(entry.day, entry.uid));
+    if (k.check(entry)) { store.set(k.postKey, null); return 'stale'; }
+    const ref = s.F.doc(s.db, k.collection, entryId(entry[k.field], entry.uid));
     try {
-      if ((await s.F.getDoc(ref)).exists()) { store.set(POST_KEY, null); return 'already'; }
+      if ((await s.F.getDoc(ref)).exists()) { store.set(k.postKey, null); return 'already'; }
       await s.F.setDoc(ref, { ...entry, at: s.F.serverTimestamp() });
     } catch (err) {
-      if (err?.code === 'permission-denied') { store.set(POST_KEY, null); return 'already'; }
+      if (err?.code === 'permission-denied') { store.set(k.postKey, null); return 'already'; }
       return 'offline';
     }
-    store.set(POST_KEY, null);
-    cache.delete(entry.day);
+    store.set(k.postKey, null);
+    cache.delete(`${k.collection}/${entry[k.field]}`);
     return 'posted';
-  })();
-  try { return await posting; } finally { posting = null; }
+  })());
+  try { return await posting.get(k); } finally { posting.delete(k); }
 }
 
 const POST_TEXT = {
@@ -92,15 +118,20 @@ const POST_TEXT = {
 };
 
 /** From endRun(): keeps the first try's result and starts posting it. Returns the result window's line (or null). */
-export function postSafariResult(result) {
+export const postSafariResult = (result) => postResult(KINDS.safari, result);
+/** From endTower(): the week's first climb, the same way. */
+export const postTowerResult = (result) => postResult(KINDS.tower, result);
+
+function postResult(k, result) {
   try {
     if (!cloudConfigured()) return null;
-    store.set(POST_KEY, result);
+    store.set(k.postKey, result);
     resultLine = el('li', 'board-line', '');
     const line = resultLine;
-    if (!cloudRemembered()) { say(POST_TEXT.signin); return line; }
-    say('Posting your result to today\'s leaderboard…');
-    post().then(state => { if (resultLine === line) say(POST_TEXT[state] || POST_TEXT.offline); }).catch(() => {});
+    const text = (state) => (k === KINDS.tower ? (POST_TEXT[state] || POST_TEXT.offline).replace('today\'s Safari leaderboard', 'this week\'s Sky Pillar leaderboard').replace('until tomorrow', 'until next week').replace('This day', 'This week') : POST_TEXT[state] || POST_TEXT.offline);
+    if (!cloudRemembered()) { say(text('signin')); return line; }
+    say(`Posting your result to ${k.period} leaderboard…`);
+    post(k).then(state => { if (resultLine === line) say(text(state)); }).catch(() => {});
     return line;
   } catch (err) { return null; }
 }
@@ -114,14 +145,15 @@ function row(board, r) {
   const starter = STARTERS_BY_ID[e.starter];
   if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
   li.append(el('span', 'board-rank', `${r.rank}`), img, el('span', 'board-name', e.name), el('span', 'board-value', boardValue(board.id, e)));
-  li.title = `${e.name}: ${e.won ? 'crossed the Safari Zone' : `reached area ${e.area}`}, ${e.turns} turns, ${e.caught} caught`;
+  li.title = kind === 'tower' ? `${e.name}: floor ${e.floor}, ${e.turns} turns, ${formatTime(e.time)}`
+    : `${e.name}: ${e.won ? 'crossed the Safari Zone' : `reached area ${e.area}`}, ${e.turns} turns, ${e.caught} caught`;
   return li;
 }
 
 function boardBox(board) {
   const box = el('section', 'board-box');
   box.append(el('h3', '', board.name));
-  if (!board.rows.length) { box.append(el('p', 'hint', board.id === 'caught' ? 'Nobody has caught anything yet.' : 'No wins yet.')); return box; }
+  if (!board.rows.length) { box.append(el('p', 'hint', board.id === 'caught' ? 'Nobody has caught anything yet.' : board.id === 'floor' ? 'Nobody has climbed yet.' : 'No wins yet.')); return box; }
   const list = el('ol', 'board-list');
   list.append(...board.rows.map(r => row(board, r)));
   if (board.me) list.append(el('li', 'board-gap', '⋯'), row(board, board.me));
@@ -129,16 +161,17 @@ function boardBox(board) {
   return box;
 }
 
-async function entriesFor(day, s) {
-  const hit = cache.get(day);
+async function entriesFor(day, s, k = K()) {
+  const key = `${k.collection}/${day}`;
+  const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.entries;
-  const q = s.F.query(s.F.collection(s.db, BOARD_COLLECTION), s.F.where('day', '==', day), s.F.limit(FETCH_LIMIT));
+  const q = s.F.query(s.F.collection(s.db, k.collection), s.F.where(k.field, '==', day), s.F.limit(FETCH_LIMIT));
   const entries = (await s.F.getDocs(q)).docs.map(d => d.data());
   if (s.user && !entries.some(e => e.uid === s.user.uid)) {   // past the fetch limit, your own entry still shows
-    const mine = await s.F.getDoc(s.F.doc(s.db, BOARD_COLLECTION, entryId(day, s.user.uid)));
+    const mine = await s.F.getDoc(s.F.doc(s.db, k.collection, entryId(day, s.user.uid)));
     if (mine.exists()) entries.push(mine.data());
   }
-  cache.set(day, { at: Date.now(), entries });
+  cache.set(key, { at: Date.now(), entries });
   return entries;
 }
 
@@ -186,41 +219,46 @@ function nameRow(user, waiting) {
 }
 
 async function render() {
-  const day = dayOffset(safariDay(), shown);
+  const k = K(), was = kind;
+  const day = k.offset(k.now(), shown);
   const body = $('board-body');
-  for (const tab of document.querySelectorAll('.board-tab')) tab.setAttribute('aria-selected', String(Number(tab.dataset.day) === shown));
-  const daily = safariDaily(day);
-  $('board-day').textContent = `${day} · ${daily.starter.line[0].name} · ${daily.areas.map(a => a.name).join(' · ')}`;
+  for (const tab of document.querySelectorAll('.board-tab')) {
+    tab.setAttribute('aria-selected', String(Number(tab.dataset.day) === shown));
+    tab.textContent = k.tabs[-Number(tab.dataset.day)];
+  }
+  $('board-title').textContent = k.title;
+  $('board-day').textContent = k.header(day);
   if (!cloudConfigured()) { body.replaceChildren(el('p', 'hint board-note', 'The leaderboard isn\'t available in this version of the game.')); return; }
   body.replaceChildren(el('p', 'hint board-note', 'Loading…'));
   let s;
   try { s = await cloudSession(); }
   catch (err) { body.replaceChildren(el('p', 'hint board-note', 'The leaderboard can\'t be reached right now (offline?). The game itself is unaffected.')); return; }
   const top = [];
-  const waiting = pending();
+  const waiting = pending(k);
   if (!nameFor() || editingName) top.push(nameRow(s.user, waiting && s.user));   // a nickname first, signed in or not
   else top.push(nameLine());
-  if (!s.user) top.push(signInRow(waiting ? 'Your first try is waiting on this device: sign in to post it.' : 'Sign in to post your first try of the day.'));
+  if (!s.user) top.push(signInRow(waiting ? 'Your first try is waiting on this device: sign in to post it.' : k.signin));
   else if (nameFor() && !editingName && waiting) {
-    const state = await post();
+    const state = await post(k);
     if (POST_TEXT[state] && state !== 'none') top.push(el('p', 'hint board-note', POST_TEXT[state]));
   }
   let boards, mine;
   try {
-    const entries = await entriesFor(day, s);
-    boards = rankBoards(entries, s.user?.uid);
+    const entries = await entriesFor(day, s, k);
+    boards = k.rank(entries, s.user?.uid);
     mine = s.user && entries.find(e => e.uid === s.user.uid);
   }
   catch (err) { body.replaceChildren(...top, el('p', 'hint board-note', 'The leaderboard can\'t be reached right now (offline?). The game itself is unaffected.')); return; }
-  if (dayOffset(safariDay(), shown) !== day) return;   // the tab changed while it loaded
-  if (mine) {   // your own try, even when it's on no board (a loss with nothing caught)
-    top.push(el('p', 'hint board-note board-mine', `Your try: ${mine.won ? 'crossed the Safari Zone' : `fainted in area ${mine.area}`} · ${mine.turns} turn${mine.turns === 1 ? '' : 's'} · ${formatTime(mine.time)} · ${mine.caught} caught`));
-  }
+  if (kind !== was || k.offset(k.now(), shown) !== day) return;   // the tab changed while it loaded
+  if (mine) top.push(el('p', 'hint board-note board-mine', k.mine(mine)));   // your own try, even when it's on no board
   body.replaceChildren(...top, ...boards.map(boardBox));
 }
 
-export function openLeaderboard(day = 0) {
+/** Open a board: `which` is 'safari' (the daily one) or 'tower' (the Sky Pillar's weekly one); `day` 0 the current day or
+    week, -1 the one before. */
+export function openLeaderboard(day = 0, which = 'safari') {
   shown = day;
+  kind = KINDS[which] ? which : 'safari';
   render().catch(() => {});
   openDialog('board-dialog');
 }
@@ -231,5 +269,5 @@ export function initLeaderboard() {
   }
   $('board-close').addEventListener('click', () => closeDialog('board-dialog'));
   // a result waiting from a signed-out run goes up as soon as you sign in
-  onCloudSignIn(() => { if (pending()) post().catch(() => {}); });
+  onCloudSignIn(() => { for (const k of Object.values(KINDS)) if (pending(k)) post(k).catch(() => {}); });
 }

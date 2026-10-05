@@ -42,8 +42,9 @@ CSS sprites on the painted ledge.
 `pageSlot(MODES)` in `js/title.js`, one mode at a time from `MODES` (the Safari Zone, then the Sky Pillar), flipped by the ◀ ▶
 pager under it (with a dot per mode), a sideways swipe on the gem (it doesn't count as a tap) or ← → while it's pointed at;
 the new gem slides in from that side. The Safari's signpost only stands while its gem shows. The Sky Pillar's gem
-(`pillarGem()`, blue, `GEMS.pillar`) is greyed out with "Coming soon" until roadmap item 18 lands: then give it its
-`onPick` and drop `locked`. A new mode is one more `MODES` entry and a `GEMS` colour.
+(`pillarGem()`, blue, `GEMS.pillar`) is greyed out with "Win a run" until a run is won (`towerOpen()`), then opens the
+Sky Pillar's window (`actions.onTower`, `js/towerprep.js`) and shows your best floor ("Best F<n>"). A new mode is one more
+`MODES` entry and a `GEMS` colour.
 
 **Collection, Trainer Card and Game Corner share one slot too** (`HUB` in `js/title.js`, the user's ask, 2026-10-04, after the modes slot): the same `pageSlot()` / `flipSlot()` as the modes, under New game. The Trainer Card's gem (`trainerGem()`, teal, `GEMS.trainer`) wears the pixel card (`cardIcon()`) in its tier colour (`data-tier`, set by `showBadgeNews()`), with a bouncing gold "!" (`.badge-news`) while an earned badge isn't in `save.badgesSeen`; while one waits the slot opens on that page. It replaced the corner row's Trainer button, which was only there for a day.
 

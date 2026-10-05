@@ -36,7 +36,9 @@ import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } fr
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate, beginTower, peekTower } from './run.js';
+import { initTowerPrep, openTowerPrep } from './towerprep.js';
+import { floorOf } from './data/tower.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playSound, playMusic, closeSoundPops } from './audio.js';
@@ -76,11 +78,11 @@ function savedRunCard() {
   const land = area || BIOMES[biome];
   return {
     saved, hp, maxHp,
-    floor: here ? here.floor + 1 : 0,   // the biome's floor you stand on; 0 on the road in, like StS's Neow floor
+    floor: saved.tower ? floorOf(saved.tower.flight, here ? here.floor : -1) : here ? here.floor + 1 : 0,   // the biome's floor you stand on; 0 on the road in, like StS's Neow floor (a climb's: the tower's)
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
-    place: area ? `Safari Zone: ${area.name}` : BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
-    spot: land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
+    place: saved.tower ? 'Sky Pillar' : area ? `Safari Zone: ${area.name}` : BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
+    spot: saved.tower ? `Floors ${saved.tower.flight * 10 + 1}-${saved.tower.flight * 10 + 10}` : land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
     biome: land?.id,
     safari: !!area,
     cry: starter.line[stage]?.id ?? starter.line[0].id,
@@ -249,6 +251,14 @@ function init() {
     },
   });
 
+  initTowerPrep({
+    onStart: async (practice) => {
+      if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
+      leaveTitle();
+      beginTower(practice);
+    },
+  });
+
   $('reset-btn').addEventListener('click', async () => {
     if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
     resetSave();
@@ -264,6 +274,7 @@ function init() {
     onCollection: () => { showCollection(); leaveTitle(); },
     onGameCorner: () => toggleShop(),
     onSafari: openSafariPrep,
+    onTower: openTowerPrep,
     onBoard: () => openLeaderboard(),
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
@@ -286,6 +297,9 @@ function init() {
   if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
   // ...and ?bossfight=wetland (any Safari area; &starter=id) walks one straight into that area's boss fight, prelude and arena included
   // ?bossfight=depths: Mewtwo (or &starter=id) straight into Eternatus, the final boss; &hp=0.1 shrinks its bars
+  // ?tower=25: a throwaway Sky Pillar climb starting at that floor (the week's tower and starter), never saved; &hp=0.1
+  // shrinks every foe's HP
+  if (params.get('tower')) return peekTower(Number(params.get('tower')), Number(params.get('hp') ?? 1));
   if (params.get('bossfight') === 'depths') eternatusGuest();   // back on the title, it crosses the sky
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map

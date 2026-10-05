@@ -174,6 +174,22 @@ function roadMap(types) {
   return { floors: rooms.map(room => [room]), boss, byId: Object.fromEntries([...rooms, boss].map(room => [room.id, room])) };
 }
 
+/** The Sky Pillar's flight (js/data/tower.js): one row of doors per landing, every door leading to every door of the
+    landing above, then the guardian. Rendered as a normal map until the tower gets its own screen (roadmap item 18 b). */
+export function landingMap(rows) {
+  const SPREAD = { 1: [3], 2: [2, 4], 3: [1, 3, 5] };
+  const floors = rows.map((types, floor) => types.map((type, k) => ({
+    id: `f${floor}c${SPREAD[types.length][k]}`, floor, col: SPREAD[types.length][k], type, decided: true,
+    next: [], prev: [], visited: false, jx: 0, jy: 0,
+  })));
+  const boss = { id: 'boss', floor: rows.length, col: Math.floor(COLS / 2), type: 'boss', next: [], prev: [], visited: false, jx: 0, jy: 0 };
+  [...floors, [boss]].forEach((row, i, all) => {
+    if (!i) return;
+    for (const from of all[i - 1]) for (const to of row) { from.next.push(to.id); to.prev.push(from.id); }
+  });
+  return { floors, boss, byId: Object.fromEntries([...floors.flat(), boss].map(room => [room.id, room])) };
+}
+
 /**
  * Pick the column for the next step of a path: straight up, or one to the
  * left or right. A step is not allowed if it would cross another path.

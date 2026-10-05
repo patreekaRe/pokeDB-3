@@ -729,6 +729,19 @@ export const ENEMY_DEFS = {
     },
   },
 
+  /* the Sky Pillar's guardian every 50th floor (js/data/tower.js): Rayquaza, the tower's master. Never in a biome, so never
+     in the Pokédex; its numbers grow with the floor like every guardian's. */
+  'rayquaza-guardian': {
+    name: 'Rayquaza', type: 'normal', hp: 520, ...sprite('rayquaza'), boss: true,
+    description: 'It lives above the clouds at the top of the Sky Pillar, and comes down for no one.',
+    moves: [
+      { kind: 'buff',   name: 'Dragon Dance',   amount: 3 },
+      { kind: 'attack', name: 'Extreme Speed',  amount: 14 },
+      { kind: 'defend', name: 'Air Lock',       amount: 18 },
+      { kind: 'attack', name: 'Dragon Ascent',  amount: 26 },
+    ],
+  },
+
   /* ----- the Safari Zone's rare spawns (SAFARI_AREAS' `rares` in safari.js): only ever met there ----- */
   chansey: {
     name: 'Chansey', type: 'normal', hp: 70, ...sprite('chansey'), safari: true,
@@ -884,9 +897,9 @@ export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
  * the routes into it already met it, and deals one met on the fewest (almost always none); among those the deck makes
  * every Pokémon come up about as often as the rest, and `weight(id)` favours the Pokédex's unbeaten ones.
  */
-export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1, normals = null) {
+export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1, normals = null, elites = null) {
   const biome = BIOMES[biomeIndex];
-  const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : normals ?? biome.normals;   // normals: a Safari area's wilds
+  const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? elites ?? biome.elites : normals ?? biome.normals;   // normals: a Safari area's wilds (elites: the Sky Pillar's past floor 30)
   const routes = new Map(), met = new Map();   // node id -> routes from the start into it / { id: routes into it that met id }
   const count = (node) => {
     if (!routes.has(node.id)) routes.set(node.id, node.prev.length ? node.prev.reduce((n, id) => n + count(byId[id]), 0) : 1);

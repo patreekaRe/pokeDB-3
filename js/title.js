@@ -23,6 +23,7 @@ import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { getSave } from './storage.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
+import { towerOpen } from './data/tower.js';
 import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
@@ -287,14 +288,18 @@ function flipSlot(slot, dir) {
   point(next.matches('.gem') ? next : next.querySelector('.gem'), true);
 }
 
-/** The Sky Pillar, the endless tower climb (roadmap item 18): greyed out until it lands; a tap says so. */
+/** The Sky Pillar, the endless tower climb (js/data/tower.js): open once you've won a run (greyed out till then, a tap says
+    so); its face shows your best floor. */
 function pillarGem() {
   plantSign(null);   // the signpost is the Safari's
+  const open = towerOpen(getSave());
+  const best = getSave().tower?.bestEver || 0;
   const btn = gem('pillar', 'Sky Pillar', () => {
+    if (open) return actions.onTower();
     playSound('cancel');
-    tipAt(btn, 'The Sky Pillar, an endless tower climb with a weekly leaderboard, is coming soon.');
-  }, el('span', 'gem-emoji', '🗼'), el('span', 'gem-soon', 'Coming soon'));
-  btn.classList.add('locked');
+    tipAt(btn, 'Win a run to open the Sky Pillar, an endless tower climb with a weekly leaderboard.');
+  }, el('span', 'gem-emoji', '🗼'), open ? (best ? el('span', 'gem-soon', `Best F${best}`) : null) : el('span', 'gem-soon', 'Win a run'));
+  btn.classList.toggle('locked', !open);
   return btn;
 }
 

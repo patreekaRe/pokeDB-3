@@ -4175,3 +4175,15 @@ body.scene-peek #backdrop { display: none; }
 .relic:has(> .new-badge) { position: relative; }
 .card.small > .new-badge { font-size: 0.45rem; top: -5px; right: -5px; }
 .float-thing > .new-badge { top: 0; right: -4px; }
+
+/* the Sky Pillar's window (js/towerprep.js): plain until the tower's lobby is painted (roadmap item 18 b) */
+.tower-dialog { width: min(calc(100vw - 32px), 420px); }
+.tower-climber { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
+.tower-climber img { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
+.tower-rules { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; font-size: 0.72rem; line-height: 1.5; }
+.tower-rules li { display: flex; gap: 8px; }
+.tower-rule-icon { flex: none; }
+.tower-practice summary { cursor: pointer; font-size: 0.72rem; margin: 8px 0; }
+.tower-picks { display: flex; flex-wrap: wrap; gap: 6px; max-height: 40vh; overflow-y: auto; }
+.tower-pick { width: 52px; height: 52px; padding: 2px; border: 2px solid rgba(48, 48, 56, 0.25); border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.06); cursor: pointer; }
+.tower-pick img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
