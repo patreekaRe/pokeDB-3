@@ -60,6 +60,7 @@ const SKIES = {
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
 const GEM_H = 16, GEM_BIG = 19;   // gem heights in pixels: Continue's is bigger (the user's call)
+const BACK_W = 26;   // the Back gem's width in pixels
 // face, top light, bottom shade (the reference's amber, violet, gold and coral)
 const GEMS = {
   continue: ['#f0a030', '#ffd070', '#c07018'],
@@ -233,6 +234,9 @@ function renderMenu(dir = 0, from = null) {
   gems.forEach((g, i) => g.style.setProperty('--i', i));   // inherited, so the Safari gem's row passes it on
   const menu = $('title-menu');
   menu.dataset.slide = dir > 0 ? 'in-r' : dir < 0 ? 'in-l' : '';
+  // iPhone Safari left a sign stuck a step short of its place after sliding in, so the animation is dropped once it's done
+  clearTimeout(renderMenu.settle);
+  if (dir && !still()) renderMenu.settle = setTimeout(() => { menu.dataset.slide = 'done'; }, 600);
   menu.replaceChildren(...gems);
   showBadgeNews();
   sizeGems();
@@ -280,7 +284,11 @@ function more(btn) {
   btn.append(el('span', 'gem-arrow', '▶'));
   return btn;
 }
-const backGem = () => gem('back', 'Back', goBack, el('span', 'gem-emoji gem-back-icon', '◀'));
+const backGem = () => {
+  const btn = gem('back', 'Back', goBack, el('span', 'gem-emoji gem-back-icon', '◀'));
+  btn.setAttribute('aria-label', 'Back');
+  return btn;
+};
 
 /** Game Modes: greyed out until one of its modes is open (the Sky Pillar, after a won run); a tap then says so. */
 function modesGem() {
@@ -423,7 +431,8 @@ function sizeGems() {
   const cols = Math.floor(Math.min(300, innerWidth * 0.8) / px);
   for (const btn of document.querySelectorAll('#title-menu .gem')) {
     const big = btn.dataset.kind === 'continue';
-    const w = big ? cols + 2 * Math.round(cols * 0.04) : cols, h = big ? GEM_BIG : GEM_H;
+    const back = btn.dataset.kind === 'back';   // Back is a small gem of its own, just its ◀ (the user's ask)
+    const w = big ? cols + 2 * Math.round(cols * 0.04) : back ? BACK_W : cols, h = big ? GEM_BIG : GEM_H;
     btn.style.width = `${w * px}px`;
     btn.style.height = `${h * px}px`;
     // the icon keeps the same place on the face: Continue is wider, so its ends are further out

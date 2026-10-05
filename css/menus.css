@@ -204,7 +204,7 @@
   cursor: pointer;
   filter: drop-shadow(0 var(--gp) 0 rgba(20, 10, 30, 0.5));
   transition: translate 0.08s steps(2), filter 0.1s;
-  animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms);
+  animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) backwards calc(var(--i) * 70ms);
   -webkit-tap-highlight-color: transparent;
 }
 @keyframes gemIn { from { opacity: 0; translate: 0 22px; } }
@@ -835,8 +835,9 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 /* ---------- the sub-menus: Game Modes and Collection slide the stack sideways (renderMenu() in js/title.js) ---------- */
 .title-menu[data-slide="out-l"] > * { animation: menuOutL 0.14s steps(3) forwards; }
 .title-menu[data-slide="out-r"] > * { animation: menuOutR 0.14s steps(3) forwards; }
-.title-menu[data-slide="in-r"] > .gem, .title-menu[data-slide="in-r"] > .gem-row > .gem { animation: menuInR 0.24s steps(4) both calc(var(--i) * 40ms); }
-.title-menu[data-slide="in-l"] > .gem, .title-menu[data-slide="in-l"] > .gem-row > .gem { animation: menuInL 0.24s steps(4) both calc(var(--i) * 40ms); }
+.title-menu[data-slide="in-r"] > .gem, .title-menu[data-slide="in-r"] > .gem-row > .gem { animation: menuInR 0.24s steps(4) backwards calc(var(--i) * 40ms); }
+.title-menu[data-slide="in-l"] > .gem, .title-menu[data-slide="in-l"] > .gem-row > .gem { animation: menuInL 0.24s steps(4) backwards calc(var(--i) * 40ms); }
+.title-menu[data-slide="done"] > .gem, .title-menu[data-slide="done"] > .gem-row > .gem { animation: none; }
 @keyframes menuOutL { to { opacity: 0; translate: -60px 0; } }
 @keyframes menuOutR { to { opacity: 0; translate: 60px 0; } }
 @keyframes menuInR { from { opacity: 0; translate: 60px 0; } }
@@ -850,6 +851,10 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 @keyframes arrowNudge { to { translate: 3px -50%; } }
 .gem.locked .gem-arrow { opacity: 0.5; }
 .gem-back-icon { font-family: var(--pixel-font); font-size: 22px; color: #fff; text-shadow: none; }
+/* Back is a small gem of its own, just its ◀ (sizeGems() in js/title.js) */
+.gem-back .gem-icon { left: 50%; translate: -50% -50%; }
+.gem-back .gem-label { display: none; }
+.gem-back.on::before { left: -22px; }
 .gem-soon { font-size: 0.55rem; letter-spacing: 0.06em; color: #e0e4f0; }
 /* a badge line in the result window opens the Trainer Card (badgeItem() in js/run.js) */
 .result-badge-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
