@@ -402,7 +402,7 @@ function beginPlayerTurn() {
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry
   b.busy = false;
-  if (b.turn === 1) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));
+  if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
   renderAll();
 }
