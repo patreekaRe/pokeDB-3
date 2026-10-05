@@ -90,11 +90,13 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
   rooms 1, your sprite 2.
 - Tapping a reachable room walks your sprite there first (`walkTo()`):
-  along the same route `linkPoints()` gives `routeLines()`, one tile a step,
-  bobbing every other step, flipped (`--face`) to walk right (Showdown
+  along the same route `linkPoints()` gives `routeLines()`, gliding every
+  frame on `translate` (since 2026-10-05, the user's ask: it stepped a tile
+  at a time before), a little hop about every other tile, eased slightly in
+  and out, flipped (`--face`) to walk right (Showdown
   front sprites face left), filling the road red behind it. 500–850
   ms a link (`WALK_MS`; faster looked like zooming), then the room opens; taps are ignored meanwhile,
-  and reduced motion skips it (the user's picks: brisk, stepped, trailed).
+  and reduced motion skips it (the user's picks: brisk, trailed).
 - Every battle opens with a Gen 3/4-style transition (`js/transition.js`, the user's call):
   `fight()` in `js/run.js` awaits `battleWipe(kind)` (two white flashes, then wild: bars from
   alternate sides, elite: a closing iris, boss: a shatter from the centre; the battle theme

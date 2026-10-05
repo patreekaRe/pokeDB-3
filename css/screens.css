@@ -1551,8 +1551,7 @@ body.battle-intro { pointer-events: none; }
 }
 @keyframes trainerHop { 50% { margin-top: -2px; } }
 .map-trainer.at-start { transform: translate(-50%, -62%); }   /* at the foot of the start road, so the road shows above it */
-.map-trainer.walking { animation: none; }                      /* walkTo() in js/map.js steps it along the route */
-.map-trainer.walking.bob { margin-top: calc(var(--tile) * -0.4); }
+.map-trainer.walking { animation: none; will-change: translate; }   /* walkTo() in js/map.js glides it along the route */
 
 /* ---------- rewards (choose one) ---------- */
 #reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; --log-w: 440px; }

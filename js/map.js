@@ -859,22 +859,41 @@ function walkTo(node, onPick) {
   };
   if (!img || matchMedia('(prefers-reduced-motion: reduce)').matches) return arrive();
   const points = linkPoints(walkFrom, node);
-  const steps = tileSteps(points);
-  const ms = Math.min(WALK_MS[1], Math.max(WALK_MS[0], steps.length * 75)) / (steps.length - 1);
+  const legs = points.slice(1).map((p, i) => Math.hypot(p[0] - points[i][0], p[1] - points[i][1]));
+  const length = legs.reduce((a, b) => a + b, 0);
+  const hops = Math.max(1, Math.round(length / 2));
+  const total = Math.min(WALK_MS[1], Math.max(WALK_MS[0], (tileSteps(points).length - 1) * 75));
   const dx = points.at(-1)[0] - points[0][0];
   img.classList.remove('at-start');
   img.classList.add('walking');
   if (dx) img.style.setProperty('--face', dx > 0 ? -1 : 1);
   const trail = routesSvg.path({ points: [] }, ROUTE.walked, 0.75);
-  let i = 0;
-  const step = () => {
-    i++;
-    place(img, ...steps[i]);
-    img.classList.toggle('bob', i % 4 < 2);
-    trail.setAttribute('points', polyPoints(steps.slice(0, i + 1)));
-    if (i < steps.length - 1) return setTimeout(step, ms);
-    img.classList.remove('bob');
+  // Glides on `translate` from the start point (the GPU moves it), so the tile size is read once in px.
+  const box = img.parentElement.getBoundingClientRect();
+  const tw = box.width / GRID_W, th = box.height / GRID_H;
+  const [x0, y0] = points[0];
+  place(img, x0, y0);
+  const at = (d) => {
+    let i = 0;
+    while (i < legs.length - 1 && d > legs[i]) d -= legs[i++];
+    const k = legs[i] ? Math.min(1, d / legs[i]) : 1;
+    const [[x1, y1], [x2, y2]] = [points[i], points[i + 1]];
+    return { i, p: [x1 + (x2 - x1) * k, y1 + (y2 - y1) * k] };
+  };
+  // mostly an even pace, eased a little into and out of the walk
+  const ease = (t) => 0.7 * t + 0.3 * (0.5 - Math.cos(Math.PI * t) / 2);
+  const start = performance.now();
+  const frame = (now) => {
+    const t = Math.min(1, (now - start) / total);
+    const d = ease(t) * length;
+    const { i, p } = at(d);
+    const hop = Math.abs(Math.sin(Math.PI * hops * d / length)) * 0.35 * th;   // a little hop about every other tile, landing on arrival
+    img.style.translate = `${(p[0] - x0) * tw}px ${(p[1] - y0) * th - hop}px`;
+    trail.setAttribute('points', polyPoints([...points.slice(0, i + 1), p]));
+    if (t < 1) return requestAnimationFrame(frame);
+    place(img, ...points.at(-1));
+    img.style.translate = '';
     setTimeout(arrive, 120);
   };
-  setTimeout(step, ms);
+  requestAnimationFrame(frame);
 }
