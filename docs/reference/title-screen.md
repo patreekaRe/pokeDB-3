@@ -27,7 +27,7 @@ small **version tag** (v0.9 until Mewtwo lands, then v1.0) (`#title-version`, a 
 the page loaded with `cache: 'reload'` (a plain reload can show the old game for ~10 minutes after a push: GitHub Pages'
 cache), spinning meanwhile, then reloads; the save is untouched. Each page load opens on a blinking PRESS START (`showTitle()`); any tap or key
 plays `confirm`, flashes white and brings up the **gem menu** (`renderMenu()`): a stack of pixel gems under the logo, each
-painted on its own `<canvas>` by `paintGem()` (pointed ends, a dark outline, a two-tone bronze frame, an inner groove, a face
+painted on its own `<canvas>` by `paintGem()` (soft rounded points, `GEM_TIP`; a thin border traced round the shape by depth so it stays even on the curves: a dark outline and one two-tone bronze ring, since 2026-10-05 (the user found the old 4-pixel frame and sharp points heavy); a face
 with a light band, a shade band, a gloss streak and glints; `gemPx()` CSS px a pixel, 4 or 3 on windows ≤700px tall, the
 canvas a whole number of pixels wide so they stay square) with a bare pixel icon on its left end (a dark pixel outline, no
 frame: the user's call): **Continue** (amber, only with a save; see Saved runs; the biggest gem, `GEM_BIG`, with a bigger label and a smaller ball, placed by `--icon-x` so it stays on the face), **New game** (violet, an Egg that hops and rocks every 1.5 s like Continue's ball (`eggStir`, the user's ask, 2026-10-03) and wobbles faster while
@@ -43,7 +43,7 @@ busy; they were 2026-10-04's `pageSlot()`): the main stack is Continue, New game
 `modesGem()`) and **Collection ▸** (gold, `GEMS.hub`, kind `hub`). A sign with a ▶ on its right end (`more()`, `.gem-arrow`,
 nudging while pointed at) opens a sub-menu in place (`goTo()`): the stack slides out left and the sub-menu's signs slide in
 from the right (`#title-menu[data-slide]`, `menuOutL` / `menuInR`), the sky, logo and nameplate staying put, the games'
-way. Each sub-menu ends in a small slate **Back** gem, just its ◀ (`backGem()`, `GEMS.back`, `BACK_W` pixels wide; the user's ask, 2026-10-05); the slide-in animations fill `backwards` and are dropped once done (`data-slide="done"`), since iPhone Safari left the second sign stuck a step short (12-15px off centre); Back, Escape / Backspace or a tap on the empty
+way. The menu keeps its tallest page's height (`sizeGems()` sets `min-height`), so the place sign and nameplate never rise on a shorter sub-menu (the user's ask, 2026-10-05). Each sub-menu ends in a small slate **Back** gem, just its ◀ (`backGem()`, `GEMS.back`, `BACK_W` pixels wide; the user's ask, 2026-10-05); the slide-in animations fill `backwards` and are dropped once done (`data-slide="done"`), since iPhone Safari left the second sign stuck a step short (12-15px off centre); Back, Escape / Backspace or a tap on the empty
 sky (`goBack()`) slides back with the ▶ on the sign you came from. `page` (`main` / `modes` / `hub`) is reset to `main` by
 every `renderMenu()` without a direction, so `showHome()` always lands on the main stack.
 - **Game Modes**: the Safari Zone (`safariGem()`, its 🏆 and signpost, which stands only on this page), the Sky Pillar

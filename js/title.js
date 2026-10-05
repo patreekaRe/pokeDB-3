@@ -61,6 +61,7 @@ const SKIES = {
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
 const GEM_H = 16, GEM_BIG = 19;   // gem heights in pixels: Continue's is bigger (the user's call)
 const BACK_W = 26;   // the Back gem's width in pixels
+const GEM_TIP = 6;   // how far in the rounded ends reach at the top and bottom rows
 // face, top light, bottom shade (the reference's amber, violet, gold and coral)
 const GEMS = {
   continue: ['#f0a030', '#ffd070', '#c07018'],
@@ -74,7 +75,7 @@ const GEMS = {
   hub: ['#e0bc28', '#fff080', '#a88410'],
   back: ['#78849a', '#b0bccf', '#4a5468'],
 };
-const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430', BRONZE_MID = '#a86c3c', GROOVE = '#3a1c0c';
+const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -439,6 +440,12 @@ function sizeGems() {
     btn.style.setProperty('--icon-x', big ? 8 + (w - cols) / 2 + 1 : 8);
     paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind], big ? shine : null);
   }
+  // every page keeps the tallest page's height (four signs, Continue's bigger), so the nameplate never rises on a
+  // shorter sub-menu (the user's ask)
+  const menu = $('title-menu');
+  const gap = parseFloat(getComputedStyle(menu).rowGap) || 0;
+  const extra = actions.savedRun() ? GEM_BIG - GEM_H : 0;
+  menu.style.minHeight = `${(4 * GEM_H + extra) * px + 3 * gap}px`;
 }
 
 /**
@@ -450,29 +457,40 @@ function paintGem(canvas, cols, rows, [face, hi, lo], sweep = null) {
   canvas.height = rows;
   const g = canvas.getContext('2d');
   g.clearRect(0, 0, cols, rows);
-  const mid = (rows - 1) / 2;
-  const inset = (y) => Math.round(Math.abs(y - mid) * 0.75);   // how far in the pointed ends are on each row
+  const mid = (rows - 1) / 2, half = rows / 2;
+  // soft points: a superellipse end, so the tip and the corners round off instead of meeting in sharp steps
+  const inset = (y) => Math.round(GEM_TIP * (1 - (1 - Math.abs((y - mid) / half) ** 1.6) ** (1 / 1.6)));
+  const inside = (x, y) => y >= 0 && y < rows && x >= inset(y) && x <= cols - 1 - inset(y);
+  // each pixel's depth from the edge, peeled a ring at a time, so the border is even round the curved ends too
+  const depth = [];
+  for (let y = 0; y < rows; y++) depth.push(Array.from({ length: cols }, (_, x) => (inside(x, y) ? 9 : -1)));
+  for (let d = 0; d < 3; d++) {
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      if (depth[y][x] < d) continue;
+      const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => (depth[y + dy]?.[x + dx] ?? -1) < d);
+      if (edge && depth[y][x] > d) depth[y][x] = d;
+    }
+  }
   for (let y = 0; y < rows; y++) {
-    const left = inset(y), right = cols - 1 - inset(y);
-    for (let x = left; x <= right; x++) {
-      const d = Math.min(x - left, right - x, y, rows - 1 - y);
+    for (let x = 0; x < cols; x++) {
+      const d = depth[y][x];
+      if (d < 0) continue;
       let c;
       if (d === 0) c = OUTLINE;
-      else if (d <= 2) c = d === 2 ? BRONZE_MID : y < mid ? BRONZE_LIGHT : BRONZE_DARK;
-      else if (d === 3) c = GROOVE;
-      else c = y <= 5 ? hi : y >= rows - 6 ? lo : face;
+      else if (d === 1) c = y < mid ? BRONZE_LIGHT : BRONZE_DARK;
+      else c = y <= 4 ? hi : y >= rows - 5 ? lo : face;
       // Continue's shimmer: a slanted band of light crossing the face
-      if (sweep !== null && d > 3) { const at = x - sweep + (rows - y) * 0.6; if (at >= 0 && at < 3) c = at < 1 ? '#fff8d8' : '#ffe8a0'; }
+      if (sweep !== null && d > 1) { const at = x - sweep + (rows - y) * 0.6; if (at >= 0 && at < 3) c = at < 1 ? '#fff8d8' : '#ffe8a0'; }
       g.fillStyle = c;
       g.fillRect(x, y, 1, 1);
     }
   }
   // a gloss streak across the upper face, broken like the reference's highlight
   g.fillStyle = hi;
-  for (let x = Math.round(cols * 0.18); x < cols * 0.82; x++) if (x % 9 < 6) g.fillRect(x, 6, 1, 1);
+  for (let x = Math.round(cols * 0.18); x < cols * 0.82; x++) if (x % 9 < 6) g.fillRect(x, 5, 1, 1);
   g.fillStyle = 'rgba(255, 255, 255, 0.85)';
-  g.fillRect(9, 4, 5, 1); g.fillRect(16, 4, 2, 1);
-  g.fillRect(cols - 15, rows - 5, 5, 1);
+  g.fillRect(8, 3, 5, 1); g.fillRect(15, 3, 2, 1);
+  g.fillRect(cols - 14, rows - 4, 5, 1);
 }
 
 /** Continue's icon: the run's Poké Ball, wobbling, with your Pokémon waiting inside to be sent out. */
