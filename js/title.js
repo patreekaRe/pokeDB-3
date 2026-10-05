@@ -237,7 +237,7 @@ function renderMenu(dir = 0, from = null) {
   menu.dataset.slide = dir > 0 ? 'in-r' : dir < 0 ? 'in-l' : '';
   // iPhone Safari left a sign stuck a step short of its place after sliding in, so the animation is dropped once it's done
   clearTimeout(renderMenu.settle);
-  if (dir && !still()) renderMenu.settle = setTimeout(() => { menu.dataset.slide = 'done'; }, 600);
+  if (dir && !still()) renderMenu.settle = setTimeout(() => { menu.dataset.slide = 'done'; }, 700);
   menu.replaceChildren(...gems);
   showBadgeNews();
   sizeGems();
@@ -276,7 +276,7 @@ function slide(dir, next, from = null) {
   if (still()) return swap();
   closeAreas();
   $('title-menu').dataset.slide = dir > 0 ? 'out-l' : 'out-r';
-  swapping = setTimeout(swap, 140);
+  swapping = setTimeout(swap, 180);
 }
 
 /** A sign that opens a sub-menu: a ▶ on its right end says so. */

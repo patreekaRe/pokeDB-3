@@ -833,10 +833,10 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .bag-trainer p { margin: 0; }
 
 /* ---------- the sub-menus: Game Modes and Collection slide the stack sideways (renderMenu() in js/title.js) ---------- */
-.title-menu[data-slide="out-l"] > * { animation: menuOutL 0.14s steps(3) forwards; }
-.title-menu[data-slide="out-r"] > * { animation: menuOutR 0.14s steps(3) forwards; }
-.title-menu[data-slide="in-r"] > .gem, .title-menu[data-slide="in-r"] > .gem-row > .gem { animation: menuInR 0.24s steps(4) backwards calc(var(--i) * 40ms); }
-.title-menu[data-slide="in-l"] > .gem, .title-menu[data-slide="in-l"] > .gem-row > .gem { animation: menuInL 0.24s steps(4) backwards calc(var(--i) * 40ms); }
+.title-menu[data-slide="out-l"] > * { animation: menuOutL 0.18s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.title-menu[data-slide="out-r"] > * { animation: menuOutR 0.18s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.title-menu[data-slide="in-r"] > .gem, .title-menu[data-slide="in-r"] > .gem-row > .gem { animation: menuInR 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) backwards calc(var(--i) * 45ms); }
+.title-menu[data-slide="in-l"] > .gem, .title-menu[data-slide="in-l"] > .gem-row > .gem { animation: menuInL 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) backwards calc(var(--i) * 45ms); }
 .title-menu[data-slide="done"] > .gem, .title-menu[data-slide="done"] > .gem-row > .gem { animation: none; }
 @keyframes menuOutL { to { opacity: 0; translate: -60px 0; } }
 @keyframes menuOutR { to { opacity: 0; translate: 60px 0; } }
