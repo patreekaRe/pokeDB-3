@@ -51,13 +51,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       the main Pokédex, `dex.complete`), Safari (finish one Safari area page, `safariDex.done`), Streak (`bestStreak` 3).
     - New content, locked for everyone: Explorer (see every biome, once branching biomes exist) and three Tower Badges
       (Sky Pillar floors 25 / 50 / 100); they show as locked slots until their content lands.
-    a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17. Build the badge rules: a
-       `BADGES` list in js/data/badges.js (id, name, group, icon, how to earn, a test on the save like ACHIEVEMENTS' and
-       FEATS'), `checkBadges()` granting into `save.badges` from the same places checkAchievements() runs (after fights,
-       at a run's end, at load so old saves get theirs on day one), a quiet 'Badge earned!' line in the reward box and the
-       result window (no window of its own). Explorer and the Tower Badges are listed but can't be earned yet. Add
-       `tests/badges.test.mjs` (an old save earns what it can prove; a fresh one nothing). Update CLAUDE.md, AGENTS.md
-       and the roadmap, push to main."
+    a. Done 2026-10-05 (the badge rules, `save.badges`, old saves' day-one grant, `tests/badges.test.mjs`; see the archive).
     b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 17 (part a is
        done: js/data/badges.js and `save.badges`). Build the Gold/Silver-style Trainer Card as a Collection card: name
        (the cloud save's or TRAINER), runs won, Pokédex and Safari counts, gold stars, play time from now on

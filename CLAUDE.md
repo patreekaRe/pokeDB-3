@@ -512,6 +512,17 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   over as a silhouette with its shadow on the road, or, with the Sealed Gate at half HP or less, sometimes Eternatus's red
   glow pulses on the horizon (`pickGuest()`, seeded by `run.tally.startedAt` and the trip). Playtest `?travel=shrine` /
   `?travel=wastes` (`&at=0.5`, `&flyer=lugia` / `eternatus` / `none`).
+- **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
+  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), four `BADGE_GROUPS`:
+  Journey (the three biome bosses, Champion, Fire / Water / Grass), Trainer Levels (Bronze 2, Silver 3, Gold 5, Master 5 with
+  all three types), Secrets (Dojo, Seal, Depths `secret`, Pokédex, Safari, Streak) and New frontiers (Explorer, Tower
+  25F / 50F / 100F: `locked`, never earned until their content lands). Each test reads only what the save already keeps (the
+  Level legendaries, `maxLevelWinByType`, `level5WinsBy` / `level5Jackpot`, the Hall of Fame, `winsBy` by the starter's
+  type), so `checkBadges()` in `js/progress.js` (pure part `newBadges(save)`) granting into `save.badges` at load (`init()`
+  in `js/main.js`, silent) gives an old save everything it can prove on day one. In a run it's quiet, no window: a
+  `badgeLine()` in the fight's reward box (`unlock()` in `afterFight()`; Kenmatta's Dojo Badge in his relic window, once
+  `kenWins` is saved) and in the result window (`announceUnlocks()` keeps them in `run.badges`). Peeked runs grant none.
+  Tests: `tests/badges.test.mjs`. Part b (the Trainer Card and Badge Case's look) is the roadmap's.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

@@ -33,6 +33,7 @@ import { gateHp } from './gate.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate } from './run.js';
@@ -198,6 +199,7 @@ function init() {
       d.stats.deepestBiome = Math.min(d.stats.deepestBiome, 3);
     });
   }
+  checkBadges();   // an old save gets every badge it can already prove, on day one (a quiet grant: no line)
   initAudio();
   initSettings();
   initTips();

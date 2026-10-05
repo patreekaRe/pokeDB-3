@@ -39,6 +39,11 @@ three places:
   balls are a big swipeable row. Checked at 375x812 and 768x1024.
 - 2026-10-03: the roadmap was split: `docs/roadmap.md` now lists only open work; the old 1300-line file is
   `docs/roadmap-done.md` (it listed done things as open, e.g. the HP plate on event screens and the pixel pills).
+- 2026-10-05: **Badges, part a** (cloud, pushed to `main`; roadmap item 17): the badge rules in `js/data/badges.js`,
+  `save.badges`, `checkBadges()` after fights, at a run's end and at load (old saves earn what they can prove; checked
+  headless with an old save), a quiet "Badge earned!" line in the reward box and result window; `tests/badges.test.mjs`.
+  The in-run lines were only checked by reading the code. Next: part b, the Trainer Card (LOCAL, Desktop app; prompt in
+  the roadmap).
 - **After every task, update this file and `docs/roadmap.md` first** (the user's call, 2026-10-01), before reporting back.
 - **Journey films, steps 10-11** (done 2026-10-04): `js/travel.js` plays the walk between biomes after Boss 1 and Boss 2
   (`walkOn()` in `js/run.js`; not Mewtwo, not the Safari): Clearing → Shrine, and Shrine → Wastes (moss drying out, dead

@@ -27,7 +27,8 @@ import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
-import { checkAchievements, checkFeats } from './progress.js';
+import { checkAchievements, checkFeats, checkBadges } from './progress.js';
+import { badgeLine } from './data/badges.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
@@ -881,6 +882,7 @@ function afterFight(node, result) {
   const unlock = () => {
     for (const starter of checkAchievements({ sound: false })) { run.unlocks.push(starter); unlocked.push(starter); }
     if (!peeking) unlocked.push(...checkFeats());   // the Depths page's shiny Mewtwo
+    if (!peeking) dexNews.push(...checkBadges().map(badgeLine));   // quiet: a line in the reward box, no window
   };
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
@@ -935,8 +937,9 @@ function afterFight(node, result) {
     const countLine = !mapped && left > 0 && `Beat him ${left} more time${left === 1 ? '' : 's'} to find his dojo on every map.`;
     steps.push(next => {
       if (!peeking) updateSave(s => { s.kenWins = Math.max(s.kenWins || 0, wins); });
+      const badges = peeking ? [] : checkBadges().map(badgeLine);   // the Dojo Badge, once his win is saved
       showRelics('Kenmatta\'s relic', [RELICS_BY_ID['exp-share']], next, { skip: false,
-        sub: ['"...Okay. OKAY. Lucky shot, bro. I wasn\'t even warmed up."', '"Fine. Take my Mata-Mindset. Don\'t say I never gave you anything."', countLine, 'Tap it to see what it does.'].filter(Boolean) });
+        sub: ['"...Okay. OKAY. Lucky shot, bro. I wasn\'t even warmed up."', '"Fine. Take my Mata-Mindset. Don\'t say I never gave you anything."', countLine, ...badges, 'Tap it to see what it does.'].filter(Boolean) });
     }, next => offerCard('boss', next));
   }
 
@@ -2394,6 +2397,7 @@ function announceUnlocks() {
   run.unlocks.push(...fresh);
   const feats = peeking ? [] : checkFeats();
   run.feats = feats;
+  run.badges = peeking ? [] : checkBadges();
   return [...fresh, ...feats];
 }
 
@@ -2521,7 +2525,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.paid ? ` +${f.paid} PokéCoins.` : ''}`),
-    ...(run.dexNews || []).map(line => `📕 ${line}`)];
+    ...(run.dexNews || []).map(line => `📕 ${line}`), ...(run.badges || []).map(badgeLine)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);

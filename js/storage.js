@@ -61,6 +61,7 @@ const freshSave = () => ({
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
+  badges: [],                 // BADGES ids earned (js/data/badges.js), oldest first: the Trainer Card's Badge Case
   feats: [],                  // FEATS ids granted (js/data/achievements.js): Eternatus beaten, the Depths page's shiny Mewtwo
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex

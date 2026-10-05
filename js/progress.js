@@ -8,6 +8,7 @@ import { playSound } from './audio.js';
 import { ACHIEVEMENTS, FEATS } from './data/achievements.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
+import { newBadges } from './data/badges.js';
 
 /** The three real characters are always unlocked. Every skin needs an achievement or a shop purchase. */
 export function isStarterUnlocked(starter) {
@@ -49,5 +50,13 @@ export function checkFeats() {
     });
     earned.push({ ...f, feat: true, paid: f.coins ? awardCoins(f.coins) : 0 });
   }
+  return earned;
+}
+
+/** Grant every badge (js/data/badges.js) the save can now prove, quietly: no window, only a line where it was earned.
+    Returns them. Also run at load, so an old save gets what it already earned. */
+export function checkBadges() {
+  const earned = newBadges(getSave());
+  if (earned.length) updateSave(d => { d.badges = [...(d.badges || []), ...earned.map(b => b.id)]; });
   return earned;
 }
