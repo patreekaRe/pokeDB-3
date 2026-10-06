@@ -12,6 +12,9 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-05: the **Pokédex revamp, pass 1** landed (full-screen biome banners opening a red handheld device). Pass 2,
+  the zoom / lid animation and painted biome art, is roadmap item 20.
+
 - Polish batch item 1 (battle feel) is done: damage/block preview on a raised card, enemy wind-up and recoil, red
   super-effective numbers, rare-card shimmer and the upgraded-card burst. Item 2 (world polish) is done too: battle
   weather, map footprints, Pokédex cries. Item 3 (settings and battle QoL) is done: music and

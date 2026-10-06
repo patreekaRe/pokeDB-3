@@ -10,6 +10,8 @@
    Research complete, with a gold mark, and only then shows its type,
    role, flavour text, weakness, HP and moves with their numbers. Once
    every entry on a page is researched its perk goes up to Lv 2.
+   The window is full screen: a banner per biome, then a red handheld
+   Pokédex on that page (see "the window" below).
    ============================================================ */
 
 import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
@@ -21,7 +23,8 @@ import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
 import { playCry } from './audio.js';
 import { tipAt } from './tips.js';
-import { openSafariDex } from './safaridex.js';
+import { openSafariDex, safariDexCount } from './safaridex.js';
+import { SAFARI_DEX_PAGES } from './data/safari.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
 const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defend: ['🛡️', 'Block'], buff: ['💪', 'Buff'], status: ['🗂️', 'Status'] };
@@ -107,7 +110,18 @@ export function dexDefeated(id) {
 export const isResearched = (id) => Boolean(pageOf(id)) && researched(id);
 export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.length];
 
-/* ---------- the window ---------- */
+/* ---------- the window ----------
+   Full screen (the user's call, 2026-10-05: "as immersive as possible"), in two views, Pokémon GO's region list then a
+   handheld Pokédex: a banner per biome (its name, progress, perk medal and three of its Pokémon), and a tap opens the
+   red device on that page, one entry at a time, with the page's every entry as slots to jump between. */
+
+const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', wastes: 'Wastes', depths: 'Depths' };
+const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
+/** A Mewtwo run has been down into the Depths (or met one of its Pokémon), so its page shows. */
+const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
+
+let view = 'list';   // 'list' | 'page' | 'rewards'
+let entry = 0;       // the entry shown on the device, an index into the page's ids
 
 function sprite(def, className) {
   const img = el('img', `pixel ${className}`);
@@ -121,22 +135,12 @@ function typeChip(type) {
   return el('span', `index-only type-${type}`, `${TYPES[type].icon} ${TYPES[type].label}`);
 }
 
-function entryTile(id, role, seen, defeated) {
-  const def = ENEMY_DEFS[id];
-  const known = seen.has(id);
-  const done = researched(id);
-  const tile = el('button', `dex-entry${known ? '' : ' locked'}${defeated.has(id) ? ' defeated' : ''}${done ? ' researched' : ''}`);
-  tile.type = 'button';
-  tile.append(el('span', 'dex-no', dexNo(id)), sprite(def, 'dex-sprite'), el('strong', 'dex-name', known ? def.name : '???'));
-  if (defeated.has(id)) {
-    tile.append(el('span', `dex-mark pokeball${done ? ' gold' : ''}`));
-    tile.append(el('span', 'dex-research', done ? '★ Research' : `${defeats(id)}/${goalOf(id)}`));
-  }
-  tile.title = !known ? 'Not seen yet. Fight it in a run to fill this in.'
-    : done ? `${def.name}: Research complete. Tap for its entry` : `${def.name}: defeated ${defeats(id)}/${goalOf(id)}. Tap for its entry`;
-  if (!known) tile.setAttribute('aria-disabled', 'true');
-  tile.addEventListener('click', () => (known ? openEntry(id, role, tile) : tipAt(tile, tile.dataset.tip || tile.title)));
-  return tile;
+function progressBar(n, of) {
+  const bar = el('div', 'ach-bar dex-bar');
+  const fill = el('div', 'ach-fill');
+  fill.style.width = `${(n / of) * 100}%`;
+  bar.append(fill);
+  return bar;
 }
 
 function perkBox(p, count, done) {
@@ -176,13 +180,6 @@ function depthsBox(p, count, done) {
   return box;
 }
 
-/* The Rewards tab (the user's call: what finishing the Pokédex pays should be easy to find): the jackpot, research and
-   each page's perk, with how far along you are. */
-const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
-/** A Mewtwo run has been down into the Depths (or met one of its Pokémon), so its page shows. */
-const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
-const REWARDS = MYSTERY + 1;
-
 function prize(art, name, text) {
   const row = el('div', 'dex-prize');
   row.append(art, el('span', 'dex-prize-text'));
@@ -190,15 +187,9 @@ function prize(art, name, text) {
   return row;
 }
 
-function progressBar(n, of) {
-  const bar = el('div', 'ach-bar dex-bar');
-  const fill = el('div', 'ach-fill');
-  fill.style.width = `${(n / of) * 100}%`;
-  bar.append(fill);
-  return bar;
-}
-
-function renderRewards() {
+/* The Rewards (the user's call: what finishing the Pokédex pays should be easy to find): the jackpot, research and each
+   page's perk, with how far along you are. */
+function rewardBoxes() {
   const save = getSave();
   const [done, all] = researchCount();
   const defeated = new Set(save.dex.defeated);
@@ -237,13 +228,13 @@ function renderRewards() {
     pay('⚔️', 'Wild', RESEARCH_COINS.wild), pay('💀', 'Alpha', RESEARCH_COINS.elite), pay('👹', 'Boss', RESEARCH_COINS.boss),
   ], done, all, false, 'Each entry pays once.');
 
-  const pages = DEX_PAGES.map(p => goal(p.perk.icon, `${p.name.split(' ').pop()} page`, `Beat all ${p.ids.length} once`, [
+  const pages = DEX_PAGES.map(p => goal(p.perk.icon, `${BANNER_NAME[p.biome]} page`, `Beat all ${p.ids.length} once`, [
     coins(p.perk.coins),
     prize(el('span', 'dex-prize-icon', p.perk.icon), p.perk.name, p.perk.short),
   ], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.perk.name}: ${p.perk.text}`));
 
   // researching a whole page raises its perk to Lv 2 (the user's call, 2026-09-28)
-  const masters = DEX_PAGES.map(p => goal('★', `${p.name.split(' ').pop()} research`, `Research all ${p.ids.length}`, [
+  const masters = DEX_PAGES.map(p => goal('★', `${BANNER_NAME[p.biome]} research`, `Research all ${p.ids.length}`, [
     prize(el('span', 'dex-prize-icon', p.perk.icon), `${p.perk.name} Lv 2`, p.perk.lv2.short),
   ], p.ids.filter(researched).length, p.ids.length, levelOf(p) === 2, `${p.perk.name} Lv 2: ${p.perk.lv2.text}`));
 
@@ -257,68 +248,7 @@ function renderRewards() {
       p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.prize.name}: ${p.prize.text}`));
     depths[0].classList.add('dex-depths');
   }
-  $('dex-body').replaceChildren(jackpot, research, ...pages, ...masters, ...depths);
-}
-
-/** The fourth biome's page: nothing but silhouettes of question marks, a hint of what's coming. */
-function renderMystery() {
-  const box = el('div', 'dex-perk dex-mystery-box');
-  const text = el('div', 'dex-perk-text');
-  text.append(el('strong', '', '???'), el('span', '', 'Something waits beyond the Ember Wastes.'), el('small', '', 'No trainer has found a way there... yet.'));
-  box.append(el('span', 'dex-perk-icon', '🔒'), text);
-  const body = [box];
-  for (const [label, n] of [['Wild Pokémon', 12], ['Alphas', 3], ['???', 1]]) {
-    const head = el('div', 'index-head');
-    const title = el('h3', 'index-heading', label);
-    title.append(el('span', 'index-count', `?/${n > 1 ? '??' : '?'}`));
-    head.append(title);
-    body.push(head, ...Array.from({ length: n }, () => {
-      const tile = el('div', 'dex-entry locked dex-unknown');
-      tile.append(el('span', 'dex-no', 'No.???'), el('span', 'dex-sprite dex-unknown-mark', '?'), el('strong', 'dex-name', '???'));
-      return tile;
-    }));
-  }
-  $('dex-body').replaceChildren(...body);
-}
-
-function render() {
-  const save = getSave();
-  $('dex-safari-tab').hidden = !safariOpen(save);
-  if (page === REWARDS) { renderRewards(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
-  if (page === MYSTERY && !depthsKnown()) { renderMystery(); markTabs(); $('dex-dialog').scrollTop = 0; return; }
-  const seen = new Set(save.dex.seen);
-  const defeated = new Set(save.dex.defeated);
-  const p = ALL_PAGES[page];
-  const count = p.ids.filter(id => defeated.has(id)).length;
-  const body = [perkBox(p, count, save.dex.done.includes(p.biome))];
-  for (const role of ['wild', 'elite', 'boss']) {
-    const ids = p.ids.filter(id => p.role[id] === role);
-    const head = el('div', 'index-head');
-    const title = el('h3', 'index-heading', { wild: 'Wild Pokémon', elite: 'Alphas', boss: 'Bosses' }[role]);
-    title.append(el('span', 'index-count', `${ids.filter(id => defeated.has(id)).length}/${ids.length}`));
-    head.append(title);
-    body.push(head, ...ids.map(id => entryTile(id, role, seen, defeated)));
-  }
-  $('dex-body').replaceChildren(...body);
-  $('dex-dialog').scrollTop = 0;
-  const [done] = researchCount();
-  if (p === DEPTHS_PAGE) {   // a page apart from the Pokédex's total: count its own
-    const ids = p.ids;
-    $('dex-total').textContent = `${ids.filter(id => defeated.has(id)).length}/${ids.length} · ${ids.filter(id => seen.has(id)).length} seen · ★${ids.filter(researched).length}`;
-    $('dex-total').title = 'The Crystal Depths, Mewtwo\'s alone: kept apart from the Pokédex\'s total';
-    return markTabs();
-  }
-  $('dex-total').textContent = `${ALL_IDS.filter(id => defeated.has(id)).length}/${ALL_IDS.length} · ${ALL_IDS.filter(id => seen.has(id)).length} seen · ★${done}`;
-  $('dex-total').title = `${ALL_IDS.filter(id => defeated.has(id)).length} defeated, ${ALL_IDS.filter(id => seen.has(id)).length} seen, ${done} with Research complete`;
-  markTabs();
-}
-
-function markTabs() {
-  for (const btn of document.querySelectorAll('.dex-tab')) {
-    const on = Number(btn.dataset.page) === page;
-    btn.setAttribute('aria-selected', String(on));
-    btn.tabIndex = on ? 0 : -1;
-  }
+  return [jackpot, research, ...pages, ...masters, ...depths];
 }
 
 /** A move's numbers in a fight (Research complete): attacks carry the biome's extra damage. */
@@ -335,113 +265,254 @@ function moveNumbers(m, extra) {
   return parts.join(', ');
 }
 
-/** One entry blown up over the window, like a zoomed card: any tap or Escape closes it. */
-function openEntry(id, role, from) {
+/* ---------- the list: a banner per biome ---------- */
+
+function banner(cls, title, sub, onClick) {
+  const b = el('button', `pdx-banner ${cls}`);
+  b.type = 'button';
+  b.append(el('span', 'pdx-stripe'), el('strong', 'pdx-banner-name', title));
+  if (sub) b.append(el('span', 'pdx-banner-sub', sub));
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+function bannerMons(ids, seen) {
+  const mons = el('span', 'pdx-banner-mons');
+  for (const id of ids) {
+    const img = sprite(ENEMY_DEFS[id], `pdx-banner-mon${seen.has(id) ? '' : ' unseen'}`);
+    mons.append(img);
+  }
+  return mons;
+}
+
+function medal(lv, icon, title) {
+  const m = el('span', `pdx-medal lv${lv}`, icon);
+  m.title = title;
+  return m;
+}
+
+function renderList() {
+  const save = getSave();
+  const seen = new Set(save.dex.seen);
+  const defeated = new Set(save.dex.defeated);
+  const banners = DEX_PAGES.map((p, i) => {
+    const n = p.ids.filter(id => defeated.has(id)).length;
+    const done = save.dex.done.includes(p.biome);
+    const b = banner(`biome-${p.biome}${done ? ' complete' : ''}`, BANNER_NAME[p.biome], done ? 'Complete!' : p.name, () => openPage(i));
+    const lv = levelOf(p);
+    b.append(el('span', 'pdx-banner-count', `${n} / ${p.ids.length}`), progressBar(n, p.ids.length),
+      medal(lv, p.perk.icon, lv ? `${p.perk.name}${lv === 2 ? ' Lv 2' : ''}` : `${p.perk.name}: complete the page to earn it`),
+      bannerMons(bannerIds(p), seen));
+    return b;
+  });
+
+  if (depthsKnown()) {
+    const p = DEPTHS_PAGE;
+    const n = p.ids.filter(id => defeated.has(id)).length;
+    const done = save.dex.done.includes(p.biome);
+    const b = banner(`biome-depths${done ? ' complete' : ''}`, BANNER_NAME.depths, done ? 'Complete!' : p.name, () => openPage(MYSTERY));
+    b.append(el('span', 'pdx-banner-count', `${n} / ${p.ids.length}`), progressBar(n, p.ids.length),
+      medal(done ? 2 : 0, '✨', p.prize.name), bannerMons(bannerIds(p), seen));
+    banners.push(b);
+  } else {
+    const b = banner('biome-mystery locked', '???', 'Something waits beyond the Ember Wastes.', () => tipAt(b, 'No trainer has found a way there... yet.'));
+    b.append(el('span', 'pdx-banner-count', '? / ??'), el('span', 'pdx-banner-mons'));
+    b.lastChild.append(el('span', 'pdx-mystery-mark', '?'));
+    banners.push(b);
+  }
+
+  const [done, all] = researchCount();
+  const rewards = banner(`pdx-rewards${save.dex.complete ? ' complete' : ''}`, 'Rewards', save.dex.complete ? 'Pokédex complete!' : 'What finishing it pays', openRewards);
+  rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), el('span', 'pdx-banner-mons pdx-trophy', '🏆'));
+  banners.push(rewards);
+
+  if (safariOpen(save)) {   // the Safari Pokédex is its own window: its banner hands over to it
+    const { caught, total } = safariDexCount();
+    const safari = banner('pdx-safari', 'Safari', 'The Safari Zone\'s Pokédex', () => { closeDialog('dex-dialog'); openSafariDex(); });
+    const caughtIds = new Set([...getSave().safariDex.seen, ...getSave().safariDex.caught]);
+    safari.append(el('span', 'pdx-banner-count', `${caught} / ${total}`), progressBar(caught, total), bannerMons(SAFARI_DEX_PAGES[0].ids.slice(0, 3), caughtIds));
+    banners.push(safari);
+  }
+  $('dex-banners').replaceChildren(...banners);
+
+  const ids = ALL_IDS;
+  $('dex-total').textContent = `${ids.filter(id => defeated.has(id)).length}/${ids.length}`;
+  $('dex-total').title = `${ids.filter(id => defeated.has(id)).length} defeated, ${ids.filter(id => seen.has(id)).length} seen, ${done} with Research complete`;
+}
+
+/** A banner's three: a wild, the boss in the middle, an Alpha (Pokémon GO's three starters). */
+function bannerIds(p) {
+  const of = (role) => p.ids.filter(id => p.role[id] === role);
+  return [of('wild')[0], of('boss').at(-1), of('elite')[0]].filter(Boolean);
+}
+
+/* ---------- the device ---------- */
+
+function deviceFrame(cls, title) {
+  const dev = el('div', `pdx-device ${cls}`);
+  const lid = el('div', 'pdx-lid');
+  const back = el('button', 'pdx-back', '◀');
+  back.type = 'button';
+  back.setAttribute('aria-label', 'Back to the biomes');
+  back.addEventListener('click', backToList);
+  lid.append(back, el('span', 'pdx-lens'), el('span', 'pdx-light red'), el('span', 'pdx-light yellow'), el('span', 'pdx-light green'),
+    el('span', 'pdx-lid-title', title));
+  const body = el('div', 'pdx-body');
+  dev.append(lid, body);
+  return [dev, body];
+}
+
+function renderPage() {
+  const save = getSave();
+  const seen = new Set(save.dex.seen);
+  const defeated = new Set(save.dex.defeated);
+  const p = ALL_PAGES[page];
+  const id = p.ids[entry];
+  const role = p.role[id];
   const base = ENEMY_DEFS[id];
-  const def = role === 'elite' ? eliteOf(base) : base;
-  const card = el('div', 'dex-detail');
-  const head = el('div', 'dex-detail-head');
-  const names = el('div', 'dex-detail-names');
-  const done = researched(id);
-  names.append(el('span', 'dex-no', dexNo(id)), el('strong', 'dex-detail-name', base.name), ...(done ? [typeChip(base.type)] : []));
-  head.append(sprite(base, 'dex-detail-sprite'), names);
-  card.append(head);
-  playCry(base.spriteId);
+  const known = seen.has(id);
+  const done = known && researched(id);
+  const [dev, body] = deviceFrame(`biome-${p.biome}`, BANNER_NAME[p.biome]);
 
-  // until its research is complete an entry shows only its picture and where it lives (the user's call): the rest is the prize
-  const facts = el('p', 'dex-detail-facts');
-  const where = pageOf(id).name;
-  facts.textContent = done ? `${ROLE_LABEL[role]} · ${where}` : where;
-  card.append(facts);
-  card.append(el('p', `dex-detail-research${done ? ' done' : ''}`, done
-    ? `★ Research complete (defeated ${defeats(id)})`
-    : `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
-  if (!done) return showEntry(card, from);
-  const foe = buildEncounter(BIOMES.findIndex(b => b.id === pageOf(id).biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
-  if (foe) card.append(el('p', 'dex-detail-hp', `HP ${foe.maxHp} · ${pageOf(id) === DEPTHS_PAGE ? 'numbers in the Depths' : 'numbers at Level 0, before types'}`));
-  card.append(el('p', 'dex-detail-text', base.description));
-  const weak = role === 'wild' && TYPES[base.type].losesTo;
-  card.append(el('p', 'dex-detail-weak', weak
-    ? `Weak to ${TYPES[weak].icon} ${TYPES[weak].label}. Resists ${TYPES[base.type].beats ? `${TYPES[TYPES[base.type].beats].icon} ${TYPES[TYPES[base.type].beats].label}` : 'nothing'}.`
-    : role === 'wild' ? 'No weakness: Neutral both ways.' : 'Alphas and bosses ignore types in battle.'));
-  const moves = el('ul', 'dex-moves');
-  for (const m of def.moves) {
-    const li = el('li', `dex-move kind-${m.kind}`);
-    li.append(el('span', 'dex-move-icon', (MOVE_KIND[m.kind] || ['❓'])[0]), el('span', 'dex-move-name', m.name), el('small', '', moveNumbers(m, foe.strength)));
-    moves.append(li);
-  }
-  card.append(el('h4', 'dex-moves-head', 'Moves, in order'), moves);
-  if (def.phase2) {   // Eternatus's second bar
-    const next = el('ul', 'dex-moves');
-    for (const m of def.phase2.moves) {
-      const li = el('li', `dex-move kind-${m.kind}`);
-      li.append(el('span', 'dex-move-icon', (MOVE_KIND[m.kind] || ['⚠️'])[0]), el('span', 'dex-move-name', m.name),
-        el('small', '', m.kind === 'charge' ? 'charging' : `${moveNumbers(m, foe.strength)}${m.grow ? `, +${m.grow} each use` : ''}`));
-      next.append(li);
-    }
-    card.append(el('h4', 'dex-moves-head', `Then it rises as ${def.phase2.name}`), next);
-  }
-  showEntry(card, from);
-}
+  const nameplate = el('div', 'pdx-lcd pdx-nameplate');
+  nameplate.append(el('span', 'pdx-name', known ? base.name : '???'), el('span', 'pdx-no', dexNo(id)));
 
-function showEntry(card, from) {
-  const layer = el('div', 'card-zoom dex-zoom');
-  layer.append(card, el('p', 'focus-hint', 'Tap anywhere to close'));
-  const close = () => {
-    layer.remove();
-    document.removeEventListener('keydown', onKey, true);
-    from?.focus({ preventScroll: true });
+  const screen = el('div', `pdx-screen${known ? '' : ' unseen'}`);
+  screen.append(el('span', 'pdx-pad'), sprite(base, 'pdx-mon'));
+  if (known) screen.append(el('span', `pdx-role role-${role}`, ROLE_LABEL[role]));
+  if (done) screen.append(typeChip(base.type));
+  if (defeated.has(id)) screen.append(el('span', `pdx-caught${done ? ' gold' : ''}`, done ? '★' : `${defeats(id)}/${goalOf(id)}`));
+  swipe(screen);
+
+  const lines = [nameplate, screen];
+  if (!known) {
+    lines.push(el('div', 'pdx-lcd pdx-text muted', 'No data. Fight it in a run to fill this in.'));
+  } else if (!done) {
+    // until its research is complete an entry shows only its picture and where it lives (the user's call): the rest is the prize
+    lines.push(el('div', 'pdx-lcd pdx-text', `Found in the ${p.name}.`),
+      el('div', 'pdx-lcd pdx-text muted', `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
+  } else {
+    const def = role === 'elite' ? eliteOf(base) : base;
+    const foe = buildEncounter(BIOMES.findIndex(b => b.id === p.biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
+    const weak = role === 'wild' && TYPES[base.type].losesTo;
+    const facts = el('div', 'pdx-lcd pdx-facts');
+    facts.append(
+      el('span', '', `HP ${foe?.maxHp ?? '?'}`),
+      el('span', '', weak ? `Weak: ${TYPES[weak].icon} ${TYPES[weak].label}` : role === 'wild' ? 'No weakness' : 'Ignores types'),
+      el('small', '', p === DEPTHS_PAGE ? 'Numbers in the Depths' : 'Numbers at Level 0, before types'));
+    lines.push(el('div', 'pdx-lcd pdx-text', base.description), facts, moveList('Moves, in order', def.moves, foe?.strength ?? 0));
+    if (def.phase2) lines.push(moveList(`Then it rises as ${def.phase2.name}`, def.phase2.moves, foe?.strength ?? 0));
+    lines.push(el('div', 'pdx-lcd pdx-text gold', `★ Research complete (defeated ${defeats(id)})`));
+  }
+
+  const slots = el('div', 'pdx-slots');
+  p.ids.forEach((sid, i) => {
+    const s = el('button', `pdx-slot role-${p.role[sid]}${i === entry ? ' on' : ''}${seen.has(sid) ? '' : ' unseen'}${defeated.has(sid) ? ' caught' : ''}${seen.has(sid) && researched(sid) ? ' researched' : ''}`);
+    s.type = 'button';
+    s.setAttribute('aria-label', `${dexNo(sid)} ${seen.has(sid) ? ENEMY_DEFS[sid].name : 'unknown'}`);
+    s.append(sprite(ENEMY_DEFS[sid], 'pdx-slot-mon'));
+    s.addEventListener('click', () => showEntry(i));
+    slots.append(s);
+  });
+  lines.push(slots, perkBox(p, p.ids.filter(x => defeated.has(x)).length, save.dex.done.includes(p.biome)));
+  body.append(...lines);
+
+  const controls = el('div', 'pdx-controls');
+  const step = (dir, label, glyph) => {
+    const b = el('button', 'pdx-round', glyph);
+    b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.addEventListener('click', () => showEntry(entry + dir));
+    return b;
   };
-  const onKey = (e) => { if (['Escape', 'Enter', ' '].includes(e.key)) { e.preventDefault(); e.stopPropagation(); close(); } };
-  layer.addEventListener('click', close);
-  document.addEventListener('keydown', onKey, true);
-  $('dex-dialog').append(layer);
+  controls.append(step(-1, 'Previous entry', '◀'), el('span', 'pdx-lcd pdx-counter', `${entry + 1} / ${p.ids.length}`), step(1, 'Next entry', '▶'));
+  dev.append(controls);
+  $('dex-device').replaceChildren(dev);
 }
 
-function pick(i, focus = false) {
+function moveList(head, moves, extra) {
+  const box = el('div', 'pdx-lcd pdx-moves');
+  box.append(el('h4', '', head));
+  for (const m of moves) {
+    const row = el('div', `pdx-move kind-${m.kind}`);
+    const nums = m.kind === 'charge' ? 'charging' : `${moveNumbers(m, extra)}${m.grow ? `, +${m.grow} each use` : ''}`;
+    row.append(el('span', 'pdx-move-icon', (MOVE_KIND[m.kind] || ['⚠️'])[0]), el('span', 'pdx-move-name', m.name), el('span', 'pdx-dots'), el('span', 'pdx-move-num', nums));
+    box.append(row);
+  }
+  return box;
+}
+
+function renderRewardsView() {
+  const [dev, body] = deviceFrame('pdx-rewards', 'Rewards');
+  body.append(...rewardBoxes());
+  $('dex-device').replaceChildren(dev);
+}
+
+/** A swipe across the screen steps to the next or previous entry. */
+function swipe(node) {
+  let x0 = null;
+  node.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+  node.addEventListener('pointerup', (e) => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 40) showEntry(entry + (dx < 0 ? 1 : -1));
+  });
+  node.addEventListener('pointercancel', () => { x0 = null; });
+}
+
+function showEntry(i) {
+  const ids = ALL_PAGES[page].ids;
+  entry = (i + ids.length) % ids.length;
+  renderPage();
+  const id = ids[entry];
+  if (getSave().dex.seen.includes(id)) playCry(ENEMY_DEFS[id].spriteId);
+}
+
+function show(next) {
+  view = next;
+  $('dex-list').hidden = next !== 'list';
+  $('dex-device').hidden = next === 'list';
+  if (next === 'list') renderList();
+  else if (next === 'rewards') renderRewardsView();
+  else renderPage();
+  $('dex-dialog').scrollTop = 0;
+  $('dex-device').scrollTop = 0;
+}
+
+/** Opens the device on a page, at its first entry you've seen. */
+function openPage(i) {
   page = i;
-  render();
-  if (focus) document.querySelector(`.dex-tab[data-page="${i}"]`).focus();
+  const seen = getSave().dex.seen;
+  entry = Math.max(0, ALL_PAGES[page].ids.findIndex(id => seen.includes(id)));
+  show('page');
+}
+
+function openRewards() {
+  show('rewards');
+}
+
+function backToList() {
+  show('list');
 }
 
 export function initPokedex() {
-  const tabs = $('dex-tabs');
-  const tab = (i, className, icon, label) => {
-    const btn = el('button', `index-tab dex-tab ${className}`);
-    btn.type = 'button';
-    btn.dataset.page = String(i);
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-controls', 'dex-body');
-    btn.append(el('span', 'index-tab-icon', icon), el('span', 'index-tab-label', label));
-    btn.addEventListener('click', () => pick(i));
-    return btn;
-  };
-  tabs.replaceChildren(...DEX_PAGES.map((p, i) => tab(i, `biome-${p.biome}`, ['🌳', '⛩️', '🌋'][i], p.name.split(' ').pop())),
-    tab(MYSTERY, 'biome-mystery', '🔒', '???'), tab(REWARDS, 'dex-rewards-tab', '🏆', 'Rewards'));
-  // the Safari Pokédex is its own window: this tab hands over to it, once the Safari Zone is open
-  const safari = el('button', 'index-tab dex-safari-tab');
-  safari.type = 'button';
-  safari.id = 'dex-safari-tab';
-  safari.title = 'The Safari Zone\'s own Pokédex';
-  safari.append(el('span', 'index-tab-icon', '🌿'), el('span', 'index-tab-label', 'Safari'));
-  safari.addEventListener('click', () => { closeDialog('dex-dialog'); openSafariDex(); });
-  tabs.append(safari);
-  tabs.addEventListener('keydown', (e) => {
+  $('dex-close').addEventListener('click', () => closeDialog('dex-dialog'));
+  // Escape on the device goes back to the biomes rather than shutting the Pokédex
+  $('dex-dialog').addEventListener('cancel', (e) => { if (view !== 'list') { e.preventDefault(); backToList(); } });
+  $('dex-dialog').addEventListener('keydown', (e) => {
+    if (view !== 'page') return;
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;
     e.preventDefault();
-    pick((page + step + REWARDS + 1) % (REWARDS + 1), true);
+    showEntry(entry + step);
   });
 }
 
-/** Opens on the given biome's page (the run's), else the last one looked at. */
+/** Opens on the given biome's page (the run's), else on the list of biomes. */
 export function openPokedex(biome) {
-  if (Number.isInteger(biome) && ALL_PAGES[biome]) page = biome;
-  const tab = document.querySelector(`.dex-tab[data-page="${MYSTERY}"]`);   // the Depths' tab, once a Mewtwo run has been down
-  const known = depthsKnown();
-  tab.classList.toggle('biome-depths', known);
-  tab.querySelector('.index-tab-icon').textContent = known ? '💎' : '🔒';
-  tab.querySelector('.index-tab-label').textContent = known ? 'Depths' : '???';
-  render();
+  const onPage = Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown());
   openDialog('dex-dialog');
+  if (onPage) openPage(biome);
+  else show('list');
 }

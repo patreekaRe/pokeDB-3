@@ -70,7 +70,7 @@ live site.
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
   it). The Bag, the Poké Ball menu, zooms and
-  focus layers already did. The Collection screen goes back on a tap on its empty background too (`initCollection()`: pointer events, since iOS Safari sends no `click` for a tap on a plain section or the body).
+  focus layers already did. The Collection screen goes back on a tap on its empty background too (`initCollection()`: pointer events, since iOS Safari sends no `click` for a tap on a plain section or the body). **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05; pass 2 is roadmap item 20).
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different

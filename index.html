@@ -482,12 +482,17 @@
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
-  <!-- every enemy, a page per biome: ??? until fought, complete once beaten (js/pokedex.js) -->
-  <dialog id="dex-dialog" class="dialog wide-dialog index-dialog dex-dialog">
-    <h2 tabindex="-1" autofocus>📕 Pokédex <span id="dex-total" class="count"></span></h2>
-    <div class="index-tabs" id="dex-tabs" role="tablist" aria-label="Pokédex pages"></div>
-    <div id="dex-body" class="dex-body" role="tabpanel"></div>
-    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+  <!-- every enemy, full screen: a banner per biome, then a handheld Pokédex on that page (js/pokedex.js) -->
+  <dialog id="dex-dialog" class="pokedex" aria-label="Pokédex">
+    <div class="pdx-list" id="dex-list">
+      <header class="pdx-top">
+        <button class="pdx-close" id="dex-close" type="button" aria-label="Close the Pokédex">✕</button>
+        <h2 class="pdx-title" tabindex="-1" autofocus>POKÉDEX</h2>
+        <span class="pdx-total" id="dex-total"></span>
+      </header>
+      <div class="pdx-banners" id="dex-banners"></div>
+    </div>
+    <div class="pdx-stage" id="dex-device" hidden></div>
   </dialog>
 
   <!-- the Safari Zone's own Pokédex, a page per area: ??? until met, a Poké Ball once caught (js/safaridex.js) -->

@@ -218,7 +218,7 @@ let lastCue = -1;          // ctx time the latest effect started
 // tap's own playSound() has had its turn. Cries don't count: picking a starter blips, then cries.
 const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-node, .card, #reward-log, #map-log, #evolve-scene.waiting, #hof-scene.waiting, #descent-scene.waiting, #gate-scene.waiting, .card-focus, .card-zoom, [title], [data-tip]';
 // ...except these back out (Back / Skip / Leave, No, a window's Close or ✕, a zoomed card), so they blip `cancel`
-const CANCELS = '#reward-skip, #coll-back, #sel-back, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
+const CANCELS = '#reward-skip, #coll-back, #sel-back, .pdx-back, #dex-close, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {
   if (!ctx || !e.target.closest?.(CONTROLS)) return;
   const at = ctx.currentTime;

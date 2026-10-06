@@ -1461,3 +1461,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Safari lobby** (the user's ask, 2026-10-05): the Safari Zone's prep window as a full-screen lobby like the Sky Pillar's,
   the Zone's gate painted behind today's starter (`js/safari-lobby.js`), a top-catchers plaque; the old window stays behind
   `?safariclassic` (`?safarilobby` undoes it). Detail in `docs/reference/safari.md`.
+- **Pokédex revamp, pass 1** (the user's ask, 2026-10-05, from Pokémon GO's region list and an anime-style red Pokédex):
+  the window is full screen. A banner per biome (name, count, bar, a perk medal: grey / silver Lv 1 / gold Lv 2, a wild,
+  the boss and an Alpha), the Depths' "???" banner until a Mewtwo run reaches it, Rewards and (once open) Safari banners.
+  A banner opens the red handheld on that page: an LCD nameplate, the Pokémon on its biome's pad, the entry's data (still
+  hidden until researched), a slot per entry to jump to, the page's perk, ◀ ▶ / arrow keys / a swipe on the screen;
+  Escape or ◀ goes back to the list. The in-run Pokédex button opens straight on the run's page. Pass 2 is roadmap item 20.
