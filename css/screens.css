@@ -4192,6 +4192,38 @@ body.scene-peek #backdrop { display: none; }
 .travel-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
 .travel-scene.still { animation: none; }
 
+/* the crossroads after a boss (js/crossroads.js): a card over each road, your Pokémon at the fork, the button under it */
+.crossroads-scene { position: fixed; inset: 0; z-index: 944; overflow: hidden; background: #282c68; animation: biIn 0.5s both; user-select: none; -webkit-user-select: none; }
+.crossroads-scene.still { animation: none; }
+.crossroads-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
+.xr-mon { position: absolute; max-width: none; translate: calc(-50% + var(--lean, 0px)) calc(var(--foot, 0px) - 100%); transform-origin: 50% 100%;
+  image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); transition: translate 0.35s ease-out; pointer-events: none; }
+.xr-mon.away { translate: calc(-50% + var(--to-x)) calc(var(--foot, 0px) - 100% + var(--to-y)); scale: 0.4;
+  transition: translate 1.5s linear, scale 1.5s linear, filter 1.5s; filter: brightness(0.55) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
+  animation: xrBob 0.38s steps(2) infinite; }
+@keyframes xrBob { 50% { margin-top: -3px; } }
+.crossroads-scene.still .xr-mon { transition: none; animation: none; }
+.xr-roads { position: absolute; inset: 0; pointer-events: none; }
+.xr-road { position: absolute; top: calc(12px + env(safe-area-inset-top)); translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 0 6px 8px; border: 3px solid #1a1008; border-radius: 6px; background: rgba(20, 14, 34, 0.82); color: #fff4d6; cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45); pointer-events: auto; font: inherit; transition: translate 0.2s, border-color 0.2s; }
+.xr-road:hover { border-color: #8a6a3a; }
+.xr-road.on { border-color: #f8c850; translate: -50% 4px; box-shadow: 0 0 0 2px #fff0a0, 0 0 16px rgba(248, 200, 80, 0.55), 3px 3px 0 rgba(0, 0, 0, 0.45); }
+.xr-road .xr-sign { margin: -3px -9px 2px; width: calc(100% + 18px); box-sizing: border-box; padding: 6px 8px 7px; font-size: 1rem; text-align: center; line-height: 1.15; }
+.xr-label { font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
+.xr-bosses { display: flex; justify-content: center; align-items: flex-end; gap: 2px; min-height: 44px; }
+.xr-boss { height: 44px; width: auto; max-width: 33%; object-fit: contain; image-rendering: pixelated; }
+.xr-boss.unmet { filter: brightness(0) drop-shadow(0 0 1px rgba(255, 240, 200, 0.8)); }
+.xr-types { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.xr-types .chip { font-size: 0.75rem; padding: 2px 6px; }
+.xr-go { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); translate: -50% 0; min-width: 200px; max-width: calc(100% - 32px); white-space: nowrap; }
+.xr-go:disabled { opacity: 1; filter: saturate(0.4) brightness(0.85); }
+.crossroads-scene.chosen .xr-roads, .crossroads-scene.chosen .xr-go { opacity: 0; transition: opacity 0.4s; }
+@media (min-width: 721px) {
+  .xr-road .xr-sign { font-size: 1.25rem; }
+  .xr-bosses, .xr-boss { min-height: 64px; height: 64px; }
+}
+
 /* the Sky Pillar's opening film (js/climb-intro.js), on the journey films' frame */
 .climb-mon { position: absolute; left: 50%; max-width: none; transform-origin: 50% 100%; image-rendering: pixelated;
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }

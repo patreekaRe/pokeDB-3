@@ -61,13 +61,14 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     own reward, never counted towards finishing the Pokédex (so Reshiram and the Safari don't move); Mewtwo's speedrun
     keeps its fixed road, no crossroads; the Explorer Badge is earned by entering all five main biomes (across any runs,
     not beating their bosses: `stats.biomesSeen` already tracks it). The bot checks each new biome against the one it
-    pairs with. **Part a is done** (the crossroads logic and the Sunken Ruins' gameplay; see the archive).
+    pairs with. **Part a is done** (the crossroads logic and the Sunken Ruins' gameplay; see the archive), and part b's
+    crossroads scene (`js/crossroads.js`, `?crossroads`).
     For Thornwood's Pokémon: every Gen 1-5 species is used, so use Gen 6-9 (PokeAPI's `other/showdown/<dex>.gif`); only 7
     pure-Normal Gen 6-9 species are left for its 3 Normal wilds, 3 Alphas and 3 bosses (Skwovet, Greedent, Wooloo, Komala,
     Tandemaus, Type: Null, Silvally), so ask the user how to fill the last two slots.
     b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (part a is
-       done: the crossroads logic and the Sunken Ruins' gameplay). Paint the crossroads scene (signpost, two paths, each
-       biome's glimpse, boss silhouette, type icons) and the Sunken Ruins: its 4 places, intro film, boss walk-on and
+       done: the crossroads logic and the Sunken Ruins' gameplay). The crossroads scene is done (js/crossroads.js). Paint the
+       Sunken Ruins: its 4 places, intro film, boss walk-on and
        boss intro, map palette and signs, treasure grotto, and the Clearing → Ruins and Ruins → Wastes journey films.
        Check at 375x812 and 1280x800, push to main."
     Then the same two sessions again for the Thornwood Jungle (and its Shrine → Jungle and Ruins → Jungle films).

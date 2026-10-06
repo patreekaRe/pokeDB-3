@@ -31,7 +31,7 @@
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
-import { BIOMES, biomeAt } from './data/enemies.js';
+import { BIOMES, biomeAt, CROSSROADS } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { checkBadges } from './progress.js';
@@ -66,6 +66,7 @@ import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { travel } from './travel.js';
+import { crossroads } from './crossroads.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -290,6 +291,9 @@ function init() {
     // ?travel=shrine (the biome you walk to; &starter=id, &stage=0-2) plays that journey film after PRESS START, its
     // first-time lines included, without saving anything; &at=0.5 holds it at that point of the trip, no lines
     if (params.has('travel')) return peekTravel(params);
+    // ?crossroads (&starter=id, &stage=0-2) shows the fork after Biome 1's boss after PRESS START; the road taken plays its
+    // journey film if it has one, then the title comes back. Nothing is saved
+    if (params.has('crossroads')) return peekCrossroads(params);
     // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
     if (params.has('climb')) return peekClimb(params);
     // Show the how-to-play once, the very first time.
@@ -354,6 +358,16 @@ async function peekTravel(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? to) || 0);
   const at = params.has('at') ? Number(params.get('at')) : null;   // &at=0.5 holds the film there
   const close = await travel({ from: BIOMES[to - 1]?.id, to: BIOMES[to]?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at, flyer: params.get('flyer') });
+  close();
+}
+
+/** The ?crossroads playtest: the fork after Biome 1, then the road taken's journey film. Nothing is saved. */
+async function peekCrossroads(params) {
+  const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
+  const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? 1) || 0), shiny = getSave().shiny.on.includes(starter.id);
+  const fork = await crossroads({ ids: CROSSROADS[1], starter, stage, shiny });
+  const close = await travel({ from: BIOMES[0].id, to: fork.id, starter, stage, shiny, first: true });
+  fork.close();
   close();
 }
 

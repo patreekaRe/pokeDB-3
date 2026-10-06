@@ -553,9 +553,14 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Ruins**, slot 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Furfrou / Gumshoos / Dubwool, bosses
   Dudunsparce / Oinkologne / Maushold, Biome 2's numbers), `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'] }`),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
-  default road, no version bump). After a boss's rewards `walkOn()` asks `chooseRoad()` (`#crossroads-dialog`, a plain
-  two-button window with each road's wild types until part b paints the signpost; a tap outside or Escape can't skip it),
-  never on Mewtwo's or a Safari run. `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
+  default road, no version bump). After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
+  `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the
+  path splitting round a signpost (an arm a road in its biome sign's colours, `ARMS`; a new biome needs one) into two gaps in
+  the treeline, each a glimpse of its biome (`sceneShot(id, { time: 'dusk' })`), a card over each road (sign, bosses as
+  silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. A tap (card or road) or an arrow key picks,
+  a second tap, the button or Enter takes it: it walks up that road into the dark. No way out without choosing. It resolves
+  `{ id, close }`, closed once the journey film or the map covers it. Never on Mewtwo's or a Safari run. Playtest
+  `?crossroads` (`&starter=`, `&stage=`, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
   biome object (or a slot number for the default road). Every per-biome array (events' numbers, Kenmatta's HP,
   `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
   biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: all five main biomes entered, the user's call, once Thornwood exists). The Ruins'

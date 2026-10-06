@@ -1141,9 +1141,9 @@ export function showScene(biomeId, kind = 'wild', where = 0) {
 /** One still frame of a biome's scene, `w` x `h` scene pixels on a canvas of its own (the Pokédex's banners and screen),
     with the horizon at `at` of the height. The live scene behind the page is set aside while it paints and put back as it
     was, since this module paints one scene at a time. */
-export function sceneShot(biomeId, { w, h, at = 0.6, kind = 'wild', where = 0 }) {
+export function sceneShot(biomeId, { w, h, at = 0.6, kind = 'wild', where = 0, time = timeOfDay() }) {
   const art = BIOME_ART[biomeId] || BIOME_ART.clearing;
-  return shoot({ ...biomeLook(art, timeOfDay(), kind), ...journeyOf(where), weather: null }, w, h, at);
+  return shoot({ ...biomeLook(art, time, kind), ...journeyOf(where), weather: null }, w, h, at);
 }
 
 /** A still of an indoor place (PLACE_ART: 'mart', 'center', 'treasure' with a `biome`'s grotto, 'kombat'...), like sceneShot(). */

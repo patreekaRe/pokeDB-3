@@ -1552,3 +1552,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Fire, which the crossroads shows, so no retune. Checked headless at 390x844: the crossroads (a tap outside and Escape
   don't skip it), the Ruins' map, signs and a fight, a saved route surviving a reload, an old save without one, a bad route
   thrown away, the Ruins' Pokédex banner and page. No console errors.
+- **Branching biomes, part b: the crossroads scene** (roadmap item 19, Desktop app, 2026-10-06): `js/crossroads.js` in place
+  of part a's two-button window. A dusk fork on one low-res canvas: the path from your Pokémon (from behind) splits round a
+  signpost whose arms wear each biome sign's colours into two gaps in the pines, each showing `sceneShot()` of its biome at
+  dusk (`sceneShot()` takes a `time` now); framing trees, fireflies. A card over each road: its sign, its bosses (silhouettes
+  until met) and its wild types; one tap picks (the card and its arm light gold), a second or the button takes it, and your
+  Pokémon walks up that road as the dark comes down, under the journey film. `?crossroads` previews it. Checked in the pane
+  at 375x812 and 1280x800 (pick, take, close); 67 tests pass.

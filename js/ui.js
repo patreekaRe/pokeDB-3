@@ -89,7 +89,6 @@ document.addEventListener('click', (e) => {
   if (!(d instanceof HTMLDialogElement) || !d.open || !d.matches(':modal') || downOn !== d || !e.detail) return;
   const r = d.getBoundingClientRect();
   if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
-  if (d.hasAttribute('data-stay')) return;   // a choice that must be made (the crossroads)
   const stand = OUTSIDE_TAP[d.id];
   if (stand) return $(stand).click();
   if (!d.dataset.closeSound) playSound('cancel', 'confirm');

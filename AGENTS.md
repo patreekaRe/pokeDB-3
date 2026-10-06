@@ -12,6 +12,11 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: **Branching biomes, part b, the crossroads scene** (Desktop app, pushed): `js/crossroads.js` replaces the plain
+  two-button window with a painted dusk fork (signpost, a glimpse of each biome through the trees, a card a road with its
+  bosses as silhouettes until met and its wild types, your Pokémon walking off up the road taken). `?crossroads` previews it.
+  Checked at 375x812 and 1280x800. Next: the Sunken Ruins' own scenery, films and grotto.
+
 - 2026-10-06: **Branching biomes, part a** (cloud, pushed): the crossroads' logic (`run.route`, `chooseRoad()`) and the
   Sunken Ruins' gameplay (18 Gen 6-9 Pokémon, a bonus Pokédex page, `?biome=ruins`); the sim takes `cfg.route`. The Ruins
   borrow the Shrine's scenery. Next: part b (Desktop app), painting the crossroads and the Ruins.

@@ -47,6 +47,7 @@ import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winSce
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
+import { crossroads } from './crossroads.js';
 import { renderTower, hideTower, guardianIntro, towerFall } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
@@ -135,7 +136,6 @@ export function initRun({ onMenu, onNewRun }) {
 
   // This pop-up moves the game along, so Escape must not just close it.
   $('result-dialog').addEventListener('cancel', (e) => e.preventDefault());
-  $('crossroads-dialog').addEventListener('cancel', (e) => e.preventDefault());   // Escape can't skip the choice
 }
 
 /** Throw away the current run (used when you go back to the menu). */
@@ -331,7 +331,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     maxHp: startHp,
     hp: startHp,
     biome: 0,
-    route: [BIOMES[0].id],   // the biome taken at each slot (the crossroads, chooseRoad()), saved with the run
+    route: [BIOMES[0].id],   // the biome taken at each slot (the crossroads, js/crossroads.js), saved with the run
     deck: [...starter.deck],
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
@@ -1127,8 +1127,11 @@ function afterFight(node, result) {
 /** On to the next biome: the journey film there first (js/travel.js; not on Mewtwo's speedrun or in the Safari), ending
     dark while the next biome's map and intro film come up beneath it. */
 async function walkOn() {
-  const from = mainBiome().id;
-  run.route[run.biome + 1] = isMewtwoRun(run.starter) || isSafari() ? BIOMES[run.biome + 1].id : await chooseRoad(run.biome + 1);   // Mewtwo keeps its one road
+  const from = mainBiome().id, roads = CROSSROADS[run.biome + 1];
+  // the crossroads (js/crossroads.js), where the next slot has two roads; Mewtwo keeps its one road
+  const fork = roads && !isMewtwoRun(run.starter) && !isSafari()
+    ? await crossroads({ ids: roads, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
+  run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
   const to = biomeAt(run.route, run.biome + 1).id;
   let close = null;
   if (!isSafari() && !isMewtwoRun(run.starter) && hasTravel(from, to)) {
@@ -1141,33 +1144,7 @@ async function walkOn() {
   run.biome += 1;
   startBiome();
   close?.();
-}
-
-/** The crossroads (roadmap item 19): where a slot has more than one road (CROSSROADS), a choice between them, each with
-    its name and which types live there. A plain two-button window for now; part b paints it. Resolves with the biome id. */
-function chooseRoad(slot) {
-  const roads = CROSSROADS[slot];
-  if (!roads || roads.length < 2) return Promise.resolve(BIOMES[slot].id);
-  const box = $('crossroads-paths');
-  return new Promise(resolve => {
-    box.replaceChildren(...roads.map(id => {
-      const biome = BIOMES_BY_ID[id];
-      const btn = el('button', 'btn crossroads-path');
-      btn.type = 'button';
-      btn.dataset.biome = id;
-      btn.append(el('strong', '', biome.name), el('span', 'crossroads-types', roadTypes(biome)));
-      btn.addEventListener('click', () => { closeDialog('crossroads-dialog'); playSound('confirm'); resolve(id); });
-      return btn;
-    }));
-    openDialog('crossroads-dialog');
-  });
-}
-
-/** What lives on a road, by its wilds' types, the most common first ("💧 5 · 🔥 2 · 🌿 2 · ⚪ 3"): Alphas and bosses fight as Neutral. */
-function roadTypes(biome) {
-  const counts = {};
-  for (const id of biome.normals) counts[ENEMY_DEFS[id].type] = (counts[ENEMY_DEFS[id].type] || 0) + 1;
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([type, n]) => `${TYPES[type]?.icon ?? ''} ${n}`).join(' · ');
+  fork?.close();
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;
