@@ -1510,3 +1510,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   art (`VECTOR` / `iconOf()` in `js/pokedex.js`; new `star`, `swords`, `skull`, `boss`, `coin`, `cash`, `cap`, `gem` in
   `js/smooth-icons.js`), and the Moves app shows the real cards again on the Pokédex's green LCD, with smooth type keys
   (`fire`, `grass`, `water`, `normal`, `psychic`) and the Index's filter and sort.
+- **Relics / Items icons** (2026-10-06, Desktop app; the user's ask): the Collection's Relics app is a Fire Stone, not
+  the Leftovers apple, and Items is the games' Potion spray bottle (`relics` / `items` in `js/smooth-icons.js`), which
+  also replaces the old round flask on the Pokédex Rewards' 🧴 perks.

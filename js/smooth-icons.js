@@ -150,21 +150,25 @@ const ART = {
       <rect x="14.2" y="22.6" width="8" height="1.6" rx="0.8" fill="#c8ccd8"/>
     </g>`,
 
-  // Relics: Leftovers, a bitten red apple with its leaf
-  relics: `<path d="M16 9.5c-2.4-1.6-6.4-1.8-8.6.8C5 13.2 5.2 18.6 7.6 22.8c1.8 3.2 4.4 5.4 6.6 4.8.9-.2 1.2-.6 1.8-.6s.9.4 1.8.6c2.2.6 4.8-1.6 6.6-4.8.6-1 1-2 1.4-3.2-1.8.4-3.4-1.4-3-3.2-1.6-.2-2.6-2-2-3.6.4-.9 1-1.4 1.6-1.6-2.4-1.6-5.4-1.4-7.4.3Z" fill="#e23a2c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M16 9.5c0-2.6.8-4.6 2.4-6" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>
-    <path d="M17 6.4c1.6-2.6 5-3.4 7.4-2-1.2 2.6-4.4 3.6-7.4 2Z" fill="#62c050" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="M9.6 13.2c-1.2 1.6-1.6 3.8-1.2 6" fill="none" stroke="#ffb0a0" stroke-width="1.8" stroke-linecap="round"/>`,
+  // Relics: a Fire Stone, the evolution stone with its flame inside
+  relics: `<path d="M12 3.5h8.4l6.4 6.2 1.4 9.4-5.2 8.4H9.8l-5.6-7.8 1.2-9.6Z" fill="#f2672a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M27 19.1l-5.2 8.4H9.8l-5.6-7.8c4 2.6 9 3.4 13.6 2.2 3.4-.8 6.6-1.8 9.2-2.8Z" fill="#c23e1a"/>
+    <path d="M16.2 7.6c.6 3 3.8 4.6 4.8 7.8 1.2 3.6-.8 7.6-5 7.6s-5.8-3.2-5-6.4c.4-1.6 1.6-2.4 2-4.2 1.2 1 1.6 2.2 1.6 3.4.6-2.6-.2-5.4 1.6-8.2Z" fill="#ffb02a" stroke="#a8300e" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M16.2 14.8c.4 1.6 2.2 2.4 2.2 4.4 0 1.6-1 2.4-2.2 2.4s-2.2-.8-2.2-2.2c0-1.6 1.4-2.4 2.2-4.6Z" fill="#fff0a0"/>
+    <path d="M8 10.2l3.6-4.4" stroke="#ffd0b0" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M12 3.5h8.4l6.4 6.2 1.4 9.4-5.2 8.4H9.8l-5.6-7.8 1.2-9.6Z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`,
 
-  // Items: a Potion spray, purple with its white nozzle
-  items: `<rect x="12.5" y="2.5" width="7" height="4" rx="1" fill="#f0f0f4" stroke="${INK}" stroke-width="1.6"/>
-    <path d="M19.5 3.8h3.4" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>
-    <rect x="11" y="6.5" width="10" height="4" rx="1" fill="#c8ccd8" stroke="${INK}" stroke-width="1.6"/>
-    <path d="M11.5 10.5h9c3.6 2 6 5.6 6 9.6 0 5-4.4 8.4-10.5 8.4S5.5 25.1 5.5 20.1c0-4 2.4-7.6 6-9.6Z" fill="#9a5ad8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M7.8 19.5h16.4c0 3.6-3.4 6.2-8.2 6.2s-8.2-2.6-8.2-6.2Z" fill="#6a34a8"/>
-    <rect x="11" y="15" width="10" height="5.2" rx="1.2" fill="#fff" stroke="${INK}" stroke-width="1.2"/>
-    <path d="M16 15.8v3.6M14.2 17.6h3.6" stroke="#e23a2c" stroke-width="1.4" stroke-linecap="round"/>
-    <path d="M9 14.6c-1 1-1.6 2.4-1.8 3.6" fill="none" stroke="#e0c4ff" stroke-width="1.6" stroke-linecap="round"/>`,
+  // Items: the games' Potion, a purple spray bottle with its white trigger head
+  items: `<path d="M11.5 8V4.6c0-1.2.9-2.1 2.1-2.1h5.6c1.6 0 2.8 1.2 2.8 2.8V8Z" fill="#f4f4f8" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M22 3.8h3.4c.8 0 1.2.6 1.2 1.2s-.4 1.2-1.2 1.2H22" fill="#c8ccd8" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M18.6 8V5.4c0-.8-.4-1.2-1-1.4" fill="none" stroke="#c8ccd8" stroke-width="1.4" stroke-linecap="round"/>
+    <rect x="10" y="8" width="12" height="3" rx="0.8" fill="#9aa0b4" stroke="${INK}" stroke-width="1.6"/>
+    <path d="M10.6 11h10.8c2.4 0 3.6 1.6 3.6 3.6v11.4c0 2-1.6 3.5-3.6 3.5H10.6C8.6 29.5 7 28 7 26V14.6C7 12.6 8.2 11 10.6 11Z" fill="#9050d8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M20.2 11.2h1.2c2.4 0 3.6 1.6 3.6 3.6v11.2c0 2-1.6 3.4-3.6 3.4h-1.2Z" fill="#6430ac"/>
+    <path d="M7.2 17.4h17.6v5.2H7.2Z" fill="#c8a8ff"/>
+    <path d="M7.2 17.4h17.6M7.2 22.6h17.6" stroke="#5a2898" stroke-width="1"/>
+    <path d="M10.2 14v1.6M10.2 24.6v2" stroke="#e4d0ff" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M10.6 11h10.8c2.4 0 3.6 1.6 3.6 3.6v11.4c0 2-1.6 3.5-3.6 3.5H10.6C8.6 29.5 7 28 7 26V14.6C7 12.6 8.2 11 10.6 11Z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`,
 
   // Stats: a little screen with three rising bars
   stats: `<rect x="3" y="4" width="26" height="23" rx="3" fill="#fff" stroke="${INK}" stroke-width="2"/>
