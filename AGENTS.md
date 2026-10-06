@@ -12,6 +12,10 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: Settings option 5, **Nickname**: a Trainer group at the top of Settings with a name box (`showName()` /
+  `initName()` in `js/settings.js`, `setTrainerName()` in `js/leaderboard.js`, the same `pokedb.safari.name` key the leaderboard
+  uses, so this device only). Empty goes back to "Trainer". Checked in the pane at 375x812. Next: option 6, Music player.
+
 - 2026-10-06: Settings option 4, **Text size: Normal / Large** (`html.large-text`, root font 120%; cards keep theirs, phone
   nameplates keep their name and HP size), checked in the pane at 375x812. The user still has to see it on a phone. Next:
   option 5, Nickname (CLOUD).

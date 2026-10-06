@@ -101,6 +101,11 @@
     <div id="dev-parts" hidden>
       <!-- the Settings app, a games' OPTIONS screen: a card per group, its choices built by js/settings.js -->
       <div class="dev-settings" id="dev-settings">
+        <section class="set-group" data-tone="trainer">
+          <header class="set-head"><span class="set-ico" data-icon="cap" aria-hidden="true"></span><b>Trainer</b></header>
+          <form class="set-opt set-name-form" id="set-name-form"><label class="set-name" for="set-name-input">Nickname</label><small id="set-name-hint">On your Trainer Card and the leaderboards</small>
+            <span class="set-name-row"><input type="text" class="set-name-input" id="set-name-input" placeholder="Trainer" autocomplete="nickname" enterkeyhint="done" spellcheck="false"><button type="submit" class="set-chip set-name-save" aria-checked="true">Save</button></span></form>
+        </section>
         <section class="set-group sound-ctl" data-tone="sound">
           <header class="set-head"><span class="set-ico" data-icon="sound" aria-hidden="true"></span><b>Sound</b>
             <button type="button" class="sound-mute" id="music-btn" aria-pressed="true"><span class="snd-icon" data-smooth></span></button></header>

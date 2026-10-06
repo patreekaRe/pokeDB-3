@@ -12,6 +12,9 @@ import { updateSave } from './storage.js';
 import { setClock } from './daytime.js';
 import { smoothIcon } from './smooth-icons.js';
 import { pref as valueOf, vibrate } from './prefs.js';
+import { pickedName, setTrainerName } from './leaderboard.js';
+import { NAME_MAX } from './data/leaderboard.js';
+import { playSound } from './audio.js';
 
 // a choice's third entry is a swatch colour: the chip is drawn as that colour and its name shows after the option's name
 const OPTIONS = {
@@ -35,7 +38,7 @@ const OPTIONS = {
 };
 
 function render() {
-  for (const row of document.querySelectorAll('#dev-settings .set-opt')) {
+  for (const row of document.querySelectorAll('#dev-settings .set-opt[data-opt]')) {
     const now = valueOf(row.dataset.opt);
     for (const b of row.querySelectorAll('.set-chip')) b.setAttribute('aria-checked', String(b.value === String(now)));
     const named = row.querySelector('.set-picked');
@@ -50,9 +53,31 @@ function choose(key, value) {
   render();
 }
 
+const NAME_HINT = 'On your Trainer Card and the leaderboards';
+
+/** The name box shows the nickname as it is now (the leaderboard's own box can change it too). */
+export function showName() {
+  $('set-name-input').value = pickedName();
+  $('set-name-hint').textContent = NAME_HINT;
+}
+
+function initName() {
+  const input = $('set-name-input');
+  input.maxLength = NAME_MAX;
+  $('set-name-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const kept = setTrainerName(input.value);
+    input.value = kept;
+    input.blur();
+    playSound('confirm');
+    $('set-name-hint').textContent = kept ? `Saved! Hello, ${kept}.` : 'Cleared: you\'re "Trainer" again.';
+  });
+}
+
 export function initSettings() {
+  initName();
   for (const node of document.querySelectorAll('#dev-settings [data-icon]')) node.append(smoothIcon(node.dataset.icon));
-  for (const row of document.querySelectorAll('#dev-settings .set-opt')) {
+  for (const row of document.querySelectorAll('#dev-settings .set-opt[data-opt]')) {
     const key = row.dataset.opt;
     const chips = el('div', 'set-chips');
     chips.setAttribute('role', 'radiogroup');

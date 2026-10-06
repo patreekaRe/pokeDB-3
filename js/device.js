@@ -313,6 +313,7 @@ function key(e) {
   if (!shown() || document.querySelector('dialog[open]')) return;
   // the keys it takes go no further: over a run, the Bag and the battle listen for them too
   if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); back(); return; }
+  if (e.target.matches?.('input[type="text"]')) return;   // Settings' name box: its arrows move the caret
   const dir = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
   if (dir) { e.preventDefault(); e.stopImmediatePropagation(); dpad(dir); return; }
   if ((e.key === 'Enter' || e.key === ' ') && (!app || app.def.app?.press) && !e.target.closest?.('button')) { e.preventDefault(); press(); }

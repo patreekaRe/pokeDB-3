@@ -24,6 +24,7 @@ import { tipAt } from './tips.js';
 import { openTrainerCard, trainerTile, badgeNews, partner, cardTier, badgeArt } from './trainercard.js';
 import { BADGES } from './data/badges.js';
 import { trainerName } from './leaderboard.js';
+import { showName } from './settings.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
 import { initDevice, openDevice, openApp, swapApp, hideDevice, deviceOver } from './device.js';
@@ -189,7 +190,7 @@ const borrow = (id, before) => ({
 const settingsApp = () => ({
   id: 'settings', name: 'SETTINGS', cls: 'cdev-win panel cdev-system',
   // abandoning is only offered over a run's own screens, not from the title's Collection (it has its Escape Rope)
-  app: borrow('dev-settings', () => { $('abandon-btn').hidden = !(deviceOver() && dock.abandonable()); }),
+  app: borrow('dev-settings', () => { $('abandon-btn').hidden = !(deviceOver() && dock.abandonable()); showName(); }),
 });
 
 /** The dock under the apps: settings, help and the Game Corner; laid over a screen also Main menu. */

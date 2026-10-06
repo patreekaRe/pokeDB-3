@@ -242,6 +242,16 @@ body.scrolled .topbar::before { opacity: 1; }
 .set-group[data-tone="display"] { --tone: #4cb84a; --tone-dk: #257a38; }
 .set-group[data-tone="battle"] { --tone: #e8483c; --tone-dk: #a82420; }
 .set-group[data-tone="save"] { --tone: #8a64d8; --tone-dk: #4e3290; }
+.set-group[data-tone="trainer"] { --tone: #e89a20; --tone-dk: #9a5a10; }
+.set-name-row { display: flex; gap: 6px; margin-top: 4px; }
+.set-name-input {
+  flex: 1; min-width: 0; padding: 8px 9px 7px; border: 2px solid #1f3a14; border-radius: 7px; background: #b6d68e; color: #1f3a14;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); font: 0.6rem/1 var(--pixel-font); text-transform: uppercase;
+}
+@media (pointer: coarse) { .set-name-input { font-size: 16px; padding: 6px 8px 5px; } }   /* iOS zooms in on a smaller box */
+.set-name-input::placeholder { color: rgba(31, 58, 20, 0.45); }
+.set-name-input:focus { outline: 2px solid var(--tone); outline-offset: 1px; }
+.set-chip.set-name-save { flex: none; padding: 8px 14px 7px; }
 /* Save holds only Sign in and Abandon run, each shown only sometimes */
 .set-group[data-tone="save"]:not(:has(> .dev-row:not([hidden]))) { display: none; }
 .set-head {

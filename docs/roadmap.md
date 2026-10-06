@@ -15,7 +15,7 @@ their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the
 2. ~~Battle animations~~ done 2026-10-06 (see the archive).
 3. ~~Flashing & shake~~ done 2026-10-06 (see the archive).
 4. ~~Text size~~ done 2026-10-06 (see the archive).
-5. **Nickname**: set the Trainer name here, not only through the leaderboard (`trainerName()`).
+5. ~~Nickname~~ done 2026-10-06 (see the archive).
 6. **Music player**: a sound test replaying any unlocked track.
 7. **Reset save**: two "Are you sure?" steps, like the games' delete-save combo.
 
