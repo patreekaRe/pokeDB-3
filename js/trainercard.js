@@ -13,7 +13,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { getSave, updateSave, addPlayTime } from './storage.js';
+import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName } from './leaderboard.js';
 import { tipAt } from './tips.js';
@@ -169,18 +169,26 @@ function autoPartner(save) {
 }
 
 /** Every Pokémon the card can show, by group: your starters at each stage, the Pokédex's defeated, the Safari's caught.
-    Keys are what `save.partner` holds: 'starter:<id>:<stage>' or 'mon:<enemy id>'. */
+    Keys are what `save.partner` holds: 'starter:<id>:<stage>[:shiny]' or 'mon:<enemy id>'. A starter whose shiny you own
+    comes both ways, each pointing at the other as its `twin` (the card's ✨ toggle); only starters have shiny sprites. */
 export function partnerChoices(save = getSave()) {
   const mon = (id) => ENEMY_DEFS[id] && { key: `mon:${id}`, src: ENEMY_DEFS[id].image, name: ENEMY_DEFS[id].name };
-  const starters = STARTERS.filter(isStarterUnlocked).flatMap(st => st.line.map((form, stage) => ({
-    key: `starter:${st.id}:${stage}`, src: spriteUrl(st, 'front', stage), name: form.name,
-  })));
+  const owned = new Set(save.shiny?.owned || []);
+  const form = (st, stage, shiny) => ({
+    key: `starter:${st.id}:${stage}${shiny ? ':shiny' : ''}`, src: spriteUrl(st, 'front', stage, shiny),
+    name: `${shiny ? 'Shiny ' : ''}${st.line[stage].name}`, shiny,
+    twin: owned.has(st.id) ? `starter:${st.id}:${stage}${shiny ? '' : ':shiny'}` : null,
+  });
+  const mine = STARTERS.filter(isStarterUnlocked);
+  const starters = mine.flatMap(st => st.line.map((_, stage) => form(st, stage, false)));
+  const shinies = mine.filter(st => owned.has(st.id)).flatMap(st => st.line.map((_, stage) => form(st, stage, true)));
   const defeated = new Set(save.dex.defeated);
   const dex = [...DEX_PAGES, DEPTHS_PAGE].flatMap(p => p.ids).filter(id => defeated.has(id)).map(mon).filter(Boolean);
   const caught = new Set(save.safariDex?.caught || []);
   const safari = SAFARI_DEX_PAGES.flatMap(p => p.ids).filter(id => caught.has(id)).map(mon).filter(Boolean);
   return [
     { name: 'Starters', mons: starters },
+    { name: 'Shiny', mons: shinies },
     { name: 'Pokédex', mons: dex },
     { name: 'Safari', mons: [...new Map(safari.map(m => [m.key, m])).values()] },
   ].filter(g => g.mons.length);
@@ -191,7 +199,9 @@ export function partner(save) {
   const chosen = save.partner && partnerChoices(save).flatMap(g => g.mons).find(m => m.key === save.partner);
   if (chosen) return chosen;
   const { starter, stage } = autoPartner(save);
-  return { key: null, src: spriteUrl(starter, 'front', stage), name: starter.line[stage].name };
+  const shiny = isShiny(starter.id);
+  const twin = (save.shiny?.owned || []).includes(starter.id) ? `starter:${starter.id}:${stage}${shiny ? '' : ':shiny'}` : null;
+  return { key: null, src: spriteUrl(starter, 'front', stage), name: starter.line[stage].name, shiny, twin };
 }
 
 /** The picker over the card's body: Auto, then a grid per group; a tap saves it and calls `done`. */
@@ -296,7 +306,22 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     playSound('confirm');
     partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
   });
-  info.append(list, pic);
+  const frame = el('div', 'tc-partner-frame');
+  frame.append(pic);
+  if (mate.twin) {
+    const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, '✨');
+    flip.type = 'button';
+    flip.title = mate.shiny ? 'Shiny on: tap for its normal colours' : 'Tap for its shiny colours';
+    flip.setAttribute('aria-pressed', String(!!mate.shiny));
+    flip.setAttribute('aria-label', 'Shiny partner');
+    flip.addEventListener('click', () => {
+      updateSave(d => { d.partner = mate.twin; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(flip);
+  }
+  info.append(list, frame);
 
   let n = 0;
   const caseBox = el('div', 'tc-case');

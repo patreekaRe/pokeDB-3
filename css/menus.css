@@ -990,6 +990,11 @@ button.mv-row { cursor: zoom-in; }
 .tc-partner { position: relative; display: grid; place-items: center; height: 84px; padding: 0; border: 0; border-radius: var(--round-sm);
   background: rgba(48, 48, 56, 0.08); cursor: pointer; }
 .tc-partner:hover, .tc-partner:focus-visible { background: rgba(48, 48, 56, 0.16); outline: none; }
+.tc-partner-frame { position: relative; display: grid; }
+.tc-shiny { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0;
+  border-radius: 50%; font-size: 0.7rem; background: rgba(48, 48, 56, 0.18); filter: grayscale(1); opacity: 0.7; cursor: pointer; }
+.tc-shiny.on { background: var(--tc3); filter: none; opacity: 1; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
+.tc-shiny:focus-visible { outline: 2px solid var(--tc3); outline-offset: 1px; }
 .tc-partner-edit { position: absolute; right: 3px; bottom: 3px; display: grid; place-items: center; width: 18px; height: 18px;
   border-radius: 50%; font-size: 0.6rem; color: #fff; background: var(--tc3); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
 .tc-pick-back { padding: 5px 12px 4px; border: 0; border-radius: 999px; font: inherit; font-size: 0.55rem; color: #fff; background: var(--tc3); cursor: pointer; }
