@@ -553,7 +553,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`ownerStrip()`, drawn in the device's screen; `#trainer-dialog` from the title's Trainer Card sign and the Bag): the leaderboard nickname (`trainerName()`, never the sign-in's real name) or
   TRAINER, wins, Pokédex / Safari counts, gold stars, play time (`stats.playMs`: `initPlayTime()` feeds `addPlayTime()` in
   `js/storage.js`, which adds only its own minutes to the save on disk and never wakes the cloud, so a hiding page can't
-  write an old save over a cloud download), the partner, and the Badge Case. Each badge is painted from `LOOK` (a shape
+  write an old save over a cloud download), the partner, and the Badge Case. Each badge is drawn as smooth SVG (2026-10-05, no pixels) from `LOOK` (a shape
   polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line. Its colour steps up with badges
   (`cardTier()`: green, bronze 5, silver 10, gold 15, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
   the next time it opens. **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the

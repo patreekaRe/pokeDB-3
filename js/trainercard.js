@@ -1,9 +1,9 @@
 /* ============================================================
    trainercard.js  -  Gold/Silver's Trainer Card (roadmap item 17b): a
    Collection card opening a window with the trainer's numbers and the
-   Badge Case, four rows of pixel badges (js/data/badges.js). The badges
-   are painted from a shape and a small glyph each, shaded like GSC's: a
-   dark outline, a light rim top-left, a dark one bottom-right.
+   Badge Case, four rows of badges (js/data/badges.js). The badges
+   are drawn as smooth SVG from a shape and a glyph each: a gradient from a
+   light top-left to a dark bottom-right, a gloss and a dark outline.
    Also keeps `stats.playMs`, the play time, counted from its release.
    ============================================================ */
 
@@ -17,9 +17,7 @@ import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog } from './ui.js';
 
-const N = 18;   // a badge is 18x18 pixels: a 16x16 shape plus its outline
-
-// shapes as polygons in a 16x16 box, filled at pixel centres
+// shapes as polygons in a 16x16 box, scaled onto a 36x36 SVG
 const circle = (r = 7.6, cx = 8, cy = 8) => Array.from({ length: 32 }, (_, i) => [cx + r * Math.cos(i * Math.PI / 16), cy + r * Math.sin(i * Math.PI / 16)]);
 const star = () => Array.from({ length: 10 }, (_, i) => {
   const r = i % 2 ? 3.6 : 8.4, a = -Math.PI / 2 + i * Math.PI / 5;
@@ -41,27 +39,25 @@ const SHAPES = {
   book: [[1.4, 1.4], [14.6, 1.4], [14.6, 14.6], [1.4, 14.6]],
   tower: [[8, 0], [13.6, 4.4], [13.6, 15.6], [2.4, 15.6], [2.4, 4.4]],
 };
+const ROUND = { book: 4, circle: 0 };
 
-// glyphs: # dark ink, o white, + the badge's light colour
+const num = (t, size, y = 24) => (d) => `<text x="18" y="${y}" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="${size}" fill="${d}">${t}</text>`;
+// glyphs on the 36x36 badge, centred on 18,18: d is the dark ink, h the badge's light colour
 const G = {
-  tree: ['.###.', '#####', '#####', '.###.', '..#..', '..#..'],
-  torii: ['#######', '.#...#.', '#######', '.#...#.', '.#...#.'],
-  volcano: ['..o..', '..#..', '.###.', '#####'],
-  flame: ['..o..', '.ooo.', '.ooo.', '..o..'],
-  drop: ['..o..', '.ooo.', '.ooo.', '..o..'],
-  vein: ['....o', '...o.', '.oo..', 'o....'],
-  two: ['###', '..#', '###', '#..', '###'],
-  three: ['###', '..#', '###', '..#', '###'],
-  five: ['###', '#..', '###', '..#', '###'],
-  fist: ['.####', '#####', '#####', '.###.'],
-  eye: ['.###.', '#ooo#', '#o#o#', '#ooo#', '.###.'],
-  facet: ['o#o', '.o.'],
-  ball: ['.###.', '#ooo#', '##o##', '#ooo#', '.###.'],
-  paw: ['#.#.#', '.....', '.###.', '.###.'],
-  compass: ['..o..', '.ooo.', '..#..', '..#..'],
-  t25: ['###.###', '..#.#..', '###.###', '#.....#', '###.###'],
-  t50: ['###.###', '#...#.#', '###.#.#', '..#.#.#', '###.###'],
-  t100: ['#.###.###', '#.#.#.#.#', '#.#.#.#.#', '#.#.#.#.#', '#.###.###'],
+  tree: (d) => `<path d="M17 19h2v7h-2Z" fill="${d}"/><circle cx="18" cy="14.5" r="5.6" fill="${d}"/><circle cx="16" cy="12.6" r="1.6" fill="#fff" opacity=".5"/>`,
+  torii: (d) => `<path d="M9.5 11.8Q18 9.2 26.5 11.8M12 15.4h12M13.6 12v13M22.4 12v13" fill="none" stroke="${d}" stroke-width="2.4" stroke-linecap="round"/>`,
+  volcano: (d) => `<path d="M8.5 25.5 15 15h6l6.5 10.5Z" fill="${d}" stroke="${d}" stroke-width="1.2" stroke-linejoin="round"/><path d="M15.6 15.4l1.4 2.6 1-1.4 1.4 2 1-3.2" fill="none" stroke="#ffc060" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="11" r="1.8" fill="#fff"/><circle cx="20.6" cy="8.4" r="1.3" fill="#fff" opacity=".8"/>`,
+  flame: () => `<path d="M18 12.5c2.8 3 4.2 5.6 4.2 8.4a4.2 4.2 0 0 1-8.4 0c0-2 .9-3.6 2.2-5 .3 1.4.9 2.1 1.6 2.4-.4-2.2-.2-3.9.4-5.8Z" fill="#fff" opacity=".92"/>`,
+  drop: () => `<path d="M18 13c2.6 3.6 4 6 4 8.3a4 4 0 0 1-8 0c0-2.3 1.4-4.7 4-8.3Z" fill="#fff" opacity=".9"/>`,
+  vein: () => `<path d="M27 8Q19 15 9.5 28M20.5 14.5l-.6-4.4M20.5 14.5l4.4.2M15.8 19.5l-.8-4.2M15.8 19.5l4.2.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>`,
+  two: num('2', 16), three: num('3', 16), five: num('5', 16),
+  fist: (d, h) => `<path d="M11.5 15.5a2.5 2.5 0 0 1 2.5-2.5h9a2.5 2.5 0 0 1 2.5 2.5v6a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4Z" fill="${d}"/><path d="M15 13v4M18.5 13v4M22 13v4" stroke="${h}" stroke-width="1.1" stroke-linecap="round" opacity=".8"/><path d="M11.5 19.5h5.5" stroke="${h}" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>`,
+  eye: (d) => `<path d="M9 18q9-9 18 0-9 9-18 0Z" fill="#fff" stroke="${d}" stroke-width="1.6" stroke-linejoin="round"/><circle cx="18" cy="18" r="3.2" fill="${d}"/><circle cx="19" cy="17" r="1" fill="#fff"/>`,
+  facet: () => `<path d="M3.5 14h29M10 4l4 10 4 19.6 4-19.6 4-10" fill="none" stroke="#fff" stroke-width="1" stroke-linejoin="round" opacity=".55"/>`,
+  ball: (d) => `<circle cx="18" cy="18" r="7" fill="#fff" stroke="${d}" stroke-width="1.6"/><path d="M11 18a7 7 0 0 1 14 0Z" fill="${d}"/><path d="M11 18h14" stroke="${d}" stroke-width="1.6"/><circle cx="18" cy="18" r="2.2" fill="#fff" stroke="${d}" stroke-width="1.4"/>`,
+  paw: (d) => `<ellipse cx="18" cy="21.6" rx="4.6" ry="3.8" fill="${d}"/><circle cx="12.4" cy="16" r="2" fill="${d}"/><circle cx="16" cy="12.6" r="2" fill="${d}"/><circle cx="20" cy="12.6" r="2" fill="${d}"/><circle cx="23.6" cy="16" r="2" fill="${d}"/>`,
+  compass: (d) => `<circle cx="18" cy="18" r="7.4" fill="none" stroke="#fff" stroke-width="1.4" opacity=".85"/><path d="M18 10.5l2.6 7.5h-5.2Z" fill="#fff"/><path d="M15.4 18h5.2L18 25.5Z" fill="${d}"/><circle cx="18" cy="18" r="1.1" fill="${d}"/>`,
+  t25: num('25', 11, 26), t50: num('50', 11, 26), t100: num('100', 8.6, 25.5),
 };
 
 // per badge: shape, [light, mid, dark] colours, glyph
@@ -90,49 +86,31 @@ const LOOK = {
 };
 const INK = '#181820';
 
-function inside(poly, x, y) {
-  let hit = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const [xi, yi] = poly[i], [xj, yj] = poly[j];
-    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) hit = !hit;
-  }
-  return hit;
+const at = ([x, y]) => `${+(x * 2 + 2).toFixed(2)},${+(y * 2 + 2).toFixed(2)}`;
+function outline(shape) {
+  if (shape === 'circle') return `<circle cx="18" cy="18" r="15.2"/>`;
+  if (shape === 'book') return `<rect x="4.8" y="4.8" width="26.4" height="26.4" rx="${ROUND.book}"/>`;
+  return `<polygon points="${SHAPES[shape].map(at).join(' ')}"/>`;
 }
 
 const painted = new Map();
-/** A badge's pixel art as a data URL (also its shine's mask): earned in colour, locked as a dark outline. */
+/** A badge's vector art as an SVG data URL (also its shine's mask): earned in colour, locked as a dark outline. */
 export function badgeArt(id, earned) {
   const key = `${id}:${earned}`;
   if (painted.has(key)) return painted.get(key);
   const [shape, [hi, mid, lo], glyph] = LOOK[id] ?? LOOK.champion;
-  const poly = SHAPES[shape];
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = N;
-  const g = canvas.getContext('2d');
-  const at = (x, y) => x >= 1 && y >= 1 && x <= N - 2 && y <= N - 2 && inside(poly, x - 0.5, y - 0.5);
-  const mask = Array.from({ length: N }, (_, y) => Array.from({ length: N }, (_, x) => at(x, y)));
-  const on = (x, y) => mask[y]?.[x] ?? false;
-  const edge = (x, y) => on(x, y) && !(on(x - 1, y) && on(x + 1, y) && on(x, y - 1) && on(x, y + 1));
-  const dot = (x, y, c) => { g.fillStyle = c; g.fillRect(x, y, 1, 1); };
-  let shine = null;
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    if (!on(x, y)) continue;
-    if (!earned) { dot(x, y, edge(x, y) ? '#5a5a70' : '#26262f'); continue; }
-    if (edge(x, y)) dot(x, y, INK);
-    else if (edge(x - 1, y) || edge(x, y - 1)) dot(x, y, hi);
-    else if (edge(x + 1, y) || edge(x, y + 1)) dot(x, y, lo);
-    else dot(x, y, mid);
-    if (!shine && !edge(x, y) && !edge(x - 1, y) && !edge(x, y - 1)) shine = [x, y];
-  }
-  if (earned && glyph) {
-    const rows = G[glyph], w = rows[0].length, h = rows.length;
-    const ox = Math.floor((N - w) / 2), oy = Math.floor((N - h) / 2) + (shape === 'tower' ? 1 : 0);
-    rows.forEach((row, y) => [...row].forEach((c, x) => {
-      if (c !== '.') dot(ox + x, oy + y, c === 'o' ? '#ffffff' : c === '+' ? hi : shadeInk(lo));
-    }));
-  }
-  if (earned && shine) { dot(shine[0], shine[1], '#ffffff'); dot(shine[0] + 1, shine[1], '#ffffff'); dot(shine[0], shine[1] + 1, '#ffffff'); }
-  const url = canvas.toDataURL();
+  const body = outline(shape);
+  const svg = earned
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+      <defs><linearGradient id="f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".5" stop-color="${mid}"/><stop offset="1" stop-color="${lo}"/></linearGradient>
+      <clipPath id="c">${body}</clipPath></defs>
+      <g fill="url(#f)">${body}</g>
+      <g clip-path="url(#c)"><g fill="none" stroke="${hi}" stroke-width="2" opacity=".75" transform="translate(1.2 1.2)">${body}</g>
+      <ellipse cx="12" cy="9" rx="11" ry="6" transform="rotate(-28 12 9)" fill="#fff" opacity=".28"/></g>
+      ${glyph ? G[glyph](shadeInk(lo), hi) : ''}
+      <g fill="none" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round">${body}</g></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><g fill="#26262f" stroke="#5a5a70" stroke-width="1.8" stroke-linejoin="round">${body}</g></svg>`;
+  const url = `data:image/svg+xml,${encodeURIComponent(svg.replace(/\n\s*/g, ''))}`;
   painted.set(key, url);
   return url;
 }
@@ -303,7 +281,7 @@ export function showBadgeNews(save = getSave()) {
 /** The Collection's card for it: the newest badge as its art, coloured like the card. */
 export function trainerTile(save = getSave()) {
   const earned = (save.badges || []).filter(id => EARNABLE.some(b => b.id === id));
-  const img = el('img', 'pixel coll-badge');
+  const img = el('img', 'coll-badge');
   img.src = badgeArt(earned.at(-1) ?? 'champion', earned.length > 0);
   img.alt = '';
   const fresh = earned.some(id => !(save.badgesSeen || []).includes(id));

@@ -86,7 +86,7 @@ function coverArt() {
   const earned = BADGES.filter(b => !b.locked && (save.badges || []).includes(b.id));
   const row = el('span', 'cdev-cover-badges');
   row.append(...earned.map(b => {
-    const art = el('img', 'pixel');
+    const art = el('img');
     art.src = badgeArt(b.id, true);
     art.alt = '';
     return art;

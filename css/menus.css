@@ -874,7 +874,7 @@ button.mv-row { cursor: zoom-in; }
 .cdev-cover-plate b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.7rem; font-weight: 400; letter-spacing: 1px; }
 .cdev-cover-plate small { font-size: 0.45rem; opacity: 0.9; }
 .cdev-cover-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
-.cdev-cover-badges img { width: 26px; height: 26px; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
+.cdev-cover-badges img { width: 26px; height: 26px; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
 /* once open, the lid's yellow light carries the LED on */
 .cdev.news.powered .pdx-light.yellow { animation: cdevLidLed 1s steps(1) infinite 0.9s; }
 @keyframes cdevLidLed { 50% { filter: brightness(0.45); } 0% { filter: brightness(1.4); box-shadow: 0 0 10px #ffd23a; } }
@@ -908,7 +908,7 @@ button.mv-row { cursor: zoom-in; }
 .cdev-owner-id b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 400; }
 .cdev-owner-id small { font-size: 0.48rem; opacity: 0.9; }
 .cdev-owner-badge { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.45rem; text-shadow: 1px 1px 0 var(--tc3); }
-.cdev-owner-badge .coll-badge { width: 40px; height: 40px; image-rendering: pixelated; }
+.cdev-owner-badge .coll-badge { width: 40px; height: 40px; }
 
 /* the apps */
 .cdev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
@@ -974,7 +974,7 @@ button.mv-row { cursor: zoom-in; }
 [data-tier="silver"] { --tc1: #a8b0c0; --tc2: #808898; --tc3: #444a58; }
 [data-tier="gold"] { --tc1: #e8b830; --tc2: #c09018; --tc3: #6a4a08; }
 [data-tier="violet"] { --tc1: #9a60e0; --tc2: #7040b8; --tc3: #361a68; }
-.coll-badge { width: 72px; height: 72px; image-rendering: pixelated; }
+.coll-badge { width: 72px; height: 72px; }
 
 .trainer-dialog { width: min(460px, 94vw); padding: 16px; border-color: var(--tc3);
   background: repeating-linear-gradient(135deg, var(--tc1) 0 8px, var(--tc2) 8px 10px); }
@@ -998,7 +998,7 @@ button.mv-row { cursor: zoom-in; }
 .tc-badge { position: relative; display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: 0;
   border-radius: var(--round-xs); background: rgba(255, 255, 255, 0.05); cursor: pointer; }
 .tc-badge:focus-visible { outline: 2px solid #f8e070; }
-.tc-badge-art { width: 36px; height: 36px; image-rendering: pixelated; }
+.tc-badge-art { width: 36px; height: 36px; }
 /* a band of light sweeps over each earned badge, in steps, cut to its shape by its own art */
 .tc-badge.earned::after { content: ''; position: absolute; inset: 4px; pointer-events: none;
   -webkit-mask: var(--art) center / 36px 36px no-repeat; mask: var(--art) center / 36px 36px no-repeat;
