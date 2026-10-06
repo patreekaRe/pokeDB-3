@@ -1501,3 +1501,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Main menu when laid over a screen. The menu's Index went (the Moves / Relics / Items apps cover it). Checked at 375x812
   on a peeked ? room: dock, Settings, Help, Game Corner, Main menu with its confirm (Cancel keeps the device open).
 - **Title: one Pokédex sign** (2026-10-05, Desktop app; the user's call): the Collection ▸ sub-menu went, since the device's home already has the Trainer Card and its dock now always has the Game Corner (on the title it puts the device away and opens the cabinet over the title). The stack is Continue, New game, Game Modes ▸, Pokédex; the badge "!" sits on the Pokédex sign.
+- **Choose your partner** (2026-10-05, Desktop app; the user's ask): a tap on the Trainer Card's Pokémon opens a picker
+  (`partnerPicker()` in `js/trainercard.js`): Auto (the starter with the most wins, as before), then every owned starter at
+  each stage, every Pokédex entry defeated (Depths too) and every Safari catch (`partnerChoices()`). Saved as
+  `save.partner` (`'starter:<id>:<stage>'` / `'mon:<id>'`); `partner()` now returns `{ key, src, name }` and also feeds
+  the device's cover and ID strip.

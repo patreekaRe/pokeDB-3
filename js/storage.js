@@ -63,6 +63,7 @@ const freshSave = () => ({
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
   badges: [],                 // BADGES ids earned (js/data/badges.js), oldest first: the Trainer Card's Badge Case
   badgesSeen: [],             // the badges the Trainer Card has shown: one not in here pops in with a shine (js/trainercard.js)
+  partner: null,              // the Trainer Card's Pokémon, a key from partnerChoices() (js/trainercard.js); null picks the starter with the most wins
   feats: [],                  // FEATS ids granted (js/data/achievements.js): Eternatus beaten, the Depths page's shiny Mewtwo
   tower: { week: null, tries: 0, best: 0, bestEver: 0, summits: 0, bestTurns: 0 },   // the Sky Pillar (js/data/tower.js): the week (its Monday), its tries (only the first counts), that try's floor, your highest floor ever (any try: the Tower Badges), climbs that reached the top and the fewest turns one took
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD") and its tries so far: only the first counts

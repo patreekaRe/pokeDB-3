@@ -8,7 +8,10 @@
    ============================================================ */
 
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
-import { DEX_PAGES, safariOpen } from './data/pokedex.js';
+import { DEX_PAGES, DEPTHS_PAGE, safariOpen } from './data/pokedex.js';
+import { ENEMY_DEFS } from './data/enemies.js';
+import { SAFARI_DEX_PAGES } from './data/safari.js';
+import { isStarterUnlocked } from './progress.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, addPlayTime } from './storage.js';
 import { safariDexCount } from './safaridex.js';
@@ -157,12 +160,81 @@ const playTime = (ms = 0) => {
 
 /* ---------- the window ---------- */
 
-/** The starter on the card: the one with the most wins (a Level 5 win counts big), else Charmander. */
-export function partner(save) {
+/** The starter it picks by itself: the one with the most wins (a Level 5 win counts big), else Charmander. */
+function autoPartner(save) {
   const s = save.stats;
   const score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const best = STARTERS.filter(st => score(st.id) > 0).sort((a, b) => score(b.id) - score(a.id))[0];
   return best ? { starter: best, stage: best.line.length - 1 } : { starter: STARTERS_BY_ID.charmander, stage: 0 };
+}
+
+/** Every Pokémon the card can show, by group: your starters at each stage, the Pokédex's defeated, the Safari's caught.
+    Keys are what `save.partner` holds: 'starter:<id>:<stage>' or 'mon:<enemy id>'. */
+export function partnerChoices(save = getSave()) {
+  const mon = (id) => ENEMY_DEFS[id] && { key: `mon:${id}`, src: ENEMY_DEFS[id].image, name: ENEMY_DEFS[id].name };
+  const starters = STARTERS.filter(isStarterUnlocked).flatMap(st => st.line.map((form, stage) => ({
+    key: `starter:${st.id}:${stage}`, src: spriteUrl(st, 'front', stage), name: form.name,
+  })));
+  const defeated = new Set(save.dex.defeated);
+  const dex = [...DEX_PAGES, DEPTHS_PAGE].flatMap(p => p.ids).filter(id => defeated.has(id)).map(mon).filter(Boolean);
+  const caught = new Set(save.safariDex?.caught || []);
+  const safari = SAFARI_DEX_PAGES.flatMap(p => p.ids).filter(id => caught.has(id)).map(mon).filter(Boolean);
+  return [
+    { name: 'Starters', mons: starters },
+    { name: 'Pokédex', mons: dex },
+    { name: 'Safari', mons: [...new Map(safari.map(m => [m.key, m])).values()] },
+  ].filter(g => g.mons.length);
+}
+
+/** The Pokémon on the card, cover and ID strip: the one chosen (`save.partner`) while it's still yours, else autoPartner(). */
+export function partner(save) {
+  const chosen = save.partner && partnerChoices(save).flatMap(g => g.mons).find(m => m.key === save.partner);
+  if (chosen) return chosen;
+  const { starter, stage } = autoPartner(save);
+  return { key: null, src: spriteUrl(starter, 'front', stage), name: starter.line[stage].name };
+}
+
+/** The picker over the card's body: Auto, then a grid per group; a tap saves it and calls `done`. */
+function partnerPicker(body, done) {
+  const save = getSave();
+  const current = partner(save).key;
+  const head = el('div', 'tc-head');
+  head.append(el('h2', 'tc-title', 'PARTNER'));
+  const back = el('button', 'tc-pick-back', 'Back');
+  back.type = 'button';
+  back.addEventListener('click', done);
+  head.append(back);
+  const pick = (key) => {
+    updateSave(d => { d.partner = key; });
+    playSound('confirm');
+    done();
+  };
+  const auto = el('button', `tc-pick-auto${current ? '' : ' on'}`, 'Auto: the starter with the most wins');
+  auto.type = 'button';
+  auto.addEventListener('click', () => pick(null));
+  const groups = partnerChoices(save).map(g => {
+    const box = el('div', 'tc-pick-group');
+    const grid = el('div', 'tc-pick-grid');
+    grid.append(...g.mons.map(m => {
+      const btn = el('button', `tc-pick${m.key === current ? ' on' : ''}`);
+      btn.type = 'button';
+      btn.title = m.name;
+      btn.setAttribute('aria-label', m.name);
+      const img = el('img', 'pixel');
+      img.src = m.src;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.draggable = false;
+      btn.append(img);
+      btn.addEventListener('click', () => pick(m.key));
+      return btn;
+    }));
+    box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} · ${g.mons.length}`), grid);
+    return box;
+  });
+  body.replaceChildren(head, auto, ...groups);
+  head.querySelector('h2').tabIndex = -1;
+  body.scrollTop = 0;
 }
 
 const hintFor = (b, save) => {
@@ -186,7 +258,7 @@ function badgeButton(b, save, earned, fresh, i) {
   return btn;
 }
 
-export function openTrainerCard(into = null) {   // `into`: draw it there (the Collection device's screen), no window
+export function openTrainerCard(into = null, { reopen = false } = {}) {   // `into`: draw it there (the Collection device's screen), no window
   const save = getSave();
   const s = save.stats;
   const tier = cardTier(save);
@@ -211,12 +283,19 @@ export function openTrainerCard(into = null) {   // `into`: draw it there (the C
   const info = el('div', 'tc-info');
   const list = el('dl', 'tc-lines');
   for (const [k, v] of lines) list.append(el('dt', '', k), el('dd', '', v));
-  const { starter, stage } = partner(save);
-  const pic = el('div', 'tc-partner');
+  const mate = partner(save);
+  const pic = el('button', 'tc-partner');
+  pic.type = 'button';
+  pic.title = `${mate.name}. Tap to choose your partner`;
+  pic.setAttribute('aria-label', `Partner: ${mate.name}. Choose another`);
   const img = el('img', 'pixel');
-  img.src = spriteUrl(starter, 'front', stage);
+  img.src = mate.src;
   img.alt = '';
-  pic.append(img);
+  pic.append(img, el('span', 'tc-partner-edit', '✎'));
+  pic.addEventListener('click', () => {
+    playSound('confirm');
+    partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
+  });
   info.append(list, pic);
 
   let n = 0;
@@ -233,8 +312,9 @@ export function openTrainerCard(into = null) {   // `into`: draw it there (the C
   head.append(el('h2', 'tc-title', 'TRAINER CARD'), el('span', 'tc-tier', tier.name));
   head.querySelector('h2').tabIndex = -1;
   const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
-  (into ?? $('trainer-body')).replaceChildren(head, info, el('span', 'tc-case-label', 'BADGE CASE'), caseBox, foot);
-  if (!into) openDialog('trainer-dialog');
+  const body = into ?? $('trainer-body');
+  body.replaceChildren(head, info, el('span', 'tc-case-label', 'BADGE CASE'), caseBox, foot);
+  if (!into && !reopen) openDialog('trainer-dialog');
   const showing = () => (into ? into.isConnected && !into.closest('[hidden]') : dialog.open);
 
   if (fresh.length) {

@@ -987,7 +987,21 @@ button.mv-row { cursor: zoom-in; }
 .tc-lines { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; margin: 0; font-size: 0.62rem; }
 .tc-lines dt { color: var(--muted); }
 .tc-lines dd { margin: 0; text-align: right; color: var(--win-ink); overflow-wrap: anywhere; }
-.tc-partner { display: grid; place-items: center; height: 84px; border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.08); }
+.tc-partner { position: relative; display: grid; place-items: center; height: 84px; padding: 0; border: 0; border-radius: var(--round-sm);
+  background: rgba(48, 48, 56, 0.08); cursor: pointer; }
+.tc-partner:hover, .tc-partner:focus-visible { background: rgba(48, 48, 56, 0.16); outline: none; }
+.tc-partner-edit { position: absolute; right: 3px; bottom: 3px; display: grid; place-items: center; width: 18px; height: 18px;
+  border-radius: 50%; font-size: 0.6rem; color: #fff; background: var(--tc3); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
+.tc-pick-back { padding: 5px 12px 4px; border: 0; border-radius: 999px; font: inherit; font-size: 0.55rem; color: #fff; background: var(--tc3); cursor: pointer; }
+.tc-pick-auto { display: block; width: 100%; padding: 9px 10px; border: 0; border-radius: var(--round-sm); font: inherit; font-size: 0.58rem;
+  text-align: left; color: var(--win-ink); background: var(--win-bg); box-shadow: 0 0 0 3px #303038; cursor: pointer; }
+.tc-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; padding: 8px; border-radius: var(--round-sm);
+  background: var(--win-bg); box-shadow: 0 0 0 3px #303038; }
+.tc-pick { display: grid; place-items: center; aspect-ratio: 1; padding: 2px; border: 0; border-radius: var(--round-xs);
+  background: rgba(48, 48, 56, 0.08); cursor: pointer; }
+.tc-pick img { max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+.tc-pick:hover, .tc-pick:focus-visible { background: rgba(48, 48, 56, 0.18); outline: none; }
+.tc-pick.on, .tc-pick-auto.on { box-shadow: 0 0 0 3px var(--tc2), 0 0 0 5px #303038; }
 .tc-partner img { max-width: 76px; max-height: 76px; image-rendering: pixelated; }
 .tc-case-label { display: block; margin: 14px 0 6px; font-size: 0.55rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
 .tc-case { display: grid; gap: 8px; padding: 10px; border-radius: var(--round-sm); background: #2a3048;
