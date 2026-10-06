@@ -57,11 +57,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     a map palette and signs, a treasure grotto, a Pokédex page and map music. Journey films go from 2 routes to 6:
     Clearing → Ruins (wading down a flooded stairwell), Ruins → Wastes (steam as the water boils away), Shrine → Jungle
     (a vine-choked torii), Ruins → Jungle (a waterfall crossing). Seeing every biome earns the Explorer Badge. Roughly
-    6-10 sessions a biome. **To decide first:** do the new Pokédex pages count towards finishing the Pokédex (suggested:
-    no, bonus pages with their own reward, so Reshiram and the Safari don't move); does Mewtwo's speedrun get the
-    crossroads or keep its fixed road; the bot checks each new biome against the one it pairs with.
+    6-10 sessions a biome. **Decided (the user's picks, 2026-10-06):** the new Pokédex pages are bonus pages with their
+    own reward, never counted towards finishing the Pokédex (so Reshiram and the Safari don't move); Mewtwo's speedrun
+    keeps its fixed road, no crossroads; the Explorer Badge is earned by entering all five main biomes (across any runs,
+    not beating their bosses). The bot checks each new biome against the one it pairs with.
     a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 19 and its 'Rules for adding
-       Pokémon'. Ask me the three open decisions in item 19 first. Then build the crossroads' logic (the run picks a
+       Pokémon'. Item 19's decisions are settled. Build the crossroads' logic (the run picks a
        biome per slot, saved with the run; a plain two-button choice for now) and the Sunken Ruins' gameplay: its 12
        wilds, 3 Alphas and 3 bosses (sprites, cries at -13 LUFS, SPRITE_FIT, ENEMY_DEFS), its Pokédex page and
        events' per-biome values, with `?biome=ruins` to playtest. Bot-check it against the Overgrown Shrine at 150 runs
