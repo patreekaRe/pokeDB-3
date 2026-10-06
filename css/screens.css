@@ -2035,44 +2035,20 @@ body.battle-intro { pointer-events: none; }
   .hof-credits { overflow-y: auto; }
 }
 
-/* the Collection's Hall of Fame window */
+/* a run's full page (the books' sheet, the loss recap) */
 .hof-body { display: flex; flex-direction: column; gap: 8px; }
-.hof-row {
-  display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px;
-  border: 0; border-left: 6px solid #777; border-radius: var(--round-sm);
-  background: rgba(48, 48, 56, 0.07); box-shadow: inset 0 0 0 2px rgba(48, 48, 56, 0.15);
-  color: var(--win-ink); font: inherit; text-align: left; cursor: pointer;
-}
-.hof-row.type-fire, .hof-entry.type-fire { border-left-color: #c8402a; }
-.hof-row.type-grass, .hof-entry.type-grass { border-left-color: #2e8a40; }
-.hof-row.type-water, .hof-entry.type-water { border-left-color: #2a68c8; }
-.hof-row.type-psychic, .hof-entry.type-psychic { border-left-color: #8a45c0; }
-@media (hover: hover) { .hof-row:hover { background: rgba(48, 48, 56, 0.13); } }
-.hof-row-pic { display: grid; place-items: center; flex: none; width: 64px; height: 64px; }
-.hof-row-pic img { max-width: 64px; max-height: 64px; image-rendering: pixelated; }
-.hof-row-text { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
-.hof-row-text strong { font-size: 0.78rem; font-weight: 400; }
-.hof-row-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 0.6rem; }
-.hof-row-text small { font-size: 0.56rem; color: var(--muted); }
-.hof-row-go { color: #c02020; font-size: 0.7rem; }
-.hof-back { align-self: flex-start; }
 .hof-entry {
   display: flex; align-items: center; gap: 12px; padding: 6px 10px;
   border-left: 6px solid #777; border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.07);
 }
+.hof-entry.type-fire { border-left-color: #c8402a; }
+.hof-entry.type-grass { border-left-color: #2e8a40; }
+.hof-entry.type-water { border-left-color: #2a68c8; }
+.hof-entry.type-psychic { border-left-color: #8a45c0; }
 .hof-entry-pic { display: grid; place-items: center; flex: none; width: 96px; height: 96px; }
 .hof-entry-pic img { max-width: 96px; max-height: 96px; image-rendering: pixelated; }
 .hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .hof-cards { margin-top: 6px; }
-.hof-row.champion { background: rgba(248, 208, 72, 0.18); }
-/* a lost run: a short grey line, nothing to open */
-.hof-row.lost { padding: 4px 12px; cursor: default; opacity: 0.8; background: rgba(48, 48, 56, 0.04); }
-.hof-row.lost .hof-row-pic { width: 44px; height: 44px; }
-.hof-row.lost .hof-row-pic img { max-width: 44px; max-height: 44px; filter: grayscale(1); }
-.hof-row.lost strong { font-size: 0.66rem; }
-@media (hover: hover) { .hof-row.lost:hover { background: rgba(48, 48, 56, 0.04); } }
-button.hof-row.lost { cursor: pointer; }
-@media (hover: hover) { button.hof-row.lost:hover { background: rgba(48, 48, 56, 0.1); } }
 /* the loss recap (lossPage()): a grey Pokémon, the blow that ended it, HP over the run */
 .hof-entry.lost .hof-entry-pic img { filter: grayscale(1); opacity: 0.85; }
 .loss-blow { margin: 8px 0 0; font-size: 0.66rem; line-height: 1.6; color: #a02020; }
@@ -2094,12 +2070,11 @@ button.hof-row.lost { cursor: pointer; }
 .loss-end { position: absolute; bottom: 0; translate: -50% 40%; font-size: 0.8rem; pointer-events: none; }
 .loss-caption { margin: 6px 0 0; font-size: 0.56rem; color: var(--muted); }
 /* a Champion of the Depths: gold and violet */
-.hof-row.depths, .hof-entry.depths {
+.hof-entry.depths {
   border-left-color: #d8b048;
   background: linear-gradient(90deg, rgba(248, 208, 72, 0.22), rgba(150, 90, 230, 0.2));
   box-shadow: inset 0 0 0 2px rgba(150, 90, 230, 0.45);
 }
-.hof-row.depths .hof-row-go { color: #8a45c0; }
 .dex-perk-mon { width: 56px; height: 56px; object-fit: contain; flex: none; image-rendering: pixelated; }
 .dex-depths { border-color: rgba(150, 90, 230, 0.5); }
 .dex-depths.earned { background: linear-gradient(90deg, rgba(248, 208, 72, 0.14), rgba(150, 90, 230, 0.14)); }

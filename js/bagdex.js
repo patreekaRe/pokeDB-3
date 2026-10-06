@@ -114,10 +114,14 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
     label(g, t, known)       the nameplate's name and the slot's label
     tally(g, done)           the tally's words
     doneSub                  the banner's sub once all are found
-    onShow(g, t, known)      after stepping to a thing (a cry) */
+    onShow(g, t, known)      after stepping to a thing (a cry)
+    count(g, things)         a plain count for the banner and tally, for a shelf where nothing is ever "not found" (the books)
+    direct                   no banners: the device opens straight on the first group, and B leaves the app
+    sheet(g, t, known)       the thing's full page (nodes, or null for none): a tap on the screen or A slides it over the device
+    press(g, t, known)       what A does instead of opening the sheet */
 export function shelfApp(spec) {
   const groups = spec.groups;
-  let host, list, stage;
+  let host, list, stage, sheet;
   let view = 'list', group = null, at = 0, busy = false;
 
   function renderList() {
@@ -125,15 +129,18 @@ export function shelfApp(spec) {
       const things = g.list();
       if (!things.length) return null;
       const n = things.filter(t => spec.known(g, t)).length;
+      const counted = spec.count?.(g, things);
+      const all = !counted && n === things.length;
       const mask = g.mask?.();
-      const b = el('button', `pdx-banner bdx-banner${n === things.length ? ' complete' : ''}${mask ? ' masked' : ''}`);
+      const b = el('button', `pdx-banner bdx-banner${all ? ' complete' : ''}${mask ? ' masked' : ''}`);
       b.type = 'button';
       b.dataset.group = g.id;
       b.style.setProperty('--b1', g.b1);
       b.style.setProperty('--b2', g.b2);
       b.append(el('span', 'pdx-stripe'),
-        el('strong', 'pdx-banner-name', mask?.name ?? g.name), el('span', 'pdx-banner-sub', mask?.sub ?? (n === things.length ? spec.doneSub : g.sub)),
-        el('span', 'pdx-banner-count', `${n} / ${things.length}`), progressBar(n, things.length));
+        el('strong', 'pdx-banner-name', mask?.name ?? g.name), el('span', 'pdx-banner-sub', mask?.sub ?? (all ? spec.doneSub : g.sub)),
+        el('span', 'pdx-banner-count', counted ?? `${n} / ${things.length}`));
+      if (!counted) b.append(progressBar(n, things.length));
       const shelf = el('span', 'pdx-banner-mons bdx-banner-things');
       for (const t of things.slice(0, 3)) shelf.append(spec.art(g, t, spec.known(g, t), 'banner'));
       b.append(shelf);
@@ -180,6 +187,10 @@ export function shelfApp(spec) {
     const screen = el('div', `pdx-screen bdx-screen${known ? '' : ' unseen'}${extra ? ` ${extra}` : ''}`);
     screen.append(el('span', 'pdx-stripe bdx-dots'), ...spec.screen(group, thing, known));
     swipe(screen);
+    if (spec.sheet?.(group, thing, known)) {
+      screen.classList.add('opens');
+      screen.addEventListener('click', () => { if (!swiped) openSheet(); });
+    }
 
     const slots = el('div', 'pdx-slots bdx-slots');
     things.forEach((t, i) => {
@@ -192,9 +203,18 @@ export function shelfApp(spec) {
       slots.append(s);
     });
     const n = things.filter(t => spec.known(group, t)).length;
-    const tally = el('div', `pdx-lcd bdx-tally${n === things.length ? ' done' : ''}`);
-    tally.append(el('span', '', spec.tally(group, n === things.length)), el('b', '', `${n}/${things.length}`), progressBar(n, things.length));
-    body.replaceChildren(nameplate, screen, ...spec.lines(group, thing, known), slots, tally);
+    const counted = spec.count?.(group, things);
+    const tally = el('div', `pdx-lcd bdx-tally${!counted && n === things.length ? ' done' : ''}`);
+    tally.append(el('span', '', spec.tally(group, n === things.length)), el('b', '', counted ?? `${n}/${things.length}`));
+    if (!counted) tally.append(progressBar(n, things.length));
+    const lines = spec.lines(group, thing, known);
+    if (screen.classList.contains('opens')) {
+      const open = el('button', 'pdx-lcd bdx-open', `${spec.sheetLabel ?? 'Full record'} ▶`);
+      open.type = 'button';
+      open.addEventListener('click', openSheet);
+      lines.push(open);
+    }
+    body.replaceChildren(nameplate, screen, ...lines, slots, tally);
     dev.querySelector('.pdx-counter').textContent = `${at + 1} / ${things.length}`;
 
     typeOut([...body.querySelectorAll('.pdx-type')]);
@@ -217,20 +237,47 @@ export function shelfApp(spec) {
     now.animate([{ translate: pos(dir * 120), opacity: 0 }, { translate: pos(0), opacity: 1 }], ease);
   }
 
+  let swiped = false;   // a swipe's pointerup is followed by a click: it mustn't open the sheet too
   function swipe(node) {
     let x0 = null;
-    node.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+    node.addEventListener('pointerdown', (e) => { x0 = e.clientX; swiped = false; });
     node.addEventListener('pointerup', (e) => {
       if (x0 === null) return;
       const dx = e.clientX - x0;
       x0 = null;
-      if (Math.abs(dx) > 40) show(at + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+      if (Math.abs(dx) > 40) { swiped = true; show(at + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); }
     });
     node.addEventListener('pointercancel', () => { x0 = null; });
   }
 
+  /* the thing's full page, slid in over the device; B (or its own back button) slides it away */
+  function openSheet() {
+    const thing = group.list()[at];
+    const nodes = spec.sheet?.(group, thing, spec.known(group, thing));
+    if (busy || sheet || !nodes) return;
+    playSound('confirm');
+    sheet = el('div', 'pdx-stage bdx-sheet');
+    const back = el('button', 'pdx-lcd bdx-sheet-back', '◀ Back');
+    back.type = 'button';
+    back.addEventListener('click', closeSheet);
+    sheet.append(back, ...nodes);
+    stage.inert = true;
+    host.append(sheet);
+    if (!calm()) sheet.animate([{ translate: '100% 0' }, { translate: '0 0' }], { duration: 260, easing: EASE });
+  }
+
+  function closeSheet() {
+    if (!sheet) return;
+    const was = sheet;
+    sheet = null;
+    stage.inert = false;
+    playSound('cancel');
+    if (calm()) { was.remove(); return; }
+    settle(was.animate([{ translate: '0 0' }, { translate: '100% 0' }], { duration: 220, easing: EASE, fill: 'forwards' })).then(() => was.remove());
+  }
+
   function show(i, dir = 0) {
-    if (busy) return;
+    if (busy || sheet) return;
     const things = group.list();
     at = (i + things.length) % things.length;
     fill(dir);
@@ -301,21 +348,40 @@ export function shelfApp(spec) {
       host.append(list, stage);
       view = 'list';
       busy = false;
-      renderList();
+      sheet = null;
+      if (!spec.direct) { renderList(); return; }
+      group = groups[0];
+      at = 0;
+      view = 'page';
+      list.hidden = true;
+      stage.hidden = false;
+      renderPage();
+      stage.querySelector('.pdx-device').classList.add('powered');
+      stage.querySelector('.pdx-screen')?.classList.add('power-on');
+      spec.onShow?.(group, group.list()[0], true);
     },
     back() {
-      if (busy) return true;
-      if (view === 'list') return false;
+      if (busy || spec.busy?.()) return true;
+      if (sheet) { closeSheet(); return true; }
+      if (view === 'list' || spec.direct) return false;
       backToList();
       return true;
     },
     key(e) {
-      const step = view === 'page' && { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+      if (spec.busy?.()) return true;
+      const step = view === 'page' && !sheet && { ArrowLeft: -1, ArrowRight: 1 }[e.key];
       if (!step) return false;
       show(at + step, step);
       return true;
     },
-    unmount() { busy = false; },
+    /** A: the sheet, or the spec's own `press`. */
+    press() {
+      if (busy || spec.busy?.() || view !== 'page' || sheet) return;
+      const thing = group.list()[at];
+      if (spec.press) spec.press(group, thing, spec.known(group, thing));
+      else openSheet();
+    },
+    unmount() { busy = false; sheet = null; },
   };
 }
 

@@ -116,7 +116,7 @@ function apps(save) {
   const book = (id, name, noun, how) => {
     const entries = bookEntries(id);
     if (!entries.length) return { id, locked: how };
-    return { id, name, art: vec(id), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, app: recordsApp(id) };
+    return { id, name, art: vec(id), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, cls: `cdev-dex cdev-bag cdev-${id}`, app: recordsApp(id) };
   };
   const safari = safariOpen(save) ? safariDexCount() : null;
   const things = (id, name, art, all) => ({

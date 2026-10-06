@@ -8,7 +8,8 @@
  * is no party; the cry and music stay.
  */
 import { $, el, sleep, openDialog, makeCard, groupDeck, itemSprite } from './ui.js';
-import { playMusic, playSound, playCry, preloadMusic, preloadCries } from './audio.js';
+import { playMusic, playCry, preloadMusic, preloadCries, musicNow } from './audio.js';
+import { shelfApp, typed, typeChip } from './bagdex.js';
 import { sceneSay } from './evolution.js';
 import { celebrate } from './celebrate.js';
 import { rollCredits } from './credits.js';
@@ -289,7 +290,8 @@ export async function winScene(entry) {
   scene.className = 'hof-scene';
 }
 
-/* ---------- the Collection's two books, apps in its device's screen: the Hall of Fame and the Record Book ---------- */
+/* ---------- the Collection's two books, made like its Pokédex app on shelfApp() (js/bagdex.js; the user's picks,
+   2026-10-06): the Record Book a banner per Trainer Level, the Hall of Fame one gold handheld of pedestals ---------- */
 
 const BOOKS = {
   fame: { has: (e) => fameNo(e) || isDepths(e) },
@@ -298,91 +300,107 @@ const BOOKS = {
 /** The entries a book lists, oldest first: the Hall of Fame holds Level 5 wins, the Record Book every win. */
 export const bookEntries = (which) => getSave().hallOfFame.filter(BOOKS[which].has);
 
-let view = null;   // the open book's screen: { panel, sub, body, page }
+const newestFirst = (list) => [...list].reverse();
+const LEVEL_COLOURS = [['#6ab04c', '#2a5a1c'], ['#4aa8a0', '#1a5050'], ['#5a8ef0', '#24448a'], ['#f0a040', '#8a4a10'], ['#e86a5a', '#8a2a22'], ['#e8b830', '#6a4a08']];
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-/** The Hall of Fame ('fame') or the Record Book ('record') as a device app (js/device.js): its entries newest first;
-    tapping one opens its page, and the device's Back steps from a page to the list. */
-export function recordsApp(which) {
-  return {
-    mount(panel) {
-      book = which;
-      view = { panel, sub: el('p', 'records-sub'), body: el('div', 'hof-body'), page: false };
-      panel.append(view.sub, view.body);
-      showList();
-    },
-    back() {
-      if (!view?.page) return false;
-      playSound('cancel');
-      showList();
-      return true;
-    },
-    key: () => false,
-    unmount() { view = null; },
-  };
-}
+/** The Record Book's banners: one per Trainer Level, the Crystal Depths, then the lost runs. */
+const RECORD_GROUPS = [
+  ...LEVELS.map((lv, i) => ({
+    id: `lv${i}`, name: `Level ${i}`, sub: lv.name, b1: LEVEL_COLOURS[i][0], b2: LEVEL_COLOURS[i][1],
+    list: () => newestFirst(bookEntries('record').filter(e => !isDepths(e) && e.level === i)),
+  })),
+  { id: 'depths', name: 'Crystal Depths', sub: 'Eternatus beaten', b1: '#b07ae8', b2: '#2a0c4a', list: () => newestFirst(bookEntries('record').filter(isDepths)) },
+  { id: 'lost', name: 'Lost runs', sub: 'Every fall, remembered', b1: '#8a8a98', b2: '#2a2a34', list: () => newestFirst(getSave().losses || []) },
+];
 
-function paint(sub, nodes, page) {
-  view.sub.textContent = sub;
-  view.body.replaceChildren(...nodes);
-  view.page = page;
-  view.panel.scrollTop = 0;
-}
-
-function showList() {
-  const entries = bookEntries(book);
-  const losses = book === 'record' ? getSave().losses || [] : [];
-  const wins = `${entries.length} ${book === 'fame' ? (entries.length === 1 ? 'champion' : 'champions') : (entries.length === 1 ? 'win' : 'wins')}`;   // a Champion of the Depths counts among them
-  const count = losses.length ? `${wins}, ${losses.length} ${losses.length === 1 ? 'loss' : 'losses'}` : wins;
-  // a lost run sits after the wins that came before it (`after`), so the book reads as one history
-  const rows = [];
-  entries.forEach((entry, i) => {
-    if (book === 'record') rows.push(...losses.filter(l => l.after === i).map(lossRow));
-    rows.push(winRow(entry));
-  });
-  rows.push(...losses.filter(l => l.after >= entries.length).map(lossRow));
-  paint(`${count}. Tap a ${losses.some(l => l.deck) ? 'run' : 'win'} for its record.`, rows.reverse(), false);
-}
-
-function rowPic(entry) {
-  const pic = el('span', 'hof-row-pic');
-  const img = el('img', 'pixel');
+function monImg(entry, cls) {
+  const img = el('img', `pixel ${cls}`);
   img.src = imgOf(entry);
   img.alt = '';
-  pic.append(img);
-  return pic;
+  img.draggable = false;
+  return img;
 }
 
-function winRow(entry) {
-  const star = book === 'record' && fameNo(entry);
-  const row = el('button', `hof-row type-${entry.type}${star ? ' champion' : ''}${isDepths(entry) ? ' depths' : ''}`);
-  row.type = 'button';
-  const text = el('span', 'hof-row-text');
-  const line = el('span', 'hof-row-line');
-  line.append(chip(entry), el('span', 'hof-lv', isDepths(entry) ? 'Depths' : `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
-  text.append(el('strong', '', `${star ? '⭐ ' : isDepths(entry) ? '💎 ' : ''}${numberOf(entry)} ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
-    el('small', '', `${entry.deck.length} cards · ${entry.relics.length} relics · ${entry.fights} fights won`));
-  row.append(rowPic(entry), text, el('span', 'hof-row-go', '▶'));
-  row.addEventListener('click', () => showEntry(entry));
-  return row;
-}
-
-/** A lost run's short line: where it fell and to what. Losses saved since the recap open it; older ones have no page. */
-function lossRow(entry) {
-  const page = Boolean(entry.deck);
-  const row = el(page ? 'button' : 'div', `hof-row lost type-${entry.type}${page ? ' recap' : ''}`);
-  const text = el('span', 'hof-row-text');
-  const line = el('span', 'hof-row-line');
-  line.append(chip(entry), el('span', 'hof-lv', entry.starter === 'mewtwo' ? 'Mewtwo' : `Lv.${entry.level}`), el('span', '', dateOf(entry.date)));
-  text.append(el('strong', '', `💀 Lost ${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`), line,
-    el('small', '', `${entry.foe ? `Fell to ${entry.foe}` : 'Fainted'} in ${whereOf(entry)} · ${entry.fights} fights won`));
-  row.append(rowPic(entry), text);
-  if (page) {
-    row.type = 'button';
-    row.append(el('span', 'hof-row-go', '▶'));
-    row.addEventListener('click', () => showLoss(entry));
+/** Four of the run's numbers on one LCD line, under its story. */
+function quick(entry) {
+  const box = el('div', 'pdx-lcd rbk-quick');
+  for (const [label, value] of [['Fights', num(entry.fights)], ['Turns', num(entry.turns)], ['Dealt', num(entry.dealt)], ['Deck', entry.deck ? entry.deck.length : '-']]) {
+    const cell = el('span', '');
+    cell.append(el('b', '', String(value)), el('small', '', label));
+    box.append(cell);
   }
-  return row;
+  return box;
 }
+
+function storyOf(entry, lost) {
+  if (lost) return `${blowOf(entry)} in ${whereOf(entry)}, ${dateOf(entry.date)}.`;
+  if (isDepths(entry)) return `Beat Eternatus in the Crystal Depths, ${dateOf(entry.date)}.`;
+  return `Won on Trainer Level ${entry.level}, ${LEVELS[entry.level]?.name ?? ''}, ${dateOf(entry.date)}.`;
+}
+
+const cryOf = (entry) => playCry(starterOf(entry).line[entry.stage].id);
+
+/** The Record Book as a device app (js/device.js): a banner per Trainer Level, then the handheld, one run a screen. */
+const recordBook = () => shelfApp({
+  groups: RECORD_GROUPS,
+  known: () => true,
+  count: (g, runs) => (g.id === 'lost' ? plural(runs.length, 'loss', 'losses') : plural(runs.length, 'win', 'wins')),
+  no: (g, e) => (g.id === 'lost' ? 'Lost' : winNo(e)),
+  label: (g, e) => `${nameOf(e)}${e.shiny ? ' ✨' : ''}`,
+  art: (g, e, known, where) => monImg(e, where === 'banner' ? `bdx-banner-mon${g.id === 'lost' ? ' lost' : ''}` : 'pdx-slot-mon'),
+  screenCls: (g, e) => (g.id === 'lost' ? 'lost' : isDepths(e) ? 'depths' : ''),
+  screen(g, e) {
+    const nodes = [el('span', 'pdx-pad'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type)];
+    const tag = g.id === 'lost' ? '💀 Lost' : fameNo(e) ? `⭐ ${fameNo(e)}` : isDepths(e) ? `💎 ${champNo(e)}` : null;
+    if (tag) nodes.push(el('span', `pdx-role rbk-tag${g.id === 'lost' ? '' : ' gold'}`, tag));
+    return nodes;
+  },
+  lines: (g, e) => [typed(g.id === 'lost' ? 'muted' : '', storyOf(e, g.id === 'lost')), quick(e)],
+  tally: (g) => (g.id === 'lost' ? 'Runs lost' : 'Runs won'),
+  sheet: (g, e) => (g.id === 'lost' ? (e.deck ? lossPage(e) : null) : entryPage(e, 'record')),
+  onShow: (g, e) => { if (g.id !== 'lost') cryOf(e); },
+});
+
+/* the Hall of Fame: one gold handheld, each champion on Gold/Silver's pedestal under a spotlight */
+let replaying = false;
+async function ceremony(entry) {
+  if (replaying) return;
+  replaying = true;
+  const was = musicNow();
+  try { await winScene(entry); } finally {
+    replaying = false;
+    if (was) playMusic(was);
+  }
+}
+
+const hallOfFame = () => shelfApp({
+  groups: [{ id: 'fame', name: 'Hall of Fame', b1: '#f2c040', b2: '#a8640c', list: () => newestFirst(bookEntries('fame')) }],
+  direct: true,
+  known: () => true,
+  count: (g, runs) => String(runs.length),
+  no: (g, e) => fameNo(e) || champNo(e),
+  label: (g, e) => `${nameOf(e)}${e.shiny ? ' ✨' : ''}`,
+  art: (g, e) => monImg(e, 'pdx-slot-mon'),
+  screenCls: (g, e) => `hofx${isDepths(e) ? ' depths' : ''}`,
+  screen: (g, e) => [el('span', 'hofx-light'), el('span', 'hofx-pedestal'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type),
+    el('span', 'pdx-role rbk-tag gold', isDepths(e) ? '💎 Depths' : `Lv.${e.level}`)],
+  lines(g, e) {
+    const again = el('button', 'pdx-lcd bdx-open hofx-replay', '★ Replay the ceremony');
+    again.type = 'button';
+    again.addEventListener('click', () => ceremony(e));
+    return [typed('', isDepths(e) ? `Became the Champion of the Depths, ${dateOf(e.date)}.`
+      : `Entered the Hall of Fame on ${dateOf(e.date)}, a champion on Trainer Level ${e.level}.`), quick(e), again];
+  },
+  tally: () => 'Champions',
+  sheet: (g, e) => entryPage(e, 'fame'),
+  press: (g, e) => ceremony(e),
+  busy: () => replaying,
+  onShow: (g, e) => cryOf(e),
+});
+
+/** The Hall of Fame ('fame') or the Record Book ('record') as a device app (js/device.js). */
+export const recordsApp = (which) => (which === 'fame' ? hallOfFame() : recordBook());
 
 const whereOf = (entry) => `${entry.biomeName}${entry.place ? `, ${entry.place}` : ''}${entry.kind === 'boss' ? ' (boss)' : entry.floor ? ` F${entry.floor}` : ''}`;
 const blowOf = (entry) => !entry.foe ? 'Fainted' : entry.move ? `Fell to ${entry.foe}'s ${entry.move}` : `Fell to ${entry.foe}`;
@@ -432,10 +450,9 @@ function things(ids, table, empty) {
   return box;
 }
 
-function showEntry(entry) {
-  const back = el('button', 'btn secondary hof-back', book === 'fame' ? '◀ All champions' : '◀ All wins');
-  back.type = 'button';
-  back.addEventListener('click', showList);
+/** A won run's full page, slid over the handheld: plate, numbers, relics, items and final deck. */
+function entryPage(entry, which) {
+  book = which;
   const top = el('div', `hof-entry type-${entry.type}${isDepths(entry) ? ' depths' : ''}`);
   const pic = el('span', 'hof-entry-pic');
   const img = el('img', 'pixel');
@@ -462,13 +479,13 @@ function showEntry(entry) {
   const cards = el('div', 'card-pool hof-cards');
   fillDeck(cards, entry.deck.filter(id => CARDS_BY_ID[id]), entry.stage);
 
-  const parts = [back, top, label('The record'), record, label(`Relics (${entry.relics.length})`), relics];
+  const parts = [top, label('The record'), record, label(`Relics (${entry.relics.length})`), relics];
   if (entry.items) {
     parts.push(label(`Items in the Bag (${entry.items.length})`), things(entry.items, ITEMS_BY_ID, 'The Bag was empty.'),
       label(`Items used (${entry.itemsUsed.length})`), things(entry.itemsUsed, ITEMS_BY_ID, 'None used.'));
   }
   parts.push(label(`Final deck (${entry.deck.length})`), cards);
-  paint(`${numberOf(entry)}: ${nameOf(entry)}'s run. Tap a card, relic or item to read it.`, parts, true);
+  return parts;
 }
 
 /* ---------- the loss recap: a lost run's short page, after its last fight and in the Record Book ---------- */
@@ -536,13 +553,6 @@ function lossPage(entry) {
   const cards = el('div', 'card-pool hof-cards');
   fillDeck(cards, entry.deck.filter(id => CARDS_BY_ID[id]), entry.stage);
   return [top, label('HP over the run'), ...hpChart(entry), label('The record'), record, label(`Final deck (${entry.deck.length})`), cards];
-}
-
-function showLoss(entry) {
-  const back = el('button', 'btn secondary hof-back', '◀ All runs');
-  back.type = 'button';
-  back.addEventListener('click', showList);
-  paint(`${nameOf(entry)}'s lost run. Tap a card to read it.`, [back, ...lossPage(entry)], true);
 }
 
 /** At a lost run's end, before the result window: its recap in a quiet window. Resolves once it's closed. */

@@ -84,7 +84,10 @@ live site.
   grid, ??? silhouettes after the known ones, a tap zooms one; the run's Index window is unchanged), the Safari
   Pokédex (`safariDexApp`: its tabs and body move into the screen like the Pokédex's, back into `#safari-dex-dialog`
   when a run or the prep window opens it; the Pokédex app's Safari banner `swapApp()`s to it) and the Record Book / Hall
-  of Fame (`recordsApp()` in `js/halloffame.js`; their `#hof-dialog` is gone, B steps from an entry page to the list).
+  of Fame (`recordsApp()` in `js/halloffame.js`, Pokédex style on `shelfApp()` since 2026-10-06, the user's picks: the Record
+  Book a banner per Trainer Level, the Crystal Depths and Lost runs, one run a screen; the Hall of Fame no banners, one gold
+  handheld, each champion on a gold pedestal under a spotlight on a starry screen, A replays its win scene. A tap on the
+  screen, A in the Record Book or "Full record" slides the run's full page over it (shelfApp's `sheet`), B closes it).
   D-pad left / right steps Moves' and the Safari's tabs. Only the Leaderboard and zoomed cards open over it. The
   hardware: D-pad (the highlight, shown once used: `.keyed`; in an app it steps a Pokédex page or scrolls), A opens, B
   backs out (a Pokédex page to its biomes, an app to home, home shuts the device with the screen collapsing and the cover

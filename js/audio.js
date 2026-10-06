@@ -212,6 +212,8 @@ const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (
 const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
 const loops = {};          // sound name -> { on, source } of an effect that repeats until turned off (setLoop)
 let current = null;        // name of the track that should be playing right now
+/** The track that should be playing now (a scene that takes the music over puts it back). */
+export const musicNow = () => current;
 
 let lastCue = -1;          // ctx time the latest effect started
 

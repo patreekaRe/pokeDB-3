@@ -262,7 +262,8 @@ export const deviceOver = () => $('collection-screen').classList.contains('over'
 
 /** A: opens the highlighted pick on the home screen. */
 function press() {
-  if (busy || !shown() || app) return;
+  if (busy || !shown()) return;
+  if (app) { app.def.app?.press?.(); return; }
   sel?.click();
 }
 
@@ -314,5 +315,5 @@ function key(e) {
   if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); back(); return; }
   const dir = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
   if (dir) { e.preventDefault(); e.stopImmediatePropagation(); dpad(dir); return; }
-  if ((e.key === 'Enter' || e.key === ' ') && !app && !e.target.closest?.('button')) { e.preventDefault(); press(); }
+  if ((e.key === 'Enter' || e.key === ' ') && (!app || app.def.app?.press) && !e.target.closest?.('button')) { e.preventDefault(); press(); }
 }

@@ -12,6 +12,15 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: the Collection's **Record Book and Hall of Fame** are Pokédex style (the user's picks from a pitch). The Record
+  Book (`recordsApp('record')`) has a banner per Trainer Level (only those with wins), the Crystal Depths and Lost runs, newest
+  first, one run a screen: the starter on its pad, its story line, four numbers, a Full record button. The Hall of Fame
+  (`recordsApp('fame')`) skips the banners (`direct`): one gold handheld, each champion on a gold (Depths: crystal) pedestal
+  under a spotlight on a starry screen, its cry, and A or "Replay the ceremony" replays `winScene()` (the music is put back
+  after, `musicNow()` in `js/audio.js`). `shelfApp()` gained `count` (plain counts, no found bar), `direct`, `sheet` (a full
+  page slid over the device: `entryPage()` / `lossPage()`), `press` and `busy`; the device's A now calls an app's `press()`.
+  The old list rows (`.hof-row`) are gone. Checked in the pane at 375x812; the user still has to see it on a phone.
+
 - 2026-10-06: the Collection's **Achievements app** is Pokédex style, one goal per screen (the user's pick over a grid of
   trophy slots). `shelfApp(spec)` in `js/bagdex.js` is now the banner-and-handheld engine (Relics / Items run on it too);
   `achievementsApp` in `js/records.js` gives it five groups: New Starters, Trainer Levels, Pokédex (Ho-Oh, Lugia, Palkia,
