@@ -12,6 +12,10 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: Settings option 4, **Text size: Normal / Large** (`html.large-text`, root font 120%; cards keep theirs, phone
+  nameplates keep their name and HP size), checked in the pane at 375x812. The user still has to see it on a phone. Next:
+  option 5, Nickname (CLOUD).
+
 - 2026-10-06: the Collection's **Record Book and Hall of Fame** are Pokédex style (the user's picks from a pitch). The Record
   Book (`recordsApp('record')`) has a banner per Trainer Level (only those with wins), the Crystal Depths and Lost runs, newest
   first, one run a screen: the starter on its pad, its story line, four numbers, a Full record button. The Hall of Fame

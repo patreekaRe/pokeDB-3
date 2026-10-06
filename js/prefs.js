@@ -6,7 +6,7 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red' };
+export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', textSize: 'normal' };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 /** Battle animations (the games' Battle Scene): off in Settings or under reduced motion, a fight skips its move effects
