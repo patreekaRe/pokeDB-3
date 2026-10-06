@@ -13,8 +13,9 @@ three places:
 ## Where we left off (2026-10-03)
 
 - 2026-10-06: the Collection's **Relics and Items apps** are Pokédex style (`js/bagdex.js`: group banners, then the red
-  handheld with each thing floating in a still of its place, `placeShot()` in `js/scene.js`). Checked in the pane at
-  375x812 and 768x1024; the user still has to see it on a phone.
+  handheld). Same day, after the user's phone look: no painted places any more (they hid the item); banners and the screen are
+  flat colours like the Pokédex's Rewards banner, the thing blown up in the middle, and item sprites are trimmed to what's
+  drawn (`thingArt()`: their PNGs have uneven margins) so slots and banners fill their boxes.
 
 - 2026-10-05: **Collection device, pass 1** landed (the Collection is a red handheld with a home screen of apps,
   `js/device.js` + `js/collection.js`). Pass 2 the same day: Moves, the Safari Pokédex and the two books run in the

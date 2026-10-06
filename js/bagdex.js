@@ -3,10 +3,9 @@
    like its Pokédex app (js/pokedex.js; the user's call, 2026-10-06:
    "immersive too, Pokédex style"). A banner per group (relics by
    where they turn up, items by the games' Bag pockets), then the red
-   handheld on that group: one thing at a time on a screen painted as
-   the place it comes from (a treasure grotto whose chest matches the
-   rarity, a boss arena, Kenmatta's dojo, the Pokémon Center, the
-   Poké Mart), its text typing itself out, and the group's every
+   handheld on that group: one thing at a time, blown up on a screen in
+   the group's colours (the user's call, 2026-10-06: the painted places
+   hid the item), its text typing itself out, and the group's every
    thing as slots to jump between. A thing not found yet is a dark
    silhouette and ???, like an unseen Pokémon.
    ============================================================ */
@@ -18,36 +17,33 @@ import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
 import { el, itemSprite, termKind } from './ui.js';
 import { playCry, playSound } from './audio.js';
-import { placeShot } from './scene.js';
-import { timeOfDay } from './daytime.js';
-import { still, sceneImg, typeOut, finishTyping, progressBar } from './pokedex.js';
+import { typeOut, finishTyping, progressBar } from './pokedex.js';
 
 const isMedicine = (i) => i.map || i.effects.revive;
 
-/* Each group: its banner colours (`b1`/`b2`, like a biome's), the place its screen shows (`place` [, `biome`]) or a
-   biome's own scene (`biome` + `kind`), and the line saying where its things are found. */
+/* Each group: its banner and screen colours (`b1`/`b2`, like a biome's) and the line saying where its things are found. */
 const GROUPS = {
   relics: [
-    { id: 'ability', name: 'Abilities', sub: 'One per type', b1: '#ff9a5a', b2: '#9a3a1a', biome: 'clearing', kind: 'wild',
+    { id: 'ability', name: 'Abilities', sub: 'One per type', b1: '#ff9a5a', b2: '#9a3a1a',
       list: () => Object.values(ABILITIES).filter(a => a.id !== 'pressure' || getSave().unlocked.includes('mewtwo')),
       where: 'Every starter of its type has it from the start.' },
-    { id: 'common', name: 'Common', sub: 'Everyday finds', b1: '#e86a5a', b2: '#8a2a22', place: 'treasure', biome: 'clearing',
+    { id: 'common', name: 'Common', sub: 'Everyday finds', b1: '#e86a5a', b2: '#8a2a22',
       list: () => RELICS.filter(r => !r.boss && !r.unique && r.rarity === 'common'), where: 'Found in treasure rooms, from Alphas and at the Poké Mart.' },
-    { id: 'uncommon', name: 'Uncommon', sub: 'Great finds', b1: '#5a8ef0', b2: '#24448a', place: 'treasure', biome: 'shrine',
+    { id: 'uncommon', name: 'Uncommon', sub: 'Great finds', b1: '#5a8ef0', b2: '#24448a',
       list: () => RELICS.filter(r => !r.boss && !r.unique && r.rarity === 'uncommon'), where: 'Found in treasure rooms, from Alphas and at the Poké Mart.' },
-    { id: 'rare', name: 'Rare', sub: 'Ultra finds', b1: '#e8b830', b2: '#6a4a08', place: 'treasure', biome: 'wastes',
+    { id: 'rare', name: 'Rare', sub: 'Ultra finds', b1: '#e8b830', b2: '#6a4a08',
       list: () => RELICS.filter(r => !r.boss && !r.unique && r.rarity === 'rare'), where: 'Found in treasure rooms, from Alphas and at the Poké Mart.' },
-    { id: 'boss', name: 'Boss', sub: 'Power at a price', b1: '#d04848', b2: '#3a0c14', biome: 'wastes', kind: 'boss',
+    { id: 'boss', name: 'Boss', sub: 'Power at a price', b1: '#d04848', b2: '#3a0c14',
       list: () => RELICS.filter(r => r.boss), where: 'Only offered after beating a biome\'s boss.' },
-    { id: 'special', name: 'Special', sub: 'From the dojo', b1: '#c8a040', b2: '#4a2a10', place: 'kombat',
+    { id: 'special', name: 'Special', sub: 'From the dojo', b1: '#c8a040', b2: '#4a2a10',
       list: () => RELICS.filter(r => r.unique), where: 'Won by beating Chad Master Kenmatta in his dojo.' },
   ],
   items: [
-    { id: 'medicine', name: 'Medicine', sub: 'Heal up', b1: '#f0708a', b2: '#8a2440', place: 'center',
+    { id: 'medicine', name: 'Medicine', sub: 'Heal up', b1: '#f0708a', b2: '#8a2440',
       list: () => ITEMS.filter(isMedicine), where: 'Dropped after fights and sold at the Poké Mart.' },
-    { id: 'battle', name: 'Battle Items', sub: 'For the fight', b1: '#4aa8e0', b2: '#1c4a8a', place: 'mart',
+    { id: 'battle', name: 'Battle Items', sub: 'For the fight', b1: '#4aa8e0', b2: '#1c4a8a',
       list: () => ITEMS.filter(i => !i.only && !isMedicine(i)), where: 'Dropped after fights and sold at the Poké Mart.' },
-    { id: 'type', name: 'Type Items', sub: 'One type each', b1: '#9a70e0', b2: '#3e2482', place: 'mart',
+    { id: 'type', name: 'Type Items', sub: 'One type each', b1: '#9a70e0', b2: '#3e2482',
       list: () => ITEMS.filter(i => i.only), where: 'Only turn up for a starter of their type.' },
   ],
 };
@@ -56,22 +52,46 @@ const RARITY = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare' };
 const STARTER_OF = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo' };
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- the screen's scenery: a still of its place, kept per size and hour ---------- */
+/* ---------- item sprites trimmed to what's drawn: their PNGs carry uneven empty margins, so they sat small and off-centre ---------- */
 
-const shots = new Map();
-function placeStill(g, w, h) {
-  if (!g.place) return still(g.biome, w, h, 0.5, g.kind, g.kind === 'boss' ? 3 : 0);
-  const key = `${g.place}/${g.biome}/${w}x${h}/${timeOfDay()}`;
-  if (!shots.has(key)) {
-    let shot = null;
-    try {
-      shot = { url: placeShot(g.place, { w, h, biome: g.biome }).toDataURL(), pad: null };
-    } catch (err) {
-      console.warn('Collection scenery', g.place, err);   // the flat colours stay
-    }
-    shots.set(key, shot);
+const trims = new Map();
+function trimmedSrc(src) {
+  if (!trims.has(src)) {
+    trims.set(src, new Promise((done) => {
+      const probe = new Image();
+      probe.onload = () => {
+        try {
+          const { width: w, height: h } = probe;
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const g = c.getContext('2d');
+          g.drawImage(probe, 0, 0);
+          const px = g.getImageData(0, 0, w, h).data;
+          let x0 = w, y0 = h, x1 = -1, y1 = -1;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            if (px[(y * w + x) * 4 + 3] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+          }
+          if (x1 < 0) return done(null);
+          const bw = x1 - x0 + 1, bh = y1 - y0 + 1, side = Math.max(bw, bh);
+          const out = document.createElement('canvas');
+          out.width = out.height = side;
+          out.getContext('2d').drawImage(c, x0, y0, bw, bh, Math.floor((side - bw) / 2), Math.floor((side - bh) / 2), bw, bh);
+          done(out.toDataURL());
+        } catch { done(null); }
+      };
+      probe.onerror = () => done(null);
+      probe.src = src;
+    }));
   }
-  return shots.get(key);
+  return trims.get(src);
+}
+
+/** itemSprite(), its picture trimmed to fill its box. */
+function thingArt(thing, cls) {
+  const box = itemSprite(thing, cls);
+  const img = box.querySelector('img');
+  if (img) trimmedSrc(img.src).then(url => { if (url) img.src = url; });
+  return box;
 }
 
 /* ---------- the app ---------- */
@@ -101,12 +121,12 @@ export function bagApp(kind) {
       b.type = 'button';
       b.style.setProperty('--b1', g.b1);
       b.style.setProperty('--b2', g.b2);
-      b.append(sceneImg(placeStill(g, 150, 46), 'pdx-banner-art'), el('span', 'pdx-banner-shade'), el('span', 'pdx-stripe'),
+      b.append(el('span', 'pdx-stripe'),
         el('strong', 'pdx-banner-name', g.name), el('span', 'pdx-banner-sub', n === things.length ? 'All found!' : g.sub),
         el('span', 'pdx-banner-count', `${n} / ${things.length}`), progressBar(n, things.length));
       const shelf = el('span', 'pdx-banner-mons bdx-banner-things');
       for (const t of things.slice(0, 3)) {
-        const art = g.id === 'ability' ? starterImg(t, 'bdx-banner-mon') : itemSprite(t, `bdx-banner-thing${isSeen(g, t, seen) ? '' : ' unseen'}`);
+        const art = g.id === 'ability' ? starterImg(t, 'bdx-banner-mon') : thingArt(t, `bdx-banner-thing${isSeen(g, t, seen) ? '' : ' unseen'}`);
         shelf.append(art);
       }
       b.append(shelf);
@@ -162,19 +182,13 @@ export function bagApp(kind) {
     const nameplate = el('div', 'pdx-lcd pdx-nameplate');
     nameplate.append(el('span', 'pdx-name', known ? thing.name : '???'), el('span', 'pdx-no', noOf(thing)));
 
-    const shot = group.place === 'mart' ? placeStill(group, 192, 96) : placeStill(group, 128, 64);   // the Mart's posters and crates only show this big
-    const screen = el('div', `pdx-screen bdx-screen${known ? '' : ' unseen'}${shot ? ' painted' : ''} at-${group.place || group.kind}`);
-    screen.append(sceneImg(shot, 'pdx-scene'));
-    const pad = el('span', 'pdx-pad');   // a biome's own battle pad, under an Ability's starter or a boss relic
-    if (shot?.pad) pad.style.backgroundImage = `url("${shot.pad}")`;
+    const screen = el('div', `pdx-screen bdx-screen${known ? '' : ' unseen'}${thing.boss ? ' boss' : ''}`);
+    screen.append(el('span', 'pdx-stripe bdx-dots'));
     if (group.id === 'ability') {
       const mon = starterImg(thing, 'pdx-mon bdx-art');
-      screen.append(pad, mon, typeChip(mon.dataset.type));
+      screen.append(el('span', 'pdx-pad'), mon, typeChip(mon.dataset.type));
     } else {
-      const art = itemSprite(thing, 'bdx-thing bdx-art');
-      if (!group.place) screen.append(pad);
-      if (group.place === 'mart') screen.append(el('span', 'bdx-stand'));   // a shelf board like the Mart's own
-      screen.append(el('span', 'bdx-glow'), el('span', 'bdx-shadow'), art);
+      screen.append(el('span', 'bdx-glow'), thingArt(thing, 'bdx-thing bdx-art'));
       const tag = thing.boss ? 'Boss' : thing.unique ? 'Special' : RARITY[thing.rarity];
       if (tag) screen.append(el('span', `pdx-role bdx-rarity rarity-${thing.boss ? 'boss' : thing.unique ? 'special' : thing.rarity}`, tag));
       if (known && thing.only) screen.append(typeChip(thing.only));
@@ -204,7 +218,7 @@ export function bagApp(kind) {
       const s = el('button', `pdx-slot bdx-slot${i === at ? ' on' : ''}${isSeen(group, t, seen) ? '' : ' unseen'}`);
       s.type = 'button';
       s.setAttribute('aria-label', isSeen(group, t, seen) ? t.name : 'Not found yet');
-      s.append(group.id === 'ability' ? starterImg(t, 'pdx-slot-mon') : itemSprite(t, 'bdx-slot-thing'));
+      s.append(group.id === 'ability' ? starterImg(t, 'pdx-slot-mon') : thingArt(t, 'bdx-slot-thing'));
       s.addEventListener('click', () => show(i, Math.sign(i - at)));
       slots.append(s);
     });
