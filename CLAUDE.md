@@ -95,8 +95,8 @@ live site.
   device over any screen on its home screen (`openPokedex({ dex, safari })` in `js/collection.js`: its Pokédex / Safari apps
   open on the run's page). Under the app grid a **dock** (`dockRow()`): Settings and Help (apps that borrow
   `#dev-settings` / `#dev-help` from `#dev-parts` in `index.html` while open: sound, battle speed, end-turn warning, Sign
-  in, and Abandon run only over a run; How to play, About), and only over a screen (`deviceOver()`) Game Corner and Main
-  menu, which put the device away at once (`hideDevice()` in `js/device.js`) once their confirm says yes. The old menu's
+  in, and Abandon run only over a run; How to play, About), the Game Corner, and only over a screen (`deviceOver()`) Main
+  menu; both put the device away at once (`hideDevice()` in `js/device.js`; on the title the Game Corner then opens over it). The old menu's
   Index is gone (the Moves, Relics and Items apps are it). **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
@@ -556,11 +556,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   write an old save over a cloud download), the partner, and the Badge Case. Each badge is painted from `LOOK` (a shape
   polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line. Its colour steps up with badges
   (`cardTier()`: green, bronze 5, silver 10, gold 15, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
-  the next time it opens. **Getting to it** (2026-10-04): the title's Collection ▸ sub-menu (Collection, Trainer Card, Game Corner; `renderMenu()` in `js/title.js`), the
+  the next time it opens. **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
-  (`badgeItem()`); `showBadgeNews()` colours the title's Collection ▸ and Trainer Card signs and the Bag by tier and puts a gold "!" on them while a badge
-  is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Collection ▸** (2026-10-05, the user's pick over
-  two flipped slots): the ▸ ones slide the stack sideways to a sub-menu with a Back sign (`renderMenu()` / `goTo()` in
+  (`badgeItem()`); `showBadgeNews()` colours the title's Pokédex sign and the Bag by tier and puts a gold "!" on them while a badge
+  is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Pokédex** (2026-10-05, the user's pick over
+  two flipped slots): Game Modes ▸ slides the stack sideways to a sub-menu with a Back sign, the Pokédex opens the device (since 2026-10-05; it was a Collection ▸ sub-menu) (`renderMenu()` / `goTo()` in
   `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
   (`docs/reference/title-screen.md`).
 - **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a

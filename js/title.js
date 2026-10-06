@@ -5,7 +5,7 @@
    pixel sky lit for the player's time of day (dusk: a moon), the flying legendaries crossing it in turn,
    over an empty grassy ledge). After that it's the main
    menu: a stack of pixel gems under the logo (Continue, New game,
-   Collection, Game Corner, after the user's references: Slay the Spire 2's
+   Game Modes, Pokédex, after the user's references: Slay the Spire 2's
    short centred list and glossy hexagon buttons). "Main menu" anywhere
    comes back here, straight to the gems.
 
@@ -28,7 +28,7 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { openTrainerCard, showBadgeNews } from './trainercard.js';
+import { showBadgeNews } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
 
 const PIXEL = 3;
@@ -68,7 +68,7 @@ let actions = null;       // what the gems do, and the saved run for Continue (i
 let pressed = false;      // PRESS START happens once per page load
 let base = null, stars = [], shooting = null, W = 0, H = 0, timer = 0, frame = 0, look = SKIES.dusk;
 
-/** Called once at startup with what the menu's gems do: { savedRun(), onContinue(run), onNewGame(), onCollection(), onGameCorner() }. */
+/** Called once at startup with what the menu's gems do: { savedRun(), onContinue(run), onNewGame(), onCollection(), ... }. */
 /* The legendaries that fly (or float) cross the sky one at a time, like Ho-Oh in the Gold intro: a black silhouette until
    you've unlocked that one, then in its own colours (shiny if you've switched its shiny on). Each pass deals the next from
    a shuffled round, so they all come by before any comes back. Never Mewtwo: it has no flying sprite, and it's the secret
@@ -202,7 +202,7 @@ function start(e) {
 /* The main stack is four signs (the user's call, 2026-10-05: two flipped slots with pips under them looked busy):
    Continue, New game, and two that slide the stack sideways to a sub-menu of the same signs with a Back sign, the games'
    way, while the sky, logo and nameplate stay put. Game modes live in theirs, so a new mode never lengthens the title. */
-let page = 'main';      // 'main', 'modes' or 'hub'
+let page = 'main';      // 'main' or 'modes'
 let swapping = 0;
 
 function renderMenu(dir = 0, from = null) {
@@ -213,15 +213,9 @@ function renderMenu(dir = 0, from = null) {
       run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
       gem('new', 'New game', hatch, smoothIcon('egg', 'gem-egg')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
       modesGem(),
-      more(gem('hub', 'Collection', () => goTo('hub'), smoothIcon('dex'))),
+      gem('dex', 'Pokédex', actions.onCollection, smoothIcon('dex')),   // one sign: the device's own home has the Trainer Card and Game Corner
     ],
     modes: () => [safariGem(), pillarGem(), backGem()],
-    hub: () => [
-      gem('collection', 'Collection', actions.onCollection, smoothIcon('dex')),
-      gem('trainer', 'Trainer Card', () => { playSound('confirm'); openTrainerCard(); }, smoothIcon('card', 'tc-icon')),
-      gem('corner', 'Game Corner', actions.onGameCorner, smoothIcon('corner')),
-      backGem(),
-    ],
   }[page]().filter(Boolean);
   if (page !== 'modes') plantSign(null);   // the signpost is the Safari's
   gems.forEach((g, i) => g.style.setProperty('--i', i));   // inherited, so the Safari gem's row passes it on

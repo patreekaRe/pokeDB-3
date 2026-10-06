@@ -1500,3 +1500,4 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Settings (sound, speed, warning, Sign in, Abandon run over a run) and Help (How to play, About), plus Game Corner and
   Main menu when laid over a screen. The menu's Index went (the Moves / Relics / Items apps cover it). Checked at 375x812
   on a peeked ? room: dock, Settings, Help, Game Corner, Main menu with its confirm (Cancel keeps the device open).
+- **Title: one Pokédex sign** (2026-10-05, Desktop app; the user's call): the Collection ▸ sub-menu went, since the device's home already has the Trainer Card and its dock now always has the Game Corner (on the title it puts the device away and opens the cabinet over the title). The stack is Continue, New game, Game Modes ▸, Pokédex; the badge "!" sits on the Pokédex sign.

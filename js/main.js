@@ -246,7 +246,6 @@ function init() {
     onContinue: (saved) => { leaveTitle(); continueRun(saved); },
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
-    onGameCorner: () => toggleShop(),
     onSafari: openSafariPrep,
     onTower: openTowerPrep,
     onBoard: () => openLeaderboard(),

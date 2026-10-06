@@ -3,8 +3,8 @@
    (js/device.js): the owner's ID strip (the Trainer Card) and a grid
    of apps, each with how far along you are. Every app runs inside the
    screen; only the Leaderboard and a zoomed card open over it. Under
-   the grid a dock: Settings and Help, and laid over a screen (the top
-   bar's Pokédex) the Game Corner and Main menu too.
+   the grid a dock: Settings, Help and the Game Corner, and laid over a screen (the top
+   bar's Pokédex) Main menu too.
    ============================================================ */
 
 import { ALL_CARDS } from './data/cards.js';
@@ -193,14 +193,14 @@ const settingsApp = () => ({
   app: borrow('dev-settings', () => { $('abandon-btn').hidden = !(deviceOver() && dock.abandonable()); }),
 });
 
-/** The dock under the apps: the device's own settings and help; over a screen also the Game Corner and Main menu. */
+/** The dock under the apps: settings, help and the Game Corner; laid over a screen also Main menu. */
 function dockRow() {
   const over = deviceOver();
   const row = el('div', 'cdev-dock');
   const items = [
     ['settings', 'Settings', '⚙️', () => openApp(settingsApp())],
     ['help', 'Help', '❓', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
-    over && ['corner', 'Game Corner', '🎰', () => { hideDevice(); dock.corner(); }],
+    ['corner', 'Game Corner', '🎰', () => { hideDevice(); dock.corner(); }],
     over && ['menu', 'Main menu', '🖥️', () => dock.menu()],
   ].filter(Boolean);
   row.append(...items.map(([id, name, icon, open]) => {

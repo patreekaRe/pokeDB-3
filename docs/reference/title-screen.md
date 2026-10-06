@@ -39,21 +39,22 @@ Ball menu's Main menu, a run's end, Back on the select or the Collection, the Ab
 `showHome()`. The first PRESS START unlocks audio and opens the first-time How to play. `--ground` (set from JS) keeps the
 CSS sprites on the painted ledge.
 
-**Four signs, two sub-menus** (2026-10-05, the user's pick: the two flipped slots with ◀ ▶ and pips under them looked
+**Four signs, one sub-menu** (2026-10-05, the user's pick: the two flipped slots with ◀ ▶ and pips under them looked
 busy; they were 2026-10-04's `pageSlot()`): the main stack is Continue, New game, **Game Modes ▸** (rose, `GEMS.modes`,
-`modesGem()`) and **Collection ▸** (gold, `GEMS.hub`, kind `hub`). A sign with a ▶ on its right end (`more()`, `.gem-arrow`,
+`modesGem()`) and **Pokédex** (gold, kind `dex`: one sign straight into the Collection device, `actions.onCollection`; it was
+a Collection ▸ sub-menu of Collection / Trainer Card / Game Corner until 2026-10-05, the user's call, since the device's home
+has the Trainer Card and its dock the Game Corner). A sign with a ▶ on its right end (`more()`, `.gem-arrow`,
 nudging while pointed at) opens a sub-menu in place (`goTo()`): the stack slides out left and the sub-menu's signs slide in
 from the right at the same time, one push (`slide()` moves the old signs into a `.title-menu-ghost` layer; `menuOutL` / `menuInR` on `transform` with `will-change`, since out-then-in on `translate` read as choppy, 2026-10-05), the sky, logo and nameplate staying put, the games'
 way. The menu keeps its tallest page's height (`sizeGems()` sets `min-height`), so the place sign and nameplate never rise on a shorter sub-menu (the user's ask, 2026-10-05). Each sub-menu ends in a small slate **Back** gem, just its ◀ (`backGem()`, `GEMS.back`, `BACK_W` pixels wide; the user's ask, 2026-10-05); the slide-in animations fill `backwards` and are dropped once done (`data-slide="done"`), since iPhone Safari left the second sign stuck a step short (12-15px off centre); Back, Escape / Backspace or a tap on the empty
-sky (`goBack()`) slides back with the ▶ on the sign you came from. `page` (`main` / `modes` / `hub`) is reset to `main` by
+sky (`goBack()`) slides back with the ▶ on the sign you came from. `page` (`main` / `modes`) is reset to `main` by
 every `renderMenu()` without a direction, so `showHome()` always lands on the main stack.
 - **Game Modes**: the Safari Zone (`safariGem()`, its 🏆 and signpost, which stands only on this page), the Sky Pillar
   (`pillarGem()`, blue, greyed with "Win a run" until `towerOpen()`, then "Best F<n>", opening `actions.onTower`), Back.
   Locked modes still show, greyed, and a tap says how to open them. The Game Modes sign itself is greyed with "Win a run"
   (a tap says so) until either mode is open. A new mode is one more gem in `renderMenu()`'s `modes` list and a `GEMS` colour.
-- **Collection**: the Collection, the Trainer Card (teal, `GEMS.trainer`, the pixel card `cardIcon()` in its tier colour,
-  `data-tier` from `showBadgeNews()`) and the Game Corner, then Back. While an earned badge isn't in `save.badgesSeen`,
-  the gold "!" (`.badge-news`) bounces on both the Collection ▸ sign and the Trainer Card sign.
+- **Pokédex**: while an earned badge isn't in `save.badgesSeen`, the gold "!" (`.badge-news`) bounces on it
+  (`showBadgeNews()`, which also sets its `data-tier`).
 
 Once the Sealed Gate is broken and Mewtwo unlocked, the **open gate** stands on the ledge in the right-hand gutter
 (`#title-gate`, `sizeGate()` / `paintGate()`, `makeGate()` from `js/gate.js` with `open: true`, repainted each tick;
