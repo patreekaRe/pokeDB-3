@@ -549,7 +549,7 @@ function hatch() {
   }, 1250);
 }
 
-/** The Sound button under the PC opens the Poké Ball menu's Sound toggle and slider (js/audio.js runs both). */
+/** The Sound button under the PC opens the same Sound toggle and slider as the Pokédex's Settings (js/audio.js runs both). */
 /**
  * The Refresh button (the user's ask): a plain reload can keep showing the old game for up to 10 minutes after a push,
  * since the browser keeps its files (GitHub Pages caches them that long), so every file this page loaded is fetched

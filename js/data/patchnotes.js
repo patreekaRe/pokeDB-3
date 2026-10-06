@@ -113,5 +113,5 @@ export const IN_THE_GAME = [
   ['📕', 'Pokédex', '55 entries over three pages, plus the Crystal Depths\' 16. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🎰', 'Game Corner', 'Spend PokéCoins on 6 starters, 9 perks, a shiny for every starter but Mewtwo, and Poké Balls.'],
-  ['☁️', 'Cloud save', 'Sign in from the Poké Ball menu to play on your phone and PC with one save.'],
+  ['☁️', 'Cloud save', 'Sign in from the Pokédex\'s Settings to play on your phone and PC with one save.'],
 ];

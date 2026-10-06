@@ -111,7 +111,7 @@ async function post(k = K()) {
 const POST_TEXT = {
   posted: 'Posted to today\'s Safari leaderboard!',
   already: 'This day\'s result was already posted from this account.',
-  signin: 'Sign in (the Poké Ball menu, or the title\'s PC) to post this result. It waits on this device until tomorrow.',
+  signin: 'Sign in (the Pokédex\'s Settings, or the title\'s PC) to post this result. It waits on this device until tomorrow.',
   name: 'Open the Leaderboard and pick a name to post this result.',
   offline: 'Couldn\'t reach the leaderboard. The result waits on this device: open the Leaderboard to try again.',
   stale: 'This result is too old to post.',

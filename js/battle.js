@@ -1409,7 +1409,7 @@ async function askEndTurn() {
   const playable = b.energy > 0 ? b.hand.filter(h => !whyNotPlayable(h.card)).length : 0;
   if (playable && (getSave().endTurnWarn ?? true)) {
     const cards = playable === 1 ? 'a card' : `${playable} cards`;
-    const ok = await confirmDialog(`You still have ${b.energy} PP and ${cards} you can play. End your turn anyway? (Settings in the Poké Ball menu can turn this off.)`, 'End turn');
+    const ok = await confirmDialog(`You still have ${b.energy} PP and ${cards} you can play. End your turn anyway? (The Pokédex's Settings can turn this off.)`, 'End turn');
     if (!ok || battle !== b) return;
   }
   endTurn();

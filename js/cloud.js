@@ -1,5 +1,5 @@
 /* ============================================================
-   cloud.js  -  the optional cloud save (Firebase), from the Poké Ball menu.
+   cloud.js  -  the optional cloud save (Firebase), from the Pokédex's Settings.
 
    Signed out, nothing here runs: the Firebase SDK is only downloaded once
    you've signed in on this device (or tap Sign in). Signed in, both

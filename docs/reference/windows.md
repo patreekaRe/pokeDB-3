@@ -1,7 +1,7 @@
 ## Windows
 
 Every `.dialog`, every `.panel` (deck preview), the Bag
-and the Poké Ball menu are light Pokégear windows (a `.panel`
+and the device's Settings app are light Pokégear windows (a `.panel`
 inside a `.dialog` is a flat inset box instead):
 muted parchment inside a chunky grey frame, softly rounded corners (`--round` 12px windows,
 `--round-sm` 8px buttons/tiles, `--round-xs` 4px tiny bits, all in `:root`;
@@ -39,7 +39,7 @@ hover/focus (left padding reserves its space; `.primary` = orange frame,
 frame (`.sound-pop`, `SOUND_POPS` in `js/audio.js`: the button again, a tap elsewhere or Escape close it): a speaker
 (`.sound-mute`, 🔊 / 🔇, every `.snd-icon` follows the mute) and a `.vol-slider` to its right, a pixel track (the HP bar's
 outline, green fill from `--v`) with a square knob; `.muted` on the row greys the bar, and dragging it up unmutes. In the
-Poké Ball menu it opens under the Sound item (`#menu-sound-pop`), on the title under or beside the speaker on a soft dark
+Pokédex it is the Settings app (`#dev-settings`), on the title under or beside the speaker on a soft dark
 backing (`#title-sound-pop`). The speaker's icon is swapped as it's tapped, so the outside-tap checks use
 `e.composedPath()`, not `e.target.closest()` (a detached target read as outside and closed the menu).
 

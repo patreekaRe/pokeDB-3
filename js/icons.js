@@ -1192,7 +1192,7 @@ const ICONS = {
     '..bbccccbb..',
     '..b.bbbb....',
   ],
-  '☁️': [   // the Poké Ball menu's Sign in / Cloud save
+  '☁️': [   // the Pokédex Settings' Sign in / Cloud save
     '............',
     '............',
     '....www.....',
@@ -1206,7 +1206,7 @@ const ICONS = {
     '............',
     '............',
   ],
-  '🖥️': [   // the Poké Ball menu's Main menu: the games' cream PC, a blue menu on its screen, and its keyboard
+  '🖥️': [   // the Pokédex dock's Main menu: the games' cream PC, a blue menu on its screen, and its keyboard
     '............',
     '.vvvvvvvvvv.',
     '.vbbbbbbbbV.',

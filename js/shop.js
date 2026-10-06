@@ -75,7 +75,7 @@ export function initShop() {
   document.addEventListener('click', (e) => {
     const dialog = $('shop-dialog');
     if (!dialog.open || pressedInside || !e.detail || document.querySelector('dialog:modal')) return;
-    if (e.target.closest('#shop-dialog, .shop-btn, #menu-shop-btn, #sel-corner, .gem-corner')) return;
+    if (e.target.closest('#shop-dialog, .shop-btn, .app-corner, #sel-corner, .gem-corner')) return;
     e.preventDefault();
     e.stopPropagation();
     playSound('cancel', 'confirm');
@@ -86,7 +86,7 @@ export function initShop() {
     const dialog = $('shop-dialog');
     if (!dialog.open || (document.querySelector('dialog:modal') && !dialog.matches(':modal'))) return;
     const focus = document.activeElement;
-    if (focus && focus !== document.body && !dialog.contains(focus) && !focus.closest('.shop-btn, #menu-shop-btn')) return;
+    if (focus && focus !== document.body && !dialog.contains(focus) && !focus.closest('.shop-btn, .app-corner')) return;
     if (e.key === 'Escape') { playSound('cancel', 'confirm'); dialog.close(); return; }
     const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
     if (!dir) return;

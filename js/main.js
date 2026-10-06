@@ -14,7 +14,7 @@
      progress.js     unlocking starters
      ui.js           small helpers (dialogs, card element)
      deckpreview.js  the run's deck window (read-only, sort and filter)
-     settings.js     the Poké Ball menu's Settings toggles (battle speed, end-turn warning)
+     settings.js     the Pokédex's Settings toggles (battle speed, end-turn warning)
      run.js          one run: the map loop, rewards, evolution, the end
      map.js          building and drawing the branching map
      rewards.js      the "choose one" screen
@@ -26,7 +26,7 @@
      collection.js   the Collection: the device's home screen of apps (Pokédex, Moves, Relics, Items, Stats...)
      device.js       the Collection device: the handheld's cover, screen, apps and D-pad / A / B
      tips.js         tap-to-read hints (an element's title) on touch screens
-     cloud.js        the optional cloud save (Firebase sign-in, from the Poké Ball menu)
+     cloud.js        the optional cloud save (Firebase sign-in, from the Pokédex's Settings)
    ============================================================ */
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
@@ -42,17 +42,18 @@ import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { floorOf } from './data/tower.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
-import { initAudio, playSound, playMusic, closeSoundPops } from './audio.js';
+import { initAudio, playMusic } from './audio.js';
 import { initSettings } from './settings.js';
 import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
-import { initCollection, showCollection, openDeviceApp } from './collection.js';
+import { initCollection, showCollection, openPokedex } from './collection.js';
+import { hideDevice } from './device.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
-import { initCardIndex, openCardIndex } from './cardindex.js';
+import { initCardIndex } from './cardindex.js';
 import { initPokedex } from './pokedex.js';
 import { initSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
@@ -113,59 +114,38 @@ function previewStarter(starter) {
 }
 
 // The run stays saved (the user's call: going to the menu shouldn't cost it). Only the map is a checkpoint, so
-// leaving from a fight or room means replaying it, as a refresh would.
+// leaving from a fight or room means replaying it, as a refresh would. True once it has gone.
 async function requestMenu() {
   if (isRunActive()) {
     if (document.body.dataset.screen !== 'map-screen'
-      && !(await confirmDialog('Back to the menu? Your run is saved, but this room will start over when you continue.', 'Menu'))) return;
+      && !(await confirmDialog('Back to the menu? Your run is saved, but this room will start over when you continue.', 'Menu'))) return false;
     suspendRun();
-    return showHome();
+    showHome();
+    return true;
   }
   goHome();
+  return true;
 }
 
-/** Throw the run away for good (the user's ask): from the Poké Ball menu, or the title's Escape Rope, which has already
-    asked in its own bubble (`sure`). */
+/** Throw the run away for good (the user's ask): from the Pokédex's Settings, or the title's Escape Rope, which has
+    already asked in its own bubble (`sure`). True once it has gone. */
 async function requestAbandon(sure) {
-  if (!hasSavedRun() && !isRunActive()) return;
-  if (sure !== true && !(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return;
+  if (!hasSavedRun() && !isRunActive()) return false;
+  if (sure !== true && !(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return false;
   forfeitRun();
   if (!isPeeking()) clearRunData();   // a ?event= playtest run leaves the real saved run alone
   showHome();
+  return true;
 }
 
-/* ---------- the Poké Ball menu (top left) ---------- */
+/* ---------- the Pokédex (top left) ---------- */
 
-function initBallMenu() {
-  const ball = $('brand-btn');
-  const panel = $('ball-menu-panel');
-  // opening and closing it sound like the Bag (the user's call), except when a picked item closes it
-  const setOpen = (open, quiet = false) => {
-    if (!quiet && open === panel.hidden) playSound('bag');
-    panel.hidden = !open;
-    ball.setAttribute('aria-expanded', String(open));
-    if (!open) closeSoundPops();
-  };
-
-  ball.addEventListener('click', () => {
-    if (panel.hidden) $('abandon-btn').hidden = !isRunActive() && !hasSavedRun();
-    setOpen(panel.hidden);
-  });
-  $('abandon-btn').addEventListener('click', requestAbandon);
-  $('home-btn').addEventListener('click', requestMenu);
-
-  // picking an item closes the menu, except Settings, which opens its speaker, volume bars and toggles
-  panel.addEventListener('click', (e) => {
-    const item = e.target.closest('.menu-item');
-    if (item && item.id !== 'menu-sound-btn') setOpen(false, true);
-  });
-  document.addEventListener('click', (e) => {
-    // the path, not e.target.closest(): the speaker's icon is swapped as it's tapped, so the target is already detached
-    if (!panel.hidden && !e.composedPath().includes(ball.parentElement)) setOpen(false);
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !panel.hidden) { setOpen(false); ball.focus(); }
-  });
+function initPokedexButton() {
+  // a run's Pokédex apps open on the page it stands on: a Safari run's own Pokédex on its area (its catches never touch
+  // the main one), else the main Pokédex on its biome
+  $('brand-btn').addEventListener('click', () => openPokedex({ dex: runBiome(), safari: runSafariArea() }));
+  // leaving from inside the device puts it away once the confirm (if any) has said yes
+  $('abandon-btn').addEventListener('click', async () => { if (await requestAbandon()) hideDevice(); });
 }
 
 /* ---------- start everything ---------- */
@@ -217,7 +197,6 @@ function init() {
 
   initShop();
   $('shop-btn').addEventListener('click', () => toggleShop());
-  $('menu-shop-btn').addEventListener('click', () => toggleShop());
 
   // A purchase made while the shop was open (a skin, a shiny) shows on the character select at once.
   $('shop-dialog').addEventListener('close', () => {
@@ -232,13 +211,9 @@ function init() {
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   initCardIndex();
-  $('index-btn').addEventListener('click', () => openCardIndex(pickedStarter()?.type));
   initPokedex();
   initSafariDex();
-  // the menu's Collection opens the device on its Pokédex, on the run's page (a Safari run's own Pokédex, on its area: its
-  // catches never touch the main one); B steps out to the home screen and its other apps
-  $('collection-btn').addEventListener('click', () => (runSafariArea() ? openDeviceApp('safari', runSafariArea(), true) : openDeviceApp('dex', runBiome(), true)));
-  initBallMenu();
+  initPokedexButton();
   initCloud();
   initLeaderboard();
   $('safari-dex-board').addEventListener('click', () => openLeaderboard());
@@ -279,7 +254,12 @@ function init() {
     onAbandon: requestAbandon,
   });
   initSelect({ onChoose: previewStarter, onBack: showHome });
-  initCollection({ onBack: showHome });
+  initCollection({
+    onBack: showHome,
+    corner: () => toggleShop(),
+    menu: async () => { if (await requestMenu()) hideDevice(); },
+    abandonable: () => isRunActive() || hasSavedRun(),
+  });
 
   // Playtest shortcut (the user's ask): ?scene=tutor (or kombat, center...) shows just that room's painted scene, no
   // run started, so the saved run is untouched; &biome=shrine or wastes picks the biome outside its windows.

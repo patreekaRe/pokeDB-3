@@ -8,9 +8,10 @@
    or scrolls), A opens, B goes back, and B on the home screen shuts
    the device. Escape is B. Its cover (collection.js draws it) shows
    your partner and badges, and an LED that blinks for a new badge.
-   The Poké Ball menu and the Bag open it straight into one app over
-   whatever is showing, a run included (`over`); B out of that app
-   shuts it again.
+   The top bar's Pokédex opens it over whatever is showing, a run
+   included (`over`), with a dock for Settings, Help, the Game Corner and
+   Main menu; the Bag opens it straight into one app, and B out of that
+   app shuts it again.
    ============================================================ */
 
 import { $, el, showScreen } from './ui.js';
@@ -234,6 +235,21 @@ async function shut() {
   dev.getAnimations({ subtree: true }).forEach(a => a.cancel());
   dev.querySelector('.cdev-cover')?.remove();
 }
+
+/** Puts the device away at once, no cover: a dock button that leaves for somewhere else (Main menu, the Game Corner). */
+export function hideDevice() {
+  if (!shown()) return;
+  const dev = $('cdev');
+  dev.getAnimations({ subtree: true }).forEach(a => a.cancel());
+  dev.querySelector('.cdev-cover')?.remove();
+  busy = false;
+  closeApp(true);
+  $('collection-screen').hidden = true;
+  afterShut?.();
+}
+
+/** Laid over a screen (the top bar's Pokédex, the Bag), not the title's Collection. */
+export const deviceOver = () => $('collection-screen').classList.contains('over');
 
 /** A: opens the highlighted pick on the home screen. */
 function press() {

@@ -1,13 +1,14 @@
 ## Top bar and start screen
 
-There's no bar: the top-left Poké Ball (`#brand-btn`: an 18x18 pixel sprite inline in `index.html`, `.ball-sprite`, always
-36px so each pixel is exactly 2x2, the user's call 2026-09-28: "between smooth and a hint of 8-bit"; the logo's "o" stays
-the CSS `.pokeball`) opens a drop-down
-(`#ball-menu-panel`, wired in `initBallMenu()` in `js/main.js`) holding Main
-menu, Index, Stats, Achievements, Sign in (the cloud save, see Cloud save), Settings (⚙️, `#menu-sound-btn`: opens `#menu-sound-pop` under it, a speaker that mutes, a 🎵 music and a 🔔 effects bar (cries
-go with effects), then Battle speed 1x / 2x and the end-turn warning's On / Off (`js/settings.js`), and keeps the menu open; see Windows), How to play and About (Stats and
-Achievements are windows built fresh from the save by `js/records.js`; a locked legendary's achievement shows "???" for
-its name, the user's call). Stats (revamped 2026-09-28, the user found "0/3 bosses" meaningless) is in sections: Runs (won
+There's no bar: the top-left **Pokédex** (`#brand-btn`: an 18x18 pixel red handheld inline in `index.html`, `.dex-sprite`,
+always 36px so each pixel is exactly 2x2, the user's call 2026-09-28: "between smooth and a hint of 8-bit") opens the
+Collection device over whatever is showing (`initPokedexButton()` in `js/main.js`, `openPokedex()` in `js/collection.js`).
+It replaced the Poké Ball and its drop-down menu (2026-10-05, the user's call). The menu's items moved into the device's
+home-screen dock: **Settings** (`#dev-settings`: a speaker that mutes, a 🎵 music and a 🔔 effects bar (cries go with
+effects), Battle speed 1x / 2x, the end-turn warning's On / Off (`js/settings.js`), Sign in (the cloud save, see Cloud
+save), and Abandon run over a run), **Help** (`#dev-help`: How to play, About), and over a screen also **Game Corner** and
+**Main menu**. Stats and Achievements are device apps built fresh from the save by `js/records.js` (a locked legendary's
+achievement shows "???" for its name, the user's call). Stats (revamped 2026-09-28, the user found "0/3 bosses" meaningless) is in sections: Runs (won
 with win rate, lost, best level won, wins per type), Battles (Pokémon and Alphas defeated, furthest biome, each boss's kill
 count), Collection (bars: starters, shinies, Pokédex defeated / researched, moves / relics / items found), PokéCoins &
 records, and wins by starter. The newer counters live in `stats` (`bossKills`, `elitesDefeated`, `coinsEarned` in
@@ -15,7 +16,7 @@ records, and wins by starter. The newer counters live in `stats` (`bossKills`, `
 beaten counts once). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
 letters in `PALETTE`). The
 **Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the
-Poké Ball menu and the Collection's Moves, Relics and Items cards: every card in `ALL_CARDS`,
+the Collection's Moves, Relics and Items cards (the device's apps since 2026-10-05; `openCardIndex()` has no caller now): every card in `ALL_CARDS`,
 a sticky tab row per type (Fire, Grass, Water, Neutral, then a purple **???** for Mewtwo's coming Psychic pool: `renderMystery()`, 8 blank locked cards, counted nowhere; the user's ask 2026-09-28), grouped by rarity and
 then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name at
 stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,
@@ -33,7 +34,7 @@ A relic or item is only met once it's really yours (the user's call, 2026-09-28;
 (`gainRelic()`, every reward / treasure / event relic; a Mart buy; the Relic Charm) and for an item when you use it
 (`useItem()` and `revive()` in `js/battle.js`, `useItemOnMap()`). Saves keep what they had already marked.
 The **Pokédex** (`js/pokedex.js`, `#dex-dialog`, roadmap step 7) opens from the Collection's Pokédex card
-and a Poké Ball menu item (so it opens from the map too, on the run's biome page). A page per biome
+and the top bar's Pokédex (so it opens from the map too, on the run's biome page). A page per biome
 (`DEX_PAGES` in `js/data/pokedex.js`, built from `BIOMES`: 12 wilds, then Alphas, then Bosses, numbered No.001-055);
 an entry is a dark "???" silhouette (`.dex-entry.locked`) until you've fought it (seen: picture, name, biome and research count only), then a
 Poké Ball mark once beaten (defeated), like the games' seen / caught; everything else waits for Research complete (the
@@ -66,13 +67,13 @@ every unvisited fight / elite room (`scopeable()`, `.scope-pick`, `renderMap(...
 the room in colour (`.map-revealed`) with its type icon for a wild one (elites are Normal, so none). No bot run (the user's call). The
 top right shows the coins (floating, no box), then the Game Corner outside a run, or
 the ₽ (`#money-pill`) and the Bag during one: on `RUN_SCREENS` `showScreen()`
-hides `#shop-btn` and shows a Game Corner item (`#menu-shop-btn`) in the Poké Ball
-menu instead. In battle on phones ≤420px the PokéCoins
+hides `#shop-btn`; the Game Corner is then in the Pokédex's
+dock. In battle on phones ≤420px the PokéCoins
 hide so the piles, ₽ and buttons fit on one row.
-In battle, the draw and discard piles sit beside the Poké Ball. On the map, the floor you stand on in the biome does (`#floor-tag`, the user's
+In battle, the draw and discard piles sit beside the Pokédex. On the map, the floor you stand on in the biome does (`#floor-tag`, the user's
 call: a cream pixel staircase and "F7", outlined like the piles, shown only on `body[data-screen="map-screen"]`, set in
 `showMap()`, counted like the title's Continue plate; its `title` says "Floor 7 of 10 in X, then the boss").
-The "Main menu" item takes you to the title's gem menu from anywhere.
+The dock's "Main menu" takes you to the title's gem menu from anywhere.
 
 **Character select** (`#start-screen.select-screen`, `js/select.js`, New game; Slay the Spire's, the user's call
 2026-09-28): the picked Pokémon stands big on its type's scene (`showMenuScene()`), its resting pose (`SPRITE_FIT`) scaled in

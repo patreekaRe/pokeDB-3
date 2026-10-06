@@ -939,6 +939,26 @@ button.mv-row { cursor: zoom-in; }
 .app-achievements .cdev-tile { --c1: #a880e4; --c2: #5a3890; }
 .app-fame .cdev-tile { --c1: #ecbc40; --c2: #8a5e10; }
 .app-record .cdev-tile { --c1: #4a60c0; --c2: #1c2668; }
+/* the dock under the apps (collection.js dockRow()): smaller tiles on a shelf, the device's own system buttons */
+.cdev-dock {
+  flex: none; display: flex; justify-content: space-around; gap: 4px; margin-top: auto; padding: 10px 4px 8px;
+  border-radius: 16px; background: rgba(0, 0, 0, 0.28); box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+.cdev-dock-btn {
+  flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 2px; border: 0; border-radius: 10px;
+  background: none; color: #fff; cursor: pointer; font-family: inherit;
+}
+.cdev-dock-btn .cdev-tile { width: 46px; border-radius: 13px; }
+.cdev-dock-btn .cdev-tile::after { border-radius: 10px 10px 40% 40% / 10px 10px 8px 8px; }
+.cdev-dock-btn .coll-emoji { font-size: 22px; }
+.cdev-dock-btn .cdev-label { font-size: 0.42rem; }
+@media (hover: hover) { .cdev-dock-btn:hover .cdev-tile { translate: 0 -2px; } }
+.cdev-dock-btn:active .cdev-tile { translate: 0 2px; }
+.app-settings .cdev-tile { --c1: #8a96aa; --c2: #48526a; }
+.app-help .cdev-tile { --c1: #48b8d8; --c2: #1e6a8a; }
+.app-corner .cdev-tile { --c1: #e86ab0; --c2: #8a2a64; }
+.app-menu .cdev-tile { --c1: #e8dcb0; --c2: #9a8c60; }
+.cdev-system .set-row { font-size: 0.6rem; }
 .cdev-icon.locked { cursor: help; }
 .cdev-icon.locked .cdev-tile { --c1: #6a6a7a; --c2: #3a3a48; }
 .cdev-icon.locked .cdev-label, .cdev-icon.locked .cdev-count { color: #a8a8b8; }

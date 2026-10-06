@@ -129,7 +129,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   a number and a signature card).
 - **Where it opens**: the Collection's **Safari Pokédex** card (`safariCard()` in `js/collection.js`, a 🔒 ??? until
   `safariOpen(save)`), the main Pokédex's last tab **Safari** (`#dex-safari-tab`, hidden until `safariOpen(save)`; it closes that
-  window and opens this one), and the Poké Ball menu's Collection button during a Safari run (the device opens on this app), on the run's area
+  window and opens this one), and the top bar's Pokédex during a Safari run (its Safari app opens on this area), on the run's area
   (`runSafariArea()` in `js/run.js`).
 
 ## Completion rewards (2026-10-02, the user's design)

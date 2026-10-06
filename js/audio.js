@@ -231,7 +231,7 @@ function menuBlip(e) {
 /** Called once at startup. */
 export function initAudio() {
   renderButton();
-  // the Poké Ball menu's speaker + slider and the title's are the same control twice
+  // the Pokédex's Settings speaker + slider and the title's are the same control twice
   for (const id of SOUND_TOGGLES) $(id).addEventListener('click', () => setMuted(!getSave().muted));
   for (const [id, key] of VOLUME_SLIDERS) {
     const slider = $(id);
@@ -415,7 +415,7 @@ const SOUND_TOGGLES = ['music-btn', 'title-music-btn'];
 const VOLUME_SLIDERS = [['volume-slider', 'musicVolume'], ['title-volume', 'musicVolume'], ['sfx-slider', 'sfxVolume'], ['title-sfx', 'sfxVolume']];
 
 // a Sound button opens its pop-out: the speaker that mutes and the volume bar (the user's call, 2026-10-02)
-const SOUND_POPS = [['title-sound-btn', 'title-sound-pop'], ['menu-sound-btn', 'menu-sound-pop']];
+const SOUND_POPS = [['title-sound-btn', 'title-sound-pop']];
 
 function renderButton() {
   const muted = getSave().muted;
@@ -432,7 +432,7 @@ function renderButton() {
   }
 }
 
-/** Put every Sound pop-out away (leaving the title, closing the Poké Ball menu). */
+/** Put every Sound pop-out away (leaving the title). */
 export function closeSoundPops() {
   for (const [btnId, popId] of SOUND_POPS) { $(popId).hidden = true; $(btnId).setAttribute('aria-expanded', 'false'); }
 }

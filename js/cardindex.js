@@ -3,7 +3,7 @@
    game, a tab per type, grouped by rarity with the evolution-only
    moves on their own, then every relic and item. Everything stays a
    dark "???" until you meet it in a run, Pokédex-style (`seen` in
-   the save, markSeen()). Opened from the Poké Ball menu; the Collection device's
+   the save, markSeen()). openCardIndex() opens it as a window (nothing does since the menu went, 2026-10-05); the device's
    Moves app (movesApp()) is its compact list. Read-only: tap a card
    to read it bigger.
    ============================================================ */

@@ -130,8 +130,9 @@ h1, h2, h3, h4, p { margin: 0; }
 body.scrolled .topbar::before { opacity: 1; }
 .topbar-actions { position: relative; display: flex; align-items: center; gap: 8px; }   /* position: the Bag drops down from its right edge */
 
-/* the home button: a Poké Ball as a clean 18x18 pixel sprite (index.html), drawn at 2x so its pixels stay even */
-.home-ball {
+/* the Pokédex (top left): a clean 18x18 pixel sprite (index.html), drawn at 2x so its pixels stay even; it opens the
+   Collection device over any screen (js/collection.js openPokedex()) */
+.home-dex {
   display: grid;
   place-items: center;
   padding: 0;
@@ -140,99 +141,37 @@ body.scrolled .topbar::before { opacity: 1; }
   line-height: 1;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.45));
 }
-.ball-sprite { width: 36px; height: 36px; transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
-.home-ball:hover .ball-sprite { transform: rotate(-25deg) scale(1.08); }
-.home-ball:active .ball-sprite { transform: scale(0.9); }
-.home-ball[aria-expanded="true"] .ball-sprite { transform: rotate(180deg); }
+.dex-sprite { width: 36px; height: 36px; transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.home-dex:hover .dex-sprite { transform: rotate(-8deg) scale(1.08); }
+.home-dex:active .dex-sprite { transform: scale(0.9); }
 
-/* the drop-down under the Poké Ball: Main menu, Sound, How to play, About */
-.ball-menu { position: relative; }
-.ball-menu-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 200px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  border-radius: 18px;
-  background: rgba(20, 24, 54, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transform-origin: 16px 0;
-  animation: menuDrop 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
-}
-.ball-menu-panel::before {                 /* little notch pointing up at the ball */
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: 14px;
-  width: 12px;
-  height: 12px;
-  transform: rotate(45deg);
-  background: inherit;
-  border-left: 1px solid rgba(255, 255, 255, 0.16);
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-}
-.menu-item {
+/* rows in the device's Settings and Help apps (#dev-settings, #dev-help) */
+.dev-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 9px 12px 9px 8px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--round-sm);
   background: none;
-  font-weight: 700;
+  color: var(--win-ink);
+  font-family: var(--pixel-font);
+  font-synthesis-weight: none;
+  font-size: 0.75rem;
   text-align: left;
-  white-space: nowrap;
 }
-.menu-item:hover, .menu-item:focus-visible { background: rgba(255, 255, 255, 0.1); }
-.mi-icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  font-size: 1rem;
-  flex: 0 0 auto;
-}
-
-/* The menu is a light Pokégear window too, with a blinking ▶ cursor on the item you point at, like the Gold/Silver start menu */
-.ball-menu-panel {
-  --ink: var(--win-ink);
-  --muted: var(--win-muted);
-  padding: 8px;
-  color: var(--ink);
-  border-radius: var(--round);
-  border: 3px solid #b8b8c8;
-  background: var(--win-bg);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 14px 34px rgba(0, 0, 0, 0.5);
-}
-.ball-menu-panel::before { display: none; }
-.ball-menu-panel .menu-item { position: relative; padding-left: 24px; border-radius: var(--round-sm); color: var(--ink); }
-.ball-menu-panel .menu-item:hover, .ball-menu-panel .menu-item:focus-visible { background: var(--win-panel); }
-.ball-menu-panel .menu-item:hover::before, .ball-menu-panel .menu-item:focus-visible::before {
-  content: '▶';
-  position: absolute;
-  left: 8px;
-  font-size: 0.7rem;
-  animation: cursorBlink 1s steps(1) infinite;
-}
-@keyframes cursorBlink { 50% { opacity: 0; } }
-.ball-menu-panel .mi-icon { background: none; border-radius: 0; }
+.dev-row:hover, .dev-row:focus-visible { background: var(--win-panel); }
+.dev-row[hidden] { display: none; }
+.dev-row.danger { color: #b02828; }
+.mi-icon { width: 32px; height: 32px; display: grid; place-items: center; font-size: 1rem; flex: 0 0 auto; }
+.dev-settings .sound-ctl { margin-bottom: 4px; }
+.dev-settings .set-row:last-of-type { margin-bottom: 14px; }
 /* Sound's pop-out (SOUND_POPS in js/audio.js): a speaker (tap to mute; SOUND_TOGGLES) and a volume bar beside it
-   (VOLUME_SLIDERS), under the Poké Ball menu's Sound item and under the title's speaker; a pixel track (the HP bar's outline) and a square knob */
+   (VOLUME_SLIDERS), in the Pokédex's Settings and under the title's speaker; a pixel track (the HP bar's outline) and a square knob */
 .sound-ctl { display: flex; align-items: center; gap: 8px; }
 .sound-mute { flex: none; display: grid; place-items: center; padding: 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: var(--round-sm); }
 .sound-mute:active .snd-icon { translate: 0 2px; }
-.menu-sound { padding: 0 10px 6px 20px; }
-.menu-sound[hidden] { display: none; }
 /* two bars, music (🎵) over effects and cries (🔔): VOLUME_SLIDERS */
 .vol-rows { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .vol-row { display: flex; align-items: center; gap: 6px; }
@@ -247,8 +186,9 @@ body.scrolled .topbar::before { opacity: 1; }
 }
 .set-toggle.on { border-color: #257a38; background: #72dc70; color: #fff; text-shadow: 1px 1px 0 #257a38; }
 .set-toggle:active { translate: 1px 1px; box-shadow: 1px 1px 0 var(--win-shadow); }
-.menu-sound .snd-icon { font-size: 1rem; }
-.menu-sound .sound-mute:hover, .menu-sound .sound-mute:focus-visible { background: var(--win-panel); }
+.dev-settings .snd-icon { font-size: 1.2rem; }
+@keyframes cursorBlink { 50% { opacity: 0; } }
+.dev-settings .sound-mute:hover, .dev-settings .sound-mute:focus-visible { background: var(--win-panel); }
 .vol-slider {
   --fill: calc(var(--v, 100) * 1%);
   flex: 1 1 auto;
@@ -275,7 +215,7 @@ body.scrolled .topbar::before { opacity: 1; }
   to   { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ball-menu-panel, .drop { animation: none; }
+  .drop { animation: none; }
 }
 .icon-btn {
   width: 36px;
@@ -468,7 +408,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   backdrop-filter: none;
 }
 .dialog .panel { border: 2px solid var(--win-edge); background: var(--win-panel); box-shadow: none; }
-.ball-menu-panel { font-family: var(--pixel-font); font-synthesis-weight: none; }
+.dev-settings, .dev-help { font-family: var(--pixel-font); font-synthesis-weight: none; }
 :is(.dialog, .panel) h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
 :is(.dialog, .panel) h3 { color: #283060; }
 :is(.dialog, .panel) :not(.card, .card *) { text-shadow: none; }

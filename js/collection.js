@@ -2,7 +2,9 @@
    collection.js  -  the Collection, the device's home screen
    (js/device.js): the owner's ID strip (the Trainer Card) and a grid
    of apps, each with how far along you are. Every app runs inside the
-   screen; only the Leaderboard and a zoomed card open over it.
+   screen; only the Leaderboard and a zoomed card open over it. Under
+   the grid a dock: Settings and Help, and laid over a screen (the top
+   bar's Pokédex) the Game Corner and Main menu too.
    ============================================================ */
 
 import { ALL_CARDS } from './data/cards.js';
@@ -23,24 +25,38 @@ import { trainerName } from './leaderboard.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
-import { initDevice, openDevice, openApp, swapApp } from './device.js';
+import { initDevice, openDevice, openApp, swapApp, hideDevice, deviceOver } from './device.js';
 import { $, el, itemSprite } from './ui.js';
 
+let dock = null;   // main.js's { corner(), menu(), abandonable() } for the dock
+let here = {};     // the pages a run stands on, for the Pokédex apps: { dex, safari }
+
 /** Called once at startup. */
-export function initCollection({ onBack }) {
+export function initCollection({ onBack, ...handlers }) {
   initDevice({ onBack });
+  dock = handlers;
   pokedexApp.toSafari = () => swapApp({ ...safariApp(safariDexCount()), name: 'SAFARI' });
 }
 
 const safariApp = ({ caught, total }) => ({ id: 'safari', count: `${caught}/${total}`, cls: 'cdev-win panel cdev-safari', app: safariDexApp });
 
+const splash = () => `HELLO, ${trainerName().toUpperCase()}!`;
+
 export function showCollection() {
   showMenuScene();
-  openDevice({ render: renderHome, cover: coverArt, splash: `HELLO, ${trainerName().toUpperCase()}!` });
+  here = {};
+  openDevice({ render: renderHome, cover: coverArt, splash: splash() });
+}
+
+/** The top bar's Pokédex: the device over whatever is showing, on its home screen. `at` is where a run stands: its
+    Pokédex apps open on that page ({ dex: biome, safari: area }). */
+export function openPokedex(at = {}) {
+  here = at;
+  openDevice({ render: renderHome, cover: coverArt, splash: splash(), over: true });
 }
 
 /**
- * Opens the device straight into one app over whatever is showing (the Poké Ball menu and the Bag, in a run or not):
+ * Opens the device straight into one app over whatever is showing (the Bag, in a run or not):
  * 'dex' (`at` a biome's page), 'safari' (`at` an area), 'stats', 'achievements' or 'trainer'. B out of it shuts the
  * device, or with `home` steps out to the home screen like any app.
  */
@@ -108,11 +124,11 @@ function apps(save) {
     id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-win panel index-dialog', fill: (p) => drawThings(id, p),
   });
   return [
-    { id: 'dex', name: 'Pokédex', art: emoji('📕'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp },
+    { id: 'dex', name: 'Pokédex', art: emoji('📕'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },
     { id: 'moves', name: 'Moves', art: emoji('🃏'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
       cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type) },
     safari
-      ? { ...safariApp(safari), name: 'Safari', art: emoji('🌿') }
+      ? { ...safariApp(safari), name: 'Safari', art: emoji('🌿'), at: here.safari }
       : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
     things('relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), RELICS),
     things('items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), ITEMS),
@@ -160,5 +176,41 @@ function renderHome() {
     else icon.addEventListener('click', () => openApp({ ...a, name: a.name.toUpperCase() }));
     return icon;
   }));
-  return [ownerStrip(save), grid];
+  return [ownerStrip(save), grid, dockRow()];
+}
+
+/** An app that shows a piece of the page (index.html's #dev-parts) while it's open, and hands it back after. */
+const borrow = (id, before) => ({
+  mount(panel) { before?.(); panel.append($(id)); },
+  back: () => false,
+  key: () => false,
+  unmount() { $('dev-parts').append($(id)); },
+});
+
+const settingsApp = () => ({
+  id: 'settings', name: 'SETTINGS', cls: 'cdev-win panel cdev-system',
+  // abandoning is only offered over a run's own screens, not from the title's Collection (it has its Escape Rope)
+  app: borrow('dev-settings', () => { $('abandon-btn').hidden = !(deviceOver() && dock.abandonable()); }),
+});
+
+/** The dock under the apps: the device's own settings and help; over a screen also the Game Corner and Main menu. */
+function dockRow() {
+  const over = deviceOver();
+  const row = el('div', 'cdev-dock');
+  const items = [
+    ['settings', 'Settings', '⚙️', () => openApp(settingsApp())],
+    ['help', 'Help', '❓', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
+    over && ['corner', 'Game Corner', '🎰', () => { hideDevice(); dock.corner(); }],
+    over && ['menu', 'Main menu', '🖥️', () => dock.menu()],
+  ].filter(Boolean);
+  row.append(...items.map(([id, name, icon, open]) => {
+    const b = el('button', `cdev-pick cdev-dock-btn app-${id}`);
+    b.type = 'button';
+    const tile = el('span', 'cdev-tile');
+    tile.append(emoji(icon));
+    b.append(tile, el('span', 'cdev-label', name));
+    b.addEventListener('click', open);
+    return b;
+  }));
+  return row;
 }

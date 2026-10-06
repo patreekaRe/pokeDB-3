@@ -14,7 +14,7 @@ Pokémon twice on ~2% of routes instead of ~45%, with each type's share unchange
 refresh can't reroll a fight (no room names its Pokémon in its `title`, elites and the boss included, the user's call
 2026-09-28; only a Silph Scope reveal does).
 The save is cleared by `endRun()`, by starting a new run over it (Begin run confirms), and by the About dialog's
-erase. The Poké Ball menu's Main menu keeps it (`suspendRun()`, the user's call): straight from the map, and after a
+erase. The Pokédex dock's Main menu keeps it (`suspendRun()`, the user's call): straight from the map, and after a
 confirm from anywhere else, since that room replays from the map checkpoint; `abandonRun()` is only for the run's end. Fight coins and the enemiesDefeated stat
 are shown on the reward screen but only paid out as the rewards end, just
 before the checkpoint, so refreshing on a reward screen can't pay twice.

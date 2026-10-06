@@ -1495,3 +1495,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   that app shuts it. The menu's Index and the result window's badge line still open their windows. The Bag never had a
   Pokédex button; the roadmap meant its Trainer Card one. Checked at 375x812 (map, a battle, a Safari battle) and
   1024x768; the pane was hidden, so animations were stepped by screenshots or forced to reduced motion.
+- **The Pokédex button** (2026-10-05, the user's call): the top-left Poké Ball and its drop-down menu are gone. A pixel
+  Pokédex (`#brand-btn`) opens the Collection device over any screen on its home screen. A dock under the app grid holds
+  Settings (sound, speed, warning, Sign in, Abandon run over a run) and Help (How to play, About), plus Game Corner and
+  Main menu when laid over a screen. The menu's Index went (the Moves / Relics / Items apps cover it). Checked at 375x812
+  on a peeked ? room: dock, Settings, Help, Game Corner, Main menu with its confirm (Cancel keeps the device open).

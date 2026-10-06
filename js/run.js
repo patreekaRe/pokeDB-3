@@ -64,7 +64,7 @@ export const isRunActive = () => run !== null && !run.over;
 
 /** The biome the run in progress is in (the Pokédex opens on its page), or undefined. */
 export const runBiome = () => (isRunActive() ? run.biome : undefined);
-/** The Safari area the run is in, for the Poké Ball menu's Pokédex button; undefined outside a Safari run. */
+/** The Safari area the run is in, for the top bar's Pokédex; undefined outside a Safari run. */
 export const runSafariArea = () => (isRunActive() && run.safari ? run.safari.areas[run.biome] : undefined);
 
 /** A Safari Zone daily run (js/data/safari.js): the date's seed drives every roll, through js/rng.js. */

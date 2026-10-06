@@ -1,5 +1,5 @@
 /* ============================================================
-   settings.js  -  the Poké Ball menu's Settings toggles (under the sound bars):
+   settings.js  -  the Pokédex's Settings toggles (under the sound bars):
    battle speed (1x / 2x, read by js/battle.js) and the end-turn warning.
    ============================================================ */
 

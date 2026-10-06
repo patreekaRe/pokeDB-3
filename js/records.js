@@ -1,6 +1,6 @@
 /* ============================================================
    records.js  -  the Stats and Achievements windows, opened from the
-   Poké Ball menu. Both are rebuilt from the save every time they open,
+   Collection device. Both are rebuilt from the save every time they open,
    so they're always current.
    ============================================================ */
 
