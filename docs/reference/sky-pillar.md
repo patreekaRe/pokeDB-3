@@ -92,6 +92,11 @@ is the screen and the overlay that use them.
   stamps the new number (gold on a guardian's floor, SUMMIT on the top) with the `stamp` synth. A fresh climb walks up from
   the lobby. The altitude gauge (`#tw-gauge`) is the sky's colours from 0 to 100, a tick every 10, your floor and a gold
   tick at your best; wider screens add its marks (🌲 ☁️ ⛈️ 🌇 🌌 🐉). Under reduced motion nothing walks.
+  Fluid motion (the user's ask, 2026-10-06): the screen repaints every display frame (`requestAnimationFrame`, 60/120 Hz)
+  while the art's own clock (`tick`: flicker, drift, lightning) stays at 30 a second; the art is painted at a whole-pixel
+  camera on a canvas one row taller and slid the rest by CSS `translate` (`paint()`), so pans glide instead of stepping a
+  3-4px tower pixel; the climb glides round the newel on the steps' circle with a little lift per tread. The Climb film's
+  pan does the same (`paintPan()` in `js/climb-intro.js`).
 - **Guardian intros** (`guardianIntro()`, from `fight()` before the wipe): the overlay `#tower-fx` shows the hall close up
   (bigger pixels, no stair): the braziers flare, the doors grind open on red light and the guardian's silhouette (its GIF,
   sized to the door), and "Floor N · Guardian" slams in. Rayquaza's on floor 100: green streaks cross the stars twice, the

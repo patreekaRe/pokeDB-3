@@ -41,7 +41,7 @@ export async function climbIntro({ starter, stage = 0, shiny = false }) {
   preloadSounds('gust', 'gate-hum', 'rumble-far', 'footstep', 'door-light');
   const layout = () => {
     P = innerWidth <= 720 ? 4 : 5;
-    b = makeBuffer(canvas, Math.ceil(innerWidth / P), Math.ceil(innerHeight / P));
+    b = makeBuffer(canvas, Math.ceil(innerWidth / P), Math.ceil(innerHeight / P) + 1);   // a spare row for the pan's glide
     canvas.style.width = `${b.W * P}px`;
     canvas.style.height = `${b.H * P}px`;
   };
@@ -101,9 +101,10 @@ function frame(ms, scene, mon, canvas, once) {
     once('gust', () => playSound('gust'));
     mon.hidden = true;
     fadeTo(easeInOut(clamp01((ms - (PAN - FADE_OUT)) / FADE_OUT)));
-    paintPan(ms);
+    paintPan(ms, canvas);
   } else if (ms < T_WALK) {
     fadeTo(1);
+    canvas.style.translate = '';
     mon.hidden = true;
     paintPov(0, 0, 0, ms);
   } else {
@@ -149,12 +150,15 @@ function placeMon(mon, ms, walking, inside, doorY) {
 
 /* ---------- the pan: the summit down to the foot ---------- */
 
-function paintPan(ms) {
+function paintPan(ms, canvas) {
   const { W, H } = b;
   // a slow drift off the summit that gathers speed, then brakes and settles at the foot as the black comes down
   const p = 1 - (1 - clamp01((ms - 300) / (PAN - 300)) ** 2.6) ** 2;
   const from = TOP * FH + 40 - H * 0.6, to = -Math.round(H * 0.18);
-  const camY = Math.round(from + (to - from) * p), t = ms / 33;
+  // painted at a whole pixel, the canvas slid the rest by CSS (over its spare row), so the fall glides
+  const exact = from + (to - from) * p, camY = Math.floor(exact), t = ms / 33;
+  const dpr = devicePixelRatio;
+  canvas.style.translate = `0 ${Math.round((exact - camY - 1) * P * dpr) / dpr}px`;
   paintSky(b, camY, t);
   const cx = W >> 1, hw = Math.max(13, Math.round(W * 0.2)), R = hw + 8;
   const ROOF = ['#7ab890', '#4e8a68', '#346048'].map(K);

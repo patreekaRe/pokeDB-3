@@ -17,7 +17,7 @@ import { playSound, preloadSounds } from './audio.js';
 import { $, el, sleep } from './ui.js';
 import { calmFx } from './prefs.js';
 
-const FPS = 30;
+const FPS = 30;       // the art's own clock (flicker, drift); the screen itself repaints every display frame
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ease = (v) => (v < 0.5 ? 2 * v * v : 1 - (-2 * v + 2) ** 2 / 2);
 const pixel = () => (innerWidth <= 720 ? 3 : 4);
@@ -40,9 +40,9 @@ const mon = { x: 0, floor: 1, lift: 0, alpha: 1, flip: false, behind: false, hop
 function layout() {
   const P = pixel(), W = Math.ceil(innerWidth / P), H = Math.ceil(innerHeight / P);
   const canvas = $('tw-canvas');
-  const b = makeBuffer(canvas, W, H);
+  const b = makeBuffer(canvas, W, H + 1);   // a spare row on top, so the camera can sit between pixels (see paint())
   canvas.style.width = `${W * P}px`;
-  canvas.style.height = `${H * P}px`;
+  canvas.style.height = `${(H + 1) * P}px`;
   V = { b, P, W, H, lay: towerLayout(W) };
   fitMon();
   placeGauge();
@@ -67,19 +67,18 @@ function floorInfo(f) {
   return info;
 }
 
+// The art is painted at a whole-pixel camera and the canvas slid the rest of the way by CSS, so a pan glides instead
+// of stepping a whole 3-4px tower pixel at a time.
 function paint() {
-  const { b, lay, H } = V;
-  paintSky(b, camY, tick, { flash });
-  paintTower(b, camY, lay, floorInfo, tick);
+  const { b, lay, P } = V, cam = Math.floor(camY);
+  paintSky(b, cam, tick, { flash });
+  paintTower(b, cam, lay, floorInfo, tick);
   flush(b);
-  drawStatues();
+  statuesOn(b, cam, lay, S.trail, S.floorNow, S.rising);
+  b.ctx.canvas.style.translate = `0 ${snap((camY - cam - 1) * P)}px`;
   placeMon();
 }
-
-/** Each beaten foe's statue, before the door it came through (a guardian's before its great door). */
-function drawStatues() {
-  statuesOn(V.b, camY, V.lay, S.trail, S.floorNow, S.rising);
-}
+const snap = (px) => Math.round(px * devicePixelRatio) / devicePixelRatio;
 
 function statuesOn(b, cam, lay, trail, below, rising = null) {
   for (const e of trail) {
@@ -150,23 +149,28 @@ function fitMon() {
 
 function placeMon() {
   const img = $('tw-mon'), { P } = V;
-  img.style.left = `${mon.x * P}px`;
-  img.style.top = `${(surfRow(mon.floor) - mon.lift - mon.hop) * P}px`;
+  img.style.left = `${snap(mon.x * P)}px`;
+  img.style.top = `${snap((surfRow(mon.floor) - mon.lift - mon.hop) * P)}px`;
   img.style.opacity = String(mon.alpha);
   img.classList.toggle('flip', mon.flip);
   img.classList.toggle('behind', mon.behind);
 }
 
-function frame() {
+let lastNow = 0, owed = 0;
+function frame(now) {
   if ($('map-screen').hidden || !$('tower-view').isConnected || $('tower-view').hidden) { stop(); return; }
-  if (document.hidden) return;
-  tick++;
-  flash = Math.max(0, flash - 0.2);
-  if (S && S.floorNow >= 15 && S.floorNow <= 26 && Math.random() < 0.006 && !calmFx()) { flash = 1; }
+  timer = requestAnimationFrame(frame);
+  owed = Math.min(owed + (now - lastNow), 250);
+  lastNow = now;
+  for (; owed >= 1000 / FPS; owed -= 1000 / FPS) {
+    tick++;
+    flash = Math.max(0, flash - 0.2);
+    if (S && S.floorNow >= 15 && S.floorNow <= 26 && Math.random() < 0.006 && !calmFx()) { flash = 1; }
+  }
   paint();
 }
-function run() { if (!timer) timer = setInterval(frame, 1000 / FPS); }
-function stop() { clearInterval(timer); timer = null; }
+function run() { if (!timer) { lastNow = performance.now(); timer = requestAnimationFrame(frame); } }
+function stop() { cancelAnimationFrame(timer); timer = null; }
 
 /** A tween over `ms`, calling `fn(0..1)` each frame; resolves at the end (at once under reduced motion). */
 function tween(ms, fn) {
@@ -351,20 +355,23 @@ async function climbUp(floorNow, flight) {
     S.rising = null;
   }
   await walk(lay.stair - 6);
-  // up the spiral: step by step round the newel, the camera rising a floor
-  const steps = stairSteps(lay.stairX, 0);
+  // up the spiral round the newel, gliding along the same circle as the steps (stairSteps()) with a little lift on
+  // each tread, the camera rising a floor
+  const n = stairSteps(lay.stairX, 0).length;
   const c0 = camY, c1 = standY(floorNow);
   let at = -1;
   await tween(1700, v => {
-    const i = Math.min(steps.length - 1, Math.floor(v * steps.length));
+    const i = Math.min(n - 1, Math.floor(v * n));
     if (i !== at) { at = i; if (i % 2 === 0) playSound('stick'); }
-    const st = steps[i];
-    mon.x = st.x;
-    mon.lift = -st.y;
-    mon.behind = st.depth < 0;
-    mon.flip = Math.cos((i / steps.length) * Math.PI * 2 + Math.PI) > 0;
+    const a = v * Math.PI * 2 + Math.PI;
+    mon.x = lay.stairX + Math.sin(a) * 6;
+    mon.lift = v * FH;
+    mon.hop = Math.sin((v * n) % 1 * Math.PI) * 1.2;
+    mon.behind = Math.cos(a) < 0;
+    mon.flip = Math.cos(a) > 0;
     camY = c0 + (c1 - c0) * ease(v);
   });
+  mon.hop = 0;
   Object.assign(mon, { floor: floorNow, lift: 0, behind: false, x: lay.stairX });
   camY = c1;
   await walk(lay.stairX + 1);
