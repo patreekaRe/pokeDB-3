@@ -502,6 +502,7 @@
 /* Continue holds your run's ball, a smooth SVG one */
 .gem-continue .cball { z-index: 1; }
 .gem-continue .cball-ball { width: 30px; height: 30px; }
+.gem-continue .cball img { bottom: 2px; }   /* the user found it sat a touch low once out */
 .gem-continue .cball-top { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 14A12.5 12.5 0 0 1 26.5 14Z' fill='%23e83828' stroke='%23181010' stroke-width='2'/><path d='M5.5 8.5A9 9 0 0 1 11 4' fill='none' stroke='%23ffa090' stroke-width='2' stroke-linecap='round'/><rect x='1' y='12.4' width='26' height='1.6' fill='%23181010'/><path d='M9.8 14A4.2 4.2 0 0 1 18.2 14Z' fill='%23fff' stroke='%23181010' stroke-width='1.8'/></svg>"); image-rendering: auto; }
 .gem-continue .cball-bottom { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 0A12.5 12.5 0 0 0 26.5 0Z' fill='%23f4f4f6' stroke='%23181010' stroke-width='2'/><path d='M20 9.5A9 9 0 0 0 23.5 5' fill='none' stroke='%23c4c4ce' stroke-width='2.4' stroke-linecap='round'/><rect x='1' y='0' width='26' height='1.6' fill='%23181010'/><path d='M9.8 0A4.2 4.2 0 0 0 18.2 0Z' fill='%23fff' stroke='%23181010' stroke-width='1.8'/></svg>"); image-rendering: auto; }
 @media (max-height: 700px) { .gem-continue .cball-ball { width: 22px; height: 22px; } }
