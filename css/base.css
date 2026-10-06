@@ -533,7 +533,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .seal-bar:is([data-stage="3"], [data-stage="4"]) .seal-bar-rune[data-k="3"] { background: #3a3256; box-shadow: 0 0 0 var(--edge) #0e0818; }
 .seal-bar.big:is([data-stage="1"], [data-stage="2"], [data-stage="3"]) .seal-bar-rune[data-k="1"],
 .seal-bar.big:is([data-stage="2"], [data-stage="3"]) .seal-bar-rune[data-k="2"],
-.seal-bar.big[data-stage="3"] .seal-bar-rune[data-k="3"] { animation: runeBreak 0.7s steps(7) both; }
+.seal-bar.big[data-stage="3"] .seal-bar-rune[data-k="3"] { animation: runeBreak 0.7s ease-out both; }
 @keyframes runeBreak { 0% { background: #fff; scale: 2.2; box-shadow: 0 0 0 var(--edge) #0e0818, 0 0 18px 6px #fff; } 40% { background: #ff6aa8; scale: 1.4; } }
 /* past 25% the seal is failing: the bar and its gem flicker */
 .seal-bar[data-stage="3"] .seal-bar-fill, .seal-bar[data-stage="3"] .seal-bar-gem { animation: sealFail 1.3s steps(1) infinite; }

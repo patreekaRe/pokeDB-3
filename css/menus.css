@@ -19,7 +19,7 @@
   background: none;
   cursor: pointer;
   filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55));
-  transition: translate 0.08s steps(2), filter 0.1s;
+  transition: translate 0.08s ease-out, filter 0.1s;
   -webkit-tap-highlight-color: transparent;
 }
 .pxb-o { display: grid; background: #181018; clip-path: var(--steps); }
@@ -174,11 +174,11 @@
   background: rgba(255, 255, 255, 0.6);
   skew: -20deg;
   pointer-events: none;
-  animation: versionShine 3s steps(10) infinite 2s;
+  animation: versionShine 3s ease-in-out infinite 2s;
 }
 .title-version:not(.seen) {
   background: var(--gold);
-  animation: versionIn 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both 1.2s, versionPulse 1.1s ease-in-out infinite 1.6s, versionGlow 1.4s steps(4) infinite alternate 1.6s;
+  animation: versionIn 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both 1.2s, versionPulse 1.1s ease-in-out infinite 1.6s, versionGlow 1.4s ease-in-out infinite alternate 1.6s;
 }
 @keyframes versionPulse { 0%, 100% { scale: 1; } 50% { scale: var(--pulse, 1.35); } }
 @keyframes versionGlow { from { box-shadow: 0 3px 0 #0d1a44, 0 0 0 0 rgba(255, 224, 96, 0); } to { box-shadow: 0 3px 0 #0d1a44, 0 0 10px 3px rgba(255, 224, 96, 0.7); } }
@@ -214,7 +214,7 @@
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
   cursor: pointer;
   filter: drop-shadow(0 var(--gp) 0 rgba(20, 10, 30, 0.5));
-  transition: translate 0.08s steps(2), filter 0.1s;
+  transition: translate 0.08s ease-out, filter 0.1s;
   animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) backwards calc(var(--i) * 70ms);
   -webkit-tap-highlight-color: transparent;
 }
@@ -364,8 +364,8 @@
 .title-signpost:focus-visible { outline: none; }
 .title-signpost:active .signpost-art { translate: 0 2px; }
 @media (prefers-reduced-motion: no-preference) {
-  .signpost-art { animation: signSway 4s steps(1) infinite; }
-  .signpost-bang { animation: signBang 1.2s steps(2) infinite; }
+  .signpost-art { animation: signSway 4s ease-in-out infinite; }
+  .signpost-bang { animation: signBang 1.2s ease-in-out infinite; }
 }
 /* a little wobble on its post, then still; in steps, like a sprite */
 @keyframes signSway {
@@ -415,14 +415,14 @@
 .cball { position: relative; display: grid; place-items: center; width: 44px; height: 44px; }
 .cball-ball { position: relative; width: 36px; height: 36px; transform-origin: 50% 90%; }
 .cball-top, .cball-bottom { position: absolute; left: 0; width: 100%; height: 50%; background: center / 100% 100% no-repeat; image-rendering: pixelated; }
-.cball-top { top: 0; z-index: 2; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='4' y='0' width='6' height='1' fill='%23181010'/><rect x='2' y='1' width='2' height='1' fill='%23181010'/><rect x='4' y='1' width='6' height='1' fill='%23e83828'/><rect x='10' y='1' width='2' height='1' fill='%23181010'/><rect x='1' y='2' width='1' height='1' fill='%23181010'/><rect x='2' y='2' width='1' height='1' fill='%23e83828'/><rect x='3' y='2' width='1' height='1' fill='%23f8f8f8'/><rect x='4' y='2' width='7' height='1' fill='%23e83828'/><rect x='11' y='2' width='1' height='1' fill='%23a01818'/><rect x='12' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='1' height='1' fill='%23f8f8f8'/><rect x='3' y='3' width='8' height='1' fill='%23e83828'/><rect x='11' y='3' width='1' height='1' fill='%23a01818'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='0' y='4' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='4' height='1' fill='%23e83828'/><rect x='5' y='4' width='4' height='1' fill='%23181010'/><rect x='9' y='4' width='2' height='1' fill='%23e83828'/><rect x='11' y='4' width='2' height='1' fill='%23a01818'/><rect x='13' y='4' width='1' height='1' fill='%23181010'/><rect x='0' y='5' width='1' height='1' fill='%23181010'/><rect x='1' y='5' width='3' height='1' fill='%23e83828'/><rect x='4' y='5' width='2' height='1' fill='%23181010'/><rect x='6' y='5' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='5' width='2' height='1' fill='%23181010'/><rect x='10' y='5' width='1' height='1' fill='%23e83828'/><rect x='11' y='5' width='2' height='1' fill='%23a01818'/><rect x='13' y='5' width='1' height='1' fill='%23181010'/><rect x='0' y='6' width='5' height='1' fill='%23181010'/><rect x='5' y='6' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='6' width='5' height='1' fill='%23181010'/></svg>"); transform-origin: 6% 100%; transition: transform 0.28s steps(3); }
+.cball-top { top: 0; z-index: 2; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='4' y='0' width='6' height='1' fill='%23181010'/><rect x='2' y='1' width='2' height='1' fill='%23181010'/><rect x='4' y='1' width='6' height='1' fill='%23e83828'/><rect x='10' y='1' width='2' height='1' fill='%23181010'/><rect x='1' y='2' width='1' height='1' fill='%23181010'/><rect x='2' y='2' width='1' height='1' fill='%23e83828'/><rect x='3' y='2' width='1' height='1' fill='%23f8f8f8'/><rect x='4' y='2' width='7' height='1' fill='%23e83828'/><rect x='11' y='2' width='1' height='1' fill='%23a01818'/><rect x='12' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='1' height='1' fill='%23f8f8f8'/><rect x='3' y='3' width='8' height='1' fill='%23e83828'/><rect x='11' y='3' width='1' height='1' fill='%23a01818'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='0' y='4' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='4' height='1' fill='%23e83828'/><rect x='5' y='4' width='4' height='1' fill='%23181010'/><rect x='9' y='4' width='2' height='1' fill='%23e83828'/><rect x='11' y='4' width='2' height='1' fill='%23a01818'/><rect x='13' y='4' width='1' height='1' fill='%23181010'/><rect x='0' y='5' width='1' height='1' fill='%23181010'/><rect x='1' y='5' width='3' height='1' fill='%23e83828'/><rect x='4' y='5' width='2' height='1' fill='%23181010'/><rect x='6' y='5' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='5' width='2' height='1' fill='%23181010'/><rect x='10' y='5' width='1' height='1' fill='%23e83828'/><rect x='11' y='5' width='2' height='1' fill='%23a01818'/><rect x='13' y='5' width='1' height='1' fill='%23181010'/><rect x='0' y='6' width='5' height='1' fill='%23181010'/><rect x='5' y='6' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='6' width='5' height='1' fill='%23181010'/></svg>"); transform-origin: 6% 100%; transition: transform 0.28s ease-out; }
 .cball-bottom { bottom: 0; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 7' shape-rendering='crispEdges'><rect x='0' y='0' width='5' height='1' fill='%23181010'/><rect x='5' y='0' width='4' height='1' fill='%23f8f8f8'/><rect x='9' y='0' width='5' height='1' fill='%23181010'/><rect x='0' y='1' width='1' height='1' fill='%23181010'/><rect x='1' y='1' width='3' height='1' fill='%23f8f8f8'/><rect x='4' y='1' width='2' height='1' fill='%23181010'/><rect x='6' y='1' width='2' height='1' fill='%23f8f8f8'/><rect x='8' y='1' width='2' height='1' fill='%23181010'/><rect x='10' y='1' width='1' height='1' fill='%23f8f8f8'/><rect x='11' y='1' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='1' width='1' height='1' fill='%23181010'/><rect x='0' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='2' width='4' height='1' fill='%23f8f8f8'/><rect x='5' y='2' width='4' height='1' fill='%23181010'/><rect x='9' y='2' width='2' height='1' fill='%23f8f8f8'/><rect x='11' y='2' width='2' height='1' fill='%23c8c8d0'/><rect x='13' y='2' width='1' height='1' fill='%23181010'/><rect x='1' y='3' width='1' height='1' fill='%23181010'/><rect x='2' y='3' width='8' height='1' fill='%23f8f8f8'/><rect x='10' y='3' width='2' height='1' fill='%23c8c8d0'/><rect x='12' y='3' width='1' height='1' fill='%23181010'/><rect x='1' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='4' width='7' height='1' fill='%23f8f8f8'/><rect x='9' y='4' width='3' height='1' fill='%23c8c8d0'/><rect x='12' y='4' width='1' height='1' fill='%23181010'/><rect x='2' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='5' width='6' height='1' fill='%23c8c8d0'/><rect x='10' y='5' width='2' height='1' fill='%23181010'/><rect x='4' y='6' width='6' height='1' fill='%23181010'/></svg>"); }
 .cball-light { position: absolute; left: 50%; top: 50%; z-index: 1; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 12px 6px #fff, 0 0 30px 12px #f8d048; opacity: 0; }
 .cball img { position: absolute; left: 50%; bottom: -4px; width: 60px; height: 60px; max-width: none; margin: 0 0 0 -30px; object-fit: contain; image-rendering: pixelated; scale: 0; }
 .gem.opening .cball-top { transform: rotate(-38deg); }
 .gem.opening .cball-light { animation: cballLight 0.45s ease-out forwards; }
-.gem.out .cball-ball { animation: cballAway 0.2s steps(2) forwards; }
-.gem.out .cball img { animation: cballOut 0.45s steps(5) forwards; }
+.gem.out .cball-ball { animation: cballAway 0.2s ease-in forwards; }
+.gem.out .cball img { animation: cballOut 0.45s ease-out forwards; }
 @keyframes cballAway { to { transform: scale(0.2); opacity: 0; } }
 @keyframes cballOut { 0% { scale: 0.2; filter: brightness(0) invert(1); } 60% { scale: 1.12; filter: brightness(0) invert(1); } 100% { scale: 1; filter: none; } }
 @keyframes cballLight { 0% { opacity: 0; transform: scale(0.3); } 35% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: scale(3.5); } }
@@ -433,15 +433,15 @@
 /* the biome's own map sign, smaller, with a touch of its place: the Clearing's sways, the Shrine's has mist drifting
    across, the Wastes' rim flickers like embers */
 .title-biome { font-size: 0.85rem; padding: 6px 16px 7px; overflow: hidden; transform-origin: 50% -20px; }
-.title-biome.arrive { animation: signDrop 0.7s steps(7) both; }
+.title-biome.arrive { animation: signDrop 0.7s ease-out both; }
 @media (prefers-reduced-motion: no-preference) {
-  .title-biome[data-biome="clearing"] { animation: signDrop 0.7s steps(7) both, signSway 3.2s steps(8) 0.7s infinite; }
+  .title-biome[data-biome="clearing"] { animation: signDrop 0.7s ease-out both, signSway 3.2s ease-in-out 0.7s infinite; }
   .title-biome[data-biome="shrine"]::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(100deg, transparent 20%, rgba(240, 255, 230, 0.35) 45%, transparent 70%) -100% 0 / 60% 100% no-repeat;
     animation: signMist 4s linear infinite;
   }
-  .title-biome[data-biome="wastes"] { animation: signDrop 0.7s steps(7) both, signEmber 1.2s steps(2) infinite; }
+  .title-biome[data-biome="wastes"] { animation: signDrop 0.7s ease-out both, signEmber 1.2s steps(2) infinite; }
 }
 @keyframes signSway { 0%, 100% { rotate: -1.5deg; } 50% { rotate: 1.5deg; } }
 @keyframes signMist { to { background-position: 250% 0; } }
@@ -543,7 +543,7 @@
   90% { rotate: 2deg; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .cball-ball { animation: ballWobble 2.4s steps(24) infinite; }
+  .cball-ball { animation: ballWobble 2.4s ease-in-out infinite; }
   .gem.opening:not(.out) .cball-ball { animation: none; }
 }
 @media (max-height: 700px) { .cball { width: 36px; height: 36px; } .cball-ball { width: 28px; height: 28px; } .cball img { width: 48px; height: 48px; margin: 0 0 0 -24px; } }
@@ -820,7 +820,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .tc-badge.earned::after { content: ''; position: absolute; inset: 4px; pointer-events: none;
   -webkit-mask: var(--art) center / 36px 36px no-repeat; mask: var(--art) center / 36px 36px no-repeat;
   background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.8) 42% 50%, transparent 50% 54%, rgba(255, 255, 255, 0.5) 54% 57%, transparent 57%) 100% 0 / 300% 100% no-repeat;
-  animation: tcShine 4s steps(16) infinite; }
+  animation: tcShine 4s ease-in-out infinite; }
 .tc-badge.earned:nth-child(3n+2)::after { animation-delay: -1.3s; }
 .tc-badge.earned:nth-child(3n)::after { animation-delay: -2.6s; }
 @keyframes tcShine { 0%, 55% { background-position: 100% 0; } 100% { background-position: 0 0; } }
@@ -829,8 +829,8 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .tc-badge.fresh .tc-badge-art { animation: tcPop 0.5s ease-out calc(0.45s + var(--i) * 0.26s) backwards; }
 .tc-badge.fresh::before { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; background: #fff;
   box-shadow: 0 -18px #fff, 0 18px #fff, -18px 0 #fff, 18px 0 #fff, -13px -13px #fff8a0, 13px -13px #fff8a0, -13px 13px #fff8a0, 13px 13px #fff8a0;
-  opacity: 0; animation: tcSpark 0.7s steps(4) calc(0.65s + var(--i) * 0.26s); pointer-events: none; }
-.tc-badge.fresh.earned::after { animation: tcFlash 0.6s steps(3) calc(0.75s + var(--i) * 0.26s) backwards, tcShine 4s steps(16) calc(1.35s + var(--i) * 0.26s) infinite;
+  opacity: 0; animation: tcSpark 0.7s ease-out calc(0.65s + var(--i) * 0.26s); pointer-events: none; }
+.tc-badge.fresh.earned::after { animation: tcFlash 0.6s ease-out calc(0.75s + var(--i) * 0.26s) backwards, tcShine 4s ease-in-out calc(1.35s + var(--i) * 0.26s) infinite;
   background-color: transparent; }
 @keyframes tcPop { 0% { transform: scale(0); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
 @keyframes tcSpark { 0% { opacity: 1; transform: scale(0.5); } 100% { opacity: 0; transform: scale(1.4); } }
@@ -875,7 +875,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   content: '!'; position: absolute; top: -6px; right: -8px; z-index: 2;
   display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
   background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
-  font: 10px/1 var(--pixel-font); animation: newsBob 0.8s steps(2) infinite alternate;
+  font: 10px/1 var(--pixel-font); animation: newsBob 0.8s ease-in-out infinite alternate;
 }
 .bag-pocket.badge-news::before { top: -9px; left: -9px; right: auto; }
 @keyframes newsBob { to { translate: 0 -3px; } }

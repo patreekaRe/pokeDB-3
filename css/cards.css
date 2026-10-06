@@ -380,7 +380,7 @@
 .pick-banner[hidden] { display: none; }
 .pick-title { font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--pick); text-shadow: 2px 2px 0 #181010; }
 .pick-line { font-size: 0.7rem; color: var(--win-muted); }
-.pick-icon { font-size: 1.6rem; animation: pickPuff 1.2s steps(3) infinite; }
+.pick-icon { font-size: 1.6rem; animation: pickPuff 1.2s ease-in-out infinite; }
 @keyframes pickBanner { 0% { translate: -50% -40px; opacity: 0; } 70% { translate: -50% 6px; opacity: 1; } 100% { translate: -50% 0; } }
 @keyframes pickPuff { 50% { translate: 0 -4px; scale: 1.15; } }
 #battle-screen.picking .card.in-hand.choosable .card-face {
@@ -398,7 +398,7 @@
    particles are drawn on one low-res canvas over everything, in whole pixels */
 .exhaust-fx { position: fixed; inset: 0; z-index: 130; pointer-events: none; }
 .card-fx { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 131; pointer-events: none; image-rendering: pixelated; }
-.pile.bump { animation: pileBump 0.35s steps(3); }
+.pile.bump { animation: pileBump 0.35s ease-out; }
 @keyframes pileBump { 40% { scale: 1.35; } }
 
 /* keywords with a box beside the blown-up card, coloured in the card's text and on their box's name (colourTerms() in js/ui.js) */

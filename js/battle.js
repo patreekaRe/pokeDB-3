@@ -1260,7 +1260,7 @@ async function ballAnimation(ball, shakes, caught) {
     if (battle !== b) { thrown.remove(); return false; }
     playSound(['catch-shake', 'catch-shake-2', 'catch-shake-3'][i]);
     if (motion) await thrown.animate([{ transform: `${at(x, ground)} rotate(0deg)` }, { transform: `${at(x, ground)} rotate(-24deg)` },
-      { transform: `${at(x, ground)} rotate(18deg)` }, { transform: `${at(x, ground)} rotate(0deg)` }], { duration: 420, easing: 'steps(6)' }).finished;
+      { transform: `${at(x, ground)} rotate(18deg)` }, { transform: `${at(x, ground)} rotate(0deg)` }], { duration: 420, easing: 'ease-in-out' }).finished;
   }
   await sleep(motion ? 420 : 250);
   if (battle !== b) { thrown.remove(); return false; }

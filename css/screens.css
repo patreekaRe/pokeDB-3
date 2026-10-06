@@ -36,7 +36,7 @@
    rolls through them; the "o" is a Poké Ball that wobbles like a catch */
 .title-logo { display: inline-flex; align-items: flex-end; }
 .tl canvas { display: block; image-rendering: pixelated; }
-.tl-ball canvas { transform-origin: 50% 85%; animation: ballWobble 3.2s steps(12) infinite 1.4s; }
+.tl-ball canvas { transform-origin: 50% 85%; animation: ballWobble 3.2s ease-in-out infinite 1.4s; }
 .tl {
   display: inline-block;
   animation:
@@ -447,7 +447,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .intent.status { --kind: #707078; }
 .intent.charge { --kind: #ff2a6a; animation: chargeWarn 0.6s steps(2) infinite; }   /* charging a huge hit (Eternamax's Eternabeam): it blinks */
 @keyframes chargeWarn { 50% { --kind: #ffd23a; } }   /* shuffles junk (a status card) into your deck, or hidden by the Dusk Stone */
-.intent.fresh { animation: intentPop 0.35s ease-out, bob 1.8s steps(2) 0.35s infinite; }
+.intent.fresh { animation: intentPop 0.35s ease-out, bob 1.8s ease-in-out 0.35s infinite; }
 .intent-icon { font-size: 1rem; }
 .intent-value { font-size: 1.05rem; font-weight: 400; color: #283060; }
 .intent-name { font-size: 0.8rem; color: #283060; text-shadow: 1px 0 0 currentColor; white-space: nowrap; }   /* the 1px copy is a crisp pixel "bold": the font has no bold weight */
@@ -569,7 +569,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
   80% { transform: translateX(4px); }
 }
 /* a big hit (bigHit() in battle.js): the arena jolts and the screen flashes white; `translate` leaves the sprites' own transforms alone */
-#battle-screen.big-hit .arena { animation: bigJolt 0.45s steps(9); }
+#battle-screen.big-hit .arena { animation: bigJolt 0.45s linear; }
 @keyframes bigJolt {
   11% { translate: -8px 4px; }
   22% { translate: 7px -5px; }
@@ -586,7 +586,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
   z-index: 50;
   background: #fff;
   pointer-events: none;
-  animation: bigFlash 0.3s steps(3) forwards;
+  animation: bigFlash 0.3s ease-out forwards;
 }
 @keyframes bigFlash { from { opacity: 0.5; } to { opacity: 0; } }
 #player-sprite.lunge { animation: lunge 0.38s ease-out; }
@@ -640,7 +640,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
   background: repeating-linear-gradient(to bottom, var(--fx-a) 0 8px, var(--fx-b) 8px 16px);
   mix-blend-mode: hard-light;
   opacity: 0;
-  animation: statFx 0.9s steps(18) forwards;
+  animation: statFx 0.9s linear forwards;
 }
 .stat-fx.up   { --fx-a: rgba(255, 96, 48, 0.85); --fx-b: rgba(255, 216, 96, 0.55); --fx-to: -64px; }
 .stat-fx.down { --fx-a: rgba(40, 96, 255, 0.85); --fx-b: rgba(150, 200, 255, 0.5); --fx-to: 64px; }
@@ -680,7 +680,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   font-size: 28px;
   line-height: 1;
   opacity: 0;
-  animation: shinyStar 0.8s steps(8) var(--delay) forwards;
+  animation: shinyStar 0.8s ease-out var(--delay) forwards;
 }
 @keyframes shinyStar {
   0% { opacity: 1; transform: rotate(var(--angle)) translateY(-10px) scale(0.4); }
@@ -771,10 +771,10 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .pp-label { font-size: 1rem; }
 .pp-count { margin-left: auto; font-size: 1.35rem; }
 .energy-orb b { display: inline-block; font-weight: 400; }
-.energy-orb b.bump { animation: ppBump 0.35s steps(3); }
+.energy-orb b.bump { animation: ppBump 0.35s ease-out; }
 .energy-orb.empty .pp-count { color: #e03828; text-shadow: 2px 2px 0 #f8b8a8; }
 @keyframes ppBump { 50% { transform: translateY(-4px) scale(1.15); } }
-.energy-orb.shake { animation: ppShake 0.36s steps(6); }   /* tried to play a card without enough PP */
+.energy-orb.shake { animation: ppShake 0.36s linear; }   /* tried to play a card without enough PP */
 @keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 /* beside the hand, PP and End Turn sit level with the lower half of the cards rather than their middle */
@@ -786,7 +786,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 #end-turn-btn:focus-visible { outline: 3px solid #f8d030; outline-offset: 3px; }
 #end-turn-btn:disabled { filter: grayscale(1) brightness(0.9); opacity: 0.7; cursor: not-allowed; }
 /* nothing left to play (.nudge, renderAll()): End Turn hops, its stripes scroll and a gold ring blinks (no ▶ in the pill: it widened the button) */
-#end-turn-btn.nudge { background-size: 100% 8px; animation: turnHop 1.4s steps(1) infinite, turnRing 0.7s steps(1) infinite, stripeScroll 0.5s steps(4) infinite; }
+#end-turn-btn.nudge { background-size: 100% 8px; animation: turnHop 1.4s ease-in-out infinite, turnRing 0.7s steps(1) infinite, stripeScroll 0.5s steps(4) infinite; }
 @keyframes turnHop { 0%, 60%, 80%, 100% { translate: 0 0; } 70% { translate: 0 -7px; } 90% { translate: 0 -3px; } }
 @keyframes turnRing { 50% { box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 0 0 0 5px #f8d030, 4px 4px 0 5px rgba(0, 0, 0, 0.45); } }
 @media (prefers-reduced-motion: reduce) {
@@ -799,7 +799,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   background: repeating-linear-gradient(#58a838 0 4px, #78c850 4px 8px);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #2e7020, 4px 4px 0 2px rgba(0, 0, 0, 0.45);
   font-family: var(--pixel-font); font-synthesis-weight: none; line-height: 1;
-  animation: throwHop 1.6s steps(1) infinite;
+  animation: throwHop 1.6s ease-in-out infinite;
 }
 .throw-btn .pp-pill { --rim: #2e7020; justify-content: center; align-items: center; gap: 8px; font-size: 1.05rem; }
 .battle-controls .throw-btn .pp-pill { min-width: 0; }
@@ -832,11 +832,11 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 /* the thrown ball (ballAnimation()): moved by the Web Animations API, from the arena's top-left corner */
 .thrown-ball { position: absolute; left: 0; top: 0; z-index: 4; width: 0; height: 0; pointer-events: none; }
 .thrown-ball .item-sprite { position: absolute; width: 40px; height: 40px; translate: -50% -50%; image-rendering: pixelated; }
-.thrown-ball.caught .item-sprite { filter: brightness(0.6); transition: filter 0.4s steps(3); }
+.thrown-ball.caught .item-sprite { filter: brightness(0.6); transition: filter 0.4s ease; }
 .thrown-ball.burst .item-sprite { animation: ballPop 0.3s ease-in both; }
 /* pulled into the ball: a white flash and a shrink into it, like the games */
-.enemy-portrait.captured { transition: transform 0.4s steps(5), opacity 0.4s steps(5), filter 0.2s steps(2); transform: scale(0.05) translateY(40%); opacity: 0; filter: brightness(8); }
-.enemy-portrait.ran { transition: transform 1s steps(8), opacity 1s steps(8); transform: translateX(140px); opacity: 0; }
+.enemy-portrait.captured { transition: transform 0.4s ease-in, opacity 0.4s ease-in, filter 0.2s ease-out; transform: scale(0.05) translateY(40%); opacity: 0; filter: brightness(8); }
+.enemy-portrait.ran { transition: transform 1s ease-in, opacity 1s ease-in; transform: translateX(140px); opacity: 0; }
 .catch-star { color: #f8d030; }
 /* a rare spawn's nameplate: a gold rim and a slow shimmer on its name */
 #enemy-plate.rare { box-shadow: 0 0 0 2px #f8d030, 0 0 14px rgba(248, 208, 48, 0.6); }
@@ -1007,15 +1007,15 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-mon .run-sprite { display: block; transform-origin: 50% 100%; }
 .run-mon .run-ball { position: absolute; left: 50%; bottom: 2px; width: 28px; height: 28px; margin-left: -14px; transform-origin: 50% 90%; opacity: 0; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.5)); }
 .run-mon[data-state="in"] .run-sprite { opacity: 0; }
-.run-mon[data-state="in"] .run-ball { opacity: 1; animation: ballWobble 3.2s steps(12) infinite 0.6s; }
-.run-mon[data-state="recalling"] .run-sprite { animation: monRecall 0.55s steps(6) forwards; }
-.run-mon[data-state="recalling"] .run-ball { animation: monBallIn 0.9s steps(9) forwards; }
+.run-mon[data-state="in"] .run-ball { opacity: 1; animation: ballWobble 3.2s ease-in-out infinite 0.6s; }
+.run-mon[data-state="recalling"] .run-sprite { animation: monRecall 0.55s ease-in forwards; }
+.run-mon[data-state="recalling"] .run-ball { animation: monBallIn 0.9s ease-in-out forwards; }
 .run-mon[data-state="recalling"] .cball-top { animation: monLid 0.9s steps(1) forwards; }
 .run-mon[data-state="recalling"] .cball-light { animation: cballLight 0.45s ease-out 0.1s; }
-.run-mon[data-state="releasing"] .run-ball { opacity: 1; animation: monBallOut 0.9s steps(9) forwards; }
+.run-mon[data-state="releasing"] .run-ball { opacity: 1; animation: monBallOut 0.9s ease-in forwards; }
 .run-mon[data-state="releasing"] .cball-top { transform: rotate(-38deg); }
 .run-mon[data-state="releasing"] .cball-light { animation: cballLight 0.45s ease-out; }
-.run-mon[data-state="releasing"] .run-sprite { animation: monRelease 0.6s steps(6) 0.2s backwards; }
+.run-mon[data-state="releasing"] .run-sprite { animation: monRelease 0.6s ease-out 0.2s backwards; }
 @keyframes monRecall {
   0% { transform: none; filter: none; }
   30% { transform: none; filter: brightness(0.7) sepia(1) saturate(9) hue-rotate(-40deg); }
@@ -1113,7 +1113,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .gb-bars { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .gb-bars .gb-hp-track { flex: none; }
 .gb-exp { display: block; height: 10px; padding: 2px; border: 2px solid #181818; border-top: 0; border-radius: 0 0 6px 0; background: #f8f8f0; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); cursor: help; margin-top: -2px; }
-.gb-exp-fill { display: block; height: 100%; width: 0; background: #3890f8; transition: width 0.6s steps(10); }
+.gb-exp-fill { display: block; height: 100%; width: 0; background: #3890f8; transition: width 0.6s ease-out; }
 
 /* The Bag button: a frameless pixel backpack in the top-right corner beside the coins and the Poké Mart.
    Shown only on run screens (showScreen() in js/ui.js); open (aria-expanded) looks pressed in. */
@@ -1126,7 +1126,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   border: 0;
   background: none;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
-  transition: transform 0.1s steps(2), filter 0.1s;
+  transition: transform 0.1s ease-out, filter 0.1s;
 }
 .bag-btn:hover { transform: translateY(-2px); }
 .bag-btn[aria-expanded="true"], .bag-btn:active { transform: translateY(2px) scale(0.9); filter: brightness(0.85) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); }
@@ -1190,10 +1190,10 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .biome-sign[data-biome="shrine"] { --plank: #6f7f62; --plank-dark: #5b6a50; --rim: #9aae84; --frame: #1f2a18; --nail: #2f4a24; --text: #eef8dc; }
 .biome-sign[data-biome="wastes"] { --plank: #54403a; --plank-dark: #43322d; --rim: #e0602a; --frame: #1c1210; --nail: #f8a030; --text: #ffe0b0; }
 .biome-sign[data-biome="depths"] { --plank: #3a2c5c; --plank-dark: #2c2148; --rim: #7ae8ff; --frame: #120a22; --nail: #ff6ac8; --text: #eadcff; animation: crystalGlint 2.6s steps(2) infinite; }   /* a slab of amethyst, glinting cyan */
-.biome-sign[data-biome="depths"].arrive { animation: signDrop 0.7s steps(7) both, crystalGlint 2.6s steps(2) 0.7s infinite; }
+.biome-sign[data-biome="depths"].arrive { animation: signDrop 0.7s ease-out both, crystalGlint 2.6s steps(2) 0.7s infinite; }
 @keyframes crystalGlint { 50% { box-shadow: inset 0 0 0 2px #ff6ac8, 4px 4px 0 rgba(0, 0, 0, 0.45), 0 0 8px rgba(122, 232, 255, 0.55); } }
 .biome-sign[data-safari] { --plank: #3e8a3a; --plank-dark: #317030; --rim: #f0d878; --frame: #183a14; --nail: #f0d878; --text: #fff8d8; }   /* the Safari Zone's green signboard */
-.biome-sign.arrive { animation: signDrop 0.7s steps(7) both; }
+.biome-sign.arrive { animation: signDrop 0.7s ease-out both; }
 /* the place you stand in, a little board hung from the biome sign on two cords; it swings in when you reach a new one */
 .stage-sign {
   --plank: #c88040; --frame: #3e1e0c; --text: #fff4d6; --cord: #3e1e0c;
@@ -1226,7 +1226,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .stage-sign[data-biome="depths"] { --plank: #4a3a74; --frame: #120a22; --text: #eadcff; --cord: #7ae8ff; }
 .stage-sign[data-safari] { --plank: #d8b070; --frame: #3a2410; --text: #fff8e0; --cord: #3a2410; }
 .stage-sign[data-stage="3"] { --plank: #a02c20; --text: #fff0c0; }   /* the boss's arena */
-.stage-sign.arrive { animation: stageSwing 0.9s steps(9) both; }
+.stage-sign.arrive { animation: stageSwing 0.9s ease-out both; }
 @keyframes stageSwing {
   from { transform: rotate(-14deg); opacity: 0; }
   30%  { transform: rotate(9deg); opacity: 1; }
@@ -1403,7 +1403,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .ken-face[hidden] { display: none; }
 .map-node.ken .map-town { background: #f8e8c8; overflow: hidden; }
 .map-node.ken .ken-face { width: 100%; }
-.unlock-stage .ken-face { width: 104px; animation: unlockHop 0.9s steps(4) infinite; transform-origin: 50% 100%; }
+.unlock-stage .ken-face { width: 104px; animation: unlockHop 0.9s ease-in-out infinite; transform-origin: 50% 100%; }
 @media (prefers-reduced-motion: reduce) { .unlock-stage .ken-face { animation: none; } }
 .map-revealed {
   position: absolute;
@@ -1443,13 +1443,13 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   pointer-events: none;
   image-rendering: pixelated;
   filter: brightness(0) invert(0.3) opacity(0.75) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
-  transition: filter 0.45s steps(5);
+  transition: filter 0.45s ease;
 }
-/* the boss reveal (js/transition.js): the silhouette colours in, in pixel steps, and rears up */
+/* the boss reveal (js/transition.js): the silhouette colours in and rears up */
 .map-boss-shadow.revealed {
   z-index: 3;
   filter: brightness(1) invert(0) opacity(1) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
-  animation: boss-rear 0.5s steps(4) both;
+  animation: boss-rear 0.5s ease-out both;
 }
 @keyframes boss-rear {
   0% { scale: 1; }
@@ -1485,7 +1485,7 @@ body.battle-intro { pointer-events: none; }
   background: #000;
   margin: -1px 0;   /* a hair of overlap so no seams show */
   translate: calc(var(--from) * 100%) 0;
-  animation: wipe-bar 0.24s steps(6) both;
+  animation: wipe-bar 0.24s ease-in both;
   animation-delay: calc(0.4s + var(--delay));
 }
 @keyframes wipe-bar {
@@ -1500,7 +1500,7 @@ body.battle-intro { pointer-events: none; }
   border-radius: 50%;
   box-shadow: 0 0 0 150vmax #000;
   /* its size animates rather than its scale, which would shrink the black shadow with it */
-  animation: wipe-iris 0.5s steps(10) 0.4s both;
+  animation: wipe-iris 0.5s ease-in 0.4s both;
 }
 @keyframes wipe-iris {
   from { width: 120vmax; height: 120vmax; }
@@ -1524,12 +1524,12 @@ body.battle-intro { pointer-events: none; }
 }
 /* ...and each opens back up onto the battle the way it closed: the bars carry on off the far side,
    the iris opens, the tiles fall away from the centre first */
-.wipe-fight.out i { animation: wipe-bar-out 0.24s steps(6) var(--delay) both; }
+.wipe-fight.out i { animation: wipe-bar-out 0.24s ease-out var(--delay) both; }
 @keyframes wipe-bar-out {
   from { translate: 0 0; }
   to { translate: calc(var(--from) * -100%) 0; }
 }
-.wipe-elite.out i { animation: wipe-iris-open 0.45s steps(10) both; }
+.wipe-elite.out i { animation: wipe-iris-open 0.45s ease-out both; }
 @keyframes wipe-iris-open {
   from { width: 0; height: 0; }
   to { width: 120vmax; height: 120vmax; }
@@ -1547,7 +1547,7 @@ body.battle-intro { pointer-events: none; }
   pointer-events: none;
   image-rendering: pixelated;
   filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.5));
-  animation: trainerHop 1s steps(1) infinite;
+  animation: trainerHop 1s ease-in-out infinite;
 }
 @keyframes trainerHop { 50% { margin-top: -2px; } }
 .map-trainer.at-start { transform: translate(-50%, -62%); }   /* at the foot of the start road, so the road shows above it */
@@ -1631,7 +1631,7 @@ body.battle-intro { pointer-events: none; }
    Touch screens skip it (a tap leaves :hover stuck). The 8px tile is one stripe pair, so the scroll loops seamlessly;
    `translate` leaves the press-in `transform` and PP's shake alone. */
 @media (hover: hover) {
-  :is(.battle-controls .energy-orb, #end-turn-btn, .ds-btn) { background-size: 100% 8px; transition: translate 0.12s steps(2), filter 0.25s; }
+  :is(.battle-controls .energy-orb, #end-turn-btn, .ds-btn) { background-size: 100% 8px; transition: translate 0.12s ease-out, filter 0.25s; }
   :is(.battle-controls .energy-orb:not(.shake), #end-turn-btn:not(:disabled), .ds-btn):hover {
     translate: 0 -3px;
     animation: stripeScroll 0.5s steps(4) infinite;
@@ -1874,7 +1874,7 @@ body.battle-intro { pointer-events: none; }
 .hof-boom { position: absolute; inset: 0; background: #f8f8f8; pointer-events: none; opacity: 0; }
 .hof-scene.boom .hof-boom { animation: hofBoom 0.45s steps(1, end) both; }
 @keyframes hofBoom { 0% { opacity: 0.95; } 20% { opacity: 0; } 40% { opacity: 0.6; } 60%, 100% { opacity: 0; } }
-.hof-scene.boom .hof-layout, .hof-scene.boom .hof-fx { animation: hofShake 0.5s steps(1, end); }
+.hof-scene.boom .hof-layout, .hof-scene.boom .hof-fx { animation: hofShake 0.5s linear; }
 @keyframes hofShake {
   0% { translate: 6px 0; } 12% { translate: -6px 3px; } 24% { translate: 4px -4px; } 36% { translate: -4px 2px; }
   48% { translate: 3px 0; } 60% { translate: -2px 2px; } 72% { translate: 2px 0; } 84%, 100% { translate: 0 0; }
@@ -1883,7 +1883,7 @@ body.battle-intro { pointer-events: none; }
 @keyframes hofTitleFlash { 0% { filter: brightness(2.2); } 25% { filter: none; } 50% { filter: brightness(2.2); } 75%, 100% { filter: none; } }
 .hof-letter {
   display: inline-block; white-space: pre;
-  animation: hofLetter 0.4s steps(4) both calc(0.5s + var(--i) * 70ms), hofShimmer 2.6s steps(1, end) infinite calc(2.2s + var(--i) * 60ms);
+  animation: hofLetter 0.4s ease-out both calc(0.5s + var(--i) * 70ms), hofShimmer 2.6s steps(1, end) infinite calc(2.2s + var(--i) * 60ms);
 }
 @keyframes hofLetter {
   0% { opacity: 0; scale: 2.6; color: #f8f8f8; }
@@ -1894,7 +1894,7 @@ body.battle-intro { pointer-events: none; }
   0% { color: #f8d048; } 60% { color: #f85858; } 64% { color: #f8a038; } 68% { color: #f8f070; } 72% { color: #58d858; }
   76% { color: #58b0f8; } 80% { color: #c080f8; } 84% { color: #f8f8f8; } 88%, 100% { color: #f8d048; }
 }
-.hof-scene.party.hop .hof-mon { animation: hofHop 0.6s steps(10) both; }
+.hof-scene.party.hop .hof-mon { animation: hofHop 0.6s ease-in-out both; }
 @keyframes hofHop {
   0% { transform: translateY(0); } 35% { transform: translateY(-26px); } 65% { transform: translateY(0); }
   80% { transform: translateY(-8px); } 100% { transform: translateY(0); }
@@ -2121,7 +2121,7 @@ button.hof-row.lost { cursor: pointer; }
 .gate-plate-name strong { font-size: 0.85rem; font-weight: normal; letter-spacing: 0.18em; text-transform: uppercase; text-shadow: 2px 2px 0 #0e0818, 0 0 8px #e02a70; }
 .gate-plate-name i { width: 6px; height: 6px; rotate: 45deg; background: #ff6aa8; box-shadow: 0 0 0 1px #0e0818, 0 0 6px #ff6aa8; }
 .gate-plate-num { align-self: flex-end; font-size: 0.65rem; color: #c8b8e8; text-shadow: 1px 1px 0 #0e0818; }
-.gate-plate.jolt { animation: gateJolt 0.45s steps(6); opacity: 1; }
+.gate-plate.jolt { animation: gateJolt 0.45s linear; opacity: 1; }
 @keyframes gateJolt { 0%, 100% { translate: -50% 0; } 20% { translate: calc(-50% - 5px) 2px; } 40% { translate: calc(-50% + 4px) -2px; } 60% { translate: calc(-50% - 3px) 1px; } 80% { translate: calc(-50% + 2px) 0; } }
 /* your Pokémon, from behind: it rises into place, lunges as it attacks */
 .gate-mon {
@@ -2130,7 +2130,7 @@ button.hof-row.lost { cursor: pointer; }
   transition: translate 0.5s cubic-bezier(0.2, 1.4, 0.4, 1), opacity 0.3s; image-rendering: pixelated;
 }
 .gate-scene.mon-in .gate-mon { translate: -50% var(--foot, 0px); opacity: 1; }
-.gate-mon.lunge { animation: gateLunge 0.6s steps(6) both; }
+.gate-mon.lunge { animation: gateLunge 0.6s ease-out both; }
 @keyframes gateLunge { 0%, 100% { scale: 1; } 30% { scale: 1.08; translate: -40% calc(var(--foot, 0px) - 18px); } 60% { scale: 1; } }
 @media (min-width: 900px) { .gate-mon { left: 36%; } }
 /* the damage, popping up off the seal like battle's numbers */
@@ -2139,7 +2139,7 @@ button.hof-row.lost { cursor: pointer; }
   font: 2rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff;
   text-shadow: 3px 0 0 #8a1040, -3px 0 0 #8a1040, 0 3px 0 #8a1040, 0 -3px 0 #8a1040, 3px 3px 0 #2a0414;
 }
-.gate-dmg.go { animation: gateDmg 1.4s steps(14) both; }
+.gate-dmg.go { animation: gateDmg 1.4s ease-out both; }
 @keyframes gateDmg { 0% { opacity: 1; translate: -50% -50%; scale: 0.6; } 15% { scale: 1.3; } 25% { scale: 1; } 75% { opacity: 1; } 100% { opacity: 0; translate: -50% -180%; } }
 /* the break: the screen whites out, then Mewtwo steps out of the arch, a silhouette until its colours flood in */
 .gate-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
@@ -2148,7 +2148,7 @@ button.hof-row.lost { cursor: pointer; }
 .gate-scene.white .gate-mon, .gate-scene.after-white .gate-mon { filter: brightness(0.6); }
 .gate-free { position: fixed; width: 0; height: 0; }
 .gate-free img { position: absolute; left: 0; bottom: 0; max-width: none; translate: calc(-50% + var(--dx, 0px)) var(--foot, 0px); scale: 0.55; transform-origin: 50% 100%; image-rendering: pixelated; }
-.gate-free.step img { scale: 1; translate: calc(-50% + var(--dx, 0px)) calc(var(--foot, 0px) + 6vh); transition: scale 1s steps(10), translate 1s steps(10); }
+.gate-free.step img { scale: 1; translate: calc(-50% + var(--dx, 0px)) calc(var(--foot, 0px) + 6vh); transition: scale 1s ease-out, translate 1s ease-out; }
 .gate-free.dark img { filter: brightness(0) drop-shadow(0 0 2px #e0c0ff) drop-shadow(0 0 1px #b070ff); }
 .gate-free.flash img { animation: gateFreeFlash 0.5s steps(1, end); }
 @keyframes gateFreeFlash { 0%, 40% { filter: brightness(0) invert(1); } 20%, 60% { filter: brightness(0); } 100% { filter: none; } }
@@ -2169,7 +2169,7 @@ button.hof-row.lost { cursor: pointer; }
   animation: strikeBob 1.6s ease-in-out infinite;
 }
 @keyframes strikeBob { 50% { translate: 0 -6px; } }
-.gate-strike.held .card, .gate-strike.full .card { animation: strikeShake 0.09s steps(2) infinite; }
+.gate-strike.held .card, .gate-strike.full .card { animation: strikeShake 0.09s linear infinite alternate; }
 @keyframes strikeShake { 0% { translate: calc(var(--charge) * -3px) calc(var(--charge) * 2px); } 100% { translate: calc(var(--charge) * 3px) calc(var(--charge) * -2px); } }
 .gate-strike:focus-visible .card-face { outline: 3px solid #ffd0e8; outline-offset: 4px; }
 /* the charge: a ring filling round, and HOLD turning to LET GO! once it's full */
@@ -2200,7 +2200,7 @@ button.hof-row.lost { cursor: pointer; }
 .gate-strike.thrown .gate-strike-hint { visibility: hidden; }
 @keyframes strikeThrow { from { translate: 0 0; } 25% { translate: 0 18px; scale: 1.05; } to { translate: var(--tx) var(--ty); scale: 0.12; rotate: -30deg; opacity: 0; filter: brightness(4); } }
 /* your Pokémon glows brighter and trembles as the charge builds */
-.gate-scene.charging .gate-mon { filter: brightness(calc(1 + var(--charge) * 0.7)); animation: strikeTremble 0.08s steps(2) infinite; }
+.gate-scene.charging .gate-mon { filter: brightness(calc(1 + var(--charge) * 0.7)); animation: strikeTremble 0.08s linear infinite alternate; }
 @keyframes strikeTremble { 0% { transform: translateX(calc(var(--charge) * -2px)); } 100% { transform: translateX(calc(var(--charge) * 2px)); } }
 .gate-scene.still .gate-strike, .gate-scene.still .gate-strike .card, .gate-scene.still .gate-strike-label, .gate-scene.still .gate-foil, .gate-scene.still.charging .gate-mon { animation: none; }
 .gate-scene.still .gate-strike.thrown { opacity: 0; }
@@ -2221,7 +2221,7 @@ button.hof-row.lost { cursor: pointer; }
    rift in the roof (bossRebirth() in js/scene.js), a black silhouette taking on its colours as it lands */
 .enemy-portrait.sprite.boss.max img { --rest: drop-shadow(0 0 14px #ff2a6a) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); animation: maxBreath 2.4s ease-in-out infinite; }
 @keyframes maxBreath { 50% { filter: drop-shadow(0 0 22px #ff2a6a) drop-shadow(0 0 4px #fff0f6) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); } }
-.enemy-portrait.sprite.boss.charging img { animation: maxCharge 0.5s steps(4) infinite; }
+.enemy-portrait.sprite.boss.charging img { animation: maxCharge 0.5s ease-in-out infinite; }
 @keyframes maxCharge { 50% { filter: brightness(1.6) drop-shadow(0 0 26px #ff5a8a) drop-shadow(0 0 8px #fff) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); } }
 .enemy-portrait.sinking { animation: bossSink 1.8s ease-in forwards; }
 @keyframes bossSink {
@@ -2240,7 +2240,7 @@ button.hof-row.lost { cursor: pointer; }
 /* The enemy's body language (renderPose() in js/battle.js), on its own wrapper so it never fights the box's lunge, sink
    and drop-in or the GIF's recoil and glow. Both pivot on the feet, which sizeSprite() puts at the box's bottom middle:
    a raised attack makes it crouch and flinch back (transform), low HP makes it sway (rotate), so the two stack. */
-.enemy-pose { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; transition: transform 0.16s steps(3); }
+.enemy-pose { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; transition: transform 0.16s ease-out; }
 .enemy-pose.bracing { transform: translateX(4px) skewX(-3deg) scale(1.05, 0.9); }
 .enemy-pose.swaying { animation: lowSway 2.8s ease-in-out infinite; }
 @keyframes lowSway {
@@ -2587,8 +2587,8 @@ button.hof-row.lost { cursor: pointer; }
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45));
 }
 .gc-stick.held .gc-ball { cursor: grabbing; }
-.gc-stick:not(.held) .gc-ball { transition: translate 0.08s steps(2); }
-.gc-stick:not(.held) .gc-shaft { transition: transform 0.08s steps(2); }
+.gc-stick:not(.held) .gc-ball { transition: translate 0.08s ease-out; }
+.gc-stick:not(.held) .gc-shaft { transition: transform 0.08s ease-out; }
 .gc-ball svg { display: block; width: 100%; height: 100%; }
 
 /* the arcade buttons: a pink Buy and a blue Exit, pressed in while held; Buy blinks once armed */
@@ -3125,7 +3125,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   box-shadow: 0 0 0 3px #303038, inset 0 0 0 2px rgba(255, 255, 255, 0.35), 3px 4px 0 2px rgba(0, 0, 0, 0.3);
   transform-origin: 50% -10px;
   rotate: -3deg;
-  animation: signSwing 3.2s steps(4) infinite;
+  animation: signSwing 3.2s ease-in-out infinite;
   pointer-events: none;
 }
 /* the two chains up to the board */
@@ -3175,7 +3175,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 /* items and relics are bare icons on the shelf (the name and text show when you tap one), bobbing one after another */
 .mart-window :is(.group-items, .group-relics) .relic { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .mart-window :is(.group-items, .group-relics) :is(.relic-name, .relic-text, .relic-terms) { display: none; }
-.mart-window :is(.group-items, .group-relics) .relic-icon { font-size: 2.4rem; filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.25)); animation: wareBob 2.4s steps(2) infinite; }
+.mart-window :is(.group-items, .group-relics) .relic-icon { font-size: 2.4rem; filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.25)); animation: wareBob 2.4s ease-in-out infinite; }
 .mart-window :is(.group-items, .group-relics) .reward-option:nth-child(2) .relic-icon { animation-delay: -0.8s; }
 .mart-window :is(.group-items, .group-relics) .reward-option:nth-child(3) .relic-icon { animation-delay: -1.6s; }
 .mart-window .group-relics .relic-icon { animation-delay: -0.4s; }
@@ -3188,7 +3188,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
   inset: 0;
   background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.75) 38% 46%, transparent 46% 52%, rgba(255, 255, 255, 0.5) 52% 55%, transparent 55%);
   translate: -110% 0;
-  animation: wareShine 6s steps(8) infinite;
+  animation: wareShine 6s ease-in-out infinite;
   pointer-events: none;
 }
 .mart-window .group-cards .reward-option:nth-child(2) .card-face::after { animation-delay: 0.6s; }
@@ -3387,8 +3387,8 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 .event-figure img { display: block; width: 100%; image-rendering: pixelated; }
 .event-figure.alpha { filter: drop-shadow(0 0 6px #ff3b3b); }
 .event-figure.flip { scale: -1 1; }
-.event-figure.hop { animation: figureHop 0.5s steps(4) 1s 2; }
-.event-figure.shake { animation: figureShake 0.25s steps(2) 0.25s 4; }
+.event-figure.hop { animation: figureHop 0.5s ease-in-out 1s 2; }
+.event-figure.shake { animation: figureShake 0.25s linear 0.25s 4; }
 @keyframes figureHop { 50% { translate: 0 -10px; } }
 @keyframes figureShake { 25% { translate: -4px 0; } 75% { translate: 4px 0; } }
 /* the event trainers (NPCS in js/data/events.js) are stills in three layers (legs, upper body, head) that move a whole
@@ -3402,7 +3402,7 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 :where(#reward-screen:has(#reward-log.typing)) .event-figure.npc .npc-head { animation: npcDip 0.3s steps(1) infinite; }
 .event-figure.npc.npc-nod .npc-head { animation: npcNod 0.8s steps(1) 2; }
 .event-figure.npc.npc-no .npc-head { animation: npcNo 0.3s steps(1) 0.2s 3; }
-.event-figure.npc-jump { animation: figureHop 0.5s steps(4) 0.2s 2; }
+.event-figure.npc-jump { animation: figureHop 0.5s ease-in-out 0.2s 2; }
 .event-figure.npc-turn { scale: -1 1; }
 .event-figure.flip.npc-turn { scale: 1 1; }
 @keyframes npcBreathe { 50% { translate: 0 calc(100% / var(--h, 64)); } }
@@ -3522,7 +3522,7 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
   height: 10px;
   background: #fffbe0;
   clip-path: polygon(40% 0, 60% 0, 60% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%, 40% 100%, 40% 60%, 0 60%, 0 40%, 40% 40%);
-  animation: sparkle 1.6s steps(4) calc(var(--i) * -0.5s) infinite;
+  animation: sparkle 1.6s ease-in-out calc(var(--i) * -0.5s) infinite;
 }
 .relic-float::before { left: 4%; top: 10%; }
 .relic-float::after { right: 2%; bottom: 20%; animation-delay: calc(var(--i) * -0.5s - 0.8s); }
@@ -3808,7 +3808,7 @@ body.has-scene #scene-bg { display: block; }
 .dex-detail-head { display: flex; align-items: center; gap: 14px; }
 .dex-detail-sprite { width: 112px; height: 112px; object-fit: contain; image-rendering: pixelated; flex: none; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.12), transparent); }
 /* an opened entry hops as its cry plays, then idles with a small bounce; object-position moves the Pokémon, not its shadow */
-.dex-zoom .dex-detail-sprite { animation: dexHop 0.42s steps(4) both, dexIdle 1.2s steps(2) 0.5s infinite; }
+.dex-zoom .dex-detail-sprite { animation: dexHop 0.42s ease-in-out both, dexIdle 1.2s ease-in-out 0.5s infinite; }
 @keyframes dexHop { 0%, 100% { object-position: 50% 50%; } 50% { object-position: 50% calc(50% - 10px); } }
 @keyframes dexIdle { 0%, 100% { object-position: 50% 50%; } 50% { object-position: 50% calc(50% - 3px); } }
 @media (prefers-reduced-motion: reduce) { .dex-zoom .dex-detail-sprite { animation: none; } }
@@ -3898,7 +3898,7 @@ body.has-scene #scene-bg { display: block; }
   height: 120px;
   background: radial-gradient(ellipse 26% 7% at 50% 92%, rgba(24, 16, 16, 0.25) 0 98%, transparent), radial-gradient(circle at 50% 60%, #fff6d0 0 34%, transparent 35%);
 }
-.unlock-stage img { width: auto; height: 104px; image-rendering: pixelated; animation: unlockHop 0.9s steps(4) infinite; transform-origin: 50% 100%; }
+.unlock-stage img { width: auto; height: 104px; image-rendering: pixelated; animation: unlockHop 0.9s ease-in-out infinite; transform-origin: 50% 100%; }
 @keyframes unlockHop { 50% { translate: 0 -6px; } }
 #unlock-name { margin: 6px 0 4px; font-family: var(--pixel-font); color: var(--win-gold); font-size: 1.3rem; }
 #unlock-text { margin: 0 0 6px; }
@@ -3936,7 +3936,7 @@ body.has-scene #scene-bg { display: block; }
 .bi-mon img { display: block; image-rendering: pixelated; transform: translateY(110%); }
 .bi-mon.up img { animation: biPop 0.7s cubic-bezier(.2, .9, .3, 1.2) both; }
 .bi-mon img.unseen { filter: brightness(0); }
-.bi-mon img { transition: filter .45s steps(4); }
+.bi-mon img { transition: filter .45s ease; }
 .bi-walker { position: absolute; transform: translate(-50%, -100%); }
 .bi-walker img { display: block; image-rendering: pixelated; }
 @keyframes biPop { 0% { transform: translateY(110%); } 55% { transform: translateY(-22%); } 75% { transform: translateY(4%); } 100% { transform: none; } }
@@ -4132,14 +4132,14 @@ body.scene-peek #backdrop { display: none; }
 .descent-scene.waiting { cursor: pointer; }
 .descent-world { position: absolute; inset: 0; }
 .descent-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-.descent-scene.shaking .descent-world { animation: descentShake 0.12s steps(2) infinite; }
+.descent-scene.shaking .descent-world { animation: descentShake 0.12s linear infinite alternate; }
 @keyframes descentShake { 0% { translate: -3px 1px; } 50% { translate: 3px -1px; } }
 /* your Pokémon: standing on the arena floor (top is its feet), then tumbling down the middle of the shaft */
 .descent-mon { position: absolute; left: 50%; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); image-rendering: pixelated; }
-.descent-scene.shaking .descent-mon { animation: descentTotter 0.5s steps(4) infinite; }
+.descent-scene.shaking .descent-mon { animation: descentTotter 0.5s ease-in-out infinite; }
 @keyframes descentTotter { 0%, 100% { rotate: 0deg; } 25% { rotate: -4deg; } 75% { rotate: 4deg; } }
 .descent-scene.loss .descent-mon { filter: grayscale(0.7) brightness(0.6); }
-.descent-scene.falling .descent-mon { translate: -50% calc(-50% + var(--mid, 0px)); animation: descentDrop 0.7s cubic-bezier(0.3, 0, 0.4, 1) both, descentTumble 2.4s steps(12) 0.7s infinite; filter: drop-shadow(0 6px 10px rgba(176, 96, 240, 0.55)); }
+.descent-scene.falling .descent-mon { translate: -50% calc(-50% + var(--mid, 0px)); animation: descentDrop 0.7s cubic-bezier(0.3, 0, 0.4, 1) both, descentTumble 2.4s ease-in-out 0.7s infinite; filter: drop-shadow(0 6px 10px rgba(176, 96, 240, 0.55)); }
 .descent-scene.falling.loss .descent-mon { filter: grayscale(0.7) brightness(0.6) drop-shadow(0 6px 10px rgba(120, 40, 160, 0.5)); }
 /* transform, not top, so the fall moves on the GPU: falling, place() puts it at 40% of the height, so -30% is -70vh */
 @keyframes descentDrop { from { transform: translate3d(0, -70vh, 0); rotate: -30deg; } to { transform: translate3d(0, 0, 0); } }
@@ -4261,7 +4261,7 @@ body.scene-peek #backdrop { display: none; }
 .tw-plate-sub { font-size: 0.55rem; color: #3e382e; }
 .tw-plate.guardian { background: linear-gradient(#f0d890, #c8a048 55%, #9a7428); border-color: #4a3410; }
 .tw-plate.stamp { animation: twStamp 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
-.tw-plate.stamp .tw-plate-num { animation: twCarve 0.9s steps(6) both; }
+.tw-plate.stamp .tw-plate-num { animation: twCarve 0.9s ease-out both; }
 @keyframes twStamp { 0% { scale: 1.9; opacity: 0; rotate: -6deg; } 45% { scale: 0.92; opacity: 1; rotate: 1deg; } 70% { scale: 1.04; } 100% { scale: 1; rotate: 0deg; } }
 @keyframes twCarve { 0%, 30% { color: transparent; text-shadow: none; } }
 /* the altitude gauge: the sky's colours by height, a tick every 10 floors, your floor and your best */
@@ -4278,7 +4278,7 @@ body.scene-peek #backdrop { display: none; }
 
 /* the guardian intros and the fall (js/tower.js): one overlay over everything */
 .tower-fx { position: fixed; inset: 0; z-index: 946; overflow: hidden; background: #000; cursor: pointer; animation: biIn 0.4s both; }
-.tower-fx.shake .tw-canvas, .tower-fx.shake .tw-fx-mon { animation: twShake 0.45s steps(9); }
+.tower-fx.shake .tw-canvas, .tower-fx.shake .tw-fx-mon { animation: twShake 0.45s linear; }
 @keyframes twShake { 20% { translate: 4px 2px; } 40% { translate: -5px -1px; } 60% { translate: 3px -2px; } 80% { translate: -2px 2px; } }
 .tw-fx-mon { position: absolute; max-width: none; translate: -50% -100%; transform-origin: 50% 100%; image-rendering: pixelated; pointer-events: none; opacity: 0;
   filter: brightness(0) drop-shadow(0 0 3px rgba(255, 90, 60, 0.9)) drop-shadow(0 0 12px rgba(255, 60, 40, 0.6)); }
