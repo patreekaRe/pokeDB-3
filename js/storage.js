@@ -40,7 +40,8 @@ const freshSave = () => ({
   endTurnWarn: true,         // ask before ending a turn with PP left and a card you could play
   textSpeed: 'mid',          // text boxes typing: slow, mid, fast or instant (textPace() in js/settings.js)
   clock: 'auto',             // the scenes' time of day: auto (the device clock) or dawn / day / dusk / night (js/daytime.js)
-  vibration: true,           // phones buzz (vibrate() in js/settings.js)
+  vibration: true,           // phones buzz (vibrate() in js/prefs.js)
+  shell: 'red',              // the Pokédex device's colour: red, blue, yellow, green, pink or black (css/base.css)
   deckSort: 'got',           // the deck view's sort: 'got' (the order you got them), 'cost', 'name'
   deckFilter: 'all',         // and its filter: 'all', 'attack', 'skill', 'power'
   maxLevel: 0,               // the highest Trainer Level you have unlocked (see data/difficulty.js)

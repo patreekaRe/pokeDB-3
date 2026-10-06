@@ -6,7 +6,7 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, endTurnWarn: true, vibration: true };
+export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, endTurnWarn: true, vibration: true, shell: 'red' };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 // letters typed per tick and the tick's ms; null types the whole line at once

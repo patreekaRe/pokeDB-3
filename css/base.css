@@ -59,6 +59,33 @@
   --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
 }
 
+/* The Pokédex device's shell (Settings > Device colour, js/settings.js sets data-shell): light to dark, the cover's
+   fold, the outline and the darkest shade under the buttons */
+:root {
+  --shell-hi: #e0343a; --shell: #c41f2a; --shell-lo: #b01822; --shell-fold: #a8141e;
+  --shell-rim: #7a1016; --shell-deep: #5a0c12; --shell-hinge: #8a1018;
+}
+:root[data-shell="blue"] {
+  --shell-hi: #3a7ae0; --shell: #245cc4; --shell-lo: #1a4aac; --shell-fold: #16409c;
+  --shell-rim: #0f2a6e; --shell-deep: #0a1d4f; --shell-hinge: #133584;
+}
+:root[data-shell="yellow"] {
+  --shell-hi: #f8d040; --shell: #ecb818; --shell-lo: #d8a20c; --shell-fold: #cc960a;
+  --shell-rim: #7a5608; --shell-deep: #573c04; --shell-hinge: #8c6408;
+}
+:root[data-shell="green"] {
+  --shell-hi: #3cbc58; --shell: #229a3e; --shell-lo: #198632; --shell-fold: #157a2c;
+  --shell-rim: #0c4e1c; --shell-deep: #083814; --shell-hinge: #10602a;
+}
+:root[data-shell="pink"] {
+  --shell-hi: #f070a8; --shell: #dc4c8c; --shell-lo: #c63a78; --shell-fold: #ba3270;
+  --shell-rim: #7a1a48; --shell-deep: #561034; --shell-hinge: #8c2058;
+}
+:root[data-shell="black"] {
+  --shell-hi: #50505c; --shell: #383840; --shell-lo: #2a2a32; --shell-fold: #26262c;
+  --shell-rim: #101014; --shell-deep: #060608; --shell-hinge: #1c1c22;
+}
+
 body[data-theme="fire"]  { --accent: #ff7a45; --accent-dark: #d4501f; }
 body[data-theme="water"] { --accent: #3fa3ff; --accent-dark: #1f6fd0; }
 body[data-theme="grass"] { --accent: #4fcf6c; --accent-dark: #2a9a45; }
@@ -249,6 +276,13 @@ body.scrolled .topbar::before { opacity: 1; }
   box-shadow: 0 2px 0 var(--tone-dk), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 .set-chip:active { translate: 0 1px; }
+.set-picked { color: var(--tone-dk); }
+.set-chip.swatch { display: grid; place-items: center; padding: 5px 0; }
+.set-chip.swatch::before {
+  content: ""; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.45) 0 18%, transparent 20%), var(--sw);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25), 0 2px 0 rgba(36, 28, 20, 0.25);
+}
+.set-chip.swatch[aria-checked="true"]::before { box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25), 0 0 0 3px #fff; }
 .set-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 .set-group > .dev-row { border-radius: 0; padding: 10px 12px 10px 8px; font-size: 0.6rem; }
 @keyframes menuDrop {

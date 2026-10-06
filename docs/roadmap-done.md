@@ -1530,3 +1530,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Settings as an OPTIONS screen** (2026-10-06, Desktop app; the user found it bland): coloured cards for Sound (Music,
   Effects and a new Cries bar, LCD numbers), Display (new Text speed and Day & night), Battle (speed, end-turn warning, a new
   Vibration switch) and Save. Detail in `docs/reference/top-bar-and-start-screen.md`.
+
+- **Device colour** (Settings option 1, 2026-10-06): Red / Blue / Yellow / Green / Pink / Black swatches in Settings' Display card; the device's reds became `--shell-*` variables in `css/base.css`, swapped by `data-shell`. Same day: iPhones get a haptic tick for Vibration (iOS 18+'s switch-checkbox trick in `vibrate()`).

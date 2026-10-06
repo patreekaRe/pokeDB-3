@@ -4416,38 +4416,38 @@ body.scene-peek #backdrop { display: none; }
 .pdx-device {
   --sky: #bfe8ff; --ground: #7cc75f; --pad: #5ea548;
   display: flex; flex-direction: column; width: min(520px, 100%); min-height: 100%;
-  background: linear-gradient(180deg, #e0343a, #c41f2a 40%, #b01822);
-  position: relative; box-shadow: inset 0 0 0 3px #7a1016, inset 6px 0 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  position: relative; box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08);
 }
 @media (min-width: 560px) {
   .pdx-stage { padding: 20px 0; }
-  .pdx-device { min-height: 0; border-radius: 22px; box-shadow: inset 0 0 0 3px #7a1016, 0 14px 40px rgba(20, 60, 90, 0.35); }
+  .pdx-device { min-height: 0; border-radius: 22px; box-shadow: inset 0 0 0 3px var(--shell-rim), 0 14px 40px rgba(20, 60, 90, 0.35); }
 }
 .pdx-device.biome-shrine { --sky: #f7c6d8; --ground: #b89870; --pad: #8e7454; }
 .pdx-device.biome-wastes { --sky: #ffb070; --ground: #7a3c24; --pad: #5a2a18; }
 .pdx-device.biome-depths { --sky: #3a2470; --ground: #6a4aa8; --pad: #4a2e88; }
 .pdx-lid {
   position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px;
-  padding: max(10px, env(safe-area-inset-top)) 12px 10px; background: #c41f2a; border-bottom: 3px solid #7a1016;
+  padding: max(10px, env(safe-area-inset-top)) 12px 10px; background: var(--shell); border-bottom: 3px solid var(--shell-rim);
 }
 @media (min-width: 560px) { .pdx-lid { border-radius: 22px 22px 0 0; } }
 .pdx-back {
-  width: 38px; height: 38px; border-radius: 10px; border: 3px solid #7a1016; background: #f2f2f2; color: #7a1016;
-  font-size: 0.9rem; cursor: pointer; box-shadow: 0 3px 0 #7a1016;
+  width: 38px; height: 38px; border-radius: 10px; border: 3px solid var(--shell-rim); background: #f2f2f2; color: var(--shell-rim);
+  font-size: 0.9rem; cursor: pointer; box-shadow: 0 3px 0 var(--shell-rim);
 }
-.pdx-back:active { translate: 0 2px; box-shadow: 0 1px 0 #7a1016; }
+.pdx-back:active { translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim); }
 .pdx-lens {
   width: 40px; height: 40px; border-radius: 50%; border: 4px solid #fff; flex: none;
-  background: radial-gradient(circle at 34% 30%, #e6f8ff 0 14%, #5ec8ff 16%, #1f78c8 70%); box-shadow: 0 0 0 2px #7a1016;
+  background: radial-gradient(circle at 34% 30%, #e6f8ff 0 14%, #5ec8ff 16%, #1f78c8 70%); box-shadow: 0 0 0 2px var(--shell-rim);
 }
-.pdx-light { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #7a1016; flex: none; }
+.pdx-light { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--shell-rim); flex: none; }
 .pdx-light.red { background: #ff5a5a; }
 .pdx-light.yellow { background: #ffe36b; }
 .pdx-light.green { background: #6be36b; }
 .pdx-lid-title { margin-left: auto; font: 0.7rem/1 var(--pixel-font); font-synthesis-weight: none; color: #ffe0e2; letter-spacing: 1px; text-transform: uppercase; }
 .pdx-body { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 12px; }
 .pdx-lcd {
-  padding: 8px 10px; border: 3px solid #7a1016; border-radius: 8px; background: #b6d68e; color: #1f3a14;
+  padding: 8px 10px; border: 3px solid var(--shell-rim); border-radius: 8px; background: #b6d68e; color: #1f3a14;
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); font-size: 0.85rem; line-height: 1.45;
 }
 .pdx-nameplate { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 0.8rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
@@ -4456,7 +4456,7 @@ body.scene-peek #backdrop { display: none; }
   position: relative; flex: none; aspect-ratio: 2 / 1; container-type: size;
   border: 4px solid #2a2a30; border-radius: 10px; overflow: hidden; touch-action: pan-y;
   background: linear-gradient(180deg, var(--sky) 0 58%, var(--ground) 58%);
-  box-shadow: 0 0 0 3px #7a1016, inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 3px var(--shell-rim), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 /* the biome's own scenery (scene.js's sceneShot()), its battle pad, and the Pokémon standing on it */
 .pdx-scene { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center bottom; image-rendering: pixelated; pointer-events: none; }
@@ -4487,7 +4487,7 @@ body.scene-peek #backdrop { display: none; }
 .pdx-light.yellow { color: #ffe36b; }
 .pdx-light.green { color: #6be36b; }
 .pdx-device.powered .pdx-lens { animation: pdxLens 0.9s ease-out both; }
-@keyframes pdxLens { 30% { box-shadow: 0 0 0 2px #7a1016, 0 0 16px 6px #7fd8ff; filter: brightness(1.4); } }
+@keyframes pdxLens { 30% { box-shadow: 0 0 0 2px var(--shell-rim), 0 0 16px 6px #7fd8ff; filter: brightness(1.4); } }
 .pdx-text.typing::after { content: '▌'; margin-left: 1px; animation: pdxCaret 0.5s steps(1) infinite; }
 @keyframes pdxCaret { 50% { opacity: 0; } }
 /* the front cover that swings open on its left hinge (pokedex.js's cover()) */
@@ -4495,14 +4495,14 @@ body.scene-peek #backdrop { display: none; }
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; transform-origin: left center; backface-visibility: hidden;
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.12), transparent 40%),
-    linear-gradient(180deg, #e0343a, #c41f2a 45%, #a8141e);
-  box-shadow: inset 0 0 0 3px #7a1016, inset -10px 0 0 rgba(0, 0, 0, 0.12);
+    linear-gradient(180deg, var(--shell-hi), var(--shell) 45%, var(--shell-fold));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset -10px 0 0 rgba(0, 0, 0, 0.12);
 }
 @media (min-width: 560px) { .pdx-cover { border-radius: 0 0 22px 22px; } }
-.pdx-cover-hinge { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: repeating-linear-gradient(180deg, #8a1018 0 18px, #5a0c12 18px 22px); }
+.pdx-cover-hinge { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: repeating-linear-gradient(180deg, var(--shell-hinge) 0 18px, var(--shell-deep) 18px 22px); }
 .pdx-cover-mark {
   position: absolute; left: 50%; top: min(30%, 220px); width: 90px; height: 90px; translate: -50% 0; border-radius: 50%;
-  border: 6px solid #7a1016; background: radial-gradient(circle, #f2f2f2 0 22%, #7a1016 23% 30%, transparent 31%), linear-gradient(180deg, #ff6a6a 0 46%, #7a1016 46% 54%, #f2f2f2 54%);
+  border: 6px solid var(--shell-rim); background: radial-gradient(circle, #f2f2f2 0 22%, var(--shell-rim) 23% 30%, transparent 31%), linear-gradient(180deg, #ff6a6a 0 46%, var(--shell-rim) 46% 54%, #f2f2f2 54%);
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -4525,7 +4525,7 @@ body.scene-peek #backdrop { display: none; }
 .pdx-move-name { flex: none; }
 .pdx-dots { flex: 1; min-width: 12px; border-bottom: 2px dotted rgba(31, 58, 20, 0.45); translate: 0 -4px; }
 .pdx-move-num { flex: 0 1 auto; min-width: 0; font-weight: 400; text-align: right; }
-.pdx-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; padding: 8px; border: 3px solid #7a1016; border-radius: 8px; background: #8e1820; }
+.pdx-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; padding: 8px; border: 3px solid var(--shell-rim); border-radius: 8px; background: #8e1820; }
 .pdx-slot {
   position: relative; aspect-ratio: 1; padding: 2px; border: 2px solid #3a0a0e; border-radius: 6px; cursor: pointer;
   background: linear-gradient(180deg, #7ab8ff, #4a88e0); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
@@ -4537,17 +4537,17 @@ body.scene-peek #backdrop { display: none; }
 .pdx-slot.unseen .pdx-slot-mon { filter: brightness(0) opacity(0.5); }
 .pdx-slot.caught::after { content: ""; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #3a0a0e; }
 .pdx-slot.researched::after { background: #ffd23a; }
-.pdx-device .dex-perk { margin: 0; border: 3px solid #7a1016; background: #b6d68e; color: #1f3a14; }
-.pdx-device .dex-perk.earned { background: #f2dc8a; border-color: #7a1016; }
+.pdx-device .dex-perk { margin: 0; border: 3px solid var(--shell-rim); background: #b6d68e; color: #1f3a14; }
+.pdx-device .dex-perk.earned { background: #f2dc8a; border-color: var(--shell-rim); }
 .pdx-device .dex-perk-text small, .pdx-device .dex-goal-how { color: #3a4a2a; }
 .pdx-controls {
   position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 10px 16px max(12px, env(safe-area-inset-bottom)); background: #b01822; border-top: 3px solid #7a1016;
+  padding: 10px 16px max(12px, env(safe-area-inset-bottom)); background: var(--shell-lo); border-top: 3px solid var(--shell-rim);
 }
 @media (min-width: 560px) { .pdx-controls { border-radius: 0 0 22px 22px; } }
 .pdx-round {
-  width: 52px; height: 52px; border-radius: 50%; border: 4px solid #7a1016; cursor: pointer; color: #fff; font-size: 1.1rem;
-  background: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0); box-shadow: 0 4px 0 #5a0c12;
+  width: 52px; height: 52px; border-radius: 50%; border: 4px solid var(--shell-rim); cursor: pointer; color: #fff; font-size: 1.1rem;
+  background: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0); box-shadow: 0 4px 0 var(--shell-deep);
 }
-.pdx-round:active { translate: 0 3px; box-shadow: 0 1px 0 #5a0c12; }
+.pdx-round:active { translate: 0 3px; box-shadow: 0 1px 0 var(--shell-deep); }
 .pdx-counter { min-width: 96px; text-align: center; font: 0.7rem/1 var(--pixel-font); font-synthesis-weight: none; }
