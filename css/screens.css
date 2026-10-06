@@ -4210,7 +4210,7 @@ body.scene-peek #backdrop { display: none; }
 .tower-title { margin: 0; font-size: clamp(1.5rem, 8vw, 2.4rem); font-weight: normal; letter-spacing: 2px; color: #f8d878;
   text-shadow: 3px 0 0 #2a1c08, -3px 0 0 #2a1c08, 0 3px 0 #2a1c08, 0 -3px 0 #2a1c08, 0 7px 0 rgba(0, 0, 0, 0.5); }
 .tower-title:focus { outline: none; }
-.tower-week { margin: 10px 0 0; font-size: 0.62rem; letter-spacing: 1px; color: #e8f0ff; }
+.tower-week { width: fit-content; margin: 10px auto 0; padding: 5px 12px 4px; border-radius: 99px; background: rgba(6, 8, 24, 0.55); font-size: 0.78rem; letter-spacing: 1px; color: #e8f0ff; }
 .tower-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 50%); width: 96px; height: 96px; object-fit: contain; object-position: 50% 100%;
   translate: -50% calc(6px - 100%); pointer-events: none; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45)); }
 .tower-base { position: relative; z-index: 1; display: grid; justify-items: center; gap: 12px; width: min(100%, 400px); padding-top: 22px; }
@@ -4220,7 +4220,7 @@ body.scene-peek #backdrop { display: none; }
 .tower-stat { display: grid; justify-items: center; gap: 4px; min-width: 104px; padding: 8px 12px 7px; border: 2px solid rgba(248, 240, 216, 0.25); border-radius: 6px; background: rgba(0, 0, 0, 0.35); }
 .tower-stat b { font-weight: normal; font-size: 1.1rem; color: #f8d878; }
 .tower-stat span { font-size: 0.5rem; opacity: 0.8; }
-.tower-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; font-size: 0.52rem; }
+.tower-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; justify-content: center; gap: 6px; font-size: min(0.62rem, 2.35vw); white-space: nowrap; }
 .tower-rules li { display: flex; align-items: center; gap: 5px; margin: 0; padding: 5px 8px; border-radius: 99px; background: rgba(248, 240, 216, 0.12); }
 .tower-go { margin-top: 4px; }
 .tower-go .pxb-i { font-size: 1rem; min-width: 200px; }

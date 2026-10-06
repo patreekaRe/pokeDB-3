@@ -21,7 +21,7 @@ let actions = {};
 const RULES = [
   ['🗼', `${TOP_FLOOR} floors`],
   ['👹', `Guardian every ${FLIGHT}`],
-  ['🐉', 'Rayquaza on top'],
+  ['👑', 'Boss at the top'],
 ];
 
 export function initTowerPrep(handlers) {
