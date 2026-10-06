@@ -1,7 +1,8 @@
 /* ============================================================
    smooth-icons.js  -  the title screen's icons as smooth vector art
    (the user's call, 2026-10-06: clean and smooth like the Poké Ball
-   signs, no pixels). Every other screen keeps js/icons.js's pixel
+   signs, no pixels), and since 2026-10-05 the Collection device's
+   app icons. Every other screen keeps js/icons.js's pixel
    icons; inside an <svg> those are never swapped in.
 
    smoothIcon(name) returns an inline <svg class="smooth-icon">,
@@ -135,6 +136,79 @@ const ART = {
     <ellipse cx="16" cy="17" rx="12" ry="9" fill="none" stroke="#8a5a2c" stroke-width="1" stroke-dasharray="1.4 2.2"/>
     <path d="M26 21c2 2.6 2.4 5.6 1.2 8" fill="none" stroke="${INK}" stroke-width="4.6" stroke-linecap="round"/>
     <path d="M26 21c2 2.6 2.4 5.6 1.2 8" fill="none" stroke="#d09a58" stroke-width="2.4" stroke-linecap="round"/>`,
+
+  // ---- the Collection device's apps (js/collection.js; the user's call, 2026-10-05) ----
+
+  // Moves: two cards fanned, the front one with a lightning bolt in its art window
+  moves: `<rect x="4" y="5" width="15" height="21" rx="2.4" transform="rotate(-12 11.5 15.5)" fill="#3c6cd8" stroke="${INK}" stroke-width="2"/>
+    <rect x="7" y="8.4" width="9" height="14.2" rx="1.4" transform="rotate(-12 11.5 15.5)" fill="none" stroke="#8cb4ff" stroke-width="1.2"/>
+    <rect x="12" y="5" width="16" height="22.5" rx="2.4" transform="rotate(8 20 16.25)" fill="#fff" stroke="${INK}" stroke-width="2"/>
+    <g transform="rotate(8 20 16.25)">
+      <rect x="14.2" y="7.4" width="11.6" height="10" rx="1.2" fill="#ffe6a0" stroke="${INK}" stroke-width="1.2"/>
+      <path d="M21.2 8.6l-4 5h2.8l-1.4 3.4 4.4-5.2h-2.8Z" fill="#f8c020" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+      <rect x="14.2" y="19.6" width="11.6" height="1.6" rx="0.8" fill="#c8ccd8"/>
+      <rect x="14.2" y="22.6" width="8" height="1.6" rx="0.8" fill="#c8ccd8"/>
+    </g>`,
+
+  // Relics: Leftovers, a bitten red apple with its leaf
+  relics: `<path d="M16 9.5c-2.4-1.6-6.4-1.8-8.6.8C5 13.2 5.2 18.6 7.6 22.8c1.8 3.2 4.4 5.4 6.6 4.8.9-.2 1.2-.6 1.8-.6s.9.4 1.8.6c2.2.6 4.8-1.6 6.6-4.8.6-1 1-2 1.4-3.2-1.8.4-3.4-1.4-3-3.2-1.6-.2-2.6-2-2-3.6.4-.9 1-1.4 1.6-1.6-2.4-1.6-5.4-1.4-7.4.3Z" fill="#e23a2c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 9.5c0-2.6.8-4.6 2.4-6" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M17 6.4c1.6-2.6 5-3.4 7.4-2-1.2 2.6-4.4 3.6-7.4 2Z" fill="#62c050" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M9.6 13.2c-1.2 1.6-1.6 3.8-1.2 6" fill="none" stroke="#ffb0a0" stroke-width="1.8" stroke-linecap="round"/>`,
+
+  // Items: a Potion spray, purple with its white nozzle
+  items: `<rect x="12.5" y="2.5" width="7" height="4" rx="1" fill="#f0f0f4" stroke="${INK}" stroke-width="1.6"/>
+    <path d="M19.5 3.8h3.4" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>
+    <rect x="11" y="6.5" width="10" height="4" rx="1" fill="#c8ccd8" stroke="${INK}" stroke-width="1.6"/>
+    <path d="M11.5 10.5h9c3.6 2 6 5.6 6 9.6 0 5-4.4 8.4-10.5 8.4S5.5 25.1 5.5 20.1c0-4 2.4-7.6 6-9.6Z" fill="#9a5ad8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7.8 19.5h16.4c0 3.6-3.4 6.2-8.2 6.2s-8.2-2.6-8.2-6.2Z" fill="#6a34a8"/>
+    <rect x="11" y="15" width="10" height="5.2" rx="1.2" fill="#fff" stroke="${INK}" stroke-width="1.2"/>
+    <path d="M16 15.8v3.6M14.2 17.6h3.6" stroke="#e23a2c" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M9 14.6c-1 1-1.6 2.4-1.8 3.6" fill="none" stroke="#e0c4ff" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // Stats: a little screen with three rising bars
+  stats: `<rect x="3" y="4" width="26" height="23" rx="3" fill="#fff" stroke="${INK}" stroke-width="2"/>
+    <path d="M6.5 23.5h19" stroke="#c8ccd8" stroke-width="1.4" stroke-linecap="round"/>
+    <rect x="7.5" y="16" width="4.6" height="7.5" rx="1" fill="#e23a2c" stroke="${INK}" stroke-width="1.4"/>
+    <rect x="13.7" y="11.5" width="4.6" height="12" rx="1" fill="#3c8cf0" stroke="${INK}" stroke-width="1.4"/>
+    <rect x="19.9" y="7" width="4.6" height="16.5" rx="1" fill="#62c050" stroke="${INK}" stroke-width="1.4"/>`,
+
+  // Record Book: a blue book, a gold star on its cover and a red bookmark
+  record: `<path d="M8 3.5h17a1.5 1.5 0 0 1 1.5 1.5v20.5H8.5a2.5 2.5 0 0 0 0 5h18" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M8.5 25.5h18v5h-18a2.5 2.5 0 0 1 0-5Z" fill="#f4ecd4" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M8 3.5h17a1.5 1.5 0 0 1 1.5 1.5v20.5H8.5A2.5 2.5 0 0 0 6 28V6a2.5 2.5 0 0 1 2-2.5Z" fill="#3c5cd0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M9.5 3.5v22" stroke="#24389a" stroke-width="2"/>
+    <path d="M18 8.4l1.5 3.1 3.4.5-2.5 2.4.6 3.4-3-1.6-3 1.6.6-3.4-2.5-2.4 3.4-.5Z" fill="#f8c830" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M21 25.5v6l2-1.6 2 1.6v-6" fill="#e23a2c" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>`,
+
+  // Hall of Fame: a gold crown set with jewels
+  fame: `<path d="M4 11l6 5.5L16 6l6 10.5 6-5.5-2.4 14H6.4Z" fill="#f8c830" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="6" y="22.5" width="20" height="5.5" rx="1.4" fill="#e0a020" stroke="${INK}" stroke-width="2"/>
+    <circle cx="16" cy="25.2" r="1.6" fill="#e23a2c" stroke="${INK}" stroke-width="1"/>
+    <circle cx="10.4" cy="25.2" r="1.2" fill="#3c8cf0" stroke="${INK}" stroke-width="1"/>
+    <circle cx="21.6" cy="25.2" r="1.2" fill="#62c050" stroke="${INK}" stroke-width="1"/>
+    <circle cx="4" cy="10" r="1.8" fill="#f8c830" stroke="${INK}" stroke-width="1.4"/>
+    <circle cx="16" cy="4.6" r="1.8" fill="#f8c830" stroke="${INK}" stroke-width="1.4"/>
+    <circle cx="28" cy="10" r="1.8" fill="#f8c830" stroke="${INK}" stroke-width="1.4"/>
+    <path d="M9 18.5l1.2 2.6M15.2 11.6l-.6 6" stroke="#fff6c0" stroke-width="1.4" stroke-linecap="round"/>`,
+
+  // a locked app: a gold padlock
+  lock: `<path d="M10 14v-3.5a6 6 0 0 1 12 0V14" fill="none" stroke="${INK}" stroke-width="5"/>
+    <path d="M10 14v-3.5a6 6 0 0 1 12 0V14" fill="none" stroke="#c8ccd8" stroke-width="2.6"/>
+    <rect x="6" y="13.5" width="20" height="15" rx="3" fill="#f8c830" stroke="${INK}" stroke-width="2"/>
+    <path d="M16 18.5a2 2 0 0 1 1.2 3.6v2.4h-2.4v-2.4a2 2 0 0 1 1.2-3.6Z" fill="${INK}"/>
+    <path d="M8.6 16.6v8" stroke="#fff6c0" stroke-width="1.4" stroke-linecap="round"/>`,
+
+  // Settings: a grey cog
+  settings: `<path d="M13.8 3h4.4l.7 3.4 2.3 1 2.9-1.9 3.1 3.1-1.9 2.9 1 2.3 3.4.7v4.4l-3.4.7-1 2.3 1.9 2.9-3.1 3.1-2.9-1.9-2.3 1-.7 3.4h-4.4l-.7-3.4-2.3-1-2.9 1.9-3.1-3.1 1.9-2.9-1-2.3L3 18.2v-4.4l3.4-.7 1-2.3-1.9-2.9 3.1-3.1 2.9 1.9 2.3-1Z" fill="#e4e8f0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="16" cy="16" r="4.6" fill="#7a8498" stroke="${INK}" stroke-width="2"/>`,
+
+  // Main menu: a little house
+  home: `<path d="M3.5 15.5L16 4.5l12.5 11" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7 13.5V28h18V13.5L16 5.6Z" fill="#fff4dc" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M3.5 15.5L16 4.5l12.5 11" fill="none" stroke="#e23a2c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="13" y="19" width="6" height="9" rx="1" fill="#c87a3a" stroke="${INK}" stroke-width="1.6"/>
+    <rect x="19.5" y="14" width="3.6" height="3.6" rx="0.6" fill="#8cc8ff" stroke="${INK}" stroke-width="1.2"/>`,
 };
 
 export function smoothIcon(name, className = '') {

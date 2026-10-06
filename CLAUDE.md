@@ -75,7 +75,7 @@ live site.
   device on the title's sky wider). It comes up closed (its cover shows your partner and badges, an LED blinking for an
   unseen badge; a beat later, or on a tap, it swings open) and the screen boots ("HELLO, NAME!") onto
   the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card; the lid's yellow light blinks for an unseen badge) and a 3x3
-  grid of apps, each with its count, "???" + 🔒 until unlocked (a tap says how). `openApp()` slides an app over the home
+  grid of apps, each with its count, "???" + a padlock until unlocked (a tap says how). Its app and dock icons are smooth vector art, `smoothIcon()` in `js/smooth-icons.js` (the user's call, 2026-10-05: no pixels; Record Book and Hall of Fame are a book and a crown, no longer the newest winner's sprite). `openApp()` slides an app over the home
   screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
   into `#dex-dialog` when its window opens), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
   the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`: a type tab row

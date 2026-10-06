@@ -22,11 +22,12 @@ import { tipAt } from './tips.js';
 import { openTrainerCard, trainerTile, badgeNews, partner, cardTier, badgeArt } from './trainercard.js';
 import { BADGES } from './data/badges.js';
 import { trainerName } from './leaderboard.js';
-import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
 import { initDevice, openDevice, openApp, swapApp, hideDevice, deviceOver } from './device.js';
-import { $, el, itemSprite } from './ui.js';
+import { $, el } from './ui.js';
+import { smoothIcon } from './smooth-icons.js';
 
 let dock = null;   // main.js's { corner(), menu(), abandonable() } for the dock
 let here = {};     // the pages a run stands on, for the Pokédex apps: { dex, safari }
@@ -99,15 +100,12 @@ const trainerApp = (save) => {
   return { id: 'trainer', name: 'Trainer Card', count: tc.count.replace(' · New!', ''), cls: 'cdev-win panel trainer-dialog', fill: (p) => openTrainerCard(p) };
 };
 
-const emoji = (e) => el('span', 'coll-emoji', e);
-
-/** The newest entry stands on the Hall of Fame and Record Book icons. */
-function fameArt(entry) {
-  const img = el('img', 'pixel coll-winner');
-  img.src = spriteUrl(STARTERS_BY_ID[entry.starter], 'front', entry.stage, entry.shiny);
-  img.alt = '';
-  return img;
-}
+/** An app's icon: smooth vector art (js/smooth-icons.js), sized by the tile's font-size. */
+const vec = (name) => {
+  const s = el('span', 'coll-emoji');
+  s.append(smoothIcon(name));
+  return s;
+};
 
 /** The apps, in the home screen's order. `locked` is how to unlock one ("???" until then); `fill` / `app` run in the
     screen (device.js's openApp()). */
@@ -117,23 +115,23 @@ function apps(save) {
   const book = (id, name, noun, how) => {
     const entries = bookEntries(id);
     if (!entries.length) return { id, locked: how };
-    return { id, name, art: fameArt(entries.at(-1)), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, app: recordsApp(id) };
+    return { id, name, art: vec(id), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, app: recordsApp(id) };
   };
   const safari = safariOpen(save) ? safariDexCount() : null;
   const things = (id, name, art, all) => ({
     id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-win panel index-dialog', fill: (p) => drawThings(id, p),
   });
   return [
-    { id: 'dex', name: 'Pokédex', art: emoji('📕'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },
-    { id: 'moves', name: 'Moves', art: emoji('🃏'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
+    { id: 'dex', name: 'Pokédex', art: vec('dex'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },
+    { id: 'moves', name: 'Moves', art: vec('moves'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
       cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type) },
     safari
-      ? { ...safariApp(safari), name: 'Safari', art: emoji('🌿'), at: here.safari }
+      ? { ...safariApp(safari), name: 'Safari', art: vec('safari'), at: here.safari }
       : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
-    things('relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), RELICS),
-    things('items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), ITEMS),
-    { id: 'stats', name: 'Stats', art: emoji('📊'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, fill: (p) => openStats(p) },
-    { id: 'achievements', name: 'Achievements', art: emoji('🏆'),
+    things('relics', 'Relics', vec('relics'), RELICS),
+    things('items', 'Items', vec('items'), ITEMS),
+    { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, fill: (p) => openStats(p) },
+    { id: 'achievements', name: 'Achievements', art: vec('trophy'),
       count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, fill: (p) => openAchievements(p) },
     book('record', 'Record Book', 'win', 'Win a run to unlock it.'),
     book('fame', 'Hall of Fame', 'champion', 'Win a run on Trainer Level 5 to unlock it.'),
@@ -170,7 +168,7 @@ function renderHome() {
     const icon = el('button', `cdev-pick cdev-icon app-${a.id}${a.locked ? ' locked' : ''}`);
     icon.type = 'button';
     const tile = el('span', 'cdev-tile');
-    tile.append(a.locked ? emoji('🔒') : a.art);
+    tile.append(a.locked ? vec('lock') : a.art);
     icon.append(tile, el('span', 'cdev-label', a.locked ? '???' : a.name), el('span', 'cdev-count', a.locked ? '???' : a.count));
     if (a.locked) icon.addEventListener('click', () => tipAt(icon, a.locked));   // a ??? until its first entry: a tap says how
     else icon.addEventListener('click', () => openApp({ ...a, name: a.name.toUpperCase() }));
@@ -198,16 +196,16 @@ function dockRow() {
   const over = deviceOver();
   const row = el('div', 'cdev-dock');
   const items = [
-    ['settings', 'Settings', '⚙️', () => openApp(settingsApp())],
-    ['help', 'Help', '❓', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
-    ['corner', 'Game Corner', '🎰', () => { hideDevice(); dock.corner(); }],
-    over && ['menu', 'Main menu', '🖥️', () => dock.menu()],
+    ['settings', 'Settings', 'settings', () => openApp(settingsApp())],
+    ['help', 'Help', 'help', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
+    ['corner', 'Game Corner', 'corner', () => { hideDevice(); dock.corner(); }],
+    over && ['menu', 'Main menu', 'home', () => dock.menu()],
   ].filter(Boolean);
   row.append(...items.map(([id, name, icon, open]) => {
     const b = el('button', `cdev-pick cdev-dock-btn app-${id}`);
     b.type = 'button';
     const tile = el('span', 'cdev-tile');
-    tile.append(emoji(icon));
+    tile.append(vec(icon));
     b.append(tile, el('span', 'cdev-label', name));
     b.addEventListener('click', open);
     return b;
