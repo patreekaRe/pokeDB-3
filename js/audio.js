@@ -164,6 +164,8 @@ const SOUNDS = {
   'gate-hum':   { synth: gateHum },          // the Sealed Gate's scene (gatescene.js): the seal's low, uneasy drone...
   'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
   'gate-shatter': { synth: gateShatter },    // ...and the door blows apart in crystal shards
+  footstep:     { synth: stoneStep, gain: 0.7 },   // the Sky Pillar's opening film (climb-intro.js): your Pokémon's steps up the flagstones...
+  'door-light': { synth: ac => powerSurge(ac, [392, 494, 587, 784, 988, 1175], 2.2), gain: 0.8 },   // ...and the warm light swelling as it walks in
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -731,6 +733,24 @@ function stickTick(ac) {
     out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.04) * fade;
   }
   return normalize(buffer, 0.12);
+}
+
+/** A soft footfall on stone: a dull low thud under a short scuff of grit, a little different each time. */
+function stoneStep(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.14);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 3);
+  const pitch = 70 + Math.random() * 25;
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    low += 0.18 * (noise[i] - low);
+    phase += pitch * (1 + Math.exp(-t / 0.01)) / rate;
+    const thud = Math.sin(2 * Math.PI * phase) * Math.exp(-t / 0.035);
+    out[i] = (thud + low * 1.6 * Math.exp(-t / 0.025)) * Math.min(1, t / 0.002);
+  }
+  return normalize(buffer, 0.16);
 }
 
 /** The Pokédex powering on (`up`) or off: a square-wave blip stepping up (or down) a chord, like a Game Boy booting. */

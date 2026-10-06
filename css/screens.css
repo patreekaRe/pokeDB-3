@@ -4198,7 +4198,6 @@ body.scene-peek #backdrop { display: none; }
   text-shadow: 2px 2px 0 #10183a, -2px -2px 0 #10183a, 2px -2px 0 #10183a, -2px 2px 0 #10183a; }
 .climb-title small { display: block; margin-top: 0.7rem; font-size: 0.6rem; letter-spacing: 1px; color: #a0ffc8; }
 .climb-scene.titled .climb-title { opacity: 1; }
-.climb-scene.cut .travel-dark { opacity: 1; }
 .climb-light { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.8s ease-in;
   background: radial-gradient(circle at 50% var(--door, 50%), #fffbe0 0, #f8d070 30%, rgba(240, 160, 64, 0) 75%); }
 .climb-scene.flood .climb-light { opacity: 1; }

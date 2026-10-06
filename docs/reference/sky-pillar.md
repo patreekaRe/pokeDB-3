@@ -119,12 +119,12 @@ is the screen and the overlay that use them.
 
 Pressing Climb (or Climb again, or a Practice pick) plays `climbIntro()` from `js/climb-intro.js` before the climb starts
 (`onStart` in `js/main.js`), on its own `#climb-scene` (the journey films' frame: `.travel-scene`, bars, skip, dark). The
-camera starts at the summit (jade roof, Rayquaza's glow), "SKY PILLAR" over it, and falls the whole height through
-`paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). Then a cut to the user's
+camera starts at the summit (jade roof, Rayquaza's glow), "SKY PILLAR" over it, and falls the whole height (a slow drift that keeps speeding up, the user's ask) through
+`paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). Then a dip to black (`fadeTo()`, inline on `.travel-dark`) and a fade up on the user's
 reference (a hero from behind before a temple door): your climber's back sprite walks a flagstone path between four stone
-pillars to the great arched door (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
+pillars to the great arched door at a brisk pace with a `footstep` each step (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
 two scowling eyes over the arch light up (`gate-hum`), the door grinds open on warm light with a shake (`rumble-far`), the
-light floods out, your Pokémon walks in and it goes dark. Like `travel()` it resolves dark with a `close()` called once
+light floods out, your Pokémon walks in (`door-light`, a warm swell) and it goes dark. Like `travel()` it resolves dark with a `close()` called once
 the climb's map is up. A tap or Enter skips it; reduced motion holds one still of the door. About 12 s in all.
 
 ## The leaderboard

@@ -15,12 +15,13 @@ import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { makeBuffer, flush, put, K, bay, hash, paintSky, stone, FH, TOP } from './tower-art.js';
 
-const PAN = 3800, CUT = 400, WALK = 4400, OPEN = 1900;
+// the pan dips to black over its last FADE_OUT ms, holds CUT, and the walk fades in over its first FADE_IN
+const PAN = 4400, FADE_OUT = 550, CUT = 200, FADE_IN = 750, WALK = 2900, OPEN = 1900, STEP = 150;
 const T_WALK = PAN + CUT, T_EYES = T_WALK + WALK * 0.6, T_OPEN = T_WALK + WALK, T_END = T_OPEN + OPEN;
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2);
-const easeOut = (p) => 1 - (1 - p) ** 3;
+const easeOutQuad = (p) => 1 - (1 - p) ** 2;
 const frac = (v) => v - Math.floor(v);
 
 let P = 4, b = null;
@@ -37,7 +38,7 @@ export async function climbIntro({ starter, stage = 0, shiny = false }) {
   mon.hidden = true;
   mon.src = spriteUrl(starter, 'back', stage, shiny);
   mon.alt = stageName(starter, stage);
-  preloadSounds('gust', 'gate-hum', 'rumble-far');
+  preloadSounds('gust', 'gate-hum', 'rumble-far', 'footstep', 'door-light');
   const layout = () => {
     P = innerWidth <= 720 ? 4 : 5;
     b = makeBuffer(canvas, Math.ceil(innerWidth / P), Math.ceil(innerHeight / P));
@@ -68,6 +69,7 @@ export async function climbIntro({ starter, stage = 0, shiny = false }) {
       over = true;
       clearInterval(timer);
       clearTimeout(hold);
+      fadeTo(null);
       scene.removeEventListener('pointerup', skip);
       removeEventListener('keydown', onKey, true);
       resolve();
@@ -87,18 +89,27 @@ export async function climbIntro({ starter, stage = 0, shiny = false }) {
   };
 }
 
+/** The black over the film, at `k` (0-1), or null to hand it back to the stylesheet (the closing `.dark`). */
+function fadeTo(k) {
+  const dark = $('climb-scene').querySelector('.travel-dark');
+  dark.style.opacity = k == null ? '' : String(k);
+}
+
 function frame(ms, scene, mon, canvas, once) {
-  scene.classList.toggle('titled', ms > 350 && ms < PAN - 900);
+  scene.classList.toggle('titled', ms > 350 && ms < PAN - 1100);
   if (ms < PAN) {
     once('gust', () => playSound('gust'));
     mon.hidden = true;
+    fadeTo(easeInOut(clamp01((ms - (PAN - FADE_OUT)) / FADE_OUT)));
     paintPan(ms);
   } else if (ms < T_WALK) {
-    scene.classList.add('cut');
+    fadeTo(1);
+    mon.hidden = true;
     paintPov(0, 0, 0, ms);
   } else {
-    scene.classList.remove('cut');
-    const walk = easeOut(clamp01((ms - T_WALK) / (WALK * 0.92)));
+    const fade = clamp01((ms - T_WALK) / FADE_IN);
+    fadeTo(fade < 1 ? 1 - easeInOut(fade) : null);
+    const walk = easeOutQuad(clamp01((ms - T_WALK) / (WALK * 0.95)));
     const eyes = clamp01((ms - T_EYES) / 900);
     const open = easeInOut(clamp01((ms - T_OPEN - 250) / (OPEN * 0.55)));
     if (eyes > 0) once('eyes', () => playSound('gate-hum'));
@@ -110,7 +121,11 @@ function frame(ms, scene, mon, canvas, once) {
     const inside = clamp01((ms - T_OPEN - OPEN * 0.62) / (OPEN * 0.38));
     scene.classList.toggle('flood', inside > 0.35);
     scene.style.setProperty('--door', `${doorY * P}px`);
-    placeMon(mon, ms, walk < 0.995 || inside > 0, inside, doorY * P);
+    const walking = walk < 0.985 || (inside > 0 && inside < 0.8);
+    // a footfall each time the bob touches down, and the light's swell as it crosses the threshold
+    if (walking) once(`step${Math.floor((ms - T_WALK) / (STEP * Math.PI))}`, () => playSound('footstep'));
+    if (inside > 0) once('enter', () => playSound('door-light'));
+    placeMon(mon, ms - T_WALK, walking, inside, doorY * P);
   }
   flush(b);
 }
@@ -126,7 +141,7 @@ function placeMon(mon, ms, walking, inside, doorY) {
   mon.style.width = `${mon.naturalWidth * s}px`;
   mon.style.height = `${mon.naturalHeight * s}px`;
   mon.style.top = `${foot - (mon.naturalHeight - bottom) * s}px`;
-  const bob = walking ? -Math.abs(Math.sin(ms / 190)) * 3 * s / 2 : 0;
+  const bob = walking ? -Math.abs(Math.sin(ms / STEP)) * 3 * s / 2 : 0;
   const k = easeInOut(inside);
   mon.style.transform = `translateX(-50%) translateY(${bob - (foot - doorY) * k}px) scale(${1 - 0.72 * k})`;
   mon.style.opacity = String(1 - clamp01((inside - 0.75) / 0.25));
@@ -136,7 +151,8 @@ function placeMon(mon, ms, walking, inside, doorY) {
 
 function paintPan(ms) {
   const { W, H } = b;
-  const p = easeInOut(clamp01((ms - 500) / (PAN - 1000)));
+  // a slow drift off the summit that keeps gathering speed, still falling fast as the black comes down
+  const p = clamp01((ms - 300) / (PAN - 300)) ** 2.6;
   const from = TOP * FH + 40 - H * 0.6, to = -Math.round(H * 0.18);
   const camY = Math.round(from + (to - from) * p), t = ms / 33;
   paintSky(b, camY, t);
