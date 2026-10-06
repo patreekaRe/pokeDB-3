@@ -4203,9 +4203,6 @@ body.scene-peek #backdrop { display: none; }
 .tower-page { position: relative; min-height: 100%; overflow: hidden; display: flex; flex-direction: column; align-items: center;
   padding: 0 16px max(18px, env(safe-area-inset-bottom)); text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6); }
 .tower-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
-.tower-x { position: absolute; z-index: 2; top: max(10px, env(safe-area-inset-top)); right: 12px; width: 40px; height: 40px; padding: 0;
-  border: 3px solid #303038; border-radius: 8px; background: #f0e8d4; color: #303038; font-size: 1rem; line-height: 1; cursor: pointer;
-  box-shadow: inset -2px -3px 0 rgba(0, 0, 0, 0.18), 2px 3px 0 rgba(0, 0, 0, 0.45); text-shadow: none; }
 .tower-top { position: relative; flex: 1 0 auto; min-height: clamp(260px, 52dvh, 520px); width: 100%; text-align: center; padding-top: max(26px, calc(env(safe-area-inset-top) + 18px)); }
 .tower-title { margin: 0; font-size: clamp(1.5rem, 8vw, 2.4rem); font-weight: normal; letter-spacing: 2px; color: #f8d878;
   text-shadow: 3px 0 0 #2a1c08, -3px 0 0 #2a1c08, 0 3px 0 #2a1c08, 0 -3px 0 #2a1c08, 0 7px 0 rgba(0, 0, 0, 0.5); }
@@ -4222,7 +4219,10 @@ body.scene-peek #backdrop { display: none; }
 .tower-stat span { font-size: 0.5rem; opacity: 0.8; }
 .tower-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; justify-content: center; gap: 6px; font-size: min(0.62rem, 2.35vw); white-space: nowrap; }
 .tower-rules li { display: flex; align-items: center; gap: 5px; margin: 0; padding: 5px 8px; border-radius: 99px; background: rgba(248, 240, 216, 0.12); }
-.tower-go { margin-top: 4px; }
+.tower-gorow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; width: 100%; margin-top: 4px; }
+.tower-back { justify-self: end; }
+.tower-back .pxb-i { font-size: 1rem; padding-inline: calc(5 * var(--p)); }
+.tower-back svg { width: 1.6em; height: 1.4em; fill: currentColor; shape-rendering: crispEdges; }
 .tower-go .pxb-i { font-size: 1rem; min-width: 200px; }
 .tower-note { margin: -4px 0 0; font-size: 0.5rem; opacity: 0.75; text-align: center; }
 .tower-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }

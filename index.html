@@ -729,7 +729,6 @@
        climber at its door, then your floors and Climb / Practice -->
   <dialog id="tower-dialog" class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
     <canvas id="tower-sky" class="tower-sky" aria-hidden="true"></canvas>
-    <button type="button" class="tower-x" id="tower-close" aria-label="Close">✕</button>
     <div class="tower-top">
       <h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2>
       <p class="tower-week" id="tower-week"></p>
@@ -739,7 +738,10 @@
       <p class="tower-name" id="tower-name"></p>
       <div class="tower-stats" id="tower-best"></div>
       <ul class="tower-rules" id="tower-rules"></ul>
-      <button type="button" class="pxb green tower-go" id="tower-go"><span class="pxb-o"><span class="pxb-i">Climb</span></span></button>
+      <div class="tower-gorow">
+        <button type="button" class="pxb grey tower-back" id="tower-close" aria-label="Back"><span class="pxb-o"><span class="pxb-i"><svg viewBox="0 0 8 7" aria-hidden="true"><path d="M3 0h1v1h-1zM2 1h2v1h-2zM1 2h7v3h-7zM0 3h1v1h-1zM2 5h2v1h-2zM3 6h1v1h-1z"/></svg></span></span></button>
+        <button type="button" class="pxb green tower-go" id="tower-go"><span class="pxb-o"><span class="pxb-i">Climb</span></span></button>
+      </div>
       <p class="tower-note" id="tower-note"></p>
       <div class="tower-row">
         <button type="button" class="pxb orange small" id="tower-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>

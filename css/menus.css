@@ -51,6 +51,7 @@
 .pxb.orange { --base: #f07a1e; --hi: #ffa650; --lo: #b85010; --ink: #3a1a06; }
 .pxb.sun    { --base: #f8c858; --hi: #ffe498; --lo: #c08a20; --ink: #3a2606; }
 .pxb.red    { --base: #e8483c; --hi: #ff8070; --lo: #a82420; }
+.pxb.grey   { --base: #8a8a9c; --hi: #b4b4c4; --lo: #5c5c6c; --ink: #1c1c26; }
 @media (hover: hover) { .pxb:not(:disabled):hover { translate: 0 -2px; filter: brightness(1.08) drop-shadow(0 calc(var(--p) + 2px) 0 rgba(20, 10, 30, 0.5)); } }
 .pxb:not(:disabled):active { translate: 0 var(--p); filter: drop-shadow(0 0 0 transparent); }
 .pxb:focus-visible { outline: none; filter: drop-shadow(0 var(--p) 0 rgba(20, 10, 30, 0.55)) drop-shadow(0 0 2px #f8e070) drop-shadow(0 0 1px #f8e070); }
