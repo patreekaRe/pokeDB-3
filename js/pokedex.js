@@ -104,7 +104,8 @@ export function dexDefeated(id) {
 }
 
 /** How many entries' research is complete, of how many. */
-export const researchCount = () => [ALL_IDS.filter(researched).length, ALL_IDS.length];
+export const isResearched = (id) => Boolean(pageOf(id)) && researched(id);
+export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.length];
 
 /* ---------- the window ---------- */
 

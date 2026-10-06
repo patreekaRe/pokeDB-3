@@ -302,6 +302,8 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .nameplate .gb-hp { width: 100%; margin: 0; }
 /* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */
 .nameplate-foot { display: flex; align-items: flex-start; gap: 4px 8px; }
+#enemy-dex.dex-mark { position: static; align-self: center; font-size: 1.7rem; }   /* already caught / researched (js/battle.js setupEnemy) */
+#enemy-dex[hidden] { display: none; }
 .nameplate .gb-hp-num { flex: none; width: auto; margin: 0 0 0 auto; font-size: 0.85rem; line-height: 20px; }
 .nameplate .gb-hp-track { transition: border-color 0.2s, box-shadow 0.2s; }
 /* while a fighter has block, its HP bar gets a blue rim so you can tell at a glance */

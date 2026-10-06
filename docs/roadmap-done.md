@@ -1455,3 +1455,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   battle for 350 ms (hit-stop), the enemy burns white, the number slams in big, the arena shakes in steps, then the faint;
   Eternatus's first bar keeps its rebirth (`finishingBlow()` in `js/battle.js`; detail in `docs/reference/battle-screen-layout.md`).
   Checked at 375x812 with `?bossfight=depths&hp=0.02`.
+- **Caught / researched mark on the enemy's plate** (the user's ask, 2026-10-05): a wild Pokémon you've fully researched
+  shows the Pokédex's gold Poké Ball at the foot of its nameplate, and in the Safari one you've already caught shows a red
+  one (`encounter.dexMark` from `enterRoom` in `js/run.js`, `isResearched()` in `js/pokedex.js`, drawn in `setupEnemy()`).
