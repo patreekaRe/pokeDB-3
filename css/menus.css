@@ -194,37 +194,79 @@
 .title-screen.menu .title-big { font-size: clamp(3rem, 14vw, 6rem); }
 .title-big { transition: font-size 0.4s ease; }
 
+/* Every sign is a Poké Ball on its side (the user's call, 2026-10-06: Continue's look for them all), smooth CSS, each in
+   its own colour (--c0 light, --c1 face, --c2 shade, --ink the label's outline, --g0..3 the glow in its button): the
+   coloured top with the label, the black seam, a white base, and the ball's round button at the left end holding the
+   sign's icon in a glow that breathes. A band of light sweeps each one in turn. */
 .gem {
-  --gp: 4px;   /* a gem pixel, as title.js draws it */
+  --gp: 4px;   /* a sign's size step (title.js reads the same breakpoint) */
+  --c0: #ff8a72; --c1: #e03024; --c2: #b41c14; --ink: #6a1008;
+  --g0: color-mix(in srgb, var(--c0) 35%, #fff); --g1: var(--c0); --g2: var(--c1); --g3: color-mix(in srgb, var(--c2) 55%, #181010);
   position: relative;
   flex: none;
   padding: 0;
-  border: 0;
-  background: none;
+  border: 3px solid #181010;
+  border-radius: 999px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0)) right 18px top 5px / calc(100% - var(--gp) * 18) 22% no-repeat,
+    linear-gradient(var(--c0) 0%, color-mix(in srgb, var(--c0), var(--c1)) 16%, var(--c1) 44%, var(--c2) 60%, #181010 60%, #181010 68%, #fff 68%, #f0f0f4 84%, #c4c4ce 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
   cursor: pointer;
   filter: drop-shadow(0 var(--gp) 0 rgba(20, 10, 30, 0.5));
   transition: translate 0.08s steps(2), filter 0.1s;
   animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) backwards calc(var(--i) * 70ms);
   -webkit-tap-highlight-color: transparent;
 }
+.gem-new { --c0: #e088f8; --c1: #b848d8; --c2: #7a2098; --ink: #4a1060; }
+.gem-collection, .gem-hub { --c0: #fff080; --c1: #e0bc28; --c2: #a88410; --ink: #5a4000; }
+.gem-corner { --c0: #ff9870; --c1: #f06038; --c2: #b83018; --ink: #6a1808; }
+.gem-trainer { --c0: #80e8d8; --c1: #38b0a0; --c2: #1e7468; --ink: #0c4038; }
+.gem-safari { --c0: #98e070; --c1: #58a838; --c2: #2e7020; --ink: #183c10; }
+.gem-pillar { --c0: #88c8f8; --c1: #4088c8; --c2: #20508a; --ink: #102c50; }
+.gem-modes { --c0: #ff90a8; --c1: #d84868; --c2: #902038; --ink: #50101c; }
+.gem-back { --c0: #b0bccf; --c1: #78849a; --c2: #4a5468; --ink: #262c38; }
+.gem-continue { --g0: #ffe6a0; --g1: #f4a840; --g2: #c85a1c; --g3: #5a1c0c; }   /* your run's ball in a warm amber glow */
+.gem.locked { --c0: #c8c8d0; --c1: #9a9aa6; --c2: #6c6c78; --ink: #34343c; --g0: #e8e8ee; --g1: #b8b8c2; --g2: #84848e; --g3: #3a3a42; }
 @keyframes gemIn { from { opacity: 0; transform: translate3d(0, 22px, 0); } to { transform: translate3d(0, 0, 0); } }
-.gem-face { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.gem::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.55) 48%, rgba(255, 255, 255, 0.15) 52%, transparent 56%) 0 0 / 250% 100% no-repeat;
+}
+/* the button: a black ring, a white ring, a thin black ring, then the glow round the icon */
 .gem-icon {
   position: absolute;
-  left: calc(var(--icon-x, 8) * var(--gp));
+  left: -3px;
   top: 50%;
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  height: calc(100% + 6px);
+  aspect-ratio: 1;
+  border-radius: 50%;
   translate: 0 -50%;
   pointer-events: none;
-  /* a dark pixel outline round the bare icon, so it reads on any gem */
-  filter: drop-shadow(2px 0 0 #2a1408) drop-shadow(-2px 0 0 #2a1408) drop-shadow(0 2px 0 #2a1408) drop-shadow(0 -2px 0 #2a1408) drop-shadow(0 3px 0 rgba(20, 10, 30, 0.45));
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.9) 0 6%, transparent 7%),
+    radial-gradient(circle closest-side, var(--g0) 0%, var(--g1) 34%, var(--g2) 52%, var(--g3) 60%, #181010 61%, #181010 66%, #fff 67%, #ececf2 80%, #b8b8c4 88%, #181010 89%);
+  filter: drop-shadow(1px 2px 1px rgba(20, 10, 30, 0.35));
 }
-.gem-icon img { width: 60px; height: 60px; max-width: none; object-fit: contain; image-rendering: pixelated; margin-top: -8px; }
-.gem-emoji { font-size: 30px; line-height: 1; }
+.gem-icon > * { position: relative; z-index: 1; }
+.gem-icon::before {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, color-mix(in srgb, var(--g0) 95%, transparent), color-mix(in srgb, var(--g1) 50%, transparent) 60%, transparent);
+  opacity: 0.4;
+}
+/* a dark outline round the icon itself, so it reads on the glow (Continue's ball has its own) */
+.gem-icon > :not(.cball) { filter: drop-shadow(2px 0 0 #2a1408) drop-shadow(-2px 0 0 #2a1408) drop-shadow(0 2px 0 #2a1408) drop-shadow(0 -2px 0 #2a1408); }
+.gem-icon img { width: 52px; height: 52px; max-width: none; object-fit: contain; image-rendering: pixelated; margin-top: -6px; }
+.gem-emoji { font-size: 26px; line-height: 1; }
 .gem-label {
   position: relative;
   display: grid;
@@ -232,12 +274,12 @@
   gap: 7px;
   height: 100%;
   align-content: center;
-  padding-left: 40px;
+  padding: 0 0 calc(var(--gp) * 6) calc(var(--gp) * 15);   /* on the coloured top, clear of the button */
   font: 1rem/1 var(--pixel-font); font-synthesis-weight: none;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #fff;
-  text-shadow: 2px 0 0 #3a1c0c, -2px 0 0 #3a1c0c, 0 2px 0 #3a1c0c, 0 -2px 0 #3a1c0c, 0 4px 0 rgba(20, 10, 30, 0.4);
+  text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 0 3px 2px rgba(20, 10, 30, 0.35);
 }
 /* a full Safari Pokédex: a gold ✦ in the Safari Zone gem's corner (safariGem() in js/title.js) */
 .gem-badge { position: absolute; top: calc(var(--gp) * 1.5); right: calc(var(--gp) * 2.5); z-index: 2; pointer-events: none; font: 1.1rem/1 var(--pixel-font); color: #ffe060; text-shadow: 2px 0 0 #6a4000, -2px 0 0 #6a4000, 0 2px 0 #6a4000, 0 -2px 0 #6a4000; }
@@ -254,7 +296,7 @@
 }
 .pxb-i .try-count, .pxb-i .inf-px { margin-left: 4px; }
 .gem-safari:has(.gem-tries) .gem-label { padding-right: 40px; }   /* centred between the icon and the count */
-.gem-tries { position: absolute; top: 50%; right: calc(var(--gp) * 6 + 3px); translate: 0 -50%; z-index: 2; pointer-events: none; }
+.gem-tries { position: absolute; top: 30%; right: calc(var(--gp) * 6 + 3px); translate: 0 -50%; z-index: 2; pointer-events: none; }
 @media (max-width: 600px) { .gem-tries { right: calc(var(--gp) * 5 + 3px); } .try-count.gem-tries { font-size: 1.05rem; } }
 .inf-px.gem-tries { right: calc(var(--gp) * 9); }   /* the ∞ sat too near the edge (the user's ask) */
 @media (max-width: 600px) { .inf-px.gem-tries { right: calc(var(--gp) * 8); } }
@@ -347,13 +389,12 @@
 .gem-areas-pop .area-marsh   { --c1: #d4dcc8; --c2: #3e5232; }
 .gem-areas-pop .area-peak    { --c1: #dde4ee; --c2: #4a5878; }
 .gem-areas-pop .area-desert  { --c1: #f4e2b0; --c2: #9a6a20; }
-.gem.locked .gem-face { filter: grayscale(1) brightness(0.8); }
-.gem.locked .gem-icon img { filter: grayscale(1) brightness(0.9); }
+.gem.locked .gem-icon img { filter: grayscale(1) brightness(0.9) drop-shadow(2px 0 0 #2a1408) drop-shadow(-2px 0 0 #2a1408) drop-shadow(0 2px 0 #2a1408) drop-shadow(0 -2px 0 #2a1408); }
 .gem.locked .gem-label { color: #c8c8d0; }
 /* today's starter, sized and centred on its visible pixels by fitMon() in js/title.js */
 .gem-icon img.gem-mon { position: absolute; max-width: none; margin: 0; object-fit: fill; }
 /* 2x, wider than its 44px slot, so negative margins centre it like the other icons */
-.gem-icon img.gem-ball { width: 60px; height: 60px; margin: calc((100% - 60px) / 2); }
+.gem-icon img.gem-ball { width: 52px; height: 52px; margin: 0; }
 .gem.on { translate: 0 -2px; filter: brightness(1.08) drop-shadow(0 calc(var(--gp) + 2px) 0 rgba(20, 10, 30, 0.5)); }
 .gem.on::before {
   content: "▶";
@@ -458,58 +499,15 @@
 .title-plate .gb-hp-num { width: 100%; font-size: 0.7rem; }
 @keyframes plateIn { from { opacity: 0; translate: 0 8px; } }
 @media (max-height: 700px) { .title-plate { width: 190px; padding: 4px 8px; } }
-/* Continue is a Poké Ball on its side, smooth rather than pixel art and the other signs' size (the user's calls,
-   2026-10-06): a red top with the label, the black seam, a white base, and the ball's round button at the left end
-   holding your run's ball in a warm glow that breathes. A band of light sweeps across it every 3.5 s. */
-.gem-continue {
-  border: 3px solid #181010;
-  border-radius: 999px;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0)) right 18px top 5px / calc(100% - var(--gp) * 18) 22% no-repeat,
-    linear-gradient(#ff8a72 0%, #f04a34 16%, #e03024 44%, #b41c14 60%, #181010 60%, #181010 68%, #fff 68%, #f0f0f4 84%, #c4c4ce 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
-}
-.gem-continue .gem-face { display: none; }
-.gem-continue::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.55) 48%, rgba(255, 255, 255, 0.15) 52%, transparent 56%) 0 0 / 250% 100% no-repeat;
-}
-.gem-continue .gem-label {
-  padding: 0 0 calc(var(--gp) * 6) calc(var(--gp) * 15);
-  text-shadow: 2px 0 0 #6a1008, -2px 0 0 #6a1008, 0 2px 0 #6a1008, 0 -2px 0 #6a1008, 0 3px 2px rgba(20, 10, 30, 0.35);
-}
-/* the button: a black ring, a white ring, a thin black ring, then the glow round the ball */
-.gem-continue .gem-icon {
-  left: -3px;
-  width: auto;
-  height: calc(100% + 6px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.9) 0 6%, transparent 7%),
-    radial-gradient(circle closest-side, #ffe6a0 0%, #f4a840 34%, #c85a1c 52%, #5a1c0c 60%, #181010 61%, #181010 66%, #fff 67%, #ececf2 80%, #b8b8c4 88%, #181010 89%);
-  filter: drop-shadow(1px 2px 1px rgba(20, 10, 30, 0.35));
-}
-.gem-continue .gem-icon::before {
-  content: "";
-  position: absolute;
-  inset: 18%;
-  border-radius: 50%;
-  background: radial-gradient(circle closest-side, rgba(255, 236, 170, 0.95), rgba(255, 190, 80, 0.5) 60%, transparent);
-  opacity: 0.4;
-}
+/* Continue holds your run's ball, a smooth SVG one */
 .gem-continue .cball { z-index: 1; }
 .gem-continue .cball-ball { width: 30px; height: 30px; }
 .gem-continue .cball-top { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 14A12.5 12.5 0 0 1 26.5 14Z' fill='%23e83828' stroke='%23181010' stroke-width='2'/><path d='M5.5 8.5A9 9 0 0 1 11 4' fill='none' stroke='%23ffa090' stroke-width='2' stroke-linecap='round'/><rect x='1' y='12.4' width='26' height='1.6' fill='%23181010'/><path d='M9.8 14A4.2 4.2 0 0 1 18.2 14Z' fill='%23fff' stroke='%23181010' stroke-width='1.8'/></svg>"); image-rendering: auto; }
 .gem-continue .cball-bottom { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 14'><path d='M1.5 0A12.5 12.5 0 0 0 26.5 0Z' fill='%23f4f4f6' stroke='%23181010' stroke-width='2'/><path d='M20 9.5A9 9 0 0 0 23.5 5' fill='none' stroke='%23c4c4ce' stroke-width='2.4' stroke-linecap='round'/><rect x='1' y='0' width='26' height='1.6' fill='%23181010'/><path d='M9.8 0A4.2 4.2 0 0 0 18.2 0Z' fill='%23fff' stroke='%23181010' stroke-width='1.8'/></svg>"); image-rendering: auto; }
 @media (max-height: 700px) { .gem-continue .cball-ball { width: 22px; height: 22px; } }
 @media (prefers-reduced-motion: no-preference) {
-  .gem-continue::after { animation: contSweep 3.5s ease-in-out infinite 0.8s; }
-  .gem-continue .gem-icon::before { animation: knobGlow 2s ease-in-out infinite; }
+  .gem::after { animation: contSweep 3.5s ease-in-out infinite calc(0.8s + var(--i, 0) * 0.35s); }
+  .gem-icon::before { animation: knobGlow 2s ease-in-out infinite calc(var(--i, 0) * -0.4s); }
 }
 @keyframes contSweep { 0% { background-position-x: 0%; } 35%, 100% { background-position-x: 100%; } }
 @keyframes knobGlow { 50% { opacity: 1; transform: scale(1.12); } }
@@ -557,10 +555,9 @@
 /* short windows: smaller gem pixels (title.js reads --gp's value from the same breakpoint) */
 @media (max-height: 700px) {
   .gem { --gp: 3px; }
-  .gem-label { font-size: 0.8rem; padding-left: 34px; }
-  .gem-icon { width: 36px; height: 36px; }
-  .gem-icon img { width: 48px; height: 48px; }
-  .gem-emoji { font-size: 24px; }
+  .gem-label { font-size: 0.8rem; gap: 4px; }
+  .gem-icon img { width: 40px; height: 40px; margin-top: -4px; }
+  .gem-emoji { font-size: 20px; }
   .title-menu { gap: 10px; }
   .title-screen.menu .title-big { font-size: clamp(2.6rem, 12vw, 5rem); }
   .title-screen.menu .title-big small { font-size: 0.85rem; }
@@ -901,7 +898,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 @keyframes menuInL { from { opacity: 0; transform: translate3d(-110px, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 /* a sign that opens a sub-menu: a ▶ on its right end */
 .gem-arrow {
-  position: absolute; top: 50%; right: calc(var(--gp) * 7); translate: 0 -50%; z-index: 2; pointer-events: none;
+  position: absolute; top: 30%; right: calc(var(--gp) * 7); translate: 0 -50%; z-index: 2; pointer-events: none;
   color: #fff8d8; font: 0.7rem/1 var(--pixel-font); text-shadow: 2px 2px 0 #2a1408;
 }
 @media (prefers-reduced-motion: no-preference) { .gem-more.on .gem-arrow { animation: arrowNudge 0.6s steps(2) infinite alternate; } }
@@ -909,7 +906,8 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .gem.locked .gem-arrow { opacity: 0.5; }
 .gem-back-icon { font-family: var(--pixel-font); font-size: 22px; color: #fff; text-shadow: none; }
 /* Back is a small gem of its own, just its ◀ (sizeGems() in js/title.js) */
-.gem-back .gem-icon { left: 50%; translate: -50% -50%; }
+.gem-back .gem-icon { left: 50%; top: 30%; height: auto; background: none; filter: none; translate: -50% -50%; }
+.gem-back .gem-icon::before { content: none; }
 .gem-back .gem-label { display: none; }
 .gem-back.on::before { left: -22px; }
 .gem-soon { font-size: 0.55rem; letter-spacing: 0.06em; color: #e0e4f0; }

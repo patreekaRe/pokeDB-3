@@ -59,23 +59,8 @@ const SKIES = {
 };
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
-const GEM_H = 16;   // gem height in pixels
+const GEM_H = 16;   // a sign's height in --gp steps; each one's look is CSS (.gem in css/menus.css)
 const BACK_W = 26;   // the Back gem's width in pixels
-const GEM_TIP = 6;   // how far in the rounded ends reach at the top and bottom rows
-// face, top light, bottom shade (the reference's amber, violet, gold and coral)
-const GEMS = {
-  new: ['#b848d8', '#e088f8', '#7a2098'],
-  collection: ['#e0bc28', '#fff080', '#a88410'],
-  corner: ['#f06038', '#ff9870', '#b83018'],
-  trainer: ['#38b0a0', '#80e8d8', '#1e7468'],
-  safari: ['#58a838', '#98e070', '#2e7020'],
-  pillar: ['#4088c8', '#88c8f8', '#20508a'],
-  modes: ['#d84868', '#ff90a8', '#902038'],
-  hub: ['#e0bc28', '#fff080', '#a88410'],
-  back: ['#78849a', '#b0bccf', '#4a5468'],
-};
-const OUTLINE = '#2a1408', BRONZE_LIGHT = '#d8a068', BRONZE_DARK = '#8a5430';
-
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let actions = null;       // what the gems do, and the saved run for Continue (initTitle)
@@ -250,7 +235,7 @@ function gem(kind, label, onPick, icon, extra) {
   const name = el('span', 'gem-label');
   name.append(el('span', 'gem-name', label));
   if (extra) name.append(extra);
-  btn.append(el('canvas', 'gem-face'), el('span', 'gem-icon'), name);
+  btn.append(el('span', 'gem-icon'), name);
   btn.querySelector('.gem-icon').append(icon);
   btn.addEventListener('pointerenter', () => point(btn, true));
   btn.addEventListener('focus', () => point(btn, true));
@@ -416,7 +401,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAreas
 function fitMon(img) {
   const [top, bottom, left, right] = spriteFit(img.src);
   const w = img.naturalWidth - left - right, h = img.naturalHeight - top - bottom;
-  const k = 1.2 / Math.max(w, h);
+  const k = 0.6 / Math.max(w, h);   // the slot is the whole round button, so fill its glow, not the ring
   const pct = (n) => `${(n * 100).toFixed(2)}%`;
   Object.assign(img.style, {
     width: pct(img.naturalWidth * k), height: pct(img.naturalHeight * k),
@@ -433,7 +418,7 @@ function point(btn, quiet = false) {
   if (document.activeElement !== btn && document.activeElement?.closest?.('#title-menu')) btn.focus({ preventScroll: true });
 }
 
-/** Each gem's canvas is a whole number of gem pixels wide, so its pixels stay square at any screen width. */
+/** Each sign is sized in whole --gp steps, so they all line up at any screen width. */
 function sizeGems() {
   const px = gemPx();
   const cols = Math.floor(Math.min(300, innerWidth * 0.8) / px);
@@ -442,56 +427,12 @@ function sizeGems() {
     const w = back ? BACK_W : cols;
     btn.style.width = `${w * px}px`;
     btn.style.height = `${GEM_H * px}px`;
-    if (btn.dataset.kind !== 'continue') paintGem(btn.querySelector('.gem-face'), w, GEM_H, GEMS[btn.dataset.kind]);   // Continue is CSS
   }
   // every page keeps the tallest page's height (four signs), so the nameplate never rises on a shorter sub-menu (the
   // user's ask)
   const menu = $('title-menu');
   const gap = parseFloat(getComputedStyle(menu).rowGap) || 0;
   menu.style.minHeight = `${4 * GEM_H * px + 3 * gap}px`;
-}
-
-/**
- * A pixel gem, after the glossy hexagon reference: pointed ends, a dark outline, a two-tone bronze frame and an inner
- * groove round a face with a light band on top, a shade band below, a gloss streak and white glints.
- */
-function paintGem(canvas, cols, rows, [face, hi, lo]) {
-  canvas.width = cols;
-  canvas.height = rows;
-  const g = canvas.getContext('2d');
-  g.clearRect(0, 0, cols, rows);
-  const mid = (rows - 1) / 2, half = rows / 2;
-  // soft points: a superellipse end, so the tip and the corners round off instead of meeting in sharp steps
-  const inset = (y) => Math.round(GEM_TIP * (1 - (1 - Math.abs((y - mid) / half) ** 1.6) ** (1 / 1.6)));
-  const inside = (x, y) => y >= 0 && y < rows && x >= inset(y) && x <= cols - 1 - inset(y);
-  // each pixel's depth from the edge, peeled a ring at a time, so the border is even round the curved ends too
-  const depth = [];
-  for (let y = 0; y < rows; y++) depth.push(Array.from({ length: cols }, (_, x) => (inside(x, y) ? 9 : -1)));
-  for (let d = 0; d < 3; d++) {
-    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-      if (depth[y][x] < d) continue;
-      const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => (depth[y + dy]?.[x + dx] ?? -1) < d);
-      if (edge && depth[y][x] > d) depth[y][x] = d;
-    }
-  }
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const d = depth[y][x];
-      if (d < 0) continue;
-      let c;
-      if (d === 0) c = OUTLINE;
-      else if (d === 1) c = y < mid ? BRONZE_LIGHT : BRONZE_DARK;
-      else c = y <= 4 ? hi : y >= rows - 5 ? lo : face;
-      g.fillStyle = c;
-      g.fillRect(x, y, 1, 1);
-    }
-  }
-  // a gloss streak across the upper face, broken like the reference's highlight
-  g.fillStyle = hi;
-  for (let x = Math.round(cols * 0.18); x < cols * 0.82; x++) if (x % 9 < 6) g.fillRect(x, 5, 1, 1);
-  g.fillStyle = 'rgba(255, 255, 255, 0.85)';
-  g.fillRect(8, 3, 5, 1); g.fillRect(15, 3, 2, 1);
-  g.fillRect(cols - 14, rows - 4, 5, 1);
 }
 
 /** Continue's icon: the run's Poké Ball, wobbling, with your Pokémon waiting inside to be sent out. */
