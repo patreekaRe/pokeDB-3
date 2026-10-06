@@ -25,6 +25,7 @@ import { $ } from './ui.js';
 import { playSound } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
+import { battleFx } from './prefs.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;   // the scenery's clock: everything below is timed in these ticks a second
@@ -1300,7 +1301,7 @@ export function setStorm(on) {
 /** Hold on an empty boss arena, awaken its landmark, then open a flash into the Pokémon reveal. */
 export async function bossArenaPrelude() {
   if (!hasPrelude()) return;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (!battleFx()) {
     await new Promise(resolve => setTimeout(resolve, 500));
     if (hasPrelude()) {
       bossPrelude = { phase: 'awake', at: tick };
@@ -1341,7 +1342,7 @@ export async function bossRebirth(skipped) {
   let skip = false;
   skipped?.then(() => { skip = true; });
   const wait = (ms) => Promise.race([new Promise(resolve => setTimeout(resolve, ms)), skipped]);
-  if (S.raw.backdrop === 'depths' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (S.raw.backdrop === 'depths' && battleFx()) {
     await Promise.race([maxFigureReady(), wait(800)]);
     if (!still()) return;
     bossPrelude = { phase: 'max', at: tick };

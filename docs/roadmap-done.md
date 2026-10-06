@@ -1532,3 +1532,4 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Vibration switch) and Save. Detail in `docs/reference/top-bar-and-start-screen.md`.
 
 - **Device colour** (Settings option 1, 2026-10-06): Red / Blue / Yellow / Green / Pink / Black swatches in Settings' Display card; the device's reds became `--shell-*` variables in `css/base.css`, swapped by `data-shell`. Same day: iPhones get a haptic tick for Vibration (iOS 18+'s switch-checkbox trick in `vibrate()`).
+- **Battle animations On / Off** (Settings option 2, 2026-10-06, the games' Battle Scene): `battleFx()` in `js/prefs.js` (off, or reduced motion) skips card trails and burns, stat-change bands, big-hit jolts, the KO hit-stop, the enemy's slide-in and the Poké Ball throw, boss preludes (the half-second reduced-motion cut) and the Darkest Day; `html.no-battle-fx` stops the lunges and recoil. Hits still shake, numbers and sounds stay; the catch's ball wobbles too.

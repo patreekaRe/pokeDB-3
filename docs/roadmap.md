@@ -12,7 +12,7 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 **More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
 their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.
 1. ~~Device colour~~ done 2026-10-06 (see the archive).
-2. **Battle animations On / Off** (the games' Battle Scene): skip move effects and slow intros.
+2. ~~Battle animations~~ done 2026-10-06 (see the archive).
 3. **Reduce flashing / screen shake** (white-outs, `.boom`, shakes; reduced motion already skips some).
 4. **Text size**: Normal / Large.
 5. **Nickname**: set the Trainer name here, not only through the leaderboard (`trainerName()`).

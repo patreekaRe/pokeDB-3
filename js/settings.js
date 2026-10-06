@@ -1,7 +1,7 @@
 /* ============================================================
    settings.js  -  the Pokédex's Settings app, a games' OPTIONS screen
    (index.html's #dev-settings): under the sound bars (js/audio.js), a row
-   of choices per option, each saved under its key. Battle speed is read
+   of choices per option, each saved under its key. Battle speed and animations are read
    by js/battle.js, the text speed by every typing text box, the clock by
    js/daytime.js, vibration by vibrate() and the device colour by css/base.css's
    data-shell colours (their meanings are in js/prefs.js).
@@ -27,6 +27,7 @@ const OPTIONS = {
     apply: (v, changed) => { setClock(v); if (changed) dispatchEvent(new Event('resize')); },
   },
   battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
+  battleFx: { values: [[true, 'On'], [false, 'Off']], apply: v => document.documentElement.classList.toggle('no-battle-fx', !v) },
   endTurnWarn: { values: [[true, 'On'], [false, 'Off']] },
   vibration: { values: [[true, 'On'], [false, 'Off']], apply: (v, changed) => { if (changed && v) vibrate(20); } },
 };

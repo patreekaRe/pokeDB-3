@@ -632,6 +632,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 #enemy-img.recoil { transform-origin: 50% 100%; animation: enemyRecoil 0.52s ease-out; }
 @keyframes enemyRecoil { 18% { translate: 12px -8px; rotate: 9deg; scale: 0.94; } 50% { translate: 5px -3px; rotate: 4deg; scale: 0.98; } }
 @media (prefers-reduced-motion: reduce) { .enemy-portrait.attacking, #enemy-img.recoil { animation: none; } }
+.no-battle-fx :is(.enemy-portrait.attacking, #enemy-img.recoil, #player-sprite.lunge) { animation: none; }
 /* 2x battle speed (Settings, js/settings.js): the same animations at half their length, to match pause() in battle.js */
 .fast-battle #battle-screen .pop { animation-duration: 0.6s; }
 .fast-battle #battle-screen .hit { animation-duration: 0.21s; }
