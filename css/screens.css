@@ -4067,15 +4067,15 @@ body.scene-peek #backdrop { display: none; }
 .sp-pill.perks { color: #98f0a0; background: rgba(152, 240, 160, 0.14); border-color: #98f0a0; }
 .sp-pill.off { color: #6a6878; background: rgba(255, 255, 255, 0.04); border-color: #4a4858; }
 .sp-eq { font: 0.9rem/1 var(--pixel-font); color: #c8c0a8; }
-.dialog .sp-rules li.with-card { grid-template-columns: 1.5em 1fr auto; }
+.safari-prep-dialog .sp-rules li.with-card { grid-template-columns: 1.5em 1fr auto; }
 .sp-card { width: 62px; cursor: zoom-in; flex: none; }
 .sp-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
-.dialog .sp-head {
+.safari-prep-dialog .sp-head {
   margin: 16px 0 8px; padding-top: 10px; border-top: 2px dashed rgba(255, 255, 255, 0.18);
   font-size: 0.75rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: #f8d048;
 }
 .sp-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.dialog .sp-rules li { display: grid; grid-template-columns: 1.5em 1fr; align-items: center; gap: 10px; margin: 0; font-size: 0.82rem; line-height: 1.5; color: #fff8e8; }
+.safari-prep-dialog .sp-rules li { display: grid; grid-template-columns: 1.5em 1fr; align-items: center; gap: 10px; margin: 0; font-size: 0.82rem; line-height: 1.5; color: #fff8e8; }
 .sp-rule-icon { display: grid; place-items: center; font-size: 1.1rem; }
 .sp-links .pxb.small .pxb-i { font-size: 0.8rem; }
 /* the balls and Back / Start stay on the window's bottom edge, like an item bar, while the rules scroll on a phone */
@@ -4131,8 +4131,51 @@ body.scene-peek #backdrop { display: none; }
   .sp-ball-icon img { width: 44px; height: 44px; }
   .sp-corner { width: 40px; font-size: 16px; }
   .sp-foot { margin: 12px -12px 0; padding: 0 12px 12px; }
-  .dialog .sp-rules li { font-size: 0.78rem; }
+  .safari-prep-dialog .sp-rules li { font-size: 0.78rem; }
 }
+
+/* the classic window (?safariclassic): the lobby's wrappers step aside and its scene is never drawn */
+.safari-prep-dialog:not(.lobby) :is(.sp-page, .sp-top, .sp-base) { display: contents; }
+.safari-prep-dialog:not(.lobby) :is(.sp-sky, .sp-gate-mon, .sp-date, .sp-plaque-slot) { display: none; }
+.safari-prep-dialog:not(.lobby) .sp-how > summary { list-style: none; cursor: default; }
+.safari-prep-dialog:not(.lobby) .sp-how > summary::-webkit-details-marker { display: none; }
+
+/* the lobby (the user's ask, 2026-10-05: the Sky Pillar lobby's look on the Safari window): a screen of its own over the
+   Zone's gate (js/safari-lobby.js, `--ground` its grass line), today's starter at the gate, everything else on the soil */
+.safari-prep-dialog.lobby { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+  background: #0e140c; color: #fff8e8; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+.safari-prep-dialog.lobby::backdrop { background: #000; }
+.lobby .sp-page { position: relative; min-height: 100%; overflow: hidden; display: flex; flex-direction: column; align-items: center;
+  padding: 0 16px max(18px, env(safe-area-inset-bottom)); text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6); }
+.lobby .sp-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.lobby .sp-top { position: relative; flex: 1 0 auto; min-height: clamp(270px, 46dvh, 500px); width: 100%; text-align: center; padding-top: max(26px, calc(env(safe-area-inset-top) + 18px)); }
+.lobby h2.sp-title { margin: 0; padding: 0; border: 0; outline: none; font: clamp(1.5rem, 8vw, 2.4rem)/1.1 var(--pixel-font); letter-spacing: 2px; text-transform: uppercase; color: #f8d048;
+  text-shadow: 3px 0 0 #2a1408, -3px 0 0 #2a1408, 0 3px 0 #2a1408, 0 -3px 0 #2a1408, 0 7px 0 rgba(0, 0, 0, 0.45); }
+.lobby .sp-date { width: fit-content; margin: 10px auto 0; padding: 5px 12px 4px; border-radius: 99px; background: rgba(6, 8, 24, 0.55); font-size: 0.72rem; letter-spacing: 1px; color: #e8f0ff; }
+.sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 50%); width: 96px; height: 96px; object-fit: contain; object-position: 50% 100%;
+  translate: -50% calc(6px - 100%); pointer-events: none; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45)); }
+.lobby .sp-base { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: min(100%, 440px); padding-top: 22px; }
+.lobby .sp-foot { display: contents; }
+.lobby .sp-today { order: 1; justify-content: center; padding: 0; background: none; text-align: center; }
+.lobby .sp-today .sp-mon, .lobby .sp-kicker { display: none; }
+.lobby .sp-info { justify-items: center; gap: 10px; }
+.lobby .sp-areas { justify-content: center; }
+.lobby .sp-replay { order: 2; margin: 0; }
+.lobby .sp-actions { order: 3; display: grid; grid-template-columns: auto 1fr; gap: 10px; margin: 2px 0 0; }
+.lobby .sp-actions #sp-start .pxb-i { width: 100%; }
+.lobby .sp-links { order: 4; margin: 0; }
+.lobby .sp-foot > .sp-head { order: 5; margin: 6px 0 0; }
+.lobby .sp-bar { order: 6; }
+.lobby .sp-how { order: 7; }
+.lobby .sp-plaque-slot { order: 8; margin: 0; min-height: 0; }
+.lobby .sp-head { margin: 6px 0 8px; }
+.lobby .sp-how > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
+.lobby .sp-how > summary::-webkit-details-marker { display: none; }
+.lobby .sp-how > summary::after { content: '▸'; font-size: 0.9rem; transition: rotate 0.2s; }
+.lobby .sp-how[open] > summary::after { rotate: 90deg; }
+.lobby .sp-how[open] .sp-rules { padding: 10px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); }
+.lobby :is(.sp-rules li, .sp-area, .sp-pill, .sp-eq) { text-shadow: none; }
+@media (max-width: 480px) { .lobby .sp-page { padding: 0 12px max(14px, env(safe-area-inset-bottom)); } .lobby .sp-base { gap: 10px; } }
 
 /* ---------- the Safari leaderboard (js/leaderboard.js): narrow, centred, a box per board ---------- */
 .dialog.board-dialog { width: min(440px, 94vw); }

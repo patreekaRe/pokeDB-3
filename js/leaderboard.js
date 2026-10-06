@@ -282,3 +282,13 @@ export function initLeaderboard() {
   // a result waiting from a signed-out run goes up as soon as you sign in
   onCloudSignIn(() => { for (const k of Object.values(KINDS)) if (pending(k)) post(k).catch(() => {}); });
 }
+
+/** Today's top catchers, for the Safari lobby's plaque (js/safariprep.js): like towerTop(), off the Most caught board. */
+export async function safariTop(n = 5) {
+  if (!cloudConfigured()) return null;
+  try {
+    const s = await cloudSession();
+    const entries = await entriesFor(safariDay(), s, KINDS.safari);
+    return rankBoards(entries, s.user?.uid, n).find(b => b.id === 'caught').rows.map(r => ({ ...r.entry, mine: r.mine }));
+  } catch (err) { return null; }
+}

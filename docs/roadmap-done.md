@@ -1458,3 +1458,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Caught / researched mark on the enemy's plate** (the user's ask, 2026-10-05): a wild Pokémon you've fully researched
   shows the Pokédex's gold Poké Ball at the foot of its nameplate, and in the Safari one you've already caught shows a red
   one (`encounter.dexMark` from `fight()` in `js/run.js`, `isResearched()` in `js/pokedex.js`, drawn in `setupEnemy()`).
+- **Safari lobby** (the user's ask, 2026-10-05): the Safari Zone's prep window as a full-screen lobby like the Sky Pillar's,
+  the Zone's gate painted behind today's starter (`js/safari-lobby.js`), a top-catchers plaque; the old window stays behind
+  `?safariclassic` (`?safarilobby` undoes it). Detail in `docs/reference/safari.md`.

@@ -3,6 +3,10 @@
    Safari Zone gem and the run (docs/reference/safari.md): today's run,
    how the Safari works, your Poké Balls, and the doors to the Safari
    Pokédex, the leaderboard and the Game Corner, then Start.
+   Two looks (the user's ask, 2026-10-05, to compare): the lobby, a screen
+   of its own like the Sky Pillar's (js/safari-lobby.js paints the gate
+   behind it), or the classic window; ?safariclassic picks the classic one
+   for good on this device, ?safarilobby the lobby again.
    ============================================================ */
 
 import { safariDaily, SAFARI_DEX_PAGES, SAFARI_AREA_COINS, RARE_BOOST, safariProgress } from './data/safari.js';
@@ -11,12 +15,24 @@ import { CARDS_BY_ID } from './data/cards.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
 import { openSafariDex } from './safaridex.js';
-import { openLeaderboard } from './leaderboard.js';
+import { openLeaderboard, safariTop } from './leaderboard.js';
+import { cloudConfigured } from './cloud.js';
+import { startGate, stopGate } from './safari-lobby.js';
 import { toggleShop } from './shop.js';
 import { playSound } from './audio.js';
 import { $, el, infGlyph, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
 
 let actions = {};
+
+const CLASSIC_KEY = 'pokedb.safari.classic';
+const classic = (() => {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.has('safariclassic')) localStorage.setItem(CLASSIC_KEY, '1');
+    if (q.has('safarilobby')) localStorage.removeItem(CLASSIC_KEY);
+    return localStorage.getItem(CLASSIC_KEY) === '1';
+  } catch (err) { return false; }
+})();
 
 const ROCK_HIT = CARDS_BY_ID.rock.effects.damage;
 const RULES = [
@@ -48,11 +64,60 @@ export function initSafariPrep(handlers) {
   $('sp-corner').addEventListener('click', () => { if (!$('shop-dialog').open) toggleShop('balls', { modal: true }); });
   // a ball bought in the Game Corner, or anything changed in a window opened on top, shows once it closes
   for (const id of ['safari-dex-dialog', 'board-dialog', 'shop-dialog']) $(id).addEventListener('close', () => { if ($('safari-prep-dialog').open) render(); });
+  // the classic window always shows the rules; the lobby folds them away
+  $('sp-how').querySelector('summary').addEventListener('click', e => { if (classic) e.preventDefault(); else playSound('confirm'); });
+  $('safari-prep-dialog').classList.toggle('lobby', !classic);
+  $('safari-prep-dialog').classList.toggle('dialog', classic);
+  if (classic) return;
+  $('safari-prep-dialog').addEventListener('close', stopGate);
+  // the grass line is measured off the layout, so repaint whenever anything above or around it moves
+  const relayout = new ResizeObserver(() => { if ($('safari-prep-dialog').open) paintGate(); });
+  relayout.observe($('sp-page'));
+  relayout.observe($('sp-top'));
+}
+
+function paintGate() {
+  const page = $('sp-page'), top = page.getBoundingClientRect().top;
+  const g = startGate($('sp-sky'), page, $('sp-base').getBoundingClientRect().top - top + 8, $('sp-date').getBoundingClientRect().bottom - top);
+  page.style.setProperty('--ground', `${g}px`);
 }
 
 export function openSafariPrep() {
   render();
+  $('sp-how').open = classic;
   openDialog('safari-prep-dialog');
+  if (classic) return;
+  $('safari-prep-dialog').scrollTop = 0;
+  engrave();
+  paintGate();
+}
+
+const PLAQUE_ROWS = 5;
+let engraved = false;
+
+/** The lobby's plaque: today's top catchers, the Sky Pillar's bronze plate (engrave() in js/towerprep.js); it's the last
+    thing on the page, so unlike the tower's it keeps no room before the board answers. */
+async function engrave() {
+  const slot = $('sp-plaque-slot'), plaque = $('sp-plaque'), list = $('sp-plaque-list');
+  slot.hidden = !cloudConfigured();
+  if (slot.hidden) return;
+  if (!engraved) plaque.classList.remove('in');
+  const top = await safariTop(PLAQUE_ROWS);
+  if (!top) { plaque.classList.remove('in'); engraved = false; return; }
+  engraved = true;
+  plaque.classList.add('in');
+  if (!top.length) { list.replaceChildren(el('li', 'tower-plaque-note', 'No catches yet today. Be the first!')); return; }
+  list.replaceChildren(...top.map(plaqueRow));
+}
+
+function plaqueRow(e, i) {
+  const li = el('li', `tower-plaque-row${e.mine ? ' mine' : ''}`);
+  const img = el('img', 'pixel');
+  const starter = STARTERS_BY_ID[e.starter];
+  if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
+  li.append(el('span', 'tower-plaque-rank', `${i + 1}`), img, el('span', 'tower-plaque-name', e.name), el('span', 'tower-plaque-floor', `${e.caught} caught`));
+  li.title = `${e.name}: ${e.caught} caught${e.won ? ', crossed the Safari Zone' : ''}`;
+  return li;
 }
 
 function render() {
@@ -76,6 +141,10 @@ function render() {
   info.append(el('span', 'sp-kicker', `Today's starter · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
     el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : '🏆 Daily run: 0/1'));
   $('sp-today').replaceChildren(mon, info);
+  $('sp-date').textContent = `Today's starter · ${daily.day}`;
+  const gateMon = $('sp-gate-mon');
+  gateMon.src = mon.src;
+  gateMon.alt = daily.starter.line[0].name;
   $('sp-start').querySelector('.pxb-i').replaceChildren(first ? 'Start' : 'Replay', first ? el('span', 'try-count', '1/1') : infGlyph());
 
   // the full Safari Pokédex's prize stays unnamed until it's won
