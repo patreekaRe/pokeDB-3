@@ -649,16 +649,16 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
   position: absolute; top: 3px; bottom: 3px;
   left: calc(3px + (100% - 6px) * var(--from));
   width: calc((100% - 6px) * var(--size));
-  background: #f8f8f0;
-  box-shadow: inset 0 0 0 2px #e83020;
+  background: #e83020;
   animation: hpGhost 0.7s steps(1) infinite;
 }
-@keyframes hpGhost { 50% { background: #e83020; } }
+/* blinks red over the bar's own colour: a cream box with a red ring read as a stray white dot on small hits */
+@keyframes hpGhost { 50% { background: transparent; } }
 .nameplate.block-preview .gb-hp-track { animation: blockGhost 0.7s steps(1) infinite; }
 @keyframes blockGhost { 50% { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); } }
 .badge.preview { animation: badgeGhost 0.7s steps(1) infinite; }
 @keyframes badgeGhost { 50% { opacity: 0.45; } }
-@media (prefers-reduced-motion: reduce) { .gb-hp-ghost, .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } .gb-hp-ghost { background: #f0a090; } }
+@media (prefers-reduced-motion: reduce) { .gb-hp-ghost, .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } .gb-hp-ghost { background: #f07060; } }
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
