@@ -498,7 +498,7 @@ function roomWall(b, lay, surf, S, t, info, lit, f) {
   doors.forEach((d, k) => door(b, xs[k], surf, d.type, { open: d.open || 0, lit, taken: d.taken, S }));
 }
 
-/** A guardian's hall: banners, braziers and one great double door. */
+/** A guardian's hall: banners, braziers and one great door. */
 function guardianHall(b, lay, surf, S, t, info, lit) {
   const cx = Math.round((lay.doorL + lay.doorR) / 2), ban = (BANNER[info.banner] || BANNER[0]).map(h => K(lit ? h : dim(h)));
   for (const side of [-1, 1]) {
@@ -514,8 +514,7 @@ function guardianHall(b, lay, surf, S, t, info, lit) {
   }
   // the great door, gold-trimmed, an emblem over it
   const w = 23, h = 32;
-  door(b, cx - 6, surf, 'boss', { open: info.doors?.[0]?.open || 0, lit, S, w: 12, h });
-  door(b, cx + 6, surf, 'boss', { open: info.doors?.[0]?.open || 0, lit, S, w: 12, h });
+  door(b, cx, surf, 'boss', { open: info.doors?.[0]?.open || 0, lit, S, w, h });
   rect(b, cx - Math.floor(w / 2) - 2, surf - h - 6, w + 4, 2, S.gold[2]);
   disc(b, cx, surf - h - 8, 3.5, S.gold[1]);
   disc(b, cx, surf - h - 8, 2, K(lit ? DOOR_GEM.boss : dim(DOOR_GEM.boss)));
