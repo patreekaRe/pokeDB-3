@@ -74,3 +74,7 @@ went +1/+2/+3 (now 7/16/27 and 8/21/33). Human bot fire / grass / water, 300
 runs/cell: L0 70 / 77 / 76, L3 56 / 57 / 61, L5 34 / 34 / 33 (before, 400
 runs: L0 69 / 78 / 71, L3 60 / 62 / 64, L5 37 / 32 / 38).
 
+
+## In the Index
+
+An item counts as found (`save.seen.items`, the Collection's Items app) once it is in the Bag, used or not (the user's call, 2026-10-06: a Revive carried twice and never used stayed ???). `checkpoint()` in `js/run.js` marks the Bag at every map, `endRun()` marks whatever the last rewards added, and using one in battle or on the map still marks it.

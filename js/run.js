@@ -208,6 +208,7 @@ function checkpoint() {
   if (peeking) return;   // a ?event= playtest run is never saved
   const { floors, byId } = run.map;
   for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
+  for (const id of run.items) markSeen('items', id);   // an item is found once it's in the Bag, used or not (the user's call)
   saveRunData({
     version: RUN_SAVE_VERSION,
     starter: run.starter.id,
@@ -2620,6 +2621,7 @@ async function endTower(won) {
 function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
   if (!peeking) clearRunData();
+  if (!peeking) for (const id of run.items) markSeen('items', id);   // found on the last rewards, with no map checkpoint after
   if (isTower()) return endTower(won);
   const mewtwoRun = isMewtwoRun(run.starter);
   const safari = isSafari();   // the daily run pays its coins, but its starter isn't yours: no records, stats or Levels
