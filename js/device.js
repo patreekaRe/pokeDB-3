@@ -82,7 +82,7 @@ export async function openDevice({ render, cover, splash, start = null, home: to
   dev.querySelector('.cdev-cover')?.remove();
   dev.classList.remove('powered', 'keyed');
   sel = null;
-  renderHome(!calm() && !start);
+  renderHome();
   setTitle('COLLECTION', '');
   if (start) openApp(start, true);   // under the cover, so it swings open onto the app
   if (calm()) { playSound('dex-on'); return; }
@@ -93,9 +93,11 @@ export async function openDevice({ render, cover, splash, start = null, home: to
   await held(lid, lid.querySelector('.cdev-led.on') ? 1300 : 420);
   playSound('dex-on');
   dev.classList.add('powered');
+  // the hello is up before the lid swings, so the home screen is never seen ahead of it
+  const hello = start ? null : splashOf(splash);
   await settle(lid.animate(SWING, { duration: 520, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
   lid.remove();
-  bootScreen(start ? null : splash);
+  bootScreen(hello);
   busy = false;
 }
 
@@ -113,24 +115,31 @@ function makeCover() {
 }
 
 /** The screen warms up from a bright line, says hello, and the home screen's icons pop in. */
-function bootScreen(splash) {
+function bootScreen(hello) {
   const screen = $('cdev-screen');
   screen.classList.remove('power-on');
   void screen.offsetWidth;
   screen.classList.add('power-on');
-  if (splash) {
-    const s = el('div', 'cdev-splash');
-    s.append(el('span', 'cdev-splash-ball'), el('span', 'cdev-splash-text', splash));
-    screen.append(s);
-    s.addEventListener('animationend', () => s.remove());
-  }
+  if (!hello) return;
+  hello.classList.remove('wait');
+  hello.addEventListener('animationend', () => hello.remove());
+  home().classList.add('boot');
 }
 
-function renderHome(boot = false) {
+/** The boot screen's hello, held still over the home screen until bootScreen() lets it fade. */
+function splashOf(splash) {
+  if (!splash) return null;
+  const s = el('div', 'cdev-splash wait');
+  s.append(el('span', 'cdev-splash-ball'), el('span', 'cdev-splash-text', splash));
+  $('cdev-screen').append(s);
+  return s;
+}
+
+function renderHome() {
   const h = home();
   const keep = sel && [...h.querySelectorAll('.cdev-pick')].indexOf(sel);
   h.replaceChildren(...drawHome());
-  h.classList.toggle('boot', boot);
+  h.classList.remove('boot');
   h.querySelectorAll('.cdev-pick').forEach((p, i) => p.style.setProperty('--i', i));
   const picks = [...h.querySelectorAll('.cdev-pick')];
   select(picks[keep > 0 ? keep : 0] ?? null, false);

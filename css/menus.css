@@ -891,6 +891,7 @@ button.mv-row { cursor: zoom-in; }
   background: radial-gradient(circle, #f2f2f2 0 20%, #1a1a22 21% 29%, transparent 30%), linear-gradient(180deg, #e8343a 0 46%, #1a1a22 46% 54%, #f2f2f2 54%);
 }
 .cdev-splash-text { font-size: 0.62rem; letter-spacing: 1px; color: #b6f08e; }
+.cdev-splash.wait { animation-play-state: paused; }
 @keyframes cdevSplash { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 .cdev-home.boot .cdev-pick { animation: cdevPop 0.36s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(0.7s + var(--i) * 45ms); }
 @keyframes cdevPop { from { opacity: 0; transform: scale(0.6); } }
