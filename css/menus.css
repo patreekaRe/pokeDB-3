@@ -989,7 +989,10 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .bdx-sheet .hof-stats .stat-tile { padding: 6px 4px 5px; }
 .bdx-sheet .hof-stats .stat-value { font: 0.78rem/1.3 var(--pixel-font); font-synthesis-weight: none; color: var(--ink); }
 .bdx-sheet .hof-stats .stat-label { color: var(--ink); opacity: 0.75; }
-.bdx-sheet .hof-things { padding: 8px; gap: 6px; }
+.bdx-sheet .hof-things { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 8px; gap: 6px; }
+.bdx-sheet .hof-thing { min-width: 0; min-height: 40px; box-sizing: border-box; padding-right: 6px; line-height: 1.4; }
+.bdx-sheet .hof-thing-icon { flex: none; }
+.bdx-sheet .hof-thing-name { min-width: 0; overflow-wrap: anywhere; }
 .bdx-sheet .hof-thing { background: rgba(255, 255, 255, 0.35); box-shadow: inset 0 0 0 2px rgba(31, 58, 20, 0.25); color: var(--ink); }
 .bdx-sheet .hof-thing.ability { background: #f2dc8a; box-shadow: inset 0 0 0 2px #b08a20; color: #6a4a00; }
 /* HP over the run, drawn in the LCD's own ink */
