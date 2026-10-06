@@ -16,7 +16,7 @@ import { spriteFit } from './data/sprite-fit.js';
 import { makeBuffer, flush, put, K, bay, hash, paintSky, stone, FH, TOP } from './tower-art.js';
 
 // the pan dips to black over its last FADE_OUT ms, holds CUT, and the walk fades in over its first FADE_IN
-const PAN = 4400, FADE_OUT = 550, CUT = 200, FADE_IN = 750, WALK = 2900, OPEN = 1900, STEP = 150;
+const PAN = 4800, FADE_OUT = 950, CUT = 450, FADE_IN = 1200, WALK = 2900, OPEN = 1900, STEP = 150;
 const T_WALK = PAN + CUT, T_EYES = T_WALK + WALK * 0.6, T_OPEN = T_WALK + WALK, T_END = T_OPEN + OPEN;
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
@@ -151,8 +151,8 @@ function placeMon(mon, ms, walking, inside, doorY) {
 
 function paintPan(ms) {
   const { W, H } = b;
-  // a slow drift off the summit that keeps gathering speed, still falling fast as the black comes down
-  const p = clamp01((ms - 300) / (PAN - 300)) ** 2.6;
+  // a slow drift off the summit that gathers speed, then brakes and settles at the foot as the black comes down
+  const p = 1 - (1 - clamp01((ms - 300) / (PAN - 300)) ** 2.6) ** 2;
   const from = TOP * FH + 40 - H * 0.6, to = -Math.round(H * 0.18);
   const camY = Math.round(from + (to - from) * p), t = ms / 33;
   paintSky(b, camY, t);
