@@ -4296,7 +4296,11 @@ body.scene-peek #backdrop { display: none; }
 @media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-plate.stamp, .tw-plate.stamp .tw-plate-num, .tw-fx-text.in { animation: none; } }
 .tw-fx-text.high { top: 7%; }
 /* the lobby's plaque (js/towerprep.js): the week's top climbers engraved in a bronze plate, riveted at the corners */
-.tower-plaque { position: relative; width: 100%; margin: 6px 0 0; text-shadow: none; padding: 10px 18px 12px; border: 3px solid #4a3410; border-radius: 6px;
+.tower-plaque-slot { width: 100%; min-height: var(--plaque-h, 0px); margin-top: 6px; }
+.tower-plaque-slot[hidden] { display: none; }
+.tower-plaque { visibility: hidden; opacity: 0; transition: opacity 0.35s ease-out, visibility 0s 0.35s; }
+.tower-plaque.in { visibility: visible; opacity: 1; transition: opacity 0.35s ease-out; }
+.tower-plaque { position: relative; width: 100%; margin: 0; text-shadow: none; padding: 10px 18px 12px; border: 3px solid #4a3410; border-radius: 6px;
   background: linear-gradient(160deg, #f0d088 0%, #c89a48 35%, #a87830 70%, #c89a48 100%); color: #3a2408;
   box-shadow: inset 2px 2px 0 rgba(255, 248, 210, 0.6), inset -2px -2px 0 rgba(60, 36, 8, 0.4), 3px 4px 0 rgba(0, 0, 0, 0.35); }
 .tower-plaque::before, .tower-plaque::after { content: ''; position: absolute; top: 5px; width: 6px; height: 6px; border-radius: 50%; background: #6a4818; box-shadow: inset 1px 1px 0 #f8e0a0; }

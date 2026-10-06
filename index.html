@@ -729,7 +729,7 @@
        climber at its door, then your floors and Climb / Practice -->
   <dialog id="tower-dialog" class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
     <canvas id="tower-sky" class="tower-sky" aria-hidden="true"></canvas>
-    <div class="tower-top">
+    <div class="tower-top" id="tower-top">
       <h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2>
       <p class="tower-week" id="tower-week"></p>
     </div>
@@ -748,8 +748,9 @@
         <button type="button" class="pxb blue small" id="tower-practice"><span class="pxb-o"><span class="pxb-i">Practice</span></span></button>
       </div>
       <div class="tower-picks" id="tower-picks" hidden></div>
-      <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js) -->
-      <div class="tower-plaque" id="tower-plaque" hidden><h3 class="tower-plaque-title">This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div>
+      <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js); its slot keeps the
+           room a full plaque needs from the start, so the board answering late doesn't shove the screen about -->
+      <div class="tower-plaque-slot" id="tower-plaque-slot"><div class="tower-plaque" id="tower-plaque"><h3 class="tower-plaque-title">This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div></div>
     </div>
   </div></dialog>
 

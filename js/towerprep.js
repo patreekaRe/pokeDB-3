@@ -11,6 +11,7 @@ import { towerWeekly, FLIGHT, TOP_FLOOR } from './data/tower.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { getSave } from './storage.js';
+import { cloudConfigured } from './cloud.js';
 import { openLeaderboard, towerTop } from './leaderboard.js';
 import { playSound } from './audio.js';
 import { makeBuffer, flush, put, K, mix, bay, hash, skyHex } from './tower-art.js';
@@ -36,26 +37,43 @@ export function initTowerPrep(handlers) {
     if (!picks.hidden) picks.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
   $('tower-dialog').addEventListener('close', stopSky);
-  new ResizeObserver(() => { if ($('tower-dialog').open) startSky(); }).observe($('tower-page'));
+  // the grass line is measured off the layout, so repaint whenever anything above or around it moves
+  const relayout = new ResizeObserver(() => { if ($('tower-dialog').open) startSky(); });
+  relayout.observe($('tower-page'));
+  relayout.observe($('tower-top'));
 }
 
-/** The lobby's plaque: the week's top climbers engraved in bronze, once the board answers (hidden if it can't). */
+const PLAQUE_ROWS = 5;
+let engraved = false;   // the plaque already shows a board from an earlier open: keep it up while this one loads
+
+/** The lobby's plaque: the week's top climbers engraved in bronze, faded in once the board answers. Its slot holds a
+    full plaque's room from the start (measured once, with dummy rows), so nothing above it moves when it arrives. */
 async function engrave() {
-  const plaque = $('tower-plaque'), list = $('tower-plaque-list');
-  plaque.hidden = true;
-  const top = await towerTop(5);
-  if (!top) return;
-  plaque.hidden = false;
+  const slot = $('tower-plaque-slot'), plaque = $('tower-plaque'), list = $('tower-plaque-list');
+  slot.hidden = !cloudConfigured();
+  if (slot.hidden) return;
+  if (!slot.style.getPropertyValue('--plaque-h')) {
+    list.replaceChildren(...Array.from({ length: PLAQUE_ROWS }, () => plaqueRow({ name: 'TRAINER', floor: 100, turns: 0, starter: '' }, 0)));
+    slot.style.setProperty('--plaque-h', `${Math.ceil(plaque.getBoundingClientRect().height)}px`);
+    list.replaceChildren();
+  }
+  if (!engraved) plaque.classList.remove('in');
+  const top = await towerTop(PLAQUE_ROWS);
+  if (!top) { plaque.classList.remove('in'); engraved = false; return; }
+  engraved = true;
+  plaque.classList.add('in');
   if (!top.length) { list.replaceChildren(el('li', 'tower-plaque-note', 'No names yet. Be the first!')); return; }
-  list.replaceChildren(...top.map((e, i) => {
-    const li = el('li', `tower-plaque-row${e.mine ? ' mine' : ''}`);
-    const img = el('img', 'pixel');
-    const starter = STARTERS_BY_ID[e.starter];
-    if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
-    li.append(el('span', 'tower-plaque-rank', `${i + 1}`), img, el('span', 'tower-plaque-name', e.name), el('span', 'tower-plaque-floor', e.floor >= TOP_FLOOR ? `🏔️ ${e.turns}t` : `${e.floor}F`));
-    li.title = `${e.name}: floor ${e.floor}, ${e.turns} turns`;
-    return li;
-  }));
+  list.replaceChildren(...top.map(plaqueRow));
+}
+
+function plaqueRow(e, i) {
+  const li = el('li', `tower-plaque-row${e.mine ? ' mine' : ''}`);
+  const img = el('img', 'pixel');
+  const starter = STARTERS_BY_ID[e.starter];
+  if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
+  li.append(el('span', 'tower-plaque-rank', `${i + 1}`), img, el('span', 'tower-plaque-name', e.name), el('span', 'tower-plaque-floor', e.floor >= TOP_FLOOR ? `🏔️ ${e.turns}t` : `${e.floor}F`));
+  li.title = `${e.name}: floor ${e.floor}, ${e.turns} turns`;
+  return li;
 }
 
 const weekLabel = (week) => new Date(`${week}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -101,8 +119,8 @@ export function openTowerPrep() {
     btn.addEventListener('click', () => { closeDialog('tower-dialog'); actions.onStart(starter); });
     return btn;
   }));
-  engrave();
   openDialog('tower-dialog');
+  engrave();
   $('tower-dialog').scrollTop = 0;
   startSky();
 }

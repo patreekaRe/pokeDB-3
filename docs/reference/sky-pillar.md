@@ -107,7 +107,11 @@ is the screen and the overlay that use them.
   show it, its horizon behind the pedestal.
 - **The lobby's plaque** (`engrave()` in `js/towerprep.js`, `towerTop()` in `js/leaderboard.js`): the Sky Pillar window
   lists the week's top five climbers on a bronze plate (a summit shows its turns). The board is public to read, but until
-  the user publishes `firestore.rules` Firestore refuses it and the plaque stays hidden.
+  the user publishes `firestore.rules` Firestore refuses it and the plaque stays hidden. Its slot
+  (`.tower-plaque-slot`, `--plaque-h`, measured once with five dummy rows) holds a full plaque's room from the moment the
+  lobby opens and the plaque fades in (`.in`): it used to pop in ~0.4 s late and shove the stats and buttons 80px up over
+  the climber (the user saw it, 2026-10-05). The sky also repaints when `#tower-top` resizes, so the grass line never
+  drifts from the layout.
 
 ## The leaderboard
 
