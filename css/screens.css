@@ -4367,7 +4367,7 @@ body.scene-peek #backdrop { display: none; }
 /* the lobby's plaque (js/towerprep.js): the week's top climbers engraved in a bronze plate, riveted at the corners */
 /* pinned to the screen's bottom while the lobby scrolls (the user's ask, 2026-10-05); sticky needs the pages' overflow to be
    clip, not hidden, or the page would be its scroll container. The empty slot lets taps through until the plaque is in. */
-.tower-plaque-slot { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 2; width: 100%; min-height: var(--plaque-h, 0px); margin-top: 6px; pointer-events: none; }
+.tower-plaque-slot { position: relative; z-index: 2; width: 100%; min-height: var(--plaque-h, 0px); margin: 6px 0 max(10px, env(safe-area-inset-bottom)); pointer-events: none; }
 .tower-plaque-slot[hidden] { display: none; }
 .tower-plaque.in { pointer-events: auto; }
 .tower-plaque { visibility: hidden; opacity: 0; transition: opacity 0.35s ease-out, visibility 0s 0.35s; }
