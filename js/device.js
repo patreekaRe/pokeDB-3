@@ -62,13 +62,14 @@ export function initDevice({ onBack }) {
 /**
  * Shows the device closed, then opens it onto the home screen; `splash` is the boot screen's line. `start` (an app's
  * def, as openApp() takes) opens it straight into that app instead; `over` lays it over the current screen rather than
- * switching screens (a run's menu), and `onClose` then runs once it has shut.
+ * switching screens (a run's menu), and `onClose` then runs once it has shut. B out of a `start` app shuts the device,
+ * unless `home`: then it steps out to the home screen.
  */
-export async function openDevice({ render, cover, splash, start = null, over = false, onClose = null }) {
+export async function openDevice({ render, cover, splash, start = null, home: toHome = false, over = false, onClose = null }) {
   if (busy) return;
   drawHome = render;
   drawCover = cover;
-  direct = !!start;
+  direct = !!start && !toHome;
   afterShut = over ? onClose : onShut;
   const screen = $('collection-screen');
   screen.classList.toggle('over', over);

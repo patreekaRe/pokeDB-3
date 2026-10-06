@@ -235,11 +235,9 @@ function init() {
   $('index-btn').addEventListener('click', () => openCardIndex(pickedStarter()?.type));
   initPokedex();
   initSafariDex();
-  // the menu's Pokédex, Stats and Achievements open the Collection device on that app, over the run; in a Safari run the
-  // Pokédex is the Safari's own, on the run's area: its catches never touch the main one
-  $('dex-btn').addEventListener('click', () => (runSafariArea() ? openDeviceApp('safari', runSafariArea()) : openDeviceApp('dex', runBiome())));
-  $('stats-btn').addEventListener('click', () => openDeviceApp('stats'));
-  $('achievements-btn').addEventListener('click', () => openDeviceApp('achievements'));
+  // the menu's Collection opens the device on its Pokédex, on the run's page (a Safari run's own Pokédex, on its area: its
+  // catches never touch the main one); B steps out to the home screen and its other apps
+  $('collection-btn').addEventListener('click', () => (runSafariArea() ? openDeviceApp('safari', runSafariArea(), true) : openDeviceApp('dex', runBiome(), true)));
   initBallMenu();
   initCloud();
   initLeaderboard();
@@ -322,7 +320,6 @@ function init() {
     }
   });
 }
-
 
 /** The Safari areas' scenes, a floor at a time as you'd walk them (a playtest view: no run, nothing saved): floors 1-3,
     4-6 and 7-10 are an area's first three places (stageOf() in js/map.js), then the boss's. Each area opens with its

@@ -41,15 +41,16 @@ export function showCollection() {
 
 /**
  * Opens the device straight into one app over whatever is showing (the Poké Ball menu and the Bag, in a run or not):
- * 'dex' (`at` a biome's page), 'safari' (`at` an area), 'stats', 'achievements' or 'trainer'.
+ * 'dex' (`at` a biome's page), 'safari' (`at` an area), 'stats', 'achievements' or 'trainer'. B out of it shuts the
+ * device, or with `home` steps out to the home screen like any app.
  */
-export function openDeviceApp(id, at) {
+export function openDeviceApp(id, at, home = false) {
   const save = getSave();
   const def = id === 'trainer' ? trainerApp(save)
     : id === 'safari' ? { ...safariApp(safariDexCount()), name: 'Safari' }   // a Safari run's own, open or not on the home screen
     : apps(save).find(a => a.id === id);
   if (!def || def.locked) return;
-  openDevice({ render: renderHome, cover: coverArt, over: true, start: { ...def, name: def.name.toUpperCase(), at } });
+  openDevice({ render: renderHome, cover: coverArt, over: true, home, start: { ...def, name: def.name.toUpperCase(), at } });
 }
 
 /** The closed cover: an LED that blinks while a badge is unseen, your partner in a little window, your name and badges. */
