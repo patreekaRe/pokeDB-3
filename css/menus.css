@@ -880,8 +880,9 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .bdx-slots { grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); }
 .bdx-slot { background: linear-gradient(180deg, #f4f0e0, #cfc6a8); }
 .bdx-slot.on { background: #ffe36b; }
-.bdx-slot { display: grid; place-items: center; padding: 0; }
-.bdx-slot-thing { display: grid; place-items: center; width: 84%; height: 84%; font-size: 1.8rem; line-height: 1; }
+.bdx-slot { display: block; padding: 0; overflow: hidden; }
+.bdx-slot .pdx-slot-mon { position: absolute; inset: 6%; width: 88%; height: 88%; }
+.bdx-slot-thing { position: absolute; inset: 8%; display: grid; place-items: center; font-size: 1.8rem; line-height: 1; }
 .bdx-slot.unseen .bdx-slot-thing img { filter: brightness(0) opacity(0.5); }
 .bdx-tally { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 10px; font: 0.58rem/1.3 var(--pixel-font); font-synthesis-weight: none; }
 .bdx-tally b { font-weight: 400; }
