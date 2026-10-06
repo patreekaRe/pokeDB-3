@@ -1513,3 +1513,11 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Relics / Items icons** (2026-10-06, Desktop app; the user's ask): the Collection's Relics app is a Fire Stone, not
   the Leftovers apple, and Items is the games' Potion spray bottle (`relics` / `items` in `js/smooth-icons.js`), which
   also replaces the old round flask on the Pokédex Rewards' 🧴 perks.
+- **Relics / Items apps, Pokédex style** (2026-10-06, Desktop app; the user's ask: "immersive too"): `bagApp(kind)` in
+  `js/bagdex.js` replaced the old tile grid (`drawThings()` is gone). A banner per group (Relics: Abilities, Common,
+  Uncommon, Rare, Boss, Special; Items: the Bag's Medicine / Battle Items / Type Items pockets, worked out from `map`,
+  `revive` and `only`), then the red handheld: one thing at a time floating on a screen painted as where it's from
+  (`placeShot()` in `js/scene.js`, a still of a `PLACE_ART` room: the treasure grotto by rarity, the Clearing's, Shrine's
+  and Wastes' caves; the Wastes boss arena on its pad; Kenmatta's courtyard; the Center; the Mart at 192x96 on a shelf
+  board), its text typed out, keyword lines, slots, a found tally. Unfound ones are rimmed silhouettes with where to
+  find them. Abilities show their type's starter on the Clearing's pad, with its cry.

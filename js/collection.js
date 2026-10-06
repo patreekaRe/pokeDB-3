@@ -15,7 +15,8 @@ import { DEX_PAGES, safariOpen } from './data/pokedex.js';
 import { getSave } from './storage.js';
 import { pokedexApp } from './pokedex.js';
 import { safariDexApp, safariDexCount } from './safaridex.js';
-import { movesApp, drawThings } from './cardindex.js';
+import { movesApp } from './cardindex.js';
+import { bagApp } from './bagdex.js';
 import { openStats, openAchievements } from './records.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
@@ -118,7 +119,7 @@ function apps(save) {
   };
   const safari = safariOpen(save) ? safariDexCount() : null;
   const things = (id, name, art, all) => ({
-    id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-win panel index-dialog', fill: (p) => drawThings(id, p),
+    id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-dex cdev-bag', app: bagApp(id),
   });
   return [
     { id: 'dex', name: 'Pokédex', art: vec('dex'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },

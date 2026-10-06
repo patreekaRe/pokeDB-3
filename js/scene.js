@@ -1060,6 +1060,14 @@ export function showPlaceScene(place, { floor = null, span = null, biome = null,
     paintScene(`place/${place}/${biome}/${type}/${time}/${placeKey(at)}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life], ...at }, floor, span);
     return;
   }
+  paintScene(...placeLook(place, biome, type), floor, span);
+}
+
+/** An indoor place's look at the hour it is now, as [key, look]: showPlaceScene() paints it, placeShot() takes a still. */
+function placeLook(place, biome, type) {
+  const { biomes, types, ...art } = PLACE_ART[place];
+  const time = timeOfDay(), g = GRADES[time];
+  const kin = BIOME_ART[biome]?.kin || biome;
   const look = biomes && (biomes[kin] || Object.values(biomes)[0]), glow = types?.[type];
   let lit = { ...art, ...look, ...glow };
   // open-air close-ups take the light whole; indoors only the view through the windows changes
@@ -1073,7 +1081,7 @@ export function showPlaceScene(place, { floor = null, span = null, biome = null,
     lit = { ...lit, ...grade(lit, { sky: g.sky, land: g.sky }, ['view']) };
     if (lit.window) { const [frame, ...rest] = lit.window; lit.window = [frame, ...rest.map(c => gradeHex(c, g.sky))]; }
   }
-  paintScene(`place/${place}${look ? `/${biome}` : ''}${glow ? `/${type}` : ''}/${time}`, lit, floor, span);
+  return [`place/${place}${look ? `/${biome}` : ''}${glow ? `/${type}` : ''}/${time}`, lit];
 }
 
 const BALL_DROP = 4;   // frames before your Poké Ball settles into the healing machine
@@ -1132,13 +1140,22 @@ export function showScene(biomeId, kind = 'wild', where = 0) {
     was, since this module paints one scene at a time. */
 export function sceneShot(biomeId, { w, h, at = 0.6, kind = 'wild', where = 0 }) {
   const art = BIOME_ART[biomeId] || BIOME_ART.clearing;
+  return shoot({ ...biomeLook(art, timeOfDay(), kind), ...journeyOf(where), weather: null }, w, h, at);
+}
+
+/** A still of an indoor place (PLACE_ART: 'mart', 'center', 'treasure' with a `biome`'s grotto, 'kombat'...), like sceneShot(). */
+export function placeShot(place, { w, h, at = null, biome = null }) {
+  const [, look] = placeLook(place, biome, null);
+  return shoot(look, w, h, at ?? look.horizon ?? 0.6);
+}
+
+function shoot(look, w, h, at) {
   const kept = { canvas, ctx, S, tick, last, W, H, horizon, base, img, px, sky, rand, life, bossPrelude, floorAt, spanAt, storm };
   const shot = document.createElement('canvas');
   try {
     canvas = shot; ctx = shot.getContext('2d');
     floorAt = null; spanAt = null; bossPrelude = null; storm = { on: false, level: 0 }; tick = FPS * 7; last = tick;
-    const time = timeOfDay();
-    const raw = { ...biomeLook(art, time, kind), ...journeyOf(where), weather: null, horizon: at };
+    const raw = { ...look, horizon: at };
     S = colours(raw);
     S.raw = raw;
     S.storm = null;

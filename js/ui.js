@@ -214,7 +214,7 @@ function cardSprite(card) {
    colour (StS 2's gold keywords, the user's pick 2026-09-28): the Fire / Water / Grass resources in their type's colour,
    debuffs purple, Strength red, the rest the keyword gold. */
 const TERM_KIND = { Burn: 'burn', Tide: 'tide', 'Leech Seed': 'seed', Weak: 'debuff', Vulnerable: 'debuff', Sap: 'debuff', Debuffs: 'debuff', Strength: 'strength' };
-const termKind = (label) => TERM_KIND[label] || 'key';
+export const termKind = (label) => TERM_KIND[label] || 'key';
 
 function colourTerms(text, card) {
   const labels = cardTerms(card).map(([label]) => label).filter(l => l !== 'Upgraded' && l !== 'Losing HP' && !/^Combo /.test(l));

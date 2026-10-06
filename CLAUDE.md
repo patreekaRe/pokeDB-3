@@ -77,7 +77,8 @@ live site.
   the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card; the lid's yellow light blinks for an unseen badge) and a 3x3
   grid of apps, each with its count, "???" + a padlock until unlocked (a tap says how). Its app and dock icons are smooth vector art, `smoothIcon()` in `js/smooth-icons.js` (the user's call, 2026-10-05: no pixels; Record Book and Hall of Fame are a book and a crown, no longer the newest winner's sprite). `openApp()` slides an app over the home
   screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
-  into `#dex-dialog` when its window opens), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
+  into `#dex-dialog` when its window opens), Relics and Items (`bagApp()` in `js/bagdex.js`, 2026-10-06: the Pokédex's banners and
+  handheld, a banner per group, each thing floating in a still of its place, `placeShot()` in `js/scene.js`), Stats, Achievements, Trainer Card (their `open*(into)` draw into
   the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`, redone 2026-10-06: the Pokédex's green LCD, smooth type keys,
   the Index's All / Attack / Skill / Power filter and Cost / A-Z sort (saved, shared with it), then the real cards in a
   grid, ??? silhouettes after the known ones, a tap zooms one; the run's Index window is unchanged), the Safari

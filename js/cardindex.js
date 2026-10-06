@@ -88,15 +88,6 @@ function renderThings() {
   $('index-total').textContent = total;
 }
 
-/** The Relics or Items tab drawn into `into` (the Collection device's screen); returns its "n/m found". */
-export function drawThings(kind, into) {
-  const { body, total } = thingsBody(kind);
-  const grid = el('div', 'card-pool index-things');
-  grid.append(...body);
-  into.replaceChildren(grid);
-  return total;
-}
-
 function thingsBody(kind) {
   const relics = kind === 'relics';
   const all = relics ? RELICS : ITEMS;

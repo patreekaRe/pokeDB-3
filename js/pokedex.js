@@ -138,7 +138,7 @@ function typeChip(type) {
   return el('span', `index-only type-${type}`, `${TYPES[type].icon} ${TYPES[type].label}`);
 }
 
-function progressBar(n, of) {
+export function progressBar(n, of) {
   const bar = el('div', 'ach-bar dex-bar');
   const fill = el('div', 'ach-fill');
   fill.style.width = `${(n / of) * 100}%`;
@@ -284,7 +284,7 @@ const shots = new Map();
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** A still of `biome`'s scene as { url, pad }: `w` x `h` scene pixels, the horizon at `at`, at `where` on its journey. */
-function still(biome, w, h, at, kind = 'wild', stage = 0) {
+export function still(biome, w, h, at, kind = 'wild', stage = 0) {
   const key = `${biome}/${w}x${h}/${at}/${kind}/${stage}/${timeOfDay()}`;
   if (!shots.has(key)) {
     let shot = null;
@@ -299,7 +299,7 @@ function still(biome, w, h, at, kind = 'wild', stage = 0) {
   return shots.get(key);
 }
 
-function sceneImg(shot, className) {
+export function sceneImg(shot, className) {
   const img = el('img', `pixel ${className}`);
   img.alt = '';
   img.draggable = false;
@@ -536,7 +536,7 @@ function slide(old, screen, dir) {
 /* The entry's text types itself out, line after line, like the games' Pokédex; a tap on the device finishes it. */
 let typing = null;
 
-function typeOut(nodes) {
+export function typeOut(nodes) {
   const token = ++typer;
   typing = null;
   if (calm() || !nodes.length) return;
@@ -567,7 +567,7 @@ function typeOut(nodes) {
   typing = finish;
 }
 
-function finishTyping(e) {
+export function finishTyping(e) {
   if (!typing || e.target.closest('button')) return;
   typing();
 }
