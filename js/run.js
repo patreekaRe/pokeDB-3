@@ -30,6 +30,7 @@ import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MAR
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { badgeLine } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
+import { openDeviceApp } from './collection.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
@@ -714,7 +715,7 @@ function initBag() {
   const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
   $('bag-trainer-icon').append(cardIcon());
   $('bag-trainer-art').append(cardIcon());
-  $('bag-trainer-btn').addEventListener('click', () => { closeBag(true); openTrainerCard(); });
+  $('bag-trainer-btn').addEventListener('click', () => { closeBag(true); openDeviceApp('trainer'); });
   $('bag-prev').addEventListener('click', () => flip(-1));
   $('bag-next').addEventListener('click', () => flip(1));
   document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #bag')) closeBag(); });

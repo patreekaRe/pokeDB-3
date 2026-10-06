@@ -729,11 +729,17 @@ const shelled = () => !$('dex-dialog').contains($('dex-list'));
 
 export const pokedexApp = {
   toSafari: null,   // set by the Collection: the Safari banner swaps to its app
-  mount(host) {
+  /** `at`: a biome's page to open straight onto (a run's menu), else the list of biomes. */
+  mount(host, at) {
     host.append($('dex-list'), $('dex-device'));
     renderList();
-    show('list');
     $('dex-list').scrollTop = 0;
+    if (!onPage(at)) return show('list');
+    page = at;
+    const seen = getSave().dex.seen;
+    entry = Math.max(0, ALL_PAGES[page].ids.findIndex(id => seen.includes(id)));
+    show('page');
+    $('dex-device').querySelector('.pdx-device')?.classList.add('powered');
   },
   /** The device's Back: true if the Pokédex stepped back itself (a page to the biomes), false to leave the app. */
   back() {
@@ -756,12 +762,13 @@ export const pokedexApp = {
 };
 
 /** Opens on the given biome's page (the run's), else on the list of biomes. */
+const onPage = (biome) => Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown());
+
 export function openPokedex(biome) {
   if (shelled()) pokedexApp.unmount();
-  const onPage = Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown());
   openDialog('dex-dialog');
   renderList();
   $('dex-list').scrollTop = 0;
-  if (onPage) openPage(biome);
+  if (onPage(biome)) openPage(biome);
   else show('list');
 }

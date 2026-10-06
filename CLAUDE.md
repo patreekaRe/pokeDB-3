@@ -70,13 +70,14 @@ live site.
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
   it). The Bag, the Poké Ball menu, zooms and
-  focus layers already did. **The Collection is a device** (2026-10-05, passes 1-2 of 3; the roadmap has pass 3): the
+  focus layers already did. **The Collection is a device** (2026-10-05, three passes): the
   red handheld grown into `js/device.js` (`#collection-screen`, fixed, full screen on phones with a thin frame, a 500px
-  device on the title's sky wider). It comes up closed, its cover swings open and the screen boots ("HELLO, NAME!") onto
-  the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card, with a "!" for an unseen badge) and a 3x3
+  device on the title's sky wider). It comes up closed (its cover shows your partner and badges, an LED blinking for an
+  unseen badge; a beat later, or on a tap, it swings open) and the screen boots ("HELLO, NAME!") onto
+  the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card; the lid's yellow light blinks for an unseen badge) and a 3x3
   grid of apps, each with its count, "???" + 🔒 until unlocked (a tap says how). `openApp()` slides an app over the home
   screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
-  into `#dex-dialog` when a run opens it), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
+  into `#dex-dialog` when its window opens), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
   the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`: a type tab row
   over compact rows of cost + name, ??? until met, a tap zooms the card; the run's Index window is unchanged), the Safari
   Pokédex (`safariDexApp`: its tabs and body move into the screen like the Pokédex's, back into `#safari-dex-dialog`
@@ -86,7 +87,10 @@ live site.
   hardware: D-pad (the highlight, shown once used: `.keyed`; in an app it steps a Pokédex page or scrolls), A opens, B
   backs out (a Pokédex page to its biomes, an app to home, home shuts the device with the screen collapsing and the cover
   closing). Escape is B; a tap on the sky around it shuts it (pointer events, as iOS Safari sends no `click` for a tap
-  on a plain section). Shut, the screen is hidden again so the title's keys aren't taken. **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
+  on a plain section). Shut, the screen is hidden again so the title's keys aren't taken. Pass 3: the Poké Ball menu's
+  Pokédex / Stats / Achievements and the Bag's Trainer Card open it straight into that app (`openDeviceApp()`: the run's
+  biome page, a Safari run's area) as an overlay over whatever is showing (`.over`, z-index 100, never `showScreen()`, so a
+  run underneath is untouched); B out of that app shuts it. **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different

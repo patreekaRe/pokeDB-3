@@ -23,14 +23,6 @@ The user's second pick (2026-10-03), one session each:
    tint), December snow, and room for more. A `season(now)` helper like `timeOfDay()`, and `?season=halloween` to pin it
    for a playtest (as `?time=` does). Title only; battles and the map are untouched.
 
-20. **The Collection device** (the user's pick, 2026-10-05). Passes 1-2 are done (every app runs in the screen;
-    see the archive and CLAUDE.md's Dialogs note). Then:
-    b. **Pass 3, the device as an object. Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and
-       docs/roadmap.md's item 20 (passes 1-2 are done). The unseen-badge "!" becomes a blinking LED on the closed cover,
-       the cover shows your partner and your badges, and the Bag's Pokédex button and the Poké Ball menu open the same
-       device during runs (careful: runs' windows already work, so keep the battle and map flows intact). Check at 375x812
-       and once at 1024x768, push to main."
-
 **Journey films** (the user's pick, 2026-10-03: "like the fall into the Depths, but travelling"). Between a boss's
 evolution and the next biome's `biomeIntro()`, a short film of the trip there: your evolved Pokémon walks a side-on
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one

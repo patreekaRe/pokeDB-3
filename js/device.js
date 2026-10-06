@@ -6,14 +6,21 @@
    home screen and fills the screen. The hardware: the D-pad moves the
    highlight on the home screen (inside an app it steps a Pokédex page
    or scrolls), A opens, B goes back, and B on the home screen shuts
-   the device. Escape is B.
+   the device. Escape is B. Its cover (collection.js draws it) shows
+   your partner and badges, and an LED that blinks for a new badge.
+   The Poké Ball menu and the Bag open it straight into one app over
+   whatever is showing, a run included (`over`); B out of that app
+   shuts it again.
    ============================================================ */
 
 import { $, el, showScreen } from './ui.js';
 import { playSound } from './audio.js';
 
 let drawHome = null;   // () => the home screen's nodes, a `.cdev-pick` on everything the D-pad can land on
+let drawCover = null;  // () => the closed cover's nodes
 let onShut = null;
+let afterShut = null;
+let direct = false;    // opened straight into an app: B out of it shuts the device
 let app = null;        // the open app: { def, panel }
 let busy = false;      // the cover or a slide is moving: taps and keys wait for it
 let sel = null;        // the home screen's highlighted pick
@@ -52,33 +59,52 @@ export function initDevice({ onBack }) {
   });
 }
 
-/** Shows the device closed, then opens it onto the home screen; `splash` is the boot screen's line. */
-export async function openDevice({ render, splash }) {
+/**
+ * Shows the device closed, then opens it onto the home screen; `splash` is the boot screen's line. `start` (an app's
+ * def, as openApp() takes) opens it straight into that app instead; `over` lays it over the current screen rather than
+ * switching screens (a run's menu), and `onClose` then runs once it has shut.
+ */
+export async function openDevice({ render, cover, splash, start = null, over = false, onClose = null }) {
+  if (busy) return;
   drawHome = render;
-  showScreen('collection-screen');
+  drawCover = cover;
+  direct = !!start;
+  afterShut = over ? onClose : onShut;
+  const screen = $('collection-screen');
+  screen.classList.toggle('over', over);
+  if (over) screen.hidden = false;
+  else showScreen('collection-screen');
   closeApp(true);
   const dev = $('cdev');
   dev.getAnimations({ subtree: true }).forEach(a => a.cancel());
   dev.querySelector('.cdev-cover')?.remove();
   dev.classList.remove('powered', 'keyed');
   sel = null;
-  renderHome(!calm());
+  renderHome(!calm() && !start);
   setTitle('COLLECTION', '');
+  if (start) openApp(start, true);   // under the cover, so it swings open onto the app
   if (calm()) { playSound('dex-on'); return; }
   busy = true;
-  const cover = makeCover();
+  const lid = makeCover();
   await settle(dev.animate(LIFT, { duration: 320, easing: EASE }));
+  // a beat closed so its face can be seen, longer while the LED blinks for a new badge; a tap on it opens it at once
+  await held(lid, lid.querySelector('.cdev-led.on') ? 1300 : 420);
   playSound('dex-on');
   dev.classList.add('powered');
-  await settle(cover.animate(SWING, { duration: 520, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
-  cover.remove();
-  bootScreen(splash);
+  await settle(lid.animate(SWING, { duration: 520, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
+  lid.remove();
+  bootScreen(start ? null : splash);
   busy = false;
 }
 
+const held = (lid, ms) => new Promise(done => {
+  const t = setTimeout(done, ms);
+  lid.addEventListener('pointerdown', () => { clearTimeout(t); done(); }, { once: true });
+});
+
 function makeCover() {
   const c = el('div', 'cdev-cover');
-  c.append(el('span', 'pdx-cover-hinge'), el('span', 'pdx-cover-mark'));
+  c.append(el('span', 'pdx-cover-hinge'), ...(drawCover?.() ?? [el('span', 'pdx-cover-mark')]));
   c.style.top = `${$('cdev').querySelector('.cdev-lid').getBoundingClientRect().bottom - $('cdev').getBoundingClientRect().top}px`;
   $('cdev').append(c);
   return c;
@@ -119,19 +145,19 @@ function setTitle(name, count) {
  * Opens an app in the screen. `def`: { id, name, count, cls, fill(panel) } for one that draws into the screen, or
  * { ..., app: { mount(panel), back(), key(e), unmount() } } for one that runs its own views (the Pokédex).
  */
-export function openApp(def) {
+export function openApp(def, now = false) {
   if (busy || app) return;
-  playSound('confirm');
+  if (!now) playSound('confirm');
   const panel = el('div', `cdev-app ${def.cls ?? 'cdev-win panel'}`);
   panel.dataset.app = def.id;
   $('cdev-screen').append(panel);
-  if (def.app) def.app.mount(panel);
+  if (def.app) def.app.mount(panel, def.at);
   else def.fill(panel);
   panel.scrollTop = 0;
   app = { def, panel };
   setTitle(def.name, def.count);
   home().inert = true;
-  if (calm()) { home().hidden = true; return; }
+  if (now || calm()) { home().hidden = true; return; }
   busy = true;
   home().animate([{ translate: '0 0', opacity: 1 }, { translate: '-30% 0', opacity: 0 }], { ...SLIDE, fill: 'forwards' });
   settle(panel.animate([{ translate: '100% 0' }, { translate: '0 0' }], SLIDE)).then(() => {
@@ -179,6 +205,7 @@ export function back() {
   if (busy || !shown()) return;
   if (app) {
     if (app.def.app?.back()) return;
+    if (direct) { shut(); return; }
     playSound('cancel');
     closeApp();
     return;
@@ -202,7 +229,7 @@ async function shut() {
   closeApp(true);
   busy = false;
   $('collection-screen').hidden = true;   // the title comes back over it as an overlay: hidden, it stops taking keys
-  onShut?.();
+  afterShut?.();
   dev.getAnimations({ subtree: true }).forEach(a => a.cancel());
   dev.querySelector('.cdev-cover')?.remove();
 }
@@ -257,8 +284,9 @@ function dpad(dir) {
 
 function key(e) {
   if (!shown() || document.querySelector('dialog[open]')) return;
-  if (e.key === 'Escape') { e.preventDefault(); back(); return; }
+  // the keys it takes go no further: over a run, the Bag and the battle listen for them too
+  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); back(); return; }
   const dir = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
-  if (dir) { e.preventDefault(); dpad(dir); return; }
+  if (dir) { e.preventDefault(); e.stopImmediatePropagation(); dpad(dir); return; }
   if ((e.key === 'Enter' || e.key === ' ') && !app && !e.target.closest?.('button')) { e.preventDefault(); press(); }
 }

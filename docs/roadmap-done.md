@@ -1485,3 +1485,13 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `#hof-dialog` and `openRecords()` are gone; the Index and Safari Pokédex windows stay, since runs and the Safari prep
   still open them. Checked at 375x812 and 1024x768 with a throwaway record (the pane was hidden again, so animations were
   fast-forwarded).
+- **Collection device, pass 3** (2026-10-05, Desktop app): the device as an object. Its cover (`coverArt()` in
+  `js/collection.js`) shows your partner in a little window and a nameplate in the Trainer Card's colour with your name
+  and earned badges; it holds a beat closed before it swings (a tap opens it at once), longer while its LED blinks for an
+  unseen badge (the home strip's "!" is gone; once open the lid's yellow light keeps blinking, `.cdev.news`). The Poké
+  Ball menu's Pokédex / Stats / Achievements and the Bag's Trainer Card button open the device straight into that app
+  (`openDeviceApp()`: the Pokédex on the run's biome page, a Safari run's Safari Pokédex on its area) as an overlay
+  (`.collection-screen.over`, z-index 100) that never switches screens, so the run underneath is untouched; B out of
+  that app shuts it. The menu's Index and the result window's badge line still open their windows. The Bag never had a
+  Pokédex button; the roadmap meant its Trainer Card one. Checked at 375x812 (map, a battle, a Safari battle) and
+  1024x768; the pane was hidden, so animations were stepped by screenshots or forced to reduced motion.

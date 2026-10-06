@@ -17,13 +17,14 @@ import { movesApp, drawThings } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
-import { openTrainerCard, trainerTile, badgeNews, partner, cardTier } from './trainercard.js';
+import { openTrainerCard, trainerTile, badgeNews, partner, cardTier, badgeArt } from './trainercard.js';
+import { BADGES } from './data/badges.js';
 import { trainerName } from './leaderboard.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
 import { initDevice, openDevice, openApp, swapApp } from './device.js';
-import { el, itemSprite } from './ui.js';
+import { $, el, itemSprite } from './ui.js';
 
 /** Called once at startup. */
 export function initCollection({ onBack }) {
@@ -35,8 +36,51 @@ const safariApp = ({ caught, total }) => ({ id: 'safari', count: `${caught}/${to
 
 export function showCollection() {
   showMenuScene();
-  openDevice({ render: renderHome, splash: `HELLO, ${trainerName().toUpperCase()}!` });
+  openDevice({ render: renderHome, cover: coverArt, splash: `HELLO, ${trainerName().toUpperCase()}!` });
 }
+
+/**
+ * Opens the device straight into one app over whatever is showing (the Poké Ball menu and the Bag, in a run or not):
+ * 'dex' (`at` a biome's page), 'safari' (`at` an area), 'stats', 'achievements' or 'trainer'.
+ */
+export function openDeviceApp(id, at) {
+  const save = getSave();
+  const def = id === 'trainer' ? trainerApp(save)
+    : id === 'safari' ? { ...safariApp(safariDexCount()), name: 'Safari' }   // a Safari run's own, open or not on the home screen
+    : apps(save).find(a => a.id === id);
+  if (!def || def.locked) return;
+  openDevice({ render: renderHome, cover: coverArt, over: true, start: { ...def, name: def.name.toUpperCase(), at } });
+}
+
+/** The closed cover: an LED that blinks while a badge is unseen, your partner in a little window, your name and badges. */
+function coverArt() {
+  const save = getSave();
+  const led = el('span', `cdev-led${badgeNews(save) ? ' on' : ''}`);
+  led.title = badgeNews(save) ? 'A new badge!' : '';
+  const { starter, stage } = partner(save);
+  const win = el('span', 'cdev-cover-window');
+  const img = el('img', 'pixel');
+  img.src = spriteUrl(starter, 'front', stage);
+  img.alt = '';
+  win.append(img);
+  const plate = el('span', 'cdev-cover-plate');
+  plate.dataset.tier = cardTier(save).id;
+  const earned = BADGES.filter(b => !b.locked && (save.badges || []).includes(b.id));
+  const row = el('span', 'cdev-cover-badges');
+  row.append(...earned.map(b => {
+    const art = el('img', 'pixel');
+    art.src = badgeArt(b.id, true);
+    art.alt = '';
+    return art;
+  }));
+  plate.append(el('b', '', trainerName().toUpperCase()), earned.length ? row : el('small', '', 'NO BADGES YET'));
+  return [led, win, plate];
+}
+
+const trainerApp = (save) => {
+  const tc = trainerTile(save);
+  return { id: 'trainer', name: 'Trainer Card', count: tc.count.replace(' · New!', ''), cls: 'cdev-win panel trainer-dialog', fill: (p) => openTrainerCard(p) };
+};
 
 const emoji = (e) => el('span', 'coll-emoji', e);
 
@@ -96,17 +140,14 @@ function ownerStrip(save) {
   const badge = el('span', 'cdev-owner-badge');
   badge.append(tc.art, el('small', '', tc.count.replace(' · New!', '')));
   strip.append(mon, id, badge);
-  if (badgeNews(save)) strip.append(el('span', 'cdev-news', '!'));
   strip.setAttribute('aria-label', `Trainer Card: ${tc.count}`);
-  strip.addEventListener('click', () => openApp({
-    id: 'trainer', name: 'TRAINER CARD', count: tc.count.replace(' · New!', ''), cls: 'cdev-win panel trainer-dialog',
-    fill: (p) => openTrainerCard(p),
-  }));
+  strip.addEventListener('click', () => openApp({ ...trainerApp(save), name: 'TRAINER CARD' }));
   return strip;
 }
 
 function renderHome() {
   const save = getSave();
+  $('cdev').classList.toggle('news', badgeNews(save));   // the cover's LED, still blinking on the lid once it's open
   const grid = el('div', 'cdev-grid');
   grid.append(...apps(save).map(a => {
     const icon = el('button', `cdev-pick cdev-icon app-${a.id}${a.locked ? ' locked' : ''}`);

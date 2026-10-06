@@ -194,8 +194,10 @@ const PARTS = ['safari-dex-board', 'safari-dex-tabs', 'safari-dex-body'];
 const shelled = () => !$('safari-dex-dialog').contains($('safari-dex-body'));
 
 export const safariDexApp = {
-  mount(host) {
+  mount(host, area) {   // `area`: a Safari run's own, to open on its page
     host.append(...PARTS.map($));
+    const i = SAFARI_DEX_PAGES.findIndex(p => p.area === area);
+    if (i >= 0) page = i;
     render();
   },
   back: () => false,

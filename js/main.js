@@ -48,14 +48,13 @@ import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
-import { initCollection, showCollection } from './collection.js';
+import { initCollection, showCollection, openDeviceApp } from './collection.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
-import { openStats, openAchievements } from './records.js';
 import { initCardIndex, openCardIndex } from './cardindex.js';
-import { initPokedex, openPokedex } from './pokedex.js';
-import { initSafariDex, openSafariDex } from './safaridex.js';
+import { initPokedex } from './pokedex.js';
+import { initSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
@@ -236,10 +235,11 @@ function init() {
   $('index-btn').addEventListener('click', () => openCardIndex(pickedStarter()?.type));
   initPokedex();
   initSafariDex();
-  // in a Safari run the button opens the Safari Pokédex on the run's area: its catches never touch the main one
-  $('dex-btn').addEventListener('click', () => (runSafariArea() ? openSafariDex(runSafariArea()) : openPokedex(runBiome())));
-  $('stats-btn').addEventListener('click', openStats);
-  $('achievements-btn').addEventListener('click', openAchievements);
+  // the menu's Pokédex, Stats and Achievements open the Collection device on that app, over the run; in a Safari run the
+  // Pokédex is the Safari's own, on the run's area: its catches never touch the main one
+  $('dex-btn').addEventListener('click', () => (runSafariArea() ? openDeviceApp('safari', runSafariArea()) : openDeviceApp('dex', runBiome())));
+  $('stats-btn').addEventListener('click', () => openDeviceApp('stats'));
+  $('achievements-btn').addEventListener('click', () => openDeviceApp('achievements'));
   initBallMenu();
   initCloud();
   initLeaderboard();

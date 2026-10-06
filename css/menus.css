@@ -851,6 +851,35 @@ button.mv-row { cursor: zoom-in; }
   box-shadow: inset 0 0 0 3px #7a1016, inset -10px 0 0 rgba(0, 0, 0, 0.12);
 }
 @media (min-width: 560px) { .cdev-cover { border-radius: 0 0 26px 26px; } }
+/* its face: an LED for a new badge, your partner in a little window, a nameplate with your badges */
+.cdev-led {
+  position: absolute; top: 14px; right: 18px; width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8a6a5a, #4a2a24); box-shadow: inset 0 0 0 2px #5a0c12;
+}
+.cdev-led.on { background: radial-gradient(circle at 35% 35%, #fffbd0, #ffd23a 50%, #d89a00); animation: cdevLed 0.5s steps(1) infinite; }
+@keyframes cdevLed { 50% { background: radial-gradient(circle at 35% 35%, #8a6a5a, #4a2a24); box-shadow: inset 0 0 0 2px #5a0c12; } 0% { box-shadow: inset 0 0 0 2px #5a0c12, 0 0 12px 3px #ffd23a; } }
+.cdev-cover-window {
+  position: absolute; left: 50%; top: 13%; width: min(48%, 200px); aspect-ratio: 1; translate: -50% 0; display: grid; place-items: center;
+  border-radius: 18px; border: 5px solid #7a1016; overflow: hidden;
+  background: radial-gradient(circle at 50% 70%, #3a6a8a, #142838 70%), #142838;
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.45), inset 0 -18px 0 rgba(0, 0, 0, 0.2), 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+.cdev-cover-window::after { content: ''; position: absolute; inset: 6px 50% 60% 8px; border-radius: 10px; background: rgba(255, 255, 255, 0.14); transform: skewX(-12deg); }
+.cdev-cover-window img { width: 70%; height: 70%; object-fit: contain; image-rendering: pixelated; }
+.cdev-cover-plate {
+  position: absolute; left: 50%; bottom: max(10%, 28px); width: min(82%, 340px); translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 8px 10px 10px; border: 3px solid var(--tc3); border-radius: 10px; color: #fff; text-shadow: 1px 1px 0 var(--tc3);
+  background: repeating-linear-gradient(135deg, var(--tc1) 0 8px, var(--tc2) 8px 10px); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+}
+.cdev-cover-plate b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.7rem; font-weight: 400; letter-spacing: 1px; }
+.cdev-cover-plate small { font-size: 0.45rem; opacity: 0.9; }
+.cdev-cover-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+.cdev-cover-badges img { width: 26px; height: 26px; image-rendering: pixelated; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
+/* once open, the lid's yellow light carries the LED on */
+.cdev.news.powered .pdx-light.yellow { animation: cdevLidLed 1s steps(1) infinite 0.9s; }
+@keyframes cdevLidLed { 50% { filter: brightness(0.45); } 0% { filter: brightness(1.4); box-shadow: 0 0 10px #ffd23a; } }
+/* over a run (the Poké Ball menu, the Bag) it dims what's under it */
+.collection-screen.over { z-index: 100; background: rgba(8, 10, 28, 0.6); }
 
 /* the boot screen: a Poké Ball and a hello, then the home screen's picks pop in */
 .cdev-splash {
@@ -879,11 +908,6 @@ button.mv-row { cursor: zoom-in; }
 .cdev-owner-id small { font-size: 0.48rem; opacity: 0.9; }
 .cdev-owner-badge { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.45rem; text-shadow: 1px 1px 0 var(--tc3); }
 .cdev-owner-badge .coll-badge { width: 40px; height: 40px; image-rendering: pixelated; }
-.cdev-news {
-  position: absolute; top: -8px; right: -6px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
-  background: #ffd23a; color: #6a3a00; font-size: 0.7rem; box-shadow: 0 0 0 2px #fff, 0 0 10px #ffd23a; animation: cdevNews 1.2s steps(2) infinite;
-}
-@keyframes cdevNews { 50% { filter: brightness(1.35); } }
 
 /* the apps */
 .cdev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
@@ -919,7 +943,7 @@ button.mv-row { cursor: zoom-in; }
 .cdev-icon.locked .cdev-tile { --c1: #6a6a7a; --c2: #3a3a48; }
 .cdev-icon.locked .cdev-label, .cdev-icon.locked .cdev-count { color: #a8a8b8; }
 @media (prefers-reduced-motion: reduce) {
-  .cdev-screen.power-on, .cdev.powered .pdx-light, .cdev.powered .pdx-lens, .cdev-home.boot .cdev-pick, .cdev-news { animation: none; }
+  .cdev-screen.power-on, .cdev.powered .pdx-light, .cdev.powered .pdx-lens, .cdev-home.boot .cdev-pick, .cdev-led.on, .cdev.news.powered .pdx-light.yellow { animation: none; }
   .cdev-splash { display: none; }
 }
 .coll-emoji { font-size: 48px; line-height: 1; }
