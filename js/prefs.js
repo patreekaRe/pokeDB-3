@@ -14,7 +14,29 @@ const PACE = { slow: [1, 34], mid: [2, 18], fast: [4, 14], instant: null };
 /** The text boxes' typing pace, [letters, ms], or null for instant. */
 export const textPace = () => (pref('textSpeed') in PACE ? PACE[pref('textSpeed')] : PACE.mid);
 
-/** Buzz the phone, unless Vibration is off (iOS lets no page vibrate). */
+/** Buzz the phone, unless Vibration is off. */
 export function vibrate(pattern) {
-  if (pref('vibration') && navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(pattern);
+  if (!pref('vibration') || navigator.userActivation?.hasBeenActive === false) return;
+  if (navigator.vibrate) navigator.vibrate(pattern);
+  else iosTick();
+}
+
+// iOS has no navigator.vibrate, but since iOS 18 toggling an <input switch> ticks the Taptic Engine, even through a hidden
+// label's click. It only works inside a tap's handler and gives one tick, so a pattern becomes a single tap.
+let tickLabel;
+function iosTick() {
+  if (typeof document === 'undefined' || !/iP(hone|ad|od)|Macintosh/.test(navigator.userAgent) || !('ontouchend' in document)) return;
+  if (!tickLabel) {
+    tickLabel = document.createElement('label');
+    tickLabel.className = 'haptic';
+    tickLabel.ariaHidden = 'true';
+    tickLabel.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.setAttribute('switch', '');
+    tickLabel.append(input);
+    tickLabel.addEventListener('click', (e) => e.stopPropagation());
+    document.head.append(tickLabel);
+  }
+  tickLabel.click();
 }

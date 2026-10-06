@@ -2276,8 +2276,14 @@ function initScrub() {
     const { on: slid, armed } = drag;
     drag = null;
     if (!slid) return;
-    const swallow = (c) => { c.stopPropagation(); c.preventDefault(); };
-    document.addEventListener('click', swallow, { capture: true, once: true });
+    // vibrate()'s iOS tick is a click too; let it through, or it would use up the swallow
+    const swallow = (c) => {
+      if (c.target.closest?.('.haptic')) return;
+      document.removeEventListener('click', swallow, { capture: true });
+      c.stopPropagation();
+      c.preventDefault();
+    };
+    document.addEventListener('click', swallow, { capture: true });
     setTimeout(() => document.removeEventListener('click', swallow, { capture: true }), 400);
     const uid = current();
     if (armed && battle && !battle.busy && uid != null) return tapCard(uid);
