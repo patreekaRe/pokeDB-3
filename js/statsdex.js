@@ -10,7 +10,6 @@
 
 import { getSave, loadRunData } from './storage.js';
 import { STARTERS, spriteUrl } from './data/starters.js';
-import { spriteFit } from './data/sprite-fit.js';
 import { ALL_CARDS, TYPES } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
@@ -63,64 +62,6 @@ function mon(st, cls, stage = finalStage(st)) {
   img.alt = '';
   img.draggable = false;
   return img;
-}
-
-const heads = new Map();
-
-/** Where a sprite's head is, in GIF pixels: [x, y, size] of a square. The top of the body is the head on almost
-    every Pokémon, so it takes a square off the top of the median pose (spriteFit) and centres it on the opaque
-    pixels there. HEAD_FIX overrides the few where something else stands higher (a bulb, wings). */
-function headBox(img) {
-  const src = img.currentSrc || img.src;
-  if (heads.has(src)) return heads.get(src);
-  const W = img.naturalWidth, H = img.naturalHeight;
-  const [top, bottom, left, right] = spriteFit(src);
-  const bw = W - left - right, bh = H - top - bottom;
-  const size = Math.max(16, Math.round(Math.min(bw, bh) * 0.62));
-  let cx = left + bw / 2;
-  try {
-    const c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    const g = c.getContext('2d', { willReadFrequently: true });
-    g.drawImage(img, 0, 0);
-    const px = g.getImageData(0, top, W, Math.min(size, bh)).data;
-    let sum = 0, n = 0;
-    for (let y = 0; y < Math.min(size, bh); y++) for (let x = 0; x < W; x++) if (px[(y * W + x) * 4 + 3] > 40) { sum += x; n++; }
-    if (n) cx = sum / n;
-  } catch { /* tainted or not decoded: centre on the body */ }
-  const fix = HEAD_FIX[src.split('/').pop().replace(/-shiny/, '').replace(/\.\w+$/, '')];
-  const box = fix || [Math.min(Math.max(cx - size / 2, 0), W - size), Math.min(Math.max(top - size * 0.08, 0), H - size), size];
-  heads.set(src, box);
-  return box;
-}
-
-/** Hand-placed heads, [x, y, size] in GIF pixels, for the stage-0 sprites the measure gets wrong: a flame, leaf
-    or crest above the head, a head off to one side, or wings flapping over it (those get a looser square). */
-const HEAD_FIX = {
-  'cyndaquil-front': [2, 8, 22], 'chikorita-front': [1, 23, 24], 'tepig-front': [2, 12, 24],
-  'torchic-front': [4, 10, 22], 'mudkip-front': [0, 20, 24], 'chimchar-front': [4, 6, 30],
-  'victini-front': [12, 22, 32], 'hooh-front': [14, 40, 34], 'moltres-front': [16, 34, 36],
-  'virizion-front': [10, 5, 26], 'suicune-front': [2, 18, 28], 'entei-front': [23, 5, 32],
-  'kyogre-front': [18, 32, 32], 'lugia-front': [44, 44, 32], 'palkia-front': [0, 10, 34],
-  'reshiram-front': [20, 0, 40], 'heatran-front': [14, 6, 30], 'manaphy-front': [4, 10, 30],
-  'keldeo-front': [4, 6, 26], 'rayquaza-front': [16, 20, 28], 'mewtwo-front': [14, 4, 24],
-};
-
-/** A starter's head in a square slot, the same size for every Pokémon whatever its GIF's size. */
-function headShot(st, stage) {
-  const frame = el('span', 'sdx-slot-pic');
-  const img = mon(st, 'sdx-slot-mon', stage);
-  const place = () => {
-    const [x, y, s] = headBox(img);
-    Object.assign(img.style, {
-      width: `${img.naturalWidth / s * 100}%`, height: `${img.naturalHeight / s * 100}%`,
-      left: `${-x / s * 100}%`, top: `${-y / s * 100}%`,
-    });
-    frame.classList.add('ready');
-  };
-  if (img.complete && img.naturalWidth) place(); else img.addEventListener('load', place, { once: true });
-  frame.append(img);
-  return frame;
 }
 
 function enemyImg(id, cls) {
@@ -385,7 +326,7 @@ function championsPage(n) {
     slot.type = 'button';
     if (!st) { slot.disabled = true; slots.append(slot); continue; }
     slot.setAttribute('aria-label', `${st.line[finalStage(st)].name}: ${s.winsBy[st.id]} wins`);
-    slot.append(headShot(st, 0));
+    slot.append(mon(st, 'sdx-slot-mon', 0));
     if (st === crown) slot.append(el('span', 'sdx-slot-crown', '♛'));
     if (save.shiny.on.includes(st.id)) slot.classList.add('shiny');
     slot.addEventListener('click', () => {
