@@ -59,7 +59,7 @@ const SKIES = {
 };
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
-const GEM_H = 16, GEM_BIG = 21;   // gem heights in pixels: Continue's is bigger (the user's call), its button standing proud
+const GEM_H = 16;   // gem height in pixels
 const BACK_W = 26;   // the Back gem's width in pixels
 const GEM_TIP = 6;   // how far in the rounded ends reach at the top and bottom rows
 // face, top light, bottom shade (the reference's amber, violet, gold and coral)
@@ -438,20 +438,17 @@ function sizeGems() {
   const px = gemPx();
   const cols = Math.floor(Math.min(300, innerWidth * 0.8) / px);
   for (const btn of document.querySelectorAll('#title-menu .gem')) {
-    const big = btn.dataset.kind === 'continue';
     const back = btn.dataset.kind === 'back';   // Back is a small gem of its own, just its ◀ (the user's ask)
-    const w = big ? cols + 2 * Math.round(cols * 0.04) : back ? BACK_W : cols, h = big ? GEM_BIG : GEM_H;
+    const w = back ? BACK_W : cols;
     btn.style.width = `${w * px}px`;
-    btn.style.height = `${h * px}px`;
-    if (big) paintContinue(btn.querySelector('.gem-face'), w, h);
-    else paintGem(btn.querySelector('.gem-face'), w, h, GEMS[btn.dataset.kind]);
+    btn.style.height = `${GEM_H * px}px`;
+    if (btn.dataset.kind !== 'continue') paintGem(btn.querySelector('.gem-face'), w, GEM_H, GEMS[btn.dataset.kind]);   // Continue is CSS
   }
-  // every page keeps the tallest page's height (four signs, Continue's bigger), so the nameplate never rises on a
-  // shorter sub-menu (the user's ask)
+  // every page keeps the tallest page's height (four signs), so the nameplate never rises on a shorter sub-menu (the
+  // user's ask)
   const menu = $('title-menu');
   const gap = parseFloat(getComputedStyle(menu).rowGap) || 0;
-  const extra = actions.savedRun() ? GEM_BIG - GEM_H : 0;
-  menu.style.minHeight = `${(4 * GEM_H + extra) * px + 3 * gap}px`;
+  menu.style.minHeight = `${4 * GEM_H * px + 3 * gap}px`;
 }
 
 /**
@@ -495,80 +492,6 @@ function paintGem(canvas, cols, rows, [face, hi, lo]) {
   g.fillStyle = 'rgba(255, 255, 255, 0.85)';
   g.fillRect(8, 3, 5, 1); g.fillRect(15, 3, 2, 1);
   g.fillRect(cols - 14, rows - 4, 5, 1);
-}
-
-/* Continue is a Poké Ball laid on its side (the user asked for a whole new look, 2026-10-06): a red top, the black seam
-   and a white base, with the ball's round button standing proud at the left end, holding your run's ball in a warm glow
-   that breathes. A band of light still sweeps it every 3 s and the odd glint twinkles on the red. */
-const BALL = {
-  ink: '#181010', red: ['#ff7860', '#e83828', '#b01c14'], white: ['#ffffff', '#f0f0f0', '#c8c8d0'],
-  glow: ['#2a1010', '#4a1c14', '#7a3018', '#b85820', '#e89838', '#f8d070'],
-};
-const KNOB_R = 10;   // the button's radius in pixels
-
-function paintContinue(canvas, cols, rows) {
-  canvas.width = cols;
-  canvas.height = rows;
-  const g = canvas.getContext('2d');
-  g.clearRect(0, 0, cols, rows);
-  const dot = (x, y, c) => { g.fillStyle = c; g.fillRect(x, y, 1, 1); };
-  const cx = KNOB_R, cy = (rows - 1) / 2;
-  // the capsule: rows top..bottom, its right end rounded like the gems', its left end tucked under the button
-  const top = 2, bottom = rows - 3, seam = bottom - 6, mid = (top + bottom) / 2, half = (bottom - top + 1) / 2;
-  const inset = (y) => Math.round(GEM_TIP * (1 - (1 - Math.abs((y - mid) / half) ** 1.6) ** (1 / 1.6)));
-  for (let y = top; y <= bottom; y++) {
-    const end = cols - 1 - inset(y);
-    for (let x = cx; x <= end; x++) {
-      const edge = y === top || y === bottom || x === end || (y > top && x > cols - 1 - inset(y - 1)) || (y < bottom && x > cols - 1 - inset(y + 1));
-      let c;
-      if (edge || y === seam || y === seam + 1) c = BALL.ink;
-      else if (y < seam) c = y <= top + 2 ? BALL.red[0] : y >= seam - 2 ? BALL.red[2] : BALL.red[1];
-      else c = y === bottom - 1 ? BALL.white[2] : y === seam + 2 ? BALL.white[0] : BALL.white[1];
-      if (shine !== null && !edge && y !== seam && y !== seam + 1) {
-        const at = x - shine + (rows - y) * 0.6;
-        if (at >= 0 && at < 3) c = y < seam ? (at < 1 ? '#fff0e0' : '#ffb098') : '#ffffff';
-      }
-      dot(x, y, c);
-    }
-  }
-  // a gloss streak and glints on the red
-  g.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  for (let x = cx + KNOB_R + 4; x < cols - 10; x++) if (x % 11 < 7) g.fillRect(x, top + 2, 1, 1);
-  g.fillStyle = '#ffffff';
-  g.fillRect(cols - 12, top + 2, 3, 1); g.fillRect(cols - 8, top + 3, 1, 1);
-  twinkle(dot, cols, top, seam);
-  // the button: a black ring, a white ring shaded to the lower right, a thin black ring, then the glow round your ball
-  const pulse = still() ? 0.5 : (Math.sin(frame / FPS * Math.PI) + 1) / 2;   // a breath every 2 s
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x <= cx + KNOB_R; x++) {
-      const r = Math.hypot(x - cx, y - cy);
-      if (r > KNOB_R + 0.5) continue;
-      let c;
-      if (r > KNOB_R - 1.2) c = BALL.ink;
-      else if (r > KNOB_R - 3.4) c = (x - cx) + (y - cy) > 3 ? BALL.white[2] : (x - cx) + (y - cy) < -6 ? BALL.white[0] : BALL.white[1];
-      else if (r > KNOB_R - 4.4) c = BALL.ink;
-      else {
-        const k = Math.max(0, Math.min(BALL.glow.length - 1, Math.round(BALL.glow.length - r / (KNOB_R - 4.4) * 2 - (1 - pulse) * 2)));
-        c = BALL.glow[k];
-      }
-      dot(x, y, c);
-    }
-  }
-  dot(cx - 5, cy - 6, BALL.white[0]); dot(cx - 6, cy - 5, BALL.white[0]);   // the button's own glint
-}
-
-/* A glint twinkles somewhere on the red now and then: a four-point star that blooms and fades in three frames. */
-let glint = null;
-function twinkle(dot, cols, top, seam) {
-  if (still()) return;
-  if (!glint && Math.random() < 0.04) glint = { x: KNOB_R * 2 + 6 + Math.floor(Math.random() * (cols - KNOB_R * 2 - 18)), y: top + 2 + Math.floor(Math.random() * (seam - top - 4)), t: 0 };
-  if (!glint) return;
-  const size = [1, 2, 1][glint.t];
-  dot(glint.x, glint.y, '#ffffff');
-  for (let i = 1; i <= size; i++) {
-    const c = i === size ? '#ffd0c0' : '#ffffff';
-    dot(glint.x - i, glint.y, c); dot(glint.x + i, glint.y, c); dot(glint.x, glint.y - i, c); dot(glint.x, glint.y + i, c);
-  }
 }
 
 /** Continue's icon: the run's Poké Ball, wobbling, with your Pokémon waiting inside to be sent out. */
@@ -781,18 +704,8 @@ function draw() {
   }
 }
 
-let shine = null;   // where Continue's shimmer is on its face (gem pixels), null between sweeps
-
 function tick() {
   frame++;
-  const cont = document.querySelector('#title-menu .gem-continue');
-  if (cont) {
-    const face = cont.querySelector('.gem-face');
-    if (shine === null && frame % 30 === 0) shine = -12;
-    else if (shine !== null) shine = shine + 3 > face.width + 4 ? null : shine + 3;
-    if (glint && ++glint.t > 2) glint = null;
-    paintContinue(face, face.width, face.height);
-  }
   if (!shooting && look.stars && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
   if (shooting) {
     shooting.x -= 4; shooting.y += 2;
