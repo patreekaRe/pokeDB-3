@@ -1,4 +1,4 @@
-﻿# The Sky Pillar
+# The Sky Pillar
 
 The 100-floor tower climb with a weekly leaderboard (roadmap item 18). Part a (2026-10-05, cloud) built the rules, the
 seed, the leaderboard and the Tower Badges on a placeholder map. Part b (2026-10-05, Desktop app) painted it: the tower is
