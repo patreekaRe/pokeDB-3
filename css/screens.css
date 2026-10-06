@@ -589,6 +589,39 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
   animation: bigFlash 0.3s ease-out forwards;
 }
 @keyframes bigFlash { from { opacity: 0.5; } to { opacity: 0; } }
+/* the finishing blow on an Alpha, Kenmatta or a boss (finishingBlow() in battle.js): everything freezes mid-move for a
+   beat while the enemy burns white and the number slams in, then the arena shakes in whole steps */
+#battle-screen.hitstop :is(*, *::before, *::after):not(.ko-num, .ko-flash) { animation-play-state: paused !important; }
+.ko-flash {
+  position: absolute; z-index: 2; pointer-events: none; background: #fff;
+  -webkit-mask: var(--mask) 50% 100% / contain no-repeat; mask: var(--mask) 50% 100% / contain no-repeat;
+  animation: koFlash 0.85s steps(1) forwards;
+}
+@keyframes koFlash { 0% { opacity: 1; } 45% { opacity: 0; } 55% { opacity: 1; } 65% { opacity: 0; } 75% { opacity: 1; } 85%, 100% { opacity: 0; } }
+.ko-num {
+  position: absolute; left: 50%; top: 22%; z-index: 9; pointer-events: none; white-space: nowrap;
+  font-size: 3.4rem; color: #ffe14a; -webkit-text-stroke: 7px #3a0000; paint-order: stroke fill;
+  text-shadow: 4px 4px 0 #3a0000;
+  animation: koNum 1.6s steps(1) both;
+}
+@keyframes koNum {
+  0%   { transform: translate(-50%, 0) scale(2.2); }
+  5%   { transform: translate(-50%, 0) scale(1.6); }
+  10%  { transform: translate(-50%, 0) scale(1); color: #fff; }
+  16%  { color: #ffe14a; }
+  60%  { transform: translate(-50%, -6px) scale(1); opacity: 1; }
+  70%  { transform: translate(-50%, -12px) scale(1); opacity: 1; }
+  80%  { transform: translate(-50%, -18px) scale(1); opacity: 0.5; }
+  90%, 100% { transform: translate(-50%, -24px) scale(1); opacity: 0; }
+}
+#battle-screen.ko-shake .arena { animation: koShake 0.52s steps(1); }
+@keyframes koShake {
+  0%  { translate: -10px 6px; }  12% { translate: 9px -6px; }  24% { translate: -8px -4px; } 36% { translate: 7px 5px; }
+  48% { translate: -5px 3px; }   60% { translate: 4px -3px; }  72% { translate: -2px 2px; }  84%, 100% { translate: 0 0; }
+}
+.fast-battle #battle-screen.ko-shake .arena { animation-duration: 0.26s; }
+@media (prefers-reduced-motion: reduce) { .ko-num { animation: koNumStill 1.6s steps(1) both; } }
+@keyframes koNumStill { 0%, 85% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, 0); opacity: 0; } }
 #player-sprite.lunge { animation: lunge 0.38s ease-out; }
 @keyframes lunge { 40% { transform: translate(40px, -14px); } }
 /* the enemy winds up, then lunges; a big hit makes its sprite reel back (bigHit()), on the img so it doesn't fight the box's shake */

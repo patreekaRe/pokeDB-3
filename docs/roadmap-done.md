@@ -1451,3 +1451,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   journey films) glide in screen pixels with the art pixels unchanged (`fineCtx()` in `js/biome-intro.js`, a canvas per
   layer in `js/travel.js`), and the places' scenery (`js/scene.js`) draws at 30 fps instead of 8, still timed in 8-a-second
   ticks (rules in `docs/reference/battle-screen-layout.md`).
+- **A finishing blow** (roadmap item 14, 2026-10-05, desktop): the hit that fells an Alpha, Kenmatta or a boss freezes the
+  battle for 350 ms (hit-stop), the enemy burns white, the number slams in big, the arena shakes in steps, then the faint;
+  Eternatus's first bar keeps its rebirth (`finishingBlow()` in `js/battle.js`; detail in `docs/reference/battle-screen-layout.md`).
+  Checked at 375x812 with `?bossfight=depths&hp=0.02`.

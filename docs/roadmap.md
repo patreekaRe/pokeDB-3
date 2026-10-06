@@ -28,16 +28,6 @@ evolution and the next biome's `biomeIntro()`, a short film of the trip there: y
 parallax road while the land morphs from one biome into the next and the sky runs dusk → night → dawn, with one
 crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the archive has them).
 
-**The user's third pick (2026-10-05):** the finishing blow (and the Trainer Card, now part of item 17 below).
-
-14. **A finishing blow.** Run in: Desktop app (visual).
-    Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 14 and docs/reference/battle-screen-layout.md. When the
-    hit that takes an Alpha, Kenmatta or a boss to 0 HP lands, freeze the battle for a beat (~350 ms: hit-stop), shake
-    the screen, flash white over the enemy and show the damage number big, then let the normal faint play. Eternatus's
-    first bar keeps its own rebirth hand-off. Pixel-style only (steps, no soft glows); nothing under reduced motion
-    beyond the number. Check at 375x812 with `?bossfight=depths&hp=0.05` and an Alpha via `?event=` or a run, push to
-    main."
-
 **The user's suggested order (2026-10-05): badges, then the Sky Pillar, then branching biomes.** Each part has a CLOUD
 session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). Each prompt is the whole first message.
 

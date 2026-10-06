@@ -294,7 +294,14 @@ super-effective hit's number is red (`.pop.dmg.super`), either side.
 Battle moments: a hit that takes at least a quarter of the target's HP
 (clamped to 12–25) runs `bigHit()` in `js/battle.js`, which jolts `.arena`
 (the `translate` property, so sprite transforms are untouched) and flashes the
-screen white (`#battle-screen.big-hit`), skipped under reduced motion. When a
+screen white (`#battle-screen.big-hit`), skipped under reduced motion. The hit that fells an
+Alpha, Kenmatta or a boss is a **finishing blow** (`finishingBlow()`, from the
+hit loop, or from `finish()` for a Burn / Leech Seed / relic kill): every
+animation in `#battle-screen` pauses for 350 ms (`.hitstop`, hit-stop) while the
+enemy burns white (`.ko-flash`, masked by its sprite, blinking off in steps), the
+number slams in big and gold (`.ko-num`), then `.ko-shake` jolts the arena in
+whole steps and the faint plays. Under reduced motion only the number shows.
+Eternatus's first bar skips it for its rebirth; Eternamax gets it. When a
 boss drops to 30% HP, `checkStorm()` calls `setStorm(true)`: the biome's
 `storm` (rain in the Clearing and Shrine, a rain of cinders in the Wastes)
 fades in over 2 s with darker/redder light, stronger wind, faster clouds and

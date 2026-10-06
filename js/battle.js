@@ -729,7 +729,7 @@ async function resolveCard(card, x, { exhaust = false } = {}) {
       hitEffect('enemy-portrait-box');
       bigHit(dealt, b.enemy.maxHp, 'enemy-img');
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
-      if (b.enemy.hp <= 0) break;
+      if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
       if (i < hits.length - 1) { renderBars(); await pause(200); }
     }
     if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
@@ -1345,6 +1345,7 @@ function hurtEnemy(amount) {
 function enemyLoses(n) {
   const en = battle.enemy;
   battle.tally.dealt += Math.min(en.hp, n);
+  if (n > 0) battle.lastHit = n;
   en.hp = Math.max(0, en.hp - n);
 }
 
@@ -1651,9 +1652,11 @@ const winTrack = (kind) => (kind === 'elite' || kind === 'boss' ? 'trainer-victo
 async function finish(won) {
   const b = battle;
   if (won && b.def.phase2 && !b.phased) return rebirth();
+  b.busy = true;
+  if (won) await finishingBlow(b.lastHit);   // felled by Burn, Leech Seed, a relic...: the beat comes now
+  if (battle !== b) return;
   b.over = true;
   setStorm(false);
-  b.busy = true;
   renderAll();
 
   if (won) {
@@ -2524,6 +2527,36 @@ function bigHit(through, maxHp, recoil) {
   if (through < Math.max(12, Math.min(25, maxHp * 0.25)) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   flash('battle-screen', 'big-hit', 450);
   if (recoil) flash(recoil, 'recoil', 520);
+}
+
+/**
+ * The hit that fells an Alpha, Kenmatta or a boss: the battle freezes for a beat (hit-stop), the enemy goes white, the
+ * number comes up big, then the screen shakes and the faint plays. Once a fight; Eternatus's first bar has its rebirth.
+ */
+async function finishingBlow(n) {
+  const b = battle;
+  if (b.blowShown || !typeless() || !n || (b.def.phase2 && !b.phased)) return;
+  b.blowShown = true;
+  const zone = $('enemy-zone'), screen = $('battle-screen');
+  const num = el('span', 'ko-num', `-${n}`);
+  zone.append(num);
+  setTimeout(() => num.remove(), 1700);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { await sleep(600); return; }
+
+  const img = $('enemy-img'), host = $('enemy-portrait-box');
+  const box = img.getBoundingClientRect(), at = host.getBoundingClientRect();
+  const white = el('div', 'ko-flash');
+  Object.assign(white.style, { left: `${box.left - at.left}px`, top: `${box.top - at.top}px`, width: `${box.width}px`, height: `${box.height}px` });
+  white.style.setProperty('--mask', `url("${img.currentSrc || img.src}")`);
+  host.append(white);
+  setTimeout(() => white.remove(), 900);
+  screen.classList.add('hitstop');
+  playSound('fw-boom');
+  await sleep(350);
+  screen.classList.remove('hitstop');
+  if (battle !== b) return;
+  flash('battle-screen', 'ko-shake', 520);
+  await pause(520);
 }
 
 /** A boss close to fainting brings the weather in (see setStorm in scene.js). */
