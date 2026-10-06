@@ -907,10 +907,10 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 @keyframes arrowNudge { to { translate: 3px -50%; } }
 .gem.locked .gem-arrow { opacity: 0.5; }
 .gem-back-icon { font-family: var(--pixel-font); font-size: 22px; color: #fff; text-shadow: none; }
-/* Back is a small gem of its own, just its ◀ (sizeGems() in js/title.js) */
-.gem-back .gem-icon { left: 50%; top: 30%; height: auto; background: none; filter: none; translate: -50% -50%; }
+/* Back is a smaller gem on the left, "◀ BACK" on its coloured top (sizeGems() in js/title.js) */
+.gem-back .gem-icon { left: calc(var(--gp) * 5); top: 30%; height: auto; background: none; filter: none; translate: 0 -50%; }
 .gem-back .gem-icon::before { content: none; }
-.gem-back .gem-label { display: none; }
+.gem-back .gem-label { padding: 0 0 calc(var(--gp) * 4.8) calc(var(--gp) * 7); font-size: 0.8rem; }
 .gem-back.on::before { left: -22px; }
 .gem-soon { font-size: 0.55rem; letter-spacing: 0.06em; color: #e0e4f0; }
 /* a badge line in the result window opens the Trainer Card (badgeItem() in js/run.js) */
@@ -924,7 +924,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .gem-icon > .smooth-icon.tc-icon { width: 38px; height: 38px; }
 .gem-icon > .smooth-icon.gem-ball { width: 32px; height: 32px; }
 .gem.locked .gem-icon > .smooth-icon { filter: grayscale(1) brightness(0.95) drop-shadow(0 1px 1px rgba(20, 10, 30, 0.5)); }
-.gem-back .gem-icon > .gem-back-icon { width: 22px; height: 22px; }
+.gem-back .gem-icon > .gem-back-icon { width: 14px; height: 14px; }
 .gem-side-icon.smooth-icon { width: 30px; height: 30px; }
 .title-sound .vol-tag .smooth-icon { width: 18px; height: 18px; }
 @media (max-height: 700px) {

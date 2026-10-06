@@ -61,7 +61,7 @@ const SKIES = {
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
 const GEM_H = 16;   // a sign's height in --gp steps; each one's look is CSS (.gem in css/menus.css)
-const BACK_W = 26;   // the Back gem's width in pixels
+const BACK_W = 34, BACK_H = 12;   // the Back gem's size in --gp steps: smaller than the signs, and left-aligned
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let actions = null;       // what the gems do, and the saved run for Continue (initTitle)
@@ -434,10 +434,12 @@ function sizeGems() {
   const px = gemPx();
   const cols = Math.floor(Math.min(300, innerWidth * 0.8) / px);
   for (const btn of document.querySelectorAll('#title-menu .gem')) {
-    const back = btn.dataset.kind === 'back';   // Back is a small gem of its own, just its ◀ (the user's ask)
+    const back = btn.dataset.kind === 'back';
     const w = back ? BACK_W : cols;
     btn.style.width = `${w * px}px`;
-    btn.style.height = `${GEM_H * px}px`;
+    btn.style.height = `${(back ? BACK_H : GEM_H) * px}px`;
+    // the stack is centred, so a right margin of the difference lines Back's left edge up with the signs above
+    if (back) btn.style.marginRight = `${(cols - w) * px}px`;
   }
   // every page keeps the tallest page's height (four signs), so the nameplate never rises on a shorter sub-menu (the
   // user's ask)
