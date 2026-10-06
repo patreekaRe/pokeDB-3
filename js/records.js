@@ -41,7 +41,7 @@ const progress = ([icon, label, n, total]) => {
 };
 
 /** Every number that means something, in sections: runs, battles, collection, coins (the user's call, 2026-09-28). */
-export function openStats() {
+export function openStats(into = null) {   // `into`: draw it there (the Collection device's screen), no window
   const save = getSave();
   const s = save.stats;
   const inRun = loadRunData() ? 1 : 0;
@@ -99,17 +99,17 @@ export function openStats() {
   const label = (text) => el('h3', 'records-label', text);
   const champs = champions.length ? el('div', 'champions') : el('p', 'records-empty', 'Win a run and your champions show up here.');
   if (champions.length) champs.append(...champions);
-  $('stats-body').replaceChildren(
+  (into ?? $('stats-body')).replaceChildren(
     label('Runs'), runs,
     label('Battles'), battles,
     label('Collection'), collection,
     label('PokéCoins & records'), coins,
     label('Wins by starter'), champs,
   );
-  openDialog('stats-dialog');
+  if (!into) openDialog('stats-dialog');
 }
 
-export function openAchievements() {
+export function openAchievements(into = null) {
   const unlocked = new Set(getSave().unlocked);
   const done = ACHIEVEMENTS.filter(a => unlocked.has(a.starter)).length;
 
@@ -191,6 +191,7 @@ export function openAchievements() {
     feats.append(row);
   }
 
-  $('achievements-body').replaceChildren(header, list, el('h3', 'records-label', 'Pokédex pages'), dex, el('h3', 'records-label', 'The Crystal Depths'), feats);
-  openDialog('achievements-dialog');
+  const sub = into ? [el('p', 'records-sub', 'Each one unlocks a new starter.')] : [];
+  (into ?? $('achievements-body')).replaceChildren(...sub, header, list, el('h3', 'records-label', 'Pokédex pages'), dex, el('h3', 'records-label', 'The Crystal Depths'), feats);
+  if (!into) openDialog('achievements-dialog');
 }

@@ -94,10 +94,9 @@ saved run) and Back / Escape return to the portraits (`showSelect()` clears it).
 sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, Back / Choose on the sides, the strip centred at
 the bottom). The page's footer note hides here.
 
-**Collection** (`#collection-screen`, `js/collection.js`, StS's compendium): eight Pokégear cards with a coloured header
-(Pokédex, Moves, Relics, Items, Stats, Achievements, Record Book, Hall of Fame), each with its art, a line and a progress count (defeated, moves,
-found, done; Stats is a plain "12 runs · 3 wins", `runCount()`, since "0 of 1 runs won" read like a goal to the user), opening the same windows as the Poké Ball menu (Relics and Items open the Index on their tabs).
-4 across on PCs, 2 on phones. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
+**Collection** (`#collection-screen`): since 2026-10-05 a red handheld device (`js/device.js`) whose home screen
+(`js/collection.js`) is the owner's ID strip and a 3x3 grid of apps with their counts; CLAUDE.md's Dialogs note has the
+detail. Stats' count is a plain "3 wins", since "0 of 1 runs won" read like a goal to the user. The Shop marks owned skins and maxed perks with a small Poké Ball (`ownedTag()` in `js/shop.js`).
 
 
 The logo is pixel art since 2026-09-28 (the user's pick of two mockups): `js/logo.js` paints each glyph of "PokéDB"

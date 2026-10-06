@@ -23,7 +23,8 @@
      howto.js        the swipeable How to play window
      title.js        the title screen: PRESS START, then the gem menu (home)
      select.js       the character select (New game)
-     collection.js   the Collection (Pokédex, Moves, Relics, Items, Stats, Achievements)
+     collection.js   the Collection: the device's home screen of apps (Pokédex, Moves, Relics, Items, Stats...)
+     device.js       the Collection device: the handheld's cover, screen, apps and D-pad / A / B
      tips.js         tap-to-read hints (an element's title) on touch screens
      cloud.js        the optional cloud save (Firebase sign-in, from the Poké Ball menu)
    ============================================================ */

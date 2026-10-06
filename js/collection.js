@@ -1,8 +1,10 @@
 /* ============================================================
-   collection.js  -  the Collection, after Slay the Spire's compendium:
-   a row of big cards, one per window (Pokédex, Moves, Relics, Items,
-   Stats, Achievements), each with how far along you are. The windows
-   themselves are the ones the Poké Ball menu opens.
+   collection.js  -  the Collection, the device's home screen
+   (js/device.js): the owner's ID strip (the Trainer Card) and a grid
+   of apps, each with how far along you are. Pokédex, Relics, Items,
+   Stats, Achievements and the Trainer Card run inside the screen;
+   Moves, the Safari Pokédex and the books still open their windows
+   over the device (the roadmap's next pass moves them in).
    ============================================================ */
 
 import { ALL_CARDS } from './data/cards.js';
@@ -11,49 +13,33 @@ import { ITEMS } from './data/items.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { DEX_PAGES, safariOpen } from './data/pokedex.js';
 import { getSave } from './storage.js';
-import { openPokedex } from './pokedex.js';
+import { pokedexApp } from './pokedex.js';
 import { openSafariDex, safariDexCount } from './safaridex.js';
-import { openCardIndex } from './cardindex.js';
+import { openCardIndex, drawThings } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
 import { openRecords, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
-import { openTrainerCard, trainerTile } from './trainercard.js';
+import { openTrainerCard, trainerTile, badgeNews, partner, cardTier } from './trainercard.js';
+import { trainerName } from './leaderboard.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
-import { $, el, showScreen, itemSprite } from './ui.js';
-
-const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
-// a plain count, not "0 of 1 runs won": every other card's pill is a goal (N/M), and this one read like "win one run"
-const runCount = (stats) => `${plural(stats.runsStarted, 'run')} · ${plural(stats.runsWon, 'win')}`;
+import { initDevice, openDevice, openApp } from './device.js';
+import { el, itemSprite } from './ui.js';
 
 /** Called once at startup. */
 export function initCollection({ onBack }) {
-  $('coll-back').addEventListener('click', onBack);
-  // a tap on the empty background, anywhere but a card or the top bar, goes back like a tap outside a window (the user's
-  // call). Pointer events, not click: iOS Safari sends no click for a tap on a plain section or the body. The press must
-  // start and end on the same spot, so a swipe to scroll isn't a tap (iOS cancels the pointer on a scroll anyway)
-  let down = null;
-  document.addEventListener('pointerdown', (e) => { down = e.isPrimary ? { target: e.target, x: e.clientX, y: e.clientY } : null; }, true);
-  document.addEventListener('pointerup', (e) => {
-    const start = down;
-    down = null;
-    if (document.body.dataset.screen !== 'collection-screen' || !start || start.target !== e.target) return;
-    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) return;
-    if (document.querySelector('dialog[open], .card-zoom, .tap-tip, #ball-menu-panel:not([hidden])')) return;
-    if (e.target.closest('.coll-card, button, a, input, dialog, .topbar > *, .drop')) return;
-    $('coll-back').click();
-    // the tap's own click comes after, onto the title's gems now under the finger: swallow it
-    const swallow = (c) => { c.stopPropagation(); c.preventDefault(); };
-    document.addEventListener('click', swallow, { capture: true, once: true });
-    setTimeout(() => document.removeEventListener('click', swallow, true), 500);
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.body.dataset.screen === 'collection-screen' && !document.querySelector('dialog:modal')) onBack();
-  });
+  initDevice({ onBack });
 }
 
-/** The newest entry stands on the Hall of Fame and Record Book cards. */
+export function showCollection() {
+  showMenuScene();
+  openDevice({ render: renderHome, splash: `HELLO, ${trainerName().toUpperCase()}!` });
+}
+
+const emoji = (e) => el('span', 'coll-emoji', e);
+
+/** The newest entry stands on the Hall of Fame and Record Book icons. */
 function fameArt(entry) {
   const img = el('img', 'pixel coll-winner');
   img.src = spriteUrl(STARTERS_BY_ID[entry.starter], 'front', entry.stage, entry.shiny);
@@ -61,60 +47,76 @@ function fameArt(entry) {
   return img;
 }
 
-/** The Hall of Fame's or the Record Book's card, a ??? until it holds an entry. */
-function book(which, name, text, noun, how) {
-  const entries = bookEntries(which);
-  if (!entries.length) return [which, '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
-  return [which, name, fameArt(entries.at(-1)), text, `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, () => openRecords(which)];
-}
-
-/** The Safari Pokédex's card, a ??? until the Safari Zone opens (every Pokémon beaten). */
-function safariCard(save) {
-  const how = 'Beat every Pokémon in all three biomes to open the Safari Zone.';
-  if (!safariOpen(save)) return ['safari', '???', el('span', 'coll-emoji', '🔒'), how, '???', null, how];
-  const n = safariDexCount();
-  return ['safari', 'Safari Pokédex', el('span', 'coll-emoji', '🌿'), 'The Pokémon of the Safari Zone, area by area. Catch them all.',
-    `${n.caught}/${n.total} caught`, () => openSafariDex()];
-}
-
-export function showCollection() {
-  showScreen('collection-screen');
-  showMenuScene();
-  const save = getSave();
+/** The apps, in the home screen's order. `locked` is how to unlock one ("???" until then); `open` opens a window over
+    the device; `fill` / `app` run in the screen (device.js's openApp()). */
+function apps(save) {
   const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
-  const tc = trainerTile(save);
-  const cards = [
-    ['trainer', 'Trainer Card', tc.art, 'Your name, your numbers and the Badge Case.', tc.count, openTrainerCard],
-    ['dex', 'Pokédex', el('span', 'coll-emoji', '📕'), 'Every Pokémon you have met. Research them for PokéCoins.',
-      `${save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length}/${dexTotal} defeated`, () => openPokedex()],
-    safariCard(save),
-    ['moves', 'Moves', el('span', 'coll-emoji', '🃏'), 'Every move card in the game, by type.', `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length} found`, () => openCardIndex(pickedStarter()?.type ?? 'fire')],
-    ['relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), 'The held items found climbing the biomes.',
-      `${save.seen.relics.length}/${RELICS.length} found`, () => openCardIndex('relics')],
-    ['items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), 'The one-use items for your Bag.',
-      `${save.seen.items.length}/${ITEMS.length} found`, () => openCardIndex('items')],
-    ['stats', 'Stats', el('span', 'coll-emoji', '📊'), 'Runs, wins and records.',
-      runCount(save.stats), openStats],
-    ['achievements', 'Achievements', el('span', 'coll-emoji', '🏆'), 'The goals that unlock starters and legendaries.',
-      `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length} done`, openAchievements],
-    book('record', 'Record Book', 'Every run you won: its deck, relics, items and numbers. Lost runs get a line too.', 'win',
-      'Win a run to unlock it.'),
-    book('fame', 'Hall of Fame', 'Your Trainer Level 5 champions, each with its full record.', 'champion',
-      'Win a run on Trainer Level 5 to unlock it.'),
+  const dexN = save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length;
+  const book = (id, name, noun, how) => {
+    const entries = bookEntries(id);
+    if (!entries.length) return { id, locked: how };
+    return { id, name, art: fameArt(entries.at(-1)), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, open: () => openRecords(id) };
+  };
+  const safari = safariOpen(save) ? safariDexCount() : null;
+  const things = (id, name, art, all) => ({
+    id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-win panel index-dialog', fill: (p) => drawThings(id, p),
+  });
+  return [
+    { id: 'dex', name: 'Pokédex', art: emoji('📕'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp },
+    { id: 'moves', name: 'Moves', art: emoji('🃏'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
+      open: () => openCardIndex(pickedStarter()?.type ?? 'fire') },
+    safari
+      ? { id: 'safari', name: 'Safari', art: emoji('🌿'), count: `${safari.caught}/${safari.total}`, open: () => openSafariDex() }
+      : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
+    things('relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), RELICS),
+    things('items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), ITEMS),
+    { id: 'stats', name: 'Stats', art: emoji('📊'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, fill: (p) => openStats(p) },
+    { id: 'achievements', name: 'Achievements', art: emoji('🏆'),
+      count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, fill: (p) => openAchievements(p) },
+    book('record', 'Record Book', 'win', 'Win a run to unlock it.'),
+    book('fame', 'Hall of Fame', 'champion', 'Win a run on Trainer Level 5 to unlock it.'),
   ];
-  $('coll-grid').replaceChildren(...cards.map(([id, name, art, text, count, open, locked], i) => {
-    const card = el('button', `coll-card coll-${id}`);
-    card.type = 'button';
-    card.style.setProperty('--i', i);
-    if (id === 'trainer') card.dataset.tier = tc.tier;
-    const pic = el('span', 'coll-art');
-    pic.append(art);
-    card.append(el('strong', 'coll-name', name), pic, el('span', 'coll-text', text), el('span', 'coll-count', count));
-    if (locked) {
-      // a ??? until its first entry (the user's call): a tap says how to unlock it
-      card.classList.add('locked');
-      card.addEventListener('click', () => tipAt(card, locked));
-    } else card.addEventListener('click', open);
-    return card;
+}
+
+/** The owner's ID strip at the top of the home screen: it opens the Trainer Card. */
+function ownerStrip(save) {
+  const tc = trainerTile(save);
+  const strip = el('button', 'cdev-pick cdev-owner');
+  strip.type = 'button';
+  strip.dataset.tier = tc.tier;
+  const { starter, stage } = partner(save);
+  const mon = el('span', 'cdev-owner-mon');
+  const img = el('img', 'pixel');
+  img.src = spriteUrl(starter, 'front', stage);
+  img.alt = '';
+  mon.append(img);
+  const id = el('span', 'cdev-owner-id');
+  id.append(el('small', '', 'TRAINER'), el('b', '', trainerName().toUpperCase()), el('small', '', cardTier(save).name));
+  const badge = el('span', 'cdev-owner-badge');
+  badge.append(tc.art, el('small', '', tc.count.replace(' · New!', '')));
+  strip.append(mon, id, badge);
+  if (badgeNews(save)) strip.append(el('span', 'cdev-news', '!'));
+  strip.setAttribute('aria-label', `Trainer Card: ${tc.count}`);
+  strip.addEventListener('click', () => openApp({
+    id: 'trainer', name: 'TRAINER CARD', count: tc.count.replace(' · New!', ''), cls: 'cdev-win panel trainer-dialog',
+    fill: (p) => openTrainerCard(p),
   }));
+  return strip;
+}
+
+function renderHome() {
+  const save = getSave();
+  const grid = el('div', 'cdev-grid');
+  grid.append(...apps(save).map(a => {
+    const icon = el('button', `cdev-pick cdev-icon app-${a.id}${a.locked ? ' locked' : ''}`);
+    icon.type = 'button';
+    const tile = el('span', 'cdev-tile');
+    tile.append(a.locked ? emoji('🔒') : a.art);
+    icon.append(tile, el('span', 'cdev-label', a.locked ? '???' : a.name), el('span', 'cdev-count', a.locked ? '???' : a.count));
+    if (a.locked) icon.addEventListener('click', () => tipAt(icon, a.locked));   // a ??? until its first entry: a tap says how
+    else if (a.open) icon.addEventListener('click', a.open);
+    else icon.addEventListener('click', () => openApp({ ...a, name: a.name.toUpperCase() }));
+    return icon;
+  }));
+  return [ownerStrip(save), grid];
 }

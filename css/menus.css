@@ -733,56 +733,165 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   .prep-form b { font-size: 0.66rem; }
 }
 
-/* ---------- the Collection ---------- */
-.collection-screen { display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 12px; }
-.coll-title {
-  margin: 0;
-  font: 1.6rem/1 var(--pixel-font); font-synthesis-weight: none;
-  color: #fff8e0;
-  text-shadow: 2px 0 0 #14275e, -2px 0 0 #14275e, 0 2px 0 #14275e, 0 -2px 0 #14275e, 0 5px 0 #0d1a44;
+/* ---------- the Collection: a red handheld device (js/device.js), its home screen a grid of apps (js/collection.js) ---------- */
+.collection-screen { position: fixed; inset: 0; z-index: 30; max-width: none; padding: 0; display: grid; place-items: center; }
+.collection-screen[hidden] { display: none; }
+.cdev {
+  position: relative; display: flex; flex-direction: column; gap: 6px; width: 100%; height: 100%;
+  padding: max(6px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #e0343a, #c41f2a 40%, #b01822);
+  box-shadow: inset 0 0 0 3px #7a1016, inset 6px 0 0 rgba(255, 255, 255, 0.08);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
 }
-.coll-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; width: min(960px, 100%); }
-.coll-card {
+@media (min-width: 560px) {
+  .cdev { width: 500px; height: min(900px, calc(100dvh - 32px)); padding: 10px 14px 12px; border-radius: 26px;
+    box-shadow: inset 0 0 0 3px #7a1016, inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 18px 50px rgba(10, 20, 60, 0.45); }
+}
+.cdev-lid { flex: none; display: flex; align-items: center; gap: 8px; height: 50px; padding: 0 2px; }
+.cdev-lid .pdx-lens { width: 38px; height: 38px; }
+.cdev-lcd {
+  margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 3px;
+  min-width: 128px; max-width: 60%; padding: 5px 10px; border: 3px solid #7a1016; border-radius: 8px;
+  background: #b6d68e; color: #1f3a14; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+.cdev-lcd b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.62rem; font-weight: 400; letter-spacing: 1px; }
+.cdev-lcd small { font-size: 0.5rem; opacity: 0.75; white-space: nowrap; }
+.cdev-lcd small:empty { display: none; }
+.cdev.powered .pdx-light { animation: pdxBlink 0.16s steps(1) 5 both; }
+.cdev.powered .pdx-light.yellow { animation-delay: 0.08s; }
+.cdev.powered .pdx-light.green { animation-delay: 0.16s; }
+.cdev.powered .pdx-lens { animation: pdxLens 0.9s ease-out both; }
+/* the screen's light-grey bezel, its corner cut like the anime Pokédex's */
+.cdev-glass {
+  flex: 1; min-height: 0; display: flex; padding: 8px; border-radius: 12px 12px 12px 30px;
+  background: #e4e4ea; box-shadow: inset 0 0 0 3px #7a1016, inset 0 -4px 0 rgba(0, 0, 0, 0.14);
+}
+.cdev-screen {
+  position: relative; flex: 1; min-width: 0; overflow: hidden; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 22px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1.5px) 0 0 / 10px 10px,
+    linear-gradient(180deg, #24508a, #10234a);
+  color: #fff;
+}
+.cdev-screen.power-on { animation: pdxPowerOn 0.5s steps(8) both; }
+.cdev-home { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 14px; padding: 14px 10px 18px; }
+.cdev-home[hidden] { display: none; }
+.cdev-app { position: absolute; inset: 0; z-index: 1; overflow: auto; overscroll-behavior: contain; color: var(--win-ink); }
+.cdev-win { border: 0; border-radius: 0; box-shadow: none; padding: 14px 12px 20px; background: var(--win-bg); backdrop-filter: none; }
+.cdev-win.trainer-dialog { width: auto; padding: 12px; background: repeating-linear-gradient(135deg, var(--tc1) 0 8px, var(--tc2) 8px 10px); }
+.cdev-win.index-dialog .index-things { margin: 0; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px 8px; }
+.cdev-win.index-dialog .index-head:first-child { margin-top: 0; }
+.cdev-win > :is(.records-label, .records-sub):first-child { margin-top: 0; }
+/* the Pokédex app: its banners and page (js/pokedex.js) move in here, without their window's top bar or the page's lid */
+.cdev-dex { overflow: hidden; background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 1px, transparent 1.5px) 0 0 / 14px 14px, linear-gradient(180deg, #c8ecf8, #9fd6ec); }
+.cdev-dex .pdx-list { padding: 10px; }
+.cdev-dex .pdx-top { display: none; }
+.cdev-dex .pdx-banners { width: 100%; }
+.cdev-dex .pdx-stage { padding: 0; }
+.cdev-dex .pdx-device { width: 100%; min-height: 100%; border-radius: 0; box-shadow: none; }
+.cdev-dex .pdx-lid { display: none; }
+.cdev-dex .pdx-controls { padding-bottom: 10px; border-radius: 0; }
+
+/* the hardware: D-pad, speaker grille, B and A */
+.cdev-pad { flex: none; display: flex; align-items: center; justify-content: space-between; height: 76px; padding: 0 8px; }
+.cdev-dpad { display: grid; grid-template-columns: repeat(3, 22px); grid-template-rows: repeat(3, 22px); filter: drop-shadow(0 3px 0 #5a0c12); }
+.cdev-dpad > * { background: #2a2a30; }
+.cdev-dpad button { padding: 0; border: 0; cursor: pointer; }
+.cdev-dpad button:active { background: #48484f; }
+.cdev-dpad [data-dir="up"] { grid-area: 1 / 2; border-radius: 4px 4px 0 0; }
+.cdev-dpad [data-dir="left"] { grid-area: 2 / 1; border-radius: 4px 0 0 4px; }
+.cdev-dpad span { grid-area: 2 / 2; }
+.cdev-dpad [data-dir="right"] { grid-area: 2 / 3; border-radius: 0 4px 4px 0; }
+.cdev-dpad [data-dir="down"] { grid-area: 3 / 2; border-radius: 0 0 4px 4px; }
+.cdev-grille { width: 54px; height: 22px; border-radius: 3px; background: repeating-linear-gradient(180deg, #7a1016 0 4px, transparent 4px 8px); }
+.cdev-ab { display: flex; align-items: flex-start; gap: 10px; height: 58px; }
+.cdev-btn {
+  width: 46px; height: 46px; border-radius: 50%; border: 3px solid #7a1016; cursor: pointer;
+  font: 0.7rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  background: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0); box-shadow: 0 4px 0 #5a0c12;
+}
+#cdev-b { align-self: flex-end; background: radial-gradient(circle at 35% 30%, #f4f4f8 0 12%, #b8b8c4 45%, #6a6a78); color: #2a2a30; text-shadow: none; }
+.cdev-btn:active { translate: 0 3px; box-shadow: 0 1px 0 #5a0c12; }
+/* the cover that swings open on its left hinge, over everything under the lid */
+.cdev-cover {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; transform-origin: left center; backface-visibility: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), transparent 40%), linear-gradient(180deg, #e0343a, #c41f2a 45%, #a8141e);
+  box-shadow: inset 0 0 0 3px #7a1016, inset -10px 0 0 rgba(0, 0, 0, 0.12);
+}
+@media (min-width: 560px) { .cdev-cover { border-radius: 0 0 26px 26px; } }
+
+/* the boot screen: a Poké Ball and a hello, then the home screen's picks pop in */
+.cdev-splash {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: #10234a; pointer-events: none; animation: cdevSplash 1s steps(10) both;
+}
+.cdev-splash-ball {
+  width: 54px; height: 54px; border-radius: 50%; border: 4px solid #1a1a22;
+  background: radial-gradient(circle, #f2f2f2 0 20%, #1a1a22 21% 29%, transparent 30%), linear-gradient(180deg, #e8343a 0 46%, #1a1a22 46% 54%, #f2f2f2 54%);
+}
+.cdev-splash-text { font-size: 0.62rem; letter-spacing: 1px; color: #b6f08e; }
+@keyframes cdevSplash { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+.cdev-home.boot .cdev-pick { animation: cdevPop 0.36s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(0.7s + var(--i) * 45ms); }
+@keyframes cdevPop { from { opacity: 0; transform: scale(0.6); } }
+
+/* the owner's ID strip: the Trainer Card in its colour */
+.cdev-owner {
+  position: relative; flex: none; display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 8px 10px;
+  border: 3px solid var(--tc3); border-radius: 12px; cursor: pointer; text-align: left; color: #fff; font-family: inherit;
+  background: repeating-linear-gradient(135deg, var(--tc1) 0 8px, var(--tc2) 8px 10px); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+.cdev-owner-mon { display: grid; place-items: center; height: 64px; border-radius: 8px; background: var(--win-bg); box-shadow: inset 0 0 0 2px var(--tc3); }
+.cdev-owner-mon img { max-width: 58px; max-height: 58px; image-rendering: pixelated; }
+.cdev-owner-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; text-shadow: 1px 1px 0 var(--tc3); }
+.cdev-owner-id b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 400; }
+.cdev-owner-id small { font-size: 0.48rem; opacity: 0.9; }
+.cdev-owner-badge { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.45rem; text-shadow: 1px 1px 0 var(--tc3); }
+.cdev-owner-badge .coll-badge { width: 40px; height: 40px; image-rendering: pixelated; }
+.cdev-news {
+  position: absolute; top: -8px; right: -6px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
+  background: #ffd23a; color: #6a3a00; font-size: 0.7rem; box-shadow: 0 0 0 2px #fff, 0 0 10px #ffd23a; animation: cdevNews 1.2s steps(2) infinite;
+}
+@keyframes cdevNews { 50% { filter: brightness(1.35); } }
+
+/* the apps */
+.cdev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+.cdev-icon {
+  display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; padding: 6px 2px; border: 0; border-radius: 12px;
+  background: none; color: #fff; cursor: pointer; font-family: inherit;
+}
+.cdev-tile {
   --c1: #5868c8; --c2: #303890;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 0 12px 14px;
-  overflow: hidden;
-  border: 3px solid #b8b8c8;
-  border-radius: var(--round);
-  background: linear-gradient(var(--c1) 0 44px, var(--c2) 44px 47px, var(--win-bg) 47px);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 4px 5px 0 2px rgba(0, 0, 0, 0.35);
-  color: var(--win-ink);
-  text-align: center;
-  cursor: pointer;
-  transition: translate 0.12s;
-  animation: collIn 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 60ms);
+  position: relative; display: grid; place-items: center; width: min(72px, 100%); aspect-ratio: 1; overflow: hidden; border-radius: 18px;
+  background: linear-gradient(160deg, var(--c1), var(--c2)); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.3), 0 4px 0 rgba(0, 0, 0, 0.4);
+  transition: translate 0.1s;
 }
-@keyframes collIn { from { opacity: 0; transform: translate3d(0, 18px, 0); } to { transform: translate3d(0, 0, 0); } }
-@media (hover: hover) { .coll-card:hover { translate: 0 -5px; } }
-.coll-card:active { translate: 0 2px; }
-.coll-card:focus-visible { outline: 3px solid #f8e070; outline-offset: 3px; }
-.coll-name { display: flex; align-items: center; height: 44px; font: 0.9rem var(--pixel-font); font-weight: 400; color: #fff; text-shadow: 2px 2px 0 var(--c2); }
-.coll-art { display: grid; place-items: center; width: 96px; height: 80px; border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.08); box-shadow: inset 0 0 0 2px rgba(48, 48, 56, 0.15); }
-.coll-art .item-sprite { width: 64px; height: 64px; image-rendering: pixelated; }
+.cdev-tile::after { content: ''; position: absolute; inset: 3px 3px 50%; border-radius: 15px 15px 40% 40% / 15px 15px 12px 12px; background: rgba(255, 255, 255, 0.16); pointer-events: none; }
+.cdev-tile .coll-emoji { font-size: 34px; }
+.cdev-tile .item-sprite { width: 52px; height: 52px; image-rendering: pixelated; }
+.cdev-tile .coll-winner { max-width: 60px; max-height: 60px; }
+.cdev-label { max-width: 100%; font-size: 0.5rem; line-height: 1.3; text-align: center; text-shadow: 1px 1px 0 #000; overflow-wrap: anywhere; }
+.cdev-count { padding: 3px 7px 2px; border-radius: 999px; font-size: 0.45rem; color: #b6f08e; background: rgba(0, 0, 0, 0.4); white-space: nowrap; }
+@media (hover: hover) { .cdev-icon:hover .cdev-tile { translate: 0 -3px; } }
+.cdev-icon:active .cdev-tile { translate: 0 2px; }
+.cdev.keyed .cdev-pick.sel, .cdev-pick:focus-visible { outline: 3px solid #ffe36b; outline-offset: 2px; }
+.app-dex .cdev-tile { --c1: #f05a5a; --c2: #a02c2c; }
+.app-safari .cdev-tile { --c1: #6ac458; --c2: #2c6a24; }
+.app-moves .cdev-tile { --c1: #5a8ef0; --c2: #2c58b0; }
+.app-relics .cdev-tile { --c1: #e8b048; --c2: #9a6a18; }
+.app-items .cdev-tile { --c1: #f088c4; --c2: #983068; }
+.app-stats .cdev-tile { --c1: #58c070; --c2: #2a7038; }
+.app-achievements .cdev-tile { --c1: #a880e4; --c2: #5a3890; }
+.app-fame .cdev-tile { --c1: #ecbc40; --c2: #8a5e10; }
+.app-record .cdev-tile { --c1: #4a60c0; --c2: #1c2668; }
+.cdev-icon.locked { cursor: help; }
+.cdev-icon.locked .cdev-tile { --c1: #6a6a7a; --c2: #3a3a48; }
+.cdev-icon.locked .cdev-label, .cdev-icon.locked .cdev-count { color: #a8a8b8; }
+@media (prefers-reduced-motion: reduce) {
+  .cdev-screen.power-on, .cdev.powered .pdx-light, .cdev.powered .pdx-lens, .cdev-home.boot .cdev-pick, .cdev-news { animation: none; }
+  .cdev-splash { display: none; }
+}
 .coll-emoji { font-size: 48px; line-height: 1; }
-.coll-text { font-size: 0.7rem; line-height: 1.6; color: var(--win-ink); }
-.coll-count { margin-top: auto; padding: 4px 10px 3px; border-radius: 999px; font: 0.62rem var(--pixel-font); color: #fff; background: var(--c2); }
-.coll-dex { --c1: #e05858; --c2: #a02c2c; }
-.coll-safari { --c1: #58b048; --c2: #2c6a24; }
-.coll-moves { --c1: #5a8ef0; --c2: #2c58b0; }
-.coll-relics { --c1: #e0a840; --c2: #9a6a18; }
-.coll-items { --c1: #e878b8; --c2: #983068; }
-.coll-stats { --c1: #4cb060; --c2: #2a7038; }
-.coll-achievements { --c1: #9a70d8; --c2: #5a3890; }
-.coll-fame { --c1: #d8a830; --c2: #8a5e10; }
-.coll-record { --c1: #3a4ea8; --c2: #1c2668; }
-.coll-card.locked { --c1: #8a8a98; --c2: #56566a; cursor: help; }
-.coll-card.locked .coll-art { filter: grayscale(1); opacity: 0.6; }
 .coll-winner { max-width: 76px; max-height: 76px; image-rendering: pixelated; }
-.coll-foot { padding-bottom: 12px; }
 
 /* ---------- the Trainer Card (js/trainercard.js): its colour steps up with badges ---------- */
 [data-tier="green"] { --tc1: #58b048; --tc2: #3c8a30; --tc3: #1e4e18; }
@@ -790,7 +899,6 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 [data-tier="silver"] { --tc1: #a8b0c0; --tc2: #808898; --tc3: #444a58; }
 [data-tier="gold"] { --tc1: #e8b830; --tc2: #c09018; --tc3: #6a4a08; }
 [data-tier="violet"] { --tc1: #9a60e0; --tc2: #7040b8; --tc3: #361a68; }
-.coll-trainer { --c1: var(--tc1); --c2: var(--tc3); }
 .coll-badge { width: 72px; height: 72px; image-rendering: pixelated; }
 
 .trainer-dialog { width: min(460px, 94vw); padding: 16px; border-color: var(--tc3);
@@ -845,15 +953,9 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .tc-badge.earned::after, .tc-badge.fresh .tc-badge-art, .tc-badge.fresh::before { animation: none; }
 }
-@media (max-width: 600px) {
-  .coll-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .coll-card { padding: 0 8px 12px; }
-  .coll-name { font-size: 0.75rem; }
-  .coll-text { font-size: 0.62rem; }
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .gem, .gem-side, .coll-card, .select-screen, .sel-stage img, .title-screen:not([hidden]), .title-screen.away { animation: none; }
+  .gem, .gem-side, .select-screen, .sel-stage img, .title-screen:not([hidden]), .title-screen.away { animation: none; }
   .title-screen.away { opacity: 0; }
   .gem.on::before, .gem.on .gem-egg { animation: none; }
 }

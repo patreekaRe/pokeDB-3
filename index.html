@@ -238,11 +238,29 @@
       </div>
     </section>
 
-    <!-- Collection, the compendium (js/collection.js): a card per window, opened from the title's Collection gem -->
+    <!-- Collection: a red handheld device (js/device.js) whose home screen is a grid of apps (js/collection.js) -->
     <section id="collection-screen" class="screen collection-screen" hidden>
-      <h2 class="coll-title">Collection</h2>
-      <div class="coll-grid" id="coll-grid"></div>
-      <div class="coll-foot"><button type="button" class="pxb blue white" id="coll-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button></div>
+      <div class="cdev" id="cdev" role="dialog" aria-label="Collection">
+        <div class="cdev-lid">
+          <span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span>
+          <span class="cdev-lcd" aria-live="polite"><b id="cdev-title">COLLECTION</b><small id="cdev-count"></small></span>
+        </div>
+        <div class="cdev-glass">
+          <div class="cdev-screen" id="cdev-screen">
+            <div class="cdev-home" id="cdev-home"></div>
+          </div>
+        </div>
+        <div class="cdev-pad">
+          <div class="cdev-dpad" id="cdev-dpad">
+            <button type="button" data-dir="up" aria-label="Up"></button><button type="button" data-dir="left" aria-label="Left"></button><span></span><button type="button" data-dir="right" aria-label="Right"></button><button type="button" data-dir="down" aria-label="Down"></button>
+          </div>
+          <span class="cdev-grille" aria-hidden="true"></span>
+          <div class="cdev-ab">
+            <button type="button" class="cdev-btn" id="cdev-b" aria-label="B: back">B</button>
+            <button type="button" class="cdev-btn" id="cdev-a" aria-label="A: open">A</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ============ 2. DECK PREVIEW (read-only) ============ -->

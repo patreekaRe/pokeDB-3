@@ -180,7 +180,7 @@ const playTime = (ms = 0) => {
 /* ---------- the window ---------- */
 
 /** The starter on the card: the one with the most wins (a Level 5 win counts big), else Charmander. */
-function partner(save) {
+export function partner(save) {
   const s = save.stats;
   const score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const best = STARTERS.filter(st => score(st.id) > 0).sort((a, b) => score(b.id) - score(a.id))[0];
@@ -208,14 +208,14 @@ function badgeButton(b, save, earned, fresh, i) {
   return btn;
 }
 
-export function openTrainerCard() {
+export function openTrainerCard(into = null) {   // `into`: draw it there (the Collection device's screen), no window
   const save = getSave();
   const s = save.stats;
   const tier = cardTier(save);
   const earned = earnedIds(save);
   const seen = new Set(save.badgesSeen || []);
   const fresh = [...earned].filter(id => !seen.has(id));
-  const dialog = $('trainer-dialog');
+  const dialog = into ?? $('trainer-dialog');
   dialog.dataset.tier = tier.id;
 
   const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
@@ -255,12 +255,13 @@ export function openTrainerCard() {
   head.append(el('h2', 'tc-title', 'TRAINER CARD'), el('span', 'tc-tier', tier.name));
   head.querySelector('h2').tabIndex = -1;
   const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
-  $('trainer-body').replaceChildren(head, info, el('span', 'tc-case-label', 'BADGE CASE'), caseBox, foot);
-  openDialog('trainer-dialog');
+  (into ?? $('trainer-body')).replaceChildren(head, info, el('span', 'tc-case-label', 'BADGE CASE'), caseBox, foot);
+  if (!into) openDialog('trainer-dialog');
+  const showing = () => (into ? into.isConnected && !into.closest('[hidden]') : dialog.open);
 
   if (fresh.length) {
     // each new badge pops in with a shine the first time the card opens after it
-    fresh.forEach((id, i) => setTimeout(() => { if (dialog.open) playSound(`crystal-${i % 3}`); }, 450 + i * 260));
+    fresh.forEach((id, i) => setTimeout(() => { if (showing()) playSound(`crystal-${i % 3}`); }, 450 + i * 260));
     updateSave(d => { d.badgesSeen = [...earned]; });
     showBadgeNews();
   }

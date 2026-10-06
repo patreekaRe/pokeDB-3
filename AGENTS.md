@@ -12,6 +12,9 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-05: **Collection device, pass 1** landed (the Collection is a red handheld with a home screen of apps,
+  `js/device.js` + `js/collection.js`). Passes 2-3 are roadmap item 20.
+
 - 2026-10-05: the **Pokédex revamp, pass 1** landed (full-screen biome banners opening a red handheld device). Pass 2,
   the zoom / lid animation and painted biome art, landed the same day (Desktop app, pushed): checked in the browser pane
   at 375x812 and 1280x800 and with reduced motion; the user still has to see the lid and blip on a phone.

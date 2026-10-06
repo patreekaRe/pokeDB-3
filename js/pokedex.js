@@ -628,7 +628,7 @@ async function bootDevice(from) {
   const stage = $('dex-device'), dev = stage.querySelector('.pdx-device');
   if (calm()) { playSound('dex-on'); return; }
   busy = true;
-  const lid = cover(dev);
+  const lid = shelled() ? null : cover(dev);   // in the Collection device the page is already behind its cover
   stage.classList.add('zooming');
   const list = $('dex-list');
   const zoom = from
@@ -640,9 +640,10 @@ async function bootDevice(from) {
   fade.cancel();
   playSound('dex-on');
   dev.classList.add('powered');
-  await settle(lid.animate(SWING,
-    { duration: 460, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
-  lid.remove();
+  if (lid) {
+    await settle(lid.animate(SWING, { duration: 460, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
+    lid.remove();
+  }
   dev.querySelector('.pdx-screen')?.classList.add('power-on');
   busy = false;
 }
@@ -653,10 +654,12 @@ async function shutDevice() {
   if (calm() || !dev) return;
   busy = true;
   playSound('dex-off');
-  const lid = cover(dev);
   stage.scrollTop = 0;
-  await settle(lid.animate(SWING.map(k => ({ ...k, ...(k.offset && { offset: 1 - k.offset }) })).reverse(),
-    { duration: 320, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' }));
+  if (!shelled()) {
+    const lid = cover(dev);
+    await settle(lid.animate(SWING.map(k => ({ ...k, ...(k.offset && { offset: 1 - k.offset }) })).reverse(),
+      { duration: 320, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' }));
+  }
   const to = $('dex-banners').querySelector(`[data-page="${view === 'rewards' ? 'rewards' : page}"]`);
   const box = to?.getBoundingClientRect();
   const seen = box && box.bottom > 0 && box.top < innerHeight;
@@ -714,8 +717,41 @@ export function initPokedex() {
   $('dex-dialog').addEventListener('close', () => { ++typer; busy = false; });
 }
 
+/* ---------- as an app in the Collection device (js/device.js) ----------
+   The list and the page move into the device's screen, the page drops its own lid (the device's Back steps out of it),
+   and they move back into their window when a run opens the Pokédex. */
+const shelled = () => !$('dex-dialog').contains($('dex-list'));
+
+export const pokedexApp = {
+  mount(host) {
+    host.append($('dex-list'), $('dex-device'));
+    renderList();
+    show('list');
+    $('dex-list').scrollTop = 0;
+  },
+  /** The device's Back: true if the Pokédex stepped back itself (a page to the biomes), false to leave the app. */
+  back() {
+    if (busy) return true;
+    if (view === 'list') return false;
+    backToList();
+    return true;
+  },
+  key(e) {
+    const step = view === 'page' && { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (!step) return false;
+    showEntry(entry + step, step);
+    return true;
+  },
+  unmount() {
+    ++typer;
+    busy = false;
+    $('dex-dialog').append($('dex-list'), $('dex-device'));
+  },
+};
+
 /** Opens on the given biome's page (the run's), else on the list of biomes. */
 export function openPokedex(biome) {
+  if (shelled()) pokedexApp.unmount();
   const onPage = Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown());
   openDialog('dex-dialog');
   renderList();

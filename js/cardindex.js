@@ -80,9 +80,25 @@ function thingGroup(label, things, seen, note) {
 
 /** The Relics or Items tab, grouped by rarity (and boss relics on their own). */
 function renderThings() {
-  const relics = tab === 'relics';
+  const { body, total } = thingsBody(tab);
+  $('index-cards').replaceChildren(...body);
+  $('index-cards').classList.add('index-things');
+  $('index-total').textContent = total;
+}
+
+/** The Relics or Items tab drawn into `into` (the Collection device's screen); returns its "n/m found". */
+export function drawThings(kind, into) {
+  const { body, total } = thingsBody(kind);
+  const grid = el('div', 'card-pool index-things');
+  grid.append(...body);
+  into.replaceChildren(grid);
+  return total;
+}
+
+function thingsBody(kind) {
+  const relics = kind === 'relics';
   const all = relics ? RELICS : ITEMS;
-  const seen = new Set(getSave().seen[tab]);
+  const seen = new Set(getSave().seen[kind]);
   const body = [];
   if (relics) {
     const abilities = Object.values(ABILITIES).filter(a => a.id !== 'pressure' || getSave().unlocked.includes('mewtwo'));
@@ -95,9 +111,7 @@ function renderThings() {
   }
   if (relics) body.push(...thingGroup('Boss', all.filter(t => t.boss), seen, 'Only offered after beating a boss.'));
   if (relics) body.push(...thingGroup('Special', all.filter(t => t.unique), seen, 'Won by beating Chad Master Kenmatta in his dojo.'));
-  $('index-cards').replaceChildren(...body);
-  $('index-cards').classList.add('index-things');
-  $('index-total').textContent = `${all.filter(t => seen.has(t.id)).length}/${all.length} found`;
+  return { body, total: `${all.filter(t => seen.has(t.id)).length}/${all.length} found` };
 }
 
 function render() {

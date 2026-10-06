@@ -70,7 +70,18 @@ live site.
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
   it). The Bag, the Poké Ball menu, zooms and
-  focus layers already did. The Collection screen goes back on a tap on its empty background too (`initCollection()`: pointer events, since iOS Safari sends no `click` for a tap on a plain section or the body). **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
+  focus layers already did. **The Collection is a device** (2026-10-05, pass 1 of 3; the roadmap has the rest): the
+  red handheld grown into `js/device.js` (`#collection-screen`, fixed, full screen on phones with a thin frame, a 500px
+  device on the title's sky wider). It comes up closed, its cover swings open and the screen boots ("HELLO, NAME!") onto
+  the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card, with a "!" for an unseen badge) and a 3x3
+  grid of apps, each with its count, "???" + 🔒 until unlocked (a tap says how). `openApp()` slides an app over the home
+  screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
+  into `#dex-dialog` when a run opens it), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
+  the screen instead of opening the window). Moves, Safari and the two books still open their windows over it. The
+  hardware: D-pad (the highlight, shown once used: `.keyed`; in an app it steps a Pokédex page or scrolls), A opens, B
+  backs out (a Pokédex page to its biomes, an app to home, home shuts the device with the screen collapsing and the cover
+  closing). Escape is B; a tap on the sky around it shuts it (pointer events, as iOS Safari sends no `click` for a tap
+  on a plain section). Shut, the screen is hidden again so the title's keys aren't taken. **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
@@ -522,8 +533,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   in `js/main.js`, silent) gives an old save everything it can prove on day one. In a run it's quiet, no window: a
   `badgeLine()` in the fight's reward box (`unlock()` in `afterFight()`; Kenmatta's Dojo Badge in his relic window, once
   `kenWins` is saved) and in the result window (`announceUnlocks()` keeps them in `run.badges`). Peeked runs grant none.
-  Tests: `tests/badges.test.mjs`. **The Trainer Card** (part b, 2026-10-04): `js/trainercard.js`, the Collection's first card
-  (`trainerTile()`) opening `#trainer-dialog`: the leaderboard nickname (`trainerName()`, never the sign-in's real name) or
+  Tests: `tests/badges.test.mjs`. **The Trainer Card** (part b, 2026-10-04): `js/trainercard.js`, the Collection device's ID strip
+  (`ownerStrip()`, drawn in the device's screen; `#trainer-dialog` from the title's Trainer Card sign and the Bag): the leaderboard nickname (`trainerName()`, never the sign-in's real name) or
   TRAINER, wins, Pokédex / Safari counts, gold stars, play time (`stats.playMs`: `initPlayTime()` feeds `addPlayTime()` in
   `js/storage.js`, which adds only its own minutes to the save on disk and never wakes the cloud, so a hiding page can't
   write an old save over a cloud download), the partner, and the Badge Case. Each badge is painted from `LOOK` (a shape

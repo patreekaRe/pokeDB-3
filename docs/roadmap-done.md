@@ -1471,3 +1471,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (`sceneShot()`), the zoom from the banner and the cover swinging open with a power-on blip (reversed going back), the
   entry text typing out, entries sliding across the screen. Checked at 375x812 and 1280x800 and with reduced motion. The
   Safari Pokédex keeps its grid: 514 entries one at a time would be slow to browse (left as an idea).
+- **Collection device, pass 1** (2026-10-05, Desktop app; the user picked the three-pass plan): the Collection screen is
+  gone, replaced by a red handheld (`js/device.js`) whose cover swings open onto a home screen (`js/collection.js`): the
+  owner's ID strip (Trainer Card) and 9 apps. Pokédex, Stats, Achievements, Relics, Items and the Trainer Card run in the
+  screen; Moves, Safari and the books open their windows over it for now. D-pad / A / B, Escape, a tap on the sky shuts
+  it. The title's Collection ▸ sub-menu stays (the Game Corner lives there); its Collection sign opens the device. Checked
+  at 375x812 and 1024x768 and with reduced motion (the browser pane was hidden, so the animations were fast-forwarded:
+  the user should watch the cover and boot on a phone). Passes 2-3 are roadmap item 20.
