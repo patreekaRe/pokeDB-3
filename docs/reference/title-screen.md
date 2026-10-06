@@ -63,3 +63,11 @@ the gate's progress is only seen at a run's end). After PRESS START a tap (`ente
 reduced motion), then `actions.onGate` opens the character select on Mewtwo's Prepare step; Back leaves you on the select.
 Playtest: `?mewtwo&gate=0`.
 
+**Smooth icons** (2026-10-06, the user's call: clean and smooth like the Poké Ball signs, no pixels): every icon on the
+title (the signs' Egg, Pokédex, map, slot machine, Sky Pillar, Trainer Card, Back ◀ and locked Safari Ball, the 🏆, the
+corner's PC / speaker / ❓, the volume pop-out's note and bell, the Escape Rope) is vector art from `smoothIcon(name)` in
+`js/smooth-icons.js`, with a soft shadow instead of the hard pixel outline, and their animations ease instead of stepping.
+`js/icons.js` never swaps inside an `<svg>`, so they stay smooth; every other screen keeps the pixel icons. The title's
+speaker is redrawn by `renderButton()` in `js/audio.js` (`data-smooth`). The sign pointer ▶ and the sub-menu ▶ are CSS
+triangles. The Pokémon sprites, the sky, logo, signpost and gate stay pixel art. A new title icon needs an `ART` entry.
+

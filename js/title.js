@@ -28,7 +28,8 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { openTrainerCard, cardIcon, showBadgeNews } from './trainercard.js';
+import { openTrainerCard, showBadgeNews } from './trainercard.js';
+import { smoothIcon } from './smooth-icons.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -112,6 +113,13 @@ export function initTitle(handlers) {
     if (pressed && page !== 'main' && !e.target.closest('button, a, input, .nameplate, .title-areas, .title-corner')) goBack();
   });
   $('title-refresh').addEventListener('click', refreshGame);
+  // the corner's icons are smooth vector art like the signs (the user's call); the speaker is audio.js's
+  $('title-account').querySelector('.ta-pc').replaceChildren(smoothIcon('pc'));
+  $('title-help').querySelector('.ta-pc').replaceChildren(smoothIcon('help'));
+  const tags = screen.querySelectorAll('.title-sound .vol-tag');
+  tags[0].replaceChildren(smoothIcon('music'));
+  tags[1].replaceChildren(smoothIcon('bell'));
+  $('title-abandon').replaceChildren(smoothIcon('rope'));
   paintLogo();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
@@ -203,15 +211,15 @@ function renderMenu(dir = 0, from = null) {
   const gems = {
     main: () => [
       run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
-      gem('new', 'New game', hatch, el('span', 'gem-emoji gem-egg', '🥚')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
+      gem('new', 'New game', hatch, smoothIcon('egg', 'gem-egg')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
       modesGem(),
-      more(gem('hub', 'Collection', () => goTo('hub'), el('span', 'gem-emoji', '📕'))),
+      more(gem('hub', 'Collection', () => goTo('hub'), smoothIcon('dex'))),
     ],
     modes: () => [safariGem(), pillarGem(), backGem()],
     hub: () => [
-      gem('collection', 'Collection', actions.onCollection, el('span', 'gem-emoji', '📕')),
-      gem('trainer', 'Trainer Card', () => { playSound('confirm'); openTrainerCard(); }, cardIcon()),
-      gem('corner', 'Game Corner', actions.onGameCorner, el('span', 'gem-emoji', '🎰')),
+      gem('collection', 'Collection', actions.onCollection, smoothIcon('dex')),
+      gem('trainer', 'Trainer Card', () => { playSound('confirm'); openTrainerCard(); }, smoothIcon('card', 'tc-icon')),
+      gem('corner', 'Game Corner', actions.onGameCorner, smoothIcon('corner')),
       backGem(),
     ],
   }[page]().filter(Boolean);
@@ -274,11 +282,11 @@ function slide(dir, next, from = null) {
 /** A sign that opens a sub-menu: a ▶ on its right end says so. */
 function more(btn) {
   btn.classList.add('gem-more');
-  btn.append(el('span', 'gem-arrow', '▶'));
+  btn.append(el('span', 'gem-arrow'));   // a smooth triangle in CSS
   return btn;
 }
 const backGem = () => {
-  const btn = gem('back', 'Back', goBack, el('span', 'gem-emoji gem-back-icon', '◀'));
+  const btn = gem('back', 'Back', goBack, smoothIcon('back', 'gem-back-icon'));
   btn.setAttribute('aria-label', 'Back');
   return btn;
 };
@@ -290,7 +298,7 @@ function modesGem() {
     if (open) return goTo('modes');
     playSound('cancel');
     tipAt(btn, 'Win a run to open the game modes, starting with the Sky Pillar: a 100-floor tower climb with a weekly leaderboard.');
-  }, el('span', 'gem-emoji', '🗺️'), open ? null : el('span', 'gem-soon', 'Win a run')));
+  }, smoothIcon('map'), open ? null : el('span', 'gem-soon', 'Win a run')));
   btn.classList.toggle('locked', !open);
   return btn;
 }
@@ -304,7 +312,7 @@ function pillarGem() {
     if (open) return actions.onTower();
     playSound('cancel');
     tipAt(btn, 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.');
-  }, el('span', 'gem-emoji', '🗼'), open ? (best ? el('span', 'gem-soon', `Best F${best}`) : null) : el('span', 'gem-soon', 'Win a run'));
+  }, smoothIcon('tower'), open ? (best ? el('span', 'gem-soon', `Best F${best}`) : null) : el('span', 'gem-soon', 'Win a run'));
   btn.classList.toggle('locked', !open);
   return btn;
 }
@@ -316,10 +324,13 @@ function safariGem() {
   const daily = safariDaily();
   plantSign(open && daily);
   const line = daily.areas.map(a => a.name).join(' · ');
-  const icon = el('img', open ? 'pixel gem-mon' : 'pixel gem-ball');
-  icon.alt = '';
-  if (open) icon.addEventListener('load', () => fitMon(icon), { once: true });
-  icon.src = open ? spriteUrl(daily.starter, 'front', 0) : 'assets/items/safari-ball.png';
+  let icon = smoothIcon('safari', 'gem-ball');
+  if (open) {
+    icon = el('img', 'pixel gem-mon');
+    icon.alt = '';
+    icon.addEventListener('load', () => fitMon(icon), { once: true });
+    icon.src = spriteUrl(daily.starter, 'front', 0);
+  }
   const btn = gem('safari', 'Safari Zone', () => {
     if (open) return actions.onSafari();
     playSound('cancel');
@@ -338,7 +349,7 @@ function safariGem() {
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');
   const board = el('button', 'gem-side gem-board');
-  board.append(el('span', 'gem-side-icon', '🏆'));
+  board.append(smoothIcon('trophy', 'gem-side-icon'));
   board.type = 'button';
   board.id = 'title-board';
   board.title = 'Today\'s Safari Zone leaderboard';

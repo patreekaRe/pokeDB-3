@@ -27,6 +27,7 @@
    ============================================================ */
 
 import { getSave, updateSave } from './storage.js';
+import { smoothIcon } from './smooth-icons.js';
 const $ = (id) => document.getElementById(id);   // not imported from ui.js, which imports this file
 
 const TRACKS = {
@@ -416,7 +417,10 @@ const SOUND_POPS = [['title-sound-btn', 'title-sound-pop'], ['menu-sound-btn', '
 
 function renderButton() {
   const muted = getSave().muted;
-  for (const icon of document.querySelectorAll('.snd-icon')) icon.textContent = muted ? '🔇' : '🔊';
+  for (const icon of document.querySelectorAll('.snd-icon')) {
+    if (icon.hasAttribute('data-smooth')) icon.replaceChildren(smoothIcon(muted ? 'mute' : 'sound'));   // the title's
+    else icon.textContent = muted ? '🔇' : '🔊';
+  }
   for (const id of SOUND_TOGGLES) {
     const btn = $(id);
     btn.title = muted ? 'Turn sound on' : 'Mute sound';

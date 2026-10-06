@@ -128,7 +128,7 @@
 @keyframes taLed { 50% { opacity: 0.35; } }
 @keyframes taBob { to { translate: 0 -3px; } }
 @media (prefers-reduced-motion: no-preference) {
-  .title-account:hover .ta-pc, .title-account:focus-visible .ta-pc { animation: taBob 0.4s steps(2) infinite alternate; }
+  .title-account:hover .ta-pc, .title-account:focus-visible .ta-pc { animation: taBob 0.4s ease-in-out infinite alternate; }
 }
 @media (prefers-reduced-motion: reduce) { .title-account.on .ta-pc::after { animation: none; } }
 /* phones: a little smaller (the user's call) */
@@ -462,14 +462,14 @@
   width: 40px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;
 }
-.title-abandon img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.3)); }
-.title-rope.armed img, .title-abandon:focus-visible img { filter: drop-shadow(2px 0 0 #e05048) drop-shadow(-2px 0 0 #e05048) drop-shadow(0 2px 0 #e05048) drop-shadow(0 -2px 0 #e05048); }
-@media (hover: hover) { .title-abandon:hover img { filter: drop-shadow(2px 0 0 #e05048) drop-shadow(-2px 0 0 #e05048) drop-shadow(0 2px 0 #e05048) drop-shadow(0 -2px 0 #e05048); } }
+.title-abandon svg { width: 32px; height: 32px; pointer-events: none; filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.35)); }
+.title-rope.armed svg, .title-abandon:focus-visible svg { filter: drop-shadow(0 0 3px #ff5a4a) drop-shadow(0 0 2px #ff5a4a); }
+@media (hover: hover) { .title-abandon:hover svg { filter: drop-shadow(0 0 3px #ff5a4a) drop-shadow(0 0 2px #ff5a4a); } }
 .title-abandon:focus-visible { outline: none; }
-.title-abandon:active img { translate: 2px 2px; }
+.title-abandon:active svg { translate: 1px 2px; }
 @media (prefers-reduced-motion: no-preference) {
-  .title-rope.armed img { animation: ropeSwing 0.6s steps(4) infinite; }
-  @media (hover: hover) { .title-abandon:hover img { animation: ropeSwing 0.6s steps(4) infinite; } }
+  .title-rope.armed svg { animation: ropeSwing 0.6s ease-in-out infinite; }
+  @media (hover: hover) { .title-abandon:hover svg { animation: ropeSwing 0.6s ease-in-out infinite; } }
 }
 @keyframes ropeSwing { 0%, 100% { rotate: -8deg; } 50% { rotate: 8deg; } }
 /* the ask: a little window over the rope, left-aligned with the plate so it stays on a phone's screen, its tail pointing
@@ -514,17 +514,17 @@
 /* New game's Egg stirs now and then, like Continue's ball (the user's ask, 2026-10-03): a little hop and a rock, as if
    something inside moved; while it's the one picked it wobbles faster, about to hatch */
 .gem-egg { transform-origin: 50% 90%; }
-@media (prefers-reduced-motion: no-preference) { .gem-egg { animation: eggStir 1.5s steps(15) infinite; } }
-.gem.on .gem-egg { animation: eggWobble 1.6s steps(8) infinite; }
+@media (prefers-reduced-motion: no-preference) { .gem-egg { animation: eggStir 1.5s ease-in-out infinite; } }
+.gem.on .gem-egg { animation: eggWobble 1.6s ease-in-out infinite; }
 /* New game: the Egg hatches (hatch() in js/title.js): it shakes harder and harder, cracks, and bursts in a flash of light */
-.gem.hatching .gem-egg { animation: eggShake 0.65s steps(10) forwards; transform-origin: 50% 90%; }
-.gem.cracked .gem-egg { animation: eggShake2 0.2s steps(4) infinite; }
+.gem.hatching .gem-egg { animation: eggShake 0.65s ease-in-out forwards; transform-origin: 50% 90%; }
+.gem.cracked .gem-egg { animation: eggShake2 0.2s ease-in-out infinite; }
 .gem.cracked .gem-icon::after {
   content: ''; position: absolute; left: 50%; top: 45%; width: 26px; height: 6px; margin-left: -13px; pointer-events: none;
   background: #2a1408;
   clip-path: polygon(0 50%, 20% 0, 40% 60%, 60% 0, 80% 60%, 100% 20%, 100% 55%, 80% 100%, 60% 45%, 40% 100%, 20% 45%, 0 90%);
 }
-.gem.hatched .gem-egg { animation: eggBurst 0.4s steps(4) forwards; }
+.gem.hatched .gem-egg { animation: eggBurst 0.4s ease-out forwards; }
 .gem.hatched .gem-icon::before {
   content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
   background: #fff; box-shadow: 0 0 12px 6px #fff, 0 0 30px 12px #f8e0ff; animation: cballLight 0.45s ease-out forwards;
@@ -901,7 +901,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   position: absolute; top: 30%; right: calc(var(--gp) * 7); translate: 0 -50%; z-index: 2; pointer-events: none;
   color: #fff8d8; font: 0.7rem/1 var(--pixel-font); text-shadow: 2px 2px 0 #2a1408;
 }
-@media (prefers-reduced-motion: no-preference) { .gem-more.on .gem-arrow { animation: arrowNudge 0.6s steps(2) infinite alternate; } }
+@media (prefers-reduced-motion: no-preference) { .gem-more.on .gem-arrow { animation: arrowNudge 0.6s ease-in-out infinite alternate; } }
 @keyframes arrowNudge { to { translate: 3px -50%; } }
 .gem.locked .gem-arrow { opacity: 0.5; }
 .gem-back-icon { font-family: var(--pixel-font); font-size: 22px; color: #fff; text-shadow: none; }
@@ -914,3 +914,33 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 /* a badge line in the result window opens the Trainer Card (badgeItem() in js/run.js) */
 .result-badge-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 .result-badge-btn:hover, .result-badge-btn:focus-visible { color: #c08a10; outline: none; }
+
+/* ---------- the title's icons are smooth vector art (js/smooth-icons.js; the user's call, 2026-10-06: like the Poké Ball
+   signs, no pixels), with a soft shadow instead of the pixel icons' hard outline ---------- */
+.smooth-icon { display: block; width: 1em; height: 1em; overflow: visible; }
+.gem-icon > .smooth-icon { width: 34px; height: 34px; filter: drop-shadow(0 1px 1px rgba(20, 10, 30, 0.5)); }
+.gem-icon > .smooth-icon.tc-icon { width: 38px; height: 38px; }
+.gem-icon > .smooth-icon.gem-ball { width: 32px; height: 32px; }
+.gem.locked .gem-icon > .smooth-icon { filter: grayscale(1) brightness(0.95) drop-shadow(0 1px 1px rgba(20, 10, 30, 0.5)); }
+.gem-back .gem-icon > .gem-back-icon { width: 22px; height: 22px; }
+.gem-side-icon.smooth-icon { width: 30px; height: 30px; }
+.title-sound .vol-tag .smooth-icon { width: 18px; height: 18px; }
+@media (max-height: 700px) {
+  .gem-icon > .smooth-icon { width: 26px; height: 26px; }
+  .gem-icon > .smooth-icon.tc-icon { width: 30px; height: 30px; }
+  .gem-icon > .smooth-icon.gem-ball { width: 24px; height: 24px; }
+}
+@media (max-width: 600px) { .gem-icon > .smooth-icon.tc-icon { width: 32px; height: 32px; } }
+/* the pointer beside the picked sign and the ▶ on a sign that opens a sub-menu: smooth triangles, not the pixel font's */
+.gem.on::before {
+  content: ""; left: -24px; width: 14px; height: 16px; background: #f8e070; text-shadow: none;
+  clip-path: polygon(10% 4%, 96% 50%, 10% 96%, 2% 88%, 2% 12%);
+  filter: drop-shadow(1px 2px 0 #181018);
+}
+@media (prefers-reduced-motion: no-preference) { .gem.on::before { animation: cursorPulse 1s ease-in-out infinite; } }
+@keyframes cursorPulse { 50% { opacity: 0.35; translate: 3px -50%; } }
+.gem-arrow::before {
+  content: ""; display: block; width: 10px; height: 12px; background: #fff8d8;
+  clip-path: polygon(10% 4%, 96% 50%, 10% 96%, 2% 88%, 2% 12%);
+}
+.gem-arrow { text-shadow: none; filter: drop-shadow(1px 2px 0 #2a1408); }
