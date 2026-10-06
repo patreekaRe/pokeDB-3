@@ -1,4 +1,4 @@
-# The Sky Pillar
+﻿# The Sky Pillar
 
 The 100-floor tower climb with a weekly leaderboard (roadmap item 18). Part a (2026-10-05, cloud) built the rules, the
 seed, the leaderboard and the Tower Badges on a placeholder map. Part b (2026-10-05, Desktop app) painted it: the tower is
@@ -80,7 +80,7 @@ is the screen and the overlay that use them.
   top), its number carved by the wall, its slab open over the stair of the floor below. A floor is lit once climbed or where
   you stand, dim above (`stone(f, lit)`). Plain floors: their 2-3 doors (`door()`: an arched frame, planks, iron bands, a
   gem in the keystone in the room's colour, `DOOR_GEM`) with windows and torches between; every 10th a guardian's hall
-  (banners in the guardian's biome colours, `BANNER`, braziers, a gold-trimmed double door); floor 0 the lobby (the way in,
+  (banners in the guardian's biome colours, `BANNER`, braziers, one great gold-trimmed door); floor 0 the lobby (the way in,
   a bronze plaque, torches); floor 100 the summit, open to the sky (broken pillars, an altar where Rayquaza comes down). The
   spiral stair (`stairWell()`, `stairSteps()`) winds round a newel at the right of every floor but the top.
 - **The climb screen** (`renderTower()`): `#tower-view` fills the map screen behind the run card (the sign and the map box
