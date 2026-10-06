@@ -33,7 +33,7 @@ import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './da
 import { gateHp } from './gate.js';
 import { BIOMES } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
-import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
@@ -59,7 +59,7 @@ import { initSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
-import { $, el, openDialog, closeDialog, confirmDialog } from './ui.js';
+import { $, el, openDialog, confirmDialog } from './ui.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
@@ -231,14 +231,6 @@ function init() {
       leaveTitle();
       beginTower(practice);
     },
-  });
-
-  $('reset-btn').addEventListener('click', async () => {
-    if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
-    resetSave();
-    clearRunData();
-    closeDialog('about-dialog');
-    goHome();
   });
 
   initTitle({

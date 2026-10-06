@@ -7,8 +7,9 @@
    data-shell colours (their meanings are in js/prefs.js).
    ============================================================ */
 
-import { $, el } from './ui.js';
-import { updateSave } from './storage.js';
+import { $, el, confirmDialog } from './ui.js';
+import { updateSave, resetSave, clearRunData } from './storage.js';
+import { cloudRemembered } from './cloud.js';
 import { setClock } from './daytime.js';
 import { smoothIcon } from './smooth-icons.js';
 import { pref as valueOf, vibrate } from './prefs.js';
@@ -74,8 +75,20 @@ function initName() {
   });
 }
 
+/** The games' delete-save combo: two asks, then a fresh save (Settings' choices kept) and a reload onto the title. Signed in,
+ * the reset save is the newer one, so js/cloud.js uploads it on the reload and every other device takes it. */
+async function resetAll() {
+  if (!(await confirmDialog('Reset your save? Every starter, badge, Pokédex entry, PokéCoin and record will be erased.', 'Reset'))) return;
+  const cloud = cloudRemembered() ? ' Your cloud save, on every device, will be reset too.' : '';
+  if (!(await confirmDialog(`Are you really sure? This can't be undone.${cloud}`, 'Erase it all'))) return;
+  resetSave();
+  clearRunData();
+  location.reload();
+}
+
 export function initSettings() {
   initName();
+  $('reset-btn').addEventListener('click', resetAll);
   for (const node of document.querySelectorAll('#dev-settings [data-icon]')) node.append(smoothIcon(node.dataset.icon));
   for (const row of document.querySelectorAll('#dev-settings .set-opt[data-opt]')) {
     const key = row.dataset.opt;

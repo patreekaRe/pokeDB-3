@@ -327,6 +327,11 @@ const ART = {
     <path d="M11 12.5c2-3 3 3 5 0s3 3 5 0M11 19.5c2-3 3 3 5 0s3 3 5 0" fill="none" stroke="#6a5596" stroke-width="2" stroke-linecap="round"/>`,
   check: `<rect x="3.5" y="3.5" width="25" height="25" rx="5" fill="#4cb84a" stroke="${INK}" stroke-width="2"/>
     <path d="M9 16.5l4.6 4.6L23.5 11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  trash: `<path d="M12.5 6.5V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" fill="none" stroke="${INK}" stroke-width="2"/>
+    <path d="M7.5 10.5h17l-1.6 16a2 2 0 0 1-2 1.8h-9.8a2 2 0 0 1-2-1.8Z" fill="#c8ccd8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="4.5" y="6.5" width="23" height="4.5" rx="1.6" fill="#e4e6ee" stroke="${INK}" stroke-width="2"/>
+    <path d="M12.6 14.5l.5 10M16 14.5v10M19.4 14.5l-.5 10" stroke="#7c8090" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M10 13.2l1.1 11" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>`,
   flower: `<g fill="#fff4a8" stroke="${INK}" stroke-width="1.8"><circle cx="24" cy="16" r="5.4"/><circle cx="20" cy="22.9" r="5.4"/><circle cx="12" cy="22.9" r="5.4"/><circle cx="8" cy="16" r="5.4"/><circle cx="12" cy="9.1" r="5.4"/><circle cx="20" cy="9.1" r="5.4"/></g>
     <circle cx="16" cy="16" r="5" fill="#f0a020" stroke="${INK}" stroke-width="1.8"/>`,
   tree: `<rect x="13.5" y="25" width="5" height="5" rx="1" fill="#8a5a2c" stroke="${INK}" stroke-width="1.8"/>
@@ -348,7 +353,7 @@ export const SMOOTH_EMOJI = {
   '⚔': 'swords', '👑': 'fame', '❤': 'heart', '🔄': 'turns', '🃏': 'moves', '💥': 'burst', '🩸': 'drop', '🎯': 'target',
   '🎒': 'items', '🧴': 'items', '💴': 'cash', '🏪': 'mart', '🏥': 'center', '❓': 'help', '💻': 'pc', '⏫': 'ppup',
   '✨': 'sparkle', '💀': 'skull', '💎': 'gem', '🗼': 'tower', '⭐': 'star', '🏆': 'trophy', '💰': 'coin', '🔒': 'lock',
-  '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap',
+  '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap', '🗑': 'trash',
   '🔥': 'fire', '💧': 'water', '🌿': 'grass', '🔯': 'normal', '🔮': 'psychic',
   '🌼': 'flower', '🌲': 'tree', '🍄': 'mushroom', '🏔': 'mountain', '🌵': 'cactus',
 };

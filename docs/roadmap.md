@@ -17,7 +17,7 @@ their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the
 4. ~~Text size~~ done 2026-10-06 (see the archive).
 5. ~~Nickname~~ done 2026-10-06 (see the archive).
 6. **Music player**: a sound test replaying any unlocked track.
-7. **Reset save**: two "Are you sure?" steps, like the games' delete-save combo.
+7. ~~Reset save~~ done 2026-10-06 (see the archive). The user skipped 6 for now.
 
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
