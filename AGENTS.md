@@ -12,6 +12,15 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: the Collection's **Achievements app** is Pokédex style, one goal per screen (the user's pick over a grid of
+  trophy slots). `shelfApp(spec)` in `js/bagdex.js` is now the banner-and-handheld engine (Relics / Items run on it too);
+  `achievementsApp` in `js/records.js` gives it five groups: New Starters, Trainer Levels, Pokédex (Ho-Oh, Lugia, Palkia,
+  Reshiram, the page perks, Pokédex complete), Feats (Victini, Heatran, Manaphy, Keldeo, Rayquaza), Crystal Depths (Mewtwo and
+  the FEATS; the banner is ??? until Mewtwo is free). Each screen: the Pokémon or prize (silhouette until earned), the goal
+  typed out, progress (beaten / researched bars, Victini's streak), a Reward box, a gold UNLOCKED stamp or a Locked tag; the
+  cry on stepping to an earned one. The old `openAchievements()` / `#achievements-dialog` are gone. Next: the Record Book and
+  Hall of Fame, pitched one at a time.
+
 - 2026-10-06: the Collection's **Stats app** is Pokédex style too, "Trainer Data" (`js/statsdex.js`; the old `openStats()` /
   `#stats-dialog` are gone). Five banners (Runs, Battles, Collection, Wallet, Champions), each opening the red handheld:
   seven-segment LCD digits that count up with a `stat-tick` blip, runs as an HP bar, bosses as badge slots lit once beaten,

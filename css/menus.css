@@ -889,6 +889,25 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .bdx-tally.done { background: #f2dc8a; color: #6a4a00; }
 @media (prefers-reduced-motion: reduce) { .bdx-thing, .bdx-glow { animation: none; } }
 
+/* the Achievements app (js/records.js) on the same handheld */
+.bdx-banner-mon.unseen { filter: brightness(0) opacity(0.55); }
+.ach-icon .smooth-icon { width: 100%; height: 100%; }
+.bdx-banner-thing.ach-icon, .bdx-slot-thing.ach-icon { padding: 8%; }
+.bdx-thing.ach-icon { width: 48cqh; height: 48cqh; }
+.bdx-banner-thing.unseen .smooth-icon, .bdx-slot.unseen .smooth-icon, .bdx-screen.unseen .ach-icon:not(.pdx-ghost) .smooth-icon, .ach-icon.pdx-ghost.unseen .smooth-icon { filter: brightness(0) opacity(0.6); }
+.ach-lock { display: inline-flex; align-items: center; gap: 4px; }
+.ach-lock .smooth-icon { width: 12px; height: 12px; }
+.ach-stamp {
+  position: absolute; right: 8px; bottom: 10px; padding: 5px 8px; rotate: -10deg; pointer-events: none;
+  font: 0.62rem/1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.06em; color: #fff3b0;
+  background: rgba(120, 80, 0, 0.55); border: 2px solid #ffd84a; border-radius: 6px; box-shadow: 0 0 10px rgba(255, 216, 74, 0.6);
+  animation: achStamp 0.42s cubic-bezier(0.3, 1.6, 0.5, 1) both 0.15s;
+}
+@keyframes achStamp { from { scale: 2.2; opacity: 0; } }
+.ach-count { color: #8a5a00; }
+.ach-progress { background: #efe6c4; }
+@media (prefers-reduced-motion: reduce) { .ach-stamp { animation: none; } }
+
 /* the hardware: D-pad, speaker grille, B and A */
 .cdev-pad { flex: none; display: flex; align-items: center; justify-content: space-between; height: 76px; padding: 0 8px; }
 .cdev-dpad { display: grid; grid-template-columns: repeat(3, 22px); grid-template-rows: repeat(3, 22px); filter: drop-shadow(0 3px 0 #5a0c12); }

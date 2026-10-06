@@ -7,7 +7,8 @@
    the group's colours (the user's call, 2026-10-06: the painted places
    hid the item), its text typing itself out, and the group's every
    thing as slots to jump between. A thing not found yet is a dark
-   silhouette and ???, like an unseen Pokémon.
+   silhouette and ???, like an unseen Pokémon. shelfApp() is that
+   engine; the Achievements app (js/records.js) runs on it too.
    ============================================================ */
 
 import { RELICS, ABILITIES, relicTerms } from './data/relics.js';
@@ -87,48 +88,54 @@ function trimmedSrc(src) {
 }
 
 /** itemSprite(), its picture trimmed to fill its box. */
-function thingArt(thing, cls) {
+export function thingArt(thing, cls) {
   const box = itemSprite(thing, cls);
   const img = box.querySelector('img');
   if (img) trimmedSrc(img.src).then(url => { if (url) img.src = url; });
   return box;
 }
 
-/* ---------- the app ---------- */
+/** A line of the device's LCD text that types itself out. */
+export const typed = (cls, text) => el('div', `pdx-lcd pdx-text pdx-type${cls ? ` ${cls}` : ''}`, text);
 
-/** The Relics ('relics') or Items ('items') app for the Collection device (js/device.js). */
-export function bagApp(kind) {
-  const groups = GROUPS[kind];
-  const seenSet = () => new Set(getSave().seen[kind]);
-  const isSeen = (g, thing, seen) => g.id === 'ability' || seen.has(thing.id);
-  const noOf = (thing) => {
-    const all = kind === 'relics' ? RELICS : ITEMS;
-    const i = all.indexOf(thing);
-    return i < 0 ? 'Ability' : `No.${String(i + 1).padStart(3, '0')}`;
-  };
+/** A type's chip, top right of the screen. */
+export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES[type].icon} ${TYPES[type].label}`);
 
+/* ---------- the engine ---------- */
+
+/** A banner-and-handheld app for the Collection device (js/device.js). `spec`:
+    groups      [{ id, name, sub, b1, b2, list(), mask?() }]: mask() gives a { name, sub } to show while the group is a secret
+    known(g, t) whether the thing counts as found (lit up, counted)
+    no(g, t)    the nameplate's number
+    art(g, t, known, where)  its picture, `where` 'banner' | 'slot'
+    screen(g, t, known)      the screen's nodes, one with the class `bdx-art` (it slides)
+    screenCls(g, t, known)   more classes for the screen
+    lines(g, t, known)       the LCD lines under the screen (`typed()` ones type out)
+    label(g, t, known)       the nameplate's name and the slot's label
+    tally(g, done)           the tally's words
+    doneSub                  the banner's sub once all are found
+    onShow(g, t, known)      after stepping to a thing (a cry) */
+export function shelfApp(spec) {
+  const groups = spec.groups;
   let host, list, stage;
   let view = 'list', group = null, at = 0, busy = false;
 
-  /* the list: a banner per group */
   function renderList() {
-    const seen = seenSet();
     const banners = groups.map(g => {
       const things = g.list();
       if (!things.length) return null;
-      const n = things.filter(t => isSeen(g, t, seen)).length;
-      const b = el('button', `pdx-banner bdx-banner${n === things.length ? ' complete' : ''}`);
+      const n = things.filter(t => spec.known(g, t)).length;
+      const mask = g.mask?.();
+      const b = el('button', `pdx-banner bdx-banner${n === things.length ? ' complete' : ''}${mask ? ' masked' : ''}`);
       b.type = 'button';
+      b.dataset.group = g.id;
       b.style.setProperty('--b1', g.b1);
       b.style.setProperty('--b2', g.b2);
       b.append(el('span', 'pdx-stripe'),
-        el('strong', 'pdx-banner-name', g.name), el('span', 'pdx-banner-sub', n === things.length ? 'All found!' : g.sub),
+        el('strong', 'pdx-banner-name', mask?.name ?? g.name), el('span', 'pdx-banner-sub', mask?.sub ?? (n === things.length ? spec.doneSub : g.sub)),
         el('span', 'pdx-banner-count', `${n} / ${things.length}`), progressBar(n, things.length));
       const shelf = el('span', 'pdx-banner-mons bdx-banner-things');
-      for (const t of things.slice(0, 3)) {
-        const art = g.id === 'ability' ? starterImg(t, 'bdx-banner-mon') : thingArt(t, `bdx-banner-thing${isSeen(g, t, seen) ? '' : ' unseen'}`);
-        shelf.append(art);
-      }
+      for (const t of things.slice(0, 3)) shelf.append(spec.art(g, t, spec.known(g, t), 'banner'));
       b.append(shelf);
       b.addEventListener('click', () => openGroup(g, b));
       return b;
@@ -138,18 +145,6 @@ export function bagApp(kind) {
     list.replaceChildren(wrap);
   }
 
-  /** An Ability's starter: the type's first free starter (Mewtwo for Psychic), standing on the screen. */
-  function starterImg(ability, cls) {
-    const type = Object.keys(ABILITIES).find(t => ABILITIES[t] === ability);
-    const img = el('img', `pixel ${cls}`);
-    img.src = spriteUrl(STARTERS_BY_ID[STARTER_OF[type]], 'front', 0);
-    img.alt = '';
-    img.draggable = false;
-    img.dataset.type = type;
-    return img;
-  }
-
-  /* the device on one group */
   function renderPage() {
     const dev = el('div', `pdx-device bdx-device bdx-${group.id}`);
     dev.style.setProperty('--b1', group.b1);
@@ -171,77 +166,46 @@ export function bagApp(kind) {
   }
 
   function fill(dir) {
-    const seen = seenSet();
     const things = group.list();
     const thing = things[at];
-    const known = isSeen(group, thing, seen);
+    const known = spec.known(group, thing);
     const dev = stage.querySelector('.pdx-device');
     const body = dev.querySelector('.pdx-body');
     const old = body.querySelector('.pdx-screen');
 
     const nameplate = el('div', 'pdx-lcd pdx-nameplate');
-    nameplate.append(el('span', 'pdx-name', known ? thing.name : '???'), el('span', 'pdx-no', noOf(thing)));
+    nameplate.append(el('span', 'pdx-name', spec.label(group, thing, known)), el('span', 'pdx-no', spec.no(group, thing)));
 
-    const screen = el('div', `pdx-screen bdx-screen${known ? '' : ' unseen'}${thing.boss ? ' boss' : ''}`);
-    screen.append(el('span', 'pdx-stripe bdx-dots'));
-    if (group.id === 'ability') {
-      const mon = starterImg(thing, 'pdx-mon bdx-art');
-      screen.append(el('span', 'pdx-pad'), mon, typeChip(mon.dataset.type));
-    } else {
-      screen.append(el('span', 'bdx-glow'), thingArt(thing, 'bdx-thing bdx-art'));
-      const tag = thing.boss ? 'Boss' : thing.unique ? 'Special' : RARITY[thing.rarity];
-      if (tag) screen.append(el('span', `pdx-role bdx-rarity rarity-${thing.boss ? 'boss' : thing.unique ? 'special' : thing.rarity}`, tag));
-      if (known && thing.only) screen.append(typeChip(thing.only));
-    }
+    const extra = spec.screenCls?.(group, thing, known);
+    const screen = el('div', `pdx-screen bdx-screen${known ? '' : ' unseen'}${extra ? ` ${extra}` : ''}`);
+    screen.append(el('span', 'pdx-stripe bdx-dots'), ...spec.screen(group, thing, known));
     swipe(screen);
-
-    const typed = (cls, text) => el('div', `pdx-lcd pdx-text pdx-type${cls ? ` ${cls}` : ''}`, text);
-    const lines = [nameplate, screen];
-    if (!known) {
-      lines.push(typed('muted', 'Not found yet.'), typed('muted', group.where));
-    } else {
-      lines.push(typed('', thing.text));
-      const terms = relicTerms(thing);
-      if (terms.length) {
-        const box = el('div', 'pdx-lcd bdx-terms');
-        for (const [label, text] of terms) {
-          const line = el('div', 'bdx-term');
-          line.append(el('b', `term-${termKind(label)}`, label), ` ${text}`);
-          box.append(line);
-        }
-        lines.push(box);
-      }
-    }
 
     const slots = el('div', 'pdx-slots bdx-slots');
     things.forEach((t, i) => {
-      const s = el('button', `pdx-slot bdx-slot${i === at ? ' on' : ''}${isSeen(group, t, seen) ? '' : ' unseen'}`);
+      const k = spec.known(group, t);
+      const s = el('button', `pdx-slot bdx-slot${i === at ? ' on' : ''}${k ? '' : ' unseen'}`);
       s.type = 'button';
-      s.setAttribute('aria-label', isSeen(group, t, seen) ? t.name : 'Not found yet');
-      s.append(group.id === 'ability' ? starterImg(t, 'pdx-slot-mon') : thingArt(t, 'bdx-slot-thing'));
+      s.setAttribute('aria-label', spec.label(group, t, k));
+      s.append(spec.art(group, t, k, 'slot'));
       s.addEventListener('click', () => show(i, Math.sign(i - at)));
       slots.append(s);
     });
-    const n = things.filter(t => isSeen(group, t, seen)).length;
+    const n = things.filter(t => spec.known(group, t)).length;
     const tally = el('div', `pdx-lcd bdx-tally${n === things.length ? ' done' : ''}`);
-    tally.append(el('span', '', n === things.length ? `★ Every ${group.name === 'Abilities' ? 'Ability' : `${group.name.toLowerCase()} ${kind === 'relics' ? 'relic' : 'item'}`} found` : 'Found'),
-      el('b', '', `${n}/${things.length}`), progressBar(n, things.length));
-    lines.push(slots, tally);
-    body.replaceChildren(...lines);
+    tally.append(el('span', '', spec.tally(group, n === things.length)), el('b', '', `${n}/${things.length}`), progressBar(n, things.length));
+    body.replaceChildren(nameplate, screen, ...spec.lines(group, thing, known), slots, tally);
     dev.querySelector('.pdx-counter').textContent = `${at + 1} / ${things.length}`;
 
     typeOut([...body.querySelectorAll('.pdx-type')]);
     if (dir && old && !calm()) slide(old, screen, dir);
   }
 
-  function typeChip(type) {
-    return el('span', `index-only type-${type}`, `${TYPES[type].icon} ${TYPES[type].label}`);
-  }
-
   /** The old thing slides off the screen as the new one slides on. */
   function slide(old, screen, dir) {
     const ease = { duration: 280, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
     const was = old.querySelector('.bdx-art'), now = screen.querySelector('.bdx-art');
+    if (!was || !now) return;
     const ghost = was.cloneNode(true);
     ghost.classList.add('pdx-ghost');
     if (old.classList.contains('unseen')) ghost.classList.add('unseen');
@@ -270,7 +234,7 @@ export function bagApp(kind) {
     const things = group.list();
     at = (i + things.length) % things.length;
     fill(dir);
-    if (group.id === 'ability') playCry(STARTER_OF[stage.querySelector('.bdx-art').dataset.type]);
+    spec.onShow?.(group, things[at], spec.known(group, things[at]));
   }
 
   /* opening and shutting: the banner zooms up into the device and its screen flickers on, and back */
@@ -285,8 +249,7 @@ export function bagApp(kind) {
   async function openGroup(g, from) {
     if (busy) return;
     group = g;
-    const seen = seenSet();
-    at = Math.max(0, g.list().findIndex(t => isSeen(g, t, seen)));
+    at = Math.max(0, g.list().findIndex(t => spec.known(g, t)));
     view = 'page';
     list.inert = true;
     stage.hidden = false;
@@ -314,8 +277,7 @@ export function bagApp(kind) {
     if (!calm() && dev) {
       busy = true;
       stage.scrollTop = 0;
-      const to = [...list.querySelectorAll('.bdx-banner')].find(b => b.querySelector('.pdx-banner-name').textContent === group.name);
-      const box = to?.getBoundingClientRect();
+      const box = list.querySelector(`.bdx-banner[data-group="${group.id}"]`)?.getBoundingClientRect();
       stage.classList.add('zooming');
       list.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
       await settle(box && box.bottom > 0 && box.top < innerHeight
@@ -355,4 +317,62 @@ export function bagApp(kind) {
     },
     unmount() { busy = false; },
   };
+}
+
+/* ---------- Relics and Items ---------- */
+
+/** An Ability's starter: the type's first free starter (Mewtwo for Psychic), standing on the screen. */
+function starterImg(ability, cls) {
+  const type = Object.keys(ABILITIES).find(t => ABILITIES[t] === ability);
+  const img = el('img', `pixel ${cls}`);
+  img.src = spriteUrl(STARTERS_BY_ID[STARTER_OF[type]], 'front', 0);
+  img.alt = '';
+  img.draggable = false;
+  img.dataset.type = type;
+  return img;
+}
+
+/** The Relics ('relics') or Items ('items') app for the Collection device (js/device.js). */
+export function bagApp(kind) {
+  const all = kind === 'relics' ? RELICS : ITEMS;
+  return shelfApp({
+    groups: GROUPS[kind],
+    known: (g, t) => g.id === 'ability' || getSave().seen[kind].includes(t.id),
+    no: (g, t) => (all.includes(t) ? `No.${String(all.indexOf(t) + 1).padStart(3, '0')}` : 'Ability'),
+    label: (g, t, known) => (known ? t.name : '???'),
+    art: (g, t, known, where) => {
+      if (g.id === 'ability') return starterImg(t, where === 'banner' ? 'bdx-banner-mon' : 'pdx-slot-mon');
+      return thingArt(t, where === 'banner' ? `bdx-banner-thing${known ? '' : ' unseen'}` : 'bdx-slot-thing');
+    },
+    screenCls: (g, t) => (t.boss ? 'boss' : ''),
+    screen(g, t, known) {
+      if (g.id === 'ability') {
+        const mon = starterImg(t, 'pdx-mon bdx-art');
+        return [el('span', 'pdx-pad'), mon, typeChip(mon.dataset.type)];
+      }
+      const nodes = [el('span', 'bdx-glow'), thingArt(t, 'bdx-thing bdx-art')];
+      const tag = t.boss ? 'Boss' : t.unique ? 'Special' : RARITY[t.rarity];
+      if (tag) nodes.push(el('span', `pdx-role bdx-rarity rarity-${t.boss ? 'boss' : t.unique ? 'special' : t.rarity}`, tag));
+      if (known && t.only) nodes.push(typeChip(t.only));
+      return nodes;
+    },
+    lines(g, t, known) {
+      if (!known) return [typed('muted', 'Not found yet.'), typed('muted', g.where)];
+      const lines = [typed('', t.text)];
+      const terms = relicTerms(t);
+      if (terms.length) {
+        const box = el('div', 'pdx-lcd bdx-terms');
+        for (const [label, text] of terms) {
+          const line = el('div', 'bdx-term');
+          line.append(el('b', `term-${termKind(label)}`, label), ` ${text}`);
+          box.append(line);
+        }
+        lines.push(box);
+      }
+      return lines;
+    },
+    tally: (g, done) => (done ? `★ Every ${g.id === 'ability' ? 'Ability' : `${g.name.toLowerCase()} ${kind === 'relics' ? 'relic' : 'item'}`} found` : 'Found'),
+    doneSub: 'All found!',
+    onShow: (g, t) => { if (g.id === 'ability') playCry(STARTER_OF[Object.keys(ABILITIES).find(k => ABILITIES[k] === t)]); },
+  });
 }

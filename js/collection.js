@@ -17,7 +17,7 @@ import { pokedexApp } from './pokedex.js';
 import { safariDexApp, safariDexCount } from './safaridex.js';
 import { movesApp } from './cardindex.js';
 import { bagApp } from './bagdex.js';
-import { openAchievements } from './records.js';
+import { achievementsApp } from './records.js';
 import { statsApp } from './statsdex.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
@@ -133,7 +133,7 @@ function apps(save) {
     things('items', 'Items', vec('items'), ITEMS),
     { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, cls: 'cdev-dex', app: statsApp },
     { id: 'achievements', name: 'Achievements', art: vec('trophy'),
-      count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, fill: (p) => openAchievements(p) },
+      count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, cls: 'cdev-dex cdev-bag', app: achievementsApp },
     book('record', 'Record Book', 'win', 'Win a run to unlock it.'),
     book('fame', 'Hall of Fame', 'champion', 'Win a run on Trainer Level 5 to unlock it.'),
   ];
