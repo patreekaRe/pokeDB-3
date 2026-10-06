@@ -3,15 +3,16 @@
    game, a tab per type, grouped by rarity with the evolution-only
    moves on their own, then every relic and item. Everything stays a
    dark "???" until you meet it in a run, Pokédex-style (`seen` in
-   the save, markSeen()). Opened from the Poké Ball menu and the home
-   screen. Read-only: tap a card to read it bigger.
+   the save, markSeen()). Opened from the Poké Ball menu; the Collection device's
+   Moves app (movesApp()) is its compact list. Read-only: tap a card
+   to read it bigger.
    ============================================================ */
 
 import { ALL_CARDS, TYPES, evolutionCardsFor } from './data/cards.js';
 import { RELICS, ABILITIES } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { getSave, updateSave } from './storage.js';
-import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
+import { $, el, makeCard, makeRelic, itemSprite, zoomable, zoomCard, openDialog } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
 
 const TAB_LOOK = { mystery: { icon: '🔒', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
@@ -222,4 +223,87 @@ export function openCardIndex(type) {
   renderTabs();
   render();
   openDialog('index-dialog');
+}
+
+/* ---------- the Collection device's Moves app (js/device.js): a type tab row over a compact list ---------- */
+
+let movesTab = null;
+const moveTabs = () => visibleTabs().filter(t => !['relics', 'items'].includes(t));
+
+/** A move's row: its cost and name, ??? until met; a tap zooms its card. */
+function moveRow(card, seen) {
+  const known = seen.has(card.id);
+  const row = el(known ? 'button' : 'div', `mv-row${known ? '' : ' locked'}`);
+  row.dataset.type = card.type;
+  row.append(el('span', 'mv-cost', known ? String(card.cost) : '?'), el('span', 'mv-name', known ? card.name : '???'));
+  if (known) {
+    row.type = 'button';
+    row.append(el('span', 'mv-kind', kindOf(card)));
+    row.addEventListener('click', () => zoomCard(card, 0, row));
+  }
+  return row;
+}
+
+function moveGroup(label, cards, seen, note) {
+  if (!cards.length) return [];
+  const rank = (c) => (seen.has(c.id) ? costRank(c) : 100);   // the ??? rows after the known ones, their costs hidden
+  const head = el('h3', 'mv-head', label);
+  head.append(el('span', 'index-count', `${cards.filter(c => seen.has(c.id)).length}/${cards.length}`));
+  const rows = el('div', 'mv-rows');
+  rows.append(...[...cards].sort((a, b) => rank(a) - rank(b) || (rank(a) < 100 ? a.name.localeCompare(b.name) : 0)).map(c => moveRow(c, seen)));
+  return [head, ...(note ? [el('p', 'mv-note', note)] : []), rows];
+}
+
+function moveList(type) {
+  if (type === 'mystery') {
+    return moveGroup('???', ALL_CARDS.filter(c => c.type === 'psychic'), new Set(), 'The secret starter\'s moves are still unknown.');
+  }
+  const cards = ALL_CARDS.filter(c => c.type === type);
+  const seen = new Set(getSave().seen.cards);
+  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && (c.rarity || 'common') === rarity), seen));
+  body.push(...moveGroup('Evolution: 1st form', evolutionCardsFor(type, 1), seen, 'Offered when your starter first evolves.'),
+    ...moveGroup('Evolution: final form', evolutionCardsFor(type, 2), seen, 'Offered when it reaches its final form.'));
+  return body;
+}
+
+/** The Moves app on the given type's tab (the picked starter's), else the last one looked at; the D-pad's left and
+    right step through the tabs. */
+export function movesApp(type) {
+  let panel, tabs, list;
+  const show = (t) => {
+    movesTab = t;
+    for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.type === t));
+    list.replaceChildren(...moveList(t));
+    panel.scrollTop = 0;
+  };
+  return {
+    mount(host) {
+      panel = host;
+      const available = moveTabs();
+      tabs = el('div', 'index-tabs mv-tabs');
+      tabs.setAttribute('role', 'tablist');
+      tabs.append(...available.map(t => {
+        const btn = el('button', `index-tab type-${t}`);
+        btn.type = 'button';
+        btn.dataset.type = t;
+        btn.setAttribute('role', 'tab');
+        const look = TAB_LOOK[t] || TYPES[t];
+        btn.append(el('span', 'index-tab-icon', look.icon), el('span', 'index-tab-label', look.label));
+        btn.addEventListener('click', () => show(t));
+        return btn;
+      }));
+      list = el('div', 'mv-list');
+      host.append(tabs, list);
+      show([type, movesTab].find(t => available.includes(t)) ?? available[0]);
+    },
+    back: () => false,
+    key(e) {
+      const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+      if (!step) return false;
+      const available = moveTabs();
+      show(available[(available.indexOf(movesTab) + step + available.length) % available.length]);
+      return true;
+    },
+    unmount() {},
+  };
 }

@@ -1,10 +1,8 @@
 /* ============================================================
    collection.js  -  the Collection, the device's home screen
    (js/device.js): the owner's ID strip (the Trainer Card) and a grid
-   of apps, each with how far along you are. Pokédex, Relics, Items,
-   Stats, Achievements and the Trainer Card run inside the screen;
-   Moves, the Safari Pokédex and the books still open their windows
-   over the device (the roadmap's next pass moves them in).
+   of apps, each with how far along you are. Every app runs inside the
+   screen; only the Leaderboard and a zoomed card open over it.
    ============================================================ */
 
 import { ALL_CARDS } from './data/cards.js';
@@ -14,23 +12,26 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { DEX_PAGES, safariOpen } from './data/pokedex.js';
 import { getSave } from './storage.js';
 import { pokedexApp } from './pokedex.js';
-import { openSafariDex, safariDexCount } from './safaridex.js';
-import { openCardIndex, drawThings } from './cardindex.js';
+import { safariDexApp, safariDexCount } from './safaridex.js';
+import { movesApp, drawThings } from './cardindex.js';
 import { openStats, openAchievements } from './records.js';
-import { openRecords, bookEntries } from './halloffame.js';
+import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
 import { openTrainerCard, trainerTile, badgeNews, partner, cardTier } from './trainercard.js';
 import { trainerName } from './leaderboard.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
-import { initDevice, openDevice, openApp } from './device.js';
+import { initDevice, openDevice, openApp, swapApp } from './device.js';
 import { el, itemSprite } from './ui.js';
 
 /** Called once at startup. */
 export function initCollection({ onBack }) {
   initDevice({ onBack });
+  pokedexApp.toSafari = () => swapApp({ ...safariApp(safariDexCount()), name: 'SAFARI' });
 }
+
+const safariApp = ({ caught, total }) => ({ id: 'safari', count: `${caught}/${total}`, cls: 'cdev-win panel cdev-safari', app: safariDexApp });
 
 export function showCollection() {
   showMenuScene();
@@ -47,15 +48,15 @@ function fameArt(entry) {
   return img;
 }
 
-/** The apps, in the home screen's order. `locked` is how to unlock one ("???" until then); `open` opens a window over
-    the device; `fill` / `app` run in the screen (device.js's openApp()). */
+/** The apps, in the home screen's order. `locked` is how to unlock one ("???" until then); `fill` / `app` run in the
+    screen (device.js's openApp()). */
 function apps(save) {
   const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
   const dexN = save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length;
   const book = (id, name, noun, how) => {
     const entries = bookEntries(id);
     if (!entries.length) return { id, locked: how };
-    return { id, name, art: fameArt(entries.at(-1)), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, open: () => openRecords(id) };
+    return { id, name, art: fameArt(entries.at(-1)), count: `${entries.length} ${noun}${entries.length === 1 ? '' : 's'}`, app: recordsApp(id) };
   };
   const safari = safariOpen(save) ? safariDexCount() : null;
   const things = (id, name, art, all) => ({
@@ -64,9 +65,9 @@ function apps(save) {
   return [
     { id: 'dex', name: 'Pokédex', art: emoji('📕'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp },
     { id: 'moves', name: 'Moves', art: emoji('🃏'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
-      open: () => openCardIndex(pickedStarter()?.type ?? 'fire') },
+      cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type) },
     safari
-      ? { id: 'safari', name: 'Safari', art: emoji('🌿'), count: `${safari.caught}/${safari.total}`, open: () => openSafariDex() }
+      ? { ...safariApp(safari), name: 'Safari', art: emoji('🌿') }
       : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
     things('relics', 'Relics', itemSprite({ id: 'leftovers', icon: '🍎' }), RELICS),
     things('items', 'Items', itemSprite({ id: 'potion', icon: '🧪' }), ITEMS),
@@ -114,7 +115,6 @@ function renderHome() {
     tile.append(a.locked ? emoji('🔒') : a.art);
     icon.append(tile, el('span', 'cdev-label', a.locked ? '???' : a.name), el('span', 'cdev-count', a.locked ? '???' : a.count));
     if (a.locked) icon.addEventListener('click', () => tipAt(icon, a.locked));   // a ??? until its first entry: a tap says how
-    else if (a.open) icon.addEventListener('click', a.open);
     else icon.addEventListener('click', () => openApp({ ...a, name: a.name.toUpperCase() }));
     return icon;
   }));

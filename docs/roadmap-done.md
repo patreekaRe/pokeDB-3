@@ -1478,3 +1478,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   it. The title's Collection ▸ sub-menu stays (the Game Corner lives there); its Collection sign opens the device. Checked
   at 375x812 and 1024x768 and with reduced motion (the browser pane was hidden, so the animations were fast-forwarded:
   the user should watch the cover and boot on a phone). Passes 2-3 are roadmap item 20.
+- **Collection device, pass 2** (2026-10-05, Desktop app): the last apps moved into the screen. Moves is a compact list
+  (`movesApp()`: type tabs, rows of cost + name + kind, known moves first, ??? rows after with their cost hidden, a tap
+  zooms the card), the Safari Pokédex's parts move in like the Pokédex's (`safariDexApp`; the Pokédex app's Safari
+  banner swaps to it), the Record Book / Hall of Fame are `recordsApp()` (B steps a page back to the list). The old
+  `#hof-dialog` and `openRecords()` are gone; the Index and Safari Pokédex windows stay, since runs and the Safari prep
+  still open them. Checked at 375x812 and 1024x768 with a throwaway record (the pane was hidden again, so animations were
+  fast-forwarded).

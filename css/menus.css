@@ -782,6 +782,38 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .cdev-win.index-dialog .index-things { margin: 0; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px 8px; }
 .cdev-win.index-dialog .index-head:first-child { margin-top: 0; }
 .cdev-win > :is(.records-label, .records-sub):first-child { margin-top: 0; }
+/* the tab rows (Moves, Safari) stick under the screen's top edge: the window's padding is the device's */
+.cdev-win .index-tabs { top: -14px; margin: 0 -12px 10px; gap: 4px; padding: 8px 6px 10px; }
+.cdev-win .index-tab { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; padding: 6px 2px 5px; font-size: 0.5rem; }
+.cdev-win .index-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cdev-safari .board-open { margin-top: 0; }
+.cdev-safari .dex-body { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+.cdev-safari .index-heading { display: flex; align-items: baseline; gap: 8px; margin: 0; font: 0.8rem var(--pixel-font); color: #283060; }
+/* the Moves app (movesApp() in js/cardindex.js): a row per move, its cost and name; a tap zooms the card */
+.mv-head { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 6px; font: 0.72rem var(--pixel-font); color: #283060; }
+.mv-list > .mv-head:first-child { margin-top: 2px; }
+.mv-note { margin: -2px 0 6px; font-size: 0.68rem; color: var(--muted); }
+.mv-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px; }
+.mv-row {
+  --tc: #8a90a8;
+  display: flex; align-items: center; gap: 8px; min-width: 0; padding: 4px 8px 4px 4px;
+  border: 2px solid var(--win-edge); border-left: 6px solid var(--tc); border-radius: var(--round-xs);
+  background: var(--win-panel); color: var(--win-ink); font: 0.6rem/1.2 var(--pixel-font); text-align: left;
+}
+button.mv-row { cursor: zoom-in; }
+@media (hover: hover) { button.mv-row:hover { background: var(--win-tile); } }
+.mv-row[data-type="fire"] { --tc: #e0603a; }
+.mv-row[data-type="grass"] { --tc: #3ea050; }
+.mv-row[data-type="water"] { --tc: #3a80d8; }
+.mv-row[data-type="psychic"] { --tc: #9050c8; }
+.mv-cost {
+  flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: #f8d048; box-shadow: inset 0 0 0 2px #a07810; color: #3a2a08; font-size: 0.6rem;
+}
+.mv-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-kind { flex: none; font-size: 0.44rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.mv-row.locked { --tc: #a8a8b4; background: var(--win-tile); color: var(--win-muted); }
+.mv-row.locked .mv-cost { background: #b8b8c2; box-shadow: inset 0 0 0 2px #808090; color: #f0f0f4; }
 /* the Pokédex app: its banners and page (js/pokedex.js) move in here, without their window's top bar or the page's lid */
 .cdev-dex { overflow: hidden; background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 1px, transparent 1.5px) 0 0 / 14px 14px, linear-gradient(180deg, #c8ecf8, #9fd6ec); }
 .cdev-dex .pdx-list { padding: 10px; }

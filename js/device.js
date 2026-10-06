@@ -141,6 +141,13 @@ export function openApp(def) {
   });
 }
 
+/** Leaves the open app for another straight away (the Pokédex's Safari banner opens the Safari Pokédex). */
+export function swapApp(def) {
+  if (busy) return;
+  closeApp(true);
+  openApp(def);
+}
+
 function closeApp(now = false) {
   if (!app) return;
   const { def, panel } = app;

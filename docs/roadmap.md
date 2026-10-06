@@ -23,13 +23,8 @@ The user's second pick (2026-10-03), one session each:
    tint), December snow, and room for more. A `season(now)` helper like `timeOfDay()`, and `?season=halloween` to pin it
    for a playtest (as `?time=` does). Title only; battles and the map are untouched.
 
-20. **The Collection device** (the user's pick, 2026-10-05). Pass 1 is done (the shell, home screen and the easy apps;
+20. **The Collection device** (the user's pick, 2026-10-05). Passes 1-2 are done (every app runs in the screen;
     see the archive and CLAUDE.md's Dialogs note). Then:
-    a. **Pass 2, the hard apps. Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md (the Collection device
-       note) and docs/roadmap.md's item 20. Move the last apps into the device's screen: Moves as a compact list (a type
-       tab row, small rows of cost + name, a tap zooms the card), the Record Book and Hall of Fame scrolling inside the
-       screen (their entry pages too), and the Safari Pokédex. Then drop the old window code nothing opens any more. Check
-       at 375x812 and once at 1024x768, push to main."
     b. **Pass 3, the device as an object. Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and
        docs/roadmap.md's item 20 (passes 1-2 are done). The unseen-badge "!" becomes a blinking LED on the closed cover,
        the cover shows your partner and your badges, and the Bag's Pokédex button and the Poké Ball menu open the same

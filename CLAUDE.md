@@ -70,14 +70,19 @@ live site.
   their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
   closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
   it). The Bag, the Poké Ball menu, zooms and
-  focus layers already did. **The Collection is a device** (2026-10-05, pass 1 of 3; the roadmap has the rest): the
+  focus layers already did. **The Collection is a device** (2026-10-05, passes 1-2 of 3; the roadmap has pass 3): the
   red handheld grown into `js/device.js` (`#collection-screen`, fixed, full screen on phones with a thin frame, a 500px
   device on the title's sky wider). It comes up closed, its cover swings open and the screen boots ("HELLO, NAME!") onto
   the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card, with a "!" for an unseen badge) and a 3x3
   grid of apps, each with its count, "???" + 🔒 until unlocked (a tap says how). `openApp()` slides an app over the home
   screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
   into `#dex-dialog` when a run opens it), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
-  the screen instead of opening the window). Moves, Safari and the two books still open their windows over it. The
+  the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`: a type tab row
+  over compact rows of cost + name, ??? until met, a tap zooms the card; the run's Index window is unchanged), the Safari
+  Pokédex (`safariDexApp`: its tabs and body move into the screen like the Pokédex's, back into `#safari-dex-dialog`
+  when a run or the prep window opens it; the Pokédex app's Safari banner `swapApp()`s to it) and the Record Book / Hall
+  of Fame (`recordsApp()` in `js/halloffame.js`; their `#hof-dialog` is gone, B steps from an entry page to the list).
+  D-pad left / right steps Moves' and the Safari's tabs. Only the Leaderboard and zoomed cards open over it. The
   hardware: D-pad (the highlight, shown once used: `.keyed`; in an app it steps a Pokédex page or scrolls), A opens, B
   backs out (a Pokédex page to its biomes, an app to home, home shuts the device with the screen collapsing and the cover
   closing). Escape is B; a tap on the sky around it shuts it (pointer events, as iOS Safari sends no `click` for a tap

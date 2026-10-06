@@ -364,9 +364,14 @@ function renderList() {
   rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), el('span', 'pdx-banner-mons pdx-trophy', '🏆'));
   banners.push(rewards);
 
-  if (safariOpen(save)) {   // the Safari Pokédex is its own window: its banner hands over to it
+  if (safariOpen(save)) {   // the Safari Pokédex is its own window (an app in the device): its banner hands over to it
     const { caught, total } = safariDexCount();
-    const safari = banner('pdx-safari', 'Safari', 'The Safari Zone\'s Pokédex', () => { closeDialog('dex-dialog'); openSafariDex(); }, 'meadow');
+    const toSafari = () => {
+      if (shelled() && pokedexApp.toSafari) return pokedexApp.toSafari();
+      closeDialog('dex-dialog');
+      openSafariDex();
+    };
+    const safari = banner('pdx-safari', 'Safari', 'The Safari Zone\'s Pokédex', toSafari, 'meadow');
     const caughtIds = new Set([...getSave().safariDex.seen, ...getSave().safariDex.caught]);
     safari.append(el('span', 'pdx-banner-count', `${caught} / ${total}`), progressBar(caught, total), bannerMons(SAFARI_DEX_PAGES[0].ids.slice(0, 3), caughtIds));
     banners.push(safari);
@@ -723,6 +728,7 @@ export function initPokedex() {
 const shelled = () => !$('dex-dialog').contains($('dex-list'));
 
 export const pokedexApp = {
+  toSafari: null,   // set by the Collection: the Safari banner swaps to its app
   mount(host) {
     host.append($('dex-list'), $('dex-device'));
     renderList();

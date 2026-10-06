@@ -8,7 +8,7 @@
  * is no party; the cry and music stay.
  */
 import { $, el, sleep, openDialog, makeCard, groupDeck, itemSprite } from './ui.js';
-import { playMusic, playCry, preloadMusic, preloadCries } from './audio.js';
+import { playMusic, playSound, playCry, preloadMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
 import { celebrate } from './celebrate.js';
 import { rollCredits } from './credits.js';
@@ -289,21 +289,43 @@ export async function winScene(entry) {
   scene.className = 'hof-scene';
 }
 
-/* ---------- the Collection's two windows: the Hall of Fame and the Record Book ---------- */
+/* ---------- the Collection's two books, apps in its device's screen: the Hall of Fame and the Record Book ---------- */
 
 const BOOKS = {
-  fame: { title: '🏆 Hall of Fame', has: (e) => fameNo(e) || isDepths(e) },
-  record: { title: '📖 Record Book', has: () => true },
+  fame: { has: (e) => fameNo(e) || isDepths(e) },
+  record: { has: () => true },
 };
 /** The entries a book lists, oldest first: the Hall of Fame holds Level 5 wins, the Record Book every win. */
 export const bookEntries = (which) => getSave().hallOfFame.filter(BOOKS[which].has);
 
-/** Open the Hall of Fame ('fame') or the Record Book ('record'): its entries newest first; tapping one opens its page. */
-export function openRecords(which) {
-  book = which;
-  $('hof-dialog-title').textContent = BOOKS[which].title;
-  showList();
-  openDialog('hof-dialog');
+let view = null;   // the open book's screen: { panel, sub, body, page }
+
+/** The Hall of Fame ('fame') or the Record Book ('record') as a device app (js/device.js): its entries newest first;
+    tapping one opens its page, and the device's Back steps from a page to the list. */
+export function recordsApp(which) {
+  return {
+    mount(panel) {
+      book = which;
+      view = { panel, sub: el('p', 'records-sub'), body: el('div', 'hof-body'), page: false };
+      panel.append(view.sub, view.body);
+      showList();
+    },
+    back() {
+      if (!view?.page) return false;
+      playSound('cancel');
+      showList();
+      return true;
+    },
+    key: () => false,
+    unmount() { view = null; },
+  };
+}
+
+function paint(sub, nodes, page) {
+  view.sub.textContent = sub;
+  view.body.replaceChildren(...nodes);
+  view.page = page;
+  view.panel.scrollTop = 0;
 }
 
 function showList() {
@@ -311,7 +333,6 @@ function showList() {
   const losses = book === 'record' ? getSave().losses || [] : [];
   const wins = `${entries.length} ${book === 'fame' ? (entries.length === 1 ? 'champion' : 'champions') : (entries.length === 1 ? 'win' : 'wins')}`;   // a Champion of the Depths counts among them
   const count = losses.length ? `${wins}, ${losses.length} ${losses.length === 1 ? 'loss' : 'losses'}` : wins;
-  $('hof-dialog-sub').textContent = `${count}. Tap a ${losses.some(l => l.deck) ? 'run' : 'win'} for its record.`;
   // a lost run sits after the wins that came before it (`after`), so the book reads as one history
   const rows = [];
   entries.forEach((entry, i) => {
@@ -319,8 +340,7 @@ function showList() {
     rows.push(winRow(entry));
   });
   rows.push(...losses.filter(l => l.after >= entries.length).map(lossRow));
-  $('hof-body').replaceChildren(...rows.reverse());
-  $('hof-body').scrollTop = 0;
+  paint(`${count}. Tap a ${losses.some(l => l.deck) ? 'run' : 'win'} for its record.`, rows.reverse(), false);
 }
 
 function rowPic(entry) {
@@ -448,9 +468,7 @@ function showEntry(entry) {
       label(`Items used (${entry.itemsUsed.length})`), things(entry.itemsUsed, ITEMS_BY_ID, 'None used.'));
   }
   parts.push(label(`Final deck (${entry.deck.length})`), cards);
-  $('hof-dialog-sub').textContent = `${numberOf(entry)}: ${nameOf(entry)}'s run. Tap a card, relic or item to read it.`;
-  $('hof-body').replaceChildren(...parts);
-  $('hof-body').scrollTop = 0;
+  paint(`${numberOf(entry)}: ${nameOf(entry)}'s run. Tap a card, relic or item to read it.`, parts, true);
 }
 
 /* ---------- the loss recap: a lost run's short page, after its last fight and in the Record Book ---------- */
@@ -524,9 +542,7 @@ function showLoss(entry) {
   const back = el('button', 'btn secondary hof-back', '◀ All runs');
   back.type = 'button';
   back.addEventListener('click', showList);
-  $('hof-dialog-sub').textContent = `${nameOf(entry)}'s lost run. Tap a card to read it.`;
-  $('hof-body').replaceChildren(back, ...lossPage(entry));
-  $('hof-body').scrollTop = 0;
+  paint(`${nameOf(entry)}'s lost run. Tap a card to read it.`, [back, ...lossPage(entry)], true);
 }
 
 /** At a lost run's end, before the result window: its recap in a quiet window. Resolves once it's closed. */

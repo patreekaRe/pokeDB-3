@@ -13,7 +13,8 @@ three places:
 ## Where we left off (2026-10-03)
 
 - 2026-10-05: **Collection device, pass 1** landed (the Collection is a red handheld with a home screen of apps,
-  `js/device.js` + `js/collection.js`). Passes 2-3 are roadmap item 20.
+  `js/device.js` + `js/collection.js`). Pass 2 the same day: Moves, the Safari Pokédex and the two books run in the
+  screen too. Pass 3 (the device as an object, runs opening it) is roadmap item 20b.
 
 - 2026-10-05: the **Pokédex revamp, pass 1** landed (full-screen biome banners opening a red handheld device). Pass 2,
   the zoom / lid animation and painted biome art, landed the same day (Desktop app, pushed): checked in the browser pane

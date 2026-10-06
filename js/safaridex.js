@@ -6,8 +6,10 @@
    then its rare spawns. Like the main Pokédex, an entry is a dark ???
    silhouette until met in a Safari run (save.safariDex.seen), then its
    picture and name, and gets a Poké Ball mark once caught; a caught
-   entry shows its signature card. Opened from the Collection, the main
-   Pokédex's Safari tab, and the Poké Ball menu during a Safari run.
+   entry shows its signature card. An app in the Collection device
+   (safariDexApp, its parts move into the screen), and a window from
+   the main Pokédex's Safari tab, the Safari prep window and the Poké
+   Ball menu during a Safari run.
    ============================================================ */
 
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -99,7 +101,7 @@ function render() {
   const body = [areaBox(p, rec), prizeBox(rec), ...section('Wild Pokémon', p.wild, false, rec)];
   if (p.rare.length) body.push(...section('Rare spawns', p.rare, true, rec));
   $('safari-dex-body').replaceChildren(...body);
-  $('safari-dex-dialog').scrollTop = 0;
+  $('safari-dex-body').parentElement.scrollTop = 0;
   const all = safariProgress(SAFARI_ROSTER, rec.dex);
   $('safari-dex-total').textContent = `${all.caught}/${all.total} · ${all.seen} seen`;
   $('safari-dex-total').title = `${all.caught} caught and ${all.seen} seen, of ${all.total} Safari Pokémon`;
@@ -148,7 +150,7 @@ function openEntry(id, from) {
   const onKey = (e) => { if (['Escape', 'Enter', ' '].includes(e.key)) { e.preventDefault(); e.stopPropagation(); close(); } };
   layer.addEventListener('click', close);
   document.addEventListener('keydown', onKey, true);
-  $('safari-dex-dialog').append(layer);
+  (shelled() ? document.body : $('safari-dex-dialog')).append(layer);
 }
 
 function pick(i, focus = false) {
@@ -179,11 +181,34 @@ export function initSafariDex() {
 
 /** Opens on the given area's page (a Safari run's current one), else the last one looked at. */
 export function openSafariDex(area) {
+  if (shelled()) safariDexApp.unmount();
   const i = SAFARI_DEX_PAGES.findIndex(p => p.area === area);
   if (i >= 0) page = i;
   render();
   openDialog('safari-dex-dialog');
 }
+
+/* ---------- as an app in the Collection device (js/device.js): its parts move into the screen, and back into their
+   window when it closes, as the Pokédex's do ---------- */
+const PARTS = ['safari-dex-board', 'safari-dex-tabs', 'safari-dex-body'];
+const shelled = () => !$('safari-dex-dialog').contains($('safari-dex-body'));
+
+export const safariDexApp = {
+  mount(host) {
+    host.append(...PARTS.map($));
+    render();
+  },
+  back: () => false,
+  key(e) {
+    const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (!step) return false;
+    pick((page + step + SAFARI_DEX_PAGES.length) % SAFARI_DEX_PAGES.length);
+    return true;
+  },
+  unmount() {
+    $('safari-dex-dialog').querySelector('.records-close').before(...PARTS.map($));
+  },
+};
 
 /** The Collection card's count. */
 export const safariDexCount = () => safariProgress(SAFARI_ROSTER, getSave().safariDex);
