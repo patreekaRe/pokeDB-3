@@ -1,13 +1,13 @@
 ## Pixel icons
 
 The game never shows emoji: `js/icons.js` swaps every emoji on the page for
-an 8-bit pixel icon (but the title screen's, smooth vector art since 2026-10-06: `js/smooth-icons.js`, see title-screen.md; and the Collection device's app and dock icons since 2026-10-05, the same file, plus since 2026-10-06 the Pokédex Rewards' icons (`VECTOR` / `iconOf()` in `js/pokedex.js`) and the Moves app's type keys; the user is moving things off pixel art bit by bit and will say which next). Data files and code keep writing emoji (card `art`,
+an 8-bit pixel icon (but the title screen's, smooth vector art since 2026-10-06: `js/smooth-icons.js`, see title-screen.md; and the Collection device's app and dock icons since 2026-10-05, the same file, plus since 2026-10-06 the Pokédex Rewards' icons (`VECTOR` / `iconOf()` in `js/pokedex.js`) and the Moves app's type keys; and since 2026-10-06 every emoji inside the device, see below; the user is moving things off pixel art bit by bit and will say which next). Data files and code keep writing emoji (card `art`,
 relic `icon`, text boxes...); `initPixelIcons()` (called first in `js/main.js`)
 swaps existing text and uses a `MutationObserver` to swap anything added
 later. Each icon is a 12x12 pixel map in `ICONS` using the letters in
 `PALETTE`; the black outline is added automatically, so only draw the fill.
 **When you add an emoji anywhere, draw its icon in `ICONS` too**, or it shows
-as a plain emoji. Tooltips (`title`) can't hold SVG and keep the emoji. Don't
+as a plain emoji. **Inside `[data-smooth-icons]`** (the Collection device, `#dex-dialog`, `#safari-dex-dialog`, `#trainer-dialog`, `#loss-dialog`, `#hof-scene`) `swapText()` swaps in the smooth twin from `SMOOTH_EMOJI` in `js/smooth-icons.js` instead (`.si-wrap`), and turns pixel icons on pages moved in (the Pokédex) smooth; `.card`s there keep their pixel icons, to match battle. An emoji used in the device needs a `SMOOTH_EMOJI` line (and its `ART`), or it falls back to plain emoji there. Tooltips (`title`) can't hold SVG and keep the emoji. Don't
 read an emoji back out of the page with `textContent`: it's been replaced.
 
 Items and relics are the exception: they show real PokéSprite item sprites

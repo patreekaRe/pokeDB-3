@@ -235,7 +235,7 @@
     </section>
 
     <!-- Collection: a red handheld device (js/device.js) whose home screen is a grid of apps (js/collection.js) -->
-    <section id="collection-screen" class="screen collection-screen" hidden>
+    <section id="collection-screen" data-smooth-icons class="screen collection-screen" hidden>
       <div class="cdev" id="cdev" role="dialog" aria-label="Collection">
         <div class="cdev-lid">
           <span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span>
@@ -497,7 +497,7 @@
   </dialog>
 
   <!-- every enemy, full screen: a banner per biome, then a handheld Pokédex on that page (js/pokedex.js) -->
-  <dialog id="dex-dialog" class="pokedex" aria-label="Pokédex">
+  <dialog id="dex-dialog" data-smooth-icons class="pokedex" aria-label="Pokédex">
     <div class="pdx-list" id="dex-list">
       <header class="pdx-top">
         <button class="pdx-close" id="dex-close" type="button" aria-label="Close the Pokédex">✕</button>
@@ -510,7 +510,7 @@
   </dialog>
 
   <!-- the Safari Zone's own Pokédex, a page per area: ??? until met, a Poké Ball once caught (js/safaridex.js) -->
-  <dialog id="safari-dex-dialog" class="dialog wide-dialog index-dialog dex-dialog safari-dex-dialog">
+  <dialog id="safari-dex-dialog" data-smooth-icons class="dialog wide-dialog index-dialog dex-dialog safari-dex-dialog">
     <h2 tabindex="-1" autofocus>🌿 Safari Pokédex <span id="safari-dex-total" class="count"></span></h2>
     <button class="btn secondary board-open" id="safari-dex-board" type="button">🏆 Leaderboard</button>
     <div class="index-tabs" id="safari-dex-tabs" role="tablist" aria-label="Safari areas"></div>
@@ -519,7 +519,7 @@
   </dialog>
 
   <!-- the Trainer Card and its Badge Case (js/trainercard.js), a Collection card -->
-  <dialog id="trainer-dialog" class="dialog trainer-dialog">
+  <dialog id="trainer-dialog" data-smooth-icons class="dialog trainer-dialog">
     <div id="trainer-body"></div>
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
@@ -593,7 +593,7 @@
   </dialog>
 
   <!-- The win scene (js/halloffame.js): a starry night, your Pokémon on a pedestal, its numbers and deck; a Level 5 win's is the Hall of Fame -->
-  <div id="hof-scene" class="hof-scene" hidden>
+  <div id="hof-scene" data-smooth-icons class="hof-scene" hidden>
     <div class="hof-sky" aria-hidden="true"></div>
     <canvas class="hof-summit-bg" id="hof-summit-bg" aria-hidden="true" hidden></canvas>
     <div class="hof-cave" aria-hidden="true"></div>
@@ -661,7 +661,7 @@
     <div class="evo-bottom"><div class="reward-log" id="gate-log" hidden><span id="gate-log-text" aria-hidden="true"></span><span class="sr-only" id="gate-log-live" aria-live="polite"></span></div></div>
   </div>
 
-  <dialog id="loss-dialog" class="dialog records-dialog hof-dialog loss-dialog">
+  <dialog id="loss-dialog" data-smooth-icons class="dialog records-dialog hof-dialog loss-dialog">
     <h2 tabindex="-1" autofocus>💀 Fainted…</h2>
     <p class="records-sub" id="loss-sub"></p>
     <div id="loss-body" class="hof-body"></div>

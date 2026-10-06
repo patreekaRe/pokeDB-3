@@ -1526,3 +1526,4 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   three lights, the Pokémon on a screen in its type's colours (starry for the Depths and the Hall of Fame, grey for a
   loss), plate, stat tiles, relics, items and the HP chart on green LCDs, the deck on a dark screen; gold casing in the
   Hall of Fame. The loss recap window after a lost run keeps its old look.
+- **Smooth icons across the device** (2026-10-06, Desktop app; the user's ask): every emoji inside the Collection device and the windows sharing its pages (full record stats, type chips, tags, Pokédex move kinds, Safari areas, Trainer Card) is smooth vector art now, swapped by `js/icons.js` inside `[data-smooth-icons]` from `SMOOTH_EMOJI` (18 new drawings); cards keep pixel icons.

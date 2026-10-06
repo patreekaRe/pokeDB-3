@@ -11,6 +11,8 @@
    Emoji without an icon yet are left alone.
    ============================================================ */
 
+import { smoothIcon, SMOOTH_EMOJI } from './smooth-icons.js';
+
 const PALETTE = {
   k: '#181010', w: '#f8f8f8', l: '#c8c8d0', g: '#888890', d: '#505058',
   r: '#e83828', R: '#a01818', o: '#f89030', y: '#f8d030', Y: '#c88810',
@@ -1793,15 +1795,20 @@ const FIND = new RegExp(`(${Object.keys(SVGS).map(escape).join('|')})\\uFE0F?`, 
 /** The pixel icon for an emoji, as SVG markup (or null if it hasn't been drawn yet). */
 export const pixelIcon = (emoji) => SVGS[bare(emoji)] ?? null;
 
+const SMOOTH_FIND = new RegExp(`(${Object.keys(SMOOTH_EMOJI).map(escape).join('|')})\\uFE0F?`, 'u');
+const smoothZone = (el) => !!el?.closest('[data-smooth-icons]') && !el.closest('.card');
+
 function swapText(node) {
   const text = node.nodeValue;
-  const match = FIND.exec(text);
+  const smooth = smoothZone(node.parentElement);
+  const match = (smooth ? SMOOTH_FIND : FIND).exec(text);
   if (!match) return;
   const icon = document.createElement('span');
-  icon.className = 'px-wrap';
+  icon.className = smooth ? 'px-wrap si-wrap' : 'px-wrap';
   icon.setAttribute('role', 'img');
   icon.setAttribute('aria-label', match[1]);
-  icon.innerHTML = SVGS[match[1]];
+  if (smooth) icon.append(smoothIcon(SMOOTH_EMOJI[match[1]]));
+  else icon.innerHTML = SVGS[match[1]];
   const rest = node.splitText(match.index);
   rest.nodeValue = rest.nodeValue.slice(match[0].length);
   rest.before(icon);
@@ -1811,6 +1818,14 @@ function swapText(node) {
 function swapIn(root) {
   if (root.nodeType === Node.TEXT_NODE) return swapText(root);
   if (root.nodeType !== Node.ELEMENT_NODE || root.closest('script, style, textarea, title, svg')) return;
+  // pages moved into the device (the Pokédex, the Safari Pokédex) come with pixel icons already in
+  for (const old of [root, ...root.querySelectorAll('.px-wrap:not(.si-wrap)')]) {
+    const name = SMOOTH_EMOJI[old.getAttribute?.('aria-label')];
+    if (name && old.classList.contains('px-wrap') && smoothZone(old)) {
+      old.classList.add('si-wrap');
+      old.replaceChildren(smoothIcon(name));
+    }
+  }
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const texts = [];
   while (walker.nextNode()) texts.push(walker.currentNode);

@@ -2,7 +2,8 @@
    smooth-icons.js  -  the title screen's icons as smooth vector art
    (the user's call, 2026-10-06: clean and smooth like the Poké Ball
    signs, no pixels), and since 2026-10-05 the Collection device's
-   app icons. Every other screen keeps js/icons.js's pixel
+   app icons, and since 2026-10-06 every emoji in it (SMOOTH_EMOJI).
+   Every other screen keeps js/icons.js's pixel
    icons; inside an <svg> those are never swapped in.
 
    smoothIcon(name) returns an inline <svg class="smooth-icon">,
@@ -283,6 +284,73 @@ const ART = {
     <path d="M3.5 15.5L16 4.5l12.5 11" fill="none" stroke="#e23a2c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     <rect x="13" y="19" width="6" height="9" rx="1" fill="#c87a3a" stroke="${INK}" stroke-width="1.6"/>
     <rect x="19.5" y="14" width="3.6" height="3.6" rx="0.6" fill="#8cc8ff" stroke="${INK}" stroke-width="1.2"/>`,
+
+  // ---- the device's text icons (a run's full record, the Pokédex's move kinds, the Safari areas) ----
+  heart: `<path d="M16 27.5C9 22.5 3.5 17.6 3.5 11.6c0-4 3.1-7.1 6.9-7.1 2.6 0 4.5 1.4 5.6 3.4 1.1-2 3-3.4 5.6-3.4 3.8 0 6.9 3.1 6.9 7.1 0 6-5.5 10.9-12.5 15.9Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7.6 11c.2-1.8 1.4-3 3-3.2" fill="none" stroke="#ffc0cc" stroke-width="2" stroke-linecap="round"/>`,
+  turns: `<path d="M25 12.5A9.5 9.5 0 0 0 8 10.5M7 19.5A9.5 9.5 0 0 0 24 21.5" fill="none" stroke="${INK}" stroke-width="6.4" stroke-linecap="round"/>
+    <path d="M25 12.5A9.5 9.5 0 0 0 8 10.5M7 19.5A9.5 9.5 0 0 0 24 21.5" fill="none" stroke="#3c8cf0" stroke-width="3" stroke-linecap="round"/>
+    <path d="M3.4 6.6l1.8 8.6 8-4.2Z" fill="#3c8cf0" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M28.6 25.4l-1.8-8.6-8 4.2Z" fill="#3c8cf0" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>`,
+  burst: `<path d="M16 2l3 7.5 7.5-3.5-3 7.6 7 2.6-7 3 3.4 7.4-7.6-3L16 30l-3-7.4-7.6 3 3.4-7.4-7-3 7-2.6-3-7.6L13 9.5Z" fill="#ff7a2a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 9.5l1.8 4.2 4.2-1.6-1.8 4.2 4 1.8-4.2 1.4 1.6 4.2-4.2-1.8L16 24l-1.6-4.1-4.2 1.8 1.6-4.2-4.2-1.4 4-1.8-1.8-4.2 4.2 1.6Z" fill="#ffd23a"/>`,
+  drop: `<path d="M16 3c4 6 10 11 10 17a10 10 0 0 1-20 0c0-6 6-11 10-17Z" fill="#d8283c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M10.6 19.6c0 2.8 1.6 5 3.8 5.8" fill="none" stroke="#ff9aa8" stroke-width="2" stroke-linecap="round"/>`,
+  target: `<circle cx="14" cy="18" r="11.5" fill="#e23a2c" stroke="${INK}" stroke-width="2"/>
+    <circle cx="14" cy="18" r="7.6" fill="#fff" stroke="${INK}" stroke-width="1.4"/>
+    <circle cx="14" cy="18" r="3.8" fill="#e23a2c" stroke="${INK}" stroke-width="1.4"/>
+    <path d="M14 18L27 5" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M24.5 3.5l1 3 3 1 2-2-3-1-1-3Z" fill="#3c8cf0" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
+  // the Poké Mart: its blue awning over a white shop
+  mart: `<rect x="5" y="12" width="22" height="16" rx="1.5" fill="#f4f4f6" stroke="${INK}" stroke-width="2"/>
+    <path d="M3.5 13l2.6-8.5h19.8l2.6 8.5Z" fill="#3c6cd8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M11.4 4.8l-1.4 8M16 4.8v8M20.6 4.8l1.4 8" stroke="#bcd4ff" stroke-width="1.6"/>
+    <rect x="13" y="19" width="6" height="9" fill="#8cc8ff" stroke="${INK}" stroke-width="1.6"/>
+    <rect x="7.6" y="16" width="3.6" height="3.6" rx="0.6" fill="#8cc8ff" stroke="${INK}" stroke-width="1.2"/>
+    <rect x="20.8" y="16" width="3.6" height="3.6" rx="0.6" fill="#8cc8ff" stroke="${INK}" stroke-width="1.2"/>`,
+  // the Pokémon Center: a red roof over a white front with its cross
+  center: `<rect x="5" y="12" width="22" height="16" rx="1.5" fill="#fff4f0" stroke="${INK}" stroke-width="2"/>
+    <path d="M3 13.5L16 4l13 9.5Z" fill="#e23a2c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M14 15.5h4v3h3v4h-3v3h-4v-3h-3v-4h3Z" fill="#e23a2c" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
+  // PP Up: two stat-raise arrows
+  ppup: `<path d="M6 17L16 7l10 10M6 27l10-10 10 10" fill="none" stroke="${INK}" stroke-width="7.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6 17L16 7l10 10M6 27l10-10 10 10" fill="none" stroke="#62c050" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  sparkle: `<path d="M13 3c1 6.4 3.6 9 10 10-6.4 1-9 3.6-10 10-1-6.4-3.6-9-10-10 6.4-1 9-3.6 10-10Z" fill="#f8d838" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M24.5 17.5c.5 3 1.8 4.5 5 5-3.2.5-4.5 2-5 5-.5-3-1.8-4.5-5-5 3.2-.5 4.5-2 5-5Z" fill="#fff4a8" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`,
+  shield: `<path d="M16 3l11 4v8c0 7-4.6 12-11 14.5C9.6 27 5 22 5 15V7Z" fill="#8a9ab8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 6.4l8 2.9v5.9c0 5-3.2 8.8-8 10.9Z" fill="#c8d4ec"/>`,
+  // Buff: a flexed arm
+  muscle: `<path d="M5 27.5c0-7 1.6-12 4.6-16.4L12 6c1-2 3.4-2.6 5-1.2l1.8 1.6c1.2 1 .8 2.8-.6 3.4L15 11l-1 4.8c2.4-2.2 6-2.8 9-1.4 3.4 1.6 5 5 4.4 8.4-.6 3.2-3.4 4.7-6.6 4.7Z" fill="#f8c890" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M14 15.8c1 2.4 3.8 3.4 6.4 2.4" fill="none" stroke="#c88a50" stroke-width="1.6" stroke-linecap="round"/>`,
+  // Status: a grey junk card
+  status: `<rect x="7" y="3.5" width="18" height="25" rx="2.6" fill="#b8bcc8" stroke="${INK}" stroke-width="2"/>
+    <path d="M11 12.5c2-3 3 3 5 0s3 3 5 0M11 19.5c2-3 3 3 5 0s3 3 5 0" fill="none" stroke="#6a5596" stroke-width="2" stroke-linecap="round"/>`,
+  check: `<rect x="3.5" y="3.5" width="25" height="25" rx="5" fill="#4cb84a" stroke="${INK}" stroke-width="2"/>
+    <path d="M9 16.5l4.6 4.6L23.5 11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  flower: `<g fill="#fff4a8" stroke="${INK}" stroke-width="1.8"><circle cx="24" cy="16" r="5.4"/><circle cx="20" cy="22.9" r="5.4"/><circle cx="12" cy="22.9" r="5.4"/><circle cx="8" cy="16" r="5.4"/><circle cx="12" cy="9.1" r="5.4"/><circle cx="20" cy="9.1" r="5.4"/></g>
+    <circle cx="16" cy="16" r="5" fill="#f0a020" stroke="${INK}" stroke-width="1.8"/>`,
+  tree: `<rect x="13.5" y="25" width="5" height="5" rx="1" fill="#8a5a2c" stroke="${INK}" stroke-width="1.8"/>
+    <path d="M16 2.5l7 9h-3.4l6 7.5h-3.6l5 7H5l5-7H6.4l6-7.5H9Z" fill="#3a9a48" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`,
+  mushroom: `<path d="M11.5 18h9l1 9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 10.5 27Z" fill="#f4ecd4" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M3.5 18.5C3.5 10 9 4 16 4s12.5 6 12.5 14.5c0 1-.8 1.5-1.8 1.5H5.3c-1 0-1.8-.5-1.8-1.5Z" fill="#e23a2c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <g fill="#fff"><circle cx="10.5" cy="12" r="2.4"/><circle cx="19" cy="8.6" r="2"/><circle cx="23" cy="15" r="1.8"/><circle cx="15" cy="15.6" r="1.6"/></g>`,
+  mountain: `<path d="M2 27.5L12 8l5 8 3-4.5 10 16Z" fill="#8a94a8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M12 8.6l-3.4 6.6 2-1 1.6 1.6 1.6-1.6 1.8 1.2Z" fill="#fff"/>
+    <path d="M20 12.2l-2.2 3.2 1.2-.4 1 1 1-1 1.2.4Z" fill="#fff"/>`,
+  cactus: `<path d="M16 27V7M16 19h-5a2 2 0 0 1-2-2v-4M16 15h5a2 2 0 0 0 2-2V9" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M16 27V7M16 19h-5a2 2 0 0 1-2-2v-4M16 15h5a2 2 0 0 0 2-2V9" fill="none" stroke="#4caa50" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7 29h18" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`,
+};
+
+/* Emoji with a smooth twin. Inside a [data-smooth-icons] part of the page (the Collection device and the windows it
+   shares pages with) js/icons.js swaps these in instead of its pixel icons; cards keep theirs, to match battle. */
+export const SMOOTH_EMOJI = {
+  '⚔': 'swords', '👑': 'fame', '❤': 'heart', '🔄': 'turns', '🃏': 'moves', '💥': 'burst', '🩸': 'drop', '🎯': 'target',
+  '🎒': 'items', '🧴': 'items', '💴': 'cash', '🏪': 'mart', '🏥': 'center', '❓': 'help', '💻': 'pc', '⏫': 'ppup',
+  '✨': 'sparkle', '💀': 'skull', '💎': 'gem', '🗼': 'tower', '⭐': 'star', '🏆': 'trophy', '💰': 'coin', '🔒': 'lock',
+  '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap',
+  '🔥': 'fire', '💧': 'water', '🌿': 'grass', '🔯': 'normal', '🔮': 'psychic',
+  '🌼': 'flower', '🌲': 'tree', '🍄': 'mushroom', '🏔': 'mountain', '🌵': 'cactus',
 };
 
 export function smoothIcon(name, className = '') {

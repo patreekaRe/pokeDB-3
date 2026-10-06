@@ -2083,7 +2083,7 @@ body.battle-intro { pointer-events: none; }
 .hof-stats, .stat-grid.hof-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .hof-stats .stat-tile { padding: 6px 4px; gap: 2px; }
 .hof-stats .stat-value { font-size: 0.95rem; }
-.hof-stats .stat-icon { font-size: 1rem; }
+.hof-stats .stat-icon { font-size: 1.2rem; }
 .hof-stats .stat-label { font-size: 0.56rem; line-height: 1.4; }
 .hof-things { display: flex; flex-wrap: wrap; gap: 8px; }
 .hof-thing {
