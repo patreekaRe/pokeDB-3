@@ -4195,16 +4195,41 @@ body.scene-peek #backdrop { display: none; }
 .card.small > .new-badge { font-size: 0.45rem; top: -5px; right: -5px; }
 .float-thing > .new-badge { top: 0; right: -4px; }
 
-/* the Sky Pillar's window (js/towerprep.js): plain until the tower's lobby is painted (roadmap item 18 b) */
-.tower-dialog { width: min(calc(100vw - 32px), 420px); }
-.tower-climber { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
-.tower-climber img { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
-.tower-rules { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; font-size: 0.72rem; line-height: 1.5; }
-.tower-rules li { display: flex; gap: 8px; }
-.tower-rule-icon { flex: none; }
-.tower-practice summary { cursor: pointer; font-size: 0.72rem; margin: 8px 0; }
-.tower-picks { display: flex; flex-wrap: wrap; gap: 6px; max-height: 40vh; overflow-y: auto; }
-.tower-pick { width: 52px; height: 52px; padding: 2px; border: 2px solid rgba(48, 48, 56, 0.25); border-radius: var(--round-sm); background: rgba(48, 48, 56, 0.06); cursor: pointer; }
+/* the Sky Pillar's lobby (js/towerprep.js): a screen of its own over a painted backdrop (the tower from its foot to
+   space, `--ground` the grass line the climber stands on), the words kept to a title, two numbers and three chips */
+.tower-lobby { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+  background: #0e140c; color: #f8f0d8; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+.tower-lobby::backdrop { background: #000; }
+.tower-page { position: relative; min-height: 100%; overflow: hidden; display: flex; flex-direction: column; align-items: center;
+  padding: 0 16px max(18px, env(safe-area-inset-bottom)); text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6); }
+.tower-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.tower-x { position: absolute; z-index: 2; top: max(10px, env(safe-area-inset-top)); right: 12px; width: 40px; height: 40px; padding: 0;
+  border: 3px solid #303038; border-radius: 8px; background: #f0e8d4; color: #303038; font-size: 1rem; line-height: 1; cursor: pointer;
+  box-shadow: inset -2px -3px 0 rgba(0, 0, 0, 0.18), 2px 3px 0 rgba(0, 0, 0, 0.45); text-shadow: none; }
+.tower-top { position: relative; flex: 1 0 auto; min-height: clamp(260px, 52dvh, 520px); width: 100%; text-align: center; padding-top: max(26px, calc(env(safe-area-inset-top) + 18px)); }
+.tower-title { margin: 0; font-size: clamp(1.5rem, 8vw, 2.4rem); font-weight: normal; letter-spacing: 2px; color: #f8d878;
+  text-shadow: 3px 0 0 #2a1c08, -3px 0 0 #2a1c08, 0 3px 0 #2a1c08, 0 -3px 0 #2a1c08, 0 7px 0 rgba(0, 0, 0, 0.5); }
+.tower-title:focus { outline: none; }
+.tower-week { margin: 10px 0 0; font-size: 0.62rem; letter-spacing: 1px; color: #e8f0ff; }
+.tower-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 50%); width: 96px; height: 96px; object-fit: contain; object-position: 50% 100%;
+  translate: -50% calc(6px - 100%); pointer-events: none; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45)); }
+.tower-base { position: relative; z-index: 1; display: grid; justify-items: center; gap: 12px; width: min(100%, 400px); padding-top: 22px; }
+.tower-name { margin: 0; font-size: 0.7rem; text-align: center; }
+.tower-name strong { font-weight: normal; color: #f8d878; font-size: 0.9rem; }
+.tower-stats { display: flex; gap: 10px; }
+.tower-stat { display: grid; justify-items: center; gap: 4px; min-width: 104px; padding: 8px 12px 7px; border: 2px solid rgba(248, 240, 216, 0.25); border-radius: 6px; background: rgba(0, 0, 0, 0.35); }
+.tower-stat b { font-weight: normal; font-size: 1.1rem; color: #f8d878; }
+.tower-stat span { font-size: 0.5rem; opacity: 0.8; }
+.tower-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; font-size: 0.52rem; }
+.tower-rules li { display: flex; align-items: center; gap: 5px; margin: 0; padding: 5px 8px; border-radius: 99px; background: rgba(248, 240, 216, 0.12); }
+.tower-go { margin-top: 4px; }
+.tower-go .pxb-i { font-size: 1rem; min-width: 200px; }
+.tower-note { margin: -4px 0 0; font-size: 0.5rem; opacity: 0.75; text-align: center; }
+.tower-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.tower-picks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.tower-picks[hidden] { display: none; }
+.tower-pick { width: 52px; height: 52px; padding: 2px; border: 2px solid rgba(248, 240, 216, 0.3); border-radius: var(--round-sm); background: rgba(0, 0, 0, 0.35); cursor: pointer; }
+.tower-pick:hover, .tower-pick:focus-visible { border-color: #f8d878; outline: none; }
 .tower-pick img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 
 /* ---------- the Sky Pillar's climb (js/tower.js): the tower is the map, painted behind the run card ---------- */
@@ -4270,7 +4295,7 @@ body.scene-peek #backdrop { display: none; }
 @media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-plate.stamp, .tw-plate.stamp .tw-plate-num, .tw-fx-text.in { animation: none; } }
 .tw-fx-text.high { top: 7%; }
 /* the lobby's plaque (js/towerprep.js): the week's top climbers engraved in a bronze plate, riveted at the corners */
-.tower-plaque { position: relative; margin: 10px 0 6px; padding: 10px 18px 12px; border: 3px solid #4a3410; border-radius: 6px;
+.tower-plaque { position: relative; width: 100%; margin: 6px 0 0; text-shadow: none; padding: 10px 18px 12px; border: 3px solid #4a3410; border-radius: 6px;
   background: linear-gradient(160deg, #f0d088 0%, #c89a48 35%, #a87830 70%, #c89a48 100%); color: #3a2408;
   box-shadow: inset 2px 2px 0 rgba(255, 248, 210, 0.6), inset -2px -2px 0 rgba(60, 36, 8, 0.4), 3px 4px 0 rgba(0, 0, 0, 0.35); }
 .tower-plaque::before, .tower-plaque::after { content: ''; position: absolute; top: 5px; width: 6px; height: 6px; border-radius: 50%; background: #6a4818; box-shadow: inset 1px 1px 0 #f8e0a0; }

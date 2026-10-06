@@ -10,6 +10,13 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
 
 - **Opens** once you've won a run (`towerOpen()`): the title's Game Modes sub-menu has a Sky Pillar gem (`pillarGem()` in
   `js/title.js`; greyed with "Win a run" until then, "Best F<n>" after), opening `#tower-dialog` (`js/towerprep.js`).
+- **The lobby** (2026-10-05, the user's call: the old text window was too wordy): `#tower-dialog` is a full screen of its
+  own (`.tower-lobby`), over one low-res canvas painted by `build()` / `paint()` in `js/towerprep.js` with
+  `js/tower-art.js`'s helpers: the sky by height squeezed from the grass (floor 0) to the summit (floor 100) under the
+  title, the cloud sea, stars, drifting clouds, the stone pillar with a ledge every 10 floors and windows onto the sky,
+  Rayquaza's green glow breathing over its roof, the week's climber at its door (`--ground`). Below on the soil: the
+  climber's name, two numbers (this week, best ever), three rule chips (`RULES`), Climb with a one-line note on whether it
+  counts, Leaderboard and Practice (toggles the starter picks), the plaque. Keep its words that short.
 - **The week deals the tower** (`towerWeekly()`): its Monday (UTC, `towerWeek()`) seeds every roll through `js/rng.js`
   like the Safari's day, and picks the starter everyone climbs with (the Safari's pool: never Mewtwo or Rayquaza).
 - **The week's first try counts** for the leaderboard and is played without perks (`fairTry()` covers `run.tower.first`).
@@ -100,7 +107,7 @@ is the screen and the overlay that use them.
   show it, its horizon behind the pedestal.
 - **The lobby's plaque** (`engrave()` in `js/towerprep.js`, `towerTop()` in `js/leaderboard.js`): the Sky Pillar window
   lists the week's top five climbers on a bronze plate (a summit shows its turns). The board is public to read, but until
-  the user publishes `firestore.rules` Firestore refuses it and the plaque says it can't be read.
+  the user publishes `firestore.rules` Firestore refuses it and the plaque stays hidden.
 
 ## The leaderboard
 

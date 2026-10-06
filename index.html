@@ -725,22 +725,31 @@
 
   <!-- the cloud save (js/cloud.js): only once js/cloud-config.js holds a Firebase project -->
   <!-- the Safari Zone's prep window: today's run, the rules, your balls, then Start (js/safariprep.js) -->
-  <!-- the Sky Pillar's window (js/towerprep.js): the week's climber, the rules, Climb or Practice -->
-  <dialog id="tower-dialog" class="dialog small-dialog tower-dialog" aria-labelledby="tower-title">
-    <h2 id="tower-title" tabindex="-1" autofocus>🗼 Sky Pillar</h2>
-    <p class="hint" id="tower-week"></p>
-    <div class="tower-climber"><img id="tower-mon" class="pixel" alt=""><strong id="tower-name"></strong></div>
-    <p class="hint" id="tower-best"></p>
-    <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js) -->
-    <div class="tower-plaque"><h3 class="tower-plaque-title">This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div>
-    <ul class="tower-rules" id="tower-rules"></ul>
-    <div class="dialog-actions">
-      <button type="button" class="pxb orange small" id="tower-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>
-      <button type="button" class="pxb green" id="tower-go"><span class="pxb-o"><span class="pxb-i">Climb</span></span></button>
+  <!-- the Sky Pillar's lobby (js/towerprep.js): a screen of its own, the tower rising into space over the week's
+       climber at its door, then your floors and Climb / Practice -->
+  <dialog id="tower-dialog" class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
+    <canvas id="tower-sky" class="tower-sky" aria-hidden="true"></canvas>
+    <button type="button" class="tower-x" id="tower-close" aria-label="Close">✕</button>
+    <div class="tower-top">
+      <h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2>
+      <p class="tower-week" id="tower-week"></p>
     </div>
-    <details class="tower-practice"><summary>Practice with your own starter</summary><div class="tower-picks" id="tower-picks"></div></details>
-    <div class="dialog-actions"><button class="btn secondary" id="tower-close" type="button">Close</button></div>
-  </dialog>
+    <img id="tower-mon" class="tower-mon pixel" alt="">
+    <div class="tower-base" id="tower-base">
+      <p class="tower-name" id="tower-name"></p>
+      <div class="tower-stats" id="tower-best"></div>
+      <ul class="tower-rules" id="tower-rules"></ul>
+      <button type="button" class="pxb green tower-go" id="tower-go"><span class="pxb-o"><span class="pxb-i">Climb</span></span></button>
+      <p class="tower-note" id="tower-note"></p>
+      <div class="tower-row">
+        <button type="button" class="pxb orange small" id="tower-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>
+        <button type="button" class="pxb blue small" id="tower-practice"><span class="pxb-o"><span class="pxb-i">Practice</span></span></button>
+      </div>
+      <div class="tower-picks" id="tower-picks" hidden></div>
+      <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js) -->
+      <div class="tower-plaque" id="tower-plaque" hidden><h3 class="tower-plaque-title">This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div>
+    </div>
+  </div></dialog>
 
   <dialog id="safari-prep-dialog" class="dialog safari-prep-dialog" aria-labelledby="sp-title">
     <h2 class="sp-title" id="sp-title" tabindex="-1" autofocus>Safari Zone</h2>
