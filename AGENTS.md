@@ -37,6 +37,10 @@ three places:
   Collection page (3) and a printable Trainer Data receipt on a held A (5). Next in line: Achievements, then the Record Book
   and Hall of Fame, pitched one at a time.
 
+- 2026-10-06: Settings option 3, **Flashing & shake: Full / Reduced** (`calmFx()` in `js/prefs.js`), checked in the pane:
+  Reduced, the Wastes boss prelude ramps up smoothly with no white strobe frames, and the battle shakes / flashes are off or a
+  faint fade. The user still has to see it on a phone. Next: option 4, Text size (LOCAL).
+
 - 2026-10-06: Settings option 2, **Battle animations On / Off** (`battleFx()` in `js/prefs.js`), checked in the pane: off,
   a fight plays with no card trails or stat bands. The user still has to feel it in a real run. Next: option 3, flashing / shake.
 

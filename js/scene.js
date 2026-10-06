@@ -25,7 +25,7 @@ import { $ } from './ui.js';
 import { playSound } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
-import { battleFx } from './prefs.js';
+import { battleFx, calmFx } from './prefs.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;   // the scenery's clock: everything below is timed in these ticks a second
@@ -5816,6 +5816,7 @@ function draw() {
   }
   else if (bossPrelude) shake = drawBossAwakening(t) || 0;
 
+  if (calmFx()) shake = 0;
   // the whole picture jolts a pixel or two; the strip it uncovers keeps last frame's colours, which reads as blur
   ctx.putImageData(img, shake ? (Math.floor(t) % 2 ? shake : -shake) : 0, shake > 1 && Math.floor(t) % 3 === 0 ? 1 : 0);
   last = tick;
@@ -5961,7 +5962,7 @@ function drawShrineAwakening(t) {
     return shake;
   }
   // the last toll lands: the seal flares white and fox-fires burst off its ring, blasting the wards outwards
-  if (Math.floor(e) === 0) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70);
+  if (Math.floor(e) === 0) flashScreen(1.35, 70);
   roofFlames(hall, ridge, age, 1.4);
   foxFires(hall.gx, sealY, sealR * grow, e, age);
   shockRing(hall.gx, floorY, e * W * 0.15, [white, body], 0.28);
@@ -6431,7 +6432,7 @@ function drawWastesAwakening(t) {
 
   // the dome bursts: a white flash, then the column and its bombs
   const e = age - ERUPT_AT;
-  if (Math.floor(e) === 0) { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 1.35, 70); }
+  if (Math.floor(e) === 0) flashScreen(1.35, 70);
   const reach = Math.min(1, (e + 1) / 2.5), top = surface - Math.round((surface + 4) * reach);
   lavaColumn(cx, surface, top, Math.round(3 + Math.min(e, 5) * W * 0.02), age);
   lavaBombs(cx, surface, e);
@@ -6447,7 +6448,7 @@ function drawWastesAwakening(t) {
 /** The column floods sideways into a curtain of lava that fills the screen, then the white flashes. */
 function drawWastesPortal(t) {
   const age = Math.max(0, t - bossPrelude.at), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   const { cx, surface } = wastesCrater();
   groundFissures(age, 1, false);
   for (let y = surface; y <= horizon; y++) for (let x = 0; x < W; x++) if (dither(x, y + age) < 10) put(x, y, S.lava[1]);
@@ -6487,7 +6488,7 @@ function shockRing(cx, cy, r, [inner, outer], squash) {
 /** Flowers burst open all over the screen in a wave out from the great blossom until they cover it, then the white flashes. */
 function drawClearingPortal(t) {
   const age = Math.max(0, t - bossPrelude.at), frame = age | 0, white = abgr('#fffce8');
-  if (frame === 6 || frame === 8) { px.fill(white); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   const { hx, hy } = clearingTree(), shade = abgr('#0c2a1c'), [rim, , lit] = BLOSSOM();
   for (let i = 0; i < W * H; i++) blend(i % W, (i / W) | 0, shade, 0.42);   // still the gloom the wake brought
   petalGale(hx, hy, age + 9);
@@ -6507,7 +6508,7 @@ function drawClearingPortal(t) {
     and floods the screen, paper wards streaming from the roof, before the paired white flashes. */
 function drawShrinePortal(t) {
   const age = Math.max(0, t - bossPrelude.at), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
 
   const hall = shrineHall(), [core, spirit, trail] = S.wisp, indigo = abgr('#0a1034');
   for (let i = 0; i < W * H; i++) blend(i % W, (i / W) | 0, indigo, 0.5);   // still the night the wake brought
@@ -6693,7 +6694,7 @@ function drawLightning(t) {
     if (storm.on && !storm.thundered) { storm.thundered = true; playSound('thunder'); }   // once a storm (the user found it repeating too much); the lightning goes on silently
   }
   const cycle = t - life.boltAt;
-  if (cycle < 2) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle < 1 ? 1.9 : 1.35, cycle < 1 ? 40 : 14);
+  if (cycle < 2 && !calmFx()) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle < 1 ? 1.9 : 1.35, cycle < 1 ? 40 : 14);
   if (cycle < 3 && life.bolt) for (const [x, y] of life.bolt) { put(x, y, abgr('#fffff0')); put(x + 1, y, abgr('#c8c0ff')); }
 }
 
@@ -7763,7 +7764,11 @@ const SAFARI_PRELUDES = {
 };
 
 const preludeAge = (t) => Math.max(0, t - bossPrelude.at);
-function flashScreen(k = 1.35, add = 70) { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, k, add); }
+/** The preludes' paired white frames, true once drawn; under Reduced flashing (calmFx) the prelude just carries on. */
+function whiteOut() { if (calmFx()) return false; px.fill(abgr('#fffce8')); return true; }
+function flashScreen(k = 1.35, add = 70) {
+  if (calmFx()) { k = 1 + (k - 1) * 0.3; add *= 0.3; }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, k, add); }
 /** Lays colour `c` over the picture (only the sky with `skyOnly`), `k` of the way. */
 function veil(c, k, skyOnly = false) {
   if (k <= 0) return;
@@ -7851,7 +7856,7 @@ function meadowWake(t) {
 /** The whole flock wheels round and pours at you, every bird bigger than the last, until they black out the screen. */
 function meadowPortal(t) {
   const age = preludeAge(t), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   const { x: cx, r, top } = loneTree(), cy = top - Math.round(r * 0.3);
   swayCrown(age, 2);
   veil(abgr('#3a4a5a'), 0.3, true);
@@ -7940,7 +7945,7 @@ function forestWake(t) {
 /** The light pours down out of the opening, wheeling rays and all, until it fills the screen. */
 function forestPortal(t) {
   const age = preludeAge(t), frame = age | 0, [white, hot, glow] = GLOW();
-  if (frame === 6 || frame === 8) { px.fill(white); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   const g = gladeLight();
   gladeFlood(g, 1);
   sunbeams(g, age, 2);
@@ -8028,7 +8033,7 @@ function wetlandWake(t) {
 /** The wave breaks over you: a curtain of water and foam coming down the screen. */
 function wetlandPortal(t) {
   const age = preludeAge(t), frame = age | 0, white = abgr('#fffce8');
-  if (frame === 6 || frame === 8) { px.fill(white); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   veil(abgr('#1c3050'), 0.35, true);
   greatWave(lakeTop(), 12 + age);
   const fall = H * Math.min(1.1, ((age + 1) / 5) ** 1.4);
@@ -8118,7 +8123,7 @@ function marshWake(t) {
 /** The mist closes in solid, the Snag's eyes the last thing showing, then the white. */
 function marshPortal(t) {
   const age = preludeAge(t), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   const { x: gx, foot, h } = greatSnag(), tall = Math.round(h * 1.6);
   veil(abgr('#101810'), 0.3);
   snagShape(gx, foot, tall, 1.35 + age * 0.04, Math.sin(age * 0.5) * 0.06, abgr('#141c16'), 0.95);
@@ -8221,7 +8226,7 @@ function peakWake(t) {
 /** The powder cloud engulfs you: a white-out. */
 function peakPortal(t) {
   const age = preludeAge(t), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   veil(abgr('#5a6a88'), 0.3, true);
   powderCloud(age, 12 + age * 3);
   tumblingIce(12 + age);
@@ -8311,7 +8316,7 @@ function desertWake(t) {
 /** The sandstorm swallows the screen. */
 function desertPortal(t) {
   const age = preludeAge(t), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   veil(abgr('#c89048'), 0.35, true);
   haboob(HABOOB_AT + 7 + age * 2, 12 + age * 2);
   sandStreaks(age + 30, 300, 2);
@@ -9837,7 +9842,7 @@ function core(cx, cy, r, age) {
     everything; then the paired white flashes. */
 function depthsPortal(t) {
   const age = preludeAge(t), frame = age | 0;
-  if (frame === 6 || frame === 8) { px.fill(abgr('#fffce8')); return 0; }
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
   const e = S.energy, { x: cx, y: cy } = wellAt(), R = Math.hypot(W, H) * 1.1 * Math.min(1, ((age + 1) / 6) ** 1.6), hex = Math.max(5, Math.round(Math.min(W, H) / 9));
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const d = Math.hypot(x - cx, (y - cy) * 1.4), edge = R + Math.sin(Math.atan2(y - cy, x - cx) * 7 + age * 2) * 3;

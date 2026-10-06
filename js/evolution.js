@@ -11,8 +11,9 @@ import { playMusic, playCry, playSound, preloadMusic, preloadSounds, preloadCrie
 import { sayLines } from './rewards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
+import { calmFx } from './prefs.js';
 
-const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const still = () => calmFx();   // reduced motion or Reduced flashing: the whole show is flashes, so it's skipped
 const CRY_WAIT_MAX = 1500;   // a long cry mustn't hold the scene up
 const STILL_SONG_MS = 5500;  // under reduced motion the song plays about as long as the flashing would
 

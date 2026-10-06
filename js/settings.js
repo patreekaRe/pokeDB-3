@@ -26,6 +26,7 @@ const OPTIONS = {
     // the title's sky repaints on resize; every other scene reads the time as it paints
     apply: (v, changed) => { setClock(v); if (changed) dispatchEvent(new Event('resize')); },
   },
+  calmFx: { values: [[false, 'Full'], [true, 'Reduced']], apply: v => document.documentElement.classList.toggle('calm-fx', v) },
   battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
   battleFx: { values: [[true, 'On'], [false, 'Off']], apply: v => document.documentElement.classList.toggle('no-battle-fx', !v) },
   endTurnWarn: { values: [[true, 'On'], [false, 'Off']] },

@@ -15,6 +15,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { playSound, preloadSounds } from './audio.js';
 import { $, el, sleep } from './ui.js';
+import { calmFx } from './prefs.js';
 
 const FPS = 30;
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -161,7 +162,7 @@ function frame() {
   if (document.hidden) return;
   tick++;
   flash = Math.max(0, flash - 0.2);
-  if (S && S.floorNow >= 15 && S.floorNow <= 26 && Math.random() < 0.006) { flash = 1; }
+  if (S && S.floorNow >= 15 && S.floorNow <= 26 && Math.random() < 0.006 && !calmFx()) { flash = 1; }
   paint();
 }
 function run() { if (!timer) timer = setInterval(frame, 1000 / FPS); }

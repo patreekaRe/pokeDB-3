@@ -12,7 +12,7 @@
  * Pokémon are the GIFs. Under reduced motion nothing shakes, flashes or flies; the lines, bar and sounds stay.
  */
 import { $, el, sleep, makeCard } from './ui.js';
-import { vibrate } from './prefs.js';
+import { vibrate, calmFx } from './prefs.js';
 import { ALL_CARDS } from './data/cards.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
@@ -296,8 +296,8 @@ function frame(now) {
   ctx.globalAlpha = Math.min(1, 0.35 + (1 - Math.max(0, view.hp)) * 0.65 + (view.open ? 0.4 : 0));
   ctx.drawImage(halo, gx + GW / 2 - halo.width / 2, gy + gate.sealY - halo.height / 2);
   ctx.globalAlpha = 1;
-  const sx = shake && !still() ? Math.round((Math.random() - 0.5) * 2 * shake) : 0;
-  const sy = shake && !still() ? Math.round((Math.random() - 0.5) * 2 * shake) : 0;
+  const sx = shake && !calmFx() ? Math.round((Math.random() - 0.5) * 2 * shake) : 0;
+  const sy = shake && !calmFx() ? Math.round((Math.random() - 0.5) * 2 * shake) : 0;
   if (rays > 0) drawRays(sx, sy);
   gate.paint(gateCanvas.getContext('2d'), view);
   ctx.drawImage(gateCanvas, gx + sx, gy + sy);
@@ -543,7 +543,7 @@ function beam(x0, y0, x1, y1, time, width, colors, ring = false) {
 function impact(type, kind, power = 1) {
   const [x, y] = target();
   const big = kind === 'ultimate';
-  view.flash = kind === 'held' ? 0.3 : big ? 1 : 0.7;
+  view.flash = (kind === 'held' ? 0.3 : big ? 1 : 0.7) * (calmFx() ? 0.3 : 1);
   if (!still()) {
     shake = kind === 'held' ? 1 : big ? 3 : power < 0.6 ? 1 : 2;
     setTimeout(() => { shake = 0; }, big ? 700 : 400);
@@ -584,7 +584,7 @@ async function drain(from, to, ms) {
 /** A stage passed: the gate jolts, a burst of light and crystal off it, and the bar's rune there shatters. */
 function crackOpen() {
   playSound('gate-crack');
-  view.flash = Math.max(view.flash, 0.8);
+  view.flash = Math.max(view.flash, calmFx() ? 0.25 : 0.8);
   view.seal = 1;
   shake = 3;
   setTimeout(() => { shake = 0; }, 450);

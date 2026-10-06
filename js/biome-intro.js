@@ -30,6 +30,7 @@ import { el } from './ui.js';
 import { playSound, playCry, preloadCries, preloadSounds } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { getSave } from './storage.js';
+import { calmFx } from './prefs.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { SAFARI_INTROS } from './safari-intro.js';
 import { DEPTHS_INTRO } from './depths-intro.js';
@@ -1520,7 +1521,7 @@ function wastesScene({ film, look, mini, time, land, sky, cloud, W, H, tall, ran
     const cz = camZ(ms), k = K(ms), dt = lastMs < 0 ? 0 : Math.min(0.1, (ms - lastMs) / 1000);
     if (!gusted && !mini) { gusted = true; if (live()) playSound('gust'); }
     if (!rumbled && tick >= huffAt - 0.25) { rumbled = true; if (live()) playSound('rumble-far'); }
-    const huff = tick - huffAt, shake = huff > 0 && huff < 0.5 ? (Math.floor(ms / 50) % 2) : 0;
+    const huff = tick - huffAt, shake = huff > 0 && huff < 0.5 && !calmFx() ? (Math.floor(ms / 50) % 2) : 0;
 
     bg.drawImage(skyC, 0, 0);
     for (const c of clouds) {

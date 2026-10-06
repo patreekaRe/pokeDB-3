@@ -6,12 +6,15 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, endTurnWarn: true, vibration: true, shell: 'red' };
+export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red' };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 /** Battle animations (the games' Battle Scene): off in Settings or under reduced motion, a fight skips its move effects
     and slow intros. */
 export const battleFx = () => pref('battleFx') && !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+/** Reduce flashing / screen shake (Settings, or reduced motion): nothing shakes, and white-outs become a soft brightening. */
+export const calmFx = () => pref('calmFx') || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // letters typed per tick and the tick's ms; null types the whole line at once
 const PACE = { slow: [1, 34], mid: [2, 18], fast: [4, 14], instant: null };
