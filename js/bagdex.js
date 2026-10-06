@@ -246,8 +246,11 @@ export function bagApp(kind) {
     ghost.classList.add('pdx-ghost');
     if (old.classList.contains('unseen')) ghost.classList.add('unseen');
     screen.append(ghost);
-    ghost.animate([{ translate: '0 0', opacity: 1 }, { translate: `${-dir * 120}% 0`, opacity: 0 }], ease).finished.then(() => ghost.remove(), () => ghost.remove());
-    now.animate([{ translate: `${dir * 120}% 0`, opacity: 0 }, { translate: '0 0', opacity: 1 }], ease);
+    // items are centred with translate: -50% -50%, so the slide must start and end there or they jump
+    const [bx, by] = (getComputedStyle(now).translate === 'none' ? '0px 0px' : getComputedStyle(now).translate).split(' ');
+    const pos = (dx) => `calc(${bx} + ${dx}%) ${by || '0px'}`;
+    ghost.animate([{ translate: pos(0), opacity: 1 }, { translate: pos(-dir * 120), opacity: 0 }], ease).finished.then(() => ghost.remove(), () => ghost.remove());
+    now.animate([{ translate: pos(dir * 120), opacity: 0 }, { translate: pos(0), opacity: 1 }], ease);
   }
 
   function swipe(node) {
