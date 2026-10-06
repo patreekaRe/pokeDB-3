@@ -919,13 +919,89 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .rbk-quick small { font-size: 0.66rem; opacity: 0.7; }
 .bdx-open { font: 0.58rem/1.3 var(--pixel-font); font-synthesis-weight: none; text-align: left; cursor: pointer; background: #f2dc8a; color: #6a4a00; }
 .bdx-open:active { translate: 0 2px; }
-/* a run's full page, slid over the handheld (shelfApp()'s sheet) */
-.cdev-dex .bdx-sheet { z-index: 2; display: block; padding: 0 12px 24px; background: var(--win-bg); color: var(--win-ink); }
-.bdx-sheet > * + * { margin-top: 10px; }
-.bdx-sheet-back {
-  position: sticky; top: 0; z-index: 1; display: block; width: calc(100% + 24px); margin: 0 -12px 12px; border-width: 0 0 3px; border-radius: 0;
-  text-align: left; font: 0.6rem/1 var(--pixel-font); font-synthesis-weight: none; cursor: pointer;
+/* a run's full page, slid over the handheld (shelfApp()'s sheet): the same red handheld, its run on a screen, its
+   numbers, relics and items on green LCDs, its deck on a dark panel (the user's call, 2026-10-06) */
+.cdev-dex .bdx-sheet {
+  --rim: #7a1016; --lid: #c41f2a; --lcd: #b6d68e; --ink: #1f3a14;
+  z-index: 2; display: block; padding: 0 12px 24px; color: var(--ink);
+  background: linear-gradient(180deg, #e0343a, #c41f2a 40%, #b01822); box-shadow: inset 0 0 0 3px var(--rim);
 }
+.cdev-fame .bdx-sheet { --rim: #6a4a08; --lid: #c8960c; background: linear-gradient(180deg, #f0c448, #d8a020 40%, #b07c10); }
+.bdx-sheet > * + * { margin-top: 10px; }
+/* the lid: Back on the left, the three lights on the right */
+.bdx-sheet-back {
+  position: sticky; top: 0; z-index: 1; display: block; width: calc(100% + 24px); margin: 0 -12px 12px; padding: 12px 14px;
+  border: 0; border-bottom: 3px solid var(--rim); border-radius: 0; cursor: pointer; text-align: left;
+  font: 0.62rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; text-shadow: 1px 1px 0 var(--rim); letter-spacing: 1px;
+  background:
+    radial-gradient(circle, #6be36b 0 4px, var(--rim) 4.5px 6px, transparent 6.5px) right 14px center / 14px 14px no-repeat,
+    radial-gradient(circle, #ffe36b 0 4px, var(--rim) 4.5px 6px, transparent 6.5px) right 32px center / 14px 14px no-repeat,
+    radial-gradient(circle, #ff5a5a 0 4px, var(--rim) 4.5px 6px, transparent 6.5px) right 50px center / 14px 14px no-repeat,
+    var(--lid);
+  box-shadow: none; animation: none;
+}
+.bdx-sheet-back:active { translate: 0 1px; }
+/* the run's screen: its Pokémon on a pad, in its type's colours; the plate under it is an LCD */
+.bdx-sheet .hof-entry { --b1: #9aa2c8; --b2: #565d84; display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 0; border: 0; background: none; box-shadow: none; }
+.bdx-sheet .hof-entry.type-fire { --b1: #ff8f4d; --b2: #b8321a; }
+.bdx-sheet .hof-entry.type-grass { --b1: #72dc70; --b2: #257a38; }
+.bdx-sheet .hof-entry.type-water { --b1: #5cbcff; --b2: #1d58b8; }
+.bdx-sheet .hof-entry.type-psychic { --b1: #d49aff; --b2: #7138a8; }
+.bdx-sheet .hof-entry-pic {
+  position: relative; width: auto; height: auto; aspect-ratio: 2 / 1; container-type: size; overflow: hidden;
+  border: 4px solid #2a2a30; border-radius: 10px; box-shadow: 0 0 0 3px var(--rim), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1.5px) 0 0 / 10px 10px,
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--b1) 70%, #fff) 0, transparent 60%),
+    linear-gradient(150deg, var(--b1), var(--b2));
+}
+.bdx-sheet .hof-entry-pic::before { content: ''; position: absolute; left: 24cqw; bottom: 5cqh; width: 52cqw; height: 17.3cqw; border-radius: 50%; background: rgba(0, 0, 0, 0.22); }
+.bdx-sheet .hof-entry-pic img {
+  position: absolute; left: 20cqw; bottom: calc(5cqh + 7.5cqw); width: 60cqw; height: 68cqh; max-width: none; max-height: none;
+  object-fit: contain; object-position: bottom; animation: pdxIdle 1.4s ease-in-out infinite;
+}
+.bdx-sheet .hof-entry.lost .hof-entry-pic { --b1: #a0a0aa; --b2: #3a3a44; }
+.bdx-sheet .hof-entry.lost .hof-entry-pic img { opacity: 1; filter: grayscale(1) brightness(0.85); animation: none; }
+.bdx-sheet .hof-entry.depths .hof-entry-pic,
+.cdev-fame .bdx-sheet .hof-entry-pic {
+  background:
+    radial-gradient(circle, #fff 0.7px, transparent 1.3px) 0 0 / 23px 19px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.6) 0.6px, transparent 1.2px) 11px 7px / 31px 27px,
+    radial-gradient(ellipse at 50% 38%, #34489a, #18205a 55%, #0a0e2c);
+}
+.bdx-sheet .hof-entry.depths .hof-entry-pic { background: radial-gradient(circle, rgba(220, 190, 255, 0.8) 0.7px, transparent 1.3px) 0 0 / 23px 19px, radial-gradient(ellipse at 50% 38%, #6a3aa8, #2a1050 55%, #0e0420); }
+.cdev-fame .bdx-sheet .hof-entry-pic::before { background: radial-gradient(ellipse at 50% 40%, #fff6c0, #e8b830 60%, #a8740c); box-shadow: 0 2px 0 #6a4a08; }
+.bdx-sheet .hof-entry.depths .hof-entry-pic::before { background: radial-gradient(ellipse at 50% 40%, #f4ecff, #b48ae8 60%, #5a3a98); box-shadow: 0 2px 0 #d8b048; }
+.bdx-sheet :is(.hof-plate, .hof-stats .stat-tile, .hof-things, .loss-chart) {
+  border: 3px solid var(--rim); border-radius: 8px; background: var(--lcd); color: var(--ink); box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+.bdx-sheet .hof-entry .hof-plate { padding: 8px 10px; border: 3px solid var(--rim); background: var(--lcd); box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); }
+.bdx-sheet .hof-name { font-size: 0.8rem; }
+.bdx-sheet .hof-no { color: inherit; opacity: 0.75; }
+.bdx-sheet :is(.hof-rule, .loss-biome-tag, .records-empty) { color: var(--ink); opacity: 0.8; }
+.bdx-sheet .loss-caption { color: #fff; text-shadow: 1px 1px 0 var(--rim); }
+.bdx-sheet .loss-blow { color: #8a1010; }
+/* section heads: white pixel text on the casing, a dashed rule under it */
+.bdx-sheet .records-label {
+  margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 2px dashed rgba(255, 255, 255, 0.45);
+  font: 0.6rem/1.2 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 1px; color: #fff; text-shadow: 1px 1px 0 var(--rim);
+}
+.bdx-sheet .hof-stats .stat-tile { padding: 6px 4px 5px; }
+.bdx-sheet .hof-stats .stat-value { font: 0.78rem/1.3 var(--pixel-font); font-synthesis-weight: none; color: var(--ink); }
+.bdx-sheet .hof-stats .stat-label { color: var(--ink); opacity: 0.75; }
+.bdx-sheet .hof-things { padding: 8px; gap: 6px; }
+.bdx-sheet .hof-thing { background: rgba(255, 255, 255, 0.35); box-shadow: inset 0 0 0 2px rgba(31, 58, 20, 0.25); color: var(--ink); }
+.bdx-sheet .hof-thing.ability { background: #f2dc8a; box-shadow: inset 0 0 0 2px #b08a20; color: #6a4a00; }
+/* HP over the run, drawn in the LCD's own ink */
+.bdx-sheet .loss-chart { --hp: var(--ink); margin-top: 10px; }
+.bdx-sheet .loss-max, .bdx-sheet .loss-biome { stroke: rgba(31, 58, 20, 0.45); }
+.bdx-sheet .loss-area { opacity: 0.22; }
+/* the final deck on a dark screen, so the cards stand out */
+.bdx-sheet .hof-cards {
+  padding: 10px 8px; border: 4px solid #2a2a30; border-radius: 10px; box-shadow: 0 0 0 3px var(--rim);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1.5px) 0 0 / 10px 10px, linear-gradient(180deg, #24508a, #10234a);
+}
+@media (prefers-reduced-motion: reduce) { .bdx-sheet .hof-entry-pic img { animation: none; } }
 
 /* the Hall of Fame: one gold handheld, each champion on Gold/Silver's pedestal under a spotlight on a starry night */
 .cdev-fame .pdx-device { background: linear-gradient(180deg, #f0c448, #d8a020 40%, #b07c10); box-shadow: inset 0 0 0 3px #6a4a08; }

@@ -1521,3 +1521,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   and Wastes' caves; the Wastes boss arena on its pad; Kenmatta's courtyard; the Center; the Mart at 192x96 on a shelf
   board), its text typed out, keyword lines, slots, a found tally. Unfound ones are rimmed silhouettes with where to
   find them. Abilities show their type's starter on the Clearing's pad, with its cry.
+- **Full record pages, Pokédex style** (2026-10-06, Desktop app; the user's ask): the run page a Record Book / Hall of
+  Fame entry slides over the handheld (`.bdx-sheet`, CSS only in `css/menus.css`) is the red device now: a lid with the
+  three lights, the Pokémon on a screen in its type's colours (starry for the Depths and the Hall of Fame, grey for a
+  loss), plate, stat tiles, relics, items and the HP chart on green LCDs, the deck on a dark screen; gold casing in the
+  Hall of Fame. The loss recap window after a lost run keeps its old look.

@@ -87,7 +87,9 @@ live site.
   of Fame (`recordsApp()` in `js/halloffame.js`, Pokédex style on `shelfApp()` since 2026-10-06, the user's picks: the Record
   Book a banner per Trainer Level, the Crystal Depths and Lost runs, one run a screen; the Hall of Fame no banners, one gold
   handheld, each champion on a gold pedestal under a spotlight on a starry screen, A replays its win scene. A tap on the
-  screen, A in the Record Book or "Full record" slides the run's full page over it (shelfApp's `sheet`), B closes it).
+  screen, A in the Record Book or "Full record" slides the run's full page over it (shelfApp's `sheet`), B closes it; since 2026-10-06 that page is the handheld too,
+  `.bdx-sheet` in `css/menus.css`: a red lid, the run's Pokémon on a screen in its type's colours, its numbers, relics,
+  items and HP chart on green LCDs, the deck on a dark screen, gold in the Hall of Fame; the loss recap window outside the device is unchanged).
   D-pad left / right steps Moves' and the Safari's tabs. Only the Leaderboard and zoomed cards open over it. The
   hardware: D-pad (the highlight, shown once used: `.keyed`; in an app it steps a Pokédex page or scrolls), A opens, B
   backs out (a Pokédex page to its biomes, an app to home, home shuts the device with the screen collapsing and the cover
