@@ -115,6 +115,18 @@ is the screen and the overlay that use them.
   the climber (the user saw it, 2026-10-05). The sky also repaints when `#tower-top` resizes, so the grass line never
   drifts from the layout.
 
+## The opening film (2026-10-06)
+
+Pressing Climb (or Climb again, or a Practice pick) plays `climbIntro()` from `js/climb-intro.js` before the climb starts
+(`onStart` in `js/main.js`), on its own `#climb-scene` (the journey films' frame: `.travel-scene`, bars, skip, dark). The
+camera starts at the summit (jade roof, Rayquaza's glow), "SKY PILLAR" over it, and falls the whole height through
+`paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). Then a cut to the user's
+reference (a hero from behind before a temple door): your climber's back sprite walks a flagstone path between four stone
+pillars to the great arched door (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
+two scowling eyes over the arch light up (`gate-hum`), the door grinds open on warm light with a shake (`rumble-far`), the
+light floods out, your Pokémon walks in and it goes dark. Like `travel()` it resolves dark with a `close()` called once
+the climb's map is up. A tap or Enter skips it; reduced motion holds one still of the door. About 12 s in all.
+
 ## The leaderboard
 
 - `towerBoard/<week>_<uid>` in the cloud save's Firestore, posted once by the week's first try when it ends
@@ -130,7 +142,8 @@ is the screen and the overlay that use them.
 `?tower=25` starts a throwaway climb at that floor (the week's tower and starter, evolved as its guardians would have),
 never saved; `&hp=0.1` shrinks every foe's HP to see guardians and flights through quickly (`?tower=99&hp=0.01` reaches
 Rayquaza in one fight). `?tower=1` walks up from the lobby. From the console, `import('/js/tower.js')` then
-`guardianIntro({ def, floor })` or `towerFall({ floor, trail: [], sprite })` plays either on its own.
+`guardianIntro({ def, floor })` or `towerFall({ floor, trail: [], sprite })` plays either on its own. `?climb` (`&starter=id`)
+plays the opening film after PRESS START, then `?tower=1`'s throwaway climb.
 
 ## Tests and the bot
 

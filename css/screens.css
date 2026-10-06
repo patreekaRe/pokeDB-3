@@ -4190,6 +4190,19 @@ body.scene-peek #backdrop { display: none; }
 .travel-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
 .travel-scene.still { animation: none; }
 
+/* the Sky Pillar's opening film (js/climb-intro.js), on the journey films' frame */
+.climb-mon { position: absolute; left: 50%; max-width: none; transform-origin: 50% 100%; image-rendering: pixelated;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }
+.climb-title { position: absolute; left: 0; right: 0; top: 20vh; text-align: center; pointer-events: none; opacity: 0;
+  font: 1.7rem/1.2 var(--pixel-font); letter-spacing: 2px; color: #fff; transition: opacity 0.7s;
+  text-shadow: 2px 2px 0 #10183a, -2px -2px 0 #10183a, 2px -2px 0 #10183a, -2px 2px 0 #10183a; }
+.climb-title small { display: block; margin-top: 0.7rem; font-size: 0.6rem; letter-spacing: 1px; color: #a0ffc8; }
+.climb-scene.titled .climb-title { opacity: 1; }
+.climb-scene.cut .travel-dark { opacity: 1; }
+.climb-light { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.8s ease-in;
+  background: radial-gradient(circle at 50% var(--door, 50%), #fffbe0 0, #f8d070 30%, rgba(240, 160, 64, 0) 75%); }
+.climb-scene.flood .climb-light { opacity: 1; }
+
 /* "New!": a card or relic you've never had (not in the Index yet), on rewards and the Mart's shelves */
 .new-badge {
   position: absolute;

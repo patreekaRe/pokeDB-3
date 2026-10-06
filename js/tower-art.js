@@ -339,7 +339,7 @@ const TIERS = [
 const tierOf = (f) => TIERS.reduce((t, x) => (f >= x.at ? x : t), TIERS[0]);
 const LIT_CACHE = new Map();
 /** A floor's colours, lit (climbed, or where you stand) or dim (still above you). */
-function stone(f, lit) {
+export function stone(f, lit) {
   const tier = tierOf(f), key = `${tier.at}${lit}`;
   if (!LIT_CACHE.has(key)) {
     const d = (list) => list.map(h => K(lit ? h : dim(h)));
