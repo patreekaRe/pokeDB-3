@@ -370,7 +370,7 @@ function renderList() {
   const [done, all] = researchCount();
   const rewards = banner(`pdx-rewards${save.dex.complete ? ' complete' : ''}`, 'Rewards', save.dex.complete ? 'Pokédex complete!' : 'What finishing it pays', (b) => openRewards(b));
   rewards.dataset.page = 'rewards';
-  rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), el('span', 'pdx-banner-mons pdx-trophy', '🏆'));
+  rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), iconOf('pdx-banner-mons pdx-trophy', '🏆'));
   banners.push(rewards);
 
   if (safariOpen(save)) {   // the Safari Pokédex is its own window (an app in the device): its banner hands over to it
