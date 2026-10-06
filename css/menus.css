@@ -673,9 +673,12 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 
 /* ---------- Prepare: after Choose, the same screen holds the run's setup (prepare() in js/select.js) ---------- */
 .select-screen.preparing :is(.sel-stats, .sel-blurb, .sel-ability, #sel-shiny, #sel-corner, .sel-strip) { display: none; }
-.sel-prep, .sel-deck { animation: prepIn 0.3s steps(4) both; }
+/* transform, not translate: the wide layout centres .sel-deck with translate, which the slide would fight */
+.sel-prep, .sel-deck { animation: prepIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; will-change: transform, opacity; }
+.sel-deck { animation-delay: 0.06s; }
 .sel-prep[hidden], .sel-deck[hidden] { display: none; }
-@keyframes prepIn { from { opacity: 0; translate: 0 10px; } }
+@keyframes prepIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sel-prep, .sel-deck { animation: none; } }
 .prep-evo { display: flex; align-items: flex-end; justify-content: center; gap: 4px; margin: 0 0 10px; cursor: help; }
 .prep-form { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; font-size: 0.5rem; color: #d8d0b8; text-align: center; }
 .prep-form b { font-size: 0.58rem; color: #fff8e8; font-weight: 400; }
