@@ -203,6 +203,73 @@ const ART = {
   settings: `<path d="M13.8 3h4.4l.7 3.4 2.3 1 2.9-1.9 3.1 3.1-1.9 2.9 1 2.3 3.4.7v4.4l-3.4.7-1 2.3 1.9 2.9-3.1 3.1-2.9-1.9-2.3 1-.7 3.4h-4.4l-.7-3.4-2.3-1-2.9 1.9-3.1-3.1 1.9-2.9-1-2.3L3 18.2v-4.4l3.4-.7 1-2.3-1.9-2.9 3.1-3.1 2.9 1.9 2.3-1Z" fill="#e4e8f0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <circle cx="16" cy="16" r="4.6" fill="#7a8498" stroke="${INK}" stroke-width="2"/>`,
 
+  // ---- the Pokédex's Rewards (js/pokedex.js) ----
+  star: `<path d="M16 3l3.8 7.8 8.6 1.2-6.2 6 1.5 8.5L16 22.4l-7.7 4.1 1.5-8.5-6.2-6 8.6-1.2Z" fill="#f8c830" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M14.6 9.6l-1.4 2.8" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // a wild fight: two crossed swords
+  swords: `<path d="M5 5l16 16M27 5L11 21" stroke="${INK}" stroke-width="5.4" stroke-linecap="round"/>
+    <path d="M5 5l16 16M27 5L11 21" stroke="#e4e8f0" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M17.5 24.5l7-7M7.5 17.5l7 7" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M17.5 24.5l7-7M7.5 17.5l7 7" stroke="#f8c830" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M22 22l4.6 4.6M10 22l-4.6 4.6" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M22 22l4.6 4.6M10 22l-4.6 4.6" stroke="#a8642c" stroke-width="2.4" stroke-linecap="round"/>`,
+
+  // an Alpha: a skull
+  skull: `<path d="M16 3.5c-6.6 0-11 4.6-11 10.5 0 3.6 1.6 6 4 7.4V26a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4.6c2.4-1.4 4-3.8 4-7.4 0-5.9-4.4-10.5-11-10.5Z" fill="#f4f4f6" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="11.4" cy="14.6" rx="3" ry="3.4" fill="${INK}"/><ellipse cx="20.6" cy="14.6" rx="3" ry="3.4" fill="${INK}"/>
+    <path d="M16 18.6l-1.7 2.8h3.4Z" fill="${INK}"/>
+    <path d="M13 24v4M16 24v4M19 24v4" stroke="${INK}" stroke-width="1.4"/>
+    <path d="M8.6 9.6c.8-1.6 2-2.6 3.4-3.2" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // a boss: a red horned face, scowling
+  boss: `<path d="M8.5 10L5 2.5l7.4 4M23.5 10L27 2.5l-7.4 4" fill="#f4ecd4" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="16" cy="17.5" r="11.5" fill="#e23a2c" stroke="${INK}" stroke-width="2"/>
+    <path d="M8.5 12.5l5.5 2.6M23.5 12.5L18 15.1" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="12" cy="17" r="1.9" fill="#ffe060" stroke="${INK}" stroke-width="1.2"/><circle cx="20" cy="17" r="1.9" fill="#ffe060" stroke="${INK}" stroke-width="1.2"/>
+    <path d="M10 22.2c2.4 3 9.6 3 12 0Z" fill="#5a0c12" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M12.4 22.6l1 2.4 1-2.2ZM19.6 22.6l-1 2.4-1-2.2Z" fill="#fff"/>
+    <path d="M7.4 14.6c.4-2 1.4-3.6 2.8-4.6" fill="none" stroke="#ff9a8a" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // PokéCoins: a gold coin
+  coin: `<circle cx="16" cy="16" r="12.5" fill="#f8c830" stroke="${INK}" stroke-width="2"/>
+    <circle cx="16" cy="16" r="8.6" fill="none" stroke="#c8901a" stroke-width="1.6"/>
+    <path d="M13.6 21.5v-11h3.4a3.2 3.2 0 0 1 0 6.4h-3.4" fill="none" stroke="#a86a10" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.2 12.4a8.6 8.6 0 0 1 4-4.4" fill="none" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // Mom's Savings: two banknotes
+  cash: `<rect x="5" y="5.5" width="24" height="15" rx="2" fill="#5aa848" stroke="${INK}" stroke-width="2"/>
+    <rect x="3" y="11" width="24" height="15" rx="2" fill="#8cd070" stroke="${INK}" stroke-width="2"/>
+    <rect x="6" y="14" width="18" height="9" rx="1.4" fill="none" stroke="#3a8a3a" stroke-width="1.4"/>
+    <circle cx="15" cy="18.5" r="3.2" fill="#f8c830" stroke="${INK}" stroke-width="1.2"/>`,
+
+  // Oak's Advice: a mortarboard and its tassel
+  cap: `<path d="M8 15v6c0 2.4 3.6 4 8 4s8-1.6 8-4v-6" fill="#3a3a4a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M2 12l14-7 14 7-14 7Z" fill="#4a4a5c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 12l8.6 2.6V22" fill="none" stroke="#f8c830" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="24.6" cy="23.2" r="1.8" fill="#f8c830" stroke="${INK}" stroke-width="1"/>
+    <path d="M9 10.6l6-3" stroke="#8a8aa4" stroke-width="1.4" stroke-linecap="round"/>`,
+
+  // the Crystal Depths: a cut gem
+  gem: `<path d="M9 5h14l6 7-13 16L3 12Z" fill="#7ad8f8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M3 12h26M12 12l4-7 4 7M12 12l4 16 4-16M9 5l3 7M23 5l-3 7" fill="none" stroke="#2a78a8" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M9 5h14l6 7-13 16L3 12Z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7.4 11l2.4-3.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // ---- the types (the Moves app's tabs) ----
+  fire: `<path d="M16 2.5c1.2 4.6 6 7 8.4 11.6 2.6 5 .4 13.4-8.4 13.4S5 23.4 7.4 17.8c1.2-2.8 3.4-4 3.6-7.4 2.4 1.8 2.8 4 2.8 5.6.8-3.8-.6-9 2.2-13.5Z" fill="#ff7a2a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 14c.6 2.6 3.6 3.8 3.6 7.2 0 2.6-1.6 4.2-3.6 4.2s-3.6-1.6-3.6-3.8c0-2.4 2.4-3.6 3.6-7.6Z" fill="#ffd23a"/>`,
+  grass: `<path d="M5 27C4 14 12 5 27 4c1 14-7 23-22 23Z" fill="#62c050" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M6 26C12 19 17 13 23 8M12 19.5v-5M16 15.6h5" fill="none" stroke="#2e7a30" stroke-width="1.8" stroke-linecap="round"/>`,
+  water: `<path d="M16 3c4 6 10 11 10 17a10 10 0 0 1-20 0c0-6 6-11 10-17Z" fill="#3c8cf0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M10.6 19.6c0 2.8 1.6 5 3.8 5.8" fill="none" stroke="#bfe4ff" stroke-width="2" stroke-linecap="round"/>`,
+  normal: `<circle cx="16" cy="16" r="12.5" fill="#e4e8f0" stroke="${INK}" stroke-width="2"/>
+    <path d="M16 7.4l7.6 13.2H8.4ZM16 24.6L8.4 11.4h15.2Z" fill="#9aa2c8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
+  psychic: `<path d="M9 23.5h14l2.4 5H6.6Z" fill="#a8642c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="16" cy="14" r="10.5" fill="#c08af0" stroke="${INK}" stroke-width="2"/>
+    <path d="M12 17.6c1.6 2 6 2 8-1.4" fill="none" stroke="#f0d8ff" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="12" cy="10" rx="2.4" ry="3.2" transform="rotate(30 12 10)" fill="#fff" opacity="0.8"/>`,
+
   // Main menu: a little house
   home: `<path d="M3.5 15.5L16 4.5l12.5 11" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M7 13.5V28h18V13.5L16 5.6Z" fill="#fff4dc" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>

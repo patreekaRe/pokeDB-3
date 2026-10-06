@@ -25,6 +25,7 @@ import { playCry, playSound } from './audio.js';
 import { sceneShot } from './scene.js';
 import { timeOfDay } from './daytime.js';
 import { tipAt } from './tips.js';
+import { smoothIcon } from './smooth-icons.js';
 import { openSafariDex, safariDexCount } from './safaridex.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 
@@ -145,11 +146,19 @@ function progressBar(n, of) {
   return bar;
 }
 
+// the Rewards' icons are smooth vector art (js/smooth-icons.js; the user's call, 2026-10-06), the data keeps its emoji
+const VECTOR = { '🏆': 'trophy', '★': 'star', '⚔️': 'swords', '💀': 'skull', '👹': 'boss', '💰': 'coin', '💴': 'cash', '🧴': 'items', '🎓': 'cap', '💎': 'gem' };
+function iconOf(cls, emoji) {
+  const span = el('span', cls, VECTOR[emoji] ? '' : emoji);
+  if (VECTOR[emoji]) span.append(smoothIcon(VECTOR[emoji]));
+  return span;
+}
+
 function perkBox(p, count, done) {
   if (!p.perk) return depthsBox(p, count, done);
   const lv = levelOf(p);
   const box = el('div', `dex-perk${done ? ' earned' : ''}${lv === 2 ? ' mastered' : ''}`);
-  const icon = el('span', 'dex-perk-icon', p.perk.icon);
+  const icon = iconOf('dex-perk-icon', p.perk.icon);
   const text = el('div', 'dex-perk-text');
   const studied = p.ids.filter(researched).length;
   text.append(
@@ -207,11 +216,11 @@ function rewardBoxes() {
     const box = el('div', `dex-perk dex-goal${earned ? ' earned' : ''}`);
     const text = el('div', 'dex-perk-text');
     text.append(el('strong', '', `${earned ? '✅ ' : ''}${title}`), el('span', 'dex-goal-how', how), ...prizes, progressBar(n, of));
-    box.append(el('span', 'dex-perk-icon', icon), text, el('b', 'dex-perk-count', `${n}/${of}`));
+    box.append(iconOf('dex-perk-icon', icon), text, el('b', 'dex-perk-count', `${n}/${of}`));
     box.title = tip;
     return box;
   };
-  const coins = (n) => prize(el('span', 'dex-prize-icon', '💰'), `${n} PokéCoins`, '');
+  const coins = (n) => prize(iconOf('dex-prize-icon', '💰'), `${n} PokéCoins`, '');
 
   const jackpot = goal('🏆', 'Complete the Pokédex', `Research all ${all} entries`, [
     coins(DEX_COMPLETE_COINS),
@@ -222,7 +231,7 @@ function rewardBoxes() {
 
   // one row per kind, marked with its map room's icon rather than a word (the user's call)
   const pay = (icon, kind, n) => {
-    const row = prize(el('span', 'dex-prize-icon', icon), `💰 ${n}`, '');
+    const row = prize(iconOf('dex-prize-icon', icon), `${n} PokéCoins`, '');
     row.title = `${kind}: ${n} PokéCoins`;
     return row;
   };
@@ -232,12 +241,12 @@ function rewardBoxes() {
 
   const pages = DEX_PAGES.map(p => goal(p.perk.icon, `${BANNER_NAME[p.biome]} page`, `Beat all ${p.ids.length} once`, [
     coins(p.perk.coins),
-    prize(el('span', 'dex-prize-icon', p.perk.icon), p.perk.name, p.perk.short),
+    prize(iconOf('dex-prize-icon', p.perk.icon), p.perk.name, p.perk.short),
   ], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.perk.name}: ${p.perk.text}`));
 
   // researching a whole page raises its perk to Lv 2 (the user's call, 2026-09-28)
   const masters = DEX_PAGES.map(p => goal('★', `${BANNER_NAME[p.biome]} research`, `Research all ${p.ids.length}`, [
-    prize(el('span', 'dex-prize-icon', p.perk.icon), `${p.perk.name} Lv 2`, p.perk.lv2.short),
+    prize(iconOf('dex-prize-icon', p.perk.icon), `${p.perk.name} Lv 2`, p.perk.lv2.short),
   ], p.ids.filter(researched).length, p.ids.length, levelOf(p) === 2, `${p.perk.name} Lv 2: ${p.perk.lv2.text}`));
 
   const depths = [];

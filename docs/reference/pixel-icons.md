@@ -1,7 +1,7 @@
 ## Pixel icons
 
 The game never shows emoji: `js/icons.js` swaps every emoji on the page for
-an 8-bit pixel icon (but the title screen's, smooth vector art since 2026-10-06: `js/smooth-icons.js`, see title-screen.md; and the Collection device's app and dock icons since 2026-10-05, the same file; the user is moving things off pixel art bit by bit and will say which next). Data files and code keep writing emoji (card `art`,
+an 8-bit pixel icon (but the title screen's, smooth vector art since 2026-10-06: `js/smooth-icons.js`, see title-screen.md; and the Collection device's app and dock icons since 2026-10-05, the same file, plus since 2026-10-06 the Pokédex Rewards' icons (`VECTOR` / `iconOf()` in `js/pokedex.js`) and the Moves app's type keys; the user is moving things off pixel art bit by bit and will say which next). Data files and code keep writing emoji (card `art`,
 relic `icon`, text boxes...); `initPixelIcons()` (called first in `js/main.js`)
 swaps existing text and uses a `MutationObserver` to swap anything added
 later. Each icon is a 12x12 pixel map in `ICONS` using the letters in

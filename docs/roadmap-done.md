@@ -1506,3 +1506,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   each stage, every Pokédex entry defeated (Depths too) and every Safari catch (`partnerChoices()`). Saved as
   `save.partner` (`'starter:<id>:<stage>'` / `'mon:<id>'`); `partner()` now returns `{ key, src, name }` and also feeds
   the device's cover and ID strip.
+- **Moves app and Rewards revamp** (2026-10-06, Desktop app; the user's ask): the Pokédex Rewards' icons are smooth vector
+  art (`VECTOR` / `iconOf()` in `js/pokedex.js`; new `star`, `swords`, `skull`, `boss`, `coin`, `cash`, `cap`, `gem` in
+  `js/smooth-icons.js`), and the Moves app shows the real cards again on the Pokédex's green LCD, with smooth type keys
+  (`fire`, `grass`, `water`, `normal`, `psychic`) and the Index's filter and sort.

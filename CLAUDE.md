@@ -78,8 +78,9 @@ live site.
   grid of apps, each with its count, "???" + a padlock until unlocked (a tap says how). Its app and dock icons are smooth vector art, `smoothIcon()` in `js/smooth-icons.js` (the user's call, 2026-10-05: no pixels; Record Book and Hall of Fame are a book and a crown, no longer the newest winner's sprite). `openApp()` slides an app over the home
   screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
   into `#dex-dialog` when its window opens), Stats, Achievements, Relics, Items, Trainer Card (their `open*(into)` draw into
-  the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`: a type tab row
-  over compact rows of cost + name, ??? until met, a tap zooms the card; the run's Index window is unchanged), the Safari
+  the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`, redone 2026-10-06: the Pokédex's green LCD, smooth type keys,
+  the Index's All / Attack / Skill / Power filter and Cost / A-Z sort (saved, shared with it), then the real cards in a
+  grid, ??? silhouettes after the known ones, a tap zooms one; the run's Index window is unchanged), the Safari
   Pokédex (`safariDexApp`: its tabs and body move into the screen like the Pokédex's, back into `#safari-dex-dialog`
   when a run or the prep window opens it; the Pokédex app's Safari banner `swapApp()`s to it) and the Record Book / Hall
   of Fame (`recordsApp()` in `js/halloffame.js`; their `#hof-dialog` is gone, B steps from an entry page to the list).

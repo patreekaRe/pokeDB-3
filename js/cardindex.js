@@ -12,8 +12,9 @@ import { ALL_CARDS, TYPES, evolutionCardsFor } from './data/cards.js';
 import { RELICS, ABILITIES } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { getSave, updateSave } from './storage.js';
-import { $, el, makeCard, makeRelic, itemSprite, zoomable, zoomCard, openDialog } from './ui.js';
+import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
+import { smoothIcon } from './smooth-icons.js';
 
 const TAB_LOOK = { mystery: { icon: '🔒', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
@@ -225,38 +226,44 @@ export function openCardIndex(type) {
   openDialog('index-dialog');
 }
 
-/* ---------- the Collection device's Moves app (js/device.js): a type tab row over a compact list ---------- */
+/* ---------- the Collection device's Moves app (js/device.js): type tabs, the filter and sort, then the cards ---------- */
 
 let movesTab = null;
 const moveTabs = () => visibleTabs().filter(t => !['relics', 'items'].includes(t));
+const FILTERS = [['all', 'All'], ['attack', 'Attack'], ['skill', 'Skill'], ['power', 'Power']];
+const ORDERS = [['cost', 'Cost'], ['name', 'A-Z']];
 
-/** A move's row: its cost and name, ??? until met; a tap zooms its card. */
-function moveRow(card, seen) {
-  const known = seen.has(card.id);
-  const row = el(known ? 'button' : 'div', `mv-row${known ? '' : ' locked'}`);
-  row.dataset.type = card.type;
-  row.append(el('span', 'mv-cost', known ? String(card.cost) : '?'), el('span', 'mv-name', known ? card.name : '???'));
-  if (known) {
-    row.type = 'button';
-    row.append(el('span', 'mv-kind', kindOf(card)));
-    row.addEventListener('click', () => zoomCard(card, 0, row));
+/** A row of LCD keys for one of the save's settings (the Index window's filter and sort, shared with it). */
+function lcdKeys(key, choices, fallback, redraw) {
+  const row = el('div', 'mv-keys');
+  row.setAttribute('role', 'group');
+  for (const [v, label] of choices) {
+    const btn = el('button', 'mv-key', label);
+    btn.type = 'button';
+    btn.setAttribute('aria-pressed', String((getSave()[key] ?? fallback) === v));
+    btn.addEventListener('click', () => {
+      updateSave(d => { d[key] = v; });
+      for (const b of row.children) b.setAttribute('aria-pressed', String(b === btn));
+      redraw();
+    });
+    row.append(btn);
   }
   return row;
 }
 
-function moveGroup(label, cards, seen, note) {
+function moveGroup(label, all, seen, note, hideType = false) {
+  const cards = filtered(all, seen).sort((a, b) => seen.has(b.id) - seen.has(a.id));   // the ??? cards after the known ones
   if (!cards.length) return [];
-  const rank = (c) => (seen.has(c.id) ? costRank(c) : 100);   // the ??? rows after the known ones, their costs hidden
-  const head = el('h3', 'mv-head', label);
-  head.append(el('span', 'index-count', `${cards.filter(c => seen.has(c.id)).length}/${cards.length}`));
-  const rows = el('div', 'mv-rows');
-  rows.append(...[...cards].sort((a, b) => rank(a) - rank(b) || (rank(a) < 100 ? a.name.localeCompare(b.name) : 0)).map(c => moveRow(c, seen)));
-  return [head, ...(note ? [el('p', 'mv-note', note)] : []), rows];
+  const head = el('h3', 'mv-head');
+  head.append(el('span', '', label), el('span', 'mv-count', `${all.filter(c => seen.has(c.id)).length}/${all.length}`));
+  const grid = el('div', 'mv-cards');
+  grid.append(...cards.map(c => (seen.has(c.id) ? zoomable(makeCard(c), c, 0) : lockedCard(c, hideType))));
+  return [head, ...(note ? [el('p', 'mv-note', note)] : []), grid];
 }
 
 function moveList(type) {
   if (type === 'mystery') {
-    return moveGroup('???', ALL_CARDS.filter(c => c.type === 'psychic'), new Set(), 'The secret starter\'s moves are still unknown.');
+    return moveGroup('???', ALL_CARDS.filter(c => c.type === 'psychic'), new Set(), 'The secret starter\'s moves are still unknown.', true);
   }
   const cards = ALL_CARDS.filter(c => c.type === type);
   const seen = new Set(getSave().seen.cards);
@@ -270,30 +277,37 @@ function moveList(type) {
     right step through the tabs. */
 export function movesApp(type) {
   let panel, tabs, list;
+  const draw = () => {
+    const body = moveList(movesTab);
+    list.replaceChildren(...(body.length ? body : [el('p', 'mv-empty', 'No moves like that here.')]));
+  };
   const show = (t) => {
     movesTab = t;
     for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.type === t));
-    list.replaceChildren(...moveList(t));
+    draw();
     panel.scrollTop = 0;
   };
   return {
     mount(host) {
       panel = host;
       const available = moveTabs();
-      tabs = el('div', 'index-tabs mv-tabs');
+      tabs = el('div', 'mv-tabs');
       tabs.setAttribute('role', 'tablist');
       tabs.append(...available.map(t => {
-        const btn = el('button', `index-tab type-${t}`);
+        const btn = el('button', `mv-tab type-${t}`);
         btn.type = 'button';
         btn.dataset.type = t;
         btn.setAttribute('role', 'tab');
-        const look = TAB_LOOK[t] || TYPES[t];
-        btn.append(el('span', 'index-tab-icon', look.icon), el('span', 'index-tab-label', look.label));
+        btn.append(smoothIcon(t === 'mystery' ? 'lock' : t), el('span', 'mv-tab-label', (TAB_LOOK[t] || TYPES[t]).label));
         btn.addEventListener('click', () => show(t));
         return btn;
       }));
+      const tools = el('div', 'mv-tools');
+      tools.append(lcdKeys('indexFilter', FILTERS, 'all', draw), lcdKeys('indexSort', ORDERS, 'cost', draw));
+      const top = el('div', 'mv-top');
+      top.append(tabs, tools);
       list = el('div', 'mv-list');
-      host.append(tabs, list);
+      host.append(top, list);
       show([type, movesTab].find(t => available.includes(t)) ?? available[0]);
     },
     back: () => false,

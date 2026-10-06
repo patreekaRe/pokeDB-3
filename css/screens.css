@@ -3786,6 +3786,8 @@ body.has-scene #scene-bg { display: block; }
 .dex-prize-text { font-size: 0.85rem; }
 .dex-prize-icon, .dex-prize-sprite { flex: none; width: 32px; height: 32px; display: grid; place-items: center; font-size: 1.3rem; object-fit: contain; }
 .dex-prize-icon .item-sprite { width: 28px; height: 28px; image-rendering: pixelated; }
+.dex-prize-icon > .smooth-icon { width: 26px; height: 26px; }
+.dex-perk-icon > .smooth-icon { width: 1.1em; height: 1.1em; }
 .dex-jackpot:not(.earned) .dex-prize-sprite { filter: brightness(0) opacity(0.45); }
 .dex-entry {
   position: relative;
