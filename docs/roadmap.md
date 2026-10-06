@@ -9,6 +9,17 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
+their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.
+1. **Device colour**: the Pokédex shell in Red / Blue / Yellow / Black..., like Gen 3's frames. The red is written into
+   many places in `css/` (device, `.bdx-sheet`, cover); make it a few CSS variables first.
+2. **Battle animations On / Off** (the games' Battle Scene): skip move effects and slow intros.
+3. **Reduce flashing / screen shake** (white-outs, `.boom`, shakes; reduced motion already skips some).
+4. **Text size**: Normal / Large.
+5. **Nickname**: set the Trainer name here, not only through the leaderboard (`trainerName()`).
+6. **Music player**: a sound test replaying any unlocked track.
+7. **Reset save**: two "Are you sure?" steps, like the games' delete-save combo.
+
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
 5. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
@@ -70,7 +81,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
 - More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
-  Android vibration on big hits (the Settings switch exists since 2026-10-06), a "Reduce flashing" / text-size setting,
+  Android vibration on big hits (the Settings switch exists since 2026-10-06, iPhones tick since iOS 18),
   quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
