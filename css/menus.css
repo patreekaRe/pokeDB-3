@@ -1321,6 +1321,8 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 }
 .sdx-slot.empty { cursor: default; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.3); }
 .sdx-slot.on { background: #ffe36b; border-color: #fff; box-shadow: 0 0 0 2px #e0a020; }
-.sdx-slot-mon { width: 92%; height: 92%; object-fit: contain; image-rendering: pixelated; }
+.sdx-slot-pic { position: absolute; inset: 2px; overflow: hidden; border-radius: 4px; visibility: hidden; }
+.sdx-slot-pic.ready { visibility: visible; }
+.sdx-slot-mon { position: absolute; max-width: none; image-rendering: pixelated; }
 .sdx-slot-crown { position: absolute; top: -6px; right: -3px; font-size: 0.9rem; color: #f8c830; text-shadow: 0 1px 0 #6a4a00, 0 0 3px #fff; }
 .sdx-slot.shiny::after { content: "✨"; position: absolute; left: 1px; top: -2px; font-size: 0.6rem; }

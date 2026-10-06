@@ -15,7 +15,8 @@ three places:
 - 2026-10-06: the Collection's **Stats app** is Pokédex style too, "Trainer Data" (`js/statsdex.js`; the old `openStats()` /
   `#stats-dialog` are gone). Five banners (Runs, Battles, Collection, Wallet, Champions), each opening the red handheld:
   seven-segment LCD digits that count up with a `stat-tick` blip, runs as an HP bar, bosses as badge slots lit once beaten,
-  champions in a PC Box. The user picked parts 1, 2 and 4 of the pitch; still unbuilt: completion rings with a gold rim on the
+  champions in a PC Box (each slot a head crop, `headShot()`: auto from the sprite's top, `HEAD_FIX` for the 21 it misjudges;
+  whole sprites made tall GIFs like Chikorita's stretch their slot). The user picked parts 1, 2 and 4 of the pitch; still unbuilt: completion rings with a gold rim on the
   Collection page (3) and a printable Trainer Data receipt on a held A (5). Next in line: Achievements, then the Record Book
   and Hall of Fame, pitched one at a time.
 
