@@ -106,7 +106,9 @@ is the screen and the overlay that use them.
 - **The summit's win scene** (`.hof-scene.summit`): its backdrop is `paintSummit()`, floor 100 as the climb and the fight
   show it, its horizon behind the pedestal.
 - **The lobby's plaque** (`engrave()` in `js/towerprep.js`, `towerTop()` in `js/leaderboard.js`): the Sky Pillar window
-  lists the week's top five climbers on a bronze plate (a summit shows its turns). The board is public to read, but until
+  lists the week's top five climbers on a bronze plate (a summit shows its turns). It's pinned to the screen's bottom
+  however the lobby scrolls (the user's ask, 2026-10-05; the Safari lobby's plaque too): `position: sticky` on the slot,
+  which needs `.tower-page` / `.lobby .sp-page` at `overflow: clip`, not `hidden`. The board is public to read, but until
   the user publishes `firestore.rules` Firestore refuses it and the plaque stays hidden. Its slot
   (`.tower-plaque-slot`, `--plaque-h`, measured once with five dummy rows) holds a full plaque's room from the moment the
   lobby opens and the plaque fades in (`.in`): it used to pop in ~0.4 s late and shove the stats and buttons 80px up over
