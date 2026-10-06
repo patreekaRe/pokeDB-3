@@ -1127,6 +1127,39 @@ export function showScene(biomeId, kind = 'wild', where = 0) {
   paintScene(`${biomeId}/${kind}/${time}/${placeKey(at)}/${weather?.kind}`, { ...biomeLook(art, time, kind), ...at, weather });
 }
 
+/** One still frame of a biome's scene, `w` x `h` scene pixels on a canvas of its own (the Pokédex's banners and screen),
+    with the horizon at `at` of the height. The live scene behind the page is set aside while it paints and put back as it
+    was, since this module paints one scene at a time. */
+export function sceneShot(biomeId, { w, h, at = 0.6, kind = 'wild', where = 0 }) {
+  const art = BIOME_ART[biomeId] || BIOME_ART.clearing;
+  const kept = { canvas, ctx, S, tick, last, W, H, horizon, base, img, px, sky, rand, life, bossPrelude, floorAt, spanAt, storm };
+  const shot = document.createElement('canvas');
+  try {
+    canvas = shot; ctx = shot.getContext('2d');
+    floorAt = null; spanAt = null; bossPrelude = null; storm = { on: false, level: 0 }; tick = FPS * 7; last = tick;
+    const time = timeOfDay();
+    const raw = { ...biomeLook(art, time, kind), ...journeyOf(where), weather: null, horizon: at };
+    S = colours(raw);
+    S.raw = raw;
+    S.storm = null;
+    W = shot.width = w; H = shot.height = h;
+    horizon = Math.round(H * at);
+    rand = seeded(W * 131 + H);
+    img = ctx.createImageData(W, H);
+    px = new Uint32Array(img.data.buffer);
+    sky = new Uint8Array(W * H);
+    life = {};
+    base = paintBase();
+    makeLife();
+    draw();
+    const pad = raw.padDeep && raw.stage >= 2 ? raw.padDeep : raw.pad;
+    shot.pad = pad ? padImage(pad) : null;   // the battle pad's image, for a Pokémon to stand on in front of it
+  } finally {
+    ({ canvas, ctx, S, tick, last, W, H, horizon, base, img, px, sky, rand, life, bossPrelude, floorAt, spanAt, storm } = kept);
+  }
+  return shot;
+}
+
 /* ---------- battle weather ----------
    A light fall over every wild and elite fight, matched to the biome and the hour. `glow` kinds keep their colours in
    the dark; the rest are graded with the land (js/daytime.js), so night leaves don't shine. */

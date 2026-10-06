@@ -1466,4 +1466,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the boss and an Alpha), the Depths' "???" banner until a Mewtwo run reaches it, Rewards and (once open) Safari banners.
   A banner opens the red handheld on that page: an LCD nameplate, the Pokémon on its biome's pad, the entry's data (still
   hidden until researched), a slot per entry to jump to, the page's perk, ◀ ▶ / arrow keys / a swipe on the screen;
-  Escape or ◀ goes back to the list. The in-run Pokédex button opens straight on the run's page. Pass 2 is roadmap item 20.
+  Escape or ◀ goes back to the list. The in-run Pokédex button opens straight on the run's page.
+- **Pokédex revamp, pass 2** (2026-10-05, Desktop app): the banners and the device's screen show the biome's own scenery
+  (`sceneShot()`), the zoom from the banner and the cover swinging open with a power-on blip (reversed going back), the
+  entry text typing out, entries sliding across the screen. Checked at 375x812 and 1280x800 and with reduced motion. The
+  Safari Pokédex keeps its grid: 514 entries one at a time would be slow to browse (left as an idea).

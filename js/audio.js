@@ -101,6 +101,8 @@ const SOUNDS = {
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
   stick:        { synth: stickTick },                         // the Game Corner's joystick moves the cursor: made in code (the user's call)
+  'dex-on':     { synth: ac => dexBlip(ac, true) },           // the Pokédex's lid swings open on a biome's page (pokedex.js)...
+  'dex-off':    { synth: ac => dexBlip(ac, false) },          // ...and shuts going back to the biomes
   thunder:      { url: 'assets/audio/sfx/thunder.mp3' },      // a lightning bolt in a boss's storm
   coins:        { url: 'assets/audio/sfx/buy.mp3' },          // a fight's PokéCoins and ₽ are paid out: the Mart's buy file (the user's call)
   door:         { url: 'assets/audio/sfx/event.mp3' },        // walking into a Poké Mart or Pokémon Center: the same sound as a ? room (the user's call)
@@ -719,6 +721,20 @@ function stickTick(ac) {
     out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.04) * fade;
   }
   return normalize(buffer, 0.12);
+}
+
+/** The Pokédex powering on (`up`) or off: a square-wave blip stepping up (or down) a chord, like a Game Boy booting. */
+function dexBlip(ac, up) {
+  const notes = up ? [988, 1319, 1976] : [1319, 988, 659], step = 0.055;
+  const rate = ac.sampleRate, length = Math.round(rate * (step * notes.length + 0.08));
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, k = Math.min(notes.length - 1, Math.floor(t / step)), local = t - k * step;
+    const fade = Math.min(1, local / 0.002, (length - i) / (rate * 0.02));
+    out[i] = Math.sign(Math.sin(2 * Math.PI * notes[k] * t)) * Math.exp(-local / 0.05) * fade * (k === notes.length - 1 ? 1 : 0.8);
+  }
+  return normalize(buffer, 0.14);
 }
 
 /** A filtered click: a burst of noise rung through a resonant band at `freq`, the body of every plastic and metal tick below. */

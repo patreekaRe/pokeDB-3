@@ -21,7 +21,9 @@ import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOA
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
-import { playCry } from './audio.js';
+import { playCry, playSound } from './audio.js';
+import { sceneShot } from './scene.js';
+import { timeOfDay } from './daytime.js';
 import { tipAt } from './tips.js';
 import { openSafariDex, safariDexCount } from './safaridex.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
@@ -265,14 +267,47 @@ function moveNumbers(m, extra) {
   return parts.join(', ');
 }
 
+/* ---------- the biomes' own scenery ----------
+   Each banner and the device's screen show a still of the biome's scene (js/scene.js), at the hour it is now. They're
+   painted once an hour and kept as images. */
+
+const shots = new Map();
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** A still of `biome`'s scene as { url, pad }: `w` x `h` scene pixels, the horizon at `at`, at `where` on its journey. */
+function still(biome, w, h, at, kind = 'wild', stage = 0) {
+  const key = `${biome}/${w}x${h}/${at}/${kind}/${stage}/${timeOfDay()}`;
+  if (!shots.has(key)) {
+    let shot = null;
+    try {
+      const c = sceneShot(biome, { w, h, at, kind, where: { progress: stage / 3, stage, step: null } });
+      shot = { url: c.toDataURL(), pad: c.pad };
+    } catch (err) {
+      console.warn('Pokédex scenery', biome, err);   // a painter that can't paint off-screen: the flat colours stay
+    }
+    shots.set(key, shot);
+  }
+  return shots.get(key);
+}
+
+function sceneImg(shot, className) {
+  const img = el('img', `pixel ${className}`);
+  img.alt = '';
+  img.draggable = false;
+  if (shot) img.src = shot.url;
+  else img.hidden = true;
+  return img;
+}
+
 /* ---------- the list: a banner per biome ---------- */
 
-function banner(cls, title, sub, onClick) {
+function banner(cls, title, sub, onClick, scene = null) {
   const b = el('button', `pdx-banner ${cls}`);
   b.type = 'button';
+  if (scene) b.append(sceneImg(still(scene, 150, 46, 0.56), 'pdx-banner-art'), el('span', 'pdx-banner-shade'));
   b.append(el('span', 'pdx-stripe'), el('strong', 'pdx-banner-name', title));
   if (sub) b.append(el('span', 'pdx-banner-sub', sub));
-  b.addEventListener('click', onClick);
+  b.addEventListener('click', () => onClick(b));
   return b;
 }
 
@@ -298,7 +333,8 @@ function renderList() {
   const banners = DEX_PAGES.map((p, i) => {
     const n = p.ids.filter(id => defeated.has(id)).length;
     const done = save.dex.done.includes(p.biome);
-    const b = banner(`biome-${p.biome}${done ? ' complete' : ''}`, BANNER_NAME[p.biome], done ? 'Complete!' : p.name, () => openPage(i));
+    const b = banner(`biome-${p.biome}${done ? ' complete' : ''}`, BANNER_NAME[p.biome], done ? 'Complete!' : p.name, (b) => openPage(i, b), p.biome);
+    b.dataset.page = i;
     const lv = levelOf(p);
     b.append(el('span', 'pdx-banner-count', `${n} / ${p.ids.length}`), progressBar(n, p.ids.length),
       medal(lv, p.perk.icon, lv ? `${p.perk.name}${lv === 2 ? ' Lv 2' : ''}` : `${p.perk.name}: complete the page to earn it`),
@@ -310,7 +346,8 @@ function renderList() {
     const p = DEPTHS_PAGE;
     const n = p.ids.filter(id => defeated.has(id)).length;
     const done = save.dex.done.includes(p.biome);
-    const b = banner(`biome-depths${done ? ' complete' : ''}`, BANNER_NAME.depths, done ? 'Complete!' : p.name, () => openPage(MYSTERY));
+    const b = banner(`biome-depths${done ? ' complete' : ''}`, BANNER_NAME.depths, done ? 'Complete!' : p.name, (b) => openPage(MYSTERY, b), 'depths');
+    b.dataset.page = MYSTERY;
     b.append(el('span', 'pdx-banner-count', `${n} / ${p.ids.length}`), progressBar(n, p.ids.length),
       medal(done ? 2 : 0, '✨', p.prize.name), bannerMons(bannerIds(p), seen));
     banners.push(b);
@@ -322,13 +359,14 @@ function renderList() {
   }
 
   const [done, all] = researchCount();
-  const rewards = banner(`pdx-rewards${save.dex.complete ? ' complete' : ''}`, 'Rewards', save.dex.complete ? 'Pokédex complete!' : 'What finishing it pays', openRewards);
+  const rewards = banner(`pdx-rewards${save.dex.complete ? ' complete' : ''}`, 'Rewards', save.dex.complete ? 'Pokédex complete!' : 'What finishing it pays', (b) => openRewards(b));
+  rewards.dataset.page = 'rewards';
   rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), el('span', 'pdx-banner-mons pdx-trophy', '🏆'));
   banners.push(rewards);
 
   if (safariOpen(save)) {   // the Safari Pokédex is its own window: its banner hands over to it
     const { caught, total } = safariDexCount();
-    const safari = banner('pdx-safari', 'Safari', 'The Safari Zone\'s Pokédex', () => { closeDialog('dex-dialog'); openSafariDex(); });
+    const safari = banner('pdx-safari', 'Safari', 'The Safari Zone\'s Pokédex', () => { closeDialog('dex-dialog'); openSafariDex(); }, 'meadow');
     const caughtIds = new Set([...getSave().safariDex.seen, ...getSave().safariDex.caught]);
     safari.append(el('span', 'pdx-banner-count', `${caught} / ${total}`), progressBar(caught, total), bannerMons(SAFARI_DEX_PAGES[0].ids.slice(0, 3), caughtIds));
     banners.push(safari);
@@ -346,7 +384,13 @@ function bannerIds(p) {
   return [of('wild')[0], of('boss').at(-1), of('elite')[0]].filter(Boolean);
 }
 
-/* ---------- the device ---------- */
+/* ---------- the device ----------
+   A tapped banner zooms up into the device, its front cover swings open with a power-on blip and the lights blink, then
+   the screen flickers on (bootDevice()); going back reverses it into the banner (shutDevice()). Entries slide across the
+   screen and their text types itself out. Under reduced motion it all just appears. */
+
+let busy = false;   // the lid is opening or shutting: taps and keys wait for it
+let typer = 0;      // bumped on every new entry, so the last one's typing stops
 
 function deviceFrame(cls, title) {
   const dev = el('div', `pdx-device ${cls}`);
@@ -358,11 +402,38 @@ function deviceFrame(cls, title) {
   lid.append(back, el('span', 'pdx-lens'), el('span', 'pdx-light red'), el('span', 'pdx-light yellow'), el('span', 'pdx-light green'),
     el('span', 'pdx-lid-title', title));
   const body = el('div', 'pdx-body');
+  body.addEventListener('click', finishTyping);
   dev.append(lid, body);
   return [dev, body];
 }
 
 function renderPage() {
+  const p = ALL_PAGES[page];
+  const [dev] = deviceFrame(`biome-${p.biome}`, BANNER_NAME[p.biome]);
+  const controls = el('div', 'pdx-controls');
+  const step = (dir, label, glyph) => {
+    const b = el('button', 'pdx-round', glyph);
+    b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.addEventListener('click', () => showEntry(entry + dir, dir));
+    return b;
+  };
+  controls.append(step(-1, 'Previous entry', '◀'), el('span', 'pdx-lcd pdx-counter'), step(1, 'Next entry', '▶'));
+  dev.append(controls);
+  $('dex-device').replaceChildren(dev);
+  fillEntry(0);
+}
+
+/** Where on its biome's journey an entry's screen stands: wilds in the first two places, an Alpha in the third, a boss in its arena. */
+function placeOf(p, id) {
+  const role = p.role[id];
+  if (role === 'boss') return ['boss', 3];
+  if (role === 'elite') return ['elite', 2];
+  return ['wild', p.ids.filter(x => p.role[x] === 'wild').indexOf(id) % 2];
+}
+
+/** Fills the device with the current entry; `dir` (±1) slides it in from that side. */
+function fillEntry(dir) {
   const save = getSave();
   const seen = new Set(save.dex.seen);
   const defeated = new Set(save.dex.defeated);
@@ -372,25 +443,32 @@ function renderPage() {
   const base = ENEMY_DEFS[id];
   const known = seen.has(id);
   const done = known && researched(id);
-  const [dev, body] = deviceFrame(`biome-${p.biome}`, BANNER_NAME[p.biome]);
+  const dev = $('dex-device').querySelector('.pdx-device');
+  const body = dev.querySelector('.pdx-body');
+  const old = body.querySelector('.pdx-screen');
 
   const nameplate = el('div', 'pdx-lcd pdx-nameplate');
   nameplate.append(el('span', 'pdx-name', known ? base.name : '???'), el('span', 'pdx-no', dexNo(id)));
 
-  const screen = el('div', `pdx-screen${known ? '' : ' unseen'}`);
-  screen.append(el('span', 'pdx-pad'), sprite(base, 'pdx-mon'));
+  const [kind, stage] = placeOf(p, id);
+  const shot = still(p.biome, 128, 64, 0.5, kind, stage);
+  const screen = el('div', `pdx-screen${known ? '' : ' unseen'}${shot ? ' painted' : ''}`);
+  const pad = el('span', 'pdx-pad');
+  if (shot?.pad) pad.style.backgroundImage = `url("${shot.pad}")`;
+  screen.append(sceneImg(shot, 'pdx-scene'), pad, sprite(base, 'pdx-mon'));
   if (known) screen.append(el('span', `pdx-role role-${role}`, ROLE_LABEL[role]));
   if (done) screen.append(typeChip(base.type));
   if (defeated.has(id)) screen.append(el('span', `pdx-caught${done ? ' gold' : ''}`, done ? '★' : `${defeats(id)}/${goalOf(id)}`));
   swipe(screen);
 
+  const typed = (cls, text) => el('div', `pdx-lcd pdx-text pdx-type${cls ? ` ${cls}` : ''}`, text);
   const lines = [nameplate, screen];
   if (!known) {
-    lines.push(el('div', 'pdx-lcd pdx-text muted', 'No data. Fight it in a run to fill this in.'));
+    lines.push(typed('muted', 'No data. Fight it in a run to fill this in.'));
   } else if (!done) {
     // until its research is complete an entry shows only its picture and where it lives (the user's call): the rest is the prize
-    lines.push(el('div', 'pdx-lcd pdx-text', `Found in the ${p.name}.`),
-      el('div', 'pdx-lcd pdx-text muted', `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
+    lines.push(typed('', `Found in the ${p.name}.`),
+      typed('muted', `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
   } else {
     const def = role === 'elite' ? eliteOf(base) : base;
     const foe = buildEncounter(BIOMES.findIndex(b => b.id === p.biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
@@ -400,7 +478,7 @@ function renderPage() {
       el('span', '', `HP ${foe?.maxHp ?? '?'}`),
       el('span', '', weak ? `Weak: ${TYPES[weak].icon} ${TYPES[weak].label}` : role === 'wild' ? 'No weakness' : 'Ignores types'),
       el('small', '', p === DEPTHS_PAGE ? 'Numbers in the Depths' : 'Numbers at Level 0, before types'));
-    lines.push(el('div', 'pdx-lcd pdx-text', base.description), facts, moveList('Moves, in order', def.moves, foe?.strength ?? 0));
+    lines.push(typed('', base.description), facts, moveList('Moves, in order', def.moves, foe?.strength ?? 0));
     if (def.phase2) lines.push(moveList(`Then it rises as ${def.phase2.name}`, def.phase2.moves, foe?.strength ?? 0));
     lines.push(el('div', 'pdx-lcd pdx-text gold', `★ Research complete (defeated ${defeats(id)})`));
   }
@@ -411,23 +489,73 @@ function renderPage() {
     s.type = 'button';
     s.setAttribute('aria-label', `${dexNo(sid)} ${seen.has(sid) ? ENEMY_DEFS[sid].name : 'unknown'}`);
     s.append(sprite(ENEMY_DEFS[sid], 'pdx-slot-mon'));
-    s.addEventListener('click', () => showEntry(i));
+    s.addEventListener('click', () => showEntry(i, Math.sign(i - entry)));
     slots.append(s);
   });
   lines.push(slots, perkBox(p, p.ids.filter(x => defeated.has(x)).length, save.dex.done.includes(p.biome)));
-  body.append(...lines);
+  body.replaceChildren(...lines);
+  dev.querySelector('.pdx-counter').textContent = `${entry + 1} / ${p.ids.length}`;
 
-  const controls = el('div', 'pdx-controls');
-  const step = (dir, label, glyph) => {
-    const b = el('button', 'pdx-round', glyph);
-    b.type = 'button';
-    b.setAttribute('aria-label', label);
-    b.addEventListener('click', () => showEntry(entry + dir));
-    return b;
+  typeOut([...body.querySelectorAll('.pdx-type')]);
+  if (dir && old && !calm()) slide(old, screen, dir);
+}
+
+/** The old entry's Pokémon slides off the screen as the new one slides on, and the old scenery fades if the place changed. */
+function slide(old, screen, dir) {
+  const ease = { duration: 280, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
+  const was = old.querySelector('.pdx-mon'), now = screen.querySelector('.pdx-mon');
+  const ghost = was.cloneNode();
+  ghost.classList.add('pdx-ghost');
+  if (old.classList.contains('unseen')) ghost.classList.add('unseen');
+  screen.append(ghost);
+  ghost.animate([{ translate: '0 0', opacity: 1 }, { translate: `${-dir * 120}% 0`, opacity: 0 }], ease).finished.then(() => ghost.remove(), () => ghost.remove());
+  now.animate([{ translate: `${dir * 120}% 0`, opacity: 0 }, { translate: '0 0', opacity: 1 }], ease);
+  const oldScene = old.querySelector('.pdx-scene'), newScene = screen.querySelector('.pdx-scene');
+  if (oldScene?.src && oldScene.src !== newScene?.src) {
+    const fade = oldScene.cloneNode();
+    fade.classList.add('pdx-scene-old');
+    screen.insertBefore(fade, newScene.nextSibling);
+    fade.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320 }).finished.then(() => fade.remove(), () => fade.remove());
+  }
+}
+
+/* The entry's text types itself out, line after line, like the games' Pokédex; a tap on the device finishes it. */
+let typing = null;
+
+function typeOut(nodes) {
+  const token = ++typer;
+  typing = null;
+  if (calm() || !nodes.length) return;
+  const texts = nodes.map(n => n.textContent);
+  for (const n of nodes) {
+    n.style.minHeight = `${n.offsetHeight}px`;   // the box keeps its size while it fills
+    n.setAttribute('aria-label', n.textContent);
+    n.textContent = '';
+  }
+  let line = 0, at = 0;
+  const finish = () => {
+    clearInterval(timer);
+    nodes.forEach((n, i) => { n.textContent = texts[i]; n.classList.remove('typing'); });
+    typing = null;
   };
-  controls.append(step(-1, 'Previous entry', '◀'), el('span', 'pdx-lcd pdx-counter', `${entry + 1} / ${p.ids.length}`), step(1, 'Next entry', '▶'));
-  dev.append(controls);
-  $('dex-device').replaceChildren(dev);
+  const timer = setInterval(() => {
+    if (token !== typer || !nodes[0].isConnected) { clearInterval(timer); return; }
+    at += 2;
+    nodes[line].textContent = texts[line].slice(0, at);
+    nodes[line].classList.add('typing');
+    if (at >= texts[line].length) {
+      nodes[line].classList.remove('typing');
+      line += 1;
+      at = 0;
+      if (line >= nodes.length) finish();
+    }
+  }, 22);
+  typing = finish;
+}
+
+function finishTyping(e) {
+  if (!typing || e.target.closest('button')) return;
+  typing();
 }
 
 function moveList(head, moves, extra) {
@@ -456,63 +584,142 @@ function swipe(node) {
     if (x0 === null) return;
     const dx = e.clientX - x0;
     x0 = null;
-    if (Math.abs(dx) > 40) showEntry(entry + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 40) showEntry(entry + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
   });
   node.addEventListener('pointercancel', () => { x0 = null; });
 }
 
-function showEntry(i) {
+function showEntry(i, dir = 0) {
+  if (busy) return;
   const ids = ALL_PAGES[page].ids;
   entry = (i + ids.length) % ids.length;
-  renderPage();
+  fillEntry(dir);
   const id = ids[entry];
   if (getSave().dex.seen.includes(id)) playCry(ENEMY_DEFS[id].spriteId);
 }
 
+/* ---------- opening and shutting the device ---------- */
+
+const EASE = 'cubic-bezier(0.2, 0.8, 0.25, 1)';
+// the cover stays solid until it's nearly edge-on, then fades as it folds away
+const SWING = [
+  { transform: 'perspective(1100px) rotateY(0deg)', opacity: 1 },
+  { transform: 'perspective(1100px) rotateY(-80deg)', opacity: 1, offset: 0.8 },
+  { transform: 'perspective(1100px) rotateY(-104deg)', opacity: 0 },
+];
+const settle = (anim) => anim.finished.catch(() => {});
+
+/** The transform that lays the device over `box` (a banner's rect): it zooms from or to there. */
+function overBanner(dev, box) {
+  const d = dev.getBoundingClientRect();
+  const h = Math.max(1, Math.min(d.height, innerHeight - Math.max(0, d.top)));
+  return `translate(${box.left - d.left}px, ${box.top - d.top}px) scale(${box.width / d.width}, ${box.height / h})`;
+}
+
+function cover(dev) {
+  const c = el('div', 'pdx-cover');
+  c.append(el('span', 'pdx-cover-hinge'), el('span', 'pdx-cover-mark'));
+  c.style.top = `${dev.querySelector('.pdx-lid').offsetHeight}px`;
+  dev.append(c);
+  return c;
+}
+
+async function bootDevice(from) {
+  const stage = $('dex-device'), dev = stage.querySelector('.pdx-device');
+  if (calm()) { playSound('dex-on'); return; }
+  busy = true;
+  const lid = cover(dev);
+  stage.classList.add('zooming');
+  const list = $('dex-list');
+  const zoom = from
+    ? dev.animate([{ transformOrigin: '0 0', transform: overBanner(dev, from.getBoundingClientRect()), opacity: 0.6 }, { transformOrigin: '0 0', transform: 'none', opacity: 1 }], { duration: 360, easing: EASE })
+    : dev.animate([{ transform: 'scale(0.94) translateY(12px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: EASE });
+  const fade = list.animate([{ opacity: 1 }, { opacity: 0 }], { duration: from ? 360 : 200, fill: 'forwards' });
+  await settle(zoom);
+  stage.classList.remove('zooming');
+  fade.cancel();
+  playSound('dex-on');
+  dev.classList.add('powered');
+  await settle(lid.animate(SWING,
+    { duration: 460, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
+  lid.remove();
+  dev.querySelector('.pdx-screen')?.classList.add('power-on');
+  busy = false;
+}
+
+async function shutDevice() {
+  const stage = $('dex-device'), dev = stage.querySelector('.pdx-device');
+  ++typer;
+  if (calm() || !dev) return;
+  busy = true;
+  playSound('dex-off');
+  const lid = cover(dev);
+  stage.scrollTop = 0;
+  await settle(lid.animate(SWING.map(k => ({ ...k, ...(k.offset && { offset: 1 - k.offset }) })).reverse(),
+    { duration: 320, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' }));
+  const to = $('dex-banners').querySelector(`[data-page="${view === 'rewards' ? 'rewards' : page}"]`);
+  const box = to?.getBoundingClientRect();
+  const seen = box && box.bottom > 0 && box.top < innerHeight;
+  stage.classList.add('zooming');
+  $('dex-list').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+  await settle(seen
+    ? dev.animate([{ transformOrigin: '0 0', transform: 'none', opacity: 1 }, { transformOrigin: '0 0', transform: overBanner(dev, box), opacity: 0.5 }], { duration: 300, easing: EASE, fill: 'forwards' })
+    : dev.animate([{ opacity: 1 }, { transform: 'scale(0.94) translateY(12px)', opacity: 0 }], { duration: 240, easing: EASE, fill: 'forwards' }));
+  stage.classList.remove('zooming');
+  busy = false;
+}
+
 function show(next) {
   view = next;
-  $('dex-list').hidden = next !== 'list';
+  $('dex-list').inert = next !== 'list';
   $('dex-device').hidden = next === 'list';
-  if (next === 'list') renderList();
-  else if (next === 'rewards') renderRewardsView();
-  else renderPage();
-  $('dex-dialog').scrollTop = 0;
+  if (next === 'rewards') renderRewardsView();
+  else if (next === 'page') renderPage();
   $('dex-device').scrollTop = 0;
 }
 
-/** Opens the device on a page, at its first entry you've seen. */
-function openPage(i) {
+/** Opens the device on a page, at its first entry you've seen; `from` is the banner it zooms up out of. */
+function openPage(i, from = null) {
+  if (busy) return;
   page = i;
   const seen = getSave().dex.seen;
   entry = Math.max(0, ALL_PAGES[page].ids.findIndex(id => seen.includes(id)));
   show('page');
+  bootDevice(from);
 }
 
-function openRewards() {
+function openRewards(from = null) {
+  if (busy) return;
   show('rewards');
+  bootDevice(from);
 }
 
-function backToList() {
+async function backToList() {
+  if (busy || view === 'list') return;
+  await shutDevice();
   show('list');
 }
 
 export function initPokedex() {
   $('dex-close').addEventListener('click', () => closeDialog('dex-dialog'));
   // Escape on the device goes back to the biomes rather than shutting the Pokédex
-  $('dex-dialog').addEventListener('cancel', (e) => { if (view !== 'list') { e.preventDefault(); backToList(); } });
+  $('dex-dialog').addEventListener('cancel', (e) => { if (view !== 'list' || busy) { e.preventDefault(); backToList(); } });
   $('dex-dialog').addEventListener('keydown', (e) => {
     if (view !== 'page') return;
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;
     e.preventDefault();
-    showEntry(entry + step);
+    showEntry(entry + step, step);
   });
+  $('dex-dialog').addEventListener('close', () => { ++typer; busy = false; });
 }
 
 /** Opens on the given biome's page (the run's), else on the list of biomes. */
 export function openPokedex(biome) {
   const onPage = Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown());
   openDialog('dex-dialog');
+  renderList();
+  $('dex-list').scrollTop = 0;
   if (onPage) openPage(biome);
   else show('list');
 }

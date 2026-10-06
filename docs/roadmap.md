@@ -64,15 +64,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
        Check at 375x812 and 1280x800, push to main."
     Then the same two sessions again for the Thornwood Jungle (and its Shrine → Jungle and Ruins → Jungle films).
 
-20. **Pokédex revamp, pass 2** (the user's ask, 2026-10-05: "as immersive as possible"; pass 1 is done, see the archive).
-    **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 20. The Pokédex window
-    (`js/pokedex.js`, `.pokedex` / `.pdx-*` at the end of `css/screens.css`) is a full-screen banner list that opens a red
-    handheld device. Add the feel: a tapped banner zooms up into the device as its lid swings open (with a power-on blip and
-    the lights blinking), reversed going back; paint each banner's backdrop and the device screen with the biome's own
-    scenery from `js/scene.js` (`BIOME_ART`) instead of the flat gradients; the Pokédex text types itself out; a slide
-    between entries on a swipe / ◀ ▶. Consider giving the Safari Pokédex the same device. Check at 375x812 and 1280x800,
-    reduced motion too, push to main."
-
 ## Ideas, not agreed yet (ask the user before building)
 
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
