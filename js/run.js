@@ -10,11 +10,11 @@
          -> Biome 3 map -> final boss -> you win
 
    Everything about the current run lives in one object, `run`:
-     starter, stage (0-2 evolution), hp, maxHp, biome (0-2),
-     deck (list of card ids), relics (list of relic ids), map, ...
+     starter, stage (0-2 evolution), hp, maxHp, biome (0-2, the slot), route (the biome id
+     picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, CROSSROADS, biomeAt, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
@@ -53,7 +53,7 @@ import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, isResearched } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
-import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS } from './data/pokedex.js';
+import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 
 let run = null;
@@ -62,8 +62,8 @@ export const isPeeking = () => peeking;
 
 export const isRunActive = () => run !== null && !run.over;
 
-/** The biome the run in progress is in (the Pokédex opens on its page), or undefined. */
-export const runBiome = () => (isRunActive() ? run.biome : undefined);
+/** The Pokédex page of the biome the run in progress is in (the Pokédex opens on it), or undefined. */
+export const runBiome = () => (isRunActive() ? (run.safari || run.tower ? run.biome : pageIndexOf(mainBiome().id)) : undefined);
 /** The Safari area the run is in, for the top bar's Pokédex; undefined outside a Safari run. */
 export const runSafariArea = () => (isRunActive() && run.safari ? run.safari.areas[run.biome] : undefined);
 
@@ -83,8 +83,11 @@ const reseed = (key) => useStream(run?.safari?.seed ?? run?.tower?.seed ?? null,
 /** The Safari area a biome of the run is (null outside the Safari Zone). */
 const safariArea = (biome = run.biome) => (run?.safari ? SAFARI_AREAS_BY_ID[run.safari.areas[biome]] : null);
 
+/** The main game's biome at the run's slot, on the road its crossroads took (a Safari run's or a climb's: the default road's). */
+const mainBiome = (r = run) => biomeAt(r.route, r.biome);
+
 /** Where the run is: its Safari area, or the main game's biome. Both have an id (its scene), a name and `stages`. */
-const land = () => safariArea() || BIOMES[run.biome];
+const land = () => safariArea() || mainBiome();
 
 /** The Safari Zone's first try of the day is the leaderboard's, so it's played without Game Corner or Pokédex perks
     (the user's call, 2026-10-02): every player starts it the same. Replays keep them. Coin Finder only touches PokéCoins,
@@ -94,7 +97,7 @@ const perk = (id) => (fairTry() ? 0 : perkLevel(id));
 const dexPerk = (id) => (fairTry() ? 0 : dexPerkLevel(id));
 
 /** The name the map's sign shows for the biome you're in. */
-const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTower() ? 'Sky Pillar' : BIOMES[run.biome].name);
+const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTower() ? 'Sky Pillar' : mainBiome().name);
 
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
@@ -132,6 +135,7 @@ export function initRun({ onMenu, onNewRun }) {
 
   // This pop-up moves the game along, so Escape must not just close it.
   $('result-dialog').addEventListener('cancel', (e) => e.preventDefault());
+  $('crossroads-dialog').addEventListener('cancel', (e) => e.preventDefault());   // Escape can't skip the choice
 }
 
 /** Throw away the current run (used when you go back to the menu). */
@@ -218,6 +222,7 @@ function checkpoint() {
     hp: run.hp,
     maxHp: run.maxHp,
     biome: run.biome,
+    route: run.route,
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -265,7 +270,8 @@ function restoreRun(saved) {
   const known = (ids, table) => ids.every(id => table[id]);
   if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0) || !(saved.money >= 0)
       || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.items, ITEMS_BY_ID) || !(saved.itemChance >= 0)
-      || !saved.unlocks.every(starterById) || (saved.safari && !saved.safari.areas.every(id => SAFARI_AREAS_BY_ID[id]))) {
+      || !saved.unlocks.every(starterById) || (saved.safari && !saved.safari.areas.every(id => SAFARI_AREAS_BY_ID[id]))
+      || (saved.route && !saved.route.every((id, i) => id === null || BIOMES_BY_ID[id]?.slot === i))) {
     throw new Error('bad run save');
   }
 
@@ -283,6 +289,7 @@ function restoreRun(saved) {
   return {
     ...saved,
     starter,
+    route: saved.route ?? BIOMES.slice(0, saved.biome + 1).map(b => b.id),   // saved before the crossroads: the default road
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     map: { floors, boss: byId.boss, byId },
@@ -324,6 +331,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     maxHp: startHp,
     hp: startHp,
     biome: 0,
+    route: [BIOMES[0].id],   // the biome taken at each slot (the crossroads, chooseRoad()), saved with the run
     deck: [...starter.deck],
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
@@ -430,7 +438,26 @@ export function peekDescent(starter) {
   beginRun(starter, 0, ':descent');
 }
 
+/** Playtest shortcut: ?biome=ruins (any biome but the Depths; &starter=id, &level=0-5) starts a throwaway run at that
+    biome's slot, on the road through it, evolved as far as its bosses would have taken you. Nothing about it is saved. */
+export function peekBiome(starter, id, level = 0) {
+  const biome = BIOMES_BY_ID[id];
+  if (!biome || biome.secret || !starter) return false;
+  peeking = true;
+  peekAt = biome;
+  beginRun(starter, Math.max(0, Math.min(MAX_LEVEL, level || 0)), ':biome');
+  return true;
+}
+let peekAt = null;
+
 function peekRoom(id) {
+  if (id === ':biome') {
+    run.biome = peekAt.slot;
+    run.route = [...BIOMES.slice(0, peekAt.slot).map(b => b.id), peekAt.id];
+    run.stage = Math.min(run.biome, run.starter.line.length - 1);
+    run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
+    return startBiome();
+  }
   if (id === ':tower') {
     const { flight, at } = run.tower;
     run.stage = Math.min(flight, run.starter.line.length - 1);
@@ -456,7 +483,7 @@ function peekRoom(id) {
   }
   run.map = generateMap();
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
-  for (const kind of ['fight', 'elite', 'boss']) dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
+  for (const kind of ['fight', 'elite', 'boss']) dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   const node = nodes.find(n => n.event?.id === id) ?? nodes.find(n => n.type === 'event') ?? nodes[0];   // a rolled one keeps its dice (Team Rocket's team)
@@ -471,14 +498,17 @@ function peekRoom(id) {
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
-  if (!isSafari() && !peeking) updateSave(d => { d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1); });
+  if (!isSafari() && !peeking) updateSave(d => {
+    d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1);
+    if (!d.stats.biomesSeen.includes(mainBiome().id)) d.stats.biomesSeen.push(mainBiome().id);   // for the Explorer Badge, once every road exists
+  });
   run.mods = runMods(run.starter, run.level, run.biome);
   run.map = generateMap({ floors: runFloors(run.starter, run.biome) });
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) {
     // a Safari area has its own wilds, and the main Pokédex's favourites would make the day's run differ between players
-    dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
+    dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
   if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea(), rareOdds(safariArea().id, getSave().safariDex, fairTry()));   // rare spawns, on the biome's seed (more on a replay once the area's page is complete)
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
@@ -958,7 +988,7 @@ async function fight(node) {
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   intro?.();
-  const encounter = ken ? buildKenEncounter(run.biome, run.mods) : buildEncounter(run.biome, node.type, run.mods, node.enemyId);
+  const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
   if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
@@ -1097,7 +1127,9 @@ function afterFight(node, result) {
 /** On to the next biome: the journey film there first (js/travel.js; not on Mewtwo's speedrun or in the Safari), ending
     dark while the next biome's map and intro film come up beneath it. */
 async function walkOn() {
-  const from = BIOMES[run.biome]?.id, to = BIOMES[run.biome + 1]?.id;
+  const from = mainBiome().id;
+  run.route[run.biome + 1] = isMewtwoRun(run.starter) || isSafari() ? BIOMES[run.biome + 1].id : await chooseRoad(run.biome + 1);   // Mewtwo keeps its one road
+  const to = biomeAt(run.route, run.biome + 1).id;
   let close = null;
   if (!isSafari() && !isMewtwoRun(run.starter) && hasTravel(from, to)) {
     // travelSeen is per trip; an old save's `true` was the only trip there was then
@@ -1109,6 +1141,33 @@ async function walkOn() {
   run.biome += 1;
   startBiome();
   close?.();
+}
+
+/** The crossroads (roadmap item 19): where a slot has more than one road (CROSSROADS), a choice between them, each with
+    its name and which types live there. A plain two-button window for now; part b paints it. Resolves with the biome id. */
+function chooseRoad(slot) {
+  const roads = CROSSROADS[slot];
+  if (!roads || roads.length < 2) return Promise.resolve(BIOMES[slot].id);
+  const box = $('crossroads-paths');
+  return new Promise(resolve => {
+    box.replaceChildren(...roads.map(id => {
+      const biome = BIOMES_BY_ID[id];
+      const btn = el('button', 'btn crossroads-path');
+      btn.type = 'button';
+      btn.dataset.biome = id;
+      btn.append(el('strong', '', biome.name), el('span', 'crossroads-types', roadTypes(biome)));
+      btn.addEventListener('click', () => { closeDialog('crossroads-dialog'); playSound('confirm'); resolve(id); });
+      return btn;
+    }));
+    openDialog('crossroads-dialog');
+  });
+}
+
+/** What lives on a road, by its wilds' types, the most common first ("💧 5 · 🔥 2 · 🌿 2 · ⚪ 3"): Alphas and bosses fight as Neutral. */
+function roadTypes(biome) {
+  const counts = {};
+  for (const id of biome.normals) counts[ENEMY_DEFS[id].type] = (counts[ENEMY_DEFS[id].type] || 0) + 1;
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([type, n]) => `${TYPES[type]?.icon ?? ''} ${n}`).join(' · ');
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;
@@ -1860,7 +1919,7 @@ function rollEvents() {
       node.event.relic = !node.event.trap && roll < event.trapChance + event.relicChance;   // else an item
     }
     if (event.team) {
-      const team = event.team[run.biome];
+      const team = event.team[mainBiome().id];
       node.event.enemyId = pickOne(team);
       node.event.grunt = pickOne(event.grunts);
     }
@@ -2579,7 +2638,7 @@ function level5Rewards() {
 /** Where the run stands, for a lost run's line in the Record Book: the biome, the place in it and the floor. */
 function whereNow() {
   const here = run.current && run.map.byId[run.current];
-  return { biomeName: BIOMES[run.biome].name, place: BIOMES[run.biome].stages?.[stageOf(run.map, here).stage] ?? null, floor: here ? here.floor + 1 : 0 };
+  return { biomeName: mainBiome().name, place: mainBiome().stages?.[stageOf(run.map, here).stage] ?? null, floor: here ? here.floor + 1 : 0 };
 }
 
 /** A Sky Pillar climb ends in a faint, at the summit (Rayquaza beaten on floor 100: its scene first), or in an abandon,
@@ -2681,7 +2740,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   if (won && peeking && mewtwoRun) fresh.push({ ...FEATS.find(f => f.id === 'eternatus'), feat: true, paid: 0 });
 
   const name = stageName(run.starter, run.stage);
-  const biome = BIOMES[run.biome];
+  const biome = mainBiome();
   $('result-title').textContent = won ? (safari ? '🏆 You crossed the Safari Zone!' : mewtwoRun ? '🏆 You reached the last energy!' : '🏆 You conquered the wastes!') : '💀 Your run has ended';
   $('result-text').textContent = won
     ? `${name} beat all ${mewtwoRun ? 'four' : 'three'} bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`

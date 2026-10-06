@@ -12,6 +12,10 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: **Branching biomes, part a** (cloud, pushed): the crossroads' logic (`run.route`, `chooseRoad()`) and the
+  Sunken Ruins' gameplay (18 Gen 6-9 Pokémon, a bonus Pokédex page, `?biome=ruins`); the sim takes `cfg.route`. The Ruins
+  borrow the Shrine's scenery. Next: part b (Desktop app), painting the crossroads and the Ruins.
+
 - 2026-10-06: the Collection's **Record Book and Hall of Fame** are Pokédex style (the user's picks from a pitch). The Record
   Book (`recordsApp('record')`) has a banner per Trainer Level (only those with wins), the Crystal Depths and Lost runs, newest
   first, one run a screen: the starter on its pad, its story line, four numbers, a Full record button. The Hall of Fame

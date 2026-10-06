@@ -8,7 +8,7 @@
    ============================================================ */
 
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
-import { DEX_PAGES, DEPTHS_PAGE, safariOpen } from './data/pokedex.js';
+import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen } from './data/pokedex.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { isStarterUnlocked } from './progress.js';
@@ -183,7 +183,7 @@ export function partnerChoices(save = getSave()) {
   const starters = mine.flatMap(st => st.line.map((_, stage) => form(st, stage, false)));
   const shinies = mine.filter(st => owned.has(st.id)).flatMap(st => st.line.map((_, stage) => form(st, stage, true)));
   const defeated = new Set(save.dex.defeated);
-  const dex = [...DEX_PAGES, DEPTHS_PAGE].flatMap(p => p.ids).filter(id => defeated.has(id)).map(mon).filter(Boolean);
+  const dex = [...DEX_PAGES, ...BONUS_PAGES, DEPTHS_PAGE].flatMap(p => p.ids).filter(id => defeated.has(id)).map(mon).filter(Boolean);
   const caught = new Set(save.safariDex?.caught || []);
   const safari = SAFARI_DEX_PAGES.flatMap(p => p.ids).filter(id => caught.has(id)).map(mon).filter(Boolean);
   return [

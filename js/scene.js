@@ -507,6 +507,8 @@ for (const [area, art] of Object.entries(SAFARI_ART)) {
     },
   };
 }
+// The Sunken Ruins (roadmap item 19 a) borrow the Shrine's scenery until part b paints their own flooded temple.
+BIOME_ART.ruins = { ...BIOME_ART.shrine, kin: 'shrine' };
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
@@ -1183,6 +1185,7 @@ function shoot(look, w, h, at) {
 const WEATHER = {
   clearing: { dawn: 'drizzle', day: 'leaves', dusk: 'leaves', night: 'drizzle' },
   shrine: { dawn: 'drizzle', day: 'drizzle', dusk: 'leaves', night: 'drizzle' },
+  ruins: 'drizzle',
   wastes: 'ash',
   depths: 'dust',
   meadow: { dawn: 'drizzle', dusk: 'leaves', night: 'drizzle' },

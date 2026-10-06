@@ -251,6 +251,117 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  /* ----- Biome 2, the other road: the Sunken Ruins, a flooded temple (roadmap item 19). Mostly Water. Every Gen 1-5
+     species was taken by the main game or the Safari, so these are Gen 6-9 (PokeAPI's showdown GIFs, like Eternatus's). ----- */
+  clauncher: {
+    name: 'Clauncher', type: 'water', hp: 54, ...sprite('clauncher'),
+    description: 'Fires water from its big claw at anything that moves in the flooded halls.',
+    moves: [
+      { kind: 'attack', name: 'Water Pulse', amount: 7 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
+      { kind: 'attack', name: 'Crabhammer',  amount: 12 },
+    ],
+  },
+  wishiwashi: {
+    name: 'Wishiwashi', type: 'water', hp: 46, ...sprite('wishiwashi'),
+    description: 'Alone it\'s a minnow. When it calls its school, the whole flooded hall comes at you.',
+    moves: [
+      { kind: 'attack', name: 'Water Gun', amount: 6 },
+      { kind: 'buff',   name: 'Schooling', amount: 3 },
+      { kind: 'attack', name: 'Dive',      amount: 11 },
+    ],
+  },
+  pyukumuku: {
+    name: 'Pyukumuku', type: 'water', hp: 62, ...sprite('pyukumuku'),
+    description: 'Lies in the temple\'s tide pools. Step on it and it punches back with its insides.',
+    moves: [
+      { kind: 'attack', name: 'Counter',     amount: 6, type: 'normal' },
+      { kind: 'defend', name: 'Harden',      amount: 10 },
+      { kind: 'attack', name: 'Innards Out', amount: 11 },
+    ],
+  },
+  bruxish: {
+    name: 'Bruxish', type: 'water', hp: 52, ...sprite('bruxish'),
+    description: 'Grinds its teeth, and the noise rings through the water into your skull.',
+    moves: [
+      { kind: 'attack', name: 'Aqua Jet',      amount: 7 },
+      { kind: 'buff',   name: 'Calm Mind',     amount: 2 },
+      { kind: 'attack', name: 'Psychic Fangs', amount: 11, type: 'normal', adds: { card: 'confusion', n: 1, to: 'draw' } },
+    ],
+  },
+  arrokuda: {
+    name: 'Arrokuda', type: 'water', hp: 50, ...sprite('arrokuda'),
+    description: 'Darts down the drowned corridors faster than you can turn round.',
+    moves: [
+      { kind: 'attack', name: 'Peck',        amount: 6, type: 'normal' },
+      { kind: 'buff',   name: 'Agility',     amount: 2 },
+      { kind: 'attack', name: 'Liquidation', amount: 12 },
+    ],
+  },
+  salandit: {
+    name: 'Salandit', type: 'fire', hp: 52, ...sprite('salandit'),
+    description: 'Slinks along the dry upper ledges, trailing sweet, poisonous smoke.',
+    moves: [
+      { kind: 'attack', name: 'Smog',        amount: 6, type: 'normal', adds: { card: 'poison', n: 1 } },
+      { kind: 'buff',   name: 'Nasty Plot',  amount: 2 },
+      { kind: 'attack', name: 'Flame Burst', amount: 11 },
+    ],
+  },
+  charcadet: {
+    name: 'Charcadet', type: 'fire', hp: 56, ...sprite('charcadet'),
+    description: 'A temple brazier\'s last flame, walking the dry halls in armour made of ash.',
+    moves: [
+      { kind: 'attack', name: 'Astonish',     amount: 6, type: 'normal' },
+      { kind: 'buff',   name: 'Will-O-Wisp',  amount: 2 },
+      { kind: 'attack', name: 'Flame Charge', amount: 12 },
+    ],
+  },
+  dhelmise: {
+    name: 'Dhelmise', type: 'grass', hp: 62, ...sprite('dhelmise'),
+    description: 'Seaweed wound round a sunken anchor. It hauls whatever it catches down to the temple floor.',
+    moves: [
+      { kind: 'drain',  name: 'Giga Drain',  amount: 6, heal: 5 },
+      { kind: 'attack', name: 'Anchor Shot', amount: 7, type: 'normal', adds: { card: 'sludge', n: 1 } },
+      { kind: 'attack', name: 'Power Whip',  amount: 12 },
+    ],
+  },
+  morelull: {
+    name: 'Morelull', type: 'grass', hp: 50, ...sprite('morelull'),
+    description: 'Its caps glow in the dark crypts, luring travellers off the safe stones.',
+    moves: [
+      { kind: 'drain',  name: 'Mega Drain', amount: 6, heal: 5 },
+      { kind: 'status', name: 'Spore',      adds: { card: 'paralysis', n: 1, to: 'draw' } },
+      { kind: 'attack', name: 'Moonblast',  amount: 11, type: 'normal' },
+    ],
+  },
+  bunnelby: {
+    name: 'Bunnelby', type: 'normal', hp: 50, ...sprite('bunnelby'),
+    description: 'Digs through the temple\'s silted floors with its ears, faster than any shovel.',
+    moves: [
+      { kind: 'attack', name: 'Quick Attack', amount: 6 },
+      { kind: 'defend', name: 'Dig',          amount: 8 },
+      { kind: 'attack', name: 'Take Down',    amount: 11 },
+    ],
+  },
+  yungoos: {
+    name: 'Yungoos', type: 'normal', hp: 52, ...sprite('yungoos'),
+    description: 'Patrols the dry corridors all day, gnawing on anything it finds.',
+    moves: [
+      { kind: 'attack', name: 'Bite',       amount: 7 },
+      { kind: 'buff',   name: 'Work Up',    amount: 2 },
+      { kind: 'attack', name: 'Hyper Fang', amount: 11 },
+    ],
+  },
+  lechonk: {
+    name: 'Lechonk', type: 'normal', hp: 58, ...sprite('lechonk'),
+    description: 'Snuffles round the offerings on the temple steps, and charges if you get between it and them.',
+    moves: [
+      { kind: 'attack', name: 'Tackle',      amount: 6 },
+      { kind: 'defend', name: 'Curse',       amount: 9 },
+      { kind: 'attack', name: 'Double-Edge', amount: 12 },
+    ],
+  },
+
   /* ----- Biome 3: the wastes, fully evolved ----- */
   magmar: {
     name: 'Magmar', type: 'fire', hp: 64, ...sprite('magmar'),
@@ -537,6 +648,34 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Crunch',      amount: 11 },
     ],
   },
+  furfrou: {
+    name: 'Furfrou', type: 'normal', hp: 70, ...sprite('furfrou'),
+    description: 'Groomed in the temple\'s style long ago, it still guards the door it was trimmed for.',
+    moves: [
+      { kind: 'attack', name: 'Headbutt',  amount: 8 },
+      { kind: 'buff',   name: 'Work Up',   amount: 2 },
+      { kind: 'attack', name: 'Retaliate', amount: 12 },
+    ],
+  },
+  gumshoos: {
+    name: 'Gumshoos', type: 'normal', hp: 68, ...sprite('gumshoos'),
+    description: 'Stakes out one corridor of the ruins and waits all day for someone to walk down it.',
+    moves: [
+      { kind: 'attack', name: 'Pursuit',    amount: 7 },
+      { kind: 'drain',  name: 'Super Fang', amount: 8, heal: 5 },
+      { kind: 'attack', name: 'Crunch',     amount: 12 },
+    ],
+  },
+  dubwool: {
+    name: 'Dubwool', type: 'normal', hp: 72, ...sprite('dubwool'),
+    description: 'Its soaked fleece weighs a ton, and so does every kick.',
+    moves: [
+      { kind: 'attack', name: 'Double Kick',  amount: 7 },
+      { kind: 'defend', name: 'Cotton Guard', amount: 10 },
+      { kind: 'attack', name: 'Body Press',   amount: 12 },
+    ],
+  },
+
   purugly: {
     name: 'Purugly', type: 'normal', hp: 70, ...sprite('purugly'),
     description: 'Squats in other Pokémon\'s dens on the wastes and dares them to argue.',
@@ -659,6 +798,37 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Hammer Arm',   amount: 22 },
     ],
   },
+  dudunsparce: {
+    name: 'Dudunsparce', type: 'normal', hp: 250, ...sprite('dudunsparce'), boss: true,
+    description: 'They say it bored the temple\'s halls before the builders came. Now the water\'s in, it wants them back.',
+    moves: [
+      { kind: 'attack', name: 'Drill Run',   amount: 11 },
+      { kind: 'status', name: 'Glare',       adds: { card: 'paralysis', n: 2, to: 'draw' } },
+      { kind: 'buff',   name: 'Coil',        amount: 2 },
+      { kind: 'attack', name: 'Hyper Drill', amount: 22 },
+    ],
+  },
+  oinkologne: {
+    name: 'Oinkologne', type: 'normal', hp: 240, ...sprite('oinkologne'), boss: true,
+    description: 'Its scent hangs over the flooded halls. Everyone who follows it finds the treasure room. Then finds it.',
+    moves: [
+      { kind: 'attack', name: 'Body Slam',   amount: 10, adds: { card: 'paralysis', n: 1, to: 'draw' } },
+      { kind: 'defend', name: 'Rest',        amount: 13 },
+      { kind: 'buff',   name: 'Work Up',     amount: 2 },
+      { kind: 'attack', name: 'Double-Edge', amount: 21 },
+    ],
+  },
+  maushold: {
+    name: 'Maushold', type: 'normal', hp: 230, ...sprite('maushold'), boss: true,
+    description: 'A family of four who lived in the dry crypt until the water came. They are not happy about it.',
+    moves: [
+      { kind: 'attack', name: 'Bite',            amount: 10 },
+      { kind: 'buff',   name: 'Tidy Up',         amount: 3 },
+      { kind: 'drain',  name: 'Super Fang',      amount: 10, heal: 8 },
+      { kind: 'attack', name: 'Population Bomb', amount: 22 },
+    ],
+  },
+
   slaking: {
     name: 'Slaking', type: 'normal', hp: 440, ...sprite('slaking'), boss: true,
     description: 'Lazes about every other turn. The turns in between hurt.',
@@ -792,11 +962,11 @@ export const KEN = {
   ],
 };
 
-export function buildKenEncounter(biomeIndex, mods) {
-  const biome = BIOMES[biomeIndex];
+export function buildKenEncounter(at, mods) {
+  const biome = biomeOf(at);
   return {
     def: KEN, kind: 'boss',
-    maxHp: Math.round(KEN.hp[biomeIndex] * mods.bossHp),
+    maxHp: Math.round(KEN.hp[biome.slot] * mods.bossHp),
     strength: biome.bossBonus + mods.bossDmg + mods.enemyDmg,
     dmgMult: mods.enemyDmgMult ?? 1,
   };
@@ -829,7 +999,7 @@ export function eliteOf(def) {
    ============================================================ */
 export const BIOMES = [
   {
-    id: 'clearing', name: 'Whispering Clearing',
+    id: 'clearing', name: 'Whispering Clearing', slot: 0,
     stages: ['Meadow', 'Forest Edge', 'Deep Woods', 'Ancient Tree'],   // floors 1-3, 4-6, 7-10, the boss (stageOf() in js/map.js, painted by js/scene.js)
     normals: ['vulpix', 'growlithe', 'pansear', 'oddish', 'hoppip', 'seedot',
       'poliwag', 'psyduck', 'marill', 'rattata', 'sentret', 'zigzagoon'],
@@ -837,7 +1007,7 @@ export const BIOMES = [
     hpMult: 1.2, dmgBonus: 7, bossBonus: 8,
   },
   {
-    id: 'shrine', name: 'Overgrown Shrine',
+    id: 'shrine', name: 'Overgrown Shrine', slot: 1,
     stages: ['Stone Steps', 'Torii Path', 'Inner Court', 'Main Hall'],   // floors 1-3, 4-6, 7-10, the boss (stageOf() in js/map.js, painted by js/scene.js)
     normals: ['litwick', 'houndour', 'darumaka', 'bellsprout', 'paras', 'cherubi',
       'krabby', 'slowpoke', 'shellos', 'teddiursa', 'aipom', 'stantler'],
@@ -845,7 +1015,7 @@ export const BIOMES = [
     hpMult: 2.9, dmgBonus: 16, bossBonus: 21,
   },
   {
-    id: 'wastes', name: 'Ember Wastes',
+    id: 'wastes', name: 'Ember Wastes', slot: 2,
     stages: ['Ash Plains', 'Lava Fields', 'Volcano Slope', 'Crater Rim'],   // floors 1-3, 4-6, 7-10, the boss (stageOf() in js/map.js, painted by js/scene.js)
     normals: ['magmar', 'torkoal', 'heatmor', 'tangela', 'cacturne', 'maractus',
       'staryu', 'crawdaunt', 'sharpedo', 'tauros', 'bouffalant', 'zangoose'],
@@ -855,7 +1025,7 @@ export const BIOMES = [
   {
     // Mewtwo's alone (v1.0): `secret` keeps it out of every other run, the Pokédex and the records. Its numbers are fixed:
     // no Trainer Level reaches it (MEWTWO_MODE in difficulty.js). Its scenery is BIOME_ART.depths in scene.js.
-    id: 'depths', name: 'Crystal Depths', secret: true,
+    id: 'depths', name: 'Crystal Depths', secret: true, slot: 3,
     stages: ['Cave Mouth', 'Crystal Halls', 'Deep Core', 'Energy Well'],
     normals: ['crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus',
       'golurk', 'bronzong', 'claydol', 'dusknoir', 'lanturn', 'magnezone'],
@@ -863,6 +1033,27 @@ export const BIOMES = [
     hpMult: 7.5, dmgBonus: 31, bossBonus: 58,
   },
 ];
+
+/* Branching biomes (roadmap item 19): after a boss, the crossroads offers the next slot's biomes (CROSSROADS) and the run
+   saves its pick in `run.route`, a biome id per slot. BIOMES above is the default road, and every per-biome array (events,
+   Kenmatta's HP, `deepestBiome`, `bossesDefeated`) is by slot, so an other-road biome shares its slot's numbers. */
+export const ALT_BIOMES = [
+  {
+    id: 'ruins', name: 'Sunken Ruins', slot: 1,
+    stages: ['Flooded Steps', 'Drowned Halls', 'Sunken Court', 'Tide Altar'],
+    normals: ['clauncher', 'wishiwashi', 'pyukumuku', 'bruxish', 'arrokuda', 'salandit',
+      'charcadet', 'dhelmise', 'morelull', 'bunnelby', 'yungoos', 'lechonk'],
+    elites: ['furfrou', 'gumshoos', 'dubwool'], bosses: ['dudunsparce', 'oinkologne', 'maushold'],
+    hpMult: 2.9, dmgBonus: 16, bossBonus: 21,
+  },
+];
+export const BIOMES_BY_ID = Object.fromEntries([...BIOMES, ...ALT_BIOMES].map(b => [b.id, b]));
+/** The roads a slot can take, the default first. A slot not listed has only its BIOMES entry. */
+export const CROSSROADS = { 1: ['shrine', 'ruins'] };
+/** The biome a run is in at slot `i`, by its saved `route` (none, or a run saved before the crossroads: the default road). */
+export const biomeAt = (route, i) => BIOMES_BY_ID[route?.[i]] ?? BIOMES[i];
+/** A biome given as its slot (the default road's) or as the biome itself. */
+const biomeOf = (b) => (typeof b === 'number' ? BIOMES[b] : b);
 
 /** The biome a run ends in: the third, or for Mewtwo its secret fourth. */
 export const finalBiome = (starter) => (starter?.id === 'mewtwo' ? BIOMES.length : BIOMES.filter(b => !b.secret).length) - 1;
@@ -884,8 +1075,8 @@ const pick = (list) => pickOne(list);
  */
 /** Pick which enemy a fight, elite or boss node will hold, when the map is made. `weight(id)` favours some
     (the Pokédex's unbeaten ones); the default is an even pick. */
-export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
-  const biome = BIOMES[biomeIndex];
+export function pickEnemyId(at, kind, weight = () => 1) {
+  const biome = biomeOf(at);
   const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? biome.elites : biome.normals;
   const weights = list.map(weight);
   let roll = random() * weights.reduce((a, b) => a + b, 0);
@@ -898,8 +1089,8 @@ export function pickEnemyId(biomeIndex, kind, weight = () => 1) {
  * the routes into it already met it, and deals one met on the fewest (almost always none); among those the deck makes
  * every Pokémon come up about as often as the rest, and `weight(id)` favours the Pokédex's unbeaten ones.
  */
-export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1, normals = null, elites = null) {
-  const biome = BIOMES[biomeIndex];
+export function dealEnemies(at, kind, rooms, byId, weight = () => 1, normals = null, elites = null) {
+  const biome = biomeOf(at);
   const list = kind === 'boss' ? biome.bosses : kind === 'elite' ? elites ?? biome.elites : normals ?? biome.normals;   // normals: a Safari area's wilds (elites: the Sky Pillar's past floor 30)
   const routes = new Map(), met = new Map();   // node id -> routes from the start into it / { id: routes into it that met id }
   const count = (node) => {
@@ -932,8 +1123,8 @@ export function dealEnemies(biomeIndex, kind, rooms, byId, weight = () => 1, nor
   }
 }
 
-export function buildEncounter(biomeIndex, kind, mods, enemyId) {
-  const biome = BIOMES[biomeIndex];
+export function buildEncounter(at, kind, mods, enemyId) {
+  const biome = biomeOf(at);
 
   if (kind === 'boss') {
     const def = ENEMY_DEFS[enemyId || pick(biome.bosses)];
@@ -947,7 +1138,7 @@ export function buildEncounter(biomeIndex, kind, mods, enemyId) {
 
   const base = ENEMY_DEFS[enemyId || pick(kind === 'elite' ? biome.elites : biome.normals)];
   const def = kind === 'elite' ? eliteOf(base) : base;
-  const place = (def.template && PLACE[biomeIndex]) || { hp: 1, dmg: 0 };   // a Safari template Pokémon grows with its area's place
+  const place = (def.template && PLACE[biome.slot]) || { hp: 1, dmg: 0 };   // a Safari template Pokémon grows with its area's place
   return {
     def,
     kind,

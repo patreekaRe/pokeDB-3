@@ -864,6 +864,13 @@
     <form method="dialog" class="dialog-actions"><button class="btn primary" id="unlock-ok">Great!</button></form>
   </dialog>
 
+  <!-- the crossroads after a boss (roadmap item 19): pick the next biome; it must be answered, so a tap outside does nothing -->
+  <dialog id="crossroads-dialog" class="dialog small-dialog" data-stay>
+    <h2>A fork in the road</h2>
+    <p>The path splits in two. Which way?</p>
+    <div class="crossroads-paths" id="crossroads-paths"></div>
+  </dialog>
+
   <dialog id="confirm-dialog" class="dialog small-dialog">
     <p id="confirm-text"></p>
     <div class="dialog-actions">

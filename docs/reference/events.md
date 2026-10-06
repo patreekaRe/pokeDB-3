@@ -51,7 +51,8 @@ tufts, drawn live so they rustle); picking it up wobbles it, then it pops open, 
 flashes and explodes over a scorch. Team Rocket: a black-and-red roadblock with an R board and a bush, with the grunt
 and their Alpha standing at it as real GIFs (the choice returns `figures`, `{ stand: { src, alpha } }`; each
 `.event-figure` stands on the scene's `life.stands` at half the scene's pixel size, like Chansey, fitted by
-`SPRITE_FIT`). The grunt is male or female (`grunts` in `js/data/events.js`, rolled into `node.event.grunt`;
+`SPRITE_FIT`). The Alpha comes from `team`, keyed by biome id (since the crossroads, 2026-10-06: the Sunken Ruins has its own
+pair), so a new biome needs a line there; every other per-biome number is by slot. The grunt is male or female (`grunts` in `js/data/events.js`, rolled into `node.event.grunt`;
 saves from before fall back to the first), animated HGSS-style sprites by justin8964 in `assets/trainers/`,
 credited in About. Paying throws coins into the grunt's hand and `figureDoes('trainer', 'hop')` hops the sprite as they
 land; Battle goes straight to the fight; Run shakes the bush (and `shake`s the grunt). Shrine (`PLACE_ART.altar`, not `shrine`: that's a biome) is a

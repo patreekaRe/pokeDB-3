@@ -846,6 +846,25 @@ export const SPRITE_FIT = {
   'deino-front': [1, 0, 10, 1],
   'zweilous-front': [6, 0, 3, 2],
   'hydreigon-front': [20, 11, 1, 12],
+  // the Sunken Ruins (roadmap item 19 a): Gen 6-9, PokeAPI's other/showdown/ Gen 5-style GIFs, like Eternatus's
+  'arrokuda-front': [1, 0, 2, 4],
+  'bruxish-front': [1, 2, 1, 2],
+  'bunnelby-front': [3, 0, 1, 6],
+  'charcadet-front': [1, 0, 1, 2],
+  'clauncher-front': [2, 0, 1, 1],
+  'dhelmise-front': [4, 1, 2, 1],
+  'dubwool-front': [1, 0, 0, 0],
+  'dudunsparce-front': [2, 0, 1, 2],
+  'furfrou-front': [1, 0, 0, 0],
+  'gumshoos-front': [1, 0, 1, 4],
+  'lechonk-front': [0, 0, 0, 1],
+  'maushold-front': [0, 0, 1, 2],
+  'morelull-front': [1, 0, 2, 2],
+  'oinkologne-front': [2, 0, 1, 1],
+  'pyukumuku-front': [1, 0, 1, 0],
+  'salandit-front': [2, 0, 1, 10],
+  'wishiwashi-front': [2, 2, 3, 9],
+  'yungoos-front': [0, 0, 1, 5],
 };
 
 /** The gaps for a sprite's URL or file name. A starter's bought shiny is the same animation recoloured, so it

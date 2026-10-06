@@ -3,7 +3,8 @@
    choice, and most choices cost something (HP, max HP, ₽ or a risk),
    like Slay the Spire's events.
 
-   Numbers written as [a, b, c] are per biome (Biome 1, 2, 3, and Mewtwo's Crystal Depths). What each
+   Numbers written as [a, b, c] are per biome (Biome 1, 2, 3, and Mewtwo's Crystal Depths), by its slot: an other-road
+   biome from the crossroads (the Sunken Ruins is Biome 2) takes its slot's number. What each
    choice does is in eventRoom() in js/run.js; tune the numbers here.
 
    Which event a room holds (and any dice, like the Item Ball's trap, the
@@ -47,8 +48,9 @@ export const EVENTS = [
     text: 'A Team Rocket grunt blocks the road and demands a toll!',
     toll: [30, 45, 60, 75],        // ₽
     fleeHp: 0.15,              // share of max HP lost running past
-    // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), picked per biome.
-    team: [['rattata', 'zigzagoon'], ['teddiursa', 'aipom'], ['bouffalant', 'zangoose'], ['crobat', 'sableye']],   // all Normal, like every Alpha
+    // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), by biome id: from its own wilds, so a new
+    // biome needs a line here. All Normal, like every Alpha.
+    team: { clearing: ['rattata', 'zigzagoon'], shrine: ['teddiursa', 'aipom'], ruins: ['bunnelby', 'yungoos'], wastes: ['bouffalant', 'zangoose'], depths: ['crobat', 'sableye'] },
     grunts: ['grunt-m', 'grunt-f'],   // the grunt himself (or herself), from assets/trainers/
   },
   {

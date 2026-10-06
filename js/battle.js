@@ -28,7 +28,7 @@ import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
-import { BIOMES, TRAITS } from './data/enemies.js';
+import { biomeAt, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
@@ -44,7 +44,7 @@ const ROOM_SERVICE_CAP = 6;   // the Room Service boss relic's cards per turn (S
 const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
-const BOSS_PRELUDE_LINES = ['The Ancient Tree stirs...', 'The shrine lanterns answer...', 'The crater rumbles...', 'The crystals hum with a terrible energy...'];
+const BOSS_PRELUDE_LINES = { clearing: 'The Ancient Tree stirs...', shrine: 'The shrine lanterns answer...', ruins: 'The water round the altar begins to churn...', wastes: 'The crater rumbles...', depths: 'The crystals hum with a terrible energy...' };
 const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
@@ -235,7 +235,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
 
   setTheme(run.starter.type);
   showScreen('battle-screen');
-  const land = run.safari?.areas[run.biome] ?? BIOMES[run.biome]?.id;
+  const land = run.safari?.areas[run.biome] ?? biomeAt(run.route, run.biome)?.id;
   document.body.dataset.biome = land || '';   // the piles' colour
   if (def.arena) showPlaceScene(def.arena);
   else if (run.tower) {   // a Sky Pillar fight: one of the tower's rooms, its windows on the sky at that height (js/tower-art.js)
@@ -250,7 +250,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   setupBattleScreen();
 
   log(encounter.kind === 'boss'
-    ? def.prelude ?? (run.safari ? SAFARI_PRELUDE_LINES[run.safari.areas[run.biome]] : BOSS_PRELUDE_LINES[run.biome]) ?? 'A powerful presence stirs...'
+    ? def.prelude ?? (run.safari ? SAFARI_PRELUDE_LINES[run.safari.areas[run.biome]] : BOSS_PRELUDE_LINES[land]) ?? 'A powerful presence stirs...'
     : `A wild ${def.name} appeared!`);
   if (deferIntro) {
     document.body.classList.add('boss-prelude');

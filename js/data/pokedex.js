@@ -10,7 +10,7 @@
    perk to Lv 2. Perks can't be bought at the Game Corner.
    ============================================================ */
 
-import { BIOMES } from './enemies.js';
+import { BIOMES, ALT_BIOMES } from './enemies.js';
 
 export const DEX_PERKS = {
   clearing: {
@@ -64,8 +64,15 @@ export const DEX_PAGES = BIOMES.filter(b => !b.secret).map(b => ({ ...pageFor(b)
 /** The Crystal Depths' page (v1.0 part D, the user's pick): a "???" tab until a Mewtwo run reaches it. Beating all 16 once
     unlocks shiny Mewtwo, which can't be bought (FEATS in achievements.js grants it). */
 export const DEPTHS_PAGE = { ...pageFor(BIOMES.find(b => b.secret)), prize: { icon: '✨', name: 'Shiny Mewtwo', text: 'Mewtwo in its shiny colours. It can\'t be bought.' } };
-/** Every page the Pokédex window shows, the Depths last. */
-export const ALL_PAGES = [...DEX_PAGES, DEPTHS_PAGE];
+/** The other roads' pages (roadmap item 19, the user's call): bonus pages, never in DEX_PAGES, so finishing the Pokédex,
+    Reshiram and the Safari Zone don't wait on a road a run may never take. Each pays its `bonus` PokéCoins once, and is
+    "???" in the Pokédex until one of its Pokémon has been met. */
+export const BONUS_COINS = { ruins: 500 };
+export const BONUS_PAGES = ALT_BIOMES.map(b => ({ ...pageFor(b), bonus: { icon: '🏛️', coins: BONUS_COINS[b.id] } }));
+/** Every page the Pokédex window shows: the three, the Depths, then the bonus pages (indices stay put as pages are added). */
+export const ALL_PAGES = [...DEX_PAGES, DEPTHS_PAGE, ...BONUS_PAGES];
+/** A biome's page number in ALL_PAGES (-1 if it has none). */
+export const pageIndexOf = (biomeId) => ALL_PAGES.findIndex(p => p.biome === biomeId);
 
 /** The Safari Zone opens once every entry has been beaten at least once (every page complete), not researched:
     3 defeats of each felt like a grind for a door (the user's call, 2026-10-02). */

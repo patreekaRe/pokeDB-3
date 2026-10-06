@@ -31,13 +31,13 @@
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
-import { BIOMES } from './data/enemies.js';
+import { BIOMES, biomeAt } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, isPeeking, playGate, beginTower, peekTower } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { floorOf } from './data/tower.js';
 import { initBattle } from './battle.js';
@@ -76,13 +76,13 @@ function savedRunCard() {
   const here = saved.current && saved.map.byId[saved.current];
   // a Safari run is in today's area, not the main game's biome: the same names as its map's signs
   const area = saved.safari && SAFARI_AREAS_BY_ID[saved.safari.areas?.[biome]];
-  const land = area || BIOMES[biome];
+  const land = area || biomeAt(saved.route, biome);
   return {
     saved, hp, maxHp,
     floor: saved.tower ? floorOf(saved.tower.flight, here ? here.floor : -1) : here ? here.floor + 1 : 0,   // the biome's floor you stand on; 0 on the road in, like StS's Neow floor (a climb's: the tower's)
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
-    place: saved.tower ? 'Sky Pillar' : area ? `Safari Zone: ${area.name}` : BIOMES[biome]?.name ?? `Biome ${biome + 1}`,
+    place: saved.tower ? 'Sky Pillar' : area ? `Safari Zone: ${area.name}` : land?.name ?? `Biome ${biome + 1}`,
     spot: saved.tower ? `Floors ${saved.tower.flight * 10 + 1}-${saved.tower.flight * 10 + 10}` : land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
     biome: land?.id,
     safari: !!area,
@@ -282,6 +282,8 @@ function init() {
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map
   if (params.get('descent') === 'mewtwo') return peekDescent(STARTERS_BY_ID.mewtwo);
+  // ?biome=ruins (any biome; &starter=id, &level=0-5): a throwaway run starting in that biome, on the road through it
+  if (params.get('biome') && peekBiome(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('biome'), Number(params.get('level') ?? 0))) return;
   if (SAFARI_AREAS.some(a => a.id === params.get('bossfight'))) return peekSafariBoss(params.get('bossfight'), STARTERS_BY_ID[params.get('starter')]);
 
   showSelect();   // under the title, so the menu scene is ready behind it

@@ -92,6 +92,7 @@ const freshSave = () => ({
     elitesDefeated: 0,        // Alphas beaten (Team Rocket's too)
     coinsEarned: 0,           // every PokéCoin ever paid out, spent or not
     deepestBiome: 0,          // the furthest biome a run reached (1-3)
+    biomesSeen: [],           // every biome a run has walked into, by id (the crossroads' other roads too; the Explorer Badge's)
     level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
     level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
     playMs: 0,                // play time while the page is visible, counted from the Trainer Card's release (initPlayTime())
@@ -141,6 +142,7 @@ function seedStats(stats) {
   const beaten = Object.keys(stats.bossesDefeated || {}).map(Number);
   if (!stats.bossKills) seed.bossKills = Object.fromEntries(beaten.map(b => [b, 1]));
   if (stats.deepestBiome === undefined) seed.deepestBiome = stats.runsStarted ? Math.min(3, Math.max(0, ...beaten) + 1) : 0;
+  if (!stats.biomesSeen) seed.biomesSeen = ['clearing', 'shrine', 'wastes', 'depths'].slice(0, seed.deepestBiome ?? stats.deepestBiome ?? 0);   // before the crossroads there was one road
   return seed;
 }
 

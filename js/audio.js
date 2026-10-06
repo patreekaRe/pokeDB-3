@@ -190,6 +190,8 @@ const CRIES = new Set([
   'slaking', 'regigigas', 'lickilicky', 'porygonz',
   'crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus', 'golurk', 'bronzong',
   'claydol', 'dusknoir', 'lanturn', 'magnezone', 'clefable', 'ditto', 'smeargle', 'eternatus', 'eternamax',
+  'clauncher', 'wishiwashi', 'pyukumuku', 'bruxish', 'arrokuda', 'salandit', 'charcadet', 'dhelmise', 'morelull',
+  'bunnelby', 'yungoos', 'lechonk', 'furfrou', 'gumshoos', 'dubwool', 'dudunsparce', 'oinkologne', 'maushold',
   'chansey', 'kecleon',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1

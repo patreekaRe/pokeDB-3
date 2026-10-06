@@ -386,6 +386,7 @@ const PALETTES = {
   clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
   shrine:   { ground: 'mossy', blobs: [['ruins', 6, 10, 30], ['bamboo', 4, 10, 26], ['sakura', 5, 5, 14], ['lotus', 2, 10, 22], ['trees', 4, 8, 20]],
               props: [['torii', 2], ['lantern', 7]] },   // an overgrown temple ground, not the Clearing's meadow
+  ruins:    { ground: 'mossy', blobs: [['water', 8, 14, 44], ['ruins', 6, 10, 30], ['lotus', 3, 10, 22]], props: [['lantern', 5]] },   // a flooded temple (part b paints its own)
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
   depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)

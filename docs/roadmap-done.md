@@ -1530,3 +1530,17 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Settings as an OPTIONS screen** (2026-10-06, Desktop app; the user found it bland): coloured cards for Sound (Music,
   Effects and a new Cries bar, LCD numbers), Display (new Text speed and Day & night), Battle (speed, end-turn warning, a new
   Vibration switch) and Save. Detail in `docs/reference/top-bar-and-start-screen.md`.
+- **Branching biomes, part a** (roadmap item 19, cloud, 2026-10-06): the crossroads' logic and the Sunken Ruins' gameplay.
+  `ALT_BIOMES` / `CROSSROADS` / `biomeAt()` in `js/data/enemies.js`, `run.route` saved with the run (old saves read as the
+  default road, so no `RUN_SAVE_VERSION` bump), `chooseRoad()` in `walkOn()` (a plain two-button window with each road's
+  wild types; never for Mewtwo or the Safari). The Ruins (slot 1, Biome 2's numbers): wilds Clauncher, Wishiwashi, Pyukumuku,
+  Bruxish, Arrokuda (Water), Salandit, Charcadet (Fire), Dhelmise, Morelull (Grass), Bunnelby, Yungoos, Lechonk (Normal);
+  Alphas Furfrou, Gumshoos, Dubwool; bosses Dudunsparce, Oinkologne, Maushold. All Gen 6-9 (every Gen 1-5 species was
+  taken), PokeAPI showdown GIFs, cries at -13 LUFS (Maushold -16.1, limiter-bound), `SPRITE_FIT` lines. A bonus Pokédex page
+  (`BONUS_PAGES`, No.072-089, 500 PokéCoins once), Team Rocket's Bunnelby / Yungoos (`team` is by biome id now),
+  `stats.biomesSeen`, `?biome=ruins`. Borrows the Shrine's scenery until part b. Human bot, 150 runs a cell, Shrine -> Ruins:
+  fire L0 82.7 -> 84.0, L3 66.7 -> 58.0 (confirmed at 450 runs: 64.9 -> 56.9); grass L0 84.0 -> 86.7, L3 62.7 -> 63.3;
+  water L0 78.0 -> 77.3, L3 52.7 -> 58.7. Only Fire at Level 3 moves past the noise, the cost of a mostly-Water road for
+  Fire, which the crossroads shows, so no retune. Checked headless at 390x844: the crossroads (a tap outside and Escape
+  don't skip it), the Ruins' map, signs and a fight, a saved route surviving a reload, an old save without one, a bad route
+  thrown away, the Ruins' Pokédex banner and page. No console errors.

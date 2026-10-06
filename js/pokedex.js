@@ -14,10 +14,10 @@
    Pokédex on that page (see "the window" below).
    ============================================================ */
 
-import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES } from './data/enemies.js';
+import { ENEMY_DEFS, eliteOf, buildEncounter, BIOMES_BY_ID } from './data/enemies.js';
 import { TYPES, CARDS_BY_ID } from './data/cards.js';
 import { modsFor } from './data/difficulty.js';
-import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
+import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOAL, RESEARCH_COINS, DEX_COMPLETE_COINS, SCOPE } from './data/pokedex.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
@@ -91,6 +91,9 @@ export function dexDefeated(id) {
   if (p === DEPTHS_PAGE && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });   // its prize, shiny Mewtwo, is a feat (checkFeats()), with its own window
     lines.push(`The ${p.name} page is complete! ${p.prize.icon} ${p.prize.name} unlocked!`);
+  } else if (p.bonus && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
+    updateSave(d => { d.dex.done.push(p.biome); });   // a bonus page (another road's): PokéCoins, no perk
+    lines.push(`The ${p.name} bonus page is complete! +${awardCoins(p.bonus.coins)} PokéCoins.`);
   } else if (!save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });
     const coins = awardCoins(p.perk.coins);
@@ -119,8 +122,10 @@ export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.le
    handheld Pokédex: a banner per biome (its name, progress, perk medal and three of its Pokémon), and a tap opens the
    red device on that page, one entry at a time, with the page's every entry as slots to jump between. */
 
-const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', wastes: 'Wastes', depths: 'Depths' };
+const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', ruins: 'Ruins', wastes: 'Wastes', depths: 'Depths' };
 const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
+/** A bonus page (another road from a crossroads) shows once a run has walked that road or met one of its Pokémon. */
+const bonusKnown = (p) => (getSave().stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => getSave().dex.seen.includes(id));
 /** A Mewtwo run has been down into the Depths (or met one of its Pokémon), so its page shows. */
 const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
 
@@ -156,6 +161,7 @@ function iconOf(cls, emoji) {
 }
 
 function perkBox(p, count, done) {
+  if (p.bonus) return bonusBox(p, count, done);
   if (!p.perk) return depthsBox(p, count, done);
   const lv = levelOf(p);
   const box = el('div', `dex-perk${done ? ' earned' : ''}${lv === 2 ? ' mastered' : ''}`);
@@ -189,6 +195,19 @@ function depthsBox(p, count, done) {
     el('small', '', done ? 'Earned: switch it on or off in Mewtwo\'s panel.' : `Defeat all ${p.ids.length} to earn it. Only Mewtwo comes down here.`),
     progressBar(count, p.ids.length));
   box.append(img, text, el('b', 'dex-perk-count', `${count}/${p.ids.length}`));
+  return box;
+}
+
+/** A bonus page's prize, PokéCoins once, in the perk's place. */
+function bonusBox(p, count, done) {
+  const box = el('div', `dex-perk${done ? ' earned' : ''}`);
+  const text = el('div', 'dex-perk-text');
+  text.append(
+    el('strong', '', `${done ? '' : '🔒 '}Bonus page: 💰 ${p.bonus.coins} PokéCoins`),
+    el('span', '', 'Another road\'s page: it doesn\'t count towards finishing the Pokédex.'),
+    el('small', '', done ? 'Earned.' : `Defeat all ${p.ids.length} to earn it.`),
+    progressBar(count, p.ids.length));
+  box.append(iconOf('dex-perk-icon', p.bonus.icon), text, el('b', 'dex-perk-count', `${count}/${p.ids.length}`));
   return box;
 }
 
@@ -260,7 +279,9 @@ function rewardBoxes() {
       p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.prize.name}: ${p.prize.text}`));
     depths[0].classList.add('dex-depths');
   }
-  return [jackpot, research, ...pages, ...masters, ...depths];
+  const bonus = BONUS_PAGES.filter(bonusKnown).map(p => goal(p.bonus.icon, `${BANNER_NAME[p.biome]} page`, `Beat all ${p.ids.length} once (a bonus page)`,
+    [coins(p.bonus.coins)], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.name}: another road's page`));
+  return [jackpot, research, ...pages, ...masters, ...bonus, ...depths];
 }
 
 /** A move's numbers in a fight (Research complete): attacks carry the biome's extra damage. */
@@ -351,6 +372,24 @@ function renderList() {
       bannerMons(bannerIds(p), seen));
     return b;
   });
+
+  for (const p of BONUS_PAGES) {   // the other roads' pages, after the three
+    const i = ALL_PAGES.indexOf(p);
+    if (bonusKnown(p)) {
+      const n = p.ids.filter(id => defeated.has(id)).length;
+      const done = save.dex.done.includes(p.biome);
+      const b = banner(`biome-${p.biome}${done ? ' complete' : ''}`, BANNER_NAME[p.biome], done ? 'Complete!' : p.name, (b) => openPage(i, b), p.biome);
+      b.dataset.page = i;
+      b.append(el('span', 'pdx-banner-count', `${n} / ${p.ids.length}`), progressBar(n, p.ids.length),
+        medal(done ? 2 : 0, p.bonus.icon, `Bonus page: ${p.bonus.coins} PokéCoins`), bannerMons(bannerIds(p), seen));
+      banners.push(b);
+    } else {
+      const b = banner('biome-mystery locked', '???', 'A road you haven\'t taken.', () => tipAt(b, 'Take the other path at a crossroads to find it.'));
+      b.append(el('span', 'pdx-banner-count', '? / ??'), el('span', 'pdx-banner-mons'));
+      b.lastChild.append(el('span', 'pdx-mystery-mark', '?'));
+      banners.push(b);
+    }
+  }
 
   if (depthsKnown()) {
     const p = DEPTHS_PAGE;
@@ -486,7 +525,7 @@ function fillEntry(dir) {
       typed('muted', `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
   } else {
     const def = role === 'elite' ? eliteOf(base) : base;
-    const foe = buildEncounter(BIOMES.findIndex(b => b.id === p.biome), role === 'wild' ? 'fight' : role, modsFor(0), id);
+    const foe = buildEncounter(BIOMES_BY_ID[p.biome], role === 'wild' ? 'fight' : role, modsFor(0), id);
     const weak = role === 'wild' && TYPES[base.type].losesTo;
     const facts = el('div', 'pdx-lcd pdx-facts');
     facts.append(
@@ -773,7 +812,7 @@ export const pokedexApp = {
 };
 
 /** Opens on the given biome's page (the run's), else on the list of biomes. */
-const onPage = (biome) => Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown());
+const onPage = (biome) => Number.isInteger(biome) && ALL_PAGES[biome] && (biome !== MYSTERY || depthsKnown()) && (!ALL_PAGES[biome].bonus || bonusKnown(ALL_PAGES[biome]));
 
 export function openPokedex(biome) {
   if (shelled()) pokedexApp.unmount();

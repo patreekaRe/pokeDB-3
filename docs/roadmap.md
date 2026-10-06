@@ -47,16 +47,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     a map palette and signs, a treasure grotto, a Pokédex page and map music. Journey films go from 2 routes to 6:
     Clearing → Ruins (wading down a flooded stairwell), Ruins → Wastes (steam as the water boils away), Shrine → Jungle
     (a vine-choked torii), Ruins → Jungle (a waterfall crossing). Seeing every biome earns the Explorer Badge. Roughly
-    6-10 sessions a biome. **To decide first:** do the new Pokédex pages count towards finishing the Pokédex (suggested:
-    no, bonus pages with their own reward, so Reshiram and the Safari don't move); does Mewtwo's speedrun get the
-    crossroads or keep its fixed road; the bot checks each new biome against the one it pairs with.
-    a. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 19 and its 'Rules for adding
-       Pokémon'. Ask me the three open decisions in item 19 first. Then build the crossroads' logic (the run picks a
-       biome per slot, saved with the run; a plain two-button choice for now) and the Sunken Ruins' gameplay: its 12
-       wilds, 3 Alphas and 3 bosses (sprites, cries at -13 LUFS, SPRITE_FIT, ENEMY_DEFS), its Pokédex page and
-       events' per-biome values, with `?biome=ruins` to playtest. Bot-check it against the Overgrown Shrine at 150 runs
-       a cell (fire / grass / water, Levels 0 and 3). Bump RUN_SAVE_VERSION if needed, update the docs, push to main.
-       Attach pokeDB-sim too."
+    6-10 sessions a biome. **Decided (2026-10-06):** the new pages are bonus pages (their own PokéCoins, never towards
+    finishing the Pokédex, so Reshiram and the Safari don't move); Mewtwo keeps its fixed road; each new biome is bot-checked
+    against the one it pairs with. **Part a is done** (the crossroads logic and the Sunken Ruins' gameplay; see the archive).
+    For Thornwood's Pokémon: every Gen 1-5 species is used, so use Gen 6-9 (PokeAPI's `other/showdown/<dex>.gif`); only 7
+    pure-Normal Gen 6-9 species are left for its 3 Normal wilds, 3 Alphas and 3 bosses (Skwovet, Greedent, Wooloo, Komala,
+    Tandemaus, Type: Null, Silvally), so ask the user how to fill the last two slots.
     b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (part a is
        done: the crossroads logic and the Sunken Ruins' gameplay). Paint the crossroads scene (signpost, two paths, each
        biome's glimpse, boss silhouette, type icons) and the Sunken Ruins: its 4 places, intro film, boss walk-on and

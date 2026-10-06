@@ -18,7 +18,7 @@
 import { FIREBASE_CONFIG } from './cloud-config.js';
 import { SAVE_KEYS, onSaveWrite } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, stageName } from './data/starters.js';
-import { BIOMES } from './data/enemies.js';
+import { biomeAt } from './data/enemies.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 import { playSound, preloadSounds } from './audio.js';
 
@@ -175,7 +175,7 @@ function describe({ save, run }) {
   try { r = run && JSON.parse(run); } catch (err) { /* no run */ }
   const starter = r && STARTERS_BY_ID[r.starter];
   lines.push(starter
-    ? `Run: ${stageName(starter, r.stage)}, ${BIOMES[r.biome]?.name ?? `biome ${r.biome + 1}`}, HP ${r.hp}/${r.maxHp}`
+    ? `Run: ${stageName(starter, r.stage)}, ${biomeAt(r.route, r.biome)?.name ?? `biome ${r.biome + 1}`}, HP ${r.hp}/${r.maxHp}`
     : 'No run in progress');
   return lines;
 }
