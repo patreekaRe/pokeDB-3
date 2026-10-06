@@ -101,8 +101,9 @@ live site.
   user's call: `#brand-btn`, an 18x18 pixel handheld, replaced the Poké Ball and its whole drop-down menu) opens the
   device over any screen on its home screen (`openPokedex({ dex, safari })` in `js/collection.js`: its Pokédex / Safari apps
   open on the run's page). Under the app grid a **dock** (`dockRow()`): Settings and Help (apps that borrow
-  `#dev-settings` / `#dev-help` from `#dev-parts` in `index.html` while open: sound, battle speed, end-turn warning, Sign
-  in, and Abandon run only over a run; How to play, About), the Game Corner, and only over a screen (`deviceOver()`) Main
+  `#dev-settings` / `#dev-help` from `#dev-parts` in `index.html` while open; Settings is a games' OPTIONS screen since
+  2026-10-06, a card per group (Sound: mute, Music / Effects / Cries bars with LCD numbers; Display: Text speed, Day & night;
+  Battle: speed, end-turn warning, Vibration; Save: Sign in, and Abandon run only over a run; `js/settings.js`'s `OPTIONS`); How to play, About), the Game Corner, and only over a screen (`deviceOver()`) Main
   menu; both put the device away at once (`hideDevice()` in `js/device.js`; on the title the Game Corner then opens over it). The old menu's
   Index is gone (the Moves, Relics and Items apps are it). **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique

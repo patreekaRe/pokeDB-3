@@ -17,9 +17,14 @@ const pinned = (() => {
   return TIMES.includes(t) ? t : null;
 })();
 
+// the Settings app's Day & night: one time kept whatever the clock says (null follows the clock)
+let chosen = null;
+export function setClock(t) { chosen = TIMES.includes(t) ? t : null; }
+
 /** 5-7 dawn, 7-17 day, 17-20 dusk, 20-5 night, by the device's local time. */
 export function timeOfDay(now = new Date()) {
   if (pinned) return pinned;
+  if (chosen) return chosen;
   const h = now.getHours() + now.getMinutes() / 60;
   return h >= 5 && h < 7 ? 'dawn' : h >= 7 && h < 17 ? 'day' : h >= 17 && h < 20 ? 'dusk' : 'night';
 }

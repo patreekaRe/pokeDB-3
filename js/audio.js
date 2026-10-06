@@ -205,7 +205,8 @@ let musicBus = null;       // gain node every music track runs through
 let sfxBus = null;         // gain node every sound effect runs through
 let cryBus = null;         // gain node every cry runs through
 let musicVol = null;       // the 🎵 slider: the music bus runs through it
-let sfxVol = null;         // the 🔔 slider: effects and cries run through it
+let sfxVol = null;         // the 🔔 slider: effects run through it
+let cryVol = null;         // the Cries slider: cries run through it
 let cryPlaying = null;     // the AudioBufferSourceNode of the cry playing now
 const players = {};        // track name -> { el, gain } (el is a LoopedTrack for LOOP_POINTS tracks)
 const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (null if missing)
@@ -243,7 +244,8 @@ export function initAudio() {
       if (getSave().muted && +slider.value > 0) setMuted(false);   // turning it up means you want to hear it
       paintSliders();
     });
-    slider.addEventListener('change', () => playSound('confirm'));   // a blip at the new level, so you hear what you picked
+    // a blip (or a cry) at the new level, so you hear what you picked
+    slider.addEventListener('change', () => { if (key === 'cryVolume') playCry('charmander'); else playSound('confirm'); });
   }
   paintSliders();
   initSoundPops();
@@ -403,19 +405,19 @@ function setMuted(muted) {
   else fadeIn(current);
 }
 
-// an old save's single `volume` is where both bars start
-const volumeOf = (key) => getSave()[key] ?? getSave().volume ?? 1;
+// an old save's single `volume` is where both bars start; cries follow effects until their own bar is moved
+const volumeOf = (key) => getSave()[key] ?? (key === 'cryVolume' ? volumeOf('sfxVolume') : getSave().volume ?? 1);
 // squared, so the slider's low half isn't nearly all loud (ears hear loudness roughly logarithmically)
 const volumeGain = (key) => volumeOf(key) ** 2;
 
 function setVolume(key, volume) {
   updateSave(d => { d[key] = volume; });
-  const node = key === 'musicVolume' ? musicVol : sfxVol;
-  if (node) node.gain.setTargetAtTime(volumeGain(key), ctx.currentTime, 0.02);
+  if (!ctx) return;
+  for (const [k, node] of [['musicVolume', musicVol], ['sfxVolume', sfxVol], ['cryVolume', cryVol]]) node.gain.setTargetAtTime(volumeGain(k), ctx.currentTime, 0.02);
 }
 
 const SOUND_TOGGLES = ['music-btn', 'title-music-btn'];
-const VOLUME_SLIDERS = [['volume-slider', 'musicVolume'], ['title-volume', 'musicVolume'], ['sfx-slider', 'sfxVolume'], ['title-sfx', 'sfxVolume']];
+const VOLUME_SLIDERS = [['volume-slider', 'musicVolume'], ['title-volume', 'musicVolume'], ['sfx-slider', 'sfxVolume'], ['title-sfx', 'sfxVolume'], ['cry-slider', 'cryVolume']];
 
 // a Sound button opens its pop-out: the speaker that mutes and the volume bar (the user's call, 2026-10-02)
 const SOUND_POPS = [['title-sound-btn', 'title-sound-pop']];
@@ -464,6 +466,8 @@ function paintSliders() {
     const slider = $(id), value = Math.round(volumeOf(key) * 100);
     slider.value = value;
     slider.style.setProperty('--v', value);
+    const num = slider.parentElement.querySelector('.vol-num');   // the Settings app's number beside each bar
+    if (num) num.value = value;
   }
 }
 
@@ -484,7 +488,10 @@ function audioContext() {
     sfxBus.connect(sfxVol);
     cryBus = ctx.createGain();
     cryBus.gain.value = CRY_VOLUME;
-    cryBus.connect(sfxVol);
+    cryVol = ctx.createGain();
+    cryVol.gain.value = volumeGain('cryVolume');
+    cryVol.connect(ctx.destination);
+    cryBus.connect(cryVol);
   }
   return ctx;
 }

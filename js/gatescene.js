@@ -12,6 +12,7 @@
  * Pokémon are the GIFs. Under reduced motion nothing shakes, flashes or flies; the lines, bar and sounds stay.
  */
 import { $, el, sleep, makeCard } from './ui.js';
+import { vibrate } from './settings.js';
 import { ALL_CARDS } from './data/cards.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
@@ -372,7 +373,7 @@ function strikeCard({ type, kind, move, hit, breaks }) {
   wrap.focus({ preventScroll: true });
   chargeType = type;
 
-  const vibe = (p) => { if (navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(p); };
+  const vibe = vibrate;
   return new Promise(resolve => {
     let charge = 0, mode = null, pressAt = 0, fullAt = 0, buzzAt = 0, done = false, last = performance.now();
     const tick = (now) => {

@@ -8,6 +8,7 @@ import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { playSound } from './audio.js';
 import { random, shuffled, pickOne } from './rng.js';
+import { textPace } from './settings.js';
 
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
@@ -229,7 +230,6 @@ function closeFocus() {
    for you, like the games: a tap finishes the line being typed, or moves on to the
    next one, and a tap on the last one closes the box. The ▼ blinks while there's more to read. */
 // The map has its own copy of the box (#map-log), so `box` names which one to use.
-const TYPE_MS = 18;
 let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
 export function sayLines(lines, boxId = 'reward-log', onDone) {
@@ -265,18 +265,19 @@ function showLine(i) {
   const line = say.lines[i];
   $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finishLine();
+  const pace = textPace();
+  if (!pace || matchMedia('(prefers-reduced-motion: reduce)').matches) return finishLine();
   box.classList.add('typing');   // an event's trainer bobs their head while it types (css/screens.css)
   const letters = Array.from(line);
   let shown = 0;
   // the rest of the line is laid out but invisible, so centred text doesn't slide as it types out
   const rest = el('span', 'log-rest');
   say.typing = setInterval(() => {
-    shown += 2;
+    shown += pace[0];
     rest.textContent = letters.slice(shown).join('');
     $(`${say.box}-text`).replaceChildren(letters.slice(0, shown).join(''), rest);
     if (shown >= letters.length) finishLine();
-  }, TYPE_MS);
+  }, pace[1]);
 }
 
 function finishLine() {

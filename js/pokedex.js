@@ -21,6 +21,7 @@ import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOA
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
+import { textPace } from './settings.js';
 import { playCry, playSound } from './audio.js';
 import { sceneShot } from './scene.js';
 import { timeOfDay } from './daytime.js';
@@ -539,7 +540,8 @@ let typing = null;
 export function typeOut(nodes) {
   const token = ++typer;
   typing = null;
-  if (calm() || !nodes.length) return;
+  const pace = textPace();
+  if (calm() || !pace || !nodes.length) return;
   const texts = nodes.map(n => n.textContent);
   for (const n of nodes) {
     n.style.minHeight = `${n.offsetHeight}px`;   // the box keeps its size while it fills
@@ -554,7 +556,7 @@ export function typeOut(nodes) {
   };
   const timer = setInterval(() => {
     if (token !== typer || !nodes[0].isConnected) { clearInterval(timer); return; }
-    at += 2;
+    at += pace[0];
     nodes[line].textContent = texts[line].slice(0, at);
     nodes[line].classList.add('typing');
     if (at >= texts[line].length) {
@@ -563,7 +565,7 @@ export function typeOut(nodes) {
       at = 0;
       if (line >= nodes.length) finish();
     }
-  }, 22);
+  }, pace[1] + 4);
   typing = finish;
 }
 

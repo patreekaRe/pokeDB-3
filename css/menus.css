@@ -1180,7 +1180,6 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .app-help .cdev-tile { --c1: #48b8d8; --c2: #1e6a8a; }
 .app-corner .cdev-tile { --c1: #e86ab0; --c2: #8a2a64; }
 .app-menu .cdev-tile { --c1: #e8dcb0; --c2: #9a8c60; }
-.cdev-system .set-row { font-size: 0.6rem; }
 .cdev-icon.locked { cursor: help; }
 .cdev-icon.locked .cdev-tile { --c1: #6a6a7a; --c2: #3a3a48; }
 .cdev-icon.locked .cdev-label, .cdev-icon.locked .cdev-count { color: #a8a8b8; }

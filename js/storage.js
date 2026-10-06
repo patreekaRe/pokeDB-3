@@ -34,9 +34,13 @@ const freshSave = () => ({
   muted: false,              // background music switched off with the 🔊 button
   volume: 1,                 // the old single volume slider, 0-1: where both bars below start on an old save
   musicVolume: null,         // the 🎵 bar, 0-1 (js/audio.js squares it); null = `volume`
-  sfxVolume: null,           // the 🔔 bar: effects and cries
+  sfxVolume: null,           // the 🔔 bar: effects
+  cryVolume: null,           // the Cries bar; null = `sfxVolume` (cries went with effects before it had a bar)
   battleSpeed: 1,            // 1 or 2: the enemy's turn and the hit animations (battleSpeed() in js/battle.js)
   endTurnWarn: true,         // ask before ending a turn with PP left and a card you could play
+  textSpeed: 'mid',          // text boxes typing: slow, mid, fast or instant (textPace() in js/settings.js)
+  clock: 'auto',             // the scenes' time of day: auto (the device clock) or dawn / day / dusk / night (js/daytime.js)
+  vibration: true,           // phones buzz (vibrate() in js/settings.js)
   deckSort: 'got',           // the deck view's sort: 'got' (the order you got them), 'cost', 'name'
   deckFilter: 'all',         // and its filter: 'all', 'attack', 'skill', 'power'
   maxLevel: 0,               // the highest Trainer Level you have unlocked (see data/difficulty.js)

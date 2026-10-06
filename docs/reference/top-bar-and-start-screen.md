@@ -4,9 +4,16 @@ There's no bar: the top-left **Pokédex** (`#brand-btn`: an 18x18 pixel red hand
 always 36px so each pixel is exactly 2x2, the user's call 2026-09-28: "between smooth and a hint of 8-bit") opens the
 Collection device over whatever is showing (`initPokedexButton()` in `js/main.js`, `openPokedex()` in `js/collection.js`).
 It replaced the Poké Ball and its drop-down menu (2026-10-05, the user's call). The menu's items moved into the device's
-home-screen dock: **Settings** (`#dev-settings`: a speaker that mutes, a 🎵 music and a 🔔 effects bar (cries go with
-effects), Battle speed 1x / 2x, the end-turn warning's On / Off (`js/settings.js`), Sign in (the cloud save, see Cloud
-save), and Abandon run over a run), **Help** (`#dev-help`: How to play, About), and over a screen also **Game Corner** and
+home-screen dock: **Settings** (`#dev-settings`, a games' OPTIONS screen since 2026-10-06, the user found it bland: a card
+per group, its head a band in the group's colour with a smooth icon, `.set-group` in `css/base.css`. **Sound**: the speaker
+that mutes, then Music, Effects and Cries bars, each with an LCD number (`.vol-num`, painted by `paintSliders()`); Cries
+have their own gain node (`cryVol` in `js/audio.js`, the save's `cryVolume`, which follows `sfxVolume` until moved; letting
+go of the bar plays a cry). **Display**: Text speed Slow / Mid / Fast / Instant (`textPace()`, read by `sayLines()` in
+`js/rewards.js`, so every text box and scene, and the Pokédex's `typeOut()`), Day & night Clock / Dawn / Day / Dusk / Night
+(`setClock()` in `js/daytime.js`; a `?time=` pin still wins). **Battle**: speed 1x / 2x, the end-turn warning, Vibration
+(`vibrate()`, every buzz goes through it). **Save**: Sign in (the cloud save, see Cloud save) and Abandon run over a run;
+the card hides when neither shows. Every chip row is built from `OPTIONS` in `js/settings.js`: a new option is a line
+there, a `.set-opt` in `index.html` and a default in `freshSave()`), **Help** (`#dev-help`: How to play, About), and over a screen also **Game Corner** and
 **Main menu**. Stats and Achievements are device apps built fresh from the save by `js/records.js` (a locked legendary's
 achievement shows "???" for its name, the user's call). Stats (revamped 2026-09-28, the user found "0/3 bosses" meaningless) is in sections: Runs (won
 with win rate, lost, best level won, wins per type), Battles (Pokémon and Alphas defeated, furthest biome, each boss's kill

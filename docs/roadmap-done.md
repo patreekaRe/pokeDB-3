@@ -1527,3 +1527,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   loss), plate, stat tiles, relics, items and the HP chart on green LCDs, the deck on a dark screen; gold casing in the
   Hall of Fame. The loss recap window after a lost run keeps its old look.
 - **Smooth icons across the device** (2026-10-06, Desktop app; the user's ask): every emoji inside the Collection device and the windows sharing its pages (full record stats, type chips, tags, Pokédex move kinds, Safari areas, Trainer Card) is smooth vector art now, swapped by `js/icons.js` inside `[data-smooth-icons]` from `SMOOTH_EMOJI` (18 new drawings); cards keep pixel icons.
+- **Settings as an OPTIONS screen** (2026-10-06, Desktop app; the user found it bland): coloured cards for Sound (Music,
+  Effects and a new Cries bar, LCD numbers), Display (new Text speed and Day & night), Battle (speed, end-turn warning, a new
+  Vibration switch) and Save. Detail in `docs/reference/top-bar-and-start-screen.md`.

@@ -23,6 +23,7 @@ import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
+import { vibrate } from './settings.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
@@ -2242,7 +2243,7 @@ function initScrub() {
     }
     renderHand();
     playSound('stick');
-    if (navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(8);
+    vibrate(8);
   };
   document.addEventListener('pointerdown', (e) => {
     drag = null;

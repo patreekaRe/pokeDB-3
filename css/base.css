@@ -165,30 +165,16 @@ body.scrolled .topbar::before { opacity: 1; }
 .dev-row[hidden] { display: none; }
 .dev-row.danger { color: #b02828; }
 .mi-icon { width: 32px; height: 32px; display: grid; place-items: center; font-size: 1rem; flex: 0 0 auto; }
-.dev-settings .sound-ctl { margin-bottom: 4px; }
-.dev-settings .set-row:last-of-type { margin-bottom: 14px; }
 /* Sound's pop-out (SOUND_POPS in js/audio.js): a speaker (tap to mute; SOUND_TOGGLES) and a volume bar beside it
    (VOLUME_SLIDERS), in the Pokédex's Settings and under the title's speaker; a pixel track (the HP bar's outline) and a square knob */
 .sound-ctl { display: flex; align-items: center; gap: 8px; }
 .sound-mute { flex: none; display: grid; place-items: center; padding: 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; border-radius: var(--round-sm); }
 .sound-mute:active .snd-icon { translate: 0 2px; }
-/* two bars, music (🎵) over effects and cries (🔔): VOLUME_SLIDERS */
+/* the title's two bars, music (🎵) over effects (🔔); the Settings app adds Cries: VOLUME_SLIDERS */
 .vol-rows { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .vol-row { display: flex; align-items: center; gap: 6px; }
 .vol-tag { flex: none; font-size: 0.85rem; line-height: 1; }
-/* the menu's other settings (js/settings.js): a label and a pill that flips */
-.set-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; font-size: 0.78rem; line-height: 1.25; color: var(--win-ink); }
-.set-label { min-width: 0; }
-.set-toggle {
-  flex: none; min-width: 48px; padding: 5px 8px 4px; border: 3px solid var(--win-edge); border-radius: var(--round-sm);
-  background: var(--win-panel); box-shadow: 2px 2px 0 var(--win-shadow); color: var(--win-ink);
-  font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.75rem; cursor: pointer;
-}
-.set-toggle.on { border-color: #257a38; background: #72dc70; color: #fff; text-shadow: 1px 1px 0 #257a38; }
-.set-toggle:active { translate: 1px 1px; box-shadow: 1px 1px 0 var(--win-shadow); }
-.dev-settings .snd-icon { font-size: 1.2rem; }
 @keyframes cursorBlink { 50% { opacity: 0; } }
-.dev-settings .sound-mute:hover, .dev-settings .sound-mute:focus-visible { background: var(--win-panel); }
 .vol-slider {
   --fill: calc(var(--v, 100) * 1%);
   flex: 1 1 auto;
@@ -210,6 +196,61 @@ body.scrolled .topbar::before { opacity: 1; }
 .vol-slider:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 /* muted: the bar greys out, still draggable (turning it up unmutes) */
 .sound-ctl.muted .vol-slider { filter: grayscale(1); opacity: 0.55; }
+/* The Settings app (#dev-settings, js/settings.js), a games' OPTIONS screen: a card per group, its head a band in the
+   group's colour with a smooth icon; volume bars with an LCD number, every other option a row of chips, the picked one lit */
+.dev-settings { display: flex; flex-direction: column; gap: 14px; }
+.set-group {
+  --tone: #3c8cf0; --tone-dk: #1e4fa0;
+  display: block; overflow: hidden; border: 3px solid var(--win-ink); border-radius: 12px; background: #fbf7ea;
+  box-shadow: 0 4px 0 rgba(36, 28, 20, 0.22);
+}
+.set-group[data-tone="display"] { --tone: #4cb84a; --tone-dk: #257a38; }
+.set-group[data-tone="battle"] { --tone: #e8483c; --tone-dk: #a82420; }
+.set-group[data-tone="save"] { --tone: #8a64d8; --tone-dk: #4e3290; }
+/* Save holds only Sign in and Abandon run, each shown only sometimes */
+.set-group[data-tone="save"]:not(:has(> .dev-row:not([hidden]))) { display: none; }
+.set-head {
+  display: flex; align-items: center; gap: 9px; min-height: 42px; padding: 5px 8px 5px 7px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 55%), var(--tone);
+  border-bottom: 3px solid var(--win-ink); color: #fff; text-shadow: 2px 2px 0 var(--tone-dk);
+}
+.set-head b { font-weight: 400; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; }
+.set-ico { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid var(--win-ink); border-radius: 50%; background: #fff; }
+.set-ico svg { width: 20px; height: 20px; }
+.set-head .sound-mute { margin-left: auto; width: 36px; height: 30px; border: 2px solid var(--win-ink); border-radius: 8px; background: #fff; box-shadow: 0 2px 0 var(--tone-dk); }
+.set-head .sound-mute:active { translate: 0 2px; box-shadow: none; }
+.set-head .snd-icon { font-size: 1rem; }
+.set-head .snd-icon svg { width: 20px; height: 20px; }
+.set-group > :is(.vol-row, .set-opt, .dev-row) + :is(.vol-row, .set-opt, .dev-row) { border-top: 2px dashed rgba(36, 28, 20, 0.14); }
+.dev-settings .vol-row { display: grid; grid-template-columns: 22px 4.6em minmax(0, 1fr) 38px; align-items: center; gap: 8px; padding: 9px 10px; }
+.dev-settings .vol-tag svg { display: block; width: 22px; height: 22px; }
+.vol-name, .set-name { font-size: 0.6rem; color: var(--win-ink); }
+.vol-num {
+  padding: 5px 0 4px; border: 2px solid #1f3a14; border-radius: 5px; background: #b6d68e; color: #1f3a14;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); font-size: 0.5rem; text-align: center;
+}
+.sound-ctl.muted .vol-num { opacity: 0.5; }
+.dev-settings .vol-slider::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--tone) var(--fill), #f0f0e8 var(--fill)); }
+.dev-settings .vol-slider::-moz-range-progress { background: var(--tone); }
+.set-opt { display: flex; flex-direction: column; gap: 4px; padding: 10px 10px 11px; }
+.set-opt small { font-size: 0.46rem; line-height: 1.4; color: #6a5e48; }
+.set-chips {
+  display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 3px; margin-top: 4px; padding: 3px;
+  border-radius: 9px; background: #e6dec6; box-shadow: inset 0 2px 0 rgba(36, 28, 20, 0.14);
+}
+.set-chip {
+  min-width: 0; padding: 8px 0 7px; border: 0; border-radius: 7px; background: none; color: #6a5e48; cursor: pointer;
+  font: 0.5rem/1 var(--pixel-font); font-synthesis-weight: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: background-color 0.15s, color 0.15s;
+}
+@media (hover: hover) { .set-chip:hover:not([aria-checked="true"]) { background: rgba(255, 255, 255, 0.6); color: var(--win-ink); } }
+.set-chip[aria-checked="true"] {
+  background: var(--tone); color: #fff; text-shadow: 1px 1px 0 var(--tone-dk);
+  box-shadow: 0 2px 0 var(--tone-dk), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+.set-chip:active { translate: 0 1px; }
+.set-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.set-group > .dev-row { border-radius: 0; padding: 10px 12px 10px 8px; font-size: 0.6rem; }
 @keyframes menuDrop {
   from { opacity: 0; transform: translateY(-6px) scale(0.92); }
   to   { opacity: 1; transform: none; }

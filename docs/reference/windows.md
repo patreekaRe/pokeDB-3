@@ -39,7 +39,7 @@ hover/focus (left padding reserves its space; `.primary` = orange frame,
 frame (`.sound-pop`, `SOUND_POPS` in `js/audio.js`: the button again, a tap elsewhere or Escape close it): a speaker
 (`.sound-mute`, 🔊 / 🔇, every `.snd-icon` follows the mute) and a `.vol-slider` to its right, a pixel track (the HP bar's
 outline, green fill from `--v`) with a square knob; `.muted` on the row greys the bar, and dragging it up unmutes. In the
-Pokédex it is the Settings app (`#dev-settings`), on the title under or beside the speaker on a soft dark
+Pokédex it is the Settings app's Sound card (`#dev-settings`, a third bar for Cries there), on the title under or beside the speaker on a soft dark
 backing (`#title-sound-pop`). The speaker's icon is swapped as it's tapped, so the outside-tap checks use
 `e.composedPath()`, not `e.target.closest()` (a detached target read as outside and closed the menu).
 

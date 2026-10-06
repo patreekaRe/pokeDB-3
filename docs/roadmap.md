@@ -70,7 +70,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
 - More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
-  Android vibration on big hits (a Settings switch), a "Reduce flashing" / text-size setting,
+  Android vibration on big hits (the Settings switch exists since 2026-10-06), a "Reduce flashing" / text-size setting,
   quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
