@@ -12,6 +12,13 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: the Collection's **Stats app** is Pokédex style too, "Trainer Data" (`js/statsdex.js`; the old `openStats()` /
+  `#stats-dialog` are gone). Five banners (Runs, Battles, Collection, Wallet, Champions), each opening the red handheld:
+  seven-segment LCD digits that count up with a `stat-tick` blip, runs as an HP bar, bosses as badge slots lit once beaten,
+  champions in a PC Box. The user picked parts 1, 2 and 4 of the pitch; still unbuilt: completion rings with a gold rim on the
+  Collection page (3) and a printable Trainer Data receipt on a held A (5). Next in line: Achievements, then the Record Book
+  and Hall of Fame, pitched one at a time.
+
 - 2026-10-06: the Collection's **Relics and Items apps** are Pokédex style (`js/bagdex.js`: group banners, then the red
   handheld). Same day, after the user's phone look: no painted places any more (they hid the item); banners and the screen are
   flat colours like the Pokédex's Rewards banner, the thing blown up in the middle, and item sprites are trimmed to what's

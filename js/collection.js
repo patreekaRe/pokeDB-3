@@ -17,7 +17,8 @@ import { pokedexApp } from './pokedex.js';
 import { safariDexApp, safariDexCount } from './safaridex.js';
 import { movesApp } from './cardindex.js';
 import { bagApp } from './bagdex.js';
-import { openStats, openAchievements } from './records.js';
+import { openAchievements } from './records.js';
+import { statsApp } from './statsdex.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
 import { openTrainerCard, trainerTile, badgeNews, partner, cardTier, badgeArt } from './trainercard.js';
@@ -130,7 +131,7 @@ function apps(save) {
       : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
     things('relics', 'Relics', vec('relics'), RELICS),
     things('items', 'Items', vec('items'), ITEMS),
-    { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, fill: (p) => openStats(p) },
+    { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, cls: 'cdev-dex', app: statsApp },
     { id: 'achievements', name: 'Achievements', art: vec('trophy'),
       count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, fill: (p) => openAchievements(p) },
     book('record', 'Record Book', 'win', 'Win a run to unlock it.'),

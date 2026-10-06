@@ -103,6 +103,7 @@ const SOUNDS = {
   stick:        { synth: stickTick },                         // the Game Corner's joystick moves the cursor: made in code (the user's call)
   'dex-on':     { synth: ac => dexBlip(ac, true) },           // the Pokédex's lid swings open on a biome's page (pokedex.js)...
   'dex-off':    { synth: ac => dexBlip(ac, false) },          // ...and shuts going back to the biomes
+  'stat-tick':  { synth: statTick },                          // the Stats app's digits counting up (statsdex.js)
   thunder:      { url: 'assets/audio/sfx/thunder.mp3' },      // a lightning bolt in a boss's storm
   coins:        { url: 'assets/audio/sfx/buy.mp3' },          // a fight's PokéCoins and ₽ are paid out: the Mart's buy file (the user's call)
   door:         { url: 'assets/audio/sfx/event.mp3' },        // walking into a Poké Mart or Pokémon Center: the same sound as a ? room (the user's call)
@@ -735,6 +736,18 @@ function dexBlip(ac, up) {
     out[i] = Math.sign(Math.sin(2 * Math.PI * notes[k] * t)) * Math.exp(-local / 0.05) * fade * (k === notes.length - 1 ? 1 : 0.8);
   }
   return normalize(buffer, 0.14);
+}
+
+/** One short high square blip, the dex blip's last note an octave up, quiet enough to repeat. */
+function statTick(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.035);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    out[i] = Math.sign(Math.sin(2 * Math.PI * 2637 * t)) * Math.exp(-t / 0.012) * Math.min(1, t / 0.001);
+  }
+  return normalize(buffer, 0.06);
 }
 
 /** A filtered click: a burst of noise rung through a resonant band at `freq`, the body of every plastic and metal tick below. */
