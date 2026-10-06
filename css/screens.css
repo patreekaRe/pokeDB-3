@@ -4547,7 +4547,7 @@ body.scene-peek #backdrop { display: none; }
 @media (min-width: 560px) { .pdx-controls { border-radius: 0 0 22px 22px; } }
 .pdx-round {
   width: 52px; height: 52px; border-radius: 50%; border: 4px solid var(--shell-rim); cursor: pointer; color: #fff; font-size: 1.1rem;
-  background: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0); box-shadow: 0 4px 0 var(--shell-deep);
+  background: var(--btn-a); box-shadow: 0 4px 0 var(--shell-deep);
 }
 .pdx-round:active { translate: 0 3px; box-shadow: 0 1px 0 var(--shell-deep); }
 .pdx-counter { min-width: 96px; text-align: center; font: 0.7rem/1 var(--pixel-font); font-synthesis-weight: none; }

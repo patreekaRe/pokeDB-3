@@ -64,10 +64,14 @@
 :root {
   --shell-hi: #e0343a; --shell: #c41f2a; --shell-lo: #b01822; --shell-fold: #a8141e;
   --shell-rim: #7a1016; --shell-deep: #5a0c12; --shell-hinge: #8a1018;
+  /* the buttons, swapped where a shell would swallow them: the D-pad (and pressed), the A / round buttons */
+  --pad: #2a2a30; --pad-on: #48484f;
+  --btn-a: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0);
 }
 :root[data-shell="blue"] {
   --shell-hi: #3a7ae0; --shell: #245cc4; --shell-lo: #1a4aac; --shell-fold: #16409c;
   --shell-rim: #0f2a6e; --shell-deep: #0a1d4f; --shell-hinge: #133584;
+  --btn-a: radial-gradient(circle at 35% 30%, #ffc0d8 0 12%, #e0407a 40%, #a01c50);
 }
 :root[data-shell="yellow"] {
   --shell-hi: #f8d040; --shell: #ecb818; --shell-lo: #d8a20c; --shell-fold: #cc960a;
@@ -84,6 +88,8 @@
 :root[data-shell="black"] {
   --shell-hi: #50505c; --shell: #383840; --shell-lo: #2a2a32; --shell-fold: #26262c;
   --shell-rim: #101014; --shell-deep: #060608; --shell-hinge: #1c1c22;
+  --pad: #a8a8b4; --pad-on: #d0d0da;
+  --btn-a: radial-gradient(circle at 35% 30%, #ffb0b0 0 12%, #e03a3a 40%, #9a1414);
 }
 
 body[data-theme="fire"]  { --accent: #ff7a45; --accent-dark: #d4501f; }

@@ -1049,9 +1049,9 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 /* the hardware: D-pad, speaker grille, B and A */
 .cdev-pad { flex: none; display: flex; align-items: center; justify-content: space-between; height: 76px; padding: 0 8px; }
 .cdev-dpad { display: grid; grid-template-columns: repeat(3, 22px); grid-template-rows: repeat(3, 22px); filter: drop-shadow(0 3px 0 var(--shell-deep)); }
-.cdev-dpad > * { background: #2a2a30; }
+.cdev-dpad > * { background: var(--pad); }
 .cdev-dpad button { padding: 0; border: 0; cursor: pointer; }
-.cdev-dpad button:active { background: #48484f; }
+.cdev-dpad button:active { background: var(--pad-on); }
 .cdev-dpad [data-dir="up"] { grid-area: 1 / 2; border-radius: 4px 4px 0 0; }
 .cdev-dpad [data-dir="left"] { grid-area: 2 / 1; border-radius: 4px 0 0 4px; }
 .cdev-dpad span { grid-area: 2 / 2; }
@@ -1062,7 +1062,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 .cdev-btn {
   width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--shell-rim); cursor: pointer;
   font: 0.7rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
-  background: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0); box-shadow: 0 4px 0 var(--shell-deep);
+  background: var(--btn-a); box-shadow: 0 4px 0 var(--shell-deep);
 }
 #cdev-b { align-self: flex-end; background: radial-gradient(circle at 35% 30%, #f4f4f8 0 12%, #b8b8c4 45%, #6a6a78); color: #2a2a30; text-shadow: none; }
 .cdev-btn:active { translate: 0 3px; box-shadow: 0 1px 0 var(--shell-deep); }
