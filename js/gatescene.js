@@ -12,7 +12,7 @@
  * Pokémon are the GIFs. Under reduced motion nothing shakes, flashes or flies; the lines, bar and sounds stay.
  */
 import { $, el, sleep, makeCard } from './ui.js';
-import { vibrate } from './settings.js';
+import { vibrate } from './prefs.js';
 import { ALL_CARDS } from './data/cards.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';

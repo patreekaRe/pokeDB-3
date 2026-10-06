@@ -8,7 +8,7 @@ import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { playSound } from './audio.js';
 import { random, shuffled, pickOne } from './rng.js';
-import { textPace } from './settings.js';
+import { textPace } from './prefs.js';
 
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.

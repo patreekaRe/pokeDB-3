@@ -3,37 +3,26 @@
    (index.html's #dev-settings): under the sound bars (js/audio.js), a row
    of choices per option, each saved under its key. Battle speed is read
    by js/battle.js, the text speed by every typing text box, the clock by
-   js/daytime.js and vibration by vibrate().
+   js/daytime.js and vibration by vibrate() (their meanings are in js/prefs.js).
    ============================================================ */
 
 import { $, el } from './ui.js';
-import { getSave, updateSave } from './storage.js';
+import { updateSave } from './storage.js';
 import { setClock } from './daytime.js';
 import { smoothIcon } from './smooth-icons.js';
+import { pref as valueOf, vibrate } from './prefs.js';
 
 const OPTIONS = {
-  textSpeed: { def: 'mid', values: [['slow', 'Slow'], ['mid', 'Mid'], ['fast', 'Fast'], ['instant', 'Instant']] },
+  textSpeed: { values: [['slow', 'Slow'], ['mid', 'Mid'], ['fast', 'Fast'], ['instant', 'Instant']] },
   clock: {
-    def: 'auto', values: [['auto', 'Clock'], ['dawn', 'Dawn'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night']],
+    values: [['auto', 'Clock'], ['dawn', 'Dawn'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night']],
     // the title's sky repaints on resize; every other scene reads the time as it paints
     apply: (v, changed) => { setClock(v); if (changed) dispatchEvent(new Event('resize')); },
   },
-  battleSpeed: { def: 1, values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
-  endTurnWarn: { def: true, values: [[true, 'On'], [false, 'Off']] },
-  vibration: { def: true, values: [[true, 'On'], [false, 'Off']], apply: (v, changed) => { if (changed && v) vibrate(20); } },
+  battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
+  endTurnWarn: { values: [[true, 'On'], [false, 'Off']] },
+  vibration: { values: [[true, 'On'], [false, 'Off']], apply: (v, changed) => { if (changed && v) vibrate(20); } },
 };
-
-const valueOf = (key) => getSave()[key] ?? OPTIONS[key].def;
-
-// letters typed per tick and the tick's ms; null types the whole line at once
-const PACE = { slow: [1, 34], mid: [2, 18], fast: [4, 14], instant: null };
-/** The text boxes' typing pace, [letters, ms], or null for instant. */
-export const textPace = () => PACE[valueOf('textSpeed')] ?? PACE.mid;
-
-/** Buzz the phone, unless Vibration is off (iOS lets no page vibrate). */
-export function vibrate(pattern) {
-  if (valueOf('vibration') && navigator.userActivation?.hasBeenActive !== false) navigator.vibrate?.(pattern);
-}
 
 function render() {
   for (const row of document.querySelectorAll('#dev-settings .set-opt')) {

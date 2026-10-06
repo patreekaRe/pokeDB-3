@@ -21,7 +21,7 @@ import { DEX_PAGES, DEPTHS_PAGE, ALL_PAGES, safariOpen, DEX_NUMBER, RESEARCH_GOA
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
-import { textPace } from './settings.js';
+import { textPace } from './prefs.js';
 import { playCry, playSound } from './audio.js';
 import { sceneShot } from './scene.js';
 import { timeOfDay } from './daytime.js';

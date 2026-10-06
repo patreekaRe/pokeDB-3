@@ -8,10 +8,10 @@ home-screen dock: **Settings** (`#dev-settings`, a games' OPTIONS screen since 2
 per group, its head a band in the group's colour with a smooth icon, `.set-group` in `css/base.css`. **Sound**: the speaker
 that mutes, then Music, Effects and Cries bars, each with an LCD number (`.vol-num`, painted by `paintSliders()`); Cries
 have their own gain node (`cryVol` in `js/audio.js`, the save's `cryVolume`, which follows `sfxVolume` until moved; letting
-go of the bar plays a cry). **Display**: Text speed Slow / Mid / Fast / Instant (`textPace()`, read by `sayLines()` in
+go of the bar plays a cry). **Display**: Text speed Slow / Mid / Fast / Instant (`textPace()` in `js/prefs.js`, DOM-free so tests can import it, read by `sayLines()` in
 `js/rewards.js`, so every text box and scene, and the Pokédex's `typeOut()`), Day & night Clock / Dawn / Day / Dusk / Night
 (`setClock()` in `js/daytime.js`; a `?time=` pin still wins). **Battle**: speed 1x / 2x, the end-turn warning, Vibration
-(`vibrate()`, every buzz goes through it). **Save**: Sign in (the cloud save, see Cloud save) and Abandon run over a run;
+(`vibrate()` in `js/prefs.js`, every buzz goes through it). **Save**: Sign in (the cloud save, see Cloud save) and Abandon run over a run;
 the card hides when neither shows. Every chip row is built from `OPTIONS` in `js/settings.js`: a new option is a line
 there, a `.set-opt` in `index.html` and a default in `freshSave()`), **Help** (`#dev-help`: How to play, About), and over a screen also **Game Corner** and
 **Main menu**. Stats and Achievements are device apps built fresh from the save by `js/records.js` (a locked legendary's
