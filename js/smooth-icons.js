@@ -158,17 +158,20 @@ const ART = {
     <path d="M8 10.2l3.6-4.4" stroke="#ffd0b0" stroke-width="1.8" stroke-linecap="round"/>
     <path d="M12 3.5h8.4l6.4 6.2 1.4 9.4-5.2 8.4H9.8l-5.6-7.8 1.2-9.6Z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`,
 
-  // Items: the games' Potion, a purple spray bottle with its white trigger head
-  items: `<path d="M11.5 8V4.6c0-1.2.9-2.1 2.1-2.1h5.6c1.6 0 2.8 1.2 2.8 2.8V8Z" fill="#f4f4f8" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
-    <path d="M22 3.8h3.4c.8 0 1.2.6 1.2 1.2s-.4 1.2-1.2 1.2H22" fill="#c8ccd8" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="M18.6 8V5.4c0-.8-.4-1.2-1-1.4" fill="none" stroke="#c8ccd8" stroke-width="1.4" stroke-linecap="round"/>
-    <rect x="10" y="8" width="12" height="3" rx="0.8" fill="#9aa0b4" stroke="${INK}" stroke-width="1.6"/>
-    <path d="M10.6 11h10.8c2.4 0 3.6 1.6 3.6 3.6v11.4c0 2-1.6 3.5-3.6 3.5H10.6C8.6 29.5 7 28 7 26V14.6C7 12.6 8.2 11 10.6 11Z" fill="#9050d8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M20.2 11.2h1.2c2.4 0 3.6 1.6 3.6 3.6v11.2c0 2-1.6 3.4-3.6 3.4h-1.2Z" fill="#6430ac"/>
-    <path d="M7.2 17.4h17.6v5.2H7.2Z" fill="#c8a8ff"/>
-    <path d="M7.2 17.4h17.6M7.2 22.6h17.6" stroke="#5a2898" stroke-width="1"/>
-    <path d="M10.2 14v1.6M10.2 24.6v2" stroke="#e4d0ff" stroke-width="1.8" stroke-linecap="round"/>
-    <path d="M10.6 11h10.8c2.4 0 3.6 1.6 3.6 3.6v11.4c0 2-1.6 3.5-3.6 3.5H10.6C8.6 29.5 7 28 7 26V14.6C7 12.6 8.2 11 10.6 11Z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`,
+  // Items: the games' Potion (Bulbapedia's art), a white trigger head with its purple nozzle on a round purple bottle
+  items: `<path d="M7.6 20.2C5.4 21.8 4.8 24.2 5.2 26.4c.4 2.2 1.8 3.1 3.8 3.1h12.8c2 0 3.3-1.1 3.3-3.1 0-2.8-2.2-5.6-4.6-7.4Z" fill="#6a5596" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7.4 21.4C6 22.8 5.8 25 6.2 26.6c.4 1.4 1.4 1.9 2.8 1.9h1.4c-1.6-1.6-2.2-4.4-1.4-7.6Z" fill="#8a7ac6"/>
+    <ellipse cx="18" cy="23.4" rx="1.5" ry="1.3" fill="#a898e0"/>
+    <path d="M8.4 2.8C11 2 16 1.8 18.6 2.6c2.6.8 3.4 3 2.6 5.4-.6 1.6-1.6 2.4-1.4 3.8.2 1.2 1.8 2 1.8 3.8 0 1.6-.8 2.8-1.6 3.4l-8.6 2.4c-2.4-.4-4.8-1-5.2-2.6-.4-1.8.8-3.4 1.6-5.2.6-1.6-.2-3-.8-4.6L6.8 5.6Z" fill="#f6f4f8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M11.8 9c3.2-.4 7.2.6 8 2.8.2 1.2 1.8 2 1.8 3.8 0 1.6-.8 2.8-1.6 3.4l-8.6 2.4c-.8-3.4-.4-8.4.4-12.4Z" fill="#bab0c4"/>
+    <path d="M6.6 17.6c.6 1.6 2.6 2.2 4.8 2.6" fill="none" stroke="#bab0c4" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M13.4 3.6c1.6-.3 3.4-.3 4.6 0" stroke="${INK}" stroke-width="1" stroke-linecap="round"/>
+    <path d="M8.4 2.8l2.8 2.8c.8 2.4.4 6.4-.8 10-.6 2 .2 4 1 5.8" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M14.2 20.6c.2-3.4.6-6.8 1.2-8 .6-1.2 1.6-1.2 2.2 0 .8 2 1.4 4.6 2.4 6.6Z" fill="#6a5596" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M14.4 20.6c1.6.6 3.6.4 5.2-.8" fill="none" stroke="#3a2e5c" stroke-width="1" stroke-linecap="round"/>
+    <ellipse cx="8.6" cy="7.6" rx="2.6" ry="2.8" fill="#8070c8" stroke="${INK}" stroke-width="1.6"/>
+    <path d="M9.4 5.6l1.6.4M9.8 7.6h1.6M9.4 9.6l1.6-.4" stroke="#5a4a9e" stroke-width=".9" stroke-linecap="round"/>
+    <ellipse cx="7.4" cy="7.8" rx=".9" ry="1.5" fill="#2e2448"/>`,
 
   // Stats: a little screen with three rising bars
   stats: `<rect x="3" y="4" width="26" height="23" rx="3" fill="#fff" stroke="${INK}" stroke-width="2"/>
