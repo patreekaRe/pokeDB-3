@@ -80,7 +80,7 @@ is the screen and the overlay that use them.
   top), its number carved by the wall, its slab open over the stair of the floor below. A floor is lit once climbed or where
   you stand, dim above (`stone(f, lit)`). Plain floors: their 2-3 doors (`door()`: an arched frame, planks, iron bands, a
   gem in the keystone in the room's colour, `DOOR_GEM`) with windows and torches between; every 10th a guardian's hall
-  (banners in the guardian's biome colours, `BANNER`, braziers, a gold-trimmed double door); floor 0 the lobby (the way in,
+  (banners in the guardian's biome colours, `BANNER`, braziers, one great gold-trimmed door); floor 0 the lobby (the way in,
   a bronze plaque, torches); floor 100 the summit, open to the sky (broken pillars, an altar where Rayquaza comes down). The
   spiral stair (`stairWell()`, `stairSteps()`) winds round a newel at the right of every floor but the top.
 - **The climb screen** (`renderTower()`): `#tower-view` fills the map screen behind the run card (the sign and the map box
@@ -92,6 +92,11 @@ is the screen and the overlay that use them.
   stamps the new number (gold on a guardian's floor, SUMMIT on the top) with the `stamp` synth. A fresh climb walks up from
   the lobby. The altitude gauge (`#tw-gauge`) is the sky's colours from 0 to 100, a tick every 10, your floor and a gold
   tick at your best; wider screens add its marks (🌲 ☁️ ⛈️ 🌇 🌌 🐉). Under reduced motion nothing walks.
+  Fluid motion (the user's ask, 2026-10-06): the screen repaints every display frame (`requestAnimationFrame`, 60/120 Hz)
+  while the art's own clock (`tick`: flicker, drift, lightning) stays at 30 a second; the art is painted at a whole-pixel
+  camera on a canvas one row taller and slid the rest by CSS `translate` (`paint()`), so pans glide instead of stepping a
+  3-4px tower pixel; the climb glides round the newel on the steps' circle with a little lift per tread. The Climb film's
+  pan does the same (`paintPan()` in `js/climb-intro.js`).
 - **Guardian intros** (`guardianIntro()`, from `fight()` before the wipe): the overlay `#tower-fx` shows the hall close up
   (bigger pixels, no stair): the braziers flare, the doors grind open on red light and the guardian's silhouette (its GIF,
   sized to the door), and "Floor N · Guardian" slams in. Rayquaza's on floor 100: green streaks cross the stars twice, the
@@ -115,6 +120,18 @@ is the screen and the overlay that use them.
   the climber (the user saw it, 2026-10-05). The sky also repaints when `#tower-top` resizes, so the grass line never
   drifts from the layout.
 
+## The opening film (2026-10-06)
+
+Pressing Climb (or Climb again, or a Practice pick) plays `climbIntro()` from `js/climb-intro.js` before the climb starts
+(`onStart` in `js/main.js`), on its own `#climb-scene` (the journey films' frame: `.travel-scene`, bars, skip, dark). The
+camera starts at the summit (jade roof, Rayquaza's glow), "SKY PILLAR" over it, and falls the whole height (a slow drift that speeds up, the user's ask, then brakes to settle at the foot: hitting it at full speed felt abrupt) through
+`paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). Then a slow dip to black (`fadeTo()`, inline on `.travel-dark`; FADE_OUT / CUT / FADE_IN, ~2.6 s in all) and a fade up on the user's
+reference (a hero from behind before a temple door): your climber's back sprite walks a flagstone path between four stone
+pillars to the great arched door at a brisk pace with a `footstep` each step (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
+two scowling eyes over the arch light up (`gate-hum`), the door grinds open on warm light with a shake (`rumble-far`), the
+light floods out, your Pokémon walks in (`door-light`, a warm swell) and it goes dark. Like `travel()` it resolves dark with a `close()` called once
+the climb's map is up. A tap or Enter skips it; reduced motion holds one still of the door. About 12 s in all.
+
 ## The leaderboard
 
 - `towerBoard/<week>_<uid>` in the cloud save's Firestore, posted once by the week's first try when it ends
@@ -130,7 +147,8 @@ is the screen and the overlay that use them.
 `?tower=25` starts a throwaway climb at that floor (the week's tower and starter, evolved as its guardians would have),
 never saved; `&hp=0.1` shrinks every foe's HP to see guardians and flights through quickly (`?tower=99&hp=0.01` reaches
 Rayquaza in one fight). `?tower=1` walks up from the lobby. From the console, `import('/js/tower.js')` then
-`guardianIntro({ def, floor })` or `towerFall({ floor, trail: [], sprite })` plays either on its own.
+`guardianIntro({ def, floor })` or `towerFall({ floor, trail: [], sprite })` plays either on its own. `?climb` (`&starter=id`)
+plays the opening film after PRESS START, then `?tower=1`'s throwaway climb.
 
 ## Tests and the bot
 

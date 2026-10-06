@@ -16,6 +16,18 @@ three places:
   Sunken Ruins' gameplay (18 Gen 6-9 Pokémon, a bonus Pokédex page, `?biome=ruins`); the sim takes `cfg.route`. The Ruins
   borrow the Shrine's scenery. Next: part b (Desktop app), painting the crossroads and the Ruins.
 
+- 2026-10-06: Settings option 7, **Reset save** (the user skipped 6, the Music player, for now): a row in Settings' Save group,
+  two asks, then a fresh save keeping Settings' choices and a reload. About's one-step erase is gone. Checked in the pane at
+  375x812. Next: option 6 if the user wants it back, else the polish batch in `docs/roadmap.md`.
+
+- 2026-10-06: Settings option 5, **Nickname**: a Trainer group at the top of Settings with a name box (`showName()` /
+  `initName()` in `js/settings.js`, `setTrainerName()` in `js/leaderboard.js`, the same `pokedb.safari.name` key the leaderboard
+  uses, so this device only). Empty goes back to "Trainer". Checked in the pane at 375x812. Next: option 6, Music player.
+
+- 2026-10-06: Settings option 4, **Text size: Normal / Large** (`html.large-text`, root font 120%; cards keep theirs, phone
+  nameplates keep their name and HP size), checked in the pane at 375x812. The user still has to see it on a phone. Next:
+  option 5, Nickname (CLOUD).
+
 - 2026-10-06: the Collection's **Record Book and Hall of Fame** are Pokédex style (the user's picks from a pitch). The Record
   Book (`recordsApp('record')`) has a banner per Trainer Level (only those with wins), the Crystal Depths and Lost runs, newest
   first, one run a screen: the starter on its pad, its story line, four numbers, a Full record button. The Hall of Fame
@@ -40,6 +52,13 @@ three places:
   champions in a PC Box. The user picked parts 1, 2 and 4 of the pitch; still unbuilt: completion rings with a gold rim on the
   Collection page (3) and a printable Trainer Data receipt on a held A (5). Next in line: Achievements, then the Record Book
   and Hall of Fame, pitched one at a time.
+
+- 2026-10-06: Settings option 3, **Flashing & shake: Full / Reduced** (`calmFx()` in `js/prefs.js`), checked in the pane:
+  Reduced, the Wastes boss prelude ramps up smoothly with no white strobe frames, and the battle shakes / flashes are off or a
+  faint fade. The user still has to see it on a phone. Next: option 4, Text size (LOCAL).
+
+- 2026-10-06: Settings option 2, **Battle animations On / Off** (`battleFx()` in `js/prefs.js`), checked in the pane: off,
+  a fight plays with no card trails or stat bands. The user still has to feel it in a real run. Next: option 3, flashing / shake.
 
 - 2026-10-06: the Collection's **Relics and Items apps** are Pokédex style (`js/bagdex.js`: group banners, then the red
   handheld). Same day, after the user's phone look: no painted places any more (they hid the item); banners and the screen are

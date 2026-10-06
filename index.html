@@ -101,6 +101,11 @@
     <div id="dev-parts" hidden>
       <!-- the Settings app, a games' OPTIONS screen: a card per group, its choices built by js/settings.js -->
       <div class="dev-settings" id="dev-settings">
+        <section class="set-group" data-tone="trainer">
+          <header class="set-head"><span class="set-ico" data-icon="cap" aria-hidden="true"></span><b>Trainer</b></header>
+          <form class="set-opt set-name-form" id="set-name-form"><label class="set-name" for="set-name-input">Nickname</label><small id="set-name-hint">On your Trainer Card and the leaderboards</small>
+            <span class="set-name-row"><input type="text" class="set-name-input" id="set-name-input" placeholder="Trainer" autocomplete="nickname" enterkeyhint="done" spellcheck="false"><button type="submit" class="set-chip set-name-save" aria-checked="true">Save</button></span></form>
+        </section>
         <section class="set-group sound-ctl" data-tone="sound">
           <header class="set-head"><span class="set-ico" data-icon="sound" aria-hidden="true"></span><b>Sound</b>
             <button type="button" class="sound-mute" id="music-btn" aria-pressed="true"><span class="snd-icon" data-smooth></span></button></header>
@@ -110,12 +115,16 @@
         </section>
         <section class="set-group" data-tone="display">
           <header class="set-head"><span class="set-ico" data-icon="sparkle" aria-hidden="true"></span><b>Display</b></header>
+          <div class="set-opt" data-opt="shell"><span class="set-name">Device colour</span><small>Your Pokédex's shell</small></div>
+          <div class="set-opt" data-opt="textSize"><span class="set-name">Text size</span><small>Bigger words everywhere but on cards</small></div>
           <div class="set-opt" data-opt="textSpeed"><span class="set-name">Text speed</span><small>How fast text boxes type out</small></div>
           <div class="set-opt" data-opt="clock"><span class="set-name">Day &amp; night</span><small>Follow your clock, or keep one time</small></div>
+          <div class="set-opt" data-opt="calmFx"><span class="set-name">Flashing &amp; shake</span><small>Reduced: no shaking, softer flashes</small></div>
         </section>
         <section class="set-group" data-tone="battle">
           <header class="set-head"><span class="set-ico" data-icon="swords" aria-hidden="true"></span><b>Battle</b></header>
           <div class="set-opt" data-opt="battleSpeed"><span class="set-name">Battle speed</span><small>Enemy turns and hits</small></div>
+          <div class="set-opt" data-opt="battleFx"><span class="set-name">Battle animations</span><small>Move effects and entrances</small></div>
           <div class="set-opt" data-opt="endTurnWarn"><span class="set-name">End-turn warning</span><small>Ask before ending a turn with PP left</small></div>
           <div class="set-opt" data-opt="vibration"><span class="set-name">Vibration</span><small>Buzz on phones that can</small></div>
         </section>
@@ -123,6 +132,7 @@
           <header class="set-head"><span class="set-ico" data-icon="record" aria-hidden="true"></span><b>Save</b></header>
           <button type="button" class="dev-row" id="cloud-btn" hidden><span class="mi-icon">☁️</span><span class="mi-label">Sign in</span></button>
           <button type="button" class="dev-row danger" id="abandon-btn" hidden><span class="mi-icon">🏳️</span><span class="mi-label">Abandon run</span></button>
+          <button type="button" class="dev-row danger" id="reset-btn"><span class="mi-icon">🗑️</span><span class="mi-label">Reset save</span></button>
         </section>
       </div>
       <div class="dev-help" id="dev-help">
@@ -569,7 +579,6 @@
       <li>Code, card design and game rules: Patrick.</li>
     </ul>
     <div class="dialog-actions">
-      <button class="btn small danger" id="reset-btn">Erase saved progress</button>
       <form method="dialog"><button class="btn primary">Close</button></form>
     </div>
   </dialog>
@@ -655,6 +664,17 @@
     <div class="travel-bars" aria-hidden="true"></div>
     <div class="travel-skip" aria-hidden="true">Tap to skip</div>
     <div class="evo-bottom"><div class="reward-log" id="travel-log" hidden><span id="travel-log-text" aria-hidden="true"></span><span class="sr-only" id="travel-log-live" aria-live="polite"></span></div></div>
+    <div class="travel-dark" aria-hidden="true"></div>
+  </div>
+
+  <!-- Pressing Climb: down the Sky Pillar from its summit, then up the path to its door (js/climb-intro.js) -->
+  <div id="climb-scene" class="travel-scene climb-scene" hidden>
+    <canvas id="climb-canvas" class="travel-canvas pixel" aria-hidden="true"></canvas>
+    <img id="climb-mon" class="climb-mon pixel" alt="" hidden>
+    <div class="climb-title" aria-hidden="true">SKY PILLAR<small>100 floors to the top</small></div>
+    <div class="travel-bars" aria-hidden="true"></div>
+    <div class="travel-skip" aria-hidden="true">Tap to skip</div>
+    <div class="climb-light" aria-hidden="true"></div>
     <div class="travel-dark" aria-hidden="true"></div>
   </div>
 

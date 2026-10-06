@@ -23,7 +23,7 @@ import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
-import { vibrate } from './prefs.js';
+import { vibrate, battleFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
@@ -273,7 +273,7 @@ async function playIntro() {
   const enemyZone = $('enemy-zone');
   const still = () => battle === b;   // the run may be abandoned mid-intro
   const cry = (id) => id ? Promise.race([playCry(id), sleep(CRY_WAIT_MAX)]) : null;
-  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motion = battleFx();
   const playerSpriteId = b.starter.line[b.stage].id;
   preloadCries(b.def.spriteId ?? '', playerSpriteId, b.def.phase2?.spriteId ?? '');
   if (b.def.phase2) {
@@ -1694,7 +1694,7 @@ async function finish(won) {
  */
 async function rebirth() {
   const b = battle, en = b.enemy, next = b.def.phase2, still = () => battle === b;
-  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motion = battleFx();
   b.phased = true;
   b.busy = true;
   setStorm(false);
@@ -2276,8 +2276,14 @@ function initScrub() {
     const { on: slid, armed } = drag;
     drag = null;
     if (!slid) return;
-    const swallow = (c) => { c.stopPropagation(); c.preventDefault(); };
-    document.addEventListener('click', swallow, { capture: true, once: true });
+    // vibrate()'s iOS tick is a click too; let it through, or it would use up the swallow
+    const swallow = (c) => {
+      if (c.target.closest?.('.haptic')) return;
+      document.removeEventListener('click', swallow, { capture: true });
+      c.stopPropagation();
+      c.preventDefault();
+    };
+    document.addEventListener('click', swallow, { capture: true });
     setTimeout(() => document.removeEventListener('click', swallow, { capture: true }), 400);
     const uid = current();
     if (armed && battle && !battle.busy && uid != null) return tapCard(uid);
@@ -2505,7 +2511,7 @@ function flash(id, className, ms = 400) {
  * own GIF, so it takes its outline; it sits in the element that shakes and lunges, so it moves with it.
  */
 function statFx(side, dir = 'up') {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!battleFx()) return;
   const img = $(side === 'enemy' ? 'enemy-img' : 'player-sprite');
   const host = side === 'enemy' ? $('enemy-portrait-box') : $('player-zone');
   host.querySelector('.stat-fx')?.remove();
@@ -2530,7 +2536,7 @@ function hitSound(through, multiplier) {
 
 /** A hit that takes a big bite out of someone (a quarter of their HP, or 25) jolts the arena and flashes the screen; the enemy reels back from it (`recoil`, its sprite). */
 function bigHit(through, maxHp, recoil) {
-  if (through < Math.max(12, Math.min(25, maxHp * 0.25)) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (through < Math.max(12, Math.min(25, maxHp * 0.25)) || !battleFx()) return;
   flash('battle-screen', 'big-hit', 450);
   if (recoil) flash(recoil, 'recoil', 520);
 }
@@ -2547,7 +2553,7 @@ async function finishingBlow(n) {
   const num = el('span', 'ko-num', `-${n}`);
   zone.append(num);
   setTimeout(() => num.remove(), 1700);
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { await sleep(600); return; }
+  if (!battleFx()) { await sleep(600); return; }
 
   const img = $('enemy-img'), host = $('enemy-portrait-box');
   const box = img.getBoundingClientRect(), at = host.getBoundingClientRect();

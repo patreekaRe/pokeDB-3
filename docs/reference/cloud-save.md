@@ -18,8 +18,8 @@ isn't the one this device last agreed with. Rules: cloud moved and this device d
 `location.reload()`; only on the title or right after signing in, else ask); this device moved → upload; both → the
 "Two saves found" window (`#cloud-pick-dialog`, a summary of each; closing it means ask again next load). The first
 sign-in on a device uploads its save if the cloud has none (the user's phone save becomes the first cloud save) and takes
-the cloud's if this device has no progress (`isBlank()`). Sign out keeps the local save. The About erase uploads the
-erased save too. Email links come back to the page with `?mode=signIn&oobCode=...`; the address is kept in
+the cloud's if this device has no progress (`isBlank()`). Sign out keeps the local save. Settings' Reset save uploads the
+erased save too (the reload finds it dirty), so every signed-in device takes it. Email links come back to the page with `?mode=signIn&oobCode=...`; the address is kept in
 `pokedb.cloud.email` (asked again if the link opens in another browser) and the URL is cleaned. Firestore rules, and the
 Firebase console steps, are in the roadmap's step 4; since the Safari leaderboard, `firestore.rules` in the repo is the
 whole rules file (this rule plus `safariBoard`, docs/reference/safari.md). `cloudSession()` / `onCloudSignIn()` /

@@ -9,6 +9,16 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
+their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.
+1. ~~Device colour~~ done 2026-10-06 (see the archive).
+2. ~~Battle animations~~ done 2026-10-06 (see the archive).
+3. ~~Flashing & shake~~ done 2026-10-06 (see the archive).
+4. ~~Text size~~ done 2026-10-06 (see the archive).
+5. ~~Nickname~~ done 2026-10-06 (see the archive).
+6. **Music player**: a sound test replaying any unlocked track.
+7. ~~Reset save~~ done 2026-10-06 (see the archive). The user skipped 6 for now.
+
 The polish batch (the user wants all of it, 2026-10-03). One session each, in any order:
 
 5. **Music hookups.** Run in: CLOUD, once the user drops files in `assets/audio/`. Find each new file's loop points
@@ -47,9 +57,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     a map palette and signs, a treasure grotto, a Pokédex page and map music. Journey films go from 2 routes to 6:
     Clearing → Ruins (wading down a flooded stairwell), Ruins → Wastes (steam as the water boils away), Shrine → Jungle
     (a vine-choked torii), Ruins → Jungle (a waterfall crossing). Seeing every biome earns the Explorer Badge. Roughly
-    6-10 sessions a biome. **Decided (2026-10-06):** the new pages are bonus pages (their own PokéCoins, never towards
-    finishing the Pokédex, so Reshiram and the Safari don't move); Mewtwo keeps its fixed road; each new biome is bot-checked
-    against the one it pairs with. **Part a is done** (the crossroads logic and the Sunken Ruins' gameplay; see the archive).
+    6-10 sessions a biome. **Decided (the user's picks, 2026-10-06):** the new Pokédex pages are bonus pages with their
+    own reward, never counted towards finishing the Pokédex (so Reshiram and the Safari don't move); Mewtwo's speedrun
+    keeps its fixed road, no crossroads; the Explorer Badge is earned by entering all five main biomes (across any runs,
+    not beating their bosses: `stats.biomesSeen` already tracks it). The bot checks each new biome against the one it
+    pairs with. **Part a is done** (the crossroads logic and the Sunken Ruins' gameplay; see the archive).
     For Thornwood's Pokémon: every Gen 1-5 species is used, so use Gen 6-9 (PokeAPI's `other/showdown/<dex>.gif`); only 7
     pure-Normal Gen 6-9 species are left for its 3 Normal wilds, 3 Alphas and 3 bosses (Skwovet, Greedent, Wooloo, Komala,
     Tandemaus, Type: Null, Silvally), so ask the user how to fill the last two slots.
@@ -66,7 +78,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
 - More polish suggested 2026-10-03, not picked yet: keyboard keys in battle on PC (1-0 play a card, E ends the turn),
-  Android vibration on big hits (the Settings switch exists since 2026-10-06), a "Reduce flashing" / text-size setting,
+  Android vibration on big hits (the Settings switch exists since 2026-10-06, iPhones tick since iOS 18),
   quiet background sounds for each place under the music.
 
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.

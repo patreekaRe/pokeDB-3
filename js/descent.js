@@ -13,6 +13,7 @@
 import { $, sleep } from './ui.js';
 import { playSound, playMusic } from './audio.js';
 import { sceneSay } from './evolution.js';
+import { calmFx } from './prefs.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 
@@ -335,8 +336,8 @@ function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   t += dt;
-  const sx = shake && !still() ? Math.round((Math.random() - 0.5) * 2 * shake) : 0;
-  const sy = shake && !still() ? Math.round((Math.random() - 0.5) * shake) : 0;
+  const sx = shake && !calmFx() ? Math.round((Math.random() - 0.5) * 2 * shake) : 0;
+  const sy = shake && !calmFx() ? Math.round((Math.random() - 0.5) * shake) : 0;
   if (mode === 'arena') {
     ctx.fillStyle = '#05020c';
     ctx.fillRect(0, 0, W, H);

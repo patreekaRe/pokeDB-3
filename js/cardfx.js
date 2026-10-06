@@ -11,6 +11,8 @@
    is playable at once; only a picked exhaust waits for its burn.
    ============================================================ */
 
+import { battleFx } from './prefs.js';
+
 const PALETTES = {
   fire:    ['#fff8c0', '#ffd848', '#ff9028', '#e04818', '#902010', '#401008'],
   water:   ['#ffffff', '#c0ecff', '#68c0f8', '#2878d8', '#18489c', '#0c2450'],
@@ -26,7 +28,7 @@ const parts = [];
 const jobs = [];   // flights and burns, each a function(now) that returns false once done
 
 const rand = (a, b) => a + Math.random() * (b - a);
-const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = () => !battleFx();
 
 function ensureCanvas() {
   PX = innerWidth <= 720 ? 3 : 4;

@@ -33,13 +33,14 @@ import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './da
 import { gateHp } from './gate.js';
 import { BIOMES, biomeAt } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
-import { getSave, updateSave, resetSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
-import { floorOf } from './data/tower.js';
+import { floorOf, towerWeekly } from './data/tower.js';
+import { climbIntro } from './climb-intro.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playMusic } from './audio.js';
@@ -59,7 +60,7 @@ import { initSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
-import { $, el, openDialog, closeDialog, confirmDialog } from './ui.js';
+import { $, el, openDialog, confirmDialog } from './ui.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
@@ -228,17 +229,12 @@ function init() {
   initTowerPrep({
     onStart: async (practice) => {
       if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
+      const climber = practice ?? towerWeekly().starter;
+      const close = await climbIntro({ starter: climber, shiny: getSave().shiny.on.includes(climber.id) });
       leaveTitle();
       beginTower(practice);
+      close();
     },
-  });
-
-  $('reset-btn').addEventListener('click', async () => {
-    if (!(await confirmDialog('Erase all stats and unlocked starters?', 'Erase'))) return;
-    resetSave();
-    clearRunData();
-    closeDialog('about-dialog');
-    goHome();
   });
 
   initTitle({
@@ -294,6 +290,8 @@ function init() {
     // ?travel=shrine (the biome you walk to; &starter=id, &stage=0-2) plays that journey film after PRESS START, its
     // first-time lines included, without saving anything; &at=0.5 holds it at that point of the trip, no lines
     if (params.has('travel')) return peekTravel(params);
+    // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
+    if (params.has('climb')) return peekClimb(params);
     // Show the how-to-play once, the very first time.
     if (!getSave().seenHelp) {
       updateSave(d => { d.seenHelp = true; });
@@ -356,6 +354,15 @@ async function peekTravel(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? to) || 0);
   const at = params.has('at') ? Number(params.get('at')) : null;   // &at=0.5 holds the film there
   const close = await travel({ from: BIOMES[to - 1]?.id, to: BIOMES[to]?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at, flyer: params.get('flyer') });
+  close();
+}
+
+/** The ?climb playtest: the Sky Pillar's opening film, then ?tower=1's throwaway climb. Nothing is saved. */
+async function peekClimb(params) {
+  const starter = STARTERS_BY_ID[params.get('starter')] ?? towerWeekly().starter;
+  const close = await climbIntro({ starter, shiny: getSave().shiny.on.includes(starter.id) });
+  leaveTitle();
+  peekTower(1);
   close();
 }
 
