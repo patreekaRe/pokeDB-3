@@ -447,7 +447,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .intent.status { --kind: #707078; }
 .intent.charge { --kind: #ff2a6a; animation: chargeWarn 0.6s steps(2) infinite; }   /* charging a huge hit (Eternamax's Eternabeam): it blinks */
 @keyframes chargeWarn { 50% { --kind: #ffd23a; } }   /* shuffles junk (a status card) into your deck, or hidden by the Dusk Stone */
-.intent.fresh { animation: intentPop 0.35s steps(4), bob 1.8s steps(2) 0.35s infinite; }
+.intent.fresh { animation: intentPop 0.35s ease-out, bob 1.8s steps(2) 0.35s infinite; }
 .intent-icon { font-size: 1rem; }
 .intent-value { font-size: 1.05rem; font-weight: 400; color: #283060; }
 .intent-name { font-size: 0.8rem; color: #283060; text-shadow: 1px 0 0 currentColor; white-space: nowrap; }   /* the 1px copy is a crisp pixel "bold": the font has no bold weight */
@@ -1800,7 +1800,7 @@ body.battle-intro { pointer-events: none; }
   font: 1.6rem/1.2 var(--pixel-font); font-synthesis-weight: none;
   color: #f8d048;
   text-shadow: 2px 0 0 #6a3a08, -2px 0 0 #6a3a08, 0 2px 0 #6a3a08, 0 -2px 0 #6a3a08, 0 5px 0 #0a0e2c;
-  animation: hofTitle 0.6s steps(6) both 0.5s;
+  animation: hofTitle 0.6s cubic-bezier(0.22, 1, 0.36, 1) both 0.5s;
 }
 @keyframes hofTitle { from { opacity: 0; translate: 0 -24px; } }
 .hof-stage { position: relative; flex: 1 1 0; min-height: 140px; width: 100%; }
@@ -1849,7 +1849,7 @@ body.battle-intro { pointer-events: none; }
   color: #fff8e0; text-align: center;
   opacity: 0;
 }
-.hof-scene.deck-in .hof-stat { animation: hofPop 0.25s steps(3) both calc(var(--i) * 70ms); }
+.hof-scene.deck-in .hof-stat { animation: hofPop 0.25s ease-out both calc(var(--i) * 70ms); }
 @keyframes hofPop { from { opacity: 0; scale: 0.6; } to { opacity: 1; scale: 1; } }
 .hof-stat-icon { font-size: 0.95rem; line-height: 1; }
 .hof-stat b { font-size: 0.95rem; font-weight: 400; color: #f8d048; }
@@ -2114,7 +2114,7 @@ button.hof-row.lost { cursor: pointer; }
   background: linear-gradient(rgba(34, 18, 62, 0.92), rgba(12, 6, 24, 0.92));
   box-shadow: 0 0 0 2px #0e0818, 0 0 0 4px #544a78, 0 0 0 6px #0e0818, 0 0 24px 4px rgba(224, 42, 112, 0.25);
   font-family: var(--pixel-font); font-synthesis-weight: none; color: #ffd0e8;
-  opacity: 0; animation: gatePlateIn 0.3s steps(3) 0.9s forwards;
+  opacity: 0; animation: gatePlateIn 0.3s ease-out 0.9s forwards;
 }
 @keyframes gatePlateIn { from { opacity: 0; translate: -50% 8px; } to { opacity: 1; translate: -50% 0; } }
 .gate-plate-name { display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -3878,7 +3878,7 @@ body.has-scene #scene-bg { display: block; }
 
 /* a starter a won fight just unlocked (unlockWindow() in js/run.js): a gold banner, the Pokémon hopping on a spotlight */
 .unlock-dialog { text-align: center; width: min(340px, calc(100vw - 32px)); }
-.unlock-dialog[open] { animation: unlockIn 0.45s steps(6) both; }
+.unlock-dialog[open] { animation: unlockIn 0.45s ease-out both; }
 @keyframes unlockIn { 0% { scale: 0.6; opacity: 0; } 70% { scale: 1.06; opacity: 1; } 100% { scale: 1; } }
 .unlock-kicker {
   margin: -4px -4px 10px;

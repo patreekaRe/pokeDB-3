@@ -351,7 +351,7 @@
   z-index: 20;
   background: rgba(8, 10, 24, 0.66);
   pointer-events: none;
-  animation: pickDim 0.25s steps(4) both;
+  animation: pickDim 0.25s ease-out both;
 }
 #battle-screen.picking .hand { position: relative; z-index: 21; }
 @keyframes pickDim { from { opacity: 0; } }
@@ -375,7 +375,7 @@
   font-family: var(--pixel-font);
   text-align: center;
   pointer-events: none;
-  animation: pickBanner 0.4s steps(6) both;
+  animation: pickBanner 0.4s ease-out both;
 }
 .pick-banner[hidden] { display: none; }
 .pick-title { font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--pick); text-shadow: 2px 2px 0 #181010; }
