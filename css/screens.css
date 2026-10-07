@@ -1227,7 +1227,9 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   text-shadow: 2px 2px 0 var(--frame);
 }
 .biome-sign[data-biome="shrine"] { --plank: #6f7f62; --plank-dark: #5b6a50; --rim: #9aae84; --frame: #1f2a18; --nail: #2f4a24; --text: #eef8dc; }
-.biome-sign[data-biome="ruins"] { --plank: #4f7472; --plank-dark: #3f5e5c; --rim: #8cc8c0; --frame: #102422; --nail: #2a5a56; --text: #e0fbf6; }
+.biome-sign[data-biome="ruins"] { --plank: #4f7472; --plank-dark: #3f5e5c; --rim: #8cc8c0; --frame: #102422; --nail: #d8c890; --text: #e0fbf6; animation: runeGlint 3.4s steps(2) infinite; }   /* sea-worn stone, its runes waking now and then */
+.biome-sign[data-biome="ruins"].arrive { animation: signDrop 0.7s ease-out both, runeGlint 3.4s steps(2) 0.7s infinite; }
+@keyframes runeGlint { 50% { box-shadow: inset 0 0 0 2px #b8fff4, 4px 4px 0 rgba(0, 0, 0, 0.45), 0 0 8px rgba(110, 240, 224, 0.5); } }
 .biome-sign[data-biome="wastes"] { --plank: #54403a; --plank-dark: #43322d; --rim: #e0602a; --frame: #1c1210; --nail: #f8a030; --text: #ffe0b0; }
 .biome-sign[data-biome="depths"] { --plank: #3a2c5c; --plank-dark: #2c2148; --rim: #7ae8ff; --frame: #120a22; --nail: #ff6ac8; --text: #eadcff; animation: crystalGlint 2.6s steps(2) infinite; }   /* a slab of amethyst, glinting cyan */
 .biome-sign[data-biome="depths"].arrive { animation: signDrop 0.7s ease-out both, crystalGlint 2.6s steps(2) 0.7s infinite; }

@@ -61,17 +61,18 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     own reward, never counted towards finishing the Pokédex (so Reshiram and the Safari don't move); Mewtwo's speedrun
     keeps its fixed road, no crossroads; the Explorer Badge is earned by entering all five main biomes (across any runs,
     not beating their bosses: `stats.biomesSeen` already tracks it). The bot checks each new biome against the one it
-    pairs with. **Part a is done** (the crossroads logic and the Sunken Ruins' gameplay; see the archive), and part b's
-    crossroads scene (`js/crossroads.js`, `?crossroads`).
+    pairs with. **The Sunken Ruins are done** (part a, the crossroads logic and its gameplay; part b, the crossroads scene and
+    its whole look, films and journey films; see the archive). Next is the Thornwood Jungle, the same two sessions.
     For Thornwood's Pokémon: every Gen 1-5 species is used, so use Gen 6-9 (PokeAPI's `other/showdown/<dex>.gif`); only 7
     pure-Normal Gen 6-9 species are left for its 3 Normal wilds, 3 Alphas and 3 bosses (Skwovet, Greedent, Wooloo, Komala,
     Tandemaus, Type: Null, Silvally), so ask the user how to fill the last two slots.
-    b. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (part a is
-       done: the crossroads logic and the Sunken Ruins' gameplay). The crossroads scene is done (js/crossroads.js). Paint the
-       Sunken Ruins: its 4 places, intro film, boss walk-on and
-       boss intro, map palette and signs, treasure grotto, and the Clearing → Ruins and Ruins → Wastes journey films.
-       Check at 375x812 and 1280x800, push to main."
-    Then the same two sessions again for the Thornwood Jungle (and its Shrine → Jungle and Ruins → Jungle films).
+    c. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (the Sunken Ruins are done, look
+       and all). Build the Thornwood Jungle's gameplay, slot 2's other road beside the Ember Wastes, the way part a built the
+       Ruins: 12 wilds (mostly Grass), 3 Alphas, 3 bosses (Gen 6-9, PokeAPI's other/showdown GIFs, cries, sprite fits, enemy
+       entries), its bonus Pokédex page, CROSSROADS[2], the Explorer Badge's test, and a bot check against the Wastes. Ask me
+       first how to fill the last two pure-Normal slots. Push to main."
+    d. **Run in: LOCAL (Desktop app).** Then paint it like the Ruins (its places, intro film, prelude, map, sign, grotto) and
+       its Shrine → Jungle (a vine-choked torii) and Ruins → Jungle (a waterfall crossing) journey films.
 
 ## Ideas, not agreed yet (ask the user before building)
 

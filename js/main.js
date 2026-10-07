@@ -31,7 +31,7 @@
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
-import { BIOMES, biomeAt, CROSSROADS } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, biomeAt, CROSSROADS } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { checkBadges } from './progress.js';
@@ -310,7 +310,7 @@ function init() {
 const PEEK_FLOORS = 11, PLACE_START = [0, 3, 6, 10];
 function peekSafari(params) {
   document.body.classList.add('scene-peek');
-  const AREAS = BIOMES.some(b => b.id === params.get('area')) ? BIOMES : SAFARI_AREAS;   // a main biome too: ?area=depths
+  const AREAS = BIOMES_BY_ID[params.get('area')] ? Object.values(BIOMES_BY_ID) : SAFARI_AREAS;   // a main biome too: ?area=depths, ?area=ruins
   let i = Math.max(0, AREAS.findIndex(a => a.id === params.get('area')));
   let floor = PLACE_START[Math.min(3, Math.max(0, +params.get('stage') || 0))];
   const kind = params.get('kind') || 'wild', label = el('div', 'peek-label');
@@ -351,13 +351,14 @@ function peekStrike(params) {
     .then(() => playMusic('title'));   // back to the title's song after the seal's
 }
 
-/** The ?travel= playtest: a journey film on its own, nothing saved. */
+/** The ?travel= playtest: a journey film on its own, nothing saved. `?travel=ruins` comes from the Clearing; `&from=ruins`
+    takes the other road's trip to the Wastes. */
 async function peekTravel(params) {
-  const to = BIOMES.findIndex(b => b.id === params.get('travel'));
+  const dest = BIOMES_BY_ID[params.get('travel')], to = dest?.slot ?? -1;
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? to) || 0);
   const at = params.has('at') ? Number(params.get('at')) : null;   // &at=0.5 holds the film there
-  const close = await travel({ from: BIOMES[to - 1]?.id, to: BIOMES[to]?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at, flyer: params.get('flyer') });
+  const close = await travel({ from: params.get('from') ?? BIOMES[to - 1]?.id, to: dest?.id, starter, stage, shiny: getSave().shiny.on.includes(starter.id), first: at === null, at, flyer: params.get('flyer') });
   close();
 }
 

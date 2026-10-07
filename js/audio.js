@@ -127,6 +127,10 @@ const SOUNDS = {
   bell:         { synth: templeBell },       // the Shrine's: the temple bell tolls three times...
   spirit:       { synth: ac => powerSurge(ac, [440, 523, 622, 880, 1047, 1245], 2.4) },   // ...and the spirits surge
   rustle:       { synth: grassRustle },      // a wild Pokémon pops out of the tall grass in a biome's intro (biome-intro.js)
+  splash:       { synth: waterSplash },      // ...or surfaces out of the water (the Sunken Ruins', ruins-intro.js)
+  'plink-0':    { synth: ac => windChime(ac, 1175), gain: 0.45 },   // ...whose intro plinks like drops into still water as its runes wake
+  'plink-1':    { synth: ac => windChime(ac, 1397), gain: 0.45 },
+  'plink-2':    { synth: ac => windChime(ac, 1760), gain: 0.45 },
   'biome-title': { synth: arrivalChime },    // ...and the biome's name lands: a bright, welcoming chime
   'furin-0':    { synth: ac => windChime(ac, 1568), gain: 0.6 },   // the Shrine's intro: a wind chime as each pair of lanterns lights...
   'furin-1':    { synth: ac => windChime(ac, 1760), gain: 0.6 },
@@ -990,6 +994,23 @@ function grassRustle(ac) {
     out[i] = low * Math.sin(Math.PI * s) * (1 - t / 0.32);
   }
   return normalize(buffer, 0.1);
+}
+
+/** A splash: a bright burst of noise that dulls fast, then a few droplets plinking back down. */
+function waterSplash(ac) {
+  const rate = ac.sampleRate, seconds = 0.6, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 2);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, cut = 3800 * Math.exp(-t * 9) + 300;
+    low += (1 - Math.exp(-2 * Math.PI * cut / rate)) * (noise[i] - low);
+    let s = low * Math.exp(-t * 7);
+    for (const [at, f] of [[0.16, 1320], [0.27, 1760], [0.36, 1480]]) if (t > at) s += Math.sin(2 * Math.PI * f * (t - at) * (1 + (t - at) * 2)) * Math.exp(-(t - at) * 40) * 0.25;
+    out[i] = s;
+  }
+  return normalize(buffer, 0.12);
 }
 
 /** A hot wind: soft noise swelling and passing, its brightness opening and closing with it. */

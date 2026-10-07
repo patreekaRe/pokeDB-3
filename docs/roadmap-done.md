@@ -1559,3 +1559,14 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   until met) and its wild types; one tap picks (the card and its arm light gold), a second or the button takes it, and your
   Pokémon walks up that road as the dark comes down, under the journey film. `?crossroads` previews it. Checked in the pane
   at 375x812 and 1280x800 (pick, take, close); 67 tests pass.
+- **Branching biomes, part b: the Sunken Ruins painted** (roadmap item 19, Desktop app, 2026-10-06): `BIOME_ART.ruins` is its
+  own now (it borrowed the Shrine's). The ground is water that mirrors the backdrop and everything standing in it and ripples
+  each frame (`ruinsFloor()`, `dry()`, `reflect()`, `rippleRuins()`); four places (the Flooded Steps' stepped temple and
+  aqueduct, the Drowned Halls' colonnade, the Sunken Court's colossal head and fountain, the Tide Altar's ring of pillars and
+  tide wheel), 12 landmarks, runes that glow at night, a fish now and then. Boss prelude: runes light round the wheel, a
+  whirlpool, a geyser through the altar, a wave into the white (sounds `quake`, `lake-churn`, `wave-crash`). Intro film
+  `js/ruins-intro.js` with two walk-ons; new synths `splash` and `plink-0..2` (`js/audio.js`); a film can name its `pop`
+  sound. Map: `paving` ground, a teal `flood`, a `colonnade` prop; the sign glints teal; its grotto has a Dive Ball chest and
+  tide pools. Journey films `clearing>ruins` (a flooded stair walked step by step, wading a drowned arcade, the temple on the
+  horizon at dawn) and `ruins>wastes` (steam, geysers, the lagoon drying to cracked mud, then ash), `volcano()` split out of
+  the Shrine → Wastes painter to share. `?area=` and `?travel=` reach the Ruins. Checked in the pane at 375x812 and 1280x800.

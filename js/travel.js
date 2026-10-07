@@ -159,7 +159,76 @@ const SHRINE_WASTES = {
   paint: paintShrineWastes,
 };
 
-const ROUTES = { 'clearing>shrine': CLEARING_SHRINE, 'shrine>wastes': SHRINE_WASTES };
+// the Sunken Ruins' colours (ruins-intro.js's by day): the jungle round the lagoon, its sandstone, its teal water
+const RUINS = {
+  far: ['#8cbcb8', '#a4ccc4', '#d0ece8'],
+  hill: ['#4e9a58', '#3e8048', '#2c6438'],
+  forest: ['#5cb064', '#3e9050', '#2a6c3e', '#163a24'],
+  floor: ['#3a7a48', '#2a6038'],
+  bark: ['#8a7050', '#5a4430', '#3a2c20'],
+  path: ['#e0d4b0', '#c0b088', '#7a6e52'],
+  ground: ['#6aa868', '#4e9050', '#3a7840', '#2a6034'],
+  fore: ['#78c060', '#4e9a48', '#2e6e38', '#143a20'],
+};
+const RUIN_SHARED = {
+  stone: ['#f0e2bc', '#cdbb90', '#9c8a64', '#4a3e2c'],
+  moss: ['#a0d060', '#6aa044'],
+  water: ['#f0ffff', '#8ae0d8', '#46b4b8', '#1f7c8c', '#0f4a5a'],
+  vine: ['#8ac858', '#559a3c'],
+  lily: ['#8ccc58', '#549c3c', '#f8a0c4'],
+};
+const RUNE = ['#f0fffc', '#8af8e8', '#2ec8c0'].map(abgr);   // ungraded: the runes glow by themselves
+
+// Clearing → Ruins: `a` the Clearing, `b` the Ruins; down a flooded stair, wading through a drowned arcade, up onto the lagoon
+const CLEARING_RUINS = {
+  a: CLEARING_SHRINE.a,
+  b: RUINS,
+  shared: { ...RUIN_SHARED, flowers: CLEARING_SHRINE.shared.flowers, mist: CLEARING_SHRINE.shared.mist },
+  fly: 0.03,
+  morph: (f) => smooth((f - 0.16) / 0.42),
+  rise: (f) => -0.1 * smooth((f - 0.36) / 0.1) + 0.1 * smooth((f - 0.8) / 0.08),   // down the stair, and up onto the shore
+  walk: (trip) => trip - 0.05 * smooth((trip - 0.44) / 0.34),   // slower, wading
+  flood: [0.4, 0.86],
+  sounds: ['plink-0', 'plink-1', 'plink-2', 'splash'],
+  lines: (name) => [
+    [0.04, [`${name} leaves the Whispering Clearing behind...`]],
+    [0.34, ['Old stone steps lead down into dark water.']],
+    [0.56, ['Runes glow along the drowned walls...', `${name} wades on through the flood.`]],
+    [0.84, ['At first light, a lagoon opens out.', 'The Sunken Ruins lie ahead!']],
+  ],
+  paint: paintClearingRuins,
+};
+
+// Ruins → Wastes: `a` the Ruins, `d` steaming mudflats half-way, `b` the Wastes; the lagoon boils away round geysers
+const RUINS_WASTES = {
+  a: RUINS,
+  d: {
+    far: ['#9a948a', '#aaa498', '#d0c8bc'],
+    hill: ['#7a7a58', '#64644a', '#4e4e3c'],
+    forest: ['#7a8048', '#5e6438', '#44482c', '#26281a'],
+    floor: ['#6a6448', '#58523a'],
+    bark: ['#6a5040', '#4a3828', '#2e2218'],
+    path: ['#c0b090', '#a09070', '#5e5040'],
+    ground: ['#8a7e66', '#766a54', '#625844', '#4e4636'],
+    fore: ['#a8a060', '#888040', '#5e5830', '#36321c'],
+  },
+  b: SHRINE_WASTES.b,
+  shared: { ...SHRINE_WASTES.shared, ...RUIN_SHARED, steam: ['#f8f8f4', '#d0ccc8', '#a8a29e'], mud: ['#7a6a56', '#5e5040', '#3e342a'] },
+  fly: 0.05,
+  morph: (f) => smooth((f - 0.08) / 0.64),
+  rise: () => 0,
+  vents: [0.38, 0.47, 0.57],   // the geysers by the road
+  sounds: ['gust', 'splash', 'rumble-far', 'lake-churn'],
+  lines: (name) => [
+    [0.04, [`${name} leaves the Sunken Ruins behind...`]],
+    [0.24, ['The water grows warm. Steam curls off it.']],
+    [0.42, ['Geysers roar up as the lagoon boils away!']],
+    [0.72, ['On the horizon, a volcano glows red.', 'The Ember Wastes lie ahead!']],
+  ],
+  paint: paintRuinsWastes,
+};
+
+const ROUTES = { 'clearing>shrine': CLEARING_SHRINE, 'shrine>wastes': SHRINE_WASTES, 'clearing>ruins': CLEARING_RUINS, 'ruins>wastes': RUINS_WASTES };
 
 /** Is there a film for this trip? */
 export const hasTravel = (from, to) => !!ROUTES[`${from}>${to}`];
@@ -784,41 +853,8 @@ function paintShrineWastes(e) {
   const flick = (n) => Math.sin(t * 7 + n * 1.3) > 0.3;
   const lightK = 0.5 + 0.5 * night;
 
-  // the volcano rises over the horizon, its red glow in the sky behind it, smoke trailing off its crater
-  const grow = smooth((pos - 0.12) / 0.62);
   const [fu] = into('far', cam * 0.05);
-  const vx = Math.round(W * (tall ? 0.8 : 0.84)) - fu, vh = Math.round(H * (tall ? 0.08 : 0.11) * (0.7 + 0.5 * grow));
-  const vtop = Math.round(hz + 4 + (1 - grow) * H * 0.14 - vh);
-  const glowK = grow * (0.35 + 0.65 * night), gr = Math.round(Math.max(W * 0.32, H * 0.17));
-  for (let y = Math.max(0, vtop - gr); y < Math.min(H, hz + 8); y++) {
-    for (let x = Math.max(0, vx - gr * 1.5); x < Math.min(W, vx + gr * 1.5); x++) {
-      const q = Math.hypot((x - vx) / 1.5, (y - vtop) * 1.2) / gr;
-      if (q < 1 && bay(x, y) < (1 - q) * 0.7 * glowK) buf[y * W + x] = q < 0.35 ? LAVA[3] : LAVA[4];
-    }
-  }
-  for (let y = Math.max(0, vtop); y < Math.min(H, hz + 14); y++) {
-    const half = Math.round(2 + ((y - vtop) / vh) * vh * 1.5);
-    for (let x = Math.max(0, vx - half); x <= Math.min(W - 1, vx + half); x++) {
-      const side = (x - vx) / Math.max(1, half);
-      buf[y * W + x] = side < -0.3 ? c.volcano[0] : side < 0.45 ? dd(c.volcano[0], c.volcano[1], (side + 0.3) / 0.75, x, y) : c.volcano[2];
-    }
-  }
-  if (grow > 0.05) {
-    rect(vx - 2, vtop, 5, 1, LAVA[flick(0) ? 1 : 2]); put(vx - 1, vtop + 1, LAVA[3]); put(vx + 1, vtop + 1, LAVA[3]);
-    if (night > 0.25) {   // lava runs down its flanks in the dark
-      for (const s of [-1, 1]) for (let j = 1; j < vh * 0.7; j++) put(vx + s * Math.round(j * (0.55 + 0.25 * s) + Math.sin(j * 0.6)), vtop + 1 + j, j % 4 ? LAVA[3] : LAVA[2]);
-    }
-    const plume = Math.round(H * 0.24 * grow);
-    for (let j = 1; j < plume; j++) {
-      const y = vtop - j;
-      if (y < 0) break;
-      const cx = vx - j * 0.8 - Math.sin(j * 0.15 - t * 0.8) * 2, w = 1.5 + j * 0.3;
-      for (let x = Math.floor(cx - w); x <= cx + w; x++) {
-        const n = noise(x * 0.2 + t * 0.3, (y + t * 6) * 0.2), edge = Math.abs(x - cx) / w;
-        if (n > 0.3 + edge * 0.55) put(x, y, j < 5 && night > 0.25 ? LAVA[4] : n > 0.7 ? c.smoke[0] : n > 0.5 ? c.smoke[1] : c.smoke[2]);
-      }
-    }
-  }
+  volcano(e, smooth((pos - 0.12) / 0.62), fu);
 
   // the far ranges: the Shrine's misty green ridges, then dry, then the Wastes' ashen peaks
   for (let x = 0; x < W; x++) {
@@ -997,5 +1033,389 @@ function paintShrineWastes(e) {
   if (pos > 0.22) cue('gust');
   if (pos > g0 - 0.01) cue('creak');
   if (pos > (g0 + g1) / 2) cue('creak-mid', 'creak');
+  if (pos > 0.68) cue('rumble-far');
+}
+
+/** The volcano rising over the horizon as the trip nears the Wastes (`grow` 0-1), its red glow in the sky behind it,
+    lava down its flanks in the dark, smoke trailing off its crater. Paints into the far layer, `fu` its camera offset. */
+function volcano(e, grow, fu) {
+  const { c, t, night } = e, flick = (n) => Math.sin(t * 7 + n * 1.3) > 0.3;
+  const vx = Math.round(W * (tall ? 0.8 : 0.84)) - fu, vh = Math.round(H * (tall ? 0.08 : 0.11) * (0.7 + 0.5 * grow));
+  const vtop = Math.round(hz + 4 + (1 - grow) * H * 0.14 - vh);
+  const glowK = grow * (0.35 + 0.65 * night), gr = Math.round(Math.max(W * 0.32, H * 0.17));
+  for (let y = Math.max(0, vtop - gr); y < Math.min(H, hz + 8); y++) {
+    for (let x = Math.max(0, vx - gr * 1.5); x < Math.min(W, vx + gr * 1.5); x++) {
+      const q = Math.hypot((x - vx) / 1.5, (y - vtop) * 1.2) / gr;
+      if (q < 1 && bay(x, y) < (1 - q) * 0.7 * glowK) buf[y * W + x] = q < 0.35 ? LAVA[3] : LAVA[4];
+    }
+  }
+  for (let y = Math.max(0, vtop); y < Math.min(H, hz + 14); y++) {
+    const half = Math.round(2 + ((y - vtop) / vh) * vh * 1.5);
+    for (let x = Math.max(0, vx - half); x <= Math.min(W - 1, vx + half); x++) {
+      const side = (x - vx) / Math.max(1, half);
+      buf[y * W + x] = side < -0.3 ? c.volcano[0] : side < 0.45 ? dd(c.volcano[0], c.volcano[1], (side + 0.3) / 0.75, x, y) : c.volcano[2];
+    }
+  }
+  if (grow > 0.05) {
+    rect(vx - 2, vtop, 5, 1, LAVA[flick(0) ? 1 : 2]); put(vx - 1, vtop + 1, LAVA[3]); put(vx + 1, vtop + 1, LAVA[3]);
+    if (night > 0.25) {   // lava runs down its flanks in the dark
+      for (const s of [-1, 1]) for (let j = 1; j < vh * 0.7; j++) put(vx + s * Math.round(j * (0.55 + 0.25 * s) + Math.sin(j * 0.6)), vtop + 1 + j, j % 4 ? LAVA[3] : LAVA[2]);
+    }
+    const plume = Math.round(H * 0.24 * grow);
+    for (let j = 1; j < plume; j++) {
+      const y = vtop - j;
+      if (y < 0) break;
+      const cx = vx - j * 0.8 - Math.sin(j * 0.15 - t * 0.8) * 2, w = 1.5 + j * 0.3;
+      for (let x = Math.floor(cx - w); x <= cx + w; x++) {
+        const n = noise(x * 0.2 + t * 0.3, (y + t * 6) * 0.2), edge = Math.abs(x - cx) / w;
+        if (n > 0.3 + edge * 0.55) put(x, y, j < 5 && night > 0.25 ? LAVA[4] : n > 0.7 ? c.smoke[0] : n > 0.5 ? c.smoke[1] : c.smoke[2]);
+      }
+    }
+  }
+}
+
+/** Mix two pixels, `k` of the way from a to b. */
+const mixW = (a, b, k) => { const f = (s) => Math.round(((a >>> s) & 255) * (1 - k) + ((b >>> s) & 255) * k); return (0xff000000 | (f(16) << 16) | (f(8) << 8) | f(0)) >>> 0; };
+
+/* ---------- Clearing → Ruins ---------- */
+
+/** A rune on the drowned stone waking: a plink like a drop into still water, now and then, while it's on screen. */
+function runeUp(id, x) {
+  if (lit.has(id)) return;
+  lit.add(id);
+  const now = performance.now();
+  if (still() || x < 0 || x >= W || now < chimeAt) return;
+  chimeAt = now + 320;
+  playSound(`plink-${lit.size % 3}`);
+}
+
+/** The flooded stair's steps: the road down (and back up) in whole steps of 3 pixels, so the walk goes step by step. */
+function stairDeck(f) {
+  if (!((f > 0.33 && f < 0.5) || (f > 0.77 && f < 0.92))) return null;
+  const base = GY - CLEARING_RUINS.rise(f) * H;
+  return Math.round(base / 3) * 3 - base;
+}
+CLEARING_RUINS.deck = stairDeck;
+
+/** The temple far off on the horizon, rising into view (`k` 0-1), hazed blue with distance. */
+function farTemple(cx, foot, k, c, haze) {
+  const s = Math.max(1, Math.round(Math.min(W, H) / 70)), y0 = foot + Math.round((1 - k) * 12 * s);
+  let y = y0;
+  for (const [hw, th] of [[10, 3], [7, 3], [4, 3]]) {
+    for (let j = 0; j < th * s; j++) for (let i = -hw * s; i <= hw * s; i++) put(cx + i, y - j, mixW(j === th * s - 1 ? c.stone[0] : i > hw * s * 0.4 ? c.stone[2] : c.stone[1], haze, 0.5));
+    y -= th * s;
+  }
+  rect(cx - 5 * s, y - s, 11 * s, s, mixW(c.stone[0], haze, 0.5));
+}
+
+function paintClearingRuins(e) {
+  const { trip, pos, a, b, c, glow, t, night } = e;
+  let { cam, camY } = e;
+  const R = CLEARING_RUINS, morph = R.morph, [w0, w1] = R.flood;
+  const ahead = (x, lead) => morph(pos + ((x - mx) / W) * lead);
+
+  // the far ranges: the Clearing's blue peaks, then the jungle's hazy teal ridges; at the end the temple on the horizon
+  const [fu, fy] = into('far', cam * 0.05, camY * 0.05);
+  const tk = smooth((pos - 0.7) / 0.24);
+  if (tk > 0) farTemple(Math.round(W * 0.68) - fu, hz - Math.round(H * 0.02) + fy, tk, c, b.far[1]);
+  for (let x = 0; x < W; x++) {
+    const u = x + fu, m = ahead(x, 0.25);
+    const top1 = Math.round(hz - H * 0.05 - H * 0.07 * (0.55 * Math.sin(u * 0.045 + 1) + 0.3 * Math.sin(u * 0.11 + 2) + 0.15 * Math.sin(u * 0.23))) + fy;
+    const top2 = Math.round(hz - H * 0.015 - H * 0.04 * (0.6 * Math.sin(u * 0.07 + 4) + 0.4 * Math.sin(u * 0.17))) + fy;
+    for (let y = Math.max(0, tk > 0.4 ? top2 : top1); y < hz + 12 && y < H; y++) {   // once the temple's up, the far peaks have sunk into the haze
+      if (y < top1) continue;
+      const peak = y < top1 + 2 && top1 < hz - H * 0.09;
+      buf[y * W + x] = peak ? dd(a.far[2], b.far[2], m, x, y) : y >= top2 ? dd(a.far[0], b.far[0], m, x, y) : dd(a.far[1], b.far[1], m, x, y);
+    }
+  }
+
+  // the hills
+  const [hu, hy] = into('hill', cam * 0.18, camY * 0.18);
+  for (let x = 0; x < W; x++) {
+    const u = x + hu, m = ahead(x, 0.4);
+    const top = Math.round(hz + H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.04 + 3) + 0.4 * Math.sin(u * 0.09))) + hy;
+    for (let y = Math.max(0, top); y < H; y++) { const k = y === top ? 0 : y < top + 7 ? 1 : 2; buf[y * W + x] = dd(a.hill[k], b.hill[k], m, x, y); }
+  }
+
+  // the woods: the meadow's round trees give way to palms and broad jungle crowns; in the flood, a drowned arcade
+  const S = 0.45, [mu, my] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
+  const fAt = (u) => (u - mx) / (S * TRIP);
+  const midTop = (u) => MB - Math.round(R.rise(fAt(u)) * H * 0.55) + Math.round(Math.sin(u * 0.13)) + my;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, m = morph(fAt(u)), top = midTop(u);
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = dd(a.floor[y - top < 3 ? 0 : 1], b.floor[y - top < 3 ? 0 : 1], m, x, y);
+  }
+  const arcade = (f) => f > w0 + 0.03 && f < w1 - 0.04;
+  for (let k = Math.floor((mu - 14) / 4); k <= Math.ceil((mu + W + 14) / 4); k++) {
+    const u0 = k * 4 + Math.floor(hash(k) * 3), f = fAt(u0), m = morph(f);
+    if (arcade(f)) continue;
+    const x = Math.round(u0 - mu), base = midTop(u0);
+    if (hash(k + 0.5) > m * 1.05) {
+      if (hash(k + 0.2) < m * 0.8) continue;
+      const r = 3 + Math.floor(hash(k + 0.7) * H * 0.022), cy = base - r - 2;
+      rect(x, cy, 1, base - cy, a.bark[2]);
+      disc(x, cy + 1, r, a.forest[2]); disc(x, cy, r - 1, a.forest[1]); disc(x - 1, cy - 1, Math.max(1, r - 3), a.forest[0]);
+    } else if (hash(k + 0.9) < 0.3) {   // a palm
+      const h = 9 + Math.floor(hash(k + 0.3) * H * 0.06), lean = hash(k + 0.1) < 0.5 ? -1 : 1;
+      let tx = x;
+      for (let i = 0; i < h; i++) { tx = x + Math.round(lean * (i / h) ** 2 * h * 0.3); put(tx, base - i, b.bark[i % 3 ? 0 : 1]); }
+      for (const [ang, len] of [[-2.8, 1], [-2.2, 0.7], [-0.9, 0.7], [-0.35, 1], [3.05, 0.6], [0.1, 0.6]]) {
+        const L2 = Math.max(3, Math.round(h * 0.45 * len));
+        for (let i = 1; i <= L2; i++) put(Math.round(tx + Math.cos(ang) * i), Math.round(base - h + Math.sin(ang) * i + (i / L2) ** 2 * L2 * 0.5), b.forest[i < L2 * 0.35 ? 1 : 0]);
+      }
+    } else {   // a broad jungle crown
+      const r = 3 + Math.floor(hash(k + 0.4) * H * 0.02), cy = base - r - 3 - Math.floor(hash(k + 0.6) * 4);
+      rect(x, cy, 1, base - cy, b.bark[1]);
+      for (let j = -r; j <= Math.round(r * 0.5); j++) { const half = Math.round(r * 1.6 * Math.sqrt(Math.max(0, 1 - (j / r) ** 2))); rect(x - half, cy + j, half * 2 + 1, 1, j < -r * 0.4 ? b.forest[0] : j < 0 ? b.forest[1] : b.forest[2]); }
+    }
+  }
+  // the drowned arcade: piers and round arches under a cornice, vines hanging off it, runes waking on the piers
+  const AH = Math.round(H * 0.17), bay = 24, pier = 4, ar = (bay - pier) / 2;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, f = fAt(u);
+    if (!arcade(f)) continue;
+    const top = midTop(u), k = ((Math.round(u) % bay) + bay) % bay, spring = top - Math.round(AH * 0.5);
+    for (let y = Math.max(0, top - AH); y <= top; y++) {
+      let col = null;
+      if (y < top - AH + 3) col = y === top - AH ? c.stone[0] : y === top - AH + 2 ? c.stone[3] : c.stone[1];
+      else if (k < pier) col = k === 0 ? c.stone[0] : k === pier - 1 ? c.stone[3] : c.stone[1];
+      else {
+        const dx = k - pier - ar + 0.5, arch = spring - Math.sqrt(Math.max(0, ar * ar - dx * dx));
+        if (y < arch - 1) col = (y + (Math.round(u) >> 3)) % 3 === 0 ? c.stone[2] : c.stone[1];
+        else if (y < arch + 1) col = dx < 0 ? c.stone[0] : c.stone[3];
+      }
+      if (col !== null) buf[y * W + x] = hash(Math.floor(u / 2) * 7 + Math.floor(y / 2)) < 0.07 ? c.moss[1] : col;
+    }
+    if (hash(Math.round(u) + 0.37) < 0.07) for (let j = 0; j < 3 + hash(Math.round(u) + 0.6) * AH * 0.5; j++) put(x + Math.round(Math.sin(t * 0.8 + u + j * 0.2) * 0.6), top - AH + 3 + j, c.vine[j % 4 ? 1 : 0]);
+    if (k === 1) {
+      const id = `r${Math.round(u)}`, on = trip >= f - 0.12;
+      if (on) {
+        halo(x + 1, spring, 5, 0.4 + 0.6 * night, RUNE);
+        for (const ry of [spring - 3, spring + 2]) { put(x, ry, Math.sin(t * 3 + u) > 0 ? RUNE[0] : RUNE[1]); put(x + 1, ry, RUNE[2]); }
+        runeUp(id, x);
+      }
+    }
+  }
+
+  [cam, camY] = into('road', cam, camY);
+  // the road: the Clearing's path, the jungle's, then sandstone steps down into the flood and its paving under the water
+  const wl = Math.round(GY + 0.1 * H - 4), water = wl + camY;
+  const wet = (u, f) => f > w0 - 0.04 && f < w1 + 0.04 && groundY(u) > wl;
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP, m = morph(f), top = groundY(u) + camY, stone = f > 0.32 && f < 0.93;
+    for (let y = Math.max(0, top); y < H; y++) {
+      const dp = y - top;
+      let col;
+      if (stone && dp < 4) col = dp === 0 ? c.stone[0] : dp === 3 || Math.round(u) % 7 === 0 ? c.stone[3] : c.stone[1];
+      else if (dp === 0) col = dd(a.path[0], b.path[0], m, x, y);
+      else if (dp < 3) col = dd(a.path[1], b.path[1], m, x, y);
+      else if (dp === 3) col = dd(a.path[2], b.path[2], m, x, y);
+      else {
+        const k = Math.min(3, Math.floor(((dp - 4) / Math.max(1, H - top - 4)) * 4));
+        col = stone ? (((y >> 1) + (Math.round(u) >> 3)) & 3 ? c.stone[2] : c.stone[3]) : dd(a.ground[k], b.ground[k], m, x, y);
+      }
+      buf[y * W + x] = col;
+    }
+  }
+  // along it: bushes, grass and flowers in the meadow, ferns in the jungle, reeds on the lagoon's shore
+  for (let k = Math.floor((cam - 10) / 9); k <= Math.ceil((cam + W + 10) / 9); k++) {
+    const u0 = k * 9 + Math.floor(hash(k + 0.1) * 4), f = (u0 - mx) / TRIP;
+    if ((f > 0.31 && f < 0.93) || hash(k + 0.8) > 0.75) continue;
+    const x = Math.round(u0 - cam), y = groundY(u0) + camY, m = morph(f), kind = hash(k + 0.6);
+    if (m < 0.5) {
+      if (kind < 0.35) { disc(x, y - 3, 3, a.forest[2]); disc(x, y - 4, 2, a.forest[1]); put(x - 1, y - 5, a.forest[0]); }
+      else if (kind < 0.65) for (let i = -3; i <= 3; i++) { const h = 3 + Math.round(hash(k * 3 + i) * 3); rect(x + i, y - h, 1, h, i & 1 ? a.fore[1] : a.fore[0]); }
+      else for (let i = 0; i < 5; i++) put(x + Math.round((hash(k + i) - 0.5) * 8), y - 1 - Math.round(hash(k + i + 0.5) * 2), c.flowers[Math.floor(hash(k * 5 + i) * 4)]);
+    } else if (f > 0.93) for (let i = -2; i <= 2; i++) { const h = 4 + Math.round(hash(k * 7 + i) * 4); rect(x + i * 2, y - h, 1, h, b.fore[i & 1 ? 1 : 2]); put(x + i * 2, y - h, b.bark[0]); }
+    else for (let i = -3; i <= 3; i++) { const h = 2 + Math.round(Math.abs(Math.sin(i)) * 3); put(x + i, y - h, b.fore[0]); rect(x + i, y - h + 1, 1, h - 1, b.fore[1]); }
+  }
+  // the flood, in front of your Pokémon: still water over the paving, its surface catching the light, rings round its legs
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP;
+    if (!wet(u, f)) continue;
+    for (let y = Math.max(0, water); y < H; y++) {
+      const dp = y - water, behind = buf[y * W + x] || c.water[3];
+      let col = dp === 0 ? c.water[0] : dp === 1 ? c.water[1] : mixW(behind, c.water[dp < 6 ? 2 : 3], 0.6);
+      if (dp > 1 && (x + Math.floor(t * 6) + y * 3) % 17 === 0) col = c.water[1];
+      fput(x, y, col);
+    }
+  }
+  if (wet(mx + cam, pos)) {   // wading: rings spreading from your Pokémon's legs
+    const r = 4 + ((t * 6) % 8);
+    for (let dx = -Math.round(r); dx <= r; dx++) if ((dx + Math.floor(t * 4)) % 3) fput(mx + dx, water + (Math.abs(dx) > r - 2 ? 1 : 0), c.water[0]);
+  }
+  for (let k = 0; k < 9; k++) {   // lily pads on the flood
+    const u = mx + (w0 + 0.03 + k * 0.05) * TRIP, x = Math.round(u - cam);
+    if (x < -4 || x > W + 4 || !wet(u, (u - mx) / TRIP)) continue;
+    for (let i = -2; i <= 2; i++) fput(x + i, water, c.lily[0]);
+    for (let i = -1; i <= 2; i++) fput(x + i, water + 1, c.lily[1]);
+    if (k % 3 === 1) fput(x, water - 1, c.lily[2]);
+  }
+
+  // fireflies over the meadow while it's dark
+  if (night > 0.2) for (let i = 0; i < 10; i++) {
+    const x = Math.round(((hash(i) * W * 1.6 - cam * 0.8) % (W * 1.6) + W * 1.6) % (W * 1.6) + Math.sin(t * 0.7 + i) * 4 - W * 0.3);
+    if (morph((x + cam - mx) / TRIP) > 0.5) continue;
+    const y = Math.round(GY + camY - 5 - hash(i + 0.5) * H * 0.15 + Math.cos(t + i) * 3);
+    if (Math.sin(t * 3 + i * 1.7) > 0.2) put(x, y, glow[0]);
+  }
+
+  // the near grass along the bottom, and the flood's near water instead of it
+  const [nu, ny] = into('near', e.cam * 1.35, e.camY * 1.35);
+  for (let x = 0; x < W; x++) {
+    const u = x + nu, fn = (u - mx) / (1.35 * TRIP), m = morph(fn), flood = fn > w0 && fn < w1;
+    const h = Math.round(H * 0.04 + hash(Math.floor(u)) * H * 0.05 + Math.sin(u * 0.21) * 2);
+    for (let y = Math.max(0, H - h + ny); y < H; y++) {
+      const dp = y - (H - h + ny), k = dp < 2 ? 0 : dp < h * 0.45 ? 1 : dp < h * 0.8 ? 2 : 3;
+      if (flood) { if (dp > h * 0.4) fput(x, y, (x + y * 2 + Math.floor(t * 5)) % 11 ? c.water[3] : c.water[1]); continue; }
+      fput(x, y, dd(a.fore[k], b.fore[k], m, x, y));
+    }
+  }
+  if (pos > w0 + 0.03) cue('splash');
+}
+
+/* ---------- Ruins → Wastes ---------- */
+
+function paintRuinsWastes(e) {
+  const { pos, a, d, c, t } = e;
+  let { cam, camY } = e;
+  const R = RUINS_WASTES, morph = R.morph;
+  // the land's three looks: the Ruins', steaming mudflats half-way, the Wastes'
+  const L = (key, k, m, x, y) => (m < 0.5 ? dd(a[key][k], d[key][k], m * 2, x, y) : dd(d[key][k], e.b[key][k], m * 2 - 1, x, y));
+  const ahead = (x, lead) => morph(pos + ((x - mx) / W) * lead);
+  const flick = (n) => Math.sin(t * 7 + n * 1.3) > 0.3;
+  const steamK = (f) => smooth((f - 0.16) / 0.14) * (1 - smooth((f - 0.62) / 0.16));   // how hard the land steams
+
+  const [fu] = into('far', cam * 0.05);
+  volcano(e, smooth((pos - 0.12) / 0.62), fu);
+  for (let x = 0; x < W; x++) {
+    const u = x + fu, m = ahead(x, 0.25);
+    const top1 = Math.round(hz - H * 0.04 - H * 0.06 * (0.55 * Math.sin(u * 0.045 + 1) + 0.3 * Math.sin(u * 0.11 + 2) + 0.15 * Math.sin(u * 0.23)));
+    const top2 = Math.round(hz - H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.07 + 4) + 0.4 * Math.sin(u * 0.17)));
+    for (let y = Math.max(0, top1); y < hz + 12 && y < H; y++) {
+      const peak = y < top1 + 2 && top1 < hz - H * 0.08;
+      buf[y * W + x] = peak ? L('far', 2, m, x, y) : y >= top2 ? L('far', 0, m, x, y) : L('far', 1, m, x, y);
+    }
+  }
+  const [hu] = into('hill', cam * 0.18);
+  for (let x = 0; x < W; x++) {
+    const u = x + hu, m = ahead(x, 0.4);
+    const top = Math.round(hz + H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.04 + 3) + 0.4 * Math.sin(u * 0.09)));
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('hill', y === top ? 0 : y < top + 7 ? 1 : 2, m, x, y);
+  }
+
+  // the woods: jungle crowns browning and dying, the last ruined columns at first, then dead trees and boulders
+  const S = 0.45, [mu] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
+  const fAt = (u) => (u - mx) / (S * TRIP);
+  const midTop = (u) => MB + Math.round(Math.sin(u * 0.13)) + camY;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, m = morph(fAt(u)), top = midTop(u);
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('floor', y - top < 3 ? 0 : 1, m, x, y);
+  }
+  for (let k = Math.floor((mu - 14) / 4); k <= Math.ceil((mu + W + 14) / 4); k++) {
+    const u0 = k * 4 + Math.floor(hash(k) * 3), f = fAt(u0), m = morph(f);
+    if (hash(k + 0.9) < m * 0.45) continue;
+    const x = Math.round(u0 - mu), base = midTop(u0);
+    if (f < 0.22 && hash(k + 0.15) < 0.12) {   // a ruined column
+      const h = 8 + Math.floor(hash(k + 0.25) * H * 0.08);
+      rect(x - 1, base - h, 3, h, c.stone[1]); rect(x - 1, base - h, 1, h, c.stone[0]); rect(x + 1, base - h, 1, h, c.stone[2]);
+      if (hash(k + 0.35) < 0.5) rect(x - 2, base - h - 1, 5, 1, c.stone[0]);
+      continue;
+    }
+    if (hash(k + 0.5) > m * 1.1) {
+      const set = m > 0.5 || hash(k + 0.6) < m * 2 ? d : a, r = 3 + Math.floor(hash(k + 0.4) * H * 0.02), cy = base - r - 3;
+      rect(x, cy, 1, base - cy, set.bark[1]);
+      for (let j = -r; j <= Math.round(r * 0.5); j++) { const half = Math.round(r * 1.5 * Math.sqrt(Math.max(0, 1 - (j / r) ** 2))); rect(x - half, cy + j, half * 2 + 1, 1, j < -r * 0.4 ? set.forest[0] : j < 0 ? set.forest[1] : set.forest[2]); }
+    } else if (hash(k + 0.2) > 0.3) deadTree(x, base, 8 + Math.floor(hash(k + 0.4) * H * 0.07), c.dead, k);
+    else boulder(x, base, 2 + Math.floor(hash(k + 0.7) * 3), c.rock);
+  }
+  // the geysers across the flats: a cone of crusted rock, now and then blasting steam and boiling water into the sky
+  R.vents.forEach((fv, i) => {
+    const u = mx + fv * S * TRIP, x = Math.round(u - mu), y = midTop(u) - 1;
+    if (x < -30 || x > W + 30) return;
+    for (let j = 0; j < 4; j++) rect(x - 4 + j, y - j, 9 - j * 2, 1, j === 3 ? c.water[2] : c.rock[j ? 1 : 2]);
+    const phase = ((t * 0.45 + i * 0.37) % 1 + 1) % 1, on = phase < 0.4 && !still();
+    if (!on) { if (Math.sin(t * 4 + i) > 0.3) put(x, y - 5, c.steam[1]); return; }
+    const k = Math.sin((phase / 0.4) * Math.PI), h = Math.round(H * 0.34 * k);
+    for (let j = 0; j < h; j++) {
+      const w = 1 + j * 0.13, cx = x + Math.sin(j * 0.2 - t * 3) * 0.8;
+      for (let xx = Math.floor(cx - w); xx <= cx + w; xx++) {
+        const n = noise(xx * 0.3, (y - j + t * 30) * 0.2), edge = Math.abs(xx - cx) / w;
+        if (n > 0.2 + edge * 0.6) put(xx, y - 4 - j, j < h * 0.35 && edge < 0.4 ? c.water[0] : n > 0.6 ? c.steam[0] : c.steam[1]);
+      }
+    }
+    for (let n = 0; n < 14; n++) {   // drops falling back off its head
+      const a2 = (hash(n + i) - 0.5) * 2, s = ((t * 1.3 + hash(n + 0.5)) % 1) * k;
+      put(Math.round(x + a2 * s * 14), Math.round(y - 4 - h + s * s * h * 1.1), c.water[1]);
+    }
+    if (x > 0 && x < W) cue(`vent${i}`, i === 1 ? 'lake-churn' : 'gust');
+  });
+  // steam rising off the land as the lagoon boils away
+  for (let y = Math.max(0, MB - Math.round(H * 0.2) + camY); y < GY + camY && y < H; y++) {
+    const band = 1 - Math.abs((y - (MB + camY - H * 0.06)) / (H * 0.15));
+    if (band <= 0) continue;
+    for (let x = 0; x < W; x++) {
+      const dm = 0.38 * steamK(pos + (x - mx) / (S * TRIP)) * band;
+      if (dm <= 0.01) continue;
+      const u = x + cam * 0.6, n = noise(u * 0.07, (y + t * 9) * 0.18) * 0.7 + noise(u * 0.19, (y + t * 14) * 0.4) * 0.3;
+      if (n < dm) buf[y * W + x] = n < dm - 0.12 ? c.steam[0] : c.steam[1];
+    }
+  }
+
+  [cam, camY] = into('road', cam, camY);
+  // the road: a sandstone causeway over the lagoon, then over cracked, steaming mud, then the Wastes' ash
+  const waterK = (f) => 1 - smooth((f - 0.12) / 0.24);
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP, m = morph(f), top = groundY(u) + camY, causeway = f < 0.36;
+    for (let y = Math.max(0, top); y < H; y++) {
+      const dp = y - top, k = Math.min(3, Math.floor(((dp - 4) / Math.max(1, H - top - 4)) * 4));
+      let col;
+      if (dp < 4) col = causeway ? (dp === 0 ? c.stone[0] : dp === 3 || Math.round(u) % 7 === 0 ? c.stone[3] : c.stone[1]) : L('path', dp === 0 ? 0 : dp < 3 ? 1 : 2, m, x, y);
+      else if (noise(u * 0.05, y * 0.12) < waterK(f) * 1.15 - 0.05) {   // the lagoon, shrinking into pools
+        col = (x + y * 3 + Math.floor(t * 5)) % 13 === 0 ? c.water[1] : dp < 6 ? c.water[2] : c.water[3];
+        if (steamK(f) > 0.3 && Math.sin(t * 9 + u * 1.7 + y) > 0.97) col = c.water[0];   // it bubbles
+      } else if (m < 0.72) {
+        const cr = noise(u * 0.14, y * 0.32);
+        col = cr > 0.47 && cr < 0.53 ? c.mud[2] : L('ground', k, m, x, y);   // cracked mud
+      } else col = L('ground', k, m, x, y);
+      if (m > 0.72 && dp > 4) {   // the Wastes' ground cracks, lava glowing in them
+        const seg = Math.floor(u / 9), cy = top + 5 + Math.floor(hash(seg + 0.4) * (H - top - 6)) + Math.round(Math.sin(u * 0.8) * 0.6);
+        if (y === cy && hash(seg + 0.8) < (m - 0.72) * 1.8) col = LAVA[flick(seg) ? 2 : 3];
+      }
+      buf[y * W + x] = col;
+    }
+  }
+  // along it: reeds by the lagoon, then dry grass and dead shrubs, then rocks
+  for (let k = Math.floor((cam - 10) / 9); k <= Math.ceil((cam + W + 10) / 9); k++) {
+    const u0 = k * 9 + Math.floor(hash(k + 0.1) * 4), f = (u0 - mx) / TRIP;
+    if (hash(k + 0.8) > 0.6) continue;
+    const x = Math.round(u0 - cam), y = groundY(u0) + camY, m = morph(f), kind = hash(k + 0.6);
+    if (m < 0.25) for (let i = -2; i <= 2; i++) { const h = 3 + Math.round(hash(k * 7 + i) * 4); rect(x + i * 2, y - h, 1, h, a.fore[i & 1 ? 1 : 2]); }
+    else if (m < 0.7) {
+      if (kind < 0.6) for (let i = -3; i <= 3; i++) { const h = 2 + Math.round(hash(k * 3 + i) * 3); rect(x + i, y - h, 1, h, i & 1 ? d.fore[1] : d.fore[0]); }
+      else for (let i = 1; i <= 3; i++) { put(x - i, y - i, c.dead[2]); put(x + i, y - i, c.dead[2]); put(x, y - i, c.dead[1]); }
+    } else if (kind < 0.55) boulder(x, y, 2 + Math.floor(hash(k + 0.2) * 3), c.rock);
+  }
+
+  // the near grass along the bottom, drying and thinning, water in it at first
+  const [nu] = into('near', e.cam * 1.35);
+  for (let x = 0; x < W; x++) {
+    const u = x + nu, fn = (u - mx) / (1.35 * TRIP), m = morph(fn);
+    const h = Math.round((H * 0.04 + hash(Math.floor(u)) * H * 0.05 + Math.sin(u * 0.21) * 2) * (1 - 0.55 * smooth((m - 0.5) / 0.5)));
+    for (let y = Math.max(0, H - h); y < H; y++) {
+      const dp = y - (H - h), k = dp < 2 ? 0 : dp < h * 0.45 ? 1 : dp < h * 0.8 ? 2 : 3;
+      fput(x, y, waterK(fn) > 0.5 && dp > h * 0.5 ? c.water[3] : L('fore', k, m, x, y));
+    }
+  }
+  // ash starts to fall near the end
+  const ashK = smooth((pos - 0.5) / 0.3), wrap = W * 1.4;
+  for (let n = 0; n < 70; n++) {
+    if (hash(n + 0.21) > ashK) continue;
+    const sp = 5 + hash(n + 0.5) * 7;
+    const x = Math.round((((hash(n) * wrap - t * sp * 0.6 - cam * (0.3 + hash(n + 0.6) * 0.6)) % wrap) + wrap) % wrap - W * 0.2 + Math.sin(t * 1.5 + n) * 1.5);
+    const y = Math.round((hash(n + 0.33) * H + t * sp) % H);
+    (n & 1 ? fput : put)(x, y, c.ash[hash(n + 0.9) < 0.3 ? 0 : 1]);
+  }
+  if (pos > 0.2) cue('gust');
   if (pos > 0.68) cue('rumble-far');
 }

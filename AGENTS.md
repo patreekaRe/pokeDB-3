@@ -12,6 +12,13 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-06: **Branching biomes, part b, the Sunken Ruins painted** (Desktop app, pushed): its own scenery in `js/scene.js`
+  (a temple drowned in a jungle lagoon; the water mirrors and ripples everything standing in it; four places, landmarks, the
+  Tide Altar's boss prelude), intro film `js/ruins-intro.js`, map tiles, a glinting sign, its own grotto (a Dive Ball chest),
+  and the `clearing>ruins` / `ruins>wastes` journey films in `js/travel.js`. Checked in the pane at 375x812 and 1280x800
+  (every place by day, dusk and night, the prelude, a real fight, the film, both trips, the crossroads' glimpse). The user
+  still has to hear the new `splash` / `plink` synths on a phone. Next: Thornwood Jungle, part a (CLOUD).
+
 - 2026-10-06: **Branching biomes, part b, the crossroads scene** (Desktop app, pushed): `js/crossroads.js` replaces the plain
   two-button window with a painted dusk fork (signpost, a glimpse of each biome through the trees, a card a road with its
   bosses as silhouettes until met and its wild types, your Pokémon walking off up the road taken). `?crossroads` previews it.

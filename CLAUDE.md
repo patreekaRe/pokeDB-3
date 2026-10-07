@@ -13,7 +13,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?safariclassic` brings back the old Safari prep window on that device for good (the new lobby is the default; `?safarilobby` undoes it). `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?lockdepths` hides the Depths' Pokédex tab again (forgets its Pokémon and `deepestBiome` 4), for a save an old playtest revealed it on. `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
+  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
@@ -546,7 +546,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   old save's `true` counts as the Clearing's). Early in each trip (a route's `fly`) a legendary you haven't unlocked flies
   over as a silhouette with its shadow on the road, or, with the Sealed Gate at half HP or less, sometimes Eternatus's red
   glow pulses on the horizon (`pickGuest()`, seeded by `run.tally.startedAt` and the trip). Playtest `?travel=shrine` /
-  `?travel=wastes` (`&at=0.5`, `&flyer=lugia` / `eternatus` / `none`).
+  `?travel=wastes` (`&at=0.5`, `&flyer=lugia` / `eternatus` / `none`). The Ruins' two trips are under Branching biomes below.
 - **Branching biomes** (roadmap item 19 part a, 2026-10-06; the user's settled calls: other roads' Pokédex pages are bonus
   pages, Mewtwo keeps its one road, each new biome is bot-checked against the one it pairs with): `BIOMES` in
   `js/data/enemies.js` is the default road, each entry with its `slot`; `ALT_BIOMES` holds the other roads (the **Sunken
@@ -566,9 +566,23 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: all five main biomes entered, the user's call, once Thornwood exists). The Ruins'
   Pokédex page is `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
   No.072-089; 500 PokéCoins once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). Every
-  Gen 1-5 species was used, so its Pokémon are Gen 6-9 with PokeAPI's `other/showdown/` GIFs (like Eternatus). Until part b
-  it borrows the Shrine's scenery (`BIOME_ART.ruins` in `js/scene.js`, the treasure grotto and boss prelude via `kin`), has no
-  intro film or journey films, and its own sign colours and map palette. Playtest `?biome=ruins` (any biome; `&starter=id`,
+  Gen 1-5 species was used, so its Pokémon are Gen 6-9 with PokeAPI's `other/showdown/` GIFs (like Eternatus). **Its look**
+  (part b, 2026-10-06): `BIOME_ART.ruins` in `js/scene.js`, a temple drowned in a jungle lagoon. Its ground is water:
+  `ruinsFloor()` mirrors the backdrop in it, things standing in it are painted with `dry()` and mirrored by `reflect()`, and
+  `rippleRuins()` ripples every wet pixel each frame from a still `snap` (`ruinsSettle()`, after the landmark); a new thing
+  in the water must be painted `dry()` (or it ripples) and reflected. Places: Flooded Steps (`steppedTemple()`, its stair on
+  under the water, an aqueduct pouring), Drowned Halls (`colonnade()` in perspective, lintels, light shafts), Sunken Court
+  (`colossalHead()`, `fountain()`, lily pads), Tide Altar (`altarRing()`, `tideAltar()`: the tide wheel, whose 12 runes
+  `wheelRunes()` draws live). Its boss prelude (`ruinsWake()` / `ruinsPortal()`, `TIDE_AT`): the runes light round the
+  wheel, the pool spins into a whirlpool (`whirl()`), a geyser bursts up through the altar, then a wave rises over the
+  screen. Landmarks `LANDMARKS.ruins`; runes glow (`S.rune`, `life.runes`). `kin: 'shrine'` now only dresses its ? events'
+  outdoor props (a place's `biomes[biome]` wins over `biomes[kin]`); its grotto is its own (a Dive Ball chest, tide pools).
+  Intro film `js/ruins-intro.js` (`RUINS_INTRO`: tilts down out of a drizzle, glides between 3D columns, runes plink,
+  Pokémon surface with a `splash`, a film's `pop` sound); map `PALETTES.ruins` (`paving`, `flood`, the `colonnade` prop);
+  signs glint (`runeGlint`). Journey films `clearing>ruins` (down a flooded stair in whole steps, `stairDeck()`, wading
+  a drowned arcade) and `ruins>wastes` (the lagoon boils away round geysers; `volcano()` is shared with the Shrine's
+  trip). Playtest `?area=ruins` (`&stage=`, `&kind=boss`), `?travel=ruins`, `?travel=wastes&from=ruins`. Before part b
+  it borrowed the Shrine's scenery. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
   pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), four `BADGE_GROUPS`:

@@ -508,8 +508,79 @@ for (const [area, art] of Object.entries(SAFARI_ART)) {
     },
   };
 }
-// The Sunken Ruins (roadmap item 19 a) borrow the Shrine's scenery until part b paints their own flooded temple.
-BIOME_ART.ruins = { ...BIOME_ART.shrine, kin: 'shrine' };
+/* The Sunken Ruins (roadmap item 19): a temple drowned in a jungle lagoon, painted by ruinsBackdrop() / ruinsFloor() /
+   ruinsFront(), its water rippled by drawRuins(). Its ? events' outdoor props are dressed like the Shrine's (`kin`); its
+   treasure grotto is its own. The runes (`rune`) glow of their own accord. */
+BIOME_ART.ruins = {
+  kin: 'shrine',
+  backdrop: 'ruins', floor: 'ruins', light: 'sun',
+  storm: { rain: ['#d8f0f8', '#78a8c0'], fall: 3.8, count: 1.2, sky: [0.5, 0, 8, 20], ground: [0.7, 0, 6, 12] },
+  sun: ['#fffce8', '#fff0a0', '#f8e070'],
+  cloud: ['#ffffff', '#eef8fb', '#c8e4ee', '#a8cce0'],
+  trunk: ['#8a7050', '#5a4430'],
+  rune: ['#f0fffc', '#8af8e8', '#2ec8c0'],
+  pollen: ['#fffce8', '#e0f8e8'],
+  firefly: ['#e8ffb8', '#a8f0a0'],
+  bird: '#2e4a58',
+  marks: {
+    stone: ['#f0e2bc', '#cdbb90', '#9c8a64', '#4a3e2c'],
+    block: ['#f0e2bc', '#cdbb90', '#ab9970', '#7c6c4e', '#463a2a'],
+    moss: ['#a0d060', '#6aa044', '#447a36'],
+    vine: ['#8ac858', '#559a3c', '#2e6a2c'],
+    water: ['#f0ffff', '#8ae0d8', '#46b4b8', '#1f7c8c', '#0f4a5a'],
+    lily: ['#8ccc58', '#549c3c', '#2e6a2a'],
+    lotus: ['#fff4f8', '#f8a0c4', '#d05890'],
+    gold: ['#fff0a0', '#e0b448', '#9a7428'],
+    clay: ['#f0a868', '#c87040', '#8a4424', '#40200e'],
+    bronze: ['#e0b070', '#a87440', '#6a4424', '#2e1c10'], patina: ['#8ad0b0', '#4a9078'],
+    wood: ['#c8945c', '#8e6034', '#5c3a1e', '#2e1c0c'], rope: ['#e8d8a0', '#b0a070'],
+    red: ['#f89878', '#c05a48'], paper: '#f8f4e8',
+    steam: ['#f4fcfc', '#c8e4e4'],
+  },
+  times: {
+    day: {   // a bright tropical day over the lagoon
+      sky: ['#3a8ad8', '#4a9ae0', '#5eaae6', '#76bcec', '#90ccf0', '#acdcf2', '#c8ecf4'],
+      far: ['#b4dcd4', '#94c4c0', '#7cb0b0'],
+      jungle: ['#62c070', '#44a058', '#2c7c46', '#1c5634'],
+      clouds: { count: 0.8 },
+      life: ['clouds', 'birds', 'ruins'],
+      pad: { style: 'stone', top: '#dccca4', mid: '#c0ae84', low: '#9e8c66', rim: '#3a3226', earth: '#3a8a8c', moss: '#6aa044' },
+    },
+    dusk: {   // sunset gilds the stone and turns the lagoon to copper
+      sunLow: true,
+      sky: ['#30306e', '#4e3e82', '#7e4c8c', '#b85c80', '#e8806a', '#f8a868', '#f8c890'],
+      sun: ['#fff4d0', '#f8c868', '#f08848'],
+      cloud: ['#f8d8c8', '#eab0a8', '#c07890', '#8a5078'],
+      far: ['#a07890', '#886480', '#704e6c'],
+      jungle: ['#5c7c48', '#40603c', '#2c4630', '#1a2e22'],
+      clouds: { count: 0.7 },
+      life: ['clouds', 'birds', 'ruins', 'fireflies'], fireflyCount: 0.4,
+      pad: { style: 'stone', top: '#c8a888', mid: '#a88c70', low: '#86705a', rim: '#2a2018', earth: '#4a5a6a', moss: '#5a7a40' },
+    },
+    night: {   // moonlight on the water, the runes awake
+      light: 'moon', stars: true,
+      sky: ['#060c22', '#0a1430', '#0e1c3e', '#14264c', '#1a305a', '#223a66', '#2a4470'],
+      cloud: ['#8088b0', '#646c94', '#4a5278', '#363c5e'],
+      far: ['#2a425c', '#22364e', '#1a2c42'],
+      jungle: ['#1e4a40', '#163a34', '#0e2c28', '#081e1c'],
+      trunk: ['#3a3430', '#26201e'],
+      clouds: { count: 0.4 },
+      life: ['stars', 'clouds', 'ruins', 'fireflies'], fireflyCount: 1.1,
+      pad: { style: 'stone', top: '#6a7480', mid: '#56606c', low: '#444e5a', rim: '#0e141a', earth: '#1a3a48', moss: '#2e5a48' },
+    },
+    dawn: {   // first light: rose and gold over a still lagoon
+      from: 'day', sunLow: true,
+      sky: ['#6a7cc0', '#8a8cc8', '#b09ccc', '#d4a8c4', '#eeb8b4', '#f8cca8', '#f8e0b8'],
+      sun: ['#fffcec', '#fff0b8', '#f8d898'],
+      cloud: ['#fff4ec', '#f8dcd8', '#e0b8c4', '#b898b0'],
+      life: ['clouds', 'birds', 'ruins', 'fireflies'], fireflyCount: 0.25,
+    },
+  },
+  kinds: {
+    elite: { grade: 'elite' },
+    boss: { grade: 'boss', clouds: { count: 1.3 } },
+  },
+};
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
@@ -698,6 +769,18 @@ const PLACE_ART = {
         ember: ['#f0ffff', '#88e8f8', '#c878f8'], embers: 0.4,
         chest: { ...BALL_CHEST, lid: ['#d0a0ff', '#8048c8', '#5a2c98', '#381a68'], trim: ['#fff0ff', '#d8b8f0', '#9878b8'], mark: ['#ffb0d8', '#f070a8'], marks: 'master' },
         life: ['treasure', 'drips', 'embers'],
+      },
+      ruins: {   // a drowned vault: sea-worn sandstone, aquamarine crystals, tide pools on the floor, and a Dive Ball for a chest
+        sky: ['#e8fff8', '#a8e8e0'],
+        rock: ['#8a8068', '#6e6652', '#565040', '#423c30', '#2c281e'],
+        moss: ['#7ab860', '#4e8a48', '#2e5a34'],
+        crystal: ['#f0fffc', '#98f0e0', '#40c0b8', '#1e7878'],
+        ground: ['#5e5848', '#544e40', '#4a4438', '#403c30', '#363228'],
+        stone: ['#e0d4b0', '#c0b088', '#988a66', '#6a5e46'],
+        beam: '#e8fff8', drip: '#b8f4ff', mote: '#f0fffc',
+        pool: ['#c8fff8', '#58c0c0', '#1e7080'],
+        chest: { ...BALL_CHEST, lid: ['#98d8ff', '#3890e0', '#2060b0', '#103870'], mark: ['#c8f4ff', '#78d0f8'], marks: 'dive' },
+        life: ['treasure', 'drips'],
       },
     },
   },
@@ -995,7 +1078,7 @@ let storm = { on: false, level: 0 };
 // lights that glow of their own accord, so the dark doesn't dim them; `storm` has its own tints
 const GLOWS = new Set(['sun', 'flame', 'lanternGlow', 'glow', 'firefly', 'lava', 'ember', 'wisp', 'spot', 'vein', 'boom',
   'wish', 'hp', 'heart', 'coin', 'crystal', 'steam', 'beam', 'mote', 'glint', 'storm', 'chalk', 'pollen',
-  'amethyst', 'ruby', 'energy', 'shroom', 'daylight', 'lamp']);
+  'amethyst', 'ruby', 'energy', 'shroom', 'daylight', 'lamp', 'rune']);
 const SKIES = new Set(['sky', 'cloud']);
 
 /** A copy of `art` with every colour but the glows run through a grade ({ sky, land } from GRADES); `only` limits it to those keys. */
@@ -1058,7 +1141,7 @@ export function showPlaceScene(place, { floor = null, span = null, biome = null,
   const kin = BIOME_ART[biome]?.kin || biome;   // a Safari area dresses its rooms like the main biome it's nearest
   if (art.outdoor) {
     const { storm, pad, life: own, ...wild } = biomeLook(BIOME_ART[biome] || BIOME_ART.clearing, time);
-    const props = grade({ ...art, ...biomes?.[kin] }, g);
+    const props = grade({ ...art, ...(biomes?.[biome] || biomes?.[kin]) }, g);
     const at = { ...journeyOf(where), step: null };
     paintScene(`place/${place}/${biome}/${type}/${time}/${placeKey(at)}`, { ...wild, ...props, ...types?.[type], life: [...own, ...art.life], ...at }, floor, span);
     return;
@@ -1071,7 +1154,7 @@ function placeLook(place, biome, type) {
   const { biomes, types, ...art } = PLACE_ART[place];
   const time = timeOfDay(), g = GRADES[time];
   const kin = BIOME_ART[biome]?.kin || biome;
-  const look = biomes && (biomes[kin] || Object.values(biomes)[0]), glow = types?.[type];
+  const look = biomes && (biomes[biome] || biomes[kin] || Object.values(biomes)[0]), glow = types?.[type];
   let lit = { ...art, ...look, ...glow };
   // open-air close-ups take the light whole; indoors only the view through the windows changes
   if (art.open) {
@@ -1186,7 +1269,7 @@ function shoot(look, w, h, at) {
 const WEATHER = {
   clearing: { dawn: 'drizzle', day: 'leaves', dusk: 'leaves', night: 'drizzle' },
   shrine: { dawn: 'drizzle', day: 'drizzle', dusk: 'leaves', night: 'drizzle' },
-  ruins: 'drizzle',
+  ruins: { dawn: 'drizzle', night: 'drizzle' },
   wastes: 'ash',
   depths: 'dust',
   meadow: { dawn: 'drizzle', dusk: 'leaves', night: 'drizzle' },
@@ -1362,7 +1445,7 @@ export async function bossRebirth(skipped) {
 /** The sounds the second form's cutscene plays, to load ahead. */
 export const bossRebirthSounds = () => MAX_SOUNDS.map(([, sound]) => sound);
 /** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
-const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
+const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'ruins', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
 const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
 /** The sounds the boss prelude on screen will play, to load ahead. */
 export const bossPreludeSounds = () => (hasPrelude() ? preludeSounds()[preludeKey()].map(([, sound]) => sound) : []);
@@ -1474,6 +1557,7 @@ function paintBase() {
   if (S.raw.backdrop === 'kombat') kombatBackdrop();
   if (S.raw.backdrop === 'safari') safariBackdrop();
   if (S.raw.backdrop === 'depths') depthsBackdrop();
+  if (S.raw.backdrop === 'ruins') ruinsBackdrop();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
@@ -1493,6 +1577,7 @@ function paintBase() {
   if (S.raw.floor === 'kombat') kombatFloor();
   if (S.raw.floor === 'safari') safariFloor();
   if (S.raw.floor === 'depths') depthsFloor();
+  if (S.raw.floor === 'ruins') ruinsFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
@@ -1503,6 +1588,7 @@ function paintBase() {
   if (S.raw.backdrop === 'safari') safariFront();
   if (S.raw.backdrop === 'hills' || S.raw.backdrop === 'shrine' || S.raw.backdrop === 'volcano') { stageFront(); landmark(); }
   if (S.raw.backdrop === 'depths') { depthsFront(); landmark(); }
+  if (S.raw.backdrop === 'ruins') { ruinsFront(); landmark(); ruinsSettle(); }
   if (S.raw.prop) eventProps();
 
   return Uint32Array.from(px);
@@ -1915,7 +2001,7 @@ function basalt() {
 
 const stage = () => S.raw.stage ?? 0;
 const within = () => { const n = [4, 3, 4][stage()]; return n ? Math.min(1, (S.raw.step || 0) / (n - 1)) : 1; };   // 0..1 through the place
-const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths' })[S.raw.backdrop];
+const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths', ruins: 'ruins' })[S.raw.backdrop];
 const M = () => S.marks;
 
 /** Mark ground where grass shouldn't grow (water, lava, a landmark's footprint). */
@@ -3430,6 +3516,11 @@ function grottoFloor() {
     put(x, y, gold); put(x + 1, y, shine); put(x, y + 1, dark); put(x + 1, y + 1, dark);
     if (rand() < 0.3) put(x + 3, y, S.gem[n % S.gem.length]);
   }
+  if (S.pool) for (const [at, k] of [[0.1, 0.5], [0.9, 0.62]]) {   // the drowned vault's tide pools
+    const [lit, body, deep] = S.pool, px0 = Math.round(W * at), py0 = dy + Math.round((H - dy) * k), r = Math.max(8, Math.round(W * 0.11));
+    pool(px0, py0, r, Math.max(3, Math.round(r * 0.34)), (x, y, d) => (d < 0.3 ? deep : (x * 3 + y * 5) % 11 === 0 ? lit : body), S.rock[3]);
+    for (let n = 0; n < 3; n++) life.glints.push({ x: px0 - r + Math.floor(rand() * r * 2), y: py0, c: lit, phase: rand() * 80 });
+  }
   floorBall(cx - rx - 13, dy + 12, 'great');
   floorBall(cx + rx + 12, dy + 1, 'poke');
 }
@@ -3592,6 +3683,7 @@ function chestLid() {
     const shade = y <= 2 ? 0 : y <= 6 ? 1 : y <= 8 ? 2 : 3;
     if (marks === 'great' && k <= 7 && y >= 2 && y <= 8) return S.chest.mark[Math.max(0, shade - 1)];   // the Great Ball's red patches
     if (marks === 'ultra' && y <= 8 && ((x >= 10 && x <= 12) || (x >= 23 && x <= 25))) return trim[x === 10 || x === 23 ? 0 : 1];   // the Ultra Ball's H
+    if (marks === 'dive' && (y === 4 || y === 7) && ((x + (y === 4 ? 0 : 3)) % 6) < 3) return S.chest.mark[y === 4 ? 0 : 1];   // the Dive Ball's waves
     if (marks === 'master' && ((x - 9) ** 2 + (y - 5) ** 2 <= 5 || (x - 26) ** 2 + (y - 5) ** 2 <= 5)) return S.chest.mark[y < 5 ? 0 : 1];   // the Master Ball's pink bumps
     if (marks === 'master' && y >= 3 && y <= 7 && (x === 15 || x === 21 || (y === 3 + Math.abs(x - 18) && x > 15 && x < 21))) return trim[0];   // ...and its M
     if (shade === 1 && y <= 4 && x >= 7 && x <= 10 && x - 7 <= y - 2) return lid[0];   // the shine
@@ -5628,6 +5720,7 @@ function makeLife() {
   }
   if (has('safari')) makeSafariLife();
   if (has('depths')) makeDepthsLife();
+  if (has('ruins')) makeRuinsLife();
   if (has('vines')) {
     life.vines = [];
     for (let i = 0, n = Math.round(W / 9); i < n; i++) {
@@ -5648,6 +5741,7 @@ function draw() {
   px.set(base);
   if (storm.level > 0) stormLight();
   const t = tick, L = life, has = (name) => S.raw.life.includes(name);
+  if (has('ruins')) rippleRuins(t);   // first, so whatever plays over the water (spray, rain) stays on it
 
   if (L.stars) for (const s of L.stars) { const b = Math.sin((t + s.phase) / 6); if (b > 0.6) { put(s.x - 1, s.y, S.sky[2]); put(s.x + 1, s.y, S.sky[2]); put(s.x, s.y - 1, S.sky[2]); put(s.x, s.y + 1, S.sky[2]); } if (b < -0.7) put(s.x, s.y, S.sky[1]); }
 
@@ -5718,6 +5812,7 @@ function draw() {
   if (has('vines')) drawVines(t);
   if (has('safari')) drawSafari(t);
   if (has('depths')) drawDepths(t);
+  if (has('ruins')) drawRuins(t);
   if (has('tower')) paintArena({ W, H, px }, horizon, S.raw.tower, t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
@@ -5815,6 +5910,7 @@ function draw() {
     else if (S.raw.backdrop === 'shrine') shake = drawShrinePortal(t);
     else if (S.raw.backdrop === 'volcano') shake = drawWastesPortal(t);
     else if (S.raw.backdrop === 'depths') shake = depthsPortal(t);
+    else if (S.raw.backdrop === 'ruins') shake = ruinsPortal(t);
     else shake = drawClearingPortal(t);
   }
   else if (bossPrelude) shake = drawBossAwakening(t) || 0;
@@ -6276,6 +6372,7 @@ function drawBossAwakening(t) {
   if (S.raw.backdrop === 'shrine') return drawShrineAwakening(t);
   if (S.raw.backdrop === 'volcano') return drawWastesAwakening(t);
   if (S.raw.backdrop === 'depths') return depthsWake(t);
+  if (S.raw.backdrop === 'ruins') return ruinsWake(t);
   return drawClearingAwakening(t);
 }
 
@@ -6475,6 +6572,7 @@ const preludeSounds = () => ({
   shrine: [...BELL_TOLLS.map(at => [at, 'bell']), [SPIRIT_AT, 'spirit']],
   volcano: [[0, 'quake'], [ERUPT_AT, 'eruption']],
   depths: [[0, 'gate-hum'], [2, 'quake'], [CORE_AT, 'eruption'], [CORE_AT + 1, 'core-surge']],
+  ruins: [[0, 'quake'], [6, 'lake-churn'], [TIDE_AT, 'wave-crash']],
   ...Object.fromEntries(Object.entries(SAFARI_PRELUDES).map(([area, p]) => [area, p.sounds])),
 });
 
@@ -10051,6 +10149,870 @@ function depthsMax(t) {
 }
 
 LANDMARKS.depths = DEEP_MARKS;
+
+/* ============================================================
+   THE SUNKEN RUINS (roadmap item 19 part b)
+   A temple drowned in a jungle lagoon. Its ground is shallow water: ruinsFloor() mirrors the backdrop in it, everything
+   standing in it is painted dry() and mirrored by reflect(), and drawRuins() ripples the lot each frame (every wet
+   pixel takes its row's neighbour a pixel or two along, from the still `snap`). Its places by stage(): the Flooded
+   Steps (a stepped temple whose grand stair runs down into the lagoon, an aqueduct pouring into it), the Drowned Halls
+   (a colonnade in perspective under broken lintels, light falling through), the Sunken Court (a colossal stone head sunk
+   to its chin, a fountain, lily pads) and the Tide Altar (a round pool ringed by pillars, the tide wheel on its altar).
+   ============================================================ */
+
+/** A pixel of something standing in the water: solid, out of the ripple, and marked for reflect(). */
+function dry(x, y, c) {
+  x |= 0; y |= 0;
+  if (!inside(x, y)) return;
+  const i = y * W + x;
+  px[i] = c; sky[i] = 0;
+  if (life.wet) { life.wet[i] = 0; life.fresh[i] = 1; }
+}
+
+/** Inside an arched opening `hw` wide each way and `h` tall, its feet on `foot`. */
+function inArch(x, y, cx, foot, hw, h) {
+  const dx = x + 0.5 - cx, spring = foot - h + hw;
+  return Math.abs(dx) <= hw && y <= foot && (y >= spring || dx * dx + (y + 0.5 - spring) ** 2 <= hw * hw);
+}
+
+/** Courses of dressed stone over x0..x1, y0..y1, staggered and weathered, moss in patches; `shade(x, y)` (0-1) darkens
+    it, `skip(x, y)` leaves holes (arches, a fallen corner). */
+function masonry(x0, x1, y0, y1, { paint = solid, course = 3, len = 7, moss = 0.2, shade = null, seed = 0, skip = null } = {}) {
+  const b = M().block, mo = M().moss;
+  for (let y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) {
+    const row = Math.floor((y - y0) / course), ry = (y - y0) % course, off = (row & 1) * (len >> 1) + Math.floor(noise(row, seed, 71) * 3);
+    for (let x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) {
+      if (skip?.(x, y)) continue;
+      const rx = (((x - x0 + off) % len) + len) % len;
+      let i = ry === course - 1 || rx === 0 ? 3 : ry === 0 ? 0 : noise(x >> 1, y >> 1, 72 + seed) < 0.2 ? 2 : 1;
+      if (shade && dither(x, y) < shade(x, y) * 16) i = Math.min(4, i + 1);
+      paint(x, y, moss && i && noise(x >> 2, y >> 2, 73 + seed) < moss ? mo[i >= 3 ? 2 : 1] : b[i]);
+    }
+  }
+}
+
+/** A fluted column from `foot` up to `top`, `hw` each side of `cx`: a base, the shaft lit on its left, a capital; a
+    `broken` one is snapped off jagged. Moss climbs from its foot. */
+function pillar(cx, foot, top, hw, { paint = solid, broken = false, seed = 0, moss = 0.35 } = {}) {
+  const b = M().block, mo = M().moss, h = Math.max(1, foot - top);
+  const capH = broken ? 0 : Math.max(1, Math.round(hw * 0.8)), baseH = Math.max(1, Math.round(hw * 0.6));
+  for (let y = Math.max(0, top); y <= Math.min(H - 1, foot); y++) {
+    const up = foot - y, cap = y < top + capH;
+    const w = up < baseH ? hw + 1 : cap ? hw + Math.max(1, Math.round(hw * 0.5)) : hw;
+    for (let x = -w; x <= w; x++) {
+      if (broken && y < top + Math.round(Math.abs(Math.sin((x + seed) * 1.9)) * Math.max(1, hw))) continue;
+      const u = (x + w + 0.5) / (2 * w + 1);
+      let i = u < 0.22 ? 0 : u < 0.6 ? 1 : u < 0.86 ? 2 : 3;
+      if (!cap && up >= baseH && hw >= 2 && x % 2 === 0 && x > -w && x < w) i = Math.min(4, i + 1);   // the flutes
+      if (cap && y === top + capH - 1) i = 3;
+      if (x === w || up === baseH) i = 4;
+      let c = b[i];
+      if (up < h * moss * (0.4 + noise(cx + x, 3, 74)) && noise((cx + x) >> 1, y >> 1, 75) < 0.6) c = mo[i >= 2 ? 2 : 1];
+      if (broken && y < top + hw + 1 && noise(cx + x, y, 76) < 0.45) c = mo[0];
+      paint(cx + x, y, c);
+    }
+  }
+}
+
+/** Mirror what was just painted dry() between x0 and x1, from y0 down to `foot`, into the water under it. */
+function reflect(x0, x1, y0, foot, keep = 0.45) {
+  const { wet, fresh } = life, w = M().water;
+  if (!wet) return;
+  x0 = Math.max(0, x0 | 0); x1 = Math.min(W - 1, x1 | 0); y0 = Math.max(0, y0 | 0); foot |= 0;
+  for (let y = foot + 1; y < H && 2 * foot + 1 - y >= y0; y++) {
+    const sy = 2 * foot + 1 - y, d = depthOf(y), deep = mixC(w[1], w[3], Math.min(1, d * 1.2)), k = Math.min(0.85, keep + d * 0.3);
+    for (let x = x0; x <= x1; x++) {
+      const i = y * W + x, s = sy * W + x;
+      if (wet[i] && fresh[s]) px[i] = mixC(px[s], deep, k);
+    }
+  }
+  for (let y = y0; y <= Math.min(H - 1, foot); y++) fresh.fill(0, y * W + x0, y * W + x1 + 1);
+}
+
+/** A fall of water from x0..x1 at `top` down to `foot`; a live one runs and foams (drawRuins), a still one is far off. */
+function fall(x0, x1, top, foot, still = false) {
+  const w = M().water;
+  for (let y = top; y <= foot; y++) for (let x = x0; x <= x1; x++) {
+    const c = (y + x * 3) % 5 < 2 ? w[0] : w[1];
+    solid(x, y, still ? mixC(c, S.far[1], 0.45) : c);
+  }
+  if (!still) { life.falls.push({ x0, x1, top, foot }); steam(x0, foot - 1, 0.7); }
+}
+
+/* ----- the back ----- */
+
+function ruinsBackdrop() {
+  const st = stage();
+  life.falls = []; life.runes = []; life.ruVines = [];
+  ruinsFar();
+  if (st === 0) floodedSteps();
+  if (st === 1) drownedHalls();
+  if (st === 2) sunkenCourt();
+  if (st === 3) altarRing();
+}
+
+/** Far cliffs with falls down them, the jungle's crowns along the shore, a few palms over them. */
+function ruinsFar() {
+  const st = stage();
+  ridge(horizon - Math.round(horizon * [0.24, 0.32, 0.22, 0.3][st]), Math.max(2, Math.round(horizon * 0.1)), 23, 2.3 + st, S.far, true);
+  for (const at of st === 2 ? [0.32] : [0.26, 0.72]) {
+    const x = Math.round(W * at + (noise(st, at * 10, 77) - 0.5) * W * 0.1);
+    let y0 = 0;
+    while (y0 < horizon && sky[y0 * W + x]) y0++;
+    if (y0 < horizon - 4) fall(x, x + (W > 160 ? 1 : 0), y0 + 1, horizon - 2, true);
+  }
+  jungleCrowns(horizon - Math.round(horizon * 0.07), Math.max(3, Math.round(horizon * 0.09)));
+  for (let n = 0, count = Math.max(2, Math.round(W / 45)); n < count; n++) {
+    ruinPalm(Math.round(rand() * W), horizon - Math.round(horizon * 0.06), Math.round(horizon * (0.18 + rand() * 0.14)), rand() < 0.5 ? -1 : 1);
+  }
+}
+
+/** A band of round treetops down to the horizon, each lit on its top left. */
+function jungleCrowns(base, amp) {
+  const [lit, body, shade, deep] = S.jungle;
+  for (let x = -4; x < W + 4; x += 2 + Math.floor(rand() * 4)) {
+    const r = 2 + Math.floor(rand() * amp), cy = base - Math.floor(rand() * amp * 0.7);
+    for (let dy = -r; cy + dy < horizon; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (dy < 0 && dx * dx + dy * dy > r * r) continue;
+      const l = (dx + dy * 1.2) / r, xx = x + dx, yy = cy + dy;
+      solid(xx, yy, dy > r * 0.5 ? deep : l < -0.8 ? lit : l < 0.2 ? (dither(xx, yy) < 4 ? lit : body) : shade);
+    }
+  }
+}
+
+/** A palm leaning out over the jungle: a curved trunk and drooping fronds. */
+function ruinPalm(cx, foot, h, lean) {
+  const [lit, body, shade] = S.jungle, [bark, barkDark] = S.trunk;
+  let x = cx;
+  for (let k = 0; k < h; k++) { x = cx + lean * (k / h) ** 2 * h * 0.35; solid(x, foot - k, k % 3 ? bark : barkDark); }
+  const tx = Math.round(x), ty = foot - h;
+  for (const [ang, len] of [[-2.8, 1], [-2.3, 0.8], [-1.6, 0.5], [-0.85, 0.8], [-0.35, 1], [3.05, 0.7], [0.1, 0.7]]) {
+    const L = Math.max(3, Math.round(h * 0.45 * len));
+    for (let k = 1; k <= L; k++) {
+      const fx = tx + Math.cos(ang) * k, fy = ty + Math.sin(ang) * k + (k / L) ** 2 * L * 0.5;
+      solid(fx, fy, k < L * 0.35 ? body : lit);
+      solid(fx, fy + 1, shade);
+    }
+  }
+}
+
+/* The Flooded Steps: an aqueduct on the left pouring into the lagoon, a broken colonnade on the right, and in the middle
+   the stepped temple, its grand stair running down into the water (and on under it: ruinsFloor). */
+function floodedSteps() {
+  const cx = Math.round(W * 0.5), sz = Math.round(Math.min(W * 0.56, horizon * 1.25) * (0.85 + 0.2 * within()));
+  aqueduct(-2, Math.round(W * 0.27), horizon - Math.round(horizon * 0.36), horizon - 1);
+  ruinedColumns([0.8, 0.87, 0.95].map(k => Math.round(W * k)), horizon - 1, Math.round(horizon * 0.55));
+  steppedTemple(cx, horizon - 1, sz);
+}
+
+function aqueduct(x0, x1, top, foot) {
+  const span = Math.max(9, Math.round((foot - top) * 0.75)), pier = Math.max(2, Math.round(span * 0.3)), ch = Math.max(2, Math.round((foot - top) * 0.18));
+  const half = (span - pier) / 2, spring = top + ch + 1 + half;
+  const open = (x, y) => {
+    const k = (((x - x0) % span) + span) % span;
+    if (k < pier || y <= top + ch) return false;
+    const ax = k - pier - half + 0.5;
+    return y >= spring || ax * ax + (y - spring) ** 2 <= half * half;
+  };
+  const end = (y) => x1 - Math.round(noise(y >> 1, 3, 81) * 3);   // where it broke off, jagged
+  masonry(x0, x1, top, foot, { course: 3, len: 6, moss: 0.3, seed: 9, skip: (x, y) => open(x, y) || x > end(y) });
+  fall(x1 + 1, x1 + (W > 160 ? 3 : 2), top + 1, horizon - 1);
+}
+
+/** Columns standing and fallen at the lagoon's edge, a lintel slipped off the first two. */
+function ruinedColumns(xs, foot, tall) {
+  const hw = Math.max(1, Math.round(W * 0.012)), tops = [];
+  xs.forEach((x, i) => {
+    const top = foot - Math.round(tall * [1, 0.7, 0.42][i % 3]);
+    pillar(x, foot, top, hw, { broken: i > 0, seed: i * 5 });
+    tops.push(top);
+  });
+  const b = M().block, [xa, xb] = xs, ya = tops[0] - 1, yb = tops[1] + 2;
+  for (let x = xa - hw - 2; x <= xb + 1; x++) {
+    const y = Math.round(ya + (yb - ya) * Math.max(0, (x - xa) / (xb - xa)));
+    solid(x, y - 2, b[0]); solid(x, y - 1, b[1]); solid(x, y, b[3]);
+  }
+}
+
+/** The temple: a platform with its grand stair, three tiers going up (the middle one's corner fallen away), a frieze of
+    waves and a doorway framed with runes on the first, a crested shrine on top. Moss on every ledge, vines hanging. */
+function steppedTemple(cx, foot, sz) {
+  const b = M().block, mo = M().moss, vine = M().vine;
+  const hw0 = Math.round(sz * 0.55), ph = Math.max(4, Math.round(sz * 0.2)), top0 = foot - ph;
+  const right = (x0, x1) => (x) => Math.max(0, ((x - x0) / Math.max(1, x1 - x0) - 0.6) * 2);
+  masonry(cx - hw0, cx + hw0, top0, foot, { course: 3, len: 8, moss: 0.22, shade: right(cx - hw0, cx + hw0), seed: 1 });
+  const half = (y) => Math.round(sz * (0.11 + 0.08 * (y - top0) / ph));
+  for (let y = top0; y <= foot; y++) {
+    const hf = half(y), tread = (y - top0) % 2 === 0;
+    for (let x = -hf - 1; x <= hf + 1; x++) {
+      let c = Math.abs(x) > hf ? b[4] : tread ? (x < -hf * 0.5 ? b[0] : b[1]) : x > hf * 0.4 ? b[4] : b[3];
+      if (tread && Math.abs(x) <= hf && noise((cx + x) >> 1, y, 78) < 0.14) c = mo[1];
+      solid(cx + x, y, c);
+    }
+  }
+  life.stair = { cx, half: half(foot), grow: (sz * 0.08) / ph, bottom: Math.round((H - horizon) * 0.24) };
+
+  let y1 = top0 - 1;
+  [[0.8, 0.19], [0.58, 0.14], [0.34, 0.14]].forEach(([wk, hk], i) => {
+    const hw = Math.round(hw0 * wk), th = Math.max(3, Math.round(sz * hk)), y0 = y1 - th + 1;
+    const cut = i === 1 ? (x, y) => x - (cx + hw - Math.round(hw * 0.3)) > (y - y0) + Math.round(noise(y, 1, 79) * 2) : null;
+    masonry(cx - hw, cx + hw, y0, y1, { course: 3, len: 7, moss: 0.16, shade: right(cx - hw, cx + hw), seed: 2 + i, skip: cut });
+    for (let x = cx - hw; x <= cx + hw; x++) {
+      if (cut?.(x, y0)) continue;
+      solid(x, y0, dither(x, y0) < 6 ? mo[0] : b[0]);   // its ledge, mossy
+      if (noise(x, i, 80) < 0.1) for (let k = 1, len = 2 + Math.floor(noise(x, i, 81) * Math.min(7, th)); k <= len; k++) solid(x + (k % 3 === 2 ? 1 : 0), y0 + k, vine[k === len ? 0 : 1]);
+    }
+    if (i === 0) {
+      if (th >= 7) for (let x = cx - hw + 1; x < cx + hw; x++) {   // a frieze of waves under the ledge
+        const m = ((x - cx) % 6 + 6) % 6;
+        if (m === 1 || m === 2) solid(x, y0 + 1, b[3]);
+        if (m === 0 || m === 3) solid(x, y0 + 2, b[3]);
+        if (m >= 3) solid(x, y0 + 3, b[3]);
+      }
+      const dw = Math.max(2, Math.round(sz * 0.06)), dh = Math.max(3, Math.min(th - 3, Math.round(th * 0.72)));
+      for (let y = y1 - dh - 1; y <= y1; y++) for (let x = cx - dw - 1; x <= cx + dw + 1; x++) {
+        if (inArch(x, y, cx, y1, dw, dh)) solid(x, y, y > y1 - 2 ? M().water[3] : mixC(b[4], M().water[4], 0.55));
+        else if (inArch(x, y, cx, y1, dw + 1, dh + 1)) solid(x, y, x < cx ? b[0] : b[3]);
+      }
+      for (const s of [-1, 1]) for (let y = y1 - dh + 1; y < y1; y += 3) {
+        const x = cx + s * (dw + 3);
+        solid(x, y, S.rune[2]);
+        life.runes.push({ x, y });
+      }
+    }
+    if (i === 2) {
+      for (let x = cx - hw - 2; x <= cx + hw + 2; x++) { solid(x, y0 - 2, b[0]); solid(x, y0 - 1, b[3]); }
+      const ch = Math.max(2, Math.round(sz * 0.07));
+      for (let k = 0; k < ch; k++) for (let x = -Math.round((ch - k) * 0.6); x <= Math.round((ch - k) * 0.6); x++) solid(cx + x, y0 - 3 - k, x < 0 ? b[0] : b[2]);
+      solid(cx, y0 - 3 - ch, M().gold[1]);
+      const ey = y0 + Math.floor(th / 2);
+      solid(cx, ey, S.rune[1]);
+      life.runes.push({ x: cx, y: ey });
+    }
+    y1 = y0 - 1;
+  });
+  if (sz >= 40) for (const s of [-1, 1]) statue(cx + s * (half(top0) + Math.round(sz * 0.1)), top0 - 1, KOI_STATUE);
+}
+
+const KOI_STATUE = [   // a leaping fish carved on a plinth, guarding the Flooded Steps' stair
+  '...oo....',
+  '..oLso...',
+  '.oLssSo..',
+  'oLsoLsSo.',
+  'oLssssSoo',
+  '.oLsssSSo',
+  '..oLsSSo.',
+  '.ooooooo.',
+  '.oLssSSo.',
+  '.ooooooo.',
+];
+
+/** The Drowned Halls' far wall: arches into a gloomier hall, daylight through its far doors, its top crumbling. */
+function drownedHalls() {
+  const cx = Math.round(W / 2), b = M().block, wh = Math.round(horizon * 0.46), y0 = horizon - wh;
+  const n = W > 200 ? 5 : 3, aw = Math.max(2, Math.round(W * 0.035)), ah = Math.round(wh * 0.72), gap = (W * 0.6) / n;
+  const arches = Array.from({ length: n }, (_, i) => Math.round(cx + (i - (n - 1) / 2) * gap));
+  masonry(-1, W, y0, horizon - 1, { course: 3, len: 8, moss: 0.25, seed: 11, shade: (x) => (Math.abs(x + 0.5 - cx) / cx) ** 2 * 0.8, skip: (x, y) => arches.some(a => inArch(x, y, a, horizon - 1, aw + 1, ah + 1)) });
+  for (let x = 0; x < W; x++) { const e = Math.round(noise(x >> 2, 4, 82) * 3); for (let k = 1; k <= e; k++) solid(x, y0 - k, b[k === e ? 0 : 1]); }
+  for (const a of arches) for (let y = horizon - ah - 2; y < horizon; y++) for (let x = a - aw - 1; x <= a + aw + 1; x++) {
+    if (inArch(x, y, a, horizon - 1, aw, ah)) {
+      const far = inArch(x, y, a, horizon - 1, Math.max(1, aw - 2), Math.round(ah * 0.55));
+      solid(x, y, far ? S.far[0] : mixC(S.jungle[3], M().water[4], 0.35 + 0.35 * ((x - a + aw) / (2 * aw + 1))));
+    } else if (inArch(x, y, a, horizon - 1, aw + 1, ah + 1)) solid(x, y, x < a ? b[0] : b[3]);
+  }
+  life.hall = { cx, ye: horizon - Math.round(wh * 0.3), top0: y0 - 3 };
+}
+
+/** The Sunken Court's far wall, broken along its top, with a gateway open to the sky and an obelisk leaning over it. */
+function sunkenCourt() {
+  const cx = Math.round(W / 2), wh = Math.max(4, Math.round(horizon * 0.2)), y0 = horizon - wh;
+  const dip = (x) => (noise(x >> 4, 2, 85) < 0.3 ? Math.round(wh * (0.3 + noise(x >> 2, 3, 86) * 0.4)) : Math.round(noise(x >> 1, 4, 87) * 1.6));
+  masonry(-1, W, y0, horizon - 1, { course: 3, len: 7, moss: 0.3, seed: 21, skip: (x, y) => y < y0 + dip(x) });
+  const flip = ((S.raw.seed || 0) & 1) === 1;
+  obelisk(Math.round(W * (flip ? 0.2 : 0.8)), horizon - 1, Math.round(horizon * 0.62), flip ? 1 : -1);
+  gateway(cx, horizon - 1, Math.round(horizon * 0.6), Math.max(3, Math.round(W * 0.06)));
+  life.court = { flip };
+}
+
+function gateway(cx, foot, h, aw) {
+  const b = M().block, pw = Math.max(3, Math.round(aw * 0.9)), hw = aw + pw, ah = Math.round(h * 0.7);
+  masonry(cx - hw, cx + hw, foot - h, foot, { course: 3, len: 6, moss: 0.2, seed: 22, shade: (x) => Math.max(0, (x - cx) / hw - 0.3), skip: (x, y) => inArch(x, y, cx, foot, aw, ah) || (x > cx + hw - 3 && y < foot - h + 3 + (cx + hw - x)) });
+  for (let y = foot - ah - 2; y <= foot; y++) for (let x = cx - aw - 1; x <= cx + aw + 1; x++) {
+    if (!inArch(x, y, cx, foot, aw, ah) && inArch(x, y, cx, foot, aw + 1, ah + 1)) solid(x, y, x < cx ? b[0] : b[3]);
+  }
+  for (let x = cx - hw - 1; x <= cx + hw - 3; x++) { solid(x, foot - h - 1, b[0]); solid(x, foot - h, b[3]); }
+  const ky = foot - ah - 3;
+  solid(cx, ky, S.rune[1]);
+  life.runes.push({ x: cx, y: ky });
+}
+
+/** A tapering obelisk, leaning, its gold tip catching the light, glyphs down its face. */
+function obelisk(cx, foot, h, lean) {
+  const b = M().block, g = M().gold, hb = Math.max(2, Math.round(h * 0.08)), tip = Math.max(2, Math.round(hb * 1.2));
+  for (let k = 0; k <= h; k++) {
+    const y = foot - k, x0 = cx + lean * k * 0.14, f = k / h;
+    const half = k > h - tip ? Math.round(hb * 0.6 * (h - k) / tip) : Math.round(hb + (hb * 0.6 - hb) * f);
+    for (let x = -half; x <= half; x++) {
+      const gold = k > h - tip, u = (x + half + 0.5) / (2 * half + 1);
+      let c = gold ? (u < 0.5 ? g[0] : g[2]) : u < 0.3 ? b[0] : u < 0.75 ? b[1] : b[3];
+      if (!gold && x === 0 && k % 4 === 1 && k > 2) c = b[3];
+      if (!gold && k < h * 0.3 && noise(x + cx, y >> 1, 88) < 0.35) c = M().moss[1];
+      solid(x0 + x, y, c);
+    }
+    if (k === Math.round(h * 0.55) || k === Math.round(h * 0.75)) { solid(x0, y, S.rune[2]); life.runes.push({ x: Math.round(x0), y }); }
+  }
+}
+
+/** The Tide Altar's ring of pillars round the pool, two still joined by their lintels, runes cut into them. */
+function altarRing() {
+  const b = M().block, hw = Math.max(1, Math.round(W * 0.014)), tall = Math.round(horizon * 0.8), tops = {};
+  [0.06, 0.2, 0.33, 0.67, 0.8, 0.94].forEach((at, i) => {
+    const x = Math.round(W * at), broken = i === 0 || i === 5 || noise(i, 9, 89) < 0.25;
+    const top = horizon - 1 - Math.round(tall * (broken ? 0.4 + noise(i, 2, 89) * 0.3 : 0.85 + Math.abs(0.5 - at) * 0.3));
+    pillar(x, horizon - 1, top, hw, { broken, seed: i * 3 });
+    if (!broken) { tops[i] = top; const ry = Math.round((horizon + top) / 2); solid(x, ry, S.rune[2]); life.runes.push({ x, y: ry }); }
+  });
+  for (const [l, r] of [[1, 2], [3, 4]]) {
+    if (tops[l] == null || tops[r] == null) continue;
+    const y = Math.min(tops[l], tops[r]) - 1, xa = Math.round(W * [0.2, 0.33, 0.67, 0.8][[1, 2, 3, 4].indexOf(l)]) - hw - 2;
+    const xb = Math.round(W * [0.2, 0.33, 0.67, 0.8][[1, 2, 3, 4].indexOf(r)]) + hw + 2;
+    for (let x = xa; x <= xb; x++) { solid(x, y - 2, b[0]); solid(x, y - 1, b[1]); solid(x, y, b[4]); }
+  }
+}
+
+/* ----- the water ----- */
+
+/** The lagoon: the backdrop mirrored in it, its own colour deepening towards you, the old paving under it in the Halls
+    and the Court, streaks of light on it, foam where it laps at the shore; the Steps' stair runs on down under it. */
+function ruinsFloor() {
+  const st = stage(), w = M().water, b = M().block, cx = W / 2;
+  const wet = life.wet = new Uint8Array(W * H);
+  life.fresh = new Uint8Array(W * H);
+  for (let y = horizon; y < H; y++) {
+    const d = depthOf(y), sy = Math.max(0, 2 * horizon - 1 - y), a = y - horizon + 1;
+    const own = st === 3 ? mixC(w[3], w[4], Math.min(1, d * 0.8)) : mixC(w[1], w[3], Math.min(1, 0.15 + d * 1.1));
+    const k = Math.min(0.9, (st === 3 ? 0.55 : 0.4) + d * 0.4);
+    const z = 30 / a, row = Math.floor(z), joinRow = a >= 8 && row !== Math.floor(30 / (a + 1));
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      let c = mixC(px[sy * W + x], own, k);
+      if ((st === 1 || st === 2) && a >= 6) {
+        const X = ((x + 0.5 - cx) / a) * 3 + (row & 1) * 0.5, X1 = ((x + 1.5 - cx) / a) * 3 + (row & 1) * 0.5;
+        if (joinRow || Math.floor(X) !== Math.floor(X1)) c = mixC(c, w[4], 0.16 + d * 0.1);
+      }
+      if (noise(x >> 3, y, 76) > 0.84 && d < 0.6) c = mixC(c, w[0], 0.22 * (1 - d));
+      px[i] = c; sky[i] = 0; wet[i] = 1;
+    }
+  }
+  for (let x = 0; x < W; x++) if (dither(x, horizon) < 6) px[horizon * W + x] = mixC(px[horizon * W + x], w[0], 0.55);
+  if (st === 0 && life.stair) {
+    const { cx: sx, half, grow, bottom } = life.stair;
+    for (let y = horizon; y < Math.min(H, horizon + bottom); y++) {
+      const hf = Math.round(half + grow * (y - horizon)), f = (y - horizon) / bottom, tread = (y - horizon) % 2 === 1;
+      for (let x = -hf - 1; x <= hf + 1; x++) {
+        if (sx + x < 0 || sx + x >= W) continue;
+        const i = y * W + sx + x;
+        px[i] = mixC(Math.abs(x) > hf ? b[4] : tread ? b[1] : b[3], px[i], 0.4 + f * 0.55);
+      }
+    }
+  }
+}
+
+/* ----- what stands in the water ----- */
+
+function ruinsFront() {
+  const st = stage();
+  if (st === 0) {   // stumps of the old causeway in the near corners
+    for (const s of [-1, 1]) {
+      const foot = horizon + Math.round((H - horizon) * (s < 0 ? 0.42 : 0.3)), x = s < 0 ? Math.round(W * 0.03) : Math.round(W * 0.97), hw = Math.max(2, Math.round(W * 0.022));
+      const top = foot - Math.round((H - horizon) * 0.3);
+      pillar(x, foot, top, hw, { paint: dry, broken: true, seed: 7 + s });
+      reflect(x - hw * 2, x + hw * 2, top, foot);
+    }
+  }
+  if (st === 1) { colonnade(); lightShafts(S.stars ? 0.4 : 1); }
+  if (st === 2) courtFront();
+  if (st === 3) { tideAltar(); altarFront(); }
+  lilies(st);
+  hangingVines(st);
+  life.fresh.fill(0);
+  life.preMark = Uint32Array.from(px);
+}
+
+/** The Drowned Halls' colonnade: two rows of columns from the far wall out past you, in perspective, their lintels
+    running along the tops (gone where a column has fallen), one beam across the hall snapped in the middle. */
+function colonnade() {
+  const { cx, ye, top0 } = life.hall, xs = W * 0.17, b = M().block;
+  const qs = [1, 1.4, 2, 2.9, 4.3], stand = {};
+  const topAt = (q) => Math.round(ye - (ye - top0) * q);
+  for (const q of qs) for (const s of [-1, 1]) {
+    const foot = Math.round(ye + (horizon + 1 - ye) * q), top = topAt(q), hw = Math.max(1, Math.round(1.25 * q)), x = Math.round(cx + s * xs * q);
+    if (x + hw * 2 < 0 || x - hw * 2 >= W) continue;
+    const broken = q > 1 && noise(q * 7, s + 2, 83) < 0.3;
+    stand[`${q}${s}`] = !broken;
+    const t = broken ? Math.round(top + (foot - top) * (0.3 + noise(q, s + 5, 84) * 0.4)) : top;
+    pillar(x, foot, t, hw, { paint: dry, broken, seed: Math.round(q * 10) + s });
+    reflect(x - hw * 2 - 1, x + hw * 2 + 1, t, foot);
+  }
+  const beam = (x, q) => {
+    const base = topAt(q) - 1, th = Math.max(2, Math.round(q * 1.4));
+    for (let y = base - th; y <= base; y++) solid(x, y, y === base ? b[4] : y === base - th ? b[0] : Math.floor(q * 4) !== Math.floor((q + 1 / xs) * 4) ? b[3] : b[1]);
+    return base;
+  };
+  for (const s of [-1, 1]) for (let k = 0; k + 1 < qs.length; k++) {
+    if (!stand[`${qs[k]}${s}`] || !stand[`${qs[k + 1]}${s}`]) continue;
+    const xa = cx + s * xs * qs[k], xb = cx + s * xs * qs[k + 1];
+    for (let x = Math.round(Math.min(xa, xb)); x <= Math.max(xa, xb); x++) {
+      const base = beam(x, Math.abs(x + 0.5 - cx) / xs);
+      if (noise(x, s, 90) < 0.06) life.ruVines.push({ x, y: base + 1, len: 3 + Math.round(noise(x, 2, 90) * horizon * 0.3), phase: noise(x, 3, 90) * 40 });
+    }
+  }
+  if (stand['2-1'] && stand['21']) {
+    const q = 2, gapL = cx - W * 0.05, gapR = cx + W * 0.03;
+    for (let x = Math.round(cx - xs * q); x <= cx + xs * q; x++) {
+      const jag = Math.round(noise(x, 7, 91) * 3);
+      if (x > gapL - jag && x < gapR + jag) continue;
+      const base = topAt(q) - 1, th = Math.max(2, Math.round(q * 1.2));
+      for (let y = base - th; y <= base; y++) solid(x, y, y === base ? b[4] : y === base - th ? b[0] : (x % 9 === 0 ? b[3] : b[2]));
+      if (noise(x, 8, 91) < 0.08) life.ruVines.push({ x, y: base + 1, len: 3 + Math.round(noise(x, 9, 91) * horizon * 0.4), phase: noise(x, 10, 91) * 40 });
+    }
+  }
+}
+
+/** The Sunken Court: the colossal head at one side, the fountain before the gateway. */
+function courtFront() {
+  const flip = life.court?.flip;
+  const size = Math.round(Math.min(horizon * 0.72, W * 0.42)), foot = horizon + Math.round((H - horizon) * 0.16);
+  const hx = Math.round(W * (flip ? 0.86 : 0.14));
+  colossalHead(hx, foot, size, flip);
+  reflect(hx - size, hx + size, foot - size * 2, foot);
+  const fx = Math.round(W / 2), ff = horizon + Math.max(2, Math.round((H - horizon) * 0.04)), fs = Math.max(8, Math.round(Math.min(W * 0.14, horizon * 0.34)));
+  fountain(fx, ff, fs);
+  reflect(fx - fs, fx + fs, ff - fs * 2, ff);
+}
+
+/** A stone face as big as a house, sunk to its chin: a crested headdress carved with waves, heavy closed eyes, a broad
+    nose, ear spools, moss over its crown and cracks across it. */
+function colossalHead(cx, foot, size, flip) {
+  const b = M().block, mo = M().moss, rx = size * 0.42, ry = size * 0.52, cy = foot - ry * 0.55;
+  const top = Math.floor(cy - ry - size * 0.3);
+  for (let y = top; y <= foot; y++) for (let x = Math.floor(cx - rx - 3); x <= cx + rx + 3; x++) {
+    const u = ((x + 0.5 - cx) / rx) * (flip ? -1 : 1), v = (y + 0.5 - cy) / ry;
+    const head = u * u + v * v <= 1;
+    const crest = v < -0.7 && Math.abs(u) < 0.28 * Math.max(0, (v + 1.6) / 0.9);
+    const ear = Math.abs(Math.abs(u) - 1.02) < 0.12 && v > -0.3 && v < 0.25;
+    if (!head && !crest && !ear) {
+      if (u * u + v * v <= 1.08 || (v < -0.68 && Math.abs(u) < 0.32 * Math.max(0, (v + 1.66) / 0.9))) dry(x, y, b[4]);
+      continue;
+    }
+    const lit = -u * 0.55 - v * 0.6 + (noise(x >> 1, y >> 1, 92) - 0.5) * 0.4;
+    let c = lit > 0.45 ? b[0] : lit > -0.05 ? b[1] : lit > -0.5 ? b[2] : b[3];
+    if (ear) c = Math.abs(Math.abs(u) - 1.02) < 0.05 ? b[3] : b[1];
+    if (v > -0.62 && v < -0.42) c = ((Math.floor((u + 2) * 9)) % 3 === 0) ? b[3] : (v < -0.55 ? b[0] : b[2]);   // the headdress's band of waves
+    if (Math.abs(v + 0.12 - 0.12 * (Math.abs(Math.abs(u) - 0.38) / 0.2) ** 2) < 0.05 && Math.abs(Math.abs(u) - 0.38) < 0.2) c = b[4];   // closed eyes
+    if (Math.abs(v + 0.24) < 0.04 && Math.abs(Math.abs(u) - 0.38) < 0.22) c = b[0];   // the brow over them
+    if (Math.abs(u) < 0.09 && v > -0.12 && v < 0.3) c = u < 0 ? b[0] : b[3];   // the nose
+    if (Math.abs(u) < 0.14 && Math.abs(v - 0.33) < 0.04) c = b[4];
+    if (Math.abs(u) < 0.26 && Math.abs(v - 0.55) < 0.035) c = b[4];   // the mouth, at the water
+    if (crest) c = Math.abs(u) < 0.06 ? M().gold[1] : u < 0 ? b[0] : b[2];
+    if ((v < -0.55 || crest) && noise(x >> 1, y >> 1, 93) < 0.45) c = mo[noise(x, y, 94) < 0.5 ? 0 : 1];
+    if (noise(Math.round(x / 3 + v * 4), y >> 1, 95) > 0.93) c = b[4];   // cracks
+    dry(x, y, c);
+  }
+}
+
+/** A two-tiered fountain, water spilling from its top bowl into the lower one and from that into the lagoon. */
+function fountain(cx, foot, s) {
+  const b = M().block, g = M().gold;
+  const bowl = (cy, rx) => {
+    const ry = Math.max(1, Math.round(rx * 0.3));
+    for (let x = -rx; x <= rx; x++) {
+      const e = Math.sqrt(Math.max(0, 1 - (x / (rx + 0.5)) ** 2)), back = Math.round(cy - ry * e), front = Math.round(cy + ry * e);
+      for (let y = back; y <= front; y++) dry(cx + x, y, y === back ? b[0] : y < front - 1 ? M().water[1] : b[1]);
+      for (let k = 1; k <= 2; k++) dry(cx + x, front + k, k === 2 ? b[4] : x > rx * 0.4 ? b[3] : b[2]);
+    }
+    return ry;
+  };
+  const r1 = Math.round(s * 0.55), r2 = Math.round(s * 0.28), y1 = foot - 3, y2 = foot - Math.round(s * 0.9);
+  for (let y = y2; y <= y1; y++) for (let x = -1; x <= 1; x++) dry(cx + x, y, x < 0 ? b[0] : x > 0 ? b[3] : b[1]);
+  const ry1 = bowl(y1, r1);
+  bowl(y2, r2);
+  dry(cx, y2 - 2, g[1]); dry(cx, y2 - 3, g[0]);
+  for (const sgn of [-1, 1]) {
+    const xa = cx + sgn * (r2 + 1), xb = cx + sgn * (r1 + 1);
+    fall(xa, xa, y2 + 1, y1 - 1);
+    fall(xb, xb, y1 + ry1 + 1, foot + 1);
+    for (const f of life.falls.slice(-2)) for (let y = f.top; y <= f.foot; y++) for (let x = f.x0; x <= f.x1; x++) { life.wet[y * W + x] = 0; life.fresh[y * W + x] = 1; }
+  }
+}
+
+/** The Tide Altar: a round stepped altar in the pool, the tide wheel standing on it, a spiral wave cut in its face and a
+    sea-blue gem at its heart; its runes are drawn live (drawRuins), lit one by one as its boss wakes. */
+function tideAltar() {
+  const cx = Math.round(W / 2), b = M().block, foot = horizon + Math.max(2, Math.round((H - horizon) * 0.07));
+  const Ra = Math.round(Math.min(W * 0.26, horizon * 0.62));
+  let y = foot, top = foot;
+  for (let i = 0; i < 3; i++) {
+    const rx = Math.round(Ra * (1 - i * 0.24)), ry = Math.max(1, Math.round(rx * 0.15)), th = Math.max(2, Math.round(Ra * 0.08));
+    const yc = y - th - ry;
+    for (let x = -rx; x <= rx; x++) {
+      const e = Math.sqrt(Math.max(0, 1 - (x / (rx + 0.5)) ** 2)), back = Math.round(yc - ry * e), front = Math.round(yc + ry * e);
+      for (let yy = back; yy <= front; yy++) dry(cx + x, yy, yy === back ? b[0] : dither(cx + x, yy) < 2 ? M().moss[1] : b[1]);
+      for (let k = 1; k <= th; k++) dry(cx + x, front + k, k === th ? b[4] : (x + rx) % 6 === 0 ? b[4] : x > rx * 0.45 ? b[3] : k === 1 ? b[0] : b[2]);
+    }
+    top = yc;
+    y = yc + Math.round(ry * 0.3);
+  }
+  const R = Math.max(5, Math.round(Math.min(horizon * 0.36, W * 0.16, (top - 3) / 2))), wcx = cx, wcy = top - R;
+  for (const s of [-1, 1]) for (let yy = wcy + Math.round(R * 0.4); yy <= top; yy++) { dry(wcx + s * Math.round(R * 0.75), yy, b[3]); dry(wcx + s * Math.round(R * 0.75) + 1, yy, b[4]); }
+  for (let yy = wcy - R - 1; yy <= wcy + R + 1; yy++) for (let x = wcx - R - 1; x <= wcx + R + 1; x++) {
+    const dx = x + 0.5 - wcx, dy = yy + 0.5 - wcy, r = Math.hypot(dx, dy) / R, a = Math.atan2(dy, dx);
+    if (r > 1) { if (r < 1 + 1.3 / R) dry(x, yy, b[4]); continue; }
+    const lit = -(dx + dy) / R;
+    let c;
+    if (r > 0.78) c = r > 0.94 ? (lit > 0 ? b[0] : b[3]) : lit > 0.3 ? b[1] : b[2];
+    else if (r > 0.72) c = b[4];
+    else if (r < 0.17) c = r < 0.09 ? S.rune[0] : r < 0.13 ? S.rune[1] : S.rune[2];
+    else {
+      const s = (((a / (Math.PI * 2)) * 3 - r * 3.2) % 1 + 1) % 1;
+      c = s < 0.16 ? b[3] : s < 0.24 ? b[0] : lit > 0.2 ? b[1] : b[2];
+    }
+    dry(x, yy, c);
+  }
+  reflect(cx - Ra - 2, cx + Ra + 2, wcy - R - 2, foot);
+  life.altar = { cx, foot, wcx, wcy, R, Ra };
+}
+
+/** Two great columns, both broken, framing the pool in the near corners. */
+function altarFront() {
+  for (const s of [-1, 1]) {
+    const foot = horizon + Math.round((H - horizon) * (s < 0 ? 0.36 : 0.28)), x = s < 0 ? Math.round(W * 0.04) : Math.round(W * 0.96), hw = Math.max(2, Math.round(W * 0.028));
+    const top = foot - Math.round(horizon * (s < 0 ? 0.9 : 1.15));
+    pillar(x, foot, top, hw, { paint: dry, broken: s < 0, seed: 11 + s });
+    reflect(x - hw * 2, x + hw * 2, top, foot);
+  }
+}
+
+/** Lily pads over the water (crowding the Court, a few elsewhere, none on the deep pool), some in flower; the middle,
+    where the Pokémon stand, kept clear. */
+function lilies(st) {
+  const n = Math.round(((W * (H - horizon)) / 900) * [0.5, 0.25, 1.6, 0][st]);
+  for (let k = 0; k < n; k++) {
+    const y = horizon + 2 + Math.floor(rand() ** 0.8 * (H - horizon - 3)), d = depthOf(y);
+    let x = Math.floor(rand() * W);
+    if (d > 0.15 && Math.abs(x - W / 2) < W * 0.22) x += x < W / 2 ? -W * 0.25 : W * 0.25;
+    ruinLily(Math.round(x), y, 1 + Math.round(d * 4 + rand()), rand() < 0.25);
+  }
+}
+
+function ruinLily(cx, cy, r, bloom) {
+  const [lit, body, dark] = M().lily, ry = Math.max(1, r * 0.45);
+  for (let y = -Math.ceil(ry); y <= Math.ceil(ry); y++) for (let x = -r; x <= r; x++) {
+    const xx = cx + x, yy = cy + y;
+    if (!inside(xx, yy) || !life.wet[yy * W + xx] || (x / (r + 0.5)) ** 2 + (y / (ry + 0.5)) ** 2 > 1) continue;
+    const a = Math.atan2(y / ry, x / r);
+    if (r > 1 && a > -0.5 && a < 0.1) continue;   // the notch
+    dry(xx, yy, y === Math.ceil(ry) ? dark : x + y < -r * 0.4 ? lit : body);
+  }
+  if (bloom) { const [w, p, d] = M().lotus; dry(cx, cy - 1, p); dry(cx - 1, cy - 1, d); dry(cx + 1, cy - 1, d); dry(cx, cy - 2, w); }
+}
+
+/** Vines hanging into the picture from the canopy overhead, drawn live so they sway (drawRuins). */
+function hangingVines(st) {
+  if (st !== 1 && st !== 2) return;
+  for (let n = 0, count = Math.max(3, Math.round(W / 28)); n < count; n++) {
+    const edge = n % 2 ? rand() * W * 0.22 : W - rand() * W * 0.22;
+    life.ruVines.push({ x: Math.round(edge), y: 0, len: Math.round(horizon * (0.2 + rand() * 0.5)), phase: rand() * 40 });
+  }
+}
+
+/** After the landmark: it's mirrored too, then the water is set as it stands (the ripple's still frame). */
+function ruinsSettle() {
+  const { wet, fresh, preMark } = life;
+  for (let i = 0; i < W * H; i++) if (px[i] !== preMark[i]) { wet[i] = 0; fresh[i] = 1; }
+  const k = life.landmark && life.keep?.at(-1);
+  if (k) reflect(k.x0, k.x1, k.y0, k.y1 - 2);
+  fresh.fill(0);
+  life.snap = Uint32Array.from(px);
+  const list = [];
+  for (let i = horizon * W; i < W * H; i++) if (wet[i]) list.push(i);
+  life.wetList = Int32Array.from(list);
+  life.preMark = null;
+}
+
+/* ----- its life ----- */
+
+function makeRuinsLife() {
+  if (!life.snap) return;
+  life.wetList = life.wetList.filter(i => base[i] === life.snap[i]);   // an event's props stand where the water was
+  const list = life.wetList, st = stage();
+  life.ruGlints = Array.from({ length: Math.round(list.length / 260) }, () => ({ i: list[Math.floor(rand() * list.length)], phase: rand() * 60 }));
+  life.rings = [];
+  life.fish = null; life.nextFish = tick + FPS * (3 + rand() * 6);
+  if (st <= 1) life.motes = Array.from({ length: Math.round(W / 7) }, () => ({ x: rand() * W, y: rand() * H, vx: 0.04 + rand() * 0.08, vy: -0.03 - rand() * 0.05, phase: rand() * 20 }));
+}
+
+/** The water moves: each wet pixel takes its row's neighbour a pixel or two along (under a storm the rain does instead). */
+function rippleRuins(t) {
+  const L = life;
+  if (!L.wetList || storm.level > 0) return;
+  const list = L.wetList, snap = L.snap, wet = L.wet;
+  for (let n = 0; n < list.length; n++) {
+    const i = list[n], y = (i / W) | 0, x = i - y * W, d = (y - horizon) / (H - horizon);
+    const off = Math.round(Math.sin(y * 0.9 - t * 0.7 + (x >> 3) * 1.7) * (0.45 + d * 1.5));
+    px[i] = off && x + off >= 0 && x + off < W && wet[i + off] ? snap[i + off] : snap[i];
+  }
+}
+
+function drawRuins(t) {
+  const L = life, w = M().water, st = stage(), r = S.rune;
+  if (L.ruGlints) for (const g of L.ruGlints) {
+    const s = Math.sin((t + g.phase) / 4);
+    if (s < 0.8) continue;
+    const y = (g.i / W) | 0, x = g.i - y * W;
+    put(x, y, w[0]);
+    if (s > 0.95) { put(x - 1, y, w[1]); put(x + 1, y, w[1]); }
+  }
+  // rings spreading where something stirs the water
+  if (L.wetList?.length && everyAt(FPS * 0.8)) {
+    const i = L.wetList[Math.floor(rand() * L.wetList.length)];
+    L.rings.push({ x: i % W, y: (i / W) | 0, at: tick });
+  }
+  if (st === 3 && L.altar && everyAt(FPS * (bossPrelude?.phase === 'awake' ? 0.9 : 1.8))) L.rings.push({ x: L.altar.cx, y: L.altar.foot + 1, at: tick, big: true });
+  L.rings = L.rings.filter(g => tick - g.at < (g.big ? 26 : 11));
+  for (const g of L.rings) {
+    const age = tick - g.at, d = depthOf(g.y), rx = age * (g.big ? 1.6 : 0.5 + d * 1.6), ry = Math.max(0.6, rx * (g.big ? 0.26 : 0.32)), fade = (g.big ? 13 : 12) - age * (g.big ? 0.5 : 1);
+    for (let a = 0; a < Math.PI * 2; a += 0.9 / Math.max(2, rx)) {
+      const x = g.x + Math.cos(a) * rx, y = g.y + Math.sin(a) * ry, xi = x | 0, yi = y | 0;
+      if (inside(xi, yi) && L.wet[yi * W + xi] && dither(xi, yi) < fade) put(x, y, w[1]);
+    }
+  }
+  // a fish leaps
+  if (!L.fish && tick >= L.nextFish && L.wetList?.length) {
+    const i = L.wetList[Math.floor(rand() * L.wetList.length)], y = (i / W) | 0;
+    if (depthOf(y) < 0.55) { L.fish = { x: i % W, y, at: tick, dir: rand() < 0.5 ? -1 : 1 }; L.rings.push({ x: i % W, y, at: tick }); }
+    L.nextFish = tick + FPS * (5 + rand() * 8);
+  }
+  if (L.fish) {
+    const f = L.fish, a = (tick - f.at) / 7;
+    if (a > 1) { L.rings.push({ x: Math.round(f.x + f.dir * 6), y: f.y, at: tick }); L.fish = null; }
+    else {
+      const x = f.x + f.dir * a * 6, y = f.y - Math.sin(a * Math.PI) * 5, tilt = a < 0.5 ? 1 : -1;
+      put(x, y, M().red[0]); put(x - f.dir, y + tilt, M().red[1]); put(x + f.dir, y - tilt, M().red[0]);
+      if (a < 0.2) put(f.x, f.y - 1, w[0]);
+    }
+  }
+  for (const f of L.falls || []) {   // the falls run, and foam where they land
+    for (let y = f.top; y <= f.foot; y++) for (let x = f.x0; x <= f.x1; x++) {
+      const p = ((y - Math.floor(t * 2.5) + x * 3) % 6 + 6) % 6;
+      put(x, y, p < 1 ? w[0] : p < 4 ? w[1] : w[2]);
+    }
+    for (let x = f.x0 - 2; x <= f.x1 + 2; x++) for (let y = f.foot - 1; y <= f.foot + 1; y++) if (dither(x, y + Math.floor(t)) < 7) put(x, y, w[0]);
+  }
+  if (L.ruVines) {
+    const [lit, body, dark] = M().vine;
+    for (const v of L.ruVines) for (let k = 0; k < v.len; k++) {
+      const x = v.x + Math.round(Math.sin(t / 7 + v.phase + k * 0.12) * (k / v.len) * 1.6);
+      put(x, v.y + k, k === v.len - 1 ? lit : k % 4 === 0 ? dark : body);
+      if (k % 4 === 2) put(x + (k % 8 === 2 ? 1 : -1), v.y + k, lit);
+    }
+  }
+  const night = S.stars ? 1 : 0, boss = !!bossPrelude;
+  for (const p of L.runes || []) {   // the runes breathe, brighter in the dark
+    const s = Math.sin(t / 5 + p.x * 0.7 + p.y);
+    put(p.x, p.y, s > 0.7 - night * 0.6 ? r[0] : r[1]);
+    if (night || boss) { if (s > 0) { put(p.x - 1, p.y, r[2]); put(p.x + 1, p.y, r[2]); } }
+  }
+  if (st === 3 && L.altar) {
+    const awake = bossPrelude?.phase === 'awake';
+    if (awake) whirl(L.altar.cx, L.altar.foot + 2, 0.32, t);
+    if (!bossPrelude || awake) wheelRunes(t, awake ? 12 : night ? 12 : 0, awake ? t * 0.04 : 0);
+  }
+}
+
+/** The tide wheel's twelve runes round its rim, `lit` of them alight, the wheel turned by `spin`. */
+function wheelRunes(t, lit, spin) {
+  const { wcx, wcy, R } = life.altar, r = S.rune, b = M().block;
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2 - Math.PI / 2 + spin, x = Math.round(wcx + Math.cos(a) * R * 0.86 - 0.5), y = Math.round(wcy + Math.sin(a) * R * 0.86 - 0.5);
+    if (k >= lit) { put(x, y, b[4]); continue; }
+    const s = Math.sin(t / 3 + k);
+    put(x, y, s > 0.3 ? r[0] : r[1]);
+    if (R > 9) { put(x + 1, y, r[1]); put(x, y + 1, r[2]); }
+  }
+}
+
+/** A whirlpool turning round (cx, cy): spiral arms of foam about a dark eye; `k` how far it reaches and how fast. */
+function whirl(cx, cy, k, t) {
+  const w = M().water, reach = W * 0.5 * k, er = Math.max(1, reach * 0.16), ery = Math.max(1, er * 0.32);
+  for (let y = Math.floor(cy - ery); y <= cy + ery; y++) for (let x = Math.floor(cx - er); x <= cx + er; x++) {
+    const d = ((x - cx) / er) ** 2 + ((y - cy) / ery) ** 2;
+    if (d <= 1 && y > horizon) put(x, y, d < 0.45 ? w[4] : w[3]);
+  }
+  for (let arm = 0; arm < 4; arm++) for (let s = 0.14; s <= 1; s += 0.7 / Math.max(8, reach)) {
+    const r = s * reach, ang = (arm * Math.PI) / 2 + s * 5.5 - t * (0.22 + k * 0.5);
+    const x = cx + Math.cos(ang) * r, y = cy + Math.sin(ang) * r * 0.3;
+    if (y <= horizon) continue;
+    put(x, y, s < 0.5 ? w[0] : w[1]);
+    if (s < 0.7) put(x + 1, y, w[1]);
+  }
+}
+
+/* ----- the Tide Altar's boss prelude: the tide draws back, the wheel's runes light round its rim and it starts to turn,
+   the pool spins into a whirlpool round the altar, then the sea bursts up through it in a column of water. The portal
+   is a great wave rising over the screen into the white. ----- */
+
+const TIDE_AT = 20;   // frames into the wake (8 fps) when the water bursts up; the `wave-crash` sound is timed to it
+
+function ruinsWake(t) {
+  const a = life.altar;
+  if (!a || bossPrelude.phase === 'awake') return 0;
+  const age = preludeAge(t);
+  veil(abgr('#041820'), Math.min(0.32, age * 0.025));
+  const k = Math.min(1, Math.max(0, (age - 5) / 12));
+  if (k > 0) whirl(a.cx, a.foot + 2, k, t);
+  wheelRunes(t, Math.min(12, Math.floor(Math.max(0, age - 1) * 0.85)), Math.max(0, age - 8) ** 1.4 * 0.02);
+  if (age >= TIDE_AT) geyser(a, age - TIDE_AT);
+  return age >= TIDE_AT ? (age < TIDE_AT + 6 ? 2 : 1) : age > 3 ? 1 : 0;
+}
+
+/** The sea bursting up through the altar: a column of water climbing out of sight, spray falling off its head. */
+function geyser({ wcx, foot }, b) {
+  const w = M().water, h = Math.min(foot + 4, b * foot * 0.35), half = Math.min(W * 0.1, 2 + b * 1.2), head = Math.round(foot - h);
+  for (let y = Math.max(0, head); y <= foot; y++) {
+    const wob = Math.sin(y * 0.5 + b * 3) * 1.2;
+    for (let x = Math.floor(wcx - half + wob); x <= wcx + half + wob; x++) {
+      const e = Math.abs(x - wcx - wob) / half;
+      put(x, y, e > 0.8 ? w[2] : (y + Math.floor(b * 8)) % 4 < 2 && e < 0.5 ? w[0] : w[1]);
+    }
+  }
+  for (let i = 0; i < 46; i++) {
+    const vx = (noise(i, 90, 0) - 0.5) * 3.4, s = (b * 1.5 + noise(i, 90, 1) * 4) % 4;
+    put(wcx + vx * s * 4, head + s * s * 2.5 - s * 3, i % 3 ? w[0] : w[1]);
+  }
+}
+
+function ruinsPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
+  const w = M().water, rise = Math.min(1.25, ((age + 1) / 6) ** 1.3);
+  for (let x = 0; x < W; x++) {
+    const crest = Math.round(H - rise * H * 1.05 + Math.sin(x * 0.18 + age * 1.5) * 3 + Math.sin(x * 0.05 - age) * 4);
+    for (let y = Math.max(0, crest - 3); y < H; y++) {
+      const dp = y - crest;
+      if (dp < 0) { if (dither(x, y + frame) < 5) put(x, y, w[0]); continue; }
+      put(x, y, dp < 2 ? w[0] : dp < 4 ? w[1] : ((x + y * 2 + frame * 3) >> 2) % 5 === 0 ? w[1] : dp < 14 ? w[2] : w[3]);
+    }
+  }
+  return 2;
+}
+
+/* ----- the Ruins' landmarks, one per floor at an edge ----- */
+const HAND = [
+  '...o.o....',
+  '..oLoLo.o.',
+  '..oLoLooLo',
+  '.ooLoLoLso',
+  'oLoLsLsLSo',
+  'oLsLssssSo',
+  '.oLsssssSo',
+  '.oLssssSSo',
+  '..oLsssSo.',
+  '..oLsssSo.',
+  '..oLssSSo.',
+];
+LANDMARKS.ruins = [
+  {
+    mooring(cx, foot) {   // two old mooring posts, a rope slung between them
+      const [lit, body, shade, line] = M().wood, [rope, ropeDark] = M().rope;
+      for (const [x0, h] of [[cx - 4, 12], [cx + 3, 8]]) {
+        for (let y = foot - h; y <= foot; y++) { solid(x0 - 1, y, line); solid(x0, y, lit); solid(x0 + 1, y, body); solid(x0 + 2, y, shade); solid(x0 + 3, y, line); }
+        for (let x = x0 - 1; x <= x0 + 3; x++) solid(x, foot - h - 1, line);
+      }
+      for (let x = cx - 1; x <= cx + 2; x++) solid(x, foot - 10 + Math.round(Math.sin(((x - cx + 1) / 3) * Math.PI) * 2), rope);
+      for (let y = foot - 6; y <= foot - 3; y++) { solid(cx - 4, y, y % 2 ? rope : ropeDark); solid(cx - 3, y, y % 2 ? ropeDark : rope); }
+    },
+    amphora(cx, foot) {   // a great jar tipped on its side, half sunk
+      const [lit, body, shade, line] = M().clay;
+      outlined(cx - 7, foot - 6, cx + 7, foot, (x, y) => {
+        const u = (x + 0.5 - cx) / 6, v = (y + 0.5 - (foot - 2)) / 3.4;
+        return y <= foot && (u * u + v * v <= 1 || (x > cx + 4 && x <= cx + 7 && Math.abs(y - (foot - 2)) <= 1));
+      }, (x, y) => {
+        if (x > cx + 5) return x === cx + 7 ? shade : body;
+        if (y === foot - 3 && (x + cx) % 3 !== 0) return line;
+        const u = (x - cx) / 6, v = (y - (foot - 2)) / 3.4;
+        return u + v < -0.6 ? lit : u + v > 0.6 ? shade : body;
+      }, line);
+      for (const [x, y] of [[2, -5], [3, -6], [4, -6], [5, -5]]) solid(cx + x, foot + y, line);
+    },
+    guardian(cx, foot) {   // a fallen guardian's head, sunk to its chin
+      mound(cx, foot, 7, 5, M().stone, (x, y, u, v) => {
+        if (v < -0.55 && dither(x, y) < 9) return M().moss[(x + y) % 2];
+        if (Math.abs(v + 0.05) < 0.16 && (Math.abs(u + 0.4) < 0.18 || Math.abs(u - 0.3) < 0.18)) return M().stone[3];
+        if (Math.abs(u + 0.05) < 0.12 && v > 0.1 && v < 0.5) return M().stone[0];
+        return null;
+      });
+    },
+    lantern(cx, foot) {   // a spirit lantern, its window glowing the runes' colour
+      const [lit, body, shade, line] = M().stone;
+      const rows = ['...ooo...', '..oLLso..', '.oLLssSo.', 'ooooooooo', '.oLsssSo.', '.oLyyySo.', '.oLyyySo.', '.oLsssSo.', 'ooooooooo', '..oLsSo..', '..oLsSo..', '..oLsSo..', '.oLLssSo.'];
+      pixelMap(cx - 4, foot - rows.length + 1, rows, { o: line, L: lit, s: body, S: shade, y: line });
+      for (const [x, y] of [[0, 5], [1, 5], [2, 5], [1, 6]]) life.runes.push({ x: cx - 2 + x, y: foot - rows.length + 1 + y });
+    },
+  },
+  {
+    drum(cx, foot) {   // a column drum lying where it fell, its fluted end towards you
+      const [lit, body, shade, line] = M().stone;
+      outlined(cx, foot - 8, cx + 9, foot, (x, y) => x >= cx && x <= cx + 9 && y >= foot - 8 && y <= foot, (x, y) => ((y - foot) % 2 ? (y < foot - 5 ? lit : body) : shade), line);
+      outlined(cx - 4, foot - 9, cx + 3, foot, (x, y) => ((x + 0.5 - cx) / 3.6) ** 2 + ((y + 0.5 - (foot - 4)) / 4.6) ** 2 <= 1, (x, y) => {
+        const d = Math.hypot((x + 0.5 - cx) / 3.6, (y + 0.5 - (foot - 4)) / 4.6);
+        return d > 0.8 ? lit : d > 0.45 ? body : d > 0.25 ? shade : lit;
+      }, line);
+    },
+    brazier(cx, foot) {   // a bronze tripod bowl gone green with age
+      const [lit, body, shade, line] = M().bronze, [pat, patDark] = M().patina;
+      for (const dx of [-4, 0, 4]) for (let y = foot - 7; y <= foot; y++) solid(cx + dx + (dx ? Math.sign(dx) * Math.round((y - foot + 7) / 4) : 0), y, dx > 0 ? shade : body);
+      for (let y = foot - 11; y <= foot - 7; y++) {
+        const half = 6 - Math.round((y - (foot - 11)) * 0.8);
+        for (let x = -half; x <= half; x++) solid(cx + x, y, y === foot - 11 ? lit : x === half || x === -half ? line : noise(cx + x, y, 96) < 0.35 ? (x < 0 ? pat : patDark) : x < 0 ? body : shade);
+      }
+    },
+    stele(cx, foot) {   // an upright tablet, a wave cut into it in glowing runes
+      const [lit, body, shade, line] = M().stone;
+      outlined(cx - 3, foot - 13, cx + 3, foot, (x, y) => Math.abs(x + 0.5 - cx) <= 3.5 && y <= foot && (y >= foot - 10 || Math.hypot(x + 0.5 - cx, y - (foot - 10)) <= 3.5), (x) => (x < cx - 1 ? lit : x > cx + 1 ? shade : body), line);
+      for (const [x, y] of [[-2, -8], [-1, -9], [0, -8], [1, -7], [2, -8], [-1, -5], [0, -4], [1, -5]]) { solid(cx + x, foot + y, S.rune[2]); life.runes.push({ x: cx + x, y: foot + y }); }
+      for (let x = -3; x <= 3; x++) if (dither(cx + x, foot) < 9) solid(cx + x, foot - 1, M().moss[1]);
+    },
+    shell(cx, foot) {   // a great spiral shell washed up on a rock
+      mound(cx, foot, 6, 3, M().stone, (x, y, u, v) => (v < -0.4 && dither(x, y) < 6 ? M().moss[1] : null));
+      const [w, p, d] = M().lotus, rows = ['....oo..', '..oowpo.', '.owpppdo', 'owpdppdo', 'opppddo.', '.oddoo..', '..oo....'];
+      pixelMap(cx - 4, foot - 12, rows, { o: M().stone[3], w, p, d });
+    },
+  },
+  {
+    lotus(cx, foot) {   // a lotus in full bloom over its pads
+      for (const [dx, dy, r] of [[-4, 0, 4], [4, -1, 3], [0, 1, 3]]) ruinLily(cx + dx, foot + dy, r, false);
+      const [w, p, d] = M().lotus, [g] = M().gold, rows = ['...p...', '..pwp..', '.dpwpd.', 'dppgppd', '.dpppd.', '..ddd..'];
+      for (let y = foot - 6; y <= foot; y++) solid(cx, y, M().lily[2]);
+      pixelMap(cx - 3, foot - 12, rows, { p, w, d, g });
+    },
+    bell(cx, foot) {   // a temple bell sunk to its waist, green with age
+      const [lit, body, shade, line] = M().bronze, [pat] = M().patina;
+      outlined(cx - 6, foot - 11, cx + 6, foot, (x, y) => {
+        const v = (foot - y) / 11, half = 2 + 4 * Math.min(1, (1 - v) * 1.6);
+        return y <= foot && v <= 1 && Math.abs(x + 0.5 - cx) <= half;
+      }, (x, y) => (y === foot - 3 || y === foot - 6 ? line : noise(x, y, 97) < 0.3 ? pat : x < cx - 1 ? lit : x > cx + 2 ? shade : body), line);
+      solid(cx, foot - 12, line); solid(cx - 1, foot - 13, line); solid(cx + 1, foot - 13, line); solid(cx, foot - 14, line);
+    },
+    hand(cx, foot) { statue(cx, foot, HAND); },   // a statue's hand reaching up out of the water
+    spout(cx, foot) {   // a fish-headed spout on a post, still pouring into the lagoon
+      const [lit, body, shade, line] = M().stone;
+      for (let y = foot - 9; y <= foot; y++) { solid(cx - 2, y, line); solid(cx - 1, y, lit); solid(cx, y, body); solid(cx + 1, y, shade); solid(cx + 2, y, line); }
+      pixelMap(cx - 3, foot - 15, ['..ooo...', '.oLsso..', 'oLsoLso.', 'oLsssSoo', '.oLsSSSo', '..ooooo.'], { o: line, L: lit, s: body, S: shade });
+      fall(cx + 5, cx + 5, foot - 12, foot);
+    },
+  },
+];
 
 /* ---------- helpers ---------- */
 

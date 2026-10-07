@@ -386,7 +386,8 @@ const PALETTES = {
   clearing: { ground: 'grass', blobs: [['water', 5, 20, 50], ['mountain', 4, 10, 26], ['trees', 4, 6, 16]] },
   shrine:   { ground: 'mossy', blobs: [['ruins', 6, 10, 30], ['bamboo', 4, 10, 26], ['sakura', 5, 5, 14], ['lotus', 2, 10, 22], ['trees', 4, 8, 20]],
               props: [['torii', 2], ['lantern', 7]] },   // an overgrown temple ground, not the Clearing's meadow
-  ruins:    { ground: 'mossy', blobs: [['water', 8, 14, 44], ['ruins', 6, 10, 30], ['lotus', 3, 10, 22]], props: [['lantern', 5]] },   // a flooded temple (part b paints its own)
+  ruins:    { ground: 'paving', blobs: [['flood', 9, 16, 46], ['ruins', 5, 8, 24], ['lotus', 4, 8, 20], ['trees', 2, 6, 14]],
+              props: [['colonnade', 2], ['lantern', 4]] },   // a flooded temple: old paving half under a teal lagoon
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
   depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)
@@ -423,6 +424,9 @@ const TERRAIN = {
   bamboo:   ['#24522a', '#8ccc58', '#5aa040', '#163a1a', '#d0ec90'],
   sakura:   ['#e890b8', '#ffd0e4', '#b05888', '#6a2848'],
   lotus:    ['#2a6a78', '#7cc0c0', '#1a4a58', '#c8e8d8'],
+  // the Sunken Ruins': sea-worn paving (no edge; a fifth colour is the moss in its joints) and its teal lagoon
+  paving:   ['#a4a07e', '#c4c09a', '#787456', null, '#5e9a48'],
+  flood:    ['#2a96a0', '#9ae8e0', '#1a6e7a', '#d8fff8'],
 };
 
 // the Shrine's landmarks, drawn over the ground: . see-through, R vermilion, K its shade, G moss, S stone, D its shade, Y lamp glow
@@ -432,7 +436,11 @@ const PROPS = {
           '...RR......RG...', '...RR......RR...', '..SSSS....SSSS..', '................'],
   lantern: ['...SS...', '.SGSSSG.', '..DDDD..', '..DYYD..', '..SSSS..', '...SD...', '...GD...', '..SSSS..'],
 };
-const PROP_INK = { R: '#c84a32', K: '#7a2418', G: '#58a040', S: '#d4d6c0', D: '#8a8e78', Y: '#ffe070' };
+// the Sunken Ruins': two columns still holding up their lintel, a third snapped off beside them (L lit stone)
+PROPS.colonnade = ['................', '.LLLLLLLLLLLS...', '.SSSSSSSSSSSD...', '.DDDDDDDDDDDD...', '..LSD....LSD....', '..LSD....LSD....',
+  '..LSD....LGD....', '..LGD....LSD.LS.', '..LSD....LSD.LSD', '..LSD....LSD.GSD', '..LSD....LSD.LSD', '..LSD....GSD.LSD',
+  '..LSD....LSD.LSD', '.LLSDD..LLSDLLSD', '.DDDDD..DDDDDDDD', '................'];
+const PROP_INK = { R: '#c84a32', K: '#7a2418', G: '#58a040', S: '#d4d6c0', D: '#8a8e78', Y: '#ffe070', L: '#f4f0d8' };
 
 // 8x8 motifs: . base, L light, D dark
 const MOTIFS = {
@@ -444,6 +452,7 @@ const MOTIFS = {
   snow:     ['........', '...L....', '..LLL...', '........', '......L.', '.....LL.', '........', '........'],
   dune:     ['........', '..LLLL..', '.L....DD', 'L.......', '........', '...LLL..', '..L...DD', '........'],
   ruins:    ['LLL.DLL.', 'L...DL..', '....D...', 'DGDDDDGD', 'D.LLL...', 'D.L.....', 'G.......', 'DDDGDDGD'],
+  paving:   ['LLLLDLLL', 'L...D...', 'L...D...', 'DDDDDDDD', 'LLDLLLLL', '..D.....', '..D.....', 'DDDDDDDD'],
   bamboo:   ['.L..D.L.', '.G..D.L.', '.L..G.L.', '.L..D.G.', '.L..D.L.', '.L..D.L.', '.G..D.L.', '.L..G.L.'],
   sakura:   ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
 };
@@ -626,7 +635,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
   const img = ctx.createImageData(w, h);
   const px = new Uint32Array(img.data.buffer);
   const put = (x, y, c) => { px[y * w + x] = c; };
-  const terrain = Object.fromEntries(Object.entries(TERRAIN).map(([k, v]) => [k, v.map(abgr)]));
+  const terrain = Object.fromEntries(Object.entries(TERRAIN).map(([k, v]) => [k, v.map(c => c && abgr(c))]));
   const flowing = [];   // [x, y, base, light, speed] for every water/lava pixel, redrawn as it drifts
   const sparks = [];    // [x, y, colour] crystal tips that glint now and then
   const white = abgr('#ffffff');
@@ -645,13 +654,13 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
       const onPad = pad && ly >= pad[1] && ly <= pad[1] + 1 && lx >= pad[0] && lx <= pad[0] + 2 && !(ly === pad[1] && lx === pad[0] + 2);
       if (onPad) {
         c = pad[2] && ly === pad[1] && lx === pad[0] + 1 ? lilyBloom : ly === pad[1] + 1 ? lilyShade : lily;
-      } else if (kind === 'water' || kind === 'lava' || kind === 'pool' || kind === 'rift' || kind === 'lotus') {
+      } else if (kind === 'water' || kind === 'lava' || kind === 'pool' || kind === 'rift' || kind === 'lotus' || kind === 'flood') {
         if (ripple(x, y)) c = light;
-        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : kind === 'rift' ? 0.7 : kind === 'lotus' ? 0.5 : 1]);
+        flowing.push([x, y, base, light, kind === 'lava' ? -0.5 : kind === 'rift' ? 0.7 : kind === 'lotus' || kind === 'flood' ? 0.5 : 1]);
       } else if (motif) {
         const m = motif[ly][lx];
         c = m === 'L' ? light : m === 'D' ? dark : m === 'G' ? moss : base;
-        if (kind === 'ruins' && m === '.' && rand() < 0.07) c = moss;   // moss creeping over the paving
+        if ((kind === 'ruins' || kind === 'paving') && m === '.' && rand() < 0.07) c = moss;   // moss creeping over the paving
         if ((kind === 'crystal' || kind === 'geode') && m === 'L' && ly <= 1) sparks.push([x, y, light]);   // a crystal's tip, to twinkle
       } else if (petal && lx === petal[0] && ly === petal[1]) {
         c = terrain.sakura[1];
