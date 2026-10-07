@@ -354,17 +354,6 @@ export function setHpBar(prefix, hp, max) {
   $(`${prefix}-hp-text`).textContent = `${Math.max(0, hp)}/${max}`;
 }
 
-/** A raised card's damage preview: the chunk of the HP bar it would take flashes (lose 0 clears it). */
-export function previewHp(prefix, hp, lose, max) {
-  const track = $(`${prefix}-hp`).querySelector('.gb-hp-track');
-  let ghost = track.querySelector('.gb-hp-ghost');
-  if (!(lose > 0)) { ghost?.remove(); return; }
-  if (!ghost) track.append(ghost = el('span', 'gb-hp-ghost'));
-  lose = Math.min(lose, Math.max(0, hp));
-  ghost.style.setProperty('--from', String((hp - lose) / max));
-  ghost.style.setProperty('--size', String(lose / max));
-}
-
 /** Taking an upgraded card: a little burst of green and gold sparks off its tile. */
 export function upgradeBurst(node) {
   playSound('stat-up');

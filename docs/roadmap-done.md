@@ -1713,3 +1713,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   swapped for a small round key in the shell's colours with a house (`.home-key`, added to `#brand-btn` by
   `initPokedexButton()`); it opens the device's home screen, whose dock already has Main menu, so the map gets no
   separate Main menu button.
+- **Battle top bar and HP bars** (2026-10-07, the user's ask): the Pokédex button shrinks to 24px in battle, and the HP
+  bars' damage preview (`previewHp()`, `.gb-hp-ghost`) is gone; the user read it as a stray dot. The block preview stays.

@@ -643,22 +643,12 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .fast-battle #enemy-img.recoil { animation-duration: 0.26s; }
 /* a super-effective hit's number is red and a notch bigger */
 .pop.dmg.super { color: #ff5a3a; -webkit-text-stroke-color: #3a0000; font-size: 2.35rem; }
-/* the damage preview (showPreview() in battle.js): the chunk a raised card would take blinks, and the block it would add */
-.nameplate .gb-hp-track { position: relative; }
-.gb-hp-ghost {
-  position: absolute; top: 3px; bottom: 3px;
-  left: calc(3px + (100% - 6px) * var(--from));
-  width: calc((100% - 6px) * var(--size));
-  background: #e83020;
-  animation: hpGhost 0.7s steps(1) infinite;
-}
-/* blinks red over the bar's own colour: a cream box with a red ring read as a stray white dot on small hits */
-@keyframes hpGhost { 50% { background: transparent; } }
+/* the block preview (showPreview() in battle.js): the block a raised card would add blinks on your nameplate */
 .nameplate.block-preview .gb-hp-track { animation: blockGhost 0.7s steps(1) infinite; }
 @keyframes blockGhost { 50% { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); } }
 .badge.preview { animation: badgeGhost 0.7s steps(1) infinite; }
 @keyframes badgeGhost { 50% { opacity: 0.45; } }
-@media (prefers-reduced-motion: reduce) { .gb-hp-ghost, .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } .gb-hp-ghost { background: #f07060; } }
+@media (prefers-reduced-motion: reduce) { .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } }
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
@@ -4910,3 +4900,5 @@ body[data-screen="map-screen"] .home-key svg { width: 17px; height: 17px; filter
 body[data-screen="map-screen"] .home-dex:active .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key { width: 26px; height: 26px; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key svg { width: 15px; height: 15px; }
+/* in battle the Pokédex button shrinks to 24px (the user's ask, 2026-10-07: at 36px it crowded the enemy's nameplate) */
+body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 24px; }

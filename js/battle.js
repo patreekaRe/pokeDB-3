@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { vibrate, battleFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar, previewHp, cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
@@ -2391,9 +2391,8 @@ function renderFocus() {
 }
 
 /**
- * StS's damage preview: while a card is raised, the enemy's HP bar flashes the chunk it would take (after its block,
- * Vulnerable, strength, Focus...) and your nameplate the block it would add. It asks damageFor() as if the card were
- * being played (played/attacks already counted, Aqua Tail's block first), then puts the numbers back.
+ * While a card is raised your nameplate blinks the block it would add (Aqua Tail's too). The HP bars show no damage
+ * preview: the user read its blinking chunk as a stray dot on the bar (2026-10-07).
  */
 function showPreview(entry) {
   const b = battle, card = entry.card;
@@ -2403,18 +2402,7 @@ function showPreview(entry) {
   if (e.exhaustHand) {
     e.exhausted = b.hand.filter(h => h !== entry && (e.exhaustHand === 'all' || (e.exhaustHand === 'status' ? h.card.status : !isAttack(h.card)))).length;
   }
-  const saved = { block: b.block, played: b.played, attacks: b.attacks };
   let block = 0;
-  if (e.blockDamage && e.block) { block += e.block + damp; b.block += e.block + damp; e.block = 0; }
-  b.played += 1;
-  if (isAttack(card)) b.attacks += 1;
-  const { hits } = damageFor(card, e);
-  Object.assign(b, saved);
-
-  const total = hits.reduce((sum, n) => sum + n, 0);
-  previewHp('enemy', b.enemy.hp, Math.max(0, total - b.enemy.block), b.enemy.maxHp);
-  if (e.selfDamage) previewHp('player', b.hp, Math.min(e.selfDamage, b.hp - 1), b.maxHp);
-
   if (e.block) block += e.block + damp;
   if (e.blockPerCard) block += e.blockPerCard * (b.hand.length - 1) + damp;
   if (e.blockMult) block += (b.block + block) * (e.blockMult - 1);
@@ -2426,8 +2414,6 @@ function showPreview(entry) {
 }
 
 function clearPreview() {
-  previewHp('enemy', 0, 0, 1);
-  previewHp('player', 0, 0, 1);
   $('player-plate').classList.remove('block-preview');
   $('player-status').querySelector('.badge.preview')?.remove();
 }
