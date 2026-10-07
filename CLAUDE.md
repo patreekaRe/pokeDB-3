@@ -556,7 +556,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `team` there), Alphas Komala / Wooloo / Tandemaus, bosses Greedent / Type: Null (`typenull`) / Silvally, the Wastes' numbers;
   it borrows the Clearing's scenery (`BIOME_ART.thornwood`, `kin: 'clearing'`) and has no intro or journey films until
   part d; a win there "conquered the jungle", `conquered(route)` in `js/halloffame.js`, from the `route` a record now keeps),
-  `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] }`),
+  `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] }`; the other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
   default road, no version bump). After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
   `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the

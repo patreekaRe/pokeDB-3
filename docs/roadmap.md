@@ -63,7 +63,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     not beating their bosses: `stats.biomesSeen` already tracks it). The bot checks each new biome against the one it
     pairs with. **The Sunken Ruins are done** (part a, the crossroads logic and its gameplay; part b, the crossroads scene and
     its whole look, films and journey films; see the archive). **The Thornwood Jungle's gameplay is done** (part c, 2026-10-07:
-    its 18 Pokémon, `CROSSROADS[2]`, its bonus page, the Explorer Badge; see the archive). It borrows the Clearing's scenery.
+    its 18 Pokémon, `CROSSROADS[2]`, its bonus page, the Explorer Badge; see the archive). It borrows the Clearing's scenery. Both new roads open only after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07).
     d. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19. Paint the
        Thornwood Jungle like the Sunken Ruins (its four places Tangled Edge / Canopy Walk / Strangler Grove / Heart Tree,
        its intro film, the Heart Tree's boss prelude, map palette and tiles, sign, its own grotto), and its Shrine → Jungle

@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, BIOMES_BY_ID, CROSSROADS, biomeAt, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, CROSSROADS, ROADS_LEVEL, biomeAt, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
@@ -1128,8 +1128,9 @@ function afterFight(node, result) {
     dark while the next biome's map and intro film come up beneath it. */
 async function walkOn() {
   const from = mainBiome().id, roads = CROSSROADS[run.biome + 1];
-  // the crossroads (js/crossroads.js), where the next slot has two roads; Mewtwo keeps its one road
-  const fork = roads && !isMewtwoRun(run.starter) && !isSafari()
+  // the crossroads (js/crossroads.js), where the next slot has two roads, once roadsOpen(); Mewtwo keeps its one road.
+  // A peeked run always gets it, so it can be playtested.
+  const fork = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats))
     ? await crossroads({ ids: roads, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
   run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
   const to = biomeAt(run.route, run.biome + 1).id;
@@ -2672,6 +2673,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   const lost = won ? 0 : breakStreak(run.starter.id, safari);
   let streak = won ? null : streakLine(false, lost);
   const lostEntry = !won && !safari && !peeking ? recordLoss(run, { ...loss, ...whereNow() }, getSave().shiny.on.includes(run.starter.id)) : null;
+  const roadsWere = roadsOpen(getSave().stats);
   if (won && !safari && !peeking) {
     updateSave(d => {
       d.stats.runsWon += 1;
@@ -2702,6 +2704,9 @@ function endRun(won, atLastBoss = false, loss = null) {
     }
     if (mewtwoRun) level5.push(`💎 ${stageName(run.starter, run.stage)} entered the Hall of Fame as Champion of the Depths No.${String(entry.champ).padStart(3, '0')}!`);
 
+    if (!roadsWere && roadsOpen(getSave().stats)) {
+      level5.push(`🧭 New roads open! You've won on Trainer Level ${ROADS_LEVEL}+ with Fire, Grass and Water: from now on, after a boss, a crossroads lets you pick the next biome.`);
+    }
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (!mewtwoRun && run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
       run.levelUnlocked = run.level + 1;

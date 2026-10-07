@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { ENEMY_DEFS, BIOMES, ALT_BIOMES, BIOMES_BY_ID, CROSSROADS, biomeAt, buildEncounter, buildKenEncounter } from '../js/data/enemies.js';
+import { ENEMY_DEFS, BIOMES, ALT_BIOMES, BIOMES_BY_ID, CROSSROADS, biomeAt, buildEncounter, buildKenEncounter, roadsOpen } from '../js/data/enemies.js';
 import { SAFARI_MONS } from '../js/data/safari-mons.js';
 import { EVENTS_BY_ID } from '../js/data/events.js';
 import { ALL_PAGES, BONUS_PAGES, DEX_PAGES, DEX_NUMBER, DEPTHS_PAGE } from '../js/data/pokedex.js';
@@ -89,4 +89,12 @@ test('the Thornwood Jungle is slot 2\'s other road: mostly Grass, one Normal wil
   const mods = modsFor(0);
   assert.equal(buildEncounter(jungle, 'boss', mods, 'silvally').strength, buildEncounter(2, 'boss', mods, 'slaking').strength);
   assert.equal(biomeAt(['clearing', 'ruins', 'thornwood'], 2).id, 'thornwood');
+});
+
+test('the other roads open only after a Level 2+ win with every type', () => {
+  const s = (fire, grass, water) => ({ maxLevelWinByType: { fire, grass, water } });
+  assert.equal(roadsOpen(undefined), false);
+  assert.equal(roadsOpen(s(-1, -1, -1)), false);
+  assert.equal(roadsOpen(s(5, 5, 1)), false);
+  assert.equal(roadsOpen(s(2, 3, 2)), true);
 });

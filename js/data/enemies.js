@@ -1230,6 +1230,10 @@ export const ALT_BIOMES = [
 export const BIOMES_BY_ID = Object.fromEntries([...BIOMES, ...ALT_BIOMES].map(b => [b.id, b]));
 /** The roads a slot can take, the default first. A slot not listed has only its BIOMES entry. */
 export const CROSSROADS = { 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] };
+/** The other roads stay hidden until you've won a run with every type (Fire, Grass, Water) on Trainer Level ROADS_LEVEL or
+    higher (the user's call, 2026-10-07); until then a run walks the default road with no crossroads. */
+export const ROADS_LEVEL = 2;
+export const roadsOpen = (stats) => ['fire', 'grass', 'water'].every(t => (stats?.maxLevelWinByType?.[t] ?? -1) >= ROADS_LEVEL);
 /** The biome a run is in at slot `i`, by its saved `route` (none, or a run saved before the crossroads: the default road). */
 export const biomeAt = (route, i) => BIOMES_BY_ID[route?.[i]] ?? BIOMES[i];
 /** A biome given as its slot (the default road's) or as the biome itself. */

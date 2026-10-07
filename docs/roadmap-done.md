@@ -1582,3 +1582,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   tide pools. Journey films `clearing>ruins` (a flooded stair walked step by step, wading a drowned arcade, the temple on the
   horizon at dawn) and `ruins>wastes` (steam, geysers, the lagoon drying to cracked mud, then ash), `volcano()` split out of
   the Shrine → Wastes painter to share. `?area=` and `?travel=` reach the Ruins. Checked in the pane at 375x812 and 1280x800.
+- **Branching biomes gated** (2026-10-07, the user's ask): the Sunken Ruins and Thornwood Jungle only show up as choices
+  (the crossroads at all) after a won run with each of Fire, Grass and Water on Trainer Level 2+ (`roadsOpen()` /
+  `ROADS_LEVEL` in `js/data/enemies.js`, read from `maxLevelWinByType`, so old saves that already qualify see them at once);
+  the result window says "New roads open!" on the win that does it. Peeked runs always get the fork for playtesting.
