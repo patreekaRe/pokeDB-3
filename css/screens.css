@@ -4318,42 +4318,82 @@ body.scene-peek #backdrop { display: none; }
 .float-thing > .new-badge { top: 0; right: -4px; }
 
 /* the Sky Pillar's lobby (js/towerprep.js): a screen of its own over a painted backdrop (the tower from its foot to
-   space, `--ground` the grass line the climber stands on), the words kept to a title, two numbers and three chips */
+   space, `--ground` the grass line the climber stands on), the words kept to a title, two numbers and three chips.
+   Smooth and modern, not pixel art (the user's call, 2026-10-07): glass cards, glossy pill buttons, smooth icons. */
 .tower-lobby { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-  background: #0e140c; color: #f8f0d8; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+  background: #0a0f1c; color: #f4f6ff; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
 .tower-lobby::backdrop { background: #000; }
 .tower-page { position: relative; min-height: 100%; overflow: hidden; overflow: clip; display: flex; flex-direction: column; align-items: center;
-  padding: 0 16px max(18px, env(safe-area-inset-bottom)); text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6); }
-.tower-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+  padding: 0 16px max(18px, env(safe-area-inset-bottom)); text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55); }
+.tower-sky { position: absolute; left: 0; top: 0; pointer-events: none; }
 .tower-top { position: relative; flex: 1 0 auto; min-height: clamp(260px, 52dvh, 520px); width: 100%; text-align: center; padding-top: max(26px, calc(env(safe-area-inset-top) + 18px)); }
-.tower-title { margin: 0; font-size: clamp(1.5rem, 8vw, 2.4rem); font-weight: normal; letter-spacing: 2px; color: #f8d878;
-  text-shadow: 3px 0 0 #2a1c08, -3px 0 0 #2a1c08, 0 3px 0 #2a1c08, 0 -3px 0 #2a1c08, 0 7px 0 rgba(0, 0, 0, 0.5); }
+.tower-title { margin: 0; font-size: clamp(1.5rem, 8vw, 2.4rem); font-weight: normal; letter-spacing: 2px; line-height: 1.25;
+  background: linear-gradient(180deg, #fffbe0 0%, #ffe07a 40%, #f6a828 80%, #e8861a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 2px 0 #8a4c10) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6)); }
 .tower-title:focus { outline: none; }
-.tower-week { width: fit-content; margin: 10px auto 0; padding: 5px 12px 4px; border-radius: 99px; background: rgba(6, 8, 24, 0.55); font-size: 0.78rem; letter-spacing: 1px; color: #e8f0ff; }
+.tower-week { width: fit-content; margin: 10px auto 0; padding: 7px 16px 6px; border-radius: 99px; font-size: 0.72rem; letter-spacing: 1px; color: #eef3ff;
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+/* the climber's glowing pad at the tower's door */
+.tower-pad { position: absolute; z-index: 1; left: 50%; top: var(--ground, 50%); width: 132px; height: 30px; translate: -50% -40%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(170, 255, 210, 0.75), rgba(70, 220, 150, 0.35) 55%, rgba(40, 180, 120, 0) 100%); animation: towerPad 2.6s ease-in-out infinite; }
+@keyframes towerPad { 50% { opacity: 0.6; scale: 0.92; } }
 .tower-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 50%); width: 96px; height: 96px; object-fit: contain; object-position: 50% 100%;
-  translate: -50% calc(6px - 100%); pointer-events: none; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45)); }
-.tower-base { position: relative; z-index: 1; display: grid; justify-items: center; gap: 12px; width: min(100%, 400px); padding-top: 22px; }
+  translate: -50% calc(6px - 100%); pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45)); }
+.tower-base { position: relative; z-index: 1; display: grid; justify-items: center; gap: 14px; width: min(100%, 400px); padding-top: 22px; }
 .tower-name { margin: 0; font-size: 0.7rem; text-align: center; }
-.tower-name strong { font-weight: normal; color: #f8d878; font-size: 0.9rem; }
-.tower-stats { display: flex; gap: 10px; }
-.tower-stat { display: grid; justify-items: center; gap: 4px; min-width: 104px; padding: 8px 12px 7px; border: 2px solid rgba(248, 240, 216, 0.25); border-radius: 6px; background: rgba(0, 0, 0, 0.35); }
-.tower-stat b { font-weight: normal; font-size: 1.1rem; color: #f8d878; }
-.tower-stat span { font-size: 0.5rem; opacity: 0.8; }
-.tower-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; justify-content: center; gap: 6px; font-size: min(0.62rem, 2.35vw); white-space: nowrap; }
-.tower-rules li { display: flex; align-items: center; gap: 5px; margin: 0; padding: 5px 8px; border-radius: 99px; background: rgba(248, 240, 216, 0.12); }
-.tower-gorow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; width: 100%; margin-top: 4px; }
+.tower-name strong { font-weight: normal; color: #ffe07a; font-size: 0.9rem; }
+.tower-stats { display: flex; gap: 12px; }
+.tower-stat { position: relative; display: grid; justify-items: center; gap: 6px; min-width: 120px; padding: 14px 14px 12px; border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16); background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.tower-stat-icon { position: absolute; top: -12px; left: 50%; translate: -50% 0; width: 26px; height: 26px; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)); }
+.tower-stat b { font-weight: normal; font-size: 1.2rem; margin-top: 4px; -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none;
+  background-image: linear-gradient(180deg, #e8f8ff, #7ad0ff 60%, #3a98f0); filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)); }
+.tower-stat.ever b { background-image: linear-gradient(180deg, #fffbe0, #ffd860 60%, #f0a020); }
+.tower-stat > span { font-size: 0.5rem; opacity: 0.8; }
+.tower-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; justify-content: center; gap: 6px; font-size: min(0.58rem, 2.2vw); white-space: nowrap; }
+.tower-rules li { display: flex; align-items: center; gap: 5px; margin: 0; padding: 6px 9px 6px 6px; border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); }
+.tower-rules .si-wrap > .smooth-icon { width: 1.5em; height: 1.5em; }
+.tower-gorow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; width: 100%; margin-top: 4px; }
 .tower-back { justify-self: end; }
-.tower-back { --p: 2px; }
-.tower-back .pxb-i { font-size: 0.8rem; padding: calc(4 * var(--p)) calc(6 * var(--p)); }
-.tower-back svg { width: 1.3em; height: 1.15em; fill: currentColor; shape-rendering: crispEdges; }
-.tower-go .pxb-i { font-size: 1rem; min-width: 200px; }
-.tower-note { margin: -4px 0 0; font-size: 0.5rem; opacity: 0.75; text-align: center; }
-.tower-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.tower-picks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.tower-note { margin: -4px 0 0; font-size: 0.55rem; opacity: 0.75; text-align: center; }
+.tower-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.tower-picks { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .tower-picks[hidden] { display: none; }
-.tower-pick { width: 52px; height: 52px; padding: 2px; border: 2px solid rgba(248, 240, 216, 0.3); border-radius: var(--round-sm); background: rgba(0, 0, 0, 0.35); cursor: pointer; }
-.tower-pick:hover, .tower-pick:focus-visible { border-color: #f8d878; outline: none; }
+.tower-pick { --t: #c8c8d8; width: 58px; height: 58px; padding: 4px; border-radius: 18px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.16); background: radial-gradient(circle at 50% 65%, color-mix(in srgb, var(--t) 45%, transparent), rgba(255, 255, 255, 0.04) 72%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+.tower-pick.type-fire { --t: #ff7a3a; } .tower-pick.type-grass { --t: #5ad06a; } .tower-pick.type-water { --t: #4aa0ff; } .tower-pick.type-psychic { --t: #f060b0; }
+.tower-pick:hover, .tower-pick:focus-visible { outline: none; border-color: var(--t); transform: translateY(-2px); box-shadow: 0 0 0 2px var(--t), 0 6px 18px color-mix(in srgb, var(--t) 50%, transparent); }
 .tower-pick img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+/* the lobby's smooth buttons: glossy pills that press down */
+.tl-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 0; border: 0; color: #fff; cursor: pointer;
+  font-family: var(--pixel-font); font-synthesis-weight: none; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.12s; }
+.tl-btn::after { content: ''; position: absolute; inset: 2px 6px 52% 6px; border-radius: 999px; background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0)); pointer-events: none; }
+.tl-btn:hover { filter: brightness(1.08); }
+.tl-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.tl-btn .si-wrap > .smooth-icon { width: 1.4em; height: 1.4em; }
+.tl-go { min-width: 220px; padding: 17px 28px 16px; border-radius: 999px; font-size: 1rem; letter-spacing: 1px;
+  background: linear-gradient(180deg, #8af08a 0%, #34c060 50%, #1f9850 100%);
+  box-shadow: 0 6px 0 #146234, 0 12px 26px rgba(40, 200, 110, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.22); animation: tlGlow 2.4s ease-in-out infinite; }
+.tl-go:active { transform: translateY(4px); box-shadow: 0 2px 0 #146234, 0 6px 14px rgba(40, 200, 110, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.22); }
+@keyframes tlGlow { 50% { box-shadow: 0 6px 0 #146234, 0 12px 34px rgba(60, 240, 130, 0.65), inset 0 0 0 2px rgba(255, 255, 255, 0.3); } }
+.tl-round { width: 54px; height: 54px; padding: 0; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.28); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.tl-round::after { inset: 2px 8px 55% 8px; }
+.tl-round > .smooth-icon { width: 24px; height: 24px; translate: -1px 0; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)); }
+.tl-round:active { transform: scale(0.94); }
+.tl-pill { padding: 11px 18px 10px 14px; border-radius: 999px; font-size: 0.62rem; }
+.tl-pill:active { transform: translateY(3px); }
+.tl-orange { background: linear-gradient(180deg, #ffbe6a, #f5822e 55%, #dc5e1a); box-shadow: 0 4px 0 #a03e10, 0 8px 18px rgba(240, 120, 40, 0.3); }
+.tl-orange:active { box-shadow: 0 1px 0 #a03e10, 0 4px 10px rgba(240, 120, 40, 0.3); }
+.tl-blue { background: linear-gradient(180deg, #78c0ff, #3c84f2 55%, #2a5cd2); box-shadow: 0 4px 0 #1c3a94, 0 8px 18px rgba(60, 120, 240, 0.3); }
+.tl-blue:active { box-shadow: 0 1px 0 #1c3a94, 0 4px 10px rgba(60, 120, 240, 0.3); }
+.tl-blue.on { box-shadow: 0 4px 0 #1c3a94, 0 0 0 3px #fff, 0 8px 22px rgba(80, 150, 255, 0.55); }
+@media (prefers-reduced-motion: reduce) { .tower-pad, .tl-go { animation: none; } }
 
 /* ---------- the Sky Pillar's climb (js/tower.js): the tower is the map, painted behind the run card ---------- */
 .tower-view { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #0a0c1c; }
@@ -4441,6 +4481,29 @@ body.scene-peek #backdrop { display: none; }
 .tower-plaque-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tower-plaque-note { text-align: center; font-size: 0.85rem; opacity: 0.85; }
 @media (max-width: 480px) { .tower-plaque { padding: 10px 14px 12px; } .tower-plaque-list { font-size: 0.85rem; gap: 6px; } .tower-plaque-row { grid-template-columns: 20px 34px 1fr auto; gap: 6px; } .tower-plaque-row img { width: 34px; height: 34px; } }
+
+/* the Sky Pillar lobby's plaque, smooth: a glass card with medals for the top three, like the leaderboard window */
+.tower-lobby .tower-plaque { padding: 14px 12px 12px; border: 1px solid rgba(255, 214, 110, 0.35); border-radius: 22px; color: #fff; text-shadow: none;
+  background: linear-gradient(165deg, rgba(44, 52, 88, 0.88), rgba(14, 18, 34, 0.92));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.tower-lobby .tower-plaque::before, .tower-lobby .tower-plaque::after { display: none; }
+.tower-lobby .tower-plaque-title { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-size: 0.72rem; color: #ffd66e; text-shadow: none; }
+.tower-lobby .tower-plaque-title .si-wrap > .smooth-icon { width: 1.6em; height: 1.6em; }
+.tower-lobby .tower-plaque-list { gap: 6px; font-size: 0.85rem; }
+.tower-lobby .tower-plaque-row { grid-template-columns: 28px 40px 1fr auto; gap: 8px; padding: 6px 8px 6px 6px; border: 1px solid transparent; border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05); text-shadow: none; }
+.tower-lobby .tower-plaque-row:last-child { padding-bottom: 6px; }
+.tower-lobby .tower-plaque-rank { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.6rem; color: #c8d0e8; background: rgba(255, 255, 255, 0.1); }
+.tower-lobby .tower-plaque-row[data-rank="1"] { background: linear-gradient(90deg, rgba(255, 210, 80, 0.18), rgba(255, 255, 255, 0.05) 60%); }
+.tower-lobby .tower-plaque-row[data-rank="1"] .tower-plaque-rank { color: #5a3a00; background: linear-gradient(145deg, #fff0a0, #f0b828 60%, #c88a10); box-shadow: 0 0 10px rgba(255, 200, 60, 0.5); }
+.tower-lobby .tower-plaque-row[data-rank="2"] .tower-plaque-rank { color: #303848; background: linear-gradient(145deg, #ffffff, #c4ccd8 60%, #8e98a8); }
+.tower-lobby .tower-plaque-row[data-rank="3"] .tower-plaque-rank { color: #4a2408; background: linear-gradient(145deg, #ffd0a0, #d48a48 60%, #9a5a24); }
+.tower-lobby .tower-plaque-row img { filter: none; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 70%); }
+.tower-lobby .tower-plaque-floor { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 999px; font-size: 0.65rem; background: rgba(0, 0, 0, 0.35); }
+.tower-lobby .tower-plaque-row.mine { border-color: #5ad08a; background: rgba(90, 208, 138, 0.16); box-shadow: 0 0 12px rgba(90, 208, 138, 0.3); }
+.tower-lobby .tower-plaque-row.mine .tower-plaque-name { color: #9cf5bc; }
+.tower-lobby .tower-plaque-row.mine .tower-plaque-floor { background: #5ad08a; color: #06221a; }
+@media (max-width: 480px) { .tower-lobby .tower-plaque-row { grid-template-columns: 26px 34px 1fr auto; gap: 6px; } .tower-lobby .tower-plaque-rank { width: 26px; height: 26px; } }
 
 /* ---------- THE POKÉDEX WINDOW (js/pokedex.js): full screen, Pokémon GO's banner per biome, then a handheld Pokédex ---------- */
 .pokedex {

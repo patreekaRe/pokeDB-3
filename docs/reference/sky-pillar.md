@@ -17,6 +17,13 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   Rayquaza's green glow breathing over its roof, the week's climber at its door (`--ground`). Below on the soil: the
   climber's name, two numbers (this week, best ever), three rule chips (`RULES`), Climb with a one-line note on whether it
   counts, Leaderboard and Practice (toggles the starter picks), the plaque. Keep its words that short.
+  **Smooth since 2026-10-07** (the user's call: a modern Pokémon look, no pixels): `build()` paints two layers at the
+  screen's resolution (Canvas 2D paths and gradients, `devicePixelRatio` up to 2) and `paint()` composites them each
+  frame (~30 fps) with the twinkling stars, drifting clouds and Rayquaza's glow between and over them; the sky's colours
+  still come from `skyHex()`. The cards are glass, the buttons glossy pills (`.tl-btn`, `.tl-go` / `.tl-round` /
+  `.tl-pill`), the climber stands on a glowing pad (`.tower-pad`), and `data-smooth-icons` swaps every emoji for
+  `js/smooth-icons.js`'s art (the leaderboard window `#board-dialog` too). The plaque's lobby look is scoped to
+  `.tower-lobby` (medals for the top three, like the leaderboard window); the Safari lobby's plaque keeps the bronze.
 - **The week deals the tower** (`towerWeekly()`): its Monday (UTC, `towerWeek()`) seeds every roll through `js/rng.js`
   like the Safari's day, and picks the starter everyone climbs with (the Safari's pool: never Mewtwo or Rayquaza).
 - **The week's first try counts** for the leaderboard and is played without perks (`fairTry()` covers `run.tower.first`).

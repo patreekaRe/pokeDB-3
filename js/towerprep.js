@@ -4,7 +4,9 @@
    of its own, the tower rising from the grass into space over the
    week's climber at its door, then your floors, three short rules,
    Climb (the week's starter; its first try counts for the leaderboard)
-   or Practice with a starter of your own.
+   or Practice with a starter of your own. Smooth, not pixel art (the
+   user's call, 2026-10-07): the backdrop is painted at full resolution
+   and its icons are js/smooth-icons.js's.
    ============================================================ */
 
 import { towerWeekly, FLIGHT, TOP_FLOOR } from './data/tower.js';
@@ -14,7 +16,8 @@ import { getSave } from './storage.js';
 import { cloudConfigured } from './cloud.js';
 import { openLeaderboard, towerTop } from './leaderboard.js';
 import { playSound } from './audio.js';
-import { makeBuffer, flush, put, K, mix, bay, hash, skyHex } from './tower-art.js';
+import { hash, mix, skyHex } from './tower-art.js';
+import { smoothIcon } from './smooth-icons.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 
 let actions = {};
@@ -27,6 +30,7 @@ const RULES = [
 
 export function initTowerPrep(handlers) {
   actions = handlers;
+  $('tower-close').append(smoothIcon('back'));
   $('tower-go').addEventListener('click', () => { closeDialog('tower-dialog'); actions.onStart(null); });
   $('tower-board').addEventListener('click', () => openLeaderboard(0, 'tower'));
   $('tower-close').addEventListener('click', () => { playSound('cancel', 'confirm'); closeDialog('tower-dialog'); });
@@ -68,6 +72,7 @@ async function engrave() {
 
 function plaqueRow(e, i) {
   const li = el('li', `tower-plaque-row${e.mine ? ' mine' : ''}`);
+  if (i < 3) li.dataset.rank = i + 1;
   const img = el('img', 'pixel');
   const starter = STARTERS_BY_ID[e.starter];
   if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
@@ -78,9 +83,9 @@ function plaqueRow(e, i) {
 
 const weekLabel = (week) => new Date(`${week}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-function stat(label, value) {
-  const s = el('span', 'tower-stat');
-  s.append(el('b', '', value), el('span', '', label));
+function stat(label, value, icon, kind) {
+  const s = el('span', `tower-stat ${kind}`);
+  s.append(smoothIcon(icon, 'tower-stat-icon'), el('b', '', value), el('span', '', label));
   return s;
 }
 
@@ -96,13 +101,13 @@ export function openTowerPrep() {
   mon.alt = name;
   const line = $('tower-name');
   line.replaceChildren(el('strong', '', name), el('span', '', " is this week's climber"));
-  $('tower-best').replaceChildren(stat('This week', first ? '-' : `${thisWeek ? t.best : 0}F`), stat('Best ever', `${t.bestEver || 0}F`));
+  $('tower-best').replaceChildren(stat('This week', first ? '-' : `${thisWeek ? t.best : 0}F`, 'tower', 'week'), stat('Best ever', `${t.bestEver || 0}F`, 'star', 'ever'));
   $('tower-rules').replaceChildren(...RULES.map(([icon, text]) => {
     const li = el('li', '');
     li.append(el('span', 'tower-rule-icon', icon), el('span', '', text));
     return li;
   }));
-  $('tower-go').querySelector('.pxb-i').textContent = first ? '🏆 Climb' : '🔁 Climb again';
+  $('tower-go').querySelector('.tl-label').textContent = first ? '🏆 Climb' : '🔁 Climb again';
   $('tower-note').textContent = first ? 'Your first climb this week counts. No perks.' : 'Only your first climb this week counts.';
   // practice: any starter you own but Mewtwo (it would trivialise the climb)
   const picks = $('tower-picks');
@@ -125,168 +130,314 @@ export function openTowerPrep() {
   startSky();
 }
 
-/* ---------- the backdrop: the Sky Pillar from its foot to space, on one low-res canvas ---------- */
+/* ---------- the backdrop: the Sky Pillar from its foot to space, painted smooth at the screen's resolution ---------- */
 
-let sky = null;   // { b, base, mask, stars, clouds, ... } for the current size; its timer while open
+let sky = null;   // the current size's layers and its frame loop
 
 function stopSky() {
-  if (sky?.timer) clearInterval(sky.timer);
-  if (sky) sky.timer = 0;
+  if (sky?.raf) cancelAnimationFrame(sky.raf);
+  if (sky) sky.raf = 0;
 }
 
 function startSky() {
   stopSky();
-  const page = $('tower-page');
-  const PX = innerWidth <= 720 ? 3 : 4;
+  const page = $('tower-page'), canvas = $('tower-sky');
   const top = page.getBoundingClientRect().top;
-  const G = Math.round(($('tower-base').getBoundingClientRect().top - top + 8) / PX);   // the grass line, just over the climber's name
-  page.style.setProperty('--ground', `${G * PX}px`);
-  const W = Math.ceil(page.clientWidth / PX), H = Math.ceil(page.clientHeight / PX);
-  const summit = Math.max(8, Math.round(($('tower-week').getBoundingClientRect().bottom - top + 40) / PX));
-  const canvas = $('tower-sky');
-  canvas.style.width = `${W * PX}px`;
-  canvas.style.height = `${H * PX}px`;
-  sky = build(makeBuffer(canvas, W, H), G, summit);
-  let t = 0;
-  paint(sky, t);
+  const G = Math.round($('tower-base').getBoundingClientRect().top - top + 8);   // the grass line, just over the climber's name
+  page.style.setProperty('--ground', `${G}px`);
+  const W = page.clientWidth, H = page.clientHeight;
+  const summit = Math.max(24, Math.round($('tower-week').getBoundingClientRect().bottom - top + 44));
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width = `${W}px`;
+  canvas.style.height = `${H}px`;
+  sky = build(W, H, G, summit, dpr);
+  const ctx = canvas.getContext('2d');
+  paint(ctx, sky, 0);
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  sky.timer = setInterval(() => paint(sky, ++t), 100);
+  let last = 0;
+  const tick = (now) => {
+    sky.raf = requestAnimationFrame(tick);
+    if (now - last < 33) return;   // ~30 fps is plenty for drifting clouds and twinkles
+    last = now;
+    paint(ctx, sky, now / 1000);
+  };
+  sky.raf = requestAnimationFrame(tick);
 }
 
-/** Everything that stands still, painted once a size: the sky by height, the far hills, the tower, the grass and soil. */
-function build(b, G, summitRow) {
-  const { W, H, px } = b;
-  const altAt = (y) => (G - y) / (G - summitRow) * 100;   // floor 0 at the grass, floor 100 at the summit
-  const rowAt = (alt) => Math.round(G - alt / 100 * (G - summitRow));
-  const mask = new Uint8Array(W * H);
+function layer(W, H, dpr) {
+  const c = document.createElement('canvas');
+  c.width = Math.round(W * dpr);
+  c.height = Math.round(H * dpr);
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return [c, ctx];
+}
 
-  for (let y = 0; y < Math.min(G, H); y++) {
-    const f = Math.max(0, altAt(y)) * 8, i = Math.floor(f), m = f - i;
-    const c0 = K(skyHex(i / 8)), c1 = K(skyHex((i + 1) / 8));
-    for (let x = 0; x < W; x++) px[y * W + x] = m > bay(x, y) ? c1 : c0;
+const rgba = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${a})`;
+
+/** A soft, rounded cloud: overlapping puffs lit from above. */
+function puff(ctx, x, y, r, tint = ['#ffffff', '#dce6f4'], alpha = 1) {
+  const g = ctx.createLinearGradient(0, y - r * 1.2, 0, y + r * 0.6);
+  g.addColorStop(0, rgba(tint[0], alpha));
+  g.addColorStop(1, rgba(tint[1], alpha));
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  for (const [dx, dy, k] of [[-1.5, 0.15, 0.6], [-0.7, -0.35, 0.85], [0.3, -0.55, 1], [1.2, -0.15, 0.75], [1.9, 0.2, 0.5]]) {
+    ctx.moveTo(x + dx * r + k * r, y + dy * r);
+    ctx.arc(x + dx * r, y + dy * r, k * r, 0, Math.PI * 2);
+  }
+  ctx.rect(x - 1.5 * r, y, 3.4 * r, 0.35 * r);
+  ctx.fill();
+}
+
+/** Everything that stands still, painted once a size: the back layer (sky, nebula, cloud sea) and the front one
+    (hills, the pillar, its roof and door, the grass). Clouds, stars and Rayquaza's glow go between and over them. */
+function build(W, H, G, S, dpr) {
+  const altAt = (y) => (G - y) / (G - S) * 100;   // floor 0 at the grass, floor 100 at the summit
+  const rowAt = (alt) => G - alt / 100 * (G - S);
+  const [back, b] = layer(W, H, dpr);
+  const [front, f] = layer(W, H, dpr);
+
+  // the sky by height, the same colours the climb shows at each floor
+  const sk = b.createLinearGradient(0, 0, 0, G);
+  for (let y = 0; y <= G; y += Math.max(6, G / 40)) sk.addColorStop(Math.min(1, y / G), skyHex(Math.max(0, altAt(y))));
+  sk.addColorStop(1, skyHex(0));
+  b.fillStyle = sk;
+  b.fillRect(0, 0, W, G + 2);
+  // a faint nebula high up
+  for (const [x, y, r, c] of [[W * 0.18, rowAt(88), W * 0.5, '#6a48c8'], [W * 0.86, rowAt(70), W * 0.45, '#2a8ab8'], [W * 0.6, rowAt(105), W * 0.35, '#c04898']]) {
+    const g = b.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, rgba(c, 0.22));
+    g.addColorStop(1, rgba(c, 0));
+    b.fillStyle = g;
+    b.fillRect(0, 0, W, G);
   }
   // the cloud sea the sunset lights, below floor 27
   const sea = rowAt(27);
-  const SEA = ['#ffd8b0', '#f8a888', '#c87890', '#7a4c78'].map(K);
-  for (let x = 0; x < W; x++) {
-    const top = sea - Math.round(2 + 2 * Math.sin(x * 0.31) + 1.5 * Math.sin(x * 0.11 + 2) + hash(x) * 1.2);
-    for (let y = top; y < sea + 7; y++) {
-      const k = y - top;
-      if (k > 4 && bay(x, y) < (k - 4) / 4) continue;
-      put(b, x, y, SEA[Math.min(3, k >> 1)]);
-    }
+  for (const [lift, tint, r] of [[16, ['#e8a0a8', '#7a4c78'], 22], [4, ['#ffe0b8', '#d88890'], 16]]) {
+    for (let x = -r; x < W + r; x += r * 2.2) puff(b, x + hash(x + lift) * r, sea - lift + hash(x * 0.3) * 6, r * (0.8 + hash(x) * 0.5), tint);
   }
-  // far hills and the treeline round the foot
-  const HILL = ['#6a9ab0', '#5a889c'].map(K), TREE = ['#5ab048', '#3e9040', '#2a7034'].map(K);
-  for (let x = 0; x < W; x++) {
-    const hill = G - Math.round(9 + 4 * Math.sin(x * 0.07 + 1) + 2 * Math.sin(x * 0.19));
-    for (let y = hill; y < G; y++) put(b, x, y, HILL[y - hill < 2 ? 0 : 1]);
-    const tree = G - Math.round(3 + 2 * Math.abs(Math.sin(x * 0.45)) + hash(x + 7) * 2);
-    for (let y = tree; y < G; y++) put(b, x, y, TREE[Math.min(2, y - tree)]);
-  }
+  const haze = b.createLinearGradient(0, sea - 10, 0, G);
+  haze.addColorStop(0, rgba('#ffd8c0', 0));
+  haze.addColorStop(1, rgba('#cfe6f4', 0.5));
+  b.fillStyle = haze;
+  b.fillRect(0, sea - 10, W, G - sea + 10);
 
-  // the tower
-  const cx = Math.floor(W / 2), hw0 = Math.max(10, Math.min(Math.round(W * 0.13), Math.round((G - summitRow) * 0.16))), hw1 = Math.round(hw0 * 0.68);
-  const half = (y) => Math.round(hw0 + (hw1 - hw0) * Math.max(0, Math.min(1, altAt(y) / 100)));
-  const STONE = ['#d4c8b0', '#aca08a', '#8a8070', '#686054', '#5c5448'];   // lit, face, shade, dark, mortar
-  const night = (h, y) => mix(h, '#1a2040', Math.max(0, Math.min(0.55, (altAt(y) - 30) / 90)));
-  const stoneAt = (y) => STONE.map(h => K(night(h, y)));
-  for (let y = summitRow; y < G; y++) {
-    const hw = half(y), S = stoneAt(y), course = Math.floor((G - y) / 4);
-    for (let x = cx - hw; x <= cx + hw; x++) {
-      const u = (x - (cx - hw)) / (2 * hw);
-      let c = u < 0.1 ? S[0] : u > 0.86 ? S[3] : u > 0.66 ? S[2] : S[1];
-      if ((G - y) % 4 === 0 || (x + course * 3) % 7 === 0) c = u > 0.66 ? S[3] : S[4];
-      put(b, x, y, c);
-      mask[y * W + x] = 1;
-    }
+  // far hills, soft and blue with distance, then the treeline round the foot
+  const ridge = (ctx, amp, base, phase, colTop, colBot) => {
+    const g = ctx.createLinearGradient(0, G - base - amp, 0, G);
+    g.addColorStop(0, colTop);
+    g.addColorStop(1, colBot);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, G + 1);
+    for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, G - base - amp * (0.55 + 0.3 * Math.sin(x * 0.012 + phase) + 0.15 * Math.sin(x * 0.033 + phase * 2)));
+    ctx.lineTo(W, G + 1);
+    ctx.fill();
+  };
+  ridge(f, 34, 14, 1, '#8fb8d0', '#6a98b4');
+  ridge(f, 22, 6, 4, '#6aa8a0', '#4e8a88');
+  f.fillStyle = '#3f9a48';
+  f.beginPath();
+  for (let x = -10; x < W + 20; x += 11 + hash(x) * 6) {
+    const r = 8 + hash(x * 1.7) * 8;
+    f.moveTo(x + r, G);
+    f.arc(x, G - r * 0.35, r, 0, Math.PI * 2);
   }
-  // a ledge every 10 floors, and a window between each pair: holes onto the sky at that height, a few lit
-  for (let f = 10; f < 100; f += 10) {
-    const y = rowAt(f), hw = half(y) + 2, S = stoneAt(y);
-    for (let x = cx - hw; x <= cx + hw; x++) { put(b, x, y - 1, S[0]); put(b, x, y, S[1]); put(b, x, y + 1, S[3]); mask[(y - 1) * W + x] = mask[y * W + x] = 1; }
-  }
-  const LIT = K('#f8d070'), GLOW = K('#f8a840');
-  for (let f = 5; f < 100; f += 10) {
-    const y = rowAt(f), lit = hash(f) > 0.45;
-    for (const ox of half(y) > 13 ? [-Math.round(half(y) / 2), 0, Math.round(half(y) / 2)] : [0]) {
-      for (let dy = -2; dy <= 2; dy++) for (let dx = -1; dx <= 1; dx++) {
-        if (dy === -2 && dx !== 0) continue;
-        const x = cx + ox + dx, yy = y + dy;
-        if (yy < 0 || yy >= H) continue;
-        px[yy * W + x] = lit && ox === 0 ? (dy > 0 ? GLOW : LIT) : K(skyHex(Math.max(0, altAt(yy))));
-        mask[yy * W + x] = 2;
-      }
-    }
-  }
-  // the summit's roof, its tip where Rayquaza waits
-  const ROOF = ['#7ab890', '#4e8a68', '#346048'].map(h => K(night(h, summitRow)));
-  const roofH = Math.max(6, Math.round(hw1 * 0.7));
-  for (let k = 0; k < roofH; k++) {
-    const y = summitRow - roofH + k, hw = Math.round((hw1 + 2) * (k + 1) / roofH);
-    for (let x = cx - hw; x <= cx + hw; x++) { put(b, x, y, x < cx - hw / 2 ? ROOF[0] : x > cx + hw / 3 ? ROOF[2] : ROOF[1]); mask[y * W + x] = 1; }
-  }
-  // the door at its foot, warm light inside
-  const DOOR = K('#1a1410');
-  for (let y = G - 12; y < G; y++) for (let x = cx - 4; x <= cx + 4; x++) {
-    const top = G - 12 + (Math.abs(x - cx) >= 3 ? 2 : Math.abs(x - cx) >= 2 ? 1 : 0);
-    if (y < top) continue;
-    put(b, x, y, bay(x, y) < (y - (G - 12)) / 16 ? GLOW : DOOR);
-  }
+  f.fill();
+  const shade = f.createLinearGradient(0, G - 20, 0, G);
+  shade.addColorStop(0, rgba('#9ae070', 0.0));
+  shade.addColorStop(1, rgba('#1e5a30', 0.6));
+  f.fillStyle = shade;
+  f.fillRect(0, G - 22, W, 22);
 
-  // the grass, a flagstone path from the door, then dark soil under the lobby's buttons
-  const GRASS = ['#78c858', '#5ab048', '#3e9040'].map(K), PATH = ['#b0a690', '#8a8274'].map(K);
-  const SOIL0 = '#24301e', SOIL1 = '#0e140c';
-  for (let y = G; y < H; y++) {
-    const k = y - G, s0 = K(mix(SOIL0, SOIL1, Math.min(1, k / 60))), s1 = K(mix(SOIL0, SOIL1, Math.min(1, (k + 6) / 60)));
-    for (let x = 0; x < W; x++) px[y * W + x] = k < 3 ? GRASS[k] : bay(x, y) < 0.5 ? s0 : s1;
-    if (k < 4) {
-      const pw = 5 + k;
-      for (let x = cx - pw; x <= cx + pw; x++) if (!(k % 4 === 3 || (x + (k >> 2) * 3) % 6 === 0) || k < 1) put(b, x, y, PATH[k % 4 === 3 ? 1 : 0]);
+  // the pillar: a tapering stone column, lit from the left, dusk deepening up its height
+  const cx = W / 2;
+  const hw0 = Math.max(30, Math.min(W * 0.13, (G - S) * 0.16)), hw1 = hw0 * 0.68;
+  const half = (y) => hw0 + (hw1 - hw0) * Math.max(0, Math.min(1, altAt(y) / 100));
+  const body = new Path2D();
+  body.moveTo(cx - hw1, S); body.lineTo(cx + hw1, S); body.lineTo(cx + hw0, G); body.lineTo(cx - hw0, G); body.closePath();
+  const stoneG = f.createLinearGradient(cx - hw0, 0, cx + hw0, 0);
+  stoneG.addColorStop(0, '#efe6d2'); stoneG.addColorStop(0.18, '#cfc4ac'); stoneG.addColorStop(0.6, '#a49882'); stoneG.addColorStop(1, '#5e574c');
+  f.save();
+  f.clip(body);
+  f.fillStyle = stoneG;
+  f.fillRect(cx - hw0, S, hw0 * 2, G - S);
+  // stone courses and joints, barely there
+  f.lineWidth = 1;
+  for (let y = G - 12, row = 0; y > S; y -= 12, row++) {
+    const hw = half(y);
+    f.strokeStyle = 'rgba(40, 32, 24, 0.16)';
+    f.beginPath(); f.moveTo(cx - hw, y); f.lineTo(cx + hw, y); f.stroke();
+    f.strokeStyle = 'rgba(40, 32, 24, 0.1)';
+    f.beginPath();
+    for (let x = cx - hw + (row % 2 ? 9 : 0); x < cx + hw; x += 18) { f.moveTo(x, y); f.lineTo(x, y - 12); }
+    f.stroke();
+  }
+  const dusk = f.createLinearGradient(0, G, 0, S);
+  dusk.addColorStop(0, rgba('#1a2040', 0));
+  dusk.addColorStop(0.3, rgba('#1a2040', 0));
+  dusk.addColorStop(1, rgba('#1a2040', 0.5));
+  f.fillStyle = dusk;
+  f.fillRect(cx - hw0, S, hw0 * 2, G - S);
+  // the sunset's warm rim on its left edge, low down
+  const rim = f.createLinearGradient(0, S, 0, G);
+  rim.addColorStop(0, rgba('#ffd8a0', 0));
+  rim.addColorStop(1, rgba('#ffd8a0', 0.5));
+  f.strokeStyle = rim;
+  f.lineWidth = 3;
+  f.beginPath(); f.moveTo(cx - hw1 + 1, S); f.lineTo(cx - hw0 + 1, G); f.stroke();
+  f.restore();
+
+  // a ledge every 10 floors
+  for (let fl = 10; fl < 100; fl += 10) {
+    const y = rowAt(fl), hw = half(y) + 6;
+    const lg = f.createLinearGradient(0, y - 4, 0, y + 5);
+    lg.addColorStop(0, '#f4ecdc'); lg.addColorStop(0.45, '#bcb09a'); lg.addColorStop(1, '#6e6656');
+    f.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    f.beginPath(); f.roundRect(cx - hw + 3, y + 3, hw * 2 - 6, 5, 3); f.fill();
+    f.fillStyle = lg;
+    f.beginPath(); f.roundRect(cx - hw, y - 4, hw * 2, 8, 3); f.fill();
+    f.fillStyle = rgba('#1a2040', Math.max(0, Math.min(0.45, (fl - 30) / 140)));
+    f.fill();
+  }
+  // windows between the ledges: arches onto the sky at that height, a few lit warm
+  const glows = [];
+  for (let fl = 5; fl < 100; fl += 10) {
+    const y = rowAt(fl), hw = half(y), lit = hash(fl) > 0.45;
+    for (const ox of hw > 40 ? [-hw / 2, 0, hw / 2] : [0]) {
+      const x = cx + ox, w = 9, h = 15;
+      const arch = new Path2D();
+      arch.moveTo(x - w / 2, y + h / 2); arch.lineTo(x - w / 2, y - h / 2 + w / 2);
+      arch.arc(x, y - h / 2 + w / 2, w / 2, Math.PI, 0); arch.lineTo(x + w / 2, y + h / 2); arch.closePath();
+      if (lit && ox === 0) {
+        const wg = f.createLinearGradient(0, y - h / 2, 0, y + h / 2);
+        wg.addColorStop(0, '#fff2b0'); wg.addColorStop(1, '#ffa840');
+        f.fillStyle = wg;
+        glows.push([x, y]);
+      } else f.fillStyle = mix(skyHex(Math.max(0, fl)), '#000000', 0.25);
+      f.fill(arch);
+      f.strokeStyle = 'rgba(30, 24, 18, 0.45)';
+      f.lineWidth = 1.5;
+      f.stroke(arch);
     }
   }
-
-  const stars = [];
-  const starTop = rowAt(40);
-  for (let i = 0; i < W * starTop / 45; i++) {
-    const x = Math.floor(hash(i * 3.1) * W), y = Math.floor(hash(i * 7.7 + 1) * starTop);
-    if (!mask[y * W + x]) stars.push([x, y, hash(i + 0.5) * 40 | 0, hash(i * 1.9) < 0.15]);
+  f.save();
+  f.globalCompositeOperation = 'lighter';
+  for (const [x, y] of glows) {
+    const g = f.createRadialGradient(x, y, 0, x, y, 26);
+    g.addColorStop(0, 'rgba(255, 190, 90, 0.4)'); g.addColorStop(1, 'rgba(255, 160, 60, 0)');
+    f.fillStyle = g;
+    f.fillRect(x - 26, y - 26, 52, 52);
   }
-  const clouds = Array.from({ length: Math.max(3, Math.round(W / 40)) }, (_, i) => ({
-    x: hash(i * 5.3) * (W + 40), y: rowAt(9 + hash(i * 2.7) * 6), r: 5 + Math.round(hash(i * 9.1) * 5), v: 0.15 + hash(i) * 0.15,
+  f.restore();
+
+  // the summit's jade roof, its eaves curling up, a gold finial where Rayquaza waits
+  const roofH = Math.max(16, hw1 * 0.75), eave = hw1 + 12;
+  const roof = new Path2D();
+  roof.moveTo(cx, S - roofH);
+  roof.quadraticCurveTo(cx - hw1 * 0.35, S - roofH * 0.35, cx - eave, S - 5);
+  roof.quadraticCurveTo(cx - eave + 2, S + 3, cx - eave + 8, S + 3);
+  roof.lineTo(cx + eave - 8, S + 3);
+  roof.quadraticCurveTo(cx + eave - 2, S + 3, cx + eave, S - 5);
+  roof.quadraticCurveTo(cx + hw1 * 0.35, S - roofH * 0.35, cx, S - roofH);
+  const rg = f.createLinearGradient(cx - eave, 0, cx + eave, 0);
+  rg.addColorStop(0, '#9ee0b4'); rg.addColorStop(0.45, '#4e9a72'); rg.addColorStop(1, '#24543e');
+  f.fillStyle = rg;
+  f.fill(roof);
+  f.strokeStyle = 'rgba(10, 30, 20, 0.5)';
+  f.lineWidth = 1.5;
+  f.stroke(roof);
+  f.strokeStyle = 'rgba(220, 255, 230, 0.35)';
+  f.beginPath(); f.moveTo(cx - 2, S - roofH + 4); f.quadraticCurveTo(cx - hw1 * 0.4, S - roofH * 0.3, cx - eave + 6, S - 2); f.stroke();
+  const tip = S - roofH - 9;
+  const fg = f.createLinearGradient(0, tip - 4, 0, S - roofH);
+  fg.addColorStop(0, '#fff4b0'); fg.addColorStop(1, '#c88a20');
+  f.fillStyle = fg;
+  f.beginPath(); f.moveTo(cx, tip - 4); f.lineTo(cx + 3, S - roofH + 1); f.lineTo(cx - 3, S - roofH + 1); f.closePath(); f.fill();
+  f.beginPath(); f.arc(cx, tip + 3, 3, 0, Math.PI * 2); f.fill();
+
+  // the door at its foot, warm light spilling from inside
+  const dw = Math.min(30, hw0 * 0.5), dh = dw * 1.5;
+  const door = new Path2D();
+  door.moveTo(cx - dw / 2, G); door.lineTo(cx - dw / 2, G - dh + dw / 2);
+  door.arc(cx, G - dh + dw / 2, dw / 2, Math.PI, 0); door.lineTo(cx + dw / 2, G); door.closePath();
+  f.lineWidth = 6;
+  f.strokeStyle = '#8a8070';
+  f.stroke(door);
+  const dg = f.createLinearGradient(0, G - dh, 0, G);
+  dg.addColorStop(0, '#2a1c14'); dg.addColorStop(0.55, '#8a4a1c'); dg.addColorStop(1, '#ffc860');
+  f.fillStyle = dg;
+  f.fill(door);
+
+  // the grass, a path from the door, then the dark the lobby's cards sit on
+  const gr = f.createLinearGradient(0, G, 0, H);
+  gr.addColorStop(0, '#86d860');
+  gr.addColorStop(Math.min(1, 14 / (H - G)), '#3c9848');
+  gr.addColorStop(Math.min(1, 60 / (H - G)), '#173a2a');
+  gr.addColorStop(Math.min(1, 220 / (H - G)), '#0c1622');
+  gr.addColorStop(1, '#0a0f1c');
+  f.fillStyle = gr;
+  f.fillRect(0, G, W, H - G);
+  const path = f.createLinearGradient(0, G, 0, G + 40);
+  path.addColorStop(0, 'rgba(232, 222, 196, 0.85)'); path.addColorStop(1, 'rgba(232, 222, 196, 0)');
+  f.fillStyle = path;
+  f.beginPath(); f.moveTo(cx - dw / 2, G); f.lineTo(cx + dw / 2, G); f.lineTo(cx + dw * 1.6, G + 40); f.lineTo(cx - dw * 1.6, G + 40); f.closePath(); f.fill();
+  f.save();
+  f.globalCompositeOperation = 'lighter';
+  const spill = f.createRadialGradient(cx, G, 0, cx, G, dw * 2.4);
+  spill.addColorStop(0, 'rgba(255, 200, 110, 0.45)'); spill.addColorStop(1, 'rgba(255, 170, 70, 0)');
+  f.fillStyle = spill;
+  f.fillRect(cx - dw * 2.4, G - dw * 2.4, dw * 4.8, dw * 4.8);
+  f.restore();
+
+  const starBottom = rowAt(40);
+  const stars = Array.from({ length: Math.round(W * starBottom / 1800) }, (_, i) => ({
+    x: hash(i * 3.1) * W, y: hash(i * 7.7 + 1) * starBottom, r: 0.5 + hash(i * 1.3) * 1.1, ph: hash(i + 0.5) * 6.3, big: hash(i * 1.9) < 0.08,
+  })).filter(st => Math.abs(st.x - cx) > hw1 + 14 || st.y < tip - 16);
+  const clouds = Array.from({ length: Math.max(3, Math.round(W / 140)) }, (_, i) => ({
+    x: hash(i * 5.3) * (W + 160), y: rowAt(8 + hash(i * 2.7) * 8), r: 12 + hash(i * 9.1) * 12, v: 4 + hash(i) * 5,
   }));
-  return { b, base: px.slice(), mask, stars, clouds, cx, tip: summitRow - roofH - 2, timer: 0 };
+  return { W, dpr, back, front, stars, clouds, cx, tip };
 }
 
-const CLOUD = ['#ffffff', '#e4ecf6', '#b8c8dc'].map(K);
-const STAR = ['#ffffff', '#c8d8ff', '#6878a8'].map(K);
-const RAY = ['#a0ffc8', '#40e0a0', '#209868'].map(K);
-
-function paint(s, t) {
-  const { b, base, mask, stars, clouds, cx, tip } = s, { W, px } = b;
-  px.set(base);
-  for (const [x, y, ph, big] of stars) {
-    const tw = (t + ph) % 40;
-    const c = tw < 3 ? STAR[0] : tw < 20 ? STAR[1] : STAR[2];
-    put(b, x, y, c);
-    if (big && tw < 6) { put(b, x - 1, y, STAR[2]); put(b, x + 1, y, STAR[2]); put(b, x, y - 1, STAR[2]); put(b, x, y + 1, STAR[2]); }
-  }
-  for (const c of clouds) {
-    const cxx = ((c.x + t * c.v) % (W + 40)) - 20;
-    for (let dy = -c.r; dy <= Math.ceil(c.r / 2); dy++) for (let dx = -c.r * 2; dx <= c.r * 2; dx++) {
-      const d = (dx * dx) / 4 + dy * dy * (dy < 0 ? 1 : 3);
-      if (d > c.r * c.r) continue;
-      const x = Math.round(cxx + dx), y = c.y + dy;
-      if (x < 0 || x >= W || y < 0 || mask[y * W + x]) continue;
-      px[y * W + x] = dy < -c.r / 2 ? CLOUD[0] : dy < c.r / 4 ? CLOUD[1] : CLOUD[2];
+function paint(ctx, s, t) {
+  const { W, dpr, back, front, stars, clouds, cx, tip } = s;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(back, 0, 0);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  for (const st of stars) {
+    const a = 0.45 + 0.55 * Math.max(0, Math.sin(t * 1.6 + st.ph));
+    ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+    ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill();
+    if (st.big) {
+      const k = (3 + 4 * a) * st.r;
+      ctx.fillStyle = `rgba(200, 220, 255, ${a * 0.8})`;
+      ctx.beginPath();
+      ctx.moveTo(st.x, st.y - k); ctx.quadraticCurveTo(st.x, st.y, st.x + k, st.y); ctx.quadraticCurveTo(st.x, st.y, st.x, st.y + k);
+      ctx.quadraticCurveTo(st.x, st.y, st.x - k, st.y); ctx.quadraticCurveTo(st.x, st.y, st.x, st.y - k);
+      ctx.fill();
     }
   }
-  // Rayquaza's green glow breathing over the summit
-  const k = 0.35 + 0.25 * Math.sin(t * 0.25);
-  for (let dy = -9; dy <= 9; dy++) for (let dx = -9; dx <= 9; dx++) {
-    const d = Math.sqrt(dx * dx + dy * dy) / 9, x = cx + dx, y = tip + dy;
-    if (d < 1 && y >= 0 && !mask[y * W + x] && bay(x, y) < (1 - d) * k) px[y * W + x] = RAY[d < 0.3 ? 0 : d < 0.6 ? 1 : 2];
+  for (const c of clouds) puff(ctx, ((c.x + t * c.v) % (W + 160)) - 80, c.y, c.r, ['#ffffff', '#d8e4f2'], 0.92);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(front, 0, 0);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // Rayquaza's green glow breathing over the summit, motes of it drifting up
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const k = 0.55 + 0.25 * Math.sin(t * 2.4), R = 46 + 10 * k;
+  const g = ctx.createRadialGradient(cx, tip, 0, cx, tip, R);
+  g.addColorStop(0, `rgba(170, 255, 210, ${0.75 * k})`); g.addColorStop(0.35, `rgba(60, 230, 150, ${0.35 * k})`); g.addColorStop(1, 'rgba(30, 160, 100, 0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - R, tip - R, R * 2, R * 2);
+  for (let i = 0; i < 7; i++) {
+    const life = (t * 0.35 + i / 7) % 1;
+    const x = cx + Math.sin(i * 2.1 + t * 0.8) * 14 * life, y = tip - life * 46;
+    ctx.fillStyle = `rgba(190, 255, 220, ${(1 - life) * 0.9})`;
+    ctx.beginPath(); ctx.arc(x, y, 1.6 * (1 - life) + 0.6, 0, Math.PI * 2); ctx.fill();
   }
-  put(b, cx, tip, RAY[0]);
-  flush(b);
+  ctx.restore();
 }

@@ -350,7 +350,7 @@ const ART = {
 /* Emoji with a smooth twin. Inside a [data-smooth-icons] part of the page (the Collection device and the windows it
    shares pages with) js/icons.js swaps these in instead of its pixel icons; cards keep theirs, to match battle. */
 export const SMOOTH_EMOJI = {
-  '⚔': 'swords', '👑': 'fame', '❤': 'heart', '🔄': 'turns', '🃏': 'moves', '💥': 'burst', '🩸': 'drop', '🎯': 'target',
+  '⚔': 'swords', '🔁': 'turns', '👑': 'fame', '❤': 'heart', '🔄': 'turns', '🃏': 'moves', '💥': 'burst', '🩸': 'drop', '🎯': 'target',
   '🎒': 'items', '🧴': 'items', '💴': 'cash', '🏪': 'mart', '🏥': 'center', '❓': 'help', '💻': 'pc', '⏫': 'ppup',
   '✨': 'sparkle', '💀': 'skull', '💎': 'gem', '🗼': 'tower', '⭐': 'star', '🏆': 'trophy', '💰': 'coin', '🔒': 'lock',
   '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap', '🗑': 'trash',

@@ -767,30 +767,31 @@
   <!-- the Safari Zone's prep window: today's run, the rules, your balls, then Start (js/safariprep.js) -->
   <!-- the Sky Pillar's lobby (js/towerprep.js): a screen of its own, the tower rising into space over the week's
        climber at its door, then your floors and Climb / Practice -->
-  <dialog id="tower-dialog" class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
+  <dialog id="tower-dialog" data-smooth-icons class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
     <canvas id="tower-sky" class="tower-sky" aria-hidden="true"></canvas>
     <div class="tower-top" id="tower-top">
       <h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2>
       <p class="tower-week" id="tower-week"></p>
     </div>
+    <div class="tower-pad" aria-hidden="true"></div>
     <img id="tower-mon" class="tower-mon pixel" alt="">
     <div class="tower-base" id="tower-base">
       <p class="tower-name" id="tower-name"></p>
       <div class="tower-stats" id="tower-best"></div>
       <ul class="tower-rules" id="tower-rules"></ul>
       <div class="tower-gorow">
-        <button type="button" class="pxb grey tower-back" id="tower-close" aria-label="Back"><span class="pxb-o"><span class="pxb-i"><svg viewBox="0 0 8 7" aria-hidden="true"><path d="M3 0h1v1h-1zM2 1h2v1h-2zM1 2h7v3h-7zM0 3h1v1h-1zM2 5h2v1h-2zM3 6h1v1h-1z"/></svg></span></span></button>
-        <button type="button" class="pxb green tower-go" id="tower-go"><span class="pxb-o"><span class="pxb-i">Climb</span></span></button>
+        <button type="button" class="tl-btn tl-round tower-back" id="tower-close" aria-label="Back"></button>
+        <button type="button" class="tl-btn tl-go tower-go" id="tower-go"><span class="tl-label">Climb</span></button>
       </div>
       <p class="tower-note" id="tower-note"></p>
       <div class="tower-row">
-        <button type="button" class="pxb orange small" id="tower-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>
-        <button type="button" class="pxb blue small" id="tower-practice"><span class="pxb-o"><span class="pxb-i">Practice</span></span></button>
+        <button type="button" class="tl-btn tl-pill tl-orange" id="tower-board">🏆 Leaderboard</button>
+        <button type="button" class="tl-btn tl-pill tl-blue" id="tower-practice">🎓 Practice</button>
       </div>
       <div class="tower-picks" id="tower-picks" hidden></div>
       <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js); its slot keeps the
            room a full plaque needs from the start, so the board answering late doesn't shove the screen about -->
-      <div class="tower-plaque-slot" id="tower-plaque-slot"><div class="tower-plaque" id="tower-plaque"><h3 class="tower-plaque-title">This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div></div>
+      <div class="tower-plaque-slot" id="tower-plaque-slot"><div class="tower-plaque" id="tower-plaque"><h3 class="tower-plaque-title">🏆 This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div></div>
     </div>
   </div></dialog>
 
@@ -830,7 +831,7 @@
   </div></dialog>
 
   <!-- the Safari Zone's daily leaderboard and the Sky Pillar's weekly one (js/leaderboard.js) -->
-  <dialog id="board-dialog" class="dialog board-dialog">
+  <dialog id="board-dialog" data-smooth-icons class="dialog board-dialog">
     <h2 tabindex="-1" autofocus id="board-title">🏆 Safari Leaderboard</h2>
     <div class="index-tabs board-tabs" role="tablist" aria-label="Day">
       <button class="index-tab board-tab" type="button" role="tab" data-day="0">Today</button>
