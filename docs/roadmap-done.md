@@ -1682,3 +1682,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   twinkling stars, glowing fireflies and pollen on their own pixels, soft beams on the Deep Woods' and the Ancient Tree's
   dithered light bands, haze settling only on the hills' colours (the far wood too, never the trees), a warm wash at dawn
   and dusk (cool moonlight at night), and the boss prelude's heartwood, sap, rays, burst and shock ring as bloom.
+
+- **Hybrid everywhere** (2026-10-07, the user liked its subtle difference): `?hybrid` now lights every biome, its
+  core moved to `js/hybrid-light.js` (the Clearing's beams and prelude stay in `js/hybrid-clearing.js` as hooks). Each
+  frame, every pixel in a look's `GLOWS` colour (bright ones only; not sun, chalk, steam...) blooms in three soft layers,
+  so lava, lanterns, crystals, runes and the preludes glow without per-biome code. The hour's tint is half strength
+  outside the Clearing and scaled by how much sky shows (Thornwood's roof keeps it out); the Depths get no tint.

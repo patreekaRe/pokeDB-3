@@ -9,11 +9,11 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Waiting on the user: pick the Clearing's look** (2026-10-07). Pixel (`?pixel`), hybrid (`?hybrid`, HD-2D:
-`js/hybrid-clearing.js`) and smooth (`?smooth`, `js/smooth-clearing.js`) are all on the live site, each saved per device.
-Once the user has compared them, ask whether to keep `?smooth` or remove `js/smooth-clearing.js` (one revert; the hybrid
-borrows its `glow()` / `dot()`, so move those two into `js/hybrid-clearing.js` first), and whether the hybrid should
-spread to the other biomes.
+**Waiting on the user: hybrid everywhere?** (2026-10-07). The user liked the hybrid's subtle light, so `?hybrid` now
+lights every biome (`js/hybrid-light.js`). Once they've played with it, ask whether it should become the default look
+(today it's opt-in per device), and whether to remove the smooth pilot (`?smooth`, `js/smooth-clearing.js`: one revert;
+the hybrid borrows its `glow()` / `dot()`, so move those two into `js/hybrid-light.js` first). A more detailed pixel
+style (finer pixels, every painter redone) was talked over and parked: a session or two a biome.
 
 **More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
 their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.

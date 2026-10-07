@@ -27,7 +27,7 @@ import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
 import { battleFx, calmFx } from './prefs.js';
 import { buildClearing, drawClearing, smoothPad } from './smooth-clearing.js';
-import { buildLight, drawLight } from './hybrid-clearing.js';
+import { buildLight, drawLight } from './hybrid-light.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;   // the scenery's clock: everything below is timed in these ticks a second
@@ -1282,10 +1282,10 @@ let shown = '';                 // which scene is up, so going back to it doesn'
 let floorAt = null, spanAt = null;   // a place whose floor line and counter the page sets (showPlaceScene's `floor` and `span`)
 let storm = { on: false, level: 0 };
 let smoothArt = null;   // the smooth painter's layers for the scene on screen (js/smooth-clearing.js), when it has one
-let hybridArt = null;   // the hybrid look's still light for the scene on screen (js/hybrid-clearing.js), when it has one
+let hybridArt = null;   // the hybrid look's still light for the scene on screen (js/hybrid-light.js), when it has one
 
-/* The Clearing's other looks (2026-10-07), each on this device for good: ?smooth paints it smooth (the pilot), ?hybrid
-   keeps the pixels and lays smooth light over them (HD-2D), ?pixel goes back to plain pixels. */
+/* The other looks (2026-10-07), each on this device for good: ?smooth paints the Clearing smooth (the pilot), ?hybrid
+   keeps every biome's pixels and lays smooth light over them (HD-2D), ?pixel goes back to plain pixels. */
 const SMOOTH_KEY = 'pokedb-smooth-scenery', HYBRID_KEY = 'pokedb-hybrid-scenery';
 try {
   const q = new URLSearchParams(location.search);
@@ -1293,6 +1293,7 @@ try {
   if (q.has('hybrid')) { localStorage.setItem(HYBRID_KEY, '1'); localStorage.removeItem(SMOOTH_KEY); }
   if (q.has('pixel')) { localStorage.removeItem(SMOOTH_KEY); localStorage.removeItem(HYBRID_KEY); }
 } catch { /* no storage: the pixel look */ }
+const HYBRID_BIOMES = new Set(['hills', 'shrine', 'volcano', 'depths', 'ruins', 'thornwood', 'savanna', 'safari']);
 const smoothOn = () => { try { return localStorage.getItem(SMOOTH_KEY) === '1'; } catch { return false; } };
 const hybridOn = () => { try { return localStorage.getItem(HYBRID_KEY) === '1'; } catch { return false; } };
 
@@ -1597,7 +1598,8 @@ function paintScene(key, raw, floor = null, span = null) {
   hybridArt = null;
   const clearing = !!raw && raw.backdrop === 'hills' && !raw.prop;   // the Clearing's own places, not an event's room in it
   document.body.classList.toggle('smooth-scene', clearing && smoothOn());
-  document.body.classList.toggle('hybrid-scene', clearing && !smoothOn() && hybridOn());
+  const lit = !!raw && HYBRID_BIOMES.has(raw.backdrop) && !raw.prop;   // a biome's own places, not an event's room in it
+  document.body.classList.toggle('hybrid-scene', lit && !(clearing && smoothOn()) && hybridOn());
   if (!raw) { S = null; return; }
   S = colours(raw);
   S.raw = raw;
@@ -1714,9 +1716,10 @@ function resize() {
     const light = $('scene-light'), dpr = Math.min(1.5, devicePixelRatio || 1);
     light.width = Math.max(1, Math.round(innerWidth * dpr));
     light.height = Math.max(1, Math.round(innerHeight * dpr));
-    const far = new Map([...S.hills.map(c => [c, 0.55]), ...S.farHills.map(c => [c, 1])]);
+    const far = new Map([...(S.hills || []).map(c => [c, 0.55]), ...(S.farHills || []).map(c => [c, 1])]);
     hybridArt = buildLight({ W, H, horizon, cw: light.width, ch: light.height, raw: S.raw, time: timeOfDay(), base, far,
-      sun: S.light === 'sun' ? life.sun : null, moon: S.light === 'moon' ? life.moon : null });
+      sun: (S.light === 'sun' || S.light === 'haze') && S.sun ? life.sun : null, moon: S.light === 'moon' ? life.moon : null, glows: GLOWS, abgr,
+      skyShare: sky.reduce((n, v) => n + (v ? 1 : 0), 0) / (W * H) });
   }
   draw();
   dispatchEvent(new Event('scenepaint'));   // the Center's tap spots follow the scene (centerSpots)
@@ -6206,7 +6209,7 @@ function draw() {
   last = tick;
 }
 
-/** The hybrid look's light over this frame's pixels (js/hybrid-clearing.js). */
+/** The hybrid look's light over this frame's pixels (js/hybrid-light.js). */
 function drawHybrid(t, dx, dy) {
   const seen = (disc, ...lit) => {   // how much of the sun or moon a cloud or a tree isn't hiding
     if (!disc) return 0;
@@ -6220,8 +6223,8 @@ function drawHybrid(t, dx, dy) {
   };
   const prelude = bossPrelude && hasPrelude() ? { phase: bossPrelude.phase, age: Math.max(0, t - bossPrelude.at) } : null;
   drawLight($('scene-light').getContext('2d'), hybridArt, {
-    t, DT, life, storm, prelude, calm: calmFx(), dx, dy,
-    sunSeen: hybridArt.sun ? seen(hybridArt.sun, S.sun[0], S.sun[1]) : 0,
+    t, DT, life, storm, prelude, calm: calmFx(), dx, dy, px,
+    sunSeen: hybridArt.sun ? seen(hybridArt.sun, ...S.sun) : 0,
     moonSeen: hybridArt.moon ? seen(hybridArt.moon, abgr('#f8f4d8'), abgr('#e0dab8')) : 0,
     open: (x, y) => !!sky[y * W + x],
   });
