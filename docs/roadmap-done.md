@@ -1616,3 +1616,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   1/5/10/15/20 different rares (76 exist), each area's page and its rares, a guardian badge per floor 10-100 (25F / 75F
   gone: 20F / 70F prove them again at load) and 1-50 guardians in all (`tower.guardians`). "Buy 10 Master Balls" became
   "throw it 10 times", since it's one buy with a throw a week (`balls.masterThrows`). The Badge Case's rows show n/m.
+- **Official Gen 5 sprites only** (2026-10-07, the user's call): the Sunken Ruins' and Thornwood's 36 Gen 6-9 Pokémon
+  (fan-made Showdown GIFs) became Safari Pokémon, shared like the Safari's borrowed wilds, each taking its slot's biome,
+  type, numbers and Pokédex number, with new move names and Pokédex lines (the Ruins: Corphish... Granbull; Thornwood:
+  Simisage... Porygon2). Their main-biome def wins over `safariMonDef()`, Safari included (so there they now use the
+  biome's numbers, like the borrowed 44, not a template's), with the Safari line kept as `safariLine`. New cries at
+  -13 LUFS (Herdier -14.3, limiter-bound); `RUN_SAVE_VERSION` 9. No new bot check: nothing the bot reads changed (HP,
+  moves, kinds, adds and move types are the old ones), so part a's and c's numbers stand.
