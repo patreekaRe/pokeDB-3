@@ -10,7 +10,8 @@ screen the map scrolls in (`showMap()` centres your sprite); `.mdex-dock`, five 
 Relics, Items, Map key, Trainer, with the counts mirrored from the pocket tabs). A button opens the Bag on its pocket just
 above the bar (lit green while open); again closes it. There the top bar's Bag button and the Bag's own tabs are hidden,
 and relics fly into the Relics button (`bagSpot()`). Wider than 720px the device stands under the top bar at up to
-1100px. In a climb the wrappers are `display: contents` and the tower's look is unchanged.
+1100px. In a climb the hinge and glass step aside (`display: contents`) and the window and dock become a bar along the
+bottom (see `sky-pillar.md`).
 
 **The top LCD** (same day, the user's ask: "like the Center's monitor, but Pokédex-like and clean"): the window is a grey
 bezel round one green Pokédex LCD (`.run-card` on `--lcd` / `--lcd-ink`, a faint pixel grid), the run card in its ink

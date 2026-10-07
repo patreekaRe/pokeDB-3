@@ -4423,7 +4423,7 @@ body.scene-peek #backdrop { display: none; }
 .tw-door.guardian .tw-door-tag { min-width: 40px; height: 32px; font-size: 1.2rem; background: linear-gradient(#fff4b8, #f8c830); }
 @keyframes twTag { 50% { translate: -50% -6px; } }
 /* the stone plate a floor's number is stamped on */
-.tw-plate { position: absolute; left: 50%; top: calc(var(--topbar-h, 52px) + 132px); translate: -50% 0; display: grid; justify-items: center; gap: 4px; min-width: 132px; padding: 8px 16px 9px;
+.tw-plate { position: absolute; left: 50%; top: max(20px, calc(env(safe-area-inset-top) + 12px)); translate: -50% 0; display: grid; justify-items: center; gap: 4px; min-width: 132px; padding: 8px 16px 9px;
   border: 3px solid #2a2622; border-radius: 6px; background: linear-gradient(#a8a090, #8a8274 55%, #6e6758); color: #2e2a24;
   box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.35), inset -2px -3px 0 rgba(0, 0, 0, 0.25), 3px 4px 0 rgba(0, 0, 0, 0.45); pointer-events: none; z-index: 1; }
 .tw-plate-num { font-size: 1.35rem; letter-spacing: 2px; color: #3a342c; text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4), -1px -1px 0 rgba(0, 0, 0, 0.35); }
@@ -4434,7 +4434,7 @@ body.scene-peek #backdrop { display: none; }
 @keyframes twStamp { 0% { scale: 1.9; opacity: 0; rotate: -6deg; } 45% { scale: 0.92; opacity: 1; rotate: 1deg; } 70% { scale: 1.04; } 100% { scale: 1; rotate: 0deg; } }
 @keyframes twCarve { 0%, 30% { color: transparent; text-shadow: none; } }
 /* the altitude gauge: the sky's colours by height, a tick every 10 floors, your floor and your best */
-.tw-gauge { position: absolute; left: 4px; top: calc(var(--topbar-h, 52px) + 126px); bottom: 70px; width: 12px; pointer-events: none; z-index: 1; }
+.tw-gauge { position: absolute; left: 4px; top: max(36px, calc(env(safe-area-inset-top) + 28px)); bottom: calc(var(--tw-bar-h, 240px) + 18px); width: 12px; pointer-events: none; z-index: 1; }
 .tw-gauge-cap { position: absolute; top: -16px; left: 50%; translate: -50% 0; font-size: 0.45rem; color: #f8f0d8; text-shadow: 1px 1px 0 #000; }
 .tw-gauge-track { position: absolute; inset: 0; border: 2px solid #1a1620; border-radius: 6px; box-shadow: 0 0 0 2px #8a8274, 2px 3px 0 2px rgba(0, 0, 0, 0.4); }
 .tw-tick { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, 0.55); }
@@ -4769,8 +4769,8 @@ body.scene-peek #backdrop { display: none; }
   padding: var(--topbar-h) 0 0;
   overflow: hidden;
 }
-#map-screen.tower :is(.mdex-window, .mdex-hinge, .mdex-glass) { display: contents; }
-#map-screen.tower :is(.mdex-dock, .mdex-hinge > .pdx-lens, .mdex-lights) { display: none; }
+#map-screen.tower :is(.mdex-hinge, .mdex-glass) { display: contents; }
+#map-screen.tower :is(.mdex-hinge > .pdx-lens, .mdex-lights) { display: none; }
 #map-screen:not(.tower) .mdex-window {
   position: relative; flex: none; margin: 2px 10px 0; padding: 6px 6px 4px; border-radius: 16px 16px 8px 8px;
   box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 8px 14px rgba(0, 0, 0, 0.3), 0 0 0 100vmax var(--shell);
@@ -4826,24 +4826,24 @@ body.scene-peek #backdrop { display: none; }
 }
 .mdex-count:empty { display: none; }
 /* the news box and the Bag sit just over the menu bar; the Bag's own tabs are the menu bar there, and the top bar's Bag goes */
-body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-bottom { bottom: calc(max(10px, env(safe-area-inset-bottom)) + 70px); }
-body[data-screen="map-screen"]:has(#map-screen:not(.tower)) #bag-btn { display: none; }
-body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) {
+body[data-screen="map-screen"] .map-bottom { bottom: calc(max(10px, env(safe-area-inset-bottom)) + 70px); }
+body[data-screen="map-screen"] #bag-btn { display: none; }
+body[data-screen="map-screen"] .bag:not([hidden]) {
   position: fixed; top: auto; right: auto; left: 50%; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 66px); translate: -50% 0;
   max-height: calc(100dvh - var(--topbar-h) - max(10px, env(safe-area-inset-bottom)) - 80px); animation: bagRise 0.18s ease-out;
 }
-body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-pockets { display: none; }
-body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-head { margin-bottom: 10px; }
+body[data-screen="map-screen"] .bag-pockets { display: none; }
+body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 @keyframes bagRise { from { transform: translateY(24px); opacity: 0; } }
 /* the top of the device is one green LCD (the user's ask, 2026-10-07: like the Center's monitor, but the Pokédex's):
    the top bar's floor and coins and the run card share it, in the LCD's ink, split by a dotted rule. The window grows
    up behind the (transparent, fixed) top bar, so the bar's buttons sit on the screen. */
+#map-screen .mdex-window { --lcd: #c2dc9a; --lcd-lo: #a8c97e; --lcd-ink: #1f3a14; --lcd-dim: #5a7a40; }
 #map-screen:not(.tower) .mdex-window {
-  --lcd: #c2dc9a; --lcd-lo: #a8c97e; --lcd-ink: #1f3a14; --lcd-dim: #5a7a40;
   padding: 7px; border-radius: 18px 18px 10px 10px; background: #e4e4ea;
   box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 -4px 0 rgba(0, 0, 0, 0.14), 0 0 0 100vmax var(--shell);
 }
-#map-screen:not(.tower) .run-card {
+#map-screen .run-card {
   gap: 16px; padding: 6px 10px 8px; border: 3px solid #2a2a30; border-radius: 8px 8px 8px 22px;
   background:
     repeating-linear-gradient(0deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
@@ -4852,19 +4852,19 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-head { margin-b
   box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), inset 0 0 18px rgba(31, 58, 20, 0.12);
   color: var(--lcd-ink);
 }
-#map-screen:not(.tower) .run-sprite { filter: drop-shadow(0 3px 0 rgba(31, 58, 20, 0.22)); }
-#map-screen:not(.tower) .run-mon::before {   /* a shadow pad under your Pokémon, like the Pokédex's entry screens */
+#map-screen .run-sprite { filter: drop-shadow(0 3px 0 rgba(31, 58, 20, 0.22)); }
+#map-screen .run-mon::before {   /* a shadow pad under your Pokémon, like the Pokédex's entry screens */
   content: ""; position: absolute; left: 10%; right: 10%; bottom: 0; height: 12px; border-radius: 50%; background: rgba(31, 58, 20, 0.16);
 }
-#map-screen:not(.tower) .run-info { text-shadow: none; }
-#map-screen:not(.tower) .run-info strong { color: var(--lcd-ink); font-weight: 400; }
-#map-screen:not(.tower) .run-bars .gb-hp-tag { border-color: var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); box-shadow: none; }
-#map-screen:not(.tower) .run-bars :is(.gb-hp-track, .gb-exp) { border-color: var(--lcd-ink); background: rgba(255, 255, 255, 0.35); box-shadow: none; }
-#map-screen:not(.tower) .run-bars .gb-exp-fill { background: #2f6cc8; }
-#map-screen:not(.tower) .run-foot .gb-hp-num { color: var(--lcd-ink); font-weight: 400; }
-#map-screen:not(.tower) .run-foot .level-chip { border: 2px solid var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); }
-#map-screen:not(.tower) .run-foot .level-chip.replay { background: none; color: var(--lcd-ink); }
-#map-screen:not(.tower) .run-ability { border-width: 2px; }
+#map-screen .run-info { text-shadow: none; }
+#map-screen .run-info strong { color: var(--lcd-ink); font-weight: 400; }
+#map-screen .run-bars .gb-hp-tag { border-color: var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); box-shadow: none; }
+#map-screen .run-bars :is(.gb-hp-track, .gb-exp) { border-color: var(--lcd-ink); background: rgba(255, 255, 255, 0.35); box-shadow: none; }
+#map-screen .run-bars .gb-exp-fill { background: #2f6cc8; }
+#map-screen .run-foot .gb-hp-num { color: var(--lcd-ink); font-weight: 400; }
+#map-screen .run-foot .level-chip { border: 2px solid var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); }
+#map-screen .run-foot .level-chip.replay { background: none; color: var(--lcd-ink); }
+#map-screen .run-ability { border-width: 2px; }
 @media (max-width: 720px) {
   #map-screen:not(.tower) { padding-top: 6px; }
   #map-screen:not(.tower) .run-card {
@@ -4889,6 +4889,46 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-head { margin-b
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .coin-pill { font-size: 1.1rem; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .shop-btn { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
 }
+/* the Sky Pillar's climb has the same device, only as a bar along the bottom (the user's call, 2026-10-07: you climb up,
+   so the screen's top is for the tower): the LCD with the top bar's floor and coins over the run card, then the pockets.
+   js/tower.js measures it (--tw-lcd-y, --tw-bar-h) to lay the top bar on the LCD and stand the floor just above it. */
+#map-screen.tower {
+  position: fixed; inset: 0; z-index: 1; max-width: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: center; overflow: hidden;
+}
+#map-screen.tower :is(.mdex-window, .mdex-dock) { position: relative; z-index: 2; width: min(100%, 640px); background: var(--shell); }
+#map-screen.tower .mdex-window {
+  padding: 10px 10px 12px; border-radius: 20px 20px 0 0;
+  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -6px 18px rgba(0, 0, 0, 0.45);
+}
+#map-screen.tower .run-card {
+  padding-top: calc(var(--topbar-h) - 2px); margin: 10px 10px 0;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), inset 0 0 18px rgba(31, 58, 20, 0.12), 0 0 0 7px #e4e4ea, 0 0 0 10px var(--shell-rim);
+  background-image:
+    radial-gradient(circle, rgba(31, 58, 20, 0.35) 1px, transparent 1.5px),
+    repeating-linear-gradient(0deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 140% at 30% 0%, var(--lcd), var(--lcd-lo));
+  background-size: 6px 6px, auto, auto, auto;
+  background-position: 2px calc(var(--topbar-h) - 9px), 0 0, 0 0, 0 0;
+  background-repeat: repeat-x, repeat, repeat, no-repeat;
+}
+#map-screen.tower .mdex-dock {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 4px 12px max(10px, env(safe-area-inset-bottom));
+  box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
+}
+body[data-screen="map-screen"]:has(#map-screen.tower) .topbar {
+  position: fixed; left: 50%; right: auto; top: calc(var(--tw-lcd-y, 70vh) + 3px); width: min(100% - 46px, 594px); translate: -50% 0;
+  height: calc(var(--topbar-h) - 12px); padding: 0 10px 0 8px;
+}
+body[data-screen="map-screen"]:has(#map-screen.tower) .topbar::before { display: none; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .dex-sprite { width: 32px; height: 32px; }
+body[data-screen="map-screen"]:has(#map-screen.tower) :is(.home-dex, .shop-btn) { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
+body[data-screen="map-screen"]:has(#map-screen.tower) :is(.floor-tag, .coin-pill) { color: #1f3a14; text-shadow: none; filter: none; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .floor-tag b { font-size: 1.15rem; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs { filter: none; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs i { width: 16px; height: 16px; background: #1f3a14; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .coin-pill { font-size: 1.1rem; }
 /* wider than a phone the device stands on the scenery under the top bar, the map at its own tile size inside */
 @media (min-width: 721px) {
   #map-screen:not(.tower) {

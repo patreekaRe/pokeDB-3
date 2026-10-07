@@ -91,7 +91,11 @@ is the screen and the overlay that use them.
   a bronze plaque, torches); floor 100 the summit, open to the sky (broken pillars, an altar where Rayquaza comes down). The
   spiral stair (`stairWell()`, `stairSteps()`) winds round a newel at the right of every floor but the top.
 - **The climb screen** (`renderTower()`): `#tower-view` fills the map screen behind the run card (the sign and the map box
-  are hidden, `#map-screen.tower`). The floor you stand on sits 30% up the screen; its doors are buttons (`.tw-door`) with
+  are hidden, `#map-screen.tower`). Since 2026-10-07 (the user's call: you climb up, so the top is for the tower) the run card
+  and top bar sit in the map's Pokédex bar along the bottom: the green LCD (floor and coins over the run card) and the Bag's
+  pockets under it (css/screens.css, "the Sky Pillar's climb has the same device"). `measureBar()` in `js/tower.js` sets
+  `--tw-lcd-y` (where the top bar lies on the LCD) and `--tw-bar-h` (the gauge's floor), re-measured by a ResizeObserver.
+  The floor you stand on sits 14% of the way up the sky above that bar (`STAND`); the plate and gauge are at the top; its doors are buttons (`.tw-door`) with
   the room's icon on a hanging sign. A tap: your Pokémon (its front GIF, `#tw-mon`) walks to the door, it opens and the
   Pokémon goes in, then `enterNode()`. Back on the map with the floor above to pick, it comes out of the same door (`last`),
   a beaten foe's statue rises out of the floor (`statue()`: its sprite cropped to its pose in four greys), it walks to the

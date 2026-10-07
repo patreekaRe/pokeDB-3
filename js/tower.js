@@ -21,7 +21,7 @@ const FPS = 30;       // the art's own clock (flicker, drift); the screen itself
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ease = (v) => (v < 0.5 ? 2 * v * v : 1 - (-2 * v + 2) ** 2 / 2);
 const pixel = () => (innerWidth <= 720 ? 3 : 4);
-const STAND = 0.3;   // where the floor you stand on sits, from the screen's bottom
+const STAND = 0.14;  // where the floor you stand on sits, from the top of the bottom bar (the run card and pockets)
 const BANNER_OF = (flight) => (flight >= 9 ? 'top' : flight % 3);
 
 let V = null;        // the screen: { b, lay, P, W, H }
@@ -48,7 +48,19 @@ function layout() {
   placeGauge();
 }
 
-const standY = (floor) => floor * FH + SLAB - Math.round(V.H * STAND);
+// The bar along the bottom: its height and its LCD's top, as CSS variables for the top bar and the gauge (css/screens.css)
+let barH = 0;
+function measureBar() {
+  const win = document.querySelector('#map-screen.tower .mdex-window');
+  if (!win || !win.offsetHeight) return false;
+  const top = win.getBoundingClientRect().top, h = Math.round(innerHeight - top);
+  document.documentElement.style.setProperty('--tw-lcd-y', `${Math.round(win.querySelector('.run-card').getBoundingClientRect().top)}px`);
+  document.documentElement.style.setProperty('--tw-bar-h', `${h}px`);
+  if (h === barH) return false;
+  barH = h;
+  return true;
+}
+const standY = (floor) => floor * FH + SLAB - Math.round((barH + (innerHeight - barH) * STAND) / V.P);
 const surfRow = (floor) => V.H - 1 - (floor * FH + SLAB - 1 - camY);   // the screen row a floor's feet stand on
 
 /** What each floor holds, for the painter: doors, light, its guardian hall. */
@@ -301,6 +313,8 @@ export function renderTower({ map, current, flight, trail, best, sprite, onPick 
   const view = $('tower-view');
   view.hidden = false;
   $('map-screen').classList.add('tower');
+  watchBar();
+  measureBar();
   preloadSounds('door', 'stamp', 'confirm');
   const here = current && map.byId[current];
   const row = here ? here.floor + 1 : 0;
@@ -598,8 +612,18 @@ export async function towerFall({ floor, trail, sprite }) {
   return () => { fx.hidden = true; fx.classList.remove('dark', 'flash', 'shake'); img.style.rotate = ''; };
 }
 
-addEventListener('resize', () => {
+function relayout() {
   if (!S || $('tower-view').hidden) return;
+  measureBar();
   layout();
   if (!busy) { camY = standY(S.floorNow); mon.floor = S.floorNow; mon.x = V.lay.stairX + 1; paint(); doorButtons(); }
-});
+}
+addEventListener('resize', relayout);
+
+// the bar grows when the run card does (a Blaze capsule, a long name) or first shows: the floor keeps standing on it
+let barWatch = null;
+function watchBar() {
+  if (barWatch) return;
+  barWatch = new ResizeObserver(() => { if (measureBar()) relayout(); });
+  barWatch.observe(document.querySelector('#map-screen .mdex-window'));
+}
