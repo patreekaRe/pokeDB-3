@@ -1,12 +1,12 @@
 /* ============================================================
    towerprep.js  -  the Sky Pillar's lobby, between the title's Sky
-   Pillar gem and a climb (js/data/tower.js, roadmap item 18): a screen
-   of its own, the tower rising from the grass into space over the
-   week's climber at its door, then your floors, three short rules,
-   Climb (the week's starter; its first try counts for the leaderboard)
-   or Practice with a starter of your own. Smooth, not pixel art (the
-   user's call, 2026-10-07): the backdrop is painted at full resolution
-   and its icons are js/smooth-icons.js's.
+   Pillar gem and a climb (js/data/tower.js, roadmap item 18): the
+   Pokédex device, like the map (the user's call, 2026-10-07): a window
+   onto the tower rising from the grass into space over the week's
+   climber at its door, an LCD with your floors, three short rules and
+   the week's top climbers, then A to Climb (the week's starter; its
+   first try counts for the leaderboard) or Practice with a starter of
+   your own. The tower is painted smooth at full resolution.
    ============================================================ */
 
 import { towerWeekly, FLIGHT, TOP_FLOOR } from './data/tower.js';
@@ -18,19 +18,20 @@ import { openLeaderboard, towerTop } from './leaderboard.js';
 import { playSound } from './audio.js';
 import { hash, mix, skyHex } from './tower-art.js';
 import { smoothIcon } from './smooth-icons.js';
+import { segInto } from './statsdex.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 
 let actions = {};
 
 const RULES = [
-  ['🗼', `${TOP_FLOOR} floors`],
-  ['👹', `Guardian every ${FLIGHT}`],
-  ['👑', 'Boss at the top'],
+  ['tower', `${TOP_FLOOR} floors`],
+  ['boss', `Guardian /${FLIGHT}`],
+  ['fame', 'Boss on top'],
 ];
 
 export function initTowerPrep(handlers) {
   actions = handlers;
-  $('tower-close').append(smoothIcon('back'));
+  for (const node of document.querySelectorAll('#tower-dialog [data-icon]')) node.append(smoothIcon(node.dataset.icon));
   $('tower-go').addEventListener('click', () => { closeDialog('tower-dialog'); actions.onStart(null); });
   $('tower-board').addEventListener('click', () => openLeaderboard(0, 'tower'));
   $('tower-close').addEventListener('click', () => { playSound('cancel', 'confirm'); closeDialog('tower-dialog'); });
@@ -43,7 +44,6 @@ export function initTowerPrep(handlers) {
   $('tower-dialog').addEventListener('close', stopSky);
   // the grass line is measured off the layout, so repaint whenever anything above or around it moves
   const relayout = new ResizeObserver(() => { if ($('tower-dialog').open) startSky(); });
-  relayout.observe($('tower-page'));
   relayout.observe($('tower-top'));
 }
 
@@ -83,9 +83,15 @@ function plaqueRow(e, i) {
 
 const weekLabel = (week) => new Date(`${week}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-function stat(label, value, icon, kind) {
-  const s = el('span', `tower-stat ${kind}`);
-  s.append(smoothIcon(icon, 'tower-stat-icon'), el('b', '', value), el('span', '', label));
+/** A readout on the LCD: an icon and label over the floor in seven-segment digits, like the Stats app's. */
+function stat(label, value, icon) {
+  const s = el('div', 'tower-stat');
+  const head = el('span', 'tower-stat-label');
+  head.append(smoothIcon(icon), el('span', '', label));
+  const digits = el('span', 'sdx-seg');
+  segInto(digits, value);
+  digits.setAttribute('aria-label', value);
+  s.append(head, digits);
   return s;
 }
 
@@ -100,14 +106,14 @@ export function openTowerPrep() {
   mon.src = spriteUrl(weekly.starter, 'front', 0);
   mon.alt = name;
   const line = $('tower-name');
-  line.replaceChildren(el('strong', '', name), el('span', '', " is this week's climber"));
-  $('tower-best').replaceChildren(stat('This week', first ? '-' : `${thisWeek ? t.best : 0}F`, 'tower', 'week'), stat('Best ever', `${t.bestEver || 0}F`, 'star', 'ever'));
+  line.replaceChildren(el('strong', '', name), el('span', '', "This week's climber"));
+  $('tower-best').replaceChildren(stat('This week', first ? '---' : `${thisWeek ? t.best : 0}F`, 'tower'), stat('Best ever', `${t.bestEver || 0}F`, 'star'));
   $('tower-rules').replaceChildren(...RULES.map(([icon, text]) => {
     const li = el('li', '');
-    li.append(el('span', 'tower-rule-icon', icon), el('span', '', text));
+    li.append(smoothIcon(icon), el('span', '', text));
     return li;
   }));
-  $('tower-go').querySelector('.tl-label').textContent = first ? '🏆 Climb' : '🔁 Climb again';
+  $('tower-go-label').textContent = first ? 'Climb' : 'Again';
   $('tower-note').textContent = first ? 'Your first climb this week counts. No perks.' : 'Only your first climb this week counts.';
   // practice: any starter you own but Mewtwo (it would trivialise the climb)
   const picks = $('tower-picks');
@@ -126,7 +132,11 @@ export function openTowerPrep() {
   }));
   openDialog('tower-dialog');
   engrave();
-  $('tower-dialog').scrollTop = 0;
+  $('tower-base').scrollTop = 0;
+  const win = $('tower-top');
+  win.classList.remove('power-on');
+  void win.offsetWidth;
+  win.classList.add('power-on');
   startSky();
 }
 
@@ -141,12 +151,11 @@ function stopSky() {
 
 function startSky() {
   stopSky();
-  const page = $('tower-page'), canvas = $('tower-sky');
-  const top = page.getBoundingClientRect().top;
-  const G = Math.round($('tower-base').getBoundingClientRect().top - top + 8);   // the grass line, just over the climber's name
-  page.style.setProperty('--ground', `${G}px`);
+  const page = $('tower-top'), canvas = $('tower-sky');
   const W = page.clientWidth, H = page.clientHeight;
-  const summit = Math.max(24, Math.round($('tower-week').getBoundingClientRect().bottom - top + 44));
+  const G = H - Math.round(Math.max(14, H * 0.07));   // the grass line, a strip of lawn under the climber
+  page.style.setProperty('--ground', `${G}px`);
+  const summit = Math.round(Math.max(34, H * 0.14));
   const dpr = Math.min(2, devicePixelRatio || 1);
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);

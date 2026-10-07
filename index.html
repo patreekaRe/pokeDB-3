@@ -785,33 +785,38 @@
 
   <!-- the cloud save (js/cloud.js): only once js/cloud-config.js holds a Firebase project -->
   <!-- the Safari Zone's prep window: today's run, the rules, your balls, then Start (js/safariprep.js) -->
-  <!-- the Sky Pillar's lobby (js/towerprep.js): a screen of its own, the tower rising into space over the week's
-       climber at its door, then your floors and Climb / Practice -->
+  <!-- the Sky Pillar's lobby (js/towerprep.js): the Pokédex device, like the map: a lid with the LCD title, a window
+       onto the tower rising into space over the week's climber at its door, the screen (your floors, the rules, the
+       week's top climbers), then the hardware: Leaderboard / Practice, B to go back, A to climb -->
   <dialog id="tower-dialog" data-smooth-icons class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
-    <canvas id="tower-sky" class="tower-sky" aria-hidden="true"></canvas>
-    <div class="tower-top" id="tower-top">
-      <h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2>
-      <p class="tower-week" id="tower-week"></p>
+    <div class="tdev-lid">
+      <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+      <div class="cdev-lcd"><h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2><p class="tower-week" id="tower-week"></p></div>
     </div>
-    <div class="tower-pad" aria-hidden="true"></div>
-    <img id="tower-mon" class="tower-mon pixel" alt="">
-    <div class="tower-base" id="tower-base">
+    <div class="tower-window" id="tower-top">
+      <canvas id="tower-sky" class="tower-sky" aria-hidden="true"></canvas>
+      <div class="tower-pad" aria-hidden="true"></div>
+      <img id="tower-mon" class="tower-mon pixel" alt="">
+    </div>
+    <div class="tdev-glass"><div class="tower-base" id="tower-base">
       <p class="tower-name" id="tower-name"></p>
       <div class="tower-stats" id="tower-best"></div>
       <ul class="tower-rules" id="tower-rules"></ul>
-      <div class="tower-gorow">
-        <button type="button" class="tl-btn tl-round tower-back" id="tower-close" aria-label="Back"></button>
-        <button type="button" class="tl-btn tl-go tower-go" id="tower-go"><span class="tl-label">Climb</span></button>
-      </div>
       <p class="tower-note" id="tower-note"></p>
-      <div class="tower-row">
-        <button type="button" class="tl-btn tl-pill tl-orange" id="tower-board">🏆 Leaderboard</button>
-        <button type="button" class="tl-btn tl-pill tl-blue" id="tower-practice">🎓 Practice</button>
-      </div>
       <div class="tower-picks" id="tower-picks" hidden></div>
-      <!-- the lobby's plaque: the week's top climbers, engraved (engrave() in js/towerprep.js); its slot keeps the
-           room a full plaque needs from the start, so the board answering late doesn't shove the screen about -->
-      <div class="tower-plaque-slot" id="tower-plaque-slot"><div class="tower-plaque" id="tower-plaque"><h3 class="tower-plaque-title">🏆 This week's top climbers</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div></div>
+      <!-- the week's top climbers (engrave() in js/towerprep.js); its slot keeps the room a full list needs from the
+           start, so the board answering late doesn't shove the screen about -->
+      <div class="tower-plaque-slot" id="tower-plaque-slot"><div class="tower-plaque" id="tower-plaque"><h3 class="tower-plaque-title">🏆 Top climbers this week</h3><ol class="tower-plaque-list" id="tower-plaque-list"></ol></div></div>
+    </div></div>
+    <div class="tdev-pad">
+      <div class="tdev-keys">
+        <button type="button" class="mdex-btn" id="tower-board"><span class="mdex-ico" data-icon="trophy"></span><span class="mdex-label">Ranks</span></button>
+        <button type="button" class="mdex-btn" id="tower-practice"><span class="mdex-ico" data-icon="cap"></span><span class="mdex-label">Practice</span></button>
+      </div>
+      <div class="tdev-ab">
+        <span class="tdev-key b"><button type="button" class="cdev-btn" id="tower-close" aria-label="Back">B</button>Back</span>
+        <span class="tdev-key a"><button type="button" class="cdev-btn" id="tower-go" aria-labelledby="tower-go-label">A</button><span id="tower-go-label">Climb</span></span>
+      </div>
     </div>
   </div></dialog>
 

@@ -76,7 +76,7 @@ function enemyImg(id, cls) {
 
 // segments a b c d e f g, lit per character
 const SEGS = {
-  0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg', '-': 'g', ' ': '',
+  0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg', '-': 'g', ' ': '', F: 'aefg',
 };
 const SHAPE = {
   a: 'M2.4 1h7.2l-1.4 1.6H3.8Z', d: 'M2.4 19h7.2l-1.4-1.6H3.8Z', g: 'M2.6 10l1.2-.9h4.4l1.2.9-1.2.9H3.8Z',
@@ -86,7 +86,7 @@ const SHAPE = {
 const NS = 'http://www.w3.org/2000/svg';
 
 /** `text` as LCD digits: every segment drawn, the unlit ones a faint ghost like a real panel. */
-function segInto(node, text) {
+export function segInto(node, text) {
   node.replaceChildren();
   for (const ch of String(text)) {
     if (ch === ',') { node.append(el('span', 'seg-comma', ',')); continue; }

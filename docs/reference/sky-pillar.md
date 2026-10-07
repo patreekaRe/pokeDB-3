@@ -10,20 +10,20 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
 
 - **Opens** once you've won a run (`towerOpen()`): the title's Game Modes sub-menu has a Sky Pillar gem (`pillarGem()` in
   `js/title.js`; greyed with "Win a run" until then, "Best F<n>" after), opening `#tower-dialog` (`js/towerprep.js`).
-- **The lobby** (2026-10-05, the user's call: the old text window was too wordy): `#tower-dialog` is a full screen of its
-  own (`.tower-lobby`), over one low-res canvas painted by `build()` / `paint()` in `js/towerprep.js` with
-  `js/tower-art.js`'s helpers: the sky by height squeezed from the grass (floor 0) to the summit (floor 100) under the
-  title, the cloud sea, stars, drifting clouds, the stone pillar with a ledge every 10 floors and windows onto the sky,
-  Rayquaza's green glow breathing over its roof, the week's climber at its door (`--ground`). Below on the soil: the
-  climber's name, two numbers (this week, best ever), three rule chips (`RULES`), Climb with a one-line note on whether it
-  counts, Leaderboard and Practice (toggles the starter picks), the plaque. Keep its words that short.
-  **Smooth since 2026-10-07** (the user's call: a modern Pokémon look, no pixels): `build()` paints two layers at the
-  screen's resolution (Canvas 2D paths and gradients, `devicePixelRatio` up to 2) and `paint()` composites them each
-  frame (~30 fps) with the twinkling stars, drifting clouds and Rayquaza's glow between and over them; the sky's colours
-  still come from `skyHex()`. The cards are glass, the buttons glossy pills (`.tl-btn`, `.tl-go` / `.tl-round` /
-  `.tl-pill`), the climber stands on a glowing pad (`.tower-pad`), and `data-smooth-icons` swaps every emoji for
-  `js/smooth-icons.js`'s art (the leaderboard window `#board-dialog` too). The plaque's lobby look is scoped to
-  `.tower-lobby` (medals for the top three, like the leaderboard window); the Safari lobby's plaque keeps the bronze.
+- **The lobby** (2026-10-05, the user's call: the old text window was too wordy; keep its words short). **A Pokédex
+  device since 2026-10-07** (the user's call: match the title, the Collection and the map): `#tower-dialog`
+  (`.tower-lobby`) is the red shell full screen (a 500px device on wider screens), reading the `--shell-*` variables so
+  Settings' Device colour reaches it. Top to bottom: the lid (`.tdev-lid`: lens, lights, a `.cdev-lcd` with "Sky Pillar"
+  and the week); a window onto the tower (`.tower-window`, `#tower-top`, powering on like the Pokédex's screen), painted
+  smooth by `build()` / `paint()` in `js/towerprep.js` at the window's resolution (`devicePixelRatio` up to 2, ~30 fps):
+  the sky by height from `skyHex()` squeezed from the grass (floor 0) to the summit, the cloud sea, stars, drifting clouds,
+  the pillar with a ledge every 10 floors, Rayquaza's glow over its roof, the week's climber at its door (`--ground`) on a
+  glowing pad; the grey bezel (`.tdev-glass`) round a green LCD (`.tower-base`, it scrolls inside so the hardware stays on
+  screen): the climber's name, two seven-segment readouts (this week, best ever; `segInto()` from `js/statsdex.js`), three
+  rules (`RULES`), the note on whether this climb counts, Practice's starter picks, and the week's top climbers; then the
+  hardware (`.tdev-pad`): Ranks (the leaderboard) and Practice as the map's `.mdex-btn` keys, B (back) and a big A (Climb /
+  Again). The plaque's LCD look is scoped to `.tower-lobby` (dark ink, your row in reverse); the Safari lobby's keeps the
+  bronze.
 - **The week deals the tower** (`towerWeekly()`): its Monday (UTC, `towerWeek()`) seeds every roll through `js/rng.js`
   like the Safari's day, and picks the starter everyone climbs with (the Safari's pool: never Mewtwo or Rayquaza).
 - **The week's first try counts** for the leaderboard and is played without perks (`fairTry()` covers `run.tower.first`).
