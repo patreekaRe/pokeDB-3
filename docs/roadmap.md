@@ -10,8 +10,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 ## Open, ready to build
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
-- C. **Leaderboards in the Pokédex look.** The Safari and Sky Pillar leaderboards (in-device Ranks apps) still look
-  like plain windows: give them the Pokédex screens' handheld look (banners, LCD, shelfApp style).
 - D. **Cream windows audit.** List every window still on the cream look (tooltips may stay), then move the map's
   buttons' windows to the Pokédex look.
 - E. **Upgrade preview.** Choosing a card to upgrade (PP Up, Tutor Notes, events): highlight the numbers that change, or

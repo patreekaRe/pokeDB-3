@@ -76,7 +76,7 @@ export function initSafariPrep(handlers) {
 
 const APPS = {
   'sp-dex': { name: 'Safari Dex', cls: 'cdev-dex', app: safariDexApp },
-  'sp-board': { name: 'Ranks', cls: 'sp-board-app board-dialog', app: boardApp('safari') },
+  'sp-board': { name: 'Ranks', cls: 'cdev-dex sp-board-app', app: boardApp('safari') },
   'sp-corner': { name: 'Game Corner', cls: 'cdev-win cdev-corner', app: cornerApp, a: 'Buy', before: () => aimCorner('balls') },
 };
 const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };

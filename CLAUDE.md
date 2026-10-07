@@ -551,7 +551,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   also needs its front GIF and `SPRITE_FIT` line; `tests/safarimons.test.mjs` checks it all.
   **Leaderboard** (phase 5a, 2026-10-02): the day's first try posts once to Firestore (`safariBoard/<day>_<uid>`) through
   the cloud save's sign-in (`js/leaderboard.js`, pure part `js/data/leaderboard.js`, guarded by `firestore.rules`, which
-  the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged.
+  the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged. Its
+  window and the lobbies' Ranks apps (the Sky Pillar's board too) are the Pokédex look on `shelfApp()` (2026-10-07): a
+  banner per board, the handheld one trainer a screen; `shelfApp()`'s `empty(g)` keeps a board with no rows as a banner.
   **Its scenery** (phase 5b): each area is a `BIOME_ART` entry built from `SAFARI_ART` in `js/scene.js` (Meadow, Forest,
   Wetland, Marsh, Peak, Desert; painted by `SAFARI_PAINT`, with the Zone's own fence, sign, rest house and tall grass over
   all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's

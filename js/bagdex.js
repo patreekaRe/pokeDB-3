@@ -125,6 +125,7 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
     slotCls(g, t, known)     more classes for a slot
     foot(g)                  nodes under the tally (a page's prize)
     top()                    a node above the banners (a window's own title bar)
+    empty(g)                 a group with nothing in it still gets a banner, saying this, that doesn't open (the leaderboards)
     A group's `scene` (a biome or Safari area) paints its banner with that place, as the Pokédex's are. */
 export function shelfApp(spec) {
   const groups = spec.groups;
@@ -134,7 +135,7 @@ export function shelfApp(spec) {
   function renderList() {
     const banners = groups.map(g => {
       const things = g.list();
-      if (!things.length) return null;
+      if (!things.length) return spec.empty ? emptyBanner(g) : null;
       const [n, of] = scoreOf(g, things);
       const counted = spec.count?.(g, things);
       const all = !counted && n === of;
@@ -162,6 +163,16 @@ export function shelfApp(spec) {
     const wrap = el('div', 'pdx-banners');
     wrap.append(...banners);
     list.replaceChildren(...(spec.top ? [spec.top()] : []), wrap);
+  }
+
+  /** A group with nothing in it yet, as a banner that says so and doesn't open. */
+  function emptyBanner(g) {
+    const b = el('div', 'pdx-banner bdx-banner empty');
+    b.style.setProperty('--b1', g.b1);
+    b.style.setProperty('--b2', g.b2);
+    if (g.scene) b.append(sceneImg(still(g.scene, 150, 46, 0.56), 'pdx-banner-art'), el('span', 'pdx-banner-shade'));
+    b.append(el('span', 'pdx-stripe'), el('strong', 'pdx-banner-name', g.name), el('span', 'pdx-banner-sub', spec.empty(g)));
+    return b;
   }
 
   const scoreOf = (g, things) => spec.score?.(g, things) ?? [things.filter(t => spec.known(g, t)).length, things.length];

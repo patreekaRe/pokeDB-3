@@ -67,7 +67,7 @@ let sliding = false;
 function openRanks() {
   if (sliding) return;
   playSound('confirm');
-  const panel = el('div', 'cdev-app sp-app sp-board-app board-dialog');
+  const panel = el('div', 'cdev-app sp-app cdev-dex sp-board-app');
   $('tower-glass').append(panel);
   RANKS.mount(panel);
   panel.scrollTop = 0;
@@ -94,7 +94,7 @@ function closeRanks(now = false) {
 /** B: out of Ranks back to the lobby, then the lobby shuts. */
 function back() {
   if (sliding) return;
-  if (ranks) { playSound('cancel'); closeRanks(); return; }
+  if (ranks) { if (RANKS.back()) return; playSound('cancel'); closeRanks(); return; }
   playSound('cancel', 'confirm');
   closeDialog('tower-dialog');
 }

@@ -866,15 +866,14 @@
   </div></dialog>
 
   <!-- the Safari Zone's daily leaderboard and the Sky Pillar's weekly one (js/leaderboard.js) -->
-  <dialog id="board-dialog" data-smooth-icons class="dialog board-dialog">
-    <h2 tabindex="-1" autofocus id="board-title">🏆 Safari Leaderboard</h2>
-    <div class="index-tabs board-tabs" role="tablist" aria-label="Day">
-      <button class="index-tab board-tab" type="button" role="tab" data-day="0">Today</button>
-      <button class="index-tab board-tab" type="button" role="tab" data-day="-1">Yesterday</button>
+  <!-- a red handheld: its lid (lens, lights, the board's name on an LCD, ✕), then the screen the board's app mounts in -->
+  <dialog id="board-dialog" data-smooth-icons class="board-dialog">
+    <div class="lb-lid">
+      <span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span>
+      <h2 tabindex="-1" autofocus id="board-title" class="pdx-lcd">Safari Leaderboard</h2>
+      <button class="pdx-back" id="board-close" type="button" aria-label="Close">✕</button>
     </div>
-    <p class="hint board-day" id="board-day"></p>
-    <div id="board-body" class="board-body" role="tabpanel"></div>
-    <div class="dialog-actions"><button class="btn secondary" id="board-close" type="button">Close</button></div>
+    <div class="lb-glass cdev-dex" id="board-host"></div>
   </dialog>
 
   <dialog id="cloud-dialog" class="dialog small-dialog cloud-dialog">

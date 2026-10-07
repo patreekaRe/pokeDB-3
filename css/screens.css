@@ -3970,12 +3970,6 @@ body.scene-peek #backdrop { display: none; }
 .sp-app { inset: 8px; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 22px; }
 .tower-lobby .tower-window { transition: height 0.26s cubic-bezier(0.25, 0.8, 0.3, 1), border-width 0.26s, margin 0.26s, box-shadow 0.26s; }
 .tower-lobby .app-open .tower-window { height: 0; border-width: 0; box-shadow: none; margin-bottom: -10px; }
-.sp-app.sp-board-app {
-  --acc: #4cd27a; --acc2: #2a9a8a; --ink: #f2f5ff; --muted: #a8b0d4; --panel: rgba(255, 255, 255, 0.06); --panel-edge: rgba(255, 255, 255, 0.12); --gold: #ffd257;
-  padding: 12px 0 16px; color: var(--ink);
-  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 14px, transparent 14px 28px), linear-gradient(170deg, #1e2656 0%, #141a3c 55%, #0e1230 100%);
-}
-.sp-app.sp-board-app > * { margin-left: 10px; margin-right: 10px; }
 .tdev-key .cdev-btn:disabled { filter: grayscale(1) brightness(0.8); animation: none; cursor: default; }
 @media (prefers-reduced-motion: reduce) { .tower-lobby .tower-window { transition: none; } }
 .sp-today { display: grid; gap: 8px; }
@@ -4023,79 +4017,77 @@ body.scene-peek #backdrop { display: none; }
 .safari-prep-dialog .sp-plaque-slot { min-height: 0; }
 @media (prefers-reduced-motion: reduce) { .sp-gate-mon { animation: none; } }
 
-/* ---------- the leaderboards (js/leaderboard.js): a modern Pokémon menu, not the cream Pokégear window (the user's call,
-   2026-10-07): a dark glassy panel, a pill switch for the period, each board a card of rows with medals for the top three.
-   `data-kind` picks the accent: the Sky Pillar's sky blue, the Safari's grass green. ---------- */
-.dialog.board-dialog {
-  --acc: #5ab8ff; --acc2: #7c6cff;
-  --ink: #f2f5ff; --muted: #a8b0d4; --panel: rgba(255, 255, 255, 0.06); --panel-edge: rgba(255, 255, 255, 0.12); --gold: #ffd257;
-  width: min(480px, 94vw); padding: 0; color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 22px;
-  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 14px, transparent 14px 28px), linear-gradient(170deg, #1e2656 0%, #141a3c 55%, #0e1230 100%);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+/* ---------- the leaderboards (js/leaderboard.js): the Pokédex's banners and handheld (the user's call, 2026-10-07, over
+   the dark glassy panel they had for a day). A banner per board with its top three on it, then the red handheld, one
+   trainer a screen; the period, the name and sign-in on green LCDs above the banners. The window (the title's 🏆, the
+   result window's Leaderboard) is a red handheld of its own; the lobbies' Ranks apps sit in their own device's screen. ---------- */
+.board-dialog {
+  width: min(480px, 94vw); height: min(780px, 88dvh); max-height: none; padding: 0; border: 0; border-radius: 22px; overflow: hidden; color: #1f3a14;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 24px 60px rgba(0, 0, 0, 0.5);
 }
-.dialog.board-dialog[data-kind="safari"] { --acc: #4cd27a; --acc2: #2a9a8a; }
-.board-dialog > * { margin-left: 18px; margin-right: 18px; }
+.board-dialog[open] { display: flex; flex-direction: column; }
+.lb-lid { display: flex; align-items: center; gap: 8px; padding: 12px 12px 10px; }
 .board-dialog #board-title {
-  position: relative; margin: 0 0 14px; padding: 18px 18px 14px 34px; border: 0; color: #fff; font-size: 0.95rem; letter-spacing: 0.04em;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 30%, transparent), transparent 75%); margin-left: 0; margin-right: 0; border-radius: 22px 22px 0 0; outline: none; box-shadow: none;
+  flex: 1; min-width: 0; margin: 0 0 0 6px; padding: 7px 10px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; outline: none;
+  font: 0.6rem/1.3 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.5px; text-transform: uppercase;
 }
-.board-dialog #board-title::before { content: ''; position: absolute; left: 18px; top: 16px; bottom: 12px; width: 5px; border-radius: 3px; background: linear-gradient(var(--acc), var(--acc2)); }
-.board-dialog .board-tabs {
-  position: static; display: flex; gap: 0; margin-top: 0; margin-bottom: 10px; padding: 4px; border: 0; border-radius: 999px;
-  background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+.lb-glass { position: relative; flex: 1; margin: 0 10px 12px; border: 4px solid #2a2a30; border-radius: 8px 8px 8px 24px; box-shadow: 0 0 0 3px var(--shell-rim); }
+.lb-top { display: grid; gap: 8px; margin-bottom: 12px; }
+.lb-period { display: flex; border: 3px solid var(--shell-rim); border-radius: 9px; overflow: hidden; background: #d6e8b8; box-shadow: 0 3px 0 var(--shell-rim); }
+.lb-key { flex: 1; padding: 9px 4px 8px; border: 0; border-left: 3px solid var(--shell-rim); background: none; color: #1f3a14; cursor: pointer; font: 0.58rem/1 var(--pixel-font); font-synthesis-weight: none; }
+.lb-key:first-child { border-left: 0; }
+.lb-key[aria-selected="true"] { background: #1f3a14; color: #b6d68e; }
+.lb-top .pdx-lcd { margin: 0; padding: 7px 10px; font: 0.52rem/1.7 var(--pixel-font); font-synthesis-weight: none; }
+.lb-note { text-align: center; }
+.lb-top .lb-mine { background: #f2dc8a; color: #6a4a00; }
+.lb-name-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lb-name-line small { font-size: 1em; opacity: 0.7; }
+.lb-name-line b { font-weight: 400; overflow-wrap: anywhere; }
+.lb-signin, .lb-name-form { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.lb-signin p, .lb-name-form p { margin: 0; }
+.lb-name-form strong { font-weight: 400; font-size: 0.62rem; }
+.lb-name-input {
+  width: min(260px, 100%); padding: 8px 12px; border: 3px solid var(--shell-rim); border-radius: 8px; background: #e4f0cc; color: #1f3a14;
+  font: 0.7rem/1.2 var(--pixel-font); font-synthesis-weight: none;
 }
-.board-dialog .board-tab {
-  flex: 1; justify-content: center; padding: 9px 10px; border: 0; border-radius: 999px; background: transparent; box-shadow: none;
-  color: var(--muted); font-size: 0.62rem; transform: none; transition: background 0.2s, color 0.2s;
+.lb-name-input:focus { outline: 3px solid #ffe36b; outline-offset: 1px; }
+.lb-btn {
+  flex: none; padding: 8px 14px 7px; border: 3px solid var(--shell-rim); border-radius: 8px; background: #e4f0cc; color: #1f3a14; cursor: pointer;
+  font: 0.55rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
-.board-dialog .board-tab:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
-.board-dialog .board-tab[aria-selected="true"] { background: linear-gradient(135deg, var(--acc), var(--acc2)); color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); box-shadow: 0 2px 8px color-mix(in srgb, var(--acc) 45%, transparent); transform: none; }
-.board-day { text-align: center; font-size: 0.55rem; line-height: 1.6; margin-top: 0; margin-bottom: 12px; }
-.board-body { display: grid; gap: 12px; }
-.board-dialog p, .board-dialog li { margin-bottom: 0; }
-.board-note { text-align: center; font-size: 0.58rem; line-height: 1.7; }
-.board-dialog .board-mine { padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); color: var(--ink); }
-.board-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 12px; }
-.board-dialog .board-box h3 { margin: 0 0 10px; font-size: 0.62rem; text-align: left; color: var(--acc); letter-spacing: 0.06em; text-transform: uppercase; }
-.board-box .hint { margin: 6px 0; text-align: center; font-size: 0.58rem; }
-.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.board-row {
-  display: grid; grid-template-columns: 28px 40px 1fr auto; align-items: center; gap: 10px; min-width: 0; padding: 5px 10px 5px 6px;
-  font-size: 0.66rem; border-radius: 12px; background: rgba(255, 255, 255, 0.06); border: 1px solid transparent;
-}
-.board-rank { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 0.58rem; color: var(--muted); background: rgba(255, 255, 255, 0.08); }
-.board-row[data-rank="1"] .board-rank { color: #5a3a00; background: linear-gradient(145deg, #fff0a0, #f0b828 60%, #c88a10); box-shadow: 0 0 10px rgba(255, 200, 60, 0.5); }
-.board-row[data-rank="2"] .board-rank { color: #303848; background: linear-gradient(145deg, #ffffff, #c4ccd8 60%, #8e98a8); }
-.board-row[data-rank="3"] .board-rank { color: #4a2408; background: linear-gradient(145deg, #ffd0a0, #d48a48 60%, #9a5a24); }
-.board-row[data-rank="1"] { background: linear-gradient(90deg, rgba(255, 210, 80, 0.16), rgba(255, 255, 255, 0.06) 60%); }
-.board-mon { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 70%); }
-.board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
-.board-value { white-space: nowrap; padding: 5px 9px; border-radius: 999px; font-size: 0.6rem; color: #fff; background: rgba(0, 0, 0, 0.3); }
-.board-row.mine { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 18%, transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--acc) 35%, transparent); }
-.board-row.mine .board-value { background: var(--acc); color: #06122a; }
-.board-gap { text-align: center; color: var(--muted); font-size: 0.7rem; line-height: 1; }
+.lb-btn.primary { background: var(--btn-a); color: #fff; }
+.lb-btn:active { translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim); }
+/* a board's banner: its top three on a podium, the winner in the middle and biggest; an empty board says so and doesn't open */
+.lb-podium .pdx-banner-mon:nth-child(n) { width: 70px; height: 70px; z-index: 0; }
+.lb-podium .pdx-banner-mon.lb-first { width: 92px; height: 92px; z-index: 1; }
+.bdx-banner.empty { cursor: default; }
+.bdx-banner.empty:hover, .bdx-banner.empty:active { transform: none; }
+.bdx-banner.empty .pdx-banner-sub { top: 42px; max-width: 70%; }
+.lb-medal { font: 0.6rem/1 var(--pixel-font); color: #1f2a44; }
+/* the handheld: the trainer's Pokémon on the board's colours (gold, silver, bronze for the top three), its rank and number */
+.lb-screen.medal-gold { background: radial-gradient(circle at 50% 50%, #fff4b0 0, transparent 60%), linear-gradient(150deg, #f0c448, #8a5a08); }
+.lb-screen.medal-silver { background: radial-gradient(circle at 50% 50%, #ffffff 0, transparent 60%), linear-gradient(150deg, #d4dae6, #5a6478); }
+.lb-screen.medal-bronze { background: radial-gradient(circle at 50% 50%, #ffd8b0 0, transparent 60%), linear-gradient(150deg, #e09a58, #6a3410); }
+.lb-rank.gold { background: linear-gradient(145deg, #fff0a0, #d89a10); color: #5a3a00; }
+.lb-rank.silver { background: linear-gradient(145deg, #ffffff, #8e98a8); color: #303848; }
+.lb-rank.bronze { background: linear-gradient(145deg, #ffd0a0, #9a5a24); color: #4a2408; }
+.lb-value, .lb-you { position: absolute; padding: 6px 8px 5px; border-radius: 6px; font: 0.62rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; }
+.lb-value { right: 8px; bottom: 8px; background: rgba(0, 0, 0, 0.5); }
+.lb-you { right: 8px; top: 8px; background: var(--btn-a); box-shadow: 0 0 0 2px #fff; }
+.lb-facts b { font-weight: 400; opacity: 0.7; }
+.lb-augs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font: 0.55rem/1 var(--pixel-font); font-synthesis-weight: none; }
+.lb-augs b { font-weight: 400; }
+.lb-aug-row { display: flex; flex-wrap: wrap; gap: 2px; }
+.lb-aug-row .aug-icon { width: 24px; height: 24px; }
+.lb-slot { position: absolute; inset: 0; }
+.lb-slot-rank { position: absolute; left: 3px; top: 2px; z-index: 1; font: 0.45rem/1 var(--pixel-font); font-synthesis-weight: none; color: #1f2a44; }
+.bdx-slot.medal-gold { background: linear-gradient(180deg, #fff0a0, #e0a820); }
+.bdx-slot.medal-silver { background: linear-gradient(180deg, #ffffff, #b4bcc8); }
+.bdx-slot.medal-bronze { background: linear-gradient(180deg, #ffd8b0, #c8803c); }
+.bdx-slot.mine { box-shadow: inset 0 0 0 3px #3aa83a; }
+.bdx-slot.on { background: #ffe36b; }
 .board-line { font-size: 1.1rem; text-align: center; }
-.board-signin, .board-name-form { display: grid; justify-items: center; gap: 8px; text-align: center; }
-.board-signin .hint { font-size: 0.58rem; line-height: 1.7; }
-/* no nickname yet: the name box leads the window, rimmed in the accent so it can't be missed */
-.board-name-form { padding: 14px; border: 1px solid var(--acc); border-radius: 16px; background: color-mix(in srgb, var(--acc) 12%, transparent); }
-.board-name-head { font-size: 0.7rem; color: #fff; }
-.board-name-form .hint { margin: 0; font-size: 0.55rem; line-height: 1.7; }
-.board-name-input { font: inherit; font-size: 0.75rem; padding: 10px 14px; width: min(280px, 100%); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 12px; background: rgba(0, 0, 0, 0.3); color: #fff; }
-.board-name-input:focus { outline: none; border-color: var(--acc); }
-.board-open { display: block; margin: 0 auto 8px; }
-.board-name-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 8px 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); }
-.board-name-line .hint { font-size: 0.55rem; line-height: 1.6; }
-/* its buttons are pills too, not the cream Pokégear keys */
-.board-dialog .btn { border: 0; border-radius: 999px; padding: 10px 20px; font-size: 0.62rem; color: #fff; background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
-.board-dialog .btn::before { display: none; }
-.board-dialog .btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
-.board-dialog .btn:active:not(:disabled) { transform: scale(0.97); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
-.board-dialog .btn.primary { background: linear-gradient(135deg, var(--acc), var(--acc2)); box-shadow: 0 2px 10px color-mix(in srgb, var(--acc) 40%, transparent); }
-.board-dialog .btn.small { padding: 7px 14px; font-size: 0.55rem; }
-.board-dialog .dialog-actions { justify-content: center; margin-top: 16px; margin-bottom: 18px; }
-.board-dialog .dialog-actions .btn { min-width: 140px; }
-@media (max-width: 480px) { .board-dialog > * { margin-left: 12px; margin-right: 12px; } .board-row { grid-template-columns: 26px 34px 1fr auto; gap: 7px; font-size: 0.6rem; } .board-mon { width: 34px; height: 34px; } .board-value { font-size: 0.55rem; padding: 4px 7px; } .board-box { padding: 10px 8px; } }
 
 /* ---------- the descent to the Sealed Gate (js/descent.js): the arena splits, your Pokémon falls down a crystal shaft into
    violet light. Under the gate's scene (z-index 949), which fades in over its dark last frame. ---------- */
@@ -5047,8 +5039,3 @@ body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 2
 svg.aug-node { padding: 0; border: 0; background: none; box-shadow: none; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3)); }
 svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 .aug-emoji { display: inline-grid; place-items: center; font-size: 22px; }
-
-/* the Sky Pillar's leaderboard: a climb's picks in a strip under its name */
-.board-row.has-augs .board-augs { grid-column: 3 / -1; grid-row: 2; display: flex; flex-wrap: wrap; gap: 1px; margin-top: -8px; }
-.board-row.has-augs .board-rank, .board-row.has-augs .board-mon { grid-row: span 2; }
-.board-augs .aug-icon { width: 18px; height: 18px; }

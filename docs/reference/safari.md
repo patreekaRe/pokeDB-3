@@ -343,9 +343,13 @@ phase 1 run.
   then wins, bosses, turns). Ties: the earlier post first. Top 10 each, plus your row under a ⋯ when you're below, and a
   "Your try" line with your own entry. A day's entries are one `where('day', '==', day)` query (up to 1000, no index
   needed), sorted on the device and cached a minute.
-- **The window** (`#board-dialog`, `.board-*` in `css/screens.css`): Today / Yesterday tabs, the day's starter and areas,
-  then the three boards. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open) and a Safari run's
-  result window; the prep window's Ranks key shows it in its own screen (`boardApp()`) instead
+- **The window** (`#board-dialog`, `.lb-*` in `css/screens.css`; since 2026-10-07 the Pokédex look, on `shelfApp()` in
+  `js/bagdex.js`): a red handheld (lid, LCD title, ✕), its screen the board's app: Today / Yesterday keys and the day's
+  starter and areas on LCDs (with your name, Sign in and your try), then a banner per board painted with one of the day's
+  areas, its top three on a podium; a tap opens the handheld on that board, one trainer a screen (gold / silver / bronze
+  for the top three, a climb's augments under it), the ranks as slots. ◀ / ▶ switch the period on the banners and step
+  the trainers on a board; B / Escape goes back to the banners first. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open) and a Safari run's
+  result window; the lobbies' Ranks keys mount the same app in their own screen (`boardApp()`)
   (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
   No config / Firebase unreachable: "can't be reached right now", the game unaffected. Every Firebase call is caught.
 - **Rules**: `firestore.rules` (the cloud save's `saves/<uid>` rule plus `safariBoard`): anyone reads; a signed-in player

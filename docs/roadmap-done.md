@@ -1735,3 +1735,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   walk-on and a new run's map boots after the first biome's intro film.
 - **Title Back sign** (UI fixes batch B, 2026-10-07): the Game Modes sub-menu's Back is a red Poké Ball under the signs'
   balls, the ◀ in its button, "BACK" lettered beside it (`.gem-back` in `css/menus.css`), instead of the slate pill.
+- **Leaderboards in the Pokédex look** (UI fixes batch C, 2026-10-07): the Safari / Sky Pillar boards (window and the
+  lobbies' Ranks apps) run on `shelfApp()`: a banner per board, the handheld one trainer a screen; `docs/reference/safari.md`.
