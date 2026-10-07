@@ -1733,3 +1733,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
   (`lobbyIn`); `bootDevice()`'s `after` holds the device hidden until a film ends, so Continue boots after a place's
   walk-on and a new run's map boots after the first biome's intro film.
+- **Title Back sign** (UI fixes batch B, 2026-10-07): the Game Modes sub-menu's Back is a red Poké Ball under the signs'
+  balls, the ◀ in its button, "BACK" lettered beside it (`.gem-back` in `css/menus.css`), instead of the slate pill.

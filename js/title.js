@@ -62,7 +62,7 @@ const SKIES = {
 
 const gemPx = () => (innerHeight <= 700 ? 3 : 4);   // CSS pixels per gem pixel: smaller on short windows (css/menus.css --gp)
 const GEM_H = 16;   // a sign's height in --gp steps; each one's look is CSS (.gem in css/menus.css)
-const BACK_W = 34, BACK_H = 12;   // the Back gem's size in --gp steps: smaller than the signs, and left-aligned
+const BACK_W = 34, BACK_H = 13;   // Back's size in --gp steps: a Poké Ball BACK_H across with "BACK" beside it, left-aligned
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let actions = null;       // what the gems do, and the saved run for Continue (initTitle)
@@ -433,8 +433,9 @@ function sizeGems() {
     const w = back ? BACK_W : cols;
     btn.style.width = `${w * px}px`;
     btn.style.height = `${(back ? BACK_H : GEM_H) * px}px`;
-    // the stack is centred, so a right margin of the difference lines Back's left edge up with the signs above
+    // the stack is centred, so a right margin of the difference lines Back's ball up with the signs' balls above
     if (back) btn.style.marginRight = `${(cols - w) * px}px`;
+    if (back) btn.style.setProperty('--ball', `${BACK_H * px}px`);
   }
   // every page keeps the tallest page's height (four signs), so the nameplate never rises on a shorter sub-menu (the
   // user's ask)

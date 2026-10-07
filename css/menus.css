@@ -1340,12 +1340,33 @@ body[data-screen="start-screen"] .topbar { display: none; }
 @media (prefers-reduced-motion: no-preference) { .gem-more.on .gem-arrow { animation: arrowNudge 0.6s ease-in-out infinite alternate; } }
 @keyframes arrowNudge { to { translate: 3px -50%; } }
 .gem.locked .gem-arrow { opacity: 0.5; }
-.gem-back-icon { font-family: var(--pixel-font); font-size: 22px; color: #fff; text-shadow: none; }
-/* Back is a smaller gem on the left, "◀ BACK" on its coloured top (sizeGems() in js/title.js) */
-.gem-back .gem-icon { left: calc(var(--gp) * 5); top: 30%; height: auto; background: none; filter: none; translate: 0 -50%; }
+/* Back is no sign but a Poké Ball under the signs' balls, the ◀ on its button, "BACK" lettered beside it in the signs'
+   outlined type (the user's ask, 2026-10-07: the old slate pill looked out of place); sizeGems() in js/title.js sets --ball */
+.gem-back {
+  --c0: #ff7a66; --c1: #e02c20; --c2: #a01810; --ink: #3a1410;
+  display: flex; align-items: center; gap: calc(var(--gp) * 2.5);
+  border: 0; border-radius: 0; background: none; box-shadow: none;
+}
+.gem-back::after { content: none; }
+.gem-back .gem-icon {
+  position: relative; left: 0; top: auto; translate: none; flex: none;
+  width: var(--ball, 52px); height: var(--ball, 52px); box-sizing: border-box;
+  border: 3px solid #181010;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.75) 0 7%, transparent 8%),
+    radial-gradient(circle closest-side, #fff 0 25%, #d4d4dc 33%, #181010 34% 43%, transparent 44%),
+    linear-gradient(var(--c0), var(--c1) 26%, var(--c2) 44%, #181010 44% 56%, #fff 56%, #e6e6ee 78%, #a8a8b6);
+  box-shadow: inset -3px -4px 0 rgba(20, 10, 30, 0.18);
+  filter: none;
+  transition: rotate 0.2s ease-out;
+}
 .gem-back .gem-icon::before { content: none; }
-.gem-back .gem-label { padding: 0 0 calc(var(--gp) * 4.8) calc(var(--gp) * 7); font-size: 0.8rem; }
-.gem-back.on::before { left: -22px; }
+.gem-back .gem-icon > .gem-back-icon { width: 34%; height: 34%; margin-left: -6%; filter: none; }
+.gem-back-icon path { fill: var(--c1); stroke: none; }
+.gem-back .gem-label { height: auto; padding: 0; font-size: 1rem; }
+.gem-back.on::before { left: -24px; }
+@media (prefers-reduced-motion: no-preference) { .gem-back.on .gem-icon { animation: backRock 1.4s ease-in-out infinite; } }
+@keyframes backRock { 0%, 100% { rotate: 0deg; } 25% { rotate: -14deg; } 50% { rotate: 0deg; } 60% { rotate: 6deg; } 70% { rotate: 0deg; } }
 .gem-soon { font-size: 0.55rem; letter-spacing: 0.06em; color: #e0e4f0; }
 /* a badge line in the result window opens the Trainer Card (badgeItem() in js/run.js) */
 .result-badge-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
@@ -1358,7 +1379,6 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .gem-icon > .smooth-icon.tc-icon { width: 38px; height: 38px; }
 .gem-icon > .smooth-icon.gem-ball { width: 32px; height: 32px; }
 .gem.locked .gem-icon > .smooth-icon { filter: grayscale(1) brightness(0.95) drop-shadow(0 1px 1px rgba(20, 10, 30, 0.5)); }
-.gem-back .gem-icon > .gem-back-icon { width: 14px; height: 14px; }
 .gem-side-icon.smooth-icon { width: 30px; height: 30px; }
 .title-sound .vol-tag .smooth-icon { width: 18px; height: 18px; }
 @media (max-height: 700px) {
