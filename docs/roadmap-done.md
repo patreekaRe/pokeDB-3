@@ -1601,6 +1601,23 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   tide pools. Journey films `clearing>ruins` (a flooded stair walked step by step, wading a drowned arcade, the temple on the
   horizon at dawn) and `ruins>wastes` (steam, geysers, the lagoon drying to cracked mud, then ash), `volcano()` split out of
   the Shrine → Wastes painter to share. `?area=` and `?travel=` reach the Ruins. Checked in the pane at 375x812 and 1280x800.
+- **A Fire biome and a shuffled pool of roads, part a** (roadmap item 20, cloud, 2026-10-07). The Ruins, Thornwood and the new
+  **Sunscorch Savanna** are one pool (`POOL`): each run rolls at its start which pool biome each fork offers beside its
+  default (`rollRoads()`, saved as `run.roads`; unseen biomes first, a coin flip between equals, pure random once all are seen;
+  a save without `roads` gets `LEGACY_ROADS`). A pool biome takes its slot's numbers (`walkAt()`) and its Pokémon grow or
+  shrink from their `home` slot to the default road's average HP and hit there (`forkGrowth()`). The Savanna (home 1, places
+  Tall Grass / Burnt Plain / Watering Hole / Sun Rock): wilds Ponyta, Magby, Ninetales, Arcanine, Houndoom, Simisear (Fire),
+  Panpour, Golduck (Water), Sunflora, Cherrim (Grass), Meowth, Minccino (Normal, Team Rocket's); Alphas Patrat / Buneary /
+  Glameow; bosses Castform / Loudred / Munchlax. Shared Safari Pokémon, new cries at -13 LUFS, a bonus page No.108-125 (🌾,
+  500 PokéCoins), the Clearing's scenery borrowed until part b. Fixed for the pool: Shrine / Ember Badges read their own bosses
+  from `dex.defeated`, the Wanderer is a win through every road at either fork (pairs would be 13 runs), the Explorer needs all
+  six biomes, `conquered()` names any last biome, `?biome=` takes `&slot=`, `?crossroads` takes `&road=`. Human bot, 150 runs a
+  cell, win % L0 / L3, fire | grass | water: default Shrine>Wastes 87/63 | 87/67 | 77/58; Ruins at fork 1 80/59 | 82/65 |
+  71/65; Thornwood at 1 85/67 | 84/67 | 72/51; Savanna at 1 85/70 | 85/57 | 78/57; Ruins at 2 76/61 | 84/59 | 81/61; Thornwood
+  at 2 91/68 | 87/65 | 69/60; Savanna at 2 87/68 | 82/65 | 72/63. The two gaps past the noise didn't hold at 300 runs (fire L0
+  default 80.3 vs Ruins at 2 79.0; grass L3 default 63.3 vs Savanna at 1 64.3), so no retune. Checked headless at 390x844:
+  `?biome=savanna&slot=2` (map, signs, a fight: Ponyta 291 HP), `?crossroads&road=savanna`, a new run saving its roads, an old
+  save without them, a bad roll thrown away. No console errors.
 - **Branching biomes gated** (2026-10-07, the user's ask): the Sunken Ruins and Thornwood Jungle only show up as choices
   (the crossroads at all) after a won run with each of Fire, Grass and Water on Trainer Level 2+ (`roadsOpen()` /
   `ROADS_LEVEL` in `js/data/enemies.js`, read from `maxLevelWinByType`, so old saves that already qualify see them at once);
