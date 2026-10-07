@@ -542,7 +542,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   One `ROUTES` entry per trip: `clearing>shrine` (the Ancient Tree's roots, the Shrine's lantern stair) and `shrine>wastes`
   (three looks, `a` / `d` dried out / `b`; a rope bridge over a lava chasm that sags and sways under your Pokémon, a
   route's `deck` in `groundY()`, its `walk` slowing the steps; ash falls, the volcano rises glowing on the horizon);
-  a trip without one is skipped. First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
+  a trip without one is skipped. Since item 20 part c (2026-10-07) every pairing the pool allows has one: the nine newer
+  trips run on one painter, `paintPool()`, crossing two `LANDS` kits (palette, trees, roadside; a new pool biome needs a
+  kit) with the trip's set piece in hooks (its doc comment lists them; `poolTrip()` builds the route). First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
   old save's `true` counts as the Clearing's). Early in each trip (a route's `fly`) a legendary you haven't unlocked flies
   over as a silhouette with its shadow on the road, or, with the Sealed Gate at half HP or less, sometimes Eternatus's red
   glow pulses on the horizon (`pickGuest()`, seeded by `run.tally.startedAt` and the trip). Playtest `?travel=shrine` /
@@ -563,9 +565,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   and since item 20 part a the **Sunscorch Savanna** (home 1: a sun-baked grassland of wildfires round one watering hole,
   places Tall Grass / Burnt Plain / Watering Hole / Sun Rock; 6 Fire (Ponyta, Magby, Ninetales, Arcanine, Houndoom, Simisear)
   / 2 Water / 2 Grass / 2 Normal wilds (Meowth and Minccino, Team Rocket's), Alphas Patrat / Buneary / Glameow, bosses
-  Castform / Loudred / Munchlax; it borrows the Clearing's scenery, `kin: 'clearing'`, until part b paints it). A win
+  Castform / Loudred / Munchlax; its look is item 20 part b's, below). A win
   "conquered" its last biome (`conquered(route)` in `js/halloffame.js`, from the `route` a record keeps; a Wastes descent
-  scene unless the last biome is Thornwood's jungle). The other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
+  scene unless the last biome is another road's: `descent({ land })`, `jungle` / `savanna` / `ruins`, each its own sky and skyline, `onSkyline()` in `js/descent.js`). The other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
   default road, no version bump). The Shrine / Ember Badges read their own bosses from `dex.defeated` (a slot's
   `bossesDefeated` is any road's), the Wanderer a win through every road at either fork, the Explorer every main biome entered. After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
@@ -614,12 +616,22 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `bramble`, the `giant` and `bloom` props). Journey films `shrine>thornwood` (a vine-choked torii) and `ruins>thornwood` (a
   fallen log over a river at a waterfall's foot), sharing `farAndHills()`, `jungleTree()`, `jungleBush()`, `fernFront()`. A run
   lost at its last boss falls through a jungle floor (`descent({ land: 'jungle' })`, from `strikeGate()`). Playtest
-  `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. Playtest `?biome=ruins` (any biome; `&starter=id`,
+  `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. **The Savanna's look** (item 20 part b,
+  2026-10-07): `BIOME_ART.savanna`, `savannaBackdrop()` / `savannaFloor()` / `savannaFront()`, life in `drawSavanna()` (a heat
+  shimmer over the horizon by day, embers, glowing cracks `life.svGlow`, the far wildfire `life.svFire` and its smoke`n  `life.svSmoke`). Places: Tall Grass (acacias, a track, `tallGrassEdge()`), Burnt Plain (`wildfireLine()`, `charredGrove()`,
+  stumps smoking), Watering Hole (`wateringHole()`, reeds, a `baobab()`), Sun Rock (`sunRock()`: a prow jutting out from the
+  right, the sun moved up over it, `life.rock`). Its prelude (`savannaWake()` / `savannaPortal()`, `FLARE_AT`): the sun swells,
+  rays wheeling, then `grassFire()` races out from the rock (it burns on, sparse, through the fight); a wall of flame rises
+  into the white. Landmarks `LANDMARKS.savanna`; grotto `treasure.biomes.savanna` (sandstone, citrine, a Fast Ball). Intro
+  film `js/savanna-intro.js` (`SAVANNA_INTRO`: up out of the tall grass, over the plain between 3D acacias to Sun Rock). Map
+  `PALETTES.savanna` (`savgrass`, `scorch`, `kopje`, the `acacia` prop). Journey films `clearing>savanna` and
+  `savanna>wastes` (`ridgeFire()`, `acaciaMid()`, `embersUp()`, `sunRock()`). Playtest `?area=savanna`, `?travel=savanna`,
+  `?travel=wastes&from=savanna`, `?strike=40&land=savanna`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
-  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (121 since 2026-10-07, the user's list):
+  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (124 since 2026-10-07, the user's list):
   Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
-  Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna has no badges of its own yet), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
+  Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna's Sun Badge, page and Savanna Hunter badges like the Ruins' and Thornwood's), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
   Veteran: 5 starters on Level 5), Challenges (one win's Record Book entry, Mewtwo's skipped: full HP, 12 cards, no move
   forgotten, under ₽100 spent, under 60 turns, 5 Alphas, no item; plus no rest, a 100 hit (losses too), 30 Tide), Collector
   (shinies, every starter, every ball held at once, every perk maxed, 10,000 coins earned), Pokédex (each page researched,

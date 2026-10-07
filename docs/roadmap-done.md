@@ -1552,6 +1552,32 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Fire, which the crossroads shows, so no retune. Checked headless at 390x844: the crossroads (a tap outside and Escape
   don't skip it), the Ruins' map, signs and a fight, a saved route surviving a reload, an old save without one, a bad route
   thrown away, the Ruins' Pokédex banner and page. No console errors.
+- **A Fire biome and a pool of roads, part b: the Sunscorch Savanna painted** (roadmap item 20, Desktop app, 2026-10-07).
+  `BIOME_ART.savanna` is its own (it borrowed the Clearing's): golden Tall Grass under acacias with a track; the Burnt Plain,
+  black and still glowing in its cracks, charred trees, a wildfire burning along the horizon under leaning smoke; the
+  Watering Hole in cracked mud by a baobab; Sun Rock jutting out over the plain with the sun over it. A heat shimmer over
+  the horizon by day, embers rising. 12 landmarks (termite mound, skull, sunflowers, kopje; charred stump, burning log,
+  burnt sapling, cairn; ribcage, wallow, log, weaver birds' nests). Prelude: the sun swells, its rays wheeling, then the
+  grass catches in a line of fire racing out from the rock (it keeps burning, sparser, through the fight); the portal is a
+  wall of flame (sounds `gust`, `rumble-far`, `sunburst`, `eruption`). Its grotto is sandstone with citrine and a Fast Ball
+  chest. Map: `savgrass` ground, `scorch` and `kopje` tiles, the `acacia` prop. Intro film `js/savanna-intro.js` (up out of
+  the tall grass, low over the plain between 3D acacias to Sun Rock). Descent floors for every road that can end a run
+  now that a pool biome can stand at the second fork (`savanna`, `ruins`, as well as `jungle`). Journey films
+  `clearing>savanna` (the woods thinning into tall grass, a wildfire on the ridge, Sun Rock at dawn) and `savanna>wastes`
+  (the grass burning down to embers and ash, the volcano rising). Checked in the pane at 1280x720 (every place, the
+  prelude, the film, both trips, both new descents). No console errors.
+- **A Fire biome and a pool of roads, part c: the pool's journey films** (roadmap item 20, Desktop app, 2026-10-07). The
+  nine pairings the pool made possible cut straight to the map; now each has a film. One painter, `paintPool()` in
+  `js/travel.js`, crosses two `LANDS` kits (Clearing, Shrine, Ruins, Thornwood, Savanna, Wastes: palette, trees behind the
+  road, things along it) and takes each trip's set piece through hooks: `clearing>thornwood` the canopy closing over the
+  sky, dawn slanting through its gaps; `shrine>ruins` stepping stones over a dark lake, a torii standing in it with its
+  reflection, lit lanterns drifting; `shrine>savanna` down the mountain's stairs, a wildfire on the ridge, a herd of Tauros
+  running at dawn, Sun Rock; `ruins>savanna` the water running out over cracked mud, stranded columns, a dust devil;
+  `thornwood>wastes` a giant still burning, split and glowing, the volcano rising, ash; `thornwood>ruins` an old gate
+  strangled by roots, its runes waking, then wading the flood; `thornwood>savanna` a dry storm, lightning setting a lone
+  acacia alight (the sky's flash skipped under `calmFx()`); `savanna>ruins` the rains rolling in, puddles, the flood;
+  `savanna>thornwood` the jungle's wall rising, its mist rolling out at night, eyes blinking. Each with its own lines.
+  Checked in the pane at 375x812 at several points of each trip; no console errors.
 - **Branching biomes, part d: the Thornwood Jungle painted** (roadmap item 19, Desktop app, 2026-10-07). This finished item
   19 (the plan: a crossroads after each boss, a second road for Biomes 2 and 3, each new biome built as fully as the others,
   journey films from 2 routes to 6, the Explorer Badge for entering all five main biomes). `BIOME_ART.thornwood` is its own
@@ -1640,3 +1666,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   biome's numbers, like the borrowed 44, not a template's), with the Safari line kept as `safariLine`. New cries at
   -13 LUFS (Herdier -14.3, limiter-bound); `RUN_SAVE_VERSION` 9. No new bot check: nothing the bot reads changed (HP,
   moves, kinds, adds and move types are the old ones), so part a's and c's numbers stand.
+
+- **Savanna badges** (item 20 follow-up, 2026-10-07, the user said yes): the Sunscorch Savanna gets the Ruins' and
+  Thornwood's three: the Sun Badge (its boss, from `dex.defeated`), the Savanna Page Badge and the Savanna Hunter Badge
+  (every Pokémon on its page beaten). Gold savanna colours and a new `sun` glyph in `js/trainercard.js`; 124 badges.

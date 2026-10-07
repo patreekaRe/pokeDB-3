@@ -12,6 +12,12 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-07: **Item 20 part b, the Sunscorch Savanna painted** (Desktop app, pushed): its scenery in `js/scene.js` (Tall Grass,
+  Burnt Plain, Watering Hole, Sun Rock; landmarks; Sun Rock's prelude of a swelling sun and a grass fire), intro film
+  `js/savanna-intro.js`, map tiles, a Fast Ball grotto, descent floors for the Savanna and the Ruins, and the
+  `clearing>savanna` / `savanna>wastes` journey films. Next: part c, the other new journey films (LOCAL); ask the user
+  whether the Savanna gets badges.
+
 - 2026-10-07: **Branching biomes, part d, the Thornwood Jungle painted** (Desktop app, pushed): its own scenery in `js/scene.js`
   (four places: a forest wall, a plank deck in the canopy, a grove of strangler figs, the Heart Tree; landmarks; the Heart
   Tree's thorny boss prelude), intro film `js/thornwood-intro.js`, map tiles, its own grotto (a Nest Ball chest), the

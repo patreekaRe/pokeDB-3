@@ -678,8 +678,93 @@ BIOME_ART.thornwood = {
     boss: { grade: 'boss', addLife: ['leaves'] },
   },
 };
-// The Sunscorch Savanna (roadmap item 20 a) borrows the Clearing's meadow until part b paints its own.
-BIOME_ART.savanna = { ...BIOME_ART.clearing, kin: 'clearing' };
+/* The Sunscorch Savanna (roadmap item 20): a sun-baked grassland of wildfires, painted by savannaBackdrop() /
+   savannaFloor() / savannaFront(), its life in drawSavanna(). Its ? events' props are dressed like the Clearing's (`kin`);
+   its grotto is its own. Embers and the sun's flare glow of their own accord. */
+BIOME_ART.savanna = {
+  kin: 'clearing',
+  backdrop: 'savanna', floor: 'savanna', light: 'sun',
+  storm: { rain: ['#fff0a0', '#f06820'], fall: 1.4, count: 0.7, sky: [0.75, 40, 10, 0], ground: [0.85, 20, 4, 0] },   // a storm of cinders
+  sun: ['#fffff0', '#fff4b0', '#f8d870'],
+  cloud: ['#ffffff', '#fbf4e8', '#ecdcc0', '#d8c098'],
+  trunk: ['#6a5034', '#3e2c1a'],
+  ember: ['#fff0a0', '#f8a830', '#e85820'], embers: 0.5,
+  pollen: ['#fffce0', '#f8ecb0'],
+  firefly: ['#f8f0a0', '#e8c858'],
+  butterflies: ['#f8f8f8', '#f8a040', '#f8d848'],
+  bird: '#3a2a20',
+  rock: ['#e0c49a', '#b08a62', '#74583c'],
+  flowers: [['#f8d030', '#8a4a14'], ['#f8f0e0', '#f8c830'], ['#f87038', '#f8e070']],
+  smoke: ['#a89890', '#847470', '#62544e', '#463a36'],
+  marks: {
+    clay: ['#e8a868', '#c07a42', '#8a5028', '#4a2a12'],
+    bone: ['#fffcf0', '#e0d6c0', '#a09480', '#4a4034'],
+    char: ['#5a4a42', '#3a302c', '#241e1c', '#100c0a'],
+    stone: ['#f0d8b0', '#d0b088', '#a08060', '#5a4430'],
+    bark: ['#8a6a48', '#644a30', '#46321e', '#22160a'], wood: ['#d8a868', '#a87840'], moss: ['#c8c860', '#8a9a40'],
+    water: ['#e8fcff', '#88d0e8', '#4a9cc8', '#2a6a98'],
+    mud: ['#9a7a54', '#7a5e40', '#5a442c'],
+    reed: ['#c8d070', '#8aa040', '#5a6a28'],
+    petal: ['#f8d030', '#e8a018', '#6a3a10'],
+    red: ['#c05030', '#8a3020'], paper: '#f8f0e0',
+    steam: ['#f8f0e8', '#c8b8ac'],
+  },
+  times: {
+    day: {   // a white-hot sky, the land shimmering in the heat
+      sky: ['#5aa0e0', '#6aaee4', '#80bce6', '#9ccae4', '#bcd8dc', '#d8e2cc', '#ecdcb0'],
+      hills: ['#d8b890', '#c8a47c', '#b0906c'],
+      trees: ['#a8b858', '#7e943e', '#5a7030', '#3a4a20'],
+      ground: ['#e8c870', '#e0bc62', '#d6b058', '#cca44e', '#c09846', '#b28a3e'],
+      blade: ['#f8e090', '#d8b050', '#9a7a30'], patch: '#c89a44',
+      burnt: ['#6a5848', '#5a4a3c', '#4a3c32', '#3e322a', '#322822', '#28201c'],
+      clouds: { count: 0.4 },
+      life: ['clouds', 'birds', 'blades', 'butterflies', 'savanna'],
+      pad: { style: 'sand', top: '#f0d488', mid: '#d8b464', low: '#b8944a', rim: '#5a3e1c', earth: '#8a6a3a', blade: '#f8e090' },
+    },
+    dusk: {   // the sun sets huge and red behind Sun Rock; the fires glow on the horizon
+      sunLow: true,
+      sky: ['#2a1e50', '#4a2a62', '#80386a', '#c04e60', '#ec7448', '#f89c40', '#f8c058'],
+      sun: ['#fff4c0', '#f8b050', '#f06830'],
+      cloud: ['#f8c8a0', '#e89878', '#b06070', '#6a3a58'],
+      hills: ['#8a4a50', '#723c48', '#5a3040'],
+      trees: ['#5a4a38', '#423628', '#2e241c', '#1c1612'],
+      trunk: ['#2e221a', '#1c140e'],
+      ground: ['#c88a48', '#bc7e42', '#ae723c', '#9e6636', '#8e5a30', '#7c4e2a'],
+      blade: ['#f8b860', '#b87038', '#6a3c1c'], patch: '#9a6232',
+      burnt: ['#4a3430', '#3e2c28', '#342422', '#2a1e1c', '#221816', '#1a1210'],
+      clouds: { count: 0.5 }, embers: 0.9,
+      life: ['clouds', 'birds', 'blades', 'savanna'],
+      pad: { style: 'sand', top: '#d89858', mid: '#b87a44', low: '#985e34', rim: '#3a2010', earth: '#6a4224', blade: '#f8c070' },
+    },
+    night: {   // a huge starry sky, the grass silver, the wildfires red on the horizon
+      light: 'moon', stars: true,
+      sky: ['#04061a', '#080c26', '#0e1432', '#141c3e', '#1c2648', '#243052', '#2e385a'],
+      cloud: ['#606890', '#4a5278', '#363c5e', '#262a44'],
+      hills: ['#28304a', '#20283e', '#1a2034'],
+      trees: ['#20282a', '#181e20', '#101416', '#080a0c'],
+      trunk: ['#14181a', '#0c0e10'],
+      ground: ['#5a6070', '#525868', '#4a5060', '#424858', '#3a4050', '#323848'],
+      blade: ['#a8b0c0', '#6a7488', '#3a4458'], patch: '#3e4456',
+      burnt: ['#2a2628', '#242022', '#1e1a1c', '#181416', '#141012', '#0e0c0e'],
+      rock: ['#8a8a98', '#5e5e6c', '#3e3e4a'],
+      flowers: [['#c8c8e0', '#e8e0a0']],
+      clouds: { count: 0.3 }, embers: 1.2,
+      life: ['stars', 'clouds', 'blades', 'fireflies', 'savanna'], fireflyCount: 0.6,
+      pad: { style: 'sand', top: '#7a8090', mid: '#626878', low: '#4a5060', rim: '#14161e', earth: '#2e3240', blade: '#a8b0c0' },
+    },
+    dawn: {   // a pink and gold sunrise over dew-wet grass
+      from: 'day', sunLow: true,
+      sky: ['#6a7cc0', '#8a8cc8', '#b09ccc', '#d4a8c4', '#eeb8b4', '#f8cca8', '#f8e0b8'],
+      sun: ['#fffcec', '#fff0b8', '#f8d898'],
+      cloud: ['#fff4ec', '#f8dcd8', '#e0b8c4', '#b898b0'],
+      life: ['clouds', 'birds', 'blades', 'savanna'],
+    },
+  },
+  kinds: {
+    elite: { grade: 'elite' },
+    boss: { grade: 'boss', embers: 1.6 },
+  },
+};
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
@@ -880,6 +965,19 @@ const PLACE_ART = {
         pool: ['#c8fff8', '#58c0c0', '#1e7080'],
         chest: { ...BALL_CHEST, lid: ['#98d8ff', '#3890e0', '#2060b0', '#103870'], mark: ['#c8f4ff', '#78d0f8'], marks: 'dive' },
         life: ['treasure', 'drips'],
+      },
+      savanna: {   // a sandstone hollow under the plain: sun-gold citrine, dry roots, and a Fast Ball for a chest
+        sky: ['#fff8e0', '#f8e0a0'],
+        rock: ['#c09068', '#a07450', '#80583c', '#62402a', '#40281a'],
+        moss: ['#c8c060', '#9a9a40', '#6a6a28'],
+        crystal: ['#fffce0', '#f8e070', '#f0a830', '#a86018'],
+        ground: ['#8a6a48', '#7e6040', '#72563a', '#664c32', '#58422a'],
+        stone: ['#f0d8b0', '#d0b088', '#a08060', '#6a5038'],
+        beam: '#fff4c8', mote: '#fff8e0',
+        ember: ['#fff0a0', '#f8c850', '#f08830'], embers: 0.3,
+        roots: ['#a08060', '#6e5236', '#3e2c18'],
+        chest: { ...BALL_CHEST, lid: ['#fff080', '#f8d030', '#d8a818', '#8a6010'], marks: 'great', mark: ['#ff7050', '#e03828', '#a82018'] },   // a Fast Ball
+        life: ['treasure', 'embers'],
       },
       thornwood: {   // the hollow of a giant tree: bark walls, amber sap crystals, roots over the floor, and a Nest Ball for a chest
         sky: ['#f8ffd8', '#c8f0a0'],
@@ -1558,7 +1656,7 @@ export async function bossRebirth(skipped) {
 /** The sounds the second form's cutscene plays, to load ahead. */
 export const bossRebirthSounds = () => MAX_SOUNDS.map(([, sound]) => sound);
 /** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
-const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'ruins', 'thornwood', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
+const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'ruins', 'thornwood', 'savanna', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
 const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
 /** The sounds the boss prelude on screen will play, to load ahead. */
 export const bossPreludeSounds = () => (hasPrelude() ? preludeSounds()[preludeKey()].map(([, sound]) => sound) : []);
@@ -1672,6 +1770,7 @@ function paintBase() {
   if (S.raw.backdrop === 'depths') depthsBackdrop();
   if (S.raw.backdrop === 'ruins') ruinsBackdrop();
   if (S.raw.backdrop === 'thornwood') thornBackdrop();
+  if (S.raw.backdrop === 'savanna') savannaBackdrop();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
@@ -1693,6 +1792,7 @@ function paintBase() {
   if (S.raw.floor === 'depths') depthsFloor();
   if (S.raw.floor === 'ruins') ruinsFloor();
   if (S.raw.floor === 'thornwood') thornFloor();
+  if (S.raw.floor === 'savanna') savannaFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
@@ -1705,6 +1805,7 @@ function paintBase() {
   if (S.raw.backdrop === 'depths') { depthsFront(); landmark(); }
   if (S.raw.backdrop === 'ruins') { ruinsFront(); landmark(); ruinsSettle(); }
   if (S.raw.backdrop === 'thornwood') { thornFront(); landmark(); }
+  if (S.raw.backdrop === 'savanna') { savannaFront(); landmark(); }
   if (S.raw.prop) eventProps();
 
   return Uint32Array.from(px);
@@ -2117,7 +2218,7 @@ function basalt() {
 
 const stage = () => S.raw.stage ?? 0;
 const within = () => { const n = [4, 3, 4][stage()]; return n ? Math.min(1, (S.raw.step || 0) / (n - 1)) : 1; };   // 0..1 through the place
-const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths', ruins: 'ruins', thornwood: 'thornwood' })[S.raw.backdrop];
+const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths', ruins: 'ruins', thornwood: 'thornwood', savanna: 'savanna' })[S.raw.backdrop];
 const M = () => S.marks;
 
 /** Mark ground where grass shouldn't grow (water, lava, a landmark's footprint). */
@@ -5857,6 +5958,7 @@ function makeLife() {
   if (has('depths')) makeDepthsLife();
   if (has('ruins')) makeRuinsLife();
   if (has('thornwood')) makeThornLife();
+  if (has('savanna')) makeSavannaLife();
   if (has('vines')) {
     life.vines = [];
     for (let i = 0, n = Math.round(W / 9); i < n; i++) {
@@ -5950,6 +6052,7 @@ function draw() {
   if (has('depths')) drawDepths(t);
   if (has('ruins')) drawRuins(t);
   if (has('thornwood')) drawThorn(t);
+  if (has('savanna')) drawSavanna(t);
   if (has('tower')) paintArena({ W, H, px }, horizon, S.raw.tower, t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
@@ -6049,6 +6152,7 @@ function draw() {
     else if (S.raw.backdrop === 'depths') shake = depthsPortal(t);
     else if (S.raw.backdrop === 'ruins') shake = ruinsPortal(t);
     else if (S.raw.backdrop === 'thornwood') shake = thornPortal(t);
+    else if (S.raw.backdrop === 'savanna') shake = savannaPortal(t);
     else shake = drawClearingPortal(t);
   }
   else if (bossPrelude) shake = drawBossAwakening(t) || 0;
@@ -6512,6 +6616,7 @@ function drawBossAwakening(t) {
   if (S.raw.backdrop === 'depths') return depthsWake(t);
   if (S.raw.backdrop === 'ruins') return ruinsWake(t);
   if (S.raw.backdrop === 'thornwood') return thornWake(t);
+  if (S.raw.backdrop === 'savanna') return savannaWake(t);
   return drawClearingAwakening(t);
 }
 
@@ -6713,6 +6818,7 @@ const preludeSounds = () => ({
   depths: [[0, 'gate-hum'], [2, 'quake'], [CORE_AT, 'eruption'], [CORE_AT + 1, 'core-surge']],
   ruins: [[0, 'quake'], [6, 'lake-churn'], [TIDE_AT, 'wave-crash']],
   thornwood: [[0, 'glade-hum'], [4, 'rustle'], [9, 'creak'], [14, 'creak'], [THORN_AT, 'quake'], [THORN_AT + 1, 'leaf-storm']],
+  savanna: [[0, 'gust'], [5, 'rumble-far'], [FLARE_AT, 'sunburst'], [FLARE_AT + 1, 'eruption']],
   ...Object.fromEntries(Object.entries(SAFARI_PRELUDES).map(([area, p]) => [area, p.sounds])),
 });
 
@@ -11740,6 +11846,360 @@ LANDMARKS.thornwood = [
         solid(cx + x, foot - 2 + y, r < 2.5 ? shade : (x * 5 + y * 7) % 7 === 0 ? spot : y < 0 ? lit : body);
         bare(cx + x, foot - 2 + y);
       }
+    },
+  },
+];
+
+/* ============================================================
+   THE SUNSCORCH SAVANNA (roadmap item 20 part b)
+   A sun-baked grassland of wildfires. Its places by stage(): the Tall Grass (golden grass to the far hills, acacias, a
+   track through it), the Burnt Plain (blackened ground still glowing in its cracks, charred trees, a wildfire burning
+   along the horizon under its smoke), the Watering Hole (a pool in cracked mud, reeds, a baobab) and Sun Rock (a great
+   rock jutting out over the plain from the right, under the sun). The land shimmers in the heat by day.
+   ============================================================ */
+
+function savannaBackdrop() {
+  const st = stage(), k = within();
+  life.svGlow = []; life.svFire = []; life.rock = null;
+  ridge(horizon - Math.round(horizon * 0.17), Math.max(2, Math.round(horizon * 0.06)), 21, 1.7 + st, S.hills, false);
+  ridge(horizon - Math.round(horizon * 0.07), Math.max(1, Math.round(horizon * 0.03)), 13, 4.1 + st, [S.hills[1], S.hills[2], S.hills[2]], false);
+  if (st === 1) { wildfireLine(); return charredGrove(); }
+  for (let n = 0, count = Math.max(3, Math.round(W / 34)); n < count; n++) {   // far acacias along the horizon
+    const x = Math.round((n + 0.2 + rand() * 0.6) * W / count);
+    if (st === 3 && x > W * 0.55) continue;
+    acacia(x, horizon - 1, 2 + Math.floor(rand() * 2), true);
+  }
+  if (st === 0) for (const at of k > 0.5 ? [0.12, 0.33, 0.8] : [0.2, 0.7]) acacia(Math.round(W * at), horizon + 1 + Math.round(rand() * 2), Math.max(4, Math.round(horizon * (0.08 + rand() * 0.05))), false);
+  if (st === 2) baobab(Math.round(W * 0.84), horizon + 1, Math.max(5, Math.round(Math.min(W * 0.05, horizon * 0.14))));
+  if (st === 3) sunRock();
+}
+
+/** A wildfire burning along the horizon: a glowing band where the grass meets the hills, smoke columns over it. */
+function wildfireLine() {
+  for (let x = 0; x < W; x++) {
+    const on = Math.sin(x / 13) + Math.sin(x / 5.3 + 1) > -0.4;
+    if (!on) continue;
+    const h = 1 + Math.round((Math.sin(x / 3.1) + 1) * 1.2);
+    for (let k = 0; k < h; k++) { solid(x, horizon - 1 - k, S.ember[k === 0 ? 1 : 2]); life.svFire.push({ x, y: horizon - 1 - k, k }); }
+  }
+  const columns = Math.max(2, Math.round(W / 50));
+  life.svSmoke = Array.from({ length: columns }, (_, n) => ({ x: Math.round((n + 0.5) * W / columns + (rand() - 0.5) * 20), len: Math.round(horizon * (0.5 + rand() * 0.4)), phase: rand() * 40 }));
+}
+
+/** The Burnt Plain's charred trees: bare black trunks and forks, a few still smoking. */
+function charredGrove() {
+  const [lit, body, shade, line] = M().char;
+  for (let n = 0, count = Math.max(3, Math.round(W / 40)); n < count; n++) {
+    const x = Math.round((n + 0.5) * W / count + (rand() - 0.5) * 12), foot = horizon + 1, h = Math.round(horizon * (0.12 + rand() * 0.14));
+    for (let y = foot - h; y <= foot; y++) { solid(x, y, body); solid(x + 1, y, line); }
+    for (const [side, at, len] of [[-1, 0.55, 0.5], [1, 0.75, 0.4], [-1, 0.9, 0.3]]) {
+      for (let s = 0, L = Math.round(h * len); s < L; s++) solid(x + side * s, foot - Math.round(h * at) - Math.round(s * 0.7), s % 3 ? body : lit);
+    }
+    if (rand() < 0.4) steam(x, foot - h, 0.6);
+  }
+}
+
+/** A baobab: a fat, tapering trunk and a few thick branches ending in tufts. */
+function baobab(cx, foot, half) {
+  const [lit, body, shade, line] = M().bark, [leaf, leafDark] = [S.trees[1], S.trees[2]], h = Math.round(half * 3.2);
+  for (let y = foot - h; y <= foot; y++) {
+    const f = (foot - y) / h, w = Math.round(half * (1 - f * 0.35) + (f < 0.1 ? (0.1 - f) * 10 : 0));
+    for (let x = -w; x <= w; x++) { const u = x / w; solid(cx + x, y, u < -0.6 ? lit : u > 0.6 ? line : (cx + x) % 4 === 0 ? shade : body); }
+  }
+  for (const [ang, len] of [[-2.4, 1.2], [-1.9, 0.9], [-1.4, 1], [-0.9, 0.9], [-0.6, 1.2]]) {
+    let x = cx + Math.cos(ang) * half * 0.6, y = foot - h;
+    for (let s = 0, L = Math.round(half * len * 1.4); s < L; s++) { x += Math.cos(ang) * 0.8; y += Math.sin(ang) * 0.8; solid(x, y, body); solid(x, y + 1, shade); }
+    for (let dy = -2; dy <= 1; dy++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dy * dy * 2 < 9) solid(x + dx, y + dy, dy < 0 ? leaf : leafDark);
+  }
+}
+
+/** Sun Rock: a great rock jutting out over the plain from the right, its prow pointing up and out, its underside in
+    shadow, strata and cracks down its face, grass on its top. */
+function sunRock() {
+  const [lit, body, shade, line] = M().stone, h = Math.round(horizon * 0.66), tx = Math.round(W * 0.5), bx = Math.round(W * 0.68), ty = horizon - h;
+  const topAt = (x) => x < bx ? ty + (x - tx) * 0.12 : ty + (bx - tx) * 0.12 - h * 0.14 * Math.sin(Math.PI * Math.min(1, (x - bx) / (W - bx + 30))) + Math.round(noise(x >> 2, 3, 120) * 3);
+  const bottomAt = (x) => x >= bx ? horizon : topAt(x) + 2 + ((x - tx) / (bx - tx)) ** 1.8 * (horizon - topAt(x) - 2);
+  for (let x = tx; x < W; x++) {
+    const top = Math.round(topAt(x)), bottom = Math.round(bottomAt(x));
+    for (let y = top; y < bottom; y++) {
+      const strata = (y + Math.round(Math.sin(x * 0.15) * 2)) % 6 === 0 && noise(x >> 3, y, 121) < 0.7, crack = noise(x >> 1, y >> 2, 120) > 0.92;
+      let c = y - top < 2 ? lit : bottom < horizon && bottom - y <= 1 ? line : crack || strata ? shade : x > W * 0.9 ? shade : x < bx + 4 && dither(x, y) < 8 ? lit : body;
+      if (y > horizon - h * 0.12 && dither(x, y) < 6) c = shade;
+      solid(x, y, c);
+    }
+    if (noise(x, 1, 121) < 0.35) { solid(x, top - 1, S.trees[1]); if (noise(x, 2, 121) < 0.4) solid(x, top - 2, S.trees[0]); }
+    if (x < bx) for (let y = horizon; y < horizon + 3; y++) if (dither(x, y) < 10) tint(x, y, 0.75);   // the prow's shadow on the plain
+  }
+  life.rock = { tipX: tx, ledgeY: ty, h };
+  if (life.sun) {   // the sun rides just over the rock, where its prelude can flare it
+    const sun = life.sun;
+    sun.y = Math.min(sun.y, Math.round(topAt(sun.x)) - sun.r * 2 - 2);
+    for (let y = -sun.r * 2; y <= sun.r * 2; y++) for (let x = -sun.r * 2; x <= sun.r * 2; x++) {
+      const d = Math.hypot(x, y);
+      if (d <= sun.r) put(sun.x + x, sun.y + y, d < sun.r - 1 ? S.sun[0] : S.sun[1]);
+      else if (d <= sun.r * 1.7 && dither(x, y) < 5 && sky[(sun.y + y) * W + sun.x + x]) put(sun.x + x, sun.y + y, S.sky[S.sky.length - 1]);
+    }
+  }
+}
+function savannaFloor() {
+  const st = stage();
+  bands(horizon, H, st === 1 ? S.burnt : S.ground, 0.8);
+  const [, warm, red] = S.ember;
+  if (st === 1) {
+    for (let n = 0, c = Math.round(W * (H - horizon) / 18); n < c; n++) {   // ash, and grass the fire missed
+      const x = Math.floor(rand() * W), y = horizon + 1 + Math.floor(rand() * (H - horizon));
+      put(x, y, rand() < 0.12 ? S.ground[4] : M().char[0]);
+    }
+    for (let n = 0, c = Math.round(W / 18); n < c; n++) {   // cracks still glowing
+      let x = rand() * W, y = horizon + 3 + rand() * (H - horizon - 4);
+      for (let s = 0, len = 2 + rand() * (3 + depthOf(y) * 7); s < len; s++) {
+        x += rand() < 0.5 ? 1 : -0.3; y += (rand() - 0.5) * 0.8;
+        put(x, y, red); life.svGlow.push({ x: x | 0, y: y | 0, phase: rand() * 40 });
+      }
+    }
+    life.bladeDensity = 0.12;
+    return;
+  }
+  for (let n = 0, c = Math.round(W * (H - horizon) / 6); n < c; n++) {   // the grass's grain
+    const x = Math.floor(rand() * W), y = horizon + 1 + Math.floor(rand() * (H - horizon)), d = depthOf(y);
+    put(x, y, S.blade[rand() < 0.5 ? 1 : 2]);
+    if (d > 0.4) put(x, y - 1, S.blade[1]);
+  }
+  grassPatches(S.patch, Math.round(W / 10));
+  if (st === 0) savannaTrack();
+  if (st === 2) wateringHole();
+  for (let n = 0; n < Math.max(2, Math.round(W / 60)); n++) {
+    const y = horizon + 6 + Math.floor(rand() * (H - horizon - 8));
+    rock(Math.floor(rand() * W), y, depthOf(y) > 0.5 ? 2 : 1);
+  }
+  if (st === 0) flowerClusters(Math.round(W / 14));
+  life.bladeDensity = st === 0 ? 1.5 : st === 2 ? 0.7 : 0.6;
+}
+
+/** A dusty track winding in to the horizon. */
+function savannaTrack() {
+  const [light, , dark] = M().stone, cx = W * 0.42;
+  for (let y = horizon; y < H; y++) {
+    const d = depthOf(y), half = 0.6 + W * 0.07 * d, mid = cx + Math.sin(y * 0.07 + 1) * d * W * 0.08 - d * W * 0.1;
+    for (let x = Math.floor(mid - half - 2); x <= mid + half + 2; x++) {
+      const e = Math.abs(x + 0.5 - mid) - half;
+      if (e < 0 || dither(x, y) < (2 - e) * 4) { put(x, y, noise(x >> 1, y >> 1, 122) < 0.25 ? dark : mixC(light, S.ground[2], 0.35)); bare(x, y); }
+    }
+  }
+}
+
+/** The watering hole: a pool at the back of the plain in a ring of cracked mud, the sky in it, reeds round its edge. */
+function wateringHole() {
+  const w = M().water, [mudLit, mud, mudDark] = M().mud, cx = W * 0.46, cy = horizon + (H - horizon) * 0.13;
+  const rx = W * 0.3, ry = Math.max(3, (H - horizon) * 0.09), skyC = S.sky[S.sky.length - 1];
+  life.svGlints = [];
+  for (let y = Math.floor(cy - ry * 1.6); y <= cy + ry * 1.6; y++) for (let x = Math.floor(cx - rx * 1.4); x <= cx + rx * 1.4; x++) {
+    const d = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2;
+    if (d <= 1) {
+      const k = (y - (cy - ry)) / (ry * 2);
+      put(x, y, mixC(skyC, k < 0.5 ? w[1] : w[2], 0.35 + k * 0.5)); bare(x, y);
+      if (rand() < 0.03) life.svGlints.push({ x, y, phase: rand() * 40 });
+    } else if (d <= 1.9) {
+      put(x, y, noise(x >> 1, y, 123) > 0.82 ? mudDark : d < 1.2 ? mudLit : mud); bare(x, y);
+    }
+  }
+  const [rl, rb, rd] = M().reed;
+  for (let n = 0; n < Math.round(W / 8); n++) {
+    const a = rand() * Math.PI * 2, x = cx + Math.cos(a) * rx * 1.05, y = cy + Math.sin(a) * ry * 1.05, h = 2 + Math.round(depthOf(y) * 8 + rand() * 3);
+    if (Math.abs(x - W / 2) < W * 0.12 && y > cy) continue;
+    for (let k = 0; k < h; k++) put(x + (k > h * 0.6 ? 1 : 0), y - k, k === h - 1 ? rl : k % 2 ? rb : rd);
+  }
+}
+
+function savannaFront() {
+  const st = stage();
+  if (st === 0) for (const s of [-1, 1]) tallGrassEdge(s);   // the tall grass you're standing in
+  if (st === 1) for (const [at, k] of [[0.04, 0.38], [0.95, 0.26]]) {
+    const x = Math.round(W * at), foot = horizon + Math.round((H - horizon) * k);
+    stump(x, foot, 3, 7, M().char, M().char, false);
+    steam(x, foot - 9, 0.8);
+  }
+  if (st === 2) for (const s of [-1, 1]) {
+    const [rl, rb, rd] = M().reed, x0 = s < 0 ? 0 : W - Math.round(W * 0.14);
+    for (let x = x0; x < x0 + W * 0.14; x += 2) {
+      const h = Math.round(H * (0.12 + noise(x, 4, 124) * 0.12)), lean = (noise(x, 5, 124) - 0.5) * 0.4;
+      for (let k = 0; k < h; k++) solid(x + Math.round(lean * k), H - 1 - k, k > h - 4 ? rl : k % 2 ? rb : rd);
+      if (noise(x, 6, 124) < 0.3) { solid(x + Math.round(lean * h), H - h - 1, M().mud[2]); solid(x + Math.round(lean * h), H - h - 2, M().mud[2]); }   // a cattail head
+    }
+  }
+  if (st === 3) for (const [at, k, r] of [[0.03, 0.34, 8], [0.97, 0.22, 6]]) mound(Math.round(W * at), horizon + Math.round((H - horizon) * k), r, Math.round(r * 0.7), [...S.rock, M().stone[3]]);
+}
+
+/** Tall golden grass along the bottom edge on one side, leaning blades taller towards the corner. */
+function tallGrassEdge(side) {
+  const [lit, body, dark] = S.blade;
+  for (let x = 0; x < W * 0.3; x++) {
+    const px = side < 0 ? x : W - 1 - x, h = Math.round(H * 0.22 * (1 - x / (W * 0.3)) ** 0.7 * (0.6 + noise(x, 7, 125) * 0.5));
+    const lean = (noise(x, 8, 125) - 0.5) * 0.6;
+    for (let k = 0; k < h; k++) solid(px + Math.round(lean * k * (k / h)), H - 1 - k, k > h * 0.75 ? lit : k > h * 0.3 ? body : dark);
+  }
+}
+
+/* ----- its life ----- */
+
+function makeSavannaLife() {
+  const st = stage(), n = Math.round(W / 6 * (S.embers || 0) * (st === 1 ? 2 : st === 3 ? 1.4 : 0.5));
+  life.svEmbers = Array.from({ length: n }, () => ({ x: rand() * W, y: horizon + rand() * (H - horizon), v: 0.15 + rand() * 0.35, phase: rand() * 40 }));
+}
+
+function drawSavanna(t) {
+  const L = life, st = stage(), [hot, warm, red] = S.ember;
+  if (!S.stars && !calmFx()) {   // the heat shimmer over the horizon
+    for (let y = Math.max(0, horizon - 7); y < horizon + 2; y++) {
+      const off = Math.round(Math.sin(y * 1.3 + t * 0.8) * 0.7);
+      if (!off) continue;
+      for (let x = 1; x < W - 1; x++) px[y * W + x] = base[y * W + x + off];
+    }
+  }
+  if (L.svFire) for (const f of L.svFire) {   // the far wildfire flickers
+    const s = Math.sin(t * 1.7 + f.x * 0.9 + f.k);
+    put(f.x, f.y, s > 0.5 ? hot : s > -0.3 ? warm : red);
+    if (s > 0.85) put(f.x, f.y - 1, red);
+  }
+  if (L.svGlow) for (const g of L.svGlow) { const s = Math.sin(t / 5 + g.phase); put(g.x, g.y, s > 0.85 ? hot : s > 0.2 ? warm : red); }
+  if (L.svSmoke) for (const m of L.svSmoke) {   // the wildfire's smoke, leaning off downwind
+    for (let j = 0; j < m.len; j++) {
+      const w = 1 + j * 0.12, cx = m.x + j * 0.35 + Math.sin(j * 0.12 - t * 0.25 + m.phase) * (1 + j * 0.06), y = horizon - 3 - j;
+      for (let x = Math.floor(cx - w); x <= cx + w; x++) if (dither(x, y + Math.floor(t)) < 14 * (1 - j / m.len) * (1 - Math.abs(x - cx) / (w + 1))) put(x, y, S.smoke[Math.min(3, Math.floor(j / m.len * 3 + (x > cx ? 1 : 0)))]);
+    }
+  }
+  if (L.svGlints) for (const g of L.svGlints) if (Math.sin((t + g.phase) / 4) > 0.8) { put(g.x, g.y, M().water[0]); put(g.x + 1, g.y, M().water[0]); }
+  if (L.svEmbers) for (const e of L.svEmbers) {
+    const span = H - horizon * 0.3, y = ((e.y - t * e.v * 3) % span + span) % span + horizon * 0.3, x = e.x + Math.sin(t / 7 + e.phase) * 3;
+    if (Math.sin(t / 3 + e.phase) > -0.2) put(x, y, Math.sin(t + e.phase) > 0.3 ? hot : warm);
+  }
+  if (st === 3 && L.rock && bossPrelude?.phase === 'awake') grassFire(1, t, true);
+}
+
+/** Flames along the grass at the horizon, spreading `k` of the way out from Sun Rock; `sparse` leaves gaps for a fight. */
+function grassFire(k, t, sparse = false) {
+  const [hot, warm, red] = S.ember, from = L0();
+  for (let x = 0; x < W; x++) {
+    if (Math.abs(x - from) > k * W * 1.1) continue;
+    if (sparse && Math.sin(x / 6) + Math.sin(x / 2.3) < 0.6) continue;
+    const h = Math.round((2 + (Math.sin(x * 1.7 + t * 2.3) + 1) * 2 + (Math.sin(x * 0.6 - t * 3.1) + 1)) * (sparse ? 0.6 : 1));
+    for (let j = 0; j < h; j++) {
+      const wob = Math.round(Math.sin(j * 0.9 + t * 4 + x) * 0.6);
+      put(x + wob, horizon + 1 - j, j < h * 0.3 ? hot : j < h * 0.7 ? warm : red);
+    }
+  }
+}
+const L0 = () => life.rock ? life.rock.tipX + (W - life.rock.tipX) * 0.3 : W * 0.7;
+
+/* ----- Sun Rock's boss prelude: the land goes red with heat, the sun swells and burns over the rock, its rays wheeling,
+   then the grass catches all along the plain in a line of fire racing out from the rock. The portal is a wall of flame
+   rising over the screen into the white. ----- */
+
+const FLARE_AT = 18;   // frames into the wake (8 fps) when the grass catches; the `sunburst` and `eruption` sounds are timed to it
+
+function savannaWake(t) {
+  if (!life.rock || bossPrelude.phase === 'awake') return 0;
+  const age = preludeAge(t), grow = Math.min(1, age / FLARE_AT);
+  veil(abgr('#401004'), Math.min(0.32, age * 0.022));
+  const sun = life.sun || { x: Math.round(W * 0.86), y: Math.round(horizon * 0.3), r: 4 };
+  const r = sun.r * (1 + grow * 1.6 + Math.max(0, Math.sin(age * 1.4)) * 0.2), [hot, warm, red] = S.ember;
+  for (let a = 0; a < 12; a++) {   // the rays wheeling round it
+    const ang = a / 12 * Math.PI * 2 + age * 0.08, len = r * (1.6 + grow * 2.4);
+    for (let s = r; s < len; s += 0.7) if (dither(Math.round(sun.x + Math.cos(ang) * s), Math.round(sun.y + Math.sin(ang) * s)) < 10 * (1 - s / len)) put(sun.x + Math.cos(ang) * s, sun.y + Math.sin(ang) * s, warm);
+  }
+  heartGlow(sun.x, sun.y, r * 0.75, [S.sun[0], hot, warm]);
+  if (age > FLARE_AT - 6) grassFire(Math.min(1, Math.max(0.05, (age - FLARE_AT + 6) / 10)), t);
+  if (age >= FLARE_AT) for (let i = 0; i < 40; i++) {   // sparks flung up off the fire
+    const x = W * noise(i, 126, 0), s = ((age - FLARE_AT) * 0.4 + noise(i, 126, 1) * 3) % 3;
+    put(x, horizon - s * horizon * 0.15 + s * s * 2, i % 2 ? hot : warm);
+  }
+  return age >= FLARE_AT ? (age < FLARE_AT + 5 ? 2 : 1) : age > 8 ? 1 : 0;
+}
+
+function savannaPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
+  const [hot, warm, red] = S.ember, rise = Math.min(1.25, ((age + 1) / 6) ** 1.2), deep = abgr('#601808');
+  for (let x = 0; x < W; x++) {
+    const crest = Math.round(H - rise * H * 1.05 + Math.sin(x * 0.4 + age * 3) * 4 + Math.sin(x * 0.13 - age * 2) * 6);
+    for (let y = Math.max(0, crest - 6); y < H; y++) {
+      const dp = y - crest, n = Math.sin(x * 0.7 + y * 0.3 - age * 6) + Math.sin(x * 0.23 - y * 0.5 + age * 4);
+      if (dp < 0) { if (n > 1.2) put(x, y, red); continue; }
+      put(x, y, dp < 3 ? red : dp < 8 ? (n > 0 ? warm : red) : n > 0.8 ? hot : dp < 20 ? warm : n > -0.5 ? hot : deep);
+    }
+  }
+  return 2;
+}
+
+/* ----- the Savanna's landmarks, one per floor at an edge ----- */
+const SKULL = [   // a bleached horned skull lying in the grass
+  'o.........o',
+  'Lo.......oL',
+  '.Lo.....oL.',
+  '..oLLLLLo..',
+  '.oLsLLLsSo.',
+  '.oLoLsLoSo.',
+  '..oLsssSo..',
+  '...oLsSo...',
+  '...oSoSo...',
+  '....ooo....',
+];
+LANDMARKS.savanna = [
+  {
+    termites(cx, foot) {   // a termite mound, its spires baked hard
+      const [lit, body, shade, line] = M().clay;
+      outlined(cx - 5, foot - 16, cx + 5, foot, (x, y) => {
+        const v = (foot - y) / 16, half = 5 * (1 - v) ** 0.8 + (Math.abs(x - cx - 2) < 2 && v < 0.95 ? 1.2 : 0);
+        return y <= foot && v <= 1 && Math.abs(x + 0.5 - cx) <= half + (x > cx && v > 0.6 && v < 0.8 ? 1.5 : 0);
+      }, (x, y) => ((y * 3 + x) % 7 === 0 ? shade : x < cx - 1 ? lit : x > cx + 1 ? shade : body), line);
+      for (let x = -6; x <= 6; x++) bare(cx + x, foot);
+    },
+    skull(cx, foot) { statue(cx, foot, SKULL); },
+    sunflowers(cx, foot) {   // big sunflowers nodding over the grass
+      const [petal, deep, heart] = M().petal, stem = S.trees[2];
+      for (const [dx, h] of [[-4, 12], [1, 15], [5, 10]]) {
+        for (let y = foot - h; y <= foot; y++) solid(cx + dx, y, stem);
+        solid(cx + dx - 1, foot - Math.round(h * 0.5), S.trees[1]); solid(cx + dx + 1, foot - Math.round(h * 0.35), S.trees[1]);
+        for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) { const d = x * x + y * y; if (d <= 5) solid(cx + dx + x, foot - h + y, d <= 1 ? heart : (x + y) % 2 ? deep : petal); }
+      }
+    },
+    kopje(cx, foot) {   // boulders piled on each other, baked smooth
+      const col = [...S.rock, M().stone[3]];
+      mound(cx - 3, foot, 6, 4, col); mound(cx + 4, foot, 4, 3, col); mound(cx, foot - 7, 4, 3, col);
+    },
+  },
+  {
+    stump(cx, foot) { stump(cx, foot, 3, 8, M().char, M().char, false); steam(cx, foot - 10, 0.7); },   // a charred stump, still smoking
+    log(cx, foot) {   // a burnt log, embers glowing in its cracks
+      const [lit, body, shade, line] = M().char;
+      for (let x = -8; x <= 8; x++) for (let k = -3; k <= 3; k++) solid(cx + x, foot - 3 + k, k === -3 ? lit : k === 3 ? line : (x * 5 + k * 3) % 7 === 0 ? shade : body);
+      for (let x = -7; x <= 7; x += 3) { const y = foot - 3 + ((x + 8) % 3) - 1; solid(cx + x, y, S.ember[2]); life.svGlow.push({ x: cx + x, y, phase: x }); }
+      for (let x = -9; x <= 9; x++) bare(cx + x, foot);
+    },
+    sapling(cx, foot) {   // a young acacia burnt black, a green shoot back already at its foot
+      const [, body, , line] = M().char;
+      for (let y = foot - 12; y <= foot; y++) solid(cx, y, body);
+      for (let s = 0; s < 6; s++) { solid(cx - s, foot - 9 - Math.round(s * 0.6), line); solid(cx + s, foot - 11 - Math.round(s * 0.5), line); }
+      solid(cx + 2, foot, S.trees[0]); solid(cx + 2, foot - 1, S.trees[1]); solid(cx + 3, foot - 2, S.trees[0]);
+    },
+    cairn(cx, foot) {   // stones stacked by someone who came this way before the fire
+      const [lit, body, shade, line] = M().char;
+      for (const [dy, r] of [[0, 5], [-4, 4], [-7, 3], [-10, 2]]) mound(cx, foot + dy, r, Math.max(1, Math.round(r * 0.6)), [lit, body, shade, line]);
+    },
+  },
+  {
+    bones(cx, foot) {   // a great ribcage bleaching by the water
+      const [lit, body, shade, line] = M().bone;
+      for (let x = -7; x <= 7; x++) { solid(cx + x, foot - 1, body); solid(cx + x, foot, line); }
+      for (let i = -3; i <= 3; i++) for (let k = 0; k < 9 - Math.abs(i); k++) solid(cx + i * 2 + Math.round(Math.sin(k * 0.3) * 1.5 * Math.sign(i || 1)), foot - 2 - k, k > 6 - Math.abs(i) ? lit : body);
+    },
+    wallow(cx, foot) { pool(cx, foot - 1, 7, 2, (x, y, d) => (d < 0.4 ? M().mud[2] : M().mud[1]), M().mud[0]); },   // a mud wallow
+    log(cx, foot) { fallenLog(cx - 2, foot - 3, 6, 3, true); },   // a log washed up at the water's edge
+    weaver(cx, foot) {   // an acacia sapling hung with weaver birds' nests
+      const [bark] = S.trunk, [lit, leaf] = S.trees, [wl, wb] = M().reed;
+      for (let y = foot - 14; y <= foot; y++) solid(cx, y, bark);
+      for (let x = -6; x <= 6; x++) { solid(cx + x, foot - 15, leaf); if (Math.abs(x) < 5) solid(cx + x, foot - 16, lit); }
+      for (const dx of [-4, 2, 5]) { solid(cx + dx, foot - 13, wl); solid(cx + dx, foot - 12, wb); solid(cx + dx + 1, foot - 12, wl); solid(cx + dx, foot - 11, wb); }
     },
   },
 ];

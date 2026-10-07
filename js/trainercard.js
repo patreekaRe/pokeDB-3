@@ -71,6 +71,7 @@ const G = {
   heart: (d) => `<path d="M18 25.5 11 18.6a4 4 0 0 1 7-4.8 4 4 0 0 1 7 4.8Z" fill="#fff" stroke="${d}" stroke-width="1.4" stroke-linejoin="round"/>`,
   cards: (d) => `<rect x="11" y="12.5" width="9" height="12" rx="1.4" fill="#fff" stroke="${d}" stroke-width="1.4" transform="rotate(-12 15.5 18.5)"/><rect x="16" y="11.5" width="9" height="12" rx="1.4" fill="#fff" stroke="${d}" stroke-width="1.4" transform="rotate(10 20.5 17.5)"/>`,
   coin: (d, h) => `<circle cx="18" cy="18" r="7.2" fill="${h}" stroke="${d}" stroke-width="1.6"/><circle cx="18" cy="18" r="4.8" fill="none" stroke="${d}" stroke-width="1" opacity=".6"/><text x="18" y="21.4" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="9" fill="${d}">P</text>`,
+  sun: () => `<circle cx="18" cy="18" r="4.2" fill="#fff" opacity=".95"/><path d="M18 8.5v3.2M18 24.3v3.2M8.5 18h3.2M24.3 18h3.2M11.3 11.3l2.3 2.3M22.4 22.4l2.3 2.3M11.3 24.7l2.3-2.3M22.4 13.6l2.3-2.3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".95"/>`,
   clock: (d) => `<circle cx="18" cy="18" r="7.4" fill="#fff" stroke="${d}" stroke-width="1.6"/><path d="M18 13.2V18l3.4 2.2" fill="none" stroke="${d}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
 };
 
@@ -96,6 +97,7 @@ const LOOK = {
   explorer: ['circle', ['#98f0e0', '#30b0a0', '#106058'], 'compass'],
   tide: ['hex', ['#98f0e8', '#30a8b0', '#145860'], 'wave'],
   thorn: ['diamond', ['#a8d878', '#4a8a30', '#1e4818'], 'thorns'],
+  sun: ['circle', ['#ffe890', '#e8a830', '#8a5410'], 'sun'],
   wanderer: ['circle', ['#f0d8a0', '#b89050', '#5e4420'], 'fork'],
   rookie: ['circle', ['#c8f0b0', '#70b858', '#305c20'], 'one'],
   platinum: ['circle', ['#f0fbff', '#a8d8e8', '#4c7888'], 'four'],
@@ -115,6 +117,7 @@ const LOOK = {
   'bare-bag': ['octagon', ['#f0e0c0', '#b89868', '#5c4428'], 'zero'],
   'page-ruins': ['book', ['#98f0e8', '#30a8b0', '#145860'], 'ball'],
   'page-thornwood': ['book', ['#a8d878', '#4a8a30', '#1e4818'], 'ball'],
+  'page-savanna': ['book', ['#ffe890', '#e8a830', '#8a5410'], 'ball'],
   'page-depths': ['book', ['#d8c0ff', '#8858d0', '#402080'], 'ball'],
   'safari-master': ['shield', ['#fff4a0', '#d8b830', '#7a6410'], 'paw'],
   sparkle: ['diamond', ['#fff0f8', '#f8a8d0', '#a04880'], 'sparkle'],
@@ -148,7 +151,7 @@ const TYPE_LOOK = {
 };
 const BIOME_INK = {
   clearing: LOOK.clearing[1], shrine: LOOK.shrine[1], wastes: LOOK.ember[1],
-  ruins: LOOK.tide[1], thornwood: LOOK.thorn[1], depths: LOOK['page-depths'][1],
+  ruins: LOOK.tide[1], thornwood: LOOK.thorn[1], savanna: LOOK.sun[1], depths: LOOK['page-depths'][1],
 };
 const TOWER_INK = ['#c8d8f0', '#7890b8', '#384868'];
 for (const [area, [shape, ink]] of Object.entries(AREA_LOOK)) {
@@ -157,7 +160,7 @@ for (const [area, [shape, ink]] of Object.entries(AREA_LOOK)) {
   for (const [type, [tink, glyph]] of Object.entries(TYPE_LOOK)) LOOK[`sx-${area}-${type}`] = [shape, tink, glyph];
 }
 for (const biome of ['clearing', 'shrine', 'wastes']) LOOK[`page-${biome}`] = ['book', BIOME_INK[biome], 'ball'];
-for (const biome of ['ruins', 'thornwood', 'depths']) LOOK[`beat-${biome}`] = ['shield', BIOME_INK[biome], 'fist'];
+for (const biome of ['ruins', 'thornwood', 'savanna', 'depths']) LOOK[`beat-${biome}`] = ['shield', BIOME_INK[biome], 'fist'];
 for (const n of [10, 20, 30, 40, 50, 60, 70, 80, 90]) LOOK[`tower-${n}`] = ['tower', TOWER_INK, `t${n}`];
 LOOK['tower-100'] = ['tower', ['#fff4a0', '#d8b830', '#7a6410'], 't100'];
 for (const n of [1, 5, 10, 15, 20, 30, 40, 50]) LOOK[`guardians-${n}`] = ['shield', ['#f0e0b0', '#a88c58', '#584020'], `n${n}`];

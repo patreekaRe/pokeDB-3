@@ -129,6 +129,8 @@ export const BADGES = [
     text: 'Defeat the Ember Wastes\' boss', test: (s, save) => bossBeaten(save, 'wastes') },
   { id: 'thorn', group: 'journey', name: 'Thorn Badge', icon: 'thorn', emoji: '🌿',
     text: 'Defeat the Thornwood Jungle\'s boss', test: (s, save) => bossBeaten(save, 'thornwood') },
+  { id: 'sun', group: 'journey', name: 'Sun Badge', icon: 'sun', emoji: '🌾',
+    text: 'Defeat the Sunscorch Savanna\'s boss', test: (s, save) => bossBeaten(save, 'savanna') },
   { id: 'champion', group: 'journey', name: 'Champion Badge', icon: 'champion', emoji: '🏆',
     text: 'Win a run', test: (s) => s.runsWon >= 1 },
   { id: 'fire', group: 'journey', name: 'Fire Badge', icon: 'fire', emoji: '🔥',
@@ -234,9 +236,11 @@ export const BADGES = [
     text: 'Complete the Sunken Ruins\' Pokédex page', test: (s, save) => pageDone(save, 'ruins') },
   { id: 'page-thornwood', group: 'pokedex', name: 'Jungle Page Badge', icon: 'page-thornwood', emoji: '📗',
     text: 'Complete the Thornwood Jungle\'s Pokédex page', test: (s, save) => pageDone(save, 'thornwood') },
+  { id: 'page-savanna', group: 'pokedex', name: 'Savanna Page Badge', icon: 'page-savanna', emoji: '📙',
+    text: 'Complete the Sunscorch Savanna\'s Pokédex page', test: (s, save) => pageDone(save, 'savanna') },
   { id: 'page-depths', group: 'pokedex', name: 'Crystal Page Badge', icon: 'page-depths', emoji: '📓', secret: true,
     text: 'Complete the Crystal Depths\' Pokédex page', test: (s, save) => pageDone(save, 'depths') },
-  ...[['ruins', 'Ruins Hunter Badge'], ['thornwood', 'Jungle Hunter Badge'], ['depths', 'Crystal Hunter Badge']].map(([biome, name]) => ({
+  ...[['ruins', 'Ruins Hunter Badge'], ['thornwood', 'Jungle Hunter Badge'], ['savanna', 'Savanna Hunter Badge'], ['depths', 'Crystal Hunter Badge']].map(([biome, name]) => ({
     id: `beat-${biome}`, group: 'pokedex', name, icon: `beat-${biome}`, emoji: '🎯', ...(biome === 'depths' && { secret: true }),
     text: `Defeat every Pokémon on the ${its(PAGE_OF[biome].name)} Pokédex page`, test: (s, save) => pageBeaten(save, PAGE_OF[biome]) })),
 
