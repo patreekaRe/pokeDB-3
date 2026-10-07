@@ -56,15 +56,15 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     another, never the same one twice, so one of the three sits out each run. The crossroads stays two roads.
     **Tilt until seen:** a pool biome never walked into (`stats.biomesSeen`) is offered before a seen one (both unseen or
     both seen: a coin flip); once all three are seen it's pure random for good. Rolls through `js/rng.js`.
-    **Part a is done** (2026-10-07: the Sunscorch Savanna, the pool roll, numbers by fork; see the archive). It borrows the
-    Clearing's scenery and has no journey films yet.
-    **Part b. Run in: LOCAL (Desktop app):** "Read CLAUDE.md (Branching biomes) and `docs/roadmap.md` item 20, then paint the
-    Sunscorch Savanna (`BIOME_ART.savanna` in `js/scene.js`, now `{ ...BIOME_ART.clearing }`): its four places Tall Grass /
-    Burnt Plain / Watering Hole / Sun Rock, landmarks, the boss prelude on Sun Rock, an intro film, its map palette
-    (`PALETTES.savanna` in `js/map.js`), a grotto (`PLACE_ART.treasure.biomes.savanna`), and a `descent()` land if it ends a
-    run. Then journey films for the new pairings (`ROUTES` in `js/travel.js`; any pool biome can now follow the Clearing,
-    the Shrine or another pool biome, and lead to the Wastes or another), a few a session." Also open: should the Savanna get
-    badges like the Ruins' and Thornwood's (a boss, page and hunter badge)? Ask the user.
+    **Parts a and b are done** (2026-10-07: the Sunscorch Savanna, the pool roll, numbers by fork; then its whole look, film,
+    map, grotto, descent floors for every road that can end a run, and the `clearing>savanna` / `savanna>wastes` journey
+    films; see the archive).
+    **Part c. Run in: LOCAL (Desktop app):** "Read CLAUDE.md (Branching biomes, Journey films) and `docs/roadmap.md` item 20,
+    then add journey films (`ROUTES` in `js/travel.js`) for the pairings the pool made possible that still cut straight to
+    the map: `clearing>thornwood`, `shrine>ruins`, `shrine>savanna`, `ruins>savanna`, `thornwood>wastes`, `thornwood>ruins`,
+    `thornwood>savanna`, `savanna>ruins`, `savanna>thornwood`; a few a session, each with its own set piece and lines, reusing
+    `farAndHills()` and the jungle / savanna helpers." Also open: should the Savanna get badges like the Ruins' and
+    Thornwood's (a boss, page and hunter badge)? Ask the user.
 
 
 ## Ideas, not agreed yet (ask the user before building)

@@ -563,9 +563,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   and since item 20 part a the **Sunscorch Savanna** (home 1: a sun-baked grassland of wildfires round one watering hole,
   places Tall Grass / Burnt Plain / Watering Hole / Sun Rock; 6 Fire (Ponyta, Magby, Ninetales, Arcanine, Houndoom, Simisear)
   / 2 Water / 2 Grass / 2 Normal wilds (Meowth and Minccino, Team Rocket's), Alphas Patrat / Buneary / Glameow, bosses
-  Castform / Loudred / Munchlax; it borrows the Clearing's scenery, `kin: 'clearing'`, until part b paints it). A win
+  Castform / Loudred / Munchlax; its look is item 20 part b's, below). A win
   "conquered" its last biome (`conquered(route)` in `js/halloffame.js`, from the `route` a record keeps; a Wastes descent
-  scene unless the last biome is Thornwood's jungle). The other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
+  scene unless the last biome is another road's: `descent({ land })`, `jungle` / `savanna` / `ruins`, each its own sky and skyline, `onSkyline()` in `js/descent.js`). The other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
   default road, no version bump). The Shrine / Ember Badges read their own bosses from `dex.defeated` (a slot's
   `bossesDefeated` is any road's), the Wanderer a win through every road at either fork, the Explorer every main biome entered. After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
@@ -614,7 +614,17 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `bramble`, the `giant` and `bloom` props). Journey films `shrine>thornwood` (a vine-choked torii) and `ruins>thornwood` (a
   fallen log over a river at a waterfall's foot), sharing `farAndHills()`, `jungleTree()`, `jungleBush()`, `fernFront()`. A run
   lost at its last boss falls through a jungle floor (`descent({ land: 'jungle' })`, from `strikeGate()`). Playtest
-  `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. Playtest `?biome=ruins` (any biome; `&starter=id`,
+  `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. **The Savanna's look** (item 20 part b,
+  2026-10-07): `BIOME_ART.savanna`, `savannaBackdrop()` / `savannaFloor()` / `savannaFront()`, life in `drawSavanna()` (a heat
+  shimmer over the horizon by day, embers, glowing cracks `life.svGlow`, the far wildfire `life.svFire` and its smoke`n  `life.svSmoke`). Places: Tall Grass (acacias, a track, `tallGrassEdge()`), Burnt Plain (`wildfireLine()`, `charredGrove()`,
+  stumps smoking), Watering Hole (`wateringHole()`, reeds, a `baobab()`), Sun Rock (`sunRock()`: a prow jutting out from the
+  right, the sun moved up over it, `life.rock`). Its prelude (`savannaWake()` / `savannaPortal()`, `FLARE_AT`): the sun swells,
+  rays wheeling, then `grassFire()` races out from the rock (it burns on, sparse, through the fight); a wall of flame rises
+  into the white. Landmarks `LANDMARKS.savanna`; grotto `treasure.biomes.savanna` (sandstone, citrine, a Fast Ball). Intro
+  film `js/savanna-intro.js` (`SAVANNA_INTRO`: up out of the tall grass, over the plain between 3D acacias to Sun Rock). Map
+  `PALETTES.savanna` (`savgrass`, `scorch`, `kopje`, the `acacia` prop). Journey films so far `clearing>savanna` and
+  `savanna>wastes` (`ridgeFire()`, `acaciaMid()`, `embersUp()`). Playtest `?area=savanna`, `?travel=savanna`,
+  `?travel=wastes&from=savanna`, `?strike=40&land=savanna`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
   pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (121 since 2026-10-07, the user's list):

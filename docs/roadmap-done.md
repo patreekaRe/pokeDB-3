@@ -1552,7 +1552,20 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Fire, which the crossroads shows, so no retune. Checked headless at 390x844: the crossroads (a tap outside and Escape
   don't skip it), the Ruins' map, signs and a fight, a saved route surviving a reload, an old save without one, a bad route
   thrown away, the Ruins' Pokédex banner and page. No console errors.
-- **Branching biomes, part d: the Thornwood Jungle painted** (roadmap item 19, Desktop app, 2026-10-07). This finished item
+- **A Fire biome and a pool of roads, part b: the Sunscorch Savanna painted** (roadmap item 20, Desktop app, 2026-10-07).
+  `BIOME_ART.savanna` is its own (it borrowed the Clearing's): golden Tall Grass under acacias with a track; the Burnt Plain,
+  black and still glowing in its cracks, charred trees, a wildfire burning along the horizon under leaning smoke; the
+  Watering Hole in cracked mud by a baobab; Sun Rock jutting out over the plain with the sun over it. A heat shimmer over
+  the horizon by day, embers rising. 12 landmarks (termite mound, skull, sunflowers, kopje; charred stump, burning log,
+  burnt sapling, cairn; ribcage, wallow, log, weaver birds' nests). Prelude: the sun swells, its rays wheeling, then the
+  grass catches in a line of fire racing out from the rock (it keeps burning, sparser, through the fight); the portal is a
+  wall of flame (sounds `gust`, `rumble-far`, `sunburst`, `eruption`). Its grotto is sandstone with citrine and a Fast Ball
+  chest. Map: `savgrass` ground, `scorch` and `kopje` tiles, the `acacia` prop. Intro film `js/savanna-intro.js` (up out of
+  the tall grass, low over the plain between 3D acacias to Sun Rock). Descent floors for every road that can end a run
+  now that a pool biome can stand at the second fork (`savanna`, `ruins`, as well as `jungle`). Journey films
+  `clearing>savanna` (the woods thinning into tall grass, a wildfire on the ridge, Sun Rock at dawn) and `savanna>wastes`
+  (the grass burning down to embers and ash, the volcano rising). Checked in the pane at 1280x720 (every place, the
+  prelude, the film, both trips, both new descents). No console errors.- **Branching biomes, part d: the Thornwood Jungle painted** (roadmap item 19, Desktop app, 2026-10-07). This finished item
   19 (the plan: a crossroads after each boss, a second road for Biomes 2 and 3, each new biome built as fully as the others,
   journey films from 2 routes to 6, the Explorer Badge for entering all five main biomes). `BIOME_ART.thornwood` is its own
   now (it borrowed the Clearing's): `thornBackdrop()` / `thornFloor()` / `thornFront()`, its life in `drawThorn()`. Four
