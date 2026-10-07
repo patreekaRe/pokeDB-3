@@ -156,7 +156,11 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   [card name, cost, art, effects, card extras], { rare })`. A move name wrapped in `N()` is x1 (`type: 'normal'`), for an
   off-type move. `safariMonDef()` builds the `ENEMY_DEFS` entry (enemies.js adds them all, `safari: true`, `template`);
   cards.js builds each line's `sig-<id>` card (the card's type is the Pokémon's); safari.js appends each area's lines to
-  its `normals` (or `rares`), after the borrowed wilds.
+  its `normals` (or `rares`), after the borrowed wilds. **Shared ones** (2026-10-07): the 36 Pokémon of the Sunken Ruins
+  and Thornwood Jungle are Safari lines a main biome also holds. Their `ENEMY_DEFS` entry is that biome's (it wins over
+  `safariMonDef()`, so in the Safari they fight at the biome's numbers like the borrowed wilds, not a template's), with the
+  line's description kept as `safariLine` for the Safari Pokédex (`js/safaridex.js`); area, rare spawn and signature card
+  still come from the line.
 - Batches: 1 (58 Pokémon, ~9 an area + a rare spawn), 2 (84, 12 an area + 2 rare spawns, appended per area under
   `Batch 2` headers) and 3 (85, under `Batch 3` headers: 12-13 wilds + 2 rare spawns an area, 12 of them Fire, since
   batch 2 had only two; evolved forms of earlier Pokémon count as new species) and 4 (81, under `Batch 4` headers: 11-12
