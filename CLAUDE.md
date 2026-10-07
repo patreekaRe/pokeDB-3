@@ -111,6 +111,10 @@ live site.
   the coins sit on its LCD (`.sel-coins`), and a locked skin's Game Corner button opens this app on that skin
   (`aimCorner()` + `openDeviceApp('corner', …, refreshSelect)`), B shutting it back to the select. The old menu's
   Index is gone (the Moves, Relics and Items apps are it). **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
+- **Every way in boots the device** (2026-10-07, the user's ask): New game (the select, `newGame()` in `js/main.js`),
+  Continue (the map, `continueGame()`, not a Sky Pillar climb) and the Safari / Sky Pillar lobbies open under the
+  Collection's cover (`coverArt()` from `js/collection.js`), which swings open onto the screen saying "HELLO, NAME!"
+  (`bootDevice(host, { below: lid, screen })` in `js/device-boot.js`; a tap on the cover opens it at once).
 - **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
   device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every
   later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD),

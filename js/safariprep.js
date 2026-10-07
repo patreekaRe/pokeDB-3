@@ -22,6 +22,7 @@ import { cloudConfigured } from './cloud.js';
 import { startGate, stopGate } from './safari-lobby.js';
 import { cornerApp, aimCorner } from './shop.js';
 import { playSound } from './audio.js';
+import { bootDevice } from './device-boot.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
 
@@ -162,10 +163,9 @@ export function openSafariPrep() {
   $('sp-base').scrollTop = 0;
   const win = $('sp-top');
   win.classList.remove('power-on');
-  void win.offsetWidth;
-  win.classList.add('power-on');
   engrave();
   paintGate();
+  bootDevice($('sp-page'), { below: $('sp-page').querySelector('.tdev-lid'), screen: win, onScreen: () => { void win.offsetWidth; win.classList.add('power-on'); } });
 }
 
 const PLAQUE_ROWS = 5;

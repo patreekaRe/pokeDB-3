@@ -3960,10 +3960,10 @@ body.scene-peek #backdrop { display: none; }
 .tdev-keys.sp-keys { grid-template-columns: repeat(3, 1fr); max-width: 270px; }
 /* its keys' apps (the Safari Dex, Ranks, the Game Corner) slide over the LCD as the Collection's do, and the window folds
    away to give them the room */
-.sp-glass { position: relative; }
+.sp-glass, .tower-lobby .tdev-glass { position: relative; }
 .sp-app { inset: 8px; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 22px; }
-.safari-prep-dialog .sp-window { transition: height 0.26s cubic-bezier(0.25, 0.8, 0.3, 1), border-width 0.26s, margin 0.26s, box-shadow 0.26s; }
-.safari-prep-dialog .app-open .sp-window { height: 0; border-width: 0; box-shadow: none; margin-bottom: -10px; }
+.tower-lobby .tower-window { transition: height 0.26s cubic-bezier(0.25, 0.8, 0.3, 1), border-width 0.26s, margin 0.26s, box-shadow 0.26s; }
+.tower-lobby .app-open .tower-window { height: 0; border-width: 0; box-shadow: none; margin-bottom: -10px; }
 .sp-app.sp-board-app {
   --acc: #4cd27a; --acc2: #2a9a8a; --ink: #f2f5ff; --muted: #a8b0d4; --panel: rgba(255, 255, 255, 0.06); --panel-edge: rgba(255, 255, 255, 0.12); --gold: #ffd257;
   padding: 12px 0 16px; color: var(--ink);
@@ -3971,7 +3971,7 @@ body.scene-peek #backdrop { display: none; }
 }
 .sp-app.sp-board-app > * { margin-left: 10px; margin-right: 10px; }
 .tdev-key .cdev-btn:disabled { filter: grayscale(1) brightness(0.8); animation: none; cursor: default; }
-@media (prefers-reduced-motion: reduce) { .safari-prep-dialog .sp-window { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .tower-lobby .tower-window { transition: none; } }
 .sp-today { display: grid; gap: 8px; }
 .sp-areas { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .sp-area { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 8px; margin: 0; padding: 3px 6px 3px 3px; border: 2px solid rgba(31, 58, 20, 0.45);

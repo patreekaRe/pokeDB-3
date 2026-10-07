@@ -40,6 +40,7 @@ import { DEPTHS_PAGE } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
+import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
 import { climbIntro } from './climb-intro.js';
 import { initBattle } from './battle.js';
@@ -103,6 +104,16 @@ function goHome() {
 function newGame(starter) {
   showSelect(starter);
   leaveTitle();
+  const dev = document.querySelector('.seldev');
+  bootDevice(dev, { below: dev.querySelector('.tdev-lid'), screen: dev.querySelector('.sel-stage') });
+}
+
+/** Continue: the map, its Pokédex opening on the run (not a Sky Pillar climb, whose map is the tower). */
+function continueGame(saved) {
+  leaveTitle();
+  continueRun(saved);
+  const map = $('map-screen');
+  if (!map.hidden && !map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window') });
 }
 
 /** Look at a starter's deck, and start a run from there. */
@@ -247,7 +258,7 @@ function init() {
 
   initTitle({
     savedRun: savedRunCard,
-    onContinue: (saved) => { leaveTitle(); continueRun(saved); },
+    onContinue: continueGame,
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
     onSafari: openSafariPrep,

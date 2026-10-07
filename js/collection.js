@@ -43,7 +43,7 @@ export function initCollection({ onBack, ...handlers }) {
 
 const safariApp = ({ caught, total }) => ({ id: 'safari', count: `${caught}/${total}`, cls: 'cdev-dex', app: safariDexApp });
 
-const splash = () => `HELLO, ${trainerName().toUpperCase()}!`;
+export const splash = () => `HELLO, ${trainerName().toUpperCase()}!`;
 
 export function showCollection() {
   showMenuScene();
@@ -74,7 +74,7 @@ export function openDeviceApp(id, at, home = false, onClose = null) {
 }
 
 /** The closed cover: an LED that blinks while a badge is unseen, your partner in a little window, your name and badges. */
-function coverArt() {
+export function coverArt() {
   const save = getSave();
   const led = el('span', `cdev-led${badgeNews(save) ? ' on' : ''}`);
   led.title = badgeNews(save) ? 'A new badge!' : '';

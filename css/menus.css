@@ -1493,3 +1493,14 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .sdx-slot-mon { position: absolute; inset: 4%; width: 92%; height: 92%; object-fit: contain; image-rendering: pixelated; }
 .sdx-slot-crown { position: absolute; top: -6px; right: -3px; font-size: 0.9rem; color: #f8c830; text-shadow: 0 1px 0 #6a4a00, 0 0 3px #fff; }
 .sdx-slot.shiny::after { content: "✨"; position: absolute; left: 1px; top: -2px; font-size: 0.6rem; }
+
+/* the Collection's cover and hello on the other device screens (js/device-boot.js): the select, the map, the lobbies */
+.boot-cover, .seldev > .boot-cover { position: absolute; z-index: 70; border-radius: 0 0 0 0; border-bottom-left-radius: inherit; border-bottom-right-radius: inherit; }
+.boot-splash { z-index: 69; }
+.booted .pdx-light { animation: bootBlink 0.16s steps(1) 5 both; }
+.booted .pdx-light.yellow { animation-delay: 0.08s; }
+.booted .pdx-light.green { animation-delay: 0.16s; }
+.booted .pdx-lens { animation: bootLens 0.9s ease-out both; }
+@keyframes bootBlink { 50% { filter: brightness(1.8); box-shadow: 0 0 8px 2px currentColor; } }
+@keyframes bootLens { 30% { box-shadow: 0 0 0 2px var(--shell-rim), 0 0 16px 6px #7fd8ff; filter: brightness(1.4); } }
+@media (prefers-reduced-motion: reduce) { .booted .pdx-light, .booted .pdx-lens { animation: none; } }

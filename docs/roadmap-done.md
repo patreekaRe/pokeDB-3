@@ -1718,3 +1718,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Safari Pokédex and lobby apps** (2026-10-07, the user's ask): the Safari Pokédex is the Pokédex's banners and handheld
   (`safariDexApp` on `shelfApp()`, a painted banner per area), its window and the main Pokédex's Safari banner are gone, and
   the Safari lobby's Pokédex / Ranks / Buy keys slide their apps over its own screen (`APPS` in `js/safariprep.js`).
+- **Sky Pillar Ranks app and the device boot** (2026-10-07, the user's ask): the Sky Pillar lobby's Ranks key slides the
+  leaderboard over its own screen like the Safari lobby's apps (`openRanks()` in `js/towerprep.js`), and New game (the
+  select), Continue (the map) and both lobbies open with the Collection's cover flip and "HELLO, NAME!" (`bootDevice()` in
+  `js/device-boot.js`).

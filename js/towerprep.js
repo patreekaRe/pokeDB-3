@@ -14,7 +14,8 @@ import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { getSave } from './storage.js';
 import { cloudConfigured } from './cloud.js';
-import { openLeaderboard, towerTop } from './leaderboard.js';
+import { boardApp, towerTop } from './leaderboard.js';
+import { bootDevice } from './device-boot.js';
 import { playSound } from './audio.js';
 import { hash, mix, skyHex } from './tower-art.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -33,10 +34,17 @@ const RULES = [
 export function initTowerPrep(handlers) {
   actions = handlers;
   for (const node of document.querySelectorAll('#tower-dialog [data-icon]')) node.append(smoothIcon(node.dataset.icon));
-  $('tower-go').addEventListener('click', () => { closeDialog('tower-dialog'); actions.onStart(null); });
-  $('tower-board').addEventListener('click', () => openLeaderboard(0, 'tower'));
-  $('tower-close').addEventListener('click', () => { playSound('cancel', 'confirm'); closeDialog('tower-dialog'); });
+  $('tower-go').addEventListener('click', () => { if (ranks) return; closeDialog('tower-dialog'); actions.onStart(null); });
+  $('tower-board').addEventListener('click', () => (ranks ? back() : openRanks()));
+  $('tower-close').addEventListener('click', back);
+  const dialog = $('tower-dialog');
+  dialog.addEventListener('cancel', (e) => { if (ranks) { e.preventDefault(); back(); } });   // Escape is B
+  dialog.addEventListener('keydown', (e) => {
+    if (ranks && ['ArrowLeft', 'ArrowRight'].includes(e.key) && RANKS.key(e)) e.preventDefault();
+  });
+  dialog.addEventListener('close', () => closeRanks(true));
   $('tower-practice').addEventListener('click', () => {
+    if (ranks) closeRanks(true);
     const picks = $('tower-picks');
     picks.hidden = !picks.hidden;
     $('tower-practice').classList.toggle('on', !picks.hidden);
@@ -44,12 +52,66 @@ export function initTowerPrep(handlers) {
   });
   $('tower-dialog').addEventListener('close', stopSky);
   // the grass line is measured off the layout, so repaint whenever anything above or around it moves
-  const relayout = new ResizeObserver(() => { if ($('tower-dialog').open) startSky(); });
+  const relayout = new ResizeObserver(() => { if ($('tower-dialog').open && !ranks) startSky(); });
   relayout.observe($('tower-top'));
 }
 
+/* ---------- Ranks: the leaderboard as the device's app, sliding over the LCD as the Safari lobby's keys do ---------- */
+
+const RANKS = boardApp('tower');
+const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+let ranks = null;    // the open app's panel
+let sliding = false;
+
+function openRanks() {
+  if (sliding) return;
+  playSound('confirm');
+  const panel = el('div', 'cdev-app sp-app sp-board-app board-dialog');
+  $('tower-glass').append(panel);
+  RANKS.mount(panel);
+  panel.scrollTop = 0;
+  ranks = panel;
+  dressKeys();
+  if (calm()) return;
+  sliding = true;
+  $('tower-base').animate([{ translate: '0 0', opacity: 1 }, { translate: '-30% 0', opacity: 0 }], SLIDE);
+  panel.animate([{ translate: '100% 0' }, { translate: '0 0' }], SLIDE).finished.catch(() => {}).then(() => { sliding = false; });
+}
+
+function closeRanks(now = false) {
+  if (!ranks) return;
+  const panel = ranks;
+  ranks = null;
+  dressKeys();
+  const done = () => { RANKS.unmount(); panel.remove(); };
+  if (now || calm() || !$('tower-dialog').open) { done(); return; }
+  sliding = true;
+  $('tower-base').animate([{ translate: '-30% 0', opacity: 0 }, { translate: '0 0', opacity: 1 }], SLIDE);
+  panel.animate([{ translate: '0 0' }, { translate: '100% 0' }], { ...SLIDE, fill: 'forwards' }).finished.catch(() => {}).then(() => { done(); sliding = false; });
+}
+
+/** B: out of Ranks back to the lobby, then the lobby shuts. */
+function back() {
+  if (sliding) return;
+  if (ranks) { playSound('cancel'); closeRanks(); return; }
+  playSound('cancel', 'confirm');
+  closeDialog('tower-dialog');
+}
+
+/** The window folds away under Ranks, its key is lit, the LCD names it and A has nothing to do. */
+function dressKeys() {
+  $('tower-page').classList.toggle('app-open', !!ranks);
+  $('tower-board').classList.toggle('on', !!ranks);
+  $('tower-board').setAttribute('aria-pressed', String(!!ranks));
+  $('tower-title').textContent = ranks ? 'Ranks' : 'Sky Pillar';
+  $('tower-week').hidden = !!ranks;
+  $('tower-base').inert = !!ranks;
+  $('tower-go').disabled = !!ranks;
+}
+
 const PLAQUE_ROWS = 5;
-let engraved = false;   // the plaque already shows a board from an earlier open: keep it up while this one loads
+let engraved = false;  // the plaque already shows a board from an earlier open: keep it up while this one loads
 
 /** The lobby's plaque: the week's top climbers engraved in bronze, faded in once the board answers. Its slot holds a
     full plaque's room from the start (measured once, with dummy rows), so nothing above it moves when it arrives. */
@@ -131,14 +193,14 @@ export function openTowerPrep() {
     btn.addEventListener('click', () => { closeDialog('tower-dialog'); actions.onStart(starter); });
     return btn;
   }));
+  closeRanks(true);
   openDialog('tower-dialog');
   engrave();
   $('tower-base').scrollTop = 0;
   const win = $('tower-top');
   win.classList.remove('power-on');
-  void win.offsetWidth;
-  win.classList.add('power-on');
   startSky();
+  bootDevice($('tower-page'), { below: $('tower-page').querySelector('.tdev-lid'), screen: win, onScreen: () => { void win.offsetWidth; win.classList.add('power-on'); } });
 }
 
 /* ---------- the backdrop: the Sky Pillar from its foot to space, painted smooth at the screen's resolution ---------- */
