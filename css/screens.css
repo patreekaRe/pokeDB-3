@@ -4889,46 +4889,51 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .coin-pill { font-size: 1.1rem; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .shop-btn { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
 }
-/* the Sky Pillar's climb has the same device, only as a bar along the bottom (the user's call, 2026-10-07: you climb up,
-   so the screen's top is for the tower): the LCD with the top bar's floor and coins over the run card, then the pockets.
-   js/tower.js measures it (--tw-lcd-y, --tw-bar-h) to lay the top bar on the LCD and stand the floor just above it. */
+/* the Sky Pillar's climb has the same device, only as a slim menu bar along the bottom (the user's calls, 2026-10-07: you
+   climb up, so the screen's top is for the tower; and only the Pokédex, floor, HP, Deck, Relics, Items and Main menu,
+   kept short): one LCD strip with the top bar's Pokédex and floor laid on its left and the HP bar, then a row of icons.
+   js/tower.js measures it (--tw-lcd-x/y/h, --tw-bar-h) to lay the top bar on the LCD and stand the floor just above it. */
 #map-screen.tower {
   position: fixed; inset: 0; z-index: 1; max-width: none; margin: 0; padding: 0;
   display: flex; flex-direction: column; justify-content: flex-end; align-items: center; overflow: hidden;
 }
-#map-screen.tower :is(.mdex-window, .mdex-dock) { position: relative; z-index: 2; width: min(100%, 640px); background: var(--shell); }
+#map-screen.tower :is(.mdex-window, .mdex-dock) { position: relative; z-index: 2; width: min(100%, 520px); background: var(--shell); }
 #map-screen.tower .mdex-window {
-  padding: 10px 10px 12px; border-radius: 20px 20px 0 0;
-  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -6px 18px rgba(0, 0, 0, 0.45);
+  padding: 8px 10px 6px; border-radius: 16px 16px 0 0;
+  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
 }
 #map-screen.tower .run-card {
-  padding-top: calc(var(--topbar-h) - 2px); margin: 10px 10px 0;
-  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), inset 0 0 18px rgba(31, 58, 20, 0.12), 0 0 0 7px #e4e4ea, 0 0 0 10px var(--shell-rim);
-  background-image:
-    radial-gradient(circle, rgba(31, 58, 20, 0.35) 1px, transparent 1.5px),
-    repeating-linear-gradient(0deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(90deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
-    radial-gradient(120% 140% at 30% 0%, var(--lcd), var(--lcd-lo));
-  background-size: 6px 6px, auto, auto, auto;
-  background-position: 2px calc(var(--topbar-h) - 9px), 0 0, 0 0, 0 0;
-  background-repeat: repeat-x, repeat, repeat, no-repeat;
+  justify-content: stretch; gap: 0; min-height: 40px; margin: 3px; padding: 4px 10px 4px 104px; border-width: 2px; border-radius: 6px;
+  box-shadow: inset 0 2px 0 rgba(31, 58, 20, 0.14), inset 0 0 12px rgba(31, 58, 20, 0.12), 0 0 0 3px #e4e4ea, 0 0 0 5px var(--shell-rim);
 }
+#map-screen.tower :is(.run-mon, .run-name, .run-ability, #run-level, .run-bars .gb-exp) { display: none; }
+#map-screen.tower .run-info { flex: 1; flex-direction: row; align-items: center; gap: 8px; width: auto; }
+#map-screen.tower .run-bars { flex: 1; width: auto; margin: 0; }
+#map-screen.tower .run-foot { width: auto; }
+#map-screen.tower .run-foot .gb-hp-num { font-size: 0.6rem; white-space: nowrap; }
 #map-screen.tower .mdex-dock {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 4px 12px max(10px, env(safe-area-inset-bottom));
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
   box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
 }
+#map-screen.tower .mdex-btn { padding: 5px 0; border-radius: 10px; }
+#map-screen.tower .mdex-ico { font-size: 20px; }
+#map-screen.tower :is(.mdex-label, .mdex-btn[data-pocket="key"], .mdex-btn[data-pocket="trainer"]) { display: none; }
+#map-screen.tower .mdex-count { top: -5px; right: 4px; min-width: 16px; padding: 1px 3px; font-size: 0.42rem; }
+.mdex-btn.mdex-menu { display: none; }
+#map-screen.tower .mdex-btn.mdex-menu { display: grid; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .topbar {
-  position: fixed; left: 50%; right: auto; top: calc(var(--tw-lcd-y, 70vh) + 3px); width: min(100% - 46px, 594px); translate: -50% 0;
-  height: calc(var(--topbar-h) - 12px); padding: 0 10px 0 8px;
+  position: fixed; left: calc(var(--tw-lcd-x, 20px) + 6px); right: auto; top: var(--tw-lcd-y, 80vh); width: auto;
+  height: var(--tw-lcd-h, 40px); padding: 0; gap: 8px; justify-content: flex-start;
 }
 body[data-screen="map-screen"]:has(#map-screen.tower) .topbar::before { display: none; }
-body[data-screen="map-screen"]:has(#map-screen.tower) .dex-sprite { width: 32px; height: 32px; }
-body[data-screen="map-screen"]:has(#map-screen.tower) :is(.home-dex, .shop-btn) { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
-body[data-screen="map-screen"]:has(#map-screen.tower) :is(.floor-tag, .coin-pill) { color: #1f3a14; text-shadow: none; filter: none; }
-body[data-screen="map-screen"]:has(#map-screen.tower) .floor-tag b { font-size: 1.15rem; }
+body[data-screen="map-screen"]:has(#map-screen.tower) :is(.coin-pill, .shop-btn) { display: none; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .dex-sprite { width: 26px; height: 26px; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .home-dex { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
+body[data-screen="map-screen"]:has(#map-screen.tower) .floor-tag { color: #1f3a14; text-shadow: none; filter: none; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .floor-tag b { font-size: 0.95rem; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs { filter: none; }
-body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs i { width: 16px; height: 16px; background: #1f3a14; }
-body[data-screen="map-screen"]:has(#map-screen.tower) .coin-pill { font-size: 1.1rem; }
+body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs i { width: 13px; height: 13px; background: #1f3a14; }
+body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not([hidden])) { bottom: calc(var(--tw-bar-h, 120px) + 8px); }
 /* wider than a phone the device stands on the scenery under the top bar, the map at its own tile size inside */
 @media (min-width: 721px) {
   #map-screen:not(.tower) {

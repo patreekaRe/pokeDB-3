@@ -93,9 +93,12 @@ is the screen and the overlay that use them.
   spiral stair (`stairWell()`, `stairSteps()`) winds round a newel at the right of every floor but the top.
 - **The climb screen** (`renderTower()`): `#tower-view` fills the map screen behind the run card (the sign and the map box
   are hidden, `#map-screen.tower`). Since 2026-10-07 (the user's call: you climb up, so the top is for the tower) the run card
-  and top bar sit in the map's Pokédex bar along the bottom: the green LCD (floor and coins over the run card) and the Bag's
-  pockets under it (css/screens.css, "the Sky Pillar's climb has the same device"). `measureBar()` in `js/tower.js` sets
-  `--tw-lcd-y` (where the top bar lies on the LCD) and `--tw-bar-h` (the gauge's floor), re-measured by a ResizeObserver.
+  and top bar sit in the map's Pokédex bar along the bottom, kept slim (the user's follow-up, same day: only the Pokédex,
+  floor, HP, Deck, Relics, Items and Main menu): one green LCD strip with the top bar's Pokédex and floor laid on its left
+  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), then four
+  icon buttons, the Bag's Deck / Relics / Items and `#dock-menu` (`requestMenu()` in `js/main.js`, shown only on a climb)
+  (css/screens.css, "the Sky Pillar's climb has the same device"). `measureBar()` in `js/tower.js` sets `--tw-lcd-x/y/h`
+  (where the top bar lies on the LCD) and `--tw-bar-h` (the gauge's floor, the Bag's bottom), re-measured by a ResizeObserver.
   The floor you stand on sits 14% of the way up the sky above that bar (`STAND`); the plate and gauge are at the top; its doors are buttons (`.tw-door`) with
   the room's icon on a hanging sign. A tap: your Pokémon (its front GIF, `#tw-mon`) walks to the door, it opens and the
   Pokémon goes in, then `enterNode()`. Back on the map with the floor above to pick, it comes out of the same door (`last`),

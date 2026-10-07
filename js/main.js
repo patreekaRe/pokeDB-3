@@ -52,6 +52,7 @@ import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './ti
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex } from './collection.js';
 import { hideDevice } from './device.js';
+import { smoothIcon } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
@@ -251,6 +252,8 @@ function init() {
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
   });
+  $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
+  $('dock-menu').addEventListener('click', () => requestMenu());
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,
