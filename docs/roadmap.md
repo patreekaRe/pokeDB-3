@@ -50,16 +50,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 19. **Branching biomes** is done (parts a-d, 2026-10-06/07: the crossroads, the Sunken Ruins and the Thornwood Jungle,
     each painted with its films; see the archive). The new roads open after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07). Still the user's: hear the new synths and films on a phone.
 
-20. **A Fire biome and a shuffled pool of roads** (agreed with the user, 2026-10-07). The Ruins, Thornwood and a new
-    **Fire-heavy biome** become one pool of three "other roads". Each run rolls, **at its start** (saved with the run, so a
-    refresh can't reroll), which pool biome each fork offers beside its default: fork 1 Shrine or one, fork 2 Wastes or
-    another, never the same one twice, so one of the three sits out each run. The crossroads stays two roads.
-    **Tilt until seen:** a pool biome never walked into (`stats.biomesSeen`) is offered before a seen one (both unseen or
-    both seen: a coin flip); once all three are seen it's pure random for good. Rolls through `js/rng.js`.
-    **Parts a and b are done** (2026-10-07: the Sunscorch Savanna, the pool roll, numbers by fork; then its whole look, film,
-    map, grotto, descent floors for every road that can end a run, and the `clearing>savanna` / `savanna>wastes` journey
-    films; see the archive). **Part c is done** (2026-10-07: a journey film for all nine pairings the pool made possible).
-    Its badges are done (2026-10-07, the user said yes: Sun, Savanna Page, Savanna Hunter). Still the user's: watch the new trips on a phone (`?travel=ruins&from=shrine` etc.).
+20. **A Fire biome and a shuffled pool of roads** is done (parts a-c, 2026-10-07: the Sunscorch Savanna, the pool of three
+    roads rolled at each run's start, its look and films, journey films for every pairing, its badges; see the archive).
+    Still the user's: watch the new trips on a phone (`?travel=ruins&from=shrine` etc.).
 
 
 ## Ideas, not agreed yet (ask the user before building)

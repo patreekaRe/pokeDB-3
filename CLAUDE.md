@@ -618,7 +618,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   lost at its last boss falls through a jungle floor (`descent({ land: 'jungle' })`, from `strikeGate()`). Playtest
   `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. **The Savanna's look** (item 20 part b,
   2026-10-07): `BIOME_ART.savanna`, `savannaBackdrop()` / `savannaFloor()` / `savannaFront()`, life in `drawSavanna()` (a heat
-  shimmer over the horizon by day, embers, glowing cracks `life.svGlow`, the far wildfire `life.svFire` and its smoke`n  `life.svSmoke`). Places: Tall Grass (acacias, a track, `tallGrassEdge()`), Burnt Plain (`wildfireLine()`, `charredGrove()`,
+  shimmer over the horizon by day, embers, glowing cracks `life.svGlow`, the far wildfire `life.svFire` and its smoke
+  `life.svSmoke`). Places: Tall Grass (acacias, a track, `tallGrassEdge()`), Burnt Plain (`wildfireLine()`, `charredGrove()`,
   stumps smoking), Watering Hole (`wateringHole()`, reeds, a `baobab()`), Sun Rock (`sunRock()`: a prow jutting out from the
   right, the sun moved up over it, `life.rock`). Its prelude (`savannaWake()` / `savannaPortal()`, `FLARE_AT`): the sun swells,
   rays wheeling, then `grassFire()` races out from the rock (it burns on, sparse, through the fight); a wall of flame rises
