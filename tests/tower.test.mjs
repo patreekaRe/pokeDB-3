@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { towerWeek, weekOffset, towerWeekly, landingTypes, guardianOf, towerMods, towerPools, towerBiome, floorOf, towerOpen,
+import { towerWeek, weekOffset, towerWeekly, landingTypes, MART_LANDING, guardianOf, towerMods, towerPools, towerBiome, floorOf, towerOpen,
   LANDINGS, FLIGHT, RAYQUAZA, PAST_TOP, TOP_FLOOR, TOP_FLIGHT } from '../js/data/tower.js';
 import { towerResult, checkTowerEntry, rankTower, TOWER_LIMITS, TOWER_KEYS, boardValue } from '../js/data/leaderboard.js';
 import { BADGES_BY_ID, newBadges } from '../js/data/badges.js';
@@ -39,14 +39,15 @@ test('landings keep their rules', () => {
       assert.equal(rows.length, LANDINGS);
       rows.forEach((row, i) => {
         const floor = floorOf(flight, i);
+        if (i === MART_LANDING) return assert.deepEqual([...row].sort(), ['elite', 'shop'], `floor ${floor}`);
+        if (i === LANDINGS - 1) return assert.deepEqual([...row].sort(), ['fight', 'rest'], `floor ${floor}`);
         assert.ok(row.length === 2 || row.length === 3, `${row}`);
         assert.ok(row.includes('fight'), `floor ${floor} has a fight`);
+        assert.ok(!row.includes('shop') && !row.includes('rest'), `no Mart or Center on floor ${floor}`);
         if (floor <= 2) assert.ok(!row.includes('elite'), `no Alpha on floor ${floor}`);
-        if (floor === 1) assert.ok(!row.includes('rest'));
-        for (const t of ['shop', 'rest', 'event', 'elite']) assert.ok(row.filter(x => x === t).length <= 1, `${t} twice on ${floor}`);
+        assert.ok(row.filter(x => x === 'elite').length <= 1, `Alpha twice on ${floor}`);
       });
-      assert.ok(rows.at(-1).includes('rest'), 'a Center before the guardian');
-      assert.ok(rows.some(row => row.includes('shop')), 'a Mart every flight');
+      assert.ok(rows.flat().filter(t => t === 'event').length <= 1, 'one ? a flight');
     }
   }
 });

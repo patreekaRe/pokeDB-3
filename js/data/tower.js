@@ -2,8 +2,8 @@
    tower.js  -  the Sky Pillar's rules (roadmap item 18, the user's calls 2026-10-05).
 
    A climb of 100 floors, a floor at a time. Floors come in flights of 10:
-   nine landings, each with 2-3 doors to pick from (fight, Alpha, Mart,
-   Center, ? event), then a guardian on every 10th floor. Floors 1-30 climb
+   nine landings, each with 2-3 doors to pick from (fight, Alpha, ? event;
+   a Mart on the 5th, a Center on the 9th), then a guardian on every 10th floor. Floors 1-30 climb
    through the three biomes' Pokémon and numbers in order; past 30 they come
    from all three, and every flight adds PAST_TOP on top of the Wastes'
    numbers, so most climbs end part-way. Rayquaza guards the top, floor 100:
@@ -28,7 +28,8 @@ export const TOP_FLOOR = 100;            // Rayquaza's floor, the summit: the cl
 export const TOP_FLIGHT = TOP_FLOOR / FLIGHT - 1;
 export const RAYQUAZA = 'rayquaza-guardian';
 export const PAST_TOP = { hp: 1.12, dmg: 4, dmgMult: 1.1 };   // every flight past the third: enemy HP x1.12, +4 damage, then every attack x1.1, compounding (bot-tuned for a 100-floor top: x1.35 / +8 / x1.15 let no climb reach it; HP growth stalls Fire, damage growth checks Grass's healing)
-export const DOOR_ODDS = { fight: 50, elite: 14, event: 16, shop: 10, rest: 10 };
+export const DOOR_ODDS = { fight: 55, elite: 25, event: 20 };   // the other doors of a plain landing
+export const MART_LANDING = 4;           // floor 5 of a flight: a Mart beside an Alpha
 export const TOWER_BADGE_FLOORS = [25, 50, 100];
 
 /** The Sky Pillar opens once you've won a run. */
@@ -79,25 +80,26 @@ function roll(odds) {
 }
 
 /** A flight's landings: for each, the room types behind its doors (2 or 3), rolled with js/rng.js (the week's seed).
-    Every landing has a fight; no Alpha before floor 3 and no Center on floor 1; one Mart, one Center and one ? at most a
-    landing; a Mart somewhere in every flight; and a Center beside the last landing's doors, before the guardian. */
+    A fixed shape (the user's call, 2026-10-07: Marts and Centers on most landings let a climb skip half its fights):
+    floor 5 of every flight is a Mart beside an Alpha, floor 9 a Center beside a fight, and every other landing a fight
+    with fights, Alphas or a ? (one ? a flight, no Alpha before floor 3) behind its other doors. */
 export function landingTypes(flight) {
   const rows = [];
-  let shops = 0;
+  let events = 0;
   for (let i = 0; i < LANDINGS; i++) {
-    const floor = floorOf(flight, i), last = i === LANDINGS - 1;
-    const doors = last || random() < 0.65 ? 3 : 2;
+    const floor = floorOf(flight, i);
+    if (i === MART_LANDING) { rows.push(shuffled(['shop', 'elite'])); continue; }
+    if (i === LANDINGS - 1) { rows.push(shuffled(['fight', 'rest'])); continue; }
+    const doors = random() < 0.65 ? 3 : 2;
     const row = ['fight'];
-    if (last) row.push('rest');
     while (row.length < doors) {
       const odds = { ...DOOR_ODDS };
       if (floor <= 2 || row.includes('elite')) odds.elite = 0;
-      if (floor === 1) odds.rest = 0;
-      for (const t of ['shop', 'rest', 'event']) if (row.includes(t)) odds[t] = 0;
-      row.push(roll(odds));
+      if (events) odds.event = 0;
+      const t = roll(odds);
+      if (t === 'event') events += 1;
+      row.push(t);
     }
-    if (i === LANDINGS - 3 && !shops && !row.includes('shop')) row[row.length - 1] = 'shop';
-    if (row.includes('shop')) shops += 1;
     rows.push(shuffled(row));
   }
   return rows;

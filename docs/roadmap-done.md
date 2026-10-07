@@ -1696,3 +1696,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   starts with 30 Safari Balls (was unlimited) plus any packs bought; the daily try stays free, replays need a 100-coin Day
   Pass good until the UTC day ends (`js/daypass.js`, `docs/reference/safari.md`). The sim's bot isn't capped at
   30 yet.
+- **Sky Pillar landings fixed in shape** (2026-10-07, the user's call: Marts / Centers on ~3.7 of 9 landings a flight, and
+  a non-fight door on ~5.3, let a climb skip half its fights): floor 5 of every flight is a Mart beside an Alpha, floor 9
+  a Center beside a fight, the rest fights / Alphas with one ? a flight (`landingTypes()`, `MART_LANDING`).

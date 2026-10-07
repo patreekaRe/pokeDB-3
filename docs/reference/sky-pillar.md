@@ -29,9 +29,10 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
 - **The week's first try counts** for the leaderboard and is played without perks (`fairTry()` covers `run.tower.first`).
   Tries are counted when a climb starts (`save.tower.tries`), so quitting can't retry the first. Climb again as often as you
   like (a replay), or **Practice** with any starter you own but Mewtwo (the window's starter strip): neither posts.
-- **Flights of 10 floors** (`FLIGHT`): nine landings, each with 2-3 doors (`landingTypes()`: every landing has a fight;
-  no Alpha before floor 3, no Center on floor 1; one Mart, Center and ? at most a landing; a Mart somewhere in every flight;
-  the last landing always has a Center), then a **guardian** on every 10th floor (`guardianOf()`: a boss of the Clearing,
+- **Flights of 10 floors** (`FLIGHT`): nine landings with a fixed shape (`landingTypes()`; 2026-10-07, the user's call:
+  Marts and Centers on ~4 landings a flight let a climb skip half its fights): floor 5 of a flight is a Mart beside an
+  Alpha (`MART_LANDING`), floor 9 a Center beside a fight, every other landing a fight plus 1-2 doors of fights, Alphas
+  or a ? (`DOOR_ODDS`; one ? a flight, no Alpha before floor 3); then a **guardian** on every 10th floor (`guardianOf()`: a boss of the Clearing,
   Shrine, Wastes in turn; **Rayquaza** on floor 100 only, `rayquaza-guardian` in `ENEMY_DEFS`, never in the Pokédex).
 - **Beating a guardian**: its rewards (card, boss relic, item odds), an evolution at floors 10 and 20 (with its own heal),
   then **50% of max HP** (`GUARDIAN_HEAL`, `guardianHeal()`), and on to the next flight (`climbOn()`).
