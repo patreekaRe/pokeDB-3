@@ -1692,3 +1692,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   screen, the Bag's pockets as a menu bar at the bottom); the Bag is restyled as a piece of the device; the dock's Game
   Corner is an app (`cornerApp`) that B leaves back to the home screen instead of shutting the device. The user will
   edit the map's look as they go.
+- **Safari Balls and the Day Pass** (2026-10-07, the user's design): every Safari run, the daily try and each replay,
+  starts with 30 Safari Balls (was unlimited) plus any packs bought; the daily try stays free, replays need a 100-coin Day
+  Pass good until the UTC day ends (`js/daypass.js`, `docs/reference/safari.md`). The sim's bot isn't capped at
+  30 yet.

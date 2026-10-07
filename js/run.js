@@ -54,7 +54,8 @@ import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboar
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, isResearched } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
-import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID } from './data/balls.js';
+import { safariTicket } from './daypass.js';
+import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 
@@ -132,7 +133,7 @@ export function initRun({ onMenu, onNewRun }) {
   initScope();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
-  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) beginSafari(); else if (run.tower) beginTower(run.tower.practice ? run.starter : null); else onNewRun(run.starter); });
+  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) safariTicket().then(ok => (ok ? beginSafari() : onMenu())); else if (run.tower) beginTower(run.tower.practice ? run.starter : null); else onNewRun(run.starter); });
   $('result-board').addEventListener('click', () => openLeaderboard(0, run?.tower ? 'tower' : 'safari'));
 
   // This pop-up moves the game along, so Escape must not just close it.
@@ -383,7 +384,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
 export function beginSafari(daily = safariDaily()) {
   const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
-  updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days }; });   // counted at the start, so quitting can't retry the first
+  updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days, pass: d.safari.pass, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
 }
 

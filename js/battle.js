@@ -33,7 +33,7 @@ import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
-import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows } from './data/balls.js';
+import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
 
@@ -1149,6 +1149,7 @@ function whyNotThrow() {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
   if (b.energy < THROW_PP) return `A throw costs ${THROW_PP} PP.`;
+  if (!ballsInBag(getSave().balls, ballWeek(), safariBallsLeft(getSave().safari)).length) return 'You\'re out of balls!';
   return null;
 }
 
@@ -1174,7 +1175,7 @@ function toggleBallPicker() {
   const problem = whyNotThrow();
   if (problem) { log(problem); playSound('no-pp'); return; }
   playSound('bag');
-  const rows = ballsInBag(getSave().balls, ballWeek()).map(({ ball, left }) => {
+  const rows = ballsInBag(getSave().balls, ballWeek(), safariBallsLeft(getSave().safari)).map(({ ball, left }) => {
     const row = el('button', 'ball-row');
     row.type = 'button';
     const odds = Math.round(catchOdds(ball.id) * 100);
@@ -1206,6 +1207,7 @@ async function throwBall(id) {
   // the ball is spent as it's thrown (a refresh replays the room, but not the ball)
   updateSave(d => {
     if (ball.stock) d.balls[id] = Math.max(0, (d.balls[id] || 0) - 1);
+    if (ball.free) d.safari.balls = Math.max(0, safariBallsLeft(d.safari) - 1);
     if (ball.weekly) { d.balls.masterThrows = masterThrows(d.balls) + 1; d.balls.masterWeek = ballWeek(); }
   });
   renderAll();

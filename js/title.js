@@ -21,6 +21,7 @@ import { playSound, playCry, playMusic, closeSoundPops } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
+import { safariAccess, DAY_PASS } from './data/balls.js';
 import { getSave } from './storage.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
@@ -334,11 +335,11 @@ function safariGem() {
   const full = open && getSave().safariDex.complete;   // every Safari Pokémon caught: a gold ✦ on the gem
   if (full) btn.append(el('span', 'gem-badge', '✦'));
   // today's try still to play (1/1), or played and only replays left (∞)
-  const played = getSave().safari.day === daily.day && getSave().safari.tries;
-  const tries = played ? infGlyph() : el('span', 'try-count', '1/1');
+  const access = safariAccess(getSave().safari, daily.day), played = access !== 'first';
+  const tries = access === 'pass' ? infGlyph() : el('span', 'try-count', played ? '0/1' : '1/1');
   tries.classList.add('gem-tries');
   if (open) btn.append(tries);
-  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts${played ? ": you've played it, so it's replays from here" : ''}.` : 'Beat every Pokémon in all three biomes to open the Safari Zone.');
+  btn.title = (full ? 'Safari Pokédex complete! ' : '') + (open ? `Today's run, the same for everyone: ${daily.starter.line[0].name} through the ${line}. Only the first try counts${played ? `: you've played it, so it's replays from here${access === 'pass' ? '' : ` (a Day Pass, ${DAY_PASS} coins)`}` : ''}.` : 'Beat every Pokémon in all three biomes to open the Safari Zone.');
   if (!open) return btn;
   // the day's leaderboard, a trophy hung off the gem's right edge so the gem stays centred in the stack
   const row = el('div', 'gem-row');

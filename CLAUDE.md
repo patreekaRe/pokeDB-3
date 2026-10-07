@@ -531,7 +531,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   **Prep window** (2026-10-02): the title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`: today's run,
   the rules, your balls, the Safari Pokédex / Leaderboard / Game Corner, then Start); a 🏆 beside the gem
   (`#title-board`) opens the leaderboard. Every ball but the Safari and Master Balls is a pack used up when thrown
-  (Great / Ultra 5, the special ones 3); `migrateBalls()` turned old one-time unlocks into 10 throws.
+  (Great / Ultra 5, the special ones 3); `migrateBalls()` turned old one-time unlocks into 10 throws. Since 2026-10-07 every run
+  has 30 Safari Balls (`SAFARI_BALLS`), and replays after the free daily try need a 100-coin **Day Pass** for the day
+  (`safariTicket()` in `js/daypass.js`; `docs/reference/safari.md`).
   **Completion rewards** (2026-10-02): a page with every Pokémon caught pays 1000 PokéCoins once and doubles its rare spawns
   on replays (`rareOdds()`, never the first try); the whole Safari Pokédex unlocks Rayquaza. `creditSafari()` in
   `js/run.js`; earned stays earned in `save.safariDex.done` / `complete`, however the roster grows.

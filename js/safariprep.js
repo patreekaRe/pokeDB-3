@@ -10,7 +10,7 @@
    ============================================================ */
 
 import { safariDaily, SAFARI_DEX_PAGES, SAFARI_AREA_COINS, RARE_BOOST, safariProgress } from './data/safari.js';
-import { BALLS, THROW_PP, RARE, ballWeek } from './data/balls.js';
+import { BALLS, THROW_PP, RARE, ballWeek, SAFARI_BALLS, DAY_PASS, safariAccess } from './data/balls.js';
 import { CARDS_BY_ID } from './data/cards.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
@@ -37,6 +37,7 @@ const classic = (() => {
 const ROCK_HIT = CARDS_BY_ID.rock.effects.damage;
 const RULES = [
   ['🔄', 'One run a day, the same for everyone.'],
+  ['⚾', `Every run starts with ${SAFARI_BALLS} Safari Balls, plus any ball packs you bought. Today's first try is free; a Day Pass (${DAY_PASS} coins) gives replays until the day ends.`],
   ['🔴', `Throw a ball at any wild Pokémon: ${THROW_PP} PP, and it ends your turn. At full HP it's a long shot; the lower its HP, the better.`],
   ['🎯', 'Debuffs on it raise the odds.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
@@ -123,7 +124,7 @@ function plaqueRow(e, i) {
 function render() {
   const save = getSave();
   const daily = safariDaily();
-  const first = save.safari.day !== daily.day || !save.safari.tries;
+  const access = safariAccess(save.safari, daily.day), first = access === 'first';
 
   const mon = el('img', 'pixel sp-mon');
   mon.src = spriteUrl(daily.starter, 'front', 0);
@@ -139,13 +140,13 @@ function render() {
   });
   const info = el('div', 'sp-info');
   info.append(el('span', 'sp-kicker', `Today's starter · ${daily.day}`), el('strong', 'sp-name', daily.starter.line[0].name), areas,
-    el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : '🏆 Daily run: 0/1'));
+    el('span', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : access === 'pass' ? '🎫 Day Pass: replays today' : '🏆 Daily run: 0/1'));
   $('sp-today').replaceChildren(mon, info);
   $('sp-date').textContent = `Today's starter · ${daily.day}`;
   const gateMon = $('sp-gate-mon');
   gateMon.src = mon.src;
   gateMon.alt = daily.starter.line[0].name;
-  $('sp-start').querySelector('.pxb-i').replaceChildren(first ? 'Start' : 'Replay', first ? el('span', 'try-count', '1/1') : infGlyph());
+  $('sp-start').querySelector('.pxb-i').replaceChildren(...(first ? ['Start', el('span', 'try-count', '1/1')] : access === 'pass' ? ['Replay', infGlyph()] : [`Day Pass ${DAY_PASS}`]));
 
   // the full Safari Pokédex's prize stays unnamed until it's won
   const prize = save.unlocked.includes('rayquaza') ? `Catch them all: ${STARTERS_BY_ID.rayquaza.line[0].name} joins you.`
@@ -167,11 +168,11 @@ function render() {
   const pill = (cls, text, tip) => Object.assign(el('span', `sp-pill ${cls}`, text), { title: tip });
   const row = (...pills) => { const r = el('span', 'sp-pill-row'); r.append(...pills); return r; };
   $('sp-replay').replaceChildren(row(pill('daily', 'Daily run', 'Your one try today'), el('span', 'sp-eq', '='), pill('board', 'Leaderboard', 'This try goes on the leaderboard'), pill('perks off', 'Perks', 'Perks are off for this try')),
-    row(pill('replay', 'Replay', 'After your daily run, replay as much as you like'), el('span', 'sp-eq', '='), pill('board off', 'Leaderboard', "Replays don't go on the leaderboard"), pill('perks', 'Perks', 'Your perks are back')));
+    row(pill('replay', 'Replay', `After your daily run, a Day Pass (${DAY_PASS} coins) replays it as much as you like today`), el('span', 'sp-eq', '='), pill('board off', 'Leaderboard', "Replays don't go on the leaderboard"), pill('perks', 'Perks', 'Your perks are back')));
 
   const week = ballWeek();
   $('sp-balls').replaceChildren(...BALLS.map(ball => {
-    const left = ball.free ? '∞' : ball.stock ? save.balls[ball.id] || 0
+    const left = ball.free ? SAFARI_BALLS : ball.stock ? save.balls[ball.id] || 0
       : !save.balls.owned.includes(ball.id) ? 0 : save.balls.masterWeek === week ? 0 : 1;
     const slot = el('div', `sp-ball${left === 0 ? ' none' : ''}`);
     slot.append(itemSprite(ball, 'sp-ball-icon'), el('b', `sp-ball-left${left === '∞' ? ' inf' : ''}`, typeof left === 'number' ? `×${left}` : left));

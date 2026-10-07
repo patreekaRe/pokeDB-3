@@ -37,6 +37,7 @@ import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './stora
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
+import { safariTicket } from './daypass.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -221,6 +222,7 @@ function init() {
   $('safari-dex-board').addEventListener('click', () => openLeaderboard());
   initSafariPrep({
     onStart: async () => {
+      if (!(await safariTicket())) return openSafariPrep();
       if (hasSavedRun() && !(await confirmDialog('Start today\'s Safari Zone run? Your saved run will be lost.', 'Start'))) return openSafariPrep();
       leaveTitle();
       beginSafari();

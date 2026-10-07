@@ -75,7 +75,9 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - `BALLS` in `js/data/balls.js`; `save.balls = { great, ultra, dusk, ..., owned, masterWeek }` (a count per pack ball,
   `owned` the Master Ball). The row is for sale once the Pokédex
   is complete (the Safari's own lock).
-- Safari Ball: free, always. Every other ball but the Master Ball comes in packs, used up when thrown (the save is
+- Safari Ball: free, `SAFARI_BALLS` (30) a run, the daily try and every replay alike (since 2026-10-07, the user's call; it
+  was unlimited): `save.safari.balls`, reset by `beginSafari()`, spent as thrown (`safariBallsLeft()`; an old saved run
+  without it starts full); with none left and no packs, the Throw button says "You're out of balls!". Every other ball but the Master Ball comes in packs, used up when thrown (the save is
   written as the ball is thrown, so a refresh that replays the room doesn't give it back): Great (x1.5) and Ultra (x2),
   5 for 40 / 90 coins; Dusk (x3 at `timeOfDay()` night), Quick (x4 in turns 1-3; chosen when a throw needed red HP, so
   turn 1 alone could never be used; kept now a throw can open the fight), Timer (x1 +0.25 a turn, up to x3) and Net (x3 on Water and Grass), 3 for 150; Luxury (x1,
@@ -105,6 +107,14 @@ underneath (the user's ask): Buy calls `toggleShop('balls', { modal: true })`, t
 close (the shop's own click-elsewhere handler stands aside while any modal is open), Escape and the joystick keys still
 work, and its `close` re-renders this window, so bought balls show at once. The Safari Pokédex and the Leaderboard are
 modal and simply stack on top too. The area chips are 0.86rem with 0.74rem counts.
+
+## The Day Pass (2026-10-07, the user's design)
+
+The day's first try is free. Replays need a **Day Pass**: `DAY_PASS` (100) PokéCoins, bought once and good until the UTC
+day turns (`save.safari.pass`, the day bought). `safariAccess(safari, day)` in `js/data/balls.js` says 'first' / 'pass' /
+'locked'; `safariTicket()` in `js/daypass.js` is every way in (the prep window's Start, the result window's again button):
+it lets 'first' and 'pass' through and otherwise offers the pass (or says the coins are short). The prep window's Start
+reads Start 1/1, then "Day Pass 100", then Replay ∞; the title's gem 1/1, 0/1, then ∞. Pinned by `tests/daypass.test.mjs`.
 
 ## The fair first try
 

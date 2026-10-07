@@ -30,18 +30,23 @@ export const ROCK_FLEE = 0.15;
 /** Rare spawns: the odds a Safari wild room holds one (rolled per room on the biome's seed), how many of its turns it
     stays before it runs off, and its catch multiplier. */
 export const RARE = { odds: 0.12, turns: 4, mult: 0.5 };
+/** Every Safari run, the daily try and each replay, starts with this many Safari Balls (the user's call, 2026-10-07). */
+export const SAFARI_BALLS = 30;
+/** PokéCoins for the Day Pass: replays of today's Safari until the UTC day turns. The daily try is free. */
+export const DAY_PASS = 100;
+
 /** A catch pays this share of a knockout's ₽ (it pays in a card and a Pokédex entry instead). */
 export const CATCH_PRIZE = 0.5;
 /** The Luxury Ball's extra PokéCoins on a catch. */
 export const LUXURY_COINS = 10;
 
 /**
- * The balls. `stock`: a consumable bought in packs at the Game Corner (save.balls[id]); the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free.
+ * The balls. `stock`: a consumable bought in packs at the Game Corner (save.balls[id]); the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free, SAFARI_BALLS a run.
  * `mult(ctx)` is the ball's multiplier for a throw: ctx = { night, turn, type } (the wild Pokémon's type).
  */
 export const BALLS = [
   { id: 'safari', name: 'Safari Ball', sprite: 'safari-ball', free: true,
-    text: 'The Safari Zone\'s own ball. Always in your Bag.', mult: () => 1 },
+    text: `The Safari Zone's own ball. Every run starts with ${SAFARI_BALLS}.`, mult: () => 1 },
   { id: 'great', name: 'Great Ball', sprite: 'great-ball', stock: true, pack: 5, cost: 40,
     text: 'Better odds than a Safari Ball (x1.5). Used up when thrown.', mult: () => 1.5 },
   { id: 'ultra', name: 'Ultra Ball', sprite: 'ultra-ball', stock: true, pack: 5, cost: 90,
@@ -91,9 +96,9 @@ export function ballWeek(date = new Date()) {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
-/** The balls a save can throw right now, each with how many are left (Infinity for the Safari Ball). */
-export function ballsInBag(balls, week = ballWeek()) {
-  return BALLS.map(b => ({ ball: b, left: b.free ? Infinity
+/** The balls a save can throw right now, each with how many are left; `safari` is the run's Safari Balls left. */
+export function ballsInBag(balls, week = ballWeek(), safari = SAFARI_BALLS) {
+  return BALLS.map(b => ({ ball: b, left: b.free ? safari
     : b.stock ? balls[b.id] || 0
       : balls.owned.includes(b.id) && balls.masterWeek !== week ? 1 : 0 }))
     .filter(x => x.left > 0);
@@ -101,6 +106,12 @@ export function ballsInBag(balls, week = ballWeek()) {
 
 /** Times the Master Ball has been thrown (`masterThrows`, counted since its badge); an older save that ever threw it
     threw it once. */
+/** The run's Safari Balls left: kept in the save as they're thrown (an old saved run without it starts full). */
+export const safariBallsLeft = (safari = {}) => safari.balls ?? SAFARI_BALLS;
+
+/** Whether today's Safari can be started: the day's first try is free, a replay needs the day's pass. */
+export const safariAccess = (safari = {}, day) => (safari.day !== day || !safari.tries ? 'first' : safari.pass === day ? 'pass' : 'locked');
+
 export const masterThrows = (balls = {}) => balls.masterThrows ?? (balls.masterWeek ? 1 : 0);
 
 /** Throws given for a special ball bought back when it was a one-time unlock (300 coins, thrown freely). */
