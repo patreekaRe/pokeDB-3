@@ -1552,6 +1552,25 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Fire, which the crossroads shows, so no retune. Checked headless at 390x844: the crossroads (a tap outside and Escape
   don't skip it), the Ruins' map, signs and a fight, a saved route surviving a reload, an old save without one, a bad route
   thrown away, the Ruins' Pokédex banner and page. No console errors.
+- **Branching biomes, part d: the Thornwood Jungle painted** (roadmap item 19, Desktop app, 2026-10-07). This finished item
+  19 (the plan: a crossroads after each boss, a second road for Biomes 2 and 3, each new biome built as fully as the others,
+  journey films from 2 routes to 6, the Explorer Badge for entering all five main biomes). `BIOME_ART.thornwood` is its own
+  now (it borrowed the Clearing's): `thornBackdrop()` / `thornFloor()` / `thornFront()`, its life in `drawThorn()`. Four
+  places: the Tangled Edge (the forest rising as a wall, giants standing out of it, a dark way in between brambles, a trail
+  of trodden earth), the Canopy Walk (a plank deck high up, `canopyDeck()`; a sea of treetops below with mist drifting in
+  it, giants' trunks with platforms and rope bridges), the Strangler Grove (a gloom under a closed roof, strangler figs as a
+  lattice of cords round a dead host, `cordTrunk()`, aerial roots, glowing fungi) and the Heart Tree (a colossal trunk of
+  twisted cords, its heart glowing in a split, a thorny vine spiralling up it, roots arching over the arena). 12 landmarks.
+  Boss prelude: thorny tendrils writhe out of the ground towards the tree as its heart beats faster, then thorns burst up all
+  round it; the portal is a briar closing over the screen (`thornWake()` / `thornPortal()`, `THORN_AT`; sounds
+  `glade-hum`, `rustle`, `creak`, `quake`, `leaf-storm`). Spores glow (`spore`, in `GLOWS`). Its grotto is a tree hollow with
+  amber crystals, roots and a Nest Ball chest (`marks: 'nest'`). Map: `litter` ground, `canopy` and `bramble` tiles, `giant`
+  and `bloom` props. Intro film `js/thornwood-intro.js` (down through the canopy's leaves, along the trail between 3D giant
+  trunks to the Heart Tree's glow, Pokémon out of the ferns) with two walk-ons. Journey films `shrine>thornwood` (through the
+  Shrine's last torii, swallowed by vines) and `ruins>thornwood` (a fallen log over the river at a waterfall's foot). A run
+  lost at the jungle's last boss falls through the jungle's floor (`descent({ land: 'jungle' })`; `?strike=..&land=jungle`).
+  Checked in the pane at 1280x800 and 375x812 (every place, day / dusk / night, the prelude, the film, both trips, the
+  descent, the crossroads' glimpse). No console errors.
 - **Branching biomes, part c: the Thornwood Jungle's gameplay** (roadmap item 19, cloud, 2026-10-07). Slot 2's other road,
   `CROSSROADS[2] = ['wastes', 'thornwood']`, at the Wastes' numbers. Wilds Lurantis, Tsareena, Trevenant, Gogoat,
   Brambleghast, Arboliva, Eldegoss (Grass), Pyroar, Ceruledge (Fire), Barraskewda, Veluza (Water), Skwovet (Normal); Alphas
