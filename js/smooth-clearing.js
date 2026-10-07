@@ -51,7 +51,7 @@ function bandGradient(g, y0, y1, list, curve = 1) {
 }
 
 /** A soft round glow (added light). */
-function glow(g, x, y, r, colour, a, ry = r) {
+export function glow(g, x, y, r, colour, a, ry = r) {
   const gr = g.createRadialGradient(x, y, 0, x, y, r);
   gr.addColorStop(0, rgba(colour, a));
   gr.addColorStop(0.4, rgba(colour, a * 0.45));
@@ -65,7 +65,7 @@ function glow(g, x, y, r, colour, a, ry = r) {
 
 /** A soft round glow as a ready-made sprite (fireflies, pollen: dozens a frame), drawn at `a` strength. */
 const sprites = new Map();
-function dot(g, x, y, r, colour, a) {
+export function dot(g, x, y, r, colour, a) {
   let s = sprites.get(colour);
   if (!s) {
     s = document.createElement('canvas');

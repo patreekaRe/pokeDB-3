@@ -1675,3 +1675,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   descent entirely. Now, until a Mewtwo run reaches the Depths, the arena still shakes and splits in the last biome's look,
   but the floor holds and your Pokémon is thrown back by psychic force ("Only Mewtwo could follow that call down."), then
   the win scene. `kind: 'open'` in `descent()`; playtest `?gate=0&strike=0` (`&land=`).
+- **Hybrid scenery** (2026-10-07, the user's pick after the smooth pilot went too far): `?hybrid` (saved per device;
+  `?smooth` and `?hybrid` replace each other, `?pixel` turns both off) keeps the Clearing's pixels untouched and lays smooth
+  light over them on `#scene-light`, a full-resolution canvas screened over `#scene-bg` (`js/hybrid-clearing.js`, called from
+  the end of scene.js's `draw()` with the frame's shake). A sun / moon bloom that fades as clouds or trees cover the disc,
+  twinkling stars, glowing fireflies and pollen on their own pixels, soft beams on the Deep Woods' and the Ancient Tree's
+  dithered light bands, haze settling only on the hills' colours (the far wood too, never the trees), a warm wash at dawn
+  and dusk (cool moonlight at night), and the boss prelude's heartwood, sap, rays, burst and shock ring as bloom.

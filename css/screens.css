@@ -3720,6 +3720,9 @@ body.has-scene #scene-bg { display: block; }
 body.smooth-scene #scene-bg,
 body.smooth-scene .enemy-zone::after,
 body.smooth-scene .player-zone::before { image-rendering: auto; }
+/* the hybrid Clearing (?hybrid, js/hybrid-clearing.js): the pixel scene, with smooth light screened over it */
+#scene-light { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; pointer-events: none; display: none; mix-blend-mode: screen; }
+body.has-scene.hybrid-scene #scene-light { display: block; }
 
 /* ---------- POKÉDEX (js/pokedex.js): a page per biome, entries ??? until fought ---------- */
 .ds-btn.ds-dex { --stripe-a: #e05858; --stripe-b: #f07878; --rim: #a83030; }
@@ -3963,7 +3966,7 @@ body.smooth-scene .player-zone::before { image-rendering: auto; }
 }
 
 /* ?scene=<place> (init() in js/main.js): only the painted scene, for a look at a room */
-body.scene-peek > :not(#scene-bg):not(.peek-label):not(.biome-intro) { visibility: hidden !important; }
+body.scene-peek > :not(#scene-bg):not(#scene-light):not(.peek-label):not(.biome-intro) { visibility: hidden !important; }
 .peek-label { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 5; padding: 4px 10px; border: 2px solid #183a14; background: #3e8a3a; color: #fff8d8; font-family: var(--pixel-font); font-size: 0.75rem; white-space: nowrap; }
 body.scene-peek #backdrop { display: none; }
 

@@ -27,6 +27,7 @@ import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
 import { battleFx, calmFx } from './prefs.js';
 import { buildClearing, drawClearing, smoothPad } from './smooth-clearing.js';
+import { buildLight, drawLight } from './hybrid-clearing.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;   // the scenery's clock: everything below is timed in these ticks a second
@@ -1281,15 +1282,19 @@ let shown = '';                 // which scene is up, so going back to it doesn'
 let floorAt = null, spanAt = null;   // a place whose floor line and counter the page sets (showPlaceScene's `floor` and `span`)
 let storm = { on: false, level: 0 };
 let smoothArt = null;   // the smooth painter's layers for the scene on screen (js/smooth-clearing.js), when it has one
+let hybridArt = null;   // the hybrid look's still light for the scene on screen (js/hybrid-clearing.js), when it has one
 
-/* The smooth look's pilot (2026-10-07): ?smooth paints the Clearing smooth on this device for good, ?pixel goes back. */
-const SMOOTH_KEY = 'pokedb-smooth-scenery';
+/* The Clearing's other looks (2026-10-07), each on this device for good: ?smooth paints it smooth (the pilot), ?hybrid
+   keeps the pixels and lays smooth light over them (HD-2D), ?pixel goes back to plain pixels. */
+const SMOOTH_KEY = 'pokedb-smooth-scenery', HYBRID_KEY = 'pokedb-hybrid-scenery';
 try {
   const q = new URLSearchParams(location.search);
-  if (q.has('smooth')) localStorage.setItem(SMOOTH_KEY, '1');
-  if (q.has('pixel')) localStorage.removeItem(SMOOTH_KEY);
+  if (q.has('smooth')) { localStorage.setItem(SMOOTH_KEY, '1'); localStorage.removeItem(HYBRID_KEY); }
+  if (q.has('hybrid')) { localStorage.setItem(HYBRID_KEY, '1'); localStorage.removeItem(SMOOTH_KEY); }
+  if (q.has('pixel')) { localStorage.removeItem(SMOOTH_KEY); localStorage.removeItem(HYBRID_KEY); }
 } catch { /* no storage: the pixel look */ }
 const smoothOn = () => { try { return localStorage.getItem(SMOOTH_KEY) === '1'; } catch { return false; } };
+const hybridOn = () => { try { return localStorage.getItem(HYBRID_KEY) === '1'; } catch { return false; } };
 
 /* ---------- the time of day (js/daytime.js) ----------
    A biome has a hand-painted look per time (`times`; one with `from` is that time's look graded, under its own sky), and
@@ -1589,12 +1594,16 @@ function paintScene(key, raw, floor = null, span = null) {
   clearInterval(timer);
   storm = { on: false, level: 0 };
   smoothArt = null;
-  document.body.classList.toggle('smooth-scene', !!raw && smoothOn() && raw.backdrop === 'hills' && !raw.prop);
+  hybridArt = null;
+  const clearing = !!raw && raw.backdrop === 'hills' && !raw.prop;   // the Clearing's own places, not an event's room in it
+  document.body.classList.toggle('smooth-scene', clearing && smoothOn());
+  document.body.classList.toggle('hybrid-scene', clearing && !smoothOn() && hybridOn());
   if (!raw) { S = null; return; }
   S = colours(raw);
   S.raw = raw;
   S.storm = raw.storm && { ...raw.storm, rain: raw.storm.rain.map(abgr) };
-  S.smooth = document.body.classList.contains('smooth-scene');   // the Clearing's own places, not an event's room in it
+  S.smooth = document.body.classList.contains('smooth-scene');
+  S.hybrid = document.body.classList.contains('hybrid-scene');
   const pad = raw.padDeep && raw.stage >= 2 ? raw.padDeep : raw.pad;   // the Crystal Depths' rock turns red from the Deep Core on
   if (pad) $('battle-screen').style.setProperty('--pad', `url("${S.smooth && pad.style === 'grass' ? smoothPad(pad) : padImage(pad)}")`);
   resize();
@@ -1699,6 +1708,15 @@ function resize() {
     canvas.width = Math.max(1, Math.round(innerWidth * dpr));
     canvas.height = Math.max(1, Math.round(innerHeight * dpr));
     smoothArt = buildClearing({ W, H, horizon, cw: canvas.width, ch: canvas.height, raw: S.raw, life, p: dial(), within: within() });
+  }
+  if (S.hybrid) {
+    // soft light needs no more than the screen's own pixels
+    const light = $('scene-light'), dpr = Math.min(1.5, devicePixelRatio || 1);
+    light.width = Math.max(1, Math.round(innerWidth * dpr));
+    light.height = Math.max(1, Math.round(innerHeight * dpr));
+    const far = new Map([...S.hills.map(c => [c, 0.55]), ...S.farHills.map(c => [c, 1])]);
+    hybridArt = buildLight({ W, H, horizon, cw: light.width, ch: light.height, raw: S.raw, time: timeOfDay(), base, far,
+      sun: S.light === 'sun' ? life.sun : null, moon: S.light === 'moon' ? life.moon : null });
   }
   draw();
   dispatchEvent(new Event('scenepaint'));   // the Center's tap spots follow the scene (centerSpots)
@@ -1859,7 +1877,7 @@ function sunDisc(height, size) {
 
 function moon() {
   const r = Math.max(4, Math.round(Math.min(W, H) * 0.04));
-  const m = { x: Math.round(W * 0.84), y: Math.max(r + 8, Math.round(horizon * 0.42)), r };
+  const m = life.moon = { x: Math.round(W * 0.84), y: Math.max(r + 8, Math.round(horizon * 0.42)), r };
   const [lit, body, crater] = ['#f8f4d8', '#e0dab8', '#c0b898'].map(abgr);
   for (let y = -r * 3; y <= r * 3; y++) {
     for (let x = -r * 3; x <= r * 3; x++) {
@@ -6182,8 +6200,31 @@ function draw() {
 
   if (calmFx()) shake = 0;
   // the whole picture jolts a pixel or two; the strip it uncovers keeps last frame's colours, which reads as blur
-  ctx.putImageData(img, shake ? (Math.floor(t) % 2 ? shake : -shake) : 0, shake > 1 && Math.floor(t) % 3 === 0 ? 1 : 0);
+  const dx = shake ? (Math.floor(t) % 2 ? shake : -shake) : 0, dy = shake > 1 && Math.floor(t) % 3 === 0 ? 1 : 0;
+  ctx.putImageData(img, dx, dy);
+  if (S.hybrid && hybridArt) drawHybrid(t, dx, dy);
   last = tick;
+}
+
+/** The hybrid look's light over this frame's pixels (js/hybrid-clearing.js). */
+function drawHybrid(t, dx, dy) {
+  const seen = (disc, ...lit) => {   // how much of the sun or moon a cloud or a tree isn't hiding
+    if (!disc) return 0;
+    let n = 0, hit = 0;
+    for (let y = -disc.r; y <= disc.r; y++) for (let x = -disc.r; x <= disc.r; x++) {
+      if (x * x + y * y > disc.r * disc.r || !inside(disc.x + x, disc.y + y)) continue;
+      n++;
+      if (lit.includes(px[(disc.y + y) * W + disc.x + x])) hit++;
+    }
+    return n ? hit / n : 0;
+  };
+  const prelude = bossPrelude && hasPrelude() ? { phase: bossPrelude.phase, age: Math.max(0, t - bossPrelude.at) } : null;
+  drawLight($('scene-light').getContext('2d'), hybridArt, {
+    t, DT, life, storm, prelude, calm: calmFx(), dx, dy,
+    sunSeen: hybridArt.sun ? seen(hybridArt.sun, S.sun[0], S.sun[1]) : 0,
+    moonSeen: hybridArt.moon ? seen(hybridArt.moon, abgr('#f8f4d8'), abgr('#e0dab8')) : 0,
+    open: (x, y) => !!sky[y * W + x],
+  });
 }
 
 /** The Main Hall's geometry, recomputed from the canvas (the prelude draws over the painted scene). */

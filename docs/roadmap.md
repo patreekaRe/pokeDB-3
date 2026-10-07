@@ -9,16 +9,11 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Hybrid scenery: pixel art with modern lighting** (the user's pick, 2026-10-07). Run in: CLOUD.
-The smooth pilot (`?smooth`, `js/smooth-clearing.js`, 2026-10-07) went too far: the user still loves the pixel style. Build
-"HD-2D" (Octopath Traveler's look) on the Clearing only, behind its own switch `?hybrid` (saved per device like
-`?smooth`; `?pixel` turns both off), so the user can flip between pixel, hybrid and smooth on the live site. The scene
-stays the pixel scene, every pixel as now (sprites, pads, landmarks unchanged); only the light is drawn smooth over it,
-on a full-resolution overlay canvas: a soft glow round the sun and moon, glowing fireflies and pollen, real light beams
-through the Deep Woods, a gentle haze softening the far hills (a touch of the "soft far away, pixel up close" idea), a
-warm tint at dawn and dusk, and the boss prelude's glows (heartwood, sap, flash) as bloom. Reuse the smooth pilot's glow
-and sprite helpers (`glow()`, `dot()`) and its trick of drawing in the pixel scene's own units over scene.js's `life`.
-Once the user has compared the three, ask whether to keep `?smooth` or remove `js/smooth-clearing.js` (one revert).
+**Waiting on the user: pick the Clearing's look** (2026-10-07). Pixel (`?pixel`), hybrid (`?hybrid`, HD-2D:
+`js/hybrid-clearing.js`) and smooth (`?smooth`, `js/smooth-clearing.js`) are all on the live site, each saved per device.
+Once the user has compared them, ask whether to keep `?smooth` or remove `js/smooth-clearing.js` (one revert; the hybrid
+borrows its `glow()` / `dot()`, so move those two into `js/hybrid-clearing.js` first), and whether the hybrid should
+spread to the other biomes.
 
 **More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
 their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.
