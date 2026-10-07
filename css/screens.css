@@ -4904,3 +4904,20 @@ body[data-screen="map-screen"]:has(#map-screen.tower) .home-key { width: 26px; h
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key svg { width: 15px; height: 15px; }
 /* in battle the Pokédex button shrinks to 24px (the user's ask, 2026-10-07: at 36px it crowded the enemy's nameplate) */
 body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 24px; }
+
+/* ---------- the Sky Pillar's augment pick (roadmap item 21 part a: plain tiles; part b gives them their look) ---------- */
+.aug-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; min-height: 150px; border-radius: 10px;
+  background: #23262e; color: #f1f1f1; border: 3px solid #9aa3ad; text-align: center; box-sizing: border-box; }
+.aug-tile.aug-gold { border-color: #e4b53c; background: #2e2716; }
+.aug-tile.aug-prismatic { border-color: #c48cff; background: #241a33; box-shadow: 0 0 0 2px #6fe0ff inset; }
+.aug-icon { font-size: 30px; line-height: 1; }
+.aug-name { font-size: 15px; }
+.aug-tier { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em; }
+.aug-text { font-size: 12.5px; line-height: 1.3; }
+.aug-pick { gap: 10px; }
+.focus-card.aug-tile { width: min(260px, 80vw); min-height: 200px; }
+.focus-card.aug-tile .aug-text { font-size: 15px; }
+.aug-head { margin: 8px 0 2px; font-weight: bold; font-size: 13px; opacity: 0.8; }
+.aug-node { display: inline-grid; place-items: center; font-size: 22px; border-radius: 8px; border: 2px solid #9aa3ad; background: #23262e; }
+.aug-node.aug-gold { border-color: #e4b53c; }
+.aug-node.aug-prismatic { border-color: #c48cff; }

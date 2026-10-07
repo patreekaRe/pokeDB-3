@@ -26,7 +26,7 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   (it wears `.tower-lobby` too, `docs/reference/safari.md`), and so does the character select's device (`.tdev-*`).
 - **The week deals the tower** (`towerWeekly()`): its Monday (UTC, `towerWeek()`) seeds every roll through `js/rng.js`
   like the Safari's day, and picks the starter everyone climbs with (the Safari's pool: never Mewtwo or Rayquaza).
-- **The week's first try counts** for the leaderboard and is played without perks (`fairTry()` covers `run.tower.first`).
+- **The week's first try counts** for the leaderboard. Every climb is played without perks since augments (`fairTry()` covers every `run.tower`).
   Tries are counted when a climb starts (`save.tower.tries`), so quitting can't retry the first. Climb again as often as you
   like (a replay), or **Practice** with any starter you own but Mewtwo (the window's starter strip): neither posts.
 - **Flights of 10 floors** (`FLIGHT`): nine landings with a fixed shape (`landingTypes()`; 2026-10-07, the user's call:
@@ -58,9 +58,46 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
 - **The end**: otherwise a climb ends in a faint: `endTower()` shows the floor reached, your best, and posts the week's first
   try. "Climb again" starts the same kind of climb.
 
+## Augments (roadmap item 21 part a, 2026-10-07)
+
+The user's call: League's Arena / ARAM Mayhem, "a SHIT TON of augments", so every climb plays differently. The plan and the
+full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, shared with the bot).
+
+- **No perks on any climb**: `fairTry()` in `js/run.js` is true for every `run.tower` (the leaderboard try, replays and
+  Practice), so no Game Corner or Pokédex perk reaches it (Coin Finder still pays its PokéCoins: they don't touch the climb).
+- **Picks**: one of three before floor 1 (`run.tower.pick = 0`) and after every guardian (`climbOn()` sets `pick` to the floor of the
+  guardian just beaten: 10, 20 ... 90). `showMap()` asks for it after the checkpoint (`augmentPick()`), so a refresh
+  asks again; there's no Skip. Tiers by floor (`augTier()`): the start and 10-30 Silver, 40-60 Gold, 70-90 Prismatic, each
+  slot with a 10% seeded chance of one tier up (`AUG_TIER_UP`).
+- **The seed**: `augmentOffer()` rolls a stream per floor and reroll (`<seed>|aug:<floor>[:r<n>]`), so everyone climbing
+  that week sees the same three at the same floor and after the same reroll. Held augments, another type's and ones whose
+  `needs` fail (Overcharge without an X card) are skipped, walking on down the same seeded order; a reroll never repeats the
+  floor's earlier offers. One reroll a climb (`AUG_REROLLS`, Deep Pockets +1), saved at once (`checkpoint()`), so a refresh
+  can't peek at a fourth offer.
+- **Effects are data**: each augment carries effect keys; `augEffects(ids, spent)` sums them (MULT keys multiply). Fight keys
+  are read in `js/battle.js` off `battle.aug` (start-of-fight block / strength / Focus / Weak / Vulnerable, per-turn PP and
+  draw, `augDamage()`'s multipliers, `cardBlock()` for every card's block, Echo / Double Down / Nova in `playCard()`, Time
+  Warp in `endTurn()`, Fire / Grass / Water hooks in `burnEnemy()`, `applyDebuff()`, `spendTide()`...); run keys in
+  `js/run.js` (`takeAugment()` for what happens at once: max HP, forgetting or PP Upping moves, a relic, an item;
+  `augmentsAfterFight()`, `offerCard()`, `restSite()`, `martPrice()`, `itemSlots()`, the guardian's extra relics). The
+  header comment of `js/data/augments.js` lists every key; a new augment that only combines keys needs no code.
+- **Once a climb**: Rebirth, Second Wind and Last Breath (`lifeline()`): after a Revive, a fatal hit uses the first one
+  left; `onEnd` hands back `spent` and `run.tower.spent` keeps it.
+- **Saved** on `run.tower` (`augments`, `spent`, `rerolls`, `rerolledAt` / `rerolledN`, `pick`, `train` for Training Day's
+  PP Up after each guardian, `blood` / `bloodStr` for Bloodlust). A climb saved before augments loads with none and owes
+  none (`restoreRun()`).
+- **Shown**: an "Augments" row in the Bag's Relics pocket (between the Ability and the relics, a tier-framed icon each),
+  the result window's list, and the board entry's `augments` (ids, at most 10; `towerResult()` / `checkTowerEntry()`,
+  `firestore.rules`: **the user has to publish the rules again**, or posts with augments are refused). Part b gives the pick
+  screen its look (tier frames, icons, reveal and reroll animation) and the leaderboard the picks.
+- **Playtest**: `?tower=1&aug=echo,nova` hands a throwaway climb those augments up front (their at-once effects, like max HP,
+  don't apply), then the start's pick.
+- **Not built yet** (part c): the trade-offs, sets, augment badges, and Picky Eater, Insight, Mulligan, Recycler, Pack Rat,
+  Infinite Loop, Chaos Theory, Hydra, Copycat, Soul Bond from the first list.
+
 ## How it runs
 
-- `run.tower = { week, seed, first, practice, flight, floor }`, saved with the run. `flight` is the guardians beaten;
+- `run.tower = { week, seed, first, practice, flight, floor, augments, spent, rerolls, pick, ... }`, saved with the run. `flight` is the guardians beaten;
   `run.biome` follows `towerBiome(flight)` for scenery, numbers, events and music.
 - Each flight is a map from `landingMap()` in `js/map.js`: a row of doors per landing, every door linked to every door
   above, the guardian on top. The map screen draws it as the tower (`drawMap()` hands it to `renderTower()`), `F<n>` in

@@ -109,11 +109,12 @@ export const boardValue = (id, e) => (id === 'floor' ? `F${e.floor}` : id === 'f
 
 export const TOWER_COLLECTION = 'towerBoard';
 export const TOWER_LIMITS = { floor: [0, 999], turns: [0, 60000], time: [0, 8 * 24 * 3600] };
-export const TOWER_KEYS = ['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at'];
+export const TOWER_KEYS = ['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at', 'augments'];
+export const TOWER_AUGMENTS = 10;   // the most augments a climb can pick (js/data/augments.js: the start and nine guardians)
 
 /** What a finished climb posts, before the uid and name: the week (its Monday), starter, highest floor cleared, turns,
     climb time in seconds. */
-export function towerResult({ week, starter, floor, turns, startedAt, endedAt = Date.now() }) {
+export function towerResult({ week, starter, floor, turns, startedAt, endedAt = Date.now(), augments = [] }) {
   const start = Date.parse(startedAt);
   return {
     week,
@@ -121,6 +122,7 @@ export function towerResult({ week, starter, floor, turns, startedAt, endedAt = 
     floor: clamp(floor, TOWER_LIMITS.floor),
     turns: clamp(turns, TOWER_LIMITS.turns),
     time: Number.isFinite(start) ? clamp((endedAt - start) / 1000, TOWER_LIMITS.time) : 0,
+    augments: augments.slice(0, TOWER_AUGMENTS).map(id => String(id).slice(0, 32)),   // the augments taken, in order
   };
 }
 
@@ -136,6 +138,7 @@ export function checkTowerEntry(e, thisWeek) {
   if (typeof e.name !== 'string' || !e.name || [...e.name].length > NAME_MAX) return 'bad name';
   if (typeof e.starter !== 'string' || !e.starter || e.starter.length > 32) return 'bad starter';
   for (const key of Object.keys(TOWER_LIMITS)) if (!inRange(e[key], TOWER_LIMITS[key])) return `bad ${key}`;
+  if ('augments' in e && (!Array.isArray(e.augments) || e.augments.length > TOWER_AUGMENTS || e.augments.some(a => typeof a !== 'string' || !a || a.length > 32))) return 'bad augments';
   return null;
 }
 

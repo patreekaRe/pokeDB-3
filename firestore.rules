@@ -49,13 +49,14 @@ service cloud.firestore {
       return request.time >= start && request.time < start + duration.value(8, 'd');
     }
     function validClimb(id, d) {
-      return d.keys().hasOnly(['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at'])
+      return d.keys().hasOnly(['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at', 'augments'])
         && d.keys().hasAll(['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at'])
         && d.uid == request.auth.uid
         && isDay(d.week) && id == d.week + '_' + request.auth.uid && nearWeek(d.week)
         && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
         && d.starter is string && d.starter.size() >= 1 && d.starter.size() <= 32
         && inRange(d.floor, 0, 999) && inRange(d.turns, 0, 60000) && inRange(d.time, 0, 691200)
+        && (!('augments' in d) || (d.augments is list && d.augments.size() <= 10))
         && d.at == request.time;
     }
 

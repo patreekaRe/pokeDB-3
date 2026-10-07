@@ -35,6 +35,7 @@ import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
+import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, augEffects, augmentOffer } from './data/augments.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
@@ -73,9 +74,12 @@ export const runSafariArea = () => (isRunActive() && run.safari ? run.safari.are
 /** A Safari Zone daily run (js/data/safari.js): the date's seed drives every roll, through js/rng.js. */
 const isSafari = () => Boolean(run?.safari);
 
-/** A Sky Pillar climb (js/data/tower.js): `run.tower = { week, seed, first, practice, flight, floor }`, the week's seed
-    driving every roll like the Safari's, `flight` the guardians beaten, `floor` the highest floor cleared. */
+/** A Sky Pillar climb (js/data/tower.js): `run.tower = { week, seed, first, practice, flight, floor, augments, spent,
+    rerolls, pick }`, the week's seed driving every roll like the Safari's, `flight` the guardians beaten, `floor` the
+    highest floor cleared, `augments` the ones taken (js/data/augments.js), `pick` the floor whose augment is still owed. */
 const isTower = () => Boolean(run?.tower);
+/** The climb's augments, summed (augEffects()); {} outside the Sky Pillar. */
+const augs = () => (run?.tower ? augEffects(run.tower.augments, run.tower.spent) : {});
 /** The seeded streams' biome part: the Sky Pillar's flight (past floor 30 they all share the Wastes' biome). */
 const zone = () => (run?.tower ? `t${run.tower.flight}` : run.biome);
 
@@ -93,9 +97,10 @@ const mainBiome = (r = run) => biomeAt(r.route, r.biome);
 const land = () => safariArea() || mainBiome();
 
 /** The Safari Zone's first try of the day is the leaderboard's, so it's played without Game Corner or Pokédex perks
-    (the user's call, 2026-10-02): every player starts it the same. Replays keep them. Coin Finder only touches PokéCoins,
-    so it stays. Every perk the run reads goes through these two. */
-const fairTry = (r = run) => Boolean(r?.safari?.first || r?.tower?.first);
+    (the user's call, 2026-10-02): every player starts it the same. Replays keep them. Every Sky Pillar climb goes without
+    them, replays and Practice too (the user's call, 2026-10-07: augments are its power instead). Coin Finder only touches
+    PokéCoins, so it stays. Every perk the run reads goes through these two. */
+const fairTry = (r = run) => Boolean(r?.safari?.first || r?.tower);
 const perk = (id) => (fairTry() ? 0 : perkLevel(id));
 const dexPerk = (id) => (fairTry() ? 0 : dexPerkLevel(id));
 
@@ -113,10 +118,10 @@ export const LEVEL5_JACKPOT = 500;
 const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
 
 /** How many items the Bag holds: the Game Corner's Bag Pocket adds one. */
-const itemSlots = () => ITEM_SLOTS + (perk('bagPocket') ? 1 : 0);
+const itemSlots = () => ITEM_SLOTS + (perk('bagPocket') ? 1 : 0) + (augs().itemSlots || 0);   // Hoarder
 
 /** A Poké Mart price after the Game Corner's Mart Card (read at the counter, so buying it mid-run counts at once). */
-const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perk('martCard')]));
+const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perk('martCard')]) * (augs().martMult || 1));   // Big Spender
 
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
@@ -294,6 +299,7 @@ function restoreRun(saved) {
     ...saved,
     starter,
     route: saved.route ?? BIOMES.slice(0, saved.biome + 1).map(b => b.id),   // saved before the crossroads: the default road
+    tower: saved.tower && { ...freshAugments(null), ...saved.tower },   // a climb saved before augments has none, and owes none
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     map: { floors, boss: byId.boss, byId },
@@ -323,7 +329,7 @@ export function continueRun(saved) {
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
 export function beginRun(starter, level = 0, peek = null, safari = null, tower = null) {
   dropNotes();
-  const perks = !safari?.first && !tower?.first;   // the Safari's first try of the day goes without perks (fairTry())
+  const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
   const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
 
   run = {
@@ -368,7 +374,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
   }
 
   // Pokédex perks, earned by completing a biome's page
-  if (!perks) tell(tower ? 'The week\'s first climb: no Game Corner or Pokédex perks, so every trainer starts the same.' : 'First try of the day: no Game Corner or Pokédex perks, so every trainer starts the same.');
+  if (!perks) tell(tower ? 'The Sky Pillar: no Game Corner or Pokédex perks here. The augments you pick are your power.' : 'First try of the day: no Game Corner or Pokédex perks, so every trainer starts the same.');
   const savings = DEX_START_MONEY[dexPerk('moms-savings')];
   if (savings) { run.money += savings; tell(`Mom's Savings: you set out with ₽${savings}!`); }
   const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerk('chansey-gift')]];
@@ -398,18 +404,22 @@ export function beginTower(practice = null) {
   const first = !practice && !(thisWeek && saved.tries);
   const weeks = towerWeeks(getSave()) + (thisWeek ? 0 : 1);   // the Weekly Climber Badge's
   if (!practice) updateSave(d => { d.tower = { ...d.tower, week: weekly.week, tries: (thisWeek ? d.tower.tries : 0) + 1, best: thisWeek ? d.tower.best : 0, weeks }; });
-  beginRun(practice ?? weekly.starter, 0, null, null, { week: weekly.week, seed: weekly.seed, first, practice: Boolean(practice), flight: 0, floor: 0 });
+  beginRun(practice ?? weekly.starter, 0, null, null, { week: weekly.week, seed: weekly.seed, first, practice: Boolean(practice), flight: 0, floor: 0, ...freshAugments(0) });
 }
 
 /** Playtest shortcut: ?tower=25 starts a throwaway climb at that floor (the week's tower and starter, evolved as far as
-    its guardians would have taken it). Nothing about it is saved. */
-export function peekTower(floor, enemyHp = 1) {
+    its guardians would have taken it); &aug=echo,nova hands it those augments first. Nothing about it is saved. */
+export function peekTower(floor, enemyHp = 1, given = []) {
   const weekly = towerWeekly();
   floor = Math.max(1, Math.floor(floor) || 1);
   peeking = true;
   towerPeekHp = enemyHp > 0 ? enemyHp : 1;
-  beginRun(weekly.starter, 0, ':tower', null, { week: weekly.week, seed: weekly.seed, first: false, practice: true, flight: Math.floor((floor - 1) / FLIGHT), floor: floor - 1, at: (floor - 1) % FLIGHT });
+  const flight = Math.floor((floor - 1) / FLIGHT);
+  beginRun(weekly.starter, 0, ':tower', null, { week: weekly.week, seed: weekly.seed, first: false, practice: true, flight, floor: floor - 1, at: (floor - 1) % FLIGHT, ...freshAugments(flight * FLIGHT), augments: given.filter(id => AUGMENTS_BY_ID[id]) });
 }
+
+/** A climb's augment state: none yet, the first pick owed at `pick` (floor 0, before floor 1). */
+const freshAugments = (pick) => ({ augments: [], spent: [], rerolls: 0, pick, rerolledAt: null, rerolledN: 0, blood: 0, bloodStr: 0 });
 
 let towerPeekHp = 1;   // ?tower=25&hp=0.1 shrinks every foe's HP, to see guardians and flights through quickly
 
@@ -573,7 +583,10 @@ function climbed(floor) {
 
 /** After a guardian's rewards, on up to the next flight. */
 function climbOn() {
-  run.tower.flight += 1;
+  const t = run.tower;
+  t.flight += 1;
+  t.pick = t.flight * FLIGHT;   // an augment after every guardian, asked on the map (augmentPick())
+  if (t.augments.some(id => AUGMENTS_BY_ID[id]?.upgradePick)) t.train = true;   // Training Day, again
   startBiome();
 }
 
@@ -705,6 +718,8 @@ function showMap() {
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
+  if (run.tower && run.tower.pick != null) return augmentPick();
+  if (run.tower?.train) return trainingDay();
   const next = isTower() ? 0 : nextPlace(here);
   if (next) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
   else showNotes();
@@ -745,6 +760,96 @@ function tutorNotes() {
     sub: [`Your Move Tutor Notes! Pick a move to PP Up before you set out${left > 1 ? ` (${left} to go)` : ''}.`, 'Tap one to see it upgraded.'],
     skipLabel: 'Skip',
   });
+}
+
+/* ---------- the Sky Pillar's augments (js/data/augments.js, roadmap item 21) ---------- */
+
+/** An augment's tile on the pick screen and in the Bag: its tier, icon, name and what it does. */
+function augTile(aug) {
+  const tile = el('div', `aug-tile aug-${aug.tier}`);
+  tile.append(el('span', 'aug-icon', aug.icon), el('b', 'aug-name', aug.name),
+    el('small', 'aug-tier', `${AUG_TIER_NAMES[aug.tier]}${aug.type ? ` · ${TYPES[aug.type]?.label ?? aug.type} only` : ''}`), el('span', 'aug-text', aug.text));
+  return tile;
+}
+
+/** One of three augments, before floor 1 and after every guardian: the week's seed deals them (augmentOffer()), so
+    everyone climbing that week sees the same three, and the same three after a reroll. Asked on the map after the
+    checkpoint, with `pick` saved, so a refresh asks again; a reroll is saved at once, so a refresh can't show a fourth. */
+function augmentPick() {
+  const t = run.tower, floor = t.pick;
+  const rerolled = t.rerolledAt === floor ? t.rerolledN : 0;
+  const offer = augmentOffer({ seed: t.seed, floor, reroll: rerolled, type: run.starter.type, held: t.augments, deck: run.deck, cards: CARDS_BY_ID });
+  if (!offer.length) { t.pick = null; return showMap(); }
+  const left = AUG_REROLLS + (augs().rerolls || 0) - t.rerolls;
+  showChoice({
+    title: floor ? `Floor ${floor}: an augment` : 'The Sky Pillar: an augment',
+    sub: [floor ? `The guardian's power lingers. Pick an augment for the rest of the climb (${t.augments.length} so far).` : 'Before you climb, pick an augment. It lasts the whole climb.',
+      left > 0 ? `You can reroll all three ${left === 1 ? 'once' : `${left} times`} this climb.` : null, 'Tap one to read it, then take it.'].filter(Boolean),
+    options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
+    layout: 'aug-pick',
+    reroll: left > 0 ? () => {
+      t.rerolls += 1;
+      t.rerolledAt = floor;
+      t.rerolledN = rerolled + 1;
+      checkpoint();
+      playSound('shuffle', 'confirm');
+      augmentPick();
+    } : null,
+  });
+}
+
+/** An augment is taken: it joins the climb, and what it does at once happens now (max HP, forgetting or PP Upping
+    moves, a relic, an item). */
+function takeAugment(aug) {
+  const t = run.tower;
+  t.augments.push(aug.id);
+  t.pick = null;
+  if (aug.bloodlust) t.blood = 0;
+  tell(`${aug.icon} ${aug.name}: ${aug.text}`);
+  const steps = [];
+  if (aug.maxHp || aug.maxHpMult) steps.push(next => {
+    const before = run.maxHp;
+    run.maxHp = Math.max(1, Math.round((run.maxHp + (aug.maxHp || 0)) * (aug.maxHpMult || 1)));
+    run.hp = Math.max(1, Math.min(run.maxHp, run.hp + Math.max(0, run.maxHp - before)));
+    setHpBar('run', run.hp, run.maxHp);
+    tell(`Max HP ${run.maxHp > before ? '+' : ''}${run.maxHp - before} (now ${run.maxHp}).`);
+    next();
+  });
+  if (aug.upgradeRandom) steps.push(next => {
+    const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, aug.upgradeRandom);
+    for (const i of spots) { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); tell(`${card.name} became ${CARDS_BY_ID[run.deck[i]].name}!`); }
+    next();
+  });
+  for (let i = 0; i < (aug.forget || 0); i++) steps.push(next => (run.deck.length > MIN_DECK ? forgetMove(next, next) : next()));
+  if (aug.upgradePick) steps.push(next => upgradeMove(next, next, { title: aug.name, sub: ['Pick a move to PP Up for the rest of the climb.', 'Tap one to see it upgraded.'], skipLabel: 'Skip' }));
+  if (aug.relicNow) steps.push(next => {
+    const [relic] = relicChoices(run);
+    if (!relic) return next();
+    showRelics(aug.name, [relic], next, { skip: false, sub: [`${aug.name}! You found ${/^[AEIOU]/.test(relic.name) ? 'an' : 'a'} ${relic.name}.`, 'Tap it to see what it does.'] });
+  });
+  if (aug.itemNow) steps.push(next => { const [item] = itemChoices(run); return item ? offerItem(item, next) : next(); });
+  runSteps(steps, showMap);
+}
+
+/** Training Day: after every guardian, PP Up a move of your choice. `train` is saved, so a refresh asks again. */
+function trainingDay() {
+  const done = () => { run.tower.train = false; showMap(); };
+  upgradeMove(done, done, { title: 'Training Day', sub: ['Training Day: pick a move to PP Up.', 'Tap one to see it upgraded.'], skipLabel: 'Skip' });
+}
+
+/** After a won fight on the climb: Field Medic's heal, Speedrunner's prize and Bloodlust's count. */
+function augmentsAfterFight(result) {
+  const t = run.tower, a = augs();
+  if (a.fightHeal) run.hp = Math.min(run.maxHp, run.hp + a.fightHeal);
+  if (a.speedrunner && (result.tally?.turns ?? 99) <= a.speedrunner) {
+    run.maxHp += 1;
+    run.hp = Math.min(run.maxHp, run.hp + 10);
+    tell('⏱️ Speedrunner: +10 HP and +1 max HP!');
+  }
+  if (a.bloodlust) {
+    t.blood = (t.blood || 0) + 1;
+    if (t.blood % a.bloodlust === 0) { t.bloodStr = (t.bloodStr || 0) + 1; tell(`🩸 Bloodlust: +1 strength for the climb (${t.bloodStr} now).`); }
+  }
 }
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
@@ -845,7 +950,17 @@ function renderRelicList() {
   };
   const ability = ABILITIES[run.starter.type];   // the starter's own, always first (StS's starter relic)
   const rows = run.relics.map(id => row(RELICS_BY_ID[id]));
+  // a climb's augments: their own row, between the Ability and the relics
+  const augRows = (run.tower?.augments || []).map(id => AUGMENTS_BY_ID[id]).filter(Boolean).map(aug => {
+    const li = el('div', 'howto-li aug-row');
+    const text = el('span', 'howto-li-text');
+    const spent = run.tower.spent?.includes(aug.id);
+    text.append(el('b', '', `${aug.name} · ${AUG_TIER_NAMES[aug.tier]}${spent ? ' (used)' : ''}`), el('small', '', aug.text));
+    li.append(el('span', `howto-node aug-node aug-${aug.tier}`, aug.icon), text);
+    return li;
+  });
   $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
+    ...(augRows.length ? [el('p', 'aug-head', 'Augments'), ...augRows] : []),
     ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
 }
 
@@ -1034,6 +1149,7 @@ async function fight(node) {
 function afterFight(node, result) {
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
+  if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
   if (result.fled || result.escaped) {
     run.hp = result.hp;
     tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
@@ -1043,6 +1159,7 @@ function afterFight(node, result) {
 
   run.hp = result.hp;
   run.fights += 1;
+  if (isTower()) augmentsAfterFight(result);
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
   const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
@@ -1064,7 +1181,8 @@ function afterFight(node, result) {
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
   // a catch pays less ₽ than a knockout: it pays in a card and a Safari Pokédex entry (the user's call)
-  const prize = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const base = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const prize = Math.round(base * (augs().prizeMult || 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Golden Touch
   const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
@@ -1100,6 +1218,7 @@ function afterFight(node, result) {
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
+    for (let i = 0; i < (augs().alphaCards || 0); i++) steps.push(next => offerCard('elite', next));   // Alpha Hunter
   }
   if (node.type === 'ken') {
     // his first defeat is the Mata-Mindset's achievement, his third finds his dojo on every map (the user's call,
@@ -1130,12 +1249,17 @@ function afterFight(node, result) {
     else steps.push(next => unlockWindow(unlocked, next));
     if (isTower()) steps.push(next => { guardianHeal(); next(); });
     steps.push(next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));
+    if (isTower()) {
+      const a = augs();
+      for (let i = 0; i < (a.guardianBossRelic || 0); i++) steps.push(next => offerRelic('Spoils of War', next, { boss: true }));
+      if (a.guardianRelic && random() < a.guardianRelic) steps.push(next => offerRelic('Lucky Coin', next, { source: 'elite' }));
+    }
   } else steps.unshift(next => unlockWindow(unlocked, next));
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
   if (run.relics.includes('dusk-stone')) {
     // Dusk Stone (StS's Sozu): no new items
-  } else if (random() < run.itemChance) {
+  } else if (random() < run.itemChance * (augs().itemOdds || 1)) {   // Scavenger
     run.itemChance = Math.max(0, run.itemChance - ITEM_DROP.step);
     const [item] = itemChoices(run);
     if (item) steps.push(next => offerItem(item, next));
@@ -1216,7 +1340,12 @@ function runSteps(steps, done) {
 /* ---------- rewards ---------- */
 
 function offerCard(source, next, rerolled = false) {
-  const cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0], { reward: true });   // Scout Report: 4
+  const cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0] + (augs().rewardCards || 0), { reward: true });   // Scout Report: 4; Second Helping
+  if (augs().cardShark) {   // Card Shark: an upgraded rare as well
+    const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
+    const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES && !cards.some(x => baseId(x.id) === c.id));
+    if (rares.length) cards.push(CARDS_BY_ID[upgradeId(pickOne(rares).id)]);
+  }
   if (!cards.length) return next();
 
   // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
@@ -1657,11 +1786,11 @@ addEventListener('scenepaint', placeTreasure);
 const MIN_DECK = 7;
 
 function restSite() {
-  const restHeal = run.mods.restHeal + (perk('wellFed') ? 0.05 : 0);   // shop passive: Well-Fed Bonus
+  const restHeal = (run.mods.restHeal + (perk('wellFed') ? 0.05 : 0)) * (augs().restMult || 1);   // shop passive: Well-Fed Bonus; Rest Stop
   const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   const banned = run.relics.includes('choice-band');
   const atMin = run.deck.length <= MIN_DECK;
-  const herb = run.relics.includes('mental-herb');   // like StS's Peace Pipe: only this relic lets the PC forget a move
+  const herb = run.relics.includes('mental-herb') || !!augs().centerForget;   // like StS's Peace Pipe: only this relic (or Clean Slate) lets the PC forget a move
   const upgradable = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
   // no tiles here: the healing machine, the PC and Chansey in the scene are the choices, each under a bouncing label
   showChoice({
@@ -2680,10 +2809,11 @@ async function endTower(won) {
     : `${name} fainted on floor ${t.floor + 1} after clearing ${t.floor} floor${t.floor === 1 ? '' : 's'}.`;
   const lines = won ? [`🏔️ Summits: ${save.summits || 1}. Your fewest turns to the top: ${save.bestTurns || turns}.`]
     : [`🏔️ Your highest floor ever: ${save.bestEver}.`];
+  if (t.augments?.length) lines.push(`🧩 Augments: ${t.augments.map(id => AUGMENTS_BY_ID[id]?.name ?? id).join(', ')}.`);
   lines.push(t.first ? `🏆 The week's counted climb: floor ${t.floor}. It goes on the leaderboard.`
     : t.practice ? '🔁 A practice climb: it doesn\'t go on the leaderboard.' : '🔁 A replay: only the week\'s first climb goes on the leaderboard.');
   if (t.first && !peeking) {
-    const line = postTowerResult(towerResult({ week: t.week, starter: run.starter.id, floor: t.floor, turns: run.tally.turns, startedAt: run.tally.startedAt }));
+    const line = postTowerResult(towerResult({ week: t.week, starter: run.starter.id, floor: t.floor, turns: run.tally.turns, startedAt: run.tally.startedAt, augments: t.augments || [] }));
     if (line) lines.push(line);
   }
   const list = $('result-unlocks');
