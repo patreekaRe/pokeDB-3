@@ -1565,7 +1565,20 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   now that a pool biome can stand at the second fork (`savanna`, `ruins`, as well as `jungle`). Journey films
   `clearing>savanna` (the woods thinning into tall grass, a wildfire on the ridge, Sun Rock at dawn) and `savanna>wastes`
   (the grass burning down to embers and ash, the volcano rising). Checked in the pane at 1280x720 (every place, the
-  prelude, the film, both trips, both new descents). No console errors.- **Branching biomes, part d: the Thornwood Jungle painted** (roadmap item 19, Desktop app, 2026-10-07). This finished item
+  prelude, the film, both trips, both new descents). No console errors.
+- **A Fire biome and a pool of roads, part c: the pool's journey films** (roadmap item 20, Desktop app, 2026-10-07). The
+  nine pairings the pool made possible cut straight to the map; now each has a film. One painter, `paintPool()` in
+  `js/travel.js`, crosses two `LANDS` kits (Clearing, Shrine, Ruins, Thornwood, Savanna, Wastes: palette, trees behind the
+  road, things along it) and takes each trip's set piece through hooks: `clearing>thornwood` the canopy closing over the
+  sky, dawn slanting through its gaps; `shrine>ruins` stepping stones over a dark lake, a torii standing in it with its
+  reflection, lit lanterns drifting; `shrine>savanna` down the mountain's stairs, a wildfire on the ridge, a herd of Tauros
+  running at dawn, Sun Rock; `ruins>savanna` the water running out over cracked mud, stranded columns, a dust devil;
+  `thornwood>wastes` a giant still burning, split and glowing, the volcano rising, ash; `thornwood>ruins` an old gate
+  strangled by roots, its runes waking, then wading the flood; `thornwood>savanna` a dry storm, lightning setting a lone
+  acacia alight (the sky's flash skipped under `calmFx()`); `savanna>ruins` the rains rolling in, puddles, the flood;
+  `savanna>thornwood` the jungle's wall rising, its mist rolling out at night, eyes blinking. Each with its own lines.
+  Checked in the pane at 375x812 at several points of each trip; no console errors.
+- **Branching biomes, part d: the Thornwood Jungle painted** (roadmap item 19, Desktop app, 2026-10-07). This finished item
   19 (the plan: a crossroads after each boss, a second road for Biomes 2 and 3, each new biome built as fully as the others,
   journey films from 2 routes to 6, the Explorer Badge for entering all five main biomes). `BIOME_ART.thornwood` is its own
   now (it borrowed the Clearing's): `thornBackdrop()` / `thornFloor()` / `thornFront()`, its life in `drawThorn()`. Four

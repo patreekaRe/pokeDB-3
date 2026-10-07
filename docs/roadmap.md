@@ -58,13 +58,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     both seen: a coin flip); once all three are seen it's pure random for good. Rolls through `js/rng.js`.
     **Parts a and b are done** (2026-10-07: the Sunscorch Savanna, the pool roll, numbers by fork; then its whole look, film,
     map, grotto, descent floors for every road that can end a run, and the `clearing>savanna` / `savanna>wastes` journey
-    films; see the archive).
-    **Part c. Run in: LOCAL (Desktop app):** "Read CLAUDE.md (Branching biomes, Journey films) and `docs/roadmap.md` item 20,
-    then add journey films (`ROUTES` in `js/travel.js`) for the pairings the pool made possible that still cut straight to
-    the map: `clearing>thornwood`, `shrine>ruins`, `shrine>savanna`, `ruins>savanna`, `thornwood>wastes`, `thornwood>ruins`,
-    `thornwood>savanna`, `savanna>ruins`, `savanna>thornwood`; a few a session, each with its own set piece and lines, reusing
-    `farAndHills()` and the jungle / savanna helpers." Also open: should the Savanna get badges like the Ruins' and
-    Thornwood's (a boss, page and hunter badge)? Ask the user.
+    films; see the archive). **Part c is done** (2026-10-07: a journey film for all nine pairings the pool made possible).
+    Still open: should the Savanna get badges like the Ruins' and Thornwood's (a boss, page and hunter badge)? Asked the
+    user 2026-10-07. Still the user's: watch the new trips on a phone (`?travel=ruins&from=shrine` etc.).
 
 
 ## Ideas, not agreed yet (ask the user before building)

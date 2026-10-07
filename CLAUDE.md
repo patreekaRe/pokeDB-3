@@ -542,7 +542,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   One `ROUTES` entry per trip: `clearing>shrine` (the Ancient Tree's roots, the Shrine's lantern stair) and `shrine>wastes`
   (three looks, `a` / `d` dried out / `b`; a rope bridge over a lava chasm that sags and sways under your Pokémon, a
   route's `deck` in `groundY()`, its `walk` slowing the steps; ash falls, the volcano rises glowing on the horizon);
-  a trip without one is skipped. First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
+  a trip without one is skipped. Since item 20 part c (2026-10-07) every pairing the pool allows has one: the nine newer
+  trips run on one painter, `paintPool()`, crossing two `LANDS` kits (palette, trees, roadside; a new pool biome needs a
+  kit) with the trip's set piece in hooks (its doc comment lists them; `poolTrip()` builds the route). First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
   old save's `true` counts as the Clearing's). Early in each trip (a route's `fly`) a legendary you haven't unlocked flies
   over as a silhouette with its shadow on the road, or, with the Sealed Gate at half HP or less, sometimes Eternatus's red
   glow pulses on the horizon (`pickGuest()`, seeded by `run.tally.startedAt` and the trip). Playtest `?travel=shrine` /
@@ -622,8 +624,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   rays wheeling, then `grassFire()` races out from the rock (it burns on, sparse, through the fight); a wall of flame rises
   into the white. Landmarks `LANDMARKS.savanna`; grotto `treasure.biomes.savanna` (sandstone, citrine, a Fast Ball). Intro
   film `js/savanna-intro.js` (`SAVANNA_INTRO`: up out of the tall grass, over the plain between 3D acacias to Sun Rock). Map
-  `PALETTES.savanna` (`savgrass`, `scorch`, `kopje`, the `acacia` prop). Journey films so far `clearing>savanna` and
-  `savanna>wastes` (`ridgeFire()`, `acaciaMid()`, `embersUp()`). Playtest `?area=savanna`, `?travel=savanna`,
+  `PALETTES.savanna` (`savgrass`, `scorch`, `kopje`, the `acacia` prop). Journey films `clearing>savanna` and
+  `savanna>wastes` (`ridgeFire()`, `acaciaMid()`, `embersUp()`, `sunRock()`). Playtest `?area=savanna`, `?travel=savanna`,
   `?travel=wastes&from=savanna`, `?strike=40&land=savanna`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
