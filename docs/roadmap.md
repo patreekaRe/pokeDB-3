@@ -65,12 +65,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     its whole look, films and journey films; see the archive). Next is the Thornwood Jungle, the same two sessions.
     For Thornwood's Pokémon: every Gen 1-5 species is used, so use Gen 6-9 (PokeAPI's `other/showdown/<dex>.gif`); only 7
     pure-Normal Gen 6-9 species are left for its 3 Normal wilds, 3 Alphas and 3 bosses (Skwovet, Greedent, Wooloo, Komala,
-    Tandemaus, Type: Null, Silvally), so ask the user how to fill the last two slots.
+    Tandemaus, Type: Null, Silvally). **Decided (the user's pick, 2026-10-07):** Thornwood gets 1 Normal wild instead of 3
+    and 2 more Grass ones (7 Grass / 2 Fire / 2 Water / 1 Normal), so those 7 fill its 1 Normal wild, 3 Alphas and 3 bosses.
     c. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (the Sunken Ruins are done, look
        and all). Build the Thornwood Jungle's gameplay, slot 2's other road beside the Ember Wastes, the way part a built the
        Ruins: 12 wilds (mostly Grass), 3 Alphas, 3 bosses (Gen 6-9, PokeAPI's other/showdown GIFs, cries, sprite fits, enemy
-       entries), its bonus Pokédex page, CROSSROADS[2], the Explorer Badge's test, and a bot check against the Wastes. Ask me
-       first how to fill the last two pure-Normal slots. Push to main."
+       entries), its bonus Pokédex page, CROSSROADS[2], the Explorer Badge's test, and a bot check against the Wastes. Its
+       wilds are 7 Grass / 2 Fire / 2 Water / 1 Normal (already decided). Push to main."
     d. **Run in: LOCAL (Desktop app).** Then paint it like the Ruins (its places, intro film, prelude, map, sign, grotto) and
        its Shrine → Jungle (a vine-choked torii) and Ruins → Jungle (a waterfall crossing) journey films.
 
