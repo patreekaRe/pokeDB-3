@@ -4221,6 +4221,10 @@ body.scene-peek #backdrop { display: none; }
 .tower-lobby { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden;
   background: var(--shell); color: #fff; }
 .tower-lobby::backdrop { background: #000; }
+/* it comes in over the title the way New game's select does, as the title fades (leaveTitle(): 0.38 s) */
+.tower-lobby[open], .tower-lobby[open]::backdrop { animation: lobbyIn 0.38s ease-out both; }
+@keyframes lobbyIn { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tower-lobby[open], .tower-lobby[open]::backdrop { animation: none; } }
 .tower-page { position: relative; display: flex; flex-direction: column; gap: 10px; height: 100%; width: 100%; margin: 0 auto; overflow: hidden;
   padding: max(8px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), transparent 30%), linear-gradient(180deg, var(--shell-hi), var(--shell) 30%, var(--shell-lo));

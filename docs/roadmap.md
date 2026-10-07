@@ -10,9 +10,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 ## Open, ready to build
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
-- A. **Device boot timing.** The Sky Pillar lobby appears with no transition: fade it in like New game's. Continue boots
-  the device (cover, "HELLO, NAME!") behind a biome walk-on film still playing; it must boot after the film, onto the
-  map. New game the same: after the Clearing's intro film, then into the map.
 - B. **Title Back sign.** The Game Modes sub-menu's Back is a pill the user dislikes: make it a Poké Ball (or a back
   icon / "BACK" in the title's style).
 - C. **Leaderboards in the Pokédex look.** The Safari and Sky Pillar leaderboards (in-device Ranks apps) still look

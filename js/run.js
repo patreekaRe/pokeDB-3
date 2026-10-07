@@ -45,6 +45,7 @@ import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
+import { bootDevice } from './device-boot.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
@@ -320,11 +321,13 @@ export function loadSavedRun() {
 
 export const hasSavedRun = () => loadSavedRun() !== null;
 
-/** Pick a saved run (from loadSavedRun) back up on its map. */
+/** Pick a saved run (from loadSavedRun) back up on its map. Returns the place's walk-on film if one plays over it. */
 export function continueRun(saved) {
   run = saved;
   reseed(`map:${zone()}:${run.current}`);
+  mapFilm = null;
   showMap();
+  return mapFilm;
 }
 
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
@@ -542,9 +545,11 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
   if (quiet) return;
   showMap();
   // the biome's (or Safari area's) intro plays over the map (already checkpointed, so a refresh skips it), then its signs arrive again
-  biomeIntro(land(), run.biome + 1).then(() => {
+  const film = biomeIntro(land(), run.biome + 1).then(() => {
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
   });
+  // a new run's way in: the Pokédex boots onto the map once the first biome's film is over
+  if (run.biome === 0) bootDevice($('map-screen'), { screen: $('map-screen').querySelector('.mdex-window'), after: film });
 }
 
 /** A Sky Pillar flight: its landings' doors on the map (the placeholder until the tower gets its own screen, roadmap
@@ -722,9 +727,11 @@ function showMap() {
   if (run.tower && run.tower.pick != null) return augmentPick();
   if (run.tower?.train) return trainingDay();
   const next = isTower() ? 0 : nextPlace(here);
-  if (next) placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage)).then(showNotes);
-  else showNotes();
+  if (!next) return showNotes();
+  mapFilm = placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage));
+  mapFilm.then(showNotes);
 }
+let mapFilm = null;   // the walk-on film showMap() last started, for Continue's boot to wait for
 
 // Back on the map after a place's last room, the next place's short film plays over the map, with the map's music
 // (it used to wait for a tap on the next room, and cut off whatever that room was playing). Kept for the page's life,

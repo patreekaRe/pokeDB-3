@@ -1726,3 +1726,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   and reroll flips and chimes) and the picks on the tower leaderboard; `js/data/augments.js` untouched.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
+- **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
+  (`lobbyIn`); `bootDevice()`'s `after` holds the device hidden until a film ends, so Continue boots after a place's
+  walk-on and a new run's map boots after the first biome's intro film.

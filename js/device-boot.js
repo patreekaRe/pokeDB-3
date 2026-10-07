@@ -25,10 +25,16 @@ const LIFT = [{ transform: 'translateY(48px) scale(0.96)', opacity: 0 }, { trans
 /**
  * Shows `host` (the device) closed under its cover, then swings it open; the cover starts under `below` (the lid with
  * the LCD) or at the top. The hello is shown over `screen` and fades; `onScreen` runs as the screen comes on (a
- * window's power-on flicker). A tap on the cover opens it at once.
+ * window's power-on flicker). A tap on the cover opens it at once. `after` (a film's promise) keeps the device out of
+ * sight until it's over, so the boot comes after the film rather than behind it.
  */
-export async function bootDevice(host, { below = null, screen = null, onScreen = null } = {}) {
+export async function bootDevice(host, { below = null, screen = null, onScreen = null, after = null } = {}) {
   host.querySelectorAll('.boot-cover, .boot-splash').forEach(n => n.remove());
+  if (after) {
+    host.style.opacity = '0';
+    await after;
+    host.style.opacity = '';
+  }
   if (calm()) { playSound('dex-on'); onScreen?.(); return; }
   if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
   const cover = el('div', 'cdev-cover boot-cover');

@@ -111,9 +111,9 @@ function newGame(starter) {
 /** Continue: the map, its Pokédex opening on the run (not a Sky Pillar climb, whose map is the tower). */
 function continueGame(saved) {
   leaveTitle();
-  continueRun(saved);
+  const film = continueRun(saved);   // a place's walk-on film, if the run stood at a place's end: the boot comes after it
   const map = $('map-screen');
-  if (!map.hidden && !map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window') });
+  if (!map.hidden && !map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window'), after: film });
 }
 
 /** Look at a starter's deck, and start a run from there. */

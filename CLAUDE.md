@@ -114,7 +114,10 @@ live site.
 - **Every way in boots the device** (2026-10-07, the user's ask): New game (the select, `newGame()` in `js/main.js`),
   Continue (the map, `continueGame()`, not a Sky Pillar climb) and the Safari / Sky Pillar lobbies open under the
   Collection's cover (`coverArt()` from `js/collection.js`), which swings open onto the screen saying "HELLO, NAME!"
-  (`bootDevice(host, { below: lid, screen })` in `js/device-boot.js`; a tap on the cover opens it at once).
+  (`bootDevice(host, { below: lid, screen })` in `js/device-boot.js`; a tap on the cover opens it at once). A film over
+  the device boots it after it ends (`after`: the film's promise keeps the device hidden till then): Continue waits for a
+  place's walk-on (`continueRun()` returns it), a new run's map boots after the first biome's film (`startBiome()`). The
+  lobbies fade in over the title (`lobbyIn`).
 - **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
   device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every
   later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD),
