@@ -103,8 +103,21 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
   tower board row (a strip of small icons under the name, `.board-augs`) use the same icons.
 - **Playtest**: `?tower=1&aug=echo,nova` hands a throwaway climb those augments up front (their at-once effects, like max HP,
   don't apply), then the start's pick.
-- **Not built yet** (part c): the trade-offs, sets, augment badges, and Picky Eater, Insight, Mulligan, Recycler, Pack Rat,
-  Infinite Loop, Chaos Theory, Hydra, Copycat, Soul Bond from the first list.
+- **Part c** (2026-10-07): the trade-offs (`trade: true`, a red chip), the rest of the list and sets; `docs/augments.md`'s
+  "Part c's calls" says what changed from the first list. New fight keys in `js/battle.js`: `noCardBlock` (`cardBlock()`),
+  `noFightHeal` / `healMult` (`healPlayer()`), `turnBlock` / `minBlock` and Infinite Loop / Copycat in `beginPlayerTurn()`,
+  `chaos` in `draw()`, Hydra after an attack's hits, Monk's `skillDamage` after a card, `enemyTwice` at the end of
+  `enemyTurn()`, Pack Rat's second `itemEffects()`, Insight's `.intent-then` line under the intent, Mulligan's
+  `#mulligan-btn` (Throw's capsule in violet), and `recycled` handed back in `onEnd` as `exhausted`. Run keys in `js/run.js`:
+  `takeAugment()` (Cursed Gold's ₽, Monk, Darkrai's Deal's `dealPrismatic()` from `run.tower.augPickFloor`, sets reached via
+  `newBonuses()` / `setBonusNow()`, Risky Climb / No Mercy re-dealing an untouched flight), `offerCard()` (Picky Eater's paid
+  reroll, Heavy Pack's second pick, Card Smith's upgraded cards), `startFlight()` (fights to Alphas, Centers to fights),
+  Sudden Death's guardian HP in `fight()`, Soul Bond's relic and Heavy Pack's Sludge in a guardian's steps. **Sets**:
+  `AUG_SETS` in `js/data/augments.js`; the tile's set chip and line, and a row per set in the Bag (each bonus lit once
+  reached). **High Roller's 3** is `augmentOffer({ extra })`: a 4th from the floor's own tier after the three, no roll drawn,
+  so the three are everyone's (tested). **Augment badges** read `save.tower.augDex` (every augment ever taken,
+  `noteAugments()`), `sets` (completed at 3), `prismFloor` / `tradeFloor` (written in `climbed()`). The board keeps 10
+  augments; Darkrai's Deal's 11th is left off.
 
 ## How it runs
 

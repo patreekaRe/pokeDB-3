@@ -19,6 +19,7 @@ import { BALLS, masterThrows } from './balls.js';
 import { SAFARI_AREAS, SAFARI_DEX_PAGES } from './safari.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES } from './pokedex.js';
 import { FLIGHT } from './tower.js';
+import { AUGMENTS, AUG_SETS } from './augments.js';
 
 /** Every main biome, the default road's and the pool's (the Explorer Badge's; the Depths are Mewtwo's own). */
 const MAIN_BIOMES = [...BIOMES, ...ALT_BIOMES].filter(b => !b.secret).map(b => b.id);
@@ -274,6 +275,20 @@ export const BADGES = [
     text: 'Reach the top of the Sky Pillar 3 times', test: (s, save) => (save.tower?.summits || 0) >= 3 },
   { id: 'weekly', group: 'tower', name: 'Weekly Climber Badge', icon: 'weekly', emoji: '📅',
     text: 'Climb the Sky Pillar in 4 different weeks', test: (s, save) => towerWeeks(save) >= 4 },
+  // the Sky Pillar's augments (roadmap item 21 part c): every one ever taken is kept in `tower.augDex`, each set completed
+  // (3 held) in `tower.sets`, the highest floor cleared holding 3 Prismatics / 3 trade-offs in `prismFloor` / `tradeFloor`
+  { id: 'aug-25', group: 'tower', name: 'Augmenter Badge', icon: 'aug-25', emoji: '🧩',
+    text: 'Take 25 different augments, over any climbs', test: (s, save) => (save.tower?.augDex || []).length >= 25 },
+  { id: 'aug-dex', group: 'tower', name: 'Augment Dex Badge', icon: 'aug-dex', emoji: '📖',
+    text: 'Take every augment at least once (type-only ones with their type)', test: (s, save) => AUGMENTS.every(a => (save.tower?.augDex || []).includes(a.id)) },
+  { id: 'aug-set', group: 'tower', name: 'Set Badge', icon: 'aug-set', emoji: '🎴',
+    text: 'Hold 3 augments of one set in a climb', test: (s, save) => (save.tower?.sets || []).length >= 1 },
+  { id: 'aug-sets', group: 'tower', name: 'Set Master Badge', icon: 'aug-sets', emoji: '👑',
+    text: 'Complete every augment set, over any climbs', test: (s, save) => AUG_SETS.every(x => (save.tower?.sets || []).includes(x.id)) },
+  { id: 'aug-prism', group: 'tower', name: 'Prism Badge', icon: 'aug-prism', emoji: '🌈',
+    text: 'Clear floor 90 holding 3 Prismatic augments', test: (s, save) => (save.tower?.prismFloor || 0) >= 90 },
+  { id: 'aug-trade', group: 'tower', name: 'Devil\'s Bargain Badge', icon: 'aug-trade', emoji: '😈',
+    text: 'Clear floor 50 holding 3 trade-off augments', test: (s, save) => (save.tower?.tradeFloor || 0) >= 50 },
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

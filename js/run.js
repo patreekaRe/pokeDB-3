@@ -35,7 +35,7 @@ import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
-import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, augEffects, augmentOffer } from './data/augments.js';
+import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
@@ -562,6 +562,11 @@ function startFlight(quiet) {
   run.map = landingMap(landingTypes(flight));
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || a.col - b.col);
   const { normals, elites } = towerPools(flight);
+  const a = augs();   // Risky Climb: every landing fight an Alpha; No Mercy: its Centers are fights
+  for (const node of nodes) {
+    if (a.noCenters && node.type === 'rest') node.type = 'fight';
+    if (a.riskyClimb && node.type === 'fight') node.type = 'elite';
+  }
   for (const kind of ['fight', 'elite']) dealEnemies(run.biome, kind, nodes.filter(node => node.type === kind), run.map.byId, undefined, normals, elites);
   run.map.boss.enemyId = guardianOf(flight);
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
@@ -582,6 +587,10 @@ function climbed(floor) {
     d.tower.bestEver = Math.max(d.tower.bestEver || 0, floor);
     if (floor % FLIGHT === 0) d.tower.guardians = guardiansBeaten(d) + 1;   // only a guardian's floor ends in 0
     if (t.first && d.tower.week === t.week) d.tower.best = Math.max(d.tower.best || 0, floor);
+    // the augment badges: the highest floor cleared holding 3 Prismatics, and holding 3 trade-offs
+    const held = (t.augments || []).map(id => AUGMENTS_BY_ID[id]).filter(Boolean);
+    if (held.filter(x => x.tier === 'prismatic').length >= 3) d.tower.prismFloor = Math.max(d.tower.prismFloor || 0, floor);
+    if (held.filter(x => x.trade).length >= 3) d.tower.tradeFloor = Math.max(d.tower.tradeFloor || 0, floor);
   });
   for (const b of checkBadges()) tell(badgeLine(b));
   showBadgeNews();
@@ -777,8 +786,9 @@ function tutorNotes() {
     checkpoint, with `pick` saved, so a refresh asks again; a reroll is saved at once, so a refresh can't show a fourth. */
 function augmentPick() {
   const t = run.tower, floor = t.pick;
+  t.augPickFloor = floor;   // Darkrai's Deal deals from the floor it was taken at
   const rerolled = t.rerolledAt === floor ? t.rerolledN : 0;
-  const offer = augmentOffer({ seed: t.seed, floor, reroll: rerolled, type: run.starter.type, held: t.augments, deck: run.deck, cards: CARDS_BY_ID });
+  const offer = augmentOffer({ seed: t.seed, floor, reroll: rerolled, type: run.starter.type, held: t.augments, deck: run.deck, cards: CARDS_BY_ID, extra: augs().offerPlus || 0 });   // High Roller's 3: a 4th
   if (!offer.length) { t.pick = null; return showMap(); }
   const left = AUG_REROLLS + (augs().rerolls || 0) - t.rerolls;
   showChoice({
@@ -800,13 +810,36 @@ function augmentPick() {
 
 /** An augment is taken: it joins the climb, and what it does at once happens now (max HP, forgetting or PP Upping
     moves, a relic, an item). */
-function takeAugment(aug) {
+function takeAugment(aug, then = showMap) {
   const t = run.tower;
+  const bonuses = newBonuses(t.augments, aug.id);   // a set reaching 2 or 3
   t.augments.push(aug.id);
   t.pick = null;
   if (aug.bloodlust) t.blood = 0;
   tell(`${aug.icon} ${aug.name}: ${aug.text}`);
+  noteAugments();
   const steps = [];
+  if (aug.moneyNow) steps.push(next => { run.money += aug.moneyNow; setMoney(run.money); playSound('coins'); tell(`${aug.name}: +${aug.moneyNow} ₽!`); next(); });
+  if (aug.monk) steps.push(next => {   // Monk: every attack but the best few goes (rarest, then PP Upped, then dearest)
+    const rank = (id) => { const c = CARDS_BY_ID[id]; return ({ rare: 3, uncommon: 2, common: 1 }[c.rarity] || 0) * 100 + (c.upgraded ? 10 : 0) + (typeof c.cost === 'number' ? c.cost : 3); };
+    const attacks = run.deck.map((id, i) => i).filter(i => isAttack(CARDS_BY_ID[run.deck[i]])).sort((x, y) => rank(run.deck[y]) - rank(run.deck[x]));
+    const going = new Set(attacks.slice(aug.monk));
+    const names = [...going].map(i => CARDS_BY_ID[run.deck[i]].name);
+    run.deck = run.deck.filter((id, i) => !going.has(i));
+    if (names.length) tell(`Monk: forgot ${names.join(', ')}.`);
+    next();
+  });
+  if (aug.prismaticNow) steps.push(next => {   // Darkrai's Deal: the week's seed picks it (dealPrismatic())
+    const deal = dealPrismatic({ seed: t.seed, floor: t.augPickFloor ?? 0, type: run.starter.type, held: t.augments, deck: run.deck, cards: CARDS_BY_ID });
+    if (!deal) return next();
+    showChoice({
+      title: 'Darkrai\'s Deal', sub: [`Darkrai hands you ${deal.name}.`, 'Tap it to read it, then take it.'],
+      options: [{ node: augTile(deal), zoom: augTile(deal), ask: `Take ${deal.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(deal, next) }],
+      layout: 'aug-pick aug-floor-prismatic',
+    });
+    dealAugments($('reward-options'), [deal]);
+  });
+  for (const bonus of bonuses) steps.push(next => setBonusNow(bonus, next));
   if (aug.maxHp || aug.maxHpMult) steps.push(next => {
     const before = run.maxHp;
     run.maxHp = Math.max(1, Math.round((run.maxHp + (aug.maxHp || 0)) * (aug.maxHpMult || 1)));
@@ -822,13 +855,52 @@ function takeAugment(aug) {
   });
   for (let i = 0; i < (aug.forget || 0); i++) steps.push(next => (run.deck.length > MIN_DECK ? forgetMove(next, next) : next()));
   if (aug.upgradePick) steps.push(next => upgradeMove(next, next, { title: aug.name, sub: ['Pick a move to PP Up for the rest of the climb.', 'Tap one to see it upgraded.'], skipLabel: 'Skip' }));
-  if (aug.relicNow) steps.push(next => {
-    const [relic] = relicChoices(run);
-    if (!relic) return next();
-    showRelics(aug.name, [relic], next, { skip: false, sub: [`${aug.name}! You found ${/^[AEIOU]/.test(relic.name) ? 'an' : 'a'} ${relic.name}.`, 'Tap it to see what it does.'] });
+  if ((aug.riskyClimb || aug.noCenters) && run.current == null) steps.push(next => {   // taken before the flight's first door: it's dealt again
+    reseed(`biome:${zone()}`);
+    startFlight(true);
+    next();
   });
+  for (let i = 0; i < (aug.relicNow || 0); i++) steps.push(next => freeRelic(aug.name, next));
   if (aug.itemNow) steps.push(next => { const [item] = itemChoices(run); return item ? offerItem(item, next) : next(); });
-  runSteps(steps, showMap);
+  runSteps(steps, then);
+}
+
+/** As battle.js counts one: a card that deals damage. */
+const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
+
+/** A random relic, handed over (Lucky Find, Soul Bond). */
+function freeRelic(name, next) {
+  const [relic] = relicChoices(run);
+  if (!relic) return next();
+  showRelics(name, [relic], next, { skip: false, sub: [`${name}! You found ${/^[AEIOU]/.test(relic.name) ? 'an' : 'a'} ${relic.name}.`, 'Tap it to see what it does.'] });
+}
+
+/** A set's bonus is reached: said, and what it does at once (Glutton's max HP, Card Smith's PP Ups) happens now. */
+function setBonusNow(bonus, next) {
+  const set = AUG_SETS_BY_ID[bonus.set];
+  playSound('aug-gold', 'confirm');
+  tell(`${set.icon} ${set.name} set (${bonus.n}): ${bonus.text}!`);
+  if (bonus.maxHp) {
+    run.maxHp += bonus.maxHp;
+    run.hp += bonus.maxHp;
+    setHpBar('run', run.hp, run.maxHp);
+  }
+  if (bonus.upgradeRandom) {
+    const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, bonus.upgradeRandom);
+    for (const i of spots) { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); tell(`${card.name} became ${CARDS_BY_ID[run.deck[i]].name}!`); }
+  }
+  if (!peeking) updateSave(d => { d.tower.sets = [...new Set([...(d.tower.sets || []), ...(bonus.n === 3 ? [bonus.set] : [])])]; });
+  for (const b of peeking ? [] : checkBadges()) tell(badgeLine(b));
+  next();
+}
+
+/** The augments a climb has taken, kept for the augment badges: every one ever taken (the augment dex), and the
+    climb's Prismatics and trade-offs, checked as floors are cleared (climbed()). */
+function noteAugments() {
+  if (peeking) return;
+  updateSave(d => { d.tower.augDex = [...new Set([...(d.tower.augDex || []), ...run.tower.augments])]; });
+  for (const b of checkBadges()) tell(badgeLine(b));
+  showBadgeNews();
 }
 
 /** Training Day: after every guardian, PP Up a move of your choice. `train` is saved, so a refresh asks again. */
@@ -837,10 +909,18 @@ function trainingDay() {
   upgradeMove(done, done, { title: 'Training Day', sub: ['Training Day: pick a move to PP Up.', 'Tap one to see it upgraded.'], skipLabel: 'Skip' });
 }
 
-/** After a won fight on the climb: Field Medic's heal, Speedrunner's prize and Bloodlust's count. */
+/** After a won fight on the climb: Field Medic's heal, Recycler's PP Ups, Speedrunner's prize and Bloodlust's count. */
 function augmentsAfterFight(result) {
   const t = run.tower, a = augs();
-  if (a.fightHeal) run.hp = Math.min(run.maxHp, run.hp + a.fightHeal);
+  if (a.fightHeal) run.hp = Math.min(run.maxHp, run.hp + Math.floor(a.fightHeal * (a.healMult || 1)));
+  if (a.recycler) {   // Recycler: each move exhausted in the fight gets PP Up (one copy each)
+    for (const id of result.exhausted || []) {
+      const i = run.deck.indexOf(id);
+      if (i < 0 || !canUpgrade(CARDS_BY_ID[id])) continue;
+      run.deck[i] = upgradeId(id);
+      tell(`♻️ Recycler: ${CARDS_BY_ID[id].name} became ${CARDS_BY_ID[run.deck[i]].name}!`);
+    }
+  }
   if (a.speedrunner && (result.tally?.turns ?? 99) <= a.speedrunner) {
     run.maxHp += 1;
     run.hp = Math.min(run.maxHp, run.hp + 10);
@@ -959,8 +1039,18 @@ function renderRelicList() {
     li.append(augIcon(aug, `howto-node aug-node${spent ? ' spent' : ''}`), text);
     return li;
   });
+  // and the sets they're gathering: each bonus reached is lit
+  const counts = setCounts(run.tower?.augments);
+  const setRows = AUG_SETS.filter(set => counts[set.id]).map(set => {
+    const li = el('div', 'howto-li aug-set-row'), text = el('span', 'howto-li-text'), n = counts[set.id];
+    const steps = [2, 3].map(at => el('small', n >= at ? 'aug-set-on' : 'aug-set-off', `${at}: ${set.bonus[at].text}${n >= at ? ' ✓' : ''}`));
+    text.append(el('b', '', `${set.name} set · ${Math.min(n, 3)}/3`), ...steps);
+    text.title = `The ${set.name} set: ${setMembers(set.id).map(id => AUGMENTS_BY_ID[id].name).join(', ')}`;
+    li.append(el('span', 'howto-node aug-set-node', set.icon), text);
+    return li;
+  });
   $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
-    ...(augRows.length ? [el('p', 'aug-head', 'Augments'), ...augRows] : []),
+    ...(augRows.length ? [el('p', 'aug-head', 'Augments'), ...augRows, ...setRows] : []),
     ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
 }
 
@@ -1132,6 +1222,7 @@ async function fight(node) {
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   intro?.();
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
+  if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));   // Sudden Death
   if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
@@ -1182,7 +1273,7 @@ function afterFight(node, result) {
   const [low, high] = PRIZE_MONEY[payAs];
   // a catch pays less ₽ than a knockout: it pays in a card and a Safari Pokédex entry (the user's call)
   const base = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * (run.relics.includes('amulet-coin') ? 2 : 1);
-  const prize = Math.round(base * (augs().prizeMult || 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Golden Touch
+  const prize = Math.round(base * (augs().prizeMult || 1) * (augs().riskyClimb && node.type === 'elite' ? 2 : 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Risky Climb, Golden Touch
   const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
@@ -1253,6 +1344,12 @@ function afterFight(node, result) {
       const a = augs();
       for (let i = 0; i < (a.guardianBossRelic || 0); i++) steps.push(next => offerRelic('Spoils of War', next, { boss: true }));
       if (a.guardianRelic && random() < a.guardianRelic) steps.push(next => offerRelic('Lucky Coin', next, { source: 'elite' }));
+      for (let i = 0; i < (a.relicEvery || 0); i++) steps.push(next => freeRelic('Soul Bond', next));
+      if (a.sludgeEvery) steps.push(next => {   // Heavy Pack's price
+        for (let i = 0; i < a.sludgeEvery; i++) run.deck.push('sludge');
+        tell(`🧳 Heavy Pack: ${a.sludgeEvery > 1 ? `${a.sludgeEvery} Sludges` : 'a Sludge'} joined your deck.`);
+        next();
+      });
     }
   } else steps.unshift(next => unlockWindow(unlocked, next));
 
@@ -1339,27 +1436,39 @@ function runSteps(steps, done) {
 
 /* ---------- rewards ---------- */
 
-function offerCard(source, next, rerolled = false) {
-  const cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0] + (augs().rewardCards || 0), { reward: true });   // Scout Report: 4; Second Helping
-  if (augs().cardShark) {   // Card Shark: an upgraded rare as well
+function offerCard(source, next, rerolled = false, picky = false) {
+  const a = augs();
+  let cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0] + (a.rewardCards || 0), { reward: true });   // Scout Report: 4; Second Helping
+  if (a.cardShark) {   // Card Shark: an upgraded rare as well
     const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
     const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES && !cards.some(x => baseId(x.id) === c.id));
     if (rares.length) cards.push(CARDS_BY_ID[upgradeId(pickOne(rares).id)]);
   }
+  if (a.newUpgraded) cards = cards.map(c => (canUpgrade(c) ? CARDS_BY_ID[upgradeId(c.id)] : c));   // Card Smith's set bonus
   if (!cards.length) return next();
+  // Heavy Pack: a second pick from what's left
+  const more = a.rewardTake ? (picked) => {
+    const rest = cards.filter(c => c !== picked);
+    if (!rest.length) return next();
+    showChoice({ title: 'Heavy Pack', sub: ['Heavy Pack: take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next });
+  } : null;
 
   // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
   const used = run.rerollBiome !== run.biome ? 0 : run.rerollsUsed ?? 1;   // a run saved before Lv 2 had used its one
   const left = DEX_REROLLS[dexPerk('oaks-advice')] - used;
   const canReroll = left > 0;
+  // Picky Eater: once a reward, a reroll for ₽ (after Oak's Advice's free ones)
+  const pickyReroll = !canReroll && a.pickyEater && !picky && run.money >= a.pickyEater;
   showChoice({
     title: 'Learn a new move',
-    sub: [rerolled && 'Oak\'s Advice: new moves to pick from!', `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
-      canReroll && `Oak's Advice: you can reroll these ${left === 1 ? 'once' : 'twice'}${used ? ' more' : ''} this biome.`],
-    options: cards.map(card => learnOption(card, next)),
+    sub: [rerolled && (picky ? 'Picky Eater: new moves to pick from!' : 'Oak\'s Advice: new moves to pick from!'), `Pick a move to add to your deck (${run.deck.length} cards now), or skip.`,
+      canReroll && `Oak's Advice: you can reroll these ${left === 1 ? 'once' : 'twice'}${used ? ' more' : ''} this biome.`,
+      pickyReroll && `Picky Eater: reroll these for ${a.pickyEater} ₽.`, more && 'Heavy Pack: you can take two.'],
+    options: cards.map(card => learnOption(card, more ? () => more(card) : next)),
     onSkip: next,
     coins: run.pendingCoins,
-    reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); } : null,
+    reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); }
+      : pickyReroll ? () => { spend(a.pickyEater); setMoney(run.money); playSound('coins'); offerCard(source, next, true, true); } : null,
   });
 }
 

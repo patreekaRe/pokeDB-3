@@ -15,7 +15,7 @@
 import { el } from './ui.js';
 import { playSound } from './audio.js';
 import { smoothArt, smoothIcon } from './smooth-icons.js';
-import { AUG_TIER_NAMES } from './data/augments.js';
+import { AUG_TIER_NAMES, AUG_SETS_BY_ID, setMembers, AUGMENTS_BY_ID } from './data/augments.js';
 import { TYPES } from './data/cards.js';
 
 const INK = '#1c1430';
@@ -58,6 +58,10 @@ const GLYPHS = {
   uturn: `<path d="M24 28.5V13a7 7 0 0 0-14 0v4.5" fill="none" stroke="${INK}" stroke-width="6.4" stroke-linecap="round"/><path d="M24 28.5V13a7 7 0 0 0-14 0v4.5" fill="none" stroke="#4cb84a" stroke-width="3" stroke-linecap="round"/><path d="M3.5 17l6.5 9 6.5-9Z" fill="#4cb84a" ${O}/>`,
   glass: `<path d="M6.5 9.5h19l-2.6 19h-13.8Z" fill="#e8f4ff" ${O}/><path d="M8 14h16l-1.9 13.5H9.9Z" fill="#3c8cf0"/><path d="M6 10.5c0-3.4 4.4-5.6 10-5.6s10 2.2 10 5.6Z" fill="#6aaaf8" ${O}/><path d="M26.5 11.5c1.2 2 2.2 3.2 2.2 4.8a2.2 2.2 0 0 1-4.4 0c0-1.6 1-2.8 2.2-4.8Z" fill="#6aaaf8" stroke="${INK}" stroke-width="1.4"/><path d="M6.5 9.5h19l-2.6 19h-13.8Z" fill="none" ${O}/>`,
   bramble: `<path d="M3.5 27C10 23 8 14 14.5 12S23 15 28.5 5" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M3.5 27C10 23 8 14 14.5 12S23 15 28.5 5" fill="none" stroke="#4caa50" stroke-width="2.4" stroke-linecap="round"/><path d="M8.5 21.5l-3-1M10 16l3-2.6M19 13.5l1.4 3.4M24 10l3 1.6" stroke="${INK}" stroke-width="2" stroke-linecap="round"/><circle cx="25" cy="21" r="4.4" fill="#e23a2c" ${O}/><path d="M23.5 20a2 2 0 0 1 3 .5" fill="none" stroke="#8a1820" stroke-width="1.4" stroke-linecap="round"/>`,
+  chain: `<g transform="rotate(-40 16 16)"><rect x="2.5" y="11" width="15" height="10" rx="5" fill="none" stroke="${INK}" stroke-width="5.2"/><rect x="2.5" y="11" width="15" height="10" rx="5" fill="none" stroke="#d8dce8" stroke-width="2.4"/><rect x="14.5" y="11" width="15" height="10" rx="5" fill="none" stroke="${INK}" stroke-width="5.2"/><rect x="14.5" y="11" width="15" height="10" rx="5" fill="none" stroke="#f8c830" stroke-width="2.4"/></g>`,
+  shoe: `<path d="M4 23.5c0-3 1-9 2-13.5h8c.6 3 2.4 4.6 5.2 5.4l7 2c2.4.7 3.8 2.5 3.8 4.6v1.5Z" fill="#e23a2c" ${O}/><path d="M3.5 23.5h26.5v3a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5Z" fill="#fff" ${O}/><path d="M15.5 14.5l2-2M18.5 16l2-2" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M1 12h4M1.5 16h3" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>`,
+  moon: `<path d="M21 3.5a12.5 12.5 0 1 0 7.5 22.5A11 11 0 0 1 21 3.5Z" fill="#4a3a78" ${O}/><path d="M12 9a9 9 0 0 0-2 9" fill="none" stroke="#8a78c8" stroke-width="1.8" stroke-linecap="round"/><circle cx="16.5" cy="17" r="2" fill="#e23a2c" stroke="${INK}" stroke-width="1.2"/>`,
+  beads: `<circle cx="16" cy="14" r="10" fill="none" stroke="${INK}" stroke-width="1.6" stroke-dasharray="0.1 4.6" stroke-linecap="round"/><g fill="#a8642c" stroke="${INK}" stroke-width="1.4">${Array.from({ length: 10 }, (_, i) => { const a = (i / 10) * Math.PI * 2; return `<circle cx="${(16 + 10 * Math.cos(a)).toFixed(1)}" cy="${(14 + 10 * Math.sin(a)).toFixed(1)}" r="2.4"/>`; }).join('')}</g><path d="M16 24v4.5M13.5 29.5h5" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="25" r="2.6" fill="#f8c830" stroke="${INK}" stroke-width="1.4"/>`,
 };
 
 const art = (name) => GLYPHS[name] ?? smoothArt(name) ?? '';
@@ -91,6 +95,12 @@ const ICONS = {
   'living-legend': ['fame', '+'], speedrunner: ['watch'], nova: ['burst', '10'], pandemonium: ['boss', '+'],
   'last-breath': ['heart', '1'], phoenix: ['fire', '★'], rebirth: ['egg'], supernova: ['burst', 'fire'],
   'world-tree': ['tree', '∞'], 'spore-storm': ['mushroom'], 'tsunami-aug': ['wave', '∞'], abyss: ['whirl', '!'],
+  // part c: the rest of the list and the trade-offs
+  'picky-eater': ['moves', '₽'], insight: ['eye', '2'], mulligan: ['card', '↻'], 'cursed-gold': ['coin', '!'],
+  'heavy-pack': ['items', '!'], 'risky-climb': ['tower', '!'], recycler: ['turns', '+'], 'pack-rat': ['items', 'x2'],
+  'darkrais-deal': ['moon'], berserker: ['muscle', '!'], pacifist: ['shield', '½'], monk: ['beads'],
+  'speed-demon': ['shoe'], 'sudden-death': ['skull', '½'], 'no-mercy': ['swords', '!'], 'infinite-loop': ['infinity', '+'],
+  'chaos-theory': ['dice', '?'], hydra: ['swords', '½'], copycat: ['mirror', '+'], 'soul-bond': ['chain'],
 };
 
 /* A pip mark that is a type name shows that type's colour instead of text */
@@ -132,10 +142,18 @@ export function augIcon(aug, className = '') {
 export function augTile(aug) {
   const tile = el('div', `aug-tile aug-${aug.tier}`);
   const type = aug.type ? el('small', `aug-type type-${aug.type}`, `${TYPES[aug.type]?.label ?? aug.type} only`) : null;
+  const chips = [];
+  if (aug.trade) chips.push(el('small', 'aug-chip aug-trade', 'Trade-off'));
+  const set = AUG_SETS_BY_ID[aug.set];
+  if (set) {   // its set, with the bonuses and the other members on its title
+    const chip = el('small', 'aug-chip aug-set', `${set.icon} ${set.name} set`);
+    chip.title = `${set.name} set (${setMembers(set.id).map(id => AUGMENTS_BY_ID[id].name).join(', ')}): 2 held, ${set.bonus[2].text}; 3 held, ${set.bonus[3].text}.`;
+    chips.push(chip);
+  }
   const back = el('div', 'aug-back');
   back.append(smoothIcon('tower'));
   tile.append(el('span', 'aug-ribbon', AUG_TIER_NAMES[aug.tier]), augIcon(aug, 'aug-tile-icon'), el('b', 'aug-name', aug.name),
-    ...(type ? [type] : []), el('span', 'aug-text', aug.text), back);
+    ...(type ? [type] : []), ...chips, el('span', 'aug-text', aug.text), ...(set ? [el('span', 'aug-set-text', `${set.name}: 2 → ${set.bonus[2].text}; 3 → ${set.bonus[3].text}`)] : []), back);
   return tile;
 }
 

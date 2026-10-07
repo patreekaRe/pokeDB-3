@@ -1722,6 +1722,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   leaderboard over its own screen like the Safari lobby's apps (`openRanks()` in `js/towerprep.js`), and New game (the
   select), Continue (the map) and both lobbies open with the Collection's cover flip and "HELLO, NAME!" (`bootDevice()` in
   `js/device-boot.js`).
+- **Sky Pillar augments, part a** (2026-10-07, c7cce34): no perks on any climb; `js/data/augments.js` (Silver / Gold /
+  Prismatic / type-only, effects as data keys summed by `augEffects()`), one of three before floor 1 and after each guardian
+  from the week's seed with one reroll, saved on `run.tower` and the board entry, a Bag row; tests for the seeded offers.
+  Its sim mirror never reached pokeDB-sim; part c built it.
 - **Sky Pillar augments, part b** (2026-10-07): the pick screen's look in `js/augment-art.js` (icons, tier frames, the deal
   and reroll flips and chimes) and the picks on the tower leaderboard; `js/data/augments.js` untouched.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half

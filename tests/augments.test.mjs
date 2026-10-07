@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { AUGMENTS, AUGMENTS_BY_ID, AUG_TIERS, AUG_FLOORS, augmentOffer, augEffects, augTier, augAllowed, lifeline } from '../js/data/augments.js';
+import { AUGMENTS, AUGMENTS_BY_ID, AUG_TIERS, AUG_FLOORS, AUG_SETS, augmentOffer, augEffects, augTier, augAllowed, lifeline, dealPrismatic, setBonuses, newBonuses, setMembers, copyCard } from '../js/data/augments.js';
 import { towerWeekly, weekOffset, TOP_FLOOR } from '../js/data/tower.js';
 import { CARDS_BY_ID } from '../js/data/cards.js';
 import { towerResult, checkTowerEntry } from '../js/data/leaderboard.js';
@@ -116,4 +116,71 @@ test('a climb\'s board entry carries its augments, and the rules take at most te
   assert.match(checkTowerEntry({ ...entry, augments: Array(11).fill('echo') }, '2026-10-05'), /augments/);
   const { augments, ...old } = entry;
   assert.equal(checkTowerEntry(old, '2026-10-05'), null);   // an entry posted before augments
+});
+
+test('High Roller\'s 4th slot leaves everyone\'s three as they were, and a reroll after it never repeats one', () => {
+  for (let w = 0; w < 60; w++) {
+    const s = towerWeekly(weekOffset('2026-10-05', w)).seed;
+    for (const floor of AUG_FLOORS) {
+      const three = ids(augmentOffer({ seed: s, floor, type: 'water' }));
+      const four = ids(augmentOffer({ seed: s, floor, type: 'water', extra: 1 }));
+      assert.equal(four.length, 4);
+      assert.deepEqual(four.slice(0, 3), three);
+      assert.equal(new Set(four).size, 4);
+      assert.equal(AUGMENTS_BY_ID[four[3]].tier, augTier(floor), 'the 4th is the floor\'s own tier');
+      const again = ids(augmentOffer({ seed: s, floor, type: 'water', extra: 1, reroll: 1 }));
+      for (const id of again) assert.ok(!four.includes(id), `${id} shown twice at ${floor}`);
+    }
+  }
+});
+
+test('Darkrai\'s Deal: the week and floor pick the Prismatic, the same for everyone, never one held or not allowed', () => {
+  for (let w = 0; w < 40; w++) {
+    const s = towerWeekly(weekOffset('2026-10-05', w)).seed;
+    for (const floor of [0, 40, 50, 60]) {
+      const a = dealPrismatic({ seed: s, floor, type: 'fire' }), b = dealPrismatic({ seed: s, floor, type: 'fire' });
+      assert.equal(a.id, b.id);
+      assert.equal(a.tier, 'prismatic');
+      assert.ok(!a.type || a.type === 'fire');
+      assert.notEqual(dealPrismatic({ seed: s, floor, type: 'fire', held: [a.id] }).id, a.id);
+    }
+  }
+  const s = towerWeekly('2026-10-05').seed;
+  const picks = new Set(AUG_FLOORS.map(f => dealPrismatic({ seed: s, floor: f, type: 'grass' }).id));
+  assert.ok(picks.size > 1, 'differs by floor');
+});
+
+test('trade-offs carry a cost and their power; every set has 4+ members and both bonuses', () => {
+  const trades = AUGMENTS.filter(a => a.trade);
+  assert.ok(trades.length >= 10);
+  for (const set of AUG_SETS) {
+    assert.ok(setMembers(set.id).length >= 4, set.id);
+    for (const at of [2, 3]) assert.ok(set.bonus[at]?.text, `${set.id} ${at}`);
+  }
+  for (const a of AUGMENTS) if (a.set) assert.ok(AUG_SETS.some(x => x.id === a.set), `${a.id}'s set`);
+});
+
+test('set bonuses: 2 held give the first, 3 the second as well, summed into augEffects', () => {
+  assert.deepEqual(setBonuses(['iron-wall']), []);
+  assert.equal(augEffects(['iron-wall', 'bulwark']).turnBlock, 3);
+  assert.equal(augEffects(['iron-wall', 'bulwark']).minBlock, undefined);
+  const three = augEffects(['iron-wall', 'bulwark', 'overflow']);
+  assert.equal(three.turnBlock, 3);
+  assert.equal(three.minBlock, 10);
+  assert.equal(augEffects(['iron-wall', 'bulwark', 'overflow', 'fortress']).turnBlock, 3, '4 held is still one of each');
+  assert.equal(augEffects(['bloodlust', 'momentum', 'executioner']).startStrength, 3);
+  assert.deepEqual(newBonuses(['iron-wall'], 'bulwark').map(b => b.n), [2]);
+  assert.deepEqual(newBonuses(['iron-wall', 'bulwark'], 'overflow').map(b => b.n), [3]);
+  assert.deepEqual(newBonuses(['iron-wall', 'bulwark'], 'echo'), []);
+  assert.equal(augEffects(['gambler', 'lucky-find', 'cursed-gold']).offerPlus, 1);
+});
+
+test('Copycat\'s card: the enemy\'s move at half its power, free and exhausting', () => {
+  const hit = copyCard({ kind: 'attack', name: 'Tackle', amount: 9 }, 21);
+  assert.equal(hit.effects.damage, 11);
+  assert.equal(hit.cost, 0);
+  assert.ok(hit.exhaust && hit.copied);
+  assert.equal(copyCard({ kind: 'defend', name: 'Harden', amount: 7 }).effects.block, 4);
+  assert.equal(copyCard({ kind: 'buff', name: 'Growl', amount: 2 }).effects.strength, 1);
+  assert.equal(copyCard({ kind: 'drain', name: 'Absorb', amount: 6, heal: 4 }, 6).effects.heal, 2);
 });

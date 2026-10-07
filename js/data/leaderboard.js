@@ -110,7 +110,7 @@ export const boardValue = (id, e) => (id === 'floor' ? `F${e.floor}` : id === 'f
 export const TOWER_COLLECTION = 'towerBoard';
 export const TOWER_LIMITS = { floor: [0, 999], turns: [0, 60000], time: [0, 8 * 24 * 3600] };
 export const TOWER_KEYS = ['week', 'uid', 'name', 'starter', 'floor', 'turns', 'time', 'at', 'augments'];
-export const TOWER_AUGMENTS = 10;   // the most augments a climb can pick (js/data/augments.js: the start and nine guardians)
+export const TOWER_AUGMENTS = 10;   // the most augments a climb can pick (js/data/augments.js: the start and nine guardians; Darkrai's Deal's extra one past ten is left off the board, so the rules needn't change)
 
 /** What a finished climb posts, before the uid and name: the week (its Monday), starter, highest floor cleared, turns,
     climb time in seconds. */

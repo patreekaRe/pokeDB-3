@@ -76,13 +76,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     `docs/augments.md`: no Game Corner perks anywhere in the tower, one of three augments before floor 1 and after every
     guardian, Silver / Gold / Prismatic by height, 1 reroll, type-only ones (Fire must reach floor 100 sometimes; it's 0%
     in the bot today), every offer from the week's seed so the leaderboard stays even.
-    - **Part a.** Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Read `docs/augments.md` and
-      `docs/reference/sky-pillar.md`. Turn perks off for every tower climb; build `js/data/augments.js` with the Silver,
-      Gold, Prismatic and type-only lists (relic-like ones first, then the rule-benders with new hooks in `js/battle.js`);
-      a plain 3-choice pick window at the start and after each guardian, a reroll, augments saved on `run.tower` and the
-      board entry, a Bag row; the sim's mirror and augment picks by measured value; tune so every type reaches floor 100
-      sometimes and no augment is always right. Tests for the seeded offers.
-    - Part b (the look) is done: see the archive.
+    - Parts a (the picks and effects) and b (the look) are done: see the archive.
     - **Part c.** Run in: CLOUD. The trade-off augments, sets and their bonuses, augment badges, the rest of the list.
 
 ## Ideas, not agreed yet (ask the user before building)

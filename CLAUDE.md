@@ -653,7 +653,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `?travel=wastes&from=savanna`, `?strike=40&land=savanna`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
-  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (124 since 2026-10-07, the user's list):
+  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (130 since 2026-10-07: the user's list, then 6 augment badges):
   Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
   Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna's Sun Badge, page and Savanna Hunter badges like the Ruins' and Thornwood's), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
   Veteran: 5 starters on Level 5), Challenges (one win's Record Book entry, Mewtwo's skipped: full HP, 12 cards, no move
@@ -710,7 +710,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   in the board entry's `augments`. Their look (part b) is `js/augment-art.js`, never the data file: an icon per augment (`ICONS`:
   a glyph on a tier medallion, a new augment needs a line), tiles in Silver / Gold / Prismatic frames dealt face down and
   flipped with tier chimes (`aug-*` synths in `js/audio.js`), the reroll turning them away, and the picks under each climb on
-  the board. Detail in `docs/reference/sky-pillar.md`.
+  the board. Part c (2026-10-07): 113 augments in all, 10 trade-offs (`trade: true`, a red chip: Darkrai's Deal's Prismatic
+  comes from the week's seed, `dealPrismatic()`), 6 sets (`AUG_SETS`: 2 / 3 held add bonus keys inside `augEffects()`; a set
+  chip on the tile, a row per set in the Bag; High Roller's 3 is a 4th offer that never shifts everyone's three,
+  `augmentOffer({ extra })`) and 6 augment badges (`save.tower.augDex` / `sets` / `prismFloor` / `tradeFloor`). A new augment
+  needs an `ICONS` line; a new fight key a mirror in pokeDB-sim's engine, whose bot picks augments by measured value
+  (`sim/augranks.json`). Detail in `docs/reference/sky-pillar.md`.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

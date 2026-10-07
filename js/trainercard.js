@@ -134,6 +134,12 @@ const LOOK = {
   weekly: ['tower', ['#d8d0ff', '#8878d8', '#3c3088'], 'clock'],
   'safari-regular': ['circle', ['#f0e8a0', '#b0a048', '#5a5420'], 'paw'],
   'rare-catch': ['gem', ['#d8ffb0', '#58c048', '#1c6020'], 'sparkle'],
+  'aug-25': ['hex', ['#eef1f5', '#a8b0c0', '#4c5464'], 'sparkle'],
+  'aug-dex': ['book', ['#fff0a8', '#e8b838', '#7a5a10'], 'sparkle'],
+  'aug-set': ['octagon', ['#d0ccff', '#6c64d0', '#2c2878'], 'cards'],
+  'aug-sets': ['crown', ['#d0ccff', '#6c64d0', '#2c2878'], 'cards'],
+  'aug-prism': ['gem', ['#ffe0f8', '#c070f0', '#4c2090'], 'facet'],
+  'aug-trade': ['diamond', ['#ff9c9c', '#b02838', '#500c18'], 'coin'],
 };
 
 // the badges made in bulk: a Safari area's shape and colours, a type's colours and glyph, a biome's colours

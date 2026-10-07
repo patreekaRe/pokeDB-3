@@ -2,7 +2,9 @@
 
 The user's call (2026-10-07): the Sky Pillar gets its own run-changing **augments**, picked one of three like League's
 Arena / ARAM Mayhem or a roguelike's boons, and "a SHIT TON of them" so every climb plays differently. Roadmap item 21.
-Nothing here is built yet; numbers are first guesses for the bot to tune.
+All of it is built (parts a-c, 2026-10-07): 113 augments, 10 trade-offs, 6 sets, 6 augment badges. `js/data/augments.js` is
+the source of truth for names and numbers; the tables below are the first list, with what changed noted under
+"Part c's calls".
 
 ## Rules
 
@@ -19,7 +21,7 @@ Nothing here is built yet; numbers are first guesses for the bot to tune.
 - **Type-only augments** are offered only to that starter's type; a few per type, so Fire gets help where it fails
   (single fights at floors 75-99).
 - **Never offered twice** in a climb; an augment whose need isn't met (a Tide augment for Fire) isn't offered.
-- **Sets** (ARAM Mayhem's): some augments carry a set tag; 2 or 3 of a set gives a bonus (below). Optional, part c.
+- **Sets** (ARAM Mayhem's): some augments carry a set tag; 2 or 3 of a set gives a bonus (below).
 - Augments are their own row in the Bag (a tier-framed icon each) and badges on the battle nameplate when they act.
 
 ## Building it
@@ -176,7 +178,7 @@ Nothing here is built yet; numbers are first guesses for the bot to tune.
 | Risky Climb | Every floor's fight is an Alpha, Alphas give double rewards |
 | No Mercy | +40% damage; Centers are gone (fights) |
 
-### Sets (part c, optional)
+### Sets (part c)
 
 | Set | Members | 2 / 3 bonus |
 |---|---|---|
@@ -186,3 +188,27 @@ Nothing here is built yet; numbers are first guesses for the bot to tune.
 | Glutton | Field Medic, Siphon, Vampire, Photosynthesis | +10 max HP / healing +50% |
 | Tempo | Combo Master, Double Down, Echo, Overclock | +1 draw / +1 PP on turn 1 |
 | Card Smith | Sharpened, Training Day, Card Shark, Recycler | Upgrades show / every new card comes upgraded |
+
+## Part c's calls (2026-10-07)
+
+- **Trade-offs** are `trade: true` (a red Trade-off chip on the tile): Cursed Gold, Heavy Pack and Risky Climb are Silver;
+  Darkrai's Deal, Berserker, Pacifist, Monk, Speed Demon, Sudden Death and No Mercy Gold (Darkrai's Deal at Gold, not
+  Silver, so no Prismatic lands on floor 1). Changed from the list: Heavy Pack's Sludge comes after every guardian; Risky
+  Climb's "double rewards" is double ₽ (an Alpha already pays a relic); Monk keeps your 3 best attacks (rarest, then PP
+  Upped, then dearest) and every Skill deals 5; Sudden Death is "nothing heals you during fights" (Centers, Field Medic and
+  the guardian's heal still do); No Mercy's Centers are dealt as fights. Darkrai's Deal's Prismatic comes from the week's
+  seed and the floor it was taken at (`dealPrismatic()`), so it's the same for everyone. Risky Climb and No Mercy taken
+  before a flight's first door deal that flight again.
+- **The rest of the list**: Picky Eater (a reroll for 30 ₽ once a reward, after Oak's Advice), Insight (the move after next
+  under the intent, plus +3 on the fight's first attack so it isn't a blank for players who read intents anyway), Mulligan (a
+  violet button beside End Turn, once a fight), Recycler (each move exhausted in a fight gets PP Up after it), Pack Rat (items
+  work twice, +1 slot), Infinite Loop (+1 draw), Chaos Theory (Snecko Eye: drawn cards cost 0-3, +2 draw), Hydra (every hit
+  again at half), Copycat (the enemy's coming move as a free exhausting card at half power, `copyCard()`). **Soul Bond**
+  is two relics now and one after every guardian: doubling every relic's numbers would mean rewriting each relic.
+- **Sets** (`AUG_SETS`; an augment's `set`): 2 of a set give its first bonus, 3 the second as well; `augEffects()` adds them,
+  and the ones that happen once (Glutton's max HP, Card Smith's PP Ups) happen as the set reaches them (`setBonusNow()`).
+  Card Smith's 2 is "PP Up 2 random moves" (the list's "upgrades show" had no meaning in this game). High Roller's 3 shows a
+  4th augment after the usual three, walking on down the floor's own tier without drawing a roll, so the three stay everyone's.
+- **Badges** (Sky Pillar group): Augmenter (25 different), Augment Dex (every one), Set (3 of a set in a climb), Set Master
+  (every set), Prism (clear floor 90 holding 3 Prismatics), Devil's Bargain (clear floor 50 holding 3 trade-offs). They read
+  `save.tower.augDex`, `sets`, `prismFloor` and `tradeFloor`.

@@ -25,7 +25,7 @@ import { ITEMS_BY_ID } from './data/items.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { vibrate, battleFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
-import { augEffects, lifeline as lifelineOf } from './data/augments.js';
+import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
@@ -59,6 +59,7 @@ let nextUid = 1;
 export function initBattle() {
   $('end-turn-btn').addEventListener('click', askEndTurn);
   $('throw-btn').addEventListener('click', toggleBallPicker);
+  $('mulligan-btn').addEventListener('click', mulligan);
   // the ball picker floats over the battle like a menu: a tap anywhere else closes it
   document.addEventListener('pointerdown', (e) => {
     if (!$('ball-picker').hidden && !e.target.closest('#ball-picker, #throw-btn')) closeBallPicker();
@@ -174,6 +175,9 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     spent: null,       // the lifeline used up in this fight, handed back in onEnd
     cardsThisFight: 0, // cards played this fight (Echo, Double Down, Nova)
     guarded: false,    // Bodyguard has paid out this fight
+    mulled: false,     // Mulligan has been used this fight
+    twice: false,      // Speed Demon: the enemy has had its second turn 1
+    recycled: [],      // Recycler: the deck's moves exhausted this fight (each PP Upped after it)
     abyss: 0,          // PP a turn Abyss has given this fight
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
@@ -380,8 +384,9 @@ function beginPlayerTurn() {
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const a = b.aug;
   const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (b.turn === 2 && hasRelic('stone-plate') ? 12 : 0)
-    + (hasRelic('eviolite') ? 3 : 0) + (p.blockEachTurn || 0) + b.blockNext + (b.turn === 1 ? a.startBlock || 0 : 0);
+    + (hasRelic('eviolite') ? 3 : 0) + (p.blockEachTurn || 0) + b.blockNext + (b.turn === 1 ? a.startBlock || 0 : 0) + (a.turnBlock || 0);
   b.block = (p.keepBlock || b.blur ? b.block : hasRelic('everstone') ? Math.max(0, b.block - 10) : Math.floor(b.block * (a.keepBlock || 0))) + fresh;
+  if (a.minBlock) b.block = Math.max(b.block, a.minBlock);   // Ironclad's set bonus
   if (b.blur) b.blur -= 1;
   b.blockNext = 0;
   if (b.block) statFx('player');
@@ -420,11 +425,13 @@ function beginPlayerTurn() {
     playSound('burn');
   }
   if (hasRelic('exp-share')) { playSound('fortify'); pop('player-zone', '🎓 +1 card', 'block', 150); }   // the user's call: his shout every time his relic draws
+  if (a.infiniteLoop && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; }   // Infinite Loop
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0));
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
+  if (a.copycat) copycat();
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry
   b.busy = false;
   if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
@@ -465,6 +472,8 @@ const healBonus = () => (hasRelic('big-root') ? 2 : 0);
     into block, and Grass Pledge turns a heal into strength once a turn. */
 function healPlayer(amount) {
   const b = battle;
+  if (b.aug.noFightHeal) return 0;   // Sudden Death
+  if (b.aug.healMult) amount = Math.floor(amount * b.aug.healMult);   // Glutton's set bonus
   const healed = Math.min(amount, b.maxHp - b.hp);
   b.hp += healed;
   if (healed > 0) {
@@ -590,7 +599,7 @@ function draw(count) {
     if (b.refreshed) { count += b.refreshed; b.refreshed = 0; }
     if (top.status && b.aug.steelNerves) { exhaustCard(top); count += 1; continue; }   // Steel Nerves: it never reaches your hand
     // Max Mushrooms (StS's Snecko Eye): a drawn card costs 0-3 while it's in your hand (settled() puts it back)
-    const card = hasRelic('max-mushrooms') && typeof top.cost === 'number' && !top.unplayable
+    const card = (hasRelic('max-mushrooms') || b.aug.chaos) && typeof top.cost === 'number' && !top.unplayable
       ? { ...top, cost: randIndex(4), orig: top } : top;
     b.hand.push({ uid: nextUid++, card, fresh: true });
   }
@@ -685,8 +694,8 @@ function augDamage() {
     * (a.onePunch && b.firstAttack ? a.onePunch : 1);
 }
 
-/** Your cards' block: Damp Rock and Steady Hands add to it, Fortress multiplies it. */
-const cardBlock = (n) => Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (battle.aug.blockBonus || 0)) * (battle.aug.blockMult || 1));
+/** Your cards' block: Damp Rock and Steady Hands add to it, Fortress and Pacifist multiply it, Berserker takes it away. */
+const cardBlock = (n) => (battle.aug.noCardBlock ? 0 : Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (battle.aug.blockBonus || 0)) * (battle.aug.blockMult || 1)));
 
 async function playCard(uid) {
   const b = battle;
@@ -744,7 +753,7 @@ async function playCard(uid) {
  */
 async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   const b = battle;
-  markSeen('cards', card.id);   // a move is met in the Index once played, not when offered (the user's call); Metronome's too
+  if (!card.copied) markSeen('cards', card.id);   // a move is met in the Index once played, not when offered (the user's call); Metronome's too
   b.played += 1;
   b.tally.played += 1;
   if (isAttack(card)) b.attacks += 1;
@@ -794,6 +803,17 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
       if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
       if (i < hits.length - 1) { renderBars(); await pause(200); }
+    }
+    if (b.aug.hydra && b.enemy.hp > 0) {   // Hydra: every hit again, at a share of its damage
+      await pause(160);
+      if (battle !== b) return false;
+      for (const amount of hits) {
+        const dealt = hurtEnemy(Math.floor(amount * b.aug.hydra));
+        through += dealt;
+        hitEffect('enemy-portrait-box');
+        pop('enemy-zone', dealt > 0 ? `-${dealt} 🐉` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
+        if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
+      }
     }
     if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
     if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
@@ -847,6 +867,10 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   if (card.power && hasRelic('power-herb')) draw(1);
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
+  if (b.aug.skillDamage && !isAttack(card) && !card.power && !card.status && b.enemy.hp > 0) {   // Monk: every Skill hits
+    const dealt = hurtEnemy(b.aug.skillDamage);
+    pop('enemy-zone', dealt > 0 ? `-${dealt} 📿` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150);
+  }
   enemyTrait(card);
 
   for (let i = 0; i < (e.playTop || 0) && b.enemy.hp > 0; i++) {
@@ -1014,6 +1038,29 @@ function addRandomCards(n) {
   }
 }
 
+/** Copycat (a Sky Pillar augment): the enemy's coming move joins your hand as a free card that exhausts (copyCard()). */
+function copycat() {
+  const b = battle, move = currentMove();
+  if (b.hand.length >= MAX_HAND) return;
+  const card = copyCard(move, move.kind === 'attack' || move.kind === 'drain' ? attackDamage(move) : 0);
+  b.hand.push({ uid: nextUid++, card, fresh: true });
+  pop('player-zone', `🐱 ${card.name}!`, 'note good', 250);
+}
+
+/** Mulligan (a Sky Pillar augment): once a fight, your hand goes back into the draw pile, shuffled, and you draw as many. */
+function mulligan() {
+  const b = battle;
+  if (b.busy || b.over || b.mulled || !b.aug.mulligan || !b.hand.length) return;
+  b.mulled = true;
+  const n = b.hand.length;
+  b.drawPile = shuffle([...b.drawPile, ...b.hand.map(h => settled(h.card))]);
+  b.hand = [];
+  playSound('card');
+  draw(n);
+  pop('player-zone', '🔄 Mulligan!', 'note good');
+  renderAll();
+}
+
 /** TM (StS's Attack Potion): choose one of `n` different random cards of your type; it's free this turn, then an
     ordinary card for the rest of the fight. */
 async function discoverCard(n) {
@@ -1036,6 +1083,7 @@ const settled = (card) => card.orig || card;
 function exhaustCard(card) {
   const b = battle;
   b.exhaust.push(settled(card));
+  if (!card.status && !card.copied) b.recycled.push(baseId(settled(card).id));   // Recycler
   pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
   if (card.onExhaust) applyEffects(card.onExhaust);
   if (b.powers.exhaustBlock) gainBlock(b.powers.exhaustBlock);
@@ -1184,6 +1232,20 @@ async function useItem(index) {
     return b.onEnd({ won: false, fled: true, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
   }
 
+  for (let i = 0; i < (b.aug.packRat ? 2 : 1); i++) await itemEffects(e);   // Pack Rat: every item works twice
+  if (battle !== b) return;
+
+  renderAll();
+  await sleep(220);
+  if (battle !== b) return;
+  if (b.enemy.hp <= 0) return finish(true);   // Enigma Berry off a Potion
+  b.busy = false;
+  renderAll();
+}
+
+/** What a used item does (useItem() runs it, twice under Pack Rat). */
+async function itemEffects(e) {
+  const b = battle;
   if (e.burn)     { b.enemy.burn += e.burn; pop('enemy-zone', `🔥 Burn ${e.burn}`, 'note'); }
   if (e.burnMult) { b.enemy.burn *= e.burnMult; pop('enemy-zone', `🔥 Burn ${b.enemy.burn}!`, 'note'); }
   if (e.weaken)   applyDebuff('weaken', e.weaken);
@@ -1198,15 +1260,7 @@ async function useItem(index) {
   if (e.energy)   { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal)     healPlayer(e.heal);
   if (e.draw)     draw(e.draw);
-  if (e.discover) await discoverCard(e.discover);
-  if (battle !== b) return;
-
-  renderAll();
-  await sleep(220);
-  if (battle !== b) return;
-  if (b.enemy.hp <= 0) return finish(true);   // Enigma Berry off a Potion
-  b.busy = false;
-  renderAll();
+  if (e.discover && battle === b) await discoverCard(e.discover);
 }
 
 /* ---------- catching: the Safari Zone's Throw Ball (js/data/balls.js, docs/reference/safari.md) ---------- */
@@ -1721,6 +1775,11 @@ async function enemyTurn() {
   if (battle !== b) return;
   if (b.hp <= 0) return finish(false);
   if (b.enemy.hp <= 0) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
+  if (b.aug.enemyTwice && b.turn === 1 && !b.twice) {   // Speed Demon: on turn 1 it goes again
+    b.twice = true;
+    pop('enemy-zone', '👟 Again!', 'note bad');
+    return enemyTurn();
+  }
   b.enemyActing = false;
   beginPlayerTurn();
 }
@@ -1784,7 +1843,7 @@ async function finish(won) {
 
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won, foe: b.def.name, move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b), spent: b.spent });
+  b.onEnd({ won, foe: b.def.name, move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b), spent: b.spent, exhausted: [...new Set(b.recycled)] });
 }
 
 /**
@@ -2107,6 +2166,8 @@ function renderBars() {
   $('exhaust-count').hidden = !exhausted.length;
   $('exhaust-count').replaceChildren(el('span', 'pile-icon', '🌫️'), el('b', '', String(exhausted.length)));
   $('end-turn-btn').disabled = b.busy || b.over;
+  $('mulligan-btn').hidden = !b.aug.mulligan || b.mulled || b.over;
+  $('mulligan-btn').disabled = b.busy;
   const throwable = canCatch();
   $('throw-btn').hidden = !throwable;
   if (!throwable) closeBallPicker();
@@ -2159,6 +2220,12 @@ function renderIntent() {
     detail = detail ? `${detail}, and ${junk}` : junk;
   }
   box.title = `Next turn: ${move.name} (${detail})`;
+  if (b.aug.insight) {   // Insight: the move after it too
+    const then = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
+    const hits = then.kind === 'attack' || then.kind === 'drain';
+    box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}` : { defend: '🛡️', buff: '💪', charge: '⚠️' }[then.kind] ?? '❔'} ${then.name}`));
+    box.title += `, then ${then.name}${hits ? ` (${attackDamage(then)} damage)` : ''}`;
+  }
 }
 
 function renderStatus() {
