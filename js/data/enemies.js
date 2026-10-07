@@ -251,113 +251,114 @@ export const ENEMY_DEFS = {
     ],
   },
 
-  /* ----- Biome 2, the other road: the Sunken Ruins, a flooded temple (roadmap item 19). Mostly Water. Every Gen 1-5
-     species was taken by the main game or the Safari, so these are Gen 6-9 (PokeAPI's showdown GIFs, like Eternatus's). ----- */
-  clauncher: {
-    name: 'Clauncher', type: 'water', hp: 54, ...sprite('clauncher'),
-    description: 'Fires water from its big claw at anything that moves in the flooded halls.',
+  /* ----- Biome 2, the other road: the Sunken Ruins, a flooded temple (roadmap item 19). Mostly Water. Its Pokémon are
+     the Safari Zone's, shared like the Safari's borrowed wilds (official Gen 5 sprites only, the user's call): these
+     defs win over safariMonDef(), which keeps their Safari line (`safariLine`). ----- */
+  corphish: {
+    name: 'Corphish', type: 'water', hp: 54, ...sprite('corphish'),
+    description: 'Moved into the flooded halls and claims every one of them, one pincer at a time.',
     moves: [
-      { kind: 'attack', name: 'Water Pulse', amount: 7 },
+      { kind: 'attack', name: 'Bubble Beam', amount: 7 },
       { kind: 'buff',   name: 'Swords Dance', amount: 2 },
       { kind: 'attack', name: 'Crabhammer',  amount: 12 },
     ],
   },
-  wishiwashi: {
-    name: 'Wishiwashi', type: 'water', hp: 46, ...sprite('wishiwashi'),
-    description: 'Alone it\'s a minnow. When it calls its school, the whole flooded hall comes at you.',
+  finneon: {
+    name: 'Finneon', type: 'water', hp: 46, ...sprite('finneon'),
+    description: 'Its tail fins glow in the drowned corridors. Follow the light and you swim into its school.',
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 6 },
-      { kind: 'buff',   name: 'Schooling', amount: 3 },
-      { kind: 'attack', name: 'Dive',      amount: 11 },
+      { kind: 'buff',   name: 'Rain Dance', amount: 3 },
+      { kind: 'attack', name: 'Waterfall',      amount: 11 },
     ],
   },
-  pyukumuku: {
-    name: 'Pyukumuku', type: 'water', hp: 62, ...sprite('pyukumuku'),
-    description: 'Lies in the temple\'s tide pools. Step on it and it punches back with its insides.',
+  shellder: {
+    name: 'Shellder', type: 'water', hp: 62, ...sprite('shellder'),
+    description: 'Clamps shut in the temple\'s tide pools and waits for a careless foot.',
     moves: [
-      { kind: 'attack', name: 'Counter',     amount: 6, type: 'normal' },
-      { kind: 'defend', name: 'Harden',      amount: 10 },
-      { kind: 'attack', name: 'Innards Out', amount: 11 },
+      { kind: 'attack', name: 'Tackle',     amount: 6, type: 'normal' },
+      { kind: 'defend', name: 'Withdraw',      amount: 10 },
+      { kind: 'attack', name: 'Clamp', amount: 11 },
     ],
   },
-  bruxish: {
-    name: 'Bruxish', type: 'water', hp: 52, ...sprite('bruxish'),
-    description: 'Grinds its teeth, and the noise rings through the water into your skull.',
+  frillish: {
+    name: 'Frillish', type: 'water', hp: 52, ...sprite('frillish'),
+    description: 'Drifts through the sunken halls, veil trailing. Whoever it wraps never quite surfaces.',
     moves: [
-      { kind: 'attack', name: 'Aqua Jet',      amount: 7 },
-      { kind: 'buff',   name: 'Calm Mind',     amount: 2 },
-      { kind: 'attack', name: 'Psychic Fangs', amount: 11, type: 'normal', adds: { card: 'confusion', n: 1, to: 'draw' } },
+      { kind: 'attack', name: 'Bubble',      amount: 7 },
+      { kind: 'buff',   name: 'Rain Dance',     amount: 2 },
+      { kind: 'attack', name: 'Hex', amount: 11, type: 'normal', adds: { card: 'confusion', n: 1, to: 'draw' } },
     ],
   },
-  arrokuda: {
-    name: 'Arrokuda', type: 'water', hp: 50, ...sprite('arrokuda'),
-    description: 'Darts down the drowned corridors faster than you can turn round.',
+  basculin: {
+    name: 'Basculin', type: 'water', hp: 50, ...sprite('basculin'),
+    description: 'Two schools fight over the flooded nave, and both of them bite anything in between.',
     moves: [
-      { kind: 'attack', name: 'Peck',        amount: 6, type: 'normal' },
+      { kind: 'attack', name: 'Bite',        amount: 6, type: 'normal' },
       { kind: 'buff',   name: 'Agility',     amount: 2 },
-      { kind: 'attack', name: 'Liquidation', amount: 12 },
+      { kind: 'attack', name: 'Aqua Tail', amount: 12 },
     ],
   },
-  salandit: {
-    name: 'Salandit', type: 'fire', hp: 52, ...sprite('salandit'),
-    description: 'Slinks along the dry upper ledges, trailing sweet, poisonous smoke.',
+  slugma: {
+    name: 'Slugma', type: 'fire', hp: 52, ...sprite('slugma'),
+    description: 'Oozes along the dry upper ledges, warm enough to boil the puddles it crosses.',
     moves: [
       { kind: 'attack', name: 'Smog',        amount: 6, type: 'normal', adds: { card: 'poison', n: 1 } },
-      { kind: 'buff',   name: 'Nasty Plot',  amount: 2 },
-      { kind: 'attack', name: 'Flame Burst', amount: 11 },
+      { kind: 'buff',   name: 'Amnesia',  amount: 2 },
+      { kind: 'attack', name: 'Lava Plume', amount: 11 },
     ],
   },
-  charcadet: {
-    name: 'Charcadet', type: 'fire', hp: 56, ...sprite('charcadet'),
-    description: 'A temple brazier\'s last flame, walking the dry halls in armour made of ash.',
+  flareon: {
+    name: 'Flareon', type: 'fire', hp: 56, ...sprite('flareon'),
+    description: 'Keeps the temple\'s last brazier lit by curling round it. It doesn\'t like visitors near.',
     moves: [
-      { kind: 'attack', name: 'Astonish',     amount: 6, type: 'normal' },
-      { kind: 'buff',   name: 'Will-O-Wisp',  amount: 2 },
-      { kind: 'attack', name: 'Flame Charge', amount: 12 },
+      { kind: 'attack', name: 'Quick Attack',     amount: 6, type: 'normal' },
+      { kind: 'buff',   name: 'Focus Energy',  amount: 2 },
+      { kind: 'attack', name: 'Fire Fang', amount: 12 },
     ],
   },
-  dhelmise: {
-    name: 'Dhelmise', type: 'grass', hp: 62, ...sprite('dhelmise'),
-    description: 'Seaweed wound round a sunken anchor. It hauls whatever it catches down to the temple floor.',
+  foongus: {
+    name: 'Foongus', type: 'grass', hp: 62, ...sprite('foongus'),
+    description: 'Grows on the offerings left at the shrines. Some are real Poké Balls. Most are not.',
     moves: [
       { kind: 'drain',  name: 'Giga Drain',  amount: 6, heal: 5 },
-      { kind: 'attack', name: 'Anchor Shot', amount: 7, type: 'normal', adds: { card: 'sludge', n: 1 } },
-      { kind: 'attack', name: 'Power Whip',  amount: 12 },
+      { kind: 'attack', name: 'Clear Smog', amount: 7, type: 'normal', adds: { card: 'sludge', n: 1 } },
+      { kind: 'attack', name: 'Energy Ball',  amount: 12 },
     ],
   },
-  morelull: {
-    name: 'Morelull', type: 'grass', hp: 50, ...sprite('morelull'),
-    description: 'Its caps glow in the dark crypts, luring travellers off the safe stones.',
+  shroomish: {
+    name: 'Shroomish', type: 'grass', hp: 50, ...sprite('shroomish'),
+    description: 'Sprouts in the damp crypts and puffs spores at any lamp that comes near.',
     moves: [
       { kind: 'drain',  name: 'Mega Drain', amount: 6, heal: 5 },
       { kind: 'status', name: 'Spore',      adds: { card: 'paralysis', n: 1, to: 'draw' } },
-      { kind: 'attack', name: 'Moonblast',  amount: 11, type: 'normal' },
+      { kind: 'attack', name: 'Headbutt',  amount: 11, type: 'normal' },
     ],
   },
-  bunnelby: {
-    name: 'Bunnelby', type: 'normal', hp: 50, ...sprite('bunnelby'),
-    description: 'Digs through the temple\'s silted floors with its ears, faster than any shovel.',
+  bidoof: {
+    name: 'Bidoof', type: 'normal', hp: 50, ...sprite('bidoof'),
+    description: 'Gnaws at the temple\'s wooden beams. The floors that collapsed were probably its fault.',
     moves: [
-      { kind: 'attack', name: 'Quick Attack', amount: 6 },
-      { kind: 'defend', name: 'Dig',          amount: 8 },
-      { kind: 'attack', name: 'Take Down',    amount: 11 },
+      { kind: 'attack', name: 'Tackle', amount: 6 },
+      { kind: 'defend', name: 'Defense Curl',          amount: 8 },
+      { kind: 'attack', name: 'Hyper Fang',    amount: 11 },
     ],
   },
-  yungoos: {
-    name: 'Yungoos', type: 'normal', hp: 52, ...sprite('yungoos'),
-    description: 'Patrols the dry corridors all day, gnawing on anything it finds.',
+  lillipup: {
+    name: 'Lillipup', type: 'normal', hp: 52, ...sprite('lillipup'),
+    description: 'Sniffs out every dry corridor of the ruins, and barks at the water rising behind it.',
     moves: [
       { kind: 'attack', name: 'Bite',       amount: 7 },
       { kind: 'buff',   name: 'Work Up',    amount: 2 },
-      { kind: 'attack', name: 'Hyper Fang', amount: 11 },
+      { kind: 'attack', name: 'Take Down', amount: 11 },
     ],
   },
-  lechonk: {
-    name: 'Lechonk', type: 'normal', hp: 58, ...sprite('lechonk'),
-    description: 'Snuffles round the offerings on the temple steps, and charges if you get between it and them.',
+  skitty: {
+    name: 'Skitty', type: 'normal', hp: 58, ...sprite('skitty'),
+    description: 'Chases the light rippling on the temple walls round and round the halls.',
     moves: [
-      { kind: 'attack', name: 'Tackle',      amount: 6 },
-      { kind: 'defend', name: 'Curse',       amount: 9 },
+      { kind: 'attack', name: 'Double Slap',      amount: 6 },
+      { kind: 'defend', name: 'Wish',       amount: 9 },
       { kind: 'attack', name: 'Double-Edge', amount: 12 },
     ],
   },
@@ -472,115 +473,115 @@ export const ENEMY_DEFS = {
     ],
   },
 
-  /* ----- Biome 3, the other road: the Thornwood Jungle, a primeval forest (roadmap item 19). Mostly Grass. Gen 6-9, like
-     the Sunken Ruins' (PokeAPI's showdown GIFs). Its one Normal wild leaves the last pure-Normal species for its Alphas and
-     bosses (the user's call, 2026-10-07). ----- */
-  lurantis: {
-    name: 'Lurantis', type: 'grass', hp: 64, ...sprite('lurantis'),
-    description: 'Dresses itself as a jungle orchid, then cuts down whoever stops to admire it.',
+  /* ----- Biome 3, the other road: the Thornwood Jungle, a primeval forest (roadmap item 19). Mostly Grass. Safari Pokémon,
+     shared like the Sunken Ruins'. One Normal wild, Slakoth (Team Rocket's whole team here; the user's call,
+     2026-10-07). ----- */
+  simisage: {
+    name: 'Simisage', type: 'grass', hp: 64, ...sprite('simisage'),
+    description: 'Swings through the jungle canopy and drops on whatever walks the trail beneath.',
     moves: [
-      { kind: 'attack', name: 'Leafage',      amount: 8 },
-      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
-      { kind: 'attack', name: 'Solar Blade',  amount: 13 },
+      { kind: 'attack', name: 'Vine Whip',      amount: 8 },
+      { kind: 'buff',   name: 'Nasty Plot', amount: 2 },
+      { kind: 'attack', name: 'Seed Bomb',  amount: 13 },
     ],
   },
-  tsareena: {
-    name: 'Tsareena', type: 'grass', hp: 62, ...sprite('tsareena'),
-    description: 'Queen of the canopy. Every kick smells of fruit, and every kick lands.',
+  lilligant: {
+    name: 'Lilligant', type: 'grass', hp: 62, ...sprite('lilligant'),
+    description: 'Blooms only deep in the jungle, where no one tends it. It grew thorns instead.',
     moves: [
-      { kind: 'attack', name: 'Double Kick', amount: 8, type: 'normal' },
-      { kind: 'drain',  name: 'Drain Punch', amount: 7, heal: 6, type: 'normal' },
-      { kind: 'attack', name: 'Trop Kick',   amount: 13 },
+      { kind: 'attack', name: 'Facade', amount: 8, type: 'normal' },
+      { kind: 'drain',  name: 'Leech Life', amount: 7, heal: 6, type: 'normal' },
+      { kind: 'attack', name: 'Petal Dance',   amount: 13 },
     ],
   },
-  trevenant: {
-    name: 'Trevenant', type: 'grass', hp: 68, ...sprite('trevenant'),
-    description: 'The oldest trees here have roots that move. Those are its legs.',
+  shiftry: {
+    name: 'Shiftry', type: 'grass', hp: 68, ...sprite('shiftry'),
+    description: 'Its fans whip up gales in the treetops. The jungle says it guards the oldest trees.',
     moves: [
-      { kind: 'attack', name: 'Shadow Claw', amount: 8, type: 'normal' },
-      { kind: 'attack', name: 'Curse',       amount: 6, type: 'normal', adds: { card: 'sludge', n: 2 } },
-      { kind: 'attack', name: 'Wood Hammer', amount: 13 },
+      { kind: 'attack', name: 'Feint Attack', amount: 8, type: 'normal' },
+      { kind: 'attack', name: 'Razor Wind',       amount: 6, type: 'normal', adds: { card: 'sludge', n: 2 } },
+      { kind: 'attack', name: 'Leaf Storm', amount: 13 },
     ],
   },
-  gogoat: {
-    name: 'Gogoat', type: 'grass', hp: 70, ...sprite('gogoat'),
-    description: 'Knows every trail through the jungle by the feel of the leaves on its back.',
+  sawsbuck: {
+    name: 'Sawsbuck', type: 'grass', hp: 70, ...sprite('sawsbuck'),
+    description: 'Its antlers grow whatever the jungle grows. In Thornwood that means thorns.',
     moves: [
       { kind: 'drain',  name: 'Horn Leech',     amount: 6, heal: 7 },
-      { kind: 'defend', name: 'Grassy Terrain', amount: 10 },
-      { kind: 'attack', name: 'Seed Bomb',      amount: 12 },
+      { kind: 'defend', name: 'Aromatherapy', amount: 10 },
+      { kind: 'attack', name: 'Solar Beam',      amount: 12 },
     ],
   },
-  brambleghast: {
-    name: 'Brambleghast', type: 'grass', hp: 60, ...sprite('brambleghast'),
-    description: 'A ball of thorns that rolls through the undergrowth and tangles everything it touches.',
+  carnivine: {
+    name: 'Carnivine', type: 'grass', hp: 60, ...sprite('carnivine'),
+    description: 'Hangs from the strangler figs with its mouth open, smelling sweet.',
     moves: [
-      { kind: 'attack', name: 'Bullet Seed', amount: 7 },
-      { kind: 'status', name: 'Spikes',      adds: { card: 'sludge', n: 2 } },
+      { kind: 'attack', name: 'Vine Whip', amount: 7 },
+      { kind: 'status', name: 'Sweet Scent',      adds: { card: 'sludge', n: 2 } },
       { kind: 'attack', name: 'Power Whip',  amount: 13 },
     ],
   },
-  arboliva: {
-    name: 'Arboliva', type: 'grass', hp: 66, ...sprite('arboliva'),
-    description: 'Its olives are said to cure anything. It doesn\'t share them.',
+  exeggutor: {
+    name: 'Exeggutor', type: 'grass', hp: 66, ...sprite('exeggutor'),
+    description: 'Grows taller than the undergrowth here, and its heads argue about who saw you first.',
     moves: [
       { kind: 'drain',  name: 'Giga Drain', amount: 7, heal: 6 },
-      { kind: 'defend', name: 'Synthesis',   amount: 10 },
-      { kind: 'attack', name: 'Energy Ball', amount: 12 },
+      { kind: 'defend', name: 'Reflect',   amount: 10 },
+      { kind: 'attack', name: 'Wood Hammer', amount: 12 },
     ],
   },
-  eldegoss: {
-    name: 'Eldegoss', type: 'grass', hp: 60, ...sprite('eldegoss'),
-    description: 'Its cotton seeds drift down through the canopy and put down roots wherever they land.',
+  whimsicott: {
+    name: 'Whimsicott', type: 'grass', hp: 60, ...sprite('whimsicott'),
+    description: 'Blows through the jungle on the wind, leaving its cotton snagged on every thorn.',
     moves: [
-      { kind: 'attack', name: 'Leaf Tornado', amount: 7 },
+      { kind: 'attack', name: 'Razor Leaf', amount: 7 },
       { kind: 'defend', name: 'Cotton Guard', amount: 11 },
-      { kind: 'attack', name: 'Leaf Storm',   amount: 13 },
+      { kind: 'attack', name: 'Energy Ball',   amount: 13 },
     ],
   },
-  pyroar: {
-    name: 'Pyroar', type: 'fire', hp: 66, ...sprite('pyroar'),
-    description: 'Its mane burns brighter than anything under the canopy. You hear it roar first.',
+  volcarona: {
+    name: 'Volcarona', type: 'fire', hp: 66, ...sprite('volcarona'),
+    description: 'Its wings light the dark under the canopy like a second sun. Nothing grows where it lands.',
     moves: [
-      { kind: 'attack', name: 'Fire Fang',   amount: 8 },
-      { kind: 'buff',   name: 'Noble Roar',  amount: 2 },
-      { kind: 'attack', name: 'Flamethrower', amount: 13 },
+      { kind: 'attack', name: 'Ember',   amount: 8 },
+      { kind: 'buff',   name: 'Quiver Dance',  amount: 2 },
+      { kind: 'attack', name: 'Fiery Dance', amount: 13 },
     ],
   },
-  ceruledge: {
-    name: 'Ceruledge', type: 'fire', hp: 64, ...sprite('ceruledge'),
-    description: 'A wandering swordsman of blue flame. The vines it cuts never grow back.',
+  rapidash: {
+    name: 'Rapidash', type: 'fire', hp: 64, ...sprite('rapidash'),
+    description: 'Gallops the jungle trails so fast the leaves catch fire behind it.',
     moves: [
-      { kind: 'attack', name: 'Shadow Claw', amount: 8, type: 'normal' },
-      { kind: 'buff',   name: 'Bulk Up',     amount: 2 },
-      { kind: 'attack', name: 'Bitter Blade', amount: 13 },
+      { kind: 'attack', name: 'Stomp', amount: 8, type: 'normal' },
+      { kind: 'buff',   name: 'Agility',     amount: 2 },
+      { kind: 'attack', name: 'Flare Blitz', amount: 13 },
     ],
   },
-  barraskewda: {
-    name: 'Barraskewda', type: 'water', hp: 60, ...sprite('barraskewda'),
-    description: 'Shoots up the jungle rivers like a spear. Don\'t trail your hand in the water.',
+  carvanha: {
+    name: 'Carvanha', type: 'water', hp: 60, ...sprite('carvanha'),
+    description: 'Packs the jungle\'s rivers. One bite and the whole school knows where you are.',
     moves: [
       { kind: 'attack', name: 'Aqua Jet',    amount: 8 },
-      { kind: 'buff',   name: 'Agility',     amount: 2 },
-      { kind: 'attack', name: 'Liquidation', amount: 13 },
+      { kind: 'buff',   name: 'Rage',     amount: 2 },
+      { kind: 'attack', name: 'Waterfall', amount: 13 },
     ],
   },
-  veluza: {
-    name: 'Veluza', type: 'water', hp: 64, ...sprite('veluza'),
-    description: 'Sheds its own flesh to slip away faster, and comes back sharper for it.',
+  simipour: {
+    name: 'Simipour', type: 'water', hp: 64, ...sprite('simipour'),
+    description: 'Fills its tail at the waterfalls and sprays anyone it doesn\'t like. It likes nobody.',
     moves: [
-      { kind: 'attack', name: 'Aqua Cutter',   amount: 8 },
-      { kind: 'defend', name: 'Fillet Away',   amount: 9 },
-      { kind: 'attack', name: 'Psycho Cut',    amount: 13, type: 'normal' },
+      { kind: 'attack', name: 'Scald',   amount: 8 },
+      { kind: 'defend', name: 'Water Sport',   amount: 9 },
+      { kind: 'attack', name: 'Acrobatics',    amount: 13, type: 'normal' },
     ],
   },
-  skwovet: {
-    name: 'Skwovet', type: 'normal', hp: 66, ...sprite('skwovet'),
-    description: 'Stuffs its cheeks with every berry in the jungle, and bites whoever reaches for one.',
+  slakoth: {
+    name: 'Slakoth', type: 'normal', hp: 66, ...sprite('slakoth'),
+    description: 'Hangs in the same tree all day. It moves, a little, when you come too close.',
     moves: [
-      { kind: 'attack', name: 'Bite',       amount: 8 },
-      { kind: 'defend', name: 'Stockpile',  amount: 10 },
-      { kind: 'attack', name: 'Body Slam',  amount: 13 },
+      { kind: 'attack', name: 'Scratch',       amount: 8 },
+      { kind: 'defend', name: 'Slack Off',  amount: 10 },
+      { kind: 'attack', name: 'Feint Attack',  amount: 13 },
     ],
   },
 
@@ -760,31 +761,31 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Crunch',      amount: 11 },
     ],
   },
-  furfrou: {
-    name: 'Furfrou', type: 'normal', hp: 70, ...sprite('furfrou'),
-    description: 'Groomed in the temple\'s style long ago, it still guards the door it was trimmed for.',
+  lickitung: {
+    name: 'Lickitung', type: 'normal', hp: 70, ...sprite('lickitung'),
+    description: 'Licks the old carvings clean. It has tasted every word written in the temple.',
     moves: [
-      { kind: 'attack', name: 'Headbutt',  amount: 8 },
-      { kind: 'buff',   name: 'Work Up',   amount: 2 },
-      { kind: 'attack', name: 'Retaliate', amount: 12 },
+      { kind: 'attack', name: 'Lick',  amount: 8 },
+      { kind: 'buff',   name: 'Belly Drum',   amount: 2 },
+      { kind: 'attack', name: 'Wring Out', amount: 12 },
     ],
   },
-  gumshoos: {
-    name: 'Gumshoos', type: 'normal', hp: 68, ...sprite('gumshoos'),
-    description: 'Stakes out one corridor of the ruins and waits all day for someone to walk down it.',
+  herdier: {
+    name: 'Herdier', type: 'normal', hp: 68, ...sprite('herdier'),
+    description: 'Stands guard at one door of the ruins as if someone told it to long ago.',
     moves: [
-      { kind: 'attack', name: 'Pursuit',    amount: 7 },
-      { kind: 'drain',  name: 'Super Fang', amount: 8, heal: 5 },
-      { kind: 'attack', name: 'Crunch',     amount: 12 },
+      { kind: 'attack', name: 'Crunch',    amount: 7 },
+      { kind: 'drain',  name: 'Thief', amount: 8, heal: 5 },
+      { kind: 'attack', name: 'Giga Impact',     amount: 12 },
     ],
   },
-  dubwool: {
-    name: 'Dubwool', type: 'normal', hp: 72, ...sprite('dubwool'),
-    description: 'Its soaked fleece weighs a ton, and so does every kick.',
+  audino: {
+    name: 'Audino', type: 'normal', hp: 72, ...sprite('audino'),
+    description: 'Hears your heartbeat through the stone, so it always knows which hall you\'re hiding in.',
     moves: [
-      { kind: 'attack', name: 'Double Kick',  amount: 7 },
-      { kind: 'defend', name: 'Cotton Guard', amount: 10 },
-      { kind: 'attack', name: 'Body Press',   amount: 12 },
+      { kind: 'attack', name: 'Pound',  amount: 7 },
+      { kind: 'defend', name: 'Heal Pulse', amount: 10 },
+      { kind: 'attack', name: 'Hyper Voice',   amount: 12 },
     ],
   },
 
@@ -816,31 +817,31 @@ export const ENEMY_DEFS = {
     ],
   },
 
-  komala: {
-    name: 'Komala', type: 'normal', hp: 72, ...sprite('komala'),
-    description: 'Asleep on its log since the jungle was young. It fights in its sleep, and it never misses.',
+  vigoroth: {
+    name: 'Vigoroth', type: 'normal', hp: 72, ...sprite('vigoroth'),
+    description: 'Can\'t sit still for a second. It tears through the jungle like a storm with claws.',
     moves: [
-      { kind: 'attack', name: 'Rollout',   amount: 8 },
-      { kind: 'defend', name: 'Comatose',  amount: 11 },
-      { kind: 'attack', name: 'Sucker Punch', amount: 13 },
+      { kind: 'attack', name: 'Fury Swipes',   amount: 8 },
+      { kind: 'defend', name: 'Endure',  amount: 11 },
+      { kind: 'attack', name: 'Slash', amount: 13 },
     ],
   },
-  wooloo: {
-    name: 'Wooloo', type: 'normal', hp: 70, ...sprite('wooloo'),
-    description: 'Rolled down from the hills years ago and grew a fleece so thick the thorns can\'t reach it.',
+  delcatty: {
+    name: 'Delcatty', type: 'normal', hp: 70, ...sprite('delcatty'),
+    description: 'Wanders the jungle wherever it likes, and expects the jungle to move out of its way.',
     moves: [
-      { kind: 'attack', name: 'Double Kick',  amount: 7 },
-      { kind: 'defend', name: 'Cotton Guard', amount: 11 },
-      { kind: 'attack', name: 'Take Down',    amount: 13 },
+      { kind: 'attack', name: 'Fake Out',  amount: 7 },
+      { kind: 'defend', name: 'Heal Bell', amount: 11 },
+      { kind: 'attack', name: 'Double-Edge',    amount: 13 },
     ],
   },
-  tandemaus: {
-    name: 'Tandemaus', type: 'normal', hp: 66, ...sprite('tandemaus'),
-    description: 'Two mice who never leave each other\'s side. Hit one and both come for you.',
+  spinda: {
+    name: 'Spinda', type: 'normal', hp: 66, ...sprite('spinda'),
+    description: 'Totters along the jungle paths. Its dizzy steps make anyone who follows it lose the trail.',
     moves: [
-      { kind: 'attack', name: 'Double Hit',  amount: 8 },
-      { kind: 'buff',   name: 'Tidy Up',     amount: 2 },
-      { kind: 'attack', name: 'Super Fang',  amount: 12 },
+      { kind: 'attack', name: 'Dizzy Punch',  amount: 8 },
+      { kind: 'buff',   name: 'Psych Up',     amount: 2 },
+      { kind: 'attack', name: 'Thrash',  amount: 12 },
     ],
   },
 
@@ -938,34 +939,34 @@ export const ENEMY_DEFS = {
       { kind: 'attack', name: 'Hammer Arm',   amount: 22 },
     ],
   },
-  dudunsparce: {
-    name: 'Dudunsparce', type: 'normal', hp: 250, ...sprite('dudunsparce'), boss: true,
+  dunsparce: {
+    name: 'Dunsparce', type: 'normal', hp: 250, ...sprite('dunsparce'), boss: true,
     description: 'They say it bored the temple\'s halls before the builders came. Now the water\'s in, it wants them back.',
     moves: [
       { kind: 'attack', name: 'Drill Run',   amount: 11 },
       { kind: 'status', name: 'Glare',       adds: { card: 'paralysis', n: 2, to: 'draw' } },
       { kind: 'buff',   name: 'Coil',        amount: 2 },
-      { kind: 'attack', name: 'Hyper Drill', amount: 22 },
+      { kind: 'attack', name: 'Ancient Power', amount: 22 },
     ],
   },
-  oinkologne: {
-    name: 'Oinkologne', type: 'normal', hp: 240, ...sprite('oinkologne'), boss: true,
-    description: 'Its scent hangs over the flooded halls. Everyone who follows it finds the treasure room. Then finds it.',
+  wigglytuff: {
+    name: 'Wigglytuff', type: 'normal', hp: 240, ...sprite('wigglytuff'), boss: true,
+    description: 'Sings on the tide altar every night. The ruins went under, and it never stopped singing.',
     moves: [
       { kind: 'attack', name: 'Body Slam',   amount: 10, adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'defend', name: 'Rest',        amount: 13 },
       { kind: 'buff',   name: 'Work Up',     amount: 2 },
-      { kind: 'attack', name: 'Double-Edge', amount: 21 },
+      { kind: 'attack', name: 'Hyper Voice', amount: 21 },
     ],
   },
-  maushold: {
-    name: 'Maushold', type: 'normal', hp: 230, ...sprite('maushold'), boss: true,
-    description: 'A family of four who lived in the dry crypt until the water came. They are not happy about it.',
+  granbull: {
+    name: 'Granbull', type: 'normal', hp: 230, ...sprite('granbull'), boss: true,
+    description: 'Took the altar for its den. Every offering left there since has been its dinner.',
     moves: [
       { kind: 'attack', name: 'Bite',            amount: 10 },
-      { kind: 'buff',   name: 'Tidy Up',         amount: 3 },
-      { kind: 'drain',  name: 'Super Fang',      amount: 10, heal: 8 },
-      { kind: 'attack', name: 'Population Bomb', amount: 22 },
+      { kind: 'buff',   name: 'Bulk Up',         amount: 3 },
+      { kind: 'drain',  name: 'Drain Punch',      amount: 10, heal: 8 },
+      { kind: 'attack', name: 'Outrage', amount: 22 },
     ],
   },
 
@@ -1011,34 +1012,34 @@ export const ENEMY_DEFS = {
   },
 
   /* the Thornwood Jungle's (roadmap item 19). The last biome's bosses, so each one ends the run like the Wastes'. */
-  greedent: {
-    name: 'Greedent', type: 'normal', hp: 430, ...sprite('greedent'), boss: true,
-    description: 'Hoards every berry in the jungle in its tail. Try to take one.',
+  blissey: {
+    name: 'Blissey', type: 'normal', hp: 430, ...sprite('blissey'), boss: true,
+    description: 'Nests in the Heart Tree\'s roots and nurses every hurt thing in the jungle. Not you.',
     moves: [
-      { kind: 'attack', name: 'Bite',        amount: 12 },
-      { kind: 'defend', name: 'Stockpile',   amount: 14 },
-      { kind: 'drain',  name: 'Belch',       amount: 14, heal: 10 },
-      { kind: 'attack', name: 'Body Press',  amount: 22 },
+      { kind: 'attack', name: 'Egg Bomb',        amount: 12 },
+      { kind: 'defend', name: 'Soft-Boiled',   amount: 14 },
+      { kind: 'drain',  name: 'Present',       amount: 14, heal: 10 },
+      { kind: 'attack', name: 'Double-Edge',  amount: 22 },
     ],
   },
-  typenull: {
-    name: 'Type: Null', type: 'normal', hp: 420, ...sprite('typenull'), boss: true,
-    description: 'Made to hunt a monster from another world, then sealed away in the jungle. The mask is cracking.',
+  porygon: {
+    name: 'Porygon', type: 'normal', hp: 420, ...sprite('porygon'), boss: true,
+    description: 'Someone brought it to map the jungle. The jungle grew over the someone.',
     moves: [
-      { kind: 'attack', name: 'Crush Claw', amount: 12 },
-      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
-      { kind: 'status', name: 'Scary Face', adds: { card: 'paralysis', n: 2, to: 'draw' } },
+      { kind: 'attack', name: 'Psybeam', amount: 12 },
+      { kind: 'buff',   name: 'Conversion', amount: 2 },
+      { kind: 'status', name: 'Thunder Wave', adds: { card: 'paralysis', n: 2, to: 'draw' } },
       { kind: 'attack', name: 'Tri Attack', amount: 20 },
     ],
   },
-  silvally: {
-    name: 'Silvally', type: 'normal', hp: 420, ...sprite('silvally'), boss: true,
-    description: 'It broke its mask in the deepest part of the jungle and became whatever it needed to be.',
+  porygon2: {
+    name: 'Porygon2', type: 'normal', hp: 420, ...sprite('porygon2'), boss: true,
+    description: 'Upgraded itself to survive the jungle. It is still upgrading.',
     moves: [
-      { kind: 'attack', name: 'Crunch',          amount: 11 },
-      { kind: 'buff',   name: 'Work Up',         amount: 2 },
-      { kind: 'attack', name: 'Air Slash',       amount: 15 },
-      { kind: 'attack', name: 'Multi-Attack',    amount: 21 },
+      { kind: 'attack', name: 'Discharge',          amount: 11 },
+      { kind: 'buff',   name: 'Conversion 2',         amount: 2 },
+      { kind: 'attack', name: 'Zap Cannon',       amount: 15 },
+      { kind: 'attack', name: 'Hyper Beam',    amount: 21 },
     ],
   },
 
@@ -1105,8 +1106,9 @@ export const ENEMY_DEFS = {
   },
 };
 
-// the Safari Zone's own Pokémon, one data line each on a role template (js/data/safari-mons.js)
-for (const m of SAFARI_MONS) ENEMY_DEFS[m.id] = safariMonDef(m);
+// the Safari Zone's own Pokémon, one data line each on a role template (js/data/safari-mons.js). One a main biome also
+// holds keeps that biome's def everywhere, like the Safari's borrowed wilds, with its Safari Pokédex line beside it.
+for (const m of SAFARI_MONS) ENEMY_DEFS[m.id] = ENEMY_DEFS[m.id] ? { ...ENEMY_DEFS[m.id], safariLine: m.description } : safariMonDef(m);
 
 /* Chad Master Kenmatta, the Move Tutor, fought in person from his dojo (the Move Tutor event's Challenge). Not in
    ENEMY_DEFS, so he never joins the Pokédex. A boss fight in any biome: `hp` is per biome, and the biome's bossBonus
@@ -1213,17 +1215,17 @@ export const ALT_BIOMES = [
   {
     id: 'ruins', name: 'Sunken Ruins', slot: 1,
     stages: ['Flooded Steps', 'Drowned Halls', 'Sunken Court', 'Tide Altar'],
-    normals: ['clauncher', 'wishiwashi', 'pyukumuku', 'bruxish', 'arrokuda', 'salandit',
-      'charcadet', 'dhelmise', 'morelull', 'bunnelby', 'yungoos', 'lechonk'],
-    elites: ['furfrou', 'gumshoos', 'dubwool'], bosses: ['dudunsparce', 'oinkologne', 'maushold'],
+    normals: ['corphish', 'finneon', 'shellder', 'frillish', 'basculin', 'slugma',
+      'flareon', 'foongus', 'shroomish', 'bidoof', 'lillipup', 'skitty'],
+    elites: ['lickitung', 'herdier', 'audino'], bosses: ['dunsparce', 'wigglytuff', 'granbull'],
     hpMult: 2.9, dmgBonus: 16, bossBonus: 21,
   },
   {
     id: 'thornwood', name: 'Thornwood Jungle', slot: 2,
     stages: ['Tangled Edge', 'Canopy Walk', 'Strangler Grove', 'Heart Tree'],
-    normals: ['lurantis', 'tsareena', 'trevenant', 'gogoat', 'brambleghast', 'arboliva',
-      'eldegoss', 'pyroar', 'ceruledge', 'barraskewda', 'veluza', 'skwovet'],
-    elites: ['komala', 'wooloo', 'tandemaus'], bosses: ['greedent', 'typenull', 'silvally'],
+    normals: ['simisage', 'lilligant', 'shiftry', 'sawsbuck', 'carnivine', 'exeggutor',
+      'whimsicott', 'volcarona', 'rapidash', 'carvanha', 'simipour', 'slakoth'],
+    elites: ['vigoroth', 'delcatty', 'spinda'], bosses: ['blissey', 'porygon', 'porygon2'],
     hpMult: 5.2, dmgBonus: 27, bossBonus: 33,
   },
 ];

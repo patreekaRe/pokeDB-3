@@ -196,10 +196,10 @@ const CRIES = new Set([
   'slaking', 'regigigas', 'lickilicky', 'porygonz',
   'crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus', 'golurk', 'bronzong',
   'claydol', 'dusknoir', 'lanturn', 'magnezone', 'clefable', 'ditto', 'smeargle', 'eternatus', 'eternamax',
-  'clauncher', 'wishiwashi', 'pyukumuku', 'bruxish', 'arrokuda', 'salandit', 'charcadet', 'dhelmise', 'morelull',
-  'bunnelby', 'yungoos', 'lechonk', 'furfrou', 'gumshoos', 'dubwool', 'dudunsparce', 'oinkologne', 'maushold',
-  'lurantis', 'tsareena', 'trevenant', 'gogoat', 'brambleghast', 'arboliva', 'eldegoss', 'pyroar', 'ceruledge',
-  'barraskewda', 'veluza', 'skwovet', 'komala', 'wooloo', 'tandemaus', 'greedent', 'typenull', 'silvally',
+  'corphish', 'finneon', 'shellder', 'frillish', 'basculin', 'slugma', 'flareon', 'foongus', 'shroomish',
+  'bidoof', 'lillipup', 'skitty', 'lickitung', 'herdier', 'audino', 'dunsparce', 'wigglytuff', 'granbull',
+  'simisage', 'lilligant', 'shiftry', 'sawsbuck', 'carnivine', 'exeggutor', 'whimsicott', 'volcarona', 'rapidash',
+  'carvanha', 'simipour', 'slakoth', 'vigoroth', 'delcatty', 'spinda', 'blissey', 'porygon', 'porygon2',
   'chansey', 'kecleon',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1

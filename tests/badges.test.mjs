@@ -130,7 +130,7 @@ test('a 100-damage hit counts from a lost run too', () => {
 
 test('the Ruins\' and Thornwood\'s bosses from the Pokédex; the Wanderer walks every pair of roads', () => {
   const save = fresh();
-  save.dex.defeated = ['maushold', 'typenull'];
+  save.dex.defeated = ['granbull', 'porygon'];
   assert.deepEqual(ids(save), ['thorn', 'tide']);
   const roads = fresh();
   roads.hallOfFame = [win({}), win({ route: [null, 'ruins', 'wastes'] }), win({ route: [null, 'shrine', 'thornwood'] })];

@@ -184,7 +184,7 @@ export function abandonRun() {
    Everything is stored by id and rebuilt from the data files on load.
    ============================================================ */
 
-const RUN_SAVE_VERSION = 8;
+const RUN_SAVE_VERSION = 9;
 
 /** A run's record: what its fights add up to (battle.js hands each fight's share back), and the rest of the climb. */
 const freshTally = () => ({

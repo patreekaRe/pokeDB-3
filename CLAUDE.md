@@ -550,10 +550,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Branching biomes** (roadmap item 19 part a, 2026-10-06; the user's settled calls: other roads' Pokédex pages are bonus
   pages, Mewtwo keeps its one road, each new biome is bot-checked against the one it pairs with): `BIOMES` in
   `js/data/enemies.js` is the default road, each entry with its `slot`; `ALT_BIOMES` holds the other roads (the **Sunken
-  Ruins**, slot 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Furfrou / Gumshoos / Dubwool, bosses
-  Dudunsparce / Oinkologne / Maushold, Biome 2's numbers; and since part c, 2026-10-07, the **Thornwood Jungle**, slot 2 beside
-  the Wastes: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Skwovet, Team Rocket's whole
-  `team` there), Alphas Komala / Wooloo / Tandemaus, bosses Greedent / Type: Null (`typenull`) / Silvally, the Wastes' numbers;
+  Ruins**, slot 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Lickitung / Herdier / Audino, bosses
+  Dunsparce / Wigglytuff / Granbull, Biome 2's numbers; and since part c, 2026-10-07, the **Thornwood Jungle**, slot 2 beside
+  the Wastes: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Slakoth, Team Rocket's whole
+  `team` there), Alphas Vigoroth / Delcatty / Spinda, bosses Blissey / Porygon / Porygon2, the Wastes' numbers;
   its look is part d's (below); a win there "conquered the jungle", `conquered(route)` in `js/halloffame.js`, from the `route` a record now keeps),
   `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] }`; the other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
@@ -569,8 +569,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
   biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: all five main biomes entered, the user's call; earnable since part c). The Ruins' and Thornwood's
   Pokédex pages are `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
-  the Ruins No.072-089, Thornwood No.090-107; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). Every
-  Gen 1-5 species was used, so its Pokémon are Gen 6-9 with PokeAPI's `other/showdown/` GIFs (like Eternatus). **Its look**
+  the Ruins No.072-089, Thornwood No.090-107; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). Both
+  roads' Pokémon are **Safari Pokémon, shared** (2026-10-07, the user's call: official Gen 5 sprites only, the Gen 6-9 Showdown
+  ones they had were swapped out), like the Safari's 44 borrowed wilds: the biome's `ENEMY_DEFS` entry wins over
+  `safariMonDef()` everywhere, Safari included, and keeps the Safari Pokédex's line as `safariLine` (`js/safaridex.js` reads it);
+  their area, rare spawn and `sig-<id>` card stay in `SAFARI_MONS`. **Its look**
   (part b, 2026-10-06): `BIOME_ART.ruins` in `js/scene.js`, a temple drowned in a jungle lagoon. Its ground is water:
   `ruinsFloor()` mirrors the backdrop in it, things standing in it are painted with `dry()` and mirrored by `reflect()`, and
   `rippleRuins()` ripples every wet pixel each frame from a still `snap` (`ruinsSettle()`, after the landmark); a new thing

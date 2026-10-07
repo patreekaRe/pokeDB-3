@@ -27,11 +27,17 @@ test('every biome has 12 wilds, 3 Alphas and 3+ bosses, each with a GIF, a sprit
   }
 });
 
-test('each Pokémon lives in one biome only, never in the Safari Zone', () => {
+test('each Pokémon lives in one biome only; the other roads\' are Safari Pokémon, shared, the default road\'s never', () => {
   const seen = new Map(), safari = new Set(SAFARI_MONS.map(m => m.id));
   for (const b of ALL) for (const id of idsOf(b)) {
     assert.ok(!seen.has(id), `${id} is in ${seen.get(id)} and ${b.id}`);
-    assert.ok(!safari.has(id), `${id} is a Safari Pokémon`);
+    if (ALT_BIOMES.includes(b)) {
+      assert.ok(safari.has(id), `${id} is not a Safari Pokémon`);
+      const m = SAFARI_MONS.find(x => x.id === id);
+      assert.equal(ENEMY_DEFS[id].safariLine, m.description, `${id} keeps its Safari Pokédex line`);
+      assert.equal(ENEMY_DEFS[id].type, m.type, `${id} keeps its Safari type`);
+      assert.ok(!ENEMY_DEFS[id].template, `${id} has its biome's numbers, not a template's`);
+    } else assert.ok(!safari.has(id), `${id} is a Safari Pokémon`);
     seen.set(id, b.id);
   }
 });
@@ -57,9 +63,9 @@ test('the crossroads: every road is a biome of its slot, the default road first'
 test('an other-road biome fights at its slot\'s numbers', () => {
   const mods = modsFor(0);
   const ruins = BIOMES_BY_ID.ruins;
-  assert.equal(buildEncounter(ruins, 'boss', mods, 'dudunsparce').strength, buildEncounter(1, 'boss', mods, 'exploud').strength);
+  assert.equal(buildEncounter(ruins, 'boss', mods, 'dunsparce').strength, buildEncounter(1, 'boss', mods, 'exploud').strength);
   assert.equal(buildKenEncounter(ruins, mods).maxHp, buildKenEncounter(1, mods).maxHp);
-  assert.ok(buildEncounter(ruins, 'fight', mods, 'clauncher').maxHp > ENEMY_DEFS.clauncher.hp * 2);
+  assert.ok(buildEncounter(ruins, 'fight', mods, 'corphish').maxHp > ENEMY_DEFS.corphish.hp * 2);
 });
 
 test('Team Rocket has a team in every biome, from its own wilds', () => {
@@ -87,7 +93,7 @@ test('the Thornwood Jungle is slot 2\'s other road: mostly Grass, one Normal wil
   const types = jungle.normals.map(id => ENEMY_DEFS[id].type);
   assert.deepEqual(['grass', 'fire', 'water', 'normal'].map(t => types.filter(x => x === t).length), [7, 2, 2, 1]);
   const mods = modsFor(0);
-  assert.equal(buildEncounter(jungle, 'boss', mods, 'silvally').strength, buildEncounter(2, 'boss', mods, 'slaking').strength);
+  assert.equal(buildEncounter(jungle, 'boss', mods, 'porygon2').strength, buildEncounter(2, 'boss', mods, 'slaking').strength);
   assert.equal(biomeAt(['clearing', 'ruins', 'thornwood'], 2).id, 'thornwood');
 });
 

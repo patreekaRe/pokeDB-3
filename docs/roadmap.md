@@ -66,7 +66,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Parked (don't start unprompted)
 
-- Gen 6-9 starters: the sprites staged in `assets/pokemon/_incoming/` have no Grass line.
+- Gen 6-9 starters: the sprites staged in `assets/pokemon/_incoming/` have no Grass line, and they aren't official Gen 5 sprites (the rules below).
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
@@ -93,3 +93,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `docs/reference/safari.md` instead.
 - Removing one: also update Team Rocket's `team` lists in `js/data/events.js`, and bump `RUN_SAVE_VERSION` in
   `js/run.js` (saved maps hold `enemyId`s).
+- **Only official Gen 5 sprites** (PokeAPI black-white animated), never fan-made Gen 6+ ones such as Showdown's (the user's
+  call, 2026-10-07; Eternatus / Eternamax are the one exception). Every Gen 1-5 species is now in the main game or the Safari,
+  so a future biome takes the Safari's Gen 1-5 Pokémon, **shared** like the Sunken Ruins' and Thornwood's: a main-biome def
+  with the slot's numbers under the species id (it wins over `safariMonDef()`, keeping the Safari line as `safariLine`), the
+  `SAFARI_MONS` line kept for its area and signature card, plus a cry. It can't also be in a default-road biome.
+- **Fire is scarce**: every Gen 1-5 Fire Pokémon is already in the game. Keep these Safari ones for a future Fire biome:
+  Ponyta, Larvesta, Magby, Magmortar, Darmanitan, Ninetales, Arcanine, Houndoom, Lampent, Chandelure, Simisear.
