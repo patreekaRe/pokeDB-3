@@ -5,7 +5,10 @@
    Pokédex, the leaderboard and the Game Corner, then Start.
    The Pokédex device, like the Sky Pillar's lobby (the user's call,
    2026-10-07): a window onto the Zone's gate (js/safari-lobby.js paints
-   it), an LCD with the day's run, then the hardware's keys.
+   it), an LCD with the day's run, then the hardware's keys. Its Pokédex,
+   Ranks and Buy keys are the device's apps (the user's call, 2026-10-07):
+   the window folds away and the app slides over the LCD, as the
+   Collection's do; B (or the key again) slides it back.
    ============================================================ */
 
 import { safariDaily, SAFARI_DEX_PAGES, SAFARI_AREA_COINS, RARE_BOOST, safariProgress } from './data/safari.js';
@@ -13,11 +16,11 @@ import { BALLS, THROW_PP, RARE, ballWeek, SAFARI_BALLS, DAY_PASS, safariAccess }
 import { CARDS_BY_ID } from './data/cards.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
-import { openSafariDex } from './safaridex.js';
-import { openLeaderboard, safariTop } from './leaderboard.js';
+import { safariDexApp } from './safaridex.js';
+import { boardApp, safariTop } from './leaderboard.js';
 import { cloudConfigured } from './cloud.js';
 import { startGate, stopGate } from './safari-lobby.js';
-import { toggleShop } from './shop.js';
+import { cornerApp, aimCorner } from './shop.js';
 import { playSound } from './audio.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
@@ -40,10 +43,20 @@ const RULES = [
 export function initSafariPrep(handlers) {
   actions = handlers;
   for (const node of document.querySelectorAll('#safari-prep-dialog [data-icon]')) node.append(smoothIcon(node.dataset.icon));
-  $('sp-start').addEventListener('click', () => { closeDialog('safari-prep-dialog'); actions.onStart(); });
-  $('sp-close').addEventListener('click', () => { playSound('cancel', 'confirm'); closeDialog('safari-prep-dialog'); });
-  $('sp-dex').addEventListener('click', () => openSafariDex(safariDaily().areas[0].id));
-  $('sp-board').addEventListener('click', () => openLeaderboard());
+  $('sp-start').addEventListener('click', () => {
+    if (app) { if (app.def.a) app.def.app.press(); return; }
+    closeDialog('safari-prep-dialog');
+    actions.onStart();
+  });
+  $('sp-close').addEventListener('click', back);
+  for (const id of Object.keys(APPS)) $(id).addEventListener('click', () => (app?.key === id ? back() : openApp(id)));
+  const dialog = $('safari-prep-dialog');
+  dialog.addEventListener('cancel', (e) => { if (app) { e.preventDefault(); back(); } });   // Escape is B
+  dialog.addEventListener('keydown', (e) => {
+    if (!app || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key) || e.target.matches?.('input')) return;
+    if (app.def.app.key(e)) e.preventDefault();
+  });
+  dialog.addEventListener('close', () => closeApp(true));
   // the balls are a sideways strip: a mouse wheel scrolls it too, and its edges fade while there's more that way
   const balls = $('sp-balls');
   balls.addEventListener('scroll', () => ballEdges(balls), { passive: true });
@@ -52,13 +65,86 @@ export function initSafariPrep(handlers) {
     e.preventDefault();
     balls.scrollLeft += e.deltaY;
   }, { passive: false });
-  // the Game Corner pops up over this window (modal, so it isn't hidden under it); its balls show here once it closes
-  $('sp-corner').addEventListener('click', () => { if (!$('shop-dialog').open) toggleShop('balls', { modal: true }); });
-  for (const id of ['safari-dex-dialog', 'board-dialog', 'shop-dialog']) $(id).addEventListener('close', () => { if ($('safari-prep-dialog').open) render(); });
   $('sp-how').querySelector('summary').addEventListener('click', () => playSound('confirm'));
   $('safari-prep-dialog').addEventListener('close', stopGate);
   const relayout = new ResizeObserver(() => { if ($('safari-prep-dialog').open) paintGate(); });
   relayout.observe($('sp-top'));
+}
+
+/* ---------- the keys' apps ---------- */
+
+const APPS = {
+  'sp-dex': { name: 'Safari Dex', cls: 'cdev-dex', app: safariDexApp },
+  'sp-board': { name: 'Ranks', cls: 'sp-board-app board-dialog', app: boardApp('safari') },
+  'sp-corner': { name: 'Game Corner', cls: 'cdev-win cdev-corner', app: cornerApp, a: 'Buy', before: () => aimCorner('balls') },
+};
+const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+let app = null;      // the open app: { key, def, panel }
+let sliding = false;
+
+function openApp(key) {
+  if (sliding) return;
+  if (app) closeApp(true);
+  const def = APPS[key];
+  playSound('confirm');
+  def.before?.();
+  const panel = el('div', `cdev-app sp-app ${def.cls}`);
+  $('sp-glass').append(panel);
+  def.app.mount(panel);
+  panel.scrollTop = 0;
+  app = { key, def, panel };
+  dressKeys();
+  if (calm()) return;
+  sliding = true;
+  $('sp-base').animate([{ translate: '0 0', opacity: 1 }, { translate: '-30% 0', opacity: 0 }], SLIDE);
+  panel.animate([{ translate: '100% 0' }, { translate: '0 0' }], SLIDE).finished.catch(() => {}).then(() => { sliding = false; });
+}
+
+function closeApp(now = false) {
+  if (!app) return;
+  const { def, panel } = app;
+  app = null;
+  dressKeys();
+  const done = () => { def.app.unmount(); panel.remove(); };
+  if (!$('safari-prep-dialog').open) { done(); return; }
+  if (now || calm()) { done(); return; }
+  sliding = true;
+  $('sp-base').animate([{ translate: '-30% 0', opacity: 0 }, { translate: '0 0', opacity: 1 }], SLIDE);
+  panel.animate([{ translate: '0 0' }, { translate: '100% 0' }], { ...SLIDE, fill: 'forwards' }).finished.catch(() => {}).then(() => { done(); sliding = false; });
+}
+
+/** B: the app steps back itself first (a Safari Dex page to its banners), then home to the lobby; there it shuts. */
+function back() {
+  if (sliding) return;
+  if (app) {
+    if (app.def.app.back()) return;
+    playSound('cancel');
+    closeApp();
+    return;
+  }
+  playSound('cancel', 'confirm');
+  closeDialog('safari-prep-dialog');
+}
+
+/** The window folds away under an app, the lit key is the open app's, the LCD names it and A is its own. */
+function dressKeys() {
+  const page = $('sp-page');
+  page.classList.toggle('app-open', !!app);
+  for (const id of Object.keys(APPS)) {
+    $(id).classList.toggle('on', app?.key === id);
+    $(id).setAttribute('aria-pressed', String(app?.key === id));
+  }
+  $('sp-title').textContent = app ? app.def.name : 'Safari Zone';
+  $('sp-date').hidden = !!app;
+  $('sp-base').inert = !!app;
+  if (app) {
+    $('sp-start-label').textContent = app.def.a ?? '';
+    $('sp-start').disabled = !app.def.a;
+  } else {
+    $('sp-start').disabled = false;
+    render();   // a buy may have moved the balls
+  }
 }
 
 /** The gate in the window: a strip of meadow under the starter, the sky from the window's top. */
@@ -69,6 +155,7 @@ function paintGate() {
 }
 
 export function openSafariPrep() {
+  closeApp(true);
   render();
   $('sp-how').open = false;
   openDialog('safari-prep-dialog');

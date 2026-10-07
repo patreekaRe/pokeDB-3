@@ -96,7 +96,13 @@ bottom: the lid's LCD (Safari Zone, the day); a window onto the Zone's gate (`#s
 the window's box smooth at full resolution since 2026-10-07, like the tower's, with `js/smooth-paint.js`; `--ground` its grass line), today's starter at it; the LCD (`#sp-base`): the starter's name, the 3
 areas as numbered rows with their caught counts (reversed once caught), the try, the two try rows of pills (struck through
 when off), your balls in a swipe row, "How it works" folded, today's top catchers (the tower lobby's list); then the
-keys: Pokédex, Ranks (the leaderboard), Buy (the Game Corner), B, and A labelled Start / Replay / Pass 100. Everything
+keys: Pokédex, Ranks (the leaderboard), Buy (the Game Corner), B, and A labelled Start / Replay / Pass 100. **The three
+keys are the device's apps** (2026-10-07, the user's call: "as if they're just other apps already part of it"): `APPS` in
+`js/safariprep.js` slides `safariDexApp`, `boardApp('safari')` (`js/leaderboard.js`: the board's tabs, day and rows move
+in) or `cornerApp` (aimed at the balls row) over the LCD in `#sp-glass` (`.sp-app`), the window folding away
+(`.app-open`), the open app's key lit, the lid's LCD naming it; B (or Escape, or its key again) steps back inside the app,
+then slides it away and the lobby re-renders (a buy shows in the balls); A is the app's own (the Game Corner's Buy) or
+off. The D-pad's arrows go to the app. Everything
 below in this section is the older look's history; what it says about Start's confirm, the Game Corner over it and the
 re-render on close still holds.
 
@@ -136,22 +142,23 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 
 ## The Safari Pokédex (phase 3)
 
-- `#safari-dex-dialog` (`js/safaridex.js`, `index.html`), the main Pokédex's classes (`.dex-entry`, `.dex-perk`,
-  `.dex-detail`) plus `.safari-*` in `css/screens.css`. A tab per area (`.safari-tab.area-<id>`, gold once every entry is
-  caught); each page has the area's box (caught / seen / total, a bar of the caught) then **Wild Pokémon** and **Rare
-  spawns** (`.safari-rare`, gold rim and ✦). An entry is a silhouette and ??? until seen, its sprite and name once seen,
-  plus a Poké Ball mark once caught (`.safari-caught`). The header counts caught / all and seen.
-- **Entry page** (a tap, like the main Pokédex's): sprite, number, type, the areas it lives in (✦ rare where it's a rare
-  spawn), caught or not, its description, and its signature card (`SIGNATURE_FOR`, a 150px `makeCard()`), a dashed ?
-  until caught.
+- **Since 2026-10-07 the main Pokédex's look** (the user's call): `safariDexApp` in `js/safaridex.js` runs on `shelfApp()`
+  (`js/bagdex.js`), with no window of its own (`#safari-dex-dialog` is gone). A banner per area painted with that area's
+  scene (a group's `scene`, `still()` from `js/pokedex.js`; colours `AREA_INK`), its caught count and bar (`score`), a medal
+  (gold once the area's reward is earned) and three of its Pokémon; a tap zooms it into the red handheld on that area:
+  one Pokémon at a time on its place's scenery (`shotFor()`: wilds in the first two places, rare spawns the third), Wild or
+  ✦ Rare, its type and a Caught tag once caught, its text typing out (where it lives, its line, caught or not, its
+  signature card, a dashed ? until caught, a tap zooms it), the area's every Pokémon as slots (blue wilds, gold rares, a
+  white dot once caught; `.sdx-*` in `css/screens.css`), the caught tally, then the area's reward box and the Rayquaza box.
+  An entry is a silhouette and ??? until seen.
 - **Data** (`js/data/safari.js`): `SAFARI_DEX_PAGES` (one per `SAFARI_AREAS` entry: `wild`, `rare` without repeats,
   `ids`), `SAFARI_NUMBER` (`SAFARI_ROSTER` order, so phase 4's Pokémon get numbers by being listed), `safariHomes(id)`,
   `safariProgress(ids, dex)` (caught counts as seen). Pinned by `tests/safaridex.test.mjs` (every entry has a picture,
   a number and a signature card).
-- **Where it opens**: the Collection's **Safari Pokédex** card (`safariCard()` in `js/collection.js`, a 🔒 ??? until
-  `safariOpen(save)`), the main Pokédex's last tab **Safari** (`#dex-safari-tab`, hidden until `safariOpen(save)`; it closes that
-  window and opens this one), and the top bar's Pokédex during a Safari run (its Safari app opens on this area), on the run's area
-  (`runSafariArea()` in `js/run.js`).
+- **Where it opens**: the Collection's **Safari** app (a 🔒 ??? until `safariOpen(save)`; the main Pokédex no longer has a
+  Safari banner, 2026-10-07, the user's call: it was in two places), the Safari lobby's Pokédex key (in the lobby's own
+  screen, below), and the top bar's Pokédex during a Safari run (its Safari app opens on the run's area, `runSafariArea()`
+  in `js/run.js`).
 
 ## Completion rewards (2026-10-02, the user's design)
 
@@ -166,7 +173,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   takes nothing back (the tab keeps its ✦, the box says Earned).
 - **On screen**: each page's box shows its reward (🔒 until earned, gold once earned, ✦ on the count), a Rayquaza box on
   every page (a silhouette until won; the Safari UI never names Rayquaza until it's unlocked, the user's call: "Complete the
-  Safari Pokédex: a new Legendary awaits you." there and in the prep window's last rule), a gold ✦ on finished tabs (`.safari-tab.complete .safari-tab-star`), and a gold ✦
+  Safari Pokédex: a new Legendary awaits you." there and in the prep window's last rule), a gold medal on finished areas' banners, and a gold ✦
   badge on the title's Safari Zone gem once complete (`.gem-badge`, `safariGem()` in `js/title.js`).
 - **Rayquaza** (`safariPrize: true`) is left out of `safariStarters()`: listing it would have changed every day's dealt
   starter. Pinned by `tests/safarireward.test.mjs` (page / whole-dex news once, the boost, Rayquaza's assets).
@@ -337,8 +344,8 @@ phase 1 run.
   "Your try" line with your own entry. A day's entries are one `where('day', '==', day)` query (up to 1000, no index
   needed), sorted on the device and cached a minute.
 - **The window** (`#board-dialog`, `.board-*` in `css/screens.css`): Today / Yesterday tabs, the day's starter and areas,
-  then the three boards. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open), the prep
-  window, the Safari Pokédex's 🏆 Leaderboard button (`#safari-dex-board`) and a Safari run's result window
+  then the three boards. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open) and a Safari run's
+  result window; the prep window's Ranks key shows it in its own screen (`boardApp()`) instead
   (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
   No config / Firebase unreachable: "can't be reached right now", the game unaffected. Every Firebase call is caught.
 - **Rules**: `firestore.rules` (the cloud save's `saves/<uid>` rule plus `safariBoard`): anyone reads; a signed-in player

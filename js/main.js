@@ -58,7 +58,6 @@ import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { initCardIndex } from './cardindex.js';
 import { initPokedex } from './pokedex.js';
-import { initSafariDex } from './safaridex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
@@ -223,11 +222,9 @@ function init() {
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   initCardIndex();
   initPokedex();
-  initSafariDex();
   initPokedexButton();
   initCloud();
   initLeaderboard();
-  $('safari-dex-board').addEventListener('click', () => openLeaderboard());
   initSafariPrep({
     onStart: async () => {
       if (!(await safariTicket())) return openSafariPrep();

@@ -7,7 +7,7 @@ swaps existing text and uses a `MutationObserver` to swap anything added
 later. Each icon is a 12x12 pixel map in `ICONS` using the letters in
 `PALETTE`; the black outline is added automatically, so only draw the fill.
 **When you add an emoji anywhere, draw its icon in `ICONS` too**, or it shows
-as a plain emoji. **Inside `[data-smooth-icons]`** (the Collection device, `#dex-dialog`, `#safari-dex-dialog`, `#trainer-dialog`, `#loss-dialog`, `#hof-scene`) `swapText()` swaps in the smooth twin from `SMOOTH_EMOJI` in `js/smooth-icons.js` instead (`.si-wrap`), and turns pixel icons on pages moved in (the Pokédex) smooth; `.card`s there keep their pixel icons, to match battle. An emoji used in the device needs a `SMOOTH_EMOJI` line (and its `ART`), or it falls back to plain emoji there. Tooltips (`title`) can't hold SVG and keep the emoji. Don't
+as a plain emoji. **Inside `[data-smooth-icons]`** (the Collection device, `#dex-dialog`, `#trainer-dialog`, `#loss-dialog`, `#hof-scene`) `swapText()` swaps in the smooth twin from `SMOOTH_EMOJI` in `js/smooth-icons.js` instead (`.si-wrap`), and turns pixel icons on pages moved in (the Pokédex) smooth; `.card`s there keep their pixel icons, to match battle. An emoji used in the device needs a `SMOOTH_EMOJI` line (and its `ART`), or it falls back to plain emoji there. Tooltips (`title`) can't hold SVG and keep the emoji. Don't
 read an emoji back out of the page with `textContent`: it's been replaced.
 
 Items and relics are the exception: they show real PokéSprite item sprites

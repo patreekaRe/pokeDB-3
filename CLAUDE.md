@@ -82,8 +82,8 @@ live site.
   the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`, redone 2026-10-06: the Pokédex's green LCD, smooth type keys,
   the Index's All / Attack / Skill / Power filter and Cost / A-Z sort (saved, shared with it), then the real cards in a
   grid, ??? silhouettes after the known ones, a tap zooms one; the run's Index window is unchanged), the Safari
-  Pokédex (`safariDexApp`: its tabs and body move into the screen like the Pokédex's, back into `#safari-dex-dialog`
-  when a run or the prep window opens it; the Pokédex app's Safari banner `swapApp()`s to it) and the Record Book / Hall
+  Pokédex (`safariDexApp`, the Pokédex's banners and handheld on `shelfApp()` since 2026-10-07: a painted banner per area;
+  no window of its own, and no longer a banner in the Pokédex app) and the Record Book / Hall
   of Fame (`recordsApp()` in `js/halloffame.js`, Pokédex style on `shelfApp()` since 2026-10-06, the user's picks: the Record
   Book a banner per Trainer Level, the Crystal Depths and Lost runs, one run a screen; the Hall of Fame no banners, one gold
   handheld, each champion on a gold pedestal under a spotlight on a starry screen, A replays its win scene. A tap on the
@@ -528,10 +528,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   off after 4 turns; Bait / Rock (`SAFARI_ONLY_CARDS`) are Safari-only rewards. The day's first try reads every perk
   through `perk()` / `dexPerk()` in `js/run.js`, which are off for it (`fairTry()`): read any new perk through them.
 - **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
-  `#safari-dex-dialog`) is a page per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
-  joins it; it opens from the Collection, the main Pokédex's Safari tab and, in a Safari run, the Pokédex button.
+  an app on `shelfApp()`) is a banner per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
+  joins it; it opens from the Collection's Safari app, the prep window's Pokédex key and, in a Safari run, the top bar's Pokédex.
   **Prep window** (2026-10-02): the title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`: today's run,
-  the rules, your balls, the Safari Pokédex / Leaderboard / Game Corner, then Start); a 🏆 beside the gem
+  the rules, your balls, the Safari Pokédex / Leaderboard / Game Corner, then Start; its Pokédex / Ranks / Buy keys slide their apps over its own screen, `APPS` in `js/safariprep.js`); a 🏆 beside the gem
   (`#title-board`) opens the leaderboard. Every ball but the Safari and Master Balls is a pack used up when thrown
   (Great / Ultra 5, the special ones 3); `migrateBalls()` turned old one-time unlocks into 10 throws. Since 2026-10-07 every run
   has 30 Safari Balls (`SAFARI_BALLS`), and replays after the free daily try need a 100-coin **Day Pass** for the day

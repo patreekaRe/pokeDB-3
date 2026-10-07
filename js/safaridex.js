@@ -1,55 +1,52 @@
 /* ============================================================
-   safaridex.js  -  the Safari Pokédex window (roadmap: "Post-v1.0:
-   the Safari Zone daily run", phase 3).
+   safaridex.js  -  the Safari Pokédex, an app of the Pokédex device
+   (the Collection's Safari app, and the Safari lobby's Pokédex key).
 
-   A page per Safari area (data/safari.js SAFARI_DEX_PAGES): its wilds,
-   then its rare spawns. Like the main Pokédex, an entry is a dark ???
-   silhouette until met in a Safari run (save.safariDex.seen), then its
-   picture and name, and gets a Poké Ball mark once caught; a caught
-   entry shows its signature card. An app in the Collection device
-   (safariDexApp, its parts move into the screen), and a window from
-   the main Pokédex's Safari tab, the Safari prep window and the Poké
-   Ball menu during a Safari run.
+   Made like the main Pokédex (the user's call, 2026-10-07): a banner
+   per Safari area (data/safari.js SAFARI_DEX_PAGES) painted with that
+   area's scene, then the red handheld on that area: one Pokémon at a
+   time on its place's scenery, its text typing out, and the area's
+   every Pokémon as slots, its wilds then its rare spawns. An entry is
+   a silhouette and ??? until met in a Safari run (save.safariDex.seen)
+   and gets a Poké Ball dot once caught; a caught one shows its
+   signature card. It runs on shelfApp() (js/bagdex.js).
    ============================================================ */
 
 import { ENEMY_DEFS } from './data/enemies.js';
-import { TYPES, CARDS_BY_ID, SIGNATURE_FOR } from './data/cards.js';
+import { CARDS_BY_ID, SIGNATURE_FOR } from './data/cards.js';
 import { SAFARI_DEX_PAGES, SAFARI_NUMBER, SAFARI_ROSTER, SAFARI_AREA_COINS, RARE_BOOST, safariHomes, safariProgress } from './data/safari.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
-import { $, el, openDialog, makeCard } from './ui.js';
+import { el, makeCard, zoomable } from './ui.js';
 import { playCry } from './audio.js';
-import { tipAt } from './tips.js';
+import { shelfApp, typed, typeChip } from './bagdex.js';
+import { still, sceneImg, progressBar } from './pokedex.js';
 
 const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵' };
-
-let page = 0;
+// each area's banner and handheld colours, like a biome's
+const AREA_INK = {
+  meadow: ['#8cd060', '#3a7a24'], forest: ['#4aa860', '#163e20'], wetland: ['#4ab0d8', '#164a78'],
+  marsh: ['#9a80c0', '#2e2448'], peak: ['#9ab4d0', '#34466a'], desert: ['#eab860', '#8a5418'],
+};
 
 const dexNo = (id) => `No.${String(SAFARI_NUMBER[id]).padStart(3, '0')}`;
 const record = () => {
   const dex = getSave().safariDex;
-  const caught = new Set(dex.caught);
-  return { dex, caught, seen: new Set([...dex.seen, ...dex.caught]) };
+  return { dex, caught: new Set(dex.caught), seen: new Set([...dex.seen, ...dex.caught]) };
 };
 
-function entryTile(id, rare, { seen, caught }) {
-  const def = ENEMY_DEFS[id];
-  const known = seen.has(id);
-  const got = caught.has(id);
-  const tile = el('button', `dex-entry${known ? '' : ' locked'}${got ? ' defeated safari-caught' : ''}${rare ? ' safari-rare' : ''}`);
-  tile.type = 'button';
-  const img = el('img', 'pixel dex-sprite');
-  img.src = def.image;
+function sprite(id, cls) {
+  const img = el('img', `pixel ${cls}`);
+  img.src = ENEMY_DEFS[id].image;
   img.alt = '';
   img.draggable = false;
-  tile.append(el('span', 'dex-no', dexNo(id)), img, el('strong', 'dex-name', known ? def.name : '???'));
-  if (got) tile.append(el('span', 'dex-mark pokeball'));
-  if (rare) tile.append(el('span', 'safari-rare-mark', '✦'));
-  tile.title = !known ? `Not seen yet.${rare ? ' A rare spawn: look for a gold ✦ on the map.' : ''}`
-    : got ? `${def.name}: caught. Tap for its entry` : `${def.name}: seen, not caught yet. Tap for its entry`;
-  if (!known) tile.setAttribute('aria-disabled', 'true');
-  tile.addEventListener('click', () => (known ? openEntry(id, tile) : tipAt(tile, tile.dataset.tip || tile.title)));
-  return tile;
+  return img;
+}
+
+/** The area's scenery for an entry: wilds through its first places, rare spawns deeper in. */
+function shotFor(g, t) {
+  const i = g.page.wild.indexOf(t.id);
+  return still(g.page.area, 128, 64, 0.5, 'wild', t.rare ? 2 : i % 2);
 }
 
 function areaBox(p, rec) {
@@ -57,20 +54,16 @@ function areaBox(p, rec) {
   const earned = (rec.dex.done ?? []).includes(p.area);   // stays earned when a later batch adds Pokémon to the page
   const box = el('div', `dex-perk safari-area-box${earned ? ' earned' : ''}`);
   const text = el('div', 'dex-perk-text');
-  const bar = el('div', 'ach-bar dex-bar');
-  const fill = el('div', 'ach-fill');
-  fill.style.width = `${(caught / total) * 100}%`;
-  bar.append(fill);
   text.append(el('strong', '', `${earned ? '' : '🔒 '}${p.name}${caught === total ? ' complete!' : ''}`),
     el('span', '', `Reward: rare spawns ${RARE_BOOST === 2 ? 'twice' : `${RARE_BOOST}x`} as often here, on replays.`),
     el('small', '', earned ? `Earned, with 💰 ${SAFARI_AREA_COINS}. ${caught} caught · ${seen} seen of ${total}`
-      : `Catch all ${total} to earn it, plus 💰 ${SAFARI_AREA_COINS}. ${caught} caught · ${seen} seen`), bar);
+      : `Catch all ${total} to earn it, plus 💰 ${SAFARI_AREA_COINS}. ${caught} caught · ${seen} seen`),
+    progressBar(caught, total));
   box.append(el('span', 'dex-perk-icon', AREA_ICON[p.area] ?? '🌿'), text, el('b', 'dex-perk-count', `${earned ? '✦' : ''}${caught}/${total}`));
-  box.title = `${p.name}: ${caught} of ${total} caught, ${seen} seen. Its days come round in the Safari Zone's daily run.`;
   return box;
 }
 
-/** The whole Safari Pokédex's prize, on every page: Rayquaza, a silhouette and never named until it's unlocked. */
+/** The whole Safari Pokédex's prize: Rayquaza, a silhouette and never named until it's unlocked. */
 function prizeBox(rec) {
   const ray = STARTERS_BY_ID.rayquaza;
   const won = !!rec.dex.complete;
@@ -82,136 +75,87 @@ function prizeBox(rec) {
   const text = el('div', 'dex-perk-text');
   const named = getSave().unlocked.includes('rayquaza');
   text.append(el('strong', '', `${won ? '✅ ' : '🔒 '}Every page: ${named ? ray.line[0].name : '???'}`),
-    el('span', '', named ? `${ray.line[0].name} is yours: a Grass legendary.` : 'Complete the Safari Pokédex: a new Legendary awaits you.'));
+    el('span', '', named ? `${ray.line[0].name} is yours: a Grass legendary.` : 'Complete the Safari Pokédex: a new Legendary awaits you.'),
+    progressBar(all.caught, all.total));
   box.append(img, text, el('b', 'dex-perk-count', `${all.caught}/${all.total}`));
   return box;
 }
 
-function section(label, ids, rare, rec) {
-  const head = el('div', 'index-head');
-  const title = el('h3', 'index-heading', label);
-  title.append(el('span', 'index-count', `${ids.filter(id => rec.caught.has(id)).length}/${ids.length}`));
-  head.append(title);
-  return [head, ...ids.map(id => entryTile(id, rare, rec))];
-}
-
-function render() {
-  const rec = record();
-  const p = SAFARI_DEX_PAGES[page];
-  const body = [areaBox(p, rec), prizeBox(rec), ...section('Wild Pokémon', p.wild, false, rec)];
-  if (p.rare.length) body.push(...section('Rare spawns', p.rare, true, rec));
-  $('safari-dex-body').replaceChildren(...body);
-  $('safari-dex-body').parentElement.scrollTop = 0;
-  const all = safariProgress(SAFARI_ROSTER, rec.dex);
-  $('safari-dex-total').textContent = `${all.caught}/${all.total} · ${all.seen} seen`;
-  $('safari-dex-total').title = `${all.caught} caught and ${all.seen} seen, of ${all.total} Safari Pokémon`;
-  for (const btn of document.querySelectorAll('.safari-tab')) {
-    const on = Number(btn.dataset.page) === page;
-    btn.setAttribute('aria-selected', String(on));
-    btn.tabIndex = on ? 0 : -1;
-    btn.classList.toggle('complete', (rec.dex.done ?? []).includes(SAFARI_DEX_PAGES[btn.dataset.page].area));
-  }
-}
-
-/** One entry blown up over the window: picture, type, where it lives, and once caught its signature card. */
-function openEntry(id, from) {
-  const def = ENEMY_DEFS[id];
-  const got = record().caught.has(id);
-  const card = el('div', 'dex-detail');
-  const head = el('div', 'dex-detail-head');
-  const img = el('img', 'pixel dex-detail-sprite');
-  img.src = def.image;
-  img.alt = '';
-  const names = el('div', 'dex-detail-names');
-  names.append(el('span', 'dex-no', dexNo(id)), el('strong', 'dex-detail-name', def.name),
-    el('span', `index-only type-${def.type}`, `${TYPES[def.type].icon} ${TYPES[def.type].label}`));
-  head.append(img, names);
-  card.append(head);
-  playCry(def.spriteId);
-  card.append(el('p', 'dex-detail-facts', safariHomes(id).map(h => `${AREA_ICON[SAFARI_DEX_PAGES.find(p => p.name === h.name).area] ?? ''} ${h.name}${h.rare ? ' ✦ rare' : ''}`).join(' · ')));
-  card.append(el('p', `dex-detail-research${got ? ' done' : ''}`, got ? 'Caught!' : 'Seen, not caught yet. Wear it down and throw a ball for its card.'));
-  const line = def.safariLine ?? def.description;   // a Pokémon a main biome shares keeps its Safari line here
-  if (line) card.append(el('p', 'dex-detail-text', line));
+function signature(id, got) {
   const sig = CARDS_BY_ID[SIGNATURE_FOR[id]];
-  if (sig) {
-    card.append(el('h4', 'dex-moves-head', 'Signature card'));
-    const wrap = el('div', 'safari-sig');
-    if (got) wrap.append(makeCard(sig));
-    else wrap.append(el('div', 'safari-sig-locked', '?'));
-    wrap.title = got ? '' : 'Catch it to see its card.';
-    card.append(wrap);
+  if (!sig) return null;
+  const box = el('div', 'pdx-lcd sdx-sig');
+  box.append(el('h4', '', 'Signature card'));
+  if (got) {
+    const card = makeCard(sig);
+    card.classList.add('small');
+    zoomable(card, sig);
+    box.append(card);
+  } else {
+    box.append(el('div', 'safari-sig-locked', '?'), el('small', '', 'Catch it to see its card.'));
   }
-  const layer = el('div', 'card-zoom dex-zoom');
-  layer.append(card, el('p', 'focus-hint', 'Tap anywhere to close'));
-  const close = () => {
-    layer.remove();
-    document.removeEventListener('keydown', onKey, true);
-    from?.focus({ preventScroll: true });
-  };
-  const onKey = (e) => { if (['Escape', 'Enter', ' '].includes(e.key)) { e.preventDefault(); e.stopPropagation(); close(); } };
-  layer.addEventListener('click', close);
-  document.addEventListener('keydown', onKey, true);
-  (shelled() ? document.body : $('safari-dex-dialog')).append(layer);
+  return box;
 }
 
-function pick(i, focus = false) {
-  page = i;
-  render();
-  if (focus) document.querySelector(`.safari-tab[data-page="${i}"]`).focus();
-}
+const GROUPS = SAFARI_DEX_PAGES.map(p => {
+  const things = p.ids.map(id => ({ id, rare: p.rare.includes(id) }));
+  const [b1, b2] = AREA_INK[p.area] ?? ['#9ccf54', '#3e7a24'];
+  return { id: p.area, name: p.name, sub: `${p.wild.length} wild · ${p.rare.length} rare`, b1, b2, scene: p.area, page: p, list: () => things };
+});
 
-export function initSafariDex() {
-  const tabs = $('safari-dex-tabs');
-  tabs.replaceChildren(...SAFARI_DEX_PAGES.map((p, i) => {
-    const btn = el('button', `index-tab dex-tab safari-tab area-${p.area}`);
-    btn.type = 'button';
-    btn.dataset.page = String(i);
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-controls', 'safari-dex-body');
-    btn.append(el('span', 'index-tab-icon', AREA_ICON[p.area] ?? '🌿'), el('span', 'index-tab-label', p.name), el('span', 'safari-tab-star', '✦'));
-    btn.addEventListener('click', () => pick(i));
-    return btn;
-  }));
-  tabs.addEventListener('keydown', (e) => {
-    const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-    if (!step) return;
-    e.preventDefault();
-    pick((page + step + SAFARI_DEX_PAGES.length) % SAFARI_DEX_PAGES.length, true);
-  });
-}
-
-/** Opens on the given area's page (a Safari run's current one), else the last one looked at. */
-export function openSafariDex(area) {
-  if (shelled()) safariDexApp.unmount();
-  const i = SAFARI_DEX_PAGES.findIndex(p => p.area === area);
-  if (i >= 0) page = i;
-  render();
-  openDialog('safari-dex-dialog');
-}
-
-/* ---------- as an app in the Collection device (js/device.js): its parts move into the screen, and back into their
-   window when it closes, as the Pokédex's do ---------- */
-const PARTS = ['safari-dex-board', 'safari-dex-tabs', 'safari-dex-body'];
-const shelled = () => !$('safari-dex-dialog').contains($('safari-dex-body'));
-
-export const safariDexApp = {
-  mount(host, area) {   // `area`: a Safari run's own, to open on its page
-    host.append(...PARTS.map($));
-    const i = SAFARI_DEX_PAGES.findIndex(p => p.area === area);
-    if (i >= 0) page = i;
-    render();
+export const safariDexApp = shelfApp({
+  groups: GROUPS,
+  deviceCls: 'sdx-device',
+  known: (g, t) => record().seen.has(t.id),
+  score: (g, things) => { const { caught } = record(); return [things.filter(t => caught.has(t.id)).length, things.length]; },
+  no: (g, t) => dexNo(t.id),
+  label: (g, t, known) => (known ? ENEMY_DEFS[t.id].name : '???'),
+  medal(g) {
+    const earned = (getSave().safariDex.done ?? []).includes(g.id);
+    const m = el('span', `pdx-medal lv${earned ? 2 : 0}`, AREA_ICON[g.id] ?? '🌿');
+    m.title = earned ? `${g.name}: every Pokémon caught` : `${g.name}: catch them all for its reward`;
+    return m;
   },
-  back: () => false,
-  key(e) {
-    const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-    if (!step) return false;
-    pick((page + step + SAFARI_DEX_PAGES.length) % SAFARI_DEX_PAGES.length);
-    return true;
+  bannerArt(g) {   // a wild, the first rare spawn in the middle, another wild, like the Pokédex's three
+    const { seen } = record();
+    const ids = [g.page.wild[0], g.page.rare[0] ?? g.page.wild[2], g.page.wild[1]].filter(Boolean);
+    const mons = el('span', 'pdx-banner-mons');
+    mons.append(...ids.map(id => sprite(id, `pdx-banner-mon${seen.has(id) ? '' : ' unseen'}`)));
+    return mons;
   },
-  unmount() {
-    $('safari-dex-dialog').querySelector('.records-close').before(...PARTS.map($));
+  art: (g, t) => sprite(t.id, 'pdx-slot-mon'),
+  slotCls: (g, t) => `sdx-slot${record().caught.has(t.id) ? ' caught' : ''}${t.rare ? ' rare' : ''}`,
+  screenCls: (g, t) => `sdx-screen${shotFor(g, t) ? ' painted' : ''}`,
+  screen(g, t, known) {
+    const shot = shotFor(g, t);
+    const pad = el('span', 'pdx-pad');
+    if (shot?.pad) pad.style.backgroundImage = `url("${shot.pad}")`;
+    const nodes = [sceneImg(shot, 'pdx-scene'), pad, sprite(t.id, 'pdx-mon bdx-art')];
+    if (known) nodes.push(el('span', `pdx-role${t.rare ? ' sdx-rare' : ''}`, t.rare ? '✦ Rare' : 'Wild'));
+    if (record().caught.has(t.id)) nodes.push(typeChip(ENEMY_DEFS[t.id].type), el('span', 'pdx-caught gold', 'Caught'));
+    return nodes;
   },
-};
+  lines(g, t, known) {
+    if (!known) {
+      return [typed('muted', 'Not seen yet. Meet it in a Safari run to fill this in.'),
+        ...(t.rare ? [typed('muted', 'A rare spawn: look for a gold ✦ on the map.')] : [])];
+    }
+    const def = ENEMY_DEFS[t.id];
+    const got = record().caught.has(t.id);
+    const homes = safariHomes(t.id).map(h => `${h.name}${h.rare ? ' (rare)' : ''}`).join(', ');
+    const lines = [typed('', `Lives in: ${homes}.`)];
+    const line = def.safariLine ?? def.description;   // a Pokémon a main biome shares keeps its Safari line here
+    if (line) lines.push(typed('', line));
+    lines.push(got ? el('div', 'pdx-lcd pdx-text gold', '● Caught!') : typed('muted', 'Seen, not caught yet. Wear it down and throw a ball for its card.'));
+    const sig = signature(t.id, got);
+    if (sig) lines.push(sig);
+    return lines;
+  },
+  tally: (g, done) => (done ? `★ Every ${g.name} Pokémon caught` : 'Caught'),
+  doneSub: 'Complete!',
+  onShow: (g, t, known) => { if (known) playCry(ENEMY_DEFS[t.id].spriteId); },
+  foot: (g) => { const rec = record(); return [areaBox(g.page, rec), prizeBox(rec)]; },
+});
 
 /** The Collection card's count. */
 export const safariDexCount = () => safariProgress(SAFARI_ROSTER, getSave().safariDex);

@@ -284,6 +284,27 @@ export function openLeaderboard(day = 0, which = 'safari') {
   openDialog('board-dialog');
 }
 
+/** A board as an app of a Pokédex device's screen (the Safari lobby's Ranks key): its tabs, day and rows move into
+    the screen while it's open, and back into their window after. `which` as openLeaderboard()'s. */
+export const boardApp = (which = 'safari') => ({
+  mount(panel) {
+    shown = 0;
+    kind = KINDS[which] ? which : 'safari';
+    panel.dataset.kind = kind;
+    panel.append($('board-dialog').querySelector('.board-tabs'), $('board-day'), $('board-body'));
+    render().catch(() => {});
+  },
+  back: () => false,
+  key(e) {
+    const step = { ArrowLeft: -1, ArrowRight: 0 }[e.key];
+    if (step === undefined || shown === step) return false;
+    shown = step;
+    render().catch(() => {});
+    return true;
+  },
+  unmount() { $('board-dialog').querySelector('.dialog-actions').before(document.querySelector('.board-tabs'), $('board-day'), $('board-body')); },
+});
+
 export function initLeaderboard() {
   for (const tab of document.querySelectorAll('.board-tab')) {
     tab.addEventListener('click', () => { shown = Number(tab.dataset.day); render().catch(() => {}); });

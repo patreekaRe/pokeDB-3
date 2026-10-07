@@ -1715,3 +1715,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   separate Main menu button.
 - **Battle top bar and HP bars** (2026-10-07, the user's ask): the Pokédex button shrinks to 24px in battle, and the HP
   bars' damage preview (`previewHp()`, `.gb-hp-ghost`) is gone; the user read it as a stray dot. The block preview stays.
+- **Safari Pokédex and lobby apps** (2026-10-07, the user's ask): the Safari Pokédex is the Pokédex's banners and handheld
+  (`safariDexApp` on `shelfApp()`, a painted banner per area), its window and the main Pokédex's Safari banner are gone, and
+  the Safari lobby's Pokédex / Ranks / Buy keys slide their apps over its own screen (`APPS` in `js/safariprep.js`).

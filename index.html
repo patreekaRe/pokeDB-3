@@ -563,15 +563,6 @@
     <div class="pdx-stage" id="dex-device" hidden></div>
   </dialog>
 
-  <!-- the Safari Zone's own Pokédex, a page per area: ??? until met, a Poké Ball once caught (js/safaridex.js) -->
-  <dialog id="safari-dex-dialog" data-smooth-icons class="dialog wide-dialog index-dialog dex-dialog safari-dex-dialog">
-    <h2 tabindex="-1" autofocus>🌿 Safari Pokédex <span id="safari-dex-total" class="count"></span></h2>
-    <button class="btn secondary board-open" id="safari-dex-board" type="button">🏆 Leaderboard</button>
-    <div class="index-tabs" id="safari-dex-tabs" role="tablist" aria-label="Safari areas"></div>
-    <div id="safari-dex-body" class="dex-body" role="tabpanel"></div>
-    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
-  </dialog>
-
   <!-- the Trainer Card and its Badge Case (js/trainercard.js), a Collection card -->
   <dialog id="trainer-dialog" data-smooth-icons class="dialog trainer-dialog">
     <div id="trainer-body"></div>
@@ -846,7 +837,7 @@
       <canvas id="sp-sky" class="sp-sky" aria-hidden="true"></canvas>
       <img id="sp-gate-mon" class="sp-gate-mon pixel" alt="">
     </div>
-    <div class="tdev-glass"><div class="tower-base sp-base" id="sp-base">
+    <div class="tdev-glass sp-glass" id="sp-glass"><div class="tower-base sp-base" id="sp-base">
       <div class="sp-today" id="sp-today"></div>
       <p class="sp-replay" id="sp-replay"></p>
       <div class="sp-foot">

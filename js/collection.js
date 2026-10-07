@@ -27,7 +27,7 @@ import { trainerName } from './leaderboard.js';
 import { showName } from './settings.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
-import { initDevice, openDevice, openApp, swapApp, deviceOver } from './device.js';
+import { initDevice, openDevice, openApp, deviceOver } from './device.js';
 import { $, el } from './ui.js';
 import { cornerApp } from './shop.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -39,10 +39,9 @@ let here = {};     // the pages a run stands on, for the Pokédex apps: { dex, s
 export function initCollection({ onBack, ...handlers }) {
   initDevice({ onBack });
   dock = handlers;
-  pokedexApp.toSafari = () => swapApp({ ...safariApp(safariDexCount()), name: 'SAFARI' });
 }
 
-const safariApp = ({ caught, total }) => ({ id: 'safari', count: `${caught}/${total}`, cls: 'cdev-win panel cdev-safari', app: safariDexApp });
+const safariApp = ({ caught, total }) => ({ id: 'safari', count: `${caught}/${total}`, cls: 'cdev-dex', app: safariDexApp });
 
 const splash = () => `HELLO, ${trainerName().toUpperCase()}!`;
 

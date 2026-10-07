@@ -3825,31 +3825,20 @@ body.has-scene.hybrid-scene #scene-light { display: block; }
 }
 
 /* ---------- the SAFARI POKÉDEX (js/safaridex.js): the main one's look, a page per Safari area ---------- */
-#safari-dex-total { white-space: nowrap; }
-.dex-safari-tab { --c1: #58b048; --c2: #2c6a24; }
-.dex-safari-tab[hidden] { display: none; }
-.safari-tab.area-meadow  { --c1: #a8d860; --c2: #4a8a24; }
-.safari-tab.area-forest  { --c1: #4aa048; --c2: #1e5a24; }
-.safari-tab.area-wetland { --c1: #58a8e8; --c2: #2050a0; }
-.safari-tab.area-marsh   { --c1: #8aa070; --c2: #3e5232; }
-.safari-tab.area-peak    { --c1: #a8b8d0; --c2: #4a5878; }
-.safari-tab.area-desert  { --c1: #e8c060; --c2: #9a6a20; }
-.safari-tab.complete:not([aria-selected="true"]) { border-color: #d8a820; background: #fbf3d0; }   /* every one caught */
+/* the Safari Pokédex (js/safaridex.js): the Pokédex's banners and handheld, an area a banner */
 .safari-area-box { border-color: #4a8a24; }
-.safari-tab-star { display: none; margin-left: 4px; color: #c89000; text-shadow: 0 0 4px rgba(248, 208, 48, 0.9); }   /* a page's reward earned */
-.safari-tab.complete .safari-tab-star { display: inline; }
 .safari-prize-sprite { width: 56px; height: 56px; flex: none; object-fit: contain; image-rendering: pixelated; }
 .safari-prize-sprite.silhouette { filter: brightness(0) opacity(0.55); }
-.dex-entry.safari-caught { border-color: #58a048; background: #eef8e4; }
-.dex-entry.safari-rare { border-color: #d8a820; }
-.dex-entry.safari-rare.safari-caught { background: #fbf3d0; }
-.safari-rare-mark { position: absolute; top: 4px; left: 50%; translate: -50% 0; font-size: 0.85rem; color: #c89000; text-shadow: 0 0 4px rgba(248, 208, 48, 0.9); }
-.dex-entry.safari-rare.locked .safari-rare-mark { opacity: 0.6; }
-.dex-entry.safari-rare .dex-no { padding-right: 14px; }
-.safari-sig { display: flex; justify-content: center; padding: 4px 0 2px; }
-.safari-sig .card { width: 150px; flex: none; }
-.safari-sig-locked { display: grid; place-items: center; width: 150px; aspect-ratio: 5 / 7; border: 3px dashed var(--win-edge); border-radius: var(--round-sm); background: var(--win-panel); font: 2.4rem/1 var(--pixel-font); font-synthesis-weight: none; color: var(--win-muted); }
-@media (max-width: 720px) { #safari-dex-total { font-size: 0.62rem; } }
+.sdx-screen .pdx-role.sdx-rare { background: #c08a10; }
+.sdx-device .bdx-slot { background: linear-gradient(180deg, #7ab8ff, #4a88e0); }
+.sdx-device .bdx-slot.rare { background: linear-gradient(180deg, #ffe08a, #d8a020); }
+.sdx-device .bdx-slot.on { background: #ffe36b; }
+.sdx-device .bdx-slot.caught::after { content: ""; position: absolute; top: 2px; right: 2px; z-index: 1; width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #3a0a0e; }
+.sdx-sig { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sdx-sig h4 { align-self: stretch; margin: 0; font: 0.58rem/1.3 var(--pixel-font); font-synthesis-weight: none; }
+.sdx-sig .card { width: 130px; flex: none; }
+.sdx-sig small { font-size: 0.72rem; opacity: 0.75; }
+.safari-sig-locked { display: grid; place-items: center; width: 110px; aspect-ratio: 5 / 7; border: 3px dashed rgba(31, 58, 20, 0.5); border-radius: var(--round-sm); font: 2.4rem/1 var(--pixel-font); font-synthesis-weight: none; color: rgba(31, 58, 20, 0.5); }
 
 /* a starter a won fight just unlocked (unlockWindow() in js/run.js): a gold banner, the Pokémon hopping on a spotlight */
 .unlock-dialog { text-align: center; width: min(340px, calc(100vw - 32px)); }
@@ -3969,6 +3958,20 @@ body.scene-peek #backdrop { display: none; }
 .sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 80%); width: 84px; height: 84px; object-fit: contain; object-position: 50% 100%;
   translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
 .tdev-keys.sp-keys { grid-template-columns: repeat(3, 1fr); max-width: 270px; }
+/* its keys' apps (the Safari Dex, Ranks, the Game Corner) slide over the LCD as the Collection's do, and the window folds
+   away to give them the room */
+.sp-glass { position: relative; }
+.sp-app { inset: 8px; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 22px; }
+.safari-prep-dialog .sp-window { transition: height 0.26s cubic-bezier(0.25, 0.8, 0.3, 1), border-width 0.26s, margin 0.26s, box-shadow 0.26s; }
+.safari-prep-dialog .app-open .sp-window { height: 0; border-width: 0; box-shadow: none; margin-bottom: -10px; }
+.sp-app.sp-board-app {
+  --acc: #4cd27a; --acc2: #2a9a8a; --ink: #f2f5ff; --muted: #a8b0d4; --panel: rgba(255, 255, 255, 0.06); --panel-edge: rgba(255, 255, 255, 0.12); --gold: #ffd257;
+  padding: 12px 0 16px; color: var(--ink);
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 14px, transparent 14px 28px), linear-gradient(170deg, #1e2656 0%, #141a3c 55%, #0e1230 100%);
+}
+.sp-app.sp-board-app > * { margin-left: 10px; margin-right: 10px; }
+.tdev-key .cdev-btn:disabled { filter: grayscale(1) brightness(0.8); animation: none; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .safari-prep-dialog .sp-window { transition: none; } }
 .sp-today { display: grid; gap: 8px; }
 .sp-areas { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .sp-area { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 8px; margin: 0; padding: 3px 6px 3px 3px; border: 2px solid rgba(31, 58, 20, 0.45);
@@ -4471,7 +4474,6 @@ body.scene-peek #backdrop { display: none; }
 .pdx-banner.biome-depths   { --b1: #9a68e8; --b2: #24104c; }
 .pdx-banner.biome-mystery  { --b1: #4a3a72; --b2: #140c26; cursor: default; }
 .pdx-banner.pdx-rewards    { --b1: #f2c040; --b2: #a8640c; }
-.pdx-banner.pdx-safari     { --b1: #9ccf54; --b2: #3e7a24; }
 
 /* the handheld: a red Pokédex, the Gen 1 anime's, one entry at a time */
 .pdx-stage {
