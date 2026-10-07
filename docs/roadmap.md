@@ -50,6 +50,27 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 19. **Branching biomes** is done (parts a-d, 2026-10-06/07: the crossroads, the Sunken Ruins and the Thornwood Jungle,
     each painted with its films; see the archive). The new roads open after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07). Still the user's: hear the new synths and films on a phone.
 
+20. **A Fire biome and a shuffled pool of roads** (agreed with the user, 2026-10-07). The Ruins, Thornwood and a new
+    **Fire-heavy biome** become one pool of three "other roads". Each run rolls, **at its start** (saved with the run, so a
+    refresh can't reroll), which pool biome each fork offers beside its default: fork 1 Shrine or one, fork 2 Wastes or
+    another, never the same one twice, so one of the three sits out each run. The crossroads stays two roads.
+    **Tilt until seen:** a pool biome never walked into (`stats.biomesSeen`) is offered before a seen one (both unseen or
+    both seen: a coin flip); once all three are seen it's pure random for good. Rolls through `js/rng.js`.
+    **Part a. Run in: CLOUD** (attach `pokeDB-3` and `pokeDB-sim`): "Read CLAUDE.md, `docs/roadmap.md` item 20 and the
+    archive's Branching biomes parts a and c, then build item 20 part a. (1) The Fire biome: 12 wilds (~5-7 Fire, the rest
+    Water / Grass / pure Normal), 3 pure-Normal Alphas and 3 pure-Normal bosses, all shared Safari Pokémon per the roadmap's
+    rules (the free Fire ones: Ponyta, Numel, Camerupt, Magcargo, Larvesta, Magby, Magmortar, Darmanitan, Ninetales,
+    Arcanine, Houndoom, Lampent, Chandelure, Simisear), cries, its bonus Pokédex page after Thornwood's, Team Rocket's
+    team, a sign colour (`ARMS`), a stand-in look borrowed from an existing biome; pick its name and theme (not a volcano,
+    the Wastes are one). (2) Numbers by fork, not by biome: a pool biome's hpMult / dmgBonus / bossBonus and its Pokémon's
+    strength come from the slot it's walked at, so each works at fork 1 or fork 2. (3) The run-start roll with the tilt,
+    saved in the run (an old save keeps its route). (4) Fix what assumed a fixed slot: the Wanderer badge, `conquered()`,
+    the Explorer badge, `?crossroads` / `?biome=` playtests, journey films (a trip without a `ROUTES` entry is skipped).
+    (5) Tests, and a small bot check (~150 runs a cell) of each pool biome at both forks against the default road. Push to
+    main."
+    **Part b. Run in: LOCAL (Desktop app):** paint the Fire biome (scenery, boss prelude, intro film, map palette, grotto),
+    then journey films for the new pairings, a few a session.
+
 
 ## Ideas, not agreed yet (ask the user before building)
 
