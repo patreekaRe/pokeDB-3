@@ -93,7 +93,7 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 window is gone). `#safari-prep-dialog` wears `.tower-lobby`, so the shell, lid, window, bezel, green LCD, keys and A / B
 are the tower lobby's (`docs/reference/sky-pillar.md`); only its own parts are in `css/screens.css`'s Safari block. Top to
 bottom: the lid's LCD (Safari Zone, the day); a window onto the Zone's gate (`#sp-top`, `js/safari-lobby.js` painting
-the window's box, `--ground` its grass line), today's starter at it; the LCD (`#sp-base`): the starter's name, the 3
+the window's box smooth at full resolution since 2026-10-07, like the tower's, with `js/smooth-paint.js`; `--ground` its grass line), today's starter at it; the LCD (`#sp-base`): the starter's name, the 3
 areas as numbered rows with their caught counts (reversed once caught), the try, the two try rows of pills (struck through
 when off), your balls in a swipe row, "How it works" folded, today's top catchers (the tower lobby's list); then the
 keys: Pokédex, Ranks (the leaderboard), Buy (the Game Corner), B, and A labelled Start / Replay / Pass 100. Everything

@@ -614,6 +614,7 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   animation: selIn 0.35s cubic-bezier(0.2, 1.5, 0.4, 1);
 }
 .sel-stage img.locked { filter: brightness(0) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6)); opacity: 0.85; }
+.sel-sky { position: absolute; left: 0; top: 0; border-radius: 7px; pointer-events: none; }
 .sel-stage::after { content: ""; position: absolute; left: 50%; bottom: 0; width: min(200px, 50%); height: 16px; translate: -50% 0; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
 @keyframes selIn { from { opacity: 0; scale: 0.9; } }
 /* the info on the green LCD (the tower's .tower-base look); it scrolls inside when the window is squeezed */

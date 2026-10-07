@@ -85,8 +85,11 @@ The dock's "Main menu" takes you to the title's gem menu from anywhere.
 **Character select** (`#start-screen.select-screen`, `js/select.js`, New game; Slay the Spire's, the user's call
 2026-09-28). **A Pokédex device since 2026-10-07** (the user's call, the Sky Pillar lobby's treatment): `.seldev`, full
 screen under the top bar on phones, a 500px device with the scene round it wider. The lid's LCD says Choose / Prepare and
-the tab's count or the Pokémon; `.sel-stage` is a see-through window onto the type's scene whose own `100vmax` shadow is
-the shell (so every later part is positioned over it, like the map); the info is a green LCD (`.sel-glass` /
+the tab's count or the Pokémon; `.sel-stage` is a window onto the type's scene whose own `100vmax` shadow is
+the shell (so every later part is positioned over it, like the map); inside it `#sel-sky` paints that scene smooth at
+full resolution (`selectSky()` in `js/select-sky.js`, the tower lobby's look, 2026-10-07: Fire a canyon round a campfire,
+Water a seaside with a lighthouse, Grass a jungle, Psychic a violet plateau, lit by the hour; the pixel scene only shows
+round the device on wide screens); the info is a green LCD (`.sel-glass` /
 `.sel-info`, scrolling inside when squeezed; Shiny and Game Corner are LCD buttons, `.sel-lcdbtn`); the portraits, or
 in Prepare the deck fan, sit on a dark screen (`.sel-tray`); the hardware is the tower's: Starters / Legends keys
 (`.mdex-btn` with `.mdex-count`, greyed in Prepare), B (Back) and A (Choose / Begin, greyed on a locked Pokémon). Emoji

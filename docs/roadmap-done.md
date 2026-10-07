@@ -1706,3 +1706,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   treatment). The Safari wears `.tower-lobby` (gate in the window, LCD, Pokédex / Ranks / Buy keys, A / B); the old
   `?safariclassic` window is gone. The select is `.seldev`: a see-through window onto the scene, an LCD, the portraits or
   deck on a dark screen, Starters / Legends keys and A / B.
+- **Smooth lobby backdrops** (2026-10-07, the user's ask): the Safari lobby's gate (`js/safari-lobby.js`) and the character
+  select's window (`js/select-sky.js`, a scene per type) are painted smooth at full resolution like the Sky Pillar lobby,
+  sharing `js/smooth-paint.js` with it.

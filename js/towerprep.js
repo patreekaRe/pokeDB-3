@@ -18,6 +18,7 @@ import { openLeaderboard, towerTop } from './leaderboard.js';
 import { playSound } from './audio.js';
 import { hash, mix, skyHex } from './tower-art.js';
 import { smoothIcon } from './smooth-icons.js';
+import { layer, rgba, puff } from './smooth-paint.js';
 import { segInto } from './statsdex.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
 
@@ -173,32 +174,6 @@ function startSky() {
     paint(ctx, sky, now / 1000);
   };
   sky.raf = requestAnimationFrame(tick);
-}
-
-function layer(W, H, dpr) {
-  const c = document.createElement('canvas');
-  c.width = Math.round(W * dpr);
-  c.height = Math.round(H * dpr);
-  const ctx = c.getContext('2d');
-  ctx.scale(dpr, dpr);
-  return [c, ctx];
-}
-
-const rgba = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${a})`;
-
-/** A soft, rounded cloud: overlapping puffs lit from above. */
-function puff(ctx, x, y, r, tint = ['#ffffff', '#dce6f4'], alpha = 1) {
-  const g = ctx.createLinearGradient(0, y - r * 1.2, 0, y + r * 0.6);
-  g.addColorStop(0, rgba(tint[0], alpha));
-  g.addColorStop(1, rgba(tint[1], alpha));
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  for (const [dx, dy, k] of [[-1.5, 0.15, 0.6], [-0.7, -0.35, 0.85], [0.3, -0.55, 1], [1.2, -0.15, 0.75], [1.9, 0.2, 0.5]]) {
-    ctx.moveTo(x + dx * r + k * r, y + dy * r);
-    ctx.arc(x + dx * r, y + dy * r, k * r, 0, Math.PI * 2);
-  }
-  ctx.rect(x - 1.5 * r, y, 3.4 * r, 0.35 * r);
-  ctx.fill();
 }
 
 /** Everything that stands still, painted once a size: the back layer (sky, nebula, cloud sea) and the front one

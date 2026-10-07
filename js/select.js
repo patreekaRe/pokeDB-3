@@ -25,6 +25,7 @@ import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { toggleShop } from './shop.js';
 import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
+import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 
@@ -194,6 +195,7 @@ function show(starter) {
   document.querySelector('.select-screen').dataset.type = starter.type;
   setTheme(starter.type);
   showMenuScene(starter.type);
+  selectSky(starter.type);
 }
 
 /* ---------- Prepare: the run's setup on the same screen ---------- */

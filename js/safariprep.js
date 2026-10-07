@@ -64,7 +64,7 @@ export function initSafariPrep(handlers) {
 /** The gate in the window: a strip of meadow under the starter, the sky from the window's top. */
 function paintGate() {
   const win = $('sp-top'), H = win.clientHeight;
-  const g = startGate($('sp-sky'), win, H - Math.round(Math.max(8, H * 0.04)), 4);
+  const g = startGate($('sp-sky'), win, H - Math.round(Math.max(8, H * 0.04)));
   win.style.setProperty('--ground', `${g}px`);
 }
 

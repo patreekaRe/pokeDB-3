@@ -3975,7 +3975,7 @@ body.scene-peek #backdrop { display: none; }
    tower's, and only what's the Safari's own is here: the gate in the window (js/safari-lobby.js, `--ground` its grass
    line), the day's areas, the try pills, the balls and the rules, all in the LCD's ink. ---------- */
 .safari-prep-dialog .sp-window { background: #4888e0; }
-.sp-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.sp-sky { position: absolute; left: 0; top: 0; pointer-events: none; }
 .sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 80%); width: 84px; height: 84px; object-fit: contain; object-position: 50% 100%;
   translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
 .tdev-keys.sp-keys { grid-template-columns: repeat(3, 1fr); max-width: 270px; }
