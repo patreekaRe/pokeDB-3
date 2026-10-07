@@ -9,6 +9,8 @@
  * nothing shakes, tumbles or streaks; the lines and sounds stay.
  *
  * Its lines are picked per case by descentLines(), or handed in (`lines`), so another fall (Mewtwo's, item 5) reuses it.
+ * Once the gate is broken, until a Mewtwo run has reached the Depths, a win plays `kind: 'open'`: the crack opens but the
+ * floor holds, and your Pokémon is thrown back by the psychic force below (a hint that only Mewtwo can go down).
  */
 import { $, sleep } from './ui.js';
 import { playSound, playMusic } from './audio.js';
@@ -26,8 +28,10 @@ const pal = (list) => list.map(abgr);
 
 const SKY = pal(['#14080e', '#1e0c14', '#2c1218', '#3e1a1c', '#56241e', '#702e20']);
 const MESA = abgr('#1a0a0e');
-const GROUND = pal(['#4a2c22', '#40261e', '#36201a', '#2c1a16', '#221412']);
-// a run that falls at the Thornwood Jungle's last boss falls through the jungle's floor instead, under its dark canopy
+const GROUND = pal(['#4a2c22', '#40261e', '#36201a', '#2c1a16', '#221412']);
+
+// a run that falls at the Thornwood Jungle's last boss falls through the jungle's floor instead, under its dark canopy
+
 // ...and at the Sunscorch Savanna's, the Sunken Ruins', under their own skies and skylines
 const SAVANNA = { sky: pal(['#2a1030', '#4a1a38', '#7a2a38', '#b04030', '#e06a30', '#f8a040']), wall: abgr('#2a1408'), ground: pal(['#8a6030', '#7a542a', '#684824', '#563c1e', '#443018']) };
 const RUINS = { sky: pal(['#0a1424', '#102034', '#183044', '#224454', '#2e5a64', '#3e7474']), wall: abgr('#0e1c22'), ground: pal(['#4a5048', '#40463e', '#363c36', '#2c322e', '#222826']) };
@@ -47,6 +51,11 @@ const DUST = pal(['#d8c8ff', '#8a7ab8', '#5a4a88']);
  */
 export function descentLines({ name, kind = 'win', first = false, land = 'wastes' }) {
   const lore = first ? [`Far beneath the ${{ jungle: 'jungle', savanna: 'savanna', ruins: 'ruins' }[land] || 'wastes'} lies a chamber no map shows...`, 'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.'] : [];
+  if (kind === 'open') return {
+    arena: ['The ground shakes beneath the arena!', 'Far below, the Sealed Gate stands open... and violet light pours up through the cracks.'],
+    held: [`${name} steps towards the light...`, '...and a wave of psychic force throws it back!',
+      'Whatever waits down there answers only to a mind as strong as its own.', 'Only Mewtwo could follow that call down.'],
+  };
   if (kind === 'loss') return {
     arena: [`${name} fainted...`, 'The ground gives way beneath it!'],
     fall: ['Something drags it down into the dark...', ...lore],
@@ -100,6 +109,7 @@ export async function descent({ starter, stage = 0, shiny = false, kind = 'win',
   playSound('gate-crack');
   shake = 3;
   await sleep(still() ? 0 : 500);
+  if (kind === 'open') return repelled(scene, said.held);
 
   // the floor gives way: a violet flash, and the shaft
   playSound('eruption');
@@ -119,6 +129,32 @@ export async function descent({ starter, stage = 0, shiny = false, kind = 'win',
   playSound('core-surge');
   scene.classList.add('landing');
   await sleep(still() ? 300 : 1300);
+  scene.classList.add('dark');
+  await sleep(still() ? 0 : 600);
+  return () => {
+    cancelAnimationFrame(raf);
+    removeEventListener('resize', relayout);
+    scene.hidden = true;
+    scene.className = 'descent-scene';
+  };
+}
+
+/** The gate already broken (and Mewtwo not yet down there): your Pokémon is thrown back from the crack, a hint at who can
+    go down. The floor holds; the screen goes dark for the win scene, which covers it before close() is called. */
+async function repelled(scene, lines) {
+  scene.classList.remove('shaking');
+  shake = 0;
+  scene.classList.add('glowing', 'drawn');
+  playSound('gate-hum');
+  await say(lines.slice(0, 1));
+  scene.classList.replace('drawn', 'repelled');
+  playSound('gust');
+  flash(scene);
+  shake = 2;
+  for (let i = 0; i < 24; i++) bit(true);
+  await sleep(still() ? 0 : 400);
+  shake = 0;
+  await say(lines.slice(1));
   scene.classList.add('dark');
   await sleep(still() ? 0 : 600);
   return () => {

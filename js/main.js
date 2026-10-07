@@ -342,15 +342,15 @@ function peekSafari(params) {
   show();
 }
 
-/** The ?strike= playtest: the descent and the gate scene on their own, nothing saved. */
+/** The ?strike= playtest: the descent and the gate scene on their own, nothing saved (`?gate=0&strike=0`: the open gate). */
 function peekStrike(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
-  const kind = params.get('kind') || (after === 0 ? 'ultimate' : 'win');
+  const kind = params.get('kind') || (before === 0 ? 'open' : after === 0 ? 'ultimate' : 'win');
   playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title' })
-    .then(() => playMusic('title'));   // back to the title's song after the seal's
+    .then((close) => { close?.(); playMusic('title'); });   // back to the title's song after the seal's
 }
 
 /** The ?travel= playtest: a journey film on its own, nothing saved. `?travel=ruins` comes from the Clearing; `&from=ruins`

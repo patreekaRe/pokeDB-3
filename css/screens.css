@@ -4179,6 +4179,16 @@ body.scene-peek #backdrop { display: none; }
 @keyframes descentFlash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
 .descent-dark { position: absolute; inset: 0; background: #05020c; opacity: 0; pointer-events: none; }
 .descent-scene.dark .descent-dark { opacity: 1; transition: opacity 0.6s ease-in; }
+/* the gate already open: the light below glows up through the crack, your Pokémon leans towards it and is thrown back */
+.descent-scene.glowing .descent-light { opacity: 0.4; transition: opacity 2s; }
+.descent-scene.drawn .descent-mon { animation: descentDrawn 1.6s ease-in-out forwards; }
+@keyframes descentDrawn { to { transform: translate3d(0, 4px, 0) scale(1.06); } }
+.descent-scene.repelled .descent-mon { animation: descentRepelled 0.9s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+@keyframes descentRepelled {
+  0% { transform: translate3d(0, 4px, 0) scale(1.06); filter: brightness(3) drop-shadow(0 0 12px #c070ff); }
+  30% { transform: translate3d(0, -22px, 0) scale(0.95); }
+  100% { transform: translate3d(0, -8px, 0) scale(0.9); filter: drop-shadow(0 0 6px rgba(176, 96, 240, 0.5)); }
+}
 .descent-scene.still, .descent-scene.still .descent-mon, .descent-scene.still.flash .descent-flash { animation: none; }
 .descent-scene.still.falling .descent-mon { top: 40%; }
 .descent-scene.still.landing .descent-mon { animation: none; opacity: 0; }

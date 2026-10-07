@@ -16,7 +16,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`, `&slot=1` / `2` for a pool biome at that fork) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
-  break that frees Mewtwo) after PRESS START. Neither is saved.
+  break that frees Mewtwo) after PRESS START; `?gate=0&strike=0` the open gate throwing your Pokémon back. Neither is saved.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
@@ -190,7 +190,10 @@ live site.
   descent tells the chamber's lore, the gate scene a line that past victories already cracked it (if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
   harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
   `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`, `&land=jungle`) plays the descent and the scene after PRESS START; a
-  strike past the HP plays the break. `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo
+  strike past the HP plays the break. **Once broken**, until a Mewtwo run reaches the Depths (`deepestBiome` 4), a won run
+  still shakes the arena and opens the crack (in its last biome's look), but the floor holds and your Pokémon is thrown back
+  by the psychic force below, a hint that only Mewtwo goes down (`kind: 'open'` in `descent()`, from `strikeGate()`; no
+  strike, then the win scene; 2026-10-07, the user's ask). Playtest `?gate=0&strike=0` (`&land=`). `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo
   run, and re-seeds the gate from the Record Book; only while Mewtwo is unlocked). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
   Ability landed; run-end guards (`isMewtwoRun()`) keep Mewtwo out of Level-based rewards and stats.

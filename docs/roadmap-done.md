@@ -1670,3 +1670,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Savanna badges** (item 20 follow-up, 2026-10-07, the user said yes): the Sunscorch Savanna gets the Ruins' and
   Thornwood's three: the Sun Badge (its boss, from `dex.defeated`), the Savanna Page Badge and the Savanna Hunter Badge
   (every Pokémon on its page beaten). Gold savanna colours and a new `sun` glyph in `js/trainercard.js`; 124 badges.
+
+- **The open gate's hint** (2026-10-07, the user's ask): once the Sealed Gate is broken, a won run used to skip the
+  descent entirely. Now, until a Mewtwo run reaches the Depths, the arena still shakes and splits in the last biome's look,
+  but the floor holds and your Pokémon is thrown back by psychic force ("Only Mewtwo could follow that call down."), then
+  the win scene. `kind: 'open'` in `descent()`; playtest `?gate=0&strike=0` (`&land=`).

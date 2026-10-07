@@ -2586,7 +2586,10 @@ function announceUnlocks() {
     breaks. Returns the result window's line and what the gate scene (js/gatescene.js) needs, if it was reached. */
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
-  if (peeking || isMewtwoRun(run.starter) || isSafari() || before <= 0 || !(won || atLastBoss)) return null;
+  if (peeking || isMewtwoRun(run.starter) || isSafari() || !(won || atLastBoss)) return null;
+  // broken already: until a Mewtwo run has reached the Depths, a win is thrown back from the open gate (a hint, no strike)
+  if (before <= 0) return won && getSave().stats.deepestBiome < 4 ? { scene: { starter: run.starter, stage: run.stage,
+    shiny: getSave().shiny.on.includes(run.starter.id), kind: 'open', land: gateLand() } } : null;
   const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
@@ -2600,8 +2603,10 @@ function strikeGate(won, atLastBoss) {
   const li = el('li', 'gate-line', text);
   li.append(bar, el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
   const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
-  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first, land: { thornwood: 'jungle', savanna: 'savanna', ruins: 'ruins' }[run.route?.[2]] || 'wastes' } };
+  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first, land: gateLand() } };
 }
+
+const gateLand = () => ({ thornwood: 'jungle', savanna: 'savanna', ruins: 'ruins' }[run.route?.[2]] || 'wastes');
 
 /** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.
     Returns the result window's lines. */
@@ -2747,7 +2752,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.paid ? ` +${f.paid} PokéCoins.` : ''}`),
     ...(run.dexNews || []).map(line => `📕 ${line}`), ...(run.badges || []).map(badgeItem)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
-  lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate ? [gate.li] : []));
+  lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate?.li ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (safari && run.tally.caught) lines.push(`🎯 Caught ${run.tally.caught} Pokémon this run.`);
   if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');
@@ -2767,7 +2772,11 @@ function endRun(won, atLastBoss = false, loss = null) {
   // the last boss falls, the floor splits and your Pokémon drops down to the Sealed Gate and strikes it (a run lost at the
   // last boss is dragged down too, and fails); then the win scene, the unlocks and the result (the user's order, 2026-10-02)
   // a lost run's recap (who beat it, its numbers, its HP over the run, its deck) comes after the gate, before the rest
-  playGate(gate?.scene).then(() => (record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null)).then(result);
+  playGate(gate?.scene).then((close) => {
+    const next = record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null;
+    if (close) setTimeout(close, 800);   // the open gate's dark scene stays under the next one until it covers the screen
+    return next;
+  }).then(result);
 }
 
 /** A badge earned this run, in the result window: a tap opens the Trainer Card to see it in the Badge Case. */
@@ -2781,10 +2790,12 @@ function badgeItem(badge) {
   return li;
 }
 
-/** The descent and the gate's scene, one over the other so the page never shows between them. */
+/** The descent and the gate's scene, one over the other so the page never shows between them. With the gate already open
+    there's no strike: it resolves with the descent's close(), for the caller to call once the next scene covers it. */
 export async function playGate(scene) {
   if (!scene) return;
   const close = await descent(scene);
+  if (scene.kind === 'open') return close;   // no strike: the caller closes it under whatever comes next
   await gateScene({ ...scene, onShow: close });
   if (scene.kind === 'loss') playMusic(null);   // the seal's song fades: a lost run's recap and result are quiet, as before
 }
