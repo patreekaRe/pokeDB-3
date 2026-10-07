@@ -577,10 +577,13 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   max-width: none;
   display: flex;
   justify-content: center;
-  padding: var(--topbar-h) 0 0;
+  padding: env(safe-area-inset-top) 0 0;
   overflow: hidden;
   animation: screenIn 0.4s ease-out;
 }
+/* no top bar here (the user's call, 2026-10-07): the device fills to the top, the coins sit on its LCD and a locked
+   skin's Game Corner button opens the Pokédex's Game Corner app */
+body[data-screen="start-screen"] .topbar { display: none; }
 @keyframes screenIn { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { transform: translate3d(0, 0, 0); } }
 .seldev {
   position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 9px; width: 100%; min-height: 0; overflow: hidden;
@@ -625,7 +628,10 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); text-shadow: none;
 }
 .sel-info::-webkit-scrollbar { display: none; }
-.sel-name { margin: 0 0 8px; font: 1.05rem/1.1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 1px; text-transform: uppercase; color: #1f3a14; }
+.sel-info { position: relative; }
+.sel-coins { position: absolute; top: 10px; right: 12px; display: inline-flex; align-items: center; gap: 5px; font: 0.62rem var(--pixel-font); color: #1f3a14; }
+.sel-coins .smooth-icon { width: 14px; height: 14px; }
+.sel-name { margin: 0 0 8px; padding-right: 76px; font: 1.05rem/1.1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 1px; text-transform: uppercase; color: #1f3a14; }
 .sel-stats { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 2px dashed rgba(31, 58, 20, 0.35); font: 0.62rem var(--pixel-font); }
 .sel-stats .smooth-icon, .sel-ability .smooth-icon { width: 14px; height: 14px; }
 .sel-type { padding: 2px 8px 2px 5px; border: 2px solid #1f3a14; color: #fff; background: #777; font-size: 0.58rem; text-shadow: none; }

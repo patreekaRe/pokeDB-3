@@ -64,13 +64,14 @@ export function openPokedex(at = {}) {
  * 'dex' (`at` a biome's page), 'safari' (`at` an area), 'stats', 'achievements' or 'trainer'. B out of it shuts the
  * device, or with `home` steps out to the home screen like any app.
  */
-export function openDeviceApp(id, at, home = false) {
+export function openDeviceApp(id, at, home = false, onClose = null) {
   const save = getSave();
   const def = id === 'trainer' ? trainerApp(save)
     : id === 'safari' ? { ...safariApp(safariDexCount()), name: 'Safari' }   // a Safari run's own, open or not on the home screen
+    : id === 'corner' ? cornerDef
     : apps(save).find(a => a.id === id);
   if (!def || def.locked) return;
-  openDevice({ render: renderHome, cover: coverArt, over: true, home, start: { ...def, name: def.name.toUpperCase(), at } });
+  openDevice({ render: renderHome, cover: coverArt, over: true, home, onClose, start: { ...def, name: def.name.toUpperCase(), at } });
 }
 
 /** The closed cover: an LED that blinks while a badge is unseen, your partner in a little window, your name and badges. */
@@ -194,6 +195,8 @@ const settingsApp = () => ({
   app: borrow('dev-settings', () => { $('abandon-btn').hidden = !(deviceOver() && dock.abandonable()); showName(); }),
 });
 
+const cornerDef = { id: 'corner', name: 'Game Corner', cls: 'cdev-win cdev-corner', app: cornerApp };
+
 /** The dock under the apps: settings, help and the Game Corner; laid over a screen also Main menu. */
 function dockRow() {
   const over = deviceOver();
@@ -201,7 +204,7 @@ function dockRow() {
   const items = [
     ['settings', 'Settings', 'settings', () => openApp(settingsApp())],
     ['help', 'Help', 'help', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
-    ['corner', 'Game Corner', 'corner', () => openApp({ id: 'corner', name: 'GAME CORNER', cls: 'cdev-win cdev-corner', app: cornerApp })],
+    ['corner', 'Game Corner', 'corner', () => openApp({ ...cornerDef, name: 'GAME CORNER' })],
     over && ['menu', 'Main menu', 'home', () => dock.menu()],
   ].filter(Boolean);
   row.append(...items.map(([id, name, icon, open]) => {

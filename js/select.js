@@ -22,7 +22,8 @@ import { ABILITIES } from './data/relics.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { getSave, updateSave, isShiny } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
-import { toggleShop } from './shop.js';
+import { aimCorner } from './shop.js';
+import { openDeviceApp } from './collection.js';
 import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
 import { selectSky } from './select-sky.js';
@@ -56,7 +57,11 @@ export function initSelect(on) {
     playCry(picked.line[0].id);
     pick(picked, true);
   });
-  $('sel-corner').addEventListener('click', () => toggleShop(picked.id));
+  // the Game Corner takes over the screen as the Pokédex's app, on this skin; a skin bought there shows once it shuts
+  $('sel-corner').addEventListener('click', () => {
+    aimCorner(picked.id);
+    openDeviceApp('corner', undefined, false, refreshSelect);
+  });
   for (const btn of document.querySelectorAll('.sel-tabs .mdex-btn')) {
     btn.addEventListener('click', () => {
       if (preparing) return;
@@ -67,7 +72,7 @@ export function initSelect(on) {
   }
   document.addEventListener('keydown', (e) => {
     if (document.body.dataset.screen !== 'start-screen' || document.body.classList.contains('titling')) return;
-    if (document.querySelector('dialog:modal, #shop-dialog[open]')) return;
+    if (document.querySelector('dialog:modal, #shop-dialog[open]') || !$('collection-screen').hidden) return;
     const list = inTab(), at = list.indexOf(picked);
     const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
     if (step && preparing) { e.preventDefault(); setLevel(level + step); }
@@ -301,7 +306,7 @@ function sizeSprite() {
   if (!img.naturalWidth || !stage.clientHeight) return;
   const [top, bottom, left, right] = spriteFit(img.src);
   const poseW = img.naturalWidth - left - right || 64, poseH = img.naturalHeight - top - bottom || 64;
-  const fits = Math.min(stage.clientHeight * 0.78 / poseH, stage.clientWidth * 0.6 / poseW, 9);
+  const fits = Math.min(stage.clientHeight * 0.62 / poseH, stage.clientWidth * 0.5 / poseW, 7);
   const s = Math.max(1, Math.floor(fits * 2) / 2);
   img.style.width = `${img.naturalWidth * s}px`;
   img.style.translate = `calc(-50% + ${((right - left) / 2) * s}px) ${bottom * s}px`;

@@ -45,10 +45,7 @@ export function toggleShop(highlightId, { modal = false } = {}) {
   const dialog = $('shop-dialog');
   if (dialog.open) { playSound('cancel', 'confirm'); return dialog.close(); }
 
-  const at = SKIN_SHOP_ITEMS.findIndex(item => item.id === highlightId);
-  if (at >= 0) { cursor.row = 0; cursor.col[0] = at; }
-  const row = ROWS.findIndex(r => r.id === highlightId);   // a row's id opens on that row: 'balls' from the Safari's prep window
-  if (row >= 0) cursor.row = row;
+  const at = aimCorner(highlightId);
   cursor.armed = false;
   cursor.news = null;
   preloadSounds('stick', 'buy');
@@ -57,6 +54,15 @@ export function toggleShop(highlightId, { modal = false } = {}) {
   $('shop-btn').setAttribute('aria-expanded', 'true');
   $('gc-buy').focus({ preventScroll: true });
   if (at >= 0) flash('flash');
+}
+
+/** Points the Game Corner at a skin or a row by id, for the next time it opens; the skin's index, or -1. */
+export function aimCorner(id) {
+  const at = SKIN_SHOP_ITEMS.findIndex(item => item.id === id);
+  if (at >= 0) { cursor.row = 0; cursor.col[0] = at; }
+  const row = ROWS.findIndex(r => r.id === id);   // a row's id opens on that row: 'balls' from the Safari's prep window
+  if (row >= 0) cursor.row = row;
+  return at;
 }
 
 /**
