@@ -4835,6 +4835,60 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) {
 body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-pockets { display: none; }
 body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-head { margin-bottom: 10px; }
 @keyframes bagRise { from { transform: translateY(24px); opacity: 0; } }
+/* the top of the device is one green LCD (the user's ask, 2026-10-07: like the Center's monitor, but the Pokédex's):
+   the top bar's floor and coins and the run card share it, in the LCD's ink, split by a dotted rule. The window grows
+   up behind the (transparent, fixed) top bar, so the bar's buttons sit on the screen. */
+#map-screen:not(.tower) .mdex-window {
+  --lcd: #c2dc9a; --lcd-lo: #a8c97e; --lcd-ink: #1f3a14; --lcd-dim: #5a7a40;
+  padding: 7px; border-radius: 18px 18px 10px 10px; background: #e4e4ea;
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 -4px 0 rgba(0, 0, 0, 0.14), 0 0 0 100vmax var(--shell);
+}
+#map-screen:not(.tower) .run-card {
+  gap: 16px; padding: 6px 10px 8px; border: 3px solid #2a2a30; border-radius: 8px 8px 8px 22px;
+  background:
+    repeating-linear-gradient(0deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 140% at 30% 0%, var(--lcd), var(--lcd-lo));
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), inset 0 0 18px rgba(31, 58, 20, 0.12);
+  color: var(--lcd-ink);
+}
+#map-screen:not(.tower) .run-sprite { filter: drop-shadow(0 3px 0 rgba(31, 58, 20, 0.22)); }
+#map-screen:not(.tower) .run-mon::before {   /* a shadow pad under your Pokémon, like the Pokédex's entry screens */
+  content: ""; position: absolute; left: 10%; right: 10%; bottom: 0; height: 12px; border-radius: 50%; background: rgba(31, 58, 20, 0.16);
+}
+#map-screen:not(.tower) .run-info { text-shadow: none; }
+#map-screen:not(.tower) .run-info strong { color: var(--lcd-ink); font-weight: 400; }
+#map-screen:not(.tower) .run-bars .gb-hp-tag { border-color: var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); box-shadow: none; }
+#map-screen:not(.tower) .run-bars :is(.gb-hp-track, .gb-exp) { border-color: var(--lcd-ink); background: rgba(255, 255, 255, 0.35); box-shadow: none; }
+#map-screen:not(.tower) .run-bars .gb-exp-fill { background: #2f6cc8; }
+#map-screen:not(.tower) .run-foot .gb-hp-num { color: var(--lcd-ink); font-weight: 400; }
+#map-screen:not(.tower) .run-foot .level-chip { border: 2px solid var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); }
+#map-screen:not(.tower) .run-foot .level-chip.replay { background: none; color: var(--lcd-ink); }
+#map-screen:not(.tower) .run-ability { border-width: 2px; }
+@media (max-width: 720px) {
+  #map-screen:not(.tower) { padding-top: 6px; }
+  #map-screen:not(.tower) .run-card {
+    padding-top: calc(var(--topbar-h) - 2px);
+    background-image:
+      radial-gradient(circle, rgba(31, 58, 20, 0.35) 1px, transparent 1.5px),
+      repeating-linear-gradient(0deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(31, 58, 20, 0.05) 0 1px, transparent 1px 3px),
+      radial-gradient(120% 140% at 30% 0%, var(--lcd), var(--lcd-lo));
+    background-size: 6px 6px, auto, auto, auto;
+    background-position: 2px calc(var(--topbar-h) - 9px), 0 0, 0 0, 0 0;
+    background-repeat: repeat-x, repeat, repeat, no-repeat;
+  }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { translate: 0 16px; height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar::before { display: none; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .dex-sprite { width: 32px; height: 32px; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) :is(.floor-tag, .coin-pill) { color: #1f3a14; text-shadow: none; filter: none; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .floor-tag b { font-size: 1.15rem; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .floor-stairs { filter: none; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .floor-stairs i { width: 16px; height: 16px; background: #1f3a14; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .coin-pill { font-size: 1.1rem; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .shop-btn { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
+}
 /* wider than a phone the device stands on the scenery under the top bar, the map at its own tile size inside */
 @media (min-width: 721px) {
   #map-screen:not(.tower) {

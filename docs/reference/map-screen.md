@@ -12,6 +12,12 @@ above the bar (lit green while open); again closes it. There the top bar's Bag b
 and relics fly into the Relics button (`bagSpot()`). Wider than 720px the device stands under the top bar at up to
 1100px. In a climb the wrappers are `display: contents` and the tower's look is unchanged.
 
+**The top LCD** (same day, the user's ask: "like the Center's monitor, but Pokédex-like and clean"): the window is a grey
+bezel round one green Pokédex LCD (`.run-card` on `--lcd` / `--lcd-ink`, a faint pixel grid), the run card in its ink
+(dark HP tag, ink-outlined bars, the Level chip inverted, a shadow pad under your Pokémon; the Ability pill keeps its type
+colour). On phones (720px and under) the LCD grows up behind the top bar, which shifts down onto it: the floor and coins
+turn ink, and a dotted rule splits them from the run card. Wider, the top bar stays on the scenery above the device.
+
 **The Bag** (same day) is a piece of the device on every screen: the shell round it, the pocket's name on the LCD, the
 pockets as shell buttons with smooth icons, each pocket on a cream screen in a grey bezel with its rows as cards.
 
