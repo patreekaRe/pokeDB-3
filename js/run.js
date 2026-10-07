@@ -31,6 +31,7 @@ import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
+import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
@@ -672,8 +673,8 @@ function showMap() {
     void board.offsetWidth;
     board.classList.add('arrive');
   }
-  $('run-deck-count').textContent = String(run.deck.length);
-  $('run-relic-count').textContent = String(run.relics.length);
+  $('run-deck-count').textContent = $('dock-deck-count').textContent = String(run.deck.length);
+  $('run-relic-count').textContent = $('dock-relic-count').textContent = String(run.relics.length);
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
   // a Safari run says whether it's the day's counted try or a replay, where a normal run shows its Trainer Level
   const trial = run.safari || run.tower;   // a Safari day or a Sky Pillar week: counted or not, where a run shows its Level
@@ -697,7 +698,7 @@ function showMap() {
   checkpoint();
   drawMap();
   showScreen('map-screen');
-  document.querySelector('.map-trainer')?.scrollIntoView({ block: 'nearest' });   // on wide screens the map is taller than the screen
+  document.querySelector('.map-trainer')?.scrollIntoView({ block: 'center' });   // the map scrolls inside the Pokédex's screen
   if (isTower()) showScene(null);   // the tower is its own picture (js/tower.js)
   else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
   playMusic(`map${run.biome + 1}`);
@@ -757,12 +758,23 @@ function initBag() {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
   const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
+  for (const [p, icon] of [['deck', 'moves'], ['relics', 'relics'], ['items', 'items'], ['key', 'map']]) {
+    document.querySelector(`.bag-pocket[data-pocket="${p}"] > span`).replaceChildren(smoothIcon(icon));
+  }
   $('bag-trainer-icon').append(cardIcon());
   $('bag-trainer-art').append(cardIcon());
   $('bag-trainer-btn').addEventListener('click', () => { closeBag(true); openDeviceApp('trainer'); });
+  // the map's menu bar (the Pokédex's dock): a pocket's button opens the Bag on it, and again closes it
+  for (const b of document.querySelectorAll('.mdex-btn')) {
+    b.querySelector('.mdex-ico').append(smoothIcon(b.querySelector('.mdex-ico').dataset.icon));
+    b.addEventListener('click', () => {
+      if (!$('bag').hidden && pocket === b.dataset.pocket) { closeBag(); return; }
+      if ($('bag').hidden) openBag(b.dataset.pocket); else { playSound('confirm'); showPocket(b.dataset.pocket); }
+    });
+  }
   $('bag-prev').addEventListener('click', () => flip(-1));
   $('bag-next').addEventListener('click', () => flip(1));
-  document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #bag')) closeBag(); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #bag, #mdex-dock')) closeBag(); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeBag();
     if ($('bag').hidden) return;
@@ -771,14 +783,14 @@ function initBag() {
   });
 }
 
-function openBag() {
+function openBag(at = pocket) {
   playSound('bag');
   renderItemList();   // items can be used up in battle, so this pocket is redrawn each time
   renderTrainerPocket();
   $('bag-map-btn').hidden = document.body.dataset.screen === 'map-screen';
   $('bag').hidden = false;
   $('bag-btn').setAttribute('aria-expanded', 'true');
-  showPocket(pocket);
+  showPocket(at);
 }
 
 function renderTrainerPocket() {
@@ -792,6 +804,7 @@ function closeBag(quiet = false) {
   if (!quiet && !$('bag').hidden) playSound('bag');   // closing sounds just like opening (the user's call)
   $('bag').hidden = true;
   $('bag-btn').setAttribute('aria-expanded', 'false');
+  for (const b of document.querySelectorAll('.mdex-btn')) b.removeAttribute('aria-current');
 }
 
 function showPocket(name) {
@@ -802,6 +815,7 @@ function showPocket(name) {
     $(tab.getAttribute('aria-controls')).hidden = !on;
     if (on) $('bag-title').textContent = tab.dataset.name;
   }
+  for (const b of document.querySelectorAll('.mdex-btn')) b.toggleAttribute('aria-current', !$('bag').hidden && b.dataset.pocket === name);
 }
 
 /* A look at the map from a battle or a reward, to plan the route ahead (the user's ask, 2026-09-29): the same map, rooms
@@ -870,7 +884,7 @@ function renderItemList() {
     return row;
   });
   $('items-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
-  $('run-item-count').textContent = `${run.items.length}/${itemSlots()}`;
+  $('run-item-count').textContent = $('dock-item-count').textContent = `${run.items.length}/${itemSlots()}`;
   $('items-note').textContent = inBattle ? 'Using an item costs no PP.'
     : `Holds ${itemSlots()} items. Use them in battle; potions and HP Up work on the map too.`;
 }
@@ -1487,9 +1501,15 @@ function goButton(label) {
   return btn;
 }
 
+/** Where the Bag is on screen: the top bar's, or on the map the menu bar's Relics button. */
+function bagSpot() {
+  const bag = $('bag-btn').getBoundingClientRect();
+  return bag.width ? bag : document.querySelector('.mdex-btn[data-pocket="relics"]').getBoundingClientRect();
+}
+
 /** A floating relic or item shrinks away into the Bag (the treasure room's relicToBag). */
 async function flyToBag(btn) {
-  const from = btn.getBoundingClientRect(), to = $('bag-btn').getBoundingClientRect();
+  const from = btn.getBoundingClientRect(), to = bagSpot();
   btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
   btn.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
   btn.classList.add('taken');
@@ -1599,7 +1619,7 @@ function treasureRoom() {
     playSound('item-get');
     $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
     take.hidden = true;
-    const btn = stage.querySelector('.treasure-relic.chosen'), from = btn.getBoundingClientRect(), to = $('bag-btn').getBoundingClientRect();
+    const btn = stage.querySelector('.treasure-relic.chosen'), from = btn.getBoundingClientRect(), to = bagSpot();
     btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
     btn.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
     stage.classList.add('taking');

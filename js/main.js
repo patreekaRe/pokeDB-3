@@ -252,7 +252,6 @@ function init() {
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,
-    corner: () => toggleShop(),
     menu: async () => { if (await requestMenu()) hideDevice(); },
     abandonable: () => isRunActive() || hasSavedRun(),
   });

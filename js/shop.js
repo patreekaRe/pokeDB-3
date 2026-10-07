@@ -59,6 +59,38 @@ export function toggleShop(highlightId, { modal = false } = {}) {
   if (at >= 0) flash('flash');
 }
 
+/**
+ * The Game Corner as one of the Pokédex's apps (its dock): the cabinet's screen moves into the device's screen while
+ * it's open, the device's D-pad is the joystick, A buys (twice, as Buy does) and B goes back to the Pokédex's home
+ * screen instead of shutting it (the user's call, 2026-10-07). Its own Buy and the coins sit under the screen.
+ */
+export const cornerApp = {
+  mount(panel) {
+    cursor.armed = false;
+    cursor.news = null;
+    preloadSounds('stick', 'buy');
+    const buy = el('button', 'gc-app-buy');
+    buy.type = 'button';
+    buy.id = 'gc-app-buy';
+    buy.addEventListener('click', press);
+    const foot = el('div', 'gc-app-foot');
+    foot.append(el('span', 'gc-app-hint', 'D-pad to browse'), buy);
+    panel.append(document.querySelector('#shop-dialog .gc-crt'), foot);
+    render();
+  },
+  back: () => false,
+  key(e) {
+    const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!dir) return false;
+    move(...dir);
+    return true;
+  },
+  press,
+  unmount() {
+    document.querySelector('#shop-dialog .gc-bezel').append(document.querySelector('.cdev-app .gc-crt') ?? document.querySelector('.gc-crt'));
+  },
+};
+
 /** Called once at startup: the cabinet's fixed parts and its controls. */
 export function initShop() {
   for (const node of document.querySelectorAll('.gc-grille')) node.append(pixelSvg(GRILLE));
@@ -225,6 +257,13 @@ function render() {
   buy.classList.toggle('armed', cursor.armed);
   buy.setAttribute('aria-label', pick.done ? pick.done : cursor.armed ? `Press again to buy ${pick.name}` : `Buy ${pick.name} for ${pick.cost} PokéCoins`);
   $('gc-buy-label').textContent = cursor.armed ? 'Sure?' : 'Buy';
+  const app = document.getElementById('gc-app-buy');
+  if (app) {
+    app.disabled = buy.disabled;
+    app.classList.toggle('armed', cursor.armed);
+    app.textContent = pick.done ? 'Owned' : cursor.armed ? 'Sure? Buy!' : `Buy · ${pick.cost}`;
+    app.setAttribute('aria-label', buy.getAttribute('aria-label'));
+  }
 }
 
 function move(dx, dy) {

@@ -1687,4 +1687,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   core moved to `js/hybrid-light.js` (the Clearing's beams and prelude stay in `js/hybrid-clearing.js` as hooks). Each
   frame, every pixel in a look's `GLOWS` colour (bright ones only; not sun, chalk, steam...) blooms in three soft layers,
   so lava, lanterns, crystals, runes and the preludes glow without per-biome code. The hour's tint is half strength
-  outside the Clearing and scaled by how much sky shows (Thornwood's roof keeps it out); the Depths get no tint.
+  outside the Clearing and scaled by how much sky shows (Thornwood's roof keeps it out); the Depths get no tint.- **The map, the Bag and the Game Corner join the Pokédex** (2026-10-07, the user's three screenshots): the map screen is
+  the device full screen (a window onto the scenery with the run card, the biome on the hinge's LCD, the map on its
+  screen, the Bag's pockets as a menu bar at the bottom); the Bag is restyled as a piece of the device; the dock's Game
+  Corner is an app (`cornerApp`) that B leaves back to the home screen instead of shutting the device. The user will
+  edit the map's look as they go.

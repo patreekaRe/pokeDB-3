@@ -1,5 +1,20 @@
 ## Map screen
 
+**Inside the Pokédex** (2026-10-07, the user's call: "the whole map screen lives inside the Pokédex", to be edited as
+they go): outside a Sky Pillar climb `#map-screen` is fixed full screen as the device (`css/screens.css`, "the map inside
+the Pokédex"). From the top: the top bar on the shell; `.mdex-window`, a window onto the scenery holding the run card
+(the shell round it is the window's own `0 0 0 100vmax var(--shell)` shadow, clipped by the screen, so the hinge, glass
+and dock are `position: relative` to paint over it); `.mdex-hinge` with the lens, three lights and `.map-head` as a green
+LCD (the biome and place signs lose their wood, and type in on arrival, `lcdType`); `.mdex-glass`, the grey bezel and
+screen the map scrolls in (`showMap()` centres your sprite); `.mdex-dock`, five buttons that are the Bag's pockets (Deck,
+Relics, Items, Map key, Trainer, with the counts mirrored from the pocket tabs). A button opens the Bag on its pocket just
+above the bar (lit green while open); again closes it. There the top bar's Bag button and the Bag's own tabs are hidden,
+and relics fly into the Relics button (`bagSpot()`). Wider than 720px the device stands under the top bar at up to
+1100px. In a climb the wrappers are `display: contents` and the tower's look is unchanged.
+
+**The Bag** (same day) is a piece of the device on every screen: the shell round it, the pocket's name on the LCD, the
+pockets as shell buttons with smooth icons, each pocket on a cream screen in a grey bezel with its rows as cards.
+
 The top `.run-card`, centred like everything below it, shows your Pokémon
 floating on the scenery, then its name and a Gold/Silver-style HP bar
 (`.gb-hp`: black "HP:" tag, outlined bar, the numbers underneath;

@@ -27,11 +27,12 @@ import { trainerName } from './leaderboard.js';
 import { showName } from './settings.js';
 import { showMenuScene } from './scene.js';
 import { pickedStarter } from './select.js';
-import { initDevice, openDevice, openApp, swapApp, hideDevice, deviceOver } from './device.js';
+import { initDevice, openDevice, openApp, swapApp, deviceOver } from './device.js';
 import { $, el } from './ui.js';
+import { cornerApp } from './shop.js';
 import { smoothIcon } from './smooth-icons.js';
 
-let dock = null;   // main.js's { corner(), menu(), abandonable() } for the dock
+let dock = null;   // main.js's { menu(), abandonable() } for the dock
 let here = {};     // the pages a run stands on, for the Pokédex apps: { dex, safari }
 
 /** Called once at startup. */
@@ -200,7 +201,7 @@ function dockRow() {
   const items = [
     ['settings', 'Settings', 'settings', () => openApp(settingsApp())],
     ['help', 'Help', 'help', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
-    ['corner', 'Game Corner', 'corner', () => { hideDevice(); dock.corner(); }],
+    ['corner', 'Game Corner', 'corner', () => openApp({ id: 'corner', name: 'GAME CORNER', cls: 'cdev-win cdev-corner', app: cornerApp })],
     over && ['menu', 'Main menu', 'home', () => dock.menu()],
   ].filter(Boolean);
   row.append(...items.map(([id, name, icon, open]) => {

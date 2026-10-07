@@ -4756,3 +4756,147 @@ body.scene-peek #backdrop { display: none; }
 .calm-fx .gate-scene.white .gate-flash { opacity: 0.3; transition-duration: 0.6s; }
 @keyframes calmFlash { from { opacity: 0.2; } to { opacity: 0; } }
 @keyframes calmTitle { 0%, 35% { opacity: 0; } 45% { opacity: 0.2; } 100% { opacity: 0; } }
+
+/* ---------- the map inside the Pokédex (the user's call, 2026-10-07) ----------
+   The map screen is the device itself, full screen: a window onto the scenery at the top with your Pokémon and HP
+   (.mdex-window), a hinge with the lens, lights and the biome on an LCD (.mdex-hinge), the map on the device's screen
+   (.mdex-glass, it scrolls in there) and the Bag's pockets as its menu bar (.mdex-dock). The shell round the window is
+   the window's own huge shadow, so the scenery shows through the window and nowhere else; every part after it is
+   positioned, so it paints over that shadow. A Sky Pillar climb keeps its own look: the wrappers step aside. */
+#map-screen:not(.tower) {
+  position: fixed; inset: 0; z-index: 1; max-width: none; margin: 0;
+  display: flex; flex-direction: column;
+  padding: var(--topbar-h) 0 0;
+  overflow: hidden;
+}
+#map-screen.tower :is(.mdex-window, .mdex-hinge, .mdex-glass) { display: contents; }
+#map-screen.tower :is(.mdex-dock, .mdex-hinge > .pdx-lens, .mdex-lights) { display: none; }
+#map-screen:not(.tower) .mdex-window {
+  position: relative; flex: none; margin: 2px 10px 0; padding: 6px 6px 4px; border-radius: 16px 16px 8px 8px;
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 8px 14px rgba(0, 0, 0, 0.3), 0 0 0 100vmax var(--shell);
+}
+#map-screen:not(.tower) .run-card { padding: 2px 2px 4px; }
+#map-screen:not(.tower) .mdex-hinge { position: relative; flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+.mdex-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
+.mdex-lights { display: flex; gap: 5px; }
+.mdex-lights .pdx-light { width: 9px; height: 9px; }
+#map-screen:not(.tower) .mdex-hinge .map-head {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px;
+  margin: 0 0 0 auto; padding: 5px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
+  background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+#map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign) {
+  max-width: 100%; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; text-shadow: none;
+  color: #1f3a14; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: none !important;
+}
+#map-screen:not(.tower) .mdex-hinge .biome-sign { font-size: 0.72rem; letter-spacing: 0.04em; }
+#map-screen:not(.tower) .mdex-hinge .stage-sign { font-size: 0.58rem; opacity: 0.8; }
+#map-screen:not(.tower) .mdex-hinge .stage-sign::before, #map-screen:not(.tower) .mdex-hinge .stage-sign::after { display: none; }
+#map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: lcdType 0.6s steps(6) both !important; }
+@keyframes lcdType { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
+#map-screen:not(.tower) .mdex-glass {
+  position: relative; flex: 1; min-height: 0; display: flex; margin: 0 10px; padding: 8px; border-radius: 12px 12px 12px 30px;
+  background: #e4e4ea; box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 -4px 0 rgba(0, 0, 0, 0.14);
+}
+#map-screen:not(.tower) .map-wrap {
+  flex: 1; min-width: 0; padding: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none;
+  border: 3px solid #2a2a30; border-radius: 6px 6px 6px 22px; background: #1c2440;
+}
+#map-screen:not(.tower) .map-wrap::-webkit-scrollbar { display: none; }
+#map-screen:not(.tower) .map { width: 100%; box-shadow: none; border-radius: 0; }
+#map-screen:not(.tower) .map > .scope-btn { bottom: 10px; }
+#map-screen:not(.tower) .mdex-dock {
+  position: relative; flex: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+}
+.mdex-btn {
+  position: relative; display: grid; justify-items: center; gap: 3px; min-width: 0; padding: 7px 0 6px; border: 0; border-radius: 12px;
+  background: var(--shell-lo); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
+  color: #fff; font: 0.5rem var(--pixel-font); font-synthesis-weight: none; cursor: pointer;
+  transition: translate 0.06s, box-shadow 0.06s; -webkit-tap-highlight-color: transparent;
+}
+.mdex-ico { font-size: 26px; line-height: 0; filter: drop-shadow(0 2px 1px rgba(20, 10, 30, 0.45)); }
+.mdex-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 1px 1px 0 var(--shell-deep); }
+.mdex-btn:active, .mdex-btn[aria-current] { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+.mdex-btn[aria-current] { background: #b6d68e; color: #1f3a14; }
+.mdex-btn[aria-current] .mdex-label { text-shadow: none; }
+.mdex-count {
+  position: absolute; top: -7px; right: 0; min-width: 20px; padding: 2px 4px; border: 2px solid var(--shell-rim); border-radius: 9px;
+  background: #1f3a14; color: #d8f0b0; font-size: 0.5rem; font-weight: 400; line-height: 1;
+}
+.mdex-count:empty { display: none; }
+/* the news box and the Bag sit just over the menu bar; the Bag's own tabs are the menu bar there, and the top bar's Bag goes */
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-bottom { bottom: calc(max(10px, env(safe-area-inset-bottom)) + 70px); }
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) #bag-btn { display: none; }
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) {
+  position: fixed; top: auto; right: auto; left: 50%; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 66px); translate: -50% 0;
+  max-height: calc(100dvh - var(--topbar-h) - max(10px, env(safe-area-inset-bottom)) - 80px); animation: bagRise 0.18s ease-out;
+}
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-pockets { display: none; }
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag-head { margin-bottom: 10px; }
+@keyframes bagRise { from { transform: translateY(24px); opacity: 0; } }
+/* wider than a phone the device stands on the scenery under the top bar, the map at its own tile size inside */
+@media (min-width: 721px) {
+  #map-screen:not(.tower) {
+    inset: calc(var(--topbar-h) + 4px) auto 14px 50%; width: min(1100px, calc(100vw - 32px)); translate: -50% 0;
+    padding-top: 12px; border-radius: 26px; box-shadow: 0 18px 50px rgba(10, 20, 60, 0.45);
+  }
+  #map-screen:not(.tower) .mdex-window, #map-screen:not(.tower) .mdex-glass { margin-inline: 14px; }
+  #map-screen:not(.tower) .map { width: min(100%, calc(var(--grid-w, 37) * 11px)); }
+  #map-screen:not(.tower) .mdex-dock { grid-template-columns: repeat(5, minmax(0, 110px)); justify-content: center; padding-bottom: 12px; }
+  #map-screen:not(.tower) .mdex-hinge .map-head { flex: 0 1 380px; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-bottom { bottom: 100px; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) { bottom: 96px; max-height: calc(100dvh - var(--topbar-h) - 120px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: none !important; }
+  .bag:not([hidden]) { animation: none !important; }
+}
+
+/* ---------- the Bag, redone as a piece of the Pokédex (the user's call, 2026-10-07) ----------
+   The device's shell round it, the pocket's name on the green LCD between blinking arrows, the pockets as the shell's
+   buttons (pressed in and lit green when open) and each pocket on a cream screen in a grey bezel, its rows as cards. */
+.drop.bag {
+  padding: 10px; border: 0; border-radius: 20px;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+.bag .bag-head { flex: none; border: 3px solid var(--shell-rim); border-radius: 8px; background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); }
+.bag .bag-head strong { color: #1f3a14; font-size: 0.8rem; }
+.bag .bag-flip { color: #1f3a14; }
+.bag .bag-flip:hover { color: #3a6a20; }
+.bag .bag-pockets { flex: none; gap: 8px; margin: 10px 0 12px; }
+.bag .bag-pocket {
+  width: 52px; height: 46px; border: 0; border-radius: 12px; font-size: 26px;
+  background: var(--shell-lo); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
+}
+.bag .bag-pocket > span { line-height: 0; filter: drop-shadow(0 2px 1px rgba(20, 10, 30, 0.45)); }
+.bag .bag-pocket[aria-selected="true"] { background: #b6d68e; transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+.bag .bag-pocket[aria-selected="true"]::after { display: none; }
+.bag .bag-pocket b { right: -8px; top: -8px; border-color: var(--shell-rim); border-radius: 10px; background: #1f3a14; color: #d8f0b0; }
+.bag .bag-pocket-body {
+  margin: 6px; padding: 10px 8px; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 18px; background: var(--win-bg);
+  box-shadow: 0 0 0 6px #e4e4ea, 0 0 0 9px var(--shell-rim);
+}
+.bag .howto-list { gap: 6px; }
+.bag .howto-li { background: #fff; border: 2px solid var(--win-edge); border-radius: 10px; box-shadow: 0 2px 0 var(--win-shadow); }
+.bag .howto-li:last-child { border-bottom: 2px solid var(--win-edge); }
+.bag .bag-pocket-body > .btn { border-radius: 999px; }
+
+/* the Game Corner as a Pokédex app (cornerApp in js/shop.js): the cabinet's CRT fills the device's screen, its Buy under it */
+.cdev-app.cdev-corner { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #0c0c10; color: #e8fff4; }
+.cdev-corner .gc-crt { flex: 1 0 auto; justify-content: space-between; }
+.cdev-corner .gc-crt * { text-shadow: 2px 2px 0 rgba(0, 20, 16, 0.6); }
+.cdev-corner .gc-roster { padding-bottom: 4px; }
+.gc-app-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.gc-app-hint { font-size: 0.55rem; text-transform: uppercase; color: #8a8a96; }
+.gc-app-buy {
+  min-width: 132px; padding: 10px 14px; border: 3px solid #181010; border-radius: 999px;
+  background: #f878b0; box-shadow: 0 4px 0 #a83870, 0 4px 0 3px #181010; color: #181010;
+  font: 0.7rem var(--pixel-font); font-synthesis-weight: none; text-transform: uppercase; cursor: pointer;
+}
+.gc-app-buy:active:not(:disabled) { translate: 0 3px; box-shadow: 0 1px 0 #a83870, 0 1px 0 3px #181010; }
+.gc-app-buy:disabled { background: #888890; box-shadow: 0 4px 0 #505058, 0 4px 0 3px #181010; color: #2a2a30; cursor: default; }
+.gc-app-buy.armed { animation: gcAppArmed 0.5s steps(1) infinite; }
+@keyframes gcAppArmed { 50% { background: #fff0a0; } }
+@media (prefers-reduced-motion: reduce) { .gc-app-buy.armed { animation: none; background: #fff0a0; } }

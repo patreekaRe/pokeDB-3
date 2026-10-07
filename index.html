@@ -293,6 +293,10 @@
         <div class="tw-gauge" id="tw-gauge" aria-hidden="true"></div>
         <div class="tw-plate" id="tw-plate" aria-live="polite"><span class="tw-plate-num"></span><span class="tw-plate-sub"></span></div>
       </div>
+      <!-- the map lives inside the Pokédex (the user's call, 2026-10-07): a window onto the scenery with your Pokémon and HP,
+           the biome on the hinge's LCD, the map on the device's screen and the Bag's pockets as the menu bar at the bottom.
+           In a Sky Pillar climb these wrappers step aside (display: contents) -->
+      <div class="mdex-window">
       <div class="run-card">
         <!-- a fidget: tap to recall your Pokémon into its ball, tap again to send it out (toggleMon() in js/run.js) -->
         <button type="button" class="run-mon" id="run-mon" data-state="out" aria-pressed="false" title="Tap to recall it into its Poké Ball">
@@ -313,6 +317,9 @@
         </div>
       </div>
 
+      </div>
+      <div class="mdex-hinge">
+        <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
       <div class="map-head">
         <h2 class="biome-sign" id="biome-name"></h2>
         <!-- the place you stand in (a biome's 3 places and the boss's arena: stageOf() in js/map.js), hung under the sign -->
@@ -320,8 +327,18 @@
       </div>
       <!-- the Silph Scope, a complete Pokédex's prize, lies in the map's bottom-left corner: reveals a fight room's Pokémon
            (js/run.js drawMap()); .map-keep survives renderMap() -->
+      </div>
+      <div class="mdex-glass">
       <div class="map-wrap"><div class="map" id="map"><button class="scope-btn map-keep" id="scope-btn" type="button" hidden></button></div></div>
       <!-- news from the run (an event's outcome, a used item...), told in the same text box as the reward screens (rewards.js tell()) -->
+      </div>
+      <nav class="mdex-dock" id="mdex-dock" aria-label="Bag pockets">
+        <button type="button" class="mdex-btn" data-pocket="deck"><span class="mdex-ico" data-icon="moves"></span><span class="mdex-label">Deck</span><b class="mdex-count" id="dock-deck-count"></b></button>
+        <button type="button" class="mdex-btn" data-pocket="relics"><span class="mdex-ico" data-icon="relics"></span><span class="mdex-label">Relics</span><b class="mdex-count" id="dock-relic-count"></b></button>
+        <button type="button" class="mdex-btn" data-pocket="items"><span class="mdex-ico" data-icon="items"></span><span class="mdex-label">Items</span><b class="mdex-count" id="dock-item-count"></b></button>
+        <button type="button" class="mdex-btn" data-pocket="key"><span class="mdex-ico" data-icon="map"></span><span class="mdex-label">Map key</span></button>
+        <button type="button" class="mdex-btn" data-pocket="trainer"><span class="mdex-ico" data-icon="cap"></span><span class="mdex-label">Trainer</span></button>
+      </nav>
       <div class="map-bottom"><div class="reward-log" id="map-log" hidden><span id="map-log-text" aria-hidden="true"></span><span class="sr-only" id="map-log-live" aria-live="polite"></span></div></div>
     </section>
 
