@@ -122,7 +122,7 @@ export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.le
    handheld Pokédex: a banner per biome (its name, progress, perk medal and three of its Pokémon), and a tap opens the
    red device on that page, one entry at a time, with the page's every entry as slots to jump between. */
 
-const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', ruins: 'Ruins', wastes: 'Wastes', depths: 'Depths' };
+const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', ruins: 'Ruins', wastes: 'Wastes', thornwood: 'Jungle', depths: 'Depths' };
 const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
 /** A bonus page (another road from a crossroads) shows once a run has walked that road or met one of its Pokémon. */
 const bonusKnown = (p) => (getSave().stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => getSave().dex.seen.includes(id));

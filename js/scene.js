@@ -581,6 +581,8 @@ BIOME_ART.ruins = {
     boss: { grade: 'boss', clouds: { count: 1.3 } },
   },
 };
+// The Thornwood Jungle (roadmap item 19 c) borrows the Clearing's forest until part d paints its own.
+BIOME_ART.thornwood = { ...BIOME_ART.clearing, kin: 'clearing' };
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
@@ -1271,6 +1273,7 @@ const WEATHER = {
   shrine: { dawn: 'drizzle', day: 'drizzle', dusk: 'leaves', night: 'drizzle' },
   ruins: { dawn: 'drizzle', night: 'drizzle' },
   wastes: 'ash',
+  thornwood: 'leaves',
   depths: 'dust',
   meadow: { dawn: 'drizzle', dusk: 'leaves', night: 'drizzle' },
   forest: 'leaves',

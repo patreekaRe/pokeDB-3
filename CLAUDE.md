@@ -551,7 +551,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   pages, Mewtwo keeps its one road, each new biome is bot-checked against the one it pairs with): `BIOMES` in
   `js/data/enemies.js` is the default road, each entry with its `slot`; `ALT_BIOMES` holds the other roads (the **Sunken
   Ruins**, slot 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Furfrou / Gumshoos / Dubwool, bosses
-  Dudunsparce / Oinkologne / Maushold, Biome 2's numbers), `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'] }`),
+  Dudunsparce / Oinkologne / Maushold, Biome 2's numbers; and since part c, 2026-10-07, the **Thornwood Jungle**, slot 2 beside
+  the Wastes: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Skwovet, Team Rocket's whole
+  `team` there), Alphas Komala / Wooloo / Tandemaus, bosses Greedent / Type: Null (`typenull`) / Silvally, the Wastes' numbers;
+  it borrows the Clearing's scenery (`BIOME_ART.thornwood`, `kin: 'clearing'`) and has no intro or journey films until
+  part d; a win there "conquered the jungle", `conquered(route)` in `js/halloffame.js`, from the `route` a record now keeps),
+  `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] }`),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
   default road, no version bump). After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
   `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the
@@ -560,12 +565,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. A tap (card or road) or an arrow key picks,
   a second tap, the button or Enter takes it: it walks up that road into the dark. No way out without choosing. It resolves
   `{ id, close }`, closed once the journey film or the map covers it. Never on Mewtwo's or a Safari run. Playtest
-  `?crossroads` (`&starter=`, `&stage=`, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
+  `?crossroads` (`&starter=`, `&stage=`, `&slot=2` for the second fork with `&from=ruins`, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
   biome object (or a slot number for the default road). Every per-biome array (events' numbers, Kenmatta's HP,
   `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
-  biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: all five main biomes entered, the user's call, once Thornwood exists). The Ruins'
-  Pokédex page is `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
-  No.072-089; 500 PokéCoins once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). Every
+  biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: all five main biomes entered, the user's call; earnable since part c). The Ruins' and Thornwood's
+  Pokédex pages are `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
+  the Ruins No.072-089, Thornwood No.090-107; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). Every
   Gen 1-5 species was used, so its Pokémon are Gen 6-9 with PokeAPI's `other/showdown/` GIFs (like Eternatus). **Its look**
   (part b, 2026-10-06): `BIOME_ART.ruins` in `js/scene.js`, a temple drowned in a jungle lagoon. Its ground is water:
   `ruinsFloor()` mirrors the backdrop in it, things standing in it are painted with `dry()` and mirrored by `reflect()`, and
@@ -588,7 +593,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), four `BADGE_GROUPS`:
   Journey (the three biome bosses, Champion, Fire / Water / Grass), Trainer Levels (Bronze 2, Silver 3, Gold 5, Master 5 with
   all three types), Secrets (Dojo, Seal, Depths `secret`, Pokédex, Safari, Streak) and New frontiers (Explorer, Tower
-  25F / 50F / 100F: `locked`, never earned until their content lands). Each test reads only what the save already keeps (the
+  25F / 50F / 100F; none is `locked` any more, since the Sky Pillar and Thornwood landed). Each test reads only what the save already keeps (the
   Level legendaries, `maxLevelWinByType`, `level5WinsBy` / `level5Jackpot`, the Hall of Fame, `winsBy` by the starter's
   type), so `checkBadges()` in `js/progress.js` (pure part `newBadges(save)`) granting into `save.badges` at load (`init()`
   in `js/main.js`, silent) gives an old save everything it can prove on day one. In a run it's quiet, no window: a

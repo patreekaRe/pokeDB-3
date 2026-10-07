@@ -80,11 +80,19 @@ test('the gate, Eternatus and the dojo', () => {
   assert.deepEqual(ids(deep), ['depths']);
 });
 
-test('a granted badge is never new again, and the new-content badges can\'t be earned', () => {
+test('a granted badge is never new again, and no badge is still waiting on content', () => {
   const save = fresh();
   save.stats.runsWon = 1;
   save.badges = ['champion'];
   assert.deepEqual(ids(save), []);
-  for (const b of BADGES.filter(x => x.group === 'new' && !x.id.startsWith('tower-'))) assert.ok(b.locked, b.id);
+  for (const b of BADGES) assert.ok(!b.locked, b.id);
   assert.match(badgeLine(BADGES_BY_ID.champion), /Badge earned: Champion Badge!/);
+});
+
+test('the Explorer Badge needs all five main biomes entered, both roads at each crossroads', () => {
+  const save = fresh();
+  save.stats.biomesSeen = ['clearing', 'shrine', 'ruins', 'wastes', 'depths'];
+  assert.ok(!ids(save).includes('explorer'));
+  save.stats.biomesSeen.push('thornwood');
+  assert.ok(ids(save).includes('explorer'));
 });

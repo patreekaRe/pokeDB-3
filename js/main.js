@@ -65,7 +65,7 @@ import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
-import { travel } from './travel.js';
+import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 
 /* ---------- moving between screens ---------- */
@@ -292,7 +292,8 @@ function init() {
     // first-time lines included, without saving anything; &at=0.5 holds it at that point of the trip, no lines
     if (params.has('travel')) return peekTravel(params);
     // ?crossroads (&starter=id, &stage=0-2) shows the fork after Biome 1's boss after PRESS START; the road taken plays its
-    // journey film if it has one, then the title comes back. Nothing is saved
+    // journey film if it has one, then the title comes back. Nothing is saved. &slot=2 is the fork after Biome 2's boss
+    // (&from=ruins walks it from the Ruins)
     if (params.has('crossroads')) return peekCrossroads(params);
     // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
     if (params.has('climb')) return peekClimb(params);
@@ -362,14 +363,16 @@ async function peekTravel(params) {
   close();
 }
 
-/** The ?crossroads playtest: the fork after Biome 1, then the road taken's journey film. Nothing is saved. */
+/** The ?crossroads playtest: the fork after Biome 1 (or &slot=2's), then the road taken's journey film. Nothing is saved. */
 async function peekCrossroads(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
-  const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? 1) || 0), shiny = getSave().shiny.on.includes(starter.id);
-  const fork = await crossroads({ ids: CROSSROADS[1], starter, stage, shiny });
-  const close = await travel({ from: BIOMES[0].id, to: fork.id, starter, stage, shiny, first: true });
+  const slot = CROSSROADS[params.get('slot')] ? Number(params.get('slot')) : 1;
+  const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? slot) || 0), shiny = getSave().shiny.on.includes(starter.id);
+  const fork = await crossroads({ ids: CROSSROADS[slot], starter, stage, shiny });
+  const from = BIOMES_BY_ID[params.get('from')]?.slot === slot - 1 ? params.get('from') : BIOMES[slot - 1].id;
+  const close = hasTravel(from, fork.id) ? await travel({ from, to: fork.id, starter, stage, shiny, first: true }) : null;
   fork.close();
-  close();
+  close?.();
 }
 
 /** The ?climb playtest: the Sky Pillar's opening film, then ?tower=1's throwaway climb. Nothing is saved. */

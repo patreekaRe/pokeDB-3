@@ -1230,6 +1230,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .biome-sign[data-biome="ruins"] { --plank: #4f7472; --plank-dark: #3f5e5c; --rim: #8cc8c0; --frame: #102422; --nail: #d8c890; --text: #e0fbf6; animation: runeGlint 3.4s steps(2) infinite; }   /* sea-worn stone, its runes waking now and then */
 .biome-sign[data-biome="ruins"].arrive { animation: signDrop 0.7s ease-out both, runeGlint 3.4s steps(2) 0.7s infinite; }
 @keyframes runeGlint { 50% { box-shadow: inset 0 0 0 2px #b8fff4, 4px 4px 0 rgba(0, 0, 0, 0.45), 0 0 8px rgba(110, 240, 224, 0.5); } }
+.biome-sign[data-biome="thornwood"] { --plank: #3e5a2a; --plank-dark: #30481f; --rim: #8cc850; --frame: #12200c; --nail: #c8e070; --text: #eaffd0; }
 .biome-sign[data-biome="wastes"] { --plank: #54403a; --plank-dark: #43322d; --rim: #e0602a; --frame: #1c1210; --nail: #f8a030; --text: #ffe0b0; }
 .biome-sign[data-biome="depths"] { --plank: #3a2c5c; --plank-dark: #2c2148; --rim: #7ae8ff; --frame: #120a22; --nail: #ff6ac8; --text: #eadcff; animation: crystalGlint 2.6s steps(2) infinite; }   /* a slab of amethyst, glinting cyan */
 .biome-sign[data-biome="depths"].arrive { animation: signDrop 0.7s ease-out both, crystalGlint 2.6s steps(2) 0.7s infinite; }
@@ -1265,6 +1266,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .stage-sign::after { right: 14px; }
 .stage-sign[data-biome="shrine"] { --plank: #7f8f70; --frame: #1f2a18; --text: #eef8dc; --cord: #c8b070; }
 .stage-sign[data-biome="ruins"] { --plank: #5f8482; --frame: #102422; --text: #e0fbf6; --cord: #c8b070; }
+.stage-sign[data-biome="thornwood"] { --plank: #4e6a38; --frame: #12200c; --text: #eaffd0; --cord: #8a6a3a; }
 .stage-sign[data-biome="wastes"] { --plank: #64504a; --frame: #1c1210; --text: #ffe0b0; --cord: #1c1210; }
 .stage-sign[data-biome="depths"] { --plank: #4a3a74; --frame: #120a22; --text: #eadcff; --cord: #7ae8ff; }
 .stage-sign[data-safari] { --plank: #d8b070; --frame: #3a2410; --text: #fff8e0; --cord: #3a2410; }
@@ -4452,6 +4454,7 @@ body.scene-peek #backdrop { display: none; }
 .pdx-banner.biome-clearing { --b1: #6cc85a; --b2: #2b7a3a; }
 .pdx-banner.biome-shrine   { --b1: #c27ad2; --b2: #5a2e7e; }
 .pdx-banner.biome-ruins    { --b1: #4ab8c0; --b2: #14485e; }
+.pdx-banner.biome-thornwood { --b1: #6ac040; --b2: #1e4a1a; }
 .pdx-banner.biome-wastes   { --b1: #f08a48; --b2: #8a2a18; }
 .pdx-banner.biome-depths   { --b1: #9a68e8; --b2: #24104c; }
 .pdx-banner.biome-mystery  { --b1: #4a3a72; --b2: #140c26; cursor: default; }
@@ -4478,6 +4481,7 @@ body.scene-peek #backdrop { display: none; }
 }
 .pdx-device.biome-shrine { --sky: #f7c6d8; --ground: #b89870; --pad: #8e7454; }
 .pdx-device.biome-ruins { --sky: #a8e0e0; --ground: #6a8a7a; --pad: #4a6a5c; }
+.pdx-device.biome-thornwood { --sky: #b8e890; --ground: #3e6a2a; --pad: #2e5020; }
 .pdx-device.biome-wastes { --sky: #ffb070; --ground: #7a3c24; --pad: #5a2a18; }
 .pdx-device.biome-depths { --sky: #3a2470; --ground: #6a4aa8; --pad: #4a2e88; }
 .pdx-lid {

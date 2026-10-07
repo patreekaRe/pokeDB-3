@@ -389,6 +389,7 @@ const PALETTES = {
   ruins:    { ground: 'paving', blobs: [['flood', 9, 16, 46], ['ruins', 5, 8, 24], ['lotus', 4, 8, 20], ['trees', 2, 6, 14]],
               props: [['colonnade', 2], ['lantern', 4]] },   // a flooded temple: old paving half under a teal lagoon
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
+  thornwood: { ground: 'moss', blobs: [['trees', 14, 14, 44], ['water', 3, 8, 20], ['bog', 2, 8, 16]] },   // a primeval forest (part d paints its own)
   depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)
   meadow:   { ground: 'grass', blobs: [['trees', 3, 6, 14], ['water', 2, 10, 24], ['mountain', 2, 8, 16]] },

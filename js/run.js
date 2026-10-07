@@ -43,7 +43,7 @@ import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, mart
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
-import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene } from './halloffame.js';
+import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
@@ -2718,7 +2718,7 @@ function endRun(won, atLastBoss = false, loss = null) {
 
   const name = stageName(run.starter, run.stage);
   const biome = mainBiome();
-  $('result-title').textContent = won ? (safari ? '🏆 You crossed the Safari Zone!' : mewtwoRun ? '🏆 You reached the last energy!' : '🏆 You conquered the wastes!') : '💀 Your run has ended';
+  $('result-title').textContent = won ? (safari ? '🏆 You crossed the Safari Zone!' : mewtwoRun ? '🏆 You reached the last energy!' : `🏆 You conquered ${conquered(run.route)}!`) : '💀 Your run has ended';
   $('result-text').textContent = won
     ? `${name} beat all ${mewtwoRun ? 'four' : 'three'} bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
     : safari ? `${name} fainted in the Safari Zone's ${safariArea().name} after ${run.fights} won fights. Today's run is the same every try: try another path!`

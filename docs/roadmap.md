@@ -62,18 +62,15 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     keeps its fixed road, no crossroads; the Explorer Badge is earned by entering all five main biomes (across any runs,
     not beating their bosses: `stats.biomesSeen` already tracks it). The bot checks each new biome against the one it
     pairs with. **The Sunken Ruins are done** (part a, the crossroads logic and its gameplay; part b, the crossroads scene and
-    its whole look, films and journey films; see the archive). Next is the Thornwood Jungle, the same two sessions.
-    For Thornwood's Pokémon: every Gen 1-5 species is used, so use Gen 6-9 (PokeAPI's `other/showdown/<dex>.gif`); only 7
-    pure-Normal Gen 6-9 species are left for its 3 Normal wilds, 3 Alphas and 3 bosses (Skwovet, Greedent, Wooloo, Komala,
-    Tandemaus, Type: Null, Silvally). **Decided (the user's pick, 2026-10-07):** Thornwood gets 1 Normal wild instead of 3
-    and 2 more Grass ones (7 Grass / 2 Fire / 2 Water / 1 Normal), so those 7 fill its 1 Normal wild, 3 Alphas and 3 bosses.
-    c. **Run in: CLOUD.** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19 (the Sunken Ruins are done, look
-       and all). Build the Thornwood Jungle's gameplay, slot 2's other road beside the Ember Wastes, the way part a built the
-       Ruins: 12 wilds (mostly Grass), 3 Alphas, 3 bosses (Gen 6-9, PokeAPI's other/showdown GIFs, cries, sprite fits, enemy
-       entries), its bonus Pokédex page, CROSSROADS[2], the Explorer Badge's test, and a bot check against the Wastes. Its
-       wilds are 7 Grass / 2 Fire / 2 Water / 1 Normal (already decided). Push to main."
-    d. **Run in: LOCAL (Desktop app).** Then paint it like the Ruins (its places, intro film, prelude, map, sign, grotto) and
-       its Shrine → Jungle (a vine-choked torii) and Ruins → Jungle (a waterfall crossing) journey films.
+    its whole look, films and journey films; see the archive). **The Thornwood Jungle's gameplay is done** (part c, 2026-10-07:
+    its 18 Pokémon, `CROSSROADS[2]`, its bonus page, the Explorer Badge; see the archive). It borrows the Clearing's scenery.
+    d. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19. Paint the
+       Thornwood Jungle like the Sunken Ruins (its four places Tangled Edge / Canopy Walk / Strangler Grove / Heart Tree,
+       its intro film, the Heart Tree's boss prelude, map palette and tiles, sign, its own grotto), and its Shrine → Jungle
+       (a vine-choked torii) and Ruins → Jungle (a waterfall crossing) journey films. It borrows the Clearing's scenery
+       now (`BIOME_ART.thornwood` in js/scene.js). Also: a run that falls at the jungle's last boss still plays the descent
+       in a dusky wasteland (js/descent.js); give it a jungle floor. Playtest with ?biome=thornwood and ?crossroads&slot=2."
+
 
 ## Ideas, not agreed yet (ask the user before building)
 

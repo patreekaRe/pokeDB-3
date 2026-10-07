@@ -44,7 +44,7 @@ const INK = abgr('#1a1008');
 const GOLD = pal(['#fff0a0', '#f8c850']);
 const FLY = pal(['#fffad0', '#f8d860', '#a88830']);
 // each road's arm of the signpost in its biome sign's colours (css/screens.css's .biome-sign): plank, rim
-const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'], ruins: ['#4f7472', '#8cc8c0'], wastes: ['#54403a', '#e0602a'] };
+const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'], ruins: ['#4f7472', '#8cc8c0'], wastes: ['#54403a', '#e0602a'], thornwood: ['#3e5a2a', '#8cc850'] };
 
 let P = 4, W = 0, H = 0, tall = true, hz = 0, fy = 0, fx = 0, d = 0, gw = 0, gh = 0, bw = 0;
 let canvas = null, ctx = null, img = null, buf = null, base = null, shots = [];

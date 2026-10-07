@@ -865,6 +865,25 @@ export const SPRITE_FIT = {
   'salandit-front': [2, 0, 1, 10],
   'wishiwashi-front': [2, 2, 3, 9],
   'yungoos-front': [0, 0, 1, 5],
+  // the Thornwood Jungle (roadmap item 19 c): the same source
+  'arboliva-front': [0, 0, 0, 0],
+  'barraskewda-front': [2, 1, 1, 7],
+  'brambleghast-front': [0, 0, 0, 1],
+  'ceruledge-front': [1, 0, 0, 1],
+  'eldegoss-front': [1, 0, 2, 2],
+  'gogoat-front': [0, 0, 0, 1],
+  'greedent-front': [2, 0, 1, 2],
+  'komala-front': [1, 0, 0, 1],
+  'lurantis-front': [1, 0, 1, 1],
+  'pyroar-front': [2, 0, 1, 5],
+  'silvally-front': [0, 0, 0, 0],
+  'skwovet-front': [2, 0, 1, 5],
+  'tandemaus-front': [0, 0, 2, 1],
+  'trevenant-front': [1, 0, 1, 0],
+  'tsareena-front': [1, 0, 0, 1],
+  'typenull-front': [0, 0, 0, 2],
+  'veluza-front': [3, 4, 5, 6],
+  'wooloo-front': [1, 0, 3, 2],
 };
 
 /** The gaps for a sprite's URL or file name. A starter's bought shiny is the same animation recoloured, so it

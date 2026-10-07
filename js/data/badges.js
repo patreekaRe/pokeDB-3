@@ -13,6 +13,10 @@
 
 import { STARTERS } from './starters.js';
 import { MAX_LEVEL } from './difficulty.js';
+import { BIOMES, ALT_BIOMES } from './enemies.js';
+
+/** Every main biome, both roads at each crossroads (the Explorer Badge's; the Depths are Mewtwo's own). */
+const MAIN_BIOMES = [...BIOMES, ...ALT_BIOMES].filter(b => !b.secret).map(b => b.id);
 
 const KANTO_TYPES = ['fire', 'water', 'grass'];
 const LEVEL2_LEGENDS = ['moltres', 'virizion', 'suicune'];
@@ -85,8 +89,8 @@ export const BADGES = [
     text: 'Win 3 runs in a row on Trainer Level 2 or higher', test: (s) => s.bestStreak >= 3 },
 
   // New content: shown as locked slots until it lands
-  { id: 'explorer', group: 'new', name: 'Explorer Badge', icon: 'explorer', emoji: '🧭', locked: true,
-    text: 'See every biome (coming with branching biomes)', test: () => false },
+  { id: 'explorer', group: 'new', name: 'Explorer Badge', icon: 'explorer', emoji: '🧭',
+    text: 'Walk into all five biomes, both roads at each crossroads', test: (s) => MAIN_BIOMES.every(id => (s.biomesSeen || []).includes(id)) },
   { id: 'tower-25', group: 'new', name: 'Tower Badge 25F', icon: 'tower-25', emoji: '🗼',
     text: 'Clear floor 25 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 25 },
   { id: 'tower-50', group: 'new', name: 'Tower Badge 50F', icon: 'tower-50', emoji: '🗼',

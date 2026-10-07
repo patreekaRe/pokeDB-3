@@ -80,3 +80,13 @@ test('bonus pages stay out of the Pokédex count, and old dex numbers stay put',
   assert.equal(DEX_NUMBER[DEPTHS_PAGE.ids[0]], 56);
   assert.equal(DEX_NUMBER[DEPTHS_PAGE.ids.at(-1)], 71);
 });
+
+test('the Thornwood Jungle is slot 2\'s other road: mostly Grass, one Normal wild, at the Wastes\' numbers', () => {
+  const jungle = BIOMES_BY_ID.thornwood;
+  assert.deepEqual(CROSSROADS[2], ['wastes', 'thornwood']);
+  const types = jungle.normals.map(id => ENEMY_DEFS[id].type);
+  assert.deepEqual(['grass', 'fire', 'water', 'normal'].map(t => types.filter(x => x === t).length), [7, 2, 2, 1]);
+  const mods = modsFor(0);
+  assert.equal(buildEncounter(jungle, 'boss', mods, 'silvally').strength, buildEncounter(2, 'boss', mods, 'slaking').strength);
+  assert.equal(biomeAt(['clearing', 'ruins', 'thornwood'], 2).id, 'thornwood');
+});

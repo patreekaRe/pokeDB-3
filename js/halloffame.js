@@ -68,6 +68,9 @@ export function recordLoss(run, { foe = null, move = null, kind = null, biomeNam
   return entry;
 }
 
+/** What a win conquered: the last biome on its road (a record saved before the crossroads walked the Wastes). */
+export const conquered = (route) => (route?.[2] === 'thornwood' ? 'the jungle' : 'the wastes');
+
 /** A won run's entry, unsaved (recordWin() saves it; a ?bossfight=depths playtest only plays its scene). */
 export function draftWin(run, shiny) {
   const wins = getSave().hallOfFame;
@@ -94,6 +97,7 @@ function runRecord(run, shiny) {
     date: dayOf(new Date()),
     started: t.startedAt ? dayOf(new Date(t.startedAt)) : null,
     level: run.level,
+    route: run.route ? [...run.route] : null,   // the crossroads' picks (roadmap item 19), so a win can say which land it conquered
     deck: [...run.deck],
     relics: [...run.relics],
     items: [...run.items],
@@ -265,7 +269,7 @@ export async function winScene(entry) {
     ? ['Eternatus\'s energy is spent. The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
     : summit ? ['Rayquaza bows its head and soars off. Above the summit there is only sky.', `${name} climbed all ${entry.floor} floors of the SKY PILLAR!`]
     : fame ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
-    : [`${name} conquered the wastes on Trainer Level ${entry.level}!`]);
+    : [`${name} conquered ${conquered(entry.route)} on Trainer Level ${entry.level}!`]);
 
   scene.classList.add('deck-in');
   await sleep(still() ? 0 : 500);

@@ -472,6 +472,118 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  /* ----- Biome 3, the other road: the Thornwood Jungle, a primeval forest (roadmap item 19). Mostly Grass. Gen 6-9, like
+     the Sunken Ruins' (PokeAPI's showdown GIFs). Its one Normal wild leaves the last pure-Normal species for its Alphas and
+     bosses (the user's call, 2026-10-07). ----- */
+  lurantis: {
+    name: 'Lurantis', type: 'grass', hp: 64, ...sprite('lurantis'),
+    description: 'Dresses itself as a jungle orchid, then cuts down whoever stops to admire it.',
+    moves: [
+      { kind: 'attack', name: 'Leafage',      amount: 8 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
+      { kind: 'attack', name: 'Solar Blade',  amount: 13 },
+    ],
+  },
+  tsareena: {
+    name: 'Tsareena', type: 'grass', hp: 62, ...sprite('tsareena'),
+    description: 'Queen of the canopy. Every kick smells of fruit, and every kick lands.',
+    moves: [
+      { kind: 'attack', name: 'Double Kick', amount: 8, type: 'normal' },
+      { kind: 'drain',  name: 'Drain Punch', amount: 7, heal: 6, type: 'normal' },
+      { kind: 'attack', name: 'Trop Kick',   amount: 13 },
+    ],
+  },
+  trevenant: {
+    name: 'Trevenant', type: 'grass', hp: 68, ...sprite('trevenant'),
+    description: 'The oldest trees here have roots that move. Those are its legs.',
+    moves: [
+      { kind: 'attack', name: 'Shadow Claw', amount: 8, type: 'normal' },
+      { kind: 'attack', name: 'Curse',       amount: 6, type: 'normal', adds: { card: 'sludge', n: 2 } },
+      { kind: 'attack', name: 'Wood Hammer', amount: 13 },
+    ],
+  },
+  gogoat: {
+    name: 'Gogoat', type: 'grass', hp: 70, ...sprite('gogoat'),
+    description: 'Knows every trail through the jungle by the feel of the leaves on its back.',
+    moves: [
+      { kind: 'drain',  name: 'Horn Leech',     amount: 6, heal: 7 },
+      { kind: 'defend', name: 'Grassy Terrain', amount: 10 },
+      { kind: 'attack', name: 'Seed Bomb',      amount: 12 },
+    ],
+  },
+  brambleghast: {
+    name: 'Brambleghast', type: 'grass', hp: 60, ...sprite('brambleghast'),
+    description: 'A ball of thorns that rolls through the undergrowth and tangles everything it touches.',
+    moves: [
+      { kind: 'attack', name: 'Bullet Seed', amount: 7 },
+      { kind: 'status', name: 'Spikes',      adds: { card: 'sludge', n: 2 } },
+      { kind: 'attack', name: 'Power Whip',  amount: 13 },
+    ],
+  },
+  arboliva: {
+    name: 'Arboliva', type: 'grass', hp: 66, ...sprite('arboliva'),
+    description: 'Its olives are said to cure anything. It doesn\'t share them.',
+    moves: [
+      { kind: 'drain',  name: 'Giga Drain', amount: 7, heal: 6 },
+      { kind: 'defend', name: 'Synthesis',   amount: 10 },
+      { kind: 'attack', name: 'Energy Ball', amount: 12 },
+    ],
+  },
+  eldegoss: {
+    name: 'Eldegoss', type: 'grass', hp: 60, ...sprite('eldegoss'),
+    description: 'Its cotton seeds drift down through the canopy and put down roots wherever they land.',
+    moves: [
+      { kind: 'attack', name: 'Leaf Tornado', amount: 7 },
+      { kind: 'defend', name: 'Cotton Guard', amount: 11 },
+      { kind: 'attack', name: 'Leaf Storm',   amount: 13 },
+    ],
+  },
+  pyroar: {
+    name: 'Pyroar', type: 'fire', hp: 66, ...sprite('pyroar'),
+    description: 'Its mane burns brighter than anything under the canopy. You hear it roar first.',
+    moves: [
+      { kind: 'attack', name: 'Fire Fang',   amount: 8 },
+      { kind: 'buff',   name: 'Noble Roar',  amount: 2 },
+      { kind: 'attack', name: 'Flamethrower', amount: 13 },
+    ],
+  },
+  ceruledge: {
+    name: 'Ceruledge', type: 'fire', hp: 64, ...sprite('ceruledge'),
+    description: 'A wandering swordsman of blue flame. The vines it cuts never grow back.',
+    moves: [
+      { kind: 'attack', name: 'Shadow Claw', amount: 8, type: 'normal' },
+      { kind: 'buff',   name: 'Bulk Up',     amount: 2 },
+      { kind: 'attack', name: 'Bitter Blade', amount: 13 },
+    ],
+  },
+  barraskewda: {
+    name: 'Barraskewda', type: 'water', hp: 60, ...sprite('barraskewda'),
+    description: 'Shoots up the jungle rivers like a spear. Don\'t trail your hand in the water.',
+    moves: [
+      { kind: 'attack', name: 'Aqua Jet',    amount: 8 },
+      { kind: 'buff',   name: 'Agility',     amount: 2 },
+      { kind: 'attack', name: 'Liquidation', amount: 13 },
+    ],
+  },
+  veluza: {
+    name: 'Veluza', type: 'water', hp: 64, ...sprite('veluza'),
+    description: 'Sheds its own flesh to slip away faster, and comes back sharper for it.',
+    moves: [
+      { kind: 'attack', name: 'Aqua Cutter',   amount: 8 },
+      { kind: 'defend', name: 'Fillet Away',   amount: 9 },
+      { kind: 'attack', name: 'Psycho Cut',    amount: 13, type: 'normal' },
+    ],
+  },
+  skwovet: {
+    name: 'Skwovet', type: 'normal', hp: 66, ...sprite('skwovet'),
+    description: 'Stuffs its cheeks with every berry in the jungle, and bites whoever reaches for one.',
+    moves: [
+      { kind: 'attack', name: 'Bite',       amount: 8 },
+      { kind: 'defend', name: 'Stockpile',  amount: 10 },
+      { kind: 'attack', name: 'Body Slam',  amount: 13 },
+    ],
+  },
+
   /* ----- Biome 4: the Crystal Depths, Mewtwo's own (v1.0). Shown as Neutral or Psychic whatever their real types:
      Mewtwo is neutral to every type. Built to test a strong deck: shields, scaling, and a `trait` that answers what you
      play (TRAITS below). ----- */
@@ -704,6 +816,34 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  komala: {
+    name: 'Komala', type: 'normal', hp: 72, ...sprite('komala'),
+    description: 'Asleep on its log since the jungle was young. It fights in its sleep, and it never misses.',
+    moves: [
+      { kind: 'attack', name: 'Rollout',   amount: 8 },
+      { kind: 'defend', name: 'Comatose',  amount: 11 },
+      { kind: 'attack', name: 'Sucker Punch', amount: 13 },
+    ],
+  },
+  wooloo: {
+    name: 'Wooloo', type: 'normal', hp: 70, ...sprite('wooloo'),
+    description: 'Rolled down from the hills years ago and grew a fleece so thick the thorns can\'t reach it.',
+    moves: [
+      { kind: 'attack', name: 'Double Kick',  amount: 7 },
+      { kind: 'defend', name: 'Cotton Guard', amount: 11 },
+      { kind: 'attack', name: 'Take Down',    amount: 13 },
+    ],
+  },
+  tandemaus: {
+    name: 'Tandemaus', type: 'normal', hp: 66, ...sprite('tandemaus'),
+    description: 'Two mice who never leave each other\'s side. Hit one and both come for you.',
+    moves: [
+      { kind: 'attack', name: 'Double Hit',  amount: 8 },
+      { kind: 'buff',   name: 'Tidy Up',     amount: 2 },
+      { kind: 'attack', name: 'Super Fang',  amount: 12 },
+    ],
+  },
+
   clefable: {
     name: 'Clefable', type: 'normal', hp: 80, ...sprite('clefable'),
     trait: { id: 'stamina', name: 'Magic Guard', after: 4, amount: 7 },
@@ -867,6 +1007,38 @@ export const ENEMY_DEFS = {
       { kind: 'buff',   name: 'Nasty Plot', amount: 2 },
       { kind: 'attack', name: 'Tri Attack', amount: 15 },
       { kind: 'attack', name: 'Hyper Beam', amount: 20 },
+    ],
+  },
+
+  /* the Thornwood Jungle's (roadmap item 19). The last biome's bosses, so each one ends the run like the Wastes'. */
+  greedent: {
+    name: 'Greedent', type: 'normal', hp: 430, ...sprite('greedent'), boss: true,
+    description: 'Hoards every berry in the jungle in its tail. Try to take one.',
+    moves: [
+      { kind: 'attack', name: 'Bite',        amount: 12 },
+      { kind: 'defend', name: 'Stockpile',   amount: 14 },
+      { kind: 'drain',  name: 'Belch',       amount: 14, heal: 10 },
+      { kind: 'attack', name: 'Body Press',  amount: 22 },
+    ],
+  },
+  typenull: {
+    name: 'Type: Null', type: 'normal', hp: 420, ...sprite('typenull'), boss: true,
+    description: 'Made to hunt a monster from another world, then sealed away in the jungle. The mask is cracking.',
+    moves: [
+      { kind: 'attack', name: 'Crush Claw', amount: 12 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
+      { kind: 'status', name: 'Scary Face', adds: { card: 'paralysis', n: 2, to: 'draw' } },
+      { kind: 'attack', name: 'Tri Attack', amount: 20 },
+    ],
+  },
+  silvally: {
+    name: 'Silvally', type: 'normal', hp: 420, ...sprite('silvally'), boss: true,
+    description: 'It broke its mask in the deepest part of the jungle and became whatever it needed to be.',
+    moves: [
+      { kind: 'attack', name: 'Crunch',          amount: 11 },
+      { kind: 'buff',   name: 'Work Up',         amount: 2 },
+      { kind: 'attack', name: 'Air Slash',       amount: 15 },
+      { kind: 'attack', name: 'Multi-Attack',    amount: 21 },
     ],
   },
 
@@ -1046,10 +1218,18 @@ export const ALT_BIOMES = [
     elites: ['furfrou', 'gumshoos', 'dubwool'], bosses: ['dudunsparce', 'oinkologne', 'maushold'],
     hpMult: 2.9, dmgBonus: 16, bossBonus: 21,
   },
+  {
+    id: 'thornwood', name: 'Thornwood Jungle', slot: 2,
+    stages: ['Tangled Edge', 'Canopy Walk', 'Strangler Grove', 'Heart Tree'],
+    normals: ['lurantis', 'tsareena', 'trevenant', 'gogoat', 'brambleghast', 'arboliva',
+      'eldegoss', 'pyroar', 'ceruledge', 'barraskewda', 'veluza', 'skwovet'],
+    elites: ['komala', 'wooloo', 'tandemaus'], bosses: ['greedent', 'typenull', 'silvally'],
+    hpMult: 5.2, dmgBonus: 27, bossBonus: 33,
+  },
 ];
 export const BIOMES_BY_ID = Object.fromEntries([...BIOMES, ...ALT_BIOMES].map(b => [b.id, b]));
 /** The roads a slot can take, the default first. A slot not listed has only its BIOMES entry. */
-export const CROSSROADS = { 1: ['shrine', 'ruins'] };
+export const CROSSROADS = { 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] };
 /** The biome a run is in at slot `i`, by its saved `route` (none, or a run saved before the crossroads: the default road). */
 export const biomeAt = (route, i) => BIOMES_BY_ID[route?.[i]] ?? BIOMES[i];
 /** A biome given as its slot (the default road's) or as the biome itself. */

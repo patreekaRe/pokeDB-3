@@ -50,7 +50,7 @@ export const EVENTS = [
     fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), by biome id: from its own wilds, so a new
     // biome needs a line here. All Normal, like every Alpha.
-    team: { clearing: ['rattata', 'zigzagoon'], shrine: ['teddiursa', 'aipom'], ruins: ['bunnelby', 'yungoos'], wastes: ['bouffalant', 'zangoose'], depths: ['crobat', 'sableye'] },
+    team: { clearing: ['rattata', 'zigzagoon'], shrine: ['teddiursa', 'aipom'], ruins: ['bunnelby', 'yungoos'], wastes: ['bouffalant', 'zangoose'], thornwood: ['skwovet'], depths: ['crobat', 'sableye'] },
     grunts: ['grunt-m', 'grunt-f'],   // the grunt himself (or herself), from assets/trainers/
   },
   {
