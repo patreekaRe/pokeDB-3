@@ -149,6 +149,7 @@ function postResult(k, result) {
 function row(board, r) {
   const e = r.entry;
   const li = el('li', `board-row${r.mine ? ' mine' : ''}`);
+  if (r.rank <= 3) li.dataset.rank = r.rank;
   const img = el('img', 'pixel board-mon');
   const starter = STARTERS_BY_ID[e.starter];
   if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
@@ -235,6 +236,7 @@ async function render() {
     tab.textContent = k.tabs[-Number(tab.dataset.day)];
   }
   $('board-title').textContent = k.title;
+  $('board-dialog').dataset.kind = kind;
   $('board-day').textContent = k.header(day);
   if (!cloudConfigured()) { body.replaceChildren(el('p', 'hint board-note', 'The leaderboard isn\'t available in this version of the game.')); return; }
   body.replaceChildren(el('p', 'hint board-note', 'Loading…'));

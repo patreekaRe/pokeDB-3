@@ -4120,37 +4120,79 @@ body.scene-peek #backdrop { display: none; }
 .lobby :is(.sp-rules li, .sp-area, .sp-pill, .sp-eq) { text-shadow: none; }
 @media (max-width: 480px) { .lobby .sp-page { padding: 0 12px max(14px, env(safe-area-inset-bottom)); } .lobby .sp-base { gap: 10px; } }
 
-/* ---------- the Safari leaderboard (js/leaderboard.js): narrow, centred, a box per board ---------- */
-.dialog.board-dialog { width: min(620px, 96vw); }
-#board-title { font-size: 1.5rem; }
-.board-tab { font-size: 1rem; padding: 8px 14px; }
-.board-tabs { position: static; margin: 0 0 6px; padding: 4px 0 10px; }
-.board-day { text-align: center; font-size: 1rem; margin: 0 0 8px; }
-.board-body { display: grid; gap: 10px; }
-.board-note { text-align: center; font-size: 1rem; }
-.board-box { background: var(--win-panel); border: 3px solid var(--win-edge); border-radius: var(--round-sm); padding: 10px 12px; box-shadow: 2px 2px 0 var(--win-shadow); }
-.board-box h3 { margin: 0 0 10px; font-size: 1.3rem; text-align: center; }
-.board-box .hint { margin: 6px 0; text-align: center; font-size: 1rem; }
-.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.board-row { display: grid; grid-template-columns: 2em 44px 1fr auto; align-items: center; gap: 10px; font-size: 1.15rem; padding: 4px 8px; border-radius: var(--round-xs); min-width: 0; }
-.board-row.mine { background: #fbf3d0; outline: 2px solid #d8a820; }
-.board-rank { text-align: right; color: var(--muted); }
-.board-row:nth-child(1) .board-rank { color: #c89000; }
-.board-row:nth-child(-n+3) { font-size: 1.3rem; }
-.board-mon { width: 44px; height: 44px; object-fit: contain; }
-.board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.board-value { white-space: nowrap; font-weight: bold; }
+/* ---------- the leaderboards (js/leaderboard.js): a modern Pokémon menu, not the cream Pokégear window (the user's call,
+   2026-10-07): a dark glassy panel, a pill switch for the period, each board a card of rows with medals for the top three.
+   `data-kind` picks the accent: the Sky Pillar's sky blue, the Safari's grass green. ---------- */
+.dialog.board-dialog {
+  --acc: #5ab8ff; --acc2: #7c6cff;
+  --ink: #f2f5ff; --muted: #a8b0d4; --panel: rgba(255, 255, 255, 0.06); --panel-edge: rgba(255, 255, 255, 0.12); --gold: #ffd257;
+  width: min(480px, 94vw); padding: 0; color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 22px;
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 14px, transparent 14px 28px), linear-gradient(170deg, #1e2656 0%, #141a3c 55%, #0e1230 100%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.dialog.board-dialog[data-kind="safari"] { --acc: #4cd27a; --acc2: #2a9a8a; }
+.board-dialog > * { margin-left: 18px; margin-right: 18px; }
+.board-dialog #board-title {
+  position: relative; margin: 0 0 14px; padding: 18px 18px 14px 34px; border: 0; color: #fff; font-size: 0.95rem; letter-spacing: 0.04em;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 30%, transparent), transparent 75%); margin-left: 0; margin-right: 0; border-radius: 22px 22px 0 0; outline: none; box-shadow: none;
+}
+.board-dialog #board-title::before { content: ''; position: absolute; left: 18px; top: 16px; bottom: 12px; width: 5px; border-radius: 3px; background: linear-gradient(var(--acc), var(--acc2)); }
+.board-dialog .board-tabs {
+  position: static; display: flex; gap: 0; margin-top: 0; margin-bottom: 10px; padding: 4px; border: 0; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.board-dialog .board-tab {
+  flex: 1; justify-content: center; padding: 9px 10px; border: 0; border-radius: 999px; background: transparent; box-shadow: none;
+  color: var(--muted); font-size: 0.62rem; transform: none; transition: background 0.2s, color 0.2s;
+}
+.board-dialog .board-tab:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.board-dialog .board-tab[aria-selected="true"] { background: linear-gradient(135deg, var(--acc), var(--acc2)); color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); box-shadow: 0 2px 8px color-mix(in srgb, var(--acc) 45%, transparent); transform: none; }
+.board-day { text-align: center; font-size: 0.55rem; line-height: 1.6; margin-top: 0; margin-bottom: 12px; }
+.board-body { display: grid; gap: 12px; }
+.board-dialog p, .board-dialog li { margin-bottom: 0; }
+.board-note { text-align: center; font-size: 0.58rem; line-height: 1.7; }
+.board-dialog .board-mine { padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); color: var(--ink); }
+.board-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 12px; }
+.board-dialog .board-box h3 { margin: 0 0 10px; font-size: 0.62rem; text-align: left; color: var(--acc); letter-spacing: 0.06em; text-transform: uppercase; }
+.board-box .hint { margin: 6px 0; text-align: center; font-size: 0.58rem; }
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.board-row {
+  display: grid; grid-template-columns: 28px 40px 1fr auto; align-items: center; gap: 10px; min-width: 0; padding: 5px 10px 5px 6px;
+  font-size: 0.66rem; border-radius: 12px; background: rgba(255, 255, 255, 0.06); border: 1px solid transparent;
+}
+.board-rank { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 0.58rem; color: var(--muted); background: rgba(255, 255, 255, 0.08); }
+.board-row[data-rank="1"] .board-rank { color: #5a3a00; background: linear-gradient(145deg, #fff0a0, #f0b828 60%, #c88a10); box-shadow: 0 0 10px rgba(255, 200, 60, 0.5); }
+.board-row[data-rank="2"] .board-rank { color: #303848; background: linear-gradient(145deg, #ffffff, #c4ccd8 60%, #8e98a8); }
+.board-row[data-rank="3"] .board-rank { color: #4a2408; background: linear-gradient(145deg, #ffd0a0, #d48a48 60%, #9a5a24); }
+.board-row[data-rank="1"] { background: linear-gradient(90deg, rgba(255, 210, 80, 0.16), rgba(255, 255, 255, 0.06) 60%); }
+.board-mon { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 70%); }
+.board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
+.board-value { white-space: nowrap; padding: 5px 9px; border-radius: 999px; font-size: 0.6rem; color: #fff; background: rgba(0, 0, 0, 0.3); }
+.board-row.mine { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 18%, transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--acc) 35%, transparent); }
+.board-row.mine .board-value { background: var(--acc); color: #06122a; }
+.board-gap { text-align: center; color: var(--muted); font-size: 0.7rem; line-height: 1; }
 .board-line { font-size: 1.1rem; text-align: center; }
-.board-gap { text-align: center; color: var(--muted); font-size: 1.1rem; }
-.board-signin, .board-name-form { display: grid; justify-items: center; gap: 6px; text-align: center; }
-/* signed in with no nickname yet: the name box leads the window, a gold-rimmed box so it can't be missed */
-.board-name-form { padding: 10px; border: 3px solid #d8a820; border-radius: var(--round-sm); background: #fbf3d0; box-shadow: 2px 2px 0 var(--win-shadow); }
-.board-name-head { font-size: 1.15rem; color: #6a4000; }
-.board-name-form .hint { margin: 0; font-size: 1rem; }
-.board-name-input { font: inherit; font-size: 1.1rem; padding: 8px 10px; width: min(280px, 100%); border: 3px solid var(--win-edge); border-radius: var(--round-sm); background: #fff; color: var(--win-ink); }
+.board-signin, .board-name-form { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.board-signin .hint { font-size: 0.58rem; line-height: 1.7; }
+/* no nickname yet: the name box leads the window, rimmed in the accent so it can't be missed */
+.board-name-form { padding: 14px; border: 1px solid var(--acc); border-radius: 16px; background: color-mix(in srgb, var(--acc) 12%, transparent); }
+.board-name-head { font-size: 0.7rem; color: #fff; }
+.board-name-form .hint { margin: 0; font-size: 0.55rem; line-height: 1.7; }
+.board-name-input { font: inherit; font-size: 0.75rem; padding: 10px 14px; width: min(280px, 100%); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 12px; background: rgba(0, 0, 0, 0.3); color: #fff; }
+.board-name-input:focus { outline: none; border-color: var(--acc); }
 .board-open { display: block; margin: 0 auto 8px; }
-.board-name-line { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
-@media (max-width: 480px) { .board-row { font-size: 1rem; gap: 6px; grid-template-columns: 1.8em 36px 1fr auto; padding: 3px 4px; } .board-row:nth-child(-n+3) { font-size: 1.1rem; } .board-mon { width: 36px; height: 36px; } .board-box { padding: 8px; } }
+.board-name-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 8px 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); }
+.board-name-line .hint { font-size: 0.55rem; line-height: 1.6; }
+/* its buttons are pills too, not the cream Pokégear keys */
+.board-dialog .btn { border: 0; border-radius: 999px; padding: 10px 20px; font-size: 0.62rem; color: #fff; background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.board-dialog .btn::before { display: none; }
+.board-dialog .btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+.board-dialog .btn:active:not(:disabled) { transform: scale(0.97); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.board-dialog .btn.primary { background: linear-gradient(135deg, var(--acc), var(--acc2)); box-shadow: 0 2px 10px color-mix(in srgb, var(--acc) 40%, transparent); }
+.board-dialog .btn.small { padding: 7px 14px; font-size: 0.55rem; }
+.board-dialog .dialog-actions { justify-content: center; margin-top: 16px; margin-bottom: 18px; }
+.board-dialog .dialog-actions .btn { min-width: 140px; }
+@media (max-width: 480px) { .board-dialog > * { margin-left: 12px; margin-right: 12px; } .board-row { grid-template-columns: 26px 34px 1fr auto; gap: 7px; font-size: 0.6rem; } .board-mon { width: 34px; height: 34px; } .board-value { font-size: 0.55rem; padding: 4px 7px; } .board-box { padding: 10px 8px; } }
 
 /* ---------- the descent to the Sealed Gate (js/descent.js): the arena splits, your Pokémon falls down a crystal shaft into
    violet light. Under the gate's scene (z-index 949), which fades in over its dark last frame. ---------- */
@@ -4388,16 +4430,17 @@ body.scene-peek #backdrop { display: none; }
   box-shadow: inset 2px 2px 0 rgba(255, 248, 210, 0.6), inset -2px -2px 0 rgba(60, 36, 8, 0.4), 3px 4px 0 rgba(0, 0, 0, 0.35); }
 .tower-plaque::before, .tower-plaque::after { content: ''; position: absolute; top: 5px; width: 6px; height: 6px; border-radius: 50%; background: #6a4818; box-shadow: inset 1px 1px 0 #f8e0a0; }
 .tower-plaque::before { left: 5px; } .tower-plaque::after { right: 5px; }
-.tower-plaque-title { margin: 0 0 8px; font-size: 0.62rem; text-align: center; letter-spacing: 1px; color: #3a2408; text-shadow: 1px 1px 0 rgba(255, 240, 190, 0.7); }
-.tower-plaque-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: 0.6rem; }
-.tower-plaque-row { display: grid; grid-template-columns: 18px 26px 1fr auto; align-items: center; gap: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(74, 52, 16, 0.35);
+.tower-plaque-title { margin: 0 0 10px; font-size: 0.85rem; text-align: center; letter-spacing: 1px; color: #3a2408; text-shadow: 1px 1px 0 rgba(255, 240, 190, 0.7); }
+.tower-plaque-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 1rem; }
+.tower-plaque-row { display: grid; grid-template-columns: 24px 40px 1fr auto; align-items: center; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(74, 52, 16, 0.35);
   text-shadow: 1px 1px 0 rgba(255, 240, 190, 0.6); }
 .tower-plaque-row:last-child { border-bottom: 0; padding-bottom: 0; }
-.tower-plaque-row img { width: 26px; height: 26px; object-fit: contain; image-rendering: pixelated; filter: sepia(1) saturate(0.6) brightness(0.8) contrast(1.3); }
+.tower-plaque-row img { width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; filter: sepia(1) saturate(0.6) brightness(0.8) contrast(1.3); }
 .tower-plaque-row.mine .tower-plaque-name { color: #1a5a28; }
 .tower-plaque-rank { text-align: right; }
 .tower-plaque-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tower-plaque-note { text-align: center; font-size: 0.58rem; opacity: 0.85; }
+.tower-plaque-note { text-align: center; font-size: 0.85rem; opacity: 0.85; }
+@media (max-width: 480px) { .tower-plaque { padding: 10px 14px 12px; } .tower-plaque-list { font-size: 0.85rem; gap: 6px; } .tower-plaque-row { grid-template-columns: 20px 34px 1fr auto; gap: 6px; } .tower-plaque-row img { width: 34px; height: 34px; } }
 
 /* ---------- THE POKÉDEX WINDOW (js/pokedex.js): full screen, Pokémon GO's banner per biome, then a handheld Pokédex ---------- */
 .pokedex {
