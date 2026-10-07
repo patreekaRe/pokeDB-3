@@ -28,6 +28,9 @@ const SKY = pal(['#14080e', '#1e0c14', '#2c1218', '#3e1a1c', '#56241e', '#702e20
 const MESA = abgr('#1a0a0e');
 const GROUND = pal(['#4a2c22', '#40261e', '#36201a', '#2c1a16', '#221412']);
 // a run that falls at the Thornwood Jungle's last boss falls through the jungle's floor instead, under its dark canopy
+// ...and at the Sunscorch Savanna's, the Sunken Ruins', under their own skies and skylines
+const SAVANNA = { sky: pal(['#2a1030', '#4a1a38', '#7a2a38', '#b04030', '#e06a30', '#f8a040']), wall: abgr('#2a1408'), ground: pal(['#8a6030', '#7a542a', '#684824', '#563c1e', '#443018']) };
+const RUINS = { sky: pal(['#0a1424', '#102034', '#183044', '#224454', '#2e5a64', '#3e7474']), wall: abgr('#0e1c22'), ground: pal(['#4a5048', '#40463e', '#363c36', '#2c322e', '#222826']) };
 const JUNGLE = { sky: pal(['#060c08', '#0a140c', '#0e1c10', '#142616', '#1a301c', '#223a22']), wall: abgr('#050a06'), ground: pal(['#2e3a1e', '#28331a', '#222c16', '#1c2412', '#161d0e']), leaf: abgr('#5a4422') };
 const CRACK = ['#ffffff', '#f0c8ff', '#c070ff', '#7a30c0'];
 // the shaft: its far wall darkest at the top, lit violet from below; rock walls rimmed by the light; crystals
@@ -43,7 +46,7 @@ const DUST = pal(['#d8c8ff', '#8a7ab8', '#5a4a88']);
  * loss at the last boss is dragged down instead.
  */
 export function descentLines({ name, kind = 'win', first = false, land = 'wastes' }) {
-  const lore = first ? [`Far beneath the ${land === 'jungle' ? 'jungle' : 'wastes'} lies a chamber no map shows...`, 'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.'] : [];
+  const lore = first ? [`Far beneath the ${{ jungle: 'jungle', savanna: 'savanna', ruins: 'ruins' }[land] || 'wastes'} lies a chamber no map shows...`, 'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.'] : [];
   if (kind === 'loss') return {
     arena: [`${name} fainted...`, 'The ground gives way beneath it!'],
     fall: ['Something drags it down into the dark...', ...lore],
@@ -195,7 +198,8 @@ function paintArena() {
   const c = Object.assign(document.createElement('canvas'), { width: W, height: H });
   const g = c.getContext('2d'), im = g.createImageData(W, H), d = new Uint32Array(im.data.buffer);
   const horizon = GY - Math.round(H * 0.12), jungle = land === 'jungle';
-  const sky = jungle ? JUNGLE.sky : SKY, ground = jungle ? JUNGLE.ground : GROUND;
+  const own = { savanna: SAVANNA, ruins: RUINS }[land];
+  const sky = jungle ? JUNGLE.sky : own ? own.sky : SKY, ground = jungle ? JUNGLE.ground : own ? own.ground : GROUND;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     let col;
     if (jungle && y < horizon) {   // the gloom under the canopy: crowns overhead, trunks and the far trees' wall
@@ -206,11 +210,9 @@ function paintArena() {
       const trunk = ((x + 400) % 23 < 3 && hash(Math.floor(x / 23)) < 0.7) || ((x + 400) % 37 < 5 && hash(Math.floor(x / 37) + 0.5) < 0.5);
       if (y < roof || y >= wall || trunk) col = JUNGLE.wall;
     } else if (y < horizon) {
-      const v = (y / horizon) * (SKY.length - 1);
-      col = SKY[Math.min(SKY.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
-      // mesas on the horizon, flat-topped and ragged
-      const m = horizon - (6 + Math.round(5 * Math.sin(x * 0.07) + 4 * Math.sin(x * 0.19 + 2) + (Math.sin(x * 0.045 + 1) > 0.4 ? 6 : 0)));
-      if (y >= m) col = MESA;
+      const v = (y / horizon) * (sky.length - 1);
+      col = sky[Math.min(sky.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
+      if (onSkyline(x, y, horizon)) col = own ? own.wall : MESA;
     } else {
       const v = ((y - horizon) / (H - horizon)) * (ground.length - 1);
       col = ground[Math.min(ground.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
@@ -225,6 +227,23 @@ function paintArena() {
   return c;
 }
 
+/** Whether (x, y) is the land's skyline against the sky: whatever stands on the horizon there. */
+function onSkyline(x, y, horizon) {
+  if (land === 'savanna') {   // flat grassland, acacias' flat crowns, Sun Rock jutting from the right
+    const k = ((x % 41) + 41) % 41, tree = hash(Math.floor(x / 41)) < 0.6;
+    if (y >= horizon - 2) return true;
+    if (x > W * 0.72 && y >= horizon - Math.round(H * 0.16) + Math.round((x - W * 0.72) * 0.08)) return true;
+    if (!tree) return false;
+    const crown = k >= 10 && k <= 26 && y >= horizon - 13 + (k > 12 && k < 24 ? 0 : 2) && y <= horizon - 10;
+    return crown || ((k === 17 || k === 18) && y > horizon - 10);
+  }
+  if (land === 'ruins') {   // broken columns and the stepped temple
+    const k = ((x % 17) + 17) % 17, col = k < 3 ? horizon - 8 - Math.round(hash(Math.floor(x / 17)) * 14) : horizon - 2;
+    const t = Math.abs(x - W * 0.5), temple = t < W * 0.14 ? horizon - Math.round((W * 0.14 - t) / (W * 0.14) * H * 0.12 / 3) * 3 - 3 : horizon;
+    return y >= Math.min(col, temple);
+  }
+  return y >= horizon - (6 + Math.round(5 * Math.sin(x * 0.07) + 4 * Math.sin(x * 0.19 + 2) + (Math.sin(x * 0.045 + 1) > 0.4 ? 6 : 0)));   // mesas, flat-topped and ragged
+}
 /** The crack's zigzag, out from the middle both ways, flat across the ground as it runs to the edges. */
 function makeCrack() {
   const pts = [];

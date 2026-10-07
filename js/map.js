@@ -391,7 +391,8 @@ const PALETTES = {
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
   thornwood: { ground: 'litter', blobs: [['canopy', 12, 14, 44], ['bramble', 5, 6, 18], ['water', 2, 10, 24], ['trees', 3, 6, 16]],
               props: [['giant', 2], ['bloom', 5]] },   // a primeval forest: leaf litter under a dense canopy, brambles, a stream
-  savanna:  { ground: 'dust',  blobs: [['trees', 3, 4, 10], ['lava', 3, 5, 12], ['water', 1, 10, 22], ['mountain', 2, 8, 16]] },   // a dry grassland with a few wildfires and one watering hole (part b paints its own)
+  savanna:  { ground: 'savgrass', blobs: [['scorch', 5, 10, 30], ['water', 1, 10, 22], ['kopje', 3, 4, 12], ['lava', 2, 3, 8]],
+              props: [['acacia', 4]] },   // a dry grassland with a few wildfires and one watering hole (part b paints its own)
   depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)
   meadow:   { ground: 'grass', blobs: [['trees', 3, 6, 14], ['water', 2, 10, 24], ['mountain', 2, 8, 16]] },
@@ -432,6 +433,10 @@ const TERRAIN = {
   flood:    ['#2a96a0', '#9ae8e0', '#1a6e7a', '#d8fff8'],
   // the Thornwood Jungle's: leaf litter (fallen leaves dotted over it), the canopy's dense crowns, thorny brambles (berries)
   litter:   ['#4a6a30', '#6a8a3e', '#344e22'],
+  // the Sunscorch Savanna's: golden grass, the burnt plain, sun-baked boulders
+  savgrass: ['#d8b858', '#f0d888', '#a88838'],
+  scorch:   ['#4a3e36', '#6a5a4a', '#2a221e', '#1a1412'],
+  kopje:    ['#c09068', '#e8c098', '#7a5638', '#4a3020'],
   canopy:   ['#2a7a2a', '#5aa83e', '#14401a', '#0c2c10'],
   bramble:  ['#3a5a2a', '#7a9a48', '#22381a', '#162414', '#e04060'],
 };
@@ -451,6 +456,8 @@ PROPS.colonnade = ['................', '.LLLLLLLLLLLS...', '.SSSSSSSSSSSD...', '
 PROPS.giant = ['....VVVVVV......', '..VVTTTTVVVV....', '.VTTTVVVTTVVW...', 'VTTVVVVVVVVVWW..', 'VTVVVWVVVVVVVWW.', '.VVWWVVVWVVVWWW.',
   '..WWWWBBWWWWWW..', '.....BBb........', '.....BBb........', '.....BBb...V....', '....BBBbb.VTV...', '....BBBbb..W....',
   '...BBBBbbb......', '..BB.BBb.bb.....', '.B...B.b...b....', '................'];
+PROPS.acacia = ['................', '..TTTVVTTTVV....', '.TVVVVVVVVVVVW..', 'WWVVWWVVWWVVWWW.', '.WWWWWWWWWWWWW..', '......Bb........', '......Bb...b....', '.......Bb.Bb....',
+  '.......BbBb.....', '........Bb......', '........Bb......', '........Bb......', '........Bb......', '.......BBbb.....', '................', '................'];
 PROPS.bloom = ['........', '..PPPP..', '.PpPPpP.', 'PPPbbPPP', 'PpPbbPpP', '.PPPPPP.', '..PpPP..', '........'];
 const PROP_INK = { R: '#c84a32', K: '#7a2418', G: '#58a040', S: '#d4d6c0', D: '#8a8e78', Y: '#ffe070', L: '#f4f0d8',
   B: '#8a6440', b: '#4a3420', T: '#7ac850', V: '#3e8a34', W: '#1e5022', P: '#e04848', p: '#f8d870' };
@@ -468,6 +475,7 @@ const MOTIFS = {
   paving:   ['LLLLDLLL', 'L...D...', 'L...D...', 'DDDDDDDD', 'LLDLLLLL', '..D.....', '..D.....', 'DDDDDDDD'],
   bamboo:   ['.L..D.L.', '.G..D.L.', '.L..G.L.', '.L..D.G.', '.L..D.L.', '.L..D.L.', '.G..D.L.', '.L..G.L.'],
   sakura:   ['..LLL...', '.LL..D..', 'LL....D.', 'L.....D.', '.D...DD.', '..DDDD..', '...DD...', '........'],
+  kopje:    ['........', '..LLL...', '.LL..D..', '.L....D.', 'L.....DD', 'L....DDD', '.DDDDDD.', '........'],
   canopy:   ['LLL.LLL.', 'L..DL..D', '.DD..DD.', '..LLL...', '.LL..D.L', 'L....DLL', '.DD.DD..', 'DD..DDDD'],
   bramble:  ['..L..D..', '.LGL.DL.', 'L.D.LG.D', '.D.LD.D.', 'LG.D..LD', '.DL.LDG.', 'D..DD..D', '.DD..DD.'],
 };
@@ -662,7 +670,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
     const [base, light, dark, edge, moss] = terrain[kind];
     const motif = MOTIFS[kind];
     const tuft = !motif && rand() < 0.22 ? [1 + Math.floor(rand() * 4), 1 + Math.floor(rand() * 5)] : null;
-    const petal = (kind === 'mossy' && rand() < 0.14) || (kind === 'litter' && rand() < 0.3) ? [Math.floor(rand() * TILE), Math.floor(rand() * TILE)] : null;   // fallen cherry petals, or the jungle's fallen leaves
+    const petal = (kind === 'mossy' && rand() < 0.14) || (kind === 'litter' && rand() < 0.3) || (kind === 'savgrass' && rand() < 0.2) ? [Math.floor(rand() * TILE), Math.floor(rand() * TILE)] : null;   // fallen cherry petals, or the jungle's fallen leaves
     const pad = kind === 'lotus' && rand() < 0.4 ? [1 + Math.floor(rand() * 4), 1 + Math.floor(rand() * 5), rand() < 0.4] : null;   // a lily pad, maybe in flower
     for (let ly = 0; ly < TILE; ly++) for (let lx = 0; lx < TILE; lx++) {
       const x = tx * TILE + lx, y = ty * TILE + ly;
@@ -679,7 +687,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
         if ((kind === 'ruins' || kind === 'paving') && m === '.' && rand() < 0.07) c = moss;   // moss creeping over the paving
         if ((kind === 'crystal' || kind === 'geode') && m === 'L' && ly <= 1) sparks.push([x, y, light]);   // a crystal's tip, to twinkle
       } else if (petal && lx === petal[0] && ly === petal[1]) {
-        c = kind === 'litter' ? leafFall : terrain.sakura[1];
+        c = kind === 'litter' ? leafFall : kind === 'savgrass' ? terrain.savgrass[2] : terrain.sakura[1];
       } else if (tuft && ly === tuft[1] + 1 && (lx === tuft[0] || lx === tuft[0] + 2)) {
         c = dark;
       } else if (tuft && ly === tuft[1] && lx === tuft[0] + 1) {
