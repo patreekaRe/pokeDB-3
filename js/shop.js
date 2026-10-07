@@ -17,7 +17,9 @@ import { BALLS } from './data/balls.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, perkLevel } from './storage.js';
 import { safariOpen } from './data/pokedex.js';
-import { checkAchievements, isStarterUnlocked } from './progress.js';
+import { checkAchievements, checkBadges, isStarterUnlocked } from './progress.js';
+import { badgeLine } from './data/badges.js';
+import { showBadgeNews } from './trainercard.js';
 import { playSound, preloadSounds } from './audio.js';
 import { $, el, refreshCoins } from './ui.js';
 
@@ -254,7 +256,8 @@ function press() {
   cursor.armed = false;
   updateSave(d => { d.coins -= pick.cost; });
   playSound('buy');
-  cursor.news = pick.bought();
+  cursor.news = [...pick.bought(), ...checkBadges().map(badgeLine)];   // a shiny, a maxed perk or a full set of balls can earn one
+  showBadgeNews();
   render();
   flash('won');
 }

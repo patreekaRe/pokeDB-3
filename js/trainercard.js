@@ -1,7 +1,7 @@
 /* ============================================================
    trainercard.js  -  Gold/Silver's Trainer Card (roadmap item 17b): a
    Collection card opening a window with the trainer's numbers and the
-   Badge Case, four rows of badges (js/data/badges.js). The badges
+   Badge Case, six rows of badges (js/data/badges.js). The badges
    are drawn as smooth SVG from a shape and a glyph each: a gradient from a
    light top-left to a dark bottom-right, a gloss and a dark outline.
    Also keeps `stats.playMs`, the play time, counted from its release.
@@ -60,7 +60,17 @@ const G = {
   ball: (d) => `<circle cx="18" cy="18" r="7" fill="#fff" stroke="${d}" stroke-width="1.6"/><path d="M11 18a7 7 0 0 1 14 0Z" fill="${d}"/><path d="M11 18h14" stroke="${d}" stroke-width="1.6"/><circle cx="18" cy="18" r="2.2" fill="#fff" stroke="${d}" stroke-width="1.4"/>`,
   paw: (d) => `<ellipse cx="18" cy="21.6" rx="4.6" ry="3.8" fill="${d}"/><circle cx="12.4" cy="16" r="2" fill="${d}"/><circle cx="16" cy="12.6" r="2" fill="${d}"/><circle cx="20" cy="12.6" r="2" fill="${d}"/><circle cx="23.6" cy="16" r="2" fill="${d}"/>`,
   compass: (d) => `<circle cx="18" cy="18" r="7.4" fill="none" stroke="#fff" stroke-width="1.4" opacity=".85"/><path d="M18 10.5l2.6 7.5h-5.2Z" fill="#fff"/><path d="M15.4 18h5.2L18 25.5Z" fill="${d}"/><circle cx="18" cy="18" r="1.1" fill="${d}"/>`,
-  t25: num('25', 11, 26), t50: num('50', 11, 26), t100: num('100', 8.6, 25.5),
+  t10: num('10', 11, 26), t25: num('25', 11, 26), t50: num('50', 11, 26), t75: num('75', 11, 26), t100: num('100', 8.6, 25.5),
+  one: num('1', 16), four: num('4', 16), A: num('A', 14), zero: num('0', 16),
+  wave: () => `<path d="M9 16q2.25-3 4.5 0t4.5 0 4.5 0 4.5 0M9 22q2.25-3 4.5 0t4.5 0 4.5 0 4.5 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>`,
+  thorns: (d) => `<path d="M10 26Q14 18 18 18T26 10" fill="none" stroke="${d}" stroke-width="2.2" stroke-linecap="round"/><path d="M13.4 21.6l-2.6-1.2M16.6 18.6l-.4-2.8M20 17.6l2.4 1.6M23.2 13.6l.6 2.8" stroke="${d}" stroke-width="1.6" stroke-linecap="round"/>`,
+  fork: (d) => `<path d="M18 27v-7l-6-8M18 20l6-8" fill="none" stroke="${d}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11" r="1.8" fill="#fff"/><circle cx="24" cy="11" r="1.8" fill="#fff"/>`,
+  leafy: (d) => `<path d="M12 25Q12 14 24.5 12.5Q24 24 12 25Z" fill="#fff" opacity=".92"/><path d="M12.6 24.4 21 16" stroke="${d}" stroke-width="1.2" stroke-linecap="round"/>`,
+  sparkle: () => `<path d="M18 9.5Q19 17 26.5 18 19 19 18 26.5 17 19 9.5 18 17 17 18 9.5Z" fill="#fff" opacity=".95"/>`,
+  heart: (d) => `<path d="M18 25.5 11 18.6a4 4 0 0 1 7-4.8 4 4 0 0 1 7 4.8Z" fill="#fff" stroke="${d}" stroke-width="1.4" stroke-linejoin="round"/>`,
+  cards: (d) => `<rect x="11" y="12.5" width="9" height="12" rx="1.4" fill="#fff" stroke="${d}" stroke-width="1.4" transform="rotate(-12 15.5 18.5)"/><rect x="16" y="11.5" width="9" height="12" rx="1.4" fill="#fff" stroke="${d}" stroke-width="1.4" transform="rotate(10 20.5 17.5)"/>`,
+  coin: (d, h) => `<circle cx="18" cy="18" r="7.2" fill="${h}" stroke="${d}" stroke-width="1.6"/><circle cx="18" cy="18" r="4.8" fill="none" stroke="${d}" stroke-width="1" opacity=".6"/><text x="18" y="21.4" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="9" fill="${d}">P</text>`,
+  clock: (d) => `<circle cx="18" cy="18" r="7.4" fill="#fff" stroke="${d}" stroke-width="1.6"/><path d="M18 13.2V18l3.4 2.2" fill="none" stroke="${d}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
 };
 
 // per badge: shape, [light, mid, dark] colours, glyph
@@ -86,6 +96,45 @@ const LOOK = {
   'tower-25': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't25'],
   'tower-50': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't50'],
   'tower-100': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't100'],
+  tide: ['hex', ['#98f0e8', '#30a8b0', '#145860'], 'wave'],
+  thorn: ['diamond', ['#a8d878', '#4a8a30', '#1e4818'], 'thorns'],
+  wanderer: ['circle', ['#f0d8a0', '#b89050', '#5e4420'], 'fork'],
+  rookie: ['circle', ['#c8f0b0', '#70b858', '#305c20'], 'one'],
+  platinum: ['circle', ['#f0fbff', '#a8d8e8', '#4c7888'], 'four'],
+  'crown-fire': ['crown', ['#ffb060', '#f05828', '#a02810'], 'flame'],
+  'crown-water': ['crown', ['#90d0ff', '#3890e8', '#1c4ea0'], 'drop'],
+  'crown-grass': ['crown', ['#b0f080', '#50b838', '#286a20'], 'leafy'],
+  veteran: ['shield', ['#fff4a0', '#d8a830', '#7a5410'], 'five'],
+  'iron-will': ['shield', ['#e0e4ec', '#8c94a8', '#3c4250'], 'fist'],
+  untouchable: ['circle', ['#ffc8e0', '#f070a8', '#902858'], 'heart'],
+  minimalist: ['book', ['#ffffff', '#c8ccd8', '#5c6070'], 'cards'],
+  purist: ['octagon', ['#fff8e0', '#e0c890', '#806030'], 'cards'],
+  penny: ['circle', ['#f8c8a0', '#c8804c', '#683818'], 'coin'],
+  'heavy-hitter': ['star', ['#ffa898', '#e04838', '#801810'], 'fist'],
+  speedrun: ['diamond', ['#b8f4ff', '#40c0e0', '#106078'], 'clock'],
+  'alpha-slayer': ['shield', ['#ff9890', '#c02830', '#601018'], 'A'],
+  tsunami: ['drop', ['#80b8ff', '#2860d0', '#102c78'], 'wave'],
+  'bare-bag': ['octagon', ['#f0e0c0', '#b89868', '#5c4428'], 'zero'],
+  'page-ruins': ['book', ['#98f0e8', '#30a8b0', '#145860'], 'ball'],
+  'page-thornwood': ['book', ['#a8d878', '#4a8a30', '#1e4818'], 'ball'],
+  'page-depths': ['book', ['#d8c0ff', '#8858d0', '#402080'], 'ball'],
+  'safari-master': ['shield', ['#fff4a0', '#d8b830', '#7a6410'], 'paw'],
+  sparkle: ['diamond', ['#fff0f8', '#f8a8d0', '#a04880'], 'sparkle'],
+  'shiny-hunter': ['star', ['#fff0f8', '#f8a8d0', '#a04880']],
+  roster: ['circle', ['#ff9898', '#d83838', '#781818'], 'ball'],
+  balls: ['hex', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'],
+  'high-roller': ['octagon', ['#fff090', '#f0c030', '#a07010'], 'coin'],
+  jackpot: ['circle', ['#fff090', '#f0c030', '#a07010'], 'coin'],
+  'black-belt': ['octagon', ['#8890a0', '#40444c', '#141418'], 'fist'],
+  eternal: ['gem', ['#ffb8c8', '#d02850', '#600c28'], 'facet'],
+  thunder: ['bolt', ['#ffe0a0', '#f89820', '#984800']],
+  legend: ['star', ['#ffffff', '#b8c8ff', '#4c5aa0']],
+  'tower-10': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't10'],
+  'tower-75': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't75'],
+  'sky-king': ['crown', ['#e8f8ff', '#78c0f0', '#2c6098']],
+  weekly: ['tower', ['#d8d0ff', '#8878d8', '#3c3088'], 'clock'],
+  'safari-regular': ['circle', ['#f0e8a0', '#b0a048', '#5a5420'], 'paw'],
+  'rare-catch': ['gem', ['#d8ffb0', '#58c048', '#1c6020'], 'sparkle'],
 };
 const INK = '#181820';
 
@@ -125,9 +174,9 @@ const shadeInk = (hex) => `#${[1, 3, 5].map(i => Math.round(parseInt(hex.slice(i
 const EARNABLE = BADGES.filter(b => !b.locked);
 const TIERS = [
   { id: 'green', name: 'Green', at: 0 },
-  { id: 'bronze', name: 'Bronze', at: 5 },
-  { id: 'silver', name: 'Silver', at: 10 },
-  { id: 'gold', name: 'Gold', at: 15 },
+  { id: 'bronze', name: 'Bronze', at: 10 },
+  { id: 'silver', name: 'Silver', at: 25 },
+  { id: 'gold', name: 'Gold', at: 40 },
 ];
 const earnedIds = (save) => new Set((save.badges || []).filter(id => EARNABLE.some(b => b.id === id)));
 /** The card's colour from the badges earned; violet once Eternatus is beaten. */

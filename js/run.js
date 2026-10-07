@@ -28,7 +28,7 @@ import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
-import { badgeLine } from './data/badges.js';
+import { badgeLine, towerWeeks, safariDays } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
@@ -376,7 +376,8 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     leaderboard; after it the same seed replays as often as you like. */
 export function beginSafari(daily = safariDaily()) {
   const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
-  updateSave(d => { d.safari = { day: daily.day, tries: tries + 1 }; });   // counted at the start, so quitting can't retry the first
+  const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
+  updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days }; });   // counted at the start, so quitting can't retry the first
   beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
 }
 
@@ -388,7 +389,8 @@ export function beginTower(practice = null) {
   const saved = getSave().tower;
   const thisWeek = saved.week === weekly.week;
   const first = !practice && !(thisWeek && saved.tries);
-  if (!practice) updateSave(d => { d.tower = { ...d.tower, week: weekly.week, tries: (thisWeek ? d.tower.tries : 0) + 1, best: thisWeek ? d.tower.best : 0 }; });
+  const weeks = towerWeeks(getSave()) + (thisWeek ? 0 : 1);   // the Weekly Climber Badge's
+  if (!practice) updateSave(d => { d.tower = { ...d.tower, week: weekly.week, tries: (thisWeek ? d.tower.tries : 0) + 1, best: thisWeek ? d.tower.best : 0, weeks }; });
   beginRun(practice ?? weekly.starter, 0, null, null, { week: weekly.week, seed: weekly.seed, first, practice: Boolean(practice), flight: 0, floor: 0 });
 }
 

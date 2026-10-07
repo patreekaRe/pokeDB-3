@@ -1605,3 +1605,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (the crossroads at all) after a won run with each of Fire, Grass and Water on Trainer Level 2+ (`roadsOpen()` /
   `ROADS_LEVEL` in `js/data/enemies.js`, read from `maxLevelWinByType`, so old saves that already qualify see them at once);
   the result window says "New roads open!" on the win that does it. Peeked runs always get the fork for playtesting.
+- **Sixty badges** (2026-10-07, the user's ask): the Badge Case grew from 21 to 60, six groups of ten in rows of five
+  (`js/data/badges.js`; new groups Challenges and Collector). All but two read what the save already keeps (the Record
+  Book's per-win numbers, `dex.defeated` for the other roads' bosses, shinies, balls, perks), so old saves earn them at load;
+  the Sky Pillar's weeks and the Safari's days are new counts (`tower.weeks`, `safari.days`). The Safari leaderboard podium
+  was cut (the user's call: online only). Card tiers moved to 10 / 25 / 40.
