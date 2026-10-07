@@ -32,6 +32,7 @@ import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomab
 
 const LEGENDS = (s) => s.legendary || s.secret;
 const PSYCHIC = { label: '???', icon: '' };
+const LEGEND_POSE = 66;
 
 let picked = null;        // the starter shown big
 let tab = 'starters';
@@ -306,7 +307,10 @@ function sizeSprite() {
   if (!img.naturalWidth || !stage.clientHeight) return;
   const [top, bottom, left, right] = spriteFit(img.src);
   const poseW = img.naturalWidth - left - right || 64, poseH = img.naturalHeight - top - bottom || 64;
-  const fits = Math.min(stage.clientHeight * 0.62 / poseH, stage.clientWidth * 0.5 / poseW, 7);
+  let fits = Math.min(stage.clientHeight * 0.62 / poseH, stage.clientWidth * 0.5 / poseW, 7);
+  // legendaries share one scale (that of a LEGEND_POSE-tall pose), so the little ones (Celebi, Victini, Manaphy) stand
+  // small beside Lugia instead of being blown up to fill the stage
+  if (picked && LEGENDS(picked)) fits = Math.min(fits, stage.clientHeight * 0.62 / LEGEND_POSE);
   const s = Math.max(1, Math.floor(fits * 2) / 2);
   img.style.width = `${img.naturalWidth * s}px`;
   img.style.translate = `calc(-50% + ${((right - left) / 2) * s}px) ${bottom * s}px`;
