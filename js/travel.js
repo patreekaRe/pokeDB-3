@@ -228,7 +228,69 @@ const RUINS_WASTES = {
   paint: paintRuinsWastes,
 };
 
-const ROUTES = { 'clearing>shrine': CLEARING_SHRINE, 'shrine>wastes': SHRINE_WASTES, 'clearing>ruins': CLEARING_RUINS, 'ruins>wastes': RUINS_WASTES };
+// the Thornwood Jungle's colours (thornwood-intro.js's by day): hazy jungle ridges, giants' crowns, its leaf-litter trail
+const JUNGLE = {
+  far: ['#7a9c88', '#90b09a', '#c0d8c8'],
+  hill: ['#3e8a40', '#2e7034', '#20562a'],
+  forest: ['#4ea844', '#348a38', '#22662c', '#123a1a'],
+  floor: ['#2e5a2a', '#22461e'],
+  bark: ['#9a7a54', '#6e5236', '#4a3420'],
+  path: ['#a88a58', '#8a6e44', '#5a4630'],
+  ground: ['#5e6c36', '#525e30', '#46522a', '#3a4424'],
+  fore: ['#7ac858', '#4e9a40', '#2e6a2e', '#143a18'],
+};
+const JUNGLE_SHARED = {
+  vine: ['#8ac858', '#4e9a3c', '#2a6a2a'],
+  thorn: ['#e8dcb0', '#a89468'],
+  litter: ['#b88a40', '#8a6430', '#d0a050'],
+  bloom: ['#ff7860', '#f8e070', '#e858a8'],
+  berry: ['#f04868', '#a01838'],
+};
+const SPORE = ['#f8ffd8', '#c8f070', '#68c040'].map(abgr);   // ungraded: the jungle's spores glow by themselves
+
+// Shrine → Jungle: `a` the Shrine, `b` the Jungle; through the Shrine's last gate, swallowed by vines, under the giants
+const SHRINE_JUNGLE = {
+  a: CLEARING_SHRINE.b,
+  b: JUNGLE,
+  shared: { ...JUNGLE_SHARED, stone: CLEARING_SHRINE.shared.stone, moss: CLEARING_SHRINE.shared.moss, mist: CLEARING_SHRINE.shared.mist, torii: CLEARING_SHRINE.shared.torii },
+  fly: 0.05,
+  morph: (f) => smooth((f - 0.22) / 0.46),
+  rise: () => 0,
+  GATE: 0.46,   // the vine-choked torii
+  sounds: ['rustle', 'creak', 'gust'],
+  lines: (name) => [
+    [0.04, [`${name} leaves the Overgrown Shrine behind...`]],
+    [0.36, ['An old gate stands half-swallowed by vines.']],
+    [0.6, ['Past it, the trees grow taller than any shrine.', 'Thorns catch at every step...']],
+    [0.82, ['Deep in the green, something vast is stirring.', 'The Thornwood Jungle lies ahead!']],
+  ],
+  paint: paintShrineJungle,
+};
+
+// Ruins → Jungle: `a` the Ruins, `b` the Jungle; over the river at a waterfall's foot on a fallen log, into the giants
+const RUINS_JUNGLE = {
+  a: RUINS,
+  b: JUNGLE,
+  shared: { ...RUIN_SHARED, ...JUNGLE_SHARED, rock: ['#8a9488', '#6a746a', '#4a544c', '#2a322e'], spray: ['#f8ffff', '#c8ecf0'] },
+  fly: 0.05,
+  morph: (f) => smooth((f - 0.16) / 0.52),
+  rise: () => 0,
+  walk: (trip) => trip - 0.05 * smooth((trip - 0.42) / 0.2),   // careful steps along the log
+  river: [0.44, 0.58],
+  sounds: ['splash', 'rustle', 'lake-churn', 'gust'],
+  lines: (name) => [
+    [0.04, [`${name} leaves the Sunken Ruins behind...`]],
+    [0.34, ['A roar ahead: a waterfall spills off a cliff.']],
+    [0.5, [`${name} crosses on a fallen log, spray in the air.`]],
+    [0.8, ['The trees close in, older and wilder.', 'The Thornwood Jungle lies ahead!']],
+  ],
+  paint: paintRuinsJungle,
+};
+
+const ROUTES = {
+  'clearing>shrine': CLEARING_SHRINE, 'shrine>wastes': SHRINE_WASTES, 'clearing>ruins': CLEARING_RUINS, 'ruins>wastes': RUINS_WASTES,
+  'shrine>thornwood': SHRINE_JUNGLE, 'ruins>thornwood': RUINS_JUNGLE,
+};
 
 /** Is there a film for this trip? */
 export const hasTravel = (from, to) => !!ROUTES[`${from}>${to}`];
@@ -1418,4 +1480,268 @@ function paintRuinsWastes(e) {
   }
   if (pos > 0.2) cue('gust');
   if (pos > 0.68) cue('rumble-far');
+}
+
+/* ---------- into the Thornwood Jungle (from the Shrine or the Ruins) ---------- */
+
+/** The far ranges and the hills, turning from one land's look into the other's by `ahead`. */
+function farAndHills(e, L, ahead) {
+  const { cam, camY } = e;
+  const [fu, fy] = into('far', cam * 0.05, camY * 0.05);
+  for (let x = 0; x < W; x++) {
+    const u = x + fu, m = ahead(x, 0.25);
+    const top1 = Math.round(hz - H * 0.05 - H * 0.07 * (0.55 * Math.sin(u * 0.045 + 1) + 0.3 * Math.sin(u * 0.11 + 2) + 0.15 * Math.sin(u * 0.23))) + fy;
+    const top2 = Math.round(hz - H * 0.015 - H * 0.04 * (0.6 * Math.sin(u * 0.07 + 4) + 0.4 * Math.sin(u * 0.17))) + fy;
+    for (let y = Math.max(0, top1); y < hz + 12 && y < H; y++) {
+      const peak = y < top1 + 2 && top1 < hz - H * 0.09;
+      buf[y * W + x] = peak ? L('far', 2, m, x, y) : y >= top2 ? L('far', 0, m, x, y) : L('far', 1, m, x, y);
+    }
+  }
+  const [hu, hy] = into('hill', cam * 0.18, camY * 0.18);
+  for (let x = 0; x < W; x++) {
+    const u = x + hu, m = ahead(x, 0.4);
+    const top = Math.round(hz + H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.04 + 3) + 0.4 * Math.sin(u * 0.09))) + hy;
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('hill', y === top ? 0 : y < top + 7 ? 1 : 2, m, x, y);
+  }
+}
+
+/** A jungle tree in the woods behind the road: a giant standing out with a wide flat crown, or a broad round one. */
+function jungleTree(x, base, k, { forest, bark }, { vine }) {
+  if (hash(k + 0.37) < 0.3) {
+    const h = Math.round(H * (0.14 + hash(k + 0.47) * 0.12)), r = 3 + Math.floor(hash(k + 0.57) * 3);
+    rect(x, base - h, 2, h, bark[1]); rect(x, base - h, 1, h, bark[0]);
+    for (let j = -2; j <= 1; j++) { const half = Math.round(r * 2.2 * (1 - Math.abs(j + 0.5) * 0.3)); rect(x - half + 1, base - h + j, half * 2, 1, j < -1 ? forest[0] : j < 1 ? forest[1] : forest[2]); }
+    if (hash(k + 0.67) < 0.5) for (let j = 0; j < h * 0.4; j++) put(x + 2, base - h + 2 + j, vine[j % 3 ? 1 : 0]);
+    return;
+  }
+  const r = 3 + Math.floor(hash(k + 0.4) * H * 0.025), cy = base - r - 3 - Math.floor(hash(k + 0.6) * 5);
+  rect(x, cy, 1, base - cy, bark[1]);
+  for (let j = -r; j <= Math.round(r * 0.6); j++) { const half = Math.round(r * 1.5 * Math.sqrt(Math.max(0, 1 - (j / r) ** 2))); rect(x - half, cy + j, half * 2 + 1, 1, j < -r * 0.4 ? forest[0] : j < r * 0.1 ? forest[1] : forest[2]); }
+}
+
+/** The jungle's undergrowth along the road: a fern, a bramble with berries, or a flower. */
+function jungleBush(x, y, k, { fore }, c) {
+  const kind = hash(k + 0.6);
+  if (kind < 0.45) for (const a of [-1, -0.5, 0, 0.5, 1]) for (let s = 1; s <= 5; s++) put(Math.round(x + a * s), Math.round(y - s + (s / 5) ** 2 * 3), a < 0 ? fore[0] : fore[1]);
+  else if (kind < 0.75) {
+    disc(x, y - 3, 3, fore[3]); disc(x, y - 3, 2, fore[2]);
+    for (let i = 0; i < 6; i++) put(x - 4 + Math.round(hash(k * 3 + i) * 8), y - 1 - Math.round(hash(k * 5 + i) * 5), i % 3 ? c.thorn[1] : c.berry[0]);
+  } else { rect(x, y - 3, 1, 3, fore[2]); put(x - 1, y - 4, c.bloom[0]); put(x + 1, y - 4, c.bloom[0]); put(x, y - 5, c.bloom[0]); put(x, y - 4, c.bloom[1]); }
+}
+
+/** The road's dirt with the jungle's fallen leaves on it, where it's turned. */
+function litterOn(col, m, u, y, c) {
+  return m > 0.5 && hash(Math.floor(u) * 13 + y * 7) < 0.12 * m ? c.litter[hash(Math.floor(u) + y) < 0.5 ? 0 : 1] : col;
+}
+
+/** The near ferns along the bottom, passing faster than the road; `m(u)` how far the land has turned there. */
+function fernFront(e, L, morph) {
+  const [nu, ny] = into('near', e.cam * 1.35, e.camY * 1.35);
+  for (let x = 0; x < W; x++) {
+    const u = x + nu, m = morph((u - mx) / (1.35 * TRIP));
+    const h = Math.round((H * 0.04 + hash(Math.floor(u)) * H * 0.05 + Math.sin(u * 0.21) * 2) * (1 + m * 0.5));
+    for (let y = Math.max(0, H - h + ny); y < H; y++) {
+      const d = y - (H - h + ny), k = d < 2 ? 0 : d < h * 0.45 ? 1 : d < h * 0.8 ? 2 : 3;
+      fput(x, y, L('fore', k, m, x, y));
+    }
+    if (m > 0.5 && Math.round(u) % 9 === 0) for (let s = 1; s < h * 0.9; s++) fput(x + Math.round((s / h) ** 2 * 4), H - h + ny - s * 0.6, L('fore', 0, m, x, s));   // fronds arching up over it
+  }
+}
+
+/** Fireflies at night, then the jungle's spores, drifting over the road. */
+function motesOver(e, morph) {
+  const { cam, camY, t, night } = e;
+  for (let i = 0; i < 14; i++) {
+    const x = Math.round(((hash(i) * W * 1.6 - cam * 0.8) % (W * 1.6) + W * 1.6) % (W * 1.6) + Math.sin(t * 0.7 + i) * 4 - W * 0.3);
+    const m = morph((x + cam - mx) / TRIP);
+    if (night < 0.2 && m < 0.5) continue;
+    const y = Math.round(GY + camY - 5 - hash(i + 0.5) * H * 0.2 + Math.cos(t + i) * 3);
+    if (Math.sin(t * 3 + i * 1.7) > 0.2) put(x, y, m > 0.5 ? SPORE[Math.sin(t * 2 + i) > 0.5 ? 0 : 1] : e.glow[0]);
+  }
+}
+
+function paintShrineJungle(e) {
+  const { pos, a, b, c, glow, t } = e;
+  let { cam, camY } = e;
+  const R = SHRINE_JUNGLE, morph = R.morph, L = (key, k, m, x, y) => dd(a[key][k], b[key][k], m, x, y);
+  const ahead = (x, lead) => morph(pos + ((x - mx) / W) * lead);
+  farAndHills(e, L, ahead);
+
+  // the woods: the Shrine's cedars and maples give way to the jungle's giants and broad crowns
+  const S = 0.45, [mu, my] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
+  const fAt = (u) => (u - mx) / (S * TRIP);
+  const midTop = (u) => MB + Math.round(Math.sin(u * 0.13)) + my;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, m = morph(fAt(u)), top = midTop(u);
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('floor', y - top < 3 ? 0 : 1, m, x, y);
+  }
+  for (let k = Math.floor((mu - 20) / 4); k <= Math.ceil((mu + W + 20) / 4); k++) {
+    const u0 = k * 4 + Math.floor(hash(k) * 3), m = morph(fAt(u0)), x = Math.round(u0 - mu), base = midTop(u0);
+    if (hash(k + 0.5) > m * 1.05) {
+      if (hash(k + 0.9) < 0.12) {   // a maple
+        const r = 3 + Math.floor(hash(k + 0.4) * 3), cy = base - r - 2;
+        rect(x, cy, 1, base - cy, a.bark[1]);
+        disc(x, cy + 1, r, a.forest[2]); disc(x, cy, r - 1, a.forest[1]);
+      } else {   // a cedar
+        const hc = 9 + Math.floor(hash(k + 0.3) * H * 0.07);
+        for (let i = 0; i < hc; i++) {
+          const half = Math.round(i * 0.3 - (i % 4) * 0.3 + 0.4), y = base - hc - 1 + i;
+          for (let j = -half; j <= half; j++) put(x + j, y, j < 0 ? a.forest[1] : a.forest[2]);
+          if (half > 1) put(x - half, y, a.forest[0]);
+        }
+        rect(x, base - 2, 1, 2, a.bark[2]);
+      }
+    } else jungleTree(x, base, k, b, c);
+  }
+  // the Shrine's mist lies over its end of the woods, thinning out as the jungle comes
+  for (let y = Math.max(0, MB - Math.round(H * 0.14) + my); y < GY + camY && y < H; y++) {
+    const band = 1 - Math.abs((y - (MB + my - H * 0.04)) / (H * 0.12));
+    if (band <= 0) continue;
+    for (let x = 0; x < W; x++) {
+      const d = 0.45 * (1 - morph(pos + (x - mx) / (S * TRIP))) * band, u = x + cam * 0.6;
+      if (d <= 0.02) continue;
+      const n = noise(u * 0.06 + t * 0.25, y * 0.2) * 0.75 + noise(u * 0.17 - t * 0.4, y * 0.45) * 0.25;
+      if (n < d) buf[y * W + x] = n < d - 0.1 ? c.mist[0] : c.mist[1];
+    }
+  }
+
+  [cam, camY] = into('road', cam, camY);
+  // the road: the Shrine's gravel and moss, then the jungle's trodden earth under fallen leaves
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP, m = morph(f), top = groundY(u) + camY;
+    for (let y = Math.max(0, top); y < H; y++) {
+      const d = y - top;
+      let col = d === 0 ? L('path', 0, m, x, y) : d < 3 ? L('path', 1, m, x, y) : d === 3 ? L('path', 2, m, x, y) : L('ground', Math.min(3, Math.floor(((d - 4) / Math.max(1, H - top - 4)) * 4)), m, x, y);
+      buf[y * W + x] = litterOn(col, m, u, y, c);
+    }
+  }
+  // along it: the Shrine's lanterns, unlit now and moss-grown, then the jungle's undergrowth
+  const gateU = mx + R.GATE * TRIP;
+  for (let k = Math.floor((cam - 10) / 9); k <= Math.ceil((cam + W + 10) / 9); k++) {
+    const u0 = k * 9 + Math.floor(hash(k + 0.1) * 4), f = (u0 - mx) / TRIP, m = morph(f);
+    if (hash(k + 0.8) > 0.7 || Math.abs(u0 - gateU) < 16) continue;
+    const x = Math.round(u0 - cam), y = groundY(u0) + camY;
+    if (m > 0.4) jungleBush(x, y, k, b, c);
+    else if (k % 3 === 0) { lantern(x, y, false, c, glow); put(x - 1, y - 8, c.vine[1]); put(x + 2, y - 5, c.vine[0]); put(x - 2, y - 3, c.vine[1]); }
+    else for (let i = -3; i <= 3; i++) { const h = 2 + Math.round(hash(k * 3 + i) * 3); rect(x + i, y - h, 1, h, i & 1 ? a.fore[1] : a.fore[0]); }
+  }
+  // the vine-choked torii: the Shrine's last gate, the jungle grown right over it
+  const th = Math.max(28, Math.round(Math.min(H * 0.36, W * 0.6))), gx = Math.round(gateU - cam), gy = groundY(gateU) + camY;
+  if (gx > -th && gx < W + th) {
+    torii(gx, gy, th, c);
+    const w = Math.round(th * 0.85), half = Math.round(w / 2), legs = Math.round(w * 0.32);
+    for (const side of [-1, 1]) for (let j = 2; j < th; j++) {   // vines twining up its legs
+      const lx = gx + side * legs + Math.round(Math.sin(j * 0.5 + side) * 1.6);
+      put(lx, gy - j, c.vine[j % 4 ? 1 : 2]);
+      if (j % 5 === 0) { put(lx - 1, gy - j, c.vine[0]); put(lx + 1, gy - j + 1, c.vine[0]); }
+    }
+    for (let i = -half; i <= half; i++) {   // and hanging off its beams in a curtain, swaying, parted where the road runs through
+      const len = Math.round((th * 0.22 + hash(i + 3.3) * th * 0.3) * (Math.abs(i) < legs - 2 ? 0.45 : 1));
+      if (hash(i + 7.7) < 0.35) continue;
+      for (let j = 0; j < len; j++) put(gx + i + Math.round(Math.sin(t * 1.2 + i + j * 0.15) * (j / len) * 1.5), gy - th + 2 + j, j === len - 1 ? c.vine[0] : c.vine[j % 3 ? 1 : 2]);
+    }
+    for (let i = -half - 1; i <= half + 1; i += 2) put(gx + i, gy - th - 1, c.vine[0]);   // moss and leaves along the kasagi
+    if (gx < W * 0.8) cue('creak');
+  }
+  if (pos > 0.5) cue('rustle');
+
+  motesOver(e, morph);
+  fernFront(e, L, morph);
+}
+
+function paintRuinsJungle(e) {
+  const { pos, a, b, c, t } = e;
+  let { cam, camY } = e;
+  const R = RUINS_JUNGLE, morph = R.morph, [r0, r1] = R.river, L = (key, k, m, x, y) => dd(a[key][k], b[key][k], m, x, y);
+  const ahead = (x, lead) => morph(pos + ((x - mx) / W) * lead);
+  farAndHills(e, L, ahead);
+
+  // the woods: the lagoon's palms and last columns, then the jungle; mid-way a cliff with the waterfall down it
+  const S = 0.45, [mu, my] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
+  const fAt = (u) => (u - mx) / (S * TRIP);
+  const midTop = (u) => MB + Math.round(Math.sin(u * 0.13)) + my;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, m = morph(fAt(u)), top = midTop(u);
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('floor', y - top < 3 ? 0 : 1, m, x, y);
+  }
+  const fallU = mx + ((r0 + r1) / 2) * S * TRIP, cliffHalf = Math.max(22, Math.round(W * 0.2)), cliffTop = MB + my - Math.round(H * 0.34);
+  for (let k = Math.floor((mu - 20) / 4); k <= Math.ceil((mu + W + 20) / 4); k++) {
+    const u0 = k * 4 + Math.floor(hash(k) * 3), f = fAt(u0), m = morph(f), x = Math.round(u0 - mu), base = midTop(u0);
+    if (Math.abs(u0 - fallU) < cliffHalf + 4) continue;
+    if (f < 0.24 && hash(k + 0.15) < 0.12) {   // a last ruined column
+      const h = 8 + Math.floor(hash(k + 0.25) * H * 0.08);
+      rect(x - 1, base - h, 3, h, c.stone[1]); rect(x - 1, base - h, 1, h, c.stone[0]); rect(x + 1, base - h, 1, h, c.stone[2]);
+      continue;
+    }
+    if (hash(k + 0.5) > m * 1.05) {
+      if (hash(k + 0.9) > 0.35) continue;
+      const h = 9 + Math.floor(hash(k + 0.3) * H * 0.06), lean = hash(k + 0.1) < 0.5 ? -1 : 1;   // a palm
+      let tx = x;
+      for (let i = 0; i < h; i++) { tx = x + Math.round(lean * (i / h) ** 2 * h * 0.3); put(tx, base - i, a.bark[i % 3 ? 0 : 1]); }
+      for (const [ang, len] of [[-2.8, 1], [-2.2, 0.7], [-0.9, 0.7], [-0.35, 1], [3.05, 0.6], [0.1, 0.6]]) {
+        const L2 = Math.max(3, Math.round(h * 0.45 * len));
+        for (let i = 1; i <= L2; i++) put(Math.round(tx + Math.cos(ang) * i), Math.round(base - h + Math.sin(ang) * i + (i / L2) ** 2 * L2 * 0.5), a.forest[i < L2 * 0.35 ? 1 : 0]);
+      }
+    } else jungleTree(x, base, k, b, c);
+  }
+  // the cliff: mossy rock stepping down to the river, the falls pouring off its lip into a pool of spray
+  const fx = Math.round(fallU - mu), fw = Math.max(5, Math.round(W * 0.05));
+  if (fx > -cliffHalf * 2 && fx < W + cliffHalf * 2) {
+    for (let x = fx - cliffHalf * 2; x <= fx + cliffHalf * 2; x++) {
+      if (x < 0 || x >= W) continue;
+      const d = Math.abs(x - fx) / (cliffHalf * 2), top = Math.round(cliffTop + (MB + my - cliffTop) * smooth((d - 0.35) / 0.65) + Math.sin(x * 0.4) * 1.5 + (Math.abs(x - fx) < fw + 2 ? 2 : 0));
+      for (let y = Math.max(0, top); y < MB + my; y++) {
+        const s = Math.sin(x * 0.7 + Math.floor((y - top) / 4) * 2.1);
+        let col = y < top + 2 ? c.moss[0] : s > 0.6 ? c.rock[0] : s > -0.2 ? c.rock[1] : c.rock[2];
+        if (hash(Math.floor(x / 2) * 9 + Math.floor(y / 3)) < 0.1) col = c.vine[1];
+        put(x, y, col);
+      }
+    }
+    for (let y = Math.max(0, cliffTop + 2); y < MB + my + 2; y++) for (let x = fx - fw; x <= fx + fw; x++) {
+      const p = ((y - Math.floor(t * 22) + x * 3) % 7 + 7) % 7, edge = Math.abs(x - fx) >= fw - 1;
+      put(x, y, edge ? c.water[2] : p < 2 ? c.water[0] : p < 5 ? c.water[1] : c.water[2]);
+    }
+    for (let y = MB + my - 6; y < MB + my + 4; y++) for (let x = fx - fw * 3; x <= fx + fw * 3; x++) {   // the spray at its foot
+      const n = noise(x * 0.25 + t * 2, (y + t * 8) * 0.3), k = 1 - Math.abs(x - fx) / (fw * 3);
+      if (n < k * 0.7) put(x, y, n < k * 0.4 ? c.spray[0] : c.spray[1]);
+    }
+    if (fx < W * 0.9 && fx > -W * 0.2) cue('roar', 'lake-churn');
+  }
+
+  [cam, camY] = into('road', cam, camY);
+  // the road: the Ruins' sandstone, then the jungle's trodden earth; over the river, a fallen log with the water under it
+  const riverAt = (f) => f > r0 && f < r1;
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP, m = morph(f), top = groundY(u) + camY, stone = f < 0.2;
+    for (let y = Math.max(0, top); y < H; y++) {
+      const d = y - top;
+      let col;
+      if (riverAt(f)) {
+        if (d < 4) col = d === 0 ? b.bark[0] : d === 3 ? b.bark[2] : Math.round(u) % 5 === 0 ? b.bark[2] : b.bark[1];   // the log
+        else col = (x + y * 3 + Math.floor(t * 8)) % 9 === 0 ? c.water[0] : (x - y + Math.floor(t * 12)) % 13 === 0 ? c.water[1] : d < 8 ? c.water[2] : c.water[3];
+      } else if (stone && d < 4) col = d === 0 ? c.stone[0] : d === 3 || Math.round(u) % 7 === 0 ? c.stone[3] : c.stone[1];
+      else col = litterOn(d === 0 ? L('path', 0, m, x, y) : d < 3 ? L('path', 1, m, x, y) : d === 3 ? L('path', 2, m, x, y) : L('ground', Math.min(3, Math.floor(((d - 4) / Math.max(1, H - top - 4)) * 4)), m, x, y), m, u, y, c);
+      buf[y * W + x] = col;
+    }
+    if (Math.abs(f - r0) * TRIP < 2 || Math.abs(f - r1) * TRIP < 2) for (let y = top; y < Math.min(H, top + 10); y++) put(x, y, c.rock[2]);   // the banks
+  }
+  // along it: reeds by the lagoon's water, then the jungle's undergrowth
+  for (let k = Math.floor((cam - 10) / 9); k <= Math.ceil((cam + W + 10) / 9); k++) {
+    const u0 = k * 9 + Math.floor(hash(k + 0.1) * 4), f = (u0 - mx) / TRIP, m = morph(f);
+    if (hash(k + 0.8) > 0.7 || (f > r0 - 0.02 && f < r1 + 0.02)) continue;
+    const x = Math.round(u0 - cam), y = groundY(u0) + camY;
+    if (m > 0.4) jungleBush(x, y, k, b, c);
+    else for (let i = -2; i <= 2; i++) { const h = 3 + Math.round(hash(k * 7 + i) * 4); rect(x + i * 2, y - h, 1, h, a.fore[i & 1 ? 1 : 2]); put(x + i * 2, y - h, a.bark[0]); }
+  }
+  // the spray drifting over the road at the crossing, in front of your Pokémon
+  const sprayK = smooth(1 - Math.abs(pos - (r0 + r1) / 2) / 0.12);
+  if (sprayK > 0) for (let y = Math.round(GY + camY - H * 0.2); y < GY + camY + 6 && y < H; y++) for (let x = 0; x < W; x++) {
+    const n = noise((x + cam * 0.9) * 0.08 + t * 0.9, (y - t * 6) * 0.15);
+    if (y >= 0 && n < 0.3 * sprayK * (1 - Math.abs(x - mx) / W)) fput(x, y, c.spray[n < 0.15 * sprayK ? 0 : 1]);
+  }
+  if (riverAt(pos)) cue('splash');
+  if (pos > 0.66) cue('rustle');
+
+  motesOver(e, morph);
+  fernFront(e, L, morph);
 }
