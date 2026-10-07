@@ -232,3 +232,5 @@ pixel face instead (`.map-node.ken`, `.ken-face`: a 26x26 crop of Alder's sprite
 
 A Safari rare spawn's room has a gold ✦ over it (`.map-rare`, added in `js/map.js`; see `docs/reference/safari.md`): 22px,
 with a soft glow that swells as it slowly bobs and twinkles (`rareTwinkle`), still under reduced motion.
+
+**Home key** (2026-10-07): on this screen the top bar's Pokédex (`#brand-btn`) shows as `.home-key` (a round shell-coloured key with a house, `css/screens.css`) instead of the pixel handheld; it opens the device home, where Main menu lives. No Main menu button on the map itself (the user asked; one more tap away is safer than a mis-tap ending the screen).

@@ -114,7 +114,7 @@ live site.
 - **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
   device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every
   later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD),
-  `.mdex-glass` (the map scrolls inside it) and `.mdex-dock`, the Bag's pockets as a menu bar (it opens the Bag over it, the
+  `.mdex-glass` (the map scrolls inside it), the top bar's Pokédex shown as a round Home key (`.home-key`) and `.mdex-dock`, the Bag's pockets as a menu bar (it opens the Bag over it, the
   top bar's Bag hidden there). The Bag itself is the device's too (shell, LCD title, pocket buttons, a cream screen). Detail
   in `docs/reference/map-screen.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique

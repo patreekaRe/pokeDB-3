@@ -1709,3 +1709,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Smooth lobby backdrops** (2026-10-07, the user's ask): the Safari lobby's gate (`js/safari-lobby.js`) and the character
   select's window (`js/select-sky.js`, a scene per type) are painted smooth at full resolution like the Sky Pillar lobby,
   sharing `js/smooth-paint.js` with it.
+- **Map's Home key** (2026-10-07, the user's ask): on the map (and the Sky Pillar's bar) the top bar's pixel handheld is
+  swapped for a small round key in the shell's colours with a house (`.home-key`, added to `#brand-btn` by
+  `initPokedexButton()`); it opens the device's home screen, whose dock already has Main menu, so the map gets no
+  separate Main menu button.
