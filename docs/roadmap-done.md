@@ -1698,4 +1698,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   30 yet.
 - **Sky Pillar landings fixed in shape** (2026-10-07, the user's call: Marts / Centers on ~3.7 of 9 landings a flight, and
   a non-fight door on ~5.3, let a climb skip half its fights): floor 5 of every flight is a Mart beside an Alpha, floor 9
-  a Center beside a fight, the rest fights / Alphas with one ? a flight (`landingTypes()`, `MART_LANDING`).
+  a Center beside a fight, the rest fights / Alphas with one ? a flight (`landingTypes()`, `MART_LANDING`). Human bot, 60 climbs a type, median floor fire / grass / water
+  35 / 60 / 36 -> 26 / 23 / 27; reach 50 28 / 58 / 35 -> 18 / 40 / 32%; reach 100 0 / 8 / 7 -> 0 / 2 / 7%.
