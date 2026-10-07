@@ -60,7 +60,8 @@ const G = {
   ball: (d) => `<circle cx="18" cy="18" r="7" fill="#fff" stroke="${d}" stroke-width="1.6"/><path d="M11 18a7 7 0 0 1 14 0Z" fill="${d}"/><path d="M11 18h14" stroke="${d}" stroke-width="1.6"/><circle cx="18" cy="18" r="2.2" fill="#fff" stroke="${d}" stroke-width="1.4"/>`,
   paw: (d) => `<ellipse cx="18" cy="21.6" rx="4.6" ry="3.8" fill="${d}"/><circle cx="12.4" cy="16" r="2" fill="${d}"/><circle cx="16" cy="12.6" r="2" fill="${d}"/><circle cx="20" cy="12.6" r="2" fill="${d}"/><circle cx="23.6" cy="16" r="2" fill="${d}"/>`,
   compass: (d) => `<circle cx="18" cy="18" r="7.4" fill="none" stroke="#fff" stroke-width="1.4" opacity=".85"/><path d="M18 10.5l2.6 7.5h-5.2Z" fill="#fff"/><path d="M15.4 18h5.2L18 25.5Z" fill="${d}"/><circle cx="18" cy="18" r="1.1" fill="${d}"/>`,
-  t10: num('10', 11, 26), t25: num('25', 11, 26), t50: num('50', 11, 26), t75: num('75', 11, 26), t100: num('100', 8.6, 25.5),
+  ...Object.fromEntries([10, 20, 30, 40, 50, 60, 70, 80, 90].map(n => [`t${n}`, num(`${n}`, 11, 26)])), t100: num('100', 8.6, 25.5),
+  ...Object.fromEntries([1, 5, 10, 15, 20, 30, 40, 50].map(n => [`n${n}`, n < 10 ? num(`${n}`, 16) : num(`${n}`, 12, 23)])),
   one: num('1', 16), four: num('4', 16), A: num('A', 14), zero: num('0', 16),
   wave: () => `<path d="M9 16q2.25-3 4.5 0t4.5 0 4.5 0 4.5 0M9 22q2.25-3 4.5 0t4.5 0 4.5 0 4.5 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>`,
   thorns: (d) => `<path d="M10 26Q14 18 18 18T26 10" fill="none" stroke="${d}" stroke-width="2.2" stroke-linecap="round"/><path d="M13.4 21.6l-2.6-1.2M16.6 18.6l-.4-2.8M20 17.6l2.4 1.6M23.2 13.6l.6 2.8" stroke="${d}" stroke-width="1.6" stroke-linecap="round"/>`,
@@ -93,9 +94,6 @@ const LOOK = {
   safari: ['shield', ['#e8e098', '#a8a048', '#5a5420'], 'paw'],
   streak: ['bolt', ['#fff8a0', '#f8d020', '#a07800']],
   explorer: ['circle', ['#98f0e0', '#30b0a0', '#106058'], 'compass'],
-  'tower-25': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't25'],
-  'tower-50': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't50'],
-  'tower-100': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't100'],
   tide: ['hex', ['#98f0e8', '#30a8b0', '#145860'], 'wave'],
   thorn: ['diamond', ['#a8d878', '#4a8a30', '#1e4818'], 'thorns'],
   wanderer: ['circle', ['#f0d8a0', '#b89050', '#5e4420'], 'fork'],
@@ -129,13 +127,44 @@ const LOOK = {
   eternal: ['gem', ['#ffb8c8', '#d02850', '#600c28'], 'facet'],
   thunder: ['bolt', ['#ffe0a0', '#f89820', '#984800']],
   legend: ['star', ['#ffffff', '#b8c8ff', '#4c5aa0']],
-  'tower-10': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't10'],
-  'tower-75': ['tower', ['#c8d8f0', '#7890b8', '#384868'], 't75'],
   'sky-king': ['crown', ['#e8f8ff', '#78c0f0', '#2c6098']],
   weekly: ['tower', ['#d8d0ff', '#8878d8', '#3c3088'], 'clock'],
   'safari-regular': ['circle', ['#f0e8a0', '#b0a048', '#5a5420'], 'paw'],
   'rare-catch': ['gem', ['#d8ffb0', '#58c048', '#1c6020'], 'sparkle'],
 };
+
+// the badges made in bulk: a Safari area's shape and colours, a type's colours and glyph, a biome's colours
+const AREA_LOOK = {
+  meadow: ['circle', ['#eef8a8', '#a8c838', '#566818']],
+  forest: ['octagon', ['#a8e098', '#3c8a3c', '#18441c']],
+  wetland: ['hex', ['#a8e0ff', '#4890d0', '#1c4878']],
+  marsh: ['shield', ['#c8e0b8', '#6a8c68', '#2c4430']],
+  peak: ['diamond', ['#f0f8ff', '#a8b8d0', '#4c5870']],
+  desert: ['gem', ['#ffe0a0', '#e0a048', '#7a4c18']],
+};
+const TYPE_LOOK = {
+  fire: [LOOK.fire[1], 'flame'], water: [LOOK.water[1], 'drop'], grass: [LOOK.grass[1], 'leafy'],
+  normal: [['#f4f0e4', '#b8b098', '#5c5644'], 'paw'], psychic: [['#ffc8f0', '#d058b0', '#701c58'], 'eye'],
+};
+const BIOME_INK = {
+  clearing: LOOK.clearing[1], shrine: LOOK.shrine[1], wastes: LOOK.ember[1],
+  ruins: LOOK.tide[1], thornwood: LOOK.thorn[1], depths: LOOK['page-depths'][1],
+};
+const TOWER_INK = ['#c8d8f0', '#7890b8', '#384868'];
+for (const [area, [shape, ink]] of Object.entries(AREA_LOOK)) {
+  LOOK[`area-${area}`] = [shape, ink, 'paw'];
+  LOOK[`rares-${area}`] = [shape, ink, 'sparkle'];
+  for (const [type, [tink, glyph]] of Object.entries(TYPE_LOOK)) LOOK[`sx-${area}-${type}`] = [shape, tink, glyph];
+}
+for (const biome of ['clearing', 'shrine', 'wastes']) LOOK[`page-${biome}`] = ['book', BIOME_INK[biome], 'ball'];
+for (const biome of ['ruins', 'thornwood', 'depths']) LOOK[`beat-${biome}`] = ['shield', BIOME_INK[biome], 'fist'];
+for (const n of [10, 20, 30, 40, 50, 60, 70, 80, 90]) LOOK[`tower-${n}`] = ['tower', TOWER_INK, `t${n}`];
+LOOK['tower-100'] = ['tower', ['#fff4a0', '#d8b830', '#7a6410'], 't100'];
+for (const n of [1, 5, 10, 15, 20, 30, 40, 50]) LOOK[`guardians-${n}`] = ['shield', ['#f0e0b0', '#a88c58', '#584020'], `n${n}`];
+for (const n of [5, 10, 15, 20]) LOOK[`rare-${n}`] = ['gem', LOOK['rare-catch'][1], `n${n}`];
+LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
+LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
+
 const INK = '#181820';
 
 const at = ([x, y]) => `${+(x * 2 + 2).toFixed(2)},${+(y * 2 + 2).toFixed(2)}`;
@@ -378,7 +407,8 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     const row = el('div', 'tc-row');
     const badges = el('div', 'tc-badges');
     badges.append(...BADGES.filter(b => b.group === group.id).map(b => badgeButton(b, save, earned.has(b.id), fresh.includes(b.id), fresh.includes(b.id) ? n++ : 0)));
-    row.append(el('span', 'tc-group', group.name), badges);
+    const inGroup = BADGES.filter(b => b.group === group.id);
+    row.append(el('span', 'tc-group', `${group.name} · ${inGroup.filter(b => earned.has(b.id)).length}/${inGroup.length}`), badges);
     caseBox.append(row);
   }
 

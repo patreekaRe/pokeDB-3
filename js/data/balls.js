@@ -99,6 +99,10 @@ export function ballsInBag(balls, week = ballWeek()) {
     .filter(x => x.left > 0);
 }
 
+/** Times the Master Ball has been thrown (`masterThrows`, counted since its badge); an older save that ever threw it
+    threw it once. */
+export const masterThrows = (balls = {}) => balls.masterThrows ?? (balls.masterWeek ? 1 : 0);
+
 /** Throws given for a special ball bought back when it was a one-time unlock (300 coins, thrown freely). */
 export const UNLOCK_REFUND = 10;
 

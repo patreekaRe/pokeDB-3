@@ -33,7 +33,7 @@ import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
-import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag } from './data/balls.js';
+import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
 
@@ -1206,7 +1206,7 @@ async function throwBall(id) {
   // the ball is spent as it's thrown (a refresh replays the room, but not the ball)
   updateSave(d => {
     if (ball.stock) d.balls[id] = Math.max(0, (d.balls[id] || 0) - 1);
-    if (ball.weekly) d.balls.masterWeek = ballWeek();
+    if (ball.weekly) { d.balls.masterThrows = masterThrows(d.balls) + 1; d.balls.masterWeek = ballWeek(); }
   });
   renderAll();
   const roll = random();

@@ -42,8 +42,6 @@ crossing set piece in the middle. Steps 10-12 are done (`js/travel.js`; the arch
 session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). Each prompt is the whole first message.
 
 17. **Badges** are done (parts a and b: `js/data/badges.js`, the Trainer Card in `js/trainercard.js`; see the archive).
-    The Explorer and three Tower Badges stay locked slots: drop their `locked: true` and give them a `test` when
-    branching biomes / the Sky Pillar land.
     The title's Game Modes sub-menu has the Sky Pillar's gem (`pillarGem()` in `js/title.js`).
 
 18. **The Sky Pillar** is done (parts a and b, 2026-10-05: the rules, then the painted tower; see

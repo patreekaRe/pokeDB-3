@@ -603,15 +603,20 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
-  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), sixty in six `BADGE_GROUPS` of ten
-  (2026-10-07, the user's ask): Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
-  Fire / Water / Grass, Wanderer: a win down every pair of roads), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
+  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (121 since 2026-10-07, the user's list):
+  Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
+  Fire / Water / Grass, Wanderer: a win down every pair of roads, Explorer), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
   Veteran: 5 starters on Level 5), Challenges (one win's Record Book entry, Mewtwo's skipped: full HP, 12 cards, no move
   forgotten, under ₽100 spent, under 60 turns, 5 Alphas, no item; plus no rest, a 100 hit (losses too), 30 Tide), Collector
-  (bonus pages, the Safari Pokédex, shinies, every starter, every ball held at once, every perk maxed, 10,000 coins earned),
-  Secrets (Dojo, Black Belt, Seal, Depths and Eternal `secret`, Pokédex, Safari, Streak 3 / Thunder 5, every legendary) and New
-  frontiers (Explorer, Tower 10F-100F, Sky King 3 summits, 4 weeks climbed `tower.weeks`, 7 Safari days `safari.days`: the
-  only two new counts, `towerWeeks()` / `safariDays()` reading an old save as one; a rare Safari catch). The Game Corner checks
+  (shinies, every starter, every ball held at once, every perk maxed, 10,000 coins earned), Pokédex (each page researched,
+  and every Pokémon on the Ruins' / Thornwood's / Depths' page beaten: the main game's "capture"), Secrets (Dojo, Black Belt,
+  Seal, Depths and Eternal `secret`, Pokédex, Safari, Streak 3 / Thunder 5, every legendary), Safari Zone (opened, 7 days,
+  the Master Ball thrown 10 times: it's one buy with a throw a week, so `balls.masterThrows`, `masterThrows()` in
+  `js/data/balls.js`; 1/5/10/15/20 different rares, each area's page, each area's rares, the whole Safari Pokédex), Safari
+  types (each area x each type it holds, generated from `SAFARI_DEX_PAGES`, so a new area or type adds its own) and Sky
+  Pillar (each guardian floor 10-100 from `bestEver`; 1-50 guardians in all, `tower.guardians`, counted in `climbed()` and
+  read by `guardiansBeaten()`, an old save proving its best climb's or 10 a summit; Sky King, 4 weeks `tower.weeks`).
+  `towerWeeks()` / `safariDays()` read an old save as one. The Game Corner checks
   them after a purchase too. Each test reads only what the save already keeps (the
   Level legendaries, `maxLevelWinByType`, `level5WinsBy` / `level5Jackpot`, the Hall of Fame, `winsBy` by the starter's
   type), so `checkBadges()` in `js/progress.js` (pure part `newBadges(save)`) granting into `save.badges` at load (`init()`
@@ -623,7 +628,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   TRAINER, wins, Pokédex / Safari counts, gold stars, play time (`stats.playMs`: `initPlayTime()` feeds `addPlayTime()` in
   `js/storage.js`, which adds only its own minutes to the save on disk and never wakes the cloud, so a hiding page can't
   write an old save over a cloud download), the partner (a tap picks it: any owned starter at any stage, a defeated Pokédex entry or a Safari catch, `partnerChoices()`, saved as `save.partner`; an owned shiny comes both ways, a "Shiny" group in the picker and a ✨ toggle on the card (`:shiny` on the key; only starters have shiny sprites); Auto is the starter with the most wins; it also shows on the device cover and ID strip), and the Badge Case. Each badge is drawn as smooth SVG (2026-10-05, no pixels) from `LOOK` (a shape
-  polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line. Its colour steps up with badges
+  polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line (the bulk ones are made in loops after it: `AREA_LOOK`, `TYPE_LOOK`, `BIOME_INK`). Its colour steps up with badges
   (`cardTier()`: green, bronze 10, silver 25, gold 40, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
   the next time it opens. **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line

@@ -87,7 +87,7 @@ test('the Sky Pillar opens with a won run', () => {
 test('the Tower Badges follow your highest floor', () => {
   const save = { stats: { bossesDefeated: {}, winsBy: {}, maxLevelWinByType: {} }, unlocked: [], badges: [], hallOfFame: [], dex: { done: [] }, safariDex: { done: [] }, tower: { bestEver: 52 } };
   const got = newBadges(save).map(b => b.id);
-  assert.ok(got.includes('tower-25') && got.includes('tower-50') && !got.includes('tower-100'));
+  assert.ok(got.includes('tower-20') && got.includes('tower-50') && !got.includes('tower-100'));
   assert.ok(!BADGES_BY_ID['tower-100'].locked);
 });
 

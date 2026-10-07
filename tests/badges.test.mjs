@@ -1,7 +1,11 @@
 // The Badge Case's rules (js/data/badges.js): what a save can prove, and nothing more.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BADGES, BADGES_BY_ID, BADGE_GROUPS, newBadges, badgeLine } from '../js/data/badges.js';
+import { BADGES, BADGES_BY_ID, BADGE_GROUPS, newBadges, badgeLine, guardiansBeaten } from '../js/data/badges.js';
+import { masterThrows } from '../js/data/balls.js';
+import { SAFARI_DEX_PAGES } from '../js/data/safari.js';
+import { ENEMY_DEFS } from '../js/data/enemies.js';
+import { ALL_PAGES } from '../js/data/pokedex.js';
 
 const fresh = () => ({
   unlocked: [], badges: [], feats: [], kenWins: 0, kenBeaten: false, gateHp: 1000, hallOfFame: [],
@@ -97,9 +101,9 @@ test('the Explorer Badge needs all five main biomes entered, both roads at each 
   assert.ok(ids(save).includes('explorer'));
 });
 
-test('sixty badges, ten in each group', () => {
-  assert.equal(BADGES.length, 60);
-  for (const g of BADGE_GROUPS) assert.equal(BADGES.filter(b => b.group === g.id).length, 10, g.id);
+test('every group holds badges, in the Badge Case\'s order', () => {
+  for (const g of BADGE_GROUPS) assert.ok(BADGES.some(b => b.group === g.id), g.id);
+  assert.equal(BADGES.filter(b => b.group === 'tower' && /^tower-\d+$/.test(b.id)).length, 10, 'a badge per guardian floor');
 });
 
 // a Record Book win, as recordWin() saves it
@@ -168,9 +172,56 @@ test('the Sky Pillar\'s weeks and the Safari\'s days; an old save played the one
   const save = fresh();
   save.tower = { week: '2026-10-05', bestEver: 75, summits: 3 };
   save.safari = { day: '2026-10-07', tries: 1 };
-  assert.deepEqual(ids(save), ['sky-king', 'tower-10', 'tower-25', 'tower-50', 'tower-75']);
+  assert.deepEqual(ids(save).filter(id => !id.startsWith('guardians-')), ['sky-king', 'tower-10', 'tower-20', 'tower-30', 'tower-40', 'tower-50', 'tower-60', 'tower-70']);
   save.tower.weeks = 4;
   save.safari.days = 7;
   save.safariDex.caught = ['chansey'];
   assert.deepEqual(ids(save).filter(id => ['weekly', 'safari-regular', 'rare-catch'].includes(id)), ['rare-catch', 'safari-regular', 'weekly']);
+});
+
+test('guardians over every climb: the count, or what an old save\'s best climb and summits prove', () => {
+  const save = fresh();
+  save.tower = { bestEver: 47, summits: 0 };
+  assert.deepEqual(ids(save).filter(id => id.startsWith('guardians-')), ['guardians-1']);
+  save.tower.summits = 2;   // 10 guardians a summit
+  assert.deepEqual(ids(save).filter(id => id.startsWith('guardians-')).sort(), ['guardians-1', 'guardians-10', 'guardians-15', 'guardians-20', 'guardians-5']);
+  save.tower.guardians = 50;
+  assert.ok(ids(save).includes('guardians-50'));
+  assert.equal(guardiansBeaten({}), 0);
+});
+
+test('the Master Ball\'s throws; an old save that threw it once counts one', () => {
+  assert.equal(masterThrows({ masterWeek: '2026-W40' }), 1);
+  assert.equal(masterThrows({ owned: ['master'] }), 0);
+  const save = fresh();
+  save.balls = { owned: ['master'], masterThrows: 9 };
+  assert.ok(!ids(save).includes('master-ball'));
+  save.balls.masterThrows = 10;
+  assert.ok(ids(save).includes('master-ball'));
+});
+
+test('the Safari\'s pages, rares and types', () => {
+  const meadow = SAFARI_DEX_PAGES.find(p => p.area === 'meadow');
+  const save = fresh();
+  save.safariDex.caught = meadow.rare.slice(0, 5);
+  assert.deepEqual(ids(save).filter(id => id.startsWith('rare')), ['rare-5', 'rare-catch']);
+  save.safariDex.caught = [...meadow.rare];
+  assert.ok(ids(save).includes('rares-meadow') && !ids(save).includes('area-meadow'));
+  const fire = meadow.ids.filter(id => ENEMY_DEFS[id].type === 'fire');
+  save.safariDex.caught = fire;
+  assert.ok(ids(save).includes('sx-meadow-fire') && !ids(save).includes('sx-meadow-water'));
+  save.safariDex.caught = [...meadow.ids];
+  assert.ok(['area-meadow', 'sx-meadow-water', 'sx-meadow-grass', 'sx-meadow-normal'].every(id => ids(save).includes(id)));
+  assert.ok(!BADGES.some(b => b.id === 'sx-meadow-psychic'), 'no badge for a type an area doesn\'t hold');
+});
+
+test('the Pokédex pages: researched, beaten, and the Safari Zone opened', () => {
+  const save = fresh();
+  save.dex.done = ['clearing', 'shrine'];
+  assert.deepEqual(ids(save), ['page-clearing', 'page-shrine']);
+  save.dex.done.push('wastes');
+  assert.ok(ids(save).includes('safari-open') && ids(save).includes('page-wastes'));
+  const hunt = fresh();
+  hunt.dex.defeated = ALL_PAGES.find(p => p.biome === 'ruins').ids;
+  assert.ok(ids(hunt).includes('beat-ruins') && !ids(hunt).includes('beat-thornwood'));
 });

@@ -1,8 +1,8 @@
 /* ============================================================
    badges.js  -  the Trainer Card's Badge Case (roadmap item 17).
 
-   Badges unlock nothing: they're a record of what you've done, sixty of
-   them in six groups. Each `test(stats, save)` looks only at what the save already
+   Badges unlock nothing: they're a record of what you've done, in
+   BADGE_GROUPS. Each `test(stats, save)` looks only at what the save already
    keeps, so an old save earns on day one everything it can prove
    (checkBadges() in js/progress.js also runs at load). Earned ids are kept
    in the save's `badges`, so a badge stays earned even if a test ever
@@ -13,10 +13,12 @@
 
 import { STARTERS } from './starters.js';
 import { MAX_LEVEL } from './difficulty.js';
-import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, CROSSROADS } from './enemies.js';
+import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, CROSSROADS, ENEMY_DEFS } from './enemies.js';
 import { PASSIVE_SHOP_ITEMS } from './shop.js';
-import { BALLS } from './balls.js';
-import { SAFARI_AREAS } from './safari.js';
+import { BALLS, masterThrows } from './balls.js';
+import { SAFARI_AREAS, SAFARI_DEX_PAGES } from './safari.js';
+import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES } from './pokedex.js';
+import { FLIGHT } from './tower.js';
 
 /** Every main biome, both roads at each crossroads (the Explorer Badge's; the Depths are Mewtwo's own). */
 const MAIN_BIOMES = [...BIOMES, ...ALT_BIOMES].filter(b => !b.secret).map(b => b.id);
@@ -71,13 +73,47 @@ const SAFARI_RARES = new Set(SAFARI_AREAS.flatMap(a => a.rares));
 export const towerWeeks = (save) => save.tower?.weeks ?? (save.tower?.week ? 1 : 0);
 export const safariDays = (save) => save.safari?.days ?? (save.safari?.day ? 1 : 0);
 
+/** Sky Pillar guardians beaten in all, any climb (`tower.guardians`, counted since these badges); an older save has at
+    least beaten its best climb's, or 10 a summit. */
+export const guardiansBeaten = (save) => Math.max(save.tower?.guardians || 0,
+  Math.floor((save.tower?.bestEver || 0) / FLIGHT), (save.tower?.summits || 0) * 10);
+
+/** A main Pokédex page with every Pokémon on it beaten (the main game has no catching: beating one is its "capture"). */
+const pageBeaten = (save, page) => page.ids.every(id => (save.dex?.defeated || []).includes(id));
+const its = (name) => `${name}'${name.endsWith('s') ? '' : 's'}`;
+const PAGE_OF = Object.fromEntries([...DEX_PAGES, DEPTHS_PAGE, ...BONUS_PAGES].map(p => [p.biome, p]));
+
+const caughtAll = (save, ids) => ids.length > 0 && ids.every(id => (save.safariDex?.caught || []).includes(id));
+const raresCaught = (save) => new Set((save.safariDex?.caught || []).filter(id => SAFARI_RARES.has(id))).size;
+
+/** Types as the game shows them (Normal is Neutral). */
+const TYPE_NAME = { fire: 'Fire', water: 'Water', grass: 'Grass', normal: 'Neutral', psychic: 'Psychic' };
+const TYPE_EMOJI = { fire: '🔥', water: '💧', grass: '🍃', normal: '⚪', psychic: '🔮' };
+const TYPE_ORDER = ['fire', 'water', 'grass', 'normal', 'psychic'];
+const AREA_EMOJI = { meadow: '🌼', forest: '🌲', wetland: '🦆', marsh: '🪷', peak: '🏔️', desert: '🏜️' };
+
+/** One badge per type on each Safari Pokédex page: every Pokémon of that type there caught. */
+const SAFARI_TYPE_BADGES = SAFARI_DEX_PAGES.flatMap(p => TYPE_ORDER
+  .map(type => ({ type, ids: p.ids.filter(id => (ENEMY_DEFS[id]?.type ?? 'normal') === type) }))
+  .filter(t => t.ids.length)
+  .map(({ type, ids }) => ({ id: `sx-${p.area}-${type}`, group: 'safari-types', name: `${p.name} ${TYPE_NAME[type]} Badge`,
+    icon: `sx-${p.area}-${type}`, emoji: TYPE_EMOJI[type], text: `Catch every ${TYPE_NAME[type]} Pokémon in the Safari's ${p.name}`,
+    test: (s, save) => caughtAll(save, ids) })));
+
+const GUARDIAN_FLOORS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const GUARDIAN_COUNTS = [1, 5, 10, 15, 20, 30, 40, 50];
+const RARE_COUNTS = [5, 10, 15, 20];
+
 export const BADGE_GROUPS = [
   { id: 'journey', name: 'Journey' },
   { id: 'levels', name: 'Trainer Levels' },
   { id: 'challenges', name: 'Challenges' },
   { id: 'collector', name: 'Collector' },
+  { id: 'pokedex', name: 'Pokédex' },
   { id: 'secrets', name: 'Secrets' },
-  { id: 'new', name: 'New frontiers' },
+  { id: 'safari', name: 'Safari Zone' },
+  { id: 'safari-types', name: 'Safari types' },
+  { id: 'tower', name: 'Sky Pillar' },
 ];
 
 export const BADGES = [
@@ -103,6 +139,8 @@ export const BADGES = [
   { id: 'wanderer', group: 'journey', name: 'Wanderer Badge', icon: 'wanderer', emoji: '🗺️',
     text: 'Win a run down every pair of roads from the crossroads',
     test: (s, save) => { const won = new Set(levelWins(save).map(routeOf)); return ROUTES.every(r => won.has(r)); } },
+  { id: 'explorer', group: 'journey', name: 'Explorer Badge', icon: 'explorer', emoji: '🧭',
+    text: 'Walk into all five biomes, both roads at each crossroads', test: (s) => MAIN_BIOMES.every(id => (s.biomesSeen || []).includes(id)) },
 
   // Trainer Levels (Mewtwo's runs have no Level, so they never count; its Hall of Fame entries are skipped too)
   { id: 'rookie', group: 'levels', name: 'Rookie Badge', icon: 'rookie', emoji: '🎗️',
@@ -151,14 +189,6 @@ export const BADGES = [
     text: 'Win a run without using an item', test: (s, save) => aWin(save, w => Array.isArray(w.itemsUsed) && !w.itemsUsed.length) },
 
   // Collector
-  { id: 'page-ruins', group: 'collector', name: 'Ruins Page Badge', icon: 'page-ruins', emoji: '📘',
-    text: 'Complete the Sunken Ruins\' Pokédex page', test: (s, save) => pageDone(save, 'ruins') },
-  { id: 'page-thornwood', group: 'collector', name: 'Jungle Page Badge', icon: 'page-thornwood', emoji: '📗',
-    text: 'Complete the Thornwood Jungle\'s Pokédex page', test: (s, save) => pageDone(save, 'thornwood') },
-  { id: 'page-depths', group: 'collector', name: 'Crystal Page Badge', icon: 'page-depths', emoji: '📓', secret: true,
-    text: 'Complete the Crystal Depths\' Pokédex page', test: (s, save) => pageDone(save, 'depths') },
-  { id: 'safari-master', group: 'collector', name: 'Safari Master Badge', icon: 'safari-master', emoji: '🦺',
-    text: 'Catch every Pokémon in the Safari Pokédex', test: (s, save) => !!save.safariDex?.complete },
   { id: 'sparkle', group: 'collector', name: 'Sparkle Badge', icon: 'sparkle', emoji: '✨',
     text: 'Own a shiny starter', test: (s, save) => (save.shiny?.owned || []).length >= 1 },
   { id: 'shiny-hunter', group: 'collector', name: 'Shiny Hunter Badge', icon: 'shiny-hunter', emoji: '🌟',
@@ -196,27 +226,49 @@ export const BADGES = [
   { id: 'legend', group: 'secrets', name: 'Legend Badge', icon: 'legend', emoji: '🌠',
     text: 'Unlock every legendary starter', test: (s, save) => LEGENDS.every(id => (save.unlocked || []).includes(id)) },
 
-  // New frontiers: the crossroads' roads, the Sky Pillar and the Safari Zone
-  { id: 'explorer', group: 'new', name: 'Explorer Badge', icon: 'explorer', emoji: '🧭',
-    text: 'Walk into all five biomes, both roads at each crossroads', test: (s) => MAIN_BIOMES.every(id => (s.biomesSeen || []).includes(id)) },
-  { id: 'tower-10', group: 'new', name: 'Tower Badge 10F', icon: 'tower-10', emoji: '🗼',
-    text: 'Clear floor 10 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 10 },
-  { id: 'tower-25', group: 'new', name: 'Tower Badge 25F', icon: 'tower-25', emoji: '🗼',
-    text: 'Clear floor 25 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 25 },
-  { id: 'tower-50', group: 'new', name: 'Tower Badge 50F', icon: 'tower-50', emoji: '🗼',
-    text: 'Clear floor 50 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 50 },
-  { id: 'tower-75', group: 'new', name: 'Tower Badge 75F', icon: 'tower-75', emoji: '🗼',
-    text: 'Clear floor 75 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 75 },
-  { id: 'tower-100', group: 'new', name: 'Tower Badge 100F', icon: 'tower-100', emoji: '🗼',
-    text: 'Clear floor 100 of the Sky Pillar', test: (s, save) => (save.tower?.bestEver || 0) >= 100 },
-  { id: 'sky-king', group: 'new', name: 'Sky King Badge', icon: 'sky-king', emoji: '☁️',
-    text: 'Reach the top of the Sky Pillar 3 times', test: (s, save) => (save.tower?.summits || 0) >= 3 },
-  { id: 'weekly', group: 'new', name: 'Weekly Climber Badge', icon: 'weekly', emoji: '📅',
-    text: 'Climb the Sky Pillar in 4 different weeks', test: (s, save) => towerWeeks(save) >= 4 },
-  { id: 'safari-regular', group: 'new', name: 'Safari Regular Badge', icon: 'safari-regular', emoji: '🌄',
+  // Pokédex: research every entry on a biome's page, or beat every Pokémon on it
+  ...DEX_PAGES.map(p => ({ id: `page-${p.biome}`, group: 'pokedex', name: `${p.name.split(' ').at(-1)} Page Badge`, icon: `page-${p.biome}`,
+    emoji: '📖', text: `Complete the ${its(p.name)} Pokédex page`, test: (s, save) => pageDone(save, p.biome) })),
+  { id: 'page-ruins', group: 'pokedex', name: 'Ruins Page Badge', icon: 'page-ruins', emoji: '📘',
+    text: 'Complete the Sunken Ruins\' Pokédex page', test: (s, save) => pageDone(save, 'ruins') },
+  { id: 'page-thornwood', group: 'pokedex', name: 'Jungle Page Badge', icon: 'page-thornwood', emoji: '📗',
+    text: 'Complete the Thornwood Jungle\'s Pokédex page', test: (s, save) => pageDone(save, 'thornwood') },
+  { id: 'page-depths', group: 'pokedex', name: 'Crystal Page Badge', icon: 'page-depths', emoji: '📓', secret: true,
+    text: 'Complete the Crystal Depths\' Pokédex page', test: (s, save) => pageDone(save, 'depths') },
+  ...[['ruins', 'Ruins Hunter Badge'], ['thornwood', 'Jungle Hunter Badge'], ['depths', 'Crystal Hunter Badge']].map(([biome, name]) => ({
+    id: `beat-${biome}`, group: 'pokedex', name, icon: `beat-${biome}`, emoji: '🎯', ...(biome === 'depths' && { secret: true }),
+    text: `Defeat every Pokémon on the ${its(PAGE_OF[biome].name)} Pokédex page`, test: (s, save) => pageBeaten(save, PAGE_OF[biome]) })),
+
+  // Safari Zone
+  { id: 'safari-open', group: 'safari', name: 'Safari Pass Badge', icon: 'safari-open', emoji: '🎫',
+    text: 'Open the Safari Zone: research every Pokémon in the first three biomes', test: (s, save) => DEX_PAGES.every(p => pageDone(save, p.biome)) },
+  { id: 'safari-regular', group: 'safari', name: 'Safari Regular Badge', icon: 'safari-regular', emoji: '🌄',
     text: 'Play the Safari Zone on 7 different days', test: (s, save) => safariDays(save) >= 7 },
-  { id: 'rare-catch', group: 'new', name: 'Rare Catch Badge', icon: 'rare-catch', emoji: '🍀',
+  { id: 'master-ball', group: 'safari', name: 'Master Ball Badge', icon: 'master-ball', emoji: '🟣',
+    text: 'Throw the Master Ball 10 times (it has one throw a week)', test: (s, save) => masterThrows(save.balls) >= 10 },
+  { id: 'rare-catch', group: 'safari', name: 'Rare Catch Badge', icon: 'rare-catch', emoji: '🍀',
     text: 'Catch a rare Pokémon in the Safari Zone', test: (s, save) => (save.safariDex?.caught || []).some(id => SAFARI_RARES.has(id)) },
+  ...RARE_COUNTS.map(n => ({ id: `rare-${n}`, group: 'safari', name: `Rare Catch Badge ×${n}`, icon: `rare-${n}`, emoji: '🍀',
+    text: `Catch ${n} different rare Pokémon in the Safari Zone`, test: (s, save) => raresCaught(save) >= n })),
+  ...SAFARI_DEX_PAGES.map(p => ({ id: `area-${p.area}`, group: 'safari', name: `${p.name} Badge`, icon: `area-${p.area}`,
+    emoji: AREA_EMOJI[p.area] ?? '🦺', text: `Catch every Pokémon on the Safari's ${p.name} page`, test: (s, save) => caughtAll(save, p.ids) })),
+  ...SAFARI_DEX_PAGES.map(p => ({ id: `rares-${p.area}`, group: 'safari', name: `${p.name} Rarity Badge`, icon: `rares-${p.area}`,
+    emoji: '💎', text: `Catch every rare Pokémon in the Safari's ${p.name}`, test: (s, save) => caughtAll(save, p.rare) })),
+  { id: 'safari-master', group: 'safari', name: 'Safari Master Badge', icon: 'safari-master', emoji: '🦺',
+    text: 'Catch every Pokémon in the Safari Pokédex', test: (s, save) => !!save.safariDex?.complete },
+  ...SAFARI_TYPE_BADGES,
+
+  // Sky Pillar: each flight's guardian, and guardians beaten over every climb
+  ...GUARDIAN_FLOORS.map(f => ({ id: `tower-${f}`, group: 'tower', name: `Tower Badge ${f}F`, icon: `tower-${f}`, emoji: '🗼',
+    text: f === 100 ? 'Defeat Rayquaza, the guardian of the Sky Pillar\'s top floor' : `Defeat the Sky Pillar's floor ${f} guardian`,
+    test: (s, save) => (save.tower?.bestEver || 0) >= f })),
+  ...GUARDIAN_COUNTS.map(n => ({ id: `guardians-${n}`, group: 'tower', name: n === 1 ? 'Guardian Badge' : `Guardian Badge ×${n}`,
+    icon: `guardians-${n}`, emoji: '🛡️', text: n === 1 ? 'Defeat a Sky Pillar guardian' : `Defeat ${n} Sky Pillar guardians, over any climbs`,
+    test: (s, save) => guardiansBeaten(save) >= n })),
+  { id: 'sky-king', group: 'tower', name: 'Sky King Badge', icon: 'sky-king', emoji: '☁️',
+    text: 'Reach the top of the Sky Pillar 3 times', test: (s, save) => (save.tower?.summits || 0) >= 3 },
+  { id: 'weekly', group: 'tower', name: 'Weekly Climber Badge', icon: 'weekly', emoji: '📅',
+    text: 'Climb the Sky Pillar in 4 different weeks', test: (s, save) => towerWeeks(save) >= 4 },
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

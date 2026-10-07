@@ -28,7 +28,7 @@ import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
-import { badgeLine, towerWeeks, safariDays } from './data/badges.js';
+import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
@@ -552,6 +552,7 @@ function climbed(floor) {
   if (peeking) return;
   updateSave(d => {
     d.tower.bestEver = Math.max(d.tower.bestEver || 0, floor);
+    if (floor % FLIGHT === 0) d.tower.guardians = guardiansBeaten(d) + 1;   // only a guardian's floor ends in 0
     if (t.first && d.tower.week === t.week) d.tower.best = Math.max(d.tower.best || 0, floor);
   });
   for (const b of checkBadges()) tell(badgeLine(b));

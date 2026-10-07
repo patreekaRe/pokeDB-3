@@ -1610,3 +1610,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Book's per-win numbers, `dex.defeated` for the other roads' bosses, shinies, balls, perks), so old saves earn them at load;
   the Sky Pillar's weeks and the Safari's days are new counts (`tower.weeks`, `safari.days`). The Safari leaderboard podium
   was cut (the user's call: online only). Card tiers moved to 10 / 25 / 40.
+- **121 badges** (2026-10-07, the user's list): three new groups, Pokédex, Safari Zone, Safari types (an area x each type it
+  holds: 24) and Sky Pillar; the old New frontiers row split into them. New: each main page researched, every Pokémon on the
+  Ruins' / Thornwood's / Depths' page beaten (the user's "capture": the main game has no catching), the Safari opened,
+  1/5/10/15/20 different rares (76 exist), each area's page and its rares, a guardian badge per floor 10-100 (25F / 75F
+  gone: 20F / 70F prove them again at load) and 1-50 guardians in all (`tower.guardians`). "Buy 10 Master Balls" became
+  "throw it 10 times", since it's one buy with a throw a week (`balls.masterThrows`). The Badge Case's rows show n/m.
