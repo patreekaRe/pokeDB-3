@@ -35,6 +35,7 @@ import { spriteFit } from './data/sprite-fit.js';
 import { SAFARI_INTROS } from './safari-intro.js';
 import { DEPTHS_INTRO } from './depths-intro.js';
 import { RUINS_INTRO } from './ruins-intro.js';
+import { THORNWOOD_INTRO } from './thornwood-intro.js';
 
 // the film's beats, in ms
 const TILT = [0, 2600];        // down through the clouds
@@ -141,6 +142,7 @@ const INTROS = {
   },
   depths: DEPTHS_INTRO,   // Mewtwo's Crystal Depths: down a crystal shaft into the cavern as its lights come on (js/depths-intro.js)
   ruins: RUINS_INTRO,   // the Sunken Ruins: down through the rain onto the lagoon, gliding low over it to the temple (js/ruins-intro.js)
+  thornwood: THORNWOOD_INTRO,   // the Thornwood Jungle: down through the canopy, along the trail between giant trunks to the Heart Tree (js/thornwood-intro.js)
   ...SAFARI_INTROS,   // the Safari Zone's six areas, one painter with a camera move each (js/safari-intro.js)
 };
 

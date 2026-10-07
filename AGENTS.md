@@ -12,6 +12,12 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-07: **Branching biomes, part d, the Thornwood Jungle painted** (Desktop app, pushed): its own scenery in `js/scene.js`
+  (four places: a forest wall, a plank deck in the canopy, a grove of strangler figs, the Heart Tree; landmarks; the Heart
+  Tree's thorny boss prelude), intro film `js/thornwood-intro.js`, map tiles, its own grotto (a Nest Ball chest), the
+  `shrine>thornwood` / `ruins>thornwood` journey films, and a jungle floor for the descent. Item 19 is done. Checked in the
+  pane at 1280x800 and 375x812. The user still has to playtest it on a phone.
+
 - 2026-10-07: **Branching biomes, part c, the Thornwood Jungle's gameplay** (cloud, pushed): slot 2's other road (18 Gen 6-9
   Pokémon, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds), its bonus Pokédex page, the Explorer Badge earnable, `?crossroads&slot=2`.
   Bot: Water at Level 0 loses ~9 points on it (Fire gains ~7), left as the road's cost. It borrows the Clearing's scenery.

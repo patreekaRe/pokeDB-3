@@ -2587,7 +2587,7 @@ function strikeGate(won, atLastBoss) {
   const li = el('li', 'gate-line', text);
   li.append(bar, el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
   const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
-  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first } };
+  return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first, land: run.route?.[2] === 'thornwood' ? 'jungle' : 'wastes' } };
 }
 
 /** A Trainer Level 5 win: a gold star for the starter, its shiny if not owned, and each type's first win a jackpot.

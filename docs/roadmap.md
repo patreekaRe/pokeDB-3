@@ -49,27 +49,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 18. **The Sky Pillar** is done (parts a and b, 2026-10-05: the rules, then the painted tower; see
     `docs/reference/sky-pillar.md` and the archive). Still the user's: publish `firestore.rules` for the tower board and plaque.
 
-19. **Branching biomes.** After each boss's rewards, a crossroads: a painted scene with a signpost and two paths, each
-    showing its biome's name, a glimpse of its scenery, its boss's silhouette (??? until met) and which types live there.
-    Biome 2: Overgrown Shrine or **Sunken Ruins** (a flooded temple, mostly Water). Biome 3: Ember Wastes (mostly Fire) or
-    **Thornwood Jungle** (a primeval forest, mostly Grass). Each new biome is built as fully as the others: 12 wilds, 3
-    Alphas, 3 bosses (GIF, cry, sprite fit, enemy entry), 4 painted places, an intro film, a boss walk-on and boss intro,
-    a map palette and signs, a treasure grotto, a Pokédex page and map music. Journey films go from 2 routes to 6:
-    Clearing → Ruins (wading down a flooded stairwell), Ruins → Wastes (steam as the water boils away), Shrine → Jungle
-    (a vine-choked torii), Ruins → Jungle (a waterfall crossing). Seeing every biome earns the Explorer Badge. Roughly
-    6-10 sessions a biome. **Decided (the user's picks, 2026-10-06):** the new Pokédex pages are bonus pages with their
-    own reward, never counted towards finishing the Pokédex (so Reshiram and the Safari don't move); Mewtwo's speedrun
-    keeps its fixed road, no crossroads; the Explorer Badge is earned by entering all five main biomes (across any runs,
-    not beating their bosses: `stats.biomesSeen` already tracks it). The bot checks each new biome against the one it
-    pairs with. **The Sunken Ruins are done** (part a, the crossroads logic and its gameplay; part b, the crossroads scene and
-    its whole look, films and journey films; see the archive). **The Thornwood Jungle's gameplay is done** (part c, 2026-10-07:
-    its 18 Pokémon, `CROSSROADS[2]`, its bonus page, the Explorer Badge; see the archive). It borrows the Clearing's scenery. Both new roads open only after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07).
-    d. **Run in: LOCAL (Desktop app).** Prompt: "Read AGENTS.md, CLAUDE.md and docs/roadmap.md's item 19. Paint the
-       Thornwood Jungle like the Sunken Ruins (its four places Tangled Edge / Canopy Walk / Strangler Grove / Heart Tree,
-       its intro film, the Heart Tree's boss prelude, map palette and tiles, sign, its own grotto), and its Shrine → Jungle
-       (a vine-choked torii) and Ruins → Jungle (a waterfall crossing) journey films. It borrows the Clearing's scenery
-       now (`BIOME_ART.thornwood` in js/scene.js). Also: a run that falls at the jungle's last boss still plays the descent
-       in a dusky wasteland (js/descent.js); give it a jungle floor. Playtest with ?biome=thornwood and ?crossroads&slot=2."
+19. **Branching biomes** is done (parts a-d, 2026-10-06/07: the crossroads, the Sunken Ruins and the Thornwood Jungle,
+    each painted with its films; see the archive). The new roads open after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07). Still the user's: hear the new synths and films on a phone.
 
 
 ## Ideas, not agreed yet (ask the user before building)

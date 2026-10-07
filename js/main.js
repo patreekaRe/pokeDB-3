@@ -348,7 +348,7 @@ function peekStrike(params) {
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
   const kind = params.get('kind') || (after === 0 ? 'ultimate' : 'win');
-  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), music: 'title' })
+  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title' })
     .then(() => playMusic('title'));   // back to the title's song after the seal's
 }
 

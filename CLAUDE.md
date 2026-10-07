@@ -189,7 +189,7 @@ live site.
   Legendaries portrait (the user's ask, 2026-10-02). Playtest: `?mewtwo&gate=0`. The story is told on the way: the first time (`save.gateSeen`) the
   descent tells the chamber's lore, the gate scene a line that past victories already cracked it (if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
   harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
-  `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`) plays the descent and the scene after PRESS START; a
+  `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`, `&land=jungle`) plays the descent and the scene after PRESS START; a
   strike past the HP plays the break. `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo
   run, and re-seeds the gate from the Record Book; only while Mewtwo is unlocked). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
   cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
@@ -554,8 +554,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Dudunsparce / Oinkologne / Maushold, Biome 2's numbers; and since part c, 2026-10-07, the **Thornwood Jungle**, slot 2 beside
   the Wastes: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Skwovet, Team Rocket's whole
   `team` there), Alphas Komala / Wooloo / Tandemaus, bosses Greedent / Type: Null (`typenull`) / Silvally, the Wastes' numbers;
-  it borrows the Clearing's scenery (`BIOME_ART.thornwood`, `kin: 'clearing'`) and has no intro or journey films until
-  part d; a win there "conquered the jungle", `conquered(route)` in `js/halloffame.js`, from the `route` a record now keeps),
+  its look is part d's (below); a win there "conquered the jungle", `conquered(route)` in `js/halloffame.js`, from the `route` a record now keeps),
   `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] }`; the other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
   default road, no version bump). After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
@@ -587,7 +586,21 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   signs glint (`runeGlint`). Journey films `clearing>ruins` (down a flooded stair in whole steps, `stairDeck()`, wading
   a drowned arcade) and `ruins>wastes` (the lagoon boils away round geysers; `volcano()` is shared with the Shrine's
   trip). Playtest `?area=ruins` (`&stage=`, `&kind=boss`), `?travel=ruins`, `?travel=wastes&from=ruins`. Before part b
-  it borrowed the Shrine's scenery. Playtest `?biome=ruins` (any biome; `&starter=id`,
+  it borrowed the Shrine's scenery. **Thornwood's look** (part d, 2026-10-07): `BIOME_ART.thornwood` (`kin: 'clearing'` dresses
+  its ? events' props only), `thornBackdrop()` / `thornFloor()` / `thornFront()`, life in `drawThorn()`. Places: Tangled Edge
+  (the forest's wall, giants standing out of it, `emergent()`, a dark way in, `bramble()`s, a trail), Canopy Walk (a plank
+  deck, `canopyDeck()`, its far rail over a sea of treetops, `crowns()`, mist drifting, `life.thMist`; giants' trunks,
+  `barkColumn()`, with `platform()`s and rope `bridge()`s), Strangler Grove (`gloomUnderRoof()`, figs as a lattice of cords,
+  `cordTrunk({ lattice: true })`, aerial roots, `glowCap()` fungi), Heart Tree (`heartTree()`: a cord trunk, its heart in a
+  split, `life.heart`, `archRoots()` over the arena). Its prelude (`thornWake()` / `thornPortal()`, `THORN_AT`): `tendrils()`
+  writhe in from the edges as the heart beats faster, `thornBurst()`, then a briar closes over the screen. Spores and the
+  heart glow (`S.spore`, in `GLOWS`). Landmarks `LANDMARKS.thornwood`; grotto `treasure.biomes.thornwood` (a tree hollow,
+  `grottoRoots()`, a Nest Ball, `marks: 'nest'`). Intro film `js/thornwood-intro.js` (`THORNWOOD_INTRO`: down through the
+  canopy's leaves, along the trail between 3D giant trunks to the Heart Tree). Map `PALETTES.thornwood` (`litter`, `canopy`,
+  `bramble`, the `giant` and `bloom` props). Journey films `shrine>thornwood` (a vine-choked torii) and `ruins>thornwood` (a
+  fallen log over a river at a waterfall's foot), sharing `farAndHills()`, `jungleTree()`, `jungleBush()`, `fernFront()`. A run
+  lost at its last boss falls through a jungle floor (`descent({ land: 'jungle' })`, from `strikeGate()`). Playtest
+  `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
   pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), four `BADGE_GROUPS`:
