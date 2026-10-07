@@ -54,7 +54,10 @@ function measureBar() {
   const win = document.querySelector('#map-screen.tower .mdex-window');
   if (!win || !win.offsetHeight) return false;
   const top = win.getBoundingClientRect().top, h = Math.round(innerHeight - top);
-  document.documentElement.style.setProperty('--tw-lcd-y', `${Math.round(win.querySelector('.run-card').getBoundingClientRect().top)}px`);
+  const lcd = win.querySelector('.run-card').getBoundingClientRect(), css = document.documentElement.style;
+  css.setProperty('--tw-lcd-x', `${Math.round(lcd.left)}px`);
+  css.setProperty('--tw-lcd-y', `${Math.round(lcd.top)}px`);
+  css.setProperty('--tw-lcd-h', `${Math.round(lcd.height)}px`);
   document.documentElement.style.setProperty('--tw-bar-h', `${h}px`);
   if (h === barH) return false;
   barH = h;

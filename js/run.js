@@ -766,7 +766,7 @@ function initBag() {
   $('bag-trainer-art').append(cardIcon());
   $('bag-trainer-btn').addEventListener('click', () => { closeBag(true); openDeviceApp('trainer'); });
   // the map's menu bar (the Pokédex's dock): a pocket's button opens the Bag on it, and again closes it
-  for (const b of document.querySelectorAll('.mdex-btn')) {
+  for (const b of document.querySelectorAll('.mdex-btn[data-pocket]')) {
     b.querySelector('.mdex-ico').append(smoothIcon(b.querySelector('.mdex-ico').dataset.icon));
     b.addEventListener('click', () => {
       if (!$('bag').hidden && pocket === b.dataset.pocket) { closeBag(); return; }
