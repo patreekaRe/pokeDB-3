@@ -68,7 +68,9 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
 - **Picks**: one of three before floor 1 (`run.tower.pick = 0`) and after every guardian (`climbOn()` sets `pick` to the floor of the
   guardian just beaten: 10, 20 ... 90). `showMap()` asks for it after the checkpoint (`augmentPick()`), so a refresh
   asks again; there's no Skip. Tiers by floor (`augTier()`): the start and 10-30 Silver, 40-60 Gold, 70-90 Prismatic, each
-  slot with a 10% seeded chance of one tier up (`AUG_TIER_UP`).
+  slot with a 10% seeded chance of one tier up (`AUG_TIER_UP`), but at most one slot an offer and never at the start
+  (2026-10-07: a first climb opened on two Golds, Gold power on floor 1 for the whole week). Every slot still draws its
+  roll, so the shuffles keep their seeded order.
 - **The seed**: `augmentOffer()` rolls a stream per floor and reroll (`<seed>|aug:<floor>[:r<n>]`), so everyone climbing
   that week sees the same three at the same floor and after the same reroll. Held augments, another type's and ones whose
   `needs` fail (Overcharge without an X card) are skipped, walking on down the same seeded order; a reroll never repeats the

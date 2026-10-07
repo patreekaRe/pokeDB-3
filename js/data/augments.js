@@ -4,7 +4,7 @@
 
    One of three before floor 1, then after every guardian (floors 10-90):
    Silver up to floor 30, Gold 40-60, Prismatic 70-90, with a small seeded
-   chance of a slot one tier up. Every offer comes from the week's seed
+   chance of one slot one tier up after a guardian. Every offer comes from the week's seed
    (a stream per floor and per reroll), so everyone climbing that week sees
    the same three; only the choice differs. docs/augments.md is the plan.
 
@@ -208,7 +208,7 @@ export function augAllowed(aug, { type, deck = [], cards = {} } = {}) {
 /** The three augments offered at a floor (and after `reroll` rerolls there), from the week's seed: everyone climbing
     that week sees the same ones, whatever they hold, except that an augment already held (or not allowed) is skipped,
     walking on down the same seeded order. A reroll never shows one the floor's earlier offers did. Each slot has
-    AUG_TIER_UP's chance of being one tier up. */
+    AUG_TIER_UP's chance of being one tier up, at most one slot an offer, and never before floor 1. */
 export function augmentOffer({ seed, floor, reroll = 0, type, held = [], deck = [], cards = {} }) {
   const shown = [];
   for (let r = 0; r < reroll; r++) shown.push(...offerAt({ seed, floor, reroll: r, type, held: [...held, ...shown], deck, cards }).map(a => a.id));
@@ -218,7 +218,10 @@ export function augmentOffer({ seed, floor, reroll = 0, type, held = [], deck = 
 function offerAt({ seed, floor, reroll, type, held, deck, cards }) {
   const rng = makeRng(hashString(`${seed}|aug:${floor}${reroll ? `:r${reroll}` : ''}`));
   const base = AUG_TIERS.indexOf(augTier(floor));
-  const tiers = Array.from({ length: AUG_OFFER }, () => AUG_TIERS[Math.min(AUG_TIERS.length - 1, base + (rng() < AUG_TIER_UP ? 1 : 0))]);
+  // Every slot still draws its roll so the shuffles below (and this week's other offers) stay as they were.
+  const rolls = Array.from({ length: AUG_OFFER }, () => rng() < AUG_TIER_UP);
+  const up = floor === 0 ? -1 : rolls.indexOf(true);
+  const tiers = rolls.map((_, i) => AUG_TIERS[Math.min(AUG_TIERS.length - 1, base + (i === up ? 1 : 0))]);
   const order = (tier) => {
     const pool = AUGMENTS.filter(a => a.tier === tier);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }

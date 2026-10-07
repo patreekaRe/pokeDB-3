@@ -46,14 +46,20 @@ test('offers differ between weeks and floors', () => {
   assert.notEqual(here(seed, 10), here(seed, 20));
 });
 
-test('an offer is mostly its floor\'s tier, sometimes one up, never down', () => {
+test('an offer is mostly its floor\'s tier, at most one slot one up, never down, and the start is all Silver', () => {
   const counts = { same: 0, up: 0 };
   for (let w = 0; w < 200; w++) {
     const s = towerWeekly(weekOffset('2026-10-05', w)).seed;
-    for (const floor of [0, 40]) for (const a of augmentOffer({ seed: s, floor, type: 'grass' })) {
-      const d = AUG_TIERS.indexOf(a.tier) - AUG_TIERS.indexOf(augTier(floor));
-      assert.ok(d === 0 || d === 1, `${a.id} at ${floor}`);
-      counts[d ? 'up' : 'same'] += 1;
+    for (let r = 0; r < 2; r++) assert.ok(augmentOffer({ seed: s, floor: 0, reroll: r, type: 'grass' }).every(a => a.tier === 'silver'));
+    for (const floor of [10, 40]) {
+      let ups = 0;
+      for (const a of augmentOffer({ seed: s, floor, type: 'grass' })) {
+        const d = AUG_TIERS.indexOf(a.tier) - AUG_TIERS.indexOf(augTier(floor));
+        assert.ok(d === 0 || d === 1, `${a.id} at ${floor}`);
+        counts[d ? 'up' : 'same'] += 1;
+        ups += d;
+      }
+      assert.ok(ups <= 1, `${ups} tier-ups at ${floor}`);
     }
   }
   const up = counts.up / (counts.up + counts.same);
