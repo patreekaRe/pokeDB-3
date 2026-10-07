@@ -9,6 +9,17 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Hybrid scenery: pixel art with modern lighting** (the user's pick, 2026-10-07). Run in: CLOUD.
+The smooth pilot (`?smooth`, `js/smooth-clearing.js`, 2026-10-07) went too far: the user still loves the pixel style. Build
+"HD-2D" (Octopath Traveler's look) on the Clearing only, behind its own switch `?hybrid` (saved per device like
+`?smooth`; `?pixel` turns both off), so the user can flip between pixel, hybrid and smooth on the live site. The scene
+stays the pixel scene, every pixel as now (sprites, pads, landmarks unchanged); only the light is drawn smooth over it,
+on a full-resolution overlay canvas: a soft glow round the sun and moon, glowing fireflies and pollen, real light beams
+through the Deep Woods, a gentle haze softening the far hills (a touch of the "soft far away, pixel up close" idea), a
+warm tint at dawn and dusk, and the boss prelude's glows (heartwood, sap, flash) as bloom. Reuse the smooth pilot's glow
+and sprite helpers (`glow()`, `dot()`) and its trick of drawing in the pixel scene's own units over scene.js's `life`.
+Once the user has compared the three, ask whether to keep `?smooth` or remove `js/smooth-clearing.js` (one revert).
+
 **More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
 their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.
 1. ~~Device colour~~ done 2026-10-06 (see the archive).
@@ -83,9 +94,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `docs/reference/cloud-save.md`.
 - Playtests on the live site: a real Mewtwo run (Eternatus's numbers, the fall into the Depths), Ken's difficulty, the
   boss intros' and biome films' sound levels; the Sky Pillar's walk and climb pacing and its guardian intros on a phone.
-- The smooth scenery pilot (2026-10-07): `?smooth` on the live site paints the Clearing (all four places, the boss arena
-  and its prelude, every hour) smooth, `js/smooth-clearing.js`; `?pixel` goes back. The user's verdict decides whether the
-  other biomes get the same treatment (each would be its own session), whether it becomes the default, or whether it goes.
 
 ## Rules for adding Pokémon (still in force)
 
