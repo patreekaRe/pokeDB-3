@@ -1552,6 +1552,18 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Fire, which the crossroads shows, so no retune. Checked headless at 390x844: the crossroads (a tap outside and Escape
   don't skip it), the Ruins' map, signs and a fight, a saved route surviving a reload, an old save without one, a bad route
   thrown away, the Ruins' Pokédex banner and page. No console errors.
+- **Branching biomes, part c: the Thornwood Jungle's gameplay** (roadmap item 19, cloud, 2026-10-07). Slot 2's other road,
+  `CROSSROADS[2] = ['wastes', 'thornwood']`, at the Wastes' numbers. Wilds Lurantis, Tsareena, Trevenant, Gogoat,
+  Brambleghast, Arboliva, Eldegoss (Grass), Pyroar, Ceruledge (Fire), Barraskewda, Veluza (Water), Skwovet (Normal); Alphas
+  Komala, Wooloo, Tandemaus; bosses Greedent, Type: Null (`typenull`), Silvally. Gen 6-9, PokeAPI showdown GIFs, cries at
+  -13 LUFS (Tandemaus -16.8, limiter-bound), `SPRITE_FIT` lines. Places Tangled Edge / Canopy Walk / Strangler Grove / Heart
+  Tree. A bonus Pokédex page (No.090-107, 500 PokéCoins once, 🌴), Team Rocket's Skwovet, the Explorer Badge's test (all five
+  main biomes in `stats.biomesSeen`; no badge is `locked` now), win records keep their `route` (`conquered()`: "conquered
+  the jungle"), `?crossroads&slot=2`. Borrows the Clearing's scenery and has no films until part d. Human bot, 150 runs a
+  cell, Wastes -> Jungle: fire L0 81.3 -> 88.7, L3 67.3 -> 70.0; grass L0 80.7 -> 84.7, L3 61.3 -> 66.0; water L0 76.7 ->
+  65.3 (confirmed at 300 runs: 80.0 -> 70.7), L3 56.7 -> 54.0. Only Water at Level 0 moves past the noise, the cost of a
+  mostly-Grass road for Water, which the crossroads shows (like the Ruins for Fire), so no retune. Checked headless at
+  390x844: `?biome=thornwood` (map, signs, a fight with Brambleghast) and `?crossroads&slot=2`. No console errors.
 - **Branching biomes, part b: the crossroads scene** (roadmap item 19, Desktop app, 2026-10-06): `js/crossroads.js` in place
   of part a's two-button window. A dusk fork on one low-res canvas: the path from your Pokémon (from behind) splits round a
   signpost whose arms wear each biome sign's colours into two gaps in the pines, each showing `sceneShot()` of its biome at

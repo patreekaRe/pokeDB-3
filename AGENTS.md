@@ -12,6 +12,11 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-07: **Branching biomes, part c, the Thornwood Jungle's gameplay** (cloud, pushed): slot 2's other road (18 Gen 6-9
+  Pokémon, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds), its bonus Pokédex page, the Explorer Badge earnable, `?crossroads&slot=2`.
+  Bot: Water at Level 0 loses ~9 points on it (Fire gains ~7), left as the road's cost. It borrows the Clearing's scenery.
+  Next: part d (Desktop app), painting it and its two journey films.
+
 - 2026-10-06: **Branching biomes, part b, the Sunken Ruins painted** (Desktop app, pushed): its own scenery in `js/scene.js`
   (a temple drowned in a jungle lagoon; the water mirrors and ripples everything standing in it; four places, landmarks, the
   Tide Altar's boss prelude), intro film `js/ruins-intro.js`, map tiles, a glinting sign, its own grotto (a Dive Ball chest),
