@@ -59,8 +59,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     **Parts a and b are done** (2026-10-07: the Sunscorch Savanna, the pool roll, numbers by fork; then its whole look, film,
     map, grotto, descent floors for every road that can end a run, and the `clearing>savanna` / `savanna>wastes` journey
     films; see the archive). **Part c is done** (2026-10-07: a journey film for all nine pairings the pool made possible).
-    Still open: should the Savanna get badges like the Ruins' and Thornwood's (a boss, page and hunter badge)? Asked the
-    user 2026-10-07. Still the user's: watch the new trips on a phone (`?travel=ruins&from=shrine` etc.).
+    Its badges are done (2026-10-07, the user said yes: Sun, Savanna Page, Savanna Hunter). Still the user's: watch the new trips on a phone (`?travel=ruins&from=shrine` etc.).
 
 
 ## Ideas, not agreed yet (ask the user before building)

@@ -1649,3 +1649,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   biome's numbers, like the borrowed 44, not a template's), with the Safari line kept as `safariLine`. New cries at
   -13 LUFS (Herdier -14.3, limiter-bound); `RUN_SAVE_VERSION` 9. No new bot check: nothing the bot reads changed (HP,
   moves, kinds, adds and move types are the old ones), so part a's and c's numbers stand.
+
+- **Savanna badges** (item 20 follow-up, 2026-10-07, the user said yes): the Sunscorch Savanna gets the Ruins' and
+  Thornwood's three: the Sun Badge (its boss, from `dex.defeated`), the Savanna Page Badge and the Savanna Hunter Badge
+  (every Pokémon on its page beaten). Gold savanna colours and a new `sun` glyph in `js/trainercard.js`; 124 badges.

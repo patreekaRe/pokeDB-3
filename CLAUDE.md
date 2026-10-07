@@ -629,9 +629,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `?travel=wastes&from=savanna`, `?strike=40&land=savanna`. Playtest `?biome=ruins` (any biome; `&starter=id`,
   `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
-  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (121 since 2026-10-07, the user's list):
+  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (124 since 2026-10-07, the user's list):
   Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
-  Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna has no badges of its own yet), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
+  Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna's Sun Badge, page and Savanna Hunter badges like the Ruins' and Thornwood's), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
   Veteran: 5 starters on Level 5), Challenges (one win's Record Book entry, Mewtwo's skipped: full HP, 12 cards, no move
   forgotten, under ₽100 spent, under 60 turns, 5 Alphas, no item; plus no rest, a 100 hit (losses too), 30 Tide), Collector
   (shinies, every starter, every ball held at once, every perk maxed, 10,000 coins earned), Pokédex (each page researched,

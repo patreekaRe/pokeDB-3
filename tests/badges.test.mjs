@@ -235,4 +235,8 @@ test('the Pokédex pages: researched, beaten, and the Safari Zone opened', () =>
   const hunt = fresh();
   hunt.dex.defeated = ALL_PAGES.find(p => p.biome === 'ruins').ids;
   assert.ok(ids(hunt).includes('beat-ruins') && !ids(hunt).includes('beat-thornwood'));
+  const savanna = fresh();
+  savanna.dex.defeated = ALL_PAGES.find(p => p.biome === 'savanna').ids;
+  savanna.dex.done = ['savanna'];
+  assert.deepEqual(ids(savanna).filter(id => /savanna|^sun$/.test(id)), ['beat-savanna', 'page-savanna', 'sun']);
 });
