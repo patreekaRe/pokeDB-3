@@ -581,8 +581,103 @@ BIOME_ART.ruins = {
     boss: { grade: 'boss', clouds: { count: 1.3 } },
   },
 };
-// The Thornwood Jungle (roadmap item 19 c) borrows the Clearing's forest until part d paints its own.
-BIOME_ART.thornwood = { ...BIOME_ART.clearing, kin: 'clearing' };
+/* The Thornwood Jungle (roadmap item 19): a primeval forest, painted by thornBackdrop() / thornFloor() / thornFront(), its
+   life in drawThorn(). Its ? events' outdoor props are dressed like the Clearing's (`kin`); its treasure grotto is its own.
+   The spores and the Heart Tree's heart (`spore`) glow of their own accord. */
+BIOME_ART.thornwood = {
+  kin: 'clearing',
+  backdrop: 'thornwood', floor: 'thornwood', light: 'sun',
+  storm: { rain: ['#d8f0d0', '#80a888'], fall: 3.8, count: 1.4, sky: [0.5, 0, 8, 4], ground: [0.7, 0, 6, 2] },
+  sun: ['#fffce8', '#fff0a0', '#f8e070'],
+  cloud: ['#ffffff', '#eef8f0', '#c8e4d4', '#a8ccbc'],
+  trunk: ['#6a5038', '#3e2c1c'],
+  spore: ['#f8ffd8', '#c8f070', '#68c040'],
+  pollen: ['#fffce0', '#e8f8a0'],
+  firefly: ['#f8f8a0', '#c8e858'],
+  butterflies: ['#f8d848', '#58c8f8', '#f87848'],
+  bird: '#1e3a24',
+  leaves: [['#a8c858', '#688a30'], ['#d8c050', '#a08828'], ['#78b848', '#4a8a30']],
+  fern: ['#7ac858', '#4e9a40', '#2e6a2e'],
+  leaf: ['#5ab84a', '#3a9038', '#1e5a24', '#9ae070'],
+  rock: ['#a8b098', '#7a8270', '#4e5646'],
+  flowers: [['#f84830', '#f8e048'], ['#e858a8', '#f8e0f0'], ['#f89830', '#f8f0a0']],
+  marks: {
+    bark: ['#9a7a54', '#6e5236', '#4a3420', '#22160a'],
+    fig: ['#b8a07a', '#8e7856', '#64503a', '#2e2214'],
+    wood: ['#e0b070', '#b08048', '#7a5428', '#3a2410'], rope: ['#ecdcaa', '#b4a070'],
+    moss: ['#9ad060', '#5e9a40', '#3a6a2c'],
+    vine: ['#8ac858', '#4e9a3c', '#2a6a2a'],
+    thorn: ['#e8dcb0', '#a89468', '#5a4a30'],
+    leaf: ['#78c860', '#4a9a40', '#2e7030', '#1a4a20'],
+    litter: ['#b88a40', '#8a6430', '#d0a050', '#6a8a34'],
+    berry: ['#f04868', '#a01838', '#f8c8d8'], stem: ['#f0e8d0', '#c8b898'],
+    cap: ['#f0a030', '#b86818', '#fff0c8'], shroom: ['#e8fff0', '#78f0b0', '#28a878'],
+    bloom: ['#ff7860', '#d02830', '#801020', '#f8e070'],
+    stone: ['#c4c8b0', '#989c84', '#6c705c', '#383a30'],
+    pitcher: ['#c8e070', '#90b040', '#a83848', '#5a1828'],
+    egg: ['#fffcf0', '#e0d8c0', '#90c060'],
+    lamp: ['#fff4c0', '#f8c050', '#c07020'],
+    steam: ['#f0f8f0', '#c8dccc'],
+  },
+  times: {
+    day: {   // a hot, steaming day under a hazy blue sky
+      sky: ['#4a98d8', '#5ca8e0', '#72b8e6', '#8ac8ea', '#a4d6ea', '#bee2e6', '#d4ecdc'],
+      far: ['#a8ccac', '#90b898', '#78a484'],
+      canopy: ['#6cc050', '#469a3c', '#2c7430', '#174a20'],
+      gloom: ['#1a3a22', '#21462a', '#285232', '#305e3a', '#3a6a42'],
+      ground: ['#5e6c36', '#566432', '#4e5c2e', '#46522a', '#3e4a26', '#364022'],
+      blade: ['#8ac858', '#4e8a38', '#2e5a26'], patch: '#3e5a2a',
+      mist: ['#e8f4e8', '#c8dcd0'],
+      clouds: { count: 0.6 },
+      life: ['clouds', 'birds', 'blades', 'butterflies', 'thornwood'],
+      pad: { style: 'grass', top: '#86b058', mid: '#66903e', low: '#4a7230', rim: '#1a3014', earth: '#4a3a24', blade: '#a8d070' },
+    },
+    dusk: {   // the sun sets red through the haze; the spores begin to glow
+      sunLow: true,
+      sky: ['#2e2c62', '#4a3a74', '#7a4a7a', '#b05a70', '#e07a60', '#f0a060', '#f0c47c'],
+      sun: ['#fff4d0', '#f8c868', '#f08848'],
+      cloud: ['#f8d8c8', '#eab0a8', '#c07890', '#8a5078'],
+      far: ['#8a7488', '#725e76', '#5c4c62'],
+      canopy: ['#5e8a44', '#426c38', '#2c4e2c', '#18301c'],
+      gloom: ['#12201a', '#182a1e', '#1e3422', '#263e28', '#2e482e'],
+      ground: ['#4e5430', '#464c2c', '#3e4428', '#363c24', '#2e3420', '#262c1c'],
+      blade: ['#a8b058', '#5e7a38', '#304a22'], patch: '#34461e',
+      mist: ['#f0d0c0', '#c0a0a0'],
+      clouds: { count: 0.5 },
+      life: ['clouds', 'birds', 'blades', 'fireflies', 'thornwood'], fireflyCount: 0.6,
+      pad: { style: 'grass', top: '#8a9a50', mid: '#6a7a3c', low: '#4e5e2e', rim: '#141c0e', earth: '#3e2e1e', blade: '#b8c070' },
+    },
+    night: {   // the jungle wakes: fireflies everywhere, the spores and fungi alight
+      light: 'moon', stars: true,
+      sky: ['#060a1e', '#0a102a', '#0e1834', '#14203e', '#1a2a48', '#203250', '#263a54'],
+      cloud: ['#8088b0', '#646c94', '#4a5278', '#363c5e'],
+      far: ['#203a48', '#1a303e', '#142634'],
+      canopy: ['#1e4a3c', '#163a30', '#0e2c26', '#081e1a'],
+      gloom: ['#040c0c', '#061210', '#0a1814', '#0e1e18', '#12241c'],
+      trunk: ['#3a3028', '#241c18'],
+      ground: ['#24382c', '#203428', '#1c3024', '#182a20', '#14241c', '#102018'],
+      blade: ['#3a6a50', '#24503c', '#123426'], patch: '#123020',
+      mist: ['#8aa0b8', '#4a5a74'],
+      rock: ['#6a7888', '#4a5464', '#323a46'],
+      flowers: [['#a8b0d8', '#e0d890'], ['#c8b8f0', '#f0f0f8']],
+      clouds: { count: 0.3 },
+      life: ['stars', 'clouds', 'blades', 'fireflies', 'thornwood'], fireflyCount: 1.8,
+      pad: { style: 'grass', top: '#3e7a5a', mid: '#2e644a', low: '#22503a', rim: '#081610', earth: '#2a2420', blade: '#60a080' },
+    },
+    dawn: {   // mist lying in the trees, a rose sky over it
+      from: 'day', sunLow: true,
+      sky: ['#6a7cc0', '#8a8cc8', '#b09ccc', '#d4a8c4', '#eeb8b4', '#f8cca8', '#f8e0b8'],
+      sun: ['#fffcec', '#fff0b8', '#f8d898'],
+      cloud: ['#fff4ec', '#f8dcd8', '#e0b8c4', '#b898b0'],
+      mist: ['#fff4f0', '#e8d0d0'],
+      life: ['clouds', 'birds', 'blades', 'fireflies', 'thornwood'], fireflyCount: 0.3,
+    },
+  },
+  kinds: {
+    elite: { grade: 'elite' },
+    boss: { grade: 'boss', addLife: ['leaves'] },
+  },
+};
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
@@ -782,6 +877,18 @@ const PLACE_ART = {
         beam: '#e8fff8', drip: '#b8f4ff', mote: '#f0fffc',
         pool: ['#c8fff8', '#58c0c0', '#1e7080'],
         chest: { ...BALL_CHEST, lid: ['#98d8ff', '#3890e0', '#2060b0', '#103870'], mark: ['#c8f4ff', '#78d0f8'], marks: 'dive' },
+        life: ['treasure', 'drips'],
+      },
+      thornwood: {   // the hollow of a giant tree: bark walls, amber sap crystals, roots over the floor, and a Nest Ball for a chest
+        sky: ['#f8ffd8', '#c8f0a0'],
+        rock: ['#8a6a4a', '#6e5236', '#56402a', '#40301e', '#281c10'],
+        moss: ['#9ad060', '#5e9a40', '#3a6a2c'],
+        crystal: ['#fffce0', '#f8d070', '#e09a30', '#985818'],
+        ground: ['#5a4a32', '#50422c', '#463a26', '#3c3220', '#322a1a'],
+        stone: ['#c8b890', '#a8946c', '#806c4c', '#584830'],
+        beam: '#f8ffd0', drip: '#f8e8a0', mote: '#f8ffd8',
+        roots: ['#8a6a4a', '#5a4430', '#2e2216'],
+        chest: { ...BALL_CHEST, lid: ['#a8e880', '#58b048', '#3a8a34', '#1e5a22'], mark: ['#f0f8a0', '#c8e060'], marks: 'nest' },
         life: ['treasure', 'drips'],
       },
     },
@@ -1080,7 +1187,7 @@ let storm = { on: false, level: 0 };
 // lights that glow of their own accord, so the dark doesn't dim them; `storm` has its own tints
 const GLOWS = new Set(['sun', 'flame', 'lanternGlow', 'glow', 'firefly', 'lava', 'ember', 'wisp', 'spot', 'vein', 'boom',
   'wish', 'hp', 'heart', 'coin', 'crystal', 'steam', 'beam', 'mote', 'glint', 'storm', 'chalk', 'pollen',
-  'amethyst', 'ruby', 'energy', 'shroom', 'daylight', 'lamp', 'rune']);
+  'amethyst', 'ruby', 'energy', 'shroom', 'daylight', 'lamp', 'rune', 'spore']);
 const SKIES = new Set(['sky', 'cloud']);
 
 /** A copy of `art` with every colour but the glows run through a grade ({ sky, land } from GRADES); `only` limits it to those keys. */
@@ -1448,7 +1555,7 @@ export async function bossRebirth(skipped) {
 /** The sounds the second form's cutscene plays, to load ahead. */
 export const bossRebirthSounds = () => MAX_SOUNDS.map(([, sound]) => sound);
 /** A boss's place in a main biome or a Safari area (not an event's room there) has a prelude. */
-const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'ruins', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
+const hasPrelude = () => ['hills', 'shrine', 'volcano', 'depths', 'ruins', 'thornwood', 'safari'].includes(S?.raw.backdrop) && S.raw.stage === 3 && !S.raw.prop;
 const preludeKey = () => (S.raw.backdrop === 'safari' ? S.raw.area : S.raw.backdrop);
 /** The sounds the boss prelude on screen will play, to load ahead. */
 export const bossPreludeSounds = () => (hasPrelude() ? preludeSounds()[preludeKey()].map(([, sound]) => sound) : []);
@@ -1561,6 +1668,7 @@ function paintBase() {
   if (S.raw.backdrop === 'safari') safariBackdrop();
   if (S.raw.backdrop === 'depths') depthsBackdrop();
   if (S.raw.backdrop === 'ruins') ruinsBackdrop();
+  if (S.raw.backdrop === 'thornwood') thornBackdrop();
 
   if (S.raw.floor === 'treasure') grottoFloor();
   if (S.raw.floor === 'altar') shrineApproach();
@@ -1581,6 +1689,7 @@ function paintBase() {
   if (S.raw.floor === 'safari') safariFloor();
   if (S.raw.floor === 'depths') depthsFloor();
   if (S.raw.floor === 'ruins') ruinsFloor();
+  if (S.raw.floor === 'thornwood') thornFloor();
 
   if (S.raw.backdrop === 'hills') treeLine();
   if (S.raw.backdrop === 'shrine') shrineFront();
@@ -1592,6 +1701,7 @@ function paintBase() {
   if (S.raw.backdrop === 'hills' || S.raw.backdrop === 'shrine' || S.raw.backdrop === 'volcano') { stageFront(); landmark(); }
   if (S.raw.backdrop === 'depths') { depthsFront(); landmark(); }
   if (S.raw.backdrop === 'ruins') { ruinsFront(); landmark(); ruinsSettle(); }
+  if (S.raw.backdrop === 'thornwood') { thornFront(); landmark(); }
   if (S.raw.prop) eventProps();
 
   return Uint32Array.from(px);
@@ -2004,7 +2114,7 @@ function basalt() {
 
 const stage = () => S.raw.stage ?? 0;
 const within = () => { const n = [4, 3, 4][stage()]; return n ? Math.min(1, (S.raw.step || 0) / (n - 1)) : 1; };   // 0..1 through the place
-const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths', ruins: 'ruins' })[S.raw.backdrop];
+const biomeOf = () => ({ hills: 'clearing', shrine: 'shrine', volcano: 'wastes', depths: 'depths', ruins: 'ruins', thornwood: 'thornwood' })[S.raw.backdrop];
 const M = () => S.marks;
 
 /** Mark ground where grass shouldn't grow (water, lava, a landmark's footprint). */
@@ -2784,8 +2894,8 @@ function landmark() {
   if (!b || S.raw.step == null || st > 2) return;
   const r = seeded((S.raw.seed ^ (st * 7919 + 17)) >>> 0), order = shuffled(Object.entries(LANDMARKS[b][st]), r);
   const [name, mark] = order[S.raw.step % order.length];
-  // the deep woods' big trees frame the left edge, and the Crystal Halls' lake fills the back of it, so there it stands on the right
-  const paint = mark.paint || mark, side = mark.side || ((b === 'clearing' && st === 2) || (b === 'depths' && st === 1) ? 1 : r() < 0.5 ? -1 : 1);
+  // the deep woods' big trees and the Strangler Grove's figs frame the left edge, and the Crystal Halls' lake fills the back of it, so there it stands on the right
+  const paint = mark.paint || mark, side = mark.side || ((b === 'clearing' && st === 2) || (b === 'depths' && st === 1) || (b === 'thornwood' && st === 2) ? 1 : r() < 0.5 ? -1 : 1);
   const cx = side < 0 ? Math.max(12, Math.round(W * 0.08)) : Math.min(W - 13, Math.round(W * 0.91));
   const foot = groundAt(side < 0 ? 0.1 : 0.26);
   const keep = { x0: cx - 14, x1: cx + 14, y0: foot - 24, y1: foot + 2 };
@@ -3569,6 +3679,24 @@ function grottoFront() {
   boulder(-1, Math.round(W * 0.2), Math.round((H - horizon) * 0.28));
   boulder(W, Math.round(W * 0.84), Math.round((H - horizon) * 0.2));
   crystalCluster(Math.round(W * 0.92), H - Math.round((H - horizon) * 0.14), 10);
+  if (S.roots) grottoRoots();
+}
+
+/** The jungle's tree hollow: roots hanging from the roof either side of the light and crawling in over the floor. */
+function grottoRoots() {
+  const [lit, body, dark] = S.roots;
+  for (let n = 0; n < Math.round(W / 10); n++) {
+    const x0 = rand() < 0.5 ? rand() * W * 0.32 : W - rand() * W * 0.32, len = Math.round(horizon * (0.25 + rand() * 0.6));
+    for (let k = 0; k < len; k++) { const x = x0 + Math.sin(k * 0.15 + n) * 1.5; solid(x, k, k % 5 === 0 ? dark : body); if (k % 3 === 0) solid(x - 1, k, lit); }
+  }
+  for (const s of [-1, 1]) for (let r = 0; r < 3; r++) {
+    let x = s < 0 ? -1 : W, y = H - Math.round((H - horizon) * (0.32 + r * 0.16));
+    for (let n = 0, len = Math.round(W * (0.16 + r * 0.05)); n < len; n++) {
+      const th = Math.max(0, Math.round((1 - n / len) * 2));
+      x -= s; y += Math.sin(n * 0.3 + r) * 0.6 + 0.15;
+      for (let k = -th - 1; k <= th; k++) solid(x, y + k, k === -th - 1 ? lit : k === th ? dark : body);
+    }
+  }
 }
 
 const beamWidth = (y) => life.hole.rx + (CHEST_W / 2 + 10 - life.hole.rx) * Math.min(1, y / life.dais.y);
@@ -3686,6 +3814,7 @@ function chestLid() {
     const shade = y <= 2 ? 0 : y <= 6 ? 1 : y <= 8 ? 2 : 3;
     if (marks === 'great' && k <= 7 && y >= 2 && y <= 8) return S.chest.mark[Math.max(0, shade - 1)];   // the Great Ball's red patches
     if (marks === 'ultra' && y <= 8 && ((x >= 10 && x <= 12) || (x >= 23 && x <= 25))) return trim[x === 10 || x === 23 ? 0 : 1];   // the Ultra Ball's H
+    if (marks === 'nest' && (Math.abs(Math.hypot(x - 17.5, (y - 12) * 1.6) - 9) < 1.1 || Math.abs(Math.hypot(x - 17.5, (y - 12) * 1.6) - 14) < 1.1)) return S.chest.mark[y < 6 ? 0 : 1];   // the Nest Ball's rings
     if (marks === 'dive' && (y === 4 || y === 7) && ((x + (y === 4 ? 0 : 3)) % 6) < 3) return S.chest.mark[y === 4 ? 0 : 1];   // the Dive Ball's waves
     if (marks === 'master' && ((x - 9) ** 2 + (y - 5) ** 2 <= 5 || (x - 26) ** 2 + (y - 5) ** 2 <= 5)) return S.chest.mark[y < 5 ? 0 : 1];   // the Master Ball's pink bumps
     if (marks === 'master' && y >= 3 && y <= 7 && (x === 15 || x === 21 || (y === 3 + Math.abs(x - 18) && x > 15 && x < 21))) return trim[0];   // ...and its M
@@ -5724,6 +5853,7 @@ function makeLife() {
   if (has('safari')) makeSafariLife();
   if (has('depths')) makeDepthsLife();
   if (has('ruins')) makeRuinsLife();
+  if (has('thornwood')) makeThornLife();
   if (has('vines')) {
     life.vines = [];
     for (let i = 0, n = Math.round(W / 9); i < n; i++) {
@@ -5816,6 +5946,7 @@ function draw() {
   if (has('safari')) drawSafari(t);
   if (has('depths')) drawDepths(t);
   if (has('ruins')) drawRuins(t);
+  if (has('thornwood')) drawThorn(t);
   if (has('tower')) paintArena({ W, H, px }, horizon, S.raw.tower, t);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
@@ -5914,6 +6045,7 @@ function draw() {
     else if (S.raw.backdrop === 'volcano') shake = drawWastesPortal(t);
     else if (S.raw.backdrop === 'depths') shake = depthsPortal(t);
     else if (S.raw.backdrop === 'ruins') shake = ruinsPortal(t);
+    else if (S.raw.backdrop === 'thornwood') shake = thornPortal(t);
     else shake = drawClearingPortal(t);
   }
   else if (bossPrelude) shake = drawBossAwakening(t) || 0;
@@ -6376,6 +6508,7 @@ function drawBossAwakening(t) {
   if (S.raw.backdrop === 'volcano') return drawWastesAwakening(t);
   if (S.raw.backdrop === 'depths') return depthsWake(t);
   if (S.raw.backdrop === 'ruins') return ruinsWake(t);
+  if (S.raw.backdrop === 'thornwood') return thornWake(t);
   return drawClearingAwakening(t);
 }
 
@@ -6576,6 +6709,7 @@ const preludeSounds = () => ({
   volcano: [[0, 'quake'], [ERUPT_AT, 'eruption']],
   depths: [[0, 'gate-hum'], [2, 'quake'], [CORE_AT, 'eruption'], [CORE_AT + 1, 'core-surge']],
   ruins: [[0, 'quake'], [6, 'lake-churn'], [TIDE_AT, 'wave-crash']],
+  thornwood: [[0, 'glade-hum'], [4, 'rustle'], [9, 'creak'], [14, 'creak'], [THORN_AT, 'quake'], [THORN_AT + 1, 'leaf-storm']],
   ...Object.fromEntries(Object.entries(SAFARI_PRELUDES).map(([area, p]) => [area, p.sounds])),
 });
 
@@ -11013,6 +11147,596 @@ LANDMARKS.ruins = [
       for (let y = foot - 9; y <= foot; y++) { solid(cx - 2, y, line); solid(cx - 1, y, lit); solid(cx, y, body); solid(cx + 1, y, shade); solid(cx + 2, y, line); }
       pixelMap(cx - 3, foot - 15, ['..ooo...', '.oLsso..', 'oLsoLso.', 'oLsssSoo', '.oLsSSSo', '..ooooo.'], { o: line, L: lit, s: body, S: shade });
       fall(cx + 5, cx + 5, foot - 12, foot);
+    },
+  },
+];
+
+/* ============================================================
+   THE THORNWOOD JUNGLE (roadmap item 19 part d)
+   A primeval forest. Its places by stage(): the Tangled Edge (the jungle rising as a wall over a far range, giants
+   standing out of it, a dark way in between brambles), the Canopy Walk (a plank deck high in the trees, the giants' trunks
+   with platforms round them and rope bridges slung between, a sea of treetops far below), the Strangler Grove (a gloom
+   under a closed roof, the trees wrapped in the lattice of strangler figs, fungi glowing on the floor) and the Heart Tree
+   (a colossal trunk of twisted cords, its heart glowing in a split in it, roots arching over the arena).
+   ============================================================ */
+
+function thornBackdrop() {
+  const st = stage();
+  life.thVines = []; life.thGlow = []; life.heart = null;
+  if (st === 0) tangledEdge();
+  if (st === 1) canopyView();
+  if (st === 2) stranglerGrove();
+  if (st === 3) heartTree();
+}
+
+/** Billowing treetops from `top` down to `foot` in three rows, each crown lit on its top left, the lower rows darker. */
+function crowns(top, foot, [lit, body, shade, deep], size = 0.22) {
+  const span = Math.max(4, foot - top);
+  for (let row = 0; row < 3; row++) {
+    const y0 = top + Math.round(span * row * 0.3), rMax = Math.max(2, Math.round(span * size * (1 - row * 0.2)));
+    for (let x = -rMax - Math.floor(rand() * rMax); x < W + rMax; x += 2 + Math.floor(rand() * rMax)) {
+      const r = Math.max(2, Math.round(rMax * (0.55 + rand() * 0.45))), cy = y0 + r + Math.floor(rand() * r * 0.5);
+      for (let dy = -r; cy + dy < foot; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (dy < 0 && dx * dx + dy * dy > r * r) continue;
+        const xx = x + dx, yy = cy + dy, l = (dx + dy * 1.3) / r;
+        solid(xx, yy, dy > r * 0.7 || l > 0.9 ? deep : l < -0.75 ? lit : l < 0 ? (dither(xx, yy) < 4 ? lit : body) : l < 0.5 ? body : shade);
+      }
+    }
+  }
+}
+
+/** A giant standing out of the canopy: a thin pale trunk and a wide flat crown. */
+function emergent(cx, top, r) {
+  const [lit, body, shade, deep] = S.canopy, [bark, barkDark] = S.trunk, rx = Math.round(r * 1.8);
+  for (let y = top; y < horizon; y++) { solid(cx, y, bark); solid(cx + 1, y, barkDark); }
+  for (let dy = -Math.round(r * 0.6); dy <= Math.round(r * 0.4); dy++) for (let dx = -rx; dx <= rx; dx++) {
+    const u = dx / rx, v = dy / (dy < 0 ? r * 0.6 : r * 0.4) + Math.sin(dx * 0.9) * 0.15;
+    if (u * u + v * v > 1) continue;
+    const xx = cx + dx, yy = top + dy;
+    solid(xx, yy, dy > 0 ? (dy > r * 0.2 ? deep : shade) : u + v < -0.7 ? lit : dither(xx, yy) < 5 ? lit : body);
+  }
+}
+
+/** A trunk of twisted cords from `top` down to `foot`, `half` each side of `cx`, flaring into roots at its foot. A
+    `lattice` is a strangler fig's: two sets of cords winding opposite ways round a dead host, its dark showing between. */
+function cordTrunk(cx, foot, top, half, { cords = 4, lattice = false, flare = 1, colours = M().fig, seed = 0, paint = solid } = {}) {
+  const [lit, body, shade, line] = colours, rootH = Math.max(3, Math.round(Math.min(half * 2 * flare, (foot - top) * 0.3))), pitch = Math.max(4, half * 2.2);
+  for (let y = Math.max(0, top); y <= Math.min(H - 1, foot); y++) {
+    const up = foot - y, hw = half + (up < rootH ? ((rootH - up) / rootH) ** 2 * half * 1.6 * flare : 0);
+    for (let x = Math.floor(-hw); x <= Math.ceil(hw); x++) {
+      const u = x / hw;
+      if (Math.abs(u) > 1) continue;
+      const a = u * cords * 0.5 + (y + seed * 17) / pitch, fa = a - Math.floor(a);
+      const b = u * cords * 0.5 - (y + seed * 11) / pitch, fb = b - Math.floor(b);
+      const onA = lattice ? fa > 0.3 && fa < 0.7 : fa > 0.1 && fa < 0.9, onB = lattice && fb > 0.32 && fb < 0.68;
+      let c = line;
+      if (onA || onB) {
+        const f = onA ? fa : fb, light = (0.5 - f) * 1.4 - u * 0.7;
+        c = light > 0.4 ? lit : light > -0.25 ? body : shade;
+      }
+      if (u > 0.9) c = line;
+      paint(cx + x, y, c);
+    }
+  }
+}
+
+/** A trunk of bark from `top` to `foot`, grooved, lit on its left, moss in patches; `haze` mixes it into the distance. */
+function barkColumn(cx, top, foot, hw, haze = 0, paint = solid, far = S.far[1]) {
+  const [lit, body, shade, line] = M().bark, mo = M().moss;
+  for (let y = Math.max(0, top); y <= Math.min(H - 1, foot); y++) for (let x = -hw; x <= hw; x++) {
+    const u = (x + 0.5) / (hw + 0.5), groove = Math.abs(Math.sin((cx + x) * 1.3 + Math.sin(y * 0.11) * 1.5)) < 0.2;
+    let c = u < -0.6 ? lit : u > 0.55 ? (u > 0.85 ? line : shade) : groove ? shade : body;
+    if (noise((cx + x) >> 1, y >> 2, 102) < 0.16 && u < 0.5) c = mo[u < -0.2 ? 0 : 1];
+    paint(cx + x, y, haze ? mixC(c, far, haze) : c);
+  }
+}
+
+/** A thorny cane from (x, y) along `ang`, curling by `bend` a step, `len` long; thorns on its outside. */
+function cane(x, y, ang, len, bend, [lit, body, dark], thorn) {
+  for (let s = 0; s < len; s++) {
+    ang += bend; x += Math.cos(ang) * 0.75; y += Math.sin(ang) * 0.75;
+    solid(x, y, s < len * 0.3 ? dark : s % 5 === 0 ? lit : body);
+    if (s % 3 === 1) solid(x - Math.sin(ang) * 1.2 * Math.sign(bend || 1), y + Math.cos(ang) * 1.2 * Math.sign(bend || 1), thorn);
+  }
+  return [x, y];
+}
+
+/** A bramble: a dark tangle with thorny canes arching out of it and drooping, berries at their tips. */
+function bramble(cx, foot, r) {
+  const vine = M().vine, [, , leafShade, leafDeep] = M().leaf, [berry, berryDark] = M().berry;
+  for (let y = foot - r; y <= foot; y++) for (let x = -Math.round(r * 1.4); x <= r * 1.4; x++) {
+    const u = x / (r * 1.4), v = (foot - y) / r;
+    if (u * u + v * v <= 0.7) { solid(cx + x, y, dither(cx + x, y) < 6 ? leafShade : leafDeep); bare(cx + x, y); }
+  }
+  for (let n = 0; n < 10; n++) {
+    const a0 = -Math.PI * (0.12 + noise(n, cx, 104) * 0.76), len = r * (1.1 + noise(n, cx, 105) * 0.9);
+    const [x, y] = cane(cx + (noise(n, cx, 106) - 0.5) * r, foot - noise(n, cx, 107) * r * 0.4, a0, len, (a0 < -Math.PI / 2 ? -1 : 1) * 1.7 / len, vine, M().thorn[0]);
+    if (n % 3 === 0) { solid(x, y, berry); solid(x + 1, y, berryDark); solid(x, y + 1, berryDark); }
+  }
+}
+
+/* The Tangled Edge: a far range under jungle, the giants standing out of it, then the forest's wall, taller the further
+   in, the way in a dark tunnel under an arch of leaves. */
+function tangledEdge() {
+  const k = within(), cx = Math.round(W / 2), [, , shade, deep] = S.canopy;
+  ridge(horizon - Math.round(horizon * 0.38), Math.max(2, Math.round(horizon * 0.07)), 14, 2.1, S.far, true);
+  for (const at of [0.1, 0.34, 0.66, 0.9]) {
+    const x = Math.round(W * at + (noise(at * 10, 1, 101) - 0.5) * W * 0.08);
+    emergent(x, horizon - Math.round(horizon * (0.8 + noise(at * 10, 2, 101) * 0.1 + k * 0.06)), Math.max(3, Math.round(horizon * (0.08 + noise(at * 10, 3, 101) * 0.04))));
+  }
+  const top = horizon - Math.round(horizon * (0.58 + k * 0.14));
+  crowns(top, horizon, S.canopy, 0.16);
+  for (let x = Math.floor(rand() * 6); x < W; x += 6 + Math.floor(rand() * 9)) {   // trunks glimpsed under the crowns
+    const y0 = horizon - Math.round((horizon - top) * (0.2 + rand() * 0.2));
+    for (let y = y0; y < horizon; y++) { solid(x, y, S.trunk[1]); if (dither(x + 1, y) < 8) solid(x + 1, y, deep); }
+  }
+  const gw = Math.max(3, Math.round(W * 0.05)), gh = Math.max(5, Math.round((horizon - top) * 0.62)), black = mixC(deep, abgr('#000000'), 0.6);
+  for (let y = horizon - gh - 3; y < horizon; y++) for (let x = cx - gw - 3; x <= cx + gw + 3; x++) {
+    if (inArch(x, y, cx, horizon - 1, gw, gh)) {
+      const d = Math.hypot((x + 0.5 - cx) / gw, (horizon - y) / gh);
+      solid(x, y, d < 0.6 ? black : d < 0.85 && dither(x, y) < 9 ? black : deep);
+    } else if (inArch(x, y, cx, horizon - 1, gw + 2, gh + 2) && dither(x, y) < 10) solid(x, y, shade);
+  }
+  life.edge = { cx, gw };
+}
+
+/* The Canopy Walk: the deck you stand on is high in the trees. Out past its rail a sea of treetops far below, mist lying
+   in it; the giants' trunks rise out of it with platforms round them, rope bridges slung between. */
+function canopyView() {
+  const sea = Math.round(horizon * 0.5), haze = (c, k) => mixC(c, S.far[0], k);
+  crowns(sea, horizon, S.far, 0.14);
+  crowns(sea + Math.round((horizon - sea) * 0.4), horizon, S.canopy.map((c, i) => haze(c, 0.42 - i * 0.06)), 0.18);
+  const near = Math.max(2, Math.round(W * 0.03)), far = Math.max(1, Math.round(W * 0.016));
+  const trees = [
+    { x: Math.round(W * 0.13), hw: near, haze: 0, deck: Math.round(horizon * 0.46) },
+    { x: Math.round(W * 0.6), hw: far, haze: 0.35, deck: Math.round(horizon * 0.34) },
+    { x: Math.round(W * 0.92), hw: near, haze: 0.1, deck: Math.round(horizon * 0.5) },
+  ];
+  for (const t of trees) barkColumn(t.x, 0, horizon - 1, t.hw, t.haze);
+  bridge(trees[0].x + trees[0].hw * 3, trees[0].deck, trees[1].x - trees[1].hw * 3, trees[1].deck, 0.35);
+  bridge(trees[1].x + trees[1].hw * 3, trees[1].deck, trees[2].x - trees[2].hw * 3, trees[2].deck, 0.25);
+  for (const t of trees) platform(t.x, t.deck, t.hw * 3 + 1, Math.max(1, Math.round(t.hw * 0.7)), t.haze);
+  fringe(Math.max(3, Math.round(horizon * 0.1)));
+  life.thMist = Array.from({ length: 4 }, (_, i) => ({ y: sea + Math.round((horizon - sea) * (0.15 + i * 0.22)), h: Math.max(2, Math.round((horizon - sea) * 0.1)), speed: 0.15 + i * 0.08, phase: rand() * W }));
+}
+
+/** A round deck built round a trunk: planks on top, its rim, rope rails along its front, two struts under it. */
+function platform(cx, y, rx, ry, haze) {
+  const [lit, body, shade, line] = M().wood.map(c => (haze ? mixC(c, S.far[1], haze) : c)), [rope] = M().rope;
+  for (let k = 1; k <= rx; k++) { solid(cx - k, y + 2 + k, shade); solid(cx + k, y + 2 + k, shade); if (k > rx * 0.6) break; }
+  for (let x = -rx; x <= rx; x++) {
+    const e = Math.sqrt(Math.max(0, 1 - (x / (rx + 0.5)) ** 2)), back = Math.round(y - ry * e), front = Math.round(y + ry * e);
+    for (let yy = back; yy <= front; yy++) solid(cx + x, yy, x % 3 === 0 ? shade : yy === back ? lit : body);
+    solid(cx + x, front + 1, line);
+    if ((x + rx) % 3 === 0) for (let k = 1; k <= 3; k++) solid(cx + x, front - k, k === 3 ? line : body);
+    solid(cx + x, front - 3, haze ? mixC(rope, S.far[1], haze) : rope);
+  }
+}
+
+/** A rope bridge from (x0, y0) to (x1, y1): planks on a sagging line, hand ropes over them on posts. */
+function bridge(x0, y0, x1, y1, haze) {
+  const [lit, body, shade, line] = M().wood.map(c => mixC(c, S.far[1], haze)), [rope, ropeDark] = M().rope.map(c => mixC(c, S.far[1], haze));
+  const sag = Math.max(2, (x1 - x0) * 0.08);
+  for (let x = Math.round(x0); x <= x1; x++) {
+    const t = (x - x0) / Math.max(1, x1 - x0), y = Math.round(y0 + (y1 - y0) * t + sag * 4 * t * (1 - t)), hand = y - 3 - Math.round(sag * 0.3 * 4 * t * (1 - t));
+    solid(x, y, x % 2 ? lit : body); solid(x, y + 1, x % 2 ? shade : line);
+    solid(x, hand, rope);
+    if (x % 4 === 0) for (let k = y - 1; k > hand; k--) solid(x, k, ropeDark);
+  }
+}
+
+/** Leaves hanging into the picture from the canopy overhead, vines dropping from them (drawn live: drawThorn). */
+function fringe(deep, colour = M().vine) {
+  const [lit, body, shade, dark] = S.canopy;
+  for (let x = 0; x < W; x++) {
+    const h = Math.round(deep * (1 + 0.5 * Math.sin(x / 5) + 0.3 * Math.sin(x / 2.3 + 1)));
+    for (let y = 0; y <= h; y++) solid(x, y, y === h ? dark : y === h - 1 && dither(x, y) < 8 ? shade : dither(x, y) < 3 ? lit : body);
+    if (noise(x, 3, 108) < 0.07) life.thVines.push({ x, y: h, len: Math.round(horizon * (0.12 + noise(x, 4, 108) * 0.4)), phase: noise(x, 5, 108) * 40, colour });
+  }
+}
+
+/** A closed roof over a gloom: no sky, the far trees fading into it, a few gaps of light in the leaves. */
+function gloomUnderRoof(roof) {
+  const g = S.gloom;
+  for (let y = 0; y < horizon; y++) {
+    const t = (y / horizon) * (g.length - 1), i = Math.floor(t), f = t - i;
+    for (let x = 0; x < W; x++) solid(x, y, g[Math.min(g.length - 1, i + (f * 16 > dither(x, y) ? 1 : 0))]);
+  }
+  for (let x = Math.floor(rand() * 4); x < W; x += 3 + Math.floor(rand() * 6)) {   // the far trunks
+    const w = 1 + Math.floor(rand() * 2), c = mixC(M().bark[2], g[3], 0.5 + rand() * 0.3);
+    for (let y = 0; y < horizon; y++) for (let dx = 0; dx < w; dx++) solid(x + dx, y, dx === w - 1 ? mixC(c, g[0], 0.3) : c);
+  }
+  const [lit, body, shade, deep] = S.canopy;
+  for (let x = 0; x < W; x++) {
+    const h = roof + Math.round(2.5 * Math.sin(x / 6) + 1.5 * Math.sin(x / 2.7 + 2));
+    for (let y = 0; y <= h; y++) {
+      const gap = Math.sin(x / 9 + y / 4) + Math.sin(x / 4.3 - y / 3) > 1.6 && y < h - 3;
+      solid(x, y, gap ? S.far[0] : y >= h - 1 ? deep : dither(x, y) < 2 ? lit : y > h - 4 && dither(x, y) < 8 ? shade : body);
+    }
+  }
+}
+
+/* The Strangler Grove: under the closed roof, the trees wrapped in strangler figs, roots hanging from their limbs. */
+function stranglerGrove() {
+  gloomUnderRoof(Math.round(horizon * 0.2));
+  const g = S.gloom, mid = M().fig.map(c => mixC(c, g[4], 0.45));
+  barkColumn(Math.round(W * 0.52), 0, horizon, Math.max(1, Math.round(W * 0.016)), 0.6, solid, g[2]);
+  for (const [at, k] of [[0.1, 0.05], [0.33, 0.038], [0.69, 0.04], [0.9, 0.05]]) {
+    const x = Math.round(W * at + (noise(at * 10, 6, 109) - 0.5) * W * 0.04), hw = Math.max(3, Math.round(W * k));
+    cordTrunk(x, horizon, 0, hw, { lattice: true, cords: 2, colours: mid, seed: at * 10 });
+  }
+  for (let n = 0; n < Math.round(W / 12); n++) {   // aerial roots hanging from the roof
+    const x = Math.floor(rand() * W);
+    life.thVines.push({ x, y: Math.round(horizon * 0.2), len: Math.round(horizon * (0.2 + rand() * 0.6)), phase: rand() * 40, colour: mid, root: true });
+  }
+}
+
+/* The Heart Tree: a colossal trunk of twisted cords filling the back, its heart glowing in a split in it, a thorny vine
+   spiralling up it, its crown the roof. */
+function heartTree() {
+  gloomUnderRoof(Math.round(horizon * 0.14));
+  const cx = Math.round(W / 2), half = Math.max(8, Math.round(Math.min(W * 0.12, horizon * 0.42))), foot = horizon + 2, [lit, body, shade, line] = M().bark;
+  cordTrunk(cx, foot, 0, half, { cords: 6, flare: 1.4, colours: M().bark, seed: 3 });
+  const hy = Math.round(horizon * 0.52), sh = Math.max(4, Math.round(half * 0.85)), sw = Math.max(2, Math.round(half * 0.3)), hollow = mixC(line, S.spore[2], 0.18);
+  for (let y = hy - sh - 1; y <= hy + sh + 1; y++) {
+    const w = sw * Math.sqrt(Math.max(0, 1 - ((y - hy) / sh) ** 2));
+    for (let x = -Math.ceil(w) - 1; x <= Math.ceil(w) + 1; x++) {
+      if (Math.abs(x) <= w) solid(cx + x, y, hollow);
+      else if (Math.abs(x) <= w + 1.5) solid(cx + x, y, x < 0 ? shade : lit);
+    }
+  }
+  life.heart = { x: cx, y: hy, r: Math.max(2, Math.round(sw * 0.75)), foot: horizon, half };
+  const [vl, vb, vd] = M().vine, thorn = M().thorn[0];   // the vine spiralling up the trunk, in front where it faces you
+  for (let y = 0; y < foot; y++) {
+    const a = y * 0.16, x = cx + Math.sin(a) * half * 0.95;
+    if (Math.cos(a) < 0 || Math.abs(y - hy) < sh + 2 && Math.abs(x - cx) < sw + 2) continue;
+    solid(x, y, vb); solid(x, y - 1, vl); solid(x + 1, y, vd);
+    if (y % 5 === 0) solid(x + (Math.sin(a + 1) > 0 ? 2 : -2), y - 1, thorn);
+  }
+  for (let x = 0; x < W; x++) {   // the crown, heavier over the trunk
+    const over = Math.max(0, 1 - Math.abs(x - cx) / (W * 0.5)), h = Math.round(horizon * (0.12 + over * 0.14) + 3 * Math.sin(x / 5) + 2 * Math.sin(x / 2.3 + 1));
+    const [cl, cb, cs, cd] = S.canopy;
+    for (let y = 0; y <= h; y++) solid(x, y, y >= h - 1 ? cd : y > h - 4 && dither(x, y) < 9 ? cs : dither(x + 1, y) < 3 ? cl : cb);
+    if (noise(x, 7, 110) < 0.06) life.thVines.push({ x, y: h, len: Math.round(horizon * (0.1 + noise(x, 8, 110) * 0.35)), phase: noise(x, 9, 110) * 40, colour: M().vine });
+  }
+}
+
+/* ----- the ground ----- */
+
+function thornFloor() {
+  const st = stage();
+  if (st === 1) { canopyDeck(); life.bladeDensity = 0; return; }
+  bands(horizon, H, S.ground, 0.8);
+  if (st >= 2) for (let y = horizon; y < H; y++) for (let x = 0; x < W; x++) tint(x, y, 0.8);   // under the roof
+  const litter = M().litter;
+  for (let n = 0, c = Math.round(W * (H - horizon) / 26); n < c; n++) {   // leaf litter
+    const x = Math.floor(rand() * W), y = horizon + 1 + Math.floor(rand() * (H - horizon)), col = mixC(litter[Math.floor(rand() * 4)], S.ground[3], st >= 2 ? 0.55 : 0.3);
+    put(x, y, col);
+    if (depthOf(y) > 0.4 && rand() < 0.6) put(x + 1, y, col);
+  }
+  grassPatches(S.patch, Math.round(W / 12));
+  if (st === 0) {   // the forest's shade on the ground at its foot, then the trail
+    const reach = Math.round((H - horizon) * 0.22);
+    for (let y = horizon; y < horizon + reach; y++) for (let x = 0; x < W; x++) if (dither(x, y) < 14 - ((y - horizon) / reach) * 14) tint(x, y, 0.82);
+    edgeTrail();
+  }
+  for (let n = 0, count = st === 0 ? 2 : 4; n < count; n++) {
+    const left = n % 2 === 0, y = horizon + Math.round((H - horizon) * (0.1 + noise(n, st, 111) * 0.6));
+    floorRoot(left ? -2 : W + 1, y, left ? 1 : -1, Math.round(W * (0.12 + noise(n, st, 112) * 0.14)), Math.max(1, Math.round(depthOf(y) * 3)));
+  }
+  for (let n = 0; n < Math.round(W / 22); n++) {
+    const y = horizon + 3 + Math.floor(rand() * (H - horizon - 3)), x = rand() < 0.5 ? rand() * W * 0.2 : W - rand() * W * 0.2;
+    fern(Math.round(x), y, 2 + Math.round(depthOf(y) * 8));
+  }
+  if (st >= 2) for (let n = 0; n < Math.round(W / 16); n++) {   // fungi glowing on the floor
+    const y = horizon + 2 + Math.floor(rand() ** 1.5 * (H - horizon) * 0.7), x = rand() < 0.5 ? rand() * W * 0.3 : W - rand() * W * 0.3;
+    glowCap(Math.round(x), y, depthOf(y) > 0.3 ? 2 : 1);
+  }
+  life.bladeDensity = st === 0 ? 0.7 : 0.25;
+}
+
+/** The trail in: trodden earth from your feet narrowing to the way in under the trees. */
+function edgeTrail() {
+  const { cx, gw } = life.edge, [earth, dark] = [mixC(S.ground[0], M().litter[0], 0.45), mixC(S.ground[3], M().litter[1], 0.4)];
+  for (let y = horizon; y < H; y++) {
+    const d = depthOf(y), half = gw * 0.5 + W * 0.08 * d, mid = cx + Math.sin(y * 0.09) * d * W * 0.04;
+    for (let x = Math.floor(mid - half - 2); x <= mid + half + 2; x++) {
+      const e = Math.abs(x + 0.5 - mid) - half;
+      if (e < 0 || dither(x, y) < (2 - e) * 4) { put(x, y, noise(x >> 1, y >> 1, 113) < 0.3 || (x * 3 + y * 5) % 13 === 0 ? dark : earth); bare(x, y); }
+    }
+  }
+}
+
+/** A root snaking out over the ground from an edge, its top lit. */
+function floorRoot(x, y, dir, len, thick) {
+  const [lit, body, shade, line] = M().bark;
+  for (let n = 0; n < len; n++) {
+    const th = Math.max(0, Math.round(thick * (1 - n / len) + 0.4));
+    x += dir; y += Math.sin(n * 0.25) * 0.5 + 0.08;
+    for (let k = -th - 1; k <= th; k++) solid(x, y + k, k === -th - 1 ? lit : k === th ? line : k > 0 ? shade : body);
+    bare(x, y);
+  }
+}
+
+/** A little glowing toadstool; its cap pulses (drawThorn). */
+function glowCap(x, y, size) {
+  const [stem] = M().stem, [, glow, deep] = S.spore;
+  solid(x, y, stem);
+  if (size > 1) solid(x, y - 1, stem);
+  for (let k = -size; k <= size; k++) solid(x + k, y - size, k === size ? deep : glow);
+  if (size > 1) for (let k = -1; k <= 1; k++) solid(x + k, y - size - 1, glow);
+  life.thGlow.push({ x, y: y - size, size, phase: rand() * 40 });
+}
+
+/** The Canopy Walk's deck: planks laid across, in perspective, gaps between them. */
+function canopyDeck() {
+  const [lit, body, shade, line] = M().wood, cx = W / 2, K = 12;   // a board every 1/K of a doubling of the distance: thin far off, wide at your feet
+  for (let y = horizon; y < H; y++) {
+    const a = y - horizon + 1, rowOf = (n) => Math.floor(Math.log(n) * K), row = rowOf(a), seam = a > 5 && row !== rowOf(a + 1), first = a > 5 && row !== rowOf(a - 1);
+    for (let x = 0; x < W; x++) {
+      let c;
+      if (a <= 5) c = dither(x, y) < 6 ? shade : body;
+      else {
+        const X = ((x + 0.5 - cx) / a) * 7 + row * 2.3, X1 = ((x + 1.5 - cx) / a) * 7 + row * 2.3;
+        c = seam || Math.floor(X / 9) !== Math.floor(X1 / 9) ? line : first ? lit : noise(Math.floor(X), row, 103) < 0.25 ? shade : body;
+      }
+      solid(x, y, c);
+    }
+  }
+}
+
+/* ----- in front ----- */
+
+function thornFront() {
+  const st = stage();
+  if (st === 0) {
+    const { cx, gw } = life.edge;
+    for (let x = Math.floor(rand() * 4); x < W; x += 3 + Math.floor(rand() * 4)) if (Math.abs(x - cx) > gw + 2) fern(x, horizon + 1 + Math.floor(rand() * 2), 3 + Math.floor(rand() * 3));   // undergrowth at the wall's foot
+    for (const s of [-1, 1]) bramble(s < 0 ? Math.round(W * 0.04) : Math.round(W * 0.96), horizon + Math.round((H - horizon) * (s < 0 ? 0.32 : 0.22)), Math.max(6, Math.round(Math.min(W * 0.09, (H - horizon) * 0.2))));
+    for (const [x0, dir] of [[-2, 1], [W + 1, -1]]) for (const [ang, len] of [[-0.95, 0.16], [-0.5, 0.22]]) bigLeaf(x0, H + 2, Math.round(H * len), dir > 0 ? ang : -Math.PI - ang);
+  }
+  if (st === 1) {
+    deckRail();
+    const hw = Math.max(3, Math.round(W * 0.04));
+    barkColumn(-Math.round(hw * 0.3), 0, H - 1, hw);
+    barkColumn(W - 1 + Math.round(hw * 0.4), 0, H - 1, hw);
+  }
+  if (st === 2) {
+    lightShafts(S.stars ? 0.3 : 0.75);
+    const hw = Math.max(3, Math.round(W * 0.045));
+    for (const [x, foot] of [[-Math.round(W * 0.01), horizon + Math.round((H - horizon) * 0.4)], [Math.round(W * 1.03), horizon + Math.round((H - horizon) * 0.5)]]) cordTrunk(x, foot, 0, hw, { lattice: true, cords: 3, seed: x });
+  }
+  if (st === 3) archRoots();
+}
+
+/** The deck's far rail along its edge, over the drop: posts, a rope slung between them. */
+function deckRail() {
+  const [lit, body, shade, line] = M().wood, [rope, ropeDark] = M().rope, gap = Math.max(8, Math.round(W / 9));
+  for (let x = Math.round((W / 2) % gap); x < W; x += gap) {
+    for (let y = horizon - 5; y <= horizon; y++) { solid(x, y, lit); solid(x + 1, y, shade); }
+    solid(x, horizon - 6, line); solid(x + 1, horizon - 6, line);
+  }
+  for (let x = 0; x < W; x++) {
+    const k = (((x - (W / 2) % gap) % gap) + gap) % gap / gap, y = horizon - 5 + Math.round(Math.sin(k * Math.PI) * 1.5);
+    solid(x, y, rope); if (dither(x, y) < 6) solid(x, y + 1, ropeDark);
+  }
+  for (let x = 0; x < W; x++) solid(x, horizon, line);
+}
+
+/** The Heart Tree's roots arching over the edges of the arena, thorned along their backs. */
+function archRoots() {
+  const [lit, body, shade, line] = M().bark, thorn = M().thorn[0], foot = H + 2;
+  for (const s of [-1, 1]) {
+    const x0 = s < 0 ? -W * 0.06 : W * 1.06, x1 = W / 2 + s * W * 0.28, y1 = horizon + Math.round((H - horizon) * 0.06), rise = Math.round(horizon * (s < 0 ? 0.5 : 0.42));
+    const th0 = Math.max(3, Math.round(Math.min(W, H) * 0.05));
+    for (let n = 0, steps = Math.round(Math.abs(x1 - x0) * 2); n <= steps; n++) {
+      const t = n / steps, x = x0 + (x1 - x0) * t, y = foot + (y1 - foot) * t - Math.sin(Math.PI * t) * rise, th = Math.round(th0 * (1.3 - t * 0.7));
+      for (let k = -th; k <= th; k++) {
+        const cord = Math.abs(Math.sin(k * 1.4 + t * 18)) < 0.25;
+        solid(x, y + k, k === -th ? lit : k === th ? line : k > th * 0.4 ? shade : cord ? shade : body);
+      }
+      if (n % 5 === 0 && t > 0.05 && t < 0.95) { solid(x, y - th - 1, thorn); solid(x, y - th - 2, thorn); }
+    }
+  }
+}
+
+/* ----- its life ----- */
+
+function makeThornLife() {
+  const st = stage();
+  if (life.stars) life.stars = life.stars.filter(s => sky[s.y * W + s.x]);   // none twinkling through the roof
+  life.spores = st >= 2 || S.stars ? Array.from({ length: Math.round(W / (st === 3 ? 4 : st === 2 ? 6 : 12)) }, () => ({ x: rand() * W, y: rand() * H, vx: (rand() - 0.5) * 0.4, vy: -0.15 - rand() * 0.3, phase: rand() * 30 })) : null;
+}
+
+function drawThorn(t) {
+  const L = life, sp = S.spore, night = S.stars ? 1 : 0;
+  if (L.thMist) for (const m of L.thMist) {   // mist drifting through the treetops below
+    for (let y = m.y - m.h; y <= m.y + m.h; y++) {
+      const k = 1 - Math.abs(y - m.y) / (m.h + 1);
+      for (let x = 0; x < W; x++) {
+        const s = Math.sin((x + m.phase + t * m.speed) / 11) + Math.sin((x - t * m.speed * 0.6) / 4.7);
+        if (s > 0.5 && dither(x, y) < k * (s - 0.3) * 6) blend(x, y, S.mist[s > 1.2 ? 0 : 1], 0.35);
+      }
+    }
+  }
+  if (L.thVines) for (const v of L.thVines) {
+    const [lit, body, dark] = v.colour;
+    for (let k = 0; k < v.len; k++) {
+      const x = v.x + Math.round(Math.sin(t / 8 + v.phase + k * 0.1) * (k / v.len) ** 1.4 * (v.root ? 1 : 2));
+      put(x, v.y + k, v.root ? (k === v.len - 1 ? lit : k % 6 === 0 ? dark : body) : k === v.len - 1 ? lit : k % 4 === 0 ? dark : body);
+      if (!v.root && k % 4 === 2) put(x + (k % 8 === 2 ? 1 : -1), v.y + k, lit);
+    }
+  }
+  if (L.thGlow) for (const g of L.thGlow) {
+    const s = Math.sin(t / 6 + g.phase);
+    if (s > 0.2 - night * 0.6) { put(g.x, g.y, sp[0]); if (g.size > 1) { put(g.x - 1, g.y, sp[1]); put(g.x + 1, g.y, sp[1]); } }
+  }
+  if (L.spores) for (const p of L.spores) {
+    const x = ((p.x + t * p.vx + Math.sin(t / 9 + p.phase) * 2) % W + W) % W, y = ((p.y + t * p.vy) % H + H) % H;
+    const s = Math.sin(t / 4 + p.phase);
+    if (s > -0.3) put(x, y, s > 0.6 ? sp[0] : sp[1]);
+  }
+  const h = L.heart;
+  if (h && (!bossPrelude || bossPrelude.phase === 'awake')) {
+    const awake = bossPrelude?.phase === 'awake', beat = Math.max(0, Math.sin(t / (awake ? 2.5 : 5)));
+    heartGlow(h.x, h.y, h.r * (1 + beat * (awake ? 0.6 : 0.3)), sp);
+  }
+}
+
+/* ----- the Heart Tree's boss prelude: the light drains, thorny tendrils creep out of the ground at the edges towards the
+   tree, the heart beating faster and brighter, then thorns burst up all round it. The portal is the briar closing over
+   the screen from every edge into the white. ----- */
+
+const THORN_AT = 18;   // frames into the wake (8 fps) when the thorns burst up; the `quake` and `leaf-storm` sounds are timed to it
+
+function thornWake(t) {
+  const h = life.heart;
+  if (!h || bossPrelude.phase === 'awake') return 0;
+  const age = preludeAge(t), grow = Math.min(1, age / THORN_AT);
+  veil(abgr('#081806'), Math.min(0.4, age * 0.03));
+  tendrils(h, grow, t);
+  const beat = Math.max(0, Math.sin(age * (0.9 + grow * 2.4)));
+  heartGlow(h.x, h.y, h.r * (1 + grow * 1.2 + beat * (0.4 + grow)), S.spore);
+  if (age >= THORN_AT) thornBurst(h, age - THORN_AT);
+  return age >= THORN_AT ? (age < THORN_AT + 5 ? 2 : 1) : age > 6 && beat > 0.92 ? 1 : 0;
+}
+
+/** Thorny tendrils writhing out of the ground at the edges towards the tree's foot, `grow` of the way there. */
+function tendrils(h, grow, t) {
+  if (grow <= 0) return;
+  const [lit, body, dark] = M().vine, thorn = M().thorn[0], fat = H > 220 ? 2 : 1;
+  [[-0.03, 0.45], [0.06, 0.95], [0.18, 0.15], [1.03, 0.4], [0.94, 0.9], [0.82, 0.12]].forEach(([ax, ay], i) => {
+    const x0 = W * ax, y0 = horizon + (H - horizon) * ay, x1 = h.x + (ax < 0.5 ? -1 : 1) * h.half * 1.3, y1 = h.foot;
+    const len = Math.hypot(x1 - x0, y1 - y0), nx = -(y1 - y0) / len, ny = (x1 - x0) / len, steps = Math.ceil(len * 1.5);
+    for (let s = 0, end = Math.ceil(steps * grow); s <= end; s++) {
+      const p = s / steps, wig = Math.sin(p * 9 + i * 2 - t * 0.5) * (2 + p * 2) * (1 - p * 0.5);
+      const x = x0 + (x1 - x0) * p + nx * wig, y = y0 + (y1 - y0) * p + ny * wig - Math.sin(p * Math.PI) * (H - horizon) * 0.08;
+      const th = Math.round((1 - p) * 2 + fat);
+      for (let k = -th; k <= th; k++) { put(x, y + k, k === -th ? lit : k === th ? dark : body); put(x + 1, y + k, k === th ? dark : body); }
+      if (s % 4 === 0) { put(x, y - th - 1, thorn); put(x, y - th - 2, thorn); }
+      if (s % 4 === 2) put(x, y + th + 1, thorn);
+    }
+  });
+}
+
+/** Thorns bursting up out of the ground all round the tree, `b` frames after they broke. */
+function thornBurst(h, b) {
+  const [lit, body, dark] = M().vine, thorn = M().thorn[0];
+  for (let i = 0; i < 12; i++) {
+    const ring = i >> 1, side = i % 2 ? 1 : -1, x = h.x + side * (h.half * 1.5 + ring * W * 0.075), foot = horizon + 1 + ring * 2;
+    const tall = Math.min(1, b / (2 + ring)) * horizon * (0.5 - ring * 0.05), w = Math.max(1, Math.round(W * 0.012 * (1 - ring * 0.1)));
+    for (let k = 0; k < tall; k++) {
+      const hw = Math.round(w * (1 - k / tall)), wob = Math.sin(k * 0.2 + i) * 1.5;
+      for (let dx = -hw; dx <= hw; dx++) put(x + dx + wob, foot - k, dx < 0 ? lit : dx > 0 ? dark : body);
+      if (k % 4 === 2) put(x + wob + side * (hw + 1), foot - k, thorn);
+    }
+  }
+  for (let i = 0; i < 40; i++) {   // leaves thrown out of the crown
+    const a = noise(i, 112, 0) * Math.PI * 2, s = (b * 0.6 + noise(i, 112, 1) * 3) % 4, r = s * Math.min(W, H) * 0.12;
+    const [leaf, leafDark] = S.leaves[i % S.leaves.length];
+    put(h.x + Math.cos(a) * r, h.y + Math.sin(a) * r * 0.7 + s * s, i % 2 ? leaf : leafDark);
+  }
+}
+
+function thornPortal(t) {
+  const age = preludeAge(t), frame = age | 0;
+  if ((frame === 6 || frame === 8) && whiteOut()) return 0;
+  veil(abgr('#081806'), 0.4);
+  const reach = Math.min(1.15, ((age + 1) / 6) ** 1.2), [lit, body, dark] = M().vine, thorn = M().thorn[0], deep = abgr('#0a160a');
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const e = Math.min(Math.min(x, W - 1 - x) / (W / 2), Math.min(y, H - 1 - y) / (H / 2));   // 0 at an edge, 1 in the middle
+    if (e + (Math.sin(x * 0.3 + y * 0.2) + Math.sin(x * 0.11 - y * 0.37)) * 0.06 > reach) continue;
+    const a = Math.sin((x + y) * 0.45 + Math.sin(y * 0.2) + age * 0.3), b = Math.sin((x - y) * 0.4 + Math.sin(x * 0.15) - age * 0.3);
+    let c = a > 0.75 ? lit : a > 0.4 ? body : b > 0.7 ? body : b > 0.45 ? dark : deep;
+    if ((a > 0.55 || b > 0.6) && (x * 7 + y * 13) % 17 === 0) c = thorn;
+    put(x, y, c);
+  }
+  return frame < 6 ? 2 : 0;
+}
+
+/* ----- the Jungle's landmarks, one per floor at an edge ----- */
+const TOTEM = [   // a carved post: a Pokémon's face over a wing
+  '..oooo..',
+  '.oLssSo.',
+  'oLoLsoSo',
+  'oLyLsySo',
+  'oLssssSo',
+  '.oLooSo.',
+  'oooooooo',
+  'oLrrrrSo',
+  'oLssssSo',
+  '.oLsSSo.',
+  'oLLssSSo',
+  'oLsoosSo',
+  '.oLssSo.',
+  '.oLssSo.',
+  '.oLssSo.',
+];
+LANDMARKS.thornwood = [
+  {
+    pitcher(cx, foot) {   // a giant pitcher plant, its lid half open
+      const [lit, body, red, dark] = M().pitcher;
+      outlined(cx - 4, foot - 11, cx + 4, foot, (x, y) => {
+        const v = (foot - y) / 11, half = v < 0.15 ? 2 : v < 0.75 ? 2 + Math.sin(((v - 0.15) / 0.6) * Math.PI) * 2.5 : 2.5 - (v - 0.75) * 2;
+        return y <= foot && v <= 1 && Math.abs(x + 0.5 - cx) <= half;
+      }, (x, y) => ((foot - y) % 4 === 0 && x > cx ? red : x < cx - 1 ? lit : x > cx + 1 ? red : body), dark);
+      pixelMap(cx - 3, foot - 15, ['..ooo..', '.oLbbo.', 'oLbrro.', '.ooro..'], { o: dark, L: lit, b: body, r: red });
+      for (let k = -4; k <= 4; k++) { solid(cx + k, foot, M().leaf[2]); bare(cx + k, foot); }
+    },
+    totem(cx, foot) {   // a carved wooden post, moss on its head
+      const [lit, body, shade, line] = M().bark;
+      pixelMap(cx - 4, foot - TOTEM.length + 1, TOTEM, { o: line, L: lit, s: body, S: shade, y: M().berry[0], r: M().bloom[1] });
+      for (let x = -3; x <= 3; x++) if (dither(cx + x, foot) < 9) solid(cx + x, foot - TOTEM.length + 1, M().moss[0]);
+    },
+    thicket(cx, foot) { bramble(cx, foot, 6); },   // a bramble heavy with berries
+    stump(cx, foot) { stump(cx, foot, 3, 6, M().bark, M().wood, true); },   // an old stump, shelf fungi up it
+  },
+  {
+    crate(cx, foot) {   // a supply crate on the deck, a rope coil on it
+      const [lit, body, shade, line] = M().wood, [rope, ropeDark] = M().rope;
+      outlined(cx - 5, foot - 8, cx + 5, foot, (x, y) => x >= cx - 5 && x <= cx + 5 && y >= foot - 8 && y <= foot, (x, y) => (y === foot - 8 ? lit : x === cx - 5 || x === cx + 5 || Math.abs(x - cx) === Math.abs(y - (foot - 4)) ? shade : body), line);
+      for (let x = -3; x <= 2; x++) { solid(cx + x, foot - 10, rope); solid(cx + x, foot - 9, x % 2 ? ropeDark : rope); }
+    },
+    nest(cx, foot) {   // a twig nest wedged by the rail, two eggs in it
+      const [lit, body, shade, line] = M().wood, [egg, eggShade, spot] = M().egg;
+      pixelMap(cx - 2, foot - 7, ['.ee.ee.', 'eEseEse', 'eEEeEEe'], { e: egg, E: eggShade, s: spot });
+      for (let x = -6; x <= 6; x++) for (let k = 0; k < 4; k++) if (Math.abs(x) <= 6 - k) solid(cx + x, foot - 3 + k, (x * 3 + k * 5) % 4 === 0 ? line : k === 0 ? lit : (x + k) % 2 ? body : shade);
+    },
+    lantern(cx, foot) {   // a lantern hung from a crooked post
+      const [lit, body, shade, line] = M().wood, [hot, warm] = M().lamp;
+      for (let y = foot - 14; y <= foot; y++) { solid(cx, y, lit); solid(cx + 1, y, shade); }
+      for (let x = 0; x <= 5; x++) solid(cx + x, foot - 14, body);
+      solid(cx + 5, foot - 13, line);
+      pixelMap(cx + 3, foot - 12, ['.ooo.', 'ohyho', 'oyhyo', '.ooo.'], { o: line, h: hot, y: warm });
+    },
+    pulley(cx, foot) {   // a pulley on a post, its rope running off over the edge with a basket
+      const [lit, body, shade, line] = M().wood, [rope] = M().rope;
+      for (let y = foot - 16; y <= foot; y++) { solid(cx - 1, y, line); solid(cx, y, lit); solid(cx + 1, y, shade); }
+      for (let x = -1; x <= 6; x++) solid(cx + x, foot - 16, body);
+      pixelMap(cx + 4, foot - 18, ['.oo.', 'o..o', '.oo.'], { o: line });
+      for (let y = foot - 15; y <= foot - 7; y++) solid(cx + 7, y, rope);
+      outlined(cx + 5, foot - 7, cx + 9, foot - 3, (x, y) => x >= cx + 5 && x <= cx + 9 && y >= foot - 7 && y <= foot - 3, (x, y) => ((x + y) % 2 ? body : shade), line);
+    },
+  },
+  {
+    fungi(cx, foot) {   // a ring of glowing toadstools
+      for (const [dx, dy, s] of [[-5, 0, 2], [-2, -2, 1], [2, -2, 2], [5, 0, 1], [0, 1, 2]]) glowCap(cx + dx, foot + dy, s);
+    },
+    log(cx, foot) { fallenLog(cx - 2, foot - 3, 6, 3, true); },   // a hollow log gone soft with moss
+    idol(cx, foot) {   // a stone idol the roots have swallowed
+      const [lit, body, shade, line] = M().stone, [figLit, fig, figShade] = M().fig;
+      pixelMap(cx - 4, foot - 13, ['..oooo...', '.oLsssSo.', 'oLsyssySo', 'oLssssSSo', 'oLsoooSSo', '.oLsssSo.', '..oLsSo..', '.oLssSSo.', 'oLsssssSo', 'oLsssssSo', 'oLssssSSo', 'oLssssSSo', 'ooooooooo', 'ooooooooo'], { o: line, L: lit, s: body, S: shade, y: S.spore[1] });
+      for (let k = 0; k < 14; k++) for (const s of [-1, 1]) solid(cx + s * Math.round(4 - Math.sin(k * 0.6) * 3), foot - k, k % 3 ? fig : s < 0 ? figLit : figShade);
+      life.thGlow.push({ x: cx - 1, y: foot - 11, size: 1, phase: 0 }, { x: cx + 2, y: foot - 11, size: 1, phase: 0 });
+    },
+    flower(cx, foot) {   // a giant rafflesia, its five spotted petals open on the floor
+      const [lit, body, shade, spot] = M().bloom;
+      for (let y = -4; y <= 2; y++) for (let x = -8; x <= 8; x++) {
+        const a = Math.atan2(y * 2, x), r = Math.hypot(x, y * 2), petal = 7 + Math.cos(a * 5) * 1.5;
+        if (r > petal) continue;
+        solid(cx + x, foot - 2 + y, r < 2.5 ? shade : (x * 5 + y * 7) % 7 === 0 ? spot : y < 0 ? lit : body);
+        bare(cx + x, foot - 2 + y);
+      }
     },
   },
 ];
