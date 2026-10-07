@@ -26,7 +26,9 @@ const pal = (list) => list.map(abgr);
 
 const SKY = pal(['#14080e', '#1e0c14', '#2c1218', '#3e1a1c', '#56241e', '#702e20']);
 const MESA = abgr('#1a0a0e');
-const GROUND = pal(['#4a2c22', '#40261e', '#36201a', '#2c1a16', '#221412']);
+const GROUND = pal(['#4a2c22', '#40261e', '#36201a', '#2c1a16', '#221412']);
+// a run that falls at the Thornwood Jungle's last boss falls through the jungle's floor instead, under its dark canopy
+const JUNGLE = { sky: pal(['#060c08', '#0a140c', '#0e1c10', '#142616', '#1a301c', '#223a22']), wall: abgr('#050a06'), ground: pal(['#2e3a1e', '#28331a', '#222c16', '#1c2412', '#161d0e']), leaf: abgr('#5a4422') };
 const CRACK = ['#ffffff', '#f0c8ff', '#c070ff', '#7a30c0'];
 // the shaft: its far wall darkest at the top, lit violet from below; rock walls rimmed by the light; crystals
 const VOID = pal(['#05020c', '#0a0518', '#110826', '#1a0c36', '#261048', '#36165e', '#4c1e78', '#682a98']);
@@ -40,8 +42,8 @@ const DUST = pal(['#d8c8ff', '#8a7ab8', '#5a4a88']);
  * gateSeen) the fall tells the chamber's lore, which the gate scene no longer repeats; later wins get a line or two; a
  * loss at the last boss is dragged down instead.
  */
-export function descentLines({ name, kind = 'win', first = false }) {
-  const lore = first ? ['Far beneath the wastes lies a chamber no map shows...', 'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.'] : [];
+export function descentLines({ name, kind = 'win', first = false, land = 'wastes' }) {
+  const lore = first ? [`Far beneath the ${land === 'jungle' ? 'jungle' : 'wastes'} lies a chamber no map shows...`, 'A gate of living crystal, bound by an ancient seal. Something sleeps behind it.'] : [];
   if (kind === 'loss') return {
     arena: [`${name} fainted...`, 'The ground gives way beneath it!'],
     fall: ['Something drags it down into the dark...', ...lore],
@@ -57,16 +59,17 @@ export function descentLines({ name, kind = 'win', first = false }) {
 
 let P = 4, W = 0, H = 0, GY = 0, ctx = null, img = null, buf = null, arenaBg = null;
 let mode = 'arena', t = 0, last = 0, raf = 0, depth = 0, speed = 0, shake = 0, crack = 0, glow = 0;
-let dust = [], bits = [], crackPts = [], loss = false, chimeAt = 0, monY = 0;
+let dust = [], bits = [], crackPts = [], loss = false, chimeAt = 0, monY = 0, land = 'wastes';
 
 /**
  * Play the descent. Resolves once your Pokémon has fallen into the light and the screen is dark, with a close() that
  * takes the scene away; call it once the next scene (the gate's) is showing, so the page never shows through between them.
  */
-export async function descent({ starter, stage = 0, shiny = false, kind = 'win', first = false, lines = null }) {
+export async function descent({ starter, stage = 0, shiny = false, kind = 'win', first = false, lines = null, land: where = 'wastes' }) {
+  land = where;
   const scene = $('descent-scene'), mon = $('descent-mon');
   const name = stageName(starter, stage);
-  const said = lines ?? descentLines({ name, kind, first });
+  const said = lines ?? descentLines({ name, kind, first, land });
   loss = kind === 'loss';
   scene.className = `descent-scene${still() ? ' still' : ''}${loss ? ' loss' : ''}`;
   scene.hidden = false;
@@ -191,22 +194,30 @@ function place() {
 function paintArena() {
   const c = Object.assign(document.createElement('canvas'), { width: W, height: H });
   const g = c.getContext('2d'), im = g.createImageData(W, H), d = new Uint32Array(im.data.buffer);
-  const horizon = GY - Math.round(H * 0.12);
+  const horizon = GY - Math.round(H * 0.12), jungle = land === 'jungle';
+  const sky = jungle ? JUNGLE.sky : SKY, ground = jungle ? JUNGLE.ground : GROUND;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     let col;
-    if (y < horizon) {
+    if (jungle && y < horizon) {   // the gloom under the canopy: crowns overhead, trunks and the far trees' wall
+      const v = (y / horizon) * (sky.length - 1);
+      col = sky[Math.min(sky.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
+      const roof = Math.round(horizon * 0.22 + 4 * Math.sin(x * 0.17) + 3 * Math.sin(x * 0.41 + 1));
+      const wall = horizon - (5 + Math.round(4 * Math.abs(Math.sin(x * 0.11)) + 3 * Math.abs(Math.sin(x * 0.29 + 2))));
+      const trunk = ((x + 400) % 23 < 3 && hash(Math.floor(x / 23)) < 0.7) || ((x + 400) % 37 < 5 && hash(Math.floor(x / 37) + 0.5) < 0.5);
+      if (y < roof || y >= wall || trunk) col = JUNGLE.wall;
+    } else if (y < horizon) {
       const v = (y / horizon) * (SKY.length - 1);
       col = SKY[Math.min(SKY.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
       // mesas on the horizon, flat-topped and ragged
       const m = horizon - (6 + Math.round(5 * Math.sin(x * 0.07) + 4 * Math.sin(x * 0.19 + 2) + (Math.sin(x * 0.045 + 1) > 0.4 ? 6 : 0)));
       if (y >= m) col = MESA;
     } else {
-      const v = ((y - horizon) / (H - horizon)) * (GROUND.length - 1);
-      col = GROUND[Math.min(GROUND.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
-      if (hash(x * 31 + y * 7) < 0.04) col = GROUND[GROUND.length - 1];
+      const v = ((y - horizon) / (H - horizon)) * (ground.length - 1);
+      col = ground[Math.min(ground.length - 1, Math.floor(v) + (v % 1 > bayer(x, y) ? 1 : 0))];
+      if (hash(x * 31 + y * 7) < 0.04) col = jungle ? JUNGLE.leaf : ground[ground.length - 1];
       // old cracks and the arena's worn ring under the fight
       const ring = Math.hypot((x - W / 2) / (W * 0.42), (y - GY) / (H * 0.07));
-      if (Math.abs(ring - 1) < 0.04) col = GROUND[0];
+      if (Math.abs(ring - 1) < 0.04) col = ground[0];
     }
     d[y * W + x] = col;
   }
