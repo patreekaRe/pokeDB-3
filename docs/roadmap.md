@@ -9,6 +9,20 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
+- A. **Device boot timing.** The Sky Pillar lobby appears with no transition: fade it in like New game's. Continue boots
+  the device (cover, "HELLO, NAME!") behind a biome walk-on film still playing; it must boot after the film, onto the
+  map. New game the same: after the Clearing's intro film, then into the map.
+- B. **Title Back sign.** The Game Modes sub-menu's Back is a pill the user dislikes: make it a Poké Ball (or a back
+  icon / "BACK" in the title's style).
+- C. **Leaderboards in the Pokédex look.** The Safari and Sky Pillar leaderboards (in-device Ranks apps) still look
+  like plain windows: give them the Pokédex screens' handheld look (banners, LCD, shelfApp style).
+- D. **Cream windows audit.** List every window still on the cream look (tooltips may stay), then move the map's
+  buttons' windows to the Pokédex look.
+- E. **Upgrade preview.** Choosing a card to upgrade (PP Up, Tutor Notes, events): highlight the numbers that change, or
+  show base and + side by side, before confirming, instead of tapping in and out.
+- F. **Map menu bar drop-down.** It covers the whole screen: cut it to about half height and scroll the rest.
+
 **Waiting on the user: hybrid everywhere?** (2026-10-07). The user liked the hybrid's subtle light, so `?hybrid` now
 lights every biome (`js/hybrid-light.js`). Once they've played with it, ask whether it should become the default look
 (today it's opt-in per device), and whether to remove the smooth pilot (`?smooth`, `js/smooth-clearing.js`: one revert;
