@@ -1000,9 +1000,6 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .enemy-zone { width: 100%; }
   .nameplate { padding: 4px 8px 6px; }
   .nameplate-title strong { font-size: 0.85rem; }
-  /* Large text (Settings) leaves the phone's nameplates as they are: they're as wide as the screen allows and the HP got cut */
-  :root.large-text .nameplate-title strong { font-size: 13.6px; }
-  :root.large-text .nameplate .gb-hp-num { font-size: 13.6px; }
   .badge { width: 30px; height: 30px; font-size: 0.95rem; }
   .badges { min-height: 32px; gap: 6px; }
   .enemy-zone { --base: clamp(80px, 13vh, 118px); }

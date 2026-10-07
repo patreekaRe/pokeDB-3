@@ -100,8 +100,6 @@ body[data-theme="psychic"] { --accent: #c080f0; --accent-dark: #8a45c0; }
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-/* Settings > Text size: nearly every font-size is in rem, so this grows the words; cards size theirs by their own width */
-html.large-text { font-size: 120%; }
 body {
   margin: 0;
   min-height: 100vh;

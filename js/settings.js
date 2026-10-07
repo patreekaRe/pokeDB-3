@@ -3,7 +3,7 @@
    (index.html's #dev-settings): under the sound bars (js/audio.js), a row
    of choices per option, each saved under its key. Battle speed and animations are read
    by js/battle.js, the text speed by every typing text box, the clock by
-   js/daytime.js, vibration by vibrate(), the text size by css/base.css's html.large-text and the device colour by css/base.css's
+   js/daytime.js, vibration by vibrate() and the device colour by css/base.css's
    data-shell colours (their meanings are in js/prefs.js).
    ============================================================ */
 
@@ -24,7 +24,6 @@ const OPTIONS = {
       ['pink', 'Pink', '#dc4c8c'], ['black', 'Black', '#383840']],
     apply: v => { if (v === 'red') delete document.documentElement.dataset.shell; else document.documentElement.dataset.shell = v; },
   },
-  textSize: { values: [['normal', 'Normal'], ['large', 'Large']], apply: v => document.documentElement.classList.toggle('large-text', v === 'large') },
   textSpeed: { values: [['slow', 'Slow'], ['mid', 'Mid'], ['fast', 'Fast'], ['instant', 'Instant']] },
   clock: {
     values: [['auto', 'Clock'], ['dawn', 'Dawn'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night']],
