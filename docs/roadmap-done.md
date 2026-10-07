@@ -1722,3 +1722,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   leaderboard over its own screen like the Safari lobby's apps (`openRanks()` in `js/towerprep.js`), and New game (the
   select), Continue (the map) and both lobbies open with the Collection's cover flip and "HELLO, NAME!" (`bootDevice()` in
   `js/device-boot.js`).
+- **Sky Pillar augments, part b** (2026-10-07): the pick screen's look in `js/augment-art.js` (icons, tier frames, the deal
+  and reroll flips and chimes) and the picks on the tower leaderboard; `js/data/augments.js` untouched.

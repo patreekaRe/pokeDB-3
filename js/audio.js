@@ -170,6 +170,11 @@ const SOUNDS = {
   'gate-shatter': { synth: gateShatter },    // ...and the door blows apart in crystal shards
   footstep:     { synth: stoneStep, gain: 0.7 },   // the Sky Pillar's opening film (climb-intro.js): your Pokémon's steps up the flagstones...
   'door-light': { synth: ac => powerSurge(ac, [392, 494, 587, 784, 988, 1175], 2.2), gain: 0.8 },   // ...and the warm light swelling as it walks in
+  // the Sky Pillar's augment pick (augment-art.js): each tile turning face up, a chime by its tier, and a reroll's shuffle
+  'aug-silver':    { synth: ac => augChime(ac, [1319, 1976], 0.06, 0.5, 0.16) },
+  'aug-gold':      { synth: ac => augChime(ac, [1047, 1319, 1568, 2093], 0.055, 0.8, 0.2) },
+  'aug-prismatic': { synth: ac => augChime(ac, [1047, 1319, 1568, 2093, 2637, 3136, 4186], 0.045, 1.3, 0.22, true) },
+  'aug-reroll':    { synth: augShuffle },
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -850,6 +855,43 @@ function catchSuccess(ac) {
 }
 
 /** The NES noise channel: random values held for `hold` samples, so it sounds crunchy rather than hissy. */
+/** A tile turning face up: a quick rising arpeggio of square-ish bell notes; `shimmer` adds a sparkle of high noise
+    (Prismatic). */
+function augChime(ac, notes, step, seconds, peak, shimmer = false) {
+  const rate = ac.sampleRate, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const fizz = chipNoise(length, 1);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = 0;
+    notes.forEach((f, n) => {
+      const s = t - n * step;
+      if (s >= 0) v += (Math.sign(Math.sin(2 * Math.PI * f * s)) * 0.35 + Math.sin(2 * Math.PI * f * 2 * s) * 0.4) * Math.exp(-s / 0.16);
+    });
+    if (shimmer) v += fizz[i] * 0.12 * Math.exp(-t / (seconds * 0.5)) * (0.5 + 0.5 * Math.sin(2 * Math.PI * 18 * t));
+    out[i] = v * Math.min(1, t / 0.002, (length - i) / (rate * 0.04));
+  }
+  return normalize(buffer, peak);
+}
+
+/** A reroll: the tiles swept off the table, a soft noise whoosh rising and falling with a card flutter in it. */
+function augShuffle(ac) {
+  const rate = ac.sampleRate, seconds = 0.5, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const noise = chipNoise(length, 2);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, x = t / seconds;
+    const cut = 600 + 4200 * Math.sin(Math.PI * x);
+    low += (1 - Math.exp(-2 * Math.PI * cut / rate)) * (noise[i] - low);
+    const flutter = 0.55 + 0.45 * Math.sign(Math.sin(2 * Math.PI * (22 + 30 * x) * t));
+    out[i] = low * Math.sin(Math.PI * x) ** 1.5 * flutter;
+  }
+  return normalize(buffer, 0.2);
+}
+
 function chipNoise(length, hold) {
   const out = new Float32Array(length);
   let v = 0;

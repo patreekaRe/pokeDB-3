@@ -36,6 +36,7 @@ import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, augEffects, augmentOffer } from './data/augments.js';
+import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
@@ -764,14 +765,6 @@ function tutorNotes() {
 
 /* ---------- the Sky Pillar's augments (js/data/augments.js, roadmap item 21) ---------- */
 
-/** An augment's tile on the pick screen and in the Bag: its tier, icon, name and what it does. */
-function augTile(aug) {
-  const tile = el('div', `aug-tile aug-${aug.tier}`);
-  tile.append(el('span', 'aug-icon', aug.icon), el('b', 'aug-name', aug.name),
-    el('small', 'aug-tier', `${AUG_TIER_NAMES[aug.tier]}${aug.type ? ` · ${TYPES[aug.type]?.label ?? aug.type} only` : ''}`), el('span', 'aug-text', aug.text));
-  return tile;
-}
-
 /** One of three augments, before floor 1 and after every guardian: the week's seed deals them (augmentOffer()), so
     everyone climbing that week sees the same three, and the same three after a reroll. Asked on the map after the
     checkpoint, with `pick` saved, so a refresh asks again; a reroll is saved at once, so a refresh can't show a fourth. */
@@ -786,16 +779,16 @@ function augmentPick() {
     sub: [floor ? `The guardian's power lingers. Pick an augment for the rest of the climb (${t.augments.length} so far).` : 'Before you climb, pick an augment. It lasts the whole climb.',
       left > 0 ? `You can reroll all three ${left === 1 ? 'once' : `${left} times`} this climb.` : null, 'Tap one to read it, then take it.'].filter(Boolean),
     options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
-    layout: 'aug-pick',
+    layout: `aug-pick aug-floor-${offer.some(a => a.tier === 'prismatic') ? 'prismatic' : offer.some(a => a.tier === 'gold') ? 'gold' : 'silver'}`,
     reroll: left > 0 ? () => {
       t.rerolls += 1;
       t.rerolledAt = floor;
       t.rerolledN = rerolled + 1;
       checkpoint();
-      playSound('shuffle', 'confirm');
-      augmentPick();
+      foldAugments($('reward-options'), augmentPick);
     } : null,
   });
+  dealAugments($('reward-options'), offer);
 }
 
 /** An augment is taken: it joins the climb, and what it does at once happens now (max HP, forgetting or PP Upping
@@ -956,7 +949,7 @@ function renderRelicList() {
     const text = el('span', 'howto-li-text');
     const spent = run.tower.spent?.includes(aug.id);
     text.append(el('b', '', `${aug.name} · ${AUG_TIER_NAMES[aug.tier]}${spent ? ' (used)' : ''}`), el('small', '', aug.text));
-    li.append(el('span', `howto-node aug-node aug-${aug.tier}`, aug.icon), text);
+    li.append(augIcon(aug, `howto-node aug-node${spent ? ' spent' : ''}`), text);
     return li;
   });
   $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),

@@ -88,8 +88,17 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
   none (`restoreRun()`).
 - **Shown**: an "Augments" row in the Bag's Relics pocket (between the Ability and the relics, a tier-framed icon each),
   the result window's list, and the board entry's `augments` (ids, at most 10; `towerResult()` / `checkTowerEntry()`,
-  `firestore.rules`: **the user has to publish the rules again**, or posts with augments are refused). Part b gives the pick
-  screen its look (tier frames, icons, reveal and reroll animation) and the leaderboard the picks.
+  `firestore.rules`: **the user has to publish the rules again**, or posts with augments are refused).
+- **The look** (part b, 2026-10-07): all in `js/augment-art.js`, keyed by augment id, so `js/data/augments.js` stays numbers
+  only (the bot tunes it). `augIcon()` is a smooth SVG medallion in the tier's metal (silver, gold, a rainbow for Prismatic)
+  with a glyph from `GLYPHS` or `smoothArt()` (js/smooth-icons.js) and an optional pip ("+", "x2", a type's colour) so
+  augments sharing a glyph read apart; `ICONS` maps each id (no line: its emoji). `augTile()` frames it (`.aug-tile` in
+  `css/screens.css`: brushed silver; gold with a sheen; Prismatic a turning conic rainbow edge, `--aug-spin`) with a tier
+  ribbon, a type chip and a back face (the Sky Pillar on the metal). `dealAugments()` slides the three in face down and
+  flips them one by one, each with its tier's chime (`aug-silver` / `aug-gold` / `aug-prismatic` synths) and a flash;
+  `foldAugments()` turns them back and drops them on a reroll (`aug-reroll`). Fades sit on the button, never the tile: opacity
+  on the tile flattens its 3D and the flip shows the front mirrored. Phones keep three across. The Bag's row and each
+  tower board row (a strip of small icons under the name, `.board-augs`) use the same icons.
 - **Playtest**: `?tower=1&aug=echo,nova` hands a throwaway climb those augments up front (their at-once effects, like max HP,
   don't apply), then the start's pick.
 - **Not built yet** (part c): the trade-offs, sets, augment badges, and Picky Eater, Insight, Mulligan, Recycler, Pack Rat,

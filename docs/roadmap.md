@@ -72,8 +72,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       a plain 3-choice pick window at the start and after each guardian, a reroll, augments saved on `run.tower` and the
       board entry, a Bag row; the sim's mirror and augment picks by measured value; tune so every type reaches floor 100
       sometimes and no augment is always right. Tests for the seeded offers.
-    - **Part b.** Run in: LOCAL (Desktop app). The pick screen's look: tier frames (silver, gold, a rainbow edge for
-      Prismatic), each augment's icon, the reveal and reroll animation and sounds, the leaderboard showing picks.
+    - Part b (the look) is done: see the archive.
     - **Part c.** Run in: CLOUD. The trade-off augments, sets and their bonuses, augment badges, the rest of the list.
 
 ## Ideas, not agreed yet (ask the user before building)

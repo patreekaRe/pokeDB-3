@@ -17,6 +17,8 @@ import { safariDay, safariDaily } from './data/safari.js';
 import { towerWeek, weekOffset, towerWeekly } from './data/tower.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
+import { AUGMENTS_BY_ID } from './data/augments.js';
+import { augIcon } from './augment-art.js';
 
 const POST_KEY = 'pokedb.safari.post';
 const TOWER_POST_KEY = 'pokedb.tower.post';
@@ -156,6 +158,15 @@ function row(board, r) {
   li.append(el('span', 'board-rank', `${r.rank}`), img, el('span', 'board-name', e.name), el('span', 'board-value', boardValue(board.id, e)));
   li.title = kind === 'tower' ? `${e.name}: floor ${e.floor}, ${e.turns} turns, ${formatTime(e.time)}`
     : `${e.name}: ${e.won ? 'crossed the Safari Zone' : `reached area ${e.area}`}, ${e.turns} turns, ${e.caught} caught`;
+  // a climb's picks, in order, under its name (an entry posted before augments has none)
+  const picks = kind === 'tower' ? (e.augments || []).map(id => AUGMENTS_BY_ID[id]).filter(Boolean) : [];
+  if (picks.length) {
+    const augs = el('span', 'board-augs');
+    augs.append(...picks.map(a => augIcon(a)));
+    li.classList.add('has-augs');
+    li.append(augs);
+    li.title += `\nAugments: ${picks.map(a => a.name).join(', ')}`;
+  }
   return li;
 }
 

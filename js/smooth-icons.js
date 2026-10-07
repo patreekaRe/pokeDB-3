@@ -366,3 +366,6 @@ export function smoothIcon(name, className = '') {
   svg.innerHTML = ART[name];
   return svg;
 }
+
+/** A glyph's raw SVG markup (on the 32x32 grid), for art that sets it on something of its own (js/augment-art.js). */
+export const smoothArt = (name) => ART[name];

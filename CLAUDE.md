@@ -704,7 +704,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`js/data/augments.js`, shared with the bot) before floor 1 and after every guardian, Silver / Gold / Prismatic by height,
   dealt from the week's seed (`augmentOffer()`), 1 reroll; effects are data keys summed by `augEffects()` and read off
   `battle.aug` in `js/battle.js` and `augs()` in `js/run.js` (the file's header lists every key). Saved on `run.tower`, posted
-  in the board entry's `augments`. Detail in `docs/reference/sky-pillar.md`.
+  in the board entry's `augments`. Their look (part b) is `js/augment-art.js`, never the data file: an icon per augment (`ICONS`:
+  a glyph on a tier medallion, a new augment needs a line), tiles in Silver / Gold / Prismatic frames dealt face down and
+  flipped with tier chimes (`aug-*` synths in `js/audio.js`), the reroll turning them away, and the picks under each climb on
+  the board. Detail in `docs/reference/sky-pillar.md`.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
