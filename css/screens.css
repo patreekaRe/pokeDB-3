@@ -3716,6 +3716,10 @@ body.has-scene #scene-bg { display: block; }
 }
 .has-scene .enemy-zone::after { width: calc(var(--base) * 1.5); bottom: calc(var(--base) * -0.2); }   /* the feet land just below the pad's middle; horizonRow() assumes this */
 .has-scene .player-zone::before { width: clamp(130px, 25vh, 290px); bottom: -4%; }
+/* the smooth Clearing (?smooth, js/smooth-clearing.js) is painted at the screen's resolution, its pads too */
+body.smooth-scene #scene-bg,
+body.smooth-scene .enemy-zone::after,
+body.smooth-scene .player-zone::before { image-rendering: auto; }
 
 /* ---------- POKÉDEX (js/pokedex.js): a page per biome, entries ??? until fought ---------- */
 .ds-btn.ds-dex { --stripe-a: #e05858; --stripe-b: #f07878; --rim: #a83030; }

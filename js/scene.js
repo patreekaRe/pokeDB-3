@@ -26,6 +26,7 @@ import { playSound } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
 import { battleFx, calmFx } from './prefs.js';
+import { buildClearing, drawClearing, smoothPad } from './smooth-clearing.js';
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const FPS = 8;   // the scenery's clock: everything below is timed in these ticks a second
@@ -1279,6 +1280,16 @@ let bossPrelude = null;
 let shown = '';                 // which scene is up, so going back to it doesn't restart it
 let floorAt = null, spanAt = null;   // a place whose floor line and counter the page sets (showPlaceScene's `floor` and `span`)
 let storm = { on: false, level: 0 };
+let smoothArt = null;   // the smooth painter's layers for the scene on screen (js/smooth-clearing.js), when it has one
+
+/* The smooth look's pilot (2026-10-07): ?smooth paints the Clearing smooth on this device for good, ?pixel goes back. */
+const SMOOTH_KEY = 'pokedb-smooth-scenery';
+try {
+  const q = new URLSearchParams(location.search);
+  if (q.has('smooth')) localStorage.setItem(SMOOTH_KEY, '1');
+  if (q.has('pixel')) localStorage.removeItem(SMOOTH_KEY);
+} catch { /* no storage: the pixel look */ }
+const smoothOn = () => { try { return localStorage.getItem(SMOOTH_KEY) === '1'; } catch { return false; } };
 
 /* ---------- the time of day (js/daytime.js) ----------
    A biome has a hand-painted look per time (`times`; one with `from` is that time's look graded, under its own sky), and
@@ -1577,12 +1588,15 @@ function paintScene(key, raw, floor = null, span = null) {
   bossPrelude = null;
   clearInterval(timer);
   storm = { on: false, level: 0 };
+  smoothArt = null;
+  document.body.classList.toggle('smooth-scene', !!raw && smoothOn() && raw.backdrop === 'hills' && !raw.prop);
   if (!raw) { S = null; return; }
   S = colours(raw);
   S.raw = raw;
   S.storm = raw.storm && { ...raw.storm, rain: raw.storm.rain.map(abgr) };
+  S.smooth = document.body.classList.contains('smooth-scene');   // the Clearing's own places, not an event's room in it
   const pad = raw.padDeep && raw.stage >= 2 ? raw.padDeep : raw.pad;   // the Crystal Depths' rock turns red from the Deep Core on
-  if (pad) $('battle-screen').style.setProperty('--pad', `url("${padImage(pad)}")`);
+  if (pad) $('battle-screen').style.setProperty('--pad', `url("${S.smooth && pad.style === 'grass' ? smoothPad(pad) : padImage(pad)}")`);
   resize();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(frame, 1000 / RATE);
 }
@@ -1679,6 +1693,13 @@ function resize() {
   life = {};
   base = paintBase();
   makeLife();
+  if (S.smooth) {
+    // the pixel pass above still lays out the place (its landmark, the stream, where grass can't grow); the smooth one paints it
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = Math.max(1, Math.round(innerWidth * dpr));
+    canvas.height = Math.max(1, Math.round(innerHeight * dpr));
+    smoothArt = buildClearing({ W, H, horizon, cw: canvas.width, ch: canvas.height, raw: S.raw, life, p: dial(), within: within() });
+  }
   draw();
   dispatchEvent(new Event('scenepaint'));   // the Center's tap spots follow the scene (centerSpots)
 }
@@ -3007,6 +3028,7 @@ function landmark() {
   paint(cx, foot);
   (life.keep ||= []).push(keep);
   life.landmark = name;
+  life.mark = { name, cx, foot };
 }
 
 /** The places' living parts: steam and smoke puffs rising, glints on water and glass. */
@@ -5976,6 +5998,7 @@ function makeRain() {
 }
 
 function draw() {
+  if (S.smooth && smoothArt) { drawSmooth(); return; }
   px.set(base);
   if (storm.level > 0) stormLight();
   const t = tick, L = life, has = (name) => S.raw.life.includes(name);
@@ -7028,8 +7051,23 @@ function drawEruption(t) {
   });
 }
 
-/** A lightning bolt now and then (every few seconds in a storm): a white flash over the sky, then a forked bolt for two frames. */
-function drawLightning(t) {
+/** The smooth Clearing's frame: the same clock, life and prelude as draw(), painted by js/smooth-clearing.js. */
+function drawSmooth() {
+  const t = tick;
+  let bolt = null, flash = 0;
+  if (storm.level > 0.6) {
+    boltClock(t);
+    const cycle = t - life.boltAt;
+    if (cycle < 2 && !calmFx()) flash = cycle < 1 ? 2 : 1;
+    if (cycle < 3) bolt = life.bolt;
+  }
+  const prelude = bossPrelude && hasPrelude() ? { phase: bossPrelude.phase, age: Math.max(0, t - bossPrelude.at) } : null;
+  drawClearing(ctx, smoothArt, { t, DT, FPS, life, storm, prelude, calm: calmFx(), rand, everyAt, bolt, flash });
+  last = tick;
+}
+
+/** Time for the next lightning bolt? Then pick its path (and roll the thunder, once a storm). */
+function boltClock(t) {
   if (t >= life.nextBolt) {
     const bolt = [];
     let x = Math.floor(W * (0.15 + rand() * 0.7)), y = 0;
@@ -7040,6 +7078,11 @@ function drawLightning(t) {
     life.nextBolt = t + (storm.fury ? FPS * (0.8 + rand() * 1.5) : storm.on ? FPS * (2 + rand() * 3) : FPS * 7);
     if (storm.on && !storm.thundered) { storm.thundered = true; playSound('thunder'); }   // once a storm (the user found it repeating too much); the lightning goes on silently
   }
+}
+
+/** A lightning bolt now and then (every few seconds in a storm): a white flash over the sky, then a forked bolt for two frames. */
+function drawLightning(t) {
+  boltClock(t);
   const cycle = t - life.boltAt;
   if (cycle < 2 && !calmFx()) for (let i = 0; i < W * horizon; i++) if (sky[i]) tintIndex(i, cycle < 1 ? 1.9 : 1.35, cycle < 1 ? 40 : 14);
   if (cycle < 3 && life.bolt) for (const [x, y] of life.bolt) { put(x, y, abgr('#fffff0')); put(x + 1, y, abgr('#c8c0ff')); }

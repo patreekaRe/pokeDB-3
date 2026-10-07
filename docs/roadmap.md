@@ -83,6 +83,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `docs/reference/cloud-save.md`.
 - Playtests on the live site: a real Mewtwo run (Eternatus's numbers, the fall into the Depths), Ken's difficulty, the
   boss intros' and biome films' sound levels; the Sky Pillar's walk and climb pacing and its guardian intros on a phone.
+- The smooth scenery pilot (2026-10-07): `?smooth` on the live site paints the Clearing (all four places, the boss arena
+  and its prelude, every hour) smooth, `js/smooth-clearing.js`; `?pixel` goes back. The user's verdict decides whether the
+  other biomes get the same treatment (each would be its own session), whether it becomes the default, or whether it goes.
 
 ## Rules for adding Pokémon (still in force)
 
