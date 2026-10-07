@@ -8,7 +8,7 @@ and dock are `position: relative` to paint over it); `.mdex-hinge` with the lens
 LCD (the biome and place signs lose their wood, and type in on arrival, `lcdType`); `.mdex-glass`, the grey bezel and
 screen the map scrolls in (`showMap()` centres your sprite); `.mdex-dock`, five buttons that are the Bag's pockets (Deck,
 Relics, Items, Map key, Trainer, with the counts mirrored from the pocket tabs). A button opens the Bag on its pocket just
-above the bar (lit green while open); again closes it. There the top bar's Bag button and the Bag's own tabs are hidden,
+above the bar (lit green while open), half the screen tall at most with its pocket scrolling (the user found it covering the map, 2026-10-07); again closes it. There the top bar's Bag button and the Bag's own tabs are hidden,
 and relics fly into the Relics button (`bagSpot()`). Wider than 720px the device stands under the top bar at up to
 1100px. In a climb the hinge and glass step aside (`display: contents`) and the window and dock become a bar along the
 bottom (see `sky-pillar.md`).

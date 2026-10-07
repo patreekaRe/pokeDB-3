@@ -1724,3 +1724,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `js/device-boot.js`).
 - **Sky Pillar augments, part b** (2026-10-07): the pick screen's look in `js/augment-art.js` (icons, tier frames, the deal
   and reroll flips and chimes) and the picks on the tower leaderboard; `js/data/augments.js` untouched.
+- **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
+  the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.

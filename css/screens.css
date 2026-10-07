@@ -4711,12 +4711,12 @@ body.scene-peek #backdrop { display: none; }
   background: #1f3a14; color: #d8f0b0; font-size: 0.5rem; font-weight: 400; line-height: 1;
 }
 .mdex-count:empty { display: none; }
-/* the news box and the Bag sit just over the menu bar; the Bag's own tabs are the menu bar there, and the top bar's Bag goes */
+/* the news box and the Bag sit just over the menu bar (the Bag half the screen tall at most, its pocket scrolling: the user found it covering the map, 2026-10-07); the Bag's own tabs are the menu bar there, and the top bar's Bag goes */
 body[data-screen="map-screen"] .map-bottom { bottom: calc(max(10px, env(safe-area-inset-bottom)) + 70px); }
 body[data-screen="map-screen"] #bag-btn { display: none; }
 body[data-screen="map-screen"] .bag:not([hidden]) {
   position: fixed; top: auto; right: auto; left: 50%; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 66px); translate: -50% 0;
-  max-height: calc(100dvh - var(--topbar-h) - max(10px, env(safe-area-inset-bottom)) - 80px); animation: bagRise 0.18s ease-out;
+  max-height: min(50dvh, calc(100dvh - var(--topbar-h) - max(10px, env(safe-area-inset-bottom)) - 80px)); animation: bagRise 0.18s ease-out;
 }
 body[data-screen="map-screen"] .bag-pockets { display: none; }
 body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
@@ -4832,7 +4832,7 @@ body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not(
   #map-screen:not(.tower) .mdex-dock { grid-template-columns: repeat(5, minmax(0, 110px)); justify-content: center; padding-bottom: 12px; }
   #map-screen:not(.tower) .mdex-hinge .map-head { flex: 0 1 380px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-bottom { bottom: 100px; }
-  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) { bottom: 96px; max-height: calc(100dvh - var(--topbar-h) - 120px); }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) { bottom: 96px; max-height: min(50dvh, calc(100dvh - var(--topbar-h) - 120px)); }
 }
 @media (prefers-reduced-motion: reduce) {
   #map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: none !important; }

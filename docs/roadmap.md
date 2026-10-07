@@ -21,7 +21,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
   buttons' windows to the Pokédex look.
 - E. **Upgrade preview.** Choosing a card to upgrade (PP Up, Tutor Notes, events): highlight the numbers that change, or
   show base and + side by side, before confirming, instead of tapping in and out.
-- F. **Map menu bar drop-down.** It covers the whole screen: cut it to about half height and scroll the rest.
 
 **Waiting on the user: hybrid everywhere?** (2026-10-07). The user liked the hybrid's subtle light, so `?hybrid` now
 lights every biome (`js/hybrid-light.js`). Once they've played with it, ask whether it should become the default look
