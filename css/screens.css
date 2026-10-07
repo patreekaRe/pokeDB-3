@@ -4772,7 +4772,8 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
     background-position: 2px calc(var(--topbar-h) - 9px), 0 0, 0 0, 0 0;
     background-repeat: repeat-x, repeat, repeat, no-repeat;
   }
-  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { translate: 0 16px; height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
+  /* margin, not translate: a transform would make the top bar the containing block of the Bag (fixed, inside it) */
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { margin-top: 16px; height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar::before { display: none; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .dex-sprite { width: 32px; height: 32px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
