@@ -287,9 +287,72 @@ const RUINS_JUNGLE = {
   paint: paintRuinsJungle,
 };
 
+// the Sunscorch Savanna's colours (savanna-intro.js's by day): hazy hills, acacias, its golden grass
+const SAVANNA = {
+  far: ['#d8b48c', '#e8c8a0', '#f0dcc0'],
+  hill: ['#c8a070', '#b08a5c', '#8a6a44'],
+  forest: ['#a8b858', '#7e943e', '#5a7030', '#3a4a20'],
+  floor: ['#c8a048', '#b08a3c'],
+  bark: ['#6a5034', '#4a3824', '#2e2214'],
+  path: ['#e8d0a0', '#c8a878', '#8a6a44'],
+  ground: ['#e0bc62', '#d0aa54', '#bc964a', '#a8823e'],
+  fore: ['#f8e090', '#d8b050', '#9a7a30', '#5a4418'],
+};
+// the Burnt Plain, half-way from the Savanna to the Wastes
+const BURNT = {
+  far: ['#a08878', '#b09888', '#d0c0b0'],
+  hill: ['#7a6050', '#5e4a3e', '#463830'],
+  forest: ['#5a4a42', '#3a302c', '#241e1c', '#100c0a'],
+  floor: ['#4a3c34', '#3a302a'],
+  bark: ['#3a302c', '#241e1c', '#100c0a'],
+  path: ['#a89080', '#887060', '#4a3c34'],
+  ground: ['#5a4a3c', '#4a3c32', '#3e322a', '#322822'],
+  fore: ['#8a7a50', '#6a5a38', '#4a3c26', '#2a2018'],
+};
+const SAVANNA_SHARED = { char: ['#5a4a42', '#3a302c', '#241e1c'], bone: ['#fffcf0', '#d8ccb0'], smoke: ['#a89890', '#847470', '#62544e'] };
+
+// Clearing → Savanna: `a` the Clearing, `b` the Savanna; the woods thin into tall gold grass, a wildfire glows far off
+const CLEARING_SAVANNA = {
+  a: CLEARING_SHRINE.a,
+  b: SAVANNA,
+  shared: { ...SAVANNA_SHARED, flowers: CLEARING_SHRINE.shared.flowers },
+  fly: 0.03,
+  morph: (f) => smooth((f - 0.18) / 0.4),
+  rise: () => 0,
+  ROCK: 1.12,   // Sun Rock, on the road's horizon at the end
+  sounds: ['gust', 'rustle'],
+  lines: (name) => [
+    [0.04, [`${name} leaves the Whispering Clearing behind...`]],
+    [0.34, ['The trees thin out. The grass grows tall and gold.']],
+    [0.56, ['Far off, a wildfire glows red in the dark.']],
+    [0.84, ['At sunrise, a great rock juts over the plain.', 'The Sunscorch Savanna lies ahead!']],
+  ],
+  paint: paintToSavanna,
+};
+
+// Savanna → Wastes: `a` the Savanna, `d` the Burnt Plain, `b` the Wastes; the grass burns away to ash under a wildfire
+const SAVANNA_WASTES = {
+  a: SAVANNA,
+  d: BURNT,
+  b: SHRINE_WASTES.b,
+  shared: { ...SAVANNA_SHARED, ...SHRINE_WASTES.shared },
+  fly: 0.05,
+  morph: (f) => smooth((f - 0.1) / 0.62),
+  rise: () => 0,
+  sounds: ['gust', 'rumble-far'],
+  lines: (name) => [
+    [0.04, [`${name} leaves the Sunscorch Savanna behind...`]],
+    [0.28, ['The grass is burnt black here. Embers still glow in it.']],
+    [0.48, ['A wildfire races along the ridge!']],
+    [0.74, ['On the horizon, a volcano glows red.', 'The Ember Wastes lie ahead!']],
+  ],
+  paint: paintSavannaWastes,
+};
+
 const ROUTES = {
   'clearing>shrine': CLEARING_SHRINE, 'shrine>wastes': SHRINE_WASTES, 'clearing>ruins': CLEARING_RUINS, 'ruins>wastes': RUINS_WASTES,
   'shrine>thornwood': SHRINE_JUNGLE, 'ruins>thornwood': RUINS_JUNGLE,
+  'clearing>savanna': CLEARING_SAVANNA, 'savanna>wastes': SAVANNA_WASTES,
 };
 
 /** Is there a film for this trip? */
@@ -1744,4 +1807,178 @@ function paintRuinsJungle(e) {
 
   motesOver(e, morph);
   fernFront(e, L, morph);
+}
+
+/* ---------- into and out of the Sunscorch Savanna ---------- */
+
+/** An acacia in the woods behind the road: a thin leaning trunk under a wide, flat crown. */
+function acaciaMid(x, base, k, { forest, bark }) {
+  const h = 8 + Math.floor(hash(k + 0.3) * H * 0.06), r = 3 + Math.floor(hash(k + 0.6) * 3), lean = hash(k + 0.1) < 0.5 ? -1 : 1;
+  let tx = x;
+  for (let i = 0; i < h; i++) { tx = x + Math.round(lean * (i / h) * 2); put(tx, base - i, bark[i % 3 ? 0 : 1]); }
+  for (let j = -1; j <= 1; j++) rect(tx - r * 2 + Math.abs(j), base - h + j, r * 4 - Math.abs(j) * 2 + 1, 1, j < 0 ? forest[0] : j === 0 ? forest[1] : forest[3]);
+}
+
+/** A wildfire racing along the hills' tops between trip points f0 and f1 (by the hill layer's own parallax), smoke over it. */
+function ridgeFire(e, f0, f1, k = 1) {
+  const { t } = e, [hu, hy] = into('hill', e.cam * 0.18, e.camY * 0.18);
+  for (let x = 0; x < W; x++) {
+    const u = x + hu, f = e.pos + ((x - mx) / W) * 0.4;
+    if (f < f0 || f > f1) continue;
+    const top = Math.round(hz + H * 0.01 - H * 0.035 * (0.6 * Math.sin(u * 0.04 + 3) + 0.4 * Math.sin(u * 0.09))) + hy;
+    const h = Math.round((2 + (Math.sin(u * 1.3 + t * 5) + 1) * 1.5) * k);
+    for (let j = 0; j < h; j++) put(x, top - j, LAVA[j < h * 0.3 ? 0 : j < h * 0.7 ? 1 : 2]);
+    if (Math.round(u) % 23 === 0) for (let j = 0; j < H * 0.18; j++) {   // a column of smoke leaning downwind
+      const cx = x + j * 0.3 + Math.sin(j * 0.15 - t) * 1.5, w = 1 + j * 0.08;
+      for (let xx = Math.floor(cx - w); xx <= cx + w; xx++) if (bay(xx, top - h - j) < 0.7 * (1 - j / (H * 0.18))) put(xx, top - h - j, e.c.smoke[Math.min(2, Math.floor(j / (H * 0.07)))]);
+    }
+  }
+}
+
+/** Embers drifting up off the land wherever `where(f)` (0-1) says it burns. */
+function embersUp(e, where) {
+  const { cam, camY, t } = e;
+  for (let i = 0; i < 24; i++) {
+    const x = Math.round(((hash(i) * W * 1.6 - cam * 0.9) % (W * 1.6) + W * 1.6) % (W * 1.6) - W * 0.3 + Math.sin(t + i) * 3);
+    if (hash(i + 0.4) > where((x + cam - mx) / TRIP)) continue;
+    const y = Math.round(GY + camY - ((t * (6 + hash(i + 0.7) * 8) + hash(i + 0.2) * H) % (H * 0.5)));
+    if (Math.sin(t * 4 + i) > -0.2) put(x, y, LAVA[Math.sin(t * 3 + i) > 0.4 ? 0 : 1]);
+  }
+}
+
+function paintToSavanna(e) {
+  const { pos, a, b, c, glow, t, night } = e;
+  let { cam, camY } = e;
+  const R = CLEARING_SAVANNA, morph = R.morph, L = (key, k, m, x, y) => dd(a[key][k], b[key][k], m, x, y);
+  const ahead = (x, lead) => morph(pos + ((x - mx) / W) * lead);
+  farAndHills(e, L, ahead);
+  // Sun Rock rising on the horizon at the end
+  const [fu, fy] = into('far', cam * 0.05, camY * 0.05), tk = smooth((pos - 0.66) / 0.26);
+  if (tk > 0) {
+    const s = Math.max(1, Math.round(Math.min(W, H) / 60)), cx = Math.round(W * 0.72) - fu, foot = hz - Math.round(H * 0.01) + fy + Math.round((1 - tk) * 14 * s);
+    for (let i = -6 * s; i <= 14 * s; i++) {
+      const top = i < 0 ? foot - 10 * s - i * 0.15 : foot - 10 * s - Math.sin(Math.PI * i / (14 * s)) * 2 * s, bottom = i < 0 ? top + 1 + ((i + 6 * s) / (6 * s)) ** 1.8 * (foot - top - 1) : foot;
+      for (let y = Math.round(top); y < bottom; y++) put(cx + i, y, mixW(y - top < 1.5 ? b.hill[0] : b.hill[1], b.far[1], 0.35));
+    }
+  }
+  if (night > 0.3) ridgeFire(e, 0.5, 0.66, night);
+
+  // the woods: the Clearing's round trees thin out into acacias standing alone in the grass
+  const S = 0.45, [mu, my] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
+  const fAt = (u) => (u - mx) / (S * TRIP);
+  const midTop = (u) => MB + Math.round(Math.sin(u * 0.13)) + my;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, m = morph(fAt(u)), top = midTop(u);
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('floor', y - top < 3 ? 0 : 1, m, x, y);
+  }
+  for (let k = Math.floor((mu - 20) / 4); k <= Math.ceil((mu + W + 20) / 4); k++) {
+    const u0 = k * 4 + Math.floor(hash(k) * 3), m = morph(fAt(u0)), x = Math.round(u0 - mu), base = midTop(u0);
+    if (hash(k + 0.5) > m * 1.05) {
+      if (hash(k + 0.2) < m * 0.9) continue;
+      const r = 3 + Math.floor(hash(k + 0.7) * H * 0.022), cy = base - r - 2;
+      rect(x, cy, 1, base - cy, a.bark[2]);
+      disc(x, cy + 1, r, a.forest[2]); disc(x, cy, r - 1, a.forest[1]); disc(x - 1, cy - 1, Math.max(1, r - 3), a.forest[0]);
+    } else if (hash(k + 0.9) < 0.18) acaciaMid(x, base, k, b);
+  }
+
+  [cam, camY] = into('road', cam, camY);
+  // the road: the Clearing's path, then a dusty track through the grass
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP, m = morph(f), top = groundY(u) + camY;
+    for (let y = Math.max(0, top); y < H; y++) {
+      const d = y - top;
+      buf[y * W + x] = d === 0 ? L('path', 0, m, x, y) : d < 3 ? L('path', 1, m, x, y) : d === 3 ? L('path', 2, m, x, y) : L('ground', Math.min(3, Math.floor(((d - 4) / Math.max(1, H - top - 4)) * 4)), m, x, y);
+    }
+  }
+  // along it: bushes and flowers, then tall grass, termite mounds and bones
+  for (let k = Math.floor((cam - 10) / 9); k <= Math.ceil((cam + W + 10) / 9); k++) {
+    const u0 = k * 9 + Math.floor(hash(k + 0.1) * 4), f = (u0 - mx) / TRIP, m = morph(f), kind = hash(k + 0.6);
+    if (hash(k + 0.8) > 0.75) continue;
+    const x = Math.round(u0 - cam), y = groundY(u0) + camY;
+    if (m < 0.5) {
+      if (kind < 0.4) { disc(x, y - 3, 3, a.forest[2]); disc(x, y - 4, 2, a.forest[1]); }
+      else for (let i = 0; i < 5; i++) put(x + Math.round((hash(k + i) - 0.5) * 8), y - 1 - Math.round(hash(k + i + 0.5) * 2), c.flowers[Math.floor(hash(k * 5 + i) * 4)]);
+    } else if (kind < 0.6) for (let i = -3; i <= 3; i++) { const h = 4 + Math.round(hash(k * 3 + i) * 5); rect(x + i, y - h, 1, h, b.fore[i & 1 ? 1 : 0]); put(x + i, y - h, b.fore[0]); }
+    else if (kind < 0.8) { for (let j = 0; j < 9; j++) rect(x - Math.round((9 - j) * 0.35), y - j, Math.max(1, Math.round((9 - j) * 0.7)), 1, j % 3 ? b.bark[0] : b.bark[1]); }   // a termite mound
+    else { rect(x - 3, y - 1, 7, 1, c.bone[1]); for (const i of [-2, 0, 2]) rect(x + i, y - 3, 1, 2, c.bone[0]); }   // bones
+  }
+  if (night > 0.2) for (let i = 0; i < 10; i++) {   // fireflies over the meadow
+    const x = Math.round(((hash(i) * W * 1.6 - cam * 0.8) % (W * 1.6) + W * 1.6) % (W * 1.6) + Math.sin(t * 0.7 + i) * 4 - W * 0.3);
+    if (morph((x + cam - mx) / TRIP) > 0.5) continue;
+    const y = Math.round(GY + camY - 5 - hash(i + 0.5) * H * 0.15 + Math.cos(t + i) * 3);
+    if (Math.sin(t * 3 + i * 1.7) > 0.2) put(x, y, glow[0]);
+  }
+  if (pos > 0.36) cue('rustle');
+  fernFront(e, L, morph);
+}
+
+function paintSavannaWastes(e) {
+  const { pos, a, d, c, t } = e;
+  let { cam, camY } = e;
+  const R = SAVANNA_WASTES, morph = R.morph;
+  const L = (key, k, m, x, y) => (m < 0.5 ? dd(a[key][k], d[key][k], m * 2, x, y) : dd(d[key][k], e.b[key][k], m * 2 - 1, x, y));
+  const ahead = (x, lead) => morph(pos + ((x - mx) / W) * lead);
+  const flick = (n) => Math.sin(t * 7 + n * 1.3) > 0.3;
+
+  const [fu] = into('far', cam * 0.05);
+  volcano(e, smooth((pos - 0.14) / 0.6), fu);
+  farAndHills(e, L, ahead);
+  ridgeFire(e, 0.36, 0.62);
+
+  // the woods: acacias, then their charred skeletons, then the Wastes' dead trees and boulders
+  const S = 0.45, [mu] = into('mid', cam * S, camY * S), MB = GY - Math.round(H * 0.07);
+  const fAt = (u) => (u - mx) / (S * TRIP);
+  const midTop = (u) => MB + Math.round(Math.sin(u * 0.13)) + camY;
+  for (let x = 0; x < W; x++) {
+    const u = x + mu, m = morph(fAt(u)), top = midTop(u);
+    for (let y = Math.max(0, top); y < H; y++) buf[y * W + x] = L('floor', y - top < 3 ? 0 : 1, m, x, y);
+  }
+  for (let k = Math.floor((mu - 20) / 4); k <= Math.ceil((mu + W + 20) / 4); k++) {
+    const u0 = k * 4 + Math.floor(hash(k) * 3), m = morph(fAt(u0)), x = Math.round(u0 - mu), base = midTop(u0);
+    if (hash(k + 0.9) > 0.3) continue;
+    if (m < 0.3) acaciaMid(x, base, k, a);
+    else if (m < 0.65) deadTree(x, base, 8 + Math.floor(hash(k + 0.4) * H * 0.06), c.char.concat(c.char[2]), k);
+    else if (hash(k + 0.2) > 0.4) deadTree(x, base, 8 + Math.floor(hash(k + 0.4) * H * 0.07), c.dead, k);
+    else boulder(x, base, 2 + Math.floor(hash(k + 0.7) * 3), c.rock);
+  }
+
+  [cam, camY] = into('road', cam, camY);
+  // the road: the dusty track, the burnt ground with embers in its cracks, the Wastes' ash
+  for (let x = 0; x < W; x++) {
+    const u = x + cam, f = (u - mx) / TRIP, m = morph(f), top = groundY(u) + camY;
+    for (let y = Math.max(0, top); y < H; y++) {
+      const dp = y - top, k = Math.min(3, Math.floor(((dp - 4) / Math.max(1, H - top - 4)) * 4));
+      let col = dp < 4 ? L('path', dp === 0 ? 0 : dp < 3 ? 1 : 2, m, x, y) : L('ground', k, m, x, y);
+      if (m > 0.3 && dp > 4) {   // the burnt ground cracks, embers and then lava glowing in them
+        const seg = Math.floor(u / 9), cy = top + 5 + Math.floor(hash(seg + 0.4) * (H - top - 6)) + Math.round(Math.sin(u * 0.8) * 0.6);
+        if (y === cy && hash(seg + 0.8) < (m - 0.3) * 1.3) col = LAVA[flick(seg) ? 2 : 3];
+      }
+      buf[y * W + x] = col;
+    }
+  }
+  for (let k = Math.floor((cam - 10) / 9); k <= Math.ceil((cam + W + 10) / 9); k++) {   // along it: tall grass, then charred stumps, then rocks
+    const u0 = k * 9 + Math.floor(hash(k + 0.1) * 4), f = (u0 - mx) / TRIP, m = morph(f);
+    if (hash(k + 0.8) > 0.6) continue;
+    const x = Math.round(u0 - cam), y = groundY(u0) + camY;
+    if (m < 0.25) for (let i = -3; i <= 3; i++) { const h = 3 + Math.round(hash(k * 3 + i) * 5); rect(x + i, y - h, 1, h, a.fore[i & 1 ? 1 : 0]); }
+    else if (m < 0.7) { rect(x - 1, y - 4, 3, 4, c.char[1]); rect(x - 1, y - 4, 3, 1, c.char[0]); }
+    else if (hash(k + 0.5) < 0.55) boulder(x, y, 2 + Math.floor(hash(k + 0.2) * 3), c.rock);
+  }
+  embersUp(e, (f) => smooth((morph(f) - 0.2) / 0.2));
+
+  const [nu] = into('near', e.cam * 1.35);
+  for (let x = 0; x < W; x++) {   // the near grass, burning down to stubble
+    const u = x + nu, m = morph((u - mx) / (1.35 * TRIP));
+    const h = Math.round((H * 0.05 + hash(Math.floor(u)) * H * 0.06 + Math.sin(u * 0.21) * 2) * (1 - 0.6 * smooth((m - 0.2) / 0.5)));
+    for (let y = Math.max(0, H - h); y < H; y++) { const dp = y - (H - h), k = dp < 2 ? 0 : dp < h * 0.45 ? 1 : dp < h * 0.8 ? 2 : 3; fput(x, y, L('fore', k, m, x, y)); }
+  }
+  const ashK = smooth((pos - 0.45) / 0.3), wrap = W * 1.4;   // ash falling
+  for (let n = 0; n < 70; n++) {
+    if (hash(n + 0.21) > ashK) continue;
+    const sp = 5 + hash(n + 0.5) * 7;
+    const x = Math.round((((hash(n) * wrap - t * sp * 0.6 - cam * (0.3 + hash(n + 0.6) * 0.6)) % wrap) + wrap) % wrap - W * 0.2 + Math.sin(t * 1.5 + n) * 1.5);
+    (n & 1 ? fput : put)(x, Math.round((hash(n + 0.33) * H + t * sp) % H), c.ash[hash(n + 0.9) < 0.3 ? 0 : 1]);
+  }
+  if (pos > 0.3) cue('gust');
+  if (pos > 0.66) cue('rumble-far');
 }
