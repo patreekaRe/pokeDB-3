@@ -56,20 +56,15 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     another, never the same one twice, so one of the three sits out each run. The crossroads stays two roads.
     **Tilt until seen:** a pool biome never walked into (`stats.biomesSeen`) is offered before a seen one (both unseen or
     both seen: a coin flip); once all three are seen it's pure random for good. Rolls through `js/rng.js`.
-    **Part a. Run in: CLOUD** (attach `pokeDB-3` and `pokeDB-sim`): "Read CLAUDE.md, `docs/roadmap.md` item 20 and the
-    archive's Branching biomes parts a and c, then build item 20 part a. (1) The Fire biome: 12 wilds (~5-7 Fire, the rest
-    Water / Grass / pure Normal), 3 pure-Normal Alphas and 3 pure-Normal bosses, all shared Safari Pokémon per the roadmap's
-    rules (the free Fire ones: Ponyta, Numel, Camerupt, Magcargo, Larvesta, Magby, Magmortar, Darmanitan, Ninetales,
-    Arcanine, Houndoom, Lampent, Chandelure, Simisear), cries, its bonus Pokédex page after Thornwood's, Team Rocket's
-    team, a sign colour (`ARMS`), a stand-in look borrowed from an existing biome; pick its name and theme (not a volcano,
-    the Wastes are one). (2) Numbers by fork, not by biome: a pool biome's hpMult / dmgBonus / bossBonus and its Pokémon's
-    strength come from the slot it's walked at, so each works at fork 1 or fork 2. (3) The run-start roll with the tilt,
-    saved in the run (an old save keeps its route). (4) Fix what assumed a fixed slot: the Wanderer badge, `conquered()`,
-    the Explorer badge, `?crossroads` / `?biome=` playtests, journey films (a trip without a `ROUTES` entry is skipped).
-    (5) Tests, and a small bot check (~150 runs a cell) of each pool biome at both forks against the default road. Push to
-    main."
-    **Part b. Run in: LOCAL (Desktop app):** paint the Fire biome (scenery, boss prelude, intro film, map palette, grotto),
-    then journey films for the new pairings, a few a session.
+    **Part a is done** (2026-10-07: the Sunscorch Savanna, the pool roll, numbers by fork; see the archive). It borrows the
+    Clearing's scenery and has no journey films yet.
+    **Part b. Run in: LOCAL (Desktop app):** "Read CLAUDE.md (Branching biomes) and `docs/roadmap.md` item 20, then paint the
+    Sunscorch Savanna (`BIOME_ART.savanna` in `js/scene.js`, now `{ ...BIOME_ART.clearing }`): its four places Tall Grass /
+    Burnt Plain / Watering Hole / Sun Rock, landmarks, the boss prelude on Sun Rock, an intro film, its map palette
+    (`PALETTES.savanna` in `js/map.js`), a grotto (`PLACE_ART.treasure.biomes.savanna`), and a `descent()` land if it ends a
+    run. Then journey films for the new pairings (`ROUTES` in `js/travel.js`; any pool biome can now follow the Clearing,
+    the Shrine or another pool biome, and lead to the Wastes or another), a few a session." Also open: should the Savanna get
+    badges like the Ruins' and Thornwood's (a boss, page and hunter badge)? Ask the user.
 
 
 ## Ideas, not agreed yet (ask the user before building)
@@ -119,5 +114,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   so a future biome takes the Safari's Gen 1-5 Pokémon, **shared** like the Sunken Ruins' and Thornwood's: a main-biome def
   with the slot's numbers under the species id (it wins over `safariMonDef()`, keeping the Safari line as `safariLine`), the
   `SAFARI_MONS` line kept for its area and signature card, plus a cry. It can't also be in a default-road biome.
-- **Fire is scarce**: every Gen 1-5 Fire Pokémon is already in the game. Keep these Safari ones for a future Fire biome:
-  Ponyta, Larvesta, Magby, Magmortar, Darmanitan, Ninetales, Arcanine, Houndoom, Lampent, Chandelure, Simisear.
+- **Fire is scarce**: every Gen 1-5 Fire Pokémon is already in the game. The Sunscorch Savanna took Ponyta, Magby, Ninetales,
+  Arcanine, Houndoom and Simisear; still free in the Safari only: Larvesta, Magmortar, Darmanitan, Chandelure (rare spawns),
+  Lampent, and Numel / Camerupt / Magcargo (Ground / Rock, so not for a Fire slot).

@@ -31,7 +31,7 @@
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
-import { BIOMES, BIOMES_BY_ID, biomeAt, CROSSROADS } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { checkBadges } from './progress.js';
@@ -279,8 +279,9 @@ function init() {
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map
   if (params.get('descent') === 'mewtwo') return peekDescent(STARTERS_BY_ID.mewtwo);
-  // ?biome=ruins (any biome; &starter=id, &level=0-5): a throwaway run starting in that biome, on the road through it
-  if (params.get('biome') && peekBiome(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('biome'), Number(params.get('level') ?? 0))) return;
+  // ?biome=ruins (any biome; &starter=id, &level=0-5; &slot=1 or 2 walks a pool biome at that fork): a throwaway run
+  // starting in that biome, on the road through it
+  if (params.get('biome') && peekBiome(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('biome'), Number(params.get('level') ?? 0), Number(params.get('slot')) || null)) return;
   if (SAFARI_AREAS.some(a => a.id === params.get('bossfight'))) return peekSafariBoss(params.get('bossfight'), STARTERS_BY_ID[params.get('starter')]);
 
   showSelect();   // under the title, so the menu scene is ready behind it
@@ -293,7 +294,7 @@ function init() {
     if (params.has('travel')) return peekTravel(params);
     // ?crossroads (&starter=id, &stage=0-2) shows the fork after Biome 1's boss after PRESS START; the road taken plays its
     // journey film if it has one, then the title comes back. Nothing is saved. &slot=2 is the fork after Biome 2's boss
-    // (&from=ruins walks it from the Ruins)
+    // (&from=ruins walks it from the Ruins); &road=savanna is the pool biome it offers beside the default
     if (params.has('crossroads')) return peekCrossroads(params);
     // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
     if (params.has('climb')) return peekClimb(params);
@@ -353,9 +354,10 @@ function peekStrike(params) {
 }
 
 /** The ?travel= playtest: a journey film on its own, nothing saved. `?travel=ruins` comes from the Clearing; `&from=ruins`
-    takes the other road's trip to the Wastes. */
+    takes the other road's trip to the Wastes (a pool biome before a fork stands at the first one). */
 async function peekTravel(params) {
-  const dest = BIOMES_BY_ID[params.get('travel')], to = dest?.slot ?? -1;
+  const from = BIOMES_BY_ID[params.get('from')], dest = BIOMES_BY_ID[params.get('travel')];
+  const to = from ? (POOL.includes(from.id) ? FORKS[0] : from.slot) + 1 : dest?.slot ?? -1;
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? to) || 0);
   const at = params.has('at') ? Number(params.get('at')) : null;   // &at=0.5 holds the film there
@@ -366,10 +368,11 @@ async function peekTravel(params) {
 /** The ?crossroads playtest: the fork after Biome 1 (or &slot=2's), then the road taken's journey film. Nothing is saved. */
 async function peekCrossroads(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free);
-  const slot = CROSSROADS[params.get('slot')] ? Number(params.get('slot')) : 1;
+  const slot = FORKS.includes(Number(params.get('slot'))) ? Number(params.get('slot')) : FORKS[0];
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? slot) || 0), shiny = getSave().shiny.on.includes(starter.id);
-  const fork = await crossroads({ ids: CROSSROADS[slot], starter, stage, shiny });
-  const from = BIOMES_BY_ID[params.get('from')]?.slot === slot - 1 ? params.get('from') : BIOMES[slot - 1].id;
+  const from = canWalk(params.get('from'), slot - 1) ? params.get('from') : BIOMES[slot - 1].id;
+  const road = [params.get('road'), LEGACY_ROADS[slot], ...POOL].find(id => POOL.includes(id) && id !== from);
+  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), starter, stage, shiny });
   const close = hasTravel(from, fork.id) ? await travel({ from, to: fork.id, starter, stage, shiny, first: true }) : null;
   fork.close();
   close?.();

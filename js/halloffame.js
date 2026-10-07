@@ -68,8 +68,10 @@ export function recordLoss(run, { foe = null, move = null, kind = null, biomeNam
   return entry;
 }
 
-/** What a win conquered: the last biome on its road (a record saved before the crossroads walked the Wastes). */
-export const conquered = (route) => (route?.[2] === 'thornwood' ? 'the jungle' : 'the wastes');
+/** What a win conquered: the last biome on its road, any pool biome walked there too (a record saved before the crossroads
+    walked the Wastes). */
+const LANDS = { wastes: 'the wastes', thornwood: 'the jungle', ruins: 'the ruins', savanna: 'the savanna' };
+export const conquered = (route) => LANDS[route?.[2]] ?? LANDS.wastes;
 
 /** A won run's entry, unsaved (recordWin() saves it; a ?bossfight=depths playtest only plays its scene). */
 export function draftWin(run, shiny) {

@@ -678,6 +678,8 @@ BIOME_ART.thornwood = {
     boss: { grade: 'boss', addLife: ['leaves'] },
   },
 };
+// The Sunscorch Savanna (roadmap item 20 a) borrows the Clearing's meadow until part b paints its own.
+BIOME_ART.savanna = { ...BIOME_ART.clearing, kin: 'clearing' };
 
 /* ---------- the menus: one scene per starter type, seen nowhere else ----------
    Same shape as a biome's scene, without kinds, pads or storms. Each is painted at its `native` time (day unless
@@ -1381,6 +1383,7 @@ const WEATHER = {
   ruins: { dawn: 'drizzle', night: 'drizzle' },
   wastes: 'ash',
   thornwood: 'leaves',
+  savanna: { day: 'sand', dusk: 'ash' },   // dry wind, then the wildfires' ash
   depths: 'dust',
   meadow: { dawn: 'drizzle', dusk: 'leaves', night: 'drizzle' },
   forest: 'leaves',

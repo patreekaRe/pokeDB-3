@@ -13,14 +13,14 @@
 
 import { STARTERS } from './starters.js';
 import { MAX_LEVEL } from './difficulty.js';
-import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, CROSSROADS, ENEMY_DEFS } from './enemies.js';
+import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, FORKS, ENEMY_DEFS } from './enemies.js';
 import { PASSIVE_SHOP_ITEMS } from './shop.js';
 import { BALLS, masterThrows } from './balls.js';
 import { SAFARI_AREAS, SAFARI_DEX_PAGES } from './safari.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES } from './pokedex.js';
 import { FLIGHT } from './tower.js';
 
-/** Every main biome, both roads at each crossroads (the Explorer Badge's; the Depths are Mewtwo's own). */
+/** Every main biome, the default road's and the pool's (the Explorer Badge's; the Depths are Mewtwo's own). */
 const MAIN_BIOMES = [...BIOMES, ...ALT_BIOMES].filter(b => !b.secret).map(b => b.id);
 
 const KANTO_TYPES = ['fire', 'water', 'grass'];
@@ -50,12 +50,13 @@ const levelWins = (save) => (save.hallOfFame || []).filter(w => w.starter !== 'm
 const aWin = (save, test) => levelWins(save).some(test);
 const isNum = (v) => typeof v === 'number';
 
-/** A biome's boss beaten, from the Pokédex (the stats count bosses by slot, which both roads share). */
+/** A biome's boss beaten, from the Pokédex (the stats count bosses by slot, which every road through it shares). */
 const bossBeaten = (save, biome) => BIOMES_BY_ID[biome].bosses.some(id => (save.dex?.defeated || []).includes(id));
 
-/** Every pair of roads through the crossroads (the Wanderer Badge's); a win saved before them walked the default road. */
-const ROUTES = CROSSROADS[1].flatMap(a => CROSSROADS[2].map(b => `${a}>${b}`));
-const routeOf = (w) => `${w.route?.[1] ?? CROSSROADS[1][0]}>${w.route?.[2] ?? CROSSROADS[2][0]}`;
+/** Every road a fork can offer (the Wanderer Badge's: each won through at least once, at either fork; since item 20 a pool
+    biome can stand at both, so pairs of roads would be 13 runs). A win saved before the crossroads walked the default road. */
+const ROADS = [...FORKS.map(i => BIOMES[i].id), ...ALT_BIOMES.map(b => b.id)];
+const roadsOf = (w) => FORKS.map(i => w.route?.[i] ?? BIOMES[i].id);
 
 /** The starters with a Level 5 win (the Veteran Badge's). */
 function level5Starters(s, save) {
@@ -121,11 +122,11 @@ export const BADGES = [
   { id: 'clearing', group: 'journey', name: 'Clearing Badge', icon: 'clearing', emoji: '🌳',
     text: 'Defeat the Whispering Clearing\'s boss', test: (s) => !!s.bossesDefeated?.[1] },
   { id: 'shrine', group: 'journey', name: 'Shrine Badge', icon: 'shrine', emoji: '⛩️',
-    text: 'Defeat the Overgrown Shrine\'s boss', test: (s) => !!s.bossesDefeated?.[2] },
+    text: 'Defeat the Overgrown Shrine\'s boss', test: (s, save) => bossBeaten(save, 'shrine') },
   { id: 'tide', group: 'journey', name: 'Tide Badge', icon: 'tide', emoji: '🌊',
     text: 'Defeat the Sunken Ruins\' boss', test: (s, save) => bossBeaten(save, 'ruins') },
   { id: 'ember', group: 'journey', name: 'Ember Badge', icon: 'ember', emoji: '🌋',
-    text: 'Defeat the Ember Wastes\' boss', test: (s) => !!s.bossesDefeated?.[3] },
+    text: 'Defeat the Ember Wastes\' boss', test: (s, save) => bossBeaten(save, 'wastes') },
   { id: 'thorn', group: 'journey', name: 'Thorn Badge', icon: 'thorn', emoji: '🌿',
     text: 'Defeat the Thornwood Jungle\'s boss', test: (s, save) => bossBeaten(save, 'thornwood') },
   { id: 'champion', group: 'journey', name: 'Champion Badge', icon: 'champion', emoji: '🏆',
@@ -137,10 +138,10 @@ export const BADGES = [
   { id: 'grass', group: 'journey', name: 'Grass Badge', icon: 'grass', emoji: '🍃',
     text: 'Win a run with a Grass starter', test: (s) => wonWithType(s, 'grass') },
   { id: 'wanderer', group: 'journey', name: 'Wanderer Badge', icon: 'wanderer', emoji: '🗺️',
-    text: 'Win a run down every pair of roads from the crossroads',
-    test: (s, save) => { const won = new Set(levelWins(save).map(routeOf)); return ROUTES.every(r => won.has(r)); } },
+    text: 'Win a run down every road from the crossroads',
+    test: (s, save) => { const won = new Set(levelWins(save).flatMap(roadsOf)); return ROADS.every(r => won.has(r)); } },
   { id: 'explorer', group: 'journey', name: 'Explorer Badge', icon: 'explorer', emoji: '🧭',
-    text: 'Walk into all five biomes, both roads at each crossroads', test: (s) => MAIN_BIOMES.every(id => (s.biomesSeen || []).includes(id)) },
+    text: 'Walk into every biome on every road', test: (s) => MAIN_BIOMES.every(id => (s.biomesSeen || []).includes(id)) },
 
   // Trainer Levels (Mewtwo's runs have no Level, so they never count; its Hall of Fame entries are skipped too)
   { id: 'rookie', group: 'levels', name: 'Rookie Badge', icon: 'rookie', emoji: '🎗️',

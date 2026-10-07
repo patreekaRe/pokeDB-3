@@ -24,7 +24,7 @@
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
    ============================================================ */
 
-import { random, pickOne } from '../rng.js';
+import { random, pickOne, shuffled } from '../rng.js';
 import { SAFARI_MONS, safariMonDef, PLACE } from './safari-mons.js';
 
 /** Pixel sprite from assets/pokemon/ (Gen 5 art from PokeAPI/sprites). */
@@ -585,6 +585,118 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  /* ----- the pool's Fire road (roadmap item 20): the Sunscorch Savanna, a sun-baked grassland of wildfires and one
+     watering hole. Mostly Fire. Safari Pokémon, shared like the Sunken Ruins', authored at Biome 2's numbers (its
+     `home`); walked at the second fork they grow like any pool biome's (walkAt() below). ----- */
+  ponyta: {
+    name: 'Ponyta', type: 'fire', hp: 46, ...sprite('ponyta'),
+    description: 'Its herd gallops ahead of the wildfires, and leaves a fresh one in the grass behind it.',
+    moves: [
+      { kind: 'attack', name: 'Ember',        amount: 6 },
+      { kind: 'attack', name: 'Stomp',        amount: 5, type: 'normal' },
+      { kind: 'attack', name: 'Flame Charge', amount: 10 },
+    ],
+  },
+  magby: {
+    name: 'Magby', type: 'fire', hp: 48, ...sprite('magby'),
+    description: 'Naps on the hottest rock of the plain. When it sneezes, the grass round it catches.',
+    moves: [
+      { kind: 'attack', name: 'Ember',       amount: 6 },
+      { kind: 'defend', name: 'Smokescreen', amount: 7 },
+      { kind: 'attack', name: 'Fire Punch',  amount: 11 },
+    ],
+  },
+  ninetales: {
+    name: 'Ninetales', type: 'fire', hp: 54, ...sprite('ninetales'),
+    description: 'Walks the savanna in the heat haze. Travellers who follow its glow wake up far from the trail.',
+    moves: [
+      { kind: 'buff',   name: 'Nasty Plot',   amount: 2 },
+      { kind: 'attack', name: 'Extrasensory', amount: 7, type: 'normal', adds: { card: 'confusion', n: 1, to: 'draw' } },
+      { kind: 'attack', name: 'Flamethrower', amount: 11 },
+    ],
+  },
+  arcanine: {
+    name: 'Arcanine', type: 'fire', hp: 58, ...sprite('arcanine'),
+    description: 'Runs the plain from one horizon to the other between sunrise and noon. The lions keep out of its way.',
+    moves: [
+      { kind: 'attack', name: 'Bite',       amount: 7, type: 'normal' },
+      { kind: 'buff',   name: 'Howl',       amount: 2 },
+      { kind: 'attack', name: 'Flare Blitz', amount: 12 },
+    ],
+  },
+  houndoom: {
+    name: 'Houndoom', type: 'fire', hp: 52, ...sprite('houndoom'),
+    description: 'Hunts the savanna in packs after dark. Its howl carries from one burning grass fire to the next.',
+    moves: [
+      { kind: 'attack', name: 'Smog',    amount: 6, type: 'normal', adds: { card: 'poison', n: 1 } },
+      { kind: 'buff',   name: 'Roar',    amount: 1 },
+      { kind: 'attack', name: 'Inferno', amount: 11 },
+    ],
+  },
+  simisear: {
+    name: 'Simisear', type: 'fire', hp: 52, ...sprite('simisear'),
+    description: 'Lords it over the one shady tree on the plain, and roasts whoever wants the shade.',
+    moves: [
+      { kind: 'attack', name: 'Fury Swipes', amount: 6, type: 'normal' },
+      { kind: 'buff',   name: 'Work Up',     amount: 2 },
+      { kind: 'attack', name: 'Flame Burst', amount: 10 },
+    ],
+  },
+  panpour: {
+    name: 'Panpour', type: 'water', hp: 50, ...sprite('panpour'),
+    description: 'Fills its head at the watering hole and carries it across the plain for its troop.',
+    moves: [
+      { kind: 'attack', name: 'Water Gun',   amount: 6 },
+      { kind: 'defend', name: 'Water Sport', amount: 7 },
+      { kind: 'attack', name: 'Scald',       amount: 10 },
+    ],
+  },
+  golduck: {
+    name: 'Golduck', type: 'water', hp: 54, ...sprite('golduck'),
+    description: 'Guards the last watering hole. Every thirsty Pokémon on the savanna has to get past it.',
+    moves: [
+      { kind: 'defend', name: 'Amnesia',      amount: 8 },
+      { kind: 'attack', name: 'Zen Headbutt', amount: 7, type: 'normal' },
+      { kind: 'attack', name: 'Hydro Pump',   amount: 12 },
+    ],
+  },
+  sunflora: {
+    name: 'Sunflora', type: 'grass', hp: 52, ...sprite('sunflora'),
+    description: 'Turns all day to follow the sun across the plain, drinking in every ray.',
+    moves: [
+      { kind: 'drain',  name: 'Mega Drain',     amount: 6, heal: 5 },
+      { kind: 'buff',   name: 'Growth',         amount: 2 },
+      { kind: 'attack', name: 'Petal Blizzard', amount: 11 },
+    ],
+  },
+  cherrim: {
+    name: 'Cherrim', type: 'grass', hp: 50, ...sprite('cherrim'),
+    description: 'Stays shut through the long dry spells and bursts open the moment the sun gets fierce.',
+    moves: [
+      { kind: 'defend', name: 'Synthesis',    amount: 8 },
+      { kind: 'attack', name: 'Magical Leaf', amount: 7 },
+      { kind: 'attack', name: 'Petal Dance',  amount: 11 },
+    ],
+  },
+  meowth: {
+    name: 'Meowth', type: 'normal', hp: 46, ...sprite('meowth'),
+    description: 'Picks coins out of the ashes after every grass fire. It knows who dropped them.',
+    moves: [
+      { kind: 'attack', name: 'Scratch',     amount: 6 },
+      { kind: 'attack', name: 'Pay Day',     amount: 7 },
+      { kind: 'attack', name: 'Fury Swipes', amount: 9 },
+    ],
+  },
+  minccino: {
+    name: 'Minccino', type: 'normal', hp: 48, ...sprite('minccino'),
+    description: 'Sweeps the ash off its burrow with its tail every morning, then the wind brings more.',
+    moves: [
+      { kind: 'attack', name: 'Pound',     amount: 6 },
+      { kind: 'defend', name: 'Tidy Up',   amount: 7 },
+      { kind: 'attack', name: 'Tail Slap', amount: 10 },
+    ],
+  },
+
   /* ----- Biome 4: the Crystal Depths, Mewtwo's own (v1.0). Shown as Neutral or Psychic whatever their real types:
      Mewtwo is neutral to every type. Built to test a strong deck: shields, scaling, and a `trait` that answers what you
      play (TRAITS below). ----- */
@@ -845,6 +957,34 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  patrat: {
+    name: 'Patrat', type: 'normal', hp: 66, ...sprite('patrat'),
+    description: 'Stands sentry on a termite mound. One squeak from it and the whole plain knows you\'re here.',
+    moves: [
+      { kind: 'attack', name: 'Bite',       amount: 7 },
+      { kind: 'defend', name: 'Detect',     amount: 9 },
+      { kind: 'attack', name: 'Hyper Fang', amount: 12 },
+    ],
+  },
+  buneary: {
+    name: 'Buneary', type: 'normal', hp: 68, ...sprite('buneary'),
+    description: 'Bounds through the tall grass faster than the fires. It kicks first and asks after.',
+    moves: [
+      { kind: 'attack', name: 'Pound',     amount: 8 },
+      { kind: 'buff',   name: 'Agility',   amount: 2 },
+      { kind: 'attack', name: 'Jump Kick', amount: 12 },
+    ],
+  },
+  glameow: {
+    name: 'Glameow', type: 'normal', hp: 66, ...sprite('glameow'),
+    description: 'Lounges in the shade of the thorn trees and claws whatever wakes it.',
+    moves: [
+      { kind: 'attack', name: 'Fury Swipes', amount: 7 },
+      { kind: 'buff',   name: 'Hone Claws',  amount: 2 },
+      { kind: 'attack', name: 'Slash',       amount: 12 },
+    ],
+  },
+
   clefable: {
     name: 'Clefable', type: 'normal', hp: 80, ...sprite('clefable'),
     trait: { id: 'stamina', name: 'Magic Guard', after: 4, amount: 7 },
@@ -1043,6 +1183,39 @@ export const ENEMY_DEFS = {
     ],
   },
 
+  /* the Sunscorch Savanna's (roadmap item 20), on top of Sun Rock. Biome 2's numbers at home; at the second fork they
+     grow with the slot like its wilds, and each one ends the run like the Wastes'. */
+  castform: {
+    name: 'Castform', type: 'normal', hp: 235, ...sprite('castform'), boss: true,
+    description: 'Sits on Sun Rock and calls the drought down on the plain. No rain has fallen since it came.',
+    moves: [
+      { kind: 'attack', name: 'Weather Ball', amount: 11 },
+      { kind: 'defend', name: 'Forecast',     amount: 13 },
+      { kind: 'status', name: 'Thunder Wave', adds: { card: 'paralysis', n: 2, to: 'draw' } },
+      { kind: 'attack', name: 'Hurricane',    amount: 21 },
+    ],
+  },
+  loudred: {
+    name: 'Loudred', type: 'normal', hp: 250, ...sprite('loudred'), boss: true,
+    description: 'Roars from Sun Rock at dawn, and the whole savanna stampedes.',
+    moves: [
+      { kind: 'attack', name: 'Stomp',       amount: 10 },
+      { kind: 'buff',   name: 'Howl',        amount: 3 },
+      { kind: 'status', name: 'Supersonic',  adds: { card: 'confusion', n: 2, to: 'draw' } },
+      { kind: 'attack', name: 'Hyper Voice', amount: 22 },
+    ],
+  },
+  munchlax: {
+    name: 'Munchlax', type: 'normal', hp: 260, ...sprite('munchlax'), boss: true,
+    description: 'Ate the savanna\'s last fruit tree, roots and all, and is still hungry.',
+    moves: [
+      { kind: 'attack', name: 'Tackle',      amount: 10 },
+      { kind: 'defend', name: 'Stockpile',   amount: 14 },
+      { kind: 'drain',  name: 'Snatch',      amount: 10, heal: 8 },
+      { kind: 'attack', name: 'Last Resort', amount: 22 },
+    ],
+  },
+
   /* the final boss: "the last energy". A set piece in two bars (v1.0 part C, the user's calls 2026-10-02): when this one
      faints it draws the Well's energy in and rises again as `phase2`, Eternamax, with a fresh bar (its `hp` scaled like
      this one's) and its own moves, music and cry (rebirth() in js/battle.js). Eternamax charges Eternabeam a turn ahead
@@ -1208,38 +1381,93 @@ export const BIOMES = [
   },
 ];
 
-/* Branching biomes (roadmap item 19): after a boss, the crossroads offers the next slot's biomes (CROSSROADS) and the run
-   saves its pick in `run.route`, a biome id per slot. BIOMES above is the default road, and every per-biome array (events,
-   Kenmatta's HP, `deepestBiome`, `bossesDefeated`) is by slot, so an other-road biome shares its slot's numbers. */
+/* Branching biomes (roadmap items 19-20): after a boss, the crossroads offers the next slot's default biome and one of the
+   POOL's, rolled for each fork at the run's start (rollRoads(), saved as `run.roads`), and the run saves its pick in
+   `run.route`, a biome id per slot. BIOMES above is the default road, and every per-biome array (events, Kenmatta's HP,
+   `deepestBiome`, `bossesDefeated`) is by slot. A pool biome can be walked at either fork, so it has no numbers of its own:
+   walkAt() lends it the slot's, and its Pokémon (authored at its `home` slot) grow or shrink to that slot's. */
 export const ALT_BIOMES = [
   {
-    id: 'ruins', name: 'Sunken Ruins', slot: 1,
+    id: 'ruins', name: 'Sunken Ruins', home: 1,
     stages: ['Flooded Steps', 'Drowned Halls', 'Sunken Court', 'Tide Altar'],
     normals: ['corphish', 'finneon', 'shellder', 'frillish', 'basculin', 'slugma',
       'flareon', 'foongus', 'shroomish', 'bidoof', 'lillipup', 'skitty'],
     elites: ['lickitung', 'herdier', 'audino'], bosses: ['dunsparce', 'wigglytuff', 'granbull'],
-    hpMult: 2.9, dmgBonus: 16, bossBonus: 21,
   },
   {
-    id: 'thornwood', name: 'Thornwood Jungle', slot: 2,
+    id: 'thornwood', name: 'Thornwood Jungle', home: 2,
     stages: ['Tangled Edge', 'Canopy Walk', 'Strangler Grove', 'Heart Tree'],
     normals: ['simisage', 'lilligant', 'shiftry', 'sawsbuck', 'carnivine', 'exeggutor',
       'whimsicott', 'volcarona', 'rapidash', 'carvanha', 'simipour', 'slakoth'],
     elites: ['vigoroth', 'delcatty', 'spinda'], bosses: ['blissey', 'porygon', 'porygon2'],
-    hpMult: 5.2, dmgBonus: 27, bossBonus: 33,
+  },
+  {
+    id: 'savanna', name: 'Sunscorch Savanna', home: 1,
+    stages: ['Tall Grass', 'Burnt Plain', 'Watering Hole', 'Sun Rock'],
+    normals: ['ponyta', 'magby', 'ninetales', 'arcanine', 'houndoom', 'simisear',
+      'panpour', 'golduck', 'sunflora', 'cherrim', 'meowth', 'minccino'],
+    elites: ['patrat', 'buneary', 'glameow'], bosses: ['castform', 'loudred', 'munchlax'],
   },
 ];
-export const BIOMES_BY_ID = Object.fromEntries([...BIOMES, ...ALT_BIOMES].map(b => [b.id, b]));
-/** The roads a slot can take, the default first. A slot not listed has only its BIOMES entry. */
-export const CROSSROADS = { 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] };
+/** The pool of other roads (roadmap item 20) and the slots that fork. */
+export const POOL = ALT_BIOMES.map(b => b.id);
+export const FORKS = [1, 2];
+/** A run saved before item 20 has no `roads`: its forks offer what they always did. */
+export const LEGACY_ROADS = { 1: 'ruins', 2: 'thornwood' };
+
+const walks = new Map();
+/** A biome as walked at `slot`: a default-road biome is itself; a pool biome takes the slot's hpMult / dmgBonus / bossBonus
+    (the same object each time, so it can be compared). */
+export function walkAt(biome, slot) {
+  if (!biome?.home) return biome;
+  const key = `${biome.id}@${slot}`;
+  if (!walks.has(key)) {
+    const { hpMult, dmgBonus, bossBonus } = BIOMES[slot];
+    walks.set(key, { ...biome, slot, hpMult, dmgBonus, bossBonus });
+  }
+  return walks.get(key);
+}
+/** Every biome by id, a pool biome as walked at its `home` slot (the Pokédex shows its numbers there). */
+export const BIOMES_BY_ID = Object.fromEntries([...BIOMES, ...ALT_BIOMES.map(b => walkAt(b, b.home))].map(b => [b.id, b]));
+/** Whether biome `id` can stand at slot `i` of a route. */
+export const canWalk = (id, i) => BIOMES[i]?.id === id || (POOL.includes(id) && FORKS.includes(i));
+/** The roads a fork offers, the default first; `roads` is the run's roll (rollRoads()). */
+export const forkRoads = (slot, roads) => [BIOMES[slot].id, roads?.[slot] ?? LEGACY_ROADS[slot]];
+
+/**
+ * Which pool biome each fork offers this run, rolled once at its start (roadmap item 20, the user's call): never the same
+ * one twice, so one sits out. A biome never walked into (`seen`, stats.biomesSeen) is offered before a seen one, so a
+ * player meets all three soon; between two unseen or two seen ones it's a coin flip, and once all are seen pure random.
+ */
+export function rollRoads(seen = []) {
+  const order = shuffled(POOL).sort((a, b) => seen.includes(a) - seen.includes(b));
+  return Object.fromEntries(FORKS.map((slot, i) => [slot, order[i]]));
+}
+
 /** The other roads stay hidden until you've won a run with every type (Fire, Grass, Water) on Trainer Level ROADS_LEVEL or
     higher (the user's call, 2026-10-07); until then a run walks the default road with no crossroads. */
 export const ROADS_LEVEL = 2;
 export const roadsOpen = (stats) => ['fire', 'grass', 'water'].every(t => (stats?.maxLevelWinByType?.[t] ?? -1) >= ROADS_LEVEL);
 /** The biome a run is in at slot `i`, by its saved `route` (none, or a run saved before the crossroads: the default road). */
-export const biomeAt = (route, i) => BIOMES_BY_ID[route?.[i]] ?? BIOMES[i];
+export const biomeAt = (route, i) => (canWalk(route?.[i], i) ? walkAt(BIOMES_BY_ID[route[i]], i) : BIOMES[i]);
 /** A biome given as its slot (the default road's) or as the biome itself. */
 const biomeOf = (b) => (typeof b === 'number' ? BIOMES[b] : b);
+
+/* How strong a slot's Pokémon stand, from the default road's own (average HP of its wilds, Alphas' bases and bosses, and
+   the average hit of its attacks), so a pool biome's Pokémon walked away from `home` match the slot (forkGrowth()). */
+const average = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+const hitsOf = (ids) => ids.flatMap(id => ENEMY_DEFS[id].moves.filter(m => m.amount && m.kind !== 'defend' && m.kind !== 'buff').map(m => m.amount));
+let strengths = null;
+const strengthAt = (slot) => (strengths ??= BIOMES.map(b => ({
+  fight: average(b.normals.map(id => ENEMY_DEFS[id].hp)), elite: average(b.elites.map(id => ENEMY_DEFS[id].hp)),
+  boss: average(b.bosses.map(id => ENEMY_DEFS[id].hp)), hit: average(hitsOf([...b.normals, ...b.elites])), bossHit: average(hitsOf(b.bosses)),
+})))[slot];
+/** A pool biome's Pokémon walked at another slot than `home`: their HP times `hp`, and `dmg` more on every attack. */
+export function forkGrowth(biome, kind) {
+  if (!biome.home || biome.slot === biome.home) return { hp: 1, dmg: 0 };
+  const at = strengthAt(biome.slot), home = strengthAt(biome.home), boss = kind === 'boss';
+  return { hp: at[kind] / home[kind], dmg: Math.round(boss ? at.bossHit - home.bossHit : at.hit - home.hit) };
+}
 
 /** The biome a run ends in: the third, or for Mewtwo its secret fourth. */
 export const finalBiome = (starter) => (starter?.id === 'mewtwo' ? BIOMES.length : BIOMES.filter(b => !b.secret).length) - 1;
@@ -1313,11 +1541,11 @@ export function buildEncounter(at, kind, mods, enemyId) {
   const biome = biomeOf(at);
 
   if (kind === 'boss') {
-    const def = ENEMY_DEFS[enemyId || pick(biome.bosses)];
+    const def = ENEMY_DEFS[enemyId || pick(biome.bosses)], grow = forkGrowth(biome, kind);
     return {
       def, kind,
-      maxHp: Math.round(def.hp * mods.bossHp),
-      strength: biome.bossBonus + mods.bossDmg + mods.enemyDmg,
+      maxHp: Math.round(def.hp * grow.hp * mods.bossHp),
+      strength: biome.bossBonus + grow.dmg + mods.bossDmg + mods.enemyDmg,
       dmgMult: mods.enemyDmgMult ?? 1,
     };
   }
@@ -1325,11 +1553,12 @@ export function buildEncounter(at, kind, mods, enemyId) {
   const base = ENEMY_DEFS[enemyId || pick(kind === 'elite' ? biome.elites : biome.normals)];
   const def = kind === 'elite' ? eliteOf(base) : base;
   const place = (def.template && PLACE[biome.slot]) || { hp: 1, dmg: 0 };   // a Safari template Pokémon grows with its area's place
+  const grow = forkGrowth(biome, kind);
   return {
     def,
     kind,
-    maxHp: Math.round(def.hp * place.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),
-    strength: biome.dmgBonus + place.dmg + mods.enemyDmg,
+    maxHp: Math.round(def.hp * place.hp * grow.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),
+    strength: biome.dmgBonus + place.dmg + grow.dmg + mods.enemyDmg,
     dmgMult: mods.enemyDmgMult ?? 1,
   };
 }

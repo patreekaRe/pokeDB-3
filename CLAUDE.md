@@ -13,7 +13,7 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
   a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
   Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?safariclassic` brings back the old Safari prep window on that device for good (the new lobby is the default; `?safarilobby` undoes it). `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?lockdepths` hides the Depths' Pokédex tab again (forgets its Pokémon and `deepestBiome` 4), for a save an old playtest revealed it on. `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
+  `night` pins the day/night cycle for that page load (`js/daytime.js`). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`, `&slot=1` / `2` for a pool biome at that fork) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START. Neither is saved.
@@ -549,28 +549,39 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `?travel=wastes` (`&at=0.5`, `&flyer=lugia` / `eternatus` / `none`). The Ruins' two trips are under Branching biomes below.
 - **Branching biomes** (roadmap item 19 part a, 2026-10-06; the user's settled calls: other roads' Pokédex pages are bonus
   pages, Mewtwo keeps its one road, each new biome is bot-checked against the one it pairs with): `BIOMES` in
-  `js/data/enemies.js` is the default road, each entry with its `slot`; `ALT_BIOMES` holds the other roads (the **Sunken
-  Ruins**, slot 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Lickitung / Herdier / Audino, bosses
-  Dunsparce / Wigglytuff / Granbull, Biome 2's numbers; and since part c, 2026-10-07, the **Thornwood Jungle**, slot 2 beside
-  the Wastes: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Slakoth, Team Rocket's whole
-  `team` there), Alphas Vigoroth / Delcatty / Spinda, bosses Blissey / Porygon / Porygon2, the Wastes' numbers;
-  its look is part d's (below); a win there "conquered the jungle", `conquered(route)` in `js/halloffame.js`, from the `route` a record now keeps),
-  `CROSSROADS` the roads per slot (`{ 1: ['shrine', 'ruins'], 2: ['wastes', 'thornwood'] }`; the other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
+  `js/data/enemies.js` is the default road, each entry with its `slot`; `ALT_BIOMES` holds the other roads, since item 20 part
+  a (2026-10-07) one **pool** (`POOL`) of three that can each stand at either fork (`FORKS`, slots 1 and 2): each run rolls at
+  its start which pool biome each fork offers beside its default (`rollRoads(stats.biomesSeen)`, saved as `run.roads`, never
+  the same one twice; an unseen biome is offered before a seen one, a coin flip between equals; a save without `roads` gets
+  `LEGACY_ROADS`, the Ruins then Thornwood), `forkRoads(slot, roads)` the fork's two. A pool biome has no numbers of its own:
+  `walkAt(biome, slot)` lends it the slot's hpMult / dmgBonus / bossBonus, and `forkGrowth()` grows or shrinks its Pokémon
+  (authored at its `home` slot) to the default road's at that slot (average HP per kind and average hit, measured from
+  `BIOMES`); `biomeAt()` returns the walked copy, `BIOMES_BY_ID` the one at `home`, `canWalk(id, slot)` checks a route. The
+  pool: the **Sunken Ruins** (home 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Lickitung / Herdier / Audino, bosses
+  Dunsparce / Wigglytuff / Granbull), since part c (2026-10-07) the **Thornwood Jungle** (home 2: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Slakoth, Team Rocket's whole
+  `team` there), Alphas Vigoroth / Delcatty / Spinda, bosses Blissey / Porygon / Porygon2; its look is part d's, below),
+  and since item 20 part a the **Sunscorch Savanna** (home 1: a sun-baked grassland of wildfires round one watering hole,
+  places Tall Grass / Burnt Plain / Watering Hole / Sun Rock; 6 Fire (Ponyta, Magby, Ninetales, Arcanine, Houndoom, Simisear)
+  / 2 Water / 2 Grass / 2 Normal wilds (Meowth and Minccino, Team Rocket's), Alphas Patrat / Buneary / Glameow, bosses
+  Castform / Loudred / Munchlax; it borrows the Clearing's scenery, `kin: 'clearing'`, until part b paints it). A win
+  "conquered" its last biome (`conquered(route)` in `js/halloffame.js`, from the `route` a record keeps; a Wastes descent
+  scene unless the last biome is Thornwood's jungle). The other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
-  default road, no version bump). After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
+  default road, no version bump). The Shrine / Ember Badges read their own bosses from `dex.defeated` (a slot's
+  `bossesDefeated` is any road's), the Wanderer a win through every road at either fork, the Explorer every main biome entered. After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
   `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the
   path splitting round a signpost (an arm a road in its biome sign's colours, `ARMS`; a new biome needs one) into two gaps in
   the treeline, each a glimpse of its biome (`sceneShot(id, { time: 'dusk' })`), a card over each road (sign, bosses as
   silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. A tap (card or road) or an arrow key picks,
   a second tap, the button or Enter takes it: it walks up that road into the dark. No way out without choosing. It resolves
   `{ id, close }`, closed once the journey film or the map covers it. Never on Mewtwo's or a Safari run. Playtest
-  `?crossroads` (`&starter=`, `&stage=`, `&slot=2` for the second fork with `&from=ruins`, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
+  `?crossroads` (`&starter=`, `&stage=`, `&slot=2` for the second fork with `&from=ruins`, `&road=savanna` the pool biome it offers, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
   biome object (or a slot number for the default road). Every per-biome array (events' numbers, Kenmatta's HP,
   `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
-  biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: all five main biomes entered, the user's call; earnable since part c). The Ruins' and Thornwood's
+  biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: every main biome entered, the user's call; six since item 20). The pool's
   Pokédex pages are `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
-  the Ruins No.072-089, Thornwood No.090-107; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). Both
-  roads' Pokémon are **Safari Pokémon, shared** (2026-10-07, the user's call: official Gen 5 sprites only, the Gen 6-9 Showdown
+  the Ruins No.072-089, Thornwood No.090-107, the Savanna No.108-125; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). The
+  pool's Pokémon are **Safari Pokémon, shared** (2026-10-07, the user's call: official Gen 5 sprites only, the Gen 6-9 Showdown
   ones they had were swapped out), like the Safari's 44 borrowed wilds: the biome's `ENEMY_DEFS` entry wins over
   `safariMonDef()` everywhere, Safari included, and keeps the Safari Pokédex's line as `safariLine` (`js/safaridex.js` reads it);
   their area, rare spawn and `sig-<id>` card stay in `SAFARI_MONS`. **Its look**
@@ -608,7 +619,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
 - **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
   pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (121 since 2026-10-07, the user's list):
   Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
-  Fire / Water / Grass, Wanderer: a win down every pair of roads, Explorer), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
+  Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna has no badges of its own yet), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
   Veteran: 5 starters on Level 5), Challenges (one win's Record Book entry, Mewtwo's skipped: full HP, 12 cards, no move
   forgotten, under ₽100 spent, under 60 turns, 5 Alphas, no item; plus no rest, a 100 hit (losses too), 30 Tide), Collector
   (shinies, every starter, every ball held at once, every perk maxed, 10,000 coins earned), Pokédex (each page researched,

@@ -67,8 +67,8 @@ export const DEPTHS_PAGE = { ...pageFor(BIOMES.find(b => b.secret)), prize: { ic
 /** The other roads' pages (roadmap item 19, the user's call): bonus pages, never in DEX_PAGES, so finishing the Pokédex,
     Reshiram and the Safari Zone don't wait on a road a run may never take. Each pays its `bonus` PokéCoins once, and is
     "???" in the Pokédex until one of its Pokémon has been met. */
-export const BONUS_COINS = { ruins: 500, thornwood: 500 };
-const BONUS_ICON = { ruins: '🏛️', thornwood: '🌴' };
+export const BONUS_COINS = { ruins: 500, thornwood: 500, savanna: 500 };
+const BONUS_ICON = { ruins: '🏛️', thornwood: '🌴', savanna: '🌾' };
 export const BONUS_PAGES = ALT_BIOMES.map(b => ({ ...pageFor(b), bonus: { icon: BONUS_ICON[b.id], coins: BONUS_COINS[b.id] } }));
 /** Every page the Pokédex window shows: the three, the Depths, then the bonus pages (indices stay put as pages are added). */
 export const ALL_PAGES = [...DEX_PAGES, DEPTHS_PAGE, ...BONUS_PAGES];

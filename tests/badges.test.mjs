@@ -37,7 +37,7 @@ test('an old save without a badges list earns what it can prove', () => {
   delete save.badges;
   Object.assign(save.stats, { runsWon: 4, bossesDefeated: { 1: true, 2: true, 3: true }, winsBy: { charmander: 2, chikorita: 1 },
     maxLevelWinByType: { fire: 3, grass: 0, water: -1 }, bestStreak: 3 });
-  Object.assign(save, { kenWins: 1, dex: { ...save.dex, complete: true }, safariDex: { ...save.safariDex, done: ['meadow'] } });
+  Object.assign(save, { kenWins: 1, dex: { ...save.dex, defeated: ['exploud', 'slaking'], complete: true }, safariDex: { ...save.safariDex, done: ['meadow'] } });
   assert.deepEqual(ids(save), ['bronze', 'champion', 'clearing', 'dojo', 'ember', 'fire', 'grass', 'pokedex', 'rookie', 'safari', 'shrine', 'silver', 'streak']);
 });
 
@@ -93,12 +93,21 @@ test('a granted badge is never new again, and no badge is still waiting on conte
   assert.match(badgeLine(BADGES_BY_ID.champion), /Badge earned: Champion Badge!/);
 });
 
-test('the Explorer Badge needs all five main biomes entered, both roads at each crossroads', () => {
+test('the Explorer Badge needs every main biome entered, the pool\'s three too', () => {
   const save = fresh();
-  save.stats.biomesSeen = ['clearing', 'shrine', 'ruins', 'wastes', 'depths'];
+  save.stats.biomesSeen = ['clearing', 'shrine', 'ruins', 'wastes', 'thornwood', 'depths'];
   assert.ok(!ids(save).includes('explorer'));
-  save.stats.biomesSeen.push('thornwood');
+  save.stats.biomesSeen.push('savanna');
   assert.ok(ids(save).includes('explorer'));
+});
+
+test('the Shrine and Ember Badges are their own bosses, not their slot\'s (a pool biome can stand there)', () => {
+  const save = fresh();
+  save.stats.bossesDefeated = { 2: true, 3: true };
+  save.dex.defeated = ['castform', 'granbull'];
+  assert.ok(!ids(save).includes('shrine') && !ids(save).includes('ember'));
+  save.dex.defeated.push('ursaring', 'porygonz');
+  assert.ok(ids(save).includes('shrine') && ids(save).includes('ember'));
 });
 
 test('every group holds badges, in the Badge Case\'s order', () => {
@@ -128,14 +137,16 @@ test('a 100-damage hit counts from a lost run too', () => {
   assert.deepEqual(ids(save), ['heavy-hitter']);
 });
 
-test('the Ruins\' and Thornwood\'s bosses from the Pokédex; the Wanderer walks every pair of roads', () => {
+test('the Ruins\' and Thornwood\'s bosses from the Pokédex; the Wanderer wins down every road, at either fork', () => {
   const save = fresh();
   save.dex.defeated = ['granbull', 'porygon'];
   assert.deepEqual(ids(save), ['thorn', 'tide']);
   const roads = fresh();
-  roads.hallOfFame = [win({}), win({ route: [null, 'ruins', 'wastes'] }), win({ route: [null, 'shrine', 'thornwood'] })];
+  roads.hallOfFame = [win({}), win({ route: [null, 'ruins', 'thornwood'] })];
   assert.ok(!ids(roads).includes('wanderer'));
-  roads.hallOfFame.push(win({ route: [null, 'ruins', 'thornwood'] }));
+  roads.hallOfFame.push(win({ route: [null, 'thornwood', 'savanna'], starter: 'mewtwo' }));   // Mewtwo's never count
+  assert.ok(!ids(roads).includes('wanderer'));
+  roads.hallOfFame.push(win({ route: [null, 'shrine', 'savanna'] }));
   assert.ok(ids(roads).includes('wanderer'));
 });
 

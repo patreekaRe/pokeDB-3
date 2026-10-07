@@ -391,6 +391,7 @@ const PALETTES = {
   wastes:   { ground: 'dust',  blobs: [['mountain', 7, 14, 36], ['lava', 5, 12, 30]] },
   thornwood: { ground: 'litter', blobs: [['canopy', 12, 14, 44], ['bramble', 5, 6, 18], ['water', 2, 10, 24], ['trees', 3, 6, 16]],
               props: [['giant', 2], ['bloom', 5]] },   // a primeval forest: leaf litter under a dense canopy, brambles, a stream
+  savanna:  { ground: 'dust',  blobs: [['trees', 3, 4, 10], ['lava', 3, 5, 12], ['water', 1, 10, 22], ['mountain', 2, 8, 16]] },   // a dry grassland with a few wildfires and one watering hole (part b paints its own)
   depths:   { ground: 'cave',  blobs: [['rift', 4, 10, 26], ['crystal', 6, 8, 26], ['geode', 4, 6, 18], ['pool', 2, 8, 18], ['boulder', 3, 5, 14]] },   // Mewtwo's Crystal Depths: energy rifts, amethyst and ice crystal
   // the Safari Zone's areas (js/data/safari.js)
   meadow:   { ground: 'grass', blobs: [['trees', 3, 6, 14], ['water', 2, 10, 24], ['mountain', 2, 8, 16]] },

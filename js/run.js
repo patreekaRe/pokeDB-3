@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, BIOMES_BY_ID, CROSSROADS, ROADS_LEVEL, biomeAt, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_LEVEL, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
@@ -223,6 +223,7 @@ function checkpoint() {
     maxHp: run.maxHp,
     biome: run.biome,
     route: run.route,
+    roads: run.roads,
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -271,7 +272,8 @@ function restoreRun(saved) {
   if (!starter || !BIOMES[saved.biome] || !starter.line[saved.stage] || !(saved.hp > 0) || !(saved.money >= 0)
       || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.items, ITEMS_BY_ID) || !(saved.itemChance >= 0)
       || !saved.unlocks.every(starterById) || (saved.safari && !saved.safari.areas.every(id => SAFARI_AREAS_BY_ID[id]))
-      || (saved.route && !saved.route.every((id, i) => id === null || BIOMES_BY_ID[id]?.slot === i))) {
+      || (saved.route && !saved.route.every((id, i) => id === null || canWalk(id, i)))
+      || (saved.roads && !(FORKS.every(i => POOL.includes(saved.roads[i])) && saved.roads[1] !== saved.roads[2]))) {
     throw new Error('bad run save');
   }
 
@@ -332,6 +334,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     hp: startHp,
     biome: 0,
     route: [BIOMES[0].id],   // the biome taken at each slot (the crossroads, js/crossroads.js), saved with the run
+    roads: null,           // the pool biome each fork offers beside its default, rolled below (rollRoads())
     deck: [...starter.deck],
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
@@ -355,6 +358,8 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     over: false,
   };
   reseed('start');
+  // rolled now and saved, so a refresh can't reroll the forks; a Safari run or a climb never forks (and its seed must stay put)
+  if (!safari && !tower) run.roads = rollRoads(getSave().stats.biomesSeen);
 
   if (perk('relicCharm')) {                          // shop passive: Starting Relic Charm
     run.charm = randomStartingRelic()?.id ?? null;   // handed over on the map by relicCharm()
@@ -441,12 +446,13 @@ export function peekDescent(starter) {
 }
 
 /** Playtest shortcut: ?biome=ruins (any biome but the Depths; &starter=id, &level=0-5) starts a throwaway run at that
-    biome's slot, on the road through it, evolved as far as its bosses would have taken you. Nothing about it is saved. */
-export function peekBiome(starter, id, level = 0) {
-  const biome = BIOMES_BY_ID[id];
-  if (!biome || biome.secret || !starter) return false;
+    biome's slot (a pool biome's home, or &slot=1 / 2), on the road through it, evolved as far as its bosses would have
+    taken you. Nothing about it is saved. */
+export function peekBiome(starter, id, level = 0, slot = null) {
+  const home = BIOMES_BY_ID[id];
+  if (!home || home.secret || !starter) return false;
   peeking = true;
-  peekAt = biome;
+  peekAt = canWalk(id, slot) ? biomeAt({ [slot]: id }, slot) : home;
   beginRun(starter, Math.max(0, Math.min(MAX_LEVEL, level || 0)), ':biome');
   return true;
 }
@@ -456,6 +462,10 @@ function peekRoom(id) {
   if (id === ':biome') {
     run.biome = peekAt.slot;
     run.route = [...BIOMES.slice(0, peekAt.slot).map(b => b.id), peekAt.id];
+    if (peekAt.home) {   // the other fork offers another pool biome
+      const other = FORKS.find(i => i !== peekAt.slot);
+      run.roads = { [peekAt.slot]: peekAt.id, [other]: run.roads[other] !== peekAt.id ? run.roads[other] : run.roads[peekAt.slot] };
+    }
     run.stage = Math.min(run.biome, run.starter.line.length - 1);
     run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
     return startBiome();
@@ -1130,7 +1140,7 @@ function afterFight(node, result) {
 /** On to the next biome: the journey film there first (js/travel.js; not on Mewtwo's speedrun or in the Safari), ending
     dark while the next biome's map and intro film come up beneath it. */
 async function walkOn() {
-  const from = mainBiome().id, roads = CROSSROADS[run.biome + 1];
+  const from = mainBiome().id, roads = FORKS.includes(run.biome + 1) && forkRoads(run.biome + 1, run.roads);
   // the crossroads (js/crossroads.js), where the next slot has two roads, once roadsOpen(); Mewtwo keeps its one road.
   // A peeked run always gets it, so it can be playtested.
   const fork = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats))
