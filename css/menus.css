@@ -565,7 +565,10 @@
   .title-screen.menu .title-big small { font-size: 0.85rem; }
 }
 
-/* ---------- the character select ---------- */
+/* ---------- the character select (js/select.js): the Pokédex device, like the Sky Pillar's lobby (the user's call,
+   2026-10-07). The lid, bezel, keys and A / B are the tower's (.tdev-*); the window onto the type's scene is see-through,
+   its own huge shadow painting the shell round it, so every part after it is positioned to paint over that shadow. On
+   phones the device fills the screen under the top bar; wider, it's a 500px device with the scene round it too. ---------- */
 body[data-screen="start-screen"] .fan-note { display: none; }
 .select-screen {
   position: fixed;
@@ -573,52 +576,80 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   z-index: 1;
   max-width: none;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: calc(var(--topbar-h) + 4px) 12px max(12px, env(safe-area-inset-bottom));
+  justify-content: center;
+  padding: var(--topbar-h) 0 0;
   overflow: hidden;
   animation: screenIn 0.4s ease-out;
 }
 @keyframes screenIn { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { transform: translate3d(0, 0, 0); } }
-.sel-stage { position: relative; flex: 1 1 0; width: 100%; min-height: 110px; }
+.seldev {
+  position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 9px; width: 100%; min-height: 0; overflow: hidden;
+  padding: 6px 12px max(12px, env(safe-area-inset-bottom)); color: #fff;
+}
+.seldev > :not(.sel-stage) { position: relative; z-index: 1; }
+@media (min-width: 560px) {
+  .select-screen { align-items: flex-start; }
+  .seldev { width: 500px; height: min(900px, calc(100% - 20px)); margin-top: 6px; border-radius: 26px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5); }
+  .seldev::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: 26px; box-shadow: inset 0 0 0 3px var(--shell-rim); }
+}
+.seldev .tdev-lid { min-height: 44px; }
+.seldev .tdev-lid .pdx-lens { width: 36px; height: 36px; }
+.select-screen:not([hidden]) .pdx-light { animation: pdxBlink 0.16s steps(1) 5 both; }
+.select-screen:not([hidden]) .pdx-light.yellow { animation-delay: 0.08s; }
+.select-screen:not([hidden]) .pdx-light.green { animation-delay: 0.16s; }
+.seldev .cdev-lcd { min-width: 0; max-width: 64%; }
+/* the window onto the scene: the shell is its shadow */
+.sel-stage {
+  position: relative; flex: 1 1 0; width: 100%; min-height: 120px; border: 3px solid #2a2a30; border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25), 0 0 0 3px var(--shell-rim), 0 0 0 100vmax var(--shell);
+}
 .sel-stage img {
   position: absolute;
+  z-index: 1;
   left: 50%;
-  bottom: 0;
+  bottom: 6px;
   max-width: none;
   image-rendering: pixelated;
   filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.3));
   animation: selIn 0.35s cubic-bezier(0.2, 1.5, 0.4, 1);
 }
 .sel-stage img.locked { filter: brightness(0) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6)); opacity: 0.85; }
-.sel-stage::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: min(220px, 50%); height: 18px; translate: -50% 0; border-radius: 50%; background: rgba(0, 0, 0, 0.3); z-index: -1; }
+.sel-stage::after { content: ""; position: absolute; left: 50%; bottom: 0; width: min(200px, 50%); height: 16px; translate: -50% 0; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
 @keyframes selIn { from { opacity: 0; scale: 0.9; } }
+/* the info on the green LCD (the tower's .tower-base look); it scrolls inside when the window is squeezed */
+.sel-glass { flex: 0 1 auto; }
 .sel-info {
-  flex: none;
-  width: min(440px, 100%);
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(14, 12, 30, 0.66);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
-  color: #fff8e8;
+  flex: 1; min-width: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  padding: 10px 12px 12px; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 22px; background: #b6d68e; color: #1f3a14;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); text-shadow: none;
 }
-.sel-name { margin: 0 0 10px; font: 1.5rem/1.1 var(--pixel-font); font-synthesis-weight: none; color: #f8d048; text-shadow: 3px 3px 0 #5a3010; }
-.sel-stats { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; font: 0.8rem var(--pixel-font); }
-.sel-type { padding: 2px 9px 2px 6px; color: #fff; background: #777; font-size: 0.7rem; }
+.sel-info::-webkit-scrollbar { display: none; }
+.sel-name { margin: 0 0 8px; font: 1.05rem/1.1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 1px; text-transform: uppercase; color: #1f3a14; }
+.sel-stats { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 2px dashed rgba(31, 58, 20, 0.35); font: 0.62rem var(--pixel-font); }
+.sel-stats .smooth-icon, .sel-ability .smooth-icon { width: 14px; height: 14px; }
+.sel-type { padding: 2px 8px 2px 5px; border: 2px solid #1f3a14; color: #fff; background: #777; font-size: 0.58rem; text-shadow: none; }
 .sel-type.type-fire { background: #c9431f; }
 .sel-type.type-grass { background: #2f8f43; }
 .sel-type.type-water { background: #2569c7; }
 .sel-type.type-psychic { background: #8a6ad8; }
-.sel-blurb { margin: 0 0 8px; font-size: 0.72rem; line-height: 1.6; }
-.sel-ability { margin: 0 0 10px; font-size: 0.66rem; line-height: 1.6; opacity: 0.9; }
-.sel-ability b { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; color: #f8d048; font-weight: 400; }
+.sel-blurb { margin: 0 0 8px; font-size: 0.56rem; line-height: 1.7; }
+.sel-ability { margin: 0 0 8px; font-size: 0.52rem; line-height: 1.7; }
+.sel-ability b { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; font-weight: 400; text-transform: uppercase; }
 .sel-ability b img { width: 22px; height: 22px; image-rendering: pixelated; }
-.sel-info .pxb { margin: 2px 8px 0 0; }
-.sel-actions { flex: none; display: flex; justify-content: space-between; width: min(440px, 100%); }
-.sel-strip { flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; }
-.sel-tabs { display: flex; gap: 10px; }
-.sel-thumbs { display: flex; gap: 6px; max-width: 100%; padding: 6px; overflow-x: auto; border-radius: 10px; background: rgba(14, 12, 30, 0.55); scrollbar-width: none; }
+.sel-extras { display: flex; flex-wrap: wrap; gap: 6px; }
+.sel-extras:not(:has(> :not([hidden]))) { display: none; }
+.sel-lcdbtn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px 4px; border: 2px solid #1f3a14; border-radius: 6px; background: none; color: #1f3a14;
+  font: 0.52rem var(--pixel-font); text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sel-lcdbtn .smooth-icon { width: 14px; height: 14px; }
+.sel-lcdbtn.on, .sel-lcdbtn:active { background: #1f3a14; color: #b6d68e; }
+.sel-wins { color: inherit; }
+.sel-wins.none { opacity: 0.55; }
+.sel-name-star { display: inline-block; margin-left: 0.4em; font-size: 0.8em; vertical-align: 0.1em; }
+.sel-name-star .smooth-icon { width: 1em; height: 1em; }
+/* the portraits (or the starting deck) on a dark screen */
+.sel-tray { flex: none; display: flex; justify-content: center; padding: 6px; border: 3px solid #2a2a30; border-radius: 10px; background: #1c2440;
+  box-shadow: 0 0 0 3px var(--shell-rim), inset 0 2px 8px rgba(0, 0, 0, 0.5); }
+.sel-thumbs { display: flex; gap: 6px; max-width: 100%; padding: 4px 2px 2px; overflow-x: auto; scrollbar-width: none; }
 .sel-thumbs::-webkit-scrollbar { display: none; }
 .sel-thumb {
   position: relative;
@@ -627,88 +658,77 @@ body[data-screen="start-screen"] .fan-note { display: none; }
   height: 52px;
   padding: 0;
   overflow: hidden;
-  border: 3px solid #504860;
+  border: 3px solid #3a4468;
   border-radius: 8px;
-  background: #2a2640;
+  background: #283258;
   cursor: pointer;
   transition: translate 0.1s, border-color 0.1s;
 }
 .sel-thumb img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 .sel-thumb.locked img { filter: brightness(0) opacity(0.65); }
-.sel-thumb[aria-checked="true"] { border-color: #f8d048; translate: 0 -4px; box-shadow: 0 0 10px rgba(248, 208, 72, 0.8); }
-@media (hover: hover) { .sel-thumb:hover { border-color: #a8a0c0; } }
+.sel-thumb[aria-checked="true"] { border-color: #b6d68e; background: #3a5a3a; box-shadow: 0 0 10px rgba(182, 214, 142, 0.7); }
+@media (hover: hover) { .sel-thumb:hover { border-color: #8a94b8; } }
+.sel-thumb .smooth-icon { width: 12px; height: 12px; }
 .sel-lock { position: absolute; right: 1px; bottom: 1px; font-size: 13px; }
 .sel-sparkle { position: absolute; right: 1px; top: 1px; font-size: 12px; opacity: 0.55; }
 .sel-sparkle.on { opacity: 1; }
-.sel-star { position: absolute; left: 1px; top: 1px; font-size: 13px; filter: drop-shadow(0 0 3px rgba(248, 208, 72, 0.9)); }
+.sel-star { position: absolute; left: 1px; top: 1px; font-size: 13px; }
 .sel-thumb-wins {
   position: absolute; left: 1px; bottom: 1px; display: flex; align-items: center; gap: 1px;
   padding: 1px 3px 1px 1px; border-radius: 4px; background: rgba(14, 12, 30, 0.8);
   font: 10px/1 var(--pixel-font); color: #f8d048;
 }
 .sel-thumb-wins svg, .sel-thumb-wins img { width: 12px; height: 12px; }
-.sel-wins { color: #f8d048; }
-.sel-wins.none { color: inherit; opacity: 0.6; }
-.sel-name-star { display: inline-block; margin-left: 0.4em; font-size: 0.8em; vertical-align: 0.1em; filter: drop-shadow(0 0 4px rgba(248, 208, 72, 0.9)); }
+/* the hardware: the A key greys out on a locked Pokémon, the tab keys while preparing */
+.seldev .tdev-key .cdev-btn:disabled { filter: grayscale(1) brightness(0.8); animation: none; cursor: default; }
+.seldev .sel-tabs .mdex-btn:disabled { opacity: 0.45; cursor: default; translate: none; }
+.seldev .sel-tabs .mdex-count { top: -6px; right: -2px; }
 /* short phones: the words get tighter so the Pokémon keeps room */
 @media (max-height: 700px) {
-  .select-screen { gap: 8px; }
-  .sel-info { padding: 10px 12px; }
-  .sel-name { font-size: 1.2rem; margin-bottom: 6px; }
-  .sel-blurb { margin-bottom: 4px; }
-  .sel-ability { margin-bottom: 6px; }
-  .sel-thumb { width: 46px; height: 46px; }
+  .seldev { gap: 7px; }
+  .seldev .tdev-lid { min-height: 36px; }
+  .sel-info { padding: 8px 10px 10px; }
+  .sel-name { font-size: 0.9rem; margin-bottom: 6px; }
+  .sel-thumb { width: 44px; height: 44px; }
 }
-/* wide screens: StS's layout, the Pokémon on the right, its panel on the left, the strip along the bottom */
-@media (min-width: 900px) and (min-height: 560px) {
-  .select-screen { display: block; padding: 0; }
-  .sel-stage { position: absolute; left: 40%; right: 4%; top: calc(var(--topbar-h) + 4vh); bottom: 27vh; width: auto; }
-  .sel-info { position: absolute; left: max(28px, 5vw); top: calc(var(--topbar-h) + 8vh); width: min(420px, 34vw); padding: 20px 22px; }
-  .sel-name { font-size: 2rem; margin-bottom: 14px; }
-  .sel-blurb { font-size: 0.8rem; }
-  .sel-ability { font-size: 0.72rem; }
-  .sel-actions { position: absolute; left: max(28px, 5vw); right: max(28px, 5vw); bottom: calc(18vh + 20px); width: auto; }
-  .sel-strip { position: absolute; left: 50%; bottom: 18px; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); }
-}
+@media (prefers-reduced-motion: reduce) { .select-screen .pdx-light { animation: none; } }
 
 /* ---------- Prepare: after Choose, the same screen holds the run's setup (prepare() in js/select.js) ---------- */
-.select-screen.preparing :is(.sel-stats, .sel-blurb, .sel-ability, #sel-shiny, #sel-corner, .sel-strip) { display: none; }
-/* transform, not translate: the wide layout centres .sel-deck with translate, which the slide would fight */
+.select-screen.preparing :is(.sel-stats, .sel-blurb, .sel-ability, .sel-extras, .sel-thumbs) { display: none; }
 .sel-prep, .sel-deck { animation: prepIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; will-change: transform, opacity; }
 .sel-deck { animation-delay: 0.06s; }
 .sel-prep[hidden], .sel-deck[hidden] { display: none; }
 @keyframes prepIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sel-prep, .sel-deck { animation: none; } }
-.prep-evo { display: flex; align-items: flex-end; justify-content: center; gap: 4px; margin: 0 0 10px; cursor: help; }
-.prep-form { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; font-size: 0.5rem; color: #d8d0b8; text-align: center; }
-.prep-form b { font-size: 0.58rem; color: #fff8e8; font-weight: 400; }
-.prep-form img { width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated; }
-.prep-form:first-child img { width: 64px; height: 64px; }
-.prep-form:first-child b { color: #f8d048; }
-.prep-arrow { margin: 0 2px 34px; font-size: 0.6rem; color: #f8d048; }
-.prep-level { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 2px dashed rgba(255, 255, 255, 0.18); }
-.prep-level h4 { margin: 0; font-size: 0.66rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: #f8d048; }
+.prep-evo { display: flex; align-items: flex-end; justify-content: center; gap: 4px; margin: 0 0 8px; cursor: help; }
+.prep-form { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; font-size: 0.46rem; text-align: center; }
+.prep-form b { font-size: 0.52rem; font-weight: 400; }
+.prep-form img { width: 52px; height: 52px; object-fit: contain; image-rendering: pixelated; }
+.prep-form:first-child img { width: 60px; height: 60px; }
+.prep-arrow { margin: 0 2px 30px; font-size: 0.6rem; }
+.prep-level { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 2px dashed rgba(31, 58, 20, 0.35); }
+.prep-level h4 { margin: 0; font-size: 0.58rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
 .prep-pick { display: flex; align-items: center; gap: 6px; }
-.prep-pick b { min-width: 2ch; font-size: 1.2rem; font-weight: 400; text-align: center; color: #fff; }
-.prep-step { width: 34px; height: 34px; padding: 0; border: 0; background: none; color: #f8d048; font: 1rem var(--pixel-font); cursor: pointer; }
-.prep-step:disabled { color: rgba(255, 255, 255, 0.2); cursor: default; }
-@media (hover: hover) { .prep-step:not(:disabled):hover { color: #fff; } }
-.prep-lname { margin: 6px 0 4px; font-size: 0.72rem; color: #fff; }
-.prep-rule { margin: 0 0 8px; font-size: 0.6rem; line-height: 1.6; color: #e8e0cc; }
-.prep-foot { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 6px 10px; font-size: 0.55rem; }
-.prep-coins { padding: 3px 7px; border-radius: 6px; background: rgba(248, 208, 72, 0.16); color: #f8d048; }
+.prep-pick b { min-width: 2ch; padding: 2px 6px; border-radius: 4px; background: #1f3a14; color: #b6d68e; font-size: 1.05rem; font-weight: 400; text-align: center; }
+.prep-step { width: 32px; height: 32px; padding: 0; border: 0; background: none; color: #1f3a14; font: 0.9rem var(--pixel-font); cursor: pointer; }
+.prep-step:disabled { color: rgba(31, 58, 20, 0.25); cursor: default; }
+.prep-lname { margin: 6px 0 4px; font-size: 0.62rem; text-transform: uppercase; }
+.prep-rule { margin: 0 0 8px; font-size: 0.52rem; line-height: 1.7; }
+.prep-foot { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 6px 10px; font-size: 0.5rem; }
+.prep-coins { padding: 3px 7px; border-radius: 4px; background: #1f3a14; color: #b6d68e; }
+.prep-coins .smooth-icon { width: 12px; height: 12px; }
 .prep-coins[hidden] { display: none; }
-.prep-all { margin-left: auto; color: #b8b0a0; }
-.prep-all summary { cursor: pointer; list-style: none; text-align: right; }
+.prep-all { margin-left: auto; }
+.prep-all summary { cursor: pointer; list-style: none; text-align: right; text-transform: uppercase; }
 .prep-all summary::-webkit-details-marker { display: none; }
 .prep-all summary::after { content: ' ▸'; }
 .prep-all[open] summary::after { content: ' ▾'; }
-.prep-all ul { margin: 6px 0 0; padding: 0; list-style: none; line-height: 1.6; color: #e8e0cc; text-align: left; }
-.prep-all .level-locked { color: #a8a0b8; }
+.prep-all ul { margin: 6px 0 0; padding: 0; list-style: none; line-height: 1.7; text-align: left; }
+.prep-all .level-locked { opacity: 0.6; }
 /* the starting deck, fanned like a hand, copies stacked (×3); every card can be tapped to read */
-.sel-deck { flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 100%; }
-.prep-deckhead { margin: 0; font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; color: #f8d048; text-shadow: 2px 2px 0 #1c1440; }
-.prep-fan { --cw: min(96px, calc((100vw - 32px) / var(--n) * 1.04)); display: flex; justify-content: center; padding: 4px 0 18px; }
+.sel-deck { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 100%; }
+.prep-deckhead { margin: 0; font-size: 0.5rem; letter-spacing: 0.06em; text-transform: uppercase; color: #b6d68e; }
+.prep-fan { --cw: min(84px, calc((min(100vw, 500px) - 60px) / var(--n) * 1.04)); display: flex; justify-content: center; padding: 4px 0 14px; }
 .prep-fan .in-deck { top: auto; bottom: -10px; right: 50%; translate: 50% 0; z-index: 3; }   /* under the card: a badge in the corner hid under its neighbour */
 .prep-fan .card {
   flex: none; width: var(--cw); margin: 0 calc(var(--cw) * -0.06);
@@ -717,20 +737,10 @@ body[data-screen="start-screen"] .fan-note { display: none; }
 }
 @media (hover: hover) { .prep-fan .card:hover { translate: 0 -8px; rotate: 0deg; z-index: 2; } }
 @media (max-height: 700px) {
-  .prep-form img { width: 44px; height: 44px; }
-  .prep-form:first-child img { width: 50px; height: 50px; }
-  .prep-arrow { margin-bottom: 28px; }
-  .prep-fan { --cw: min(84px, calc((100vw - 32px) / var(--n) * 1.04)); padding-bottom: 14px; }
-}
-@media (min-width: 900px) and (min-height: 560px) {
-  .prep-fan { --cw: 118px; }
-  .select-screen.preparing .sel-deck { position: absolute; left: 50%; bottom: 14px; translate: -50% 0; }
-  .select-screen.preparing .sel-actions { bottom: calc(118px * 1.4 + 56px); }
-  .select-screen.preparing .sel-stage { bottom: calc(118px * 1.4 + 70px); }
-  .prep-form img { width: 72px; height: 72px; }
-  .prep-form:first-child img { width: 84px; height: 84px; }
-  .prep-form { font-size: 0.56rem; }
-  .prep-form b { font-size: 0.66rem; }
+  .prep-form img { width: 40px; height: 40px; }
+  .prep-form:first-child img { width: 46px; height: 46px; }
+  .prep-arrow { margin-bottom: 26px; }
+  .prep-fan { --cw: min(72px, calc((min(100vw, 500px) - 60px) / var(--n) * 1.04)); padding-bottom: 10px; }
 }
 
 /* ---------- the Collection: a red handheld device (js/device.js), its home screen a grid of apps (js/collection.js) ---------- */

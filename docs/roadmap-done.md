@@ -1702,3 +1702,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   35 / 60 / 36 -> 26 / 23 / 27; reach 50 28 / 58 / 35 -> 18 / 40 / 32%; reach 100 0 / 8 / 7 -> 0 / 2 / 7%.
 - **Sky Pillar's bottom bar slimmed** (2026-10-07, the user's call: a minimal menu bar, shorter): one LCD strip (Pokédex,
   floor, HP) over four icons (Deck, Relics, Items, Main menu); coins, the sprite, name, chips, Map key and Trainer gone from it.
+- **Safari lobby and character select become Pokédex devices** (2026-10-07, the user's call: the Sky Pillar lobby's
+  treatment). The Safari wears `.tower-lobby` (gate in the window, LCD, Pokédex / Ranks / Buy keys, A / B); the old
+  `?safariclassic` window is gone. The select is `.seldev`: a see-through window onto the scene, an LCD, the portraits or
+  deck on a dark screen, Starters / Legends keys and A / B.

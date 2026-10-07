@@ -3970,162 +3970,59 @@ body.scene-peek > :not(#scene-bg):not(#scene-light):not(.peek-label):not(.biome-
 .peek-label { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 5; padding: 4px 10px; border: 2px solid #183a14; background: #3e8a3a; color: #fff8d8; font-family: var(--pixel-font); font-size: 0.75rem; white-space: nowrap; }
 body.scene-peek #backdrop { display: none; }
 
-/* ---------- the Safari Zone's prep window (js/safariprep.js): the character select's dark panel, gold pixel heads,
-   pixel pill buttons, and the balls along the bottom like an item bar ---------- */
-.dialog.safari-prep-dialog {
-  --ink: #fff8e8; --muted: #c8c0a8; --gold: #f8d048;
-  width: min(540px, 94vw); padding: 18px 20px 0;
-  border: 3px solid #4a4068; border-radius: 14px;
-  background: rgba(14, 12, 30, 0.94); color: #fff8e8;
-  box-shadow: 0 0 0 2px #0a0818, inset 0 0 0 2px rgba(255, 255, 255, 0.06), 0 20px 60px rgba(0, 0, 0, 0.6);
-}
-.dialog.safari-prep-dialog h2.sp-title {
-  margin: 0 0 12px; padding: 0; border: 0; outline: none; text-align: center;
-  font: 1.6rem/1.1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.06em; text-transform: uppercase;
-  color: #f8d048; text-shadow: 3px 3px 0 #5a3010;
-}
-.sp-today { display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); }
-.sp-mon { width: 96px; height: 96px; flex: none; object-fit: contain; image-rendering: pixelated; }
-.sp-info { display: grid; gap: 8px; min-width: 0; }
-.sp-kicker { font-size: 0.66rem; color: #c8c0a8; }
-.safari-prep-dialog .sp-name { font-size: 1.15rem; font-weight: 400; color: #f8d048; text-shadow: 2px 2px 0 #5a3010; }
-.sp-areas { display: flex; flex-wrap: wrap; gap: 6px; }
-.sp-area {
-  display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 8px; font-size: 0.86rem;
-  border: 2px solid var(--c2); border-radius: 6px; background: var(--c1); color: #102010;
-}
-.sp-area b { font-weight: 400; }
-.sp-area small { font-size: 0.74rem; opacity: 0.85; }
-.sp-area.area-meadow  { --c1: #d4ecb0; --c2: #4a8a24; }
-.sp-area.area-forest  { --c1: #b8dcb4; --c2: #1e5a24; }
-.sp-area.area-wetland { --c1: #c4e0f8; --c2: #2050a0; }
-.sp-area.area-marsh   { --c1: #d4dcc8; --c2: #3e5232; }
-.sp-area.area-peak    { --c1: #dde4ee; --c2: #4a5878; }
-.sp-area.area-desert  { --c1: #f4e2b0; --c2: #9a6a20; }
-.sp-try { font-size: 0.7rem; color: #c8c0a8; }
-.sp-try.first { color: #f8d048; }
-.sp-try.replay { color: #a8d8f8; }
-.sp-try .inf-px { --ip: 2px; margin-left: 2px; filter: none; color: inherit; }
-/* replays: unlimited, perks back, off the board; said right under the day's status, not in the rules */
-/* the two rows share one grid, so their Leaderboard and Perks pills line up in columns */
-.sp-replay { display: grid; grid-template-columns: repeat(4, auto); justify-content: center; align-items: center; gap: 8px 6px; margin: 10px 0 0; }
+/* ---------- the Safari Zone's lobby (js/safariprep.js): the Pokédex device, like the Sky Pillar's (the user's call,
+   2026-10-07); it wears `.tower-lobby`, so the shell, lid, window, bezel, LCD, keys and the top-five list are the
+   tower's, and only what's the Safari's own is here: the gate in the window (js/safari-lobby.js, `--ground` its grass
+   line), the day's areas, the try pills, the balls and the rules, all in the LCD's ink. ---------- */
+.safari-prep-dialog .sp-window { background: #4888e0; }
+.sp-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 80%); width: 84px; height: 84px; object-fit: contain; object-position: 50% 100%;
+  translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
+.tdev-keys.sp-keys { grid-template-columns: repeat(3, 1fr); max-width: 270px; }
+.sp-today { display: grid; gap: 8px; }
+.sp-areas { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.sp-area { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 8px; margin: 0; padding: 3px 6px 3px 3px; border: 2px solid rgba(31, 58, 20, 0.45);
+  border-radius: 6px; font-size: 0.6rem; }
+.sp-area b { font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px; }
+.sp-area small { font-size: 0.55rem; }
+.sp-area-no { display: grid; place-items: center; height: 20px; border-radius: 4px; background: #1f3a14; color: #b6d68e; font-size: 0.55rem; }
+.sp-area.done { background: #1f3a14; color: #b6d68e; }
+.sp-area.done .sp-area-no { background: #b6d68e; color: #1f3a14; }
+.sp-try { margin: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.sp-try .smooth-icon { width: 15px; height: 15px; }
+/* the two tries side by side: what each one gets, the off ones struck through */
+.sp-replay { display: grid; grid-template-columns: repeat(4, auto); justify-content: center; align-items: center; gap: 6px 5px; margin: 0; padding: 8px 0;
+  border-block: 2px dashed rgba(31, 58, 20, 0.35); }
 .sp-pill-row { display: contents; }
-.sp-pill { text-align: center; padding: 5px 10px 4px; border: 2px solid; border-radius: 999px; font: 0.68rem/1 var(--pixel-font); letter-spacing: 0.04em; text-transform: uppercase; }
-.sp-pill.daily { color: #2a1408; background: #f8d048; border-color: #fff0a0; }
-.sp-pill.board { color: #f8d048; background: rgba(248, 208, 72, 0.14); border-color: #f8d048; }
-.sp-pill.replay { color: #0c2034; background: #a8d8f8; border-color: #e0f4ff; }
-.sp-pill.perks { color: #98f0a0; background: rgba(152, 240, 160, 0.14); border-color: #98f0a0; }
-.sp-pill.off { color: #6a6878; background: rgba(255, 255, 255, 0.04); border-color: #4a4858; }
-.sp-eq { font: 0.9rem/1 var(--pixel-font); color: #c8c0a8; }
-.safari-prep-dialog .sp-rules li.with-card { grid-template-columns: 1.5em 1fr auto; }
-.sp-card { width: 62px; cursor: zoom-in; flex: none; }
-.sp-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
-.safari-prep-dialog .sp-head {
-  margin: 16px 0 8px; padding-top: 10px; border-top: 2px dashed rgba(255, 255, 255, 0.18);
-  font-size: 0.75rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: #f8d048;
-}
-.sp-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.safari-prep-dialog .sp-rules li { display: grid; grid-template-columns: 1.5em 1fr; align-items: center; gap: 10px; margin: 0; font-size: 0.82rem; line-height: 1.5; color: #fff8e8; }
-.sp-rule-icon { display: grid; place-items: center; font-size: 1.1rem; }
-.sp-links .pxb.small .pxb-i { font-size: 0.8rem; }
-/* the balls and Back / Start stay on the window's bottom edge, like an item bar, while the rules scroll on a phone */
-.sp-foot {
-  position: sticky; bottom: 0; margin: 14px -20px 0; padding: 0 20px 16px;
-  background: #0f0d20; box-shadow: 0 -10px 12px #0f0d20;
-}
-.sp-foot .sp-head { margin-top: 0; }
-.sp-bar { display: flex; gap: 6px; padding: 6px; border-radius: 10px; background: rgba(0, 0, 0, 0.4); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08); }
-/* the balls: big slots in a row you swipe sideways, like the character select's portraits (the user's ask, 2026-10-02);
-   the far edge fades while there's more to see (.more-l / .more-r, js/safariprep.js) */
-.sp-balls {
-  flex: 1; display: flex; gap: 6px; min-width: 0; overflow-x: auto; scroll-snap-type: x proximity; overscroll-behavior-x: contain;
-  scrollbar-width: none; touch-action: pan-x;
-}
+.sp-pill { padding: 4px 7px 3px; border: 2px solid #1f3a14; border-radius: 5px; font-size: 0.5rem; line-height: 1; text-align: center; text-transform: uppercase; letter-spacing: 0.3px; }
+.sp-pill:is(.daily, .replay) { background: #1f3a14; color: #b6d68e; }
+.sp-pill.off { border-color: rgba(31, 58, 20, 0.35); color: rgba(31, 58, 20, 0.45); text-decoration: line-through; }
+.sp-eq { font-size: 0.7rem; }
+.sp-foot { display: grid; gap: 6px; }
+.safari-prep-dialog .sp-head { margin: 0; font-size: 0.55rem; font-weight: 400; letter-spacing: 0.5px; text-transform: uppercase; color: #1f3a14; }
+.sp-balls { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .sp-balls::-webkit-scrollbar { display: none; }
 .sp-balls.more-r { mask-image: linear-gradient(90deg, #000 85%, transparent); }
 .sp-balls.more-l { mask-image: linear-gradient(90deg, transparent, #000 15%); }
 .sp-balls.more-l.more-r { mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); }
-.sp-ball { flex: none; width: 72px; scroll-snap-align: start; }
-.sp-ball, .sp-corner {
-  position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0;
-  border-radius: 6px; background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-}
-.sp-ball { cursor: help; }
+.sp-ball { position: relative; flex: none; display: grid; justify-items: center; width: 54px; padding: 3px 0 4px; border: 2px solid rgba(31, 58, 20, 0.45); border-radius: 6px;
+  scroll-snap-align: start; cursor: help; }
 .sp-ball.none { opacity: 0.4; }
 .sp-ball.none .sp-ball-icon img { filter: grayscale(1); }
-.sp-ball-icon img { width: 52px; height: 52px; image-rendering: pixelated; }
-.safari-prep-dialog .sp-ball-left {
-  position: absolute; right: 3px; bottom: 2px; font-size: 0.72rem; font-weight: 400; color: #fff;
-  text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000;
-}
-/* the Safari Ball never runs out: a big ∞ under its sprite, overlapping it a little */
-.safari-prep-dialog .sp-ball-left.inf { right: auto; left: 50%; bottom: -3px; translate: -50% 0; font-size: 1.35rem; line-height: 1; }
-/* the Game Corner: a purple slot at the bar's end */
-.sp-corner {
-  flex: none; width: 54px; align-content: center; gap: 2px; padding: 0; border: 0; cursor: pointer;
-  background: #b43ad8; box-shadow: inset 0 0 0 2px #d670f0, inset 0 -3px 0 2px #7a2098; font-size: 20px; color: #fff;
-}
-.sp-corner b { font: 0.55rem var(--pixel-font); font-weight: 400; text-transform: uppercase; }
-@media (hover: hover) { .sp-corner:hover { filter: brightness(1.12); } }
-.sp-corner:active { translate: 0 2px; }
-.sp-actions { display: flex; justify-content: space-between; margin-top: 12px; }
-@media (min-width: 700px) { .sp-ball { width: 80px; } .sp-ball-icon img { width: 60px; height: 60px; } .safari-prep-dialog .sp-ball-left { font-size: 0.8rem; } .sp-corner { width: 64px; font-size: 24px; } }
-@media (max-width: 480px) {
-  .dialog.safari-prep-dialog { padding: 14px 12px 0; }
-  .dialog.safari-prep-dialog h2.sp-title { font-size: 1.3rem; }
-  .sp-mon { width: 76px; height: 76px; }
-  .sp-today { gap: 10px; padding: 8px; }
-  .sp-bar { gap: 4px; padding: 4px; }
-  .sp-balls { gap: 4px; }
-  .sp-ball { width: 62px; }
-  .sp-ball-icon img { width: 44px; height: 44px; }
-  .sp-corner { width: 40px; font-size: 16px; }
-  .sp-foot { margin: 12px -12px 0; padding: 0 12px 12px; }
-  .safari-prep-dialog .sp-rules li { font-size: 0.78rem; }
-}
-
-/* the classic window (?safariclassic): the lobby's wrappers step aside and its scene is never drawn */
-.safari-prep-dialog:not(.lobby) :is(.sp-page, .sp-top, .sp-base) { display: contents; }
-.safari-prep-dialog:not(.lobby) :is(.sp-sky, .sp-gate-mon, .sp-date, .sp-plaque-slot) { display: none; }
-.safari-prep-dialog:not(.lobby) .sp-how > summary { list-style: none; cursor: default; }
-.safari-prep-dialog:not(.lobby) .sp-how > summary::-webkit-details-marker { display: none; }
-
-/* the lobby (the user's ask, 2026-10-05: the Sky Pillar lobby's look on the Safari window): a screen of its own over the
-   Zone's gate (js/safari-lobby.js, `--ground` its grass line), today's starter at the gate, everything else on the soil */
-.safari-prep-dialog.lobby { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-  background: #0e140c; color: #fff8e8; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
-.safari-prep-dialog.lobby::backdrop { background: #000; }
-.lobby .sp-page { position: relative; min-height: 100%; overflow: hidden; overflow: clip; display: flex; flex-direction: column; align-items: center;
-  padding: 0 16px max(18px, env(safe-area-inset-bottom)); text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6); }
-.lobby .sp-sky { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
-.lobby .sp-top { position: relative; flex: 1 0 auto; min-height: clamp(270px, 46dvh, 500px); width: 100%; text-align: center; padding-top: max(26px, calc(env(safe-area-inset-top) + 18px)); }
-.lobby h2.sp-title { margin: 0; padding: 0; border: 0; outline: none; font: clamp(1.5rem, 8vw, 2.4rem)/1.1 var(--pixel-font); letter-spacing: 2px; text-transform: uppercase; color: #f8d048;
-  text-shadow: 3px 0 0 #2a1408, -3px 0 0 #2a1408, 0 3px 0 #2a1408, 0 -3px 0 #2a1408, 0 7px 0 rgba(0, 0, 0, 0.45); }
-.lobby .sp-date { width: fit-content; margin: 10px auto 0; padding: 5px 12px 4px; border-radius: 99px; background: rgba(6, 8, 24, 0.55); font-size: 0.72rem; letter-spacing: 1px; color: #e8f0ff; }
-.sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 50%); width: 96px; height: 96px; object-fit: contain; object-position: 50% 100%;
-  translate: -50% calc(6px - 100%); pointer-events: none; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45)); }
-.lobby .sp-base { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: min(100%, 440px); padding-top: 22px; }
-.lobby .sp-foot { display: contents; }
-.lobby .sp-today { order: 1; justify-content: center; padding: 0; background: none; text-align: center; }
-.lobby .sp-today .sp-mon, .lobby .sp-kicker { display: none; }
-.lobby .sp-info { justify-items: center; gap: 10px; }
-.lobby .sp-areas { justify-content: center; }
-.lobby .sp-replay { order: 2; margin: 0; }
-.lobby .sp-actions { order: 3; display: grid; grid-template-columns: auto 1fr; gap: 10px; margin: 2px 0 0; }
-.lobby .sp-actions #sp-start .pxb-i { width: 100%; }
-.lobby .sp-links { order: 4; margin: 0; }
-.lobby .sp-foot > .sp-head { order: 5; margin: 6px 0 0; }
-.lobby .sp-bar { order: 6; }
-.lobby .sp-how { order: 7; }
-.lobby .sp-plaque-slot { order: 8; margin: 0; min-height: 0; }
-.lobby .sp-head { margin: 6px 0 8px; }
-.lobby .sp-how > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
-.lobby .sp-how > summary::-webkit-details-marker { display: none; }
-.lobby .sp-how > summary::after { content: '▸'; font-size: 0.9rem; transition: rotate 0.2s; }
-.lobby .sp-how[open] > summary::after { rotate: 90deg; }
-.lobby .sp-how[open] .sp-rules { padding: 10px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); }
-.lobby :is(.sp-rules li, .sp-area, .sp-pill, .sp-eq) { text-shadow: none; }
-@media (max-width: 480px) { .lobby .sp-page { padding: 0 12px max(14px, env(safe-area-inset-bottom)); } .lobby .sp-base { gap: 10px; } }
+.sp-ball-icon img { width: 36px; height: 36px; image-rendering: pixelated; }
+.sp-ball-left { font-size: 0.5rem; font-weight: 400; }
+.sp-how > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+.sp-how > summary::-webkit-details-marker { display: none; }
+.sp-how > summary::after { content: '▸'; transition: rotate 0.2s; }
+.sp-how[open] > summary::after { rotate: 90deg; }
+.sp-rules { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 7px; }
+.safari-prep-dialog .sp-rules li { display: grid; grid-template-columns: 1.6em 1fr; align-items: center; gap: 8px; margin: 0; font-size: 0.52rem; line-height: 1.6; }
+.safari-prep-dialog .sp-rules li.with-card { grid-template-columns: 1.6em 1fr auto; }
+.sp-rule-icon { display: grid; place-items: center; font-size: 1rem; }
+.sp-rule-icon .smooth-icon { width: 18px; height: 18px; }
+.sp-card { width: 54px; cursor: zoom-in; flex: none; }
+.safari-prep-dialog .sp-plaque-slot { min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .sp-gate-mon { animation: none; } }
 
 /* ---------- the leaderboards (js/leaderboard.js): a modern Pokémon menu, not the cream Pokégear window (the user's call,
    2026-10-07): a dark glassy panel, a pill switch for the period, each board a card of rows with medals for the top three.

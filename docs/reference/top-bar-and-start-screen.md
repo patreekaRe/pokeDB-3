@@ -83,7 +83,15 @@ call: a cream pixel staircase and "F7", outlined like the piles, shown only on `
 The dock's "Main menu" takes you to the title's gem menu from anywhere.
 
 **Character select** (`#start-screen.select-screen`, `js/select.js`, New game; Slay the Spire's, the user's call
-2026-09-28): the picked Pokémon stands big on its type's scene (`showMenuScene()`), its resting pose (`SPRITE_FIT`) scaled in
+2026-09-28). **A Pokédex device since 2026-10-07** (the user's call, the Sky Pillar lobby's treatment): `.seldev`, full
+screen under the top bar on phones, a 500px device with the scene round it wider. The lid's LCD says Choose / Prepare and
+the tab's count or the Pokémon; `.sel-stage` is a see-through window onto the type's scene whose own `100vmax` shadow is
+the shell (so every later part is positioned over it, like the map); the info is a green LCD (`.sel-glass` /
+`.sel-info`, scrolling inside when squeezed; Shiny and Game Corner are LCD buttons, `.sel-lcdbtn`); the portraits, or
+in Prepare the deck fan, sit on a dark screen (`.sel-tray`); the hardware is the tower's: Starters / Legends keys
+(`.mdex-btn` with `.mdex-count`, greyed in Prepare), B (Back) and A (Choose / Begin, greyed on a locked Pokémon). Emoji
+there are smooth icons (`data-smooth-icons`). The rest of this paragraph is the older look's history, its behaviour
+unchanged: the picked Pokémon stands big on its type's scene (`showMenuScene()`), its resting pose (`SPRITE_FIT`) scaled in
 half steps to fit the stage (`sizeSprite()`), with a see-through dark panel (name in big gold pixel letters, HP, type chip,
 blurb, Ability, a ✨ Shiny pill once that shiny is owned; its wins at any Level, `stats.winsBy`, as "🏆 N wins" beside the
 HP, `#sel-wins`, and as a 🏆N tag on the portrait's bottom left once it has one, `.sel-thumb-wins`; the user's ask, 2026-10-01) and a strip of portraits along the bottom under two pill tabs,

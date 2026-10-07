@@ -209,17 +209,26 @@
   <main>
 
     <!-- ============ 1. START SCREEN ============ -->
-    <!-- Character select, Slay the Spire-style (js/select.js): the picked Pokémon big on its type's scene, its info
-         beside it, a strip of portraits along the bottom with Starters / Legendaries tabs -->
-    <section id="start-screen" class="screen select-screen">
+    <!-- Character select (js/select.js), the Pokédex device like the Sky Pillar's lobby (the user's call, 2026-10-07): a
+         lid with the LCD title, a window onto the type's scene with the picked Pokémon big in it (the shell round the
+         window is its own shadow, so the scene shows through it), its info on a green LCD, the portraits (or, once
+         chosen, the starting deck) on a dark screen, then the hardware: Starters / Legendaries keys, B and A -->
+    <section id="start-screen" data-smooth-icons class="screen select-screen">
+      <div class="seldev">
+      <div class="tdev-lid">
+        <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+        <div class="cdev-lcd"><p class="tower-title" id="sel-title">Choose</p><p class="tower-week" id="sel-sub"></p></div>
+      </div>
       <div class="sel-stage" aria-hidden="true"><img id="sel-sprite" class="pixel" alt=""></div>
-      <div class="sel-info" aria-live="polite">
+      <div class="tdev-glass sel-glass"><div class="sel-info" id="sel-info" aria-live="polite">
         <h2 class="sel-name" id="sel-name"></h2>
         <div class="sel-stats"><span class="sel-hp" id="sel-hp"></span><span class="chip" id="sel-type"></span><span class="sel-wins" id="sel-wins"></span></div>
         <p class="sel-blurb" id="sel-blurb"></p>
         <p class="sel-ability" id="sel-ability"></p>
-        <button type="button" class="pxb sun small" id="sel-shiny" hidden aria-pressed="false"><span class="pxb-o"><span class="pxb-i">✨ Shiny</span></span></button>
-        <button type="button" class="pxb purple small white" id="sel-corner" hidden><span class="pxb-o"><span class="pxb-i">🎰 Game Corner</span></span></button>
+        <div class="sel-extras">
+          <button type="button" class="sel-lcdbtn" id="sel-shiny" hidden aria-pressed="false">✨ Shiny</button>
+          <button type="button" class="sel-lcdbtn" id="sel-corner" hidden>🎰 Game Corner</button>
+        </div>
         <!-- after Choose: the run's setup on the same screen (prepare() in js/select.js) -->
         <div class="sel-prep" id="sel-prep" hidden>
           <div class="prep-evo" id="prep-evo"></div>
@@ -238,21 +247,24 @@
             <details class="prep-all"><summary>All rules</summary><ul id="level-rules"></ul></details>
           </div>
         </div>
-      </div>
-      <div class="sel-actions">
-        <button type="button" class="pxb blue white" id="sel-back"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
-        <button type="button" class="pxb green" id="sel-go"><span class="pxb-o"><span class="pxb-i">Choose</span></span></button>
-      </div>
-      <div class="sel-strip">
-        <div class="sel-tabs" role="tablist" aria-label="Starters or legendaries">
-          <button type="button" class="pxb orange small" id="sel-tab-starters" role="tab" data-tab="starters"><span class="pxb-o"><span class="pxb-i">Starters</span></span></button>
-          <button type="button" class="pxb purple small white" id="sel-tab-legends" role="tab" data-tab="legends"><span class="pxb-o"><span class="pxb-i">Legendaries</span></span></button>
-        </div>
+      </div></div>
+      <div class="sel-tray">
         <div class="sel-thumbs" id="sel-thumbs" role="radiogroup" aria-label="Starter Pokémon"></div>
+        <div class="sel-deck" id="sel-deck" hidden>
+          <p class="prep-deckhead" id="prep-deckhead"></p>
+          <div class="prep-fan" id="prep-fan"></div>
+        </div>
       </div>
-      <div class="sel-deck" id="sel-deck" hidden>
-        <p class="prep-deckhead" id="prep-deckhead"></p>
-        <div class="prep-fan" id="prep-fan"></div>
+      <div class="tdev-pad">
+        <div class="tdev-keys sel-tabs" role="tablist" aria-label="Starters or legendaries">
+          <button type="button" class="mdex-btn" id="sel-tab-starters" role="tab" data-tab="starters"><span class="mdex-ico" data-icon="safari"></span><span class="mdex-label">Starters</span><span class="mdex-count"></span></button>
+          <button type="button" class="mdex-btn" id="sel-tab-legends" role="tab" data-tab="legends"><span class="mdex-ico" data-icon="fame"></span><span class="mdex-label">Legends</span><span class="mdex-count"></span></button>
+        </div>
+        <div class="tdev-ab">
+          <span class="tdev-key b"><button type="button" class="cdev-btn" id="sel-back" aria-label="Back">B</button>Back</span>
+          <span class="tdev-key a"><button type="button" class="cdev-btn" id="sel-go" aria-labelledby="sel-go-label">A</button><span id="sel-go-label">Choose</span></span>
+        </div>
+      </div>
       </div>
     </section>
 
@@ -820,38 +832,42 @@
     </div>
   </div></dialog>
 
-  <!-- two looks on one window (js/safariprep.js): the lobby (.lobby: a screen of its own like the Sky Pillar's, the
-       Safari Zone's gate painted behind, today's starter at it) or the classic window (?safariclassic) -->
-  <dialog id="safari-prep-dialog" class="dialog safari-prep-dialog" aria-labelledby="sp-title"><div class="sp-page" id="sp-page">
-    <canvas id="sp-sky" class="sp-sky" aria-hidden="true"></canvas>
-    <div class="sp-top" id="sp-top">
-      <h2 class="sp-title" id="sp-title" tabindex="-1" autofocus>Safari Zone</h2>
-      <p class="sp-date" id="sp-date"></p>
+  <!-- the Safari Zone's lobby (js/safariprep.js): the Pokédex device, like the Sky Pillar's (it borrows .tower-lobby's
+       shell): a lid with the LCD title and the day, a window onto the Zone's gate with today's starter at it, the
+       screen (today's run, the try, your balls, how it works, today's top catchers), then the hardware: Pokédex /
+       Ranks / Buy, B to go back, A to start -->
+  <dialog id="safari-prep-dialog" data-smooth-icons class="safari-prep-dialog tower-lobby" aria-labelledby="sp-title"><div class="tower-page" id="sp-page">
+    <div class="tdev-lid">
+      <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+      <div class="cdev-lcd"><h2 id="sp-title" class="tower-title" tabindex="-1" autofocus>Safari Zone</h2><p class="tower-week" id="sp-date"></p></div>
     </div>
-    <img id="sp-gate-mon" class="sp-gate-mon pixel" alt="">
-    <div class="sp-base" id="sp-base">
-    <div class="sp-today" id="sp-today"></div>
-    <p class="sp-replay" id="sp-replay"></p>
-    <div class="sp-links">
-      <button type="button" class="pxb sun small" id="sp-dex"><span class="pxb-o"><span class="pxb-i">📕 Pokédex</span></span></button>
-      <button type="button" class="pxb orange small" id="sp-board"><span class="pxb-o"><span class="pxb-i">🏆 Leaderboard</span></span></button>
+    <div class="tower-window sp-window" id="sp-top">
+      <canvas id="sp-sky" class="sp-sky" aria-hidden="true"></canvas>
+      <img id="sp-gate-mon" class="sp-gate-mon pixel" alt="">
     </div>
-    <details class="sp-how" id="sp-how" open>
-      <summary class="sp-head">How it works</summary>
-      <ul class="sp-rules" id="sp-rules"></ul>
-    </details>
-    <div class="tower-plaque-slot sp-plaque-slot" id="sp-plaque-slot" hidden><div class="tower-plaque" id="sp-plaque"><h3 class="tower-plaque-title">Today's top catchers</h3><ol class="tower-plaque-list" id="sp-plaque-list"></ol></div></div>
-    <div class="sp-foot">
-      <h4 class="sp-head">Your Poké Balls</h4>
-      <div class="sp-bar">
+    <div class="tdev-glass"><div class="tower-base sp-base" id="sp-base">
+      <div class="sp-today" id="sp-today"></div>
+      <p class="sp-replay" id="sp-replay"></p>
+      <div class="sp-foot">
+        <h4 class="sp-head">Your Poké Balls</h4>
         <div class="sp-balls" id="sp-balls"></div>
-        <button type="button" class="sp-corner" id="sp-corner" title="Buy more balls at the Game Corner" aria-label="Buy more balls at the Game Corner">🎰<b>Buy</b></button>
       </div>
-      <div class="sp-actions">
-        <button type="button" class="pxb blue white" id="sp-close"><span class="pxb-o"><span class="pxb-i">Back</span></span></button>
-        <button type="button" class="pxb green" id="sp-start"><span class="pxb-o"><span class="pxb-i">Start</span></span></button>
+      <details class="sp-how" id="sp-how">
+        <summary class="sp-head">How it works</summary>
+        <ul class="sp-rules" id="sp-rules"></ul>
+      </details>
+      <div class="tower-plaque-slot sp-plaque-slot" id="sp-plaque-slot" hidden><div class="tower-plaque" id="sp-plaque"><h3 class="tower-plaque-title">🏆 Top catchers today</h3><ol class="tower-plaque-list" id="sp-plaque-list"></ol></div></div>
+    </div></div>
+    <div class="tdev-pad">
+      <div class="tdev-keys sp-keys">
+        <button type="button" class="mdex-btn" id="sp-dex"><span class="mdex-ico" data-icon="dex"></span><span class="mdex-label">Pokédex</span></button>
+        <button type="button" class="mdex-btn" id="sp-board"><span class="mdex-ico" data-icon="trophy"></span><span class="mdex-label">Ranks</span></button>
+        <button type="button" class="mdex-btn" id="sp-corner" title="Buy more balls at the Game Corner"><span class="mdex-ico" data-icon="corner"></span><span class="mdex-label">Buy</span></button>
       </div>
-    </div>
+      <div class="tdev-ab">
+        <span class="tdev-key b"><button type="button" class="cdev-btn" id="sp-close" aria-label="Back">B</button>Back</span>
+        <span class="tdev-key a"><button type="button" class="cdev-btn" id="sp-start" aria-labelledby="sp-start-label">A</button><span id="sp-start-label">Start</span></span>
+      </div>
     </div>
   </div></dialog>
 

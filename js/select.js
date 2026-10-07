@@ -1,15 +1,16 @@
 /* ============================================================
    select.js  -  the character select, Slay the Spire-style.
 
-   The picked Pokémon stands big on its type's scene, its name, HP,
-   type, blurb and Ability in a see-through panel beside it, and every
-   starter waits in a strip of portraits along the bottom, split into
-   Starters and Legendaries tabs. A locked one shows as a silhouette and
+   The Pokédex device (the user's call, 2026-10-07, like the Sky
+   Pillar's lobby): the picked Pokémon stands big in a window onto its
+   type's scene, its name, HP, type, blurb and Ability on a green LCD
+   under it, and every starter waits in a strip of portraits on a dark
+   screen, split by the Starters and Legendaries keys. A locked one shows as a silhouette and
    says how to get it (a Game Corner skin gets a button that opens the
    Game Corner on it). Choose turns the same screen into the run's
    setup, StS-style (prepare()): the panel shows the evolution line
    and a Trainer Level picker, the strip gives way to the starting
-   deck fanned out, and Choose becomes Begin run.
+   deck fanned out, and A's Choose becomes Begin.
    ============================================================ */
 
 import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
@@ -24,6 +25,7 @@ import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { toggleShop } from './shop.js';
 import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
+import { smoothIcon } from './smooth-icons.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
@@ -38,6 +40,7 @@ let level = 0;            // the Trainer Level picked for the run
 /** Called once at startup. */
 export function initSelect(on) {
   handlers = on;
+  for (const node of document.querySelectorAll('#start-screen [data-icon]')) node.append(smoothIcon(node.dataset.icon));
   $('sel-back').addEventListener('click', () => (preparing ? preparing.onBack() : handlers.onBack()));
   $('sel-go').addEventListener('click', () => {
     if (!picked || !usable(picked)) return;
@@ -53,8 +56,9 @@ export function initSelect(on) {
     pick(picked, true);
   });
   $('sel-corner').addEventListener('click', () => toggleShop(picked.id));
-  for (const btn of document.querySelectorAll('.sel-tabs .pxb')) {
+  for (const btn of document.querySelectorAll('.sel-tabs .mdex-btn')) {
     btn.addEventListener('click', () => {
+      if (preparing) return;
       tab = btn.dataset.tab;
       const first = inTab().find(isStarterUnlocked) || inTab()[0];
       pick(inTab().includes(picked) ? picked : first, true);
@@ -106,12 +110,14 @@ function pick(starter, quiet = false) {
 }
 
 function renderTabs() {
-  for (const btn of document.querySelectorAll('.sel-tabs .pxb')) {
+  for (const btn of document.querySelectorAll('.sel-tabs .mdex-btn')) {
     const list = STARTERS.filter(s => (btn.dataset.tab === 'legends') === Boolean(LEGENDS(s)));
     const on = btn.dataset.tab === tab;
     btn.classList.toggle('on', on);
     btn.setAttribute('aria-selected', String(on));
-    btn.querySelector('.pxb-i').textContent = `${btn.dataset.tab === 'legends' ? 'Legendaries' : 'Starters'} ${list.filter(isStarterUnlocked).length}/${list.length}`;
+    const count = `${list.filter(isStarterUnlocked).length}/${list.length}`;
+    btn.querySelector('.mdex-count').textContent = count;
+    if (on) $('sel-sub').textContent = `${btn.dataset.tab === 'legends' ? 'Legendaries' : 'Starters'} ${count}`;
   }
 }
 
@@ -181,7 +187,7 @@ function show(starter) {
   $('sel-shiny').hidden = !owned;
   $('sel-shiny').classList.toggle('on', owned && isShiny(starter.id));
   $('sel-shiny').setAttribute('aria-pressed', String(owned && isShiny(starter.id)));
-  $('sel-shiny').querySelector('.pxb-i').textContent = `✨ Shiny ${isShiny(starter.id) ? 'on' : 'off'}`;
+  $('sel-shiny').textContent = `✨ Shiny ${isShiny(starter.id) ? 'on' : 'off'}`;
   $('sel-corner').hidden = !shop;
   $('sel-go').disabled = !usable(starter);
 
@@ -209,7 +215,12 @@ function setPreparing(on) {
   screen.classList.toggle('preparing', !!on);
   $('sel-prep').hidden = !on;
   $('sel-deck').hidden = !on;
-  $('sel-go').querySelector('.pxb-i').textContent = on ? 'Begin run' : 'Choose';
+  $('sel-go-label').textContent = on ? 'Begin' : 'Choose';
+  $('sel-title').textContent = on ? 'Prepare' : 'Choose';
+  if (on) $('sel-sub').textContent = picked.line[0].name;
+  else renderTabs();
+  for (const key of document.querySelectorAll('.sel-tabs .mdex-btn')) key.disabled = !!on;
+  $('sel-info').scrollTop = 0;
   requestAnimationFrame(sizeSprite);   // the stage changes height with the panel
 }
 
@@ -288,7 +299,7 @@ function sizeSprite() {
   if (!img.naturalWidth || !stage.clientHeight) return;
   const [top, bottom, left, right] = spriteFit(img.src);
   const poseW = img.naturalWidth - left - right || 64, poseH = img.naturalHeight - top - bottom || 64;
-  const fits = Math.min(stage.clientHeight * 0.9 / poseH, stage.clientWidth * 0.62 / poseW, 9);
+  const fits = Math.min(stage.clientHeight * 0.78 / poseH, stage.clientWidth * 0.6 / poseW, 9);
   const s = Math.max(1, Math.floor(fits * 2) / 2);
   img.style.width = `${img.naturalWidth * s}px`;
   img.style.translate = `calc(-50% + ${((right - left) / 2) * s}px) ${bottom * s}px`;
