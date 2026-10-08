@@ -120,7 +120,7 @@ export function initTitle(handlers) {
   const tags = screen.querySelectorAll('.title-sound .vol-tag');
   tags[0].replaceChildren(smoothIcon('music'));
   tags[1].replaceChildren(smoothIcon('bell'));
-  $('title-abandon').replaceChildren(smoothIcon('rope'));
+  $('title-abandon').replaceChildren(smoothIcon('run'));
   paintLogo();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
@@ -456,8 +456,8 @@ function runIcon(run) {
   return ball;
 }
 
-/** The Escape Rope beside the nameplate: a tap rings it red and swings it (a phone's hover) and asks in a bubble over
-    it rather than a window, so the rope stays in sight; Yes abandons the run, No or a tap anywhere else puts it away. */
+/** The Run key on the plate's LCD: a tap lights it up (a phone's hover) and asks in a bubble over it rather than a
+    window, so the key stays in sight; Yes abandons the run, No or a tap anywhere else puts it away. */
 function initRope() {
   const rope = $('title-rope'), ask = $('rope-ask'), btn = $('title-abandon');
   const set = (open) => {

@@ -129,7 +129,16 @@ const ART = {
     <path d="M12.6 26.5a3.4 3.4 0 0 0 6.8 0Z" fill="#d89a18" stroke="${INK}" stroke-width="1.8"/>
     <path d="M11 17v-1.4c0-2.6 1.2-4.6 3.2-5.6" fill="none" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,
 
-  // the Escape Rope beside a saved run's nameplate: a coil of rope
+  // Abandon run (the title's plate, the device's Settings): battle's Run, a figure sprinting off with speed lines, in
+  // currentColor so it takes the LCD's ink on the plate (the user's pick, 2026-10-07: it replaced the Escape Rope)
+  run: `<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 10h5M1.5 14h7M2.5 18h4.5" stroke-width="2.4"/>
+      <path d="M19.5 11.5L14 19.5" stroke-width="4.4"/>
+      <path d="M19 11.5l-5-1.8-2.6 3.2M19.5 12l3.6 4.4 4.2-.6M14 19.5l5.6 3-1.8 5.2h3.4M14 19.5l-4.4 3.2-4.6 5" stroke-width="3.2"/>
+    </g>
+    <circle cx="23.5" cy="6.5" r="3.6" fill="currentColor"/>`,
+
+  // the old Escape Rope: a coil of rope
   rope: `<ellipse cx="16" cy="17" rx="12" ry="9" fill="none" stroke="${INK}" stroke-width="6"/>
     <ellipse cx="16" cy="17" rx="12" ry="9" fill="none" stroke="#d09a58" stroke-width="3.6"/>
     <ellipse cx="16" cy="17" rx="7" ry="5" fill="none" stroke="${INK}" stroke-width="5.4"/>
@@ -353,7 +362,7 @@ export const SMOOTH_EMOJI = {
   '⚔': 'swords', '🔁': 'turns', '👑': 'fame', '❤': 'heart', '🔄': 'turns', '🃏': 'moves', '💥': 'burst', '🩸': 'drop', '🎯': 'target',
   '🎒': 'items', '🧴': 'items', '💴': 'cash', '🏪': 'mart', '🏥': 'center', '❓': 'help', '💻': 'pc', '⏫': 'ppup',
   '✨': 'sparkle', '💀': 'skull', '💎': 'gem', '🗼': 'tower', '⭐': 'star', '🏆': 'trophy', '💰': 'coin', '🔒': 'lock',
-  '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap', '🗑': 'trash',
+  '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap', '🗑': 'trash', '🏃': 'run',
   '🔥': 'fire', '💧': 'water', '🌿': 'grass', '🔯': 'normal', '🔮': 'psychic',
   '🌼': 'flower', '🌲': 'tree', '🍄': 'mushroom', '🏔': 'mountain', '🌵': 'cactus',
 };

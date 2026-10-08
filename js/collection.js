@@ -190,7 +190,7 @@ const borrow = (id, before) => ({
 
 const settingsApp = () => ({
   id: 'settings', name: 'SETTINGS', cls: 'cdev-win panel cdev-system',
-  // abandoning is only offered over a run's own screens, not from the title's Collection (it has its Escape Rope)
+  // abandoning is only offered over a run's own screens, not from the title's Collection (it has its Run key)
   app: borrow('dev-settings', () => { $('abandon-btn').hidden = !(deviceOver() && dock.abandonable()); showName(); }),
 });
 

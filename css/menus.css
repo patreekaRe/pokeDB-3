@@ -452,28 +452,31 @@
   content: ''; width: 0.75em; height: 0.75em; margin-right: 0.35em; background: currentColor; opacity: 0.55;
   clip-path: polygon(0 100%, 0 70%, 30% 70%, 30% 40%, 60% 40%, 60% 10%, 100% 10%, 100% 100%);
 }
-/* the Escape Rope sits inside the plate, under its HP: tag, where the plate is empty left of the HP numbers (the user's
-   pick, 2026-10-02: hung off the plate's right edge it ran into the open gate on phones). The sprite at 1x, whole
-   pixels, in a bigger tap target. Hover (a mouse) or a tap (.armed, which also opens the bubble over it) rings it red
-   and swings it */
+/* Abandon run is battle's Run, a key drawn on the plate's LCD under its HP: tag (it replaced the Escape Rope, the
+   user's pick, 2026-10-07), where the plate is empty left of the HP numbers. Its ink is the LCD's; hover (a mouse) or a
+   tap (.armed, which also opens the bubble over it) lights it, the LCD's inverted selection, and the figure runs */
 .title-run-row { position: relative; }
-.title-rope { position: absolute; left: 6px; bottom: 0; width: 40px; height: 36px; opacity: 0; }
+.title-rope { position: absolute; left: 6px; bottom: 2px; width: 40px; height: 30px; opacity: 0; }
 .title-screen.menu .title-rope { opacity: 1; animation: plateIn 0.3s ease-out; }
 .title-abandon {
-  width: 40px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer;
-  -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;
+  width: 40px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer;
+  color: #1f3a14; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;
 }
-.title-abandon svg { width: 32px; height: 32px; pointer-events: none; filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.35)); }
-.title-rope.armed svg, .title-abandon:focus-visible svg { filter: drop-shadow(0 0 3px #ff5a4a) drop-shadow(0 0 2px #ff5a4a); }
-@media (hover: hover) { .title-abandon:hover svg { filter: drop-shadow(0 0 3px #ff5a4a) drop-shadow(0 0 2px #ff5a4a); } }
+.title-abandon svg {
+  width: 30px; height: 22px; padding: 1px 4px; box-sizing: border-box; pointer-events: none; overflow: visible;
+  border: 2px solid currentColor; border-radius: 4px; background: rgba(31, 58, 20, 0.08);
+}
+.title-rope.armed .title-abandon, .title-abandon:focus-visible { color: #c8e0a0; }
+.title-rope.armed svg, .title-abandon:focus-visible svg { background: #1f3a14; border-color: #1f3a14; }
+@media (hover: hover) { .title-abandon:hover { color: #c8e0a0; } .title-abandon:hover svg { background: #1f3a14; border-color: #1f3a14; } }
 .title-abandon:focus-visible { outline: none; }
-.title-abandon:active svg { translate: 1px 2px; }
+.title-abandon:active svg { translate: 0 1px; }
 @media (prefers-reduced-motion: no-preference) {
-  .title-rope.armed svg { animation: ropeSwing 0.6s ease-in-out infinite; }
-  @media (hover: hover) { .title-abandon:hover svg { animation: ropeSwing 0.6s ease-in-out infinite; } }
+  .title-rope.armed svg { animation: runAway 0.4s steps(2) infinite; }
+  @media (hover: hover) { .title-abandon:hover svg { animation: runAway 0.4s steps(2) infinite; } }
 }
-@keyframes ropeSwing { 0%, 100% { rotate: -8deg; } 50% { rotate: 8deg; } }
-/* the ask: a little window over the rope, left-aligned with the plate so it stays on a phone's screen, its tail pointing
+@keyframes runAway { 50% { padding-left: 6px; padding-right: 2px; } }
+/* the ask: a little window over the Run key, left-aligned with the plate so it stays on a phone's screen, its tail pointing
    down at it */
 .rope-ask {
   position: absolute; left: -10px; bottom: calc(100% + 10px); z-index: 5; width: 176px; padding: 8px 9px 9px;
