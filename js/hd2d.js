@@ -15,6 +15,21 @@ export async function loadThree() {
   return THREE;
 }
 
+let veil = null;
+/** A black curtain over everything, for walking from one view into another (the hub's door into the Secret Base and
+    back): `curtain(true)` resolves once it's dark, `curtain(false)` once it's lifted. */
+export function curtain(on, ms = 320) {
+  if (!veil) {
+    veil = Object.assign(document.createElement('div'), { className: 'hd2d-curtain' });
+    document.body.append(veil);
+  }
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) ms = 0;
+  veil.style.transitionDuration = `${ms}ms`;
+  void veil.offsetWidth;
+  veil.classList.toggle('on', on);
+  return new Promise(resolve => setTimeout(resolve, ms + 20));
+}
+
 export function tex(canvas) {
   const t = new THREE.CanvasTexture(canvas);
   t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter;

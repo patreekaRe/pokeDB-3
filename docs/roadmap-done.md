@@ -1834,3 +1834,17 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Display > Title screen: Walk / Signs (`titleHub`, kept by a reset; `?signs` for one page load, `?walk` sets it). What the
   base and the hub share (Three.js loading, pixel textures, GIF frames on a billboard, the tilt-shift + bloom pass) moved
   into `js/hd2d.js`. 80+ fps in the pane at 375x812; phone check is the user's.
+- **The Clearing hub, part b** (2026-10-08, branch `secret-base` only, session 4 of the walkable 3D plan): the hub's light
+  follows the hour (`LIGHT` in `js/hub-3d.js`: `glow`, `lamp`, `bugs`, `air`). The Ancient Tree's lantern, the Pokédex
+  stand's screen and the Sky Pillar's doorway shine (`GLOWS`: those painted colours as emissive maps, `glowing()`), two
+  point lights (the lantern, the doorway) light the ground from dusk, made once and only dimmed; 44 additive points drift
+  as pollen by day and blink as fireflies from dusk (`liveBugs()`). Every 30-50 s a legendary from the title's own round
+  (`dealFlyer()` in `js/title.js`, a silhouette until yours) crosses over the treetops, its shadow gliding over the
+  Clearing while the sun's up; never under reduced motion. The Secret Base's door: the Ancient Tree's door opens, your
+  partner steps into the hollow under a black curtain (`curtain()` in `js/hd2d.js`), the base comes up; its ✕ walks back
+  out (`openBase3d({ onLeave })`, the room kept and only re-attached, `reopen()`), onto the doorstep facing you as the
+  door shuts (`leftBase()`); a `?base` playtest's ✕ still reloads. Sounds: `grass-step` while walking, and a looped
+  `clearing-day` (birds, a breeze) / `clearing-night` (crickets) synth in `js/audio.js`. The trail's card has the
+  Escape Rope beside Continue / New game with a saved run; the version tag (Patch notes) sits by How to play, since the
+  logo fades. The hub fades in only the first time (`.hub.shown`), so coming back never shows the screen under the title.
+  80+ fps in the pane at 390x844 with a flyer; phone check is the user's.

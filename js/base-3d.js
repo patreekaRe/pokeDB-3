@@ -12,7 +12,7 @@ import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt } from './secret-base.js';
@@ -45,7 +45,8 @@ let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
 let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
-let guests = [], puffs = [], puffTex = {};   // the Safari Pokémon on show, and the hearts and Zs floating off them
+let guests = [], puffs = [], puffTex = {};
+let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -860,10 +861,46 @@ function frame(now) {
 /** The 2D room instead, where there's no WebGL or no Three.js (offline). */
 async function fallBack() {
   root.remove();
-  (await import('./secret-base.js')).openBase();
+  root = null;
+  await (await import('./secret-base.js')).openBase();
+  curtain(false);
 }
 
-export async function openBase3d() {
+/** Out through the door: dark, the room put away (kept, so going back in is quick), then wherever it was opened from. */
+async function leave() {
+  if (!leaveTo) { location.href = location.pathname; return; }
+  playSound('door');
+  await curtain(true);
+  if (holding) act('cancel');
+  root.remove();
+  await leaveTo();
+  curtain(false);
+}
+
+/** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
+async function reopen() {
+  calm = calmFx();
+  document.body.append(root);
+  const mate = partner(getSave());
+  if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
+  walker.path = [];
+  walker.tile = nearestFree(startTile());
+  walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
+  walker.facing = 'back';
+  camX = panX = walker.x;
+  setTime(true);
+  resize();
+  refresh();
+  syncGuests();
+  last = 0;
+  requestAnimationFrame(frame);
+  curtain(false);
+}
+
+/** The Secret Base. `onLeave` is where its ✕ goes (the walkable hub hands it the way back out to the Clearing). */
+export async function openBase3d({ onLeave = null } = {}) {
+  leaveTo = onLeave;
+  if (root && renderer) return reopen();
   calm = calmFx();
   root = document.createElement('section');
   root.className = 'base3d';
@@ -894,7 +931,7 @@ export async function openBase3d() {
   view = root.querySelector('.b3-view');
   hud = { hint: root.querySelector('.b3-hint'), fps: null };
   if (new URLSearchParams(location.search).has('fps')) { hud.fps = root.querySelector('.b3-fps'); hud.fps.hidden = false; }
-  root.querySelector('.b3-close').addEventListener('click', () => { location.href = location.pathname; });
+  root.querySelector('.b3-close').addEventListener('click', leave);
 
   try {
     THREE = await loadThree();
@@ -948,6 +985,7 @@ export async function openBase3d() {
   refresh();
   syncGuests();
   requestAnimationFrame(frame);
+  curtain(false);
 }
 
 function startTile() {

@@ -119,11 +119,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   2. ~~Safari Pokémon living in it~~ done 2026-10-08 (`docs/roadmap-done.md`).
   3. ~~The Clearing as a walkable hub, part a~~ done 2026-10-08 (`docs/roadmap-done.md`): `js/hub-3d.js` after PRESS
      START, the signs as Settings' Title screen: Signs.
-  4. **The hub, part b**: its light (dawn / day / dusk / night, fireflies, the hybrid's glows: the Ancient Tree's lantern,
-     the Pokédex's screen, the Sky Pillar's door), the flyers crossing its sky, a walk from the hub into the base (today the
-     door opens it straight, and its ✕ reloads onto the title), sounds (footsteps, the Clearing's ambience). Also from part
-     a: the saved run's Escape Rope isn't on the hub (Settings' Abandon run covers it only during a run), and the patch
-     notes' version tag fades with the logo. Then the user decides if it goes live.
+  4. ~~The hub, part b~~ done 2026-10-08 (`docs/roadmap-done.md`): light and glows by the hour, fireflies / pollen, the
+     legendaries flying over, the walk into the base and back, footsteps and the Clearing's air, the Escape Rope, the
+     version tag. **Next: the user playtests the branch and decides if it goes live.**
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s

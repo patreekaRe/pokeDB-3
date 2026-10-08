@@ -284,8 +284,8 @@ function init() {
     onBoard: () => openLeaderboard(),
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
-    // the hub's door in the Ancient Tree (js/hub-3d.js); the base's ✕ reloads onto the title
-    onBase: () => { leaveTitle(); import('./base-3d.js').then(m => m.openBase3d()); },
+    // the hub's door in the Ancient Tree (js/hub-3d.js); the base's ✕ walks back out of it
+    onBase: () => { leaveTitle(); return import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome })); },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {

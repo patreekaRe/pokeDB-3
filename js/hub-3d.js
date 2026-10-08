@@ -10,9 +10,9 @@
 import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
+import { playSound, playCry, setLoop } from './audio.js';
 import { partner } from './trainercard.js';
-import { loadThree, tex, dispose, monBoard, drawMon, onSprite, createPost } from './hd2d.js';
+import { loadThree, tex, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -44,12 +44,19 @@ const P = {
   flowers: [['#ffffff', '#f8d848'], ['#f8e048', '#f89830'], ['#f8a0c8', '#f8f0f8'], ['#b0a0f8', '#f8f8f8']],
 };
 
+// glow: how hard the lantern, the Pokédex's screen and the Sky Pillar's door shine; lamp: the two lights they cast;
+// bugs: pollen drifting by day, fireflies blinking from dusk; air: the ambience loop (js/audio.js)
 const LIGHT = {
-  dawn: { sky: '#ffd8c0', ground: '#5a5048', amb: 1.3, sun: '#ffb890', sunI: 2.4, at: [-10, 8, 6], bg: '#e8b8a8' },
-  day: { sky: '#ffffff', ground: '#6a7a50', amb: 1.5, sun: '#fff4e0', sunI: 2.8, at: [-6, 14, 8], bg: '#9ccaf0' },
-  dusk: { sky: '#f8a878', ground: '#4a3040', amb: 1.1, sun: '#ff9050', sunI: 2.4, at: [10, 7, 6], bg: '#d88868' },
-  night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830' },
+  dawn: { sky: '#ffd8c0', ground: '#5a5048', amb: 1.3, sun: '#ffb890', sunI: 2.4, at: [-10, 8, 6], bg: '#e8b8a8', glow: 0.5, lamp: 0.5, bugs: 'pollen', bugsI: 0.6, air: 'clearing-day' },
+  day: { sky: '#ffffff', ground: '#6a7a50', amb: 1.5, sun: '#fff4e0', sunI: 2.8, at: [-6, 14, 8], bg: '#9ccaf0', glow: 0.15, lamp: 0, bugs: 'pollen', bugsI: 1, air: 'clearing-day' },
+  dusk: { sky: '#f8a878', ground: '#4a3040', amb: 1.1, sun: '#ff9050', sunI: 2.4, at: [10, 7, 6], bg: '#d88868', glow: 1, lamp: 1.2, bugs: 'fireflies', bugsI: 0.6, air: 'clearing-night' },
+  night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
+const AIRS = ['clearing-day', 'clearing-night'];
+// the painted pixels that shine (an emissive map each): the lantern by the base's door, the Pokédex's screen, the
+// Sky Pillar's door and stair
+const GLOWS = { lantern: ['#f8e070', '#fff4c0', '#f8d848'], dex: ['#98d0a0', '#c8f0c8', '#58a8f8'], door: ['#2a3a6a', '#6a8ae0', '#141a30'] };
+const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
 const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[1, 7], [6, 7]], [[6, 8], [10, 8]]];
@@ -58,6 +65,7 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts;
 let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, tags = [], card;
+let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, inBase = false, entering = null;
 let calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
@@ -232,7 +240,7 @@ function pillarArt(front) {
 }
 
 /** The Ancient Tree: a huge crown, a trunk flaring into arching roots, and the Secret Base's door in the hollow between them. */
-function ancientArt() {
+function ancientArt(open = false) {
   const W = 128, H = 160, a = art(W, H), rnd = seeded(11);
   // roots: thick curves out of the trunk's foot
   const root = (x0, x1, y1, t) => {
@@ -259,6 +267,7 @@ function ancientArt() {
     if (y < 128 && r > 12.5) continue;
     const inner = y < 128 ? r < 10.5 : x > 53 && x < 75;
     if (!inner) { a.dot(x, y, P.bark[3]); continue; }
+    if (open) { a.dot(x, y, y > 150 ? '#4a2c14' : y > 144 ? '#2a180a' : '#120804'); continue; }   // the hollow, a warm floor inside
     a.dot(x, y, (x - 55) % 5 === 0 ? P.wood[3] : x < 60 ? P.wood[1] : P.wood[2]);
   }
   a.dot(70, 138, '#f8d848', 2, 2);
@@ -298,6 +307,27 @@ function board(canvas, x, z, { s = 1, shadow = true } = {}) {
   return mesh;
 }
 
+/** Only the pixels in these colours, the rest black: an emissive map. */
+function mask(src, colours) {
+  const { width: w, height: h } = src, c = new OffscreenCanvas(w, h), g = c.getContext('2d');
+  const d = src.getContext('2d').getImageData(0, 0, w, h), keep = colours.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  for (let i = 0; i < d.data.length; i += 4) {
+    const hit = d.data[i + 3] > 8 && keep.some(([r, gg, b]) => d.data[i] === r && d.data[i + 1] === gg && d.data[i + 2] === b);
+    if (!hit) { d.data[i] = d.data[i + 1] = d.data[i + 2] = 0; }
+  }
+  g.putImageData(d, 0, 0);
+  return c;
+}
+
+/** A material's painted lights shine with the clock (setTime()): `k` scales the hour's glow, in that colour. */
+function glowing(m, src, colours, colour = '#ffffff', k = 1) {
+  m.emissive = new THREE.Color(colour);
+  m.emissiveMap = tex(mask(src, colours));
+  m.userData.glow = k;
+  glowMats.push(m);
+  return m;
+}
+
 /* ---------- the places ---------- */
 
 const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
@@ -311,20 +341,25 @@ function makePlaces() {
       id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: 6, y: ROWS - 1 }, tiles: [[7, ROWS - 2]], tag: [6, 1.5, ROWS - 1],
       open: true,
       line: run ? `${run.name} waits in the ${run.place}${run.floor ? `, floor ${run.floor}` : ''}. HP ${run.hp}/${run.maxHp}.` : 'The trail out of the Clearing: a new adventure.',
-      buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame]] : [['New game', acts.onNewGame]],
+      buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       build: (g) => g.add(board(signArt(), tileX(7), tileZ(ROWS - 2))),
     },
     {
       id: 'dex', name: 'Pokédex', step: { x: 10, y: 8 }, tiles: [[10, 7]], tag: [10, 2.4, 7], open: true,
       line: 'Your Pokédex: its apps, your Trainer Card and the Game Corner.',
       buttons: [['Open', acts.onCollection]],
-      build: (g) => g.add(board(standArt(), tileX(10), tileZ(7))),
+      build: (g) => { const c = standArt(), b = board(c, tileX(10), tileZ(7)); glowing(b.material, c, GLOWS.dex, '#c8ffd0', 0.8); g.add(b); },
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
       line: 'A door in the Ancient Tree\'s roots: your Secret Base.',
-      buttons: [['Go in', acts.onBase]],
-      build: (g) => g.add(board(ancientArt(), tileX(6), tileZ(2) + 0.2)),
+      buttons: [['Go in', enterBase]],
+      build: (g) => {
+        const shut = ancientArt(), b = board(shut, tileX(6), tileZ(2) + 0.2), open = ancientArt(true);
+        glowing(b.material, shut, GLOWS.lantern, '#ffd890');
+        tree = { m: b.material, shut: b.material.map, open: tex(open) };
+        g.add(b);
+      },
     },
   ];
   const safari = safariOpen(save);
@@ -342,7 +377,7 @@ function makePlaces() {
     buttons: tower ? [['Climb', acts.onTower]] : [],
     build: (g) => {
       const side = new THREE.MeshStandardMaterial({ map: tex(pillarArt(false)), roughness: 1 });
-      const face = new THREE.MeshStandardMaterial({ map: tex(pillarArt(true)), roughness: 1 });
+      const door = pillarArt(true), face = glowing(new THREE.MeshStandardMaterial({ map: tex(door), roughness: 1 }), door, GLOWS.door, '#a8c4ff', 0.9);
       const top = new THREE.MeshStandardMaterial({ color: P.stone[1], roughness: 1 });
       const box = new THREE.Mesh(new THREE.BoxGeometry(2.6, 12, 2.6), [side, side, top, top, face, side]);
       box.position.set(tileX(11), 6, tileZ(1));
@@ -387,6 +422,8 @@ function paintGateArt(now) {
 
 function buildPlaces() {
   dispose(placeGroup);
+  tree?.open.dispose();
+  glowMats = []; tree = null;
   tags.forEach(t => t.el.remove());
   places = makePlaces();
   blocked = new Set(TREE_TILES.filter(([x, y]) => !(gateOpen() && x <= 2 && y <= 2)).map(([x, y]) => key(x, y)));
@@ -408,6 +445,7 @@ function buildPlaces() {
   }
   // trees stand where the Sealed Gate does until it breaks
   forest.children.forEach(m => { if (m.userData.gateSpot) m.visible = !gateOpen(); });
+  setTime(true);
 }
 
 /* ---------- the Clearing round them ---------- */
@@ -525,10 +563,40 @@ function arrived() {
 /** What a place does: a closed one says why; the trail with a saved run asks Continue or New game; else straight in. */
 function open(p) {
   if (!p.open || p.buttons.length > 1) return showCard(p);
+  if (p.id === 'base') return enterBase();
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
   hideCard();
   setTimeout(() => { if (running) p.buttons[0][1](); }, calm ? 0 : 260);
+}
+
+/** Into the Ancient Tree: the door swings open, your partner steps into the dark, and the Secret Base comes up under a
+    curtain (js/base-3d.js); its ✕ brings it back out here (showHub(), `inBase`). */
+async function enterBase() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
+  if (tree) tree.m.map = tree.open;
+  playSound('door');
+  entering = { at: performance.now(), z: walker.z };
+  await curtain(true, calm ? 0 : 420);
+  entering = null;
+  if (tree) tree.m.map = tree.shut;
+  inBase = true;
+  await acts.onBase();
+}
+
+/** Back out of the base: on its doorstep, facing you, the door shutting behind. */
+function leftBase() {
+  inBase = false;
+  const p = places.find(q => q.id === 'base');
+  walker.tile = p.step; walker.x = tileX(p.step.x); walker.z = tileZ(p.step.y);
+  walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500;
+  camX = walker.x; camZ = walker.z;
+  here = p;
+  if (!tree) return;
+  tree.m.map = tree.open;
+  setTimeout(() => { if (tree) tree.m.map = tree.shut; }, calm ? 0 : 650);
 }
 
 /* ---------- the card under a place ---------- */
@@ -611,7 +679,105 @@ function setTime(force) {
   sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
   scene.background = new THREE.Color(L.bg);
   scene.fog.color.set(L.bg);
+  for (const m of glowMats) m.emissiveIntensity = L.glow * m.userData.glow;
+  for (const l of lamps) l.intensity = L.lamp * l.userData.k;
+  if (bugs) bugs.userData.kind = L.bugs;
 }
+
+/* ---------- life: pollen or fireflies, a legendary flying over, the Clearing's sounds ---------- */
+
+function dotTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 16;
+  const g = c.getContext('2d'), r = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+  r.addColorStop(0, '#fff'); r.addColorStop(0.35, 'rgba(255,255,255,0.8)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 16, 16);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+function makeBugs() {
+  const rnd = seeded(33), pos = new Float32Array(BUGS * 3), col = new Float32Array(BUGS * 3), seeds = [];
+  for (let i = 0; i < BUGS; i++) {
+    const s = [(rnd() - 0.5) * (COLS + 2), 0.25 + rnd() * 1.6, -ROWS / 2 - 1 + rnd() * (ROWS + 2), rnd() * 100, 0.6 + rnd() * 0.8];
+    seeds.push(s);
+    pos.set(s.slice(0, 3), i * 3);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  bugs = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.16, map: dotTexture(), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+  bugs.userData = { seeds, kind: 'pollen' };
+  bugs.raycast = () => {};
+  scene.add(bugs);
+}
+
+const FIREFLY = [0.85, 1, 0.45], POLLEN = [1, 0.96, 0.78];
+function liveBugs(now) {
+  const { seeds, kind } = bugs.userData, L = LIGHT[time], p = bugs.geometry.attributes.position, c = bugs.geometry.attributes.color;
+  const t = calm ? 0 : now / 1000, fly = kind === 'fireflies';
+  bugs.material.size = fly ? 0.16 : 0.09;
+  seeds.forEach(([x, y, z, ph, sp], i) => {
+    if (!calm) p.setXYZ(i, x + Math.sin(t * 0.3 * sp + ph) * 1.2, y + Math.sin(t * 0.7 * sp + ph * 2) * (fly ? 0.3 : 0.12) - (fly ? 0 : (t * 0.05 * sp + ph) % 1 * 0.3), z + Math.cos(t * 0.25 * sp + ph) * 1.0);
+    // a firefly glows in slow pulses, dark between; pollen just catches the light
+    const k = (fly ? Math.max(0, Math.sin(t * 1.3 * sp + ph)) ** 3 : 0.35 + 0.15 * Math.sin(t * 2 + ph)) * L.bugsI * (calm ? 0.7 : 1);
+    const [r, g, b] = fly ? FIREFLY : POLLEN;
+    c.setXYZ(i, r * k, g * k, b * k);
+  });
+  p.needsUpdate = true; c.needsUpdate = true;
+}
+
+/** Now and then a legendary crosses the sky over the forest, from the title's own round (a silhouette until it's
+    yours), its shadow gliding over the Clearing while the sun's up. Never under reduced motion, like the title's. */
+async function launchFlyer(now) {
+  nextFly = now + 30000 + Math.random() * 20000;
+  if (calm || !acts.dealFlyer) return;
+  const { id, src, lit } = acts.dealFlyer();
+  const m = await monBoard({ src, name: '', cry: id }, false);
+  if (!running) return dispose(m.group);
+  m.group.children[1].visible = false;
+  m.board.castShadow = false;
+  m.board.material.fog = false;
+  if (!lit) m.board.material.color.set('#000');
+  const shade = new THREE.Mesh(new THREE.CircleGeometry(1, 24), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0, depthWrite: false }));
+  shade.rotation.x = -Math.PI / 2;
+  shade.scale.set(1.8, 0.7, 1);
+  shade.raycast = () => {};
+  scene.add(m.group, shade);
+  flyer = { m, shade, at: now, ms: 9000 + Math.random() * 3000, dir: Math.random() < 0.5 ? 1 : -1, high: 0.4 + Math.random() * 0.15, w: { facing: 'front' } };
+}
+
+const ray = { dir: null };
+
+function liveFlyer(now, dt) {
+  if (!flyer) { if (now > nextFly) launchFlyer(now); return; }
+  const f = flyer, k = (now - f.at) / f.ms;
+  if (k >= 1) { scene.remove(f.m.group, f.shade); dispose(f.m.group); f.shade.geometry.dispose(); f.shade.material.dispose(); flyer = null; return; }
+  // its path is across the top of the view, high over the treetops (nearer the camera than the forest, or it would fly
+  // through it); the board always faces the camera
+  const x = f.dir * (-1.5 + 3 * k), y = f.high + Math.sin(k * Math.PI) * 0.08;
+  ray.dir ??= new THREE.Vector3();
+  ray.dir.set(x, y, 0.5).unproject(camera).sub(camera.position).normalize();
+  f.m.group.position.copy(camera.position).addScaledVector(ray.dir, camera.userData.dist * 0.55);
+  f.m.group.position.y += Math.sin(now / 260) * 0.06;
+  f.m.group.quaternion.copy(camera.quaternion);
+  f.m.board.scale.set(f.dir > 0 ? -0.45 : 0.45, 0.45, 1);
+  drawMon(f.m, f.w, dt);
+  // the shadow runs a little ahead, over the ground near you
+  const sh = Math.min(1, k * 1.2 + 0.05), up = time !== 'night';
+  f.shade.position.set(camX + f.dir * (-14 + 28 * sh), 0.03, camZ - 1.5);
+  f.shade.material.opacity = up ? 0.2 * Math.sin(Math.min(1, sh) * Math.PI) : 0;
+}
+
+/** Footsteps while walking; the Clearing's air (birds by day, crickets from dusk) while the hub shows. */
+function sounds(now) {
+  if (walker.path.length && now > stepAt) { stepAt = now + 270; playSound('grass-step'); }
+  if (now < airAt) return;
+  airAt = now + 2000;
+  for (const name of AIRS) setLoop(name, running && name === LIGHT[time].air);
+}
+const quiet = () => AIRS.forEach(name => setLoop(name, false));
 
 function aimCamera(x, z) {
   const d = camera.userData.dist;
@@ -671,12 +837,13 @@ function placeTags() {
 
 function frame(now) {
   if (!running) return;
-  if (screen.hidden || !root.isConnected) { running = false; return; }
+  if (screen.hidden || !root.isConnected) { running = false; quiet(); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
 
   if (walker.path.length) { here = null; if (walk(dt)) arrived(); }
+  if (entering) walker.z = entering.z - Math.min(1, (now - entering.at) / 420) * 0.7;   // into the hollow
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
@@ -686,7 +853,10 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
+  liveBugs(now);
   placeCamera(dt);
+  liveFlyer(now, dt);
+  sounds(now);
   placeTags();
   post.draw(scene, camera, (v3().set(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
   if (fpsEl) fpsEl.textContent = `${Math.round(1000 / (fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length))} fps`;
@@ -699,16 +869,20 @@ async function build() {
   THREE = await loadThree();
   root = document.createElement('div');
   root.className = 'hub';
+  // it fades in once; shown again (back from the base, a run) it's simply there, or the screen under the title shows through
+  root.addEventListener('animationend', () => root.classList.add('shown'), { once: true });
   root.innerHTML = `
     <canvas class="hub-view"></canvas>
     <div class="hub-tags"></div>
     <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><div class="hub-card-btns"></div></div>
     <button type="button" class="hub-help" aria-label="How to play"></button>
+    <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
   view = root.querySelector('.hub-view');
   card = root.querySelector('.hub-card');
   root.querySelector('.hub-help').append(smoothIcon('help'));
   root.querySelector('.hub-help').addEventListener('click', () => { playSound('confirm'); acts.onHelp(); });
+  root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
   if (new URLSearchParams(location.search).has('fps')) { fpsEl = root.querySelector('.hub-fps'); fpsEl.hidden = false; }
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   renderer.shadowMap.enabled = true;
@@ -724,12 +898,22 @@ async function build() {
   sun.shadow.bias = -0.0015;
   sun.shadow.normalBias = 0.02;
   scene.add(hemi, sun);
+  // the lantern by the base's door and the Sky Pillar's doorway light their ground from dusk; made once and only dimmed,
+  // so the hour changing never recompiles a shader
+  for (const [colour, at, k] of [['#ffc070', [tileX(6) - 1.25, 2.4, tileZ(2) + 0.6], 1], ['#8ab0ff', [tileX(11), 1.1, tileZ(1) + 1.6], 0.7]]) {
+    const l = new THREE.PointLight(colour, 0, 6, 1.6);
+    l.position.set(...at);
+    l.userData.k = k;
+    lamps.push(l);
+    scene.add(l);
+  }
   ring = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.42, 24), new THREE.MeshBasicMaterial({ color: '#fff6c0', transparent: true, opacity: 0, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2;
   placeGroup = new THREE.Group();
   scene.add(ring, placeGroup);
   post = createPost(renderer);
   buildClearing();
+  makeBugs();
   await gateReady();
   view.addEventListener('click', onTap);
   addEventListener('keydown', onKey);
@@ -757,7 +941,12 @@ export async function showHub(titleScreen, actions) {
   }
   if (!placed) { placed = true; walker.tile = START; walker.x = tileX(START.x); walker.z = tileZ(START.y); camX = walker.x; camZ = walker.z; }
   walker.path = []; aim = null; here = placeAt(walker.tile);
+  if (inBase) leftBase();
   hideCard();
+  const tag = document.getElementById('title-version');
+  root.querySelector('.hub-version').textContent = tag?.textContent ?? '';
+  nextFly = performance.now() + 6000;
+  airAt = 0;
   setTime(true);
   resize();
   screen.classList.add('hub-on');
@@ -768,6 +957,7 @@ export async function showHub(titleScreen, actions) {
 /** Back to the signs (Settings' Title screen). */
 export function hideHub() {
   running = false;
+  quiet();
   screen?.classList.remove('hub-on');
   root?.remove();
 }

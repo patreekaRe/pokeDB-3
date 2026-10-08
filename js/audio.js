@@ -169,6 +169,9 @@ const SOUNDS = {
   'gate-crack': { synth: gateCrack },        // ...a hit cracks it, or a chain snaps...
   'gate-shatter': { synth: gateShatter },    // ...and the door blows apart in crystal shards
   footstep:     { synth: stoneStep, gain: 0.7 },   // the Sky Pillar's opening film (climb-intro.js): your Pokémon's steps up the flagstones...
+  'grass-step': { synth: grassStep, gain: 0.5 },   // the walkable Clearing (hub-3d.js): your partner's steps through the grass...
+  'clearing-day':   { synth: ac => clearingAir(ac, false), gain: 0.6 },   // ...and its air, looped by setLoop(): birds and a breeze by day...
+  'clearing-night': { synth: ac => clearingAir(ac, true), gain: 0.6 },    // ...crickets by night
   'door-light': { synth: ac => powerSurge(ac, [392, 494, 587, 784, 988, 1175], 2.2), gain: 0.8 },   // ...and the warm light swelling as it walks in
   // the Sky Pillar's augment pick (augment-art.js): each tile turning face up, a chime by its tier, and a reroll's shuffle
   'aug-silver':    { synth: ac => augChime(ac, [1319, 1976], 0.06, 0.5, 0.16) },
@@ -766,6 +769,68 @@ function stoneStep(ac) {
     out[i] = (thud + low * 1.6 * Math.exp(-t / 0.025)) * Math.min(1, t / 0.002);
   }
   return normalize(buffer, 0.16);
+}
+
+/** A step through short grass: a soft brushed swish. */
+function grassStep(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.11);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const cut = 0.25 + Math.random() * 0.15;
+  let low = 0, prev = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, n = Math.random() * 2 - 1;
+    low += cut * (n - low);
+    const high = low - prev;   // brushed: the hiss without its rumble
+    prev = low;
+    out[i] = (high * 0.9 + low * 0.25) * Math.min(1, t / 0.008) * Math.exp(-t / 0.035);
+  }
+  return normalize(buffer, 0.1);
+}
+
+/** The Clearing's air for the walkable hub (hub-3d.js), a loop: a breeze rising and falling, and by day birdsong
+    (`night` false), by night crickets. Its noise wraps round, so the loop has no seam. */
+function clearingAir(ac, night) {
+  const rate = ac.sampleRate, seconds = 16, length = Math.round(rate * seconds), wrap = Math.round(rate * 1);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const bed = new Float32Array(length + wrap);
+  let a = 0, b = 0;
+  for (let i = 0; i < bed.length; i++) { a += 0.02 * (Math.random() * 2 - 1 - a); b += 0.08 * (a - b); bed[i] = b; }
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = bed[i];
+    if (i < wrap) v = v * (i / wrap) + bed[length + i] * (1 - i / wrap);
+    out[i] = v * 2.2 * (0.55 + 0.45 * Math.sin(2 * Math.PI * t / seconds * 2));
+  }
+  let seed = night ? 9 : 4;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  if (night) {
+    // two crickets: pulses of a high tone, in little trains, each at its own pitch and pace
+    for (const [f, every, pulses, level] of [[4700, 0.8, 4, 0.05], [5300, 1.0, 3, 0.035]]) {
+      for (let at = rnd() * every; at < seconds - 0.2; at += every) for (let p = 0; p < pulses; p++) {
+        const s = Math.round((at + p * 0.035) * rate), n = Math.round(rate * 0.022);
+        for (let i = 0; i < n && s + i < length; i++) out[s + i] += Math.sin(2 * Math.PI * f * i / rate) * level * Math.sin(Math.PI * i / n);
+      }
+    }
+  } else {
+    // birds: little phrases of quick whistled sweeps, here and there
+    for (let k = 0; k < 7; k++) {
+      let at = 0.5 + k * 2.1 + rnd() * 1.2;
+      const base = 2400 + rnd() * 1600, notes = 2 + Math.floor(rnd() * 4), level = 0.03 + rnd() * 0.03;
+      for (let j = 0; j < notes; j++) {
+        const dur = 0.05 + rnd() * 0.07, s = Math.round(at * rate), n = Math.round(dur * rate);
+        const f0 = base * (0.85 + rnd() * 0.3), f1 = f0 * (rnd() < 0.5 ? 1.35 : 0.75);
+        let ph = 0;
+        for (let i = 0; i < n && s + i < length; i++) {
+          ph += 2 * Math.PI * (f0 + (f1 - f0) * i / n) / rate;
+          out[s + i] += Math.sin(ph) * level * Math.sin(Math.PI * i / n);
+        }
+        at += dur + 0.03 + rnd() * 0.06;
+      }
+    }
+  }
+  return normalize(buffer, 0.09);
 }
 
 /** The Pokédex powering on (`up`) or off: a square-wave blip stepping up (or down) a chord, like a Game Boy booting. */

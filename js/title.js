@@ -85,22 +85,25 @@ const ETERNATUS = 'eternatus';
 let guest = false;
 export const eternatusGuest = () => { guest = true; flight = [ETERNATUS]; };   // the next pass is its
 
-function nextFlyer(img) {
+/** The next legendary to cross the sky: `{ id, src, lit }`, a silhouette unless `lit`. The walkable hub (js/hub-3d.js)
+    deals from the same round. */
+export function dealFlyer() {
   if (!flight.length) {
     const round = guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS;
     flight = round.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
     if (flight[0] === lastFlyer) flight.push(flight.shift());
   }
   const id = lastFlyer = flight.shift();
-  if (id === ETERNATUS) {
-    img.onload = () => img.style.setProperty('--w', img.naturalWidth);
-    img.src = `assets/pokemon/${ETERNATUS}-front.gif`;
-    img.classList.add('lit');
-    return;
-  }
+  if (id === ETERNATUS) return { id, src: `assets/pokemon/${ETERNATUS}-front.gif`, lit: true };
   const starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
-  img.onload = () => img.style.setProperty('--w', Math.max(64, img.naturalWidth));   // one scale, so Celebi stays small next to Lugia (not a speck)
-  img.src = lit ? spriteUrl(starter, 'front') : `assets/pokemon/${id}-front.gif`;
+  return { id, src: lit ? spriteUrl(starter, 'front') : `assets/pokemon/${id}-front.gif`, lit };
+}
+
+function nextFlyer(img) {
+  const { id, src, lit } = dealFlyer();
+  // one scale, so Celebi stays small next to Lugia (not a speck)
+  img.onload = () => img.style.setProperty('--w', id === ETERNATUS ? img.naturalWidth : Math.max(64, img.naturalWidth));
+  img.src = src;
   img.classList.toggle('lit', lit);
 }
 
@@ -149,7 +152,7 @@ const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).h
 function openHub() {
   if (!useHub()) return hideHub();
   const mewtwo = STARTERS_BY_ID.mewtwo;
-  showHub($('title-screen'), {
+  return showHub($('title-screen'), {
     savedRun: actions.savedRun,
     onContinue: (run) => actions.onContinue(run.saved),
     onNewGame: actions.onNewGame,
@@ -160,6 +163,8 @@ function openHub() {
     onTower: actions.onTower,
     onGate: () => { playCry(mewtwo.line[0].id); actions.onGate(mewtwo); },
     onBase: actions.onBase,
+    onAbandon: () => actions.onAbandon(),
+    dealFlyer,
   });
 }
 
@@ -177,7 +182,7 @@ export function showHome() {
   playMusic('title');   // the overlay doesn't go through showScreen(), so a run's map or battle track would play on
   open();
   renderMenu();
-  openHub();
+  return openHub();
 }
 
 /** Leave the title for another screen: it fades while that screen comes in under it. */
