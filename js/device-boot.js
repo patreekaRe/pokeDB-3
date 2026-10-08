@@ -30,12 +30,13 @@ const LIFT = [{ transform: 'translateY(48px) scale(0.96)', opacity: 0 }, { trans
  */
 export async function bootDevice(host, { below = null, screen = null, onScreen = null, after = null } = {}) {
   host.querySelectorAll('.boot-cover, .boot-splash').forEach(n => n.remove());
+  host.classList.add('booting');   // the map's top bar sits on its LCD, so it hides until the cover is open
   if (after) {
     host.style.opacity = '0';
     await after;
     host.style.opacity = '';
   }
-  if (calm()) { playSound('dex-on'); onScreen?.(); return; }
+  if (calm()) { host.classList.remove('booting'); playSound('dex-on'); onScreen?.(); return; }
   if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
   const cover = el('div', 'cdev-cover boot-cover');
   cover.append(el('span', 'pdx-cover-hinge'), ...coverArt());
@@ -58,6 +59,7 @@ export async function bootDevice(host, { below = null, screen = null, onScreen =
   host.classList.add('booted');   // the lid's lights blink
   await settle(cover.animate(SWING, { duration: 520, easing: 'cubic-bezier(0.55, 0, 0.35, 1)' }));
   cover.remove();
+  host.classList.remove('booting');
   onScreen?.();
   if (!hello) return;
   hello.classList.remove('wait');

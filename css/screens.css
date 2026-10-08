@@ -5250,6 +5250,13 @@ body[data-screen="map-screen"] .home-key svg, .room-home .home-key svg { width: 
 body[data-screen="map-screen"] .home-dex:active .home-key, .room-home:active .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key { width: 26px; height: 26px; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key svg { width: 15px; height: 15px; }
+/* the top bar is laid on the device, so it waits for the cover to swing open (bootDevice()'s .booting) */
+body:has(#map-screen.booting) .topbar { visibility: hidden; }
+/* nothing on the map drags or rubber-bands the page; only the map itself scrolls, inside its glass (the user's ask, 2026-10-08) */
+html:has(body[data-screen="map-screen"]), body[data-screen="map-screen"] { overflow: hidden; overscroll-behavior: none; }
+body[data-screen="map-screen"] #map-screen:not(.tower) { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body[data-screen="map-screen"] #map-screen:not(.tower) .map-wrap { touch-action: pan-x pan-y; }
+body[data-screen="map-screen"] :is(#map-screen, .topbar) img { -webkit-user-drag: none; }
 /* on a map the Home key sits on the hinge, after the lights (the user's call, 2026-10-08); fixed, not moved in the DOM,
    since the top bar's button serves every screen. 95px = the hinge's padding, lens and lights */
 body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { position: fixed; z-index: 21; left: 95px; top: calc(var(--topbar-h) + (var(--hinge-h) - 30px) / 2); }
