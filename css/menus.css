@@ -1429,7 +1429,12 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .gem-back.on::before { left: -24px; }
 @media (prefers-reduced-motion: no-preference) { .gem-back.on .gem-icon { animation: backRock 1.4s ease-in-out infinite; } }
 @keyframes backRock { 0%, 100% { rotate: 0deg; } 25% { rotate: -14deg; } 50% { rotate: 0deg; } 60% { rotate: 6deg; } 70% { rotate: 0deg; } }
-.gem-soon { font-size: 0.55rem; letter-spacing: 0.06em; color: #e0e4f0; }
+/* a sign's subline (Best F19, Win a run) sits on its white lower band, so the name stays centred on the colour */
+.gem-soon {
+  position: absolute; left: calc(var(--gp) * 15); right: 0; bottom: 0; height: 32%;
+  display: grid; place-items: center;
+  font-size: 0.55rem; letter-spacing: 0.06em; color: var(--ink); text-shadow: none;
+}
 /* a badge line in the result window opens the Trainer Card (badgeItem() in js/run.js) */
 .result-badge-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 .result-badge-btn:hover, .result-badge-btn:focus-visible { color: #c08a10; outline: none; }
