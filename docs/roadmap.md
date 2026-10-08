@@ -95,6 +95,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   c) furniture unlocked from badges, achievements, feats and Safari pages, ~30 more pieces (Run in: CLOUD for the data, LOCAL for the art);
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
   e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
+  Decorating (the user's ask, 2026-10-08, keep all of it): **rotate** a piece (a tap on it gives Rotate / Move / Store;
+  drawn in code, a piece facing 4 ways is its front, back and one side mirrored, so 3 drawings, not 4), **wallpaper and
+  floors** swapped like furniture, **rugs** under things, **small things on top** of tables and shelves (Gen 3's dolls on a
+  desk: a second layer per tile), **colour variants** of a piece (a palette swap, cheap since it's painted in code), and
+  maybe a **day / night light** through the window from `js/daytime.js`. Build rotate, wallpaper / floor and rugs into a);
+  stacking and colour variants can be c).
   Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
   Pokémon on show, and whether furniture is pure decoration or gives a small perk.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
