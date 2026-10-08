@@ -293,6 +293,13 @@ const ART = {
     <rect x="13" y="19" width="6" height="9" rx="1" fill="#c87a3a" stroke="${INK}" stroke-width="1.6"/>
     <rect x="19.5" y="14" width="3.6" height="3.6" rx="0.6" fill="#8cc8ff" stroke="${INK}" stroke-width="1.2"/>`,
 
+  // Leave a room: an open door, a green arrow walking out of it
+  leave: `<path d="M5 28.5V5h14v23.5" fill="#5a3a24" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M5 28.5V5l9 3v23.5Z" fill="#c87a3a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="11.6" cy="18" r="1.2" fill="#ffe08a"/>
+    <path d="M17 16.5h8.5M22 12.5l4.2 4-4.2 4" fill="none" stroke="${INK}" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M17 16.5h8.5M22 12.5l4.2 4-4.2 4" fill="none" stroke="#5ad06a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+
   // ---- the device's text icons (a run's full record, the Pokédex's move kinds, the Safari areas) ----
   heart: `<path d="M16 27.5C9 22.5 3.5 17.6 3.5 11.6c0-4 3.1-7.1 6.9-7.1 2.6 0 4.5 1.4 5.6 3.4 1.1-2 3-3.4 5.6-3.4 3.8 0 6.9 3.1 6.9 7.1 0 6-5.5 10.9-12.5 15.9Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M7.6 11c.2-1.8 1.4-3 3-3.2" fill="none" stroke="#ffc0cc" stroke-width="2" stroke-linecap="round"/>`,

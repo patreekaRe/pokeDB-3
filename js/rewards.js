@@ -184,9 +184,11 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   }
 
   const skip = $('reward-skip');
-  // a room standing in its scene (an event, the Center) has the slim bar along the bottom, and Leave is its button
-  if (/\b(event|center)-room\b/.test(layout)) $('room-keys').prepend(skip);
+  // a room (an event, the Center, the Mart, the grotto) has the slim bar along the bottom, and Leave is its key after Home
+  const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
+  if (inBar) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
+  skip.classList.toggle('room-leave', inBar);
   skip.hidden = !onSkip;
   skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
   $('reward-skip-text').textContent = skipLabel;

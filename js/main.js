@@ -268,6 +268,8 @@ function init() {
   $('dock-menu').addEventListener('click', () => requestMenu());
   $('room-home').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('room-home').addEventListener('click', () => $('brand-btn').click());
+  $('reward-skip').prepend(el('span', 'leave-ico'));
+  $('reward-skip').firstChild.append(smoothIcon('leave'));   // only shown while it's the room bar's Leave key
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,

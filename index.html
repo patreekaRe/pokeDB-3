@@ -369,10 +369,13 @@
       <div class="reward-bottom">
         <div class="reward-log" id="reward-log"><span id="reward-log-text" aria-hidden="true"></span><span class="sr-only" id="reward-log-live" aria-live="polite"></span></div>
       </div>
-      <!-- the event rooms' and the Center's slim bar along the bottom, a shorter Sky Pillar bar (the user's call, 2026-10-07):
-           HP, money and coins on one LCD, then Leave (the screen's own #reward-skip, moved in by showChoice()) and the
-           Pokédex at the far right; the top bar steps aside there -->
+      <!-- the rooms' slim bar along the bottom (the event rooms, the Center, the Mart, the grotto), one row (the user's call,
+           2026-10-07): the Pokédex's Home key, Leave (the screen's own #reward-skip, moved in by showChoice()), then HP and
+           money on one LCD; the top bar steps aside there -->
       <div class="room-bar" id="room-bar">
+        <div class="room-keys" id="room-keys">
+          <button type="button" class="mdex-btn room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"><span class="mdex-ico"></span></button>
+        </div>
         <div class="room-lcd">
           <div class="gb-hp" id="room-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
@@ -381,9 +384,6 @@
           <span class="gb-hp-num" id="room-hp-text"></span>
           <span class="room-cash" title="Pokédollars - prize money for this run">💴 <span id="room-money">0</span></span>
           <span class="room-cash" title="PokéCoins - spend them at the Game Corner">💰 <span class="coin-value">0</span></span>
-        </div>
-        <div class="room-keys" id="room-keys">
-          <button type="button" class="mdex-btn room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"><span class="mdex-ico"></span></button>
         </div>
       </div>
     </section>

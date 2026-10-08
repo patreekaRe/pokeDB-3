@@ -1770,3 +1770,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   top bar; the rooms carry a slim bottom bar instead (`#room-bar`, a shorter Sky Pillar bar: HP, ₽ and coins on one LCD,
   Leave, which is `#reward-skip` moved in by `showChoice()`, and a Home key opening the Pokédex). The page's fan-note footer
   and the title's © line are gone; the disclaimer lives in About.
+- **Room bar on one row** (2026-10-07, the user's call): Home, then Leave as a key like it (green, an open door with an arrow,
+  its word under it), then HP / ₽ / coins; the Mart and the treasure grotto use it too (their Leave was a pill above the text box).
