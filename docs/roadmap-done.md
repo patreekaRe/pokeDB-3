@@ -1777,6 +1777,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   move pick: no top bar, the bottom bar with the title on its hinge LCD.
 - **R2. Room bar's Home key is the map's round key** (2026-10-07, the user's ask): `#room-home` holds the same `.home-key`
   (`homeKey()` in `js/main.js`, round, shell colours, a house), a little bigger (38px), instead of the square red button.
+- **R2b. Leave, Skip and the confirm are round keys like Home** (2026-10-08, the user's call: the green Leave, the labelled
+  Skip and the red A key didn't fit): `roundKey()` in `js/main.js` draws all four (white line glyphs on the shell's colour,
+  `.round-key`); Leave and Skip keep their word for screen readers only, the confirm keeps its word beside the tick.
 - **R3. No PokéCoins on the room bar** (2026-10-07, the user's ask): `.room-lcd` shows HP and ₽ only; coins stay on the
   Game Corner and the device.
 - **R4. One ₽ on a normal run's map** (2026-10-07, the user's ask): the run card's `#run-money` (a climb's, which has no

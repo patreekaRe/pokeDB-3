@@ -5077,44 +5077,43 @@ body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.
   flex: none; display: grid; place-items: center; width: 48px; min-height: 46px; padding: 0; border: 0;
   background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-/* Leave is a key like Home, told apart by its open door and its word under it, in the green of a way out; a fight's
-   reward steps have Skip there instead, in the shell's colour like Home (the user's call, 2026-10-08) */
+/* Leave (a door, an arrow out) and a fight's reward steps' Skip (a double chevron) are round keys exactly like Home, the
+   word kept for screen readers only (the user's call, 2026-10-08); js/main.js roundKey() draws all of them */
+.round-key {
+  display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--shell-hi), var(--shell) 60%, var(--shell-lo));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
+  color: #fff; transition: translate 0.06s, box-shadow 0.06s;
+}
+.round-key svg { width: 21px; height: 21px; filter: drop-shadow(0 1px 0 var(--shell-deep)); }
 .leave-ico, .skip-ico { display: none; }
+#reward-skip.room-leave .leave-ico, #reward-skip.room-skip .skip-ico { display: grid; }
 #reward-skip:is(.room-leave, .room-skip) {
-  display: grid; justify-items: center; align-content: center; gap: 2px; width: 58px; padding: 4px 2px 3px; border: 0; border-radius: 12px;
-  background: #2f8a3a; box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
-  color: #fff; font: 0.5rem var(--pixel-font); transition: translate 0.06s, box-shadow 0.06s; -webkit-tap-highlight-color: transparent;
+  flex: none; display: grid; place-items: center; width: 48px; min-height: 46px; padding: 0; border: 0; border-radius: 0;
+  background: none; box-shadow: none; -webkit-tap-highlight-color: transparent;
 }
-#reward-skip:is(.room-leave, .room-skip):active { transform: none; translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+#reward-skip:is(.room-leave, .room-skip):active { transform: none; }
+#reward-skip:is(.room-leave, .room-skip):active .round-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 #reward-skip:is(.room-leave, .room-skip)[hidden] { display: grid; visibility: hidden; }   /* Team Rocket has no Leave: the LCD keeps its place */
-#reward-skip.room-skip { background: radial-gradient(circle at 35% 30%, var(--shell-hi), var(--shell) 60%, var(--shell-lo)); }
-#reward-skip.room-skip .pp-pill { text-shadow: 1px 1px 0 var(--shell-deep); }
-#reward-skip.room-skip .skip-ico { display: block; line-height: 0; filter: drop-shadow(0 2px 1px rgba(20, 10, 30, 0.45)); }
-#reward-skip.room-skip .skip-ico .smooth-icon { width: 22px; height: 22px; }
-#reward-skip.room-leave .leave-ico { display: block; line-height: 0; filter: drop-shadow(0 2px 1px rgba(20, 10, 30, 0.45)); }
-#reward-skip.room-leave .leave-ico .smooth-icon { width: 24px; height: 24px; }
 #reward-skip:is(.room-leave, .room-skip) .pp-pill {
-  display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0; border-radius: 0;
-  background: none; box-shadow: none; color: inherit; font-size: inherit; white-space: nowrap; text-transform: uppercase; text-shadow: 1px 1px 0 #1a4a20;
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
-#reward-skip:is(.room-leave, .room-skip) .pp-pill::before { content: none; }
-/* the screen's confirm is the device's A key beside the hinge's lights, its word beside it, pulsing while it waits */
+/* the screen's confirm is a round key with a tick beside the hinge's lights, its word beside it, pulsing while it waits */
 .room-ok {
   flex: none; display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 2px; border: 0; background: none; cursor: pointer;
   color: #fff; font: 0.55rem var(--pixel-font); font-synthesis-weight: none; text-transform: uppercase; white-space: nowrap;
   text-shadow: 1px 1px 0 var(--shell-deep); -webkit-tap-highlight-color: transparent; animation: roomOkIn 0.2s ease-out;
 }
 .room-ok[hidden] { display: none; }
-.room-a {
-  flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--shell-rim);
-  background: var(--btn-a); box-shadow: 0 3px 0 var(--shell-deep); font-size: 0.7rem; line-height: 1; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
-  animation: roomOkPulse 1.2s ease-in-out infinite; transition: translate 0.06s;
-}
-.room-ok:active .room-a { translate: 0 3px; box-shadow: 0 0 0 var(--shell-deep); }
+.room-a { flex: none; width: 34px; height: 34px; animation: roomOkPulse 1.2s ease-in-out infinite; }
+.room-a svg { width: 19px; height: 19px; }
+.room-ok:active .room-a { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 .room-ok:focus-visible { outline: none; }
 .room-ok:focus-visible .room-a { outline: 3px solid #f8d030; outline-offset: 2px; }
 @keyframes roomOkIn { from { opacity: 0; scale: 0.6; } }
-@keyframes roomOkPulse { 50% { box-shadow: 0 3px 0 var(--shell-deep), 0 0 0 5px rgba(255, 255, 255, 0.35); } }
+@keyframes roomOkPulse {
+  50% { box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep), 0 0 0 5px rgba(255, 255, 255, 0.35); }
+}
 @media (prefers-reduced-motion: reduce) { .room-ok, .room-a { animation: none; } }
 /* a picked card blown up over a room: the bar (and its A key) stays lit above the dimmed screen */
 body:has(.card-focus.over-room) #reward-screen.in-room .room-bar { z-index: 31; }
@@ -5123,7 +5122,7 @@ body:has(.card-focus.over-room) #reward-screen.in-room .room-bar { z-index: 31; 
   #reward-screen.in-room .room-bar { padding-inline: 8px; }
   .room-row { gap: 6px; }
   .room-home { width: 42px; }
-  #reward-skip:is(.room-leave, .room-skip) { width: 50px; }
+  #reward-skip:is(.room-leave, .room-skip) { width: 42px; }
   .room-a { width: 30px; height: 30px; }
   .room-lcd { gap: 5px; padding-inline: 5px; }
   .room-lcd .gb-hp-tag { display: none; }
