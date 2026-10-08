@@ -135,6 +135,8 @@ body.titling { overflow: hidden; }
   opacity: 0;
 }
 .press-start:focus-visible { outline: 2px dashed var(--gold); outline-offset: 6px; }
+/* no words under the shut Pokédex (the user's call, 2026-10-08: its pulsing power button says it); the button stays for keys and screen readers */
+.press-start { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .title-screen.powering .press-start { visibility: hidden; }
 
 /* the smooth light over the pixel sky (js/title-light.js), and the dark the shut Pokédex lies in until it's on */

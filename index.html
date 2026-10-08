@@ -39,13 +39,12 @@
     <!-- the broken Sealed Gate on the ledge, only once Mewtwo is free (js/title.js): a tap goes to Mewtwo's Prepare step -->
     <button type="button" class="title-gate" id="title-gate" aria-label="The broken Sealed Gate: play as Mewtwo" hidden><canvas class="title-gate-art" id="title-gate-art" aria-hidden="true"></canvas></button>
     <div class="title-veil" aria-hidden="true"></div>   <!-- the dark the shut Pokédex lies in, lifted once it's on -->
-    <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js: the version, a sticker in the top-right corner -->
     <div class="title-center">
       <div class="title title-big" aria-label="Poké Deckbound: Roguelike Deckbuilder">
         <span class="title-logo-wrap">
           <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
         </span>
-        <small aria-hidden="true">Roguelike Deckbuilder</small>
+        <span class="title-sub"><small aria-hidden="true">Roguelike Deckbuilder</small><button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button></span>   <!-- the version tag beside it opens the Patch notes (js/patchnotes.js) -->
       </div>
       <!-- before the first tap: a Pokédex lying shut in the dark; the tap powers it on (powerOn() in js/title.js) -->
       <div class="title-dex" id="title-dex" aria-hidden="true">

@@ -6,6 +6,7 @@
 import { el, sleep } from './ui.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { ENEMY_DEFS, BIOMES } from './data/enemies.js';
+import { PATCHES } from './data/patchnotes.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SECONDS = 38;   // the roll's length at its own pace
@@ -35,7 +36,7 @@ function sections(entry) {
 
 function rollOf(entry) {
   const roll = el('div', 'credits-roll');
-  roll.append(el('h2', 'credits-logo', 'Poké Deckbound'), el('p', 'credits-version', 'v1.0'));
+  roll.append(el('h2', 'credits-logo', 'Poké Deckbound'), el('p', 'credits-version', `v${PATCHES[0].version}`));
   for (const part of sections(entry)) {
     const box = el('section', 'credits-part');
     if (part.cast) {
