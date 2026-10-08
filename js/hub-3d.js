@@ -1,6 +1,6 @@
 /* hub-3d.js  -  the Clearing as a walkable HD-2D hub (branch secret-base, session 3 part a): after PRESS START your
    partner stands in a small 3D Clearing and walks up to the places instead of tapping the title's signs. The trail out
-   (Continue / New game), the Safari Zone's gate, the Sky Pillar, the Sealed Gate once broken, the Secret Base's door in
+   (Continue / New game), the Safari Zone's gate, the Game Corner's stall, the Sky Pillar, the Sealed Gate once broken, the Secret Base's door in
    the Ancient Tree's roots each open what their sign opens; the Pokédex is a shut handheld in the bottom left corner that
    grows into the device (the user's call, 2026-10-08: always to hand, not a place to walk to). Everything is painted here in code in
    the Clearing's palette (js/scene.js's clearing day colours): pixel-textured ground, billboard trees (instanced) and
@@ -28,6 +28,7 @@ const START = { x: 6, y: 8 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
+const SEEN = 2.6;             // how near (tiles) a place's doorstep you walk before its name tag pops up
 
 // the Clearing's day colours (BIOME_ART.clearing in js/scene.js); the light, not the paint, follows the clock
 const P = {
@@ -55,11 +56,11 @@ const LIGHT = {
 };
 const AIRS = ['clearing-day', 'clearing-night'];
 // the painted pixels that shine (an emissive map each): the lantern by the base's door, the Sky Pillar's door and stair
-const GLOWS = { lantern: ['#f8e070', '#fff4c0', '#f8d848'], door: ['#2a3a6a', '#6a8ae0', '#141a30'] };
+const GLOWS = { lantern: ['#f8e070', '#fff4c0', '#f8d848'], door: ['#2a3a6a', '#6a8ae0', '#141a30'], slots: ['#fff8e0', '#fff4a0', '#f83048'] };
 const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[1, 7], [6, 7]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[2, 8], [6, 8]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
@@ -209,6 +210,36 @@ function safariArt(open) {
   if (!open) {
     for (let x = 13; x < 47; x++) { const y = 36 + Math.round(Math.sin((x - 13) / 34 * Math.PI) * 3); a.dot(x, y, (x >> 2) % 2 ? '#e84838' : '#f8f0e0', 1, 2); }
   }
+  return a.c;
+}
+
+/** The Game Corner's stall: a striped awning trimmed with bulbs over two slot machines, three 7s on each one's reels. */
+function cornerArt() {
+  const a = art(48, 40), seven = ['###', '..#', '.#.', '.#.', '.#.'];
+  a.dot(3, 10, P.wood[2], 2, 30); a.dot(43, 10, P.wood[2], 2, 30);
+  a.dot(3, 10, P.wood[1], 1, 30); a.dot(43, 10, P.wood[1], 1, 30);
+  a.dot(5, 11, '#3a2a5a', 38, 27);   // the booth's dark back
+  for (let y = 1; y < 10; y++) {   // the awning, red and yellow, wider at its foot
+    const half = 21 + y * 0.35;
+    for (let x = Math.round(24 - half); x < Math.round(24 + half); x++) {
+      const red = Math.floor((x + 1) / 5) % 2 === 0;
+      a.dot(x, y, y === 1 ? '#f8f0d0' : red ? (y > 7 ? '#b8302a' : '#e84838') : (y > 7 ? '#d8a830' : '#f8d848'));
+    }
+  }
+  for (let x = 2; x < 46; x += 5) a.dot(x, 10, Math.floor((x + 1) / 5) % 2 === 0 ? '#b8302a' : '#d8a830', 4, 2);   // its scalloped hem
+  for (let x = 4; x < 45; x += 4) a.dot(x, 12, '#fff4a0');   // a row of bulbs
+  for (const x0 of [7, 26]) {   // the slot machines
+    a.dot(x0, 15, '#2a2a3a', 15, 23); a.dot(x0 + 1, 16, '#c8c8d8', 13, 21); a.dot(x0 + 1, 16, '#e8e8f0', 13, 1);
+    a.dot(x0 + 1, 18, '#2a2a3a', 13, 9);
+    for (let r = 0; r < 3; r++) {
+      const cx = x0 + 2 + r * 4;
+      a.dot(cx, 19, '#fff8e0', 3, 7);
+      seven.forEach((row, y) => [...row].forEach((p, c) => { if (p === '#') a.dot(cx + c, 20 + y, '#f83048'); }));
+    }
+    a.dot(x0 + 4, 29, '#8a8aa0', 7, 2); a.dot(x0 + 3, 33, '#3a3a4a', 9, 2);   // the coin slot and tray
+    a.dot(x0 + 15, 20, '#8a8aa0', 1, 7); a.dot(x0 + 14, 17, '#f83048', 3, 3);   // the lever
+  }
+  a.dot(2, 38, P.wood[3], 44, 2); a.dot(2, 38, P.wood[2], 44, 1);
   return a.c;
 }
 
@@ -392,17 +423,24 @@ function makePlaces() {
   ];
   const safari = safariOpen(save);
   list.push({
-    id: 'safari', name: 'Safari Zone', step: { x: 1, y: 7 }, tiles: rect(0, 6, 2, 6), tag: [1, 3.8, 6], open: safari,
+    id: 'safari', name: 'Safari Zone', step: { x: 1, y: 3 }, tiles: rect(0, 0, 2, 2), tag: [1, 3.8, 2], open: safari,
     line: safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
     buttons: safari ? [['Enter', acts.onSafari]] : [],
-    build: (g) => g.add(board(safariArt(safari), tileX(1), tileZ(6))),
+    build: (g) => g.add(board(safariArt(safari), tileX(1), tileZ(2))),
   });
   list.push({
-    id: 'safari-board', name: 'Safari Ranks', step: { x: 3, y: 7 }, tiles: [[3, 6]], tag: [3, 2.6, 6], open: safari,
+    id: 'safari-board', name: 'Safari Ranks', step: { x: 3, y: 4 }, tiles: [[3, 3]], tag: [3, 2.6, 3], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(6))),
+    build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(3))),
+  });
+  // a low stall, so the Safari stays in view over it
+  list.push({
+    id: 'corner', name: 'Game Corner', step: { x: 2, y: 8 }, tiles: rect(1, 7, 3, 7), tag: [2, 2.9, 7], open: true,
+    line: 'Spend PokéCoins on starters, perks, shinies and Poké Balls.',
+    buttons: [['Play', acts.onCorner]],
+    build: (g) => { const c = cornerArt(), b = board(c, tileX(2), tileZ(7)); glowing(b.material, c, GLOWS.slots, '#fff0b0', 0.7); g.add(b); },
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -426,7 +464,7 @@ function makePlaces() {
     build: (g) => g.add(board(pinArt(), tileX(9), tileZ(3))),
   });
   if (gateOpen()) list.push({
-    id: 'gate', name: 'Sealed Gate', step: { x: 1, y: 3 }, tiles: rect(0, 0, 2, 2), tag: [1, 4, 1], open: true,
+    id: 'gate', name: 'Sealed Gate', step: { x: 10, y: 9 }, tiles: rect(9, 8, 11, 8), tag: [10, 4, 8], open: true,
     line: 'The broken Sealed Gate. Something waits beyond it.',
     buttons: [['Go through', acts.onGate]],
     build: (g) => {
@@ -435,7 +473,7 @@ function makePlaces() {
       gateArt = { ...makeGate(48, 58), c, t: tex(c), at: 0 };
       const m = new THREE.MeshStandardMaterial({ map: gateArt.t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, emissive: '#ffffff', emissiveMap: gateArt.t, emissiveIntensity: 0.35 });
       const h = 58 / TP * 1.1, mesh = new THREE.Mesh(new THREE.PlaneGeometry(48 / TP * 1.1, h), m);
-      mesh.position.set(tileX(1), h / 2, tileZ(1.4));
+      mesh.position.set(tileX(10), h / 2, tileZ(8));
       mesh.castShadow = true;
       g.add(mesh);
       paintGateArt(0);
@@ -466,7 +504,7 @@ function buildPlaces() {
   glowMats = []; tree = null;
   tags.forEach(t => t.el.remove());
   places = makePlaces();
-  blocked = new Set(TREE_TILES.filter(([x, y]) => !(gateOpen() && x <= 2 && y <= 2)).map(([x, y]) => key(x, y)));
+  blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
   tags = [];
   for (const p of places) {
     const g = new THREE.Group();
@@ -483,15 +521,13 @@ function buildPlaces() {
     root.querySelector('.hub-tags').append(el);
     tags.push({ el, p, at: new THREE.Vector3(tileX(p.tag[0]), p.tag[1], tileZ(p.tag[2])) });
   }
-  // trees stand where the Sealed Gate does until it breaks
-  forest.children.forEach(m => { if (m.userData.gateSpot) m.visible = !gateOpen(); });
   setTime(true);
 }
 
 /* ---------- the Clearing round them ---------- */
 
-// trees inside the walkable grid (they block); the back left three only until the Sealed Gate breaks
-const TREE_TILES = [[0, 9], [0, 10], [0, 11], [12, 9], [12, 10], [12, 11], [3, 11], [0, 0], [2, 1], [0, 2]];
+// trees inside the walkable grid (they block)
+const TREE_TILES = [[0, 9], [0, 10], [0, 11], [12, 9], [12, 10], [12, 11], [3, 11]];
 
 function buildClearing() {
   const W = COLS + 2 * M, D = ROWS + M + FRONT;
@@ -506,7 +542,7 @@ function buildClearing() {
   scene.add(forest);
   const rnd = seeded(21), kinds = [treeArt(1), treeArt(2), treeArt(3, P.deep), treeArt(4, P.deep), bushArt(5), bushArt(6)];
   const spots = kinds.map(() => []);
-  const put = (k, x, z, s, gateSpot = false) => spots[k].push({ x, z, s, gateSpot });
+  const put = (k, x, z, s) => spots[k].push({ x, z, s });
   // the forest's wall: three ragged rows behind, three down each side, the far ones bigger and darker
   for (let r = 0; r < 3; r++) for (let x = -M + 0.5; x < COLS + M; x += 1.25 + rnd() * 0.4) {
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x - 0.5) + (rnd() - 0.5) * 0.5, tileZ(-1 - r * 1.2 - rnd() * 0.4), 1.25 + r * 0.25 + rnd() * 0.2);
@@ -516,26 +552,19 @@ function buildClearing() {
     const x = s < 0 ? -1 - r * 1.2 : COLS + r * 1.2;
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
-  for (const [x, y] of TREE_TILES) {
-    const back = x <= 2 && y <= 2;
-    put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), back ? 1.15 : 1, back);
-  }
+  for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
   for (const x of [1, 3, 4, 8, 9, 11]) put(4 + (x % 2), tileX(x), tileZ(ROWS) + 0.2, 1);   // bushes along the front edge, the trail between
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
-    // the gate's spot is its own little set, shown or hidden as the gate breaks
-    for (const gate of [false, true]) {
-      const list = spots[k].filter(s => s.gateSpot === gate);
-      if (!list.length) continue;
-      const geo = new THREE.PlaneGeometry(c.width / TP, c.height / TP);
-      geo.translate(0, c.height / TP / 2, 0);
-      const mesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ map: tex(c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), list.length);
-      list.forEach((s, i) => mesh.setMatrixAt(i, m4.makeScale(s.s, s.s, s.s).setPosition(s.x, 0, s.z)));
-      mesh.castShadow = true;
-      mesh.userData.gateSpot = gate;
-      mesh.raycast = () => {};
-      forest.add(mesh);
-    }
+    const list = spots[k];
+    if (!list.length) return;
+    const geo = new THREE.PlaneGeometry(c.width / TP, c.height / TP);
+    geo.translate(0, c.height / TP / 2, 0);
+    const mesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ map: tex(c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), list.length);
+    list.forEach((s, i) => mesh.setMatrixAt(i, m4.makeScale(s.s, s.s, s.s).setPosition(s.x, 0, s.z)));
+    mesh.castShadow = true;
+    mesh.raycast = () => {};
+    forest.add(mesh);
   });
 }
 
@@ -887,6 +916,7 @@ function placeTags() {
     t.el.hidden = off;
     if (!off) t.el.style.translate = `${Math.round((p.x + 1) / 2 * w)}px ${Math.round((1 - p.y) / 2 * h)}px`;
     t.el.classList.toggle('near', here === t.p && !walker.path.length);
+    t.el.classList.toggle('show', Math.hypot(walker.x - tileX(t.p.step.x), walker.z - tileZ(t.p.step.y)) < SEEN);
   }
 }
 

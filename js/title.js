@@ -34,6 +34,7 @@ import { smoothIcon } from './smooth-icons.js';
 import { paintTitleLight, runTitleLight } from './title-light.js';
 import { showHub, hideHub } from './hub-3d.js';
 import { pref } from './prefs.js';
+import { toggleShop } from './shop.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -159,6 +160,7 @@ function openHub() {
     onPokedex: actions.onPokedex,
     onHelp: actions.onHelp,
     onSafari: actions.onSafari,
+    onCorner: () => toggleShop(),
     onBoard: actions.onBoard,
     onTower: actions.onTower,
     onGate: () => { playCry(mewtwo.line[0].id); actions.onGate(mewtwo); },

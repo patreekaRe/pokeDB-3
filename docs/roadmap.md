@@ -123,7 +123,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      legendaries flying over, the walk into the base and back, footsteps and the Clearing's air, the Escape Rope, the
      version tag. Since then (the user's call, 2026-10-08) the Pokédex is no stand in the Clearing but a shut
      handheld in the bottom left corner that grows into the device over the hub and shrinks back into it (`openDevice()`'s
-     `from`). **Next: the user playtests the branch and decides if it goes live.**
+     `from`). Layout since (the user's calls, 2026-10-08): the Safari gate and its kiosk stand at the end of the back-left
+     road, a low Game Corner stall on the left (`cornerArt()`), the Sealed Gate once broken on the right where the
+     Pokédex stood; name tags pop up only within `SEEN` tiles of a place's doorstep. **Next: the user playtests the branch and decides if it goes live.**
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
