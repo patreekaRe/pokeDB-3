@@ -108,6 +108,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   Safari / Sky Pillar boards' fairness; the reward is how it looks, and the Pokémon reacting).
   Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
   Pokémon on show, and whether furniture is pure decoration or gives a small perk.
+- **Walkable 3D (HD-2D) pilot** built 2026-10-08 on `secret-base` only, not pushed (the user wants to playtest first):
+  `?3d` (`js/base-3d.js`, Three.js 0.160.0 from jsDelivr) builds the `?base` room as a diorama from the same save and
+  paintings (`roomArt()` / `pieceArt()` in `js/secret-base.js`), the partner's GIF frames via ImageDecoder (a live `<img>`
+  without it), tap to walk (BFS round furniture), tap it for its cry, a follow camera, tilt-shift on the partner and bloom
+  in one pass chain, light by `timeOfDay()` (`&time=night` pins it), `&fps` shows a counter. Waiting on the user: base in
+  3D, the Clearing hub, both, or neither (main's roadmap entry has the plan).
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.

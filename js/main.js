@@ -306,6 +306,8 @@ function init() {
   // tap walks on to its next place, then the next area
   if (params.has('area')) return peekSafari(params);
   // ?base: the Secret Base (a first pass, roadmap idea; not reachable from the game yet)
+  // ?3d: the same room as a walkable HD-2D diorama (the roadmap's pilot, js/base-3d.js)
+  if (params.has('3d')) return import('./base-3d.js').then(m => m.openBase3d());
   if (params.has('base')) return import('./secret-base.js').then(m => m.openBase());
   if (place) {
     document.body.classList.add('scene-peek');

@@ -130,6 +130,33 @@ const freshBase = () => ({
 
 const footprint = (it) => { const p = PIECES[it.id]; return it.dir % 2 ? [p.h, p.w] : [p.w, p.h]; };
 
+/* For the ?3d pilot (js/base-3d.js), which builds the same room out of these paintings. */
+export { PIECES, T, WALL, COLS, ROWS, footprint };
+export const loadBase = () => getSave().secretBase ?? freshBase();
+
+/** The wallpaper strip (WALL high) and the bare floor, painted on one canvas the room's size. */
+export function roomArt(b) {
+  const c = new OffscreenCanvas(W, H), keep = g, kept = base;
+  g = c.getContext('2d'); base = b;
+  paintWall(); paintFloor();
+  g = keep; base = kept;
+  return c;
+}
+
+/** One piece alone on a clear canvas: a flat one top-down at its first facing, a wall one as its strip, an upright one
+    at `dir` with 24 px of headroom above its tiles (the tiles' top edge at y 24). */
+export function pieceArt(id, dir = 0) {
+  const p = PIECES[id], keep = g;
+  const [fw, fh] = p.flat || p.layer === 'wall' ? [p.w, p.h] : footprint({ id, dir });
+  const c = new OffscreenCanvas(fw * T, p.layer === 'wall' ? WALL : p.flat ? fh * T : fh * T + 24);
+  g = c.getContext('2d');
+  if (p.flat) p.flat(p.w * T, p.h * T);
+  else if (p.layer === 'wall') p.wall(0);
+  else p.upright(0, 24, dir);
+  g = keep;
+  return c;
+}
+
 let base, canvas, holding = null, sel = -1, ghost = null, badGhost = 0, hint;
 
 function paintWall() {
@@ -347,7 +374,7 @@ export function openBase() {
   const root = document.createElement('section');
   root.className = 'secret-base';
   root.innerHTML = `
-    <header class="sb-top"><h2>Secret Base</h2><button type="button" class="sb-close" aria-label="Leave">✕</button></header>
+    <header class="sb-top"><h2>Secret Base</h2><a class="sb-close sb-3d" href="?3d">3D</a><button type="button" class="sb-close" aria-label="Leave">✕</button></header>
     <div class="sb-room"><canvas class="pixel" width="${W}" height="${H}"></canvas></div>
     <p class="sb-hint"></p>
     <div class="sb-actions" id="sb-actions" hidden>
