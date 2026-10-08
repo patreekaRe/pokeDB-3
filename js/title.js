@@ -22,7 +22,7 @@ import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { safariAccess, DAY_PASS } from './data/balls.js';
-import { getSave } from './storage.js';
+import { getSave, updateSave } from './storage.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { tipAt } from './tips.js';
@@ -116,7 +116,6 @@ export function initTitle(handlers) {
   $('title-refresh').addEventListener('click', refreshGame);
   // the corner's icons are smooth vector art like the signs (the user's call); the speaker is audio.js's
   $('title-account').querySelector('.ta-pc').replaceChildren(smoothIcon('pc'));
-  $('title-help').querySelector('.ta-pc').replaceChildren(smoothIcon('help'));
   const tags = screen.querySelectorAll('.title-sound .vol-tag');
   tags[0].replaceChildren(smoothIcon('music'));
   tags[1].replaceChildren(smoothIcon('bell'));
@@ -212,7 +211,7 @@ function renderMenu(dir = 0, from = null) {
   const gems = {
     main: () => [
       run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
-      gem('new', 'New game', hatch, smoothIcon('egg', 'gem-egg')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
+      helpRow(gem('new', 'New game', hatch, smoothIcon('egg', 'gem-egg'))),   // an Egg, a new adventure hatching: Continue has the Poké Ball
       modesGem(),
       gem('dex', 'Pokédex', actions.onCollection, smoothIcon('dex')),   // one sign: the device's own home has the Trainer Card and Game Corner
     ],
@@ -272,6 +271,27 @@ function slide(dir, next, from = null) {
   renderMenu(dir, from);
   menu.append(ghost);
   swapping = setTimeout(() => { swapping = 0; ghost.remove(); }, 420);
+}
+
+/** How to play hangs off New game's right end as an emote bubble (the user's call, 2026-10-08: whoever needs it is about to
+    start a game). It hops until it's first tapped (`helpTapped`; the first launch's own How to play doesn't count). */
+function helpRow(btn) {
+  const row = el('div', 'gem-row');
+  const help = el('button', 'gem-side gem-help');
+  help.type = 'button';
+  help.id = 'title-help';
+  help.title = 'How to play';
+  help.setAttribute('aria-label', 'How to play');
+  help.classList.toggle('calm', !!getSave().helpTapped);
+  help.append(smoothIcon('help', 'gem-side-icon'));
+  help.addEventListener('click', () => {
+    playSound('confirm');
+    if (!getSave().helpTapped) updateSave(d => { d.helpTapped = true; });
+    help.classList.add('calm');
+    actions.onHelp();
+  });
+  row.append(btn, help);
+  return row;
 }
 
 /** A sign that opens a sub-menu: a ▶ on its right end says so. */

@@ -236,7 +236,6 @@ function init() {
   });
 
   // Buttons that are always on screen
-  $('title-help').addEventListener('click', openHowto);
   initPatchNotes();
   initPokedex();
   initPokedexButton();
@@ -267,6 +266,7 @@ function init() {
     onContinue: continueGame,
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
+    onHelp: openHowto,
     onSafari: openSafariPrep,
     onTower: openTowerPrep,
     onBoard: () => openLeaderboard(),

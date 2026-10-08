@@ -113,9 +113,6 @@
 @media (min-width: 601px) { .title-corner { grid-template-columns: auto; } }
 @keyframes taSpin { to { rotate: 360deg; } }
 @media (max-width: 600px) { .title-refresh .ta-pc { font-size: 20px; } .title-refresh { margin: 11px 0 0 4px; } }
-/* How to play: a small ❓ between the speaker and Refresh, centred on the speaker in the phones' row */
-.title-help .ta-pc { font-size: 26px; }
-@media (max-width: 600px) { .title-help .ta-pc { font-size: 22px; } .title-help { margin-top: 9px; } }
 .ta-pc { position: relative; font-size: 40px; line-height: 1; filter: drop-shadow(0 3px 0 rgba(10, 8, 40, 0.55)); }
 .ta-label { text-shadow: 2px 2px 0 #1c1440; }
 .title-account:hover .ta-label, .title-account:focus-visible .ta-label, .title-account[aria-expanded="true"] .ta-label { color: #ffd070; }
@@ -328,6 +325,42 @@
 @media (max-width: 420px) {
   .gem-board { left: calc(100% + 4px); }
   .gem-side { width: 36px; height: 36px; font-size: 18px; }
+}
+/* How to play: a white emote bubble with a red ? hung off New game's right end, its tail on the sign (helpRow() in
+   js/title.js); it hops twice and rings out every few seconds until first tapped (.calm), then only breathes */
+.gem-side.gem-help {
+  left: calc(100% - 10px); top: 4px; translate: 0 -50%;
+  width: 38px; height: 34px; overflow: visible; z-index: 2;
+  border: 3px solid #181010; border-radius: 14px; background: linear-gradient(#fff 60%, #e4e4ee);
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 rgba(20, 10, 30, 0.5);
+}
+.gem-help::before {   /* the tail, pointing down-left at the sign */
+  content: ''; position: absolute; left: 2px; bottom: -9px; width: 10px; height: 10px;
+  background: #ececf4; border: solid #181010; border-width: 0 0 3px 3px; transform: skewY(-30deg) rotate(-15deg);
+}
+.gem-help::after {   /* the ring that pulses out */
+  content: ''; position: absolute; inset: -3px; border-radius: 16px; border: 2px solid #fff4b0; opacity: 0; pointer-events: none;
+}
+.gem-help .gem-side-icon.smooth-icon { width: 24px; height: 24px; }
+.gem-help:active { translate: 0 calc(-50% + 2px); }
+@media (prefers-reduced-motion: no-preference) {
+  .gem-help:not(.calm) { animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms + 120ms), helpHop 3.2s ease-out infinite 1.4s; }
+  .gem-help:not(.calm)::after { animation: helpRing 3.2s ease-out infinite 1.4s; }
+  .gem-help.calm .gem-side-icon { animation: helpBreathe 3s ease-in-out infinite; }
+  .calm-fx .gem-help::after { animation: none; }
+}
+@keyframes helpHop {
+  0%, 70%, 100% { translate: 0 -50%; }
+  76% { translate: 0 calc(-50% - 7px); }
+  82% { translate: 0 -50%; }
+  87% { translate: 0 calc(-50% - 3px); }
+  92% { translate: 0 -50%; }
+}
+@keyframes helpRing { 0%, 70% { opacity: 0; scale: 1; } 74% { opacity: 0.9; } 100% { opacity: 0; scale: 1.45; } }
+@keyframes helpBreathe { 0%, 100% { scale: 1; } 50% { scale: 1.08; } }
+@media (max-width: 420px) {
+  .gem-side.gem-help { left: calc(100% - 14px); width: 34px; height: 30px; border-radius: 12px; }
+  .gem-help .gem-side-icon.smooth-icon { width: 21px; height: 21px; }
 }
 .gem-side:focus-visible { outline: 3px solid #f8e070; outline-offset: 2px; }
 @media (hover: hover) { .gem-side:hover { filter: brightness(1.08); } }
