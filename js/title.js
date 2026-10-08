@@ -108,7 +108,7 @@ export function initTitle(handlers) {
   const flyer = screen.querySelector('.title-flyer');
   nextFlyer(flyer);
   flyer.addEventListener('animationiteration', () => nextFlyer(flyer));   // swapped while it's off screen
-  $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
+  $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO POWER ON' : 'PRESS TO POWER ON';
   screen.addEventListener('click', (e) => {
     if (!pressed && !e.target.closest('.gem')) return start(e);
     // a sub-menu goes back on a tap on the empty sky, like every window closes on a tap outside it

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Poké Deckbound – Rogue-Like Deck Battler</title>
+  <title>Poké Deckbound – Roguelike Deckbuilder</title>
   <meta name="description" content="A free browser deck-builder and roguelike battle game. Pick a starter, build a deck of moves, and battle wild monsters. Fan project, not affiliated with Nintendo.">
   <meta name="theme-color" content="#1b1f3a">
-  <meta property="og:title" content="Poké Deckbound – Rogue-Like Deck Battler">
+  <meta property="og:title" content="Poké Deckbound – Roguelike Deckbuilder">
   <meta property="og:description" content="Pick a starter, build a deck of moves and battle wild monsters. Built with plain HTML, CSS and JavaScript.">
   <meta property="og:image" content="https://patreekare.github.io/pokeDB-3/assets/screenshots/social.jpg?v=2">   <!-- bump ?v= when the picture changes: apps cache previews by URL -->
   <meta property="og:image:width" content="1280">
@@ -39,13 +39,13 @@
     <!-- the broken Sealed Gate on the ledge, only once Mewtwo is free (js/title.js): a tap goes to Mewtwo's Prepare step -->
     <button type="button" class="title-gate" id="title-gate" aria-label="The broken Sealed Gate: play as Mewtwo" hidden><canvas class="title-gate-art" id="title-gate-art" aria-hidden="true"></canvas></button>
     <div class="title-veil" aria-hidden="true"></div>   <!-- the dark the shut Pokédex lies in, lifted once it's on -->
+    <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js: the version, a sticker in the top-right corner -->
     <div class="title-center">
-      <div class="title title-big" aria-label="Poké Deckbound: Rogue-Like Deck Battler">
+      <div class="title title-big" aria-label="Poké Deckbound: Roguelike Deckbuilder">
         <span class="title-logo-wrap">
           <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
-          <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js -->
         </span>
-        <small aria-hidden="true">Rogue-Like Deck Battler</small>
+        <small aria-hidden="true">Roguelike Deckbuilder</small>
       </div>
       <!-- before the first tap: a Pokédex lying shut in the dark; the tap powers it on (powerOn() in js/title.js) -->
       <div class="title-dex" id="title-dex" aria-hidden="true">

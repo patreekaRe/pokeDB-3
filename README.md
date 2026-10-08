@@ -1,4 +1,4 @@
-# Poké Deckbound – Rogue-Like Deck Battler
+# Poké Deckbound – Roguelike Deckbuilder
 
 A browser roguelike deck-battler. Pick a starter, climb a branching map, grow your deck with new moves and relics, evolve, and beat three bosses. It is built with plain HTML, CSS and JavaScript, with no frameworks and no build step.
 

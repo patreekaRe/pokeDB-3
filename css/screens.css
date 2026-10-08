@@ -19,7 +19,7 @@
   margin-top: 0.45em;
   font-family: var(--pixel-font); font-synthesis-weight: none;   /* in the game's pixel font, with a hard outline in the logo's dark blue */
   font-weight: 400;
-  font-size: clamp(1rem, 4vw, 1.6rem);
+  font-size: clamp(0.75rem, 3vw, 1.1rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff8e0;
