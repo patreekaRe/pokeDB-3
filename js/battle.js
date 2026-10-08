@@ -98,11 +98,11 @@ function showPile(which) {
   const b = battle;
   const lists = { draw: b.drawPile, discard: b.discard, exhaust: exhaustedCards(b) };
   $('piles-tabs').replaceChildren(...PILES.map(([id, icon, label]) => {
-    const tab = el('button', 'index-tab');
+    const tab = el('button', 'pile-tab');
     tab.type = 'button';
     tab.setAttribute('role', 'tab');
     tab.setAttribute('aria-selected', String(id === which));
-    tab.append(el('span', 'index-tab-icon', icon), el('span', 'index-tab-label', `${label} ${lists[id].length}`));
+    tab.append(el('span', 'pile-tab-icon', icon), `${label} ${lists[id].length}`);
     tab.addEventListener('click', () => showPile(id));
     return tab;
   }));

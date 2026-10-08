@@ -10,15 +10,11 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 ## Open, ready to build
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
-- D2. **The rest of the cream windows** (D's audit, 2026-10-07; D moved the map's to the Pokédex look). Still cream
-  (`--win-*`, `.dialog` / `.panel` in `css/base.css`). Order agreed 2026-10-07: run's end (done), rewards / Mart (done),
-  then the rest; battle last, its nameplates and intents probably staying cream (the classic look); `.btn` moved window by
-  window, never globally; the old Index retired if nothing opens it. Windows: the battle's piles (`#piles-dialog`), the cloud save pair (`#cloud-dialog`, `#cloud-pick-dialog`), patch notes
-  (`#patch-dialog`), About and How to play (the windows and the device's Help / About apps, `.cdev-win`), the old Index
-  (`#index-dialog`), the deck preview `.panel`. In battle: the nameplates, the Ability banner, intent bubbles, the battle
-  log. Elsewhere: the Center's label, the Hall of Fame plate, the Trainer Card's info strip (`.tc-info`), the
-  title's gem side panels (`.gem-side`, `.gem-areas-pop`), the rope ask (`.rope-ask`), and every `.btn` (the cream menu
-  option). Staying cream on purpose: tap tips, keyword boxes (`.card-tip`), the cards' own text windows.
+- D2. **The last cream: battle** (D's audit, 2026-10-07; groups 1-3 done, see the archive). Left: the nameplates, the
+  Ability banner, intent bubbles, the battle log, probably staying cream (the classic look, the user to decide), and the
+  title's run plate (`.title-plate`, under the rope). `.btn` moves window by window, never globally (the cream `.btn` is
+  still the default outside `.dev-window`). Staying cream on purpose: tap tips, keyword boxes (`.card-tip`), the cards'
+  own text windows, the scenes' text boxes.
 - E. **Upgrade preview.** Choosing a card to upgrade (PP Up, Tutor Notes, events): highlight the numbers that change, or
   show base and + side by side, before confirming, instead of tapping in and out.
 

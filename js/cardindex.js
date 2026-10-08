@@ -1,48 +1,32 @@
 /* ============================================================
-   cardindex.js  -  the Index (StS's Compendium): every card in the
-   game, a tab per type, grouped by rarity with the evolution-only
-   moves on their own, then every relic and item. Everything stays a
-   dark "???" until you meet it in a run, Pokédex-style (`seen` in
-   the save, markSeen()). openCardIndex() opens it as a window (nothing does since the menu went, 2026-10-05); the device's
-   Moves app (movesApp()) is its compact list. Read-only: tap a card
-   to read it bigger.
+   cardindex.js  -  the Collection device's Moves app (StS's
+   Compendium): every card in the game, a tab per type, grouped by
+   rarity with the evolution-only moves on their own. Everything stays
+   a dark "???" until you meet it in a run, Pokédex-style (`seen` in
+   the save, markSeen()). Read-only: tap a card to read it bigger.
+   The old Index window it came from was retired in D2 (2026-10-07).
    ============================================================ */
 
 import { ALL_CARDS, TYPES, evolutionCardsFor } from './data/cards.js';
-import { RELICS, ABILITIES } from './data/relics.js';
-import { ITEMS } from './data/items.js';
 import { getSave, updateSave } from './storage.js';
-import { $, el, makeCard, makeRelic, itemSprite, zoomable, openDialog } from './ui.js';
+import { el, makeCard, zoomable } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
 import { smoothIcon } from './smooth-icons.js';
 
-const TAB_LOOK = { mystery: { icon: '🔒', label: '???' }, relics: { icon: '🎒', label: 'Relics' }, items: { icon: '🧴', label: 'Items' } };
+const TAB_LOOK = { mystery: { label: '???' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
-
-let tab = 'fire';
 
 const SORTS = {
   cost: (a, b) => costRank(a) - costRank(b) || a.name.localeCompare(b.name),
   name: (a, b) => a.name.localeCompare(b.name),
 };
 
-// the deck window's filter and sort; a locked card sorts as ??? so A-Z can't give its name away
+// the filter and sort; a locked card sorts as ??? so A-Z can't give its name away
 function filtered(cards, seen) {
   const { indexFilter = 'all', indexSort = 'cost' } = getSave();
   const nameOf = (c) => (seen.has(c.id) ? c.name : '???');
   const sort = indexSort === 'name' ? (a, b) => nameOf(a).localeCompare(nameOf(b)) || SORTS.cost(a, b) : SORTS.cost;
   return cards.filter(c => indexFilter === 'all' || kindOf(c) === indexFilter).sort(sort);
-}
-
-function group(label, all, seen, note) {
-  const cards = filtered(all, seen);
-  if (!cards.length) return [];
-  const head = el('div', 'index-head');
-  const title = el('h3', 'index-heading', label);
-  title.append(el('span', 'index-count', `${cards.filter(c => seen.has(c.id)).length}/${cards.length}`));
-  head.append(title);
-  if (note) head.append(el('p', 'index-note', note));
-  return [head, ...cards.map(card => (seen.has(card.id) ? zoomable(makeCard(card), card, 0) : lockedCard(card)))];
 }
 
 /** A move not met yet: its card's frame, a dark silhouette of its art, and ??? for its name and text. */
@@ -57,174 +41,15 @@ function lockedCard(card, hideType = false) {
   return node;
 }
 
-/** A relic or item: its tile once seen in a run, else a dark silhouette of its sprite. */
-function thingTile(thing, seen) {
-  if (!seen) {
-    const node = el('div', 'relic index-thing locked');
-    node.append(itemSprite(thing, 'relic-icon'), el('strong', 'relic-name', '???'), el('span', 'relic-text', 'Not found yet.'));
-    return node;
-  }
-  const node = makeRelic(thing, { tips: true });
-  node.removeAttribute('title');   // its name and text are right there
-  node.classList.add('index-thing');
-  if (thing.only) node.append(el('span', `index-only type-${thing.only}`, `${TYPES[thing.only].label} only`));
-  return node;
-}
-
-function thingGroup(label, things, seen, note) {
-  const head = el('div', 'index-head');
-  const title = el('h3', 'index-heading', label);
-  title.append(el('span', 'index-count', `${things.filter(t => seen.has(t.id)).length}/${things.length}`));
-  head.append(title);
-  if (note) head.append(el('p', 'index-note', note));
-  return [head, ...things.map(t => thingTile(t, seen.has(t.id)))];
-}
-
-/** The Relics or Items tab, grouped by rarity (and boss relics on their own). */
-function renderThings() {
-  const { body, total } = thingsBody(tab);
-  $('index-cards').replaceChildren(...body);
-  $('index-cards').classList.add('index-things');
-  $('index-total').textContent = total;
-}
-
-function thingsBody(kind) {
-  const relics = kind === 'relics';
-  const all = relics ? RELICS : ITEMS;
-  const seen = new Set(getSave().seen[kind]);
-  const body = [];
-  if (relics) {
-    const abilities = Object.values(ABILITIES).filter(a => a.id !== 'pressure' || getSave().unlocked.includes('mewtwo'));
-    body.push(...thingGroup('Abilities', abilities, new Set(abilities.map(a => a.id)),
-      'Every starter has its type\'s Ability from the start.'));
-  }
-  for (const [rarity, label] of RARITIES) {
-    const set = all.filter(t => !t.boss && t.rarity === rarity);
-    if (set.length) body.push(...thingGroup(label, set, seen));
-  }
-  if (relics) body.push(...thingGroup('Boss', all.filter(t => t.boss), seen, 'Only offered after beating a boss.'));
-  if (relics) body.push(...thingGroup('Special', all.filter(t => t.unique), seen, 'Won by beating Chad Master Kenmatta in his dojo.'));
-  return { body, total: `${all.filter(t => seen.has(t.id)).length}/${all.length} found` };
-}
-
-function render() {
-  $('index-cards').classList.remove('index-things');
-  const cardTab = !TAB_LOOK[tab];
-  $('index-tools').hidden = !cardTab;
-  if (cardTab) {
-    const { indexFilter = 'all', indexSort = 'cost' } = getSave();
-    for (const [id, value] of [['index-filter', indexFilter], ['index-sort', indexSort]]) {
-      for (const btn of $(id).children) btn.setAttribute('aria-pressed', String(btn.dataset.v === value));
-    }
-  }
-  if (tab === 'mystery') renderMystery();
-  else if (TAB_LOOK[tab]) renderThings();
-  else renderCards();
-  $('index-empty').hidden = !cardTab || $('index-cards').children.length > 0;
-  $('index-dialog').scrollTop = 0;
-  for (const btn of document.querySelectorAll('.index-tab')) {
-    btn.setAttribute('aria-selected', String(btn.dataset.type === tab));
-    btn.tabIndex = btn.dataset.type === tab ? 0 : -1;
-  }
-}
-
-function renderMystery() {
-  const all = ALL_CARDS.filter(card => card.type === 'psychic');
-  const cards = filtered([...all], new Set());
-  const head = el('div', 'index-head');
-  const title = el('h3', 'index-heading', '???');
-  title.append(el('span', 'index-count', String(all.length)));
-  head.append(title, el('p', 'index-note', 'The secret starter\'s moves are still unknown.'));
-  $('index-cards').replaceChildren(...(cards.length ? [head, ...cards.map(card => lockedCard(card, true))] : []));
-  $('index-total').textContent = `0/${all.length} found`;
-}
-
-function renderCards() {
-  const cards = ALL_CARDS.filter(c => c.type === tab);
-  const seen = new Set(getSave().seen.cards);
-  const body = [];
-  for (const [rarity, label] of RARITIES) {
-    const set = cards.filter(c => !c.evoOnly && (c.rarity || 'common') === rarity);
-    if (set.length) body.push(...group(label, set, seen));
-  }
-  const evo = [[1, 'Evolution: 1st form', 'Offered when your starter first evolves (pick 1 of 2).'],
-    [2, 'Evolution: final form', 'Offered when your starter reaches its final form.']];
-  for (const [stage, label, note] of evo) {
-    const set = evolutionCardsFor(tab, stage);
-    if (set.length) body.push(...group(label, [...set], seen, note));
-  }
-  $('index-cards').replaceChildren(...body);
-  $('index-total').textContent = `${cards.filter(c => seen.has(c.id)).length}/${cards.length} found`;
-}
-
-function visibleTabs() {
-  return [
-    'fire', 'grass', 'water', 'normal',
-    getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery',
-    'relics', 'items',
-  ];
-}
-
-function renderTabs() {
-  const tabs = $('index-tabs');
-  tabs.replaceChildren(...visibleTabs().map(type => {
-    const btn = el('button', `index-tab type-${type}`);
-    btn.type = 'button';
-    btn.dataset.type = type;
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-controls', 'index-cards');
-    const look = TAB_LOOK[type] || TYPES[type];
-    btn.append(el('span', 'index-tab-icon', look.icon), el('span', 'index-tab-label', look.label));
-    btn.addEventListener('click', () => pick(type));
-    return btn;
-  }));
-}
-
-function pick(type, focus = false) {
-  if (!visibleTabs().includes(type)) return;
-  tab = type;
-  render();
-  if (focus) document.querySelector(`.index-tab[data-type="${type}"]`)?.focus();
-}
-
-export function initCardIndex() {
-  const tabs = $('index-tabs');
-  renderTabs();
-  for (const [id, key] of [['index-filter', 'indexFilter'], ['index-sort', 'indexSort']]) {
-    $(id).addEventListener('click', (e) => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      updateSave(d => { d[key] = btn.dataset.v; });
-      render();
-    });
-  }
-  tabs.addEventListener('keydown', (e) => {
-    const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-    if (!step) return;
-    e.preventDefault();
-    const available = visibleTabs();
-    pick(available[(available.indexOf(tab) + step + available.length) % available.length], true);
-  });
-}
-
-/** Opens on the given type's tab (the picked starter's), else the last one looked at. */
-export function openCardIndex(type) {
-  const available = visibleTabs();
-  if (available.includes(type)) tab = type;
-  if (!available.includes(tab)) tab = available.includes('psychic') ? 'psychic' : 'fire';
-  renderTabs();
-  render();
-  openDialog('index-dialog');
-}
+const moveTabs = () => ['fire', 'grass', 'water', 'normal', getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery'];
 
 /* ---------- the Collection device's Moves app (js/device.js): type tabs, the filter and sort, then the cards ---------- */
 
 let movesTab = null;
-const moveTabs = () => visibleTabs().filter(t => !['relics', 'items'].includes(t));
 const FILTERS = [['all', 'All'], ['attack', 'Attack'], ['skill', 'Skill'], ['power', 'Power']];
 const ORDERS = [['cost', 'Cost'], ['name', 'A-Z']];
 
-/** A row of LCD keys for one of the save's settings (the Index window's filter and sort, shared with it). */
+/** A row of LCD keys for one of the save's settings (the filter and sort). */
 function lcdKeys(key, choices, fallback, redraw) {
   const row = el('div', 'mv-keys');
   row.setAttribute('role', 'group');

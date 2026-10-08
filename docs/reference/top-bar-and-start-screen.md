@@ -22,8 +22,8 @@ records, and wins by starter. The newer counters live in `stats` (`bossKills`, `
 `awardCoins()`, `deepestBiome` in `startBiome()`); old saves are seeded by `seedStats()` in `js/storage.js` (each boss ever
 beaten counts once). Main menu's icon is the games' cream PC (🖥️, with the `v`/`V` cream
 letters in `PALETTE`). The
-**Index** (`js/cardindex.js`, `#index-dialog`, StS's Compendium; "Card index" until 6c.11b) opens from the
-the Collection's Moves, Relics and Items cards (the device's apps since 2026-10-05; `openCardIndex()` has no caller now): every card in `ALL_CARDS`,
+**Index** (`js/cardindex.js`, StS's Compendium; "Card index" until 6c.11b) was a window (`#index-dialog`), retired in D2
+(2026-10-07) once nothing opened it; what follows lives on in the device's Moves, Relics and Items apps: every card in `ALL_CARDS`,
 a sticky tab row per type (Fire, Grass, Water, Neutral, then a purple **???** for Mewtwo's coming Psychic pool: `renderMystery()`, 8 blank locked cards, counted nowhere; the user's ask 2026-09-28), grouped by rarity and
 then the two evolution tiers (`evolutionCardsFor()`), sorted by cost then name at
 stage 0 numbers, each card `zoomable()`. It opens on the picked starter's type,

@@ -1749,3 +1749,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   event / Forget choices, the old Index) and the hand picker's `.pick-banner` (its border the verb's colour) are each a green
   LCD in a ring of the device's shell (end of the D2 block in `css/screens.css`). The scenes' text boxes (evolution, Hall of
   Fame, films) keep the classic window; the Mart's shelf icons stay bare.
+- **The rest of the windows in the Pokédex look** (D2 group 3, 2026-10-07): the battle's piles (the deck window's twin, its
+  tabs the deck's keys), patch notes, About, How to play (its slide track the green screen) and the cloud save pair are
+  `.dev-window`s; the Center / event signs (`.center-label`, its border still the choice's colour), the Hall of Fame plate
+  (gold-ringed for the Depths and the summit), the Trainer Card's `.tc-info`, the Safari's `.gem-areas-pop`, `.gem-side`
+  and the rope ask are green LCDs in a ring of the shell. The old Index window (`#index-dialog`) is retired: nothing opened it.

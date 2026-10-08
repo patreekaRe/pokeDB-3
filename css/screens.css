@@ -1861,11 +1861,12 @@ body.battle-intro { pointer-events: none; }
 .hof-scene.mon-in .hof-mon { transform: translate3d(0, 0, 0); transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1); }
 .hof-scene.mon-in .hof-light { opacity: 1; }
 .hof-plate-slot { min-height: 64px; width: min(calc(100% - 32px), 440px); }
+/* the plate is a green LCD in a ring of the device's shell (D2, 2026-10-07); the Depths' and the summit's ring is gold */
 .hof-plate {
   padding: 8px 14px;
-  border: 3px solid #b8b8c8; border-radius: var(--round);
-  background: var(--win-bg); color: var(--win-ink);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  border: 3px solid #2a2a30; border-radius: var(--round);
+  background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884; color: #1f3a14;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px var(--shell), 0 0 0 8px var(--shell-rim), 3px 5px 0 8px rgba(0, 0, 0, 0.35);
 }
 .hof-scene .hof-plate { opacity: 0; scale: 0.8; transition: opacity 0.3s, scale 0.3s cubic-bezier(0.2, 1.6, 0.4, 1); }
 .hof-scene.plate-in .hof-plate { opacity: 1; scale: 1; }
@@ -1984,7 +1985,7 @@ body.battle-intro { pointer-events: none; }
   background: linear-gradient(#fff0a0 0 4px, #e8d0ff 4px 8px, #b088f0 8px 12px, #f8d048 12px 16px, #7848c8 16px 21px, #5830a0 21px 36px, #2a1050 36px);
 }
 .hof-scene.depths .hof-title { color: #f8d048; text-shadow: 2px 0 0 #4a1880, -2px 0 0 #4a1880, 0 2px 0 #4a1880, 0 -2px 0 #4a1880, 0 5px 0 #0c0418; }
-.hof-scene.depths .hof-plate { border-color: #d8b048; box-shadow: 0 0 0 2px #4a1880, inset 0 0 0 2px #4a1880, 3px 3px 0 2px rgba(0, 0, 0, 0.4); }
+.hof-scene.depths .hof-plate { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px #d8b048, 0 0 0 8px #4a1880, 3px 5px 0 8px rgba(0, 0, 0, 0.35); }
 .hof-scene.depths .hof-stat { border-color: #b088f0; background: rgba(28, 8, 52, 0.85); }
 .hof-scene.depths .hof-mon img { filter: drop-shadow(0 0 10px rgba(190, 120, 255, 0.7)); }
 @media (max-width: 720px) { .hof-scene.depths .hof-title { font-size: 0.95rem; } }
@@ -2000,7 +2001,7 @@ body.battle-intro { pointer-events: none; }
   background: linear-gradient(#f8e078 0 4px, #48c070 4px 8px, #a8b0a0 8px 12px, #d8b048 12px 16px, #788878 16px 21px, #586858 21px 36px, #304030 36px);
 }
 .hof-scene.summit .hof-title { color: #f8e078; text-shadow: 2px 0 0 #186838, -2px 0 0 #186838, 0 2px 0 #186838, 0 -2px 0 #186838, 0 5px 0 #141a48; }
-.hof-scene.summit .hof-plate { border-color: #d8b048; box-shadow: 0 0 0 2px #186838, inset 0 0 0 2px #186838, 3px 3px 0 2px rgba(0, 0, 0, 0.4); }
+.hof-scene.summit .hof-plate { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px #d8b048, 0 0 0 8px #186838, 3px 5px 0 8px rgba(0, 0, 0, 0.35); }
 .hof-scene.summit .hof-stat { border-color: #58c080; background: rgba(20, 26, 72, 0.88); }
 .hof-scene.summit .hof-mon img { filter: drop-shadow(0 0 10px rgba(255, 220, 140, 0.7)); }
 @media (max-width: 720px) { .hof-scene.summit .hof-title { font-size: 1rem; } }
@@ -2111,7 +2112,6 @@ body.battle-intro { pointer-events: none; }
 .deck-seg button:first-child { border-left: 0; }
 .deck-seg button:hover { background: var(--win-tile); }
 .deck-seg button[aria-pressed="true"] { background: #9aa2c8; color: #fff; text-shadow: 1px 1px 0 #565d84; }
-.index-tools { margin: 12px 0 0; }
 .deck-empty { margin: 12px 0; text-align: center; color: var(--muted); }
 @media (max-width: 420px) { .deck-seg button { padding: 6px 7px 5px; font-size: 0.62rem; } }
 
@@ -2881,57 +2881,7 @@ body.battle-intro { pointer-events: none; }
   .howto-beats { font-size: 0.58rem; }
 }
 
-/* ---------- CARD INDEX (js/cardindex.js): StS's Compendium, a tab per type ---------- */
-.index-tabs {
-  position: sticky;
-  top: -22px;   /* the dialog's padding: the tabs stay put while the cards scroll under them */
-  z-index: 3;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 -22px 4px;
-  padding: 10px 12px 12px;
-  background: var(--win-bg);
-  border-bottom: 3px dashed var(--win-edge);
-}
-.index-tab {
-  --c1: #9aa2c8; --c2: #565d84;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px 7px;
-  border: 3px solid var(--win-edge);
-  border-radius: var(--round-sm);
-  background: var(--win-panel);
-  box-shadow: 2px 2px 0 var(--win-shadow);
-  color: var(--win-ink);
-  font-family: var(--pixel-font); font-synthesis-weight: none;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-.index-tab.type-fire  { --c1: #ff8f4d; --c2: #b8321a; }
-.index-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
-.index-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
-.index-tab.type-psychic { --c1: #d49aff; --c2: #7138a8; }
-.index-tab-icon { font-size: 1.1rem; line-height: 1; }
-.index-tab:hover { background: var(--win-tile); }
-.index-tab[aria-selected="true"] { border-color: var(--c2); background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); transform: translateY(-2px); box-shadow: 2px 4px 0 var(--win-shadow); }
-.index-dialog .card-pool { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(144px, 1fr)); }
-.index-head { grid-column: 1 / -1; margin-top: 14px; }
-.index-dialog .index-heading { display: flex; align-items: baseline; gap: 8px; margin: 0; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 1rem; color: #283060; }
-.index-count { font-size: 0.7em; color: var(--muted); }
-#index-total, #dex-total { white-space: nowrap; }
-.index-dialog .index-note { margin: 6px 0 0; color: var(--muted); font-size: 0.85rem; }
-.index-tab.type-relics { --c1: #e0a040; --c2: #8a5a18; }
-.index-tab.type-items  { --c1: #e878b8; --c2: #983068; }
-.index-dialog .index-things { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
-.index-thing { min-height: 0; justify-content: flex-start; padding: 12px 10px; gap: 6px; }
-.index-thing .relic-icon { font-size: 2.4rem; }
-.index-thing .relic-name { font-size: 0.8rem; }
-.index-thing .relic-text { font-size: 0.8rem; }
-.index-thing.locked .relic-icon img { filter: brightness(0) opacity(0.55); }   /* a silhouette until it's met in a run */
-.index-thing.locked .relic-name, .index-thing.locked .relic-text { color: var(--win-muted); }
-/* a move not met yet: a greyed card, its art a black silhouette, ??? for the rest (lockedCard() in js/cardindex.js) */
+/* ---------- a move not met yet in the Moves app: a greyed card, its art a black silhouette, ??? for the rest (lockedCard() in js/cardindex.js) ---------- */
 .card.index-locked { filter: grayscale(1) brightness(0.7); cursor: default; }
 .card.index-locked .card-art > * { filter: brightness(0) opacity(0.6); }
 .card.index-locked .card-text { display: grid; place-items: center; font-size: 1.4em; color: #707078; }
@@ -2940,17 +2890,8 @@ body.battle-intro { pointer-events: none; }
 .index-only.type-grass { background: #2e8a40; }
 .index-only.type-water { background: #2a68c8; }
 .index-only.type-psychic { background: #7138a8; }
-@media (max-width: 720px) {
-  .index-dialog { padding: 16px; }
-  .index-dialog h2 { font-size: 1.1rem; }
-  #index-total { font-size: 0.7rem; }
-  #dex-total { font-size: 0.62rem; }
-  .index-dialog .card-pool { grid-template-columns: repeat(3, 1fr); gap: 16px 8px; }
-  .index-tabs { top: -16px; margin: 0 -16px 4px; gap: 5px; padding: 8px 6px 10px; }
-  .index-tab { flex-direction: column; gap: 3px; padding: 6px 4px 5px; min-width: 0; flex: 1 1 0; font-size: 0.62rem; }
-  .index-dialog .index-things { grid-template-columns: repeat(2, 1fr); gap: 10px 8px; }
-  .index-tab { font-size: 0.5rem; }
-}
+#dex-total { white-space: nowrap; }
+@media (max-width: 720px) { #dex-total { font-size: 0.62rem; } }
 
 /* ---------- 8. STATS & ACHIEVEMENTS (from the Poké Ball menu) ---------- */
 .records-dialog { width: min(560px, 94vw); }
@@ -3235,7 +3176,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 .mart-props { grid-area: counter; z-index: 4; align-self: end; display: flex; align-items: flex-end; gap: 2px; margin: 0 -4px -26px; pointer-events: none; }
 .mart-props img { image-rendering: pixelated; }
 .mart-props-gap { flex: 1; }
-.mart-window .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; }
+.mart-window .reward-option:disabled .center-label { animation: none; color: #5a6a50; border-color: #909098; }
 @media (max-width: 420px) {
   .mart-window :is(.group-cards, .group-items, .group-relics) { margin: 0 6px; padding-inline: 12px; }
   .mart-window :is(.group-items, .group-relics) .reward-option { width: 54px; }
@@ -3319,7 +3260,8 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   pointer-events: none;
 }
 .center-nurse img { position: absolute; left: 0; top: 0; width: 122px; image-rendering: pixelated; }
-/* the floating sign over each, a small Pokégear bubble with the intent's pixel tail, bobbing to say "tap me" */
+/* the floating sign over each, a small green LCD in a ring of the device's shell (D2, 2026-10-07; a cream Pokégear bubble
+   before) with a pixel tail, bobbing to say "tap me"; its border is the choice's colour */
 .center-label {
   position: absolute;
   left: 50%;
@@ -3327,9 +3269,9 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   translate: -50% 0;
   padding: 6px 10px;
   border: 2px solid #e05838;
-  background: var(--win-bg);
-  color: var(--win-ink);
-  box-shadow: 0 0 0 2px #303038, 2px 2px 0 2px rgba(0, 0, 0, 0.4);
+  background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884;
+  color: #1f3a14;
+  box-shadow: 0 0 0 2px #2a2a30, 0 0 0 5px var(--shell), 0 0 0 7px var(--shell-rim), 2px 4px 0 7px rgba(0, 0, 0, 0.35);
   border-radius: var(--round-sm);
   font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 0.8rem;
@@ -3346,13 +3288,13 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   top: 100%;
   width: 10px;
   height: 6px;
-  margin-top: 2px;
+  margin-top: 7px;
   transform: translateX(-50%);
-  background: #303038;
+  background: var(--shell-rim);
   clip-path: polygon(0 0, 100% 0, 100% 50%, 70% 50%, 70% 100%, 30% 100%, 30% 50%, 0 50%);
 }
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
-:is(.center-room, .event-room) .reward-option:disabled .center-label { animation: none; color: var(--win-muted); border-color: #909098; filter: grayscale(1); }
+:is(.center-room, .event-room) .reward-option:disabled .center-label { animation: none; color: #5a6a50; border-color: #909098; filter: grayscale(1); }
 :is(.center-room, .event-room).resting .center-label { visibility: hidden; }
 /* what an event choice does, a second line in its sign (spotOption()), in the text boxes' pixel font like every
    other window (the user's call, 2026-09-28) */
@@ -3365,7 +3307,7 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   line-height: 1.4;
   white-space: normal;
   text-align: center;
-  color: var(--win-muted);
+  color: #3a5a28;
 }
 /* the ? events with a scene of their own (eventRoom()) work the same way over their props; the well's two tosses are
    its two halves, so their signs lean apart */
@@ -4960,6 +4902,59 @@ body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not(
   border: 0; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
   box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
 }
+
+/* the rest of the windows on the device (D2 group 3, 2026-10-07): the battle's piles (the deck window's twin, its tabs
+   the deck's keys), patch notes, About, How to play and the cloud save pair; their text on the green screen, a light LCD
+   tile for anything that stood out on the cream */
+.dev-window .deck-seg button[aria-selected="true"] { background: #1f3a14; color: #c4dca0; text-shadow: none; }
+.pile-tab-icon { margin-right: 5px; }
+.piles-dialog .deck-tools { justify-content: center; }
+.piles-dialog .deck-empty { margin: 0 0 10px; font-size: 0.72rem; }
+.dev-window .dev-screen a { color: #1f3a14; text-decoration-thickness: 2px; }
+.dev-window .dev-screen a:hover { color: #3a6a20; }
+.dev-window .dev-screen .hint { color: #3a5a28; }
+.dev-window .dev-screen :is(.disclaimer, .panel) {
+  background: #e4f0cc; border: 2px solid #1f3a14; border-radius: 8px; box-shadow: 0 2px 0 rgba(31, 58, 20, 0.3); color: #1f3a14;
+}
+.about-dialog .dev-screen { font-size: 0.85rem; line-height: 1.6; }
+.about-dialog .dev-screen > p { text-align: left; }
+.about-dialog .disclaimer { font-size: 0.75rem; }
+.about-dialog .credits { margin: 12px 0 0; }
+
+.patch-dialog.dev-window { padding-bottom: 12px; }
+.patch-dialog .patch-body { margin: 6px; padding: 12px 10px; }
+.patch-dialog :is(.records-label, .patch-head) { color: #1f3a14; }
+.patch-dialog .patch-title { color: #6a4a00; }
+.patch-dialog .patch-date { color: #3a5a28; }
+.patch-dialog .dialog-actions { flex: none; justify-content: center; margin-top: 14px; }
+
+.cloud-dialog .dev-screen > div > p:not(.hint) { text-align: center; }
+.cloud-dialog .cloud-email input { border: 2px solid #1f3a14; background: #e4f0cc; color: #1f3a14; }
+.cloud-dialog .cloud-email input::placeholder { color: #5a7a48; }
+.cloud-dialog .cloud-email input:focus { outline-color: #1f3a14; }
+.cloud-pick-dialog .cloud-save h3 { color: #1f3a14; }
+.cloud-pick-dialog .dev-screen > p { text-align: center; }
+
+.howto-dialog.dev-window h2 { margin-right: 44px; font-size: 0.8rem; }
+.howto-dialog.dev-window .howto-track { margin: 6px; padding: 0; }
+.howto-dialog.dev-window .howto-slide { padding: 12px 10px 10px; }
+.howto-dialog.dev-window :is(.howto-li, .howto-tip) {
+  background: #e4f0cc; border: 2px solid #1f3a14; box-shadow: 0 2px 0 rgba(31, 58, 20, 0.3);
+}
+.howto-dialog.dev-window .howto-flow .howto-li.boss { border-color: #8a6200; background: #f4e6a4; }
+.howto-dialog.dev-window .howto-flow .howto-li::before { background: #1f3a14; color: #c4dca0; }
+.howto-dialog.dev-window .howto-beats { color: #6a4a00; }
+.howto-dialog.dev-window .howto-close {
+  top: 13px; right: 12px; width: 36px; height: 36px; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
+}
+.howto-dialog.dev-window .howto-close:hover { background: var(--shell); color: #fff; }
+.howto-dialog.dev-window .howto-nav { margin-top: 14px; }
+.howto-dialog.dev-window .howto-prev {
+  border: 0; background: var(--shell-lo); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep); text-shadow: 1px 1px 0 var(--shell-deep);
+}
+.howto-dialog.dev-window .howto-dot { background: var(--shell-deep); }
+.howto-dialog.dev-window .howto-dot[aria-current="true"] { background: #b6d68e; box-shadow: 0 0 0 2px var(--shell-rim); }
 
 /* rewards and the Mart on the device too (UI fixes D2 group 2, 2026-10-07): the screen's title, its text box, the
    picked card's note, the relic / item / choice tiles and the hand picker's banner are each a green LCD in a ring of the

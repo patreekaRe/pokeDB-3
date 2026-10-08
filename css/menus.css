@@ -307,8 +307,8 @@
 .gem-side {
   position: absolute; top: 50%; translate: 0 -50%;
   display: grid; place-items: center; width: 44px; height: 44px; padding: 0; cursor: pointer;
-  border: 3px solid #b8b8c8; border-radius: var(--round-sm); background: var(--win-bg);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 0 4px 0 2px rgba(20, 10, 30, 0.5);
+  border: 3px solid #2a2a30; border-radius: var(--round-sm); background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884;
+  box-shadow: 0 0 0 3px var(--shell), 0 0 0 5px var(--shell-rim), 0 6px 0 5px rgba(20, 10, 30, 0.5);
   font-size: 22px; line-height: 1;
   animation: gemIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both calc(var(--i) * 70ms + 120ms);
   -webkit-tap-highlight-color: transparent;
@@ -334,8 +334,8 @@
 /* the signpost's pop-up: today's three areas and how much of each page is caught, a little window under the gem */
 .gem-areas-pop {
   position: absolute; left: 0; top: calc(100% + 10px); z-index: 6; width: min(240px, 80vw); padding: 10px 12px;
-  border: 3px solid #b8b8c8; border-radius: var(--round-sm); background: var(--win-bg); color: var(--win-ink);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  border: 3px solid #2a2a30; border-radius: var(--round-sm); background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884; color: #1f3a14;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px var(--shell), 0 0 0 8px var(--shell-rim), 3px 5px 0 8px rgba(0, 0, 0, 0.35);
   font-family: var(--pixel-font); font-synthesis-weight: none; animation: plateIn 0.2s ease-out;
 }
 .gem-areas-pop[hidden] { display: none; }
@@ -380,7 +380,7 @@
   .signpost-bang { font-size: 18px; }
   .title-areas { left: 8px; bottom: calc(var(--ground) + 56px); }
 }
-.gem-areas-pop strong { display: block; margin-bottom: 8px; font-size: 0.75rem; font-weight: 400; color: #283060; text-align: center; }
+.gem-areas-pop strong { display: block; margin-bottom: 8px; font-size: 0.75rem; font-weight: 400; color: #1f3a14; text-align: center; }
 .gem-areas-pop ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .gem-areas-pop li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 5px 8px; border: 2px solid var(--c2); border-radius: 6px; background: var(--c1); font-size: 0.85rem; color: #102010; }
 .gem-areas-pop li small { font-size: 0.7rem; opacity: 0.8; }
@@ -477,15 +477,15 @@
    down at it */
 .rope-ask {
   position: absolute; left: -10px; bottom: calc(100% + 10px); z-index: 5; width: 176px; padding: 8px 9px 9px;
-  border: 3px solid #b8b8c8; background: var(--win-bg); color: var(--win-ink);
-  box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+  border: 3px solid #2a2a30; border-radius: 6px; background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884; color: #1f3a14;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 4px var(--shell), 0 0 0 6px var(--shell-rim), 3px 4px 0 6px rgba(0, 0, 0, 0.35);
   font-family: var(--pixel-font); font-synthesis-weight: none; text-align: center;
   animation: plateIn 0.2s ease-out;
 }
 .rope-ask[hidden] { display: none; }
 .rope-ask::after {
-  content: ''; position: absolute; left: 24px; top: 100%; width: 12px; height: 8px; margin-top: 2px;
-  background: #303038; clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: ''; position: absolute; left: 24px; top: 100%; width: 12px; height: 8px; margin-top: 6px;
+  background: var(--shell-rim); clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 .rope-ask p { margin: 0 0 8px; font-size: 0.55rem; line-height: 1.5; }
 .rope-ask-btns { display: flex; justify-content: center; gap: 8px; }
@@ -796,13 +796,7 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .cdev-app { position: absolute; inset: 0; z-index: 1; overflow: auto; overscroll-behavior: contain; color: var(--win-ink); }
 .cdev-win { border: 0; border-radius: 0; box-shadow: none; padding: 14px 12px 20px; background: var(--win-bg); backdrop-filter: none; }
 .cdev-win.trainer-dialog { width: auto; padding: 12px; background: repeating-linear-gradient(135deg, var(--tc1) 0 8px, var(--tc2) 8px 10px); }
-.cdev-win.index-dialog .index-things { margin: 0; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px 8px; }
-.cdev-win.index-dialog .index-head:first-child { margin-top: 0; }
 .cdev-win > :is(.records-label, .records-sub):first-child { margin-top: 0; }
-/* the tab rows (Moves, Safari) stick under the screen's top edge: the window's padding is the device's */
-.cdev-win .index-tabs { top: -14px; margin: 0 -12px 10px; gap: 4px; padding: 8px 6px 10px; }
-.cdev-win .index-tab { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; padding: 6px 2px 5px; font-size: 0.5rem; }
-.cdev-win .index-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* the Moves app (movesApp() in js/cardindex.js): the Pokédex's green LCD, type keys, the filter and sort, then the
    cards themselves (the user missed seeing them, 2026-10-06); a tap zooms one */
 .cdev-win.cdev-moves {
@@ -1218,13 +1212,13 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .trainer-dialog .tc-title { margin: 0; padding: 0; border: 0; outline: none; font-size: 1rem; color: #fff; text-shadow: 2px 2px 0 var(--tc3); }
 .tc-tier { padding: 4px 10px 3px; border-radius: 999px; font-size: 0.55rem; color: #fff; background: var(--tc3); }
 .tc-info { display: grid; grid-template-columns: 1fr 84px; align-items: center; gap: 8px; padding: 10px 12px;
-  border-radius: var(--round-sm); background: var(--win-bg); box-shadow: 0 0 0 3px #303038, 4px 4px 0 3px rgba(0, 0, 0, 0.25); }
+  border-radius: var(--round-sm); background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884; box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px #2a2a30, 4px 4px 0 3px rgba(0, 0, 0, 0.25); }
 .tc-lines { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; margin: 0; font-size: 0.78rem; }
-.tc-lines dt { color: var(--muted); }
-.tc-lines dd { margin: 0; text-align: right; color: var(--win-ink); overflow-wrap: anywhere; }
+.tc-lines dt { color: #3a5a28; }
+.tc-lines dd { margin: 0; text-align: right; color: #1f3a14; overflow-wrap: anywhere; }
 .tc-partner { position: relative; display: grid; place-items: center; height: 84px; padding: 0; border: 0; border-radius: var(--round-sm);
-  background: rgba(48, 48, 56, 0.08); cursor: pointer; }
-.tc-partner:hover, .tc-partner:focus-visible { background: rgba(48, 48, 56, 0.16); outline: none; }
+  background: rgba(31, 58, 20, 0.1); cursor: pointer; }
+.tc-partner:hover, .tc-partner:focus-visible { background: rgba(31, 58, 20, 0.18); outline: none; }
 .tc-partner-frame { position: relative; display: grid; }
 .tc-shiny { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0;
   border-radius: 50%; font-size: 0.7rem; background: rgba(48, 48, 56, 0.18); filter: grayscale(1); opacity: 0.7; cursor: pointer; }

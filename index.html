@@ -441,12 +441,12 @@
 
 
   <!-- ============ DIALOGS ============ -->
-  <dialog id="help-dialog" class="dialog howto-dialog">
+  <dialog id="help-dialog" class="dialog howto-dialog dev-window">
     <form method="dialog"><button class="howto-close" aria-label="Close">✕</button></form>
     <h2 tabindex="-1" autofocus>How to play</h2>   <!-- focus the top, or the dialog opens scrolled down to its only button -->
 
     <!-- one slide per topic; swipe on touch, or use the dots, arrows and arrow keys (js/howto.js) -->
-    <div class="howto-track" id="howto-track">
+    <div class="howto-track dev-screen" id="howto-track">
       <section class="howto-slide" data-title="Your run">
         <header class="howto-head"><h3>🏆 Your run</h3><p>Four steps from starter to champion</p></header>
         <ol class="howto-list howto-flow">
@@ -534,24 +534,6 @@
     </div>
   </dialog>
 
-  <!-- every card in the game, a tab per type, then every relic and item (js/cardindex.js) -->
-  <dialog id="index-dialog" class="dialog wide-dialog index-dialog">
-    <h2 tabindex="-1" autofocus>🃏 Index <span id="index-total" class="count"></span></h2>
-    <div class="index-tabs" id="index-tabs" role="tablist" aria-label="Index tabs"></div>
-    <!-- the deck window's filter and sort, on the card tabs only (js/cardindex.js), remembered in the save -->
-    <div class="deck-tools index-tools" id="index-tools">
-      <div class="deck-seg" id="index-filter" role="group" aria-label="Show">
-        <button type="button" data-v="all">All</button><button type="button" data-v="attack">Attacks</button><button type="button" data-v="skill">Skills</button><button type="button" data-v="power">Powers</button>
-      </div>
-      <div class="deck-seg" id="index-sort" role="group" aria-label="Sort by">
-        <button type="button" data-v="cost">Cost</button><button type="button" data-v="name">A-Z</button>
-      </div>
-    </div>
-    <div id="index-cards" class="card-pool" role="tabpanel"></div>
-    <p class="deck-empty" id="index-empty" hidden>No cards like that here.</p>
-    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
-  </dialog>
-
   <!-- every enemy, full screen: a banner per biome, then a handheld Pokédex on that page (js/pokedex.js) -->
   <dialog id="dex-dialog" data-smooth-icons class="pokedex" aria-label="Pokédex">
     <div class="pdx-list" id="dex-list">
@@ -571,14 +553,15 @@
     <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
   </dialog>
 
-  <dialog id="patch-dialog" class="dialog records-dialog patch-dialog">
+  <dialog id="patch-dialog" class="dialog records-dialog patch-dialog dev-window">
     <h2 tabindex="-1" autofocus>📖 Patch notes</h2>
-    <div id="patch-body" class="patch-body"></div>
-    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+    <div id="patch-body" class="patch-body dev-screen"></div>
+    <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 
-  <dialog id="about-dialog" class="dialog">
+  <dialog id="about-dialog" class="dialog about-dialog dev-window">
     <h2>About &amp; credits</h2>
+    <div class="dev-screen">
     <p><strong>PokéDB</strong> is a fan-made learning project by Patrick, built with plain HTML, CSS and JavaScript. It is free and non-commercial.</p>
     <p class="disclaimer">Pokémon and all related names and characters are trademarks of Nintendo, Creatures Inc. and GAME FREAK inc. This project is <strong>not affiliated with, endorsed by or sponsored by</strong> any of them.</p>
     <ul class="credits">
@@ -603,6 +586,7 @@
       <li>Backgrounds: original AI-assisted artwork made for this project.</li>
       <li>Code, card design and game rules: Patrick.</li>
     </ul>
+    </div>
     <div class="dialog-actions">
       <form method="dialog"><button class="btn primary">Close</button></form>
     </div>
@@ -632,12 +616,12 @@
   </div>
 
   <!-- battle's draw / discard / exhaust piles, opened from their counts in the top bar (openPiles() in js/battle.js) -->
-  <dialog id="piles-dialog" class="dialog wide-dialog index-dialog">
+  <dialog id="piles-dialog" class="dialog wide-dialog piles-dialog dev-window">
     <h2 tabindex="-1" autofocus>Your piles</h2>
-    <div class="index-tabs" id="piles-tabs" role="tablist" aria-label="Piles"></div>
-    <p class="index-note" id="piles-note"></p>
-    <div id="piles-cards" class="card-pool" role="tabpanel"></div>
-    <form method="dialog" class="records-close"><button class="btn primary">Close</button></form>
+    <div class="deck-tools"><div class="deck-seg" id="piles-tabs" role="tablist" aria-label="Piles"></div></div>
+    <p class="deck-empty" id="piles-note"></p>
+    <div id="piles-cards" class="card-pool dev-screen" role="tabpanel"></div>
+    <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 
   <!-- The win scene (js/halloffame.js): a starry night, your Pokémon on a pedestal, its numbers and deck; a Level 5 win's is the Hall of Fame -->
@@ -878,8 +862,9 @@
     <div class="lb-glass cdev-dex" id="board-host"></div>
   </dialog>
 
-  <dialog id="cloud-dialog" class="dialog small-dialog cloud-dialog">
+  <dialog id="cloud-dialog" class="dialog small-dialog cloud-dialog dev-window">
     <h2>Cloud save</h2>
+    <div class="dev-screen">
     <div id="cloud-out">
       <p>Sign in to keep your progress safe in the cloud and carry on from your phone or PC. You can keep playing without it.</p>
       <button class="btn primary cloud-google" id="cloud-google">Sign in with Google</button>
@@ -903,20 +888,23 @@
       <button class="btn primary" id="cloud-choose" hidden>Choose a save</button>
     </div>
     <p class="hint" id="cloud-note" aria-live="polite"></p>
+    </div>
     <div class="dialog-actions">
       <button class="btn small" id="cloud-signout" hidden>Sign out</button>
       <form method="dialog"><button class="btn">Close</button></form>
     </div>
   </dialog>
 
-  <dialog id="cloud-pick-dialog" class="dialog cloud-pick-dialog">
+  <dialog id="cloud-pick-dialog" class="dialog cloud-pick-dialog dev-window">
     <h2>Two saves found</h2>
+    <div class="dev-screen">
     <p>This device and the cloud have different progress. Which one do you want to keep? The other one will be replaced.</p>
     <div class="cloud-saves">
       <section class="panel cloud-save" id="cloud-save-here"></section>
       <section class="panel cloud-save" id="cloud-save-cloud"></section>
     </div>
     <p class="hint">Not sure? Close this and it will ask again next time.</p>
+    </div>
   </dialog>
 
   <!-- a starter a won fight just unlocked (unlockWindow() in js/run.js) -->

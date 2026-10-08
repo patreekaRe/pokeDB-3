@@ -57,7 +57,6 @@ import { smoothIcon } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
-import { initCardIndex } from './cardindex.js';
 import { initPokedex } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
@@ -231,7 +230,6 @@ function init() {
   initPatchNotes();
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
-  initCardIndex();
   initPokedex();
   initPokedexButton();
   initCloud();

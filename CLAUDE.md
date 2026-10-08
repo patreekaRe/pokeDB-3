@@ -80,8 +80,8 @@ live site.
   into `#dex-dialog` when its window opens), Relics and Items (`bagApp()` in `js/bagdex.js`, 2026-10-06: the Pokédex's banners and
   handheld, a banner per group in flat colours, each thing blown up on a screen in its group's colours, sprites trimmed by `thingArt()`), Stats (`statsApp` in `js/statsdex.js`, 2026-10-06: "Trainer Data", five banners onto the handheld, seven-segment digits counting up, an HP-bar win rate, boss badge slots, a PC Box of champions), Achievements (`achievementsApp` in `js/records.js`, 2026-10-06: the same banners and handheld, one goal per screen, a gold UNLOCKED stamp; Relics, Items and it all run on `shelfApp()` in `js/bagdex.js`), Trainer Card (its `open*(into)` draws into
   the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`, redone 2026-10-06: the Pokédex's green LCD, smooth type keys,
-  the Index's All / Attack / Skill / Power filter and Cost / A-Z sort (saved, shared with it), then the real cards in a
-  grid, ??? silhouettes after the known ones, a tap zooms one; the run's Index window is unchanged), the Safari
+  the Index's All / Attack / Skill / Power filter and Cost / A-Z sort (saved), then the real cards in a
+  grid, ??? silhouettes after the known ones, a tap zooms one; the old Index window was retired in D2, 2026-10-07), the Safari
   Pokédex (`safariDexApp`, the Pokédex's banners and handheld on `shelfApp()` since 2026-10-07: a painted banner per area;
   no window of its own, and no longer a banner in the Pokédex app) and the Record Book / Hall
   of Fame (`recordsApp()` in `js/halloffame.js`, Pokédex style on `shelfApp()` since 2026-10-06, the user's picks: the Record
