@@ -1073,8 +1073,8 @@ body[data-screen="start-screen"] .topbar { display: none; }
 @media (prefers-reduced-motion: reduce) { .hofx-light { animation: none; } }
 
 /* the hardware: D-pad, speaker grille, B and A */
-.cdev-pad { flex: none; display: flex; align-items: center; justify-content: space-between; height: 76px; padding: 0 8px; }
-.cdev-dpad { display: grid; grid-template-columns: repeat(3, 22px); grid-template-rows: repeat(3, 22px); filter: drop-shadow(0 3px 0 var(--shell-deep)); }
+.cdev-pad { flex: none; display: flex; align-items: center; justify-content: space-between; height: 100px; padding: 0 10px; }
+.cdev-dpad { display: grid; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); filter: drop-shadow(0 3px 0 var(--shell-deep)); }
 .cdev-dpad > * { background: var(--pad); }
 .cdev-dpad button { padding: 0; border: 0; cursor: pointer; }
 .cdev-dpad button:active { background: var(--pad-on); }
@@ -1084,13 +1084,15 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .cdev-dpad [data-dir="right"] { grid-area: 2 / 3; border-radius: 0 4px 4px 0; }
 .cdev-dpad [data-dir="down"] { grid-area: 3 / 2; border-radius: 0 0 4px 4px; }
 .cdev-grille { width: 54px; height: 22px; border-radius: 3px; background: repeating-linear-gradient(180deg, var(--shell-rim) 0 4px, transparent 4px 8px); }
-.cdev-ab { display: flex; align-items: flex-start; gap: 10px; height: 58px; }
+.cdev-ab { display: flex; align-items: flex-start; gap: 12px; height: 80px; }
 .cdev-btn {
   width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--shell-rim); cursor: pointer;
   font: 0.7rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
   background: var(--btn-a); box-shadow: 0 4px 0 var(--shell-deep);
 }
-#cdev-b { align-self: flex-end; background: radial-gradient(circle at 35% 30%, #f4f4f8 0 12%, #b8b8c4 45%, #6a6a78); color: #2a2a30; text-shadow: none; }
+/* A big, B always smaller (the user's call, 2026-10-08, like the other Pokédex scenes) */
+#cdev-a { width: 66px; height: 66px; font-size: 0.95rem; }
+#cdev-b { width: 50px; height: 50px; align-self: flex-end; background: radial-gradient(circle at 35% 30%, #f4f4f8 0 12%, #b8b8c4 45%, #6a6a78); color: #2a2a30; text-shadow: none; }
 .cdev-btn:active { translate: 0 3px; box-shadow: 0 1px 0 var(--shell-deep); }
 /* the cover that swings open on its left hinge, over everything under the lid */
 .cdev-cover {
