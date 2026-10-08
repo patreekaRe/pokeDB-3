@@ -70,7 +70,7 @@ const art = (name) => GLYPHS[name] ?? smoothArt(name) ?? '';
 const ICONS = {
   // Silver
   'thick-skin': ['heart', '+'], 'iron-wall': ['shield'], 'light-pack': ['feather'], sharpened: ['ppup'],
-  'training-day': ['book'], 'pocket-change': ['cash'], 'big-spender': ['tag'], 'field-medic': ['bandage'],
+  'training-day': ['book'], 'pocket-change': ['pokedollar'], 'big-spender': ['tag'], 'field-medic': ['bandage'],
   'rest-stop': ['center'], 'first-strike': ['bolt'], 'warm-up': ['moves', '+'], 'early-bird': ['bird'],
   hoarder: ['items', '+'], 'lucky-find': ['clover'], scavenger: ['magnify'], 'thorn-coat': ['cactus'],
   'steady-hands': ['shield', '+'], 'heavy-hitter': ['glove'], 'alpha-hunter': ['target'], 'second-helping': ['moves', '4'],

@@ -151,7 +151,7 @@ export function progressBar(n, of) {
 }
 
 // the Rewards' icons are smooth vector art (js/smooth-icons.js; the user's call, 2026-10-06), the data keeps its emoji
-const VECTOR = { '🏆': 'trophy', '★': 'star', '⚔️': 'swords', '💀': 'skull', '👹': 'boss', '💰': 'coin', '💴': 'cash', '🧴': 'items', '🎓': 'cap', '💎': 'gem' };
+const VECTOR = { '🏆': 'trophy', '★': 'star', '⚔️': 'swords', '💀': 'skull', '👹': 'boss', '💰': 'coin', '💴': 'pokedollar', '🧴': 'items', '🎓': 'cap', '💎': 'gem' };
 function iconOf(cls, emoji) {
   const span = el('span', cls, VECTOR[emoji] ? '' : emoji);
   if (VECTOR[emoji]) span.append(smoothIcon(VECTOR[emoji]));

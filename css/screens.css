@@ -4732,10 +4732,10 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen.tower .run-bars { flex: 1; width: auto; margin: 0; }
 #map-screen.tower .run-foot { width: auto; }
 #map-screen.tower .run-foot .gb-hp-num { font-size: 0.6rem; white-space: nowrap; }
-/* the climb's top bar loses its coin pill to the LCD's left, so the coins sit at the LCD's right end, past the HP */
-.run-coins { display: none; }
-#map-screen.tower .run-coins { display: flex; margin-left: 4px; padding-left: 8px; border-left: 2px dashed rgba(31, 58, 20, 0.35); font-size: 0.6rem; color: #1f3a14; }
-#map-screen.tower .run-coins .smooth-icon { width: 14px; height: 14px; }
+/* the climb's ₽ (it starts at 0, unlike the PokéCoin savings) sit at the LCD's right end, past the HP */
+.run-money { display: none; }
+#map-screen.tower .run-money { display: flex; margin-left: 4px; padding-left: 8px; border-left: 2px dashed rgba(31, 58, 20, 0.35); font-size: 0.6rem; color: #1f3a14; }
+#map-screen.tower .run-money .smooth-icon { width: 14px; height: 14px; }
 #map-screen.tower .mdex-dock {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
   box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);

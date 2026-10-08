@@ -423,4 +423,5 @@ export function upgradeBurst(node) {
 export function setMoney(amount) {
   $('money-value').textContent = String(amount);
   $('room-money').textContent = String(amount);
+  $('run-money').textContent = String(amount);
 }

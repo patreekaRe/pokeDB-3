@@ -19,7 +19,7 @@ import { el } from './ui.js';
 import { playCry } from './audio.js';
 
 const starterGoals = (...ids) => ids.map(id => ({ kind: 'starter', a: ACHIEVEMENT_FOR[id], starter: STARTERS_BY_ID[id] }));
-const PERK_ICON = { 'moms-savings': 'cash', 'oaks-advice': 'cap' };
+const PERK_ICON = { 'moms-savings': 'pokedollar', 'oaks-advice': 'cap' };
 
 const GROUPS = [
   { id: 'skins', name: 'New Starters', sub: 'Six more partners', b1: '#f0a040', b2: '#8a4a10',

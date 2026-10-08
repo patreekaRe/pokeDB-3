@@ -1797,17 +1797,20 @@ export const pixelIcon = (emoji) => SVGS[bare(emoji)] ?? null;
 
 const SMOOTH_FIND = new RegExp(`(${Object.keys(SMOOTH_EMOJI).map(escape).join('|')})\\uFE0F?`, 'u');
 const smoothZone = (el) => !!el?.closest('[data-smooth-icons]') && !el.closest('.card');
+// smooth everywhere, not only in the device: the pixel ₽ note was hard to read at bar size
+const ALWAYS_SMOOTH = { '💴': 'pokedollar' };
 
 function swapText(node) {
   const text = node.nodeValue;
   const smooth = smoothZone(node.parentElement);
   const match = (smooth ? SMOOTH_FIND : FIND).exec(text);
   if (!match) return;
+  const vector = smooth ? SMOOTH_EMOJI[match[1]] : ALWAYS_SMOOTH[match[1]];
   const icon = document.createElement('span');
-  icon.className = smooth ? 'px-wrap si-wrap' : 'px-wrap';
+  icon.className = vector ? 'px-wrap si-wrap' : 'px-wrap';
   icon.setAttribute('role', 'img');
   icon.setAttribute('aria-label', match[1]);
-  if (smooth) icon.append(smoothIcon(SMOOTH_EMOJI[match[1]]));
+  if (vector) icon.append(smoothIcon(vector));
   else icon.innerHTML = SVGS[match[1]];
   const rest = node.splitText(match.index);
   rest.nodeValue = rest.nodeValue.slice(match[0].length);

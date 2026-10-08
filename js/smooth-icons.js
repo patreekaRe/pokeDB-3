@@ -253,6 +253,12 @@ const ART = {
     <path d="M13.6 21.5v-11h3.4a3.2 3.2 0 0 1 0 6.4h-3.4" fill="none" stroke="#a86a10" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M8.2 12.4a8.6 8.6 0 0 1 4-4.4" fill="none" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,
 
+  // Pokédollars: a green coin stamped with ₽, so it never reads as a PokéCoin
+  pokedollar: `<circle cx="16" cy="16" r="12.5" fill="#48b060" stroke="${INK}" stroke-width="2"/>
+    <circle cx="16" cy="16" r="9" fill="none" stroke="#2e8044" stroke-width="1.4"/>
+    <path d="M13.2 22.5V9.5h4.2a3.4 3.4 0 0 1 0 6.8h-4.2M10.6 19.2h6.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.2 12.4a8.6 8.6 0 0 1 4-4.4" fill="none" stroke="#bff0c8" stroke-width="1.6" stroke-linecap="round"/>`,
+
   // Mom's Savings: two banknotes
   cash: `<rect x="5" y="5.5" width="24" height="15" rx="2" fill="#5aa848" stroke="${INK}" stroke-width="2"/>
     <rect x="3" y="11" width="24" height="15" rx="2" fill="#8cd070" stroke="${INK}" stroke-width="2"/>
@@ -366,7 +372,7 @@ const ART = {
    shares pages with) js/icons.js swaps these in instead of its pixel icons; cards keep theirs, to match battle. */
 export const SMOOTH_EMOJI = {
   '⚔': 'swords', '🔁': 'turns', '👑': 'fame', '❤': 'heart', '🔄': 'turns', '🃏': 'moves', '💥': 'burst', '🩸': 'drop', '🎯': 'target',
-  '🎒': 'items', '🧴': 'items', '💴': 'cash', '🏪': 'mart', '🏥': 'center', '❓': 'help', '💻': 'pc', '⏫': 'ppup',
+  '🎒': 'items', '🧴': 'items', '💴': 'pokedollar', '🏪': 'mart', '🏥': 'center', '❓': 'help', '💻': 'pc', '⏫': 'ppup',
   '✨': 'sparkle', '💀': 'skull', '💎': 'gem', '🗼': 'tower', '⭐': 'star', '🏆': 'trophy', '💰': 'coin', '🔒': 'lock',
   '✅': 'check', '🛡': 'shield', '💪': 'muscle', '🗂': 'status', '👹': 'boss', '🎓': 'cap', '🗑': 'trash', '🏃': 'run',
   '🔥': 'fire', '💧': 'water', '🌿': 'grass', '🔯': 'normal', '🔮': 'psychic',

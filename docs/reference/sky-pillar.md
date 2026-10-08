@@ -162,7 +162,7 @@ is the screen and the overlay that use them.
   are hidden, `#map-screen.tower`). Since 2026-10-07 (the user's call: you climb up, so the top is for the tower) the run card
   and top bar sit in the map's Pokédex bar along the bottom, kept slim (the user's follow-up, same day: only the Pokédex,
   floor, HP, Deck, Relics, Items and Main menu): one green LCD strip with the top bar's Pokédex and floor laid on its left
-  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), then four
+  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), the climb's ₽ at its right end (`#run-money`, from 0 each climb; the PokéCoin savings never show there, the user's call 2026-10-07), then four
   icon buttons, the Bag's Deck / Relics / Items and `#dock-menu` (`requestMenu()` in `js/main.js`, shown only on a climb)
   (css/screens.css, "the Sky Pillar's climb has the same device"). `measureBar()` in `js/tower.js` sets `--tw-lcd-x/y/h`
   (where the top bar lies on the LCD) and `--tw-bar-h` (the gauge's floor, the Bag's bottom), re-measured by a ResizeObserver.
