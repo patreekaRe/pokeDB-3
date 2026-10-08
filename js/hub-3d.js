@@ -149,6 +149,16 @@ function groundArt() {
     const a0 = hash(gx, gy), a1 = hash(gx + 1, gy), b0 = hash(gx, gy + 1), b1 = hash(gx + 1, gy + 1);
     return (a0 + (a1 - a0) * fx) * (1 - fy) + (b0 + (b1 - b0) * fx) * fy;
   };
+  // the plaza is a Poké Ball worn into the dirt, only just there: a reddish top half, a darker band, a pale button ring
+  const mix = (c, t, k) => c.map((n, i) => Math.round(n + (t[i] - n) * k));
+  const pokePlaza = (c, du, dv, wob) => {
+    const r = Math.hypot(du, dv);
+    if (r > 1.45 + wob) return c;
+    if (Math.abs(r - 0.4) < 0.07) return mix(c, dirt[3], 0.7);
+    if (r < 0.33) return mix(c, dirt[0], 0.5);
+    if (Math.abs(dv - wob * 0.3) < 0.08) return mix(c, dirt[3], 0.6);
+    return dv < 0 ? mix(c, [196, 84, 64], 0.38) : mix(c, dirt[0], 0.25);
+  };
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const u = x / TP - M - 0.5, v = y / TP - M - 0.5;
     const wob = (smooth(x, y, 5) - 0.5) * 0.22;
@@ -159,6 +169,7 @@ function groundArt() {
       const n = smooth(x + 99, y, 3) + hash(x, y) * 0.35;
       c = dirt[path > -0.06 ? 3 : n > 1.0 ? 0 : n > 0.62 ? 1 : 2];
       if (hash(x * 3, y * 7) > 0.985) c = dirt[3];
+      c = pokePlaza(c, u - START.x, v - START.y, wob);
     } else {
       // darker away from the walkable ground, towards the trees
       const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, 0) ;
