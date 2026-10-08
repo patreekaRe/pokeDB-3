@@ -116,8 +116,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `js/gif-frames.js` (no ImageDecoder there). **The user's verdict (2026-10-08): 60 fps on their phone, and they want
   both, the base in 3D and the Clearing hub.** Sessions, in order, all on `secret-base`, all Run in: LOCAL (Desktop app):
   1. ~~The base in 3D for real~~ done 2026-10-08 (`docs/roadmap-done.md`): `?base` is the 3D room, decorated in place.
-  2. **Safari Pokémon living in it** (Secret Base part d, in 3D): up to 6 catches as GIF billboards wandering the free
-     tiles with `route()`, tap one for its cry and a hop or hearts; the bed and cushion used.
+  2. ~~Safari Pokémon living in it~~ done 2026-10-08 (`docs/roadmap-done.md`).
   3. **The Clearing as a walkable hub, part a**: after PRESS START, your partner stands in a small 3D Clearing (pixel
      blocks and billboards in the Clearing's palette, its trees and the Ancient Tree's roots), and walks up to the
      places instead of tapping the title's signs: the trail out (New game / Continue), the Safari gate, the Sky Pillar,

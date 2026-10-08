@@ -14,6 +14,8 @@ import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { decodeGif } from './gif-frames.js';
+import { ENEMY_DEFS } from './data/enemies.js';
+import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt } from './secret-base.js';
 
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -22,6 +24,9 @@ const MON_PX = 1 / 32;     // Pokémon GIFs are drawn at twice the furniture's d
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
+const ON_SHOW = 6;         // Safari catches living in the base at once
+// pieces a Pokémon climbs onto, and what it does there
+const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
 
 // flat pieces stand this tall, their sides this colour
 const FLAT = { rug: [0.04, '#8e342e'], bed: [0.5, '#5a3a1e'], table: [0.55, '#6e4626'], cushion: [0.22, '#202028'] };
@@ -43,6 +48,7 @@ let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
 let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
+let guests = [], puffs = [], puffTex = {};   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -149,6 +155,7 @@ function buildPieces() {
     walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   }
   if (mon) walker.path = [];
+  settleGuests();
   setTime(true);
 }
 
@@ -368,10 +375,10 @@ async function gifFrames(src) {
   } catch { return null; }
 }
 
-async function makeMon() {
-  const mate = partner(getSave());
+/** A Pokémon on a billboard: the partner (front and back GIFs), or a Safari guest (`{ src, name, cry }`, front only). */
+async function makeMon(mate = partner(getSave()), back = true) {
   const front = mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif');
-  const [ff, bf] = await Promise.all([gifFrames(front), backSrc !== front ? gifFrames(backSrc) : null]);
+  const [ff, bf] = await Promise.all([gifFrames(front), back && backSrc !== front ? gifFrames(backSrc) : null]);
   const sheets = { front: { frames: ff || [] } };
   if (bf) sheets.back = { frames: bf };
   const first = ff?.[0].bmp;
@@ -382,7 +389,7 @@ async function makeMon() {
   const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
   const board = new THREE.Mesh(new THREE.PlaneGeometry(w * MON_PX, h * MON_PX), m);
   board.castShadow = true;
-  const [, bottom, left, right] = spriteFit(front);
+  const [top, bottom, left, right] = spriteFit(front);
   board.geometry.translate((right - left) / 2 * MON_PX, (h / 2 - bottom) * MON_PX, 0);
   const blob = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.28, depthWrite: false }));
   blob.rotation.x = -Math.PI / 2;
@@ -391,17 +398,31 @@ async function makeMon() {
   const group = new THREE.Group();
   group.add(board, blob);
   scene.add(group);
-  return { group, board, c, g: c.getContext('2d'), t, sheets, frame: 0, clock: 0, id: front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name };
+  return {
+    group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0,
+    id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * MON_PX,
+  };
 }
 
-function drawMon(dt) {
-  const s = mon.sheets[walker.facing] || mon.sheets.front;
+/** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */
+function drawMon(m, w, dt) {
+  const s = m.sheets[w.facing] || m.sheets.front;
   if (!s.frames.length) return;
-  mon.clock += dt;
-  const f = s.frames[mon.frame % s.frames.length];
-  if (mon.clock >= f.ms) { mon.clock = 0; mon.frame = (mon.frame + 1) % s.frames.length; }
-  const now = s.frames[mon.frame % s.frames.length];
-  if (mon.shown !== now) { mon.g.clearRect(0, 0, mon.c.width, mon.c.height); mon.g.drawImage(now.bmp, 0, 0); mon.t.needsUpdate = true; mon.shown = now; }
+  m.clock += w.sleeping ? dt / 3 : dt;
+  const f = s.frames[m.frame % s.frames.length];
+  if (m.clock >= f.ms) { m.clock = 0; m.frame = (m.frame + 1) % s.frames.length; }
+  const now = s.frames[m.frame % s.frames.length];
+  if (m.shown !== now) { m.g.clearRect(0, 0, m.c.width, m.c.height); m.g.drawImage(now.bmp, 0, 0); m.t.needsUpdate = true; m.shown = now; }
+}
+
+/** Whether a ray's hit on a billboard landed on the sprite itself, a few pixels' slack round it, not its empty corners. */
+function onSprite(hit) {
+  const m = hit.object.userData.who?.mon;
+  if (!m || !hit.uv) return true;
+  const x = Math.round(hit.uv.x * m.c.width), y = Math.round((1 - hit.uv.y) * m.c.height);
+  const d = m.g.getImageData(Math.max(0, x - 4), Math.max(0, y - 4), 9, 9).data;
+  for (let i = 3; i < d.length; i += 4) if (d[i] > 8) return true;
+  return false;
 }
 
 /* ---------- walking ---------- */
@@ -444,16 +465,214 @@ function nearestFree(from) {
   return from;
 }
 
-function walk(dt) {
-  const step = walker.path[0];
-  if (!step) { walker.hop = 0; return; }
-  const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - walker.x, dz = tz - walker.z;
-  const d = Math.hypot(dx, dz), move = dt / 1000 * 3.2;
-  if (Math.abs(dz) > Math.abs(dx)) walker.facing = dz < 0 && mon.sheets.back ? 'back' : 'front';
-  else { walker.facing = 'front'; walker.flip = dx > 0; }
-  if (d <= move) { walker.x = tx; walker.z = tz; walker.tile = step; walker.path.shift(); }
-  else { walker.x += dx / d * move; walker.z += dz / d * move; }
-  walker.hop += dt;
+/** One step along `w.path`; true on the frame it arrives. */
+function walk(w, m, dt, speed = 3.2) {
+  const step = w.path[0];
+  if (!step) { w.hop = 0; return false; }
+  const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - w.x, dz = tz - w.z;
+  const d = Math.hypot(dx, dz), move = dt / 1000 * speed;
+  if (Math.abs(dz) > Math.abs(dx)) w.facing = dz < 0 && m.sheets.back ? 'back' : 'front';
+  else { w.facing = 'front'; w.flip = dx > 0; }
+  if (d <= move) { w.x = tx; w.z = tz; w.tile = step; w.path.shift(); }
+  else { w.x += dx / d * move; w.z += dz / d * move; }
+  w.hop += dt;
+  return !w.path.length;
+}
+
+/* ---------- the Safari Pokémon living here ---------- */
+
+const rand = (a, b) => a + Math.random() * (b - a);
+
+/** The catches on show: the save's pick, or before one is made the first ON_SHOW caught, so the room is never empty.
+    `&guests` lends every Safari Pokémon as caught for the page load, to playtest without a full Safari Pokédex. */
+function onShow() {
+  const lend = new URLSearchParams(location.search).has('guests');
+  const caught = new Set(getSave().safariDex?.caught || []);
+  const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
+  return { all, shown: (base.mons ?? all.slice(0, ON_SHOW)).filter(id => all.includes(id)) };
+}
+
+/** Tiles someone stands on or is heading for, so two never pick the same one. */
+function taken(skip) {
+  const out = new Set();
+  for (const w of [walker, ...guests.map(g => g.w)]) {
+    if (!w || w === skip || !w.tile) continue;
+    out.add(key(w.tile.x, w.tile.y));
+    const end = w.path.at(-1);
+    if (end) out.add(key(end.x, end.y));
+  }
+  return out;
+}
+
+function freeTiles(skip) {
+  const busy = taken(skip), out = [];
+  for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS; y++) if (!blocked.has(key(x, y)) && !busy.has(key(x, y))) out.push({ x, y });
+  return out;
+}
+
+/** Bring the room's guests in line with the pick: new ones load in (a hop and hearts as they arrive), dropped ones go. */
+function syncGuests() {
+  const { shown } = onShow();
+  for (const g of guests.filter(g => !shown.includes(g.id))) dropGuest(g);
+  for (const id of shown) if (!guests.some(g => g.id === id)) addGuest(id);
+}
+
+function dropGuest(g) {
+  guests = guests.filter(x => x !== g);
+  if (g.mon) { dispose(g.mon.group); scene.remove(g.mon.group); }
+}
+
+async function addGuest(id) {
+  const def = ENEMY_DEFS[id], g = { id, mon: null, w: null };
+  guests.push(g);
+  const m = await makeMon({ src: def.image, name: def.name, cry: def.spriteId ?? id }, false);
+  if (!guests.includes(g)) { dispose(m.group); scene.remove(m.group); return; }
+  const spots = freeTiles();
+  const tile = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree({ x: 5, y: ROWS - 1 });
+  g.w = { tile, x: tileX(tile.x), z: tileZ(tile.y), y: 0, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0, think: performance.now() + rand(800, 3000) };
+  m.board.userData.who = g;
+  g.mon = m;
+  cheer(g, 2);
+}
+
+/** Every seat in the room (a bed, a cushion) and who's on it or heading for it. */
+function seats() {
+  const used = new Set(guests.map(g => g.w?.seat?.it).filter(Boolean));
+  return base.items.filter(it => SEATS[it.id] && !used.has(it));
+}
+
+/** The seat's spot: the middle of its footprint, on top of it. */
+function seatSpot(it) {
+  const [fw, fh] = footprint(it);
+  return { x: it.x - COLS / 2 + fw / 2, z: it.y - ROWS / 2 + fh / 2, y: FLAT[it.id][0], tile: { x: it.x + Math.floor((fw - 1) / 2), y: it.y + Math.floor((fh - 1) / 2) } };
+}
+
+const nextTo = (t, it) => {
+  const [fw, fh] = footprint(it);
+  const dx = Math.max(it.x - t.x, 0, t.x - (it.x + fw - 1)), dy = Math.max(it.y - t.y, 0, t.y - (it.y + fh - 1));
+  return dx + dy === 1;
+};
+
+/** A hop from where it is to (x, y, z) over `ms`, then `then()`. */
+function leap(w, to, ms, then) {
+  w.jump = { from: { x: w.x, y: w.y, z: w.z }, to, t0: performance.now(), ms, then };
+  if (Math.abs(to.x - w.x) > 0.05) w.flip = to.x > w.x;
+  w.facing = 'front';
+}
+
+/** A guest with nothing to do picks something: off its seat when its rest is up, onto a free seat now and then, or a
+    short wander. */
+function think(g, now) {
+  const w = g.w;
+  if (w.seat) {
+    w.sleeping = false;
+    const down = w.from && !blocked.has(key(w.from.x, w.from.y)) && !taken(w).has(key(w.from.x, w.from.y)) ? w.from : nearestFree(w.seat.tile);
+    w.seat = null;
+    leap(w, { x: tileX(down.x), y: 0, z: tileZ(down.y) }, 420, () => { w.tile = down; w.think = now + rand(1500, 4000); });
+    return;
+  }
+  const free = seats();
+  if (free.length && Math.random() < 0.3) {
+    const it = free[Math.floor(Math.random() * free.length)], spot = seatSpot(it);
+    const path = route(w.tile, spot.tile), end = path.at(-1) ?? w.tile;
+    if (nextTo(end, it)) { w.path = path; w.goal = it; w.seat = { it, ...spot }; if (!path.length) climb(w, now); return; }
+  }
+  const near = freeTiles(w).filter(t => { const d = Math.abs(t.x - w.tile.x) + Math.abs(t.y - w.tile.y); return d > 0 && d <= 4; });
+  if (near.length) w.path = route(w.tile, near[Math.floor(Math.random() * near.length)]);
+  w.think = now + rand(2500, 6000) + w.path.length * 450;
+}
+
+/** At the seat it walked to: still there and still free, up it hops; else it just stands about. */
+function climb(w, now) {
+  const it = w.goal;
+  w.goal = null;
+  if (!base.items.includes(it) || !nextTo(w.tile, it)) { w.seat = null; w.think = now + rand(1000, 3000); return; }
+  w.from = w.tile;
+  const s = SEATS[it.id];
+  leap(w, { x: w.seat.x, y: w.seat.y, z: w.seat.z }, 450, () => {
+    const at = performance.now();
+    if (!base.items.includes(it)) { w.think = at; return; }   // moved from under it mid-hop: straight back down
+    w.sleeping = !!s.sleep; w.think = at + rand(...s.rest); w.nextZ = at + 600;
+  });
+}
+
+/** After the furniture changes: anyone on a seat that went comes down, walks are forgotten, and no one stands in a piece. */
+function settleGuests() {
+  for (const { w } of guests) {
+    if (!w || w.jump) continue;
+    if (w.goal) { w.goal = null; w.seat = null; }
+    w.path = [];
+    if (w.seat && !base.items.includes(w.seat.it)) {
+      const down = nearestFree(w.seat.tile);
+      Object.assign(w, { seat: null, sleeping: false, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
+    }
+    if (!w.seat && blocked.has(key(w.tile.x, w.tile.y))) {
+      w.tile = nearestFree(w.tile);
+      w.x = tileX(w.tile.x); w.z = tileZ(w.tile.y);
+    }
+  }
+}
+
+function liveGuest(g, dt, now) {
+  const { w, mon: m } = g;
+  if (w.jump) {
+    const j = w.jump, k = Math.min(1, (now - j.t0) / j.ms);
+    w.x = j.from.x + (j.to.x - j.from.x) * k; w.z = j.from.z + (j.to.z - j.from.z) * k;
+    w.y = j.from.y + (j.to.y - j.from.y) * k + (calm ? 0 : Math.sin(k * Math.PI) * 0.45);
+    if (k >= 1) { w.jump = null; w.y = j.to.y; j.then?.(); }
+  } else if (w.path.length) {
+    if (walk(w, m, dt, 2.2) && w.goal) climb(w, now);
+  } else if (now > w.think) think(g, now);
+  if (w.sleeping && now > w.nextZ) { w.nextZ = now + 1400; puff('z', w, m); }
+  const hopping = w.hopUntil > now;
+  const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : hopping ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
+  m.group.position.set(w.x, w.y, w.z);
+  m.board.position.y = bob;
+  m.board.scale.x = w.flip ? -1 : 1;
+  drawMon(m, w, dt);
+}
+
+/** A guest happy to see you: its cry, a hop and hearts; a sleeper wakes and gets down. */
+function cheer(g, hearts = 3) {
+  const w = g.w;
+  if (!w) return;
+  playCry(g.mon.id);
+  if (!w.jump && !w.seat) w.hopUntil = performance.now() + 500;
+  for (let i = 0; i < hearts; i++) setTimeout(() => puff('heart', w, g.mon), i * 160);
+  if (w.sleeping) w.think = performance.now() + 500;
+}
+
+/* ---------- hearts and Zs ---------- */
+
+function puffTexture(kind) {
+  if (puffTex[kind]) return puffTex[kind];
+  const rows = kind === 'heart'
+    ? ['.##.##.', '#######', '#######', '.#####.', '..###..', '...#...']
+    : ['#####', '...#.', '..#..', '.#...', '#####'];
+  const c = new OffscreenCanvas(rows[0].length + 2, rows.length + 2), x = c.getContext('2d');
+  const ink = kind === 'heart' ? '#ff5a8a' : '#e8f0ff', edge = kind === 'heart' ? '#8a1a3a' : '#2a3a6a';
+  rows.forEach((r, y) => [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = edge; x.fillRect(i, y, 3, 3); } }));
+  rows.forEach((r, y) => [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = ink; x.fillRect(i + 1, y + 1, 1, 1); } }));
+  return (puffTex[kind] = tex(c));
+}
+
+function puff(kind, w, m) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTexture(kind), transparent: true, depthWrite: false }));
+  const size = kind === 'heart' ? 0.26 : 0.2;
+  s.scale.set(size, size * (kind === 'heart' ? 8 / 9 : 1), 1);
+  s.raycast = () => {};
+  scene.add(s);
+  puffs.push({ s, t0: performance.now(), life: kind === 'heart' ? 1100 : 2200, x: w.x + rand(-0.2, 0.2), y: w.y + m.top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
+}
+
+function livePuffs(now) {
+  puffs = puffs.filter(p => {
+    const k = (now - p.t0) / p.life;
+    if (k >= 1) { scene.remove(p.s); p.s.material.dispose(); return false; }
+    p.s.position.set(p.x + p.drift * k + (calm ? 0 : Math.sin(p.sway + k * 7) * 0.08), p.y + k * 0.7, p.z);
+    p.s.material.opacity = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
+    return true;
+  });
 }
 
 /* ---------- taps ---------- */
@@ -499,25 +718,29 @@ function onUp() {
 
 /** The placed piece (its index) under a point on the view, unless the partner stands in front of it. */
 function pieceUnder(at) {
-  const ray = new THREE.Raycaster();
-  ray.setFromCamera(new THREE.Vector2(...at), camera);
-  let g = ray.intersectObjects([mon.board, pieceGroup], true)[0]?.object;
-  if (g === mon.board) return -1;
+  let g = tapped(at);
+  if (g?.userData.who) return -1;
   while (g && g.userData.index === undefined) g = g.parent;
   return g?.parent === pieceGroup ? g.userData.index : -1;
+}
+
+/** What's under a point on the view: a Pokémon's billboard (where its sprite is), a piece's mesh, or nothing. */
+function tapped(at, ray = new THREE.Raycaster()) {
+  ray.setFromCamera(new THREE.Vector2(...at), camera);
+  const boards = [mon.board, ...guests.filter(g => g.mon).map(g => g.mon.board)];
+  return ray.intersectObjects([...boards, pieceGroup], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
 function onTap(e) {
   if (swallowClick || holding) { swallowClick = false; return; }
   const ray = new THREE.Raycaster();
-  ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
-  const hits = ray.intersectObjects([mon.board, pieceGroup], true);
-  const first = hits[0]?.object;
+  const first = tapped(ndc(e), ray);
   if (first === mon.board) {
     playCry(mon.id);
     walker.hopUntil = performance.now() + 500;
     return;
   }
+  if (first?.userData.who) return cheer(first.userData.who);
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;
   if (g && g.parent === pieceGroup) {
@@ -572,6 +795,20 @@ function tray(which = tab) {
   });
   if (tab === 'wall') swatch(WALLPAPERS, 'wall');
   if (tab === 'floor') swatch(FLOORS, 'floor');
+  if (tab === 'mons') {
+    const { all, shown } = onShow();
+    // the ones on show first, then every other catch in Pokédex order
+    for (const id of [...shown, ...all.filter(id => !shown.includes(id))]) {
+      const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: ENEMY_DEFS[id].image, alt: '', draggable: false, className: 'pixel' });
+      add(ENEMY_DEFS[id].name, img, shown.includes(id), () => {
+        const now = onShow().shown;
+        if (now.includes(id)) { base.mons = now.filter(x => x !== id); playSound('cancel'); }
+        else if (now.length >= ON_SHOW) { playSound('cancel'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }
+        else { base.mons = [...now, id]; playSound('confirm'); }
+        save(); syncGuests(); tray(); refresh();
+      });
+    }
+  }
 }
 
 function refresh() {
@@ -584,7 +821,10 @@ function refresh() {
     const a = b.dataset.act;
     b.hidden = holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
   });
+  const mons = onShow();
   hud.hint.textContent = holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
+    : tab === 'mons' ? (mons.all.length ? `Pick up to ${ON_SHOW} Safari catches to live here (${mons.shown.length}/${ON_SHOW}). Tap one in the room to say hello.`
+      : 'Catch Pokémon in the Safari Zone and they can live here.')
     : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap it again to turn it, '}drag it to move it.`
     : `Tap the floor and ${mon?.name ?? 'your partner'} walks there. Drag a piece to move it, tap it for more, or pick one below.`;
   if (sel >= 0) {
@@ -760,13 +1000,15 @@ function frame(now) {
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
 
-  walk(dt);
+  walk(walker, mon, dt);
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
-  drawMon(dt);
+  drawMon(mon, walker, dt);
+  for (const g of guests) if (g.mon) liveGuest(g, dt, now);
+  livePuffs(now);
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) {
     for (const dust of motes) {
@@ -826,6 +1068,7 @@ export async function openBase3d() {
           <button type="button" class="b3-tab" data-tab="furniture">Furniture</button>
           <button type="button" class="b3-tab" data-tab="wall">Wallpaper</button>
           <button type="button" class="b3-tab" data-tab="floor">Floor</button>
+          <button type="button" class="b3-tab" data-tab="mons">Pokémon</button>
         </nav>
         <div class="b3-acts" hidden>
           <button type="button" data-act="rotate">Rotate</button><button type="button" data-act="move">Move</button>
@@ -875,6 +1118,7 @@ export async function openBase3d() {
   buildRoom();
   buildPieces();
   mon = await makeMon();
+  mon.board.userData.who = { mon, w: walker };
   walker.tile = nearestFree(startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   camX = panX = walker.x;
@@ -887,9 +1131,10 @@ export async function openBase3d() {
   view.addEventListener('pointerup', onUp);
   view.addEventListener('pointercancel', () => { pressing = false; pointer = null; });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
-  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => tray(b.dataset.tab)));
+  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { tray(b.dataset.tab); refresh(); }));
   tray('furniture');
   refresh();
+  syncGuests();
   requestAnimationFrame(frame);
 }
 
