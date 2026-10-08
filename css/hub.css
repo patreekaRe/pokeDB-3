@@ -63,6 +63,15 @@
 .hub-card-name { display: block; font: 0.85rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
 .hub-card-line { margin: 6px 0 0; font-size: 0.9rem; line-height: 1.35; }
 .hub-card.locked { background: #eeeae4; }
+/* the Pokéstop's question with a saved run: Continue (gold, like the bar's pill) or New game */
+.hub-card-acts { display: flex; gap: 8px; margin-top: 10px; }
+.hub-card-acts:empty { display: none; }
+.hub-card-btn {
+  flex: 1; padding: 9px 6px 8px; border: 3px solid #2a2a3a; border-radius: 999px; background: #fff; color: #2a2a3a;
+  font: 0.62rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 #2a2a3a; cursor: pointer;
+}
+.hub-card-btn.go { background: linear-gradient(#ffe066, #f5b82e); }
+.hub-card-btn:active { translate: 0 3px; box-shadow: none; }
 
 .hub-fps { position: absolute; right: 60px; top: 18px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #8f8; font: 12px/1.2 monospace; }
 

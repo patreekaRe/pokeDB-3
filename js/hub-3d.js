@@ -1143,8 +1143,18 @@ function leftBase() {
 
 function showCard(p) {
   here = p;
-  card.querySelector('.hub-card-name').textContent = p.name;
+  // the Pokéstop with a saved run asks which (the user's call, 2026-10-08): its card's two buttons
+  const ask = p.id === 'trail' && p.open && saved;
+  card.querySelector('.hub-card-name').textContent = ask ? 'Continue or New game?' : p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
+  card.querySelector('.hub-card-acts').replaceChildren(...(ask ? ['Continue', 'New game'] : []).map((label) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `hub-card-btn${label === 'Continue' ? ' go' : ''}`;
+    b.textContent = label;
+    b.addEventListener('click', () => open(p, p.buttons.findIndex(([l]) => l === label)));
+    return b;
+  }));
   card.classList.toggle('locked', !p.open);
   card.hidden = false;
   if (!p.open) playSound('cancel');
@@ -1496,7 +1506,7 @@ async function build() {
   root.addEventListener('animationend', () => root.classList.add('shown'), { once: true });
   root.innerHTML = `
     <canvas class="hub-view"></canvas>
-    <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p></div>
+    <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><div class="hub-card-acts"></div></div>
     <div class="hub-bar">
       <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
         <button type="button" class="room-ok hbar-ok"><span></span></button>
