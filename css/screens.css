@@ -5098,23 +5098,30 @@ body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.
 #reward-skip:is(.room-leave, .room-skip) .pp-pill {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
-/* the screen's confirm is a round key with a tick beside the hinge's lights, its word beside it, pulsing while it waits */
+/* the screen's confirm: a glowing gold pill beside the hinge's lights, one word on it (the user's call, 2026-10-08), the
+   colour of the yellow light so it stands out on any shell and pulses clearly while it waits */
 .room-ok {
-  flex: none; display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 2px; border: 0; background: none; cursor: pointer;
-  color: #fff; font: 0.55rem var(--pixel-font); font-synthesis-weight: none; text-transform: uppercase; white-space: nowrap;
-  text-shadow: 1px 1px 0 var(--shell-deep); -webkit-tap-highlight-color: transparent; animation: roomOkIn 0.2s ease-out;
+  flex: none; display: grid; place-items: center; min-width: 76px; height: 32px; padding: 0 16px; cursor: pointer;
+  border: 2px solid #5a3a08; border-radius: 999px;
+  background: linear-gradient(#fff3a0, #f8d030 45%, #e0a818);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(120, 70, 0, 0.35), 0 3px 0 #5a3a08, 0 0 8px 2px rgba(255, 216, 64, 0.55);
+  color: #3a2400; font: 0.62rem var(--pixel-font); font-synthesis-weight: none; text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); -webkit-tap-highlight-color: transparent;
+  animation: roomOkIn 0.2s ease-out, roomOkPulse 1.1s ease-in-out 0.2s infinite;
+  transition: translate 0.06s;
 }
 .room-ok[hidden] { display: none; }
-.room-a { flex: none; width: 34px; height: 34px; animation: roomOkPulse 1.2s ease-in-out infinite; }
-.room-a svg { width: 19px; height: 19px; }
-.room-ok:active .room-a { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
-.room-ok:focus-visible { outline: none; }
-.room-ok:focus-visible .room-a { outline: 3px solid #f8d030; outline-offset: 2px; }
+.room-ok:active { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), 0 1px 0 #5a3a08, 0 0 14px 4px rgba(255, 216, 64, 0.8); }
+.room-ok:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 @keyframes roomOkIn { from { opacity: 0; scale: 0.6; } }
 @keyframes roomOkPulse {
-  50% { box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep), 0 0 0 5px rgba(255, 255, 255, 0.35); }
+  50% {
+    scale: 1.06; filter: brightness(1.12);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(120, 70, 0, 0.35), 0 3px 0 #5a3a08,
+      0 0 18px 7px rgba(255, 224, 80, 0.85), 0 0 0 4px rgba(255, 240, 160, 0.5);
+  }
 }
-@media (prefers-reduced-motion: reduce) { .room-ok, .room-a { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .room-ok { animation: none; } }
 /* a picked card blown up over a room: the bar (and its A key) stays lit above the dimmed screen */
 body:has(.card-focus.over-room) #reward-screen.in-room .room-bar { z-index: 31; }
 .card-focus.reward-focus.over-room { padding-bottom: calc(var(--room-bar-h, 120px) + 12px); }
@@ -5123,7 +5130,7 @@ body:has(.card-focus.over-room) #reward-screen.in-room .room-bar { z-index: 31; 
   .room-row { gap: 6px; }
   .room-home { width: 42px; }
   #reward-skip:is(.room-leave, .room-skip) { width: 42px; }
-  .room-a { width: 30px; height: 30px; }
+  .room-ok { min-width: 64px; padding-inline: 12px; }
   .room-lcd { gap: 5px; padding-inline: 5px; }
   .room-lcd .gb-hp-tag { display: none; }
 }

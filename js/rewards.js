@@ -214,12 +214,17 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (over) { $('map-screen').hidden = false; document.body.dataset.screen = 'map-screen'; }
 }
 
-/** The room bar's A key, beside the hinge's lights: `label` names it ("Take it", "Add to deck"), `fn` runs on a press;
-    no `fn` puts it away. It starts shown; a screen that waits for a pick first sets `hidden` itself. */
+// the pill says one word (the user's call, 2026-10-08); the windows outside a room keep the full label
+const ONE_WORD = { 'Put in Bag': 'Take', 'PP Up': 'Upgrade' };
+
+/** The room bar's confirm pill, beside the hinge's lights: `label` names it ("Take it" shows as "Take"), `fn` runs on a
+    press; no `fn` puts it away. It starts shown; a screen that waits for a pick first sets `hidden` itself. */
 export function roomConfirm(label, fn) {
   const ok = $('room-ok');
   ok.hidden = !fn;
-  $('room-ok-text').textContent = label || '';
+  const word = label ? ONE_WORD[label] || label.split(' ')[0] : '';
+  $('room-ok-text').textContent = word;
+  ok.setAttribute('aria-label', label || '');
   ok.onclick = fn ? () => fn() : null;
   return ok;
 }

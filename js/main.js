@@ -285,7 +285,6 @@ function init() {
   $('room-home').addEventListener('click', () => $('brand-btn').click());
   // only shown while it's the room bar's Leave key, or its Skip key
   $('reward-skip').prepend(roundKey('leave', 'round-key leave-ico'), roundKey('skip', 'round-key skip-ico'));
-  $('room-ok').querySelector('.room-a').replaceWith(roundKey('ok', 'round-key room-a'));
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,
