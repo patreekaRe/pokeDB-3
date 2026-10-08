@@ -41,6 +41,7 @@ let roomGroup, pieceGroup, ghost, foot, selBox;
 let mon, walker = { x: 0, z: 0, path: [], facing: 'front', flip: false, hop: 0 };
 let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
+let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
 let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -290,7 +291,12 @@ function showGhost() {
 function place() {
   if (!holding || !aimAt) return;
   const it = held();
-  if (!fits(it, -1, base)) { playSound('cancel'); return; }
+  if (!fits(it, -1, base)) {
+    playSound('cancel');
+    // a piece dragged straight off the floor goes back where it was, rather than staying in your hand
+    if (holding.dragged) { const back = holding.back; base.items.push(back); dropHold(); sel = base.items.length - 1; buildPieces(); refresh(); }
+    return;
+  }
   base.items.push(it);
   dropHold();
   sel = base.items.length - 1;
@@ -458,21 +464,47 @@ function ndc(e) {
 }
 
 // holding a piece, a press shows its ghost under the finger, a drag carries it, and lifting puts it down
+// not holding, a press on a placed piece that then moves picks it up and carries it: no Move key needed
 function onDown(e) {
-  if (!holding) return;
+  if (!holding) {
+    const i = pieceUnder(ndc(e));
+    if (i >= 0) { grab = { i, x: e.clientX, y: e.clientY }; view.setPointerCapture?.(e.pointerId); }
+    return;
+  }
   pressing = true; pointer = ndc(e);
   view.setPointerCapture?.(e.pointerId);
   aimFrom(...pointer); showGhost();
 }
 function onMove(e) {
+  if (grab && Math.hypot(e.clientX - grab.x, e.clientY - grab.y) > 10) {
+    const it = base.items[grab.i];
+    grab = null;
+    base.items.splice(base.items.indexOf(it), 1);
+    buildPieces();
+    hold(it.id, it.dir ?? 0, it);
+    holding.dragged = true;
+    pressing = true;
+    playSound('confirm');
+  }
   if (!holding || (!pressing && e.pointerType !== 'mouse')) return;
   pointer = ndc(e);
   aimFrom(...pointer); showGhost();
 }
 function onUp() {
+  grab = null;
   if (!holding || !pressing) return;
   pressing = false; pointer = null; swallowClick = true;
   place();
+}
+
+/** The placed piece (its index) under a point on the view, unless the partner stands in front of it. */
+function pieceUnder(at) {
+  const ray = new THREE.Raycaster();
+  ray.setFromCamera(new THREE.Vector2(...at), camera);
+  let g = ray.intersectObjects([mon.board, pieceGroup], true)[0]?.object;
+  if (g === mon.board) return -1;
+  while (g && g.userData.index === undefined) g = g.parent;
+  return g?.parent === pieceGroup ? g.userData.index : -1;
 }
 
 function onTap(e) {
@@ -489,8 +521,10 @@ function onTap(e) {
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;
   if (g && g.parent === pieceGroup) {
-    sel = sel === g.userData.index ? -1 : g.userData.index;
-    playSound(sel >= 0 ? 'confirm' : 'cancel');
+    // a second tap on the picked piece turns it
+    if (sel === g.userData.index) return PIECES[base.items[sel].id].layer === 'wall' ? undefined : act('rotate');
+    sel = g.userData.index;
+    playSound('confirm');
     return refresh();
   }
   if (sel >= 0) { sel = -1; refresh(); }
@@ -551,8 +585,8 @@ function refresh() {
     b.hidden = holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
   });
   hud.hint.textContent = holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
-    : sel >= 0 ? PIECES[base.items[sel].id].name
-    : `Tap the floor and ${mon?.name ?? 'your partner'} walks there. Tap a piece to move it, or pick one below.`;
+    : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap it again to turn it, '}drag it to move it.`
+    : `Tap the floor and ${mon?.name ?? 'your partner'} walks there. Drag a piece to move it, tap it for more, or pick one below.`;
   if (sel >= 0) {
     const g = pieceGroup.children.find(c => c.userData.index === sel), it = base.items[sel];
     const box = new THREE.Box3().setFromObject(g);
