@@ -60,7 +60,7 @@ const GLOWS = { lantern: ['#f8e070', '#fff4c0', '#f8d848'], door: ['#2a3a6a', '#
 const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[2, 8], [6, 8]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[1, 10], [6, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
@@ -435,12 +435,12 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(3))),
   });
-  // a low stall, so the Safari stays in view over it
+  // a low stall down in the bottom left, so the Safari has the back left to itself
   list.push({
-    id: 'corner', name: 'Game Corner', step: { x: 2, y: 8 }, tiles: rect(1, 7, 3, 7), tag: [2, 2.9, 7], open: true,
+    id: 'corner', name: 'Game Corner', step: { x: 1, y: 10 }, tiles: rect(0, 9, 2, 9), tag: [1, 2.9, 9], open: true,
     line: 'Spend PokéCoins on starters, perks, shinies and Poké Balls.',
     buttons: [['Play', acts.onCorner]],
-    build: (g) => { const c = cornerArt(), b = board(c, tileX(2), tileZ(7)); glowing(b.material, c, GLOWS.slots, '#fff0b0', 0.7); g.add(b); },
+    build: (g) => { const c = cornerArt(), b = board(c, tileX(1), tileZ(9)); glowing(b.material, c, GLOWS.slots, '#fff0b0', 0.7); g.add(b); },
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -527,7 +527,7 @@ function buildPlaces() {
 /* ---------- the Clearing round them ---------- */
 
 // trees inside the walkable grid (they block)
-const TREE_TILES = [[0, 9], [0, 10], [0, 11], [12, 9], [12, 10], [12, 11], [3, 11]];
+const TREE_TILES = [[12, 11]];
 
 function buildClearing() {
   const W = COLS + 2 * M, D = ROWS + M + FRONT;
@@ -549,7 +549,7 @@ function buildClearing() {
   }
   for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = -1; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
     if (r === 0 && y > ROWS - 0.5) continue;
-    const x = s < 0 ? -1 - r * 1.2 : COLS + r * 1.2;
+    const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
   for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
@@ -890,7 +890,7 @@ function fitCamera(w, h) {
 
 function placeCamera(dt) {
   const { half, front } = camera.userData;
-  const reachX = COLS / 2 + 1.2 - half, frontZ = front, backZ = tileZ(2);
+  const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = tileZ(2);
   const wantX = reachX <= 0 ? 0 : Math.max(-reachX, Math.min(reachX, walker.x));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, walker.z));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
