@@ -67,7 +67,7 @@ let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, tags = [], card;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, inBase = false, entering = null;
-let calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
+let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
 
@@ -629,12 +629,36 @@ function pinArt() {
   return c;
 }
 
-function signArt() {
-  const a = art(22, 26);
-  a.dot(10, 9, P.wood[2], 3, 17); a.dot(10, 9, P.wood[1], 1, 17);
-  a.dot(1, 2, P.wood[3], 20, 9); a.dot(2, 3, P.wood[0], 18, 7); a.dot(2, 9, P.wood[1], 18, 1);
-  a.dot(9, 4, P.wood[3], 4, 1); a.dot(8, 5, P.wood[3], 6, 1); a.dot(10, 6, P.wood[3], 2, 3);   // an arrow, this way out
-  return a.c;
+/** New game's Pokéstop (the user's pick, after Pokémon Go's): a holographic disc, a ring round a Poké Ball with arcs
+    orbiting it, floating over a slim post with a little tilted plate. The disc's own shapes are its glow (shine()). */
+function stopDiscArt() {
+  const { c, g, lin, shine } = fine(32, 32), o = 16;
+  const ink = (gg, col) => {
+    gg.strokeStyle = gg.fillStyle = col;
+    gg.lineWidth = 1.6; gg.beginPath(); gg.arc(o, o, 12.6, 0, Math.PI * 2); gg.stroke();   // the ring
+    gg.lineWidth = 1.2;   // the arcs orbiting inside and out
+    for (const [r, a0, a1] of [[14.9, 1.12, 1.42], [11, 1.3, 1.72], [11, 0.66, 0.8]]) { gg.beginPath(); gg.arc(o, o, r, a0 * Math.PI, a1 * Math.PI); gg.stroke(); }
+    gg.save(); gg.beginPath(); gg.arc(o, o, 8.6, 0, Math.PI * 2);   // the Poké Ball, its band and button cut out
+    gg.rect(o - 9, o - 0.55, 18, 1.1); gg.arc(o, o, 3.9, 0, Math.PI * 2); gg.clip('evenodd');
+    gg.beginPath(); gg.arc(o, o, 8.6, 0, Math.PI * 2); gg.fill(); gg.restore();
+    gg.beginPath(); gg.arc(o, o, 2.9, 0, Math.PI * 2); gg.fill();
+  };
+  ink(g, lin(0, 2, 0, 30, ['#9cf0ff', '#3cc8f8', '#1aa8e8']));
+  g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 0.6;   // a shine along the top
+  g.beginPath(); g.arc(o, o, 12.6, 1.15 * Math.PI, 1.4 * Math.PI); g.stroke();
+  g.beginPath(); g.arc(o, o, 7.4, 1.1 * Math.PI, 1.35 * Math.PI); g.stroke();
+  ink(shine(), '#8c8c8c');
+  return c;
+}
+
+function stopPostArt() {
+  const { c, g, fill, rr, lin } = fine(12, 22);
+  rr(5.4, 2.4, 1.2, 18, 0.5, lin(5.4, 0, 6.6, 0, ['#9cf0ff', '#3cc8f8', '#1a98d8']));
+  fill(lin(0, 0, 0, 3, ['#bff6ff', '#3cc8f8', '#1a98d8']), () => {   // the plate, tilted towards you
+    g.moveTo(1.6, 0.6); g.lineTo(10.4, 0.6); g.lineTo(11.4, 2.4); g.lineTo(0.6, 2.4); g.closePath();
+  });
+  fill(lin(0, 19.6, 0, 22, ['#7ee4ff', '#1a98d8']), () => g.ellipse(6, 20.8, 2.6, 0.9, 0, 0, Math.PI * 2));
+  return c;
 }
 
 /** A billboard: the painting standing upright, feet at (x, z), `s` units a painted tile. */
@@ -679,11 +703,21 @@ function makePlaces() {
   const save = getSave(), run = acts.savedRun();
   const list = [
     {
-      id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: 6, y: ROWS - 1 }, tiles: [[7, ROWS - 2]], tag: [6, 1.5, ROWS - 1],
+      id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: 6, y: ROWS - 1 }, tiles: [[7, ROWS - 2]], tag: [6, 4, ROWS - 1],
       open: true,
       line: run ? `${run.name} waits in the ${run.place}${run.floor ? `, floor ${run.floor}` : ''}. HP ${run.hp}/${run.maxHp}.` : 'The trail out of the Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      build: (g) => g.add(board(signArt(), tileX(7), tileZ(ROWS - 2))),
+      build: (g) => {
+        const x = tileX(7), z = tileZ(ROWS - 2), d = stopDiscArt(), w = d.width / d.fine / TP * 1.15;
+        g.add(board(stopPostArt(), x, z));
+        const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
+        m.userData.glowMin = 0.3;
+        const disc = new THREE.Mesh(new THREE.PlaneGeometry(w, w), m);
+        disc.position.set(x, 1.55 + w / 2, z);
+        disc.castShadow = true;
+        g.add(disc);
+        stop = { disc, m, y: disc.position.y, spinAt: 0 };
+      },
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
@@ -777,7 +811,7 @@ function paintGateArt(now) {
 function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
-  glowMats = []; tree = null;
+  glowMats = []; tree = null; stop = null;
   tags.forEach(t => t.el.remove());
   places = makePlaces();
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -907,12 +941,39 @@ function arrived() {
 
 /** What a place does: a closed one says why; the trail with a saved run asks Continue or New game; else straight in. */
 function open(p) {
+  if (p.id === 'trail') {
+    if (stop?.spinAt && performance.now() - stop.spinAt < SPIN) return;
+    spinStop();
+  }
   if (!p.open || p.buttons.length > 1) return showCard(p);
   if (p.id === 'base') return enterBase();
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
   hideCard();
-  setTimeout(() => { if (running) p.buttons[0][1](); }, calm ? 0 : 260);
+  setTimeout(() => { if (running) p.buttons[0][1](); }, calm ? 0 : p.id === 'trail' ? SPIN * 0.8 : 260);
+}
+
+/* ---------- the Pokéstop ---------- */
+
+const SPIN = 1100;
+
+/** A tap spins the disc like Pokémon Go's, three turns slowing down, and it glows violet a moment after. */
+function spinStop() {
+  if (!stop || calm) return;
+  stop.spinAt = performance.now();
+  playSound('aug-reroll');
+  setTimeout(() => playSound('aug-gold'), SPIN * 0.75);
+}
+
+/** Idle it bobs and sways a little; spun, it whirls, then its violet fades back to blue. */
+function liveStop(now) {
+  if (!stop || calm) return;
+  const t = stop.spinAt ? (now - stop.spinAt) / SPIN : 9, sway = Math.sin(now / 1400) * 0.3;
+  stop.disc.rotation.y = t < 1 ? (1 - (1 - t) ** 3) * Math.PI * 6 + sway * t : sway;
+  stop.disc.position.y = stop.y + Math.sin(now / 900) * 0.06;
+  const violet = t < 1 ? t : Math.max(0, 1 - (t - 1) * SPIN / 3000);
+  stop.m.color.setRGB(1 - violet * 0.15, 1 - violet * 0.55, 1);
+  stop.m.emissive.setRGB(0.61 + violet * 0.3, 0.92 - violet * 0.5, 1);
 }
 
 /** Into the Ancient Tree: the door swings open, your partner steps into the dark, and the Secret Base comes up under a
@@ -1039,7 +1100,7 @@ function setTime(force) {
   sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
   scene.background = new THREE.Color(L.bg);
   scene.fog.color.set(L.bg);
-  for (const m of glowMats) m.emissiveIntensity = L.glow * m.userData.glow;
+  for (const m of glowMats) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
   for (const l of lamps) l.intensity = L.lamp * l.userData.k;
   if (bugs) bugs.userData.kind = L.bugs;
 }
@@ -1215,6 +1276,7 @@ function frame(now) {
   drawMon(mon, walker, dt);
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
+  liveStop(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
   placeCamera(dt);
