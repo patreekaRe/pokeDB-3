@@ -1761,3 +1761,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   shows the cards already upgraded, what changes on a pale green highlight (`markUpgrade()` in `js/ui.js`: an in-order
   word diff against the base card's text, a cheaper cost green), and the blown-up card sits beside the card as it is now
   with an arrow (`before` on a `showChoice()` option, `.up-pair` in `css/cards.css`), so nothing needs tapping in and out.
+- **Speech stays cream** (2026-10-07, the user's call): in ? rooms and the Center the text box is the classic cream
+  speech window again (someone in the scene is talking); their title and choice signs stay LCD (`css/screens.css`, after
+  the D2 rewards rule).
