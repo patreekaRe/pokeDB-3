@@ -38,7 +38,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
@@ -1452,7 +1452,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
   const more = a.rewardTake ? (picked) => {
     const rest = cards.filter(c => c !== picked);
     if (!rest.length) return next();
-    showChoice({ title: 'Heavy Pack', sub: ['Heavy Pack: take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next, layout: 'learn-room' });
+    showChoice({ title: 'Heavy Pack', sub: ['Take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next, layout: 'learn-room' });
   } : null;
 
   // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
@@ -1571,7 +1571,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     coins: run.pendingCoins,
   });
   const stage = el('div', `float-stage open relic-stage${boss ? ' boss' : ''}`), spot = el('div', 'ball-spot'), row = el('div', 'float-row');
-  const go = goButton('Take it');
+  const go = goButton('Take it', () => take());
   let picked = null, taking = false;
   const buttons = relics.map((relic, i) => {
     const btn = newBadge(floatingThing(relic, i, size), 'relics', relic);
@@ -1580,7 +1580,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
   });
   row.append(...buttons);
   spot.append(el('span', 'chest-rays'), row);
-  stage.append(el('div', 'treasure-flash'), spot, go);
+  stage.append(el('div', 'treasure-flash'), spot);
   $('reward-options').append(stage);
   playSound('ball-open');
 
@@ -1592,7 +1592,6 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     go.hidden = false;
     sayLines(relicLines(relic));
   }
-  go.addEventListener('click', take);
   async function take() {
     if (!picked || taking) return;
     taking = true;
@@ -1622,7 +1621,7 @@ function gainRelic(relic, next) {
 function offerItem(item, next, { opened = false } = {}) {
   const thisRun = run, full = run.items.length >= itemSlots(), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${itemSlots()} items). Tap one of yours to swap it out, or leave it.`
-    : `Tap it to put it in your Bag (up to ${itemSlots()} items, used up in battle).`];
+    : `Put it in your Bag? It holds ${itemSlots()} items, used up in battle.`];
   showChoice({
     title: 'Item found',
     sub: opened ? found : ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
@@ -1633,13 +1632,14 @@ function offerItem(item, next, { opened = false } = {}) {
     layout: 'item-found',
   });
   const stage = el('div', `float-stage ${opened ? 'open' : 'sealed'}`), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
-  const go = goButton(full ? 'Swap' : 'Put in Bag');
+  const go = goButton(full ? 'Swap' : 'Put in Bag', () => take());
+  go.hidden = full || !opened;   // with room in the Bag, A is up as soon as the item is out: the text box has said what it does
   // picking one of yours to toss shows what each does, side by side, so you know what you're trading (the user's call)
   const tips = el('div', 'swap-tips');
   tips.hidden = true;
   // the item rises where the ball was, so a quick second tap on the ball, or a double tap, used to bag it unseen:
-  // taps wait until it has risen, and the tap that picks it can't also take it
-  let toss = null, taking = false, ready = opened, pickedAt = 0;
+  // taps wait until it has risen (and a beat more)
+  let toss = null, taking = false, ready = opened, readyAt = 0;
 
   const art = itemBallArt(['poke', 'great', 'ultra', 'master'][run.biome] || 'poke'), ball = el('button', 'item-ball');
   ball.type = 'button';
@@ -1665,6 +1665,8 @@ function offerItem(item, next, { opened = false } = {}) {
     await sleep(reduced ? 0 : 900);
     if (run !== thisRun || !ball.isConnected) return;
     ready = true;
+    readyAt = performance.now();
+    if (!full) go.hidden = false;
     sayLines(found);
   });
 
@@ -1686,21 +1688,10 @@ function offerItem(item, next, { opened = false } = {}) {
     stage.append(el('p', 'float-caption', 'Your Bag'), row, tips);
   }
   thing.addEventListener('click', () => {
-    if (!ready || performance.now() - pickedAt < 400) return;
+    if (!ready || performance.now() - readyAt < 400) return;
     if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
-    if (!full && go.hidden) {
-      pickedAt = performance.now();
-      thing.classList.add('chosen');
-      tips.replaceChildren(swapTip('in', item.name, item.text));
-      tips.hidden = false;
-      go.hidden = false;
-      return sayLines([`Put the ${item.name} in your Bag?`]);
-    }
     take();
   });
-  go.addEventListener('click', take);
-  if (!full) stage.append(tips);
-  stage.append(go);
   $('reward-options').append(stage);
 
   async function take() {
@@ -1737,11 +1728,10 @@ function swapTip(kind, name, text) {
   return tip;
 }
 
-function goButton(label) {
-  const btn = el('button', 'ds-btn ds-go ds-sm float-go');
-  btn.type = 'button';
+/** The screen's confirm: the room bar's A key beside the hinge's lights, put away until there's something to take. */
+function goButton(label, onPress) {
+  const btn = roomConfirm(label, onPress);
   btn.hidden = true;
-  btn.append(el('span', 'pp-pill', label));
   return btn;
 }
 
@@ -1766,9 +1756,9 @@ function revealGift(thing, lines, done) {
   const thisRun = run, box = $('reward-options');
   box.querySelectorAll('.reward-option').forEach(btn => { btn.hidden = true; });
   $('reward-skip').style.visibility = 'hidden';
-  const stage = el('div', 'float-stage float-gift'), gift = floatingThing(thing, 0, 104), go = goButton('Take it');
+  const stage = el('div', 'float-stage float-gift'), gift = floatingThing(thing, 0, 104), go = goButton('Take it', () => take());
   go.hidden = false;
-  stage.append(gift, go);
+  stage.append(gift);
   box.append(stage);
   sayLines(lines);
   let taking = false;
@@ -1781,7 +1771,6 @@ function revealGift(thing, lines, done) {
     if (run === thisRun) done();
   };
   gift.addEventListener('click', take);
-  go.addEventListener('click', take);
 }
 
 /** The treasure grotto: a Poké Ball chest on a dais in a shaft of light. Tapped, it wobbles like a ball about to open,
@@ -1811,11 +1800,8 @@ function treasureRoom() {
   chest.type = 'button';
   chest.setAttribute('aria-label', 'Open the chest');
   chest.append(el('span', 'chest-rays'), part('open'), part('body'), part('lid'), el('span', 'chest-glow'), centerLabel('Open', 'Open the chest'));
-  const take = el('button', 'ds-btn ds-go ds-sm treasure-take');
-  take.type = 'button';
-  take.hidden = true;
-  take.append(el('span', 'pp-pill', 'Take it'));
-  stage.append(chest, take);
+  const take = goButton('Take it', () => takeIt());
+  stage.append(chest);
   $('reward-options').append(stage);
   placeTreasure();
 
@@ -1856,7 +1842,6 @@ function treasureRoom() {
     sayLines(relicLines(relic));
   }
 
-  take.addEventListener('click', takeIt);
   async function takeIt() {
     if (!picked || taking) return;
     taking = true;
@@ -1885,7 +1870,6 @@ function placeTreasure() {
   stage.style.setProperty('--px', `${px}px`);
   stage.style.setProperty('--size', `${size}px`);
   Object.assign(stage.querySelector('.treasure-chest').style, { left: `${left}px`, top: `${foot}px` });
-  stage.querySelector('.treasure-take').style.top = `${Math.max(rowY + size / 2 + 24, chestTop - 66)}px`;
   const relics = [...stage.querySelectorAll('.treasure-relic')], gap = Math.min(size * 1.5, (innerWidth - 24) / Math.max(1, relics.length));
   relics.forEach((btn, i) => {
     const off = i - (relics.length - 1) / 2, x = cx + off * gap, y = rowY + Math.abs(off) * 14;
@@ -2592,7 +2576,9 @@ function dayCare(trades, back, done = showMap) {
 /** A card an event handed you, shown big in a burst of light before you go on (the user found "You got X!" in the
     text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text box's last line goes on. */
 function revealCard(title, card, lines, done) {
-  showChoice({ title, sub: lines, options: [], skipLabel: 'OK', onSkip: done, layout: 'card-reveal-room' });
+  showChoice({ title, sub: lines, options: [], layout: 'card-reveal-room' });
+  let gone = false;
+  roomConfirm('OK', () => { if (!gone) { gone = true; done(); } });
   const stage = el('div', 'card-reveal');
   const big = zoomable(makeCard(card, { stage: run.stage }), card, run.stage);
   stage.append(el('span', 'chest-rays'), el('div', 'treasure-flash'), big);
@@ -2608,14 +2594,20 @@ function tutorCards(back, pay, done = showMap) {
   showChoice({
     title: 'Chad Master Kenmatta',
     sub: 'Kenmatta: Which move should your Pokémon learn?',
-    options: cards.map(card => cardOption(card, run.stage, () => {
-      pay();
-      run.deck.push(card.id);
-      tell(`${card.name} added to your deck.`);
-      done();
+    options: cards.map(card => ({
+      ...cardOption(card, run.stage, () => {
+        pay();
+        run.deck.push(card.id);
+        tell(`${card.name} added to your deck.`);
+        done();
+      }),
+      ask: `Learn ${card.name}?`,
+      confirm: 'Learn it',
+      note: deckNote(card, run.deck),
     })),
     skipLabel: 'Back',
     onSkip: back,
+    layout: 'learn-room',
   });
 }
 

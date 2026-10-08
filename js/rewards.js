@@ -138,7 +138,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (coins) coins.told = true;
   const lines = [
     ...notes.splice(0),
-    ...(news ? [coins.beaten ?? `${coins.foe} fainted!`, `You got ${coins.coins} PokéCoins!`, `You got ₽${coins.money} for winning!`, ...(coins.dex || [])] : []),
+    // the icon row over the screen already shows the coins and ₽, so the box doesn't read them out again
+    ...(news ? [coins.beaten ?? `${coins.foe} fainted!`, ...(coins.dex || [])] : []),
     ...[].concat(sub),   // sub is one line, or a list of them
   ];
   sayLines(lines.filter(Boolean));
@@ -188,13 +189,16 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
   // the rooms and a fight's reward steps (moves, relics, a found item): the bar along the bottom, the title on its
   // hinge's LCD, no top bar
-  const roomy = inBar || /\b(learn-room|item-found)\b/.test(layout);
+  const roomy = inBar || /\b(learn-room|item-found|card-reveal-room)\b/.test(layout);
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;
-  if (inBar) $('room-home').after(skip);
+  roomConfirm(null);
+  // a fight's reward steps put Skip by Home too, a key in the shell's colour (the user's call, 2026-10-08)
+  if (roomy) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
   skip.classList.toggle('room-leave', inBar);
+  skip.classList.toggle('room-skip', roomy && !inBar);
   skip.hidden = !onSkip;
   skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
   $('reward-skip-text').textContent = skipLabel;
@@ -210,8 +214,19 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (over) { $('map-screen').hidden = false; document.body.dataset.screen = 'map-screen'; }
 }
 
-// the bar's height, for whatever has to stay clear of it (the Mart, the grotto, the move pick's text box)
-new ResizeObserver(() => $('reward-screen').style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
+/** The room bar's A key, beside the hinge's lights: `label` names it ("Take it", "Add to deck"), `fn` runs on a press;
+    no `fn` puts it away. It starts shown; a screen that waits for a pick first sets `hidden` itself. */
+export function roomConfirm(label, fn) {
+  const ok = $('room-ok');
+  ok.hidden = !fn;
+  $('room-ok-text').textContent = label || '';
+  ok.onclick = fn ? () => fn() : null;
+  return ok;
+}
+
+// the bar's height, for whatever has to stay clear of it (the Mart, the grotto, the move pick's text box, a picked card
+// blown up over the screen, which lives outside it)
+new ResizeObserver(() => document.documentElement.style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
 
 /* A picked reward blows up in the middle of a dimmed screen, like a card picked in battle,
    with its confirm ("Add to deck") under it where battle says "Tap to play". The big tile
@@ -240,6 +255,13 @@ function openFocus(option, btn, take) {
     pair.append(was, el('span', 'up-arrow', '▶'), big);
   }
   layer.append(shown, ...(option.note ? [el('p', 'focus-note', option.note)] : []), yes);
+  // over a room's bar, the confirm is its A key instead, and the bar stays lit above the dimmed screen
+  const inRoom = $('reward-screen').classList.contains('in-room') && !$('reward-screen').hidden;
+  if (inRoom) {
+    yes.hidden = true;
+    layer.classList.add('over-room');
+    roomConfirm(option.confirm || 'Choose', take);
+  }
   layer.addEventListener('click', (e) => {
     if (e.target.closest('.card-tips, .up-before, .up-arrow')) return;
     if (e.target.closest('.focus-card, .focus-confirm')) take(); else backOut();
@@ -251,8 +273,8 @@ function openFocus(option, btn, take) {
   document.addEventListener('keydown', onKey);
   btn.classList.add('picked');
   document.body.append(layer);
-  focus = { layer, btn, onKey };
-  yes.focus({ preventScroll: true });
+  focus = { layer, btn, onKey, inRoom };
+  (inRoom ? $('room-ok') : yes).focus({ preventScroll: true });
 }
 
 function backOut() {
@@ -265,6 +287,7 @@ function closeFocus() {
   focus.layer.remove();
   focus.btn.classList.remove('picked');
   document.removeEventListener('keydown', focus.onKey);
+  if (focus.inRoom) roomConfirm(null);
   focus = null;
 }
 

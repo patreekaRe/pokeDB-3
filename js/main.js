@@ -277,6 +277,8 @@ function init() {
   $('room-home').addEventListener('click', () => $('brand-btn').click());
   $('reward-skip').prepend(el('span', 'leave-ico'));
   $('reward-skip').firstChild.append(smoothIcon('leave'));   // only shown while it's the room bar's Leave key
+  $('reward-skip').firstChild.after(el('span', 'skip-ico'));
+  $('reward-skip').querySelector('.skip-ico').append(smoothIcon('skip'));   // and this while it's the bar's Skip key
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,

@@ -306,6 +306,10 @@ const ART = {
     <path d="M17 16.5h8.5M22 12.5l4.2 4-4.2 4" fill="none" stroke="${INK}" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M17 16.5h8.5M22 12.5l4.2 4-4.2 4" fill="none" stroke="#5ad06a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
 
+  // Skip a reward: a fast-forward to a bar
+  skip: `<path d="M4.5 7.5v17L15 16ZM14.5 7.5v17L25 16Z" fill="#fff4dc" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="24.5" y="7" width="3.6" height="18" rx="1" fill="#fff4dc" stroke="${INK}" stroke-width="2"/>`,
+
   // ---- the device's text icons (a run's full record, the Pokédex's move kinds, the Safari areas) ----
   heart: `<path d="M16 27.5C9 22.5 3.5 17.6 3.5 11.6c0-4 3.1-7.1 6.9-7.1 2.6 0 4.5 1.4 5.6 3.4 1.1-2 3-3.4 5.6-3.4 3.8 0 6.9 3.1 6.9 7.1 0 6-5.5 10.9-12.5 15.9Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M7.6 11c.2-1.8 1.4-3 3-3.2" fill="none" stroke="#ffc0cc" stroke-width="2" stroke-linecap="round"/>`,
