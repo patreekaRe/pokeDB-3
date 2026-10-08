@@ -4916,6 +4916,50 @@ body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not(
 }
 .dev-window .dialog-actions .btn:hover:not(:disabled) { background: var(--shell); }
 .dev-window .dialog-actions .btn:active:not(:disabled) { box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+/* beside another key, the one to press is a light LCD key */
+.dev-window .dialog-actions .btn:not(.secondary):not(:only-child) {
+  background: #d6e8b8; color: #1f3a14; text-shadow: none; box-shadow: inset 0 0 0 2px #1f3a14, 0 3px 0 var(--shell-deep);
+}
+.dev-window .dialog-actions .btn:not(.secondary):not(:only-child):hover:not(:disabled) { background: #e4f0cc; }
+
+/* the run's end windows on the device too (UI fixes D2, 2026-10-07): the result, unlock, yes/no and loss recap windows
+   were cream over a map and device that no longer are */
+.dev-window.result h2 { font-size: 0.95rem; }
+.dev-window .dev-screen > p { margin: 0 0 8px; text-align: center; }
+.dev-window .dev-screen > p:last-child { margin-bottom: 0; }
+.dev-window .unlocks { margin: 0; }
+.dev-window .unlocks li {
+  margin: 6px 0 0; background: #e4f0cc; border: 2px solid #1f3a14; border-radius: 8px; box-shadow: 0 2px 0 rgba(31, 58, 20, 0.3); font-size: 0.72rem; line-height: 1.5;
+}
+.dev-window .unlocks .gate-line { background: #e4daf8; border-color: #3a2a68; color: #2a1a50; }
+.dev-window .gate-hp { color: #3a2a68; }
+.dev-window .result-badge-btn:hover, .dev-window .result-badge-btn:focus-visible { color: #6a4a00; }
+
+#confirm-dialog .dev-screen { margin: 4px; padding: 16px 12px; }
+#confirm-dialog #confirm-text { font-size: 0.8rem; line-height: 1.6; }
+
+.unlock-dialog.dev-window .unlock-kicker { margin: 0 0 10px; border-color: var(--shell-rim); }
+.unlock-dialog.dev-window .unlock-stage {
+  margin: 0 6px; border: 4px solid #2a2a30; border-radius: 10px; box-shadow: 0 0 0 3px var(--shell-rim), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  background:
+    radial-gradient(ellipse 26% 7% at 50% 92%, rgba(24, 16, 16, 0.3) 0 98%, transparent),
+    radial-gradient(circle at 50% 60%, #fff6d0 0 34%, transparent 35%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1.5px) 0 0 / 10px 10px,
+    linear-gradient(150deg, #5cbcff, #1d58b8);
+}
+.unlock-dialog.dev-window .dev-screen { margin: 12px 6px 6px; padding: 10px 10px 12px; }
+.unlock-dialog.dev-window #unlock-name {
+  margin: 0 0 6px; padding: 0; border: 0; background: none; box-shadow: none; color: #1f3a14; font-size: 1.1rem; letter-spacing: 0; text-transform: none;
+}
+.unlock-dialog.dev-window .unlock-hint { color: #3a5a28; }
+
+.loss-dialog.dev-window .records-sub { margin: 0 0 10px; color: #fff; text-align: center; font-size: 0.7rem; text-shadow: 1px 1px 0 var(--shell-deep); }
+.loss-dialog .bdx-sheet { --rim: var(--shell-rim); --lcd: #b6d68e; --ink: #1f3a14; color: var(--ink); }
+.loss-dialog .bdx-sheet > * + * { margin-top: 0; }
+.loss-dialog .records-close .btn {
+  border: 0; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
+}
 
 /* the Game Corner as a Pokédex app (cornerApp in js/shop.js): the cabinet's CRT fills the device's screen, its Buy under it */
 .cdev-app.cdev-corner { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #0c0c10; color: #e8fff4; }

@@ -11,9 +11,9 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
 - D2. **The rest of the cream windows** (D's audit, 2026-10-07; D moved the map's to the Pokédex look). Still cream
-  (`--win-*`, `.dialog` / `.panel` in `css/base.css`), the user to pick which go next. Windows: the run's result window
-  (`#result-dialog`), the unlock windows (`#unlock-dialog`), yes/no (`#confirm-dialog`), the battle's piles
-  (`#piles-dialog`), the loss recap (`#loss-dialog`), the cloud save pair (`#cloud-dialog`, `#cloud-pick-dialog`), patch notes
+  (`--win-*`, `.dialog` / `.panel` in `css/base.css`). Order agreed 2026-10-07: run's end (done), then rewards / Mart,
+  then the rest; battle last, its nameplates and intents probably staying cream (the classic look); `.btn` moved window by
+  window, never globally; the old Index retired if nothing opens it. Windows: the battle's piles (`#piles-dialog`), the cloud save pair (`#cloud-dialog`, `#cloud-pick-dialog`), patch notes
   (`#patch-dialog`), About and How to play (the windows and the device's Help / About apps, `.cdev-win`), the old Index
   (`#index-dialog`), the deck preview `.panel`. In battle: the nameplates, the Ability banner, intent bubbles, the battle
   log. Rewards / Mart: the reward title, focus note, reward log, relic tiles (`.relic`), the pile picker's banner

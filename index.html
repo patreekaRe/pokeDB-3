@@ -608,10 +608,12 @@
     </div>
   </dialog>
 
-  <dialog id="result-dialog" class="dialog result">
+  <dialog id="result-dialog" class="dialog result dev-window">
     <h2 id="result-title"></h2>
-    <p id="result-text"></p>
-    <ul id="result-unlocks" class="unlocks"></ul>
+    <div class="dev-screen">
+      <p id="result-text"></p>
+      <ul id="result-unlocks" class="unlocks"></ul>
+    </div>
     <div class="dialog-actions">
       <button class="btn secondary" id="result-menu">Main menu</button>
       <button class="btn secondary" id="result-board" hidden>🏆 Leaderboard</button>
@@ -727,10 +729,10 @@
     <div class="evo-bottom"><div class="reward-log" id="gate-log" hidden><span id="gate-log-text" aria-hidden="true"></span><span class="sr-only" id="gate-log-live" aria-live="polite"></span></div></div>
   </div>
 
-  <dialog id="loss-dialog" data-smooth-icons class="dialog records-dialog hof-dialog loss-dialog">
+  <dialog id="loss-dialog" data-smooth-icons class="dialog records-dialog hof-dialog loss-dialog dev-window">
     <h2 tabindex="-1" autofocus>💀 Fainted…</h2>
     <p class="records-sub" id="loss-sub"></p>
-    <div id="loss-body" class="hof-body"></div>
+    <div id="loss-body" class="hof-body bdx-sheet"></div>
     <form method="dialog" class="records-close"><button class="btn primary">Continue</button></form>
   </dialog>
 
@@ -918,18 +920,20 @@
   </dialog>
 
   <!-- a starter a won fight just unlocked (unlockWindow() in js/run.js) -->
-  <dialog id="unlock-dialog" class="dialog small-dialog unlock-dialog">
+  <dialog id="unlock-dialog" class="dialog small-dialog unlock-dialog dev-window">
     <p class="unlock-kicker">🏆 Achievement unlocked!</p>
     <div class="unlock-stage"><img id="unlock-sprite" class="pixel" alt=""><span id="unlock-face" class="ken-face" hidden></span></div>
-    <h2 id="unlock-name"></h2>
-    <p id="unlock-text"></p>
-    <p class="unlock-hint" id="unlock-hint">Choose it at New game.</p>
+    <div class="dev-screen">
+      <h2 id="unlock-name"></h2>
+      <p id="unlock-text"></p>
+      <p class="unlock-hint" id="unlock-hint">Choose it at New game.</p>
+    </div>
     <form method="dialog" class="dialog-actions"><button class="btn primary" id="unlock-ok">Great!</button></form>
   </dialog>
 
 
-  <dialog id="confirm-dialog" class="dialog small-dialog">
-    <p id="confirm-text"></p>
+  <dialog id="confirm-dialog" class="dialog small-dialog dev-window">
+    <div class="dev-screen"><p id="confirm-text"></p></div>
     <div class="dialog-actions">
       <button class="btn secondary" id="confirm-no">Cancel</button>
       <button class="btn danger" id="confirm-yes">Yes</button>

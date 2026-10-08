@@ -1740,3 +1740,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Map windows in the Pokédex look** (UI fixes batch D, 2026-10-07): the Bag's pockets are the green LCD (rows LCD
   tiles, buttons LCD keys), the deck and map-peek windows `.dialog.dev-window` (shell, LCD title, Moves-app keys, cards on
   a `.dev-screen`); `docs/reference/map-screen.md`. The audit of what's still cream is the roadmap's D2.
+- **Run's end windows in the Pokédex look** (D2 group 1, 2026-10-07): the result, unlock, yes/no and loss recap windows are
+  `.dev-window`s: shell, LCD title, their text on a green `.dev-screen` (result lines as LCD tiles, the gate line violet), the
+  unlock's Pokémon on a blue screen; beside another key the one to press is a light LCD key; the loss recap's body is a
+  `.bdx-sheet`, the Record Book's run page.
