@@ -94,7 +94,7 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
 - **Saved** on `run.tower` (`augments`, `spent`, `rerolls`, `rerolledAt` / `rerolledN`, `pick`, `train` for Training Day's
   PP Up after each guardian, `blood` / `bloodStr` for Bloodlust). A climb saved before augments loads with none and owes
   none (`restoreRun()`).
-- **Shown**: an "Augments" row in the Bag's Relics pocket (between the Ability and the relics, a tier-framed icon each),
+- **Shown**: the Bag's Augments pocket (climbs only, `renderAugmentList()` in `js/run.js`; the dock's 5th button, a puzzle piece with the count, opens it; a tier-framed icon each, then the sets),
   the result window's list, and the board entry's `augments` (ids, at most 10; `towerResult()` / `checkTowerEntry()`,
   `firestore.rules`: **the user has to publish the rules again**, or posts with augments are refused).
 - **The look** (part b, 2026-10-07): all in `js/augment-art.js`, keyed by augment id, so `js/data/augments.js` stays numbers

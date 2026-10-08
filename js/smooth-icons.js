@@ -167,6 +167,11 @@ const ART = {
     <path d="M8 10.2l3.6-4.4" stroke="#ffd0b0" stroke-width="1.8" stroke-linecap="round"/>
     <path d="M12 3.5h8.4l6.4 6.2 1.4 9.4-5.2 8.4H9.8l-5.6-7.8 1.2-9.6Z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`,
 
+  // Augments: a violet puzzle piece with a gold spark, the Sky Pillar's power-ups slotting in
+  augments: `<path d="M5 9.5h6.2a3.6 3.6 0 1 1 6.6 0H24v6.2a3.6 3.6 0 1 1 0 6.6V28.5H5v-6.2a3.6 3.6 0 1 0 0-6.6Z" fill="#8a5ad8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7.5 12h3.2" stroke="#c8a8f8" stroke-width="2" stroke-linecap="round"/>
+    <path d="M14.5 15.5c.5 2.6 1.6 3.7 4.2 4.2-2.6.5-3.7 1.6-4.2 4.2-.5-2.6-1.6-3.7-4.2-4.2 2.6-.5 3.7-1.6 4.2-4.2Z" fill="#f8d838" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
+
   // Items: the games' Potion (Bulbapedia's art), a white trigger head with its purple nozzle on a round purple bottle
   items: `<path d="M7.6 20.2C5.4 21.8 4.8 24.2 5.2 26.4c.4 2.2 1.8 3.1 3.8 3.1h12.8c2 0 3.3-1.1 3.3-3.1 0-2.8-2.2-5.6-4.6-7.4Z" fill="#6a5596" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M7.4 21.4C6 22.8 5.8 25 6.2 26.6c.4 1.4 1.4 1.9 2.8 1.9h1.4c-1.6-1.6-2.2-4.4-1.4-7.6Z" fill="#8a7ac6"/>

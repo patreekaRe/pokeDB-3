@@ -716,7 +716,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Modes, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
   **Augments** (roadmap item 21 part a, 2026-10-07): no perks on any climb (`fairTry()`); one of three augments
   (`js/data/augments.js`, shared with the bot) before floor 1 and after every guardian, Silver / Gold / Prismatic by height,
-  dealt from the week's seed (`augmentOffer()`), 1 reroll; effects are data keys summed by `augEffects()` and read off
+  dealt from the week's seed (`augmentOffer()`), 1 reroll; effects are data keys summed by `augEffects()` (shown in the Bag's Augments pocket, the climb dock's 5th button) and read off
   `battle.aug` in `js/battle.js` and `augs()` in `js/run.js` (the file's header lists every key). Saved on `run.tower`, posted
   in the board entry's `augments`. Their look (part b) is `js/augment-art.js`, never the data file: an icon per augment (`ICONS`:
   a glyph on a tier medallion, a new augment needs a line), tiles in Silver / Gold / Prismatic frames dealt face down and

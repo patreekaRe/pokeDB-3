@@ -4603,15 +4603,15 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen.tower .mdex-hinge .pdx-lens { width: 24px; height: 24px; }
 #map-screen.tower .mdex-hinge .map-head { padding: 3px 10px; }
 #map-screen.tower .mdex-dock {
-  order: 3; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
+  order: 3; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
   box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
 }
 #map-screen.tower .mdex-btn { padding: 5px 0; border-radius: 10px; }
 #map-screen.tower .mdex-ico { font-size: 20px; }
 #map-screen.tower :is(.mdex-label, .mdex-btn[data-pocket="key"], .mdex-btn[data-pocket="trainer"]) { display: none; }
 #map-screen.tower .mdex-count { top: -5px; right: 4px; min-width: 16px; padding: 1px 3px; font-size: 0.42rem; }
-.mdex-btn.mdex-menu { display: none; }
-#map-screen.tower .mdex-btn.mdex-menu { display: grid; }
+.mdex-btn:is(.mdex-menu, .mdex-aug) { display: none; }
+#map-screen.tower .mdex-btn:is(.mdex-menu, .mdex-aug) { display: grid; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .topbar {
   position: fixed; left: calc(var(--tw-lcd-x, 20px) + 6px); right: auto; top: var(--tw-lcd-y, 80vh); width: auto;
   height: var(--tw-lcd-h, 40px); padding: 0; gap: 8px; justify-content: flex-start;

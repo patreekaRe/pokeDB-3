@@ -163,6 +163,7 @@
         <div class="bag-pockets" role="tablist" aria-label="Bag pockets">
           <button class="bag-pocket" role="tab" data-pocket="deck" data-name="Deck" aria-label="Deck" aria-controls="bag-deck"><span aria-hidden="true">🃏</span><b id="run-deck-count">10</b></button>
           <button class="bag-pocket" role="tab" data-pocket="relics" data-name="Relics" aria-label="Relics" aria-controls="bag-relics"><span aria-hidden="true">💎</span><b id="run-relic-count">0</b></button>
+          <button class="bag-pocket" role="tab" data-pocket="augments" data-name="Augments" aria-label="Augments" aria-controls="bag-augments" hidden><span aria-hidden="true">🧩</span><b id="run-aug-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="items" data-name="Items" aria-label="Items" aria-controls="bag-items"><span aria-hidden="true"><img class="item-sprite" src="assets/items/potion.png" alt=""></span><b id="run-item-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="key" data-name="Map" aria-label="Map" aria-controls="bag-key"><span aria-hidden="true">🗺️</span></button>
           <button class="bag-pocket" role="tab" data-pocket="trainer" data-name="Trainer Card" aria-label="Trainer Card" aria-controls="bag-trainer"><span aria-hidden="true" id="bag-trainer-icon"></span></button>
@@ -173,6 +174,9 @@
         </div>
         <div class="bag-pocket-body" id="bag-relics" role="tabpanel" hidden>
           <div id="relics-list" class="howto-list"></div>
+        </div>
+        <div class="bag-pocket-body" id="bag-augments" role="tabpanel" hidden>
+          <div id="augments-list" class="howto-list"></div>
         </div>
         <div class="bag-pocket-body" id="bag-items" role="tabpanel" hidden>
           <div id="items-list" class="howto-list"></div>
@@ -352,6 +356,8 @@
       <nav class="mdex-dock" id="mdex-dock" aria-label="Bag pockets">
         <button type="button" class="mdex-btn" data-pocket="deck"><span class="mdex-ico" data-icon="moves"></span><span class="mdex-label">Deck</span><b class="mdex-count" id="dock-deck-count"></b></button>
         <button type="button" class="mdex-btn" data-pocket="relics"><span class="mdex-ico" data-icon="relics"></span><span class="mdex-label">Relics</span><b class="mdex-count" id="dock-relic-count"></b></button>
+        <!-- only on a Sky Pillar climb, like Menu below -->
+        <button type="button" class="mdex-btn mdex-aug" data-pocket="augments"><span class="mdex-ico" data-icon="augments"></span><span class="mdex-label">Augments</span><b class="mdex-count" id="dock-aug-count"></b></button>
         <button type="button" class="mdex-btn" data-pocket="items"><span class="mdex-ico" data-icon="items"></span><span class="mdex-label">Items</span><b class="mdex-count" id="dock-item-count"></b></button>
         <button type="button" class="mdex-btn" data-pocket="key"><span class="mdex-ico" data-icon="map"></span><span class="mdex-label">Map key</span></button>
         <button type="button" class="mdex-btn" data-pocket="trainer"><span class="mdex-ico" data-icon="cap"></span><span class="mdex-label">Trainer</span></button>

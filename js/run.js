@@ -727,6 +727,8 @@ function showMap() {
   }
   $('run-deck-count').textContent = $('dock-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = $('dock-relic-count').textContent = String(run.relics.length);
+  $('run-aug-count').textContent = $('dock-aug-count').textContent = String(run.tower?.augments?.length ?? 0);
+  document.querySelector('.bag-pocket[data-pocket="augments"]').hidden = !run.tower;
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
   // a Safari run says whether it's the day's counted try or a replay, where a normal run shows its Trainer Level
   const trial = run.safari || run.tower;   // a Safari day or a Sky Pillar week: counted or not, where a run shows its Level
@@ -745,6 +747,7 @@ function showMap() {
   showAbility();
 
   renderRelicList();
+  renderAugmentList();
   renderItemList();
   closeBag(true);
   checkpoint();
@@ -976,7 +979,7 @@ function augmentsAfterFight(result) {
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
    The tabs pick a pocket, and the arrows flip through them in order. */
-const POCKETS = ['deck', 'relics', 'items', 'key', 'trainer'];
+const POCKETS = ['deck', 'relics', 'augments', 'items', 'key', 'trainer'];
 let pocket = 'relics';
 
 function initBag() {
@@ -985,8 +988,11 @@ function initBag() {
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
-  const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
-  for (const [p, icon] of [['deck', 'moves'], ['relics', 'relics'], ['items', 'items'], ['key', 'map']]) {
+  const flip = (step) => {   // skips a hidden pocket (Augments off a climb)
+    const open = POCKETS.filter(p => !document.querySelector(`.bag-pocket[data-pocket="${p}"]`).hidden);
+    showPocket(open[(open.indexOf(pocket) + step + open.length) % open.length]);
+  };
+  for (const [p, icon] of [['deck', 'moves'], ['relics', 'relics'], ['augments', 'augments'], ['items', 'items'], ['key', 'map']]) {
     document.querySelector(`.bag-pocket[data-pocket="${p}"] > span`).replaceChildren(smoothIcon(icon));
   }
   // the map key's Mart and Center rows show the map's own little buildings
@@ -1041,6 +1047,7 @@ function closeBag(quiet = false) {
 }
 
 function showPocket(name) {
+  if (name === 'augments' && !run?.tower) name = 'relics';
   pocket = name;
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     const on = tab.dataset.pocket === name;
@@ -1077,7 +1084,14 @@ function renderRelicList() {
   };
   const ability = ABILITIES[run.starter.type];   // the starter's own, always first (StS's starter relic)
   const rows = run.relics.map(id => row(RELICS_BY_ID[id]));
-  // a climb's augments: their own row, between the Ability and the relics
+  $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
+    ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
+}
+
+/** A climb's augments, their own pocket (the dock's 5th button on a climb, the user's ask, 2026-10-08), with the sets
+    they're gathering. */
+function renderAugmentList() {
+  if (!run?.tower) return;
   const augRows = (run.tower?.augments || []).map(id => AUGMENTS_BY_ID[id]).filter(Boolean).map(aug => {
     const li = el('div', 'howto-li aug-row');
     const text = el('span', 'howto-li-text');
@@ -1096,9 +1110,8 @@ function renderRelicList() {
     li.append(el('span', 'howto-node aug-set-node', set.icon), text);
     return li;
   });
-  $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
-    ...(augRows.length ? [el('p', 'aug-head', 'Augments'), ...augRows, ...setRows] : []),
-    ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
+  $('augments-list').replaceChildren(...augRows, ...setRows);
+  if (!augRows.length) $('augments-list').append(el('p', 'drop-empty', 'No augments yet. You pick one before floor 1 and after every guardian.'));
 }
 
 /* The Items pocket: in battle, Use picks the item like a slot does (with the same confirm step); on the map only heals can be used.
