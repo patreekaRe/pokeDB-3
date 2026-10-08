@@ -277,28 +277,49 @@ function ancientArt(open = false) {
   return a.c;
 }
 
-/** A notice board under a little arched roof (Scarlet / Violet's roadside boards): notices pinned under a header strip.
-    The Safari's is wood with a red roof and a green header, the Sky Pillar's stone with a slate roof and a starry one. */
-function noticeArt(kind) {
-  const a = art(28, 36), pillar = kind === 'pillar';
-  const post = pillar ? P.stone : P.wood, roof = pillar ? ['#7088b0', '#4a5e88', '#2a3858'] : [P.roof[0], P.roof[1], '#702018'];
-  for (const x0 of [4, 21]) { a.dot(x0, 8, post[1], 3, 26); a.dot(x0, 8, post[0], 1, 26); a.dot(x0 + 2, 8, post[2], 1, 26); }
-  a.dot(3, 33, post[3], 5, 3); a.dot(20, 33, post[3], 5, 3);
-  for (let y = 1; y < 9; y++) {   // the roof, an arch with eaves
-    const half = Math.round(10 + Math.sqrt(Math.max(0, 1 - ((8 - y) / 8) ** 2)) * 4 - (8 - y) * 0.6);
-    a.dot(14 - half, y, y < 3 ? roof[0] : y > 6 ? roof[2] : roof[1], half * 2, 1);
+const KIT = { white: '#f6f8fb', pale: '#e2e6ee', grey: '#bcc3cf', dark: '#8a92a0', ink: '#3a3e4c', red: '#e84838', redDark: '#b8302a' };
+
+/** The Safari's board, Scarlet / Violet's roadside kiosk: a white frame on arched legs under a ribbed, curved roof, a
+    poster with a red header and three snapshots of today's catches. */
+function kioskArt() {
+  const a = art(22, 32), K = KIT;
+  for (let y = 1; y < 7; y++) {   // the roof, rounded on top, its underside in shadow
+    const x0 = y === 1 ? 3 : y === 2 ? 2 : 1;
+    a.dot(x0, y, y === 1 ? K.white : y === 6 ? K.dark : y === 2 ? K.pale : K.pale, 22 - x0 * 2, 1);
   }
-  for (let x = 6; x < 23; x += 4) a.dot(x, 3, roof[2], 1, 4);   // its ribs
-  a.dot(2, 9, post[3], 24, 18);   // the frame, then the board
-  a.dot(3, 10, pillar ? '#283450' : '#c89858', 22, 16);
-  a.dot(3, 10, pillar ? '#1c2440' : '#3a9a48', 22, 4); a.dot(3, 10, pillar ? '#3a4a7a' : '#58b860', 22, 1);
-  if (pillar) for (const [x, y] of [[6, 12], [11, 11], [16, 12], [21, 11]]) a.dot(x, y, '#c8dcff');
-  else { a.dot(12, 11, '#f8d848', 4, 2); a.dot(13, 13, '#c89820', 2, 1); }   // a little trophy
-  for (const [x, y, w, h] of [[4, 15, 7, 9], [12, 16, 6, 7], [19, 15, 5, 8]]) {   // the notices
-    a.dot(x, y, '#f8f0d8', w, h); a.dot(x, y + h - 1, '#d8c8a0', w, 1);
-    for (let r = y + 3; r < y + h - 2; r += 2) a.dot(x + 1, r, '#8a8070', w - 2 - (r % 3), 1);
-    a.dot(x + (w >> 1), y + 1, '#e84838');
+  for (let x = 5; x < 18; x += 4) a.dot(x, 2, K.grey, 1, 4);   // its ribs
+  a.dot(1, 5, K.grey, 20, 1);
+  for (const x0 of [2, 18]) {   // the posts, each standing on a little arch
+    a.dot(x0, 7, K.white, 2, 21); a.dot(x0 + 1, 7, K.grey, 1, 21);
+    a.dot(x0 - 1, 27, K.pale, 4, 2); a.dot(x0 - 1, 29, K.pale, 1, 3); a.dot(x0 + 2, 29, K.grey, 1, 3);
   }
+  a.dot(3, 8, K.grey, 16, 15);   // the frame, then the poster
+  a.dot(4, 9, K.white, 14, 13);
+  a.dot(5, 10, K.red, 12, 2); a.dot(5, 11, K.redDark, 12, 1);
+  a.dot(6, 10, K.white); a.dot(6, 11, K.ink);   // a Poké Ball on the header
+  for (let x = 6; x < 16; x++) if (x % 3 !== 2) a.dot(x, 13, K.ink, 1, 2);   // a headline
+  ['#58b860', '#f8d848', '#6ab0e0'].forEach((c, i) => { a.dot(6 + i * 4, 16, c, 3, 3); a.dot(6 + i * 4, 19, K.grey, 3, 1); });
+  a.dot(3, 23, K.pale, 16, 1); a.dot(3, 24, K.dark, 16, 1);   // the rail under it
+  return a.c;
+}
+
+/** The Sky Pillar's board, a pin-shaped roadside marker: a red-and-white head round a white face, a red arrow pointing
+    down its tapering body, on a jointed pole and a stone foot. */
+function pinArt() {
+  const a = art(16, 40), K = KIT;
+  for (let y = 0; y < 27; y++) for (let x = 0; x < 16; x++) {
+    const r = Math.hypot(x - 7.5, y - 7.5), half = y < 8 ? 0 : 7.5 - (y - 8) * 0.36;
+    const body = r <= 7.5 || (y >= 8 && Math.abs(x - 7.5) <= half);
+    if (!body) continue;
+    const edge = r > 6.6 && (y < 8 || Math.abs(x - 7.5) > half - 0.9) || (y >= 8 && Math.abs(x - 7.5) > half - 0.9);
+    const arrow = y >= 15 && y <= 22 && Math.abs(x - 7.5) <= (22 - y) * 0.55;
+    a.dot(x, y, r <= 5 ? K.white : edge ? (y < 8 ? K.redDark : K.grey) : y < 8 ? K.red : arrow ? K.red : K.pale);
+  }
+  for (let x = 5; x < 11; x++) if (x !== 8) a.dot(x, 5, K.red);   // the face's lines
+  a.dot(5, 8, K.ink, 6, 1); a.dot(5, 10, K.ink, 2, 1); a.dot(8, 10, K.ink, 3, 1);
+  a.dot(7, 27, K.pale, 2, 9); a.dot(8, 27, K.grey, 1, 9);   // the pole and its joint
+  a.dot(6, 30, K.grey, 4, 2); a.dot(6, 30, K.pale, 4, 1);
+  a.dot(4, 36, K.grey, 8, 4); a.dot(4, 36, K.pale, 8, 1); a.dot(4, 39, K.dark, 8, 1);
   return a.c;
 }
 
@@ -381,7 +402,7 @@ function makePlaces() {
     id: 'safari-board', name: 'Safari Ranks', step: { x: 3, y: 7 }, tiles: [[3, 6]], tag: [3, 2.6, 6], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => g.add(board(noticeArt('safari'), tileX(3), tileZ(6))),
+    build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(6))),
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -402,7 +423,7 @@ function makePlaces() {
     id: 'pillar-board', name: 'Pillar Ranks', step: { x: 9, y: 4 }, tiles: [[9, 3]], tag: [9, 2.6, 3], open: tower,
     line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
-    build: (g) => g.add(board(noticeArt('pillar'), tileX(9), tileZ(3))),
+    build: (g) => g.add(board(pinArt(), tileX(9), tileZ(3))),
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: 1, y: 3 }, tiles: rect(0, 0, 2, 2), tag: [1, 4, 1], open: true,
