@@ -8,7 +8,7 @@
    It lives inside #title-screen, over its sky and under its logo and corner, and runs only while the title shows. The
    signs are the fallback: no WebGL, Three.js not loading, or Settings' Title screen set to Signs (js/title.js). */
 
-import { getSave } from './storage.js';
+import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
@@ -20,7 +20,7 @@ import { STARTERS_BY_ID } from './data/starters.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
-import { setHpBar } from './ui.js';
+import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
 const M = 4, FRONT = 1;       // grass and forest round it (tiles): back and sides, and in front where the trail leaves
@@ -396,8 +396,8 @@ function pillarArt(front) {
 /** The Ancient Tree, smooth (2026-10-08): a crown of hundreds of leaf clumps lit from the top left with blossoms in it and
     vines hanging off it, a ridged trunk flaring into arching roots, and the Secret Base's plank door in the hollow between
     them, a round window and a lantern lit at dusk; mushrooms, ferns and grass at its foot. Open, the door's swung in on a
-    warm room. */
-function ancientArt(open = false) {
+    warm room; `boarded` (not bought yet) nails two planks across it. */
+function ancientArt(open = false, boarded = false) {
   const W = 128, H = 160, { c, g, fill, rr, lin, shine } = fine(W, H, 8), rnd = seeded(11), glow = shine();
   const B = ['#8a6844', '#6a4c30', '#4a3420', '#26180c'], WD = ['#e0b07c', '#c08a50', '#94643a', '#5a3a1c'];
   const root = (x0, x1, y1, t) => {   // a tapering root out of the trunk's foot, arching as it goes
@@ -449,6 +449,13 @@ function ancientArt(open = false) {
     strokeOn(g, WD[3], 0.45, () => { g.moveTo(dx + dw / 2 - 2.8, wy); g.lineTo(dx + dw / 2 + 2.8, wy); g.moveTo(dx + dw / 2, wy - 2.8); g.lineTo(dx + dw / 2, wy + 2.8); });
     fill('#3a3a44', () => g.arc(70.5, 138, 1.1, 0, Math.PI * 2));   // the ring handle
     strokeOn(g, '#e0b848', 0.4, () => g.arc(70.5, 139.4, 1.3, 0, Math.PI * 2));
+    if (boarded) for (const [y, a] of [[dtop + 22, -0.32], [dtop + 30, 0.28]]) {   // not yours yet: two planks nailed across
+      g.save(); g.translate(dx + dw / 2, y); g.rotate(a);
+      rr(-dw / 2 - 3, -2, dw + 6, 4, 0.5, lin(0, -2, 0, 2, ['#b08458', '#7a5432', '#4a3018']));
+      strokeOn(g, 'rgba(40,22,8,0.45)', 0.25, () => { g.moveTo(-dw / 2, -0.6); g.lineTo(dw / 2 - 2, -0.4); g.moveTo(-dw / 2 + 4, 0.9); g.lineTo(dw / 2 + 1, 1); });
+      for (const nx of [-dw / 2 - 1, dw / 2 + 1]) fill('#9a9aa8', () => g.arc(nx, 0, 0.55, 0, Math.PI * 2));
+      g.restore();
+    }
   }
   fill(lin(0, 156, 0, 160, [P.stone[0], P.stone[2]]), () => g.ellipse(64, 158.4, 9, 1.6, 0, 0, Math.PI * 2));   // a stepping stone
 
@@ -507,6 +514,46 @@ function ancientArt(open = false) {
   }
   for (const x of [8, 26, 46, 82, 100, 120]) tuft(g, x, 160, 9, rnd);
   for (const [x, p] of [[12, '#ffffff'], [40, '#f8e048'], [88, '#f8a0c8'], [116, '#b0a0f8']]) blossom(g, x, 159.2, 0.55, p, '#f89830');
+  return c;
+}
+
+/** The Secret Base's sign by its door (the user's ask, 2026-10-08): a weathered "Home" board on a leaning post, slanted
+    on one nail, its right end snapped off, cracked, mossy, ivy climbing the post. */
+function homeSignArt() {
+  const W = 26, H = 30, { c, g, fill, rr, lin } = fine(W, H, 10), rnd = seeded(7);
+  g.save(); g.translate(11, 30); g.rotate(-0.12);   // the post, leaning, sunk in a mound of earth
+  rr(-1.3, -24, 2.6, 24, 0.5, lin(-1.3, 0, 1.3, 0, ['#9a7448', '#6a4a2a', '#3e2a16']));
+  fill('#3e2a16', () => { g.moveTo(-1.3, -24); g.lineTo(-0.2, -25.6); g.lineTo(0.6, -24.4); g.lineTo(1.3, -25); g.lineTo(1.3, -24); g.closePath(); });
+  for (let i = 0; i < 4; i++) strokeOn(g, 'rgba(30,16,6,0.4)', 0.2, () => { const x = -0.8 + i * 0.5; g.moveTo(x, -22 + rnd() * 4); g.lineTo(x + 0.1, -6 - rnd() * 4); });
+  for (let k = 0; k < 7; k++) leaf(g, (k % 2 ? 1.2 : -1.2), -2 - k * 2.4, k % 2 ? -0.5 : Math.PI + 0.5, 1.5, k % 3 ? '#4a9a3c' : '#6cc058');
+  strokeOn(g, '#2e6a2a', 0.3, () => { g.moveTo(0, 0); for (let k = 0; k <= 7; k++) g.lineTo(Math.sin(k * 1.4) * 1.1, -k * 2.4); });
+  g.restore();
+  fill(lin(0, 27, 0, 30, ['#7a5a34', '#4a3420']), () => g.ellipse(11.5, 29.4, 5, 1.2, 0, 0, Math.PI * 2));
+
+  g.save(); g.translate(12, 13); g.rotate(-0.2);   // the board, hanging askew off one nail
+  const board = () => {
+    g.moveTo(-10.5, -4.2); g.lineTo(8.4, -4.4); g.lineTo(9.6, -2.6); g.lineTo(8.2, -1.4); g.lineTo(10.2, 0.4);
+    g.lineTo(8.8, 2.2); g.lineTo(9.4, 4.2); g.lineTo(-10.5, 4.4); g.quadraticCurveTo(-11.2, 0, -10.5, -4.2); g.closePath();
+  };
+  fill('rgba(20,10,4,0.45)', () => { g.save(); g.translate(0.5, 0.7); board(); g.restore(); });
+  fill(lin(0, -4.4, 0, 4.4, ['#c49a64', '#a07444', '#7a5432']), board);
+  g.save(); g.beginPath(); board(); g.clip();
+  for (const y of [-1.4, 1.5]) strokeOn(g, 'rgba(60,34,14,0.55)', 0.28, () => { g.moveTo(-11, y); g.lineTo(11, y + 0.1); });   // three planks
+  for (let i = 0; i < 18; i++) { const x = -10 + rnd() * 19, y = -4 + rnd() * 8; strokeOn(g, 'rgba(70,40,16,0.3)', 0.15, () => { g.moveTo(x, y); g.quadraticCurveTo(x + 1.5, y + 0.3, x + 3 + rnd() * 2, y); }); }
+  strokeOn(g, '#3a2210', 0.32, () => { g.moveTo(3.5, -4.4); g.lineTo(4.3, -2.2); g.lineTo(3.6, -0.6); g.lineTo(4.8, 1.4); });   // a crack
+  fill('rgba(90,150,60,0.75)', () => { g.moveTo(-10.6, -4.3); g.quadraticCurveTo(-7, -3, -3, -4.1); g.lineTo(-3, -4.6); g.lineTo(-10.6, -4.6); g.closePath(); });   // moss along the top
+  for (let i = 0; i < 6; i++) fill('rgba(110,176,72,0.8)', () => g.ellipse(-10 + i * 1.3, -4 + rnd() * 0.4, 0.9, 0.5, 0, 0, Math.PI * 2));
+  g.restore();
+  g.font = '900 6.4px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineWidth = 0.9; g.strokeStyle = '#3a2210'; g.strokeText('Home', -0.6, 0.3);
+  g.fillStyle = '#f4e4c0'; g.fillText('Home', -0.6, 0.3);
+  fill('rgba(244,228,192,0.35)', () => g.arc(-8, 2.6, 0.5, 0, Math.PI * 2));
+  fill('#8a8a96', () => g.arc(-1.4, -3.2, 0.5, 0, Math.PI * 2));   // the nail it hangs from, and the empty hole of the one that gave
+  fill('#2a1608', () => g.arc(6.4, -3.1, 0.38, 0, Math.PI * 2));
+  g.restore();
+  const shard = () => { g.moveTo(17, 27.6); g.lineTo(21.4, 27.2); g.lineTo(21.8, 28.6); g.lineTo(17.4, 29.2); g.closePath(); };   // the snapped-off end, lying in the grass
+  fill(lin(0, 27, 0, 29.4, ['#a07444', '#6a4626']), shard);
+  for (const x of [4, 9, 15, 20, 24]) tuft(g, x, 30, 5, rnd);
   return c;
 }
 
@@ -859,13 +906,15 @@ function makePlaces() {
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
-      line: 'A door in the Ancient Tree\'s roots: your Secret Base.',
-      buttons: [['Go in', enterBase]],
+      line: baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
+        : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
+      buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : buyBase]],
       build: (g) => {
-        const shut = ancientArt(), b = board(shut, tileX(6), tileZ(2) + 0.2), open = ancientArt(true);
+        const shut = ancientArt(false, !baseOwned()), b = board(shut, tileX(6), tileZ(2) + 0.2), open = ancientArt(true);
         glowing(b.material, shut, null, '#ffd890');
         tree = { m: b.material, shut: b.material.map, open: texOf(open) };
         g.add(b);
+        g.add(board(homeSignArt(), tileX(4.6), tileZ(2) + 0.62, { s: 0.9 }));
       },
     },
   ];
@@ -1079,7 +1128,7 @@ function open(p, i = null) {
     if (stop?.spinAt && performance.now() - stop.spinAt < SPIN) return;
     spinStop();
   }
-  if (p.id === 'base') return enterBase();
+  if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
   hideCard();
@@ -1108,6 +1157,30 @@ function liveStop(now) {
   const violet = t < 1 ? t : Math.max(0, 1 - (t - 1) * SPIN / 3000);
   stop.m.color.setRGB(1 - violet * 0.15, 1 - violet * 0.55, 1);
   stop.m.emissive.setRGB(0.61 + violet * 0.3, 0.92 - violet * 0.5, 1);
+}
+
+// the Secret Base is bought once (the user's call, 2026-10-08), saved as `baseOwned`
+const BASE_PRICE = 1500;
+const baseOwned = () => !!getSave().baseOwned;
+
+/** The boarded door's price: too few coins says how many more; else a yes pays, pulls the planks off and walks in. */
+async function buyBase() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; aim = null;
+  const coins = getSave().coins ?? 0;
+  if (coins < BASE_PRICE) {
+    playSound('cancel');
+    await confirmDialog(`The Secret Base costs ${BASE_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
+    return;
+  }
+  if (!(await confirmDialog(`Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return;
+  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; });
+  refreshCoins();
+  playSound('buy');
+  buildPlaces();
+  here = places.find(q => q.id === 'base');
+  await enterBase();
 }
 
 /** Into the Ancient Tree: the door swings open, your partner steps into the dark, and the Secret Base comes up under a
