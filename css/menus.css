@@ -726,6 +726,17 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .sel-thumb.locked img { filter: brightness(0) opacity(0.65); }
 .sel-thumb[aria-checked="true"] { border-color: #b6d68e; background: #3a5a3a; box-shadow: 0 0 10px rgba(182, 214, 142, 0.7); }
 @media (hover: hover) { .sel-thumb:hover { border-color: #8a94b8; } }
+/* choosing, the portraits sit on a green LCD like the Sky Pillar's Practice grid, one swipeable row, a little bigger
+   (the user's ask, 2026-10-08); the starting deck keeps the dark screen while preparing */
+.select-screen:not(.preparing) .sel-tray { background: #b6d68e; box-shadow: 0 0 0 3px var(--shell-rim), inset 0 2px 0 rgba(0, 0, 0, 0.12); }
+.select-screen:not(.preparing) .sel-thumbs { gap: 8px; padding: 5px; }
+.select-screen:not(.preparing) .sel-thumb {
+  width: 62px; height: 62px; padding: 3px; border: 2px solid rgba(31, 58, 20, 0.55); border-radius: 6px; background: rgba(31, 58, 20, 0.06);
+  -webkit-tap-highlight-color: transparent;
+}
+.select-screen:not(.preparing) .sel-thumb[aria-checked="true"] { border-color: #1f3a14; background: #1f3a14; box-shadow: 0 0 0 2px #b6d68e, 0 0 0 4px #1f3a14; }
+@media (hover: hover) { .select-screen:not(.preparing) .sel-thumb:not([aria-checked="true"]):hover { border-color: #1f3a14; background: rgba(31, 58, 20, 0.16); } }
+.select-screen:not(.preparing) .sel-thumb.locked img { filter: brightness(0) opacity(0.45); }
 .sel-thumb .smooth-icon { width: 12px; height: 12px; }
 .sel-lock { position: absolute; right: 1px; bottom: 1px; font-size: 13px; }
 .sel-sparkle { position: absolute; right: 1px; top: 1px; font-size: 12px; opacity: 0.55; }
@@ -748,6 +759,7 @@ body[data-screen="start-screen"] .topbar { display: none; }
   .sel-info { padding: 8px 10px 10px; }
   .sel-name { font-size: 0.9rem; margin-bottom: 6px; }
   .sel-thumb { width: 44px; height: 44px; }
+  .select-screen:not(.preparing) .sel-thumb { width: 54px; height: 54px; }
 }
 @media (prefers-reduced-motion: reduce) { .select-screen .pdx-light { animation: none; } }
 

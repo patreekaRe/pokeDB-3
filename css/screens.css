@@ -4024,25 +4024,13 @@ body.scene-peek #backdrop { display: none; }
 .tower-rules li { display: flex; align-items: center; gap: 4px; margin: 0; }
 .tower-rules .smooth-icon { width: 15px; height: 15px; flex: none; }
 .tower-note { margin: -2px 0 0; font-size: 0.48rem; line-height: 1.5; text-align: center; opacity: 0.8; }
-/* the Pokédex's slots (.pdx-slots): a red tray of glossy tiles, four a row, each in its starter's type (the user's ask, 2026-10-08) */
-.tower-picks {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; padding: 8px;
-  border: 3px solid var(--shell-rim); border-radius: 8px; background: #8e1820;
-}
+.tower-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; padding-top: 8px; border-top: 2px dashed rgba(31, 58, 20, 0.35); }
 .tower-picks[hidden] { display: none; }
-.tower-picks::before { content: 'Practice with...'; grid-column: 1 / -1; color: #fff4dc; font-size: 0.5rem; text-transform: uppercase; text-shadow: 1px 1px 0 #3a0a0e; }
-.tower-pick {
-  position: relative; aspect-ratio: 1; padding: 3px; border: 2px solid #3a0a0e; border-radius: 8px; cursor: pointer;
-  background: linear-gradient(180deg, #e4e8f0, #a8b0c0); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
-  transition: translate 0.08s ease-out; -webkit-tap-highlight-color: transparent;
-}
-.tower-pick.type-fire { background: linear-gradient(180deg, #ffa878, #e0582a); }
-.tower-pick.type-grass { background: linear-gradient(180deg, #98e080, #4ea83a); }
-.tower-pick.type-water { background: linear-gradient(180deg, #7ab8ff, #4a88e0); }
-.tower-pick.type-psychic { background: linear-gradient(180deg, #f4a8dc, #c058a8); }
-.tower-pick:hover, .tower-pick:focus-visible { outline: 3px solid #fff; outline-offset: -1px; background: #ffe36b; }
-.tower-pick:active { translate: 0 2px; }
-.tower-pick img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(40, 10, 10, 0.3)); }
+.tower-picks::before { content: 'Practice with...'; grid-column: 1 / -1; font-size: 0.5rem; text-transform: uppercase; }
+.tower-pick { aspect-ratio: 1; padding: 3px; border: 2px solid rgba(31, 58, 20, 0.55); border-radius: 6px; background: rgba(31, 58, 20, 0.06); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; }
+.tower-pick:hover, .tower-pick:focus-visible { outline: none; background: #1f3a14; }
+.tower-pick img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 /* the hardware: two menu keys like the map's, then B and A (A climbs) */
 .tdev-pad { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 2px 0; }
 .tdev-keys { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; max-width: 190px; }
