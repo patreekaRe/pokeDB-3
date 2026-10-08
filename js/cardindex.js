@@ -75,6 +75,8 @@ function fresh(node, card) {
   drawnNew.push(card.id);
   node.classList.add('news');
   node.append(el('span', 'tc-new card-new', '!'));
+  // a tap reads it, so its "!" goes there and then, not only once the app is drawn again (the user's call, 2026-10-08)
+  node.addEventListener('click', () => { node.classList.remove('news'); node.querySelector('.card-new')?.remove(); }, { once: true });
   return node;
 }
 

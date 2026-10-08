@@ -1170,7 +1170,7 @@ const KEY_FOR = { Continue: 'play', 'New game': 'plus', 'Escape Rope': 'rope' };
 
 /** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08): the hinge's LCD names the place your partner
     walks up to and the gold pill does it (a tap walking there first); the row under it is Home (the Pokédex), round
-    keys for How to play (New game's + at the Pokéstop) and the rest (Continue with a saved run), and the LCD: a saved
+    keys for How to play (New game's + at the Pokéstop) and a place's other doings (no Continue key: it squashed the HP), and the LCD: a saved
     run's HP and its Escape Rope (battle's running figure), then the PokéCoins. Near
     nothing the pill is Continue, or New game (the Pokéstop). Redrawn only when the place changes. */
 function placeBar() {
@@ -1193,7 +1193,6 @@ function placeBar() {
   } else if (saved) {
     main = ['Continue', cont];
   } else main = ['New game', () => goTo(trail, true, 0)];
-  if (saved && p && p.id !== 'trail') rest.unshift(['Continue', cont]);
   bar.querySelector('.hbar-sign b').textContent = p?.name ?? 'The Clearing';
   helpKey(p?.id === 'trail' && p.open ? () => goTo(p, true, p.buttons.findIndex(([label]) => label === 'New game')) : null);
   const ok = bar.querySelector('.hbar-ok');
@@ -1247,8 +1246,8 @@ function fromCorner(open, key) {
   key.classList.add('out');
 }
 
-/** Its LED blinks while the device has something new (a badge, a find), like the title's Pokédex sign's "!". */
-const dexNews = () => dexBtn.classList.toggle('news', deviceNews());
+/** It wears the yellow "!" while the device has something new (a badge, a find), like every other Home key. */
+const dexNews = () => dexBtn.classList.toggle('dex-news', deviceNews());
 
 /* ---------- taps and keys ---------- */
 

@@ -43,15 +43,14 @@
 .hbar-flee:active { translate: 0 1px; background: rgba(31, 58, 20, 0.2); }
 .hbar-cash { flex: none; margin-left: auto; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .hbar-coin { width: 18px; height: 18px; flex: none; }
-/* something new in the device (a badge, a find): a red dot blinks on Home, like the title's "!" */
-.hub-dex { position: relative; }
+/* Home and How to play a size up from the rooms' keys (the user's call, 2026-10-08); something new in the device wears the
+   other Home keys' yellow "!" (.dex-news) */
+.hub-bar .room-home { width: 54px; }
+.hub-bar .room-home .home-key { width: 46px; height: 46px; }
+.hub-bar .hub-dex.dex-news::after { top: -2px; right: -2px; }
 .hub-dex.out, .hub-help.out { visibility: hidden; }
-.hub-dex.news::after {
-  content: ""; position: absolute; left: calc(50% + 9px); top: 1px; width: 10px; height: 10px; border-radius: 50%;
-  background: #ff5a5a; box-shadow: 0 0 0 2px var(--shell-rim); animation: tdxStandby 1.2s ease-in-out infinite;
-}
-@media (max-width: 360px) { .hub-bar { padding-inline: 8px; } .hub-bar .room-row { gap: 6px; } .hub-bar .room-home { width: 42px; } }
-@media (prefers-reduced-motion: reduce) { .hub-bar, .hbar-pop, .hub-dex.news::after { animation: none; } }
+@media (max-width: 360px) { .hub-bar { padding-inline: 8px; } .hub-bar .room-row { gap: 6px; } .hub-bar .room-home { width: 46px; } .hub-bar .room-home .home-key { width: 42px; height: 42px; } }
+@media (prefers-reduced-motion: reduce) { .hub-bar, .hbar-pop { animation: none; } }
 
 .hub-card {
   position: absolute; left: 50%; bottom: calc(var(--hub-bar-h, 110px) + 10px); translate: -50% 0;
