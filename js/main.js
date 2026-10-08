@@ -52,7 +52,7 @@ import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './ti
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
-import { smoothIcon } from './smooth-icons.js';
+import { smoothIcon, roundKey } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
@@ -152,21 +152,6 @@ async function requestAbandon(sure) {
 
 /* ---------- the Pokédex (top left) ---------- */
 
-// the round keys' glyphs, white line art on the shell's colour (the room bar's Leave, Skip and confirm match Home)
-const KEY_GLYPHS = {
-  home: '<path d="M4 11.2 12 4.5l8 6.7" stroke-width="2.4"/><path d="M6.6 10v8.6a1.4 1.4 0 0 0 1.4 1.4h2.6v-5h2.8v5H16a1.4 1.4 0 0 0 1.4-1.4V10" stroke-width="2.2"/>',
-  leave: '<path d="M12.5 4.5H7a1.4 1.4 0 0 0-1.4 1.4v12.2A1.4 1.4 0 0 0 7 19.5h5.5" stroke-width="2.2"/><path d="M10.5 12h9.5M16.5 8.5 20 12l-3.5 3.5" stroke-width="2.4"/>',
-  skip: '<path d="M5.5 6.5 11 12l-5.5 5.5M12.5 6.5 18 12l-5.5 5.5" stroke-width="2.6"/>',
-  ok: '<path d="M5.5 12.5 10 17l8.5-9.5" stroke-width="2.8"/>',
-};
-
-function roundKey(glyph, cls = 'home-key') {
-  const key = document.createElement('span');
-  key.className = cls;
-  key.setAttribute('aria-hidden', 'true');
-  key.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${KEY_GLYPHS[glyph]}</svg>`;
-  return key;
-}
 const homeKey = () => roundKey('home');
 
 function initPokedexButton() {

@@ -15,46 +15,37 @@
 .title-screen.hub-on .title-big { font-size: clamp(2.2rem, 10vw, 4.4rem); }
 
 
-/* the Pokédex strip beside the corner handheld: what the place you walk up to does, as keys (js/hub-3d.js's placeBar()) */
+/* the bottom bar, the rooms Pokédex bar (#room-bar, the user's pick, 2026-10-08): on the hinge the place's name on an LCD
+   and its gold pill; under it Home (the Pokédex grows out of it), round keys for the rest, the PokéCoins on an LCD
+   (js/hub-3d.js's placeBar()). The parts are the room bar's own classes */
 .hub-bar {
-  position: absolute; left: calc(max(14px, env(safe-area-inset-left)) + 66px); right: max(14px, env(safe-area-inset-right));
-  bottom: max(14px, env(safe-area-inset-bottom)); height: 52px; box-sizing: border-box;
-  display: flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; border-radius: 12px;
-  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
-  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep), 0 6px 14px rgba(0, 0, 0, 0.4);
-  animation: hubDexIn 0.35s ease-out;
+  position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: min(100%, 520px); box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 6px; padding: 6px 10px max(8px, env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
+  background: var(--shell); box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
+  animation: hubBarIn 0.35s ease-out;
 }
-.hbar-lights { display: flex; align-items: center; gap: 4px; flex: none; }
-.hbar-lens {
-  width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; margin-right: 2px;
-  background: radial-gradient(circle at 35% 30%, #e6f8ff 0 12%, #5ec8ff 30%, #1f78c8 80%);
-  box-shadow: 0 0 0 1px var(--shell-rim);
-}
-.hbar-lights i { width: 7px; height: 7px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 0 1px var(--shell-rim); }
-.hbar-lights i:nth-of-type(2) { background: #ffd84a; }
-.hbar-lights i:nth-of-type(3) { background: #6be36b; }
-/* three keys (the trail with a saved run) need the room the lights take, on a phone */
-@media (max-width: 459px) { .hub-bar.full .hbar-lights i { display: none; } }
-.hbar-keys { flex: 1; min-width: 0; display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
-.hbar-keys.hbar-pop { animation: hbarPop 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes hubBarIn { from { translate: -50% 100%; } }
+.hbar-ok.locked { background: linear-gradient(#e0e0e6, #a8a8b2); border-color: #44444c; color: #2a2a30; text-shadow: none; animation: none; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), 0 3px 0 #44444c; }
+.hbar-pop { animation: hbarPop 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.room-ok.hbar-pop:not(.locked) { animation: hbarPop 0.22s cubic-bezier(0.3, 1.6, 0.5, 1), roomOkPulse 1.1s ease-in-out 0.22s infinite; }
 @keyframes hbarPop { from { opacity: 0; scale: 0.85; } }
-.hbar-key {
-  display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 8px 12px; cursor: pointer;
-  border: 2px solid rgba(0, 0, 0, 0.45); border-radius: 999px; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-  font: 700 0.82rem/1 var(--font); white-space: nowrap;
+.hbar-keys { display: contents; }
+.hub-bar .room-home .round-key { width: 38px; height: 38px; }
+.hbar-lcd { justify-content: flex-end; gap: 6px; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+.hbar-coin { width: 18px; height: 18px; flex: none; }
+.hbar-tag { margin-right: auto; padding: 3px 5px; border-radius: 3px; background: #1f3a14; color: #c2dc9a; font-size: 0.55rem; }
+/* something new in the device (a badge, a find): a red dot blinks on Home, like the title's "!" */
+.hub-dex { position: relative; }
+.hub-dex.out { visibility: hidden; }
+.hub-dex.news::after {
+  content: ""; position: absolute; left: calc(50% + 9px); top: 1px; width: 10px; height: 10px; border-radius: 50%;
+  background: #ff5a5a; box-shadow: 0 0 0 2px var(--shell-rim); animation: tdxStandby 1.2s ease-in-out infinite;
 }
-.hbar-key span { overflow: hidden; text-overflow: ellipsis; }
-.hbar-key:active { translate: 0 2px; box-shadow: none; }
-.hbar-key.gold { background: linear-gradient(#ffe878, #f4c430); color: #3a2a00; }
-.hbar-key.green { background: linear-gradient(#8ef08a, #3cc04a); color: #0c3a12; }
-.hbar-key.grey { background: linear-gradient(#f0f0f4, #c8c8d0); color: #33333c; }
-.hbar-key.locked { background: linear-gradient(#9a9aa2, #6a6a70); color: #fff; }
-.hbar-lock { width: 11px; height: 11px; }
-.hub-bar.full .hbar-key { padding: 8px 9px; font-size: 0.76rem; }
-@media (hover: hover) { .hbar-key:hover { filter: brightness(1.08); } }
+@media (max-width: 360px) { .hub-bar { padding-inline: 8px; } .hub-bar .room-row { gap: 6px; } .hub-bar .room-home { width: 42px; } }
+@media (prefers-reduced-motion: reduce) { .hub-bar, .hbar-pop, .hub-dex.news::after { animation: none; } }
 
 .hub-card {
-  position: absolute; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 62px); translate: -50% 0;
+  position: absolute; left: 50%; bottom: calc(var(--hub-bar-h, 110px) + 10px); translate: -50% 0;
   width: min(360px, calc(100% - 32px)); padding: 12px 14px; box-sizing: border-box;
   border: 3px solid #2a2a3a; border-radius: 10px; background: #fff8e8; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
   color: #2a2a3a; text-align: left; animation: hubCard 0.2s ease-out;
@@ -94,45 +85,6 @@
 }
 .hub-version:empty { display: none; }
 .hub-version:active { translate: 0 2px; box-shadow: none; }
-
-/* the Pokédex, shut, always to hand in the bottom left corner (the user's call, 2026-10-08): a tap grows it into the
-   device over the Clearing (openDevice()'s `from` in js/device.js), which shrinks back into it when shut */
-.hub-dex {
-  position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom));
-  width: 58px; height: 76px; padding: 0; border: 0; border-radius: 10px; cursor: pointer;
-  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
-  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep), 0 6px 14px rgba(0, 0, 0, 0.4);
-  animation: hubDexIn 0.35s ease-out; transition: scale 0.15s ease;
-}
-.hub-dex.out { visibility: hidden; }
-@keyframes hubDexIn { from { opacity: 0; scale: 0.8; } }
-@media (hover: hover) { .hub-dex:hover { scale: 1.06; } }
-.hub-dex:active { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
-.hdx-top { position: absolute; left: 6px; top: 6px; display: flex; align-items: center; gap: 3px; }
-.hdx-lens {
-  width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff;
-  background: radial-gradient(circle at 35% 30%, #e6f8ff 0 12%, #5ec8ff 30%, #1f78c8 80%);
-  box-shadow: 0 0 0 1px var(--shell-rim);
-}
-.hdx-light { width: 5px; height: 5px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 0 1px var(--shell-rim); }
-.hdx-light:nth-child(3) { background: #ffd84a; }
-.hdx-light:nth-child(4) { background: #6be36b; }
-.hdx-cover {
-  position: absolute; left: 0; right: 0; top: 26px; bottom: 0; border-radius: 0 0 10px 10px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), transparent 40%), linear-gradient(180deg, var(--shell-hi), var(--shell) 45%, var(--shell-fold));
-  box-shadow: inset 0 0 0 2px var(--shell-rim), inset -4px 0 0 rgba(0, 0, 0, 0.12);
-}
-/* the yellow chevron, as on the title's Pokédex */
-.hdx-cover::before {
-  content: ''; position: absolute; left: 50%; top: 22%; width: 56%; height: 20%; translate: -50% 0;
-  background: linear-gradient(180deg, #ffe36b, #e8b818); clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%); opacity: 0.9;
-}
-.hdx-led { position: absolute; right: 7px; bottom: 7px; width: 7px; height: 7px; border-radius: 50%; background: #6a1e22; box-shadow: inset 0 0 0 1px var(--shell-deep); }
-/* something new in it (a badge, a find): the LED blinks, like the title's "!" */
-.hub-dex.news .hdx-led { background: #ff5a5a; animation: tdxStandby 1.2s ease-in-out infinite; }
-/* on a phone the place's card sits above the handheld too */
-@media (max-width: 559px) { .hub-card { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 84px); } }
-@media (prefers-reduced-motion: reduce) { .hub-dex, .hub-dex.news .hdx-led { animation: none; } }
 
 /* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and bar wait for the partner to walk in */
 .hub.held .hub-dex, .hub.held .hub-help, .hub.held .hub-version, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }

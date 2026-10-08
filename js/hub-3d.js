@@ -19,7 +19,7 @@ import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
-import { smoothIcon } from './smooth-icons.js';
+import { smoothIcon, roundKey } from './smooth-icons.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
 const M = 4, FRONT = 1;       // grass and forest round it (tiles): back and sides, and in front where the trail leaves
@@ -63,7 +63,7 @@ const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
-let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, saved = null;
+let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, inBase = false, entering = null;
 let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
@@ -1164,37 +1164,51 @@ function nearest() {
   return best;
 }
 
-/** A Pokédex strip along the bottom (the user's pick over name tags, 2026-10-08): its keys are what the place you walk
-    up to does, a tap walking there and doing it; a saved run keeps Continue on it wherever you are, and near nothing it
-    offers New game (the Pokéstop). Redrawn only when
-    the place changes. */
+// a round key's glyph by what it does (only the trail has more than one thing to do)
+const KEY_FOR = { Continue: 'play', 'New game': 'plus', 'Escape Rope': 'rope' };
+
+/** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08): the hinge's LCD names the place your partner
+    walks up to and the gold pill does it (a tap walking there first); the row under it is Home (the Pokédex), round
+    keys for the rest (Continue with a saved run, the trail's New game and Escape Rope) and the PokéCoins on an LCD. Near
+    nothing the pill is Continue, or New game (the Pokéstop). Redrawn only when the place changes. */
 function placeBar() {
+  const coins = getSave().coins ?? 0;
+  if (coins !== barCoins) { barCoins = coins; bar.querySelector('.hbar-coins').textContent = coins.toLocaleString(); }
   const p = nearest(), k = p?.id ?? '';
   if (k === barKey) return;
   barKey = k;
-  const keys = [];
-  if (saved && p?.id !== 'trail') keys.push(['Continue', 'gold', () => { playSound('confirm'); hideCard(); acts.onContinue(saved); }]);
-  if (p && !p.open) keys.push([p.name, 'locked', () => goTo(p, true)]);
-  else if (p && p.buttons.length > 1) p.buttons.forEach(([label], i) => keys.push([label, ['gold', 'green', 'grey'][i] ?? 'grey', () => goTo(p, true, i)]));
-  else if (p) keys.push([p.name, 'green', () => goTo(p, true, 0)]);
-  else {
-    const trail = places.find(q => q.id === 'trail');
-    keys.push(['New game', 'green', () => goTo(trail, true, saved ? 1 : 0)]);
-  }
-  const row = bar.querySelector('.hbar-keys');
-  row.replaceChildren(...keys.map(([label, tone, go]) => {
+  const cont = () => { playSound('confirm'); hideCard(); acts.onContinue(saved); };
+  const trail = places.find(q => q.id === 'trail');
+  let main, rest = [];
+  if (p && (!p.open || !p.buttons.length)) main =['Locked', () => goTo(p, true), true];
+  else if (p) {
+    main = [p.buttons[0][0], () => goTo(p, true, 0)];
+    rest = p.buttons.slice(1).map(([label], i) => [label, () => goTo(p, true, i + 1)]);
+  } else if (saved) {
+    main = ['Continue', cont];
+    rest = [['New game', () => goTo(trail, true, 1)]];
+  } else main = ['New game', () => goTo(trail, true, 0)];
+  if (saved && p && p.id !== 'trail') rest.unshift(['Continue', cont]);
+  bar.querySelector('.hbar-sign b').textContent = p?.name ?? 'The Clearing';
+  const ok = bar.querySelector('.hbar-ok');
+  ok.querySelector('span').textContent = main[0];
+  ok.classList.toggle('locked', !!main[2]);
+  ok.onclick = main[1];
+  bar.querySelector('.hbar-keys').replaceChildren(...rest.map(([label, go]) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = `hbar-key ${tone}`;
-    b.append(Object.assign(document.createElement('span'), { textContent: label }));
-    if (tone === 'locked') b.prepend(smoothIcon('lock', 'hbar-lock'));
+    b.className = 'room-home hbar-key';
+    b.title = label;
+    b.setAttribute('aria-label', label);
+    b.append(roundKey(KEY_FOR[label] ?? 'ok', 'round-key'));
     b.addEventListener('click', go);
     return b;
   }));
-  bar.classList.toggle('full', keys.length > 2);
-  row.classList.remove('hbar-pop');
-  void row.offsetWidth;
-  row.classList.add('hbar-pop');
+  for (const el of [ok, bar.querySelector('.hbar-sign b')]) {
+    el.classList.remove('hbar-pop');
+    void el.offsetWidth;
+    el.classList.add('hbar-pop');
+  }
 }
 
 /* ---------- the Pokédex in the corner ---------- */
@@ -1463,17 +1477,25 @@ async function build() {
   root.innerHTML = `
     <canvas class="hub-view"></canvas>
     <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p></div>
-    <div class="hub-bar"><span class="hbar-lights"><span class="hbar-lens"></span><i></i><i></i><i></i></span><div class="hbar-keys" aria-live="polite"></div></div>
-    <button type="button" class="hub-dex" aria-label="Pokédex"><span class="hdx-top"><span class="hdx-lens"></span><span class="hdx-light"></span><span class="hdx-light"></span><span class="hdx-light"></span></span><span class="hdx-cover"><span class="hdx-led"></span></span></button>
+    <div class="hub-bar">
+      <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+        <button type="button" class="room-ok hbar-ok"><span></span></button>
+        <div class="room-sign hbar-sign" aria-live="polite"><b></b></div></div>
+      <div class="room-row"><div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><span class="hbar-keys"></span></div>
+        <div class="room-lcd hbar-lcd" title="PokéCoins"><span class="hbar-tag" aria-hidden="true">COINS</span><span class="hbar-coins">0</span></div></div>
+    </div>
     <button type="button" class="hub-help" aria-label="How to play"></button>
     <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
   view = root.querySelector('.hub-view');
   card = root.querySelector('.hub-card');
   bar = root.querySelector('.hub-bar');
+  bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
+  new ResizeObserver(() => root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`)).observe(bar);
   root.querySelector('.hub-help').append(smoothIcon('help'));
   root.querySelector('.hub-help').addEventListener('click', () => fromCorner(acts.onHelp));
   dexBtn = root.querySelector('.hub-dex');
+  dexBtn.append(roundKey('home'));
   dexBtn.addEventListener('click', openDex);
   root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
   if (new URLSearchParams(location.search).has('fps')) { fpsEl = root.querySelector('.hub-fps'); fpsEl.hidden = false; }

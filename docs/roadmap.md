@@ -126,7 +126,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      handheld in the bottom left corner that grows into the device over the hub and shrinks back into it (`openDevice()`'s
      `from`). Layout since (the user's calls, 2026-10-08): the Safari gate and its kiosk stand at the end of the back-left
      road, a Game Corner stall on the left (`cornerStall()`: 3D and smooth, turned 45 degrees to the plaza), the Sealed Gate once broken on the right where the
-     Pokédex stood; name tags pop up only within `SEEN` tiles of a place's doorstep. **Next: the user playtests the branch and decides if it goes live.**
+     Pokédex stood. The bottom bar (2026-10-08, the user's pick) is the rooms' Pokédex bar: the place's name on the hinge's LCD, its gold pill, then Home (the corner handheld folded into it), round keys and the PokéCoins. **Next: the user playtests the branch and decides if it goes live.**
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
