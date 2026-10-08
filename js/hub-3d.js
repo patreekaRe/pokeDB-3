@@ -65,7 +65,7 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
-let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, inBase = false, entering = null;
+let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inBase = false, entering = null;
 let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
@@ -517,45 +517,56 @@ function ancientArt(open = false, boarded = false) {
   return c;
 }
 
-/** The Secret Base's sign by its door (the user's ask, 2026-10-08): a weathered "Home" board on a leaning post, slanted
-    on one nail, its right end snapped off, cracked, mossy, ivy climbing the post. */
-function homeSignArt() {
-  const W = 26, H = 30, { c, g, fill, rr, lin } = fine(W, H, 10), rnd = seeded(7);
-  g.save(); g.translate(11, 30); g.rotate(-0.12);   // the post, leaning, sunk in a mound of earth
-  rr(-1.3, -24, 2.6, 24, 0.5, lin(-1.3, 0, 1.3, 0, ['#9a7448', '#6a4a2a', '#3e2a16']));
-  fill('#3e2a16', () => { g.moveTo(-1.3, -24); g.lineTo(-0.2, -25.6); g.lineTo(0.6, -24.4); g.lineTo(1.3, -25); g.lineTo(1.3, -24); g.closePath(); });
-  for (let i = 0; i < 4; i++) strokeOn(g, 'rgba(30,16,6,0.4)', 0.2, () => { const x = -0.8 + i * 0.5; g.moveTo(x, -22 + rnd() * 4); g.lineTo(x + 0.1, -6 - rnd() * 4); });
-  for (let k = 0; k < 7; k++) leaf(g, (k % 2 ? 1.2 : -1.2), -2 - k * 2.4, k % 2 ? -0.5 : Math.PI + 0.5, 1.5, k % 3 ? '#4a9a3c' : '#6cc058');
-  strokeOn(g, '#2e6a2a', 0.3, () => { g.moveTo(0, 0); for (let k = 0; k <= 7; k++) g.lineTo(Math.sin(k * 1.4) * 1.1, -k * 2.4); });
-  g.restore();
-  fill(lin(0, 27, 0, 30, ['#7a5a34', '#4a3420']), () => g.ellipse(11.5, 29.4, 5, 1.2, 0, 0, Math.PI * 2));
-
-  g.save(); g.translate(12, 13); g.rotate(-0.2);   // the board, hanging askew off one nail
-  const board = () => {
-    g.moveTo(-10.5, -4.2); g.lineTo(8.4, -4.4); g.lineTo(9.6, -2.6); g.lineTo(8.2, -1.4); g.lineTo(10.2, 0.4);
-    g.lineTo(8.8, 2.2); g.lineTo(9.4, 4.2); g.lineTo(-10.5, 4.4); g.quadraticCurveTo(-11.2, 0, -10.5, -4.2); g.closePath();
+/** The Secret Base's "Home" sign over its door (the user's asks, 2026-10-08). Locked (`fixed` false) it's weathered,
+    cracked and mossy, its right end snapped off, hanging off one nail by a frayed rope, and liveSign() swings it left and
+    right; bought, it's whole again, nailed up level with a vine of leaves and blossoms along its top. SIGN_NAIL is the
+    rope's nail, the pivot, in painted pixels. */
+function homeSignArt(fixed = false) {
+  const W = 28, H = 17, { c, g, fill, lin } = fine(W, H, 10), rnd = seeded(fixed ? 9 : 7), top = 6.4;
+  const whole = () => {
+    g.moveTo(1, top); g.lineTo(27, top - 0.2); g.quadraticCurveTo(27.6, top + 4.4, 27, top + 8.8); g.lineTo(1, top + 9); g.quadraticCurveTo(0.4, top + 4.6, 1, top); g.closePath();
   };
-  fill('rgba(20,10,4,0.45)', () => { g.save(); g.translate(0.5, 0.7); board(); g.restore(); });
-  fill(lin(0, -4.4, 0, 4.4, ['#c49a64', '#a07444', '#7a5432']), board);
-  g.save(); g.beginPath(); board(); g.clip();
-  for (const y of [-1.4, 1.5]) strokeOn(g, 'rgba(60,34,14,0.55)', 0.28, () => { g.moveTo(-11, y); g.lineTo(11, y + 0.1); });   // three planks
-  for (let i = 0; i < 18; i++) { const x = -10 + rnd() * 19, y = -4 + rnd() * 8; strokeOn(g, 'rgba(70,40,16,0.3)', 0.15, () => { g.moveTo(x, y); g.quadraticCurveTo(x + 1.5, y + 0.3, x + 3 + rnd() * 2, y); }); }
-  strokeOn(g, '#3a2210', 0.32, () => { g.moveTo(3.5, -4.4); g.lineTo(4.3, -2.2); g.lineTo(3.6, -0.6); g.lineTo(4.8, 1.4); });   // a crack
-  fill('rgba(90,150,60,0.75)', () => { g.moveTo(-10.6, -4.3); g.quadraticCurveTo(-7, -3, -3, -4.1); g.lineTo(-3, -4.6); g.lineTo(-10.6, -4.6); g.closePath(); });   // moss along the top
-  for (let i = 0; i < 6; i++) fill('rgba(110,176,72,0.8)', () => g.ellipse(-10 + i * 1.3, -4 + rnd() * 0.4, 0.9, 0.5, 0, 0, Math.PI * 2));
+  const snapped = () => {
+    g.moveTo(1, top); g.lineTo(22.6, top - 0.1); g.lineTo(24, top + 1.8); g.lineTo(22.4, top + 3.2); g.lineTo(24.6, top + 5);
+    g.lineTo(23, top + 6.8); g.lineTo(23.8, top + 8.7); g.lineTo(1, top + 9); g.quadraticCurveTo(0.4, top + 4.6, 1, top); g.closePath();
+  };
+  const path = fixed ? whole : snapped, [nx, ny] = SIGN_NAIL;
+  if (!fixed) {   // the rope: one side whole, the other frayed thin
+    strokeOn(g, '#b89868', 0.55, () => { g.moveTo(nx, ny); g.lineTo(4, top + 0.6); });
+    strokeOn(g, '#a08050', 0.3, () => { g.moveTo(nx, ny); g.lineTo(20, top + 0.4); });
+    strokeOn(g, '#c8a878', 0.15, () => { g.moveTo(17.4, top - 1.4); g.lineTo(18.6, top - 0.6); g.moveTo(17.8, top - 1.6); g.lineTo(18.2, top - 2.2); });
+  }
+  fill('rgba(20,10,4,0.4)', () => { g.save(); g.translate(0.4, 0.6); path(); g.restore(); });
+  fill(lin(0, top, 0, top + 9, fixed ? ['#e0b47a', '#c08a50', '#94643a'] : ['#b08a5a', '#8a6440', '#5e4026']), path);
+  g.save(); g.beginPath(); path(); g.clip();
+  for (const y of [top + 3, top + 6]) fill(fixed ? 'rgba(90,52,22,0.45)' : 'rgba(50,28,10,0.6)', () => g.rect(0, y, W, 0.3));   // three planks
+  for (let i = 0; i < 20; i++) {
+    const x = rnd() * 25 + 1.5, y = top + 0.4 + rnd() * 8, rx = 2 + rnd() * 2;
+    fill(`rgba(70,40,16,${fixed ? 0.18 : 0.32})`, () => g.ellipse(x, y, rx, 0.12, 0, 0, Math.PI * 2));
+  }
+  if (!fixed) {
+    strokeOn(g, '#2a1608', 0.35, () => { g.moveTo(15.6, top); g.lineTo(16.6, top + 2.4); g.lineTo(15.8, top + 4.2); g.lineTo(17.2, top + 6.6); });   // a crack
+    for (let i = 0; i < 9; i++) { const x = 1.5 + i * 1.6 + rnd(), y = top + 0.2 + rnd() * 0.5, r = 1 + rnd() * 0.5; fill('rgba(104,166,66,0.85)', () => g.ellipse(x, y, r, 0.55, 0, 0, Math.PI * 2)); }   // moss
+    fill('rgba(30,16,6,0.35)', () => g.ellipse(9, top + 7.8, 3, 0.8, 0, 0, Math.PI * 2));   // a water stain
+  }
   g.restore();
-  g.font = '900 6.4px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineWidth = 0.9; g.strokeStyle = '#3a2210'; g.strokeText('Home', -0.6, 0.3);
-  g.fillStyle = '#f4e4c0'; g.fillText('Home', -0.6, 0.3);
-  fill('rgba(244,228,192,0.35)', () => g.arc(-8, 2.6, 0.5, 0, Math.PI * 2));
-  fill('#8a8a96', () => g.arc(-1.4, -3.2, 0.5, 0, Math.PI * 2));   // the nail it hangs from, and the empty hole of the one that gave
-  fill('#2a1608', () => g.arc(6.4, -3.1, 0.38, 0, Math.PI * 2));
-  g.restore();
-  const shard = () => { g.moveTo(17, 27.6); g.lineTo(21.4, 27.2); g.lineTo(21.8, 28.6); g.lineTo(17.4, 29.2); g.closePath(); };   // the snapped-off end, lying in the grass
-  fill(lin(0, 27, 0, 29.4, ['#a07444', '#6a4626']), shard);
-  for (const x of [4, 9, 15, 20, 24]) tuft(g, x, 30, 5, rnd);
+  const tx = fixed ? 14 : 12.4, ty = top + 4.8;
+  g.font = '900 6.6px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineWidth = 0.9; g.strokeStyle = fixed ? '#4a2a10' : '#2e1a0a'; g.strokeText('Home', tx, ty);
+  g.fillStyle = fixed ? '#fff4d8' : '#e4d0a4'; g.fillText('Home', tx, ty);
+  if (!fixed) fill('rgba(100,70,40,0.9)', () => g.rect(16.2, ty - 1.6, 1.4, 1.8));   // a letter flaked off
+  const nail = (x, y) => { fill('#9a9aa8', () => g.arc(x, y, 0.6, 0, Math.PI * 2)); fill('#e0e0ea', () => g.arc(x - 0.2, y - 0.2, 0.22, 0, Math.PI * 2)); };
+  if (fixed) {
+    nail(3, top + 1.4); nail(25, top + 1.4);
+    const pts = [];
+    for (let x = 2; x <= 26; x += 1.2) pts.push([x, top + Math.sin(x * 0.7) * 0.5]);
+    strokeOn(g, '#2e6a2a', 0.3, () => { g.moveTo(...pts[0]); pts.forEach(p => g.lineTo(...p)); });
+    pts.forEach(([x, y], i) => leaf(g, x, y, i % 2 ? -0.6 : Math.PI + 0.6, 1.3, i % 3 ? '#58b04a' : '#8ad468'));
+    for (const x of [6, 14, 22]) blossom(g, x, top - 0.1, 0.5, x === 14 ? '#f8c8e0' : '#ffffff', '#f8d848');
+  } else nail(nx, ny);
   return c;
 }
+const SIGN_NAIL = [14, 1.2];
 
 const KIT = { white: '#f6f8fb', pale: '#e2e6ee', grey: '#bcc3cf', dark: '#8a92a0', ink: '#3a3e4c', red: '#e84838', redDark: '#b8302a' };
 const FINE = 12;   // a smooth painting's pixels per painted pixel
@@ -914,7 +925,13 @@ function makePlaces() {
         glowing(b.material, shut, null, '#ffd890');
         tree = { m: b.material, shut: b.material.map, open: texOf(open) };
         g.add(b);
-        g.add(board(homeSignArt(), tileX(4.6), tileZ(2) + 0.62, { s: 0.9 }));
+        // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
+        const art = homeSignArt(baseOwned()), plate = board(art, 0, 0), pivot = new THREE.Group();
+        plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
+        pivot.position.set(tileX(6), 3.62, tileZ(2) + 0.32);
+        pivot.add(plate);
+        g.add(pivot);
+        sign = { pivot, m: plate.material, fixed: baseOwned() ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
       },
     },
   ];
@@ -998,7 +1015,8 @@ function paintGateArt(now) {
 function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
-  glowMats = []; tree = null; stop = null;
+  sign?.fixed?.dispose();
+  glowMats = []; tree = null; sign = null; stop = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -1163,6 +1181,17 @@ function liveStop(now) {
 const BASE_PRICE = 1500;
 const baseOwned = () => !!getSave().baseOwned;
 
+const FIX = 1100;
+
+/** The locked sign swings left and right on its one nail; bought, it settles level, mending itself on the way. */
+function liveSign(now) {
+  if (!sign) return;
+  if (!sign.fixAt) { sign.pivot.rotation.z = sign.fixed ? (calm ? 0.12 : Math.sin(now / 700) * 0.34) : 0; return; }
+  const t = Math.min(1, (now - sign.fixAt) / FIX);
+  sign.pivot.rotation.z = sign.from * Math.exp(-6 * t) * Math.cos(t * 14) * (1 - t);
+  if (t > 0.3 && !sign.swapped) { sign.swapped = true; sign.m.map = sign.fixed; sign.m.needsUpdate = true; playSound('aug-gold'); }
+}
+
 /** The boarded door's price: too few coins says how many more; else a yes pays, pulls the planks off and walks in. */
 async function buyBase() {
   if (entering) return;
@@ -1178,6 +1207,12 @@ async function buyBase() {
   updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; });
   refreshCoins();
   playSound('buy');
+  if (sign && !calm) {   // the sign swings up level and mends itself before the door opens
+    entering = { at: performance.now(), z: walker.z, still: true };
+    sign.from = sign.pivot.rotation.z; sign.fixAt = performance.now();
+    await new Promise(r => setTimeout(r, FIX + 300));
+    entering = null;
+  }
   buildPlaces();
   here = places.find(q => q.id === 'base');
   await enterBase();
@@ -1535,7 +1570,7 @@ function frame(now) {
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
 
   if (walker.path.length) { here = null; if (walk(dt)) arrived(); }
-  if (entering) walker.z = entering.z - Math.min(1, (now - entering.at) / 420) * 0.7;   // into the hollow
+  if (entering && !entering.still) walker.z = entering.z - Math.min(1, (now - entering.at) / 420) * 0.7;   // into the hollow
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
@@ -1545,6 +1580,7 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   liveStop(now);
+  liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
   placeCamera(dt);
