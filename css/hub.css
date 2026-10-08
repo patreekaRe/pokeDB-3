@@ -119,3 +119,11 @@
 /* on a phone the place's card sits above it rather than over it */
 @media (max-width: 559px) { .hub-card { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 84px); } }
 @media (prefers-reduced-motion: reduce) { .hub-dex, .hub-dex.news .hdx-led { animation: none; } }
+
+/* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and tags wait for the partner to walk in */
+.hub.held .hub-dex, .hub.held .hub-help, .hub.held .hub-version, .hub.held .hub-tags, .hub.held .hub-card { visibility: hidden; }
+.hub.held .hub-view { pointer-events: none; }
+/* the hub is the title from the first frame, so the old pixel sky, its light and the signs never show under it */
+.title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
+.title-screen.hub-mode .title-menu, .title-screen.hub-mode .title-run, .title-screen.hub-mode .title-gate,
+.title-screen.hub-mode .title-signpost, .title-screen.hub-mode .title-areas { display: none; }

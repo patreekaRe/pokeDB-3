@@ -69,7 +69,8 @@ export function initDevice({ onBack }) {
  * element: the hub's corner handheld) is where it grows out of, shut, and back into once shut.
  */
 export async function openDevice({ render, cover, splash, start = null, home: toHome = false, over = false, onClose = null, powered = false, from = null }) {
-  if (busy) return;
+  // mid-swing already: say it shut at once, or a caller waiting on onClose (the hub's corner handheld) waits for ever
+  if (busy) { if (over) onClose?.(); return; }
   grewFrom = from;
   drawHome = render;
   drawCover = cover;

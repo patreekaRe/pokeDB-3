@@ -55,8 +55,6 @@ const LIGHT = {
   night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
 const AIRS = ['clearing-day', 'clearing-night'];
-// the painted pixels that shine (an emissive map each): the Game Corner's bulbs and reels; the smooth paintings paint their own (shine())
-const GLOWS = { slots: ['#fff8e0', '#fff4a0', '#f83048'] };
 const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
@@ -70,6 +68,9 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 
 let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
+let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
+let arriving = false;   // walking in from the bottom of the screen (enterHub())
+let showing = null; // a showHub() under way, so two calls at once never build two partners
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -303,36 +304,6 @@ function safariArt(open) {
     g.font = '900 1.9px "Trebuchet MS", sans-serif'; g.fillStyle = '#a02818'; g.fillText('CLOSED', 30, 40.2);
   }
   return c;
-}
-
-/** The Game Corner's stall: a striped awning trimmed with bulbs over two slot machines, three 7s on each one's reels. */
-function cornerArt() {
-  const a = art(48, 40), seven = ['###', '..#', '.#.', '.#.', '.#.'];
-  a.dot(3, 10, P.wood[2], 2, 30); a.dot(43, 10, P.wood[2], 2, 30);
-  a.dot(3, 10, P.wood[1], 1, 30); a.dot(43, 10, P.wood[1], 1, 30);
-  a.dot(5, 11, '#3a2a5a', 38, 27);   // the booth's dark back
-  for (let y = 1; y < 10; y++) {   // the awning, red and yellow, wider at its foot
-    const half = 21 + y * 0.35;
-    for (let x = Math.round(24 - half); x < Math.round(24 + half); x++) {
-      const red = Math.floor((x + 1) / 5) % 2 === 0;
-      a.dot(x, y, y === 1 ? '#f8f0d0' : red ? (y > 7 ? '#b8302a' : '#e84838') : (y > 7 ? '#d8a830' : '#f8d848'));
-    }
-  }
-  for (let x = 2; x < 46; x += 5) a.dot(x, 10, Math.floor((x + 1) / 5) % 2 === 0 ? '#b8302a' : '#d8a830', 4, 2);   // its scalloped hem
-  for (let x = 4; x < 45; x += 4) a.dot(x, 12, '#fff4a0');   // a row of bulbs
-  for (const x0 of [7, 26]) {   // the slot machines
-    a.dot(x0, 15, '#2a2a3a', 15, 23); a.dot(x0 + 1, 16, '#c8c8d8', 13, 21); a.dot(x0 + 1, 16, '#e8e8f0', 13, 1);
-    a.dot(x0 + 1, 18, '#2a2a3a', 13, 9);
-    for (let r = 0; r < 3; r++) {
-      const cx = x0 + 2 + r * 4;
-      a.dot(cx, 19, '#fff8e0', 3, 7);
-      seven.forEach((row, y) => [...row].forEach((p, c) => { if (p === '#') a.dot(cx + c, 20 + y, '#f83048'); }));
-    }
-    a.dot(x0 + 4, 29, '#8a8aa0', 7, 2); a.dot(x0 + 3, 33, '#3a3a4a', 9, 2);   // the coin slot and tray
-    a.dot(x0 + 15, 20, '#8a8aa0', 1, 7); a.dot(x0 + 14, 17, '#f83048', 3, 3);   // the lever
-  }
-  a.dot(2, 38, P.wood[3], 44, 2); a.dot(2, 38, P.wood[2], 44, 1);
-  return a.c;
 }
 
 /** The Sky Pillar's stone, smooth (2026-10-08): weathered blocks, a carved band of runes every few storeys, arched windows
@@ -693,6 +664,161 @@ function glowing(m, src, colours, colour = '#ffffff', k = 1) {
   return m;
 }
 
+/* ---------- the Game Corner's stall, in 3D ---------- */
+
+// its colours: the awning's red and gold stripes, the booth's violet, the cabinets' lilac chrome
+const GC = { red: '#e84838', redDark: '#a82820', gold: '#f8d040', goldDark: '#c89418', violet: '#5a3a8a', violetDark: '#2e1c4e', chrome: ['#f4f2fa', '#cdc8e0', '#9a92b8'], ink: '#2a2238' };
+
+const star = (g, x, y, r) => {
+  g.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); }
+  g.closePath(); g.fill();
+};
+const words = (g, text, x, y, size, col) => {
+  g.font = `900 ${size}px "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = col; g.fillText(text, x, y);
+};
+
+/** A slot machine's face: a lit marquee, three reels showing 7s behind glass, three buttons and the coin tray. */
+function slotFaceArt() {
+  const { c, g, fill, rr, lin, shine } = fine(16, 26), G = GC;
+  rr(0, 0, 16, 26, 1.2, lin(0, 0, 16, 0, [G.chrome[2], G.chrome[0], G.chrome[1], G.chrome[2]]));
+  rr(1.2, 1.2, 13.6, 4.4, 1, lin(0, 1.2, 0, 5.6, [G.red, G.redDark]));
+  g.fillStyle = G.gold; star(g, 3.6, 3.4, 1.5);
+  words(g, 'SLOTS', 9.6, 3.5, 2.6, '#fff4c0');
+  rr(1.4, 7, 13.2, 9.2, 1, G.ink);   // the reels behind their glass
+  const reels = (gg, white) => {
+    for (let r = 0; r < 3; r++) {
+      const x = 2.3 + r * 4.15;
+      if (white) rr(x, 7.8, 3.6, 7.6, 0.5, lin(0, 7.8, 0, 15.4, ['#b8b4c4', '#ffffff', '#ffffff', '#b8b4c4']));
+      words(gg, '7', x + 1.8, 11.8, 6, white ? G.red : '#8c3c3c');
+    }
+  };
+  reels(g, true);
+  rr(1.6, 11.5, 12.8, 0.45, 0.2, 'rgba(232,72,56,0.85)');   // the pay line
+  fill('rgba(255,255,255,0.35)', () => { g.moveTo(2, 7.6); g.lineTo(6, 7.6); g.lineTo(3.4, 15.6); g.lineTo(2, 15.6); g.closePath(); });   // a glint on the glass
+  rr(1.4, 17.4, 13.2, 3.4, 0.8, lin(0, 17.4, 0, 20.8, [G.violet, G.violetDark]));   // the button deck
+  const buttons = [['#f85848', 4], ['#f8d040', 8], ['#58a8f8', 12]];
+  for (const [col, x] of buttons) fill(lin(0, 18, 0, 20.4, ['#ffffff', col, col]), () => g.arc(x, 19.1, 1.15, 0, Math.PI * 2));
+  rr(4, 22.2, 8, 2.6, 0.8, lin(0, 22.2, 0, 24.8, [G.ink, '#4a4060']));   // the coin tray, a few coins in it
+  for (const x of [5.6, 7.2, 8.6]) fill(G.gold, () => g.ellipse(x, 24, 0.75, 0.4, 0, 0, Math.PI * 2));
+  // what lights up after dark: the marquee, the reels and the buttons
+  const s = shine();
+  s.fillStyle = '#c86a50'; s.beginPath(); s.roundRect(1.2, 1.2, 13.6, 4.4, 1); s.fill();
+  s.fillStyle = '#ffe890'; star(s, 3.6, 3.4, 1.5);
+  words(s, 'SLOTS', 9.6, 3.5, 2.6, '#ffe890');
+  s.fillStyle = '#9a9a9a';
+  for (let r = 0; r < 3; r++) { s.beginPath(); s.roundRect(2.3 + r * 4.15, 7.8, 3.6, 7.6, 0.5); s.fill(); }
+  reels(s, false);
+  for (const [col, x] of buttons) { s.fillStyle = col; s.beginPath(); s.arc(x, 19.1, 1.15, 0, Math.PI * 2); s.fill(); }
+  return c;
+}
+
+/** The striped awning, red and gold, shaded darker towards its foot; `under` is its shadowed underside. */
+function awningArt(under = false) {
+  const { c, g, lin } = fine(24, 12, 8), G = GC;
+  for (let i = 0; i < 8; i++) {
+    g.fillStyle = lin(0, 0, 0, 12, i % 2 ? [G.gold, G.gold, G.goldDark] : [G.red, G.red, G.redDark]);
+    g.fillRect(i * 3, 0, 3, 12);
+  }
+  g.fillStyle = lin(0, 0, 24, 0, ['rgba(255,255,255,0.18)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.12)']);
+  g.fillRect(0, 0, 24, 12);
+  if (under) { g.fillStyle = 'rgba(30,10,40,0.45)'; g.fillRect(0, 0, 24, 12); }
+  return c;
+}
+
+/** Its hem: the stripes ending in scallops. */
+function valanceArt() {
+  const { c, g, lin } = fine(24, 4, 8), G = GC;
+  for (let i = 0; i < 8; i++) {
+    g.fillStyle = lin(0, 0, 0, 4, i % 2 ? [G.gold, G.goldDark] : [G.red, G.redDark]);
+    g.beginPath(); g.moveTo(i * 3, 0); g.lineTo(i * 3 + 3, 0); g.lineTo(i * 3 + 3, 2.4);
+    g.arc(i * 3 + 1.5, 2.4, 1.5, 0, Math.PI); g.closePath(); g.fill();
+  }
+  g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(0, 0, 24, 0.35);
+  return c;
+}
+
+/** The marquee over the awning: GAME CORNER in gold on violet, ringed with bulbs. */
+function cornerSignArt() {
+  const { c, g, rr, lin, shine } = fine(28, 8), G = GC;
+  rr(0.2, 0.2, 27.6, 7.6, 1.6, lin(0, 0, 0, 8, [G.goldDark, G.gold, G.goldDark]));
+  rr(0.9, 0.9, 26.2, 6.2, 1.1, lin(0, 0.9, 0, 7.1, [G.violet, G.violetDark]));
+  words(g, 'GAME CORNER', 14.2, 4.45, 3.4, 'rgba(0,0,0,0.45)');
+  words(g, 'GAME CORNER', 14, 4.2, 3.4, '#ffe36b');
+  const s = shine();
+  for (let x = 2; x <= 26; x += 2) for (const y of [0.55, 7.45]) {
+    g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, 0.42, 0, Math.PI * 2); g.fill();
+    s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y, 0.5, 0, Math.PI * 2); s.fill();
+  }
+  words(s, 'GAME CORNER', 14, 4.2, 3.4, '#d8c060');
+  return c;
+}
+
+/** The booth's walls: violet under a gold lattice of diamonds, a coin where the lines cross. */
+function boothWallArt() {
+  const { c, g, lin } = fine(24, 20, 8), G = GC;
+  g.fillStyle = lin(0, 0, 0, 20, [G.violet, G.violetDark]); g.fillRect(0, 0, 24, 20);
+  g.strokeStyle = 'rgba(248,208,64,0.5)'; g.lineWidth = 0.25;
+  for (let k = -20; k < 44; k += 4) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + 20, 20); g.moveTo(k, 20); g.lineTo(k + 20, 0); g.stroke(); }
+  g.fillStyle = 'rgba(248,208,64,0.55)';
+  for (let y = 0; y <= 20; y += 2) for (let x = (y / 2) % 2 ? 2 : 0; x <= 24; x += 4) { g.beginPath(); g.arc(x, y, 0.45, 0, Math.PI * 2); g.fill(); }
+  return c;
+}
+
+/** The Game Corner, built (the user's call, 2026-10-08: 3D, smooth, turned 45 degrees to the plaza): a violet booth on a
+    wooden deck, two slot machines with their stools, a striped awning sloping out over them with a row of bulbs under
+    its hem, and the GAME CORNER marquee on top. Its lights come up with the evening like the other places'. */
+function cornerStall() {
+  const W = 2.3, D = 1.3, FRONT_Y = 1.86, BACK_Y = 2.14, OUT = 0.32;
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const lit = (colour, k, min) => {
+    const m = std({ color: colour, emissive: new THREE.Color(colour), roughness: 0.4 });
+    m.userData.glow = k; m.userData.glowMin = min;
+    glowMats.push(m);
+    return m;
+  };
+  const g = new THREE.Group();
+  const add = (mesh, x, y, z) => { mesh.position.set(x, y, z); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); return mesh; };
+  const box = (w, h, d, mats, x, y, z) => add(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats), x, y, z);
+  const wood = std({ color: P.wood[1] }), woodDark = std({ color: P.wood[2] }), violet = std({ color: GC.violetDark });
+  box(W + 0.16, 0.12, D + 0.16, [woodDark, woodDark, wood, woodDark, woodDark, woodDark], 0, 0.06, 0);
+  box(W - 0.1, 0.01, D - 0.1, std({ color: '#9a2a4a' }), 0, 0.125, 0.02);   // a red carpet
+  const wall = std({ map: texOf(boothWallArt()) });
+  box(W, 1.95, 0.08, [violet, violet, violet, violet, wall, violet], 0, 0.12 + 0.975, -D / 2 + 0.04);
+  for (const s of [-1, 1]) box(0.08, 1.95, D, [wall, wall, violet, violet, violet, violet], s * (W / 2 - 0.04), 0.12 + 0.975, 0);
+
+  const face = slotFaceArt(), faceM = glowing(std({ map: texOf(face), roughness: 0.5 }), face, null, '#fff0c0', 0.9);
+  faceM.userData.glowMin = 0.25;
+  const chrome = std({ color: GC.chrome[1], metalness: 0.45, roughness: 0.35 }), chromeTop = std({ color: GC.chrome[0], metalness: 0.45, roughness: 0.35 });
+  const topper = lit('#ffd860', 0.9, 0.35), red = std({ color: GC.red, roughness: 0.4 }), steel = std({ color: '#8a88a0', metalness: 0.6, roughness: 0.3 });
+  for (const sx of [-0.55, 0.55]) {
+    const z = -D / 2 + 0.36;
+    box(0.72, 1.17, 0.55, [chrome, chrome, chromeTop, chrome, faceM, chrome], sx, 0.12 + 0.585, z);
+    box(0.6, 0.16, 0.42, [chrome, chrome, topper, chrome, topper, chrome], sx, 0.12 + 1.17 + 0.08, z - 0.02);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.42, 10), steel), sx + 0.39, 0.92, z + 0.06);   // the lever
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.06, 14, 10), red), sx + 0.39, 1.15, z + 0.06);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.07, 18), red), sx, 0.5, z + 0.62);   // a stool
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.36, 10), steel), sx, 0.3, z + 0.62);
+  }
+
+  const rise = BACK_Y - FRONT_Y, run = D + OUT;
+  const stripes = std({ map: texOf(awningArt()), roughness: 0.7 }), under = std({ map: texOf(awningArt(true)), roughness: 0.9 });
+  box(W + 0.24, 0.04, Math.hypot(run, rise), [under, under, stripes, under, under, under], 0, (FRONT_Y + BACK_Y) / 2, OUT / 2).rotation.x = Math.atan2(rise, run);
+  const hem = add(new THREE.Mesh(new THREE.PlaneGeometry(W + 0.24, 0.34), std({ map: texOf(valanceArt()), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.7 })), 0, FRONT_Y - 0.17, D / 2 + OUT + 0.005);
+  hem.receiveShadow = false;
+  const bulb = lit('#fff2b0', 1.4, 0.6), bulbGeo = new THREE.SphereGeometry(0.035, 10, 8);
+  for (let i = 0; i <= 10; i++) {
+    const b = new THREE.Mesh(bulbGeo, bulb);
+    b.position.set(-W / 2 + (i / 10) * W, FRONT_Y - 0.03, D / 2 + OUT + 0.04);
+    g.add(b);
+  }
+  const sign = cornerSignArt(), signM = glowing(std({ map: texOf(sign), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5 }), sign, null, '#fff0b0', 1.1);
+  signM.userData.glowMin = 0.35;
+  add(new THREE.Mesh(new THREE.PlaneGeometry(2.05, 2.05 * 8 / 28), signM), 0, FRONT_Y + 0.33, D / 2 + OUT - 0.04).receiveShadow = false;
+  return g;
+}
+
 /* ---------- the places ---------- */
 
 const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
@@ -745,12 +871,12 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(3))),
   });
-  // a low stall down in the bottom left, so the Safari has the back left to itself
+  // a stall down in the bottom left, so the Safari has the back left to itself, turned 45 degrees to face the plaza
   list.push({
-    id: 'corner', name: 'Game Corner', step: { x: 1, y: 10 }, tiles: rect(0, 9, 2, 9), tag: [1, 2.9, 9], open: true,
+    id: 'corner', name: 'Game Corner', step: { x: 2, y: 10 }, tiles: [[0, 9], [1, 9], [1, 8], [2, 8], [0, 10]], tag: [1.4, 3, 9.4], open: true,
     line: 'Spend PokéCoins on starters, perks, shinies and Poké Balls.',
     buttons: [['Play', acts.onCorner]],
-    build: (g) => { const c = cornerArt(), b = board(c, tileX(1), tileZ(9)); glowing(b.material, c, GLOWS.slots, '#fff0b0', 0.7); g.add(b); },
+    build: (g) => { const st = cornerStall(); st.position.set(tileX(1) - 0.1, 0, tileZ(9) - 0.1); st.rotation.y = Math.PI / 4; g.add(st); },
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -933,6 +1059,7 @@ function arrived() {
   here = placeAt(walker.tile);
   const go = aim;
   aim = null;
+  if (arriving) { arriving = false; walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500; return; }
   if (!here) return;
   walker.facing = here.id === 'trail' || !mon.sheets.back ? 'front' : 'back';
   if (go === here) open(here);
@@ -1029,12 +1156,15 @@ function hideCard() { card.hidden = true; }
 /* ---------- the Pokédex in the corner ---------- */
 
 /** It grows from the corner into the device (js/device.js's `from`), which opens over the hub; shut, it's back here. */
-function openDex() {
-  if (dexBtn.classList.contains('out') || entering) return;
+const openDex = () => fromCorner(acts.onPokedex);
+
+/** How to play comes out of it too (the user's call, 2026-10-08), and shuts back into it. */
+function fromCorner(open) {
+  if (dexBtn.classList.contains('out') || entering || held) return;
   hideCard();
   walker.path = []; aim = null;
   playSound('confirm');
-  acts.onPokedex(dexBtn, () => { dexBtn.classList.remove('out'); dexNews(); });
+  open(dexBtn, () => { dexBtn.classList.remove('out'); dexNews(); });
   dexBtn.classList.add('out');
 }
 
@@ -1049,6 +1179,7 @@ function ndc(e) {
 }
 
 function onTap(e) {
+  if (held || arriving) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects([mon.board, placeGroup], true).find(h => h.object !== mon.board || onSprite(h));
@@ -1068,7 +1199,7 @@ function onTap(e) {
 }
 
 function onKey(e) {
-  if (!running || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
+  if (!running || held || arriving || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
   const step = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (step) {
@@ -1228,8 +1359,10 @@ function fitCamera(w, h) {
 function placeCamera(dt) {
   const { half, front } = camera.userData;
   const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = tileZ(2);
-  const wantX = reachX <= 0 ? 0 : Math.max(-reachX, Math.min(reachX, walker.x));
-  const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, walker.z));
+  // walking in, the view waits on the plaza for it rather than dipping to meet it
+  const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z;
+  const wantX = reachX <= 0 ? 0 : Math.max(-reachX, Math.min(reachX, wx));
+  const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
   aimCamera(camX, camZ);
@@ -1280,8 +1413,7 @@ function frame(now) {
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
   placeCamera(dt);
-  liveFlyer(now, dt);
-  sounds(now);
+  if (!held) { liveFlyer(now, dt); sounds(now); }
   placeTags();
   post.draw(scene, camera, (v3().set(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
   if (fpsEl) fpsEl.textContent = `${Math.round(1000 / (fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length))} fps`;
@@ -1307,7 +1439,7 @@ async function build() {
   view = root.querySelector('.hub-view');
   card = root.querySelector('.hub-card');
   root.querySelector('.hub-help').append(smoothIcon('help'));
-  root.querySelector('.hub-help').addEventListener('click', () => { playSound('confirm'); acts.onHelp(); });
+  root.querySelector('.hub-help').addEventListener('click', () => fromCorner(acts.onHelp));
   dexBtn = root.querySelector('.hub-dex');
   dexBtn.addEventListener('click', openDex);
   root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
@@ -1349,8 +1481,14 @@ async function build() {
 }
 
 /** Show the hub over the title (screen is #title-screen, acts what the places open). Resolves true once it's drawn,
-    false where it can't be (no WebGL, Three.js offline), and the signs stay. */
-export async function showHub(titleScreen, actions) {
+    false where it can't be (no WebGL, Three.js offline), and the signs stay. `hold` draws it behind the shut Pokédex with
+    no partner and nothing to tap, until enterHub() walks the partner in. */
+export function showHub(titleScreen, actions, { hold = false } = {}) {
+  showing ??= openHub(titleScreen, actions, hold).finally(() => { showing = null; });
+  return showing;
+}
+
+async function openHub(titleScreen, actions, hold) {
   screen = titleScreen;
   acts = actions;
   calm = calmFx();
@@ -1368,6 +1506,9 @@ export async function showHub(titleScreen, actions) {
     scene.add(mon.group);
     mon.board.userData.who = { mon, w: walker };
   }
+  held = hold;
+  root.classList.toggle('held', held);
+  mon.group.visible = !held;
   if (!placed) { placed = true; walker.tile = START; walker.x = tileX(START.x); walker.z = tileZ(START.y); camX = walker.x; camZ = walker.z; }
   walker.path = []; aim = null; here = placeAt(walker.tile);
   if (inBase) leftBase();
@@ -1380,14 +1521,37 @@ export async function showHub(titleScreen, actions) {
   airAt = 0;
   setTime(true);
   resize();
-  screen.classList.add('hub-on');
+  if (!held) screen.classList.add('hub-on');
   if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
   return true;
 }
 
+/** Out from behind the shut Pokédex: the corner keys come up and your partner walks in from the bottom of the screen, up
+    the trail onto the plaza, then turns to face you. */
+export function enterHub() {
+  if (!held || !mon) return;
+  held = false;
+  root.classList.remove('held');
+  screen.classList.add('hub-on');
+  mon.group.visible = true;
+  nextFly = performance.now() + 6000;
+  if (calm) return;
+  const from = ROWS + FRONT + 2;
+  walker.x = tileX(START.x); walker.z = tileZ(from); walker.tile = { x: START.x, y: from };
+  walker.path = [];
+  for (let y = from - 1; y >= START.y; y--) walker.path.push({ x: START.x, y });
+  walker.facing = mon.sheets.back ? 'back' : 'front';
+  here = null;
+  arriving = true;
+}
+
+/** The corner handheld, for a device to shrink back into (the first launch's How to play). */
+export const hubDex = () => (root?.isConnected ? dexBtn : null);
+
 /** Back to the signs (Settings' Title screen). */
 export function hideHub() {
   running = false;
+  held = arriving = false;
   quiet();
   screen?.classList.remove('hub-on');
   root?.remove();

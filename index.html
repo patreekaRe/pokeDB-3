@@ -27,14 +27,16 @@
   <link rel="stylesheet" href="css/secret-base.css">
   <link rel="stylesheet" href="css/hub.css">
 </head>
-<body data-screen="start-screen">
+<body data-screen="start-screen" class="titling">
 
   <div id="backdrop" aria-hidden="true"></div>
   <canvas id="scene-bg" aria-hidden="true"></canvas>   <!-- the pixel scene behind every screen, js/scene.js -->
   <canvas id="scene-light" aria-hidden="true"></canvas>   <!-- the hybrid look's light over it (?hybrid), js/hybrid-light.js -->
 
-  <!-- Title screen: shown once per page load, before the start screen (js/title.js) -->
-  <div id="title-screen" class="title-screen" hidden>
+  <!-- Title screen: shown once per page load, before the start screen (js/title.js). Not hidden, so the shut Pokédex is
+       the first thing painted while the scripts load (the select's device under it showed before, empty); hub-mode keeps
+       the old pixel sky off until js/title.js knows the walkable Clearing isn't wanted -->
+  <div id="title-screen" class="title-screen hub-mode">
     <canvas id="title-sky" class="title-sky pixel" aria-hidden="true"></canvas>
     <canvas id="title-light" class="title-light" aria-hidden="true"></canvas>   <!-- smooth light over the pixel sky (js/title-light.js) -->
     <img class="title-flyer pixel" alt="" aria-hidden="true">

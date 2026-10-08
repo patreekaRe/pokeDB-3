@@ -65,7 +65,7 @@ export function openPokedex(at = {}, { from = null, onClose = null } = {}) {
  * 'dex' (`at` a biome's page), 'safari' (`at` an area), 'stats', 'achievements' or 'trainer'. B out of it shuts the
  * device, or with `home` steps out to the home screen like any app.
  */
-export function openDeviceApp(id, at, home = false, onClose = null) {
+export function openDeviceApp(id, at, home = false, onClose = null, from = null) {
   const save = getSave();
   const def = id === 'trainer' ? trainerApp(save)
     : id === 'safari' ? { ...safariApp(safariDexCount()), name: 'Safari' }   // a Safari run's own, open or not on the home screen
@@ -73,7 +73,7 @@ export function openDeviceApp(id, at, home = false, onClose = null) {
     : id === 'howto' ? howtoDef
     : apps(save).find(a => a.id === id);
   if (!def || def.locked) return;
-  openDevice({ render: renderHome, cover: coverArt, over: true, home, onClose, start: { ...def, name: def.name.toUpperCase(), at } });
+  openDevice({ render: renderHome, cover: coverArt, over: true, home, onClose, from, start: { ...def, name: def.name.toUpperCase(), at } });
 }
 
 /** The closed cover: an LED that blinks while a badge is unseen, your partner in a little window, your name and badges. */
@@ -200,13 +200,14 @@ const settingsApp = () => ({
 const cornerDef = { id: 'corner', name: 'Game Corner', cls: 'cdev-win cdev-corner', app: cornerApp };
 const howtoDef = { id: 'howto', name: 'How to play', cls: 'cdev-dex cdev-bag', app: howtoApp };
 
-/** How to play: the device over whatever is showing, on its banners (B shuts it). */
-export const openHowto = () => openDeviceApp('howto');
+/** How to play: the device over whatever is showing, on its banners (B shuts it); `from` (the Clearing's corner handheld)
+    is where it grows out of and shrinks back into. */
+export const openHowto = (from = null, onClose = null) => openDeviceApp('howto', undefined, false, onClose, from);
 
 /** The very first launch: the title's Pokédex has just powered on and dived into its screen, so How to play comes up
     already on, no cover (one boot, not two); resolves once it's shut. */
-export const bootHowto = () => new Promise(done => openDevice({
-  render: renderHome, cover: coverArt, over: true, powered: true, onClose: done, start: { ...howtoDef, name: 'HOW TO PLAY' },
+export const bootHowto = (from = null) => new Promise(done => openDevice({
+  render: renderHome, cover: coverArt, over: true, powered: true, from, onClose: done, start: { ...howtoDef, name: 'HOW TO PLAY' },
 }));
 
 /** The dock under the apps: settings, help and the Game Corner; laid over a screen also Main menu. */

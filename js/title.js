@@ -32,7 +32,7 @@ import { spriteFit } from './data/sprite-fit.js';
 import { showBadgeNews } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
 import { paintTitleLight, runTitleLight } from './title-light.js';
-import { showHub, hideHub } from './hub-3d.js';
+import { showHub, hideHub, enterHub, hubDex } from './hub-3d.js';
 import { pref } from './prefs.js';
 import { toggleShop } from './shop.js';
 
@@ -134,7 +134,7 @@ export function initTitle(handlers) {
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')) return;
     if (!pressed) return start(e);
-    if (screen.classList.contains('hub-on')) return;   // the hub walks on the keys (js/hub-3d.js)
+    if (screen.classList.contains('hub-mode')) return;   // the hub walks on the keys (js/hub-3d.js), and its signs are hidden
     const gems = [...screen.querySelectorAll('.gem')];
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
@@ -150,10 +150,20 @@ export function initTitle(handlers) {
    under it as the fallback (no WebGL, Three.js offline) and for Settings' Title screen: Signs, or ?signs. */
 const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).has('signs');
 
-function openHub() {
-  if (!useHub()) return hideHub();
+let hubReady = Promise.resolve(false);   // the hub drawn behind the shut Pokédex (showTitle()), true once it's there
+
+function openHub(hold = false) {
+  const screen = $('title-screen');
+  if (!useHub()) {
+    screen.classList.remove('hub-mode');
+    hideHub();
+    if (pressed) runTitleLight(true);
+    return Promise.resolve(false);
+  }
+  screen.classList.add('hub-mode');
+  runTitleLight(false);
   const mewtwo = STARTERS_BY_ID.mewtwo;
-  return showHub($('title-screen'), {
+  return showHub(screen, {
     savedRun: actions.savedRun,
     onContinue: (run) => actions.onContinue(run.saved),
     onNewGame: actions.onNewGame,
@@ -167,13 +177,19 @@ function openHub() {
     onBase: actions.onBase,
     onAbandon: () => actions.onAbandon(),
     dealFlyer,
-  });
+  }, { hold }).then((ok) => {
+    // no WebGL or Three.js offline: the signs and their sky after all
+    if (!ok) { screen.classList.remove('hub-mode'); runTitleLight(!screen.hidden); }
+    return ok;
+  }, () => { screen.classList.remove('hub-mode'); hideHub(); return false; });
 }
 
 /** The first time: PRESS START. Resolves once it's pressed and the menu is up. */
 export function showTitle() {
   pressed = false;
   open();
+  // the Clearing loads behind the shut Pokédex from the first frame, so after the power-on it is simply there
+  hubReady = openHub(true);
   $('press-start').focus({ preventScroll: true });
   return new Promise(resolve => { showTitle.done = resolve; });
 }
@@ -213,7 +229,7 @@ function open() {
   renderRun(actions.savedRun());
   clearInterval(timer);
   if (!still()) timer = setInterval(tick, 1000 / FPS);
-  runTitleLight(true);
+  runTitleLight(!screen.classList.contains('hub-mode'));
 }
 
 /* The first tap powers on the shut Pokédex (the user's pick, 2026-10-08): the button goes in, the LED turns green, the
@@ -231,13 +247,15 @@ async function start(e) {
   const first = actions.firstLaunch?.() ?? false;
   const dex = $('title-dex');
   if (!still()) await powerOn(dex);
+  const hub = await hubReady;   // as a rule long since there; till then the device stays on
   if (first) {
     if (!still()) await dive(dex);
-    const howto = actions.onFirstBoot();
+    // How to play shuts back into the Clearing's corner handheld, as it will every later time
+    const howto = actions.onFirstBoot(hub ? hubDex() : null);
     dex.classList.add('gone');
     await howto;
   } else if (!still()) lift(dex);
-  reveal();
+  reveal(hub);
 }
 
 async function powerOn(dex) {
@@ -267,13 +285,14 @@ function lift(dex) {
   setTimeout(() => dex.classList.add('gone'), 700);
 }
 
-function reveal() {
+function reveal(hub) {
   const screen = $('title-screen');
   screen.classList.remove('powering');
   screen.classList.add('menu');
   if (!$('title-dex').classList.contains('away')) $('title-dex').classList.add('gone');
   renderMenu();
-  openHub();
+  if (hub) enterHub();   // your partner walks in from the bottom as the logo comes up
+  else openHub();
   showTitle.done?.();
   showTitle.done = null;
 }
@@ -679,6 +698,9 @@ function paint() {
   screen.style.setProperty('--ground', `${ground}px`);
   W = Math.ceil(innerWidth / PIXEL);
   H = Math.ceil(innerHeight / PIXEL);
+  // a page opened in a background tab can have no size yet: painting then threw and cut showTitle() short, leaving the
+  // title half set up; the resize listener paints it once there is a window
+  if (!W || !H) return;
   canvas.width = W;
   canvas.height = H;
   look = SKIES[timeOfDay()];
@@ -745,6 +767,7 @@ function enterGate() {
 }
 
 function draw() {
+  if (!base) return;
   const ctx = $('title-sky').getContext('2d');
   ctx.drawImage(base, 0, 0);
   for (const s of stars) {
@@ -767,6 +790,7 @@ function draw() {
 }
 
 function tick() {
+  if ($('title-screen').classList.contains('hub-mode')) return;   // the Clearing covers the sky
   frame++;
   if (!shooting && look.stars && Math.random() < 0.012) shooting = { x: W * (0.2 + Math.random() * 0.7), y: H * 0.05 + Math.random() * H * 0.2, life: 14 };
   if (shooting) {
