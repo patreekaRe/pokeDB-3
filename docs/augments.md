@@ -234,3 +234,9 @@ augment always taken and seven never. Changes, each re-measured before the climb
 
 Guardian-only upsides measure close to nothing (the bot dies on landings, not guardians), so Sudden Death became an all-foes
 trade. Gambler's old halving lost the fight it landed on early in a climb, hence the softer tails.
+
+Before (150 climbs a type) / after (300): floor 100 reached by Fire 26 / 16%, Grass 59 / 49%, Water 39 / 32% (median floor
+62 / 53, 100 / 99, 65 / 65). Taken when offered: Siphon 99 / 77%, Pacifist 90 / 78%; Pandemonium 0 / 61%, Overclock 0 / 30%,
+Speed Demon 0 / 28%, Gambler 5 / 27%, Sudden Death 0 / 22%, Berserker 0 / 15%. Still near-always taken: Fire's own Rebirth
+(100%, 34 offers) and Cauterize (97%), Grass's Photosynthesis (93%), all type-only; left alone since Fire is the weakest
+climber. Never taken still: Mulligan, Scavenger, Ambush, Refresh, Wildfire, Thorn Garden (not reworked this pass).

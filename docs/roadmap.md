@@ -72,7 +72,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     guardian, Silver / Gold / Prismatic by height, 1 reroll, type-only ones (Fire must reach floor 100 sometimes; it's 0%
     in the bot today), every offer from the week's seed so the leaderboard stays even.
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
-    - **Part c.** Run in: CLOUD. The trade-off augments, sets and their bonuses, augment badges, the rest of the list.
+    - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
+    - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
 
 ## Ideas, not agreed yet (ask the user before building)
 
