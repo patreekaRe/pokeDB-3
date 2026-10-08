@@ -134,10 +134,6 @@
           <button type="button" class="dev-row danger" id="reset-btn"><span class="mi-icon">🗑️</span><span class="mi-label">Reset save</span></button>
         </section>
       </div>
-      <div class="dev-help" id="dev-help">
-        <button type="button" class="dev-row" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
-        <button type="button" class="dev-row" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>
-      </div>
     </div>
     <div class="piles" aria-label="Your piles">   <!-- shown only in battle -->
       <button type="button" class="pile" id="draw-count" data-pile="draw" title="Cards left in your draw pile: tap to see them"></button>
@@ -474,99 +470,6 @@
 
 
   <!-- ============ DIALOGS ============ -->
-  <dialog id="help-dialog" class="dialog howto-dialog dev-window">
-    <form method="dialog"><button class="howto-close" aria-label="Close">✕</button></form>
-    <h2 tabindex="-1" autofocus>How to play</h2>   <!-- focus the top, or the dialog opens scrolled down to its only button -->
-
-    <!-- one slide per topic; swipe on touch, or use the dots, arrows and arrow keys (js/howto.js) -->
-    <div class="howto-track dev-screen" id="howto-track">
-      <section class="howto-slide" data-title="Your run">
-        <header class="howto-head"><h3>🏆 Your run</h3><p>Four steps from starter to champion</p></header>
-        <ol class="howto-list howto-flow">
-          <li class="howto-li"><span class="howto-pic"><img src="assets/pokemon/charmander-front.gif" class="pixel" alt=""></span><span class="howto-li-text"><b>Pick a starter</b><small>Fire, Grass or Water: each type plays differently.</small></span></li>
-          <li class="howto-li"><span class="howto-pic">🗺️</span><span class="howto-li-text"><b>Climb the map</b><small>Choose your path, room by room, up to the boss.</small></span></li>
-          <li class="howto-li"><span class="howto-pic">⚔️</span><span class="howto-li-text"><b>Win battles</b><small>Each win teaches you a new move and pays 💰.</small></span></li>
-          <li class="howto-li boss"><span class="howto-pic"><img src="assets/pokemon/snorlax-front.gif" class="pixel" alt=""></span><span class="howto-li-text"><b>Beat 3 bosses</b><small>Your Pokémon evolves after each one. Beat the third to win.</small></span></li>
-        </ol>
-      </section>
-
-      <section class="howto-slide" data-title="Your turn">
-        <header class="howto-head"><h3>⚔️ Your turn</h3><p>Play your cards, then it's the enemy's move</p></header>
-        <ol class="howto-list howto-flow">
-          <li class="howto-li">
-            <span class="howto-pic wide"><span class="energy-orb" title="PP (energy)"><span class="pp-pill"><span class="pp-label">PP</span><span class="pp-count"><b>3</b>/3</span></span></span></span>
-            <span class="howto-li-text"><b>Get 3 PP</b><small>Your energy. It refills every turn.</small></span>
-          </li>
-          <li class="howto-li">
-            <span class="howto-pic wide"><span class="howto-hand" aria-hidden="true"><span class="fire">🔥</span><span class="grass">🌿</span><span class="water">💧</span></span></span>
-            <span class="howto-li-text"><b>Play cards</b><small>Each one costs the PP in its corner.</small></span>
-          </li>
-          <li class="howto-li">
-            <span class="howto-pic wide"><span class="howto-endturn"><span class="pp-pill">End Turn</span></span></span>
-            <span class="howto-li-text"><b>End your turn</b><small>The enemy moves, then you draw 5 new cards.</small></span>
-          </li>
-        </ol>
-        <p class="howto-tip with-pic"><span class="howto-tip-pic"><span class="intent attack"><span class="intent-icon">⚔️</span><b class="intent-value">12</b><span class="intent-name">Tackle</span></span></span><span>The enemy's next move, over its head. Block before a big hit!</span></p>
-        <p class="howto-tip with-pic"><span class="howto-tip-pic" id="howto-bag"></span><span>Your Bag holds your deck, relics, items and the map key.</span></p>
-      </section>
-
-      <section class="howto-slide" data-title="The map">
-        <header class="howto-head"><h3>🧭 The map</h3><p>Start at the bottom and choose your path to the boss</p></header>
-        <div class="howto-list">
-          <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card, sometimes an item.</small></span></div>
-          <div class="howto-li"><span class="howto-node town elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
-          <div class="howto-li"><span class="howto-node town rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal, or have Chansey PP Up a move.</small></span></div>
-          <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
-          <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, items, relics or forgetting a move.</small></span></div>
-          <div class="howto-li"><span class="howto-node town event">❓</span><span class="howto-li-text"><b>Mystery event</b><small>Something happens. Choose what to do: most rewards have a cost.</small></span></div>
-          <div class="howto-li"><span class="howto-node town boss">👹</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
-        </div>
-      </section>
-
-      <section class="howto-slide" data-title="Types and statuses">
-        <header class="howto-head"><h3>🔥 Types and statuses</h3><p>Hit wild Pokémon's weakness and keep an eye on the badges</p></header>
-        <div class="howto-types">
-          <span class="howto-type fire">🔥</span><span class="howto-beats" aria-label="beats">▶</span>
-          <span class="howto-type grass">🌿</span><span class="howto-beats" aria-label="beats">▶</span>
-          <span class="howto-type water">💧</span><span class="howto-beats" aria-label="beats">▶</span>
-          <span class="howto-type fire">🔥</span>
-        </div>
-        <div class="howto-chips">
-          <span class="howto-chip good">▲ +30% damage with the edge</span>
-          <span class="howto-chip bad">▼ −25% against it</span>
-        </div>
-
-        <div class="howto-list">
-          <div class="howto-li"><span class="badge block">🛡️<b>6</b></span><span class="howto-li-text"><b>Block</b><small>Soaks up damage until your next turn.</small></span></div>
-          <div class="howto-li"><span class="badge">🔥<b>3</b></span><span class="howto-li-text"><b>Burn</b><small>Hurts at the start of each turn.</small></span></div>
-          <div class="howto-li"><span class="badge good">🎯<b>8</b></span><span class="howto-li-text"><b>Focus</b><small>Your next attack hits harder.</small></span></div>
-          <div class="howto-li"><span class="badge">📉<b>2</b></span><span class="howto-li-text"><b>Weak</b><small>Deals 25% less damage for 2 turns.</small></span></div>
-          <div class="howto-li"><span class="badge">💔<b>2</b></span><span class="howto-li-text"><b>Vulnerable</b><small>Takes 50% more from your attacks.</small></span></div>
-          <div class="howto-li"><span class="badge good">💪<b>2</b></span><span class="howto-li-text"><b>Strength</b><small>Every hit deals more, all fight.</small></span></div>
-          <div class="howto-li"><span class="badge good">🧬</span><span class="howto-li-text"><b>Powers</b><small>Cards that keep working all fight.</small></span></div>
-          <div class="howto-li"><span class="badge bad">😡</span><span class="howto-li-text"><b>Enraged</b><small>Every 6 turns, the enemy gets stronger.</small></span></div>
-        </div>
-      </section>
-
-      <section class="howto-slide" data-title="PokéCoins and the Game Corner">
-        <header class="howto-head">
-          <div class="gc-hero" aria-hidden="true"><span>💰</span><b>▶</b><span class="gc-icon">🎰</span></div>
-          <h3>PokéCoins</h3><p>Spend them at the Game Corner. Yours to keep, even if you faint.</p>
-        </header>
-        <div class="howto-list howto-earn" id="howto-perks"></div>
-
-        <h4 class="howto-label">Earn them</h4>
-        <div class="howto-list howto-earn" id="howto-coins"></div>
-      </section>
-    </div>
-
-    <div class="howto-nav">
-      <button class="howto-prev" id="howto-prev" type="button" aria-label="Previous">‹</button>
-      <div class="howto-dots" id="howto-dots"></div>
-      <button class="btn primary howto-next" id="howto-next" type="button">Next ›</button>
-    </div>
-  </dialog>
-
   <!-- every enemy, full screen: a banner per biome, then a handheld Pokédex on that page (js/pokedex.js) -->
   <dialog id="dex-dialog" data-smooth-icons class="pokedex" aria-label="Pokédex">
     <div class="pdx-list" id="dex-list">

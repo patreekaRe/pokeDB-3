@@ -178,7 +178,7 @@ body.scrolled .topbar::before { opacity: 1; }
 .home-dex:hover .dex-sprite { transform: rotate(-8deg) scale(1.08); }
 .home-dex:active .dex-sprite { transform: scale(0.9); }
 
-/* rows in the device's Settings and Help apps (#dev-settings, #dev-help) */
+/* rows in the device's Settings app (#dev-settings) */
 .dev-row {
   display: flex;
   align-items: center;
@@ -493,7 +493,7 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   backdrop-filter: none;
 }
 .dialog .panel { border: 2px solid var(--win-edge); background: var(--win-panel); box-shadow: none; }
-.dev-settings, .dev-help { font-family: var(--pixel-font); font-synthesis-weight: none; }
+.dev-settings { font-family: var(--pixel-font); font-synthesis-weight: none; }
 :is(.dialog, .panel) h2 { color: #283060; padding-bottom: 6px; border-bottom: 3px dashed var(--win-edge); }
 :is(.dialog, .panel) h3 { color: #283060; }
 :is(.dialog, .panel) :not(.card, .card *) { text-shadow: none; }

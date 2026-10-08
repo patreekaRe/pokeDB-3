@@ -18,6 +18,7 @@ import { safariDexApp, safariDexCount } from './safaridex.js';
 import { movesApp } from './cardindex.js';
 import { bagApp } from './bagdex.js';
 import { achievementsApp } from './records.js';
+import { howtoApp } from './howto.js';
 import { statsApp } from './statsdex.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
@@ -68,6 +69,7 @@ export function openDeviceApp(id, at, home = false, onClose = null) {
   const def = id === 'trainer' ? trainerApp(save)
     : id === 'safari' ? { ...safariApp(safariDexCount()), name: 'Safari' }   // a Safari run's own, open or not on the home screen
     : id === 'corner' ? cornerDef
+    : id === 'howto' ? howtoDef
     : apps(save).find(a => a.id === id);
   if (!def || def.locked) return;
   openDevice({ render: renderHome, cover: coverArt, over: true, home, onClose, start: { ...def, name: def.name.toUpperCase(), at } });
@@ -195,6 +197,10 @@ const settingsApp = () => ({
 });
 
 const cornerDef = { id: 'corner', name: 'Game Corner', cls: 'cdev-win cdev-corner', app: cornerApp };
+const howtoDef = { id: 'howto', name: 'How to play', cls: 'cdev-dex cdev-bag', app: howtoApp };
+
+/** How to play: the device over whatever is showing, on its banners (B shuts it). */
+export const openHowto = () => openDeviceApp('howto');
 
 /** The dock under the apps: settings, help and the Game Corner; laid over a screen also Main menu. */
 function dockRow() {
@@ -202,7 +208,7 @@ function dockRow() {
   const row = el('div', 'cdev-dock');
   const items = [
     ['settings', 'Settings', 'settings', () => openApp(settingsApp())],
-    ['help', 'Help', 'help', () => openApp({ id: 'help', name: 'HELP', cls: 'cdev-win panel cdev-system', app: borrow('dev-help') })],
+    ['help', 'Help', 'help', () => openApp({ ...howtoDef, name: 'HOW TO PLAY' })],
     ['corner', 'Game Corner', 'corner', () => openApp({ ...cornerDef, name: 'GAME CORNER' })],
     over && ['menu', 'Main menu', 'home', () => dock.menu()],
   ].filter(Boolean);

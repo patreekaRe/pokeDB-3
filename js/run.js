@@ -61,6 +61,7 @@ import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
+import { buildingSvg } from './buildings.js';
 
 let run = null;
 let peeking = false;   // a ?event= playtest run (peekEvent()): nothing about it is saved, so the real saved run is safe
@@ -987,6 +988,11 @@ function initBag() {
   const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
   for (const [p, icon] of [['deck', 'moves'], ['relics', 'relics'], ['items', 'items'], ['key', 'map']]) {
     document.querySelector(`.bag-pocket[data-pocket="${p}"] > span`).replaceChildren(smoothIcon(icon));
+  }
+  // the map key's Mart and Center rows show the map's own little buildings
+  for (const node of document.querySelectorAll('.howto-node.town.shop, .howto-node.town.rest')) {
+    node.innerHTML = buildingSvg(node.classList.contains('shop') ? 'shop' : 'rest');
+    node.classList.add('building');
   }
   $('bag-trainer-icon').append(cardIcon());
   $('bag-trainer-art').append(cardIcon());

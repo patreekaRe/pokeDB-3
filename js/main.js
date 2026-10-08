@@ -20,7 +20,7 @@
      rewards.js      the "choose one" screen
      battle.js       the fight
      records.js      the Stats and Achievements windows
-     howto.js        the swipeable How to play window
+     howto.js        How to play, an app on the Pokédex device
      title.js        the title screen: PRESS START, then the gem menu (home)
      select.js       the character select (New game)
      collection.js   the Collection: the device's home screen of apps (Pokédex, Moves, Relics, Items, Stats...)
@@ -47,11 +47,10 @@ import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playMusic } from './audio.js';
 import { initSettings } from './settings.js';
-import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
-import { initCollection, showCollection, openPokedex } from './collection.js';
+import { initCollection, showCollection, openPokedex, openHowto } from './collection.js';
 import { hideDevice } from './device.js';
 import { smoothIcon } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
@@ -61,7 +60,7 @@ import { initPokedex } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
-import { $, el, openDialog, confirmDialog } from './ui.js';
+import { $, el, confirmDialog } from './ui.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
@@ -220,7 +219,6 @@ function init() {
   initSettings();
   initTips();
   initPlayTime();
-  initHowto();
   // The top bar has no background, so once the page scrolls a fade keeps its numbers off whatever slides under them.
   const markScrolled = () => document.body.classList.toggle('scrolled', scrollY > 4);
   addEventListener('scroll', markScrolled, { passive: true });
@@ -238,10 +236,8 @@ function init() {
   });
 
   // Buttons that are always on screen
-  $('help-btn').addEventListener('click', openHowto);
   $('title-help').addEventListener('click', openHowto);
   initPatchNotes();
-  $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   initPokedex();
   initPokedexButton();
   initCloud();

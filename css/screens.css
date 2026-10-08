@@ -774,7 +774,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 }
 /* PP and End Turn are drawn like the Diamond/Pearl move screen: a white pill on the salmon striped move
    panel. PP shows "PP" on the left and "2/3" on the right; the numbers turn red when you're out. */
-.energy-orb, #end-turn-btn, .howto-endturn {
+.energy-orb, #end-turn-btn {
   position: relative;
   padding: 7px 8px;
   border: 0;
@@ -975,7 +975,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .battle-controls { margin-top: 8px; }
   .battle-controls > :is(.orb-wrap, .turn-side) { translate: 0; }
   .hand { padding-top: 10px; }
-  .energy-orb, .howto-endturn { padding: 6px 7px; }
+  .energy-orb { padding: 6px 7px; }
   .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
   /* Throw shows: PP | Throw | End Turn, with Throw in the middle of the screen (the user's call: it sat off to the right) */
@@ -2340,8 +2340,6 @@ body.battle-intro { pointer-events: none; }
 .gc-icon { display: inline-block; vertical-align: middle; line-height: 0; }
 .shop-btn .gc-icon { font-size: 30px; }
 /* the PokéCoins slide opens on coin ▶ slot machine: what they're for, before how to earn them */
-.gc-hero { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; font-size: 44px; line-height: 0; }
-.gc-hero b { font-size: 16px; line-height: 1; color: var(--win-muted); }
 
 /* No button chrome: the slot machine itself is the button, with a shadow so it reads over any backdrop */
 .icon-btn.shop-btn {
@@ -2664,109 +2662,14 @@ body.battle-intro { pointer-events: none; }
 .shop-owned { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #1f7a38; }
 .shop-owned .pokeball { font-size: 2.2em; margin: 0; border-width: 0.06em; box-shadow: none; animation: none; }
 
-/* ---------- 7. HOW TO PLAY ---------- */
-/* Mostly pictures: the real PP box and End Turn, map-node colours and
-   battle badges, so the guide looks exactly like what you'll see in play. */
-.howto-dialog { width: min(640px, 94vw); text-align: center; }
-.howto-dialog h2 { font-size: 1.6rem; outline: none; }
-.howto-label {
-  margin: 18px 0 8px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+/* ---------- 7. ICON ROWS (the Bag's pockets: relics, items, augments, the map key) ---------- */
+/* How to play itself is an app on the Pokédex device now (js/howto.js, on shelfApp()'s styles) */
+.howto-about { display: block; width: 100%; margin: 0 0 10px; padding: 9px 12px; border: 0; text-align: center; cursor: pointer; }
 
-/* each slide opens with a title and a one-line summary */
-.howto-head { margin-bottom: 14px; }
-.howto-head h3 { margin: 0; font-size: 1.2rem; color: var(--ink); }
-.howto-head p { margin: 6px 0 0; font-size: 0.9rem; color: var(--muted); }
-
-/* the first two slides: numbered steps, one per row, with a picture slot on the left */
-.howto-list.howto-flow { grid-template-columns: 1fr; margin: 0; padding: 0; list-style: none; counter-reset: step; }
-.howto-flow .howto-li { counter-increment: step; position: relative; padding-left: 42px; min-height: 64px; }
-.howto-flow .howto-li::before {
-  content: counter(step);
-  position: absolute;
-  left: 11px;
-  top: 50%;
-  translate: 0 -50%;
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--win-gold);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 900;
-}
-.howto-flow .howto-li.boss { border-color: var(--win-gold); background: rgba(255, 203, 5, 0.14); }
-.howto-pic { flex: none; width: 56px; height: 48px; display: grid; place-items: center; font-size: 1.9rem; }
-.howto-pic img { width: 56px; height: 56px; object-fit: contain; }
-.howto-pic.wide { width: 104px; }
-
-.howto-tip {
-  margin: 10px 0 0;
-  padding: 9px 14px;
-  border-radius: var(--round-sm);
-  background: rgba(255, 203, 5, 0.14);
-  border: 1px solid var(--win-edge);
-  font-size: 0.86rem;
-  text-align: left;
-}
-.howto-tip.with-pic { display: flex; align-items: center; gap: 12px; }
-.howto-tip-pic { flex: none; display: grid; place-items: center; min-width: 44px; }
-.howto-tip-pic .intent { translate: none; margin: 0 0 8px; padding: 3px 7px 3px 5px; gap: 4px; cursor: default; }
-.howto-tip-pic :is(.intent-value, .intent-name) { font-size: 0.72rem; }
-.howto-tip-pic .bag-sprite { width: 44px; height: 44px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35)); }
-
-/* the PP window and End Turn, small */
-.howto-pic :is(.energy-orb, .howto-endturn) { padding: 4px 5px; }
-.howto-pic .pp-pill { gap: 6px; padding: 5px 8px 4px; font-size: 0.66rem; box-shadow: 0 0 0 2px var(--rim, #c84840), inset 0 -2px 0 #d0d0d8; }
-.howto-pic :is(.pp-label, .pp-count) { font-size: inherit; }
-
-/* a little fanned hand of cards, one per type, each with its PP cost disc */
-.howto-hand { display: flex; }
-.howto-hand > span {
-  position: relative;
-  width: 30px;
-  height: 40px;
-  margin: 0 -3px;
-  display: grid;
-  place-items: center;
-  border: 2px solid rgba(0, 0, 0, 0.45);
-  border-radius: 4px;
-  font-size: 0.95rem;
-  box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.25);
-}
-.howto-hand > span::before {
-  content: "1";
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 14px;
-  height: 14px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  border: 2px solid #e06058;
-  background: #fff;
-  color: var(--win-ink);
-  font-size: 0.55rem;
-  font-weight: 900;
-}
-.howto-hand .fire  { background: #f08850; rotate: -10deg; translate: 0 3px; }
-.howto-hand .grass { background: #78c060; z-index: 1; }
-.howto-hand .water { background: #6890f0; rotate: 10deg; translate: 0 3px; }
-
-/* icon + name + one-line explanation (map rooms, statuses) */
+/* icon + name + one-line explanation */
 .howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
-/* a lone last row (Boss, Enraged, Coin Finder) gets its own line but stays the others' width, centred */
+/* a lone last row gets its own line but stays the others' width, centred */
 .howto-li:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 8px) / 2); }
-:is(.drop, .howto-flow) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }   /* one column there anyway */
-.howto-list.howto-earn { grid-template-columns: 1fr 1fr; }   /* short rows: two per line even on phones */
 .howto-li {
   display: flex;
   align-items: center;
@@ -2776,16 +2679,10 @@ body.battle-intro { pointer-events: none; }
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--panel-edge);
 }
-.howto-li .howto-node, .howto-li .badge { flex: none; }
-.howto-li .badge { cursor: default; animation: none; }
+.howto-li .howto-node { flex: none; }
 .howto-li-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .howto-li-text b { font-size: 0.92rem; }
 .howto-li-text small { font-size: 0.8rem; line-height: 1.25; color: var(--muted); }
-
-.howto-chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
-.howto-chip { padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
-.howto-chip.good { background: #2e7d32; color: #fff; }
-.howto-chip.bad  { background: #b3261e; color: #fff; }
 
 /* bare icons (map rooms, relics, items): no chip or frame, the user's call */
 .howto-node {
@@ -2797,92 +2694,11 @@ body.battle-intro { pointer-events: none; }
 }
 .howto-node.building svg { width: 100%; height: auto; display: block; }
 
-/* the type cycle */
-.howto-types { display: flex; align-items: center; justify-content: center; gap: 6px; }
-.howto-type {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-size: 1.3rem;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-}
-.howto-type.fire  { background: #c9431f; }
-.howto-type.grass { background: #2f8f43; }
-.howto-type.water { background: #2569c7; }
-.howto-beats { font-size: 0.8rem; color: var(--win-gold); }
-
-/* the slides: a sideways scroll-snap strip, one topic per slide */
-.howto-dialog { position: relative; }
-.howto-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-.howto-close:hover { background: rgba(0, 0, 0, 0.08); color: var(--ink); }
-.howto-track {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-.howto-track::-webkit-scrollbar { display: none; }
-.howto-slide {
-  flex: 0 0 100%;
-  min-width: 0;
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 10px 4px 6px;
-}
-.howto-slide > .howto-label:first-child { margin-top: 0; }
-
-.howto-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
-.howto-prev {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--panel-edge);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 1.5rem;
-  line-height: 1;
-}
-.howto-prev:disabled { visibility: hidden; }
-.howto-next { min-width: 118px; }
-.howto-dots { display: flex; gap: 8px; }
-.howto-dot {
-  width: 9px;
-  height: 9px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.28);
-  transition: width 0.2s, background 0.2s;
-}
-.howto-dot[aria-current="true"] { width: 24px; background: var(--gold); }
-
 @media (max-width: 560px) {
-  .howto-dialog { padding: 18px 14px; }
   .howto-list { grid-template-columns: 1fr; gap: 6px; }
-  .howto-list:not(.howto-earn) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }
+  .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }
   .howto-li { padding: 5px 10px; gap: 10px; }
   .howto-li .howto-node { width: 34px; height: 34px; font-size: 1.35rem; }
-  .howto-pic.wide { width: 90px; }
-  .howto-type { width: 38px; height: 38px; font-size: 1.1rem; }
-  .howto-types { gap: 4px; }
-  .howto-beats { font-size: 0.58rem; }
 }
 
 /* ---------- a move not met yet in the Moves app: a greyed card, its art a black silhouette, ??? for the rest (lockedCard() in js/cardindex.js) ---------- */
@@ -3611,25 +3427,6 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .item-row .howto-li-text { flex: 1; }
 .item-actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
 .bag .item-actions .btn { padding: 4px 8px 4px 16px; font-size: 0.7rem; min-height: 0; }
-
-/* How to play: plain icons, no round chips. Statuses read like the nameplates' badges (icon, then a coloured
-   number). */
-.howto-dialog .howto-li .badge {
-  width: 44px;
-  height: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  font-size: 1.4rem;
-}
-.howto-dialog .howto-li .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.95rem; }
-.howto-dialog .howto-li .badge.block b { color: #2060d8; }
-.howto-dialog .howto-li .badge.good b { color: #208030; }
-.howto-dialog .howto-li .badge.bad b { color: #c02020; }
 
 /* ---------- the pixel scene behind every screen (js/scene.js), dimmed by #backdrop outside battles ---------- */
 #scene-bg { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; image-rendering: pixelated; display: none; }
@@ -4987,27 +4784,6 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 .cloud-dialog .cloud-email input:focus { outline-color: #1f3a14; }
 .cloud-pick-dialog .cloud-save h3 { color: #1f3a14; }
 .cloud-pick-dialog .dev-screen > p { text-align: center; }
-
-.howto-dialog.dev-window h2 { margin-right: 44px; font-size: 0.8rem; }
-.howto-dialog.dev-window .howto-track { margin: 6px; padding: 0; }
-.howto-dialog.dev-window .howto-slide { padding: 12px 10px 10px; }
-.howto-dialog.dev-window :is(.howto-li, .howto-tip) {
-  background: #e4f0cc; border: 2px solid #1f3a14; box-shadow: 0 2px 0 rgba(31, 58, 20, 0.3);
-}
-.howto-dialog.dev-window .howto-flow .howto-li.boss { border-color: #8a6200; background: #f4e6a4; }
-.howto-dialog.dev-window .howto-flow .howto-li::before { background: #1f3a14; color: #c4dca0; }
-.howto-dialog.dev-window .howto-beats { color: #6a4a00; }
-.howto-dialog.dev-window .howto-close {
-  top: 13px; right: 12px; width: 36px; height: 36px; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
-  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
-}
-.howto-dialog.dev-window .howto-close:hover { background: var(--shell); color: #fff; }
-.howto-dialog.dev-window .howto-nav { margin-top: 14px; }
-.howto-dialog.dev-window .howto-prev {
-  border: 0; background: var(--shell-lo); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep); text-shadow: 1px 1px 0 var(--shell-deep);
-}
-.howto-dialog.dev-window .howto-dot { background: var(--shell-deep); }
-.howto-dialog.dev-window .howto-dot[aria-current="true"] { background: #b6d68e; box-shadow: 0 0 0 2px var(--shell-rim); }
 
 /* rewards and the Mart on the device too (UI fixes D2 group 2, 2026-10-07): the screen's title, its text box, the
    picked card's note, the relic / item / choice tiles and the hand picker's banner are each a green LCD in a ring of the

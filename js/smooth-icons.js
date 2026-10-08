@@ -372,6 +372,36 @@ const ART = {
     <path d="M7 29h18" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`,
 };
 
+/* How to play's battle terms and rooms (js/howto.js), each in its term's colour (TERM_KIND in js/ui.js) */
+Object.assign(ART, {
+  // Weak: a purple fist-arrow pointing down
+  weak: `<circle cx="16" cy="16" r="13" fill="#9a5ad8" stroke="${INK}" stroke-width="2"/>
+    <path d="M16 7.5v13M10 15.5l6 6.5 6-6.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  // Vulnerable: a purple heart cracked down the middle
+  vulnerable: `<path d="M16 27.5C9 22.5 3.5 17.6 3.5 11.6c0-4 3.1-7.1 6.9-7.1 2.6 0 4.5 1.4 5.6 3.4 1.1-2 3-3.4 5.6-3.4 3.8 0 6.9 3.1 6.9 7.1 0 6-5.5 10.9-12.5 15.9Z" fill="#9a5ad8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 8l-2.6 5.4 4.2 3-3.2 5.2 1.6 5.4" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+    <ellipse cx="9.6" cy="10.4" rx="2" ry="2.8" transform="rotate(30 9.6 10.4)" fill="#fff" opacity="0.5"/>`,
+  // Tide: a curling blue wave
+  tide: `<path d="M2.5 26.5c3-1 4.5-3 5-7C8.6 11 14.4 5 21.4 5.4c4.4.3 7.6 3.6 7.6 7.6 0 3.4-2.4 5.6-5.2 5.6-2.4 0-4-1.6-4-3.6 0-1.6 1.2-2.8 2.6-2.8-2.4-1.8-7.2-.4-8.4 4.6-1 4.2 1 8.2 5.6 9.7Z" fill="#3c8cf0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M2.5 26.5h27" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M10.6 16.5c1-4.4 4.6-8 9.4-8.4" fill="none" stroke="#bfe0ff" stroke-width="2" stroke-linecap="round"/>`,
+  // Leech Seed: a sprout out of a seed
+  seed: `<path d="M16 26V14" stroke="${INK}" stroke-width="4.4" stroke-linecap="round"/>
+    <path d="M16 26V14" stroke="#62c050" stroke-width="2" stroke-linecap="round"/>
+    <path d="M16 15.5C15 9 10 5.5 3.5 6c.4 6.6 5 10 12.5 9.5ZM16 13c.8-5.2 4.8-8 10.5-7.6-.3 5.4-4.2 8.2-10.5 7.6Z" fill="#62c050" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="16" cy="26" rx="7" ry="3.8" fill="#a8763c" stroke="${INK}" stroke-width="2"/>`,
+  // Treasure: a wooden chest with a gold clasp
+  chest: `<path d="M4 14h24v13a1.5 1.5 0 0 1-1.5 1.5h-21A1.5 1.5 0 0 1 4 27Z" fill="#b8763a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M4 14v-3a7 7 0 0 1 7-7h10a7 7 0 0 1 7 7v3Z" fill="#d08c46" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M4 14h24M9.5 4.6V28.5M22.5 4.6V28.5" stroke="${INK}" stroke-width="1.6"/>
+    <rect x="13" y="11" width="6" height="7.5" rx="1.2" fill="#f8c830" stroke="${INK}" stroke-width="1.8"/>
+    <circle cx="16" cy="14.6" r="1.2" fill="${INK}"/>`,
+  // PP: a lightning bolt on a blue orb, like the battle's PP pill
+  pp: `<circle cx="16" cy="16" r="13" fill="#2c64c8" stroke="${INK}" stroke-width="2"/>
+    <circle cx="16" cy="16" r="10" fill="#4a8ef0"/>
+    <path d="M18 5.5L9.5 17.5h6l-2 9 9-12.5h-6.2Z" fill="#f8d838" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>`,
+});
+
 /* Emoji with a smooth twin. Inside a [data-smooth-icons] part of the page (the Collection device and the windows it
    shares pages with) js/icons.js swaps these in instead of its pixel icons; cards keep theirs, to match battle. */
 export const SMOOTH_EMOJI = {
