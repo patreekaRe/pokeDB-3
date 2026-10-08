@@ -186,8 +186,9 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const skip = $('reward-skip');
   // a room (an event, the Center, the Mart, the grotto) has the slim bar along the bottom, and Leave is its key after Home
   const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
-  // the rooms and the move pick after a fight: the bar along the bottom, the title on its hinge's LCD, no top bar
-  const roomy = inBar || /\blearn-room\b/.test(layout);
+  // the rooms and a fight's reward steps (moves, relics, a found item): the bar along the bottom, the title on its
+  // hinge's LCD, no top bar
+  const roomy = inBar || /\b(learn-room|item-found)\b/.test(layout);
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;

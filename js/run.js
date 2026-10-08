@@ -1512,6 +1512,7 @@ function offerSignature(enemyId, next) {
     onSkip: next,
     skipLabel: known ? 'Continue' : 'Skip',
     coins: run.pendingCoins,
+    layout: 'learn-room',
   });
 }
 
@@ -1526,6 +1527,7 @@ function offerEvolutionCard(next) {
     options: cards.map(card => learnOption(card, next)),
     onSkip: next,
     coins: run.pendingCoins,
+    layout: 'learn-room',
   });
 }
 

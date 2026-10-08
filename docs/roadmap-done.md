@@ -1772,3 +1772,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   and the title's © line are gone; the disclaimer lives in About.
 - **Room bar on one row** (2026-10-07, the user's call): Home, then Leave as a key like it (green, an open door with an arrow,
   its word under it), then HP / ₽ / coins; the Mart and the treasure grotto use it too (their Leave was a pill above the text box).
+- **R1. Post-fight reward steps get the room bar** (2026-10-07, the user's ask): "Item found", the relic picks (`item-found`)
+  and the signature-move picks (a catch's, after evolving: now `learn-room`) get `.in-room` from `showChoice()` like the
+  move pick: no top bar, the bottom bar with the title on its hinge LCD.

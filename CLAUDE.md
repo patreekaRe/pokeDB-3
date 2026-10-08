@@ -127,7 +127,7 @@ live site.
   top bar (2026-10-07): the rooms get `#room-bar` along the bottom, one row: Home (the Pokédex), Leave (`#reward-skip` moved in
   by `showChoice()` as `.room-leave`, a green key with a door, `smoothIcon('leave')`), then HP, ₽ and coins on one LCD; on top
   of it the Pokédex's hinge (`.room-hinge`: lens, lights, the room's title alone on a small LCD sized to it, no biome line (the user's call, 2026-10-07), in place of the title plate).
-  The move pick after a fight (`layout: 'learn-room'`, `.learn`) gets the bar and hinge too, keeping its Reroll / Skip;
+  The move pick after a fight (`layout: 'learn-room'`, `.learn`; the signature-move picks too) and the found item and relic picks (`item-found`) get the bar and hinge too, keeping their own Reroll / Skip;
   `showChoice()` sets `#reward-screen.in-room` for all of them. There is no page footer any more; the disclaimer is in About.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
