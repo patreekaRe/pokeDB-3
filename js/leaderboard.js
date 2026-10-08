@@ -21,10 +21,11 @@ import { AUGMENTS_BY_ID } from './data/augments.js';
 import { augIcon } from './augment-art.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
+import { getSave, updateSave } from './storage.js';
 
 const POST_KEY = 'pokedb.safari.post';
 const TOWER_POST_KEY = 'pokedb.tower.post';
-const NAME_KEY = 'pokedb.safari.name';
+const NAME_KEY = 'pokedb.safari.name';   // where the nickname lived before the save took it (nameFor())
 const FETCH_LIMIT = 1000;
 const CACHE_MS = 60000;
 
@@ -73,8 +74,17 @@ function pending(k = K()) {
   return p;
 }
 
-/** The board only ever shows a nickname the player picked, never the sign-in's real name. */
-const nameFor = () => cleanName(store.get(NAME_KEY) || '');
+/** The board only ever shows a nickname the player picked, never the sign-in's real name. It's in the save since
+    2026-10-08 (the user's call), so it follows a cloud save to every device; a device's own old one moves in once, unless
+    the save already has one. The old one stays on the device until a name is set here, in case a cloud save from before
+    the move lands over the save without one. */
+const nameFor = () => {
+  const saved = cleanName(getSave().trainerName || '');
+  if (saved) return saved;
+  const old = cleanName(String(store.get(NAME_KEY) || ''));
+  if (old) updateSave(d => { d.trainerName = old; });
+  return old;
+};
 /** The Trainer Card's name: the leaderboard nickname the player picked, never the sign-in's real name. */
 export const trainerName = () => nameFor() || 'Trainer';
 /** The picked nickname itself ('' if none), for Settings' name box. */
@@ -82,7 +92,8 @@ export const pickedName = () => nameFor();
 /** Settings' name box: saves the nickname (an empty one goes back to "Trainer") and returns what was kept. */
 export function setTrainerName(name) {
   const clean = cleanName(name);
-  store.set(NAME_KEY, clean || null);
+  updateSave(d => { d.trainerName = clean; });
+  store.set(NAME_KEY, null);   // so clearing it really goes back to "Trainer"
   return clean;
 }
 /** A suggestion for the name box: the sign-in's first name, only ever posted if the player keeps it. */
@@ -310,7 +321,7 @@ function nameRow(user, waiting) {
     e.preventDefault();
     const name = cleanName(input.value);
     if (!name) return;
-    store.set(NAME_KEY, name);
+    setTrainerName(name);
     editingName = false;
     render();
   });
