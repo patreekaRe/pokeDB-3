@@ -4590,6 +4590,13 @@ body.scene-peek #backdrop { display: none; }
 }
 #map-screen:not(.tower) .run-card { padding: 2px 2px 4px; }
 #map-screen .mdex-hinge { position: relative; flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+/* the hinge on top, over the LCD, like the Sky Pillar's bar (the user's call, 2026-10-08); flex order also orders the
+   painting, so it needs a z-index to paint over the window's shell shadow */
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) { --hinge-h: 44px; }   /* the top bar reads it too */
+#map-screen:not(.tower) .mdex-hinge { order: 1; z-index: 1; height: var(--hinge-h); box-sizing: border-box; }
+#map-screen:not(.tower) .mdex-window { order: 2; }
+#map-screen:not(.tower) .mdex-glass { order: 3; margin-top: 8px; }
+#map-screen:not(.tower) .mdex-dock { order: 4; }
 .mdex-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
 .mdex-lights { display: flex; gap: 5px; }
 .mdex-lights .pdx-light { width: 9px; height: 9px; }
@@ -4732,7 +4739,7 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
     background-repeat: repeat-x, repeat, repeat, no-repeat;
   }
   /* margin, not translate: a transform would make the top bar the containing block of the Bag (fixed, inside it) */
-  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { margin-top: 16px; height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { margin-top: calc(16px + var(--hinge-h, 0px)); height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar::before { display: none; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .dex-sprite { width: 32px; height: 32px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }

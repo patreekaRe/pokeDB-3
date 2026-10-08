@@ -120,7 +120,7 @@ live site.
   lobbies fade in over the title (`lobbyIn`).
 - **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
   device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every
-  later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD),
+  later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD; on top since 2026-10-08, above the run card),
   `.mdex-glass` (the map scrolls inside it), the top bar's Pokédex shown as a round Home key (`.home-key`) and `.mdex-dock`, the Bag's pockets as a menu bar (it opens the Bag over it, the
   top bar's Bag hidden there). The Bag itself is the device's too (shell, LCD title, pocket buttons, each pocket on a green LCD), and so are the deck and map-peek windows and the run's end windows (result, unlock, yes/no, loss recap) (`.dev-window`), and the deck pickers (Forget a move, PP Up, Day Care: `showChoice()`'s `deck-pick` layout, the deck on a dark screen scrolling in the glass, 2026-10-07; under the text box the yes/no window's two keys, the one-word confirm `#reward-ok` left, gold like the room bar's, greyed until a card is picked, then glowing, and Skip right, the picked card's dim stopping above them, 2026-10-08). Detail
   in `docs/reference/map-screen.md`. **Rooms** (? events, the Center, the Mart, the grotto) and the deck pickers have no

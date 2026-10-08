@@ -5,7 +5,7 @@ they go): outside a Sky Pillar climb `#map-screen` is fixed full screen as the d
 the Pokédex"). From the top: the top bar on the shell; `.mdex-window`, a window onto the scenery holding the run card
 (the shell round it is the window's own `0 0 0 100vmax var(--shell)` shadow, clipped by the screen, so the hinge, glass
 and dock are `position: relative` to paint over it); `.mdex-hinge` with the lens, three lights and `.map-head` as a green
-LCD (the biome and place signs lose their wood, and type in on arrival, `lcdType`); `.mdex-glass`, the grey bezel and
+LCD (the biome and place signs lose their wood, and type in on arrival, `lcdType`), shown first since 2026-10-08 (flex `order`, `z-index: 1` to paint over the window's shadow; its height `--hinge-h` also pushes the phone top bar down onto the LCD); `.mdex-glass`, the grey bezel and
 screen the map scrolls in (`showMap()` centres your sprite); `.mdex-dock`, five buttons that are the Bag's pockets (Deck,
 Relics, Items, Map key, Trainer, with the counts mirrored from the pocket tabs). A button opens the Bag on its pocket just
 above the bar (lit green while open), half the screen tall at most with its pocket scrolling (the user found it covering the map, 2026-10-07); again closes it. There the top bar's Bag button and the Bag's own tabs are hidden,
