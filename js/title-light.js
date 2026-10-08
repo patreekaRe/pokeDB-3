@@ -7,8 +7,11 @@
    sun, a warm (or cool) glow along the horizon, haze over the far
    hills, a soft vignette, and glowing motes drifting over the grass
    (fireflies at dusk and night, pollen by day). It's drawn at half
-   resolution and scaled up, since light is blurry anyway.
+   resolution and scaled up, since light is blurry anyway. Settings'
+   Scenery set to Pixel leaves the sky plain.
    ============================================================ */
+
+import { hybridScenery } from './prefs.js';
 
 const SCALE = 0.5;
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,6 +36,7 @@ export function paintTitleLight(el, { time, orb, ground, hills }) {
   look = LOOKS[time] ?? LOOKS.dusk;
   W = canvas.width = Math.ceil(innerWidth * SCALE);
   H = canvas.height = Math.ceil(innerHeight * SCALE);
+  if (!hybridScenery()) { base = null; motes = []; runTitleLight(false); return; }   // the canvas is clear from the resize
   groundY = (innerHeight - ground) * SCALE;
   const horizonY = groundY - hills * SCALE;
   base = document.createElement('canvas');
@@ -71,6 +75,7 @@ export function paintTitleLight(el, { time, orb, ground, hills }) {
   sprite = glowSprite(look.mote);
   motes = Array.from({ length: look.count }, () => mote(true));
   draw(performance.now());
+  if (!raf) runTitleLight(true);   // switched back on in Settings while the title is up
 }
 
 /** One glowing mote: a firefly wanders low over the grass and blinks; pollen rises slowly and fades. */
@@ -129,7 +134,7 @@ export function runTitleLight(on) {
   cancelAnimationFrame(raf);
   raf = 0;
   last = 0;
-  if (!on || still()) return;
+  if (!on || still() || !base) return;
   let prev = 0;
   const loop = (now) => {
     raf = requestAnimationFrame(loop);

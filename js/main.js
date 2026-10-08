@@ -188,6 +188,7 @@ function init() {
   // Playtest shortcut (the user's ask): opening the game with ?levels unlocks every Trainer Level for good.
   const query = new URLSearchParams(location.search);
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
+  if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('safari')) updateSave(d => { d.safariPass = true; });
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });

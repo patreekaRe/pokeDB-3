@@ -1618,3 +1618,13 @@ body[data-screen="start-screen"] .topbar { display: none; }
 @keyframes bootBlink { 50% { filter: brightness(1.8); box-shadow: 0 0 8px 2px currentColor; } }
 @keyframes bootLens { 30% { box-shadow: 0 0 0 2px var(--shell-rim), 0 0 16px 6px #7fd8ff; filter: brightness(1.4); } }
 @media (prefers-reduced-motion: reduce) { .booted .pdx-light, .booted .pdx-lens { animation: none; } }
+/* the Trainer Card's NAME: a tap turns it into a box (nameField() in js/trainercard.js) */
+.tc-name-btn { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: right; }
+.tc-name-btn > span:first-child { overflow-wrap: anywhere; }
+.tc-name-edit { flex: none; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; font-size: 0.6rem; color: #fff; background: var(--tc3); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
+.tc-name-btn:hover .tc-name-edit, .tc-name-btn:focus-visible .tc-name-edit { filter: brightness(1.2); }
+.tc-name-btn:focus-visible { outline: 2px solid var(--tc3); outline-offset: 2px; }
+.tc-name-form { display: flex; gap: 4px; justify-content: flex-end; }
+.tc-name-input { min-width: 0; width: 100%; max-width: 12em; padding: 4px 6px; border: 2px solid #1f3a14; border-radius: 4px; background: #c8e0a0; color: #1f3a14; font: inherit; text-transform: uppercase; }
+.tc-name-input:focus { outline: none; box-shadow: 0 0 0 2px var(--tc3); }
+.tc-name-ok { flex: none; padding: 4px 8px; border: 0; border-radius: 4px; font: inherit; font-size: 0.8em; color: #fff; background: var(--tc3); cursor: pointer; }

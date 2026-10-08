@@ -18,7 +18,8 @@ import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
 import { safariDexCount } from './safaridex.js';
-import { trainerName } from './leaderboard.js';
+import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
+import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog } from './ui.js';
@@ -377,6 +378,43 @@ function badgeButton(b, save, earned, fresh, i) {
   return btn;
 }
 
+/** NAME on the card: a tap turns it into a box (the user's ask, 2026-10-08), the same nickname as Settings' Trainer box and
+    the leaderboards. Enter, OK or a tap away keeps it; Escape leaves it as it was. */
+function nameField(redraw) {
+  const dd = el('dd', 'tc-name');
+  const show = el('button', 'tc-name-btn');
+  show.type = 'button';
+  show.title = 'Tap to change your name';
+  show.setAttribute('aria-label', `Name: ${trainerName()}. Change it`);
+  show.append(el('span', '', trainerName().toUpperCase()), el('span', 'tc-name-edit', '✎'));
+  show.addEventListener('click', () => {
+    playSound('confirm');
+    const form = el('form', 'tc-name-form');
+    const input = el('input', 'tc-name-input');
+    Object.assign(input, { maxLength: NAME_MAX, value: pickedName(), placeholder: 'Trainer', autocomplete: 'nickname', spellcheck: false, enterKeyHint: 'done' });
+    input.setAttribute('aria-label', 'Your name');
+    const ok = el('button', 'tc-name-ok', 'OK');
+    ok.type = 'submit';
+    form.append(input, ok);
+    let done = false;
+    const finish = (keep) => {
+      if (done) return;
+      done = true;
+      if (keep) { setTrainerName(input.value); playSound('confirm'); }
+      redraw();
+    };
+    form.addEventListener('submit', (e) => { e.preventDefault(); finish(true); });
+    input.addEventListener('blur', () => setTimeout(() => finish(true)));
+    // typing stays in the box: the device's keys (D-pad, B on Escape) wait
+    input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    dd.replaceChildren(form);
+    input.focus();
+    input.select();
+  });
+  dd.append(show);
+  return dd;
+}
+
 export function openTrainerCard(into = null, { reopen = false } = {}) {   // `into`: draw it there (the Collection device's screen), no window
   const save = getSave();
   const s = save.stats;
@@ -401,7 +439,8 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   ];
   const info = el('div', 'tc-info');
   const list = el('dl', 'tc-lines');
-  for (const [k, v] of lines) list.append(el('dt', '', k), el('dd', '', v));
+  const redraw = () => openTrainerCard(into, { reopen: true });
+  for (const [k, v] of lines) list.append(el('dt', '', k), k === 'NAME' ? nameField(redraw) : el('dd', '', v));
   const mate = partner(save);
   const pic = el('button', 'tc-partner');
   pic.type = 'button';
