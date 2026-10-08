@@ -532,7 +532,7 @@ function player(name) {
     let el;
     if (LOOP_POINTS[name]) el = new LoopedTrack(TRACKS[name], LOOP_POINTS[name], gain, onError);
     else {
-      el = new Audio(TRACKS[name]);
+      el = Object.assign(new Audio(), { crossOrigin: 'anonymous', src: TRACKS[name] });
       el.loop = true;
       el.addEventListener('error', onError);
       ctx.createMediaElementSource(el).connect(gain);

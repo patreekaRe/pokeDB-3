@@ -109,6 +109,7 @@ const figureReady = new Promise(resolve => {
     resolve();
   };
   img.onerror = () => resolve();
+  img.crossOrigin = 'anonymous';
   img.src = 'assets/pokemon/mewtwo-front.gif';
 });
 export const gateReady = () => figureReady;

@@ -211,6 +211,7 @@ export function createPost(renderer) {
       texel = [1 / bw, 1 / bh];
     },
     draw(scene, camera, focusY) {
+      if (!rt) return;
       final.uniforms.uFocus.value = focusY;
       renderer.setRenderTarget(rt);
       renderer.render(scene, camera);
