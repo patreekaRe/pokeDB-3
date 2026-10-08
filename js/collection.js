@@ -53,10 +53,11 @@ export function showCollection() {
 }
 
 /** The top bar's Pokédex: the device over whatever is showing, on its home screen. `at` is where a run stands: its
-    Pokédex apps open on that page ({ dex: biome, safari: area }). */
-export function openPokedex(at = {}) {
+    Pokédex apps open on that page ({ dex: biome, safari: area }). `from` is an element it grows out of (the hub's corner
+    handheld), `onClose` runs once it's shut. */
+export function openPokedex(at = {}, { from = null, onClose = null } = {}) {
   here = at;
-  openDevice({ render: renderHome, cover: coverArt, splash: splash(), over: true });
+  openDevice({ render: renderHome, cover: coverArt, splash: splash(), over: true, from, onClose });
 }
 
 /**

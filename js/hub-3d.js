@@ -1,7 +1,8 @@
 /* hub-3d.js  -  the Clearing as a walkable HD-2D hub (branch secret-base, session 3 part a): after PRESS START your
    partner stands in a small 3D Clearing and walks up to the places instead of tapping the title's signs. The trail out
    (Continue / New game), the Safari Zone's gate, the Sky Pillar, the Sealed Gate once broken, the Secret Base's door in
-   the Ancient Tree's roots and a Pokédex stand each open what their sign opens. Everything is painted here in code in
+   the Ancient Tree's roots each open what their sign opens; the Pokédex is a shut handheld in the bottom left corner that
+   grows into the device (the user's call, 2026-10-08: always to hand, not a place to walk to). Everything is painted here in code in
    the Clearing's palette (js/scene.js's clearing day colours): pixel-textured ground, billboard trees (instanced) and
    places; the partner's GIF and the post pass are js/hd2d.js's, shared with the Secret Base.
    It lives inside #title-screen, over its sky and under its logo and corner, and runs only while the title shows. The
@@ -11,7 +12,7 @@ import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
-import { partner } from './trainercard.js';
+import { partner, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
@@ -44,7 +45,7 @@ const P = {
   flowers: [['#ffffff', '#f8d848'], ['#f8e048', '#f89830'], ['#f8a0c8', '#f8f0f8'], ['#b0a0f8', '#f8f8f8']],
 };
 
-// glow: how hard the lantern, the Pokédex's screen and the Sky Pillar's door shine; lamp: the two lights they cast;
+// glow: how hard the lantern and the Sky Pillar's door shine; lamp: the two lights they cast;
 // bugs: pollen drifting by day, fireflies blinking from dusk; air: the ambience loop (js/audio.js)
 const LIGHT = {
   dawn: { sky: '#ffd8c0', ground: '#5a5048', amb: 1.3, sun: '#ffb890', sunI: 2.4, at: [-10, 8, 6], bg: '#e8b8a8', glow: 0.5, lamp: 0.5, bugs: 'pollen', bugsI: 0.6, air: 'clearing-day' },
@@ -53,15 +54,14 @@ const LIGHT = {
   night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
 const AIRS = ['clearing-day', 'clearing-night'];
-// the painted pixels that shine (an emissive map each): the lantern by the base's door, the Pokédex's screen, the
-// Sky Pillar's door and stair
-const GLOWS = { lantern: ['#f8e070', '#fff4c0', '#f8d848'], dex: ['#98d0a0', '#c8f0c8', '#58a8f8'], door: ['#2a3a6a', '#6a8ae0', '#141a30'] };
+// the painted pixels that shine (an emissive map each): the lantern by the base's door, the Sky Pillar's door and stair
+const GLOWS = { lantern: ['#f8e070', '#fff4c0', '#f8d848'], door: ['#2a3a6a', '#6a8ae0', '#141a30'] };
 const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[1, 7], [6, 7]], [[6, 8], [10, 8]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[1, 7], [6, 7]]];
 
-let THREE, renderer, scene, camera, post, root, view, screen, acts;
+let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, tags = [], card;
@@ -277,18 +277,6 @@ function ancientArt(open = false) {
   return a.c;
 }
 
-/** The Pokédex on a stone stand, open. */
-function standArt() {
-  const a = art(22, 32);
-  a.dot(7, 15, P.stone[1], 8, 14); a.dot(7, 15, P.stone[0], 2, 14); a.dot(13, 15, P.stone[2], 2, 14);
-  a.dot(3, 28, P.stone[2], 16, 4); a.dot(3, 28, P.stone[1], 16, 1);
-  a.dot(2, 12, P.stone[3], 18, 4); a.dot(2, 12, P.stone[0], 18, 1);
-  a.dot(3, 1, '#3a0a10', 16, 11); a.dot(4, 2, '#d02838', 14, 9); a.dot(4, 2, '#f05868', 14, 1);
-  a.dot(6, 4, '#203018', 10, 6); a.dot(7, 5, '#98d0a0', 8, 4); a.dot(7, 5, '#c8f0c8', 3, 1);
-  a.dot(5, 3, '#58a8f8', 2, 2);
-  return a.c;
-}
-
 function signArt() {
   const a = art(22, 26);
   a.dot(10, 9, P.wood[2], 3, 17); a.dot(10, 9, P.wood[1], 1, 17);
@@ -343,12 +331,6 @@ function makePlaces() {
       line: run ? `${run.name} waits in the ${run.place}${run.floor ? `, floor ${run.floor}` : ''}. HP ${run.hp}/${run.maxHp}.` : 'The trail out of the Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       build: (g) => g.add(board(signArt(), tileX(7), tileZ(ROWS - 2))),
-    },
-    {
-      id: 'dex', name: 'Pokédex', step: { x: 10, y: 8 }, tiles: [[10, 7]], tag: [10, 2.4, 7], open: true,
-      line: 'Your Pokédex: its apps, your Trainer Card and the Game Corner.',
-      buttons: [['Open', acts.onCollection]],
-      build: (g) => { const c = standArt(), b = board(c, tileX(10), tileZ(7)); glowing(b.material, c, GLOWS.dex, '#c8ffd0', 0.8); g.add(b); },
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
@@ -620,6 +602,21 @@ function showCard(p) {
 }
 function hideCard() { card.hidden = true; }
 
+/* ---------- the Pokédex in the corner ---------- */
+
+/** It grows from the corner into the device (js/device.js's `from`), which opens over the hub; shut, it's back here. */
+function openDex() {
+  if (dexBtn.classList.contains('out') || entering) return;
+  hideCard();
+  walker.path = []; aim = null;
+  playSound('confirm');
+  acts.onPokedex(dexBtn, () => { dexBtn.classList.remove('out'); dexNews(); });
+  dexBtn.classList.add('out');
+}
+
+/** Its LED blinks while the device has something new (a badge, a find), like the title's Pokédex sign's "!". */
+const dexNews = () => dexBtn.classList.toggle('news', deviceNews());
+
 /* ---------- taps and keys ---------- */
 
 function ndc(e) {
@@ -838,6 +835,8 @@ function placeTags() {
 function frame(now) {
   if (!running) return;
   if (screen.hidden || !root.isConnected) { running = false; quiet(); return; }
+  // under the device (its corner button opened it over the hub) the Clearing holds still rather than drawing unseen
+  if (dexBtn.classList.contains('out') && document.getElementById('collection-screen')?.hidden === false) { last = 0; requestAnimationFrame(frame); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
@@ -875,6 +874,7 @@ async function build() {
     <canvas class="hub-view"></canvas>
     <div class="hub-tags"></div>
     <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><div class="hub-card-btns"></div></div>
+    <button type="button" class="hub-dex" aria-label="Pokédex"><span class="hdx-top"><span class="hdx-lens"></span><span class="hdx-light"></span><span class="hdx-light"></span><span class="hdx-light"></span></span><span class="hdx-cover"><span class="hdx-led"></span></span></button>
     <button type="button" class="hub-help" aria-label="How to play"></button>
     <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
@@ -882,6 +882,8 @@ async function build() {
   card = root.querySelector('.hub-card');
   root.querySelector('.hub-help').append(smoothIcon('help'));
   root.querySelector('.hub-help').addEventListener('click', () => { playSound('confirm'); acts.onHelp(); });
+  dexBtn = root.querySelector('.hub-dex');
+  dexBtn.addEventListener('click', openDex);
   root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
   if (new URLSearchParams(location.search).has('fps')) { fpsEl = root.querySelector('.hub-fps'); fpsEl.hidden = false; }
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
@@ -943,6 +945,8 @@ export async function showHub(titleScreen, actions) {
   walker.path = []; aim = null; here = placeAt(walker.tile);
   if (inBase) leftBase();
   hideCard();
+  dexBtn.classList.remove('out');
+  dexNews();
   const tag = document.getElementById('title-version');
   root.querySelector('.hub-version').textContent = tag?.textContent ?? '';
   nextFly = performance.now() + 6000;

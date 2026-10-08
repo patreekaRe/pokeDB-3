@@ -156,7 +156,7 @@ function openHub() {
     savedRun: actions.savedRun,
     onContinue: (run) => actions.onContinue(run.saved),
     onNewGame: actions.onNewGame,
-    onCollection: actions.onCollection,
+    onPokedex: actions.onPokedex,
     onHelp: actions.onHelp,
     onSafari: actions.onSafari,
     onBoard: actions.onBoard,

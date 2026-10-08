@@ -76,3 +76,42 @@
 }
 .hub-version:empty { display: none; }
 .hub-version:active { translate: 0 2px; box-shadow: none; }
+
+/* the Pokédex, shut, always to hand in the bottom left corner (the user's call, 2026-10-08): a tap grows it into the
+   device over the Clearing (openDevice()'s `from` in js/device.js), which shrinks back into it when shut */
+.hub-dex {
+  position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom));
+  width: 58px; height: 76px; padding: 0; border: 0; border-radius: 10px; cursor: pointer;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep), 0 6px 14px rgba(0, 0, 0, 0.4);
+  animation: hubDexIn 0.35s ease-out; transition: scale 0.15s ease;
+}
+.hub-dex.out { visibility: hidden; }
+@keyframes hubDexIn { from { opacity: 0; scale: 0.8; } }
+@media (hover: hover) { .hub-dex:hover { scale: 1.06; } }
+.hub-dex:active { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+.hdx-top { position: absolute; left: 6px; top: 6px; display: flex; align-items: center; gap: 3px; }
+.hdx-lens {
+  width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff;
+  background: radial-gradient(circle at 35% 30%, #e6f8ff 0 12%, #5ec8ff 30%, #1f78c8 80%);
+  box-shadow: 0 0 0 1px var(--shell-rim);
+}
+.hdx-light { width: 5px; height: 5px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 0 1px var(--shell-rim); }
+.hdx-light:nth-child(3) { background: #ffd84a; }
+.hdx-light:nth-child(4) { background: #6be36b; }
+.hdx-cover {
+  position: absolute; left: 0; right: 0; top: 26px; bottom: 0; border-radius: 0 0 10px 10px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), transparent 40%), linear-gradient(180deg, var(--shell-hi), var(--shell) 45%, var(--shell-fold));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), inset -4px 0 0 rgba(0, 0, 0, 0.12);
+}
+/* the yellow chevron, as on the title's Pokédex */
+.hdx-cover::before {
+  content: ''; position: absolute; left: 50%; top: 22%; width: 56%; height: 20%; translate: -50% 0;
+  background: linear-gradient(180deg, #ffe36b, #e8b818); clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%); opacity: 0.9;
+}
+.hdx-led { position: absolute; right: 7px; bottom: 7px; width: 7px; height: 7px; border-radius: 50%; background: #6a1e22; box-shadow: inset 0 0 0 1px var(--shell-deep); }
+/* something new in it (a badge, a find): the LED blinks, like the title's "!" */
+.hub-dex.news .hdx-led { background: #ff5a5a; animation: tdxStandby 1.2s ease-in-out infinite; }
+/* on a phone the place's card sits above it rather than over it */
+@media (max-width: 559px) { .hub-card { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 84px); } }
+@media (prefers-reduced-motion: reduce) { .hub-dex, .hub-dex.news .hdx-led { animation: none; } }

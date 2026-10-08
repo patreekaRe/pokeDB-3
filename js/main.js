@@ -270,6 +270,7 @@ function init() {
     onContinue: continueGame,
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
+    onPokedex: (from, onClose) => openPokedex({}, { from, onClose }),   // the hub's corner handheld grows into it, over the Clearing
     onHelp: openHowto,
     hello: splash,
     // How to play comes up once, the very first time (not under a playtest film's URL)

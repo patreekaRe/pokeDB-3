@@ -121,7 +121,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      START, the signs as Settings' Title screen: Signs.
   4. ~~The hub, part b~~ done 2026-10-08 (`docs/roadmap-done.md`): light and glows by the hour, fireflies / pollen, the
      legendaries flying over, the walk into the base and back, footsteps and the Clearing's air, the Escape Rope, the
-     version tag. **Next: the user playtests the branch and decides if it goes live.**
+     version tag. Since then (the user's call, 2026-10-08) the Pokédex is no stand in the Clearing but a shut
+     handheld in the bottom left corner that grows into the device over the hub and shrinks back into it (`openDevice()`'s
+     `from`). **Next: the user playtests the branch and decides if it goes live.**
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s

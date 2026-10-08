@@ -25,6 +25,7 @@ let direct = false;    // opened straight into an app: B out of it shuts the dev
 let app = null;        // the open app: { def, panel }
 let busy = false;      // the cover or a slide is moving: taps and keys wait for it
 let sel = null;        // the home screen's highlighted pick
+let grewFrom = null;   // the element it grew out of (openDevice()'s `from`), to shrink back into
 
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settle = (anim) => anim.finished.catch(() => {});
@@ -64,10 +65,12 @@ export function initDevice({ onBack }) {
  * Shows the device closed, then opens it onto the home screen; `splash` is the boot screen's line. `start` (an app's
  * def, as openApp() takes) opens it straight into that app instead; `over` lays it over the current screen rather than
  * switching screens (a run's menu), and `onClose` then runs once it has shut. B out of a `start` app shuts the device,
- * unless `home`: then it steps out to the home screen. `powered` skips the cover: the device is already on.
+ * unless `home`: then it steps out to the home screen. `powered` skips the cover: the device is already on. `from` (an
+ * element: the hub's corner handheld) is where it grows out of, shut, and back into once shut.
  */
-export async function openDevice({ render, cover, splash, start = null, home: toHome = false, over = false, onClose = null, powered = false }) {
+export async function openDevice({ render, cover, splash, start = null, home: toHome = false, over = false, onClose = null, powered = false, from = null }) {
   if (busy) return;
+  grewFrom = from;
   drawHome = render;
   drawCover = cover;
   direct = !!start && !toHome;
@@ -90,7 +93,8 @@ export async function openDevice({ render, cover, splash, start = null, home: to
   if (calm()) { playSound('dex-on'); return; }
   busy = true;
   const lid = makeCover();
-  await settle(dev.animate(LIFT, { duration: 320, easing: EASE }));
+  if (from) await grow(dev, from);
+  else await settle(dev.animate(LIFT, { duration: 320, easing: EASE }));
   // a beat closed so its face can be seen, longer while the LED blinks for a new badge; a tap on it opens it at once
   await held(lid, lid.querySelector('.cdev-led.on') ? 1300 : 420);
   playSound('dex-on');
@@ -101,6 +105,18 @@ export async function openDevice({ render, cover, splash, start = null, home: to
   lid.remove();
   bootScreen(hello);
   busy = false;
+}
+
+/** Out of `from` and up to its full size, the dim behind it coming up too; `back` shrinks it into `from` again. */
+function grow(dev, from, back = false) {
+  const a = from.getBoundingClientRect(), b = dev.getBoundingClientRect();
+  const sx = a.width / b.width, sy = a.height / b.height;
+  const small = { transformOrigin: '0 0', transform: `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${sx}, ${sy})`, borderRadius: `${10 / sx}px / ${10 / sy}px` };
+  const big = { transformOrigin: '0 0', transform: 'none' };
+  const dim = [{ backgroundColor: 'rgba(8, 10, 28, 0)' }, {}];
+  const opts = { duration: back ? 300 : 440, easing: back ? 'cubic-bezier(0.5, 0, 0.75, 0.2)' : 'cubic-bezier(0.25, 0.9, 0.3, 1)', fill: back ? 'forwards' : 'none' };
+  $('collection-screen').animate(back ? [...dim].reverse() : dim, opts);
+  return settle(dev.animate(back ? [big, small] : [small, big], opts));
 }
 
 const held = (lid, ms) => new Promise(done => {
@@ -237,8 +253,10 @@ async function shut() {
     const cover = makeCover();
     await settle(cover.animate(SWING.map(k => ({ ...k, ...(k.offset && { offset: 1 - k.offset }) })).reverse(),
       { duration: 340, easing: 'cubic-bezier(0.4, 0, 0.6, 1)', fill: 'forwards' }));
-    await settle(dev.animate([...LIFT].reverse(), { duration: 220, easing: EASE, fill: 'forwards' }));
+    if (grewFrom?.isConnected) await grow(dev, grewFrom, true);
+    else await settle(dev.animate([...LIFT].reverse(), { duration: 220, easing: EASE, fill: 'forwards' }));
   }
+  $('collection-screen').getAnimations().forEach(a => a.cancel());
   closeApp(true);
   busy = false;
   $('collection-screen').hidden = true;   // the title comes back over it as an overlay: hidden, it stops taking keys
@@ -260,7 +278,8 @@ export function hideDevice() {
 }
 
 /** Laid over a screen (the top bar's Pokédex, the Bag), not the title's Collection. */
-export const deviceOver = () => $('collection-screen').classList.contains('over');
+// over a screen, not the title (the hub's corner handheld): only then are Main menu and Abandon run in its dock
+export const deviceOver = () => $('collection-screen').classList.contains('over') && $('title-screen').hidden;
 
 /** A: opens the highlighted pick on the home screen. */
 function press() {
