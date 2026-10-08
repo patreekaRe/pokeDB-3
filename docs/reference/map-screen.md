@@ -5,7 +5,7 @@ they go): outside a Sky Pillar climb `#map-screen` is fixed full screen as the d
 the Pokédex"). From the top: the top bar on the shell; `.mdex-window`, a window onto the scenery holding the run card
 (the shell round it is the window's own `0 0 0 100vmax var(--shell)` shadow, clipped by the screen, so the hinge, glass
 and dock are `position: relative` to paint over it); `.mdex-hinge` with the lens, three lights and `.map-head` as a green
-LCD (the biome and place signs lose their wood, and type in on arrival, `lcdType`); `.mdex-glass`, the grey bezel and
+LCD (the biome and place signs lose their wood, and type in on arrival, `lcdType`), shown first since 2026-10-08 (flex `order`, `z-index: 1` to paint over the window's shadow; its height `--hinge-h` also pushes the phone top bar down onto the LCD); `.mdex-glass`, the grey bezel and
 screen the map scrolls in (`showMap()` centres your sprite); `.mdex-dock`, five buttons that are the Bag's pockets (Deck,
 Relics, Items, Map key, Trainer, with the counts mirrored from the pocket tabs). A button opens the Bag on its pocket just
 above the bar (lit green while open), half the screen tall at most with its pocket scrolling (the user found it covering the map, 2026-10-07); again closes it. There the top bar's Bag button and the Bag's own tabs are hidden,
@@ -18,6 +18,10 @@ bezel round one green Pokédex LCD (`.run-card` on `--lcd` / `--lcd-ink`, a fain
 (dark HP tag, ink-outlined bars, the Level chip inverted, a shadow pad under your Pokémon; the Ability pill keeps its type
 colour). On phones (720px and under) the LCD grows up behind the top bar, which shifts down onto it: the floor and coins
 turn ink, and a dotted rule splits them from the run card. Wider, the top bar stays on the scenery above the device.
+Since 2026-10-08 (the user found it untidy) the run card is a battle status box, a grid: your Pokémon on the left painted in
+the LCD's four greens (`filter: url(#lcd-ink)`, an SVG duotone in `index.html`, Game Boy / Game & Watch style; the recall
+ball and Blaze flicker go through it too), then name | Level chip, the HP bar, Ability | HP numbers (`.run-foot` is
+`display: contents`). The run's ₽ show only in the top bar (`.run-money` is the Sky Pillar's alone).
 
 **The Bag** (same day) is a piece of the device on every screen: the shell round it, the pocket's name on the LCD, the
 pockets as shell buttons with smooth icons, each pocket on the Pokédex's green LCD in a grey bezel, its rows lighter LCD tiles, its buttons LCD keys (UI fixes D,

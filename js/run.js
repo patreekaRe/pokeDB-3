@@ -38,7 +38,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
@@ -55,12 +55,13 @@ import { crossroads } from './crossroads.js';
 import { renderTower, hideTower, guardianIntro, towerFall, barReady } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
-import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, isResearched } from './pokedex.js';
+import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
+import { buildingSvg } from './buildings.js';
 
 let run = null;
 let peeking = false;   // a ?event= playtest run (peekEvent()): nothing about it is saved, so the real saved run is safe
@@ -80,6 +81,12 @@ const isSafari = () => Boolean(run?.safari);
     rerolls, pick }`, the week's seed driving every roll like the Safari's, `flight` the guardians beaten, `floor` the
     highest floor cleared, `augments` the ones taken (js/data/augments.js), `pick` the floor whose augment is still owed. */
 const isTower = () => Boolean(run?.tower);
+/** The climb's LCD: the flight's floors, or once the guardian is the next door (or the room you're in), that guardian. */
+export function towerPlace(here, tower = run.tower) {
+  const top = (tower.flight + 1) * FLIGHT;
+  if (here?.type === 'boss' || here?.next.includes('boss')) return tower.flight >= TOP_FLIGHT ? 'Summit' : `Guardian ${top}`;
+  return `Floors ${tower.flight * FLIGHT + 1}-${top}`;
+}
 /** The climb's augments, summed (augEffects()); {} outside the Sky Pillar. */
 const augs = () => (run?.tower ? augEffects(run.tower.augments, run.tower.spent) : {});
 /** The seeded streams' biome part: the Sky Pillar's flight (past floor 30 they all share the Wastes' biome). */
@@ -151,6 +158,7 @@ export function initRun({ onMenu, onNewRun }) {
 /** Back to the menu keeping the save: Continue picks the run up from its last map checkpoint. */
 export function suspendRun() {
   abandonBattle();
+  bootLater = null;
   run = null;
 }
 
@@ -184,6 +192,7 @@ export function forfeitRun() {
 export function abandonRun() {
   abandonBattle();
   if (run && !peeking) clearRunData();
+  bootLater = null;
   run = null;
 }
 
@@ -222,6 +231,7 @@ function checkpoint() {
   const { floors, byId } = run.map;
   for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
   for (const id of run.items) markSeen('items', id);   // an item is found once it's in the Bag, used or not (the user's call)
+  showBadgeNews();   // a new find puts a "!" on the Home key
   saveRunData({
     version: RUN_SAVE_VERSION,
     starter: run.starter.id,
@@ -248,6 +258,7 @@ function checkpoint() {
     rerollsUsed: run.rerollsUsed,
     tutorLeft: run.tutorLeft,
     charm: run.charm,
+    gift: run.gift,
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
@@ -304,6 +315,7 @@ function restoreRun(saved) {
     tower: saved.tower && { ...freshAugments(null), ...saved.tower },   // a climb saved before augments has none, and owes none
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
+    gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
     tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
@@ -362,6 +374,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     rerollsUsed: 0,        // how many, in that biome (Lv 2 gives two)
     tutorLeft: perks ? perkLevel('tutorNotes') : 0,   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
     charm: null,           // the Starting Relic Charm's relic, until it's been presented and taken
+    gift: null,            // Chansey's Gift's item, the same way (chanseyGift())
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     tally: freshTally(),   // the run's record, kept for the Hall of Fame if it's won
@@ -382,7 +395,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
   const savings = DEX_START_MONEY[dexPerk('moms-savings')];
   if (savings) { run.money += savings; tell(`Mom's Savings: you set out with ₽${savings}!`); }
   const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerk('chansey-gift')]];
-  if (gift) { run.items.push(gift.id); tell(`Chansey's Gift: a ${gift.name} is in your Bag!`); }
+  if (gift) run.gift = gift.id;   // handed over on the map by chanseyGift()
 
   if (peek) return peekRoom(peek);
   if (!tower) updateSave(d => { d.stats.runsStarted += 1; });   // a climb always ends in a faint: not a run for the win rate
@@ -549,7 +562,18 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
   });
   // a new run's way in: the Pokédex boots onto the map once the first biome's film is over
-  if (run.biome === 0) bootDevice($('map-screen'), { screen: $('map-screen').querySelector('.mdex-window'), after: film });
+  if (run.biome === 0) bootMap(film);
+}
+
+/** The Pokédex's boot onto the map (a new run, Continue), after `film`. If a perk's screen (the Relic Charm, Chansey's
+    Gift, Move Tutor Notes) stands in front of the map, it waits for showMap() to come back to the map itself: booting
+    behind that screen played the blip and the cover early. */
+let bootLater = null;
+export function bootMap(film) {
+  bootLater = null;
+  if (document.body.dataset.screen !== 'map-screen') { bootLater = film || Promise.resolve(); return; }
+  const map = $('map-screen');
+  if (!map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window'), after: film });
 }
 
 /** A Sky Pillar flight: its landings' doors on the map (the placeholder until the tower gets its own screen, roadmap
@@ -664,6 +688,7 @@ function showAbility() {
 function showMap() {
   const biome = land();
   scoping = false;
+  showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
 
@@ -687,7 +712,7 @@ function showMap() {
   if (isTower() && here?.visited) climbed(floorOf(run.tower.flight, here.floor));
   $('floor-num').textContent = `F${isTower() ? floorOf(run.tower.flight, floor - 1) : floor}`;
   const { stage } = stageOf(run.map, here);
-  const place = isTower() ? `Floors ${run.tower.flight * FLIGHT + 1}-${(run.tower.flight + 1) * FLIGHT}` : biome.stages[stage];
+  const place = isTower() ? towerPlace(here) : biome.stages[stage];
   $('floor-tag').title = `Floor ${floor} of ${run.map.floors.length} in ${biome.name} (${place}), then the boss`;
   // the place you stand in swings in under the sign whenever you reach a new one (showScene() paints it)
   const board = $('stage-name');
@@ -704,6 +729,8 @@ function showMap() {
   }
   $('run-deck-count').textContent = $('dock-deck-count').textContent = String(run.deck.length);
   $('run-relic-count').textContent = $('dock-relic-count').textContent = String(run.relics.length);
+  $('run-aug-count').textContent = $('dock-aug-count').textContent = String(run.tower?.augments?.length ?? 0);
+  document.querySelector('.bag-pocket[data-pocket="augments"]').hidden = !run.tower;
   $('bag-deck-text').textContent = `${run.deck.length} cards. Every card you win joins it for the rest of the run.`;
   // a Safari run says whether it's the day's counted try or a replay, where a normal run shows its Trainer Level
   const trial = run.safari || run.tower;   // a Safari day or a Sky Pillar week: counted or not, where a run shows its Level
@@ -722,6 +749,7 @@ function showMap() {
   showAbility();
 
   renderRelicList();
+  renderAugmentList();
   renderItemList();
   closeBag(true);
   checkpoint();
@@ -732,7 +760,9 @@ function showMap() {
   else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
+  if (run.gift) return chanseyGift();
   if (run.tutorLeft > 0) return tutorNotes();
+  if (bootLater) bootMap(bootLater);
   if (run.tower && run.tower.pick != null) {   // over the climb once its menu bar has slid in
     const at = run;
     return barReady().then(() => { if (run === at && run.tower.pick != null && document.body.dataset.screen === 'map-screen') augmentPick(); });
@@ -771,6 +801,18 @@ function relicCharm() {
   });
 }
 
+/** Chansey's Gift (the Shrine page's Pokédex perk): its Potion or Super Potion is handed over like a found item, already
+    out of its ball, saying where it comes from. Saved as `gift` until taken, so a refresh shows it again. */
+function chanseyGift() {
+  const item = ITEMS_BY_ID[run.gift], lv2 = dexPerk('chansey-gift') > 1;
+  offerItem(item, () => { run.gift = null; showMap(); }, {
+    opened: true, skip: false, title: "Chansey's Gift",
+    say: [`Chansey sends you off with a gift: ${/^[AEIOU]/.test(item.name) ? 'an' : 'a'} ${item.name}!`,
+      `That's Chansey's Gift, your reward for researching the ${BIOMES_BY_ID.shrine.name}'s Pokédex page${lv2 ? ' (Lv 2)' : ''}. Every run starts with one.`,
+      item.text, 'Tap it to put it in your Bag.'],
+  });
+}
+
 /** Move Tutor Notes (a Game Corner perk, Neow's "upgrade a card"): before the first room, PP Up starting moves.
     It's asked on the map, after the checkpoint, and `tutorLeft` is saved, so a refresh asks again. */
 function tutorNotes() {
@@ -798,7 +840,7 @@ function augmentPick() {
     title: floor ? `Floor ${floor}: an augment` : 'The Sky Pillar: an augment',
     sub: [floor ? `The guardian's power lingers. Pick an augment for the rest of the climb (${t.augments.length} so far).` : 'Before you climb, pick an augment. It lasts the whole climb.',
       left > 0 ? `You can reroll all three ${left === 1 ? 'once' : `${left} times`} this climb.` : null, 'Tap one to read it, then take it.'].filter(Boolean),
-    options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
+    options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take', gold: true, confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
     layout: `aug-pick aug-floor-${offer.some(a => a.tier === 'prismatic') ? 'prismatic' : offer.some(a => a.tier === 'gold') ? 'gold' : 'silver'}`,
     over: true,
     reroll: left > 0 ? () => {
@@ -838,7 +880,7 @@ function takeAugment(aug, then = showMap) {
     if (!deal) return next();
     showChoice({
       title: 'Darkrai\'s Deal', sub: [`Darkrai hands you ${deal.name}.`, 'Tap it to read it, then take it.'],
-      options: [{ node: augTile(deal), zoom: augTile(deal), ask: `Take ${deal.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(deal, next) }],
+      options: [{ node: augTile(deal), zoom: augTile(deal), ask: `Take ${deal.name}?`, confirm: 'Take', gold: true, confirmSound: 'item-get', onPick: () => takeAugment(deal, next) }],
       layout: 'aug-pick aug-floor-prismatic',
       over: true,
     });
@@ -939,7 +981,7 @@ function augmentsAfterFight(result) {
 
 /* The Bag: one drop-down with a pocket each for your deck, relics and the map key, like the Gold/Silver Bag.
    The tabs pick a pocket, and the arrows flip through them in order. */
-const POCKETS = ['deck', 'relics', 'items', 'key', 'trainer'];
+const POCKETS = ['deck', 'relics', 'augments', 'items', 'key', 'trainer'];
 let pocket = 'relics';
 
 function initBag() {
@@ -948,9 +990,17 @@ function initBag() {
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
-  const flip = (step) => showPocket(POCKETS[(POCKETS.indexOf(pocket) + step + POCKETS.length) % POCKETS.length]);
-  for (const [p, icon] of [['deck', 'moves'], ['relics', 'relics'], ['items', 'items'], ['key', 'map']]) {
+  const flip = (step) => {   // skips a hidden pocket (Augments off a climb)
+    const open = POCKETS.filter(p => !document.querySelector(`.bag-pocket[data-pocket="${p}"]`).hidden);
+    showPocket(open[(open.indexOf(pocket) + step + open.length) % open.length]);
+  };
+  for (const [p, icon] of [['deck', 'moves'], ['relics', 'relics'], ['augments', 'augments'], ['items', 'items'], ['key', 'map']]) {
     document.querySelector(`.bag-pocket[data-pocket="${p}"] > span`).replaceChildren(smoothIcon(icon));
+  }
+  // the map key's Mart and Center rows show the map's own little buildings
+  for (const node of document.querySelectorAll('.howto-node.town.shop, .howto-node.town.rest')) {
+    node.innerHTML = buildingSvg(node.classList.contains('shop') ? 'shop' : 'rest');
+    node.classList.add('building');
   }
   $('bag-trainer-icon').append(cardIcon());
   $('bag-trainer-art').append(cardIcon());
@@ -999,6 +1049,7 @@ function closeBag(quiet = false) {
 }
 
 function showPocket(name) {
+  if (name === 'augments' && !run?.tower) name = 'relics';
   pocket = name;
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     const on = tab.dataset.pocket === name;
@@ -1035,7 +1086,14 @@ function renderRelicList() {
   };
   const ability = ABILITIES[run.starter.type];   // the starter's own, always first (StS's starter relic)
   const rows = run.relics.map(id => row(RELICS_BY_ID[id]));
-  // a climb's augments: their own row, between the Ability and the relics
+  $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
+    ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
+}
+
+/** A climb's augments, their own pocket (the dock's 5th button on a climb, the user's ask, 2026-10-08), with the sets
+    they're gathering. */
+function renderAugmentList() {
+  if (!run?.tower) return;
   const augRows = (run.tower?.augments || []).map(id => AUGMENTS_BY_ID[id]).filter(Boolean).map(aug => {
     const li = el('div', 'howto-li aug-row');
     const text = el('span', 'howto-li-text');
@@ -1054,9 +1112,8 @@ function renderRelicList() {
     li.append(el('span', 'howto-node aug-set-node', set.icon), text);
     return li;
   });
-  $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
-    ...(augRows.length ? [el('p', 'aug-head', 'Augments'), ...augRows, ...setRows] : []),
-    ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
+  $('augments-list').replaceChildren(...augRows, ...setRows);
+  if (!augRows.length) $('augments-list').append(el('p', 'drop-empty', 'No augments yet. You pick one before floor 1 and after every guardian.'));
 }
 
 /* The Items pocket: in battle, Use picks the item like a slot does (with the same confirm step); on the map only heals can be used.
@@ -1232,9 +1289,6 @@ async function fight(node) {
   if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
-  encounter.dexMark = ken ? null
-    : isSafari() ? (getSave().safariDex.caught.includes(node.enemyId) ? 'caught' : null)
-    : isResearched(node.enemyId) ? 'researched' : null;
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
@@ -1456,7 +1510,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
   const more = a.rewardTake ? (picked) => {
     const rest = cards.filter(c => c !== picked);
     if (!rest.length) return next();
-    showChoice({ title: 'Heavy Pack', sub: ['Heavy Pack: take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next });
+    showChoice({ title: 'Heavy Pack', sub: ['Take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next, layout: 'learn-room' });
   } : null;
 
   // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
@@ -1473,6 +1527,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
     options: cards.map(card => learnOption(card, more ? () => more(card) : next)),
     onSkip: next,
     coins: run.pendingCoins,
+    layout: 'learn-room',
     reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); }
       : pickyReroll ? () => { spend(a.pickyEater); setMoney(run.money); playSound('coins'); offerCard(source, next, true, true); } : null,
   });
@@ -1512,6 +1567,7 @@ function offerSignature(enemyId, next) {
     onSkip: next,
     skipLabel: known ? 'Continue' : 'Skip',
     coins: run.pendingCoins,
+    layout: 'learn-room',
   });
 }
 
@@ -1526,6 +1582,7 @@ function offerEvolutionCard(next) {
     options: cards.map(card => learnOption(card, next)),
     onSkip: next,
     coins: run.pendingCoins,
+    layout: 'learn-room',
   });
 }
 
@@ -1572,7 +1629,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     coins: run.pendingCoins,
   });
   const stage = el('div', `float-stage open relic-stage${boss ? ' boss' : ''}`), spot = el('div', 'ball-spot'), row = el('div', 'float-row');
-  const go = goButton('Take it');
+  const go = goButton('Take it', () => take());
   let picked = null, taking = false;
   const buttons = relics.map((relic, i) => {
     const btn = newBadge(floatingThing(relic, i, size), 'relics', relic);
@@ -1581,7 +1638,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
   });
   row.append(...buttons);
   spot.append(el('span', 'chest-rays'), row);
-  stage.append(el('div', 'treasure-flash'), spot, go);
+  stage.append(el('div', 'treasure-flash'), spot);
   $('reward-options').append(stage);
   playSound('ball-open');
 
@@ -1590,16 +1647,15 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     picked = relic;
     stage.classList.add('choosing');
     buttons.forEach(b => b.classList.toggle('chosen', b === btn));
-    go.hidden = false;
+    go.disabled = false;
     sayLines(relicLines(relic));
   }
-  go.addEventListener('click', take);
   async function take() {
     if (!picked || taking) return;
     taking = true;
     playSound('item-get');
-    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box would jump into its place
-    go.hidden = true;
+    $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
+    pressConfirm(go);
     stage.classList.add('taking');
     await flyToBag(buttons[relics.indexOf(picked)]);
     if (run === thisRun) gainRelic(picked, next);
@@ -1611,6 +1667,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
 function gainRelic(relic, next) {
   run.relics.push(relic.id);
   markSeen('relics', relic.id);
+  showBadgeNews();
   tell(`Found ${relic.name}!`);
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
   next();
@@ -1620,27 +1677,29 @@ function gainRelic(relic, next) {
     wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic: tap
     it (then Put in Bag) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark
     it for tossing (it greys out with a ✕), then Swap. */
-function offerItem(item, next, { opened = false } = {}) {
+function offerItem(item, next, { opened = false, title = 'Item found', say = null, skip = true } = {}) {
   const thisRun = run, full = run.items.length >= itemSlots(), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${itemSlots()} items). Tap one of yours to swap it out, or leave it.`
-    : `Tap it to put it in your Bag (up to ${itemSlots()} items, used up in battle).`];
+    : `Put it in your Bag? It holds ${itemSlots()} items, used up in battle.`];
+  if (say && !full) found.splice(0, found.length, ...say);
   showChoice({
-    title: 'Item found',
+    title,
     sub: opened ? found : ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
     options: [],
     skipLabel: full ? 'Leave it' : 'Skip',
-    onSkip: next,
+    onSkip: skip ? next : null,
     coins: run.pendingCoins,
     layout: 'item-found',
   });
   const stage = el('div', `float-stage ${opened ? 'open' : 'sealed'}`), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
-  const go = goButton(full ? 'Swap' : 'Put in Bag');
+  const go = goButton(full ? 'Swap' : 'Put in Bag', () => take());
+  go.disabled = full || !opened;   // with room in the Bag, A is up as soon as the item is out: the text box has said what it does
   // picking one of yours to toss shows what each does, side by side, so you know what you're trading (the user's call)
   const tips = el('div', 'swap-tips');
   tips.hidden = true;
   // the item rises where the ball was, so a quick second tap on the ball, or a double tap, used to bag it unseen:
-  // taps wait until it has risen, and the tap that picks it can't also take it
-  let toss = null, taking = false, ready = opened, pickedAt = 0;
+  // taps wait until it has risen (and a beat more)
+  let toss = null, taking = false, ready = opened, readyAt = 0;
 
   const art = itemBallArt(['poke', 'great', 'ultra', 'master'][run.biome] || 'poke'), ball = el('button', 'item-ball');
   ball.type = 'button';
@@ -1666,6 +1725,8 @@ function offerItem(item, next, { opened = false } = {}) {
     await sleep(reduced ? 0 : 900);
     if (run !== thisRun || !ball.isConnected) return;
     ready = true;
+    readyAt = performance.now();
+    if (!full) go.disabled = false;
     sayLines(found);
   });
 
@@ -1677,7 +1738,7 @@ function offerItem(item, next, { opened = false } = {}) {
         toss = index;
         stage.classList.add('choosing');
         row.querySelectorAll('.float-thing').forEach(b => b.classList.toggle('tossing', b === btn));
-        go.hidden = false;
+        go.disabled = false;
         tips.replaceChildren(swapTip('out', `Toss: ${mine.name}`, mine.text), swapTip('in', `Take: ${item.name}`, item.text));
         tips.hidden = false;
         sayLines([`Toss your ${mine.name} for the ${item.name}?`]);
@@ -1687,29 +1748,18 @@ function offerItem(item, next, { opened = false } = {}) {
     stage.append(el('p', 'float-caption', 'Your Bag'), row, tips);
   }
   thing.addEventListener('click', () => {
-    if (!ready || performance.now() - pickedAt < 400) return;
+    if (!ready || performance.now() - readyAt < 400) return;
     if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
-    if (!full && go.hidden) {
-      pickedAt = performance.now();
-      thing.classList.add('chosen');
-      tips.replaceChildren(swapTip('in', item.name, item.text));
-      tips.hidden = false;
-      go.hidden = false;
-      return sayLines([`Put the ${item.name} in your Bag?`]);
-    }
     take();
   });
-  go.addEventListener('click', take);
-  if (!full) stage.append(tips);
-  stage.append(go);
   $('reward-options').append(stage);
 
   async function take() {
     if (taking) return;
     taking = true;
     playSound('item-get');
-    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
-    go.hidden = true;
+    $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
+    pressConfirm(go);
     tips.hidden = true;
     if (toss !== null) row.children[toss].classList.add('gone');
     await flyToBag(thing);
@@ -1738,11 +1788,10 @@ function swapTip(kind, name, text) {
   return tip;
 }
 
-function goButton(label) {
-  const btn = el('button', 'ds-btn ds-go ds-sm float-go');
-  btn.type = 'button';
-  btn.hidden = true;
-  btn.append(el('span', 'pp-pill', label));
+/** The screen's confirm: the room bar's A key beside the hinge's lights, greyed until there's something to take. */
+function goButton(label, onPress) {
+  const btn = roomConfirm(label, onPress);
+  btn.disabled = true;
   return btn;
 }
 
@@ -1767,22 +1816,21 @@ function revealGift(thing, lines, done) {
   const thisRun = run, box = $('reward-options');
   box.querySelectorAll('.reward-option').forEach(btn => { btn.hidden = true; });
   $('reward-skip').style.visibility = 'hidden';
-  const stage = el('div', 'float-stage float-gift'), gift = floatingThing(thing, 0, 104), go = goButton('Take it');
-  go.hidden = false;
-  stage.append(gift, go);
+  const stage = el('div', 'float-stage float-gift'), gift = floatingThing(thing, 0, 104), go = goButton('Take it', () => take());
+  go.disabled = false;
+  stage.append(gift);
   box.append(stage);
   sayLines(lines);
   let taking = false;
   const take = async () => {
     if (taking) return;
     taking = true;
-    go.hidden = true;
+    pressConfirm(go);
     playSound('item-get');
     await flyToBag(gift);
     if (run === thisRun) done();
   };
   gift.addEventListener('click', take);
-  go.addEventListener('click', take);
 }
 
 /** The treasure grotto: a Poké Ball chest on a dais in a shaft of light. Tapped, it wobbles like a ball about to open,
@@ -1812,11 +1860,8 @@ function treasureRoom() {
   chest.type = 'button';
   chest.setAttribute('aria-label', 'Open the chest');
   chest.append(el('span', 'chest-rays'), part('open'), part('body'), part('lid'), el('span', 'chest-glow'), centerLabel('Open', 'Open the chest'));
-  const take = el('button', 'ds-btn ds-go ds-sm treasure-take');
-  take.type = 'button';
-  take.hidden = true;
-  take.append(el('span', 'pp-pill', 'Take it'));
-  stage.append(chest, take);
+  const take = goButton('Take it', () => takeIt());
+  stage.append(chest);
   $('reward-options').append(stage);
   placeTreasure();
 
@@ -1853,17 +1898,16 @@ function treasureRoom() {
     picked = relic;
     stage.classList.add('choosing');
     stage.querySelectorAll('.treasure-relic').forEach(b => b.classList.toggle('chosen', b === btn));
-    take.hidden = false;
+    take.disabled = false;
     sayLines(relicLines(relic));
   }
 
-  take.addEventListener('click', takeIt);
   async function takeIt() {
     if (!picked || taking) return;
     taking = true;
     playSound('item-get');
-    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
-    take.hidden = true;
+    $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
+    pressConfirm(take);
     const btn = stage.querySelector('.treasure-relic.chosen'), from = btn.getBoundingClientRect(), to = bagSpot();
     btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
     btn.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
@@ -1886,7 +1930,6 @@ function placeTreasure() {
   stage.style.setProperty('--px', `${px}px`);
   stage.style.setProperty('--size', `${size}px`);
   Object.assign(stage.querySelector('.treasure-chest').style, { left: `${left}px`, top: `${foot}px` });
-  stage.querySelector('.treasure-take').style.top = `${Math.max(rowY + size / 2 + 24, chestTop - 66)}px`;
   const relics = [...stage.querySelectorAll('.treasure-relic')], gap = Math.min(size * 1.5, (innerWidth - 24) / Math.max(1, relics.length));
   relics.forEach((btn, i) => {
     const off = i - (relics.length - 1) / 2, x = cx + off * gap, y = rowY + Math.abs(off) * 14;
@@ -2593,7 +2636,9 @@ function dayCare(trades, back, done = showMap) {
 /** A card an event handed you, shown big in a burst of light before you go on (the user found "You got X!" in the
     text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text box's last line goes on. */
 function revealCard(title, card, lines, done) {
-  showChoice({ title, sub: lines, options: [], skipLabel: 'OK', onSkip: done, layout: 'card-reveal-room' });
+  showChoice({ title, sub: lines, options: [], layout: 'card-reveal-room' });
+  let gone = false;
+  roomConfirm('OK', () => { if (!gone) { gone = true; done(); } });
   const stage = el('div', 'card-reveal');
   const big = zoomable(makeCard(card, { stage: run.stage }), card, run.stage);
   stage.append(el('span', 'chest-rays'), el('div', 'treasure-flash'), big);
@@ -2609,14 +2654,20 @@ function tutorCards(back, pay, done = showMap) {
   showChoice({
     title: 'Chad Master Kenmatta',
     sub: 'Kenmatta: Which move should your Pokémon learn?',
-    options: cards.map(card => cardOption(card, run.stage, () => {
-      pay();
-      run.deck.push(card.id);
-      tell(`${card.name} added to your deck.`);
-      done();
+    options: cards.map(card => ({
+      ...cardOption(card, run.stage, () => {
+        pay();
+        run.deck.push(card.id);
+        tell(`${card.name} added to your deck.`);
+        done();
+      }),
+      ask: `Learn ${card.name}?`,
+      confirm: 'Learn it',
+      note: deckNote(card, run.deck),
     })),
     skipLabel: 'Back',
     onSkip: back,
+    layout: 'learn-room',
   });
 }
 
@@ -2703,6 +2754,7 @@ function martRoom() {
       item.sold = true;
       run.relics.push(relic.id);
       markSeen('relics', relic.id);
+      showBadgeNews();
       tell(`Bought ${relic.name}!`);
       if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
       martRoom();

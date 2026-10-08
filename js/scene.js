@@ -25,7 +25,7 @@ import { $ } from './ui.js';
 import { playSound } from './audio.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { paintArena } from './tower-art.js';
-import { battleFx, calmFx } from './prefs.js';
+import { battleFx, calmFx, hybridScenery } from './prefs.js';
 import { buildClearing, drawClearing, smoothPad } from './smooth-clearing.js';
 import { buildLight, drawLight } from './hybrid-light.js';
 
@@ -1284,18 +1284,18 @@ let storm = { on: false, level: 0 };
 let smoothArt = null;   // the smooth painter's layers for the scene on screen (js/smooth-clearing.js), when it has one
 let hybridArt = null;   // the hybrid look's still light for the scene on screen (js/hybrid-light.js), when it has one
 
-/* The other looks (2026-10-07), each on this device for good: ?smooth paints the Clearing smooth (the pilot), ?hybrid
-   keeps every biome's pixels and lays smooth light over them (HD-2D), ?pixel goes back to plain pixels. */
-const SMOOTH_KEY = 'pokedb-smooth-scenery', HYBRID_KEY = 'pokedb-hybrid-scenery';
+/* The other looks (2026-10-07): ?smooth paints the Clearing smooth on this device for good (the pilot). The hybrid (every
+   biome's pixels under smooth light, HD-2D) is the default since 2026-10-08, Settings' Scenery (the save's `scenery`, set by
+   ?hybrid / ?pixel in main.js); either one turns the pilot off. */
+const SMOOTH_KEY = 'pokedb-smooth-scenery';
 try {
   const q = new URLSearchParams(location.search);
-  if (q.has('smooth')) { localStorage.setItem(SMOOTH_KEY, '1'); localStorage.removeItem(HYBRID_KEY); }
-  if (q.has('hybrid')) { localStorage.setItem(HYBRID_KEY, '1'); localStorage.removeItem(SMOOTH_KEY); }
-  if (q.has('pixel')) { localStorage.removeItem(SMOOTH_KEY); localStorage.removeItem(HYBRID_KEY); }
+  if (q.has('smooth')) localStorage.setItem(SMOOTH_KEY, '1');
+  if (q.has('hybrid') || q.has('pixel')) localStorage.removeItem(SMOOTH_KEY);
 } catch { /* no storage: the pixel look */ }
 const HYBRID_BIOMES = new Set(['hills', 'shrine', 'volcano', 'depths', 'ruins', 'thornwood', 'savanna', 'safari']);
 const smoothOn = () => { try { return localStorage.getItem(SMOOTH_KEY) === '1'; } catch { return false; } };
-const hybridOn = () => { try { return localStorage.getItem(HYBRID_KEY) === '1'; } catch { return false; } };
+const hybridOn = hybridScenery;
 
 /* ---------- the time of day (js/daytime.js) ----------
    A biome has a hand-painted look per time (`times`; one with `from` is that time's look graded, under its own sky), and
@@ -1582,6 +1582,14 @@ function journeyOf(where) {
   return { progress, stage: stage ?? Math.min(3, progress >= 1 ? 3 : Math.floor(progress * 11 / 3.5)), step: stage == null ? null : step, seed };
 }
 const placeKey = ({ progress, stage, step, seed }) => `${Math.round(progress * 100)}/${stage}/${step}/${seed}`;
+
+/** Settings' Scenery changed: the scene on screen repaints in the new look. */
+export function refreshScenery() {
+  if (!S?.raw) return;
+  const key = shown;
+  shown = '';
+  paintScene(key, S.raw, floorAt, spanAt);
+}
 
 function paintScene(key, raw, floor = null, span = null) {
   canvas = $('scene-bg');

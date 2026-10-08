@@ -13,7 +13,7 @@ images by `treasureChest()`. `placeTreasure()` stands it on the dais (`treasureS
 the scene's own pixel size `--px`) and reruns on `scenepaint`. Tap: it hops, wobbles three
 times like a Poké Ball, pops open (`ball-open`, a flash, rays), and the relics
 (`relicChoices()`) arc up out of it to float in a row. A tap picks one (its text in the text
-box, its name under it, a Take it button); tapping it again or Take it flies it into the Bag
+box, its name under it, the room bar's A key turns to Take it); tapping it again or A flies it into the Bag
 (`item-get`), then `gainRelic()`. Leave is hidden with `visibility` meanwhile (`showChoice()`
 resets it) so the text box doesn't jump.
 

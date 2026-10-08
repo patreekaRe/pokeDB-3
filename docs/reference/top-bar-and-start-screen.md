@@ -51,7 +51,7 @@ by `dexSeen()` from `fight()` and `dexDefeated()` from `afterFight()` (Team Rock
 first defeat says "X's data was added to the Pokédex!" in the reward text box (`pendingCoins.dex`, after the coin
 lines); defeating the last entry on a page pays its PokéCoins once (300 / 400 / 500, `done` guards it) and turns on its
 perk (`DEX_PERKS`, `hasDexPerk()`): Mom's Savings (start runs with ₽50, `DEX_START_MONEY`), Chansey's Gift (start
-with a Potion), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
+with a Potion, handed over on the map like a found item saying where it comes from, `chanseyGift()` in `js/run.js`, `run.gift` until taken), Oak's Advice (once per biome a card reward gets a 🎓 Reroll button beside Skip, `showChoice({ reroll })`,
 `run.rerollBiome` / `run.rerollsUsed`, saved with the run). Researching every entry on a page raises its perk to **Lv 2**
 (the user's call, 2026-09-28): ₽100, a Super Potion, two rerolls a biome (`lv2` in `DEX_PERKS`; `DEX_START_MONEY` /
 `DEX_START_ITEM` / `DEX_REROLLS` by level). `dexPerkLevel()` in `js/pokedex.js` works it out from the save (0 / 1 / 2), so

@@ -20,7 +20,7 @@ function markSeen() {
 
 export function initPatchNotes() {
   const seen = seenNow();
-  $('title-version').textContent = seen ? `v${latest.version}` : `v${latest.version} NEW!`;
+  $('title-version').textContent = seen ? `v${latest.version}` : `v${latest.version}`;
   $('title-version').addEventListener('click', openPatchNotes);
   $('title-version').classList.toggle('seen', seen);
 }

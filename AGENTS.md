@@ -1,4 +1,4 @@
-# PokéDB: handoff for coding agents
+# Poké Deckbound (was PokéDB): handoff for coding agents
 
 This project was built with Claude Code until 2026-09-29. It moved to opencode then. Everything an agent needs is in
 three places:
@@ -12,6 +12,11 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-08: **Hybrid by default, name on the Trainer Card** (Desktop app, pushed): Settings → Display → Scenery
+  (Hybrid / Pixel, the save's `scenery`); the card's NAME is tappable to edit.
+- 2026-10-08: **Power-on title and the rename** (Desktop app, pushed): the game is Poké Deckbound; the title opens on a
+  shut Pokédex the first tap powers on, a first launch diving into How to play (one boot); smooth light over the title's
+  sky, `js/title-light.js`. See `docs/reference/title-screen.md`.
 - 2026-10-07: **Item 20 part b, the Sunscorch Savanna painted** (Desktop app, pushed): its scenery in `js/scene.js` (Tall Grass,
   Burnt Plain, Watering Hole, Sun Rock; landmarks; Sun Rock's prelude of a swelling sun and a grass fire), intro film
   `js/savanna-intro.js`, map tiles, a Fast Ball grotto, descent floors for the Savanna and the Ruins, and the

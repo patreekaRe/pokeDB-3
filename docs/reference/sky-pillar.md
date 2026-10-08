@@ -22,7 +22,7 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   screen): the climber's name, two seven-segment readouts (this week, best ever; `segInto()` from `js/statsdex.js`), three
   rules (`RULES`), the note on whether this climb counts, Practice's starter picks, and the week's top climbers; then the
   hardware (`.tdev-pad`): Ranks (the leaderboard, since 2026-10-07 an app sliding over the LCD as the Safari lobby's keys do, `openRanks()` in `js/towerprep.js`; B or the key again slides it back) and Practice as the map's `.mdex-btn` keys, B (back) and a big A (Climb /
-  Again). The plaque's LCD look is scoped to `.tower-lobby` (dark ink, your row in reverse); the Safari lobby borrows all of it
+  Again). On the lid, after the lights, a gold Continue pill (`#tower-continue`, 2026-10-08) resumes any saved run. The plaque's LCD look is scoped to `.tower-lobby` (dark ink, your row in reverse); the Safari lobby borrows all of it
   (it wears `.tower-lobby` too, `docs/reference/safari.md`), and so does the character select's device (`.tdev-*`).
 - **The week deals the tower** (`towerWeekly()`): its Monday (UTC, `towerWeek()`) seeds every roll through `js/rng.js`
   like the Safari's day, and picks the starter everyone climbs with (the Safari's pool: never Mewtwo or Rayquaza).
@@ -94,7 +94,7 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
 - **Saved** on `run.tower` (`augments`, `spent`, `rerolls`, `rerolledAt` / `rerolledN`, `pick`, `train` for Training Day's
   PP Up after each guardian, `blood` / `bloodStr` for Bloodlust). A climb saved before augments loads with none and owes
   none (`restoreRun()`).
-- **Shown**: an "Augments" row in the Bag's Relics pocket (between the Ability and the relics, a tier-framed icon each),
+- **Shown**: the Bag's Augments pocket (climbs only, `renderAugmentList()` in `js/run.js`; the dock's 5th button, a puzzle piece with the count, opens it; a tier-framed icon each, then the sets),
   the result window's list, and the board entry's `augments` (ids, at most 10; `towerResult()` / `checkTowerEntry()`,
   `firestore.rules`: **the user has to publish the rules again**, or posts with augments are refused).
 - **The look** (part b, 2026-10-07): all in `js/augment-art.js`, keyed by augment id, so `js/data/augments.js` stays numbers
@@ -152,7 +152,7 @@ is the screen and the overlay that use them.
   copy of the sky (`b.sky`) and every window, and the lobby's open door, shows it.
 - **The tower** (`paintTower()`, `towerLayout()`): outer walls cut away (moss and ivy outside), each floor a back wall of
   stone courses whose stone changes every few flights (`TIERS`: mossy grey, sandstone, cloud grey, moonstone, jade at the
-  top), its number carved by the wall, its slab open over the stair of the floor below. A floor is lit once climbed or where
+  top), its number on a gold-on-black iron plaque by the wall (`floorPlaque()`, dim on floors not yet climbed; it was carved in the stone until 2026-10-08, too hard to see), its slab open over the stair of the floor below. A floor is lit once climbed or where
   you stand, dim above (`stone(f, lit)`). Plain floors: their 2-3 doors (`door()`: an arched frame, planks, iron bands, a
   gem in the keystone in the room's colour, `DOOR_GEM`) with windows and torches between; every 10th a guardian's hall
   (banners in the guardian's biome colours, `BANNER`, braziers, one great gold-trimmed door); floor 0 the lobby (the way in,
@@ -162,16 +162,15 @@ is the screen and the overlay that use them.
   are hidden, `#map-screen.tower`). Since 2026-10-07 (the user's call: you climb up, so the top is for the tower) the run card
   and top bar sit in the map's Pokédex bar along the bottom, kept slim (the user's follow-up, same day: only the Pokédex,
   floor, HP, Deck, Relics, Items and Main menu): one green LCD strip with the top bar's Pokédex and floor laid on its left
-  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), the climb's ₽ at its right end (`#run-money`, from 0 each climb; the PokéCoin savings never show there, the user's call 2026-10-07), then four
+  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), the climb's ₽ at its right end (`#run-money`, from 0 each climb; the PokéCoin savings never show there, the user's call 2026-10-07), with the hinge above it (flex `order`, the user's call 2026-10-08; `measureBar()` in `js/tower.js` measures the bar from the hinge's top) (lens, lights and an LCD saying "Sky Pillar" / "Floors 11-20", "Guardian 20" once the guardian is the next door and "Summit" for the top one (`towerPlace()`, the Continue plate too): run.js writes `#biome-name` / `#stage-name` as on every map; the stone plate over the tower went 2026-10-08, the user's call), then under the LCD four
   icon buttons, the Bag's Deck / Relics / Items and `#dock-menu` (`requestMenu()` in `js/main.js`, shown only on a climb)
   (css/screens.css, "the Sky Pillar's climb has the same device"). `measureBar()` in `js/tower.js` sets `--tw-lcd-x/y/h`
   (where the top bar lies on the LCD) and `--tw-bar-h` (the gauge's floor, the Bag's bottom), re-measured by a ResizeObserver.
-  The floor you stand on sits 14% of the way up the sky above that bar (`STAND`); the plate and gauge are at the top; its doors are buttons (`.tw-door`) with
+  The floor you stand on sits 14% of the way up the sky above that bar (`STAND`); the gauge is at the side; its doors are buttons (`.tw-door`) with
   the room's icon on a hanging sign. A tap: your Pokémon (its front GIF, `#tw-mon`) walks to the door, it opens and the
   Pokémon goes in, then `enterNode()`. Back on the map with the floor above to pick, it comes out of the same door (`last`),
   a beaten foe's statue rises out of the floor (`statue()`: its sprite cropped to its pose in four greys), it walks to the
-  stair and climbs it step by step round the newel while the camera pans up a floor, then the stone plate (`#tw-plate`)
-  stamps the new number (gold on a guardian's floor, SUMMIT on the top) with the `stamp` synth. A fresh climb walks up from
+  stair and climbs it step by step round the newel while the camera pans up a floor. A fresh climb walks up from
   the lobby. The altitude gauge (`#tw-gauge`) is the sky's colours from 0 to 100, a tick every 10, your floor and a gold
   tick at your best; wider screens add its marks (🌲 ☁️ ⛈️ 🌇 🌌 🐉). Under reduced motion nothing walks.
   Fluid motion (the user's ask, 2026-10-06): the screen repaints every display frame (`requestAnimationFrame`, 60/120 Hz)

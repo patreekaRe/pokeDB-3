@@ -1,4 +1,4 @@
-# PokéDB – Rogue-Like Deck Battler
+# Poké Deckbound – Roguelike Deckbuilder
 
 A browser roguelike deck-battler. Pick a starter, climb a branching map, grow your deck with new moves and relics, evolve, and beat three bosses. It is built with plain HTML, CSS and JavaScript, with no frameworks and no build step.
 
@@ -6,7 +6,7 @@ A browser roguelike deck-battler. Pick a starter, climb a branching map, grow yo
 
 ![Battle screen](assets/screenshots/battle.jpg)
 
-> **Fan project.** PokéDB is a free, non-commercial learning project. It is not affiliated with, endorsed by or sponsored by Nintendo, Creatures Inc., GAME FREAK inc. or The Pokémon Company. See [Credits](#credits-and-legal).
+> **Fan project.** Poké Deckbound is a free, non-commercial learning project. It is not affiliated with, endorsed by or sponsored by Nintendo, Creatures Inc., GAME FREAK inc. or The Pokémon Company. See [Credits](#credits-and-legal).
 
 ## How to play
 

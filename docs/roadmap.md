@@ -14,11 +14,10 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
   Ability banner, intent bubbles and log, tap tips, keyword boxes, the cards' own text windows, the scenes' text boxes.
   `.btn` moves window by window, never globally (the cream `.btn` is still the default outside `.dev-window`).
 
-**Waiting on the user: hybrid everywhere?** (2026-10-07). The user liked the hybrid's subtle light, so `?hybrid` now
-lights every biome (`js/hybrid-light.js`). Once they've played with it, ask whether it should become the default look
-(today it's opt-in per device), and whether to remove the smooth pilot (`?smooth`, `js/smooth-clearing.js`: one revert;
-the hybrid borrows its `glow()` / `dot()`, so move those two into `js/hybrid-light.js` first). A more detailed pixel
-style (finer pixels, every painter redone) was talked over and parked: a session or two a biome.
+**Waiting on the user: remove the smooth pilot?** The hybrid became the default on 2026-10-08 (see the archive). Still to ask:
+whether to remove the smooth pilot (`?smooth`, `js/smooth-clearing.js`: one revert; the hybrid borrows its `glow()` / `dot()`, so
+move those two into `js/hybrid-light.js` first). A more detailed pixel style (finer pixels, every painter redone) was talked
+over and parked: a session or two a biome.
 
 **More Settings options** (the user wants all seven, one by one, 2026-10-06; the OPTIONS screen is `js/settings.js`,
 their meanings `js/prefs.js`). Run in: LOCAL for 1 and 4 (visual), CLOUD for the rest.
@@ -84,6 +83,32 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   Android vibration on big hits (the Settings switch exists since 2026-10-06, iPhones tick since iOS 18),
   quiet background sounds for each place under the music.
 
+- **Secret Base** (the user's idea, 2026-10-08: Gen 3's secret bases crossed with Animal Crossing). A room of your own
+  to decorate: furniture bought with PokéCoins, a **daily stock** in its shop, some pieces only from badges / achievements
+  / feats / Safari pages, and the Pokémon you caught in the Safari living in it, wandering and reacting to taps. Feasible
+  on what's already there: the pixel room is a `PLACE_ART`-style painter (like the ? rooms), furniture is drawn in code
+  like the biomes' landmarks (no sprite sheet to find: Gen 3's decorations aren't on PokeAPI), the daily stock is seeded
+  by the UTC day like the Safari's (`js/rng.js`), unlocks are `test(stats, save)` lines like `BADGES`, the layout is one
+  `save.base` (follows the cloud save), placing is tap-a-tile on a grid (phones, no dragging), and the Pokémon are the
+  `save.safariDex` catches' front GIFs. Its way in: a Game Modes sign or a Pokédex app. Suggested parts, each a session:
+  a) the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base` (Run in: LOCAL, visual);
+  b) the Furniture shop and its daily stock, prices, a "!" on new stock (Run in: CLOUD);
+  c) furniture unlocked from badges, achievements, feats and Safari pages, ~30 more pieces (Run in: CLOUD for the data, LOCAL for the art);
+  d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
+  e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
+  Decorating (the user's ask, 2026-10-08, keep all of it): **rotate** a piece (a tap on it gives Rotate / Move / Store;
+  drawn in code, a piece facing 4 ways is its front, back and one side mirrored, so 3 drawings, not 4), **wallpaper and
+  floors** swapped like furniture, **rugs** under things, **small things on top** of tables and shelves (Gen 3's dolls on a
+  desk: a second layer per tile), **colour variants** of a piece (a palette swap, cheap since it's painted in code), and
+  maybe a **day / night light** through the window from `js/daytime.js`. Build rotate, wallpaper / floor and rugs into a);
+  stacking and colour variants can be c).
+  Claude's suggested answers (2026-10-08; the user plans to start on Saturday 2026-10-10, confirm with them then): **one
+  room that grows** (it starts small, bigger rooms bought or earned; Gen 3's tree / cave / desert looks as wallpaper-like
+  themes later, so there's one painter, not three), **6 Pokémon on show** (enough to feel lively, few enough to read on a
+  phone; more slots could be an unlock), **decoration only** (bonuses would make the base a chore and pull at the
+  Safari / Sky Pillar boards' fairness; the reward is how it looks, and the Pokémon reacting).
+  Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
+  Pokémon on show, and whether furniture is pure decoration or gives a small perk.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.

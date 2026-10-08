@@ -20,7 +20,7 @@
      rewards.js      the "choose one" screen
      battle.js       the fight
      records.js      the Stats and Achievements windows
-     howto.js        the swipeable How to play window
+     howto.js        How to play, an app on the Pokédex device
      title.js        the title screen: PRESS START, then the gem menu (home)
      select.js       the character select (New game)
      collection.js   the Collection: the device's home screen of apps (Pokédex, Moves, Relics, Items, Stats...)
@@ -38,7 +38,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -47,11 +47,10 @@ import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
 import { initAudio, playMusic } from './audio.js';
 import { initSettings } from './settings.js';
-import { initHowto, openHowto } from './howto.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
-import { initCollection, showCollection, openPokedex } from './collection.js';
+import { initCollection, showCollection, openPokedex, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
 import { smoothIcon } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
@@ -61,7 +60,7 @@ import { initPokedex } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
-import { $, el, openDialog, confirmDialog } from './ui.js';
+import { $, el, confirmDialog } from './ui.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
@@ -86,7 +85,7 @@ function savedRunCard() {
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
     place: saved.tower ? 'Sky Pillar' : area ? `Safari Zone: ${area.name}` : land?.name ?? `Biome ${biome + 1}`,
-    spot: saved.tower ? `Floors ${saved.tower.flight * 10 + 1}-${saved.tower.flight * 10 + 10}` : land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
+    spot: saved.tower ? towerPlace(here, saved.tower) : land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
     biome: land?.id,
     safari: !!area,
     cry: starter.line[stage]?.id ?? starter.line[0].id,
@@ -153,16 +152,29 @@ async function requestAbandon(sure) {
 
 /* ---------- the Pokédex (top left) ---------- */
 
+// the round keys' glyphs, white line art on the shell's colour (the room bar's Leave, Skip and confirm match Home)
+const KEY_GLYPHS = {
+  home: '<path d="M4 11.2 12 4.5l8 6.7" stroke-width="2.4"/><path d="M6.6 10v8.6a1.4 1.4 0 0 0 1.4 1.4h2.6v-5h2.8v5H16a1.4 1.4 0 0 0 1.4-1.4V10" stroke-width="2.2"/>',
+  leave: '<path d="M12.5 4.5H7a1.4 1.4 0 0 0-1.4 1.4v12.2A1.4 1.4 0 0 0 7 19.5h5.5" stroke-width="2.2"/><path d="M10.5 12h9.5M16.5 8.5 20 12l-3.5 3.5" stroke-width="2.4"/>',
+  skip: '<path d="M5.5 6.5 11 12l-5.5 5.5M12.5 6.5 18 12l-5.5 5.5" stroke-width="2.6"/>',
+  ok: '<path d="M5.5 12.5 10 17l8.5-9.5" stroke-width="2.8"/>',
+};
+
+function roundKey(glyph, cls = 'home-key') {
+  const key = document.createElement('span');
+  key.className = cls;
+  key.setAttribute('aria-hidden', 'true');
+  key.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${KEY_GLYPHS[glyph]}</svg>`;
+  return key;
+}
+const homeKey = () => roundKey('home');
+
 function initPokedexButton() {
   // a run's Pokédex apps open on the page it stands on: a Safari run's own Pokédex on its area (its catches never touch
   // the main one), else the main Pokédex on its biome
-  // on the map, which already is the device, the button is the device's own Home key (css/screens.css)
-  const key = document.createElement('span');
-  key.className = 'home-key';
-  key.setAttribute('aria-hidden', 'true');
-  key.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 11.2 12 4.5l8 6.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'
-    + '<path d="M6.6 10v8.6a1.4 1.4 0 0 0 1.4 1.4h2.6v-5h2.8v5H16a1.4 1.4 0 0 0 1.4-1.4V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
-  $('brand-btn').append(key);
+  // on the map, which already is the device, the button is the device's own Home key (css/screens.css); rooms' bar too
+  $('brand-btn').append(homeKey());
+  $('room-home').append(homeKey());
   $('brand-btn').addEventListener('click', () => openPokedex({ dex: runBiome(), safari: runSafariArea() }));
   // leaving from inside the device puts it away once the confirm (if any) has said yes
   $('abandon-btn').addEventListener('click', async () => { if (await requestAbandon()) hideDevice(); });
@@ -176,6 +188,7 @@ function init() {
   // Playtest shortcut (the user's ask): opening the game with ?levels unlocks every Trainer Level for good.
   const query = new URLSearchParams(location.search);
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
+  if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('safari')) updateSave(d => { d.safariPass = true; });
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
@@ -207,7 +220,6 @@ function init() {
   initSettings();
   initTips();
   initPlayTime();
-  initHowto();
   // The top bar has no background, so once the page scrolls a fade keeps its numbers off whatever slides under them.
   const markScrolled = () => document.body.classList.toggle('scrolled', scrollY > 4);
   addEventListener('scroll', markScrolled, { passive: true });
@@ -225,10 +237,7 @@ function init() {
   });
 
   // Buttons that are always on screen
-  $('help-btn').addEventListener('click', openHowto);
-  $('title-help').addEventListener('click', openHowto);
   initPatchNotes();
-  $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
   initPokedex();
   initPokedexButton();
   initCloud();
@@ -243,6 +252,8 @@ function init() {
   });
 
   initTowerPrep({
+    savedRun: savedRunCard,
+    onContinue: continueGame,
     onStart: async (practice) => {
       if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
       const climber = practice ?? towerWeekly().starter;
@@ -258,6 +269,15 @@ function init() {
     onContinue: continueGame,
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
+    onHelp: openHowto,
+    hello: splash,
+    // How to play comes up once, the very first time (not under a playtest film's URL)
+    firstLaunch: () => {
+      if (getSave().seenHelp || ['strike', 'travel', 'crossroads', 'climb'].some(k => new URLSearchParams(location.search).has(k))) return false;
+      updateSave(d => { d.seenHelp = true; });
+      return true;
+    },
+    onFirstBoot: bootHowto,
     onSafari: openSafariPrep,
     onTower: openTowerPrep,
     onBoard: () => openLeaderboard(),
@@ -269,10 +289,9 @@ function init() {
     const left = isPeeking() ? 'This test climb won\'t be kept.' : 'Your climb is saved, so you can carry on from Continue.';
     if (await confirmDialog(`Leave the Sky Pillar for the menu? ${left}`, 'Menu')) requestMenu();
   });
-  $('room-home').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('room-home').addEventListener('click', () => $('brand-btn').click());
-  $('reward-skip').prepend(el('span', 'leave-ico'));
-  $('reward-skip').firstChild.append(smoothIcon('leave'));   // only shown while it's the room bar's Leave key
+  // only shown while it's the room bar's Leave key, or its Skip key
+  $('reward-skip').prepend(roundKey('leave', 'round-key leave-ico'), roundKey('skip', 'round-key skip-ico'));
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,
@@ -321,11 +340,6 @@ function init() {
     if (params.has('crossroads')) return peekCrossroads(params);
     // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
     if (params.has('climb')) return peekClimb(params);
-    // Show the how-to-play once, the very first time.
-    if (!getSave().seenHelp) {
-      updateSave(d => { d.seenHelp = true; });
-      setTimeout(openHowto, 400);
-    }
   });
 }
 

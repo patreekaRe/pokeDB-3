@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>PokéDB – Rogue-Like Deck Battler</title>
+  <!-- iOS zooms into a text box under 16px and never zooms back; only iOS gets maximum-scale, which it still lets you pinch past -->
+  <script>if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) document.querySelector("meta[name=viewport]").content += ", maximum-scale=1";</script>
+  <title>Poké Deckbound – Roguelike Deckbuilder</title>
   <meta name="description" content="A free browser deck-builder and roguelike battle game. Pick a starter, build a deck of moves, and battle wild monsters. Fan project, not affiliated with Nintendo.">
   <meta name="theme-color" content="#1b1f3a">
-  <meta property="og:title" content="PokéDB – Rogue-Like Deck Battler">
+  <meta property="og:title" content="Poké Deckbound – Roguelike Deckbuilder">
   <meta property="og:description" content="Pick a starter, build a deck of moves and battle wild monsters. Built with plain HTML, CSS and JavaScript.">
   <meta property="og:image" content="https://patreekare.github.io/pokeDB-3/assets/screenshots/social.jpg?v=2">   <!-- bump ?v= when the picture changes: apps cache previews by URL -->
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:image:alt" content="The PokéDB title screen: the pixel logo over a dusk sky, Bulbasaur, Charmander and Squirtle on a grassy ledge">
+  <meta property="og:image:alt" content="The Poké Deckbound title screen: the pixel logo over a dusk sky, Bulbasaur, Charmander and Squirtle on a grassy ledge">
   <meta property="og:url" content="https://patreekare.github.io/pokeDB-3/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -34,16 +36,27 @@
   <!-- Title screen: shown once per page load, before the start screen (js/title.js) -->
   <div id="title-screen" class="title-screen" hidden>
     <canvas id="title-sky" class="title-sky pixel" aria-hidden="true"></canvas>
+    <canvas id="title-light" class="title-light" aria-hidden="true"></canvas>   <!-- smooth light over the pixel sky (js/title-light.js) -->
     <img class="title-flyer pixel" alt="" aria-hidden="true">
     <!-- the broken Sealed Gate on the ledge, only once Mewtwo is free (js/title.js): a tap goes to Mewtwo's Prepare step -->
     <button type="button" class="title-gate" id="title-gate" aria-label="The broken Sealed Gate: play as Mewtwo" hidden><canvas class="title-gate-art" id="title-gate-art" aria-hidden="true"></canvas></button>
+    <div class="title-veil" aria-hidden="true"></div>   <!-- the dark the shut Pokédex lies in, lifted once it's on -->
     <div class="title-center">
-      <div class="title title-big" aria-label="PokéDB: Rogue-Like Deck Battler">
+      <div class="title title-big" aria-label="Poké Deckbound: Roguelike Deckbuilder">
         <span class="title-logo-wrap">
           <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
-          <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js -->
         </span>
-        <small aria-hidden="true">Rogue-Like Deck Battler</small>
+        <span class="title-sub"><small aria-hidden="true">Roguelike Deckbuilder</small><button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button></span>   <!-- the version tag beside it opens the Patch notes (js/patchnotes.js) -->
+      </div>
+      <!-- before the first tap: a Pokédex lying shut in the dark; the tap powers it on (powerOn() in js/title.js) -->
+      <div class="title-dex" id="title-dex" aria-hidden="true">
+        <div class="tdx-top"><span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></div>
+        <div class="tdx-glass"><div class="tdx-screen">
+          <span class="cdev-splash-ball"></span>
+          <span class="tdx-name"><small>POKÉ</small>DECKBOUND</span>
+          <span class="tdx-hello" id="tdx-hello"></span>
+        </div></div>
+        <div class="tdx-cover"><span class="pdx-cover-hinge"></span><span class="tdx-led"></span><span class="tdx-power"></span></div>
       </div>
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
@@ -64,8 +77,8 @@
           <div class="rope-ask" id="rope-ask" role="dialog" aria-label="Abandon run?" hidden>
             <p>Run away? Your run will be gone for good.</p>
             <div class="rope-ask-btns">
-              <button type="button" class="pxb red white small" id="rope-yes"><span class="pxb-o"><span class="pxb-i">Yes</span></span></button>
-              <button type="button" class="pxb blue white small" id="rope-no"><span class="pxb-o"><span class="pxb-i">No</span></span></button>
+              <button type="button" class="btn secondary" id="rope-no">No</button>
+              <button type="button" class="btn" id="rope-yes">Yes</button>
             </div>
           </div>
           <button type="button" class="title-abandon" id="title-abandon" aria-label="Abandon run" aria-expanded="false" aria-controls="rope-ask"></button>
@@ -87,7 +100,6 @@
           </div>
         </div>
       </div>
-      <button type="button" class="title-account title-help" id="title-help" aria-label="How to play"><span class="ta-pc">❓</span></button>
       <button type="button" class="title-account title-refresh" id="title-refresh" aria-label="Get the newest version"><span class="ta-pc"><svg class="refresh-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></span></button>
     </div>
   </div>
@@ -118,6 +130,7 @@
           <div class="set-opt" data-opt="shell"><span class="set-name">Device colour</span><small>Your Pokédex's shell</small></div>
           <div class="set-opt" data-opt="textSpeed"><span class="set-name">Text speed</span><small>How fast text boxes type out</small></div>
           <div class="set-opt" data-opt="clock"><span class="set-name">Day &amp; night</span><small>Follow your clock, or keep one time</small></div>
+          <div class="set-opt" data-opt="scenery"><span class="set-name">Scenery</span><small>Hybrid: pixel art in soft light</small></div>
           <div class="set-opt" data-opt="calmFx"><span class="set-name">Flashing &amp; shake</span><small>Reduced: no shaking, softer flashes</small></div>
         </section>
         <section class="set-group" data-tone="battle">
@@ -133,10 +146,6 @@
           <button type="button" class="dev-row danger" id="abandon-btn" hidden><span class="mi-icon">🏃</span><span class="mi-label">Abandon run</span></button>
           <button type="button" class="dev-row danger" id="reset-btn"><span class="mi-icon">🗑️</span><span class="mi-label">Reset save</span></button>
         </section>
-      </div>
-      <div class="dev-help" id="dev-help">
-        <button type="button" class="dev-row" id="help-btn"><span class="mi-icon">❓</span><span class="mi-label">How to play</span></button>
-        <button type="button" class="dev-row" id="about-btn"><span class="mi-icon">ℹ️</span><span class="mi-label">About &amp; credits</span></button>
       </div>
     </div>
     <div class="piles" aria-label="Your piles">   <!-- shown only in battle -->
@@ -168,6 +177,7 @@
         <div class="bag-pockets" role="tablist" aria-label="Bag pockets">
           <button class="bag-pocket" role="tab" data-pocket="deck" data-name="Deck" aria-label="Deck" aria-controls="bag-deck"><span aria-hidden="true">🃏</span><b id="run-deck-count">10</b></button>
           <button class="bag-pocket" role="tab" data-pocket="relics" data-name="Relics" aria-label="Relics" aria-controls="bag-relics"><span aria-hidden="true">💎</span><b id="run-relic-count">0</b></button>
+          <button class="bag-pocket" role="tab" data-pocket="augments" data-name="Augments" aria-label="Augments" aria-controls="bag-augments" hidden><span aria-hidden="true">🧩</span><b id="run-aug-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="items" data-name="Items" aria-label="Items" aria-controls="bag-items"><span aria-hidden="true"><img class="item-sprite" src="assets/items/potion.png" alt=""></span><b id="run-item-count">0</b></button>
           <button class="bag-pocket" role="tab" data-pocket="key" data-name="Map" aria-label="Map" aria-controls="bag-key"><span aria-hidden="true">🗺️</span></button>
           <button class="bag-pocket" role="tab" data-pocket="trainer" data-name="Trainer Card" aria-label="Trainer Card" aria-controls="bag-trainer"><span aria-hidden="true" id="bag-trainer-icon"></span></button>
@@ -178,6 +188,9 @@
         </div>
         <div class="bag-pocket-body" id="bag-relics" role="tabpanel" hidden>
           <div id="relics-list" class="howto-list"></div>
+        </div>
+        <div class="bag-pocket-body" id="bag-augments" role="tabpanel" hidden>
+          <div id="augments-list" class="howto-list"></div>
         </div>
         <div class="bag-pocket-body" id="bag-items" role="tabpanel" hidden>
           <div id="items-list" class="howto-list"></div>
@@ -303,11 +316,21 @@
         <img id="tw-mon" class="tw-mon pixel" alt="">
         <div class="tw-doors" id="tw-doors"></div>
         <div class="tw-gauge" id="tw-gauge" aria-hidden="true"></div>
-        <div class="tw-plate" id="tw-plate" aria-live="polite"><span class="tw-plate-num"></span><span class="tw-plate-sub"></span></div>
       </div>
       <!-- the map lives inside the Pokédex (the user's call, 2026-10-07): a window onto the scenery with your Pokémon and HP,
            the biome on the hinge's LCD, the map on the device's screen and the Bag's pockets as the menu bar at the bottom.
            In a Sky Pillar climb these wrappers step aside (display: contents) -->
+      <!-- the LCD's four greens (darkest = the LCD's ink, lightest just above its glass): the run card's Pokémon is painted
+           in them, Game Boy / Game & Watch style, by luminance (the user's ask, 2026-10-08) -->
+      <svg class="svg-defs" width="0" height="0" aria-hidden="true"><filter id="lcd-ink" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0 0 0 1 0"/>
+        <feComponentTransfer>
+          <feFuncR type="discrete" tableValues="0.122 0.247 0.471 0.847"/>
+          <feFuncG type="discrete" tableValues="0.227 0.392 0.627 0.925"/>
+          <feFuncB type="discrete" tableValues="0.078 0.157 0.314 0.706"/>
+          <feFuncA type="discrete" tableValues="0 1"/>
+        </feComponentTransfer>
+      </filter></svg>
       <div class="mdex-window">
       <div class="run-card">
         <!-- a fidget: tap to recall your Pokémon into its ball, tap again to send it out (toggleMon() in js/run.js) -->
@@ -347,6 +370,8 @@
       <nav class="mdex-dock" id="mdex-dock" aria-label="Bag pockets">
         <button type="button" class="mdex-btn" data-pocket="deck"><span class="mdex-ico" data-icon="moves"></span><span class="mdex-label">Deck</span><b class="mdex-count" id="dock-deck-count"></b></button>
         <button type="button" class="mdex-btn" data-pocket="relics"><span class="mdex-ico" data-icon="relics"></span><span class="mdex-label">Relics</span><b class="mdex-count" id="dock-relic-count"></b></button>
+        <!-- only on a Sky Pillar climb, like Menu below -->
+        <button type="button" class="mdex-btn mdex-aug" data-pocket="augments"><span class="mdex-ico" data-icon="augments"></span><span class="mdex-label">Augments</span><b class="mdex-count" id="dock-aug-count"></b></button>
         <button type="button" class="mdex-btn" data-pocket="items"><span class="mdex-ico" data-icon="items"></span><span class="mdex-label">Items</span><b class="mdex-count" id="dock-item-count"></b></button>
         <button type="button" class="mdex-btn" data-pocket="key"><span class="mdex-ico" data-icon="map"></span><span class="mdex-label">Map key</span></button>
         <button type="button" class="mdex-btn" data-pocket="trainer"><span class="mdex-ico" data-icon="cap"></span><span class="mdex-label">Trainer</span></button>
@@ -362,7 +387,9 @@
       <p id="reward-coins" class="reward-coins" hidden></p>
       <div id="reward-options" class="reward-options"></div>
       <div class="reward-actions">
-        <button class="ds-btn ds-go" id="reward-reroll" type="button" hidden><span class="pp-pill">🎓 Reroll</span></button>
+        <!-- the deck pickers' confirm (Upgrade, Forget...), left of Skip under the text box, greyed until a card is picked -->
+        <button class="ds-btn deck-ok" id="reward-ok" type="button" hidden disabled><span class="pp-pill" id="reward-ok-text"></span></button>
+        <button class="ds-btn ds-go" id="reward-reroll" type="button" hidden><span class="pp-pill"><span class="reroll-cap">🎓</span> Reroll</span></button>
         <button class="ds-btn ds-skip" id="reward-skip" type="button"><span class="pp-pill" id="reward-skip-text">Skip</span></button>
       </div>
       <!-- pinned to the bottom: the screen's text, typed out in a battle-style text box you tap through (rewards.js) -->
@@ -373,8 +400,18 @@
            2026-10-07): the Pokédex's Home key, Leave (the screen's own #reward-skip, moved in by showChoice()), then HP and
            money on one LCD; the top bar steps aside there -->
       <div class="room-bar" id="room-bar">
+        <!-- the Pokédex's hinge on top of the bar: the lens, the lights and the room's name on an LCD, like the map's biome
+             sign (the user's call, 2026-10-07); the post-battle move pick has it too -->
+        <div class="room-hinge">
+          <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+          <!-- the screen's confirm as a glowing one-word pill beside the lights (Take, Add, Learn...; the user's call,
+               2026-10-08); rewards.js roomConfirm() names and arms it -->
+          <button type="button" class="room-ok" id="room-ok" hidden><span id="room-ok-text"></span></button>
+          <div class="room-sign" aria-live="polite"><b id="room-title"></b></div>
+        </div>
+        <div class="room-row">
         <div class="room-keys" id="room-keys">
-          <button type="button" class="mdex-btn room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"><span class="mdex-ico"></span></button>
+          <button type="button" class="room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"></button>
         </div>
         <div class="room-lcd">
           <div class="gb-hp" id="room-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
@@ -383,7 +420,7 @@
           </div>
           <span class="gb-hp-num" id="room-hp-text"></span>
           <span class="room-cash" title="Pokédollars - prize money for this run">💴 <span id="room-money">0</span></span>
-          <span class="room-cash" title="PokéCoins - spend them at the Game Corner">💰 <span class="coin-value">0</span></span>
+        </div>
         </div>
       </div>
     </section>
@@ -401,7 +438,7 @@
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>
           </div>
-          <div class="nameplate-foot"><span id="enemy-dex" hidden></span><div class="badges" id="enemy-status"></div><span class="gb-hp-num" id="enemy-hp-text"></span></div>
+          <div class="nameplate-foot"><div class="badges" id="enemy-status"></div><span class="gb-hp-num" id="enemy-hp-text"></span></div>
         </div>
 
         <div class="enemy-zone" id="enemy-zone">
@@ -452,99 +489,6 @@
 
 
   <!-- ============ DIALOGS ============ -->
-  <dialog id="help-dialog" class="dialog howto-dialog dev-window">
-    <form method="dialog"><button class="howto-close" aria-label="Close">✕</button></form>
-    <h2 tabindex="-1" autofocus>How to play</h2>   <!-- focus the top, or the dialog opens scrolled down to its only button -->
-
-    <!-- one slide per topic; swipe on touch, or use the dots, arrows and arrow keys (js/howto.js) -->
-    <div class="howto-track dev-screen" id="howto-track">
-      <section class="howto-slide" data-title="Your run">
-        <header class="howto-head"><h3>🏆 Your run</h3><p>Four steps from starter to champion</p></header>
-        <ol class="howto-list howto-flow">
-          <li class="howto-li"><span class="howto-pic"><img src="assets/pokemon/charmander-front.gif" class="pixel" alt=""></span><span class="howto-li-text"><b>Pick a starter</b><small>Fire, Grass or Water: each type plays differently.</small></span></li>
-          <li class="howto-li"><span class="howto-pic">🗺️</span><span class="howto-li-text"><b>Climb the map</b><small>Choose your path, room by room, up to the boss.</small></span></li>
-          <li class="howto-li"><span class="howto-pic">⚔️</span><span class="howto-li-text"><b>Win battles</b><small>Each win teaches you a new move and pays 💰.</small></span></li>
-          <li class="howto-li boss"><span class="howto-pic"><img src="assets/pokemon/snorlax-front.gif" class="pixel" alt=""></span><span class="howto-li-text"><b>Beat 3 bosses</b><small>Your Pokémon evolves after each one. Beat the third to win.</small></span></li>
-        </ol>
-      </section>
-
-      <section class="howto-slide" data-title="Your turn">
-        <header class="howto-head"><h3>⚔️ Your turn</h3><p>Play your cards, then it's the enemy's move</p></header>
-        <ol class="howto-list howto-flow">
-          <li class="howto-li">
-            <span class="howto-pic wide"><span class="energy-orb" title="PP (energy)"><span class="pp-pill"><span class="pp-label">PP</span><span class="pp-count"><b>3</b>/3</span></span></span></span>
-            <span class="howto-li-text"><b>Get 3 PP</b><small>Your energy. It refills every turn.</small></span>
-          </li>
-          <li class="howto-li">
-            <span class="howto-pic wide"><span class="howto-hand" aria-hidden="true"><span class="fire">🔥</span><span class="grass">🌿</span><span class="water">💧</span></span></span>
-            <span class="howto-li-text"><b>Play cards</b><small>Each one costs the PP in its corner.</small></span>
-          </li>
-          <li class="howto-li">
-            <span class="howto-pic wide"><span class="howto-endturn"><span class="pp-pill">End Turn</span></span></span>
-            <span class="howto-li-text"><b>End your turn</b><small>The enemy moves, then you draw 5 new cards.</small></span>
-          </li>
-        </ol>
-        <p class="howto-tip with-pic"><span class="howto-tip-pic"><span class="intent attack"><span class="intent-icon">⚔️</span><b class="intent-value">12</b><span class="intent-name">Tackle</span></span></span><span>The enemy's next move, over its head. Block before a big hit!</span></p>
-        <p class="howto-tip with-pic"><span class="howto-tip-pic" id="howto-bag"></span><span>Your Bag holds your deck, relics, items and the map key.</span></p>
-      </section>
-
-      <section class="howto-slide" data-title="The map">
-        <header class="howto-head"><h3>🧭 The map</h3><p>Start at the bottom and choose your path to the boss</p></header>
-        <div class="howto-list">
-          <div class="howto-li"><span class="howto-node town">⚔️</span><span class="howto-li-text"><b>Fight</b><small>A wild Pokémon. Win a new card, sometimes an item.</small></span></div>
-          <div class="howto-li"><span class="howto-node town elite">💀</span><span class="howto-li-text"><b>Elite</b><small>Much tougher, but drops a relic.</small></span></div>
-          <div class="howto-li"><span class="howto-node town rest">🏥</span><span class="howto-li-text"><b>Pokémon Center</b><small>Rest to heal, or have Chansey PP Up a move.</small></span></div>
-          <div class="howto-li"><span class="howto-node town treasure">🎁</span><span class="howto-li-text"><b>Treasure</b><small>Pick a free relic.</small></span></div>
-          <div class="howto-li"><span class="howto-node town shop">🏪</span><span class="howto-li-text"><b>Poké Mart</b><small>Spend prize money (💴) on cards, items, relics or forgetting a move.</small></span></div>
-          <div class="howto-li"><span class="howto-node town event">❓</span><span class="howto-li-text"><b>Mystery event</b><small>Something happens. Choose what to do: most rewards have a cost.</small></span></div>
-          <div class="howto-li"><span class="howto-node town boss">👹</span><span class="howto-li-text"><b>Boss</b><small>Beat it to evolve and move on.</small></span></div>
-        </div>
-      </section>
-
-      <section class="howto-slide" data-title="Types and statuses">
-        <header class="howto-head"><h3>🔥 Types and statuses</h3><p>Hit wild Pokémon's weakness and keep an eye on the badges</p></header>
-        <div class="howto-types">
-          <span class="howto-type fire">🔥</span><span class="howto-beats" aria-label="beats">▶</span>
-          <span class="howto-type grass">🌿</span><span class="howto-beats" aria-label="beats">▶</span>
-          <span class="howto-type water">💧</span><span class="howto-beats" aria-label="beats">▶</span>
-          <span class="howto-type fire">🔥</span>
-        </div>
-        <div class="howto-chips">
-          <span class="howto-chip good">▲ +30% damage with the edge</span>
-          <span class="howto-chip bad">▼ −25% against it</span>
-        </div>
-
-        <div class="howto-list">
-          <div class="howto-li"><span class="badge block">🛡️<b>6</b></span><span class="howto-li-text"><b>Block</b><small>Soaks up damage until your next turn.</small></span></div>
-          <div class="howto-li"><span class="badge">🔥<b>3</b></span><span class="howto-li-text"><b>Burn</b><small>Hurts at the start of each turn.</small></span></div>
-          <div class="howto-li"><span class="badge good">🎯<b>8</b></span><span class="howto-li-text"><b>Focus</b><small>Your next attack hits harder.</small></span></div>
-          <div class="howto-li"><span class="badge">📉<b>2</b></span><span class="howto-li-text"><b>Weak</b><small>Deals 25% less damage for 2 turns.</small></span></div>
-          <div class="howto-li"><span class="badge">💔<b>2</b></span><span class="howto-li-text"><b>Vulnerable</b><small>Takes 50% more from your attacks.</small></span></div>
-          <div class="howto-li"><span class="badge good">💪<b>2</b></span><span class="howto-li-text"><b>Strength</b><small>Every hit deals more, all fight.</small></span></div>
-          <div class="howto-li"><span class="badge good">🧬</span><span class="howto-li-text"><b>Powers</b><small>Cards that keep working all fight.</small></span></div>
-          <div class="howto-li"><span class="badge bad">😡</span><span class="howto-li-text"><b>Enraged</b><small>Every 6 turns, the enemy gets stronger.</small></span></div>
-        </div>
-      </section>
-
-      <section class="howto-slide" data-title="PokéCoins and the Game Corner">
-        <header class="howto-head">
-          <div class="gc-hero" aria-hidden="true"><span>💰</span><b>▶</b><span class="gc-icon">🎰</span></div>
-          <h3>PokéCoins</h3><p>Spend them at the Game Corner. Yours to keep, even if you faint.</p>
-        </header>
-        <div class="howto-list howto-earn" id="howto-perks"></div>
-
-        <h4 class="howto-label">Earn them</h4>
-        <div class="howto-list howto-earn" id="howto-coins"></div>
-      </section>
-    </div>
-
-    <div class="howto-nav">
-      <button class="howto-prev" id="howto-prev" type="button" aria-label="Previous">‹</button>
-      <div class="howto-dots" id="howto-dots"></div>
-      <button class="btn primary howto-next" id="howto-next" type="button">Next ›</button>
-    </div>
-  </dialog>
-
   <!-- every enemy, full screen: a banner per biome, then a handheld Pokédex on that page (js/pokedex.js) -->
   <dialog id="dex-dialog" data-smooth-icons class="pokedex" aria-label="Pokédex">
     <div class="pdx-list" id="dex-list">
@@ -573,7 +517,7 @@
   <dialog id="about-dialog" class="dialog about-dialog dev-window">
     <h2>About &amp; credits</h2>
     <div class="dev-screen">
-    <p><strong>PokéDB</strong> is a fan-made learning project by Patrick, built with plain HTML, CSS and JavaScript. It is free and non-commercial.</p>
+    <p><strong>Poké Deckbound</strong> is a fan-made learning project by Patrick, built with plain HTML, CSS and JavaScript. It is free and non-commercial.</p>
     <p class="disclaimer">Pokémon and all related names and characters are trademarks of Nintendo, Creatures Inc. and GAME FREAK inc. This project is <strong>not affiliated with, endorsed by or sponsored by</strong> any of them.</p>
     <ul class="credits">
       <li>Pokémon pixel sprites (starters, evolutions, wild Pokémon and bosses): <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener">PokeAPI/sprites</a> (Gen 5 art, © Nintendo / Game Freak).</li>
@@ -794,6 +738,8 @@
   <dialog id="tower-dialog" data-smooth-icons class="tower-lobby" aria-labelledby="tower-title"><div class="tower-page" id="tower-page">
     <div class="tdev-lid">
       <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+      <!-- any saved run can be continued from here too (the user's ask, 2026-10-08) -->
+      <button type="button" class="room-ok tower-continue" id="tower-continue" hidden>Continue</button>
       <div class="cdev-lcd"><h2 id="tower-title" class="tower-title" tabindex="-1" autofocus>Sky Pillar</h2><p class="tower-week" id="tower-week"></p></div>
     </div>
     <div class="tower-window" id="tower-top">
@@ -939,7 +885,7 @@
     </div>
   </dialog>
 
-  <noscript><p class="noscript">PokéDB needs JavaScript to run. Please enable it.</p></noscript>
+  <noscript><p class="noscript">Poké Deckbound needs JavaScript to run. Please enable it.</p></noscript>
 
   <script type="module" src="js/main.js"></script>
 </body>

@@ -8,7 +8,8 @@
    ============================================================ */
 
 import { ALL_CARDS, TYPES, evolutionCardsFor } from './data/cards.js';
-import { getSave, updateSave } from './storage.js';
+import { getSave, updateSave, clearFinds } from './storage.js';
+import { newFinds, showBadgeNews } from './trainercard.js';
 import { el, makeCard, zoomable } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -67,13 +68,23 @@ function lcdKeys(key, choices, fallback, redraw) {
   return row;
 }
 
+// the drawn tab's new finds wear a "!" this once; draw() clears them from the save once they're on screen
+let drawnNew = [];
+function fresh(node, card) {
+  if (!newFinds('cards').includes(card.id)) return node;
+  drawnNew.push(card.id);
+  node.classList.add('news');
+  node.append(el('span', 'tc-new card-new', '!'));
+  return node;
+}
+
 function moveGroup(label, all, seen, note, hideType = false) {
   const cards = filtered(all, seen).sort((a, b) => seen.has(b.id) - seen.has(a.id));   // the ??? cards after the known ones
   if (!cards.length) return [];
   const head = el('h3', 'mv-head');
   head.append(el('span', '', label), el('span', 'mv-count', `${all.filter(c => seen.has(c.id)).length}/${all.length}`));
   const grid = el('div', 'mv-cards');
-  grid.append(...cards.map(c => (seen.has(c.id) ? zoomable(makeCard(c), c, 0) : lockedCard(c, hideType))));
+  grid.append(...cards.map(c => (seen.has(c.id) ? fresh(zoomable(makeCard(c), c, 0), c) : lockedCard(c, hideType))));
   return [head, ...(note ? [el('p', 'mv-note', note)] : []), grid];
 }
 
@@ -94,8 +105,16 @@ function moveList(type) {
 export function movesApp(type) {
   let panel, tabs, list;
   const draw = () => {
+    drawnNew = [];
     const body = moveList(movesTab);
     list.replaceChildren(...(body.length ? body : [el('p', 'mv-empty', 'No moves like that here.')]));
+    if (drawnNew.length) { clearFinds('cards', drawnNew); showBadgeNews(); }
+    markTabs();
+  };
+  // a tab with new moves in it wears a "!" till it's been looked at
+  const markTabs = () => {
+    const fresh = new Set(newFinds('cards'));
+    for (const b of tabs.children) b.classList.toggle('news', ALL_CARDS.some(c => c.type === b.dataset.type && fresh.has(c.id)));
   };
   const show = (t) => {
     movesTab = t;

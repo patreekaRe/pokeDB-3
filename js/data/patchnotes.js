@@ -8,6 +8,42 @@
 
 export const PATCHES = [
   {
+    version: '1.1',
+    name: 'Many Roads',
+    date: '2026-10-08',
+    sections: [
+      ['🗺️', 'New roads', [
+        'Three new biomes: the Sunken Ruins, a temple drowned in a jungle lagoon; the Thornwood Jungle, a forest older than the Shrine; and the Sunscorch Savanna, grassland burning round one watering hole.',
+        'Win on Trainer Level 2 or higher with Fire, Grass and Water to open them. After a boss you reach a crossroads and choose your road.',
+        'Each run offers different roads, the ones you haven\'t walked first. Every new biome has its own wild Pokémon, Alphas, bosses, music for the map and a Pokédex page worth 500 PokéCoins.',
+        'Between biomes your Pokémon now walks the road from one to the next, past a legendary in the sky if you\'re lucky.',
+      ]],
+      ['🗼', 'The Sky Pillar', [
+        'A new game mode: climb 100 floors, with a guardian every 10 and Rayquaza at the top. One starter a week, the same for everyone, and a weekly leaderboard.',
+        'No perks on the climb. Pick one of three augments at the start and after every guardian: 113 of them, from Silver to Prismatic, some with a catch, and six sets that grow stronger together.',
+        'Practice any time with any starter you own (but Mewtwo).',
+      ]],
+      ['🏆', 'Badges and the Trainer Card', [
+        '130 badges to earn across the whole game, from beating each boss to catching every rare in the Safari Zone. Your old wins already count.',
+        'Your Trainer Card shows them in a Badge Case, with your name, play time and a partner Pokémon of your choice.',
+      ]],
+      ['📕', 'The game is a Pokédex', [
+        'PokéDB is now Poké Deckbound. The whole game runs on the Pokédex: it powers on at the title and opens on every map.',
+        'Its home screen holds every app: the Pokédex, Moves, Relics, Items, Stats, Achievements, the Record Book, the Hall of Fame and the Game Corner.',
+        'How to play is rewritten as an app, and new moves, relics and items leave a "!" until you\'ve looked at them.',
+      ]],
+      ['✨', 'A new look', [
+        'Hybrid scenery: every biome keeps its pixel art, now with soft light over it, glowing lanterns, crystals and lava, and a dawn and dusk glow. Switch back to Pixel in Settings.',
+        'Smooth icons through the menus, and the Pokédex in six colours.',
+      ]],
+      ['⚙️', 'Settings and fixes', [
+        'Settings is a proper options screen: music, effects and cries volumes, text speed, battle speed, reduced flashing and shake, and vibration.',
+        'Every window closes on a tap outside it, and every confirm button looks and works the same.',
+        'Safari Zone: every run has 30 Safari Balls, and replays after the free daily try need a 100-coin Day Pass.',
+      ]],
+    ],
+  },
+  {
     version: '1.0',
     name: 'The Last Energy',
     date: '2026-10-02',
@@ -104,13 +140,15 @@ export const PATCHES = [
 export const IN_THE_GAME = [
   ['🔥', '31 starters', 'Charmander, Bulbasaur and Squirtle, 12 more from later generations, 15 legendaries to earn, and Mewtwo behind the Sealed Gate.'],
   ['🃏', '310 moves', 'About 74 each for Fire, Grass and Water, 68 Psychic moves for Mewtwo, and 21 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
-  ['🗺️', '4 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, each with wild Pokémon, Alphas and a boss, and the Crystal Depths for Mewtwo alone.'],
+  ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
   ['💎', '59 relics', 'Starter Abilities, relics for each type and boss relics that give extra PP with a catch.'],
   ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag.'],
   ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
-  ['📕', 'Pokédex', '55 entries over three pages, plus the Crystal Depths\' 16. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
+  ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
+  ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 113 augments and a weekly leaderboard.'],
+  ['🏆', '130 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🎰', 'Game Corner', 'Spend PokéCoins on 6 starters, 9 perks, a shiny for every starter but Mewtwo, and Poké Balls.'],
   ['☁️', 'Cloud save', 'Sign in from the Pokédex\'s Settings to play on your phone and PC with one save.'],

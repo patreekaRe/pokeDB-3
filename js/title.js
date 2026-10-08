@@ -22,7 +22,7 @@ import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { safariAccess, DAY_PASS } from './data/balls.js';
-import { getSave } from './storage.js';
+import { getSave, updateSave } from './storage.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { tipAt } from './tips.js';
@@ -31,6 +31,7 @@ import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { showBadgeNews } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
+import { paintTitleLight, runTitleLight } from './title-light.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -107,7 +108,7 @@ export function initTitle(handlers) {
   const flyer = screen.querySelector('.title-flyer');
   nextFlyer(flyer);
   flyer.addEventListener('animationiteration', () => nextFlyer(flyer));   // swapped while it's off screen
-  $('press-start-text').textContent = matchMedia('(pointer: coarse)').matches ? 'TAP TO START' : 'PRESS START';
+  $('press-start-text').textContent = 'Power on';   // read out only: the shut Pokédex says it on its own (the user's call)
   screen.addEventListener('click', (e) => {
     if (!pressed && !e.target.closest('.gem')) return start(e);
     // a sub-menu goes back on a tap on the empty sky, like every window closes on a tap outside it
@@ -116,7 +117,6 @@ export function initTitle(handlers) {
   $('title-refresh').addEventListener('click', refreshGame);
   // the corner's icons are smooth vector art like the signs (the user's call); the speaker is audio.js's
   $('title-account').querySelector('.ta-pc').replaceChildren(smoothIcon('pc'));
-  $('title-help').querySelector('.ta-pc').replaceChildren(smoothIcon('help'));
   const tags = screen.querySelectorAll('.title-sound .vol-tag');
   tags[0].replaceChildren(smoothIcon('music'));
   tags[1].replaceChildren(smoothIcon('bell'));
@@ -166,6 +166,7 @@ export function leaveTitle() {
     document.body.classList.remove('titling');
     clearInterval(timer);
     timer = 0;
+    runTitleLight(false);
   }, still() ? 0 : 380);
 }
 
@@ -179,23 +180,68 @@ function open() {
   renderRun(actions.savedRun());
   clearInterval(timer);
   if (!still()) timer = setInterval(tick, 1000 / FPS);
+  runTitleLight(true);
 }
 
-function start(e) {
+/* The first tap powers on the shut Pokédex (the user's pick, 2026-10-08): the button goes in, the LED turns green, the
+   cover swings open and the screen flickers on with the logo and a hello. Then it lifts away as the sky lights up onto
+   the menu. On the very first launch it dives into the screen instead, where How to play is already on (the Collection
+   device, booted without its cover: the one boot), and the sky lights up once that's shut. */
+const wait = (ms) => new Promise(done => setTimeout(done, ms));
+
+async function start(e) {
   if (e.type === 'keydown' && (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key))) return;
   e.preventDefault();
   pressed = true;
-  // the menu blip only answers buttons, and a tap on the sky isn't one: every way in says so (the user heard silence)
-  playSound('confirm');
+  // the power-on's dex-on is the tap's answer; with motion off there's no power-on, so the blip stands in (the user heard silence)
+  if (still()) playSound('confirm');
+  const first = actions.firstLaunch?.() ?? false;
+  const dex = $('title-dex');
+  if (!still()) await powerOn(dex);
+  if (first) {
+    if (!still()) await dive(dex);
+    const howto = actions.onFirstBoot();
+    dex.classList.add('gone');
+    await howto;
+  } else if (!still()) lift(dex);
+  reveal();
+}
+
+async function powerOn(dex) {
+  $('title-screen').classList.add('powering');
+  $('tdx-hello').textContent = actions.hello?.() ?? '';
+  dex.classList.add('on');
+  await wait(240);
+  playSound('dex-on');
+  dex.classList.add('open');
+  await wait(1700);
+}
+
+/** Into the screen: it grows until its glow fills the view, where the real device takes over. */
+async function dive(dex) {
+  const box = dex.getBoundingClientRect(), glass = dex.querySelector('.tdx-screen').getBoundingClientRect();
+  dex.style.transformOrigin = `${glass.left + glass.width / 2 - box.left}px ${glass.top + glass.height / 2 - box.top}px`;
+  dex.style.setProperty('--dive', Math.ceil(2.4 * Math.max(innerWidth / glass.width, innerHeight / glass.height)));
+  dex.classList.add('dive');
+  await wait(560);
+}
+
+/** Out of the way: it rises and fades in the light, pinned where it stood while the menu takes its place. */
+function lift(dex) {
+  const box = dex.getBoundingClientRect();
+  Object.assign(dex.style, { position: 'fixed', left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, margin: 0 });
+  dex.classList.add('away');
+  setTimeout(() => dex.classList.add('gone'), 700);
+}
+
+function reveal() {
   const screen = $('title-screen');
-  screen.classList.add('flash');
-  setTimeout(() => {
-    screen.classList.remove('flash');
-    screen.classList.add('menu');
-    renderMenu();
-    showTitle.done?.();
-    showTitle.done = null;
-  }, still() ? 0 : 260);
+  screen.classList.remove('powering');
+  screen.classList.add('menu');
+  if (!$('title-dex').classList.contains('away')) $('title-dex').classList.add('gone');
+  renderMenu();
+  showTitle.done?.();
+  showTitle.done = null;
 }
 
 /* ---------- the gem menu ---------- */
@@ -212,7 +258,7 @@ function renderMenu(dir = 0, from = null) {
   const gems = {
     main: () => [
       run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
-      gem('new', 'New game', hatch, smoothIcon('egg', 'gem-egg')),   // an Egg, a new adventure hatching: Continue has the Poké Ball
+      helpRow(gem('new', 'New game', hatch, smoothIcon('egg', 'gem-egg'))),   // an Egg, a new adventure hatching: Continue has the Poké Ball
       modesGem(),
       gem('dex', 'Pokédex', actions.onCollection, smoothIcon('dex')),   // one sign: the device's own home has the Trainer Card and Game Corner
     ],
@@ -274,6 +320,27 @@ function slide(dir, next, from = null) {
   swapping = setTimeout(() => { swapping = 0; ghost.remove(); }, 420);
 }
 
+/** How to play hangs off New game's right end as an emote bubble (the user's call, 2026-10-08: whoever needs it is about to
+    start a game). It hops until it's first tapped (`helpTapped`; the first launch's own How to play doesn't count). */
+function helpRow(btn) {
+  const row = el('div', 'gem-row');
+  const help = el('button', 'gem-side gem-help');
+  help.type = 'button';
+  help.id = 'title-help';
+  help.title = 'How to play';
+  help.setAttribute('aria-label', 'How to play');
+  help.classList.toggle('calm', !!getSave().helpTapped);
+  help.append(smoothIcon('help', 'gem-side-icon'));
+  help.addEventListener('click', () => {
+    playSound('confirm');
+    if (!getSave().helpTapped) updateSave(d => { d.helpTapped = true; });
+    help.classList.add('calm');
+    actions.onHelp();
+  });
+  row.append(btn, help);
+  return row;
+}
+
 /** A sign that opens a sub-menu: a ▶ on its right end says so. */
 function more(btn) {
   btn.classList.add('gem-more');
@@ -281,7 +348,7 @@ function more(btn) {
   return btn;
 }
 const backGem = () => {
-  const btn = gem('back', 'Back', goBack, smoothIcon('back', 'gem-back-icon'));
+  const btn = gem('back', 'Back', goBack, '');   // a plain ball, wobbling (the user's call, 2026-10-08: no ◀)
   btn.setAttribute('aria-label', 'Back');
   return btn;
 };
@@ -436,6 +503,8 @@ function sizeGems() {
     // the stack is centred, so a right margin of the difference lines Back's ball up with the signs' balls above
     if (back) btn.style.marginRight = `${(cols - w) * px}px`;
     if (back) btn.style.setProperty('--ball', `${BACK_H * px}px`);
+    // and its centre under theirs: a sign's ball is as tall as the sign, GEM_H steps
+    if (back) btn.style.setProperty('--ball-x', `${(GEM_H - BACK_H) * px / 2}px`);
   }
   // every page keeps the tallest page's height (four signs), so the nameplate never rises on a shorter sub-menu (the
   // user's ask)
@@ -521,12 +590,19 @@ function paintLogo() {
   const px = logoPixel();
   if (paintLogo.px === px) return;
   paintLogo.px = px;
-  $('title-logo').replaceChildren(...LOGO.map((ch, i) => {
-    const letter = el('span', `tl${ch === 'o' ? ' tl-ball' : ''}`);
-    letter.style.setProperty('--i', i);
-    if (i < LOGO.length - 1) letter.style.marginRight = `${-EDGE * px}px`;
-    letter.append(paintGlyph(ch, px));
-    return letter;
+  // "Poké" small over "Deckbound", like the games' logos; the letters still bounce in one by one across both lines
+  let i = 0;
+  $('title-logo').replaceChildren(...LOGO.map((word, line) => {
+    const size = line ? px : Math.max(2, Math.round(px * 0.6));
+    const row = el('span', `tl-row${line ? '' : ' tl-small'}`);
+    row.append(...word.map((ch, j) => {
+      const letter = el('span', `tl${ch === 'o' ? ' tl-ball' : ''}`);
+      letter.style.setProperty('--i', i++);
+      if (j < word.length - 1) letter.style.marginRight = `${-EDGE * size}px`;
+      letter.append(paintGlyph(ch, size));
+      return letter;
+    }));
+    return row;
   }));
 }
 
@@ -574,6 +650,8 @@ function paint() {
   look = SKIES[timeOfDay()];
   base = paintScenery(W, H, Math.round(ground / PIXEL));
   stars = look.stars ? makeStars(W, H - Math.round(ground / PIXEL) - 56, moonOf(W, H)) : [];
+  const orb = moonOf(W, H);
+  paintTitleLight($('title-light'), { time: timeOfDay(), orb: { x: orb.x * PIXEL, y: orb.y * PIXEL, r: orb.r * PIXEL }, ground, hills: 40 * PIXEL });
   sizeGate();
   draw();
 }

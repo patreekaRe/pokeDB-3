@@ -13,9 +13,13 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { RELICS } from './data/relics.js';
+import { ITEMS } from './data/items.js';
+import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
 import { safariDexCount } from './safaridex.js';
-import { trainerName } from './leaderboard.js';
+import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
+import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog } from './ui.js';
@@ -344,8 +348,6 @@ const popped = new Set();   // new badges whose pop-in has played this page load
 /** A new badge seen: its "!" goes, and so does its group's, the device lid's and the title's / Bag's once none is left. */
 function markSeen(ids) {
   updateSave(d => { d.badgesSeen = [...new Set([...(d.badgesSeen || []), ...ids])]; });
-  const news = badgeNews();
-  $('cdev')?.classList.toggle('news', news);
   showBadgeNews();
 }
 
@@ -376,6 +378,43 @@ function badgeButton(b, save, earned, fresh, i) {
   return btn;
 }
 
+/** NAME on the card: a tap turns it into a box (the user's ask, 2026-10-08), the same nickname as Settings' Trainer box and
+    the leaderboards. Enter, OK or a tap away keeps it; Escape leaves it as it was. */
+function nameField(redraw) {
+  const dd = el('dd', 'tc-name');
+  const show = el('button', 'tc-name-btn');
+  show.type = 'button';
+  show.title = 'Tap to change your name';
+  show.setAttribute('aria-label', `Name: ${trainerName()}. Change it`);
+  show.append(el('span', '', trainerName().toUpperCase()), el('span', 'tc-name-edit', '✎'));
+  show.addEventListener('click', () => {
+    playSound('confirm');
+    const form = el('form', 'tc-name-form');
+    const input = el('input', 'tc-name-input');
+    Object.assign(input, { maxLength: NAME_MAX, value: pickedName(), placeholder: 'Trainer', autocomplete: 'nickname', spellcheck: false, enterKeyHint: 'done' });
+    input.setAttribute('aria-label', 'Your name');
+    const ok = el('button', 'tc-name-ok', 'OK');
+    ok.type = 'submit';
+    form.append(input, ok);
+    let done = false;
+    const finish = (keep) => {
+      if (done) return;
+      done = true;
+      if (keep) { setTrainerName(input.value); playSound('confirm'); }
+      redraw();
+    };
+    form.addEventListener('submit', (e) => { e.preventDefault(); finish(true); });
+    input.addEventListener('blur', () => setTimeout(() => finish(true)));
+    // typing stays in the box: the device's keys (D-pad, B on Escape) wait
+    input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    dd.replaceChildren(form);
+    input.focus();
+    input.select();
+  });
+  dd.append(show);
+  return dd;
+}
+
 export function openTrainerCard(into = null, { reopen = false } = {}) {   // `into`: draw it there (the Collection device's screen), no window
   const save = getSave();
   const s = save.stats;
@@ -400,7 +439,8 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   ];
   const info = el('div', 'tc-info');
   const list = el('dl', 'tc-lines');
-  for (const [k, v] of lines) list.append(el('dt', '', k), el('dd', '', v));
+  const redraw = () => openTrainerCard(into, { reopen: true });
+  for (const [k, v] of lines) list.append(el('dt', '', k), k === 'NAME' ? nameField(redraw) : el('dd', '', v));
   const mate = partner(save);
   const pic = el('button', 'tc-partner');
   pic.type = 'button';
@@ -499,13 +539,24 @@ export function cardIcon() {
   return svg;
 }
 
-/** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen. */
+const FIND_LISTS = { relics: RELICS, items: ITEMS, cards: ALL_CARDS };
+
+/** A kind's new finds the Collection hasn't shown, only ones its apps list (a played Cinder or status card isn't one). */
+export const newFinds = (kind, save = getSave()) => (save.newFinds?.[kind] || []).filter(id => FIND_LISTS[kind].some(t => t.id === id));
+
+/** Anything new in the Collection device: a badge, or a relic, item or move found. */
+export const deviceNews = (save = getSave()) => badgeNews(save) || Object.keys(FIND_LISTS).some(k => newFinds(k, save).length);
+
+/** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen; the
+    title's Pokédex sign and every Pokédex / Home key glint for anything new in the device. */
 export function showBadgeNews(save = getSave()) {
-  const tier = cardTier(save).id, news = badgeNews(save);
+  const tier = cardTier(save).id, news = badgeNews(save), any = deviceNews(save);
   for (const node of document.querySelectorAll('#title-menu .gem-dex, #bag-btn, .bag-pocket[data-pocket="trainer"]')) {
     node.dataset.tier = tier;
-    node.classList.toggle('badge-news', news);
+    node.classList.toggle('badge-news', node.classList.contains('gem-dex') ? any : news);
   }
+  for (const node of document.querySelectorAll('#brand-btn, #room-home')) node.classList.toggle('dex-news', any);
+  $('cdev')?.classList.toggle('news', any);
 }
 
 /** The Collection's card for it: the newest badge as its art, coloured like the card. */

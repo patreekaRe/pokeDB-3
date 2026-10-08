@@ -19,7 +19,7 @@
   margin-top: 0.45em;
   font-family: var(--pixel-font); font-synthesis-weight: none;   /* in the game's pixel font, with a hard outline in the logo's dark blue */
   font-weight: 400;
-  font-size: clamp(1rem, 4vw, 1.6rem);
+  font-size: clamp(0.75rem, 3vw, 1.1rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff8e0;
@@ -34,7 +34,9 @@
 
 /* the pixel logo (js/logo.js, a canvas a letter): letters bounce in one by one, then a slow wave with a shine
    rolls through them; the "o" is a Poké Ball that wobbles like a catch */
-.title-logo { display: inline-flex; align-items: flex-end; }
+.title-logo { display: inline-flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 22px rgba(255, 214, 110, 0.28)); }
+.tl-row { display: inline-flex; align-items: flex-end; }
+.tl-small { margin-bottom: -0.04em; }
 .tl canvas { display: block; image-rendering: pixelated; }
 .tl-ball canvas { transform-origin: 50% 85%; animation: ballWobble 3.2s ease-in-out infinite 1.4s; }
 .tl {
@@ -133,6 +135,107 @@ body.titling { overflow: hidden; }
   opacity: 0;
 }
 .press-start:focus-visible { outline: 2px dashed var(--gold); outline-offset: 6px; }
+/* no words under the shut Pokédex (the user's call, 2026-10-08: its pulsing power button says it); the button stays for keys and screen readers */
+.press-start { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.title-screen.powering .press-start { visibility: hidden; }
+
+/* the smooth light over the pixel sky (js/title-light.js), and the dark the shut Pokédex lies in until it's on */
+.title-light { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.title-veil {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 46%, rgba(6, 8, 26, 0.5), rgba(3, 4, 14, 0.86) 75%);
+  transition: opacity 1.6s ease;
+}
+.title-screen.powering .title-veil { opacity: 0.72; }
+.title-screen.menu .title-veil { opacity: 0; }
+.title-center { z-index: 2; }
+.title-screen:not(.menu) .title-big { display: none; }
+
+/* the shut Pokédex before the first tap (powerOn() in js/title.js): its power button pulses; a tap presses it, the LED
+   turns green, the cover swings open on its left hinge and the screen flickers on with the logo and a hello */
+.title-dex {
+  position: relative; display: flex; flex-direction: column; gap: 8px; width: clamp(200px, 58vw, 250px); aspect-ratio: 10 / 13;
+  padding: 10px 12px 14px; border-radius: 22px;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 20px 40px rgba(0, 0, 0, 0.55), 0 0 70px rgba(130, 160, 255, 0.16);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  animation: tdxFloat 4s ease-in-out infinite;
+}
+.title-screen.menu .title-dex:not(.away), .title-dex.gone { display: none; }
+@keyframes tdxFloat { 50% { transform: translateY(-6px); } }
+.tdx-top { flex: none; display: flex; align-items: center; gap: 7px; height: 40px; }
+.tdx-top .pdx-lens { width: 32px; height: 32px; border-width: 3px; }
+.tdx-glass {
+  flex: 1; display: flex; padding: 7px; border-radius: 10px 10px 10px 24px;
+  background: #e4e4ea; box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 -4px 0 rgba(0, 0, 0, 0.14);
+}
+.tdx-screen {
+  position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  overflow: hidden; border: 3px solid #2a2a30; border-radius: 5px 5px 5px 18px; background: #0a1020; text-align: center;
+}
+.tdx-screen > * { opacity: 0; }
+.tdx-screen .cdev-splash-ball { width: 40px; height: 40px; border-width: 3px; }
+.tdx-name { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: clamp(0.66rem, 3.2vw, 0.8rem); letter-spacing: 1px; color: #ffd84a; text-shadow: 2px 2px 0 #2a4cb0; }
+.tdx-name small { font-size: 0.62em; color: #fff4a0; }
+.tdx-hello { min-height: 1em; font-size: 0.5rem; letter-spacing: 1px; color: #b6f08e; }
+.tdx-cover {
+  position: absolute; left: 0; right: 0; top: 58px; bottom: 0; z-index: 2; border-radius: 0 0 22px 22px;
+  transform-origin: left center; backface-visibility: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), transparent 40%), linear-gradient(180deg, var(--shell-hi), var(--shell) 45%, var(--shell-fold));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset -10px 0 0 rgba(0, 0, 0, 0.12);
+}
+/* the classic yellow chevron on the cover */
+.tdx-cover::before {
+  content: ''; position: absolute; left: 50%; top: 16%; width: 52%; height: 16%; translate: -50% 0;
+  background: linear-gradient(180deg, #ffe36b, #e8b818); clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); opacity: 0.9;
+}
+.tdx-led {
+  position: absolute; top: 12px; right: 16px; width: 11px; height: 11px; border-radius: 50%;
+  background: #ff5a5a; box-shadow: inset 0 0 0 2px var(--shell-deep); animation: tdxStandby 2.4s ease-in-out infinite;
+}
+@keyframes tdxStandby { 50% { background: #6a1e22; } }
+.tdx-power {
+  position: absolute; left: 50%; bottom: 18%; width: 58px; height: 58px; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #e6f8ff 0 10%, #5ec8ff 24%, #1f78c8 72%); border: 4px solid #fff;
+  box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep);
+  animation: tdxPulse 1.8s ease-out infinite;
+  transition: translate 0.08s, box-shadow 0.2s;
+}
+.tdx-power::before { content: ''; position: absolute; left: 50%; top: 20%; width: 4px; height: 32%; translate: -50% 0; border-radius: 2px; background: #fff; }
+.tdx-power::after { content: ''; position: absolute; inset: 28%; border-radius: 50%; border: 4px solid #fff; border-top-color: transparent; }
+@keyframes tdxPulse {
+  0%   { box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep), 0 0 0 3px rgba(127, 216, 255, 0.7); }
+  100% { box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep), 0 0 0 22px rgba(127, 216, 255, 0); }
+}
+.title-dex.on .tdx-power { translate: -50% 3px; animation: none; box-shadow: 0 0 0 3px var(--shell-rim), 0 1px 0 var(--shell-deep), 0 0 26px 8px #7fd8ff; }
+.title-dex.on .tdx-led { animation: none; background: #6be36b; box-shadow: inset 0 0 0 2px var(--shell-deep), 0 0 12px 3px #6be36b; }
+.title-dex.open .tdx-cover { animation: tdxSwing 0.55s cubic-bezier(0.55, 0, 0.35, 1) forwards; }
+@keyframes tdxSwing {
+  80%  { transform: perspective(900px) rotateY(-80deg); opacity: 1; }
+  100% { transform: perspective(900px) rotateY(-104deg); opacity: 0; }
+}
+.title-dex.open .pdx-light { animation: pdxBlink 0.16s steps(1) 5 0.3s; }
+.title-dex.open .pdx-light.yellow { animation-delay: 0.38s; }
+.title-dex.open .pdx-light.green { animation-delay: 0.46s; }
+.title-dex.open .pdx-lens { animation: pdxLens 0.9s ease-out 0.3s; }
+.title-dex.open .tdx-screen {
+  background: radial-gradient(circle at 50% 40%, #2a5a98, #10234a 75%); box-shadow: inset 0 0 30px rgba(127, 216, 255, 0.3);
+  animation: pdxPowerOn 0.5s steps(8) 0.45s;
+}
+.title-dex.open .tdx-screen > * { animation: tdxShow 0.4s ease-out forwards 0.85s; }
+.title-dex.open .tdx-name { animation-delay: 1s; }
+.title-dex.open .tdx-hello { animation-delay: 1.3s; }
+@keyframes tdxShow { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* lifting away as the sky lights up; or, the very first time, diving into the screen */
+.title-dex.away { z-index: 5; animation: tdxAway 0.7s ease-in forwards; pointer-events: none; }
+@keyframes tdxAway { to { transform: translateY(-24px) scale(1.12); opacity: 0; filter: brightness(1.7); } }
+.title-dex.dive { z-index: 5; animation: tdxDive 0.56s cubic-bezier(0.6, 0, 0.9, 0.5) forwards; }
+.title-dex.dive .tdx-screen { filter: brightness(1.6); transition: filter 0.4s; }
+@keyframes tdxDive { to { transform: scale(var(--dive, 12)); } }
+@media (prefers-reduced-motion: reduce) {
+  .title-dex, .tdx-power, .tdx-led { animation: none; }
+}
 .press-cursor { font-size: 0.7em; color: var(--gold); }
 @keyframes pressBlink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0; } }
 
@@ -288,8 +391,6 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .nameplate .gb-hp { width: 100%; margin: 0; }
 /* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */
 .nameplate-foot { display: flex; align-items: flex-start; gap: 4px 8px; }
-#enemy-dex.dex-mark { position: static; align-self: center; font-size: 1.7rem; }   /* already caught / researched (js/battle.js setupEnemy) */
-#enemy-dex[hidden] { display: none; }
 .nameplate .gb-hp-num { flex: none; width: auto; margin: 0 0 0 auto; font-size: 0.85rem; line-height: 20px; }
 .nameplate .gb-hp-track { transition: border-color 0.2s, box-shadow 0.2s; }
 /* while a fighter has block, its HP bar gets a blue rim so you can tell at a glance */
@@ -635,18 +736,26 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .badge.preview { animation: badgeGhost 0.7s steps(1) infinite; }
 @keyframes badgeGhost { 50% { opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } }
-/* the HP the raised card's block would save from the coming hit (shieldPreview()): blue over the end of the bar, blinking
-   between two blues and never to nothing, at least 4px, since the old red damage chunk read as a stray dot on small hits */
+/* the HP your block would save from the coming hit (shieldPreview()): blue over the end of the bar, at least 4px, since
+   the old red damage chunk read as a stray dot on small hits. The block you have holds steady; a raised card's blinks
+   between two blues (never to nothing); when the hit lands it flashes white and breaks off (soakShield()) */
 .nameplate .gb-hp-track { position: relative; }
 .gb-hp-shield {
   position: absolute; top: 3px; bottom: 3px;
   left: max(3px, calc(3px + (100% - 6px) * var(--from)));
   width: max(4px, calc((100% - 6px) * var(--size)));
   background: #3878f0; box-shadow: inset 0 2px 0 #88c0ff;
-  animation: shieldGhost 0.7s steps(1) infinite;
 }
+.gb-hp-shield.ghost { animation: shieldGhost 0.7s steps(1) infinite; }
 @keyframes shieldGhost { 50% { background: #88c0ff; box-shadow: inset 0 2px 0 #c8e4ff; } }
-@media (prefers-reduced-motion: reduce) { .gb-hp-shield { animation: none; } }
+.gb-hp-shield.soak { animation: shieldSoak 0.5s steps(5) forwards; }
+@keyframes shieldSoak {
+  0%   { background: #fff; box-shadow: inset 0 2px 0 #fff; }
+  40%  { background: #c8e4ff; translate: 0 -1px; }
+  100% { background: #88c0ff; translate: 0 -5px; opacity: 0; }
+}
+.fast-battle .gb-hp-shield.soak { animation-duration: 0.25s; }
+@media (prefers-reduced-motion: reduce) { .gb-hp-shield.ghost { animation: none; } .gb-hp-shield.soak { animation: shieldSoak 0.5s steps(1) forwards; } }
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
@@ -768,7 +877,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 }
 /* PP and End Turn are drawn like the Diamond/Pearl move screen: a white pill on the salmon striped move
    panel. PP shows "PP" on the left and "2/3" on the right; the numbers turn red when you're out. */
-.energy-orb, #end-turn-btn, .howto-endturn {
+.energy-orb, #end-turn-btn {
   position: relative;
   padding: 7px 8px;
   border: 0;
@@ -969,7 +1078,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .battle-controls { margin-top: 8px; }
   .battle-controls > :is(.orb-wrap, .turn-side) { translate: 0; }
   .hand { padding-top: 10px; }
-  .energy-orb, .howto-endturn { padding: 6px 7px; }
+  .energy-orb { padding: 6px 7px; }
   .pp-pill { gap: 16px; padding: 10px 14px 9px; }
   .turn-side { align-items: flex-end; }
   /* Throw shows: PP | Throw | End Turn, with Throw in the middle of the screen (the user's call: it sat off to the right) */
@@ -1756,6 +1865,7 @@ body.battle-intro { pointer-events: none; }
 }
 .relic-term b { font-weight: 400; }
 /* Skip / Leave sits centred right under the options, not off in a corner by the text box */
+.reward-actions:not(:has(> :not([hidden]))) { display: none; }
 .reward-actions { flex: none; display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: -4px; }
 .reward-option > .relic { height: 100%; }   /* tiles side by side share one height */
 @media (max-width: 720px) {
@@ -2333,8 +2443,6 @@ body.battle-intro { pointer-events: none; }
 .gc-icon { display: inline-block; vertical-align: middle; line-height: 0; }
 .shop-btn .gc-icon { font-size: 30px; }
 /* the PokéCoins slide opens on coin ▶ slot machine: what they're for, before how to earn them */
-.gc-hero { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; font-size: 44px; line-height: 0; }
-.gc-hero b { font-size: 16px; line-height: 1; color: var(--win-muted); }
 
 /* No button chrome: the slot machine itself is the button, with a shadow so it reads over any backdrop */
 .icon-btn.shop-btn {
@@ -2657,109 +2765,33 @@ body.battle-intro { pointer-events: none; }
 .shop-owned { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #1f7a38; }
 .shop-owned .pokeball { font-size: 2.2em; margin: 0; border-width: 0.06em; box-shadow: none; animation: none; }
 
-/* ---------- 7. HOW TO PLAY ---------- */
-/* Mostly pictures: the real PP box and End Turn, map-node colours and
-   battle badges, so the guide looks exactly like what you'll see in play. */
-.howto-dialog { width: min(640px, 94vw); text-align: center; }
-.howto-dialog h2 { font-size: 1.6rem; outline: none; }
-.howto-label {
-  margin: 18px 0 8px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+/* ---------- 7. ICON ROWS (the Bag's pockets: relics, items, augments, the map key) ---------- */
+/* How to play itself is an app on the Pokédex device now (js/howto.js, on shelfApp()'s styles) */
+.pdx-banner .howto-banner-art.bdx-banner-things { right: 6px; top: 50%; bottom: auto; translate: 0 -50%; gap: 0; align-items: center; }
+.pdx-banner .howto-banner-art .bdx-banner-thing { width: 68px; height: 68px; padding: 0; translate: none; }
+.pdx-banner .howto-banner-art > * + * { margin-left: -18px; }
+.pdx-banner .howto-banner-art > :nth-child(2) { width: 90px; height: 90px; z-index: 1; }
+.pdx-banner .howto-banner-art .bdx-banner-mon { width: 104px; height: 104px; margin: 0 -10px 0 -22px; object-position: center; }
+.pdx-banner:has(.howto-banner-art) .pdx-banner-sub { max-width: 34%; }
+.howto-tricard { display: flex; align-items: flex-end; padding: 0 6px 4px 0; }
+.howto-minicard {
+  position: relative; display: grid; place-items: center; width: 60px; height: 82px; margin: 0 -6px;
+  border: 3px solid #fff; border-radius: 8px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
 }
-
-/* each slide opens with a title and a one-line summary */
-.howto-head { margin-bottom: 14px; }
-.howto-head h3 { margin: 0; font-size: 1.2rem; color: var(--ink); }
-.howto-head p { margin: 6px 0 0; font-size: 0.9rem; color: var(--muted); }
-
-/* the first two slides: numbered steps, one per row, with a picture slot on the left */
-.howto-list.howto-flow { grid-template-columns: 1fr; margin: 0; padding: 0; list-style: none; counter-reset: step; }
-.howto-flow .howto-li { counter-increment: step; position: relative; padding-left: 42px; min-height: 64px; }
-.howto-flow .howto-li::before {
-  content: counter(step);
-  position: absolute;
-  left: 11px;
-  top: 50%;
-  translate: 0 -50%;
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--win-gold);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 900;
+.howto-minicard .smooth-icon { width: 40px; height: 40px; }
+.howto-minicard.fire  { background: linear-gradient(160deg, #ffa070, #e0602c); rotate: -12deg; translate: 0 6px; }
+.howto-minicard.grass { background: linear-gradient(160deg, #98d880, #4ea040); z-index: 1; }
+.howto-minicard.water { background: linear-gradient(160deg, #8ab0ff, #3c70d8); rotate: 12deg; translate: 0 6px; }
+.howto-minicost {
+  position: absolute; top: -8px; left: -8px; width: 20px; height: 20px; display: grid; place-items: center;
+  border: 2px solid #e06058; border-radius: 50%; background: #fff; color: #2a2a3a; font: 0.6rem/1 var(--pixel-font); font-synthesis-weight: none;
 }
-.howto-flow .howto-li.boss { border-color: var(--win-gold); background: rgba(255, 203, 5, 0.14); }
-.howto-pic { flex: none; width: 56px; height: 48px; display: grid; place-items: center; font-size: 1.9rem; }
-.howto-pic img { width: 56px; height: 56px; object-fit: contain; }
-.howto-pic.wide { width: 104px; }
+.howto-about { display: block; width: 100%; margin: 0 0 10px; padding: 9px 12px; border: 0; text-align: center; cursor: pointer; }
 
-.howto-tip {
-  margin: 10px 0 0;
-  padding: 9px 14px;
-  border-radius: var(--round-sm);
-  background: rgba(255, 203, 5, 0.14);
-  border: 1px solid var(--win-edge);
-  font-size: 0.86rem;
-  text-align: left;
-}
-.howto-tip.with-pic { display: flex; align-items: center; gap: 12px; }
-.howto-tip-pic { flex: none; display: grid; place-items: center; min-width: 44px; }
-.howto-tip-pic .intent { translate: none; margin: 0 0 8px; padding: 3px 7px 3px 5px; gap: 4px; cursor: default; }
-.howto-tip-pic :is(.intent-value, .intent-name) { font-size: 0.72rem; }
-.howto-tip-pic .bag-sprite { width: 44px; height: 44px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35)); }
-
-/* the PP window and End Turn, small */
-.howto-pic :is(.energy-orb, .howto-endturn) { padding: 4px 5px; }
-.howto-pic .pp-pill { gap: 6px; padding: 5px 8px 4px; font-size: 0.66rem; box-shadow: 0 0 0 2px var(--rim, #c84840), inset 0 -2px 0 #d0d0d8; }
-.howto-pic :is(.pp-label, .pp-count) { font-size: inherit; }
-
-/* a little fanned hand of cards, one per type, each with its PP cost disc */
-.howto-hand { display: flex; }
-.howto-hand > span {
-  position: relative;
-  width: 30px;
-  height: 40px;
-  margin: 0 -3px;
-  display: grid;
-  place-items: center;
-  border: 2px solid rgba(0, 0, 0, 0.45);
-  border-radius: 4px;
-  font-size: 0.95rem;
-  box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.25);
-}
-.howto-hand > span::before {
-  content: "1";
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 14px;
-  height: 14px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  border: 2px solid #e06058;
-  background: #fff;
-  color: var(--win-ink);
-  font-size: 0.55rem;
-  font-weight: 900;
-}
-.howto-hand .fire  { background: #f08850; rotate: -10deg; translate: 0 3px; }
-.howto-hand .grass { background: #78c060; z-index: 1; }
-.howto-hand .water { background: #6890f0; rotate: 10deg; translate: 0 3px; }
-
-/* icon + name + one-line explanation (map rooms, statuses) */
+/* icon + name + one-line explanation */
 .howto-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
-/* a lone last row (Boss, Enraged, Coin Finder) gets its own line but stays the others' width, centred */
+/* a lone last row gets its own line but stays the others' width, centred */
 .howto-li:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 8px) / 2); }
-:is(.drop, .howto-flow) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }   /* one column there anyway */
-.howto-list.howto-earn { grid-template-columns: 1fr 1fr; }   /* short rows: two per line even on phones */
 .howto-li {
   display: flex;
   align-items: center;
@@ -2769,16 +2801,10 @@ body.battle-intro { pointer-events: none; }
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--panel-edge);
 }
-.howto-li .howto-node, .howto-li .badge { flex: none; }
-.howto-li .badge { cursor: default; animation: none; }
+.howto-li .howto-node { flex: none; }
 .howto-li-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .howto-li-text b { font-size: 0.92rem; }
 .howto-li-text small { font-size: 0.8rem; line-height: 1.25; color: var(--muted); }
-
-.howto-chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
-.howto-chip { padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
-.howto-chip.good { background: #2e7d32; color: #fff; }
-.howto-chip.bad  { background: #b3261e; color: #fff; }
 
 /* bare icons (map rooms, relics, items): no chip or frame, the user's call */
 .howto-node {
@@ -2790,92 +2816,11 @@ body.battle-intro { pointer-events: none; }
 }
 .howto-node.building svg { width: 100%; height: auto; display: block; }
 
-/* the type cycle */
-.howto-types { display: flex; align-items: center; justify-content: center; gap: 6px; }
-.howto-type {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-size: 1.3rem;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-}
-.howto-type.fire  { background: #c9431f; }
-.howto-type.grass { background: #2f8f43; }
-.howto-type.water { background: #2569c7; }
-.howto-beats { font-size: 0.8rem; color: var(--win-gold); }
-
-/* the slides: a sideways scroll-snap strip, one topic per slide */
-.howto-dialog { position: relative; }
-.howto-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-.howto-close:hover { background: rgba(0, 0, 0, 0.08); color: var(--ink); }
-.howto-track {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-.howto-track::-webkit-scrollbar { display: none; }
-.howto-slide {
-  flex: 0 0 100%;
-  min-width: 0;
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 10px 4px 6px;
-}
-.howto-slide > .howto-label:first-child { margin-top: 0; }
-
-.howto-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
-.howto-prev {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--panel-edge);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 1.5rem;
-  line-height: 1;
-}
-.howto-prev:disabled { visibility: hidden; }
-.howto-next { min-width: 118px; }
-.howto-dots { display: flex; gap: 8px; }
-.howto-dot {
-  width: 9px;
-  height: 9px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.28);
-  transition: width 0.2s, background 0.2s;
-}
-.howto-dot[aria-current="true"] { width: 24px; background: var(--gold); }
-
 @media (max-width: 560px) {
-  .howto-dialog { padding: 18px 14px; }
   .howto-list { grid-template-columns: 1fr; gap: 6px; }
-  .howto-list:not(.howto-earn) .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }
+  .howto-li:last-child:nth-child(odd) { width: auto; justify-self: stretch; }
   .howto-li { padding: 5px 10px; gap: 10px; }
   .howto-li .howto-node { width: 34px; height: 34px; font-size: 1.35rem; }
-  .howto-pic.wide { width: 90px; }
-  .howto-type { width: 38px; height: 38px; font-size: 1.1rem; }
-  .howto-types { gap: 4px; }
-  .howto-beats { font-size: 0.58rem; }
 }
 
 /* ---------- a move not met yet in the Moves app: a greyed card, its art a black silhouette, ??? for the rest (lockedCard() in js/cardindex.js) ---------- */
@@ -3483,7 +3428,6 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .treasure-relic:focus-visible { outline: none; }
 .treasure-relic:focus-visible .relic-halo { background: radial-gradient(closest-side, rgba(248, 208, 48, 0.9), transparent); }
 .treasure-stage.choosing .treasure-relic:not(.chosen) { opacity: 0.55; filter: grayscale(0.6); }
-.treasure-take { position: fixed; left: 50%; translate: -50% 0; }
 /* taken: it shrinks away into the Bag, and the others sink back into the light */
 .treasure-relic.taken { animation: relicToBag 0.7s ease-in forwards; }
 @keyframes relicToBag { 20% { transform: scale(1.3); } to { transform: translate(var(--to-x), var(--to-y)) scale(0.2); opacity: 0.2; } }
@@ -3532,7 +3476,6 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .float-thing.tossing .float-label { color: #ffb0a8; }
 .float-thing.gone { opacity: 0; }
 .float-thing.taken { animation: relicToBag 0.7s ease-in forwards; }
-.float-go { margin-top: 2px; }
 /* an event's gift floats in the middle of the scene, over the props */
 .float-gift { position: fixed; left: 50%; top: 42%; translate: -50% -50%; z-index: 3; padding: 0; }
 /* before the item shows, it lies in a Poké Ball in the middle (offerItem): tapped, it hops and wobbles like the treasure
@@ -3606,25 +3549,6 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .item-row .howto-li-text { flex: 1; }
 .item-actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
 .bag .item-actions .btn { padding: 4px 8px 4px 16px; font-size: 0.7rem; min-height: 0; }
-
-/* How to play: plain icons, no round chips. Statuses read like the nameplates' badges (icon, then a coloured
-   number). */
-.howto-dialog .howto-li .badge {
-  width: 44px;
-  height: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  font-size: 1.4rem;
-}
-.howto-dialog .howto-li .badge b { position: static; min-width: 0; height: auto; padding: 0; background: none; box-shadow: none; color: var(--win-ink); font-size: 0.95rem; }
-.howto-dialog .howto-li .badge.block b { color: #2060d8; }
-.howto-dialog .howto-li .badge.good b { color: #208030; }
-.howto-dialog .howto-li .badge.bad b { color: #c02020; }
 
 /* ---------- the pixel scene behind every screen (js/scene.js), dimmed by #backdrop outside battles ---------- */
 #scene-bg { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; image-rendering: pixelated; display: none; }
@@ -4169,6 +4093,8 @@ body.scene-peek #backdrop { display: none; }
 .tower-lobby[open] .pdx-light.yellow { animation-delay: 0.08s; }
 .tower-lobby[open] .pdx-light.green { animation-delay: 0.16s; }
 .tdev-lid .cdev-lcd { min-width: 0; max-width: 64%; }
+.tower-continue { min-width: 0; padding-inline: 14px; }
+@media (max-width: 380px) { .tower-continue { padding-inline: 10px; font-size: 0.55rem; } }
 .tower-title { margin: 0; font-size: 0.72rem; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
 .tower-title:focus { outline: none; }
 .tower-week { margin: 0; font-size: 0.55rem; opacity: 0.75; white-space: nowrap; }
@@ -4227,7 +4153,7 @@ body.scene-peek #backdrop { display: none; }
 
 /* ---------- the Sky Pillar's climb (js/tower.js): the tower is the map, painted behind the run card ---------- */
 .tower-view { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #0a0c1c; }
-#map-screen.tower .map-head, #map-screen.tower .map-wrap { display: none; }
+#map-screen.tower .map-wrap { display: none; }
 #map-screen.tower .run-card { z-index: 2; }
 .tw-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 .tw-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); image-rendering: pixelated; pointer-events: none;
@@ -4245,17 +4171,6 @@ body.scene-peek #backdrop { display: none; }
 .tw-door:nth-child(2) .tw-door-tag { animation-delay: -0.5s; } .tw-door:nth-child(3) .tw-door-tag { animation-delay: -1s; }
 .tw-door.guardian .tw-door-tag { min-width: 40px; height: 32px; font-size: 1.2rem; background: linear-gradient(#fff4b8, #f8c830); }
 @keyframes twTag { 50% { translate: -50% -6px; } }
-/* the stone plate a floor's number is stamped on */
-.tw-plate { position: absolute; left: 50%; top: max(20px, calc(env(safe-area-inset-top) + 12px)); translate: -50% 0; display: grid; justify-items: center; gap: 4px; min-width: 132px; padding: 8px 16px 9px;
-  border: 3px solid #2a2622; border-radius: 6px; background: linear-gradient(#a8a090, #8a8274 55%, #6e6758); color: #2e2a24;
-  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.35), inset -2px -3px 0 rgba(0, 0, 0, 0.25), 3px 4px 0 rgba(0, 0, 0, 0.45); pointer-events: none; z-index: 1; }
-.tw-plate-num { font-size: 1.35rem; letter-spacing: 2px; color: #3a342c; text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4), -1px -1px 0 rgba(0, 0, 0, 0.35); }
-.tw-plate-sub { font-size: 0.55rem; color: #3e382e; }
-.tw-plate.guardian { background: linear-gradient(#f0d890, #c8a048 55%, #9a7428); border-color: #4a3410; }
-.tw-plate.stamp { animation: twStamp 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
-.tw-plate.stamp .tw-plate-num { animation: twCarve 0.9s ease-out both; }
-@keyframes twStamp { 0% { scale: 1.9; opacity: 0; rotate: -6deg; } 45% { scale: 0.92; opacity: 1; rotate: 1deg; } 70% { scale: 1.04; } 100% { scale: 1; rotate: 0deg; } }
-@keyframes twCarve { 0%, 30% { color: transparent; text-shadow: none; } }
 /* the altitude gauge: the sky's colours by height, a tick every 10 floors, your floor and your best */
 .tw-gauge { position: absolute; left: 4px; top: max(36px, calc(env(safe-area-inset-top) + 28px)); bottom: calc(var(--tw-bar-h, 240px) + 18px); width: 12px; pointer-events: none; z-index: 1; }
 .tw-gauge-cap { position: absolute; top: -16px; left: 50%; translate: -50% 0; font-size: 0.45rem; color: #f8f0d8; text-shadow: 1px 1px 0 #000; }
@@ -4285,7 +4200,7 @@ body.scene-peek #backdrop { display: none; }
 .tower-fx.flash .tw-fx-dark { background: #fff; animation: twFlash 0.5s both; }
 @keyframes twFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
 .tower-fx.dark .tw-fx-dark { background: #000; opacity: 1; transition: opacity 0.45s ease-in; animation: none; }
-@media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-plate.stamp, .tw-plate.stamp .tw-plate-num, .tw-fx-text.in { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-fx-text.in { animation: none; } }
 .tw-fx-text.high { top: 7%; }
 /* the lobby's plaque (js/towerprep.js): the week's top climbers engraved in a bronze plate, riveted at the corners */
 /* pinned to the screen's bottom while the lobby scrolls (the user's ask, 2026-10-05); sticky needs the pages' overflow to be
@@ -4589,30 +4504,36 @@ body.scene-peek #backdrop { display: none; }
   padding: var(--topbar-h) 0 0;
   overflow: hidden;
 }
-#map-screen.tower :is(.mdex-hinge, .mdex-glass) { display: contents; }
-#map-screen.tower :is(.mdex-hinge > .pdx-lens, .mdex-lights) { display: none; }
+#map-screen.tower .mdex-glass { display: contents; }
 #map-screen:not(.tower) .mdex-window {
   position: relative; flex: none; margin: 2px 10px 0; padding: 6px 6px 4px; border-radius: 16px 16px 8px 8px;
   box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 8px 14px rgba(0, 0, 0, 0.3), 0 0 0 100vmax var(--shell);
 }
 #map-screen:not(.tower) .run-card { padding: 2px 2px 4px; }
-#map-screen:not(.tower) .mdex-hinge { position: relative; flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+#map-screen .mdex-hinge { position: relative; flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+/* the hinge on top, over the LCD, like the Sky Pillar's bar (the user's call, 2026-10-08); flex order also orders the
+   painting, so it needs a z-index to paint over the window's shell shadow */
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) { --hinge-h: 44px; }   /* the top bar reads it too */
+#map-screen:not(.tower) .mdex-hinge { order: 1; z-index: 1; height: var(--hinge-h); box-sizing: border-box; }
+#map-screen:not(.tower) .mdex-window { order: 2; }
+#map-screen:not(.tower) .mdex-glass { order: 3; margin-top: 8px; }
+#map-screen:not(.tower) .mdex-dock { order: 4; }
 .mdex-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
 .mdex-lights { display: flex; gap: 5px; }
 .mdex-lights .pdx-light { width: 9px; height: 9px; }
-#map-screen:not(.tower) .mdex-hinge .map-head {
-  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px;
+#map-screen .mdex-hinge .map-head {
+  flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
   margin: 0 0 0 auto; padding: 5px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
   background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
 }
-#map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign) {
+#map-screen .mdex-hinge :is(.biome-sign, .stage-sign) {
   max-width: 100%; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; text-shadow: none;
   color: #1f3a14; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: none !important;
 }
-#map-screen:not(.tower) .mdex-hinge .biome-sign { font-size: 0.72rem; letter-spacing: 0.04em; }
-#map-screen:not(.tower) .mdex-hinge .stage-sign { font-size: 0.58rem; opacity: 0.8; }
-#map-screen:not(.tower) .mdex-hinge .stage-sign::before, #map-screen:not(.tower) .mdex-hinge .stage-sign::after { display: none; }
-#map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: lcdType 0.6s steps(6) both !important; }
+#map-screen .mdex-hinge .biome-sign { font-size: 0.72rem; letter-spacing: 0.04em; }
+#map-screen .mdex-hinge .stage-sign { font-size: 0.58rem; opacity: 0.8; }
+#map-screen .mdex-hinge .stage-sign::before, #map-screen .mdex-hinge .stage-sign::after { display: none; }
+#map-screen .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: lcdType 0.6s steps(6) both !important; }
 @keyframes lcdType { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
 #map-screen:not(.tower) .mdex-glass {
   position: relative; flex: 1; min-height: 0; display: flex; margin: 0 10px; padding: 8px; border-radius: 12px 12px 12px 30px;
@@ -4685,6 +4606,46 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen .run-foot .level-chip { border: 2px solid var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); }
 #map-screen .run-foot .level-chip.replay { background: none; color: var(--lcd-ink); }
 #map-screen .run-ability { border-width: 2px; }
+/* a battle status box (the user's ask, 2026-10-08: the card was untidy): your Pokémon in the LCD's own four greens on
+   the left, then name | Level, the HP bar, Ability | HP numbers, every row the same width; the run's ₽ are the top bar's */
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+#map-screen:not(.tower) .run-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 12px; }
+/* the greens go on each moving piece, not the button: iOS Safari drops a parent's SVG filter for a few frames while its
+   children animate, flashing them in full colour */
+#map-screen:not(.tower) .run-mon { width: 84px; height: 84px; margin: -6px -4px -8px -6px; translate: 0 -7px; }
+#map-screen:not(.tower) .run-sprite { width: 84px; height: 84px; filter: url(#lcd-ink); }
+#map-screen:not(.tower) .run-ball { filter: none; }
+#map-screen:not(.tower) :is(.cball-top, .cball-bottom, .cball-light) { filter: url(#lcd-ink); }
+#map-screen:not(.tower) .run-mon[data-state="recalling"] .run-sprite { animation-name: monRecallInk; }
+#map-screen:not(.tower) .run-mon[data-state="releasing"] .run-sprite { animation-name: monReleaseInk; }
+#map-screen:not(.tower) .run-sprite[data-blaze] { animation: blazeAuraInk 0.5s steps(1) infinite; }
+@keyframes monRecallInk {
+  0% { transform: none; filter: url(#lcd-ink); }
+  15%, 100% { filter: brightness(0.45) url(#lcd-ink); }
+  100% { transform: scale(0.1); opacity: 0; }
+}
+@keyframes monReleaseInk {
+  0%, 60% { filter: brightness(0) invert(1) url(#lcd-ink); }
+  0% { transform: scale(0.2); }
+  60% { transform: scale(1.12); }
+  100% { transform: none; filter: url(#lcd-ink); }
+}
+@keyframes blazeAuraInk { 0% { filter: url(#lcd-ink); } 50% { filter: drop-shadow(0 0 3px #000) url(#lcd-ink); } }
+@media (prefers-reduced-motion: reduce) { #map-screen:not(.tower) .run-sprite[data-blaze] { animation: none; } }
+#map-screen:not(.tower) .run-info {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name lv" "bar bar" "ab hp";
+  align-items: center; gap: 5px 8px; width: auto;
+}
+#map-screen:not(.tower) .run-foot { display: contents; }
+#map-screen:not(.tower) .run-name { grid-area: name; justify-content: flex-start; }
+#map-screen:not(.tower) .run-name::before { display: none; }
+#map-screen:not(.tower) .run-name strong { font-size: 1rem; letter-spacing: 0.04em; }
+#map-screen:not(.tower) #run-level { grid-area: lv; justify-self: end; }
+#map-screen:not(.tower) #run-level[hidden] { display: none; }
+#map-screen:not(.tower) .run-bars { grid-area: bar; width: 100%; }
+#map-screen:not(.tower) .run-ability { grid-area: ab; justify-self: start; margin: 0; }
+#map-screen:not(.tower) .run-foot .gb-hp-num { grid-area: hp; justify-self: end; font-size: 0.85rem; }
+#map-screen:not(.tower) .run-money { display: none; }
 @media (max-width: 720px) {
   #map-screen:not(.tower) { padding-top: 6px; }
   #map-screen:not(.tower) .run-card {
@@ -4699,7 +4660,7 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
     background-repeat: repeat-x, repeat, repeat, no-repeat;
   }
   /* margin, not translate: a transform would make the top bar the containing block of the Bag (fixed, inside it) */
-  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { margin-top: 16px; height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
+  body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar { margin-top: calc(16px + var(--hinge-h, 0px)); height: calc(var(--topbar-h) - 12px); padding: 0 24px 0 22px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .topbar::before { display: none; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .dex-sprite { width: 32px; height: 32px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { filter: drop-shadow(0 2px 0 rgba(31, 58, 20, 0.25)); }
@@ -4720,8 +4681,8 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 }
 #map-screen.tower :is(.mdex-window, .mdex-dock) { position: relative; z-index: 2; width: min(100%, 520px); background: var(--shell); }
 #map-screen.tower .mdex-window {
-  padding: 8px 10px 6px; border-radius: 16px 16px 0 0;
-  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
+  order: 2; padding: 4px 10px 6px;
+  box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
 }
 #map-screen.tower .run-card {
   justify-content: stretch; gap: 0; min-height: 40px; margin: 3px; padding: 4px 10px 4px 104px; border-width: 2px; border-radius: 6px;
@@ -4733,19 +4694,27 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen.tower .run-foot { width: auto; }
 #map-screen.tower .run-foot .gb-hp-num { font-size: 0.6rem; white-space: nowrap; }
 /* the climb's ₽ (it starts at 0, unlike the PokéCoin savings) sit at the LCD's right end, past the HP */
-.run-money { display: none; }
+.room-cash.run-money { display: none; }   /* .room-cash below would show it on every map; only a climb has no top bar ₽ */
 #map-screen.tower .run-money { display: flex; margin-left: 4px; padding-left: 8px; border-left: 2px dashed rgba(31, 58, 20, 0.35); font-size: 0.6rem; color: #1f3a14; }
 #map-screen.tower .run-money .smooth-icon { width: 14px; height: 14px; }
+/* the hinge on top of the bar, over the LCD: lens, lights and "Sky Pillar / Floors 1-10" on its own LCD (the user's calls,
+   2026-10-08: the stone plate over the tower went, the title sits on the bar like every map's; then it moved above the LCD) */
+#map-screen.tower .mdex-hinge {
+  order: 1; z-index: 2; width: min(100%, 520px); padding: 8px 14px 2px; background: var(--shell); border-radius: 16px 16px 0 0;
+  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
+}
+#map-screen.tower .mdex-hinge .pdx-lens { width: 24px; height: 24px; }
+#map-screen.tower .mdex-hinge .map-head { padding: 3px 10px; }
 #map-screen.tower .mdex-dock {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
+  order: 3; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
   box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
 }
 #map-screen.tower .mdex-btn { padding: 5px 0; border-radius: 10px; }
 #map-screen.tower .mdex-ico { font-size: 20px; }
 #map-screen.tower :is(.mdex-label, .mdex-btn[data-pocket="key"], .mdex-btn[data-pocket="trainer"]) { display: none; }
 #map-screen.tower .mdex-count { top: -5px; right: 4px; min-width: 16px; padding: 1px 3px; font-size: 0.42rem; }
-.mdex-btn.mdex-menu { display: none; }
-#map-screen.tower .mdex-btn.mdex-menu { display: grid; }
+.mdex-btn:is(.mdex-menu, .mdex-aug) { display: none; }
+#map-screen.tower .mdex-btn:is(.mdex-menu, .mdex-aug) { display: grid; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .topbar {
   position: fixed; left: calc(var(--tw-lcd-x, 20px) + 6px); right: auto; top: var(--tw-lcd-y, 80vh); width: auto;
   height: var(--tw-lcd-h, 40px); padding: 0; gap: 8px; justify-content: flex-start;
@@ -4760,7 +4729,7 @@ body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs { filter: no
 body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs i { width: 13px; height: 13px; background: #1f3a14; }
 body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not([hidden])) { bottom: calc(var(--tw-bar-h, 120px) + 8px); }
 /* a climb's first look: the bar and the top bar on its LCD slide up from below (popBar() in js/tower.js, BAR_IN) */
-#map-screen.tower.bar-in :is(.mdex-window, .mdex-dock),
+#map-screen.tower.bar-in :is(.mdex-window, .mdex-hinge, .mdex-dock),
 body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation: twBarIn 0.48s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
 @keyframes twBarIn { from { translate: 0 calc(var(--tw-bar-h, 140px) + 30px); } to { translate: 0 0; } }
 /* an augment pick over the climb (showChoice()'s `over`): no title, no text box, no backdrop, just the tiles and the
@@ -4779,12 +4748,12 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
   #map-screen:not(.tower) .mdex-window, #map-screen:not(.tower) .mdex-glass { margin-inline: 14px; }
   #map-screen:not(.tower) .map { width: min(100%, calc(var(--grid-w, 37) * 11px)); }
   #map-screen:not(.tower) .mdex-dock { grid-template-columns: repeat(5, minmax(0, 110px)); justify-content: center; padding-bottom: 12px; }
-  #map-screen:not(.tower) .mdex-hinge .map-head { flex: 0 1 380px; }
+  #map-screen .mdex-hinge .map-head { flex: 0 1 380px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-bottom { bottom: 100px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) { bottom: 96px; max-height: min(50dvh, calc(100dvh - var(--topbar-h) - 120px)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: none !important; }
+  #map-screen .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: none !important; }
   .bag:not([hidden]) { animation: none !important; }
 }
 
@@ -4940,27 +4909,6 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 .cloud-pick-dialog .cloud-save h3 { color: #1f3a14; }
 .cloud-pick-dialog .dev-screen > p { text-align: center; }
 
-.howto-dialog.dev-window h2 { margin-right: 44px; font-size: 0.8rem; }
-.howto-dialog.dev-window .howto-track { margin: 6px; padding: 0; }
-.howto-dialog.dev-window .howto-slide { padding: 12px 10px 10px; }
-.howto-dialog.dev-window :is(.howto-li, .howto-tip) {
-  background: #e4f0cc; border: 2px solid #1f3a14; box-shadow: 0 2px 0 rgba(31, 58, 20, 0.3);
-}
-.howto-dialog.dev-window .howto-flow .howto-li.boss { border-color: #8a6200; background: #f4e6a4; }
-.howto-dialog.dev-window .howto-flow .howto-li::before { background: #1f3a14; color: #c4dca0; }
-.howto-dialog.dev-window .howto-beats { color: #6a4a00; }
-.howto-dialog.dev-window .howto-close {
-  top: 13px; right: 12px; width: 36px; height: 36px; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
-  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
-}
-.howto-dialog.dev-window .howto-close:hover { background: var(--shell); color: #fff; }
-.howto-dialog.dev-window .howto-nav { margin-top: 14px; }
-.howto-dialog.dev-window .howto-prev {
-  border: 0; background: var(--shell-lo); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep); text-shadow: 1px 1px 0 var(--shell-deep);
-}
-.howto-dialog.dev-window .howto-dot { background: var(--shell-deep); }
-.howto-dialog.dev-window .howto-dot[aria-current="true"] { background: #b6d68e; box-shadow: 0 0 0 2px var(--shell-rim); }
-
 /* rewards and the Mart on the device too (UI fixes D2 group 2, 2026-10-07): the screen's title, its text box, the
    picked card's note, the relic / item / choice tiles and the hand picker's banner are each a green LCD in a ring of the
    device's shell. The scenes' text boxes (evolution, Hall of Fame, films) keep the classic window. */
@@ -4969,17 +4917,18 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
   background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884;
   box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px var(--shell), 0 0 0 8px var(--shell-rim), 3px 5px 0 8px rgba(0, 0, 0, 0.35);
 }
-/* except where someone in the scene is talking (? rooms, the Center): their words keep the classic cream speech window
-   (the user's call, 2026-10-07); the choice signs over the scene stay LCD, they're buttons */
-#reward-screen:has(:is(.center-room, .event-room)) .reward-log {
+/* except over a scene (the rooms, a fight's rewards, a found item): the words there are the game talking, so they keep
+   the classic cream speech window (the user's calls, 2026-10-07 and 2026-10-08); green stays the device's own readouts
+   (the hinge, the HP LCD, the deck pickers) and the choice signs, which are buttons */
+#reward-screen.in-room .reward-log {
   border: 3px solid #b8b8c8; border-radius: var(--round); background: var(--win-bg); color: var(--win-ink);
   box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #303038, 3px 3px 0 2px rgba(0, 0, 0, 0.4);
 }
-#reward-screen:has(:is(.center-room, .event-room)) .reward-log.more::after { color: #c02020; }
 .reward-title { letter-spacing: 0.04em; }
 .focus-note { box-shadow: inset 0 2px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell), 0 0 0 5px var(--shell-rim), 2px 3px 0 5px rgba(0, 0, 0, 0.35); }
 .reward-bottom { gap: 18px; }
 :where(#reward-screen, .map-bottom) .reward-log.more::after { color: #1f3a14; }
+#reward-screen.in-room .reward-log.more::after { color: #c02020; }
 .relic .relic-text, .relic .relic-term { color: #3a5a28; }
 .relic .relic-term { background: #d6e8b8; border-left-color: #1f3a14; }
 .relic.item-tile { border-color: #1d58b8; }
@@ -5015,6 +4964,34 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 #reward-screen:has(> .deck-pick) .reward-bottom { order: 1; position: static; flex: none; margin: 0; align-self: center; }
 #reward-screen:has(> .deck-pick) .reward-log { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell-rim); border-color: var(--shell-rim); }
 #reward-screen:has(> .deck-pick) .reward-actions { order: 2; margin: 0; }
+/* its buttons are the yes/no window's keys side by side (the user's call, 2026-10-08): the confirm (Upgrade, Forget...)
+   a gold key on the left like the room bar's, greyed until a card is picked, then glowing; Skip a shell key on the right */
+#reward-screen.deck-picking .reward-actions { align-self: stretch; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 4px; }
+#reward-screen.deck-picking .reward-actions > .ds-btn {
+  min-width: 0; padding: 0; border-radius: 999px; background: var(--shell-lo);
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep); transition: translate 0.06s, filter 0.2s, opacity 0.2s;
+}
+#reward-screen.deck-picking .reward-actions > .ds-btn[hidden] { display: none; }
+#reward-screen.deck-picking .reward-actions .pp-pill {
+  display: block; padding: 12px 10px 11px; border: 0; background: none; box-shadow: none; color: #fff; font-size: 0.85rem;
+  text-align: center; text-shadow: 1px 1px 0 var(--shell-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#reward-screen.deck-picking .reward-actions .pp-pill::before { content: none; }
+#reward-screen.deck-picking .reward-actions > .ds-btn:active:not(:disabled) { transform: none; translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+#reward-screen.deck-picking #reward-ok {
+  background: linear-gradient(#fff3a0, #f8d030 45%, #e0a818);
+  box-shadow: inset 0 0 0 2px #5a3a08, inset 0 3px 0 rgba(255, 255, 255, 0.6), 0 3px 0 #5a3a08, 0 0 8px 2px rgba(255, 216, 64, 0.55); animation: deckOkPulse 1.1s ease-in-out infinite; }
+#reward-screen.deck-picking #reward-ok .pp-pill { color: #3a2400; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+#reward-screen.deck-picking #reward-ok:disabled { opacity: 0.45; filter: grayscale(1); cursor: default; animation: none; }
+@keyframes deckOkPulse {
+  50% {
+    filter: brightness(1.12);
+    box-shadow: inset 0 0 0 2px #5a3a08, inset 0 3px 0 rgba(255, 255, 255, 0.6), 0 3px 0 #5a3a08, 0 0 18px 7px rgba(255, 224, 80, 0.85), 0 0 0 4px rgba(255, 240, 160, 0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) { #reward-screen.deck-picking #reward-ok { animation: none; } }
+/* the picked card blown up above it: the dim stops at the text box (rewards.js openFocus() sets its bottom) */
+.card-focus.reward-focus.over-pick { padding-bottom: 8px; overflow-y: auto; }
 @media (min-width: 721px) {
   #reward-screen:has(> .deck-pick) {
     inset: 14px auto 14px 50%; width: min(900px, calc(100vw - 32px)); translate: -50% 0;
@@ -5025,17 +5002,36 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 
 /* the deck pickers and the rooms (events, the Center, the Mart, the grotto) need no top bar (the user's call, 2026-10-07):
    the rooms carry their own slim bar along the bottom instead, one row: the Pokédex's Home key, Leave (the screen's
-   #reward-skip, moved in by showChoice()), then HP, money and coins on one LCD */
-body[data-screen="reward-screen"]:has(#reward-options:is(.deck-pick, .center-room, .event-room, .treasure-room, .mart-window)) .topbar { display: none; }
+   #reward-skip, moved in by showChoice()), then HP and money on one LCD. The move pick after a fight has the bar
+   too (.learn), keeping its own Reroll / Skip. showChoice() sets .in-room */
+body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.in-room) .topbar { display: none; }
 .room-bar { display: none; }
-#reward-screen:has(> :is(.center-room, .event-room, .treasure-room, .mart-window)) .room-bar {
+#reward-screen.in-room .room-bar {
   position: fixed; z-index: 3; left: 50%; bottom: 0; translate: -50% 0; width: min(100%, 520px);
-  display: flex; align-items: stretch; gap: 8px; padding: 8px 10px max(8px, env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
+  display: flex; flex-direction: column; gap: 6px; padding: 6px 10px max(8px, env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
   background: var(--shell); box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
 }
+.room-row { display: flex; align-items: stretch; gap: 8px; }
+/* on top of the bar, the Pokédex's hinge like the map's: lens, lights and the room's name on an LCD (the user's call,
+   2026-10-07: the device tells you what's happening), so the title plate up top steps aside */
+#reward-screen.in-room .reward-title { display: none; }
+.room-hinge { display: flex; align-items: center; gap: 8px; padding: 2px 2px 0; }
+.room-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
+.room-sign {
+  flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
+  margin-left: auto; padding: 3px 10px; border: 2px solid var(--shell-rim); border-radius: 6px;
+  background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); color: #1f3a14; font-family: var(--pixel-font); font-synthesis-weight: none;
+}
+.room-sign b {
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400;
+  font-size: 0.66rem; letter-spacing: 0.04em; animation: lcdType 0.6s steps(6) both;
+}
+@media (prefers-reduced-motion: reduce) { .room-sign b { animation: none; } }
 #reward-screen:has(> :is(.center-room, .event-room, .treasure-room, .mart-window)) .reward-actions { display: none; }
-/* the Mart and the grotto stand in the screen's flow, so it keeps the bar's height clear */
-#reward-screen:has(> :is(.treasure-room, .mart-window)) { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+/* the Mart, the grotto and the move pick stand in the screen's flow, so it keeps the bar's height clear */
+#reward-screen:has(> :is(.treasure-room, .mart-window)) { padding-bottom: var(--room-bar-h, 120px); }
+#reward-screen.learn { padding-bottom: calc(var(--room-bar-h, 120px) + 8px); }
+#reward-screen.learn .reward-bottom { bottom: calc(var(--room-bar-h, 120px) + 10px); }
 .room-lcd {
   flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; margin: 2px; padding: 3px 8px; border: 2px solid #2a2a30; border-radius: 6px;
   background: radial-gradient(120% 140% at 30% 0%, #c2dc9a, #a8c97e); color: #1f3a14; font: 0.55rem var(--pixel-font); font-synthesis-weight: none;
@@ -5048,28 +5044,75 @@ body[data-screen="reward-screen"]:has(#reward-options:is(.deck-pick, .center-roo
 .room-lcd .gb-hp-num { width: auto; align-self: center; font-size: 0.55rem; font-weight: 400; white-space: nowrap; }
 .room-cash { display: flex; align-items: center; gap: 2px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .room-keys { flex: none; display: flex; align-items: stretch; gap: 6px; }
-.room-home { flex: none; width: 48px; min-height: 46px; align-content: center; padding: 0; }
-.room-home .mdex-ico .smooth-icon { width: 26px; height: 26px; }
-/* Leave is a key like Home, told apart by its open door and its word under it, in the green of a way out */
-.leave-ico { display: none; }
-#reward-skip.room-leave {
-  display: grid; justify-items: center; align-content: center; gap: 2px; width: 58px; padding: 4px 2px 3px; border: 0; border-radius: 12px;
-  background: #2f8a3a; box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
-  color: #fff; font: 0.5rem var(--pixel-font); transition: translate 0.06s, box-shadow 0.06s; -webkit-tap-highlight-color: transparent;
+.room-home {
+  flex: none; display: grid; place-items: center; width: 48px; min-height: 46px; padding: 0; border: 0;
+  background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-#reward-skip.room-leave:active { transform: none; translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
-#reward-skip.room-leave[hidden] { display: grid; visibility: hidden; }   /* Team Rocket has no Leave: the LCD keeps its place */
-#reward-skip.room-leave .leave-ico { display: block; line-height: 0; filter: drop-shadow(0 2px 1px rgba(20, 10, 30, 0.45)); }
-#reward-skip.room-leave .leave-ico .smooth-icon { width: 24px; height: 24px; }
-#reward-skip.room-leave .pp-pill {
-  display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0; border-radius: 0;
-  background: none; box-shadow: none; color: inherit; font-size: inherit; white-space: nowrap; text-transform: uppercase; text-shadow: 1px 1px 0 #1a4a20;
+/* Leave (a door, an arrow out) and a fight's reward steps' Skip (a double chevron) are round keys exactly like Home, the
+   word kept for screen readers only (the user's call, 2026-10-08); js/main.js roundKey() draws all of them */
+.round-key {
+  display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--shell-hi), var(--shell) 60%, var(--shell-lo));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
+  color: #fff; transition: translate 0.06s, box-shadow 0.06s;
 }
-#reward-skip.room-leave .pp-pill::before { content: none; }
+.round-key svg { width: 21px; height: 21px; filter: drop-shadow(0 1px 0 var(--shell-deep)); }
+.leave-ico, .skip-ico { display: none; }
+#reward-skip.room-leave .leave-ico, #reward-skip.room-skip .skip-ico { display: grid; }
+#reward-skip:is(.room-leave, .room-skip) {
+  flex: none; display: grid; place-items: center; width: 48px; min-height: 46px; padding: 0; border: 0; border-radius: 0;
+  background: none; box-shadow: none; -webkit-tap-highlight-color: transparent;
+}
+#reward-skip:is(.room-leave, .room-skip):active { transform: none; }
+#reward-skip:is(.room-leave, .room-skip):active .round-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+#reward-skip:is(.room-leave, .room-skip)[hidden] { display: grid; visibility: hidden; }   /* Team Rocket has no Leave: the LCD keeps its place */
+#reward-skip:is(.room-leave, .room-skip) .pp-pill {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+/* the screen's confirm: a glowing gold pill beside the hinge's lights, one word on it (the user's call, 2026-10-08), the
+   colour of the yellow light so it stands out on any shell and pulses clearly while it waits */
+.room-ok {
+  flex: none; display: grid; place-items: center; min-width: 76px; height: 32px; padding: 0 16px; cursor: pointer;
+  border: 2px solid #5a3a08; border-radius: 999px;
+  background: linear-gradient(#fff3a0, #f8d030 45%, #e0a818);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(120, 70, 0, 0.35), 0 3px 0 #5a3a08, 0 0 8px 2px rgba(255, 216, 64, 0.55);
+  color: #3a2400; font: 0.62rem var(--pixel-font); font-synthesis-weight: none; text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); -webkit-tap-highlight-color: transparent;
+  animation: roomOkIn 0.2s ease-out, roomOkPulse 1.1s ease-in-out 0.2s infinite;
+  transition: translate 0.06s;
+}
+.room-ok[hidden] { display: none; }
+/* waiting for a pick: greyed in its place, so it never pops in and out */
+.room-ok:disabled { opacity: 0.45; filter: grayscale(1); cursor: default; animation: none; }
+/* pressed: pushed down into the shell with a flash, and it stays down, lit, until the screen moves on */
+.room-ok.pressed, #reward-screen.deck-picking #reward-ok.pressed {
+  opacity: 1; filter: none; translate: 0 3px; animation: roomOkPress 0.35s ease-out both;
+  background: linear-gradient(#f0d860, #e8b820 50%, #c88a10);
+  box-shadow: inset 0 3px 4px rgba(90, 58, 8, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.35), 0 0 0 #5a3a08, 0 0 10px 3px rgba(255, 216, 64, 0.6);
+}
+@keyframes roomOkPress {
+  0% { filter: brightness(1.6); box-shadow: inset 0 3px 4px rgba(90, 58, 8, 0.55), 0 0 26px 10px rgba(255, 240, 140, 0.95); }
+}
+.room-ok:active:not(:disabled) { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), 0 1px 0 #5a3a08, 0 0 14px 4px rgba(255, 216, 64, 0.8); }
+.room-ok:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@keyframes roomOkIn { from { opacity: 0; scale: 0.6; } }
+@keyframes roomOkPulse {
+  50% {
+    scale: 1.06; filter: brightness(1.12);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(120, 70, 0, 0.35), 0 3px 0 #5a3a08,
+      0 0 18px 7px rgba(255, 224, 80, 0.85), 0 0 0 4px rgba(255, 240, 160, 0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) { .room-ok { animation: none; } }
+/* a picked card blown up over a room: the bar (and its A key) stays lit above the dimmed screen */
+body:has(.card-focus.over-room) #reward-screen.in-room .room-bar { z-index: 31; }
+.card-focus.reward-focus.over-room { padding-bottom: calc(var(--room-bar-h, 120px) + 12px); }
 @media (max-width: 360px) {
-  #reward-screen:has(> :is(.center-room, .event-room, .treasure-room, .mart-window)) .room-bar { gap: 6px; padding-inline: 8px; }
+  #reward-screen.in-room .room-bar { padding-inline: 8px; }
+  .room-row { gap: 6px; }
   .room-home { width: 42px; }
-  #reward-skip.room-leave { width: 50px; }
+  #reward-skip:is(.room-leave, .room-skip) { width: 42px; }
+  .room-ok { min-width: 64px; padding-inline: 12px; }
   .room-lcd { gap: 5px; padding-inline: 5px; }
   .room-lcd .gb-hp-tag { display: none; }
 }
@@ -5097,16 +5140,32 @@ body[data-screen="reward-screen"]:has(#reward-options:is(.deck-pick, .center-roo
 .home-key { display: none; }
 body[data-screen="map-screen"] .home-dex .dex-sprite { display: none; }
 body[data-screen="map-screen"] .home-dex { filter: none !important; }
-body[data-screen="map-screen"] .home-key {
+body[data-screen="map-screen"] .home-key, .room-home .home-key {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--shell-hi), var(--shell) 60%, var(--shell-lo));
   box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
   color: #fff; transition: translate 0.06s, box-shadow 0.06s;
 }
-body[data-screen="map-screen"] .home-key svg { width: 17px; height: 17px; filter: drop-shadow(0 1px 0 var(--shell-deep)); }
-body[data-screen="map-screen"] .home-dex:active .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+body[data-screen="map-screen"] .home-key svg, .room-home .home-key svg { width: 17px; height: 17px; filter: drop-shadow(0 1px 0 var(--shell-deep)); }
+body[data-screen="map-screen"] .home-dex:active .home-key, .room-home:active .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key { width: 26px; height: 26px; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key svg { width: 15px; height: 15px; }
+/* the climb's Home key moves up onto the hinge, after the lights, like every map's (the user's call, 2026-10-08):
+   measureBar() in js/tower.js gives its spot inside the top bar */
+body[data-screen="map-screen"]:has(#map-screen.tower) .home-dex { position: absolute; z-index: 3; left: var(--tw-home-x, 0); top: var(--tw-home-y, 0); }
+/* the top bar is laid on the device, so it waits for the cover to swing open (bootDevice()'s .booting) */
+body:has(#map-screen.booting) .topbar { visibility: hidden; }
+/* nothing on the map drags or rubber-bands the page; only the map itself scrolls, inside its glass (the user's ask, 2026-10-08) */
+html:has(body[data-screen="map-screen"]), body[data-screen="map-screen"] { overflow: hidden; overscroll-behavior: none; }
+body[data-screen="map-screen"] #map-screen:not(.tower) { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body[data-screen="map-screen"] #map-screen:not(.tower) .map-wrap { touch-action: pan-x pan-y; }
+body[data-screen="map-screen"] :is(#map-screen, .topbar) img { -webkit-user-drag: none; }
+/* on a map the Home key sits on the hinge, after the lights (the user's call, 2026-10-08); fixed, not moved in the DOM,
+   since the top bar's button serves every screen. 95px = the hinge's padding, lens and lights */
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { position: fixed; z-index: 21; left: 95px; top: calc(var(--topbar-h) + (var(--hinge-h) - 30px) / 2); }
+@media (max-width: 720px) { body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { top: calc(6px + (var(--hinge-h) - 30px) / 2); } }
+.room-home .home-key { width: 38px; height: 38px; }
+.room-home .home-key svg { width: 21px; height: 21px; }
 /* in battle the Pokédex button shrinks to 24px (the user's ask, 2026-10-07: at 36px it crowded the enemy's nameplate) */
 body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 24px; }
 
@@ -5242,3 +5301,8 @@ body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 2
 svg.aug-node { padding: 0; border: 0; background: none; box-shadow: none; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3)); }
 svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 .aug-emoji { display: inline-grid; place-items: center; font-size: 22px; }
+/* the Sky Pillar's augment pick: Reroll and Take are the gold pill (.room-ok, the user's call, 2026-10-08) */
+#reward-reroll.room-ok { min-width: 96px; height: 38px; font-size: 0.7rem; }
+#reward-reroll.room-ok .pp-pill { display: contents; }
+#reward-reroll.room-ok .reroll-cap { display: none; }
+.reward-focus .room-ok.focus-confirm { min-width: 110px; height: 42px; font-size: 0.8rem; }

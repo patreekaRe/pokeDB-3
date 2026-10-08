@@ -11,6 +11,7 @@ import { $, el, confirmDialog } from './ui.js';
 import { updateSave, resetSave, clearRunData } from './storage.js';
 import { cloudRemembered } from './cloud.js';
 import { setClock } from './daytime.js';
+import { refreshScenery } from './scene.js';
 import { smoothIcon } from './smooth-icons.js';
 import { pref as valueOf, vibrate } from './prefs.js';
 import { pickedName, setTrainerName } from './leaderboard.js';
@@ -30,6 +31,8 @@ const OPTIONS = {
     // the title's sky repaints on resize; every other scene reads the time as it paints
     apply: (v, changed) => { setClock(v); if (changed) dispatchEvent(new Event('resize')); },
   },
+  // the scene on screen repaints at once; the title's sky (and its light) on the resize
+  scenery: { values: [['hybrid', 'Hybrid'], ['pixel', 'Pixel']], apply: (v, changed) => { if (changed) { refreshScenery(); dispatchEvent(new Event('resize')); } } },
   calmFx: { values: [[false, 'Full'], [true, 'Reduced']], apply: v => document.documentElement.classList.toggle('calm-fx', v) },
   battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
   battleFx: { values: [[true, 'On'], [false, 'Off']], apply: v => document.documentElement.classList.toggle('no-battle-fx', !v) },

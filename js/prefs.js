@@ -6,7 +6,7 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red' };
+export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', scenery: 'hybrid' };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 /** Battle animations (the games' Battle Scene): off in Settings or under reduced motion, a fight skips its move effects
@@ -14,6 +14,8 @@ export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 export const battleFx = () => pref('battleFx') && !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 /** Reduce flashing / screen shake (Settings, or reduced motion): nothing shakes, and white-outs become a soft brightening. */
+/** The scenery's look: Hybrid (pixels under smooth light, the default since 2026-10-08) or plain Pixel (Settings, ?pixel). */
+export const hybridScenery = () => pref('scenery') !== 'pixel';
 export const calmFx = () => pref('calmFx') || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // letters typed per tick and the tick's ms; null types the whole line at once

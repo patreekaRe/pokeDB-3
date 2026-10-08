@@ -75,12 +75,26 @@ function line(b, x0, y0, x1, y1, c) {
 // a 3x5 pixel font for the floor numbers carved by each landing
 const DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001',
   '111100111001111', '111100111101111', '111001010010010', '111101111101111', '111101111001111'];
-export function digits(b, x, y, text, c, shade) {
+export function digits(b, x, y, text, c, shade, s = 1) {
   for (const ch of String(text)) {
     const g = DIGITS[ch];
-    if (g) for (let i = 0; i < 15; i++) if (g[i] === '1') { if (shade) put(b, x + (i % 3) + 1, y + Math.floor(i / 3) + 1, shade); put(b, x + (i % 3), y + Math.floor(i / 3), c); }
-    x += 4;
+    if (g) for (let i = 0; i < 15; i++) if (g[i] === '1') {
+      const px = x + (i % 3) * s, py = y + Math.floor(i / 3) * s;
+      if (shade) rect(b, px + 1, py + 1, s, s, shade);
+      rect(b, px, py, s, s, c);
+    }
+    x += 4 * s;
   }
+}
+
+// a floor's number on an iron plaque by the outer wall, gold on black so it reads at a glance (the user found the carved
+// one hard to see, 2026-10-08); the floors still to climb get a dimmer one
+function floorPlaque(b, x, y, f, lit) {
+  const w = String(f).length * 8 - 2 + 6, h = 10 + 6;
+  rect(b, x, y, w, h, K(lit ? '#6a5428' : '#2e2a30'));
+  rect(b, x + 1, y + 1, w - 2, h - 2, K(lit ? '#c8a048' : '#4a4652'));
+  rect(b, x + 2, y + 2, w - 4, h - 4, K(lit ? '#1a140e' : '#121018'));
+  digits(b, x + 3, y + 3, f, K(lit ? '#ffe890' : '#8a8494'), K(lit ? '#7a4a10' : '#000000'), 2);
 }
 
 /* ---------- the sky by height ---------- */
@@ -416,8 +430,7 @@ function paintFloor(b, camY, lay, f, info, t) {
       put(b, x, s, k === SLAB - 1 ? S.slab[0] : k === SLAB - 2 ? S.slab[1] : k === 0 ? S.slab[3] : S.slab[2]);
     }
   }
-  // the floor's number, carved by the outer wall
-  if (f > 0) digits(b, lay.iL + 2, surf - FH + SLAB + 6, f, lit ? S.cut[0] : S.wall[0], S.wall[3]);
+  if (f > 0) floorPlaque(b, lay.iL + 1, surf - FH + SLAB + 2, f, lit);
 }
 
 /** A window: an arched hole in the wall (the sky shows through), its stone frame and a cross of lead. */
