@@ -125,7 +125,7 @@ live site.
   top bar's Bag hidden there). The Bag itself is the device's too (shell, LCD title, pocket buttons, each pocket on a green LCD), and so are the deck and map-peek windows and the run's end windows (result, unlock, yes/no, loss recap) (`.dev-window`), and the deck pickers (Forget a move, PP Up, Day Care: `showChoice()`'s `deck-pick` layout, the deck on a dark screen scrolling in the glass, 2026-10-07). Detail
   in `docs/reference/map-screen.md`. **Rooms** (? events, the Center, the Mart, the grotto) and the deck pickers have no
   top bar (2026-10-07): the rooms get `#room-bar` along the bottom, one row: Home (the Pokédex, the map's round `.home-key`), Leave (`#reward-skip` moved in
-  by `showChoice()` as `.room-leave`, a green key with a door, `smoothIcon('leave')`), then HP, ₽ and coins on one LCD; on top
+  by `showChoice()` as `.room-leave`, a green key with a door, `smoothIcon('leave')`), then HP and ₽ on one LCD (no PokéCoins, 2026-10-07); on top
   of it the Pokédex's hinge (`.room-hinge`: lens, lights, the room's title alone on a small LCD sized to it, no biome line (the user's call, 2026-10-07), in place of the title plate).
   The move pick after a fight (`layout: 'learn-room'`, `.learn`; the signature-move picks too) and the found item and relic picks (`item-found`) get the bar and hinge too, keeping their own Reroll / Skip;
   `showChoice()` sets `#reward-screen.in-room` for all of them. There is no page footer any more; the disclaimer is in About.

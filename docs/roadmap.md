@@ -16,7 +16,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 **Device cleanup batch** (the user's asks from a phone playtest, 2026-10-07; one session each, in any order, all Run in:
 LOCAL, Desktop app, visual). Each was also handed out as its own task chip.
-- **R3. No PokéCoins on the room bar's LCD**: HP and ₽ only (`.room-lcd` in `index.html`).
 - **R4. ₽ shown twice on a normal run's map**: a second ₽ sits beside the HP bar; find every place ₽ is drawn on the map
   (run card, hinge LCD, top bar) and keep one.
 - **R5. The dot on battle's HP bars**: a small circle still sits on the enemy's HP bar (seen on Pansear's); remove it.

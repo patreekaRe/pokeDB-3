@@ -1777,3 +1777,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   move pick: no top bar, the bottom bar with the title on its hinge LCD.
 - **R2. Room bar's Home key is the map's round key** (2026-10-07, the user's ask): `#room-home` holds the same `.home-key`
   (`homeKey()` in `js/main.js`, round, shell colours, a house), a little bigger (38px), instead of the square red button.
+- **R3. No PokéCoins on the room bar** (2026-10-07, the user's ask): `.room-lcd` shows HP and ₽ only; coins stay on the
+  Game Corner and the device.

@@ -5025,7 +5025,7 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 
 /* the deck pickers and the rooms (events, the Center, the Mart, the grotto) need no top bar (the user's call, 2026-10-07):
    the rooms carry their own slim bar along the bottom instead, one row: the Pokédex's Home key, Leave (the screen's
-   #reward-skip, moved in by showChoice()), then HP, money and coins on one LCD. The move pick after a fight has the bar
+   #reward-skip, moved in by showChoice()), then HP and money on one LCD. The move pick after a fight has the bar
    too (.learn), keeping its own Reroll / Skip. showChoice() sets .in-room */
 body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.in-room) .topbar { display: none; }
 .room-bar { display: none; }
