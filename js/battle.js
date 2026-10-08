@@ -2558,7 +2558,7 @@ function renderFocus() {
 }
 
 /**
- * While a card is raised your nameplate blinks the block it would add (Aqua Tail's too). The HP bars show no damage
+ * While a card is raised your nameplate blinks the block it would add (Aqua Tail's too), and your HP bar the part of the coming hit it would stop. The HP bars show no damage
  * preview: the user read its blinking chunk as a stray dot on the bar (2026-10-07).
  */
 function showPreview(entry) {
@@ -2574,14 +2574,30 @@ function showPreview(entry) {
   if (e.blockMult) block += (b.block + block) * (e.blockMult - 1);
   if (e.blockPerExhausted && e.exhausted) block += cardBlock(e.blockPerExhausted * e.exhausted);
   if (block > 0) {
+    const stopped = shieldPreview(b.block + block);
     $('player-plate').classList.add('block-preview');
-    $('player-status').prepend(badgeFor(['🛡️', `+${block}`, `Playing it adds ${block} block`, 'block preview']));
+    $('player-status').prepend(badgeFor(['🛡️', `+${block}`, `Playing it adds ${block} block${stopped ? `: it would stop ${stopped} of the next hit` : ''}`, 'block preview']));
   }
+}
+
+/** The part of the enemy's coming hit that `block` would stop, laid in blue over the end of your HP bar. */
+function shieldPreview(block) {
+  const b = battle, move = currentMove();
+  const hits = !b.guard && (move.kind === 'attack' || move.kind === 'drain');
+  const incoming = hits ? Math.max(0, attackDamage(move) - (b.aug.hitReduce || 0)) : 0;
+  const stopped = Math.min(block, incoming, b.hp);
+  if (!stopped) return 0;
+  const track = $('player-hp').querySelector('.gb-hp-track');
+  const chunk = track.querySelector('.gb-hp-shield') ?? track.appendChild(el('span', 'gb-hp-shield'));
+  chunk.style.setProperty('--from', (Math.min(b.hp, b.maxHp) - stopped) / b.maxHp);
+  chunk.style.setProperty('--size', stopped / b.maxHp);
+  return stopped;
 }
 
 function clearPreview() {
   $('player-plate').classList.remove('block-preview');
   $('player-status').querySelector('.badge.preview')?.remove();
+  $('player-hp').querySelector('.gb-hp-shield')?.remove();
 }
 
 /**
