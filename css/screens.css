@@ -4862,14 +4862,60 @@ body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not(
 .bag .bag-pocket[aria-selected="true"] { background: #b6d68e; transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 .bag .bag-pocket[aria-selected="true"]::after { display: none; }
 .bag .bag-pocket b { right: -8px; top: -8px; border-color: var(--shell-rim); border-radius: 10px; background: #1f3a14; color: #d8f0b0; }
-.bag .bag-pocket-body {
-  margin: 6px; padding: 10px 8px; border: 3px solid #2a2a30; border-radius: 6px 6px 6px 18px; background: var(--win-bg);
-  box-shadow: 0 0 0 6px #e4e4ea, 0 0 0 9px var(--shell-rim);
+/* each pocket is the Pokédex's green LCD (UI fixes D, 2026-10-07: the cream screen was the last of the old windows on
+   the map), its rows lighter LCD tiles in the screen's ink, its buttons LCD keys */
+:is(.bag .bag-pocket-body, .dev-window .dev-screen) {
+  --ink: #1f3a14; --muted: #3a5a28; --panel: #d6e8b8; --panel-edge: #1f3a14;
+  border: 3px solid #2a2a30; border-radius: 6px 6px 6px 18px; color: #1f3a14;
+  background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 6px #e4e4ea, 0 0 0 9px var(--shell-rim);
 }
+.bag .bag-pocket-body { margin: 6px; padding: 10px 8px; }
 .bag .howto-list { gap: 6px; }
-.bag .howto-li { background: #fff; border: 2px solid var(--win-edge); border-radius: 10px; box-shadow: 0 2px 0 var(--win-shadow); }
-.bag .howto-li:last-child { border-bottom: 2px solid var(--win-edge); }
-.bag .bag-pocket-body > .btn { border-radius: 999px; }
+.bag .howto-li { background: #e4f0cc; border: 2px solid #1f3a14; border-radius: 10px; box-shadow: 0 2px 0 rgba(31, 58, 20, 0.3); }
+.bag .howto-li:last-child { border-bottom: 2px solid #1f3a14; }
+.bag :is(.howto-li-text small, .drop-note, .drop-empty) { color: #3a5a28; }
+:is(.bag .bag-pocket-body, .dev-window) .btn {
+  border: 2px solid #1f3a14; border-radius: 999px; background: #d6e8b8; color: #1f3a14; box-shadow: 0 3px 0 #1f3a14;
+}
+:is(.bag .bag-pocket-body, .dev-window) .btn:hover:not(:disabled) { background: #e4f0cc; }
+:is(.bag .bag-pocket-body, .dev-window) .btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #1f3a14; }
+.bag .item-actions .btn { box-shadow: 0 2px 0 #1f3a14; }
+
+/* the deck and map-peek windows are the device too (.dev-window): the Bag's shell, the title on its LCD, the filter and
+   sort as the Moves app's keys, the cards or map on the green screen, Close a shell key */
+.dialog.dev-window {
+  padding: 10px 10px 12px; border: 0; border-radius: 20px; color: #1f3a14;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+.dev-window h2 {
+  margin: 0 0 10px; padding: 8px 12px; border: 3px solid var(--shell-rim); border-radius: 8px; background: #b6d68e;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); color: #1f3a14; font-size: 0.8rem; letter-spacing: 0.1em; text-align: center; text-transform: uppercase;
+}
+.dev-window h2 .count { color: #3a5a28; }
+.dev-window .deck-tools { margin: 0 0 14px; }
+.dev-window .deck-seg { border: 2px solid var(--shell-rim); border-radius: 6px; background: #d6e8b8; box-shadow: 0 3px 0 var(--shell-deep); }
+.dev-window .deck-seg button { border-left: 2px solid #1f3a14; background: none; color: #1f3a14; }
+.dev-window .deck-seg button:first-child { border-left: 0; }
+.dev-window .deck-seg button:hover { background: #e4f0cc; }
+.dev-window .deck-seg button[aria-pressed="true"] { background: #1f3a14; color: #c4dca0; text-shadow: none; }
+.dev-window .dev-screen { margin: 6px; padding: 12px 8px; }
+.dev-window .dev-screen:empty { display: none; }
+.dev-window .deck-empty { color: #fff; text-shadow: 1px 1px 0 var(--shell-deep); }
+.dev-window .dialog-actions { margin-top: 16px; }
+.dev-window::-webkit-scrollbar-track { background: var(--shell-lo); box-shadow: inset 0 0 0 2px var(--shell-rim); }
+.bag .bag-pocket-body::-webkit-scrollbar-track { background: #94b870; box-shadow: none; }
+@supports not selector(::-webkit-scrollbar) {
+  .dev-window { scrollbar-color: #e4e4ea var(--shell-lo); }
+  .bag .bag-pocket-body { scrollbar-color: #1f3a14 #94b870; }
+}
+.dev-window .dialog-actions .btn {
+  border: 0; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
+}
+.dev-window .dialog-actions .btn:hover:not(:disabled) { background: var(--shell); }
+.dev-window .dialog-actions .btn:active:not(:disabled) { box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 
 /* the Game Corner as a Pokédex app (cornerApp in js/shop.js): the cabinet's CRT fills the device's screen, its Buy under it */
 .cdev-app.cdev-corner { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #0c0c10; color: #e8fff4; }

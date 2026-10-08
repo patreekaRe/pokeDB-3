@@ -734,13 +734,13 @@
     <form method="dialog" class="records-close"><button class="btn primary">Continue</button></form>
   </dialog>
 
-  <dialog id="map-dialog" class="dialog wide-dialog">
+  <dialog id="map-dialog" class="dialog wide-dialog dev-window">
     <h2 id="map-dialog-title">Map</h2>
-    <div class="map-peek-wrap"><div class="map map-peek" id="map-peek"></div></div>
+    <div class="map-peek-wrap dev-screen"><div class="map map-peek" id="map-peek"></div></div>
     <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>
 
-  <dialog id="deck-dialog" class="dialog wide-dialog">
+  <dialog id="deck-dialog" class="dialog wide-dialog dev-window">
     <h2>Your deck <span id="deck-dialog-count" class="count"></span></h2>
     <!-- sort and filter (js/deckpreview.js), remembered in the save -->
     <div class="deck-tools">
@@ -751,7 +751,7 @@
         <button type="button" data-v="got" title="The order you got them in">Added</button><button type="button" data-v="cost">Cost</button><button type="button" data-v="name">A-Z</button>
       </div>
     </div>
-    <div id="deck-dialog-cards" class="card-pool"></div>
+    <div id="deck-dialog-cards" class="card-pool dev-screen"></div>
     <p class="deck-empty" id="deck-empty" hidden>No cards like that in your deck.</p>
     <form method="dialog" class="dialog-actions"><button class="btn primary">Close</button></form>
   </dialog>

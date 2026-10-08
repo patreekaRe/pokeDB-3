@@ -1737,3 +1737,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   balls, the ◀ in its button, "BACK" lettered beside it (`.gem-back` in `css/menus.css`), instead of the slate pill.
 - **Leaderboards in the Pokédex look** (UI fixes batch C, 2026-10-07): the Safari / Sky Pillar boards (window and the
   lobbies' Ranks apps) run on `shelfApp()`: a banner per board, the handheld one trainer a screen; `docs/reference/safari.md`.
+- **Map windows in the Pokédex look** (UI fixes batch D, 2026-10-07): the Bag's pockets are the green LCD (rows LCD
+  tiles, buttons LCD keys), the deck and map-peek windows `.dialog.dev-window` (shell, LCD title, Moves-app keys, cards on
+  a `.dev-screen`); `docs/reference/map-screen.md`. The audit of what's still cream is the roadmap's D2.

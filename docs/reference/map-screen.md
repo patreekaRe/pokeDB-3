@@ -20,7 +20,10 @@ colour). On phones (720px and under) the LCD grows up behind the top bar, which 
 turn ink, and a dotted rule splits them from the run card. Wider, the top bar stays on the scenery above the device.
 
 **The Bag** (same day) is a piece of the device on every screen: the shell round it, the pocket's name on the LCD, the
-pockets as shell buttons with smooth icons, each pocket on a cream screen in a grey bezel with its rows as cards.
+pockets as shell buttons with smooth icons, each pocket on the Pokédex's green LCD in a grey bezel, its rows lighter LCD tiles, its buttons LCD keys (UI fixes D,
+2026-10-07). The deck window (`#deck-dialog`) and the map peek (`#map-dialog`) are `.dialog.dev-window`: the Bag's shell,
+the title on its LCD, the filter / sort as the Moves app's keys, the cards or map on a `.dev-screen` LCD, Close a shell key.
+A new window opened from the map should take the same two classes rather than the cream look.
 
 The top `.run-card`, centred like everything below it, shows your Pokémon
 floating on the scenery, then its name and a Gold/Silver-style HP bar
