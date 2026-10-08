@@ -101,6 +101,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   desk: a second layer per tile), **colour variants** of a piece (a palette swap, cheap since it's painted in code), and
   maybe a **day / night light** through the window from `js/daytime.js`. Build rotate, wallpaper / floor and rugs into a);
   stacking and colour variants can be c).
+  Claude's suggested answers (2026-10-08; the user plans to start on Saturday 2026-10-10, confirm with them then): **one
+  room that grows** (it starts small, bigger rooms bought or earned; Gen 3's tree / cave / desert looks as wallpaper-like
+  themes later, so there's one painter, not three), **6 Pokémon on show** (enough to feel lively, few enough to read on a
+  phone; more slots could be an unlock), **decoration only** (bonuses would make the base a chore and pull at the
+  Safari / Sky Pillar boards' fairness; the reward is how it looks, and the Pokémon reacting).
   Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
   Pokémon on show, and whether furniture is pure decoration or gives a small perk.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
