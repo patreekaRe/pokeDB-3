@@ -633,18 +633,26 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .badge.preview { animation: badgeGhost 0.7s steps(1) infinite; }
 @keyframes badgeGhost { 50% { opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .nameplate.block-preview .gb-hp-track, .badge.preview { animation: none; } }
-/* the HP the raised card's block would save from the coming hit (shieldPreview()): blue over the end of the bar, blinking
-   between two blues and never to nothing, at least 4px, since the old red damage chunk read as a stray dot on small hits */
+/* the HP your block would save from the coming hit (shieldPreview()): blue over the end of the bar, at least 4px, since
+   the old red damage chunk read as a stray dot on small hits. The block you have holds steady; a raised card's blinks
+   between two blues (never to nothing); when the hit lands it flashes white and breaks off (soakShield()) */
 .nameplate .gb-hp-track { position: relative; }
 .gb-hp-shield {
   position: absolute; top: 3px; bottom: 3px;
   left: max(3px, calc(3px + (100% - 6px) * var(--from)));
   width: max(4px, calc((100% - 6px) * var(--size)));
   background: #3878f0; box-shadow: inset 0 2px 0 #88c0ff;
-  animation: shieldGhost 0.7s steps(1) infinite;
 }
+.gb-hp-shield.ghost { animation: shieldGhost 0.7s steps(1) infinite; }
 @keyframes shieldGhost { 50% { background: #88c0ff; box-shadow: inset 0 2px 0 #c8e4ff; } }
-@media (prefers-reduced-motion: reduce) { .gb-hp-shield { animation: none; } }
+.gb-hp-shield.soak { animation: shieldSoak 0.5s steps(5) forwards; }
+@keyframes shieldSoak {
+  0%   { background: #fff; box-shadow: inset 0 2px 0 #fff; }
+  40%  { background: #c8e4ff; translate: 0 -1px; }
+  100% { background: #88c0ff; translate: 0 -5px; opacity: 0; }
+}
+.fast-battle .gb-hp-shield.soak { animation-duration: 0.25s; }
+@media (prefers-reduced-motion: reduce) { .gb-hp-shield.ghost { animation: none; } .gb-hp-shield.soak { animation: shieldSoak 0.5s steps(1) forwards; } }
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }

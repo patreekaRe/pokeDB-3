@@ -1785,3 +1785,4 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **R5. No dot under the enemy's HP bar** (2026-10-07, the user's ask): the dot was the Pokédex's caught / researched
   Poké Ball (`#enemy-dex`, `encounter.dexMark`), which sat at the foot of a known wild's nameplate; it's gone from battle
   (the Pokédex itself still marks them).
+- **R6. Block preview stays on the HP bar** (2026-10-08, the user's ask): the block you already have now holds on the HP bar as a steady blue chunk of the coming hit it stops (`shieldPreview()` from `renderBars()`); a raised card's still blinks (`.ghost`), and when the hit lands it flashes white and breaks off (`soakShield()`, `b.struck` until your next turn).

@@ -378,6 +378,7 @@ function resetIntro() {
 function beginPlayerTurn() {
   const b = battle;
   b.turn += 1;
+  b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
   if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure'))) abilityBanner();
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
@@ -1697,6 +1698,8 @@ async function enemyTurn() {
       log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
     } else {
       const shield = b.block;
+      soakShield();
+      b.struck = true;
       const through = hurtPlayer(Math.max(0, damage - (b.aug.hitReduce || 0)), move.name);
       const effect = enemyTypeMultiplier(move);
       hitSound(through, effect);
@@ -1776,6 +1779,7 @@ async function enemyTurn() {
   if (b.enemy.hp <= 0) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
   if (b.aug.enemyTwice && b.turn === 1 && !b.twice) {   // Speed Demon: on turn 1 it goes again
     b.twice = true;
+    b.struck = false;
     pop('enemy-zone', '👟 Again!', 'note bad');
     return enemyTurn();
   }
@@ -2140,6 +2144,7 @@ function renderBars() {
   setHpBar('enemy', b.enemy.hp, b.enemy.maxHp);
   renderPose();
   $('player-plate').classList.toggle('has-block', b.block > 0);
+  if (!$('player-plate').classList.contains('block-preview')) shieldPreview(b.block);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
 
   // Energy is shown as the games' PP: "PP 2/3", out of what this turn started with. The number bumps when it changes.
@@ -2569,30 +2574,46 @@ function showPreview(entry) {
   if (e.blockMult) block += (b.block + block) * (e.blockMult - 1);
   if (e.blockPerExhausted && e.exhausted) block += cardBlock(e.blockPerExhausted * e.exhausted);
   if (block > 0) {
-    const stopped = shieldPreview(b.block + block);
+    const stopped = shieldPreview(b.block + block, true);
     $('player-plate').classList.add('block-preview');
     $('player-status').prepend(badgeFor(['🛡️', `+${block}`, `Playing it adds ${block} block${stopped ? `: it would stop ${stopped} of the next hit` : ''}`, 'block preview']));
   }
 }
 
-/** The part of the enemy's coming hit that `block` would stop, laid in blue over the end of your HP bar. */
-function shieldPreview(block) {
+/**
+ * The part of the enemy's coming hit that `block` would stop, laid in blue over the end of your HP bar. A raised card's
+ * (`ghost`) blinks; the block you already have holds steady until the hit lands and soaks it (`soakShield()`), so you see
+ * it take the blow (the user's ask, 2026-10-07).
+ */
+function shieldPreview(block, ghost = false) {
   const b = battle, move = currentMove();
-  const hits = !b.guard && (move.kind === 'attack' || move.kind === 'drain');
+  const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain');
   const incoming = hits ? Math.max(0, attackDamage(move) - (b.aug.hitReduce || 0)) : 0;
   const stopped = Math.min(block, incoming, b.hp);
-  if (!stopped) return 0;
   const track = $('player-hp').querySelector('.gb-hp-track');
-  const chunk = track.querySelector('.gb-hp-shield') ?? track.appendChild(el('span', 'gb-hp-shield'));
+  let chunk = track.querySelector('.gb-hp-shield:not(.soak)');
+  if (!stopped) { chunk?.remove(); return 0; }
+  chunk ??= track.appendChild(el('span', 'gb-hp-shield'));
+  chunk.classList.toggle('ghost', ghost);
   chunk.style.setProperty('--from', (Math.min(b.hp, b.maxHp) - stopped) / b.maxHp);
   chunk.style.setProperty('--size', stopped / b.maxHp);
   return stopped;
 }
 
+/** The hit lands: the held shield flashes and breaks off the bar. */
+function soakShield() {
+  const chunk = $('player-hp').querySelector('.gb-hp-shield:not(.soak)');
+  if (!chunk) return;
+  chunk.classList.remove('ghost');
+  chunk.classList.add('soak');
+  chunk.addEventListener('animationend', () => chunk.remove(), { once: true });
+  setTimeout(() => chunk.remove(), 1200);
+}
+
 function clearPreview() {
   $('player-plate').classList.remove('block-preview');
   $('player-status').querySelector('.badge.preview')?.remove();
-  $('player-hp').querySelector('.gb-hp-shield')?.remove();
+  if (battle) shieldPreview(battle.block);
 }
 
 /**

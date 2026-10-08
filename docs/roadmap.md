@@ -14,11 +14,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
   Ability banner, intent bubbles and log, tap tips, keyword boxes, the cards' own text windows, the scenes' text boxes.
   `.btn` moves window by window, never globally (the cream `.btn` is still the default outside `.dev-window`).
 
-**Device cleanup batch** (the user's asks from a phone playtest, 2026-10-07; one session each, in any order, all Run in:
-LOCAL, Desktop app, visual). Each was also handed out as its own task chip.
-- **R6. Block preview stays on the HP bar**: the light-blue block preview on your HP bar should stay while block is up,
-  so you see it soak the incoming hit, not vanish once the card is played.
-
 **Waiting on the user: hybrid everywhere?** (2026-10-07). The user liked the hybrid's subtle light, so `?hybrid` now
 lights every biome (`js/hybrid-light.js`). Once they've played with it, ask whether it should become the default look
 (today it's opt-in per device), and whether to remove the smooth pilot (`?smooth`, `js/smooth-clearing.js`: one revert;
