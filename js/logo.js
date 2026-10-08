@@ -1,5 +1,6 @@
 /* ============================================================
-   logo.js  -  the title's pixel "PokéDB" logo (the user's pick, 2026-09-28).
+   logo.js  -  the title's pixel "Poké Deckbound" logo (the user's pick, 2026-09-28;
+   renamed from PokéDB 2026-10-08: "Poké" small over "Deckbound").
 
    Hand-drawn glyphs, each painted on its own small canvas (so the
    letters can still bounce in and wave one by one, css/screens.css):
@@ -17,7 +18,18 @@ const GLYPHS = {
   D: ['########..', '#########.', '###...####', '###....###', '###....###', '###....###', '###....###', '###....###', '###....###', '###....###', '###....###', '###...####', '#########.', '########..'],
   B: ['########..', '#########.', '###...####', '###....###', '###...####', '########..', '#########.', '###...####', '###....###', '###....###', '###....###', '###...####', '#########.', '########..'],
 };
-export const LOGO = ['P', 'o', 'k', 'é', 'D', 'B'];
+const X = '.........';   // lowercase letters sit on rows 5-13 (é's own rows), ascenders run the full 14
+const n = [X, X, X, X, X, '#######..', '########.', '###..####', '###...###', '###...###', '###...###', '###...###', '###...###', '###...###'];
+const b = ['###......', '###......', '###......', '###......', '###......', '#######..', '########.', '###..####', '###...###', '###...###', '###...###', '###..####', '########.', '#######..'];
+const mirror = (rows) => rows.map(r => [...r].reverse().join(''));
+Object.assign(GLYPHS, {
+  e: [X, X, X, X, X, ...GLYPHS['é'].slice(5)],
+  c: [X, X, X, X, X, '..######.', '.########', '###....##', '###......', '###......', '###......', '###....##', '.########', '..######.'],
+  b, d: mirror(b), n,
+  u: [X, X, X, X, X, ...mirror(n.slice(5).reverse())],
+  O: [X, X, X, X, X, '..#####..', '.#######.', '###...###', '###...###', '###...###', '###...###', '###...###', '.#######.', '..#####..'],   // a plain o (the "o" is Poké's Poké Ball)
+});
+export const LOGO = [['P', 'o', 'k', 'é'], ['D', 'e', 'c', 'k', 'b', 'O', 'u', 'n', 'd']];
 
 const ROWS = 14;
 const YELLOW = ['#fff4a0', '#f8d030', '#d8a010'];   // light band, face, shade band
@@ -25,15 +37,15 @@ const BALL = { r: '#e83828', R: '#a01818', h: '#ff9a88', k: '#181010', w: '#f8f8
 const OUTLINE = '#2a4cb0', RIM = '#101a50', SHADOW = '#0c0c28';
 export const EDGE = 3;   // logo pixels each glyph's canvas overlaps the next: its rim and shadow, leaving 2 pixels between faces
 
-/** CSS pixels per logo pixel: the whole word about 70% of the width (clear of the corner buttons), at most 6. */
-export const logoPixel = () => Math.max(3, Math.min(6, Math.floor(innerWidth * 0.72 / 80)));
+/** CSS pixels per logo pixel: "Deckbound" about 80% of the width (clear of the corner buttons), at most 5. */
+export const logoPixel = () => Math.max(2, Math.min(5, Math.floor(innerWidth * 0.8 / 104)));
 
 /** One glyph on its own canvas, with its outline, rim and shadow. */
 export function paintGlyph(ch, px) {
   const glyph = GLYPHS[ch];
   const w = glyph[0].length + 4, h = ROWS + 4;   // 2 pixels of outline and rim each side
   const m = Array.from({ length: h }, () => Array(w).fill(null));
-  const top = ch === 'é' ? 5 : 0;
+  const top = ch === 'é' ? 5 : glyph.findIndex(row => row.includes('#'));   // the light band tops a lowercase letter, not row 0
   glyph.forEach((row, y) => [...row].forEach((c, x) => {
     if (c === '.') return;
     if (ch === 'o') m[y + 2][x + 2] = BALL[c];

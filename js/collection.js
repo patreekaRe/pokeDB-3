@@ -202,6 +202,12 @@ const howtoDef = { id: 'howto', name: 'How to play', cls: 'cdev-dex cdev-bag', a
 /** How to play: the device over whatever is showing, on its banners (B shuts it). */
 export const openHowto = () => openDeviceApp('howto');
 
+/** The very first launch: the title's Pokédex has just powered on and dived into its screen, so How to play comes up
+    already on, no cover (one boot, not two); resolves once it's shut. */
+export const bootHowto = () => new Promise(done => openDevice({
+  render: renderHome, cover: coverArt, over: true, powered: true, onClose: done, start: { ...howtoDef, name: 'HOW TO PLAY' },
+}));
+
 /** The dock under the apps: settings, help and the Game Corner; laid over a screen also Main menu. */
 function dockRow() {
   const over = deviceOver();

@@ -28,14 +28,14 @@ function sections(entry) {
     ['Music', 'The Pokémon games\' soundtracks', 'uploads credited in About & credits'],
     { cast: BIOMES.map(b => ENEMY_DEFS[b.bosses.at(-1)].image), caption: 'And everyone who stood in the way' },
     ['Inspired by', 'Slay the Spire, by Mega Crit', 'Pokémon Gold & Silver\'s Hall of Fame'],
-    ['Pokémon', '© Nintendo, Creatures Inc., GAME FREAK inc.', 'PokéDB is a free fan game,', 'not affiliated with any of them.'],
+    ['Pokémon', '© Nintendo, Creatures Inc., GAME FREAK inc.', 'Poké Deckbound is a free fan game,', 'not affiliated with any of them.'],
     ['Special thanks', 'You, for playing to the very bottom'],
   ];
 }
 
 function rollOf(entry) {
   const roll = el('div', 'credits-roll');
-  roll.append(el('h2', 'credits-logo', 'PokéDB'), el('p', 'credits-version', 'v1.0'));
+  roll.append(el('h2', 'credits-logo', 'Poké Deckbound'), el('p', 'credits-version', 'v1.0'));
   for (const part of sections(entry)) {
     const box = el('section', 'credits-part');
     if (part.cast) {

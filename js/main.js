@@ -50,7 +50,7 @@ import { initSettings } from './settings.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
-import { initCollection, showCollection, openPokedex, openHowto } from './collection.js';
+import { initCollection, showCollection, openPokedex, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
 import { smoothIcon } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
@@ -269,6 +269,14 @@ function init() {
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
     onHelp: openHowto,
+    hello: splash,
+    // How to play comes up once, the very first time (not under a playtest film's URL)
+    firstLaunch: () => {
+      if (getSave().seenHelp || ['strike', 'travel', 'crossroads', 'climb'].some(k => new URLSearchParams(location.search).has(k))) return false;
+      updateSave(d => { d.seenHelp = true; });
+      return true;
+    },
+    onFirstBoot: bootHowto,
     onSafari: openSafariPrep,
     onTower: openTowerPrep,
     onBoard: () => openLeaderboard(),
@@ -331,11 +339,6 @@ function init() {
     if (params.has('crossroads')) return peekCrossroads(params);
     // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
     if (params.has('climb')) return peekClimb(params);
-    // Show the how-to-play once, the very first time.
-    if (!getSave().seenHelp) {
-      updateSave(d => { d.seenHelp = true; });
-      setTimeout(openHowto, 400);
-    }
   });
 }
 

@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>PokéDB – Rogue-Like Deck Battler</title>
+  <title>Poké Deckbound – Rogue-Like Deck Battler</title>
   <meta name="description" content="A free browser deck-builder and roguelike battle game. Pick a starter, build a deck of moves, and battle wild monsters. Fan project, not affiliated with Nintendo.">
   <meta name="theme-color" content="#1b1f3a">
-  <meta property="og:title" content="PokéDB – Rogue-Like Deck Battler">
+  <meta property="og:title" content="Poké Deckbound – Rogue-Like Deck Battler">
   <meta property="og:description" content="Pick a starter, build a deck of moves and battle wild monsters. Built with plain HTML, CSS and JavaScript.">
   <meta property="og:image" content="https://patreekare.github.io/pokeDB-3/assets/screenshots/social.jpg?v=2">   <!-- bump ?v= when the picture changes: apps cache previews by URL -->
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:image:alt" content="The PokéDB title screen: the pixel logo over a dusk sky, Bulbasaur, Charmander and Squirtle on a grassy ledge">
+  <meta property="og:image:alt" content="The Poké Deckbound title screen: the pixel logo over a dusk sky, Bulbasaur, Charmander and Squirtle on a grassy ledge">
   <meta property="og:url" content="https://patreekare.github.io/pokeDB-3/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -34,16 +34,28 @@
   <!-- Title screen: shown once per page load, before the start screen (js/title.js) -->
   <div id="title-screen" class="title-screen" hidden>
     <canvas id="title-sky" class="title-sky pixel" aria-hidden="true"></canvas>
+    <canvas id="title-light" class="title-light" aria-hidden="true"></canvas>   <!-- smooth light over the pixel sky (js/title-light.js) -->
     <img class="title-flyer pixel" alt="" aria-hidden="true">
     <!-- the broken Sealed Gate on the ledge, only once Mewtwo is free (js/title.js): a tap goes to Mewtwo's Prepare step -->
     <button type="button" class="title-gate" id="title-gate" aria-label="The broken Sealed Gate: play as Mewtwo" hidden><canvas class="title-gate-art" id="title-gate-art" aria-hidden="true"></canvas></button>
+    <div class="title-veil" aria-hidden="true"></div>   <!-- the dark the shut Pokédex lies in, lifted once it's on -->
     <div class="title-center">
-      <div class="title title-big" aria-label="PokéDB: Rogue-Like Deck Battler">
+      <div class="title title-big" aria-label="Poké Deckbound: Rogue-Like Deck Battler">
         <span class="title-logo-wrap">
           <span class="title-logo" id="title-logo" aria-hidden="true"></span>   <!-- the pixel logo, painted by js/logo.js -->
           <button type="button" class="title-version" id="title-version" aria-label="Patch notes"></button>   <!-- js/patchnotes.js -->
         </span>
         <small aria-hidden="true">Rogue-Like Deck Battler</small>
+      </div>
+      <!-- before the first tap: a Pokédex lying shut in the dark; the tap powers it on (powerOn() in js/title.js) -->
+      <div class="title-dex" id="title-dex" aria-hidden="true">
+        <div class="tdx-top"><span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></div>
+        <div class="tdx-glass"><div class="tdx-screen">
+          <span class="cdev-splash-ball"></span>
+          <span class="tdx-name"><small>POKÉ</small>DECKBOUND</span>
+          <span class="tdx-hello" id="tdx-hello"></span>
+        </div></div>
+        <div class="tdx-cover"><span class="pdx-cover-hinge"></span><span class="tdx-led"></span><span class="tdx-power"></span></div>
       </div>
       <button class="press-start" id="press-start" type="button"><span class="press-cursor" aria-hidden="true">▶</span><span id="press-start-text">PRESS START</span></button>
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
@@ -503,7 +515,7 @@
   <dialog id="about-dialog" class="dialog about-dialog dev-window">
     <h2>About &amp; credits</h2>
     <div class="dev-screen">
-    <p><strong>PokéDB</strong> is a fan-made learning project by Patrick, built with plain HTML, CSS and JavaScript. It is free and non-commercial.</p>
+    <p><strong>Poké Deckbound</strong> is a fan-made learning project by Patrick, built with plain HTML, CSS and JavaScript. It is free and non-commercial.</p>
     <p class="disclaimer">Pokémon and all related names and characters are trademarks of Nintendo, Creatures Inc. and GAME FREAK inc. This project is <strong>not affiliated with, endorsed by or sponsored by</strong> any of them.</p>
     <ul class="credits">
       <li>Pokémon pixel sprites (starters, evolutions, wild Pokémon and bosses): <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener">PokeAPI/sprites</a> (Gen 5 art, © Nintendo / Game Freak).</li>
@@ -871,7 +883,7 @@
     </div>
   </dialog>
 
-  <noscript><p class="noscript">PokéDB needs JavaScript to run. Please enable it.</p></noscript>
+  <noscript><p class="noscript">Poké Deckbound needs JavaScript to run. Please enable it.</p></noscript>
 
   <script type="module" src="js/main.js"></script>
 </body>

@@ -34,7 +34,9 @@
 
 /* the pixel logo (js/logo.js, a canvas a letter): letters bounce in one by one, then a slow wave with a shine
    rolls through them; the "o" is a Poké Ball that wobbles like a catch */
-.title-logo { display: inline-flex; align-items: flex-end; }
+.title-logo { display: inline-flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 22px rgba(255, 214, 110, 0.28)); }
+.tl-row { display: inline-flex; align-items: flex-end; }
+.tl-small { margin-bottom: -0.04em; }
 .tl canvas { display: block; image-rendering: pixelated; }
 .tl-ball canvas { transform-origin: 50% 85%; animation: ballWobble 3.2s ease-in-out infinite 1.4s; }
 .tl {
@@ -133,6 +135,105 @@ body.titling { overflow: hidden; }
   opacity: 0;
 }
 .press-start:focus-visible { outline: 2px dashed var(--gold); outline-offset: 6px; }
+.title-screen.powering .press-start { visibility: hidden; }
+
+/* the smooth light over the pixel sky (js/title-light.js), and the dark the shut Pokédex lies in until it's on */
+.title-light { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.title-veil {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 46%, rgba(6, 8, 26, 0.5), rgba(3, 4, 14, 0.86) 75%);
+  transition: opacity 1.6s ease;
+}
+.title-screen.powering .title-veil { opacity: 0.72; }
+.title-screen.menu .title-veil { opacity: 0; }
+.title-center { z-index: 2; }
+.title-screen:not(.menu) .title-big { display: none; }
+
+/* the shut Pokédex before the first tap (powerOn() in js/title.js): its power button pulses; a tap presses it, the LED
+   turns green, the cover swings open on its left hinge and the screen flickers on with the logo and a hello */
+.title-dex {
+  position: relative; display: flex; flex-direction: column; gap: 8px; width: clamp(200px, 58vw, 250px); aspect-ratio: 10 / 13;
+  padding: 10px 12px 14px; border-radius: 22px;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 20px 40px rgba(0, 0, 0, 0.55), 0 0 70px rgba(130, 160, 255, 0.16);
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  animation: tdxFloat 4s ease-in-out infinite;
+}
+.title-screen.menu .title-dex:not(.away), .title-dex.gone { display: none; }
+@keyframes tdxFloat { 50% { transform: translateY(-6px); } }
+.tdx-top { flex: none; display: flex; align-items: center; gap: 7px; height: 40px; }
+.tdx-top .pdx-lens { width: 32px; height: 32px; border-width: 3px; }
+.tdx-glass {
+  flex: 1; display: flex; padding: 7px; border-radius: 10px 10px 10px 24px;
+  background: #e4e4ea; box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 -4px 0 rgba(0, 0, 0, 0.14);
+}
+.tdx-screen {
+  position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  overflow: hidden; border: 3px solid #2a2a30; border-radius: 5px 5px 5px 18px; background: #0a1020; text-align: center;
+}
+.tdx-screen > * { opacity: 0; }
+.tdx-screen .cdev-splash-ball { width: 40px; height: 40px; border-width: 3px; }
+.tdx-name { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: clamp(0.66rem, 3.2vw, 0.8rem); letter-spacing: 1px; color: #ffd84a; text-shadow: 2px 2px 0 #2a4cb0; }
+.tdx-name small { font-size: 0.62em; color: #fff4a0; }
+.tdx-hello { min-height: 1em; font-size: 0.5rem; letter-spacing: 1px; color: #b6f08e; }
+.tdx-cover {
+  position: absolute; left: 0; right: 0; top: 58px; bottom: 0; z-index: 2; border-radius: 0 0 22px 22px;
+  transform-origin: left center; backface-visibility: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), transparent 40%), linear-gradient(180deg, var(--shell-hi), var(--shell) 45%, var(--shell-fold));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset -10px 0 0 rgba(0, 0, 0, 0.12);
+}
+/* the classic yellow chevron on the cover */
+.tdx-cover::before {
+  content: ''; position: absolute; left: 50%; top: 16%; width: 52%; height: 16%; translate: -50% 0;
+  background: linear-gradient(180deg, #ffe36b, #e8b818); clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); opacity: 0.9;
+}
+.tdx-led {
+  position: absolute; top: 12px; right: 16px; width: 11px; height: 11px; border-radius: 50%;
+  background: #ff5a5a; box-shadow: inset 0 0 0 2px var(--shell-deep); animation: tdxStandby 2.4s ease-in-out infinite;
+}
+@keyframes tdxStandby { 50% { background: #6a1e22; } }
+.tdx-power {
+  position: absolute; left: 50%; bottom: 18%; width: 58px; height: 58px; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #e6f8ff 0 10%, #5ec8ff 24%, #1f78c8 72%); border: 4px solid #fff;
+  box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep);
+  animation: tdxPulse 1.8s ease-out infinite;
+  transition: translate 0.08s, box-shadow 0.2s;
+}
+.tdx-power::before { content: ''; position: absolute; left: 50%; top: 20%; width: 4px; height: 32%; translate: -50% 0; border-radius: 2px; background: #fff; }
+.tdx-power::after { content: ''; position: absolute; inset: 28%; border-radius: 50%; border: 4px solid #fff; border-top-color: transparent; }
+@keyframes tdxPulse {
+  0%   { box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep), 0 0 0 3px rgba(127, 216, 255, 0.7); }
+  100% { box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep), 0 0 0 22px rgba(127, 216, 255, 0); }
+}
+.title-dex.on .tdx-power { translate: -50% 3px; animation: none; box-shadow: 0 0 0 3px var(--shell-rim), 0 1px 0 var(--shell-deep), 0 0 26px 8px #7fd8ff; }
+.title-dex.on .tdx-led { animation: none; background: #6be36b; box-shadow: inset 0 0 0 2px var(--shell-deep), 0 0 12px 3px #6be36b; }
+.title-dex.open .tdx-cover { animation: tdxSwing 0.55s cubic-bezier(0.55, 0, 0.35, 1) forwards; }
+@keyframes tdxSwing {
+  80%  { transform: perspective(900px) rotateY(-80deg); opacity: 1; }
+  100% { transform: perspective(900px) rotateY(-104deg); opacity: 0; }
+}
+.title-dex.open .pdx-light { animation: pdxBlink 0.16s steps(1) 5 0.3s; }
+.title-dex.open .pdx-light.yellow { animation-delay: 0.38s; }
+.title-dex.open .pdx-light.green { animation-delay: 0.46s; }
+.title-dex.open .pdx-lens { animation: pdxLens 0.9s ease-out 0.3s; }
+.title-dex.open .tdx-screen {
+  background: radial-gradient(circle at 50% 40%, #2a5a98, #10234a 75%); box-shadow: inset 0 0 30px rgba(127, 216, 255, 0.3);
+  animation: pdxPowerOn 0.5s steps(8) 0.45s;
+}
+.title-dex.open .tdx-screen > * { animation: tdxShow 0.4s ease-out forwards 0.85s; }
+.title-dex.open .tdx-name { animation-delay: 1s; }
+.title-dex.open .tdx-hello { animation-delay: 1.3s; }
+@keyframes tdxShow { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* lifting away as the sky lights up; or, the very first time, diving into the screen */
+.title-dex.away { z-index: 5; animation: tdxAway 0.7s ease-in forwards; pointer-events: none; }
+@keyframes tdxAway { to { transform: translateY(-24px) scale(1.12); opacity: 0; filter: brightness(1.7); } }
+.title-dex.dive { z-index: 5; animation: tdxDive 0.56s cubic-bezier(0.6, 0, 0.9, 0.5) forwards; }
+.title-dex.dive .tdx-screen { filter: brightness(1.6); transition: filter 0.4s; }
+@keyframes tdxDive { to { transform: scale(var(--dive, 12)); } }
+@media (prefers-reduced-motion: reduce) {
+  .title-dex, .tdx-power, .tdx-led { animation: none; }
+}
 .press-cursor { font-size: 0.7em; color: var(--gold); }
 @keyframes pressBlink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0; } }
 

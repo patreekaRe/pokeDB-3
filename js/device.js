@@ -64,9 +64,9 @@ export function initDevice({ onBack }) {
  * Shows the device closed, then opens it onto the home screen; `splash` is the boot screen's line. `start` (an app's
  * def, as openApp() takes) opens it straight into that app instead; `over` lays it over the current screen rather than
  * switching screens (a run's menu), and `onClose` then runs once it has shut. B out of a `start` app shuts the device,
- * unless `home`: then it steps out to the home screen.
+ * unless `home`: then it steps out to the home screen. `powered` skips the cover: the device is already on.
  */
-export async function openDevice({ render, cover, splash, start = null, home: toHome = false, over = false, onClose = null }) {
+export async function openDevice({ render, cover, splash, start = null, home: toHome = false, over = false, onClose = null, powered = false }) {
   if (busy) return;
   drawHome = render;
   drawCover = cover;
@@ -85,6 +85,8 @@ export async function openDevice({ render, cover, splash, start = null, home: to
   renderHome();
   setTitle('COLLECTION', '');
   if (start) openApp(start, true);   // under the cover, so it swings open onto the app
+  // already on (the title's Pokédex booted it and dived into its screen): no cover, just the screen's flicker
+  if (powered) { dev.classList.add('powered'); if (!calm()) bootScreen(null); return; }
   if (calm()) { playSound('dex-on'); return; }
   busy = true;
   const lid = makeCover();
