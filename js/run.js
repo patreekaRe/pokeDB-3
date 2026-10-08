@@ -2137,6 +2137,7 @@ function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a mo
       };
     }),
     skipLabel,
+    layout: 'deck-pick',
     onSkip: back,
   });
 }
@@ -2158,6 +2159,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
       confirmSound,
     })),
     skipLabel,
+    layout: 'deck-pick',
     onSkip: back,
   });
 }
@@ -2587,6 +2589,7 @@ function dayCare(trades, back, done = showMap) {
       confirm: 'Trade it',
     })),
     skipLabel: 'Back',
+    layout: 'deck-pick',
     onSkip: back,
   });
 }

@@ -5000,6 +5000,40 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 .pick-banner { border-color: var(--pick); }
 .pick-banner .pick-line { color: #3a5a28; }
 
+/* the deck pickers (Forget a move, PP Up, Day Care: showChoice()'s 'deck-pick') are the device (the user's call,
+   2026-10-07): its shell under the top bar, the title an LCD, the deck on a dark screen that scrolls inside the glass,
+   the text box and the button kept on the shell under it, so nothing slides under the top bar or covers a card */
+#reward-screen:has(> .deck-pick) {
+  position: fixed; inset: var(--topbar-h) 0 0; z-index: 1; max-width: none; margin: 0; gap: 10px;
+  padding: 10px 10px max(10px, env(safe-area-inset-bottom)); overflow: hidden; border-radius: 20px 20px 0 0;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 30%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08);
+}
+#reward-screen:has(> .deck-pick) .reward-title {
+  flex: none; align-self: stretch; padding: 8px 12px; border-color: var(--shell-rim); background: #b6d68e;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); font-size: 1rem;
+}
+.reward-options.deck-pick {
+  flex: 1; min-height: 0; align-self: stretch; width: auto; padding: 8px; border-radius: 12px 12px 12px 30px;
+  background: #e4e4ea; box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 -4px 0 rgba(0, 0, 0, 0.14);
+}
+.deck-pick-screen {
+  flex: 1; min-width: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 20px 12px 16px; border: 3px solid #2a2a30;
+  border-radius: 6px 6px 6px 22px; background: #1c2440; scrollbar-width: thin; scrollbar-color: #e4e4ea #1c2440;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(104px, 28vw), 1fr)); align-content: start; gap: 22px 12px;
+}
+.deck-pick-screen > .reward-option { width: 100%; max-width: 180px; justify-self: center; }
+#reward-screen:has(> .deck-pick) .reward-bottom { order: 1; position: static; flex: none; margin: 0; align-self: center; }
+#reward-screen:has(> .deck-pick) .reward-log { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell-rim); border-color: var(--shell-rim); }
+#reward-screen:has(> .deck-pick) .reward-actions { order: 2; margin: 0; }
+@media (min-width: 721px) {
+  #reward-screen:has(> .deck-pick) {
+    inset: calc(var(--topbar-h) + 4px) auto 14px 50%; width: min(900px, calc(100vw - 32px)); translate: -50% 0;
+    padding: 14px; border-radius: 26px; box-shadow: inset 0 0 0 3px var(--shell-rim), 0 18px 50px rgba(10, 20, 60, 0.45);
+  }
+  .deck-pick-screen { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 24px 20px 20px; }
+}
+
 /* the Game Corner as a Pokédex app (cornerApp in js/shop.js): the cabinet's CRT fills the device's screen, its Buy under it */
 .cdev-app.cdev-corner { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #0c0c10; color: #e8fff4; }
 .cdev-corner .gc-crt { flex: 1 0 auto; justify-content: space-between; }

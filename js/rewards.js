@@ -149,8 +149,10 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   box.className = `reward-options${layout ? ` ${layout}` : ''}`;
   box.style.zoom = '';   // fitMart()'s zoom-out would shrink the next screen too, and pull the Center's and events' fixed spots towards the top left
   const groups = {};
+  // a deck picker's cards sit on the device's dark screen, which scrolls inside the glass (the box)
+  const glass = layout.split(' ').includes('deck-pick') ? box.appendChild(el('div', 'deck-pick-screen')) : box;
   const home = (group) => {
-    if (!group) return box;
+    if (!group) return glass;
     if (!groups[group]) box.append(groups[group] = el('div', `choice-group group-${group}`));
     return groups[group];
   };
