@@ -191,7 +191,6 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;
-  $('room-place').textContent = $('biome-name').textContent;
   if (inBar) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
   skip.classList.toggle('room-leave', inBar);

@@ -4601,7 +4601,7 @@ body.scene-peek #backdrop { display: none; }
 .mdex-lights { display: flex; gap: 5px; }
 .mdex-lights .pdx-light { width: 9px; height: 9px; }
 #map-screen:not(.tower) .mdex-hinge .map-head {
-  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px;
+  flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
   margin: 0 0 0 auto; padding: 5px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
   background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
 }
@@ -5041,14 +5041,14 @@ body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.
 .room-hinge { display: flex; align-items: center; gap: 8px; padding: 2px 2px 0; }
 .room-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
 .room-sign {
-  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px;
-  margin-left: auto; padding: 4px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
+  flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
+  margin-left: auto; padding: 3px 10px; border: 2px solid var(--shell-rim); border-radius: 6px;
   background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12); color: #1f3a14; font-family: var(--pixel-font); font-synthesis-weight: none;
 }
-.room-sign > * { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
-.room-sign b { font-size: 0.72rem; letter-spacing: 0.04em; animation: lcdType 0.6s steps(6) both; }
-.room-sign small { font-size: 0.58rem; opacity: 0.8; }
-.room-sign small:empty { display: none; }
+.room-sign b {
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400;
+  font-size: 0.66rem; letter-spacing: 0.04em; animation: lcdType 0.6s steps(6) both;
+}
 @media (prefers-reduced-motion: reduce) { .room-sign b { animation: none; } }
 #reward-screen:has(> :is(.center-room, .event-room, .treasure-room, .mart-window)) .reward-actions { display: none; }
 /* the Mart, the grotto and the move pick stand in the screen's flow, so it keeps the bar's height clear */
