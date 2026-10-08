@@ -1152,7 +1152,7 @@ function showCard(p) {
   card.querySelector('.hub-card-acts').replaceChildren(...(ask ? ['Continue', 'New game'] : []).map((label) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = `hub-card-btn${label === 'Continue' ? ' go' : ''}`;
+    b.className = label === 'Continue' ? 'room-ok hub-card-ok' : 'hub-card-btn';
     b.textContent = label;
     b.addEventListener('click', () => open(p, p.buttons.findIndex(([l]) => l === label)));
     return b;
@@ -1181,10 +1181,9 @@ function nearest() {
 const KEY_FOR = { Continue: 'play', 'New game': 'plus', 'Escape Rope': 'rope' };
 
 /** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08): the hinge's LCD names the place your partner
-    walks up to and the gold pill does it (a tap walking there first); the row under it is Home (the Pokédex), round
+    walks up to (no gold pill since 2026-10-08, the user's call: a tap on the place does it); the row under it is Home (the Pokédex), round
     keys for How to play (New game's + at the Pokéstop) and a place's other doings (no Continue key: it squashed the HP), and the LCD: a saved
-    run's HP and its Escape Rope (battle's running figure), then the PokéCoins. Near
-    nothing the pill is Continue, or New game (the Pokéstop). Redrawn only when the place changes. */
+    run's HP and its Escape Rope (battle's running figure), then the PokéCoins. Redrawn only when the place changes. */
 function placeBar() {
   const coins = getSave().coins ?? 0;
   if (coins !== barCoins) { barCoins = coins; bar.querySelector('.hbar-coins').textContent = coins.toLocaleString(); }
@@ -1193,24 +1192,10 @@ function placeBar() {
   barKey = k;
   bar.querySelector('.hbar-run').hidden = !saved;
   if (saved) setHpBar('hub', saved.hp, saved.maxHp);
-  const cont = () => { playSound('confirm'); hideCard(); acts.onContinue(saved); };
-  const trail = places.find(q => q.id === 'trail');
-  let main, rest = [];
-  if (p && (!p.open || !p.buttons.length)) main =['Locked', () => goTo(p, true), true];
-  else if (p) {
-    main = [p.buttons[0][0], () => goTo(p, true, 0)];
-    rest = p.buttons.slice(1).map(([label], i) => [label, () => goTo(p, true, i + 1)]);
-    // at the Pokéstop How to play's key is New game and the Escape Rope is on the LCD, by your HP
-    if (p.id === 'trail') rest = [];
-  } else if (saved) {
-    main = ['Continue', cont];
-  } else main = ['New game', () => goTo(trail, true, 0)];
+  // at the Pokéstop How to play's key is New game and the Escape Rope is on the LCD, by your HP
+  const rest = p?.open && p.id !== 'trail' ? p.buttons.slice(1).map(([label], i) => [label, () => goTo(p, true, i + 1)]) : [];
   bar.querySelector('.hbar-sign b').textContent = p?.name ?? 'The Clearing';
   helpKey(p?.id === 'trail' && p.open ? () => goTo(p, true, p.buttons.findIndex(([label]) => label === 'New game')) : null);
-  const ok = bar.querySelector('.hbar-ok');
-  ok.querySelector('span').textContent = main[0];
-  ok.classList.toggle('locked', !!main[2]);
-  ok.onclick = main[1];
   bar.querySelector('.hbar-keys').replaceChildren(...rest.map(([label, go]) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -1221,11 +1206,10 @@ function placeBar() {
     b.addEventListener('click', go);
     return b;
   }));
-  for (const el of [ok, bar.querySelector('.hbar-sign b')]) {
-    el.classList.remove('hbar-pop');
-    void el.offsetWidth;
-    el.classList.add('hbar-pop');
-  }
+  const sign = bar.querySelector('.hbar-sign b');
+  sign.classList.remove('hbar-pop');
+  void sign.offsetWidth;
+  sign.classList.add('hbar-pop');
 }
 
 /** How to play's key, or New game's (+) while your partner is at the Pokéstop (`go`); it pops when it swaps. */
@@ -1511,7 +1495,6 @@ async function build() {
     <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><div class="hub-card-acts"></div></div>
     <div class="hub-bar">
       <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
-        <button type="button" class="room-ok hbar-ok"><span></span></button>
         <div class="room-sign hbar-sign" aria-live="polite"><b></b></div></div>
       <div class="room-row"><div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help"></button><span class="hbar-keys"></span></div>
         <div class="room-lcd hbar-lcd"><span class="hbar-run" hidden><span class="gb-hp" id="hub-hp" role="progressbar" aria-label="HP" aria-valuemin="0"><span class="gb-hp-tag" aria-hidden="true">HP:</span><span class="gb-hp-track"><span class="gb-hp-fill" id="hub-hp-fill"></span></span></span><span class="gb-hp-num" id="hub-hp-text"></span><button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></span>
