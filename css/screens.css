@@ -5047,6 +5047,9 @@ body[data-screen="map-screen"] .home-key svg, .room-home .home-key svg { width: 
 body[data-screen="map-screen"] .home-dex:active .home-key, .room-home:active .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key { width: 26px; height: 26px; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key svg { width: 15px; height: 15px; }
+/* the climb's Home key moves up onto the hinge, after the lights, like every map's (the user's call, 2026-10-08):
+   measureBar() in js/tower.js gives its spot inside the top bar */
+body[data-screen="map-screen"]:has(#map-screen.tower) .home-dex { position: absolute; z-index: 3; left: var(--tw-home-x, 0); top: var(--tw-home-y, 0); }
 /* the top bar is laid on the device, so it waits for the cover to swing open (bootDevice()'s .booting) */
 body:has(#map-screen.booting) .topbar { visibility: hidden; }
 /* nothing on the map drags or rubber-bands the page; only the map itself scrolls, inside its glass (the user's ask, 2026-10-08) */

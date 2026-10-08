@@ -60,6 +60,12 @@ function measureBar() {
   css.setProperty('--tw-lcd-x', `${Math.round(lcd.left)}px`);
   css.setProperty('--tw-lcd-y', `${Math.round(lcd.top)}px`);
   css.setProperty('--tw-lcd-h', `${Math.round(lcd.height)}px`);
+  // the Home key sits on the hinge after the lights, placed inside the top bar, which is laid on the LCD
+  const lights = hinge?.querySelector('.mdex-lights')?.getBoundingClientRect();
+  if (lights) {
+    css.setProperty('--tw-home-x', `${Math.round(lights.right + 10 - (lcd.left + 6))}px`);
+    css.setProperty('--tw-home-y', `${Math.round(lights.top + lights.height / 2 - 13 - lcd.top)}px`);
+  }
   document.documentElement.style.setProperty('--tw-bar-h', `${h}px`);
   if (h === barH) return false;
   barH = h;

@@ -211,7 +211,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   skip.classList.toggle('room-leave', inBar);
   skip.classList.toggle('room-skip', roomy && !inBar);
   skip.hidden = !onSkip;
-  skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
+  skip.style.visibility = '';   // an event's gift hides it this way
+  skip.disabled = false;   // a take holds it, inert, while the thing flies to the Bag
   $('reward-skip-text').textContent = skipLabel;
   skip.onclick = onSkip ? askFirst(once(onSkip), skip, title) : null;
   $('reward-reroll').hidden = !reroll;

@@ -1638,7 +1638,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     if (!picked || taking) return;
     taking = true;
     playSound('item-get');
-    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box would jump into its place
+    $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
     pressConfirm(go);
     stage.classList.add('taking');
     await flyToBag(buttons[relics.indexOf(picked)]);
@@ -1741,7 +1741,7 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
     if (taking) return;
     taking = true;
     playSound('item-get');
-    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
+    $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
     pressConfirm(go);
     tips.hidden = true;
     if (toss !== null) row.children[toss].classList.add('gone');
@@ -1889,7 +1889,7 @@ function treasureRoom() {
     if (!picked || taking) return;
     taking = true;
     playSound('item-get');
-    $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
+    $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
     pressConfirm(take);
     const btn = stage.querySelector('.treasure-relic.chosen'), from = btn.getBoundingClientRect(), to = bagSpot();
     btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
