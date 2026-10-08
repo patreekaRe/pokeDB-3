@@ -834,12 +834,12 @@ function makePlaces() {
       line: run ? `${run.name} waits in the ${run.place}${run.floor ? `, floor ${run.floor}` : ''}. HP ${run.hp}/${run.maxHp}.` : 'The trail out of the Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       build: (g) => {
-        const x = tileX(7), z = tileZ(ROWS - 2), d = stopDiscArt(), w = d.width / d.fine / TP * 1.15;
-        g.add(board(stopPostArt(), x, z));
+        const S = 0.7, x = tileX(7), z = tileZ(ROWS - 2), d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
+        g.add(board(stopPostArt(), x, z, { s: S }));
         const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
         m.userData.glowMin = 0.3;
         const disc = new THREE.Mesh(new THREE.PlaneGeometry(w, w), m);
-        disc.position.set(x, 1.55 + w / 2, z);
+        disc.position.set(x, 1.55 * S + w / 2, z);
         disc.castShadow = true;
         g.add(disc);
         stop = { disc, m, y: disc.position.y, spinAt: 0 };
