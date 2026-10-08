@@ -955,13 +955,13 @@ function open(p) {
 
 /* ---------- the Pokéstop ---------- */
 
-const SPIN = 1100;
+const SPIN = 1700;
 
 /** A tap spins the disc like Pokémon Go's, three turns slowing down, and it glows violet a moment after. */
 function spinStop() {
   if (!stop || calm) return;
   stop.spinAt = performance.now();
-  playSound('aug-reroll');
+  playSound('aug-silver');
   setTimeout(() => playSound('aug-gold'), SPIN * 0.75);
 }
 
