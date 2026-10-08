@@ -1456,7 +1456,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Eternatus's first bar keeps its rebirth (`finishingBlow()` in `js/battle.js`; detail in `docs/reference/battle-screen-layout.md`).
   Checked at 375x812 with `?bossfight=depths&hp=0.02`.
 - **Caught / researched mark on the enemy's plate** (the user's ask, 2026-10-05): a wild Pokémon you've fully researched
-  shows the Pokédex's gold Poké Ball at the foot of its nameplate, and in the Safari one you've already caught shows a red
+  shows the Pokédex's gold Poké Ball at the foot of its nameplate (removed 2026-10-07, R5: it read as a dot on the bar), and in the Safari one you've already caught shows a red
   one (`encounter.dexMark` from `fight()` in `js/run.js`, `isResearched()` in `js/pokedex.js`, drawn in `setupEnemy()`).
 - **Safari lobby** (the user's ask, 2026-10-05): the Safari Zone's prep window as a full-screen lobby like the Sky Pillar's,
   the Zone's gate painted behind today's starter (`js/safari-lobby.js`), a top-catchers plaque; the old window stays behind
@@ -1782,3 +1782,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **R4. One ₽ on a normal run's map** (2026-10-07, the user's ask): the run card's `#run-money` (a climb's, which has no
   top bar ₽) showed on every map because the later `.room-cash` rule beat `.run-money { display: none }`; now
   `.room-cash.run-money`, so a normal map keeps only the top bar's pill.
+- **R5. No dot under the enemy's HP bar** (2026-10-07, the user's ask): the dot was the Pokédex's caught / researched
+  Poké Ball (`#enemy-dex`, `encounter.dexMark`), which sat at the foot of a known wild's nameplate; it's gone from battle
+  (the Pokédex itself still marks them).

@@ -183,7 +183,6 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     onEnd,
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
-    dexMark: encounter.dexMark ?? null,   // 'caught' (Safari) or 'researched': a Poké Ball on the enemy's plate
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
@@ -2058,10 +2057,6 @@ function setupEnemy() {
   $('enemy-type').title = `${TYPES[type].label} type`;
   $('enemy-type').className = `chip type-${type}`;
   box.classList.toggle('max', !!b.phased);
-  const mark = $('enemy-dex');
-  mark.hidden = !b.dexMark;
-  mark.className = `dex-mark pokeball${b.dexMark === 'researched' ? ' gold' : ''}`;
-  mark.title = b.dexMark === 'caught' ? 'Already caught' : 'Research complete';
 }
 
 function renderAll() {

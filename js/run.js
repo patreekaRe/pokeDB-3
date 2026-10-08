@@ -55,7 +55,7 @@ import { crossroads } from './crossroads.js';
 import { renderTower, hideTower, guardianIntro, towerFall, barReady } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
-import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, isResearched } from './pokedex.js';
+import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
@@ -1231,9 +1231,6 @@ async function fight(node) {
   if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
-  encounter.dexMark = ken ? null
-    : isSafari() ? (getSave().safariDex.caught.includes(node.enemyId) ? 'caught' : null)
-    : isResearched(node.enemyId) ? 'researched' : null;
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
