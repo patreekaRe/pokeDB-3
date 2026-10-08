@@ -1,5 +1,6 @@
 /* The walkable Clearing over the title (js/hub-3d.js): its canvas covers the sky and the signs (which stay under it as the
-   fallback), under the logo and the corner keys. A Pokédex bar along the bottom holds the keys for the place you walk near, its green screen saying what it is. */
+   fallback), under the logo and the corner keys. A Pokédex strip along the bottom holds the keys for the place you walk near; standing at its door, a card
+   along the bottom says what it is. */
 
 .hub { position: absolute; inset: 0; z-index: 1; animation: hubIn 0.5s ease-out; }
 @keyframes hubIn { from { opacity: 0; } }
@@ -30,23 +31,18 @@
 @keyframes hbarPop { from { opacity: 0; scale: 0.85; } }
 .hbar-keys { display: contents; }
 .hub-bar .room-home .round-key { width: 38px; height: 38px; }
-/* the hinge LCD holds the PokéCoins; the long green screen says what the place near you is (a tap walks there) */
-.hbar-sign { gap: 5px; }
-.hbar-sign b { font-variant-numeric: tabular-nums; animation: none; }
-.hbar-coin { width: 16px; height: 16px; flex: none; }
-.hbar-screen {
-  flex-direction: column; align-items: stretch; justify-content: center; gap: 3px; min-height: 58px; padding: 5px 9px;
-  text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+/* the LCD: a saved run's HP and its Escape Rope (battle's running figure), then the PokéCoins on their own */
+.hbar-lcd { gap: 6px; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+.hbar-run { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
+.hbar-run[hidden] { display: none; }
+.hbar-flee {
+  flex: none; display: grid; place-items: center; width: 30px; height: 26px; padding: 3px; border: 2px solid #1f3a14; border-radius: 6px;
+  background: rgba(255, 255, 255, 0.3); color: #1f3a14; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-.hbar-screen:active { filter: brightness(0.95); }
-.hbar-name { font-weight: 400; font-size: 0.62rem; letter-spacing: 0.04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hbar-line {
-  font: 0.74rem/1.25 system-ui, sans-serif; color: #2a4a1c;
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
-}
-.hbar-screen.locked { background: radial-gradient(120% 140% at 30% 0%, #c9cfbe, #aab3a0); }
-.hbar-blink { animation: hbarBlink 0.5s steps(2) 2; }
-@keyframes hbarBlink { 50% { filter: brightness(1.12); } }
+.hbar-flee svg { width: 100%; height: 100%; display: block; }
+.hbar-flee:active { translate: 0 1px; background: rgba(31, 58, 20, 0.2); }
+.hbar-cash { flex: none; margin-left: auto; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.hbar-coin { width: 18px; height: 18px; flex: none; }
 /* something new in the device (a badge, a find): a red dot blinks on Home, like the title's "!" */
 .hub-dex { position: relative; }
 .hub-dex.out, .hub-help.out { visibility: hidden; }
@@ -57,10 +53,21 @@
 @media (max-width: 360px) { .hub-bar { padding-inline: 8px; } .hub-bar .room-row { gap: 6px; } .hub-bar .room-home { width: 42px; } }
 @media (prefers-reduced-motion: reduce) { .hub-bar, .hbar-pop, .hub-dex.news::after { animation: none; } }
 
+.hub-card {
+  position: absolute; left: 50%; bottom: calc(var(--hub-bar-h, 110px) + 10px); translate: -50% 0;
+  width: min(360px, calc(100% - 32px)); padding: 12px 14px; box-sizing: border-box;
+  border: 3px solid #2a2a3a; border-radius: 10px; background: #fff8e8; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  color: #2a2a3a; text-align: left; animation: hubCard 0.2s ease-out;
+}
+.hub-card[hidden] { display: none; }
+@keyframes hubCard { from { opacity: 0; translate: -50% 10px; } }
+.hub-card-name { display: block; font: 0.85rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
+.hub-card-line { margin: 6px 0 0; font-size: 0.9rem; line-height: 1.35; }
+.hub-card.locked { background: #eeeae4; }
 
 .hub-fps { position: absolute; right: 60px; top: 18px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #8f8; font: 12px/1.2 monospace; }
 
-@media (prefers-reduced-motion: reduce) { .hub, .hbar-blink { animation: none; } .hbar-keys.hbar-pop, .hub-bar { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hbar-keys.hbar-pop, .hub-bar { animation: none; } }
 
 /* the logo greets the hub, then fades so it never hides the Ancient Tree's tag */
 .title-screen.hub-on .title-center { animation: hubLogo 3.6s ease-in forwards; }
@@ -82,7 +89,7 @@
 .hub-version:active { translate: 0 2px; box-shadow: none; }
 
 /* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and bar wait for the partner to walk in */
-.hub.held .hub-dex, .hub.held .hub-version, .hub.held .hub-bar { visibility: hidden; }
+.hub.held .hub-dex, .hub.held .hub-version, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }
 .hub.held .hub-view { pointer-events: none; }
 /* the hub is the title from the first frame, so the old pixel sky, its light and the signs never show under it */
 .title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
