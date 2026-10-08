@@ -22,7 +22,7 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   screen): the climber's name, two seven-segment readouts (this week, best ever; `segInto()` from `js/statsdex.js`), three
   rules (`RULES`), the note on whether this climb counts, Practice's starter picks, and the week's top climbers; then the
   hardware (`.tdev-pad`): Ranks (the leaderboard, since 2026-10-07 an app sliding over the LCD as the Safari lobby's keys do, `openRanks()` in `js/towerprep.js`; B or the key again slides it back) and Practice as the map's `.mdex-btn` keys, B (back) and a big A (Climb /
-  Again). The plaque's LCD look is scoped to `.tower-lobby` (dark ink, your row in reverse); the Safari lobby borrows all of it
+  Again). On the lid, after the lights, a gold Continue pill (`#tower-continue`, 2026-10-08) resumes any saved run. The plaque's LCD look is scoped to `.tower-lobby` (dark ink, your row in reverse); the Safari lobby borrows all of it
   (it wears `.tower-lobby` too, `docs/reference/safari.md`), and so does the character select's device (`.tdev-*`).
 - **The week deals the tower** (`towerWeekly()`): its Monday (UTC, `towerWeek()`) seeds every roll through `js/rng.js`
   like the Safari's day, and picks the starter everyone climbs with (the Safari's pool: never Mewtwo or Rayquaza).
