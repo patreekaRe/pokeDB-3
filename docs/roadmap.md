@@ -93,6 +93,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
+- Friends and messages (talked through 2026-10-07, "maybe later"; Run in: CLOUD). No free-text chat. Friends with no
+  codes or links: unique nicknames (claimed in Firestore, a "Let others find me" switch), search by name, one-tap
+  Follow (mutual = Friends) from search, leaderboards and suggested Rivals, a Friends tab on both boards, a Friends app
+  in the device. Then, Dark Souls style: signs built from phrase parts left on map nodes (best on the seeded Safari /
+  Sky Pillar, rated for coins), friends' ghosts where they lost (opens their loss recap), a daily gift item in a
+  friend's Lost & Found. Maybe an Assist (a friend's partner for one fight), bot-checked. Needs sign-in.
 
 ## Waiting on the user
 
