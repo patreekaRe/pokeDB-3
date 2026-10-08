@@ -73,6 +73,16 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
     - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
     - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
+    - **Part d, augment balance (the user's pick, 2026-10-08: do it the weekend of 2026-10-10).** Run in: CLOUD (attach
+      `pokeDB-3` and `pokeDB-sim`). Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 21 and
+      docs/reference/sky-pillar.md. Balance the Sky Pillar's augments with the bot (pokeDB-sim's `sim/augranks.json`,
+      `towerCfg()` in `sim/run-node.mjs`). 1) Fire first: on full climbs Fire reaches floor 100 16% of the time against
+      Grass 49% and Water 32%; lift it (stronger Fire-only augments, or more healing / block for it) to within ~10 points
+      of Water, without moving Grass and Water. 2) Re-check the five that measured far below no augment, with more climbs
+      before touching them: Risky Climb (Grass -26 floors), Card Shark (-19), Golden Touch and Bodyguard (-13), Overcharge
+      (Water -11); fix any that is really a trap. 3) Re-measure what changed and confirm the full-climb rates once at
+      ~300. The ranks are one augment from floor 1, so read gaps under ~5 floors as even, and remember scaling augments
+      measure low there. Keep bot runs small (CLAUDE.md). Push both repos to main."
 
 ## Ideas, not agreed yet (ask the user before building)
 
