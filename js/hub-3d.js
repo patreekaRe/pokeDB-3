@@ -1145,7 +1145,9 @@ function showCard(p) {
   here = p;
   // the Pokéstop with a saved run asks which (the user's call, 2026-10-08): its card's two buttons
   const ask = p.id === 'trail' && p.open && saved;
-  card.querySelector('.hub-card-name').textContent = ask ? 'Continue or New game?' : p.name;
+  // the user's call, 2026-10-08: that question is the Pokédex's shell, its two keys and no words
+  card.classList.toggle('ask', ask);
+  card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
   card.querySelector('.hub-card-acts').replaceChildren(...(ask ? ['Continue', 'New game'] : []).map((label) => {
     const b = document.createElement('button');
