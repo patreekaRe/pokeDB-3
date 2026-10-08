@@ -4682,8 +4682,28 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
    the left, then name | Level, the HP bar, Ability | HP numbers, every row the same width; the run's ₽ are the top bar's */
 .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #map-screen:not(.tower) .run-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 12px; }
-#map-screen:not(.tower) .run-mon { width: 84px; height: 84px; margin: -6px -4px -8px -6px; filter: url(#lcd-ink); }
-#map-screen:not(.tower) .run-sprite { width: 84px; height: 84px; filter: none; }
+/* the greens go on each moving piece, not the button: iOS Safari drops a parent's SVG filter for a few frames while its
+   children animate, flashing them in full colour */
+#map-screen:not(.tower) .run-mon { width: 84px; height: 84px; margin: -6px -4px -8px -6px; translate: 0 -7px; }
+#map-screen:not(.tower) .run-sprite { width: 84px; height: 84px; filter: url(#lcd-ink); }
+#map-screen:not(.tower) .run-ball { filter: none; }
+#map-screen:not(.tower) :is(.cball-top, .cball-bottom, .cball-light) { filter: url(#lcd-ink); }
+#map-screen:not(.tower) .run-mon[data-state="recalling"] .run-sprite { animation-name: monRecallInk; }
+#map-screen:not(.tower) .run-mon[data-state="releasing"] .run-sprite { animation-name: monReleaseInk; }
+#map-screen:not(.tower) .run-sprite[data-blaze] { animation: blazeAuraInk 0.5s steps(1) infinite; }
+@keyframes monRecallInk {
+  0% { transform: none; filter: url(#lcd-ink); }
+  15%, 100% { filter: brightness(0.45) url(#lcd-ink); }
+  100% { transform: scale(0.1); opacity: 0; }
+}
+@keyframes monReleaseInk {
+  0%, 60% { filter: brightness(0) invert(1) url(#lcd-ink); }
+  0% { transform: scale(0.2); }
+  60% { transform: scale(1.12); }
+  100% { transform: none; filter: url(#lcd-ink); }
+}
+@keyframes blazeAuraInk { 0% { filter: url(#lcd-ink); } 50% { filter: drop-shadow(0 0 3px #000) url(#lcd-ink); } }
+@media (prefers-reduced-motion: reduce) { #map-screen:not(.tower) .run-sprite[data-blaze] { animation: none; } }
 #map-screen:not(.tower) .run-info {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name lv" "bar bar" "ab hp";
   align-items: center; gap: 5px 8px; width: auto;
