@@ -309,49 +309,88 @@ function ancientArt(open = false) {
 }
 
 const KIT = { white: '#f6f8fb', pale: '#e2e6ee', grey: '#bcc3cf', dark: '#8a92a0', ink: '#3a3e4c', red: '#e84838', redDark: '#b8302a' };
+const FINE = 12;   // a smooth painting's pixels per painted pixel
+
+/** A smooth painting (the user's call: the notice boards aren't pixel art), drawn in painted-pixel units, FINE times
+    finer; board() shows it the same size as a pixel one. */
+function fine(w, h) {
+  const c = new OffscreenCanvas(w * FINE, h * FINE), g = c.getContext('2d');
+  c.fine = true;
+  g.scale(FINE, FINE);
+  g.lineJoin = g.lineCap = 'round';
+  const fill = (col, path) => { g.fillStyle = col; g.beginPath(); path(); g.fill(); };
+  const rr = (x, y, ww, hh, r, col) => fill(col, () => g.roundRect(x, y, ww, hh, r));
+  const lin = (x0, y0, x1, y1, stops) => { const l = g.createLinearGradient(x0, y0, x1, y1); stops.forEach((s, i) => l.addColorStop(i / (stops.length - 1), s)); return l; };
+  return { c, g, fill, rr, lin };
+}
 
 /** The Safari's board, Scarlet / Violet's roadside kiosk: a white frame on arched legs under a ribbed, curved roof, a
     poster with a red header and three snapshots of today's catches. */
 function kioskArt() {
-  const a = art(22, 32), K = KIT;
-  for (let y = 1; y < 7; y++) {   // the roof, rounded on top, its underside in shadow
-    const x0 = y === 1 ? 3 : y === 2 ? 2 : 1;
-    a.dot(x0, y, y === 1 ? K.white : y === 6 ? K.dark : y === 2 ? K.pale : K.pale, 22 - x0 * 2, 1);
-  }
-  for (let x = 5; x < 18; x += 4) a.dot(x, 2, K.grey, 1, 4);   // its ribs
-  a.dot(1, 5, K.grey, 20, 1);
+  const { c, g, fill, rr, lin } = fine(22, 32), K = KIT;
   for (const x0 of [2, 18]) {   // the posts, each standing on a little arch
-    a.dot(x0, 7, K.white, 2, 21); a.dot(x0 + 1, 7, K.grey, 1, 21);
-    a.dot(x0 - 1, 27, K.pale, 4, 2); a.dot(x0 - 1, 29, K.pale, 1, 3); a.dot(x0 + 2, 29, K.grey, 1, 3);
+    rr(x0, 6, 2, 22, 0.6, lin(x0, 0, x0 + 2, 0, [K.white, K.pale, K.grey]));
+    fill(lin(0, 27, 0, 32, [K.white, K.grey]), () => {
+      g.moveTo(x0 - 1.2, 32); g.lineTo(x0 - 1.2, 28); g.quadraticCurveTo(x0 - 1.2, 27, x0, 27); g.lineTo(x0 + 2, 27);
+      g.quadraticCurveTo(x0 + 3.2, 27, x0 + 3.2, 28); g.lineTo(x0 + 3.2, 32); g.lineTo(x0 + 2.3, 32);
+      g.arc(x0 + 1, 31.6, 1.3, 0, Math.PI, true); g.closePath();
+    });
   }
-  a.dot(3, 8, K.grey, 16, 15);   // the frame, then the poster
-  a.dot(4, 9, K.white, 14, 13);
-  a.dot(5, 10, K.red, 12, 2); a.dot(5, 11, K.redDark, 12, 1);
-  a.dot(6, 10, K.white); a.dot(6, 11, K.ink);   // a Poké Ball on the header
-  for (let x = 6; x < 16; x++) if (x % 3 !== 2) a.dot(x, 13, K.ink, 1, 2);   // a headline
-  ['#58b860', '#f8d848', '#6ab0e0'].forEach((c, i) => { a.dot(6 + i * 4, 16, c, 3, 3); a.dot(6 + i * 4, 19, K.grey, 3, 1); });
-  a.dot(3, 23, K.pale, 16, 1); a.dot(3, 24, K.dark, 16, 1);   // the rail under it
-  return a.c;
+  fill(lin(0, 1, 0, 7, [K.white, K.pale, K.grey]), () => {   // the roof, rounded on top, its underside in shadow
+    g.moveTo(0.6, 6.4); g.quadraticCurveTo(0.6, 1.2, 11, 0.8); g.quadraticCurveTo(21.4, 1.2, 21.4, 6.4);
+    g.quadraticCurveTo(21.4, 7.2, 20.6, 7.2); g.lineTo(1.4, 7.2); g.quadraticCurveTo(0.6, 7.2, 0.6, 6.4);
+  });
+  rr(0.8, 5.9, 20.4, 1.3, 0.6, K.dark);
+  g.strokeStyle = K.grey; g.lineWidth = 0.35;   // its ribs
+  for (const x of [4.5, 8.5, 13.5, 17.5]) { g.beginPath(); g.moveTo(x, x < 11 ? 2.2 + (11 - x) * 0.12 : 2.2 + (x - 11) * 0.12); g.lineTo(x, 5.6); g.stroke(); }
+  rr(3, 8, 16, 15, 1, lin(0, 8, 0, 23, [K.grey, K.dark]));   // the frame, then the poster
+  rr(3.9, 8.9, 14.2, 13.2, 0.6, K.white);
+  rr(4.8, 9.8, 12.4, 2.4, 0.5, lin(0, 9.8, 0, 12.2, [K.red, K.redDark]));
+  fill(K.white, () => g.arc(6.4, 11, 0.85, 0, Math.PI * 2));   // a Poké Ball on the header
+  fill(K.red, () => g.arc(6.4, 11, 0.85, Math.PI, 0));
+  g.strokeStyle = K.ink; g.lineWidth = 0.22;
+  g.beginPath(); g.arc(6.4, 11, 0.85, 0, Math.PI * 2); g.moveTo(5.55, 11); g.lineTo(7.25, 11); g.stroke();
+  fill(K.white, () => g.arc(6.4, 11, 0.28, 0, Math.PI * 2));
+  rr(8, 10.6, 7.5, 0.7, 0.35, 'rgba(255,255,255,0.75)');
+  [[5.5, 4], [10, 3], [13.5, 3]].forEach(([x, w]) => rr(x, 13.2, w, 1.1, 0.55, K.ink));   // a headline
+  ['#58b860', '#f8d848', '#6ab0e0'].forEach((col, i) => {   // the snapshots, with captions
+    const x = 5.4 + i * 4;
+    rr(x, 15.6, 3.2, 3.2, 0.5, lin(x, 15.6, x + 3.2, 18.8, ['#ffffff', col, col]));
+    fill('rgba(0,0,0,0.18)', () => g.ellipse(x + 1.6, 17.6, 0.9, 0.7, 0, 0, Math.PI * 2));
+    rr(x + 0.2, 19.3, 2.8, 0.6, 0.3, K.grey);
+  });
+  rr(3, 22.7, 16, 1.8, 0.8, lin(0, 22.7, 0, 24.5, [K.white, K.pale, K.dark]));   // the rail under it
+  return c;
 }
 
 /** The Sky Pillar's board, a pin-shaped roadside marker: a red-and-white head round a white face, a red arrow pointing
     down its tapering body, on a jointed pole and a stone foot. */
 function pinArt() {
-  const a = art(16, 40), K = KIT;
-  for (let y = 0; y < 27; y++) for (let x = 0; x < 16; x++) {
-    const r = Math.hypot(x - 7.5, y - 7.5), half = y < 8 ? 0 : 7.5 - (y - 8) * 0.36;
-    const body = r <= 7.5 || (y >= 8 && Math.abs(x - 7.5) <= half);
-    if (!body) continue;
-    const edge = r > 6.6 && (y < 8 || Math.abs(x - 7.5) > half - 0.9) || (y >= 8 && Math.abs(x - 7.5) > half - 0.9);
-    const arrow = y >= 15 && y <= 22 && Math.abs(x - 7.5) <= (22 - y) * 0.55;
-    a.dot(x, y, r <= 5 ? K.white : edge ? (y < 8 ? K.redDark : K.grey) : y < 8 ? K.red : arrow ? K.red : K.pale);
-  }
-  for (let x = 5; x < 11; x++) if (x !== 8) a.dot(x, 5, K.red);   // the face's lines
-  a.dot(5, 8, K.ink, 6, 1); a.dot(5, 10, K.ink, 2, 1); a.dot(8, 10, K.ink, 3, 1);
-  a.dot(7, 27, K.pale, 2, 9); a.dot(8, 27, K.grey, 1, 9);   // the pole and its joint
-  a.dot(6, 30, K.grey, 4, 2); a.dot(6, 30, K.pale, 4, 1);
-  a.dot(4, 36, K.grey, 8, 4); a.dot(4, 36, K.pale, 8, 1); a.dot(4, 39, K.dark, 8, 1);
-  return a.c;
+  const { c, g, fill, rr, lin } = fine(16, 40), K = KIT;
+  rr(7, 25, 2, 12, 0.5, lin(7, 0, 9, 0, [K.white, K.pale, K.grey]));   // the pole and its joint
+  rr(5.8, 29.8, 4.4, 2.2, 0.8, lin(0, 29.8, 0, 32, [K.pale, K.grey]));
+  rr(3.6, 35.6, 8.8, 4.2, 1.2, lin(0, 35.6, 0, 39.8, [K.pale, K.grey, K.dark]));   // the stone foot
+  const pin = () => {
+    g.moveTo(0.5, 8); g.arc(8, 8, 7.5, Math.PI, 0);
+    g.bezierCurveTo(15.5, 14, 11, 21, 8, 27.4); g.bezierCurveTo(5, 21, 0.5, 14, 0.5, 8); g.closePath();
+  };
+  fill(K.grey, pin);
+  g.save(); g.beginPath(); pin(); g.clip();
+  g.fillStyle = lin(0.5, 0, 15.5, 0, [K.white, K.pale, K.grey]); g.fillRect(0, 0, 16, 28);
+  g.fillStyle = lin(0, 0, 0, 9, [K.red, K.red, K.redDark]); g.fillRect(0, 0, 16, 8.6);
+  g.restore();
+  g.strokeStyle = K.dark; g.lineWidth = 0.5; g.beginPath(); pin(); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.7;   // a shine on the head
+  g.beginPath(); g.arc(8, 8, 6.4, Math.PI * 1.15, Math.PI * 1.45); g.stroke();
+  fill(K.grey, () => g.arc(8, 8, 5.4, 0, Math.PI * 2));   // the face
+  fill(K.white, () => g.arc(8, 8, 4.9, 0, Math.PI * 2));
+  rr(5, 5.2, 6, 0.9, 0.45, K.red);   // the face's lines
+  rr(5, 7.8, 6, 0.8, 0.4, K.ink);
+  rr(5, 9.8, 2.2, 0.8, 0.4, K.ink); rr(8, 9.8, 3, 0.8, 0.4, K.ink);
+  fill(lin(0, 15, 0, 23, [K.red, K.redDark]), () => {   // the arrow, pointing down
+    g.moveTo(4.4, 15.4); g.lineTo(11.6, 15.4); g.lineTo(8, 22.6); g.closePath();
+  });
+  return c;
 }
 
 function signArt() {
@@ -364,8 +403,10 @@ function signArt() {
 
 /** A billboard: the painting standing upright, feet at (x, z), `s` units a painted tile. */
 function board(canvas, x, z, { s = 1, shadow = true } = {}) {
-  const w = canvas.width / TP * s, h = canvas.height / TP * s;
-  const m = new THREE.MeshStandardMaterial({ map: tex(canvas), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
+  const k = canvas.fine ? s / FINE : s, w = canvas.width / TP * k, h = canvas.height / TP * k;
+  const map = tex(canvas);
+  if (canvas.fine) { map.magFilter = THREE.LinearFilter; map.minFilter = THREE.LinearMipmapLinearFilter; map.generateMipmaps = true; map.anisotropy = 4; }
+  const m = new THREE.MeshStandardMaterial({ map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m);
   mesh.position.set(x, h / 2, z);
   mesh.castShadow = shadow;
