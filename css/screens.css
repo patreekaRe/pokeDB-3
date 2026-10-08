@@ -2664,6 +2664,25 @@ body.battle-intro { pointer-events: none; }
 
 /* ---------- 7. ICON ROWS (the Bag's pockets: relics, items, augments, the map key) ---------- */
 /* How to play itself is an app on the Pokédex device now (js/howto.js, on shelfApp()'s styles) */
+.pdx-banner .howto-banner-art.bdx-banner-things { right: 6px; top: 50%; bottom: auto; translate: 0 -50%; gap: 0; align-items: center; }
+.pdx-banner .howto-banner-art .bdx-banner-thing { width: 68px; height: 68px; padding: 0; translate: none; }
+.pdx-banner .howto-banner-art > * + * { margin-left: -18px; }
+.pdx-banner .howto-banner-art > :nth-child(2) { width: 90px; height: 90px; z-index: 1; }
+.pdx-banner .howto-banner-art .bdx-banner-mon { width: 104px; height: 104px; margin: 0 -10px 0 -22px; object-position: center; }
+.pdx-banner:has(.howto-banner-art) .pdx-banner-sub { max-width: 34%; }
+.howto-tricard { display: flex; align-items: flex-end; padding: 0 6px 4px 0; }
+.howto-minicard {
+  position: relative; display: grid; place-items: center; width: 60px; height: 82px; margin: 0 -6px;
+  border: 3px solid #fff; border-radius: 8px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+}
+.howto-minicard .smooth-icon { width: 40px; height: 40px; }
+.howto-minicard.fire  { background: linear-gradient(160deg, #ffa070, #e0602c); rotate: -12deg; translate: 0 6px; }
+.howto-minicard.grass { background: linear-gradient(160deg, #98d880, #4ea040); z-index: 1; }
+.howto-minicard.water { background: linear-gradient(160deg, #8ab0ff, #3c70d8); rotate: 12deg; translate: 0 6px; }
+.howto-minicost {
+  position: absolute; top: -8px; left: -8px; width: 20px; height: 20px; display: grid; place-items: center;
+  border: 2px solid #e06058; border-radius: 50%; background: #fff; color: #2a2a3a; font: 0.6rem/1 var(--pixel-font); font-synthesis-weight: none;
+}
 .howto-about { display: block; width: 100%; margin: 0 0 10px; padding: 9px 12px; border: 0; text-align: center; cursor: pointer; }
 
 /* icon + name + one-line explanation */

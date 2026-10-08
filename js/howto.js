@@ -107,6 +107,31 @@ function art(t, cls) {
   return box;
 }
 
+/** The old How to play's fanned hand: a 1-PP card of each starter type. */
+function tricard() {
+  const hand = el('span', 'howto-tricard');
+  for (const type of ['fire', 'grass', 'water']) {
+    const card = el('span', `howto-minicard ${type}`);
+    card.append(el('b', 'howto-minicost', '1'), smoothIcon(type));
+    hand.append(card);
+  }
+  return hand;
+}
+
+/** A banner's pictures: its first three tips, big and huddled, a Pokémon among them in the middle; Cards gets the fanned hand. */
+function bannerArt(g, tips) {
+  const shelf = el('span', 'pdx-banner-mons bdx-banner-things howto-banner-art');
+  if (g.id === 'cards') {
+    shelf.append(tricard());
+    return shelf;
+  }
+  const three = tips.slice(0, 3);
+  const at = three.findIndex(t => t.mon);
+  if (at >= 0 && three.length === 3) three.splice(1, 0, ...three.splice(at, 1));
+  for (const t of three) shelf.append(art(t, t.mon ? 'bdx-banner-mon' : 'bdx-banner-thing'));
+  return shelf;
+}
+
 function termsBox(rows) {
   const box = el('div', 'pdx-lcd bdx-terms');
   for (const [label, text] of rows) {
@@ -132,7 +157,8 @@ export const howtoApp = shelfApp({
   count: (g, tips) => `${tips.length} tips`,
   no: (g) => g.name,
   label: (g, t) => t.name,
-  art: (g, t, known, where) => art(t, t.mon ? (where === 'banner' ? 'bdx-banner-mon' : 'pdx-slot-mon') : (where === 'banner' ? 'bdx-banner-thing' : 'bdx-slot-thing')),
+  art: (g, t) => art(t, t.mon ? 'pdx-slot-mon' : 'bdx-slot-thing'),
+  bannerArt,
   screen: (g, t) => (t.mon ? [el('span', 'pdx-pad'), art(t, 'pdx-mon bdx-art')] : [el('span', 'bdx-glow'), art(t, 'bdx-thing bdx-art')]),
   lines: (g, t) => [typed('', t.text), t.terms && termsBox(t.terms())].filter(Boolean),
   tally: () => 'This topic',
