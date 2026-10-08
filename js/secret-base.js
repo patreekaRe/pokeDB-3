@@ -7,6 +7,7 @@
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { PIECES, CATALOGUE, KINDS, colours } from './base-furniture.js';
+import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 
@@ -98,19 +99,9 @@ export function roomArt(b) {
   return c;
 }
 
-/** One piece alone on a clear canvas: a flat one top-down at its first facing, a wall one as its strip, an upright one
-    at `dir` with 24 px of headroom above its tiles (the tiles' top edge at y 24). */
-export function pieceArt(id, dir = 0) {
-  const p = PIECES[id], keep = g;
-  const [fw, fh] = p.flat || p.layer === 'wall' ? [p.w, p.h] : footprint({ id, dir });
-  const c = new OffscreenCanvas(fw * T, p.layer === 'wall' ? WALL : p.flat ? fh * T : fh * T + 24);
-  g = c.getContext('2d');
-  if (p.flat) p.flat(g, p.w * T, p.h * T);
-  else if (p.layer === 'wall') p.wall(g, 0);
-  else p.upright(g, 0, 24, dir);
-  g = keep;
-  return c;
-}
+/** One piece alone on a clear canvas, RES painted pixels to a room pixel (its `art()`): a flat one top-down at its first
+    facing, a wall one as its strip, an upright one at `dir` with headroom above its tiles. */
+export const pieceArt = (id, dir = 0) => PIECES[id].art(dir);
 
 let base, canvas, holding = null, sel = -1, ghost = null, badGhost = 0, hint;
 
@@ -142,22 +133,18 @@ function paintFloor() {
 function paintPiece(it, alpha = 1) {
   const p = PIECES[it.id];
   g.globalAlpha = alpha;
-  if (p.layer === 'wall') { p.wall(g, it.x * T); g.globalAlpha = 1; return; }
+  if (p.layer === 'wall') { g.drawImage(p.art(), it.x * T, 0, p.w * T, WALL); g.globalAlpha = 1; return; }
   const x = it.x * T, y = WALL + it.y * T, [fw, fh] = footprint(it);
   if (p.flat) {
-    const off = new OffscreenCanvas(p.w * T, p.h * T), keep = g;
-    g = off.getContext('2d');
-    p.flat(g, p.w * T, p.h * T);
-    g = keep;
     g.save();
     g.translate(x + fw * T / 2, y + fh * T / 2);
     g.rotate(it.dir * Math.PI / 2);
-    g.drawImage(off, -p.w * T / 2, -p.h * T / 2);
+    g.drawImage(p.art(), -p.w * T / 2, -p.h * T / 2, p.w * T, p.h * T);
     g.restore();
     if (p.layer !== 'rug') R(x + 1, y + fh * T - 2, fw * T - 2, 2, '#00000040');   // its side, so it stands off the floor
   } else {
-    R(x + 2, y + fh * T - 3, fw * T - 4, 3, '#00000030');
-    p.upright(g, x, y, it.dir);
+    const art = p.art(it.dir);
+    g.drawImage(art, x, y + fh * T - art.height / RES, art.width / RES, art.height / RES);
   }
   g.globalAlpha = 1;
 }
@@ -280,15 +267,13 @@ const icons = new Map();
 function icon(id) {
   const made = icons.get(id);
   if (made) { const c = document.createElement('canvas'); c.width = made.width; c.height = made.height; c.getContext('2d').drawImage(made, 0, 0); return c; }
-  const p = PIECES[id], c = document.createElement('canvas');
-  const it = p.layer === 'wall' ? { id, x: 0 } : { id, x: 0, y: 0, dir: 0 };
-  const top = p.flat || p.layer === 'wall' ? 0 : 24;
-  c.width = p.w * T; c.height = p.layer === 'wall' ? WALL : p.h * T + top;
-  const keep = g;
-  g = c.getContext('2d');
-  g.translate(0, p.layer === 'wall' ? 0 : top - WALL);
-  paintPiece(it);
-  g = keep;
+  // the piece's own picture, cropped to what's painted
+  const art = PIECES[id].art(0), d = art.getContext('2d').getImageData(0, 0, art.width, art.height).data;
+  let x0 = art.width, y0 = art.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < art.height; y++) for (let x = 0; x < art.width; x++) if (d[(y * art.width + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, x1 - x0 + 1); c.height = Math.max(1, y1 - y0 + 1);
+  c.getContext('2d').drawImage(art, -x0, -y0);
   icons.set(id, c);
   return icon(id);
 }

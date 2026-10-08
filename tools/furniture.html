@@ -12,7 +12,7 @@
   .bar button.on { background: #d84848; color: #fff; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   .tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1.5px #e6dcc6; }
-  .tile canvas { image-rendering: pixelated; width: auto; height: 64px; }
+  .tile canvas { image-rendering: pixelated; width: auto; height: 96px; max-width: 100%; object-fit: contain; }
   .tile b { font-weight: 600; font-size: 11px; text-align: center; }
   .tile small { color: #9a8e78; }
 </style>
@@ -26,12 +26,9 @@
 <div class="grid" id="grid"></div>
 <script type="module">
 import { PIECES, CATALOGUE, THEMES, FAMILIES } from '../js/base-furniture.js';
-const T = 16;
 function art(id) {
-  const p = PIECES[id], c = document.createElement('canvas');
-  if (p.flat) { c.width = p.w * T; c.height = p.h * T; p.flat(c.getContext('2d'), c.width, c.height); }
-  else if (p.wall) { c.width = p.w * T; c.height = 48; p.wall(c.getContext('2d'), 0); }
-  else { c.width = p.w * T; c.height = p.h * T + 40; p.upright(c.getContext('2d'), 0, 40, 0); }
+  const a = PIECES[id].art(0), c = document.createElement('canvas');
+  c.width = a.width; c.height = a.height; c.getContext('2d').drawImage(a, 0, 0);
   return c;
 }
 const GROUPS = [...new Set(FAMILIES.map(f => f.group))];

@@ -14,11 +14,12 @@ import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
+import { RES } from './base-paint.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, KINDS, colours, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, furnitureStock, buyPiece } from './secret-base.js';
 
-const PX = 1 / T;          // furniture: one painted pixel
+const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
@@ -198,7 +199,8 @@ function makePiece(it, ghostly = false) {
 
   if (p.flat) {
     const h = p.high, side = p.side;
-    const top = new THREE.MeshStandardMaterial({ map: tex(pieceArt(it.id)), roughness: 0.9 }), s = solid(side);
+    // alphaTest: a round rug's corners are clear, not black
+    const top = new THREE.MeshStandardMaterial({ map: tex(pieceArt(it.id)), roughness: 0.9, alphaTest: 0.5 }), s = solid(side);
     const block = add(new THREE.BoxGeometry(p.w, h, p.h), [s, s, top, s, s, s], h > 0.1);
     block.position.set(cx, h / 2 + (ghostly ? 0.01 : 0), cz);
     block.rotation.y = -it.dir * Math.PI / 2;
