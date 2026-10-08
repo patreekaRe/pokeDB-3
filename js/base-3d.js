@@ -98,62 +98,49 @@ function buildRoom() {
     side.receiveShadow = true; side.castShadow = true;
     roomGroup.add(side);
   }
-  dressRoom(art, trimC);
+  dressRoom(art, cap, outer);
 }
 
 const UPPER = 9, PLINTH = 6;   // tall enough to fill an upright phone above the wall and below the floor
 
 /* The room in a dollhouse: the walls run on up past a picture rail (the wallpaper's pattern, without its skirting,
-   repeated), and the floor sits on a thick wooden base cut at the front, so a tall screen shows no empty sky round it.
-   Both fade into the dark away from the room, as if its light falls off under the ceiling and below the floor, so the
-   eye stays on the lit middle. fitShot() still frames the 3-tile room; these only fill what's left, casting no shadows. */
-function dressRoom(art, trimC) {
-  const fadeMat = (opts) => new THREE.MeshStandardMaterial({ roughness: 1, vertexColors: true, ...opts });
-  const upper = (d) => {
+   repeated), and the floor sits on a thick base cut at the front, so a tall screen shows no empty sky round it.
+   fitShot() still frames the 3-tile room; these only fill what's left. They cast no shadows into it. */
+function dressRoom(art, cap, outer) {
+  const upper = (w, d) => {
     const t = tex(crop(art, 0, 0, d * T, 2 * T));
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.repeat.set(1, UPPER / 2);
-    return fadeMat({ map: t });
+    return new THREE.MeshStandardMaterial({ map: t, roughness: 1 });
   };
-  const outer = fadeMat({ color: shade(trimC, 0.6) });
-  const rail = solid(shade(trimC, 0.85));
+  const rail = solid(shade(cap.color.getHexString(), 0.9));
   const top = WALL_H + UPPER / 2;
-  const back = new THREE.Mesh(faded(new THREE.BoxGeometry(COLS + 0.8, UPPER, 0.4, 1, UPPER), -1), [outer, outer, outer, outer, upper(COLS), outer]);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, UPPER, 0.4), [outer, outer, outer, outer, upper(COLS + 0.8, COLS), outer]);
   back.position.set(0, top, -ROWS / 2 - 0.2);
   back.receiveShadow = true;
-  const backRail = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.12, 0.12), rail);
-  backRail.position.set(0, WALL_H + 0.06, -ROWS / 2 + 0.06);
+  const backRail = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.14, 0.16), rail);
+  backRail.position.set(0, WALL_H + 0.07, -ROWS / 2 + 0.08);
   roomGroup.add(back, backRail);
   for (const s of [-1, 1]) {
     const faces = [outer, outer, outer, outer, outer, outer];
-    faces[s < 0 ? 0 : 1] = upper(ROWS);
-    const side = new THREE.Mesh(faded(new THREE.BoxGeometry(0.4, UPPER, ROWS, 1, UPPER), -1), faces);
+    faces[s < 0 ? 0 : 1] = upper(ROWS, ROWS);
+    const side = new THREE.Mesh(new THREE.BoxGeometry(0.4, UPPER, ROWS), faces);
     side.position.set(s * (COLS / 2 + 0.2), top, 0);
     side.receiveShadow = true;
-    const sideRail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, ROWS), rail);
-    sideRail.position.set(s * (COLS / 2 - 0.06), WALL_H + 0.06, 0);
+    const sideRail = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, ROWS), rail);
+    sideRail.position.set(s * (COLS / 2 - 0.08), WALL_H + 0.07, 0);
     roomGroup.add(side, sideRail);
   }
   // the base under the floor: its cut top in the trim's colour, a dark wood front going down out of view
-  const lip = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.12, 0.4), solid(shade(trimC, 1.15)));
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.12, 0.4), cap);
   lip.position.set(0, 0.02, ROWS / 2 + 0.2);
   lip.receiveShadow = true;
-  const plinth = new THREE.Mesh(faded(new THREE.BoxGeometry(COLS + 0.8, PLINTH, 0.4, 1, PLINTH), 1), fadeMat({ color: '#3a281c' }));
+  const wood = solid('#3a281c');
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, PLINTH, 0.4), wood);
   plinth.position.set(0, -0.04 - PLINTH / 2, ROWS / 2 + 0.2);
-  const band = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.08, 0.02), solid('#4e3626'));
+  const band = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.1, 0.02), rail);
   band.position.set(0, -0.6, ROWS / 2 + 0.41);
   roomGroup.add(lip, plinth, band);
-}
-
-/** Darkens a box away from its edge nearest the room (`from` -1: its bottom, 1: its top), in vertex colours. */
-function faded(geo, from) {
-  const p = geo.attributes.position, h = geo.parameters.height, c = new Float32Array(p.count * 3);
-  for (let i = 0; i < p.count; i++) {
-    const away = from < 0 ? p.getY(i) + h / 2 : h / 2 - p.getY(i);
-    c.fill(0.06 + 0.94 * Math.exp(-away / 1.1), i * 3, i * 3 + 3);
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(c, 3));
-  return geo;
 }
 
 // the trim colour is the wallpaper strip's bottom row, whatever the paper
