@@ -15,7 +15,7 @@ import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
-import { PIECES, CATALOGUE, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
+import { PIECES, KINDS, colours, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, furnitureStock, buyPiece } from './secret-base.js';
 
 const PX = 1 / T;          // furniture: one painted pixel
@@ -342,10 +342,12 @@ function act(kind) {
       if (aimAt) { aimAt.x = Math.min(aimAt.x, COLS - fw); aimAt.y = Math.min(aimAt.y, ROWS - fh); }
       showGhost();
     }
+    if (kind === 'paint') { tray(tab === 'colour' ? 'furniture' : 'colour'); playSound('select'); }
     if (kind === 'cancel') {
       if (holding.back) { base.items.push(holding.back); buildPieces(); }
       dropHold();
       playSound('cancel');
+      if (tab === 'colour') tab = 'furniture';
     }
     return refresh();
   }
@@ -358,9 +360,11 @@ function act(kind) {
     if (fits(turned, sel, base)) { base.items[sel] = turned; save(); buildPieces(); playSound('confirm'); }
     else playSound('cancel');
   }
+  if (kind === 'paint') { tray(tab === 'colour' ? 'furniture' : 'colour'); playSound('select'); return refresh(); }
   if (kind === 'move') { base.items.splice(sel, 1); buildPieces(); hold(it.id, it.dir ?? 0, it); return; }
   if (kind === 'store') { base.items.splice(sel, 1); sel = -1; playSound('cancel'); save(); buildPieces(); }
   if (kind === 'done') sel = -1;
+  if (sel < 0 && tab === 'colour') tab = 'furniture';
   refresh();
 }
 
@@ -755,7 +759,7 @@ function onTap(e) {
 
 /* ---------- the sheet ---------- */
 
-const TAB_NAME = { furniture: 'Furniture', shop: 'Shop', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
+const TAB_NAME = { colour: 'Colours', furniture: 'Furniture', shop: 'Shop', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
 // white line art, like the round keys' (js/smooth-icons.js)
 const GLYPHS = {
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-width="2.6"/>',
@@ -766,6 +770,7 @@ const GLYPHS = {
   roller: '<rect x="4" y="4" width="13" height="5.5" rx="1.6" stroke-width="2.2"/><path d="M17 6.7h2.5v5H11.5v2.8" stroke-width="2.2"/><rect x="9.8" y="14.5" width="3.4" height="6" rx="1.1" stroke-width="2.2"/>',
   floor: '<path d="M3.5 19.5 7.5 6.5h9l4 13Z" stroke-width="2.2"/><path d="M12 6.5v13M5.6 12.8h12.8" stroke-width="2"/>',
   cart: '<path d="M3 4.5h2.4l2.2 10.2h10.2l1.9-7.2H6.6" stroke-width="2.2"/><circle cx="9" cy="18.6" r="1.5" stroke-width="2"/><circle cx="16.2" cy="18.6" r="1.5" stroke-width="2"/>',
+  paint: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.9 1.4-1.9-.5-1.2.3-2.4 1.6-2.4h1.6a3.9 3.9 0 0 0 3.9-3.9C20.5 7.6 16.7 3.5 12 3.5Z" stroke-width="2.2"/><circle cx="7.8" cy="11" r="1.2" stroke-width="2"/><circle cx="10.5" cy="7.4" r="1.2" stroke-width="2"/><circle cx="14.8" cy="7.6" r="1.2" stroke-width="2"/>',
   ball: '<circle cx="12" cy="12" r="8" stroke-width="2.2"/><path d="M4 12h5.3M14.7 12H20" stroke-width="2.2"/><circle cx="12" cy="12" r="2.6" stroke-width="2.2"/>',
 };
 const glyph = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[name]}</svg>`;
@@ -794,7 +799,12 @@ function tray(which = tab) {
     list.append(b);
   };
   if (tab === 'shop') for (const id of furnitureStock()) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
-  if (tab === 'furniture') for (const id of CATALOGUE.filter(id => spare(base, id) > 0)) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'colour') {
+    const id = holding?.id ?? base.items[sel]?.id;
+    if (!id) return tray('furniture');
+    for (const c of colours(id)) add(PIECES[c].name, () => icon(c), c === id, () => recolour(c));
+  }
+  if (tab === 'furniture') for (const id of KINDS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
@@ -828,6 +838,14 @@ function tray(which = tab) {
   }
 }
 
+/** The piece in hand, or the one picked in the room, in another colour of its kind: every colour comes with it. */
+function recolour(id) {
+  playSound('confirm');
+  if (holding) { holding.id = id; makeGhost(); showGhost(); }
+  else if (sel >= 0) { base.items[sel] = { ...base.items[sel], id }; save(); buildPieces(); }
+  refresh();
+}
+
 /** A first tap on a piece for sale shows its price, a second buys it into storage. */
 function shopTap(id) {
   const p = PIECES[id], coins = getSave().coins ?? 0;
@@ -846,7 +864,9 @@ function refresh() {
   const wall = PIECES[holding?.id ?? base.items[sel]?.id]?.layer === 'wall';
   bar.querySelectorAll('[data-act]').forEach(b => {
     const a = b.dataset.act;
-    b.hidden = holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
+    const many = colours(holding?.id ?? base.items[sel]?.id ?? 'bed').length > 1;
+    b.hidden = a === 'paint' ? !busy || !many : holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
+    if (a === 'paint') b.classList.toggle('on', tab === 'colour');
   });
   const mons = onShow();
   root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}`
@@ -856,8 +876,9 @@ function refresh() {
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
     : holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
     : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
+    : tab === 'colour' ? 'Every colour comes with it. Tap one to paint it.'
     : tab === 'shop' ? (shopMsg || (shopPick ? `${PIECES[shopPick].name}: ${PIECES[shopPick].price.toLocaleString()} PokéCoins. Tap again to buy.` : 'New furniture every day. Tap a piece for its price.'))
-    : tab === 'furniture' && !CATALOGUE.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
+    : tab === 'furniture' && !KINDS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : 'Pick a piece, or drag one in the room to move it.';
   if (sel >= 0) {
@@ -871,7 +892,7 @@ function refresh() {
     selBox.box.copy(box);
     selBox.visible = true;
   } else selBox.visible = false;
-  if (tab === 'furniture' || tab === 'shop') tray();
+  if (tab === 'furniture' || tab === 'shop' || tab === 'colour') tray();
 }
 
 /* ---------- light ---------- */
@@ -1072,6 +1093,7 @@ export async function openBase3d({ onLeave = null } = {}) {
       <p class="b3-hint" aria-live="polite"></p>
       <div class="b3-acts" hidden>
         <button type="button" data-act="rotate">${glyph('rotate')}<span>Turn</span></button>
+        <button type="button" data-act="paint">${glyph('paint')}<span>Colour</span></button>
         <button type="button" data-act="store">${glyph('store')}<span>Store</span></button>
         <button type="button" data-act="done">${glyph('ok')}<span>Done</span></button>
         <button type="button" data-act="cancel">${glyph('close')}<span>Cancel</span></button>

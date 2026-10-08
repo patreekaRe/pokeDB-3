@@ -6,7 +6,7 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { PIECES, CATALOGUE } from './base-furniture.js';
+import { PIECES, CATALOGUE, KINDS, colours } from './base-furniture.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 
@@ -42,7 +42,7 @@ const freshBase = (mons) => ({
   owned: { window: 1, rug: 1, bed: 1, lamp: 1 }, ...(mons ? { mons } : {}),
 });
 
-export { PIECES, CATALOGUE, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
+export { PIECES, CATALOGUE, KINDS, colours, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
 /** The saved room, or the first one. A room from before furniture was owned (v 1, when every piece was free) starts
     over as the first room, keeping its Pokémon: only playtests of the unreleased branch made those. `?basefresh` does
     the same on purpose. */
@@ -50,6 +50,11 @@ export function loadBase() {
   const b = getSave().secretBase;
   if (!b || !(b.v >= 2) || new URLSearchParams(location.search).has('basefresh')) return freshBase(b?.mons);
   b.owned ||= {};
+  // furniture was once owned colour by colour (`bed-fire`); now a kind is owned and every colour comes with it
+  for (const id of Object.keys(b.owned)) {
+    const kind = PIECES[id]?.fam;
+    if (kind && kind !== id) { b.owned[kind] = (b.owned[kind] || 0) + b.owned[id]; delete b.owned[id]; }
+  }
   return b;
 }
 export const saveBase = (b) => updateSave(d => { d.secretBase = b; });
@@ -57,10 +62,11 @@ export const saveBase = (b) => updateSave(d => { d.secretBase = b; });
 /** `?allfurniture`: every catalogue piece to hand for a playtest, never saved as owned. */
 export const lendAll = () => new URLSearchParams(location.search).has('allfurniture');
 
-/** How many of a piece are in storage: owned, less those standing in the room. */
+/** How many of a piece's kind are in storage, in any colour: owned, less those standing in the room. */
 export function spare(b, id) {
   if (lendAll() && PIECES[id] && !PIECES[id].gift) return Infinity;
-  return (b.owned[id] || 0) - b.items.filter(it => it.id === id).length;
+  const kind = PIECES[id].fam;
+  return (b.owned[kind] || 0) - b.items.filter(it => PIECES[it.id].fam === kind).length;
 }
 
 /** Open the room's present: it's gone, and the starter furniture is in storage. Returns what was inside. */
@@ -71,22 +77,14 @@ export function openGift(b) {
   return STARTER_GIFT;
 }
 
-/** The Furniture shop's stock for a UTC day: STOCK pieces, no two of a kind, the same for everyone that day. */
-export function furnitureStock(day = safariDay()) {
-  const seen = new Set(), out = [];
-  for (const id of shuffled(CATALOGUE, streamOf('furniture', day))) {
-    if (seen.has(PIECES[id].fam)) continue;
-    seen.add(PIECES[id].fam); out.push(id);
-    if (out.length === STOCK) break;
-  }
-  return out;
-}
+/** The Furniture shop's stock for a UTC day: STOCK kinds, the same for everyone that day. */
+export const furnitureStock = (day = safariDay()) => shuffled(KINDS, streamOf('furniture', day)).slice(0, STOCK);
 
 /** Buy a piece for PokéCoins into storage. False if the coins aren't there. */
 export function buyPiece(b, id) {
   const price = PIECES[id].price;
   if ((getSave().coins ?? 0) < price) return false;
-  b.owned[id] = (b.owned[id] || 0) + 1;
+  b.owned[PIECES[id].fam] = (b.owned[PIECES[id].fam] || 0) + 1;
   updateSave(d => { d.coins -= price; d.secretBase = b; });
   return true;
 }
@@ -306,7 +304,7 @@ function tray(tab) {
     b.addEventListener('click', pick);
     list.append(b);
   };
-  if (tab === 'furniture') for (const id of CATALOGUE.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of KINDS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) cancelHold();
     holding = holding?.id === id ? null : { id, dir: 0 }; sel = -1; ghost = null;
     refresh(); tray(tab);

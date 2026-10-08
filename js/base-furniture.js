@@ -314,7 +314,13 @@ for (const fam of FAMILIES) for (const theme of fam.solo ? THEMES.slice(0, 1) : 
 }
 /** Every catalogue id, kind by kind (the present isn't one). */
 const CATALOGUE = Object.keys(PIECES);
+/** What you buy and own: a kind, by its classic piece's id. Owning one gives every colour of it (`colours()`). */
+const KINDS = FAMILIES.map(f => f.id);
+const COLOURS = {};
+for (const id of CATALOGUE) (COLOURS[PIECES[id].fam] ||= []).push(id);
+/** Every colour of a piece's kind, the classic first. */
+const colours = (id) => COLOURS[PIECES[id].fam];
 PIECES.gift = makePiece(GIFT, null);
 PIECES.gift.gift = true;
 
-export { PIECES, CATALOGUE, THEMES, FAMILIES };
+export { PIECES, CATALOGUE, KINDS, colours, THEMES, FAMILIES };
