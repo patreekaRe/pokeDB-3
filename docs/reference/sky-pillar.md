@@ -85,6 +85,12 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
   header comment of `js/data/augments.js` lists every key; a new augment that only combines keys needs no code.
 - **Once a climb**: Rebirth, Second Wind and Last Breath (`lifeline()`): after a Revive, a fatal hit uses the first one
   left; `onEnd` hands back `spent` and `run.tower.spent` keeps it.
+- **The pick's order** (the user's call, 2026-10-07): a climb's first look (started after the film, or continued) slides the
+  menu bar up from the bottom (`popBar()` in `js/tower.js`, `.bar-in`; `barReady()`), then the augments float over the
+  tower: `showChoice({ over: true })` keeps the map up as the screen (`#reward-screen.over-map`: no title, text box or
+  backdrop, just the tiles and the reroll above the bar, so the top bar stays on the bar's LCD). While a pick (or Training
+  Day) is owed, `renderTower({ hold })` leaves your Pokémon behind the floor below's door (`waitBelow()`, `held`); the
+  render after the pick climbs on from there.
 - **Saved** on `run.tower` (`augments`, `spent`, `rerolls`, `rerolledAt` / `rerolledN`, `pick`, `train` for Training Day's
   PP Up after each guardian, `blood` / `bloodStr` for Bloodlust). A climb saved before augments loads with none and owes
   none (`restoreRun()`).

@@ -128,7 +128,7 @@ export function showChoiceHp() {
   if (hp) setHpBar('choice', hp.hp, hp.maxHp);
 }
 
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false }) {
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;
@@ -178,6 +178,10 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 
   showChoiceHp();
   showScreen('reward-screen');
+  // `over`: just the options floating over the Sky Pillar's climb, its menu bar still along the bottom (the user's call,
+  // 2026-10-07), so the map stays up and counts as the screen (the top bar keeps to the bar's LCD)
+  $('reward-screen').classList.toggle('over-map', over);
+  if (over) { $('map-screen').hidden = false; document.body.dataset.screen = 'map-screen'; }
 }
 
 /* A picked reward blows up in the middle of a dimmed screen, like a card picked in battle,

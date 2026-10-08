@@ -31,6 +31,7 @@ let tick = 0;
 let timer = null;
 let flash = 0;
 let busy = false;    // a walk or a climb is playing: the doors wait
+let held = false;    // the climb up from the floor below waits on a pick (waitBelow())
 let last = null;     // the door last walked through: { floor, k, n, type }, so coming back out climbs on from it
 const statues = new Map();   // enemy id -> its stone statue, a little canvas (null while it loads)
 const mon = { x: 0, floor: 1, lift: 0, alpha: 1, flip: false, behind: false, hop: 0 };   // your Pokémon, in tower pixels
@@ -52,7 +53,7 @@ function layout() {
 let barH = 0;
 function measureBar() {
   const win = document.querySelector('#map-screen.tower .mdex-window');
-  if (!win || !win.offsetHeight) return false;
+  if (!win || !win.offsetHeight || $('map-screen').classList.contains('bar-in')) return false;   // sliding in: measured once it's up
   const top = win.getBoundingClientRect().top, h = Math.round(innerHeight - top);
   const lcd = win.querySelector('.run-card').getBoundingClientRect(), css = document.documentElement.style;
   css.setProperty('--tw-lcd-x', `${Math.round(lcd.left)}px`);
@@ -312,12 +313,13 @@ function stampPlate(floor, flight, animate) {
  * the room you last went into, `flight`, `trail` the floors climbed so far ({ f, type, enemy, n, k }), `best` your best
  * floor, `sprite` your Pokémon's front GIF, `onPick(node)` going into a door.
  */
-export function renderTower({ map, current, flight, trail, best, sprite, onPick }) {
+export function renderTower({ map, current, flight, trail, best, sprite, onPick, hold = false }) {
   const view = $('tower-view');
   view.hidden = false;
   $('map-screen').classList.add('tower');
   watchBar();
   measureBar();
+  if (!S) popBar();
   preloadSounds('door', 'stamp', 'confirm');
   const here = current && map.byId[current];
   const row = here ? here.floor + 1 : 0;
@@ -335,9 +337,11 @@ export function renderTower({ map, current, flight, trail, best, sprite, onPick 
   if (!img.src.endsWith(sprite)) { img.onload = fitMon; img.src = sprite; }
   if (!V || V.W !== Math.ceil(innerWidth / pixel()) || V.H !== Math.ceil(innerHeight / pixel())) layout();
   setGauge(floorNow, best);
-  const climb = !busy && !still() && ((last && last.floor === floorNow - 1) || (!last && floorNow === 1 && !trail?.length && !prev));
+  const climb = !busy && !still() && (held || (last && last.floor === floorNow - 1) || (!last && floorNow === 1 && !trail?.length && !prev));
   const same = prev && prev.floorNow === floorNow && !climb;
   run();
+  if (climb && hold) { held = true; return waitBelow(floorNow); }
+  held = false;
   if (same && !busy) { doorButtons(); return; }
   if (climb) return climbUp(floorNow, flight);
   camY = standY(floorNow);
@@ -347,13 +351,46 @@ export function renderTower({ map, current, flight, trail, best, sprite, onPick 
   doorButtons();
 }
 
+/** The door you come back out of (the lobby's way in on a fresh climb), in tower pixels. */
+function exitDoor(from) {
+  const { lay } = V;
+  return !last ? lay.doorL + 9 : last.type === 'boss' || from % 10 === 0 ? Math.round((lay.doorL + lay.doorR) / 2) : doorXs(lay, last.n)[last.k];
+}
+
+/** The climb's waiting on a pick (an augment, Training Day): the floor below, your Pokémon still behind its door, no
+    doors to tap. The next render climbs on from there (`held`). */
+function waitBelow(floorNow) {
+  const from = floorNow - 1;
+  busy = false;
+  camY = standY(from);
+  stampPlate(from || 1, Math.floor(Math.max(0, from - 1) / 10), false);
+  Object.assign(mon, { x: exitDoor(from), floor: from, lift: 2, alpha: 0, flip: true, behind: false });
+  S.opening = null;
+  $('tw-doors').replaceChildren();
+  paint();
+}
+
+/** A climb's first look (a new climb, or one continued): the menu bar slides up from the bottom. */
+function popBar() {
+  const map = $('map-screen');
+  if (still()) return;
+  map.classList.remove('bar-in');
+  void map.offsetWidth;
+  map.classList.add('bar-in');
+  popping = sleep(BAR_IN).then(() => { map.classList.remove('bar-in'); if (measureBar()) relayout(); });
+}
+const BAR_IN = 480;   // css/screens.css's twBarIn
+let popping = Promise.resolve();
+/** Resolves once the menu bar has slid in, for whatever pops up over the climb next. */
+export const barReady = () => popping;
+
 /** Out of the door you went through and up the spiral stair to the next floor, the camera panning up with you. */
 async function climbUp(floorNow, flight) {
   busy = true;
   doorButtons();
   const from = floorNow - 1, { lay } = V;
   const fromLobby = !last;
-  const door = fromLobby ? lay.doorL + 9 : last.type === 'boss' || from % 10 === 0 ? Math.round((lay.doorL + lay.doorR) / 2) : doorXs(lay, last.n)[last.k];
+  const door = exitDoor(from);
   camY = standY(from);
   stampPlate(from || 1, Math.floor(Math.max(0, from - 1) / 10), false);
   Object.assign(mon, { x: door, floor: from, lift: 2, alpha: 0, flip: true, behind: false });
@@ -406,6 +443,7 @@ export function hideTower() {
   $('map-screen').classList.remove('tower');
   S = null;
   last = null;
+  held = false;
 }
 
 /* ---------- the overlay: guardian intros and the fall ---------- */
@@ -619,7 +657,8 @@ function relayout() {
   if (!S || $('tower-view').hidden) return;
   measureBar();
   layout();
-  if (!busy) { camY = standY(S.floorNow); mon.floor = S.floorNow; mon.x = V.lay.stairX + 1; paint(); doorButtons(); }
+  if (held) waitBelow(S.floorNow);
+  else if (!busy) { camY = standY(S.floorNow); mon.floor = S.floorNow; mon.x = V.lay.stairX + 1; paint(); doorButtons(); }
 }
 addEventListener('resize', relayout);
 

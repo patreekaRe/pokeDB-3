@@ -4765,6 +4765,17 @@ body[data-screen="map-screen"]:has(#map-screen.tower) .floor-tag b { font-size: 
 body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs { filter: none; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs i { width: 13px; height: 13px; background: #1f3a14; }
 body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not([hidden])) { bottom: calc(var(--tw-bar-h, 120px) + 8px); }
+/* a climb's first look: the bar and the top bar on its LCD slide up from below (popBar() in js/tower.js, BAR_IN) */
+#map-screen.tower.bar-in :is(.mdex-window, .mdex-dock),
+body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation: twBarIn 0.48s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
+@keyframes twBarIn { from { translate: 0 calc(var(--tw-bar-h, 140px) + 30px); } to { translate: 0 0; } }
+/* an augment pick over the climb (showChoice()'s `over`): no title, no text box, no backdrop, just the tiles and the
+   reroll floating over the tower above the bar */
+#reward-screen.over-map {
+  position: fixed; left: 0; right: 0; top: 0; bottom: var(--tw-bar-h, 140px); z-index: 3; max-width: none; margin: 0;
+  justify-content: center; padding: 16px 12px; animation: biIn 0.3s both;
+}
+#reward-screen.over-map :is(.reward-title, .reward-coins, .reward-bottom) { display: none; }
 /* wider than a phone the device stands on the scenery under the top bar, the map at its own tile size inside */
 @media (min-width: 721px) {
   #map-screen:not(.tower) {

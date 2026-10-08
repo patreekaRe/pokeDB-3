@@ -52,7 +52,7 @@ import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
-import { renderTower, hideTower, guardianIntro, towerFall } from './tower.js';
+import { renderTower, hideTower, guardianIntro, towerFall, barReady } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, isResearched } from './pokedex.js';
@@ -733,7 +733,10 @@ function showMap() {
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
   if (run.tutorLeft > 0) return tutorNotes();
-  if (run.tower && run.tower.pick != null) return augmentPick();
+  if (run.tower && run.tower.pick != null) {   // over the climb once its menu bar has slid in
+    const at = run;
+    return barReady().then(() => { if (run === at && run.tower.pick != null && document.body.dataset.screen === 'map-screen') augmentPick(); });
+  }
   if (run.tower?.train) return trainingDay();
   const next = isTower() ? 0 : nextPlace(here);
   if (!next) return showNotes();
@@ -797,6 +800,7 @@ function augmentPick() {
       left > 0 ? `You can reroll all three ${left === 1 ? 'once' : `${left} times`} this climb.` : null, 'Tap one to read it, then take it.'].filter(Boolean),
     options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
     layout: `aug-pick aug-floor-${offer.some(a => a.tier === 'prismatic') ? 'prismatic' : offer.some(a => a.tier === 'gold') ? 'gold' : 'silver'}`,
+    over: true,
     reroll: left > 0 ? () => {
       t.rerolls += 1;
       t.rerolledAt = floor;
@@ -836,6 +840,7 @@ function takeAugment(aug, then = showMap) {
       title: 'Darkrai\'s Deal', sub: [`Darkrai hands you ${deal.name}.`, 'Tap it to read it, then take it.'],
       options: [{ node: augTile(deal), zoom: augTile(deal), ask: `Take ${deal.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(deal, next) }],
       layout: 'aug-pick aug-floor-prismatic',
+      over: true,
     });
     dealAugments($('reward-options'), [deal]);
   });
@@ -1131,7 +1136,7 @@ const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).leng
 
 function drawMap() {
   if (isTower()) return renderTower({ map: run.map, current: run.current, flight: run.tower.flight, trail: run.tower.trail, best: peeking ? 0 : getSave().tower.bestEver || 0,
-    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode });
+    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode, hold: run.tower.pick != null || !!run.tower.train });   // the climb waits for the pick
   const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
