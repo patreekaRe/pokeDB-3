@@ -1455,7 +1455,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
   const more = a.rewardTake ? (picked) => {
     const rest = cards.filter(c => c !== picked);
     if (!rest.length) return next();
-    showChoice({ title: 'Heavy Pack', sub: ['Heavy Pack: take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next });
+    showChoice({ title: 'Heavy Pack', sub: ['Heavy Pack: take another move, or skip.'], options: rest.map(card => learnOption(card, next)), onSkip: next, layout: 'learn-room' });
   } : null;
 
   // Oak's Advice (a Pokédex perk): once per biome (twice at Lv 2), swap the moves offered for new ones
@@ -1472,6 +1472,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
     options: cards.map(card => learnOption(card, more ? () => more(card) : next)),
     onSkip: next,
     coins: run.pendingCoins,
+    layout: 'learn-room',
     reroll: canReroll ? () => { run.rerollBiome = run.biome; run.rerollsUsed = used + 1; offerCard(source, next, true); }
       : pickyReroll ? () => { spend(a.pickyEater); setMoney(run.money); playSound('coins'); offerCard(source, next, true, true); } : null,
   });

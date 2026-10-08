@@ -373,6 +373,13 @@
            2026-10-07): the Pokédex's Home key, Leave (the screen's own #reward-skip, moved in by showChoice()), then HP and
            money on one LCD; the top bar steps aside there -->
       <div class="room-bar" id="room-bar">
+        <!-- the Pokédex's hinge on top of the bar: the lens, the lights and the room's name on an LCD, like the map's biome
+             sign (the user's call, 2026-10-07); the post-battle move pick has it too -->
+        <div class="room-hinge">
+          <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+          <div class="room-sign" aria-live="polite"><b id="room-title"></b><small id="room-place"></small></div>
+        </div>
+        <div class="room-row">
         <div class="room-keys" id="room-keys">
           <button type="button" class="mdex-btn room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"><span class="mdex-ico"></span></button>
         </div>
@@ -384,6 +391,7 @@
           <span class="gb-hp-num" id="room-hp-text"></span>
           <span class="room-cash" title="Pokédollars - prize money for this run">💴 <span id="room-money">0</span></span>
           <span class="room-cash" title="PokéCoins - spend them at the Game Corner">💰 <span class="coin-value">0</span></span>
+        </div>
         </div>
       </div>
     </section>

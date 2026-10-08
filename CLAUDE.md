@@ -125,7 +125,10 @@ live site.
   top bar's Bag hidden there). The Bag itself is the device's too (shell, LCD title, pocket buttons, each pocket on a green LCD), and so are the deck and map-peek windows and the run's end windows (result, unlock, yes/no, loss recap) (`.dev-window`), and the deck pickers (Forget a move, PP Up, Day Care: `showChoice()`'s `deck-pick` layout, the deck on a dark screen scrolling in the glass, 2026-10-07). Detail
   in `docs/reference/map-screen.md`. **Rooms** (? events, the Center, the Mart, the grotto) and the deck pickers have no
   top bar (2026-10-07): the rooms get `#room-bar` along the bottom, one row: Home (the Pokédex), Leave (`#reward-skip` moved in
-  by `showChoice()` as `.room-leave`, a green key with a door, `smoothIcon('leave')`), then HP, ₽ and coins on one LCD. There is no page footer any more; the disclaimer is in About.
+  by `showChoice()` as `.room-leave`, a green key with a door, `smoothIcon('leave')`), then HP, ₽ and coins on one LCD; on top
+  of it the Pokédex's hinge (`.room-hinge`: lens, lights, the room's title and biome on an LCD, in place of the title plate).
+  The move pick after a fight (`layout: 'learn-room'`, `.learn`) gets the bar and hinge too, keeping its Reroll / Skip;
+  `showChoice()` sets `#reward-screen.in-room` for all of them. There is no page footer any more; the disclaimer is in About.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different

@@ -186,6 +186,12 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const skip = $('reward-skip');
   // a room (an event, the Center, the Mart, the grotto) has the slim bar along the bottom, and Leave is its key after Home
   const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
+  // the rooms and the move pick after a fight: the bar along the bottom, the title on its hinge's LCD, no top bar
+  const roomy = inBar || /\blearn-room\b/.test(layout);
+  $('reward-screen').classList.toggle('in-room', roomy);
+  $('reward-screen').classList.toggle('learn', roomy && !inBar);
+  $('room-title').textContent = title;
+  $('room-place').textContent = $('biome-name').textContent;
   if (inBar) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
   skip.classList.toggle('room-leave', inBar);
@@ -203,6 +209,9 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   $('reward-screen').classList.toggle('over-map', over);
   if (over) { $('map-screen').hidden = false; document.body.dataset.screen = 'map-screen'; }
 }
+
+// the bar's height, for whatever has to stay clear of it (the Mart, the grotto, the move pick's text box)
+new ResizeObserver(() => $('reward-screen').style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
 
 /* A picked reward blows up in the middle of a dimmed screen, like a card picked in battle,
    with its confirm ("Add to deck") under it where battle says "Tap to play". The big tile
