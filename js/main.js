@@ -282,7 +282,7 @@ function init() {
     onFirstBoot: bootHowto,
     onSafari: openSafariPrep,
     onTower: openTowerPrep,
-    onBoard: () => openLeaderboard(),
+    onBoard: (which) => openLeaderboard(0, which),
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
     // the hub's door in the Ancient Tree (js/hub-3d.js); the base's ✕ walks back out of it

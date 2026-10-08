@@ -277,6 +277,31 @@ function ancientArt(open = false) {
   return a.c;
 }
 
+/** A notice board under a little arched roof (Scarlet / Violet's roadside boards): notices pinned under a header strip.
+    The Safari's is wood with a red roof and a green header, the Sky Pillar's stone with a slate roof and a starry one. */
+function noticeArt(kind) {
+  const a = art(28, 36), pillar = kind === 'pillar';
+  const post = pillar ? P.stone : P.wood, roof = pillar ? ['#7088b0', '#4a5e88', '#2a3858'] : [P.roof[0], P.roof[1], '#702018'];
+  for (const x0 of [4, 21]) { a.dot(x0, 8, post[1], 3, 26); a.dot(x0, 8, post[0], 1, 26); a.dot(x0 + 2, 8, post[2], 1, 26); }
+  a.dot(3, 33, post[3], 5, 3); a.dot(20, 33, post[3], 5, 3);
+  for (let y = 1; y < 9; y++) {   // the roof, an arch with eaves
+    const half = Math.round(10 + Math.sqrt(Math.max(0, 1 - ((8 - y) / 8) ** 2)) * 4 - (8 - y) * 0.6);
+    a.dot(14 - half, y, y < 3 ? roof[0] : y > 6 ? roof[2] : roof[1], half * 2, 1);
+  }
+  for (let x = 6; x < 23; x += 4) a.dot(x, 3, roof[2], 1, 4);   // its ribs
+  a.dot(2, 9, post[3], 24, 18);   // the frame, then the board
+  a.dot(3, 10, pillar ? '#283450' : '#c89858', 22, 16);
+  a.dot(3, 10, pillar ? '#1c2440' : '#3a9a48', 22, 4); a.dot(3, 10, pillar ? '#3a4a7a' : '#58b860', 22, 1);
+  if (pillar) for (const [x, y] of [[6, 12], [11, 11], [16, 12], [21, 11]]) a.dot(x, y, '#c8dcff');
+  else { a.dot(12, 11, '#f8d848', 4, 2); a.dot(13, 13, '#c89820', 2, 1); }   // a little trophy
+  for (const [x, y, w, h] of [[4, 15, 7, 9], [12, 16, 6, 7], [19, 15, 5, 8]]) {   // the notices
+    a.dot(x, y, '#f8f0d8', w, h); a.dot(x, y + h - 1, '#d8c8a0', w, 1);
+    for (let r = y + 3; r < y + h - 2; r += 2) a.dot(x + 1, r, '#8a8070', w - 2 - (r % 3), 1);
+    a.dot(x + (w >> 1), y + 1, '#e84838');
+  }
+  return a.c;
+}
+
 function signArt() {
   const a = art(22, 26);
   a.dot(10, 9, P.wood[2], 3, 17); a.dot(10, 9, P.wood[1], 1, 17);
@@ -349,8 +374,14 @@ function makePlaces() {
     id: 'safari', name: 'Safari Zone', step: { x: 1, y: 7 }, tiles: rect(0, 6, 2, 6), tag: [1, 3.8, 6], open: safari,
     line: safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
-    buttons: safari ? [['Enter', acts.onSafari], ['Ranks', acts.onBoard]] : [],
+    buttons: safari ? [['Enter', acts.onSafari]] : [],
     build: (g) => g.add(board(safariArt(safari), tileX(1), tileZ(6))),
+  });
+  list.push({
+    id: 'safari-board', name: 'Safari Ranks', step: { x: 3, y: 7 }, tiles: [[3, 6]], tag: [3, 2.6, 6], open: safari,
+    line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
+    buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
+    build: (g) => g.add(board(noticeArt('safari'), tileX(3), tileZ(6))),
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -366,6 +397,12 @@ function makePlaces() {
       box.castShadow = box.receiveShadow = true;
       g.add(box);
     },
+  });
+  list.push({
+    id: 'pillar-board', name: 'Pillar Ranks', step: { x: 9, y: 4 }, tiles: [[9, 3]], tag: [9, 2.6, 3], open: tower,
+    line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
+    buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
+    build: (g) => g.add(board(noticeArt('pillar'), tileX(9), tileZ(3))),
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: 1, y: 3 }, tiles: rect(0, 0, 2, 2), tag: [1, 4, 1], open: true,
