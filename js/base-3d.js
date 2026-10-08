@@ -782,7 +782,8 @@ function setTime(force) {
 
 /* Two shots, blended as you switch: walking, a lower, closer look that follows your partner (Octopath's tilt, the room
    at eye level); decorating, higher and pulled back so the whole room fits over the sheet, every tile in reach. */
-const SHOT = { walk: { pitch: 0.7, across: 5.2 }, edit: { pitch: 0.9, across: COLS + 1.2 } };
+// walking matches the Clearing outside (js/hub-3d.js: PITCH 0.6, ACROSS 8), so your partner is the same size in and out
+const SHOT = { walk: { pitch: 0.6, across: 8 }, edit: { pitch: 0.9, across: COLS + 1.2 } };
 const LOOK_Y = 0.9;
 
 function aimCamera(x, d, pitch) {
@@ -834,7 +835,10 @@ function placeCamera(dt, now) {
   const before = camX;
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   camera.setViewOffset(viewW, viewH, 0, mix('shift'), viewW, viewH);
-  aimCamera(camX, mix('dist'), mix('pitch'));
+  const pitch = mix('pitch');
+  aimCamera(camX, mix('dist'), pitch);
+  // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
+  for (const m of [mon, ...guests.map(g => g.mon)]) if (m) m.board.rotation.x = -pitch;
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
 }
 
