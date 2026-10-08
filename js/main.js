@@ -153,16 +153,21 @@ async function requestAbandon(sure) {
 
 /* ---------- the Pokédex (top left) ---------- */
 
-function initPokedexButton() {
-  // a run's Pokédex apps open on the page it stands on: a Safari run's own Pokédex on its area (its catches never touch
-  // the main one), else the main Pokédex on its biome
-  // on the map, which already is the device, the button is the device's own Home key (css/screens.css)
+function homeKey() {
   const key = document.createElement('span');
   key.className = 'home-key';
   key.setAttribute('aria-hidden', 'true');
   key.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 11.2 12 4.5l8 6.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'
     + '<path d="M6.6 10v8.6a1.4 1.4 0 0 0 1.4 1.4h2.6v-5h2.8v5H16a1.4 1.4 0 0 0 1.4-1.4V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
-  $('brand-btn').append(key);
+  return key;
+}
+
+function initPokedexButton() {
+  // a run's Pokédex apps open on the page it stands on: a Safari run's own Pokédex on its area (its catches never touch
+  // the main one), else the main Pokédex on its biome
+  // on the map, which already is the device, the button is the device's own Home key (css/screens.css); rooms' bar too
+  $('brand-btn').append(homeKey());
+  $('room-home').append(homeKey());
   $('brand-btn').addEventListener('click', () => openPokedex({ dex: runBiome(), safari: runSafariArea() }));
   // leaving from inside the device puts it away once the confirm (if any) has said yes
   $('abandon-btn').addEventListener('click', async () => { if (await requestAbandon()) hideDevice(); });
@@ -269,7 +274,6 @@ function init() {
     const left = isPeeking() ? 'This test climb won\'t be kept.' : 'Your climb is saved, so you can carry on from Continue.';
     if (await confirmDialog(`Leave the Sky Pillar for the menu? ${left}`, 'Menu')) requestMenu();
   });
-  $('room-home').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('room-home').addEventListener('click', () => $('brand-btn').click());
   $('reward-skip').prepend(el('span', 'leave-ico'));
   $('reward-skip').firstChild.append(smoothIcon('leave'));   // only shown while it's the room bar's Leave key

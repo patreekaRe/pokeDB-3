@@ -1775,3 +1775,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **R1. Post-fight reward steps get the room bar** (2026-10-07, the user's ask): "Item found", the relic picks (`item-found`)
   and the signature-move picks (a catch's, after evolving: now `learn-room`) get `.in-room` from `showChoice()` like the
   move pick: no top bar, the bottom bar with the title on its hinge LCD.
+- **R2. Room bar's Home key is the map's round key** (2026-10-07, the user's ask): `#room-home` holds the same `.home-key`
+  (`homeKey()` in `js/main.js`, round, shell colours, a house), a little bigger (38px), instead of the square red button.
