@@ -38,7 +38,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
@@ -1589,7 +1589,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     picked = relic;
     stage.classList.add('choosing');
     buttons.forEach(b => b.classList.toggle('chosen', b === btn));
-    go.hidden = false;
+    go.disabled = false;
     sayLines(relicLines(relic));
   }
   async function take() {
@@ -1597,7 +1597,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     taking = true;
     playSound('item-get');
     $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box would jump into its place
-    go.hidden = true;
+    pressConfirm(go);
     stage.classList.add('taking');
     await flyToBag(buttons[relics.indexOf(picked)]);
     if (run === thisRun) gainRelic(picked, next);
@@ -1633,7 +1633,7 @@ function offerItem(item, next, { opened = false } = {}) {
   });
   const stage = el('div', `float-stage ${opened ? 'open' : 'sealed'}`), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
   const go = goButton(full ? 'Swap' : 'Put in Bag', () => take());
-  go.hidden = full || !opened;   // with room in the Bag, A is up as soon as the item is out: the text box has said what it does
+  go.disabled = full || !opened;   // with room in the Bag, A is up as soon as the item is out: the text box has said what it does
   // picking one of yours to toss shows what each does, side by side, so you know what you're trading (the user's call)
   const tips = el('div', 'swap-tips');
   tips.hidden = true;
@@ -1666,7 +1666,7 @@ function offerItem(item, next, { opened = false } = {}) {
     if (run !== thisRun || !ball.isConnected) return;
     ready = true;
     readyAt = performance.now();
-    if (!full) go.hidden = false;
+    if (!full) go.disabled = false;
     sayLines(found);
   });
 
@@ -1678,7 +1678,7 @@ function offerItem(item, next, { opened = false } = {}) {
         toss = index;
         stage.classList.add('choosing');
         row.querySelectorAll('.float-thing').forEach(b => b.classList.toggle('tossing', b === btn));
-        go.hidden = false;
+        go.disabled = false;
         tips.replaceChildren(swapTip('out', `Toss: ${mine.name}`, mine.text), swapTip('in', `Take: ${item.name}`, item.text));
         tips.hidden = false;
         sayLines([`Toss your ${mine.name} for the ${item.name}?`]);
@@ -1699,7 +1699,7 @@ function offerItem(item, next, { opened = false } = {}) {
     taking = true;
     playSound('item-get');
     $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
-    go.hidden = true;
+    pressConfirm(go);
     tips.hidden = true;
     if (toss !== null) row.children[toss].classList.add('gone');
     await flyToBag(thing);
@@ -1728,10 +1728,10 @@ function swapTip(kind, name, text) {
   return tip;
 }
 
-/** The screen's confirm: the room bar's A key beside the hinge's lights, put away until there's something to take. */
+/** The screen's confirm: the room bar's A key beside the hinge's lights, greyed until there's something to take. */
 function goButton(label, onPress) {
   const btn = roomConfirm(label, onPress);
-  btn.hidden = true;
+  btn.disabled = true;
   return btn;
 }
 
@@ -1757,7 +1757,7 @@ function revealGift(thing, lines, done) {
   box.querySelectorAll('.reward-option').forEach(btn => { btn.hidden = true; });
   $('reward-skip').style.visibility = 'hidden';
   const stage = el('div', 'float-stage float-gift'), gift = floatingThing(thing, 0, 104), go = goButton('Take it', () => take());
-  go.hidden = false;
+  go.disabled = false;
   stage.append(gift);
   box.append(stage);
   sayLines(lines);
@@ -1765,7 +1765,7 @@ function revealGift(thing, lines, done) {
   const take = async () => {
     if (taking) return;
     taking = true;
-    go.hidden = true;
+    pressConfirm(go);
     playSound('item-get');
     await flyToBag(gift);
     if (run === thisRun) done();
@@ -1838,7 +1838,7 @@ function treasureRoom() {
     picked = relic;
     stage.classList.add('choosing');
     stage.querySelectorAll('.treasure-relic').forEach(b => b.classList.toggle('chosen', b === btn));
-    take.hidden = false;
+    take.disabled = false;
     sayLines(relicLines(relic));
   }
 
@@ -1847,7 +1847,7 @@ function treasureRoom() {
     taking = true;
     playSound('item-get');
     $('reward-skip').style.visibility = 'hidden';   // not `hidden`: the text box below would jump up into its place
-    take.hidden = true;
+    pressConfirm(take);
     const btn = stage.querySelector('.treasure-relic.chosen'), from = btn.getBoundingClientRect(), to = bagSpot();
     btn.style.setProperty('--to-x', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
     btn.style.setProperty('--to-y', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);

@@ -13,7 +13,7 @@ import { textPace } from './prefs.js';
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
 const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
-const { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar, upgradeBurst } = UI;
+const { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar, upgradeBurst, confirmDialog } = UI;
 
 /* ---------- what you get offered ---------- */
 
@@ -201,7 +201,10 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;
-  roomConfirm(null);
+  // a screen whose picks blow up for a confirm keeps its gold key up, greyed, until one is picked (the user's call,
+  // 2026-10-08: a key that came and went didn't read as a button)
+  const asked = roomy && options.find(o => o.ask);
+  roomConfirm(asked ? asked.confirm || 'Choose' : null);
   // a fight's reward steps put Skip by Home too, a key in the shell's colour (the user's call, 2026-10-08)
   if (roomy) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
@@ -210,7 +213,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   skip.hidden = !onSkip;
   skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
   $('reward-skip-text').textContent = skipLabel;
-  skip.onclick = onSkip ? once(onSkip) : null;
+  skip.onclick = onSkip ? askFirst(once(onSkip), skip, title) : null;
   $('reward-reroll').hidden = !reroll;
   $('reward-reroll').onclick = reroll ? once(reroll) : null;
 
@@ -226,22 +229,47 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 const ONE_WORD = { 'Put in Bag': 'Take', 'PP Up': 'Upgrade' };
 const oneWord = (label) => ONE_WORD[label] || label.split(' ')[0];
 
+/* Skip and Leave are icon keys, so what they throw away isn't obvious: they ask first (the user's call, 2026-10-08).
+   Leave only asks while the room still has something to pick, and Back never does. */
+function askFirst(go, skip, title) {
+  return async () => {
+    const leave = skip.classList.contains('room-leave');
+    if (leave && !$('reward-options').querySelector('.reward-option:not(:disabled)')) return go();
+    if (!leave && $('reward-skip-text').textContent === 'Back') return go();
+    playSound('stick');
+    const sure = await confirmDialog(leave ? `Leave ${title}? You can't come back.` : "Skip this? You can't come back for it.",
+      leave ? 'Leave' : 'Skip');
+    if (sure) go();
+  };
+}
+
 /** The deck picker's confirm: `fn` lights it up for the picked card, null greys it out again. */
 function armDeckOk(fn) {
   const ok = $('reward-ok');
+  ok.classList.remove('pressed');
   ok.disabled = !fn;
-  ok.onclick = fn ? () => fn() : null;
+  ok.onclick = fn ? () => { pressConfirm(ok); fn(); } : null;
 }
 
 /** The room bar's confirm pill, beside the hinge's lights: `label` names it ("Take it" shows as "Take"), `fn` runs on a
-    press; no `fn` puts it away. It starts shown; a screen that waits for a pick first sets `hidden` itself. */
+    press; a label alone shows it greyed, no label puts it away. A screen that waits for a pick sets `disabled` itself. */
 export function roomConfirm(label, fn) {
   const ok = $('room-ok');
-  ok.hidden = !fn;
+  ok.classList.remove('pressed');
+  ok.hidden = !label;
+  ok.disabled = !fn;
   $('room-ok-text').textContent = label ? oneWord(label) : '';
   ok.setAttribute('aria-label', label || '');
-  ok.onclick = fn ? () => fn() : null;
+  ok.onclick = fn ? () => { pressConfirm(ok); fn(); } : null;
   return ok;
+}
+
+/** A confirm once pressed stays on screen pushed in, lit, until the screen moves on: it never just vanishes under your
+    finger (the user's call, 2026-10-08). */
+export function pressConfirm(ok) {
+  if (ok.classList.contains('pressed')) return;
+  ok.classList.add('pressed');
+  ok.disabled = true;
 }
 
 // the bar's height, for whatever has to stay clear of it (the Mart, the grotto, the move pick's text box, a picked card
@@ -253,8 +281,14 @@ new ResizeObserver(() => document.documentElement.style.setProperty('--room-bar-
    or the confirm takes it; the dimmed area or Escape puts it back. */
 let focus = null;   // { layer, btn, onKey }
 
-function openFocus(option, btn, take) {
+function openFocus(option, btn, takeIt) {
   closeFocus();
+  // however it's taken (the key, the big card, Enter), the gold key goes down and stays down
+  const take = () => {
+    if (focus?.inRoom) pressConfirm($('room-ok'));
+    if (focus?.deckPick) pressConfirm($('reward-ok'));
+    takeIt();
+  };
   const big = (option.zoom || option.node).cloneNode(true);   // zoom: the bare tile, when node wraps it (a Mart price tag)
   big.classList.add('focus-card');
   if (big.classList.contains('relic')) big.classList.add('focus-item');
@@ -301,7 +335,7 @@ function openFocus(option, btn, take) {
   document.addEventListener('keydown', onKey);
   btn.classList.add('picked');
   document.body.append(layer);
-  focus = { layer, btn, onKey, inRoom, deckPick };
+  focus = { layer, btn, onKey, inRoom, deckPick, label: option.confirm || 'Choose' };
   (inRoom ? $('room-ok') : deckPick ? $('reward-ok') : yes).focus({ preventScroll: true });
 }
 
@@ -315,8 +349,9 @@ function closeFocus() {
   focus.layer.remove();
   focus.btn.classList.remove('picked');
   document.removeEventListener('keydown', focus.onKey);
-  if (focus.inRoom) roomConfirm(null);
-  if (focus.deckPick) armDeckOk(null);
+  // pressed, the key stays down; backed out, it greys again and waits for the next pick
+  if (focus.inRoom && !$('room-ok').classList.contains('pressed')) roomConfirm(focus.label);
+  if (focus.deckPick && !$('reward-ok').classList.contains('pressed')) armDeckOk(null);
   focus = null;
 }
 

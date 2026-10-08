@@ -5139,7 +5139,18 @@ body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.
   transition: translate 0.06s;
 }
 .room-ok[hidden] { display: none; }
-.room-ok:active { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), 0 1px 0 #5a3a08, 0 0 14px 4px rgba(255, 216, 64, 0.8); }
+/* waiting for a pick: greyed in its place, so it never pops in and out */
+.room-ok:disabled { opacity: 0.45; filter: grayscale(1); cursor: default; animation: none; }
+/* pressed: pushed down into the shell with a flash, and it stays down, lit, until the screen moves on */
+.room-ok.pressed, #reward-screen.deck-picking #reward-ok.pressed {
+  opacity: 1; filter: none; translate: 0 3px; animation: roomOkPress 0.35s ease-out both;
+  background: linear-gradient(#f0d860, #e8b820 50%, #c88a10);
+  box-shadow: inset 0 3px 4px rgba(90, 58, 8, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.35), 0 0 0 #5a3a08, 0 0 10px 3px rgba(255, 216, 64, 0.6);
+}
+@keyframes roomOkPress {
+  0% { filter: brightness(1.6); box-shadow: inset 0 3px 4px rgba(90, 58, 8, 0.55), 0 0 26px 10px rgba(255, 240, 140, 0.95); }
+}
+.room-ok:active:not(:disabled) { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), 0 1px 0 #5a3a08, 0 0 14px 4px rgba(255, 216, 64, 0.8); }
 .room-ok:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 @keyframes roomOkIn { from { opacity: 0; scale: 0.6; } }
 @keyframes roomOkPulse {
