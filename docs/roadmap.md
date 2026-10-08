@@ -82,6 +82,21 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   Android vibration on big hits (the Settings switch exists since 2026-10-06, iPhones tick since iOS 18),
   quiet background sounds for each place under the music.
 
+- **Secret Base** (the user's idea, 2026-10-08: Gen 3's secret bases crossed with Animal Crossing). A room of your own
+  to decorate: furniture bought with PokéCoins, a **daily stock** in its shop, some pieces only from badges / achievements
+  / feats / Safari pages, and the Pokémon you caught in the Safari living in it, wandering and reacting to taps. Feasible
+  on what's already there: the pixel room is a `PLACE_ART`-style painter (like the ? rooms), furniture is drawn in code
+  like the biomes' landmarks (no sprite sheet to find: Gen 3's decorations aren't on PokeAPI), the daily stock is seeded
+  by the UTC day like the Safari's (`js/rng.js`), unlocks are `test(stats, save)` lines like `BADGES`, the layout is one
+  `save.base` (follows the cloud save), placing is tap-a-tile on a grid (phones, no dragging), and the Pokémon are the
+  `save.safariDex` catches' front GIFs. Its way in: a Game Modes sign or a Pokédex app. Suggested parts, each a session:
+  a) the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base` (Run in: LOCAL, visual);
+  b) the Furniture shop and its daily stock, prices, a "!" on new stock (Run in: CLOUD);
+  c) furniture unlocked from badges, achievements, feats and Safari pages, ~30 more pieces (Run in: CLOUD for the data, LOCAL for the art);
+  d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
+  e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
+  Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
+  Pokémon on show, and whether furniture is pure decoration or gives a small perk.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
