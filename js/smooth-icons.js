@@ -436,6 +436,7 @@ const KEY_GLYPHS = {
   ok: '<path d="M5.5 12.5 10 17l8.5-9.5" stroke-width="2.8"/>',
   play: '<path d="M8 5.5v13l10.5-6.5Z" fill="currentColor" stroke-width="2"/>',
   plus: '<path d="M12 5v14M5 12h14" stroke-width="2.8"/>',
+  help: '<path d="M8.8 9a3.4 3.4 0 1 1 5 3c-1.2.7-1.8 1.5-1.8 2.9" stroke-width="2.6"/><circle cx="12" cy="18.6" r="1.5" fill="currentColor" stroke="none"/>',
   rope: '<circle cx="11" cy="12" r="6.5" stroke-width="2.2"/><circle cx="11" cy="12" r="3" stroke-width="2"/><path d="M17.5 12c0 4 1.5 6.5 3 7.5" stroke-width="2.2"/>',
 };
 

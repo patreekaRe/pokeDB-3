@@ -63,7 +63,7 @@ const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
-let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
+let places = [], blocked = new Set(), aim = null, here = null, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, inBase = false, entering = null;
 let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
@@ -1054,7 +1054,6 @@ function goTo(p, enter, i = null) {
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
-  hideCard();
   playSound('confirm');
   if (!walker.path.length) open(p, i);
 }
@@ -1081,7 +1080,6 @@ function open(p, i = null) {
   if (p.id === 'base') return enterBase();
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
-  hideCard();
   const go = p.buttons[i ?? 0][1];
   setTimeout(() => { if (running) go(); }, calm ? 0 : p.id === 'trail' ? SPIN * 0.8 : 260);
 }
@@ -1113,7 +1111,6 @@ function liveStop(now) {
     curtain (js/base-3d.js); its ✕ brings it back out here (showHub(), `inBase`). */
 async function enterBase() {
   if (entering) return;
-  hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
   if (tree) tree.m.map = tree.open;
   playSound('door');
@@ -1138,17 +1135,17 @@ function leftBase() {
   setTimeout(() => { if (tree) tree.m.map = tree.shut; }, calm ? 0 : 650);
 }
 
-/* ---------- the card under a place ---------- */
+/* ---------- standing at a place ---------- */
 
+/** Its name and line are on the bar's green screen already (placeBar()); standing at its door, the screen blinks. */
 function showCard(p) {
   here = p;
-  card.querySelector('.hub-card-name').textContent = p.name;
-  card.querySelector('.hub-card-line').textContent = p.line;
-  card.classList.toggle('locked', !p.open);
-  card.hidden = false;
+  const s = bar.querySelector('.hbar-screen');
+  s.classList.remove('hbar-blink');
+  void s.offsetWidth;
+  s.classList.add('hbar-blink');
   if (!p.open) playSound('cancel');
 }
-function hideCard() { card.hidden = true; }
 
 /* ---------- the bar beside it ---------- */
 
@@ -1167,9 +1164,10 @@ function nearest() {
 // a round key's glyph by what it does (only the trail has more than one thing to do)
 const KEY_FOR = { Continue: 'play', 'New game': 'plus', 'Escape Rope': 'rope' };
 
-/** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08): the hinge's LCD names the place your partner
-    walks up to and the gold pill does it (a tap walking there first); the row under it is Home (the Pokédex), round
-    keys for the rest (Continue with a saved run, the trail's New game and Escape Rope) and the PokéCoins on an LCD. Near
+/** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08): the gold pill does what the place your partner
+    walks up to does (a tap walking there first) and the hinge's LCD holds the PokéCoins; the row under it is Home (the
+    Pokédex), How to play, round keys for the rest (Continue with a saved run, the trail's New game and Escape Rope) and
+    the long green screen saying what the place is (a tap walks there; the user's call, 2026-10-08, over a floating card). Near
     nothing the pill is Continue, or New game (the Pokéstop). Redrawn only when the place changes. */
 function placeBar() {
   const coins = getSave().coins ?? 0;
@@ -1177,7 +1175,7 @@ function placeBar() {
   const p = nearest(), k = p?.id ?? '';
   if (k === barKey) return;
   barKey = k;
-  const cont = () => { playSound('confirm'); hideCard(); acts.onContinue(saved); };
+  const cont = () => { playSound('confirm'); acts.onContinue(saved); };
   const trail = places.find(q => q.id === 'trail');
   let main, rest = [];
   if (p && (!p.open || !p.buttons.length)) main =['Locked', () => goTo(p, true), true];
@@ -1189,7 +1187,9 @@ function placeBar() {
     rest = [['New game', () => goTo(trail, true, 1)]];
   } else main = ['New game', () => goTo(trail, true, 0)];
   if (saved && p && p.id !== 'trail') rest.unshift(['Continue', cont]);
-  bar.querySelector('.hbar-sign b').textContent = p?.name ?? 'The Clearing';
+  bar.querySelector('.hbar-name').textContent = p?.name ?? 'The Clearing';
+  bar.querySelector('.hbar-line').textContent = p?.line ?? 'Walk up to a place, or tap one, to see what it is.';
+  bar.querySelector('.hbar-screen').classList.toggle('locked', !!p && !p.open);
   const ok = bar.querySelector('.hbar-ok');
   ok.querySelector('span').textContent = main[0];
   ok.classList.toggle('locked', !!main[2]);
@@ -1204,7 +1204,7 @@ function placeBar() {
     b.addEventListener('click', go);
     return b;
   }));
-  for (const el of [ok, bar.querySelector('.hbar-sign b')]) {
+  for (const el of [ok, bar.querySelector('.hbar-screen')]) {
     el.classList.remove('hbar-pop');
     void el.offsetWidth;
     el.classList.add('hbar-pop');
@@ -1214,16 +1214,15 @@ function placeBar() {
 /* ---------- the Pokédex in the corner ---------- */
 
 /** It grows from the corner into the device (js/device.js's `from`), which opens over the hub; shut, it's back here. */
-const openDex = () => fromCorner(acts.onPokedex);
+const openDex = () => fromCorner(acts.onPokedex, dexBtn);
 
-/** How to play comes out of it too (the user's call, 2026-10-08), and shuts back into it. */
-function fromCorner(open) {
-  if (dexBtn.classList.contains('out') || entering || held) return;
-  hideCard();
+/** How to play grows out of its own round key beside Home (the user's call, 2026-10-08), and shuts back into it. */
+function fromCorner(open, key) {
+  if (root.querySelector('.room-home.out') || entering || held) return;
   walker.path = []; aim = null;
   playSound('confirm');
-  open(dexBtn, () => { dexBtn.classList.remove('out'); dexNews(); });
-  dexBtn.classList.add('out');
+  open(key, () => { key.classList.remove('out'); dexNews(); });
+  key.classList.add('out');
 }
 
 /** Its LED blinks while the device has something new (a badge, a find), like the title's Pokédex sign's "!". */
@@ -1249,7 +1248,6 @@ function onTap(e) {
   if (!inGrid(to)) return;
   walker.path = route(walker.tile, to);
   aim = null;
-  hideCard();
   const end = walker.path.at(-1) ?? walker.tile;
   ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
   ring.material.opacity = 0.9;
@@ -1267,14 +1265,12 @@ function onKey(e) {
     if (walker.path.length > 1) walker.path.length = 1;
     walker.path.push(n);
     aim = null;
-    hideCard();
     return;
   }
   if ((e.key === 'Enter' || e.key === ' ') && !walker.path.length && placeAt(walker.tile) && !document.activeElement?.closest?.('button')) {
     e.preventDefault();
     open(placeAt(walker.tile), 0);
   }
-  if (e.key === 'Escape' && !card.hidden) hideCard();
 }
 
 /* ---------- light, camera, frame ---------- */
@@ -1440,7 +1436,7 @@ function frame(now) {
   if (!running) return;
   if (screen.hidden || !root.isConnected) { running = false; quiet(); return; }
   // under the device (its corner button opened it over the hub) the Clearing holds still rather than drawing unseen
-  if (dexBtn.classList.contains('out') && document.getElementById('collection-screen')?.hidden === false) { last = 0; requestAnimationFrame(frame); return; }
+  if (root.querySelector('.room-home.out') && document.getElementById('collection-screen')?.hidden === false) { last = 0; requestAnimationFrame(frame); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
@@ -1476,24 +1472,25 @@ async function build() {
   root.addEventListener('animationend', () => root.classList.add('shown'), { once: true });
   root.innerHTML = `
     <canvas class="hub-view"></canvas>
-    <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p></div>
     <div class="hub-bar">
       <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
         <button type="button" class="room-ok hbar-ok"><span></span></button>
-        <div class="room-sign hbar-sign" aria-live="polite"><b></b></div></div>
-      <div class="room-row"><div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><span class="hbar-keys"></span></div>
-        <div class="room-lcd hbar-lcd" title="PokéCoins"><span class="hbar-tag" aria-hidden="true">COINS</span><span class="hbar-coins">0</span></div></div>
+        <div class="room-sign hbar-sign" title="PokéCoins"><b class="hbar-coins">0</b></div></div>
+      <div class="room-row"><div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help" aria-label="How to play"></button><span class="hbar-keys"></span></div>
+        <button type="button" class="room-lcd hbar-screen" aria-live="polite"><b class="hbar-name"></b><span class="hbar-line"></span></button></div>
     </div>
-    <button type="button" class="hub-help" aria-label="How to play"></button>
     <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
   view = root.querySelector('.hub-view');
-  card = root.querySelector('.hub-card');
   bar = root.querySelector('.hub-bar');
   bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
   new ResizeObserver(() => root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`)).observe(bar);
-  root.querySelector('.hub-help').append(smoothIcon('help'));
-  root.querySelector('.hub-help').addEventListener('click', () => fromCorner(acts.onHelp));
+  root.querySelector('.hub-help').append(roundKey('help'));
+  root.querySelector('.hub-help').addEventListener('click', e => fromCorner(acts.onHelp, e.currentTarget));
+  bar.querySelector('.hbar-screen').addEventListener('click', () => {
+    const p = nearest();
+    if (p) goTo(p, false); else playSound('cancel');
+  });
   dexBtn = root.querySelector('.hub-dex');
   dexBtn.append(roundKey('home'));
   dexBtn.addEventListener('click', openDex);
@@ -1567,8 +1564,7 @@ async function openHub(titleScreen, actions, hold) {
   if (!placed) { placed = true; walker.tile = START; walker.x = tileX(START.x); walker.z = tileZ(START.y); camX = walker.x; camZ = walker.z; }
   walker.path = []; aim = null; here = placeAt(walker.tile);
   if (inBase) leftBase();
-  hideCard();
-  dexBtn.classList.remove('out');
+  root.querySelectorAll('.room-home.out').forEach(k => k.classList.remove('out'));
   dexNews();
   const tag = document.getElementById('title-version');
   root.querySelector('.hub-version').textContent = tag?.textContent ?? '';
@@ -1601,7 +1597,7 @@ export function enterHub() {
 }
 
 /** The corner handheld, for a device to shrink back into (the first launch's How to play). */
-export const hubDex = () => (root?.isConnected ? dexBtn : null);
+export const hubDex = () => (root?.isConnected ? root.querySelector('.hub-help') : null);
 
 /** Back to the signs (Settings' Title screen). */
 export function hideHub() {
