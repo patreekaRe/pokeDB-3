@@ -26,7 +26,7 @@ const ON_SHOW = 6;         // Safari catches living in the base at once
 // kinds of piece a Pokémon climbs onto, and what it does there
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
 
-const seatOf = (id) => SEATS[PIECES[id].fam];
+const seatOf = (id) => SEATS[PIECES[id].seat || PIECES[id].fam];
 
 const LIGHT = {
   dawn: { sky: '#ffd0b8', ground: '#5a4058', amb: 1.4, sun: '#ffb48a', sunI: 2.2, at: [-9, 5, 6], lamp: 0.8, win: 0.9, shaft: 0.3, motes: 0.7, bg: '#2a2036' },
@@ -770,24 +770,31 @@ const GLYPHS = {
 };
 const glyph = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[name]}</svg>`;
 
+let lazy;
 function tray(which = tab) {
   tab = which;
   const list = root.querySelector('.b3-strip');
   list.replaceChildren();
+  lazy?.disconnect();
+  lazy = new IntersectionObserver((seen) => seen.forEach(e => {
+    if (!e.isIntersecting || !e.target.paint) return;
+    e.target.prepend(e.target.paint()); e.target.paint = null; lazy.unobserve(e.target);
+  }), { root: list, rootMargin: '200px' });
   root.querySelectorAll('.b3-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   root.querySelector('.b3-title').textContent = TAB_NAME[tab];
   const add = (label, art, on, pick, tag = '') => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'b3-tile' + (on ? ' on' : '');
     const pic = Object.assign(document.createElement('span'), { className: 'b3-pic' });
-    pic.append(art);
+    // a piece's icon is painted once it scrolls into view, so a tray of thousands (?allfurniture) opens at once
+    if (typeof art === 'function') { pic.paint = art; lazy.observe(pic); } else pic.append(art);
     if (tag) pic.append(Object.assign(document.createElement('i'), { className: 'b3-tag', textContent: tag }));
     b.append(pic, Object.assign(document.createElement('span'), { className: 'b3-name', textContent: label }));
     b.addEventListener('click', pick);
     list.append(b);
   };
   if (tab === 'shop') for (const id of furnitureStock()) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
-  if (tab === 'furniture') for (const id of CATALOGUE.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of CATALOGUE.filter(id => spare(base, id) > 0)) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();

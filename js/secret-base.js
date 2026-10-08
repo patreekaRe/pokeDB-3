@@ -59,7 +59,7 @@ export const lendAll = () => new URLSearchParams(location.search).has('allfurnit
 
 /** How many of a piece are in storage: owned, less those standing in the room. */
 export function spare(b, id) {
-  if (lendAll() && CATALOGUE.includes(id)) return Infinity;
+  if (lendAll() && PIECES[id] && !PIECES[id].gift) return Infinity;
   return (b.owned[id] || 0) - b.items.filter(it => it.id === id).length;
 }
 

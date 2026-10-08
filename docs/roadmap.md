@@ -91,7 +91,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `save.base` (follows the cloud save), placing is tap-a-tile on a grid (phones, no dragging), and the Pokémon are the
   `save.safariDex` catches' front GIFs. Its way in: a Game Modes sign or a Pokédex app. Suggested parts, each a session:
   a) the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base` (Run in: LOCAL, visual);
-  b) ~~the Furniture shop and its daily stock, prices~~ done 2026-10-08 with the first room's present and a 500-piece catalogue (`docs/roadmap-done.md`); still open: a "!" on new stock, wallpapers / floors for sale, and more kinds of piece (Pokémon dolls from the sprites, Gen 3's mats, tents, slides) (Run in: CLOUD);
+  b) ~~the Furniture shop and its daily stock, prices~~ done 2026-10-08 with the first room's present and a 500-piece catalogue (`docs/roadmap-done.md`); still open: a "!" on new stock, wallpapers / floors for sale, and more kinds of piece ~~(done 2026-10-08: 241 kinds, 4,212 pieces, dolls drawn in code, not from the sprites)~~ (Run in: CLOUD);
   c) furniture unlocked from badges, achievements, feats and Safari pages, ~30 more pieces (Run in: CLOUD for the data, LOCAL for the art);
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
   e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).

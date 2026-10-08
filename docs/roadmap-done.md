@@ -1863,4 +1863,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   pieces), `glow` (lamps, the window), `solid` (bookshelves as boxes). **The Shop**: the sheet's cart tab, 8 pieces a UTC
   day, no two of a kind (`furnitureStock()`, seeded like the Safari's day), a first tap shows the price, a second buys it
   for PokéCoins (`buyPiece()`); prices by kind and theme tier. `tools/furniture.html` shows all 500 by theme or kind.
+  **More kinds** (2026-10-08, the user's ask: "way more than 25, like hundreds"): `js/base-furniture-kinds.js` adds 216 kinds (241 in all,
+  4,212 pieces): 8 chairs by back, stools, a bench and rocker, 7 tables, 5 beds and 12 motif cushions (`seat`: Pokémon nap / sit on them),
+  13 motif mats, 8 patterned rugs, 4 runners, 13 posters and 13 banners, 8 framed pictures, 16 more wall pieces (clocks, mirror, sconce,
+  4 windows with `sky`), 11 plants and 8 Berry bushes, ~50 things (trophy, aquarium, fireplace, arcade machine, Storage PC, tent, slide...),
+  and 16 Pokémon dolls in two sizes (`solo`, unthemed). The tray paints icons as they scroll in (an `IntersectionObserver`), for `?allfurniture`.
   Playtest: `?base&basefresh` (the first room again, that page load), `&allfurniture` (every piece in the tray, unsaved).

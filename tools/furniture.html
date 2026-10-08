@@ -21,6 +21,7 @@
 <h1>Secret Base furniture</h1>
 <p id="count"></p>
 <div class="bar" id="by"></div>
+<div class="bar" id="shelf"></div>
 <div class="bar" id="pick"></div>
 <div class="grid" id="grid"></div>
 <script type="module">
@@ -33,17 +34,19 @@ function art(id) {
   else { c.width = p.w * T; c.height = p.h * T + 40; p.upright(c.getContext('2d'), 0, 40, 0); }
   return c;
 }
-let by = 'theme', pick = 'classic';
+const GROUPS = [...new Set(FAMILIES.map(f => f.group))];
+let by = 'theme', pick = 'classic', shelf = GROUPS[0];
 const bar = (el, list, on, set) => {
   el.replaceChildren(...list.map(([id, label]) => Object.assign(document.createElement('button'), {
     textContent: label, className: id === on ? 'on' : '', onclick: () => set(id),
   })));
 };
 function draw() {
-  bar(document.getElementById('by'), [['theme', 'By theme'], ['fam', 'By kind']], by, (v) => { by = v; pick = by === 'theme' ? 'classic' : 'bed'; draw(); });
-  const opts = by === 'theme' ? THEMES.map(t => [t.id, t.name || 'Classic']) : FAMILIES.map(f => [f.id, f.name]);
+  bar(document.getElementById('by'), [['theme', 'By theme'], ['fam', 'By kind']], by, (v) => { by = v; pick = by === 'theme' ? 'classic' : FAMILIES.find(f => f.group === shelf).id; draw(); });
+  bar(document.getElementById('shelf'), GROUPS.map(g => [g, g]), shelf, (v) => { shelf = v; if (by === 'fam') pick = FAMILIES.find(f => f.group === v).id; draw(); });
+  const opts = by === 'theme' ? THEMES.map(t => [t.id, t.name || 'Classic']) : FAMILIES.filter(f => f.group === shelf).map(f => [f.id, f.name]);
   bar(document.getElementById('pick'), opts, pick, (v) => { pick = v; draw(); });
-  const ids = CATALOGUE.filter(id => PIECES[id][by] === pick);
+  const ids = CATALOGUE.filter(id => PIECES[id][by] === pick && (by === 'fam' || PIECES[id].group === shelf));
   document.getElementById('grid').replaceChildren(...ids.map(id => {
     const t = document.createElement('div');
     t.className = 'tile';

@@ -1,5 +1,6 @@
-/* base-furniture.js  -  the Secret Base's furniture catalogue: 25 kinds of piece (FAMILIES) in 20 colour themes (THEMES),
-   500 pieces, every one painted in code from its theme's palette (Gen 3's decorations were the reference for the kinds
+/* base-furniture.js  -  the Secret Base's furniture catalogue: its first 25 kinds of piece (FAMILIES) here and ~200 more from
+   js/base-furniture-kinds.js, each in 20 colour themes (THEMES) but the Pokémon dolls (`solo`), thousands of pieces,
+   every one painted in code from its theme's palette (Gen 3's decorations were the reference for the kinds
    and the theme names; no sprite sheet). A classic piece keeps its kind's bare id (`bed`, `chair`...), so rooms saved
    before the catalogue load unchanged; a themed one is `<kind>-<theme>` (`bed-fire`). Plus the present (`gift`), which
    is no catalogue piece: a new room's box of starter furniture (js/base-3d.js opens it).
@@ -8,6 +9,7 @@
    one as its strip of the wall (`wall(ctx, x)`). */
 
 import { timeOfDay } from './daytime.js';
+import { moreKinds } from './base-furniture-kinds.js';
 
 const T = 16;
 
@@ -268,7 +270,11 @@ const FAMILIES = [
   } },
 ];
 
+for (const f of FAMILIES) f.group ||= f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics';
+FAMILIES.push(...moreKinds({ R, C: (x, y, w, h) => g.clearRect(x, y, w, h), box, tone, BOOKS, SKY, pal: () => k, timeOfDay }));
+
 const NOUN = { cushion: 'Cushion' };   // a themed piece's name drops the classic one's adjective
+const noun = (fam) => fam.id === 'tv' ? 'TV' : NOUN[fam.id] || (fam.proper ? fam.name : fam.name[0].toLowerCase() + fam.name.slice(1));
 
 /** The present a new room starts with: no theme, never sold. */
 const GIFT = { id: 'gift', name: 'Present', w: 1, h: 1, price: 0, draw(x, b) {
@@ -285,8 +291,8 @@ function makePiece(fam, theme) {
   const pal = theme || THEMES[0];
   const bind = (fn) => fn && ((ctx, ...args) => { const keep = [g, k]; g = ctx; k = pal; try { fn(...args); } finally { [g, k] = keep; } });
   const p = {
-    name: theme ? `${theme.name} ${fam.id === 'tv' ? 'TV' : (NOUN[fam.id] || fam.name).toLowerCase()}` : fam.name,
-    fam: fam.id, theme: pal.id, w: fam.w, h: fam.h, price: Math.round(fam.price * (theme ? [1, 1, 1.4, 2][theme.tier] : 1) / 10) * 10,
+    name: theme ? `${theme.name} ${noun(fam)}` : fam.name,
+    fam: fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: Math.round(fam.price * (theme ? [1, 1, 1.4, 2][theme.tier] : 1) / 10) * 10,
   };
   if (fam.layer) p.layer = fam.layer;
   if (fam.flat) { p.flat = bind((w, h) => fam.flat(w, h)); p.high = fam.high; p.side = pal[fam.side]; }
@@ -296,13 +302,14 @@ function makePiece(fam, theme) {
     fam.draw(x, y + fh * T, fw * T, dir);
   });
   if (fam.solid) Object.assign(p, { solid: true, wood: pal.w, woodLit: pal.wl });
-  if (fam.glow) p.glow = fam.glow.map(key => pal[key]);
-  if (fam.id === 'window') p.glow = Object.values(SKY);
+  if (fam.seat) p.seat = fam.seat;
+  if (fam.glow) p.glow = fam.glow.map(key => key[0] === '#' ? key : pal[key]);
+  if (fam.id === 'window' || fam.sky) p.glow = Object.values(SKY);
   return p;
 }
 
 const PIECES = {};
-for (const fam of FAMILIES) for (const theme of THEMES) {
+for (const fam of FAMILIES) for (const theme of fam.solo ? THEMES.slice(0, 1) : THEMES) {
   PIECES[theme.id === 'classic' ? fam.id : `${fam.id}-${theme.id}`] = makePiece(fam, theme.id === 'classic' ? null : theme);
 }
 /** Every catalogue id, kind by kind (the present isn't one). */
