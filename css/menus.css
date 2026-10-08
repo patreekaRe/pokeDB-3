@@ -1402,12 +1402,13 @@ body[data-screen="start-screen"] .topbar { display: none; }
 @media (prefers-reduced-motion: no-preference) { .gem-more.on .gem-arrow { animation: arrowNudge 0.6s ease-in-out infinite alternate; } }
 @keyframes arrowNudge { to { translate: 3px -50%; } }
 .gem.locked .gem-arrow { opacity: 0.5; }
-/* Back is no sign but a Poké Ball under the signs' balls, the ◀ on its button, "BACK" lettered beside it in the signs'
+/* Back is no sign but a Poké Ball under the signs' balls, "BACK" lettered beside it in the signs'
    outlined type (the user's ask, 2026-10-07: the old slate pill looked out of place); sizeGems() in js/title.js sets --ball */
 .gem-back {
   --c0: #ff7a66; --c1: #e02c20; --c2: #a01810; --ink: #3a1410;
   display: flex; align-items: center; gap: calc(var(--gp) * 2.5);
   border: 0; border-radius: 0; background: none; box-shadow: none;
+  padding-left: var(--ball-x, 0);
 }
 .gem-back::after { content: none; }
 .gem-back .gem-icon {
@@ -1420,15 +1421,14 @@ body[data-screen="start-screen"] .topbar { display: none; }
     linear-gradient(var(--c0), var(--c1) 26%, var(--c2) 44%, #181010 44% 56%, #fff 56%, #e6e6ee 78%, #a8a8b6);
   box-shadow: inset -3px -4px 0 rgba(20, 10, 30, 0.18);
   filter: none;
-  transition: rotate 0.2s ease-out;
+  transform-origin: 50% 90%;
 }
 .gem-back .gem-icon::before { content: none; }
-.gem-back .gem-icon > .gem-back-icon { width: 34%; height: 34%; margin-left: -6%; filter: none; }
-.gem-back-icon path { fill: var(--c1); stroke: none; }
 .gem-back .gem-label { height: auto; padding: 0; font-size: 1rem; }
 .gem-back.on::before { left: -24px; }
-@media (prefers-reduced-motion: no-preference) { .gem-back.on .gem-icon { animation: backRock 1.4s ease-in-out infinite; } }
-@keyframes backRock { 0%, 100% { rotate: 0deg; } 25% { rotate: -14deg; } 50% { rotate: 0deg; } 60% { rotate: 6deg; } 70% { rotate: 0deg; } }
+/* always wobbling, like a ball with a Pokémon inside: two rocks and a rest (the user's ask, 2026-10-08) */
+@media (prefers-reduced-motion: no-preference) { .gem-back .gem-icon { animation: backRock 1.6s ease-in-out infinite; } }
+@keyframes backRock { 0%, 56%, 100% { rotate: 0deg; } 10% { rotate: -16deg; } 22% { rotate: 12deg; } 32% { rotate: -6deg; } 42% { rotate: 3deg; } }
 /* a sign's subline (Best F19, Win a run) sits on its white lower band, so the name stays centred on the colour */
 .gem-soon {
   position: absolute; left: calc(var(--gp) * 15); right: 0; bottom: 0; height: 32%;

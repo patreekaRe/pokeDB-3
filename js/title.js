@@ -301,7 +301,7 @@ function more(btn) {
   return btn;
 }
 const backGem = () => {
-  const btn = gem('back', 'Back', goBack, smoothIcon('back', 'gem-back-icon'));
+  const btn = gem('back', 'Back', goBack, '');   // a plain ball, wobbling (the user's call, 2026-10-08: no ◀)
   btn.setAttribute('aria-label', 'Back');
   return btn;
 };
@@ -456,6 +456,8 @@ function sizeGems() {
     // the stack is centred, so a right margin of the difference lines Back's ball up with the signs' balls above
     if (back) btn.style.marginRight = `${(cols - w) * px}px`;
     if (back) btn.style.setProperty('--ball', `${BACK_H * px}px`);
+    // and its centre under theirs: a sign's ball is as tall as the sign, GEM_H steps
+    if (back) btn.style.setProperty('--ball-x', `${(GEM_H - BACK_H) * px / 2}px`);
   }
   // every page keeps the tallest page's height (four signs), so the nameplate never rises on a shorter sub-menu (the
   // user's ask)
