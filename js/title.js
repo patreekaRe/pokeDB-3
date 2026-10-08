@@ -193,8 +193,8 @@ async function start(e) {
   if (e.type === 'keydown' && (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key))) return;
   e.preventDefault();
   pressed = true;
-  // the menu blip only answers buttons, and a tap on the sky isn't one: every way in says so (the user heard silence)
-  playSound('confirm');
+  // the power-on's dex-on is the tap's answer; with motion off there's no power-on, so the blip stands in (the user heard silence)
+  if (still()) playSound('confirm');
   const first = actions.firstLaunch?.() ?? false;
   const dex = $('title-dex');
   if (!still()) await powerOn(dex);
