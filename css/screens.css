@@ -136,18 +136,6 @@ body.titling { overflow: hidden; }
 .press-cursor { font-size: 0.7em; color: var(--gold); }
 @keyframes pressBlink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0; } }
 
-.title-foot {
-  position: absolute;
-  inset: auto 0 max(10px, env(safe-area-inset-bottom));
-  margin: 0;
-  text-align: center;
-  font: 0.6rem/1.6 var(--pixel-font);
-  font-synthesis-weight: none;
-  color: #8fd08a;
-  letter-spacing: 0.06em;
-  padding: 0 16px;
-}
-
 /* the flying legendaries cross the sky in turn (nextFlyer() in js/title.js): a silhouette until unlocked, like Ho-Oh in the
    Gold intro, then in colour. One scale for all (Moltres's old 90-150px), from each GIF's own width (--w). */
 .title-flyer {
@@ -209,7 +197,6 @@ body.titling { overflow: hidden; }
 
 @media (max-width: 480px) {
   .press-start { font-size: 0.85rem; }
-  .title-foot { font-size: 0.5rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .press-start { animation: none; opacity: 1; }
@@ -232,7 +219,6 @@ body.titling { overflow: hidden; }
 
 /* ============ 3. BATTLE ============ */
 body[data-screen="battle-screen"] { height: 100vh; height: 100dvh; overflow: hidden; }
-body[data-screen="battle-screen"] .fan-note { display: none; }   /* it sat over the fanned hand's sunk ends; the menus and About still show it */
 /* nothing on the battle screen pans, zooms, pulls to refresh or long-press selects on a phone; the hand has its own slide (initScrub()) */
 html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] { overscroll-behavior: none; }
 #battle-screen { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -1012,7 +998,6 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .badges { min-height: 32px; gap: 6px; }
   .enemy-zone { --base: clamp(80px, 13vh, 118px); }
   .hand { --hand-card-w: 108px; }
-  .fan-note { font-size: 0.56rem; line-height: 1.5; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
   .battle-log { width: 96%; --log-font: 0.85rem; }
 }
 
@@ -5004,8 +4989,8 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
    2026-10-07): its shell under the top bar, the title an LCD, the deck on a dark screen that scrolls inside the glass,
    the text box and the button kept on the shell under it, so nothing slides under the top bar or covers a card */
 #reward-screen:has(> .deck-pick) {
-  position: fixed; inset: var(--topbar-h) 0 0; z-index: 1; max-width: none; margin: 0; gap: 10px;
-  padding: 10px 10px max(10px, env(safe-area-inset-bottom)); overflow: hidden; border-radius: 20px 20px 0 0;
+  position: fixed; inset: 0; z-index: 1; max-width: none; margin: 0; gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)); overflow: hidden; border-radius: 0;
   background: linear-gradient(180deg, var(--shell-hi), var(--shell) 30%, var(--shell-lo));
   box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08);
 }
@@ -5028,11 +5013,42 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 #reward-screen:has(> .deck-pick) .reward-actions { order: 2; margin: 0; }
 @media (min-width: 721px) {
   #reward-screen:has(> .deck-pick) {
-    inset: calc(var(--topbar-h) + 4px) auto 14px 50%; width: min(900px, calc(100vw - 32px)); translate: -50% 0;
+    inset: 14px auto 14px 50%; width: min(900px, calc(100vw - 32px)); translate: -50% 0;
     padding: 14px; border-radius: 26px; box-shadow: inset 0 0 0 3px var(--shell-rim), 0 18px 50px rgba(10, 20, 60, 0.45);
   }
   .deck-pick-screen { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 24px 20px 20px; }
 }
+
+/* the deck pickers, the event rooms and the Center need no top bar (the user's call, 2026-10-07): the rooms carry their
+   own slim bar along the bottom instead, a shorter Sky Pillar bar: HP, money and coins on one LCD, then Leave (the
+   screen's #reward-skip, moved in by showChoice()) and the Pokédex's Home key at the far right */
+body[data-screen="reward-screen"]:has(#reward-options:is(.deck-pick, .center-room, .event-room)) .topbar { display: none; }
+.room-bar { display: none; }
+#reward-screen:has(> :is(.center-room, .event-room)) .room-bar {
+  position: fixed; z-index: 3; left: 50%; bottom: 0; translate: -50% 0; width: min(100%, 520px);
+  display: grid; gap: 7px; padding: 8px 10px max(8px, env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
+  background: var(--shell); box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
+}
+#reward-screen:has(> :is(.center-room, .event-room)) .reward-actions { display: none; }
+.room-lcd {
+  display: flex; align-items: center; gap: 10px; min-height: 32px; margin: 2px; padding: 3px 10px; border: 2px solid #2a2a30; border-radius: 6px;
+  background: radial-gradient(120% 140% at 30% 0%, #c2dc9a, #a8c97e); color: #1f3a14; font: 0.6rem var(--pixel-font); font-synthesis-weight: none;
+  box-shadow: inset 0 2px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px #e4e4ea, 0 0 0 5px var(--shell-rim);
+}
+.room-lcd .gb-hp { flex: 1; width: auto; min-width: 0; margin: 0; }
+.room-lcd .gb-hp-tag { border-color: #1f3a14; background: #1f3a14; color: #c2dc9a; box-shadow: none; }
+.room-lcd .gb-hp-track { border-color: #1f3a14; background: rgba(255, 255, 255, 0.35); box-shadow: none; }
+.room-lcd .gb-hp-fill { transition-duration: 0.8s, 0.3s; }   /* an event's HP change runs down visibly, as on the old top bar plate */
+.room-lcd .gb-hp-num { width: auto; align-self: center; font-size: 0.6rem; font-weight: 400; white-space: nowrap; }
+.room-cash { display: flex; align-items: center; gap: 3px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.room-keys { display: flex; align-items: stretch; gap: 8px; }
+.room-keys #reward-skip { flex: 1; min-width: 0; padding: 4px 5px; }
+.room-keys #reward-skip[hidden] { display: block; visibility: hidden; }   /* Team Rocket has no Leave: Home keeps to the right */
+.room-keys #reward-skip .pp-pill { width: 100%; justify-content: center; font-size: 0.9rem; padding: 9px 18px 8px; }
+.room-keys #reward-skip .pp-pill::before { position: static; translate: none; margin-right: 10px; }
+.room-home { flex: none; width: 58px; align-content: center; padding: 0; }
+.room-home .mdex-ico .smooth-icon { width: 26px; height: 26px; }
+@media (max-width: 360px) { .room-lcd { gap: 7px; padding-inline: 7px; } }
 
 /* the Game Corner as a Pokédex app (cornerApp in js/shop.js): the cabinet's CRT fills the device's screen, its Buy under it */
 .cdev-app.cdev-corner { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #0c0c10; color: #e8fff4; }

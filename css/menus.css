@@ -579,7 +579,6 @@
    2026-10-07). The lid, bezel, keys and A / B are the tower's (.tdev-*); the window onto the type's scene is see-through,
    its own huge shadow painting the shell round it, so every part after it is positioned to paint over that shadow. On
    phones the device fills the screen under the top bar; wider, it's a 500px device with the scene round it too. ---------- */
-body[data-screen="start-screen"] .fan-note { display: none; }
 .select-screen {
   position: fixed;
   inset: 0;

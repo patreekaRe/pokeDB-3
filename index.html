@@ -90,7 +90,6 @@
       <button type="button" class="title-account title-help" id="title-help" aria-label="How to play"><span class="ta-pc">❓</span></button>
       <button type="button" class="title-account title-refresh" id="title-refresh" aria-label="Get the newest version"><span class="ta-pc"><svg class="refresh-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></span></button>
     </div>
-    <p class="title-foot">© 2026 PokéDB · a fan game, not affiliated with Nintendo</p>
   </div>
 
   <!-- Floating buttons along the top of every screen (no bar behind them) -->
@@ -370,6 +369,23 @@
       <div class="reward-bottom">
         <div class="reward-log" id="reward-log"><span id="reward-log-text" aria-hidden="true"></span><span class="sr-only" id="reward-log-live" aria-live="polite"></span></div>
       </div>
+      <!-- the event rooms' and the Center's slim bar along the bottom, a shorter Sky Pillar bar (the user's call, 2026-10-07):
+           HP, money and coins on one LCD, then Leave (the screen's own #reward-skip, moved in by showChoice()) and the
+           Pokédex at the far right; the top bar steps aside there -->
+      <div class="room-bar" id="room-bar">
+        <div class="room-lcd">
+          <div class="gb-hp" id="room-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
+            <span class="gb-hp-tag" aria-hidden="true">HP:</span>
+            <span class="gb-hp-track"><span class="gb-hp-fill" id="room-hp-fill"></span></span>
+          </div>
+          <span class="gb-hp-num" id="room-hp-text"></span>
+          <span class="room-cash" title="Pokédollars - prize money for this run">💴 <span id="room-money">0</span></span>
+          <span class="room-cash" title="PokéCoins - spend them at the Game Corner">💰 <span class="coin-value">0</span></span>
+        </div>
+        <div class="room-keys" id="room-keys">
+          <button type="button" class="mdex-btn room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"><span class="mdex-ico"></span></button>
+        </div>
+      </div>
     </section>
 
     <!-- ============ 5. BATTLE ============ -->
@@ -433,11 +449,6 @@
 
   </main>
 
-  <!-- Always-visible fan project note -->
-  <footer class="fan-note">
-    Fan project made for learning. Not affiliated with or endorsed by Nintendo, Game Freak or The Pokémon Company.
-    <button class="link-btn" id="credits-link">Credits</button>
-  </footer>
 
 
   <!-- ============ DIALOGS ============ -->

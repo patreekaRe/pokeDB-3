@@ -1766,3 +1766,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the D2 rewards rule).
 - **Event signs say only their name** (2026-10-07, the user's call): a first tap rings the sign in gold and says what it
   does in the text box, a second takes it; greyed ones answer a tap with why (`peek` in `showChoice()`).
+- **Rooms lose the top bar, footers go** (2026-10-07, the user's call): the deck pickers, ? rooms and the Center hide the
+  top bar; the rooms carry a slim bottom bar instead (`#room-bar`, a shorter Sky Pillar bar: HP, ₽ and coins on one LCD,
+  Leave, which is `#reward-skip` moved in by `showChoice()`, and a Home key opening the Pokédex). The page's fan-note footer
+  and the title's © line are gone; the disclaimer lives in About.

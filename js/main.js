@@ -229,7 +229,6 @@ function init() {
   $('title-help').addEventListener('click', openHowto);
   initPatchNotes();
   $('about-btn').addEventListener('click', () => openDialog('about-dialog'));
-  $('credits-link').addEventListener('click', () => openDialog('about-dialog'));
   initPokedex();
   initPokedexButton();
   initCloud();
@@ -267,6 +266,8 @@ function init() {
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', () => requestMenu());
+  $('room-home').querySelector('.mdex-ico').append(smoothIcon('home'));
+  $('room-home').addEventListener('click', () => $('brand-btn').click());
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,

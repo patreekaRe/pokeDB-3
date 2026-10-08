@@ -2068,10 +2068,10 @@ function placeCenterSpots() {
 /** On a short phone the text box under the counter reached down over Leave, so lift it just clear (it grows a line
  *  for long text, hence the observer). */
 function liftRoomLog() {
-  const screen = $('reward-screen'), box = screen.querySelector('.reward-bottom'), skip = $('reward-skip');
+  const screen = $('reward-screen'), box = screen.querySelector('.reward-bottom');
   if (!screen.querySelector(':is(.center-room, .event-room)')) return;
   const foot = parseFloat(screen.style.getPropertyValue('--counter-foot')) || 0;
-  const floor = skip.offsetHeight ? skip.getBoundingClientRect().top : screen.getBoundingClientRect().bottom;   // Team Rocket has no Leave
+  const floor = $('room-bar').getBoundingClientRect().top;
   const room = floor - 8 - box.offsetHeight - (foot + 12);
   screen.style.setProperty('--log-lift', `${Math.max(0, -room)}px`);
 }
@@ -2085,8 +2085,7 @@ function fitMart() {
   const shop = document.querySelector('#reward-options.mart-window');
   if (!shop) return;
   const before = shop.style.zoom;
-  const note = document.querySelector('.fan-note')?.offsetHeight || 0;   // the fan note may scroll away under the page
-  const fits = (zoom) => { shop.style.zoom = zoom; return document.documentElement.scrollHeight - note <= innerHeight; };
+  const fits = (zoom) => { shop.style.zoom = zoom; return document.documentElement.scrollHeight <= innerHeight; };
   if (!fits('')) {
     let [lo, hi] = [0.6, 1];   // the largest zoom that fits, to within 1%: the layout doesn't shrink in step with it
     while (hi - lo > 0.01) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }

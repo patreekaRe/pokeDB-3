@@ -126,7 +126,7 @@ let hpSource = () => null;
 export function trackHp(source) { hpSource = source; }
 export function showChoiceHp() {
   const hp = hpSource();
-  if (hp) setHpBar('choice', hp.hp, hp.maxHp);
+  if (hp) { setHpBar('choice', hp.hp, hp.maxHp); setHpBar('room', hp.hp, hp.maxHp); }
 }
 
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false }) {
@@ -184,6 +184,9 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   }
 
   const skip = $('reward-skip');
+  // a room standing in its scene (an event, the Center) has the slim bar along the bottom, and Leave is its button
+  if (/\b(event|center)-room\b/.test(layout)) $('room-keys').prepend(skip);
+  else $('reward-reroll').after(skip);
   skip.hidden = !onSkip;
   skip.style.visibility = '';   // the treasure room hides it this way while a relic flies to the Bag
   $('reward-skip-text').textContent = skipLabel;

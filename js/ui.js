@@ -422,4 +422,5 @@ export function upgradeBurst(node) {
 /** Show the run's Pokédollars in the top bar (it's only visible on the run screens). */
 export function setMoney(amount) {
   $('money-value').textContent = String(amount);
+  $('room-money').textContent = String(amount);
 }

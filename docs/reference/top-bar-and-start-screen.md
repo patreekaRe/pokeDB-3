@@ -111,7 +111,7 @@ an "All rules" fold-out (with the next level's lock); `#sel-deck` fans the start
 saved run) and Back / Escape return to the portraits (`showSelect()` clears it). A Game Corner purchase refreshes it
 (`refreshSelect()` on the shop's `close`). Phones stack it (Pokémon, panel, Back / Choose, tabs, strip, which scrolls
 sideways); ≥900px wide it's StS's layout (the Pokémon right, the panel left, Back / Choose on the sides, the strip centred at
-the bottom). The page's footer note hides here.
+the bottom).
 
 **Collection** (`#collection-screen`): since 2026-10-05 a red handheld device (`js/device.js`) whose home screen
 (`js/collection.js`) is the owner's ID strip and a 3x3 grid of apps with their counts; CLAUDE.md's Dialogs note has the
