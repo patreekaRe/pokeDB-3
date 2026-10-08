@@ -1,6 +1,6 @@
 /* The walkable Clearing over the title (js/hub-3d.js): its canvas covers the sky and the signs (which stay under it as the
-   fallback), under the logo and the corner keys. Each place has a wooden name tag over it, popping up as you walk near; standing at its door, a card
-   along the bottom says what it is and opens it. */
+   fallback), under the logo and the corner keys. A Pokédex strip along the bottom holds the keys for the place you walk near; standing at its door, a card
+   along the bottom says what it is. */
 
 .hub { position: absolute; inset: 0; z-index: 1; animation: hubIn 0.5s ease-out; }
 @keyframes hubIn { from { opacity: 0; } }
@@ -15,29 +15,46 @@
 .title-screen.hub-on .title-big { font-size: clamp(2.2rem, 10vw, 4.4rem); }
 
 
-.hub-tags { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.hub-tag {
-  position: absolute; left: 0; top: 0; transform: translate(-50%, -100%);
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 12px; border: 1.5px solid rgba(62, 30, 12, 0.85); border-radius: 999px;
-  background: linear-gradient(#d8964e, #b0682c 55%, #96541f);
-  box-shadow: inset 0 1px 0 rgba(255, 228, 180, 0.7), 0 3px 8px rgba(0, 0, 0, 0.35);
-  color: #fff8e6; font: 700 0.78rem/1 var(--font); letter-spacing: 0.02em; white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(62, 30, 12, 0.8);
-  pointer-events: none; cursor: pointer; opacity: 0; scale: 0.4;
-  transition: scale 0.22s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.15s ease;
-  will-change: translate;
+/* the Pokédex strip beside the corner handheld: what the place you walk up to does, as keys (js/hub-3d.js's placeBar()) */
+.hub-bar {
+  position: absolute; left: calc(max(14px, env(safe-area-inset-left)) + 66px); right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom)); height: 52px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; border-radius: 12px;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep), 0 6px 14px rgba(0, 0, 0, 0.4);
+  animation: hubDexIn 0.35s ease-out;
 }
-/* a tag pops up only once your partner walks near its place */
-.hub-tag.show { pointer-events: auto; opacity: 1; scale: 1; }
-.hub-tag.locked { background: linear-gradient(#8a8a92, #6a6a70 55%, #55555c); border-color: rgba(42, 42, 48, 0.85); text-shadow: 0 1px 2px rgba(42, 42, 48, 0.8); }
-.hub-tag-lock { width: 11px; height: 11px; }
-.hub-tag.show.near { scale: 1.15; }
-.hub-tag:not(.locked).near { background: linear-gradient(#f0b060, #d88838 55%, #b86a22); }
-@media (hover: hover) { .hub-tag.show:hover { scale: 1.1; } }
+.hbar-lights { display: flex; align-items: center; gap: 4px; flex: none; }
+.hbar-lens {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; margin-right: 2px;
+  background: radial-gradient(circle at 35% 30%, #e6f8ff 0 12%, #5ec8ff 30%, #1f78c8 80%);
+  box-shadow: 0 0 0 1px var(--shell-rim);
+}
+.hbar-lights i { width: 7px; height: 7px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 0 1px var(--shell-rim); }
+.hbar-lights i:nth-of-type(2) { background: #ffd84a; }
+.hbar-lights i:nth-of-type(3) { background: #6be36b; }
+/* three keys (the trail with a saved run) need the room the lights take, on a phone */
+@media (max-width: 459px) { .hub-bar.full .hbar-lights i { display: none; } }
+.hbar-keys { flex: 1; min-width: 0; display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+.hbar-keys.hbar-pop { animation: hbarPop 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes hbarPop { from { opacity: 0; scale: 0.85; } }
+.hbar-key {
+  display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 8px 12px; cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0.45); border-radius: 999px; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  font: 700 0.82rem/1 var(--font); white-space: nowrap;
+}
+.hbar-key span { overflow: hidden; text-overflow: ellipsis; }
+.hbar-key:active { translate: 0 2px; box-shadow: none; }
+.hbar-key.gold { background: linear-gradient(#ffe878, #f4c430); color: #3a2a00; }
+.hbar-key.green { background: linear-gradient(#8ef08a, #3cc04a); color: #0c3a12; }
+.hbar-key.grey { background: linear-gradient(#f0f0f4, #c8c8d0); color: #33333c; }
+.hbar-key.locked { background: linear-gradient(#9a9aa2, #6a6a70); color: #fff; }
+.hbar-lock { width: 11px; height: 11px; }
+.hub-bar.full .hbar-key { padding: 8px 9px; font-size: 0.76rem; }
+@media (hover: hover) { .hbar-key:hover { filter: brightness(1.08); } }
 
 .hub-card {
-  position: absolute; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); translate: -50% 0;
+  position: absolute; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 62px); translate: -50% 0;
   width: min(360px, calc(100% - 32px)); padding: 12px 14px; box-sizing: border-box;
   border: 3px solid #2a2a3a; border-radius: 10px; background: #fff8e8; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
   color: #2a2a3a; text-align: left; animation: hubCard 0.2s ease-out;
@@ -46,9 +63,6 @@
 @keyframes hubCard { from { opacity: 0; translate: -50% 10px; } }
 .hub-card-name { display: block; font: 0.85rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
 .hub-card-line { margin: 6px 0 0; font-size: 0.9rem; line-height: 1.35; }
-.hub-card-btns { display: flex; gap: 8px; margin-top: 10px; }
-.hub-card-btns:empty { display: none; }
-.hub-card-btns .btn { flex: 1; }
 .hub-card.locked { background: #eeeae4; }
 
 .hub-help {
@@ -60,7 +74,7 @@
 .hub-help:active { translate: 0 2px; box-shadow: none; }
 .hub-fps { position: absolute; right: 60px; top: 18px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #8f8; font: 12px/1.2 monospace; }
 
-@media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hub-tag { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hbar-keys.hbar-pop, .hub-bar { animation: none; } }
 
 /* the logo greets the hub, then fades so it never hides the Ancient Tree's tag */
 .title-screen.hub-on .title-center { animation: hubLogo 3.6s ease-in forwards; }
@@ -116,12 +130,12 @@
 .hdx-led { position: absolute; right: 7px; bottom: 7px; width: 7px; height: 7px; border-radius: 50%; background: #6a1e22; box-shadow: inset 0 0 0 1px var(--shell-deep); }
 /* something new in it (a badge, a find): the LED blinks, like the title's "!" */
 .hub-dex.news .hdx-led { background: #ff5a5a; animation: tdxStandby 1.2s ease-in-out infinite; }
-/* on a phone the place's card sits above it rather than over it */
-@media (max-width: 559px) { .hub-card { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 84px); } }
+/* on a phone the place's card sits above the handheld too */
+@media (max-width: 559px) { .hub-card { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 84px); } }
 @media (prefers-reduced-motion: reduce) { .hub-dex, .hub-dex.news .hdx-led { animation: none; } }
 
-/* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and tags wait for the partner to walk in */
-.hub.held .hub-dex, .hub.held .hub-help, .hub.held .hub-version, .hub.held .hub-tags, .hub.held .hub-card { visibility: hidden; }
+/* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and bar wait for the partner to walk in */
+.hub.held .hub-dex, .hub.held .hub-help, .hub.held .hub-version, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }
 .hub.held .hub-view { pointer-events: none; }
 /* the hub is the title from the first frame, so the old pixel sky, its light and the signs never show under it */
 .title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
