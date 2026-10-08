@@ -1779,3 +1779,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (`homeKey()` in `js/main.js`, round, shell colours, a house), a little bigger (38px), instead of the square red button.
 - **R3. No PokéCoins on the room bar** (2026-10-07, the user's ask): `.room-lcd` shows HP and ₽ only; coins stay on the
   Game Corner and the device.
+- **R4. One ₽ on a normal run's map** (2026-10-07, the user's ask): the run card's `#run-money` (a climb's, which has no
+  top bar ₽) showed on every map because the later `.room-cash` rule beat `.run-money { display: none }`; now
+  `.room-cash.run-money`, so a normal map keeps only the top bar's pill.
