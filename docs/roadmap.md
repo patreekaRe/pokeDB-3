@@ -117,13 +117,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   both, the base in 3D and the Clearing hub.** Sessions, in order, all on `secret-base`, all Run in: LOCAL (Desktop app):
   1. ~~The base in 3D for real~~ done 2026-10-08 (`docs/roadmap-done.md`): `?base` is the 3D room, decorated in place.
   2. ~~Safari Pokémon living in it~~ done 2026-10-08 (`docs/roadmap-done.md`).
-  3. **The Clearing as a walkable hub, part a**: after PRESS START, your partner stands in a small 3D Clearing (pixel
-     blocks and billboards in the Clearing's palette, its trees and the Ancient Tree's roots), and walks up to the
-     places instead of tapping the title's signs: the trail out (New game / Continue), the Safari gate, the Sky Pillar,
-     the Sealed Gate once broken, the Secret Base's door, a Pokédex stand. Each opens what its sign opens today. The
-     signs stay as the fallback (no WebGL, or a Settings switch), and the device boots as now.
-  4. **The hub, part b**: its light (dawn / day / dusk / night, fireflies, the hybrid's glows), the flyers crossing its
-     sky, a walk from the hub into the base, sounds. Then the user decides if it goes live.
+  3. ~~The Clearing as a walkable hub, part a~~ done 2026-10-08 (`docs/roadmap-done.md`): `js/hub-3d.js` after PRESS
+     START, the signs as Settings' Title screen: Signs.
+  4. **The hub, part b**: its light (dawn / day / dusk / night, fireflies, the hybrid's glows: the Ancient Tree's lantern,
+     the Pokédex's screen, the Sky Pillar's door), the flyers crossing its sky, a walk from the hub into the base (today the
+     door opens it straight, and its ✕ reloads onto the title), sounds (footsteps, the Clearing's ambience). Also from part
+     a: the saved run's Escape Rope isn't on the hub (Settings' Abandon run covers it only during a run), and the patch
+     notes' version tag fades with the logo. Then the user decides if it goes live.
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s

@@ -1820,3 +1820,17 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   sleeper (`cheer()`). Taps on any Pokémon only count on its sprite's pixels (`onSprite()`), so a big billboard's empty
   corners no longer swallow a tap meant for the floor. Moving furniture drops anyone off a seat that went (`settleGuests()`).
   Playtest `?base&guests` lends every Safari Pokémon as caught for that page load. 50+ fps at 390x844 with 6 guests.
+- **The Clearing as a walkable hub, part a** (2026-10-08, branch `secret-base` only, session 3 of the walkable 3D plan):
+  after PRESS START your partner stands in a small 3D Clearing over the title (`js/hub-3d.js`, inside `#title-screen` at
+  z-index 1, under the logo, which fades after a beat, and the corner keys; `css/hub.css`). A 13x12 tile grid in a ring of
+  instanced billboard trees, all painted in code in the Clearing's day colours: meadow ground with dirt paths and a plaza,
+  the Ancient Tree with the Secret Base's door in its roots, the Safari Zone's gate (a rope across it while shut), the
+  Sky Pillar (a stone block 12 tall), the broken Sealed Gate (`makeGate()` repainted live; trees stand there until it
+  breaks), a Pokédex stand and the trail out by a signpost. A wooden tag hangs over each (grey with a lock while shut);
+  tapping a place or its tag walks there and opens it (`goTo(p, true)`), plain walking onto a doorstep shows its card
+  (name, a line, its buttons: the trail's Continue / New game, the Safari's Enter / Ranks), arrow keys step, Enter opens.
+  Each opens what its sign opened (`openHub()` in `js/title.js` hands it the title's actions; the base's door is
+  `onBase` in `js/main.js`). The signs stay underneath as the fallback (no WebGL, Three.js offline) and as Settings'
+  Display > Title screen: Walk / Signs (`titleHub`, kept by a reset; `?signs` for one page load, `?walk` sets it). What the
+  base and the hub share (Three.js loading, pixel textures, GIF frames on a billboard, the tilt-shift + bloom pass) moved
+  into `js/hd2d.js`. 80+ fps in the pane at 375x812; phone check is the user's.

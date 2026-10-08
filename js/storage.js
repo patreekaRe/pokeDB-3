@@ -262,7 +262,7 @@ export function countDex(id) {
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
 const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed',
-  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName'];
+  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName'];
 
 export function resetSave() {
   const kept = Object.fromEntries(PREF_KEYS.filter(k => k in data).map(k => [k, data[k]]));

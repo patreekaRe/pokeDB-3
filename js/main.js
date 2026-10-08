@@ -188,6 +188,7 @@ function init() {
   // Playtest shortcut (the user's ask): opening the game with ?levels unlocks every Trainer Level for good.
   const query = new URLSearchParams(location.search);
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
+  if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('safari')) updateSave(d => { d.safariPass = true; });
@@ -283,6 +284,8 @@ function init() {
     onBoard: () => openLeaderboard(),
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
+    // the hub's door in the Ancient Tree (js/hub-3d.js); the base's ✕ reloads onto the title
+    onBase: () => { leaveTitle(); import('./base-3d.js').then(m => m.openBase3d()); },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {

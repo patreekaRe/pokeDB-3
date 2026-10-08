@@ -12,15 +12,12 @@ import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
-import { spriteFit } from './data/sprite-fit.js';
-import { decodeGif } from './gif-frames.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt } from './secret-base.js';
 
-const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const PX = 1 / T;          // furniture: one painted pixel
-const MON_PX = 1 / 32;     // Pokémon GIFs are drawn at twice the furniture's detail
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
@@ -40,7 +37,7 @@ const LIGHT = {
 };
 
 let THREE, renderer, scene, camera, root, view, hud;
-let rt, bloomA, bloomB, quad, quadCam, mats;
+let post;
 let hemi, sun, lampLights = [], winMats = [], shafts = [], motes = [], ring;
 let roomGroup, pieceGroup, ghost, foot, selBox;
 let mon, walker = { x: 0, z: 0, path: [], facing: 'front', flip: false, hop: 0 };
@@ -53,29 +50,6 @@ let guests = [], puffs = [], puffTex = {};   // the Safari Pokémon on show, and
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
 
-function tex(canvas) {
-  const t = new THREE.CanvasTexture(canvas);
-  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter;
-  t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
-
-function crop(src, x, y, w, h) {
-  const c = new OffscreenCanvas(w, h);
-  c.getContext('2d').drawImage(src, x, y, w, h, 0, 0, w, h);
-  return c;
-}
-
-/** The painting cut to its opaque pixels, with where that box sat. */
-function trim(src) {
-  const { width: w, height: h } = src, d = src.getContext('2d').getImageData(0, 0, w, h).data;
-  let x0 = w, y0 = h, x1 = -1, y1 = -1;
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 8) {
-    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
-  }
-  if (x1 < 0) return { c: src, x: 0, y: 0, w, h };
-  return { c: crop(src, x0, y0, x1 - x0 + 1, y1 - y0 + 1), x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
-}
 
 /** Only the pixels in these colours, for an emissive map: a window's sky, a lamp's shade. */
 function mask(src, colours) {
@@ -90,13 +64,6 @@ function mask(src, colours) {
 const solid = (hex) => new THREE.MeshStandardMaterial({ color: hex, roughness: 0.95 });
 const shade = (hex, k) => '#' + new THREE.Color(hex).multiplyScalar(k).getHexString();
 
-function dispose(group) {
-  group.traverse(o => {
-    o.geometry?.dispose();
-    for (const m of [o.material].flat()) if (m) { m.map?.dispose(); m.emissiveMap?.dispose(); m.dispose(); }
-  });
-  group.clear();
-}
 
 /* ---------- the room and its pieces, rebuilt whenever the layout changes ---------- */
 
@@ -349,80 +316,11 @@ function act(kind) {
   refresh();
 }
 
-/* ---------- the partner: GIF frames on a billboard ---------- */
-
-/** Every frame of a GIF with its delay: ImageDecoder where there is one, else js/gif-frames.js (iPhone Safari). */
-async function gifFrames(src) {
-  try {
-    const res = await fetch(src);
-    if (!res.ok) return null;
-    const data = await res.arrayBuffer();
-    if (typeof ImageDecoder === 'function' && !new URLSearchParams(location.search).has('gifjs')) {
-      const dec = new ImageDecoder({ data, type: 'image/gif' });
-      await dec.tracks.ready;
-      const frames = [];
-      for (let i = 0; i < dec.tracks.selectedTrack.frameCount; i++) {
-        const { image } = await dec.decode({ frameIndex: i });
-        const ms = (image.duration ?? 0) / 1000;
-        frames.push({ bmp: await createImageBitmap(image), ms: ms < 20 ? 100 : ms });
-        image.close();
-      }
-      dec.close();
-      if (frames.length) return frames;
-    }
-    const frames = decodeGif(data);
-    return frames.length ? frames : null;
-  } catch { return null; }
-}
-
-/** A Pokémon on a billboard: the partner (front and back GIFs), or a Safari guest (`{ src, name, cry }`, front only). */
+/** A Pokémon on a billboard in the room: the partner (front and back GIFs), or a Safari guest (front only). */
 async function makeMon(mate = partner(getSave()), back = true) {
-  const front = mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif');
-  const [ff, bf] = await Promise.all([gifFrames(front), back && backSrc !== front ? gifFrames(backSrc) : null]);
-  const sheets = { front: { frames: ff || [] } };
-  if (bf) sheets.back = { frames: bf };
-  const first = ff?.[0].bmp;
-  const w = first?.width || 96, h = first?.height || 96;
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const t = tex(c);
-  const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
-  const board = new THREE.Mesh(new THREE.PlaneGeometry(w * MON_PX, h * MON_PX), m);
-  board.castShadow = true;
-  const [top, bottom, left, right] = spriteFit(front);
-  board.geometry.translate((right - left) / 2 * MON_PX, (h / 2 - bottom) * MON_PX, 0);
-  const blob = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.28, depthWrite: false }));
-  blob.rotation.x = -Math.PI / 2;
-  blob.position.y = 0.011;
-  blob.raycast = () => {};
-  const group = new THREE.Group();
-  group.add(board, blob);
-  scene.add(group);
-  return {
-    group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0,
-    id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * MON_PX,
-  };
-}
-
-/** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */
-function drawMon(m, w, dt) {
-  const s = m.sheets[w.facing] || m.sheets.front;
-  if (!s.frames.length) return;
-  m.clock += w.sleeping ? dt / 3 : dt;
-  const f = s.frames[m.frame % s.frames.length];
-  if (m.clock >= f.ms) { m.clock = 0; m.frame = (m.frame + 1) % s.frames.length; }
-  const now = s.frames[m.frame % s.frames.length];
-  if (m.shown !== now) { m.g.clearRect(0, 0, m.c.width, m.c.height); m.g.drawImage(now.bmp, 0, 0); m.t.needsUpdate = true; m.shown = now; }
-}
-
-/** Whether a ray's hit on a billboard landed on the sprite itself, a few pixels' slack round it, not its empty corners. */
-function onSprite(hit) {
-  const m = hit.object.userData.who?.mon;
-  if (!m || !hit.uv) return true;
-  const x = Math.round(hit.uv.x * m.c.width), y = Math.round((1 - hit.uv.y) * m.c.height);
-  const d = m.g.getImageData(Math.max(0, x - 4), Math.max(0, y - 4), 9, 9).data;
-  for (let i = 3; i < d.length; i += 4) if (d[i] > 8) return true;
-  return false;
+  const m = await monBoard(mate, back);
+  scene.add(m.group);
+  return m;
 }
 
 /* ---------- walking ---------- */
@@ -855,71 +753,8 @@ function setTime(force) {
   for (const s of shafts) s.material.opacity = L.shaft;
   for (const d of motes) d.material.opacity = L.motes;
   scene.background = new THREE.Color(L.bg);
-  mats.final.uniforms.uBg.value.set(L.bg);
 }
 
-/* ---------- post: tilt-shift and bloom, one small pass chain ---------- */
-
-const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
-
-function makePost() {
-  const bright = new THREE.ShaderMaterial({
-    uniforms: { tScene: { value: null }, uCut: { value: 0.9 } },
-    vertexShader: VERT,
-    fragmentShader: `uniform sampler2D tScene; uniform float uCut; varying vec2 vUv;
-      void main() { vec3 c = texture2D(tScene, vUv).rgb; float l = max(c.r, max(c.g, c.b));
-        gl_FragColor = vec4(c * smoothstep(uCut, uCut + 0.2, l), 1.0); }`,
-  });
-  const blur = new THREE.ShaderMaterial({
-    uniforms: { tIn: { value: null }, uDir: { value: new THREE.Vector2() } },
-    vertexShader: VERT,
-    fragmentShader: `uniform sampler2D tIn; uniform vec2 uDir; varying vec2 vUv;
-      void main() { vec3 c = texture2D(tIn, vUv).rgb * 0.227;
-        c += (texture2D(tIn, vUv + uDir * 1.385).rgb + texture2D(tIn, vUv - uDir * 1.385).rgb) * 0.316;
-        c += (texture2D(tIn, vUv + uDir * 3.231).rgb + texture2D(tIn, vUv - uDir * 3.231).rgb) * 0.070;
-        gl_FragColor = vec4(c, 1.0); }`,
-  });
-  const final = new THREE.ShaderMaterial({
-    uniforms: {
-      tScene: { value: null }, tBloom: { value: null }, uRes: { value: new THREE.Vector2() },
-      uFocus: { value: 0.5 }, uBand: { value: 0.16 }, uBlur: { value: 5 }, uBloom: { value: 0.75 }, uBg: { value: new THREE.Color() },
-    },
-    vertexShader: VERT,
-    fragmentShader: `uniform sampler2D tScene; uniform sampler2D tBloom; uniform vec2 uRes;
-      uniform float uFocus; uniform float uBand; uniform float uBlur; uniform float uBloom; uniform vec3 uBg; varying vec2 vUv;
-      void main() {
-        vec2 px = (floor(vUv * uRes) + 0.5) / uRes;
-        vec3 c = texture2D(tScene, px).rgb;
-        float d = clamp((abs(vUv.y - uFocus) - uBand) / (0.5 - uBand), 0.0, 1.0);
-        float r = d * d * uBlur;
-        if (r > 0.15) {
-          vec3 acc = c; float n = 1.0;
-          for (int i = 0; i < 12; i++) {
-            float a = float(i) * 2.39996, k = sqrt((float(i) + 0.5) / 12.0);
-            acc += texture2D(tScene, vUv + vec2(cos(a), sin(a)) * k * r / uRes).rgb; n += 1.0;
-          }
-          c = acc / n;
-        }
-        c += texture2D(tBloom, vUv).rgb * uBloom;
-        vec2 v = vUv - 0.5; c *= 1.0 - dot(v, v) * 0.55;
-        gl_FragColor = vec4(c, 1.0);
-        #include <colorspace_fragment>
-      }`,
-  });
-  mats = { bright, blur, final };
-  quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), final);
-  quad.frustumCulled = false;
-  quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const quadScene = new THREE.Scene();
-  quadScene.add(quad);
-  quad.userData.scene = quadScene;
-}
-
-function pass(material, target) {
-  quad.material = material;
-  renderer.setRenderTarget(target);
-  renderer.render(quad.userData.scene, quadCam);
-}
 
 /* ---------- camera ---------- */
 
@@ -977,17 +812,7 @@ function resize() {
   if (!w || !h) return;
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(w, h, false);
-  // a small scene, scaled up with crisp pixels: about 420 px on the short side
-  const k = Math.min(1, 420 / Math.min(w, h));
-  const sw = Math.round(w * k), sh = Math.round(h * k);
-  rt?.dispose(); bloomA?.dispose(); bloomB?.dispose();
-  rt = new THREE.WebGLRenderTarget(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, samples: 0 });
-  rt.texture.colorSpace = THREE.SRGBColorSpace;
-  const bw = Math.max(1, sw >> 1), bh = Math.max(1, sh >> 1);
-  bloomA = new THREE.WebGLRenderTarget(bw, bh);
-  bloomB = new THREE.WebGLRenderTarget(bw, bh);
-  mats.final.uniforms.uRes.value.set(sw, sh);
-  mats.blur.userData.texel = [1 / bw, 1 / bh];
+  post.size(w, h);
   camera.aspect = w / h;
   fitCamera(w, h);
 }
@@ -1026,20 +851,7 @@ function frame(now) {
   placeCamera(dt, now);
   // the tilt-shift keeps its sharp band on what you're handling: the ghost, the picked piece, else the partner
   const focus = holding && aimAt ? foot.position : selBox.visible ? selBox.box.getCenter(new THREE.Vector3()) : new THREE.Vector3(walker.x, 0.6, walker.z);
-  mats.final.uniforms.uFocus.value = (focus.clone().project(camera).y + 1) / 2;
-
-  renderer.setRenderTarget(rt);
-  renderer.render(scene, camera);
-  mats.bright.uniforms.tScene.value = rt.texture;
-  pass(mats.bright, bloomA);
-  const [tx, ty] = mats.blur.userData.texel;
-  for (let i = 0; i < 2; i++) {
-    mats.blur.uniforms.tIn.value = bloomA.texture; mats.blur.uniforms.uDir.value.set(tx * (i + 1), 0); pass(mats.blur, bloomB);
-    mats.blur.uniforms.tIn.value = bloomB.texture; mats.blur.uniforms.uDir.value.set(0, ty * (i + 1)); pass(mats.blur, bloomA);
-  }
-  mats.final.uniforms.tScene.value = rt.texture;
-  mats.final.uniforms.tBloom.value = bloomA.texture;
-  pass(mats.final, null);
+  post.draw(scene, camera, (focus.clone().project(camera).y + 1) / 2);
 
   if (hud.fps) hud.fps.textContent = `${Math.round(1000 / (fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length))} fps`;
   requestAnimationFrame(frame);
@@ -1085,7 +897,7 @@ export async function openBase3d() {
   root.querySelector('.b3-close').addEventListener('click', () => { location.href = location.pathname; });
 
   try {
-    THREE = await import(THREE_URL);
+    THREE = await loadThree();
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   } catch { return fallBack(); }
   renderer.shadowMap.enabled = true;
@@ -1113,7 +925,7 @@ export async function openBase3d() {
   roomGroup = new THREE.Group(); pieceGroup = new THREE.Group();
   scene.add(ring, foot, selBox, roomGroup, pieceGroup);
 
-  makePost();
+  post = createPost(renderer);
   base = loadBase();
   buildRoom();
   buildPieces();

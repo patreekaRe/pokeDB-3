@@ -32,6 +32,8 @@ import { spriteFit } from './data/sprite-fit.js';
 import { showBadgeNews } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
 import { paintTitleLight, runTitleLight } from './title-light.js';
+import { showHub, hideHub } from './hub-3d.js';
+import { pref } from './prefs.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -128,6 +130,7 @@ export function initTitle(handlers) {
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')) return;
     if (!pressed) return start(e);
+    if (screen.classList.contains('hub-on')) return;   // the hub walks on the keys (js/hub-3d.js)
     const gems = [...screen.querySelectorAll('.gem')];
     const at = gems.findIndex(g => g.classList.contains('on'));
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
@@ -136,6 +139,28 @@ export function initTitle(handlers) {
     if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('.gem, .gem-side, .title-corner, .title-gate, .title-signpost, .title-areas') && gems[at]) { e.preventDefault(); gems[at].click(); }
   });
   addEventListener('resize', () => { if (!screen.hidden) { paint(); sizeGems(); paintLogo(); } });
+  addEventListener('title-hub', () => { if (pressed && !screen.hidden) openHub(); });   // Settings' Title screen
+}
+
+/* The walkable Clearing (js/hub-3d.js) over the sky and signs, where its places open what the signs do; the signs stay
+   under it as the fallback (no WebGL, Three.js offline) and for Settings' Title screen: Signs, or ?signs. */
+const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).has('signs');
+
+function openHub() {
+  if (!useHub()) return hideHub();
+  const mewtwo = STARTERS_BY_ID.mewtwo;
+  showHub($('title-screen'), {
+    savedRun: actions.savedRun,
+    onContinue: (run) => actions.onContinue(run.saved),
+    onNewGame: actions.onNewGame,
+    onCollection: actions.onCollection,
+    onHelp: actions.onHelp,
+    onSafari: actions.onSafari,
+    onBoard: actions.onBoard,
+    onTower: actions.onTower,
+    onGate: () => { playCry(mewtwo.line[0].id); actions.onGate(mewtwo); },
+    onBase: actions.onBase,
+  });
 }
 
 /** The first time: PRESS START. Resolves once it's pressed and the menu is up. */
@@ -152,6 +177,7 @@ export function showHome() {
   playMusic('title');   // the overlay doesn't go through showScreen(), so a run's map or battle track would play on
   open();
   renderMenu();
+  openHub();
 }
 
 /** Leave the title for another screen: it fades while that screen comes in under it. */
@@ -240,6 +266,7 @@ function reveal() {
   screen.classList.add('menu');
   if (!$('title-dex').classList.contains('away')) $('title-dex').classList.add('gone');
   renderMenu();
+  openHub();
   showTitle.done?.();
   showTitle.done = null;
 }

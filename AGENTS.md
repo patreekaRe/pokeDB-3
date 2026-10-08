@@ -12,6 +12,11 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-08: **The Clearing as a walkable 3D hub, part a** (Desktop app, branch `secret-base` only, not on main): after
+  PRESS START the partner walks a small HD-2D Clearing (`js/hub-3d.js`) to the trail out, Safari gate, Sky Pillar, Sealed
+  Gate, the Secret Base's door in the Ancient Tree and a Pokédex stand, each opening what its title sign did; the signs are
+  the fallback and Settings' Title screen. Shared HD-2D code in `js/hd2d.js`. Next: session 4, the hub's part b (LOCAL).
+
 - 2026-10-08: **Hybrid by default, name on the Trainer Card** (Desktop app, pushed): Settings → Display → Scenery
   (Hybrid / Pixel, the save's `scenery`); the card's NAME is tappable to edit.
 - 2026-10-08: **Power-on title and the rename** (Desktop app, pushed): the game is Poké Deckbound; the title opens on a
