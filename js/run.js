@@ -1227,7 +1227,8 @@ async function fight(node) {
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
   intro?.();
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
-  if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));   // Sudden Death
+  if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
+  if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
   if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);

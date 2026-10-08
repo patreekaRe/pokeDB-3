@@ -212,3 +212,25 @@ the source of truth for names and numbers; the tables below are the first list, 
 - **Badges** (Sky Pillar group): Augmenter (25 different), Augment Dex (every one), Set (3 of a set in a climb), Set Master
   (every set), Prism (clear floor 90 holding 3 Prismatics), Devil's Bargain (clear floor 50 holding 3 trade-offs). They read
   `save.tower.augDex`, `sets`, `prismFloor` and `tradeFloor`.
+
+## Tuning (2026-10-08, bot-checked)
+
+Human bot on full 100-floor climbs, the bot picking augments by measured value (pokeDB-sim's `sim/augranks.json`: floors
+gained by a 4-flight climb holding only that augment). Every type already reached floor 100 sometimes; the problems were one
+augment always taken and seven never. Changes, each re-measured before the climbs:
+
+| Augment | Was | Now |
+|---|---|---|
+| Siphon | Heal 2 per attack (taken 99% when offered) | Heal 1 |
+| Vampire | Heal 15% of attack damage | 10% |
+| Pacifist | Block x2, Thorns 5 | Block x1.75, Thorns 3 |
+| Bulwark | Block 25% of attack damage | 20% |
+| Berserker | +3 strength; cards give no block | +4 strength; cards that give block give 1 less |
+| Speed Demon | +1 PP; enemies act twice on turn 1 | +1 PP; every enemy attack deals 2 more (`hitReduce: -2`) |
+| Sudden Death | Guardians half HP; no healing in fights | Every enemy -25% HP; -25% max HP (`enemyHp`) |
+| Overclock | +2 PP; draw 2 fewer | +2 PP; draw 1 fewer after turn 1 |
+| Pandemonium | Draw 3 more; -1 HP per card left in hand | +2 PP and draw 1 more; -1 HP per card left |
+| Gambler | All damage x2 or x0.5, both ways | Your attacks x3 or x0.75 (`gambler: [3, 0.75]`); enemies unchanged |
+
+Guardian-only upsides measure close to nothing (the bot dies on landings, not guardians), so Sudden Death became an all-foes
+trade. Gambler's old halving lost the fight it landed on early in a climb, hence the softer tails.
