@@ -72,7 +72,7 @@
 }
 .hub-card-btn.go { background: linear-gradient(#ffe066, #f5b82e); }
 .hub-card-btn:active { translate: 0 3px; box-shadow: none; }
-/* asked, the card is the Pokédex's shell holding just its two keys: Continue the light LCD key, New game a shell key */
+/* asked, the card is the Pokédex's shell holding just its two keys: Continue the bar's gold pill, New game a shell key */
 .hub-card.ask {
   width: min(300px, calc(100% - 32px)); padding: 10px; border: 0; border-radius: 18px;
   background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
@@ -85,7 +85,8 @@
   box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
 }
 .hub-card.ask .hub-card-btn.go {
-  background: #d6e8b8; color: #1f3a14; text-shadow: none; box-shadow: inset 0 0 0 2px #1f3a14, 0 3px 0 var(--shell-deep);
+  background: linear-gradient(#ffe066, #f5b82e); color: #2a2a3a; text-shadow: none;
+  box-shadow: inset 0 0 0 2px #2a2a3a, 0 3px 0 var(--shell-deep), 0 0 10px rgba(255, 216, 80, 0.55);
 }
 .hub-card.ask .hub-card-btn:active { box-shadow: inset 0 0 0 2px var(--shell-rim); }
 
