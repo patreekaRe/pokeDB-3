@@ -139,14 +139,7 @@ export function makeCard(card, options = {}) {
   const art = card.sprite ? cardSprite(card) : el('div', 'card-art', card.art);
   const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
   const text = el('p', 'card-text');
-  const words = keywords(card);
-  const kw = ([label, tip]) => { const k = el('b', 'card-kw', `${label}.`); k.title = tip; return k; };
-  // one wrapper, since .card-text is a grid and would give each piece its own row
-  const line = el('span');
-  line.append(...words.lead.flatMap(w => [kw(w), ' ']), ...colourTerms(describe(card, options.stage || 0), card), ...words.tail.flatMap(w => [' ', kw(w)]));
-  const tips = termTips(card);
-  if (tips.length) line.title = tips.join(' ');
-  text.append(line);
+  text.append(cardLine(card, options.stage || 0));
 
   // The outer .card sets the size; the inner .card-face is what you see.
   // (Text inside sizes itself from the card's width, see cards.css.)
@@ -163,6 +156,58 @@ export function makeCard(card, options = {}) {
 
   if (options.count > 1) node.append(el('span', 'in-deck', `×${options.count}`));
   fitWatch.observe(node);
+  return node;
+}
+
+function cardLine(card, stage) {
+  const words = keywords(card);
+  const kw = ([label, tip]) => { const k = el('b', 'card-kw', `${label}.`); k.title = tip; return k; };
+  // one wrapper, since .card-text is a grid and would give each piece its own row
+  const line = el('span');
+  line.append(...words.lead.flatMap(w => [kw(w), ' ']), ...colourTerms(describe(card, stage), card), ...words.tail.flatMap(w => [' ', kw(w)]));
+  const tips = termTips(card);
+  if (tips.length) line.title = tips.join(' ');
+  return line;
+}
+
+/** An upgraded card's preview (PP Up): what changed from `base` turns green, StS's upgrade preview. The words are
+    diffed in order (their longest common run), so a new clause or keyword lights up whole and a number that moved
+    lights up alone. */
+export function markUpgrade(node, base, stage = 0) {
+  const cost = node.querySelector('.card-cost');
+  if (typeof base.cost === 'number' && Number(cost.textContent) < base.cost) {
+    cost.classList.add('cheaper');
+    cost.title = `Costs ${cost.textContent} energy (was ${base.cost})`;
+  }
+  const words = (root) => {
+    const out = [];
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let t = walk.nextNode(); t; t = walk.nextNode()) {
+      for (const m of t.data.matchAll(/\S+/g)) out.push({ t, at: m.index, end: m.index + m[0].length, w: m[0] });
+    }
+    return out;
+  };
+  const was = words(cardLine(base, stage)).map(x => x.w);
+  const now = words(node.querySelector('.card-text'));
+  const lcs = now.map(() => new Array(was.length + 1).fill(0));
+  lcs.push(new Array(was.length + 1).fill(0));
+  for (let i = now.length - 1; i >= 0; i--) {
+    for (let j = was.length - 1; j >= 0; j--) {
+      lcs[i][j] = now[i].w === was[j] ? lcs[i + 1][j + 1] + 1 : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+    }
+  }
+  const changed = [];
+  for (let i = 0, j = 0; i < now.length;) {
+    if (j < was.length && now[i].w === was[j]) { i++; j++; } else if (j < was.length && lcs[i][j + 1] >= lcs[i + 1][j]) j++;
+    else changed.push(now[i++]);
+  }
+  // back to front, so wrapping one word never moves the offsets of the ones before it in the same text node
+  for (const x of changed.reverse()) {
+    const range = document.createRange();
+    range.setStart(x.t, x.at);
+    range.setEnd(x.t, x.end);
+    range.surroundContents(el('span', 'up-diff'));
+  }
   return node;
 }
 

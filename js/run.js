@@ -40,7 +40,7 @@ import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -774,7 +774,7 @@ function tutorNotes() {
   const left = run.tutorLeft;
   upgradeMove(() => { run.tutorLeft = 0; showMap(); }, () => { run.tutorLeft -= 1; showMap(); }, {
     title: 'Move Tutor Notes',
-    sub: [`Your Move Tutor Notes! Pick a move to PP Up before you set out${left > 1 ? ` (${left} to go)` : ''}.`, 'Tap one to see it upgraded.'],
+    sub: [`Your Move Tutor Notes! Pick a move to PP Up before you set out${left > 1 ? ` (${left} to go)` : ''}.`, 'What changes is in green.'],
     skipLabel: 'Skip',
   });
 }
@@ -854,7 +854,7 @@ function takeAugment(aug, then = showMap) {
     next();
   });
   for (let i = 0; i < (aug.forget || 0); i++) steps.push(next => (run.deck.length > MIN_DECK ? forgetMove(next, next) : next()));
-  if (aug.upgradePick) steps.push(next => upgradeMove(next, next, { title: aug.name, sub: ['Pick a move to PP Up for the rest of the climb.', 'Tap one to see it upgraded.'], skipLabel: 'Skip' }));
+  if (aug.upgradePick) steps.push(next => upgradeMove(next, next, { title: aug.name, sub: ['Pick a move to PP Up for the rest of the climb.', 'What changes is in green.'], skipLabel: 'Skip' }));
   if ((aug.riskyClimb || aug.noCenters) && run.current == null) steps.push(next => {   // taken before the flight's first door: it's dealt again
     reseed(`biome:${zone()}`);
     startFlight(true);
@@ -906,7 +906,7 @@ function noteAugments() {
 /** Training Day: after every guardian, PP Up a move of your choice. `train` is saved, so a refresh asks again. */
 function trainingDay() {
   const done = () => { run.tower.train = false; showMap(); };
-  upgradeMove(done, done, { title: 'Training Day', sub: ['Training Day: pick a move to PP Up.', 'Tap one to see it upgraded.'], skipLabel: 'Skip' });
+  upgradeMove(done, done, { title: 'Training Day', sub: ['Training Day: pick a move to PP Up.', 'What changes is in green.'], skipLabel: 'Skip' });
 }
 
 /** After a won fight on the climb: Field Medic's heal, Recycler's PP Ups, Speedrunner's prize and Bloodlust's count. */
@@ -2107,21 +2107,25 @@ function martPc(text, hint) {
   return pc;
 }
 
-/** PP Up (StS's Smith): pick a card to upgrade for the rest of the run; it saves as its `<id>+`. The blown-up
-    card shows the upgraded version, so you see what you get before you confirm. */
-function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a move to power up for the rest of the run. Tap one to see it upgraded.', skipLabel = 'Back' } = {}) {
+/** PP Up (StS's Smith): pick a card to upgrade for the rest of the run; it saves as its `<id>+`. The grid already
+    shows every card upgraded, what changes in green (`markUpgrade()`), and the blown-up one sits beside the card as it
+    is now, so nothing needs tapping in and out to compare (roadmap E, 2026-10-07). */
+function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a move to power up for the rest of the run. What changes is in green.', skipLabel = 'Back' } = {}) {
   showChoice({
     title,
     sub,
     options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => canUpgrade(card)).map(({ card, count }) => {
       const better = CARDS_BY_ID[upgradeId(card.id)];
+      const option = cardOption(better, run.stage, () => {
+        run.deck.splice(run.deck.indexOf(card.id), 1, better.id);
+        tell(`${card.name} became ${better.name}!`);
+        done();
+      }, count);
+      markUpgrade(option.node, card, run.stage);
       return {
-        ...cardOption(card, run.stage, () => {
-          run.deck.splice(run.deck.indexOf(card.id), 1, better.id);
-          tell(`${card.name} became ${better.name}!`);
-          done();
-        }, count),
-        zoom: makeCard(better, { stage: run.stage }),
+        ...option,
+        zoom: markUpgrade(makeCard(better, { stage: run.stage }), card, run.stage),
+        before: makeCard(card, { stage: run.stage }),
         ask: `Upgrade ${card.name}?`,
         confirm: 'PP Up',
         confirmSound: 'stat-up',

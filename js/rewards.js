@@ -197,9 +197,18 @@ function openFocus(option, btn, take) {
   yes.append(el('span', 'pp-pill', option.confirm || 'Choose'));
   yes.type = 'button';
   const layer = el('div', 'card-focus reward-focus');
-  layer.append(withTips(big), ...(option.note ? [el('p', 'focus-note', option.note)] : []), yes);
+  let shown = withTips(big);
+  // `before`: the card as it is now, small on the left of an arrow, so a PP Up shows what it was and what it becomes
+  if (option.before) {
+    const pair = el('div', 'up-pair');
+    const was = option.before.cloneNode(true);
+    was.classList.add('up-before');
+    if (shown === big) shown = pair; else shown.replaceChild(pair, big);
+    pair.append(was, el('span', 'up-arrow', '▶'), big);
+  }
+  layer.append(shown, ...(option.note ? [el('p', 'focus-note', option.note)] : []), yes);
   layer.addEventListener('click', (e) => {
-    if (e.target.closest('.card-tips')) return;
+    if (e.target.closest('.card-tips, .up-before, .up-arrow')) return;
     if (e.target.closest('.focus-card, .focus-confirm')) take(); else backOut();
   });
   const onKey = (e) => {

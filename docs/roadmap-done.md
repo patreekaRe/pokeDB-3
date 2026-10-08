@@ -1754,3 +1754,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `.dev-window`s; the Center / event signs (`.center-label`, its border still the choice's colour), the Hall of Fame plate
   (gold-ringed for the Depths and the summit), the Trainer Card's `.tc-info`, the Safari's `.gem-areas-pop`, `.gem-side`
   and the rope ask are green LCDs in a ring of the shell. The old Index window (`#index-dialog`) is retired: nothing opened it.
+- **D2 closed: the title's run plate, battle stays classic** (2026-10-07): `.title-plate` is a green LCD in a ring of the
+  shell like the rope ask over it (its HP tag and track in LCD ink). The user's call: battle's nameplates, Ability banner,
+  intent bubbles and battle log stay cream, the classic look (the device frames the game; battle is the game).
+- **E. Upgrade preview** (2026-10-07): every PP Up picker (`upgradeMove()`: the Center, Move Tutor Notes, Training Day)
+  shows the cards already upgraded, what changes on a pale green highlight (`markUpgrade()` in `js/ui.js`: an in-order
+  word diff against the base card's text, a cheaper cost green), and the blown-up card sits beside the card as it is now
+  with an arrow (`before` on a `showChoice()` option, `.up-pair` in `css/cards.css`), so nothing needs tapping in and out.

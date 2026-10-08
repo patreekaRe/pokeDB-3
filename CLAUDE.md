@@ -421,7 +421,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
   (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
   bump). Anything counting copies uses `baseId()` (MAX_COPIES, Mart, Day Care, Move Tutor, rewards).
-  `ALL_CARDS` stays base cards only. The Center's third choice is PP Up (see Deck thinning).
+  `ALL_CARDS` stays base cards only. The Center's third choice is PP Up (see Deck thinning). Every PP Up picker
+  (`upgradeMove()`) shows the cards upgraded with what changes highlighted (`markUpgrade()` in `js/ui.js`) and the blown-up
+  one beside the card as it is now (an option's `before`, 2026-10-07).
   **No duplicates in one run** (the user found Fire Lash = Double Hit, 2026-09-28): no two cards a run can meet (its type's
   pool, the neutral pool, its starting deck) may share cost and text. `noOffer: true` keeps a card out of `poolForType()`
   (Block: Grass's starting Defend, which offered doubled Water's Withdraw); Tackle is Pommel Strike (6 + draw 1) and Fire

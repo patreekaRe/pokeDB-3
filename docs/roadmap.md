@@ -10,13 +10,9 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 ## Open, ready to build
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
-- D2. **The last cream: battle** (D's audit, 2026-10-07; groups 1-3 done, see the archive). Left: the nameplates, the
-  Ability banner, intent bubbles, the battle log, probably staying cream (the classic look, the user to decide), and the
-  title's run plate (`.title-plate`, under the rope). `.btn` moves window by window, never globally (the cream `.btn` is
-  still the default outside `.dev-window`). Staying cream on purpose: tap tips, keyword boxes (`.card-tip`), the cards'
-  own text windows, the scenes' text boxes.
-- E. **Upgrade preview.** Choosing a card to upgrade (PP Up, Tutor Notes, events): highlight the numbers that change, or
-  show base and + side by side, before confirming, instead of tapping in and out.
+- ~~D2~~ and ~~E~~ done 2026-10-07 (see the archive). Staying cream on purpose (the user's call): battle's nameplates,
+  Ability banner, intent bubbles and log, tap tips, keyword boxes, the cards' own text windows, the scenes' text boxes.
+  `.btn` moves window by window, never globally (the cream `.btn` is still the default outside `.dev-window`).
 
 **Waiting on the user: hybrid everywhere?** (2026-10-07). The user liked the hybrid's subtle light, so `?hybrid` now
 lights every biome (`js/hybrid-light.js`). Once they've played with it, ask whether it should become the default look

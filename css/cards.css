@@ -428,3 +428,15 @@
 @keyframes upSpark { from { transform: scale(1.4); } to { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; } }
 .up-burst b { position: absolute; font-family: var(--pixel-font); font-size: 3rem; color: #7dff8e; -webkit-text-stroke: 5px #145c28; paint-order: stroke fill; animation: upPlus 0.7s ease-out forwards; }
 @keyframes upPlus { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } 30% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); } 100% { opacity: 0; transform: translate(-50%, -90%) scale(1); } }
+
+/* PP Up's preview (markUpgrade() in js/ui.js): what the upgrade changes in green on a pale green highlight, so it
+   stands apart from Leech Seed's green word; the blown-up card sits beside the card as it is now (.up-pair) */
+.card-text .up-diff { color: #0c6c20; background: #c4f0a8; border-radius: 1.2cqw; box-shadow: 0 0 0 0.8cqw #c4f0a8; }
+.up-pair { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.up-pair .card.up-before { --card-w: min(30vw, 150px); flex: none; filter: saturate(0.6) brightness(0.85); }
+.up-arrow { flex: none; color: #8ef070; font-family: var(--pixel-font); font-size: 1.1rem; text-shadow: 2px 2px 0 #102010; }
+.card-focus .up-pair .card.focus-card { --card-w: min(52vw, 240px, 45vh); flex: none; }
+@media (max-width: 720px) {
+  .card-focus .tip-row .up-pair .card.focus-card { --card-w: min(52vw, 240px, calc(50vh - var(--tips) * 5.5vh)); }
+  .card-focus .tip-row .up-pair .card.up-before { --card-w: min(30vw, 150px, calc(29vh - var(--tips) * 3.2vh)); }
+}
