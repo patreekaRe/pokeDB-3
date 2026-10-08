@@ -5344,3 +5344,8 @@ body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 2
 svg.aug-node { padding: 0; border: 0; background: none; box-shadow: none; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3)); }
 svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 .aug-emoji { display: inline-grid; place-items: center; font-size: 22px; }
+/* the Sky Pillar's augment pick: Reroll and Take are the gold pill (.room-ok, the user's call, 2026-10-08) */
+#reward-reroll.room-ok { min-width: 96px; height: 38px; font-size: 0.7rem; }
+#reward-reroll.room-ok .pp-pill { display: contents; }
+#reward-reroll.room-ok .reroll-cap { display: none; }
+.reward-focus .room-ok.focus-confirm { min-width: 110px; height: 42px; font-size: 0.8rem; }

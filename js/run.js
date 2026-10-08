@@ -798,7 +798,7 @@ function augmentPick() {
     title: floor ? `Floor ${floor}: an augment` : 'The Sky Pillar: an augment',
     sub: [floor ? `The guardian's power lingers. Pick an augment for the rest of the climb (${t.augments.length} so far).` : 'Before you climb, pick an augment. It lasts the whole climb.',
       left > 0 ? `You can reroll all three ${left === 1 ? 'once' : `${left} times`} this climb.` : null, 'Tap one to read it, then take it.'].filter(Boolean),
-    options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
+    options: offer.map(aug => ({ node: augTile(aug), zoom: augTile(aug), ask: `Take ${aug.name}?`, confirm: 'Take', gold: true, confirmSound: 'item-get', onPick: () => takeAugment(aug) })),
     layout: `aug-pick aug-floor-${offer.some(a => a.tier === 'prismatic') ? 'prismatic' : offer.some(a => a.tier === 'gold') ? 'gold' : 'silver'}`,
     over: true,
     reroll: left > 0 ? () => {
@@ -838,7 +838,7 @@ function takeAugment(aug, then = showMap) {
     if (!deal) return next();
     showChoice({
       title: 'Darkrai\'s Deal', sub: [`Darkrai hands you ${deal.name}.`, 'Tap it to read it, then take it.'],
-      options: [{ node: augTile(deal), zoom: augTile(deal), ask: `Take ${deal.name}?`, confirm: 'Take it', confirmSound: 'item-get', onPick: () => takeAugment(deal, next) }],
+      options: [{ node: augTile(deal), zoom: augTile(deal), ask: `Take ${deal.name}?`, confirm: 'Take', gold: true, confirmSound: 'item-get', onPick: () => takeAugment(deal, next) }],
       layout: 'aug-pick aug-floor-prismatic',
       over: true,
     });

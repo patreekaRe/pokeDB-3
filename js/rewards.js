@@ -215,6 +215,10 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   $('reward-skip-text').textContent = skipLabel;
   skip.onclick = onSkip ? askFirst(once(onSkip), skip, title) : null;
   $('reward-reroll').hidden = !reroll;
+  // over the Sky Pillar the reroll is the gold pill too (the user's call, 2026-10-08)
+  $('reward-reroll').classList.toggle('room-ok', over);
+  $('reward-reroll').classList.toggle('ds-btn', !over);
+  $('reward-reroll').classList.toggle('ds-go', !over);
   $('reward-reroll').onclick = reroll ? once(reroll) : null;
 
   showChoiceHp();
@@ -287,6 +291,7 @@ function openFocus(option, btn, takeIt) {
   const take = () => {
     if (focus?.inRoom) pressConfirm($('room-ok'));
     if (focus?.deckPick) pressConfirm($('reward-ok'));
+    if (option.gold) pressConfirm(yes);
     takeIt();
   };
   const big = (option.zoom || option.node).cloneNode(true);   // zoom: the bare tile, when node wraps it (a Mart price tag)
@@ -295,8 +300,9 @@ function openFocus(option, btn, takeIt) {
   big.tabIndex = 0;
   big.setAttribute('role', 'button');
   big.setAttribute('aria-label', option.ask);
-  const yes = el('button', 'ds-btn ds-go focus-confirm');
-  yes.append(el('span', 'pp-pill', option.confirm || 'Choose'));
+  // `gold`: the room bar's glowing gold pill instead (a Sky Pillar augment, the user's call, 2026-10-08)
+  const yes = el('button', option.gold ? 'room-ok focus-confirm' : 'ds-btn ds-go focus-confirm');
+  yes.append(el('span', option.gold ? '' : 'pp-pill', option.gold ? oneWord(option.confirm || 'Choose') : option.confirm || 'Choose'));
   yes.type = 'button';
   const layer = el('div', 'card-focus reward-focus');
   let shown = withTips(big);
@@ -335,7 +341,7 @@ function openFocus(option, btn, takeIt) {
   document.addEventListener('keydown', onKey);
   btn.classList.add('picked');
   document.body.append(layer);
-  focus = { layer, btn, onKey, inRoom, deckPick, label: option.confirm || 'Choose' };
+  focus = { layer, btn, yes, onKey, inRoom, deckPick, label: option.confirm || 'Choose' };
   (inRoom ? $('room-ok') : deckPick ? $('reward-ok') : yes).focus({ preventScroll: true });
 }
 
