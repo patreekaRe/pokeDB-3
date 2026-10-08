@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- iOS zooms into a text box under 16px and never zooms back; only iOS gets maximum-scale, which it still lets you pinch past -->
+  <script>if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) document.querySelector("meta[name=viewport]").content += ", maximum-scale=1";</script>
   <title>Poké Deckbound – Roguelike Deckbuilder</title>
   <meta name="description" content="A free browser deck-builder and roguelike battle game. Pick a starter, build a deck of moves, and battle wild monsters. Fan project, not affiliated with Nintendo.">
   <meta name="theme-color" content="#1b1f3a">
