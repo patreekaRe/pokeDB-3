@@ -305,6 +305,8 @@ function init() {
   // ?area=wetland (any Safari area; &stage=0-3, &kind=elite or boss) shows that area's scene the same way, and each
   // tap walks on to its next place, then the next area
   if (params.has('area')) return peekSafari(params);
+  // ?base: the Secret Base (a first pass, roadmap idea; not reachable from the game yet)
+  if (params.has('base')) return import('./secret-base.js').then(m => m.openBase());
   if (place) {
     document.body.classList.add('scene-peek');
     showPlaceScene(place, { biome: params.get('biome') || 'clearing' });
