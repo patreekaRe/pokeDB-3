@@ -2,7 +2,7 @@
    as a little 3D diorama in Three.js, so the user can judge the look on a phone before anything more is funded. The same
    layout and pixel paintings as js/secret-base.js: the floor and walls are pixel-textured blocks, flat pieces low blocks
    with their painting on top, the bookshelf a block, the rest standing billboards; your partner's GIF is split into
-   frames (ImageDecoder) and walks where you tap. A fixed tilted camera follows it; the scene renders small and is
+   frames (ImageDecoder, or js/gif-frames.js) and walks where you tap. A fixed tilted camera follows it; the scene renders small and is
    scaled up with crisp pixels, then tilt-shift and bloom are laid on in one pass. The light follows js/daytime.js. */
 
 import { getSave } from './storage.js';
@@ -11,6 +11,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { spriteFit } from './data/sprite-fit.js';
+import { decodeGif } from './gif-frames.js';
 import { PIECES, T, WALL, COLS, ROWS, footprint, loadBase, roomArt, pieceArt } from './secret-base.js';
 
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -204,44 +205,36 @@ function addShaft(x) {
 
 /* ---------- the partner: GIF frames on a billboard ---------- */
 
+/** Every frame of a GIF with its delay: ImageDecoder where there is one, else js/gif-frames.js (iPhone Safari). */
 async function gifFrames(src) {
-  if (typeof ImageDecoder !== 'function') return null;
   try {
     const res = await fetch(src);
     if (!res.ok) return null;
-    const dec = new ImageDecoder({ data: await res.arrayBuffer(), type: 'image/gif' });
-    await dec.tracks.ready;
-    const frames = [];
-    for (let i = 0; i < dec.tracks.selectedTrack.frameCount; i++) {
-      const { image } = await dec.decode({ frameIndex: i });
-      const ms = (image.duration ?? 0) / 1000;
-      frames.push({ bmp: await createImageBitmap(image), ms: ms < 20 ? 100 : ms });
-      image.close();
+    const data = await res.arrayBuffer();
+    if (typeof ImageDecoder === 'function' && !new URLSearchParams(location.search).has('gifjs')) {
+      const dec = new ImageDecoder({ data, type: 'image/gif' });
+      await dec.tracks.ready;
+      const frames = [];
+      for (let i = 0; i < dec.tracks.selectedTrack.frameCount; i++) {
+        const { image } = await dec.decode({ frameIndex: i });
+        const ms = (image.duration ?? 0) / 1000;
+        frames.push({ bmp: await createImageBitmap(image), ms: ms < 20 ? 100 : ms });
+        image.close();
+      }
+      dec.close();
+      if (frames.length) return frames;
     }
-    dec.close();
+    const frames = decodeGif(data);
     return frames.length ? frames : null;
   } catch { return null; }
 }
-
-/** Without ImageDecoder (older Safari): a live <img> kept in the page, its current frame copied over every tick. */
-function liveImg(src) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.className = 'b3-live';
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-    document.body.append(img);
-  });
-}
-
 async function makeMon() {
   const mate = partner(getSave());
   const front = mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif');
   const [ff, bf] = await Promise.all([gifFrames(front), backSrc !== front ? gifFrames(backSrc) : null]);
-  const sheets = { front: ff ? { frames: ff } : { img: await liveImg(front) } };
+  const sheets = { front: { frames: ff || [] } };
   if (bf) sheets.back = { frames: bf };
-  const first = ff?.[0].bmp ?? sheets.front.img;
+  const first = ff?.[0].bmp;
   const w = first?.width || 96, h = first?.height || 96;
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
@@ -262,14 +255,12 @@ async function makeMon() {
 
 function drawMon(dt) {
   const s = mon.sheets[walker.facing] || mon.sheets.front;
-  if (s.frames) {
+  if (s.frames.length) {
     mon.clock += dt;
     const f = s.frames[mon.frame % s.frames.length];
     if (mon.clock >= f.ms) { mon.clock = 0; mon.frame = (mon.frame + 1) % s.frames.length; }
     const now = s.frames[mon.frame % s.frames.length];
     if (mon.shown !== now) { mon.g.clearRect(0, 0, mon.c.width, mon.c.height); mon.g.drawImage(now.bmp, 0, 0); mon.t.needsUpdate = true; mon.shown = now; }
-  } else if (s.img) {
-    mon.g.clearRect(0, 0, mon.c.width, mon.c.height); mon.g.drawImage(s.img, 0, 0); mon.t.needsUpdate = true;
   }
 }
 
