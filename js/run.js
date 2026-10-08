@@ -2007,13 +2007,6 @@ function centerVitals(hp, heal) {
   };
 }
 
-/** A Center or event sign that spells out what its choice does, since a phone never shows centerLabel()'s hover title. */
-function captionedSign(text, caption) {
-  const sign = el('span', 'center-label', text);
-  sign.append(el('span', 'spot-caption', caption));
-  return sign;
-}
-
 /** The Center's signs are one or two words (the user found captions covered the scene); the room's text box says the
  *  rest, and the hint is on hover. */
 function shortSign(text, hint) {
@@ -2297,8 +2290,9 @@ async function showHpChange() {
   await sleep(1000);
 }
 
-/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. */
-const spotOption = (label, hint, onPick, disabled = false) => ({ node: captionedSign(label, hint), disabled, onPick });
+/** A choice laid over one of the event scene's props, under a bouncing sign, like the Center's. The sign is just its
+    name (the user found three captions too much to read); the first tap says the hint in the text box, the second takes it. */
+const spotOption = (label, hint, onPick, disabled = false) => ({ node: shortSign(label, hint), peek: hint, disabled, onPick });
 
 /** Play a choice out on the event's scene before it takes effect; false if the run ended meanwhile. */
 async function playOut(act, opts) {
@@ -2392,8 +2386,8 @@ const EVENT_CHOICES = {
       : ['"Yo. Chad Master Kenmatta. Yeah, THE Kenmatta. You\'ve heard of me."', '"I teach rare moves. Not to everyone. Only to people who can afford my genius."'];
     return { figures: { npc: { npc: 'alder' } }, sub: [...hello, `Pay ₽${price}, or train until it hurts (${hpCost} HP), to learn one of 3 rare moves.`,
       !beaten && '"Or step up and fight me, if you dare. You won\'t."'], options: [
-      spotOption(`Pay ₽${price}`, 'A lesson from the scroll: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
-      spotOption(`Train -${hpCost} HP`, 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
+      spotOption(`Pay ₽${price}`, run.money < price ? `You need ₽${price} for a lesson.` : 'A lesson from the scroll: learn one of 3 rare moves.', teach('lesson', () => { spend(price); setMoney(run.money); }), run.money < price),
+      spotOption(`Train -${hpCost} HP`, run.hp <= hpCost ? `You need more than ${hpCost} HP to train.` : 'Train until it hurts, then learn one of 3 rare moves.', teach('train', () => loseHp(hpCost)), run.hp <= hpCost),
       spotOption('Challenge!', beaten ? 'You already won his Mata-Mindset.' : `A boss fight against Kenmatta. Win his Mata-Mindset.${getSave().kenBeaten ? '' : ` Beaten ${getSave().kenWins || 0}/${KEN_WINS}.`}`, challenge, beaten),
     ] };
   },
@@ -2409,7 +2403,8 @@ const EVENT_CHOICES = {
     return { figures: { npc: { npc: 'deleter' }, mon: { src: 'assets/pokemon/slowpoke-front.gif' } }, options: [
       spotOption('Forget a move', canOne ? 'Free: he erases one card from your deck.' : `Your deck is at the minimum (${MIN_DECK} cards).`,
         async () => { if (await playOut('erase')) forgetMove(refuse, gone); }, !canOne),
-      spotOption(`Forget two -${hpCost} HP`, canTwo ? `The pendulum takes two cards, and ${hpCost} HP.` : `Needs a deck of ${MIN_DECK + 2} cards or more.`,
+      spotOption(`Forget two -${hpCost} HP`, !canTwo ? `Needs a deck of ${MIN_DECK + 2} cards or more.`
+        : run.hp <= hpCost ? `You need more than ${hpCost} HP.` : `The pendulum takes two cards, and ${hpCost} HP.`,
         async () => { if (await playOut('hypno')) forgetMove(refuse, second); }, !canTwo || run.hp <= hpCost),
     ] };
   },
@@ -2466,7 +2461,7 @@ const EVENT_CHOICES = {
       trainer: { src: `assets/trainers/${state.grunt || event.grunts[0]}.gif` },
       mon: { src: foe.image, alpha: true },
     }, sub: [event.text, `Pay ₽${toll}, battle the grunt's Alpha ${foe.name}, or run for it (-${flee} HP).`], options: [
-      spotOption(`Pay ₽${toll}`, 'Walk on in peace.', async () => {
+      spotOption(`Pay ₽${toll}`, run.money < toll ? `You don't have ₽${toll}.` : 'Walk on in peace.', async () => {
         spend(toll);
         setMoney(run.money);
         playSound('buy');
@@ -2513,7 +2508,8 @@ const EVENT_CHOICES = {
     return { sub: [event.text, canToss ? 'Toss a coin, or a big one for better odds.' : 'No wish today, but there are coins glinting at the bottom...'], options: event.tosses.map(({ price, odds }, i) => {
       if (i === 0 && !canToss) return fishOption;
       const cost = perBiome(price);
-      const hint = relics.length ? `A ${Math.round(odds * 100)}% chance to find a relic.` : 'Nothing down there you don\'t already have.';
+      const hint = !relics.length ? 'Nothing down there you don\'t already have.'
+        : run.money < cost ? `You need ₽${cost} to toss.` : `A ${Math.round(odds * 100)}% chance to find a relic.`;
       return spotOption(`Toss ₽${cost}`, hint, async () => {
         spend(cost);
         setMoney(run.money);

@@ -3231,7 +3231,7 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 }
 :is(.center-room, .event-room) .reward-option:is(:hover, :focus-visible) { transform: none; background: rgba(255, 255, 255, 0.18); }
 :is(.center-room, .event-room) .reward-option:focus-visible { outline: 3px solid #f8d030; outline-offset: 2px; }
-:is(.center-room, .event-room) .reward-option:disabled { opacity: 1; cursor: not-allowed; }
+:is(.center-room, .event-room) .reward-option:is(:disabled, .locked) { opacity: 1; cursor: not-allowed; }
 /* the patient monitor (centerVitals()): your Pokémon's HP in green phosphor over the scene's monitor screen, the heal
    Rest would give blinking on the end of the bar, and the bar filling up in real time while you rest */
 .center-vitals {
@@ -3306,20 +3306,13 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
   clip-path: polygon(0 0, 100% 0, 100% 50%, 70% 50%, 70% 100%, 30% 100%, 30% 50%, 0 50%);
 }
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
-:is(.center-room, .event-room) .reward-option:disabled .center-label { animation: none; color: #5a6a50; border-color: #909098; filter: grayscale(1); }
+:is(.center-room, .event-room) .reward-option:is(:disabled, .locked) .center-label { animation: none; color: #5a6a50; border-color: #909098; filter: grayscale(1); }
 :is(.center-room, .event-room).resting .center-label { visibility: hidden; }
-/* what an event choice does, a second line in its sign (spotOption()), in the text boxes' pixel font like every
-   other window (the user's call, 2026-09-28) */
-.spot-caption {
-  display: block;
-  width: max-content;
-  max-width: min(180px, 38vw);
-  margin-top: 6px;
-  font-size: 0.72rem;
-  line-height: 1.4;
-  white-space: normal;
-  text-align: center;
-  color: #3a5a28;
+/* an event sign tapped once (spotOption()): it holds still, raised, in a gold ring, while the text box says what it does
+   and a second tap takes it */
+.event-room .reward-option.picked .center-label {
+  animation: none; transform: translateY(-7px);
+  box-shadow: 0 0 0 2px #2a2a30, 0 0 0 5px #f8d030, 0 0 0 7px #a07818, 0 0 12px 8px rgba(248, 208, 48, 0.55);
 }
 /* the ? events with a scene of their own (eventRoom()) work the same way over their props; the well's two tosses are
    its two halves, so their signs lean apart */

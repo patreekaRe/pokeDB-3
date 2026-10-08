@@ -1764,3 +1764,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Speech stays cream** (2026-10-07, the user's call): in ? rooms and the Center the text box is the classic cream
   speech window again (someone in the scene is talking); their title and choice signs stay LCD (`css/screens.css`, after
   the D2 rewards rule).
+- **Event signs say only their name** (2026-10-07, the user's call): a first tap rings the sign in gold and says what it
+  does in the text box, a second takes it; greyed ones answer a tap with why (`peek` in `showChoice()`).

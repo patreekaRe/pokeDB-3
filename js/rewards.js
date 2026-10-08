@@ -110,7 +110,8 @@ export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
 /**
  * Show a "choose one" screen.
  *   sub       the text box's line, or a list of lines
- *   options   [{ node, onPick, disabled, ask, confirm }]   node is the element to show, onPick runs when chosen.
+ *   options   [{ node, onPick, disabled, ask, confirm, peek }]   node is the element to show, onPick runs when chosen.
+ *             With `peek` (an event's sign) the first tap says it in the text box and the second takes it.
  *             With `ask` (the question, read out to screen readers) the pick takes two taps, like a card in
  *             battle: the first blows the tile up with a `confirm` button under it (openFocus). Taking it
  *             plays the confirm sound, or `confirmSound` (a Mart purchase's own). A `note` is a line over the
@@ -166,7 +167,19 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.append(option.node);
     btn.disabled = !!option.disabled;
     const take = once(option.ask ? () => { playSound(option.confirmSound || 'confirm'); option.onPick(); } : option.onPick);
-    btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
+    if (option.peek) {
+      // a disabled one still answers a tap, so you can read why it's greyed out
+      btn.disabled = false;
+      btn.classList.toggle('locked', !!option.disabled);
+      if (option.disabled) btn.setAttribute('aria-disabled', 'true');
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('picked')) return take();
+        box.querySelectorAll('.reward-option.picked').forEach(b => b.classList.remove('picked'));
+        if (!option.disabled) btn.classList.add('picked');
+        playSound('stick');
+        sayLines([option.disabled ? option.peek : `${option.peek} Tap it again to choose.`]);
+      });
+    } else btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
     home(option.group).append(btn);
   }
 

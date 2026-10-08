@@ -37,8 +37,10 @@ its `PLACE_ART` entry; `outdoor: true` makes `showPlaceScene()` paint that biome
 backdrop, ground, life) with the event's props in the middle (`prop`, `eventProps()` in `js/scene.js`), and
 its `biomes` only retint the props. Like the Center, there are no tiles: layout `event-room <scene>-room`
 lays each choice as a see-through button over a prop (`life.eventSpots`, `eventSpots()`, placed by
-`placeEventSpots()`) under a bouncing `.center-label` (`spotOption()`) whose second line (`.spot-caption`, in the pixel font like every window since 2026-09-28) says what
-it does (phones never see a `title`; `spreadSigns()` keeps the signs on screen, off each other and off the screen's title), with the text box under the props
+`placeEventSpots()`) under a bouncing `.center-label` (`spotOption()`) holding just the choice's name (2026-10-07, the user's call: the old
+second-line captions were too much text); the first tap rings it in gold and says its hint in the text box (`peek` on a
+`showChoice()` option), the second takes it; a greyed one (`.locked`, not `:disabled`, so it still answers) only says why
+(`spreadSigns()` keeps the signs on screen, off each other and off the screen's title), with the text box under the props
 (`--counter-foot`). A pick plays out on the scene first (`playOut()` → `sceneAct()`: frames in `ACTS`, drawn
 by the prop's draw function off `actFrame()`; skipped under reduced motion), then takes effect. Berry Tree:
 eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Hot Spring: soak
