@@ -265,7 +265,10 @@ function init() {
     onAbandon: requestAbandon,
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
-  $('dock-menu').addEventListener('click', () => requestMenu());
+  $('dock-menu').addEventListener('click', async () => {
+    const left = isPeeking() ? 'This test climb won\'t be kept.' : 'Your climb is saved, so you can carry on from Continue.';
+    if (await confirmDialog(`Leave the Sky Pillar for the menu? ${left}`, 'Menu')) requestMenu();
+  });
   $('room-home').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('room-home').addEventListener('click', () => $('brand-btn').click());
   $('reward-skip').prepend(el('span', 'leave-ico'));
