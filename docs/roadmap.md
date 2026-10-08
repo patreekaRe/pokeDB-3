@@ -119,6 +119,22 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   Safari / Sky Pillar boards' fairness; the reward is how it looks, and the Pokémon reacting).
   Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
   Pokémon on show, and whether furniture is pure decoration or gives a small perk.
+- **Walkable 3D, Octopath's HD-2D** (the user's idea, 2026-10-08; they want to fund it, so the pilot is agreed, the rest
+  waits on it). Pixel sprites standing in a real 3D world: chunky low blocks with pixel textures, a fixed tilted camera,
+  tilt-shift blur on the near and far edges, bloom, real shadows, the day / night light from `js/daytime.js`. Feasible
+  with no build step: Three.js as an ES module from a CDN (an exact, pinned version). The catches: WebGL plays no GIFs, so
+  each Pokémon GIF is split into frames (ImageDecoder at load, as `SPRITE_FIT`'s numbers were measured, or a tool once);
+  phones want small spaces, few lights and a low render resolution (which suits pixel art); the cost is building each
+  space, not the engine. Keep it to places you visit; fights, the map device and the rooms stay as they are. Best fits:
+  the **Secret Base** (walk your partner round your own furniture) and maybe later the **Clearing as a walkable hub**
+  (walk up to the Safari gate, the Sky Pillar, the Sealed Gate instead of tapping title signs).
+  **Pilot, one session.** Run in: LOCAL (Desktop app, visual). "Read CLAUDE.md and this entry. On the `secret-base`
+  branch, behind a `?3d` flag, build one small Secret Base room in Three.js: a floor and walls of pixel-textured blocks, a
+  few pieces of the base's furniture as blocks, your partner's front GIF as an animated billboard (frames from
+  ImageDecoder), tap a floor tile to walk there, a fixed tilted camera, tilt-shift and bloom (respect `calmFx()` /
+  reduced motion), the light following `js/daytime.js`. Check it holds 30 fps at 390x844. Push the branch only, not main;
+  tell the user what to look at on their phone." After it, the user decides: the base in 3D, the Clearing hub, both, or
+  neither.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
