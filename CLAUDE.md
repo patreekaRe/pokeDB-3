@@ -116,7 +116,7 @@ live site.
   Collection's cover (`coverArt()` from `js/collection.js`), which swings open onto the screen saying "HELLO, NAME!"
   (`bootDevice(host, { below: lid, screen })` in `js/device-boot.js`; a tap on the cover opens it at once). A film over
   the device boots it after it ends (`after`: the film's promise keeps the device hidden till then): Continue waits for a
-  place's walk-on (`continueRun()` returns it), a new run's map boots after the first biome's film (`startBiome()`). The
+  place's walk-on (`continueRun()` returns it), a new run's map boots after the first biome's film (`startBiome()`), and after any perk screen in front of the map (Relic Charm, Chansey's Gift, Move Tutor Notes: `bootMap()` in `js/run.js` waits for `showMap()` to reach the map itself). The
   lobbies fade in over the title (`lobbyIn`).
 - **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
   device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every

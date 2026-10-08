@@ -157,6 +157,7 @@ export function initRun({ onMenu, onNewRun }) {
 /** Back to the menu keeping the save: Continue picks the run up from its last map checkpoint. */
 export function suspendRun() {
   abandonBattle();
+  bootLater = null;
   run = null;
 }
 
@@ -190,6 +191,7 @@ export function forfeitRun() {
 export function abandonRun() {
   abandonBattle();
   if (run && !peeking) clearRunData();
+  bootLater = null;
   run = null;
 }
 
@@ -254,6 +256,7 @@ function checkpoint() {
     rerollsUsed: run.rerollsUsed,
     tutorLeft: run.tutorLeft,
     charm: run.charm,
+    gift: run.gift,
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
@@ -310,6 +313,7 @@ function restoreRun(saved) {
     tower: saved.tower && { ...freshAugments(null), ...saved.tower },   // a climb saved before augments has none, and owes none
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
+    gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
     tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
@@ -368,6 +372,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     rerollsUsed: 0,        // how many, in that biome (Lv 2 gives two)
     tutorLeft: perks ? perkLevel('tutorNotes') : 0,   // starting moves still to PP Up (Game Corner perk Move Tutor Notes)
     charm: null,           // the Starting Relic Charm's relic, until it's been presented and taken
+    gift: null,            // Chansey's Gift's item, the same way (chanseyGift())
     unlocks: [],          // starters unlocked during this run
     pendingCoins: null,    // { foe, coins, money } won in the last fight, paid out when its rewards end
     tally: freshTally(),   // the run's record, kept for the Hall of Fame if it's won
@@ -388,7 +393,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
   const savings = DEX_START_MONEY[dexPerk('moms-savings')];
   if (savings) { run.money += savings; tell(`Mom's Savings: you set out with ₽${savings}!`); }
   const gift = ITEMS_BY_ID[DEX_START_ITEM[dexPerk('chansey-gift')]];
-  if (gift) { run.items.push(gift.id); tell(`Chansey's Gift: a ${gift.name} is in your Bag!`); }
+  if (gift) run.gift = gift.id;   // handed over on the map by chanseyGift()
 
   if (peek) return peekRoom(peek);
   if (!tower) updateSave(d => { d.stats.runsStarted += 1; });   // a climb always ends in a faint: not a run for the win rate
@@ -555,7 +560,18 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
   });
   // a new run's way in: the Pokédex boots onto the map once the first biome's film is over
-  if (run.biome === 0) bootDevice($('map-screen'), { screen: $('map-screen').querySelector('.mdex-window'), after: film });
+  if (run.biome === 0) bootMap(film);
+}
+
+/** The Pokédex's boot onto the map (a new run, Continue), after `film`. If a perk's screen (the Relic Charm, Chansey's
+    Gift, Move Tutor Notes) stands in front of the map, it waits for showMap() to come back to the map itself: booting
+    behind that screen played the blip and the cover early. */
+let bootLater = null;
+export function bootMap(film) {
+  bootLater = null;
+  if (document.body.dataset.screen !== 'map-screen') { bootLater = film || Promise.resolve(); return; }
+  const map = $('map-screen');
+  if (!map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window'), after: film });
 }
 
 /** A Sky Pillar flight: its landings' doors on the map (the placeholder until the tower gets its own screen, roadmap
@@ -738,7 +754,9 @@ function showMap() {
   else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
   playMusic(`map${run.biome + 1}`);
   if (run.charm) return relicCharm();
+  if (run.gift) return chanseyGift();
   if (run.tutorLeft > 0) return tutorNotes();
+  if (bootLater) bootMap(bootLater);
   if (run.tower && run.tower.pick != null) {   // over the climb once its menu bar has slid in
     const at = run;
     return barReady().then(() => { if (run === at && run.tower.pick != null && document.body.dataset.screen === 'map-screen') augmentPick(); });
@@ -774,6 +792,18 @@ function relicCharm() {
   showRelics('Relic Charm', [relic], () => { run.charm = null; showMap(); }, {
     sub: ['Your Starting Relic Charm glows...', `It gave you ${/^[AEIOU]/.test(relic.name) ? 'an' : 'a'} ${relic.name}!`, 'Tap it to see what it does.'],
     skip: false,
+  });
+}
+
+/** Chansey's Gift (the Shrine page's Pokédex perk): its Potion or Super Potion is handed over like a found item, already
+    out of its ball, saying where it comes from. Saved as `gift` until taken, so a refresh shows it again. */
+function chanseyGift() {
+  const item = ITEMS_BY_ID[run.gift], lv2 = dexPerk('chansey-gift') > 1;
+  offerItem(item, () => { run.gift = null; showMap(); }, {
+    opened: true, skip: false, title: "Chansey's Gift",
+    say: [`Chansey sends you off with a gift: ${/^[AEIOU]/.test(item.name) ? 'an' : 'a'} ${item.name}!`,
+      `That's Chansey's Gift, your reward for researching the ${BIOMES_BY_ID.shrine.name}'s Pokédex page${lv2 ? ' (Lv 2)' : ''}. Every run starts with one.`,
+      item.text, 'Tap it to put it in your Bag.'],
   });
 }
 
@@ -1624,16 +1654,17 @@ function gainRelic(relic, next) {
     wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic: tap
     it (then Put in Bag) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark
     it for tossing (it greys out with a ✕), then Swap. */
-function offerItem(item, next, { opened = false } = {}) {
+function offerItem(item, next, { opened = false, title = 'Item found', say = null, skip = true } = {}) {
   const thisRun = run, full = run.items.length >= itemSlots(), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${itemSlots()} items). Tap one of yours to swap it out, or leave it.`
     : `Put it in your Bag? It holds ${itemSlots()} items, used up in battle.`];
+  if (say && !full) found.splice(0, found.length, ...say);
   showChoice({
-    title: 'Item found',
+    title,
     sub: opened ? found : ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
     options: [],
     skipLabel: full ? 'Leave it' : 'Skip',
-    onSkip: next,
+    onSkip: skip ? next : null,
     coins: run.pendingCoins,
     layout: 'item-found',
   });
