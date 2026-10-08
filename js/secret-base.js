@@ -6,7 +6,9 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { timeOfDay } from './daytime.js';
+import { PIECES, CATALOGUE } from './base-furniture.js';
+import { safariDay } from './data/safari.js';
+import { streamOf, shuffled } from './rng.js';
 
 const T = 16, COLS = 11, ROWS = 8, WALL = 48;
 const W = COLS * T, H = WALL + ROWS * T;
@@ -26,126 +28,68 @@ const FLOORS = [
 
 let g;   // the room's 2D context while painting
 const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
-const box = (x, y, w, h, fill, edge) => { R(x, y, w, h, edge); R(x + 1, y + 1, w - 2, h - 2, fill); };
-
-/* Flat pieces are painted top-down at their first facing and turned in 90° steps (exact for pixels); upright ones are
-   painted per facing (front, side, back; the other side mirrored), standing up out of their tiles. */
-const PIECES = {
-  rug: { name: 'Round rug', w: 3, h: 2, layer: 'rug', flat(w, h) {
-    R(2, 0, w - 4, h, '#b8443c'); R(0, 2, w, h - 4, '#b8443c');
-    R(3, 2, w - 6, h - 4, '#e0b04a'); R(5, 4, w - 10, h - 8, '#b8443c');
-    for (let x = 8; x < w - 8; x += 6) R(x, h / 2 - 1, 2, 2, '#f4e6c4');
-  } },
-  bed: { name: 'Bed', w: 2, h: 3, flat(w, h) {
-    box(0, 0, w, h, '#a8723f', '#5a3a1e');
-    R(0, 0, w, 6, '#6e4626');
-    R(2, 6, w - 4, h - 8, '#f4f4f0');
-    box(5, 8, w - 10, 7, '#ffffff', '#c8c8d0');
-    R(2, 18, w - 4, h - 20, '#d0485a'); R(2, 18, w - 4, 2, '#f07888');
-    for (let y = 24; y < h - 4; y += 6) R(4, y, w - 8, 1, '#a83448');
-  } },
-  table: { name: 'Table', w: 2, h: 2, flat(w, h) {
-    box(1, 1, w - 2, h - 2, '#c48a52', '#5a3a1e');
-    R(3, 3, w - 6, h - 6, '#f4f4f0');
-    for (let i = 3; i < w - 3; i += 4) { R(i, 3, 2, 2, '#d0485a'); R(i, h - 5, 2, 2, '#d0485a'); }
-    box(w / 2 - 3, h / 2 - 3, 6, 6, '#7ac8e8', '#3a7aa0');
-  } },
-  cushion: { name: 'Poké Ball cushion', w: 1, h: 1, flat() {
-    R(3, 1, 10, 14, '#202028'); R(1, 3, 14, 10, '#202028');
-    R(4, 2, 8, 6, '#e04848'); R(2, 4, 12, 4, '#e04848');
-    R(4, 8, 8, 6, '#f4f4f0'); R(2, 8, 12, 4, '#f4f4f0');
-    R(2, 7, 12, 2, '#202028'); box(6, 6, 4, 4, '#f4f4f0', '#202028');
-  } },
-  chair: { name: 'Chair', w: 1, h: 1, upright(x, y, dir) {
-    const legs = () => { R(x + 3, y + 12, 2, 4, '#5a3a1e'); R(x + 11, y + 12, 2, 4, '#5a3a1e'); };
-    const back = { 0: [x + 3, y - 8, 10, 12], 2: [x + 3, y + 2, 10, 12], 1: [x + 11, y - 6, 3, 16], 3: [x + 2, y - 6, 3, 16] }[dir];
-    if (dir !== 2) box(...back, '#a8723f', '#5a3a1e');
-    legs();
-    box(x + 2, y + 4, 12, 9, '#c48a52', '#5a3a1e');
-    R(x + 3, y + 5, 10, 2, '#e0b04a');
-    if (dir === 2) box(...back, '#a8723f', '#5a3a1e');
-  } },
-  plant: { name: 'Potted plant', w: 1, h: 1, upright(x, y) {
-    box(x + 4, y + 7, 8, 8, '#c86a3a', '#6a2e14'); R(x + 4, y + 7, 8, 2, '#e08a50');
-    const leaf = '#4f9a42', lit = '#7cc860';
-    box(x + 1, y - 4, 7, 9, leaf, '#24502a'); box(x + 8, y - 6, 7, 9, leaf, '#24502a'); box(x + 4, y - 11, 8, 10, leaf, '#24502a');
-    R(x + 6, y - 9, 2, 3, lit); R(x + 10, y - 4, 2, 3, lit); R(x + 3, y - 2, 2, 3, lit);
-  } },
-  lamp: { name: 'Lamp', w: 1, h: 1, upright(x, y) {
-    box(x + 4, y + 11, 8, 4, '#5a5a68', '#2a2a34');
-    R(x + 7, y - 2, 2, 13, '#3a3a44');
-    box(x + 2, y - 12, 12, 10, '#f4dc88', '#a8823a'); R(x + 3, y - 11, 10, 2, '#fff4c0');
-  } },
-  shelf: { name: 'Bookshelf', w: 2, h: 1, upright(x, y, dir) {
-    if (dir % 2) {   // seen from the side: a tall narrow box, its open face towards where it faces
-      box(x + 2, y - 22, 12, 52, '#a8723f', '#5a3a1e');
-      R(dir === 1 ? x + 3 : x + 11, y - 21, 2, 50, '#6e4626');
-      return;
-    }
-    box(x, y - 22, 32, 36, '#a8723f', '#5a3a1e');
-    if (dir === 2) { for (let i = 0; i < 3; i++) R(x + 2, y - 14 + i * 10, 28, 1, '#8a5a30'); return; }
-    const books = ['#d0485a', '#4a7ac8', '#e0b04a', '#4f9a42', '#8a5ab8', '#f4f4f0'];
-    for (let row = 0; row < 3; row++) {
-      const top = y - 20 + row * 11;
-      R(x + 2, top, 28, 10, '#4a2e16');
-      let bx = x + 3;
-      for (let i = 0; bx < x + 28; i++) { const bw = 2 + ((row * 3 + i) % 3); R(bx, top + 2 + (i % 2), bw, 8 - (i % 2), books[(row + i) % books.length]); bx += bw + 1; }
-      R(x + 1, top + 10, 30, 1, '#5a3a1e');
-    }
-  } },
-  tv: { name: 'TV', w: 2, h: 1, upright(x, y, dir) {
-    if (dir % 2) {
-      R(x + 6, y + 8, 4, 8, '#3a3a44');
-      box(x + 3, y - 10, 10, 30, '#5a5a68', '#202028');
-      R(dir === 1 ? x + 3 : x + 11, y - 9, 2, 28, '#2a3a5a');
-      return;
-    }
-    R(x + 13, y + 8, 6, 6, '#3a3a44'); R(x + 9, y + 13, 14, 2, '#3a3a44');
-    box(x + 1, y - 12, 30, 22, '#5a5a68', '#202028');
-    if (dir === 2) { for (let i = 0; i < 4; i++) R(x + 8, y - 6 + i * 3, 16, 1, '#3a3a44'); return; }
-    R(x + 3, y - 10, 26, 16, '#2a4a8a'); R(x + 5, y - 8, 6, 2, '#a8d8f8'); R(x + 5, y - 6, 2, 3, '#a8d8f8');
-    R(x + 24, y + 7, 2, 2, '#e04848');
-  } },
-  window: { name: 'Window', w: 2, h: 1, layer: 'wall', wall(x) {
-    const sky = { dawn: '#f4b8a0', day: '#8cc8f4', dusk: '#e8885a', night: '#2a3a6a' }[timeOfDay()];
-    box(x + 2, 8, 28, 28, sky, '#5a3a1e');
-    R(x + 3, 26, 26, 9, timeOfDay() === 'night' ? '#1a2a4a' : '#6cbf58');
-    R(x + 15, 9, 2, 26, '#a8723f'); R(x + 3, 21, 26, 2, '#a8723f');
-    R(x + 1, 35, 30, 3, '#c48a52');
-  } },
-  poster: { name: 'Poster', w: 1, h: 1, layer: 'wall', wall(x) {
-    box(x + 2, 10, 12, 18, '#f4f4f0', '#3a3a44');
-    R(x + 4, 13, 8, 6, '#e0b04a'); R(x + 6, 15, 4, 2, '#202028'); R(x + 4, 21, 8, 1, '#3a3a44'); R(x + 4, 23, 6, 1, '#3a3a44');
-  } },
-  clock: { name: 'Clock', w: 1, h: 1, layer: 'wall', wall(x) {
-    R(x + 4, 10, 8, 10, '#5a3a1e'); R(x + 2, 12, 12, 6, '#5a3a1e');
-    R(x + 5, 11, 6, 8, '#f4f4f0'); R(x + 3, 13, 10, 4, '#f4f4f0');
-    R(x + 7, 12, 2, 4, '#202028'); R(x + 8, 15, 3, 1, '#202028');
-  } },
-};
-
-const freshBase = () => ({
-  v: 1, wall: 'cream', floor: 'wood',
-  items: [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 }, { id: 'lamp', x: 2, y: 0, dir: 0 },
-    { id: 'plant', x: 10, y: 0, dir: 0 }],
-});
 
 const footprint = (it) => { const p = PIECES[it.id]; return it.dir % 2 ? [p.h, p.w] : [p.w, p.h]; };
 
-export { PIECES, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, cells, fits, aimTile, icon };
-/** The saved room, or the starting one. A room saved before the lamp joined the starting set gets it once (v 1), by
-    the bed if that spot is free, so night has a light. */
+// every new room is the same: a bed, a lamp, a rug under the window, and a present of starter furniture to open
+const FIRST_ROOM = [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 },
+  { id: 'lamp', x: 2, y: 0, dir: 0 }, { id: 'gift', x: 5, y: 3, dir: 0 }];
+const STARTER_GIFT = ['table', 'chair', 'chair', 'cushion', 'cushion', 'plant', 'shelf', 'tv', 'poster', 'clock'];
+const STOCK = 8;   // pieces in the Furniture shop each day
+
+const freshBase = (mons) => ({
+  v: 2, wall: 'cream', floor: 'wood', items: FIRST_ROOM.map(it => ({ ...it })),
+  owned: { window: 1, rug: 1, bed: 1, lamp: 1 }, ...(mons ? { mons } : {}),
+});
+
+export { PIECES, CATALOGUE, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
+/** The saved room, or the first one. A room from before furniture was owned (v 1, when every piece was free) starts
+    over as the first room, keeping its Pokémon: only playtests of the unreleased branch made those. `?basefresh` does
+    the same on purpose. */
 export function loadBase() {
   const b = getSave().secretBase;
-  if (!b) return freshBase();
-  if (!b.v) {
-    b.v = 1;
-    const lamp = { id: 'lamp', x: 2, y: 0, dir: 0 };
-    if (!b.items.some(it => it.id === 'lamp') && fits(lamp, -1, b)) b.items.push(lamp);
-  }
+  if (!b || !(b.v >= 2) || new URLSearchParams(location.search).has('basefresh')) return freshBase(b?.mons);
+  b.owned ||= {};
   return b;
 }
 export const saveBase = (b) => updateSave(d => { d.secretBase = b; });
+
+/** `?allfurniture`: every catalogue piece to hand for a playtest, never saved as owned. */
+export const lendAll = () => new URLSearchParams(location.search).has('allfurniture');
+
+/** How many of a piece are in storage: owned, less those standing in the room. */
+export function spare(b, id) {
+  if (lendAll() && CATALOGUE.includes(id)) return Infinity;
+  return (b.owned[id] || 0) - b.items.filter(it => it.id === id).length;
+}
+
+/** Open the room's present: it's gone, and the starter furniture is in storage. Returns what was inside. */
+export function openGift(b) {
+  b.items = b.items.filter(it => it.id !== 'gift');
+  for (const id of STARTER_GIFT) b.owned[id] = (b.owned[id] || 0) + 1;
+  saveBase(b);
+  return STARTER_GIFT;
+}
+
+/** The Furniture shop's stock for a UTC day: STOCK pieces, no two of a kind, the same for everyone that day. */
+export function furnitureStock(day = safariDay()) {
+  const seen = new Set(), out = [];
+  for (const id of shuffled(CATALOGUE, streamOf('furniture', day))) {
+    if (seen.has(PIECES[id].fam)) continue;
+    seen.add(PIECES[id].fam); out.push(id);
+    if (out.length === STOCK) break;
+  }
+  return out;
+}
+
+/** Buy a piece for PokéCoins into storage. False if the coins aren't there. */
+export function buyPiece(b, id) {
+  const price = PIECES[id].price;
+  if ((getSave().coins ?? 0) < price) return false;
+  b.owned[id] = (b.owned[id] || 0) + 1;
+  updateSave(d => { d.coins -= price; d.secretBase = b; });
+  return true;
+}
 
 /** The wallpaper strip (WALL high) and the bare floor, painted on one canvas the room's size. */
 export function roomArt(b) {
@@ -163,9 +107,9 @@ export function pieceArt(id, dir = 0) {
   const [fw, fh] = p.flat || p.layer === 'wall' ? [p.w, p.h] : footprint({ id, dir });
   const c = new OffscreenCanvas(fw * T, p.layer === 'wall' ? WALL : p.flat ? fh * T : fh * T + 24);
   g = c.getContext('2d');
-  if (p.flat) p.flat(p.w * T, p.h * T);
-  else if (p.layer === 'wall') p.wall(0);
-  else p.upright(0, 24, dir);
+  if (p.flat) p.flat(g, p.w * T, p.h * T);
+  else if (p.layer === 'wall') p.wall(g, 0);
+  else p.upright(g, 0, 24, dir);
   g = keep;
   return c;
 }
@@ -200,12 +144,12 @@ function paintFloor() {
 function paintPiece(it, alpha = 1) {
   const p = PIECES[it.id];
   g.globalAlpha = alpha;
-  if (p.layer === 'wall') { p.wall(it.x * T); g.globalAlpha = 1; return; }
+  if (p.layer === 'wall') { p.wall(g, it.x * T); g.globalAlpha = 1; return; }
   const x = it.x * T, y = WALL + it.y * T, [fw, fh] = footprint(it);
   if (p.flat) {
     const off = new OffscreenCanvas(p.w * T, p.h * T), keep = g;
     g = off.getContext('2d');
-    p.flat(p.w * T, p.h * T);
+    p.flat(g, p.w * T, p.h * T);
     g = keep;
     g.save();
     g.translate(x + fw * T / 2, y + fh * T / 2);
@@ -215,7 +159,7 @@ function paintPiece(it, alpha = 1) {
     if (p.layer !== 'rug') R(x + 1, y + fh * T - 2, fw * T - 2, 2, '#00000040');   // its side, so it stands off the floor
   } else {
     R(x + 2, y + fh * T - 3, fw * T - 4, 3, '#00000030');
-    p.upright(x, y, it.dir);
+    p.upright(g, x, y, it.dir);
   }
   g.globalAlpha = 1;
 }
@@ -298,7 +242,8 @@ function onTap(e) {
     save();
   } else {
     sel = pieceAt(lx, ly);
-    if (sel >= 0) playSound('confirm');
+    if (base.items[sel]?.id === 'gift') { openGift(base); sel = -1; playSound('item-get'); tray('furniture'); }
+    else if (sel >= 0) playSound('confirm');
   }
   refresh();
 }
@@ -332,7 +277,11 @@ function cancelHold() {
   refresh();
 }
 
+const icons = new Map();
+/** A piece's tray picture: painted once, then copied, since a tray can list hundreds. */
 function icon(id) {
+  const made = icons.get(id);
+  if (made) { const c = document.createElement('canvas'); c.width = made.width; c.height = made.height; c.getContext('2d').drawImage(made, 0, 0); return c; }
   const p = PIECES[id], c = document.createElement('canvas');
   const it = p.layer === 'wall' ? { id, x: 0 } : { id, x: 0, y: 0, dir: 0 };
   const top = p.flat || p.layer === 'wall' ? 0 : 24;
@@ -342,7 +291,8 @@ function icon(id) {
   g.translate(0, p.layer === 'wall' ? 0 : top - WALL);
   paintPiece(it);
   g = keep;
-  return c;
+  icons.set(id, c);
+  return icon(id);
 }
 
 function tray(tab) {
@@ -356,7 +306,7 @@ function tray(tab) {
     b.addEventListener('click', pick);
     list.append(b);
   };
-  if (tab === 'furniture') for (const [id, p] of Object.entries(PIECES)) add(p.name, icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of CATALOGUE.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) cancelHold();
     holding = holding?.id === id ? null : { id, dir: 0 }; sel = -1; ghost = null;
     refresh(); tray(tab);

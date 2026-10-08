@@ -1848,3 +1848,19 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Escape Rope beside Continue / New game with a saved run; the version tag (Patch notes) sits by How to play, since the
   logo fades. The hub fades in only the first time (`.hub.shown`), so coming back never shows the screen under the title.
   80+ fps in the pane at 390x844 with a flyer; phone check is the user's.
+- **Secret Base: the first room, the present, the catalogue and the daily shop** (2026-10-08, branch `secret-base` only,
+  the user's asks). Every new room is the same (`FIRST_ROOM` in `js/secret-base.js`): bed, lamp, a rug under the window,
+  and a present (`gift`) in the middle; a tap on it (walking or decorating) shakes it, pops it in stars and shows a card of
+  the starter furniture it held (`STARTER_GIFT`: table, 2 chairs, 2 cushions, plant, bookshelf, TV, poster, clock), with a
+  Decorate key. Furniture is owned now (`secretBase.owned`, counts; the tray lists only what's in storage, `spare()`), and a
+  room saved before (v 1, playtests only) starts over as the first room, keeping its Pokémon. **500 pieces**:
+  `js/base-furniture.js`, 25 kinds (`FAMILIES`: beds, rugs, mats, tables, cushions, chairs, stools, sofas, armchairs, lamps,
+  floor lamps, plants, big plants, bookshelves, dressers, TVs, desks, wardrobes, vases, crates, windows, posters, clocks,
+  paintings...) in 20 themes (`THEMES`, named after Gen 3's decoration sets and the Poké Balls / types: Pretty, Heavy,
+  Ragged, Comfort, Brick, Camp, Hard, Poké, Great, Ultra, Master, Fire, Aqua, Leaf, Pika, Psychic, Frost, Dragon, Shadow),
+  each painted in code from its theme's palette (no copied sprites; Gen 3's decoration list was the reference). A classic
+  piece keeps its bare id (`bed`), a themed one is `bed-fire`. The 3D room reads a piece's `fam`, `high` / `side` (flat
+  pieces), `glow` (lamps, the window), `solid` (bookshelves as boxes). **The Shop**: the sheet's cart tab, 8 pieces a UTC
+  day, no two of a kind (`furnitureStock()`, seeded like the Safari's day), a first tap shows the price, a second buys it
+  for PokéCoins (`buyPiece()`); prices by kind and theme tier. `tools/furniture.html` shows all 500 by theme or kind.
+  Playtest: `?base&basefresh` (the first room again, that page load), `&allfurniture` (every piece in the tray, unsaved).

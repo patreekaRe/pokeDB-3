@@ -15,19 +15,18 @@ import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
-import { PIECES, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt } from './secret-base.js';
+import { PIECES, CATALOGUE, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
+  spare, openGift, furnitureStock, buyPiece } from './secret-base.js';
 
 const PX = 1 / T;          // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
 const ON_SHOW = 6;         // Safari catches living in the base at once
-// pieces a Pokémon climbs onto, and what it does there
+// kinds of piece a Pokémon climbs onto, and what it does there
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
 
-// flat pieces stand this tall, their sides this colour
-const FLAT = { rug: [0.04, '#8e342e'], bed: [0.5, '#5a3a1e'], table: [0.55, '#6e4626'], cushion: [0.22, '#202028'] };
-const GLOW = { window: ['#8cc8f4', '#f4b8a0', '#e8885a', '#2a3a6a'], lamp: ['#f4dc88', '#fff4c0'] };
+const seatOf = (id) => SEATS[PIECES[id].fam];
 
 const LIGHT = {
   dawn: { sky: '#ffd0b8', ground: '#5a4058', amb: 1.4, sun: '#ffb48a', sunI: 2.2, at: [-9, 5, 6], lamp: 0.8, win: 0.9, shaft: 0.3, motes: 0.7, bg: '#2a2036' },
@@ -48,6 +47,7 @@ let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 // Walk shows only the room; Decorate pulls the camera back over the whole room and brings up the sheet
 let mode = 'walk', blend = 0, shots = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
+let giftBoard = null, unwrapping = null, shopPick = null, shopMsg = '';
 let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -152,11 +152,13 @@ function wallTrim(art) {
 function buildPieces() {
   dispose(pieceGroup);
   blocked = new Set(); winMats = []; shafts = []; motes = [];
+  giftBoard = null;
   const lamps = [];
   base.items.forEach((it, i) => {
     const g = makePiece(it);
     g.userData.index = i;
     pieceGroup.add(g);
+    if (PIECES[it.id].gift) { giftBoard = g.children[0]; giftBoard.userData.y0 = giftBoard.position.y; }
     if (g.userData.lamp) lamps.push(g.userData.lamp);
     if (PIECES[it.id].layer === 'wall' || PIECES[it.id].layer === 'rug') return;
     const [fw, fh] = footprint(it);
@@ -185,28 +187,28 @@ function makePiece(it, ghostly = false) {
   };
   if (p.layer === 'wall') {
     const art = pieceArt(it.id), m = new THREE.MeshStandardMaterial({ map: tex(art), transparent: true, alphaTest: 0.5, roughness: 1 });
-    if (GLOW[it.id] && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, GLOW[it.id])); winMats.push(m); }
+    if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
     const plane = add(new THREE.PlaneGeometry(p.w, WALL_H), m, false);
     plane.position.set(it.x - COLS / 2 + p.w / 2, WALL_H / 2, -ROWS / 2 + 0.01 + (ghostly ? 0.01 : 0));
-    if (it.id === 'window' && !ghostly) addShaft(group, plane.position.x);
+    if (p.fam === 'window' && !ghostly) addShaft(group, plane.position.x);
     return group;
   }
   const [fw, fh] = footprint(it);
   const cx = it.x - COLS / 2 + fw / 2, cz = it.y - ROWS / 2 + fh / 2;
 
   if (p.flat) {
-    const [h, side] = FLAT[it.id] || [0.4, '#5a3a1e'];
+    const h = p.high, side = p.side;
     const top = new THREE.MeshStandardMaterial({ map: tex(pieceArt(it.id)), roughness: 0.9 }), s = solid(side);
     const block = add(new THREE.BoxGeometry(p.w, h, p.h), [s, s, top, s, s, s], h > 0.1);
     block.position.set(cx, h / 2 + (ghostly ? 0.01 : 0), cz);
     block.rotation.y = -it.dir * Math.PI / 2;
     return group;
   }
-  if (it.id === 'shelf') {
-    const front = trim(pieceArt('shelf', 0)), behind = trim(pieceArt('shelf', 2));
-    const h = front.h * PX, wood = solid('#a8723f');
+  if (p.solid) {
+    const front = trim(pieceArt(it.id, 0)), behind = trim(pieceArt(it.id, 2));
+    const h = front.h * PX, wood = solid(p.wood);
     const face = (a) => new THREE.MeshStandardMaterial({ map: tex(a.c), roughness: 1 });
-    const block = add(new THREE.BoxGeometry(p.w, h, 0.8), [wood, wood, solid('#c48a52'), wood, face(front), face(behind)]);
+    const block = add(new THREE.BoxGeometry(p.w, h, 0.8), [wood, wood, solid(p.woodLit), wood, face(front), face(behind)]);
     block.position.set(cx, h / 2, cz);
     block.rotation.y = -it.dir * Math.PI / 2;
     return group;
@@ -214,10 +216,10 @@ function makePiece(it, ghostly = false) {
   // upright pieces stand as billboards: their painting at their facing, feet on the floor at the footprint's middle
   const cut = trim(pieceArt(it.id, it.dir));
   const m = new THREE.MeshStandardMaterial({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
-  if (GLOW[it.id] && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(cut.c, GLOW[it.id])); m.userData.lamp = true; winMats.push(m); }
+  if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(cut.c, p.glow)); m.userData.lamp = true; winMats.push(m); }
   const board = add(new THREE.PlaneGeometry(cut.w * PX, cut.h * PX), m);
   board.position.set(it.x - COLS / 2 + (cut.x + cut.w / 2) * PX, cut.h * PX / 2, cz);
-  if (it.id === 'lamp') group.userData.lamp = new THREE.Vector3(board.position.x, cut.h * PX - 0.35, cz + 0.3);
+  if (p.glow) group.userData.lamp = new THREE.Vector3(board.position.x, cut.h * PX - 0.35, cz + 0.3);
   return group;
 }
 
@@ -482,13 +484,13 @@ async function addGuest(id) {
 /** Every seat in the room (a bed, a cushion) and who's on it or heading for it. */
 function seats() {
   const used = new Set(guests.map(g => g.w?.seat?.it).filter(Boolean));
-  return base.items.filter(it => SEATS[it.id] && !used.has(it));
+  return base.items.filter(it => seatOf(it.id) && !used.has(it));
 }
 
 /** The seat's spot: the middle of its footprint, on top of it. */
 function seatSpot(it) {
   const [fw, fh] = footprint(it);
-  return { x: it.x - COLS / 2 + fw / 2, z: it.y - ROWS / 2 + fh / 2, y: FLAT[it.id][0], tile: { x: it.x + Math.floor((fw - 1) / 2), y: it.y + Math.floor((fh - 1) / 2) } };
+  return { x: it.x - COLS / 2 + fw / 2, z: it.y - ROWS / 2 + fh / 2, y: PIECES[it.id].high, tile: { x: it.x + Math.floor((fw - 1) / 2), y: it.y + Math.floor((fh - 1) / 2) } };
 }
 
 const nextTo = (t, it) => {
@@ -532,7 +534,7 @@ function climb(w, now) {
   w.goal = null;
   if (!base.items.includes(it) || !nextTo(w.tile, it)) { w.seat = null; w.think = now + rand(1000, 3000); return; }
   w.from = w.tile;
-  const s = SEATS[it.id];
+  const s = seatOf(it.id);
   leap(w, { x: w.seat.x, y: w.seat.y, z: w.seat.z }, 450, () => {
     const at = performance.now();
     if (!base.items.includes(it)) { w.think = at; return; }   // moved from under it mid-hop: straight back down
@@ -586,15 +588,57 @@ function cheer(g, hearts = 3) {
   if (w.sleeping) w.think = performance.now() + 500;
 }
 
+/* ---------- the present ---------- */
+
+function unwrap(i) {
+  if (unwrapping) return;
+  playSound('catch-shake');
+  unwrapping = { it: base.items[i], t0: performance.now() };
+}
+
+function liveGift(now) {
+  if (!giftBoard) return;
+  if (unwrapping) {
+    const k = (now - unwrapping.t0) / 900;
+    if (k < 1 && !calm) { giftBoard.rotation.z = Math.sin(k * Math.PI * 6) * 0.22 * (1 - k * 0.5); return; }
+    const it = unwrapping.it, at = { x: tileX(it.x), y: 0, z: tileZ(it.y) };
+    unwrapping = null;
+    const got = openGift(base);
+    buildPieces();
+    playSound('item-get');
+    for (let i = 0; i < 8; i++) setTimeout(() => puff('star', { x: at.x + rand(-0.4, 0.4), y: 0, z: at.z }, { top: rand(0.1, 0.6) }), i * 70);
+    showGiftCard(got);
+    return;
+  }
+  if (!calm) giftBoard.position.y = giftBoard.userData.y0 + Math.abs(Math.sin(now / 280)) * 0.07;
+}
+
+/** What was in the present, its pieces popping in one by one, and a key straight into decorating. */
+function showGiftCard(got) {
+  const card = root.querySelector('.b3-gift'), row = card.querySelector('.b3-gift-row');
+  row.replaceChildren();
+  const counts = got.reduce((m, id) => m.set(id, (m.get(id) || 0) + 1), new Map());
+  [...counts].forEach(([id, n], i) => {
+    const pic = Object.assign(document.createElement('span'), { className: 'b3-pic' });
+    pic.style.animationDelay = `${0.25 + i * 0.08}s`;
+    pic.append(icon(id));
+    if (n > 1) pic.append(Object.assign(document.createElement('i'), { className: 'b3-tag', textContent: `×${n}` }));
+    row.append(pic);
+  });
+  card.hidden = false;
+  refresh();
+}
+
 /* ---------- hearts and Zs ---------- */
 
 function puffTexture(kind) {
   if (puffTex[kind]) return puffTex[kind];
   const rows = kind === 'heart'
     ? ['.##.##.', '#######', '#######', '.#####.', '..###..', '...#...']
+    : kind === 'star' ? ['...#...', '..###..', '#######', '.#####.', '.##.##.', '#.....#']
     : ['#####', '...#.', '..#..', '.#...', '#####'];
   const c = new OffscreenCanvas(rows[0].length + 2, rows.length + 2), x = c.getContext('2d');
-  const ink = kind === 'heart' ? '#ff5a8a' : '#e8f0ff', edge = kind === 'heart' ? '#8a1a3a' : '#2a3a6a';
+  const ink = { heart: '#ff5a8a', star: '#ffe060' }[kind] || '#e8f0ff', edge = { heart: '#8a1a3a', star: '#8a5a00' }[kind] || '#2a3a6a';
   rows.forEach((r, y) => [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = edge; x.fillRect(i, y, 3, 3); } }));
   rows.forEach((r, y) => [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = ink; x.fillRect(i + 1, y + 1, 1, 1); } }));
   return (puffTex[kind] = tex(c));
@@ -602,8 +646,8 @@ function puffTexture(kind) {
 
 function puff(kind, w, m) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTexture(kind), transparent: true, depthWrite: false }));
-  const size = kind === 'heart' ? 0.26 : 0.2;
-  s.scale.set(size, size * (kind === 'heart' ? 8 / 9 : 1), 1);
+  const size = kind === 'z' ? 0.2 : 0.26;
+  s.scale.set(size, size * (kind === 'z' ? 1 : 8 / 9), 1);
   s.raycast = () => {};
   scene.add(s);
   puffs.push({ s, t0: performance.now(), life: kind === 'heart' ? 1100 : 2200, x: w.x + rand(-0.2, 0.2), y: w.y + m.top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
@@ -632,7 +676,7 @@ function onDown(e) {
   if (mode !== 'edit') return;
   if (!holding) {
     const i = pieceUnder(ndc(e));
-    if (i >= 0) { grab = { i, x: e.clientX, y: e.clientY }; view.setPointerCapture?.(e.pointerId); }
+    if (i >= 0 && !PIECES[base.items[i].id].gift) { grab = { i, x: e.clientX, y: e.clientY }; view.setPointerCapture?.(e.pointerId); }
     return;
   }
   pressing = true; pointer = ndc(e);
@@ -688,6 +732,7 @@ function onTap(e) {
   if (first?.userData.who) return cheer(first.userData.who);
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;
+  if (g && g.parent === pieceGroup && PIECES[base.items[g.userData.index].id].gift) return unwrap(g.userData.index);
   if (mode === 'edit' && g && g.parent === pieceGroup) {
     // a second tap on the picked piece turns it
     if (sel === g.userData.index) return PIECES[base.items[sel].id].layer === 'wall' ? undefined : act('rotate');
@@ -710,7 +755,7 @@ function onTap(e) {
 
 /* ---------- the sheet ---------- */
 
-const TAB_NAME = { furniture: 'Furniture', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
+const TAB_NAME = { furniture: 'Furniture', shop: 'Shop', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
 // white line art, like the round keys' (js/smooth-icons.js)
 const GLYPHS = {
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-width="2.6"/>',
@@ -720,6 +765,7 @@ const GLYPHS = {
   sofa: '<path d="M6 11V8.5a2.5 2.5 0 0 1 2.5-2.5h7A2.5 2.5 0 0 1 18 8.5V11" stroke-width="2.2"/><path d="M4 11.5a1.8 1.8 0 0 1 3.6 0v2.3h8.8v-2.3a1.8 1.8 0 0 1 3.6 0v5.3a1.4 1.4 0 0 1-1.4 1.4H5.4A1.4 1.4 0 0 1 4 16.8Z" stroke-width="2.2"/><path d="M6.5 18.2v1.8M17.5 18.2v1.8" stroke-width="2.2"/>',
   roller: '<rect x="4" y="4" width="13" height="5.5" rx="1.6" stroke-width="2.2"/><path d="M17 6.7h2.5v5H11.5v2.8" stroke-width="2.2"/><rect x="9.8" y="14.5" width="3.4" height="6" rx="1.1" stroke-width="2.2"/>',
   floor: '<path d="M3.5 19.5 7.5 6.5h9l4 13Z" stroke-width="2.2"/><path d="M12 6.5v13M5.6 12.8h12.8" stroke-width="2"/>',
+  cart: '<path d="M3 4.5h2.4l2.2 10.2h10.2l1.9-7.2H6.6" stroke-width="2.2"/><circle cx="9" cy="18.6" r="1.5" stroke-width="2"/><circle cx="16.2" cy="18.6" r="1.5" stroke-width="2"/>',
   ball: '<circle cx="12" cy="12" r="8" stroke-width="2.2"/><path d="M4 12h5.3M14.7 12H20" stroke-width="2.2"/><circle cx="12" cy="12" r="2.6" stroke-width="2.2"/>',
 };
 const glyph = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[name]}</svg>`;
@@ -740,13 +786,14 @@ function tray(which = tab) {
     b.addEventListener('click', pick);
     list.append(b);
   };
-  if (tab === 'furniture') for (const [id, p] of Object.entries(PIECES)) add(p.name, icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'shop') for (const id of furnitureStock()) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
+  if (tab === 'furniture') for (const id of CATALOGUE.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
     playSound('confirm');
     hold(id);
-  }, p.layer === 'wall' ? 'Wall' : '');
+  }, spare(base, id) > 1 && spare(base, id) < Infinity ? `×${spare(base, id)}` : PIECES[id].layer === 'wall' ? 'Wall' : '');
   const swatch = (all, field) => all.forEach(s => {
     const sw = document.createElement('span');
     sw.className = 'b3-swatch';
@@ -774,6 +821,16 @@ function tray(which = tab) {
   }
 }
 
+/** A first tap on a piece for sale shows its price, a second buys it into storage. */
+function shopTap(id) {
+  const p = PIECES[id], coins = getSave().coins ?? 0;
+  if (shopPick !== id) { shopPick = id; shopMsg = ''; playSound('select'); return refresh(); }
+  if (!buyPiece(base, id)) { playSound('cancel'); shopMsg = `You need ${(p.price - coins).toLocaleString()} more PokéCoins for the ${p.name.toLowerCase()}.`; return refresh(); }
+  playSound('buy');
+  shopPick = null; shopMsg = `The ${p.name.toLowerCase()} is in your Furniture now.`;
+  refresh();
+}
+
 function refresh() {
   const busy = holding || sel >= 0;
   root.classList.toggle('editing', mode === 'edit');
@@ -785,9 +842,15 @@ function refresh() {
     b.hidden = holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
   });
   const mons = onShow();
-  root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}` : '';
-  hud.hint.textContent = holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
+  root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}`
+    : tab === 'shop' ? `${(getSave().coins ?? 0).toLocaleString()} coins` : '';
+  const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
+  hud.hint.classList.toggle('tip', !!tip);
+  hud.hint.textContent = tip ? 'A present! Tap it to open it.'
+    : holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
     : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
+    : tab === 'shop' ? (shopMsg || (shopPick ? `${PIECES[shopPick].name}: ${PIECES[shopPick].price.toLocaleString()} PokéCoins. Tap again to buy.` : 'New furniture every day. Tap a piece for its price.'))
+    : tab === 'furniture' && !CATALOGUE.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : 'Pick a piece, or drag one in the room to move it.';
   if (sel >= 0) {
@@ -801,7 +864,7 @@ function refresh() {
     selBox.box.copy(box);
     selBox.visible = true;
   } else selBox.visible = false;
-  if (tab === 'furniture') tray();
+  if (tab === 'furniture' || tab === 'shop') tray();
 }
 
 /* ---------- light ---------- */
@@ -923,6 +986,7 @@ function frame(now) {
   drawMon(mon, walker, dt);
   for (const g of guests) if (g.mon) liveGuest(g, dt, now);
   livePuffs(now);
+  liveGift(now);
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) {
     for (const dust of motes) {
@@ -1005,12 +1069,14 @@ export async function openBase3d({ onLeave = null } = {}) {
         <button type="button" data-act="done">${glyph('ok')}<span>Done</span></button>
         <button type="button" data-act="cancel">${glyph('close')}<span>Cancel</span></button>
       </div>
+      <div class="b3-gift" hidden><p>Starter furniture!</p><div class="b3-gift-row"></div><button type="button" class="b3-done">Decorate</button></div>
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
     </div>
     <div class="b3-sheet">
       <div class="b3-head">
         <nav class="b3-tabs">
           <button type="button" class="b3-tab" data-tab="furniture" aria-label="Furniture">${glyph('sofa')}</button>
+          <button type="button" class="b3-tab" data-tab="shop" aria-label="Shop">${glyph('cart')}</button>
           <button type="button" class="b3-tab" data-tab="wall" aria-label="Wallpaper">${glyph('roller')}</button>
           <button type="button" class="b3-tab" data-tab="floor" aria-label="Floor">${glyph('floor')}</button>
           <button type="button" class="b3-tab" data-tab="mons" aria-label="Pokémon">${glyph('ball')}</button>
@@ -1073,9 +1139,10 @@ export async function openBase3d({ onLeave = null } = {}) {
   view.addEventListener('pointerup', onUp);
   view.addEventListener('pointercancel', () => { pressing = false; pointer = null; });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
-  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); tray(b.dataset.tab); refresh(); }));
+  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopPick = null; shopMsg = ''; tray(b.dataset.tab); refresh(); }));
+  root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
-  root.querySelector('.b3-done').addEventListener('click', () => setMode('walk'));
+  root.querySelector('.b3-head .b3-done').addEventListener('click', () => setMode('walk'));
   new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));
   tray('furniture');
   refresh();

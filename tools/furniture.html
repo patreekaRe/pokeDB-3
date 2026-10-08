@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Furniture catalogue</title>
+<style>
+  body { margin: 0; padding: 16px; background: #fbf6ea; color: #2a2a3a; font: 13px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .bar { position: sticky; top: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; background: #fbf6ea; z-index: 1; }
+  .bar button { border: 0; border-radius: 999px; padding: 6px 10px; background: #efe6d2; cursor: pointer; }
+  .bar button.on { background: #d84848; color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1.5px #e6dcc6; }
+  .tile canvas { image-rendering: pixelated; width: auto; height: 64px; }
+  .tile b { font-weight: 600; font-size: 11px; text-align: center; }
+  .tile small { color: #9a8e78; }
+</style>
+</head>
+<body>
+<h1>Secret Base furniture</h1>
+<p id="count"></p>
+<div class="bar" id="by"></div>
+<div class="bar" id="pick"></div>
+<div class="grid" id="grid"></div>
+<script type="module">
+import { PIECES, CATALOGUE, THEMES, FAMILIES } from '../js/base-furniture.js';
+const T = 16;
+function art(id) {
+  const p = PIECES[id], c = document.createElement('canvas');
+  if (p.flat) { c.width = p.w * T; c.height = p.h * T; p.flat(c.getContext('2d'), c.width, c.height); }
+  else if (p.wall) { c.width = p.w * T; c.height = 48; p.wall(c.getContext('2d'), 0); }
+  else { c.width = p.w * T; c.height = p.h * T + 40; p.upright(c.getContext('2d'), 0, 40, 0); }
+  return c;
+}
+let by = 'theme', pick = 'classic';
+const bar = (el, list, on, set) => {
+  el.replaceChildren(...list.map(([id, label]) => Object.assign(document.createElement('button'), {
+    textContent: label, className: id === on ? 'on' : '', onclick: () => set(id),
+  })));
+};
+function draw() {
+  bar(document.getElementById('by'), [['theme', 'By theme'], ['fam', 'By kind']], by, (v) => { by = v; pick = by === 'theme' ? 'classic' : 'bed'; draw(); });
+  const opts = by === 'theme' ? THEMES.map(t => [t.id, t.name || 'Classic']) : FAMILIES.map(f => [f.id, f.name]);
+  bar(document.getElementById('pick'), opts, pick, (v) => { pick = v; draw(); });
+  const ids = CATALOGUE.filter(id => PIECES[id][by] === pick);
+  document.getElementById('grid').replaceChildren(...ids.map(id => {
+    const t = document.createElement('div');
+    t.className = 'tile';
+    t.append(art(id), Object.assign(document.createElement('b'), { textContent: PIECES[id].name }),
+      Object.assign(document.createElement('small'), { textContent: `${PIECES[id].price} coins` }));
+    return t;
+  }));
+}
+document.getElementById('count').textContent = `${CATALOGUE.length} pieces: ${FAMILIES.length} kinds in ${THEMES.length} themes.`;
+draw();
+</script>
+</body>
+</html>
