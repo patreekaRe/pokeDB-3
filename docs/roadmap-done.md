@@ -1744,3 +1744,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `.dev-window`s: shell, LCD title, their text on a green `.dev-screen` (result lines as LCD tiles, the gate line violet), the
   unlock's Pokémon on a blue screen; beside another key the one to press is a light LCD key; the loss recap's body is a
   `.bdx-sheet`, the Record Book's run page.
+- **Rewards / Mart in the Pokédex look** (D2 group 2, 2026-10-07): the reward screen's title, its text box (and the map's
+  copy, `#map-log`), the picked card's `.focus-note`, every `.relic` tile (relics, items in a blue screen border, Center /
+  event / Forget choices, the old Index) and the hand picker's `.pick-banner` (its border the verb's colour) are each a green
+  LCD in a ring of the device's shell (end of the D2 block in `css/screens.css`). The scenes' text boxes (evolution, Hall of
+  Fame, films) keep the classic window; the Mart's shelf icons stay bare.

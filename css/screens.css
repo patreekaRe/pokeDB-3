@@ -4961,6 +4961,27 @@ body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not(
   box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
 }
 
+/* rewards and the Mart on the device too (UI fixes D2 group 2, 2026-10-07): the screen's title, its text box, the
+   picked card's note, the relic / item / choice tiles and the hand picker's banner are each a green LCD in a ring of the
+   device's shell. The scenes' text boxes (evolution, Hall of Fame, films) keep the classic window. */
+:is(.reward-title, :where(#reward-screen, .map-bottom) .reward-log, .focus-note, .relic, .pick-banner) {
+  border: 3px solid #2a2a30; border-radius: 8px; color: #1f3a14;
+  background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px var(--shell), 0 0 0 8px var(--shell-rim), 3px 5px 0 8px rgba(0, 0, 0, 0.35);
+}
+.reward-title { letter-spacing: 0.04em; }
+.focus-note { box-shadow: inset 0 2px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell), 0 0 0 5px var(--shell-rim), 2px 3px 0 5px rgba(0, 0, 0, 0.35); }
+.reward-bottom { gap: 18px; }
+:where(#reward-screen, .map-bottom) .reward-log.more::after { color: #1f3a14; }
+.relic .relic-text, .relic .relic-term { color: #3a5a28; }
+.relic .relic-term { background: #d6e8b8; border-left-color: #1f3a14; }
+.relic.item-tile { border-color: #1d58b8; }
+.reward-option.picked > .relic { outline-offset: 10px; }
+.reward-options:has(> .reward-option > .relic) { gap: 30px; }
+@media (max-width: 720px) { .reward-options:has(> .reward-option > .relic) { gap: 22px; } }
+.pick-banner { border-color: var(--pick); }
+.pick-banner .pick-line { color: #3a5a28; }
+
 /* the Game Corner as a Pokédex app (cornerApp in js/shop.js): the cabinet's CRT fills the device's screen, its Buy under it */
 .cdev-app.cdev-corner { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #0c0c10; color: #e8fff4; }
 .cdev-corner .gc-crt { flex: 1 0 auto; justify-content: space-between; }

@@ -11,13 +11,12 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
 - D2. **The rest of the cream windows** (D's audit, 2026-10-07; D moved the map's to the Pokédex look). Still cream
-  (`--win-*`, `.dialog` / `.panel` in `css/base.css`). Order agreed 2026-10-07: run's end (done), then rewards / Mart,
+  (`--win-*`, `.dialog` / `.panel` in `css/base.css`). Order agreed 2026-10-07: run's end (done), rewards / Mart (done),
   then the rest; battle last, its nameplates and intents probably staying cream (the classic look); `.btn` moved window by
   window, never globally; the old Index retired if nothing opens it. Windows: the battle's piles (`#piles-dialog`), the cloud save pair (`#cloud-dialog`, `#cloud-pick-dialog`), patch notes
   (`#patch-dialog`), About and How to play (the windows and the device's Help / About apps, `.cdev-win`), the old Index
   (`#index-dialog`), the deck preview `.panel`. In battle: the nameplates, the Ability banner, intent bubbles, the battle
-  log. Rewards / Mart: the reward title, focus note, reward log, relic tiles (`.relic`), the pile picker's banner
-  (`.pick-banner`). Elsewhere: the Center's label, the Hall of Fame plate, the Trainer Card's info strip (`.tc-info`), the
+  log. Elsewhere: the Center's label, the Hall of Fame plate, the Trainer Card's info strip (`.tc-info`), the
   title's gem side panels (`.gem-side`, `.gem-areas-pop`), the rope ask (`.rope-ask`), and every `.btn` (the cream menu
   option). Staying cream on purpose: tap tips, keyword boxes (`.card-tip`), the cards' own text windows.
 - E. **Upgrade preview.** Choosing a card to upgrade (PP Up, Tutor Notes, events): highlight the numbers that change, or
