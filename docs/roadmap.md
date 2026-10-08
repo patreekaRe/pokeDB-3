@@ -112,8 +112,23 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `?3d` (`js/base-3d.js`, Three.js 0.160.0 from jsDelivr) builds the `?base` room as a diorama from the same save and
   paintings (`roomArt()` / `pieceArt()` in `js/secret-base.js`), the partner's GIF frames via ImageDecoder (a live `<img>`
   without it), tap to walk (BFS round furniture), tap it for its cry, a follow camera, tilt-shift on the partner and bloom
-  in one pass chain, light by `timeOfDay()` (`&time=night` pins it), `&fps` shows a counter. Waiting on the user: base in
-  3D, the Clearing hub, both, or neither (main's roadmap entry has the plan).
+  in one pass chain, light by `timeOfDay()` (`&time=night` pins it), `&fps` shows a counter. iPhones split GIFs with
+  `js/gif-frames.js` (no ImageDecoder there). **The user's verdict (2026-10-08): 60 fps on their phone, and they want
+  both, the base in 3D and the Clearing hub.** Sessions, in order, all on `secret-base`, all Run in: LOCAL (Desktop app):
+  1. **The base in 3D for real.** The 3D view becomes the base: decorating happens in it (tap a piece for Rotate / Move /
+     Store, the tray under the view, a ghost block on the floor tile under your finger, green / red), `?base`'s 2D room
+     only a fallback where WebGL fails. Fix the empty space above and below on an upright phone (closer camera, or the
+     tray in that space). A lamp in the starting set so night has light. Wall and floor swaps rebuild the textures live.
+  2. **Safari Pokémon living in it** (Secret Base part d, in 3D): up to 6 catches as GIF billboards wandering the free
+     tiles with `route()`, tap one for its cry and a hop or hearts; the bed and cushion used.
+  3. **The Clearing as a walkable hub, part a**: after PRESS START, your partner stands in a small 3D Clearing (pixel
+     blocks and billboards in the Clearing's palette, its trees and the Ancient Tree's roots), and walks up to the
+     places instead of tapping the title's signs: the trail out (New game / Continue), the Safari gate, the Sky Pillar,
+     the Sealed Gate once broken, the Secret Base's door, a Pokédex stand. Each opens what its sign opens today. The
+     signs stay as the fallback (no WebGL, or a Settings switch), and the device boots as now.
+  4. **The hub, part b**: its light (dawn / day / dusk / night, fireflies, the hybrid's glows), the flyers crossing its
+     sky, a walk from the hub into the base, sounds. Then the user decides if it goes live.
+  Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
