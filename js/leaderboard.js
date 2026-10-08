@@ -256,7 +256,21 @@ function periodKeys() {
   return keys;
 }
 
-const note = (text, cls = '') => el('p', `pdx-lcd lb-note${cls ? ` ${cls}` : ''}`, text);
+async function entriesFor(day, s, k = K()) {
+  const key = `${k.collection}/${day}`;
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.entries;
+  const q = s.F.query(s.F.collection(s.db, k.collection), s.F.where(k.field, '==', day), s.F.limit(FETCH_LIMIT));
+  const entries = (await s.F.getDocs(q)).docs.map(d => d.data());
+  if (s.user && !entries.some(e => e.uid === s.user.uid)) {   // past the fetch limit, your own entry still shows
+    const mine = await s.F.getDoc(s.F.doc(s.db, k.collection, entryId(day, s.user.uid)));
+    if (mine.exists()) entries.push(mine.data());
+  }
+  cache.set(key, { at: Date.now(), entries });
+  return entries;
+}
+
+const note = (text, cls = '') =>el('p', `pdx-lcd lb-note${cls ? ` ${cls}` : ''}`, text);
 
 function signInRow(text) {
   const box = el('div', 'pdx-lcd lb-signin');
