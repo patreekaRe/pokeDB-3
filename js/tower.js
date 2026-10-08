@@ -54,7 +54,8 @@ let barH = 0;
 function measureBar() {
   const win = document.querySelector('#map-screen.tower .mdex-window');
   if (!win || !win.offsetHeight || $('map-screen').classList.contains('bar-in')) return false;   // sliding in: measured once it's up
-  const top = win.getBoundingClientRect().top, h = Math.round(innerHeight - top);
+  const hinge = document.querySelector('#map-screen.tower .mdex-hinge');
+  const top = Math.min(win.getBoundingClientRect().top, hinge ? hinge.getBoundingClientRect().top : Infinity), h = Math.round(innerHeight - top);
   const lcd = win.querySelector('.run-card').getBoundingClientRect(), css = document.documentElement.style;
   css.setProperty('--tw-lcd-x', `${Math.round(lcd.left)}px`);
   css.setProperty('--tw-lcd-y', `${Math.round(lcd.top)}px`);

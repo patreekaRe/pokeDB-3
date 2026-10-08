@@ -4733,8 +4733,8 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 }
 #map-screen.tower :is(.mdex-window, .mdex-dock) { position: relative; z-index: 2; width: min(100%, 520px); background: var(--shell); }
 #map-screen.tower .mdex-window {
-  padding: 8px 10px 6px; border-radius: 16px 16px 0 0;
-  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
+  order: 2; padding: 4px 10px 6px;
+  box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
 }
 #map-screen.tower .run-card {
   justify-content: stretch; gap: 0; min-height: 40px; margin: 3px; padding: 4px 10px 4px 104px; border-width: 2px; border-radius: 6px;
@@ -4749,16 +4749,16 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 .room-cash.run-money { display: none; }   /* .room-cash below would show it on every map; only a climb has no top bar ₽ */
 #map-screen.tower .run-money { display: flex; margin-left: 4px; padding-left: 8px; border-left: 2px dashed rgba(31, 58, 20, 0.35); font-size: 0.6rem; color: #1f3a14; }
 #map-screen.tower .run-money .smooth-icon { width: 14px; height: 14px; }
-/* the hinge between the LCD and the icons: lens, lights and "Sky Pillar / Floors 1-10" on its own LCD (the user's call,
-   2026-10-08: the stone plate over the tower went, the title sits on the bar like every map's) */
+/* the hinge on top of the bar, over the LCD: lens, lights and "Sky Pillar / Floors 1-10" on its own LCD (the user's calls,
+   2026-10-08: the stone plate over the tower went, the title sits on the bar like every map's; then it moved above the LCD) */
 #map-screen.tower .mdex-hinge {
-  z-index: 2; width: min(100%, 520px); padding: 4px 14px 6px; background: var(--shell);
-  box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
+  order: 1; z-index: 2; width: min(100%, 520px); padding: 8px 14px 2px; background: var(--shell); border-radius: 16px 16px 0 0;
+  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -4px 14px rgba(0, 0, 0, 0.4);
 }
 #map-screen.tower .mdex-hinge .pdx-lens { width: 24px; height: 24px; }
 #map-screen.tower .mdex-hinge .map-head { padding: 3px 10px; }
 #map-screen.tower .mdex-dock {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
+  order: 3; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
   box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
 }
 #map-screen.tower .mdex-btn { padding: 5px 0; border-radius: 10px; }
