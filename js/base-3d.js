@@ -98,6 +98,49 @@ function buildRoom() {
     side.receiveShadow = true; side.castShadow = true;
     roomGroup.add(side);
   }
+  dressRoom(art, cap, outer);
+}
+
+const UPPER = 9, PLINTH = 6;   // tall enough to fill an upright phone above the wall and below the floor
+
+/* The room in a dollhouse: the walls run on up past a picture rail (the wallpaper's pattern, without its skirting,
+   repeated), and the floor sits on a thick base cut at the front, so a tall screen shows no empty sky round it.
+   fitShot() still frames the 3-tile room; these only fill what's left. They cast no shadows into it. */
+function dressRoom(art, cap, outer) {
+  const upper = (w, d) => {
+    const t = tex(crop(art, 0, 0, d * T, 2 * T));
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(1, UPPER / 2);
+    return new THREE.MeshStandardMaterial({ map: t, roughness: 1 });
+  };
+  const rail = solid(shade(cap.color.getHexString(), 0.9));
+  const top = WALL_H + UPPER / 2;
+  const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, UPPER, 0.4), [outer, outer, outer, outer, upper(COLS + 0.8, COLS), outer]);
+  back.position.set(0, top, -ROWS / 2 - 0.2);
+  back.receiveShadow = true;
+  const backRail = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.14, 0.16), rail);
+  backRail.position.set(0, WALL_H + 0.07, -ROWS / 2 + 0.08);
+  roomGroup.add(back, backRail);
+  for (const s of [-1, 1]) {
+    const faces = [outer, outer, outer, outer, outer, outer];
+    faces[s < 0 ? 0 : 1] = upper(ROWS, ROWS);
+    const side = new THREE.Mesh(new THREE.BoxGeometry(0.4, UPPER, ROWS), faces);
+    side.position.set(s * (COLS / 2 + 0.2), top, 0);
+    side.receiveShadow = true;
+    const sideRail = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, ROWS), rail);
+    sideRail.position.set(s * (COLS / 2 - 0.08), WALL_H + 0.07, 0);
+    roomGroup.add(side, sideRail);
+  }
+  // the base under the floor: its cut top in the trim's colour, a dark wood front going down out of view
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.12, 0.4), cap);
+  lip.position.set(0, 0.02, ROWS / 2 + 0.2);
+  lip.receiveShadow = true;
+  const wood = solid('#3a281c');
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, PLINTH, 0.4), wood);
+  plinth.position.set(0, -0.04 - PLINTH / 2, ROWS / 2 + 0.2);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.1, 0.02), rail);
+  band.position.set(0, -0.6, ROWS / 2 + 0.41);
+  roomGroup.add(lip, plinth, band);
 }
 
 // the trim colour is the wallpaper strip's bottom row, whatever the paper
