@@ -708,7 +708,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
   `run.tower` (`isTower()`, seeded streams keyed by `zone()`); each flight is still a `landingMap()` (`js/map.js`) underneath,
   but since part b (2026-10-05) the tower is the map: `js/tower.js` paints a side-on cutaway behind the run card (doors with
-  room icons, the walk in, the spiral-stair climb with the stamped floor plate and altitude gauge, lit floors below with a
+  room icons, the walk in, the spiral-stair climb with the altitude gauge (the floor range on the bar's LCD, numbers on gold plaques), lit floors below with a
   statue of every foe beaten, `run.tower.trail`), the guardian intros (Rayquaza's the grandest) and the fall on a loss, all
   from `js/tower-art.js`'s painters, which also give its fights a tower-room arena (`showTowerScene()` in `js/scene.js`) and
   the summit win scene its backdrop (`paintSummit()`). The windows show the sky by height. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
