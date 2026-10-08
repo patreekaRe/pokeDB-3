@@ -5021,6 +5021,29 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 #reward-screen:has(> .deck-pick) .reward-bottom { order: 1; position: static; flex: none; margin: 0; align-self: center; }
 #reward-screen:has(> .deck-pick) .reward-log { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell-rim); border-color: var(--shell-rim); }
 #reward-screen:has(> .deck-pick) .reward-actions { order: 2; margin: 0; }
+/* its buttons are the yes/no window's keys side by side (the user's call, 2026-10-08): the confirm (Upgrade, Forget...)
+   a light LCD key on the left, greyed until a card is picked, then glowing; Skip a shell key on the right */
+#reward-screen.deck-picking .reward-actions { align-self: stretch; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 4px; }
+#reward-screen.deck-picking .reward-actions > .ds-btn {
+  min-width: 0; padding: 0; border-radius: 999px; background: var(--shell-lo);
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep); transition: translate 0.06s, filter 0.2s, opacity 0.2s;
+}
+#reward-screen.deck-picking .reward-actions > .ds-btn[hidden] { display: none; }
+#reward-screen.deck-picking .reward-actions .pp-pill {
+  display: block; padding: 12px 10px 11px; border: 0; background: none; box-shadow: none; color: #fff; font-size: 0.85rem;
+  text-align: center; text-shadow: 1px 1px 0 var(--shell-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#reward-screen.deck-picking .reward-actions .pp-pill::before { content: none; }
+#reward-screen.deck-picking .reward-actions > .ds-btn:active:not(:disabled) { transform: none; translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+#reward-screen.deck-picking #reward-ok { background: #d6e8b8; box-shadow: inset 0 0 0 2px #1f3a14, 0 3px 0 var(--shell-deep); animation: deckOkPulse 1.1s ease-in-out infinite; }
+#reward-screen.deck-picking #reward-ok .pp-pill { color: #1f3a14; text-shadow: none; }
+#reward-screen.deck-picking #reward-ok:disabled { opacity: 0.45; filter: grayscale(1); cursor: default; animation: none; }
+@keyframes deckOkPulse {
+  50% { background: #eaf6d4; box-shadow: inset 0 0 0 2px #1f3a14, 0 3px 0 var(--shell-deep), 0 0 16px 5px rgba(214, 255, 150, 0.75), 0 0 0 4px rgba(234, 246, 212, 0.55); }
+}
+@media (prefers-reduced-motion: reduce) { #reward-screen.deck-picking #reward-ok { animation: none; } }
+/* the picked card blown up above it: the dim stops at the text box (rewards.js openFocus() sets its bottom) */
+.card-focus.reward-focus.over-pick { padding-bottom: 8px; overflow-y: auto; }
 @media (min-width: 721px) {
   #reward-screen:has(> .deck-pick) {
     inset: 14px auto 14px 50%; width: min(900px, calc(100vw - 32px)); translate: -50% 0;

@@ -184,6 +184,14 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     home(option.group).append(btn);
   }
 
+  // a deck picker's confirm waits, greyed, left of Skip under the text box until a card is picked (the user's call,
+  // 2026-10-08), so it never covers the card
+  const deckPick = layout.split(' ').includes('deck-pick');
+  $('reward-screen').classList.toggle('deck-picking', deckPick);
+  armDeckOk(null);
+  $('reward-ok').hidden = !deckPick;
+  $('reward-ok-text').textContent = oneWord(options.find(o => o.confirm)?.confirm || 'Choose');
+
   const skip = $('reward-skip');
   // a room (an event, the Center, the Mart, the grotto) has the slim bar along the bottom, and Leave is its key after Home
   const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
@@ -216,14 +224,21 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
 
 // the pill says one word (the user's call, 2026-10-08); the windows outside a room keep the full label
 const ONE_WORD = { 'Put in Bag': 'Take', 'PP Up': 'Upgrade' };
+const oneWord = (label) => ONE_WORD[label] || label.split(' ')[0];
+
+/** The deck picker's confirm: `fn` lights it up for the picked card, null greys it out again. */
+function armDeckOk(fn) {
+  const ok = $('reward-ok');
+  ok.disabled = !fn;
+  ok.onclick = fn ? () => fn() : null;
+}
 
 /** The room bar's confirm pill, beside the hinge's lights: `label` names it ("Take it" shows as "Take"), `fn` runs on a
     press; no `fn` puts it away. It starts shown; a screen that waits for a pick first sets `hidden` itself. */
 export function roomConfirm(label, fn) {
   const ok = $('room-ok');
   ok.hidden = !fn;
-  const word = label ? ONE_WORD[label] || label.split(' ')[0] : '';
-  $('room-ok-text').textContent = word;
+  $('room-ok-text').textContent = label ? oneWord(label) : '';
   ok.setAttribute('aria-label', label || '');
   ok.onclick = fn ? () => fn() : null;
   return ok;
@@ -267,6 +282,14 @@ function openFocus(option, btn, take) {
     layer.classList.add('over-room');
     roomConfirm(option.confirm || 'Choose', take);
   }
+  // over a deck picker, the dim stops above the text box so its button row stays lit and takes the confirm
+  const deckPick = $('reward-screen').classList.contains('deck-picking') && !$('reward-screen').hidden;
+  if (deckPick) {
+    yes.hidden = true;
+    layer.classList.add('over-pick');
+    layer.style.bottom = `${Math.max(0, innerHeight - $('reward-screen').querySelector('.reward-bottom').getBoundingClientRect().top + 6)}px`;
+    armDeckOk(take);
+  }
   layer.addEventListener('click', (e) => {
     if (e.target.closest('.card-tips, .up-before, .up-arrow')) return;
     if (e.target.closest('.focus-card, .focus-confirm')) take(); else backOut();
@@ -278,8 +301,8 @@ function openFocus(option, btn, take) {
   document.addEventListener('keydown', onKey);
   btn.classList.add('picked');
   document.body.append(layer);
-  focus = { layer, btn, onKey, inRoom };
-  (inRoom ? $('room-ok') : yes).focus({ preventScroll: true });
+  focus = { layer, btn, onKey, inRoom, deckPick };
+  (inRoom ? $('room-ok') : deckPick ? $('reward-ok') : yes).focus({ preventScroll: true });
 }
 
 function backOut() {
@@ -293,6 +316,7 @@ function closeFocus() {
   focus.btn.classList.remove('picked');
   document.removeEventListener('keydown', focus.onKey);
   if (focus.inRoom) roomConfirm(null);
+  if (focus.deckPick) armDeckOk(null);
   focus = null;
 }
 
