@@ -305,10 +305,12 @@ function init() {
   // ?area=wetland (any Safari area; &stage=0-3, &kind=elite or boss) shows that area's scene the same way, and each
   // tap walks on to its next place, then the next area
   if (params.has('area')) return peekSafari(params);
-  // ?base: the Secret Base (a first pass, roadmap idea; not reachable from the game yet)
-  // ?3d: the same room as a walkable HD-2D diorama (the roadmap's pilot, js/base-3d.js)
-  if (params.has('3d')) return import('./base-3d.js').then(m => m.openBase3d());
-  if (params.has('base')) return import('./secret-base.js').then(m => m.openBase());
+  // ?base (or ?3d): the Secret Base, a walkable HD-2D room you decorate in place (js/base-3d.js; not reachable from the
+  // game yet); where WebGL fails, or with &flat, the 2D room (js/secret-base.js)
+  if (params.has('base') || params.has('3d')) {
+    if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
+    return import('./base-3d.js').then(m => m.openBase3d());
+  }
   if (place) {
     document.body.classList.add('scene-peek');
     showPlaceScene(place, { biome: params.get('biome') || 'clearing' });

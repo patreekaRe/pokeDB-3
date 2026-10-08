@@ -1,7 +1,8 @@
 /* secret-base.js  -  the Secret Base (roadmap idea, part a's first pass): a room of your own, its furniture painted in
    code like the biomes' landmarks, placed on a tile grid with taps (no dragging, for phones). A tap on a piece in the
    tray then on the room places it; a tap on a placed piece gives Rotate / Move / Store. The layout is the save's
-   `secretBase`. Only reached through ?base for now. */
+   `secretBase`. Since the 3D base (js/base-3d.js) this 2D room is only its fallback where WebGL fails (or ?base&flat);
+   the 3D one builds from the paintings, rules and tray icons exported here. */
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
@@ -124,15 +125,27 @@ const PIECES = {
 };
 
 const freshBase = () => ({
-  wall: 'cream', floor: 'wood',
-  items: [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 }, { id: 'plant', x: 10, y: 0, dir: 0 }],
+  v: 1, wall: 'cream', floor: 'wood',
+  items: [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 }, { id: 'lamp', x: 2, y: 0, dir: 0 },
+    { id: 'plant', x: 10, y: 0, dir: 0 }],
 });
 
 const footprint = (it) => { const p = PIECES[it.id]; return it.dir % 2 ? [p.h, p.w] : [p.w, p.h]; };
 
-/* For the ?3d pilot (js/base-3d.js), which builds the same room out of these paintings. */
-export { PIECES, T, WALL, COLS, ROWS, footprint };
-export const loadBase = () => getSave().secretBase ?? freshBase();
+export { PIECES, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, cells, fits, aimTile, icon };
+/** The saved room, or the starting one. A room saved before the lamp joined the starting set gets it once (v 1), by
+    the bed if that spot is free, so night has a light. */
+export function loadBase() {
+  const b = getSave().secretBase;
+  if (!b) return freshBase();
+  if (!b.v) {
+    b.v = 1;
+    const lamp = { id: 'lamp', x: 2, y: 0, dir: 0 };
+    if (!b.items.some(it => it.id === 'lamp') && fits(lamp, -1, b)) b.items.push(lamp);
+  }
+  return b;
+}
+export const saveBase = (b) => updateSave(d => { d.secretBase = b; });
 
 /** The wallpaper strip (WALL high) and the bare floor, painted on one canvas the room's size. */
 export function roomArt(b) {
@@ -233,25 +246,27 @@ function outline(it, colour) {
 
 const cells = (it) => { const [fw, fh] = footprint(it), out = []; for (let i = 0; i < fw; i++) for (let j = 0; j < fh; j++) out.push(`${it.x + i},${it.y + j}`); return out; };
 
-function fits(it, skip = -1) {
+/** Whether a piece fits the room `b` (the 2D room's own by default), leaving out item `skip` (the one being moved). */
+function fits(it, skip = -1, b = base) {
   const p = PIECES[it.id], [fw, fh] = footprint(it);
   if (it.x < 0 || it.x + fw > COLS) return false;
-  if (p.layer === 'wall') return base.items.every((o, i) => i === skip || PIECES[o.id].layer !== 'wall' || o.x + PIECES[o.id].w <= it.x || it.x + fw <= o.x);
+  if (p.layer === 'wall') return b.items.every((o, i) => i === skip || PIECES[o.id].layer !== 'wall' || o.x + PIECES[o.id].w <= it.x || it.x + fw <= o.x);
   if (it.y < 0 || it.y + fh > ROWS) return false;
   const mine = new Set(cells(it)), rug = p.layer === 'rug';
-  return base.items.every((o, i) => {
+  return b.items.every((o, i) => {
     if (i === skip || PIECES[o.id].layer === 'wall' || (PIECES[o.id].layer === 'rug') !== rug) return true;
     return !cells(o).some(c => mine.has(c));
   });
 }
 
-/** Where a tap lands: the piece's footprint centred on it, pulled inside the room. */
-function aim(id, dir, lx, ly) {
+/** Where a tap lands, in tiles (fractions allowed): the piece's footprint centred on it, pulled inside the room. */
+function aimTile(id, dir, tx, ty) {
   const p = PIECES[id], [fw, fh] = dir % 2 ? [p.h, p.w] : [p.w, p.h];
-  const x = Math.max(0, Math.min(COLS - fw, Math.floor(lx / T - (fw - 1) / 2)));
+  const x = Math.max(0, Math.min(COLS - fw, Math.floor(tx - (fw - 1) / 2)));
   if (p.layer === 'wall') return { x };
-  return { x, y: Math.max(0, Math.min(ROWS - fh, Math.floor((ly - WALL) / T - (fh - 1) / 2))) };
+  return { x, y: Math.max(0, Math.min(ROWS - fh, Math.floor(ty - (fh - 1) / 2))) };
 }
+const aim = (id, dir, lx, ly) => aimTile(id, dir, lx / T, (ly - WALL) / T);
 
 function pieceAt(lx, ly) {
   const tx = Math.floor(lx / T), ty = Math.floor((ly - WALL) / T);
@@ -370,11 +385,11 @@ function refresh() {
 }
 
 export function openBase() {
-  base = getSave().secretBase ?? freshBase();
+  base = loadBase();
   const root = document.createElement('section');
   root.className = 'secret-base';
   root.innerHTML = `
-    <header class="sb-top"><h2>Secret Base</h2><a class="sb-close sb-3d" href="?3d">3D</a><button type="button" class="sb-close" aria-label="Leave">✕</button></header>
+    <header class="sb-top"><h2>Secret Base</h2><button type="button" class="sb-close" aria-label="Leave">✕</button></header>
     <div class="sb-room"><canvas class="pixel" width="${W}" height="${H}"></canvas></div>
     <p class="sb-hint"></p>
     <div class="sb-actions" id="sb-actions" hidden>

@@ -115,10 +115,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   in one pass chain, light by `timeOfDay()` (`&time=night` pins it), `&fps` shows a counter. iPhones split GIFs with
   `js/gif-frames.js` (no ImageDecoder there). **The user's verdict (2026-10-08): 60 fps on their phone, and they want
   both, the base in 3D and the Clearing hub.** Sessions, in order, all on `secret-base`, all Run in: LOCAL (Desktop app):
-  1. **The base in 3D for real.** The 3D view becomes the base: decorating happens in it (tap a piece for Rotate / Move /
-     Store, the tray under the view, a ghost block on the floor tile under your finger, green / red), `?base`'s 2D room
-     only a fallback where WebGL fails. Fix the empty space above and below on an upright phone (closer camera, or the
-     tray in that space). A lamp in the starting set so night has light. Wall and floor swaps rebuild the textures live.
+  1. ~~The base in 3D for real~~ done 2026-10-08 (`docs/roadmap-done.md`): `?base` is the 3D room, decorated in place.
   2. **Safari Pokémon living in it** (Secret Base part d, in 3D): up to 6 catches as GIF billboards wandering the free
      tiles with `route()`, tap one for its cry and a hop or hearts; the bed and cushion used.
   3. **The Clearing as a walkable hub, part a**: after PRESS START, your partner stands in a small 3D Clearing (pixel
