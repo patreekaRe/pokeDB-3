@@ -15,7 +15,8 @@ import { RELICS, ABILITIES, relicTerms } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { TYPES } from './data/cards.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { getSave } from './storage.js';
+import { getSave, clearFinds } from './storage.js';
+import { showBadgeNews } from './trainercard.js';
 import { el, itemSprite, termKind } from './ui.js';
 import { playCry, playSound } from './audio.js';
 import { typeOut, finishTyping, progressBar, still, sceneImg } from './pokedex.js';
@@ -126,6 +127,8 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
     foot(g)                  nodes under the tally (a page's prize)
     top()                    a node above the banners (a window's own title bar)
     empty(g)                 a group with nothing in it still gets a banner, saying this, that doesn't open (the leaderboards)
+    fresh(g, t)              a new find not shown yet: a "!" on its banner and slot, and its group opens on it
+    shown(g, t)              it's been on screen: its "!" goes
     A group's `scene` (a biome or Safari area) paints its banner with that place, as the Pokédex's are. */
 export function shelfApp(spec) {
   const groups = spec.groups;
@@ -140,7 +143,7 @@ export function shelfApp(spec) {
       const counted = spec.count?.(g, things);
       const all = !counted && n === of;
       const mask = g.mask?.();
-      const b = el('button', `pdx-banner bdx-banner${all ? ' complete' : ''}${mask ? ' masked' : ''}`);
+      const b = el('button', `pdx-banner bdx-banner${all ? ' complete' : ''}${mask ? ' masked' : ''}${things.some(t => spec.fresh?.(g, t)) ? ' news' : ''}`);
       b.type = 'button';
       b.dataset.group = g.id;
       b.style.setProperty('--b1', g.b1);
@@ -174,6 +177,12 @@ export function shelfApp(spec) {
     b.append(el('span', 'pdx-stripe'), el('strong', 'pdx-banner-name', g.name), el('span', 'pdx-banner-sub', spec.empty(g)));
     return b;
   }
+
+  /** A group opens on its first new find, else its first found thing. */
+  const startAt = (g) => {
+    const things = g.list(), fresh = things.findIndex(t => spec.fresh?.(g, t));
+    return fresh >= 0 ? fresh : Math.max(0, things.findIndex(t => spec.known(g, t)));
+  };
 
   const scoreOf = (g, things) => spec.score?.(g, things) ?? [things.filter(t => spec.known(g, t)).length, things.length];
 
@@ -217,14 +226,17 @@ export function shelfApp(spec) {
       screen.addEventListener('click', () => { if (!swiped) openSheet(); });
     }
 
+    if (spec.fresh?.(group, thing)) spec.shown(group, thing);
     const slots = el('div', 'pdx-slots bdx-slots');
     things.forEach((t, i) => {
       const k = spec.known(group, t);
       const more = spec.slotCls?.(group, t, k);
-      const s = el('button', `pdx-slot bdx-slot${i === at ? ' on' : ''}${k ? '' : ' unseen'}${more ? ` ${more}` : ''}`);
+      const news = spec.fresh?.(group, t);
+      const s = el('button', `pdx-slot bdx-slot${i === at ? ' on' : ''}${k ? '' : ' unseen'}${news ? ' news' : ''}${more ? ` ${more}` : ''}`);
       s.type = 'button';
       s.setAttribute('aria-label', spec.label(group, t, k));
       s.append(spec.art(group, t, k, 'slot'));
+      if (news) s.append(el('span', 'tc-new', '!'));
       s.addEventListener('click', () => show(i, Math.sign(i - at)));
       slots.append(s);
     });
@@ -322,7 +334,7 @@ export function shelfApp(spec) {
   async function openGroup(g, from) {
     if (busy) return;
     group = g;
-    at = Math.max(0, g.list().findIndex(t => spec.known(g, t)));
+    at = startAt(g);
     view = 'page';
     list.inert = true;
     stage.hidden = false;
@@ -379,7 +391,7 @@ export function shelfApp(spec) {
       const start = groups.find(g => g.id === open && g.list().length);
       if (!spec.direct && !start) { renderList(); return; }
       group = start ?? groups[0];
-      at = start ? Math.max(0, group.list().findIndex(t => spec.known(group, t))) : 0;
+      at = start ? startAt(group) : 0;
       view = 'page';
       if (start) { renderList(); list.inert = true; }
       else list.hidden = true;
@@ -434,6 +446,8 @@ export function bagApp(kind) {
   return shelfApp({
     groups: GROUPS[kind],
     known: (g, t) => g.id === 'ability' || getSave().seen[kind].includes(t.id),
+    fresh: (g, t) => g.id !== 'ability' && getSave().newFinds[kind].includes(t.id),
+    shown: (g, t) => { clearFinds(kind, [t.id]); showBadgeNews(); },
     no: (g, t) => (all.includes(t) ? `No.${String(all.indexOf(t) + 1).padStart(3, '0')}` : 'Ability'),
     label: (g, t, known) => (known ? t.name : '???'),
     art: (g, t, known, where) => {

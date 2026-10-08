@@ -231,6 +231,7 @@ function checkpoint() {
   const { floors, byId } = run.map;
   for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
   for (const id of run.items) markSeen('items', id);   // an item is found once it's in the Bag, used or not (the user's call)
+  showBadgeNews();   // a new find puts a "!" on the Home key
   saveRunData({
     version: RUN_SAVE_VERSION,
     starter: run.starter.id,
@@ -687,6 +688,7 @@ function showAbility() {
 function showMap() {
   const biome = land();
   scoping = false;
+  showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
 
@@ -1664,6 +1666,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
 function gainRelic(relic, next) {
   run.relics.push(relic.id);
   markSeen('relics', relic.id);
+  showBadgeNews();
   tell(`Found ${relic.name}!`);
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
   next();
@@ -2750,6 +2753,7 @@ function martRoom() {
       item.sold = true;
       run.relics.push(relic.id);
       markSeen('relics', relic.id);
+      showBadgeNews();
       tell(`Bought ${relic.name}!`);
       if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
       martRoom();

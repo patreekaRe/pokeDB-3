@@ -691,7 +691,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`cardTier()`: green, bronze 10, silver 25, gold 40, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
   the next time it opens, and the gold "!" follows the trail (2026-10-07, the user's ask: it was hard to find what was new): on the
   home screen's ID strip, the new badge's group and the badge itself (`.tc-new`, a gold ring), opened scrolled to the first; a
-  badge is seen only once tapped (`markSeen()` in `js/trainercard.js`), or by "Clear all !" when there are several. **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
+  badge is seen only once tapped (`markSeen()` in `js/trainercard.js`), or by "Clear all !" when there are several.
+  **New finds** get the same trail (2026-10-08, the user's ask: a relic found on a climb showed no "!"), in every mode: the
+  first `markSeen()` of a relic, item or move also files it in `save.newFinds`, and while any is there the title's Pokédex
+  sign, the top bar's / map's / rooms' Home keys (`.dex-news`, `deviceNews()` in `showBadgeNews()`), the device's LED, the
+  app's tile, the group's banner and the slot (`shelfApp()`'s `fresh` / `shown`; the group opens on it) or the Moves tab
+  and card wear a "!"; once on screen it's cleared (`clearFinds()`). `newFinds()` ignores ids no app lists (tokens, status cards). **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
   (`badgeItem()`); `showBadgeNews()` colours the title's Pokédex sign and the Bag by tier and puts a gold "!" on them while a badge
   is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Pokédex** (2026-10-05, the user's pick over

@@ -13,6 +13,9 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { RELICS } from './data/relics.js';
+import { ITEMS } from './data/items.js';
+import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName } from './leaderboard.js';
@@ -344,8 +347,6 @@ const popped = new Set();   // new badges whose pop-in has played this page load
 /** A new badge seen: its "!" goes, and so does its group's, the device lid's and the title's / Bag's once none is left. */
 function markSeen(ids) {
   updateSave(d => { d.badgesSeen = [...new Set([...(d.badgesSeen || []), ...ids])]; });
-  const news = badgeNews();
-  $('cdev')?.classList.toggle('news', news);
   showBadgeNews();
 }
 
@@ -499,13 +500,24 @@ export function cardIcon() {
   return svg;
 }
 
-/** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen. */
+const FIND_LISTS = { relics: RELICS, items: ITEMS, cards: ALL_CARDS };
+
+/** A kind's new finds the Collection hasn't shown, only ones its apps list (a played Cinder or status card isn't one). */
+export const newFinds = (kind, save = getSave()) => (save.newFinds?.[kind] || []).filter(id => FIND_LISTS[kind].some(t => t.id === id));
+
+/** Anything new in the Collection device: a badge, or a relic, item or move found. */
+export const deviceNews = (save = getSave()) => badgeNews(save) || Object.keys(FIND_LISTS).some(k => newFinds(k, save).length);
+
+/** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen; the
+    title's Pokédex sign and every Pokédex / Home key glint for anything new in the device. */
 export function showBadgeNews(save = getSave()) {
-  const tier = cardTier(save).id, news = badgeNews(save);
+  const tier = cardTier(save).id, news = badgeNews(save), any = deviceNews(save);
   for (const node of document.querySelectorAll('#title-menu .gem-dex, #bag-btn, .bag-pocket[data-pocket="trainer"]')) {
     node.dataset.tier = tier;
-    node.classList.toggle('badge-news', news);
+    node.classList.toggle('badge-news', node.classList.contains('gem-dex') ? any : news);
   }
+  for (const node of document.querySelectorAll('#brand-btn, #room-home')) node.classList.toggle('dex-news', any);
+  $('cdev')?.classList.toggle('news', any);
 }
 
 /** The Collection's card for it: the newest badge as its art, coloured like the card. */

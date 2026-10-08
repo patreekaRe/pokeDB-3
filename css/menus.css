@@ -1382,7 +1382,22 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .tc-new { top: -5px; right: -5px; width: 13px; height: 13px; font-size: 9px; }
 .tc-seen-all { float: right; padding: 3px 7px; border: 0; border-radius: var(--round-xs); font: 0.5rem/1 var(--pixel-font);
   color: #3a1c0c; background: #ffd040; box-shadow: 0 0 0 2px #3a1c0c; cursor: pointer; }
-@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new { animation: none !important; } }
+/* a new relic, item or move (newFinds in the save) leaves the same trail: every Pokédex / Home key, the app's tile, its
+   banner and slot, or the Moves tab and card, till it's been on screen */
+:where(.dex-news) { position: relative; }
+.dex-news::after, .cdev-icon.badge-news::after, .bdx-banner.news::after, .mv-tab.news::after {
+  content: '!'; position: absolute; top: -6px; right: -6px; z-index: 2;
+  display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
+  background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
+  font: 10px/1 var(--pixel-font); animation: newsBob 0.8s ease-in-out infinite alternate; pointer-events: none;
+}
+.cdev-icon.badge-news::after { top: 0; right: max(0px, calc(50% - 42px)); }
+.bdx-banner.news::after { top: 6px; right: 6px; }
+.mv-tab { position: relative; }
+.mv-tab.news::after { top: -4px; right: -4px; width: 13px; height: 13px; font-size: 9px; }
+.pdx-slot.news, .card.news { box-shadow: 0 0 0 2px #ffd040, 0 0 10px rgba(255, 208, 64, 0.6); }
+.card-new { position: absolute; top: -5px; right: -5px; z-index: 3; }
+@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after { animation: none !important; } }
 @keyframes newsBob { to { translate: 0 -3px; } }
 @media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .gem-icon::after { animation: none !important; } }
 .bag-pocket .tc-icon { width: 30px; }

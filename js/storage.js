@@ -61,6 +61,7 @@ const freshSave = () => ({
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
   seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
+  newFinds: { relics: [], items: [], cards: [] },   // seen ids the Collection hasn't shown yet: each wears a "!" there till looked at (js/collection.js)
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
@@ -114,6 +115,7 @@ function load() {
         gateHp: saved.gateHp ?? seedGate(saved),
         passives: { ...base.passives, ...saved.passives },
         seen: { ...base.seen, ...saved.seen, cards: saved.seen?.cards ?? seedCards(saved) },
+        newFinds: { ...base.newFinds, ...saved.newFinds },
         dex: seedCounts({ ...base.dex, ...saved.dex }),
         shiny: { ...base.shiny, ...saved.shiny },
         safariDex: { ...base.safariDex, ...saved.safariDex },
@@ -219,6 +221,15 @@ export function markSeen(kind, id) {
   if (kind === 'cards') id = id.replace(/\+$/, '');   // an upgraded copy counts as its card
   if (data.seen[kind].includes(id)) return;
   data.seen[kind].push(id);
+  data.newFinds[kind].push(id);
+  persist();
+}
+
+/** The Collection has shown these finds: their "!" goes. */
+export function clearFinds(kind, ids) {
+  const gone = new Set(ids);
+  if (!data.newFinds[kind].some(id => gone.has(id))) return;
+  data.newFinds[kind] = data.newFinds[kind].filter(id => !gone.has(id));
   persist();
 }
 

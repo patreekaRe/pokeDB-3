@@ -22,7 +22,7 @@ import { howtoApp } from './howto.js';
 import { statsApp } from './statsdex.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
-import { openTrainerCard, trainerTile, badgeNews, partner, cardTier, badgeArt } from './trainercard.js';
+import { openTrainerCard, trainerTile, badgeNews, deviceNews, newFinds, partner, cardTier, badgeArt } from './trainercard.js';
 import { BADGES } from './data/badges.js';
 import { trainerName } from './leaderboard.js';
 import { showName } from './settings.js';
@@ -78,8 +78,8 @@ export function openDeviceApp(id, at, home = false, onClose = null) {
 /** The closed cover: an LED that blinks while a badge is unseen, your partner in a little window, your name and badges. */
 export function coverArt() {
   const save = getSave();
-  const led = el('span', `cdev-led${badgeNews(save) ? ' on' : ''}`);
-  led.title = badgeNews(save) ? 'A new badge!' : '';
+  const led = el('span', `cdev-led${deviceNews(save) ? ' on' : ''}`);
+  led.title = badgeNews(save) ? 'A new badge!' : deviceNews(save) ? 'Something new!' : '';
   const mate = partner(save);
   const win = el('span', 'cdev-cover-window');
   const img = el('img', 'pixel');
@@ -124,12 +124,12 @@ function apps(save) {
   };
   const safari = safariOpen(save) ? safariDexCount() : null;
   const things = (id, name, art, all) => ({
-    id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-dex cdev-bag', app: bagApp(id),
+    id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-dex cdev-bag', app: bagApp(id), news: newFinds(id, save).length > 0,
   });
   return [
     { id: 'dex', name: 'Pokédex', art: vec('dex'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },
     { id: 'moves', name: 'Moves', art: vec('moves'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
-      cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type) },
+      cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type), news: newFinds('cards', save).length > 0 },
     safari
       ? { ...safariApp(safari), name: 'Safari', art: vec('safari'), at: here.safari }
       : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
@@ -167,10 +167,10 @@ function ownerStrip(save) {
 
 function renderHome() {
   const save = getSave();
-  $('cdev').classList.toggle('news', badgeNews(save));   // the cover's LED, still blinking on the lid once it's open
+  $('cdev').classList.toggle('news', deviceNews(save));   // the cover's LED, still blinking on the lid once it's open
   const grid = el('div', 'cdev-grid');
   grid.append(...apps(save).map(a => {
-    const icon = el('button', `cdev-pick cdev-icon app-${a.id}${a.locked ? ' locked' : ''}`);
+    const icon = el('button', `cdev-pick cdev-icon app-${a.id}${a.locked ? ' locked' : ''}${a.news ? ' badge-news' : ''}`);   // a new find inside: the "!" leads on to it
     icon.type = 'button';
     const tile = el('span', 'cdev-tile');
     tile.append(a.locked ? vec('lock') : a.art);
