@@ -339,8 +339,19 @@ const hintFor = (b, save) => {
   return b.locked ? b.text : `Not earned yet. ${b.text}.`;
 };
 
+const popped = new Set();   // new badges whose pop-in has played this page load: their "!" stays, the show doesn't repeat
+
+/** A new badge seen: its "!" goes, and so does its group's, the device lid's and the title's / Bag's once none is left. */
+function markSeen(ids) {
+  updateSave(d => { d.badgesSeen = [...new Set([...(d.badgesSeen || []), ...ids])]; });
+  const news = badgeNews();
+  $('cdev')?.classList.toggle('news', news);
+  showBadgeNews();
+}
+
 function badgeButton(b, save, earned, fresh, i) {
-  const btn = el('button', `tc-badge${earned ? ' earned' : ' locked'}${fresh ? ' fresh' : ''}`);
+  const btn = el('button', `tc-badge${earned ? ' earned' : ' locked'}${fresh ? ' new' : ''}${fresh && !popped.has(b.id) ? ' fresh' : ''}`);
+  btn.dataset.badge = b.id;
   btn.type = 'button';
   const art = badgeArt(b.id, earned);
   btn.style.setProperty('--art', `url(${art})`);
@@ -349,9 +360,19 @@ function badgeButton(b, save, earned, fresh, i) {
   img.src = art;
   img.alt = '';
   btn.append(img);
+  if (fresh) btn.append(el('span', 'tc-new', '!'));
   const name = earned ? b.name : (b.secret && !(save.unlocked || []).includes('mewtwo') ? '???' : b.name);
   btn.setAttribute('aria-label', `${name}: ${earned ? 'earned' : 'not earned'}`);
-  btn.addEventListener('click', () => tipAt(btn, earned ? `${b.name}: earned! ${b.text}.` : `${name}: ${hintFor(b, save)}`));
+  btn.addEventListener('click', () => {
+    tipAt(btn, earned ? `${b.name}: earned! ${b.text}.` : `${name}: ${hintFor(b, save)}`);
+    if (!btn.classList.contains('new')) return;
+    btn.classList.remove('new');
+    btn.querySelector('.tc-new')?.remove();
+    const row = btn.closest('.tc-row');
+    if (row && !row.querySelector('.tc-badge.new')) row.classList.remove('new');
+    if (!btn.closest('.tc-case')?.querySelector('.tc-badge.new')) btn.closest('.tc-case')?.parentElement?.querySelector('.tc-seen-all')?.remove();
+    markSeen([b.id]);
+  });
   return btn;
 }
 
@@ -415,8 +436,9 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   for (const group of BADGE_GROUPS) {
     const row = el('div', 'tc-row');
     const badges = el('div', 'tc-badges');
-    badges.append(...BADGES.filter(b => b.group === group.id).map(b => badgeButton(b, save, earned.has(b.id), fresh.includes(b.id), fresh.includes(b.id) ? n++ : 0)));
+    badges.append(...BADGES.filter(b => b.group === group.id).map(b => badgeButton(b, save, earned.has(b.id), fresh.includes(b.id), fresh.includes(b.id) && !popped.has(b.id) ? n++ : 0)));
     const inGroup = BADGES.filter(b => b.group === group.id);
+    if (inGroup.some(b => fresh.includes(b.id))) row.classList.add('new');
     row.append(el('span', 'tc-group', `${group.name} · ${inGroup.filter(b => earned.has(b.id)).length}/${inGroup.length}`), badges);
     caseBox.append(row);
   }
@@ -426,17 +448,32 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   head.querySelector('h2').tabIndex = -1;
   const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
   const body = into ?? $('trainer-body');
-  body.replaceChildren(head, info, el('span', 'tc-case-label', 'BADGE CASE'), caseBox, foot);
+  const label = el('span', 'tc-case-label', 'BADGE CASE');
+  if (fresh.length > 1) {
+    const all = el('button', 'tc-seen-all', 'Clear all !');
+    all.type = 'button';
+    all.addEventListener('click', () => {
+      playSound('confirm');
+      caseBox.querySelectorAll('.new').forEach(n => n.classList.remove('new'));
+      caseBox.querySelectorAll('.tc-new').forEach(n => n.remove());
+      all.remove();
+      markSeen(fresh);
+    });
+    label.append(all);
+  }
+  body.replaceChildren(head, info, label, caseBox, foot);
   if (!into && !reopen) openDialog('trainer-dialog');
   const showing = () => (into ? into.isConnected && !into.closest('[hidden]') : dialog.open);
 
-  if (fresh.length) {
-    // each new badge pops in with a shine the first time the card opens after it
-    fresh.forEach((id, i) => setTimeout(() => { if (showing()) playSound(`crystal-${i % 3}`); }, 450 + i * 260));
-    updateSave(d => { d.badgesSeen = [...earned]; });
-    showBadgeNews();
-  }
+  // a new badge keeps its "!" till it's tapped: the case opens scrolled to the first one
+  const first = caseBox.querySelector('.tc-badge.new');
+  if (first && !reopen) setTimeout(() => { if (showing()) first.closest('.tc-row').scrollIntoView({ block: 'center', behavior: calmScroll() }); }, 120);
+  const pops = fresh.filter(id => !popped.has(id));
+  // each new badge pops in with a shine the first time the card opens after it
+  pops.forEach((id, i) => { popped.add(id); setTimeout(() => { if (showing()) playSound(`crystal-${i % 3}`); }, 450 + i * 260); });
 }
+
+const calmScroll = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 
 /** Earned badges the card hasn't shown yet. */
 export const badgeNews = (save = getSave()) => [...earnedIds(save)].some(id => !(save.badgesSeen || []).includes(id));

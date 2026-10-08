@@ -1313,6 +1313,21 @@ body[data-screen="start-screen"] .topbar { display: none; }
   font: 10px/1 var(--pixel-font); animation: newsBob 0.8s ease-in-out infinite alternate;
 }
 .bag-pocket.badge-news::before { top: -9px; left: -9px; right: auto; }
+/* and it follows the trail: the home screen's Trainer Card strip, the new badge's group, the badge itself, till it's tapped */
+.cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new {
+  content: '!'; position: absolute; top: -6px; right: -6px; z-index: 2;
+  display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
+  background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
+  font: 10px/1 var(--pixel-font); animation: newsBob 0.8s ease-in-out infinite alternate;
+}
+.cdev-owner.badge-news::after { top: 4px; right: 4px; }
+.tc-row.new > .tc-group { position: relative; justify-self: start; padding-right: 22px; }
+.tc-row.new > .tc-group::after { top: -3px; right: 0; width: 13px; height: 13px; font-size: 9px; }
+.tc-badge.new { box-shadow: 0 0 0 2px #ffd040, 0 0 10px rgba(255, 208, 64, 0.6); }
+.tc-new { top: -5px; right: -5px; width: 13px; height: 13px; font-size: 9px; }
+.tc-seen-all { float: right; padding: 3px 7px; border: 0; border-radius: var(--round-xs); font: 0.5rem/1 var(--pixel-font);
+  color: #3a1c0c; background: #ffd040; box-shadow: 0 0 0 2px #3a1c0c; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new { animation: none !important; } }
 @keyframes newsBob { to { translate: 0 -3px; } }
 @media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .gem-icon::after { animation: none !important; } }
 .bag-pocket .tc-icon { width: 30px; }

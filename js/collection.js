@@ -144,7 +144,7 @@ function apps(save) {
 /** The owner's ID strip at the top of the home screen: it opens the Trainer Card. */
 function ownerStrip(save) {
   const tc = trainerTile(save);
-  const strip = el('button', 'cdev-pick cdev-owner');
+  const strip = el('button', `cdev-pick cdev-owner${badgeNews(save) ? ' badge-news' : ''}`);   // the "!" leads on to the new badge
   strip.type = 'button';
   strip.dataset.tier = tc.tier;
   const mate = partner(save);

@@ -53,7 +53,7 @@ every `renderMenu()` without a direction, so `showHome()` always lands on the ma
   (`pillarGem()`, blue, greyed with "Win a run" until `towerOpen()`, then "Best F<n>", opening `actions.onTower`), Back.
   Locked modes still show, greyed, and a tap says how to open them. The Game Modes sign itself is greyed with "Win a run"
   (a tap says so) until either mode is open. A new mode is one more gem in `renderMenu()`'s `modes` list and a `GEMS` colour.
-- **Pokédex**: while an earned badge isn't in `save.badgesSeen`, the gold "!" (`.badge-news`) bounces on it
+- **Pokédex**: while an earned badge isn't in `save.badgesSeen`, the gold "!" (`.badge-news`) bounces on it (and on the device's Trainer Card strip, the badge's group and the badge, till that badge is tapped)
   (`showBadgeNews()`, which also sets its `data-tier`).
 
 Once the Sealed Gate is broken and Mewtwo unlocked, the **open gate** stands on the ledge in the right-hand gutter

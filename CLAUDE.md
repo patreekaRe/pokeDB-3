@@ -684,7 +684,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   write an old save over a cloud download), the partner (a tap picks it: any owned starter at any stage, a defeated Pokédex entry or a Safari catch, `partnerChoices()`, saved as `save.partner`; an owned shiny comes both ways, a "Shiny" group in the picker and a ✨ toggle on the card (`:shiny` on the key; only starters have shiny sprites); Auto is the starter with the most wins; it also shows on the device cover and ID strip), and the Badge Case. Each badge is drawn as smooth SVG (2026-10-05, no pixels) from `LOOK` (a shape
   polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line (the bulk ones are made in loops after it: `AREA_LOOK`, `TYPE_LOOK`, `BIOME_INK`). Its colour steps up with badges
   (`cardTier()`: green, bronze 10, silver 25, gold 40, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
-  the next time it opens. **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
+  the next time it opens, and the gold "!" follows the trail (2026-10-07, the user's ask: it was hard to find what was new): on the
+  home screen's ID strip, the new badge's group and the badge itself (`.tc-new`, a gold ring), opened scrolled to the first; a
+  badge is seen only once tapped (`markSeen()` in `js/trainercard.js`), or by "Clear all !" when there are several. **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
   (`badgeItem()`); `showBadgeNews()` colours the title's Pokédex sign and the Bag by tier and puts a gold "!" on them while a badge
   is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Pokédex** (2026-10-05, the user's pick over
