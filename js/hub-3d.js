@@ -25,7 +25,7 @@ const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
 const M = 4, FRONT = 1;       // grass and forest round it (tiles): back and sides, and in front where the trail leaves
 const TP = 16;                // painted pixels a tile
 const START = { x: 6, y: 8 };
-const PITCH = 0.8, LOOK_Y = 0.6;
+const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
 
@@ -996,6 +996,7 @@ export async function showHub(titleScreen, actions) {
   if (!mon || mon.src !== mate.src) {
     if (mon) { dispose(mon.group); scene.remove(mon.group); }
     mon = await monBoard(mate);
+    mon.board.rotation.x = -PITCH;
     scene.add(mon.group);
     mon.board.userData.who = { mon, w: walker };
   }
