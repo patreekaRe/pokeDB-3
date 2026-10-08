@@ -4232,7 +4232,7 @@ body.scene-peek #backdrop { display: none; }
 
 /* ---------- the Sky Pillar's climb (js/tower.js): the tower is the map, painted behind the run card ---------- */
 .tower-view { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #0a0c1c; }
-#map-screen.tower .map-head, #map-screen.tower .map-wrap { display: none; }
+#map-screen.tower .map-wrap { display: none; }
 #map-screen.tower .run-card { z-index: 2; }
 .tw-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 .tw-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); image-rendering: pixelated; pointer-events: none;
@@ -4250,17 +4250,6 @@ body.scene-peek #backdrop { display: none; }
 .tw-door:nth-child(2) .tw-door-tag { animation-delay: -0.5s; } .tw-door:nth-child(3) .tw-door-tag { animation-delay: -1s; }
 .tw-door.guardian .tw-door-tag { min-width: 40px; height: 32px; font-size: 1.2rem; background: linear-gradient(#fff4b8, #f8c830); }
 @keyframes twTag { 50% { translate: -50% -6px; } }
-/* the stone plate a floor's number is stamped on */
-.tw-plate { position: absolute; left: 50%; top: max(20px, calc(env(safe-area-inset-top) + 12px)); translate: -50% 0; display: grid; justify-items: center; gap: 4px; min-width: 132px; padding: 8px 16px 9px;
-  border: 3px solid #2a2622; border-radius: 6px; background: linear-gradient(#a8a090, #8a8274 55%, #6e6758); color: #2e2a24;
-  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.35), inset -2px -3px 0 rgba(0, 0, 0, 0.25), 3px 4px 0 rgba(0, 0, 0, 0.45); pointer-events: none; z-index: 1; }
-.tw-plate-num { font-size: 1.35rem; letter-spacing: 2px; color: #3a342c; text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4), -1px -1px 0 rgba(0, 0, 0, 0.35); }
-.tw-plate-sub { font-size: 0.55rem; color: #3e382e; }
-.tw-plate.guardian { background: linear-gradient(#f0d890, #c8a048 55%, #9a7428); border-color: #4a3410; }
-.tw-plate.stamp { animation: twStamp 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
-.tw-plate.stamp .tw-plate-num { animation: twCarve 0.9s ease-out both; }
-@keyframes twStamp { 0% { scale: 1.9; opacity: 0; rotate: -6deg; } 45% { scale: 0.92; opacity: 1; rotate: 1deg; } 70% { scale: 1.04; } 100% { scale: 1; rotate: 0deg; } }
-@keyframes twCarve { 0%, 30% { color: transparent; text-shadow: none; } }
 /* the altitude gauge: the sky's colours by height, a tick every 10 floors, your floor and your best */
 .tw-gauge { position: absolute; left: 4px; top: max(36px, calc(env(safe-area-inset-top) + 28px)); bottom: calc(var(--tw-bar-h, 240px) + 18px); width: 12px; pointer-events: none; z-index: 1; }
 .tw-gauge-cap { position: absolute; top: -16px; left: 50%; translate: -50% 0; font-size: 0.45rem; color: #f8f0d8; text-shadow: 1px 1px 0 #000; }
@@ -4290,7 +4279,7 @@ body.scene-peek #backdrop { display: none; }
 .tower-fx.flash .tw-fx-dark { background: #fff; animation: twFlash 0.5s both; }
 @keyframes twFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
 .tower-fx.dark .tw-fx-dark { background: #000; opacity: 1; transition: opacity 0.45s ease-in; animation: none; }
-@media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-plate.stamp, .tw-plate.stamp .tw-plate-num, .tw-fx-text.in { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tw-door-tag, .tw-fx-text.in { animation: none; } }
 .tw-fx-text.high { top: 7%; }
 /* the lobby's plaque (js/towerprep.js): the week's top climbers engraved in a bronze plate, riveted at the corners */
 /* pinned to the screen's bottom while the lobby scrolls (the user's ask, 2026-10-05); sticky needs the pages' overflow to be
@@ -4594,30 +4583,29 @@ body.scene-peek #backdrop { display: none; }
   padding: var(--topbar-h) 0 0;
   overflow: hidden;
 }
-#map-screen.tower :is(.mdex-hinge, .mdex-glass) { display: contents; }
-#map-screen.tower :is(.mdex-hinge > .pdx-lens, .mdex-lights) { display: none; }
+#map-screen.tower .mdex-glass { display: contents; }
 #map-screen:not(.tower) .mdex-window {
   position: relative; flex: none; margin: 2px 10px 0; padding: 6px 6px 4px; border-radius: 16px 16px 8px 8px;
   box-shadow: inset 0 0 0 3px var(--shell-rim), inset 0 8px 14px rgba(0, 0, 0, 0.3), 0 0 0 100vmax var(--shell);
 }
 #map-screen:not(.tower) .run-card { padding: 2px 2px 4px; }
-#map-screen:not(.tower) .mdex-hinge { position: relative; flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+#map-screen .mdex-hinge { position: relative; flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
 .mdex-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
 .mdex-lights { display: flex; gap: 5px; }
 .mdex-lights .pdx-light { width: 9px; height: 9px; }
-#map-screen:not(.tower) .mdex-hinge .map-head {
+#map-screen .mdex-hinge .map-head {
   flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
   margin: 0 0 0 auto; padding: 5px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
   background: #b6d68e; box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
 }
-#map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign) {
+#map-screen .mdex-hinge :is(.biome-sign, .stage-sign) {
   max-width: 100%; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; text-shadow: none;
   color: #1f3a14; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: none !important;
 }
-#map-screen:not(.tower) .mdex-hinge .biome-sign { font-size: 0.72rem; letter-spacing: 0.04em; }
-#map-screen:not(.tower) .mdex-hinge .stage-sign { font-size: 0.58rem; opacity: 0.8; }
-#map-screen:not(.tower) .mdex-hinge .stage-sign::before, #map-screen:not(.tower) .mdex-hinge .stage-sign::after { display: none; }
-#map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: lcdType 0.6s steps(6) both !important; }
+#map-screen .mdex-hinge .biome-sign { font-size: 0.72rem; letter-spacing: 0.04em; }
+#map-screen .mdex-hinge .stage-sign { font-size: 0.58rem; opacity: 0.8; }
+#map-screen .mdex-hinge .stage-sign::before, #map-screen .mdex-hinge .stage-sign::after { display: none; }
+#map-screen .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: lcdType 0.6s steps(6) both !important; }
 @keyframes lcdType { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
 #map-screen:not(.tower) .mdex-glass {
   position: relative; flex: 1; min-height: 0; display: flex; margin: 0 10px; padding: 8px; border-radius: 12px 12px 12px 30px;
@@ -4741,6 +4729,14 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 .room-cash.run-money { display: none; }   /* .room-cash below would show it on every map; only a climb has no top bar ₽ */
 #map-screen.tower .run-money { display: flex; margin-left: 4px; padding-left: 8px; border-left: 2px dashed rgba(31, 58, 20, 0.35); font-size: 0.6rem; color: #1f3a14; }
 #map-screen.tower .run-money .smooth-icon { width: 14px; height: 14px; }
+/* the hinge between the LCD and the icons: lens, lights and "Sky Pillar / Floors 1-10" on its own LCD (the user's call,
+   2026-10-08: the stone plate over the tower went, the title sits on the bar like every map's) */
+#map-screen.tower .mdex-hinge {
+  z-index: 2; width: min(100%, 520px); padding: 4px 14px 6px; background: var(--shell);
+  box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
+}
+#map-screen.tower .mdex-hinge .pdx-lens { width: 24px; height: 24px; }
+#map-screen.tower .mdex-hinge .map-head { padding: 3px 10px; }
 #map-screen.tower .mdex-dock {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 12px max(8px, env(safe-area-inset-bottom));
   box-shadow: inset 3px 0 0 var(--shell-rim), inset -3px 0 0 var(--shell-rim);
@@ -4765,7 +4761,7 @@ body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs { filter: no
 body[data-screen="map-screen"]:has(#map-screen.tower) .floor-stairs i { width: 13px; height: 13px; background: #1f3a14; }
 body[data-screen="map-screen"]:has(#map-screen.tower) :is(.map-bottom, .bag:not([hidden])) { bottom: calc(var(--tw-bar-h, 120px) + 8px); }
 /* a climb's first look: the bar and the top bar on its LCD slide up from below (popBar() in js/tower.js, BAR_IN) */
-#map-screen.tower.bar-in :is(.mdex-window, .mdex-dock),
+#map-screen.tower.bar-in :is(.mdex-window, .mdex-hinge, .mdex-dock),
 body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation: twBarIn 0.48s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
 @keyframes twBarIn { from { translate: 0 calc(var(--tw-bar-h, 140px) + 30px); } to { translate: 0 0; } }
 /* an augment pick over the climb (showChoice()'s `over`): no title, no text box, no backdrop, just the tiles and the
@@ -4784,12 +4780,12 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
   #map-screen:not(.tower) .mdex-window, #map-screen:not(.tower) .mdex-glass { margin-inline: 14px; }
   #map-screen:not(.tower) .map { width: min(100%, calc(var(--grid-w, 37) * 11px)); }
   #map-screen:not(.tower) .mdex-dock { grid-template-columns: repeat(5, minmax(0, 110px)); justify-content: center; padding-bottom: 12px; }
-  #map-screen:not(.tower) .mdex-hinge .map-head { flex: 0 1 380px; }
+  #map-screen .mdex-hinge .map-head { flex: 0 1 380px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-bottom { bottom: 100px; }
   body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .bag:not([hidden]) { bottom: 96px; max-height: min(50dvh, calc(100dvh - var(--topbar-h) - 120px)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #map-screen:not(.tower) .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: none !important; }
+  #map-screen .mdex-hinge :is(.biome-sign, .stage-sign).arrive { animation: none !important; }
   .bag:not([hidden]) { animation: none !important; }
 }
 

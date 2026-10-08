@@ -3,8 +3,8 @@
  * fills the map screen behind the run card, the floor you stand on low in the middle: its 2-3 doors, each with its room's
  * icon over the arch, the spiral stair at the right, the floors you've climbed lit below with a stone statue of every
  * foe beaten before the door it came through, the floors still to climb dim above. Pick a door and your Pokémon walks
- * to it and in (run.js's enterNode). Come back out and it climbs the stair while the camera pans up a floor and the new
- * number is stamped on the stone plate; the altitude gauge at the side tops out at floor 100.
+ * to it and in (run.js's enterNode). Come back out and it climbs the stair while the camera pans up a floor and the LCD
+ * on the bar below says which ten floors; the altitude gauge at the side tops out at floor 100.
  *
  * Also here: a guardian's intro before its fight (Rayquaza's at the summit the grandest) and the fall on a loss, both on
  * one overlay (#tower-fx) painted by the same art, so every floor looks the same wherever it's seen.
@@ -211,7 +211,7 @@ async function walk(toX, speed = 34) {
   mon.hop = 0;
 }
 
-/* ---------- the doors, the gauge and the plate ---------- */
+/* ---------- the doors and the gauge ---------- */
 
 function doorButtons() {
   const box = $('tw-doors');
@@ -294,18 +294,6 @@ function setGauge(floor, best) {
   b.title = `Your best: floor ${best}`;
 }
 
-function stampPlate(floor, flight, animate) {
-  const plate = $('tw-plate');
-  plate.querySelector('.tw-plate-num').textContent = floor === TOP ? 'SUMMIT' : `${floor}F`;
-  plate.querySelector('.tw-plate-sub').textContent = floor === TOP ? `Floor ${TOP}` : floor % 10 === 0 ? 'Guardian' : `Floors ${flight * 10 + 1}-${flight * 10 + 10}`;
-  plate.classList.toggle('guardian', floor % 10 === 0);
-  if (!animate || still()) return;
-  plate.classList.remove('stamp');
-  void plate.offsetWidth;
-  plate.classList.add('stamp');
-  setTimeout(() => playSound('stamp'), 120);
-}
-
 /* ---------- the climb ---------- */
 
 /**
@@ -320,7 +308,7 @@ export function renderTower({ map, current, flight, trail, best, sprite, onPick,
   watchBar();
   measureBar();
   if (!S) popBar();
-  preloadSounds('door', 'stamp', 'confirm');
+  preloadSounds('door', 'confirm');
   const here = current && map.byId[current];
   const row = here ? here.floor + 1 : 0;
   const floorNow = flight * 10 + row + 1;
@@ -346,7 +334,6 @@ export function renderTower({ map, current, flight, trail, best, sprite, onPick,
   if (climb) return climbUp(floorNow, flight);
   camY = standY(floorNow);
   Object.assign(mon, { x: V.lay.stairX + 1, floor: floorNow, lift: 0, alpha: 1, flip: false, behind: false });
-  stampPlate(floorNow, flight, false);
   paint();
   doorButtons();
 }
@@ -363,7 +350,6 @@ function waitBelow(floorNow) {
   const from = floorNow - 1;
   busy = false;
   camY = standY(from);
-  stampPlate(from || 1, Math.floor(Math.max(0, from - 1) / 10), false);
   Object.assign(mon, { x: exitDoor(from), floor: from, lift: 2, alpha: 0, flip: true, behind: false });
   S.opening = null;
   $('tw-doors').replaceChildren();
@@ -392,7 +378,6 @@ async function climbUp(floorNow, flight) {
   const fromLobby = !last;
   const door = exitDoor(from);
   camY = standY(from);
-  stampPlate(from || 1, Math.floor(Math.max(0, from - 1) / 10), false);
   Object.assign(mon, { x: door, floor: from, lift: 2, alpha: 0, flip: true, behind: false });
   const beaten = S.trail.find(e => e.f === from);
   const fought = beaten?.enemy && ['fight', 'elite', 'boss'].includes(beaten.type);
@@ -430,7 +415,6 @@ async function climbUp(floorNow, flight) {
   camY = c1;
   await walk(lay.stairX + 1);
   mon.flip = false;
-  stampPlate(floorNow, flight, true);
   last = null;
   busy = false;
   doorButtons();

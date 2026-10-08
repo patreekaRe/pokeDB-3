@@ -152,7 +152,7 @@ is the screen and the overlay that use them.
   copy of the sky (`b.sky`) and every window, and the lobby's open door, shows it.
 - **The tower** (`paintTower()`, `towerLayout()`): outer walls cut away (moss and ivy outside), each floor a back wall of
   stone courses whose stone changes every few flights (`TIERS`: mossy grey, sandstone, cloud grey, moonstone, jade at the
-  top), its number carved by the wall, its slab open over the stair of the floor below. A floor is lit once climbed or where
+  top), its number on a gold-on-black iron plaque by the wall (`floorPlaque()`, dim on floors not yet climbed; it was carved in the stone until 2026-10-08, too hard to see), its slab open over the stair of the floor below. A floor is lit once climbed or where
   you stand, dim above (`stone(f, lit)`). Plain floors: their 2-3 doors (`door()`: an arched frame, planks, iron bands, a
   gem in the keystone in the room's colour, `DOOR_GEM`) with windows and torches between; every 10th a guardian's hall
   (banners in the guardian's biome colours, `BANNER`, braziers, one great gold-trimmed door); floor 0 the lobby (the way in,
@@ -162,16 +162,15 @@ is the screen and the overlay that use them.
   are hidden, `#map-screen.tower`). Since 2026-10-07 (the user's call: you climb up, so the top is for the tower) the run card
   and top bar sit in the map's Pokédex bar along the bottom, kept slim (the user's follow-up, same day: only the Pokédex,
   floor, HP, Deck, Relics, Items and Main menu): one green LCD strip with the top bar's Pokédex and floor laid on its left
-  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), the climb's ₽ at its right end (`#run-money`, from 0 each climb; the PokéCoin savings never show there, the user's call 2026-10-07), then four
+  and the HP bar (the run card with its sprite, name, chips and EXP hidden; coins and the Game Corner hidden), the climb's ₽ at its right end (`#run-money`, from 0 each climb; the PokéCoin savings never show there, the user's call 2026-10-07), then the hinge (lens, lights and an LCD saying "Sky Pillar" / "Floors 11-20": run.js writes `#biome-name` / `#stage-name` as on every map; the stone plate over the tower went 2026-10-08, the user's call), then four
   icon buttons, the Bag's Deck / Relics / Items and `#dock-menu` (`requestMenu()` in `js/main.js`, shown only on a climb)
   (css/screens.css, "the Sky Pillar's climb has the same device"). `measureBar()` in `js/tower.js` sets `--tw-lcd-x/y/h`
   (where the top bar lies on the LCD) and `--tw-bar-h` (the gauge's floor, the Bag's bottom), re-measured by a ResizeObserver.
-  The floor you stand on sits 14% of the way up the sky above that bar (`STAND`); the plate and gauge are at the top; its doors are buttons (`.tw-door`) with
+  The floor you stand on sits 14% of the way up the sky above that bar (`STAND`); the gauge is at the side; its doors are buttons (`.tw-door`) with
   the room's icon on a hanging sign. A tap: your Pokémon (its front GIF, `#tw-mon`) walks to the door, it opens and the
   Pokémon goes in, then `enterNode()`. Back on the map with the floor above to pick, it comes out of the same door (`last`),
   a beaten foe's statue rises out of the floor (`statue()`: its sprite cropped to its pose in four greys), it walks to the
-  stair and climbs it step by step round the newel while the camera pans up a floor, then the stone plate (`#tw-plate`)
-  stamps the new number (gold on a guardian's floor, SUMMIT on the top) with the `stamp` synth. A fresh climb walks up from
+  stair and climbs it step by step round the newel while the camera pans up a floor. A fresh climb walks up from
   the lobby. The altitude gauge (`#tw-gauge`) is the sky's colours from 0 to 100, a tick every 10, your floor and a gold
   tick at your best; wider screens add its marks (🌲 ☁️ ⛈️ 🌇 🌌 🐉). Under reduced motion nothing walks.
   Fluid motion (the user's ask, 2026-10-06): the screen repaints every display frame (`requestAnimationFrame`, 60/120 Hz)
