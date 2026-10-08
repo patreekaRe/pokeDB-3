@@ -307,6 +307,17 @@
       <!-- the map lives inside the Pokédex (the user's call, 2026-10-07): a window onto the scenery with your Pokémon and HP,
            the biome on the hinge's LCD, the map on the device's screen and the Bag's pockets as the menu bar at the bottom.
            In a Sky Pillar climb these wrappers step aside (display: contents) -->
+      <!-- the LCD's four greens (darkest = the LCD's ink, lightest just above its glass): the run card's Pokémon is painted
+           in them, Game Boy / Game & Watch style, by luminance (the user's ask, 2026-10-08) -->
+      <svg class="svg-defs" width="0" height="0" aria-hidden="true"><filter id="lcd-ink" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0 0 0 1 0"/>
+        <feComponentTransfer>
+          <feFuncR type="discrete" tableValues="0.122 0.247 0.471 0.847"/>
+          <feFuncG type="discrete" tableValues="0.227 0.392 0.627 0.925"/>
+          <feFuncB type="discrete" tableValues="0.078 0.157 0.314 0.706"/>
+          <feFuncA type="discrete" tableValues="0 1"/>
+        </feComponentTransfer>
+      </filter></svg>
       <div class="mdex-window">
       <div class="run-card">
         <!-- a fidget: tap to recall your Pokémon into its ball, tap again to send it out (toggleMon() in js/run.js) -->

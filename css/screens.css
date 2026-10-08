@@ -4678,6 +4678,26 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen .run-foot .level-chip { border: 2px solid var(--lcd-ink); background: var(--lcd-ink); color: var(--lcd); }
 #map-screen .run-foot .level-chip.replay { background: none; color: var(--lcd-ink); }
 #map-screen .run-ability { border-width: 2px; }
+/* a battle status box (the user's ask, 2026-10-08: the card was untidy): your Pokémon in the LCD's own four greens on
+   the left, then name | Level, the HP bar, Ability | HP numbers, every row the same width; the run's ₽ are the top bar's */
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+#map-screen:not(.tower) .run-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 12px; }
+#map-screen:not(.tower) .run-mon { width: 84px; height: 84px; margin: -6px -4px -8px -6px; filter: url(#lcd-ink); }
+#map-screen:not(.tower) .run-sprite { width: 84px; height: 84px; filter: none; }
+#map-screen:not(.tower) .run-info {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name lv" "bar bar" "ab hp";
+  align-items: center; gap: 5px 8px; width: auto;
+}
+#map-screen:not(.tower) .run-foot { display: contents; }
+#map-screen:not(.tower) .run-name { grid-area: name; justify-content: flex-start; }
+#map-screen:not(.tower) .run-name::before { display: none; }
+#map-screen:not(.tower) .run-name strong { font-size: 1rem; letter-spacing: 0.04em; }
+#map-screen:not(.tower) #run-level { grid-area: lv; justify-self: end; }
+#map-screen:not(.tower) #run-level[hidden] { display: none; }
+#map-screen:not(.tower) .run-bars { grid-area: bar; width: 100%; }
+#map-screen:not(.tower) .run-ability { grid-area: ab; justify-self: start; margin: 0; }
+#map-screen:not(.tower) .run-foot .gb-hp-num { grid-area: hp; justify-self: end; font-size: 0.85rem; }
+#map-screen:not(.tower) .run-money { display: none; }
 @media (max-width: 720px) {
   #map-screen:not(.tower) { padding-top: 6px; }
   #map-screen:not(.tower) .run-card {
