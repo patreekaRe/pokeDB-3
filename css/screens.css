@@ -5250,6 +5250,10 @@ body[data-screen="map-screen"] .home-key svg, .room-home .home-key svg { width: 
 body[data-screen="map-screen"] .home-dex:active .home-key, .room-home:active .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key { width: 26px; height: 26px; }
 body[data-screen="map-screen"]:has(#map-screen.tower) .home-key svg { width: 15px; height: 15px; }
+/* on a map the Home key sits on the hinge, after the lights (the user's call, 2026-10-08); fixed, not moved in the DOM,
+   since the top bar's button serves every screen. 95px = the hinge's padding, lens and lights */
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { position: fixed; z-index: 21; left: 95px; top: calc(var(--topbar-h) + (var(--hinge-h) - 30px) / 2); }
+@media (max-width: 720px) { body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { top: calc(6px + (var(--hinge-h) - 30px) / 2); } }
 .room-home .home-key { width: 38px; height: 38px; }
 .room-home .home-key svg { width: 21px; height: 21px; }
 /* in battle the Pokédex button shrinks to 24px (the user's ask, 2026-10-07: at 36px it crowded the enemy's nameplate) */
