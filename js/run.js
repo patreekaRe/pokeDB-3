@@ -80,6 +80,12 @@ const isSafari = () => Boolean(run?.safari);
     rerolls, pick }`, the week's seed driving every roll like the Safari's, `flight` the guardians beaten, `floor` the
     highest floor cleared, `augments` the ones taken (js/data/augments.js), `pick` the floor whose augment is still owed. */
 const isTower = () => Boolean(run?.tower);
+/** The climb's LCD: the flight's floors, or once the guardian is the next door (or the room you're in), that guardian. */
+export function towerPlace(here, tower = run.tower) {
+  const top = (tower.flight + 1) * FLIGHT;
+  if (here?.type === 'boss' || here?.next.includes('boss')) return tower.flight >= TOP_FLIGHT ? 'Summit' : `Guardian ${top}`;
+  return `Floors ${tower.flight * FLIGHT + 1}-${top}`;
+}
 /** The climb's augments, summed (augEffects()); {} outside the Sky Pillar. */
 const augs = () => (run?.tower ? augEffects(run.tower.augments, run.tower.spent) : {});
 /** The seeded streams' biome part: the Sky Pillar's flight (past floor 30 they all share the Wastes' biome). */
@@ -687,7 +693,7 @@ function showMap() {
   if (isTower() && here?.visited) climbed(floorOf(run.tower.flight, here.floor));
   $('floor-num').textContent = `F${isTower() ? floorOf(run.tower.flight, floor - 1) : floor}`;
   const { stage } = stageOf(run.map, here);
-  const place = isTower() ? `Floors ${run.tower.flight * FLIGHT + 1}-${(run.tower.flight + 1) * FLIGHT}` : biome.stages[stage];
+  const place = isTower() ? towerPlace(here) : biome.stages[stage];
   $('floor-tag').title = `Floor ${floor} of ${run.map.floors.length} in ${biome.name} (${place}), then the boss`;
   // the place you stand in swings in under the sign whenever you reach a new one (showScene() paints it)
   const board = $('stage-name');

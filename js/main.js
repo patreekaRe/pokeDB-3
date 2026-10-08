@@ -38,7 +38,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -86,7 +86,7 @@ function savedRunCard() {
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
     place: saved.tower ? 'Sky Pillar' : area ? `Safari Zone: ${area.name}` : land?.name ?? `Biome ${biome + 1}`,
-    spot: saved.tower ? `Floors ${saved.tower.flight * 10 + 1}-${saved.tower.flight * 10 + 10}` : land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
+    spot: saved.tower ? towerPlace(here, saved.tower) : land?.stages?.[stageOf(saved.map, here).stage],   // the place in it you stand in, as the map's board says
     biome: land?.id,
     safari: !!area,
     cry: starter.line[stage]?.id ?? starter.line[0].id,
