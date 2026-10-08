@@ -45,6 +45,8 @@ let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
 let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
+// Walk shows only the room; Decorate pulls the camera back over the whole room and brings up the sheet
+let mode = 'walk', blend = 0, shots = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
 let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
@@ -584,6 +586,7 @@ function ndc(e) {
 // holding a piece, a press shows its ghost under the finger, a drag carries it, and lifting puts it down
 // not holding, a press on a placed piece that then moves picks it up and carries it: no Move key needed
 function onDown(e) {
+  if (mode !== 'edit') return;
   if (!holding) {
     const i = pieceUnder(ndc(e));
     if (i >= 0) { grab = { i, x: e.clientX, y: e.clientY }; view.setPointerCapture?.(e.pointerId); }
@@ -642,7 +645,7 @@ function onTap(e) {
   if (first?.userData.who) return cheer(first.userData.who);
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;
-  if (g && g.parent === pieceGroup) {
+  if (mode === 'edit' && g && g.parent === pieceGroup) {
     // a second tap on the picked piece turns it
     if (sel === g.userData.index) return PIECES[base.items[sel].id].layer === 'wall' ? undefined : act('rotate');
     sel = g.userData.index;
@@ -662,17 +665,35 @@ function onTap(e) {
   playSound('confirm');
 }
 
-/* ---------- the panel under the view ---------- */
+/* ---------- the sheet ---------- */
+
+const TAB_NAME = { furniture: 'Furniture', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
+// white line art, like the round keys' (js/smooth-icons.js)
+const GLYPHS = {
+  close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-width="2.6"/>',
+  ok: '<path d="M5.5 12.5 10 17l8.5-9.5" stroke-width="2.8"/>',
+  rotate: '<path d="M18.5 12.5a6.5 6.5 0 1 1-1.9-5.1" stroke-width="2.4"/><path d="M18.5 4.5v4h-4" stroke-width="2.4"/>',
+  store: '<path d="M4.5 9.5h15v8.6a1.4 1.4 0 0 1-1.4 1.4H5.9a1.4 1.4 0 0 1-1.4-1.4Z" stroke-width="2.2"/><path d="M3.5 5.5h17v4h-17Z" stroke-width="2.2"/><path d="M10 13.5h4" stroke-width="2.4"/>',
+  sofa: '<path d="M6 11V8.5a2.5 2.5 0 0 1 2.5-2.5h7A2.5 2.5 0 0 1 18 8.5V11" stroke-width="2.2"/><path d="M4 11.5a1.8 1.8 0 0 1 3.6 0v2.3h8.8v-2.3a1.8 1.8 0 0 1 3.6 0v5.3a1.4 1.4 0 0 1-1.4 1.4H5.4A1.4 1.4 0 0 1 4 16.8Z" stroke-width="2.2"/><path d="M6.5 18.2v1.8M17.5 18.2v1.8" stroke-width="2.2"/>',
+  roller: '<rect x="4" y="4" width="13" height="5.5" rx="1.6" stroke-width="2.2"/><path d="M17 6.7h2.5v5H11.5v2.8" stroke-width="2.2"/><rect x="9.8" y="14.5" width="3.4" height="6" rx="1.1" stroke-width="2.2"/>',
+  floor: '<path d="M3.5 19.5 7.5 6.5h9l4 13Z" stroke-width="2.2"/><path d="M12 6.5v13M5.6 12.8h12.8" stroke-width="2"/>',
+  ball: '<circle cx="12" cy="12" r="8" stroke-width="2.2"/><path d="M4 12h5.3M14.7 12H20" stroke-width="2.2"/><circle cx="12" cy="12" r="2.6" stroke-width="2.2"/>',
+};
+const glyph = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[name]}</svg>`;
 
 function tray(which = tab) {
   tab = which;
   const list = root.querySelector('.b3-strip');
   list.replaceChildren();
   root.querySelectorAll('.b3-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  const add = (label, art, on, pick) => {
+  root.querySelector('.b3-title').textContent = TAB_NAME[tab];
+  const add = (label, art, on, pick, tag = '') => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'sb-item' + (on ? ' on' : '');
-    b.append(art, Object.assign(document.createElement('span'), { textContent: label }));
+    b.type = 'button'; b.className = 'b3-tile' + (on ? ' on' : '');
+    const pic = Object.assign(document.createElement('span'), { className: 'b3-pic' });
+    pic.append(art);
+    if (tag) pic.append(Object.assign(document.createElement('i'), { className: 'b3-tag', textContent: tag }));
+    b.append(pic, Object.assign(document.createElement('span'), { className: 'b3-name', textContent: label }));
     b.addEventListener('click', pick);
     list.append(b);
   };
@@ -682,10 +703,10 @@ function tray(which = tab) {
     if (holding) dropHold();
     playSound('confirm');
     hold(id);
-  });
+  }, p.layer === 'wall' ? 'Wall' : '');
   const swatch = (all, field) => all.forEach(s => {
     const sw = document.createElement('span');
-    sw.className = 'sb-swatch';
+    sw.className = 'b3-swatch';
     sw.style.background = `repeating-linear-gradient(90deg, ${s.a} 0 6px, ${s.b} 6px 10px)`;
     add(s.name, sw, base[field] === s.id, () => {
       if (base[field] === s.id) return;
@@ -705,14 +726,14 @@ function tray(which = tab) {
         else if (now.length >= ON_SHOW) { playSound('cancel'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }
         else { base.mons = [...now, id]; playSound('confirm'); }
         save(); syncGuests(); tray(); refresh();
-      });
+      }, shown.includes(id) ? '✓' : '');
     }
   }
 }
 
 function refresh() {
   const busy = holding || sel >= 0;
-  root.querySelector('.b3-tabs').hidden = !!busy;
+  root.classList.toggle('editing', mode === 'edit');
   const bar = root.querySelector('.b3-acts');
   bar.hidden = !busy;
   const wall = PIECES[holding?.id ?? base.items[sel]?.id]?.layer === 'wall';
@@ -721,11 +742,11 @@ function refresh() {
     b.hidden = holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
   });
   const mons = onShow();
+  root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}` : '';
   hud.hint.textContent = holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
-    : tab === 'mons' ? (mons.all.length ? `Pick up to ${ON_SHOW} Safari catches to live here (${mons.shown.length}/${ON_SHOW}). Tap one in the room to say hello.`
-      : 'Catch Pokémon in the Safari Zone and they can live here.')
-    : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap it again to turn it, '}drag it to move it.`
-    : `Tap the floor and ${mon?.name ?? 'your partner'} walks there. Drag a piece to move it, tap it for more, or pick one below.`;
+    : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
+    : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
+    : 'Pick a piece, or drag one in the room to move it.';
   if (sel >= 0) {
     const g = pieceGroup.children.find(c => c.userData.index === sel), it = base.items[sel];
     const box = new THREE.Box3().setFromObject(g);
@@ -759,43 +780,51 @@ function setTime(force) {
 
 /* ---------- camera ---------- */
 
-const PITCH = 0.8;   // ~46° down, Octopath's tilt
+/* Two shots, blended as you switch: walking, a lower, closer look that follows your partner (Octopath's tilt, the room
+   at eye level); decorating, higher and pulled back so the whole room fits over the sheet, every tile in reach. */
+const SHOT = { walk: { pitch: 0.7, across: 5.2 }, edit: { pitch: 0.9, across: COLS + 1.2 } };
 const LOOK_Y = 0.9;
 
-function aimCamera(x, d) {
-  camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, Math.cos(PITCH) * d);
+function aimCamera(x, d, pitch) {
+  camera.position.set(x, LOOK_Y + Math.sin(pitch) * d, Math.cos(pitch) * d);
   camera.lookAt(x, LOOK_Y, 0);
   camera.updateMatrixWorld();
 }
 
 /** How far up and down the screen (in NDC) the room reaches from this distance: the wall's top to the floor's front edge. */
-function roomSpan(d) {
-  aimCamera(0, d);
+function roomSpan(d, pitch) {
+  aimCamera(0, d, pitch);
   const top = new THREE.Vector3(0, WALL_H, -ROWS / 2 - 0.4).project(camera).y;
   const bottom = new THREE.Vector3(0, -0.6, ROWS / 2).project(camera).y;
   return [top, bottom];
 }
 
-/* The room fills the view's height (under the top bar), so an upright phone has no empty sky and floor round it; it
-   shows MIN_ACROSS tiles at least, and on a wide screen the whole room. A lens shift centres it, keeping the tilt. */
-function fitCamera(w, h) {
+/* A shot fills the height between the top bar and whatever covers the bottom (the sheet, decorating) and shows its
+   `across` tiles at least; a lens shift centres the room there, keeping the tilt. */
+function fitShot({ pitch, across: want }, w, h, below) {
   const bar = root.querySelector('.b3-top').offsetHeight;
-  const room = 2 * (h - bar) / h * 0.94;
+  const avail = h - bar - below;
+  const room = 2 * avail / h * 0.94;
+  let lo = 2, hi = 80;
+  for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = roomSpan(mid, pitch); if (t - b > room) lo = mid; else hi = mid; }
+  const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
+  const d = Math.max(hi, want / 2 / halfTan);
+  const [t, b] = roomSpan(d, pitch);
+  return { pitch, dist: d, half: d * halfTan, shift: (1 - (t + b) / 2) / 2 * h - (bar + avail / 2) };
+}
+
+function fitCamera(w, h) {
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
-  let lo = 2, hi = 80;
-  for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = roomSpan(mid); if (t - b > room) lo = mid; else hi = mid; }
-  const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  let d = hi;
-  const across = (dist) => 2 * dist * halfTan;
-  if (across(d) < MIN_ACROSS) d = MIN_ACROSS / 2 / halfTan;
-  const [t, b] = roomSpan(d);
-  camera.userData = { dist: d, half: across(d) / 2 };
-  camera.setViewOffset(w, h, 0, -((t + b) / 2) * h / 2 - bar / 2, w, h);
+  const sheet = root.querySelector('.b3-sheet').offsetHeight;
+  root.style.setProperty('--b3-sheet', sheet + 'px');
+  shots = { walk: fitShot(SHOT.walk, w, h, 0), edit: fitShot(SHOT.edit, w, h, sheet) };
 }
 
 function placeCamera(dt, now) {
-  const room = COLS / 2 + 0.6, half = camera.userData.half;
+  blend = calm ? +(mode === 'edit') : blend + ((mode === 'edit') - blend) * Math.min(1, dt / 1000 * 6);
+  const k = blend * blend * (3 - 2 * blend), mix = (key) => shots.walk[key] + (shots.edit[key] - shots.walk[key]) * k;
+  const room = COLS / 2 + 0.6, half = mix('half');
   if (holding && pressing && pointer && Math.abs(pointer[0]) > 0.7) {
     panX += Math.sign(pointer[0]) * (Math.abs(pointer[0]) - 0.7) / 0.3 * dt / 1000 * 5;
   }
@@ -804,8 +833,19 @@ function placeCamera(dt, now) {
   const want = follow ? clamp(walker.x) : panX;
   const before = camX;
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
-  aimCamera(camX, camera.userData.dist);
+  camera.setViewOffset(viewW, viewH, 0, mix('shift'), viewW, viewH);
+  aimCamera(camX, mix('dist'), mix('pitch'));
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
+}
+
+/** Walk (just the room) or Decorate (the sheet up, the camera back over the whole room). */
+function setMode(to) {
+  if (to === mode) return;
+  if (to === 'walk') { if (holding) act('cancel'); sel = -1; follow = true; }
+  mode = to;
+  playSound(to === 'edit' ? 'confirm' : 'cancel');
+  if (to === 'edit') tray();
+  refresh();
 }
 
 function resize() {
@@ -815,6 +855,7 @@ function resize() {
   renderer.setSize(w, h, false);
   post.size(w, h);
   camera.aspect = w / h;
+  viewW = w; viewH = h;
   fitCamera(w, h);
 }
 
@@ -883,6 +924,7 @@ async function reopen() {
   document.body.append(root);
   const mate = partner(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
+  mode = 'walk'; blend = 0; sel = -1;
   walker.path = [];
   walker.tile = nearestFree(startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
@@ -908,22 +950,26 @@ export async function openBase3d({ onLeave = null } = {}) {
     <div class="b3-stage">
       <canvas class="b3-view"></canvas>
       <header class="b3-top"><h2>Secret Base</h2><span class="b3-fps" hidden></span>
-        <button type="button" class="b3-key b3-close" aria-label="Leave">✕</button></header>
+        <button type="button" class="b3-key b3-close" aria-label="Leave">${glyph('close')}</button></header>
+      <p class="b3-hint" aria-live="polite"></p>
+      <div class="b3-acts" hidden>
+        <button type="button" data-act="rotate">${glyph('rotate')}<span>Turn</span></button>
+        <button type="button" data-act="store">${glyph('store')}<span>Store</span></button>
+        <button type="button" data-act="done">${glyph('ok')}<span>Done</span></button>
+        <button type="button" data-act="cancel">${glyph('close')}<span>Cancel</span></button>
+      </div>
+      <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
     </div>
-    <div class="b3-panel">
-      <p class="b3-hint">Loading…</p>
-      <div class="b3-row">
+    <div class="b3-sheet">
+      <div class="b3-head">
         <nav class="b3-tabs">
-          <button type="button" class="b3-tab" data-tab="furniture">Furniture</button>
-          <button type="button" class="b3-tab" data-tab="wall">Wallpaper</button>
-          <button type="button" class="b3-tab" data-tab="floor">Floor</button>
-          <button type="button" class="b3-tab" data-tab="mons">Pokémon</button>
+          <button type="button" class="b3-tab" data-tab="furniture" aria-label="Furniture">${glyph('sofa')}</button>
+          <button type="button" class="b3-tab" data-tab="wall" aria-label="Wallpaper">${glyph('roller')}</button>
+          <button type="button" class="b3-tab" data-tab="floor" aria-label="Floor">${glyph('floor')}</button>
+          <button type="button" class="b3-tab" data-tab="mons" aria-label="Pokémon">${glyph('ball')}</button>
         </nav>
-        <div class="b3-acts" hidden>
-          <button type="button" data-act="rotate">Rotate</button><button type="button" data-act="move">Move</button>
-          <button type="button" data-act="store">Store</button><button type="button" data-act="done">Done</button>
-          <button type="button" data-act="cancel">Cancel</button>
-        </div>
+        <span class="b3-title"></span><span class="b3-count"></span>
+        <button type="button" class="b3-done">Done</button>
       </div>
       <div class="b3-strip"></div>
     </div>`;
@@ -980,7 +1026,10 @@ export async function openBase3d({ onLeave = null } = {}) {
   view.addEventListener('pointerup', onUp);
   view.addEventListener('pointercancel', () => { pressing = false; pointer = null; });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
-  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { tray(b.dataset.tab); refresh(); }));
+  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); tray(b.dataset.tab); refresh(); }));
+  root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
+  root.querySelector('.b3-done').addEventListener('click', () => setMode('walk'));
+  new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));
   tray('furniture');
   refresh();
   syncGuests();
