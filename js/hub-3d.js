@@ -70,7 +70,7 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
-let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null;   // inside: the place walked into, 'base' or 'mall'
+let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
@@ -1059,11 +1059,13 @@ function makePlaces() {
   const safari = safariOpen(save) || !!runAt('safari'), safariRun = runAt('safari');
   // you walk right up to the gate (MEADOW), where a small Pokéstop of its own starts or continues the day's run
   // (the user's ask, 2026-10-09)
+  // only the Pokéstops start or continue a run (the user's call, 2026-10-09): a tap on the gate or the Pillar itself just
+  // walks up and says what it is
   list.push({
-    id: 'safari', name: 'Safari Zone', step: { x: 0, y: -2 }, tiles: safari ? [[-1, -2]] : [], tag: [0, 4, -3], open: safari,
-    line: safariRun ? waits(safariRun) : safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
+    id: 'safari-gate', name: 'Safari Zone', step: { x: 0, y: -2 }, tiles: [], tag: [0, 4, -3], open: safari,
+    line: safari ? 'Today\'s Safari Zone run, the same for everyone. Spin the Pokéstop to set out.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
-    buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : safari ? [['Enter', acts.onSafari]] : [],
+    buttons: [],
     // back in the left corner, just behind the Ancient Tree, its fence across the cleared meadow (the user's call, 2026-10-09)
     build: (g) => {
       const s = safariArt(safari), S = 1.1, x = tileX(SAFARI_AT.tx), z = tileZ(SAFARI_AT.ty), b = board(s, x, z, { s: S });
@@ -1072,8 +1074,13 @@ function makePlaces() {
       const half = s.width / s.fine / TP * S / 2, post = (px) => x - half + px / TP * S;
       safariFence(g, VISTA.x0 + 8, post(7), z);
       safariFence(g, post(57), tileX(3.6), z);
-      if (safari) pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5);
     },
+  });
+  if (safari) list.push({
+    id: 'safari', name: 'Safari Pokéstop', step: { x: -1, y: -1 }, tiles: [[-1, -2]], tag: [-1, 2.6, -2], open: true,
+    line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
+    buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
+    build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5),
   });
   // left of the gate, along its fence (the user's ask, 2026-10-09)
   list.push({
@@ -1092,9 +1099,9 @@ function makePlaces() {
   });
   const tower = towerOpen(save) || !!runAt('pillar'), best = save.tower?.bestEver || 0, climb = runAt('pillar');
   list.push({
-    id: 'pillar', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2).concat(tower ? [[11, -1]] : []), tag: [13, 4.2, -2], open: tower,
-    line: climb ? waits(climb) : tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''}` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
-    buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : tower ? [['Climb', acts.onTower]] : [],
+    id: 'pillar-tower', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2), tag: [13, 4.2, -2], open: tower,
+    line: tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''} Spin the Pokéstop to climb.` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
+    buttons: [],
     build: (g) => {
       const side = new THREE.MeshStandardMaterial({ map: texOf(pillarArt(false)), roughness: 1 });
       const door = pillarArt(true), face = glowing(new THREE.MeshStandardMaterial({ map: texOf(door), roughness: 1 }), door, null, '#a8c4ff', 0.9);
@@ -1103,8 +1110,13 @@ function makePlaces() {
       box.position.set(tileX(PILLAR_AT.tx), 6, tileZ(PILLAR_AT.ty));
       box.castShadow = box.receiveShadow = true;
       g.add(box);
-      if (tower) pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5);
     },
+  });
+  if (tower) list.push({
+    id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: 11, y: 0 }, tiles: [[11, -1]], tag: [11, 2.6, -1], open: true,
+    line: climb ? waits(climb) : `This week's Sky Pillar climb.${best ? ` Your best: floor ${best}.` : ''}`,
+    buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : [['Climb', acts.onTower]],
+    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5),
   });
   list.push({
     id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,
@@ -1311,7 +1323,7 @@ function arrived() {
 /** What a place does: a closed one says why; with more than one thing to do (the trail with a saved run) a tap on the
     place only shows its card, the bar's keys choosing; else straight in. */
 function open(p, i = null) {
-  if (!p.open || (i == null && p.buttons.length > 1)) return showCard(p);
+  if (!p.open || !p.buttons.length || (i == null && p.buttons.length > 1)) return showCard(p);
   const stop = stops[p.id];
   if (stop) {
     if (stop.spinAt && performance.now() - stop.spinAt < SPIN) return;
@@ -1442,7 +1454,24 @@ function leftPlace() {
   here = p;
   if (!tree || p.id !== 'base') return;
   tree.m.map = tree.open;
-  setTimeout(() => { if (tree) tree.m.map = tree.shut; }, calm ? 0 : 650);
+  if (calm) { tree.m.map = tree.shut; return; }
+  // out of the hollow the way it went in (the user's ask, 2026-10-09): it steps out of the open door onto the doorstep
+  leaving = { at: performance.now() + LEAVE_WAIT, z: walker.z };
+  walker.z -= 0.7;
+  walker.hopUntil = 0;
+}
+
+const LEAVE_WAIT = 450, LEAVE = 600;   // it waits out the hub's fade in, so the step out is seen
+
+/** Stepping out of the Ancient Tree's door; once on the doorstep it hops and the door swings shut behind it. */
+function liveLeaving(now) {
+  if (!leaving) return;
+  const t = Math.max(0, Math.min(1, (now - leaving.at) / LEAVE));
+  walker.z = leaving.z - (1 - t) * 0.7;
+  if (t < 1) return;
+  leaving = null;
+  walker.hopUntil = now + 500;
+  setTimeout(() => { if (tree) tree.m.map = tree.shut; playSound('door'); }, 250);
 }
 
 /* ---------- the card under a place ---------- */
@@ -1562,7 +1591,7 @@ function ndc(e) {
 }
 
 function onTap(e) {
-  if (held || arriving) return;
+  if (held || arriving || leaving) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects([mon.board, placeGroup], true).find(h => h.object !== mon.board || onSprite(h));
@@ -1582,7 +1611,7 @@ function onTap(e) {
 }
 
 function onKey(e) {
-  if (!running || held || arriving || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
+  if (!running || held || arriving || leaving || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
   const step = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (step) {
@@ -1775,6 +1804,7 @@ function frame(now) {
 
   if (walker.path.length) { here = null; if (walk(dt)) arrived(); }
   if (entering && !entering.still) walker.z = entering.z - Math.min(1, (now - entering.at) / 420) * 0.7;   // into the hollow
+  liveLeaving(now);
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
