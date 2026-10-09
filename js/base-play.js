@@ -18,6 +18,7 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 /* ---------- what each kind does ---------- */
 
 const PLAY = {};
+const CHANNEL_MS = 12000;
 const set = (ids, how) => ids.split(' ').forEach(id => { PLAY[id] = how; });
 
 // screens: channels on a live picture, a tap the next one
@@ -590,7 +591,7 @@ export function tapPlay(play) {
       const sc = play.screen;
       if (how.arcade || how.gives) { play.st.score = (play.st.score || 0) + 100; playSound('fx-coin'); if (how.gives) drop(play, how.gives, frontOf(play, 0.35)); go(play, 'shake', 300); return { cheer: how.arcade }; }
       if (how.music) return tapPlayer(play, { voice: 'bass' });
-      if (sc) { sc.show = (sc.show + 1) % how.show.length; sc.cut = now + 350; play.st.seed = Math.floor(Math.random() * 1000); }
+      if (sc) { sc.show = (sc.show + 1) % how.show.length; sc.cut = now + 350; sc.next = now + CHANNEL_MS; play.st.seed = Math.floor(Math.random() * 1000); }
       playSound('fx-click'); playSound('fx-static');
       return {};
     }
@@ -716,6 +717,8 @@ export function tickPlay(play, now, dt) {
   const sc = play.screen;
   if (sc && now - sc.last > 80) {
     sc.last = now;
+    // left alone, a set with several channels flips through them by itself
+    if (how.show.length > 1 && now > (sc.next ??= now + CHANNEL_MS)) { sc.show = (sc.show + 1) % how.show.length; sc.cut = now + 350; sc.next = now + CHANNEL_MS; play.st.seed = Math.floor(Math.random() * 1000); }
     const show = how.show[sc.show], w = sc.c.width, h = sc.c.height;
     (now < sc.cut ? SHOWS.static : SHOWS[show])(sc.g, w, h, (now - play.t0) / 1000, play.st);
     if (!calm) { sc.g.fillStyle = 'rgba(0,0,0,0.12)'; for (let y = 0; y < h; y += 3) sc.g.fillRect(0, y, w, 1); }
