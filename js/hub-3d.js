@@ -1125,6 +1125,14 @@ function makePlaces() {
       build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7),
     },
     {
+      // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
+      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx + 1, y: SIGN_AT.ty }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
+      open: true,
+      line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
+      buttons: [],
+      build: (g) => g.add(board(routeSignArt(), tileX(SIGN_AT.tx), tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
+    },
+    {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
       line: baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
         : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
@@ -1266,7 +1274,6 @@ function buildPlaces() {
   const way = new THREE.Group();   // no place: a tap on them walks there, through the arch
   buildGateway(way);
   placeGroup.add(way);
-  blocked.add(key(SIGN_AT.tx, SIGN_AT.ty));
   setTime(true);
 }
 
@@ -1278,7 +1285,6 @@ function buildGateway(g) {
   const half = s.width / s.fine / TP / 2, post = (px) => x - half + px / TP;
   safariFence(g, tileX(-M), post(7), z);
   safariFence(g, post(53), tileX(COLS + M - 1), z);
-  g.add(board(routeSignArt(), tileX(SIGN_AT.tx), tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 }));
 }
 
 /** A Pokémon route sign (the user's pick, 2026-10-09, after Scarlet / Violet's): a white pin, a red band over its round
