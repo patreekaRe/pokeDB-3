@@ -1222,10 +1222,17 @@ function autoModel(id, paint) {
 
 /* ---------- plants: a round pot, the leaves as crossed cards ---------- */
 
-// plants on other shelves; every unshaped kind on the Plants shelf is one too
-const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'centerplant', 'orchidstand', 'topiary', 'tomatovine', 'kelp', 'iceflower']);
+// plants on other shelves (every unshaped kind on the Plants shelf is one too), and open frames, ladders, stands and
+// spindly things whose rounded hull lost their holes or their tops (the user's ask, 2026-10-09: the same as the plants)
+const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'centerplant', 'orchidstand',
+  'topiary', 'tomatovine', 'kelp', 'iceflower', 'sakura', 'fancoral', 'beanpole', 'plantstair', 'gourdarch', 'cornrow',
+  'coatrack', 'gong', 'slide', 'rosearch', 'hurdle', 'pullupbar', 'refstand', 'lifeguard', 'dumbbells', 'easel', 'ferriswheel',
+  'bunkbed', 'towelladder', 'crib', 'skirack', 'xylophone', 'logpile', 'skates', 'satdish', 'teslacoil', 'catapult',
+  'spinwheel', 'swordrack', 'marblerun', 'rockinghorse', 'candlestand', 'weathervane', 'teaset', 'libraryladder', 'bookarch',
+  'mast', 'scrollrack', 'orrery', 'windpump', 'spyglass', 'beacon', 'plough', 'sprinkler', 'shipwreck', 'yukatarack',
+  'cloudstair', 'skybell', 'dnamodel', 'tuba', 'woodstove', 'raggeddoll']);
 const POT_MAX = 21;   // the tallest pot potAt() paints, in units
-const leafy = (p) => p.w === p.h && (p.group === 'Plants' || LEAFY.has(p.fam));
+const leafy = (p) => (p.w === p.h && p.group === 'Plants') || LEAFY.has(p.fam);
 
 /** A plant (the user's ask, 2026-10-09: leaves puffed into a hull came out a lumpy blob): its pot, the rows from the
     floor that are one centred run, turns on a lathe; above it the painting stands on two crossed cards, the front's
@@ -1236,7 +1243,7 @@ function leafyModel(id, paint) {
   if (j0 < 0) return null;
   let k = j0;
   while (k < Math.min(j1, j0 + POT_MAX) && rows[k].runs === 1 && Math.abs(rows[k].l + rows[k].r - W) <= 3) k++;
-  const split = k - j0 >= 4 ? k : j0, g = new THREE.Group();
+  const split = p.w === p.h && k - j0 >= 4 ? k : j0, g = new THREE.Group();
   if (split > j0) {
     const mats = faces(p, id).map(paint), arrs = remember(`${p.fam}|pot`, () => latheArrays(art, j0, split));
     if (arrs) arrs.forEach((a, i) => { const geo = geoFrom(a); geo.scale(U, U, U); const m = new THREE.Mesh(geo, mats[i]); m.castShadow = m.receiveShadow = true; g.add(m); });
@@ -1244,9 +1251,9 @@ function leafyModel(id, paint) {
   // the cards start a unit into the pot, so no gap shows between the soil and the leaves
   const c0 = Math.max(j0, split - 1);
   for (const [dir, turn] of [[0, 0], [1, Math.PI / 2]]) {
-    const m = paint(p.art(dir, HD));
+    const pic = p.art(dir, HD), m = paint(pic);
     Object.assign(m, { alphaTest: 0.5, side: THREE.DoubleSide, transparent: false });
-    const geo = new THREE.PlaneGeometry(W * U, (j1 - c0) * U), uv = geo.attributes.uv;
+    const geo = new THREE.PlaneGeometry(pic.width / HD * U, (j1 - c0) * U), uv = geo.attributes.uv;
     for (let i = 0; i < uv.count; i++) uv.setY(i, (c0 + uv.getY(i) * (j1 - c0)) / H);
     geo.translate(0, (c0 + j1) / 2 * U, 0);
     geo.rotateY(turn);

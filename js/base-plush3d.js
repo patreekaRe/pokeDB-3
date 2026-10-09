@@ -9,7 +9,7 @@
 import { BUILDS, EXTRAS, ear, tail, sewWith } from './base-dolls.js';
 import { sh } from './base-paint.js';
 
-let T, K, hosts, bumps, layer, finish, tailRoot;
+let T, K, hosts, bumps, layer, finish, tailRoot, fat = 1;
 
 // each build's stuffing in depth: [rz as a share of rx, z] for head and body, and where feet and arms sit
 const DEPTH = {
@@ -86,7 +86,7 @@ function place(g, hex, t, kind = 'cloth') {
 /** The 3D pen js/base-dolls.js draws with. */
 const PEN = {
   puff(x, y, rx, ry, c, rot = 0, kind) {
-    const t = layer === 'under' ? Math.min(rx, ry) * 0.75 : layer === 'front' ? Math.min(6, Math.min(rx, ry) * 0.45) : Math.min(rx, ry) * 0.7;
+    const t = fat * (layer === 'under' ? Math.min(rx, ry) * 0.75 : layer === 'front' ? Math.min(6, Math.min(rx, ry) * 0.45) : Math.min(rx, ry) * 0.7);
     const g = new T.SphereGeometry(1, 24, 16);
     g.scale(rx, ry, t);
     if (rot) g.rotateZ(-rot);
@@ -139,6 +139,8 @@ function cord(path, c, w, kind) {
 
 /* the extras that paint straight onto the canvas, sewn their own way */
 const EXTRAS3 = {
+  // a neck ruff stands proud of the chest, or the head above hides it
+  ruff: (d, L) => { const [x, y] = L.head; fat = 2.2; for (let i = -2; i <= 2; i++) PEN.puff(x + i * 9, y - 22 + Math.abs(i) * 2, 8.5, 7.5, d.ruff); fat = 1; },
   bulb: (d, L) => {
     const [x, y, , ry] = L.head, prev = layer;
     layer = 'free';
@@ -196,7 +198,7 @@ function face3(d, L) {
   for (const s of d.one ? [0] : [-1, 1]) {
     const x = hx + s * ex;
     if (d.eyes === 'shut') { PEN.curve([x - 5, ey], [x, ey - 3], [x + 5, ey], '#2a2028', 1.8); continue; }
-    if (d.eyes === 'dot') { PEN.flat(x, ey, 2.4, 2.4, eye, 0, 'gloss'); PEN.flat(x - 0.8, ey + 0.9, 0.8, 0.8, '#ffffff', 0, 'gloss'); continue; }
+    if (d.eyes === 'dot') { PEN.flat(x, ey, 3.2, 3.2, eye, 0, 'gloss'); PEN.flat(x - 1, ey + 1.1, 1, 1, '#ffffff', 0, 'gloss'); continue; }
     if (d.eyes === 'white') { PEN.flat(x, ey, 6, 7, '#ffffff'); PEN.flat(x + s * 0.5, ey - 0.5, 1.8, 1.8, '#202028', 0, 'gloss'); continue; }
     const rx = d.eyes === 'big' ? 6 : 4.6, ry = rx * 1.3;
     PEN.flat(x, ey, rx, ry, eye, 0, 'gloss');

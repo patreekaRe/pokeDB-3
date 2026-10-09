@@ -254,7 +254,7 @@ export const PLUSH = {
   torchic: { shape: 'ball', body: '#f08838', top: ['crest', 'beak'], crest: '#f8a850', beakc: '#f8d030', feet: '#f8d030', arms: '#f8a850', mouth: 'none' },
   treecko: { body: '#58b848', belly: '#e85848', tail: 'leaf', tailc: '#2f7a32', eye: '#c8a020', mouth: 'smile' },
   mudkip: { shape: 'quad', body: '#5aa8e8', belly: '#c8e8f8', ears: 'fin', earc: '#4a88c8', top: ['gills'], gills: '#f08838', tail: 'fin', tailc: '#3a6ab0', mouth: 'smile' },
-  cyndaquil: { shape: 'quad', body: '#f0e0a0', head: '#2a4a6a', under: ['flamecrest'], eyes: 'shut', mouth: 'smile', feet: '#d8c080' },
+  cyndaquil: { shape: 'quad', body: '#f0e0a0', head: '#2a4a6a', under: ['flamecrest'], top: ['face'], facec: '#f0e0a0', eyes: 'shut', mouth: 'smile', feet: '#d8c080' },
   chikorita: { shape: 'quad', body: '#b8e088', top: ['leaf', 'beads'], leafc: '#58b848', beads: '#7aa838', eye: '#c8a020', mouth: 'smile' },
   totodile: { body: '#4a98e0', belly: '#f0e0a0', under: ['spikes'], top: ['jaw'], tail: 'stub', mouth: 'none', eye: '#a83020' },
   tepig: { shape: 'quad', body: '#f08838', belly: '#303038', ears: 'cat', top: ['snout'], snout: '#f8b080', tail: 'curl', tailc: '#303038', mouth: 'smile' },
