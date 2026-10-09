@@ -28,6 +28,9 @@ const M = 4, FRONT = 7;       // grass and forest round it (tiles): back and sid
 // the Whispering Clearing's gate across the front (the user's ask, 2026-10-09): its fence closes the hub off, the trail
 // leaves under its arch, and setting out on a run walks your partner through it and away
 const GATE_AT = { tx: 6, ty: ROWS + 4 };
+// outside it (the user's ask, 2026-10-09): the gate is only scenery you walk under, New game's Pokéstop stands right of
+// the trail and a Pokémon route sign left of it
+const STOP_AT = { tx: 8, ty: GATE_AT.ty + 1 }, SIGN_AT = { tx: 4, ty: GATE_AT.ty + 1 };
 const TP = 16;                // painted pixels a tile
 const START = { x: 6, y: 8 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
@@ -1114,25 +1117,12 @@ function makePlaces() {
   const run = runAt('trail');
   const list = [
     {
-      id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: GATE_AT.tx + 2, y: GATE_AT.ty - 1 }, tiles: [[GATE_AT.tx + 3, GATE_AT.ty - 1]], tag: [9, 2.6, GATE_AT.ty - 1],
+      id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: STOP_AT.tx - 1, y: STOP_AT.ty }, tiles: [[STOP_AT.tx, STOP_AT.ty]], tag: [STOP_AT.tx, 2.6, STOP_AT.ty],
       open: true,
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      // in front of the gate on its right, like the Safari gate's (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(GATE_AT.tx + 3) - 0.2, tileZ(GATE_AT.ty - 1) + 0.1, 0.7),
-    },
-    {
-      id: 'clearing-gate', name: 'Whispering Clearing', step: { x: GATE_AT.tx, y: GATE_AT.ty - 1 }, tiles: [], tag: [6, 4, GATE_AT.ty], open: true,
-      line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out.',
-      buttons: [],
-      build: (g) => {
-        const s = clearingGateArt(), x = tileX(GATE_AT.tx), z = tileZ(GATE_AT.ty), b = board(s, x, z);
-        glowing(b.material, s, null, '#c8f0ff', 0.9);
-        g.add(b);
-        const half = s.width / s.fine / TP / 2, post = (px) => x - half + px / TP;
-        safariFence(g, tileX(-M), post(7), z);
-        safariFence(g, post(53), tileX(COLS + M - 1), z);
-      },
+      // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7),
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
@@ -1273,7 +1263,54 @@ function buildPlaces() {
     placeGroup.add(g);
     for (const [x, y] of p.tiles) blocked.add(key(x, y));
   }
+  const way = new THREE.Group();   // no place: a tap on them walks there, through the arch
+  buildGateway(way);
+  placeGroup.add(way);
+  blocked.add(key(SIGN_AT.tx, SIGN_AT.ty));
   setTime(true);
+}
+
+/** The Whispering Clearing's gate and fence across the front, and the route sign outside it. */
+function buildGateway(g) {
+  const s = clearingGateArt(), x = tileX(GATE_AT.tx), z = tileZ(GATE_AT.ty), b = board(s, x, z);
+  glowing(b.material, s, null, '#c8f0ff', 0.9);
+  g.add(b);
+  const half = s.width / s.fine / TP / 2, post = (px) => x - half + px / TP;
+  safariFence(g, tileX(-M), post(7), z);
+  safariFence(g, post(53), tileX(COLS + M - 1), z);
+  g.add(board(routeSignArt(), tileX(SIGN_AT.tx), tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 }));
+}
+
+/** A Pokémon route sign (the user's pick, 2026-10-09, after Scarlet / Violet's): a white pin, a red band over its round
+    face, a red point below, on a grey post and foot. */
+function routeSignArt() {
+  const { c, g, fill, rr, lin } = fine(16, 36), cx = 8, cy = 8.5;
+  const pin = (r, tip) => {   // the round head and its tangents down to the point
+    const a = Math.acos(r / (tip - cy));
+    g.moveTo(cx, tip); g.lineTo(cx + r * Math.cos(Math.PI / 2 - a), cy + r * Math.sin(Math.PI / 2 - a));
+    g.arc(cx, cy, r, Math.PI / 2 - a, Math.PI / 2 + a, true); g.closePath();
+  };
+  rr(6.2, 22, 3.6, 3.2, 0.9, lin(6.2, 0, 9.8, 0, ['#d8d8d4', '#a8a8a4', '#70706c']));   // the collar, post and foot
+  rr(7, 24.6, 2, 7.6, 0.6, lin(7, 0, 9, 0, ['#c8c8c4', '#9a9a96', '#6a6a66']));
+  rr(3.6, 31.4, 8.8, 4.4, 1.2, lin(0, 31.4, 0, 35.8, ['#a8a8a4', '#7a7a76', '#4e4e4a']));
+  rr(4.2, 31.6, 7.6, 0.8, 0.4, 'rgba(255,255,255,0.45)');
+  fill(lin(0, 1, 0, 23, ['#e4e4e0', '#b8b8b4', '#8a8a86']), () => pin(7.4, 23.2));
+  fill(lin(0, 2, 0, 22, ['#ffffff', '#f4f4f0', '#dcdcd6']), () => pin(6.7, 22.2));
+  g.strokeStyle = lin(0, 1.5, 0, 12, ['#ff7a6a', '#e8483a', '#c8302a']); g.lineWidth = 1.5;   // the red band round the top
+  g.beginPath(); g.arc(cx, cy, 6.3, 0.3, Math.PI - 0.3, true); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.35;
+  g.beginPath(); g.arc(cx, cy, 6.7, 1.15 * Math.PI, 1.4 * Math.PI); g.stroke();
+  fill('#e2e2dc', () => g.arc(cx, cy, 5.1, 0, Math.PI * 2));   // the face
+  fill('#fdfdfb', () => g.arc(cx, cy, 4.7, 0, Math.PI * 2));
+  fill(lin(0, 15.6, 0, 20.6, ['#ff6a5a', '#d83a30']), () => { g.moveTo(5.3, 15.6); g.lineTo(10.7, 15.6); g.lineTo(cx, 20.6); g.closePath(); });
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 1.75px "Trebuchet MS", "Arial Black", sans-serif';
+  g.fillStyle = '#e8483a'; g.fillText('WHISPERING', cx, 7.1);
+  g.font = '800 1.45px "Trebuchet MS", sans-serif';
+  g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
+  g.font = '700 1.05px "Trebuchet MS", sans-serif';
+  g.fillStyle = '#7a7a76'; g.fillText('↓ ROUTE OUT', cx, 11.1);
+  return c;
 }
 
 /* ---------- the Clearing round them ---------- */
@@ -1356,8 +1393,9 @@ function paintVista() {
 /* ---------- walking ---------- */
 
 // the cleared meadow up to the Safari gate, outside the grid's back-left corner
-// and the rows down to the Whispering Clearing's gate in front
-const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0), ...rect(0, ROWS, COLS - 1, GATE_AT.ty - 1)].map(([x, y]) => key(x, y)));
+// and the rows down to the Whispering Clearing's gate in front, under its arch and out past it to the Pokéstop
+const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0), ...rect(0, ROWS, COLS - 1, GATE_AT.ty - 1),
+  [GATE_AT.tx, GATE_AT.ty], ...rect(1, GATE_AT.ty + 1, COLS - 2, GATE_AT.ty + 2)].map(([x, y]) => key(x, y)));
 const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -1440,11 +1478,11 @@ function open(p, i = null) {
   setTimeout(() => { if (running) go(); }, calm ? 0 : stop ? SPIN * 0.8 : 260);
 }
 
-/** Setting out (the user's ask, 2026-10-09): from the Pokéstop your partner walks down the trail, under the Whispering
-    Clearing's arch and away past the bottom of the screen, and the run opens once it's gone. */
+/** Setting out (the user's ask, 2026-10-09): from the Pokéstop outside the Whispering Clearing's arch your partner steps
+    onto the trail and walks away past the bottom of the screen, and the run opens once it's gone. */
 function walkOut(go) {
   if (!running) return;
-  const at = { x: GATE_AT.tx, y: GATE_AT.ty - 1 };
+  const at = { x: GATE_AT.tx, y: STOP_AT.ty };
   walker.path = [...route(walker.tile, at)];
   for (let y = at.y + 1; y <= GATE_AT.ty + 5; y++) walker.path.push({ x: at.x, y });
   outbound = go;
