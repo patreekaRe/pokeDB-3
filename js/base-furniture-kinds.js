@@ -238,6 +238,14 @@ add('Rugs', Object.entries(PATTERNS).map(([id, p]) => ({ set: 'rug', id: `${id}r
   flat(w, h) { weave(w, h, p.at, true); } })));
 add('Rugs', ['stripe', 'check', 'zigzag', 'wave'].map(id => ({ set: 'runner', id: `${id}runner`, name: `${PATTERNS[id].name} runner`, w: 3, h: 1, layer: 'rug', price: 220, high: 0.04, side: 'c',
   flat(w, h) { weave(w, h, PATTERNS[id].at, false); for (let y = 2; y < h - 1; y += 3) { R(0, y, 2, 1, k.p); R(w - 2, y, 2, 1, k.p); } } })));
+// bigger ones (the user's ask, 2026-10-09): a large square rug with a fringe, a grand oval, a long runner down a room
+const fringe = (w, h) => { for (let x = 3; x < w - 3; x += 3) { R(x, 0, 1, 3, k.p); R(x, h - 3, 1, 3, k.p); } };
+add('Rugs', Object.entries(PATTERNS).map(([id, p]) => ({ set: 'bigrug', id: `${id}bigrug`, name: `Large ${p.name.toLowerCase()} rug`, w: 4, h: 3, layer: 'rug', price: 600, high: 0.04, side: 'c',
+  flat(w, h) { weave(w, h, p.at, false); R(5, 5, w - 10, 1, k.a); R(5, h - 6, w - 10, 1, k.a); R(5, 5, 1, h - 10, k.a); R(w - 6, 5, 1, h - 10, k.a); fringe(w, h); } })));
+add('Rugs', Object.entries(PATTERNS).map(([id, p]) => ({ set: 'grandrug', id: `${id}grandrug`, name: `Grand ${p.name.toLowerCase()} rug`, w: 6, h: 4, layer: 'rug', price: 950, high: 0.04, side: 'c',
+  flat(w, h) { weave(w, h, p.at, true); } })));
+add('Rugs', ['stripe', 'check', 'zigzag', 'wave'].map(id => ({ set: 'longrunner', id: `${id}longrunner`, name: `Long ${PATTERNS[id].name.toLowerCase()} runner`, w: 5, h: 1, layer: 'rug', price: 380, high: 0.04, side: 'c',
+  flat(w, h) { weave(w, h, PATTERNS[id].at, false); for (let y = 2; y < h - 1; y += 3) { R(0, y, 2, 1, k.p); R(w - 2, y, 2, 1, k.p); } } })));
 
 /* ---------- wall: posters, banners, pictures ---------- */
 add('Wall', MOTIF_IDS.map(m => ({ set: 'poster', id: `${m}poster`, name: `${MOTIF_NAME[m]} poster`, proper: m === 'ball', w: 1, h: 1, layer: 'wall', price: 120, wall(x) {
