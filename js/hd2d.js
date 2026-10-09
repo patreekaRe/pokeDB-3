@@ -203,11 +203,16 @@ export function createPost(renderer, { short = 420, crisp = true } = {}) {
   let rt, bloomA, bloomB, texel = [1, 1];
   const pass = (material, target) => { quad.material = material; renderer.setRenderTarget(target); renderer.render(quadScene, quadCam); };
 
+  const scale = (w, h) => Math.min(1, short / Math.min(w, h));
   return {
     final,
+    /** The scene's size over the view's, for a canvas drawn at the scene's own size (more pixels than it would add nothing). */
+    scale,
+    /** A step down in resolution for a device that can't keep up; false once there's no lower step. Call size() after. */
+    lower(w, h) { const now = Math.min(short, w, h); if (now <= 280) return false; short = Math.max(280, Math.round(now * 0.8)); return true; },
     size(w, h) {
       // a small scene, scaled up: about `short` px on the short side
-      const k = Math.min(1, short / Math.min(w, h));
+      const k = scale(w, h);
       const sw = Math.round(w * k), sh = Math.round(h * k);
       rt?.dispose(); bloomA?.dispose(); bloomB?.dispose();
       rt = new THREE.WebGLRenderTarget(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, samples: crisp ? 0 : 4 });

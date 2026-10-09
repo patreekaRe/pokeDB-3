@@ -2014,3 +2014,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Secret Base: a slimmer Decorate sheet** (2026-10-09, branch `secret-base` only, the user's pick of two ideas): tiles
   shrink to 70px with no names (five across, the sheet 272 -> 220px on a phone; the name is the tile's tooltip and shows
   in the hint for a moment once taken), and a grip or the hinge's lens folds the sheet to its hinge (68px).
+- **Secret Base: the lag fixed** (2026-10-09, branch `secret-base`): the last pass (bloom, a 12-tap tilt-shift blur) ran
+  at 2x a phone's pixels from a 1x scene; the canvas is now the scene's own size, and `keepUp()` in `js/base-3d.js` steps a
+  device under ~40 fps down (512 shadows, then the scene 20% smaller a step), remembered per device.

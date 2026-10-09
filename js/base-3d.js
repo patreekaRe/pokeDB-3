@@ -1265,7 +1265,8 @@ function setMode(to) {
 function resize() {
   const w = view.clientWidth, h = view.clientHeight;
   if (!w || !h) return;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // the canvas at the scene's own size: the last pass (bloom, tilt-shift blur) at 2x a phone's pixels cost the most and showed nothing more
+  renderer.setPixelRatio(post.scale(w, h));
   renderer.setSize(w, h, false);
   post.size(w, h);
   camera.aspect = w / h;
@@ -1280,6 +1281,7 @@ function frame(now) {
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
+  keepUp(now);
 
   if (!hopping(walker, now) && walk(walker, mon, dt)) {
     if (walker.goal) partnerUp();
@@ -1318,6 +1320,27 @@ function frame(now) {
 
   if (hud.fps) hud.fps.textContent = `${Math.round(1000 / (fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length))} fps`;
   requestAnimationFrame(frame);
+}
+
+/** A device that can't hold ~40 fps steps down: smaller shadows, then a smaller scene, a step at most every 3 s, remembered
+    on that device so the next visit starts there. */
+let slowSince = 0, lowered = 0;
+function keepUp(now) {
+  if (fpsLog.length < 60 || document.hidden) { slowSince = 0; return; }
+  const avg = fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length;
+  if (avg < 25) { slowSince = 0; return; }
+  if (!slowSince) { slowSince = now; return; }
+  if (now - slowSince < 3000) return;
+  slowSince = 0;
+  if (!stepDown()) return;
+  try { localStorage.setItem('pokedb.base3d.low', String(++lowered)); } catch {}
+  fpsLog.length = 0;
+}
+function stepDown() {
+  if (sun.shadow.mapSize.x > 512) { sun.shadow.mapSize.set(512, 512); sun.shadow.map?.dispose(); sun.shadow.map = null; return true; }
+  if (!post.lower(view.clientWidth || 9999, view.clientHeight || 9999)) return false;
+  resize();
+  return true;
 }
 
 /** The 2D room instead, where there's no WebGL or no Three.js (offline). */
@@ -1450,6 +1473,8 @@ export async function openBase3d({ onLeave = null } = {}) {
   camX = panX = walker.x;
   setTime(true);
   resize();
+  try { lowered = +localStorage.getItem('pokedb.base3d.low') || 0; } catch {}
+  for (let i = 0; i < lowered; i++) if (!stepDown()) break;
   new ResizeObserver(resize).observe(view);
   view.addEventListener('click', onTap);
   view.addEventListener('pointerdown', onDown);
