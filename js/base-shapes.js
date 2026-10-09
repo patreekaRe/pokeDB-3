@@ -100,6 +100,8 @@ set('plant', { make: 'plant' });
 set('palm', { make: 'palm' });
 set('vase', { make: 'vase' });
 set('globe', { make: 'globe' });
+set('pyramid', { make: 'pyramid' });
+set('toilet', { make: 'toilet' });
 set('drumkit', { make: 'drumkit' });
 
 export const SHAPES = S;

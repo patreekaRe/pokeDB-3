@@ -1062,6 +1062,25 @@ function drumHead(colour) {
   return t;
 }
 
+B.pyramid = (K) => {
+  const stone = K.plain('#d8b878'), dark = K.plain('#b89058');
+  for (let i = 0; i < 6; i++) {
+    const w = 0.84 - i * 0.14, h = 0.11;
+    K.put(rbox(w, h, w, 0.01), i % 2 ? dark : stone, 0, 0.055 + i * h, 0);
+  }
+  const cap = new THREE.ConeGeometry(0.1, 0.14, 4); cap.rotateY(Math.PI / 4);
+  K.put(cap, K.metal('#f0c848'), 0, 0.73, 0);
+};
+B.toilet = (K) => {
+  const china = K.gloss('#f6f6f2');
+  K.put(lathe([[0.13, 0], [0.12, 0.08], [0.15, 0.2], [0.21, 0.36], [0.2, 0.4], [0, 0.4]], 28), china, 0, 0, 0.06);
+  const seat = torus(0.17, 0.03, Math.PI * 2, 28); seat.rotateX(Math.PI / 2); seat.scale(1, 1, 1.15);
+  K.put(seat, K.gloss(K.pal.c || '#f6f6f2'), 0, 0.42, 0.06);
+  K.put(rbox(0.42, 0.4, 0.17, 0.03), china, 0, 0.6, -0.24);
+  K.put(rbox(0.46, 0.04, 0.2, 0.015), china, 0, 0.82, -0.24);
+  K.put(rbox(0.08, 0.025, 0.03, 0.01), K.metal('#c8ccd4'), 0.13, 0.74, -0.14);
+};
+
 B.vase = (K) => {
   K.put(lathe([[0.1, 0], [0.16, 0.06], [0.2, 0.2], [0.17, 0.34], [0.08, 0.44], [0.07, 0.52], [0.1, 0.56], [0.08, 0.57]], 28), K.gloss(K.pal.c), 0, 0, 0);
   K.put(torus(0.2, 0.014, Math.PI * 2, 28), K.gloss(K.pal.a), 0, 0.2, 0, 0, Math.PI / 2);
@@ -1315,9 +1334,18 @@ const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'dea
   'parasoltable', 'breadbasket', 'icestar', 'iceheart', 'icemoon', 'iceshards', 'lemonstall', 'balloonstall', 'applestall',
   'carouselhorse', 'balloons', 'kadomatsu', 'micstand', 'magnifier', 'parrotperch', 'tubecoral', 'stagcoral', 'bubblecoral',
   'anemone', 'papyrus', 'cobrastatue', 'flytrap', 'monstera', 'lilytub', 'crossing', 'wingstatue', 'beachumbrella',
-  'tomatocrate', 'cocoastand', 'whackamole', 'castlecolumn']);
+  'tomatocrate', 'cocoastand', 'whackamole', 'castlecolumn',
+  // boxed stalls without their awnings, and figures a lathe spun round (the last pass, 2026-10-09)
+  'popcornstall', 'flossstall', 'prizestall', 'hoopshot', 'spacesuit', 'labcoat', 'toysoldier', 'bust', 'schoolbag',
+  'birdhouse', 'suitcases', 'bufferstop']);
 const POT_MAX = 21;   // the tallest pot potAt() paints, in units
 const leafy = (p) => (p.w === p.h && p.group === 'Plants') || LEAFY.has(p.fam);
+// only a plant's base is a pot to turn on a lathe; anything else's would spin a bag or a stack of cases round
+const potted = (p) => p.group === 'Plants' || LEAFY.has(p.fam) && LEAFY_PLANTS.has(p.fam);
+const LEAFY_PLANTS = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'centerplant', 'orchidstand',
+  'topiary', 'tomatovine', 'kelp', 'iceflower', 'sakura', 'fancoral', 'beanpole', 'plantstair', 'cornrow', 'kadomatsu', 'papyrus',
+  'flytrap', 'monstera', 'lilytub', 'coral', 'tubecoral', 'stagcoral', 'bubblecoral', 'anemone', 'tomatocrate', 'umbrellas',
+  'trophy', 'candelabra', 'litwick', 'gymstatue', 'cobrastatue', 'wingstatue', 'icestar', 'iceheart', 'icemoon', 'iceshards', 'breadbasket']);
 
 /** A plant (the user's ask, 2026-10-09: leaves puffed into a hull came out a lumpy blob): its pot, the rows from the
     floor that are one centred run, turns on a lathe; above it the painting stands on two crossed cards, the front's
@@ -1328,7 +1356,7 @@ function leafyModel(id, paint) {
   if (j0 < 0) return null;
   let k = j0;
   while (k < Math.min(j1, j0 + POT_MAX) && rows[k] && rows[k].runs === 1 && Math.abs(rows[k].l + rows[k].r - W) <= 3) k++;
-  const split = p.w === p.h && k - j0 >= 4 ? k : j0, g = new THREE.Group();
+  const split = p.w === p.h && potted(p) && k - j0 >= 4 ? k : j0, g = new THREE.Group();
   if (split > j0) {
     const mats = faces(p, id).map(paint), arrs = remember(`${p.fam}|pot`, () => latheArrays(art, j0, split));
     if (arrs) arrs.forEach((a, i) => { const geo = geoFrom(a); geo.scale(U, U, U); const m = new THREE.Mesh(geo, mats[i]); m.castShadow = m.receiveShadow = true; g.add(m); });
