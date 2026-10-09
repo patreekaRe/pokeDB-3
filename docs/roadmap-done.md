@@ -2023,3 +2023,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the Ancient Tree, redrawn as the Safari lobby's (log posts, thatch, the green board, lanterns), a fence either side; the
   trees there cleared, and the road runs on through it into a painted view (`js/hub-vista.js`: meadow, the trail winding
   to the horizon, snowy mountains), since the user wanted it like the lobby's backdrop.
+- **Clearing: the Whispering Clearing's gate and room below the plaza** (2026-10-09): the bar hid the Clearing's bottom and
+  the Poké Mall, so the camera now stops above the bar and the ground runs four rows further down to a gate across the front
+  (log arch, WHISPERING CLEARING board, wind chimes, fence and hedge); the New game Pokéstop moved to its right, and setting
+  out walks your partner under the arch and away, the user's ask.

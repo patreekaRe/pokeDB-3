@@ -24,7 +24,10 @@ import { vistaArt, VISTA } from './hub-vista.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
-const M = 4, FRONT = 1;       // grass and forest round it (tiles): back and sides, and in front where the trail leaves
+const M = 4, FRONT = 7;       // grass and forest round it (tiles): back and sides, and in front, down to the gate and past it
+// the Whispering Clearing's gate across the front (the user's ask, 2026-10-09): its fence closes the hub off, the trail
+// leaves under its arch, and setting out on a run walks your partner through it and away
+const GATE_AT = { tx: 6, ty: ROWS + 4 };
 const TP = 16;                // painted pixels a tile
 const START = { x: 6, y: 8 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
@@ -77,6 +80,7 @@ let placed = false; // the partner has been put on the plaza once
 let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
 let arriving = false;   // walking in from the bottom of the screen (enterHub())
 let showing = null; // a showHub() under way, so two calls at once never build two partners
+let outbound = null, returning = false;   // walking out under the gate to a run (walkOut()), and back in from one
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -179,7 +183,7 @@ function groundArt() {
     } else {
       // darker away from the walkable ground, towards the trees
       // (not in the back-left corner, cleared round the Safari gate)
-      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, 0) * (u < 2.5 && v < 5 ? 0.2 : 1);
+      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, v - GATE_AT.ty - 0.2, 0) * (u < 2.5 && v < 5 ? 0.2 : 1);
       const n = smooth(x, y, 6) * 3.2 + hash(x, y) * 1.4 + (path < 0.12 ? 1 : 0) + Math.min(2, out * 0.6);
       c = meadow[Math.min(5, Math.max(0, Math.floor(n)))];
     }
@@ -336,6 +340,86 @@ function safariFence(g, x0, x1, z) {
   const n = Math.max(1, Math.round((x1 - x0) / 1.1)), post = new THREE.CylinderGeometry(0.075, 0.085, 0.78, 10);
   for (let i = 0; i <= n; i++) add(new THREE.Mesh(post, wood), x0 + (x1 - x0) * i / n, 0.39, z);
   for (const y of [0.34, 0.62]) add(new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0), 0.08, 0.06), dark), (x0 + x1) / 2, y, z + 0.06);
+}
+
+/** The Whispering Clearing's gate across the front (the user's ask, 2026-10-09), smooth like the Safari's: two mossy log
+    posts on stone feet under a torii-like beam whose ends sweep up, a second beam below, a hanging board saying
+    WHISPERING CLEARING, a leafy garland, and wind chimes either side (the whispering) that glow at dusk. The opening is
+    clear, so the trail and your partner show going on through it. */
+function clearingGateArt() {
+  const W = 60, H = 66, { c, g, fill, rr, lin, shine } = fine(W, H, 10), rnd = seeded(13), glow = shine();
+  const WD = ['#d8a868', '#a87440', '#7a4e26', '#4a2c12'];
+  for (const x of [7, 46]) {   // the posts: logs with grain and moss, a stone foot
+    rr(x, 14, 7, 47, 2, lin(x, 0, x + 7, 0, [WD[0], WD[1], WD[1], WD[2], WD[3]]));
+    for (let y = 20; y < 58; y += 5) strokeOn(g, 'rgba(70,38,14,0.35)', 0.3, () => { g.moveTo(x + 1, y); g.quadraticCurveTo(x + 3.5, y + 1.3, x + 6, y); });
+    fill('rgba(66,38,14,0.55)', () => g.ellipse(x + 2.5 + rnd() * 2, 36 + rnd() * 12, 0.7, 1.1, 0, 0, Math.PI * 2));
+    for (let i = 0; i < 7; i++) fill(i % 2 ? 'rgba(120,180,80,0.8)' : 'rgba(80,140,60,0.8)', () => g.ellipse(x + 0.6 + rnd() * 5.8, 52 + rnd() * 8, 1.4, 0.9, 0, 0, Math.PI * 2));
+    rr(x - 2, 60, 11, 5, 2, lin(0, 60, 0, 65, [P.stone[0], P.stone[1], P.stone[2]]));
+    rr(x - 1.2, 60.4, 9.4, 0.7, 0.35, 'rgba(255,255,255,0.5)');
+  }
+  const vine = (x0, dir) => {   // ivy climbing each post
+    const pts = [];
+    for (let y = 61; y > 24; y -= 2) pts.push([x0 + Math.sin(y * 0.45 * dir) * 1.8, y]);
+    strokeOn(g, '#3a7a30', 0.4, () => { g.moveTo(...pts[0]); pts.forEach(p => g.lineTo(...p)); });
+    pts.forEach(([x, y], i) => leaf(g, x, y, i % 2 ? -0.5 : Math.PI + 0.5, 1.6 + rnd() * 0.7, P.moss[i % 2]));
+  };
+  vine(9.5, 1); vine(50.5, -1);
+
+  // the lower beam, through both posts
+  rr(3, 17, 54, 4, 1, lin(0, 17, 0, 21, [WD[0], WD[1], WD[2]]));
+  rr(3.6, 17.4, 52.8, 0.7, 0.35, 'rgba(255,240,200,0.5)');
+  // the top beam, its ends sweeping up
+  const top = () => {
+    g.moveTo(-0.5, 4.5); g.quadraticCurveTo(14, 9.4, 30, 9.4); g.quadraticCurveTo(46, 9.4, 60.5, 4.5);
+    g.lineTo(60.5, 8); g.quadraticCurveTo(46, 13.6, 30, 13.6); g.quadraticCurveTo(14, 13.6, -0.5, 8); g.closePath();
+  };
+  fill('rgba(0,0,0,0.22)', () => g.rect(4, 13.4, 52, 1.2));
+  fill(lin(0, 4, 0, 14, ['#6a4a2e', '#4a2c16', '#2e1a0a']), top);
+  strokeOn(g, 'rgba(255,230,180,0.35)', 0.4, () => { g.moveTo(0, 5.2); g.quadraticCurveTo(14, 10, 30, 10); g.quadraticCurveTo(46, 10, 60, 5.2); });
+  fill('#3a7a30', () => g.ellipse(9, 9.4, 3.6, 1.1, 0.25, 0, Math.PI * 2));   // moss on the beam
+  fill('#5a9a40', () => g.ellipse(51, 9.6, 3, 1, -0.25, 0, Math.PI * 2));
+
+  // the garland draped along the lower beam
+  for (const [a, b] of [[4, 18], [42, 56]]) {
+    const pts = [];
+    for (let t = 0; t <= 1; t += 0.08) pts.push([a + (b - a) * t, 21 + Math.sin(t * Math.PI) * 3.4]);
+    strokeOn(g, '#2e6a28', 0.35, () => { g.moveTo(...pts[0]); pts.forEach(p => g.lineTo(...p)); });
+    pts.forEach(([x, y], i) => leaf(g, x, y, Math.PI / 2 + (i % 2 ? 0.7 : -0.7), 1.5 + rnd() * 0.6, P.moss[i % 2]));
+    blossom(g, (a + b) / 2, 24.2, 0.5, '#f8f0f8', '#f8d848');
+  }
+
+  // the hanging board between the beams, WHISPERING CLEARING
+  rr(16, 10.6, 28, 11.4, 1.8, 'rgba(0,0,0,0.25)');
+  rr(15.4, 10, 29.2, 11.4, 1.8, lin(0, 10, 0, 21.4, [WD[1], WD[3]]));
+  rr(16.5, 11.1, 27, 9.2, 1.2, lin(0, 11.1, 0, 20.3, ['#7cc6c0', '#3e8a90', '#24606a']));
+  rr(17.6, 11.7, 24.8, 0.8, 0.4, 'rgba(255,255,255,0.35)');
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 4.2px "Trebuchet MS", "Arial Black", sans-serif';
+  g.fillStyle = 'rgba(10,40,44,0.7)'; g.fillText('WHISPERING', 30.3, 15.1);
+  g.fillStyle = '#fbf8e4'; g.fillText('WHISPERING', 30, 14.8);
+  g.font = '800 2.4px "Trebuchet MS", sans-serif';
+  g.fillStyle = '#f8e070'; g.fillText('C L E A R I N G', 30, 18.4);
+  for (const x of [19.4, 40.6]) leaf(g, x, 18.4, x < 30 ? Math.PI : 0, 1.6, '#a8e070');
+
+  // wind chimes hung under the lower beam, a glass bell, three rods and a paper strip each; they catch the light at dusk
+  for (const [x, len] of [[18.5, 1], [41.5, 0.85]]) {
+    strokeOn(g, '#3a2410', 0.25, () => { g.moveTo(x, 21); g.lineTo(x, 24); });
+    const bell = (gg) => { gg.beginPath(); gg.moveTo(x - 2, 27); gg.quadraticCurveTo(x - 2, 23.6, x, 23.6); gg.quadraticCurveTo(x + 2, 23.6, x + 2, 27); gg.closePath(); };
+    g.fillStyle = lin(x - 2, 0, x + 2, 0, ['#e8fbff', '#9ce0f0', '#5ab0d0']); bell(g); g.fill();
+    glow.fillStyle = '#a8e8ff'; bell(glow); glow.fill();
+    fill('rgba(255,255,255,0.7)', () => g.ellipse(x - 0.9, 25, 0.35, 0.9, 0, 0, Math.PI * 2));
+    for (const [dx, l] of [[-1.2, 5], [0, 6.4], [1.2, 4.4]]) {
+      strokeOn(g, '#c8e8f0', 0.4, () => { g.moveTo(x + dx, 27); g.lineTo(x + dx, 27 + l * len); });
+      strokeOn(glow, '#6a9aa8', 0.4, () => { glow.moveTo(x + dx, 27); glow.lineTo(x + dx, 27 + l * len); });
+    }
+    strokeOn(g, '#3a2410', 0.2, () => { g.moveTo(x, 27); g.lineTo(x, 34 * len + 4); });
+    rr(x - 0.9, 34 * len + 4, 1.8, 4.6, 0.3, lin(0, 0, 0, 1, ['#f8f0d8', '#f8f0d8']));
+    rr(x - 0.9, 34 * len + 4, 1.8, 0.9, 0.3, '#e05848');
+  }
+
+  for (const x of [4, 15, 45, 57]) tuft(g, x, 65.6, 9, rnd);
+  for (const [x, y, p] of [[2.5, 64.6, '#ffffff'], [16.5, 64.8, '#b0a0f8'], [44, 64.6, '#f8a0c8'], [58, 64.9, '#f8e048']]) blossom(g, x, y, 0.5, p, '#f89830');
+  return c;
 }
 
 /** The Sky Pillar's stone, smooth (2026-10-08): weathered blocks, a carved band of runes every few storeys, arched windows
@@ -1030,11 +1114,25 @@ function makePlaces() {
   const run = runAt('trail');
   const list = [
     {
-      id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: 6, y: ROWS - 1 }, tiles: [[7, ROWS - 2]], tag: [6, 4, ROWS - 1],
+      id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: GATE_AT.tx + 2, y: GATE_AT.ty - 1 }, tiles: [[GATE_AT.tx + 3, GATE_AT.ty - 1]], tag: [9, 2.6, GATE_AT.ty - 1],
       open: true,
-      line: run ? waits(run) : 'The trail out of the Clearing: a new adventure.',
+      line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      build: (g) => pokestop(g, 'trail', tileX(7), tileZ(ROWS - 2), 0.7),
+      // in front of the gate on its right, like the Safari gate's (the user's ask, 2026-10-09)
+      build: (g) => pokestop(g, 'trail', tileX(GATE_AT.tx + 3) - 0.2, tileZ(GATE_AT.ty - 1) + 0.1, 0.7),
+    },
+    {
+      id: 'clearing-gate', name: 'Whispering Clearing', step: { x: GATE_AT.tx, y: GATE_AT.ty - 1 }, tiles: [], tag: [6, 4, GATE_AT.ty], open: true,
+      line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out.',
+      buttons: [],
+      build: (g) => {
+        const s = clearingGateArt(), x = tileX(GATE_AT.tx), z = tileZ(GATE_AT.ty), b = board(s, x, z);
+        glowing(b.material, s, null, '#c8f0ff', 0.9);
+        g.add(b);
+        const half = s.width / s.fine / TP / 2, post = (px) => x - half + px / TP;
+        safariFence(g, tileX(-M), post(7), z);
+        safariFence(g, post(53), tileX(COLS + M - 1), z);
+      },
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
@@ -1206,13 +1304,13 @@ function buildClearing() {
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x - 0.5) + (rnd() - 0.5) * 0.5, tileZ(-1 - r * 1.2 - rnd() * 0.4), 1.25 + r * 0.25 + rnd() * 0.2);
   }
   for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = -1; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
-    if (r === 0 && y > ROWS - 0.5) continue;
     if (s < 0 && r < 2 && y > 5.8 && y < 10.6) continue;   // room for the Poké Mall (MALL_AT)
     const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
   for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
-  for (const x of [1, 3, 4, 8, 9, 11]) put(4 + (x % 2), tileX(x), tileZ(ROWS) + 0.2, 1);   // bushes along the front edge, the trail between
+  // bushes along the gate's fence, outside it, the trail between
+  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45, 0.9 + rnd() * 0.25);
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
     const list = spots[k];
@@ -1258,7 +1356,8 @@ function paintVista() {
 /* ---------- walking ---------- */
 
 // the cleared meadow up to the Safari gate, outside the grid's back-left corner
-const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0)].map(([x, y]) => key(x, y)));
+// and the rows down to the Whispering Clearing's gate in front
+const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0), ...rect(0, ROWS, COLS - 1, GATE_AT.ty - 1)].map(([x, y]) => key(x, y)));
 const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -1310,6 +1409,8 @@ function goTo(p, enter, i = null) {
 }
 
 function arrived() {
+  if (outbound) { const go = outbound; outbound = null; if (running) go(); return; }
+  if (returning) { returning = false; here = null; walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500; return; }
   here = placeAt(walker.tile);
   const go = aim;
   aim = null;
@@ -1334,8 +1435,30 @@ function open(p, i = null) {
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
   hideCard();
-  const go = p.buttons[i ?? 0][1];
+  const [label, go] = p.buttons[i ?? 0];
+  if (p.id === 'trail' && label !== 'Escape Rope' && !calm) return setTimeout(() => walkOut(go), SPIN * 0.6);
   setTimeout(() => { if (running) go(); }, calm ? 0 : stop ? SPIN * 0.8 : 260);
+}
+
+/** Setting out (the user's ask, 2026-10-09): from the Pokéstop your partner walks down the trail, under the Whispering
+    Clearing's arch and away past the bottom of the screen, and the run opens once it's gone. */
+function walkOut(go) {
+  if (!running) return;
+  const at = { x: GATE_AT.tx, y: GATE_AT.ty - 1 };
+  walker.path = [...route(walker.tile, at)];
+  for (let y = at.y + 1; y <= GATE_AT.ty + 5; y++) walker.path.push({ x: at.x, y });
+  outbound = go;
+  aim = null; here = null;
+}
+
+/** Back from a run that walked out under the gate: in through it again, onto the trail, facing you. */
+function walkBackIn() {
+  walker.x = tileX(GATE_AT.tx); walker.z = tileZ(GATE_AT.ty + 3); walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty + 3 };
+  walker.path = [];
+  for (let y = GATE_AT.ty + 2; y >= GATE_AT.ty - 2; y--) walker.path.push({ x: GATE_AT.tx, y });
+  walker.facing = mon.sheets.back ? 'back' : 'front';
+  camX = walker.x; camZ = walker.z;
+  returning = true;
 }
 
 /* ---------- the Pokéstop ---------- */
@@ -1568,7 +1691,7 @@ function ndc(e) {
 }
 
 function onTap(e) {
-  if (held || arriving || leaving) return;
+  if (held || arriving || leaving || outbound || returning) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects([mon.board, placeGroup], true).find(h => h.object !== mon.board || onSprite(h));
@@ -1588,7 +1711,7 @@ function onTap(e) {
 }
 
 function onKey(e) {
-  if (!running || held || arriving || leaving || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
+  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
   const step = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (step) {
@@ -1733,13 +1856,13 @@ function fitCamera(w, h) {
   const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), tanH = tanV * camera.aspect;
   const d = Math.max(ACROSS / 2 / tanH, DEPTH * Math.sin(PITCH) / 2 / tanV);
   camera.userData = { dist: d, half: d * tanH };
-  // the furthest forward the view may look: where the ground's front edge sits on the bottom of the screen
-  const edge = new THREE.Vector3();
+  // the furthest forward the view may look: where the ground's front edge sits on the bar's top, not under it
+  const edge = new THREE.Vector3(), low = -1 + 2 * Math.min(0.4, (bar?.offsetHeight || 0) / h);
   let lo = -ROWS, hi = ROWS;
   for (let i = 0; i < 24; i++) {
     const mid = (lo + hi) / 2;
     aimCamera(0, mid);
-    if (edge.set(0, 0, ROWS / 2 + FRONT).project(camera).y < -1) lo = mid; else hi = mid;
+    if (edge.set(0, 0, ROWS / 2 + FRONT).project(camera).y < low) lo = mid; else hi = mid;
   }
   camera.userData.front = lo;
   scene.fog.near = d + 2; scene.fog.far = d + 22;
@@ -1829,7 +1952,7 @@ async function build() {
   card = root.querySelector('.hub-card');
   bar = root.querySelector('.hub-bar');
   bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
-  new ResizeObserver(() => root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`)).observe(bar);
+  new ResizeObserver(() => { root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`); if (camera) resize(); }).observe(bar);
   bar.querySelector('.hbar-flee').append(smoothIcon('run'));
   bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(); });
   dexBtn = root.querySelector('.hub-dex');
@@ -1909,7 +2032,10 @@ async function openHub(titleScreen, actions, hold) {
   mon.group.visible = !held;
   if (!placed) { placed = true; walker.tile = START; walker.x = tileX(START.x); walker.z = tileZ(START.y); camX = walker.x; camZ = walker.z; }
   walker.path = []; aim = null; here = placeAt(walker.tile);
+  outbound = null; returning = false;
   if (inside) leftPlace();
+  else if (!inGrid(walker.tile) && !hold) walkBackIn();
+  else if (!inGrid(walker.tile)) { walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty - 2 }; walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); }
   hideCard();
   root.querySelectorAll('.room-home.out').forEach(k => k.classList.remove('out'));
   dexNews();
