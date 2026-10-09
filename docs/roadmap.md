@@ -150,7 +150,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      on `secret-base`, Run in: LOCAL (Desktop app):
      a) **Furniture store** (the west front): glass walls with furniture on show behind them; walk in to a 3D shop floor
         where the day's stock (`furnitureStock()`) stands as real pieces, tap one to buy. The Secret Base's Shop tab keeps
-        working. An unlockable **second floor** (the mall's mezzanine; bought with PokéCoins) adds more stock a day.
+        working. An unlockable **second floor** (bought with PokéCoins) adds more stock a day. It is reached from inside
+        the store (the user's call, 2026-10-08): a staircase or escalator on the shop floor that your partner walks up to
+        a second 3D room of stock, roped off / shuttered until bought (a tap on it asks to buy). Not the hall's mezzanine.
      b) **Game Corner, walked into** (the middle front): an arcade inside (neon, cabinets, carpet); perks and shiny skins
         bought at counters / machines in person, the same items and prices as `js/data/shop.js`; the cabinet app stays.
      c) **Prize games** in the Game Corner: slots, roulette and blackjack for PokéCoins, seeded by `js/rng.js`, a house
