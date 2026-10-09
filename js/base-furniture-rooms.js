@@ -11,11 +11,11 @@ import { MOTIFS, motif, ink, legs4, sideBox, shadowWall } from './base-furniture
 export const ROOM_KINDS = [];
 const add = (group, list) => list.forEach(f => ROOM_KINDS.push({ group, ...f }));
 
-const BERRY = ['#e03838', '#4a78d8', '#f890b8', '#f0d848', '#7a4ab8', '#58b8a8'];
-const STONE = '#9a9aa6';
-const flower = (cx, cy, c) => { for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) P(cx + dx, cy + dy, dy < 0 ? sh(c, 1) : c); P(cx, cy, '#f8d850'); };
+export const BERRY = ['#e03838', '#4a78d8', '#f890b8', '#f0d848', '#7a4ab8', '#58b8a8'];
+export const STONE = '#9a9aa6';
+export const flower = (cx, cy, c) => { for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) P(cx + dx, cy + dy, dy < 0 ? sh(c, 1) : c); P(cx, cy, '#f8d850'); };
 /** A Poké Ball r pixels round, its top half in `top`. */
-const ball = (cx, cy, r, top = '#e04848') => {
+export const ball = (cx, cy, r, top = '#e04848') => {
   disc(cx, cy, r + 1, '#303038'); disc(cx, cy, r, '#f4f4f0');
   for (let j = -r; j < 0; j++) { const h = Math.sqrt(r * r - j * j); R(Math.round(cx - h), cy + j, Math.round(h * 2) + 1, 1, j < -r * 0.7 ? sh(top, 1) : top); }
   R(cx - r, cy, r * 2 + 1, Math.max(1, Math.round(r / 5)), '#303038');
@@ -26,7 +26,7 @@ const ballTop = () => (k.c === '#f4f4f0' ? k.w : k.c);
 
 /* ---------- kitchen ---------- */
 /** A kitchen cabinet with a worktop, vw wide; returns the worktop's line. */
-function cabinet(x, b, vw) {
+export function cabinet(x, b, vw) {
   floorShadow(x, b, vw);
   wood(x + 1, b - 32, vw - 2, 29, k.w); R(x + 2, b - 3, vw - 4, 3, sh(k.w, -3));
   for (let i = 0; i + 20 < vw; i += 30) {
