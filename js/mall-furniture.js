@@ -1,7 +1,7 @@
 /* mall-furniture.js  -  the Poké Mall's Furniture store (roadmap 5a; branch secret-base): its front in the hall, glass
    with two of the day's pieces on show behind it, and its two 3D shop floors, the day's stock (furnitureStock()) standing
    on low wooden platforms as the real pieces, each with its price card. The second floor (`secretBase.upstairs`, bought once) holds the
-   next STOCK pieces of the same day's shuffle; its stair at the back right is roped off until it's open. Painted smooth
+   next STOCK pieces of the same day's shuffle; its lift at the back right is roped off until it's open. Painted smooth
    like the hall (fine()), the furniture in its own pixels (pieceArt()). js/mall-3d.js walks it; this file only builds it. */
 
 import { PIECES, pieceArt, furnitureStock, UPSTAIRS_PRICE } from './secret-base.js';
@@ -11,8 +11,12 @@ import { fine, texOf, words, star } from './hub-3d.js';
 import { RES, HD } from './base-paint.js';
 
 const PX = 1 / (16 * RES);   // one of a piece's painted pixels, in tiles
-export const STAIR_H = 2.6;   // the stair's top, up at the back wall
-export const STAIR = { x: 11, foot: { x: 11, y: 4 }, climb: [{ x: 11, y: 3 }, { x: 11, y: 2 }, { x: 11, y: 1 }, { x: 11, y: 0 }] };
+/* The lift between the floors at the back right (2026-10-09, the user's ask: the stair's steps were blocks under a smooth
+   ramp, so your partner sank into every tread, and upstairs walked down into a stairwell only painted on the floor):
+   `x` its middle (snug between the counter's shelf and the side wall), `foot` the tile you stand on at its doors, `door`
+   right in front of them and `inside` in its car. */
+export const LIFT = { x: 11.45, foot: { x: 11, y: 2 }, door: { x: 11.45, y: 2 }, inside: { x: 11.45, y: 0.45 } };
+const LIFT_W = 2, LIFT_D = 1.4, LIFT_H = 2.5, LIFT_DOOR = 1.8;   // its case, and its doorway's height
 /* Restyled after New Horizons' Nook's Cranny (2026-10-09, the user's ask: a full restyle, and the pieces were too
    small): cream plaster between timber posts over light wood wainscoting, a plank floor, leaf-green trim, and the day's
    pieces near life size on low wooden platforms, 2 x 2 tiles, four along the back and four in front with an aisle
@@ -207,8 +211,7 @@ function clock(g, x, y, r, L) {
 }
 
 /** A floor's back wall, one painting: warm wallpaper over a dark skirting, the store's wooden sign over the back stand,
-    posters and framed pictures, a clock over the counter, tall windows up high for a tall phone, and on the ground floor
-    the lit doorway the stair climbs to. */
+    posters and framed pictures, a clock over the counter, tall windows up high for a tall phone. */
 function wallArt(floor, { cols, top: TOP, u: U }) {
   const W = (cols + 0.8) * U, H = TOP * U, L = LOOK[floor], f = fine(W, H, 4), { g, rr, lin, shine } = f, s = shine();
   const wx = (t) => (t + 0.4) * U, wy = (y) => (TOP - y) * U;
@@ -240,15 +243,6 @@ function wallArt(floor, { cols, top: TOP, u: U }) {
   clock(g, wx(9.5), wy(4.2), 8, L);
   frame(g, wx(8.05), wy(4.55), 20, 15, L);
   if (floor === 2) frame(g, wx(9.95), wy(4.55), 20, 15, L, '#f8c8a0');
-  if (floor === 1) {
-    const x0 = wx(STAIR.x) + 3, x1 = wx(STAIR.x + 2) - 3, top = wy(STAIR_H + 1.8), foot = wy(STAIR_H);
-    rr(x0 - 2, top - 2, x1 - x0 + 4, foot - top + 2, 1.4, L.dark);
-    rr(x0, top, x1 - x0, foot - top, 1, lin(0, top, 0, foot, ['#ffe8b0', '#ffc878', '#c8884a']));
-    s.fillStyle = '#c0a070'; s.beginPath(); s.roundRect(x0, top, x1 - x0, foot - top, 1); s.fill();
-    rr((x0 + x1) / 2 - 7, top - 13, 14, 9, 2, L.sign);
-    words(g, '2F', (x0 + x1) / 2, top - 8.4, 6.4, '#ffffff');
-    s.fillStyle = '#ffffff'; words(s, '2F', (x0 + x1) / 2, top - 8.4, 6.4, '#ffffff');
-  }
   return f.c;
 }
 
@@ -281,7 +275,7 @@ function sideArt(floor, left, { rows, top: TOP, u: U }) {
 }
 
 /** The floor: terracotta tiles in a basket weave downstairs (Nook's), a carpet upstairs, a red rug by the counter and a
-    welcome mat at the way in, and upstairs the stairwell going down at the back right, its steps darker the deeper. */
+    welcome mat at the way in, and a mat at the lift's doors. */
 function floorArt(floor, { cols, rows }) {
   const T = 16, L = LOOK[floor], f = fine(cols * T, rows * T, 5), { g, rr, lin } = f;
   // light planks running across, staggered, each its own shade with a little grain and a dark seam
@@ -306,16 +300,10 @@ function floorArt(floor, { cols, rows }) {
   for (const k of [0.82, 0.5]) { g.beginPath(); g.ellipse(rx, ry, rw * k, rh * k, 0, 0, Math.PI * 2); g.stroke(); }
   rr(6 * T + 1.5, (rows - 1) * T + 2.5, T - 3, T - 5, 2, L.trim);
   words(g, 'HELLO', 6.5 * T, (rows - 0.5) * T, 3.2, '#ffffff');
-  if (floor === 2) {
-    const x0 = STAIR.x * T, x1 = (STAIR.x + 2) * T, y1 = 4 * T;
-    rr(x0, 0, x1 - x0, y1, 0, '#1a1420');
-    for (let i = 0; i < 8; i++) {
-      const y = y1 - (i + 1) * 8, k = 1 - i / 9;
-      g.fillStyle = `rgb(${Math.round(200 * k)},${Math.round(160 * k)},${Math.round(120 * k)})`; g.fillRect(x0 + 1, y + 1, x1 - x0 - 2, 5.5);
-      g.fillStyle = `rgba(0,0,0,${0.3 + i * 0.07})`; g.fillRect(x0 + 1, y + 6.5, x1 - x0 - 2, 1.5);
-    }
-    g.fillStyle = lin(0, 0, 0, y1, ['rgba(0,0,0,0.85)', 'rgba(0,0,0,0)']); g.fillRect(x0, 0, x1 - x0, y1);
-  }
+  // a mat at the lift's doors
+  const mx = (LIFT.x + 0.5) * T, my = (LIFT_D + 0.32) * T;
+  rr(mx - 0.75 * T, my - 0.28 * T, 1.5 * T, 0.56 * T, 2, L.trimDark);
+  rr(mx - 0.75 * T + 1, my - 0.28 * T + 1, 1.5 * T - 2, 0.56 * T - 2, 1.4, L.trim);
   return f.c;
 }
 
@@ -353,12 +341,67 @@ function tagArt(text, L) {
   return f.c;
 }
 
-/** The rope across the stair's foot until the second floor is open: two brass posts, a red rope and its sign. */
+/** The rope across the lift's doors until the second floor is open: two brass posts, a red rope and its sign. */
 function ropeArt() {
   const f = fine(30, 12, 6), { g, rr } = f;
   rr(0.5, 0.5, 29, 11, 2, LOOK[2].trim);
   rr(1.6, 1.6, 26.8, 8.8, 1.4, '#ffffff');
   words(g, '2F CLOSED', 15, 6.2, 4.4, LOOK[2].dark);
+  return f.c;
+}
+
+/** The lift's header: a wood fascia with a leaf-green band, and a brass dial reading 1 and 2 (its needle is a mesh). */
+function liftDialArt(L) {
+  const f = fine(40, 14, 8), { g, rr, lin } = f;
+  rr(0, 0, 40, 14, 0, lin(0, 0, 0, 14, [L.lite, L.wood]));
+  for (let x = 0; x < 40; x += 3.2) { g.fillStyle = 'rgba(90,50,20,0.14)'; g.fillRect(x, 0, 0.25, 12); }
+  rr(0, 12, 40, 2, 0, lin(0, 12, 0, 14, [L.trim, L.trimDark]));
+  const cx = 20, cy = 10.6;
+  g.fillStyle = 'rgba(60,30,10,0.25)'; g.beginPath(); g.arc(cx + 0.3, cy + 0.4, 8, Math.PI, 0); g.closePath(); g.fill();
+  g.fillStyle = lin(0, cy - 8, 0, cy, ['#fff0b0', '#e0b040', '#a87818']); g.beginPath(); g.arc(cx, cy, 8, Math.PI, 0); g.closePath(); g.fill();
+  g.fillStyle = '#fbf6ea'; g.beginPath(); g.arc(cx, cy, 6.6, Math.PI, 0); g.closePath(); g.fill();
+  g.strokeStyle = L.dark; g.lineWidth = 0.3;
+  for (let i = 0; i <= 8; i++) {
+    const a = Math.PI + (0.25 + i / 8 * 0.5) * Math.PI;
+    g.beginPath(); g.moveTo(cx + Math.cos(a) * 5.4, cy + Math.sin(a) * 5.4); g.lineTo(cx + Math.cos(a) * 6.2, cy + Math.sin(a) * 6.2); g.stroke();
+  }
+  for (const [n, a] of [['1', -0.75], ['2', -0.25]]) words(g, n, cx + Math.cos(a * Math.PI) * 3.9, cy + Math.sin(a * Math.PI) * 3.9 + 0.2, 2.6, L.dark);
+  rr(cx - 8.4, cy, 16.8, 0.9, 0.3, '#a87818');
+  return f.c;
+}
+
+/** The lift's two doors as one picture (each door shows its half): brushed champagne metal, a panel inset on each, and
+    the store's leaf in a cream ring split down the middle. */
+function liftDoorArt(L) {
+  const f = fine(20, 36, 8), { g, rr, lin } = f;
+  rr(0, 0, 20, 36, 0, lin(0, 0, 20, 0, ['#e8d6aa', '#f6ead0', '#dcc694', '#f2e2c0', '#e0cc9c']));
+  for (let x = 0.4; x < 20; x += 0.7) { g.fillStyle = `rgba(${x % 1.4 < 0.7 ? '255,255,255' : '120,90,40'},0.08)`; g.fillRect(x, 0, 0.3, 36); }
+  for (const x0 of [1.4, 11.4]) {
+    g.strokeStyle = 'rgba(140,100,40,0.45)'; g.lineWidth = 0.4; g.strokeRect(x0, 2, 7.2, 32);
+    g.strokeStyle = 'rgba(255,255,255,0.6)'; g.lineWidth = 0.3; g.strokeRect(x0 + 0.35, 2.35, 7.2, 32);
+  }
+  g.fillStyle = 'rgba(90,60,20,0.5)'; g.fillRect(9.9, 0, 0.2, 36);
+  g.fillStyle = '#fbf3e0'; g.beginPath(); g.arc(10, 14, 4.4, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = L.trimDark; g.lineWidth = 0.5; g.stroke();
+  leaf(g, 10, 14, 3.1, L.trim);
+  return f.c;
+}
+
+/** The call buttons beside the doors: a brass plate, up and down in round lit buttons. */
+function liftCallArt(L) {
+  const f = fine(7, 12, 10), { g, rr, lin, shine } = f, s = shine();
+  rr(0, 0, 7, 12, 1.4, lin(0, 0, 0, 12, ['#fff0b0', '#d8a838', '#a87818']));
+  rr(0.6, 0.6, 5.8, 10.8, 1, '#f6ecd0');
+  for (const [y, up] of [[3.6, true], [8.4, false]]) {
+    for (const c of [g, s]) {
+      c.fillStyle = c === g ? '#6a5040' : '#000000'; c.beginPath(); c.arc(3.5, y, 2, 0, Math.PI * 2); c.fill();
+      c.fillStyle = c === g ? '#ffd870' : '#ffd870';
+      c.beginPath();
+      if (up) { c.moveTo(3.5, y - 1.1); c.lineTo(4.7, y + 0.8); c.lineTo(2.3, y + 0.8); }
+      else { c.moveTo(3.5, y + 1.1); c.lineTo(4.7, y - 0.8); c.lineTo(2.3, y - 0.8); }
+      c.closePath(); c.fill();
+    }
+  }
   return f.c;
 }
 
@@ -400,8 +443,8 @@ function shelfArt(L) {
 }
 
 /** One floor of the store. `size` is the hall's ({ cols, rows, top, u }), so one camera fits both. Returns its group,
-    the tiles it blocks, the spots you can walk up to (a stand each, the counter and the stair), the gold ring that marks a
-    picked stand, the rope (hidden once the second floor is open) and its shopkeeper's place (js/mall-3d.js puts the
+    the tiles it blocks, the spots you can walk up to (a stand each, the counter and the lift), the gold ring that marks a
+    picked stand, the rope (hidden once the second floor is open), the lift (its doors, dial needle, how open) and its shopkeeper's place (js/mall-3d.js puts the
     Pokémon there, its sprite loading in). */
 export function buildFloor(THREE, floor, size, upstairs) {
   const { cols, rows, top: TOP } = size, L = LOOK[floor];
@@ -526,70 +569,76 @@ export function buildFloor(THREE, floor, size, upstairs) {
   group.add(tree);
   blocked.add(`${cols - 1},${rows - 1}`);
 
-  // the stair: up to the doorway on the ground floor, a stairwell going down on the second
-  for (let x = STAIR.x; x < STAIR.x + 2; x++) for (let y = 0; y < 4; y++) blocked.add(`${x},${y}`);
-  const sx = tileX(STAIR.x) + 0.5, zFront = tileZ(3) + 0.5;
-  const stair = { id: 'stairs', kind: 'stairs', name: floor === 1 ? 'Second floor' : 'Ground floor', open: true, step: { ...STAIR.foot } };
-  spots.push(stair);
-  const steel = std({ color: '#d8dce6', metalness: 0.6, roughness: 0.3 });
-  const stairGroup = new THREE.Group();
-  let rope = null;
-  if (floor === 1) {
-    const tread = std({ color: '#b4844e', roughness: 0.7 }), riser = std({ color: '#fbf6ea' });
-    for (let i = 0; i < 8; i++) {
-      const h = (i + 1) * STAIR_H / 8;
-      const step = new THREE.Mesh(new THREE.BoxGeometry(2, h, 0.5), [riser, riser, tread, riser, riser, riser]);
-      step.position.set(sx, h / 2, zFront - (i + 0.5) * 0.5);
-      step.castShadow = step.receiveShadow = true;
-      stairGroup.add(step);
-    }
-    const run = Math.hypot(4, STAIR_H), rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, run), steel);
-    rail.position.set(sx - 0.97, STAIR_H / 2 + 0.75, zFront - 2);
-    rail.rotation.x = Math.atan2(STAIR_H, 4);
-    stairGroup.add(rail);
-    for (let i = 0; i < 4; i++) {
-      const z = zFront - 0.25 - i * 1.15, y = (zFront - z) / 4 * STAIR_H;
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.75, 0.04), steel);
-      post.position.set(sx - 0.97, y + 0.375, z);
-      stairGroup.add(post);
-    }
-    if (!upstairs) {
-      rope = new THREE.Group();
-      const brass = std({ color: '#e0b040', metalness: 0.7, roughness: 0.3 });
-      for (const x of [sx - 0.85, sx + 0.85]) {
-        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.07, 0.7, 10), brass);
-        post.position.set(x, 0.35, zFront + 0.2);
-        post.castShadow = true;
-        const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), brass);
-        knob.position.set(x, 0.72, zFront + 0.2);
-        rope.add(post, knob);
-      }
-      const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(sx - 0.85, 0.66, zFront + 0.2), new THREE.Vector3(sx, 0.36, zFront + 0.2), new THREE.Vector3(sx + 0.85, 0.66, zFront + 0.2));
-      rope.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.03, 6), std({ color: '#c8283a', roughness: 0.6 })));
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.24), std({ map: texOf(ropeArt()) }));
-      sign.position.set(sx, 0.4, zFront + 0.24);
-      rope.add(sign);
-      stairGroup.add(rope);
-    }
-  } else {
-    const glass = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.55), std({ color: '#cfeaff', transparent: true, opacity: 0.3, roughness: 0.1, metalness: 0.2, depthWrite: false, side: THREE.DoubleSide }));
-    glass.rotation.y = Math.PI / 2;
-    glass.position.set(sx - 1, 0.3, zFront - 2);
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 4), steel);
-    rail.position.set(sx - 1, 0.6, zFront - 2);
-    stairGroup.add(glass, rail);
-    for (let i = 0; i <= 4; i++) {
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.6, 0.04), steel);
-      post.position.set(sx - 1, 0.3, zFront - i);
-      stairGroup.add(post);
-    }
+  // the lift at the back right (LIFT): a timber case against the back wall, its car lit inside, two doors that slide
+  // apart into its sides, a brass dial over them and call buttons beside them (js/mall-3d.js opens and rides it)
+  for (let x = 10; x <= 12; x++) for (let y = 0; y < 2; y++) blocked.add(`${x},${y}`);
+  const liftSpot = { id: 'lift', kind: 'lift', name: floor === 1 ? 'Lift up' : 'Lift down', open: true, step: { ...LIFT.foot } };
+  spots.push(liftSpot);
+  const liftGroup = new THREE.Group();
+  liftGroup.position.set(tileX(LIFT.x), 0, -rows / 2);
+  const put = (geo, m, x, y, z, shadow = true) => {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(x, y, z); o.castShadow = shadow; o.receiveShadow = true;
+    liftGroup.add(o);
+    return o;
+  };
+  const timber = std({ color: L.wood, roughness: 0.7 }), lite = std({ color: L.lite, roughness: 0.7 }), dark = std({ color: L.dark, roughness: 0.8 });
+  const brass = std({ color: '#e0b040', metalness: 0.7, roughness: 0.3 }), champagne = std({ color: '#e4d0a0', metalness: 0.5, roughness: 0.35 });
+  const PW = (LIFT_W - 1) / 2;   // each side's width: the doorway is a tile across
+  for (const sgn of [-1, 1]) {
+    put(new THREE.BoxGeometry(PW, LIFT_H, LIFT_D), timber, sgn * (0.5 + PW / 2), LIFT_H / 2, LIFT_D / 2);
+    put(new THREE.BoxGeometry(0.08, LIFT_DOOR + 0.04, 0.06), lite, sgn * 0.54, (LIFT_DOOR + 0.04) / 2, LIFT_D + 0.03);
+    put(new THREE.BoxGeometry(PW + 0.06, 0.12, LIFT_D + 0.06), dark, sgn * (0.5 + PW / 2), 0.06, LIFT_D / 2);
   }
-  // the stair answers a tap anywhere on it: an invisible board over the whole of it
-  const tap = new THREE.Mesh(new THREE.BoxGeometry(2, floor === 1 ? STAIR_H + 0.6 : 0.4, 4), new THREE.MeshBasicMaterial({ visible: false }));
-  tap.position.set(sx, floor === 1 ? (STAIR_H + 0.6) / 2 : 0.1, zFront - 2);
-  stairGroup.add(tap);
-  stairGroup.traverse(o => { o.userData.front = stair; });
-  group.add(stairGroup);
+  const ceiling = std({ color: '#fff4d8', emissive: new THREE.Color('#ffe8b0'), emissiveIntensity: 0.9 });
+  put(new THREE.BoxGeometry(LIFT_W, LIFT_H - LIFT_DOOR, LIFT_D), [timber, timber, timber, ceiling, std({ map: texOf(liftDialArt(L)), roughness: 0.7 }), timber],
+    0, (LIFT_H + LIFT_DOOR) / 2, LIFT_D / 2);
+  put(new THREE.BoxGeometry(LIFT_W + 0.12, 0.1, LIFT_D + 0.12), dark, 0, LIFT_H + 0.05, LIFT_D / 2);
+  // the car: a warm-lit back panel, a wood floor, a brass handrail
+  put(new THREE.PlaneGeometry(1, LIFT_DOOR), std({ color: '#f6e6c4', emissive: new THREE.Color('#ffe0a8'), emissiveIntensity: 0.3 }), 0, LIFT_DOOR / 2, 0.01, false);
+  put(new THREE.BoxGeometry(1, 0.02, LIFT_D), std({ color: L.wood, roughness: 0.6 }), 0, 0.01, LIFT_D / 2, false);
+  put(new THREE.CylinderGeometry(0.02, 0.02, 0.9, 10), brass, 0, 0.85, 0.1, false).rotation.z = Math.PI / 2;
+  // the dial's needle, turning about its foot (rotation.z: 1F left, 2F right)
+  const needle = new THREE.Group();
+  needle.position.set(0, LIFT_H - 10.6 / 14 * (LIFT_H - LIFT_DOOR), LIFT_D + 0.006);
+  const hand = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.25, 0.008), std({ color: '#3a2418' }));
+  hand.position.y = 0.11;
+  needle.add(hand, new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.012, 14), brass).rotateX(Math.PI / 2));
+  needle.rotation.z = floor === 1 ? Math.PI / 4 : -Math.PI / 4;
+  liftGroup.add(needle);
+  // the doors, each showing its half of the picture
+  const doorTex = texOf(liftDoorArt(L)), doors = [-1, 1].map(sgn => {
+    const map = doorTex.clone();
+    map.repeat.set(0.5, 1); map.offset.set(sgn < 0 ? 0 : 0.5, 0); map.needsUpdate = true;
+    const face = std({ map, metalness: 0.45, roughness: 0.35 });
+    const d = put(new THREE.BoxGeometry(0.5, LIFT_DOOR, 0.04), [champagne, champagne, champagne, champagne, face, champagne], sgn * 0.25, LIFT_DOOR / 2, LIFT_D - 0.08);
+    d.userData.home = sgn * 0.25; d.userData.side = sgn;
+    return d;
+  });
+  put(new THREE.PlaneGeometry(0.15, 0.26), lit(liftCallArt(L), '#ffd870', 0.6), 0.5 + PW / 2, 1, LIFT_D + 0.004, false);
+  let rope = null;
+  if (floor === 1 && !upstairs) {
+    rope = new THREE.Group();
+    for (const x of [-0.6, 0.6]) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.07, 0.7, 10), brass);
+      post.position.set(x, 0.35, LIFT_D + 0.3);
+      post.castShadow = true;
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), brass);
+      knob.position.set(x, 0.72, LIFT_D + 0.3);
+      rope.add(post, knob);
+    }
+    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-0.6, 0.66, LIFT_D + 0.3), new THREE.Vector3(0, 0.36, LIFT_D + 0.3), new THREE.Vector3(0.6, 0.66, LIFT_D + 0.3));
+    rope.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.03, 6), std({ color: '#c8283a', roughness: 0.6 })));
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.24), std({ map: texOf(ropeArt()) }));
+    sign.position.set(0, 0.4, LIFT_D + 0.34);
+    rope.add(sign);
+    liftGroup.add(rope);
+  }
+  // the lift answers a tap anywhere on it: an invisible box over the whole of it
+  put(new THREE.BoxGeometry(LIFT_W, LIFT_H, LIFT_D + 0.4), new THREE.MeshBasicMaterial({ visible: false }), 0, LIFT_H / 2, LIFT_D / 2 + 0.2, false);
+  liftGroup.traverse(o => { o.userData.front = liftSpot; });
+  group.add(liftGroup);
+  const lift = { doors, needle, open: 0, want: 0, dial: floor };
 
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1.08, 64), new THREE.MeshBasicMaterial({ color: '#f8d040', transparent: true, opacity: 0.9, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2;
@@ -598,15 +647,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   ring.raycast = () => {};
   group.add(ring);
 
-  return { group, blocked, spots, ring, rope, keeper: { ...KEEPERS[floor], x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1) }, top: 4.4, title: floor === 1 ? 'Furniture' : 'Furniture 2F' };
-}
-
-/** How high (or, upstairs, how deep) your partner stands at world x, z: on the stair's tiles it rises with each step. */
-export function stairLift(floor, x, z, { cols, rows }) {
-  const x0 = STAIR.x - cols / 2, zFront = 3.5 - rows / 2 + 0.5;
-  if (x < x0 || z > zFront) return 0;
-  const t = Math.min(1, (zFront - z) / 4);
-  return floor === 1 ? t * STAIR_H : -t * 2.2;
+  return { group, blocked, spots, ring, rope, lift, keeper: { ...KEEPERS[floor], x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1) }, top: 4.4, title: floor === 1 ? 'Furniture' : 'Furniture 2F' };
 }
 
 export const upstairsLine = () => `Upstairs there are 8 more pieces every day. Shall I open it for ${price(UPSTAIRS_PRICE)} PokéCoins? Tap again.`;

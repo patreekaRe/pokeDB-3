@@ -6,7 +6,7 @@
    its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is shuttered for a shop
    to come (a new one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it and in (no pill at
    the bottom since 2026-10-09, the user's call); the doormat on each place's doorstep walks back out (doormat() in
-   js/hd2d.js), but the store's second floor has none, its way out is the stair. A buy is two taps: the first says the
+   js/hd2d.js), but the store's second floor has none, its way out is the lift. A buy is two taps: the first says the
    price, the second asks in a window with the thing's picture (ask()). */
 
 import { getSave } from './storage.js';
@@ -17,7 +17,7 @@ import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } f
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
-import { frontArt, frontWindow, buildFloor, stairLift, upstairsLine, STAIR } from './mall-furniture.js';
+import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT } from './mall-furniture.js';
 import { buildCorner } from './mall-corner.js';
 
 const COLS = 13, ROWS = 7;
@@ -43,7 +43,7 @@ let mon, walker = { x: 0, z: 0, tile: { x: 6, y: ROWS - 1 }, path: [], facing: '
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
 // each its own group, tiles and spots
-let places = {}, P = null, picked = null, climbing = false;
+let places = {}, P = null, picked = null, riding = null;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
 let mats = [];   // every place's doormat, breathing
 let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
 let calm = false, last = 0, camX = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
@@ -463,7 +463,7 @@ function goTo(fr, enter) {
 
 function arrived() {
   if (walker.exit) { walker.exit = false; return back(); }
-  if (climbing) return changeFloor();
+  if (riding) return rideOn();
   const go = aim;
   aim = null;
   // a case's things share doorsteps, so the one you walked to is the one you're at
@@ -485,7 +485,7 @@ const SHOPS = {
 };
 
 /** Into a place: the hall, a store floor or the Game Corner (built the first time), at tile `at`, under the curtain. */
-async function goPlace(id, at, facing = 'back') {
+async function goPlace(id, at, facing = 'back', sound = 'door') {
   await curtain(true);
   if (!root?.isConnected) return;
   if (!places[id]) {
@@ -497,11 +497,11 @@ async function goPlace(id, at, facing = 'back') {
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
     places[id] = { id, front: SHOPS[id].front, ...built };
-    if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the stair down
+    if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the lift down
     scene.add(built.group);
   }
   setPlace(places[id], at, facing);
-  playSound('door');
+  if (sound) playSound(sound);
   await curtain(false);
   const b = loadBase();
   if (id === 'f1' && metSmeargle(b) && !b.shopGreeted) {
@@ -522,7 +522,7 @@ function setPlace(p, at, facing = 'back') {
   P = p; P.group.visible = true; blocked = P.blocked;
   pick(null);
   closeAsk(false);
-  walker.path = []; aim = null; here = null; climbing = false;
+  walker.path = []; aim = null; here = null; riding = null;
   // the shops' tilt-shift is gentle (the user found them too blurry), the hall keeps the Clearing's
   const shop = P.id !== 'hall', u = post.final.uniforms;
   u.uBlur.value = shop ? 1.5 : 5;
@@ -641,8 +641,8 @@ function keeperTap() {
   talk(pickLine(P.keeper.chat), 4200);
 }
 
-/** The stair: roped off until the second floor is bought (a tap asks, a second buys), then walked up, or down again. */
-async function stairTap(spot) {
+/** The lift: roped off until the second floor is bought (a tap asks, a second buys), then ridden up, or down again. */
+async function liftTap(spot) {
   if (floorOf() === 1 && !loadBase().upstairs) {
     if (picked !== spot) { pick(spot); playSound('select'); return talk(upstairsLine(), 4600); }
     const coins = getSave().coins ?? 0;
@@ -653,23 +653,54 @@ async function stairTap(spot) {
     showCoins();
     if (P.rope) P.rope.visible = false;
     walker.hopUntil = performance.now() + 500;
-    return talk('The second floor is open! Up the stair you go.', 3600);
+    return talk('The second floor is open! Hop in the lift.', 3600);
   }
   pick(null);
-  climbing = true;
-  walker.path = STAIR.climb.map(t => ({ ...t }));
+  riding = 'to';
+  walker.path = [{ ...LIFT.door }];   // a step over to the middle of its doors
 }
 
-function changeFloor() {
-  climbing = false;
-  return goPlace(floorOf() === 1 ? 'f2' : 'f1', STAIR.foot, 'front');
+const later = (ms) => new Promise(r => setTimeout(r, calm ? Math.min(ms, 150) : ms));
+
+/** The ride, a step at a time as your partner arrives: at the doors they open with a ding and it steps in; in the car
+    it turns round, the doors shut and the dial swings over, then on the other floor they open and it steps out. */
+async function rideOn() {
+  const place = P, L = P.lift;
+  if (riding === 'to') {
+    riding = 'in';
+    L.want = 1;
+    playSound('lift-ding');
+    await later(480);
+    if (P === place && riding === 'in') walker.path = [{ ...LIFT.inside }];
+    return;
+  }
+  if (riding === 'in') {
+    riding = 'ride';
+    walker.facing = 'front'; walker.flip = false;
+    L.want = 0;
+    const to = floorOf() === 1 ? 2 : 1;
+    await later(450);
+    L.dial = to;
+    await later(750);
+    if (P !== place) return;
+    await goPlace(to === 2 ? 'f2' : 'f1', LIFT.inside, 'front', null);
+    if (!root?.isConnected) return;
+    riding = 'out';
+    P.lift.open = 0; P.lift.want = 1;
+    playSound('lift-ding');
+    await later(480);
+    if (riding === 'out') walker.path = [{ ...LIFT.door }, { ...LIFT.foot }];
+    return;
+  }
+  riding = null;   // out on the mat, the doors shut behind
+  L.want = 0;
 }
 
 /** A front's line at the bottom, a moment; in the store the shopkeeper says it, in a speech window with its name. */
 function say(fr, ms = 2600) {
   lineEl.lastChild.textContent = fr.kind === 'bay' ? `The ${fr.name.toLowerCase()}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
     : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
-    : fr.kind === 'stairs' ? (floorOf() === 2 ? 'Down to the ground floor.' : loadBase().upstairs ? 'Up to the second floor.' : 'The second floor is roped off.')
+    : fr.kind === 'lift' ? (floorOf() === 2 ? 'The lift down to the ground floor.' : loadBase().upstairs ? 'The lift up to the second floor.' : 'The lift upstairs is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
     : fr.line;
@@ -686,7 +717,7 @@ const prizeLine = (e) => (e.blocked ? `${e.name}: not yet.` : e.done ? `${e.name
 function enterFront(fr) {
   if (fr.kind === 'bay') return bayTap(fr);
   if (fr.kind === 'prize') return prizeTap(fr);
-  if (fr.kind === 'stairs') return stairTap(fr);
+  if (fr.kind === 'lift') return liftTap(fr);
   if (fr.kind === 'keeper') return keeperTap();
   if (!fr.open) { playSound('cancel'); return say(fr); }
   if (fr.id === 'furniture') return goPlace('f1', { x: 6, y: ROWS - 1 });
@@ -702,6 +733,7 @@ function ndc(e) {
 
 function onTap(e) {
   if (answer) return closeAsk(false);
+  if (riding) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
   const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
@@ -722,7 +754,7 @@ function onTap(e) {
 
 /** Your partner walks to the door tile and out over the doormat; then the place is left. */
 function headOut() {
-  if (climbing) return;
+  if (riding) return;
   walker.path = route(walker.tile, DOOR);
   walker.path.push({ x: DOOR.x, y: ROWS - 0.03 });
   walker.exit = true;
@@ -784,7 +816,16 @@ function frame(now) {
   if (walk(dt)) arrived();
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, floorOf() ? stairLift(floorOf(), walker.x, walker.z, SIZE) : 0, walker.z);
+  mon.group.position.set(walker.x, 0, walker.z);
+  const lift = P.lift;
+  if (lift) {   // the doors slide apart into the case's sides, eased; the dial's needle swings to the floor it's going to
+    const gap = lift.want - lift.open;
+    lift.open = calm ? lift.want : lift.open + Math.sign(gap) * Math.min(Math.abs(gap), dt / 420);
+    const e = lift.open * lift.open * (3 - 2 * lift.open);
+    for (const d of lift.doors) d.position.x = d.userData.home + d.userData.side * 0.5 * e;
+    const turn = lift.dial === 1 ? Math.PI / 4 : -Math.PI / 4;
+    lift.needle.rotation.z += (turn - lift.needle.rotation.z) * (calm ? 1 : Math.min(1, dt / 1000 * 2.5));
+  }
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
@@ -884,6 +925,6 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   view.addEventListener('click', onTap);
   requestAnimationFrame(frame);
   curtain(false);
-  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? STAIR.foot : { x: 6, y: ROWS - 1 });
+  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : { x: 6, y: ROWS - 1 });
   if (store === 'corner') goPlace('gc', { x: 6, y: ROWS - 1 });
 }

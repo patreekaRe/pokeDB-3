@@ -2040,3 +2040,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   white hood leaning back over a recessed cyan screen with a notch and camera, a white ledge, a red stand swelling out
   under it, a raised Poké Ball, white feet; the screen glows by the hour and its scan lines roll, `livePc()`); the user
   asked for it smooth and 3D like Pokopia's. `tools/pc.html` turns it on a turntable.
+- **Poké Mall: a lift to the Furniture store's second floor** (2026-10-09): the stair is gone (its steps were blocks under
+  a smooth ramp, so the partner sank into each tread, and upstairs it walked into a stairwell only painted on the floor);
+  a timber lift with brass-dial header, champagne doors that slide apart with a ding (`lift-ding`), a lit car, and the
+  ride is doors open, step in, doors shut, dial swings, out on the other floor. `LIFT` / `rideOn()`.
