@@ -1,6 +1,6 @@
 /* hub-3d.js  -  the Clearing as a walkable HD-2D hub (branch secret-base, session 3 part a): after PRESS START your
    partner stands in a small 3D Clearing and walks up to the places instead of tapping the title's signs. The trail out
-   (Continue / New game), the Safari Zone's gate, the Game Corner's stall, the Sky Pillar, the Sealed Gate once broken, the Secret Base's door in
+   (Continue / New game), the Safari Zone's gate, the Poké Mall (the Game Corner inside, js/mall-3d.js), the Sky Pillar, the Sealed Gate once broken, the Secret Base's door in
    the Ancient Tree's roots each open what their sign opens; the Pokédex is a shut handheld in the bottom left corner that
    grows into the device (the user's call, 2026-10-08: always to hand, not a place to walk to). Everything is painted here in code in
    the Clearing's palette (js/scene.js's clearing day colours): pixel-textured ground, billboard trees (instanced) and
@@ -65,7 +65,7 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
-let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inBase = false, entering = null;
+let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null;   // inside: the place walked into, 'base' or 'mall'
 let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
@@ -574,7 +574,7 @@ const FINE = 12;   // a smooth painting's pixels per painted pixel
 /** A smooth painting (the user's call: the notice boards, then the Safari gate, the Sky Pillar and the Ancient Tree,
     aren't pixel art), drawn in painted-pixel units, `k` times finer; board() shows it the same size as a pixel one.
     shine() is its emissive map, painted alongside (mask() matches exact pixel colours, which smooth edges never are). */
-function fine(w, h, k = FINE) {
+export function fine(w, h, k = FINE) {
   const c = new OffscreenCanvas(w * k, h * k), g = c.getContext('2d');
   c.fine = k;
   g.scale(k, k);
@@ -595,7 +595,7 @@ function fine(w, h, k = FINE) {
 }
 
 /** A texture, filtered smooth for a smooth painting. */
-function texOf(canvas) {
+export function texOf(canvas) {
   const map = tex(canvas);
   if (canvas.fine) { map.magFilter = THREE.LinearFilter; map.minFilter = THREE.LinearMipmapLinearFilter; map.generateMipmaps = true; map.anisotropy = 4; }
   return map;
@@ -726,25 +726,25 @@ function mask(src, colours) {
 }
 
 /** A material's painted lights shine with the clock (setTime()): `k` scales the hour's glow, in that colour. */
-function glowing(m, src, colours, colour = '#ffffff', k = 1) {
+export function glowing(m, src, colours, colour = '#ffffff', k = 1, list = glowMats) {
   m.emissive = new THREE.Color(colour);
   m.emissiveMap = src.glow ? texOf(src.glow) : tex(mask(src, colours));
   m.userData.glow = k;
-  glowMats.push(m);
+  list.push(m);
   return m;
 }
 
-/* ---------- the Game Corner's stall, in 3D ---------- */
+/* ---------- the Game Corner's stall, in 3D (now inside the Poké Mall, js/mall-3d.js) ---------- */
 
 // its colours: the awning's red and gold stripes, the booth's violet, the cabinets' lilac chrome
-const GC = { red: '#e84838', redDark: '#a82820', gold: '#f8d040', goldDark: '#c89418', violet: '#5a3a8a', violetDark: '#2e1c4e', chrome: ['#f4f2fa', '#cdc8e0', '#9a92b8'], ink: '#2a2238' };
+export const GC = { red: '#e84838', redDark: '#a82820', gold: '#f8d040', goldDark: '#c89418', violet: '#5a3a8a', violetDark: '#2e1c4e', chrome: ['#f4f2fa', '#cdc8e0', '#9a92b8'], ink: '#2a2238' };
 
-const star = (g, x, y, r) => {
+export const star = (g, x, y, r) => {
   g.beginPath();
   for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); }
   g.closePath(); g.fill();
 };
-const words = (g, text, x, y, size, col) => {
+export const words = (g, text, x, y, size, col) => {
   g.font = `900 ${size}px "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = col; g.fillText(text, x, y);
 };
@@ -836,16 +836,16 @@ function boothWallArt() {
   return c;
 }
 
-/** The Game Corner, built (the user's call, 2026-10-08: 3D, smooth, turned 45 degrees to the plaza): a violet booth on a
+/** The Game Corner, built (the user's call, 2026-10-08: 3D, smooth; since the same day a booth inside the Poké Mall): a violet booth on a
     wooden deck, two slot machines with their stools, a striped awning sloping out over them with a row of bulbs under
     its hem, and the GAME CORNER marquee on top. Its lights come up with the evening like the other places'. */
-function cornerStall() {
+export function cornerStall(glows = glowMats) {
   const W = 2.3, D = 1.3, FRONT_Y = 1.86, BACK_Y = 2.14, OUT = 0.32;
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const lit = (colour, k, min) => {
     const m = std({ color: colour, emissive: new THREE.Color(colour), roughness: 0.4 });
     m.userData.glow = k; m.userData.glowMin = min;
-    glowMats.push(m);
+    glows.push(m);
     return m;
   };
   const g = new THREE.Group();
@@ -858,7 +858,7 @@ function cornerStall() {
   box(W, 1.95, 0.08, [violet, violet, violet, violet, wall, violet], 0, 0.12 + 0.975, -D / 2 + 0.04);
   for (const s of [-1, 1]) box(0.08, 1.95, D, [wall, wall, violet, violet, violet, violet], s * (W / 2 - 0.04), 0.12 + 0.975, 0);
 
-  const face = slotFaceArt(), faceM = glowing(std({ map: texOf(face), roughness: 0.5 }), face, null, '#fff0c0', 0.9);
+  const face = slotFaceArt(), faceM = glowing(std({ map: texOf(face), roughness: 0.5 }), face, null, '#fff0c0', 0.9, glows);
   faceM.userData.glowMin = 0.25;
   const chrome = std({ color: GC.chrome[1], metalness: 0.45, roughness: 0.35 }), chromeTop = std({ color: GC.chrome[0], metalness: 0.45, roughness: 0.35 });
   const topper = lit('#ffd860', 0.9, 0.35), red = std({ color: GC.red, roughness: 0.4 }), steel = std({ color: '#8a88a0', metalness: 0.6, roughness: 0.3 });
@@ -883,9 +883,137 @@ function cornerStall() {
     b.position.set(-W / 2 + (i / 10) * W, FRONT_Y - 0.03, D / 2 + OUT + 0.04);
     g.add(b);
   }
-  const sign = cornerSignArt(), signM = glowing(std({ map: texOf(sign), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5 }), sign, null, '#fff0b0', 1.1);
+  const sign = cornerSignArt(), signM = glowing(std({ map: texOf(sign), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5 }), sign, null, '#fff0b0', 1.1, glows);
   signM.userData.glowMin = 0.35;
   add(new THREE.Mesh(new THREE.PlaneGeometry(2.05, 2.05 * 8 / 28), signM), 0, FRONT_Y + 0.33, D / 2 + OUT - 0.04).receiveShadow = false;
+  return g;
+}
+
+/* ---------- the Poké Mall, outside ---------- */
+
+// its colours: cream stone, the Poké Mart's red, a blue-white glass that shows the warm shops behind it
+const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
+const MU = 20;   // the mall's paintings: units a tile
+
+/** A Poké Ball, `r` round, at (x, y). */
+function ball(g, x, y, r, ink = '#2a2238') {
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  g.fillStyle = MALL.red; g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.fill();
+  g.strokeStyle = ink; g.lineWidth = r * 0.16;
+  g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.moveTo(x - r, y); g.lineTo(x + r, y); g.stroke();
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y, r * 0.32, 0, Math.PI * 2); g.fill(); g.stroke();
+}
+
+/** Glass with the shops showing through: the warm light of a lit interior, shelves' silhouettes, a sky glint. */
+function shopGlass(f, x, y, w, h, s) {
+  const { g, rr, lin } = f;
+  rr(x, y, w, h, 0.4, lin(0, y, 0, y + h, [MALL.warm[0], MALL.warm[1], MALL.warm[2]]));
+  g.fillStyle = 'rgba(120,70,40,0.28)';
+  for (let sx = x + 1; sx < x + w - 2; sx += 5) g.fillRect(sx, y + h * 0.35, 3, h * 0.65);
+  g.fillStyle = lin(x, y, x + w, y + h, ['rgba(200,230,255,0.55)', 'rgba(200,230,255,0.05)', 'rgba(200,230,255,0.3)']);
+  g.fillRect(x, y, w, h);
+  g.fillStyle = 'rgba(255,255,255,0.45)';
+  g.beginPath(); g.moveTo(x + w * 0.1, y); g.lineTo(x + w * 0.3, y); g.lineTo(x + w * 0.12, y + h); g.lineTo(x, y + h); g.lineTo(x, y + h * 0.6); g.closePath(); g.fill();
+  if (s) { s.fillStyle = '#9a7848'; s.fillRect(x, y, w, h); }
+}
+
+/** The mall's front: a cream two-storey block, POKé MALL on a white panel under the red cornice, a row of upper windows,
+    then a ground floor of shop-lit glass round sliding doors, the Game Corner's violet sign hung in the glass. */
+function mallFrontArt(W, H) {
+  const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
+  g.fillStyle = lin(0, 0, 0, H, [MALL.cream, MALL.stone]); g.fillRect(0, 0, W, H);
+  rr(0, 0, W, 3.2, 0, lin(0, 0, 0, 3.2, [MALL.red, MALL.redDark]));
+  g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(0, 3.2, W, 0.5);
+  // the sign
+  rr(W * 0.12, 5, W * 0.76, 12, 2, MALL.red);
+  rr(W * 0.12 + 0.9, 5.9, W * 0.76 - 1.8, 10.2, 1.4, '#ffffff');
+  ball(g, W * 0.12 + 6.5, 11, 3.6);
+  words(g, 'POKé MALL', W * 0.55 + 0.25, 11.35, 7, 'rgba(0,0,0,0.25)');
+  words(g, 'POKé MALL', W * 0.55, 11, 7, MALL.red);
+  s.fillStyle = '#d8d0c0'; s.beginPath(); s.roundRect(W * 0.12 + 0.9, 5.9, W * 0.76 - 1.8, 10.2, 1.4); s.fill();
+  ball(s, W * 0.12 + 6.5, 11, 3.6, '#000');
+  words(s, 'POKé MALL', W * 0.55, 11, 7, '#ff9080');
+  // the upper floor's windows
+  const n = 5, gap = 1.6, ww = (W - 4 - gap * (n - 1)) / n;
+  for (let i = 0; i < n; i++) {
+    const x = 2 + i * (ww + gap);
+    rr(x - 0.5, 18.5, ww + 1, 9, 0.6, MALL.shade);
+    shopGlass(f, x, 19, ww, 8, s);
+  }
+  rr(0, 29, W, 2.4, 0, lin(0, 29, 0, 31.4, [MALL.red, MALL.redDark]));
+  // the ground floor: glass between dark mullions, the doors in the middle
+  const top = 32.5;
+  rr(0.8, top, W - 1.6, H - top, 0, MALL.frame);
+  const doorW = W * 0.24, dx = (W - doorW) / 2;
+  for (const [x0, x1] of [[1.6, dx - 0.8], [dx + doorW + 0.8, W - 1.6]]) {
+    const panes = 2, pw = (x1 - x0 - 0.8 * (panes - 1)) / panes;
+    for (let i = 0; i < panes; i++) shopGlass(f, x0 + i * (pw + 0.8), top + 0.8, pw, H - top - 1.6, s);
+  }
+  for (const x of [dx, dx + doorW / 2 + 0.2]) shopGlass(f, x, top + 0.8, doorW / 2 - 0.2, H - top - 0.8, s);
+  rr(dx + doorW / 2 - 1.6, top + 9, 0.6, 3, 0.3, '#d8d8e0'); rr(dx + doorW / 2 + 1, top + 9, 0.6, 3, 0.3, '#d8d8e0');
+  // the Game Corner's sign, hung inside the glass on the right
+  const gx = dx + doorW + 3, gw = W - 1.6 - gx - 1.6;
+  rr(gx, top + 3, gw, 5, 1, lin(0, top + 3, 0, top + 8, [GC.gold, GC.goldDark]));
+  rr(gx + 0.5, top + 3.5, gw - 1, 4, 0.7, lin(0, top + 3.5, 0, top + 7.5, [GC.violet, GC.violetDark]));
+  g.fillStyle = GC.gold; star(g, gx + 2, top + 5.5, 1.2);
+  words(g, 'GAME CORNER', gx + gw / 2 + 1, top + 5.6, 2.3, '#ffe36b');
+  s.fillStyle = '#ffe890'; star(s, gx + 2, top + 5.5, 1.2);
+  words(s, 'GAME CORNER', gx + gw / 2 + 1, top + 5.6, 2.3, '#ffe890');
+  return f.c;
+}
+
+/** Its sides: the same cream, red cornice and band, two rows of windows. */
+function mallSideArt(W, H) {
+  const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
+  g.fillStyle = lin(0, 0, 0, H, [MALL.stone, MALL.shade]); g.fillRect(0, 0, W, H);
+  rr(0, 0, W, 3.2, 0, lin(0, 0, 0, 3.2, [MALL.red, MALL.redDark]));
+  rr(0, 29, W, 2.4, 0, lin(0, 29, 0, 31.4, [MALL.red, MALL.redDark]));
+  for (const [y, h] of [[8, 16], [35, H - 40]]) for (let x = 3; x + 9 <= W - 2; x += 13) shopGlass(f, x, y, 9, h, y > 30 ? s : null);
+  return f.c;
+}
+
+/** The Poké Mall (the user's call, 2026-10-08: the Game Corner's stall grew into a shopping centre, the Game Corner inside
+    it): a two-storey block facing you, a glass pyramid on its roof, flags at its corners, a red canopy with bulbs over the
+    doors and two potted trees beside them. */
+function mallBuilding() {
+  const W = 3.5, D = 2.5, H = 2.75;
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const g = new THREE.Group();
+  const add = (mesh, x, y, z, shadow = true) => { mesh.position.set(x, y, z); mesh.castShadow = mesh.receiveShadow = shadow; g.add(mesh); return mesh; };
+  const front = mallFrontArt(W * MU, H * MU), side = mallSideArt(D * MU, H * MU);
+  const fm = glowing(std({ map: texOf(front), roughness: 0.6 }), front, null, '#fff0d0', 1);
+  fm.userData.glowMin = 0.2;
+  const sm = glowing(std({ map: texOf(side) }), side, null, '#fff0d0', 0.8);
+  const roof = std({ color: '#b8ac98' }), back = std({ color: MALL.shade });
+  add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [sm, sm, roof, roof, fm, back]), 0, H / 2, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.12, 0.14, D + 0.12), std({ color: MALL.redDark })), 0, H + 0.07, 0);
+  const glass = std({ color: '#bfe4ff', emissive: new THREE.Color('#9fd0ff'), metalness: 0.3, roughness: 0.15, transparent: true, opacity: 0.85 });
+  glass.userData.glow = 0.5; glass.userData.glowMin = 0.15;
+  glowMats.push(glass);
+  const dome = add(new THREE.Mesh(new THREE.ConeGeometry(1.05, 0.75, 4), glass), 0, H + 0.14 + 0.375, -0.1);
+  dome.rotation.y = Math.PI / 4;
+  const pole = std({ color: '#d8d8e0', metalness: 0.5, roughness: 0.3 }), flag = std({ color: MALL.red, side: THREE.DoubleSide });
+  for (const sx of [-1, 1]) {
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.9, 8), pole), sx * (W / 2 - 0.15), H + 0.14 + 0.45, D / 2 - 0.15);
+    add(new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.24), flag), sx * (W / 2 - 0.15) + 0.2, H + 0.14 + 0.75, D / 2 - 0.15, false);
+  }
+  // the canopy over the doors, bulbs along its edge
+  const cw = W * 0.34, cy = 1.18;
+  add(new THREE.Mesh(new THREE.BoxGeometry(cw, 0.06, 0.5), [flag, flag, flag, std({ color: '#7a2018' }), flag, flag]), 0, cy, D / 2 + 0.25);
+  const bulb = std({ color: '#fff2b0', emissive: new THREE.Color('#fff2b0'), roughness: 0.4 });
+  bulb.userData.glow = 1.4; bulb.userData.glowMin = 0.6;
+  glowMats.push(bulb);
+  const bulbGeo = new THREE.SphereGeometry(0.03, 8, 6);
+  for (let i = 0; i <= 6; i++) add(new THREE.Mesh(bulbGeo, bulb), -cw / 2 + (i / 6) * cw, cy - 0.05, D / 2 + 0.5, false);
+  // potted trees by the doors
+  const pot = std({ color: '#f4f0e8' }), potBand = std({ color: MALL.red }), leaves = std({ color: P.trees[1], roughness: 1 });
+  for (const sx of [-1, 1]) {
+    const x = sx * (cw / 2 + 0.3), z = D / 2 + 0.28;
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.13, 0.3, 14), pot), x, 0.15, z);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.175, 0.175, 0.06, 14), potBand), x, 0.24, z);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.4, 8), std({ color: P.trunk[1] })), x, 0.5, z);
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10), leaves), x, 0.82, z).scale.y = 1.15;
+  }
   return g;
 }
 
@@ -949,12 +1077,12 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(3))),
   });
-  // a stall down in the bottom left, so the Safari has the back left to itself, turned 45 degrees to face the plaza
+  // down on the left, so the Safari has the back left to itself; its doors face you, on the path to the plaza
   list.push({
-    id: 'corner', name: 'Game Corner', step: { x: 2, y: 10 }, tiles: [[0, 9], [1, 9], [1, 8], [2, 8], [0, 10]], tag: [1.4, 3, 9.4], open: true,
-    line: 'Spend PokéCoins on starters, perks, shinies and Poké Balls.',
-    buttons: [['Play', acts.onCorner]],
-    build: (g) => { const st = cornerStall(); st.position.set(tileX(1) - 0.1, 0, tileZ(9) - 0.1); st.rotation.y = Math.PI / 4; g.add(st); },
+    id: 'mall', name: 'Poké Mall', step: { x: 1, y: 10 }, tiles: rect(0, 7, 2, 9), tag: [1, 3.4, 9], open: true,
+    line: 'A shopping centre. The Game Corner is inside.',
+    buttons: [['Go in', enterMall]],
+    build: (g) => { const m = mallBuilding(); m.position.set(tileX(1), 0, tileZ(8) + 0.25); g.add(m); },
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -1147,6 +1275,7 @@ function open(p, i = null) {
     spinStop();
   }
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
+  if (p.id === 'mall') return enterMall();
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
   hideCard();
@@ -1219,7 +1348,7 @@ async function buyBase() {
 }
 
 /** Into the Ancient Tree: the door swings open, your partner steps into the dark, and the Secret Base comes up under a
-    curtain (js/base-3d.js); its ✕ brings it back out here (showHub(), `inBase`). */
+    curtain (js/base-3d.js); its ✕ brings it back out here (showHub(), `inside`). */
 async function enterBase() {
   if (entering) return;
   hideCard();
@@ -1230,19 +1359,33 @@ async function enterBase() {
   await curtain(true, calm ? 0 : 420);
   entering = null;
   if (tree) tree.m.map = tree.shut;
-  inBase = true;
+  inside = 'base';
   await acts.onBase();
 }
 
-/** Back out of the base: on its doorstep, facing you, the door shutting behind. */
-function leftBase() {
-  inBase = false;
-  const p = places.find(q => q.id === 'base');
+/** Through the Poké Mall's sliding doors into its hall (js/mall-3d.js), whose ✕ brings you back out here. */
+async function enterMall() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
+  playSound('door');
+  entering = { at: performance.now(), z: walker.z };
+  await curtain(true, calm ? 0 : 420);
+  entering = null;
+  inside = 'mall';
+  await acts.onMall();
+}
+
+/** Back out of the base or the mall: on its doorstep, facing you, the base's door shutting behind. */
+function leftPlace() {
+  const p = places.find(q => q.id === inside);
+  inside = null;
+  if (!p) return;
   walker.tile = p.step; walker.x = tileX(p.step.x); walker.z = tileZ(p.step.y);
   walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500;
   camX = walker.x; camZ = walker.z;
   here = p;
-  if (!tree) return;
+  if (!tree || p.id !== 'base') return;
   tree.m.map = tree.open;
   setTimeout(() => { if (tree) tree.m.map = tree.shut; }, calm ? 0 : 650);
 }
@@ -1692,7 +1835,7 @@ async function openHub(titleScreen, actions, hold) {
   mon.group.visible = !held;
   if (!placed) { placed = true; walker.tile = START; walker.x = tileX(START.x); walker.z = tileZ(START.y); camX = walker.x; camZ = walker.z; }
   walker.path = []; aim = null; here = placeAt(walker.tile);
-  if (inBase) leftBase();
+  if (inside) leftPlace();
   hideCard();
   root.querySelectorAll('.room-home.out').forEach(k => k.classList.remove('out'));
   dexNews();

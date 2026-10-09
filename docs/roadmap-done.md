@@ -1958,3 +1958,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   tongues and the drop a splash under it (`MOTIFS`), the tomatoes grow up two canes, each bed its own flower (rose bushes,
   a daisy carpet, violets under leaves, marigold pompoms, bluebells on arched stems: `BLOOMS`), and each Berry its own
   shape on a round, tall or wide bush (`BERRY` / `BUSHES`). Ids and sets unchanged, so saved rooms load as they were.
+- **The Poké Mall** (2026-10-08, branch `secret-base` only, the user's ask: "turn the Game Corner into a big shopping centre,
+  the Game Corner inside"): the Clearing's stall is now a two-storey mall building (`mallBuilding()` in `js/hub-3d.js`) whose
+  doors open a walkable 3D hall (`js/mall-3d.js`): the Game Corner's booth in the middle of the back wall opens the cabinet,
+  two "Coming soon" shutters wait for future shops, the upper floor's shops are scenery. The user's pick: a 3D interior, not
+  a menu; where it stands was left to me (the left side, doors facing you on the path to the plaza).

@@ -272,6 +272,8 @@ function init() {
     onAbandon: requestAbandon,
     // the hub's door in the Ancient Tree (js/hub-3d.js); the base's ✕ walks back out of it
     onBase: () => { leaveTitle(); return import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome })); },
+    // the Poké Mall's doors in the Clearing (js/hub-3d.js); the Game Corner is a shop in its hall
+    onMall: () => { leaveTitle(); return import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome })); },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {

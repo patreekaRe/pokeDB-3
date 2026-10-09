@@ -115,3 +115,28 @@
 .title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
 .title-screen.hub-mode .title-menu, .title-screen.hub-mode .title-run, .title-screen.hub-mode .title-gate,
 .title-screen.hub-mode .title-signpost, .title-screen.hub-mode .title-areas { display: none; }
+
+/* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a round
+   shell pill names the shop front nearest your partner (a tap goes in), its line popping up over it a moment. */
+.mall3d .b3-top h2 { opacity: 1; }
+.mall-foot {
+  position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; width: calc(100% - 32px); pointer-events: none;
+}
+.mall-line {
+  max-width: 320px; margin: 0; padding: 7px 14px; border-radius: 12px; background: #0009; color: #fff;
+  font-size: 8px; line-height: 1.6; text-align: center; opacity: 0; translate: 0 6px; transition: opacity 0.25s, translate 0.25s;
+}
+.mall-line.on { opacity: 1; translate: 0 0; }
+.mall-go {
+  pointer-events: auto; display: flex; align-items: center; height: 46px; padding: 0 22px; box-sizing: border-box;
+  border: 0; border-radius: 999px; cursor: pointer; color: #fff; font: 10px/1 var(--pixel-font);
+  background: radial-gradient(circle at 30% 25%, var(--shell-hi), var(--shell) 60%, var(--shell-lo));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 #fff4, 0 4px 0 var(--shell-deep), 0 6px 16px #0006;
+  text-shadow: 0 1px 0 var(--shell-deep); -webkit-tap-highlight-color: transparent;
+}
+.mall-go.shut { filter: saturate(0.25) brightness(0.85); }
+.mall-go:disabled { cursor: default; }
+.mall-go:not(:disabled):active { translate: 0 3px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+.mall-go.mall-pop { animation: b3Pop 0.3s cubic-bezier(.3, 1.5, .5, 1); }
+@media (prefers-reduced-motion: reduce) { .mall-go.mall-pop { animation: none; } }
