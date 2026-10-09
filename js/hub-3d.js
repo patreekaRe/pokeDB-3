@@ -1092,7 +1092,7 @@ function makePlaces() {
   });
   const tower = towerOpen(save) || !!runAt('pillar'), best = save.tower?.bestEver || 0, climb = runAt('pillar');
   list.push({
-    id: 'pillar', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2).concat(tower ? [[11, -2]] : []), tag: [13, 4.2, -2], open: tower,
+    id: 'pillar', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2).concat(tower ? [[11, -1]] : []), tag: [13, 4.2, -2], open: tower,
     line: climb ? waits(climb) : tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''}` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : tower ? [['Climb', acts.onTower]] : [],
     build: (g) => {
@@ -1103,14 +1103,14 @@ function makePlaces() {
       box.position.set(tileX(PILLAR_AT.tx), 6, tileZ(PILLAR_AT.ty));
       box.castShadow = box.receiveShadow = true;
       g.add(box);
-      if (tower) pokestop(g, 'pillar', tileX(11.2), tileZ(-1.7), 0.5);
+      if (tower) pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5);
     },
   });
   list.push({
-    id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: -1 }, tiles: [[15, -2]], tag: [15, 2.6, -2], open: tower,
+    id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,
     line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
-    build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.9), tileZ(-2.3))),
+    build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.8), tileZ(-1.2))),
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: 10, y: 9 }, tiles: rect(9, 8, 11, 8), tag: [10, 4, 8], open: true,
@@ -1246,7 +1246,7 @@ function paintVista() {
 /* ---------- walking ---------- */
 
 // the cleared meadow up to the Safari gate, outside the grid's back-left corner
-const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1)].map(([x, y]) => key(x, y)));
+const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0)].map(([x, y]) => key(x, y)));
 const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
