@@ -11,7 +11,7 @@ user's file and pick 2026-09-29, `winTrack()`, looped with a crossfade like the 
 mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; `seal`, the user's song, from the descent's start (`descent()`, Mewtwo's fall too) through the Sealed Gate's strike and break, faded on a loss in `playGate()`, at `TRACK_GAIN` 0.22 since it's mastered ~13 dB louder (the user's file, 2026-10-04, 102 s with its own fade-out, so it loops whole), preloaded at a Biome 3+ boss; after a Level 5
 win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`), `mart` in a Poké Mart (`martRoom()`, the user's song, 2026-10-04: looped over its 48.71 s repeat with a crossfade, at `TRACK_GAIN` 0.27 since it's ~11.5 dB louder).
-`secret-base` inside the Secret Base (`openBase3d()` / `reopen()` in `js/base-3d.js`; the doormat's `showHome()` brings `title` back): the user's song, 2026-10-09, 98 s fading out at its end, so it loops whole, at gain 1 (as loud as `title`, -28 dB RMS). `showScreen()` deliberately leaves the map and
+`secret-base` inside the Secret Base (`openBase3d()` / `reopen()` in `js/base-3d.js`; the doormat's `showHome()` brings `title` back): the user's song, 2026-10-09, 98 s fading out at its end, looped seamlessly over its own 43.85 s repeat (40.4-84.25 s, 0.997 at the join, no cross-fade), at gain 1 (as loud as `title`, -28 dB RMS). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to
@@ -81,7 +81,11 @@ phase-aligned join (`LoopedTrack` then plays each pass as its own source; a pass
 from the audio thread, so a throttled background tab can't miss a join). `victory` loops too: its loop is short (11.25 s after a ~4 s
 fanfare), which a first search that only allowed loops of 15 s or more missed. `title` has no convincing repeat in its
 file (best chroma match ~0.87 over 4 s), so it still loops the whole file. Title resumes where it left off; battle tracks restart
-each fight. To change a song, replace the MP3 (keep it around 1–3 MB,
+each fight. **A new song's loop** (2026-10-09, the user's ask: every song they give should loop forever): open
+`tools/loop.html?song=<name>` (the file in `assets/audio/`, or pick one), which runs in the browser (no Node needed): it
+compares the song with itself semitone by semitone, levels included so a fade-out never matches, lists the best repeats
+(Hear plays the 6 s before a join and jumps back), and prints the `LOOP_POINTS` line, with a 0.3 s cross-fade only when
+the waveform at the join correlates under 0.95. It found Mart's 48.709 s to the sample. To change a song, replace the MP3 (keep it around 1–3 MB,
 128 kbps).
 - Playback goes through the Web Audio API (a GainNode per track) because
   iOS ignores `<audio>.volume`, so plain elements can't fade there.

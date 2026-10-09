@@ -71,6 +71,8 @@ const LOOP_POINTS = {
   'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
   kombat: [30, 115.97016, 0.3],   // an 85.97 s repeat (0.81 sample correlation at the join, so cross-faded); the file fades out at 194 s
   mart: [38.75, 87.45907, 0.3],   // a 48.71 s repeat (0.997 sample correlation at the join); the file fades out from ~101 s
+  // From here on found with tools/loop.html?song=<name>.
+  'secret-base': [40.4, 84.2515],   // a 43.85 s repeat (0.997 sample correlation at the join); the file fades out after
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
 const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
