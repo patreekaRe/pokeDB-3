@@ -706,6 +706,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   two flipped slots): Game Modes ▸ slides the stack sideways to a sub-menu with a Back sign, the Pokédex opens the device (since 2026-10-05; it was a Collection ▸ sub-menu) (`renderMenu()` / `goTo()` in
   `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
   (`docs/reference/title-screen.md`).
+- **Secret Base furniture** (part c's data, 2026-10-09, ahead of the room itself): `js/data/furniture.js`, each earned piece
+  `from` one badge / achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's
+  lists never shrink, so nothing is saved for it), with the fields part a's painter draws from (its header lists them);
+  `howToEarn()` hides a secret source's piece. The base is decoration only, one room that grows, 6 Pokémon on show (the
+  user's calls, 2026-10-09). A new piece's source must be unique (`tests/furniture.test.mjs`).
 - **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
   100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
   seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),

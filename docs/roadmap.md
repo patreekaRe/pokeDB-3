@@ -103,7 +103,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `save.safariDex` catches' front GIFs. Its way in: a Game Modes sign or a Pokédex app. Suggested parts, each a session:
   a) the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base` (Run in: LOCAL, visual);
   b) the Furniture shop and its daily stock, prices, a "!" on new stock (Run in: CLOUD);
-  c) furniture unlocked from badges, achievements, feats and Safari pages, ~30 more pieces (Run in: CLOUD for the data, LOCAL for the art);
+  c) furniture unlocked from badges, achievements, feats and Safari pages: **the data landed first** (2026-10-09, before a,
+     the user's call): `js/data/furniture.js`, 39 earned pieces (`layer` rug / stand / top / wall / wallpaper / flooring,
+     `size`, `turns`, `top`, `colours` from `SWATCHES`, part d's `use`, `glow`), each `from` one badge / achievement /
+     feat / Safari page; owned once its source is, worked out by `earnedFurniture(save)`, nothing saved of its own;
+     `howToEarn()` (??? for a secret source); `tests/furniture.test.mjs`. Left for it: their art, drawn in a), and the
+     storage / shop showing them with `howToEarn()` (Run in: LOCAL for the art);
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
   e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
   Decorating (the user's ask, 2026-10-08, keep all of it): **rotate** a piece (a tap on it gives Rotate / Move / Store;
@@ -112,13 +117,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   desk: a second layer per tile), **colour variants** of a piece (a palette swap, cheap since it's painted in code), and
   maybe a **day / night light** through the window from `js/daytime.js`. Build rotate, wallpaper / floor and rugs into a);
   stacking and colour variants can be c).
-  Claude's suggested answers (2026-10-08; the user plans to start on Saturday 2026-10-10, confirm with them then): **one
-  room that grows** (it starts small, bigger rooms bought or earned; Gen 3's tree / cave / desert looks as wallpaper-like
-  themes later, so there's one painter, not three), **6 Pokémon on show** (enough to feel lively, few enough to read on a
-  phone; more slots could be an unlock), **decoration only** (bonuses would make the base a chore and pull at the
-  Safari / Sky Pillar boards' fairness; the reward is how it looks, and the Pokémon reacting).
-  Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
-  Pokémon on show, and whether furniture is pure decoration or gives a small perk.
+  **Settled** (the user, 2026-10-09, Claude's suggested answers): **one room that grows** (it starts small, bigger rooms
+  bought or earned; Gen 3's tree / cave / desert looks as wallpaper-like themes, so one painter, not three), **6 Pokémon on
+  show** (more slots could be an unlock), **decoration only** (no perks: the reward is how it looks and the Pokémon
+  reacting, and the Safari / Sky Pillar boards stay fair). a) must draw part c's pieces from their data, and its bought
+  pieces use the same fields. The 3D pilot below may still change how the room is drawn, not this data.
 - **Walkable 3D, Octopath's HD-2D** (the user's idea, 2026-10-08; they want to fund it, so the pilot is agreed, the rest
   waits on it). Pixel sprites standing in a real 3D world: chunky low blocks with pixel textures, a fixed tilted camera,
   tilt-shift blur on the near and far edges, bloom, real shadows, the day / night light from `js/daytime.js`. Feasible
