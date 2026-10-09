@@ -63,7 +63,7 @@ const FIRST_ROOM = [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, {
   { id: 'lamp', x: 2, y: 0, dir: 0 }, { id: 'gift', x: 5, y: 3, dir: 0 }];
 const STARTER_GIFT = ['table', 'chair', 'chair', 'cushion', 'cushion', 'plant', 'shelf', 'tv', 'poster', 'clock'];
 const STOCK = 8;   // pieces on each floor of the Furniture store each day
-const UPSTAIRS_PRICE = 2500;   // PokéCoins to open the store's second floor, and STOCK more pieces a day with it
+const UPSTAIRS_PRICE = 1000;   // PokéCoins to open the store's second floor, and STOCK more pieces a day with it
 
 const freshBase = (mons) => ({
   v: 2, wall: 'cream', floor: 'wood', items: FIRST_ROOM.map(it => ({ ...it })),
