@@ -130,6 +130,10 @@
 .title-screen.hub-on .title-center { animation: hubLogo 3.6s ease-in forwards; }
 .title-screen.hub-on .title-version { visibility: hidden; }
 @keyframes hubLogo { 0%, 65% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.title-screen.hub-on.hub-greeted .title-center { animation: none; visibility: hidden; }
+/* the title's fade in showed the screen under it (the character select) through the Clearing; the walk out of the mall
+   or the base is already a fade through black */
+.title-screen.hub-mode:not([hidden]) { animation: none; }
 @media (prefers-reduced-motion: reduce) { .title-screen.hub-on .title-center { animation: none; display: none; } }
 
 /* the walk between the hub and the Secret Base fades through black (curtain() in js/hd2d.js) */

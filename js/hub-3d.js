@@ -70,7 +70,7 @@ const BUGS = 44;
 const SAFARI_AT = { tx: 0, ty: -3 };
 // the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
 const PILLAR_AT = { tx: 13, ty: -3 };
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]],[[2, 9.5], [2, 11]], [[2, 11], [6, 11]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 7.5], [-1, 8]], [[-1, 8], [6, 8]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
@@ -80,6 +80,7 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
+let greets = false; // listening for the logo's fade to end
 let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
 let arriving = false;   // walking in from the bottom of the screen (enterHub())
 let showing = null; // a showHub() under way, so two calls at once never build two partners
@@ -185,8 +186,8 @@ function groundArt() {
       c = pokePlaza(c, u - START.x, v - START.y, wob);
     } else {
       // darker away from the walkable ground, towards the trees
-      // (not in the back-left corner, cleared round the Safari gate)
-      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, v - GATE_AT.ty - 0.2, 0) * (u < 2.5 && v < 5 ? 0.2 : 1);
+      // (not down the left, cleared round the Safari gate and the Poké Mall)
+      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, v - GATE_AT.ty - 0.2, 0) * (u < 2.5 && v < GATE_AT.ty - 1 ? 0.2 : 1);
       const n = smooth(x, y, 6) * 3.2 + hash(x, y) * 1.4 + (path < 0.12 ? 1 : 0) + Math.min(2, out * 0.6);
       c = meadow[Math.min(5, Math.max(0, Math.floor(n)))];
     }
@@ -977,7 +978,9 @@ export function cornerStall(glows = glowMats) {
 // its colours: cream stone, the Poké Mart's red, a blue-white glass that shows the warm shops behind it
 const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
 const MU = 20;   // the mall's paintings: units a tile
-const MALL_AT = { x: tileX(2), z: tileZ(8) + 0.25, turn: 0 };   // on the grid's left, its doors on row 9 over tile 2 where the road comes up to them, facing the camera
+// on the left, under the Safari gate and a step left of its road, far enough forward that its roof never hides the gate,
+// its doors on row 7 over tile -1 where the road from the plaza comes up to them, facing the camera
+const MALL_AT = { x: tileX(-1), z: tileZ(6) + 0.25, turn: 0 };
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1190,10 +1193,10 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(-3), tileZ(-2.3))),
   });
-  // down on the left, clear of the Safari gate (the user's call, 2026-10-08), inside the grid with the road running up the middle
-  // of its doors and the side forest whole again beside it (2026-10-09, the user's ask: half of it hid in the trees)
+  // out on the left where the side forest stood, lined up under the Safari gate a step to its left (2026-10-09, the user's
+  // ask: in the grid it stood too near the middle), the road from the plaza running up the middle of its doors
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: 2, y: 10 }, tiles: rect(0, 7, 3, 9), tag: [2, 3.4, 9], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: -1, y: 8 }, tiles: rect(-3, 5, 0, 7), tag: [-1, 3.4, 7], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
@@ -1352,6 +1355,8 @@ function buildClearing() {
   }
   for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = -1; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
     const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
+    // none down the left, open meadow round the Poké Mall (2026-10-09, the user's ask)
+    if (s < 0) { rnd(); rnd(); rnd(); rnd(); continue; }
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
   for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
@@ -1403,7 +1408,8 @@ function paintVista() {
 
 // the cleared meadow up to the Safari gate, outside the grid's back-left corner
 // and the rows down to the Whispering Clearing's gate in front, under its arch and out past it to the Pokéstop
-const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0), ...rect(0, ROWS, COLS - 1, GATE_AT.ty - 1),
+// and the open meadow down the left round the Poké Mall
+const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(-3, 0, -1, GATE_AT.ty - 1),...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0), ...rect(0, ROWS, COLS - 1, GATE_AT.ty - 1),
   [GATE_AT.tx, GATE_AT.ty], ...rect(1, GATE_AT.ty + 1, COLS - 2, GATE_AT.ty + 2)].map(([x, y]) => key(x, y)));
 const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
@@ -1925,7 +1931,8 @@ function placeCamera(dt) {
   const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z - ahead;
-  const wantX = reachX + ahead <= 0 ? 0 : Math.max(-reachX - ahead * 1.2, Math.min(Math.max(0, reachX) + ahead * 1.2, wx));
+  // a tile further on the left, so the Poké Mall out there is whole in the view
+  const wantX = reachX + ahead <= 0 ? 0 : Math.max(-reachX - 1 - ahead * 1.2,Math.min(Math.max(0, reachX) + ahead * 1.2, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
@@ -2060,6 +2067,8 @@ export function showHub(titleScreen, actions, { hold = false } = {}) {
 async function openHub(titleScreen, actions, hold) {
   screen = titleScreen;
   acts = actions;
+  // the logo greets the hub once: the title shown again (out of the mall or the base, after a run) would restart its fade
+  if (!greets) { greets = true; screen.addEventListener('animationend', (e) => { if (e.animationName === 'hubLogo') screen.classList.add('hub-greeted'); }); }
   calm = calmFx();
   try {
     built ??= build();
