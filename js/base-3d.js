@@ -10,6 +10,7 @@
 import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
+import { smoothIcon } from './smooth-icons.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
@@ -926,8 +927,10 @@ function refresh() {
     if (a === 'paint') b.classList.toggle('on', tab === 'colour');
   });
   const mons = onShow();
-  root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}`
-    : tab === 'wall' || tab === 'floor' ? `${(getSave().coins ?? 0).toLocaleString()} coins` : '';
+  // the LCD: how many Pokémon are out on their tab, else your PokéCoins
+  const count = root.querySelector('.b3-count');
+  if (tab === 'mons') count.replaceChildren(mons.all.length ? `On show ${mons.shown.length}/${ON_SHOW}` : 'No catches yet');
+  else count.replaceChildren(smoothIcon('coin', 'hbar-coin'), (getSave().coins ?? 0).toLocaleString());
   const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip);
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
@@ -1163,18 +1166,18 @@ export async function openBase3d({ onLeave = null } = {}) {
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
     </div>
     <div class="b3-sheet">
-      <div class="b3-head">
+      <div class="room-hinge b3-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+        <div class="room-sign b3-sign" aria-live="polite"><b class="b3-title"></b></div>
+        <button type="button" class="room-ok b3-ok">Done</button></div>
+      <div class="room-row b3-row">
         <nav class="b3-tabs">
-          <button type="button" class="b3-tab" data-tab="furniture" aria-label="Furniture">${glyph('sofa')}</button>
-          <button type="button" class="b3-tab" data-tab="wall" aria-label="Wallpaper">${glyph('roller')}</button>
-          <button type="button" class="b3-tab" data-tab="floor" aria-label="Floor">${glyph('floor')}</button>
-          <button type="button" class="b3-tab" data-tab="mons" aria-label="Pokémon">${glyph('ball')}</button>
+          ${[['furniture', 'Furniture', 'sofa'], ['wall', 'Wallpaper', 'roller'], ['floor', 'Floor', 'floor'], ['mons', 'Pokémon', 'ball']]
+            .map(([id, name, g]) => `<button type="button" class="b3-tab" data-tab="${id}" title="${name}" aria-label="${name}"><span class="round-key">${glyph(g)}</span></button>`).join('')}
         </nav>
-        <span class="b3-title"></span><span class="b3-count"></span>
-        <button type="button" class="b3-done">Done</button>
+        <div class="room-lcd b3-lcd"><span class="b3-count"></span></div>
       </div>
       <div class="b3-filters" hidden></div>
-      <div class="b3-strip"></div>
+      <div class="b3-screen"><div class="b3-strip"></div></div>
     </div>`;
   document.body.append(root);
   view = root.querySelector('.b3-view');
@@ -1232,7 +1235,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
-  root.querySelector('.b3-head .b3-done').addEventListener('click', () => setMode('walk'));
+  root.querySelector('.b3-ok').addEventListener('click', () => setMode('walk'));
   new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));
   tray('furniture');
   refresh();
