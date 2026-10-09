@@ -13,15 +13,15 @@ export const MORE_KINDS = [];
 const add = (group, list) => list.forEach(f => MORE_KINDS.push({ group, ...f }));
 
 /* ---------- shared bits ---------- */
-const legs4 = (x, b, vw, h, c) => { cyl(x + 3, b - h, 3, h, c); cyl(x + vw - 6, b - h, 3, h, c); };
-const sideBox = (x, b, vw, h) => { floorShadow(x, b, vw); wood(x + 2, b - h, vw - 4, h, k.w, 'y'); R(x + 4, b - h + 2, vw - 8, 1, sh(k.w, 1)); };
-const potAt = (x, b, shape = 'round') => {
+export const legs4 = (x, b, vw, h, c) => { cyl(x + 3, b - h, 3, h, c); cyl(x + vw - 6, b - h, 3, h, c); };
+export const sideBox = (x, b, vw, h) => { floorShadow(x, b, vw); wood(x + 2, b - h, vw - 4, h, k.w, 'y'); R(x + 4, b - h + 2, vw - 8, 1, sh(k.w, 1)); };
+export const potAt = (x, b, shape = 'round') => {
   if (shape === 'square') { panel(x + 8, b - 14, 16, 14, k.pot); R(x + 9, b - 13, 14, 2, sh(k.pot, 1)); R(x + 7, b - 16, 18, 3, sh(k.pot, 1)); R(x + 9, b - 15, 14, 2, '#3a2416'); return b - 15; }
   if (shape === 'tray') { panel(x + 3, b - 8, 26, 8, k.pot); R(x + 4, b - 7, 24, 1, sh(k.pot, 1)); R(x + 5, b - 9, 22, 2, '#4a3020'); return b - 8; }
   if (shape === 'basket') { R(x + 6, b - 16, 20, 16, k.w); for (let j = 0; j < 16; j += 3) for (let i = (j % 6 ? 0 : 2); i < 20; i += 4) R(x + 6 + i, b - 16 + j, 2, 2, sh(k.w, j % 6 ? 1 : -1)); R(x + 5, b - 18, 22, 3, sh(k.w, -1)); R(x + 5, b - 18, 22, 1, sh(k.w, 1)); return b - 17; }
   cyl(x + 9, b - 16, 14, 15, k.pot); R(x + 10, b - 2, 12, 2, sh(k.pot, -1)); cushion(x + 7, b - 20, 18, 5, sh(k.pot, 1), 1); R(x + 9, b - 19, 14, 2, '#3a2416'); return b - 19;
 };
-const shadowWall = (x, y, w, h) => R(x + 1, y + 1, w, h, 'rgba(0,0,0,0.18)');
+export const shadowWall = (x, y, w, h) => R(x + 1, y + 1, w, h, 'rgba(0,0,0,0.18)');
 /** A window frame round the view already painted in a box: frame where `frame(i, j)`, glass where `glassAt(i, j)`, clear
     elsewhere, lit on its top-left side. */
 function frameAround(x0, y0, w, h, glassAt, frame) {
@@ -33,7 +33,7 @@ function frameAround(x0, y0, w, h, glassAt, frame) {
 }
 
 /* ---------- motifs: 9x9 stamps. # main, + light, k dark, o white ---------- */
-const MOTIFS = {
+export const MOTIFS = {
   ball: ['..kkkkk..', '.k##+##k.', 'k#+#####k', 'k###k###k', 'kkkkokkkk', 'koookoook', 'koooooook', '.koooook.', '..kkkkk..'],
   star: ['....#....', '...###...', '...#+#...', '#########', '.##+++##.', '..#####..', '..##.##..', '.##...##.', '##.....##'],
   heart: ['.##...##.', '#+##.####', '#+#######', '#########', '.#######.', '..#####..', '...###...', '....#....'],
@@ -51,9 +51,9 @@ const MOTIFS = {
 const MOTIF_NAME = { ball: 'Poké Ball', star: 'Star', heart: 'Heart', bolt: 'Thunder', flame: 'Flame', drop: 'Water', sprout: 'Sprout',
   moon: 'Moon', sun: 'Sun', flower: 'Flower', diamond: 'Diamond', note: 'Melody', paw: 'Paw' };
 const MOTIF_IDS = Object.keys(MOTIFS);
-const ink = (main, light, dark, white) => ({ '#': main, '+': light, k: dark, o: white });
+export const ink = (main, light, dark, white) => ({ '#': main, '+': light, k: dark, o: white });
 /** A motif stamped centred in a box `size` cells wide at (x, y), each cell `s` pixels. */
-const motif = (id, x, y, colours, s = 2, size = 9) => {
+export const motif = (id, x, y, colours, s = 2, size = 9) => {
   const rows = MOTIFS[id];
   stamp(rows, x + Math.floor((size - rows[0].length) * s / 2), y + Math.floor((size - rows.length) * s / 2), colours, s);
 };

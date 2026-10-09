@@ -12,6 +12,7 @@
 
 import { timeOfDay } from './daytime.js';
 import { MORE_KINDS } from './base-furniture-kinds.js';
+import { ROOM_KINDS } from './base-furniture-rooms.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
@@ -325,7 +326,9 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS);
+const seen = new Set();
+for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 
 const NOUN = { cushion: 'Cushion' };   // a themed piece's name drops the classic one's adjective
 const noun = (fam) => fam.id === 'tv' ? 'TV' : NOUN[fam.id] || (fam.proper ? fam.name : fam.name[0].toLowerCase() + fam.name.slice(1));
