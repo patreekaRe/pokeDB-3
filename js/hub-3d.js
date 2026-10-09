@@ -69,7 +69,7 @@ let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null;   // inside: the place walked into, 'base' or 'mall'
-let stop = null, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
+let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let placed = false; // the partner has been put on the plaza once
 let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
@@ -1059,17 +1059,7 @@ function makePlaces() {
       open: true,
       line: run ? waits(run) : 'The trail out of the Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      build: (g) => {
-        const S = 0.7, x = tileX(7), z = tileZ(ROWS - 2), d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
-        g.add(board(stopPostArt(), x, z, { s: S }));
-        const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
-        m.userData.glowMin = 0.3;
-        const disc = new THREE.Mesh(new THREE.PlaneGeometry(w, w), m);
-        disc.position.set(x, 1.55 * S + w / 2, z);
-        disc.castShadow = true;
-        g.add(disc);
-        stop = { disc, m, y: disc.position.y, spinAt: 0 };
-      },
+      build: (g) => pokestop(g, 'trail', tileX(7), tileZ(ROWS - 2), 0.7),
     },
     {
       id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
@@ -1092,8 +1082,10 @@ function makePlaces() {
     },
   ];
   const safari = safariOpen(save) || !!runAt('safari'), safariRun = runAt('safari');
+  // you walk right up to the gate (MEADOW), where a small Pokéstop of its own starts or continues the day's run
+  // (the user's ask, 2026-10-09)
   list.push({
-    id: 'safari', name: 'Safari Zone', step: { x: 0, y: 0 }, tiles: [], tag: [0, 4, -3], open: safari,
+    id: 'safari', name: 'Safari Zone', step: { x: 0, y: -2 }, tiles: safari ? [[-1, -2]] : [], tag: [0, 4, -3], open: safari,
     line: safariRun ? waits(safariRun) : safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : safari ? [['Enter', acts.onSafari]] : [],
@@ -1105,13 +1097,15 @@ function makePlaces() {
       const half = s.width / s.fine / TP * S / 2, post = (px) => x - half + px / TP * S;
       safariFence(g, VISTA.x0 + 8, post(7), z);
       safariFence(g, post(57), tileX(3.6), z);
+      if (safari) pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5);
     },
   });
+  // left of the gate, along its fence (the user's ask, 2026-10-09)
   list.push({
-    id: 'safari-board', name: 'Safari Ranks', step: { x: 3, y: 4 }, tiles: [[3, 3]], tag: [3, 2.6, 3], open: safari,
+    id: 'safari-board', name: 'Safari Ranks', step: { x: -3, y: -1 }, tiles: [[-3, -2]], tag: [-3, 2.6, -2], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(3))),
+    build: (g) => g.add(board(kioskArt(), tileX(-3), tileZ(-2.3))),
   });
   // down on the left, set back into the side trees and turned to the plaza, so it never stands in front of the Safari
   // gate (the user's call, 2026-10-08: square on the grid it hid it)
@@ -1181,7 +1175,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stop = null;
+  glowMats = []; tree = null; sign = null; stops = {};
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -1274,7 +1268,9 @@ function paintVista() {
 
 /* ---------- walking ---------- */
 
-const inGrid = (c) => c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS;
+// the cleared meadow up to the Safari gate, outside the grid's back-left corner
+const MEADOW = new Set(rect(-3, -2, 1, -1).map(([x, y]) => key(x, y)));
+const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -1339,9 +1335,10 @@ function arrived() {
     place only shows its card, the bar's keys choosing; else straight in. */
 function open(p, i = null) {
   if (!p.open || (i == null && p.buttons.length > 1)) return showCard(p);
-  if (p.id === 'trail') {
-    if (stop?.spinAt && performance.now() - stop.spinAt < SPIN) return;
-    spinStop();
+  const stop = stops[p.id];
+  if (stop) {
+    if (stop.spinAt && performance.now() - stop.spinAt < SPIN) return;
+    spinStop(stop);
   }
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   if (p.id === 'mall') return enterMall();
@@ -1349,24 +1346,36 @@ function open(p, i = null) {
   playSound('confirm');
   hideCard();
   const go = p.buttons[i ?? 0][1];
-  setTimeout(() => { if (running) go(); }, calm ? 0 : p.id === 'trail' ? SPIN * 0.8 : 260);
+  setTimeout(() => { if (running) go(); }, calm ? 0 : stop ? SPIN * 0.8 : 260);
 }
 
 /* ---------- the Pokéstop ---------- */
 
+/** A Pokéstop at (x, z), `S` its size: New game's on the trail, and the Safari's small one by its gate. */
+function pokestop(g, id, x, z, S) {
+  const d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
+  g.add(board(stopPostArt(), x, z, { s: S }));
+  const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
+  m.userData.glowMin = 0.3;
+  const disc = new THREE.Mesh(new THREE.PlaneGeometry(w, w), m);
+  disc.position.set(x, 1.55 * S + w / 2, z);
+  disc.castShadow = true;
+  g.add(disc);
+  stops[id] = { disc, m, y: disc.position.y, spinAt: 0 };
+}
+
 const SPIN = 1700;
 
 /** A tap spins the disc like Pokémon Go's, three turns slowing down, and it glows violet a moment after. */
-function spinStop() {
-  if (!stop || calm) return;
+function spinStop(stop) {
+  if (calm) return;
   stop.spinAt = performance.now();
   playSound('aug-silver');
   setTimeout(() => playSound('aug-gold'), SPIN * 0.75);
 }
 
 /** Idle it bobs and sways a little; spun, it whirls, then its violet fades back to blue. */
-function liveStop(now) {
-  if (!stop || calm) return;
+function liveStop(stop, now) {
   const t = stop.spinAt ? (now - stop.spinAt) / SPIN : 9, sway = Math.sin(now / 1400) * 0.3;
   stop.disc.rotation.y = t < 1 ? (1 - (1 - t) ** 3) * Math.PI * 6 + sway * t : sway;
   stop.disc.position.y = stop.y + Math.sin(now / 900) * 0.06;
@@ -1797,7 +1806,7 @@ function frame(now) {
   drawMon(mon, walker, dt);
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
-  liveStop(now);
+  if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
