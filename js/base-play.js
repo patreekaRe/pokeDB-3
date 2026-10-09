@@ -94,7 +94,7 @@ set('vending', { does: 'give', gives: 'can' });
 set('gumball capsuletoy candyjar', { does: 'give', gives: 'gumball' });
 set('clawmachine', { does: 'give', gives: 'prize', wait: 1400 });
 set('coinpusher', { does: 'give', gives: 'coin' });
-set('register', { does: 'give', gives: 'coin', sound: 'fx-ding' });
+set('register lemonstall applestall prizestall ticketbooth', { does: 'give', gives: 'coin', sound: 'fx-ding' });
 set('popcornstall', { does: 'give', gives: 'popcorn' });
 set('balloonstall balloons', { does: 'give', gives: 'balloon' });
 set('printer copier', { does: 'give', gives: 'paper', sound: 'fx-whirr' });

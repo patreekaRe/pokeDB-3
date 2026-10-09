@@ -1309,7 +1309,13 @@ const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'dea
   'bunkbed', 'towelladder', 'crib', 'skirack', 'xylophone', 'logpile', 'skates', 'satdish', 'teslacoil', 'catapult',
   'spinwheel', 'swordrack', 'marblerun', 'rockinghorse', 'candlestand', 'weathervane', 'teaset', 'libraryladder', 'bookarch',
   'mast', 'scrollrack', 'orrery', 'windpump', 'spyglass', 'beacon', 'plough', 'sprinkler', 'shipwreck', 'yukatarack',
-  'cloudstair', 'skybell', 'dnamodel', 'tuba', 'woodstove', 'raggeddoll']);
+  'cloudstair', 'skybell', 'dnamodel', 'tuba', 'woodstove', 'raggeddoll',
+  // and from the part-lathed, part-hull ones (2026-10-09): stalls lost their awnings, statues and sculptures their shapes
+  'trophy', 'umbrellas', 'scarecrow', 'well', 'gymstatue', 'coral', 'candelabra', 'hatstand', 'litwick', 'starprojector',
+  'parasoltable', 'breadbasket', 'icestar', 'iceheart', 'icemoon', 'iceshards', 'lemonstall', 'balloonstall', 'applestall',
+  'carouselhorse', 'balloons', 'kadomatsu', 'micstand', 'magnifier', 'parrotperch', 'tubecoral', 'stagcoral', 'bubblecoral',
+  'anemone', 'papyrus', 'cobrastatue', 'flytrap', 'monstera', 'lilytub', 'crossing', 'wingstatue', 'beachumbrella',
+  'tomatocrate', 'cocoastand', 'whackamole', 'castlecolumn']);
 const POT_MAX = 21;   // the tallest pot potAt() paints, in units
 const leafy = (p) => (p.w === p.h && p.group === 'Plants') || LEAFY.has(p.fam);
 
@@ -1321,7 +1327,7 @@ function leafyModel(id, paint) {
   const j0 = rows.findIndex(r => r), j1 = rows.length - [...rows].reverse().findIndex(r => r);
   if (j0 < 0) return null;
   let k = j0;
-  while (k < Math.min(j1, j0 + POT_MAX) && rows[k].runs === 1 && Math.abs(rows[k].l + rows[k].r - W) <= 3) k++;
+  while (k < Math.min(j1, j0 + POT_MAX) && rows[k] && rows[k].runs === 1 && Math.abs(rows[k].l + rows[k].r - W) <= 3) k++;
   const split = p.w === p.h && k - j0 >= 4 ? k : j0, g = new THREE.Group();
   if (split > j0) {
     const mats = faces(p, id).map(paint), arrs = remember(`${p.fam}|pot`, () => latheArrays(art, j0, split));
