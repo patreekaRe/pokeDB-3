@@ -249,6 +249,32 @@ function shaftArt() {
   return f.c;
 }
 
+/** Caution tape: a yellow band edged black, CAUTION over and over, a little sheen along it. */
+function tapeArt() {
+  const W = 96, H = 7, f = fine(W, H, 5), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#ffe24a', '#f8d020', '#e0b410']); g.fillRect(0, 0, W, H);
+  g.fillStyle = '#1a1a1a'; g.fillRect(0, 0, W, 0.8); g.fillRect(0, H - 0.8, W, 0.8);
+  for (let x = 12; x < W; x += 24) {
+    words(g, 'CAUTION', x, H / 2 + 0.2, 3.6, '#1a1a1a');
+    g.save(); g.translate(x + 12, H / 2); g.rotate(Math.PI / 4); g.fillRect(-0.9, -0.9, 1.8, 1.8); g.restore();
+  }
+  g.fillStyle = 'rgba(255,255,255,0.3)'; g.fillRect(0, 1.1, W, 0.6);
+  return f.c;
+}
+
+/** Two strips of tape crossed over a closed front and out onto the wall either side, a third straight across. */
+function tapeOver(fr, tape) {
+  const x = tileX(fr.x), z = -ROWS / 2 + 0.42;
+  for (const [rot, y, len, dz] of [[0.42, 1.15, 4.1, 0], [-0.42, 1.15, 4.1, 0.03], [0.04, 0.6, 3.6, 0.06]]) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(len, len * 7 / 96), std({ map: texOf(tape), side: THREE.DoubleSide, roughness: 0.5 }));
+    m.position.set(x, y, z + dz);
+    m.rotation.z = rot;
+    m.castShadow = true;
+    m.userData.front = fr;
+    hall.add(m);
+  }
+}
+
 /* ---------- building the hall ---------- */
 
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
@@ -331,6 +357,8 @@ function buildHall() {
   const shop = FRONTS.find(f => f.id === 'furniture'), show = frontWindow(THREE, tileX(shop.x), -ROWS / 2);
   show.traverse(o => { o.userData.front = shop; });
   hall.add(show);
+  const tape = tapeArt();
+  for (const fr of FRONTS) if (!fr.open && fr.id !== 'east') tapeOver(fr, tape);
 
   // planters and benches down the sides, light falling from the windows
   const planter = planterArt(), bench = benchArt();
