@@ -157,8 +157,8 @@
 .title-screen.hub-mode .title-menu, .title-screen.hub-mode .title-run, .title-screen.hub-mode .title-gate,
 .title-screen.hub-mode .title-signpost, .title-screen.hub-mode .title-areas { display: none; }
 
-/* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a round
-   shell pill names the shop front nearest your partner (a tap goes in), its line popping up over it a moment. */
+/* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a front's
+   line pops up a moment (no pill since 2026-10-09, the user's call). */
 .mall3d .b3-top h2 { opacity: 1; }
 /* in the Furniture store, your PokéCoins on a little LCD beside its name */
 .mall-coins {
@@ -172,32 +172,47 @@
 }
 .mall-line {
   max-width: 320px; margin: 0; padding: 7px 14px; border-radius: 12px; background: #0009; color: #fff;
-  font-size: 8px; line-height: 1.6; text-align: center; opacity: 0; translate: 0 6px; transition: opacity 0.25s, translate 0.25s;
+  font-size: 11px; line-height: 1.6; text-align: center; opacity: 0; translate: 0 6px; transition: opacity 0.25s, translate 0.25s;
 }
 .mall-line.on { opacity: 1; translate: 0 0; }
 .mall-who { display: none; }
 /* in the store the shopkeeper speaks: Animal Crossing's cream speech window, its name on a tilted tag */
 .mall-line.talk {
-  position: relative; max-width: 340px; width: 100%; box-sizing: border-box; margin-top: 12px; padding: 16px 18px 12px;
-  border-radius: 26px / 22px; background: #fbf4df; color: #6a5440; font-size: 9px; text-align: left;
+  position: relative; max-width: 460px; width: 100%; box-sizing: border-box; margin-top: 16px; padding: 22px 22px 18px;
+  border-radius: 30px / 26px; background: #fbf4df; color: #6a5440; font-size: 15px; line-height: 1.6; text-align: left;
   box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005;
 }
 .mall-line.talk .mall-who {
-  display: block; position: absolute; left: 16px; top: -11px; padding: 5px 12px; border-radius: 999px;
-  background: #f0a0b0; color: #6a2a3a; font-size: 8px; font-weight: normal; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
+  display: block; position: absolute; left: 18px; top: -15px; padding: 7px 14px; border-radius: 999px;
+  background: #f0a0b0; color: #6a2a3a; font-size: 12px; font-weight: normal; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
 }
-.mall-go {
-  pointer-events: auto; display: flex; align-items: center; height: 46px; padding: 0 22px; box-sizing: border-box;
-  border: 0; border-radius: 999px; cursor: pointer; color: #fff; font: 10px/1 var(--pixel-font);
-  background: radial-gradient(circle at 30% 25%, var(--shell-hi), var(--shell) 60%, var(--shell-lo));
-  box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 #fff4, 0 4px 0 var(--shell-deep), 0 6px 16px #0006;
-  text-shadow: 0 1px 0 var(--shell-deep); -webkit-tap-highlight-color: transparent;
+
+/* the buy window: the shopkeeper's speech window with the piece's picture, the question and Buy / No, over the line */
+.mall-ask {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 460px; box-sizing: border-box;
+  padding: 24px 22px 18px; border-radius: 30px / 26px; background: #fbf4df; color: #6a5440; text-align: center;
+  box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005; pointer-events: auto;
 }
-.mall-go.shut { filter: saturate(0.25) brightness(0.85); }
-.mall-go:disabled { cursor: default; }
-.mall-go:not(:disabled):active { translate: 0 3px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
-.mall-go.mall-pop { animation: b3Pop 0.3s cubic-bezier(.3, 1.5, .5, 1); }
-@media (prefers-reduced-motion: reduce) { .mall-go.mall-pop { animation: none; } }
+.mall-ask[hidden] { display: none; }
+.mall-ask.b3-say { animation: b3Pop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+.mall-ask-who {
+  position: absolute; left: 18px; top: -15px; padding: 7px 14px; border-radius: 999px; font-weight: normal; font-size: 12px;
+  background: #f0a0b0; color: #6a2a3a; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
+}
+.mall-ask-who:empty { display: none; }
+.mall-ask-pic { display: grid; place-items: center; height: 120px; margin-bottom: 10px; border-radius: 18px; background: #efe4c6; }
+.mall-ask-pic[hidden] { display: none; }
+.mall-ask-pic canvas { max-width: 86%; max-height: 104px; image-rendering: auto; }
+.mall-ask-q { margin: 0 0 16px; font-size: 15px; line-height: 1.6; }
+.mall-ask-keys { display: flex; gap: 12px; justify-content: center; }
+.mall-ask-keys button {
+  min-width: 112px; height: 48px; border: 0; border-radius: 999px; cursor: pointer; font: 13px/1 var(--pixel-font);
+  -webkit-tap-highlight-color: transparent;
+}
+.mall-ask-yes { background: linear-gradient(#ffe070, #f0b020); color: #5a3a08; box-shadow: 0 4px 0 #b07c10, 0 6px 12px #0004; }
+.mall-ask-no { background: #e8dcc0; color: #6a5440; box-shadow: 0 4px 0 #c4b290; }
+.mall-ask-keys button:active { translate: 0 3px; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .mall-ask.b3-say { animation: none; } }
 
 /* ---------- the Clearing's PC (js/pc.js): full screen, the PC by the plaza grown big ---------- */
 .pc-screen {
