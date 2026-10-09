@@ -20,10 +20,10 @@ test('a fresh save has nothing; an old one has what its lists prove', () => {
   assert.deepEqual(kinds(fresh()), []);
   const save = { ...fresh(), badges: ['clearing', 'fire'], unlocked: ['torchic'], feats: ['eternatus'] };
   save.safariDex.done = ['wetland'];
-  assert.deepEqual(kinds(save), ['bigcharmanderdoll', 'charmanderdoll', 'koipond', 'plasmaglobe', 'stump']);
+  assert.deepEqual(kinds(save), ['charmanderdoll', 'koipond', 'plasmaglobe', 'stump', 'torchicdoll']);
   delete save.badges;
   delete save.safariDex;
-  assert.deepEqual(kinds(save), ['bigcharmanderdoll', 'plasmaglobe']);
+  assert.deepEqual(kinds(save), ['plasmaglobe', 'torchicdoll']);
 });
 
 test('how a kind is earned, secret ones hidden until they are', () => {

@@ -35,13 +35,13 @@ export const FURNITURE = [
   { kind: 'worldmap', from: ['badge', 'explorer'] },
   { kind: 'trophy', from: ['badge', 'champion'] },
   { kind: 'medal', from: ['badge', 'master'] },
-  // Gen 3's dolls: the Kanto three from their type's first win, big ones from the Hoenn starters' achievements.
+  // Gen 3's dolls: the Kanto three from their type's first win, the Hoenn three from the achievements that unlock them.
   { kind: 'charmanderdoll', from: ['badge', 'fire'] },
   { kind: 'squirtledoll', from: ['badge', 'water'] },
   { kind: 'bulbasaurdoll', from: ['badge', 'grass'] },
-  { kind: 'bigcharmanderdoll', from: ['achievement', 'torchic'] },
-  { kind: 'bigbulbasaurdoll', from: ['achievement', 'treecko'] },
-  { kind: 'bigsquirtledoll', from: ['achievement', 'mudkip'] },
+  { kind: 'torchicdoll', from: ['achievement', 'torchic'] },
+  { kind: 'treeckodoll', from: ['achievement', 'treecko'] },
+  { kind: 'mudkipdoll', from: ['achievement', 'mudkip'] },
   // Collector and secret badges.
   { kind: 'confettirug', from: ['badge', 'sparkle'] },
   { kind: 'coinpusher', from: ['badge', 'jackpot'] },

@@ -102,13 +102,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `save.base` (follows the cloud save), placing is tap-a-tile on a grid (phones, no dragging), and the Pokémon are the
   `save.safariDex` catches' front GIFs. Its way in: a Game Modes sign or a Pokédex app. Suggested parts, each a session:
   a) ~~the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base`~~ done 2026-10-08, in 3D (the pilot below won);
-  b) ~~the Furniture shop and its daily stock, prices~~ done 2026-10-08 with the first room's present and a 500-piece catalogue (`docs/roadmap-done.md`); ~~a "!" on new stock, wallpapers / floors for sale~~ done 2026-10-08 (`docs/roadmap-done.md`), ~~more kinds of piece~~ ~~(done 2026-10-08: 241 kinds, 4,212 pieces, dolls drawn in code, not from the sprites)~~; **1000 kinds, more detailed** (the user's ask, 2026-10-08): a kind is now bought once with every colour free; the user picked detailed pixel and the 241 are redrawn in it at 32 pixels a tile (`js/base-paint.js`, 2026-10-08); ~~the 1,000 kinds~~ done 2026-10-08 in five batches of themed shelves (1,008 kinds, 19,514 pieces, `js/base-furniture-rooms.js` to `-rooms5.js`; `docs/roadmap-done.md`);
+  b) ~~the Furniture shop and its daily stock, prices~~ done 2026-10-08 with the first room's present and a 500-piece catalogue (`docs/roadmap-done.md`); ~~a "!" on new stock, wallpapers / floors for sale~~ done 2026-10-08 (`docs/roadmap-done.md`), ~~more kinds of piece~~ ~~(done 2026-10-08: 241 kinds, 4,212 pieces, dolls drawn in code, not from the sprites)~~; **1000 kinds, more detailed** (the user's ask, 2026-10-08): a kind is now bought once with every colour free; the user picked detailed pixel and the 241 are redrawn in it at 32 pixels a tile (`js/base-paint.js`, 2026-10-08); ~~the 1,000 kinds~~ done 2026-10-08 in five batches of themed shelves (1,008 kinds, 19,514 pieces, `js/base-furniture-rooms.js` to `-rooms5.js`; `docs/roadmap-done.md`); 44 more Pokémon dolls 2026-10-09 (60 Pokémon, 1,096 kinds, 19,602 pieces);
   c) furniture unlocked from badges, achievements, feats and Safari pages: **the data landed first** (2026-10-09, a cloud
      session on main): `js/data/furniture.js`, 39 earned pieces, each `from` one badge / achievement / feat / Safari page,
      owned once its source is (`earnedFurniture(save)`, nothing saved), `howToEarn()` (??? for a secret source),
      `tests/furniture.test.mjs`. ~~Wired into the 3D base~~ done 2026-10-09 on `secret-base`: each is a catalogue
-     kind, kept out of the daily stock, shown locked in the Shop with how to earn it (CLAUDE.md). Left: maybe new art for
-     ones that only borrow a near kind (Torchic / Treecko / Mudkip give the big Kanto dolls; the base has no Hoenn dolls yet);
+     kind, kept out of the daily stock, shown locked in the Shop with how to earn it (CLAUDE.md); Torchic / Treecko /
+     Mudkip give their own dolls since the 44 new ones;
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
   e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
   f) later (the user's ask, 2026-10-08): give the 3D base's tall upper wall (`dressRoom()` in `js/base-3d.js`, the wallpaper
