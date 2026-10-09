@@ -8,7 +8,7 @@ import { PIECES, pieceArt, furnitureStock, UPSTAIRS_PRICE } from './secret-base.
 import { tex, trim } from './hd2d.js';
 import { pieceModel } from './base-model.js';
 import { fine, texOf, words, star } from './hub-3d.js';
-import { RES } from './base-paint.js';
+import { RES, HD } from './base-paint.js';
 
 const PX = 1 / (16 * RES);   // one of a piece's painted pixels, in tiles
 export const STAIR_H = 2.6;   // the stair's top, up at the back wall
@@ -88,7 +88,7 @@ export function frontWindow(THREE, cx, z) {
   const group = new THREE.Group(), stock = furnitureStock(), shown = stock.filter(id => !PIECES[id].flat && !PIECES[id].wall);
   const picks = [...shown, 'plant', 'lamp'].slice(0, 2);
   picks.forEach((id, i) => {
-    const cut = trim(pieceArt(id, 0)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 0.78 / w, 1.15 / h);
+    const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 0.78 / w, 1.15 / h);
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), new THREE.MeshStandardMaterial({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
     m.position.set(cx + (i ? 1 : -1), 0.42 + h * k / 2, z + 0.12);
     group.add(m);
@@ -401,7 +401,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
     bay.add(slab);
     if (p.flat) {
       const k = Math.min(1, 1.6 / Math.max(p.w, p.h)), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
-      const box = new THREE.Mesh(new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id)), alphaTest: 0.5, roughness: 0.9 }), s, s, s]);
+      const box = new THREE.Mesh(new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id, 0, HD)), alphaTest: 0.5, roughness: 0.9 }), s, s, s]);
       box.position.y = H + h / 2;
       box.castShadow = h > 0.1; box.receiveShadow = true;
       bay.add(box);
@@ -415,7 +415,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
       model.castShadow = model.receiveShadow = true;
       bay.add(model);
     } else {
-      const cut = trim(pieceArt(id, 0)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 1.7 / w, b.tall / h);
+      const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 1.7 / w, b.tall / h);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
       board.position.set(0, H + h * k / 2, p.wall ? -0.3 : 0);
       board.castShadow = true;
@@ -456,7 +456,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const bell = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }));
   bell.position.set(0.2, 0.88, 0.18);
   desk.add(body, slabTop, till, screen, bell);
-  const sprig = trim(pieceArt('plant', 0)), sw = sprig.w * PX * 0.55, sh = sprig.h * PX * 0.55;
+  const sprig = trim(pieceArt('plant', 0, HD)), sw = sprig.w * PX * 0.55, sh = sprig.h * PX * 0.55;
   const pot = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), std({ map: tex(sprig.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
   pot.position.set(1.05, 0.88 + sh / 2, -0.05);
   desk.add(pot);
@@ -466,7 +466,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   shelf.position.set(tileX(COUNTER.x + 1), 1.15, -rows / 2 + 0.24);
   shelf.castShadow = shelf.receiveShadow = true;
   group.add(shelf);
-  const leafy = trim(pieceArt('plant', 0)), lw = leafy.w * PX * 1.3, lh = leafy.h * PX * 1.3;
+  const leafy = trim(pieceArt('plant', 0, HD)), lw = leafy.w * PX * 1.3, lh = leafy.h * PX * 1.3;
   const tree = new THREE.Mesh(new THREE.PlaneGeometry(lw, lh), std({ map: tex(leafy.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
   tree.position.set(tileX(cols - 1), lh / 2, tileZ(rows - 1));
   tree.castShadow = true;

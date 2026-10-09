@@ -10,8 +10,13 @@
    since js/hd2d.js's dispose() frees them with the room. */
 
 import { PIECES } from './secret-base.js';
+import { HD } from './base-paint.js';
+import { trim } from './hd2d.js';
 
 const SOLID = 128;
+// a smooth piece's rounded front is a staircase of little fronts and tops: lit alike, they read as one curved surface
+// instead of bands (tops still face the light more, so a table's top stays a top)
+const FRONT = [0, 0.32, 0.947], TOP = [0, 0.8, 0.6];
 const built = new Map(), KEEP = 80;   // models worked out, the least recently used dropped past KEEP
 
 const pixels = (c) => c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
@@ -80,6 +85,8 @@ function carve(front, side, W, D, H, round) {
     }
     boxy = straight >= rows * 0.6;
   }
+  occ.boxy = boxy;
+  occ.front = fOn;
   for (let j = 0; j < H; j++) {
     const runs = spans[j], ring = round && !boxy && runs.length === 1 && runs[0];
     for (let k = 0; k < D; k++) for (let i = 0; i < W; i++) {
@@ -126,7 +133,7 @@ function mesh(occ, W, D, H, sizes) {
   for (let k = 0; k < D; k++) {
     greedy(W, H, (i, j) => on(i, k, j) && !on(i, k + 1, j), (i, j, w, h) => {
       const z = Z(k + 1), u0 = i / fw, u1 = (i + w) / fw, v0 = j / fh, v1 = (j + h) / fh;
-      quad(0, [0, 0, 1], [[X(i), j, z], [X(i + w), j, z], [X(i + w), j + h, z], [X(i), j + h, z]], [[u0, v0], [u1, v0], [u1, v1], [u0, v1]]);
+      quad(0, FRONT, [[X(i), j, z], [X(i + w), j, z], [X(i + w), j + h, z], [X(i), j + h, z]], [[u0, v0], [u1, v0], [u1, v1], [u0, v1]]);
     });
     greedy(W, H, (i, j) => on(i, k, j) && !on(i, k - 1, j), (i, j, w, h) => {
       const z = Z(k), u0 = (W - i) / bw, u1 = (W - i - w) / bw, v0 = j / bh, v1 = (j + h) / bh;
@@ -144,12 +151,15 @@ function mesh(occ, W, D, H, sizes) {
       quad(3, [-1, 0, 0], [[x, j, Z(k)], [x, j, Z(k + d)], [x, j + h, Z(k + d)], [x, j + h, Z(k)]], [[ua, v0], [ub, v0], [ub, v1], [ua, v1]]);
     });
   }
-  // tops and undersides wear the front painting: a top the row under its outline, an underside its own row
+  // tops and undersides wear the front painting: a real top (nothing painted above it) the row under its outline, lit
+  // as a top; a step inside a rounded front (more painting above) its own row, lit as the front, so the steps of a
+  // cushion's curve read as one surface; an underside its own row
+  const painted = (i, j) => j < H && occ.front(i, j);
   for (let j = 0; j < H; j++) {
-    const vt = Math.max(0.5, j - 0.5) / fh, vb = (j + 0.5) / fh;
-    greedy(W, D, (i, k) => on(i, k, j) && !on(i, k, j + 1), (i, k, w, d) => {
-      const y = j + 1, u0 = i / fw, u1 = (i + w) / fw;
-      quad(0, [0, 1, 0], [[X(i), y, Z(k + d)], [X(i + w), y, Z(k + d)], [X(i + w), y, Z(k)], [X(i), y, Z(k)]], [[u0, vt], [u1, vt], [u1, vt], [u0, vt]]);
+    const vt = Math.max(0.5, j - 0.5) / fh, vs = (j + 0.5) / fh, vb = (j + 0.5) / fh;
+    for (const step of [false, true]) greedy(W, D, (i, k) => on(i, k, j) && !on(i, k, j + 1) && painted(i, j + 1) === step, (i, k, w, d) => {
+      const y = j + 1, u0 = i / fw, u1 = (i + w) / fw, v = step ? vs : vt;
+      quad(0, step ? FRONT : TOP, [[X(i), y, Z(k + d)], [X(i + w), y, Z(k + d)], [X(i + w), y, Z(k)], [X(i), y, Z(k)]], [[u0, v], [u1, v], [u1, v], [u0, v]]);
     });
     if (j) greedy(W, D, (i, k) => on(i, k, j) && !on(i, k, j - 1), (i, k, w, d) => {
       const u0 = i / fw, u1 = (i + w) / fw;
@@ -168,9 +178,20 @@ function build(id) {
   const round = W === D && same(pixels(front), pixels(right));
   const H = Math.min(front.height, right.height);
   const occ = carve(front, right, W, D, H, round);
+  if (round && !occ.boxy) {
+    // the same from every side and rounded (a doll, a plant, a lamp): it stands as its smooth painting, facing the
+    // camera, since voxels can only band its curves into stripes
+    const cut = trim(p.art(0, HD)), model = { standee: cut, W };
+    built.set(id, model);
+    if (built.size > KEEP) built.delete(built.keys().next().value);
+    return model;
+  }
   let top = 0;
   for (let j = 0; j < H; j++) for (let n = 0; n < W * D; n++) if (occ[j * W * D + n]) { top = j + 1; break; }
-  const faces = [filled(front), filled(back, mirror(front)), filled(right), filled(left, mirror(right))];
+  // the shape is carved from the pictures at a unit a pixel, but each face wears its HD painting
+  const [hf, hr, hb, hl] = [0, 1, 2, 3].map(d => p.art(d, HD));
+  const faces = [filled(hf), filled(hb, mirror(hf)), filled(hr), filled(hl, mirror(hr))];
+  faces.forEach(f => { f.hd = HD; });
   const parts = mesh(occ, W, D, H, [front.width, front.height, back.width, back.height, right.width, right.height]);
   const model = { parts, faces, top, W, D };
   built.set(id, model);
@@ -181,7 +202,18 @@ function build(id) {
 /** A fresh mesh of an upright piece, its feet at y 0 and its middle at x, z 0, `px` world units a painted pixel.
     `material(canvas)` makes each painting's material (the caller's texture and glow rules). */
 export function pieceModel(THREE, id, px, material) {
-  const { parts, faces, top } = build(id);
+  const model = build(id);
+  if (model.standee) {
+    const { c, x, w, h } = model.standee, geo = new THREE.PlaneGeometry(w * px, h * px);
+    geo.translate((x + w / 2 - model.W / 2) * px, h * px / 2, 0);
+    const m = material(c);
+    m.alphaTest = 0.5; m.side = THREE.DoubleSide;
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.userData.top = h * px;
+    mesh.userData.standee = true;
+    return mesh;
+  }
+  const { parts, faces, top } = model;
   const geo = new THREE.BufferGeometry(), n = parts.reduce((s, o) => s + o.pos.length / 3, 0);
   const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2);
   let at = 0;

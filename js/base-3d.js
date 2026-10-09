@@ -14,7 +14,7 @@ import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
-import { RES } from './base-paint.js';
+import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { pieceModel } from './base-model.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
@@ -49,6 +49,7 @@ let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 // Walk shows only the room; Decorate pulls the camera back over the whole room and brings up the sheet
 let mode = 'walk', blend = 0, shots = null, fitted = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
+const standees = new Set();   // round pieces drawn as their painting (js/base-model.js), leaned back like the Pokémon
 let giftBoard = null, unwrapping = null, shopMsg = '';
 let hushed = null;   // the hint tapped away: it stays away until it says something else
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
@@ -58,12 +59,19 @@ const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
 
 
-/** Only the pixels in these colours, for an emissive map: a window's sky, a lamp's shade. */
+/** Only the pixels in (or shaded near) these colours, for an emissive map: a window's sky, a lamp's shade. The pieces
+    are painted smooth, so a glow colour comes graded: a pixel glows the more the nearer it is to one of its shades. */
 function mask(src, colours) {
-  const keep = new Set(colours.map(h => parseInt(h.slice(1), 16)));
+  const keep = colours.flatMap(h => [-1, 0, 1, 2].map(n => shadeOf(h, n))).map(h => { const v = parseInt(h.slice(1), 16); return [v >> 16, (v >> 8) & 255, v & 255]; });
   const c = crop(src, 0, 0, src.width, src.height), g = c.getContext('2d');
+  c.hd = src.hd;
   const img = g.getImageData(0, 0, c.width, c.height), d = img.data;
-  for (let i = 0; i < d.length; i += 4) if (!keep.has((d[i] << 16) | (d[i + 1] << 8) | d[i + 2])) { d[i] = d[i + 1] = d[i + 2] = 0; }
+  for (let i = 0; i < d.length; i += 4) {
+    let near = 1e9;
+    for (const [r, gg, b] of keep) near = Math.min(near, Math.abs(d[i] - r) + Math.abs(d[i + 1] - gg) + Math.abs(d[i + 2] - b));
+    const f = Math.max(0, 1 - near / 70);
+    d[i] *= f; d[i + 1] *= f; d[i + 2] *= f;
+  }
   g.putImageData(img, 0, 0);
   return c;
 }
@@ -190,7 +198,7 @@ function makePiece(it, ghostly = false) {
     return mesh;
   };
   if (p.layer === 'wall') {
-    const art = pieceArt(it.id), m = new THREE.MeshStandardMaterial({ map: tex(art), transparent: true, alphaTest: 0.5, roughness: 1 });
+    const art = pieceArt(it.id, 0, HD), m = new THREE.MeshStandardMaterial({ map: tex(art), transparent: true, alphaTest: 0.5, roughness: 1 });
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
     const plane = add(new THREE.PlaneGeometry(p.w, WALL_H), m, false);
     plane.position.set(it.x - COLS / 2 + p.w / 2, WALL_H / 2, -ROWS / 2 + 0.01 + (ghostly ? 0.01 : 0));
@@ -203,14 +211,14 @@ function makePiece(it, ghostly = false) {
   if (p.flat) {
     const h = p.high, side = p.side;
     // alphaTest: a round rug's corners are clear, not black
-    const top = new THREE.MeshStandardMaterial({ map: tex(pieceArt(it.id)), roughness: 0.9, alphaTest: 0.5 }), s = solid(side);
+    const top = new THREE.MeshStandardMaterial({ map: tex(pieceArt(it.id, 0, HD)), roughness: 0.9, alphaTest: 0.5 }), s = solid(side);
     const block = add(new THREE.BoxGeometry(p.w, h, p.h), [s, s, top, s, s, s], h > 0.1);
     block.position.set(cx, h / 2 + (ghostly ? 0.01 : 0), cz);
     block.rotation.y = -it.dir * Math.PI / 2;
     return group;
   }
   if (p.solid) {
-    const front = trim(pieceArt(it.id, 0)), behind = trim(pieceArt(it.id, 2));
+    const front = trim(pieceArt(it.id, 0, HD)), behind = trim(pieceArt(it.id, 2, HD));
     const h = front.h * PX, wood = solid(p.wood);
     const face = (a) => new THREE.MeshStandardMaterial({ map: tex(a.c), roughness: 1 });
     const block = add(new THREE.BoxGeometry(p.w, h, 0.8), [wood, wood, solid(p.woodLit), wood, face(front), face(behind)]);
@@ -224,9 +232,10 @@ function makePiece(it, ghostly = false) {
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; winMats.push(m); }
     return see(m);
   });
-  model.castShadow = !ghostly; model.receiveShadow = !ghostly;
+  // a carved piece's rounded front is a staircase of steps: receiving shadows, each step shades the one below into bands
+  model.castShadow = !ghostly; model.receiveShadow = false;
   model.position.set(cx, 0, cz);
-  model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
+  if (model.userData.standee) standees.add(model); else model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
   group.add(model);
   if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.userData.top - 0.35, cz + 0.3);
   return group;
@@ -1047,6 +1056,8 @@ function placeCamera(dt, now) {
   aimCamera(camX, mix('dist'), pitch);
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
   for (const m of [mon, ...guests.map(g => g.mon)]) if (m) m.board.rotation.x = -pitch;
+  // and so do the pieces that stand as their painting
+  for (const s of standees) { if (!s.parent) standees.delete(s); else s.rotation.x = -pitch; }
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
 }
 

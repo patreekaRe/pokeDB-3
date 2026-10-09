@@ -128,27 +128,33 @@ const FAMILIES = [
     cushion(x + 5, b - 28, 22, 8, k.c, 3);
   } },
   { id: 'sofa', name: 'Sofa', w: 2, h: 1, price: 700, draw(x, b, vw, dir) {
+    // a plump sofa: a curved back, rolled arms with round scrolled fronts, two puffy seat cushions, tapered legs
     floorShadow(x, b, vw);
+    const c = k.c, legs = (xs) => xs.forEach(lx => { cyl(lx, b - 6, 3.5, 6, sh(k.w, -1)); disc(lx + 1.75, b - 0.6, 1.6, sh(k.w, -2)); });
     if (dir % 2) {
-      const bk = dir === 1 ? x + vw - 12 : x;
-      cyl(x + 4, b - 6, 4, 6, sh(k.w, -1)); cyl(x + 24, b - 6, 4, 6, sh(k.w, -1));
-      cushion(x + 1, b - 22, vw - 2, 16, k.c, 3);
-      cushion(bk, b - 40, 12, 34, sh(k.c, -1), 3);
-      cushion(x + 6, b - 30, 20, 10, k.c, 3);
+      const bk = dir === 1 ? x + vw - 13 : x + 1;
+      legs([x + 4, x + vw - 8]);
+      cushion(bk, b - 42, 12, 34, sh(c, -1), 6);
+      cushion(x + 1, b - 20, vw - 2, 14, sh(c, -1), 7);
+      cushion(x + 3, b - 25, vw - 6, 9, c, 4.5);
+      cushion(x + 5, b - 32, vw - 10, 12, c, 6);
       return;
     }
-    cyl(x + 6, b - 6, 4, 6, sh(k.w, -1)); cyl(x + vw - 10, b - 6, 4, 6, sh(k.w, -1));
-    if (dir === 2) { cushion(x + 2, b - 44, vw - 4, 38, sh(k.c, -1), 4); for (let i = 8; i < vw - 8; i += 6) R(x + i, b - 40, 1, 30, sh(k.c, -2)); return; }
-    cushion(x + 6, b - 44, vw - 12, 24, k.c, 4);
-    cushion(x + 8, b - 42, vw / 2 - 9, 20, k.c, 3); cushion(x + vw / 2 + 1, b - 42, vw / 2 - 9, 20, k.c, 3);
-    for (const [cx, cy] of [[vw / 4 + 2, b - 33], [vw * 3 / 4 - 2, b - 33]]) { P(x + cx, cy, sh(k.c, -2)); P(x + cx - 1, cy - 1, sh(k.c, 1)); }
-    cushion(x + 3, b - 22, vw - 6, 10, sh(k.c, 1), 3);
-    R(x + vw / 2, b - 21, 1, 8, sh(k.c, -1));
-    cushion(x + 3, b - 14, vw - 6, 9, sh(k.c, -1), 2);
-    for (let i = 6; i < vw - 6; i += 5) R(x + i, b - 12, 1, 6, sh(k.c, -2));
-    cushion(x, b - 30, 9, 26, k.c, 3); cushion(x + vw - 9, b - 30, 9, 26, k.c, 3);
-    R(x + 2, b - 29, 5, 2, sh(k.c, 2)); R(x + vw - 7, b - 29, 5, 2, sh(k.c, 2));
-    cushion(x + 10, b - 40, 10, 9, k.a, 3);
+    legs([x + 6, x + vw - 10]);
+    if (dir === 2) { cushion(x + 2, b - 46, vw - 4, 40, sh(c, -1), 14); cushion(x + 4, b - 20, vw - 8, 12, sh(c, -2), 6); return; }
+    cushion(x + 4, b - 46, vw - 8, 30, c, 14);
+    for (const cx of [x + 10, x + vw / 2 + 1]) {
+      cushion(cx, b - 42, vw / 2 - 11, 22, sh(c, 1), 8);
+      for (const [dx, dy] of [[0.3, 0.35], [0.7, 0.35], [0.5, 0.65]]) { disc(cx + (vw / 2 - 11) * dx, b - 42 + 22 * dy, 0.9, sh(c, -1)); disc(cx + (vw / 2 - 11) * dx - 0.3, b - 42 + 22 * dy - 0.3, 0.4, sh(c, 2)); }
+    }
+    cushion(x + 3, b - 17, vw - 6, 12, sh(c, -1), 6);
+    for (const cx of [x + 9, x + vw / 2 + 1]) cushion(cx, b - 24, vw / 2 - 10, 10, sh(c, 1), 5);
+    for (const ax of [x, x + vw - 12]) {
+      cushion(ax, b - 32, 12, 27, c, 6);
+      ovalShade(ax + 6, b - 27, 5.6, 5.2, sh(c, -1));
+      ovalShade(ax + 5.6, b - 27.4, 3.4, 3.1, c);
+      disc(ax + 5.4, b - 27.6, 1, sh(c, -1));
+    }
   } },
   { id: 'armchair', name: 'Armchair', w: 1, h: 1, price: 400, draw(x, b, vw, dir) {
     floorShadow(x, b, vw);
@@ -354,6 +360,9 @@ const GIFT = { id: 'gift', name: 'Present', w: 1, h: 1, price: 0, draw(x, b) {
   R(x + 14, b - 38, 4, 5, '#e0a818'); R(x + 15, b - 37, 2, 1, '#fff4a0');
 } };
 
+// HD pictures, the least recently used dropped past FINE_KEEP (each is a few hundred kilobytes)
+const FINE = new Map(), FINE_KEEP = 64;
+
 /** One piece: a kind in a theme. Its pictures are painted once per facing (a window's once per hour of the day). */
 function makePiece(fam, theme) {
   const pal = theme || THEMES[0];
@@ -366,25 +375,26 @@ function makePiece(fam, theme) {
   if (fam.wall) p.wall = true;
   if (fam.draw) p.upright = true;
   const cache = new Map();
-  p.art = (dir = 0) => {
+  /** Its picture at a facing, `s` canvas pixels a painted unit (1 for the carving and the 2D room, HD for textures). */
+  p.art = (dir = 0, s = 1) => {
     const key = (fam.flat || fam.wall ? 0 : dir) + (fam.sky || fam.id === 'window' ? timeOfDay() : '');
-    if (cache.has(key)) return cache.get(key);
-    let c;
-    if (fam.flat) {
-      c = new OffscreenCanvas(fam.w * FT, fam.h * FT);
-      paintWith(c.getContext('2d'), pal, () => fam.flat(c.width, c.height));
-      finish(c, { outline: false });
-    } else if (fam.wall) {
-      c = new OffscreenCanvas(fam.w * FT, WALL_PX);
-      paintWith(c.getContext('2d'), pal, () => fam.wall(0));
-      finish(c);
-    } else {
+    const store = s === 1 ? cache : FINE, at = s === 1 ? key : `${fam.id}-${pal.id}|${key}|${s}`;
+    if (store.has(at)) { const c = store.get(at); if (s !== 1) { store.delete(at); store.set(at, c); } return c; }
+    let c, w, h, paint;
+    if (fam.flat) [w, h, paint] = [fam.w * FT, fam.h * FT, () => fam.flat(w, h)];
+    else if (fam.wall) [w, h, paint] = [fam.w * FT, WALL_PX, () => fam.wall(0)];
+    else {
       const [fw, fh] = dir % 2 ? [fam.h, fam.w] : [fam.w, fam.h];
-      c = new OffscreenCanvas(fw * FT, fh * FT + HEAD);
-      paintWith(c.getContext('2d'), pal, () => fam.draw(0, c.height, fw * FT, dir));
-      finish(c);
+      [w, h, paint] = [fw * FT, fh * FT + HEAD, () => fam.draw(0, h, fw * FT, dir)];
     }
-    cache.set(key, c);
+    c = new OffscreenCanvas(w * s, h * s);
+    c.hd = s;
+    const ctx = c.getContext('2d');
+    ctx.scale(s, s);
+    paintWith(ctx, pal, paint);
+    finish(c, { outline: !fam.flat });
+    store.set(at, c);
+    if (FINE.size > FINE_KEEP) FINE.delete(FINE.keys().next().value);
     return c;
   };
   if (fam.solid) Object.assign(p, { solid: true, wood: pal.w, woodLit: sh(pal.w, 1) });

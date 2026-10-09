@@ -32,8 +32,9 @@ export function curtain(on, ms = 320) {
 
 export function tex(canvas) {
   const t = new THREE.CanvasTexture(canvas);
-  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter;
-  t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace;
+  if (canvas.hd > 1) { t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = 4; }
+  else { t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; }
+  t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
@@ -50,8 +51,12 @@ export function trim(src) {
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 8) {
     x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
   }
-  if (x1 < 0) return { c: src, x: 0, y: 0, w, h };
-  return { c: crop(src, x0, y0, x1 - x0 + 1, y1 - y0 + 1), x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+  // an HD picture's box is given in its painted units, as its canvas pixels are `hd` to a unit
+  const u = src.hd || 1;
+  if (x1 < 0) return { c: src, x: 0, y: 0, w: w / u, h: h / u };
+  const c = crop(src, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+  c.hd = u;
+  return { c, x: x0 / u, y: y0 / u, w: (x1 - x0 + 1) / u, h: (y1 - y0 + 1) / u };
 }
 
 export function dispose(group) {

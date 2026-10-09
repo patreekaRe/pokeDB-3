@@ -12,7 +12,7 @@
   .bar button.on { background: #d84848; color: #fff; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   .tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1.5px #e6dcc6; }
-  .tile canvas { image-rendering: pixelated; width: auto; height: 96px; max-width: 100%; object-fit: contain; }
+  .tile canvas { width: auto; height: 96px; max-width: 100%; object-fit: contain; }
   .tile b { font-weight: 600; font-size: 11px; text-align: center; }
   .tile small { color: #9a8e78; }
 </style>
@@ -27,7 +27,7 @@
 <script type="module">
 import { PIECES, CATALOGUE, THEMES, FAMILIES } from '../js/base-furniture.js';
 function art(id) {
-  const a = PIECES[id].art(0), c = document.createElement('canvas');
+  const a = PIECES[id].art(0, 2), c = document.createElement('canvas');
   c.width = a.width; c.height = a.height; c.getContext('2d').drawImage(a, 0, 0);
   return c;
 }

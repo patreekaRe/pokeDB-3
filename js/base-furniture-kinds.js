@@ -5,9 +5,10 @@
    only, never themed (the dolls keep their Pokémon's colours). `group` is its shelf in the tool page; `seat` lets a
    Pokémon rest on it; `sky` makes a wall piece a window (its view glows, js/base-paint-scenes.js). */
 
-import { k, sh, R, P, clear, hash, panel, inset, wood, cushion, sphere, disc, oval, ovalShade, cyl, glass, leaf, foliage, tri,
+import { plush, k, sh, R, P, clear, hash, panel, inset, wood, cushion, sphere, disc, oval, ovalShade, cyl, glass, leaf, foliage, tri,
   speckle, stamp, floorShadow, clipped } from './base-paint.js';
 import { BOOKS, view, books } from './base-paint-scenes.js';
+import { PLUSH, plushDoll } from './base-dolls.js';
 
 export const MORE_KINDS = [];
 const add = (group, list) => list.forEach(f => MORE_KINDS.push({ group, ...f }));
@@ -1014,15 +1015,14 @@ const DOLLS = [
   ['pachirisu', 'Pachirisu', { w: '#f8f8f8', b: '#68b0e8', e: '#202028' },
     ['.b.....b..', '.wwwbwww..', 'wwewbweww.', 'wwwwwwwwb.', '.wwwwwwwbb', '.wwwwwwbbb', '..wwwww.bb', '..w...w...']],
 ];
-/** A doll: its bitmap blown up and shaded cell by cell (the kit's stamp), each eye given a glint. */
-function doll(x, b, vw, rows, colours, s) {
+/** A doll: a real plush sewn from its PLUSH pattern (js/base-dolls.js); its bitmap is only the fallback. */
+function doll(id, x, b, vw, rows, colours, s) {
   const w = Math.max(...rows.map(r => r.length)), h = rows.length;
-  const ox = x + Math.floor((vw - w * s) / 2), oy = b - h * s - 1;
-  R(ox + 2, b - 3, w * s - 4, 2, 'rgba(30,18,10,0.28)');
-  stamp(rows, ox, oy, colours, s);
-  rows.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'e') P(ox + i * s, oy + j * s, '#ffffff'); }));
+  floorShadow(x + vw / 2 - w * s * 0.6, b, w * s * 1.2);
+  if (PLUSH[id]) return plushDoll(x + vw / 2, b - 0.5, h * s * 1.25, PLUSH[id]);
+  plush(rows, x + (vw - w * s) / 2, b - h * s - 1, colours, s);
 }
 add('Dolls', DOLLS.map(([id, name, colours, rows]) => ({ id: `${id}doll`, name: `${name} doll`, proper: true, solo: true, w: 1, h: 1, price: 350,
-  draw(x, b, vw) { doll(x, b, vw, rows, colours, 2); } })));
+  draw(x, b, vw) { doll(id, x, b, vw, rows, colours, 2); } })));
 add('Dolls', DOLLS.map(([id, name, colours, rows]) => ({ id: `big${id}doll`, name: `Big ${name} doll`, proper: true, solo: true, w: 2, h: 2, price: 1000,
-  draw(x, b, vw) { doll(x, b, vw, rows, colours, 5); } })));
+  draw(x, b, vw) { doll(id, x, b, vw, rows, colours, 5); } })));

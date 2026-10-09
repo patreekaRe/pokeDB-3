@@ -169,7 +169,7 @@ export function roomArt(b) {
 
 /** One piece alone on a clear canvas, RES painted pixels to a room pixel (its `art()`): a flat one top-down at its first
     facing, a wall one as its strip, an upright one at `dir` with headroom above its tiles. */
-export const pieceArt = (id, dir = 0) => PIECES[id].art(dir);
+export const pieceArt = (id, dir = 0, s = 1) => PIECES[id].art(dir, s);
 
 let base, canvas, holding = null, sel = -1, ghost = null, badGhost = 0, hint;
 
@@ -388,7 +388,7 @@ function icon(id) {
   const made = icons.get(id);
   if (made) { const c = document.createElement('canvas'); c.width = made.width; c.height = made.height; c.getContext('2d').drawImage(made, 0, 0); return c; }
   // the piece's own picture, cropped to what's painted
-  const art = PIECES[id].art(0), d = art.getContext('2d').getImageData(0, 0, art.width, art.height).data;
+  const art = PIECES[id].art(0, 2), d = art.getContext('2d').getImageData(0, 0, art.width, art.height).data;
   let x0 = art.width, y0 = art.height, x1 = 0, y1 = 0;
   for (let y = 0; y < art.height; y++) for (let x = 0; x < art.width; x++) if (d[(y * art.width + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
   const c = document.createElement('canvas');
