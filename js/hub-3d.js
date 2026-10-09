@@ -1028,12 +1028,18 @@ const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo)
 /** Every place: where it stands (`tiles` it blocks), its doorstep (`step`), whether it's open, what its card says and
     what it opens, all from the title's own actions (`acts`) and today's save. */
 function makePlaces() {
-  const save = getSave(), run = acts.savedRun();
+  const save = getSave(), saved = acts.savedRun();
+  // a saved run is continued where it was started (the user's call, 2026-10-08): a Safari run at the Safari gate, a
+  // climb at the Sky Pillar, any other at the Pokéstop
+  const kind = !saved ? null : saved.saved.tower ? 'pillar' : saved.safari ? 'safari' : 'trail';
+  const runAt = (id) => (kind === id ? saved : null);
+  const waits = (r) => `${r.name} waits in the ${r.place}${r.floor ? `, floor ${r.floor}` : ''}. HP ${r.hp}/${r.maxHp}.`;
+  const run = runAt('trail');
   const list = [
     {
       id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: 6, y: ROWS - 1 }, tiles: [[7, ROWS - 2]], tag: [6, 4, ROWS - 1],
       open: true,
-      line: run ? `${run.name} waits in the ${run.place}${run.floor ? `, floor ${run.floor}` : ''}. HP ${run.hp}/${run.maxHp}.` : 'The trail out of the Clearing: a new adventure.',
+      line: run ? waits(run) : 'The trail out of the Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       build: (g) => {
         const S = 0.7, x = tileX(7), z = tileZ(ROWS - 2), d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
@@ -1067,12 +1073,12 @@ function makePlaces() {
       },
     },
   ];
-  const safari = safariOpen(save);
+  const safari = safariOpen(save) || !!runAt('safari'), safariRun = runAt('safari');
   list.push({
     id: 'safari', name: 'Safari Zone', step: { x: 1, y: 3 }, tiles: rect(0, 0, 2, 2), tag: [1, 3.8, 2], open: safari,
-    line: safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
+    line: safariRun ? waits(safariRun) : safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
-    buttons: safari ? [['Enter', acts.onSafari]] : [],
+    buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : safari ? [['Enter', acts.onSafari]] : [],
     build: (g) => { const s = safariArt(safari), b = board(s, tileX(1), tileZ(2)); glowing(b.material, s, null, '#ffc890', 0.8); g.add(b); },
   });
   list.push({
@@ -1089,11 +1095,11 @@ function makePlaces() {
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
   });
-  const tower = towerOpen(save), best = save.tower?.bestEver || 0;
+  const tower = towerOpen(save) || !!runAt('pillar'), best = save.tower?.bestEver || 0, climb = runAt('pillar');
   list.push({
     id: 'pillar', name: 'Sky Pillar', step: { x: 11, y: 3 }, tiles: rect(10, 0, 12, 2), tag: [11, 4.2, 2], open: tower,
-    line: tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''}` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
-    buttons: tower ? [['Climb', acts.onTower]] : [],
+    line: climb ? waits(climb) : tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''}` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
+    buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : tower ? [['Climb', acts.onTower]] : [],
     build: (g) => {
       const side = new THREE.MeshStandardMaterial({ map: texOf(pillarArt(false)), roughness: 1 });
       const door = pillarArt(true), face = glowing(new THREE.MeshStandardMaterial({ map: texOf(door), roughness: 1 }), door, null, '#a8c4ff', 0.9);
@@ -1401,7 +1407,7 @@ function leftPlace() {
 function showCard(p) {
   here = p;
   // the Pokéstop with a saved run asks which (the user's call, 2026-10-08): its card's two buttons
-  const ask = p.id === 'trail' && p.open && saved;
+  const ask = asks(p);
   // the user's call, 2026-10-08: that question is the Pokédex's shell, its two keys and no words
   card.classList.toggle('ask', ask);
   card.querySelector('.hub-card-name').textContent = p.name;
@@ -1419,6 +1425,9 @@ function showCard(p) {
   if (!p.open) playSound('cancel');
 }
 function hideCard() { card.hidden = true; }
+
+/** A place where the saved run was started asks Continue or New game: the Pokéstop, the Safari gate or the Sky Pillar. */
+const asks = (p) => p.open && p.buttons[0]?.[0] === 'Continue';
 
 /* ---------- the bar beside it ---------- */
 
@@ -1450,9 +1459,9 @@ function placeBar() {
   bar.querySelector('.hbar-run').hidden = !saved;
   if (saved) setHpBar('hub', saved.hp, saved.maxHp);
   // at the Pokéstop How to play's key is New game and the Escape Rope is on the LCD, by your HP
-  const rest = p?.open && p.id !== 'trail' ? p.buttons.slice(1).map(([label], i) => [label, () => goTo(p, true, i + 1)]) : [];
+  const rest = p?.open && p.id !== 'trail' && !asks(p) ? p.buttons.slice(1).map(([label], i) => [label, () => goTo(p, true, i + 1)]) : [];
   bar.querySelector('.hbar-sign b').textContent = p?.name ?? 'The Clearing';
-  helpKey(p?.id === 'trail' && p.open ? () => goTo(p, true, p.buttons.findIndex(([label]) => label === 'New game')) : null);
+  helpKey(p && (p.id === 'trail' || asks(p)) && p.open ?() => goTo(p, true, p.buttons.findIndex(([label]) => label === 'New game')) : null);
   bar.querySelector('.hbar-keys').replaceChildren(...rest.map(([label, go]) => {
     const b = document.createElement('button');
     b.type = 'button';
