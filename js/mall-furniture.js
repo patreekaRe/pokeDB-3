@@ -6,6 +6,7 @@
 
 import { PIECES, pieceArt, furnitureStock, UPSTAIRS_PRICE } from './secret-base.js';
 import { tex, trim } from './hd2d.js';
+import { pieceModel } from './base-model.js';
 import { fine, texOf, words, star } from './hub-3d.js';
 import { RES } from './base-paint.js';
 
@@ -404,6 +405,15 @@ export function buildFloor(THREE, floor, size, upstairs) {
       box.position.y = H + h / 2;
       box.castShadow = h > 0.1; box.receiveShadow = true;
       bay.add(box);
+    } else if (!p.wall) {
+      // an upright piece is its 3D model, turned a little so its depth shows
+      const model = pieceModel(THREE, id, PX, (art) => std({ map: tex(art), roughness: 1 }));
+      const w = Math.hypot(p.w, p.h), k = Math.min(1, 1.7 / w, b.tall / model.userData.top);
+      model.scale.setScalar(k);
+      model.position.y = H;
+      model.rotation.y = b.side ? Math.PI / 2 - 0.45 : -0.45;
+      model.castShadow = model.receiveShadow = true;
+      bay.add(model);
     } else {
       const cut = trim(pieceArt(id, 0)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 1.7 / w, b.tall / h);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));

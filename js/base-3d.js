@@ -1,7 +1,7 @@
 /* base-3d.js  -  the Secret Base as a little HD-2D diorama in Three.js (?base): the room you walk your partner round and
    decorate in place. The same layout, rules and pixel paintings as js/secret-base.js (the 2D room is only the fallback
    where WebGL fails): the floor and walls are pixel-textured blocks, flat pieces low blocks with their painting on top,
-   the bookshelf a block, the rest standing billboards; your partner's GIF is split into frames (ImageDecoder, or
+   the bookshelf a block, the rest 3D models carved from their paintings (js/base-model.js); your partner's GIF is split into frames (ImageDecoder, or
    js/gif-frames.js) and walks where you tap. Decorating: a piece from the tray under the view shows as a ghost on the
    tiles under your finger (green fits, red doesn't) and lands where the finger lifts; a tap on a placed piece gives
    Rotate / Move / Store. A fixed tilted camera follows the partner; the scene renders small and is scaled up with crisp
@@ -16,6 +16,7 @@ import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES } from './base-paint.js';
+import { pieceModel } from './base-model.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt } from './secret-base.js';
@@ -217,13 +218,17 @@ function makePiece(it, ghostly = false) {
     block.rotation.y = -it.dir * Math.PI / 2;
     return group;
   }
-  // upright pieces stand as billboards: their painting at their facing, feet on the floor at the footprint's middle
-  const cut = trim(pieceArt(it.id, it.dir));
-  const m = new THREE.MeshStandardMaterial({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
-  if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(cut.c, p.glow)); m.userData.lamp = true; winMats.push(m); }
-  const board = add(new THREE.PlaneGeometry(cut.w * PX, cut.h * PX), m);
-  board.position.set(it.x - COLS / 2 + (cut.x + cut.w / 2) * PX, cut.h * PX / 2, cz);
-  if (p.glow) group.userData.lamp = new THREE.Vector3(board.position.x, cut.h * PX - 0.35, cz + 0.3);
+  // upright pieces are 3D models carved from their paintings (js/base-model.js), turned to their facing
+  const model = pieceModel(THREE, it.id, PX, (art) => {
+    const m = new THREE.MeshStandardMaterial({ map: tex(art), roughness: 1 });
+    if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; winMats.push(m); }
+    return see(m);
+  });
+  model.castShadow = !ghostly; model.receiveShadow = !ghostly;
+  model.position.set(cx, 0, cz);
+  model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
+  group.add(model);
+  if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.userData.top - 0.35, cz + 0.3);
   return group;
 }
 
