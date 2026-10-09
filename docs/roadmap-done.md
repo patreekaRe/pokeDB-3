@@ -1880,3 +1880,18 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   School (5 school desks, chalkboard, teacher's desk, abacus, type chart, alphabet banner and rug, microscope, fossil stand, science
   bench, xylophone...) and Winter (5 ice sculptures from the `MOTIFS` stamps, snowy fir, igloo, sled, ski rack, wood stove, icicles,
   frosted window, knitted rug, frozen pond, sleigh, snow fort...). Batch 1's `ball`, `cabinet`, `flower`, `BERRY`, `STONE` are exported for it.
+**Themed shelves, batch 3** (2026-10-08): `js/base-furniture-rooms3.js` adds 150 kinds (708 in all, 13,514 pieces), 25 a shelf, each
+  shelf opening with a list on one shared body: Festival (6 stalls by what they sell: popcorn, candy floss, lemonade, balloons, prizes,
+  toffee apples; carousel horse, Ferris wheel, bunting, lanterns, high striker, ring toss, ticket booth, maypole, piñata, stage, prize
+  wheel, hook-a-duck, FAIR sign, teacup ride...), Lab (6 specimen tanks: egg, Helix, Dome, sprout, crystal, orb; control panel, monitor
+  wall, robot, robot arm, teleporter pad, hologram, Tesla coil, cryo pod, DNA model, rocket, airlock, element chart, a starter table
+  of three Poké Balls...), Castle (6 tapestries by charge: crown, sword, tower, key, fleur, shield; suit of armour, portcullis, arrow
+  slit, wall torch, treasure hoard, banquet table, cannon, catapult, royal carpet, stained glass, dragon egg nest, battlement...),
+  Japanese (6 hanging scrolls: crane, mountain, bamboo, koi, moon, wave; tatami, shoji, paper lantern, torii, koi pond, zen garden,
+  cherry tree, lucky cat, daruma, taiko, kimono stand, low table, noren, wind chime, kadomatsu...), Toys (6 toy shelves: blocks,
+  cars, robots, balls, boats, tops; rocking horse, train set, jack-in-the-box, dollhouse, play tent, ball pit, race car bed, puzzle
+  mat, marble run, toy train, toy soldier...) and Types (9 type shrines, a type glyph floating over a plinth: Fire, Water, Grass,
+  Electric, Psychic, Ice, Rock, Ghost, Dragon; brazier, magma floor, generator, plasma globe, vine wall, ice crystals, boulder, geode,
+  gear wall, anvil, poison vat, weathervane, cloud cushion, honeycomb, ant farm, fairy ring). New shared bits there: `line()`,
+  `ring()`, `wheel()` (a disc in coloured wedges), a 3x5 `FONT` and `HORSE`. Checked in the browser: all 12,000 new pictures (every
+  colour, every facing) paint without an error.
