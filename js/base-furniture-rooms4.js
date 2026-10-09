@@ -714,7 +714,12 @@ const CROPS = {
   apple: ['Apple', (x, t) => { for (let r = 0; r < 2; r++) for (let i = 0; i < 4 - r; i++) { const cx = x + 8 + i * 6 + r * 3; sphere(cx, t - 3 - r * 5, 3.5, '#d83030'); R(cx, t - 7 - r * 5, 1, 2, '#6a4a2a'); } disc(x + 16, t + 12, 2, '#d83030'); }],
   carrot: ['Carrot', (x, t) => { for (let n = 0; n < 6; n++) { const cx = x + 6 + n * 4; R(cx, t - 4 - (n % 2) * 3, 3, 6, '#f08030'); for (let l = -1; l <= 1; l++) line(cx + 1, t - 5 - (n % 2) * 3, cx + 1 + l * 2, t - 13 - (n % 2) * 3, '#58b848'); } R(x + 14, t + 10, 5, 2, '#f08030'); }],
   corn: ['Corn', (x, t) => { for (let n = 0; n < 4; n++) { const cx = x + 7 + n * 6; for (let j = 0; j < 14; j++) R(cx + Math.round(j * 0.15), t - 3 - j, 4, 1, j % 2 ? '#f8d850' : '#f0c030'); leaf(cx, t - 6, 2, 6, '#78b848', -0.4); } R(x + 14, t + 10, 4, 3, '#f8d850'); }],
-  tomato: ['Tomato', (x, t) => { for (let r = 0; r < 2; r++) for (let i = 0; i < 4 - r; i++) { const cx = x + 8 + i * 6 + r * 3, cy = t - 3 - r * 5; sphere(cx, cy, 3.5, '#e83828'); for (const [dx, dy] of [[-1, -3], [1, -3], [0, -4]]) P(cx + dx, cy + dy, '#3a8a2a'); } disc(x + 16, t + 12, 2, '#e83828'); }],
+  tomato: ['Tomato', (x, t) => {   // on the vine up two canes, so it isn't the apple crate in another red
+    for (const i of [9, 22]) { R(x + i, t - 42, 2, 42, '#a8824a'); R(x + i, t - 42, 1, 42, '#c8a468'); }
+    R(x + 8, t - 30, 17, 1, '#8a6a3a');
+    for (let j = 4; j < 40; j += 6) for (const i of [9, 22]) leaf(x + i + ((j / 6) % 2 ? 4 : -2), t - j, 3, 2, (j / 6) % 2 ? '#4a9a3a' : '#3a8a2a', (j / 6) % 2 ? 0.5 : -0.5);
+    for (const [i, j] of [[6, -14], [14, -22], [26, -12], [19, -34], [12, -38], [27, -26], [16, -6]]) { sphere(x + i, t + j, 2.5, '#e83828'); P(x + i, t + j - 3, '#3a8a2a'); }
+    disc(x + 16, t + 12, 2, '#e83828'); }],
   potato: ['Potato', (x, t) => { for (let r = 0; r < 2; r++) for (let i = 0; i < 4 - r; i++) { const cx = x + 8 + i * 6 + r * 3; ovalShade(cx, t - 3 - r * 4, 4, 3, '#c8a068'); P(cx - 1, t - 4 - r * 4, '#8a6a3a'); } oval(x + 16, t + 12, 3, 2, '#c8a068'); }],
   cabbage: ['Cabbage', (x, t) => { for (let i = 0; i < 3; i++) { const cx = x + 9 + i * 7; foliage(cx, t - 5, 5, '#78c058', i); disc(cx, t - 5, 2, '#b8e098'); } disc(x + 16, t + 12, 2, '#78c058'); }],
 };

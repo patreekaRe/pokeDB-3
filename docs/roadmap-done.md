@@ -1951,3 +1951,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   and the Furniture tray deal in 907 `DESIGNS`, the Colour key lists the set's styles before its colours (`styles()`), and
   `loadBase()` folds old per-kind counts into the set. Left separate: dolls, chairs, graves, coral, ice sculptures,
   trains, café tables, music stands (real shape changes).
+- **Secret Base: no near-twins inside a set** (2026-10-09, branch `secret-base` only, the user's suggestion: each set worth
+  opening). A render of every set's styles side by side found the pairs a set doesn't fix: the Flame and Water motifs
+  (one blob in two colours, on banners, cushions, mats, posters and the Fire / Water shrines), the Apple and Tomato crates,
+  all five flower beds (one flower in five colours) and Berry bushes that differed only by colour. Now the flame has
+  tongues and the drop a splash under it (`MOTIFS`), the tomatoes grow up two canes, each bed its own flower (rose bushes,
+  a daisy carpet, violets under leaves, marigold pompoms, bluebells on arched stems: `BLOOMS`), and each Berry its own
+  shape on a round, tall or wide bush (`BERRY` / `BUSHES`). Ids and sets unchanged, so saved rooms load as they were.

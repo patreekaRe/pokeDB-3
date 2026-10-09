@@ -213,20 +213,61 @@ add('Kitchen', [
 ]);
 
 /* ---------- garden ---------- */
-const BEDS = [['rose', 'Rose', '#e04858'], ['daisy', 'Daisy', '#ffffff'], ['violet', 'Violet', '#8a5ad8'], ['marigold', 'Marigold', '#f8a030'], ['bluebell', 'Bluebell', '#5a8af0']];
 const edged = (w, h, soil) => {
   R(0, 0, w, h, sh(k.w, -1));
   for (let i = 0; i < w; i += 8) { panel(i, 0, 8, 4, k.w); panel(i, h - 4, 8, 4, k.w); }
   for (let j = 4; j < h - 4; j += 8) { panel(0, j, 4, 8, k.w); panel(w - 4, j, 4, 8, k.w); }
   R(4, 4, w - 8, h - 8, soil); speckle(4, 4, w - 8, h - 8, sh(soil, -1), 7, 0.15); speckle(4, 4, w - 8, h - 8, sh(soil, 1), 8, 0.05);
 };
-add('Garden', BEDS.map(([id, name, c]) => ({ set: 'bed', id: `${id}bed`, name: `${name} bed`, w: 2, h: 1, price: 240, high: 0.12, side: 'w', flat(w, h) {
+/* Each bed grows its own kind of flower, not one flower in five colours: rose bushes, a carpet of daisies, violets under
+   their leaves, marigold pompoms, bluebells hanging off arched stems. */
+const BLOOMS = {
+  rose(w, h) {
+    for (const [cx, cy, n] of [[14, 16, 0], [32, 15, 1], [50, 16, 2]]) {
+      foliage(cx, cy + 1, 9, sh(k.leaf, -1), n);
+      for (const [dx, dy] of [[-4, -3], [3, -2], [0, 4]]) {
+        disc(cx + dx, cy + dy, 3, '#a02038'); disc(cx + dx, cy + dy, 2.2, '#e04858');
+        P(cx + dx, cy + dy, '#a02038'); P(cx + dx + 1, cy + dy, '#c83048'); P(cx + dx - 1, cy + dy - 2, '#f898a8');
+      }
+    }
+  },
+  daisy(w, h) {
+    speckle(4, 4, w - 8, h - 8, sh(k.leaf, 1), 21, 0.18); speckle(4, 4, w - 8, h - 8, k.leaf, 22, 0.12);
+    for (let n = 0; n < 26; n++) {
+      const cx = 7 + Math.floor(hash(n, 1) * (w - 14)), cy = 7 + Math.floor(hash(n, 2) * (h - 14));
+      for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, -1], [-1, 1], [1, 1]]) P(cx + dx, cy + dy, dy > 0 ? '#e0e0d8' : '#ffffff');
+      P(cx, cy, '#f8c838');
+    }
+  },
+  violet(w, h) {
+    for (let n = 0; n < 34; n++) leaf(6 + (n % 9) * 6.5 + (Math.floor(n / 9) % 2) * 3, 7 + Math.floor(n / 9) * 6, 3, 2, n % 3 ? sh(k.leaf, -1) : sh(k.leaf, -2), (n % 2 ? 0.6 : -0.6));
+    for (const [cx, cy] of [[10, 9], [22, 20], [33, 10], [44, 21], [55, 10], [16, 23], [48, 13]]) for (const [dx, dy] of [[0, 0], [4, 1], [2, -3]]) {
+      const fx = cx + dx, fy = cy + dy;
+      P(fx - 1, fy - 1, '#a07ae8'); P(fx + 1, fy - 1, '#a07ae8'); P(fx - 1, fy, '#8a5ad8'); P(fx + 1, fy, '#8a5ad8'); P(fx, fy + 1, '#6a3ab8'); P(fx, fy, '#f8d850');
+    }
+  },
+  marigold(w, h) {
+    for (let i = 6; i < w - 6; i += 3) for (const y of [9, 20]) { P(i, y + 4, sh(k.leaf, -1)); P(i + 1, y + 5, k.leaf); }
+    for (let n = 0; n < 10; n++) {
+      const cx = 10 + (n % 5) * 11 + (Math.floor(n / 5) % 2) * 5, cy = 10 + Math.floor(n / 5) * 11;
+      disc(cx, cy, 4.5, '#c85a10'); disc(cx, cy, 3.6, '#f08a20'); for (let a = 0; a < 8; a++) P(cx + Math.round(Math.cos(a * 0.785) * 2.4), cy + Math.round(Math.sin(a * 0.785) * 2.4), '#d86a18'); disc(cx, cy, 1.5, '#f8c040'); P(cx - 1, cy - 3, '#ffd080');
+    }
+  },
+  bluebell(w, h) {
+    for (let n = 0; n < 7; n++) { const lx = 7 + n * 8; for (let j = 0; j < 18; j++) P(lx + Math.round(j * 0.35), h - 6 - j, j % 5 ? k.leaf : sh(k.leaf, 1)); }
+    for (let n = 0; n < 6; n++) {
+      const sx = 7 + n * 9, sy = h - 7;
+      for (let s = 0; s <= 14; s++) {
+        const a = s / 14 * Math.PI * 0.85, nx = sx + Math.round(Math.sin(a) * 7), ny = sy - Math.round(Math.sin(a * 1.2) * 15);
+        P(nx, ny, sh(k.leaf, -1));
+        if (s > 5 && s % 3 === 0) { R(nx, ny + 1, 2, 2, '#4a78e0'); P(nx, ny + 3, '#2a4ab0'); P(nx + 1, ny + 3, '#7aa8ff'); }
+      }
+    }
+  },
+};
+add('Garden', ['Rose', 'Daisy', 'Violet', 'Marigold', 'Bluebell'].map(name => ({ set: 'bed', id: `${name.toLowerCase()}bed`, name: `${name} bed`, w: 2, h: 1, price: 240, high: 0.12, side: 'w', flat(w, h) {
   edged(w, h, '#5a3a22');
-  for (let n = 0; n < 12; n++) {
-    const cx = 9 + (n % 6) * 9 + (Math.floor(n / 6) % 2) * 4, cy = 11 + Math.floor(n / 6) * 10;
-    leaf(cx - 2, cy + 3, 2, 2, k.leaf); leaf(cx + 2, cy + 2, 2, 2, sh(k.leaf, -1));
-    flower(cx, cy, n % 4 === 3 ? sh(c, -1) : c);
-  }
+  BLOOMS[name.toLowerCase()](w, h);
 } })));
 const CROPS = [
   ['carrot', 'Carrot', (cx, cy) => { R(cx - 1, cy - 3, 1, 4, k.leaf); R(cx + 1, cy - 3, 1, 4, k.leaf); R(cx, cy - 4, 1, 4, sh(k.leaf, 1)); R(cx - 1, cy + 1, 3, 2, '#f08030'); }],

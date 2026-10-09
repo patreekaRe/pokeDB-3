@@ -38,8 +38,8 @@ export const MOTIFS = {
   star: ['....#....', '...###...', '...#+#...', '#########', '.##+++##.', '..#####..', '..##.##..', '.##...##.', '##.....##'],
   heart: ['.##...##.', '#+##.####', '#+#######', '#########', '.#######.', '..#####..', '...###...', '....#....'],
   bolt: ['....####.', '...####..', '..####...', '.#######.', '....###..', '...###...', '..##.....', '.#.......'],
-  flame: ['....#....', '...##....', '...###.#.', '..#####..', '.###+###.', '.##+++##.', '.##+o+##.', '..#+++#..', '...###...'],
-  drop: ['....#....', '...###...', '...###...', '..#####..', '.#o#####.', '.#o#####.', '.##+####.', '..#####..', '...###...'],
+  flame: ['...#.....', '..##...#.', '..###.##.', '.####+##.', '.##++++#.', '##++o++##', '#++ooo++#', '.#++o++#.', '..#####..'],
+  drop: ['....#....', '...###...', '...#o#...', '..##o##..', '..#o###..', '..#####..', '...###...', '.#.....#.', '..#####..'],
   sprout: ['......##.', '....####.', '..#####+.', '.####+##.', '.##+####.', '.#+####..', '.+####...', '+.##.....'],
   moon: ['...###...', '.###.....', '.##......', '##.......', '##.......', '##.......', '.##......', '.###.....', '...###...'],
   sun: ['#...#...#', '.#..#..#.', '...###...', '..#+++#..', '###+o+###', '..#+++#..', '...###...', '.#..#..#.', '#...#...#'],
@@ -492,12 +492,31 @@ add('Plants', [
     for (const [i, j, c] of [[10, -20, k.c], [21, -28, '#4a7ac8'], [13, -40, k.a], [20, -16, k.p]]) sphere(x + i, t + j, 1.5, c);
   } },
 ]);
-const BERRIES = [['oran', 'Oran', '#4a78d8'], ['pecha', 'Pecha', '#f890b8'], ['cheri', 'Cheri', '#e03838'], ['chesto', 'Chesto', '#7a4ab8'],
-  ['rawst', 'Rawst', '#58b8a8'], ['aspear', 'Aspear', '#f0d848'], ['leppa', 'Leppa', '#e86a38'], ['sitrus', 'Sitrus', '#f0e070']];
-add('Plants', BERRIES.map(([id, name, c], n) => ({ set: 'bush', id: `${id}bush`, name: `${name} Berry bush`, proper: true, w: 1, h: 1, price: 280, draw(x, b) {
-  floorShadow(x + 2, b, 28); const t = potAt(x, b, 'basket');
-  foliage(x + 10, t - 10, 9, k.leaf, n); foliage(x + 22, t - 12, 9, k.leaf, n + 9); foliage(x + 16, t - 22, 10, k.leaf, n + 17);
-  for (const [i, j] of [[6, -12], [13, -26], [22, -18], [18, -8], [10, -30], [26, -10], [20, -30]]) sphere(x + i, t + j, id === 'sitrus' ? 3 : 2.3, c);
+/* Each Berry has its own shape and its bush its own outline, so two of a colour (Oran and Chesto, Cheri and Leppa,
+   Aspear and Sitrus) are still two designs in the set. */
+const BERRIES = [['oran', 'Oran', '#4a78d8', 'round'], ['pecha', 'Pecha', '#f890b8', 'wide'], ['cheri', 'Cheri', '#e03838', 'wide'],
+  ['chesto', 'Chesto', '#7a4ab8', 'tall'], ['rawst', 'Rawst', '#58b8a8', 'round'], ['aspear', 'Aspear', '#f0d848', 'tall'],
+  ['leppa', 'Leppa', '#e86a38', 'round'], ['sitrus', 'Sitrus', '#f0e070', 'wide']];
+const BUSHES = {
+  round: { leaves: [[10, -10, 9], [22, -12, 9], [16, -22, 10]], spots: [[6, -12], [13, -26], [22, -18], [18, -8], [10, -30], [26, -10], [20, -30]] },
+  tall: { leaves: [[12, -9, 8], [20, -11, 8], [16, -23, 8], [16, -36, 7]], spots: [[9, -11], [22, -13], [13, -23], [20, -28], [15, -40], [18, -18]] },
+  wide: { leaves: [[6, -8, 8], [26, -8, 8], [16, -15, 10]], spots: [[3, -9], [29, -9], [10, -17], [22, -18], [16, -24], [15, -8]] },
+};
+const STALK = '#4a7a2a';
+const BERRY = {
+  oran: (x, y, c) => { sphere(x, y, 2.5, c); P(x, y - 2, sh(c, -2)); },
+  pecha: (x, y, c) => { sphere(x - 1, y, 2, c); sphere(x + 2, y, 2, c); P(x, y - 2, sh(c, -2)); },
+  cheri: (x, y, c) => { P(x - 1, y - 2, STALK); P(x + 1, y - 2, STALK); P(x, y - 3, STALK); sphere(x - 2, y, 1.8, c); sphere(x + 2, y, 1.8, c); },
+  chesto: (x, y, c) => { ovalShade(x, y, 2, 3, c); for (const [i, j] of [[0, -4], [-3, -1], [3, -1], [-2, 3], [2, 3]]) P(x + i, y + j, sh(c, -2)); },
+  rawst: (x, y, c) => { ovalShade(x, y + 1, 2, 3, c); R(x - 2, y - 2, 5, 1, STALK); P(x, y - 3, STALK); P(x - 1, y + 1, sh(c, 2)); P(x + 1, y + 2, sh(c, 2)); },
+  aspear: (x, y, c) => { sphere(x, y + 1, 2.5, c); sphere(x, y - 2, 1.5, c); P(x, y - 4, STALK); },
+  leppa: (x, y, c) => { sphere(x, y, 3, c); leaf(x + 2, y - 3, 2, 1, STALK, -0.5); },
+  sitrus: (x, y, c) => { sphere(x, y, 3.5, c); R(x - 2, y, 5, 1, sh(c, 1)); R(x, y - 2, 1, 5, sh(c, 1)); P(x, y, '#ffffff'); },
+};
+add('Plants', BERRIES.map(([id, name, c, form], n) => ({ set: 'bush', id: `${id}bush`, name: `${name} Berry bush`, proper: true, w: 1, h: 1, price: 280, draw(x, b) {
+  floorShadow(x + 2, b, 28); const t = potAt(x, b, 'basket'), bush = BUSHES[form];
+  bush.leaves.forEach(([i, j, r], m) => foliage(x + i, t + j, r, k.leaf, n + m * 9));
+  for (const [i, j] of bush.spots) BERRY[id](x + i, t + j, c);
 } })));
 
 /* ---------- things: one painter each ---------- */
