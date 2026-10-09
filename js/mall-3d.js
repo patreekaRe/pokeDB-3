@@ -14,7 +14,7 @@ import { buddy } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
-import { PIECES, styles, loadBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE } from './secret-base.js';
+import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, stairLift, upstairsLine, STAIR } from './mall-furniture.js';
 import { buildCorner } from './mall-corner.js';
 
@@ -30,8 +30,9 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
-  // closed till the user has finished their insides (2026-10-08); `open: true` lets you in again, ?mall= still does
-  { id: 'furniture', name: 'Furniture', line: 'Closed for now: the shelves are still being stocked.', x: 2, step: { x: 2, y: 1 } },
+  // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base (syncShop()); the Game Corner
+  // is closed till the user has finished its insides (2026-10-08), `open: true` lets you in; ?mall= goes in either way
+  { id: 'furniture', name: 'Furniture', line: '', x: 2, step: { x: 2, y: 1 } },
   { id: 'corner', name: 'Game Corner', line: 'Closed for now: the machines are still being set up.', x: 6, step: { x: 6, y: 1 } },
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
 ];
@@ -43,6 +44,7 @@ let hall, glows = [], blocked = new Set(), aim = null, here = null, shown = '';
 // each its own group, tiles and spots
 let places = {}, P = null, picked = null, climbing = false;
 let mats = [];   // every place's doormat, breathing
+let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
 let calm = false, last = 0, camX = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -273,7 +275,27 @@ function tapeOver(fr, tape) {
     m.castShadow = true;
     m.userData.front = fr;
     hall.add(m);
+    (tapes[fr.id] ||= []).push(m);
   }
+}
+
+/** The Furniture store's doors by the save: taped up until Smeargle has said it opens, then until that UTC day. */
+function syncShop() {
+  const fr = FRONTS[0];
+  fr.open = shopOpen(loadBase());
+  for (const m of tapes[fr.id] || []) m.visible = !fr.open;
+  if (!wallMat || painted === fr.open) return;
+  const wall = wallArt();
+  wallMat.map = texOf(wall); wallMat.emissiveMap = texOf(wall.glow);
+  wallMat.needsUpdate = true;
+  painted = fr.open;
+}
+
+/** What the store's taped door says: a note from Smeargle, and once it has visited, how long until it opens. */
+function shopLine() {
+  if (!metSmeargle(loadBase())) return 'Closed. A note on the door says: "Opening soon! Painting like mad. Smeargle"';
+  const m = tillMidnight(), h = Math.floor(m / 60);
+  return `"Opening tomorrow! The paint's still drying. Smeargle" Opens in ${h ? `${h}h ` : ''}${m % 60}m.`;
 }
 
 /* ---------- building the hall ---------- */
@@ -309,6 +331,7 @@ function buildHall() {
   hall.add(plinth);
 
   const wall = wallArt(), wm = lit(std({ map: texOf(wall), roughness: 0.9 }), wall, '#fff4dc', 1);
+  wallMat = wm; painted = FRONTS[0].open;
   const cap = std({ color: C.shade }), back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [cap, cap, cap, cap, wm, cap]);
   back.position.set(0, TOP / 2, -ROWS / 2 - 0.2);
   back.receiveShadow = true;
@@ -359,7 +382,7 @@ function buildHall() {
   show.traverse(o => { o.userData.front = shop; });
   hall.add(show);
   const tape = tapeArt();
-  for (const fr of FRONTS) if (!fr.open && fr.id !== 'east') tapeOver(fr, tape);
+  for (const fr of FRONTS) if (fr.id !== 'east') tapeOver(fr, tape);
 
   // planters and benches down the sides, light falling from the windows
   const planter = planterArt(), bench = benchArt();
@@ -480,6 +503,12 @@ async function goPlace(id, at, facing = 'back') {
   setPlace(places[id], at, facing);
   playSound('door');
   await curtain(false);
+  const b = loadBase();
+  if (id === 'f1' && metSmeargle(b) && !b.shopGreeted) {
+    b.shopGreeted = true;
+    saveBase(b);
+    return talk('You came! Welcome to my shop! Every piece on the stands is fresh today. Tap one and I\'ll tell you about it.', 5600);
+  }
   if (P.keeper) talk(pickLine(P.keeper.hello), 4200);
 }
 
@@ -605,6 +634,7 @@ function say(fr, ms = 2600) {
     : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
     : fr.kind === 'stairs' ? (floorOf() === 2 ? 'Down to the ground floor.' : loadBase().upstairs ? 'Up to the second floor.' : 'The second floor is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
+    : fr.id === 'furniture' && !fr.open ? shopLine()
     : fr.line;
   lineEl.firstChild.textContent = P.keeper?.name ?? '';
   lineEl.classList.toggle('talk', !!P.keeper);
@@ -789,6 +819,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     document.body.append(root);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await monBoard(mate); mon.board.rotation.x = -PITCH; scene.add(mon.group); }
+    syncShop();
     atDoors();
     resize();
     last = 0;
@@ -827,7 +858,9 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   sun.shadow.normalBias = 0.02;
   scene.add(hemi, sun);
   post = createPost(renderer);
+  syncShop();
   buildHall();
+  syncShop();
   mon = await monBoard(buddy(getSave()));
   mon.board.rotation.x = -PITCH;
   scene.add(mon.group);

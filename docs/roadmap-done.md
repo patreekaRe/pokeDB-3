@@ -2027,3 +2027,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the Poké Mall, so the camera now stops above the bar and the ground runs four rows further down to a gate across the front
   (log arch, WHISPERING CLEARING board, wind chimes, fence and hedge); the New game Pokéstop moved to its right, and setting
   out walks your partner under the arch and away, the user's ask.
+- **Secret Base: Smeargle's housewarming opens the Furniture store** (2026-10-09): the first time in the base Smeargle is
+  painting at an easel, tells you it is opening a furniture shop at the Poké Mall, and the store opens the next UTC day,
+  like Animal Crossing's Nook's Cranny; the user's ask. Until then its taped door has Smeargle's note and a countdown.

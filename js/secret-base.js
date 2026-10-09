@@ -157,6 +157,18 @@ export function buyUpstairs(b) {
   return true;
 }
 
+/* Smeargle's housewarming (2026-10-09, the user's ask, Animal Crossing's way): the first time in the base it is there
+   painting, says it is opening a furniture shop, and the shop's doors open the next UTC day (`b.shopOpens`, that day).
+   `?shopopen` opens it for the page load. */
+export const metSmeargle = (b) => !!b.shopOpens;
+export function meetSmeargle(b) {
+  b.shopOpens ||= safariDay(new Date(Date.now() + 864e5));
+  saveBase(b);
+}
+export const shopOpen = (b) => new URLSearchParams(location.search).has('shopopen') || (!!b.shopOpens && safariDay() >= b.shopOpens);
+/** Minutes until the next UTC midnight, when a new day's stock (and a waiting shop) opens. */
+export const tillMidnight = () => Math.ceil((864e5 - Date.now() % 864e5) / 6e4);
+
 /** Whether today's Shop stock is still unseen (the "!" on the Decorate key and the Shop tab), and marking it seen. */
 export const shopNews = (b) => b.shopSeen !== safariDay();
 export function seeShop(b) { b.shopSeen = safariDay(); }

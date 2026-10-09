@@ -21,7 +21,7 @@ import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing } from './secret-base.js';
+  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -153,6 +153,7 @@ function buildPieces() {
   dispose(pieceGroup);
   blocked = new Set(); winMats = []; shafts = []; motes = [];
   giftBoard = null;
+  if (visit) for (const t of visit.tiles) if (visit.phase !== 'leave') blocked.add(t);
   const lamps = [];
   base.items.forEach((it, i) => {
     const g = makePiece(it);
@@ -744,6 +745,137 @@ function showGiftCard(got) {
   refresh();
 }
 
+/* ---------- Smeargle's housewarming ---------- */
+
+/* The first time in, Smeargle is at an easel painting; it turns, says it is opening a shop at the Poké Mall that opens
+   tomorrow (meetSmeargle() in js/secret-base.js, saved at SAVED_AT), then packs up and walks out over the doormat. */
+const SMEARGLE = { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif', cry: 'smeargle' };
+const DABS = ['#e84838', '#f8c830', '#3a8ad8', '#58b858', '#c868d8', '#f88838'];
+const SAVED_AT = 4;
+let visit = null;   // { mon, w, easel, tiles, lines, i, phase: paint / talk / leave, t, dab }
+
+const visitLines = () => [
+  'Oh! Hello there! You must be the one who lives here. Welcome home!',
+  'I\'m Smeargle. I was passing by and couldn\'t help giving the walls a fresh coat. Hope you don\'t mind!',
+  'Painting furniture is my thing, you see. Beds, sofas, lamps... every piece, in every colour, all with my tail.',
+  'So I\'m opening a furniture shop at the Poké Mall! New pieces on the stands every day.',
+  'The paint on the sign is still wet, though. Come by tomorrow and the doors will be open!',
+  ...(giftBoard ? ['Oh, and that present? It\'s from me. A little housewarming gift!'] : []),
+  'See you at the shop!',
+];
+
+/** Two free tiles side by side near the middle of the back: Smeargle, then its easel to its right. */
+function visitSpot() {
+  const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y));
+  for (const y of [1, 2, 0, 3]) for (const x of [6, 7, 4, 3, 5, 8, 2, 1]) if (ok({ x, y }) && ok({ x: x + 1, y })) return { x, y };
+  return null;
+}
+
+async function startVisit() {
+  if (visit || metSmeargle(base)) return;
+  const spot = visitSpot();
+  if (!spot) return;
+  visit = { phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
+  const v = visit;
+  for (const t of v.tiles) blocked.add(t);
+  root.classList.add('visiting');
+  refresh();
+  const m = await makeMon(SMEARGLE, false);
+  if (visit !== v) { dispose(m.group); scene.remove(m.group); return; }
+  if (PIECES.easel) { v.easel = makePiece({ id: 'easel', x: spot.x + 1, y: spot.y, dir: 0 }); scene.add(v.easel); }
+  const top = v.easel ? new THREE.Box3().setFromObject(v.easel).max.y : 1.6;
+  Object.assign(v, { mon: m, canvasAt: [tileX(spot.x + 1), top * 0.72, tileZ(spot.y) + 0.12], phase: 'paint', t: performance.now() + 2200, dab: 0,
+    w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: true, hop: 0 } });
+}
+
+function liveVisit(dt, now) {
+  if (!visit?.mon) return;
+  const { w, mon: m } = visit;
+  let bob = 0;
+  if (visit.phase === 'paint') {
+    if (now > visit.dab) { visit.dab = now + rand(320, 600); dab(); }
+    bob = calm ? 0 : Math.abs(Math.sin(now / 160)) * 0.06;
+    if (now > visit.t) startTalk(now);
+  } else if (visit.phase === 'leave') {
+    if (walk(w, m, dt, 2.6)) { playSound('door'); return endVisit(); }
+    bob = calm ? 0 : Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06;
+  } else if (w.hopUntil > now && !calm) bob = Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.3;
+  m.group.position.set(w.x, w.y, w.z);
+  m.board.position.y = bob;
+  m.board.scale.x = w.flip ? -1 : 1;
+  drawMon(m, w, dt);
+}
+
+/** A dab of paint flicked off Smeargle's tail onto the easel's canvas. */
+function dab() {
+  const colour = DABS[Math.floor(Math.random() * DABS.length)], k = `dab${colour}`;
+  if (!puffTex[k]) {
+    const c = document.createElement('canvas'); c.width = c.height = 16;
+    const g = c.getContext('2d');
+    g.fillStyle = colour; g.beginPath(); g.arc(8, 8, 6.5, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.arc(6, 5.5, 2, 0, Math.PI * 2); g.fill();
+    puffTex[k] = tex(c);
+  }
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex[k], transparent: true, depthWrite: false }));
+  s.scale.set(0.11, 0.11, 1);
+  s.raycast = () => {};
+  scene.add(s);
+  const { w, mon: m, canvasAt: [cx, cy, cz] } = visit;
+  puffs.push({ s, t0: performance.now(), life: 560, arc: [[w.x - 0.2, m.top * 0.45, w.z + 0.05], [cx + rand(-0.15, 0.15), cy + rand(-0.15, 0.15), cz]] });
+}
+
+function startTalk(now) {
+  const { w } = visit;
+  Object.assign(visit, { phase: 'talk', lines: visitLines(), i: -1 });
+  w.flip = walker.x > w.x;
+  w.hopUntil = now + 500;
+  walker.hopUntil = now + 500;
+  playCry('smeargle');
+  sayNext();
+}
+
+function sayNext() {
+  visit.i++;
+  if (visit.i === SAVED_AT) meetSmeargle(base);
+  const box = root.querySelector('.b3-talk');
+  if (visit.i >= visit.lines.length) return leaveVisit();
+  box.querySelector('span').textContent = visit.lines[visit.i];
+  box.hidden = false;
+  box.classList.remove('b3-say'); void box.offsetWidth; box.classList.add('b3-say');
+}
+
+/** It tucks the easel away in a puff and walks out over the doormat. */
+function leaveVisit() {
+  const { w } = visit;
+  root.querySelector('.b3-talk').hidden = true;
+  meetSmeargle(base);
+  visit.phase = 'leave';
+  for (const t of visit.tiles) blocked.delete(t);
+  if (visit.easel) {
+    const [fx, , fz] = visit.canvasAt;
+    for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: fx + rand(-0.3, 0.3), y: 0, z: fz }, { top: rand(0.2, 1) }), i * 60);
+    dispose(visit.easel); scene.remove(visit.easel); visit.easel = null;
+  }
+  playSound('item-get');
+  const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+  w.path = route(w.tile, door);
+  w.path.push({ x: door.x, y: ROWS + 0.6 });
+  root.classList.remove('visiting');
+  refresh();
+}
+
+/** Gone: out of the door, or the room left with it still here (it comes again next time, until it has told you). */
+function endVisit() {
+  if (!visit) return;
+  if (visit.mon) { dispose(visit.mon.group); scene.remove(visit.mon.group); }
+  if (visit.easel) { dispose(visit.easel); scene.remove(visit.easel); }
+  if (visit.phase !== 'leave') for (const t of visit.tiles) blocked.delete(t);
+  visit = null;
+  root.querySelector('.b3-talk').hidden = true;
+  root.classList.remove('visiting');
+  refresh();
+}
+
 /* ---------- hearts and Zs ---------- */
 
 function puffTexture(kind) {
@@ -771,6 +903,11 @@ function puff(kind, w, m) {
 function livePuffs(now) {
   puffs = puffs.filter(p => {
     const k = (now - p.t0) / p.life;
+    if (p.arc && k < 1) {
+      const [a, b] = p.arc;
+      p.s.position.set(a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k + Math.sin(k * Math.PI) * 0.3, a[2] + (b[2] - a[2]) * k);
+      return true;
+    }
     if (k >= 1) { scene.remove(p.s); p.s.material.dispose(); return false; }
     p.s.position.set(p.x + p.drift * k + (calm ? 0 : Math.sin(p.sway + k * 7) * 0.08), p.y + k * 0.7, p.z);
     p.s.material.opacity = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
@@ -1078,7 +1215,7 @@ function refresh() {
     if (a === 'paint') b.classList.toggle('on', tab === 'colour');
   });
   const mons = onShow();
-  const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
+  const tip = mode === 'walk' && giftBoard && !visit && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip);
   // with a piece in hand or picked the hinge's LCD says what's going on, and nothing covers the room
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
@@ -1196,7 +1333,7 @@ function placeCamera(dt, now) {
   const pitch = mix('pitch');
   aimCamera(camX, mix('dist') / zoomK, pitch, camZ);
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
-  for (const m of [mon, ...guests.map(g => g.mon)]) if (m) m.board.rotation.x = -pitch;
+  for (const m of [mon, ...guests.map(g => g.mon), visit?.mon]) if (m) m.board.rotation.x = -pitch;
   // and so do the pieces that stand as their painting
   for (const s of standees) { if (!s.parent) standees.delete(s); else s.rotation.x = -pitch; }
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
@@ -1265,6 +1402,7 @@ function frame(now) {
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
   for (const g of guests) if (g.mon) liveGuest(g, dt, now);
+  liveVisit(dt, now);
   livePuffs(now);
   liveGift(now);
   for (const pg of pieceGroup.children) { const pl = pg.userData.model?.userData.play; if (pl) tickPlay(pl, now, dt); }
@@ -1328,6 +1466,7 @@ async function leave() {
   playSound('door');
   await curtain(true);
   if (holding) act('cancel');
+  endVisit();
   untry();
   root.remove();
   await leaveTo();
@@ -1352,6 +1491,7 @@ async function reopen() {
   resize();
   refresh();
   syncGuests();
+  startVisit();
   last = 0;
   requestAnimationFrame(frame);
   curtain(false);
@@ -1369,6 +1509,7 @@ export async function openBase3d({ onLeave = null } = {}) {
       <canvas class="b3-view"></canvas>
       <header class="b3-top"><h2>Secret Base</h2><span class="b3-fps" hidden></span></header>
       <p class="b3-hint" aria-live="polite"></p>
+      <p class="b3-talk" hidden aria-live="polite"><b>Smeargle</b><span></span><i aria-hidden="true"></i></p>
       <div class="b3-gift" hidden><p>Starter furniture!</p><div class="b3-gift-row"></div><button type="button" class="b3-done">Decorate</button></div>
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
     </div>
@@ -1394,6 +1535,8 @@ export async function openBase3d({ onLeave = null } = {}) {
   if (new URLSearchParams(location.search).has('fps')) { hud.fps = root.querySelector('.b3-fps'); hud.fps.hidden = false; }
   // like every window in the game, a tap anywhere else puts the cream ones away: the hint, and the present's card
   root.addEventListener('pointerdown', (e) => {
+    // Smeargle talking: a tap anywhere is the next line, as in Animal Crossing
+    if (visit?.phase === 'talk') { e.stopPropagation(); swallowClick = e.target === view; playSound('select'); return sayNext(); }
     const gift = root.querySelector('.b3-gift');
     if (!gift.hidden && !gift.contains(e.target)) { gift.hidden = true; swallowClick = e.target === view; e.stopPropagation(); return refresh(); }
     if (hud.hint.textContent && !hud.hint.classList.contains('hush')) { hushed = hud.hint.textContent; hud.hint.classList.add('hush'); }
@@ -1467,6 +1610,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   tray('furniture');
   refresh();
   syncGuests();
+  startVisit();
   requestAnimationFrame(frame);
   curtain(false);
 }
