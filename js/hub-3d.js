@@ -62,6 +62,8 @@ const BUGS = 44;
 // the paths, as centre lines between tile centres; the plaza round START
 // (the Safari road runs on up through its gate, SAFARI_AT, and off the ground's back edge into the view, js/hub-vista.js)
 const SAFARI_AT = { tx: 0, ty: -3 };
+// the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
+const PILLAR_AT = { tx: 13, ty: -3 };
 const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 3]], [[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
@@ -624,8 +626,8 @@ export function texOf(canvas) {
 
 /** The Safari's board, Scarlet / Violet's roadside kiosk: a white frame on arched legs under a ribbed, curved roof, a
     poster with a red header and three snapshots of today's catches. */
-function kioskArt() {
-  const { c, g, fill, rr, lin } = fine(22, 32), K = KIT;
+function kioskArt(K = KIT) {
+  const { c, g, fill, rr, lin } = fine(22, 32);
   for (const x0 of [2, 18]) {   // the posts, each standing on a little arch
     rr(x0, 6, 2, 22, 0.6, lin(x0, 0, x0 + 2, 0, [K.white, K.pale, K.grey]));
     fill(lin(0, 27, 0, 32, [K.white, K.grey]), () => {
@@ -645,13 +647,13 @@ function kioskArt() {
   rr(3.9, 8.9, 14.2, 13.2, 0.6, K.white);
   rr(4.8, 9.8, 12.4, 2.4, 0.5, lin(0, 9.8, 0, 12.2, [K.red, K.redDark]));
   fill(K.white, () => g.arc(6.4, 11, 0.85, 0, Math.PI * 2));   // a Poké Ball on the header
-  fill(K.red, () => g.arc(6.4, 11, 0.85, Math.PI, 0));
+  fill(KIT.red, () => g.arc(6.4, 11, 0.85, Math.PI, 0));
   g.strokeStyle = K.ink; g.lineWidth = 0.22;
   g.beginPath(); g.arc(6.4, 11, 0.85, 0, Math.PI * 2); g.moveTo(5.55, 11); g.lineTo(7.25, 11); g.stroke();
   fill(K.white, () => g.arc(6.4, 11, 0.28, 0, Math.PI * 2));
   rr(8, 10.6, 7.5, 0.7, 0.35, 'rgba(255,255,255,0.75)');
   [[5.5, 4], [10, 3], [13.5, 3]].forEach(([x, w]) => rr(x, 13.2, w, 1.1, 0.55, K.ink));   // a headline
-  ['#58b860', '#f8d848', '#6ab0e0'].forEach((col, i) => {   // the snapshots, with captions
+  (K.shots || ['#58b860', '#f8d848', '#6ab0e0']).forEach((col, i) => {   // the snapshots, with captions
     const x = 5.4 + i * 4;
     rr(x, 15.6, 3.2, 3.2, 0.5, lin(x, 15.6, x + 3.2, 18.8, ['#ffffff', col, col]));
     fill('rgba(0,0,0,0.18)', () => g.ellipse(x + 1.6, 17.6, 0.9, 0.7, 0, 0, Math.PI * 2));
@@ -661,35 +663,8 @@ function kioskArt() {
   return c;
 }
 
-/** The Sky Pillar's board, a pin-shaped roadside marker: a red-and-white head round a white face, a red arrow pointing
-    down its tapering body, on a jointed pole and a stone foot. */
-function pinArt() {
-  const { c, g, fill, rr, lin } = fine(16, 40), K = KIT;
-  rr(7, 25, 2, 12, 0.5, lin(7, 0, 9, 0, [K.white, K.pale, K.grey]));   // the pole and its joint
-  rr(5.8, 29.8, 4.4, 2.2, 0.8, lin(0, 29.8, 0, 32, [K.pale, K.grey]));
-  rr(3.6, 35.6, 8.8, 4.2, 1.2, lin(0, 35.6, 0, 39.8, [K.pale, K.grey, K.dark]));   // the stone foot
-  const pin = () => {
-    g.moveTo(0.5, 8); g.arc(8, 8, 7.5, Math.PI, 0);
-    g.bezierCurveTo(15.5, 14, 11, 21, 8, 27.4); g.bezierCurveTo(5, 21, 0.5, 14, 0.5, 8); g.closePath();
-  };
-  fill(K.grey, pin);
-  g.save(); g.beginPath(); pin(); g.clip();
-  g.fillStyle = lin(0.5, 0, 15.5, 0, [K.white, K.pale, K.grey]); g.fillRect(0, 0, 16, 28);
-  g.fillStyle = lin(0, 0, 0, 9, [K.red, K.red, K.redDark]); g.fillRect(0, 0, 16, 8.6);
-  g.restore();
-  g.strokeStyle = K.dark; g.lineWidth = 0.5; g.beginPath(); pin(); g.stroke();
-  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.7;   // a shine on the head
-  g.beginPath(); g.arc(8, 8, 6.4, Math.PI * 1.15, Math.PI * 1.45); g.stroke();
-  fill(K.grey, () => g.arc(8, 8, 5.4, 0, Math.PI * 2));   // the face
-  fill(K.white, () => g.arc(8, 8, 4.9, 0, Math.PI * 2));
-  rr(5, 5.2, 6, 0.9, 0.45, K.red);   // the face's lines
-  rr(5, 7.8, 6, 0.8, 0.4, K.ink);
-  rr(5, 9.8, 2.2, 0.8, 0.4, K.ink); rr(8, 9.8, 3, 0.8, 0.4, K.ink);
-  fill(lin(0, 15, 0, 23, [K.red, K.redDark]), () => {   // the arrow, pointing down
-    g.moveTo(4.4, 15.4); g.lineTo(11.6, 15.4); g.lineTo(8, 22.6); g.closePath();
-  });
-  return c;
-}
+/** The Sky Pillar's board since 2026-10-09: the Safari's kiosk in the sky's blues (the user's ask). */
+const SKY_KIT = { ...KIT, white: '#f2f7ff', pale: '#d4e2f8', grey: '#9cb2d6', dark: '#5e74a0', red: '#3c78d8', redDark: '#24509e', shots: ['#8ad0ff', '#c8b4ff', '#f8e070'] };
 
 /** New game's Pokéstop (the user's pick, after Pokémon Go's): a holographic disc, a ring round a Poké Ball with arcs
     orbiting it, floating over a slim post with a little tilted plate. The disc's own shapes are its glow (shine()). */
@@ -1117,7 +1092,7 @@ function makePlaces() {
   });
   const tower = towerOpen(save) || !!runAt('pillar'), best = save.tower?.bestEver || 0, climb = runAt('pillar');
   list.push({
-    id: 'pillar', name: 'Sky Pillar', step: { x: 11, y: 3 }, tiles: rect(10, 0, 12, 2), tag: [11, 4.2, 2], open: tower,
+    id: 'pillar', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2).concat(tower ? [[11, -2]] : []), tag: [13, 4.2, -2], open: tower,
     line: climb ? waits(climb) : tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''}` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : tower ? [['Climb', acts.onTower]] : [],
     build: (g) => {
@@ -1125,16 +1100,17 @@ function makePlaces() {
       const door = pillarArt(true), face = glowing(new THREE.MeshStandardMaterial({ map: texOf(door), roughness: 1 }), door, null, '#a8c4ff', 0.9);
       const top = new THREE.MeshStandardMaterial({ color: P.stone[1], roughness: 1 });
       const box = new THREE.Mesh(new THREE.BoxGeometry(2.6, 12, 2.6), [side, side, top, top, face, side]);
-      box.position.set(tileX(11), 6, tileZ(1));
+      box.position.set(tileX(PILLAR_AT.tx), 6, tileZ(PILLAR_AT.ty));
       box.castShadow = box.receiveShadow = true;
       g.add(box);
+      if (tower) pokestop(g, 'pillar', tileX(11.2), tileZ(-1.7), 0.5);
     },
   });
   list.push({
-    id: 'pillar-board', name: 'Pillar Ranks', step: { x: 9, y: 4 }, tiles: [[9, 3]], tag: [9, 2.6, 3], open: tower,
+    id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: -1 }, tiles: [[15, -2]], tag: [15, 2.6, -2], open: tower,
     line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
-    build: (g) => g.add(board(pinArt(), tileX(9), tileZ(3))),
+    build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.9), tileZ(-2.3))),
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: 10, y: 9 }, tiles: rect(9, 8, 11, 8), tag: [10, 4, 8], open: true,
@@ -1210,7 +1186,8 @@ function buildClearing() {
   const spots = kinds.map(() => []);
   // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()); a few stay on
   // the far left, by the Poké Mall
-  const cleared = (x, z) => x < -3 && z < (x < -10.4 ? -3 : 0.3);
+  // and none where the Sky Pillar and its meadow stand in the back-right corner, the trees behind it kept
+  const cleared = (x, z) => (x < -3 && z < (x < -10.4 ? -3 : 0.3)) || (x > tileX(9.9) && x < tileX(17) && z > tileZ(Math.abs(x - tileX(PILLAR_AT.tx)) < 2 ? -4.6 : -2.6) && z < 0.3);
   const put = (k, x, z, s) => { if (!cleared(x, z)) spots[k].push({ x, z, s }); };
   // the forest's wall: three ragged rows behind, three down each side, the far ones bigger and darker
   for (let r = 0; r < 3; r++) for (let x = -M + 0.5; x < COLS + M; x += 1.25 + rnd() * 0.4) {
@@ -1269,7 +1246,7 @@ function paintVista() {
 /* ---------- walking ---------- */
 
 // the cleared meadow up to the Safari gate, outside the grid's back-left corner
-const MEADOW = new Set(rect(-3, -2, 1, -1).map(([x, y]) => key(x, y)));
+const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(11, -2, 15, -1)].map(([x, y]) => key(x, y)));
 const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -1764,12 +1741,12 @@ function fitCamera(w, h) {
 
 function placeCamera(dt) {
   const { half, front } = camera.userData;
-  // up the Safari road the view looks on ahead, through the gate to the distance past it
-  const ahead = !arriving && walker.tile.x <= 1 && walker.tile.y <= 3 ? 2.5 : 0;
+  // up the Safari road, or to the Sky Pillar's door, the view looks on ahead into the back corner
+  const ahead = !arriving && (walker.tile.x <= 1 || walker.tile.x >= 11) && walker.tile.y <= 3 ? 2.5 : 0;
   const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z - ahead;
-  const wantX = reachX + ahead <= 0 ? 0 : Math.max(-reachX - ahead * 1.2, Math.min(Math.max(0, reachX), wx));
+  const wantX = reachX + ahead <= 0 ? 0 : Math.max(-reachX - ahead * 1.2, Math.min(Math.max(0, reachX) + ahead * 1.2, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
@@ -1866,7 +1843,7 @@ async function build() {
   scene.add(hemi, sun);
   // the lantern by the base's door and the Sky Pillar's doorway light their ground from dusk; made once and only dimmed,
   // so the hour changing never recompiles a shader
-  for (const [colour, at, k] of [['#ffc070', [tileX(6) - 1.25, 2.4, tileZ(2) + 0.6], 1], ['#8ab0ff', [tileX(11), 1.1, tileZ(1) + 1.6], 0.7]]) {
+  for (const [colour, at, k] of [['#ffc070', [tileX(6) - 1.25, 2.4, tileZ(2) + 0.6], 1], ['#8ab0ff', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.6], 0.7]]) {
     const l = new THREE.PointLight(colour, 0, 6, 1.6);
     l.position.set(...at);
     l.userData.k = k;
