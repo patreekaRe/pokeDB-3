@@ -2004,6 +2004,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   piece in Three.js (~150 kinds from parts per `js/base-shapes.js`, the rest lathed or as rounded hulls of their
   paintings), small pieces stand on table tops and travel with them, guests and your partner sit on chairs, sofas,
   benches, beds and cushions, and the room renders sharp and antialiased. `tools/models.html` previews them all.
-- **Secret Base: a way out without the ✕** (2026-10-09, branch `secret-base` only, the user's ask): a red doormat lies over
-  the room's front edge, its arrow breathing; a tap walks your partner to it and off the front, then leaves as the ✕ does
+- **Secret Base: a way out without the ✕** (2026-10-09, branch `secret-base` only, the user's ask): a red doormat lies on a doorstep
+  jutting out past the front edge (no tile taken), its arrow breathing; a tap walks your partner to it and off the front, then leaves as the ✕ does
   (`makeExitMat()` / `headOut()` in `js/base-3d.js`). Walk mode only.

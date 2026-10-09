@@ -115,10 +115,14 @@ function buildRoom() {
     roomGroup.add(side);
   }
   dressRoom(art, cap, outer);
-  roomGroup.add(exitMat = makeExitMat());
+  // the mat lies on a doorstep jutting out of the base, past the floor's edge, so it takes no tile
+  const step = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.16, 0.95), [outer, outer, cap, outer, outer, outer]);
+  step.position.set(tileX(Math.floor(COLS / 2)), -0.1, ROWS / 2 + 0.4 + 0.47);
+  step.receiveShadow = true;
+  roomGroup.add(step, exitMat = makeExitMat());
 }
 
-/** A woven red doormat lying over the threshold with a cream arrow pointing out, off the tiles so nothing covers it. */
+/** A woven red doormat on the doorstep outside the room with a cream arrow pointing out, off the tiles so nothing covers it. */
 function makeExitMat() {
   const c = document.createElement('canvas');
   c.width = 288; c.height = 128;
@@ -142,7 +146,7 @@ function makeExitMat() {
   const top = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 1, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0 });
   const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.8), top);
   mat.rotation.x = -Math.PI / 2;
-  mat.position.set(tileX(Math.floor(COLS / 2)), 0.1, ROWS / 2 + 0.06);
+  mat.position.set(tileX(Math.floor(COLS / 2)), -0.015, ROWS / 2 + 0.87);
   mat.receiveShadow = true;
   return mat;
 }
@@ -153,9 +157,9 @@ function headOut() {
   const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
   const go = () => {
     walker.path = route(walker.tile, door);
-    walker.path.push({ x: door.x, y: ROWS - 0.4 });
+    walker.path.push({ x: door.x, y: ROWS + 0.37 });
     walker.exit = true;
-    ring.position.set(exitMat.position.x, 0.12, exitMat.position.z);
+    ring.position.set(exitMat.position.x, 0, exitMat.position.z);
     ring.material.opacity = 0.9;
   };
   follow = true;
