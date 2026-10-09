@@ -58,6 +58,8 @@ let mode = 'walk', blend = 0, shots = null, fitted = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
 const standees = new Set();   // round pieces drawn as their painting (js/base-model.js), leaned back like the Pokémon
 let giftBoard = null, unwrapping = null, shopMsg = '';
+let folded = false;   // the sheet folded down to its hinge, to look at the room while browsing
+let named = null;   // a piece just taken from the tray: its name, said for a moment (the tiles show none)
 let hushed = null;   // the hint tapped away: it stays away until it says something else
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
 let exitMat = null;   // the doormat over the front edge: a tap walks your partner out, as in a Pokémon house
@@ -980,6 +982,7 @@ function tray(which = tab) {
     if (typeof art === 'function') { pic.paint = art; lazy.observe(pic); } else pic.append(art);
     if (tag) pic.append(Object.assign(document.createElement('i'), { className: 'b3-tag', textContent: tag }));
     b.append(pic, Object.assign(document.createElement('span'), { className: 'b3-name', textContent: label }));
+    b.title = label;
     b.addEventListener('click', pick);
     list.append(b);
   };
@@ -995,6 +998,8 @@ function tray(which = tab) {
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
     playSound('confirm');
+    named = { text: PIECES[id].name, until: performance.now() + 1600 };
+    setTimeout(refresh, 1650);
     hold(id);
   }, spare(base, id) > 1 && spare(base, id) < Infinity ? `×${spare(base, id)}` : PIECES[id].layer === 'wall' ? 'Wall' : '');
   // the ones you have first, then the ones for sale, cheapest first
@@ -1090,6 +1095,7 @@ function paperTap(field, s) {
 function refresh() {
   const busy = holding || sel >= 0;
   root.classList.toggle('editing', mode === 'edit');
+  root.classList.toggle('folded', mode === 'edit' && folded);
   // a piece in hand or picked tucks the sheet down to its hinge and keys, so the room has the screen
   root.classList.toggle('tucked', mode === 'edit' && !!busy);
   root.classList.toggle('painting', tab === 'colour');
@@ -1107,7 +1113,7 @@ function refresh() {
   hud.hint.classList.toggle('tip', !!tip);
   // with a piece in hand or picked the hinge's LCD says what's going on, and nothing covers the room
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
-    : busy ? ''
+    : busy ? (named && performance.now() < named.until ? named.text : '')
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
@@ -1376,6 +1382,7 @@ export async function openBase3d({ onLeave = null } = {}) {
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
     </div>
     <div class="b3-sheet">
+      <button type="button" class="b3-grip" aria-label="Fold the sheet"></button>
       <div class="room-hinge b3-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
         <nav class="b3-tabs">
           ${[['furniture', 'Furniture', 'sofa'], ['wall', 'Wallpaper', 'roller'], ['floor', 'Floor', 'floor'], ['mons', 'Pokémon', 'ball']]
@@ -1455,7 +1462,11 @@ export async function openBase3d({ onLeave = null } = {}) {
     setZoom(zoom * Math.exp(-e.deltaY * 0.0015));
   }, { passive: false });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
-  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
+  // the grip, or a tap on the hinge's lens and lights, folds the sheet to its hinge and back; a tab opens it again
+  const fold = (to = !folded) => { folded = to; playSound(folded ? 'cancel' : 'select'); refresh(); };
+  root.querySelector('.b3-grip').addEventListener('click', () => fold());
+  root.querySelector('.b3-hinge').addEventListener('click', (e) => { if (!e.target.closest('button')) fold(); });
+  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { folded = false; playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
   // with a piece in hand the gold pill puts it down; with one picked it lets go of it; else it ends decorating

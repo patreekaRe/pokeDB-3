@@ -2011,3 +2011,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Decorate zooms in with a pinch or the mouse wheel and pans with a drag on the floor (`setZoom()` / `panBy()` in
   `js/base-3d.js`), the blur's sharp band following the view; the tall walls, picture rails and wooden base
   (`dressRoom()`) were removed, the user preferring the room as it first was.
+- **Secret Base: a slimmer Decorate sheet** (2026-10-09, branch `secret-base` only, the user's pick of two ideas): tiles
+  shrink to 70px with no names (five across, the sheet 272 -> 220px on a phone; the name is the tile's tooltip and shows
+  in the hint for a moment once taken), and a grip or the hinge's lens folds the sheet to its hinge (68px).
