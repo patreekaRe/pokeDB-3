@@ -59,7 +59,8 @@ const footprint = (it) => { const p = PIECES[it.id]; return it.dir % 2 ? [p.h, p
 const FIRST_ROOM = [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 },
   { id: 'lamp', x: 2, y: 0, dir: 0 }, { id: 'gift', x: 5, y: 3, dir: 0 }];
 const STARTER_GIFT = ['table', 'chair', 'chair', 'cushion', 'cushion', 'plant', 'shelf', 'tv', 'poster', 'clock'];
-const STOCK = 8;   // pieces in the Furniture shop each day
+const STOCK = 8;   // pieces on each floor of the Furniture store each day
+const UPSTAIRS_PRICE = 2500;   // PokéCoins to open the store's second floor, and STOCK more pieces a day with it
 
 const freshBase = (mons) => ({
   v: 2, wall: 'cream', floor: 'wood', items: FIRST_ROOM.map(it => ({ ...it })),
@@ -109,8 +110,19 @@ export function openGift(b) {
   return STARTER_GIFT;
 }
 
-/** The Furniture shop's stock for a UTC day: STOCK designs (a kind, or a whole set), the same for everyone that day. */
-export const furnitureStock = (day = safariDay()) => shuffled(DESIGNS.filter(id => !FURNITURE_BY_KIND[id]), streamOf('furniture', day)).slice(0, STOCK);
+/** The Furniture store's stock for a UTC day on a floor: STOCK designs (a kind, or a whole set), the same for everyone
+    that day; the second floor's are the next STOCK of the same shuffle, so the two never share a piece. */
+export const furnitureStock = (day = safariDay(), floor = 1) => shuffled(DESIGNS.filter(id => !FURNITURE_BY_KIND[id]), streamOf('furniture', day)).slice((floor - 1) * STOCK, floor * STOCK);
+/** Everything for sale today: the ground floor's, and the second floor's once it's open. */
+export const shopStock = (b) => [...furnitureStock(), ...(b.upstairs ? furnitureStock(undefined, 2) : [])];
+export { UPSTAIRS_PRICE };
+/** Open the store's second floor for good (`b.upstairs`). False if the coins aren't there. */
+export function buyUpstairs(b) {
+  if ((getSave().coins ?? 0) < UPSTAIRS_PRICE) return false;
+  b.upstairs = true;
+  updateSave(d => { d.coins -= UPSTAIRS_PRICE; d.secretBase = b; });
+  return true;
+}
 
 /** Whether today's Shop stock is still unseen (the "!" on the Decorate key and the Shop tab), and marking it seen. */
 export const shopNews = (b) => b.shopSeen !== safariDay();

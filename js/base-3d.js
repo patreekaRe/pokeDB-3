@@ -17,7 +17,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES } from './base-paint.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, furnitureStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt, lockedEarned } from './secret-base.js';
+  spare, openGift, shopStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt, lockedEarned } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -811,7 +811,7 @@ function tray(which = tab) {
     list.append(b);
   };
   if (tab === 'shop' && shopNews(base)) { seeShop(base); save(); }
-  if (tab === 'shop') for (const id of furnitureStock()) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
+  if (tab === 'shop') for (const id of shopStock(base)) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
   // after the day's stock, the pieces never sold: earned from a badge, achievement, feat or Safari page
   if (tab === 'shop') for (const { id, how } of lockedEarned()) {
     const secret = how === '???';
@@ -1113,6 +1113,7 @@ async function leave() {
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
 async function reopen() {
   calm = calmFx();
+  base = loadBase();   // the mall's Furniture store may have bought into it since
   document.body.append(root);
   const mate = partner(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }

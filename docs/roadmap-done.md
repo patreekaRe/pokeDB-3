@@ -1963,3 +1963,12 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   doors open a walkable 3D hall (`js/mall-3d.js`): the Game Corner's booth in the middle of the back wall opens the cabinet,
   two "Coming soon" shutters wait for future shops, the upper floor's shops are scenery. The user's pick: a 3D interior, not
   a menu; where it stands was left to me (the left side, doors facing you on the path to the plaza).
+- **The Poké Mall's Furniture store** (roadmap item 5a, 2026-10-09, branch `secret-base` only): the hall's west front
+  (`FRONTS` in `js/mall-3d.js`) is a teal shop front, two of the day's pieces in its lit windows behind glass; walking in
+  swaps the hall for a 3D shop floor (`buildFloor()` in `js/mall-furniture.js`, the hall's 13x7 so one camera fits) where
+  the day's 8 pieces (`furnitureStock()`) stand on plinths with price tags: a tap walks to one and says its price, a
+  second (or the pill, "Buy · n") buys it into the base's storage (`buyPiece()`). A roped-off stair at the back right asks
+  2,500 PokéCoins (`UPSTAIRS_PRICE`, `buyUpstairs()`, the save's `secretBase.upstairs`); then the partner climbs it to the
+  second floor (`stairLift()`), 8 more pieces, the next 8 of the same day's shuffle (`furnitureStock(day, 2)`), and walks
+  back down its stairwell. The ✕ goes back to the hall. The base's Shop tab lists both floors once it's open (`shopStock()`).
+  Price and the stair placement were my calls. Tests: `tests/furniture-store.test.mjs`.

@@ -119,6 +119,12 @@
 /* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a round
    shell pill names the shop front nearest your partner (a tap goes in), its line popping up over it a moment. */
 .mall3d .b3-top h2 { opacity: 1; }
+/* in the Furniture store, your PokéCoins on a little LCD beside its name */
+.mall-coins {
+  padding: 6px 10px; border-radius: 8px; background: var(--lcd, #9bbc6a); color: #1e2a10; font-size: 9px;
+  box-shadow: inset 0 0 0 2px #0003, 0 2px 0 #0006;
+}
+.mall-coins[hidden] { display: none; }
 .mall-foot {
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px; width: calc(100% - 32px); pointer-events: none;

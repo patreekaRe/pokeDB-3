@@ -12,6 +12,10 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-09: **The Poké Mall's Furniture store** (Desktop app, branch `secret-base` only): the hall's west front walks
+  into a 3D shop of the day's stock on plinths (`js/mall-furniture.js`), tap twice to buy; a 2,500-coin second floor up
+  a roped-off stair. Next: roadmap 5b, the Game Corner walked into (LOCAL).
+
 - 2026-10-08: **Secret Base: Shop "!" and wallpapers / floors for sale** (Desktop app, branch `secret-base` only): the
   Decorate key and Shop tab wear a "!" for each day's new stock; 10 wallpapers and 10 floors to try on and buy in their tabs.
 

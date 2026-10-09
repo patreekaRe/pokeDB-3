@@ -2,8 +2,9 @@
    shopping centre with the Game Corner inside). Walked into from its doors in the Clearing (js/hub-3d.js), the same
    HD-2D look as the Secret Base: a marble floor with a red runner, shop fronts along the back wall, a mezzanine with a
    glass rail and the upper floor's lit shops over them, tall windows above. The Game Corner is the middle front, its
-   3D booth (cornerStall()), opening the cabinet over the hall; the other fronts are shuttered for shops to come (a new
-   one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it; the pill at the
+   3D booth (cornerStall()), opening the cabinet over the hall; the west front is the Furniture store, walked into as
+   its own place (js/mall-furniture.js builds its two floors, this file walks them); the east one is shuttered for a shop
+   to come (a new one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it; the pill at the
    bottom names the nearest and goes in; the ✕ walks back out. */
 
 import { getSave } from './storage.js';
@@ -13,6 +14,8 @@ import { partner } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain } from './hd2d.js';
 import { fine, texOf, cornerStall, GC, words, star } from './hub-3d.js';
 import { toggleShop } from './shop.js';
+import { PIECES, styles, loadBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE } from './secret-base.js';
+import { frontArt, frontWindow, buildFloor, stairLift, upstairsLine, STAIR } from './mall-furniture.js';
 
 const COLS = 13, ROWS = 7;
 const U = 20;                 // the paintings' units a tile
@@ -26,7 +29,7 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
-  { id: 'west', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 2, step: { x: 2, y: 1 }, colour: '#3aa8a0' },
+  { id: 'furniture', name: 'Furniture', line: 'Furniture for your Secret Base, new pieces every day.', x: 2, step: { x: 2, y: 1 }, open: true },
   { id: 'corner', name: 'Game Corner', line: 'Starters, perks, shinies and Poké Balls for PokéCoins.', x: 6, step: { x: 6, y: 2 }, open: true },
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
 ];
@@ -34,6 +37,8 @@ const FRONTS = [
 let THREE, renderer, scene, camera, post, root, view, pill, lineEl;
 let mon, walker = { x: 0, z: 0, tile: { x: 6, y: ROWS - 1 }, path: [], facing: 'back', flip: false, hop: 0 };
 let hall, glows = [], blocked = new Set(), aim = null, here = null, shown = '';
+// where you are: the hall, or a floor of the Furniture store (js/mall-furniture.js), each its own group, tiles and spots
+let places = {}, P = null, picked = null, climbing = false;
 let calm = false, last = 0, camX = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -136,7 +141,8 @@ function wallArt() {
         s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y, 1.2, 0, Math.PI * 2); s.fill();
       }
       for (const x of [x0 + 10, x1 - 10]) { g.fillStyle = GC.gold; star(g, x, top + 14, 4); s.fillStyle = '#ffe890'; star(s, x, top + 14, 4); }
-    } else shutter(f, s, wx(fr.x - 1) + 2, wx(fr.x + 2) - 2, fr.colour);
+    } else if (fr.id === 'furniture') frontArt(f, s, wx(fr.x - 1) + 2, wx(fr.x + 2) - 2, wy(2.5), wy(0));
+    else shutter(f, s, wx(fr.x - 1) + 2, wx(fr.x + 2) - 2, fr.colour);
   }
   for (const t of [0, 4, 9, 13]) rr(wx(t) - 3, wy(DECK), 6, wy(0) - wy(DECK), 0.8, lin(wx(t) - 3, 0, wx(t) + 3, 0, ['#ffffff', C.cream, C.shade]));
   g.fillStyle = '#6a5a48'; g.fillRect(0, wy(0.12), W, wy(0) - wy(0.12));
@@ -280,7 +286,7 @@ function buildHall() {
     post.position.set(x, DECK + 0.48, deckZ + DECK_D / 2);
     hall.add(post);
   }
-  for (const x of [-4, 4]) {
+  for (const x of [-6.1, 6.1]) {   // clear of the shop fronts' signs
     const b = bannerArt(), w = 0.4, h = w * 28 / 10;
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), std({ map: texOf(b), alphaTest: 0.5, side: THREE.DoubleSide }));
     m.position.set(x, DECK - h / 2, deckZ + DECK_D / 2 + 0.03);
@@ -295,13 +301,16 @@ function buildHall() {
   booth.traverse(o => { o.userData.front = gc; });
   hall.add(booth);
   for (let x = 4; x <= 8; x++) for (let y = 0; y <= 1; y++) blocked.add(key(x, y));
-  // the shutters answer a tap too: an invisible board over each
-  for (const fr of FRONTS) if (!fr.open) {
+  // the other fronts answer a tap too: an invisible board over each
+  for (const fr of FRONTS) if (fr.id !== 'corner') {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.5), new THREE.MeshBasicMaterial({ visible: false }));
     m.position.set(tileX(fr.x), 1.25, -ROWS / 2 + 0.02);
     m.userData.front = fr;
     hall.add(m);
   }
+  const shop = FRONTS.find(f => f.id === 'furniture'), show = frontWindow(THREE, tileX(shop.x), -ROWS / 2);
+  show.traverse(o => { o.userData.front = shop; });
+  hall.add(show);
 
   // planters and benches down the sides, light falling from the windows
   const planter = planterArt(), bench = benchArt();
@@ -318,6 +327,7 @@ function buildHall() {
     hall.add(m);
   }
   for (const m of glows) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, 0.9) * m.userData.glow;
+  places.hall = { id: 'hall', group: hall, blocked, spots: FRONTS, top: DECK + 0.8, title: 'Poké Mall' };
 }
 
 /* ---------- walking ---------- */
@@ -357,7 +367,7 @@ function walk(dt) {
   return !w.path.length;
 }
 
-const frontAt = (t) => FRONTS.find(f => f.step.x === t.x && f.step.y === t.y) ?? null;
+const frontAt = (t) => P.spots.find(f => f.step.x === t.x && f.step.y === t.y) ?? null;
 
 /** To a front's doorstep; `enter` goes in on arrival. */
 function goTo(fr, enter) {
@@ -369,6 +379,7 @@ function goTo(fr, enter) {
 }
 
 function arrived() {
+  if (climbing) return changeFloor();
   here = frontAt(walker.tile);
   const go = aim;
   aim = null;
@@ -377,17 +388,110 @@ function arrived() {
   if (go === here) enterFront(here); else say(here);
 }
 
+/* ---------- the Furniture store ---------- */
+
+const SIZE = { cols: COLS, rows: ROWS, top: TOP, u: U };
+const floorOf = () => (P.id === 'hall' ? 0 : P.id === 'f2' ? 2 : 1);
+
+/** Into a place: the hall, or the store's floor 1 or 2 (built the first time), at tile `at`, under the curtain. */
+async function goPlace(id, at, facing = 'back') {
+  await curtain(true);
+  if (!root?.isConnected) return;
+  if (!places[id]) {
+    const floor = id === 'f2' ? 2 : 1, built = buildFloor(THREE, floor, SIZE, !!loadBase().upstairs);
+    places[id] = { id, ...built };
+    scene.add(built.group);
+  }
+  setPlace(places[id], at, facing);
+  playSound('door');
+  curtain(false);
+}
+
+function setPlace(p, at, facing = 'back') {
+  if (P) P.group.visible = false;
+  P = p; P.group.visible = true; blocked = P.blocked;
+  pick(null);
+  walker.path = []; aim = null; here = null; shown = null; climbing = false;
+  walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
+  walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
+  camX = walker.x;
+  root.querySelector('.b3-top h2').textContent = P.title;
+  showCoins();
+  if (viewW) fitShot(viewW, viewH);
+}
+
+function showCoins() {
+  const el = root.querySelector('.mall-coins');
+  el.hidden = P.id === 'hall';
+  el.textContent = `${(getSave().coins ?? 0).toLocaleString()} coins`;
+}
+
+function pick(spot) {
+  picked = spot;
+  shown = null;
+  if (!P?.ring) return;
+  P.ring.visible = !!spot && spot.kind === 'bay';
+  if (P.ring.visible) P.ring.position.set(spot.at.x, 0.02, spot.at.z);
+}
+
+/** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. */
+function bayTap(spot) {
+  const p = PIECES[spot.piece], n = styles(spot.piece).length, all = n > 1 ? ` (all ${n} styles)` : '';
+  if (picked !== spot) {
+    pick(spot);
+    playSound('select');
+    const had = loadBase().owned[p.own] || 0;
+    return say({ line: `${p.name}${all}: ${p.price.toLocaleString()} PokéCoins. Tap again to buy.${had ? ` You have ${had}.` : ''}` }, 4200);
+  }
+  const coins = getSave().coins ?? 0;
+  if (!buyPiece(loadBase(), spot.piece)) { playSound('cancel'); return say({ line: `You need ${(p.price - coins).toLocaleString()} more PokéCoins for the ${p.name.toLowerCase()}.` }, 3600); }
+  playSound('buy');
+  walker.hopUntil = performance.now() + 500;
+  pick(null);
+  showCoins();
+  say({ line: n > 1 ? `All ${n} styles of the ${p.name.toLowerCase()} are in your Secret Base now.` : `The ${p.name.toLowerCase()} is in your Secret Base now.` }, 3600);
+}
+
+/** The stair: roped off until the second floor is bought (a tap asks, a second buys), then walked up, or down again. */
+function stairTap(spot) {
+  if (floorOf() === 1 && !loadBase().upstairs) {
+    if (picked !== spot) { pick(spot); playSound('select'); return say({ line: upstairsLine() }, 4600); }
+    const coins = getSave().coins ?? 0;
+    if (!buyUpstairs(loadBase())) { playSound('cancel'); return say({ line: `You need ${(UPSTAIRS_PRICE - coins).toLocaleString()} more PokéCoins to open the second floor.` }, 3600); }
+    playSound('buy');
+    pick(null);
+    showCoins();
+    if (P.rope) P.rope.visible = false;
+    walker.hopUntil = performance.now() + 500;
+    return say({ line: 'The second floor is open! Tap the stair to go up.' }, 3600);
+  }
+  pick(null);
+  playSound('confirm');
+  climbing = true;
+  walker.path = STAIR.climb.map(t => ({ ...t }));
+}
+
+function changeFloor() {
+  climbing = false;
+  return goPlace(floorOf() === 1 ? 'f2' : 'f1', STAIR.foot, 'front');
+}
+
 /** A front's line under the pill, a moment. */
-function say(fr) {
-  lineEl.textContent = fr.line;
+function say(fr, ms = 2600) {
+  lineEl.textContent = fr.kind === 'bay' ? `${fr.name}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
+    : fr.kind === 'stairs' ? (floorOf() === 2 ? 'Down to the ground floor.' : loadBase().upstairs ? 'Up to the second floor.' : 'The second floor is roped off.')
+    : fr.line;
   lineEl.classList.add('on');
   clearTimeout(say.t);
-  say.t = setTimeout(() => lineEl.classList.remove('on'), 2600);
+  say.t = setTimeout(() => lineEl.classList.remove('on'), ms);
 }
 
 /** In: the Game Corner's cabinet over the hall (modal, so it sits over this full-screen view); a shutter only says so. */
 function enterFront(fr) {
+  if (fr.kind === 'bay') return bayTap(fr);
+  if (fr.kind === 'stairs') return stairTap(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
+  if (fr.id === 'furniture') return goPlace('f1', { x: 6, y: ROWS - 1 });
   walker.hopUntil = performance.now() + 400;
   playSound('confirm');
   if (fr.id === 'corner') setTimeout(() => { if (root?.isConnected) toggleShop(undefined, { modal: true }); }, calm ? 0 : 260);
@@ -397,7 +501,7 @@ function enterFront(fr) {
 function nearest() {
   if (here && !walker.path.length) return here;
   let best = null, d0 = SEEN;
-  for (const fr of FRONTS) {
+  for (const fr of P.spots) {
     const d = Math.hypot(walker.x - tileX(fr.step.x), walker.z - tileZ(fr.step.y));
     if (d < d0) { d0 = d; best = fr; }
   }
@@ -405,10 +509,11 @@ function nearest() {
 }
 
 function showPill() {
-  const fr = nearest(), k = fr?.id ?? '';
+  const fr = nearest(), buying = fr && picked === fr, k = `${fr?.id ?? ''}${buying ? '!' : ''}`;
   if (k === shown) return;
   shown = k;
-  pill.querySelector('b').textContent = fr ? fr.name : 'Poké Mall';
+  pill.querySelector('b').textContent = !fr ? P.title
+    : buying ? `Buy · ${(fr.kind === 'stairs' ? UPSTAIRS_PRICE : PIECES[fr.piece].price).toLocaleString()}` : fr.name;
   pill.classList.toggle('shut', !fr || !fr.open);
   pill.disabled = !fr;
   pill.classList.remove('mall-pop'); void pill.offsetWidth; pill.classList.add('mall-pop');
@@ -424,7 +529,7 @@ function ndc(e) {
 function onTap(e) {
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
-  const hits = ray.intersectObjects(scene.children, true);
+  const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
   const first = hits[0]?.object;
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   let o = first;
@@ -435,7 +540,7 @@ function onTap(e) {
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
   walker.path = route(walker.tile, t);
-  aim = null; here = null;
+  aim = null; here = null; pick(null);
   if (walker.path.length) playSound('select');
 }
 
@@ -456,7 +561,7 @@ function fitShot(w, h) {
   const avail = h - topBar - below, room = 2 * avail / h * 0.94;
   const span = (d) => {
     aimCamera(0, d);
-    return [new THREE.Vector3(0, DECK + 0.8, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2).project(camera).y];
+    return [new THREE.Vector3(0, P.top, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2).project(camera).y];
   };
   let lo = 2, hi = 80;
   for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = span(mid); if (t - b > room) lo = mid; else hi = mid; }
@@ -494,7 +599,7 @@ function frame(now) {
   if (walk(dt)) arrived();
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, 0, walker.z);
+  mon.group.position.set(walker.x, P.id === 'hall' ? 0 : stairLift(floorOf(), walker.x, walker.z, SIZE), walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
@@ -508,11 +613,13 @@ function frame(now) {
 
 /** In at the doors: the bottom of the hall, facing in. */
 function atDoors() {
-  walker.path = []; aim = null; here = null; shown = null;
-  walker.tile = { x: 6, y: ROWS - 1 };
-  walker.x = tileX(6); walker.z = tileZ(ROWS - 1);
-  walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-  camX = walker.x;
+  setPlace(places.hall, { x: 6, y: ROWS - 1 });
+}
+
+/** The ✕: out of the store to its doorstep in the hall, or out of the mall. */
+function back() {
+  if (P.id === 'hall') return leave();
+  goPlace('hall', FRONTS.find(f => f.id === 'furniture').step, 'front');
 }
 
 async function leave() {
@@ -544,7 +651,7 @@ export async function openMall({ onLeave = null } = {}) {
   root.innerHTML = `
     <div class="b3-stage">
       <canvas class="b3-view"></canvas>
-      <header class="b3-top"><h2>Poké Mall</h2>
+      <header class="b3-top"><h2>Poké Mall</h2><span class="mall-coins" hidden></span>
         <button type="button" class="b3-key b3-close" aria-label="Leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
       <div class="mall-foot"><p class="mall-line" aria-live="polite"></p><button type="button" class="mall-go"><b>Poké Mall</b></button></div>
     </div>`;
@@ -552,7 +659,7 @@ export async function openMall({ onLeave = null } = {}) {
   view = root.querySelector('.b3-view');
   pill = root.querySelector('.mall-go');
   lineEl = root.querySelector('.mall-line');
-  root.querySelector('.b3-close').addEventListener('click', leave);
+  root.querySelector('.b3-close').addEventListener('click', back);
   pill.addEventListener('click', () => { const fr = nearest(); if (fr) goTo(fr, true); });
 
   THREE = await loadThree();
