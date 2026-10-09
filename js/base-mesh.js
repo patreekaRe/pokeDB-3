@@ -999,6 +999,69 @@ B.palm = (K) => {
   }
 };
 
+/* a globe and a drum kit, modelled (their paintings' side views came out as stacked blocks) */
+
+/** An Earth for the globe: seas and a few seeded continents, wrapped round a sphere. */
+function earth() {
+  if (shared.earth) return shared.earth;
+  const c = new OffscreenCanvas(512, 256), g = c.getContext('2d'), r = rng('earth');
+  g.fillStyle = '#3f84d8'; g.fillRect(0, 0, 512, 256);
+  for (let i = 0; i < 9; i++) {
+    const cx = r() * 512, cy = 50 + r() * 156, n = 6 + Math.floor(r() * 6);
+    g.fillStyle = r() < 0.75 ? '#58b048' : '#c8a868';
+    for (let k = 0; k < n; k++) { g.beginPath(); g.ellipse((cx + (r() - 0.5) * 90 + 512) % 512, cy + (r() - 0.5) * 50, 14 + r() * 26, 10 + r() * 18, r() * 3, 0, Math.PI * 2); g.fill(); }
+  }
+  g.fillStyle = '#f0f6fa'; g.fillRect(0, 0, 512, 14); g.fillRect(0, 242, 512, 14);
+  return (shared.earth = canvasTex(c, false));
+}
+B.globe = (K) => {
+  const wood = K.wood(), brass = K.metal('#d8b048'), R = 0.27, cy = 0.66, tilt = 0.41;
+  K.put(lathe([[0.2, 0], [0.21, 0.03], [0.17, 0.06], [0.07, 0.12], [0.045, 0.2], [0.04, 0.3], [0.06, 0.33], [0.0, 0.34]], 28), wood, 0, 0, 0);
+  const ring = torus(R + 0.04, 0.012, Math.PI * 1.1, 40);
+  ring.rotateZ(-Math.PI * 0.05 - tilt); ring.rotateY(Math.PI / 2);
+  K.put(ring, brass, 0, cy, 0);
+  K.put(cyl(0.012, 0.1, 0.012, 8), brass, 0, 0.36, 0);
+  const m = new THREE.MeshStandardMaterial({ map: earth(), roughness: 0.45 });
+  m.userData.kind = 'pic'; m.userData.pivot = { y: cy, tilt };
+  K.put(ball(R, 40, 28), m, 0, cy, 0);
+};
+B.drumkit = (K, s, W) => {
+  const shell = K.gloss(K.pal.c || '#c83838'), head = K.plain('#f6f2ea'), chrome = K.metal('#d8dce4'), brass = K.metal('#e0b840');
+  const drum = (r, d, x, y, z, tiltX = 0, tiltZ = 0) => {
+    K.put(cyl(r, d, r, 32), shell, x, y, z, 0, tiltX, tiltZ);
+    for (const sgn of [-1, 1]) K.put(cyl(r * 1.03, 0.02, r * 1.03, 32).translate(0, sgn * d / 2, 0), chrome, x, y, z, 0, tiltX, tiltZ);
+    K.put(cyl(r * 0.97, d + 0.01, r * 0.97, 32), head, x, y, z, 0, tiltX, tiltZ);
+  };
+  // the bass drum on its side, its front head painted
+  K.put(cyl(0.3, 0.32, 0.3, 36), shell, 0, 0.31, -0.05, 0, Math.PI / 2);
+  for (const z of [-0.21, 0.11]) K.put(torus(0.3, 0.018, Math.PI * 2, 36), chrome, 0, 0.31, z);
+  const face = new THREE.MeshStandardMaterial({ map: drumHead(K.pal.c || '#c83838'), roughness: 0.6 }); face.userData.kind = 'pic';
+  K.put(new THREE.CircleGeometry(0.29, 36), face, 0, 0.31, 0.112);
+  K.put(new THREE.CircleGeometry(0.29, 36), head, 0, 0.31, -0.212, Math.PI);
+  // toms over it, the floor tom and the snare either side
+  drum(0.13, 0.13, -0.15, 0.7, 0.0, 0.35, 0.1); drum(0.14, 0.14, 0.16, 0.7, 0.0, 0.35, -0.1);
+  drum(0.18, 0.3, W / 2 - 0.3, 0.3, 0.1);
+  drum(0.16, 0.1, -W / 2 + 0.34, 0.55, 0.12, 0.15);
+  K.put(cyl(0.012, 0.5, 0.012, 8), chrome, -W / 2 + 0.34, 0.25, 0.12);
+  // cymbals on stands
+  for (const [x, z, h, r] of [[-W / 2 + 0.12, -0.05, 0.85, 0.15], [-0.42, -0.2, 1.15, 0.2], [W / 2 - 0.15, -0.18, 1.08, 0.21]]) {
+    K.put(cyl(0.01, h, 0.01, 8), chrome, x, h / 2, z);
+    for (const a of [0, 2.1, 4.2]) K.put(cyl(0.008, 0.16, 0.008, 6), chrome, x + Math.sin(a) * 0.06, 0.06, z + Math.cos(a) * 0.06, 0, Math.cos(a) * 0.6, -Math.sin(a) * 0.6);
+    K.put(lathe([[r, 0], [r * 0.6, 0.012], [0.03, 0.03], [0.02, 0.045], [0, 0.045]], 32), brass, x, h, z, 0, 0.12);
+  }
+  K.put(cyl(0.16, 0.06, 0.16, 20), K.cloth('#303038'), 0.05, 0.5, -0.45);
+  K.put(cyl(0.02, 0.48, 0.02, 8), chrome, 0.05, 0.24, -0.45);
+};
+function drumHead(colour) {
+  const c = new OffscreenCanvas(256, 256), g = c.getContext('2d');
+  g.fillStyle = '#f6f2ea'; g.fillRect(0, 0, 256, 256);
+  g.fillStyle = colour; g.beginPath(); g.arc(128, 128, 70, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f6f2ea'; g.beginPath(); g.arc(128, 128, 40, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#202028'; g.beginPath(); g.arc(128, 128, 6, 0, Math.PI * 2); g.fill();
+  const t = canvasTex(c, false); t.userData.keep = false;
+  return t;
+}
+
 B.vase = (K) => {
   K.put(lathe([[0.1, 0], [0.16, 0.06], [0.2, 0.2], [0.17, 0.34], [0.08, 0.44], [0.07, 0.52], [0.1, 0.56], [0.08, 0.57]], 28), K.gloss(K.pal.c), 0, 0, 0);
   K.put(torus(0.2, 0.014, Math.PI * 2, 28), K.gloss(K.pal.a), 0, 0.2, 0, 0, Math.PI / 2);
@@ -1088,6 +1151,21 @@ function surfaceNets(f, nx, ny, nz) {
   return { pos, idx };
 }
 
+/** Taubin smoothing (a shrink step, then a grow step, so it doesn't shrink): the surface nets mesh steps a little at
+    every painted row, which read as a 3D print's layers (the user's word, 2026-10-09). */
+function taubin(P, idx, nv, passes) {
+  const sum = new Float32Array(nv * 3), cnt = new Uint16Array(nv);
+  for (let pass = 0; pass < passes * 2; pass++) {
+    const k = pass % 2 ? -0.53 : 0.5;
+    sum.fill(0); cnt.fill(0);
+    for (let t = 0; t < idx.length; t += 3) for (let e = 0; e < 3; e++) {
+      const a = idx[t + e], b = idx[t + (e + 1) % 3];
+      for (const [p, q] of [[a, b], [b, a]]) { sum[p * 3] += P[q * 3]; sum[p * 3 + 1] += P[q * 3 + 1]; sum[p * 3 + 2] += P[q * 3 + 2]; cnt[p]++; }
+    }
+    for (let q = 0; q < nv; q++) if (cnt[q]) for (let c = 0; c < 3; c++) P[q * 3 + c] += k * (sum[q * 3 + c] / cnt[q] - P[q * 3 + c]);
+  }
+}
+
 /** The piece's rows [j0, j1) (from the floor) as a rounded solid: inside both its front and its side silhouettes (the
     visual hull carving used to cut), its edges rounded off and each slice an ellipse (`organic`, exponent 2.3) or a
     rounded box (`boxy`, exponent 8) across the runs it sits in. A piece painted the same from every side (`round`)
@@ -1130,6 +1208,7 @@ function hullArrays(p, j0, j1, mode) {
     P3[q * 3 + 1] = P3[q * 3 + 1] - 0.5 + j0;
     P3[q * 3 + 2] = P3[q * 3 + 2] - 0.5 - D / 2;
   }
+  taubin(P3, net.idx, nv, 8);
   // smooth normals, area weighted
   const nor = new Float32Array(nv * 3), fnor = [];
   for (let t = 0; t < net.idx.length; t += 3) {
@@ -1278,6 +1357,16 @@ export function furnitureModel(three, id, paint) {
     const K = kit(id, paint);
     B[shape.make](K, shape, W, D);
     g = assemble(K);
+    // a part that turns on its own (the globe's Earth) is moved to turn about its middle, tipped on its axis
+    for (const mesh of g.children) {
+      const pv = mesh.material.userData.pivot;
+      if (!pv) continue;
+      mesh.geometry.translate(0, -pv.y, 0);
+      mesh.position.y = pv.y;
+      mesh.rotation.order = 'ZYX';
+      mesh.rotation.z = pv.tilt;
+      mesh.userData.spins = true;
+    }
   } else if (p.flat || p.wall) return null;
   else g = leafy(p) ? leafyModel(id, paint) : autoModel(id, paint);
   if (!g) {

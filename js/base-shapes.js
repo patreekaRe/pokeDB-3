@@ -99,6 +99,8 @@ set('floorlamp', { make: 'floorlamp' });
 set('plant', { make: 'plant' });
 set('palm', { make: 'palm' });
 set('vase', { make: 'vase' });
+set('globe', { make: 'globe' });
+set('drumkit', { make: 'drumkit' });
 
 export const SHAPES = S;
 

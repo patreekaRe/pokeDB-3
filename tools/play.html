@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Furniture play</title>
+<base href="../">
+<style>
+  body { margin: 0; padding: 12px; background: #fbf6ea; color: #2a2a3a; font: 13px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .tile { background: #fff; border-radius: 12px; box-shadow: 0 0 0 1.5px #e6dcc6; text-align: center; cursor: pointer; }
+  .tile canvas { width: 100%; aspect-ratio: 1; display: block; border-radius: 12px 12px 0 0; }
+  .tile b { display: block; font-size: 11px; padding: 3px; }
+</style>
+</head>
+<body>
+<h1>Secret Base furniture that does things</h1>
+<p>Each kind as the room builds it, with what a tap does (js/base-play.js). Tap one. <code>?ids=tv,fridge</code> picks them.</p>
+<div class="grid" id="grid"></div>
+<script type="module">
+import { loadThree } from './js/hd2d.js';
+import { tex } from './js/hd2d.js';
+import { PIECES } from './js/base-furniture.js';
+import { furnitureModel } from './js/base-mesh.js';
+import { dressPlay, tapPlay, tickPlay } from './js/base-play.js';
+import { initAudio } from './js/audio.js';
+
+const THREE = await loadThree();
+const q = new URLSearchParams(location.search);
+const ids = (q.get('ids') || 'tv,fridge,stove,pokecenter,computer,wardrobe,arcade,jukebox,vending,fireplace,piano,aquarium,drumkit,gumball,teslacoil,hologram,globe,rockinghorse,pikachudoll,toastercounter,lavalamp,healpod,clawmachine,jackbox').split(',').filter(id => PIECES[id]);
+try { initAudio(); } catch {}
+
+// one renderer for every tile (a page gets only so many WebGL contexts), each frame copied onto the tile's canvas
+const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); r.shadowMap.enabled = true; r.setSize(360, 360, false);
+const tiles = ids.map(id => {
+  const c = document.createElement('canvas'); c.width = c.height = 360;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color('#e9dfc8');
+  scene.add(new THREE.HemisphereLight('#ffffff', '#7a6a5a', 1.6));
+  const sun = new THREE.DirectionalLight('#fff2dc', 2.4); sun.position.set(-3, 8, 6); sun.castShadow = true; scene.add(sun);
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(4, 40), new THREE.MeshStandardMaterial({ color: '#d8c8a8' })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+  const model = furnitureModel(THREE, id, (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 }));
+  const play = dressPlay(THREE, model, PIECES[id]);
+  scene.add(model);
+  const box = new THREE.Box3().setFromObject(model), s = Math.max(1.2, box.getSize(new THREE.Vector3()).length());
+  const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 50); cam.position.set(s * 0.9, box.max.y * 0.6 + s * 0.9, s * 2.2); cam.lookAt(0, box.max.y * 0.45, 0);
+  const tile = document.createElement('div'); tile.className = 'tile';
+  tile.append(c, Object.assign(document.createElement('b'), { textContent: `${PIECES[id].name} (${play.how.does})` }));
+  tile.onclick = () => tapPlay(play);
+  document.getElementById('grid').append(tile);
+  return { c, scene, cam, play };
+});
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(100, now - last); last = now;
+  for (const t of tiles) { tickPlay(t.play, now, dt); r.render(t.scene, t.cam); t.c.getContext('2d').drawImage(r.domElement, 0, 0); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+window.playTiles = tiles;
+</script>
+</body>
+</html>

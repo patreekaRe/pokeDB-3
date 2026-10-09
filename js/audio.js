@@ -1407,3 +1407,78 @@ function sandstormRoar(ac) {
   }
   return normalize(buffer, 0.16);
 }
+
+/* ---------- the Secret Base's furniture (js/base-play.js): every note and knock made in code ---------- */
+
+const PENTA = [0, 2, 4, 7, 9];
+/** How many notes each instrument has: two octaves of a major pentatonic from middle C, so any run of taps is a tune. */
+export const FURNITURE_NOTES = 10;
+const noteHz = (n) => 261.63 * 2 ** (Math.floor(n / 5) + PENTA[n % 5] / 12);
+const TAU = Math.PI * 2;
+
+/** A buffer `seconds` long from a sample function of time, with a click-free start and end. */
+function render(ac, seconds, fn, peak) {
+  const rate = ac.sampleRate, n = Math.round(rate * seconds), buffer = ac.createBuffer(1, n, rate), out = buffer.getChannelData(0);
+  for (let i = 0; i < n; i++) { const t = i / rate; out[i] = fn(t, i, rate) * Math.min(1, t / 0.004, (n - i) / (rate * 0.03)); }
+  return normalize(buffer, peak);
+}
+const partials = (f, t, list) => list.reduce((s, [k, a, d]) => s + a * Math.sin(TAU * f * k * t) * Math.exp(-t * d), 0);
+
+const VOICES = {
+  piano: (f) => [1.6, (t) => partials(f, t, [[1, 1, 2.2], [2, 0.5, 4], [3, 0.25, 6], [4, 0.1, 8]])],
+  organ: (f) => [0.8, (t) => partials(f, t, [[1, 1, 0.6], [2, 0.6, 0.6], [4, 0.35, 0.8], [8, 0.12, 1]]) * Math.min(1, t / 0.03)],
+  mallet: (f) => [0.9, (t) => partials(f * 2, t, [[1, 1, 5.5], [3.9, 0.35, 22]])],
+  bell: (f) => [2.4, (t) => partials(f * 2, t, [[1, 1, 1.3], [2.76, 0.5, 2.4], [5.4, 0.25, 3.6], [8.93, 0.12, 5]])],
+  musicbox: (f) => [1.1, (t) => partials(f * 4, t, [[1, 1, 3.5], [3, 0.15, 9], [8, 0.08, 14]])],
+  brass: (f) => [0.7, (t) => partials(f, t, [[1, 1, 1.4], [2, 0.7, 1.6], [3, 0.5, 1.8], [4, 0.35, 2], [5, 0.2, 2.2], [6, 0.12, 2.4]]) * Math.min(1, t / 0.05)],
+  reed: (f) => [0.7, (t) => partials(f, t, [[1, 1, 1.5], [3, 0.45, 1.8], [5, 0.25, 2.2], [7, 0.12, 2.6]]) * Math.min(1, t / 0.04) * (1 + 0.04 * Math.sin(TAU * 5.5 * t))],
+  flute: (f) => [0.8, (t) => (Math.sin(TAU * f * 2 * t) + 0.12 * Math.sin(TAU * f * 4 * t)) * Math.min(1, t / 0.06) * Math.exp(-t * 1.8) * (1 + 0.05 * Math.sin(TAU * 5 * t))],
+  bass: (f) => [0.8, (t) => Math.tanh(2.5 * partials(f / 2, t, [[1, 1, 3], [2, 0.4, 5]]))],
+  strings: (f) => [1.1, (t) => partials(f, t, [[1, 1, 1], [2, 0.5, 1.2], [3, 0.33, 1.4], [4, 0.25, 1.6], [5, 0.2, 1.8]]) * Math.min(1, t / 0.12) * (1 + 0.03 * Math.sin(TAU * 6 * t))],
+};
+/** A plucked string (Karplus-Strong): a burst of noise looping round a delay as long as one cycle, softening each pass. */
+function pluck(ac, f) {
+  const rate = ac.sampleRate, n = Math.round(rate * 1.4), buffer = ac.createBuffer(1, n, rate), out = buffer.getChannelData(0);
+  const p = Math.max(2, Math.round(rate / f)), ring = Float32Array.from({ length: p }, () => Math.random() * 2 - 1);
+  for (let i = 0; i < n; i++) {
+    const a = i % p, b = (i + 1) % p;
+    out[i] = ring[a];
+    ring[a] = (ring[a] + ring[b]) * 0.4985;
+  }
+  return normalize(buffer, 0.5);
+}
+for (let n = 0; n < FURNITURE_NOTES; n++) {
+  for (const [voice, make] of Object.entries(VOICES)) SOUNDS[`${voice}-${n}`] = { synth: ac => { const [s, fn] = make(noteHz(n)); return render(ac, s, fn, 0.5); } };
+  SOUNDS[`pluck-${n}`] = { synth: ac => pluck(ac, noteHz(n)) };
+}
+
+const noisy = (seconds, fn, peak = 0.5) => ({ synth: ac => { const noise = chipNoise(Math.round(ac.sampleRate * seconds), 1); return render(ac, seconds, (t, i) => fn(t, noise[i]), peak); } });
+Object.assign(SOUNDS, {
+  'fx-click': noisy(0.05, (t, r) => (Math.sin(TAU * 2200 * t) * 0.5 + r * 0.5) * Math.exp(-t * 120), 0.3),
+  'fx-static': noisy(0.35, (t, r) => r * (0.6 + 0.4 * Math.sin(TAU * 60 * t)), 0.18),
+  'fx-door': noisy(0.4, (t, r) => Math.sin(TAU * (70 - t * 40) * t) * Math.exp(-t * 9) + r * 0.25 * Math.exp(-t * 20) + Math.sin(TAU * (420 + 90 * Math.sin(t * 30)) * t) * 0.08 * Math.exp(-((t - 0.2) ** 2) * 200), 0.4),
+  'fx-ding': { synth: ac => render(ac, 1.6, t => partials(1568, t, [[1, 1, 2.2], [2.76, 0.4, 4], [5.4, 0.2, 6]]), 0.35) },
+  'fx-gong': { synth: ac => render(ac, 4, t => partials(98, t, [[1, 1, 0.7], [1.48, 0.7, 0.8], [2.1, 0.6, 0.9], [2.9, 0.4, 1.1], [4.2, 0.3, 1.4]]) * (1 + 0.15 * Math.sin(TAU * 3 * t)) * Math.min(1, t / 0.02), 0.5) },
+  'fx-boing': { synth: ac => render(ac, 0.6, t => Math.sin(TAU * (180 + 260 * Math.sin(t * 14) * Math.exp(-t * 3)) * t) * Math.exp(-t * 5), 0.4) },
+  'fx-zap': noisy(0.45, (t, r) => (Math.sign(Math.sin(TAU * (900 + 600 * Math.sin(t * 90)) * t)) * 0.4 + r * 0.6) * Math.exp(-t * 6) * (0.5 + 0.5 * Math.sin(TAU * 40 * t)), 0.25),
+  'fx-bubble': { synth: ac => render(ac, 0.12, t => Math.sin(TAU * (500 + 2400 * t) * t) * Math.exp(-t * 30), 0.3) },
+  'fx-whoosh': noisy(0.6, (t, r) => r * Math.sin(Math.PI * t / 0.6) ** 2, 0.25),
+  'fx-drum': noisy(0.5, (t, r) => Math.sin(TAU * (60 + 120 * Math.exp(-t * 30)) * t) * Math.exp(-t * 7) + r * 0.3 * Math.exp(-t * 40), 0.55),
+  'fx-snare': noisy(0.25, (t, r) => r * Math.exp(-t * 18) + Math.sin(TAU * 190 * t) * 0.4 * Math.exp(-t * 25), 0.4),
+  'fx-taiko': noisy(1, (t, r) => Math.sin(TAU * (48 + 60 * Math.exp(-t * 20)) * t) * Math.exp(-t * 3.5) + r * 0.15 * Math.exp(-t * 30), 0.6),
+  'fx-cymbal': noisy(1.2, (t, r) => r * Math.exp(-t * 3) * (0.6 + 0.4 * Math.sin(TAU * 7000 * t)), 0.2),
+  'fx-coin': { synth: ac => render(ac, 0.5, t => Math.sign(Math.sin(TAU * (t < 0.07 ? 988 : 1319) * t)) * 0.5 * Math.exp(-t * 7), 0.2) },
+  'fx-steam': noisy(1.1, (t, r) => r * Math.min(1, t / 0.1) * Math.exp(-t * 1.6), 0.15),
+  'fx-pop': { synth: ac => render(ac, 0.12, t => Math.sin(TAU * (900 - 4000 * t) * t) * Math.exp(-t * 35), 0.35) },
+  'fx-crackle': noisy(1.2, (t, r) => (Math.random() < 0.004 ? 1 : 0) * r + r * 0.05 * Math.exp(-t), 0.25),
+  'fx-beep': { synth: ac => render(ac, 0.3, t => Math.sign(Math.sin(TAU * (t < 0.12 ? 1760 : 2349) * t)) * (t % 0.15 < 0.11 ? 1 : 0), 0.12) },
+  'fx-hum': { synth: ac => render(ac, 1.2, t => partials(110, t, [[1, 1, 0.4], [2, 0.5, 0.4], [3, 0.25, 0.4]]) * Math.min(1, t / 0.15), 0.25) },
+  'fx-whirr': noisy(1.2, (t, r) => (Math.sin(TAU * (180 + 220 * Math.min(1, t * 3)) * t) * 0.5 + r * 0.3) * Math.min(1, t / 0.1), 0.25),
+  'fx-splash': noisy(0.6, (t, r) => r * Math.exp(-t * 6) + Math.sin(TAU * (700 + 900 * Math.sin(t * 80)) * t) * 0.15 * Math.exp(-t * 9), 0.3),
+  'fx-flush': noisy(1.6, (t, r) => r * Math.sin(Math.PI * Math.min(1, t / 1.6)) * (0.7 + 0.3 * Math.sin(TAU * 7 * t)), 0.25),
+  'fx-squeak': { synth: ac => render(ac, 0.25, t => Math.sin(TAU * (1300 + 900 * Math.sin(t * 22)) * t) * Math.exp(-t * 9), 0.25) },
+  'fx-tick': { synth: ac => render(ac, 0.04, t => Math.sin(TAU * 3200 * t) * Math.exp(-t * 160), 0.25) },
+  'fx-ring': { synth: ac => render(ac, 1.2, t => Math.sign(Math.sin(TAU * 2100 * t)) * (Math.floor(t * 24) % 2) * 0.5, 0.12) },
+  'fx-firework': { synth: ac => fireworkPop(ac, 0.6, 80, 0.3) },
+  'fx-heal': { synth: ac => render(ac, 2.2, t => { const i = Math.min(5, Math.floor(t / 0.26)), s = t - i * 0.26; return partials(noteHz([5, 7, 9, 10, 12, 14][i] - 3) * 0.5, s, [[1, 1, 3], [2, 0.3, 6]]) * (t < 1.6 ? 1 : Math.exp(-(t - 1.6) * 6)); }, 0.3) },
+});

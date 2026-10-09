@@ -16,6 +16,7 @@ import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, creat
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
+import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
@@ -164,6 +165,7 @@ function wallTrim(art) {
 }
 
 function buildPieces() {
+  pieceGroup.traverse(o => { if (o.userData.play) stopPlay(o.userData.play); });
   dispose(pieceGroup);
   blocked = new Set(); winMats = []; shafts = []; motes = [];
   giftBoard = null;
@@ -235,6 +237,7 @@ function makePiece(it, ghostly = false, lift = null) {
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; }
     return m;
   });
+  if (!ghostly) dressPlay(THREE, model, p);
   model.traverse(o => {
     if (!o.isMesh) return;
     o.castShadow = o.castShadow !== false && !ghostly; o.receiveShadow = !ghostly;
@@ -860,7 +863,14 @@ function onTap(e) {
   while (g && g.userData.index === undefined) g = g.parent;
   if (g && g.parent === pieceGroup && PIECES[base.items[g.userData.index].id].gift) return unwrap(g.userData.index);
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
-    const it = base.items[g.userData.index];
+    const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
+    // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
+    if (play) {
+      const r = tapPlay(play), now = performance.now();
+      if (r.cheer) walker.hopUntil = now + 500;
+      if (r.cheer === 'heal') for (const gu of guests) if (gu.mon) cheer(gu, 4);
+      if (!seatOf(it.id)) return;
+    }
     if (seatOf(it.id) && sitPartner(it)) return;
   }
   if (mode === 'edit' && g && g.parent === pieceGroup) {
@@ -1083,7 +1093,7 @@ function setTime(force) {
   hemi.color.set(L.sky); hemi.groundColor.set(L.ground); hemi.intensity = L.amb;
   sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
   for (const l of lampLights) l.intensity = L.lamp * 3;
-  for (const m of winMats) m.emissiveIntensity = m.userData.lamp ? Math.min(1, L.lamp / 2) : L.win;
+  for (const m of winMats) { m.userData.was = m.userData.lamp ? Math.min(1, L.lamp / 2) : L.win; m.emissiveIntensity = m.userData.off ? 0 : m.userData.was; }
   for (const s of shafts) s.material.opacity = L.shaft;
   for (const d of motes) d.material.opacity = L.motes;
   scene.background = new THREE.Color(L.bg);
@@ -1203,6 +1213,7 @@ function frame(now) {
   for (const g of guests) if (g.mon) liveGuest(g, dt, now);
   livePuffs(now);
   liveGift(now);
+  for (const pg of pieceGroup.children) { const pl = pg.userData.model?.userData.play; if (pl) tickPlay(pl, now, dt); }
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) {
     for (const dust of motes) {
