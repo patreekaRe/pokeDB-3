@@ -208,7 +208,8 @@ export function leaveTitle() {
   if (screen.hidden) return;
   screen.classList.add('away');
   closeSoundPops();
-  setTimeout(() => {
+  clearTimeout(leaving);
+  leaving = setTimeout(() => {
     screen.hidden = true;
     screen.classList.remove('away');
     document.body.classList.remove('titling');
@@ -218,7 +219,11 @@ export function leaveTitle() {
   }, still() ? 0 : 380);
 }
 
+// a fade still under way when the title comes back (a quick Back from the select) would hide it once it has reopened
+let leaving = 0;
+
 function open() {
+  clearTimeout(leaving);
   const screen = $('title-screen');
   screen.classList.toggle('menu', pressed);
   screen.classList.remove('away');

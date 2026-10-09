@@ -293,6 +293,9 @@ function init() {
   // Playtest shortcut (the user's ask): ?scene=tutor (or kombat, center...) shows just that room's painted scene, no
   // run started, so the saved run is untouched; &biome=shrine or wastes picks the biome outside its windows.
   const params = new URLSearchParams(location.search), place = params.get('scene');
+  // the HTML shows the title from the first paint (the shut Pokédex), so a playtest that skips it must hide it, or it
+  // sits over the run; showTitle() below shows it again in the same task, so the normal way in never flickers
+  $('title-screen').hidden = true;
   // ?area=wetland (any Safari area; &stage=0-3, &kind=elite or boss) shows that area's scene the same way, and each
   // tap walks on to its next place, then the next area
   if (params.has('area')) return peekSafari(params);
