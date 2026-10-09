@@ -1685,18 +1685,21 @@ function nearest() {
 /** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08), reworked 2026-10-09 (the user's layout): one
     line along the hinge, lens, lights, small Home and How to play keys that never turn into anything else, the PokéCoins
     on their own little LCD and the place your partner walks up to on the right (a tap on the place does it); under it a
-    saved run's LCD (its Pokémon, where and which floor, the HP bar and the Escape Rope), folding away down into the
+    saved run's LCD (its Pokémon in the LCD's greens like the map's run card, its name, where and which floor, the HP bar and the Escape Rope), folding away down into the
     bar, like an auto-hiding taskbar, while there is no run. Redrawn only when the place or the run changes. */
 function placeBar() {
   const coins = getSave().coins ?? 0;
   if (coins !== barCoins) { barCoins = coins; bar.querySelector('.hbar-coins').textContent = coins.toLocaleString(); }
-  const p = nearest(), k = `${p?.id ?? ''}|${saved ? `${saved.hp}/${saved.maxHp}` : ''}`;
+  const p = nearest(), k = `${p?.id ?? ''}|${saved ? `${saved.hp}/${saved.maxHp}|${saved.sprite}` : ''}`;
   if (k === barKey) return;
   barKey = k;
   bar.classList.toggle('no-run', !saved);
   bar.querySelector('.hbar-fold').inert = !saved;
   if (saved) {
     setHpBar('hub', saved.hp, saved.maxHp);
+    const mon = bar.querySelector('.hbar-sprite');
+    if (mon.getAttribute('src') !== saved.sprite) mon.src = saved.sprite;
+    mon.dataset.stage = saved.saved.stage;
     bar.querySelector('.hbar-name').textContent = saved.name;
     bar.querySelector('.hbar-where').textContent = saved.place;
     bar.querySelector('.hbar-floor').textContent = saved.floor ? `F${saved.floor}` : '';
@@ -1986,7 +1989,7 @@ async function build() {
         <div class="room-sign hbar-cash" title="PokéCoins"><span class="hbar-coins">0</span></div>
         <div class="room-sign hbar-sign" aria-live="polite"><b></b></div></div>
       <div class="hbar-fold"><div class="hbar-fold-in">
-        <div class="room-lcd hbar-run"><span class="hbar-info"><b class="hbar-name"></b><span class="hbar-where"></span><span class="hbar-floor"></span></span>
+        <div class="room-lcd hbar-run"><span class="hbar-mon" aria-hidden="true"><img class="hbar-sprite pixel" alt=""></span><span class="hbar-info"><b class="hbar-name"></b><span class="hbar-where"></span><span class="hbar-floor"></span></span>
           <span class="hbar-hp"><span class="gb-hp" id="hub-hp" role="progressbar" aria-label="HP" aria-valuemin="0"><span class="gb-hp-tag" aria-hidden="true">HP:</span><span class="gb-hp-track"><span class="gb-hp-fill" id="hub-hp-fill"></span></span></span><span class="gb-hp-num" id="hub-hp-text"></span></span>
           <button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></div></div></div>
     </div>
