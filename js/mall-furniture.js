@@ -57,7 +57,7 @@ function sofa(g, x, y, r, col) {
 
 /** The front on the hall's back wall, between x0 and x1 (the painting's units) from `top` to `foot`: a teal fascia saying
     FURNITURE, two warm-lit display windows (the pieces in them are real, set in front of this) and a glass door. */
-export function frontArt(f, s, x0, x1, top, foot) {
+export function frontArt(f, s, x0, x1, top, foot, closed = false) {
   const { g, rr, lin } = f, L = LOOK[1], mid = (x0 + x1) / 2;
   rr(x0, top, x1 - x0, foot - top, 0, '#4a3a2e');
   rr(x0, top, x1 - x0, 12, 1, lin(0, top, 0, top + 12, [L.trim, L.trim, L.dark]));
@@ -78,7 +78,7 @@ export function frontArt(f, s, x0, x1, top, foot) {
   g.fillStyle = '#3a3a44'; g.fillRect(mid - 0.4, wt - 0.8, 0.8, foot - wt);
   for (const x of [mid - 2.4, mid + 1.6]) rr(x, (wt + foot) / 2, 0.8, 5, 0.4, '#d8dce6');
   rr(mid - 4.5, wt + 3, 9, 3.6, 0.8, '#ffffff');
-  words(g, 'OPEN', mid, wt + 4.9, 2.6, L.trim);
+  words(g, closed ? 'CLOSED' : 'OPEN', mid, wt + 4.9, 2.6, closed ? '#c83828' : L.trim);
 }
 
 /** Two of today's pieces in the front's windows (uprights, so they read as themselves), with the glass in front of them

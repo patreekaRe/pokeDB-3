@@ -2,7 +2,7 @@
    shopping centre with the Game Corner inside). Walked into from its doors in the Clearing (js/hub-3d.js), the same
    HD-2D look as the Secret Base: a marble floor with a red runner, shop fronts along the back wall, a mezzanine with a
    glass rail and the upper floor's lit shops over them, tall windows above. The Game Corner is the middle front, its
-   3D booth (cornerStall()), walked into as its own arcade (js/mall-corner.js); the west front is the Furniture store,
+   front flat on the wall (cornerFront()), walked into as its own arcade (js/mall-corner.js); the west front is the Furniture store,
    its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is shuttered for a shop
    to come (a new one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it; the pill at the
    bottom names the nearest and goes in; the ✕ walks back out. */
@@ -12,7 +12,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain } from './hd2d.js';
-import { fine, texOf, cornerStall, GC, words, star, hubThree } from './hub-3d.js';
+import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, stairLift, upstairsLine, STAIR } from './mall-furniture.js';
@@ -30,8 +30,9 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
-  { id: 'furniture', name: 'Furniture', line: 'Furniture for your Secret Base, new pieces every day.', x: 2, step: { x: 2, y: 1 }, open: true },
-  { id: 'corner', name: 'Game Corner', line: 'Starters, perks, shinies and Poké Balls for PokéCoins: walk in and buy them.', x: 6, step: { x: 6, y: 2 }, open: true },
+  // closed till the user has finished their insides (2026-10-08); `open: true` lets you in again, ?mall= still does
+  { id: 'furniture', name: 'Furniture', line: 'Closed for now: the shelves are still being stocked.', x: 2, step: { x: 2, y: 1 } },
+  { id: 'corner', name: 'Game Corner', line: 'Closed for now: the machines are still being set up.', x: 6, step: { x: 6, y: 1 } },
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
 ];
 
@@ -74,6 +75,40 @@ function shutter(f, s, x0, x1, colour) {
   for (let y = st + 2; y < foot; y += 2.6) g.fillRect(x0 + 2, y, x1 - x0 - 4, 0.5);
   rr((x0 + x1) / 2 - 4, foot - 4, 8, 1.4, 0.7, '#5a5e6a');   // its handle
   g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(x0 + 2, st, x1 - x0 - 4, 1.2);
+}
+
+/** The Game Corner's front, flat on the wall like the others: a violet fascia trimmed in gold saying GAME CORNER between
+    two stars, slot reels lit in its two windows, a dark glass door with an OPEN or CLOSED plaque. */
+function cornerFront(f, s, x0, x1, top, foot, closed) {
+  const { g, rr, lin } = f, mid = (x0 + x1) / 2;
+  rr(x0, top, x1 - x0, foot - top, 0, GC.violetDark);
+  rr(x0, top, x1 - x0, 12, 1, lin(0, top, 0, top + 12, [GC.violet, GC.violet, GC.violetDark]));
+  g.strokeStyle = GC.gold; g.lineWidth = 0.8; g.strokeRect(x0 + 0.8, top + 0.8, x1 - x0 - 1.6, 10.4);
+  words(g, 'GAME CORNER', mid, top + 6.2, 5, GC.gold);
+  words(s, 'GAME CORNER', mid, top + 6.2, 5, '#ffe890');
+  for (const x of [x0 + 4.5, x1 - 4.5]) { g.fillStyle = GC.gold; star(g, x, top + 6, 2.2); s.fillStyle = '#ffe890'; star(s, x, top + 6, 2.2); }
+  for (let x = x0 + 3; x < x1 - 2; x += 5) {   // bulbs along the fascia's foot
+    g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, top + 12.6, 0.7, 0, Math.PI * 2); g.fill();
+    s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, top + 12.6, 0.8, 0, Math.PI * 2); s.fill();
+  }
+  const wt = top + 15, wb = foot - 4, dw = 14;
+  for (const [a, b] of [[x0 + 2, mid - dw / 2 - 1.5], [mid + dw / 2 + 1.5, x1 - 2]]) {
+    rr(a, wt, b - a, wb - wt, 0.8, lin(0, wt, 0, wb, ['#7a4ab8', '#4a2a80', '#2e1c4e']));
+    const rw = (b - a - 4) / 3, ry = wt + 5;
+    for (let i = 0; i < 3; i++) {
+      const rx = a + 2 + i * rw;
+      rr(rx + 0.3, ry, rw - 0.6, 9, 0.6, '#ffffff');
+      words(g, '7', rx + rw / 2, ry + 4.8, 4, GC.red);
+      s.fillStyle = '#c0a0ff'; s.fillRect(rx + 0.3, ry, rw - 0.6, 9);
+    }
+    rr(a - 0.6, wb, b - a + 1.2, 4, 0.4, GC.goldDark);
+  }
+  rr(mid - dw / 2, wt - 2, dw, foot - wt + 2, 0.6, '#1a1028');
+  rr(mid - dw / 2 + 1.2, wt - 0.8, dw - 2.4, foot - wt + 0.8, 0.4, lin(0, wt, 0, foot, ['#5a4880', '#3a2a5a', '#2a1c44']));
+  g.fillStyle = '#1a1028'; g.fillRect(mid - 0.4, wt - 0.8, 0.8, foot - wt);
+  for (const x of [mid - 2.4, mid + 1.6]) rr(x, (wt + foot) / 2, 0.8, 5, 0.4, GC.gold);
+  rr(mid - 4.5, wt + 3, 9, 3.6, 0.8, '#ffffff');
+  words(g, closed ? 'CLOSED' : 'OPEN', mid, wt + 4.9, 2.6, closed ? GC.red : GC.violet);
 }
 
 /** Glass onto an upper floor's shop: warm light, shelves, an icon on its sign. */
@@ -130,21 +165,12 @@ function wallArt() {
   rr(0, wy(DECK + 2.6), W, wy(DECK) - wy(DECK + 2.6), 0, lin(0, wy(DECK + 2.6), 0, wy(DECK), [C.cream, C.stone]));
   const ups = [['ball', '#e84838'], ['potion', '#8a5ad0'], ['berry', '#3a8ad8'], ['disc', '#58a858'], ['star', '#e8a830']];
   ups.forEach(([icon, colour], i) => { const t = 0.4 + i * 2.6; upperShop(f, s, wx(t) + 2, wx(t + 2.3), ICONS[icon], colour); });
-  // the ground floor: pilasters, two shutters and the Game Corner's alcove
+  // the ground floor: pilasters and the three fronts
   for (const fr of FRONTS) {
-    if (fr.id === 'corner') {
-      const x0 = wx(fr.x - 2) - 4, x1 = wx(fr.x + 3) + 4, top = wy(DECK - 0.05);
-      rr(x0, top, x1 - x0, wy(0) - top, 0, lin(0, top, 0, wy(0), [GC.violet, GC.violetDark]));
-      g.strokeStyle = 'rgba(248,208,64,0.45)'; g.lineWidth = 0.5;
-      for (let k = x0 - 60; k < x1; k += 8) { g.beginPath(); g.moveTo(k, top); g.lineTo(k + 60, wy(0)); g.moveTo(k, wy(0)); g.lineTo(k + 60, top); g.stroke(); }
-      g.strokeStyle = GC.gold; g.lineWidth = 2.4; g.strokeRect(x0 + 1.2, top + 1.2, x1 - x0 - 2.4, wy(0) - top);
-      for (let x = x0 + 4; x < x1 - 2; x += 6) for (const y of [top + 1.2]) {
-        g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, 1, 0, Math.PI * 2); g.fill();
-        s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y, 1.2, 0, Math.PI * 2); s.fill();
-      }
-      for (const x of [x0 + 10, x1 - 10]) { g.fillStyle = GC.gold; star(g, x, top + 14, 4); s.fillStyle = '#ffe890'; star(s, x, top + 14, 4); }
-    } else if (fr.id === 'furniture') frontArt(f, s, wx(fr.x - 1) + 2, wx(fr.x + 2) - 2, wy(2.5), wy(0));
-    else shutter(f, s, wx(fr.x - 1) + 2, wx(fr.x + 2) - 2, fr.colour);
+    const x0 = wx(fr.x - 1) + 2, x1 = wx(fr.x + 2) - 2;
+    if (fr.id === 'corner') cornerFront(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
+    else if (fr.id === 'furniture') frontArt(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
+    else shutter(f, s, x0, x1, fr.colour);
   }
   for (const t of [0, 4, 9, 13]) rr(wx(t) - 3, wy(DECK), 6, wy(0) - wy(DECK), 0.8, lin(wx(t) - 3, 0, wx(t) + 3, 0, ['#ffffff', C.cream, C.shade]));
   g.fillStyle = '#6a5a48'; g.fillRect(0, wy(0.12), W, wy(0) - wy(0.12));
@@ -161,7 +187,7 @@ function floorArt() {
   g.strokeStyle = C.grout; g.lineWidth = 0.4;
   for (let x = 0; x <= COLS; x++) { g.beginPath(); g.moveTo(x * T, 0); g.lineTo(x * T, ROWS * T); g.stroke(); }
   for (let y = 0; y <= ROWS; y++) { g.beginPath(); g.moveTo(0, y * T); g.lineTo(COLS * T, y * T); g.stroke(); }
-  const rx = 6 * T + 2, rw = T - 4, ry = 2 * T;
+  const rx = 6 * T + 2, rw = T - 4, ry = 0;
   rr(rx - 1, ry, rw + 2, ROWS * T - ry, 0, '#c89418');
   rr(rx, ry, rw, ROWS * T - ry, 0, lin(rx, 0, rx + rw, 0, ['#a82838', '#c83848', '#a82838']));
   ball(g, 6.5 * T, 4.5 * T, 5);
@@ -295,16 +321,8 @@ function buildHall() {
     hall.add(m);
   }
 
-  // the Game Corner's booth, set in its alcove
-  const gc = FRONTS.find(f => f.id === 'corner');
-  const booth = cornerStall(glows);
-  booth.scale.setScalar(1.15);
-  booth.position.set(tileX(gc.x), 0, -ROWS / 2 + 0.85);
-  booth.traverse(o => { o.userData.front = gc; });
-  hall.add(booth);
-  for (let x = 4; x <= 8; x++) for (let y = 0; y <= 1; y++) blocked.add(key(x, y));
-  // the other fronts answer a tap too: an invisible board over each
-  for (const fr of FRONTS) if (fr.id !== 'corner') {
+  // the fronts answer a tap: an invisible board over each
+  for (const fr of FRONTS) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.5), new THREE.MeshBasicMaterial({ visible: false }));
     m.position.set(tileX(fr.x), 1.25, -ROWS / 2 + 0.02);
     m.userData.front = fr;
