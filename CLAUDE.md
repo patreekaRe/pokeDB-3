@@ -722,9 +722,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   stock skips them (`furnitureStock()`); the Shop tab lists the unearned after the stock, greyed with an "Earn" tag, a
   tap saying how (`lockedEarned()`, `howToEarn()`; a secret source's piece is a black "???"). A new earned kind's source
   must be unique (`tests/furniture.test.mjs`). The base is decoration only, one room that grows, 6 Pokémon on show (the
-  user's calls, 2026-10-09). **Branch rule:** Secret Base work stays on `secret-base`; a cloud session starts from that
-  branch and pushes only to `origin secret-base`, never `main`, overriding the push-to-main rule above until the user
-  says it goes live.
+  user's calls, 2026-10-09). **Live since 2026-10-09** (the user's call): `secret-base` was
+  merged into `main`, the Clearing, Secret Base and Poké Mall with it; work goes to `main` again like everything else.
 - **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
   100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
   seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),
