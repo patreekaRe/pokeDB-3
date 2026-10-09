@@ -2033,3 +2033,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Secret Base: cheap furniture and a balanced daily stock** (2026-10-09): every piece now costs 50 to 150 PokéCoins
   (the authored 80-1,600 on a log curve, so the order holds; wallpapers and floors ~105-130), and each floor's day is one
   seat, table, storage piece, light, plant, rug, wall piece and a doll or anything else, the user's ask.
+- **Poké Mall: the Furniture store restyled after Nook's Cranny** (2026-10-09): plaster and timber walls, a plank floor,
+  leaf-green sign and counter, and the day's pieces near life size on 2 x 2 wooden platforms with readable price cards
+  (tallest at the back); the user found the pieces too small and wanted a full restyle. The second floor costs 1,000 now.
