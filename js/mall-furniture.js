@@ -370,6 +370,35 @@ function liftDialArt(L) {
   return f.c;
 }
 
+/** The lift's shaft from its header up to the top of the walls, `h` units tall: cream plaster between timber posts, the
+    room's beam crossing it at the storey's top, a glowing floor lamp over the header, and the shaft's own panels above. */
+function liftShaftArt(L, h) {
+  const U = 20, W = LIFT_W * U, H = h * U, f = fine(W, H, 4), { g, rr, lin, shine } = f, s = shine();
+  const wy = (y) => (LIFT_H + 0.1 + h - y) * U;
+  g.fillStyle = lin(0, 0, 0, H, [L.plaster[1], L.plaster[0]]); g.fillRect(0, 0, W, H);
+  const post = (x, w) => {
+    rr(x, 0, w, H, 0, lin(x, 0, x + w, 0, [L.lite, L.wood, L.dark]));
+    g.strokeStyle = 'rgba(90,50,20,0.25)'; g.lineWidth = 0.3;
+    for (let i = 1; i < 3; i++) { g.beginPath(); g.moveTo(x + w * i / 3, 0); g.lineTo(x + w * i / 3 + 0.4, H); g.stroke(); }
+  };
+  post(0, 5); post(W - 5, 5);
+  // panels up the shaft, each a sunken square in the plaster with a lit lower edge
+  for (let y = wy(5.6); y > 8; y -= 26) {
+    rr(9, y - 22, W - 18, 20, 1.2, 'rgba(120,80,40,0.16)');
+    g.fillStyle = 'rgba(255,250,235,0.5)'; g.fillRect(9.5, y - 2.6, W - 19, 0.6);
+  }
+  // the room's beam, level with the one painted on the wall
+  const beam = wy(5.15);
+  rr(0, beam - 3.4, W, 4.4, 0.6, lin(0, beam - 3.4, 0, beam + 1, [L.lite, L.wood, L.dark]));
+  g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(0, beam - 3.4, W, 0.5);
+  // a little lamp over the header: a brass cap and a frosted glass bowl, lit
+  const lx = W / 2, ly = wy(LIFT_H + 0.45);
+  rr(lx - 4, ly - 4.6, 8, 1.6, 0.6, '#c8982c');
+  g.fillStyle = lin(0, ly - 3, 0, ly + 3, ['#fffbe8', '#ffe2a0']); g.beginPath(); g.ellipse(lx, ly, 5, 3.2, 0, 0, Math.PI * 2); g.fill();
+  s.fillStyle = '#ffe8a8'; s.beginPath(); s.ellipse(lx, ly, 5, 3.2, 0, 0, Math.PI * 2); s.fill();
+  return f.c;
+}
+
 /** The lift's two doors as one picture (each door shows its half): brushed champagne metal, a panel inset on each, and
     the store's leaf in a cream ring split down the middle. */
 function liftDoorArt(L) {
@@ -594,6 +623,10 @@ export function buildFloor(THREE, floor, size, upstairs) {
   put(new THREE.BoxGeometry(LIFT_W, LIFT_H - LIFT_DOOR, LIFT_D), [timber, timber, timber, ceiling, std({ map: texOf(liftDialArt(L)), roughness: 0.7 }), timber],
     0, (LIFT_H + LIFT_DOOR) / 2, LIFT_D / 2);
   put(new THREE.BoxGeometry(LIFT_W + 0.12, 0.1, LIFT_D + 0.12), dark, 0, LIFT_H + 0.05, LIFT_D / 2);
+  // its shaft on up to the top of the walls, so it reads as a lift through the ceiling, not a booth on the floor
+  const shaftH = TOP - LIFT_H - 0.1;
+  put(new THREE.BoxGeometry(LIFT_W, shaftH, LIFT_D - 0.1), [timber, timber, timber, timber, lit(liftShaftArt(L, shaftH), '#ffe8b0', 0.8), timber],
+    0, LIFT_H + 0.1 + shaftH / 2, (LIFT_D - 0.1) / 2);
   // the car: a warm-lit back panel, a wood floor, a brass handrail
   put(new THREE.PlaneGeometry(1, LIFT_DOOR), std({ color: '#f6e6c4', emissive: new THREE.Color('#ffe0a8'), emissiveIntensity: 0.3 }), 0, LIFT_DOOR / 2, 0.01, false);
   put(new THREE.BoxGeometry(1, 0.02, LIFT_D), std({ color: L.wood, roughness: 0.6 }), 0, 0.01, LIFT_D / 2, false);
