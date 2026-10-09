@@ -16,8 +16,8 @@ import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, creat
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES } from './base-paint.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
-import { PIECES, KINDS, colours, WALLPAPERS, FLOORS, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, furnitureStock, buyPiece } from './secret-base.js';
+import { PIECES, KINDS, colours, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
+  spare, openGift, furnitureStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -49,6 +49,7 @@ let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 let mode = 'walk', blend = 0, shots = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
 let giftBoard = null, unwrapping = null, shopPick = null, shopMsg = '';
+let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
 let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -261,7 +262,16 @@ function addShaft(group, x) {
 
 /* ---------- decorating ---------- */
 
-const save = () => saveBase(base);
+// a wallpaper or floor being tried on is never saved: the room keeps the one it had
+const save = () => saveBase(trying ? { ...base, [trying.field]: trying.was } : base);
+
+/** Take down a wallpaper or floor that was only being tried on. */
+function untry() {
+  if (!trying) return;
+  base[trying.field] = trying.was;
+  trying = null;
+  buildRoom();
+}
 
 /** Pick up a piece (from the tray, or `back` for one lifted off the floor): its ghost appears where it was, or in the
     middle of the view. */
@@ -800,6 +810,7 @@ function tray(which = tab) {
     b.addEventListener('click', pick);
     list.append(b);
   };
+  if (tab === 'shop' && shopNews(base)) { seeShop(base); save(); }
   if (tab === 'shop') for (const id of furnitureStock()) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
   if (tab === 'colour') {
     const id = holding?.id ?? base.items[sel]?.id;
@@ -813,15 +824,9 @@ function tray(which = tab) {
     playSound('confirm');
     hold(id);
   }, spare(base, id) > 1 && spare(base, id) < Infinity ? `×${spare(base, id)}` : PIECES[id].layer === 'wall' ? 'Wall' : '');
-  const swatch = (all, field) => all.forEach(s => {
-    const sw = document.createElement('span');
-    sw.className = 'b3-swatch';
-    sw.style.background = `repeating-linear-gradient(90deg, ${s.a} 0 6px, ${s.b} 6px 10px)`;
-    add(s.name, sw, base[field] === s.id, () => {
-      if (base[field] === s.id) return;
-      base[field] = s.id; save(); buildRoom(); playSound('confirm'); tray();
-    });
-  });
+  // the ones you have first, then the ones for sale, cheapest first
+  const swatch = (all, field) => [...all.filter(s => ownsPaper(base, field, s)), ...all.filter(s => !ownsPaper(base, field, s)).sort((a, b) => a.price - b.price)]
+    .forEach(s => add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => paperTap(field, s), ownsPaper(base, field, s) ? '' : s.price.toLocaleString()));
   if (tab === 'wall') swatch(WALLPAPERS, 'wall');
   if (tab === 'floor') swatch(FLOORS, 'floor');
   if (tab === 'mons') {
@@ -848,6 +853,32 @@ function recolour(id) {
   refresh();
 }
 
+/** A wallpaper or floor you have goes straight up. One for sale goes up on approval with its price, and a second tap
+    buys it; tapping anything else, another tab or Done takes it down again. */
+function paperTap(field, s) {
+  const coins = getSave().coins ?? 0;
+  if (trying?.id === s.id) {
+    const was = trying.was;
+    trying = null;
+    base[field] = was;
+    if (!buyPaper(base, field, s)) {
+      trying = { field, id: s.id, was }; base[field] = s.id;
+      playSound('cancel'); shopMsg = `You need ${(s.price - coins).toLocaleString()} more PokéCoins for ${s.name}.`;
+      return refresh();
+    }
+    playSound('buy'); shopMsg = `${s.name} is yours.`;
+    return tray(), refresh();
+  }
+  untry();
+  shopMsg = '';
+  if (base[field] === s.id) return refresh();
+  if (ownsPaper(base, field, s)) { base[field] = s.id; save(); buildRoom(); playSound('confirm'); return tray(), refresh(); }
+  trying = { field, id: s.id, was: base[field] };
+  base[field] = s.id;
+  buildRoom(); playSound('select');
+  tray(); refresh();
+}
+
 /** A first tap on a piece for sale shows its price, a second buys it into storage. */
 function shopTap(id) {
   const p = PIECES[id], coins = getSave().coins ?? 0;
@@ -872,7 +903,10 @@ function refresh() {
   });
   const mons = onShow();
   root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}`
-    : tab === 'shop' ? `${(getSave().coins ?? 0).toLocaleString()} coins` : '';
+    : tab === 'shop' || tab === 'wall' || tab === 'floor' ? `${(getSave().coins ?? 0).toLocaleString()} coins` : '';
+  const news = shopNews(base);
+  root.querySelector('.b3-tab[data-tab="shop"]').classList.toggle('dex-news', news);
+  root.querySelector('.b3-decor').classList.toggle('dex-news', news);
   const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip);
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
@@ -880,6 +914,9 @@ function refresh() {
     : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
     : tab === 'colour' ? 'Every colour comes with it. Tap one to paint it.'
     : tab === 'shop' ? (shopMsg || (shopPick ? `${PIECES[shopPick].name}: ${PIECES[shopPick].price.toLocaleString()} PokéCoins. Tap again to buy.` : 'New furniture every day. Tap a piece for its price.'))
+    : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
+    : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
+    : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
     : tab === 'furniture' && !KINDS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : 'Pick a piece, or drag one in the room to move it.';
@@ -981,7 +1018,7 @@ function placeCamera(dt, now) {
 /** Walk (just the room) or Decorate (the sheet up, the camera back over the whole room). */
 function setMode(to) {
   if (to === mode) return;
-  if (to === 'walk') { if (holding) act('cancel'); sel = -1; follow = true; }
+  if (to === 'walk') { if (holding) act('cancel'); sel = -1; follow = true; untry(); }
   mode = to;
   playSound(to === 'edit' ? 'confirm' : 'cancel');
   if (to === 'edit') tray();
@@ -1054,6 +1091,7 @@ async function leave() {
   playSound('door');
   await curtain(true);
   if (holding) act('cancel');
+  untry();
   root.remove();
   await leaveTo();
   curtain(false);
@@ -1170,7 +1208,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   view.addEventListener('pointerup', onUp);
   view.addEventListener('pointercancel', () => { pressing = false; pointer = null; });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
-  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopPick = null; shopMsg = ''; tray(b.dataset.tab); refresh(); }));
+  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopPick = null; shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
   root.querySelector('.b3-head .b3-done').addEventListener('click', () => setMode('walk'));

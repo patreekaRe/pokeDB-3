@@ -12,6 +12,9 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-08: **Secret Base: Shop "!" and wallpapers / floors for sale** (Desktop app, branch `secret-base` only): the
+  Decorate key and Shop tab wear a "!" for each day's new stock; 10 wallpapers and 10 floors to try on and buy in their tabs.
+
 - 2026-10-08: **The Clearing as a walkable 3D hub, part a** (Desktop app, branch `secret-base` only, not on main): after
   PRESS START the partner walks a small HD-2D Clearing (`js/hub-3d.js`) to the trail out, Safari gate, Sky Pillar, Sealed
   Gate, the Secret Base's door in the Ancient Tree and a Pokédex stand, each opening what its title sign did; the signs are

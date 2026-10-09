@@ -1927,3 +1927,14 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   (a cloud, any colour), `rim()` (a spoked wheel), `turn()` (a bitmap a quarter round), `speckOval()` and a few sign letters. The ids
   were checked against every earlier kind first (a Sun banner already existed, so this one is the Sky banner). Checked in the
   browser: all 9,900 new pictures paint without an error.
+
+- **Secret Base: a "!" on new Shop stock, wallpapers and floors for sale** (2026-10-08, branch `secret-base` only, roadmap
+  Secret Base b's last open bits): each UTC day's new stock puts the yellow "!" (`.dex-news`) on the Decorate key and the
+  Shop tab until the Shop is opened (`shopNews()` / `seeShop()`, the room's `shopSeen` day). 10 wallpapers and 10 floors
+  joined the free 4 + 4 (`price` in `WALLPAPERS` / `FLOORS`, 400-900 PokéCoins; new looks: plaid, waves, stars, log cabin,
+  leaves, hearts, harlequin, Poké Balls, castle stone, sunset; checkerboard, dark wood, parquet, flagstones, tatami, sand,
+  ice, marble, red carpet, mosaic). The Wallpaper / Floor tabs list yours first, then the ones for sale with their price;
+  a first tap puts one up on approval (`trying` in `js/base-3d.js`, never saved; another tab, Done or leaving takes it
+  down), a second buys it (`buyPaper()`, saved as `secretBase.papers` `wall:id` / `floor:id`). Tiles show a corner
+  of the room painted in it (`paperArt()`). Wall patterns repeat every 8 / 16 / 32 rows, since the 3D room runs the top
+  32 up its tall wall. The 2D fallback lists only owned ones.
