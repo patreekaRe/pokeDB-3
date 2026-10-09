@@ -17,6 +17,8 @@ import { HD, FT } from './base-paint.js';
 import { pieceModel, filled, mirror } from './base-model.js';
 import { shapeOf } from './base-shapes.js';
 import { PIECES } from './base-furniture.js';
+import { PLUSH } from './base-dolls.js';
+import { sewPlush } from './base-plush3d.js';
 
 let THREE = null;
 const U = 1 / FT;   // a painted unit, in tiles
@@ -1218,18 +1220,59 @@ function autoModel(id, paint) {
   return g.children.length ? g : null;
 }
 
+/* ---------- plants: a round pot, the leaves as crossed cards ---------- */
+
+// plants on other shelves; every unshaped kind on the Plants shelf is one too
+const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'centerplant', 'orchidstand', 'topiary', 'tomatovine', 'kelp', 'iceflower']);
+const POT_MAX = 21;   // the tallest pot potAt() paints, in units
+const leafy = (p) => p.w === p.h && (p.group === 'Plants' || LEAFY.has(p.fam));
+
+/** A plant (the user's ask, 2026-10-09: leaves puffed into a hull came out a lumpy blob): its pot, the rows from the
+    floor that are one centred run, turns on a lathe; above it the painting stands on two crossed cards, the front's
+    and the side's, cut out by their alpha, so it reads as the painting from the front and still has a side. */
+function leafyModel(id, paint) {
+  const p = PIECES[id], art = p.art(0, 1, true), rows = rowsOf(art), W = art.width, H = art.height;
+  const j0 = rows.findIndex(r => r), j1 = rows.length - [...rows].reverse().findIndex(r => r);
+  if (j0 < 0) return null;
+  let k = j0;
+  while (k < Math.min(j1, j0 + POT_MAX) && rows[k].runs === 1 && Math.abs(rows[k].l + rows[k].r - W) <= 3) k++;
+  const split = k - j0 >= 4 ? k : j0, g = new THREE.Group();
+  if (split > j0) {
+    const mats = faces(p, id).map(paint), arrs = remember(`${p.fam}|pot`, () => latheArrays(art, j0, split));
+    if (arrs) arrs.forEach((a, i) => { const geo = geoFrom(a); geo.scale(U, U, U); const m = new THREE.Mesh(geo, mats[i]); m.castShadow = m.receiveShadow = true; g.add(m); });
+  }
+  // the cards start a unit into the pot, so no gap shows between the soil and the leaves
+  const c0 = Math.max(j0, split - 1);
+  for (const [dir, turn] of [[0, 0], [1, Math.PI / 2]]) {
+    const m = paint(p.art(dir, HD));
+    Object.assign(m, { alphaTest: 0.5, side: THREE.DoubleSide, transparent: false });
+    const geo = new THREE.PlaneGeometry(W * U, (j1 - c0) * U), uv = geo.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setY(i, (c0 + uv.getY(i) * (j1 - c0)) / H);
+    geo.translate(0, (c0 + j1) / 2 * U, 0);
+    geo.rotateY(turn);
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.castShadow = mesh.receiveShadow = true;
+    g.add(mesh);
+  }
+  return g;
+}
+
 /** Any piece as a 3D group (see the file's head); null for a flat piece with no shape (the caller lays it as a slab).
     `paint(canvas)` makes the material for a painting. */
 export function furnitureModel(three, id, paint) {
   THREE = three;
   const p = PIECES[id], shape = shapeOf(p.fam, p), W = p.w, D = p.h;
   let g = null;
-  if (shape && B[shape.make]) {
+  if (p.doll && PLUSH[p.doll[0]]) {
+    const K = kit(id, paint);
+    sewPlush(THREE, K, PLUSH[p.doll[0]], p.doll[1]);
+    g = assemble(K);
+  } else if (shape && B[shape.make]) {
     const K = kit(id, paint);
     B[shape.make](K, shape, W, D);
     g = assemble(K);
   } else if (p.flat || p.wall) return null;
-  else g = autoModel(id, paint);
+  else g = leafy(p) ? leafyModel(id, paint) : autoModel(id, paint);
   if (!g) {
     const mesh = pieceModel(THREE, id, U, paint);
     g = new THREE.Group();

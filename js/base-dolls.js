@@ -7,11 +7,15 @@
 import { ctx, sh } from './base-paint.js';
 
 let g, u, X, B;
+// set, the parts are sewn in 3D by js/base-plush3d.js instead of painted (the same patterns make both)
+let pen = null;
+export function sewWith(p) { pen = p; g = p ? {} : g; }
 const px = (x) => X + x * u, py = (y) => B - y * u;
 const rgba = (hex, a) => { const v = parseInt(hex.slice(1), 16); return `rgba(${v >> 16},${(v >> 8) & 255},${v & 255},${a})`; };
 
 /** A stuffed part: an oval puffed from the top left, its edge rolling into shade. */
 function puff(x, y, rx, ry, c, rot = 0) {
+  if (pen) return pen.puff(x, y, rx, ry, c, rot);
   const cx = px(x), cy = py(y), RX = rx * u, RY = ry * u;
   g.save(); g.translate(cx, cy); g.rotate(rot); g.scale(1, RY / RX);
   const s = g.createRadialGradient(-RX * 0.35, -RX * 0.45, RX * 0.05, 0, 0, RX * 1.02);
@@ -21,6 +25,7 @@ function puff(x, y, rx, ry, c, rot = 0) {
 }
 /** A stuffed shape from a path in doll units: filled with a soft light from its top left. */
 function shape(pts, c, { curve = true } = {}) {
+  if (pen) return pen.shape(pts, c, curve);
   const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const l = g.createLinearGradient(px(x0), py(y1), px(x1), py(y0));
@@ -37,16 +42,17 @@ function shape(pts, c, { curve = true } = {}) {
   g.closePath(); g.fill();
 }
 const line = (pts, c, w) => {
+  if (pen) return pen.line(pts, c, w);
   g.strokeStyle = c; g.lineWidth = w * u; g.beginPath();
   pts.forEach(([x, y], i) => (i ? g.lineTo(px(x), py(y)) : g.moveTo(px(x), py(y))));
   g.stroke();
 };
-const curveLine = (a, ctl, b, c, w) => { g.strokeStyle = c; g.lineWidth = w * u; g.beginPath(); g.moveTo(px(a[0]), py(a[1])); g.quadraticCurveTo(px(ctl[0]), py(ctl[1]), px(b[0]), py(b[1])); g.stroke(); };
-const dot = (x, y, r, c) => { g.fillStyle = c; g.beginPath(); g.arc(px(x), py(y), r * u, 0, Math.PI * 2); g.fill(); };
-const flat = (x, y, rx, ry, c, rot = 0) => { g.fillStyle = c; g.beginPath(); g.ellipse(px(x), py(y), rx * u, ry * u, rot, 0, Math.PI * 2); g.fill(); };
+const curveLine = (a, ctl, b, c, w) => { if (pen) return pen.curve(a, ctl, b, c, w); g.strokeStyle = c; g.lineWidth = w * u; g.beginPath(); g.moveTo(px(a[0]), py(a[1])); g.quadraticCurveTo(px(ctl[0]), py(ctl[1]), px(b[0]), py(b[1])); g.stroke(); };
+const dot = (x, y, r, c) => { if (pen) return pen.flat(x, y, r, r, c); g.fillStyle = c; g.beginPath(); g.arc(px(x), py(y), r * u, 0, Math.PI * 2); g.fill(); };
+const flat = (x, y, rx, ry, c, rot = 0) => { if (pen) return pen.flat(x, y, rx, ry, c, rot); g.fillStyle = c; g.beginPath(); g.ellipse(px(x), py(y), rx * u, ry * u, rot, 0, Math.PI * 2); g.fill(); };
 
 /* ---------- builds: where each part sits ---------- */
-const BUILDS = {
+export const BUILDS = {
   // stands on two feet: a small body under a big head
   biped: { head: [0, 60, 33, 29], body: [0, 25, 25, 21], belly: [0, 23, 16, 13], feet: [[-15, 6, 11, 6.5], [15, 6, 11, 6.5]], arms: [[-24, 31, 6.5, 10, 0.6], [24, 31, 6.5, 10, -0.6]], eye: [12, 61], ear: [19, 82], tail: [24, 22] },
   // sits on four paws, its head low over its front paws
@@ -60,7 +66,7 @@ const BUILDS = {
 };
 
 /* ---------- ears and tails ---------- */
-function ear(t, side, at, c, tip, inner) {
+export function ear(t, side, at, c, tip, inner) {
   const [ex, ey] = at, s = side;
   const tri = (len, base, lean, tipFrac = 0.35) => {
     const bx = ex * s, tx = bx + Math.sin(lean) * len * s, ty = ey + Math.cos(lean) * len;
@@ -84,7 +90,7 @@ function ear(t, side, at, c, tip, inner) {
     case 'side': { const x = (ex + 16) * s; shape([[x - 6 * s, ey - 10], [x + 12 * s, ey - 6], [x + 4 * s, ey - 18]], c); return; }
   }
 }
-function tail(t, at, c, tip) {
+export function tail(t, at, c, tip) {
   const [tx, ty] = at;
   switch (t) {
     case 'bolt': shape([[tx - 4, ty - 4], [tx + 6, ty + 8], [tx + 2, ty + 10], [tx + 14, ty + 22], [tx + 10, ty + 24], [tx + 24, ty + 40], [tx + 8, ty + 30], [tx + 12, ty + 28], [tx, ty + 16], [tx + 4, ty + 14], [tx - 6, ty + 2]], c, { curve: false });
@@ -109,7 +115,7 @@ function flame(x, y, s = 1, c = '#f84030') {
 }
 
 /* ---------- extras: the bits that make each one itself ---------- */
-const EXTRAS = {
+export const EXTRAS = {
   bulb: (d, L) => { const [x, y, rx, ry] = L.head; shape([[x - 22, y + ry - 10], [x - 18, y + ry + 12], [x, y + ry + 24], [x + 18, y + ry + 12], [x + 22, y + ry - 10]], '#4fa042'); line([[x, y + ry - 6], [x, y + ry + 20]], '#2f7a32', 1.4); line([[x - 10, y + ry - 6], [x - 8, y + ry + 12]], '#2f7a32', 1.2); line([[x + 10, y + ry - 6], [x + 8, y + ry + 12]], '#2f7a32', 1.2); },
   spots: (d, L) => { const [x, y] = L.head; for (const [a, b, r] of [[-20, 10, 4], [18, 14, 3], [-6, 22, 3.5]]) flat(x + a, y + b, r, r * 0.8, sh(d.head || d.body, -1)); },
   plastron: (d, L) => { const [x, y, rx, ry] = L.belly; line([[x - rx * 0.8, y + 3], [x + rx * 0.8, y + 3]], sh(d.belly, -1), 1.2); line([[x - rx * 0.7, y - 4], [x + rx * 0.7, y - 4]], sh(d.belly, -1), 1.2); line([[x, y + ry * 0.8], [x, y - ry * 0.8]], sh(d.belly, -1), 1.2); },

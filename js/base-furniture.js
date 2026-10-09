@@ -373,6 +373,7 @@ function makePiece(fam, theme) {
   if (fam.layer) p.layer = fam.layer;
   if (fam.flat) { p.flat = true; p.high = fam.high; p.side = sh(pal[fam.side] || pal.w, -1); }
   if (fam.wall) p.wall = true;
+  if (fam.doll) p.doll = fam.doll;
   if (fam.draw) p.upright = true;
   const cache = new Map();
   /** Its picture at a facing, `s` canvas pixels a painted unit (1 for the carving and the 2D room, HD for textures);

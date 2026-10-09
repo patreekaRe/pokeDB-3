@@ -1022,7 +1022,7 @@ function doll(id, x, b, vw, rows, colours, s) {
   if (PLUSH[id]) return plushDoll(x + vw / 2, b - 0.5, h * s * 1.25, PLUSH[id]);
   plush(rows, x + (vw - w * s) / 2, b - h * s - 1, colours, s);
 }
-add('Dolls', DOLLS.map(([id, name, colours, rows]) => ({ id: `${id}doll`, name: `${name} doll`, proper: true, solo: true, w: 1, h: 1, price: 350,
+add('Dolls', DOLLS.map(([id, name, colours, rows]) => ({ id: `${id}doll`, name: `${name} doll`, proper: true, solo: true, w: 1, h: 1, price: 350, doll: [id, rows.length * 2 * 1.25],
   draw(x, b, vw) { doll(id, x, b, vw, rows, colours, 2); } })));
-add('Dolls', DOLLS.map(([id, name, colours, rows]) => ({ id: `big${id}doll`, name: `Big ${name} doll`, proper: true, solo: true, w: 2, h: 2, price: 1000,
+add('Dolls', DOLLS.map(([id, name, colours, rows]) => ({ id: `big${id}doll`, name: `Big ${name} doll`, proper: true, solo: true, w: 2, h: 2, price: 1000, doll: [id, rows.length * 5 * 1.25],
   draw(x, b, vw) { doll(id, x, b, vw, rows, colours, 5); } })));
