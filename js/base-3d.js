@@ -49,6 +49,10 @@ let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
 let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
+// decorating zooms in (pinch, the wheel) and a drag on the floor pans it about; camZ / panZ are the pan towards the wall
+let zoom = 1, camZ = 0, panZ = 0, zoomK = 1, pinch = null, drag = null, quietUntil = 0;
+const touches = new Map();
+const ZOOM_MAX = 2.6;
 // Walk shows only the room; Decorate pulls the camera back over the whole room and brings up the sheet
 let mode = 'walk', blend = 0, shots = null, fitted = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
@@ -114,10 +118,9 @@ function buildRoom() {
     side.receiveShadow = true; side.castShadow = true;
     roomGroup.add(side);
   }
-  dressRoom(art, cap, outer);
-  // the mat lies on a doorstep jutting out of the base, past the floor's edge, so it takes no tile
+  // the mat lies on a doorstep jutting out past the floor's edge, so it takes no tile
   const step = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.16, 0.95), [outer, outer, cap, outer, outer, outer]);
-  step.position.set(tileX(Math.floor(COLS / 2)), -0.1, ROWS / 2 + 0.4 + 0.47);
+  step.position.set(tileX(Math.floor(COLS / 2)), -0.1, ROWS / 2 + 0.47);
   step.receiveShadow = true;
   roomGroup.add(step, exitMat = makeExitMat());
 }
@@ -146,7 +149,7 @@ function makeExitMat() {
   const top = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 1, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0 });
   const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.8), top);
   mat.rotation.x = -Math.PI / 2;
-  mat.position.set(tileX(Math.floor(COLS / 2)), -0.015, ROWS / 2 + 0.87);
+  mat.position.set(tileX(Math.floor(COLS / 2)), -0.015, ROWS / 2 + 0.47);
   mat.receiveShadow = true;
   return mat;
 }
@@ -157,7 +160,7 @@ function headOut() {
   const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
   const go = () => {
     walker.path = route(walker.tile, door);
-    walker.path.push({ x: door.x, y: ROWS + 0.37 });
+    walker.path.push({ x: door.x, y: ROWS - 0.03 });
     walker.exit = true;
     ring.position.set(exitMat.position.x, 0, exitMat.position.z);
     ring.material.opacity = 0.9;
@@ -166,48 +169,6 @@ function headOut() {
   walker.goal = null; walker.seatTo = null;
   if (walker.seat) getUp(go); else if (!walker.jump) go();
   playSound('confirm');
-}
-
-const UPPER = 9, PLINTH = 6;   // tall enough to fill an upright phone above the wall and below the floor
-
-/* The room in a dollhouse: the walls run on up past a picture rail (the wallpaper's pattern, without its skirting,
-   repeated), and the floor sits on a thick base cut at the front, so a tall screen shows no empty sky round it.
-   fitShot() still frames the 3-tile room; these only fill what's left. They cast no shadows into it. */
-function dressRoom(art, cap, outer) {
-  const upper = (w, d) => {
-    const t = tex(crop(art, 0, 0, d * T, 2 * T));
-    t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(1, UPPER / 2);
-    return new THREE.MeshStandardMaterial({ map: t, roughness: 1 });
-  };
-  const rail = solid(shade(cap.color.getHexString(), 0.9));
-  const top = WALL_H + UPPER / 2;
-  const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, UPPER, 0.4), [outer, outer, outer, outer, upper(COLS + 0.8, COLS), outer]);
-  back.position.set(0, top, -ROWS / 2 - 0.2);
-  back.receiveShadow = true;
-  const backRail = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.14, 0.16), rail);
-  backRail.position.set(0, WALL_H + 0.07, -ROWS / 2 + 0.08);
-  roomGroup.add(back, backRail);
-  for (const s of [-1, 1]) {
-    const faces = [outer, outer, outer, outer, outer, outer];
-    faces[s < 0 ? 0 : 1] = upper(ROWS, ROWS);
-    const side = new THREE.Mesh(new THREE.BoxGeometry(0.4, UPPER, ROWS), faces);
-    side.position.set(s * (COLS / 2 + 0.2), top, 0);
-    side.receiveShadow = true;
-    const sideRail = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, ROWS), rail);
-    sideRail.position.set(s * (COLS / 2 - 0.08), WALL_H + 0.07, 0);
-    roomGroup.add(side, sideRail);
-  }
-  // the base under the floor: its cut top in the trim's colour, a dark wood front going down out of view
-  const lip = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.12, 0.4), cap);
-  lip.position.set(0, 0.02, ROWS / 2 + 0.2);
-  lip.receiveShadow = true;
-  const wood = solid('#3a281c');
-  const plinth = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, PLINTH, 0.4), wood);
-  plinth.position.set(0, -0.04 - PLINTH / 2, ROWS / 2 + 0.2);
-  const band = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.1, 0.02), rail);
-  band.position.set(0, -0.6, ROWS / 2 + 0.41);
-  roomGroup.add(lip, plinth, band);
 }
 
 // the trim colour is the wallpaper strip's bottom row, whatever the paper
@@ -857,9 +818,23 @@ function ndc(e) {
 // not holding, a press on a placed piece that then moves picks it up and carries it: no Move key needed
 function onDown(e) {
   if (mode !== 'edit') return;
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  view.setPointerCapture?.(e.pointerId);
+  // a second finger turns whatever the first was doing into a pinch: nothing is put down or picked up
+  if (touches.size === 2) {
+    grab = null; drag = null;
+    if (holding && pressing) { pressing = false; pointer = null; }
+    const [a, b] = [...touches.values()];
+    pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom, mid: [(a.x + b.x) / 2, (a.y + b.y) / 2], panX, panZ };
+    startPan();
+    pinch.panX = panX; pinch.panZ = panZ;
+    return;
+  }
+  if (touches.size > 2) return;
   if (!holding) {
     const i = pieceUnder(ndc(e));
-    if (i >= 0 && !PIECES[base.items[i].id].gift) { grab = { i, x: e.clientX, y: e.clientY }; view.setPointerCapture?.(e.pointerId); }
+    if (i >= 0 && !PIECES[base.items[i].id].gift) grab = { i, x: e.clientX, y: e.clientY };
+    else drag = { x: e.clientX, y: e.clientY, panX, panZ };
     return;
   }
   pressing = true; pointer = ndc(e);
@@ -867,6 +842,20 @@ function onDown(e) {
   aimFrom(...pointer); showGhost();
 }
 function onMove(e) {
+  if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch) {
+    if (touches.size < 2) return;
+    const [a, b] = [...touches.values()];
+    setZoom(pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d);
+    panBy((a.x + b.x) / 2 - pinch.mid[0], (a.y + b.y) / 2 - pinch.mid[1], pinch);
+    return;
+  }
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) > 8 && zoom > 1.01) drag.moved = true;
+    if (drag.moved) panBy(dx, dy, drag);
+    return;
+  }
   if (grab && Math.hypot(e.clientX - grab.x, e.clientY - grab.y) > 10) {
     const it = base.items[grab.i];
     grab = null;
@@ -879,7 +868,10 @@ function onMove(e) {
   pointer = ndc(e);
   aimFrom(...pointer); showGhost();
 }
-function onUp() {
+function onUp(e) {
+  touches.delete(e?.pointerId);
+  if (pinch) { if (touches.size < 2) { pinch = null; quietUntil = performance.now() + 350; } return; }
+  if (drag) { if (drag.moved) quietUntil = performance.now() + 350; drag = null; return; }
   grab = null;
   if (!holding || !pressing) return;
   pressing = false; pointer = null; swallowClick = true;
@@ -903,6 +895,7 @@ function tapped(at, ray = new THREE.Raycaster()) {
 
 function onTap(e) {
   if (swallowClick || holding) { swallowClick = false; return; }
+  if (performance.now() < quietUntil) return;   // the end of a pinch or a pan, not a tap
   const ray = new THREE.Raycaster();
   const first = tapped(ndc(e), ray);
   walker.exit = false;
@@ -1162,9 +1155,9 @@ function setTime(force) {
 const SHOT = { walk: { pitch: 0.6, across: 8 }, edit: { pitch: 0.9, across: COLS + 1.2 } };
 const LOOK_Y = 0.9;
 
-function aimCamera(x, d, pitch) {
-  camera.position.set(x, LOOK_Y + Math.sin(pitch) * d, Math.cos(pitch) * d);
-  camera.lookAt(x, LOOK_Y, 0);
+function aimCamera(x, d, pitch, z = 0) {
+  camera.position.set(x, LOOK_Y + Math.sin(pitch) * d, z + Math.cos(pitch) * d);
+  camera.lookAt(x, LOOK_Y, z);
   camera.updateMatrixWorld();
 }
 
@@ -1209,23 +1202,48 @@ function placeCamera(dt, now) {
   easeShots(dt);
   blend = calm ? +(mode === 'edit') : blend + ((mode === 'edit') - blend) * Math.min(1, dt / 1000 * 6);
   const k = blend * blend * (3 - 2 * blend), mix = (key) => shots.walk[key] + (shots.edit[key] - shots.walk[key]) * k;
-  const room = COLS / 2 + 0.6, half = mix('half');
+  // the zoom only counts decorating, eased in and out with the blend
+  zoomK = 1 + (zoom - 1) * k;
+  const room = COLS / 2 + 0.6, half = mix('half') / zoomK, free = mode === 'edit' && zoom > 1.01;
   if (holding && pressing && pointer && Math.abs(pointer[0]) > 0.7) {
     panX += Math.sign(pointer[0]) * (Math.abs(pointer[0]) - 0.7) / 0.3 * dt / 1000 * 5;
   }
   const clamp = (x) => half >= room ? 0 : Math.max(-room + half, Math.min(room - half, x));
   panX = clamp(panX);
-  const want = follow ? clamp(walker.x) : panX;
+  const deep = (ROWS / 2 + 0.5) * (1 - 1 / zoomK);
+  panZ = Math.max(-deep, Math.min(deep, panZ));
+  const want = follow && !free ? clamp(walker.x) : panX, wantZ = free ? panZ : 0;
   const before = camX;
-  camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
+  const glide = pinch || drag?.moved ? 1 : Math.min(1, dt / 1000 * 4);
+  camX = calm ? want : camX + (want - camX) * glide;
+  camZ = calm ? wantZ : camZ + (wantZ - camZ) * glide;
   camera.setViewOffset(viewW, viewH, 0, mix('shift'), viewW, viewH);
   const pitch = mix('pitch');
-  aimCamera(camX, mix('dist'), pitch);
+  aimCamera(camX, mix('dist') / zoomK, pitch, camZ);
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
   for (const m of [mon, ...guests.map(g => g.mon)]) if (m) m.board.rotation.x = -pitch;
   // and so do the pieces that stand as their painting
   for (const s of standees) { if (!s.parent) standees.delete(s); else s.rotation.x = -pitch; }
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
+}
+
+/** Zoomed in from the whole room, the camera stops following your partner and stays where it is. */
+function startPan() {
+  if (zoom > 1.01) return;
+  follow = false; panX = camX; panZ = camZ;
+}
+
+function setZoom(z) {
+  if (z > 1.01) startPan();
+  zoom = Math.max(1, Math.min(ZOOM_MAX, z));
+}
+
+/** A drag of (dx, dy) screen pixels from where it began (`from`'s pan) moves the room under the finger. */
+function panBy(dx, dy, from) {
+  if (zoom <= 1.01) return;
+  const perPx = 2 * shots.edit.half / zoomK / viewW, pitch = shots.edit.pitch;
+  panX = from.panX - dx * perPx;
+  panZ = from.panZ - dy * perPx / Math.sin(pitch);
 }
 
 /** Walk (just the room) or Decorate (the sheet up, the camera back over the whole room). */
@@ -1288,8 +1306,8 @@ function frame(now) {
   }
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   placeCamera(dt, now);
-  // the tilt-shift keeps its sharp band on what you're handling: the ghost, the picked piece, else the partner
-  const focus = holding && aimAt ? foot.position : selBox.visible ? selBox.box.getCenter(new THREE.Vector3()) : new THREE.Vector3(walker.x, 0.6, walker.z);
+  // the tilt-shift keeps its sharp band on what you're handling: the ghost, the picked piece, else where you've zoomed, else the partner
+  const focus = holding && aimAt ? foot.position : selBox.visible ? selBox.box.getCenter(new THREE.Vector3()) : mode === 'edit' && zoom > 1.01 ? new THREE.Vector3(camX, 0.6, camZ) : new THREE.Vector3(walker.x, 0.6, walker.z);
   post.draw(scene, camera, (focus.clone().project(camera).y + 1) / 2);
 
   if (hud.fps) hud.fps.textContent = `${Math.round(1000 / (fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length))} fps`;
@@ -1430,7 +1448,12 @@ export async function openBase3d({ onLeave = null } = {}) {
   view.addEventListener('pointerdown', onDown);
   view.addEventListener('pointermove', onMove);
   view.addEventListener('pointerup', onUp);
-  view.addEventListener('pointercancel', () => { pressing = false; pointer = null; });
+  view.addEventListener('pointercancel', (e) => { touches.delete(e.pointerId); pinch = null; drag = null; pressing = false; pointer = null; });
+  view.addEventListener('wheel', (e) => {
+    if (mode !== 'edit') return;
+    e.preventDefault();
+    setZoom(zoom * Math.exp(-e.deltaY * 0.0015));
+  }, { passive: false });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
   root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });

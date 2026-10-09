@@ -2007,3 +2007,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Secret Base: a way out without the ✕** (2026-10-09, branch `secret-base` only, the user's ask): a red doormat lies on a doorstep
   jutting out past the front edge (no tile taken), its arrow breathing; a tap walks your partner to it and off the front, then leaves as the ✕ does
   (`makeExitMat()` / `headOut()` in `js/base-3d.js`). Walk mode only.
+- **Secret Base: zoom while decorating, and the open diorama back** (2026-10-09, branch `secret-base` only, the user's asks):
+  Decorate zooms in with a pinch or the mouse wheel and pans with a drag on the floor (`setZoom()` / `panBy()` in
+  `js/base-3d.js`), the blur's sharp band following the view; the tall walls, picture rails and wooden base
+  (`dressRoom()`) were removed, the user preferring the room as it first was.
