@@ -12,7 +12,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain } from './hd2d.js';
-import { fine, texOf, cornerStall, GC, words, star } from './hub-3d.js';
+import { fine, texOf, cornerStall, GC, words, star, hubThree } from './hub-3d.js';
 import { toggleShop } from './shop.js';
 import { PIECES, styles, loadBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, stairLift, upstairsLine, STAIR } from './mall-furniture.js';
@@ -399,13 +399,25 @@ async function goPlace(id, at, facing = 'back') {
   if (!root?.isConnected) return;
   if (!places[id]) {
     const floor = id === 'f2' ? 2 : 1, built = buildFloor(THREE, floor, SIZE, !!loadBase().upstairs);
+    const k = built.keeper, spot = built.spots.find(s => s.kind === 'keeper');
+    k.mon = await monBoard(k, false);
+    k.mon.board.rotation.x = -PITCH;
+    k.mon.group.position.set(k.x, 0.3, k.z);   // on a step behind the counter, so it shows over it
+    k.mon.group.traverse(o => { o.userData.front = spot; });
+    built.group.add(k.mon.group);
     places[id] = { id, ...built };
     scene.add(built.group);
   }
   setPlace(places[id], at, facing);
   playSound('door');
-  curtain(false);
+  await curtain(false);
+  if (P.keeper) talk(pickLine(P.keeper.hello), 4200);
 }
+
+const pickLine = (lines) => lines[Math.floor(Math.random() * lines.length)];
+
+/** The shopkeeper says it, in its speech window. */
+const talk = (line, ms) => say({ line }, ms);
 
 function setPlace(p, at, facing = 'back') {
   if (P) P.group.visible = false;
@@ -431,7 +443,7 @@ function pick(spot) {
   shown = null;
   if (!P?.ring) return;
   P.ring.visible = !!spot && spot.kind === 'bay';
-  if (P.ring.visible) P.ring.position.set(spot.at.x, 0.02, spot.at.z);
+  if (P.ring.visible) P.ring.position.set(spot.at.x, spot.at.y ?? 0.02, spot.at.z);
 }
 
 /** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. */
@@ -441,29 +453,38 @@ function bayTap(spot) {
     pick(spot);
     playSound('select');
     const had = loadBase().owned[p.own] || 0;
-    return say({ line: `${p.name}${all}: ${p.price.toLocaleString()} PokéCoins. Tap again to buy.${had ? ` You have ${had}.` : ''}` }, 4200);
+    return talk(`Ooh, the ${p.name.toLowerCase()}${all}! That's ${p.price.toLocaleString()} PokéCoins. Tap again and it's yours.${had ? ` You have ${had} already.` : ''}`, 4600);
   }
   const coins = getSave().coins ?? 0;
-  if (!buyPiece(loadBase(), spot.piece)) { playSound('cancel'); return say({ line: `You need ${(p.price - coins).toLocaleString()} more PokéCoins for the ${p.name.toLowerCase()}.` }, 3600); }
+  if (!buyPiece(loadBase(), spot.piece)) { playSound('cancel'); return talk(`Oh dear, you're ${(p.price - coins).toLocaleString()} PokéCoins short for the ${p.name.toLowerCase()}.`, 3600); }
   playSound('buy');
   walker.hopUntil = performance.now() + 500;
+  P.keeper.hopUntil = performance.now() + 600;
   pick(null);
   showCoins();
-  say({ line: n > 1 ? `All ${n} styles of the ${p.name.toLowerCase()} are in your Secret Base now.` : `The ${p.name.toLowerCase()} is in your Secret Base now.` }, 3600);
+  talk(n > 1 ? `Thank you! All ${n} styles of the ${p.name.toLowerCase()} are off to your Secret Base.` : `Thank you! The ${p.name.toLowerCase()} is off to your Secret Base.`, 3600);
+}
+
+/** The shopkeeper: its cry, a little hop and a line. */
+function keeperTap() {
+  pick(null);
+  playCry(P.keeper.mon.id);
+  P.keeper.hopUntil = performance.now() + 600;
+  talk(pickLine(P.keeper.chat), 4200);
 }
 
 /** The stair: roped off until the second floor is bought (a tap asks, a second buys), then walked up, or down again. */
 function stairTap(spot) {
   if (floorOf() === 1 && !loadBase().upstairs) {
-    if (picked !== spot) { pick(spot); playSound('select'); return say({ line: upstairsLine() }, 4600); }
+    if (picked !== spot) { pick(spot); playSound('select'); return talk(upstairsLine(), 4600); }
     const coins = getSave().coins ?? 0;
-    if (!buyUpstairs(loadBase())) { playSound('cancel'); return say({ line: `You need ${(UPSTAIRS_PRICE - coins).toLocaleString()} more PokéCoins to open the second floor.` }, 3600); }
+    if (!buyUpstairs(loadBase())) { playSound('cancel'); return talk(`Hmm, you'd need ${(UPSTAIRS_PRICE - coins).toLocaleString()} more PokéCoins to open the second floor.`, 3600); }
     playSound('buy');
     pick(null);
     showCoins();
     if (P.rope) P.rope.visible = false;
     walker.hopUntil = performance.now() + 500;
-    return say({ line: 'The second floor is open! Tap the stair to go up.' }, 3600);
+    return talk('The second floor is open! Up the stair you go.', 3600);
   }
   pick(null);
   playSound('confirm');
@@ -476,11 +497,14 @@ function changeFloor() {
   return goPlace(floorOf() === 1 ? 'f2' : 'f1', STAIR.foot, 'front');
 }
 
-/** A front's line under the pill, a moment. */
+/** A front's line over the pill, a moment; in the store the shopkeeper says it, in a speech window with its name. */
 function say(fr, ms = 2600) {
-  lineEl.textContent = fr.kind === 'bay' ? `${fr.name}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
+  lineEl.lastChild.textContent = fr.kind === 'bay' ? `The ${fr.name.toLowerCase()}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
     : fr.kind === 'stairs' ? (floorOf() === 2 ? 'Down to the ground floor.' : loadBase().upstairs ? 'Up to the second floor.' : 'The second floor is roped off.')
+    : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.line;
+  lineEl.firstChild.textContent = P.keeper?.name ?? '';
+  lineEl.classList.toggle('talk', !!P.keeper);
   lineEl.classList.add('on');
   clearTimeout(say.t);
   say.t = setTimeout(() => lineEl.classList.remove('on'), ms);
@@ -490,6 +514,7 @@ function say(fr, ms = 2600) {
 function enterFront(fr) {
   if (fr.kind === 'bay') return bayTap(fr);
   if (fr.kind === 'stairs') return stairTap(fr);
+  if (fr.kind === 'keeper') return keeperTap();
   if (!fr.open) { playSound('cancel'); return say(fr); }
   if (fr.id === 'furniture') return goPlace('f1', { x: 6, y: ROWS - 1 });
   walker.hopUntil = performance.now() + 400;
@@ -603,6 +628,13 @@ function frame(now) {
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
+  const k = P.keeper?.mon;
+  if (k) {   // the shopkeeper turns to face your partner, and hops when it's pleased
+    drawMon(k, { facing: 'front' }, dt);
+    k.board.scale.x = walker.x > P.keeper.x + 0.3 ? -1 : 1;
+    const left = (P.keeper.hopUntil || 0) - now;
+    k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
+  }
   showPill();
   placeCamera(dt);
   post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
@@ -633,7 +665,7 @@ async function leave() {
 }
 
 /** The Poké Mall's hall. `onLeave` is where its ✕ goes (the Clearing hands it the way back out of the doors). */
-export async function openMall({ onLeave = null } = {}) {
+export async function openMall({ onLeave = null, store = null } = {}) {
   leaveTo = onLeave;
   calm = calmFx();
   if (root && renderer) {
@@ -653,7 +685,7 @@ export async function openMall({ onLeave = null } = {}) {
       <canvas class="b3-view"></canvas>
       <header class="b3-top"><h2>Poké Mall</h2><span class="mall-coins" hidden></span>
         <button type="button" class="b3-key b3-close" aria-label="Leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
-      <div class="mall-foot"><p class="mall-line" aria-live="polite"></p><button type="button" class="mall-go"><b>Poké Mall</b></button></div>
+      <div class="mall-foot"><p class="mall-line" aria-live="polite"><b class="mall-who"></b><span></span></p><button type="button" class="mall-go"><b>Poké Mall</b></button></div>
     </div>`;
   document.body.append(root);
   view = root.querySelector('.b3-view');
@@ -663,6 +695,7 @@ export async function openMall({ onLeave = null } = {}) {
   pill.addEventListener('click', () => { const fr = nearest(); if (fr) goTo(fr, true); });
 
   THREE = await loadThree();
+  await hubThree();
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -689,4 +722,5 @@ export async function openMall({ onLeave = null } = {}) {
   view.addEventListener('click', onTap);
   requestAnimationFrame(frame);
   curtain(false);
+  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? STAIR.foot : { x: 6, y: ROWS - 1 });
 }

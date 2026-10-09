@@ -12,13 +12,37 @@ import { RES } from './base-paint.js';
 const PX = 1 / (16 * RES);   // one of a piece's painted pixels, in tiles
 export const STAIR_H = 2.6;   // the stair's top, up at the back wall
 export const STAIR = { x: 11, foot: { x: 11, y: 4 }, climb: [{ x: 11, y: 3 }, { x: 11, y: 2 }, { x: 11, y: 1 }, { x: 11, y: 0 }] };
-// each plinth's top-left tile (2 x 2), the back row then the front row; you stand at `step` to look at it
-const BAYS = [[0, 1], [3, 1], [6, 1], [9, 1], [0, 4], [3, 4], [6, 4], [9, 4]];
+/* Laid out like Animal Crossing's Nook's Cranny (the user's pick, 2026-10-08): a long teal stand along the back wall, an
+   island of two in the middle, a low one at the front left, each 2 x 2 with a gold price plaque, and a counter at the right
+   with the floor's shopkeeper behind it, a bookshelf at its back. `x, y` a stand's top-left tile, `step` where you stand
+   to look at it, `h` its height, `tall` how tall its piece may stand (low ones in front so the back row still shows),
+   `side` a plaque on its right face (its front is hidden behind the stand in front of it). */
+const BAYS = [
+  { x: 0, y: 0, step: { x: 1, y: 2 }, h: 0.42, tall: 2.1 }, { x: 2, y: 0, step: { x: 3, y: 2 }, h: 0.42, tall: 2.1 },
+  { x: 4, y: 0, step: { x: 5, y: 2 }, h: 0.42, tall: 2.1 }, { x: 6, y: 0, step: { x: 7, y: 2 }, h: 0.42, tall: 2.1 },
+  { x: 3, y: 3, step: { x: 4, y: 5 }, h: 0.32, tall: 1.25 }, { x: 5, y: 3, step: { x: 5, y: 5 }, h: 0.32, tall: 1.25 },
+  { x: 0, y: 3, step: { x: 2, y: 4 }, h: 0.32, tall: 1.25, side: true }, { x: 0, y: 5, step: { x: 2, y: 5 }, h: 0.32, tall: 1.25 },
+];
+const COUNTER = { x: 8, y: 4, w: 3 };   // its tiles, left to right; the shopkeeper stands a tile behind its middle
 const LOOK = {
-  1: { paper: ['#d6efe8', '#c2e4dc'], trim: '#2a9a90', dark: '#1a6a64', sign: '#2a9a90', floor: ['#c89a64', '#b4844e', '#9a6c3c'] },
-  2: { paper: ['#f6e0d4', '#ecccbc'], trim: '#c8566a', dark: '#8a3448', sign: '#c8566a', floor: ['#7a5a8a', '#6a4a7a', '#4e3460'] },
+  1: { paper: ['#f2a462', '#e8965a'], wood: '#7a4a2c', dark: '#4a2c1a', trim: '#2a9a90', sign: '#2a9a90',
+    floor: ['#9a5a40', '#8a4c36', '#7e4432', '#5a3024'] },
+  2: { paper: ['#f6cfc8', '#eebfb8'], wood: '#8a4a5a', dark: '#5a2c3a', trim: '#c8566a', sign: '#c8566a',
+    floor: ['#7a5a8a', '#6a4a7a', '#4e3460'] },
 };
 export const STORE_COLOUR = LOOK[1].trim;
+const TEAL = { top: '#3fa89e', hi: '#62c2b6', side: '#2a8a80', deep: '#1e6a62' };
+
+/* Each floor's shopkeeper, who says every line in the store (the user's ask: "a shopkeeper, one of the Pokémon"):
+   Smeargle paints the furniture, Minccino keeps the second floor spotless. */
+export const KEEPERS = {
+  1: { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif',
+    hello: ['Welcome in! I painted every piece in here myself.', 'Fresh pieces on the stands today, still wet! Kidding.', 'Have a look round. Tap a piece and I\'ll tell you about it.'],
+    chat: ['Every colour of a piece comes with it. I can never pick just one.', 'New stock every day, the moment the clock strikes midnight.', 'A room is a canvas, you know. Your Secret Base is your masterpiece!'] },
+  2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif',
+    hello: ['Welcome upstairs! Mind the... no, there\'s no dust. I checked.', 'Oh! A customer! Let me just polish that stand. There.'],
+    chat: ['I dust every stand twice a day. Three times on Sundays.', 'Eight more pieces up here, every day. All spotless.'] },
+};
 
 const price = (n) => n.toLocaleString();
 
@@ -74,58 +98,100 @@ export function frontWindow(THREE, cx, z) {
   return group;
 }
 
-/** A floor's back wall, one painting: wallpaper over a wood dado, the store's lit sign, shelves of little things high up,
-    tall windows above for a tall phone, and on the ground floor the lit doorway the stair climbs to. */
+/** Wallpaper the height of a wall: its colour with a faint stripe, a crown moulding at the top of the shop's storey and a
+    dark wood skirting along the floor. `wy` turns a height into the painting's y. */
+function paper(f, W, H, L, wy) {
+  const { g, rr, lin } = f;
+  g.fillStyle = L.paper[0]; g.fillRect(0, 0, W, H);
+  g.fillStyle = L.paper[1];
+  for (let x = 0; x < W; x += 10) g.fillRect(x, 0, 4, H);
+  g.fillStyle = 'rgba(255,255,255,0.08)';
+  for (let x = 5; x < W; x += 10) g.fillRect(x, 0, 0.6, H);
+  rr(0, wy(5.15), W, 2.6, 0, lin(0, wy(5.15), 0, wy(5.15) + 2.6, [L.wood, L.dark]));
+  const sk = wy(0.32);
+  rr(0, sk, W, H - sk, 0, lin(0, sk, 0, H, [L.wood, L.dark]));
+  g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(0, sk, W, 0.6);
+}
+
+/** A poster: a white margin round a coloured sheet, a motif and two lines of "writing". */
+function poster(g, x, y, w, h, bg, ink, motif) {
+  g.fillStyle = 'rgba(60,30,10,0.22)'; g.fillRect(x + 0.8, y + 0.8, w, h);
+  g.fillStyle = '#fbf3e4'; g.fillRect(x, y, w, h);
+  g.fillStyle = bg; g.fillRect(x + 1.2, y + 1.2, w - 2.4, h - 2.4);
+  const cx = x + w / 2, cy = y + h * 0.42, r = Math.min(w, h) * 0.24;
+  g.fillStyle = ink;
+  if (motif === 'ball') {
+    g.beginPath(); g.arc(cx, cy, r, Math.PI, 0); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI); g.fill();
+    g.fillStyle = ink; g.fillRect(cx - r, cy - 0.4, r * 2, 0.8);
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(cx, cy, r * 0.3, 0, Math.PI * 2); g.fill();
+  } else if (motif === 'flower') {
+    for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; g.beginPath(); g.arc(cx + Math.cos(a) * r * 0.55, cy + Math.sin(a) * r * 0.55, r * 0.45, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#f8d040'; g.beginPath(); g.arc(cx, cy, r * 0.35, 0, Math.PI * 2); g.fill();
+  } else if (motif === 'sofa') {
+    sofa(g, cx, cy, r * 0.9, ink);
+  } else {
+    g.beginPath(); g.moveTo(cx - r, cy + r * 0.7); g.lineTo(cx - r * 0.2, cy - r * 0.6); g.lineTo(cx + r * 0.3, cy + r * 0.1);
+    g.lineTo(cx + r * 0.6, cy - r * 0.3); g.lineTo(cx + r, cy + r * 0.7); g.fill();
+  }
+  g.fillStyle = ink;
+  g.fillRect(x + w * 0.2, y + h * 0.74, w * 0.6, 1);
+  g.fillRect(x + w * 0.28, y + h * 0.84, w * 0.44, 0.8);
+}
+
+/** A framed picture: a dark wood frame round a little landscape. */
+function frame(g, x, y, w, h, L, sky = '#a8d4f0') {
+  g.fillStyle = 'rgba(60,30,10,0.25)'; g.fillRect(x + 0.8, y + 0.8, w, h);
+  g.fillStyle = L.dark; g.fillRect(x, y, w, h);
+  g.fillStyle = '#f4ead8'; g.fillRect(x + 1, y + 1, w - 2, h - 2);
+  g.fillStyle = sky; g.fillRect(x + 2, y + 2, w - 4, h - 4);
+  g.fillStyle = '#7ab060'; g.beginPath(); g.moveTo(x + 2, y + h - 2); g.quadraticCurveTo(x + w * 0.4, y + h * 0.4, x + w - 2, y + h - 3); g.lineTo(x + w - 2, y + h - 2); g.fill();
+}
+
+/** A wall clock, its hands at ten past ten. */
+function clock(g, x, y, r, L) {
+  g.fillStyle = L.dark; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fbf6ea'; g.beginPath(); g.arc(x, y, r * 0.82, 0, Math.PI * 2); g.fill();
+  g.fillStyle = L.dark;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; g.fillRect(x + Math.cos(a) * r * 0.66 - 0.3, y + Math.sin(a) * r * 0.66 - 0.3, 0.6, 0.6); }
+  g.strokeStyle = L.dark; g.lineWidth = 0.7;
+  g.beginPath(); g.moveTo(x, y); g.lineTo(x - r * 0.38, y - r * 0.28); g.moveTo(x, y); g.lineTo(x + r * 0.5, y - r * 0.4); g.stroke();
+}
+
+/** A floor's back wall, one painting: warm wallpaper over a dark skirting, the store's wooden sign over the back stand,
+    posters and framed pictures, a clock over the counter, tall windows up high for a tall phone, and on the ground floor
+    the lit doorway the stair climbs to. */
 function wallArt(floor, { cols, top: TOP, u: U }) {
   const W = (cols + 0.8) * U, H = TOP * U, L = LOOK[floor], f = fine(W, H, 4), { g, rr, lin, shine } = f, s = shine();
   const wx = (t) => (t + 0.4) * U, wy = (y) => (TOP - y) * U;
-  g.fillStyle = L.paper[0]; g.fillRect(0, 0, W, H);
-  g.fillStyle = L.paper[1];
-  for (let x = 0; x < W; x += 8) g.fillRect(x, wy(5), 3.5, wy(0) - wy(5));
+  paper(f, W, H, L, wy);
   // windows up high, sky through them
   const wt = wy(TOP - 0.4), wb = wy(5.6);
   for (let t = 0.4; t < cols - 0.4; t += 2.6) {
     const x0 = wx(t) + 4, x1 = wx(t + 2.6) - 4;
-    rr(x0 - 1.5, wt - 1.5, x1 - x0 + 3, wb - wt + 3, 1, L.dark);
+    rr(x0 - 1.8, wt - 1.8, x1 - x0 + 3.6, wb - wt + 3.6, 1, L.dark);
     g.fillStyle = lin(0, wt, 0, wb, ['#7ab8f0', '#a8d4f8', '#e0f0ff']); g.fillRect(x0, wt, x1 - x0, wb - wt);
-    g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.moveTo((x0 + x1) / 2, wt); g.lineTo((x0 + x1) / 2, wb); g.stroke();
+    g.fillStyle = L.wood; g.fillRect((x0 + x1) / 2 - 0.6, wt, 1.2, wb - wt); g.fillRect(x0, (wt + wb) / 2 - 0.6, x1 - x0, 1.2);
     s.fillStyle = '#404850'; s.fillRect(x0, wt, x1 - x0, wb - wt);
   }
-  rr(0, wy(5.15), W, 2.4, 0, L.trim);
-  // the sign, lit, over the middle of the back row
-  const sx = wx(4.6), sw = 4.8 * U, sy = wy(4.6);
-  rr(sx - sw / 2, sy, sw, 20, 3, L.sign);
-  rr(sx - sw / 2 + 1.5, sy + 1.5, sw - 3, 17, 2.4, '#ffffff');
-  sofa(g, sx - sw / 2 + 13, sy + 10, 5, L.sign);
-  words(g, floor === 1 ? 'FURNITURE' : 'FURNITURE 2F', sx + 8, sy + 10.4, floor === 1 ? 10 : 8.6, L.dark);
-  s.fillStyle = '#d0d0d0'; s.beginPath(); s.roundRect(sx - sw / 2 + 1.5, sy + 1.5, sw - 3, 17, 2.4); s.fill();
-  words(s, floor === 1 ? 'FURNITURE' : 'FURNITURE 2F', sx + 8, sy + 10.4, floor === 1 ? 10 : 8.6, '#60c0c0');
-  // little things on high shelves either side of it
-  const things = ['#e86a5a', '#f0c040', '#5aa8e0', '#78c060', '#b07ad0', '#f0a0b8'];
-  for (const [a, b] of [[wx(0.2), sx - sw / 2 - 8], [sx + sw / 2 + 8, wx(floor === 1 ? 10.6 : 12.6)]]) {
-    if (b - a < 12) continue;
-    const y = wy(3.6);
-    rr(a, y, b - a, 2.4, 0.6, lin(0, y, 0, y + 2.4, ['#c89a64', '#8a5a32']));
-    let i = 0;
-    for (let x = a + 4; x < b - 4; x += 9, i++) {
-      g.fillStyle = things[i % things.length];
-      if (i % 3 === 0) { g.beginPath(); g.roundRect(x - 2.4, y - 7, 4.8, 7, [2, 2, 0.6, 0.6]); g.fill(); }
-      else if (i % 3 === 1) { for (let k = 0; k < 3; k++) g.fillRect(x - 3 + k * 2.2, y - 6 - (k % 2), 1.8, 6 + (k % 2)); }
-      else { g.beginPath(); g.arc(x, y - 3, 3, 0, Math.PI * 2); g.fill(); g.fillStyle = '#3e7a34'; g.fillRect(x - 0.4, y - 9, 0.8, 3); }
-    }
-  }
-  // hanging lamps along the top of the room
-  for (let t = 1; t < cols; t += 2.4) {
-    const x = wx(t), y = wy(5.4);
-    g.strokeStyle = '#3a3a44'; g.lineWidth = 0.5; g.beginPath(); g.moveTo(x, wy(5.15)); g.lineTo(x, y); g.stroke();
-    g.fillStyle = '#fff2c0'; g.beginPath(); g.arc(x, y + 2.4, 2.6, Math.PI, 0); g.fill();
-    s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y + 2.4, 3, Math.PI, 0); s.fill();
-  }
-  // a wood dado
-  const dt = wy(1.1);
-  rr(0, dt, W, wy(0) - dt, 0, lin(0, dt, 0, wy(0), ['#b48a5a', '#8a6038']));
-  rr(0, dt - 1.6, W, 1.6, 0, L.trim);
-  for (let x = 6; x < W; x += 14) { g.strokeStyle = 'rgba(60,30,10,0.3)'; g.lineWidth = 0.5; g.strokeRect(x, dt + 3, 10, wy(0) - dt - 6); }
+  // the sign over the back stand: a wooden board hung on two chains, a teal sofa and the name, lit
+  const sx = wx(4), sw = 4.6 * U, sy = wy(4.75), sh = 18;
+  g.strokeStyle = '#3a3a44'; g.lineWidth = 0.6;
+  for (const x of [sx - sw / 2 + 8, sx + sw / 2 - 8]) { g.beginPath(); g.moveTo(x, wy(5.15) + 2.6); g.lineTo(x, sy); g.stroke(); }
+  rr(sx - sw / 2, sy, sw, sh, 3, L.dark);
+  rr(sx - sw / 2 + 1.4, sy + 1.4, sw - 2.8, sh - 2.8, 2.2, lin(0, sy, 0, sy + sh, ['#a8724a', L.wood]));
+  sofa(g, sx - sw / 2 + 12, sy + sh / 2 - 0.4, 4.4, L.sign);
+  const name = floor === 1 ? 'FURNITURE' : 'FURNITURE 2F';
+  words(g, name, sx + 7, sy + sh / 2 + 0.2, floor === 1 ? 9 : 7.8, '#fbf0d8');
+  s.fillStyle = '#806040'; s.beginPath(); s.roundRect(sx - sw / 2 + 1.4, sy + 1.4, sw - 2.8, sh - 2.8, 2.2); s.fill();
+  words(s, name, sx + 7, sy + sh / 2 + 0.2, floor === 1 ? 9 : 7.8, '#ffe0a0');
+  // posters and pictures either side of it, a clock over the counter
+  const pa = floor === 1 ? ['#e4584a', '#fbe6c8', 'flower'] : ['#7a9ad8', '#fbf0e0', 'ball'];
+  poster(g, wx(0.15), wy(4.5), 16, 22, ...pa);
+  frame(g, wx(7.05), wy(4.3), 12, 9, L);
+  frame(g, wx(7.65), wy(3.6), 9, 7, L, '#f8c8a0');
+  poster(g, wx(8.3), wy(4.6), 14, 19, floor === 1 ? '#5aa060' : '#e88aa0', '#fbf3e4', floor === 1 ? 'hill' : 'sofa');
+  clock(g, wx(9.85), wy(4.05), 6.4, L);
   if (floor === 1) {
     const x0 = wx(STAIR.x) + 3, x1 = wx(STAIR.x + 2) - 3, top = wy(STAIR_H + 1.8), foot = wy(STAIR_H);
     rr(x0 - 2, top - 2, x1 - x0 + 4, foot - top + 2, 1.4, L.dark);
@@ -138,23 +204,68 @@ function wallArt(floor, { cols, top: TOP, u: U }) {
   return f.c;
 }
 
-/** The floor: wood planks downstairs, a carpet upstairs, a welcome mat at the way in, and upstairs the stairwell going
-    down at the back right, its steps darker the deeper they go. */
+/** A side wall's inside, `rows` tiles long, the same paper; the left one has a curtained window and a poster (its
+    painting's left is the room's front), the right one a picture by the front (its left is the back). */
+function sideArt(floor, left, { rows, top: TOP, u: U }) {
+  const W = rows * U, H = TOP * U, L = LOOK[floor], f = fine(W, H, 3), { g, rr, lin } = f;
+  const wy = (y) => (TOP - y) * U, at = (t) => (left ? rows - t - 0.5 : t + 0.5) * U;
+  paper(f, W, H, L, wy);
+  if (left) {
+    const cx = at(1.6), w = 30, t0 = wy(3.6), t1 = wy(1.3);
+    rr(cx - w / 2 - 2, t0 - 2, w + 4, t1 - t0 + 4, 1, L.dark);
+    rr(cx - w / 2, t0, w, t1 - t0, 0.6, lin(0, t0, 0, t1, ['#8ac4f0', '#c8e4fa', '#f0f8ff']));
+    g.fillStyle = '#7ab060'; g.fillRect(cx - w / 2, t1 - 8, w, 8);
+    g.fillStyle = L.wood; g.fillRect(cx - 0.6, t0, 1.2, t1 - t0);
+    rr(cx - w / 2 - 5, t0 - 4, w + 10, 1.6, 0.8, '#5a4a3a');
+    for (const side of [-1, 1]) {   // curtains drawn back to each side, in soft folds
+      const x0 = cx + side * (w / 2 - 3);
+      for (let i = 0; i < 4; i++) {
+        g.fillStyle = i % 2 ? '#f4f0ea' : '#e4ded4';
+        g.beginPath(); g.moveTo(x0 + side * i * 2.4, t0 - 3); g.lineTo(x0 + side * (i + 1) * 2.4, t0 - 3);
+        g.lineTo(x0 + side * (i + 1) * 2.4 + side * 1.5, t1 + 3); g.lineTo(x0 + side * i * 2.4 + side * 1.5, t1 + 3); g.fill();
+      }
+    }
+    poster(g, at(4.6) - 8, wy(3.9), 16, 22, '#d8463c', '#fbe6c8', 'ball');
+    poster(g, at(3.4) - 6, wy(2.6), 12, 15, '#f0c040', '#7a4a2c', 'flower');
+  } else {
+    frame(g, at(5) - 8, wy(3.4), 16, 12, L, '#f8d8a8');
+    poster(g, at(3.6) - 7, wy(3.8), 14, 19, '#3fa89e', '#fbf3e4', 'sofa');
+  }
+  return f.c;
+}
+
+/** The floor: terracotta tiles in a basket weave downstairs (Nook's), a carpet upstairs, a red rug by the counter and a
+    welcome mat at the way in, and upstairs the stairwell going down at the back right, its steps darker the deeper. */
 function floorArt(floor, { cols, rows }) {
   const T = 16, L = LOOK[floor], f = fine(cols * T, rows * T, 5), { g, rr, lin } = f;
   if (floor === 1) {
-    for (let y = 0; y < rows * T; y += 4) {
-      g.fillStyle = (y / 4) % 2 ? L.floor[0] : L.floor[1]; g.fillRect(0, y, cols * T, 4);
-      g.fillStyle = 'rgba(60,30,10,0.35)'; g.fillRect(0, y + 3.7, cols * T, 0.3);
-      for (let x = ((y / 4) % 3) * 9; x < cols * T; x += 27) g.fillRect(x, y, 0.3, 4);
+    g.fillStyle = L.floor[3]; g.fillRect(0, 0, cols * T, rows * T);
+    for (let by = 0; by < rows * 2; by++) for (let bx = 0; bx < cols * 2; bx++) {
+      const x = bx * 8, y = by * 8, flat = (bx + by) % 2;
+      for (let k = 0; k < 2; k++) {
+        const col = L.floor[(bx * 7 + by * 13 + k * 5) % 3];
+        if (flat) rr(x + 0.35, y + 0.35 + k * 4, 7.3, 3.3, 0.5, col);
+        else rr(x + 0.35 + k * 4, y + 0.35, 3.3, 7.3, 0.5, col);
+      }
     }
+    g.fillStyle = 'rgba(255,220,180,0.07)'; g.fillRect(0, 0, cols * T, rows * T);
   } else {
     g.fillStyle = L.floor[0]; g.fillRect(0, 0, cols * T, rows * T);
     g.fillStyle = L.floor[1];
     for (let y = 0; y < rows * T; y += 8) for (let x = (y / 8) % 2 ? 4 : 0; x < cols * T; x += 8) { g.beginPath(); g.arc(x, y, 1.2, 0, Math.PI * 2); g.fill(); }
   }
-  rr(5.5 * T + 2, (rows - 1) * T + 2, 2 * T - 4, T - 4, 2, L.trim);
-  words(g, 'WELCOME', 6.5 * T, (rows - 0.5) * T, 3.6, '#ffffff');
+  // a rug in front of the counter, a pattern woven into it
+  const rx = 9.2 * T, ry = 5.2 * T, rw = 3.6 * T, rh = 1.6 * T;
+  rr(rx, ry, rw, rh, 1.4, floor === 1 ? '#a82a34' : '#3a7a8a');
+  g.strokeStyle = floor === 1 ? '#d8585a' : '#6ab0c0'; g.lineWidth = 1.2;
+  g.beginPath(); g.roundRect(rx + 2.5, ry + 2.5, rw - 5, rh - 5, 1); g.stroke();
+  g.fillStyle = floor === 1 ? '#d8585a' : '#6ab0c0';
+  for (let i = 0; i < 4; i++) {
+    const cx = rx + rw * (i + 0.5) / 4, cy = ry + rh / 2;
+    g.beginPath(); g.moveTo(cx, cy - 5); g.lineTo(cx + 4, cy); g.lineTo(cx, cy + 5); g.lineTo(cx - 4, cy); g.fill();
+  }
+  rr(6 * T + 1.5, (rows - 1) * T + 2.5, T - 3, T - 5, 2, L.trim);
+  words(g, 'HELLO', 6.5 * T, (rows - 0.5) * T, 3.2, '#ffffff');
   if (floor === 2) {
     const x0 = STAIR.x * T, x1 = (STAIR.x + 2) * T, y1 = 4 * T;
     rr(x0, 0, x1 - x0, y1, 0, '#1a1420');
@@ -168,14 +279,31 @@ function floorArt(floor, { cols, rows }) {
   return f.c;
 }
 
-/** A price tag: a white card with the store's stripe, a gold coin and the price. */
-function tagArt(text, colour) {
-  const f = fine(40, 14, 6), { g, rr } = f;
-  rr(0.5, 0.5, 39, 13, 2.4, '#ffffff');
-  rr(0.5, 0.5, 6, 13, [2.4, 0, 0, 2.4], colour);
-  g.fillStyle = '#f8d040'; g.beginPath(); g.arc(12, 7, 3.6, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#c89418'; star(g, 12, 7, 2);
-  words(g, text, 26, 7.4, 7, '#2a2238');
+/** A stand's top: Nook's teal, a lighter bevel round its edge. */
+function standTop() {
+  const f = fine(32, 32, 4), { g, rr } = f;
+  rr(0, 0, 32, 32, 0, TEAL.hi);
+  rr(1.6, 1.6, 28.8, 28.8, 1, TEAL.top);
+  g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(1.6, 1.6, 28.8, 9);
+  return f.c;
+}
+
+/** A stand's side: teal, darker at the foot, a thin light edge along its top. */
+function standSide() {
+  const f = fine(32, 8, 4), { g, rr, lin } = f;
+  rr(0, 0, 32, 8, 0, lin(0, 0, 0, 8, [TEAL.side, TEAL.deep]));
+  g.fillStyle = TEAL.hi; g.fillRect(0, 0, 32, 0.7);
+  return f.c;
+}
+
+/** A stand's gold plaque: a brass plate, a coin and the price. */
+function plaqueArt(text) {
+  const f = fine(40, 12, 6), { g, rr, lin } = f;
+  rr(0.3, 0.3, 39.4, 11.4, 1.6, '#8a6418');
+  rr(1, 1, 38, 10, 1.2, lin(0, 1, 0, 11, ['#ffe48a', '#f0c048', '#c89428']));
+  g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(8, 6, 3.2, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#c89418'; star(g, 8, 6, 1.8);
+  words(g, text, 23, 6.4, 6.4, '#5a3a10');
   return f.c;
 }
 
@@ -188,9 +316,46 @@ function ropeArt() {
   return f.c;
 }
 
+/** The counter's front: dark red wood in raised panels, a lighter rail along its top. */
+function counterArt(w) {
+  const f = fine(w * 16, 14, 5), { g, rr, lin } = f;
+  rr(0, 0, w * 16, 14, 0, lin(0, 0, 0, 14, ['#8a3a2e', '#6a2a22']));
+  rr(0, 0, w * 16, 1.6, 0, '#b4584a');
+  for (let x = 2; x < w * 16 - 4; x += 12) {
+    rr(x, 3.2, 10, 8.6, 0.8, '#7a3228');
+    rr(x + 0.8, 4, 8.4, 7, 0.6, lin(0, 4, 0, 11, ['#9a4636', '#7e3428']));
+  }
+  return f.c;
+}
+
+/** The bookshelf behind the counter: three shelves of books, some leaning, a little plant on top. */
+function shelfArt(L) {
+  const f = fine(48, 40, 4), { g, rr } = f;
+  rr(0, 0, 48, 40, 1, L.dark);
+  rr(2, 2, 44, 36, 0.6, '#3a2216');
+  const books = ['#c84a3a', '#3a6aa8', '#e8b048', '#5a9a5a', '#8a5aa8', '#e4dcc8', '#2a8a80', '#a83a5a'];
+  let n = 0;
+  for (let r = 0; r < 3; r++) {
+    const base = 2 + (r + 1) * 12;
+    rr(1, base - 0.6, 46, 2, 0.4, L.wood);
+    let x = 3.5;
+    while (x < 44) {
+      const w = 1.8 + (n * 7 % 5) * 0.35, h = 7 + (n * 11 % 4), lean = n % 9 === 4;
+      if (x + w > 44.5) break;
+      g.fillStyle = books[n % books.length];
+      if (lean) { g.save(); g.translate(x, base - 0.6); g.rotate(0.28); g.fillRect(0, -h, w, h); g.restore(); x += w + 2.4; }
+      else { g.fillRect(x, base - 0.6 - h, w, h); g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(x, base - 0.6 - h + 1.5, w, 0.6); x += w + 0.3; }
+      n++;
+      if (n % 7 === 0) x += 3;
+    }
+  }
+  return f.c;
+}
+
 /** One floor of the store. `size` is the hall's ({ cols, rows, top, u }), so one camera fits both. Returns its group,
-    the tiles it blocks, the spots you can walk up to (a plinth each, and the stair), the gold ring that marks a picked
-    plinth and the rope (hidden once the second floor is open). */
+    the tiles it blocks, the spots you can walk up to (a stand each, the counter and the stair), the gold ring that marks a
+    picked stand, the rope (hidden once the second floor is open) and its shopkeeper's place (js/mall-3d.js puts the
+    Pokémon there, its sprite loading in). */
 export function buildFloor(THREE, floor, size, upstairs) {
   const { cols, rows, top: TOP } = size, L = LOOK[floor];
   const tileX = (tx) => tx + 0.5 - cols / 2, tileZ = (ty) => ty + 0.5 - rows / 2;
@@ -199,7 +364,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const lit = (src, colour, k = 1) => std({ map: texOf(src), emissive: new THREE.Color(colour), emissiveMap: texOf(src.glow), emissiveIntensity: k, roughness: 0.9 });
   const edge = std({ color: '#3a3040' });
 
-  const floorBox = new THREE.Mesh(new THREE.BoxGeometry(cols, 0.6, rows), [edge, edge, std({ map: texOf(floorArt(floor, size)), roughness: 0.6 }), edge, std({ color: '#8a6038' }), edge]);
+  const floorBox = new THREE.Mesh(new THREE.BoxGeometry(cols, 0.6, rows), [edge, edge, std({ map: texOf(floorArt(floor, size)), roughness: 0.6 }), edge, std({ color: '#6a3a28' }), edge]);
   floorBox.position.y = -0.3;
   floorBox.receiveShadow = true;
   group.add(floorBox);
@@ -211,54 +376,92 @@ export function buildFloor(THREE, floor, size, upstairs) {
   back.position.set(0, TOP / 2, -rows / 2 - 0.2);
   back.receiveShadow = true;
   group.add(back);
-  const side = std({ color: L.paper[0] });
   for (const s of [-1, 1]) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, rows), side);
+    const inside = std({ map: texOf(sideArt(floor, s < 0, size)), roughness: 0.9 });
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, rows), s < 0 ? [inside, cap, cap, cap, cap, cap] : [cap, inside, cap, cap, cap, cap]);
     m.position.set(s * (cols / 2 + 0.2), TOP / 2, 0);
     m.receiveShadow = true;
     group.add(m);
   }
 
-  // the plinths and their pieces
-  const top = std({ color: '#fbf6ea', roughness: 0.6 }), rim = std({ color: L.trim });
+  // the stands and their pieces
+  const top = std({ map: texOf(standTop()), roughness: 0.55 }), side = std({ map: texOf(standSide()), roughness: 0.7 });
   const stock = furnitureStock(undefined, floor);
   stock.forEach((id, i) => {
-    const [bx, by] = BAYS[i], p = PIECES[id], cx = tileX(bx) + 0.5, cz = tileZ(by) + 0.5;
-    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { x: bx + (by > 2 ? 1 : 0), y: by > 2 ? 6 : 3 }, at: { x: cx, z: cz } };
+    const b = BAYS[i], p = PIECES[id], cx = tileX(b.x) + 0.5, cz = tileZ(b.y) + 0.5, H = b.h;
+    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz } };
     spots.push(spot);
-    for (let x = 0; x < 2; x++) for (let y = 0; y < 2; y++) blocked.add(`${bx + x},${by + y}`);
+    for (let x = 0; x < 2; x++) for (let y = 0; y < 2; y++) blocked.add(`${b.x + x},${b.y + y}`);
     const bay = new THREE.Group();
     bay.position.set(cx, 0, cz);
-    const slab = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.16, 1.8), [rim, rim, top, rim, rim, rim]);
-    slab.position.y = 0.08;
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(1.94, H, 1.94), [side, side, top, side, side, side]);
+    slab.position.y = H / 2;
     slab.castShadow = slab.receiveShadow = true;
     bay.add(slab);
     if (p.flat) {
       const k = Math.min(1, 1.6 / Math.max(p.w, p.h)), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
       const box = new THREE.Mesh(new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id)), alphaTest: 0.5, roughness: 0.9 }), s, s, s]);
-      box.position.y = 0.16 + h / 2;
+      box.position.y = H + h / 2;
       box.castShadow = h > 0.1; box.receiveShadow = true;
       bay.add(box);
     } else {
-      const cut = trim(pieceArt(id, 0)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 1.7 / w, 2.1 / h);
+      const cut = trim(pieceArt(id, 0)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 1.7 / w, b.tall / h);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
-      board.position.set(0, 0.16 + h * k / 2, p.wall ? -0.3 : 0);
+      board.position.set(0, H + h * k / 2, p.wall ? -0.3 : 0);
       board.castShadow = true;
       bay.add(board);
       if (p.wall) {   // a wall piece hangs on a little display board of its own
         const panel = new THREE.Mesh(new THREE.BoxGeometry(w * k + 0.16, h * k + 0.16, 0.06), std({ color: '#efe6d4' }));
-        panel.position.set(0, 0.16 + h * k / 2, -0.35);
+        panel.position.set(0, H + h * k / 2, -0.35);
         panel.castShadow = true;
         bay.add(panel);
       }
     }
-    const tag = new THREE.Mesh(new THREE.PlaneGeometry(0.86, 0.3), std({ map: texOf(tagArt(price(p.price), L.trim)), roughness: 0.7 }));
-    tag.position.set(0, 0.24, 0.93);
-    tag.rotation.x = -0.6;
-    bay.add(tag);
+    const plaque = new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.22), std({ map: texOf(plaqueArt(price(p.price))), metalness: 0.3, roughness: 0.45 }));
+    if (b.side) { plaque.position.set(0.975, H / 2, 0); plaque.rotation.y = Math.PI / 2; }
+    else plaque.position.set(0, H / 2, 0.975);
+    bay.add(plaque);
     bay.traverse(o => { o.userData.front = spot; });
     group.add(bay);
   });
+
+  // the counter at the right, a bookshelf against the wall behind it, and the shopkeeper's place between them
+  const keeper = { id: 'keeper', kind: 'keeper', name: KEEPERS[floor].name, open: true, step: { x: COUNTER.x + 1, y: COUNTER.y + 1 } };
+  spots.push(keeper);
+  for (let x = COUNTER.x; x < COUNTER.x + COUNTER.w; x++) for (let y = 0; y <= COUNTER.y; y++) blocked.add(`${x},${y}`);
+  const desk = new THREE.Group();
+  desk.position.set(tileX(COUNTER.x + 1), 0, tileZ(COUNTER.y));
+  const wood = std({ color: '#6a2a22', roughness: 0.7 }), deskTop = std({ color: '#9a4434', roughness: 0.5 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(COUNTER.w - 0.1, 0.8, 0.72), [wood, wood, wood, wood, std({ map: texOf(counterArt(COUNTER.w)), roughness: 0.7 }), wood]);
+  body.position.y = 0.4;
+  body.castShadow = body.receiveShadow = true;
+  const slabTop = new THREE.Mesh(new THREE.BoxGeometry(COUNTER.w + 0.04, 0.08, 0.86), deskTop);
+  slabTop.position.y = 0.84;
+  slabTop.castShadow = slabTop.receiveShadow = true;
+  const till = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.32), std({ color: '#e4e0d8', roughness: 0.5 }));
+  till.position.set(-0.9, 1.01, -0.1);
+  const screen = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.16, 0.04), std({ color: '#2a3440', emissive: new THREE.Color('#60c0a0'), emissiveIntensity: 0.6 }));
+  screen.position.set(-0.9, 1.22, -0.2);
+  screen.rotation.x = -0.4;
+  const bell = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }));
+  bell.position.set(0.2, 0.88, 0.18);
+  desk.add(body, slabTop, till, screen, bell);
+  const sprig = trim(pieceArt('plant', 0)), sw = sprig.w * PX * 0.55, sh = sprig.h * PX * 0.55;
+  const pot = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), std({ map: tex(sprig.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
+  pot.position.set(1.05, 0.88 + sh / 2, -0.05);
+  desk.add(pot);
+  desk.traverse(o => { o.userData.front = keeper; });
+  group.add(desk);
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(COUNTER.w - 0.2, 2.3, 0.45), [cap, cap, cap, cap, std({ map: texOf(shelfArt(L)), roughness: 0.8 }), cap]);
+  shelf.position.set(tileX(COUNTER.x + 1), 1.15, -rows / 2 + 0.24);
+  shelf.castShadow = shelf.receiveShadow = true;
+  group.add(shelf);
+  const leafy = trim(pieceArt('plant', 0)), lw = leafy.w * PX * 1.3, lh = leafy.h * PX * 1.3;
+  const tree = new THREE.Mesh(new THREE.PlaneGeometry(lw, lh), std({ map: tex(leafy.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
+  tree.position.set(tileX(cols - 1), lh / 2, tileZ(rows - 1));
+  tree.castShadow = true;
+  group.add(tree);
+  blocked.add(`${cols - 1},${rows - 1}`);
 
   // the stair: up to the doorway on the ground floor, a stairwell going down on the second
   for (let x = STAIR.x; x < STAIR.x + 2; x++) for (let y = 0; y < 4; y++) blocked.add(`${x},${y}`);
@@ -325,14 +528,14 @@ export function buildFloor(THREE, floor, size, upstairs) {
   stairGroup.traverse(o => { o.userData.front = stair; });
   group.add(stairGroup);
 
-  const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1.12, 48), new THREE.MeshBasicMaterial({ color: '#f8d040', transparent: true, opacity: 0.9, depthWrite: false }));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 0.92, 48), new THREE.MeshBasicMaterial({ color: '#f8d040', transparent: true, opacity: 0.9, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.02;
   ring.visible = false;
   ring.raycast = () => {};
   group.add(ring);
 
-  return { group, blocked, spots, ring, rope, top: 4.4, title: floor === 1 ? 'Furniture' : 'Furniture 2F' };
+  return { group, blocked, spots, ring, rope, keeper: { ...KEEPERS[floor], x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1) }, top: 4.4, title: floor === 1 ? 'Furniture' : 'Furniture 2F' };
 }
 
 /** How high (or, upstairs, how deep) your partner stands at world x, z: on the stair's tiles it rises with each step. */
@@ -343,4 +546,4 @@ export function stairLift(floor, x, z, { cols, rows }) {
   return floor === 1 ? t * STAIR_H : -t * 2.2;
 }
 
-export const upstairsLine = () => `The second floor: 8 more pieces every day. Open it for ${price(UPSTAIRS_PRICE)} PokéCoins? Tap again.`;
+export const upstairsLine = () => `Upstairs there are 8 more pieces every day. Shall I open it for ${price(UPSTAIRS_PRICE)} PokéCoins? Tap again.`;

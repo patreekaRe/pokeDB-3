@@ -302,6 +302,8 @@ function init() {
     if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
     return import('./base-3d.js').then(m => m.openBase3d());
   }
+  // ?mall: the Poké Mall's hall; ?mall=furniture straight into the Furniture store, ?mall=2f its second floor
+  if (params.has('mall')) return import('./mall-3d.js').then(m => m.openMall({ store: params.get('mall') }));
   if (place) {
     document.body.classList.add('scene-peek');
     showPlaceScene(place, { biome: params.get('biome') || 'clearing' });

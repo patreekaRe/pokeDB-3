@@ -1972,3 +1972,12 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   second floor (`stairLift()`), 8 more pieces, the next 8 of the same day's shuffle (`furnitureStock(day, 2)`), and walks
   back down its stairwell. The ✕ goes back to the hall. The base's Shop tab lists both floors once it's open (`shopStock()`).
   Price and the stair placement were my calls. Tests: `tests/furniture-store.test.mjs`.
+- **The Furniture store as Nook's Cranny** (2026-10-09, branch `secret-base`, the user's ask with two Animal Crossing
+  screenshots: "a counter and everything, and a shopkeeper"): each floor is now orange wallpaper (pink upstairs) over a dark
+  skirting, posters, framed pictures, a clock, a curtained window on the left wall, terracotta tiles in a basket weave; the
+  8 pieces stand on teal stands with gold plaques (`BAYS`: a long stand of 4 along the back wall, an island of 2, a low one
+  of 2 at the front left, the front ones' pieces capped at 1.25 tall so the back row shows); a red-wood counter at the right
+  with a till and a bell, a bookshelf behind it, and the floor's shopkeeper on a step behind it (`KEEPERS`: Smeargle, who
+  paints the furniture; Minccino upstairs), who turns to face your partner, hops on a sale, and says every line in the
+  store in a cream speech window with a pink name tag (`talk()` / `.mall-line.talk`); tapping it plays its cry and a chat
+  line. The shopkeepers and their lines were my calls. Playtest `?mall` / `?mall=furniture` / `?mall=2f`.

@@ -595,6 +595,9 @@ export function fine(w, h, k = FINE) {
 }
 
 /** A texture, filtered smooth for a smooth painting. */
+/** three.js for this file's painters when the Clearing hasn't been built (the mall opened straight from ?mall). */
+export async function hubThree() { THREE ??= await loadThree(); }
+
 export function texOf(canvas) {
   const map = tex(canvas);
   if (canvas.fine) { map.magFilter = THREE.LinearFilter; map.minFilter = THREE.LinearMipmapLinearFilter; map.generateMipmaps = true; map.anisotropy = 4; }
