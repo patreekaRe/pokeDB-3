@@ -50,10 +50,15 @@
   transition: opacity 0.3s, translate 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hub-bar.no-run .hbar-run { opacity: 0; translate: 0 12px; }
-.hbar-info { display: flex; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; }
+.hbar-info { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
 .hbar-name { flex: none; font-weight: 400; }
 .hbar-where { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; opacity: 0.8; }
-.hbar-floor { flex: none; margin-left: auto; }
+/* the floor right after where you are, behind the title plate's little staircase (the user's ask, 2026-10-09) */
+.hbar-floor { flex: none; display: inline-flex; align-items: center; }
+.hbar-floor::before {
+  content: ''; width: 0.85em; height: 0.85em; margin-right: 0.3em; background: currentColor; opacity: 0.7;
+  clip-path: polygon(0 100%, 0 67%, 33% 67%, 33% 33%, 67% 33%, 67% 0, 100% 0, 100% 100%);
+}
 .hbar-floor:empty { display: none; }
 .hbar-hp { grid-column: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .hbar-flee {
