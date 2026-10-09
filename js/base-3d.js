@@ -48,7 +48,7 @@ let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, sw
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
 let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 // Walk shows only the room; Decorate pulls the camera back over the whole room and brings up the sheet
-let mode = 'walk', blend = 0, shots = null, viewW = 0, viewH = 0;
+let mode = 'walk', blend = 0, shots = null, fitted = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
 let giftBoard = null, unwrapping = null, shopMsg = '';
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
@@ -922,6 +922,9 @@ function paperTap(field, s) {
 function refresh() {
   const busy = holding || sel >= 0;
   root.classList.toggle('editing', mode === 'edit');
+  // a piece in hand or picked tucks the sheet down to its hinge and keys, so the room has the screen
+  root.classList.toggle('tucked', mode === 'edit' && !!busy);
+  root.classList.toggle('painting', tab === 'colour');
   const bar = root.querySelector('.b3-acts');
   bar.hidden = !busy;
   const wall = PIECES[holding?.id ?? base.items[sel]?.id]?.layer === 'wall';
@@ -938,16 +941,15 @@ function refresh() {
   else count.replaceChildren(smoothIcon('coin', 'hbar-coin'), (getSave().coins ?? 0).toLocaleString());
   const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip);
+  // with a piece in hand or picked the hinge's LCD says what's going on, and nothing covers the room
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
-    : holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
-    : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
-    : tab === 'colour' ? (styles(holding?.id ?? base.items[sel]?.id ?? 'bed').length > 1 ? 'Every style and colour comes with it. Tap one to use it.' : 'Every colour comes with it. Tap one to paint it.')
+    : busy ? ''
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
     : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
-    : 'Pick a piece, or drag one in the room to move it.';
+    : '';
   if (sel >= 0) {
     const g = pieceGroup.children.find(c => c.userData.index === sel), it = base.items[sel];
     const box = new THREE.Box3().setFromObject(g);
@@ -960,6 +962,9 @@ function refresh() {
     selBox.visible = true;
   } else selBox.visible = false;
   if (tab === 'furniture' || tab === 'colour') tray();
+  const pid = holding?.id ?? base.items[sel]?.id;
+  root.querySelector('.b3-title').textContent = holding ? `Place ${PIECES[pid].name}` : busy ? PIECES[pid].name : TAB_NAME[tab];
+  root.querySelector('.b3-ok').textContent = holding ? 'Place' : 'Done';
 }
 
 /* ---------- light ---------- */
@@ -1020,10 +1025,18 @@ function fitCamera(w, h) {
   camera.updateProjectionMatrix();
   const sheet = root.querySelector('.b3-sheet').offsetHeight;
   root.style.setProperty('--b3-sheet', sheet + 'px');
-  shots = { walk: fitShot(SHOT.walk, w, h, 0), edit: fitShot(SHOT.edit, w, h, sheet) };
+  fitted = { walk: fitShot(SHOT.walk, w, h, 0), edit: fitShot(SHOT.edit, w, h, sheet) };
+  shots ??= structuredClone(fitted);
+}
+
+// the sheet tucking down or coming back changes the room's fit: the camera glides to the new one rather than jumping
+function easeShots(dt) {
+  const k = calm ? 1 : Math.min(1, dt / 1000 * 6);
+  for (const s of ['walk', 'edit']) for (const key in fitted[s]) shots[s][key] += (fitted[s][key] - shots[s][key]) * k;
 }
 
 function placeCamera(dt, now) {
+  easeShots(dt);
   blend = calm ? +(mode === 'edit') : blend + ((mode === 'edit') - blend) * Math.min(1, dt / 1000 * 6);
   const k = blend * blend * (3 - 2 * blend), mix = (key) => shots.walk[key] + (shots.edit[key] - shots.walk[key]) * k;
   const room = COLS / 2 + 0.6, half = mix('half');
@@ -1160,13 +1173,6 @@ export async function openBase3d({ onLeave = null } = {}) {
       <header class="b3-top"><h2>Secret Base</h2><span class="b3-fps" hidden></span>
         <button type="button" class="b3-key b3-close" aria-label="Leave">${glyph('close')}</button></header>
       <p class="b3-hint" aria-live="polite"></p>
-      <div class="b3-acts" hidden>
-        <button type="button" data-act="rotate">${glyph('rotate')}<span>Turn</span></button>
-        <button type="button" data-act="paint">${glyph('paint')}<span>Colour</span></button>
-        <button type="button" data-act="store">${glyph('store')}<span>Store</span></button>
-        <button type="button" data-act="done">${glyph('ok')}<span>Done</span></button>
-        <button type="button" data-act="cancel">${glyph('close')}<span>Cancel</span></button>
-      </div>
       <div class="b3-gift" hidden><p>Starter furniture!</p><div class="b3-gift-row"></div><button type="button" class="b3-done">Decorate</button></div>
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
     </div>
@@ -1180,6 +1186,10 @@ export async function openBase3d({ onLeave = null } = {}) {
             .map(([id, name, g]) => `<button type="button" class="b3-tab" data-tab="${id}" title="${name}" aria-label="${name}"><span class="round-key">${glyph(g)}</span></button>`).join('')}
         </nav>
         <div class="room-lcd b3-lcd"><span class="b3-count"></span></div>
+        <div class="b3-acts" hidden>
+          ${[['rotate', 'Turn'], ['paint', 'Colour'], ['store', 'Store'], ['cancel', 'Cancel']]
+            .map(([act, name]) => `<button type="button" class="b3-act" data-act="${act}" title="${name}" aria-label="${name}"><span class="round-key">${glyph(act === 'cancel' ? 'close' : act)}</span></button>`).join('')}
+        </div>
       </div>
       <div class="b3-filters" hidden></div>
       <div class="b3-screen"><div class="b3-strip"></div></div>
@@ -1240,7 +1250,8 @@ export async function openBase3d({ onLeave = null } = {}) {
   root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
-  root.querySelector('.b3-ok').addEventListener('click', () => setMode('walk'));
+  // with a piece in hand the gold pill puts it down; with one picked it lets go of it; else it ends decorating
+  root.querySelector('.b3-ok').addEventListener('click', () => holding ? place() : sel >= 0 ? act('done') : setMode('walk'));
   new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));
   tray('furniture');
   refresh();

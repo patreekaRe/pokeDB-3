@@ -1994,3 +1994,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `undefined` and was silent; it's now a soft card blip. Layout, Meowth and its lines were my calls. Playtest `?mall=corner`.
 
 - **3D furniture** (2026-10-08, the user's ask: "a lot can't rotate properly, they look ugly"): every upright piece in the 3D base and the Furniture store's stands was a billboard swapping pictures as it turned; now `js/base-model.js` carves a voxel model from each kind's front and side paintings (a cube kept where both have paint), merges faces into rectangles and projects each painting onto the faces it looks at (back and left from the back / left views, tops from the row under the outline). A kind painted the same from every side is rounded row by row (plants, lamps, vases) unless its sides run straight (crates, presents), and rows split in two (legs) stay square. All 747 upright kinds build (~1,000-1,600 triangles each, ~25 ms the first time, 80 cached). Flat pieces, wall pieces and the bookshelf-style `solid` blocks were already 3D and are unchanged. Playtest `?base`, `?mall=furniture`.
+- **Decorate makes room to see** (2026-10-08, branch `secret-base`, the user's ask from a phone screenshot: the sheet, a
+  cream hint box and the floating Turn / Colour / Cancel strip covered most of the room): a piece in hand or picked tucks
+  the sheet to its hinge (the LCD says "Place Side table" / the piece, the gold pill Place or Done) and one row of round
+  keys where the tabs were; Colour brings the swatches back; the hint box only shows for the odd message; the camera
+  glides to the new fit (`.tucked`, `easeShots()` in `js/base-3d.js`).
