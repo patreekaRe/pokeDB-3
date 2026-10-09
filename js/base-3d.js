@@ -17,7 +17,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES } from './base-paint.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, shopStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt, lockedEarned } from './secret-base.js';
+  spare, openGift, ownsPaper, buyPaper, paperArt } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -48,7 +48,7 @@ let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 // Walk shows only the room; Decorate pulls the camera back over the whole room and brings up the sheet
 let mode = 'walk', blend = 0, shots = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
-let giftBoard = null, unwrapping = null, shopPick = null, shopMsg = '';
+let giftBoard = null, unwrapping = null, shopMsg = '';
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
 let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
@@ -771,7 +771,7 @@ function onTap(e) {
 
 /* ---------- the sheet ---------- */
 
-const TAB_NAME = { colour: 'Colours', furniture: 'Furniture', shop: 'Shop', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
+const TAB_NAME = { colour: 'Colours', furniture: 'Furniture', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
 // white line art, like the round keys' (js/smooth-icons.js)
 const GLYPHS = {
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-width="2.6"/>',
@@ -810,26 +810,14 @@ function tray(which = tab) {
     b.addEventListener('click', pick);
     list.append(b);
   };
-  if (tab === 'shop' && shopNews(base)) { seeShop(base); save(); }
-  if (tab === 'shop') for (const id of shopStock(base)) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
-  // after the day's stock, the pieces never sold: earned from a badge, achievement, feat or Safari page
-  if (tab === 'shop') for (const { id, how } of lockedEarned()) {
-    const secret = how === '???';
-    add(secret ? '???' : PIECES[id].name, () => icon(id), shopPick === id, () => {
-      shopPick = id; playSound('select');
-      shopMsg = secret ? 'A secret piece. Keep exploring to find it.' : how;
-      refresh();
-    }, 'Earn');
-    list.lastChild.classList.add('locked');
-    if (secret) list.lastChild.classList.add('secret');
-  }
+  filters();
   if (tab === 'colour') {
     const id = holding?.id ?? base.items[sel]?.id;
     if (!id) return tray('furniture');
     // a set's other styles in this colour first, then this style's other colours
     for (const c of [...styles(id), ...colours(id).filter(c => c !== id)]) add(PIECES[c].name, () => icon(c), c === id, () => recolour(c));
   }
-  if (tab === 'furniture') for (const id of DESIGNS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of DESIGNS.filter(id => spare(base, id) > 0 && KINDS_OF[kindPick](PIECES[id]))) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
@@ -855,6 +843,40 @@ function tray(which = tab) {
       }, shown.includes(id) ? '✓' : '');
     }
   }
+}
+
+// the Furniture tab's filters, by what a piece is (the user's ask, 2026-10-09: a long strip was hard to pick from)
+const KINDS_OF = {
+  All: () => true,
+  Seats: (p) => !!p.seat || ['Seats', 'Beds', 'Cushions'].includes(p.group),
+  Tables: (p) => p.group === 'Tables' || /table|desk|counter/i.test(p.name),
+  Storage: (p) => /shelf|shelves|cabinet|chest|drawer|wardrobe|dresser|locker|bookcase|cupboard/i.test(p.name),
+  Plants: (p) => ['Plants', 'Garden', 'Greenhouse'].includes(p.group) || /plant|tree|flower|bush|cactus|fern|bonsai|pot/i.test(p.name),
+  Lights: (p) => !!p.glow,
+  Rugs: (p) => p.layer === 'rug',
+  Wall: (p) => p.layer === 'wall',
+  Dolls: (p) => p.group === 'Dolls',
+  Other: (p) => !Object.entries(KINDS_OF).some(([k, test]) => k !== 'All' && k !== 'Other' && test(p)),
+};
+let kindPick = 'All';
+
+/** The filter chips over the Furniture tab: only kinds you have a piece of, so none ever opens empty. */
+function filters() {
+  const row = root.querySelector('.b3-filters');
+  row.hidden = tab !== 'furniture';
+  if (row.hidden) return;
+  const have = DESIGNS.filter(id => spare(base, id) > 0).map(id => PIECES[id]);
+  const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || have.some(KINDS_OF[k]));
+  if (!kinds.includes(kindPick)) kindPick = 'All';
+  row.replaceChildren(...kinds.map(k => {
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'b3-chip' + (k === kindPick ? ' on' : ''), textContent: k });
+    b.addEventListener('click', () => {
+      if (k === kindPick) return;
+      kindPick = k; playSound('select'); tray();
+      root.querySelector('.b3-strip').scrollLeft = 0;
+    });
+    return b;
+  }));
 }
 
 /** The piece in hand, or the one picked in the room, in another colour or style of its kind or set: they all come with it. */
@@ -891,17 +913,6 @@ function paperTap(field, s) {
   tray(); refresh();
 }
 
-/** A first tap on a piece for sale shows its price, a second buys it into storage. */
-function shopTap(id) {
-  const p = PIECES[id], coins = getSave().coins ?? 0;
-  if (shopPick !== id) { shopPick = id; shopMsg = ''; playSound('select'); return refresh(); }
-  if (!buyPiece(base, id)) { playSound('cancel'); shopMsg = `You need ${(p.price - coins).toLocaleString()} more PokéCoins for the ${p.name.toLowerCase()}.`; return refresh(); }
-  playSound('buy');
-  const n = styles(id).length;
-  shopPick = null; shopMsg = n > 1 ? `All ${n} styles of the ${p.name.toLowerCase()} are in your Furniture now.` : `The ${p.name.toLowerCase()} is in your Furniture now.`;
-  refresh();
-}
-
 function refresh() {
   const busy = holding || sel >= 0;
   root.classList.toggle('editing', mode === 'edit');
@@ -916,21 +927,17 @@ function refresh() {
   });
   const mons = onShow();
   root.querySelector('.b3-count').textContent = tab === 'mons' && mons.all.length ? `${mons.shown.length}/${ON_SHOW}`
-    : tab === 'shop' || tab === 'wall' || tab === 'floor' ? `${(getSave().coins ?? 0).toLocaleString()} coins` : '';
-  const news = shopNews(base);
-  root.querySelector('.b3-tab[data-tab="shop"]').classList.toggle('dex-news', news);
-  root.querySelector('.b3-decor').classList.toggle('dex-news', news);
+    : tab === 'wall' || tab === 'floor' ? `${(getSave().coins ?? 0).toLocaleString()} coins` : '';
   const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip);
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
     : holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
     : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
     : tab === 'colour' ? (styles(holding?.id ?? base.items[sel]?.id ?? 'bed').length > 1 ? 'Every style and colour comes with it. Tap one to use it.' : 'Every colour comes with it. Tap one to paint it.')
-    : tab === 'shop' ? (shopMsg || (shopPick ? `${PIECES[shopPick].name}${styles(shopPick).length > 1 ? ` (all ${styles(shopPick).length} styles)` : ''}: ${PIECES[shopPick].price.toLocaleString()} PokéCoins. Tap again to buy.` : 'New furniture every day. Tap a piece for its price.'))
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
-    : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
+    : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : 'Pick a piece, or drag one in the room to move it.';
   if (sel >= 0) {
@@ -944,7 +951,7 @@ function refresh() {
     selBox.box.copy(box);
     selBox.visible = true;
   } else selBox.visible = false;
-  if (tab === 'furniture' || tab === 'shop' || tab === 'colour') tray();
+  if (tab === 'furniture' || tab === 'colour') tray();
 }
 
 /* ---------- light ---------- */
@@ -1159,7 +1166,6 @@ export async function openBase3d({ onLeave = null } = {}) {
       <div class="b3-head">
         <nav class="b3-tabs">
           <button type="button" class="b3-tab" data-tab="furniture" aria-label="Furniture">${glyph('sofa')}</button>
-          <button type="button" class="b3-tab" data-tab="shop" aria-label="Shop">${glyph('cart')}</button>
           <button type="button" class="b3-tab" data-tab="wall" aria-label="Wallpaper">${glyph('roller')}</button>
           <button type="button" class="b3-tab" data-tab="floor" aria-label="Floor">${glyph('floor')}</button>
           <button type="button" class="b3-tab" data-tab="mons" aria-label="Pokémon">${glyph('ball')}</button>
@@ -1167,6 +1173,7 @@ export async function openBase3d({ onLeave = null } = {}) {
         <span class="b3-title"></span><span class="b3-count"></span>
         <button type="button" class="b3-done">Done</button>
       </div>
+      <div class="b3-filters" hidden></div>
       <div class="b3-strip"></div>
     </div>`;
   document.body.append(root);
@@ -1222,7 +1229,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   view.addEventListener('pointerup', onUp);
   view.addEventListener('pointercancel', () => { pressing = false; pointer = null; });
   root.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
-  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopPick = null; shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
+  root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
   root.querySelector('.b3-head .b3-done').addEventListener('click', () => setMode('walk'));
