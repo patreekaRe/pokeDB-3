@@ -10,6 +10,7 @@ import { PIECES, CATALOGUE, KINDS, colours } from './base-furniture.js';
 import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
+import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 
 const T = 16, COLS = 11, ROWS = 8, WALL = 48;
 const W = COLS * T, H = WALL + ROWS * T;
@@ -85,11 +86,19 @@ export const saveBase = (b) => updateSave(d => { d.secretBase = b; });
 /** `?allfurniture`: every catalogue piece to hand for a playtest, never saved as owned. */
 export const lendAll = () => new URLSearchParams(location.search).has('allfurniture');
 
+/** How many of a kind you own: bought, plus one of an earned kind once its badge, achievement, feat or page is
+    (js/data/furniture.js; worked out from the save each time, never stored in `owned`). */
+const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], getSave()) ? 1 : 0);
+
+/** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
+export const lockedEarned = () => FURNITURE.filter(p => !isEarned(p, getSave()) && PIECES[p.kind])
+  .map(p => ({ id: p.kind, how: howToEarn(p, getSave()) }));
+
 /** How many of a piece's kind are in storage, in any colour: owned, less those standing in the room. */
 export function spare(b, id) {
   if (lendAll() && PIECES[id] && !PIECES[id].gift) return Infinity;
   const kind = PIECES[id].fam;
-  return (b.owned[kind] || 0) - b.items.filter(it => PIECES[it.id].fam === kind).length;
+  return owns(b, kind) - b.items.filter(it => PIECES[it.id].fam === kind).length;
 }
 
 /** Open the room's present: it's gone, and the starter furniture is in storage. Returns what was inside. */
@@ -101,7 +110,7 @@ export function openGift(b) {
 }
 
 /** The Furniture shop's stock for a UTC day: STOCK kinds, the same for everyone that day. */
-export const furnitureStock = (day = safariDay()) => shuffled(KINDS, streamOf('furniture', day)).slice(0, STOCK);
+export const furnitureStock = (day = safariDay()) => shuffled(KINDS.filter(id => !FURNITURE_BY_KIND[id]), streamOf('furniture', day)).slice(0, STOCK);
 
 /** Whether today's Shop stock is still unseen (the "!" on the Decorate key and the Shop tab), and marking it seen. */
 export const shopNews = (b) => b.shopSeen !== safariDay();

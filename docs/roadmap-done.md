@@ -1728,6 +1728,10 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Its sim mirror never reached pokeDB-sim; part c built it.
 - **Sky Pillar augments, part b** (2026-10-07): the pick screen's look in `js/augment-art.js` (icons, tier frames, the deal
   and reroll flips and chimes) and the picks on the tower leaderboard; `js/data/augments.js` untouched.
+- **Sky Pillar augments, tuning** (2026-10-08): Siphon (taken 99%), Vampire, Pacifist and Bulwark weakened; Berserker,
+  Speed Demon, Sudden Death (now every foe -25% HP for -25% max HP, `enemyHp`), Overclock, Pandemonium and Gambler (your
+  attacks x3 or x0.75, enemies unchanged) reworked from never-taken to 15-61%. Floor 100: Fire 26 -> 16%, Grass 59 -> 49%,
+  Water 39 -> 32%. The table and numbers are in `docs/augments.md` (Tuning); pokeDB-sim's ranks re-measured.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title

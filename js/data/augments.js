@@ -19,7 +19,7 @@
      attackBonus, blockBonus       on every attack / every card's block
      dmgMult, blockMult            your attacks / your cards' block, multiplied
      bossMult, executeMult, lastBreath   x damage against guardians / below 25% HP / while you're at 1 HP
-     gambler                       each fight, a coin flip doubles or halves all damage both ways
+     gambler                       [heads, tails]: each fight, a coin flip multiplies your attacks by one of them
      thorns, hitReduce, reflect    when an enemy attacks you: it takes n / you take n less / it takes that share back
      energyEachTurn, drawEachTurn  every turn
      lowDraw, lowEnergy            below half HP / below a quarter, every turn
@@ -52,16 +52,17 @@
      infiniteLoop, chaos           your discard pile is shuffled back in every turn / drawn cards cost a random 0-3
      hydra                         an attack hits again at this share of its damage
      copycat                       each turn the enemy's move joins your hand as a free card
-     noCardBlock                   cards give no block (Berserker)
+     noCardBlock                   cards give no block
      skillDamage                   every Skill you play hits the enemy for n
-     enemyTwice                    the enemy acts twice on turn 1 (Speed Demon)
+     enemyTwice                    the enemy acts twice on turn 1
      noFightHeal                   nothing heals you in a fight
+     hitReduce < 0                 every enemy attack deals that much more (Speed Demon)
      turnBlock, minBlock, healMult set bonuses: block every turn / at least n block on your turn / all healing x n
    Run keys (read by run.js): maxHp, maxHpMult, forget, upgradeRandom, upgradePick, prizeMult, martMult, fightHeal,
      restMult, itemSlots, itemNow, relicNow, itemOdds, alphaCards, rewardCards, rerolls, centerForget, guardianRelic,
      guardianBossRelic, cardShark, goldenTouch, speedrunner, bloodlust, abilityAdd, abilityMult, and the once-a-climb
      secondWind / rebirth (spent ids are kept on run.tower.spent); part c's pickyEater, recycler, moneyNow,
-     prismaticNow, rewardTake, sludgeEvery, monk, riskyClimb, noCenters, guardianHp, relicEvery, offerPlus,
+     prismaticNow, rewardTake, sludgeEvery, monk, riskyClimb, noCenters, guardianHp, enemyHp (every foe's HP, Sudden Death), relicEvery, offerPlus,
      newUpgraded.
    `trade: true` marks a trade-off (a cost with its power); `set` puts an augment in one of AUG_SETS, whose bonuses
    augEffects() adds once 2 or 3 of a set are held.
@@ -123,8 +124,8 @@ export const AUGMENTS = [
   { id: 'double-down',    tier: 'gold', icon: '✌️', name: 'Double Down',    text: 'Every 5th card you play in a fight is played twice.', doubleEvery: 5, set: 'tempo' },
   { id: 'combo-master',   tier: 'gold', icon: '🎼', name: 'Combo Master',   text: 'Every 3rd card you play in a turn costs 0.', comboFree: 3, set: 'tempo' },
   { id: 'momentum',       tier: 'gold', icon: '📈', name: 'Momentum',       text: 'Gain 1 strength every 3rd turn of a fight.', strengthEvery: 3, set: 'snowball' },
-  { id: 'bulwark',        tier: 'gold', icon: '🏰', name: 'Bulwark',        text: 'Gain block equal to 25% of the damage your attacks deal.', bulwark: 0.25, set: 'ironclad' },
-  { id: 'siphon',         tier: 'gold', icon: '🩸', name: 'Siphon',         text: 'Heal 2 HP whenever you play an attack.', attackHeal: 2, set: 'glutton' },
+  { id: 'bulwark',        tier: 'gold', icon: '🏰', name: 'Bulwark',        text: 'Gain block equal to 20% of the damage your attacks deal.', bulwark: 0.2, set: 'ironclad' },
+  { id: 'siphon',         tier: 'gold', icon: '🩸', name: 'Siphon',         text: 'Heal 1 HP whenever you play an attack.', attackHeal: 1, set: 'glutton' },
   { id: 'executioner',    tier: 'gold', icon: '🪓', name: 'Executioner',    text: 'Your attacks deal double damage to enemies below 25% HP.', executeMult: 2, set: 'snowball' },
   { id: 'opening-act',    tier: 'gold', icon: '🎭', name: 'Opening Act',    text: 'Your Powers cost 0 on turn 1.', powersFree: true },
   { id: 'deck-diet',      tier: 'gold', icon: '🥗', name: 'Deck Diet',      text: 'Forget 4 moves from your deck; -5 max HP.', forget: 4, maxHp: -5 },
@@ -149,11 +150,11 @@ export const AUGMENTS = [
   { id: 'recycler',       tier: 'gold', icon: '♻️', name: 'Recycler',       text: 'After every fight, each of your moves exhausted in it gets PP Up.', recycler: true, set: 'card-smith' },
   { id: 'pack-rat',       tier: 'gold', icon: '🐀', name: 'Pack Rat',       text: 'Every item works twice when you use it; +1 item slot.', packRat: true, itemSlots: 1 },
   { id: 'darkrais-deal',  tier: 'gold', trade: true, icon: '🌑', name: 'Darkrai\'s Deal', text: 'A random Prismatic augment now; -20 max HP.', prismaticNow: 1, maxHp: -20 },
-  { id: 'berserker',      tier: 'gold', trade: true, icon: '😤', name: 'Berserker',      text: 'Start every fight with 3 strength; your cards give no block.', startStrength: 3, noCardBlock: true },
-  { id: 'pacifist',       tier: 'gold', trade: true, icon: '🕊️', name: 'Pacifist',       text: 'Your attacks deal half; your cards\' block is doubled, and enemies take 5 when they attack you.', dmgMult: 0.5, blockMult: 2, thorns: 5 },
+  { id: 'berserker',      tier: 'gold', trade: true, icon: '😤', name: 'Berserker',      text: 'Start every fight with 4 strength; cards that give block give 1 less.', startStrength: 4, blockBonus: -1 },
+  { id: 'pacifist',       tier: 'gold', trade: true, icon: '🕊️', name: 'Pacifist',       text: 'Your attacks deal half; your cards\' block is 75% higher, and enemies take 3 when they attack you.', dmgMult: 0.5, blockMult: 1.75, thorns: 3 },
   { id: 'monk',           tier: 'gold', trade: true, icon: '📿', name: 'Monk',           text: 'Forget all your attacks but 3 (your best stay); every Skill you play deals 5 damage.', monk: 3, skillDamage: 5 },
-  { id: 'speed-demon',    tier: 'gold', trade: true, icon: '👟', name: 'Speed Demon',    text: '+1 PP a turn; enemies act twice on turn 1.', energyEachTurn: 1, enemyTwice: true },
-  { id: 'sudden-death',   tier: 'gold', trade: true, icon: '💀', name: 'Sudden Death',   text: 'Guardians have half their HP; nothing heals you during fights.', guardianHp: 0.5, noFightHeal: true },
+  { id: 'speed-demon',    tier: 'gold', trade: true, icon: '👟', name: 'Speed Demon',    text: '+1 PP a turn; take 2 more damage from every enemy attack.', energyEachTurn: 1, hitReduce: -2 },
+  { id: 'sudden-death',   tier: 'gold', trade: true, icon: '💀', name: 'Sudden Death',   text: 'Every enemy has 25% less HP; so do you (-25% max HP).', enemyHp: 0.75, maxHpMult: 0.75 },
   { id: 'no-mercy',       tier: 'gold', trade: true, icon: '🗡️', name: 'No Mercy',       text: 'Your attacks deal 40% more; Pokémon Centers become fights.', dmgMult: 1.4, noCenters: true },
   { id: 'heat-shield',    tier: 'gold', type: 'fire',  icon: '🔰', name: 'Heat Shield',  text: 'Whenever you apply Burn, gain 2 block.', burnBlock: 2 },
   { id: 'wildfire-aug',   tier: 'gold', type: 'fire',  icon: '🌋', name: 'Wildfire',     text: 'Burn never goes down.', burnKeep: true },
@@ -167,8 +168,8 @@ export const AUGMENTS = [
 
   // ---------- Prismatic (floors 70-90) ----------
   { id: 'glass-cannon',   tier: 'prismatic', icon: '🔮', name: 'Glass Cannon',   text: 'Your attacks deal double damage; your max HP is halved.', dmgMult: 2, maxHpMult: 0.5 },
-  { id: 'vampire',        tier: 'prismatic', icon: '🦇', name: 'Vampire',        text: 'Heal 15% of the damage your attacks deal.', vampire: 0.15, set: 'glutton' },
-  { id: 'overclock',      tier: 'prismatic', icon: '⚙️', name: 'Overclock',      text: '+2 PP a turn; draw 2 fewer cards.', energyEachTurn: 2, drawEachTurn: -2, set: 'tempo' },
+  { id: 'vampire',        tier: 'prismatic', icon: '🦇', name: 'Vampire',        text: 'Heal 10% of the damage your attacks deal.', vampire: 0.1, set: 'glutton' },
+  { id: 'overclock',      tier: 'prismatic', icon: '⚙️', name: 'Overclock',      text: '+2 PP a turn; after turn 1, draw 1 fewer card.', energyEachTurn: 2, drawEachTurn: -1, turn1Draw: 1, set: 'tempo' },
   { id: 'metronome-mind', tier: 'prismatic', icon: '🎵', name: 'Metronome Mind', text: 'Every turn, a random card of your type joins your hand, free.', randomCard: 1 },
   { id: 'mirror-force',   tier: 'prismatic', icon: '🪞', name: 'Mirror Force',   text: 'Enemies take back half of every attack they hit you with.', reflect: 0.5 },
   { id: 'time-warp',      tier: 'prismatic', icon: '⌛', name: 'Time Warp',      text: 'Every 4th turn of a fight, the enemy skips its turn.', timeWarp: 4 },
@@ -176,12 +177,12 @@ export const AUGMENTS = [
   { id: 'legend',         tier: 'prismatic', icon: '🌟', name: 'Legend',         text: '+30 max HP, and your Ability\'s numbers are doubled.', maxHp: 30, abilityMult: 2 },
   { id: 'bloodlust',      tier: 'prismatic', icon: '🩸', name: 'Bloodlust',      text: 'Every 2 fights won from now on: +1 strength for the rest of the climb.', bloodlust: 2, set: 'snowball' },
   { id: 'immortal',       tier: 'prismatic', icon: '♾️', name: 'Immortal',       text: 'You can\'t drop below 1 HP for the first 3 turns of every fight.', immortal: 3 },
-  { id: 'gambler',        tier: 'prismatic', icon: '🎰', name: 'Gambler',        text: 'Every fight, a coin flip doubles or halves all damage, both ways.', gambler: true, set: 'high-roller' },
+  { id: 'gambler',        tier: 'prismatic', icon: '🎰', name: 'Gambler',        text: 'Every fight, a coin flip: your attacks deal triple damage, or 25% less.', gambler: [3, 0.75], set: 'high-roller' },
   { id: 'one-punch',      tier: 'prismatic', icon: '👊', name: 'One Punch',      text: 'Your first attack each fight deals 5 times as much.', onePunch: 5 },
   { id: 'living-legend',  tier: 'prismatic', icon: '🗿', name: 'Living Legend',  text: 'Start every fight with 3 strength, 3 Focus and 10 block.', startStrength: 3, startFocus: 3, startBlock: 10 },
   { id: 'speedrunner',    tier: 'prismatic', icon: '⏱️', name: 'Speedrunner',    text: 'Win a fight in 3 turns or fewer: heal 10 HP and +1 max HP.', speedrunner: 3, set: 'snowball' },
   { id: 'nova',           tier: 'prismatic', icon: '💫', name: 'Nova',           text: 'Every 10th card you play in a fight deals 50 damage to the enemy.', nova: { every: 10, damage: 50 } },
-  { id: 'pandemonium',    tier: 'prismatic', icon: '👹', name: 'Pandemonium',    text: 'Draw 3 more cards a turn; lose 1 HP for every card left in your hand at its end.', drawEachTurn: 3, handHurt: 1 },
+  { id: 'pandemonium',    tier: 'prismatic', icon: '👹', name: 'Pandemonium',    text: '+2 PP and 1 more card a turn; lose 1 HP for every card left in your hand at its end.', drawEachTurn: 1, energyEachTurn: 2, handHurt: 1 },
   { id: 'last-breath',    tier: 'prismatic', icon: '😮‍💨', name: 'Last Breath', text: 'At 1 HP your attacks deal triple damage; once this climb, a fatal hit leaves you at 1 HP.', lastBreath: 3, secondWind: 0 },
   { id: 'infinite-loop',  tier: 'prismatic', icon: '➰', name: 'Infinite Loop',  text: 'Every turn your discard pile is shuffled back into your draw pile first; draw 1 more card a turn.', infiniteLoop: true, drawEachTurn: 1 },
   { id: 'chaos-theory',   tier: 'prismatic', icon: '🌀', name: 'Chaos Theory',   text: 'Every card you draw costs a random 0-3 PP; draw 2 more cards a turn.', chaos: true, drawEachTurn: 2, set: 'high-roller' },
@@ -231,7 +232,7 @@ export function setBonuses(ids = []) {
 /** The bonuses a set reaches when `id` joins `ids` (none, or one: its 2 or its 3). */
 export const newBonuses = (ids, id) => setBonuses([...ids, id]).filter(b => !setBonuses(ids).some(x => x.set === b.set && x.n === b.n));
 
-const MULT = new Set(['dmgMult', 'blockMult', 'bossMult', 'executeMult', 'lastBreath', 'onePunch', 'prizeMult', 'martMult', 'restMult', 'itemOdds', 'abilityMult', 'maxHpMult', 'burnTickMult', 'seedHealMult', 'overheal', 'guardianHp', 'healMult']);
+const MULT = new Set(['dmgMult', 'blockMult', 'bossMult', 'executeMult', 'lastBreath', 'onePunch', 'prizeMult', 'martMult', 'restMult', 'itemOdds', 'abilityMult', 'maxHpMult', 'burnTickMult', 'seedHealMult', 'overheal', 'guardianHp', 'healMult', 'enemyHp']);
 const SKIP = new Set(['id', 'tier', 'type', 'icon', 'name', 'text', 'needs', 'trade', 'set']);
 
 /** Every held augment's effects in one object: numbers add up (MULT keys multiply), `true` keys switch on, objects

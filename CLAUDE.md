@@ -712,6 +712,16 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   two flipped slots): Game Modes ▸ slides the stack sideways to a sub-menu with a Back sign, the Pokédex opens the device (since 2026-10-05; it was a Collection ▸ sub-menu) (`renderMenu()` / `goTo()` in
   `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
   (`docs/reference/title-screen.md`).
+- **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
+  names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
+  achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
+  shrink, so nothing is saved; `owns()` in `js/secret-base.js` adds one to `owned[kind]`, every colour with it). The daily
+  stock skips them (`furnitureStock()`); the Shop tab lists the unearned after the stock, greyed with an "Earn" tag, a
+  tap saying how (`lockedEarned()`, `howToEarn()`; a secret source's piece is a black "???"). A new earned kind's source
+  must be unique (`tests/furniture.test.mjs`). The base is decoration only, one room that grows, 6 Pokémon on show (the
+  user's calls, 2026-10-09). **Branch rule:** Secret Base work stays on `secret-base`; a cloud session starts from that
+  branch and pushes only to `origin secret-base`, never `main`, overriding the push-to-main rule above until the user
+  says it goes live.
 - **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
   100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
   seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),

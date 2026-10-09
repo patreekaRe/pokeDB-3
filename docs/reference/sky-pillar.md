@@ -118,7 +118,7 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
   `takeAugment()` (Cursed Gold's ₽, Monk, Darkrai's Deal's `dealPrismatic()` from `run.tower.augPickFloor`, sets reached via
   `newBonuses()` / `setBonusNow()`, Risky Climb / No Mercy re-dealing an untouched flight), `offerCard()` (Picky Eater's paid
   reroll, Heavy Pack's second pick, Card Smith's upgraded cards), `startFlight()` (fights to Alphas, Centers to fights),
-  Sudden Death's guardian HP in `fight()`, Soul Bond's relic and Heavy Pack's Sludge in a guardian's steps. **Sets**:
+  Sudden Death's `enemyHp` (every foe's HP; `guardianHp`, guardians only, is kept but unused) in `fight()`, Soul Bond's relic and Heavy Pack's Sludge in a guardian's steps. **Sets**:
   `AUG_SETS` in `js/data/augments.js`; the tile's set chip and line, and a row per set in the Bag (each bonus lit once
   reached). **High Roller's 3** is `augmentOffer({ extra })`: a 4th from the floor's own tier after the three, no roll drawn,
   so the three are everyone's (tested). **Augment badges** read `save.tower.augDex` (every augment ever taken,

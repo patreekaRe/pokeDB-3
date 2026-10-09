@@ -71,7 +71,18 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     guardian, Silver / Gold / Prismatic by height, 1 reroll, type-only ones (Fire must reach floor 100 sometimes; it's 0%
     in the bot today), every offer from the week's seed so the leaderboard stays even.
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
-    - **Part c.** Run in: CLOUD. The trade-off augments, sets and their bonuses, augment badges, the rest of the list.
+    - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
+    - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
+    - **Part d, augment balance (the user's pick, 2026-10-08: do it the weekend of 2026-10-10).** Run in: CLOUD (attach
+      `pokeDB-3` and `pokeDB-sim`). Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 21 and
+      docs/reference/sky-pillar.md. Balance the Sky Pillar's augments with the bot (pokeDB-sim's `sim/augranks.json`,
+      `towerCfg()` in `sim/run-node.mjs`). 1) Fire first: on full climbs Fire reaches floor 100 16% of the time against
+      Grass 49% and Water 32%; lift it (stronger Fire-only augments, or more healing / block for it) to within ~10 points
+      of Water, without moving Grass and Water. 2) Re-check the five that measured far below no augment, with more climbs
+      before touching them: Risky Climb (Grass -26 floors), Card Shark (-19), Golden Touch and Bodyguard (-13), Overcharge
+      (Water -11); fix any that is really a trap. 3) Re-measure what changed and confirm the full-climb rates once at
+      ~300. The ranks are one augment from floor 1, so read gaps under ~5 floors as even, and remember scaling augments
+      measure low there. Keep bot runs small (CLAUDE.md). Push both repos to main."
 
 ## Ideas, not agreed yet (ask the user before building)
 
@@ -90,9 +101,14 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   by the UTC day like the Safari's (`js/rng.js`), unlocks are `test(stats, save)` lines like `BADGES`, the layout is one
   `save.base` (follows the cloud save), placing is tap-a-tile on a grid (phones, no dragging), and the Pokémon are the
   `save.safariDex` catches' front GIFs. Its way in: a Game Modes sign or a Pokédex app. Suggested parts, each a session:
-  a) the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base` (Run in: LOCAL, visual);
+  a) ~~the room, grid, placing / moving / storing, a starter set of ~15 pieces, `save.base`~~ done 2026-10-08, in 3D (the pilot below won);
   b) ~~the Furniture shop and its daily stock, prices~~ done 2026-10-08 with the first room's present and a 500-piece catalogue (`docs/roadmap-done.md`); ~~a "!" on new stock, wallpapers / floors for sale~~ done 2026-10-08 (`docs/roadmap-done.md`), ~~more kinds of piece~~ ~~(done 2026-10-08: 241 kinds, 4,212 pieces, dolls drawn in code, not from the sprites)~~; **1000 kinds, more detailed** (the user's ask, 2026-10-08): a kind is now bought once with every colour free; the user picked detailed pixel and the 241 are redrawn in it at 32 pixels a tile (`js/base-paint.js`, 2026-10-08); ~~the 1,000 kinds~~ done 2026-10-08 in five batches of themed shelves (1,008 kinds, 19,514 pieces, `js/base-furniture-rooms.js` to `-rooms5.js`; `docs/roadmap-done.md`);
-  c) furniture unlocked from badges, achievements, feats and Safari pages, ~30 more pieces (Run in: CLOUD for the data, LOCAL for the art);
+  c) furniture unlocked from badges, achievements, feats and Safari pages: **the data landed first** (2026-10-09, a cloud
+     session on main): `js/data/furniture.js`, 39 earned pieces, each `from` one badge / achievement / feat / Safari page,
+     owned once its source is (`earnedFurniture(save)`, nothing saved), `howToEarn()` (??? for a secret source),
+     `tests/furniture.test.mjs`. ~~Wired into the 3D base~~ done 2026-10-09 on `secret-base`: each is a catalogue
+     kind, kept out of the daily stock, shown locked in the Shop with how to earn it (CLAUDE.md). Left: maybe new art for
+     ones that only borrow a near kind (Torchic / Treecko / Mudkip give the big Kanto dolls; the base has no Hoenn dolls yet);
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
   e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
   f) later (the user's ask, 2026-10-08): give the 3D base's tall upper wall (`dressRoom()` in `js/base-3d.js`, the wallpaper
@@ -104,13 +120,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   desk: a second layer per tile), **colour variants** of a piece (a palette swap, cheap since it's painted in code), and
   maybe a **day / night light** through the window from `js/daytime.js`. Build rotate, wallpaper / floor and rugs into a);
   stacking and colour variants can be c).
-  Claude's suggested answers (2026-10-08; the user plans to start on Saturday 2026-10-10, confirm with them then): **one
-  room that grows** (it starts small, bigger rooms bought or earned; Gen 3's tree / cave / desert looks as wallpaper-like
-  themes later, so there's one painter, not three), **6 Pokémon on show** (enough to feel lively, few enough to read on a
-  phone; more slots could be an unlock), **decoration only** (bonuses would make the base a chore and pull at the
-  Safari / Sky Pillar boards' fairness; the reward is how it looks, and the Pokémon reacting).
-  Open questions for the user before a): one room or rooms that grow (Gen 3's tree / cave / desert bases?), how many
-  Pokémon on show, and whether furniture is pure decoration or gives a small perk.
+  **Settled** (the user, 2026-10-09, Claude's suggested answers): **one room that grows** (it starts small, bigger rooms
+  bought or earned; Gen 3's tree / cave / desert looks as wallpaper-like themes, so one painter, not three), **6 Pokémon on
+  show** (more slots could be an unlock), **decoration only** (no perks: the reward is how it looks and the Pokémon
+  reacting, and the Safari / Sky Pillar boards stay fair).
+  **Branch rule:** Secret Base work stays on `secret-base` until the user says it goes live. A cloud session must start from
+  that branch and push only to `origin secret-base`, never `main` (part c's data reached `main` by that rule, 2026-10-09).
 - **Walkable 3D (HD-2D) pilot** built 2026-10-08 on `secret-base` only, not pushed (the user wants to playtest first):
   `?3d` (`js/base-3d.js`, Three.js 0.160.0 from jsDelivr) builds the `?base` room as a diorama from the same save and
   paintings (`roomArt()` / `pieceArt()` in `js/secret-base.js`), the partner's GIF frames via ImageDecoder (a live `<img>`

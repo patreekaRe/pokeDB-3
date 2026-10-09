@@ -156,7 +156,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   const aug = run.tower ? augEffects(run.tower.augments, run.tower.spent) : {};
   const base = ABILITIES[run.starter.type] ?? null;
   const ability = base && (aug.abilityAdd || aug.abilityMult) ? { ...base, amount: (base.amount + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
-  const gamble = aug.gambler ? (random() < 0.5 ? 2 : 0.5) : 1;
+  const gamble = aug.gambler ? aug.gambler[random() < 0.5 ? 0 : 1] : 1;
   const junk = run.relics.includes('griseous-orb') ? [CARDS_BY_ID.sludge, CARDS_BY_ID.sludge] : [];   // StS's Mark of Pain
   const deck = shuffle([...run.deck.map(id => CARDS_BY_ID[id]), ...junk]);
   choosing = null;
@@ -170,7 +170,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     relics: [...run.relics],
     ability,
     aug,
-    gamble,            // Gambler's coin flip for this fight: all damage x2 or x0.5, both ways
+    gamble,            // Gambler's coin flip for this fight: your attacks x3 or x0.75
     lifeline: run.tower ? lifelineOf(run.tower.augments, run.tower.spent) : null,   // Rebirth / Second Wind / Last Breath, once a climb
     spent: null,       // the lifeline used up in this fight, handed back in onEnd
     cardsThisFight: 0, // cards played this fight (Echo, Double Down, Nova)
@@ -694,8 +694,8 @@ function augDamage() {
     * (a.onePunch && b.firstAttack ? a.onePunch : 1);
 }
 
-/** Your cards' block: Damp Rock and Steady Hands add to it, Fortress and Pacifist multiply it, Berserker takes it away. */
-const cardBlock = (n) => (battle.aug.noCardBlock ? 0 : Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (battle.aug.blockBonus || 0)) * (battle.aug.blockMult || 1)));
+/** Your cards' block: Damp Rock and Steady Hands add to it, Fortress and Pacifist multiply it, Berserker takes 1 off. */
+const cardBlock = (n) => (battle.aug.noCardBlock ? 0 : Math.max(0, Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (battle.aug.blockBonus || 0)) * (battle.aug.blockMult || 1))));
 
 async function playCard(uid) {
   const b = battle;
@@ -1808,7 +1808,7 @@ function enemyTypeMultiplier(move) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * en.dmgMult * battle.gamble * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * en.dmgMult * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 

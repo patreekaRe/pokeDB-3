@@ -17,7 +17,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES } from './base-paint.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, KINDS, colours, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, furnitureStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt } from './secret-base.js';
+  spare, openGift, furnitureStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt, lockedEarned } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -812,6 +812,17 @@ function tray(which = tab) {
   };
   if (tab === 'shop' && shopNews(base)) { seeShop(base); save(); }
   if (tab === 'shop') for (const id of furnitureStock()) add(PIECES[id].name, icon(id), shopPick === id, () => shopTap(id), PIECES[id].price.toLocaleString());
+  // after the day's stock, the pieces never sold: earned from a badge, achievement, feat or Safari page
+  if (tab === 'shop') for (const { id, how } of lockedEarned()) {
+    const secret = how === '???';
+    add(secret ? '???' : PIECES[id].name, () => icon(id), shopPick === id, () => {
+      shopPick = id; playSound('select');
+      shopMsg = secret ? 'A secret piece. Keep exploring to find it.' : how;
+      refresh();
+    }, 'Earn');
+    list.lastChild.classList.add('locked');
+    if (secret) list.lastChild.classList.add('secret');
+  }
   if (tab === 'colour') {
     const id = holding?.id ?? base.items[sel]?.id;
     if (!id) return tray('furniture');
