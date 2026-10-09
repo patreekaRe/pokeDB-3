@@ -32,7 +32,7 @@ const GATE_AT = { tx: 6, ty: ROWS + 4 };
 // the trail and a Pokémon route sign left of it
 const STOP_AT = { tx: 8, ty: GATE_AT.ty + 1 }, SIGN_AT = { tx: 4, ty: GATE_AT.ty + 1 };
 const TP = 16;                // painted pixels a tile
-const START = { x: 6, y: 8 };
+const START = { x: 6, y: 10 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -70,7 +70,7 @@ const BUGS = 44;
 const SAFARI_AT = { tx: 0, ty: -3 };
 // the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
 const PILLAR_AT = { tx: 13, ty: -3 };
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 7.5], [-1, 8]], [[-1, 8], [6, 8]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 9.5], [-1, 10]], [[-1, 10], [6, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
@@ -979,8 +979,8 @@ export function cornerStall(glows = glowMats) {
 const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
 const MU = 20;   // the mall's paintings: units a tile
 // on the left, under the Safari gate and a step left of its road, far enough forward that its roof never hides the gate,
-// its doors on row 7 over tile -1 where the road from the plaza comes up to them, facing the camera
-const MALL_AT = { x: tileX(-1), z: tileZ(6) + 0.25, turn: 0 };
+// its doors on row 9 over tile -1 where the road from the plaza comes up to them, facing the camera
+const MALL_AT = { x: tileX(-1), z: tileZ(8) + 0.25, turn: 0 };
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1196,7 +1196,7 @@ function makePlaces() {
   // out on the left where the side forest stood, lined up under the Safari gate a step to its left (2026-10-09, the user's
   // ask: in the grid it stood too near the middle), the road from the plaza running up the middle of its doors
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: -1, y: 8 }, tiles: rect(-3, 5, 0, 7), tag: [-1, 3.4, 7], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: -1, y: 10 }, tiles: rect(-3, 7, 0, 9), tag: [-1, 3.4, 9], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
