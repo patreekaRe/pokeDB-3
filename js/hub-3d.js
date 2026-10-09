@@ -59,7 +59,7 @@ const AIRS = ['clearing-day', 'clearing-night'];
 const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[1, 10], [6, 10]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup;
@@ -894,6 +894,7 @@ export function cornerStall(glows = glowMats) {
 // its colours: cream stone, the Poké Mart's red, a blue-white glass that shows the warm shops behind it
 const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
 const MU = 20;   // the mall's paintings: units a tile
+const MALL_AT = { x: tileX(-1.5), z: tileZ(8) + 0.25, turn: 0.5 };   // mostly off the grid's left edge, its doors on row 9
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1077,12 +1078,13 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(3), tileZ(3))),
   });
-  // down on the left, so the Safari has the back left to itself; its doors face you, on the path to the plaza
+  // down on the left, set back into the side trees and turned to the plaza, so it never stands in front of the Safari
+  // gate (the user's call, 2026-10-08: square on the grid it hid it)
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: 1, y: 10 }, tiles: rect(0, 7, 2, 9), tag: [1, 3.4, 9], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: 0, y: 10 }, tiles: [[0, 7], [0, 8], [0, 9], [1, 8]], tag: [-0.5, 3.4, 9], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
-    build: (g) => { const m = mallBuilding(); m.position.set(tileX(1), 0, tileZ(8) + 0.25); g.add(m); },
+    build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
   });
   const tower = towerOpen(save), best = save.tower?.bestEver || 0;
   list.push({
@@ -1184,6 +1186,7 @@ function buildClearing() {
   }
   for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = -1; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
     if (r === 0 && y > ROWS - 0.5) continue;
+    if (s < 0 && r < 2 && y > 5.8 && y < 10.6) continue;   // room for the Poké Mall (MALL_AT)
     const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
