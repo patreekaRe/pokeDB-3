@@ -1296,26 +1296,141 @@ function roundish(p) {
 /** A piece with no shape: a round one's bottom that is one centred run a row turns on a lathe; everything else is its
     rounded hull, soft for an organic outline, nearly square for a boxy one. */
 function autoModel(id, paint) {
-  const p = PIECES[id], art = p.art(0, 1, true);
+  const p = PIECES[id], full = p.art(0, 1, true);
+  const ball = ORBS.has(p.fam) ? remember(`${p.fam}|ball`, () => ballOf(full, MERIDIAN.has(p.fam))) : null;
+  // a ball's stand or base is made as before, from the rows under it
+  const art = ball ? rowsBelow(full, ball.bottom) : full;
   const plan = remember(`${p.fam}|plan`, () => {
     const pl = roundPlan(art);
-    if (pl && !pl.boxy && (!roundish(p) || p.group === 'Dolls')) pl.split = pl.j0;
+    if (pl && !pl.boxy && !ball && (!roundish(p) || p.group === 'Dolls')) pl.split = pl.j0;
     return pl;
   });
-  if (!plan) return null;
-  const rows = rowsOf(art), j0 = rows.findIndex(r => r), j1 = rows.length - [...rows].reverse().findIndex(r => r);
-  const split = plan.boxy ? j0 : plan.split;
+  if (!plan && !ball) return null;
   const mats = faces(p, id).map(paint), g = new THREE.Group();
   const add = (a, m) => { if (!a.pos.length) return; const geo = geoFrom(a); geo.scale(U, U, U); const mesh = new THREE.Mesh(geo, m); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); };
-  if (split > j0) {
-    const arrs = remember(`${p.fam}|lathe`, () => latheArrays(art, j0, split));
-    if (arrs) { add(arrs[0], mats[0]); add(arrs[1], mats[1]); }
+  if (plan) {
+    const rows = rowsOf(art), j0 = rows.findIndex(r => r), j1 = rows.length - [...rows].reverse().findIndex(r => r);
+    const split = plan.boxy ? j0 : plan.split;
+    if (split > j0) {
+      const arrs = remember(`${p.fam}|lathe`, () => latheArrays(full, j0, split));
+      if (arrs) { add(arrs[0], mats[0]); add(arrs[1], mats[1]); }
+    }
+    if (split < j1) {
+      const arrs = remember(`${p.fam}|hull`, () => hullArrays(p, split, j1, plan.boxy ? 'boxy' : roundish(p) ? 'round' : 'organic'));
+      if (arrs) arrs.forEach((a, i) => add(a, mats[i]));
+    }
   }
-  if (split < j1) {
-    const arrs = remember(`${p.fam}|hull`, () => hullArrays(p, split, j1, plan.boxy ? 'boxy' : roundish(p) ? 'round' : 'organic'));
-    if (arrs) arrs.forEach((a, i) => add(a, mats[i]));
+  if (ball) {
+    // whatever stands on the ball (a stem, a cap) the same way
+    if (ball.above) {
+      const turns = ball.aboveTurns, arrs = remember(`${p.fam}|above`, () => turns ? latheArrays(full, ball.top, ball.j1) : hullArrays(p, ball.top, ball.j1, 'organic'));
+      if (arrs) arrs.forEach((a, i) => add(a, mats[i]));
+    }
+    for (const mesh of ballMeshes(p, ball, mats, paint)) g.add(mesh);
   }
   return g.children.length ? g : null;
+}
+
+/* ---------- balls: a true sphere ---------- */
+
+// round things whose hull came out lumpy (the user's ask, 2026-10-09: the item ball should be a whole sphere): the ball
+// in their painting is a real one. Poké Balls wear a drawn ball, one button facing front (their paintings show it from
+// every side); the rest wear their front painting on the front half and their back painting behind. A value in
+// POKEBALLS is a fixed top colour, else the theme's, as `ballTop()` in js/base-furniture-rooms.js paints it.
+const POKEBALLS = { itemball: null, balllamp: null, ballstatue: null, balldisplay: '#e04848' };
+const ORBS = new Set([...Object.keys(POKEBALLS), 'beachball', 'redplanet', 'bandedplanet', 'blueplanet', 'greenplanet',
+  'moonplanet', 'moonorb', 'crystalball', 'plasmaglobe', 'iceball', 'snowglobe', 'gumball', 'jackolantern']);
+// model planets, painted under a metal meridian on their left and a pin on top (`planetStand()` in
+// js/base-furniture-rooms4.js): the ball is read from its right half, and the meridian and pin are made, not painted on
+const MERIDIAN = new Set(['redplanet', 'bandedplanet', 'blueplanet', 'greenplanet', 'moonplanet']);
+
+/** The ball in a painting: its widest rows nearest the top, read as an ellipse (centre `cx`, `cy`, radii `rx`, `ry`, in
+    painted units from the floor), `bottom` the row its stand or base starts under, `top` / `j1` the rows over it.
+    `right`: read only the right half, the ball standing in the middle. */
+function ballOf(art, right = false) {
+  const rows = rowsOf(art), W = art.width;
+  const j1 = rows.length - [...rows].reverse().findIndex(r => r);
+  if (j1 > rows.length) return null;
+  const half = right ? (r) => r.r - W / 2 : (r) => (r.r - r.l) / 2;
+  let rx = 0, j = j1 - 1, was = Infinity, past = false;
+  // down from the top past the widest row, while the rows keep narrowing: a neck or a wider base ends it
+  for (; j >= 0 && rows[j]; j--) {
+    const h = half(rows[j]);
+    if (h > rx) rx = h;
+    else if (h < rx - 0.5) past = true;
+    if (past && (h > was + 0.5 || (h >= was && h < rx * 0.7))) break;
+    was = h;
+  }
+  const bottom = j + 1, wide = [];
+  for (let k = bottom; k < j1; k++) if (half(rows[k]) >= rx - 0.75) wide.push(k);
+  const cy = (wide[0] + wide.at(-1)) / 2 + 0.5, mid = rows[Math.round(cy - 0.5)];
+  // its height from how fast the rows narrow away from the middle, so a stem or a cap doesn't stretch it
+  const est = [];
+  for (let k = bottom; k < j1; k++) {
+    const t = half(rows[k]) / rx, dy = Math.abs(k + 0.5 - cy);
+    if (t > 0.35 && t < 0.92) est.push(dy / Math.sqrt(1 - t * t));
+  }
+  est.sort((a, b) => a - b);
+  // a planet's meridian hugs it on both sides in the painting: its globe is 13 round
+  if (right) rx = 13;
+  const ry = right ? 13 : est.length ? Math.min(est[est.length >> 1], rx * 1.3) : rx;
+  const top = Math.min(j1, Math.round(cy + ry * 0.9)), above = !right && j1 - (cy + ry) >= 2;
+  const aboveTurns = above && rows.slice(top, j1).every(r => r && r.runs === 1 && Math.abs(r.l + r.r - W) <= 3);
+  return { cx: right ? 0 : (mid.l + mid.r) / 2 - W / 2, cy, rx, ry, bottom, top, j1, above, aboveTurns, meridian: right, W, H: art.height };
+}
+
+/** A painting with only its rows under `j` (from the floor) left. */
+function rowsBelow(art, j) {
+  const c = new OffscreenCanvas(art.width, art.height);
+  c.getContext('2d').drawImage(art, 0, art.height - j, art.width, j, 0, art.height - j, art.width, j);
+  return c;
+}
+
+/** A Poké Ball drawn round a sphere (its uvs: u 0.25 faces front), `top` its upper half, `glow` its button's middle. */
+function pokeBallArt(top, glow) {
+  const c = new OffscreenCanvas(512, 256), g = c.getContext('2d');
+  g.fillStyle = top; g.fillRect(0, 0, 512, 128);
+  g.fillStyle = '#f4f4f0'; g.fillRect(0, 128, 512, 128);
+  g.fillStyle = '#26262e'; g.fillRect(0, 120, 512, 16);
+  const ring = (r, col) => { g.fillStyle = col; g.beginPath(); g.arc(128, 128, r, 0, Math.PI * 2); g.fill(); };
+  ring(30, '#26262e'); ring(22, '#f4f4f0'); ring(15, '#d8d8d4'); ring(12.5, glow || '#fbfbf8');
+  c.hd = HD;
+  return c;
+}
+
+/** The ball as meshes, in tiles. */
+function ballMeshes(p, b, mats, paint) {
+  const at = (geo) => { geo.scale(b.rx, b.ry, b.rx); geo.translate(b.cx, b.cy, 0); geo.scale(U, U, U); return geo; };
+  const mesh = (geo, m) => { const o = new THREE.Mesh(geo, m); o.castShadow = o.receiveShadow = true; return o; };
+  if (p.fam in POKEBALLS) {
+    const pal = p.pal || {}, top = POKEBALLS[p.fam] || (pal.c === '#f4f4f0' ? pal.w : pal.c) || '#e04848';
+    const m = paint(pokeBallArt(top, p.glow?.[0]));
+    m.roughness = 0.3;
+    return [mesh(at(ball(1, 48, 32)), m)];
+  }
+  const out = [];
+  if (b.meridian) {
+    const pal = p.pal || {}, metal = new THREE.MeshStandardMaterial({ color: pal.m || '#5a5a68', roughness: 0.3, metalness: 0.45 });
+    const arc = torus(b.rx + 2, 0.8, Math.PI, 32);
+    arc.rotateZ(Math.PI / 2);
+    arc.translate(b.cx, b.cy, 0);
+    arc.scale(U, U, U);
+    out.push(mesh(arc, metal));
+    const pin = cyl(0.8, 3.5, 0.8, 12);
+    pin.translate(b.cx, b.cy + b.ry + 2.5, 0);
+    pin.scale(U, U, U);
+    out.push(mesh(pin, new THREE.MeshStandardMaterial({ color: pal.a || '#e0b04a', roughness: 0.3, metalness: 0.45 })));
+  }
+  // each half wears its painting as seen straight on, read a little inside the outline so its rim never shows
+  const k = 0.94;
+  return out.concat([0, 1].map(back => {
+    const geo = new THREE.SphereGeometry(1, 24, 32, back * Math.PI, Math.PI), pos = geo.attributes.position, uv = geo.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      const x = b.W / 2 + b.cx + pos.getX(i) * b.rx * k, y = b.cy + pos.getY(i) * b.ry * k;
+      uv.setXY(i, back ? 1 - x / b.W : x / b.W, y / b.H);
+    }
+    return mesh(at(geo), mats[back]);
+  }));
 }
 
 /* ---------- plants: a round pot, the leaves as crossed cards ---------- */
