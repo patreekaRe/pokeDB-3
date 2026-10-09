@@ -56,6 +56,7 @@ const standees = new Set();   // round pieces drawn as their painting (js/base-m
 let giftBoard = null, unwrapping = null, shopMsg = '';
 let hushed = null;   // the hint tapped away: it stays away until it says something else
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
+let exitMat = null;   // the doormat over the front edge: a tap walks your partner out, as in a Pokémon house
 let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -114,6 +115,53 @@ function buildRoom() {
     roomGroup.add(side);
   }
   dressRoom(art, cap, outer);
+  roomGroup.add(exitMat = makeExitMat());
+}
+
+/** A woven red doormat lying over the threshold with a cream arrow pointing out, off the tiles so nothing covers it. */
+function makeExitMat() {
+  const c = document.createElement('canvas');
+  c.width = 288; c.height = 128;
+  const g = c.getContext('2d');
+  for (let x = 14; x < 274; x += 7) {   // fringe at both ends
+    g.strokeStyle = '#d8c09a'; g.lineWidth = 3; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(x, 4); g.lineTo(x, 16); g.moveTo(x, 112); g.lineTo(x, 124); g.stroke();
+  }
+  const body = g.createLinearGradient(0, 12, 0, 116);
+  body.addColorStop(0, '#d0503e'); body.addColorStop(1, '#a8382c');
+  g.fillStyle = body; g.beginPath(); g.roundRect(6, 12, 276, 104, 14); g.fill();
+  g.strokeStyle = '#7a2420'; g.lineWidth = 5; g.beginPath(); g.roundRect(16, 22, 256, 84, 9); g.stroke();
+  g.globalAlpha = 0.12; g.fillStyle = '#000';
+  for (let y = 26; y < 104; y += 6) g.fillRect(20, y, 248, 2);
+  g.globalAlpha = 1;
+  g.fillStyle = '#fbf0d8'; g.strokeStyle = '#7a2420'; g.lineWidth = 4; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(112, 38); g.lineTo(176, 38); g.lineTo(144, 92); g.closePath(); g.fill(); g.stroke();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  const top = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 1, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0 });
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.8), top);
+  mat.rotation.x = -Math.PI / 2;
+  mat.position.set(tileX(Math.floor(COLS / 2)), 0.1, ROWS / 2 + 0.06);
+  mat.receiveShadow = true;
+  return mat;
+}
+
+/** Your partner walks to the front of the room and out over the doormat; then the room is left as by the ✕. */
+function headOut() {
+  if (mode !== 'walk') return;
+  const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+  const go = () => {
+    walker.path = route(walker.tile, door);
+    walker.path.push({ x: door.x, y: ROWS - 0.4 });
+    walker.exit = true;
+    ring.position.set(exitMat.position.x, 0.12, exitMat.position.z);
+    ring.material.opacity = 0.9;
+  };
+  follow = true;
+  walker.goal = null; walker.seatTo = null;
+  if (walker.seat) getUp(go); else if (!walker.jump) go();
+  playSound('confirm');
 }
 
 const UPPER = 9, PLINTH = 6;   // tall enough to fill an upright phone above the wall and below the floor
@@ -846,13 +894,15 @@ function pieceUnder(at) {
 function tapped(at, ray = new THREE.Raycaster()) {
   ray.setFromCamera(new THREE.Vector2(...at), camera);
   const boards = [mon.board, ...guests.filter(g => g.mon).map(g => g.mon.board)];
-  return ray.intersectObjects([...boards, pieceGroup], true).find(h => !h.object.userData.who || onSprite(h))?.object;
+  return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [exitMat] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
 function onTap(e) {
   if (swallowClick || holding) { swallowClick = false; return; }
   const ray = new THREE.Raycaster();
   const first = tapped(ndc(e), ray);
+  walker.exit = false;
+  if (first === exitMat) return headOut();
   if (first === mon.board) {
     playCry(mon.id);
     walker.hopUntil = performance.now() + 500;
@@ -1203,7 +1253,12 @@ function frame(now) {
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
 
-  if (!hopping(walker, now) && walk(walker, mon, dt) && walker.goal) partnerUp();
+  if (!hopping(walker, now) && walk(walker, mon, dt)) {
+    if (walker.goal) partnerUp();
+    else if (walker.exit) { walker.exit = false; leave(); }
+  }
+  // the mat's arrow breathes, so it reads as the way out
+  if (!calm) exitMat.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
   const happy = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, walker.y ?? 0, walker.z);
@@ -1247,13 +1302,16 @@ async function fallBack() {
 
 /** Out through the door: dark, the room put away (kept, so going back in is quick), then wherever it was opened from. */
 async function leave() {
+  if (leave.busy) return;   // the ✕ tapped while your partner is already walking out over the mat
   if (!leaveTo) { location.href = location.pathname; return; }
+  leave.busy = true;
   playSound('door');
   await curtain(true);
   if (holding) act('cancel');
   untry();
   root.remove();
   await leaveTo();
+  leave.busy = false;
   curtain(false);
 }
 
@@ -1265,7 +1323,7 @@ async function reopen() {
   const mate = partner(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
   mode = 'walk'; blend = 0; sel = -1;
-  walker.path = [];
+  walker.path = []; walker.exit = false;
   walker.tile = nearestFree(startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   walker.facing = 'back';
