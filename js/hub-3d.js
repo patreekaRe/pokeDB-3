@@ -64,7 +64,7 @@ const BUGS = 44;
 const SAFARI_AT = { tx: 0, ty: -3 };
 // the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
 const PILLAR_AT = { tx: 13, ty: -3 };
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 3]], [[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]],[[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
