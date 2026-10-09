@@ -2030,3 +2030,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Secret Base: Smeargle's housewarming opens the Furniture store** (2026-10-09): the first time in the base Smeargle is
   painting at an easel, tells you it is opening a furniture shop at the Poké Mall, and the store opens the next UTC day,
   like Animal Crossing's Nook's Cranny; the user's ask. Until then its taped door has Smeargle's note and a countdown.
+- **Secret Base: cheap furniture and a balanced daily stock** (2026-10-09): every piece now costs 50 to 150 PokéCoins
+  (the authored 80-1,600 on a log curve, so the order holds; wallpapers and floors ~105-130), and each floor's day is one
+  seat, table, storage piece, light, plant, rug, wall piece and a doll or anything else, the user's ask.

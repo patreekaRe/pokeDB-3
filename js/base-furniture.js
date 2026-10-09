@@ -360,6 +360,10 @@ const GIFT = { id: 'gift', name: 'Present', w: 1, h: 1, price: 0, draw(x, b) {
   R(x + 14, b - 38, 4, 5, '#e0a818'); R(x + 15, b - 37, 2, 1, '#fff4a0');
 } };
 
+/** What a piece costs at the store, from its authored price (80 to 1,600): 50 to 150 PokéCoins on a log curve, so the
+    order holds (a crate cheapest, a grand piano dearest) but furniture is cheap (the user's call, 2026-10-09). */
+export const shopPrice = (p) => (p ? Math.min(150, Math.max(50, Math.round((50 + 100 * Math.log(p / 80) / Math.log(20)) / 5) * 5)) : 0);
+
 // HD pictures, the least recently used dropped past FINE_KEEP (each is a few hundred kilobytes)
 const FINE = new Map(), FINE_KEEP = 64;
 
@@ -368,7 +372,7 @@ function makePiece(fam, theme) {
   const pal = theme || THEMES[0];
   const p = {
     name: theme ? `${theme.name} ${noun(fam)}` : fam.name,
-    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: fam.price, pal,
+    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: shopPrice(fam.price), pal,
   };
   if (fam.layer) p.layer = fam.layer;
   if (fam.flat) { p.flat = true; p.high = fam.high; p.side = sh(pal[fam.side] || pal.w, -1); }

@@ -21,7 +21,7 @@ import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle } from './secret-base.js';
+  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -1129,19 +1129,6 @@ function tray(which = tab) {
   }
 }
 
-// the Furniture tab's filters, by what a piece is (the user's ask, 2026-10-09: a long strip was hard to pick from)
-const KINDS_OF = {
-  All: () => true,
-  Seats: (p) => !!p.seat || ['Seats', 'Beds', 'Cushions'].includes(p.group),
-  Tables: (p) => p.group === 'Tables' || /table|desk|counter/i.test(p.name),
-  Storage: (p) => /shelf|shelves|cabinet|chest|drawer|wardrobe|dresser|locker|bookcase|cupboard/i.test(p.name),
-  Plants: (p) => ['Plants', 'Garden', 'Greenhouse'].includes(p.group) || /plant|tree|flower|bush|cactus|fern|bonsai|pot/i.test(p.name),
-  Lights: (p) => !!p.glow,
-  Rugs: (p) => p.layer === 'rug',
-  Wall: (p) => p.layer === 'wall',
-  Dolls: (p) => p.group === 'Dolls',
-  Other: (p) => !Object.entries(KINDS_OF).some(([k, test]) => k !== 'All' && k !== 'Other' && test(p)),
-};
 let kindPick = 'All';
 
 /** The filter chips over the Furniture tab: only kinds you have a piece of, so none ever opens empty. */

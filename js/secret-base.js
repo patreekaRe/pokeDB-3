@@ -6,7 +6,7 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles } from './base-furniture.js';
+import { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, shopPrice } from './base-furniture.js';
 import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
@@ -49,6 +49,8 @@ const FLOORS = [
   { id: 'redcarpet', name: 'Red carpet', look: 'carpet', a: '#b02838', b: '#98202e', c: '#d04050', price: 500 },
   { id: 'mosaic', name: 'Mosaic', look: 'mosaic', a: '#e8dcc4', b: '#4a8ac0', c: '#e0a030', price: 800 },
 ];
+// wallpapers and floors on the same cheap curve as the furniture (shopPrice())
+for (const s of [...WALLPAPERS, ...FLOORS]) s.price = shopPrice(s.price);
 const papers = (field) => field === 'wall' ? WALLPAPERS : FLOORS;
 
 let g;   // the room's 2D context while painting
@@ -143,9 +145,44 @@ export function openGift(b) {
   return STARTER_GIFT;
 }
 
+// what a piece is: the Furniture tab's filters (the user's ask, 2026-10-09: a long strip was hard to pick from), and the
+// store's daily stock, a piece of each (furnitureStock())
+export const KINDS_OF = {
+  All: () => true,
+  Seats: (p) => !!p.seat || ['Seats', 'Beds', 'Cushions'].includes(p.group),
+  Tables: (p) => p.group === 'Tables' || /table|desk|counter/i.test(p.name),
+  Storage: (p) => /shelf|shelves|cabinet|chest|drawer|wardrobe|dresser|locker|bookcase|cupboard/i.test(p.name),
+  Plants: (p) => ['Plants', 'Garden', 'Greenhouse'].includes(p.group) || /plant|tree|flower|bush|cactus|fern|bonsai|pot/i.test(p.name),
+  Lights: (p) => !!p.glow,
+  Rugs: (p) => p.layer === 'rug',
+  Wall: (p) => p.layer === 'wall',
+  Dolls: (p) => p.group === 'Dolls',
+  Other: (p) => !Object.entries(KINDS_OF).some(([k, test]) => k !== 'All' && k !== 'Other' && test(p)),
+};
+
+/* Each floor's day, like Nook's Cranny's: a piece of every kind, so a day is never eight posters (the user's ask,
+   2026-10-09); the last stand a doll or anything else, oftener anything else, as there are far more of those. */
+const SLOTS = ['Seats', 'Tables', 'Storage', 'Lights', 'Plants', 'Rugs', 'Wall', 'Other'];
+const DOLL_ODDS = 0.25;
+const stocked = new Map();
+
 /** The Furniture store's stock for a UTC day on a floor: STOCK designs (a kind, or a whole set), the same for everyone
-    that day; the second floor's are the next STOCK of the same shuffle, so the two never share a piece. */
-export const furnitureStock = (day = safariDay(), floor = 1) => shuffled(DESIGNS.filter(id => !FURNITURE_BY_KIND[id]), streamOf('furniture', day)).slice((floor - 1) * STOCK, floor * STOCK);
+    that day, one of each of SLOTS in a shuffled order; the second floor's are dealt from what is left, so the two never
+    share a piece. */
+export function furnitureStock(day = safariDay(), floor = 1) {
+  if (!stocked.has(day)) {
+    const rand = streamOf('furniture', day), taken = new Set(), pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id]);
+    const deal = () => shuffled(SLOTS.map(slot => {
+      const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
+      const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));
+      const id = can.length ? can[Math.floor(rand() * can.length)] : pool.find(id => !taken.has(id));
+      taken.add(id);
+      return id;
+    }), rand).slice(0, STOCK);
+    stocked.set(day, [deal(), deal()]);
+  }
+  return stocked.get(day)[floor - 1];
+}
 /** Everything for sale today: the ground floor's, and the second floor's once it's open. */
 export const shopStock = (b) => [...furnitureStock(), ...(b.upstairs ? furnitureStock(undefined, 2) : [])];
 export { UPSTAIRS_PRICE };
