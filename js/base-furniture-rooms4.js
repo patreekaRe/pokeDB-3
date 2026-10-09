@@ -18,7 +18,7 @@ const GOLD = '#f0c040', BRASS = '#d8a838', INK = '#303038', SILVER = '#d8dce4', 
   SEA = '#3a78b8', STRAW = '#e0c070', SPACE = '#141a34';
 const RAINBOW = ['#e04848', '#f08030', '#f8d030', '#58b848', '#4a98d8', '#5a58c8', '#a858d8'];
 /** A half ring: an arc of pixels from angle a0 to a1. */
-function arc(cx, cy, rx, ry, a0, a1, c, t = 1) {
+export function arc(cx, cy, rx, ry, a0, a1, c, t = 1) {
   const n = Math.ceil(Math.max(rx, ry) * Math.abs(a1 - a0) * 1.5);
   for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; R(Math.round(cx + Math.cos(a) * rx), Math.round(cy + Math.sin(a) * ry), t, t, c); }
 }

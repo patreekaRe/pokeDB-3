@@ -1909,3 +1909,21 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   column, giant pearl, octopus beanbag, lanternfish lamp, trident...). Batch 3's `line()`, `ring()`, `wheel()` are exported for it;
   new there: `arc()`, `globe()` (a ball painted pixel by pixel from a colour function, shaded) and a few more sign letters. Checked
   in the browser: all 12,000 new pictures paint without an error.
+**Themed shelves, batch 5, the last** (2026-10-08): `js/base-furniture-rooms5.js` adds 150 kinds, passing the user's 1,000 (1,008 in all,
+  19,514 pieces), 25 a shelf, each opening with a list on one shared body: Desert (6 hieroglyph tablets: eye, ankh, scarab, falcon,
+  sun, lotus; pyramid model, obelisk, sphinx, sarcophagus, canopic jars, papyrus, date palm, oasis, dune rug, pharaoh's throne, scarab
+  lamp, desert tent, cobra statue, lotus column, treasure urn, winged sun...), Hot Spring (6 gold-leaf folding screens: wave, crane,
+  plum, mountain, moon, fan; the hot spring pool, bamboo fountain, bath buckets, yukata rack, massage chair, milk cooler, table tennis,
+  foot bath, the ♨ curtain, sake barrel, futon stack, paper lamp, sauna stones, snow monkey statue, sandal shelf...), Arcade (6
+  cabinets by game: racing, space shooter, block puzzle, fighting, maze, rhythm, their screens painted; pinball, claw machine, air
+  hockey, dance mat, skee-ball, prize counter, photo booth, GAME neon sign, hoop shot, whack-a-mole, gumball machine, coin pusher,
+  racing cockpit, capsule toys...), Greenhouse (6 terrariums: moss, fern, cactus, pitcher plant, mushroom, orchid; greenhouse glass (a
+  window), potting bench, seed rack, sprinkler, grow lamp, Venus flytrap, monstera, string of pearls, lemon tree, water lily tub, bean
+  poles, gourd arch, living wall...), Station (6 model trains on a plinth of track: steam, diesel, bullet, tram, monorail, mine cart;
+  platform bench, station clock, departures board, ticket gate and machine, luggage trolley, railway signal, level crossing, water
+  tower, carriage window (a window), carriage seat, buffer stop, handcar...) and Sky Palace (6 orbs floating over cloud plinths: sun,
+  moon, star, rain, wind, thunder; cloud bed, cloud sofa, rainbow arch, sky throne, sky fountain, golden wings, sky arch window,
+  floating island, airship and balloon models, sky bell, cloud stairs...). Batch 4's `arc()` is exported for it; new there: `puff()`
+  (a cloud, any colour), `rim()` (a spoked wheel), `turn()` (a bitmap a quarter round), `speckOval()` and a few sign letters. The ids
+  were checked against every earlier kind first (a Sun banner already existed, so this one is the Sky banner). Checked in the
+  browser: all 9,900 new pictures paint without an error.

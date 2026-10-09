@@ -16,6 +16,7 @@ import { ROOM_KINDS } from './base-furniture-rooms.js';
 import { ROOM_KINDS_2 } from './base-furniture-rooms2.js';
 import { ROOM_KINDS_3 } from './base-furniture-rooms3.js';
 import { ROOM_KINDS_4 } from './base-furniture-rooms4.js';
+import { ROOM_KINDS_5 } from './base-furniture-rooms5.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
@@ -329,7 +330,7 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 
