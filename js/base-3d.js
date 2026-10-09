@@ -11,7 +11,8 @@ import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
-import { partner } from './trainercard.js';
+import { buddy } from './trainercard.js';
+import { RESIDENTS } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
@@ -26,7 +27,7 @@ const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
-const ON_SHOW = 6;         // Safari catches living in the base at once
+const ON_SHOW = RESIDENTS;   // Safari catches living in the base at once, also picked at the Clearing's PC
 const RIDER = 0.72;        // a piece up on a table, at this size
 // kinds of piece a Pokémon climbs onto, and what it does there; any piece with a seat height (js/base-shapes.js) too
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
@@ -422,7 +423,7 @@ function act(kind) {
 }
 
 /** A Pokémon on a billboard in the room: the partner (front and back GIFs), or a Safari guest (front only). */
-async function makeMon(mate = partner(getSave()), back = true) {
+async function makeMon(mate = buddy(getSave()), back = true) {
   const m = await monBoard(mate, back);
   scene.add(m.group);
   return m;
@@ -1339,7 +1340,7 @@ async function reopen() {
   calm = calmFx();
   base = loadBase();   // the mall's Furniture store may have bought into it since
   document.body.append(root);
-  const mate = partner(getSave());
+  const mate = buddy(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
   mode = 'walk'; blend = 0; sel = -1;
   walker.path = []; walker.exit = false;

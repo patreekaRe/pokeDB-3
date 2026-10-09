@@ -10,7 +10,7 @@
 import { getSave } from './storage.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
-import { partner } from './trainercard.js';
+import { buddy } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
@@ -787,7 +787,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   calm = calmFx();
   if (root && renderer) {
     document.body.append(root);
-    const mate = partner(getSave());
+    const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await monBoard(mate); mon.board.rotation.x = -PITCH; scene.add(mon.group); }
     atDoors();
     resize();
@@ -828,7 +828,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   scene.add(hemi, sun);
   post = createPost(renderer);
   buildHall();
-  mon = await monBoard(partner(getSave()));
+  mon = await monBoard(buddy(getSave()));
   mon.board.rotation.x = -PITCH;
   scene.add(mon.group);
   atDoors();

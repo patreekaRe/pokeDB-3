@@ -50,7 +50,7 @@ import { initSettings } from './settings.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
-import { initCollection, showCollection, openPokedex, openHowto, bootHowto, splash } from './collection.js';
+import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
@@ -257,6 +257,7 @@ function init() {
     onCollection: () => { showCollection(); leaveTitle(); },
     onPokedex: (from, onClose) => openPokedex({}, { from, onClose }),   // the hub's corner handheld grows into it, over the Clearing
     onHelp: openHowto,
+    onApp: (id) => openDeviceApp(id),   // the PC's Hall of Fame, straight into the device's app
     hello: splash,
     // How to play comes up once, the very first time (not under a playtest film's URL)
     firstLaunch: () => {

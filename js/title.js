@@ -168,6 +168,7 @@ function openHub(hold = false) {
     onNewGame: actions.onNewGame,
     onPokedex: actions.onPokedex,
     onHelp: actions.onHelp,
+    onApp: actions.onApp,
     onSafari: actions.onSafari,
     onMall: actions.onMall,
     onBoard: actions.onBoard,

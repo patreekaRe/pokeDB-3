@@ -295,6 +295,28 @@ export function partner(save) {
   return { key: null, src: spriteUrl(starter, 'front', stage), name: starter.line[stage].name, shiny, twin };
 }
 
+/** Who may walk with you in the Clearing, the Secret Base and the Poké Mall (the PC's walking buddy, the user's call,
+    2026-10-09): the first form of every starter you own, no legendaries (their sprites are too big to walk about), and
+    each one's shiny once bought. Keys are 'starter:<id>[:shiny]'. */
+export function buddyChoices(save = getSave()) {
+  const owned = new Set(save.shiny?.owned || []);
+  const form = (st, shiny) => ({ key: `starter:${st.id}${shiny ? ':shiny' : ''}`, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: `${shiny ? 'Shiny ' : ''}${st.line[0].name}`, shiny });
+  const mine = STARTERS.filter(st => !st.legendary && isStarterUnlocked(st));
+  return [...mine.map(st => form(st, false)), ...mine.filter(st => owned.has(st.id)).map(st => form(st, true))];
+}
+
+/** The Pokémon walking with you: the PC's pick (`save.buddy`) while it's still yours, else the first form of the
+    starter with the most wins, as its shiny switch says. Never the Pokédex's partner: that one only shows on the device. */
+export function buddy(save = getSave()) {
+  const all = buddyChoices(save);
+  const chosen = save.buddy && all.find(m => m.key === save.buddy);
+  if (chosen) return chosen;
+  const s = save.stats, score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
+  const plain = all.filter(m => !m.shiny), best = [...plain].sort((a, b) => score(b.id) - score(a.id))[0] ?? plain[0];
+  const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
+  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny };
+}
+
 /** The picker over the card's body: Auto, then a grid per group; a tap saves it and calls `done`. */
 function partnerPicker(body, done) {
   const save = getSave();
