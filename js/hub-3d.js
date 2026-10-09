@@ -1098,6 +1098,11 @@ function mallBuilding() {
     add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.4, 8), std({ color: P.trunk[1] })), x, 0.5, z);
     add(new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10), leaves), x, 0.82, z).scale.y = 1.15;
   }
+  // only its doors take a tap (the user's ask, 2026-10-09: a tap meant for the road to the Safari went in); the rest
+  // lets it through to the ground
+  g.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
+  const doorH = H - 32.5 / MU;
+  add(new THREE.Mesh(new THREE.BoxGeometry(W * 0.24 + 0.06, doorH + 0.08, 0.5), new THREE.MeshBasicMaterial({ visible: false })), 0, (doorH + 0.08) / 2, D / 2 + 0.25, false);
   return g;
 }
 
