@@ -2036,3 +2036,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Poké Mall: the Furniture store restyled after Nook's Cranny** (2026-10-09): plaster and timber walls, a plank floor,
   leaf-green sign and counter, and the day's pieces near life size on 2 x 2 wooden platforms with readable price cards
   (tallest at the back); the user found the pieces too small and wanted a full restyle. The second floor costs 1,000 now.
+- **The Clearing's PC in 3D** (2026-10-09): the flat painting is a real model, `pcModel()` in `js/hub-pc.js` (a rounded
+  white hood leaning back over a recessed cyan screen with a notch and camera, a white ledge, a red stand swelling out
+  under it, a raised Poké Ball, white feet; the screen glows by the hour and its scan lines roll, `livePc()`); the user
+  asked for it smooth and 3D like Pokopia's. `tools/pc.html` turns it on a turntable.

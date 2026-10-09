@@ -21,6 +21,7 @@ import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
+import { pcModel, livePc } from './hub-pc.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -1166,10 +1167,10 @@ function makePlaces() {
       line: 'A PC. Choose who walks with you, who lives in your Secret Base, and your name.',
       buttons: [['Log on', openPc]],
       build: (g) => {
-        const art = pcArt(), b = board(art, tileX(PC_AT.tx) - 0.3, tileZ(PC_AT.ty) + 0.1, { s: 1.1 });
-        const m = glowing(b.material, art, null, '#8af0ff', 1.2);
-        m.userData.glowMin = 0.35;
-        g.add(b);
+        const pc = pcModel(THREE, glowMats);
+        pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
+        pc.rotation.y = -0.35;   // turned a little, so its right side shows
+        g.add(pc);
       },
     },
   ];
@@ -1337,45 +1338,6 @@ function routeSignArt() {
   g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
   g.font = '700 1.05px "Trebuchet MS", sans-serif';
   g.fillStyle = '#7a7a76'; g.fillText('↓ ROUTE OUT', cx, 11.1);
-  return c;
-}
-
-/** The PC (the user's pick, 2026-10-09, after Pokopia's Pokémon Center one): a white hood round a striped cyan screen
-    with a notch and camera, a white ledge, a red stand with a Poké Ball on it and white feet; its right side in shade, a
-    little turned. The screen is its glow. */
-function pcArt() {
-  const { c, g, fill, rr, lin, shine } = fine(19, 27);
-  const red = lin(1, 0, 15, 0, ['#f0605a', '#e03c3a', '#c42a2e']), side = lin(15, 0, 18.6, 0, ['#c02830', '#98202a']);
-  fill(side, () => { g.moveTo(14.6, 2.4); g.lineTo(17.2, 3.4); g.quadraticCurveTo(18.6, 3.8, 18.6, 5.2); g.lineTo(18.6, 23.8); g.lineTo(14.6, 24.4); g.closePath(); });
-  rr(17.6, 6, 1, 16, 0.5, 'rgba(255,255,255,0.16)');
-  for (const x of [1.6, 11.4]) rr(x, 22.6, 4.4, 3.8, 1.6, lin(0, 22.6, 0, 26.4, ['#ffffff', '#e4e8f0', '#b8bfcc']));   // the feet
-  rr(15.2, 22.4, 3, 3.4, 1.3, lin(0, 22.4, 0, 25.8, ['#e4e8f0', '#9aa2b2']));
-  rr(1, 14, 15, 10.4, 1.4, red);   // the stand, curving out under the ledge
-  rr(1.6, 14.4, 2, 9.4, 1, 'rgba(255,255,255,0.18)');
-  fill('rgba(0,0,0,0.12)', () => g.ellipse(8.5, 15.6, 7, 1.2, 0, 0, Math.PI * 2));
-  const bx = 8.5, by = 19.6;   // the Poké Ball on it, in white and red
-  fill(lin(0, by - 3.4, 0, by + 3.4, ['#ffffff', '#e8ecf4']), () => g.arc(bx, by, 3.4, 0, Math.PI * 2));
-  fill(red, () => g.arc(bx, by, 2.5, 0, Math.PI * 2));
-  fill('#ffffff', () => g.arc(bx, by, 1.9, 0, Math.PI * 2));
-  rr(bx - 3.3, by - 0.3, 6.6, 0.6, 0.3, '#c42a2e');
-  fill('#ffffff', () => g.arc(bx, by, 1.15, 0, Math.PI * 2));
-  g.strokeStyle = '#c42a2e'; g.lineWidth = 0.32; g.beginPath(); g.arc(bx, by, 1.15, 0, Math.PI * 2); g.stroke();
-  rr(0.4, 12.6, 16.8, 2.4, 1.1, lin(0, 12.6, 0, 15, ['#ffffff', '#eef0f6', '#c4cad6']));   // the ledge
-  fill(lin(0, 0.8, 0, 13, ['#ffffff', '#f0f2f8', '#d4d8e2']), () => {   // the hood
-    g.moveTo(1, 13); g.lineTo(1, 3.2); g.quadraticCurveTo(1, 1, 3.2, 1); g.lineTo(13.4, 1); g.quadraticCurveTo(15.6, 1, 15.6, 3.2); g.lineTo(15.6, 13); g.closePath();
-  });
-  const screen = (gg, col) => {
-    gg.fillStyle = col; gg.beginPath();
-    gg.moveTo(2.6, 12.6); gg.lineTo(2.6, 4); gg.quadraticCurveTo(2.6, 2.6, 4, 2.6); gg.lineTo(6, 2.6); gg.lineTo(6.8, 3.6);
-    gg.lineTo(10.2, 3.6); gg.lineTo(11, 2.6); gg.lineTo(12.6, 2.6); gg.quadraticCurveTo(14, 2.6, 14, 4); gg.lineTo(14, 12.6); gg.closePath(); gg.fill();
-  };
-  screen(g, lin(0, 2.6, 0, 12.6, ['#a8f4f8', '#7ce8f0', '#58d6e8']));
-  fill('rgba(150,120,200,0.45)', () => { g.moveTo(2.6, 4); g.lineTo(4.4, 4.6); g.lineTo(4.4, 12.6); g.lineTo(2.6, 12.6); g.closePath(); });   // the hood's shade on it
-  g.fillStyle = 'rgba(255,255,255,0.32)';   // its scan lines
-  for (let y = 4.2; y < 12.4; y += 0.55) g.fillRect(4.4, y, 9.6, 0.18);
-  fill('rgba(255,255,255,0.4)', () => { g.moveTo(10, 4.4); g.lineTo(12.6, 4.4); g.lineTo(8.4, 11.6); g.lineTo(5.8, 11.6); g.closePath(); });
-  for (const [x, r] of [[7.6, 0.28], [8.5, 0.42], [9.4, 0.28]]) fill('#3a3e4c', () => g.arc(x, 2.35, r, 0, Math.PI * 2));   // the camera in the notch
-  screen(shine(), '#9a9a9a');
   return c;
 }
 
@@ -2048,6 +2010,7 @@ function frame(now) {
   drawMon(mon, walker, dt);
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
+  if (!calm) livePc(now);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }

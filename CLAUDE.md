@@ -715,7 +715,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   two flipped slots): Game Modes ▸ slides the stack sideways to a sub-menu with a Back sign, the Pokédex opens the device (since 2026-10-05; it was a Collection ▸ sub-menu) (`renderMenu()` / `goTo()` in
   `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
   (`docs/reference/title-screen.md`).
-- **The Clearing's PC** (2026-10-09, the user's ask; part 2 is in the roadmap): right of the plaza (`PC_AT`, `pcArt()` in
+- **The Clearing's PC** (2026-10-09, the user's ask; part 2 is in the roadmap): right of the plaza (`PC_AT`; a real 3D model since 2026-10-09, the user's ask, `pcModel()` in `js/hub-pc.js`, its screen's scan lines rolling, `livePc()`; was `pcArt()` in
   `js/hub-3d.js`, after Pokopia's Pokémon Center PC), a tap logs on to `js/pc.js`, full screen over the hub: Gen 3's menu,
   Bill's PC (Walking buddy, Base residents), your PC (Rename, the same nickname as Settings'), the Hall of Fame / Record
   Book (the device's app, `onApp`) and Log off (`pc-on` / `pc-off`). **The walking buddy is not the Pokédex's partner**

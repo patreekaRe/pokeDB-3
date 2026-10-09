@@ -1,6 +1,6 @@
 /* ============================================================
    pc.js  -  the Clearing's PC (2026-10-09, the user's ask), full screen over the hub: a white hood round a striped cyan
-   screen on a red stand, like the PC beside the plaza (pcArt() in js/hub-3d.js). Gen 3's PC menu: Bill's PC holds your
+   screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu: Bill's PC holds your
    Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
    `secretBase.mons`), your own PC your name, then the Hall of Fame and Log off. Everything about you and the game stays
    in the Pokédex; the PC is your Pokémon and your things.
