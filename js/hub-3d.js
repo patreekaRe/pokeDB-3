@@ -70,7 +70,7 @@ const BUGS = 44;
 const SAFARI_AT = { tx: 0, ty: -3 };
 // the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
 const PILLAR_AT = { tx: 13, ty: -3 };
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]],[[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]],[[2, 9.5], [2, 11]], [[2, 11], [6, 11]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
@@ -977,7 +977,7 @@ export function cornerStall(glows = glowMats) {
 // its colours: cream stone, the Poké Mart's red, a blue-white glass that shows the warm shops behind it
 const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
 const MU = 20;   // the mall's paintings: units a tile
-const MALL_AT = { x: tileX(-1.5), z: tileZ(8) + 0.25, turn: 0 };   // mostly off the grid's left edge, its doors on row 9, facing the camera
+const MALL_AT = { x: tileX(2), z: tileZ(8) + 0.25, turn: 0 };   // on the grid's left, its doors on row 9 over tile 2 where the road comes up to them, facing the camera
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1185,10 +1185,10 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(-3), tileZ(-2.3))),
   });
-  // down on the left, set back into the side trees so it never stands in front of the Safari gate (the user's call,
-  // 2026-10-08), facing the camera again and no trees in front of it (2026-10-09, the user's ask)
+  // down on the left, clear of the Safari gate (the user's call, 2026-10-08), inside the grid with the road running up the middle
+  // of its doors and the side forest whole again beside it (2026-10-09, the user's ask: half of it hid in the trees)
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: 0, y: 10 }, tiles: [[0, 7], [0, 8], [0, 9], [1, 8]], tag: [-0.5, 3.4, 9], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: 2, y: 10 }, tiles: rect(0, 7, 3, 9), tag: [2, 3.4, 9], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
@@ -1337,8 +1337,7 @@ function buildClearing() {
   scene.add(forest);
   const rnd = seeded(21), kinds = [treeArt(1), treeArt(2), treeArt(3, P.deep), treeArt(4, P.deep), bushArt(5), bushArt(6)];
   const spots = kinds.map(() => []);
-  // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()); a few stay on
-  // the far left, by the Poké Mall
+  // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()),
   // and none where the Sky Pillar and its meadow stand in the back-right corner, the trees behind it kept
   const cleared = (x, z) => (x < -3 && z < (x < -10.4 ? -3 : 0.3)) || (x > tileX(9.9) && x < tileX(17) && z > tileZ(Math.abs(x - tileX(PILLAR_AT.tx)) < 2 ? -4.6 : -2.6) && z < 0.3);
   const put = (k, x, z, s) => { if (!cleared(x, z)) spots[k].push({ x, z, s }); };
@@ -1347,7 +1346,6 @@ function buildClearing() {
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x - 0.5) + (rnd() - 0.5) * 0.5, tileZ(-1 - r * 1.2 - rnd() * 0.4), 1.25 + r * 0.25 + rnd() * 0.2);
   }
   for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = -1; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
-    if (s < 0 && r < 2 && y > 5.8 && y < 14) continue;   // room for the Poké Mall (MALL_AT), none in front hiding it
     const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
