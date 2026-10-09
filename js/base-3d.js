@@ -10,7 +10,7 @@
 import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
+import { playSound, playCry, playMusic } from './audio.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat } from './hd2d.js';
@@ -1463,6 +1463,7 @@ async function leave() {
 
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
 async function reopen() {
+  playMusic('secret-base');
   calm = calmFx();
   base = loadBase();   // the mall's Furniture store may have bought into it since
   document.body.append(root);
@@ -1487,6 +1488,7 @@ async function reopen() {
 /** The Secret Base. `onLeave` is where its doormat goes (the walkable hub hands it the way back out to the Clearing). */
 export async function openBase3d({ onLeave = null } = {}) {
   leaveTo = onLeave;
+  playMusic('secret-base');
   if (root && renderer) return reopen();
   calm = calmFx();
   root = document.createElement('section');

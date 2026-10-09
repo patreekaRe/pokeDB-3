@@ -10,7 +10,8 @@ at `TRACK_GAIN` 0.25 since it's ~13 dB louder than `boss`, looped over its 85.97
 user's file and pick 2026-09-29, `winTrack()`, looped with a crossfade like the maps and at `TRACK_GAIN` 0.35 since it's
 mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through the reward picks (after a boss, paused for the evolution scene's `evolution` track; `seal`, the user's song, from the descent's start (`descent()`, Mewtwo's fall too) through the Sealed Gate's strike and break, faded on a loss in `playGate()`, at `TRACK_GAIN` 0.22 since it's mastered ~13 dB louder (the user's file, 2026-10-04, 102 s with its own fade-out, so it loops whole), preloaded at a Biome 3+ boss; after a Level 5
 win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
-(`restSite()` in `js/run.js`), `mart` in a Poké Mart (`martRoom()`, the user's song, 2026-10-04: looped over its 48.71 s repeat with a crossfade, at `TRACK_GAIN` 0.27 since it's ~11.5 dB louder). `showScreen()` deliberately leaves the map and
+(`restSite()` in `js/run.js`), `mart` in a Poké Mart (`martRoom()`, the user's song, 2026-10-04: looped over its 48.71 s repeat with a crossfade, at `TRACK_GAIN` 0.27 since it's ~11.5 dB louder).
+`secret-base` inside the Secret Base (`openBase3d()` / `reopen()` in `js/base-3d.js`; the doormat's `showHome()` brings `title` back): the user's song, 2026-10-09, 98 s fading out at its end, so it loops whole, at gain 1 (as loud as `title`, -28 dB RMS). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
 `heal` chime from `assets/audio/sfx/`, and waits for it before returning to
