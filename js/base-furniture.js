@@ -333,6 +333,12 @@ const FAMILIES = [
 FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
+/* A `set` is one painter's family whose kinds differ only by the picture on them or the thing on top (13 banners by
+   motif, 14 kitchen counters by appliance): reskins, not new designs, so the whole set is bought and owned as one, by
+   its first kind's id, the way a kind's 20 colours are (the user's call, 2026-10-08). */
+const SETS = {};
+for (const f of FAMILIES) if (f.set) (SETS[f.set] ||= []).push(f.id);
+for (const f of FAMILIES) f.own = f.set ? SETS[f.set][0] : f.id;
 
 const NOUN = { cushion: 'Cushion' };   // a themed piece's name drops the classic one's adjective
 const noun = (fam) => fam.id === 'tv' ? 'TV' : NOUN[fam.id] || (fam.proper ? fam.name : fam.name[0].toLowerCase() + fam.name.slice(1));
@@ -353,7 +359,7 @@ function makePiece(fam, theme) {
   const pal = theme || THEMES[0];
   const p = {
     name: theme ? `${theme.name} ${noun(fam)}` : fam.name,
-    fam: fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: fam.price,
+    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: fam.price,
   };
   if (fam.layer) p.layer = fam.layer;
   if (fam.flat) { p.flat = true; p.high = fam.high; p.side = sh(pal[fam.side] || pal.w, -1); }
@@ -394,13 +400,20 @@ for (const fam of FAMILIES) for (const theme of fam.solo ? THEMES.slice(0, 1) : 
 }
 /** Every catalogue id, kind by kind (the present isn't one). */
 const CATALOGUE = Object.keys(PIECES);
-/** What you buy and own: a kind, by its classic piece's id. Owning one gives every colour of it (`colours()`). */
+/** Every kind, by its classic piece's id. */
 const KINDS = FAMILIES.map(f => f.id);
 const COLOURS = {};
 for (const id of CATALOGUE) (COLOURS[PIECES[id].fam] ||= []).push(id);
 /** Every colour of a piece's kind, the classic first. */
 const colours = (id) => COLOURS[PIECES[id].fam];
+/** What you buy and own: a kind, or a whole set by its first kind. Owning one gives every colour of every style in it. */
+const DESIGNS = KINDS.filter(id => PIECES[id].own === id);
+/** Every style of a piece's set in the piece's colour (just the piece, outside a set). */
+const styles = (id) => {
+  const { own, theme } = PIECES[id];
+  return FAMILIES.filter(f => f.own === own).map(f => theme === 'classic' ? f.id : `${f.id}-${theme}`).filter(s => PIECES[s]);
+};
 PIECES.gift = makePiece(GIFT, null);
 PIECES.gift.gift = true;
 
-export { PIECES, CATALOGUE, KINDS, colours, THEMES, FAMILIES, T };
+export { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, THEMES, FAMILIES, T };

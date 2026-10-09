@@ -197,13 +197,13 @@ add('Beds', [
 ]);
 
 /* ---------- cushions and mats with a motif ---------- */
-add('Cushions', MOTIF_IDS.filter(m => m !== 'ball').map(m => ({ id: `${m}cushion`, name: `${MOTIF_NAME[m]} cushion`, w: 1, h: 1, price: 170,
+add('Cushions', MOTIF_IDS.filter(m => m !== 'ball').map(m => ({ set: 'cushion', id: `${m}cushion`, name: `${MOTIF_NAME[m]} cushion`, w: 1, h: 1, price: 170,
   high: 0.22, side: 'c', seat: 'cushion', flat() {
     cushion(1, 1, 30, 30, k.c, 6); R(4, 4, 24, 1, sh(k.c, 2));
     for (let i = 4; i < 28; i += 3) { P(i, 2, sh(k.c, -1)); P(i, 29, sh(k.c, -1)); P(2, i, sh(k.c, -1)); P(29, i, sh(k.c, -1)); }
     motif(m, 7, 7, ink(k.a, sh(k.a, 2), sh(k.a, -2), k.p));
   } })));
-add('Rugs', MOTIF_IDS.map(m => ({ id: `${m}mat`, name: `${MOTIF_NAME[m]} mat`, proper: m === 'ball', w: 2, h: 2, layer: 'rug', price: 300, high: 0.04, side: 'c',
+add('Rugs', MOTIF_IDS.map(m => ({ set: 'mat', id: `${m}mat`, name: `${MOTIF_NAME[m]} mat`, proper: m === 'ball', w: 2, h: 2, layer: 'rug', price: 300, high: 0.04, side: 'c',
   flat(w, h) {
     R(0, 0, w, h, sh(k.c, -1)); R(2, 2, w - 4, h - 4, k.c);
     R(5, 5, w - 10, 2, k.a); R(5, h - 7, w - 10, 2, k.a); R(5, 5, 2, h - 10, k.a); R(w - 7, 5, 2, h - 10, k.a);
@@ -233,20 +233,20 @@ const weave = (w, h, at, round) => {
     P(i, j, c);
   }
 };
-add('Rugs', Object.entries(PATTERNS).map(([id, p]) => ({ id: `${id}rug`, name: `${p.name} rug`, w: 3, h: 2, layer: 'rug', price: 380, high: 0.04, side: 'c',
+add('Rugs', Object.entries(PATTERNS).map(([id, p]) => ({ set: 'rug', id: `${id}rug`, name: `${p.name} rug`, w: 3, h: 2, layer: 'rug', price: 380, high: 0.04, side: 'c',
   flat(w, h) { weave(w, h, p.at, true); } })));
-add('Rugs', ['stripe', 'check', 'zigzag', 'wave'].map(id => ({ id: `${id}runner`, name: `${PATTERNS[id].name} runner`, w: 3, h: 1, layer: 'rug', price: 220, high: 0.04, side: 'c',
+add('Rugs', ['stripe', 'check', 'zigzag', 'wave'].map(id => ({ set: 'runner', id: `${id}runner`, name: `${PATTERNS[id].name} runner`, w: 3, h: 1, layer: 'rug', price: 220, high: 0.04, side: 'c',
   flat(w, h) { weave(w, h, PATTERNS[id].at, false); for (let y = 2; y < h - 1; y += 3) { R(0, y, 2, 1, k.p); R(w - 2, y, 2, 1, k.p); } } })));
 
 /* ---------- wall: posters, banners, pictures ---------- */
-add('Wall', MOTIF_IDS.map(m => ({ id: `${m}poster`, name: `${MOTIF_NAME[m]} poster`, proper: m === 'ball', w: 1, h: 1, layer: 'wall', price: 120, wall(x) {
+add('Wall', MOTIF_IDS.map(m => ({ set: 'poster', id: `${m}poster`, name: `${MOTIF_NAME[m]} poster`, proper: m === 'ball', w: 1, h: 1, layer: 'wall', price: 120, wall(x) {
   shadowWall(x + 4, 18, 24, 40); panel(x + 4, 18, 24, 40, k.p);
   for (let j = 0; j < 22; j++) R(x + 7, 21 + j, 18, 1, j < 11 ? sh(k.c, 1) : k.c);
   motif(m, x + 7, 23, ink(k.p, '#ffffff', sh(k.c, -2), '#ffffff'));
   R(x + 8, 46, 16, 2, sh(k.p, -2)); R(x + 8, 50, 11, 1, sh(k.p, -1)); R(x + 8, 53, 13, 1, sh(k.p, -1));
   disc(x + 16, 19, 1.5, k.m); P(x + 15, 18, sh(k.m, 2));
 } })));
-add('Wall', MOTIF_IDS.map(m => ({ id: `${m}banner`, name: `${MOTIF_NAME[m]} banner`, proper: m === 'ball', w: 1, h: 1, layer: 'wall', price: 140, wall(x) {
+add('Wall', MOTIF_IDS.map(m => ({ set: 'banner', id: `${m}banner`, name: `${MOTIF_NAME[m]} banner`, proper: m === 'ball', w: 1, h: 1, layer: 'wall', price: 140, wall(x) {
   for (let j = 0; j < 54; j++) {
     const half = j < 38 ? 12 : Math.max(0, 12 - Math.round((j - 37) * 0.75));
     if (half <= 0) continue;
@@ -304,7 +304,7 @@ const SCENES = {
     for (let j = 22; j < h; j += 2) R(x + w / 2 - (j - 18), y + j, (j - 18) * 2, 1, j % 4 ? '#e8a860' : '#c88050');
   } },
 };
-add('Wall', Object.entries(SCENES).map(([id, s]) => ({ id: `${id}pic`, name: s.name, w: 2, h: 1, layer: 'wall', price: 380, wall(x) {
+add('Wall', Object.entries(SCENES).map(([id, s]) => ({ set: 'pic', id: `${id}pic`, name: s.name, w: 2, h: 1, layer: 'wall', price: 380, wall(x) {
   shadowWall(x + 4, 16, 56, 52); panel(x + 4, 16, 56, 52, k.w, 2); R(x + 6, 18, 52, 1, sh(k.w, 2)); inset(x + 8, 20, 48, 44, sh(k.w, -2));
   clipped(x + 9, 21, 46, 42, () => s.paint(x + 9, 21, 46, 42));
   R(x + 9, 21, 46, 1, 'rgba(0,0,0,0.25)');
@@ -494,7 +494,7 @@ add('Plants', [
 ]);
 const BERRIES = [['oran', 'Oran', '#4a78d8'], ['pecha', 'Pecha', '#f890b8'], ['cheri', 'Cheri', '#e03838'], ['chesto', 'Chesto', '#7a4ab8'],
   ['rawst', 'Rawst', '#58b8a8'], ['aspear', 'Aspear', '#f0d848'], ['leppa', 'Leppa', '#e86a38'], ['sitrus', 'Sitrus', '#f0e070']];
-add('Plants', BERRIES.map(([id, name, c], n) => ({ id: `${id}bush`, name: `${name} Berry bush`, proper: true, w: 1, h: 1, price: 280, draw(x, b) {
+add('Plants', BERRIES.map(([id, name, c], n) => ({ set: 'bush', id: `${id}bush`, name: `${name} Berry bush`, proper: true, w: 1, h: 1, price: 280, draw(x, b) {
   floorShadow(x + 2, b, 28); const t = potAt(x, b, 'basket');
   foliage(x + 10, t - 10, 9, k.leaf, n); foliage(x + 22, t - 12, 9, k.leaf, n + 9); foliage(x + 16, t - 22, 10, k.leaf, n + 17);
   for (const [i, j] of [[6, -12], [13, -26], [22, -18], [18, -8], [10, -30], [26, -10], [20, -30]]) sphere(x + i, t + j, id === 'sitrus' ? 3 : 2.3, c);

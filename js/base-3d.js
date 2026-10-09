@@ -16,7 +16,7 @@ import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, creat
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES } from './base-paint.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
-import { PIECES, KINDS, colours, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
+import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, furnitureStock, buyPiece, shopNews, seeShop, ownsPaper, buyPaper, paperArt, lockedEarned } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
@@ -826,9 +826,10 @@ function tray(which = tab) {
   if (tab === 'colour') {
     const id = holding?.id ?? base.items[sel]?.id;
     if (!id) return tray('furniture');
-    for (const c of colours(id)) add(PIECES[c].name, () => icon(c), c === id, () => recolour(c));
+    // a set's other styles in this colour first, then this style's other colours
+    for (const c of [...styles(id), ...colours(id).filter(c => c !== id)]) add(PIECES[c].name, () => icon(c), c === id, () => recolour(c));
   }
-  if (tab === 'furniture') for (const id of KINDS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of DESIGNS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
@@ -856,7 +857,7 @@ function tray(which = tab) {
   }
 }
 
-/** The piece in hand, or the one picked in the room, in another colour of its kind: every colour comes with it. */
+/** The piece in hand, or the one picked in the room, in another colour or style of its kind or set: they all come with it. */
 function recolour(id) {
   playSound('confirm');
   if (holding) { holding.id = id; makeGhost(); showGhost(); }
@@ -896,7 +897,8 @@ function shopTap(id) {
   if (shopPick !== id) { shopPick = id; shopMsg = ''; playSound('select'); return refresh(); }
   if (!buyPiece(base, id)) { playSound('cancel'); shopMsg = `You need ${(p.price - coins).toLocaleString()} more PokéCoins for the ${p.name.toLowerCase()}.`; return refresh(); }
   playSound('buy');
-  shopPick = null; shopMsg = `The ${p.name.toLowerCase()} is in your Furniture now.`;
+  const n = styles(id).length;
+  shopPick = null; shopMsg = n > 1 ? `All ${n} styles of the ${p.name.toLowerCase()} are in your Furniture now.` : `The ${p.name.toLowerCase()} is in your Furniture now.`;
   refresh();
 }
 
@@ -908,7 +910,7 @@ function refresh() {
   const wall = PIECES[holding?.id ?? base.items[sel]?.id]?.layer === 'wall';
   bar.querySelectorAll('[data-act]').forEach(b => {
     const a = b.dataset.act;
-    const many = colours(holding?.id ?? base.items[sel]?.id ?? 'bed').length > 1;
+    const pid = holding?.id ?? base.items[sel]?.id ?? 'bed', many = colours(pid).length > 1 || styles(pid).length > 1;
     b.hidden = a === 'paint' ? !busy || !many : holding ? !(a === 'cancel' || (a === 'rotate' && !wall)) : a === 'cancel' || (a === 'rotate' && wall);
     if (a === 'paint') b.classList.toggle('on', tab === 'colour');
   });
@@ -923,12 +925,12 @@ function refresh() {
   hud.hint.textContent = tip ? 'A present! Tap it to open it.'
     : holding ? `Tap or drag where the ${PIECES[holding.id].name.toLowerCase()} goes.`
     : sel >= 0 ? `${PIECES[base.items[sel].id].name}: ${PIECES[base.items[sel].id].layer === 'wall' ? '' : 'tap again to turn it, '}drag to move it.`
-    : tab === 'colour' ? 'Every colour comes with it. Tap one to paint it.'
-    : tab === 'shop' ? (shopMsg || (shopPick ? `${PIECES[shopPick].name}: ${PIECES[shopPick].price.toLocaleString()} PokéCoins. Tap again to buy.` : 'New furniture every day. Tap a piece for its price.'))
+    : tab === 'colour' ? (styles(holding?.id ?? base.items[sel]?.id ?? 'bed').length > 1 ? 'Every style and colour comes with it. Tap one to use it.' : 'Every colour comes with it. Tap one to paint it.')
+    : tab === 'shop' ? (shopMsg || (shopPick ? `${PIECES[shopPick].name}${styles(shopPick).length > 1 ? ` (all ${styles(shopPick).length} styles)` : ''}: ${PIECES[shopPick].price.toLocaleString()} PokéCoins. Tap again to buy.` : 'New furniture every day. Tap a piece for its price.'))
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
-    : tab === 'furniture' && !KINDS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
+    : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more in the Shop.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : 'Pick a piece, or drag one in the room to move it.';
   if (sel >= 0) {

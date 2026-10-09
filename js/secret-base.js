@@ -6,7 +6,7 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { PIECES, CATALOGUE, KINDS, colours } from './base-furniture.js';
+import { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles } from './base-furniture.js';
 import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
@@ -66,7 +66,7 @@ const freshBase = (mons) => ({
   owned: { window: 1, rug: 1, bed: 1, lamp: 1 }, ...(mons ? { mons } : {}),
 });
 
-export { PIECES, CATALOGUE, KINDS, colours, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
+export { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
 /** The saved room, or the first one. A room from before furniture was owned (v 1, when every piece was free) starts
     over as the first room, keeping its Pokémon: only playtests of the unreleased branch made those. `?basefresh` does
     the same on purpose. */
@@ -74,9 +74,9 @@ export function loadBase() {
   const b = getSave().secretBase;
   if (!b || !(b.v >= 2) || new URLSearchParams(location.search).has('basefresh')) return freshBase(b?.mons);
   b.owned ||= {};
-  // furniture was once owned colour by colour (`bed-fire`); now a kind is owned and every colour comes with it
+  // furniture was once owned colour by colour (`bed-fire`), then kind by kind; now a kind or a whole set (`own`) is owned, every colour and style with it
   for (const id of Object.keys(b.owned)) {
-    const kind = PIECES[id]?.fam;
+    const kind = PIECES[id]?.own;
     if (kind && kind !== id) { b.owned[kind] = (b.owned[kind] || 0) + b.owned[id]; delete b.owned[id]; }
   }
   return b;
@@ -94,11 +94,11 @@ const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isE
 export const lockedEarned = () => FURNITURE.filter(p => !isEarned(p, getSave()) && PIECES[p.kind])
   .map(p => ({ id: p.kind, how: howToEarn(p, getSave()) }));
 
-/** How many of a piece's kind are in storage, in any colour: owned, less those standing in the room. */
+/** How many of a piece's kind (or set) are in storage, in any colour or style: owned, less those standing in the room. */
 export function spare(b, id) {
   if (lendAll() && PIECES[id] && !PIECES[id].gift) return Infinity;
-  const kind = PIECES[id].fam;
-  return owns(b, kind) - b.items.filter(it => PIECES[it.id].fam === kind).length;
+  const kind = PIECES[id].own;
+  return owns(b, kind) - b.items.filter(it => PIECES[it.id].own === kind).length;
 }
 
 /** Open the room's present: it's gone, and the starter furniture is in storage. Returns what was inside. */
@@ -109,8 +109,8 @@ export function openGift(b) {
   return STARTER_GIFT;
 }
 
-/** The Furniture shop's stock for a UTC day: STOCK kinds, the same for everyone that day. */
-export const furnitureStock = (day = safariDay()) => shuffled(KINDS.filter(id => !FURNITURE_BY_KIND[id]), streamOf('furniture', day)).slice(0, STOCK);
+/** The Furniture shop's stock for a UTC day: STOCK designs (a kind, or a whole set), the same for everyone that day. */
+export const furnitureStock = (day = safariDay()) => shuffled(DESIGNS.filter(id => !FURNITURE_BY_KIND[id]), streamOf('furniture', day)).slice(0, STOCK);
 
 /** Whether today's Shop stock is still unseen (the "!" on the Decorate key and the Shop tab), and marking it seen. */
 export const shopNews = (b) => b.shopSeen !== safariDay();
@@ -141,7 +141,7 @@ export function paperArt(field, id) {
 export function buyPiece(b, id) {
   const price = PIECES[id].price;
   if ((getSave().coins ?? 0) < price) return false;
-  b.owned[PIECES[id].fam] = (b.owned[PIECES[id].fam] || 0) + 1;
+  b.owned[PIECES[id].own] = (b.owned[PIECES[id].own] || 0) + 1;
   updateSave(d => { d.coins -= price; d.secretBase = b; });
   return true;
 }
@@ -397,7 +397,7 @@ function tray(tab) {
     b.addEventListener('click', pick);
     list.append(b);
   };
-  if (tab === 'furniture') for (const id of KINDS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of DESIGNS.filter(id => spare(base, id) > 0)) add(PIECES[id].name, icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) cancelHold();
     holding = holding?.id === id ? null : { id, dir: 0 }; sel = -1; ghost = null;
     refresh(); tray(tab);

@@ -117,7 +117,7 @@ const TOPS = {
     }
   }],
 };
-add('Kitchen', Object.entries(TOPS).map(([id, [name, top]]) => ({ id: `${id}counter`, name: `${name} counter`, w: 1, h: 1, price: 380,
+add('Kitchen', Object.entries(TOPS).map(([id, [name, top]]) => ({ set: 'counter', id: `${id}counter`, name: `${name} counter`, w: 1, h: 1, price: 380,
   draw(x, b) { top(x, cabinet(x, b, 32)); } })));
 add('Kitchen', [
   { id: 'island', name: 'Kitchen island', w: 2, h: 1, price: 750, draw(x, b, vw, dir) {
@@ -220,7 +220,7 @@ const edged = (w, h, soil) => {
   for (let j = 4; j < h - 4; j += 8) { panel(0, j, 4, 8, k.w); panel(w - 4, j, 4, 8, k.w); }
   R(4, 4, w - 8, h - 8, soil); speckle(4, 4, w - 8, h - 8, sh(soil, -1), 7, 0.15); speckle(4, 4, w - 8, h - 8, sh(soil, 1), 8, 0.05);
 };
-add('Garden', BEDS.map(([id, name, c]) => ({ id: `${id}bed`, name: `${name} bed`, w: 2, h: 1, price: 240, high: 0.12, side: 'w', flat(w, h) {
+add('Garden', BEDS.map(([id, name, c]) => ({ set: 'bed', id: `${id}bed`, name: `${name} bed`, w: 2, h: 1, price: 240, high: 0.12, side: 'w', flat(w, h) {
   edged(w, h, '#5a3a22');
   for (let n = 0; n < 12; n++) {
     const cx = 9 + (n % 6) * 9 + (Math.floor(n / 6) % 2) * 4, cy = 11 + Math.floor(n / 6) * 10;
@@ -234,7 +234,7 @@ const CROPS = [
   ['pumpkin', 'Pumpkin', (cx, cy) => { leaf(cx + 4, cy - 3, 2, 2, k.leaf); ovalShade(cx, cy, 5, 4, '#f08030'); R(cx, cy - 5, 1, 2, '#6a8a3a'); R(cx - 2, cy - 3, 1, 6, '#d86a20'); R(cx + 2, cy - 3, 1, 6, '#d86a20'); }],
   ['tomato', 'Tomato', (cx, cy) => { leaf(cx, cy, 3, 5, k.leaf); sphere(cx - 2, cy + 1, 2, '#e04040'); sphere(cx + 2, cy - 2, 2, '#e04040'); }],
 ];
-add('Garden', CROPS.map(([id, name, crop]) => ({ id: `${id}patch`, name: `${name} patch`, w: 2, h: 1, price: 220, high: 0.1, side: 'w', flat(w, h) {
+add('Garden', CROPS.map(([id, name, crop]) => ({ set: 'patch', id: `${id}patch`, name: `${name} patch`, w: 2, h: 1, price: 220, high: 0.1, side: 'w', flat(w, h) {
   edged(w, h, '#6a4428');
   for (const cy of [11, 22]) { R(5, cy + 3, w - 10, 2, '#4a2e18'); R(5, cy - 4, w - 10, 1, '#7a5432'); for (let cx = 10; cx < w - 6; cx += 9) crop(cx, cy); }
 } })));
@@ -412,7 +412,7 @@ const SHELF_ITEMS = {
   berry: ['Berry shelf', (px, fl, i) => { sphere(px + 3, fl - 3, 3, BERRY[i % 6]); R(px + 3, fl - 7, 1, 2, '#4f9a42'); }],
   medicine: ['Medicine shelf', (px, fl, i) => { const c = ['#f0d030', '#68c868', '#f08888', '#68b8f0'][i % 4]; R(px + 1, fl - 9, 4, 9, c); R(px + 1, fl - 9, 4, 2, '#ffffff'); R(px + 2, fl - 6, 2, 3, sh(c, 1)); }],
 };
-add('Pokémon Center', Object.entries(SHELF_ITEMS).map(([id, [name, item]]) => ({ id: `${id}shelf`, name, proper: id === 'ball', w: 1, h: 1, price: 420, solid: true,
+add('Pokémon Center', Object.entries(SHELF_ITEMS).map(([id, [name, item]]) => ({ set: 'shelf', id: `${id}shelf`, name, proper: id === 'ball', w: 1, h: 1, price: 420, solid: true,
   draw(x, b, vw, dir) {
     floorShadow(x, b, vw); wood(x + 1, b - 72, 30, 72, k.w, 'y'); wood(x, b - 74, 32, 5, sh(k.w, 1)); R(x + 2, b - 72, 28, 4, k.c);
     if (dir % 2 || dir === 2) return;

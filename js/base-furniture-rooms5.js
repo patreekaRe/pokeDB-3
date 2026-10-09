@@ -56,7 +56,7 @@ const GLYPHS = {
   sun: ['Sun', ['...+++...', '.+#####+.', '.##+++##.', '###+++###', '.##+++##.', '.#######.', '#..###..#', '.#.....#.', '..#...#..']],
   lotus: ['Lotus', ['....#....', '...#+#...', '.#.#+#.#.', '.##+++##.', '#.#+++#.#', '.#######.', '...###...', '....#....', '....#....']],
 };
-add('Desert', Object.entries(GLYPHS).map(([id, [name, rows]]) => ({ id: `${id}tablet`, name: `${name} tablet`, w: 1, h: 1, layer: 'wall', price: 260,
+add('Desert', Object.entries(GLYPHS).map(([id, [name, rows]]) => ({ set: 'tablet', id: `${id}tablet`, name: `${name} tablet`, w: 1, h: 1, layer: 'wall', price: 260,
   wall(x) {
     shadowWall(x + 3, 12, 26, 46); panel(x + 3, 12, 26, 46, SANDST, 2); inset(x + 6, 15, 20, 40, sh(SANDST, -1));
     speckle(x + 6, 15, 20, 40, sh(SANDST, -2), 7, 0.05); R(x + 6, 16, 20, 2, k.c); R(x + 6, 52, 20, 2, k.c);
@@ -300,7 +300,7 @@ const SCREENS = {
     }
   }],
 };
-add('Hot Spring', Object.entries(SCREENS).map(([id, [name, pic]]) => ({ id: `${id}byobu`, name: `${name} screen`, w: 2, h: 1, price: 900,
+add('Hot Spring', Object.entries(SCREENS).map(([id, [name, pic]]) => ({ set: 'byobu', id: `${id}byobu`, name: `${name} screen`, w: 2, h: 1, price: 900,
   draw(x, b, vw, dir) { if (dir % 2) return sideBox(x, b, vw, 70); byobu(x, b, vw, pic); } })));
 add('Hot Spring', [
   { id: 'onsenpool', name: 'Hot spring', w: 2, h: 2, price: 1600, high: 0.12, side: 'm', flat(w, h) {
@@ -489,7 +489,7 @@ const GAMES = {
     for (let l = 0; l < 4; l++) { R(x + 2 + l * 5, y, 1, h, '#3a2a58'); bitmap(ARROW, x + 1 + l * 5, y + 16, '#8a7aa8', 1); for (let n = 0; n < 2; n++) bitmap(ARROW, x + 1 + l * 5, y + 2 + ((l * 7 + n * 9) % 13), NEON[l], 1); }
   }],
 };
-add('Arcade', Object.entries(GAMES).map(([id, [name, play]]) => ({ id: `${id}cabinet`, name: `${name} cabinet`, w: 1, h: 1, price: 1100, glow: [MARQUEE],
+add('Arcade', Object.entries(GAMES).map(([id, [name, play]]) => ({ set: 'cabinet', id: `${id}cabinet`, name: `${name} cabinet`, w: 1, h: 1, price: 1100, glow: [MARQUEE],
   draw(x, b) { const [sx, sy, sw, sh2] = cabinet(x, b); clipped(sx, sy, sw, sh2, () => play(sx, sy, sw, sh2)); } })));
 const UP = ['...#...', '..###..', '.#####.', '#######', '..###..', '..###..', '..###..'];
 const RIGHT = turn(UP), DOWN = turn(RIGHT), LEFT = turn(DOWN);
@@ -662,7 +662,7 @@ const JARS = {
   mushroom: ['Mushroom', (cx, s) => { for (const [i, hgt, r, c] of [[-5, 12, 5, '#e04848'], [4, 8, 4, '#f0a040'], [9, 5, 3, '#58c8f0']]) { R(cx + i - 1, s - hgt, 3, hgt, '#f4ecd8'); for (let j = 0; j < r; j++) R(cx + i - r + j * 0.5, s - hgt - r + j, (r - j * 0.5) * 2 + 1, 1, j < 1 ? sh(c, 1) : c); P(cx + i - 2, s - hgt - 2, '#ffffff'); P(cx + i + 1, s - hgt - 3, '#ffffff'); } }],
   orchid: ['Orchid', (cx, s) => { leaf(cx - 4, s - 3, 5, 2, k.leaf, 0); leaf(cx + 4, s - 4, 5, 2, sh(k.leaf, 1), 0); for (let j = 0; j < 24; j++) P(cx + Math.round(j > 14 ? (j - 14) * 0.6 : 0), s - 4 - j, sh(k.leaf, -1)); for (let n = 0; n < 3; n++) { const fx = cx + 3 + n * 2, fy = s - 24 + n * 4; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [-1, 2], [1, 2]]) disc(fx + dx, fy + dy, 1.4, k.c); P(fx, fy, '#f8e070'); P(fx, fy + 1, sh(k.c, -2)); } }],
 };
-add('Greenhouse', Object.entries(JARS).map(([id, [name, grow]]) => ({ id: `${id}terrarium`, name: `${name} terrarium`, w: 1, h: 1, price: 380,
+add('Greenhouse', Object.entries(JARS).map(([id, [name, grow]]) => ({ set: 'terrarium', id: `${id}terrarium`, name: `${name} terrarium`, w: 1, h: 1, price: 380,
   draw(x, b) { terrarium(x, b, grow); } })));
 add('Greenhouse', [
   { id: 'glasspanel', name: 'Greenhouse glass', w: 2, h: 1, layer: 'wall', price: 600, sky: true, wall(x) {
@@ -1013,7 +1013,7 @@ const ORBS = {
   wind: ['Wind', '#58c8b0', (cx, cy) => { arc(cx, cy, 6, 4, Math.PI * 0.2, Math.PI * 1.7, '#ffffff'); arc(cx + 1, cy, 3, 2, Math.PI * 0.2, Math.PI * 1.7, '#e8fff8'); line(cx - 8, cy + 5, cx + 4, cy + 5, '#ffffff'); }],
   thunder: ['Thunder', '#4a4a68', (cx, cy) => motif('bolt', cx - 9, cy - 8, ink('#f8e048', '#fff8a0', '#c8a020', '#ffffff'), 2)],
 };
-add('Sky Palace', Object.entries(ORBS).map(([id, [name, c, paint]]) => ({ id: `${id}orb`, name: `${name} orb`, w: 1, h: 1, price: 720, glow: [c, sh(c, 1)],
+add('Sky Palace', Object.entries(ORBS).map(([id, [name, c, paint]]) => ({ set: 'orb', id: `${id}orb`, name: `${name} orb`, w: 1, h: 1, price: 720, glow: [c, sh(c, 1)],
   draw(x, b) {
     floorShadow(x + 2, b, 28); puff(x + 16, b - 9, 13, 8);
     oval(x + 16, b - 24, 7, 2, sh(GOLD, -1)); oval(x + 16, b - 25, 6, 1, GOLD);

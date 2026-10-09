@@ -50,7 +50,7 @@ const VANITY = {
     R(x + 18, t - 14, 12, 2, k.a); P(x + 20, t - 11, '#ffffff');
   }],
 };
-add('Bathroom', Object.entries(VANITY).map(([id, [name, top]]) => ({ id: `${id}vanity`, name: `${name} vanity`, w: 1, h: 1, price: 360,
+add('Bathroom', Object.entries(VANITY).map(([id, [name, top]]) => ({ set: 'vanity', id: `${id}vanity`, name: `${name} vanity`, w: 1, h: 1, price: 360,
   draw(x, b) { top(x, vanity(x, b)); } })));
 add('Bathroom', [
   { id: 'clawtub', name: 'Clawfoot tub', w: 2, h: 1, price: 950, draw(x, b, vw) {
@@ -180,7 +180,7 @@ const QUILTS = [
   ['check', 'Gingham', (x, y, w, h) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const a = (i >> 2) % 2, bb = (j >> 2) % 2; if (a || bb) P(x + i, y + j, a && bb ? sh(k.c, -1) : sh(k.c, 1)); } }],
   ['heart', 'Heart', (x, y, w, h) => { for (let i = 2; i < w; i += 6) { P(x + i, y + 3, k.p); P(x + i, y + h - 4, k.p); } motif('heart', x + w / 2 - 18, y + h / 2 - 16, ink(k.a, sh(k.a, 1), sh(k.a, -2), '#ffffff'), 4); }],
 ];
-add('Bedroom', QUILTS.map(([id, name, pattern]) => ({ id: `${id}quilt`, name: `${name} quilt bed`, w: 2, h: 3, price: 650, high: 0.5, side: 'w', seat: 'bed',
+add('Bedroom', QUILTS.map(([id, name, pattern]) => ({ set: 'quilt', id: `${id}quilt`, name: `${name} quilt bed`, w: 2, h: 3, price: 650, high: 0.5, side: 'w', seat: 'bed',
   flat(w, h) {
     wood(0, 0, w, h, k.w); wood(2, 2, w - 4, 10, sh(k.w, -1)); R(4, 4, w - 8, 2, sh(k.w, 1)); R(2, 12, w - 4, 1, sh(k.w, -3));
     R(5, 13, w - 10, h - 17, k.p); cushion(10, 15, w - 20, 12, '#ffffff', 4); R(w / 2, 17, 1, 8, sh(k.p, -1));
@@ -349,7 +349,7 @@ const DESKS = {
     for (const i of [2, 17]) { panel(x + i, t - 18, 13, 11, '#303038'); R(x + i + 1, t - 17, 11, 8, '#4a88d8'); R(x + i + 2, t - 15, 5, 1, '#d8f0ff'); R(x + i + 5, t - 7, 3, 5, k.m); R(x + i + 3, t - 2, 7, 2, k.m); }
   }],
 };
-add('Office', Object.entries(DESKS).map(([id, [name, top]]) => ({ id: `${id}desk`, name: `${name} desk`, w: 1, h: 1, price: 420,
+add('Office', Object.entries(DESKS).map(([id, [name, top]]) => ({ set: 'desk', id: `${id}desk`, name: `${name} desk`, w: 1, h: 1, price: 420,
   draw(x, b) { top(x, officeDesk(x, b)); } })));
 add('Office', [
   { id: 'swivelchair', name: 'Swivel chair', w: 1, h: 1, price: 300, draw(x, b) {
@@ -668,7 +668,7 @@ const SCHOOL = {
     for (let j = 0; j < 3; j++) R(x + 12, t - 8 + j * 2, 8, 1, '#a8a8b8');
   }],
 };
-add('School', Object.entries(SCHOOL).map(([id, [name, top]]) => ({ id: `${id}schooldesk`, name: `${name} school desk`, proper: id === 'test', w: 1, h: 1, price: 280,
+add('School', Object.entries(SCHOOL).map(([id, [name, top]]) => ({ set: 'schooldesk', id: `${id}schooldesk`, name: `${name} school desk`, proper: id === 'test', w: 1, h: 1, price: 280,
   draw(x, b) { top(x, schoolDesk(x, b)); } })));
 add('School', [
   { id: 'chalkboard', name: 'Chalkboard', w: 2, h: 1, layer: 'wall', price: 320, wall(x) {

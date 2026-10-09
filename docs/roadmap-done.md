@@ -1942,3 +1942,12 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   down), a second buys it (`buyPaper()`, saved as `secretBase.papers` `wall:id` / `floor:id`). Tiles show a corner
   of the room painted in it (`paperArt()`). Wall patterns repeat every 8 / 16 / 32 rows, since the 3D room runs the top
   32 up its tall wall. The 2D fallback lists only owned ones.
+- **Secret Base: reskins come free with their set** (2026-10-08, branch `secret-base` only, the user's call: only buy one-of-a-kind
+  designs). A pixel check over all 1,096 kinds found no exact repeats but 31 painter families whose kinds differ only by
+  the picture or the thing on top (banners, posters, mats, cushions, rugs, runners, pictures, Berry bushes, flower beds,
+  patches, Center shelves, kitchen counters, vanities, quilts, desks, school desks, stalls, tanks, tapestries, scrolls,
+  toy shelves, type shrines, bookcases, flags, planets, crates, tablets, screens, arcade cabinets, terrariums, orbs;
+  outlines 82-100% alike). Each is a `set:` on its `add()`, bought and owned as one by its first kind (`own`), so the Shop
+  and the Furniture tray deal in 907 `DESIGNS`, the Colour key lists the set's styles before its colours (`styles()`), and
+  `loadBase()` folds old per-kind counts into the set. Left separate: dolls, chairs, graves, coral, ice sculptures,
+  trains, café tables, music stands (real shape changes).

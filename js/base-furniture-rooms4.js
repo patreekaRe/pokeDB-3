@@ -271,7 +271,7 @@ const CASES = {
     for (let r = 0; r < 3; r++) for (let i = 0; i < 4; i++) { const cx = x + 8 + i * 5.5 + (r % 2) * 2, cy = f - 4 - r * 7; disc(cx, cy, 3, PARCH); disc(cx, cy, 1.5, sh(PARCH, -2)); if ((i + r + n) % 3 === 0) R(cx - 3, cy - 1, 1, 3, k.c); }
   })],
 };
-add('Library', Object.entries(CASES).map(([id, [name, fill]]) => ({ id: `${id}bookcase`, name: `${name} bookcase`, w: 1, h: 1, price: 600,
+add('Library', Object.entries(CASES).map(([id, [name, fill]]) => ({ set: 'bookcase', id: `${id}bookcase`, name: `${name} bookcase`, w: 1, h: 1, price: 600,
   draw(x, b) { fill(x, bookcase(x, b)); } })));
 add('Library', [
   { id: 'wingchair', name: 'Wingback chair', w: 1, h: 1, price: 560, seat: 'cushion', draw(x, b) {
@@ -427,7 +427,7 @@ const FLAGS = {
     disc(c, y, 2, GOLD);
   }],
 };
-add('Pirate', Object.entries(FLAGS).map(([id, [name, emblem]]) => ({ id: `${id}flag`, name: `${name} flag`, proper: id === 'ball', w: 1, h: 1, layer: 'wall', price: 200,
+add('Pirate', Object.entries(FLAGS).map(([id, [name, emblem]]) => ({ set: 'flag', id: `${id}flag`, name: `${name} flag`, proper: id === 'ball', w: 1, h: 1, layer: 'wall', price: 200,
   wall(x) { const [c, y] = flag(x); emblem(c, y); } })));
 add('Pirate', [
   { id: 'mast', name: 'Ship mast', w: 1, h: 1, price: 1200, draw(x, b) {
@@ -564,7 +564,7 @@ const PLANETS = {
   green: ['Green planet', (c, y) => { globe(c, y, 13, (i, j) => hash(Math.floor((i + 13) / 5), Math.floor((j + 13) / 5)) < 0.45 ? '#58a848' : '#3a88d0'); for (const [i, j] of [[-6, -6], [3, 2]]) oval(c + i, y + j, 4, 1.5, '#ffffff'); }],
   moon: ['Moon', (c, y) => { globe(c, y, 13, () => '#c8c8c8'); for (const [i, j, r] of [[-4, -4, 3], [5, 2, 2], [-1, 6, 2], [6, -6, 1.5]]) { disc(c + i, y + j, r, '#a8a8a8'); P(c + i - 1, y + j - 1, '#909090'); } }],
 };
-add('Space', Object.entries(PLANETS).map(([id, [name, paint]]) => ({ id: `${id}planet`, name: `${name} model`, w: 1, h: 1, price: 560,
+add('Space', Object.entries(PLANETS).map(([id, [name, paint]]) => ({ set: 'planet', id: `${id}planet`, name: `${name} model`, w: 1, h: 1, price: 560,
   draw(x, b) { const [c, y] = planetStand(x, b); arc(c, y, 15, 15, Math.PI * 0.5, Math.PI * 1.5, k.m, 2); paint(c, y); R(c - 1, y - 17, 2, 3, k.a); } })));
 add('Space', [
   { id: 'spacesuit', name: 'Space suit', w: 1, h: 1, price: 1100, draw(x, b) {
@@ -718,7 +718,7 @@ const CROPS = {
   potato: ['Potato', (x, t) => { for (let r = 0; r < 2; r++) for (let i = 0; i < 4 - r; i++) { const cx = x + 8 + i * 6 + r * 3; ovalShade(cx, t - 3 - r * 4, 4, 3, '#c8a068'); P(cx - 1, t - 4 - r * 4, '#8a6a3a'); } oval(x + 16, t + 12, 3, 2, '#c8a068'); }],
   cabbage: ['Cabbage', (x, t) => { for (let i = 0; i < 3; i++) { const cx = x + 9 + i * 7; foliage(cx, t - 5, 5, '#78c058', i); disc(cx, t - 5, 2, '#b8e098'); } disc(x + 16, t + 12, 2, '#78c058'); }],
 };
-add('Farm', Object.entries(CROPS).map(([id, [name, heap]]) => ({ id: `${id}crate`, name: `${name} crate`, w: 1, h: 1, price: 240,
+add('Farm', Object.entries(CROPS).map(([id, [name, heap]]) => ({ set: 'crate', id: `${id}crate`, name: `${name} crate`, w: 1, h: 1, price: 240,
   draw(x, b) { heap(x, crate(x, b)); } })));
 add('Farm', [
   { id: 'barndoor', name: 'Barn doors', w: 2, h: 1, layer: 'wall', price: 600, wall(x) {

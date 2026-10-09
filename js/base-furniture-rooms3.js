@@ -100,7 +100,7 @@ const STALLS = {
     }
   }],
 };
-add('Festival', Object.entries(STALLS).map(([id, [name, goods]]) => ({ id: `${id}stall`, name: `${name} stall`, w: 2, h: 1, price: 800,
+add('Festival', Object.entries(STALLS).map(([id, [name, goods]]) => ({ set: 'stall', id: `${id}stall`, name: `${name} stall`, w: 2, h: 1, price: 800,
   draw(x, b, vw, dir) { if (dir % 2) return sideBox(x, b, vw, 30); goods(x, stall(x, b, vw)); } })));
 add('Festival', [
   { id: 'carouselhorse', name: 'Carousel horse', w: 1, h: 1, price: 650, draw(x, b) {
@@ -270,7 +270,7 @@ const TANKS = {
   crystal: ['Crystal', (cx, cy) => { for (const [i, h, c] of [[-5, 10, k.a], [0, 16, sh(k.a, 1)], [5, 12, k.a]]) { tri(cx + i, cy - h / 2, h, c, 0.25); R(cx + i - 2, cy + h / 2, 5, 3, c); } P(cx, cy - 6, '#ffffff'); }],
   orb: ['Orb', (cx, cy) => { disc(cx, cy, 9, sh(k.a, 1)); sphere(cx, cy, 7, k.a); ring(cx, cy, 10, '#ffffff'); }],
 };
-add('Lab', Object.entries(TANKS).map(([id, [name, inside]]) => ({ id: `${id}tank`, name: `${name} tank`, w: 1, h: 1, price: 700, glow: ['g', 'gl'],
+add('Lab', Object.entries(TANKS).map(([id, [name, inside]]) => ({ set: 'tank', id: `${id}tank`, name: `${name} tank`, w: 1, h: 1, price: 700, glow: ['g', 'gl'],
   draw(x, b) { const [cx, cy] = tank(x, b); inside(cx, cy); } })));
 add('Lab', [
   { id: 'controlpanel', name: 'Control panel', w: 2, h: 1, layer: 'wall', price: 520, glow: ['#68e8a8'], wall(x) {
@@ -419,7 +419,7 @@ const CHARGES = {
   fleur: ['Fleur', ['....#....', '...###...', '#..###..#', '##.###.##', '.#######.', '...###...', '#########', '...###...', '..#.#.#..']],
   shield: ['Shield', ['#########', '#+++++++#', '#+#+++#+#', '#++#+#++#', '#+++#+++#', '.#+++++#.', '..#+++#..', '...#+#...', '....#....']],
 };
-add('Castle', Object.entries(CHARGES).map(([id, [name, rows]]) => ({ id: `${id}tapestry`, name: `${name} tapestry`, w: 1, h: 1, layer: 'wall', price: 240,
+add('Castle', Object.entries(CHARGES).map(([id, [name, rows]]) => ({ set: 'tapestry', id: `${id}tapestry`, name: `${name} tapestry`, w: 1, h: 1, layer: 'wall', price: 240,
   wall(x) {
     shadowWall(x + 6, 14, 20, 58);
     for (let j = 0; j < 58; j++) { const cut = j > 48 ? j - 48 : 0; R(x + 6, 14 + j, 10 - cut, 1, k.c); R(x + 16 + cut, 14 + j, 10 - cut, 1, k.c); }
@@ -593,7 +593,7 @@ const SCROLLS = {
     for (let i = 0; i < 12; i += 2) P(x + i, y + 20, '#ffffff'); disc(x + 9, y + 4, 2, '#e04848');
   }],
 };
-add('Japanese', Object.entries(SCROLLS).map(([id, [name, pic]]) => ({ id: `${id}scroll`, name: `${name} scroll`, w: 1, h: 1, layer: 'wall', price: 260,
+add('Japanese', Object.entries(SCROLLS).map(([id, [name, pic]]) => ({ set: 'scroll', id: `${id}scroll`, name: `${name} scroll`, w: 1, h: 1, layer: 'wall', price: 260,
   wall(x) {
     R(x + 15, 4, 2, 6, INK); line(x + 10, 10, x + 16, 5, INK); line(x + 22, 10, x + 16, 5, INK);
     shadowWall(x + 8, 10, 16, 64); R(x + 8, 10, 16, 64, k.c); R(x + 8, 10, 16, 2, sh(k.c, 1)); R(x + 8, 16, 16, 1, k.a); R(x + 8, 66, 16, 1, k.a);
@@ -742,7 +742,7 @@ const TOYS = {
   boat: ['Boat', (x, f, n) => { for (let i = 0; i < 2; i++) { const cx = x + 10 + i * 12; for (let j = 0; j < 4; j++) R(cx - 5 + j, f - 4 + j, 10 - j * 2, 1, i ? k.c : '#e04848'); R(cx, f - 15, 1, 11, k.w); tri(cx + 3, f - 14, 8, k.p, 0.4); } }],
   top: ['Spinning top', (x, f, n) => { for (let i = 0; i < 3; i++) { const cx = x + 9 + i * 7, c = RAINBOW[(i * 3 + n) % 7]; for (let j = 0; j < 8; j++) { const h = j < 4 ? j + 1 : 8 - j; R(cx - h, f - 9 + j, h * 2 + 1, 1, j === 3 ? sh(c, 1) : c); } R(cx, f - 12, 1, 3, k.w); } }],
 };
-add('Toys', Object.entries(TOYS).map(([id, [name, row]]) => ({ id: `${id}toyshelf`, name: `${name} shelf`, w: 1, h: 1, price: 380,
+add('Toys', Object.entries(TOYS).map(([id, [name, row]]) => ({ set: 'toyshelf', id: `${id}toyshelf`, name: `${name} shelf`, w: 1, h: 1, price: 380,
   draw(x, b) { toyShelf(x, b).forEach((f, n) => row(x, f, n)); } })));
 add('Toys', [
   { id: 'rockinghorse', name: 'Rocking horse', w: 1, h: 1, price: 520, draw(x, b) {
@@ -888,7 +888,7 @@ const GLYPHS = {
   ghost: ['Ghost', '#705898', ['..#####..', '.#######.', '##k###k##', '##k###k##', '#########', '#########', '#########', '#.#.#.#.#']],
   dragon: ['Dragon', '#7038f8', ['#.......#', '##.....##', '.##...##.', '.###.###.', '..#####..', '..##k##..', '...###...', '....#....']],
 };
-add('Types', Object.entries(GLYPHS).map(([id, [name, c, rows]]) => ({ id: `${id}shrine`, name: `${name} shrine`, w: 1, h: 1, price: 900, glow: [c],
+add('Types', Object.entries(GLYPHS).map(([id, [name, c, rows]]) => ({ set: 'shrine', id: `${id}shrine`, name: `${name} shrine`, w: 1, h: 1, price: 900, glow: [c],
   draw(x, b) {
     floorShadow(x, b, 32); panel(x + 2, b - 8, 28, 8, STONE); panel(x + 6, b - 34, 20, 26, STONE); panel(x + 4, b - 38, 24, 5, sh(STONE, 1));
     R(x + 6, b - 20, 20, 2, k.a); speckle(x + 6, b - 34, 20, 26, sh(STONE, -1), 3, 0.06);
