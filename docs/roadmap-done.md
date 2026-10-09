@@ -2019,3 +2019,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   device under ~40 fps down (512 shadows, then the scene 20% smaller a step), remembered per device.
 - **Secret Base: TVs flip channels by themselves** (2026-10-09, branch `secret-base`): a screen with several shows moves to
   the next every 12 s (`CHANNEL_MS` in `js/base-play.js`), since the user saw the TV stuck on one; a tap still flips at once.
+- **Clearing: the Safari gate moved back and opened up** (2026-10-09, branch `secret-base`): the gate stands back-left behind
+  the Ancient Tree, redrawn as the Safari lobby's (log posts, thatch, the green board, lanterns), a fence either side; the
+  trees there cleared, and the road runs on through it into a painted view (`js/hub-vista.js`: meadow, the trail winding
+  to the horizon, snowy mountains), since the user wanted it like the lobby's backdrop.

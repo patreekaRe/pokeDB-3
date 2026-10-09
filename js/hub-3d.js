@@ -20,6 +20,7 @@ import { STARTERS_BY_ID } from './data/starters.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
+import { vistaArt, VISTA } from './hub-vista.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -59,10 +60,12 @@ const AIRS = ['clearing-day', 'clearing-night'];
 const BUGS = 44;
 
 // the paths, as centre lines between tile centres; the plaza round START
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 3]], [[11, 4], [11, 3]], [[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
+// (the Safari road runs on up through its gate, SAFARI_AT, and off the ground's back edge into the view, js/hub-vista.js)
+const SAFARI_AT = { tx: 0, ty: -3 };
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 3]], [[-0.6, 9.6], [0.2, 10]], [[0.2, 10], [6, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
-let hemi, sun, ring, ground, forest, placeGroup;
+let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null;   // inside: the place walked into, 'base' or 'mall'
@@ -173,7 +176,8 @@ function groundArt() {
       c = pokePlaza(c, u - START.x, v - START.y, wob);
     } else {
       // darker away from the walkable ground, towards the trees
-      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, 0) ;
+      // (not in the back-left corner, cleared round the Safari gate)
+      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, 0) * (u < 2.5 && v < 5 ? 0.2 : 1);
       const n = smooth(x, y, 6) * 3.2 + hash(x, y) * 1.4 + (path < 0.12 ? 1 : 0) + Math.min(2, out * 0.6);
       c = meadow[Math.min(5, Math.max(0, Math.floor(n)))];
     }
@@ -228,94 +232,108 @@ function blossom(g, x, y, r, petal, heart) {
   g.fillStyle = heart; g.beginPath(); g.arc(x, y, r * 0.6, 0, Math.PI * 2); g.fill();
 }
 
-/** The Safari Zone's gate, smooth like the notice boards (the user's call, 2026-10-08): two log posts lashed with rope on
-    stone feet, a tiled red roof turned up at its ends with paper lanterns hanging off it, the green SAFARI ZONE board on
-    chains; shut, a rope across it with a CLOSED tag. */
+/** The Safari Zone's gate, smooth, the lobby's own (js/safari-lobby.js; the user's call, 2026-10-09): two peeled log posts
+    on stone feet, a green board with a Safari Ball and SAFARI ZONE, a thatched roof over it with a bound ridge, paper
+    lanterns under the board lit at dusk; the opening between the posts is clear, so the road shows going on through it.
+    Shut, a rope across it with a CLOSED tag. */
 function safariArt(open) {
-  const { c, g, fill, rr, lin, shine } = fine(60, 56, 10), rnd = seeded(7), glow = shine();
-  const W = ['#e8bc84', '#c08a50', '#94643a', '#5a3a1c'];
-  for (const x of [7, 47]) {   // the posts: peeled logs, their grain and a knot, a rope lashing, a stone foot
-    rr(x, 12, 6, 42, 1.4, lin(x, 0, x + 6, 0, [W[0], W[1], W[1], W[2], W[3]]));
-    for (let i = 0; i < 11; i++) {
-      const y = 16 + rnd() * 34, x0 = x + 1 + rnd() * 3.6;
-      strokeOn(g, 'rgba(70,40,16,0.4)', 0.28, () => { g.moveTo(x0, y); g.quadraticCurveTo(x0 + 0.6, y + 1.6, x0 + 0.1, y + 3.4); });
-    }
-    fill('rgba(70,40,16,0.55)', () => g.ellipse(x + 2.4 + rnd() * 1.2, 30 + rnd() * 14, 0.7, 1.1, 0, 0, Math.PI * 2));
-    for (let i = 0; i < 4; i++) rr(x - 0.4, 17 + i * 1.05, 6.8, 0.9, 0.45, lin(0, 17 + i * 1.05, 0, 17.9 + i * 1.05, ['#f4e2aa', '#b8965a']));
-    rr(x - 1.6, 51.5, 9.2, 4.5, 1.6, lin(0, 51.5, 0, 56, [P.stone[0], P.stone[1], P.stone[2]]));
-    rr(x - 1, 51.9, 8, 0.7, 0.35, 'rgba(255,255,255,0.5)');
+  const W = 64, H = 62, { c, g, fill, rr, lin, shine } = fine(W, H, 10), rnd = seeded(7), glow = shine();
+  const WD = ['#e4b070', '#b87c48', '#8a5a30', '#5a3418'];
+  for (const x of [7, 49]) {   // the posts: peeled logs, their grain, a knot, a rope lashing, a stone foot
+    rr(x, 18, 8, 42, 2, lin(x, 0, x + 8, 0, [WD[0], WD[1], WD[1], WD[2], WD[3]]));
+    for (let y = 24; y < 57; y += 5.5) strokeOn(g, 'rgba(74,40,16,0.35)', 0.32, () => { g.moveTo(x + 1, y); g.quadraticCurveTo(x + 4, y + 1.4, x + 7, y); });
+    fill('rgba(70,40,16,0.55)', () => g.ellipse(x + 3 + rnd() * 2, 40 + rnd() * 10, 0.8, 1.2, 0, 0, Math.PI * 2));
+    for (let i = 0; i < 3; i++) rr(x - 0.4, 33 + i * 1.1, 8.8, 0.95, 0.45, lin(0, 33 + i * 1.1, 0, 34 + i * 1.1, ['#f4e2aa', '#b8965a']));
+    rr(x - 2, 57, 12, 5, 2, lin(0, 57, 0, 62, [P.stone[0], P.stone[1], P.stone[2]]));
+    rr(x - 1.2, 57.4, 10.4, 0.7, 0.35, 'rgba(255,255,255,0.5)');
   }
-  // ivy up the left post
-  const ivy = [];
-  for (let y = 54; y > 26; y -= 2) ivy.push([8.2 + Math.sin(y * 0.5) * 1.6, y]);
+  const ivy = [];   // ivy up the left post
+  for (let y = 58; y > 38; y -= 2) ivy.push([8.6 + Math.sin(y * 0.5) * 1.6, y]);
   strokeOn(g, '#3a7a30', 0.4, () => { g.moveTo(...ivy[0]); ivy.forEach(p => g.lineTo(...p)); });
-  ivy.forEach(([x, y], i) => leaf(g, x, y, i % 2 ? -0.5 : Math.PI + 0.5, 1.6 + rnd() * 0.6, P.moss[i % 2]));
+  ivy.forEach(([x, y], i) => leaf(g, x, y, i % 2 ? -0.5 : Math.PI + 0.5, 1.7 + rnd() * 0.6, P.moss[i % 2]));
 
-  const roof = () => {
-    g.moveTo(-0.2, 9.6); g.quadraticCurveTo(3, 12.4, 9, 12.4); g.lineTo(51, 12.4); g.quadraticCurveTo(57, 12.4, 60.2, 9.6);
-    g.lineTo(56.5, 9.4); g.lineTo(49, 3.2); g.quadraticCurveTo(30, 1.6, 11, 3.2); g.lineTo(3.5, 9.4); g.closePath();
-  };
-  fill(lin(0, 2, 0, 12.4, ['#f07058', '#d84838', '#a83024']), roof);
-  g.save(); g.beginPath(); roof(); g.clip();
-  for (let r = 0; r < 4; r++) {   // courses of round tiles
-    const y = 4.6 + r * 2.1;
-    strokeOn(g, 'rgba(110,24,16,0.55)', 0.35, () => { g.moveTo(0, y + 0.8); g.quadraticCurveTo(30, y - 0.6, 60, y + 0.8); });
-    for (let x = 1 + (r % 2) * 1.5; x < 60; x += 3) strokeOn(g, 'rgba(255,190,160,0.4)', 0.4, () => { g.moveTo(x, y - 1.2); g.lineTo(x + 0.3, y + 0.4); });
-  }
-  g.fillStyle = 'rgba(80,16,10,0.5)'; g.fillRect(0, 11.1, 60, 1.5);
+  // the board, its frame, the Safari Ball, SAFARI ZONE
+  rr(3.4, 17.6, 58, 15, 3, 'rgba(0,0,0,0.25)');
+  rr(2.4, 16.6, 59.2, 15, 3, lin(0, 16.6, 0, 31.6, [WD[1], WD[3]]));
+  rr(3.6, 17.8, 56.8, 12.6, 2.2, lin(0, 17.8, 0, 30.4, ['#7ad868', '#34963a', '#1e6a26']));
+  rr(5, 18.6, 54, 1, 0.5, 'rgba(255,255,255,0.35)');
+  const bx = 11.4, by = 24.1, br = 4.3;
+  g.save(); g.beginPath(); g.arc(bx, by, br, 0, Math.PI * 2); g.clip();
+  g.fillStyle = '#f4eed4'; g.fillRect(bx - br, by, br * 2, br);
+  g.fillStyle = lin(0, by - br, 0, by, ['#a8d858', '#5a9a30']); g.fillRect(bx - br, by - br, br * 2, br);
+  for (const [dx, dy, r] of [[-0.45, -0.5, 0.2], [0.35, -0.6, 0.16], [0.05, -0.28, 0.13]]) fill('#3a7a28', () => g.arc(bx + dx * br, by + dy * br, r * br, 0, Math.PI * 2));
+  g.fillStyle = '#202018'; g.fillRect(bx - br, by - 0.4, br * 2, 0.8);
   g.restore();
-  rr(10, 1.8, 40, 2, 1, lin(0, 1.8, 0, 3.8, ['#c84030', '#8a2418']));   // the ridge, a brass finial on it
-  fill(lin(0, 0, 0, 2.8, ['#fff2a0', '#e0a830', '#a87018']), () => g.arc(30, 1.5, 1.3, 0, Math.PI * 2));
-  for (const x of [1, 59]) fill('#f8d048', () => g.arc(x, 9.6, 0.8, 0, Math.PI * 2));
-
-  rr(2, 12.2, 56, 3.6, 1, lin(0, 12.2, 0, 15.8, [W[0], W[1], W[2]]));   // the beam, pegged at its ends
-  rr(2.4, 12.4, 55.2, 0.6, 0.3, 'rgba(255,240,210,0.5)');
-  for (const x of [4, 56]) fill(W[3], () => g.arc(x, 14, 0.7, 0, Math.PI * 2));
-
-  for (const x of [2.6, 57.4]) {   // paper lanterns, lit at dusk
-    strokeOn(g, '#3a2410', 0.3, () => { g.moveTo(x, 12.6); g.lineTo(x, 17.2); });
-    rr(x - 1.3, 17, 2.6, 0.8, 0.35, '#3a2410');
-    const body = (gg) => { gg.beginPath(); gg.ellipse(x, 20.4, 2.1, 2.9, 0, 0, Math.PI * 2); };
-    g.fillStyle = lin(x - 2, 0, x + 2, 0, ['#ffc070', '#f86838', '#b83020']); body(g); g.fill();
-    glow.fillStyle = '#ff9850'; body(glow); glow.fill();
-    for (const rx of [0.7, 1.5]) strokeOn(g, 'rgba(120,30,10,0.45)', 0.2, () => g.ellipse(x, 20.4, rx, 2.9, 0, 0, Math.PI * 2));
-    for (const y of [19, 21.8]) strokeOn(g, 'rgba(120,30,10,0.35)', 0.2, () => { g.moveTo(x - 1.9, y); g.lineTo(x + 1.9, y); });
-    fill('rgba(255,245,210,0.6)', () => g.ellipse(x - 0.8, 19.4, 0.5, 1, 0, 0, Math.PI * 2));
-    rr(x - 1.1, 23.1, 2.2, 0.7, 0.3, '#3a2410');
-    strokeOn(g, '#f8d048', 0.35, () => { g.moveTo(x, 23.8); g.lineTo(x, 25.6); });
-  }
-
-  for (const x of [19, 41]) for (let y = 16; y < 18.4; y += 0.85) strokeOn(g, '#6a6a74', 0.26, () => g.ellipse(x, y + 0.4, 0.34, 0.5, 0, 0, Math.PI * 2));
-  rr(14, 18, 32, 14.5, 1.8, lin(0, 18, 0, 32.5, [W[1], W[3]]));   // the board
-  rr(15.2, 19.2, 29.6, 12.1, 1.2, lin(0, 19.2, 0, 31.3, ['#5cc068', '#3a9a48', '#2a7a38']));
-  rr(15.6, 19.5, 28.8, 1.4, 0.7, 'rgba(255,255,255,0.22)');
-  for (const [x, y] of [[15.9, 19.9], [44.1, 19.9], [15.9, 30.6], [44.1, 30.6]]) fill('#d8b070', () => g.arc(x, y, 0.42, 0, Math.PI * 2));
-  leaf(g, 16.4, 30.4, -0.9, 3.4, '#2a7a38'); leaf(g, 16.4, 30.4, -0.3, 2.8, '#48a044');
-  leaf(g, 43.6, 30.4, Math.PI + 0.9, 3.4, '#2a7a38'); leaf(g, 43.6, 30.4, Math.PI + 0.3, 2.8, '#48a044');
+  strokeOn(g, '#202018', 0.55, () => g.arc(bx, by, br, 0, Math.PI * 2));
+  fill('#ffffff', () => g.arc(bx, by, br * 0.3, 0, Math.PI * 2));
+  strokeOn(g, '#202018', 0.45, () => g.arc(bx, by, br * 0.3, 0, Math.PI * 2));
+  fill('rgba(255,255,255,0.55)', () => g.ellipse(bx - 1.6, by - 2.2, 1, 0.6, -0.5, 0, Math.PI * 2));
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = '900 6.6px "Trebuchet MS", "Arial Black", sans-serif';
-  g.fillStyle = 'rgba(16,60,24,0.65)'; g.fillText('SAFARI', 30.35, 24.55);
-  g.fillStyle = '#fbf8e4'; g.fillText('SAFARI', 30, 24.2);
-  g.font = '800 2.8px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#f8d848'; g.fillText('Z O N E', 30, 29);
-  for (const x of [22.4, 37.6]) {   // pawprints either side of ZONE
-    fill('rgba(248,216,72,0.85)', () => g.ellipse(x, 29.4, 0.75, 0.6, 0, 0, Math.PI * 2));
-    for (const dx of [-0.75, 0, 0.75]) fill('rgba(248,216,72,0.85)', () => g.arc(x + dx, 28.3 - (dx ? 0 : 0.3), 0.32, 0, Math.PI * 2));
+  g.font = '900 7.6px "Trebuchet MS", "Arial Black", sans-serif';
+  g.fillStyle = 'rgba(16,60,24,0.7)'; g.fillText('SAFARI', 36.4, 22.9);
+  g.fillStyle = '#fbf8e4'; g.fillText('SAFARI', 36, 22.5);
+  g.font = '800 3.2px "Trebuchet MS", sans-serif';
+  g.fillStyle = '#f8d848'; g.fillText('Z O N E', 36, 28);
+  for (const x of [27, 45]) {   // pawprints either side of ZONE
+    fill('rgba(248,216,72,0.85)', () => g.ellipse(x, 28.4, 0.8, 0.65, 0, 0, Math.PI * 2));
+    for (const dx of [-0.8, 0, 0.8]) fill('rgba(248,216,72,0.85)', () => g.arc(x + dx, 27.2 - (dx ? 0 : 0.3), 0.34, 0, Math.PI * 2));
+  }
+  fill('#c8e8a8', () => g.arc(57.4, 24.1, 0.8, 0, Math.PI * 2));
+
+  // the thatch, a bound ridge along its top and a ragged eave
+  const roof = () => {
+    g.moveTo(-0.2, 17.4); g.quadraticCurveTo(6, 9, 20, 3.4); g.lineTo(44, 3.4); g.quadraticCurveTo(58, 9, 64.2, 17.4);
+    for (let x = 64; x > 0; x -= 2) g.lineTo(x - 1, 17.4 + (x % 4 ? 1.4 : 0.4) + Math.sin(x) * 0.3);
+    g.closePath();
+  };
+  fill('rgba(0,0,0,0.25)', () => g.rect(3, 16.6, 58, 1.6));
+  fill(lin(0, 0, W, 0, ['#f4cc78', '#e2b260', '#d09848', '#8a5a28']), roof);
+  g.save(); g.beginPath(); roof(); g.clip();
+  for (let x = -6; x < 70; x += 1.1) {   // straw
+    const top = 3 + Math.abs(x - 32) * 0.12;
+    strokeOn(g, `rgba(${rnd() < 0.5 ? '122,74,32' : '255,236,170'},${0.25 + rnd() * 0.3})`, 0.22, () => { g.moveTo(32 + (x - 32) * 0.55, top); g.quadraticCurveTo(32 + (x - 32) * 0.8, 12, 32 + (x - 32) * 1.02, 19); });
+  }
+  for (const y of [8.5, 13]) strokeOn(g, 'rgba(110,64,24,0.45)', 0.4, () => { g.moveTo(0, y + 4); g.quadraticCurveTo(32, y - 2.6, 64, y + 4); });
+  g.fillStyle = lin(0, 12, 0, 19, ['rgba(60,30,10,0)', 'rgba(60,30,10,0.35)']); g.fillRect(0, 12, W, 8);
+  g.restore();
+  strokeOn(g, 'rgba(90,56,24,0.85)', 0.45, roof);
+  rr(17, 1.4, 30, 3.6, 1.8, lin(0, 1.4, 0, 5, ['#e8bc6c', '#b07a38', '#7a4c1e']));   // the ridge bundle, tied
+  for (const x of [21, 27, 32, 37, 43]) rr(x - 0.45, 1.2, 0.9, 4, 0.4, '#6a4018');
+
+  for (const x of [20, 44]) {   // paper lanterns hanging under the board, lit at dusk
+    strokeOn(g, '#3a2410', 0.3, () => { g.moveTo(x, 31.4); g.lineTo(x, 33.4); });
+    rr(x - 1.3, 33.2, 2.6, 0.8, 0.35, '#3a2410');
+    const body = (gg) => { gg.beginPath(); gg.ellipse(x, 36.6, 2.1, 2.9, 0, 0, Math.PI * 2); };
+    g.fillStyle = lin(x - 2, 0, x + 2, 0, ['#ffd890', '#f8a048', '#c86020']); body(g); g.fill();
+    glow.fillStyle = '#ffb060'; body(glow); glow.fill();
+    for (const rx of [0.7, 1.5]) strokeOn(g, 'rgba(120,50,10,0.45)', 0.2, () => g.ellipse(x, 36.6, rx, 2.9, 0, 0, Math.PI * 2));
+    fill('rgba(255,245,210,0.6)', () => g.ellipse(x - 0.8, 35.6, 0.5, 1, 0, 0, Math.PI * 2));
+    rr(x - 1.1, 39.3, 2.2, 0.7, 0.3, '#3a2410');
+    strokeOn(g, '#f8d048', 0.35, () => { g.moveTo(x, 40); g.lineTo(x, 41.6); });
   }
 
-  for (const x of [4, 15, 45, 56]) tuft(g, x, 56, 8, rnd);
-  for (const [x, y, p] of [[3, 55, '#ffffff'], [16.5, 55.2, '#f8e048'], [44, 55, '#f8a0c8'], [57, 55.3, '#ffffff']]) blossom(g, x, y, 0.45, p, '#f89830');
+  for (const x of [5, 16, 48, 59]) tuft(g, x, 61.6, 9, rnd);
+  for (const [x, y, p] of [[3, 60.6, '#ffffff'], [17.5, 60.8, '#f8e048'], [47, 60.6, '#f8a0c8'], [60.5, 60.9, '#ffffff']]) blossom(g, x, y, 0.5, p, '#f89830');
 
   if (!open) {   // a rope across, a CLOSED tag hanging off it
-    const rope = () => { g.moveTo(13, 34); g.quadraticCurveTo(30, 40.8, 47, 34); };
-    strokeOn(g, '#f4ecd8', 0.95, rope);
-    g.setLineDash([1.1, 1.1]); strokeOn(g, '#e04030', 0.95, rope); g.setLineDash([]);
-    for (const x of [13, 47]) fill('#9a9aa6', () => g.arc(x, 34, 0.6, 0, Math.PI * 2));
-    strokeOn(g, '#5a3a1c', 0.22, () => { g.moveTo(27, 38.4); g.lineTo(30, 37.4); g.lineTo(33, 38.4); });
-    rr(26, 38.2, 8, 3.8, 0.7, lin(0, 38.2, 0, 42, [W[0], W[1]]));
-    g.font = '900 1.9px "Trebuchet MS", sans-serif'; g.fillStyle = '#a02818'; g.fillText('CLOSED', 30, 40.2);
+    const rope = () => { g.moveTo(15, 44); g.quadraticCurveTo(32, 51, 49, 44); };
+    strokeOn(g, '#f4ecd8', 1, rope);
+    g.setLineDash([1.1, 1.1]); strokeOn(g, '#e04030', 1, rope); g.setLineDash([]);
+    for (const x of [15, 49]) fill('#9a9aa6', () => g.arc(x, 44, 0.65, 0, Math.PI * 2));
+    strokeOn(g, '#5a3a1c', 0.22, () => { g.moveTo(28.6, 48.6); g.lineTo(32, 47.6); g.lineTo(35.4, 48.6); });
+    rr(27.6, 48.4, 8.8, 4, 0.7, lin(0, 48.4, 0, 52.4, [WD[0], WD[1]]));
+    g.font = '900 2.1px "Trebuchet MS", sans-serif'; g.fillStyle = '#a02818'; g.fillText('CLOSED', 32, 50.5);
   }
   return c;
+}
+
+/** The fence either side of the gate, the lobby's: round log posts and two rails, from `x0` to `x1` along `z`. */
+function safariFence(g, x0, x1, z) {
+  const wood = new THREE.MeshStandardMaterial({ color: '#b87c48', roughness: 0.9 }), dark = new THREE.MeshStandardMaterial({ color: '#8a5a30', roughness: 0.9 });
+  const add = (mesh, x, y, zz) => { mesh.position.set(x, y, zz); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); return mesh; };
+  const n = Math.max(1, Math.round((x1 - x0) / 1.1)), post = new THREE.CylinderGeometry(0.075, 0.085, 0.78, 10);
+  for (let i = 0; i <= n; i++) add(new THREE.Mesh(post, wood), x0 + (x1 - x0) * i / n, 0.39, z);
+  for (const y of [0.34, 0.62]) add(new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0), 0.08, 0.06), dark), (x0 + x1) / 2, y, z + 0.06);
 }
 
 /** The Sky Pillar's stone, smooth (2026-10-08): weathered blocks, a carved band of runes every few storeys, arched windows
@@ -1075,11 +1093,19 @@ function makePlaces() {
   ];
   const safari = safariOpen(save) || !!runAt('safari'), safariRun = runAt('safari');
   list.push({
-    id: 'safari', name: 'Safari Zone', step: { x: 1, y: 3 }, tiles: rect(0, 0, 2, 2), tag: [1, 3.8, 2], open: safari,
+    id: 'safari', name: 'Safari Zone', step: { x: 0, y: 0 }, tiles: [], tag: [0, 4, -3], open: safari,
     line: safariRun ? waits(safariRun) : safari ? 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : safari ? [['Enter', acts.onSafari]] : [],
-    build: (g) => { const s = safariArt(safari), b = board(s, tileX(1), tileZ(2)); glowing(b.material, s, null, '#ffc890', 0.8); g.add(b); },
+    // back in the left corner, just behind the Ancient Tree, its fence across the cleared meadow (the user's call, 2026-10-09)
+    build: (g) => {
+      const s = safariArt(safari), S = 1.1, x = tileX(SAFARI_AT.tx), z = tileZ(SAFARI_AT.ty), b = board(s, x, z, { s: S });
+      glowing(b.material, s, null, '#ffc890', 0.8);
+      g.add(b);
+      const half = s.width / s.fine / TP * S / 2, post = (px) => x - half + px / TP * S;
+      safariFence(g, VISTA.x0 + 8, post(7), z);
+      safariFence(g, post(57), tileX(3.6), z);
+    },
   });
   list.push({
     id: 'safari-board', name: 'Safari Ranks', step: { x: 3, y: 4 }, tiles: [[3, 3]], tag: [3, 2.6, 3], open: safari,
@@ -1188,7 +1214,10 @@ function buildClearing() {
   scene.add(forest);
   const rnd = seeded(21), kinds = [treeArt(1), treeArt(2), treeArt(3, P.deep), treeArt(4, P.deep), bushArt(5), bushArt(6)];
   const spots = kinds.map(() => []);
-  const put = (k, x, z, s) => spots[k].push({ x, z, s });
+  // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()); a few stay on
+  // the far left, by the Poké Mall
+  const cleared = (x, z) => x < -3 && z < (x < -10.4 ? -3 : 0.3);
+  const put = (k, x, z, s) => { if (!cleared(x, z)) spots[k].push({ x, z, s }); };
   // the forest's wall: three ragged rows behind, three down each side, the far ones bigger and darker
   for (let r = 0; r < 3; r++) for (let x = -M + 0.5; x < COLS + M; x += 1.25 + rnd() * 0.4) {
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x - 0.5) + (rnd() - 0.5) * 0.5, tileZ(-1 - r * 1.2 - rnd() * 0.4), 1.25 + r * 0.25 + rnd() * 0.2);
@@ -1213,6 +1242,34 @@ function buildClearing() {
     mesh.raycast = () => {};
     forest.add(mesh);
   });
+  buildVista();
+}
+
+/** The view out past the Safari gate (js/hub-vista.js), square to the camera so it reads as the far distance, its foot
+    on the ground's back edge; and plain meadow under everything, where the cleared corner shows past the ground's edges. */
+function buildVista() {
+  const meadow = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: P.meadow[3], roughness: 1 }));
+  meadow.rotation.x = -Math.PI / 2;
+  meadow.position.y = -0.02;
+  meadow.receiveShadow = true;
+  meadow.raycast = () => {};
+  forest.add(meadow);
+  const { x0, w, h } = VISTA, foot = tileZ(-M + 0.3);
+  vista = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ transparent: true, fog: false }));
+  vista.rotation.x = -PITCH;
+  vista.position.set(x0 + w / 2, Math.cos(PITCH) * h / 2, foot - Math.sin(PITCH) * h / 2);
+  vista.raycast = () => {};
+  forest.add(vista);
+  paintVista();
+}
+
+function paintVista() {
+  const t = timeOfDay();
+  if (!vista || vista.userData.time === t) return;
+  vista.material.map?.dispose();
+  vista.material.map = texOf(vistaArt(t, tileX(SAFARI_AT.tx), 0.42));
+  vista.material.needsUpdate = true;
+  vista.userData.time = t;
 }
 
 /* ---------- walking ---------- */
@@ -1573,6 +1630,7 @@ function setTime(force) {
   for (const m of glowMats) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
   for (const l of lamps) l.intensity = L.lamp * l.userData.k;
   if (bugs) bugs.userData.kind = L.bugs;
+  paintVista();
 }
 
 /* ---------- life: pollen or fireflies, a legendary flying over, the Clearing's sounds ---------- */
@@ -1697,10 +1755,12 @@ function fitCamera(w, h) {
 
 function placeCamera(dt) {
   const { half, front } = camera.userData;
-  const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = tileZ(2);
+  // up the Safari road the view looks on ahead, through the gate to the distance past it
+  const ahead = !arriving && walker.tile.x <= 1 && walker.tile.y <= 3 ? 2.5 : 0;
+  const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
-  const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z;
-  const wantX = reachX <= 0 ? 0 : Math.max(-reachX, Math.min(reachX, wx));
+  const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z - ahead;
+  const wantX = reachX + ahead <= 0 ? 0 : Math.max(-reachX - ahead * 1.2, Math.min(Math.max(0, reachX), wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;

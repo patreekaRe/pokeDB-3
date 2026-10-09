@@ -143,7 +143,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      from the bottom after the power-on, and How to play comes out of and goes back into the corner handheld. Since then (the user's call, 2026-10-08) the Pokédex is no stand in the Clearing but a shut
      handheld in the bottom left corner that grows into the device over the hub and shrinks back into it (`openDevice()`'s
      `from`). Layout since (the user's calls, 2026-10-08): the Safari gate and its kiosk stand at the end of the back-left
-     road, a Game Corner stall on the left (`cornerStall()`: 3D and smooth, turned 45 degrees to the plaza), the Sealed Gate once broken on the right where the
+     road (the gate set back behind the Ancient Tree since 2026-10-09, the road running on through it into the distance), a Game Corner stall on the left (`cornerStall()`: 3D and smooth, turned 45 degrees to the plaza), the Sealed Gate once broken on the right where the
      Pokédex stood. The bottom bar (2026-10-08, the user's pick) is the rooms' Pokédex bar: the place's name on the hinge's LCD, its gold pill, then Home (the corner handheld folded into it), round keys and the PokéCoins. **Next: the user playtests the branch and decides if it goes live.**
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
   5. **The Poké Mall's shops, walked into** (the user's ask, 2026-10-08; `js/mall-3d.js`'s `FRONTS`). Each a session, all

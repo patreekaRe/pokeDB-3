@@ -11,13 +11,13 @@ import { hash } from './tower-art.js';
 import { timeOfDay, GRADES, gradeHex } from './daytime.js';
 import { rgba, layer, fitCanvas, puff, glow, vgrad, sparkle, animate, halt } from './smooth-paint.js';
 
-const SKY = {   // top, middle, horizon
+export const SKY = {   // top, middle, horizon
   dawn: ['#2c3c70', '#a07898', '#f8c098'],
   day: ['#3a7ee0', '#78b4f0', '#cfeaf8'],
   dusk: ['#282050', '#a04868', '#f89048'],
   night: ['#060a20', '#101a40', '#2a3a62'],
 };
-const CLOUD = { day: ['#ffffff', '#d8e4f2'], dawn: ['#fbe4d8', '#c890a0'], dusk: ['#f8d0b8', '#a06078'], night: ['#3a4870', '#222c4c'] };
+export const CLOUD = { day: ['#ffffff', '#d8e4f2'], dawn: ['#fbe4d8', '#c890a0'], dusk: ['#f8d0b8', '#a06078'], night: ['#3a4870', '#222c4c'] };
 
 let sky = null;
 
