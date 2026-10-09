@@ -293,16 +293,28 @@ function select(row, col) {
   render();
 }
 
+/** One of the Game Corner's things for sale, fresh from the save: a row's id ('skins', 'perks', 'shiny', 'balls') and its
+    place in that row. The Poké Mall's walk-in Game Corner (js/mall-corner.js) sells the very same entries. */
+export const cornerEntries = (rowId) => ROWS.find(r => r.id === rowId).entries();
+
+/** Pays for an entry and hands it over; the lines saying what it got you (badges too), or null if it can't be bought. */
+export function buyCorner(pick) {
+  if (pick.done || pick.blocked || getSave().coins < pick.cost) return null;
+  updateSave(d => { d.coins -= pick.cost; });
+  const news = [...pick.bought(), ...checkBadges().map(badgeLine)];   // a shiny, a maxed perk or a full set of balls can earn one
+  showBadgeNews();
+  refreshCoins();
+  return news;
+}
+
 /** First press arms the button, the second buys (the menu blip covers the first). */
 function press() {
   const pick = ROWS[cursor.row].entries()[cursor.col[cursor.row]];
   if (pick.done || pick.blocked || getSave().coins < pick.cost) return;
   if (!cursor.armed) { cursor.armed = true; cursor.news = null; render(); return; }
   cursor.armed = false;
-  updateSave(d => { d.coins -= pick.cost; });
   playSound('buy');
-  cursor.news = [...pick.bought(), ...checkBadges().map(badgeLine)];   // a shiny, a maxed perk or a full set of balls can earn one
-  showBadgeNews();
+  cursor.news = buyCorner(pick);
   render();
   flash('won');
 }

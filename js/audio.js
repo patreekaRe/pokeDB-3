@@ -87,6 +87,7 @@ const SOUNDS = {
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
   block: { synth: blockClink, gain: 0.5 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
+  select: { url: 'assets/audio/sfx/card.mp3', gain: 0.2 },   // a pick in the 3D views (the base's tiles, the mall's stands and prizes, a tap to walk): softer than confirm
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
   event: { url: 'assets/audio/sfx/event.mp3' },   // walking into a ? event
   item:  { url: 'assets/audio/sfx/item.mp3' },    // an item is used

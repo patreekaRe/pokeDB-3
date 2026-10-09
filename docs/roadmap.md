@@ -149,8 +149,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   5. **The Poké Mall's shops, walked into** (the user's ask, 2026-10-08; `js/mall-3d.js`'s `FRONTS`). Each a session, all
      on `secret-base`, Run in: LOCAL (Desktop app):
      a) ~~Furniture store~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-furniture.js`, the west front.
-     b) **Game Corner, walked into** (the middle front): an arcade inside (neon, cabinets, carpet); perks and shiny skins
-        bought at counters / machines in person, the same items and prices as `js/data/shop.js`; the cabinet app stays.
+     b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
      c) **Prize games** in the Game Corner: slots, roulette and blackjack for PokéCoins, seeded by `js/rng.js`, a house
         edge (~5-10%) and a daily stake cap so coins stay earned by playing runs; wins can also be **prize tickets** for a
         prize counter of exclusives (dolls, wallpapers, a shiny-only trinket), Gen 1's Game Corner. Odds tested in `tests/`.

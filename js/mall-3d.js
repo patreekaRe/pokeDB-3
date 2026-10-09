@@ -2,8 +2,8 @@
    shopping centre with the Game Corner inside). Walked into from its doors in the Clearing (js/hub-3d.js), the same
    HD-2D look as the Secret Base: a marble floor with a red runner, shop fronts along the back wall, a mezzanine with a
    glass rail and the upper floor's lit shops over them, tall windows above. The Game Corner is the middle front, its
-   3D booth (cornerStall()), opening the cabinet over the hall; the west front is the Furniture store, walked into as
-   its own place (js/mall-furniture.js builds its two floors, this file walks them); the east one is shuttered for a shop
+   3D booth (cornerStall()), walked into as its own arcade (js/mall-corner.js); the west front is the Furniture store,
+   its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is shuttered for a shop
    to come (a new one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it; the pill at the
    bottom names the nearest and goes in; the ✕ walks back out. */
 
@@ -13,9 +13,10 @@ import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain } from './hd2d.js';
 import { fine, texOf, cornerStall, GC, words, star, hubThree } from './hub-3d.js';
-import { toggleShop } from './shop.js';
+import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, stairLift, upstairsLine, STAIR } from './mall-furniture.js';
+import { buildCorner } from './mall-corner.js';
 
 const COLS = 13, ROWS = 7;
 const U = 20;                 // the paintings' units a tile
@@ -30,14 +31,15 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
   { id: 'furniture', name: 'Furniture', line: 'Furniture for your Secret Base, new pieces every day.', x: 2, step: { x: 2, y: 1 }, open: true },
-  { id: 'corner', name: 'Game Corner', line: 'Starters, perks, shinies and Poké Balls for PokéCoins.', x: 6, step: { x: 6, y: 2 }, open: true },
+  { id: 'corner', name: 'Game Corner', line: 'Starters, perks, shinies and Poké Balls for PokéCoins: walk in and buy them.', x: 6, step: { x: 6, y: 2 }, open: true },
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
 ];
 
-let THREE, renderer, scene, camera, post, root, view, pill, lineEl;
+let THREE, renderer, scene, camera, post, root, view, pill, lineEl, hemi, sun;
 let mon, walker = { x: 0, z: 0, tile: { x: 6, y: ROWS - 1 }, path: [], facing: 'back', flip: false, hop: 0 };
 let hall, glows = [], blocked = new Set(), aim = null, here = null, shown = '';
-// where you are: the hall, or a floor of the Furniture store (js/mall-furniture.js), each its own group, tiles and spots
+// where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
+// each its own group, tiles and spots
 let places = {}, P = null, picked = null, climbing = false;
 let calm = false, last = 0, camX = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
@@ -380,32 +382,39 @@ function goTo(fr, enter) {
 
 function arrived() {
   if (climbing) return changeFloor();
-  here = frontAt(walker.tile);
   const go = aim;
   aim = null;
+  // a case's things share doorsteps, so the one you walked to is the one you're at
+  here = go && go.step.x === walker.tile.x && go.step.y === walker.tile.y ? go : frontAt(walker.tile);
   if (!here) return;
   walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
   if (go === here) enterFront(here); else say(here);
 }
 
-/* ---------- the Furniture store ---------- */
+/* ---------- the shops ---------- */
 
 const SIZE = { cols: COLS, rows: ROWS, top: TOP, u: U };
-const floorOf = () => (P.id === 'hall' ? 0 : P.id === 'f2' ? 2 : 1);
+const floorOf = () => (P.id === 'f2' ? 2 : P.id === 'f1' ? 1 : 0);
+// each place inside a shop: how it's built and which of the hall's fronts its ✕ walks back out to
+const SHOPS = {
+  f1: { front: 'furniture', build: () => buildFloor(THREE, 1, SIZE, !!loadBase().upstairs) },
+  f2: { front: 'furniture', build: () => buildFloor(THREE, 2, SIZE, !!loadBase().upstairs) },
+  gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
+};
 
-/** Into a place: the hall, or the store's floor 1 or 2 (built the first time), at tile `at`, under the curtain. */
+/** Into a place: the hall, a store floor or the Game Corner (built the first time), at tile `at`, under the curtain. */
 async function goPlace(id, at, facing = 'back') {
   await curtain(true);
   if (!root?.isConnected) return;
   if (!places[id]) {
-    const floor = id === 'f2' ? 2 : 1, built = buildFloor(THREE, floor, SIZE, !!loadBase().upstairs);
+    const built = SHOPS[id].build();
     const k = built.keeper, spot = built.spots.find(s => s.kind === 'keeper');
     k.mon = await monBoard(k, false);
     k.mon.board.rotation.x = -PITCH;
     k.mon.group.position.set(k.x, 0.3, k.z);   // on a step behind the counter, so it shows over it
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
-    places[id] = { id, ...built };
+    places[id] = { id, front: SHOPS[id].front, ...built };
     scene.add(built.group);
   }
   setPlace(places[id], at, facing);
@@ -428,6 +437,7 @@ function setPlace(p, at, facing = 'back') {
   walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
   camX = walker.x;
   root.querySelector('.b3-top h2').textContent = P.title;
+  hemi.intensity = 1.7 * (P.light ?? 1); sun.intensity = 2.2 * (P.light ?? 1);   // the arcade is dim, its neon does the lighting
   showCoins();
   if (viewW) fitShot(viewW, viewH);
 }
@@ -441,9 +451,41 @@ function showCoins() {
 function pick(spot) {
   picked = spot;
   shown = null;
-  if (!P?.ring) return;
-  P.ring.visible = !!spot && spot.kind === 'bay';
-  if (P.ring.visible) P.ring.position.set(spot.at.x, spot.at.y ?? 0.02, spot.at.z);
+  if (P?.ring) {
+    P.ring.visible = !!spot && spot.kind === 'bay';
+    if (P.ring.visible) P.ring.position.set(spot.at.x, spot.at.y ?? 0.02, spot.at.z);
+  }
+  if (P?.frame) {   // the Game Corner's gold frame, over a case's thing or a machine
+    const f = spot?.frame;
+    P.frame.visible = !!f;
+    if (f) { P.frame.position.set(f.x, f.y, f.z); P.frame.scale.set(f.w, f.h, 1); }
+  }
+}
+
+const priceOf = (fr) => (fr.kind === 'stairs' ? UPSTAIRS_PRICE : fr.kind === 'prize' ? cornerEntries(fr.row)[fr.i].cost : PIECES[fr.piece].price);
+
+/** A Game Corner prize (a skin, a ball pack, a shiny, a perk): the first tap picks it and Meowth says what it is and
+    costs, the next buys it, the same as the cabinet's Buy (js/shop.js's buyCorner()). */
+function prizeTap(spot) {
+  const e = cornerEntries(spot.row)[spot.i], coins = getSave().coins ?? 0;
+  if (picked !== spot) {
+    pick(spot);
+    playSound('select');
+    if (e.blocked) return talk(`${e.dark ? 'Who\'s that Pokémon? ' : ''}${e.text}`, 4600);
+    if (e.done) return talk(`${e.name}: ${e.done === 'Maxed' ? 'maxed out already, meow!' : 'that one\'s yours already, meow!'}`, 3600);
+    const what = spot.row === 'perks' ? ` ${e.text}${e.level ? ` (${e.level})` : ''}` : spot.row === 'balls' ? ` ${e.text}` : '';
+    return talk(`${e.name}!${what} That's ${e.cost.toLocaleString()} PokéCoins. Tap again and it's yours, meow.`, 5200);
+  }
+  if (e.done || e.blocked) { pick(null); return prizeTap(spot); }
+  const news = buyCorner(e);
+  if (!news) { playSound('cancel'); return talk(`No dice, you're ${(e.cost - coins).toLocaleString()} PokéCoins short for that, meow.`, 3600); }
+  playSound('buy');
+  walker.hopUntil = performance.now() + 500;
+  P.keeper.hopUntil = performance.now() + 600;
+  pick(null);
+  P.refresh();
+  showCoins();
+  talk(`Ka-ching! ${news.join(' ')}`, 4600);
 }
 
 /** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. */
@@ -500,6 +542,7 @@ function changeFloor() {
 /** A front's line over the pill, a moment; in the store the shopkeeper says it, in a speech window with its name. */
 function say(fr, ms = 2600) {
   lineEl.lastChild.textContent = fr.kind === 'bay' ? `The ${fr.name.toLowerCase()}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
+    : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
     : fr.kind === 'stairs' ? (floorOf() === 2 ? 'Down to the ground floor.' : loadBase().upstairs ? 'Up to the second floor.' : 'The second floor is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.line;
@@ -510,16 +553,17 @@ function say(fr, ms = 2600) {
   say.t = setTimeout(() => lineEl.classList.remove('on'), ms);
 }
 
-/** In: the Game Corner's cabinet over the hall (modal, so it sits over this full-screen view); a shutter only says so. */
+const prizeLine = (e) => (e.blocked ? `${e.name}: not yet.` : e.done ? `${e.name}: ${e.done.toLowerCase()}.` : `${e.name}: ${e.cost.toLocaleString()} PokéCoins.`);
+
+/** In: a shop's place (the Furniture store, the Game Corner); a shutter only says so. Inside, a spot's own tap. */
 function enterFront(fr) {
   if (fr.kind === 'bay') return bayTap(fr);
+  if (fr.kind === 'prize') return prizeTap(fr);
   if (fr.kind === 'stairs') return stairTap(fr);
   if (fr.kind === 'keeper') return keeperTap();
   if (!fr.open) { playSound('cancel'); return say(fr); }
   if (fr.id === 'furniture') return goPlace('f1', { x: 6, y: ROWS - 1 });
-  walker.hopUntil = performance.now() + 400;
-  playSound('confirm');
-  if (fr.id === 'corner') setTimeout(() => { if (root?.isConnected) toggleShop(undefined, { modal: true }); }, calm ? 0 : 260);
+  if (fr.id === 'corner') return goPlace('gc', { x: 6, y: ROWS - 1 });
 }
 
 /** The front your partner stands at, else the nearest within SEEN of its doorstep. */
@@ -538,7 +582,7 @@ function showPill() {
   if (k === shown) return;
   shown = k;
   pill.querySelector('b').textContent = !fr ? P.title
-    : buying ? `Buy · ${(fr.kind === 'stairs' ? UPSTAIRS_PRICE : PIECES[fr.piece].price).toLocaleString()}` : fr.name;
+    : buying ? `Buy · ${priceOf(fr).toLocaleString()}` : fr.name;
   pill.classList.toggle('shut', !fr || !fr.open);
   pill.disabled = !fr;
   pill.classList.remove('mall-pop'); void pill.offsetWidth; pill.classList.add('mall-pop');
@@ -624,7 +668,7 @@ function frame(now) {
   if (walk(dt)) arrived();
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, P.id === 'hall' ? 0 : stairLift(floorOf(), walker.x, walker.z, SIZE), walker.z);
+  mon.group.position.set(walker.x, floorOf() ? stairLift(floorOf(), walker.x, walker.z, SIZE) : 0, walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
@@ -648,10 +692,10 @@ function atDoors() {
   setPlace(places.hall, { x: 6, y: ROWS - 1 });
 }
 
-/** The ✕: out of the store to its doorstep in the hall, or out of the mall. */
+/** The ✕: out of a shop to its doorstep in the hall, or out of the mall. */
 function back() {
   if (P.id === 'hall') return leave();
-  goPlace('hall', FRONTS.find(f => f.id === 'furniture').step, 'front');
+  goPlace('hall', FRONTS.find(f => f.id === P.front).step, 'front');
 }
 
 async function leave() {
@@ -702,8 +746,8 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   scene = new THREE.Scene();
   scene.background = new THREE.Color('#2a2236');
   camera = new THREE.PerspectiveCamera(30, 1, 0.5, 140);
-  const hemi = new THREE.HemisphereLight('#fffaf0', '#8a7a68', 1.7);
-  const sun = new THREE.DirectionalLight('#fff4e0', 2.2);
+  hemi = new THREE.HemisphereLight('#fffaf0', '#8a7a68', 1.7);
+  sun = new THREE.DirectionalLight('#fff4e0', 2.2);
   sun.position.set(-4, 12, 7);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
@@ -723,4 +767,5 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   requestAnimationFrame(frame);
   curtain(false);
   if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? STAIR.foot : { x: 6, y: ROWS - 1 });
+  if (store === 'corner') goPlace('gc', { x: 6, y: ROWS - 1 });
 }

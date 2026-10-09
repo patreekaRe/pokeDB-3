@@ -1981,3 +1981,14 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   paints the furniture; Minccino upstairs), who turns to face your partner, hops on a sale, and says every line in the
   store in a cream speech window with a pink name tag (`talk()` / `.mall-line.talk`); tapping it plays its cry and a chat
   line. The shopkeepers and their lines were my calls. Playtest `?mall` / `?mall=furniture` / `?mall=2f`.
+- **The Poké Mall's Game Corner, walked into** (roadmap item 5b, 2026-10-09, branch `secret-base` only): the hall's middle
+  front (the booth in its violet alcove) now walks into a 3D arcade (`buildCorner()` in `js/mall-corner.js`, the hall's
+  13x7) instead of opening the cabinet: violet walls in a gold lattice, cyan and pink neon tubes, GAME CORNER in bulbs, a
+  neon Poké Ball / coin / 777 up high, a confetti carpet with the red runner. Everything the cabinet sells, from the same
+  entries (`cornerEntries()` / `buyCorner()`, split out of `js/shop.js`'s Buy so both sell alike, badges included): the 6
+  skins over the 8 ball packs in a lit PRIZES case (left), every shiny in a SHINY case (right, silhouettes for starters not
+  yet owned), the 9 perks a machine each (their pictures drawn smooth, `PERK_ART`) and a 10th, dark, for the prize games
+  (5c). A tap walks there and Meowth (`KEEPER`, Pay Day) says what it is and costs, a gold frame on it; a second tap or the
+  pill buys; the case or machine repaints (`refresh()`). The room is dimmer (`light`: the place's multiplier on the hall's
+  lights). Also fixed: the branch's `select` sound (every pick in the base and the mall) was never defined, so it fetched
+  `undefined` and was silent; it's now a soft card blip. Layout, Meowth and its lines were my calls. Playtest `?mall=corner`.

@@ -12,6 +12,12 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-09: **The Poké Mall's Game Corner, walked into** (Desktop app, branch `secret-base` only): the hall's middle front
+  walks into a neon 3D arcade (`js/mall-corner.js`; `?mall=corner`): skins and balls in a PRIZES case, shinies in a SHINY
+  case, a perk machine each, Meowth at the prize counter; tap twice to buy, the cabinet's same entries (`buyCorner()` in
+  `js/shop.js`). The undefined `select` sound is now defined. Next: roadmap 5c, the prize games (CLOUD for the odds tests,
+  LOCAL for the look).
+
 - 2026-10-09: **The Poké Mall's Furniture store** (Desktop app, branch `secret-base` only): the hall's west front walks
   into a 3D shop laid out like Nook's Cranny, the day's stock on teal stands, a counter and a shopkeeper Pokémon who says every line (`js/mall-furniture.js`, `KEEPERS`; `?mall=furniture`), tap twice to buy; a 2,500-coin second floor up
   a roped-off stair. Next: roadmap 5b, the Game Corner walked into (LOCAL).
