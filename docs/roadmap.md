@@ -146,6 +146,19 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      road, a Game Corner stall on the left (`cornerStall()`: 3D and smooth, turned 45 degrees to the plaza), the Sealed Gate once broken on the right where the
      Pokédex stood. The bottom bar (2026-10-08, the user's pick) is the rooms' Pokédex bar: the place's name on the hinge's LCD, its gold pill, then Home (the corner handheld folded into it), round keys and the PokéCoins. **Next: the user playtests the branch and decides if it goes live.**
   Every session checks 30+ fps at 390x844 with `&fps`, and pushes the branch only, never main, until the user says.
+  5. **The Poké Mall's shops, walked into** (the user's ask, 2026-10-08; `js/mall-3d.js`'s `FRONTS`). Each a session, all
+     on `secret-base`, Run in: LOCAL (Desktop app):
+     a) **Furniture store** (the west front): glass walls with furniture on show behind them; walk in to a 3D shop floor
+        where the day's stock (`furnitureStock()`) stands as real pieces, tap one to buy. The Secret Base's Shop tab keeps
+        working. An unlockable **second floor** (the mall's mezzanine; bought with PokéCoins) adds more stock a day.
+     b) **Game Corner, walked into** (the middle front): an arcade inside (neon, cabinets, carpet); perks and shiny skins
+        bought at counters / machines in person, the same items and prices as `js/data/shop.js`; the cabinet app stays.
+     c) **Prize games** in the Game Corner: slots, roulette and blackjack for PokéCoins, seeded by `js/rng.js`, a house
+        edge (~5-10%) and a daily stake cap so coins stay earned by playing runs; wins can also be **prize tickets** for a
+        prize counter of exclusives (dolls, wallpapers, a shiny-only trinket), Gen 1's Game Corner. Odds tested in `tests/`.
+     d) **The east front**: Claude's pick is a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on
+        its wall), so each shop is one thing coins buy: home, runs, the Safari. Waiting on the user's pick (balls could
+        also stay in the Game Corner, and the east front be a cosmetics Boutique instead).
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
