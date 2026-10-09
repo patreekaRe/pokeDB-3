@@ -17,16 +17,16 @@ const PINK = '#f8a8c8', SKYB = '#a8d8f8', GOLD = '#f0c040', INK = '#303038', ICE
 /** A string sagging between two points on a wall, as y at each x from 0 to `len`. */
 const sag = (len, top, dip) => (i) => top + Math.round(Math.sin(Math.max(0, Math.min(len, i)) / len * Math.PI) * dip);
 /** A straight line of pixels, `t` thick. */
-function line(x0, y0, x1, y1, c, t = 1) {
+export function line(x0, y0, x1, y1, c, t = 1) {
   const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
   for (let i = 0; i <= n; i++) R(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), t, t, c);
 }
 /** A ring of pixels. */
-function ring(cx, cy, r, c, t = 1) {
+export function ring(cx, cy, r, c, t = 1) {
   for (let a = 0; a < r * 7; a++) { const th = a / (r * 7) * Math.PI * 2; R(Math.round(cx + Math.cos(th) * r), Math.round(cy + Math.sin(th) * r), t, t, c); }
 }
 /** A disc split into wedges, each coloured by `colour(i)`. */
-function wheel(cx, cy, r, n, colour) {
+export function wheel(cx, cy, r, n, colour) {
   for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) {
     if (i * i + j * j > r * r) continue;
     const a = (Math.atan2(j, i) + Math.PI * 2.5) % (Math.PI * 2);

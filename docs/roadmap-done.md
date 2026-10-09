@@ -1895,3 +1895,17 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   gear wall, anvil, poison vat, weathervane, cloud cushion, honeycomb, ant farm, fairy ring). New shared bits there: `line()`,
   `ring()`, `wheel()` (a disc in coloured wedges), a 3x5 `FONT` and `HORSE`. Checked in the browser: all 12,000 new pictures (every
   colour, every facing) paint without an error.
+**Themed shelves, batch 4** (2026-10-08): `js/base-furniture-rooms4.js` adds 150 kinds (858 in all, 16,514 pieces), 25 a shelf, each
+  shelf opening with a list on one shared body: Music (6 instrument stands: violin, trumpet, banjo, ukulele, saxophone, flute; grand
+  piano, harp, drum kit, cello, gramophone, tuba, tubular bells, speaker stack, mixing desk, record wall, disco ball, melody and
+  piano-key rugs...), Library (6 bookcases by subject: atlas, poetry, mystery, recipe, fairy-tale, scroll; wingback chair, card
+  catalogue, library ladder, banker's lamp, orrery, map chest, book arch, marble bust, Chesterfield sofa, a scholar's portrait...),
+  Pirate (6 flags by emblem: skull, crossed swords, anchor, kraken, Poké Ball, compass; mast, cannonballs, ship's bell, porthole (a
+  window), captain's chair, chart table, parrot perch, spyglass, ship in a bottle, wanted poster, X marks the spot...), Space (6 planet
+  models: red, ringed, banded, blue, green, moon; space suit, space window, command chair, navigation console, UFO lamp, alien plant,
+  moon rover, capsule bed, lunar lander, signal beacon...), Farm (6 produce crates: apple, carrot, corn, tomato, potato, cabbage; barn
+  doors, silo, tractor, windpump, chicken coop, corn row, farm gate, mailbox, water pump, jam shelf...) and Underwater (6 corals:
+  brain, fan, tube, staghorn, table, bubble; clam bed, kelp, sunken pillar and arch, shipwreck, diving helmet, jellyfish lamp, bubble
+  column, giant pearl, octopus beanbag, lanternfish lamp, trident...). Batch 3's `line()`, `ring()`, `wheel()` are exported for it;
+  new there: `arc()`, `globe()` (a ball painted pixel by pixel from a colour function, shaded) and a few more sign letters. Checked
+  in the browser: all 12,000 new pictures paint without an error.
