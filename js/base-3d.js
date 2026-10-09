@@ -51,6 +51,7 @@ let camX = 0, panX = 0, follow = true, last = 0, fpsLog = [];
 let mode = 'walk', blend = 0, shots = null, fitted = null, viewW = 0, viewH = 0;
 let guests = [], puffs = [], puffTex = {};
 let giftBoard = null, unwrapping = null, shopMsg = '';
+let hushed = null;   // the hint tapped away: it stays away until it says something else
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
 let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
@@ -843,7 +844,7 @@ function tray(which = tab) {
       add(ENEMY_DEFS[id].name, img, shown.includes(id), () => {
         const now = onShow().shown;
         if (now.includes(id)) { base.mons = now.filter(x => x !== id); playSound('cancel'); }
-        else if (now.length >= ON_SHOW) { playSound('cancel'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }
+        else if (now.length >= ON_SHOW) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }
         else { base.mons = [...now, id]; playSound('confirm'); }
         save(); syncGuests(); tray(); refresh();
       }, shown.includes(id) ? '✓' : '');
@@ -896,6 +897,7 @@ function recolour(id) {
 /** A wallpaper or floor you have goes straight up. One for sale goes up on approval with its price, and a second tap
     buys it; tapping anything else, another tab or Done takes it down again. */
 function paperTap(field, s) {
+  hushed = null;
   const coins = getSave().coins ?? 0;
   if (trying?.id === s.id) {
     const was = trying.was;
@@ -950,6 +952,7 @@ function refresh() {
     : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : '';
+  hud.hint.classList.toggle('hush', hud.hint.textContent === hushed);
   if (sel >= 0) {
     const g = pieceGroup.children.find(c => c.userData.index === sel), it = base.items[sel];
     const box = new THREE.Box3().setFromObject(g);
@@ -1199,6 +1202,12 @@ export async function openBase3d({ onLeave = null } = {}) {
   hud = { hint: root.querySelector('.b3-hint'), fps: null };
   if (new URLSearchParams(location.search).has('fps')) { hud.fps = root.querySelector('.b3-fps'); hud.fps.hidden = false; }
   root.querySelector('.b3-close').addEventListener('click', leave);
+  // like every window in the game, a tap anywhere else puts the cream ones away: the hint, and the present's card
+  root.addEventListener('pointerdown', (e) => {
+    const gift = root.querySelector('.b3-gift');
+    if (!gift.hidden && !gift.contains(e.target)) { gift.hidden = true; swallowClick = e.target === view; e.stopPropagation(); return refresh(); }
+    if (hud.hint.textContent && !hud.hint.classList.contains('hush')) { hushed = hud.hint.textContent; hud.hint.classList.add('hush'); }
+  }, true);
 
   try {
     THREE = await loadThree();

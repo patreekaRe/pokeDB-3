@@ -1997,5 +1997,5 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Decorate makes room to see** (2026-10-08, branch `secret-base`, the user's ask from a phone screenshot: the sheet, a
   cream hint box and the floating Turn / Colour / Cancel strip covered most of the room): a piece in hand or picked tucks
   the sheet to its hinge (the LCD says "Place Side table" / the piece, the gold pill Place or Done) and one row of round
-  keys where the tabs were; Colour brings the swatches back; the hint box only shows for the odd message; the camera
+  keys where the tabs were; Colour brings the swatches back; the hint box only shows for the odd message, and a tap anywhere puts it (or the present's card) away until it says something new (`hushed`); the camera
   glides to the new fit (`.tucked`, `easeShots()` in `js/base-3d.js`).
