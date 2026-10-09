@@ -170,18 +170,17 @@
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px; width: calc(100% - 32px); pointer-events: none;
 }
+/* every line is Animal Crossing's cream speech window (the user's call, 2026-10-09: the dark pill was too small to read) */
 .mall-line {
-  max-width: 320px; margin: 0; padding: 7px 14px; border-radius: 12px; background: #0009; color: #fff;
-  font-size: 11px; line-height: 1.6; text-align: center; opacity: 0; translate: 0 6px; transition: opacity 0.25s, translate 0.25s;
+  position: relative; max-width: 460px; width: 100%; box-sizing: border-box; margin: 0; padding: 20px 22px 18px;
+  border-radius: 30px / 26px; background: #fbf4df; color: #6a5440; font-size: 15px; line-height: 1.6; text-align: center;
+  box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005;
+  opacity: 0; translate: 0 6px; transition: opacity 0.25s, translate 0.25s;
 }
 .mall-line.on { opacity: 1; translate: 0 0; }
 .mall-who { display: none; }
-/* in the store the shopkeeper speaks: Animal Crossing's cream speech window, its name on a tilted tag */
-.mall-line.talk {
-  position: relative; max-width: 460px; width: 100%; box-sizing: border-box; margin-top: 16px; padding: 22px 22px 18px;
-  border-radius: 30px / 26px; background: #fbf4df; color: #6a5440; font-size: 15px; line-height: 1.6; text-align: left;
-  box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005;
-}
+/* in the store the shopkeeper speaks, its name on a tilted tag */
+.mall-line.talk { margin-top: 16px; padding-top: 22px; text-align: left; }
 .mall-line.talk .mall-who {
   display: block; position: absolute; left: 18px; top: -15px; padding: 7px 14px; border-radius: 999px;
   background: #f0a0b0; color: #6a2a3a; font-size: 12px; font-weight: normal; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
