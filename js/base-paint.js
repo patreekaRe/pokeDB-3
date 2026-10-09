@@ -338,8 +338,13 @@ export function plush(rows, x, y, ink, s) {
   g.restore();
 }
 
+let bare = false;
+/** Paint without floor shadows (a piece's outline for its 3D shape, js/base-mesh.js), or with them again. */
+export const setBare = (on) => { bare = on; };
+
 /** A soft shadow on the floor under an upright piece. */
 export function floorShadow(x, b, w) {
+  if (bare) return;
   const s = g.createRadialGradient(x + w / 2, b - 1.5, 0, x + w / 2, b - 1.5, w / 2);
   s.addColorStop(0, 'rgba(30,18,10,0.32)'); s.addColorStop(1, 'rgba(30,18,10,0)');
   g.save(); g.translate(0, b - 1.5); g.scale(1, 0.14); g.translate(0, -(b - 1.5));

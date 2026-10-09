@@ -6,7 +6,7 @@
 
 import { PIECES, pieceArt, furnitureStock, UPSTAIRS_PRICE } from './secret-base.js';
 import { tex, trim } from './hd2d.js';
-import { pieceModel } from './base-model.js';
+import { furnitureModel } from './base-mesh.js';
 import { fine, texOf, words, star } from './hub-3d.js';
 import { RES, HD } from './base-paint.js';
 
@@ -399,21 +399,21 @@ export function buildFloor(THREE, floor, size, upstairs) {
     slab.position.y = H / 2;
     slab.castShadow = slab.receiveShadow = true;
     bay.add(slab);
-    if (p.flat) {
+    const model = p.wall ? null : furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
+    if (model) {
+      // its 3D model (js/base-mesh.js), turned a little so its depth shows
+      const w = Math.hypot(p.w, p.h), k = Math.min(1, 1.7 / w, b.tall / model.userData.top);
+      model.scale.setScalar(k);
+      model.position.y = H;
+      model.rotation.y = b.side ? Math.PI / 2 - 0.45 : -0.45;
+      model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+      bay.add(model);
+    } else if (p.flat) {
       const k = Math.min(1, 1.6 / Math.max(p.w, p.h)), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
       const box = new THREE.Mesh(new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id, 0, HD)), alphaTest: 0.5, roughness: 0.9 }), s, s, s]);
       box.position.y = H + h / 2;
       box.castShadow = h > 0.1; box.receiveShadow = true;
       bay.add(box);
-    } else if (!p.wall) {
-      // an upright piece is its 3D model, turned a little so its depth shows
-      const model = pieceModel(THREE, id, PX, (art) => std({ map: tex(art), roughness: 1 }));
-      const w = Math.hypot(p.w, p.h), k = Math.min(1, 1.7 / w, b.tall / model.userData.top);
-      model.scale.setScalar(k);
-      model.position.y = H;
-      model.rotation.y = b.side ? Math.PI / 2 - 0.45 : -0.45;
-      model.castShadow = model.receiveShadow = true;
-      bay.add(model);
     } else {
       const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 1.7 / w, b.tall / h);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));

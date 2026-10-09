@@ -15,20 +15,22 @@ import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
-import { pieceModel } from './base-model.js';
+import { furnitureModel } from './base-mesh.js';
+import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, ownsPaper, buyPaper, paperArt } from './secret-base.js';
+  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
 const ON_SHOW = 6;         // Safari catches living in the base at once
-// kinds of piece a Pokémon climbs onto, and what it does there
+const RIDER = 0.72;        // a piece up on a table, at this size
+// kinds of piece a Pokémon climbs onto, and what it does there; any piece with a seat height (js/base-shapes.js) too
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
 
-const seatOf = (id) => SEATS[PIECES[id].seat || PIECES[id].fam];
+const seatOf = (id) => { const p = PIECES[id]; return SEATS[p.seat || p.fam] || (seatHeight(p.fam, p) ? { rest: [6000, 12000] } : null); };
 
 const LIGHT = {
   dawn: { sky: '#ffd0b8', ground: '#5a4058', amb: 1.4, sun: '#ffb48a', sunI: 2.2, at: [-9, 5, 6], lamp: 0.8, win: 0.9, shaft: 0.3, motes: 0.7, bg: '#2a2036' },
@@ -41,7 +43,7 @@ let THREE, renderer, scene, camera, root, view, hud;
 let post;
 let hemi, sun, lampLights = [], winMats = [], shafts = [], motes = [], ring;
 let roomGroup, pieceGroup, ghost, foot, selBox;
-let mon, walker = { x: 0, z: 0, path: [], facing: 'front', flip: false, hop: 0 };
+let mon, walker = { x: 0, y: 0, z: 0, path: [], facing: 'front', flip: false, hop: 0 };
 let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
@@ -172,7 +174,7 @@ function buildPieces() {
     pieceGroup.add(g);
     if (PIECES[it.id].gift) { giftBoard = g.children[0]; giftBoard.userData.y0 = giftBoard.position.y; }
     if (g.userData.lamp) lamps.push(g.userData.lamp);
-    if (PIECES[it.id].layer === 'wall' || PIECES[it.id].layer === 'rug') return;
+    if (PIECES[it.id].layer === 'wall' || PIECES[it.id].layer === 'rug' || it.up) return;
     const [fw, fh] = footprint(it);
     for (let x = 0; x < fw; x++) for (let y = 0; y < fh; y++) blocked.add(`${it.x + x},${it.y + y}`);
   });
@@ -186,8 +188,9 @@ function buildPieces() {
   setTime(true);
 }
 
-/** One piece as a group of meshes in room space. A ghost is see-through and lights nothing. */
-function makePiece(it, ghostly = false) {
+/** One piece as a group of meshes in room space. A ghost is see-through and lights nothing. A piece up on a table
+    stands at the table's top (`lift`, found from the room unless given), a little smaller. */
+function makePiece(it, ghostly = false, lift = null) {
   const p = PIECES[it.id], group = new THREE.Group();
   const see = (m) => { if (ghostly) Object.assign(m, { transparent: true, opacity: 0.6, depthWrite: false }); return m; };
   const add = (geo, mat, shadow = true) => {
@@ -208,7 +211,7 @@ function makePiece(it, ghostly = false) {
   const [fw, fh] = footprint(it);
   const cx = it.x - COLS / 2 + fw / 2, cz = it.y - ROWS / 2 + fh / 2;
 
-  if (p.flat) {
+  if (p.flat && !shapeOf(p.fam, p)) {
     const h = p.high, side = p.side;
     // alphaTest: a round rug's corners are clear, not black
     const top = new THREE.MeshStandardMaterial({ map: tex(pieceArt(it.id, 0, HD)), roughness: 0.9, alphaTest: 0.5 }), s = solid(side);
@@ -217,7 +220,7 @@ function makePiece(it, ghostly = false) {
     block.rotation.y = -it.dir * Math.PI / 2;
     return group;
   }
-  if (p.solid) {
+  if (p.solid && !shapeOf(p.fam, p)) {
     const front = trim(pieceArt(it.id, 0, HD)), behind = trim(pieceArt(it.id, 2, HD));
     const h = front.h * PX, wood = solid(p.wood);
     const face = (a) => new THREE.MeshStandardMaterial({ map: tex(a.c), roughness: 1 });
@@ -226,18 +229,26 @@ function makePiece(it, ghostly = false) {
     block.rotation.y = -it.dir * Math.PI / 2;
     return group;
   }
-  // upright pieces are 3D models carved from their paintings (js/base-model.js), turned to their facing
-  const model = pieceModel(THREE, it.id, PX, (art) => {
-    const m = new THREE.MeshStandardMaterial({ map: tex(art), roughness: 1 });
-    if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; winMats.push(m); }
-    return see(m);
+  // everything else is a real 3D model (js/base-mesh.js), turned to its facing
+  const model = furnitureModel(THREE, it.id, (art) => {
+    const m = new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 });
+    if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; }
+    return m;
   });
-  // a carved piece's rounded front is a staircase of steps: receiving shadows, each step shades the one below into bands
-  model.castShadow = !ghostly; model.receiveShadow = false;
-  model.position.set(cx, 0, cz);
-  if (model.userData.standee) standees.add(model); else model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
+  model.traverse(o => {
+    if (!o.isMesh) return;
+    o.castShadow = o.castShadow !== false && !ghostly; o.receiveShadow = !ghostly;
+    for (const m of [o.material].flat()) { see(m); if (m.userData.lamp && !ghostly) winMats.push(m); }
+  });
+  if (it.up && lift === null) { const under = base.items[surfaceUnder(it, base)]; lift = under ? surfaceOf(under.id) : 0; }
+  const k = it.up ? RIDER : 1;
+  model.scale.setScalar(k);
+  model.position.set(cx, it.up ? lift : 0, cz);
+  if (model.userData.standee) standees.add(model.userData.standee);
+  model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
   group.add(model);
-  if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.userData.top - 0.35, cz + 0.3);
+  group.userData.model = model;
+  if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.position.y + model.userData.top * k - 0.35, cz + 0.3);
   return group;
 }
 
@@ -288,10 +299,10 @@ function untry() {
   buildRoom();
 }
 
-/** Pick up a piece (from the tray, or `back` for one lifted off the floor): its ghost appears where it was, or in the
-    middle of the view. */
-function hold(id, dir = 0, back = null) {
-  holding = { id, dir, back };
+/** Pick up a piece (from the tray, or `back` for one lifted off the floor, with `riders`, what stood on it): its ghost
+    appears where it was, or in the middle of the view. What stood on it is carried along, kept where it stood. */
+function hold(id, dir = 0, back = null, riders = []) {
+  holding = { id, dir, back, riders: riders.map(r => ({ id: r.id, dir: r.dir ?? 0, dx: r.x - back.x, dy: r.y - back.y, was: r })) };
   sel = -1;
   follow = false; panX = camX;
   makeGhost();
@@ -305,6 +316,7 @@ function makeGhost() {
   if (ghost) { dispose(ghost); scene.remove(ghost); }
   const wall = PIECES[holding.id].layer === 'wall';
   ghost = makePiece(wall ? { id: holding.id, x: 0 } : { id: holding.id, x: 0, y: 0, dir: holding.dir }, true);
+  for (const r of holding.riders) ghost.add(makePiece({ id: r.id, x: r.dx, y: r.dy, dir: r.dir, up: 1 }, true, surfaceOf(holding.id)));
   scene.add(ghost);
   const [fw, fh] = wall ? [PIECES[holding.id].w, WALL_H] : footprint({ id: holding.id, dir: holding.dir });
   foot.scale.set(fw, fh, 1);
@@ -321,16 +333,34 @@ function aimFrom(nx, ny) {
   aimAt = aimTile(holding.id, holding.dir, hit.x + COLS / 2, hit.z + ROWS / 2);
 }
 
-const held = () => PIECES[holding.id].layer === 'wall' ? { id: holding.id, x: aimAt.x } : { id: holding.id, x: aimAt.x, y: aimAt.y, dir: holding.dir };
+// a small piece aimed at a table goes up on it
+const held = () => PIECES[holding.id].layer === 'wall' ? { id: holding.id, x: aimAt.x }
+  : standing({ id: holding.id, x: aimAt.x, y: aimAt.y, dir: holding.dir }, base);
+
+/** Lift a placed piece into your hand, and what stands on it with it. */
+function pickUp(it) {
+  const riders = ridersOf(it, base);
+  base.items = base.items.filter(o => o !== it && !riders.includes(o));
+  buildPieces();
+  hold(it.id, it.dir ?? 0, it, riders);
+}
+
+/** The riders' tiles turned with their table: (dx, dy) on a table fw x fh turns to (fh - 1 - dy, dx). */
+function turnRiders(riders, fw, fh) {
+  for (const r of riders) { [r.dx, r.dy] = [fh - 1 - r.dy, r.dx]; r.dir = (r.dir + 1) % 4; }
+}
 
 function showGhost() {
   if (!ghost || !aimAt) return;
   const it = held(), wall = PIECES[it.id].layer === 'wall';
-  // lifted a little, as if held, and tinted, since a ghost over a piece of the same shape would look just like it
+  // lifted a little, as if held, and tinted, since a ghost over a piece of the same shape would look just like it; up on a
+  // table it shows at the table's top and the size it will be
   ghost.position.set(it.x, wall ? 0 : 0.08, wall ? 0 : it.y);
+  const model = ghost.userData.model, under = it.up ? base.items[surfaceUnder(it, base)] : null;
+  if (model) { model.scale.setScalar(under ? RIDER : 1); model.position.y = under ? surfaceOf(under.id) - 0.06 : 0; }
   const [fw, fh] = wall ? [PIECES[it.id].w, 0] : footprint(it), ok = fits(it, -1, base);
   if (wall) foot.position.set(it.x - COLS / 2 + fw / 2, WALL_H / 2, -ROWS / 2 + 0.03);
-  else foot.position.set(it.x - COLS / 2 + fw / 2, 0.025, it.y - ROWS / 2 + fh / 2);
+  else foot.position.set(it.x - COLS / 2 + fw / 2, under ? surfaceOf(under.id) + 0.02 : 0.025, it.y - ROWS / 2 + fh / 2);
   foot.material.color.set(ok ? '#60e080' : '#ff5050');
   const tint = new THREE.Color(ok ? '#b0ffc0' : '#ff8080');
   ghost.traverse(o => { for (const m of [o.material].flat()) if (m?.color) m.color.copy(m.userData.own ??= m.color.clone()).multiply(tint); });
@@ -343,12 +373,13 @@ function place() {
   if (!fits(it, -1, base)) {
     playSound('cancel');
     // a piece dragged straight off the floor goes back where it was, rather than staying in your hand
-    if (holding.dragged) { const back = holding.back; base.items.push(back); dropHold(); sel = base.items.length - 1; buildPieces(); refresh(); }
+    if (holding.dragged) { const back = holding.back; base.items.push(back, ...holding.riders.map(r => r.was)); dropHold(); sel = base.items.indexOf(back); buildPieces(); refresh(); }
     return;
   }
-  base.items.push(it);
+  base.items.push(it, ...holding.riders.map(r => ({ id: r.id, x: it.x + r.dx, y: it.y + r.dy, dir: r.dir, up: 1 })));
+  const at = base.items.indexOf(it);
   dropHold();
-  sel = base.items.length - 1;
+  sel = at;
   playSound('confirm');
   save();
   buildPieces();
@@ -363,6 +394,7 @@ function dropHold() {
 function act(kind) {
   if (holding) {
     if (kind === 'rotate' && PIECES[holding.id].layer !== 'wall') {
+      turnRiders(holding.riders, ...footprint({ id: holding.id, dir: holding.dir }));
       holding.dir = (holding.dir + 1) % 4;
       makeGhost();
       const [fw, fh] = footprint({ id: holding.id, dir: holding.dir });
@@ -371,7 +403,7 @@ function act(kind) {
     }
     if (kind === 'paint') { tray(tab === 'colour' ? 'furniture' : 'colour'); playSound('select'); }
     if (kind === 'cancel') {
-      if (holding.back) { base.items.push(holding.back); buildPieces(); }
+      if (holding.back) { base.items.push(holding.back, ...holding.riders.map(r => r.was)); buildPieces(); }
       dropHold();
       playSound('cancel');
       if (tab === 'colour') tab = 'furniture';
@@ -381,15 +413,23 @@ function act(kind) {
   const it = base.items[sel];
   if (!it) return;
   if (kind === 'rotate') {
-    const turned = { ...it, dir: (it.dir + 1) % 4 };
+    const turned = { ...it, dir: (it.dir + 1) % 4 }, riders = ridersOf(it, base);
     const [fw, fh] = footprint(turned);
     turned.x = Math.min(turned.x, COLS - fw); turned.y = Math.min(turned.y, ROWS - fh);
-    if (fits(turned, sel, base)) { base.items[sel] = turned; save(); buildPieces(); playSound('confirm'); }
-    else playSound('cancel');
+    if (fits(turned, sel, base)) {
+      // what stands on a table turns with it
+      const moved = riders.map(r => ({ id: r.id, dir: r.dir ?? 0, dx: r.x - it.x, dy: r.y - it.y }));
+      turnRiders(moved, fh, fw);
+      base.items = base.items.filter(o => !riders.includes(o));
+      base.items[base.items.indexOf(it)] = turned;
+      base.items.push(...moved.map(r => ({ id: r.id, x: turned.x + r.dx, y: turned.y + r.dy, dir: r.dir, up: 1 })));
+      sel = base.items.indexOf(turned);
+      save(); buildPieces(); playSound('confirm');
+    } else playSound('cancel');
   }
   if (kind === 'paint') { tray(tab === 'colour' ? 'furniture' : 'colour'); playSound('select'); return refresh(); }
-  if (kind === 'move') { base.items.splice(sel, 1); buildPieces(); hold(it.id, it.dir ?? 0, it); return; }
-  if (kind === 'store') { base.items.splice(sel, 1); sel = -1; playSound('cancel'); save(); buildPieces(); }
+  if (kind === 'move') { pickUp(it); return; }
+  if (kind === 'store') { const gone = [it, ...ridersOf(it, base)]; base.items = base.items.filter(o => !gone.includes(o)); sel = -1; playSound('cancel'); save(); buildPieces(); }
   if (kind === 'done') sel = -1;
   if (sel < 0 && tab === 'colour') tab = 'furniture';
   refresh();
@@ -512,16 +552,20 @@ async function addGuest(id) {
   cheer(g, 2);
 }
 
-/** Every seat in the room (a bed, a cushion) and who's on it or heading for it. */
-function seats() {
-  const used = new Set(guests.map(g => g.w?.seat?.it).filter(Boolean));
-  return base.items.filter(it => seatOf(it.id) && !used.has(it));
+/** The places on a piece a Pokémon can sit: a bed or a cushion its middle; a chair, sofa or bench one a tile, a
+    little towards its front, at its seat's height (js/base-shapes.js). */
+function seatSpots(it) {
+  const p = PIECES[it.id], [fw, fh] = footprint(it), y = seatHeight(p.fam, p) || p.high || 0;
+  if (p.seat) return [{ x: it.x - COLS / 2 + fw / 2, z: it.y - ROWS / 2 + fh / 2, y, tile: { x: it.x + Math.floor((fw - 1) / 2), y: it.y + Math.floor((fh - 1) / 2) } }];
+  const a = -(it.dir ?? 0) * Math.PI / 2, fx = Math.sin(a) * 0.1, fz = Math.cos(a) * 0.1, out = [];
+  for (let i = 0; i < fw; i++) for (let j = 0; j < fh; j++) out.push({ x: it.x + i + 0.5 - COLS / 2 + fx, z: it.y + j + 0.5 - ROWS / 2 + fz, y, tile: { x: it.x + i, y: it.y + j } });
+  return out;
 }
 
-/** The seat's spot: the middle of its footprint, on top of it. */
-function seatSpot(it) {
-  const [fw, fh] = footprint(it);
-  return { x: it.x - COLS / 2 + fw / 2, z: it.y - ROWS / 2 + fh / 2, y: PIECES[it.id].high, tile: { x: it.x + Math.floor((fw - 1) / 2), y: it.y + Math.floor((fh - 1) / 2) } };
+/** Every free place to sit in the room: { it, k } for spot k of piece it, none someone's on or heading for. */
+function seats() {
+  const used = new Set([walker, ...guests.map(g => g.w)].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
+  return base.items.flatMap((it, i) => seatOf(it.id) ? seatSpots(it).map((_, k) => ({ it, k })).filter(s => !used.has(`${i}:${s.k}`)) : []);
 }
 
 const nextTo = (t, it) => {
@@ -532,9 +576,59 @@ const nextTo = (t, it) => {
 
 /** A hop from where it is to (x, y, z) over `ms`, then `then()`. */
 function leap(w, to, ms, then) {
-  w.jump = { from: { x: w.x, y: w.y, z: w.z }, to, t0: performance.now(), ms, then };
+  w.jump = { from: { x: w.x, y: w.y ?? 0, z: w.z }, to, t0: performance.now(), ms, then };
   if (Math.abs(to.x - w.x) > 0.05) w.flip = to.x > w.x;
   w.facing = 'front';
+}
+
+/** A hop under way, a frame of it; false when there's none. */
+function hopping(w, now) {
+  const j = w.jump;
+  if (!j) return false;
+  const k = Math.min(1, (now - j.t0) / j.ms);
+  w.x = j.from.x + (j.to.x - j.from.x) * k; w.z = j.from.z + (j.to.z - j.from.z) * k;
+  w.y = j.from.y + (j.to.y - j.from.y) * k + (calm ? 0 : Math.sin(k * Math.PI) * 0.45);
+  if (k >= 1) { w.jump = null; w.y = j.to.y; j.then?.(); }
+  return true;
+}
+
+/* Your partner sits where you tap (the user's ask, 2026-10-09): a tap on a chair, sofa, bench, bed or cushion walks it
+   there and up it hops; a tap on the floor gets it down and walking. */
+
+/** Walk your partner to a seat on `it` (the free spot nearest it) and sit; false if there's none or no way there. */
+function sitPartner(it) {
+  const free = seats().filter(s => s.it === it);
+  if (!free.length) return false;
+  const spots = seatSpots(it), dist = (s) => Math.hypot(spots[s.k].x - walker.x, spots[s.k].z - walker.z);
+  const { k } = free.sort((a, b) => dist(a) - dist(b))[0], spot = spots[k];
+  const go = () => {
+    const path = route(walker.tile, spot.tile), end = path.at(-1) ?? walker.tile;
+    if (!nextTo(end, it)) return;
+    walker.path = path; walker.goal = it; walker.seatTo = { it, k, ...spot };
+    if (!path.length) partnerUp();
+  };
+  follow = true;
+  if (walker.seat) getUp(go); else go();
+  playSound('confirm');
+  return true;
+}
+
+/** Up onto the seat it walked to, if it's still there. */
+function partnerUp() {
+  const to = walker.seatTo, it = walker.goal;
+  walker.goal = null;
+  if (!to || !base.items.includes(it) || !nextTo(walker.tile, it)) { walker.seatTo = null; return; }
+  walker.from = walker.tile;
+  leap(walker, { x: to.x, y: to.y, z: to.z }, 450, () => { walker.seat = to; walker.seatTo = null; });
+}
+
+/** Down off its seat to where it climbed up from (or the nearest free tile), then `then()`. */
+function getUp(then) {
+  const s = walker.seat;
+  if (!s) return then?.();
+  walker.seat = null;
+  const down = walker.from && !blocked.has(key(walker.from.x, walker.from.y)) ? walker.from : nearestFree(s.tile);
+  leap(walker, { x: tileX(down.x), y: 0, z: tileZ(down.y) }, 380, () => { walker.tile = down; then?.(); });
 }
 
 /** A guest with nothing to do picks something: off its seat when its rest is up, onto a free seat now and then, or a
@@ -549,10 +643,10 @@ function think(g, now) {
     return;
   }
   const free = seats();
-  if (free.length && Math.random() < 0.3) {
-    const it = free[Math.floor(Math.random() * free.length)], spot = seatSpot(it);
+  if (free.length && Math.random() < 0.35) {
+    const { it, k } = free[Math.floor(Math.random() * free.length)], spot = seatSpots(it)[k];
     const path = route(w.tile, spot.tile), end = path.at(-1) ?? w.tile;
-    if (nextTo(end, it)) { w.path = path; w.goal = it; w.seat = { it, ...spot }; if (!path.length) climb(w, now); return; }
+    if (nextTo(end, it)) { w.path = path; w.goal = it; w.seat = { it, k, ...spot }; if (!path.length) climb(w, now); return; }
   }
   const near = freeTiles(w).filter(t => { const d = Math.abs(t.x - w.tile.x) + Math.abs(t.y - w.tile.y); return d > 0 && d <= 4; });
   if (near.length) w.path = route(w.tile, near[Math.floor(Math.random() * near.length)]);
@@ -575,6 +669,12 @@ function climb(w, now) {
 
 /** After the furniture changes: anyone on a seat that went comes down, walks are forgotten, and no one stands in a piece. */
 function settleGuests() {
+  // your partner off a seat that went or moved
+  if (walker.seat && !base.items.includes(walker.seat.it)) {
+    const down = nearestFree(walker.seat.tile);
+    Object.assign(walker, { seat: null, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
+  }
+  if (walker.goal) { walker.goal = null; walker.seatTo = null; walker.path = []; }
   for (const { w } of guests) {
     if (!w || w.jump) continue;
     if (w.goal) { w.goal = null; w.seat = null; }
@@ -592,17 +692,14 @@ function settleGuests() {
 
 function liveGuest(g, dt, now) {
   const { w, mon: m } = g;
-  if (w.jump) {
-    const j = w.jump, k = Math.min(1, (now - j.t0) / j.ms);
-    w.x = j.from.x + (j.to.x - j.from.x) * k; w.z = j.from.z + (j.to.z - j.from.z) * k;
-    w.y = j.from.y + (j.to.y - j.from.y) * k + (calm ? 0 : Math.sin(k * Math.PI) * 0.45);
-    if (k >= 1) { w.jump = null; w.y = j.to.y; j.then?.(); }
+  if (hopping(w, now)) {
+    // mid-hop
   } else if (w.path.length) {
     if (walk(w, m, dt, 2.2) && w.goal) climb(w, now);
   } else if (now > w.think) think(g, now);
   if (w.sleeping && now > w.nextZ) { w.nextZ = now + 1400; puff('z', w, m); }
-  const hopping = w.hopUntil > now;
-  const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : hopping ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
+  const happy = w.hopUntil > now;
+  const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : happy ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   m.group.position.set(w.x, w.y, w.z);
   m.board.position.y = bob;
   m.board.scale.x = w.flip ? -1 : 1;
@@ -718,9 +815,7 @@ function onMove(e) {
   if (grab && Math.hypot(e.clientX - grab.x, e.clientY - grab.y) > 10) {
     const it = base.items[grab.i];
     grab = null;
-    base.items.splice(base.items.indexOf(it), 1);
-    buildPieces();
-    hold(it.id, it.dir ?? 0, it);
+    pickUp(it);
     holding.dragged = true;
     pressing = true;
     playSound('confirm');
@@ -764,6 +859,10 @@ function onTap(e) {
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;
   if (g && g.parent === pieceGroup && PIECES[base.items[g.userData.index].id].gift) return unwrap(g.userData.index);
+  if (mode !== 'edit' && g && g.parent === pieceGroup) {
+    const it = base.items[g.userData.index];
+    if (seatOf(it.id) && sitPartner(it)) return;
+  }
   if (mode === 'edit' && g && g.parent === pieceGroup) {
     // a second tap on the picked piece turns it
     if (sel === g.userData.index) return PIECES[base.items[sel].id].layer === 'wall' ? undefined : act('rotate');
@@ -776,11 +875,15 @@ function onTap(e) {
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
   if (!inRoom(to)) return;
-  walker.path = route(walker.tile, to);
+  const go = () => {
+    walker.path = route(walker.tile, to);
+    const end = walker.path.at(-1) ?? walker.tile;
+    ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
+    ring.material.opacity = 0.9;
+  };
   follow = true;
-  const end = walker.path.at(-1) ?? walker.tile;
-  ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
-  ring.material.opacity = 0.9;
+  walker.goal = null; walker.seatTo = null;
+  if (walker.seat) getUp(go); else if (!walker.jump) go();
   playSound('confirm');
 }
 
@@ -1090,10 +1193,10 @@ function frame(now) {
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
 
-  walk(walker, mon, dt);
-  const hopping = walker.hopUntil > now;
-  const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, 0, walker.z);
+  if (!hopping(walker, now) && walk(walker, mon, dt) && walker.goal) partnerUp();
+  const happy = walker.hopUntil > now;
+  const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
+  mon.group.position.set(walker.x, walker.y ?? 0, walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
@@ -1237,7 +1340,8 @@ export async function openBase3d({ onLeave = null } = {}) {
   roomGroup = new THREE.Group(); pieceGroup = new THREE.Group();
   scene.add(ring, foot, selBox, roomGroup, pieceGroup);
 
-  post = createPost(renderer);
+  // the furniture is smooth 3D: a sharper scene, scaled up smoothly, not in whole pixels
+  post = createPost(renderer, { short: 820, crisp: false });
   base = loadBase();
   buildRoom();
   buildPieces();

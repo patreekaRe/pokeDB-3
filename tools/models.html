@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Furniture models</title>
+<style>
+  body { margin: 0; padding: 16px; background: #fbf6ea; color: #2a2a3a; font: 13px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .bar { position: sticky; top: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; background: #fbf6ea; z-index: 1; }
+  .bar button { border: 0; border-radius: 999px; padding: 6px 10px; background: #efe6d2; cursor: pointer; }
+  .bar button.on { background: #d84848; color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1.5px #e6dcc6; cursor: pointer; }
+  .tile canvas { width: 140px; height: 140px; }
+  body.pinned .grid { grid-template-columns: repeat(4, 1fr); }
+  body.pinned .tile canvas { width: 100%; height: auto; }
+  body.pinned .bar, body.pinned .tile b, body.pinned .tile small { display: none; }
+  .tile b { font-weight: 600; font-size: 11px; text-align: center; }
+  .tile small { color: #9a8e78; }
+  #big { position: fixed; inset: 0; background: #000a; display: grid; place-items: center; }
+  #big[hidden] { display: none; }
+  #big canvas { width: min(92vw, 640px); height: min(92vw, 640px); border-radius: 16px; background: #fbf6ea; }
+</style>
+</head>
+<body>
+<h1>Secret Base furniture, as 3D models</h1>
+<p>Each kind as the room builds it (js/base-mesh.js). Tap one to turn it. <span id="count"></span></p>
+<div class="bar" id="shelf"></div>
+<div class="bar" id="theme"></div>
+<div class="grid" id="grid"></div>
+<div id="big" hidden><canvas></canvas></div>
+<script type="module">
+import { loadThree, tex } from '../js/hd2d.js';
+import { PIECES, THEMES, FAMILIES } from '../js/base-furniture.js';
+import { furnitureModel } from '../js/base-mesh.js';
+import { shapeOf } from '../js/base-shapes.js';
+
+const THREE = await loadThree();
+const GROUPS = ['Shaped', ...new Set(FAMILIES.map(f => f.group))];
+const q = new URLSearchParams(location.search);
+let shelf = q.get('shelf') || 'Shaped', theme = q.get('theme') || 'classic';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true;
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight('#ffffff', '#7a6a5a', 1.6));
+const sun = new THREE.DirectionalLight('#fff2dc', 2.6);
+sun.position.set(-4, 9, 6); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 });
+scene.add(sun);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(3, 40), new THREE.MeshStandardMaterial({ color: '#e8dcc0' }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+scene.add(floor);
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+const paint = (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 1 });
+
+function model(id) {
+  const p = PIECES[id], g = furnitureModel(THREE, id, paint) || new THREE.Mesh(new THREE.BoxGeometry(p.w, p.high || 0.05, p.h), paint(p.art(0, 4)));
+  if (g.isMesh) g.position.y = (p.high || 0.05) / 2;
+  return g;
+}
+function shoot(g, angle, size) {
+  renderer.setSize(size, size, false);
+  const box = new THREE.Box3().setFromObject(g), r = Math.max(1.2, box.getSize(new THREE.Vector3()).length() * 0.62);
+  g.rotation.y = angle;
+  scene.add(g);
+  const y = box.max.y / 2;
+  camera.position.set(Math.sin(0.5) * r * 3.2, y + r * 1.6, Math.cos(0.5) * r * 3.2);
+  camera.lookAt(0, y, 0);
+  renderer.render(scene, camera);
+  scene.remove(g);
+}
+const pinned = q.get('ids')?.split(',');
+const ids = () => pinned ? pinned.flatMap(id => (q.has('one') ? [1] : [0, 1, 2, 3]).map(a => `${id}@${a}`)) : FAMILIES.filter(f => shelf === 'Shaped' ? shapeOf(f.id, PIECES[f.id]) : f.group === shelf)
+  .map(f => theme === 'classic' || f.solo ? f.id : `${f.id}-${theme}`).filter(id => PIECES[id] && !PIECES[id].wall);
+
+function draw() {
+  bar('shelf', GROUPS.map(g => [g, g]), shelf, (v) => { shelf = v; draw(); });
+  bar('theme', THEMES.map(t => [t.id, t.name || 'Classic']), theme, (v) => { theme = v; draw(); });
+  const grid = document.getElementById('grid'), list = ids();
+  document.getElementById('count').textContent = `${list.length} pieces.`;
+  grid.replaceChildren();
+  for (const id of list) {
+    const tile = Object.assign(document.createElement('div'), { className: 'tile' }), c = document.createElement('canvas');
+    c.width = c.height = 280;
+    const [pid, turn] = id.split('@');
+    try { const g = model(pid); shoot(g, (+turn || 0) * Math.PI / 2 * (pinned ? 0.75 : 0), 280); c.getContext('2d').drawImage(renderer.domElement, 0, 0); }
+    catch (e) { console.error(id, e); }
+    tile.append(c, Object.assign(document.createElement('b'), { textContent: PIECES[pid].name }), Object.assign(document.createElement('small'), { textContent: id }));
+    tile.onclick = () => spin(pid);
+    grid.append(tile);
+  }
+}
+function bar(el, list, on, set) {
+  document.getElementById(el).replaceChildren(...list.map(([id, label]) => Object.assign(document.createElement('button'), {
+    textContent: label, className: id === on ? 'on' : '', onclick: () => set(id),
+  })));
+}
+let spinning = null;
+function spin(id) {
+  const big = document.getElementById('big'), c = big.querySelector('canvas'), g = model(id);
+  big.hidden = false;
+  const t0 = performance.now();
+  const loop = (now) => {
+    if (spinning !== loop) return;
+    shoot(g, (now - t0) / 1600, 640);
+    c.getContext('2d').drawImage(renderer.domElement, 0, 0, c.width = c.height = 640, 640);
+    requestAnimationFrame(loop);
+  };
+  spinning = loop;
+  requestAnimationFrame(loop);
+  big.onclick = () => { spinning = null; big.hidden = true; };
+}
+if (pinned) document.body.classList.add('pinned');
+draw();
+</script>
+</body>
+</html>

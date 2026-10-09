@@ -11,6 +11,7 @@ import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
+import { surfaceHeight, seatHeight } from './base-shapes.js';
 
 const T = 16, COLS = 11, ROWS = 8, WALL = 48;
 const W = COLS * T, H = WALL + ROWS * T;
@@ -68,6 +69,38 @@ const freshBase = (mons) => ({
 });
 
 export { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
+
+/* Things on tables (the user's ask, 2026-10-09): a piece with a `top` (js/base-shapes.js: tables, desks, counters,
+   dressers) holds small pieces on its tiles, one a tile. Such a piece is saved with `up: 1` on the tile it stands on;
+   the table under it is whatever covers that tile, so nothing else is saved, and moving or storing the table takes what
+   stands on it along (js/base-3d.js). */
+
+/** The height in tiles of a piece's top that small pieces can stand on, or 0. */
+export const surfaceOf = (id) => surfaceHeight(PIECES[id].fam, PIECES[id]);
+
+const heights = new Map();
+/** Whether a piece is small enough to stand on a table: one tile, upright, no seat or table itself, and painted under
+    2 tiles tall (a lamp, a potted plant, a doll, a radio; not a floor lamp or a fridge). */
+export function small(id) {
+  const p = PIECES[id];
+  if (!p?.upright || p.w !== 1 || p.h !== 1 || p.solid || p.gift || seatHeight(p.fam, p) || surfaceOf(id)) return false;
+  if (!heights.has(p.fam)) {
+    const a = p.art(0, 1, true), d = a.getContext('2d').getImageData(0, 0, a.width, a.height).data;
+    let top = a.height;
+    for (let i = 3; i < d.length; i += 4) if (d[i] > 128) { top = Math.floor((i >> 2) / a.width); break; }
+    heights.set(p.fam, (a.height - top) / (T * RES));
+  }
+  return heights.get(p.fam) <= 2;
+}
+
+/** The table (its index in the room) whose top covers a piece's tile, or -1. */
+export const surfaceUnder = (it, b) => b.items.findIndex(o => !o.up && o.y !== undefined && surfaceOf(o.id) && cells(o).includes(`${it.x},${it.y}`));
+
+/** What stands on a table: the pieces up on its tiles. */
+export const ridersOf = (it, b) => { const mine = new Set(cells(it)); return b.items.filter(o => o.up && o !== it && mine.has(`${o.x},${o.y}`)); };
+
+/** A placed piece's spot for `it` at a tile: up on a table if it's small and a table is there. */
+export const standing = (it, b) => small(it.id) && surfaceUnder(it, b) >= 0 ? { ...it, up: 1 } : (({ up, ...rest }) => rest)(it);
 /** The saved room, or the first one. A room from before furniture was owned (v 1, when every piece was free) starts
     over as the first room, keeping its Pokémon: only playtests of the unreleased branch made those. `?basefresh` does
     the same on purpose. */
@@ -263,8 +296,10 @@ function paintPiece(it, alpha = 1) {
     g.restore();
     if (p.layer !== 'rug') R(x + 1, y + fh * T - 2, fw * T - 2, 2, '#00000040');   // its side, so it stands off the floor
   } else {
-    const art = p.art(it.dir);
-    g.drawImage(art, x, y + fh * T - art.height / RES, art.width / RES, art.height / RES);
+    // up on a table it stands on the table's top, a little smaller
+    const art = p.art(it.dir), under = it.up ? base.items[surfaceUnder(it, base)] : null, k = under ? 0.75 : 1;
+    const lift = under ? surfaceOf(under.id) * T : 0, w = art.width / RES * k, h = art.height / RES * k;
+    g.drawImage(art, x + (fw * T - w) / 2, y + fh * T - h - lift, w, h);
   }
   g.globalAlpha = 1;
 }
@@ -275,7 +310,7 @@ function paint() {
   paintWall();
   paintFloor();
   const order = base.items.map((it, i) => ({ it, i }));
-  const rank = ({ it }) => PIECES[it.id].layer === 'wall' ? -2 : PIECES[it.id].layer === 'rug' ? -1 : it.y + footprint(it)[1];
+  const rank = ({ it }) => PIECES[it.id].layer === 'wall' ? -2 : PIECES[it.id].layer === 'rug' ? -1 : it.y + footprint(it)[1] + (it.up ? 0.5 : 0);
   order.sort((a, b) => rank(a) - rank(b));
   for (const { it } of order) paintPiece(it);
   if (sel >= 0) outline(base.items[sel], '#ffe060');
@@ -299,11 +334,16 @@ const cells = (it) => { const [fw, fh] = footprint(it), out = []; for (let i = 0
 function fits(it, skip = -1, b = base) {
   const p = PIECES[it.id], [fw, fh] = footprint(it);
   if (it.x < 0 || it.x + fw > COLS) return false;
+  if (it.up) {
+    // on a table: a small piece, a table under it, and nothing else up on that tile
+    if (!small(it.id) || surfaceUnder(it, b) < 0) return false;
+    return b.items.every((o, i) => i === skip || !o.up || o.x !== it.x || o.y !== it.y);
+  }
   if (p.layer === 'wall') return b.items.every((o, i) => i === skip || PIECES[o.id].layer !== 'wall' || o.x + PIECES[o.id].w <= it.x || it.x + fw <= o.x);
   if (it.y < 0 || it.y + fh > ROWS) return false;
   const mine = new Set(cells(it)), rug = p.layer === 'rug';
   return b.items.every((o, i) => {
-    if (i === skip || PIECES[o.id].layer === 'wall' || (PIECES[o.id].layer === 'rug') !== rug) return true;
+    if (i === skip || o.up || PIECES[o.id].layer === 'wall' || (PIECES[o.id].layer === 'rug') !== rug) return true;
     return !cells(o).some(c => mine.has(c));
   });
 }
@@ -337,10 +377,10 @@ function local(e) {
 function onTap(e) {
   const [lx, ly] = local(e);
   if (holding) {
-    const it = { ...holding, ...aim(holding.id, holding.dir, lx, ly) };
+    const it = standing({ ...holding, ...aim(holding.id, holding.dir, lx, ly) }, base);
     if (!fits(it)) { ghost = aim(holding.id, holding.dir, lx, ly); playSound('cancel'); clearTimeout(badGhost); badGhost = setTimeout(() => { ghost = null; paint(); }, 600); paint(); return; }
     delete it.back;
-    base.items.push(PIECES[it.id].layer === 'wall' ? { id: it.id, x: it.x } : { id: it.id, x: it.x, y: it.y, dir: it.dir });
+    base.items.push(PIECES[it.id].layer === 'wall' ? { id: it.id, x: it.x } : { id: it.id, x: it.x, y: it.y, dir: it.dir, ...(it.up ? { up: 1 } : {}) });
     holding = null; ghost = null;
     sel = base.items.length - 1;
     playSound('confirm');
@@ -371,7 +411,7 @@ function act(kind) {
     else playSound('cancel');
   }
   if (kind === 'move') { holding = { ...it, back: it }; base.items.splice(sel, 1); sel = -1; ghost = null; }
-  if (kind === 'store') { base.items.splice(sel, 1); sel = -1; playSound('cancel'); save(); }
+  if (kind === 'store') { const gone = [it, ...ridersOf(it, base)]; base.items = base.items.filter(o => !gone.includes(o)); sel = -1; playSound('cancel'); save(); }
   if (kind === 'done') sel = -1;
   refresh();
 }

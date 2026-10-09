@@ -23,7 +23,7 @@ const pixels = (c) => c.getContext('2d').getImageData(0, 0, c.width, c.height).d
 const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
 
 /** A canvas mirrored left to right. */
-function mirror(src) {
+export function mirror(src) {
   const c = new OffscreenCanvas(src.width, src.height), g = c.getContext('2d');
   g.translate(src.width, 0); g.scale(-1, 1); g.drawImage(src, 0, 0);
   return c;
@@ -31,7 +31,7 @@ function mirror(src) {
 
 /** A painting with every clear pixel filled from its nearest painted one, so a face can sample anywhere on it. `under`
     (a canvas the same size, or none) is laid beneath first, for a back or side painted narrower than the model. */
-function filled(src, under) {
+export function filled(src, under) {
   const w = src.width, h = src.height, c = new OffscreenCanvas(w, h), g = c.getContext('2d');
   if (under) g.drawImage(under, 0, 0);
   g.drawImage(src, 0, 0);

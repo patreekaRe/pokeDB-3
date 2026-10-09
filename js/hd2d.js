@@ -62,7 +62,8 @@ export function trim(src) {
 export function dispose(group) {
   group.traverse(o => {
     o.geometry?.dispose();
-    for (const m of [o.material].flat()) if (m) { m.map?.dispose(); m.emissiveMap?.dispose(); m.dispose(); }
+    // shared textures (js/base-mesh.js's grain and weave) are marked `keep` and outlive the room
+    for (const m of [o.material].flat()) if (m) { if (!m.map?.userData.keep) m.map?.dispose(); if (!m.emissiveMap?.userData.keep) m.emissiveMap?.dispose(); m.dispose(); }
   });
   group.clear();
 }
@@ -149,7 +150,9 @@ const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(posit
 
 /** The pass chain for one renderer: `size(w, h)` on every resize, then `draw(scene, camera, focusY)` each frame, focusY
     being where the sharp band sits (0 the bottom of the view, 1 the top). */
-export function createPost(renderer) {
+/** `short`: the scene's size on its short side before scaling up; `crisp` scales up in whole pixels, else smoothly with
+    4x multisampling (the Secret Base's smooth furniture, 2026-10-09). */
+export function createPost(renderer, { short = 420, crisp = true } = {}) {
   const bright = new THREE.ShaderMaterial({
     uniforms: { tScene: { value: null }, uCut: { value: 0.9 } },
     vertexShader: VERT,
@@ -168,14 +171,14 @@ export function createPost(renderer) {
   });
   const final = new THREE.ShaderMaterial({
     uniforms: {
-      tScene: { value: null }, tBloom: { value: null }, uRes: { value: new THREE.Vector2() },
+      tScene: { value: null }, tBloom: { value: null }, uRes: { value: new THREE.Vector2() }, uCrisp: { value: crisp ? 1 : 0 },
       uFocus: { value: 0.5 }, uBand: { value: 0.16 }, uBlur: { value: 5 }, uBloom: { value: 0.75 },
     },
     vertexShader: VERT,
     fragmentShader: `uniform sampler2D tScene; uniform sampler2D tBloom; uniform vec2 uRes;
-      uniform float uFocus; uniform float uBand; uniform float uBlur; uniform float uBloom; varying vec2 vUv;
+      uniform float uFocus; uniform float uBand; uniform float uBlur; uniform float uBloom; uniform float uCrisp; varying vec2 vUv;
       void main() {
-        vec2 px = (floor(vUv * uRes) + 0.5) / uRes;
+        vec2 px = uCrisp > 0.5 ? (floor(vUv * uRes) + 0.5) / uRes : vUv;
         vec3 c = texture2D(tScene, px).rgb;
         float d = clamp((abs(vUv.y - uFocus) - uBand) / (0.5 - uBand), 0.0, 1.0);
         float r = d * d * uBlur;
@@ -203,11 +206,11 @@ export function createPost(renderer) {
   return {
     final,
     size(w, h) {
-      // a small scene, scaled up with crisp pixels: about 420 px on the short side
-      const k = Math.min(1, 420 / Math.min(w, h));
+      // a small scene, scaled up: about `short` px on the short side
+      const k = Math.min(1, short / Math.min(w, h));
       const sw = Math.round(w * k), sh = Math.round(h * k);
       rt?.dispose(); bloomA?.dispose(); bloomB?.dispose();
-      rt = new THREE.WebGLRenderTarget(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, samples: 0 });
+      rt = new THREE.WebGLRenderTarget(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, samples: crisp ? 0 : 4 });
       rt.texture.colorSpace = THREE.SRGBColorSpace;
       const bw = Math.max(1, sw >> 1), bh = Math.max(1, sh >> 1);
       bloomA = new THREE.WebGLRenderTarget(bw, bh);

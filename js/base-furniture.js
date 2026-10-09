@@ -18,7 +18,7 @@ import { ROOM_KINDS_3 } from './base-furniture-rooms3.js';
 import { ROOM_KINDS_4 } from './base-furniture-rooms4.js';
 import { ROOM_KINDS_5 } from './base-furniture-rooms5.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
-  floorShadow, paintWith, finish, FT, WALL_PX, HEAD } from './base-paint.js';
+  floorShadow, paintWith, finish, setBare, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
 
 const T = 16;
@@ -368,16 +368,17 @@ function makePiece(fam, theme) {
   const pal = theme || THEMES[0];
   const p = {
     name: theme ? `${theme.name} ${noun(fam)}` : fam.name,
-    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: fam.price,
+    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: fam.price, pal,
   };
   if (fam.layer) p.layer = fam.layer;
   if (fam.flat) { p.flat = true; p.high = fam.high; p.side = sh(pal[fam.side] || pal.w, -1); }
   if (fam.wall) p.wall = true;
   if (fam.draw) p.upright = true;
   const cache = new Map();
-  /** Its picture at a facing, `s` canvas pixels a painted unit (1 for the carving and the 2D room, HD for textures). */
-  p.art = (dir = 0, s = 1) => {
-    const key = (fam.flat || fam.wall ? 0 : dir) + (fam.sky || fam.id === 'window' ? timeOfDay() : '');
+  /** Its picture at a facing, `s` canvas pixels a painted unit (1 for the carving and the 2D room, HD for textures);
+      `bare` leaves out its floor shadow, for reading its outline. */
+  p.art = (dir = 0, s = 1, bare = false) => {
+    const key = (fam.flat || fam.wall ? 0 : dir) + (fam.sky || fam.id === 'window' ? timeOfDay() : '') + (bare ? 'b' : '');
     const store = s === 1 ? cache : FINE, at = s === 1 ? key : `${fam.id}-${pal.id}|${key}|${s}`;
     if (store.has(at)) { const c = store.get(at); if (s !== 1) { store.delete(at); store.set(at, c); } return c; }
     let c, w, h, paint;
@@ -391,7 +392,8 @@ function makePiece(fam, theme) {
     c.hd = s;
     const ctx = c.getContext('2d');
     ctx.scale(s, s);
-    paintWith(ctx, pal, paint);
+    setBare(bare);
+    try { paintWith(ctx, pal, paint); } finally { setBare(false); }
     finish(c, { outline: !fam.flat });
     store.set(at, c);
     if (FINE.size > FINE_KEEP) FINE.delete(FINE.keys().next().value);

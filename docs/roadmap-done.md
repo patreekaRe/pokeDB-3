@@ -1999,3 +1999,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   the sheet to its hinge, round keys where the tabs were and the gold pill Place or Done (the hinge one line since,
   no tab-name or coin LCDs, the user's call); Colour brings the swatches back; the hint box only shows for the odd message, and a tap anywhere puts it (or the present's card) away until it says something new (`hushed`); the camera
   glides to the new fit (`.tucked`, `easeShots()` in `js/base-3d.js`).
+- **Real 3D furniture, things on tables, Pokémon on seats** (2026-10-09, branch `secret-base`, the user's ask: "go above
+  and beyond and use three.js", some pieces had no side or didn't turn, sofas blocky): `js/base-mesh.js` models every
+  piece in Three.js (~150 kinds from parts per `js/base-shapes.js`, the rest lathed or as rounded hulls of their
+  paintings), small pieces stand on table tops and travel with them, guests and your partner sit on chairs, sofas,
+  benches, beds and cushions, and the room renders sharp and antialiased. `tools/models.html` previews them all.
