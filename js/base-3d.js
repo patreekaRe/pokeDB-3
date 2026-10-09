@@ -10,7 +10,6 @@
 import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
-import { smoothIcon } from './smooth-icons.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
@@ -778,7 +777,6 @@ function onTap(e) {
 
 /* ---------- the sheet ---------- */
 
-const TAB_NAME = { colour: 'Colours', furniture: 'Furniture', wall: 'Wallpaper', floor: 'Floor', mons: 'Pokémon' };
 // white line art, like the round keys' (js/smooth-icons.js)
 const GLYPHS = {
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-width="2.6"/>',
@@ -805,7 +803,6 @@ function tray(which = tab) {
     e.target.prepend(e.target.paint()); e.target.paint = null; lazy.unobserve(e.target);
   }), { root: list, rootMargin: '200px' });
   root.querySelectorAll('.b3-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  root.querySelector('.b3-title').textContent = TAB_NAME[tab];
   const add = (label, art, on, pick, tag = '') => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'b3-tile' + (on ? ' on' : '');
@@ -937,10 +934,6 @@ function refresh() {
     if (a === 'paint') b.classList.toggle('on', tab === 'colour');
   });
   const mons = onShow();
-  // the LCD: how many Pokémon are out on their tab, else your PokéCoins
-  const count = root.querySelector('.b3-count');
-  if (tab === 'mons') count.replaceChildren(mons.all.length ? `On show ${mons.shown.length}/${ON_SHOW}` : 'No catches yet');
-  else count.replaceChildren(smoothIcon('coin', 'hbar-coin'), (getSave().coins ?? 0).toLocaleString());
   const tip = mode === 'walk' && giftBoard && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip);
   // with a piece in hand or picked the hinge's LCD says what's going on, and nothing covers the room
@@ -965,8 +958,6 @@ function refresh() {
     selBox.visible = true;
   } else selBox.visible = false;
   if (tab === 'furniture' || tab === 'colour') tray();
-  const pid = holding?.id ?? base.items[sel]?.id;
-  root.querySelector('.b3-title').textContent = holding ? `Place ${PIECES[pid].name}` : busy ? PIECES[pid].name : TAB_NAME[tab];
   root.querySelector('.b3-ok').textContent = holding ? 'Place' : 'Done';
 }
 
@@ -1181,18 +1172,15 @@ export async function openBase3d({ onLeave = null } = {}) {
     </div>
     <div class="b3-sheet">
       <div class="room-hinge b3-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
-        <div class="room-sign b3-sign" aria-live="polite"><b class="b3-title"></b></div>
-        <button type="button" class="room-ok b3-ok">Done</button></div>
-      <div class="room-row b3-row">
         <nav class="b3-tabs">
           ${[['furniture', 'Furniture', 'sofa'], ['wall', 'Wallpaper', 'roller'], ['floor', 'Floor', 'floor'], ['mons', 'Pokémon', 'ball']]
             .map(([id, name, g]) => `<button type="button" class="b3-tab" data-tab="${id}" title="${name}" aria-label="${name}"><span class="round-key">${glyph(g)}</span></button>`).join('')}
         </nav>
-        <div class="room-lcd b3-lcd"><span class="b3-count"></span></div>
         <div class="b3-acts" hidden>
           ${[['rotate', 'Turn'], ['paint', 'Colour'], ['store', 'Store'], ['cancel', 'Cancel']]
             .map(([act, name]) => `<button type="button" class="b3-act" data-act="${act}" title="${name}" aria-label="${name}"><span class="round-key">${glyph(act === 'cancel' ? 'close' : act)}</span></button>`).join('')}
         </div>
+        <button type="button" class="room-ok b3-ok">Done</button>
       </div>
       <div class="b3-filters" hidden></div>
       <div class="b3-screen"><div class="b3-strip"></div></div>
