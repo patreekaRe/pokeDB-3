@@ -15,9 +15,9 @@
 .title-screen.hub-on .title-big { font-size: clamp(2.2rem, 10vw, 4.4rem); }
 
 
-/* the bottom bar, the rooms Pokédex bar (#room-bar, the user's pick, 2026-10-08): on the hinge the place's name on an LCD
-   alone (no gold pill, the user's call); under it Home (the Pokédex grows out of it), round keys for the rest, the PokéCoins on an LCD
-   (js/hub-3d.js's placeBar()). The parts are the room bar's own classes */
+/* the bottom bar, the rooms Pokédex bar (#room-bar, the user's pick, 2026-10-08), the place's name on an LCD (no gold
+   pill, the user's call); under it a saved run's LCD that folds away without one (js/hub-3d.js's placeBar()). The parts
+   are the room bar's own classes */
 .hub-bar {
   position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: min(100%, 520px); box-sizing: border-box;
   display: flex; flex-direction: column; gap: 6px; padding: 6px 10px max(8px, env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
@@ -27,27 +27,52 @@
 @keyframes hubBarIn { from { translate: -50% 100%; } }
 .hbar-pop { animation: hbarPop 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
 @keyframes hbarPop { from { opacity: 0; scale: 0.85; } }
-.hbar-keys { display: contents; }
-.hub-bar .room-home .round-key { width: 38px; height: 38px; }
-/* the LCD: a saved run's HP and its Escape Rope (battle's running figure), then the PokéCoins on their own */
-.hbar-lcd { gap: 6px; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
-.hbar-run { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
-.hbar-run[hidden] { display: none; }
+/* one line along the hinge (the user's layout, 2026-10-09): lens, lights, small Home and How to play, the coins' LCD,
+   the place's LCD on the right */
+.hub-bar { gap: 0; }
+.hub-bar .room-hinge { gap: 7px; padding-bottom: 2px; }
+.hub-bar .room-keys { gap: 4px; }
+.hub-bar .room-home { width: 34px; min-height: 34px; }
+.hub-bar .room-home :is(.round-key, .home-key) { width: 32px; height: 32px; }
+.hub-bar .room-home svg { width: 18px; height: 18px; }
+.hub-bar .hub-dex.dex-news::after { top: -3px; right: -3px; }
+.hub-dex.out, .hub-help.out { visibility: hidden; }
+.hub-bar .hbar-cash { flex: none; margin-left: 0; gap: 4px; padding-inline: 7px; font-size: 0.62rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hbar-coin { width: 15px; height: 15px; flex: none; }
+/* a saved run's LCD: its Pokémon, where and the floor over the HP bar, the Escape Rope (battle's running figure) on the
+   right. With no run it folds down into the bar (grid rows 1fr to 0fr), the bar's top edge sliding down after it */
+.hbar-fold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+.hub-bar.no-run .hbar-fold { grid-template-rows: 0fr; }
+.hbar-fold-in { min-height: 0; overflow: hidden; }
+.hub-bar .hbar-run {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 3px;
+  margin: 9px 5px 5px; padding: 5px 8px; font-size: 0.6rem; font-variant-numeric: tabular-nums;
+  transition: opacity 0.3s, translate 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hub-bar.no-run .hbar-run { opacity: 0; translate: 0 12px; }
+.hbar-info { display: flex; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; }
+.hbar-name { flex: none; font-weight: 400; }
+.hbar-where { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; opacity: 0.8; }
+.hbar-floor { flex: none; margin-left: auto; }
+.hbar-floor:empty { display: none; }
+.hbar-hp { grid-column: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .hbar-flee {
-  flex: none; display: grid; place-items: center; width: 30px; height: 26px; padding: 3px; border: 2px solid #1f3a14; border-radius: 6px;
+  grid-column: 2; grid-row: 1 / span 2; align-self: center;
+  display: grid; place-items: center; width: 36px; height: 34px; padding: 4px; border: 2px solid #1f3a14; border-radius: 6px;
   background: rgba(255, 255, 255, 0.3); color: #1f3a14; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .hbar-flee svg { width: 100%; height: 100%; display: block; }
 .hbar-flee:active { translate: 0 1px; background: rgba(31, 58, 20, 0.2); }
-.hbar-cash { flex: none; margin-left: auto; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-.hbar-coin { width: 18px; height: 18px; flex: none; }
-/* Home and How to play a size up from the rooms' keys (the user's call, 2026-10-08); something new in the device wears the
-   other Home keys' yellow "!" (.dex-news) */
-.hub-bar .room-home { width: 54px; }
-.hub-bar .room-home .home-key { width: 46px; height: 46px; }
-.hub-bar .hub-dex.dex-news::after { top: -2px; right: -2px; }
-.hub-dex.out, .hub-help.out { visibility: hidden; }
-@media (max-width: 360px) { .hub-bar { padding-inline: 8px; } .hub-bar .room-row { gap: 6px; } .hub-bar .room-home { width: 46px; } .hub-bar .room-home .home-key { width: 42px; height: 42px; } }
+@media (max-width: 380px) {
+  .hub-bar { padding-inline: 8px; }
+  .hub-bar .room-hinge { gap: 5px; }
+  .hub-bar .room-hinge .pdx-lens { width: 24px; height: 24px; }
+  .hub-bar .mdex-lights { gap: 3px; }
+  .hub-bar .mdex-lights .pdx-light { width: 7px; height: 7px; }
+  .hub-bar .hbar-cash, .hub-bar .hbar-sign { padding-inline: 5px; }
+  .hub-bar .hbar-sign b { font-size: 0.56rem; }
+}
+@media (prefers-reduced-motion: reduce) { .hbar-fold, .hub-bar .hbar-run { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .hub-bar, .hbar-pop { animation: none; } }
 
 .hub-card {
@@ -87,7 +112,7 @@
 
 .hub-fps { position: absolute; right: 60px; top: 18px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #8f8; font: 12px/1.2 monospace; }
 
-@media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hbar-keys.hbar-pop, .hub-bar { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hub-bar { animation: none; } }
 
 /* the logo greets the hub, then fades so it never hides the Ancient Tree's tag */
 .title-screen.hub-on .title-center { animation: hubLogo 3.6s ease-in forwards; }

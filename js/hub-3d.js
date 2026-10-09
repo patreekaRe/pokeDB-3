@@ -1515,54 +1515,31 @@ function nearest() {
   return best;
 }
 
-// a round key's glyph by what it does (only the trail has more than one thing to do)
-const KEY_FOR = { Continue: 'play', 'New game': 'plus', 'Escape Rope': 'rope' };
-
-/** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08): the hinge's LCD names the place your partner
-    walks up to (no gold pill since 2026-10-08, the user's call: a tap on the place does it); the row under it is Home (the Pokédex), round
-    keys for How to play (New game's + at the Pokéstop) and a place's other doings (no Continue key: it squashed the HP), and the LCD: a saved
-    run's HP and its Escape Rope (battle's running figure), then the PokéCoins. Redrawn only when the place changes. */
+/** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08), reworked 2026-10-09 (the user's layout): one
+    line along the hinge, lens, lights, small Home and How to play keys that never turn into anything else, the PokéCoins
+    on their own little LCD and the place your partner walks up to on the right (a tap on the place does it); under it a
+    saved run's LCD (its Pokémon, where and which floor, the HP bar and the Escape Rope), folding away down into the
+    bar, like an auto-hiding taskbar, while there is no run. Redrawn only when the place or the run changes. */
 function placeBar() {
   const coins = getSave().coins ?? 0;
   if (coins !== barCoins) { barCoins = coins; bar.querySelector('.hbar-coins').textContent = coins.toLocaleString(); }
   const p = nearest(), k = `${p?.id ?? ''}|${saved ? `${saved.hp}/${saved.maxHp}` : ''}`;
   if (k === barKey) return;
   barKey = k;
-  bar.querySelector('.hbar-run').hidden = !saved;
-  if (saved) setHpBar('hub', saved.hp, saved.maxHp);
-  // at the Pokéstop How to play's key is New game and the Escape Rope is on the LCD, by your HP
-  const rest = p?.open && p.id !== 'trail' && !asks(p) ? p.buttons.slice(1).map(([label], i) => [label, () => goTo(p, true, i + 1)]) : [];
-  bar.querySelector('.hbar-sign b').textContent = p?.name ?? 'The Clearing';
-  helpKey(p && (p.id === 'trail' || asks(p)) && p.open ?() => goTo(p, true, p.buttons.findIndex(([label]) => label === 'New game')) : null);
-  bar.querySelector('.hbar-keys').replaceChildren(...rest.map(([label, go]) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'room-home hbar-key';
-    b.title = label;
-    b.setAttribute('aria-label', label);
-    b.append(roundKey(KEY_FOR[label] ?? 'ok', 'round-key'));
-    b.addEventListener('click', go);
-    return b;
-  }));
-  const sign = bar.querySelector('.hbar-sign b');
+  bar.classList.toggle('no-run', !saved);
+  bar.querySelector('.hbar-fold').inert = !saved;
+  if (saved) {
+    setHpBar('hub', saved.hp, saved.maxHp);
+    bar.querySelector('.hbar-name').textContent = saved.name;
+    bar.querySelector('.hbar-where').textContent = saved.place;
+    bar.querySelector('.hbar-floor').textContent = saved.floor ? `F${saved.floor}` : '';
+  }
+  const sign = bar.querySelector('.hbar-sign b'), name = p?.name ?? 'The Clearing';
+  if (sign.textContent === name) return;
+  sign.textContent = name;
   sign.classList.remove('hbar-pop');
   void sign.offsetWidth;
   sign.classList.add('hbar-pop');
-}
-
-/** How to play's key, or New game's (+) while your partner is at the Pokéstop (`go`); it pops when it swaps. */
-function helpKey(go) {
-  const key = root.querySelector('.hub-help'), glyph = go ? 'plus' : 'help';
-  key.onclick = go ?? (() => fromCorner(acts.onHelp, key));
-  if (key.dataset.glyph === glyph) return;
-  key.dataset.glyph = glyph;
-  const label = go ? 'New game' : 'How to play';
-  key.title = label;
-  key.setAttribute('aria-label', label);
-  key.replaceChildren(roundKey(glyph));
-  key.classList.remove('hbar-pop');
-  void key.offsetWidth;
-  key.classList.add('hbar-pop');
 }
 
 /* ---------- the Pokédex in the corner ---------- */
@@ -1838,10 +1815,13 @@ async function build() {
     <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><div class="hub-card-acts"></div></div>
     <div class="hub-bar">
       <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+        <div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help" title="How to play" aria-label="How to play"></button></div>
+        <div class="room-sign hbar-cash" title="PokéCoins"><span class="hbar-coins">0</span></div>
         <div class="room-sign hbar-sign" aria-live="polite"><b></b></div></div>
-      <div class="room-row"><div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help"></button><span class="hbar-keys"></span></div>
-        <div class="room-lcd hbar-lcd"><span class="hbar-run" hidden><span class="gb-hp" id="hub-hp" role="progressbar" aria-label="HP" aria-valuemin="0"><span class="gb-hp-tag" aria-hidden="true">HP:</span><span class="gb-hp-track"><span class="gb-hp-fill" id="hub-hp-fill"></span></span></span><span class="gb-hp-num" id="hub-hp-text"></span><button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></span>
-          <span class="hbar-cash" title="PokéCoins"><span class="hbar-coins">0</span></span></div></div>
+      <div class="hbar-fold"><div class="hbar-fold-in">
+        <div class="room-lcd hbar-run"><span class="hbar-info"><b class="hbar-name"></b><span class="hbar-where"></span><span class="hbar-floor"></span></span>
+          <span class="hbar-hp"><span class="gb-hp" id="hub-hp" role="progressbar" aria-label="HP" aria-valuemin="0"><span class="gb-hp-tag" aria-hidden="true">HP:</span><span class="gb-hp-track"><span class="gb-hp-fill" id="hub-hp-fill"></span></span></span><span class="gb-hp-num" id="hub-hp-text"></span></span>
+          <button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></div></div></div>
     </div>
     <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
@@ -1855,6 +1835,9 @@ async function build() {
   dexBtn = root.querySelector('.hub-dex');
   dexBtn.append(roundKey('home'));
   dexBtn.addEventListener('click', openDex);
+  const help = root.querySelector('.hub-help');
+  help.append(roundKey('help'));
+  help.addEventListener('click', () => fromCorner(acts.onHelp, help));
   root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
   if (new URLSearchParams(location.search).has('fps')) { fpsEl = root.querySelector('.hub-fps'); fpsEl.hidden = false; }
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
