@@ -5,13 +5,13 @@
    front flat on the wall (cornerFront()), walked into as its own arcade (js/mall-corner.js); the west front is the Furniture store,
    its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is shuttered for a shop
    to come (a new one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it; the pill at the
-   bottom names the nearest and goes in; the ✕ walks back out. */
+   bottom names the nearest and goes in; the doormat on each place's doorstep walks back out (doormat() in js/hd2d.js). */
 
 import { getSave } from './storage.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE } from './secret-base.js';
@@ -42,6 +42,7 @@ let hall, glows = [], blocked = new Set(), aim = null, here = null, shown = '';
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
 // each its own group, tiles and spots
 let places = {}, P = null, picked = null, climbing = false;
+let mats = [];   // every place's doormat, breathing
 let calm = false, last = 0, camX = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -376,6 +377,17 @@ function buildHall() {
   }
   for (const m of glows) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, 0.9) * m.userData.glow;
   places.hall = { id: 'hall', group: hall, blocked, spots: FRONTS, top: DECK + 0.8, title: 'Poké Mall' };
+  addDoor(places.hall);
+}
+
+const DOOR = { x: 6, y: ROWS - 1 };   // the tile in from the doormat, where every place is walked into
+
+/** A place's way out: the doorstep and doormat past its floor's front edge, under the door tile. */
+function addDoor(p) {
+  const { step, mat } = doormat(tileX(DOOR.x), ROWS / 2 + 0.47, std({ color: '#b8a888' }));
+  mat.userData.exit = true;
+  p.group.add(step, mat);
+  mats.push(mat.material);
 }
 
 /* ---------- walking ---------- */
@@ -427,6 +439,7 @@ function goTo(fr, enter) {
 }
 
 function arrived() {
+  if (walker.exit) { walker.exit = false; return back(); }
   if (climbing) return changeFloor();
   const go = aim;
   aim = null;
@@ -441,7 +454,7 @@ function arrived() {
 
 const SIZE = { cols: COLS, rows: ROWS, top: TOP, u: U };
 const floorOf = () => (P.id === 'f2' ? 2 : P.id === 'f1' ? 1 : 0);
-// each place inside a shop: how it's built and which of the hall's fronts its ✕ walks back out to
+// each place inside a shop: how it's built and which of the hall's fronts its doormat walks back out to
 const SHOPS = {
   f1: { front: 'furniture', build: () => buildFloor(THREE, 1, SIZE, !!loadBase().upstairs) },
   f2: { front: 'furniture', build: () => buildFloor(THREE, 2, SIZE, !!loadBase().upstairs) },
@@ -461,6 +474,7 @@ async function goPlace(id, at, facing = 'back') {
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
     places[id] = { id, front: SHOPS[id].front, ...built };
+    addDoor(places[id]);
     scene.add(built.group);
   }
   setPlace(places[id], at, facing);
@@ -646,6 +660,8 @@ function onTap(e) {
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
   const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
   const first = hits[0]?.object;
+  walker.exit = false;
+  if (first?.userData.exit) return headOut();
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   let o = first;
   while (o && !o.userData.front) o = o.parent;
@@ -659,6 +675,16 @@ function onTap(e) {
   if (walker.path.length) playSound('select');
 }
 
+/** Your partner walks to the door tile and out over the doormat; then the place is left. */
+function headOut() {
+  if (climbing) return;
+  walker.path = route(walker.tile, DOOR);
+  walker.path.push({ x: DOOR.x, y: ROWS - 0.03 });
+  walker.exit = true;
+  aim = null; here = null; pick(null);
+  playSound('confirm');
+}
+
 /* ---------- camera ---------- */
 
 function aimCamera(x, d) {
@@ -668,7 +694,7 @@ function aimCamera(x, d) {
 }
 
 /* The Clearing's shot: ACROSS tiles at least, and far enough back that the hall from the floor's front edge up to the
-   mezzanine's rail fits between the ✕ and the pill; a lens shift centres it there. */
+   mezzanine's rail fits between the title and the pill, the doorstep included; a lens shift centres it there. */
 function fitShot(w, h) {
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
@@ -676,7 +702,7 @@ function fitShot(w, h) {
   const avail = h - topBar - below, room = 2 * avail / h * 0.94;
   const span = (d) => {
     aimCamera(0, d);
-    return [new THREE.Vector3(0, P.top, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2).project(camera).y];
+    return [new THREE.Vector3(0, P.top, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2 + 0.95).project(camera).y];
   };
   let lo = 2, hi = 80;
   for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = span(mid); if (t - b > room) lo = mid; else hi = mid; }
@@ -725,6 +751,7 @@ function frame(now) {
     const left = (P.keeper.hopUntil || 0) - now;
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
+  if (!calm) for (const m of mats) m.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   showPill();
   placeCamera(dt);
   post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
@@ -738,7 +765,7 @@ function atDoors() {
   setPlace(places.hall, { x: 6, y: ROWS - 1 });
 }
 
-/** The ✕: out of a shop to its doorstep in the hall, or out of the mall. */
+/** Out over the doormat: from a shop to its doorstep in the hall, or out of the mall. */
 function back() {
   if (P.id === 'hall') return leave();
   goPlace('hall', FRONTS.find(f => f.id === P.front).step, 'front');
@@ -754,7 +781,7 @@ async function leave() {
   curtain(false);
 }
 
-/** The Poké Mall's hall. `onLeave` is where its ✕ goes (the Clearing hands it the way back out of the doors). */
+/** The Poké Mall's hall. `onLeave` is where its doormat goes (the Clearing hands it the way back out of the doors). */
 export async function openMall({ onLeave = null, store = null } = {}) {
   leaveTo = onLeave;
   calm = calmFx();
@@ -773,15 +800,13 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   root.innerHTML = `
     <div class="b3-stage">
       <canvas class="b3-view"></canvas>
-      <header class="b3-top"><h2>Poké Mall</h2><span class="mall-coins" hidden></span>
-        <button type="button" class="b3-key b3-close" aria-label="Leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+      <header class="b3-top"><h2>Poké Mall</h2><span class="mall-coins" hidden></span></header>
       <div class="mall-foot"><p class="mall-line" aria-live="polite"><b class="mall-who"></b><span></span></p><button type="button" class="mall-go"><b>Poké Mall</b></button></div>
     </div>`;
   document.body.append(root);
   view = root.querySelector('.b3-view');
   pill = root.querySelector('.mall-go');
   lineEl = root.querySelector('.mall-line');
-  root.querySelector('.b3-close').addEventListener('click', back);
   pill.addEventListener('click', () => { const fr = nearest(); if (fr) goTo(fr, true); });
 
   THREE = await loadThree();

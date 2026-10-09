@@ -241,3 +241,36 @@ export function createPost(renderer, { short = 420, crisp = true } = {}) {
     },
   };
 }
+
+/** The way out of every 3D room (the Secret Base, the Poké Mall's places): a doorstep jutting out past the floor's front
+    edge at `x`, `z`, and on it a woven red doormat with a cream arrow pointing out, off the tiles so nothing covers it. */
+export function doormat(x, z, stepMat) {
+  const c = document.createElement('canvas');
+  c.width = 288; c.height = 128;
+  const g = c.getContext('2d');
+  for (let x = 14; x < 274; x += 7) {   // fringe at both ends
+    g.strokeStyle = '#d8c09a'; g.lineWidth = 3; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(x, 4); g.lineTo(x, 16); g.moveTo(x, 112); g.lineTo(x, 124); g.stroke();
+  }
+  const body = g.createLinearGradient(0, 12, 0, 116);
+  body.addColorStop(0, '#d0503e'); body.addColorStop(1, '#a8382c');
+  g.fillStyle = body; g.beginPath(); g.roundRect(6, 12, 276, 104, 14); g.fill();
+  g.strokeStyle = '#7a2420'; g.lineWidth = 5; g.beginPath(); g.roundRect(16, 22, 256, 84, 9); g.stroke();
+  g.globalAlpha = 0.12; g.fillStyle = '#000';
+  for (let y = 26; y < 104; y += 6) g.fillRect(20, y, 248, 2);
+  g.globalAlpha = 1;
+  g.fillStyle = '#fbf0d8'; g.strokeStyle = '#7a2420'; g.lineWidth = 4; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(112, 38); g.lineTo(176, 38); g.lineTo(144, 92); g.closePath(); g.fill(); g.stroke();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  const top = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 1, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0 });
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.8), top);
+  mat.rotation.x = -Math.PI / 2;
+  mat.position.set(x, -0.015, z);
+  mat.receiveShadow = true;
+  const step = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.16, 0.95), stepMat);
+  step.position.set(x, -0.1, z);
+  step.receiveShadow = true;
+  return { step, mat };
+}

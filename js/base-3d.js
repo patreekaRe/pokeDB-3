@@ -12,7 +12,7 @@ import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { partner } from './trainercard.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -63,7 +63,7 @@ let named = null;   // a piece just taken from the tray: its name, said for a mo
 let hushed = null;   // the hint tapped away: it stays away until it says something else
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
 let exitMat = null;   // the doormat over the front edge: a tap walks your partner out, as in a Pokémon house
-let leaveTo = null;   // where the ✕ walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
+let leaveTo = null;   // where the doormat walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -120,43 +120,11 @@ function buildRoom() {
     side.receiveShadow = true; side.castShadow = true;
     roomGroup.add(side);
   }
-  // the mat lies on a doorstep jutting out past the floor's edge, so it takes no tile
-  const step = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.16, 0.95), [outer, outer, cap, outer, outer, outer]);
-  step.position.set(tileX(Math.floor(COLS / 2)), -0.1, ROWS / 2 + 0.47);
-  step.receiveShadow = true;
-  roomGroup.add(step, exitMat = makeExitMat());
+  const door = doormat(tileX(Math.floor(COLS / 2)), ROWS / 2 + 0.47, [outer, outer, cap, outer, outer, outer]);
+  roomGroup.add(door.step, exitMat = door.mat);
 }
 
-/** A woven red doormat on the doorstep outside the room with a cream arrow pointing out, off the tiles so nothing covers it. */
-function makeExitMat() {
-  const c = document.createElement('canvas');
-  c.width = 288; c.height = 128;
-  const g = c.getContext('2d');
-  for (let x = 14; x < 274; x += 7) {   // fringe at both ends
-    g.strokeStyle = '#d8c09a'; g.lineWidth = 3; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(x, 4); g.lineTo(x, 16); g.moveTo(x, 112); g.lineTo(x, 124); g.stroke();
-  }
-  const body = g.createLinearGradient(0, 12, 0, 116);
-  body.addColorStop(0, '#d0503e'); body.addColorStop(1, '#a8382c');
-  g.fillStyle = body; g.beginPath(); g.roundRect(6, 12, 276, 104, 14); g.fill();
-  g.strokeStyle = '#7a2420'; g.lineWidth = 5; g.beginPath(); g.roundRect(16, 22, 256, 84, 9); g.stroke();
-  g.globalAlpha = 0.12; g.fillStyle = '#000';
-  for (let y = 26; y < 104; y += 6) g.fillRect(20, y, 248, 2);
-  g.globalAlpha = 1;
-  g.fillStyle = '#fbf0d8'; g.strokeStyle = '#7a2420'; g.lineWidth = 4; g.lineJoin = 'round';
-  g.beginPath(); g.moveTo(112, 38); g.lineTo(176, 38); g.lineTo(144, 92); g.closePath(); g.fill(); g.stroke();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  const top = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 1, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0 });
-  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.8), top);
-  mat.rotation.x = -Math.PI / 2;
-  mat.position.set(tileX(Math.floor(COLS / 2)), -0.015, ROWS / 2 + 0.47);
-  mat.receiveShadow = true;
-  return mat;
-}
-
-/** Your partner walks to the front of the room and out over the doormat; then the room is left as by the ✕. */
+/** Your partner walks to the front of the room and out over the doormat, the only way out; then the room is left. */
 function headOut() {
   if (mode !== 'walk') return;
   const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
@@ -1353,7 +1321,7 @@ async function fallBack() {
 
 /** Out through the door: dark, the room put away (kept, so going back in is quick), then wherever it was opened from. */
 async function leave() {
-  if (leave.busy) return;   // the ✕ tapped while your partner is already walking out over the mat
+  if (leave.busy) return;
   if (!leaveTo) { location.href = location.pathname; return; }
   leave.busy = true;
   playSound('door');
@@ -1388,7 +1356,7 @@ async function reopen() {
   curtain(false);
 }
 
-/** The Secret Base. `onLeave` is where its ✕ goes (the walkable hub hands it the way back out to the Clearing). */
+/** The Secret Base. `onLeave` is where its doormat goes (the walkable hub hands it the way back out to the Clearing). */
 export async function openBase3d({ onLeave = null } = {}) {
   leaveTo = onLeave;
   if (root && renderer) return reopen();
@@ -1398,8 +1366,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   root.innerHTML = `
     <div class="b3-stage">
       <canvas class="b3-view"></canvas>
-      <header class="b3-top"><h2>Secret Base</h2><span class="b3-fps" hidden></span>
-        <button type="button" class="b3-key b3-close" aria-label="Leave">${glyph('close')}</button></header>
+      <header class="b3-top"><h2>Secret Base</h2><span class="b3-fps" hidden></span></header>
       <p class="b3-hint" aria-live="polite"></p>
       <div class="b3-gift" hidden><p>Starter furniture!</p><div class="b3-gift-row"></div><button type="button" class="b3-done">Decorate</button></div>
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
@@ -1424,7 +1391,6 @@ export async function openBase3d({ onLeave = null } = {}) {
   view = root.querySelector('.b3-view');
   hud = { hint: root.querySelector('.b3-hint'), fps: null };
   if (new URLSearchParams(location.search).has('fps')) { hud.fps = root.querySelector('.b3-fps'); hud.fps.hidden = false; }
-  root.querySelector('.b3-close').addEventListener('click', leave);
   // like every window in the game, a tap anywhere else puts the cream ones away: the hint, and the present's card
   root.addEventListener('pointerdown', (e) => {
     const gift = root.querySelector('.b3-gift');
