@@ -11,7 +11,8 @@
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
-import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt } from './hub-season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, cauldronArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
+import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
@@ -89,6 +90,7 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
+let yardTiles = new Set(), spooks = null;   // the tiles the season's decorations stand on (nothing walks through them), and Halloween's ghosts
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
@@ -1336,6 +1338,7 @@ function buildPlaces() {
   saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
+  for (const k of yardTiles) blocked.add(k);
   for (const p of places) {
     const g = new THREE.Group();
     p.build(g);
@@ -1444,22 +1447,57 @@ function buildClearing() {
   dressSeason();
 }
 
-/** The season's decorations, built once with the forest: jack-o'-lanterns round the plaza, down the trail, at the
-    Ancient Tree's door and either side of the gate (lit with the clock, setTime()); in winter a snowman by the plaza.
-    Kept off every path's middle and every place's tiles, so nothing walks through them that wouldn't through grass. */
+/** The season's decorations, built once with the forest. Halloween: big jack-o'-lanterns round the plaza, down the
+    trail and at the Ancient Tree's door, a giant pumpkin patch with a scarecrow, a graveyard lit by candles under a dead
+    tree, a bubbling cauldron, hay bales, lantern posts and glowing toadstools (lit with the clock, setTime()), ghost
+    Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
+    every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
 function dressSeason() {
   if (SEASON === 'halloween') {
-    const px = tileX(START.x), pz = tileZ(START.y);
-    const spots = [[px + 1.4, pz - 1.35, 1], [px - 1.4, pz - 1.35, 0.8], [px - 1.45, pz + 1.3, 1], [px + 1.5, pz + 1.25, 0.75],
-      [tileX(6) - 0.95, tileZ(12.6), 0.85], [tileX(6) + 0.95, tileZ(13.8), 1], [tileX(6) - 0.95, tileZ(15), 0.7],
-      [tileX(GATE_AT.tx) - 1.55, tileZ(GATE_AT.ty) + 0.75, 1.05], [tileX(GATE_AT.tx) + 1.55, tileZ(GATE_AT.ty) + 0.75, 0.9],
-      [tileX(6) - 0.95, tileZ(3.2), 0.85], [tileX(6) + 0.95, tileZ(3.2), 0.95], [tileX(1) + 0.9, tileZ(4.6), 0.7], [tileX(11) - 0.9, tileZ(4.6), 0.8]];
-    spots.forEach(([x, z, s], i) => {
-      const lit = i % 4 !== 3, c = pumpkinArt(i, lit), b = board(c, x, z, { s });
-      if (lit) glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+    const P_ = (seed, lit = true) => [pumpkinArt(seed, lit), lit ? 'pumpkin' : null];
+    // [art, glow, tile x, tile y, size, nudge x, nudge z]; a nudge keeps a thing on its tile but off its middle
+    const yard = [
+      [...P_(0), 5, 9, 2.6, 0.1, 0], [...P_(1), 7, 9, 2.4, -0.1, 0], [...P_(2), 5, 11, 1.5, -0.2, 0.2], [...P_(3, false), 7, 11, 1.4, 0.2, 0.2],   // the plaza
+      [...P_(5), 3, 7, 5.6, 0, -0.1], [...P_(6), 4, 8, 2.4, 0.1, 0.1], [...P_(7, false), 2, 8, 2, -0.1, 0.15], [...P_(8, false), 2, 6, 1.8, 0, 0],   // the patch
+      [scarecrowArt(), 'white', 4, 6, 1.5, 0.1, 0],
+      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.1, 0, 0.2],   // the Ancient Tree's door
+      [...P_(11), 5, 12, 2, 0.1, 0], [...P_(12), 7, 13, 2.2, -0.1, 0], [...P_(13, false), 5, 14, 1.8, 0.1, 0], [...P_(14), 7, 15, 2, -0.1, 0],   // the trail
+      [...P_(15), 0, 5, 1.8, 0, 0], [...P_(16), 12, 3, 1.8, 0, 0], [...P_(17), 1, -1, 2, 0, 0], [...P_(18), -3, 11, 2.4, 0, 0], [...P_(19, false), -2, 12, 1.6, 0, 0],
+      [graveArt(0), null, 8, 5, 1.5, 0, 0], [graveArt(1), null, 10, 5, 1.6, 0, -0.1], [graveArt(2), null, 9, 6, 1.4, 0, 0.1], [graveArt(3), null, 11, 6, 1.5, 0, 0],   // the graveyard
+      [graveArt(4), null, 12, 5, 1.3, 0, 0], [candlesArt(0), 'white', 8, 6, 1.2, 0.1, 0.2], [candlesArt(1), 'white', 10, 6, 1.1, 0, 0.2], [candlesArt(2), 'white', 11, 5, 1, 0, 0.1],
+      [deadTreeArt(0), 'white', 12, 6, 1.7, 0.2, -0.2], [capsArt(1), 'white', 12, 7, 1.3, 0, 0.1],
+      [cauldronArt(), 'white', 3, 11, 1.7, 0, 0], [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
+      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0], [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],
+      [hayArt(0), 'white', 1, 13, 1.7, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0], [hayArt(2), 'white', -3, 10, 1.6, 0, 0.2], [hayArt(3), 'white', 10, 14, 1.4, 0, 0.1],
+      [deadTreeArt(1), 'white', 0, 12, 1.8, -0.2, 0], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
+      [graveArt(5), null, 2, 14, 1.3, 0, 0], [graveArt(6), null, -3, 13, 1.4, 0, 0], [candlesArt(4), 'white', -2, 13, 1, 0, 0.1], [capsArt(1), 'white', 3, 14, 1.1, 0, 0.1],
+      [capsArt(0), 'white', 9, 14, 1.1, 0, 0], [lanternArt(4), 'white', -1, 12, 1.3, 0, 0],
+    ];
+    for (const [c, glow, tx, ty, s, nx, nz] of yard) {
+      const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
+      if (glow === 'pumpkin') glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+      else if (glow && c.glow) glowing(b.material, c, null, '#ffffff', 1.2, seasonMats);
       b.raycast = () => {};
       forest.add(b);
-    });
+      yardTiles.add(key(tx, ty));
+    }
+    // out under the gate's sides, where the old little ones stood: no tile, so the sign and the Pokéstop stay reachable
+    for (const [dx, i] of [[-1.6, 20], [1.6, 21]]) {
+      const c = pumpkinArt(i), b = board(c, tileX(GATE_AT.tx) + dx, tileZ(GATE_AT.ty) + 0.7, { s: 1.7 });
+      glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+      b.raycast = () => {};
+      forest.add(b);
+    }
+    // the giant pumpkin and the cauldron light the ground round them after dark
+    for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8], ['#70ff80', [tileX(3), 1, tileZ(11) + 0.8], 0.6]]) {
+      const l = new THREE.PointLight(colour, 0, 4.5, 1.6);
+      l.position.set(...at);
+      l.userData.k = k;
+      lamps.push(l);
+      scene.add(l);
+    }
+    spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
+      spawns: [{ x: 1, y: 9 }, { x: 9, y: 7 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
@@ -1922,7 +1960,10 @@ function onTap(e) {
   if (held || arriving || leaving || outbound || returning) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
-  const hit = ray.intersectObjects([mon.board, placeGroup], true).find(h => h.object !== mon.board || onSprite(h));
+  const ghosts = spooks?.boards() || [];
+  const hit = ray.intersectObjects([mon.board, ...ghosts, placeGroup], true).find(h => !h.object.userData.who || onSprite(h));
+  if (spooks?.tap(hit, walker)) return;
+  if (spooks?.hush()) return;
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
   const at = new THREE.Vector3();
@@ -2182,6 +2223,7 @@ function frame(now) {
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
+  spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   if (!calm) livePc(now);

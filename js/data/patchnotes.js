@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['hub', "The Clearing dresses up for the season: jack-o'-lanterns, autumn leaves and ghosts flying over in October, snow in December."],
+  ['hub', "Halloween in the Clearing goes big: giant jack-o'-lanterns, a pumpkin patch with a scarecrow, a candlelit graveyard, a bubbling cauldron, lanterns and bats, and Gengar, Litwick, Duskull and Sableye wandering about with hundreds of spooky lines and stories to tell. Tap one!"],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

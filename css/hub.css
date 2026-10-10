@@ -467,3 +467,19 @@
 .pc-screen.calm, .pc-screen.calm .pc-unit, .pc-screen.calm .pc-glass { animation: none; }
 @media (prefers-reduced-motion: reduce) { .pc-screen, .pc-unit, .pc-glass { animation: none !important; } }
 .pc-screen button:focus:not(:focus-visible) { outline: none; }
+
+/* Halloween's ghosts (js/hub-spooky.js): a little floated line over one's head, and the cream speech window over the bar */
+.hub .spook-talk { bottom: calc(var(--hub-bar-h, 90px) + 14px); z-index: 6; }
+.spook-bubble {
+  position: absolute; z-index: 5; translate: -50% -100%; max-width: 160px; padding: 6px 11px; pointer-events: none;
+  border-radius: 14px; background: #fbf4df; color: #6a5440; font-size: 12px; line-height: 1.35; text-align: center;
+  box-shadow: 0 2px 0 #d8c8a4, 0 4px 10px #0004; white-space: normal; width: max-content;
+}
+.spook-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -6px; translate: -50% 0;
+  border: 6px solid transparent; border-top-color: #fbf4df; border-bottom: 0;
+}
+.spook-bubble[hidden] { display: none; }
+.spook-bubble.pop { animation: b3Pop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+.hub.held .spook-bubble, .hub.held .spook-talk { display: none; }
+@media (prefers-reduced-motion: reduce) { .spook-bubble.pop { animation: none; } }
