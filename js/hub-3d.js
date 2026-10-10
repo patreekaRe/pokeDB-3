@@ -1177,7 +1177,7 @@ function makePlaces() {
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7, !!run),
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
     {
       // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
@@ -1251,7 +1251,7 @@ function makePlaces() {
     id: 'safari', name: 'Safari Pokéstop', step: { x: -1, y: -1 }, tiles: [[-1, -2]], tag: [-1, 2.6, -2], open: true,
     line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
-    build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5, !!safariRun),
+    build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5, !!safariRun, 'EXPLORE'),
   });
   // left of the gate, along its fence (the user's ask, 2026-10-09)
   list.push({
@@ -1287,7 +1287,7 @@ function makePlaces() {
     id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: 11, y: 0 }, tiles: [[11, -1]], tag: [11, 2.6, -1], open: true,
     line: climb ? waits(climb) : `This week's Sky Pillar climb.${best ? ` Your best: floor ${best}.` : ''}`,
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : [['Climb', acts.onTower]],
-    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb),
+    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb, 'ASCEND'),
   });
   list.push({
     id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,
@@ -1649,8 +1649,9 @@ function walkBackIn() {
 /* ---------- the Pokéstop ---------- */
 
 /** A Pokéstop at (x, z), `S` its size: New game's on the trail, and the Safari's small one by its gate. `saved` is
-    whether it holds the saved run: CONTINUE on the ground before it, else a smaller NEW GAME. */
-function pokestop(g, id, x, z, S, saved = false) {
+    whether it holds the saved run: CONTINUE on the ground before it, else its own `start` a little smaller (the user
+    let Claude pick, 2026-10-10: NEW GAME sounded like wiping the save). */
+function pokestop(g, id, x, z, S, saved, start) {
   const d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
   g.add(board(stopPostArt(), x, z, { s: S }));
   const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
@@ -1659,11 +1660,11 @@ function pokestop(g, id, x, z, S, saved = false) {
   disc.position.set(x, 1.55 * S + w / 2, z);
   disc.castShadow = true;
   g.add(disc);
-  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: groundCue(g, x, z + 0.95, saved ? 'CONTINUE' : 'NEW GAME', saved ? 1 : 0.8) };
+  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: groundCue(g, x, z + 0.95, saved ? 'CONTINUE' : start, saved ? 1 : 0.8) };
 }
 
 /** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
-    or start): CONTINUE before the one holding the saved run, NEW GAME a little smaller before the rest. */
+    or start): CONTINUE before the one holding the saved run, what the others start a little smaller. */
 function groundCue(g, x, z, text, scale) {
   const c = document.createElement('canvas');
   c.width = 640; c.height = 160;
