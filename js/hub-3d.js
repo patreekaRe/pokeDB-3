@@ -1673,8 +1673,8 @@ function pokestop(g, id, x, z, S, saved, start) {
 /** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
     or start): CONTINUE before the one holding the saved run, else what that stop starts, all the same size. Bungee, a
     heavy arcade face (the pixel font's thin strokes blurred into the glow), lying flat like a painted road marking, only
-    a little taller to make up for the floor's foreshortening (1.6 looked propped up), gold arcade letters on a dark extruded edge
-    between chevrons, see-through (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game). */
+    a little taller to make up for the floor's foreshortening (1.6 looked propped up), white letters with a cyan glow on a dark
+    extruded edge between chevrons, a little see-through (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game). */
 let cueFont;
 function groundCue(g, x, z, text) {
   const c = document.createElement('canvas');
@@ -1689,22 +1689,22 @@ function groundCue(g, x, z, text) {
     d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
     const half = d.measureText(text).width / 2;
     const chevron = (x, dir) => {
-      d.beginPath(); d.moveTo(x - 22 * dir, cy - 30); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 22 * dir, cy + 30);
-      d.lineWidth = 22; d.strokeStyle = '#0c2c48'; d.stroke();
-      d.lineWidth = 11; d.strokeStyle = '#ffe14a'; d.stroke();
+      d.beginPath(); d.moveTo(x - 20 * dir, cy - 26); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 20 * dir, cy + 26);
+      d.lineWidth = 20; d.strokeStyle = '#0c2c48'; d.stroke();
+      d.lineWidth = 10; d.strokeStyle = '#8eecff'; d.stroke();
     };
     chevron(cx - half - 40, 1); chevron(cx + half + 40, -1);
-    d.shadowColor = 'rgba(95, 224, 255, 0.85)'; d.shadowBlur = 20;
-    d.lineWidth = 18; d.strokeStyle = 'rgba(40, 190, 240, 0.5)';
+    d.shadowColor = 'rgba(95, 224, 255, 0.9)'; d.shadowBlur = 22;
+    d.lineWidth = 16; d.strokeStyle = 'rgba(40, 190, 240, 0.55)';
     d.strokeText(text, cx, cy);
     d.shadowBlur = 0;
     // a chunky extruded edge under the letters, like an arcade title
-    d.lineWidth = 10; d.strokeStyle = d.fillStyle = '#06182a';
-    for (let i = 8; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
+    d.lineWidth = 9; d.strokeStyle = d.fillStyle = '#06182a';
+    for (let i = 6; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
     d.strokeStyle = '#0c2c48';
     d.strokeText(text, cx, cy);
     const g = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
-    g.addColorStop(0, '#ffffff'); g.addColorStop(0.48, '#fff6b0'); g.addColorStop(0.52, '#ffd23a'); g.addColorStop(1, '#ff9a1a');
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(1, '#bff2ff');
     d.fillStyle = g;
     d.fillText(text, cx, cy);
     map.needsUpdate = true;
@@ -2264,7 +2264,7 @@ function frame(now) {
   cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
-  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.72 : 0.64 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
+  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
