@@ -45,6 +45,7 @@ const TRACKS = {
   map4:    'assets/audio/map4.mp3',   // the Crystal Depths' map, the user's (2026-10-04)
   savanna: 'assets/audio/savanna.mp3',   // the Sunscorch Savanna's map, the user's (2026-10-09), in place of its slot's mapN (a biome's `music`, showMap())
   ruins:   'assets/audio/ruins.mp3',     // the Sunken Ruins' map, the user's (2026-10-09), the same way
+  thornwood: 'assets/audio/thornwood.mp3',   // the Thornwood Jungle's map, the user's (2026-10-09), the same way
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
@@ -81,6 +82,7 @@ const LOOP_POINTS = {
   'team-rocket': [2.5, 61.22894, 0.3],   // a 58.73 s repeat (0.93 melody match, 0.65 sample correlation at the join, so cross-faded); the file is 75.1 s
   savanna: [17.3, 40.8109, 0.3],   // a 23.51 s repeat (0.95 melody match, 0.58 sample correlation at the join, so cross-faded); the file is 56.7 s, fading from ~48 s
   ruins:   [16.05, 77.13694, 0.3],   // a 61.09 s repeat (0.968 melody match, 0.912 sample correlation at the join, so cross-faded); the file is 133.4 s
+  thornwood: [20.2, 85.54415, 0.3],   // a 65.34 s repeat (0.888 melody match, 0.747 sample correlation at the join, so cross-faded; the finder's 16 s one at the top would skip most of the song); the file is 94.8 s, fading from ~86 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
 const TRACK_FALLBACK = { 'clearing-hub': 'title', 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
@@ -681,7 +683,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8)
+const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);

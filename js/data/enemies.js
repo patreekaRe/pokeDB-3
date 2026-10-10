@@ -1395,7 +1395,7 @@ export const ALT_BIOMES = [
     elites: ['lickitung', 'herdier', 'audino'], bosses: ['dunsparce', 'wigglytuff', 'granbull'],
   },
   {
-    id: 'thornwood', name: 'Thornwood Jungle', home: 2,
+    id: 'thornwood', name: 'Thornwood Jungle', home: 2, music: 'thornwood',   // its map's own song (the user's), at either fork
     stages: ['Tangled Edge', 'Canopy Walk', 'Strangler Grove', 'Heart Tree'],
     normals: ['simisage', 'lilligant', 'shiftry', 'sawsbuck', 'carnivine', 'exeggutor',
       'whimsicott', 'volcarona', 'rapidash', 'carvanha', 'simipour', 'slakoth'],
