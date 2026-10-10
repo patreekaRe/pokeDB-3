@@ -99,7 +99,7 @@ const SOUNDS = {
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
-  block: { synth: blockClink, gain: 0.5 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
+  block: { synth: blockClink, gain: 0.6 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
   select: { url: 'assets/audio/sfx/card.mp3', gain: 0.2 },   // a pick in the 3D views (the base's tiles, the mall's stands and prizes, a tap to walk): softer than confirm
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
@@ -729,25 +729,25 @@ function unlock() {
 }
 
 /**
- * The block sound, built sample by sample: an 8-bit shield "clink". A tick of noise for the impact, a
- * square-wave blip that steps down (G6 then D6) like the games' chiptune effects, and a short metallic
- * ring from a few inharmonic partials so it reads as hitting something hard.
+ * The block sound, built sample by sample: a soft, padded shield "whump", no ring (the user disliked the old metallic
+ * "dink", 2026-10-10). A muffled puff of low-passed noise for the impact under a low sine thud that sags in pitch, with a
+ * touch of its octave so it carries on phone speakers.
  */
 function blockClink(ac) {
-  const rate = ac.sampleRate, length = Math.round(rate * 0.3);
+  const rate = ac.sampleRate, length = Math.round(rate * 0.22);
   const buffer = ac.createBuffer(1, length, rate);
   const out = buffer.getChannelData(0);
-  const ring = [[2093, 0.16], [3170, 0.1], [4060, 0.06]];
+  let lp = 0, phase = 0;
   for (let i = 0; i < length; i++) {
     const t = i / rate;
-    const tick = (Math.random() * 2 - 1) * Math.exp(-t / 0.004) * 0.5;
-    const pitch = t < 0.035 ? 1568 : 1175;
-    const blip = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.22 * Math.exp(-t / 0.07);
-    const metal = ring.reduce((sum, [f, a]) => sum + Math.sin(2 * Math.PI * f * t) * a, 0) * Math.exp(-t / 0.09);
-    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));   // no click at either end
-    out[i] = (tick + blip + metal) * fade;
+    lp += 0.08 * ((Math.random() * 2 - 1) - lp);
+    const puff = lp * 2.2 * Math.exp(-t / 0.03);
+    phase += 2 * Math.PI * (95 + 140 * Math.exp(-t / 0.04)) / rate;
+    const thud = (Math.sin(phase) + 0.35 * Math.sin(2 * phase)) * Math.exp(-t / 0.07);
+    const fade = Math.min(1, t / 0.003, (length - i) / (rate * 0.02));   // no click at either end
+    out[i] = (puff + thud) * fade;
   }
-  return normalize(buffer, 0.2);   // it used to peak at 0.9, about 4x the MP3s (the user found it far too loud)
+  return normalize(buffer, 0.22);
 }
 
 /** Scale a synth buffer so its loudest sample is `peak`: the MP3s peak around 0.1-0.25, so synths sit with them. */

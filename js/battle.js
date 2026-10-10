@@ -1461,6 +1461,7 @@ async function runAway() {
 function hurtEnemy(amount) {
   const en = battle.enemy;
   const absorbed = Math.min(en.block, amount);
+  if (absorbed > 0) soakShield('enemy');
   en.block -= absorbed;
   const through = amount - absorbed;
   enemyLoses(through);
@@ -2146,6 +2147,7 @@ function renderBars() {
   $('player-plate').classList.toggle('has-block', b.block > 0);
   if (!$('player-plate').classList.contains('block-preview')) shieldPreview(b.block);
   $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
+  if (!$('enemy-hp').querySelector('.gb-hp-shield.ghost')) enemyShield();
 
   // Energy is shown as the games' PP: "PP 2/3", out of what this turn started with. The number bumps when it changes.
   const orb = $('player-energy');
@@ -2568,6 +2570,7 @@ function showPreview(entry) {
   if (e.exhaustHand) {
     e.exhausted = b.hand.filter(h => h !== entry && (e.exhaustHand === 'all' || (e.exhaustHand === 'status' ? h.card.status : !isAttack(h.card)))).length;
   }
+  if (b.enemy.block > 0) enemyShield(card, e);
   let block = 0;
   if (e.block) block += cardBlock(e.block);
   if (e.blockPerCard) block += cardBlock(e.blockPerCard * (b.hand.length - 1));
@@ -2589,20 +2592,34 @@ function shieldPreview(block, ghost = false) {
   const b = battle, move = currentMove();
   const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain');
   const incoming = hits ? Math.max(0, attackDamage(move) - (b.aug.hitReduce || 0)) : 0;
-  const stopped = Math.min(block, incoming, b.hp);
-  const track = $('player-hp').querySelector('.gb-hp-track');
+  return shieldChunk('player', Math.min(block, incoming, b.hp), b.hp, b.maxHp, ghost);
+}
+
+/**
+ * The enemy's block on its HP bar, the same blue: all of it while nothing is raised, and while an attack is raised the
+ * part of that attack it would stop, blinking (the user's ask, 2026-10-10). Its hits break it off (`soakShield()`).
+ */
+function enemyShield(card, e) {
+  const en = battle.enemy;
+  const dealt = card ? damageFor(card, e).hits.reduce((sum, n) => sum + n, 0) : 0;
+  const block = dealt > 0 ? Math.min(en.block, dealt) : en.block;
+  return shieldChunk('enemy', Math.min(block, en.hp), en.hp, en.maxHp, dealt > 0);
+}
+
+function shieldChunk(side, stopped, hp, maxHp, ghost) {
+  const track = $(`${side}-hp`).querySelector('.gb-hp-track');
   let chunk = track.querySelector('.gb-hp-shield:not(.soak)');
   if (!stopped) { chunk?.remove(); return 0; }
   chunk ??= track.appendChild(el('span', 'gb-hp-shield'));
   chunk.classList.toggle('ghost', ghost);
-  chunk.style.setProperty('--from', (Math.min(b.hp, b.maxHp) - stopped) / b.maxHp);
-  chunk.style.setProperty('--size', stopped / b.maxHp);
+  chunk.style.setProperty('--from', (Math.min(hp, maxHp) - stopped) / maxHp);
+  chunk.style.setProperty('--size', stopped / maxHp);
   return stopped;
 }
 
 /** The hit lands: the held shield flashes and breaks off the bar. */
-function soakShield() {
-  const chunk = $('player-hp').querySelector('.gb-hp-shield:not(.soak)');
+function soakShield(side = 'player') {
+  const chunk = $(`${side}-hp`).querySelector('.gb-hp-shield:not(.soak)');
   if (!chunk) return;
   chunk.classList.remove('ghost');
   chunk.classList.add('soak');
@@ -2613,7 +2630,7 @@ function soakShield() {
 function clearPreview() {
   $('player-plate').classList.remove('block-preview');
   $('player-status').querySelector('.badge.preview')?.remove();
-  if (battle) shieldPreview(battle.block);
+  if (battle) { shieldPreview(battle.block); enemyShield(); }
 }
 
 /**
