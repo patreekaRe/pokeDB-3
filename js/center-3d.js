@@ -781,7 +781,7 @@ function tickHeal(now) {
   } else if (popping) {
     const k = Math.min(1, (now - popping.from) / popping.ms);
     walker.size = ease(k);
-    if (k >= 1) { popping = null; walker.size = 1; walker.hopUntil = now + 500; }
+    if (k >= 1) { popping = null; busy = false; walker.size = 1; walker.hopUntil = now + 500; }
   }
   if (vitals.fill) {
     const f = vitals.fill, k = Math.min(1, (now - f.from) / f.ms);

@@ -1966,23 +1966,27 @@ function warmCenter3d() {
 /** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
 const MIN_DECK = 7;
 
-function restSite() {
+/* `used`: a choice was made, so the room stays (the player walks out when they like) with every choice greyed. */
+function restSite({ used = false } = {}) {
   const restHeal = (run.mods.restHeal + (perk('wellFed') ? 0.05 : 0)) * (augs().restMult || 1);   // shop passive: Well-Fed Bonus; Rest Stop
-  const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
+  const heal = used ? 0 : Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
   const banned = run.relics.includes('choice-band');
   const atMin = run.deck.length <= MIN_DECK;
   const herb = run.relics.includes('mental-herb') || !!augs().centerForget;   // like StS's Peace Pipe: only this relic (or Clean Slate) lets the PC forget a move
   const upgradable = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
+  const spent = "You've already been helped here. Leave when you're ready.";
+  if (used) checkpoint();
+  const thenStay = () => restSite({ used: true });
   // no tiles here: the healing machine, the PC and Chansey in the scene are the choices, each under a bouncing label
   showChoice({
     title: 'Pokémon Center',
-    sub: ['A safe place to catch your breath.', herb ? 'Use the healing machine to rest, the PC to forget a move (your Mental Herb), or ask Chansey for a PP Up.'
-      : 'Use the healing machine to rest, or ask Chansey for a PP Up. The PC can forget a move once you hold a Mental Herb.'],
+    sub: used ? spent : herb ? 'Use the healing machine to rest, the PC to forget a move (your Mental Herb), or ask Chansey for a PP Up.'
+      : 'Use the healing machine to rest, or ask Chansey for a PP Up. The PC can forget a move once you hold a Mental Herb.',
     options: [
       {
-        node: shortSign(banned ? 'No rest' : heal ? `Heal +${heal}` : 'Full HP',
-          banned ? 'Your Choice Band won\'t let you rest.' : heal ? `Rest: heal ${heal} HP.` : 'You\'re already at full HP.'),
-        disabled: banned,
+        node: shortSign(banned ? 'No rest' : used ? 'Heal' : heal ? `Heal +${heal}` : 'Full HP',
+          used ? spent : banned ? 'Your Choice Band won\'t let you rest.' : heal ? `Rest: heal ${heal} HP.` : 'You\'re already at full HP.'),
+        disabled: banned || used,
         onPick: async () => {
           const thisRun = run;
           const before = run.hp;
@@ -2001,24 +2005,29 @@ function restSite() {
           showChoiceHp();
           await sleep(seconds * 1000);
           if (run !== thisRun) return;                 // the run was abandoned during the chime
-          // a moment to see the full bar, with Chansey's goodbye, before heading back out
+          // the room stays: the choices grey out and the player walks out over the doormat (or Leave) when they like
+          checkpoint();
+          $('reward-options').classList.remove('resting');
+          for (const btn of $('reward-options').querySelectorAll('.reward-option')) {
+            btn.disabled = true;
+            const label = btn.querySelector('.center-label');
+            if (label) label.title = spent;
+          }
+          $('reward-skip').onclick = () => { if (run === thisRun) showMap(); };   // showChoice()'s Leave was spent with the pick
           sayLines([`${stageName(run.starter, run.stage)} is feeling much better! Come back any time!`]);
-          await sleep(2200);
-          if (run !== thisRun) return;
-          showMap();
         },
       },
       {
         node: shortSign(herb ? 'Forget card' : '🔒 Forget',
-          !herb ? 'Needs a Mental Herb.'
+          used ? spent : !herb ? 'Needs a Mental Herb.'
             : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : 'Remove a card from your deck.'),
-        disabled: !herb || atMin,
-        onPick: () => forgetMove(restSite),
+        disabled: !herb || atMin || used,
+        onPick: () => forgetMove(restSite, thenStay),
       },
       {
-        node: shortSign(upgradable ? 'Upgrade card' : 'All upgraded', upgradable ? 'PP Up: upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
-        disabled: !upgradable,
-        onPick: () => upgradeMove(restSite),
+        node: shortSign(upgradable || used ? 'Upgrade card' : 'All upgraded', used ? spent : upgradable ? 'PP Up: upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
+        disabled: !upgradable || used,
+        onPick: () => upgradeMove(restSite, thenStay),
       },
     ],
     skipLabel: 'Leave',
