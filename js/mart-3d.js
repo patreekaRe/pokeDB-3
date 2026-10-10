@@ -1,7 +1,7 @@
 /* mart-3d.js  -  the run's Poké Mart as a 3D room you walk about (branch pokemart-3d; the user's ask, 2026-10-09, after
    the HeartGold / SoulSilver Marts and the walk-in Center, js/center-3d.js): white walls over a blue wainscot, pale blue
-   tiles, the moves on sale standing on a lit rack along the back wall, the items on a shelf on the right, the relics under
-   the glass of Kecleon's counter on the left, the PC on that counter to forget a move, ball bins and plants. It is only
+   tiles, the moves on sale standing on a lit rack along the back wall, the items on a unit on the right, the relics under
+   glass domes on a table in front of it, Kecleon's counter on the left with the PC to forget a move, ball bins and plants. It is only
    the scene: martRoom() in js/run.js keeps the shop's choices, its two-tap Buy, text box and bar, and this lays the room
    under them. A tap on a ware walks your Pokémon up to it and presses that choice; the doormat walks it out. */
 
@@ -18,13 +18,14 @@ const COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;
 const PITCH = 0.42, ACROSS = 8.8, LOOK_Y = 0.9, SHOT_TOP = 3.4;
-// the moves on a counter-height cabinet of their own in the middle, and the items and relics on a unit of their own on
-// the right (the user's ask, 2026-10-09: the cards were lost among the items under them): the items on its cabinet, the
-// relics under glass domes on a shelf over them
-const RACK = { x0: 3, n: 5, low: 0.9, h: 1.0, top: 2.25 };
-const ITEMS = { x0: 8, n: 3, cx: 4.1, w: 2.7, shelf: 1.62, top: 2.55 };
+// the moves on a counter-height cabinet of their own in the middle, the items on a unit of their own on the right (the
+// user's ask, 2026-10-09: the cards were lost among the items under them), and the relics under glass domes on a table
+// of their own on the floor in front of it (their next ask, the same day); every price stands over its ware
+const RACK = { x0: 3, n: 5, low: 0.9, h: 1.0, top: 2.45 };
+const ITEMS = { x0: 8, n: 3, cx: 3.6, w: 2.7, top: 2.45 };
+const TABLE = { x0: 8, n: 2, y: 4, h: 0.72 };
 const COUNTER = { x0: 1, x1: 2, y: 2, h: 0.95, d: 0.8 };
-const SHELF = { x0: 9, n: 2, y: 4, h: 0.98 };         // a gondola of the Mart's everyday goods
+const SHELF = { x0: 0, n: 2, y: 4, h: 0.98 };         // a gondola of the Mart's everyday goods
 const DOOR = { x: 5, y: ROWS - 1 };
 const CLERK = { x: 1.55, y: 1 };
 
@@ -40,8 +41,6 @@ let opts = null, aim = null, raf = 0, last = 0, calm = false, shot = null, viewW
 let flying = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
-// the middle of the moves' and the items' units
-const WARES_MID = (tileX(RACK.x0) - 0.65 + ITEMS.cx + ITEMS.w / 2) / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
 const key = (x, y) => `${x},${y}`;
 const wx = (t) => (t + 0.4) * U;
@@ -213,10 +212,10 @@ function tagArt(text, { dear = false, sold = false } = {}) {
   const g = c.getContext('2d');
   g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.roundRect(6, 10, 228, 78, 16); g.fill();
   g.fillStyle = sold ? '#e4e8ee' : '#ffffff'; g.beginPath(); g.roundRect(4, 4, 228, 78, 16); g.fill();
-  g.fillStyle = sold ? '#a8b0bc' : dear ? '#e84838' : '#3a7ce0'; g.beginPath(); g.roundRect(4, 4, 30, 78, [16, 0, 0, 16]); g.fill();
-  g.font = `900 ${sold ? 34 : 50}px "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = sold ? '#a8b0bc' : dear ? '#e84838' : '#3a7ce0'; g.beginPath(); g.roundRect(4, 4, 16, 78, [16, 0, 0, 16]); g.fill();
+  g.font = `900 ${sold ? 38 : 64}px "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = sold ? '#8a929e' : dear ? '#d02818' : C.navy;
-  g.fillText(text, 134, 46);
+  g.fillText(text, 126, 47, 200);
   return c;
 }
 
@@ -224,7 +223,9 @@ function tagArt(text, { dear = false, sold = false } = {}) {
 
 const images = new Map();
 function image(src) {
-  if (!images.has(src)) images.set(src, new Promise(done => { const i = new Image(); i.onload = () => done(i); i.onerror = () => done(null); i.src = src; }));
+  // CORS, as githack can hand an image over from its CDN's domain, and a canvas drawn from it then can't be a texture
+  // (the user's phone showed every card and sprite blank)
+  if (!images.has(src)) images.set(src, new Promise(done => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => done(i); i.onerror = () => done(null); i.src = src; }));
   return images.get(src);
 }
 
@@ -449,16 +450,25 @@ function buildRack() {
   for (let i = 0; i < RACK.n; i++) blocked.add(key(RACK.x0 + i, 0));
 }
 
-/** The items' unit on the right: the items on its top, a glass-fronted shelf over them for the relics. */
+/** The items' unit on the right: the items on its top. */
 function buildItems() {
-  const { cx, w } = ITEMS, wall = -ROWS / 2;
-  const { white, blue } = wallUnit(cx, w, ITEMS.top, [-0.9, 0, 0.9].map(d => cx + d), 'ITEMS');
-  box(w - 0.16, 0.05, 0.36, white, cx, ITEMS.shelf, wall + 0.2);
-  box(w - 0.16, 0.06, 0.03, blue, cx, ITEMS.shelf - 0.005, wall + 0.39);
-  const strip = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.02, 0.05), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
-  strip.position.set(cx, ITEMS.shelf - 0.04, wall + 0.3);
-  room.add(strip);
+  const { cx, w } = ITEMS;
+  wallUnit(cx, w, ITEMS.top, [-0.9, 0, 0.9].map(d => cx + d), 'ITEMS');
   for (let i = 0; i < ITEMS.n; i++) blocked.add(key(ITEMS.x0 + i, 0));
+}
+
+/** The relics' table on the floor: a white display table with rounded ends, a blue top and a gold rim, RELICS on its
+    front. */
+function buildTable() {
+  const w = TABLE.n - 0.1, cx = tileX(TABLE.x0) + (TABLE.n - 1) / 2, cz = tileZ(TABLE.y), H = TABLE.h, D = 0.78;
+  const white = std({ color: '#f8fafe', roughness: 0.35 }), blue = std({ color: '#3a7ce0', roughness: 0.4 });
+  const gold = std({ color: '#f8d048', roughness: 0.35, metalness: 0.5 });
+  mesh(rbox(w, H - 0.08, D, 0.08), white, cx, (H - 0.08) / 2, cz);
+  mesh(rbox(w - 0.12, 0.08, D - 0.12, 0.03), blue, cx, 0.04, cz);
+  mesh(rbox(w + 0.08, 0.08, D + 0.08, 0.035), blue, cx, H - 0.04, cz);
+  mesh(rbox(w + 0.1, 0.025, D + 0.1, 0.012), gold, cx, H - 0.085, cz);
+  header('RELICS', 1.1, 0.24).position.set(cx, H * 0.55, cz + D / 2 + 0.005);
+  for (let i = 0; i < TABLE.n; i++) blocked.add(key(TABLE.x0 + i, TABLE.y));
 }
 
 /** Kecleon's counter left of the unit: blue, a white stripe with the Poké Ball, a white top; the PC on its right end. */
@@ -545,13 +555,13 @@ function buildRoom() {
   buildRack();
   buildItems();
   buildCounter();
+  buildTable();
   buildShelf();
   ballBin(2, 6);
   ballBin(8, 6);
   piece('centerplant', tileX(0), tileZ(6)); blocked.add(key(0, 6));
   piece('centerplant', tileX(10), tileZ(6)); blocked.add(key(10, 6));
   piece('centerplant', tileX(0), tileZ(0)); blocked.add(key(0, 0));
-  ballBin(0, 3);
 
   const { step, mat: m } = doormat(tileX(DOOR.x), ROWS / 2 + 0.47, std({ color: '#c8d0e0' }));
   m.userData.spot = 'exit';
@@ -571,22 +581,23 @@ function buildRoom() {
 
 /* ---------- the wares ---------- */
 
-/** Where each ware stands, where its price tag hangs and where your Pokémon stands to look at it: the moves along the
-    middle unit's top, the items along the right unit's top, the relics on its shelf over them. */
+/** Where each ware stands, where its price stands over it and where your Pokémon stands to look at it: the moves along
+    the middle unit's top, the items along the right unit's top, the relics on their table. */
 function slotOf(kind, i, of) {
   const wall = -ROWS / 2;
   if (kind === 'card') {
     const x = RACK.x0 + i, at = new THREE.Vector3(tileX(x), RACK.low + 0.03 + RACK.h / 2, wall + 0.3);
-    return { at, tag: new THREE.Vector3(at.x, RACK.low - 0.2, wall + 0.61), step: { x, y: 1 } };
+    return { at, tag: new THREE.Vector3(at.x, RACK.low + RACK.h + 0.24, wall + 0.34), step: { x, y: 1 } };
   }
-  const gap = kind === 'relic' ? 1.1 : 0.88, ax = ITEMS.cx + (i - (of - 1) / 2) * gap;
-  const step = { x: Math.max(ITEMS.x0, Math.min(ITEMS.x0 + ITEMS.n - 1, Math.round(ax + COLS / 2 - 0.5))), y: 1 };
+  const clamp = (ax, x0, n) => Math.max(x0, Math.min(x0 + n - 1, Math.round(ax + COLS / 2 - 0.5)));
   if (kind === 'relic') {
-    const at = new THREE.Vector3(ax, ITEMS.shelf + 0.27, wall + 0.24);
-    return { at, tag: new THREE.Vector3(ax, ITEMS.shelf - 0.07, wall + 0.41), step };
+    const cx = tileX(TABLE.x0) + (TABLE.n - 1) / 2, ax = cx + (i - (of - 1) / 2) * 0.9, z = tileZ(TABLE.y);
+    const at = new THREE.Vector3(ax, TABLE.h + 0.27, z);
+    return { at, tag: new THREE.Vector3(ax, TABLE.h + 0.86, z + 0.05), step: { x: clamp(ax, TABLE.x0, TABLE.n), y: TABLE.y + 1 } };
   }
+  const ax = ITEMS.cx + (i - (of - 1) / 2) * 0.88;
   const at = new THREE.Vector3(ax, RACK.low + 0.27, wall + 0.36);
-  return { at, tag: new THREE.Vector3(ax, RACK.low - 0.2, wall + 0.61), step };
+  return { at, tag: new THREE.Vector3(ax, RACK.low + 0.84, wall + 0.4), step: { x: clamp(ax, ITEMS.x0, ITEMS.n), y: 1 } };
 }
 
 function tagMesh(text, look, w = 0.56) {
@@ -605,8 +616,9 @@ async function buildWares(list) {
     const spot = slotOf(w.kind, counts[w.kind]++, of(w.kind)), g = new THREE.Group();
     g.position.copy(spot.at);
     const entry = { ...w, spot, group: g, base: spot.at.clone(), seed: Math.random() * 6 };
-    const tag = tagMesh(w.sold ? 'SOLD OUT' : `₽${w.price}`, { dear: w.dear, sold: w.sold }, w.kind === 'relic' ? 0.5 : w.kind === 'card' ? 0.56 : 0.62);
+    const tag = tagMesh(w.sold ? 'SOLD OUT' : `₽${w.price}`, { dear: w.dear, sold: w.sold }, w.kind === 'card' ? 0.92 : 0.84);
     tag.position.copy(spot.tag);
+    tag.rotation.x = -PITCH * 0.5;
     group.add(tag);
     if (w.kind === 'card' && !w.sold) {
       const id = w.thing.id;
@@ -786,8 +798,7 @@ function fitShot() {
 function placeCamera(dt) {
   if (!shot) return;
   const edge = COLS / 2 + 0.4, half = shot.half;
-  // leaning towards the middle of the two units, so a phone sees the moves and the items at once from the door
-  const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x * 0.6 + WARES_MID));
+  const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x * 0.6));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist);
@@ -963,7 +974,7 @@ export async function mountMart(o) {
   scene.add(wares.group);
   if (!back && !again) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
-    camX = walker.x * 0.6 + WARES_MID;
+    camX = walker.x * 0.6;
   }
   walker.path = [];
   const pc = o.wares.find(w => w.kind === 'pc');

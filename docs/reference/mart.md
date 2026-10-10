@@ -66,9 +66,12 @@ bunting, POKé MART on a blue sign, pale blue tiles with a runner to the door. T
 ask, 2026-10-09: the cards were lost among the items under them, and looked black on their phone): MOVES in the middle, the
 cards on easels along its top (`cardArt()` paints `.card.small` on a canvas: cost, name, rarity, art; unlit,
 `MeshBasicMaterial`, so no light or shadow darkens them; a sheen sweeps across them), and ITEMS on the right (`ITEMS`,
-`buildItems()`), the items on its top, the relics under glass domes on a shelf over them; each ware has a shelf-edge price
-tag (red when too dear, SOLD OUT once bought). The camera leans towards the middle of the two (`WARES_MID`) and a phone's
-shot is `ACROSS` 8.8 tiles, so both fit from the door. Kecleon stands behind a
+`buildItems()`), the items on its top; the relics under glass domes on a RELICS table of their own on the floor in front of
+it (`TABLE`, `buildTable()`; the user's ask, 2026-10-09, with the gondola of goods moved to the left wall). Each ware's
+price stands over it, big, tilted to the camera (red when too dear, SOLD OUT once bought). The camera starts centred on the
+door and follows your Pokémon (it began leaning right, the user's call); a phone's shot is `ACROSS` 8.8 tiles. The wares'
+PNGs load with `crossOrigin` (githack can serve them from its CDN's domain, which taints the canvas so WebGL uploads it
+blank: on the user's phone every card and sprite was missing). Kecleon stands behind a
 blue counter on the left with the PC on it (its "Forget ₽N" sign, `.mart3d-sign`). A tap on a ware walks your Pokémon up
 and presses its choice (a greyed one says why in the text box); a bought ware flies into your Pokémon as the shop redraws;
 the doormat presses Leave. `warmMart()` builds it while the map is up. `?mart` (`&starter=id`, `&money=N`) walks a
