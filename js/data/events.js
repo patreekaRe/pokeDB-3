@@ -46,6 +46,7 @@ export const EVENTS = [
   {
     id: 'team-rocket', icon: '🚀', name: 'Team Rocket',
     text: 'A Team Rocket grunt blocks the road and demands a toll!',
+    music: 'team-rocket',          // the user's (2026-10-09): only in the room; the fight cuts to the elite song
     toll: [30, 45, 60, 75],        // ₽
     fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), by biome id: from its own wilds, so a new

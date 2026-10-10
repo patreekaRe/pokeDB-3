@@ -2259,6 +2259,7 @@ function eventRoom(node, after) {
   const react = (move) => () => eventRoom(node, move);
   const { options, leave = true, sub = event.text, figures } = EVENT_CHOICES[event.id](event, node.event, back, react);
   const scene = EVENT_SCENES[event.id];
+  if (event.music) playMusic(event.music);   // showMap() brings the map's back
   showChoice({
     title: `${event.icon} ${event.name}`,
     sub: after ? [] : sub,
