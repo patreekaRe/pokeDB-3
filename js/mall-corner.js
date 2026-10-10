@@ -37,7 +37,23 @@ const GAMES = {
     line: 'The Gachapon! Big Pokémon dolls you can\'t buy anywhere else, a new set every Monday. Tap again to have a look, meow.',
     open: (done) => import('./gachapon.js').then(m => m.openGachapon(done)) },
 };
-const PILLARS = [[2, 9], [6, 10], [14, 10], [18, 9]];
+/* The betting games (2026-10-10, the user's ask): a bank of slot machines either side of the runner, a Blackjack and a
+   Roulette table, and High-Low. */
+const CASINO = {
+  slots: { ats: [{ x: 7, y: 8 }, { x: 8, y: 8 }, { x: 12, y: 8 }, { x: 13, y: 8 }], name: 'Slots', colour: '#ff5a5a',
+    line: 'The slots! Bet 10 to 100 a spin. Three 7s pays a hundred times, meow. Tap again to play.',
+    open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
+  highlow: { at: { x: 2, y: 5 }, name: 'High-Low', colour: '#ffd84a',
+    line: 'High-Low: higher or lower, let it ride or cash out. Tap again to play, meow.',
+    open: (done) => import('./highlow.js').then(m => m.openHighLow(done)) },
+  blackjack: { at: { x: 3, y: 7 }, w: 2, name: 'Blackjack',
+    line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
+    open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
+  roulette: { at: { x: 16, y: 7 }, w: 2, name: 'Roulette',
+    line: 'Roulette! Red or black, odd or even, or one lucky number. Tap again to sit down, meow.',
+    open: (done) => import('./roulette.js').then(m => m.openRoulette(done)) },
+};
+const PILLARS = [[1, 9], [6, 10], [14, 10], [19, 9]];
 const ATTRACT = [[0, 4], [0, 6], [0, 8], [20, 4], [20, 6], [20, 8]];   // scenery cabinets down the side walls
 
 const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
@@ -47,7 +63,7 @@ const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 export const KEEPER = {
   id: 'meowth', name: 'Meowth', src: 'assets/pokemon/meowth-front.gif',
   hello: ['Welcome to the Game Corner, meow! Everything here\'s for PokéCoins.', 'A customer! Step right up, the prizes won\'t buy themselves, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
-  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'I put a doll in that Gachapon I\'ve never seen myself. Lucky you if you get it!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?'],
+  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'I put a doll in that Gachapon I\'ve never seen myself. Lucky you if you get it!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Feeling lucky? The slots, the tables and High-Low take bets. The house only closes once you\'re 500 up for the day, meow.', 'Blackjack against me? Bold. I like bold. I like your coins more.'],
 };
 
 /* ---------- painting ---------- */
@@ -171,7 +187,7 @@ const PERK_ART = {
 
 /** A game cabinet's face: a lit marquee in its colour, its screen's picture (`screen(g, s)` draws in the 2.2..15.8 x
     7.6..18 box), the buttons lit, FREE PLAY. */
-function gameArt(title, colour, screen) {
+function gameArt(title, colour, screen, foot = 'FREE PLAY') {
   const f = fine(18, 27, 10), { g, rr, lin, shine } = f, s = shine();
   rr(0, 0, 18, 27, 1.4, lin(0, 0, 18, 0, [GC.chrome[2], GC.chrome[0], GC.chrome[1], GC.chrome[2]]));
   rr(1.2, 1.2, 15.6, 5, 1, lin(0, 1.2, 0, 6.2, [colour, '#00000060']));
@@ -184,11 +200,26 @@ function gameArt(title, colour, screen) {
     g.fillStyle = c; g.beginPath(); g.arc(x, 21, 1.4, 0, Math.PI * 2); g.fill();
     s.fillStyle = c; s.beginPath(); s.arc(x, 21, 1, 0, Math.PI * 2); s.fill();
   }
-  words(g, 'FREE PLAY', 9, 25, 1.9, NEON.gold); words(s, 'FREE PLAY', 9, 25, 1.9, '#ffe890');
+  words(g, foot, 9, 25, 1.9, NEON.gold); words(s, foot, 9, 25, 1.9, '#ffe890');
   return f.c;
 }
 
 const SCREENS = {
+  slots(g, s, rr) {
+    rr(2.2, 7.6, 13.6, 10.4, 0.8, '#1a0e20');
+    for (let i = 0; i < 3; i++) {
+      rr(3 + i * 4.2, 8.6, 3.6, 8.4, 0.6, '#f8f4ec');
+      s.fillStyle = '#806040'; s.beginPath(); s.roundRect(3 + i * 4.2, 8.6, 3.6, 8.4, 0.6); s.fill();
+      words(g, '7', 4.8 + i * 4.2, 12.9, 4.6, '#e02030');
+    }
+    g.strokeStyle = '#ffd84a'; g.lineWidth = 0.4; g.beginPath(); g.moveTo(2.6, 12.8); g.lineTo(15.4, 12.8); g.stroke();
+  },
+  highlow(g, s, rr) {
+    rr(2.2, 7.6, 13.6, 10.4, 0.8, '#1f6a3a');
+    s.fillStyle = '#2f8a50'; s.beginPath(); s.roundRect(2.2, 7.6, 13.6, 10.4, 0.8); s.fill();
+    for (const [x, t, red] of [[4, '7', false], [10, '?', true]]) { rr(x, 8.6, 4.4, 6.4, 0.6, '#ffffff'); words(g, t, x + 2.2, 11.8, 3.4, red ? '#d02030' : '#202028'); }
+    words(g, '▲ ▼', 9, 16.6, 2, '#ffe070');
+  },
   voltorb(g, s, rr) {
     rr(2.2, 7.6, 13.6, 10.4, 0.8, '#2f8a58');
     s.fillStyle = '#3a9a68'; s.beginPath(); s.roundRect(2.2, 7.6, 13.6, 10.4, 0.8); s.fill();
@@ -236,6 +267,38 @@ function gachaArt() {
   rr(3.5, 13.6, 13, 5, 1.6, '#2a0a14');
   rr(4.3, 14.4, 11.4, 3.6, 1.2, lin(0, 14.4, 0, 18, ['#120408', '#3a1020']));
   s.fillStyle = '#601830'; s.beginPath(); s.roundRect(4.3, 14.4, 11.4, 3.6, 1.2); s.fill();
+  return f.c;
+}
+
+/** A table's felt from above, `w` tiles by one: green, a gold line round it, and its game's markings. */
+function feltArt(id, w) {
+  const W = w * 16, H = 16, f = fine(W, H, 10), { g, rr, lin } = f;
+  rr(0, 0, W, H, 1.5, lin(0, 0, 0, H, ['#2f8a50', '#1f6a3a']));
+  g.strokeStyle = '#e8c860'; g.lineWidth = 0.4; g.beginPath(); g.roundRect(0.8, 0.8, W - 1.6, H - 1.6, 1.2); g.stroke();
+  if (id === 'blackjack') {
+    g.beginPath(); g.arc(W / 2, -6, 17, 0.35 * Math.PI, 0.65 * Math.PI); g.stroke();
+    words(g, 'BLACKJACK PAYS 3 TO 2', W / 2, 5, 1.6, '#ffe890');
+    words(g, 'DEALER STANDS ON 17', W / 2, 13.5, 1.2, '#c8f0c8');
+  } else {
+    for (let n = 1; n <= 36; n++) {
+      const c = (n - 1) % 12, r = Math.floor((n - 1) / 12), x = 1.6 + c * ((W - 12) / 12), y = 2 + r * 3.2;
+      rr(x, y, (W - 12) / 12 - 0.3, 2.8, 0.3, [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(n) ? '#c02030' : '#202028');
+    }
+    words(g, 'ROULETTE', (W - 10) / 2, 13.4, 1.6, '#ffe890');
+  }
+  return f.c;
+}
+
+/** The roulette wheel's top: red and black pockets round a gold hub. */
+function wheelArt() {
+  const f = fine(32, 32, 8), { g } = f;
+  for (let i = 0; i < 37; i++) {
+    g.fillStyle = i === 0 ? '#2a8a40' : i % 2 ? '#c02030' : '#202028';
+    g.beginPath(); g.moveTo(16, 16); g.arc(16, 16, 15, i / 37 * Math.PI * 2, (i + 1) / 37 * Math.PI * 2); g.fill();
+  }
+  const r = g.createRadialGradient(14, 14, 1, 16, 16, 8);
+  r.addColorStop(0, '#ffe8a0'); r.addColorStop(1, '#a87818');
+  g.fillStyle = r; g.beginPath(); g.arc(16, 16, 7, 0, Math.PI * 2); g.fill();
   return f.c;
 }
 
@@ -420,6 +483,74 @@ export function buildCorner(THREE, size) {
     group.add(m);
   }
 
+  // the slot bank and High-Low: cabinets like the games', a slot machine with a lever on its side
+  const lever = std({ color: '#cdc8e0', metalness: 0.6, roughness: 0.3 });
+  const casinoCab = (id, gm, x, y, slot) => {
+    blocked.add(`${x},${y}`);
+    const m = new THREE.Group();
+    m.position.set(tileX(x), 0, tileZ(y));
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, CAB_H, 0.66), [violet, violet, chrome, chrome, lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id], 'BET 10-100'), 1), violet]);
+    body.position.y = CAB_H / 2;
+    body.castShadow = body.receiveShadow = true;
+    const topper = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.18, 0.54), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.9 }));
+    topper.position.y = CAB_H + 0.09;
+    m.add(body, topper);
+    if (slot) {
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.5, 10), lever);
+      rod.position.set(0.5, CAB_H * 0.62, 0.05);
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07, 14, 10), std({ color: GC.red, emissive: new THREE.Color(GC.red), emissiveIntensity: 0.4 }));
+      knob.position.set(0.5, CAB_H * 0.62 + 0.27, 0.05);
+      m.add(rod, knob);
+    }
+    const spot = { id: `${id}${x}`, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x, y: y + 1 },
+      frame: { x: tileX(x), y: CAB_H / 2, z: tileZ(y) + 0.35, w: 1, h: CAB_H + 0.1 } };
+    spots.push(spot);
+    m.traverse(o => { o.userData.front = spot; });
+    group.add(m);
+  };
+  for (const at of CASINO.slots.ats) casinoCab('slots', CASINO.slots, at.x, at.y, true);
+  casinoCab('highlow', CASINO.highlow, CASINO.highlow.at.x, CASINO.highlow.at.y, false);
+
+  // the tables: green felt on a dark wood base, two tiles wide; the roulette wheel turns slowly on its end
+  const wood = std({ color: '#4a2a18', roughness: 0.6 });
+  const wheels = [];
+  for (const id of ['blackjack', 'roulette']) {
+    const gm = CASINO[id], { x, y } = gm.at, w = gm.w;
+    for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
+    const t = new THREE.Group();
+    t.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y));
+    const base = new THREE.Mesh(new THREE.BoxGeometry(w - 0.1, 0.72, 0.86), wood);
+    base.position.y = 0.36;
+    base.castShadow = base.receiveShadow = true;
+    const rim = new THREE.Mesh(new THREE.BoxGeometry(w + 0.02, 0.08, 0.98), gold);
+    rim.position.y = 0.74;
+    const felt = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.08, 0.86), lit(feltArt(id, w), 0.5));
+    felt.rotation.x = -Math.PI / 2;
+    felt.position.y = 0.785;
+    t.add(base, rim, felt);
+    if (id === 'roulette') {
+      const wheelTex = texOf(wheelArt());
+      const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.08, 40), [wood, std({ map: wheelTex, roughness: 0.4 }), wood]);
+      disc.position.set(w / 2 - 0.42, 0.83, 0);
+      const spindle = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 10), gold);
+      spindle.position.set(w / 2 - 0.42, 0.92, 0);
+      t.add(disc, spindle);
+      wheels.push(disc);
+    } else {
+      for (const [cx, cz, r] of [[-0.3, 0.1, 0.2], [0.05, 0.12, -0.1], [0.4, 0.08, 0.15]]) {   // cards dealt on the felt
+        const c = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.18), std({ color: '#ffffff' }));
+        c.rotation.set(-Math.PI / 2, 0, r);
+        c.position.set(cx, 0.79, cz);
+        t.add(c);
+      }
+    }
+    const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor(w / 2), y: y + 1 },
+      frame: { x: tileX(x) - 0.5 + w / 2, y: 0.5, z: tileZ(y) + 0.5, w: w + 0.1, h: 1 } };
+    spots.push(spot);
+    t.traverse(o => { o.userData.front = spot; });
+    group.add(t);
+  }
+
   // the Gachapon: a red stand under a glass dome full of capsules
   {
     const { x: gx, y: gy } = GAMES.gacha.at;
@@ -537,6 +668,7 @@ export function buildCorner(THREE, size) {
       for (const sc of screens) if (!sc.held && now >= sc.next) { sc.at += 1; sc.next = now + CYCLE; sc.paint(); }
       rings.forEach((m, i) => { m.emissiveIntensity = 0.7 + 0.6 * Math.max(0, Math.sin(now / 260 - i * 0.7)); });
       screenMats.forEach((m, i) => { m.emissive.set(tints[Math.floor(now / 900 + i) % 4]); });
+      for (const w of wheels) w.rotation.y = now / 1400;
     },
   };
 }
