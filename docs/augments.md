@@ -240,3 +240,26 @@ Before (150 climbs a type) / after (300): floor 100 reached by Fire 26 / 16%, Gr
 Speed Demon 0 / 28%, Gambler 5 / 27%, Sudden Death 0 / 22%, Berserker 0 / 15%. Still near-always taken: Fire's own Rebirth
 (100%, 34 offers) and Cauterize (97%), Grass's Photosynthesis (93%), all type-only; left alone since Fire is the weakest
 climber. Never taken still: Mulligan, Scavenger, Ambush, Refresh, Wildfire, Thorn Garden (not reworked this pass).
+
+## Part d (2026-10-10, bot-checked)
+
+Re-checked with 72 climbs of 6 flights each (one augment from floor 1, ~±3.5 floors noise): Bodyguard +2.5, Golden Touch
++4.3, Card Shark +3.7 (Grass) and Overcharge +3.0 (Water) were noise at 24 climbs (-11 to -19), not traps; their ranks are
+fixed and the bot now takes them 42-47% of the time. Risky Climb was a real trap: Grass -21 floors, median floor 2, its
+Alphas dealt from floor 1 where the tower deals none. From floor 3 (`RISKY_FROM`) it measures Grass -6, Water +11, Fire +19.
+
+Fire's losses are spread over floors 20-80, and climbs reaching 90 nearly always win, so healing on its late Prismatics
+alone (Phoenix and Cauterize heal 3: 17%) didn't move floor 100. Its Silver and Gold augments got stronger too:
+
+| Augment | Was | Now |
+|---|---|---|
+| Kindling | Burn +1 | Burn +2 |
+| Ember Skin | 8 block | 8 block, heal 4 after every won fight |
+| Heat Shield | 2 block per Burn | 3 |
+| Cauterize | Heal 2 per Burn tick | 3 |
+| Wildfire | Burn never goes down | and heals 1 per tick |
+| Phoenix | Blaze always on, doubled | and heal 2 every turn |
+
+Full climbs (Fire 150 / 120 per candidate, then 200 a type): floor 100 Fire 16 -> 22% (median 53 -> 57), Grass 49 -> 51%,
+Water 32 -> 42% (median 65 -> 83). Water rose with the trap fixes (Risky Climb, taken 73% now, is worth +11 floors to it),
+so Fire still trails Water by 20; left for the user (roadmap item 21).

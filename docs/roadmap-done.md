@@ -1732,6 +1732,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Speed Demon, Sudden Death (now every foe -25% HP for -25% max HP, `enemyHp`), Overclock, Pandemonium and Gambler (your
   attacks x3 or x0.75, enemies unchanged) reworked from never-taken to 15-61%. Floor 100: Fire 26 -> 16%, Grass 59 -> 49%,
   Water 39 -> 32%. The table and numbers are in `docs/augments.md` (Tuning); pokeDB-sim's ranks re-measured.
+- **Sky Pillar augments, part d** (2026-10-10): Fire's Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix
+  stronger; Risky Climb's Alphas start on floor 3 (`RISKY_FROM`). Bodyguard, Golden Touch, Card Shark and Overcharge were
+  noise, not traps. Floor 100 (200 climbs): Fire 16 -> 22%, Grass 49 -> 51%, Water 32 -> 42%. Detail in `docs/augments.md`.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
