@@ -76,6 +76,8 @@ export const AUG_TIER_NAMES = { silver: 'Silver', gold: 'Gold', prismatic: 'Pris
 export const AUG_REROLLS = 1;           // a climb's rerolls (Deep Pockets adds one)
 export const AUG_TIER_UP = 0.1;         // each slot's seeded chance of being one tier up (Arena's surprise)
 export const AUG_OFFER = 3;
+// Risky Climb's Alphas start where the tower's own do (landingTypes()): from floor 1 they killed the bot on floor 1 or 2
+export const RISKY_FROM = 3;
 
 export const AUGMENTS = [
   // ---------- Silver (floors 1-30) ----------
@@ -109,9 +111,9 @@ export const AUGMENTS = [
   { id: 'mulligan',       tier: 'silver', icon: '🔄', name: 'Mulligan',       text: 'Once a fight, shuffle your hand into your draw pile and draw that many.', mulligan: 1 },
   { id: 'cursed-gold',    tier: 'silver', trade: true, icon: '💰', name: 'Cursed Gold',  text: '+300 ₽ now; Poké Mart prices are 25% higher.', moneyNow: 300, martMult: 1.25, set: 'high-roller' },
   { id: 'heavy-pack',     tier: 'silver', trade: true, icon: '🧳', name: 'Heavy Pack',   text: 'Take 2 moves from every card reward; a Sludge joins your deck after every guardian.', rewardTake: 1, sludgeEvery: 1 },
-  { id: 'risky-climb',    tier: 'silver', trade: true, icon: '🧗', name: 'Risky Climb',  text: 'Every landing fight is an Alpha; Alphas pay double ₽.', riskyClimb: true },
-  { id: 'kindling',       tier: 'silver', type: 'fire',  icon: '🪵', name: 'Kindling',   text: 'Every Burn you apply is 1 higher.', burnBonus: 1 },
-  { id: 'ember-skin',     tier: 'silver', type: 'fire',  icon: '🧯', name: 'Ember Skin', text: 'Start every fight with 8 block.', startBlock: 8 },
+  { id: 'risky-climb',    tier: 'silver', trade: true, icon: '🧗', name: 'Risky Climb',  text: 'From floor 3 on, every landing fight is an Alpha; Alphas pay double ₽.', riskyClimb: true },
+  { id: 'kindling',       tier: 'silver', type: 'fire',  icon: '🪵', name: 'Kindling',   text: 'Every Burn you apply is 2 higher.', burnBonus: 2 },
+  { id: 'ember-skin',     tier: 'silver', type: 'fire',  icon: '🧯', name: 'Ember Skin', text: 'Start every fight with 8 block; heal 4 HP after every won fight.', startBlock: 8, fightHeal: 4 },
   { id: 'deep-roots',     tier: 'silver', type: 'grass', icon: '🌳', name: 'Deep Roots', text: 'Overgrow heals 3 more.', abilityAdd: 3 },
   { id: 'pollinate',      tier: 'silver', type: 'grass', icon: '🐝', name: 'Pollinate',  text: 'Every Leech Seed you apply is 1 higher.', seedBonus: 1 },
   { id: 'still-pool',     tier: 'silver', type: 'water', icon: '💧', name: 'Still Pool', text: 'Torrent starts fights with 3 more Tide.', abilityAdd: 3 },
@@ -156,9 +158,9 @@ export const AUGMENTS = [
   { id: 'speed-demon',    tier: 'gold', trade: true, icon: '👟', name: 'Speed Demon',    text: '+1 PP a turn; take 2 more damage from every enemy attack.', energyEachTurn: 1, hitReduce: -2 },
   { id: 'sudden-death',   tier: 'gold', trade: true, icon: '💀', name: 'Sudden Death',   text: 'Every enemy has 25% less HP; so do you (-25% max HP).', enemyHp: 0.75, maxHpMult: 0.75 },
   { id: 'no-mercy',       tier: 'gold', trade: true, icon: '🗡️', name: 'No Mercy',       text: 'Your attacks deal 40% more; Pokémon Centers become fights.', dmgMult: 1.4, noCenters: true },
-  { id: 'heat-shield',    tier: 'gold', type: 'fire',  icon: '🔰', name: 'Heat Shield',  text: 'Whenever you apply Burn, gain 2 block.', burnBlock: 2 },
-  { id: 'wildfire-aug',   tier: 'gold', type: 'fire',  icon: '🌋', name: 'Wildfire',     text: 'Burn never goes down.', burnKeep: true },
-  { id: 'cauterize',      tier: 'gold', type: 'fire',  icon: '🩹', name: 'Cauterize',    text: 'Heal 2 HP whenever Burn hurts an enemy.', burnHeal: 2 },
+  { id: 'heat-shield',    tier: 'gold', type: 'fire',  icon: '🔰', name: 'Heat Shield',  text: 'Whenever you apply Burn, gain 3 block.', burnBlock: 3 },
+  { id: 'wildfire-aug',   tier: 'gold', type: 'fire',  icon: '🌋', name: 'Wildfire',     text: 'Burn never goes down, and heals you 1 HP whenever it hurts an enemy.', burnKeep: true, burnHeal: 1 },
+  { id: 'cauterize',      tier: 'gold', type: 'fire',  icon: '🩹', name: 'Cauterize',    text: 'Heal 3 HP whenever Burn hurts an enemy.', burnHeal: 3 },
   { id: 'photosynthesis', tier: 'gold', type: 'grass', icon: '☀️', name: 'Photosynthesis', text: 'Heal 2 HP at the start of every turn.', healEachTurn: 2, set: 'glutton' },
   { id: 'thorn-garden',   tier: 'gold', type: 'grass', icon: '🥀', name: 'Thorn Garden', text: 'An enemy with Leech Seed takes 3 damage when it attacks.', seedThorns: 3 },
   { id: 'overbloom',      tier: 'gold', type: 'grass', icon: '🌺', name: 'Overbloom',    text: 'Healing past your max HP becomes twice as much block.', overheal: 2 },
@@ -189,7 +191,7 @@ export const AUGMENTS = [
   { id: 'hydra',          tier: 'prismatic', icon: '🐉', name: 'Hydra',          text: 'Every attack hits again for half its damage.', hydra: 0.5 },
   { id: 'copycat',        tier: 'prismatic', icon: '🐱', name: 'Copycat',        text: 'Every turn, the enemy\'s next move joins your hand as a free card, at half its power.', copycat: true },
   { id: 'soul-bond',      tier: 'prismatic', icon: '🔗', name: 'Soul Bond',      text: 'Two random relics now, and another after every guardian.', relicNow: 2, relicEvery: 1 },
-  { id: 'phoenix',        tier: 'prismatic', type: 'fire',  icon: '🐦‍🔥', name: 'Phoenix',  text: 'Blaze is always on, and its bonus is doubled.', blazeAlways: true, abilityMult: 2 },
+  { id: 'phoenix',        tier: 'prismatic', type: 'fire',  icon: '🐦‍🔥', name: 'Phoenix',  text: 'Blaze is always on, and its bonus is doubled. Heal 2 HP at the start of every turn.', blazeAlways: true, abilityMult: 2, healEachTurn: 2 },
   { id: 'rebirth',        tier: 'prismatic', type: 'fire',  icon: '🔥', name: 'Rebirth',    text: 'Once this climb, at 0 HP: revive at full HP with 3 strength.', rebirth: 3 },
   { id: 'supernova',      tier: 'prismatic', type: 'fire',  icon: '☄️', name: 'Supernova',  text: 'Burn deals double damage; every card you exhaust deals 6 to the enemy.', burnTickMult: 2, exhaustDamage: 6 },
   { id: 'world-tree',     tier: 'prismatic', type: 'grass', icon: '🌲', name: 'World Tree', text: 'Leech Seed never goes down, and heals you double.', seedKeep: true, seedHealMult: 2 },

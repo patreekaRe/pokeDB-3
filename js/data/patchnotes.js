@@ -46,6 +46,7 @@ export const NEXT = [
   ['hub', 'In October a different ghost Pokémon greets you in the Clearing each visit, not always Sableye.'],
   ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are gold arcade letters between chevrons, see-through and easy to read, lying flat on the ground.'],
+  ['modes', "Sky Pillar: Fire's own augments are stronger (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
