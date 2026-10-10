@@ -2044,3 +2044,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   a smooth ramp, so the partner sank into each tread, and upstairs it walked into a stairwell only painted on the floor);
   a timber lift with brass-dial header, champagne doors that slide apart with a ding (`lift-ding`), a lit car, and the
   ride is doors open, step in, doors shut, dial swings, out on the other floor. `LIFT` / `rideOn()`.
+- **Furniture store: a ribbon-cutting grand opening** (2026-10-09, the user's ask): the day the store first opens, a red
+  ribbon on brass posts with a bow crosses its front in the hall, a GRAND OPENING! easel beside it and Smeargle waiting.
+  A tap has Smeargle ask you to cut it, a second snips it (`snip` synth): the halves swing down, the bow drops, confetti
+  bursts, the achievement jingle, and Smeargle walks in, you after it. Saved as `secretBase.ribbonCut` (a save already
+  greeted inside skips it); `?ribbon` puts it up for a page load, never saved. `buildRibbon()` / `ribbonTap()` in `js/mall-3d.js`.

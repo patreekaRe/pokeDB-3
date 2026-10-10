@@ -144,6 +144,7 @@ const SOUNDS = {
   rustle:       { synth: grassRustle },      // a wild Pokémon pops out of the tall grass in a biome's intro (biome-intro.js)
   splash:       { synth: waterSplash },      // ...or surfaces out of the water (the Sunken Ruins', ruins-intro.js)
   'lift-ding':  { synth: liftDing },        // the Furniture store's lift arriving, its doors about to open (mall-3d.js)
+  snip:         { synth: scissorSnip },     // ...and its grand opening's ribbon cut
   'plink-0':    { synth: ac => windChime(ac, 1175), gain: 0.45 },   // ...whose intro plinks like drops into still water as its runes wake
   'plink-1':    { synth: ac => windChime(ac, 1397), gain: 0.45 },
   'plink-2':    { synth: ac => windChime(ac, 1760), gain: 0.45 },
@@ -1499,6 +1500,20 @@ Object.assign(SOUNDS, {
   'fx-firework': { synth: ac => fireworkPop(ac, 0.6, 80, 0.3) },
   'fx-heal': { synth: ac => render(ac, 2.2, t => { const i = Math.min(5, Math.floor(t / 0.26)), s = t - i * 0.26; return partials(noteHz([5, 7, 9, 10, 12, 14][i] - 3) * 0.5, s, [[1, 1, 3], [2, 0.3, 6]]) * (t < 1.6 ? 1 : Math.exp(-(t - 1.6) * 6)); }, 0.3) },
 });
+
+/** Big scissors closing: a steel scrape as the blades slide, then the sharp click of them meeting. */
+function scissorSnip(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.32);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0), noise = chipNoise(length, 1);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const scrape = t < 0.16 ? noise[i] * Math.sin(Math.PI * t / 0.16) * 0.35 * (0.6 + 0.4 * Math.sin(2 * Math.PI * 3400 * t)) : 0;
+    const c = t - 0.16, click = c >= 0 ? (noise[i] * 0.7 + Math.sin(2 * Math.PI * 4200 * c) * 0.6 + Math.sin(2 * Math.PI * 2600 * c) * 0.4) * Math.exp(-c / 0.025) : 0;
+    out[i] = (scrape + click) * Math.min(1, (length - i) / (rate * 0.01));
+  }
+  return normalize(buffer, 0.3);
+}
 
 /** A lift arriving: one soft, warm bell, its overtones dying away first. */
 function liftDing(ac) {

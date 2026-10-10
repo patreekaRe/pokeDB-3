@@ -17,7 +17,7 @@ import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } f
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
-import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT } from './mall-furniture.js';
+import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
 import { buildCorner } from './mall-corner.js';
 
 const COLS = 13, ROWS = 7;
@@ -280,11 +280,232 @@ function tapeOver(fr, tape) {
   }
 }
 
+/* ---------- the grand opening ---------- */
+
+// The store's first opening day (2026-10-09, the user's ask): a red ribbon on brass posts across its front, a bow in the
+// middle, a GRAND OPENING board and Smeargle waiting beside it. A tap has Smeargle ask you to cut it, a second snips it:
+// the halves drop, the bow falls, confetti, and Smeargle leads you in. Saved as `ribbonCut`; a save that has already been
+// inside (`shopGreeted`) never sees it. `?ribbon` puts it up for the page load, never saved.
+const RIBBON_PEEK = new URLSearchParams(location.search).has('ribbon');
+const RIBBON_Y = 0.82, RIBBON_Z = -ROWS / 2 + 0.72, RIBBON_TILES = ['1,0', '2,0', '3,0', '4,0'];
+let ribbon = null, confetti = [];
+
+/** Red satin: a darker edge top and bottom, a sheen along the middle. */
+function ribbonArt() {
+  const f = fine(48, 4, 6), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, 4, ['#8a1020', '#e02838', '#ff6070', '#d82030', '#8a1020']); g.fillRect(0, 0, 48, 4);
+  g.fillStyle = 'rgba(255,215,120,0.9)'; g.fillRect(0, 0.3, 48, 0.25); g.fillRect(0, 3.45, 48, 0.25);
+  return f.c;
+}
+
+/** The bow: two puffed loops, a knot and two tails cut in a V. */
+function bowArt() {
+  const f = fine(24, 22, 6), { g, lin } = f;
+  for (const s of [-1, 1]) {
+    g.fillStyle = '#a81828';
+    g.beginPath(); g.moveTo(12 + s * 1.2, 11); g.lineTo(12 + s * 4, 21); g.lineTo(12 + s * 6.4, 19.4); g.lineTo(12 + s * 7.6, 21.6); g.lineTo(12 + s * 3, 10); g.closePath(); g.fill();
+    g.fillStyle = lin(12, 4, 12 + s * 11, 12, ['#ff6a78', '#e02838', '#a81828']);
+    g.beginPath(); g.ellipse(12 + s * 5.6, 8.6, 5.8, 4.4, s * -0.35, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#7a0c1a';
+    g.beginPath(); g.ellipse(12 + s * 5, 9, 2.6, 1.6, s * -0.35, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.45)';
+    g.beginPath(); g.ellipse(12 + s * 6.4, 6.4, 2.4, 0.9, s * -0.5, 0, Math.PI * 2); g.fill();
+  }
+  g.fillStyle = lin(9.6, 6, 14.4, 12, ['#ff5060', '#c01c2c']);
+  g.beginPath(); g.roundRect(9.6, 6, 4.8, 6, 1.6); g.fill();
+  g.fillStyle = 'rgba(255,215,120,0.9)'; g.fillRect(9.6, 8.6, 4.8, 0.5);
+  return f.c;
+}
+
+/** The board on an easel: GRAND OPENING! in red on cream, under a little bow, gold stars either side. */
+function grandSignArt() {
+  const f = fine(26, 30), { g, rr, lin } = f;
+  g.strokeStyle = '#8a5a30'; g.lineWidth = 1.4;
+  g.beginPath(); g.moveTo(6, 18); g.lineTo(3.5, 30); g.moveTo(20, 18); g.lineTo(22.5, 30); g.moveTo(13, 6); g.lineTo(13, 30); g.stroke();
+  rr(1, 3, 24, 17, 1.6, '#c83040');
+  rr(2.2, 4.2, 21.6, 14.6, 1, lin(0, 4, 0, 19, ['#fffaf0', '#f4e8d0']));
+  words(g, 'GRAND', 13, 9, 5, '#c83040');
+  words(g, 'OPENING!', 13, 14.6, 4.6, '#c83040');
+  g.fillStyle = '#e8b830';
+  for (const x of [4.6, 21.4]) star(g, x, 6.6, 1.4);
+  g.fillStyle = '#e02838';
+  for (const s of [-1, 1]) { g.beginPath(); g.ellipse(13 + s * 2.4, 2.8, 2.4, 1.6, 0, 0, Math.PI * 2); g.fill(); }
+  g.beginPath(); g.arc(13, 2.9, 1.1, 0, Math.PI * 2); g.fill();
+  return f.c;
+}
+
+/** The ribbon's parts, standing in the hall in front of the store's doors (hidden till syncShop() puts them up). */
+function buildRibbon(shop) {
+  const group = new THREE.Group(), cx = tileX(shop.x), half = 1.38;
+  const brass = std({ color: '#d8a838', metalness: 0.75, roughness: 0.3 }), tag = (m) => { m.userData.front = shop; m.castShadow = true; return m; };
+  for (const s of [-1, 1]) {
+    const x = cx + s * (half + 0.04);
+    const post = tag(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, RIBBON_Y + 0.08, 12), brass));
+    post.position.set(x, (RIBBON_Y + 0.08) / 2, RIBBON_Z);
+    const knob = tag(new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 12), brass));
+    knob.position.set(x, RIBBON_Y + 0.12, RIBBON_Z);
+    const foot = tag(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.19, 0.05, 20), brass));
+    foot.position.set(x, 0.025, RIBBON_Z);
+    group.add(post, knob, foot);
+  }
+  const satin = texOf(ribbonArt()), mat = std({ map: satin, side: THREE.DoubleSide, roughness: 0.35 });
+  const halves = [-1, 1].map(s => {
+    const geo = new THREE.PlaneGeometry(half, 0.17);
+    geo.translate(-s * half / 2, 0, 0);   // each half turns about its post
+    const m = tag(new THREE.Mesh(geo, mat));
+    m.position.set(cx + s * half, RIBBON_Y, RIBBON_Z);
+    m.userData.side = s;
+    group.add(m);
+    return m;
+  });
+  const bow = tag(new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.68), std({ map: texOf(bowArt()), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.4 })));
+  bow.position.set(cx, RIBBON_Y - 0.08, RIBBON_Z + 0.03);
+  group.add(bow);
+  const sign = grandSignArt(), sw = sign.width / sign.fine / 16, sh = sign.height / sign.fine / 16;
+  const board = tag(new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), std({ map: texOf(sign), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 })));
+  board.position.set(cx - half - 0.5, sh / 2, RIBBON_Z + 0.3);
+  group.add(board);
+  group.visible = false;
+  hall.add(group);
+  return { group, halves, bow, shop, cutAt: 0, asked: false, done: false, mon: null };
+}
+
+const ribbonUp = (b) => FRONTS[0].open && !ribbon?.done && (RIBBON_PEEK || !(b.ribbonCut || b.shopGreeted));
+
+/** Puts the ribbon up or takes it down by the save, and Smeargle beside it; the tiles under it are walked round. */
+async function syncRibbon() {
+  if (!ribbon) return;
+  const up = ribbonUp(loadBase());
+  ribbon.group.visible = up;
+  for (const k of RIBBON_TILES) up ? places.hall?.blocked.add(k) : places.hall?.blocked.delete(k);
+  if (!up) { if (ribbon.mon) ribbon.mon.group.visible = false; return clearConfetti(); }
+  ribbon.asked = false;
+  if (!ribbon.mon) {
+    ribbon.mon = await monBoard(KEEPERS[1], false);
+    ribbon.mon.board.rotation.x = -PITCH;
+    ribbon.mon.group.traverse(o => { o.userData.front = ribbon.shop; });
+    hall.add(ribbon.mon.group);
+  }
+  ribbon.home = { x: tileX(ribbon.shop.x) + 1.95, z: RIBBON_Z + 0.25 };
+  ribbon.mon.group.position.set(ribbon.home.x, 0, ribbon.home.z);
+  ribbon.mon.group.visible = true;
+  ribbon.walkIn = 0;
+}
+
+/** Smeargle says it, in the speech window, out in the hall. */
+const smeargle = (line, ms) => say({ line, who: 'Smeargle' }, ms);
+
+/** A tap on the store while the ribbon is up: the first has Smeargle ask, the second cuts it. */
+async function ribbonTap() {
+  if (ribbon.cutAt) return;
+  ribbon.hopUntil = performance.now() + 600;
+  if (!ribbon.asked) {
+    ribbon.asked = true;
+    playCry('smeargle');
+    return smeargle('It\'s the grand opening! Will you do the honours and cut the ribbon? Tap it again!', 6000);
+  }
+  ribbon.cutAt = performance.now();
+  playSound('snip');
+  if (!RIBBON_PEEK) { const b = loadBase(); b.ribbonCut = true; saveBase(b); }
+  burst();
+  await later(260);
+  playSound('fw-pop');
+  playSound('achievement');
+  playCry('smeargle');
+  ribbon.hopUntil = performance.now() + 1400;
+  walker.hopUntil = performance.now() + 900;
+  smeargle('Snip! The Furniture store is open! Thank you, thank you! Come in, come in!', 4200);
+  await later(1900);
+  ribbon.walkIn = performance.now();
+  await later(1700);
+  if (P?.id !== 'hall' || !root?.isConnected) return;
+  ribbon.done = true;
+  await goPlace('f1', { x: 6, y: ROWS - 1 });
+  syncRibbon();
+}
+
+const CONFETTI = ['#e84838', '#f8d040', '#3a8ad8', '#58b048', '#e870b0', '#ffffff', '#ff9a30'];
+
+/** Confetti over the doors and off each post. */
+function burst() {
+  if (calm) return;
+  const cx = tileX(ribbon.shop.x), geo = new THREE.PlaneGeometry(0.06, 0.1);
+  const mats = CONFETTI.map(color => new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+  const spawn = (n, x, y, spread, up) => {
+    for (let i = 0; i < n; i++) {
+      const m = new THREE.Mesh(geo, mats[i % mats.length]);
+      m.position.set(x, y, RIBBON_Z + 0.1);
+      m.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+      m.raycast = () => {};
+      hall.add(m);
+      confetti.push({ m, v: new THREE.Vector3((Math.random() - 0.5) * spread, up * (0.6 + Math.random() * 0.6), 0.3 + Math.random() * 1.6),
+        spin: new THREE.Vector3(Math.random() * 9, Math.random() * 9, Math.random() * 9), sway: Math.random() * 6, down: false });
+    }
+  };
+  spawn(110, cx, RIBBON_Y, 5, 5.2);
+  for (const s of [-1, 1]) spawn(35, cx + s * 1.42, RIBBON_Y + 0.12, 2.4, 6.4);
+}
+
+function tickConfetti(dt, now) {
+  if (!confetti.length) return;
+  const t = dt / 1000;
+  for (const c of confetti) {
+    if (c.down) continue;
+    c.v.y -= 7 * t;
+    c.v.multiplyScalar(1 - Math.min(1, t * 1.6));
+    if (c.v.y < -1.1) c.v.y = -1.1;   // flutters down, not drops
+    c.m.position.addScaledVector(c.v, t);
+    if (c.v.y < 0) c.m.position.x += Math.sin(now / 260 + c.sway) * 0.4 * t;
+    c.m.rotation.x += c.spin.x * t; c.m.rotation.y += c.spin.y * t; c.m.rotation.z += c.spin.z * t;
+    if (c.m.position.y <= 0.006) { c.m.position.y = 0.006; c.m.rotation.set(-Math.PI / 2, 0, Math.random() * 6); c.down = true; }
+  }
+}
+
+function clearConfetti() {
+  for (const c of confetti) hall.remove(c.m);
+  if (confetti.length) { confetti[0].m.geometry.dispose(); new Set(confetti.map(c => c.m.material)).forEach(m => m.dispose()); }
+  confetti = [];
+}
+
+/** The cut halves swing down off their posts, the bow drops and bounces, and Smeargle hops, then walks in at the doors. */
+function tickRibbon(dt, now) {
+  if (!ribbon?.group.visible) return;
+  const t = ribbon.cutAt ? (now - ribbon.cutAt) / 1000 : 0;
+  for (const h of ribbon.halves) {
+    const fall = !ribbon.cutAt ? 0 : calm ? 1 : 1 - Math.exp(-t * 3.4) * Math.cos(t * 9);
+    h.rotation.z = h.userData.side * (Math.PI / 2 - 0.08) * fall;
+  }
+  if (ribbon.cutAt) {
+    const b = ribbon.bow, y0 = RIBBON_Y - 0.08, floor = 0.3;
+    if (calm) b.position.y = floor;
+    else {
+      const drop = y0 - 0.5 * 9 * t * t;
+      if (drop > floor) b.position.y = drop;
+      else { const tf = Math.sqrt(2 * (y0 - floor) / 9), u = t - tf, hop = 0.9 * u - 0.5 * 9 * u * u; b.position.y = floor + Math.max(0, hop); }
+      b.rotation.z = Math.min(0.5, t * 0.8);
+    }
+  }
+  const m = ribbon.mon;
+  if (!m?.group.visible) return;
+  drawMon(m, { facing: 'front' }, dt);
+  m.board.scale.x = walker.x > m.group.position.x + 0.3 ? -1 : 1;
+  const left = (ribbon.hopUntil || 0) - now;
+  m.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
+  if (ribbon.walkIn) {   // over to the middle of the doors and in through them
+    const k = Math.min(1, (now - ribbon.walkIn) / 1400), e = k * k * (3 - 2 * k);
+    const tx = tileX(ribbon.shop.x), tz = -ROWS / 2 + 0.25;
+    m.group.position.set(ribbon.home.x + (tx - ribbon.home.x) * e, 0, ribbon.home.z + (tz - ribbon.home.z) * Math.max(0, e * 2 - 1));
+    m.board.scale.x = tx > ribbon.home.x ? -1 : 1;
+    if (k >= 1) m.group.visible = false;
+  }
+}
+
 /** The Furniture store's doors by the save: taped up until Smeargle has said it opens, then until that UTC day. */
 function syncShop() {
   const fr = FRONTS[0];
-  fr.open = shopOpen(loadBase());
+  fr.open = shopOpen(loadBase()) || RIBBON_PEEK;
   for (const m of tapes[fr.id] || []) m.visible = !fr.open;
+  syncRibbon();
   if (!wallMat || painted === fr.open) return;
   const wall = wallArt();
   wallMat.map = texOf(wall); wallMat.emissiveMap = texOf(wall.glow);
@@ -384,6 +605,7 @@ function buildHall() {
   hall.add(show);
   const tape = tapeArt();
   for (const fr of FRONTS) if (fr.id !== 'east') tapeOver(fr, tape);
+  ribbon = buildRibbon(shop);
 
   // planters and benches down the sides, light falling from the windows
   const planter = planterArt(), bench = benchArt();
@@ -501,6 +723,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     scene.add(built.group);
   }
   setPlace(places[id], at, facing);
+  if (id === 'hall') syncRibbon();
   if (sound) playSound(sound);
   await curtain(false);
   const b = loadBase();
@@ -704,8 +927,8 @@ function say(fr, ms = 2600) {
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
     : fr.line;
-  lineEl.firstChild.textContent = P.keeper?.name ?? '';
-  lineEl.classList.toggle('talk', !!P.keeper);
+  lineEl.firstChild.textContent = fr.who ?? P.keeper?.name ?? '';
+  lineEl.classList.toggle('talk', !!(fr.who || P.keeper));
   lineEl.classList.add('on');
   clearTimeout(say.t);
   say.t = setTimeout(() => lineEl.classList.remove('on'), ms);
@@ -720,6 +943,7 @@ function enterFront(fr) {
   if (fr.kind === 'lift') return liftTap(fr);
   if (fr.kind === 'keeper') return keeperTap();
   if (!fr.open) { playSound('cancel'); return say(fr); }
+  if (fr.id === 'furniture' && ribbon?.group.visible) return ribbonTap();
   if (fr.id === 'furniture') return goPlace('f1', { x: 6, y: ROWS - 1 });
   if (fr.id === 'corner') return goPlace('gc', { x: 6, y: ROWS - 1 });
 }
@@ -733,7 +957,7 @@ function ndc(e) {
 
 function onTap(e) {
   if (answer) return closeAsk(false);
-  if (riding) return;
+  if (riding || (ribbon?.cutAt && !ribbon.done)) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
   const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
@@ -789,6 +1013,8 @@ function fitShot(w, h) {
 }
 
 function placeCamera(dt) {
+  if (!shot) resize();   // opened while the page had no size yet (a hidden tab)
+  if (!shot) return;
   const room = COLS / 2 + 0.4, half = shot.half;
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
@@ -836,6 +1062,8 @@ function frame(now) {
     const left = (P.keeper.hopUntil || 0) - now;
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
+  tickRibbon(dt, now);
+  tickConfetti(dt, now);
   if (!calm) for (const m of mats) m.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   placeCamera(dt);
   post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
