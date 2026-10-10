@@ -47,8 +47,8 @@ export const NEXT = [
   ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are gold arcade letters between chevrons, see-through and easy to read, lying flat on the ground.'],
   ['modes', "Sky Pillar: Fire's own augments are stronger (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
-  ['mall', 'The Poké Mall\'s Game Corner is open: walk in to shop, play and pull.'],
-  ['mall', 'Voltorb Flip, free to play in the Game Corner: flip the tiles and clear the board for PokéCoins, up to 250 a day. Win to climb its 8 levels.'],
+  ['mall', 'The Poké Mall\'s Game Corner is open, and huge: four big screens along the back wall show the Pokémon, shinies, perks and Poké Balls for sale; tap one and flip through them left and right, one at a time.'],
+  ['mall', 'Three free games in the Game Corner: Voltorb Flip, Who\'s That Pokémon? and Memory Match. Win PokéCoins, up to 250 a day between them.'],
   ['mall', 'A Gachapon in the Game Corner: 100 PokéCoins a turn for a big Pokémon doll for your Secret Base. Big dolls come only from it now, 8 a week; one you already have gives 60 coins back.'],
   ['mall', 'Deal of the Day: one skin, perk or shiny in the Game Corner is 30% off each day, marked with a pink DEAL tag.'],
 ];

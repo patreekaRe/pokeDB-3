@@ -2,6 +2,7 @@
    corner.js  -  the Game Corner's games and deals (the revamp, 2026-10-10; the user's picks: no betting coins and no
    prize tickets). Pure rules, kept free of the DOM so node tests can read them.
 
+   The games share one pot: GAMES_CAP PokéCoins a UTC day across them all (`save.corner.pot`).
    Voltorb Flip  HeartGold / SoulSilver's: a 5x5 board of 1s, 2s, 3s and Voltorbs, each row and column's sum and
                  Voltorbs told at its edge. Flip a tile to multiply the round's score; flip every 2 and 3 to win it.
                  Free to play; a won (or quit) round pays coins from its score, up to VOLTORB_CAP a UTC day, so it's a
@@ -17,7 +18,11 @@ import { streamOf, randIndex, shuffled, hashString } from '../rng.js';
 
 /* ---------- Voltorb Flip ---------- */
 
-export const VOLTORB_CAP = 250;   // PokéCoins a UTC day from Voltorb Flip; after that it's played for fun
+export const GAMES_CAP = 250;   // PokéCoins a UTC day from all the games together; after that they're played for fun
+export const VOLTORB_CAP = GAMES_CAP;
+
+/** What a game's win pays today, after `won` coins already. */
+export const capPay = (coins, won) => Math.max(0, Math.min(coins, GAMES_CAP - won));
 export const VOLTORB_LEVELS = 8;
 export const SIZE = 5;
 
@@ -78,6 +83,38 @@ export function nextLevel(level, { won, flips }) {
 
 /** A fresh Voltorb Flip record for a day. `level` carries over between days. */
 export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0, flipped: [] });
+
+/* ---------- Who's That Pokémon? ---------- */
+
+export const QUIZ_LEN = 10;      // silhouettes a round
+export const QUIZ_CHOICES = 4;
+
+/** A round's questions: QUIZ_LEN Pokémon from `pool` (ids), each with QUIZ_CHOICES names to pick from, the same for
+    everyone on a day's nth round. */
+export function quizRound(day, n, pool) {
+  const rand = streamOf('quiz', `${day}:${n}`), ids = [...pool].sort();
+  return shuffled(ids, rand).slice(0, QUIZ_LEN).map(answer => {
+    const others = shuffled(ids.filter(id => id !== answer), rand).slice(0, QUIZ_CHOICES - 1);
+    return { answer, options: shuffled([answer, ...others], rand) };
+  });
+}
+
+/** Coins for a round: 3 a right answer, and 10 more for all of them. */
+export const quizPay = (right) => right * 3 + (right === QUIZ_LEN ? 10 : 0);
+
+/* ---------- Memory Match ---------- */
+
+export const MEMORY_PAIRS = 8;   // a 4 x 4 board
+
+/** A day's nth board: MEMORY_PAIRS Pokémon from `pool`, each twice, shuffled. */
+export function memoryBoard(day, n, pool) {
+  const rand = streamOf('memory', `${day}:${n}`);
+  const picks = shuffled([...pool].sort(), rand).slice(0, MEMORY_PAIRS);
+  return shuffled([...picks, ...picks], rand);
+}
+
+/** Coins for a cleared board: 30, less 2 a miss, never under 4. */
+export const memoryPay = (misses) => Math.max(4, 30 - 2 * misses);
 
 /* ---------- Gachapon ---------- */
 

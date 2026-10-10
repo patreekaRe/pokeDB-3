@@ -145,3 +145,72 @@
 @media (prefers-reduced-motion: reduce) {
   .cg-overlay, .vf-tile.just, .vf-tile.shown, .vf-blast, .vf-blast::after, .vf-panel.shake, .vf-meter.paid b, .vf-tile.boom, .gp-won, .gp-machine.turning *, .gp-ball, .gp-top, .gp-bottom { animation: none; }
 }
+
+/* Who's That Pokémon? */
+.qz-panel { background: linear-gradient(#2a6ad0, #1a4aa0); }
+.qz-stage { position: relative; height: 210px; display: grid; place-items: center; overflow: hidden; border-radius: 10px;
+  background: radial-gradient(circle, #fff7c0 0 18%, #ffd84a 40%, #f0a020 75%); }
+.qz-burst { position: absolute; inset: -50%; background: repeating-conic-gradient(rgba(255, 255, 255, 0.35) 0 10deg, transparent 10deg 20deg);
+  animation: qzSpin 18s linear infinite; }
+@keyframes qzSpin { to { transform: rotate(1turn); } }
+.qz-mon { position: relative; width: 168px; height: 168px; object-fit: contain; image-rendering: pixelated; filter: brightness(0); transition: filter 0.35s; }
+.qz-stage.shown .qz-mon { filter: none; animation: qzPop 0.4s ease-out; }
+@keyframes qzPop { 40% { transform: scale(1.15); } }
+.qz-name { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); padding: 3px 12px; border-radius: 99px;
+  background: #fffbea; color: #2a2a30; font-size: 15px; white-space: nowrap; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+.qz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.qz-opt { flex: none; }
+.qz-opt.right { background: #6ad070; color: #fff; }
+.qz-opt.wrong { background: #e05a5a; color: #fff; }
+.qz-opt.dim { opacity: 0.45; }
+.qz-opt:disabled { cursor: default; }
+.qz-opt.right:disabled, .qz-opt.wrong:disabled { opacity: 1; }
+
+/* Memory Match */
+.mm-panel { background: linear-gradient(#b03a8a, #7a2464); }
+.mm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; perspective: 600px; }
+.mm-card { position: relative; aspect-ratio: 3 / 4; padding: 0; border: 0; background: none; cursor: pointer;
+  transform-style: preserve-3d; transition: transform 0.3s; }
+.mm-card.up { transform: rotateY(180deg); cursor: default; }
+.mm-back, .mm-face { position: absolute; inset: 0; border-radius: 8px; backface-visibility: hidden; display: grid; place-items: center; }
+.mm-back { background: radial-gradient(circle, #fff 0 13%, #303030 14% 19%, transparent 20%),
+  linear-gradient(#e84040 0 47%, #303030 47% 53%, #f8f8f8 53%); box-shadow: inset 0 0 0 3px #fff6d8, 0 2px 0 rgba(0, 0, 0, 0.3); }
+.mm-face { transform: rotateY(180deg); background: #fffbea; box-shadow: inset 0 0 0 3px #f0c8e0; }
+.mm-face img { width: 90%; height: 90%; object-fit: contain; image-rendering: pixelated; }
+.mm-card.found .mm-face { box-shadow: inset 0 0 0 3px #ffe070, 0 0 10px #ffe070; }
+
+/* a showcase, up close: a Pokédex shell round one big screen */
+.sc-shell { width: min(420px, 100%); max-height: 100%; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 14px;
+  border-radius: 16px; background: linear-gradient(var(--shell-hi), var(--shell) 30%, var(--shell-lo));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 3px var(--shell-rim); color: #fff; }
+.sc-hinge { display: flex; align-items: center; gap: 6px; }
+.sc-lens { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c8f0ff 0 15%, #3aa8f0 45%, #145aa0);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--shell-rim); }
+.sc-light { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.3); }
+.sc-light.r { background: #ff5050; } .sc-light.y { background: #ffd84a; } .sc-light.g { background: #6ad070; }
+.sc-title { margin-left: auto; padding: 3px 12px; border-radius: 6px; background: #1a2a1a; color: var(--sc); font-size: 15px; letter-spacing: 2px;
+  text-shadow: 0 0 6px var(--sc); }
+.sc-stage { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 6px; }
+.sc-arrow { flex: none; min-height: 0; height: 56px; padding: 0; border-radius: 10px; background: var(--pad); color: #fff; font-size: 20px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.4); }
+.sc-arrow:active { background: var(--pad-on); }
+.sc-screen { position: relative; aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; border-radius: 10px; touch-action: pan-y;
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--sc) 35%, #20203a), #10101e 70%); box-shadow: inset 0 0 0 4px #0a0a14, 0 0 0 3px #e8e8f0; }
+.sc-screen.from-right .sc-art, .sc-screen.from-right .sc-icon { animation: scInR 0.25s ease-out; }
+.sc-screen.from-left .sc-art, .sc-screen.from-left .sc-icon { animation: scInL 0.25s ease-out; }
+@keyframes scInR { from { transform: translateX(40%); opacity: 0; } }
+@keyframes scInL { from { transform: translateX(-40%); opacity: 0; } }
+.sc-rays { position: absolute; inset: -40%; background: repeating-conic-gradient(color-mix(in srgb, var(--sc) 18%, transparent) 0 8deg, transparent 8deg 16deg);
+  animation: qzSpin 30s linear infinite; }
+.sc-art { position: relative; width: 78%; height: 78%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.35)); }
+.sc-art.dark { filter: brightness(0) drop-shadow(0 0 6px rgba(255, 255, 255, 0.3)); }
+.sc-icon { position: relative; font-size: 96px; line-height: 1; }
+.sc-count { position: absolute; bottom: 6px; right: 8px; font-size: 12px; color: #c8c8e0; }
+.sc-deal { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 99px; background: #ff5ab8; font-size: 11px; box-shadow: 0 0 8px #ff5ab8; }
+.sc-owned { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 99px; background: #6ad070; font-size: 11px; }
+.sc-lcd { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; background: #c8e8a8; color: #1a3a1a;
+  box-shadow: inset 0 0 0 3px #7ca868; font-size: 14px; line-height: 1.35; }
+.sc-lcd strong { font-size: 17px; }
+.sc-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sc-price { font-size: 16px; font-weight: 700; } .sc-price.short { color: #a83030; } .sc-price s { opacity: 0.6; font-weight: 400; }
+.sc-buy.armed { background: linear-gradient(#ffb070, #f07830); }
+@media (prefers-reduced-motion: reduce) { .qz-burst, .sc-rays, .sc-screen *, .qz-stage.shown .qz-mon { animation: none; } .mm-card { transition: none; } }

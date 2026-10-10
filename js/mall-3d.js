@@ -46,10 +46,12 @@ let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = nul
 let places = {}, P = null, picked = null, riding = null;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
 let mats = [];   // every place's doormat, breathing
 let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
-let calm = false, last = 0, camX = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
+let calm = false, last = 0, camX = 0, camZ = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
-const tileX = (tx) => tx + 0.5 - COLS / 2;
-const tileZ = (ty) => ty + 0.5 - ROWS / 2;
+// the place you're in can be bigger than the hall (the Game Corner): its tiles, set by setPlace()
+let PC = COLS, PR = ROWS;
+const tileX = (tx) => tx + 0.5 - PC / 2;
+const tileZ = (ty) => ty + 0.5 - PR / 2;
 const key = (x, y) => `${x},${y}`;
 const wx = (t) => (t + 0.4) * U;            // a room tile's x on the back wall's painting (it runs 0.4 past each side)
 const wy = (y) => (TOP - y) * U;            // a height's y on it
@@ -630,7 +632,8 @@ const DOOR = { x: 6, y: ROWS - 1 };   // the tile in from the doormat, where eve
 
 /** A place's way out: the doorstep and doormat past its floor's front edge, under the door tile. */
 function addDoor(p) {
-  const { step, mat } = doormat(tileX(DOOR.x), ROWS / 2 + 0.47, std({ color: '#b8a888' }));
+  const cols = p.cols ?? COLS, rows = p.rows ?? ROWS, door = p.door ?? DOOR;
+  const { step, mat } = doormat(door.x + 0.5 - cols / 2, rows / 2 + 0.47, std({ color: '#b8a888' }));
   mat.userData.exit = true;
   p.group.add(step, mat);
   mats.push(mat.material);
@@ -639,7 +642,7 @@ function addDoor(p) {
 /* ---------- walking ---------- */
 
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-const free = (c) => c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS && !blocked.has(key(c.x, c.y));
+const free = (c) => c.x >= 0 && c.y >= 0 && c.x < PC && c.y < PR && !blocked.has(key(c.x, c.y));
 
 function route(from, to) {
   const prev = new Map([[key(from.x, from.y), null]]), queue = [from];
@@ -722,7 +725,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the lift down
     scene.add(built.group);
   }
-  setPlace(places[id], at, facing);
+  setPlace(places[id], at ?? places[id].door ?? DOOR, facing);
   if (id === 'hall') syncRibbon();
   if (sound) playSound(sound);
   await curtain(false);
@@ -743,6 +746,7 @@ const talk = (line, ms) => say({ line }, ms);
 function setPlace(p, at, facing = 'back') {
   if (P) P.group.visible = false;
   P = p; P.group.visible = true; blocked = P.blocked;
+  PC = P.cols ?? COLS; PR = P.rows ?? ROWS;
   pick(null);
   closeAsk(false);
   walker.path = []; aim = null; here = null; riding = null;
@@ -752,7 +756,7 @@ function setPlace(p, at, facing = 'back') {
   u.uBand.value = shop ? 0.3 : 0.16;
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
   walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-  camX = walker.x;
+  camX = walker.x; camZ = Math.max(-Math.max(0, (PR - ROWS) / 2), Math.min(Math.max(0, (PR - ROWS) / 2), walker.z));
   root.querySelector('.b3-top h2').textContent = P.title;
   hemi.intensity = 1.7 * (P.light ?? 1); sun.intensity = 2.2 * (P.light ?? 1);   // the arcade is dim, its neon does the lighting
   showCoins();
@@ -949,7 +953,7 @@ const prizeLine = (e) => (e.blocked ? `${e.name}: not yet.` : e.done ? `${e.name
 /** Into a shop from the hall: the confirm blip as you step in (the user's ask, 2026-10-09), then its door. */
 function walkIn(id) {
   playSound('confirm');
-  return goPlace(id, { x: 6, y: ROWS - 1 });
+  return goPlace(id, null);
 }
 
 /** In: a shop's place (the Furniture store, the Game Corner); a shutter only says so. Inside, a spot's own tap. */
@@ -987,8 +991,8 @@ function onTap(e) {
   if (o?.userData.front) return goTo(o.userData.front, true);
   const hit = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
-  const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
-  if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
+  const t = { x: Math.round(hit.x + PC / 2 - 0.5), y: Math.round(hit.z + PR / 2 - 0.5) };
+  if (t.x < 0 || t.y < 0 || t.x >= PC || t.y >= PR) return;
   walker.path = route(walker.tile, t);
   aim = null; here = null; pick(null);
 }
@@ -996,17 +1000,18 @@ function onTap(e) {
 /** Your partner walks to the door tile and out over the doormat; then the place is left. */
 function headOut() {
   if (riding) return;
-  walker.path = route(walker.tile, DOOR);
-  walker.path.push({ x: DOOR.x, y: ROWS - 0.03 });
+  const door = P.door ?? DOOR;
+  walker.path = route(walker.tile, door);
+  walker.path.push({ x: door.x, y: PR - 0.03 });
   walker.exit = true;
   aim = null; here = null; pick(null);
 }
 
 /* ---------- camera ---------- */
 
-function aimCamera(x, d) {
-  camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, Math.cos(PITCH) * d);
-  camera.lookAt(x, LOOK_Y, 0);
+function aimCamera(x, d, z = 0) {
+  camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, z + Math.cos(PITCH) * d);
+  camera.lookAt(x, LOOK_Y, z);
   camera.updateMatrixWorld();
 }
 
@@ -1032,11 +1037,14 @@ function fitShot(w, h) {
 function placeCamera(dt) {
   if (!shot) resize();   // opened while the page had no size yet (a hidden tab)
   if (!shot) return;
-  const room = COLS / 2 + 0.4, half = shot.half;
+  const room = PC / 2 + 0.4, half = shot.half;
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
+  // a room deeper than the hall slides a hall-deep window along with your partner, so it stays the hall's size
+  const deep = Math.max(0, (PR - ROWS) / 2), wantZ = Math.max(-deep, Math.min(deep, walker.z));
+  camZ = calm ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 4);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
-  aimCamera(camX, shot.dist);
+  aimCamera(camX, shot.dist, camZ);
 }
 
 function resize() {
@@ -1079,6 +1087,7 @@ function frame(now) {
     const left = (P.keeper.hopUntil || 0) - now;
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
+  P.tick?.(now, dt);
   tickRibbon(dt, now);
   tickConfetti(dt, now);
   if (!calm) for (const m of mats) m.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
@@ -1172,5 +1181,5 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   requestAnimationFrame(frame);
   curtain(false);
   if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : { x: 6, y: ROWS - 1 });
-  if (store === 'corner') goPlace('gc', { x: 6, y: ROWS - 1 });
+  if (store === 'corner') goPlace('gc', null);
 }

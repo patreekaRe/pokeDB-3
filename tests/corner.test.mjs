@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   VOLTORB_BOARDS, VOLTORB_CAP, dealBoard, voltorbBoard, clues, score, cleared, payout, paysToday, nextLevel, bestScore,
-  gachaSet, gachaPull, GACHA_SET, pickDeal, dealPrice,
+  gachaSet, gachaPull, GACHA_SET, pickDeal, dealPrice, capPay, GAMES_CAP,
+  quizRound, quizPay, QUIZ_LEN, memoryBoard, memoryPay, MEMORY_PAIRS,
 } from '../js/data/corner.js';
 import { makeRng } from '../js/rng.js';
 
@@ -69,4 +70,31 @@ test('the Deal of the Day is one of the keys, stable for the day', () => {
   assert.equal(pickDeal('2026-10-10', keys), pickDeal('2026-10-10', [...keys].reverse()));
   assert.equal(pickDeal('2026-10-10', []), null);
   assert.equal(dealPrice(250), 175);
+});
+
+test('the games share one daily cap', () => {
+  assert.equal(capPay(40, 0), 40);
+  assert.equal(capPay(40, GAMES_CAP - 10), 10);
+  assert.equal(capPay(40, GAMES_CAP), 0);
+});
+
+test('a quiz round has distinct questions, each with its answer among distinct options', () => {
+  const pool = Array.from({ length: 40 }, (_, i) => `mon${i}`);
+  const round = quizRound('2026-10-10', 0, pool);
+  assert.equal(round.length, QUIZ_LEN);
+  assert.equal(new Set(round.map(q => q.answer)).size, QUIZ_LEN);
+  for (const q of round) { assert.ok(q.options.includes(q.answer)); assert.equal(new Set(q.options).size, 4); }
+  assert.deepEqual(round, quizRound('2026-10-10', 0, [...pool].reverse()));
+  assert.equal(quizPay(QUIZ_LEN), 40);
+  assert.equal(quizPay(4), 12);
+});
+
+test('a memory board holds each Pokémon twice', () => {
+  const pool = Array.from({ length: 40 }, (_, i) => `mon${i}`);
+  const board = memoryBoard('2026-10-10', 2, pool);
+  assert.equal(board.length, MEMORY_PAIRS * 2);
+  for (const id of new Set(board)) assert.equal(board.filter(x => x === id).length, 2);
+  assert.deepEqual(board, memoryBoard('2026-10-10', 2, pool));
+  assert.equal(memoryPay(0), 30);
+  assert.equal(memoryPay(20), 4);
 });

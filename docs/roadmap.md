@@ -152,10 +152,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         levels; `js/voltorb.js`), a **Gachapon** of the big Pokémon dolls, now sold nowhere else (8 a week, 100 a turn, a
         duplicate refunds 60; `js/gachapon.js`), and a **Deal of the Day** (30% off one skin, perk or shiny; `todaysDeal()` in
         `js/shop.js`). Rules in `js/data/corner.js`, `tests/corner.test.mjs`. Plain panels for now.
-        Its look pass is done too (2026-10-10, in a cloud session: the user has no local access): tiles turn over in a
-        wave at a round's end, a Voltorb explodes and shakes the board, a win counts its coins into the day's; the
-        Gachapon drops a capsule that wobbles and splits open on the doll; Voltorb Flip sits by the runner (`GAME_AT`) and
-        the Gachapon front left of it, both on a phone's screen; a pink DEAL tag marks the day's deal in the room.
+        Its look pass is done too (2026-10-10, in a cloud session: the user has no local access), and the same day the
+        room was rebuilt huge at the user's ask: four big showcase screens browsed one at a time (`js/showcase.js`), two
+        more free games (Who's That Pokémon?, Memory Match) sharing a 250-a-day pot. See CLAUDE.md.
         **Next:** the user playtests and says whether it goes to `main` (Pages only serves `main`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
         with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. Balls stay in the Game
