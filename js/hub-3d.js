@@ -1667,33 +1667,38 @@ function pokestop(g, id, x, z, S, saved, start) {
   disc.position.set(x, 1.55 * S + w / 2, z);
   disc.castShadow = true;
   g.add(disc);
-  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: groundCue(g, x, z + 0.95, saved ? 'CONTINUE' : start, saved ? 1 : 0.8) };
+  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: groundCue(g, x, z + 1.1, saved ? 'CONTINUE' : start) };
 }
 
 /** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
-    or start): CONTINUE before the one holding the saved run, what the others start a little smaller. In the signs' heavy
-    sans, not the pixel font, whose thin strokes blurred into the glow lying flat (CLIMB was hard to read, 2026-10-10). */
-function groundCue(g, x, z, text, scale) {
+    or start): CONTINUE before the one holding the saved run, else what that stop starts, all the same size. Bungee, a
+    heavy arcade face (the pixel font's thin strokes blurred into the glow), lying truly flat with no stretch so the
+    floor's perspective foreshortens it like a painted road marking (the user's ask, 2026-10-10). */
+let cueFont;
+function groundCue(g, x, z, text) {
   const c = document.createElement('canvas');
-  c.width = 640; c.height = 160;
+  c.width = 640; c.height = 200;
   c.hd = 2;
   const map = tex(c);
   const paint = () => {
     const d = c.getContext('2d');
     d.clearRect(0, 0, c.width, c.height);
-    let px = 84;
-    do d.font = `900 ${px -= 4}px "Trebuchet MS", "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 560);
+    let px = 124;
+    do d.font = `${px -= 4}px Bungee, "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 560);
     d.textAlign = 'center'; d.textBaseline = 'middle';
     d.shadowColor = '#5fe0ff'; d.shadowBlur = 30;
     d.lineWidth = 10; d.strokeStyle = '#4fd8ff'; d.lineJoin = 'round';
-    for (let i = 0; i < 3; i++) d.strokeText(text, 320, 84);
+    for (let i = 0; i < 3; i++) d.strokeText(text, 320, 104);
     d.shadowBlur = 0; d.fillStyle = '#ffffff';
-    d.fillText(text, 320, 84);
+    d.fillText(text, 320, 104);
     map.needsUpdate = true;
   };
   paint();
-  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0.9 });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.6 * scale, 3.6 * scale * 160 / 640 * 1.6), m);
+  cueFont ??= new FontFace('Bungee', 'url(https://fonts.gstatic.com/s/bungee/v17/N0bU2SZBIuF2PU_0DXR1.woff2)').load()
+    .then((f) => document.fonts.add(f));
+  cueFont.then(paint, () => {});
+  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6 * 200 / 640), m);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(x, 0.03, z);
   mesh.renderOrder = 2;
@@ -2242,7 +2247,7 @@ function frame(now) {
   cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
-  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.85 : 0.3 + 0.65 * (0.5 + 0.5 * Math.sin(now / 520));
+  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 1 : 0.8 + 0.2 * (0.5 + 0.5 * Math.sin(now / 520));
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
