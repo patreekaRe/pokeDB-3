@@ -457,6 +457,14 @@ export function peekCenter(starter) {
   beginRun(starter, 0, ':center');
 }
 
+/** Playtest shortcut: ?mart walks a throwaway run straight into a Poké Mart (&starter=id, &money=N, 300 by default). */
+export function peekMart(starter, money = 300) {
+  peeking = true;
+  martPeekMoney = money;
+  beginRun(starter, 0, ':mart');
+}
+let martPeekMoney = 300;
+
 /** Playtest shortcut: ?bossfight=wetland (any Safari area) walks a throwaway Safari run straight into that area's boss
     fight, its prelude and arena included (&starter=id picks who you play). Nothing about the run is saved. */
 export function peekSafariBoss(areaId, starter = null) {
@@ -526,6 +534,14 @@ function peekRoom(id) {
     run.hp = Math.ceil(run.maxHp * 0.55);   // hurt, so resting shows
     const node = Object.values(run.map.byId).find(n => n.type === 'rest') ?? Object.values(run.map.byId)[0];
     node.type = 'rest';
+    return enterNode(node);
+  }
+  if (id === ':mart') {
+    startBiome(true);
+    run.money = martPeekMoney;
+    const node = Object.values(run.map.byId).find(n => n.type === 'shop') ?? Object.values(run.map.byId)[0];
+    node.type = 'shop';
+    node.stock ??= martStock();
     return enterNode(node);
   }
   if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
@@ -707,6 +723,7 @@ function showMap() {
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
   warmCenter3d();
+  warmMart3d();
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -1963,6 +1980,13 @@ function warmCenter3d() {
   setTimeout(() => import('./center-3d.js').then(m => m.warmCenter()).catch(() => { warmCenter3d.done = false; }), 1500);
 }
 
+/** The 3D Mart likewise, once a map has a Mart on it. */
+function warmMart3d() {
+  if (warmMart3d.done || !Object.values(run.map?.byId ?? {}).some(n => n.type === 'shop') || new URLSearchParams(location.search).has('mart2d')) return;
+  warmMart3d.done = true;
+  setTimeout(() => import('./mart-3d.js').then(m => m.warmMart()).catch(() => { warmMart3d.done = false; }), 2500);
+}
+
 /** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
 const MIN_DECK = 7;
 
@@ -2865,6 +2889,8 @@ function martRoom() {
   clerk.alt = 'Kecleon, the shopkeeper';
   $('reward-options').append(clerk);
 
+  if (!new URLSearchParams(location.search).has('mart2d')) mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin });
+
   fitMart();
   // the room's floor starts at the foot of the counter, so the shop stands on the tiles
   const shop = () => $('reward-options').getBoundingClientRect();
@@ -2880,6 +2906,46 @@ function martRoom() {
     row.append(prop(props.plant), prop(props.left), el('span', 'mart-props-gap'), prop(props.right), prop(props.plant));
     $('reward-options').append(row);
   }
+}
+
+/** The walk-in 3D Mart (js/mart-3d.js) under the shop martRoom() just showed: every slot of the stock on its shelf, in
+    order, each pointing at its choice (a sold one stays an empty slot). The pixel shop stays if Three.js won't load. */
+function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin }) {
+  const { stock } = run.map.byId[run.current], box = $('reward-options'), thisRun = run;
+  const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
+  let at = 0;
+  const slot = (kind, thing, item, on) => ({ kind, thing, price: martPrice(item.price), dear: martPrice(item.price) > run.money, sold: !on, index: on ? at++ : -1 });
+  const wares = [
+    ...stock.cards.map(item => slot('card', CARDS_BY_ID[item.id], item, !item.sold && copies(item.id) < MAX_COPIES)),
+    ...stock.items.map(item => slot('item', ITEMS_BY_ID[item.id], item, !item.sold)),
+    ...stock.relics.map(item => slot('relic', RELICS_BY_ID[item.id], item, !item.sold && !run.relics.includes(item.id))),
+    { kind: 'pc', index: at, sign: stock.removed ? 'Sold out' : `Forget ₽${removalPrice}`, dear: removalPrice > run.money || atMin, sold: !!stock.removed },
+  ];
+  const options = [...cards, ...items, ...relics, removal];
+  // why a greyed choice can't be taken, said in the text box when it's tapped
+  const why = (o) => {
+    if (o === removal) return stock.removed ? 'Only one move can be forgotten per Mart.' : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Forgetting a move costs ₽${removalPrice}. You have ₽${run.money}.`;
+    if (items.includes(o) && bagFull) return dusk ? "Your Dusk Stone won't let you carry items." : 'Your Bag is full.';
+    return `You can't afford that. You have ₽${run.money}.`;
+  };
+  // the welcome waits until you're inside (a purchase's news is said at once: the room is already up)
+  const lines = document.querySelector('.mart3d-view.on') ? null : holdLines();
+  box.classList.add('m3d-wait');
+  import('./mart-3d.js').then(m => m.mountMart({
+    run: thisRun, wares,
+    mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
+    onPick: (i) => {
+      const btn = box.querySelectorAll('.reward-option')[i];
+      if (!btn || run !== thisRun || !box.isConnected) return;
+      if (btn.disabled) { playSound('cancel'); return sayLines([why(options[i])]); }
+      btn.click();
+    },
+    onClerk: () => sayLines(['Kecleon: Welcome! Take a good look round. Tap anything on the shelves to see it up close.']),
+    onSoldOut: () => sayLines(['That one has sold out.']),
+    onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
+  })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
+    .catch(err => { console.warn('3D Mart unavailable', err); if (lines) sayLines(lines); })
+    .finally(() => box.classList.remove('m3d-wait'));
 }
 
 /* ---------- evolution ---------- */

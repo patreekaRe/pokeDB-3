@@ -5330,3 +5330,27 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
   background: #fbf4df; clip-path: polygon(100% 0, 100% 100%, 0 100%); border: inherit; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0;
 }
 #reward-options.c3d .reward-option:is(:disabled, .locked) .center-label { color: #9a8c78; border-color: #b8ae9c; }
+
+/* ---------- the walk-in 3D Poké Mart (js/mart-3d.js, branch pokemart-3d) ---------- */
+/* the shop's tiles stay in the page (their buttons take the two-tap Buy) but the 3D shelves show the wares instead */
+#reward-options.mart-window:is(.m3d, .m3d-wait) { visibility: hidden; pointer-events: none; }
+#reward-options.mart-window:is(.m3d, .m3d-wait) * { visibility: hidden !important; pointer-events: none !important; }
+body:has(#reward-options:is(.m3d, .m3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+body:has(#reward-options.m3d) #reward-screen { cursor: pointer; }
+/* the PC's sign, a cream speech window like the 3D Center's, bobbing over it */
+.mart3d-sign {
+  position: fixed; z-index: 2; translate: -50% -100%; pointer-events: none; white-space: nowrap;
+  padding: 7px 12px 6px; font-family: var(--pixel-font); font-size: 0.62rem; line-height: 1;
+  background: #fbf4df; color: #6a5440; border: 2px solid #3878f0; border-radius: 12px;
+  box-shadow: 0 2px 0 #d8c8a4, 0 4px 10px rgba(0, 0, 0, 0.3);
+  animation: martSign 1.6s ease-in-out infinite;
+}
+.mart3d-sign::after {
+  content: ''; position: absolute; left: 50%; top: 100%; width: 10px; height: 10px; margin-top: -5px; translate: -50% 0; rotate: 45deg;
+  background: #fbf4df; border: 2px solid #3878f0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0;
+}
+.mart3d-sign.off { color: #9a8c78; border-color: #b8ae9c; animation: none; }
+.mart3d-sign.off::after { border-color: #b8ae9c; }
+body:has(.reward-focus) .mart3d-sign, body:not([data-screen="reward-screen"]) .mart3d-sign { display: none; }
+@keyframes martSign { 50% { margin-top: -5px; } }
+@media (prefers-reduced-motion: reduce) { .mart3d-sign { animation: none; } }

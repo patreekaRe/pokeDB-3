@@ -39,7 +39,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -318,6 +318,8 @@ function init() {
   if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
   // ?center: a throwaway run straight into a Pokémon Center (&starter=id), the walk-in 3D one on this branch
   if (params.has('center')) return peekCenter(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free));
+  // ?mart: a throwaway run straight into a Poké Mart, the walk-in 3D one (&starter=id, &money=N; &mart2d the pixel shop)
+  if (params.has('mart')) return peekMart(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), Number(params.get('money') ?? 300));
   // ...and ?bossfight=wetland (any Safari area; &starter=id) walks one straight into that area's boss fight, prelude and arena included
   // ?bossfight=depths: Mewtwo (or &starter=id) straight into Eternatus, the final boss; &hp=0.1 shrinks its bars
   // ?tower=25: a throwaway Sky Pillar climb starting at that floor (the week's tower and starter), never saved; &hp=0.1

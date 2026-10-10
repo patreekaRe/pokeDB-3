@@ -58,3 +58,15 @@ the next screen: left on `#reward-options`, it pulled the Center's Chansey and s
 Purchases are only saved when you leave for the map. Items are covered
 under Items below.
 
+
+**The walk-in 3D Mart** (`js/mart-3d.js`, branch `pokemart-3d`, 2026-10-09, the user's ask after the 3D Center): `mart3d()` in
+`js/run.js` lays a 3D room under the shop `martRoom()` just showed, which keeps its choices (hidden: `.m3d`), the two-tap Buy
+(the focus over the room and its gold pill) and the text box. HeartGold / SoulSilver's Mart: white walls over a blue wainscot,
+bunting, POKé MART on a blue sign, pale blue tiles with a runner to the door. Every ware stands on one wall unit (the pixel
+Mart's shelf, so a phone sees all of it at once): the moves on easels along a lit shelf at eye level (`cardArt()` paints
+`.card.small` on a canvas: cost, name, rarity, art; a sheen sweeps across them), the items then the relics (under glass domes)
+on the cabinet under it, each with a shelf-edge price tag (red when too dear, SOLD OUT once bought). Kecleon stands behind a
+blue counter on the left with the PC on it (its "Forget ₽N" sign, `.mart3d-sign`). A tap on a ware walks your Pokémon up
+and presses its choice (a greyed one says why in the text box); a bought ware flies into your Pokémon as the shop redraws;
+the doormat presses Leave. `warmMart()` builds it while the map is up. `?mart` (`&starter=id`, `&money=N`) walks a
+throwaway run straight into one (`peekMart()`), `&mart2d` the pixel shop.
