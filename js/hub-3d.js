@@ -10,6 +10,8 @@
 
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
+import { season } from './season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt } from './hub-season.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
@@ -58,6 +60,8 @@ const P = {
   roof: ['#d85040', '#a03028'],
   flowers: [['#ffffff', '#f8d848'], ['#f8e048', '#f89830'], ['#f8a0c8', '#f8f0f8'], ['#b0a0f8', '#f8f8f8']],
 };
+// the time of year (js/season.js), fixed for the page load: the trees, ground, light and decorations dress for it
+const SEASON = season(), GROUND = groundLook(SEASON, P);
 
 // glow: how hard the lantern and the Sky Pillar's door shine; lamp: the two lights they cast;
 // bugs: pollen drifting by day, fireflies blinking from dusk; air: the ambience loop (js/audio.js)
@@ -84,6 +88,7 @@ let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
+let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
@@ -148,9 +153,9 @@ function treeArt(seed, pal = P.trees) {
   return a.c;
 }
 
-function bushArt(seed) {
+function bushArt(seed, pal = P.trees) {
   const rnd = seeded(seed), a = art(30, 20);
-  blobs(a, [[10, 12, 8], [19, 11, 9], [15, 7, 7]], P.trees, rnd);
+  blobs(a, [[10, 12, 8], [19, 11, 9], [15, 7, 7]], pal, rnd);
   if (rnd() < 0.6) for (let i = 0; i < 4; i++) { const [x, y] = [6 + Math.floor(rnd() * 18), 6 + Math.floor(rnd() * 8)]; a.dot(x, y, '#f04858', 2, 2); a.dot(x, y, '#f8c8d0'); }
   return a.c;
 }
@@ -160,7 +165,7 @@ function groundArt() {
   const W = (COLS + 2 * M) * TP, H = (ROWS + M + FRONT) * TP, a = art(W, H), rnd = seeded(7);
   const img = a.g.createImageData(W, H), d = img.data;
   const rgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-  const meadow = P.meadow.map(rgb), dirt = P.path.map(rgb);
+  const meadow = GROUND.meadow.map(rgb), dirt = GROUND.path.map(rgb);
   const seg = (u, v, [[x1, y1], [x2, y2]]) => {
     const dx = x2 - x1, dy = y2 - y1, k = Math.max(0, Math.min(1, ((u - x1) * dx + (v - y1) * dy) / (dx * dx + dy * dy)));
     return Math.hypot(u - x1 - dx * k, v - y1 - dy * k);
@@ -191,6 +196,7 @@ function groundArt() {
       c = dirt[path > -0.06 ? 3 : n > 1.0 ? 0 : n > 0.62 ? 1 : 2];
       if (hash(x * 3, y * 7) > 0.985) c = dirt[3];
       c = pokePlaza(c, u - START.x, v - START.y, wob);
+      if (GROUND.snowy) c = mix(c, [244, 248, 252], smooth(x + 40, y + 17, 4) > 0.6 ? 0.55 : 0.1);   // trodden snow
     } else {
       // darker away from the walkable ground, towards the trees
       // (not down the left, cleared round the Safari gate and the Poké Mall)
@@ -203,13 +209,18 @@ function groundArt() {
   }
   a.g.putImageData(img, 0, 0);
   const onPath = (x, y) => { const u = x / TP - M - 0.5, v = y / TP - M - 0.5; return Math.min(...PATHS.map(s => seg(u, v, s))) < 0.7 || Math.hypot(u - START.x, v - START.y) < 1.9; };
-  for (let i = 0; i < 900; i++) {   // blades
+  const blade = GROUND.blade;
+  if (blade) for (let i = 0; i < 900; i++) {   // blades
     const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H);
     if (onPath(x, y)) continue;
-    a.dot(x, y, P.blade[2], 1, 1); a.dot(x, y - 1, P.blade[1]); a.dot(x, y - 2, P.blade[0]);
+    a.dot(x, y, blade[2], 1, 1); a.dot(x, y - 1, blade[1]); a.dot(x, y - 2, blade[0]);
   }
-  for (let i = 0; i < 70; i++) {   // flowers, in little clumps
-    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H), [petal, eye] = P.flowers[Math.floor(rnd() * 4)];
+  if (GROUND.leaves) for (let i = 0; i < 1400; i++) {   // fallen leaves, on the paths too
+    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H), col = GROUND.leaves[Math.floor(rnd() * GROUND.leaves.length)];
+    a.dot(x, y, col, 2, 1); if (rnd() < 0.5) a.dot(x + (rnd() < 0.5 ? 0 : 1), y + 1, col);
+  }
+  if (GROUND.flowers.length) for (let i = 0; i < 70; i++) {   // flowers, in little clumps
+    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H), [petal, eye] = GROUND.flowers[Math.floor(rnd() * 4)];
     if (onPath(x, y)) continue;
     for (let k = 0; k < 3; k++) {
       const fx = x + Math.floor(rnd() * 7) - 3, fy = y + Math.floor(rnd() * 5) - 2;
@@ -1396,7 +1407,9 @@ function buildClearing() {
 
   forest = new THREE.Group();
   scene.add(forest);
-  const rnd = seeded(21), kinds = [treeArt(1), treeArt(2), treeArt(3, P.deep), treeArt(4, P.deep), bushArt(5), bushArt(6)];
+  const L = leavesOf(SEASON), crown = (i) => L ? L.trees[i % L.trees.length] : P.trees, far = (i) => L ? L.deep[i % L.deep.length] : P.deep;
+  const rnd = seeded(21), kinds = [treeArt(1, crown(0)), treeArt(2, crown(1)), treeArt(3, far(0)), treeArt(4, far(1)), bushArt(5, crown(2)), bushArt(6, crown(0))]
+    .map(c => SEASON === 'winter' ? snowCap(c) : c);
   const spots = kinds.map(() => []);
   // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()),
   // and none where the Sky Pillar and its meadow stand in the back-right corner, the trees behind it kept
@@ -1428,12 +1441,38 @@ function buildClearing() {
     forest.add(mesh);
   });
   buildVista();
+  dressSeason();
+}
+
+/** The season's decorations, built once with the forest: jack-o'-lanterns round the plaza, down the trail, at the
+    Ancient Tree's door and either side of the gate (lit with the clock, setTime()); in winter a snowman by the plaza.
+    Kept off every path's middle and every place's tiles, so nothing walks through them that wouldn't through grass. */
+function dressSeason() {
+  if (SEASON === 'halloween') {
+    const px = tileX(START.x), pz = tileZ(START.y);
+    const spots = [[px + 1.4, pz - 1.35, 1], [px - 1.4, pz - 1.35, 0.8], [px - 1.45, pz + 1.3, 1], [px + 1.5, pz + 1.25, 0.75],
+      [tileX(6) - 0.95, tileZ(12.6), 0.85], [tileX(6) + 0.95, tileZ(13.8), 1], [tileX(6) - 0.95, tileZ(15), 0.7],
+      [tileX(GATE_AT.tx) - 1.55, tileZ(GATE_AT.ty) + 0.75, 1.05], [tileX(GATE_AT.tx) + 1.55, tileZ(GATE_AT.ty) + 0.75, 0.9],
+      [tileX(6) - 0.95, tileZ(3.2), 0.85], [tileX(6) + 0.95, tileZ(3.2), 0.95], [tileX(1) + 0.9, tileZ(4.6), 0.7], [tileX(11) - 0.9, tileZ(4.6), 0.8]];
+    spots.forEach(([x, z, s], i) => {
+      const lit = i % 4 !== 3, c = pumpkinArt(i, lit), b = board(c, x, z, { s });
+      if (lit) glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+      b.raycast = () => {};
+      forest.add(b);
+    });
+  }
+  if (SEASON === 'winter') {
+    const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
+    b.raycast = () => {};
+    forest.add(b);
+    makeSnow();
+  }
 }
 
 /** The view out past the Safari gate (js/hub-vista.js), square to the camera so it reads as the far distance, its foot
     on the ground's back edge; and plain meadow under everything, where the cleared corner shows past the ground's edges. */
 function buildVista() {
-  const meadow = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: P.meadow[3], roughness: 1 }));
+  const meadow = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: GROUND.meadow[3], roughness: 1 }));
   meadow.rotation.x = -Math.PI / 2;
   meadow.position.y = -0.02;
   meadow.receiveShadow = true;
@@ -1452,7 +1491,7 @@ function paintVista() {
   const t = timeOfDay();
   if (!vista || vista.userData.time === t) return;
   vista.material.map?.dispose();
-  vista.material.map = texOf(vistaArt(t, tileX(SAFARI_AT.tx), 0.42));
+  vista.material.map = texOf(vistaArt(t, tileX(SAFARI_AT.tx), 0.42, vistaLook(SEASON)));
   vista.material.needsUpdate = true;
   vista.userData.time = t;
 }
@@ -1931,7 +1970,12 @@ function setTime(force) {
   sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
   scene.background = new THREE.Color(L.bg);
   scene.fog.color.set(L.bg);
-  for (const m of glowMats) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
+  const T = tintOf(SEASON, t), c = new THREE.Color();
+  if (T?.bg) { scene.background.lerp(c.set(T.bg[0]), T.bg[1]); scene.fog.color.copy(scene.background); }
+  if (T?.sky) hemi.color.lerp(c.set(T.sky[0]), T.sky[1]);
+  if (T?.ground) hemi.groundColor.lerp(c.set(T.ground[0]), T.ground[1]);
+  if (T?.sun) sun.color.lerp(c.set(T.sun[0]), T.sun[1]);
+  for (const m of [...glowMats, ...seasonMats]) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
   for (const l of lamps) l.intensity = L.lamp * l.userData.k;
   if (bugs) bugs.userData.kind = L.bugs;
   paintVista();
@@ -1963,19 +2007,51 @@ function makeBugs() {
   bugs = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.16, map: dotTexture(), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
   bugs.userData = { seeds, kind: 'pollen' };
   bugs.raycast = () => {};
+  bugs.visible = SEASON !== 'winter';   // snow instead
   scene.add(bugs);
+}
+
+/** Winter's snowfall: flakes drifting down through a box that follows the view, wrapping back to the top. */
+const FLAKES = 420, SNOW_W = 26, SNOW_D = 24, SNOW_H = 9;
+function makeSnow() {
+  const rnd = seeded(51), pos = new Float32Array(FLAKES * 3), seeds = [];
+  for (let i = 0; i < FLAKES; i++) {
+    const s = [(rnd() - 0.5) * SNOW_W, rnd() * SNOW_H, (rnd() - 0.5) * SNOW_D, rnd() * 100, 0.5 + rnd() * 0.6];
+    seeds.push(s);
+    pos.set(s.slice(0, 3), i * 3);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  snow = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.12, map: dotTexture(), color: '#ffffff', transparent: true, opacity: 0.95, depthWrite: false }));
+  snow.userData = { seeds };
+  snow.raycast = () => {};
+  scene.add(snow);
+}
+
+function liveSnow(now) {
+  if (!snow) return;
+  snow.position.set(camX, 0, camZ);
+  if (calm) return;
+  const t = now / 1000, p = snow.geometry.attributes.position;
+  snow.userData.seeds.forEach(([x, y, z, ph, sp], i) => {
+    const fy = ((y - t * sp) % SNOW_H + SNOW_H) % SNOW_H;
+    p.setXYZ(i, x + Math.sin(t * 0.6 * sp + ph) * 0.5, fy, z + Math.cos(t * 0.4 * sp + ph) * 0.3);
+  });
+  p.needsUpdate = true;
 }
 
 const FIREFLY = [0.85, 1, 0.45], POLLEN = [1, 0.96, 0.78];
 function liveBugs(now) {
+  if (!bugs.visible) return;
   const { seeds, kind } = bugs.userData, L = LIGHT[time], p = bugs.geometry.attributes.position, c = bugs.geometry.attributes.color;
+  const tints = BUG_LOOK[SEASON]?.[kind];
   const t = calm ? 0 : now / 1000, fly = kind === 'fireflies';
   bugs.material.size = fly ? 0.16 : 0.09;
   seeds.forEach(([x, y, z, ph, sp], i) => {
     if (!calm) p.setXYZ(i, x + Math.sin(t * 0.3 * sp + ph) * 1.2, y + Math.sin(t * 0.7 * sp + ph * 2) * (fly ? 0.3 : 0.12) - (fly ? 0 : (t * 0.05 * sp + ph) % 1 * 0.3), z + Math.cos(t * 0.25 * sp + ph) * 1.0);
     // a firefly glows in slow pulses, dark between; pollen just catches the light
     const k = (fly ? Math.max(0, Math.sin(t * 1.3 * sp + ph)) ** 3 : 0.35 + 0.15 * Math.sin(t * 2 + ph)) * L.bugsI * (calm ? 0.7 : 1);
-    const [r, g, b] = fly ? FIREFLY : POLLEN;
+    const [r, g, b] = tints ? tints[i % tints.length] : fly ? FIREFLY : POLLEN;
     c.setXYZ(i, r * k, g * k, b * k);
   });
   p.needsUpdate = true; c.needsUpdate = true;
@@ -2116,6 +2192,7 @@ function frame(now) {
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
   placeCamera(dt);
+  liveSnow(now);
   if (!held) { liveFlyer(now, dt); sounds(now); }
   placeBar();
   post.draw(scene, camera, (v3().set(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);

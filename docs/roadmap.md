@@ -38,10 +38,7 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
 
 The user's second pick (2026-10-03), one session each:
 
-9. **Seasonal title screen.** Run in: LOCAL (Desktop app). The title dresses up by the date, the way `js/daytime.js`
-   follows the clock: October Halloween (pumpkins on the ledge, Gastly / Haunter in the flyers' round, an orange dusk
-   tint), December snow, and room for more. A `season(now)` helper like `timeOfDay()`, and `?season=halloween` to pin it
-   for a playtest (as `?time=` does). Title only; battles and the map are untouched.
+9. ~~Seasonal title screen~~ done 2026-10-10 (see the archive).
 
 **Journey films** (the user's pick, 2026-10-03: "like the fall into the Depths, but travelling"). Between a boss's
 evolution and the next biome's `biomeIntro()`, a short film of the trip there: your evolved Pokémon walks a side-on

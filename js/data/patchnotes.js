@@ -42,7 +42,9 @@ export const RELEASE_AT = 12;
 export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
-export const NEXT = [];
+export const NEXT = [
+  ['hub', "The Clearing dresses up for the season: jack-o'-lanterns, autumn leaves and ghosts flying over in October, snow in December."],
+];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
 export function sectionsOf(p) {

@@ -72,3 +72,8 @@ triangles. The Pokémon sprites, the sky, logo, signpost and gate stay pixel art
 
 
 The shut Pokédex's cover tells the time like a lock screen (2026-10-10, the user's ask): a green LCD between the chevron and the power button with the clock and day in the device's locale, and a sun or moon for `timeOfDay()` (dawn / day / dusk / night, so `?time=` shows each), `runClock()` in `js/title.js`, every 5 s until the first tap.
+
+**Seasons** (2026-10-10): the 3D Clearing dresses up by the date, `season()` in `js/season.js` (October Halloween, December
+winter, `?season=` to pin it). Everything seasonal is in `js/hub-season.js` (leaf palettes, ground and vista looks, light
+tints, wisp colours, pumpkin / snowman painters, `snowCap()`); `dressSeason()` in `js/hub-3d.js` places it, once, with the
+forest. `SEASON_FLYERS` join the flyers' round on both titles. A new season: a line in `season()`, its entries there.

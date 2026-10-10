@@ -2069,3 +2069,11 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   sends them all (and whatever stands on them) back to storage (`putAway()`). Every base owns one Storage PC (`FREE_PC`,
   added in `owns()`); tapped in the room on Walk it opens the PC on its Decorations (`logOn()` in `js/base-3d.js`, `.in-base`
   over the base), and the room reloads from the save when it's logged off.
+
+- **Seasonal title screen** (polish #9, 2026-10-10): `season(now)` in `js/season.js` (October `halloween`, December
+  `winter`; `?season=halloween|winter|none` pins it) dresses the 3D Clearing (the default title), its look all in
+  `js/hub-season.js`: Halloween's autumn trees, fallen leaves, 13 pumpkins (most jack-o'-lanterns lit from dusk through
+  `seasonMats`), an orange tint (`TINT`), orange / violet wisps; winter's snowy ground, snow-capped trees (`snowCap()`), a
+  snowman, falling snow (`makeSnow()`), a cold light; the vista past the Safari gate follows (`vistaLook()`). Ghosts
+  (Gastly, Haunter, Gengar, Misdreavus, Drifloon) / Delibird and Vanillite join the flyers' round on both titles
+  (`SEASON_FLYERS`). The Signs title's ledge is otherwise unchanged. A new season is a `season()` line and its looks.

@@ -19,6 +19,8 @@ import { $, el, setHpBar, infGlyph } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, playMusic, closeSoundPops, setHomeTrack } from './audio.js';
 import { timeOfDay } from './daytime.js';
+import { season } from './season.js';
+import { SEASON_FLYERS } from './hub-season.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { safariAccess, DAY_PASS } from './data/balls.js';
@@ -89,11 +91,12 @@ export const eternatusGuest = () => { guest = true; flight = [ETERNATUS]; };   /
     deals from the same round. */
 export function dealFlyer() {
   if (!flight.length) {
-    const round = guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS;
+    const round = [...(guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS), ...(SEASON_FLYERS[season()] || [])];
     flight = round.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
     if (flight[0] === lastFlyer) flight.push(flight.shift());
   }
   const id = lastFlyer = flight.shift();
+  if (!STARTERS_BY_ID[id] && id !== ETERNATUS) return { id, src: `assets/pokemon/${id}-front.gif`, lit: true };   // the season's guests
   if (id === ETERNATUS) return { id, src: `assets/pokemon/${ETERNATUS}-front.gif`, lit: true };
   const starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
   return { id, src: lit ? spriteUrl(starter, 'front') : `assets/pokemon/${id}-front.gif`, lit };
