@@ -1673,28 +1673,40 @@ function pokestop(g, id, x, z, S, saved, start) {
 /** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
     or start): CONTINUE before the one holding the saved run, else what that stop starts, all the same size. Bungee, a
     heavy arcade face (the pixel font's thin strokes blurred into the glow), lying flat like a painted road marking, only
-    a little taller to make up for the floor's foreshortening (1.6 looked propped up), white on a dark outline with a
-    faint glow (the user's asks, 2026-10-10: smaller, 60% as bright, and still easy to read). */
+    a little taller to make up for the floor's foreshortening (1.6 looked propped up), gold arcade letters on a dark extruded edge
+    between chevrons, see-through (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game). */
 let cueFont;
 function groundCue(g, x, z, text) {
   const c = document.createElement('canvas');
-  c.width = 640; c.height = 200;
+  c.width = 640; c.height = 240;
   c.hd = 2;
   const map = tex(c);
   const paint = () => {
-    const d = c.getContext('2d');
+    const d = c.getContext('2d'), cx = 320, cy = 120;
     d.clearRect(0, 0, c.width, c.height);
     let px = 124;
-    do d.font = `${px -= 4}px Bungee, "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 560);
-    d.textAlign = 'center'; d.textBaseline = 'middle';
-    d.lineJoin = 'round';
-    d.shadowColor = 'rgba(95, 224, 255, 0.9)'; d.shadowBlur = 22;
-    d.lineWidth = 16; d.strokeStyle = 'rgba(40, 190, 240, 0.55)';
-    d.strokeText(text, 320, 104);
-    d.shadowBlur = 0; d.lineWidth = 9; d.strokeStyle = '#0c2c48';
-    d.strokeText(text, 320, 104);
-    d.fillStyle = '#ffffff';
-    d.fillText(text, 320, 104);
+    do d.font = `${px -= 4}px Bungee, "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 500);
+    d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
+    const half = d.measureText(text).width / 2;
+    const chevron = (x, dir) => {
+      d.beginPath(); d.moveTo(x - 22 * dir, cy - 30); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 22 * dir, cy + 30);
+      d.lineWidth = 22; d.strokeStyle = '#0c2c48'; d.stroke();
+      d.lineWidth = 11; d.strokeStyle = '#ffe14a'; d.stroke();
+    };
+    chevron(cx - half - 40, 1); chevron(cx + half + 40, -1);
+    d.shadowColor = 'rgba(95, 224, 255, 0.85)'; d.shadowBlur = 20;
+    d.lineWidth = 18; d.strokeStyle = 'rgba(40, 190, 240, 0.5)';
+    d.strokeText(text, cx, cy);
+    d.shadowBlur = 0;
+    // a chunky extruded edge under the letters, like an arcade title
+    d.lineWidth = 10; d.strokeStyle = d.fillStyle = '#06182a';
+    for (let i = 8; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
+    d.strokeStyle = '#0c2c48';
+    d.strokeText(text, cx, cy);
+    const g = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.48, '#fff6b0'); g.addColorStop(0.52, '#ffd23a'); g.addColorStop(1, '#ff9a1a');
+    d.fillStyle = g;
+    d.fillText(text, cx, cy);
     map.needsUpdate = true;
   };
   paint();
@@ -1703,7 +1715,7 @@ function groundCue(g, x, z, text) {
   cueFont.then(paint, () => {});
   // drawn over the ground, not added to it: added light at 60% washed white letters into the grass (the user couldn't read them)
   const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8 * 200 / 640 * 1.25), m);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8 * 240 / 640 * 1.25), m);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(x, 0.03, z);
   mesh.renderOrder = 2;
@@ -2252,7 +2264,7 @@ function frame(now) {
   cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
-  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.9 : 0.82 + 0.13 * (0.5 + 0.5 * Math.sin(now / 520));
+  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.72 : 0.64 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);

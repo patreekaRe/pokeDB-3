@@ -45,7 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['hub', 'In October a different ghost Pokémon greets you in the Clearing each visit, not always Sableye.'],
   ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
-  ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are in an arcade font with a dark outline so they read clearly, and lie flat on the ground.'],
+  ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are gold arcade letters between chevrons, see-through and easy to read, lying flat on the ground.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
