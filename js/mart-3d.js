@@ -17,12 +17,14 @@ import { ITEM_FIT } from './data/item-fit.js';
 const COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;
-const PITCH = 0.42, ACROSS = 7.2, LOOK_Y = 0.9, SHOT_TOP = 3.4;
-// the one wall unit everything on sale stands on (the pixel Mart's shelf, which the user liked): a counter-height cabinet
-// with the items and the relics (under glass domes) on top, and over it a shelf of the moves
-const RACK = { x0: 3, n: 5, low: 0.9, shelf: 1.56, h: 1.0, top: 3.0 };
+const PITCH = 0.42, ACROSS = 8.8, LOOK_Y = 0.9, SHOT_TOP = 3.4;
+// the moves on a counter-height cabinet of their own in the middle, and the items and relics on a unit of their own on
+// the right (the user's ask, 2026-10-09: the cards were lost among the items under them): the items on its cabinet, the
+// relics under glass domes on a shelf over them
+const RACK = { x0: 3, n: 5, low: 0.9, h: 1.0, top: 2.25 };
+const ITEMS = { x0: 8, n: 3, cx: 4.1, w: 2.7, shelf: 1.62, top: 2.55 };
 const COUNTER = { x0: 1, x1: 2, y: 2, h: 0.95, d: 0.8 };
-const SHELF = { x0: 8, n: 2, y: 2, h: 0.98 };         // a gondola of the Mart's everyday goods
+const SHELF = { x0: 9, n: 2, y: 4, h: 0.98 };         // a gondola of the Mart's everyday goods
 const DOOR = { x: 5, y: ROWS - 1 };
 const CLERK = { x: 1.55, y: 1 };
 
@@ -38,6 +40,8 @@ let opts = null, aim = null, raf = 0, last = 0, calm = false, shot = null, viewW
 let flying = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
+// the middle of the moves' and the items' units
+const WARES_MID = (tileX(RACK.x0) - 0.65 + ITEMS.cx + ITEMS.w / 2) / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
 const key = (x, y) => `${x},${y}`;
 const wx = (t) => (t + 0.4) * U;
@@ -107,23 +111,11 @@ function goods(f, x0, x1, y0, y1, seed) {
   }
 }
 
-/** The back wall: goods behind Kecleon, POKé MART on a blue sign, MOVES over the card rack, a window behind the items'
-    shelf, long ceiling lights. */
+/** The back wall: goods behind Kecleon, POKé MART on a blue sign, long ceiling lights. */
 function wallArt() {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine: lit } = f, s = lit();
   wallBands(f, W);
   goods(f, wx(0.1), wx(2.9), wy(2.35), wy(1.05), 7);
-  // a window of sky behind the items' shelf
-  const x0 = wx(8.3), x1 = wx(10.6), y0 = wy(2.25), y1 = wy(1.15);
-  rr(x0 - 1.5, y0 - 1.5, x1 - x0 + 3, y1 - y0 + 3, 1.5, '#ffffff');
-  g.fillStyle = lin(0, y0, 0, y1, ['#5aa8f0', '#9cd4f8', '#e2f4ff']); g.fillRect(x0, y0, x1 - x0, y1 - y0);
-  g.fillStyle = '#ffffff';
-  for (const [cx, cy, r] of [[x0 + 12, y0 + 7, 3.4], [x0 + 16, y0 + 6, 4.4], [x0 + 21, y0 + 7.5, 3]]) { g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); }
-  g.fillStyle = lin(0, y1 - 6, 0, y1, ['#7cc464', '#58a048']); g.fillRect(x0, y1 - 6, x1 - x0, 6);
-  g.strokeStyle = '#ffffff'; g.lineWidth = 1.2;
-  g.beginPath(); g.moveTo((x0 + x1) / 2, y0); g.lineTo((x0 + x1) / 2, y1); g.stroke();
-  g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.moveTo(x0 + 2, y0); g.lineTo(x0 + 7, y0); g.lineTo(x0 + 1, y1); g.lineTo(x0, y1); g.closePath(); g.fill();
-  s.fillStyle = '#2a3a48'; s.fillRect(x0, y0, x1 - x0, y1 - y0);
   // the sign
   const sw = 6.2 * U, sx = wx(5.5) - sw / 2, sy = wy(4.85);
   rr(sx - 2, sy - 2, sw + 4, 26, 6, '#ffffff');
@@ -427,33 +419,46 @@ function ballBin(tx, ty) {
   blocked.add(key(tx, ty));
 }
 
-/** The wall unit: a white cabinet at counter height (cupboards, a blue top) for the items and relics, a lit blue back
-    over it, and a shelf across it at eye level for the moves on acrylic easels, MOVES on its crown. */
-function buildRack() {
-  const w = RACK.n + 0.3, cx = tileX(RACK.x0) + (RACK.n - 1) / 2, wall = -ROWS / 2, z = wall + 0.3;
+/** A wall unit `w` wide at `cx`: a white cabinet at counter height (cupboards a `door` apart, a blue top), a lit blue back
+    over it up to `top`, white sides and crown, a light strip under the crown and its name on it. */
+function wallUnit(cx, w, top, doors, name) {
+  const wall = -ROWS / 2, z = wall + 0.3;
   const white = std({ color: '#f8fafe', roughness: 0.35 }), back = std({ color: '#d8e8fc', emissive: new THREE.Color('#bcd8ff'), emissiveIntensity: 0.35, roughness: 0.6 });
   const blue = std({ color: '#3a7ce0', roughness: 0.4 }), H = RACK.low;
   box(w, H - 0.05, 0.6, [white, white, white, white, std({ color: '#eef3fa', roughness: 0.4 }), white], cx, (H - 0.05) / 2, z);
-  for (let i = 0; i < RACK.n; i++) {   // cupboard doors, a round handle each
-    const dx = tileX(RACK.x0 + i);
-    mesh(rbox(0.86, 0.5, 0.03, 0.02), std({ color: '#ffffff', roughness: 0.3 }), dx, 0.3, z + 0.31);
+  for (const dx of doors) {   // cupboard doors, a round handle each
+    mesh(rbox(0.82, 0.5, 0.03, 0.02), std({ color: '#ffffff', roughness: 0.3 }), dx, 0.3, z + 0.31);
     mesh(new THREE.SphereGeometry(0.028, 12, 8), blue, dx, 0.47, z + 0.335);
   }
   box(w + 0.06, 0.05, 0.66, blue, cx, H - 0.025, z + 0.01);
-  const tall = RACK.top - H;
+  const tall = top - H;
   box(w, tall, 0.06, back, cx, H + tall / 2, wall + 0.03);
   for (const s of [-1, 1]) box(0.08, tall, 0.4, white, cx + s * (w / 2 - 0.04), H + tall / 2, wall + 0.2);
-  box(w, 0.1, 0.44, white, cx, RACK.top, wall + 0.22);
-  header('MOVES', 1.7, 0.34).position.set(cx, RACK.top + 0.26, wall + 0.3);
-  // the moves' shelf: white with a blue lip; a light strip under it and one under the crown
-  box(w - 0.16, 0.05, 0.32, white, cx, RACK.shelf, wall + 0.2);
-  box(w - 0.16, 0.06, 0.03, blue, cx, RACK.shelf - 0.005, wall + 0.37);
-  for (const y of [RACK.shelf - 0.04, RACK.top - 0.06]) {
-    const strip = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.02, 0.05), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
-    strip.position.set(cx, y, wall + 0.3);
-    room.add(strip);
-  }
+  box(w, 0.1, 0.44, white, cx, top, wall + 0.22);
+  header(name, 1.7, 0.34).position.set(cx, top + 0.26, wall + 0.3);
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.02, 0.05), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
+  strip.position.set(cx, top - 0.06, wall + 0.3);
+  room.add(strip);
+  return { white, blue };
+}
+
+/** The moves' unit in the middle: the cards on acrylic easels along its top. */
+function buildRack() {
+  const cx = tileX(RACK.x0) + (RACK.n - 1) / 2;
+  wallUnit(cx, RACK.n + 0.3, RACK.top, Array.from({ length: RACK.n }, (_, i) => tileX(RACK.x0 + i)), 'MOVES');
   for (let i = 0; i < RACK.n; i++) blocked.add(key(RACK.x0 + i, 0));
+}
+
+/** The items' unit on the right: the items on its top, a glass-fronted shelf over them for the relics. */
+function buildItems() {
+  const { cx, w } = ITEMS, wall = -ROWS / 2;
+  const { white, blue } = wallUnit(cx, w, ITEMS.top, [-0.9, 0, 0.9].map(d => cx + d), 'ITEMS');
+  box(w - 0.16, 0.05, 0.36, white, cx, ITEMS.shelf, wall + 0.2);
+  box(w - 0.16, 0.06, 0.03, blue, cx, ITEMS.shelf - 0.005, wall + 0.39);
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.02, 0.05), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
+  strip.position.set(cx, ITEMS.shelf - 0.04, wall + 0.3);
+  room.add(strip);
+  for (let i = 0; i < ITEMS.n; i++) blocked.add(key(ITEMS.x0 + i, 0));
 }
 
 /** Kecleon's counter left of the unit: blue, a white stripe with the Poké Ball, a white top; the PC on its right end. */
@@ -538,14 +543,13 @@ function buildRoom() {
   }
 
   buildRack();
+  buildItems();
   buildCounter();
   buildShelf();
   ballBin(2, 6);
   ballBin(8, 6);
-  piece('centerplant', tileX(10), tileZ(0)); blocked.add(key(10, 0));
   piece('centerplant', tileX(0), tileZ(6)); blocked.add(key(0, 6));
   piece('centerplant', tileX(10), tileZ(6)); blocked.add(key(10, 6));
-  piece('watercooler', tileX(8), tileZ(0)); blocked.add(key(8, 0));
   piece('centerplant', tileX(0), tileZ(0)); blocked.add(key(0, 0));
   ballBin(0, 3);
 
@@ -567,12 +571,22 @@ function buildRoom() {
 
 /* ---------- the wares ---------- */
 
-/** Where each ware stands and where your Pokémon stands to look at it: the moves along the shelf, the items then the
-    relics along the cabinet's top under them. */
-function slotOf(kind, i) {
-  const wall = -ROWS / 2, x = RACK.x0 + i;
-  if (kind === 'card') return { at: new THREE.Vector3(tileX(x), RACK.shelf + 0.03 + RACK.h / 2, wall + 0.22), step: { x, y: 1 } };
-  return { at: new THREE.Vector3(tileX(x), RACK.low + 0.27, wall + 0.36), step: { x, y: 1 } };
+/** Where each ware stands, where its price tag hangs and where your Pokémon stands to look at it: the moves along the
+    middle unit's top, the items along the right unit's top, the relics on its shelf over them. */
+function slotOf(kind, i, of) {
+  const wall = -ROWS / 2;
+  if (kind === 'card') {
+    const x = RACK.x0 + i, at = new THREE.Vector3(tileX(x), RACK.low + 0.03 + RACK.h / 2, wall + 0.3);
+    return { at, tag: new THREE.Vector3(at.x, RACK.low - 0.2, wall + 0.61), step: { x, y: 1 } };
+  }
+  const gap = kind === 'relic' ? 1.1 : 0.88, ax = ITEMS.cx + (i - (of - 1) / 2) * gap;
+  const step = { x: Math.max(ITEMS.x0, Math.min(ITEMS.x0 + ITEMS.n - 1, Math.round(ax + COLS / 2 - 0.5))), y: 1 };
+  if (kind === 'relic') {
+    const at = new THREE.Vector3(ax, ITEMS.shelf + 0.27, wall + 0.24);
+    return { at, tag: new THREE.Vector3(ax, ITEMS.shelf - 0.07, wall + 0.41), step };
+  }
+  const at = new THREE.Vector3(ax, RACK.low + 0.27, wall + 0.36);
+  return { at, tag: new THREE.Vector3(ax, RACK.low - 0.2, wall + 0.61), step };
 }
 
 function tagMesh(text, look, w = 0.56) {
@@ -584,23 +598,23 @@ function tagMesh(text, look, w = 0.56) {
 
 const cardTex = new Map();
 async function buildWares(list) {
-  const group = new THREE.Group(), out = [], wall = -ROWS / 2;
-  const counts = { card: 0, low: 0 };
+  const group = new THREE.Group(), out = [];
+  const counts = { card: 0, item: 0, relic: 0 }, of = (k) => list.filter(w => w.kind === k).length;
   for (const w of list) {
     if (w.kind === 'pc') { out.push({ ...w, spot: { at: pcAt, step: { x: COUNTER.x1, y: COUNTER.y + 1 } } }); continue; }
-    const i = w.kind === 'card' ? counts.card++ : counts.low++, spot = slotOf(w.kind, i), g = new THREE.Group();
+    const spot = slotOf(w.kind, counts[w.kind]++, of(w.kind)), g = new THREE.Group();
     g.position.copy(spot.at);
     const entry = { ...w, spot, group: g, base: spot.at.clone(), seed: Math.random() * 6 };
-    const tag = tagMesh(w.sold ? 'SOLD OUT' : `₽${w.price}`, { dear: w.dear, sold: w.sold }, w.kind === 'card' ? 0.56 : 0.62);
-    if (w.kind === 'card') tag.position.set(spot.at.x, RACK.shelf - 0.07, wall + 0.39);
-    else tag.position.set(spot.at.x, RACK.low - 0.2, wall + 0.61);
+    const tag = tagMesh(w.sold ? 'SOLD OUT' : `₽${w.price}`, { dear: w.dear, sold: w.sold }, w.kind === 'relic' ? 0.5 : w.kind === 'card' ? 0.56 : 0.62);
+    tag.position.copy(spot.tag);
     group.add(tag);
     if (w.kind === 'card' && !w.sold) {
       const id = w.thing.id;
       if (!cardTex.has(id)) cardTex.set(id, cardArt(w.thing).then(c => { const t = texOf(Object.assign(c, { fine: 2 })); t.userData.keep = true; return t; }));
       const map = await cardTex.get(id);
       const h = RACK.h, cw = h * 100 / 124;
-      const face = new THREE.Mesh(new THREE.PlaneGeometry(cw, h), std({ map, roughness: 0.45, emissive: new THREE.Color('#ffffff'), emissiveMap: map, emissiveIntensity: 0.18 }));
+      // unlit, so it shows the card's own colours whatever the light does (on the user's phone the lit card came out black)
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(cw, h), new THREE.MeshBasicMaterial({ map, alphaTest: 0.5 }));
       face.castShadow = true;
       g.add(face);
       const sheen = new THREE.Mesh(new THREE.PlaneGeometry(cw, h), new THREE.MeshBasicMaterial({ map: shine.clone(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -772,7 +786,8 @@ function fitShot() {
 function placeCamera(dt) {
   if (!shot) return;
   const edge = COLS / 2 + 0.4, half = shot.half;
-  const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x));
+  // leaning towards the middle of the two units, so a phone sees the moves and the items at once from the door
+  const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x * 0.6 + WARES_MID));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist);
@@ -948,7 +963,7 @@ export async function mountMart(o) {
   scene.add(wares.group);
   if (!back && !again) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
-    camX = walker.x;
+    camX = walker.x * 0.6 + WARES_MID;
   }
   walker.path = [];
   const pc = o.wares.find(w => w.kind === 'pc');
