@@ -48,6 +48,7 @@ export const NEXT = [
   ['base', 'House upgrades: open the PC\'s blueprint to make your Secret Base\'s main room bigger, then build as many rooms as you like for 500 PokéCoins each, a doorway wherever you pick on a wall, turned whichever way you want, or upstairs up a staircase from a back wall. Join rooms that stand side by side with a new doorway, or take a room down and its furniture goes back into storage.'],
   ['pc', 'Duplicate any furniture you own from your PC: 50 PokéCoins, 5 more each time, never over 100.'],
   ['pc', 'Something new to read in the PC now wears a bobbing gold "!" instead of a "NEW" label.'],
+  ['pc', 'New PC pages (House Upgrades, Duplicate, Decorations, Prof. Oak) wear a gold "!" until you open them, and the PC in the Clearing shows one too.'],
   ['fixes', 'The Clearing loads again in October; a Halloween pumpkin stopped it.'],
 ];
 

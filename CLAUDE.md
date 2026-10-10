@@ -762,7 +762,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   floor mask, walls and doorways `fits()` reads. Opening the base always starts in the main room. A new doorway clears
   its furniture into storage (`clearDoors()`). **Duplicate** (the same day): the PC's DUPLICATE copies any owned piece into
   storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
-  read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)".
+  read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never

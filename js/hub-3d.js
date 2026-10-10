@@ -28,6 +28,7 @@ import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
+import { anyPcNew } from './pc-news.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -1208,7 +1209,7 @@ function makePlaces() {
     {
       // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : patchUnseen() ? 'New patch notes! ' : ''}A PC. Your mail, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : patchUnseen() ? 'New patch notes! ' : anyPcNew(getSave()) ? 'Something new on the PC! ' : ''}A PC. Your mail, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
@@ -1782,11 +1783,11 @@ async function enterMall() {
   await acts.onMall();
 }
 
-/** What floats over the PC: the envelope for mail, else the "!" for unread patch notes. */
+/** What floats over the PC: the envelope for mail, else the "!" for unread patch notes or a PC page not yet opened. */
 function pcMarks() {
   if (!pcMail) return;
   pcMail.visible = unclaimed().length > 0;
-  pcNews.visible = !pcMail.visible && patchUnseen();
+  pcNews.visible = !pcMail.visible && (patchUnseen() || anyPcNew(getSave()));
 }
 
 /** Log on to the PC (js/pc.js), full screen over the Clearing; logged off, a new walking buddy steps out in place. */

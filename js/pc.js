@@ -32,6 +32,7 @@ import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buy
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
+import { pcNew, markPcSeen } from './pc-news.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -127,6 +128,7 @@ function speak(text) {
 
 function show(id) {
   page = id;
+  markPcSeen(id === 'decor' && dupes ? 'dupe' : id);
   PAGES[id]();
   glass.querySelector('button')?.focus({ preventScroll: true });
 }
@@ -183,15 +185,15 @@ function monTile(src, name, on, tap, tag = '') {
 const PAGES = {
   home() {
     const waiting = unclaimed().length;
+    const save = getSave();
     const rows = [
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
       ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()],
-      [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine')],
-      ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }],
+      [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
+      ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
     ];
-    const save = getSave();
-    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); floor = 0; show('house'); }]);
+    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]);
     if (patchUnseen() && !waiting) rows.unshift(rows.splice(2, 1)[0]);   // the "!" over the PC leads straight to it
     if (cloudConfigured()) {
       const on = cloudRemembered();
@@ -378,8 +380,8 @@ const PAGES = {
   },
   mine() {
     menu(`${trainerName().toUpperCase()}'S PC`, [
-      ['DECORATIONS', 'Your Secret Base furniture: what stands in your rooms and what\'s kept in storage.', () => { deco = null; dupes = false; show('decor'); }],
-      ['DUPLICATE', `Make one more of any piece you own, into storage: ${dupePrice(loadBase())} PokéCoins. Each copy costs 5 more, up to 100.`, () => { deco = null; dupes = true; show('decor'); }],
+      ['DECORATIONS', 'Your Secret Base furniture: what stands in your rooms and what\'s kept in storage.', () => { deco = null; dupes = false; show('decor'); }, pcNew('decor', getSave())],
+      ['DUPLICATE', `Make one more of any piece you own, into storage: ${dupePrice(loadBase())} PokéCoins. Each copy costs 5 more, up to 100.`, () => { deco = null; dupes = true; show('decor'); }, pcNew('dupe', getSave())],
       ['RENAME', `Your name on the Trainer Card and the leaderboards: ${trainerName()}.`, () => show('rename')],
     ]);
   },
