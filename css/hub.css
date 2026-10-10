@@ -127,7 +127,7 @@
 
 /* the logo greets the hub, then fades so it never hides the Ancient Tree's tag */
 .title-screen.hub-on .title-center { animation: hubLogo 5.4s ease-in forwards; }
-.title-screen.hub-on .title-version { visibility: hidden; }
+.title-screen.hub-mode .title-version { visibility: hidden; }   /* the patch notes are on the Clearing's PC there */
 @keyframes hubLogo { 0%, 75% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 .title-screen.hub-on.hub-greeted .title-center { animation: none; visibility: hidden; }
 /* the title's fade in showed the screen under it (the character select) through the Clearing; the walk out of the mall
@@ -139,17 +139,9 @@
 .hd2d-curtain { position: fixed; inset: 0; z-index: 2000; background: #000; opacity: 0; pointer-events: none; transition: opacity 320ms ease; }
 .hd2d-curtain.on { opacity: 1; pointer-events: auto; }
 
-/* the version tag (the Patch notes) stays once the logo has faded, in the top corner */
-.hub-version {
-  position: absolute; right: max(12px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 8px);
-  padding: 4px 7px 3px; border: 2px solid #1c1d4e; border-radius: 6px; background: #fff8e0; box-shadow: 0 2px 0 #1c1d4e;
-  color: #1c1d4e; font: 0.55rem/1 var(--pixel-font); font-synthesis-weight: none; cursor: pointer;
-}
-.hub-version:empty { display: none; }
-.hub-version:active { translate: 0 2px; box-shadow: none; }
 
 /* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and bar wait for the partner to walk in */
-.hub.held .hub-dex, .hub.held .hub-version, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }
+.hub.held .hub-dex, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }
 .hub.held .hub-view { pointer-events: none; }
 /* the hub is the title from the first frame, so the old pixel sky, its light and the signs never show under it */
 .title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
@@ -306,6 +298,15 @@
 .pc-mon:active { translate: 0 2px; }
 .pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.55rem; color: #8e5c06; }
 .pc-empty { margin-top: 24px; text-align: center; font-size: 0.62rem; }
+/* Patch notes: a white sheet of lines under blue headings on the striped screen */
+.pc-notes { padding: 12px 12px 14px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; box-shadow: 0 3px 0 #2a5a90; }
+.pc-notes .patch-title { margin: 0; font-size: 0.72rem; line-height: 1.5; color: #0e3446; }
+.pc-notes .patch-date { margin: 2px 0 4px; font-size: 0.55rem; color: #5a7088; }
+.pc-notes .patch-head { margin: 14px 0 6px; font-size: 0.62rem; color: #1e5a96; }
+.pc-notes .patch-list { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 7px; font-size: 0.6rem; line-height: 1.6; }
+.pc-notes .patch-game { display: flex; flex-direction: column; gap: 10px; }
+.pc-notes .patch-row-text { display: flex; flex-direction: column; gap: 3px; font-size: 0.58rem; line-height: 1.6; }
+.pc-notes .patch-row-text b { font-size: 0.64rem; color: #1e5a96; }
 /* Decorations: the base's furniture, its pictures smooth (never pixelated), gold for what stands in the room */
 .pc-screen.in-base { z-index: 910; }
 /* The kinds as one tray of equal keys, five a row, so it always fits the screen's width and lines up */

@@ -24,6 +24,7 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { unclaimed } from './mail.js';
+import { patchUnseen } from './patchnotes.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -84,6 +85,7 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
 let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
@@ -718,6 +720,19 @@ export function texOf(canvas) {
 }
 
 /** The PC's "you've got mail": a cream envelope in a white bubble with a red dot, like a phone's badge. */
+/** The "!" over the PC: the yellow bubble every Home key wears for news (.dex-news), a point at its foot. */
+function newsArt() {
+  const { c, g, fill, rr } = fine(10, 13, 10);
+  fill('#5a3a00', () => g.arc(5, 5, 4.6, 0, Math.PI * 2));
+  fill('#5a3a00', () => { g.moveTo(3.4, 8.6); g.lineTo(5, 12.4); g.lineTo(6.6, 8.6); });
+  fill('#ffd23a', () => g.arc(5, 5, 3.8, 0, Math.PI * 2));
+  fill('#ffd23a', () => { g.moveTo(3.9, 8.2); g.lineTo(5, 11); g.lineTo(6.1, 8.2); });
+  fill('rgba(255, 255, 255, 0.55)', () => g.ellipse(3.6, 3, 1.4, 0.8, -0.6, 0, Math.PI * 2));
+  rr(4.3, 2.2, 1.4, 3.6, 0.7, '#3a2400');
+  fill('#3a2400', () => g.arc(5, 7.2, 0.8, 0, Math.PI * 2));
+  return c;
+}
+
 function mailArt() {
   const { c, g, fill, rr } = fine(14, 13, 10);
   rr(0.5, 0.5, 13, 10, 3, '#3a4a6a');
@@ -1180,15 +1195,18 @@ function makePlaces() {
     {
       // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : ''}A PC. Your mail, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : patchUnseen() ? 'New patch notes! ' : ''}A PC. Your mail, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
         pcMail = board(mailArt(), tileX(PC_AT.tx), tileZ(PC_AT.ty) + 0.1, { shadow: false });
         pcMail.rotation.x = -PITCH;
         pcMail.userData.y = 2.35;
-        pcMail.visible = unclaimed().length > 0;
-        g.add(pcMail);
+        pcNews = board(newsArt(), tileX(PC_AT.tx), tileZ(PC_AT.ty) + 0.1, { shadow: false });
+        pcNews.rotation.x = -PITCH;
+        pcNews.userData.y = 2.35;
+        g.add(pcMail, pcNews);
+        pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
         pc.rotation.y = -0.35;   // turned a little, so its right side shows
         g.add(pc);
@@ -1302,7 +1320,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -1687,13 +1705,20 @@ async function enterMall() {
   await acts.onMall();
 }
 
+/** What floats over the PC: the envelope for mail, else the "!" for unread patch notes. */
+function pcMarks() {
+  if (!pcMail) return;
+  pcMail.visible = unclaimed().length > 0;
+  pcNews.visible = !pcMail.visible && patchUnseen();
+}
+
 /** Log on to the PC (js/pc.js), full screen over the Clearing; logged off, a new walking buddy steps out in place. */
 async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
   hideCard();
   walker.path = []; aim = null;
   const { openPC } = await import('./pc.js');
-  openPC({ onClose: () => { if (pcMail) pcMail.visible = unclaimed().length > 0; swapBuddy(); }, onFame: (app) => acts.onApp?.(app) });
+  openPC({ onClose: () => { pcMarks(); swapBuddy(); }, onFame: (app) => acts.onApp?.(app) });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
@@ -2084,7 +2109,7 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   if (!calm) livePc(now);
-  if (pcMail?.visible) pcMail.position.y = pcMail.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.85 : 0.3 + 0.65 * (0.5 + 0.5 * Math.sin(now / 520));
   liveSign(now);
@@ -2119,7 +2144,6 @@ async function build() {
           <span class="hbar-hp"><span class="gb-hp" id="hub-hp" role="progressbar" aria-label="HP" aria-valuemin="0"><span class="gb-hp-tag" aria-hidden="true">HP:</span><span class="gb-hp-track"><span class="gb-hp-fill" id="hub-hp-fill"></span></span></span><span class="gb-hp-num" id="hub-hp-text"></span></span>
           <button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></div></div></div>
     </div>
-    <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
   view = root.querySelector('.hub-view');
   card = root.querySelector('.hub-card');
@@ -2135,7 +2159,6 @@ async function build() {
   const help = root.querySelector('.hub-help');
   help.append(roundKey('help'));
   help.addEventListener('click', () => fromCorner(acts.onHelp, help));
-  root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
   if (new URLSearchParams(location.search).has('fps')) { fpsEl = root.querySelector('.hub-fps'); fpsEl.hidden = false; }
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   renderer.shadowMap.enabled = true;
@@ -2215,8 +2238,6 @@ async function openHub(titleScreen, actions, hold) {
   hideCard();
   root.querySelectorAll('.room-home.out').forEach(k => k.classList.remove('out'));
   dexNews();
-  const tag = document.getElementById('title-version');
-  root.querySelector('.hub-version').textContent = tag?.textContent ?? '';
   nextFly = performance.now() + 6000;
   airAt = 0;
   setTime(true);

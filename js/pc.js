@@ -4,7 +4,8 @@
    Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
    `secretBase.mons`), your own PC your name, Prof. Oak's PC rates your Pokédex and hints at the next unlock, the cloud save's Sign in (the title corner's PC, which the hub hides), then
    the Hall of Fame and Log off. The Mailbox on top holds rewards posted to the PC (js/mail.js): a letter opens out of its
-   envelope and its PokéCoins are claimed there. Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
+   envelope and its PokéCoins are claimed there. Patch notes (since 2026-10-10, the user's ask: the hub's corner version tag
+   moved in) list each version, the small changes since the newest and what's in the game (js/patchnotes.js). Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
    your things.
    ============================================================ */
 
@@ -28,6 +29,8 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway } from './secret-base.js';
+import { PATCHES } from './data/patchnotes.js';
+import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -41,7 +44,7 @@ export function residents(save = getSave(), lend = false) {
 }
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
-let start = 'home', deco = null, decoKind = 'All', inBase = false, buddyShiny = null;
+let start = 'home', reading = 0, deco = null, decoKind = 'All', inBase = false, buddyShiny = null;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
@@ -93,7 +96,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine' };
+const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches' };
 
 function back() {
   const up = UP[page];
@@ -172,9 +175,11 @@ const PAGES = {
     const rows = [
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox')],
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
+      [patchUnseen() ? 'PATCH NOTES (NEW)' : 'PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine')],
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }],
     ];
+    if (patchUnseen() && !waiting) rows.unshift(rows.splice(2, 1)[0]);   // the "!" over the PC leads straight to it
     if (cloudConfigured()) {
       const on = cloudRemembered();
       rows.push([on ? 'CLOUD SAVE' : 'SIGN IN', on ? 'Your progress is kept in the cloud. Check it or sign out here.' : 'Keep your progress safe in the cloud and carry on from your phone or PC.', signIn]);
@@ -281,6 +286,29 @@ const PAGES = {
     }
     glass.replaceChildren(...kids);
     speak(fresh ? `A letter from ${from.name}!` : `Opened ${new Date(m.claimed).toLocaleDateString()}.`);
+  },
+  patches() {
+    const since = sincePatch(), fresh = patchUnseen();
+    const rows = PATCHES.map((p, i) => [`V${p.version}${i === 0 && fresh ? ' (NEW)' : ''}`, `${p.name}, ${p.date}.`, () => { reading = i; show('patch'); }]);
+    if (since) rows.unshift([`SINCE V${since.since}`, `Smaller changes since v${since.since}, on their way into the next version.`, () => { reading = -1; show('patch'); }]);
+    rows.push(['IN THE GAME', 'Everything in the game so far.', () => show('game')]);
+    menu('PATCH NOTES', rows);
+  },
+  patch() {
+    const p = reading < 0 ? sincePatch() : PATCHES[reading];
+    if (!p) return show('patches');
+    const fresh = p === latestPatch && patchUnseen();
+    if (p === latestPatch) markPatchSeen();
+    const notes = el('div', 'pc-notes');
+    notes.append(patchNode(p, { icons: false }));
+    glass.replaceChildren(head(p.since ? `SINCE V${p.since}` : `V${p.version}`), notes);
+    speak(fresh ? `Version ${p.version}: ${p.name}! Here's what's new.` : p.since ? 'These will be part of the next version.' : `Version ${p.version}: ${p.name}.`);
+  },
+  game() {
+    const notes = el('div', 'pc-notes');
+    notes.append(inTheGame({ icons: false }));
+    glass.replaceChildren(head('IN THE GAME'), notes);
+    speak('Everything in the game so far.');
   },
   bill() {
     menu('BILL\'S PC', [

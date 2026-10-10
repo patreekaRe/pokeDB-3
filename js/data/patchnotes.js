@@ -1,12 +1,83 @@
 /* ============================================================
-   patchnotes.js  -  the title's version tag and its Patch notes
-   window (js/patchnotes.js). Newest patch first: a new patch is
-   one more entry at the top, and the tag shows its version.
-   Each section is [icon, heading, lines]; every emoji needs an
-   icon in js/icons.js.
+   patchnotes.js  -  the patch notes, read on the Clearing's PC
+   (js/pc.js) and the Signs title's version tag (js/patchnotes.js).
+
+   How a change gets in (2026-10-10, the user's ask: no more
+   hand-writing a whole patch, and no v1.3, v1.4, v1.5 for every
+   small thing):
+   1. Every session that ships something a player would notice
+      adds ONE line to NEXT: [group, line], the group a GROUPS
+      key. Fixes too small to notice get no line.
+   2. NEXT shows on the PC as "Since vX" with no "!": players can
+      read it, nothing beckons them.
+   3. Once NEXT holds RELEASE_AT lines, or a headline (a new
+      mode, biome or place) and half that, it becomes a patch:
+      move the lines into a new PATCHES entry at the top with the
+      next version, a name and the date, and empty NEXT. The PC's
+      "!" and the version follow by themselves. tests/
+      patchnotes.test.mjs fails past NEXT_MAX, so it can't pile up.
+   A patch's notes are grouped under GROUPS' headings in GROUPS'
+   order (sectionsOf()); patches before 1.2 keep their own
+   hand-made `sections`, each [icon, heading, lines].
    ============================================================ */
 
+/** Where a note goes: its heading, in this order. A new group needs a smooth or pixel icon for its emoji. */
+export const GROUPS = {
+  hub: ['🌳', 'The Clearing'],
+  base: ['🏠', 'Secret Base'],
+  mall: ['🏪', 'Poké Mall'],
+  pc: ['💻', 'The PC'],
+  runs: ['🗺️', 'Runs'],
+  battle: ['⚔️', 'Battle'],
+  modes: ['🗼', 'Game modes'],
+  dex: ['📕', 'Pokédex'],
+  music: ['🎵', 'Music'],
+  look: ['✨', 'Look'],
+  fixes: ['⚙️', 'Settings and fixes'],
+};
+
+/** Lines a patch is cut at; a headline feature cuts it at half. */
+export const RELEASE_AT = 12;
+/** Past this the tests fail: cut a patch. */
+export const NEXT_MAX = 20;
+
+/** What has shipped since the newest patch, waiting for the next one: [group, line]. */
+export const NEXT = [];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
 export const PATCHES = [
+  {
+    version: '1.2',
+    name: 'Home Sweet Home',
+    date: '2026-10-10',
+    notes: [
+      ['hub', 'After PRESS START you walk into the Whispering Clearing in 3D: tap where to go, and tap a place to use it.'],
+      ['hub', 'A Pokéstop outside the Clearing\'s gate starts a new run; spin it and your Pokémon walks out. A saved run waits where you started it, with CONTINUE glowing in front.'],
+      ['hub', 'The Safari Zone\'s gate and the Sky Pillar stand at the ends of their roads, each with its own Pokéstop and leaderboard board.'],
+      ['hub', 'The Clearing has its own day and night, fireflies, sounds, and a legendary flying over now and then.'],
+      ['base', 'Buy the Ancient Tree\'s house for 1,500 PokéCoins and make it your Secret Base: a 3D room to decorate however you like.'],
+      ['base', 'Over 1,000 kinds of furniture in 20 colours each, from beds and TVs to 60 Pokémon plushies. Many do things when tapped: TVs change channel, lamps switch off, fridges open.'],
+      ['base', 'Up to six of your Safari catches can live in your base, and your walking Pokémon can sit on its seats.'],
+      ['base', 'Some furniture can\'t be bought: earn it with badges, achievements and Safari pages.'],
+      ['mall', 'The Poké Mall opens in the Clearing. Smeargle\'s Furniture store sells a new stock every day, 50 to 150 PokéCoins a piece, with a second floor to unlock.'],
+      ['mall', 'The Game Corner shop is coming soon.'],
+      ['pc', 'A PC in the Clearing: choose the Pokémon that walks with you, pick your base\'s residents, change your name and sign in to the cloud save.'],
+      ['pc', 'Big PokéCoin rewards now arrive as letters in its Mailbox. Prof. Oak rates your Pokédex and hints at what to unlock next.'],
+      ['pc', 'The patch notes live on the PC now. A "!" over it means there\'s a new patch to read.'],
+      ['runs', 'The Pokémon Center and Poké Mart are 3D rooms you walk around in. Your Pokémon goes into its Poké Ball to heal.'],
+      ['runs', 'The new biomes\' roads open after any two won runs, not a Level 2 win with each type.'],
+      ['battle', 'A wild Pokémon\'s block now shows in blue on its HP bar, like yours.'],
+      ['music', 'New songs for the Clearing, the Secret Base, the Poké Mall, Team Rocket\'s ambush, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna.'],
+      ['dex', 'The shut Pokédex shows the time and day like a lock screen. The Trainer Card explains each line when tapped.'],
+    ],
+  },
   {
     version: '1.1',
     name: 'Many Roads',
@@ -150,6 +221,8 @@ export const IN_THE_GAME = [
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 113 augments and a weekly leaderboard.'],
   ['🏆', '130 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
+  ['🏠', 'Secret Base', 'A 3D room in the Ancient Tree to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Spend PokéCoins on 6 starters, 9 perks, a shiny for every starter but Mewtwo, and Poké Balls.'],
-  ['☁️', 'Cloud save', 'Sign in from the Pokédex\'s Settings to play on your phone and PC with one save.'],
+  ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

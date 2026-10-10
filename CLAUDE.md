@@ -816,6 +816,14 @@ one, which is the point: it costs nothing until it's needed.
 - Commits push directly to `main` — this is a solo project with no PR flow.
   Test locally first (see below), then commit and push.
 - Commit messages explain *why*, not *what*.
+- **Patch notes, every task** (2026-10-10, the user's ask): anything a player would notice that a session ships gets ONE
+  plain line in `NEXT` in `js/data/patchnotes.js` (`[group, line]`, a `GROUPS` key: hub, base, mall, pc, runs, battle,
+  modes, dex, music, look, fixes); too-small-to-notice fixes get none. The Clearing's PC shows them as "Since vX" with
+  no "!". Once `NEXT` holds `RELEASE_AT` (12) lines, or a headline feature (a new mode, biome or place) and 6, cut a
+  patch: move them into a new `PATCHES` entry at the top (next minor version, a short name, the date), empty `NEXT`, and
+  bring `IN_THE_GAME`'s counts up to date. The PC's "!" (`pcMarks()` in `js/hub-3d.js`) and the PC's PATCH NOTES (NEW)
+  follow by themselves (`patchUnseen()` in `js/patchnotes.js`, per device). `tests/patchnotes.test.mjs` fails past
+  `NEXT_MAX` (20). The hub's corner version tag is gone; the Signs title keeps `#title-version`.
 
 ## Testing a change before shipping
 
