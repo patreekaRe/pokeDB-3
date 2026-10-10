@@ -28,8 +28,8 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, MAX_ROOMS } from './secret-base.js';
-import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
+import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, buyDoor, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE } from './secret-base.js';
+import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 
@@ -47,7 +47,10 @@ export function residents(save = getSave(), lend = false) {
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
 let start = 'home', reading = 0, deco = null, decoKind = 'All', inBase = false, buddyShiny = null;
 let dupes = false;   // Decorations picking a piece to duplicate, not to put away
-let spot = null, plan = null;   // House upgrades: the doorway picked on the blueprint ({ room, pip }) and the room tried there
+// House upgrades: the doorway picked on the blueprint ({ room, pip, up } to build onto, or { join } between two rooms), the
+// room kind tried there and which of its turns, the floor looked at, and a built room picked (to take down, `sure` once asked)
+let spot = null, plan = null, turn = 0, floor = 0, picked = null, sure = false;
+const unpick = () => { spot = plan = picked = null; turn = 0; sure = false; };
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
@@ -188,7 +191,7 @@ const PAGES = {
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }],
     ];
     const save = getSave();
-    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { spot = plan = null; show('house'); }]);
+    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); floor = 0; show('house'); }]);
     if (patchUnseen() && !waiting) rows.unshift(rows.splice(2, 1)[0]);   // the "!" over the PC leads straight to it
     if (cloudConfigured()) {
       const on = cloudRemembered();
@@ -455,54 +458,95 @@ const PAGES = {
       : dupes ? `Tap a piece to copy it into storage for ${price} PokéCoins.` : 'Gold ones stand in your rooms. Tap one to see it, or to put it away.');
   },
   house() {
-    const save = getSave(), b = loadBase(), house = b.house, big = !!house?.big, built = house?.rooms.length ?? 0;
+    const save = getSave(), b = loadBase(), house = b.house, big = !!house?.big;
     if (!inBase && !save.baseOwned && !save.secretBase) {
       glass.replaceChildren(head('HOUSE UPGRADES'), el('p', 'pc-empty', 'No Secret Base yet.'));
       return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its blueprint is kept here.');
     }
     const h = head('HOUSE UPGRADES');
     h.append(el('span', 'pc-count', `${(save.coins ?? 0).toLocaleString()} coins`));
-    const fit = spot && plan ? fitRoom(house, spot.room, spot.pip, plan) : null;
-    const kids = [h, blueprint(house, fit)];
-    const buy = (label, go) => { const ok = el('button', 'room-ok pc-build', label); ok.type = 'button'; ok.addEventListener('click', go); return ok; };
+    const fits = spot?.room && plan ? fitsOf(house, spot.room, spot.pip, plan, spot.up) : [];
+    const fit = fits[turn % (fits.length || 1)] || null;
+    const kids = [h];
+    const buy = (label, go, cls = '') => { const ok = el('button', `room-ok pc-build${cls}`, label); ok.type = 'button'; ok.addEventListener('click', go); return ok; };
+    const short = (price) => speak(`You need ${price - (getSave().coins ?? 0)} more PokéCoins.`);
     if (!big) {
       const card = el('div', 'pc-plan');
-      card.append(el('b', 'pc-plan-name', 'BIGGER MAIN ROOM'), el('small', 'pc-plan-note', `11 × 8 → 14 × 10 tiles, with doorways to build more rooms onto.`),
+      card.append(el('b', 'pc-plan-name', 'BIGGER MAIN ROOM'), el('small', 'pc-plan-note', '11 × 8 → 14 × 10 tiles. Then build rooms onto any wall you like, or upstairs.'),
         buy(`Build · ${BIG_PRICE}`, () => {
-          if (!buyBigRoom(loadBase())) { playSound('cancel'); return speak(`You need ${BIG_PRICE - (getSave().coins ?? 0)} more PokéCoins.`); }
+          if (!buyBigRoom(loadBase())) { playSound('cancel'); return short(BIG_PRICE); }
           playSound('item-get');
           show('house');
-          speak('Your main room is bigger! Tap a green doorway on the blueprint to build a new room there.');
+          speak('Your main room is bigger! Tap a green spot on a wall to build a room there, or go to 2F to build upstairs.');
         }));
-      kids.push(card);
-      glass.replaceChildren(...kids);
+      glass.replaceChildren(h, blueprint(house, null), card);
       return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it.`);
     }
-    if (spot) {
+    // a tab per floor, and one more over the top to build up into
+    const tabs = el('div', 'pc-chips pc-floors');
+    for (let lv = 0; lv <= topFloor(house) + 1; lv++) {
+      const t = el('button', `pc-chip${lv === floor ? ' on' : ''}`, floorName(lv));
+      t.type = 'button';
+      t.addEventListener('click', () => { playSound('select'); unpick(); floor = lv; show('house'); });
+      tabs.append(t);
+    }
+    kids.push(tabs, blueprint(house, fit));
+    if (spot?.join) {
+      kids.push(buy(`Doorway · ${DOOR_PRICE}`, () => {
+        const { room, pip, to, toPip } = spot.join, done = buyDoor(loadBase(), room, pip, to, toPip);
+        if (!done) { playSound('cancel'); return short(DOOR_PRICE); }
+        unpick();
+        playSound('item-get');
+        show('house');
+        speak(`A new doorway!${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear it.` : ''}`);
+      }));
+    } else if (spot) {
+      const taken = takenOn(house, floor);
       const list = el('div', 'pc-menu pc-kinds');
       list.append(...BUILDABLE.map(kind => {
-        const k = ROOM_KINDS[kind], ok = !!fitRoom(house, spot.room, spot.pip, kind), sh = shapeOf(kind);
+        const k = ROOM_KINDS[kind], ok = !!fitRoom(house, spot.room, spot.pip, kind, null, spot.up, taken), sh = shapeOf(kind);
         const r = el('button', `pc-row pc-kind${kind === plan ? ' on' : ''}`);
         r.type = 'button';
         r.disabled = !ok;
         r.append(el('span', 'pc-kind-name', k.name.toUpperCase()), el('small', 'pc-kind-size', ok ? `${sh.w} × ${sh.h}` : 'No space'));
-        r.addEventListener('click', () => { playSound('select'); plan = kind; show('house'); speak(`${k.name}: ${k.blurb} ${ROOM_PRICE} PokéCoins.`); });
+        r.addEventListener('click', () => {
+          playSound('select');
+          plan = kind; turn = 0;
+          show('house');
+          speak(`${k.name}: ${k.blurb} ${ROOM_PRICE} PokéCoins.${fitsOf(house, spot.room, spot.pip, kind, spot.up).length > 1 ? ' Tap Turn to face it another way.' : ''}`);
+        });
         return r;
       }));
-      if (fit) kids.push(buy(`Build · ${ROOM_PRICE}`, () => {
-        const name = ROOM_KINDS[plan].name, done = buyRoom(loadBase(), spot.room, spot.pip, plan);
-        if (!done) { playSound('cancel'); return speak((getSave().coins ?? 0) < ROOM_PRICE ? `You need ${ROOM_PRICE - (getSave().coins ?? 0)} more PokéCoins.` : 'That room doesn\'t fit there.'); }
-        spot = plan = null;
-        playSound('item-get');
-        show('house');
-        speak(`Your new ${name} is built! Walk through its doorway in your Secret Base.${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear the doorway.` : ''}`);
-      }));
+      if (fit) {
+        const row = el('div', 'pc-build-row');
+        if (fits.length > 1) row.append(buy('Turn', () => { playSound('select'); turn = (turn + 1) % fits.length; show('house'); }, ' pc-turn'));
+        row.append(buy(`Build · ${ROOM_PRICE}`, () => {
+          const name = ROOM_KINDS[plan].name, stairs = spot.up, done = buyRoom(loadBase(), spot.room, spot.pip, plan, fit.rot, spot.up);
+          if (!done) { playSound('cancel'); return (getSave().coins ?? 0) < ROOM_PRICE ? short(ROOM_PRICE) : speak('That room doesn\'t fit there.'); }
+          unpick();
+          playSound('item-get');
+          show('house');
+          speak(`Your new ${name} is built! ${stairs ? 'Climb the new stairs to it' : 'Walk through to it'} in your Secret Base.${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear the way.` : ''}`);
+        }));
+        kids.push(row);
+      }
       kids.push(list);
+    } else if (picked) {
+      const r = houseRooms(house).find(x => x.id === picked), name = ROOM_KINDS[r.kind].name;
+      kids.push(buy(sure ? 'Sure? Take it down' : 'Take down', () => {
+        if (!sure) { playSound('select'); sure = true; show('house'); return speak(`Take down the ${name}? Its furniture goes back into storage. No coins come back.`); }
+        if (!takeDown(loadBase(), picked)) { playSound('cancel'); sure = false; show('house'); return speak(`Other rooms are only reached through the ${name}. Take those down first.`); }
+        unpick();
+        playSound('confirm');
+        show('house');
+        speak(`The ${name} is gone, and its furniture is back in storage.`);
+      }, ' pc-down'));
     }
     glass.replaceChildren(...kids);
-    if (!spot) speak(built >= MAX_ROOMS ? `Your house has all ${MAX_ROOMS} rooms it can hold. What a home!`
-      : `Tap a green doorway to build a room onto it: ${ROOM_PRICE} PokéCoins a room. Grey ones already lead somewhere.`);
-    else if (!plan) speak('Pick a room to build there.');
+    if (spot?.join) speak(`Open a doorway between these two rooms for ${DOOR_PRICE} PokéCoins?`);
+    else if (spot && !plan) speak(spot.up ? 'Pick a room to build upstairs. Stairs will climb to it from that back wall.' : 'Pick a room to build there. Rooms that won\'t fit are greyed out.');
+    else if (!spot && !picked) speak(floor ? `Tap a green spot on a back wall of the floor below to build a room up a staircase from it, ${ROOM_PRICE} PokéCoins.`
+      : `Tap a green spot on any wall to build a room there, ${ROOM_PRICE} PokéCoins. Gold spots join two rooms side by side. Tap a room to take it down.`);
   },
   rename() {
     const form = el('form', 'pc-name');
@@ -528,19 +572,21 @@ const PAGES = {
 const svg = (tag, attrs = {}) => { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 const OUT = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] };
 
-/** The house from above, after WoW's housing blueprint (the user's reference): each room a grey block named in it, a pip
-    at each doorway, green where a room can be built (a tap picks it) and grey where one already leads on, the front
-    door's Entry under the main room. `fit` is the room being tried at the picked pip, drawn dashed in green. */
+/** The house from above, after WoW's housing blueprint (the user's reference): the floor looked at (`floor`), each room a
+    grey block named in it (a tap picks it, to take down), a pip at each doorway: grey where one already leads on (a
+    square for a staircase), green where a room can be built (a tap picks it), gold where two rooms side by side could
+    be joined; the front door's Entry under the main room. Upstairs, the floor below shows faint, the green pips on its
+    back walls building up a staircase. `fit` is the room being tried, drawn dashed in green. */
 function blueprint(house, fit) {
-  const rooms = houseRooms(house), main = rooms[0], entry = entryOf(house);
-  const full = (house?.rooms.length ?? 0) >= MAX_ROOMS;
-  const blocks = rooms.map(r => ({ r, rects: r.shape.rects.map(([x, y, w, h]) => [x + r.gx, y + r.gy, w, h]) }));
+  const all = houseRooms(house), rooms = all.filter(r => r.lv === floor), below = floor ? all.filter(r => r.lv === floor - 1) : [];
+  const main = all[0], entry = entryOf(house);
+  const place = (r) => r.shape.rects.map(([x, y, w, h]) => [x + r.gx, y + r.gy, w, h]);
   const ghost = fit ? shapeOf(fit.kind, fit.rot).rects.map(([x, y, w, h]) => [x + fit.gx, y + fit.gy, w, h]) : [];
-  const door = [entry.at - 1, main.shape.h, 3, 1.5];
-  const all = [...blocks.flatMap(b => b.rects), ...ghost, door];
-  const x0 = Math.min(...all.map(r => r[0])) - 2, y0 = Math.min(...all.map(r => r[1])) - 2;
-  const x1 = Math.max(...all.map(r => r[0] + r[2])) + 2, y1 = Math.max(...all.map(r => r[1] + r[3])) + 2;
-  const s = svg('svg', { viewBox: `${x0} ${y0} ${x1 - x0} ${y1 - y0}`, class: 'pc-bp', role: 'img', 'aria-label': 'House blueprint' });
+  const door = floor ? [] : [[entry.at - 1, main.shape.h, 3, 1.5]];
+  const every = [...rooms.flatMap(place), ...below.flatMap(place), ...ghost, ...door];
+  const x0 = Math.min(...every.map(r => r[0])) - 2, y0 = Math.min(...every.map(r => r[1])) - 2;
+  const x1 = Math.max(...every.map(r => r[0] + r[2])) + 2, y1 = Math.max(...every.map(r => r[1] + r[3])) + 2;
+  const s = svg('svg', { viewBox: `${x0} ${y0} ${x1 - x0} ${y1 - y0}`, class: 'pc-bp', role: 'img', 'aria-label': `House blueprint, ${floorName(floor)}` });
   const pat = svg('pattern', { id: 'pc-bp-grid', width: 1, height: 1, patternUnits: 'userSpaceOnUse' });
   pat.append(svg('path', { d: 'M1 0H0V1', fill: 'none', stroke: '#24507a', 'stroke-width': 0.05 }));
   const defs = svg('defs');
@@ -561,36 +607,63 @@ function blueprint(house, fit) {
     if (tap) g.addEventListener('click', tap);
     s.append(g);
   };
-  room([door], 'pc-bp-room entry', 'Entry');
-  for (const { r, rects } of blocks) {
+  for (const r of below) room(place(r), 'pc-bp-room below');
+  if (door.length) room(door, 'pc-bp-room entry', 'Entry');
+  for (const r of rooms) {
     const name = ROOM_KINDS[r.kind].name;
-    room(rects, 'pc-bp-room', name, () => { playSound('select'); speak(r.id === 'main' ? 'Your main room, the way in from the Clearing.' : `Your ${name}.`); });
+    room(place(r), `pc-bp-room${picked === r.id ? ' picked' : ''}`, name, () => {
+      playSound('select');
+      const was = picked === r.id;
+      unpick();
+      if (r.id !== 'main' && !was) picked = r.id;
+      show('house');
+      if (r.id === 'main') speak('Your main room, the way in from the Clearing.');
+      else if (picked) speak(`Your ${name}. Take it down? Its furniture goes back into storage.`);
+    });
   }
   if (ghost.length) room(ghost, 'pc-bp-room ghost', ROOM_KINDS[fit.kind].name);
   const pip = (cx, cy, cls, tap) => {
     const g = svg('g', { class: `pc-bp-pip ${cls}` });
-    g.append(svg('circle', { cx, cy, r: 1.2, class: 'pc-bp-hit' }), svg('circle', { cx, cy, r: 0.48 }));
+    const dot = /stairs/.test(cls) ? svg('rect', { x: cx - 0.4, y: cy - 0.4, width: 0.8, height: 0.8, rx: 0.12 })
+      : svg('circle', { cx, cy, r: /open|join/.test(cls) ? 0.32 : 0.42 });
+    g.append(svg('circle', { cx, cy, r: 0.55, class: 'pc-bp-hit' }), dot);
     if (tap) g.addEventListener('click', tap);
     s.append(g);
   };
-  pip(main.gx + entry.at + 0.5, main.gy + main.shape.h, 'shut');
+  const at = (r, p) => { const t = pipTile(r.shape, p), [dx, dy] = OUT[p[0]]; return [r.gx + t.x + 0.5 + dx * 0.5, r.gy + t.y + 0.5 + dy * 0.5]; };
+  const pick = (next, line) => () => {
+    const on = JSON.stringify(spot) === JSON.stringify(next);
+    playSound('confirm');
+    unpick();
+    spot = on ? null : next;
+    show('house');
+    if (spot && line) speak(line);
+  };
+  if (!floor) pip(main.gx + entry.at + 0.5, main.gy + main.shape.h, 'shut');
+  if (!house?.big) return wrap(s);
+  const taken = takenOn(house, floor);
+  // this floor's doorways and staircases, and the green spots a room fits onto
   for (const r of rooms) r.shape.pips.forEach((p, i) => {
-    const t = pipTile(r.shape, p), [dx, dy] = OUT[p[0]], cx = r.gx + t.x + 0.5 + dx * 0.5, cy = r.gy + t.y + 0.5 + dy * 0.5;
-    if (linkOf(house, r.id, i)) return pip(cx, cy, 'shut');
-    if (full || !BUILDABLE.some(k => fitRoom(house, r.id, i, k))) return;
-    const on = spot?.room === r.id && spot.pip === i;
-    pip(cx, cy, `open${on ? ' on' : ''}`, () => {
-      playSound('confirm');
-      spot = on ? null : { room: r.id, pip: i };
-      plan = null;
-      show('house');
-      if (spot) speak('Pick a room to build there. Rooms that won\'t fit are greyed out.');
-    });
+    const l = linkOf(house, r.id, i), [cx, cy] = at(r, p);
+    if (l) return pip(cx, cy, l[4] ? 'shut stairs' : 'shut');
+    if (!BUILDABLE.some(k => fitRoom(house, r.id, i, k, null, false, taken))) return;
+    const on = spot?.room === r.id && spot.pip === i && !spot.up;
+    pip(cx, cy, `open${on ? ' on' : ''}`, pick({ room: r.id, pip: i, up: false }));
   });
-  const box = el('div', 'pc-blueprint');
-  box.append(s);
-  return box;
+  // upstairs: the back walls of the floor below, where a staircase could climb to a new room
+  for (const r of below) r.shape.pips.forEach((p, i) => {
+    if (p[0] !== 'n' || linkOf(house, r.id, i)) return;
+    if (!BUILDABLE.some(k => fitRoom(house, r.id, i, k, null, true, taken))) return;
+    const [cx, cy] = at(r, p), on = spot?.room === r.id && spot.pip === i && spot.up;
+    pip(cx, cy, `open up${on ? ' on' : ''}`, pick({ room: r.id, pip: i, up: true }));
+  });
+  for (const j of joinPips(house, floor)) {
+    const [dx, dy] = OUT[j.side], on = spot?.join?.room === j.room && spot.join.pip === j.pip;
+    pip(j.x + 0.5 + dx * 0.5, j.y + 0.5 + dy * 0.5, `join${on ? ' on' : ''}`, pick({ join: j }));
+  }
+  return wrap(s);
 }
+const wrap = (s) => { const box = el('div', 'pc-blueprint'); box.append(s); return box; };
 
 /** Prof. Oak's word on your Pokédex, by how much of the main three pages you've beaten (Gen 3's Pokédex rating). */
 function rating(n, of, complete) {

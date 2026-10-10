@@ -12,7 +12,7 @@ import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
-import { roomById, doorTiles, freshHouse, addRoom, ROOM_PRICE, BIG_PRICE, MAX_ROOMS } from './data/house.js';
+import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
 // the room being shown (useRoom()): its size in tiles, the canvas it's painted on (wide enough for its longest wall),
@@ -124,8 +124,8 @@ const blocksDoor = (it) => PIECES[it.id].layer === 'wall'
   ? Array.from({ length: PIECES[it.id].w }, (_, i) => `n${it.x + i}`).some(k => DOORS.has(k))
   : cells(it).some(c => { const [x, y] = c.split(',').map(Number); return DOORS.has(c) || (y === topOf(x) && DOORS.has(`n${x}`)); });
 
-/** The first house upgrade: the main room grows to its big size (its furniture moved along to keep it centred), and
-    its doors open on the blueprint. False if the coins aren't there. */
+/** The first house upgrade: the main room grows to its big size (its furniture moved along to keep it centred), with
+    no doorways yet: those are built on the blueprint, where the player wants them. False if the coins aren't there. */
 export function buyBigRoom(b) {
   if ((getSave().coins ?? 0) < BIG_PRICE || b.house?.big) return false;
   b.house ||= freshHouse();
@@ -135,17 +135,10 @@ export function buyBigRoom(b) {
   return true;
 }
 
-/** Build a room onto pip `pip` of room `id`. Furniture standing in a new doorway's way goes into storage (named in
-    `moved`). Null if the coins aren't there, the house is full or it doesn't fit. */
-export function buyRoom(b, id, pip, kind) {
-  if ((getSave().coins ?? 0) < ROOM_PRICE || (b.house?.rooms.length ?? 0) >= MAX_ROOMS) return null;
-  const was = new Set((b.house?.links || []).map(l => l.join()));
-  const nid = addRoom(b.house, id, pip, kind);
-  if (!nid) return null;
-  Object.assign(b.house.rooms.find(r => r.id === nid), { items: [], wall: 'cream', floor: 'wood' });
-  const moved = [];
-  // each room that got a door: clear its doorway, with that room shown for the while so the rules read its shape
-  const keep = { COLS, ROWS, W, H, FLOOR, TOPS, DOORS };
+/** Every room that got a new doorway since `was` (the links' keys before): furniture standing in its way goes into
+    storage, each room shown for the while so the rules read its shape. Returns the names of what was moved. */
+function clearDoors(b, was) {
+  const moved = [], keep = { COLS, ROWS, W, H, FLOOR, TOPS, DOORS };
   for (const rid of new Set(b.house.links.filter(l => !was.has(l.join())).flatMap(([a, , c]) => [a, c]))) {
     const box = roomContents(b, rid);
     useRoom({ house: b.house, here: rid });
@@ -154,10 +147,41 @@ export function buyRoom(b, id, pip, kind) {
     box.items = box.items.filter(it => !gone.has(it));
   }
   ({ COLS, ROWS, W, H, FLOOR, TOPS, DOORS } = keep);
+  return moved;
+}
+
+/** Build a room onto pip `pip` of room `id`, turned `rot`, or up a staircase from it with `up`. Furniture standing
+    in the new doorway's way goes into storage (named in `moved`). Null if the coins aren't there or it doesn't fit. */
+export function buyRoom(b, id, pip, kind, rot = null, up = false) {
+  if ((getSave().coins ?? 0) < ROOM_PRICE) return null;
+  const was = new Set((b.house?.links || []).map(l => l.join()));
+  const nid = addRoom(b.house, id, pip, kind, rot, up);
+  if (!nid) return null;
+  Object.assign(b.house.rooms.find(r => r.id === nid), { items: [], wall: 'cream', floor: 'wood' });
+  const moved = clearDoors(b, was);
   updateSave(d => { d.coins -= ROOM_PRICE; d.secretBase = b; });
   return { id: nid, moved };
 }
-export { ROOM_PRICE, BIG_PRICE, MAX_ROOMS };
+
+/** A doorway between two rooms already wall to wall (joinPips()). Null if the coins aren't there. */
+export function buyDoor(b, a, pa, c, pc) {
+  if ((getSave().coins ?? 0) < DOOR_PRICE) return null;
+  const was = new Set(b.house.links.map(l => l.join()));
+  if (!joinRooms(b.house, a, pa, c, pc)) return null;
+  const moved = clearDoors(b, was);
+  updateSave(d => { d.coins -= DOOR_PRICE; d.secretBase = b; });
+  return { moved };
+}
+
+/** Take a room down; its furniture goes back into storage (storage is what you own less what stands in a room). If
+    you're standing in it, you're back in the main room. False if other rooms are only reached through it. */
+export function takeDown(b, id) {
+  if ((b.here || 'main') === id) goRoom(b, 'main');
+  if (!removeRoom(b.house, id)) return false;
+  saveBase(b);
+  return true;
+}
+export { ROOM_PRICE, BIG_PRICE, DOOR_PRICE };
 
 /* Duplicating (the PC's Duplicate, 2026-10-10, the user's ask): one more of any piece you own, into storage. The first
    costs 50 PokéCoins, each after it 5 more, up to 100, where it stays (`secretBase.dupes` counts them). */

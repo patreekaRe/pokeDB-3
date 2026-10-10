@@ -23,7 +23,7 @@ import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
   useRoom, goRoom, onFloor, topOf } from './secret-base.js';
-import { roomById, roomName, doorsOf, pipTile } from './data/house.js';
+import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -142,23 +142,29 @@ function buildRoom() {
   for (const d of doors) addDoor(d, [outer, outer, cap, outer, outer, outer]);
 }
 
-let throughTex = null;
-/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor. */
-function throughMat() {
-  if (!throughTex) {
+const throughTex = {};
+/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor; `down`, the top of a flight
+    of stairs going down into it instead, its treads fading into the dark. */
+function throughMat(down = false) {
+  if (!throughTex[down]) {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 128;
     const g = c.getContext('2d'), v = g.createLinearGradient(0, 0, 0, 128);
-    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, '#4a3428');
+    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, down ? '#1a1420' : '#4a3428');
     g.fillStyle = v; g.beginPath(); g.roundRect(0, 0, 64, 128, [28, 28, 0, 0]); g.fill();
-    throughTex = new THREE.CanvasTexture(c);
-    throughTex.colorSpace = THREE.SRGBColorSpace;
+    if (down) for (let i = 0; i < 5; i++) {
+      g.fillStyle = `rgba(168, 122, 76, ${0.75 - i * 0.15})`;
+      g.fillRect(6 + i * 3, 124 - i * 11, 52 - i * 6, 4);
+    }
+    throughTex[down] = new THREE.CanvasTexture(c);
+    throughTex[down].colorSpace = THREE.SRGBColorSpace;
   }
-  return new THREE.MeshBasicMaterial({ map: throughTex, transparent: true });
+  return new THREE.MeshBasicMaterial({ map: throughTex[down], transparent: true });
 }
 
 /** A doorway: on the front edge a doormat like the way out; in a wall a dark way through under a wooden frame, a small
-    mat before it pointing in. A tap on any of it walks your partner through (goThrough()). */
+    mat before it pointing in, or for a staircase (only ever in a back wall) wooden steps climbing into it, or the top
+    of a flight going down. A tap on any of it walks your partner through (goThrough()). */
 function addDoor(d, stepMat) {
   const { x: tx, y: ty } = d.tile;
   if (d.side === 's') {
@@ -170,7 +176,7 @@ function addDoor(d, stepMat) {
     return;
   }
   const g = new THREE.Group(), wood = solid('#7a5434');
-  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat());
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.stairs === 'down'));
   dark.position.set(0, 1.05, 0.03);
   const post = (x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.24, 0.14), wood); m.position.set(x, 1.12, 0.07); m.castShadow = true; return m; };
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood);
@@ -179,13 +185,23 @@ function addDoor(d, stepMat) {
   mat.scale.set(0.6, 0.75, 1);
   mat.position.set(0, 0.012, 0.45);
   mat.rotation.z = Math.PI;
-  g.add(dark, post(-0.61), post(0.61), lintel, mat);
+  g.add(dark, post(-0.61), post(0.61), lintel);
+  if (d.stairs) {
+    // up: steps climbing into the wall, each higher; down: a landing tread at the top, the rest painted going down
+    const tread = solid('#a87a4c');
+    for (let i = 0; i < (d.stairs === 'up' ? 4 : 1); i++) {
+      const hgt = d.stairs === 'up' ? 0.16 * (i + 1) : 0.04, step = new THREE.Mesh(new THREE.BoxGeometry(1.0, hgt, 0.22), i % 2 ? wood : tread);
+      step.position.set(0, hgt / 2, 0.5 - i * 0.22);
+      step.castShadow = step.receiveShadow = true;
+      g.add(step);
+    }
+  } else g.add(mat);
   if (d.side === 'n') g.position.set(tileX(tx), 0, ty - ROWS / 2);
   if (d.side === 'w') { g.position.set(tx - COLS / 2, 0, tileZ(ty)); g.rotation.y = Math.PI / 2; }
   if (d.side === 'e') { g.position.set(tx + 1 - COLS / 2, 0, tileZ(ty)); g.rotation.y = -Math.PI / 2; }
   g.traverse(o => { o.userData.door = d; });
   roomGroup.add(g);
-  doorMats.push(mat);
+  if (!d.stairs) doorMats.push(mat);
 }
 
 /** Your partner walks to a doorway and through it: out over the main room's doormat, the way out of the base, or into
@@ -1552,7 +1568,8 @@ async function travel(d) {
 /** Build the room `base.here` is and stand your partner at `spot(doors)` (a tile), or at the front; the guests about it. */
 function showRoom(spot = () => null) {
   useRoom(base);
-  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : roomName(base.house, base.here);
+  const lv = here().lv;
+  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
   buildRoom();
   Object.assign(walker, { path: [], through: null, seat: null, seatTo: null, goal: null, jump: null, y: 0 });
   buildPieces();
@@ -1576,11 +1593,12 @@ function showRoom(spot = () => null) {
     buddy, the residents) is read back from the save once it's logged off. */
 function logOn() {
   playSound('confirm');
+  const was = base.here;
   openPC({ start: 'decor', inBase: true, onClose: async () => {
     base = loadBase();
-    // the PC's House upgrades may have grown this room or opened a door in it
+    // the PC's House upgrades may have grown this room or opened a door in it, or taken it down (back in the main room)
     const at = walker.tile;
-    showRoom(() => at);
+    showRoom(() => base.here === was ? at : null);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
     syncGuests();
