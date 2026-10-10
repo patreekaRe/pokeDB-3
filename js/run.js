@@ -2046,7 +2046,7 @@ function restSite({ used = false } = {}) {
             if (label) label.title = spent;
           }
           $('reward-skip').onclick = () => { if (run === thisRun) showMap(); };   // showChoice()'s Leave was spent with the pick
-          sayLines([`${stageName(run.starter, run.stage)} is feeling much better! Come back any time!`]);
+          if (!room3d) sayLines([`${stageName(run.starter, run.stage)} is feeling much better! Come back any time!`]);
         },
       },
       {
@@ -2082,7 +2082,8 @@ function restSite({ used = false } = {}) {
   if (!new URLSearchParams(location.search).has('center2d')) {
     const box = $('reward-options'), thisRun = run;
     box.classList.add('c3d-wait');
-    // the welcome waits until you're inside: it typed out over the dark screen while the room loaded
+    // the 3D room says nothing: its text box coming and going resized the view and jolted the camera.
+    // The lines are only told if the pixel room has to stand in.
     const lines = holdLines();
     const greet = () => { if (run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines); };
     import('./center-3d.js').then(m => m.mountCenter({
@@ -2091,13 +2092,13 @@ function restSite({ used = false } = {}) {
       onPick: async (i) => {
         const btn = box.querySelectorAll('.reward-option')[i];
         if (!btn) return;
-        if (btn.disabled) { playSound('cancel'); return sayLines([btn.querySelector('.center-label')?.title ?? '']); }
+        if (btn.disabled) return playSound('cancel');
         // resting can't be taken back, so the machine asks first (Chansey's and the PC's pickers have their own Back)
         if (i === 0 && !await confirmDialog(heal ? `Heal ${heal} HP at the machine?` : "You're already at full HP. Rest anyway?", 'Heal')) return;
         if (run === thisRun && box.isConnected) btn.click();
       },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
-    })).then(ctl => { room3d = ctl; placeCenterSpots(); if (ctl) setTimeout(greet, 600); })
+    })).then(ctl => { room3d = ctl; placeCenterSpots(); if (!ctl) greet(); })
       .catch(err => { console.warn('3D Center unavailable', err); greet(); })
       .finally(() => box.classList.remove('c3d-wait'));
   }
