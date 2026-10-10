@@ -124,7 +124,28 @@ export const lendAll = () => new URLSearchParams(location.search).has('allfurnit
 
 /** How many of a kind you own: bought, plus one of an earned kind once its badge, achievement, feat or page is
     (js/data/furniture.js; worked out from the save each time, never stored in `owned`). */
-const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], getSave()) ? 1 : 0);
+const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], getSave()) ? 1 : 0)
+  + (kind === FREE_PC ? 1 : 0);
+
+/** Every base has one Storage PC, like Gen 3's: tapped in the room it opens the PC on its Decorations (js/pc.js). */
+export const FREE_PC = 'pc';
+
+/** Your furniture as the PC's Decorations list it: each design you own a piece of, with how many you have and how many
+    stand in the room. */
+export function decorations(b) {
+  return DESIGNS.filter(id => !PIECES[id].gift && owns(b, id) > 0).map(id => {
+    const room = b.items.filter(it => PIECES[it.id].own === id).length;
+    return { id, have: owns(b, id), room };
+  });
+}
+
+/** Put every piece of a design standing in the room back in storage, and whatever stands on them. How many went. */
+export function putAway(b, id) {
+  const mine = b.items.filter(it => PIECES[it.id].own === id), gone = new Set(mine.flatMap(it => [it, ...ridersOf(it, b)]));
+  b.items = b.items.filter(it => !gone.has(it));
+  saveBase(b);
+  return mine.length;
+}
 
 /** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
 export const lockedEarned = () => FURNITURE.filter(p => !isEarned(p, getSave()) && PIECES[p.kind])

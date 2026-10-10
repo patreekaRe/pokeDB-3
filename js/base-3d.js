@@ -12,7 +12,7 @@ import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { buddy } from './trainercard.js';
-import { RESIDENTS } from './pc.js';
+import { RESIDENTS, openPC } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
@@ -21,7 +21,7 @@ import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF } from './secret-base.js';
+  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC } from './secret-base.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -1019,6 +1019,7 @@ function onTap(e) {
   if (g && g.parent === pieceGroup && PIECES[base.items[g.userData.index].id].gift) return unwrap(g.userData.index);
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
+    if (PIECES[it.id].own === FREE_PC) return logOn();
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
       const r = tapPlay(play), now = performance.now();
@@ -1459,6 +1460,20 @@ async function leave() {
   await leaveTo();
   leave.busy = false;
   curtain(false);
+}
+
+/** The Storage PC: the Clearing's PC on its Decorations, over the room. What it changed (a piece put away, the walking
+    buddy, the residents) is read back from the save once it's logged off. */
+function logOn() {
+  playSound('confirm');
+  openPC({ start: 'decor', inBase: true, onClose: async () => {
+    base = loadBase();
+    buildPieces();
+    const mate = buddy(getSave());
+    if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
+    syncGuests();
+    refresh();
+  } });
 }
 
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */

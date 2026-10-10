@@ -293,6 +293,22 @@
 .pc-mon:active { translate: 0 2px; }
 .pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.55rem; color: #8e5c06; }
 .pc-empty { margin-top: 24px; text-align: center; font-size: 0.62rem; }
+/* Decorations: the base's furniture, its pictures smooth (never pixelated), gold for what stands in the room */
+.pc-screen.in-base { z-index: 910; }
+.pc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.pc-chip {
+  padding: 7px 10px; border: 2px solid #3a78b8; border-radius: 999px; cursor: pointer;
+  background: #fbfdff; color: #1e2a3a; font: 0.5rem var(--pixel-font); font-synthesis-weight: none;
+}
+.pc-chip.on { background: #3a78b8; color: #fff; }
+.pc-decos { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); }
+.pc-deco { padding: 8px; }
+.pc-deco canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.pc-deco.picked { outline: 3px solid #3a78b8; outline-offset: 1px; }
+.pc-deco-pick { gap: 6px; }
+.pc-deco-big { width: 96px; height: 96px; display: grid; place-items: center; }
+.pc-deco-big canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 4px 0 rgba(0, 60, 90, 0.2)); }
+.pc-away { margin-top: 4px; padding: 10px 16px 10px 30px; }
 .pc-name { display: flex; gap: 10px; align-items: center; }
 .pc-name-box {
   flex: 1; min-width: 0; padding: 12px; border: 3px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a;

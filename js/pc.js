@@ -27,6 +27,7 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
+import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway } from './secret-base.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -40,13 +41,17 @@ export function residents(save = getSave(), lend = false) {
 }
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
+let start = 'home', deco = null, decoKind = 'All', inBase = false;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
-    Hall of Fame or Record Book over the Clearing. */
+    Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
+    Storage PC does (`inBase` lifts it over the base). */
 export function openPC(opts = {}) {
   if (root) return;
-  ({ onClose = null, onFame = null } = opts);
-  root = el('div', 'pc-screen');
+  ({ onClose = null, onFame = null, start = 'home' } = opts);
+  deco = null;
+  inBase = !!opts.inBase;
+  root = el('div', `pc-screen${inBase ? ' in-base' : ''}`);
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-label', 'PC');
   root.innerHTML = `
@@ -68,7 +73,7 @@ export function openPC(opts = {}) {
   page = 'boot';
   glass.replaceChildren();
   speak(`${trainerName().toUpperCase()} booted up the PC.`);
-  setTimeout(() => { if (root && page === 'boot') show('home'); }, calmFx() ? 0 : 900);
+  setTimeout(() => { if (root && page === 'boot') show(start); }, calmFx() ? 0 : 900);
 }
 
 function logOff() {
@@ -88,7 +93,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine' };
+const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine' };
 
 function back() {
   const up = UP[page];
@@ -175,7 +180,7 @@ const PAGES = {
       rows.push([on ? 'CLOUD SAVE' : 'SIGN IN', on ? 'Your progress is kept in the cloud. Check it or sign out here.' : 'Keep your progress safe in the cloud and carry on from your phone or PC.', signIn]);
     }
     const fame =bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
-    if (fame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
+    if (fame && onFame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
     rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
     menu('PC', rows);
   },
@@ -321,8 +326,71 @@ const PAGES = {
   },
   mine() {
     menu(`${trainerName().toUpperCase()}'S PC`, [
+      ['DECORATIONS', 'Your Secret Base furniture: what stands in your room and what\'s kept in storage.', () => { deco = null; show('decor'); }],
       ['RENAME', `Your name on the Trainer Card and the leaderboards: ${trainerName()}.`, () => show('rename')],
     ]);
+  },
+  decor() {
+    const save = getSave();
+    if (!inBase && !save.baseOwned && !save.secretBase) {
+      glass.replaceChildren(head('DECORATIONS'), el('p', 'pc-empty', 'No Secret Base yet.'));
+      return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its furniture is kept here.');
+    }
+    const b = loadBase(), all = decorations(b);
+    const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || all.some(d => KINDS_OF[k](PIECES[d.id])));
+    if (!kinds.includes(decoKind)) decoKind = 'All';
+    const list = all.filter(d => KINDS_OF[decoKind](PIECES[d.id]));
+    const picked = all.find(d => d.id === deco);
+    const h = head('DECORATIONS');
+    h.append(el('span', 'pc-count', `${all.length} kinds`));
+
+    const kids = [h];
+    if (picked) {
+      const card = el('div', 'pc-pick pc-deco-pick');
+      const pic = el('span', 'pc-deco-big');
+      pic.append(icon(picked.id));
+      const stored = picked.have - picked.room;
+      card.append(pic, el('b', 'pc-pick-name', PIECES[picked.id].name.toUpperCase()),
+        el('small', 'pc-pick-note', `${picked.room} in your room · ${stored} in storage`));
+      if (picked.room) {
+        const away = el('button', 'pc-row pc-away', 'PUT AWAY');
+        away.type = 'button';
+        away.addEventListener('click', () => {
+          const n = putAway(loadBase(), picked.id);
+          playSound('cancel');
+          show('decor');
+          speak(`${n > 1 ? `All ${n} of the` : 'The'} ${PIECES[picked.id].name} went back into storage.`);
+        });
+        card.append(away);
+      }
+      kids.push(card);
+    }
+    const chips = el('div', 'pc-chips');
+    chips.append(...kinds.map(k => {
+      const c = el('button', `pc-chip${k === decoKind ? ' on' : ''}`, k);
+      c.type = 'button';
+      c.addEventListener('click', () => { if (k === decoKind) return; decoKind = k; playSound('select'); show('decor'); });
+      return c;
+    }));
+    const grid = el('div', 'pc-box pc-decos');
+    grid.append(...list.map(d => {
+      const t = el('button', `pc-mon pc-deco${d.room ? ' on' : ''}${d.id === deco ? ' picked' : ''}`);
+      t.type = 'button';
+      t.title = PIECES[d.id].name;
+      t.setAttribute('aria-label', `${PIECES[d.id].name}, ${d.room} in your room, ${d.have - d.room} in storage`);
+      t.append(icon(d.id));
+      if (d.have > 1) t.append(el('span', 'pc-mon-tag', `×${d.have}`));
+      t.addEventListener('click', () => {
+        playSound('select');
+        deco = d.id === deco ? null : d.id;
+        show('decor');
+        if (deco) speak(`${PIECES[d.id].name}. ${d.room ? 'Put it away to keep it in storage.' : 'It\'s in storage. Place it from the Secret Base\'s Decorate.'}`);
+      });
+      return t;
+    }));
+    kids.push(chips, all.length ? grid : el('p', 'pc-empty', 'No furniture yet.'));
+    glass.replaceChildren(...kids);
+    if (!picked) speak(all.length ? 'Gold ones stand in your room. Tap one to see it, or to put it away.' : 'Buy furniture at the Poké Mall and it\'s kept here.');
   },
   rename() {
     const form = el('form', 'pc-name');

@@ -2063,3 +2063,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   `rating()`), a gold Next unlock card (`hints()`: nearest unfinished page, the Safari Zone's door, the research, a Safari area,
   a known bonus page, then up to 3 locked starters as silhouettes, Mewtwo kept secret; a tap shows the next) and a bar per
   page (bonus pages once known, Safari areas once it's open).
+- **Decorations** (2026-10-09, the last part of the Clearing's PC): a row under your own PC opens `PAGES.decor` in `js/pc.js`:
+  every design you own (`decorations()` in `js/secret-base.js`: bought, earned, the free Storage PC), filter chips by
+  `KINDS_OF`, gold tiles for what stands in the room; a tap shows how many are in the room and in storage, and Put away
+  sends them all (and whatever stands on them) back to storage (`putAway()`). Every base owns one Storage PC (`FREE_PC`,
+  added in `owns()`); tapped in the room on Walk it opens the PC on its Decorations (`logOn()` in `js/base-3d.js`, `.in-base`
+  over the base), and the room reloads from the save when it's logged off.
