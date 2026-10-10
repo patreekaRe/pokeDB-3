@@ -856,8 +856,7 @@ export function warmCenter() {
     sun.shadow.normalBias = 0.02;
     scene.add(hemi, sun);
     post = createPost(renderer, { short: 760, crisp: false });
-    post.final.uniforms.uBlur.value = 1.5;
-    post.final.uniforms.uBand.value = 0.3;
+    post.final.uniforms.uBlur.value = 0;   // no tilt-shift in the Center (the user's call, 2026-10-09)
     buildRoom();
     nurse = await monBoard({ src: 'assets/pokemon/chansey-front.gif', name: 'Chansey', cry: 'chansey' }, false);
     nurse.board.rotation.x = -PITCH;
