@@ -138,12 +138,12 @@ the source of truth for names and numbers; the tables below are the first list, 
 
 | Augment | Tier | Type | Effect |
 |---|---|---|---|
-| Kindling | Silver | Fire | Your Burn applies +1 |
-| Ember Skin | Silver | Fire | Start every fight with 8 block |
-| Heat Shield | Gold | Fire | Every Burn you apply also gives you 2 block |
-| Wildfire | Gold | Fire | Burn never goes down |
-| Cauterize | Gold | Fire | Heal 1 for every Burn tick on an enemy |
-| Phoenix | Prismatic | Fire | Blaze is always on and its bonus doubles |
+| Kindling | Silver | Fire | Your Burn applies +2 |
+| Ember Skin | Silver | Fire | Start every fight with 8 block; heal 4 after every won fight |
+| Heat Shield | Gold | Fire | Every Burn you apply also gives you 3 block |
+| Wildfire | Gold | Fire | Burn never goes down, and heals you 1 whenever it hurts |
+| Cauterize | Gold | Fire | Heal 3 for every Burn tick on an enemy |
+| Phoenix | Prismatic | Fire | Blaze is always on and its bonus doubles; heal 2 every turn |
 | Rebirth | Prismatic | Fire | Once a climb, at 0 HP: revive at full HP with 3 strength |
 | Supernova | Prismatic | Fire | Burn stacks deal double; your exhausted cards deal 6 to the enemy |
 | Deep Roots | Silver | Grass | Overgrow heals 6 |
@@ -175,7 +175,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Monk | Remove all your attacks but 3; every Skill deals 4 |
 | Speed Demon | +1 PP a turn; enemies act twice on turn 1 |
 | Sudden Death | Guardians have half HP; you can't heal outside Centers |
-| Risky Climb | Every floor's fight is an Alpha, Alphas give double rewards |
+| Risky Climb | From floor 3, every floor's fight is an Alpha, Alphas give double rewards |
 | No Mercy | +40% damage; Centers are gone (fights) |
 
 ### Sets (part c)
