@@ -1287,7 +1287,7 @@ function makePlaces() {
     id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: 11, y: 0 }, tiles: [[11, -1]], tag: [11, 2.6, -1], open: true,
     line: climb ? waits(climb) : `This week's Sky Pillar climb.${best ? ` Your best: floor ${best}.` : ''}`,
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : [['Climb', acts.onTower]],
-    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb, 'ASCEND'),
+    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb, 'CLIMB'),
   });
   list.push({
     id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,

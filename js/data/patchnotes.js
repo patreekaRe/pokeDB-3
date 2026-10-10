@@ -71,7 +71,7 @@ export const PATCHES = [
   ['pc', 'The PC menu is in a tidier order: your mail, then the PCs and your house, the Hall of Fame, and patch notes and cloud save at the bottom.'],
   ['fixes', 'The PC\'s Decorations and Duplicate pages show the picked piece in its own card, so tall furniture no longer covers its name.'],
   ['dex', 'Each Pokédex page\'s reward medal now sits beside its name, not in the bottom corner.'],
-  ['hub', 'Every Pokéstop now says what it does on the ground in front of it: SET OUT on the trail, EXPLORE at the Safari, ASCEND at the Sky Pillar, or CONTINUE where your saved run waits.'],
+  ['hub', 'Every Pokéstop now says what it does on the ground in front of it: SET OUT on the trail, EXPLORE at the Safari, CLIMB at the Sky Pillar, or CONTINUE where your saved run waits.'],
     ],
   },
   {
